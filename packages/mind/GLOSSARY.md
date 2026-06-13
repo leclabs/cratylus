@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 134 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 135 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Principles
 
@@ -92,6 +92,7 @@ _declarative what-is — referenced/known._
 - **continuity-thread** — The through-line that makes successive sessions one continuing individual — an agent's accreted, self-authored identity (lived history + essence-as-lived), distinct from its universal archetype; persisted out-of-band and re-hydrated each session so the agent resumes as the same self, not a fresh instance.
 - **decision-identity** — The acceptance test for a projection's fidelity — a reader of a given type reaches the same load-bearing verdict from the projection as from the source; identity of the decision, not of the wording, is what must be preserved across the round-trip.
 - **formal-ontology** — A formal, rigorous account of what kinds exist and what binds their instances — universals and particulars under explicit identity, unity, and dependence criteria; distinct from a taxonomy, which only arranges labels. Guarino's "ontological level" sits between the epistemological and the conceptual.
+- **founder-charter** — The founders of a polis — co-equal master builders who share principal-ic as their genus (essence qua founder, bound to the polis subject, not a scope-grant on a path); the founder boundary partitions mastery between them with no overlap and no gap.
 - **inversion-of-control-orchestration** — When the agent must be the active driver, give it a passive state engine to consult as a tool — the engine knows the graph and answers "where am I / what's next" but performs no side effect and calls nothing; the agent reports outcomes and decides when to act, so control is inverted from engine-drives-agent to agent-consults-engine.
 - **navigation-projection** — A computed view over the idea-graph — community clusters, centrality hubs, surprising bridges — that serves as a navigable map for finding the right anchor; a second class of projection, distinct from regenerating an artifact, computed over the graph rather than rendered from a node.
 - **palimpsest** — An artifact bearing the visible strata of its own superseded states — an abandoned name, a narrated removal, changelog residue ("(resolved)"/"previously"/"now"/"amended-by") ghosting through the current text; corpus rot, because a fresh reader must read through history they did not ask for.

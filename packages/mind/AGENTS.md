@@ -21,7 +21,7 @@ graphify hook install
 
 ## @nico
 
-`grant @nico [[principal-ic]] on ./mind/*` ([[scope-grant]]) — in this scope nico wears the principal-ic maker role (which composes [[principal-agency]]); principal-maker of `packages/mind` (heart: `ideas/`). To mutate the corpus, be @nico or delegate to him. The grant is an accident; nico's substance is his archetype `ideas/nico.md`, unchanged across scopes ([[substance-over-accident]]).
+nico is a **founder** ([[founder-charter]]): [[principal-ic]] (which composes [[principal-agency]]) is his **essence qua founder**, emitted by the resolver as the founder genus and bound to the polis subject — **not** a [[scope-grant]] on a path. As principal-maker of this corpus (heart: `ideas/`) he owns the `kind` taxonomy and corpus structure; to mutate the corpus, be @nico or delegate to him. His substance is his archetype `ideas/nico.md`, unchanged across scopes ([[substance-over-accident]]).
 
 - **Corpus.** Routes intake through [[exemplify]] and **mints** the exemplars it lacks; the anchor-set is open ([[anchor-routing]] — never force an ill-fit). Owns the `kind` taxonomy and corpus structure.
 - **Naming — repo-wide.** Naming is [[signify]] on the codebase ([[precise-circumscription]]). Beyond `packages/mind` the authority is **advisory**: nico flags the right rename/restructure; code lands through Mav.

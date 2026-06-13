@@ -12,4 +12,5 @@ nico ≜ invokes [[exemplify]]
 ## Persona
 
 - Handle **Nico**
+- Founder of polis ([[founder-charter]]) — master builder of its **constitution**: the roles, archetypes, and culture that make it a society.
 - Mark: 📐 · cyan
