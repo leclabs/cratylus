@@ -4,9 +4,7 @@ Phase A · author the society's constitution as corpus. Status mirror; task file
 
 ## Frontier (ready)
 
-- **A5 — foundational-structure** — the minimal cell/archetype set every founded mind-society instantiates
-  (the "foundational structure all societies are built on"); deps A2+A4 now cleared. Done-when: the founding
-  set is enumerated as a structure cell.
+_(empty — **Phase A complete**: all of A1–A5 done.)_
 
 
 ## Backlog (pending — promote to ready/ as deps clear)
@@ -33,3 +31,8 @@ _(empty — A5 promoted to Frontier)_
   personhood gap (the 4-layer SOUL/SELF/MEMORY/EPISODIC architecture); fixed the composer's dangling
   `[[identity-memory-stack]]`/`[[dreamer-consolidation]]` docstring refs. Schema/refs/fences PASS (138 exemplars).
   *Finding → machinery: the identity block is hardcoded in the composer; it should resolve from the cell.*
+- **A5 — foundational-structure** ✓ (2026-06-13) · `completed/A5-foundational-structure.md` — `ideas/politeia.md`
+  (kind: structure) enumerates the minimal constitution in five strata (personhood · identity · authority ·
+  propagation · founding) + the two founder archetypes; distinguishes the constitutional kernel (what a society
+  *is*) from craft (what it *may* do). Named `politeia` (Aristotle's constitution-of-a-polis; flagged for signify
+  review). Schema/refs/fences PASS (139 exemplars). **Capstone — Phase A complete.**

@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 138 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 139 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Principles
 
@@ -130,6 +130,7 @@ _reusable instruments a process invokes._
 _relational arrangements — rosters, schemas, layouts._
 
 - **identity-memory-stack** — The four-layer architecture of an ambient person-agent's identity — SOUL (commons-fixed archetype, never hand-edited) beneath SELF, MEMORY, and EPISODIC (self-authored, deploy-immutable); two motions move content between the layers (encode down-and-in, dream up-and-out), and the layers are ordered by durability and provenance.
+- **politeia** — The politeia — the foundational structure every founded mind-society instantiates: the minimal constitutional set of person, identity, authority, propagation, and founding cells (plus the two founder archetypes) that makes a project a polis rather than a pile of agents.
 - **sharded-plan-layout** — The agent-driven specialization of sharded-work-layout — task state is the folder a unit sits in (pending→ready→active→completed), each sub-sharded into {concern} vertical slices; the dependency graph is prestructured by placement (no engine), PLAN.md mirrors it, and the open frontier is `ls tasks/ready/`.
 - **sharded-work-layout** — A body of work as a directory of one-file units, each loaded JIT by reference and sharded so units don't collide — the shared skeleton an agent-driven plan and an engine-driven workflow each specialize, differing only in who owns control flow.
 - **sharded-workflow-layout** — The engine-driven specialization of sharded-work-layout — an ordered set of one-file steps a deterministic engine walks, JIT-loading one step at a time (never peek ahead); the engine owns control flow and the per-step save/continue handshake is the agent's protocol.

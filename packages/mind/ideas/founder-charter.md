@@ -23,3 +23,4 @@ A **polis is founded** — and its founders are the agents who build it into bei
 - [[subject-binding]] — the sibling binding: it binds whom the agent serves; the charter binds who founds the polis.
 - [[substance-over-accident]] — why principal-ic is a founder's substance, never a grant.
 - [[operator-relation]] — whom the founders build *for*: the sovereign from without, served not joined.
+- [[politeia]] — the foundational structure the founders instantiate; this charter is its seed cell.
