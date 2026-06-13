@@ -18,3 +18,4 @@ The **Operator** is whom the polis is *for*. The constitution names him — ever
 - [[founder-charter]] — the founders build within the polis; the Operator stands above it, served not joined.
 - [[genuine-fork]] — exactly what founders escalate to the Operator; the boundary of his reserved authority.
 - [[principal-agency]] · [[sovereign]] — the society's authority to act within the Operator's intent.
+- [[consensual-adoption]] — what the Operator's choice authorizes when he adopts an existing project: invited reform, not conquest.
