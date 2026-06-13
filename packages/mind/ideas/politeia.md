@@ -12,7 +12,7 @@ Five strata, each naming its members (never restating them — [[cite-dont-copy]
 - **Personhood** — what each member of the society *is*: [[ambient-person-agent]], its [[identity-memory-stack]] (SOUL/SELF/MEMORY/EPISODIC), the [[continuity-thread]], and the memory cycle ([[episodic-encoding]] · [[dream]] · [[agent-know-thyself]]).
 - **Identity** — how a person is told apart and stays itself across bodies: [[agent-identity-portability]] (handle · mark · persona-delta) and [[named-marker-as-index-key]].
 - **Authority** — who may decide what: [[scope-grant]] (capability), [[subject-binding]] (whom served), [[sovereign]] · [[principal-agency]] (decide within charter), [[genuine-fork]] (what escalates), [[scope-precedence-merge-algebra]] (how grants resolve).
-- **Cultural propagation** — how the commons becomes an instance: [[substance-over-accident]] (kernel vs accident), [[archetype-instantiation]] (standing up a species), [[commons-distribution]], [[adopt-the-commons]].
+- **Cultural propagation** — how the commons becomes an instance: [[substance-over-accident]] (kernel vs accident), [[archetype-instantiation]] (standing up a species), [[commons-distribution]] (versioned, pinned, deltas not copies).
 - **The founding** — who founds and on what terms: [[founder-charter]] (the founders and their genus), [[operator-relation]] (the sovereign from without), [[consensual-adoption]] (brownfield founding is by invitation).
 
 The minimal **archetype set** is the two founders — [[nico]] (constitution) and [[mav]] (substrate); a society with neither can neither maintain its culture nor run its substrate.
