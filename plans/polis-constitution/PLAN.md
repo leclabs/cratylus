@@ -4,15 +4,14 @@ Phase A · author the society's constitution as corpus. Status mirror; task file
 
 ## Frontier (ready)
 
-- **A2 — author-the-sociology** — surface SOUL/SELF/MEMORY/EPISODIC (personhood), scope-grants (authority),
-  commons-vs-instance (cultural propagation), marks (identity) as an explicit constitutional body.
-  Done-when: each is a named cell or a coherent composite; no implicit sociology remains.
+- **A5 — foundational-structure** — the minimal cell/archetype set every founded mind-society instantiates
+  (the "foundational structure all societies are built on"); deps A2+A4 now cleared. Done-when: the founding
+  set is enumerated as a structure cell.
+
 
 ## Backlog (pending — promote to ready/ as deps clear)
 
-- **A5 — foundational-structure** (dep: A2, A4)  — the minimal cell/archetype set every founded
-  mind-society instantiates (the "foundational structure all societies are built on"). Done-when:
-  the founding set is enumerated as a structure cell.
+_(empty — A5 promoted to Frontier)_
 
 ## Done
 
@@ -29,3 +28,8 @@ Phase A · author the society's constitution as corpus. Status mirror; task file
   (kind: principle): brownfield founding is consensual — the founder is an *invited reformer, not a conqueror*;
   consent legitimizes the restructuring (sovereign-needs-charter parallel); adopt-don't-erase. Builds on A3;
   linked from operator-relation. Schema/refs/fences PASS. *(slug `consensual-adoption`, not plan's `consent-adoption`.)*
+- **A2 — author-the-sociology** ✓ (2026-06-13) · `completed/A2-author-the-sociology.md` — audited 4 pillars;
+  authority/propagation/identity already anchored. Minted `ideas/identity-memory-stack.md` (structure) for the
+  personhood gap (the 4-layer SOUL/SELF/MEMORY/EPISODIC architecture); fixed the composer's dangling
+  `[[identity-memory-stack]]`/`[[dreamer-consolidation]]` docstring refs. Schema/refs/fences PASS (138 exemplars).
+  *Finding → machinery: the identity block is hardcoded in the composer; it should resolve from the cell.*

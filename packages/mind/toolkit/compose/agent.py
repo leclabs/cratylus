@@ -171,7 +171,7 @@ def _identity_block() -> list[str]:
     ([[ambient-person-agent]]), like grants. Binds the def (the SOUL) to its
     sibling `~/.claude/agents/<name>/{SELF,MEMORY,EPISODIC}.md` layers
     ([[identity-memory-stack]]) and the Dreamer consolidation cascade
-    ([[dreamer-consolidation]]); names the natural-language wake/dream/encode
+    ([[dream]]); names the natural-language wake/dream/encode
     triggers that fire the cycle."""
     return [
         "Identity & memory (your persistence across sessions):",
