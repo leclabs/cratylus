@@ -7,9 +7,6 @@ Phase A · author the society's constitution as corpus. Status mirror; task file
 - **A2 — author-the-sociology** — surface SOUL/SELF/MEMORY/EPISODIC (personhood), scope-grants (authority),
   commons-vs-instance (cultural propagation), marks (identity) as an explicit constitutional body.
   Done-when: each is a named cell or a coherent composite; no implicit sociology remains.
-- **A3 — the-operator-relation** — name the **Operator** role: *named-but-outside* the society (the sovereign
-  founders serve, not a citizen). What founders owe the Operator; reserved authority. *founder-charter already
-  foreshadows it via [[subject-binding]].* Done-when: the Operator relation is an authored cell.
 - **A4 — consent-adoption** — author the principle that brownfield adoption is **consensual**: the adopting
   society opted in, so the founder is an *invited reformer*, not a conqueror. *Operator insight.* Done-when:
   principle cell exists; referenced by polis-instantiation's brownfield task.
@@ -27,3 +24,7 @@ Phase A · author the society's constitution as corpus. Status mirror; task file
   read from `founder-charter.md`'s `## Founders`); `ideas/founder-charter.md` authored (binding family's 3rd
   member); nico/mav now lead with principal-ic; grant removed. Schema/refs/fences PASS; founder cells
   round-trip. *Finding → machinery/C: polis has no green baseline. Unblocked A2/A3/A4.*
+- **A3 — the-operator-relation** ✓ (2026-06-13) · `completed/A3-the-operator-relation.md` — `ideas/operator-relation.md`
+  authored (kind: concept): the Operator as the sovereign *from without* — named-but-outside the society, its final
+  cause, reserved the genuine-fork + intent-setting; co-equal in manner, sovereign in authority. Civic complement to
+  subject-binding; linked from it + founder-charter. Schema/refs/fences PASS. Closes the open question.

@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 135 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 136 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Principles
 
@@ -95,6 +95,7 @@ _declarative what-is — referenced/known._
 - **founder-charter** — The founders of a polis — co-equal master builders who share principal-ic as their genus (essence qua founder, bound to the polis subject, not a scope-grant on a path); the founder boundary partitions mastery between them with no overlap and no gap.
 - **inversion-of-control-orchestration** — When the agent must be the active driver, give it a passive state engine to consult as a tool — the engine knows the graph and answers "where am I / what's next" but performs no side effect and calls nothing; the agent reports outcomes and decides when to act, so control is inverted from engine-drives-agent to agent-consults-engine.
 - **navigation-projection** — A computed view over the idea-graph — community clusters, centrality hubs, surprising bridges — that serves as a navigable map for finding the right anchor; a second class of projection, distinct from regenerating an artifact, computed over the graph rather than rendered from a node.
+- **operator-relation** — The Operator is the society's sovereign from without — named by the constitution yet not a citizen of it: the polis is founded to serve him, founders build within his intent and escalate only a genuine-fork, and the setting of intent and final authority are reserved to him.
 - **palimpsest** — An artifact bearing the visible strata of its own superseded states — an abandoned name, a narrated removal, changelog residue ("(resolved)"/"previously"/"now"/"amended-by") ghosting through the current text; corpus rot, because a fresh reader must read through history they did not ask for.
 - **pretransform-pass-shrinks-inference-surface** — Most of what an agent does in a transformation is mechanical bookkeeping disguised as inference — run a deterministic pre-transform pass (codemod, scaffolder, schema-gen) between setup and dispatch, so the agent receives only the small inference-shaped residue.
 - **pure-leaf-deterministic-engine** — Concentrate all orchestration in one deterministic engine and make the pluggable parts pure, stateless leaves — same input, same output, state lives outside them — so the leaves are trivially testable and a third party can author one against a small contract.
