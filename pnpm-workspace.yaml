@@ -1,0 +1,20 @@
+# koine (the projection machinery) is a Node package-group.
+# packages/mind is the culture corpus — markdown + a Python toolkit, not an npm package,
+# so it is intentionally NOT a workspace member.
+packages:
+  - "packages/koine/*"
+
+# Shared dependency versions for koine (carried from agentir).
+catalog:
+  typescript: ^5.7.0
+  tsup: ^8.3.0
+  "@types/node": ^22.0.0
+  zod: ^3.23.0
+  js-yaml: ^4.1.0
+  "@types/js-yaml": ^4.0.9
+  vitest: ^2.1.0
+  gray-matter: ^4.0.3
+  cac: ^6.7.14
+  picocolors: ^1.1.0
+  "@iarna/toml": ^2.2.5
+  chokidar: ^4.0.1
