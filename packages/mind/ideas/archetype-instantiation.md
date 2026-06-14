@@ -18,6 +18,7 @@ The emitted artifact records its provenance ([[generated-artifact-provenance]]) 
 ## See also
 
 - [[exemplar-resolution]] — the forward method; instantiation is its inverse on an agent cell.
+- [[agent-retirement]] — the lifecycle bookend: standup seeds the self, retirement archives it on exit.
 - [[scope-grant]] · [[substance-over-accident]] — the accident layer and the rule it obeys.
 - [[commons-distribution]] — where the archetype is sourced from across scopes.
 - [[continuity-thread]] · [[agent-know-thyself]] — the self the standup seeds so the species persists.

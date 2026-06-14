@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 139 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 140 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Principles
 
@@ -10,6 +10,7 @@ _normative oughts — embodied as priors._
 
 - **abstain-on-non-convergence** — When a source's traces indicate no stable exemplar, report that none is recoverable — never fabricate a convenient form; non-resolution is an honest result, a manufactured exemplar is a lie that corrupts the corpus.
 - **adopt-the-commons** — For a solved problem domain the established library/spec/standard is the answer; reserve custom code for the one differentiated layer, and don't re-derive solved infrastructure.
+- **agent-retirement** — Retiring a person-agent archives its self-authored layers, never erases them — the SOUL is regenerable from the commons but a lived SELF/MEMORY/EPISODIC is not; deletion removes the def and archives the continuity-thread. Erasing a person's lived self is a category error — the lifecycle bookend to archetype-instantiation's standup.
 - **anchor-to-the-readers-priors** — Re-encoding one content for a different audience is re-anchoring, not summarizing — replace the anchor of each claim with the name that circumscribes it against that reader's latent priors and the decision they must make, while preserving the evidence chain underneath unchanged; the reader's priors are the channel, the decision-class is the basis.
 - **architecture-md-diagrams-only** — ARCHITECTURE.md carries diagrams of stable structure (boundaries, data flow, control flow, invariants) and nothing else — explanation rots, diagrams of stable structure don't; prose belongs in README or the code-adjacent doc.
 - **bidirectional-round-trip-fidelity** — A translator declares both directions and is held to round-trip as a property-tested fixed point — read(write(read(x))) == read(x); import is a first-class direction, never an afterthought bolted onto a one-way emitter.
