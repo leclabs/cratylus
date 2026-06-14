@@ -22,9 +22,11 @@ test_verify.py). Run: python3 toolkit/test_reconstruct.py (non-zero on failure).
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 import subprocess
 import sys
+import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 VERIFY = ROOT / "toolkit" / "verify.py"
@@ -85,8 +87,14 @@ R2_HOME = "mece"
 R2_FIXTURE = IDEAS / "zz-reconstruct-r2-fixture.md"
 
 
-def run_verify() -> subprocess.CompletedProcess:
-    return subprocess.run([sys.executable, str(VERIFY)], capture_output=True, text=True)
+def run_verify(manifests_dir=None) -> subprocess.CompletedProcess:
+    # manifests_dir overrides where the R3 consumer scans (POLIS_MANIFESTS) -- lets
+    # the no-manifest case isolate against an empty dir even when committed run
+    # manifests live in the real .manifests/.
+    env = dict(os.environ)
+    if manifests_dir is not None:
+        env["POLIS_MANIFESTS"] = str(manifests_dir)
+    return subprocess.run([sys.executable, str(VERIFY)], capture_output=True, text=True, env=env)
 
 
 def _mece_definiens_run() -> str:
@@ -145,12 +153,12 @@ def main() -> int:
         R2_FIXTURE.unlink(missing_ok=True)
 
     # --- R3 (no manifest): degrade-visibly to the audit-line NOTE, not faked ---
-    # With .manifests/ absent (the current corpus state), R3 stays the visible
-    # NOTE and the PASS line reads "R3 manual" -- a no-op, no fake green, no FAIL.
-    MANIFESTS.mkdir(exist_ok=True)  # may exist empty; the gate scans *.json
-    for stale in MANIFESTS.glob("zz-r3-fixture-*.json"):
-        stale.unlink()  # ensure no leftover fixture from a crashed prior run
-    r = run_verify()
+    # Isolate against an EMPTY manifests dir (POLIS_MANIFESTS) -- the corpus may
+    # carry committed run manifests (e.g. .manifests/dream.json), and once any
+    # real manifest exists R3 is always live; "no-manifest -> NOTE" is only
+    # observable in isolation. (An empty temp dir, not the real .manifests/.)
+    with tempfile.TemporaryDirectory() as empty:
+        r = run_verify(manifests_dir=empty)
     if "R3 (reconstruction-completeness vs Delta): MANUAL audit" not in r.stderr:
         fails.append(f"R3 no-manifest: audit-line NOTE missing -- must degrade visibly:\n{r.stderr}")
     if "reconstruct (R1+R2; R3 manual)" not in r.stdout:

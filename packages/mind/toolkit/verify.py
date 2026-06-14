@@ -52,6 +52,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import pathlib
 import re
 import sys
@@ -72,7 +73,12 @@ SKILLS_OUT = ROOT.parents[1] / ".claude" / "skills"
 # them to gate R3. `packages/mind/.manifests/<source>.json`: a dotted sibling of
 # the .claude/ deploy outputs (pipeline artifact, not a corpus cell -- so it is
 # NOT under ideas/ and the corpus-slug glob never sees it).
-MANIFESTS = ROOT / ".manifests"
+# `POLIS_MANIFESTS` overrides the scan dir -- so a test can isolate the
+# no-manifest (degrade-visibly) case against an empty dir even when the real
+# `.manifests/` carries committed run manifests (steady state: once any real
+# manifest exists, R3 is always live; "no-manifest -> NOTE" is only observable
+# in isolation).
+MANIFESTS = pathlib.Path(os.environ["POLIS_MANIFESTS"]) if os.environ.get("POLIS_MANIFESTS") else ROOT / ".manifests"
 
 KINDS = {
     "principle", "concept", "process", "utility", "structure", "classification",
