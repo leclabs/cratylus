@@ -9,5 +9,11 @@ dist/
 .env.local
 .koine/local/
 .claude/worktrees/
+# Rendered projection (derived from packages/mind/ideas via resolve.py; regenerable).
+# Like playground, the real deploy target is user-scope ~/.claude per host (C4); the
+# project-scope render is a build artifact, not source (projection-is-not-the-source).
+# C4-revisitable: un-ignore to carry the projection in-repo if that policy is chosen.
+.claude/agents/
+.claude/skills/
 __pycache__/
 *.pyc
