@@ -7,7 +7,7 @@ export interface OpencodePaths {
   rulesFile: string;
   /** .opencode/ directory (project) or ~/.config/opencode/ (user) */
   opencodeDir: string;
-  /** Plugins directory; agentir-hooks.{ts,yaml} live here */
+  /** Plugins directory; koine-hooks.{ts,yaml} live here */
   pluginsDir: string;
   /** Generated executable JS shim that delegates to shell */
   hooksShimFile: string;
@@ -39,8 +39,8 @@ export function paths(scope: Scope, cwd: string): OpencodePaths {
       rulesFile: join(opencodeDir, 'AGENTS.md'),
       opencodeDir,
       pluginsDir,
-      hooksShimFile: join(pluginsDir, 'agentir-hooks.ts'),
-      hooksManifestFile: join(pluginsDir, 'agentir-hooks.yaml'),
+      hooksShimFile: join(pluginsDir, 'koine-hooks.ts'),
+      hooksManifestFile: join(pluginsDir, 'koine-hooks.yaml'),
       skillsDir: join(opencodeDir, 'skills'),
       mcpFile: join(opencodeDir, 'mcp.json'),
       permissionsFile: join(opencodeDir, 'permissions.json'),
@@ -54,8 +54,8 @@ export function paths(scope: Scope, cwd: string): OpencodePaths {
     rulesFile: join(cwd, 'AGENTS.md'),
     opencodeDir,
     pluginsDir,
-    hooksShimFile: join(pluginsDir, 'agentir-hooks.ts'),
-    hooksManifestFile: join(pluginsDir, 'agentir-hooks.yaml'),
+    hooksShimFile: join(pluginsDir, 'koine-hooks.ts'),
+    hooksManifestFile: join(pluginsDir, 'koine-hooks.yaml'),
     skillsDir: join(opencodeDir, 'skills'),
     mcpFile: join(opencodeDir, 'mcp.json'),
     permissionsFile: join(opencodeDir, 'permissions.json'),

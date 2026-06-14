@@ -11,7 +11,7 @@ export interface CompileOpts {
   explain?: boolean;
   /**
    * Directory to record `.compile-state.json` into for drift tracking.
-   * Typically the project's `.agentir/` root. If undefined, drift state is not
+   * Typically the project's `.koine/` root. If undefined, drift state is not
    * recorded for this compile.
    */
   stateDir?: string;
@@ -53,7 +53,10 @@ export async function compile(
   const results: AdapterCompileResult[] = [];
 
   for (const adapter of adapters) {
-    const result: AdapterCompileResult = { adapter: adapter.id, detected: false };
+    const result: AdapterCompileResult = {
+      adapter: adapter.id,
+      detected: false,
+    };
     try {
       result.detected = await adapter.detect(scope, cwd);
       const writeOpts: WriteOpts = {
@@ -64,7 +67,10 @@ export async function compile(
       const report = await adapter.write(ir, scope, cwd, writeOpts);
       result.report = report;
 
-      if (opts.strict && (report.warnings.length > 0 || report.skipped.length > 0)) {
+      if (
+        opts.strict &&
+        (report.warnings.length > 0 || report.skipped.length > 0)
+      ) {
         result.error = new Error(
           `[${adapter.id}] strict: ${report.warnings.length} warning(s), ${report.skipped.length} skipped`,
         );
@@ -73,7 +79,12 @@ export async function compile(
       }
 
       if (!opts.dryRun && opts.stateDir && report.written.length > 0) {
-        await recordCompileState(opts.stateDir, adapter.id, cwd, report.written);
+        await recordCompileState(
+          opts.stateDir,
+          adapter.id,
+          cwd,
+          report.written,
+        );
       }
     } catch (err) {
       result.error = err as Error;
@@ -88,7 +99,10 @@ export async function compile(
   return finalize(results, scope);
 }
 
-function finalize(results: AdapterCompileResult[], scope: Scope): CompileReport {
+function finalize(
+  results: AdapterCompileResult[],
+  scope: Scope,
+): CompileReport {
   let totalWritten = 0;
   let totalSkipped = 0;
   let totalWarnings = 0;

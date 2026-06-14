@@ -1,9 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { migrate, listMigrations, registerMigration } from '../../src/engine/migrate.js';
+import {
+  listMigrations,
+  migrate,
+  registerMigration,
+} from '../../src/engine/migrate.js';
 
 describe('migrate', () => {
   it('is a no-op when from === to', () => {
-    const ir = { agentir: 1, foo: 'bar' };
+    const ir = { koine: 1, foo: 'bar' };
     expect(migrate(ir, 1, 1)).toBe(ir);
   });
 
@@ -18,7 +22,7 @@ describe('migrate', () => {
       description: 'test: 1 → 2',
       apply: (ir: unknown) => ({ ...(ir as object), migrated: true }),
     });
-    const out = migrate({ agentir: 1 }, 1, 2) as { migrated?: boolean };
+    const out = migrate({ koine: 1 }, 1, 2) as { migrated?: boolean };
     expect(out.migrated).toBe(true);
   });
 

@@ -1,4 +1,4 @@
-import { findIRRoot, type Adapter, type Scope } from '@leclabs/koine-core';
+import { type Adapter, type Scope, findIRRoot } from '@leclabs/koine-core';
 import chokidar from 'chokidar';
 import pc from 'picocolors';
 import { runCompile } from './compile.js';
@@ -13,22 +13,31 @@ export interface WatchOpts {
   maxRebuilds?: number;
 }
 
-export async function runWatch(opts: WatchOpts, adapters: Adapter[]): Promise<number> {
+export async function runWatch(
+  opts: WatchOpts,
+  adapters: Adapter[],
+): Promise<number> {
   const scope = opts.scope ?? 'project';
   const cwd = opts.cwd ?? process.cwd();
   const debounceMs = opts.debounce ?? 300;
   const root = findIRRoot(scope, cwd);
   if (!root) {
-    console.error(pc.red(`agentir watch: no .agentir/ found for scope '${scope}' from ${cwd}`));
+    console.error(
+      pc.red(`koine watch: no .koine/ found for scope '${scope}' from ${cwd}`),
+    );
     return 2;
   }
 
-  console.log(pc.bold('agentir watch'), pc.gray(`(scope: ${scope}, watching: ${root})`));
+  console.log(
+    pc.bold('koine watch'),
+    pc.gray(`(scope: ${scope}, watching: ${root})`),
+  );
   console.log(pc.gray(`debounce: ${debounceMs}ms · ctrl-c to exit`));
   console.log('');
 
   const watcher = chokidar.watch(root, {
-    ignored: (p: string) => p.endsWith('.compile-state.json') || p.includes('/local/'),
+    ignored: (p: string) =>
+      p.endsWith('.compile-state.json') || p.includes('/local/'),
     ignoreInitial: true,
     awaitWriteFinish: { stabilityThreshold: 100, pollInterval: 50 },
   });
@@ -47,7 +56,11 @@ export async function runWatch(opts: WatchOpts, adapters: Adapter[]): Promise<nu
     if (closing) return;
     closing = true;
     await watcher.close();
-    console.log(pc.gray(`\nwatch stopped (${rebuildCount} rebuild${rebuildCount === 1 ? '' : 's'})`));
+    console.log(
+      pc.gray(
+        `\nwatch stopped (${rebuildCount} rebuild${rebuildCount === 1 ? '' : 's'})`,
+      ),
+    );
     resolveExit(0);
   };
 

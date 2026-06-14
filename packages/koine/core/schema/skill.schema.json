@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://leclabs.dev/agentir/v1/skill.schema.json",
+  "$id": "https://leclabs.dev/koine/v1/skill.schema.json",
   "title": "Skill",
   "description": "An Agent Skill — SKILL.md content plus optional adjacent files.",
   "type": "object",

@@ -1,11 +1,11 @@
-# @leclabs/agentir-adapters
+# @leclabs/koine-adapters
 
-Official adapters for [agentir](../../README.md). Bundles 10 adapters as subpath exports — install one package, import only the adapters you use.
+Official adapters for [koine](../../README.md). Bundles 10 adapters as subpath exports — install one package, import only the adapters you use.
 
 ## Install
 
 ```bash
-npm install @leclabs/agentir-adapters @leclabs/agentir-core
+npm install @leclabs/koine-adapters @leclabs/koine-core
 ```
 
 ## Usage
@@ -13,9 +13,9 @@ npm install @leclabs/agentir-adapters @leclabs/agentir-core
 Each adapter is a separate subpath export:
 
 ```ts
-import { claudeAdapter } from '@leclabs/agentir-adapters/claude';
-import { opencodeAdapter } from '@leclabs/agentir-adapters/opencode';
-import { compile } from '@leclabs/agentir-core';
+import { claudeAdapter } from '@leclabs/koine-adapters/claude';
+import { opencodeAdapter } from '@leclabs/koine-adapters/opencode';
+import { compile } from '@leclabs/koine-core';
 
 await compile(ir, [claudeAdapter, opencodeAdapter], 'project', cwd, { explain: true });
 ```
@@ -39,7 +39,7 @@ Tree-shaking by your bundler (esbuild/rollup/webpack) only includes the adapters
 
 ## Per-adapter capabilities
 
-Run `agentir adapters` to see the live capability matrix, or `agentir events --client <id>` to see the canonical-event mapping for a specific adapter.
+Run `koine adapters` to see the live capability matrix, or `koine events --client <id>` to see the canonical-event mapping for a specific adapter.
 
 ## Lossy translation
 

@@ -1,21 +1,32 @@
-import { mkdtempSync, rmSync, existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IR, Manifest } from '@leclabs/koine-core';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { clineAdapter } from '../../src/cline/index.js';
 
-const manifest = (): Manifest => ({ agentir: 1, scope: 'project', targets: ['cline'] });
+const manifest = (): Manifest => ({
+  koine: 1,
+  scope: 'project',
+  targets: ['cline'],
+});
 
 describe('clineAdapter', () => {
   let cwd: string;
-  beforeEach(() => { cwd = mkdtempSync(join(tmpdir(), 'agentir-cline-')); });
-  afterEach(() => { rmSync(cwd, { recursive: true, force: true }); });
+  beforeEach(() => {
+    cwd = mkdtempSync(join(tmpdir(), 'koine-cline-'));
+  });
+  afterEach(() => {
+    rmSync(cwd, { recursive: true, force: true });
+  });
 
   it('writes multi-file rules in .clinerules/', async () => {
     const ir: IR = {
       manifest: manifest(),
-      rules: [{ id: 'main', body: 'Be terse.' }, { id: 'style', body: 'Two-space indent.' }],
+      rules: [
+        { id: 'main', body: 'Be terse.' },
+        { id: 'style', body: 'Two-space indent.' },
+      ],
     };
     await clineAdapter.write(ir, 'project', cwd, {});
     expect(existsSync(join(cwd, '.clinerules', 'main.md'))).toBe(true);
@@ -31,7 +42,9 @@ describe('clineAdapter', () => {
       ],
     };
     await clineAdapter.write(ir, 'project', cwd, {});
-    const hooks = JSON.parse(readFileSync(join(cwd, '.cline', 'hooks.json'), 'utf8'));
+    const hooks = JSON.parse(
+      readFileSync(join(cwd, '.cline', 'hooks.json'), 'utf8'),
+    );
     expect(hooks.hooks.PreToolUse).toBeDefined();
     expect(hooks.hooks.TaskStart).toBeDefined();
   });
@@ -40,8 +53,18 @@ describe('clineAdapter', () => {
     const ir: IR = {
       manifest: manifest(),
       rules: [{ id: 'main', body: 'Be terse.' }],
-      hooks: [{ id: 'fmt', events: ['tool.use.post'], matcher: 'Edit', command: './fmt.sh', timeout: 30 }],
-      mcp_servers: [{ name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] }],
+      hooks: [
+        {
+          id: 'fmt',
+          events: ['tool.use.post'],
+          matcher: 'Edit',
+          command: './fmt.sh',
+          timeout: 30,
+        },
+      ],
+      mcp_servers: [
+        { name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] },
+      ],
     };
     await clineAdapter.write(ir, 'project', cwd, {});
     const re = await clineAdapter.read('project', cwd);

@@ -2,10 +2,6 @@ import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import {
-  parseAgent,
-  parseCommand,
-  parseRule,
-  parseSkill,
   type Agent,
   type Command,
   type Hook,
@@ -14,6 +10,10 @@ import {
   type Rule,
   type Scope,
   type Skill,
+  parseAgent,
+  parseCommand,
+  parseRule,
+  parseSkill,
 } from '@leclabs/koine-core';
 import { claudeToCanonical } from './events.js';
 import { paths } from './paths.js';
@@ -39,7 +39,10 @@ interface ClaudeMcpEntry {
   type?: 'stdio' | 'http' | 'sse';
 }
 
-export async function readClaude(scope: Scope, cwd: string): Promise<Partial<IR>> {
+export async function readClaude(
+  scope: Scope,
+  cwd: string,
+): Promise<Partial<IR>> {
   const p = paths(scope, cwd);
   const ir: Partial<IR> = {};
 
@@ -65,15 +68,22 @@ export async function readClaude(scope: Scope, cwd: string): Promise<Partial<IR>
   // .mcp.json (project scope)
   if (p.mcpFile && existsSync(p.mcpFile)) {
     const text = await readFile(p.mcpFile, 'utf8');
-    const parsed = JSON.parse(text) as { mcpServers?: Record<string, ClaudeMcpEntry> };
+    const parsed = JSON.parse(text) as {
+      mcpServers?: Record<string, ClaudeMcpEntry>;
+    };
     if (parsed.mcpServers) {
-      ir.mcp_servers = (ir.mcp_servers ?? []).concat(parseClaudeMcp(parsed.mcpServers));
+      ir.mcp_servers = (ir.mcp_servers ?? []).concat(
+        parseClaudeMcp(parsed.mcpServers),
+      );
     }
   }
 
   // Commands
   if (p.commandsDir) {
-    const commands = await readMarkdownDir<Command>(p.commandsDir, parseCommand);
+    const commands = await readMarkdownDir<Command>(
+      p.commandsDir,
+      parseCommand,
+    );
     if (commands.length) ir.commands = commands;
   }
 
@@ -126,7 +136,8 @@ function parseClaudeMcp(servers: Record<string, ClaudeMcpEntry>): McpServer[] {
         transport: transport as 'http' | 'sse',
         url: s.url,
       } as McpServer;
-      if (s.headers) (server as { headers?: Record<string, string> }).headers = s.headers;
+      if (s.headers)
+        (server as { headers?: Record<string, string> }).headers = s.headers;
       out.push(server);
     } else if (s.command) {
       const server = {

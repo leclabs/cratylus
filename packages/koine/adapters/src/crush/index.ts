@@ -3,9 +3,6 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import {
-  parseRule,
-  parseSkill,
-  serializeSkill,
   type Adapter,
   type AdapterCapabilities,
   type IR,
@@ -14,6 +11,9 @@ import {
   type Skill,
   type WriteOpts,
   type WriteReport,
+  parseRule,
+  parseSkill,
+  serializeSkill,
 } from '@leclabs/koine-core';
 
 interface CrushPaths {
@@ -42,7 +42,14 @@ function paths(scope: Scope, cwd: string): CrushPaths {
   };
 }
 
-interface McpEntry { command?: string; args?: string[]; env?: Record<string, string>; url?: string; type?: 'stdio' | 'http' | 'sse'; headers?: Record<string, string> }
+interface McpEntry {
+  command?: string;
+  args?: string[];
+  env?: Record<string, string>;
+  url?: string;
+  type?: 'stdio' | 'http' | 'sse';
+  headers?: Record<string, string>;
+}
 
 const capabilities: AdapterCapabilities = {
   resources: {
@@ -81,13 +88,24 @@ async function readImpl(scope: Scope, cwd: string): Promise<Partial<IR>> {
   }
 
   if (existsSync(p.mcpFile)) {
-    const parsed = JSON.parse(await readFile(p.mcpFile, 'utf8')) as { mcpServers?: Record<string, McpEntry> };
+    const parsed = JSON.parse(await readFile(p.mcpFile, 'utf8')) as {
+      mcpServers?: Record<string, McpEntry>;
+    };
     if (parsed.mcpServers) {
       const out: McpServer[] = [];
       for (const [name, s] of Object.entries(parsed.mcpServers)) {
-        if (s.url) out.push({ name, transport: s.type === 'sse' ? 'sse' : 'http', url: s.url } as McpServer);
+        if (s.url)
+          out.push({
+            name,
+            transport: s.type === 'sse' ? 'sse' : 'http',
+            url: s.url,
+          } as McpServer);
         else if (s.command) {
-          const server = { name, transport: 'stdio', command: s.command } as McpServer;
+          const server = {
+            name,
+            transport: 'stdio',
+            command: s.command,
+          } as McpServer;
           if (s.args) (server as { args?: string[] }).args = s.args;
           if (s.env) (server as { env?: Record<string, string> }).env = s.env;
           out.push(server);
@@ -100,7 +118,12 @@ async function readImpl(scope: Scope, cwd: string): Promise<Partial<IR>> {
   return ir;
 }
 
-async function writeImpl(ir: IR, scope: Scope, cwd: string, opts: WriteOpts = {}): Promise<WriteReport> {
+async function writeImpl(
+  ir: IR,
+  scope: Scope,
+  cwd: string,
+  opts: WriteOpts = {},
+): Promise<WriteReport> {
   const p = paths(scope, cwd);
   const written: string[] = [];
   const skipped: { path: string; reason: string }[] = [];
@@ -136,27 +159,49 @@ async function writeImpl(ir: IR, scope: Scope, cwd: string, opts: WriteOpts = {}
         if (s.env) entry.env = s.env;
         out[s.name] = entry;
       } else {
-        const entry: Record<string, unknown> = { url: s.url, type: s.transport };
+        const entry: Record<string, unknown> = {
+          url: s.url,
+          type: s.transport,
+        };
         if (s.headers) entry.headers = s.headers;
         out[s.name] = entry;
       }
     }
     if (!opts.dryRun) {
       await mkdir(dirname(p.mcpFile), { recursive: true });
-      await writeFile(p.mcpFile, `${JSON.stringify({ mcpServers: out }, null, 2)}\n`, 'utf8');
+      await writeFile(
+        p.mcpFile,
+        `${JSON.stringify({ mcpServers: out }, null, 2)}\n`,
+        'utf8',
+      );
     }
     written.push(p.mcpFile);
   }
 
   if (ir.hooks?.length) {
-    warnings.push(`hooks: Crush has no native hook system (${ir.hooks.length} skipped)`);
-    for (const h of ir.hooks) skipped.push({ path: `hooks/${h.id ?? '?'}.yaml`, reason: 'unsupported' });
+    warnings.push(
+      `hooks: Crush has no native hook system (${ir.hooks.length} skipped)`,
+    );
+    for (const h of ir.hooks)
+      skipped.push({
+        path: `hooks/${h.id ?? '?'}.yaml`,
+        reason: 'unsupported',
+      });
   }
-  for (const [field, label] of [['commands', 'commands'], ['agents', 'agents']] as const) {
+  for (const [field, label] of [
+    ['commands', 'commands'],
+    ['agents', 'agents'],
+  ] as const) {
     const items = ir[field];
     if (items?.length) {
-      warnings.push(`${label}: Crush has no ${label} (${items.length} skipped)`);
-      for (const i of items) skipped.push({ path: `${label}/${(i as { name: string }).name}`, reason: 'unsupported' });
+      warnings.push(
+        `${label}: Crush has no ${label} (${items.length} skipped)`,
+      );
+      for (const i of items)
+        skipped.push({
+          path: `${label}/${(i as { name: string }).name}`,
+          reason: 'unsupported',
+        });
     }
   }
 

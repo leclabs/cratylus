@@ -17,8 +17,8 @@ const capabilities: AdapterCapabilities = {
     rules: 'full',
     skills: 'full',
     commands: 'none',
-    agents: 'partial',  // Copilot subagent support is experimental
-    hooks: 'partial',   // 8 of 28 canonical events
+    agents: 'partial', // Copilot subagent support is experimental
+    hooks: 'partial', // 8 of 28 canonical events
     mcp: 'full',
     permissions: 'none', // VS Code settings, not in scope
     env: 'partial',
@@ -56,7 +56,12 @@ export const copilotAdapter: Adapter = {
   async read(scope: Scope, cwd: string): Promise<Partial<IR>> {
     return readCopilot(scope, cwd);
   },
-  async write(ir: IR, scope: Scope, cwd: string, opts: WriteOpts): Promise<WriteReport> {
+  async write(
+    ir: IR,
+    scope: Scope,
+    cwd: string,
+    opts: WriteOpts,
+  ): Promise<WriteReport> {
     return writeCopilot(ir, scope, cwd, opts);
   },
 };

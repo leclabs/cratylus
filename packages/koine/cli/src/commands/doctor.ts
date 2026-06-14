@@ -2,16 +2,16 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
+  type Adapter,
+  type Manifest,
+  STATE_FILENAME,
+  STATE_VERSION,
+  type Scope,
   defaultIRRoot,
   detectDrift,
   findIRRoot,
   formatErrors,
-  STATE_FILENAME,
-  STATE_VERSION,
   validateManifest,
-  type Adapter,
-  type Manifest,
-  type Scope,
 } from '@leclabs/koine-core';
 import { load } from 'js-yaml';
 import pc from 'picocolors';
@@ -29,32 +29,42 @@ interface CheckResult {
 
 function fmt(r: CheckResult): string {
   const sym =
-    r.status === 'pass' ? pc.green('✓') : r.status === 'warn' ? pc.yellow('⚠') : pc.red('✗');
+    r.status === 'pass'
+      ? pc.green('✓')
+      : r.status === 'warn'
+        ? pc.yellow('⚠')
+        : pc.red('✗');
   const detail = r.detail ? pc.gray(`  ${r.detail}`) : '';
   return `${sym} ${r.label}${detail}`;
 }
 
-export async function runDoctor(opts: DoctorOpts, adapters: Adapter[]): Promise<number> {
+export async function runDoctor(
+  opts: DoctorOpts,
+  adapters: Adapter[],
+): Promise<number> {
   const scope = opts.scope ?? 'project';
   const cwd = opts.cwd ?? process.cwd();
   const root = findIRRoot(scope, cwd);
   const targetRoot = root ?? defaultIRRoot(scope, cwd);
 
-  console.log(pc.bold(`agentir doctor`), pc.gray(`(scope: ${scope}, cwd: ${cwd})`));
+  console.log(
+    pc.bold('koine doctor'),
+    pc.gray(`(scope: ${scope}, cwd: ${cwd})`),
+  );
   console.log('');
 
   let failures = 0;
   let warnings = 0;
 
-  // 1. .agentir/ presence
+  // 1. .koine/ presence
   if (root && existsSync(root)) {
-    console.log(fmt({ status: 'pass', label: '.agentir/ exists', detail: root }));
+    console.log(fmt({ status: 'pass', label: '.koine/ exists', detail: root }));
   } else {
     console.log(
       fmt({
         status: 'warn',
-        label: `.agentir/ not found for scope '${scope}'`,
-        detail: `would be created at ${targetRoot}; run \`agentir init\``,
+        label: `.koine/ not found for scope '${scope}'`,
+        detail: `would be created at ${targetRoot}; run \`koine init\``,
       }),
     );
     warnings++;
@@ -89,7 +99,7 @@ export async function runDoctor(opts: DoctorOpts, adapters: Adapter[]): Promise<
           fmt({
             status: 'pass',
             label: 'manifest.yaml: valid',
-            detail: `agentir v${manifest.agentir}, scope ${manifest.scope}, ${manifest.targets.length} target(s)`,
+            detail: `koine v${manifest.koine}, scope ${manifest.scope}, ${manifest.targets.length} target(s)`,
           }),
         );
       }
@@ -109,17 +119,24 @@ export async function runDoctor(opts: DoctorOpts, adapters: Adapter[]): Promise<
   const statePath = join(root, STATE_FILENAME);
   if (!existsSync(statePath)) {
     console.log(
-      fmt({ status: 'warn', label: 'compile state: absent', detail: 'no prior compile recorded' }),
+      fmt({
+        status: 'warn',
+        label: 'compile state: absent',
+        detail: 'no prior compile recorded',
+      }),
     );
     warnings++;
   } else {
     try {
-      const state = JSON.parse(await readFile(statePath, 'utf8')) as { version: number; adapters: Record<string, { timestamp: string }> };
+      const state = JSON.parse(await readFile(statePath, 'utf8')) as {
+        version: number;
+        adapters: Record<string, { timestamp: string }>;
+      };
       if (state.version !== STATE_VERSION) {
         console.log(
           fmt({
             status: 'fail',
-            label: `compile state: version mismatch`,
+            label: 'compile state: version mismatch',
             detail: `expected ${STATE_VERSION}, got ${state.version}`,
           }),
         );
@@ -141,7 +158,11 @@ export async function runDoctor(opts: DoctorOpts, adapters: Adapter[]): Promise<
       }
     } catch (e) {
       console.log(
-        fmt({ status: 'fail', label: 'compile state: corrupt', detail: (e as Error).message }),
+        fmt({
+          status: 'fail',
+          label: 'compile state: corrupt',
+          detail: (e as Error).message,
+        }),
       );
       failures++;
     }
@@ -154,7 +175,9 @@ export async function runDoctor(opts: DoctorOpts, adapters: Adapter[]): Promise<
     for (const targetId of manifest.targets) {
       const adapter = adapters.find((a) => a.id === targetId);
       if (!adapter) {
-        console.log(`  ${fmt({ status: 'fail', label: `${targetId}: adapter not installed` })}`);
+        console.log(
+          `  ${fmt({ status: 'fail', label: `${targetId}: adapter not installed` })}`,
+        );
         failures++;
         continue;
       }
@@ -176,7 +199,10 @@ export async function runDoctor(opts: DoctorOpts, adapters: Adapter[]): Promise<
               `  ${fmt({
                 status: 'pass',
                 label: `${targetId}: detected`,
-                detail: drift.cleanCount > 0 ? `${drift.cleanCount} file(s) clean` : undefined,
+                detail:
+                  drift.cleanCount > 0
+                    ? `${drift.cleanCount} file(s) clean`
+                    : undefined,
               })}`,
             );
           }

@@ -4,23 +4,6 @@ import { homedir } from 'node:os';
 import { basename, join } from 'node:path';
 import { dump, load } from 'js-yaml';
 
-import {
-  parseAgent,
-  parseCommand,
-  parseHook,
-  parseRule,
-  parseSkill,
-  serializeAgent,
-  serializeCommand,
-  serializeHook,
-  serializeRule,
-  serializeSkill,
-} from '../serialize/index.js';
-import {
-  formatErrors,
-  validateIR,
-  type ValidationError,
-} from '../ir/validator.js';
 import type {
   Agent,
   Command,
@@ -34,7 +17,24 @@ import type {
   Scope,
   Skill,
 } from '../ir/types.js';
-import { findIRRoot, IR_DIRNAME, LOCAL_SUBDIR } from './paths.js';
+import {
+  type ValidationError,
+  formatErrors,
+  validateIR,
+} from '../ir/validator.js';
+import {
+  parseAgent,
+  parseCommand,
+  parseHook,
+  parseRule,
+  parseSkill,
+  serializeAgent,
+  serializeCommand,
+  serializeHook,
+  serializeRule,
+  serializeSkill,
+} from '../serialize/index.js';
+import { IR_DIRNAME, LOCAL_SUBDIR, findIRRoot } from './paths.js';
 
 export class IRValidationError extends Error {
   constructor(public errors: ValidationError[]) {
@@ -48,7 +48,7 @@ export class IRValidationError extends Error {
 }
 
 /**
- * Canonical path of the .agentir/ directory for a scope, whether or not it
+ * Canonical path of the .koine/ directory for a scope, whether or not it
  * exists. Used by writeIR and init.
  */
 export function defaultIRRoot(scope: Scope, cwd: string): string {
@@ -58,7 +58,7 @@ export function defaultIRRoot(scope: Scope, cwd: string): string {
 }
 
 /**
- * Read the IR for a given scope by walking the on-disk `.agentir/` directory.
+ * Read the IR for a given scope by walking the on-disk `.koine/` directory.
  *
  * Throws if the directory cannot be located, the manifest is missing, or the
  * assembled IR fails schema validation.
@@ -67,14 +67,18 @@ export async function readIR(scope: Scope, cwd: string): Promise<IR> {
   const root = findIRRoot(scope, cwd);
   if (!root || !existsSync(root)) {
     throw new Error(
-      `Cannot read IR for scope '${scope}': no .agentir/ found from ${cwd}`,
+      `Cannot read IR for scope '${scope}': no .koine/ found from ${cwd}`,
     );
   }
 
   const manifest = await readManifest(root);
   const ir: IR = { manifest };
 
-  const rules = await readResourceDir<Rule>(join(root, 'rules'), '.md', parseRule);
+  const rules = await readResourceDir<Rule>(
+    join(root, 'rules'),
+    '.md',
+    parseRule,
+  );
   if (rules.length) ir.rules = rules;
 
   const skills = await readSkillsDir(join(root, 'skills'));
@@ -102,9 +106,11 @@ export async function readIR(scope: Scope, cwd: string): Promise<IR> {
   if (hooks.length) ir.hooks = hooks;
 
   const mcp = await readMcpServers(join(root, 'mcp', 'servers.yaml'));
-  if (mcp && mcp.length) ir.mcp_servers = mcp;
+  if (mcp?.length) ir.mcp_servers = mcp;
 
-  const perms = await readYamlIfExists<Permissions>(join(root, 'permissions.yaml'));
+  const perms = await readYamlIfExists<Permissions>(
+    join(root, 'permissions.yaml'),
+  );
   if (perms) ir.permissions = perms;
 
   const env = await readYamlIfExists<EnvVars>(join(root, 'env.yaml'));
@@ -117,13 +123,17 @@ export async function readIR(scope: Scope, cwd: string): Promise<IR> {
 }
 
 /**
- * Write an IR to disk under the canonical `.agentir/` path for the given scope.
+ * Write an IR to disk under the canonical `.koine/` path for the given scope.
  * Validates the IR before any writes; throws `IRValidationError` if invalid.
  *
  * Existing files are overwritten. Files that no longer correspond to an IR
  * resource are NOT removed (use `clean` separately).
  */
-export async function writeIR(ir: IR, scope: Scope, cwd: string): Promise<void> {
+export async function writeIR(
+  ir: IR,
+  scope: Scope,
+  cwd: string,
+): Promise<void> {
   if (!validateIR(ir)) {
     throw new IRValidationError(formatErrors(validateIR.errors));
   }
@@ -176,7 +186,7 @@ export async function writeIR(ir: IR, scope: Scope, cwd: string): Promise<void> 
       serializeHook,
     );
   }
-  if (ir.mcp_servers && ir.mcp_servers.length) {
+  if (ir.mcp_servers?.length) {
     const dir = join(root, 'mcp');
     await mkdir(dir, { recursive: true });
     await writeFile(

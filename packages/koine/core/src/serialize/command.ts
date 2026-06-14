@@ -1,4 +1,7 @@
-import { parseFrontmatter, serializeFrontmatter } from '../engine/frontmatter.js';
+import {
+  parseFrontmatter,
+  serializeFrontmatter,
+} from '../engine/frontmatter.js';
 import type { Command } from '../ir/types.js';
 
 export function parseCommand(text: string, defaultName: string): Command {

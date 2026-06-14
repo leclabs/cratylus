@@ -57,12 +57,20 @@ export const claudeAdapter: Adapter = {
   eventMap: canonicalToClaude,
   async detect(scope: Scope, cwd: string): Promise<boolean> {
     const p = paths(scope, cwd);
-    return existsSync(p.claudeDir) || (p.rulesFile !== null && existsSync(p.rulesFile));
+    return (
+      existsSync(p.claudeDir) ||
+      (p.rulesFile !== null && existsSync(p.rulesFile))
+    );
   },
   async read(scope: Scope, cwd: string): Promise<Partial<IR>> {
     return readClaude(scope, cwd);
   },
-  async write(ir: IR, scope: Scope, cwd: string, opts: WriteOpts): Promise<WriteReport> {
+  async write(
+    ir: IR,
+    scope: Scope,
+    cwd: string,
+    opts: WriteOpts,
+  ): Promise<WriteReport> {
     return writeClaude(ir, scope, cwd, opts);
   },
 };

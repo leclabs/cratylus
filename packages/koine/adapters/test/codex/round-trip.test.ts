@@ -1,12 +1,12 @@
-import { mkdtempSync, rmSync, existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IR, Manifest } from '@leclabs/koine-core';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { codexAdapter } from '../../src/codex/index.js';
 
 const manifest = (): Manifest => ({
-  agentir: 1,
+  koine: 1,
   scope: 'project',
   targets: ['codex'],
 });
@@ -15,7 +15,7 @@ describe('codexAdapter', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-codex-'));
+    cwd = mkdtempSync(join(tmpdir(), 'koine-codex-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });
@@ -26,18 +26,33 @@ describe('codexAdapter', () => {
       manifest: manifest(),
       rules: [{ id: 'main', body: '# Rules\n\nBe terse.' }],
       commands: [{ name: 'plan', body: 'Plan tasks' }],
-      agents: [{ name: 'planner', body: 'You are the planner.', model: 'gpt-5' }],
+      agents: [
+        { name: 'planner', body: 'You are the planner.', model: 'gpt-5' },
+      ],
       skills: [{ name: 'review', description: 'Review code', body: '# steps' }],
-      hooks: [{ id: 'pre-bash', events: ['tool.use.pre'], matcher: 'Bash', command: './pre.sh' }],
-      mcp_servers: [{ name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] }],
+      hooks: [
+        {
+          id: 'pre-bash',
+          events: ['tool.use.pre'],
+          matcher: 'Bash',
+          command: './pre.sh',
+        },
+      ],
+      mcp_servers: [
+        { name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] },
+      ],
       env: { DEBUG: 'true' },
     };
     const report = await codexAdapter.write(ir, 'project', cwd, {});
     expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
     expect(existsSync(join(cwd, '.codex', 'config.toml'))).toBe(true);
     expect(existsSync(join(cwd, '.codex', 'prompts', 'plan.md'))).toBe(true);
-    expect(existsSync(join(cwd, '.codex', 'agents', 'planner.toml'))).toBe(true);
-    expect(existsSync(join(cwd, '.codex', 'skills', 'review', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(cwd, '.codex', 'agents', 'planner.toml'))).toBe(
+      true,
+    );
+    expect(
+      existsSync(join(cwd, '.codex', 'skills', 'review', 'SKILL.md')),
+    ).toBe(true);
 
     const toml = readFileSync(join(cwd, '.codex', 'config.toml'), 'utf8');
     expect(toml).toContain('codex_hooks = true');
@@ -50,7 +65,12 @@ describe('codexAdapter', () => {
     const ir: IR = {
       manifest: manifest(),
       hooks: [
-        { id: 'edit', events: ['tool.use.post'], matcher: 'Edit|Write', command: './fmt.sh' },
+        {
+          id: 'edit',
+          events: ['tool.use.post'],
+          matcher: 'Edit|Write',
+          command: './fmt.sh',
+        },
       ],
     };
     const report = await codexAdapter.write(ir, 'project', cwd, {});
@@ -73,7 +93,9 @@ describe('codexAdapter', () => {
       rules: [{ id: 'main', body: 'Be terse.' }],
       commands: [{ name: 'plan', body: 'Plan tasks', description: 'planning' }],
       skills: [{ name: 'review', description: 'Review code', body: '# steps' }],
-      mcp_servers: [{ name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] }],
+      mcp_servers: [
+        { name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] },
+      ],
       env: { DEBUG: 'true' },
     };
     await codexAdapter.write(ir, 'project', cwd, {});

@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://leclabs.dev/agentir/v1/manifest.schema.json",
+  "$id": "https://leclabs.dev/koine/v1/manifest.schema.json",
   "title": "Manifest",
-  "description": "agentir manifest. Entry point of an IR directory; declares schema version, scope, and target clients.",
+  "description": "koine manifest. Entry point of an IR directory; declares schema version, scope, and target clients.",
   "type": "object",
-  "required": ["agentir", "scope", "targets"],
+  "required": ["koine", "scope", "targets"],
   "additionalProperties": false,
   "properties": {
-    "agentir": {
+    "koine": {
       "const": 1,
       "description": "IR schema version. Always 1 in v1."
     },
@@ -23,8 +23,15 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "strict": { "type": "boolean", "default": false, "description": "Fail compile on any lossy translation." },
-        "drift_check": { "enum": ["warn", "error", "ignore"], "default": "warn" },
+        "strict": {
+          "type": "boolean",
+          "default": false,
+          "description": "Fail compile on any lossy translation."
+        },
+        "drift_check": {
+          "enum": ["warn", "error", "ignore"],
+          "default": "warn"
+        },
         "emit_warnings": { "type": "boolean", "default": true }
       }
     },

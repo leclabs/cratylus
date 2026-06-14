@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://leclabs.dev/agentir/v1/agent.schema.json",
+  "$id": "https://leclabs.dev/koine/v1/agent.schema.json",
   "title": "Agent",
   "description": "A subagent definition. System prompt body plus frontmatter declaring tools, model, color.",
   "type": "object",

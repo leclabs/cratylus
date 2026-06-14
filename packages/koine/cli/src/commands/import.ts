@@ -1,17 +1,17 @@
+import { existsSync } from 'node:fs';
+import { mkdir } from 'node:fs/promises';
 import {
-  defaultIRRoot,
-  findIRRoot,
-  readIR,
-  writeIR,
   type Adapter,
   type Hook,
   type IR,
   type Manifest,
   type Rule,
   type Scope,
+  defaultIRRoot,
+  findIRRoot,
+  readIR,
+  writeIR,
 } from '@leclabs/koine-core';
-import { existsSync } from 'node:fs';
-import { mkdir } from 'node:fs/promises';
 import pc from 'picocolors';
 
 export interface ImportOpts {
@@ -23,20 +23,27 @@ export interface ImportOpts {
   merge?: boolean;
 }
 
-export async function runImport(opts: ImportOpts, adapters: Adapter[]): Promise<number> {
+export async function runImport(
+  opts: ImportOpts,
+  adapters: Adapter[],
+): Promise<number> {
   const scope = opts.scope ?? 'project';
   const cwd = opts.cwd ?? process.cwd();
   const sourceDir = opts.from ?? cwd;
   const adapter = adapters.find((a) => a.id === opts.client);
   if (!adapter) {
-    console.error(pc.red(`agentir: unknown client '${opts.client}'`));
+    console.error(pc.red(`koine: unknown client '${opts.client}'`));
     console.error(`available: ${adapters.map((a) => a.id).join(', ')}`);
     return 1;
   }
 
   const detected = await adapter.detect(scope, sourceDir);
   if (!detected) {
-    console.error(pc.yellow(`⚠ ${opts.client}: no config detected at ${sourceDir} (scope ${scope})`));
+    console.error(
+      pc.yellow(
+        `⚠ ${opts.client}: no config detected at ${sourceDir} (scope ${scope})`,
+      ),
+    );
   }
 
   const incoming = await adapter.read(scope, sourceDir);
@@ -56,7 +63,7 @@ export async function runImport(opts: ImportOpts, adapters: Adapter[]): Promise<
     conflicts = result.conflicts;
   } else {
     ir = {
-      manifest: { agentir: 1, scope, targets: [opts.client] } satisfies Manifest,
+      manifest: { koine: 1, scope, targets: [opts.client] } satisfies Manifest,
       ...incoming,
     };
   }
@@ -64,15 +71,26 @@ export async function runImport(opts: ImportOpts, adapters: Adapter[]): Promise<
   await writeIR(ir, scope, cwd);
 
   const counts = countResources(ir);
-  console.log(pc.green('✓'), `${opts.merge ? 'merged' : 'imported'} ${opts.client} → ${root}`);
+  console.log(
+    pc.green('✓'),
+    `${opts.merge ? 'merged' : 'imported'} ${opts.client} → ${root}`,
+  );
   for (const [k, n] of Object.entries(counts)) {
     if (n > 0) console.log(`    ${k}: ${n}`);
   }
   if (conflicts.length > 0) {
     console.log('');
-    console.log(pc.yellow(`⚠ ${conflicts.length} conflict(s) — IR preserved, theirs noted below:`));
+    console.log(
+      pc.yellow(
+        `⚠ ${conflicts.length} conflict(s) — IR preserved, theirs noted below:`,
+      ),
+    );
     for (const c of conflicts) console.log(`    ${pc.yellow('•')} ${c}`);
-    console.log(pc.gray('  re-run without --merge to take theirs, or hand-resolve in the IR.'));
+    console.log(
+      pc.gray(
+        '  re-run without --merge to take theirs, or hand-resolve in the IR.',
+      ),
+    );
   }
   return 0;
 }
@@ -88,7 +106,9 @@ function mergePreservingOurs(existing: IR, incoming: Partial<IR>): MergeResult {
 
   // Rules: by id
   if (incoming.rules) {
-    const ourMap = new Map<string, Rule>(existing.rules?.map((r) => [r.id, r]) ?? []);
+    const ourMap = new Map<string, Rule>(
+      existing.rules?.map((r) => [r.id, r]) ?? [],
+    );
     for (const theirs of incoming.rules) {
       const ours = ourMap.get(theirs.id);
       if (!ours) {
@@ -102,15 +122,23 @@ function mergePreservingOurs(existing: IR, incoming: Partial<IR>): MergeResult {
 
   // Hooks: by (events tuple, matcher)
   if (incoming.hooks) {
-    const key = (h: Hook): string => `${[...h.events].sort().join(',')}|${h.matcher ?? ''}`;
-    const ourMap = new Map<string, Hook>(existing.hooks?.map((h) => [key(h), h]) ?? []);
+    const key = (h: Hook): string =>
+      `${[...h.events].sort().join(',')}|${h.matcher ?? ''}`;
+    const ourMap = new Map<string, Hook>(
+      existing.hooks?.map((h) => [key(h), h]) ?? [],
+    );
     for (const theirs of incoming.hooks) {
       const k = key(theirs);
       const ours = ourMap.get(k);
       if (!ours) {
         ourMap.set(k, theirs);
-      } else if (ours.command !== theirs.command || ours.timeout !== theirs.timeout) {
-        conflicts.push(`hook '${theirs.id ?? k}': command/timeout differs (kept ours)`);
+      } else if (
+        ours.command !== theirs.command ||
+        ours.timeout !== theirs.timeout
+      ) {
+        conflicts.push(
+          `hook '${theirs.id ?? k}': command/timeout differs (kept ours)`,
+        );
       }
     }
     ir.hooks = Array.from(ourMap.values());
@@ -118,15 +146,34 @@ function mergePreservingOurs(existing: IR, incoming: Partial<IR>): MergeResult {
 
   // skills/commands/agents/mcp_servers: by name
   ir.skills = mergeByName(existing.skills, incoming.skills, 'skill', conflicts);
-  ir.commands = mergeByName(existing.commands, incoming.commands, 'command', conflicts);
+  ir.commands = mergeByName(
+    existing.commands,
+    incoming.commands,
+    'command',
+    conflicts,
+  );
   ir.agents = mergeByName(existing.agents, incoming.agents, 'agent', conflicts);
-  ir.mcp_servers = mergeByName(existing.mcp_servers, incoming.mcp_servers, 'mcp', conflicts);
+  ir.mcp_servers = mergeByName(
+    existing.mcp_servers,
+    incoming.mcp_servers,
+    'mcp',
+    conflicts,
+  );
 
   // Permissions: combine (deny overrides allow handled by core merge but here we just union)
   if (incoming.permissions) {
-    const allow = new Set([...(existing.permissions?.allow ?? []), ...(incoming.permissions.allow ?? [])]);
-    const deny = new Set([...(existing.permissions?.deny ?? []), ...(incoming.permissions.deny ?? [])]);
-    const ask = new Set([...(existing.permissions?.ask ?? []), ...(incoming.permissions.ask ?? [])]);
+    const allow = new Set([
+      ...(existing.permissions?.allow ?? []),
+      ...(incoming.permissions.allow ?? []),
+    ]);
+    const deny = new Set([
+      ...(existing.permissions?.deny ?? []),
+      ...(incoming.permissions.deny ?? []),
+    ]);
+    const ask = new Set([
+      ...(existing.permissions?.ask ?? []),
+      ...(incoming.permissions.ask ?? []),
+    ]);
     for (const x of deny) allow.delete(x);
     ir.permissions = {
       ...(allow.size && { allow: Array.from(allow) }),
@@ -137,9 +184,15 @@ function mergePreservingOurs(existing: IR, incoming: Partial<IR>): MergeResult {
 
   // Env: ours wins per key on conflict
   if (incoming.env) {
-    const out: Record<string, string> = { ...(incoming.env), ...(existing.env ?? {}) };
+    const out: Record<string, string> = {
+      ...incoming.env,
+      ...(existing.env ?? {}),
+    };
     for (const k of Object.keys(incoming.env)) {
-      if (existing.env?.[k] !== undefined && existing.env[k] !== incoming.env[k]) {
+      if (
+        existing.env?.[k] !== undefined &&
+        existing.env[k] !== incoming.env[k]
+      ) {
         conflicts.push(`env '${k}': value differs (kept ours)`);
       }
     }

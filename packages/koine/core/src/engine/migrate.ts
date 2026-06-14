@@ -45,10 +45,14 @@ export function migrate(ir: unknown, from: number, to: number): unknown {
 function findPath(from: number, to: number): Migration[] | null {
   if (from === to) return [];
   // BFS over the migration graph
-  const queue: { version: number; path: Migration[] }[] = [{ version: from, path: [] }];
+  const queue: { version: number; path: Migration[] }[] = [
+    { version: from, path: [] },
+  ];
   const visited = new Set<number>([from]);
   while (queue.length > 0) {
-    const { version, path } = queue.shift()!;
+    const item = queue.shift();
+    if (!item) break;
+    const { version, path } = item;
     for (const m of REGISTRY) {
       if (m.from !== version || visited.has(m.to)) continue;
       const next = [...path, m];

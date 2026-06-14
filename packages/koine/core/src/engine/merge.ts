@@ -44,26 +44,45 @@ export function mergeIR(scopes: ScopedIR[]): IR {
     (a, b) => SCOPE_ORDER.indexOf(a.scope) - SCOPE_ORDER.indexOf(b.scope),
   );
 
-  const manifest = sorted[sorted.length - 1]!.ir.manifest;
+  // sorted is non-empty (scopes.length === 0 threw above); last scope wins.
+  const last = sorted[sorted.length - 1];
+  if (!last) throw new Error('mergeIR requires at least one scope');
+  const manifest = last.ir.manifest;
 
   const ir: IR = { manifest };
 
   const rules = mergeRules(sorted);
   if (rules.length) ir.rules = rules;
 
-  const skills = unionBy<Skill>(sorted, (x) => x.skills, (s) => s.name);
+  const skills = unionBy<Skill>(
+    sorted,
+    (x) => x.skills,
+    (s) => s.name,
+  );
   if (skills) ir.skills = skills;
 
-  const commands = unionBy<Command>(sorted, (x) => x.commands, (c) => c.name);
+  const commands = unionBy<Command>(
+    sorted,
+    (x) => x.commands,
+    (c) => c.name,
+  );
   if (commands) ir.commands = commands;
 
-  const agents = unionBy<Agent>(sorted, (x) => x.agents, (a) => a.name);
+  const agents = unionBy<Agent>(
+    sorted,
+    (x) => x.agents,
+    (a) => a.name,
+  );
   if (agents) ir.agents = agents;
 
   const hooks = unionBy<Hook>(sorted, (x) => x.hooks, hookKey);
   if (hooks) ir.hooks = hooks;
 
-  const mcp = unionBy<McpServer>(sorted, (x) => x.mcp_servers, (m) => m.name);
+  const mcp = unionBy<McpServer>(
+    sorted,
+    (x) => x.mcp_servers,
+    (m) => m.name,
+  );
   if (mcp) ir.mcp_servers = mcp;
 
   const perms = mergePermissions(sorted);
@@ -114,9 +133,9 @@ function mergePermissions(scopes: ScopedIR[]): Permissions | undefined {
   for (const { ir } of scopes) {
     if (!ir.permissions) continue;
     any = true;
-    ir.permissions.allow?.forEach((x) => allow.add(x));
-    ir.permissions.deny?.forEach((x) => deny.add(x));
-    ir.permissions.ask?.forEach((x) => ask.add(x));
+    for (const x of ir.permissions.allow ?? []) allow.add(x);
+    for (const x of ir.permissions.deny ?? []) deny.add(x);
+    for (const x of ir.permissions.ask ?? []) ask.add(x);
   }
   if (!any) return undefined;
 

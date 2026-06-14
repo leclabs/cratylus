@@ -1,12 +1,19 @@
-import { mkdtempSync, rmSync, writeFileSync, mkdirSync, unlinkSync, statSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  statSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
+  STATE_FILENAME,
   detectDrift,
   hashFile,
   recordCompileState,
-  STATE_FILENAME,
 } from '../../src/engine/drift.js';
 
 describe('drift', () => {
@@ -14,8 +21,8 @@ describe('drift', () => {
   let stateDir: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-drift-'));
-    stateDir = join(cwd, '.agentir');
+    cwd = mkdtempSync(join(tmpdir(), 'koine-drift-'));
+    stateDir = join(cwd, '.koine');
     mkdirSync(stateDir, { recursive: true });
   });
 

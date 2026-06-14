@@ -1,18 +1,24 @@
-import { mkdtempSync, rmSync, existsSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { claudeAdapter } from '@leclabs/koine-adapters/claude';
 import { codexAdapter } from '@leclabs/koine-adapters/codex';
 import { copilotAdapter } from '@leclabs/koine-adapters/copilot';
 import { geminiAdapter } from '@leclabs/koine-adapters/gemini';
 import { opencodeAdapter } from '@leclabs/koine-adapters/opencode';
 import type { IR, Manifest } from '@leclabs/koine-core';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
-const adapters = [claudeAdapter, opencodeAdapter, codexAdapter, geminiAdapter, copilotAdapter];
+const adapters = [
+  claudeAdapter,
+  opencodeAdapter,
+  codexAdapter,
+  geminiAdapter,
+  copilotAdapter,
+];
 
 const manifest = (): Manifest => ({
-  agentir: 1,
+  koine: 1,
   scope: 'project',
   targets: adapters.map((a) => a.id),
 });
@@ -21,15 +27,28 @@ const fullIR = (): IR => ({
   manifest: manifest(),
   rules: [{ id: 'main', body: '# Project rules\n\nBe terse.' }],
   skills: [
-    { name: 'review', description: 'Review code', body: '# steps', allowed_tools: ['Read'] },
+    {
+      name: 'review',
+      description: 'Review code',
+      body: '# steps',
+      allowed_tools: ['Read'],
+    },
   ],
   commands: [{ name: 'plan', body: 'Plan the work.', description: 'planning' }],
   agents: [{ name: 'planner', body: 'You plan.', model: 'gpt-5' }],
   hooks: [
-    { id: 'fmt', events: ['tool.use.post'], matcher: 'Edit', command: './fmt.sh', timeout: 30 },
+    {
+      id: 'fmt',
+      events: ['tool.use.post'],
+      matcher: 'Edit',
+      command: './fmt.sh',
+      timeout: 30,
+    },
     { id: 'stop', events: ['turn.end'], command: 'notify-send done' },
   ],
-  mcp_servers: [{ name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] }],
+  mcp_servers: [
+    { name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] },
+  ],
   permissions: { allow: ['Read(*)'], deny: ['Bash(rm -rf:*)'] },
   env: { DEBUG: 'true' },
 });
@@ -38,7 +57,7 @@ describe('Phase 2 cross-adapter portability', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-port2-'));
+    cwd = mkdtempSync(join(tmpdir(), 'koine-port2-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });
@@ -63,9 +82,15 @@ describe('Phase 2 cross-adapter portability', () => {
     const report = await claudeAdapter.write(fullIR(), 'project', subDir, {});
     expect(existsSync(join(subDir, 'CLAUDE.md'))).toBe(true);
     expect(existsSync(join(subDir, '.claude', 'settings.json'))).toBe(true);
-    expect(existsSync(join(subDir, '.claude', 'commands', 'plan.md'))).toBe(true);
-    expect(existsSync(join(subDir, '.claude', 'agents', 'planner.md'))).toBe(true);
-    expect(existsSync(join(subDir, '.claude', 'skills', 'review', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(subDir, '.claude', 'commands', 'plan.md'))).toBe(
+      true,
+    );
+    expect(existsSync(join(subDir, '.claude', 'agents', 'planner.md'))).toBe(
+      true,
+    );
+    expect(
+      existsSync(join(subDir, '.claude', 'skills', 'review', 'SKILL.md')),
+    ).toBe(true);
     expect(report.warnings).toEqual([]);
     expect(report.skipped).toEqual([]);
   });
@@ -78,7 +103,9 @@ describe('Phase 2 cross-adapter portability', () => {
     expect(report.warnings.some((w) => w.includes('commands'))).toBe(true);
     expect(report.warnings.some((w) => w.includes('agents'))).toBe(true);
     // Skills, mcp, env, permissions all attempted
-    expect(existsSync(join(subDir, '.opencode', 'skills', 'review', 'SKILL.md'))).toBe(true);
+    expect(
+      existsSync(join(subDir, '.opencode', 'skills', 'review', 'SKILL.md')),
+    ).toBe(true);
     expect(existsSync(join(subDir, '.opencode', 'mcp.json'))).toBe(true);
     expect(existsSync(join(subDir, '.opencode', 'env.json'))).toBe(true);
   });
@@ -90,7 +117,9 @@ describe('Phase 2 cross-adapter portability', () => {
     await codexAdapter.write(fullIR(), 'project', subDir, {});
     expect(existsSync(join(subDir, '.codex', 'config.toml'))).toBe(true);
     expect(existsSync(join(subDir, '.codex', 'prompts', 'plan.md'))).toBe(true);
-    expect(existsSync(join(subDir, '.codex', 'agents', 'planner.toml'))).toBe(true);
+    expect(existsSync(join(subDir, '.codex', 'agents', 'planner.toml'))).toBe(
+      true,
+    );
   });
 
   it('gemini emits settings.json with mapped event names', async () => {

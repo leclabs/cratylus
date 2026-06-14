@@ -1,27 +1,39 @@
-import { mkdtempSync, rmSync, existsSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IR, Manifest } from '@leclabs/koine-core';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { crushAdapter } from '../../src/crush/index.js';
 
-const manifest = (): Manifest => ({ agentir: 1, scope: 'project', targets: ['crush'] });
+const manifest = (): Manifest => ({
+  koine: 1,
+  scope: 'project',
+  targets: ['crush'],
+});
 
 describe('crushAdapter', () => {
   let cwd: string;
-  beforeEach(() => { cwd = mkdtempSync(join(tmpdir(), 'agentir-crush-')); });
-  afterEach(() => { rmSync(cwd, { recursive: true, force: true }); });
+  beforeEach(() => {
+    cwd = mkdtempSync(join(tmpdir(), 'koine-crush-'));
+  });
+  afterEach(() => {
+    rmSync(cwd, { recursive: true, force: true });
+  });
 
   it('writes AGENTS.md, skills, mcp', async () => {
     const ir: IR = {
       manifest: manifest(),
       rules: [{ id: 'main', body: 'Be terse.' }],
       skills: [{ name: 'review', description: 'Review code', body: '# steps' }],
-      mcp_servers: [{ name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] }],
+      mcp_servers: [
+        { name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] },
+      ],
     };
     await crushAdapter.write(ir, 'project', cwd, {});
     expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
-    expect(existsSync(join(cwd, '.crush', 'skills', 'review', 'SKILL.md'))).toBe(true);
+    expect(
+      existsSync(join(cwd, '.crush', 'skills', 'review', 'SKILL.md')),
+    ).toBe(true);
     expect(existsSync(join(cwd, '.crush', 'mcp.json'))).toBe(true);
   });
 
@@ -30,7 +42,9 @@ describe('crushAdapter', () => {
       manifest: manifest(),
       rules: [{ id: 'main', body: 'Be terse.' }],
       skills: [{ name: 'review', description: 'Review code', body: '# steps' }],
-      mcp_servers: [{ name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] }],
+      mcp_servers: [
+        { name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] },
+      ],
     };
     await crushAdapter.write(ir, 'project', cwd, {});
     const re = await crushAdapter.read('project', cwd);

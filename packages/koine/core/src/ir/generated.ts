@@ -41,7 +41,7 @@ export type CanonicalEvent =
 export type McpServer = StdioMcpServer | RemoteMcpServer;
 
 /**
- * The complete agentir intermediate representation. Top-level container of manifest plus all resource collections.
+ * The complete koine intermediate representation. Top-level container of manifest plus all resource collections.
  */
 export interface IR {
   manifest: Manifest;
@@ -55,13 +55,13 @@ export interface IR {
   env?: EnvVars;
 }
 /**
- * agentir manifest. Entry point of an IR directory; declares schema version, scope, and target clients.
+ * koine manifest. Entry point of an IR directory; declares schema version, scope, and target clients.
  */
 export interface Manifest {
   /**
    * IR schema version. Always 1 in v1.
    */
-  agentir: 1;
+  koine: 1;
   scope: Scope;
   /**
    * Adapter ids this manifest compiles to (e.g. claude, opencode, codex).

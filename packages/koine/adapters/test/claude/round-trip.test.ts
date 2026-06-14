@@ -1,12 +1,19 @@
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IR, Manifest } from '@leclabs/koine-core';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { claudeAdapter } from '../../src/claude/index.js';
 
 const manifest = (): Manifest => ({
-  agentir: 1,
+  koine: 1,
   scope: 'project',
   targets: ['claude'],
 });
@@ -29,7 +36,13 @@ function buildFixture(cwd: string): void {
           PreToolUse: [
             {
               matcher: 'Edit|Write',
-              hooks: [{ type: 'command', command: './scripts/format.sh', timeout: 30 }],
+              hooks: [
+                {
+                  type: 'command',
+                  command: './scripts/format.sh',
+                  timeout: 30,
+                },
+              ],
             },
           ],
           Stop: [{ hooks: [{ type: 'command', command: 'notify-send done' }] }],
@@ -77,7 +90,7 @@ describe('claudeAdapter', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-claude-'));
+    cwd = mkdtempSync(join(tmpdir(), 'koine-claude-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });
@@ -142,9 +155,13 @@ describe('claudeAdapter', () => {
 
     expect(existsSync(join(cwd, 'CLAUDE.md'))).toBe(true);
     expect(existsSync(join(cwd, '.claude', 'settings.json'))).toBe(true);
-    expect(existsSync(join(cwd, '.claude', 'commands', 'review.md'))).toBe(true);
+    expect(existsSync(join(cwd, '.claude', 'commands', 'review.md'))).toBe(
+      true,
+    );
 
-    const settings = JSON.parse(readFileSync(join(cwd, '.claude', 'settings.json'), 'utf8'));
+    const settings = JSON.parse(
+      readFileSync(join(cwd, '.claude', 'settings.json'), 'utf8'),
+    );
     expect(settings.hooks.PostToolUse).toBeDefined();
     expect(settings.hooks.PostToolUse[0]).toMatchObject({
       matcher: 'Edit',
@@ -157,9 +174,14 @@ describe('claudeAdapter', () => {
     const ir1 = await claudeAdapter.read('project', cwd);
 
     // Write to a fresh dir, then read back
-    const cwd2 = mkdtempSync(join(tmpdir(), 'agentir-claude-rt-'));
+    const cwd2 = mkdtempSync(join(tmpdir(), 'koine-claude-rt-'));
     try {
-      await claudeAdapter.write({ manifest: manifest(), ...ir1 }, 'project', cwd2, {});
+      await claudeAdapter.write(
+        { manifest: manifest(), ...ir1 },
+        'project',
+        cwd2,
+        {},
+      );
       const ir2 = await claudeAdapter.read('project', cwd2);
       // Compare resource fields (manifest is added by caller, not by read)
       expect(ir2.rules).toEqual(ir1.rules);

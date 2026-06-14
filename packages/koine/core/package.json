@@ -1,7 +1,7 @@
 {
   "name": "@leclabs/koine-core",
   "version": "0.0.0",
-  "description": "agentir IR types, schema, and engine",
+  "description": "koine IR types, schema, and engine",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",

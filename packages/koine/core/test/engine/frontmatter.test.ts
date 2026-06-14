@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { parseFrontmatter, serializeFrontmatter } from '../../src/engine/frontmatter.js';
+import {
+  parseFrontmatter,
+  serializeFrontmatter,
+} from '../../src/engine/frontmatter.js';
 
 describe('parseFrontmatter', () => {
   it('parses YAML frontmatter and returns body', () => {
@@ -11,7 +14,10 @@ tags:
 ---
 Body content here.
 `;
-    const { frontmatter, body } = parseFrontmatter<{ title: string; tags: string[] }>(text);
+    const { frontmatter, body } = parseFrontmatter<{
+      title: string;
+      tags: string[];
+    }>(text);
     expect(frontmatter).toEqual({ title: 'Hello', tags: ['a', 'b'] });
     expect(body.trim()).toBe('Body content here.');
   });

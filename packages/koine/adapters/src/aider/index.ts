@@ -2,13 +2,13 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
-  parseRule,
   type Adapter,
   type AdapterCapabilities,
   type IR,
   type Scope,
   type WriteOpts,
   type WriteReport,
+  parseRule,
 } from '@leclabs/koine-core';
 
 /**
@@ -48,7 +48,12 @@ export const aiderAdapter: Adapter = {
     if (!existsSync(path)) return {};
     return { rules: [parseRule(await readFile(path, 'utf8'), 'main')] };
   },
-  async write(ir: IR, scope: Scope, cwd: string, opts: WriteOpts = {}): Promise<WriteReport> {
+  async write(
+    ir: IR,
+    scope: Scope,
+    cwd: string,
+    opts: WriteOpts = {},
+  ): Promise<WriteReport> {
     const path = rulesPath(scope, cwd);
     const written: string[] = [];
     const skipped: { path: string; reason: string }[] = [];
@@ -64,19 +69,29 @@ export const aiderAdapter: Adapter = {
     }
 
     for (const [field, label] of [
-      ['skills', 'skills'], ['commands', 'commands'], ['agents', 'agents'], ['hooks', 'hooks'],
+      ['skills', 'skills'],
+      ['commands', 'commands'],
+      ['agents', 'agents'],
+      ['hooks', 'hooks'],
     ] as const) {
       const items = ir[field];
-      if (items && items.length) {
-        warnings.push(`${label}: Aider has no ${label} support (${items.length} skipped)`);
+      if (items?.length) {
+        warnings.push(
+          `${label}: Aider has no ${label} support (${items.length} skipped)`,
+        );
         for (const i of items) {
-          const id = (i as { name?: string; id?: string }).name ?? (i as { id?: string }).id ?? '?';
+          const id =
+            (i as { name?: string; id?: string }).name ??
+            (i as { id?: string }).id ??
+            '?';
           skipped.push({ path: `${label}/${id}`, reason: 'unsupported' });
         }
       }
     }
     if (ir.mcp_servers?.length) {
-      warnings.push(`mcp: Aider has no MCP support (${ir.mcp_servers.length} skipped)`);
+      warnings.push(
+        `mcp: Aider has no MCP support (${ir.mcp_servers.length} skipped)`,
+      );
     }
 
     return { written, skipped, warnings };

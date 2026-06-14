@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://leclabs.dev/agentir/v1/command.schema.json",
+  "$id": "https://leclabs.dev/koine/v1/command.schema.json",
   "title": "Command",
   "description": "A slash command. Markdown body becomes the prompt; frontmatter declares args, model, tools.",
   "type": "object",

@@ -2,7 +2,9 @@
   "$schema": "https://unpkg.com/@changesets/config@3.0.0/schema.json",
   "changelog": "@changesets/cli/changelog",
   "commit": false,
-  "fixed": [["@leclabs/koine", "@leclabs/koine-adapters", "@leclabs/koine-core"]],
+  "fixed": [
+    ["@leclabs/koine", "@leclabs/koine-adapters", "@leclabs/koine-core"]
+  ],
   "linked": [],
   "access": "restricted",
   "baseBranch": "main",

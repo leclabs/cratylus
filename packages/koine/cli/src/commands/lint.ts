@@ -1,11 +1,11 @@
 import {
+  type Adapter,
+  type ResourceType,
+  type Scope,
+  type Support,
+  formatErrors,
   readIR,
   validateIR,
-  formatErrors,
-  type Adapter,
-  type Scope,
-  type ResourceType,
-  type Support,
 } from '@leclabs/koine-core';
 import pc from 'picocolors';
 
@@ -15,11 +15,14 @@ export interface LintOpts {
   cwd?: string;
 }
 
-export async function runLint(opts: LintOpts, adapters: Adapter[]): Promise<number> {
+export async function runLint(
+  opts: LintOpts,
+  adapters: Adapter[],
+): Promise<number> {
   const scope = opts.scope ?? 'project';
   const cwd = opts.cwd ?? process.cwd();
 
-  let ir;
+  let ir: Awaited<ReturnType<typeof readIR>>;
   try {
     ir = await readIR(scope, cwd);
   } catch (e) {
@@ -48,9 +51,13 @@ export async function runLint(opts: LintOpts, adapters: Adapter[]): Promise<numb
       if (items === 0) continue;
       const support: Support = cap[type as ResourceType];
       if (support === 'none') {
-        issues.push(`target '${targetId}': ${items} ${type} resource(s) but adapter declares no support`);
+        issues.push(
+          `target '${targetId}': ${items} ${type} resource(s) but adapter declares no support`,
+        );
       } else if (support === 'partial') {
-        issues.push(`target '${targetId}': ${items} ${type} resource(s) — partial support, expect lossy translation`);
+        issues.push(
+          `target '${targetId}': ${items} ${type} resource(s) — partial support, expect lossy translation`,
+        );
       }
     }
   }
@@ -63,7 +70,16 @@ export async function runLint(opts: LintOpts, adapters: Adapter[]): Promise<numb
   return opts.strict ? 2 : 0;
 }
 
-function resourceCounts(ir: { rules?: unknown[]; skills?: unknown[]; commands?: unknown[]; agents?: unknown[]; hooks?: unknown[]; mcp_servers?: unknown[]; permissions?: unknown; env?: unknown }): Map<ResourceType, number> {
+function resourceCounts(ir: {
+  rules?: unknown[];
+  skills?: unknown[];
+  commands?: unknown[];
+  agents?: unknown[];
+  hooks?: unknown[];
+  mcp_servers?: unknown[];
+  permissions?: unknown;
+  env?: unknown;
+}): Map<ResourceType, number> {
   return new Map<ResourceType, number>([
     ['rules', ir.rules?.length ?? 0],
     ['skills', ir.skills?.length ?? 0],

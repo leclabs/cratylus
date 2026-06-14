@@ -2,14 +2,14 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import TOML from '@iarna/toml';
 import {
-  serializeCommand,
-  serializeSkill,
   type Hook,
   type IR,
   type McpServer,
   type Scope,
   type WriteOpts,
   type WriteReport,
+  serializeCommand,
+  serializeSkill,
 } from '@leclabs/koine-core';
 import { canonicalToCodex } from './events.js';
 import { paths } from './paths.js';
@@ -57,7 +57,9 @@ export async function writeCodex(
       // Warn about Bash-only matcher limitation for tool.use.* events
       for (const h of compatible) {
         if (
-          h.events.some((e: string) => e === 'tool.use.pre' || e === 'tool.use.post') &&
+          h.events.some(
+            (e: string) => e === 'tool.use.pre' || e === 'tool.use.post',
+          ) &&
           h.matcher &&
           h.matcher !== 'Bash'
         ) {
@@ -79,7 +81,11 @@ export async function writeCodex(
   if (Object.keys(config).length > 0) {
     if (!opts.dryRun) {
       await mkdir(dirname(p.configFile), { recursive: true });
-      await writeFile(p.configFile, TOML.stringify(config as TOML.JsonMap), 'utf8');
+      await writeFile(
+        p.configFile,
+        TOML.stringify(config as TOML.JsonMap),
+        'utf8',
+      );
     }
     written.push(p.configFile);
   }
@@ -107,7 +113,8 @@ export async function writeCodex(
       if (agent.model) obj.model = agent.model;
       if (agent.tools) obj.tools = agent.tools;
       if (agent.color) obj.color = agent.color;
-      if (!opts.dryRun) await writeFile(path, TOML.stringify(obj as TOML.JsonMap), 'utf8');
+      if (!opts.dryRun)
+        await writeFile(path, TOML.stringify(obj as TOML.JsonMap), 'utf8');
       written.push(path);
     }
   }
@@ -128,10 +135,20 @@ export async function writeCodex(
   return { written, skipped, warnings };
 }
 
-function serializeCodexHooks(
-  hooks: Hook[],
-): Record<string, Array<{ matcher?: string; hooks: Array<{ type: 'command'; command: string; timeout?: number }> }>> {
-  const out: Record<string, Array<{ matcher?: string; hooks: Array<{ type: 'command'; command: string; timeout?: number }> }>> = {};
+function serializeCodexHooks(hooks: Hook[]): Record<
+  string,
+  Array<{
+    matcher?: string;
+    hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
+  }>
+> {
+  const out: Record<
+    string,
+    Array<{
+      matcher?: string;
+      hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
+    }>
+  > = {};
   for (const hook of hooks) {
     for (const event of hook.events) {
       const codexEvent = canonicalToCodex[event];
@@ -141,11 +158,15 @@ function serializeCodexHooks(
         command: hook.command,
       };
       if (hook.timeout !== undefined) cmd.timeout = hook.timeout;
-      const entry: { matcher?: string; hooks: Array<{ type: 'command'; command: string; timeout?: number }> } = {
+      const entry: {
+        matcher?: string;
+        hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
+      } = {
         hooks: [cmd],
       };
       if (hook.matcher) entry.matcher = hook.matcher;
-      (out[codexEvent] ??= []).push(entry);
+      out[codexEvent] ??= [];
+      out[codexEvent].push(entry);
     }
   }
   return out;

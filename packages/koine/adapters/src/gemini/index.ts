@@ -15,10 +15,10 @@ import { writeGemini } from './write.js';
 const capabilities: AdapterCapabilities = {
   resources: {
     rules: 'full',
-    skills: 'partial',     // SKILL.md works; some metadata may be ignored
+    skills: 'partial', // SKILL.md works; some metadata may be ignored
     commands: 'none',
-    agents: 'partial',     // .md subagents; conventions evolving
-    hooks: 'full',         // 10 of 28 canonical events covered cleanly
+    agents: 'partial', // .md subagents; conventions evolving
+    hooks: 'full', // 10 of 28 canonical events covered cleanly
     mcp: 'full',
     permissions: 'partial',
     env: 'full',
@@ -53,7 +53,12 @@ export const geminiAdapter: Adapter = {
   async read(scope: Scope, cwd: string): Promise<Partial<IR>> {
     return readGemini(scope, cwd);
   },
-  async write(ir: IR, scope: Scope, cwd: string, opts: WriteOpts): Promise<WriteReport> {
+  async write(
+    ir: IR,
+    scope: Scope,
+    cwd: string,
+    opts: WriteOpts,
+  ): Promise<WriteReport> {
     return writeGemini(ir, scope, cwd, opts);
   },
 };

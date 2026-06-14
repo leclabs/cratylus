@@ -1,10 +1,14 @@
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import type {
+  Adapter,
+  AdapterCapabilities,
+  WriteReport,
+} from '../../src/adapter/types.js';
 import { compile } from '../../src/engine/compile.js';
 import { detectDrift } from '../../src/engine/drift.js';
-import type { Adapter, AdapterCapabilities, WriteReport } from '../../src/adapter/types.js';
 import type { IR, Manifest } from '../../src/ir/types.js';
 
 const caps: AdapterCapabilities = {
@@ -35,7 +39,7 @@ function adapter(
   };
 }
 
-const manifest: Manifest = { agentir: 1, scope: 'project', targets: ['claude'] };
+const manifest: Manifest = { koine: 1, scope: 'project', targets: ['claude'] };
 const ir: IR = { manifest };
 
 describe('compile', () => {
@@ -43,8 +47,8 @@ describe('compile', () => {
   let stateDir: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-compile-'));
-    stateDir = join(cwd, '.agentir');
+    cwd = mkdtempSync(join(tmpdir(), 'koine-compile-'));
+    stateDir = join(cwd, '.koine');
     mkdirSync(stateDir, { recursive: true });
   });
   afterEach(() => {
@@ -73,7 +77,11 @@ describe('compile', () => {
     const broken = adapter('broken', async () => {
       throw new Error('boom');
     });
-    const ok = adapter('ok', async () => ({ written: [], skipped: [], warnings: [] }));
+    const ok = adapter('ok', async () => ({
+      written: [],
+      skipped: [],
+      warnings: [],
+    }));
     const report = await compile(ir, [broken, ok], 'project', cwd);
     expect(report.results[0]?.error?.message).toBe('boom');
     expect(report.results[1]?.error).toBeUndefined();
@@ -85,7 +93,11 @@ describe('compile', () => {
       skipped: [],
       warnings: ['something'],
     }));
-    const b = adapter('b', async () => ({ written: [], skipped: [], warnings: [] }));
+    const b = adapter('b', async () => ({
+      written: [],
+      skipped: [],
+      warnings: [],
+    }));
     const report = await compile(ir, [a, b], 'project', cwd, { strict: true });
     expect(report.results).toHaveLength(1);
     expect(report.results[0]?.error?.message).toMatch(/strict/);

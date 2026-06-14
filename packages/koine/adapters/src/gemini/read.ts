@@ -2,21 +2,27 @@ import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import {
-  parseAgent,
-  parseRule,
-  parseSkill,
   type Agent,
   type Hook,
   type IR,
   type McpServer,
   type Scope,
   type Skill,
+  parseAgent,
+  parseRule,
+  parseSkill,
 } from '@leclabs/koine-core';
 import { geminiToCanonical } from './events.js';
 import { paths } from './paths.js';
 
 interface SettingsFile {
-  hooks?: Record<string, Array<{ matcher?: string; hooks?: Array<{ type: string; command: string; timeout?: number }> }>>;
+  hooks?: Record<
+    string,
+    Array<{
+      matcher?: string;
+      hooks?: Array<{ type: string; command: string; timeout?: number }>;
+    }>
+  >;
   mcpServers?: Record<string, McpEntry>;
   permissions?: { allow?: string[]; deny?: string[]; ask?: string[] };
   env?: Record<string, string>;
@@ -31,7 +37,10 @@ interface McpEntry {
   type?: 'stdio' | 'http' | 'sse';
 }
 
-export async function readGemini(scope: Scope, cwd: string): Promise<Partial<IR>> {
+export async function readGemini(
+  scope: Scope,
+  cwd: string,
+): Promise<Partial<IR>> {
   const p = paths(scope, cwd);
   const ir: Partial<IR> = {};
 
@@ -41,7 +50,9 @@ export async function readGemini(scope: Scope, cwd: string): Promise<Partial<IR>
   }
 
   if (existsSync(p.settingsFile)) {
-    const settings = JSON.parse(await readFile(p.settingsFile, 'utf8')) as SettingsFile;
+    const settings = JSON.parse(
+      await readFile(p.settingsFile, 'utf8'),
+    ) as SettingsFile;
     if (settings.hooks) {
       const hooks = parseGeminiHooks(settings.hooks);
       if (hooks.length) ir.hooks = hooks;
@@ -91,9 +102,17 @@ function parseMcp(servers: Record<string, McpEntry>): McpServer[] {
   const out: McpServer[] = [];
   for (const [name, s] of Object.entries(servers)) {
     if (s.url) {
-      out.push({ name, transport: s.type === 'sse' ? 'sse' : 'http', url: s.url } as McpServer);
+      out.push({
+        name,
+        transport: s.type === 'sse' ? 'sse' : 'http',
+        url: s.url,
+      } as McpServer);
     } else if (s.command) {
-      const server = { name, transport: 'stdio', command: s.command } as McpServer;
+      const server = {
+        name,
+        transport: 'stdio',
+        command: s.command,
+      } as McpServer;
       if (s.args) (server as { args?: string[] }).args = s.args;
       if (s.env) (server as { env?: Record<string, string> }).env = s.env;
       out.push(server);

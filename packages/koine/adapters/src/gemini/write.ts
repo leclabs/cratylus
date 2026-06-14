@@ -1,14 +1,14 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
-  serializeAgent,
-  serializeSkill,
   type Hook,
   type IR,
   type McpServer,
   type Scope,
   type WriteOpts,
   type WriteReport,
+  serializeAgent,
+  serializeSkill,
 } from '@leclabs/koine-core';
 import { canonicalToGemini } from './events.js';
 import { paths } from './paths.js';
@@ -74,9 +74,11 @@ export async function writeGemini(
         reason: 'unsupported by Gemini event surface',
       });
     }
-    if (compatible.length > 0) settings.hooks = serializeGeminiHooks(compatible);
+    if (compatible.length > 0)
+      settings.hooks = serializeGeminiHooks(compatible);
   }
-  if (ir.mcp_servers?.length) settings.mcpServers = serializeMcp(ir.mcp_servers);
+  if (ir.mcp_servers?.length)
+    settings.mcpServers = serializeMcp(ir.mcp_servers);
   if (ir.permissions) {
     warnings.push(
       'permissions: Gemini permission DSL differs from canonical; emitted verbatim, may not be honored',
@@ -88,23 +90,40 @@ export async function writeGemini(
   if (Object.keys(settings).length > 0) {
     if (!opts.dryRun) {
       await mkdir(dirname(p.settingsFile), { recursive: true });
-      await writeFile(p.settingsFile, `${JSON.stringify(settings, null, 2)}\n`, 'utf8');
+      await writeFile(
+        p.settingsFile,
+        `${JSON.stringify(settings, null, 2)}\n`,
+        'utf8',
+      );
     }
     written.push(p.settingsFile);
   }
 
   if (ir.commands?.length) {
-    warnings.push(`commands: Gemini has no slash-command system (${ir.commands.length} skipped)`);
-    for (const c of ir.commands) skipped.push({ path: `commands/${c.name}.md`, reason: 'unsupported' });
+    warnings.push(
+      `commands: Gemini has no slash-command system (${ir.commands.length} skipped)`,
+    );
+    for (const c of ir.commands)
+      skipped.push({ path: `commands/${c.name}.md`, reason: 'unsupported' });
   }
 
   return { written, skipped, warnings };
 }
 
-function serializeGeminiHooks(
-  hooks: Hook[],
-): Record<string, Array<{ matcher?: string; hooks: Array<{ type: 'command'; command: string; timeout?: number }> }>> {
-  const out: Record<string, Array<{ matcher?: string; hooks: Array<{ type: 'command'; command: string; timeout?: number }> }>> = {};
+function serializeGeminiHooks(hooks: Hook[]): Record<
+  string,
+  Array<{
+    matcher?: string;
+    hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
+  }>
+> {
+  const out: Record<
+    string,
+    Array<{
+      matcher?: string;
+      hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
+    }>
+  > = {};
   for (const hook of hooks) {
     for (const event of hook.events) {
       const geminiEvent = canonicalToGemini[event];
@@ -114,11 +133,15 @@ function serializeGeminiHooks(
         command: hook.command,
       };
       if (hook.timeout !== undefined) cmd.timeout = hook.timeout;
-      const entry: { matcher?: string; hooks: Array<{ type: 'command'; command: string; timeout?: number }> } = {
+      const entry: {
+        matcher?: string;
+        hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
+      } = {
         hooks: [cmd],
       };
       if (hook.matcher) entry.matcher = hook.matcher;
-      (out[geminiEvent] ??= []).push(entry);
+      out[geminiEvent] ??= [];
+      out[geminiEvent].push(entry);
     }
   }
   return out;

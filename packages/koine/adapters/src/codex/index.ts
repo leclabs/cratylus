@@ -18,7 +18,7 @@ const capabilities: AdapterCapabilities = {
     skills: 'full',
     commands: 'full',
     agents: 'full',
-    hooks: 'partial',  // 6 events, Bash-only matchers in practice
+    hooks: 'partial', // 6 events, Bash-only matchers in practice
     mcp: 'full',
     permissions: 'partial',
     env: 'full',
@@ -49,7 +49,12 @@ export const codexAdapter: Adapter = {
   async read(scope: Scope, cwd: string): Promise<Partial<IR>> {
     return readCodex(scope, cwd);
   },
-  async write(ir: IR, scope: Scope, cwd: string, opts: WriteOpts): Promise<WriteReport> {
+  async write(
+    ir: IR,
+    scope: Scope,
+    cwd: string,
+    opts: WriteOpts,
+  ): Promise<WriteReport> {
     return writeCodex(ir, scope, cwd, opts);
   },
 };

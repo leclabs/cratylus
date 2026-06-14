@@ -1,13 +1,13 @@
-# @leclabs/agentir-core
+# @leclabs/koine-core
 
-Core types, schema, engine, validator, serializers, and the Adapter contract for [agentir](../../README.md).
+Core types, schema, engine, validator, serializers, and the Adapter contract for [koine](../../README.md).
 
 If you're building a community adapter, **this is the only package you need**.
 
 ## Install
 
 ```bash
-npm install @leclabs/agentir-core
+npm install @leclabs/koine-core
 ```
 
 ## Public API
@@ -43,7 +43,7 @@ import {
   parseCommand, serializeCommand,
   parseAgent, serializeAgent,
   parseHook, serializeHook,
-} from '@leclabs/agentir-core';
+} from '@leclabs/koine-core';
 ```
 
 ## The IR
@@ -65,9 +65,9 @@ Full schema in `schema/*.schema.json`. TypeScript types are generated via `pnpm 
 
 ## Canonical event taxonomy
 
-agentir publishes a vendor-neutral event taxonomy (`CanonicalEvent`); each adapter maps its native events to/from this set. Includes 28 events across session/turn/model/tool/file/shell/mcp/subagent/permission/notification/context/config phases.
+koine publishes a vendor-neutral event taxonomy (`CanonicalEvent`); each adapter maps its native events to/from this set. Includes 28 events across session/turn/model/tool/file/shell/mcp/subagent/permission/notification/context/config phases.
 
-See [DESIGN.md §7](../../DESIGN.md) for the full table or run `agentir events`.
+See [DESIGN.md §7](../../DESIGN.md) for the full table or run `koine events`.
 
 ## The Adapter contract
 
@@ -89,15 +89,15 @@ Adapters are pure: given the same input, they produce the same output. State liv
 The engine is the orchestration layer that consumes adapters:
 
 ```ts
-import { readIR, compile } from '@leclabs/agentir-core';
-import { claudeAdapter } from '@leclabs/agentir-adapters/claude';
+import { readIR, compile } from '@leclabs/koine-core';
+import { claudeAdapter } from '@leclabs/koine-adapters/claude';
 
 const ir = await readIR('project', process.cwd());
 const report = await compile(ir, [claudeAdapter], 'project', process.cwd(), {
   dryRun: false,
   strict: false,
   explain: true,
-  stateDir: '.agentir',
+  stateDir: '.koine',
 });
 
 console.log(report.totalWritten, 'files written');

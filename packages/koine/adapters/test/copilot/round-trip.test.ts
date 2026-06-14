@@ -1,12 +1,19 @@
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IR, Manifest } from '@leclabs/koine-core';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { copilotAdapter } from '../../src/copilot/index.js';
 
 const manifest = (): Manifest => ({
-  agentir: 1,
+  koine: 1,
   scope: 'project',
   targets: ['copilot'],
 });
@@ -15,7 +22,7 @@ describe('copilotAdapter', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-copilot-'));
+    cwd = mkdtempSync(join(tmpdir(), 'koine-copilot-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });
@@ -35,15 +42,26 @@ describe('copilotAdapter', () => {
           timeout: 15,
         },
       ],
-      mcp_servers: [{ name: 'github', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] }],
+      mcp_servers: [
+        {
+          name: 'github',
+          transport: 'stdio',
+          command: 'npx',
+          args: ['-y', 'pkg'],
+        },
+      ],
     };
     const report = await copilotAdapter.write(ir, 'project', cwd, {});
     expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
-    expect(existsSync(join(cwd, '.copilot', 'skills', 'review', 'SKILL.md'))).toBe(true);
+    expect(
+      existsSync(join(cwd, '.copilot', 'skills', 'review', 'SKILL.md')),
+    ).toBe(true);
     expect(existsSync(join(cwd, '.vscode', 'mcp.json'))).toBe(true);
     expect(existsSync(join(cwd, '.claude', 'settings.json'))).toBe(true);
 
-    const settings = JSON.parse(readFileSync(join(cwd, '.claude', 'settings.json'), 'utf8'));
+    const settings = JSON.parse(
+      readFileSync(join(cwd, '.claude', 'settings.json'), 'utf8'),
+    );
     expect(settings.hooks.PostToolUse).toBeDefined();
     expect(settings.hooks.PostToolUse[0].matcher).toBe('Edit');
     expect(report.warnings).toEqual([]);
@@ -70,7 +88,9 @@ describe('copilotAdapter', () => {
       JSON.stringify({
         permissions: { allow: ['Read(*)'] },
         env: { CLAUDE_OWNED: 'yes' },
-        hooks: { Stop: [{ hooks: [{ type: 'command', command: 'echo claude-stop' }] }] },
+        hooks: {
+          Stop: [{ hooks: [{ type: 'command', command: 'echo claude-stop' }] }],
+        },
       }),
       'utf8',
     );
@@ -79,10 +99,12 @@ describe('copilotAdapter', () => {
       hooks: [{ id: 'fmt', events: ['tool.use.post'], command: './fmt.sh' }],
     };
     await copilotAdapter.write(ir, 'project', cwd, {});
-    const settings = JSON.parse(readFileSync(join(cwd, '.claude', 'settings.json'), 'utf8'));
+    const settings = JSON.parse(
+      readFileSync(join(cwd, '.claude', 'settings.json'), 'utf8'),
+    );
     expect(settings.permissions).toEqual({ allow: ['Read(*)'] });
     expect(settings.env).toEqual({ CLAUDE_OWNED: 'yes' });
-    expect(settings.hooks.Stop).toBeDefined();        // pre-existing
+    expect(settings.hooks.Stop).toBeDefined(); // pre-existing
     expect(settings.hooks.PostToolUse).toBeDefined(); // newly added
   });
 
@@ -91,7 +113,14 @@ describe('copilotAdapter', () => {
       manifest: manifest(),
       rules: [{ id: 'main', body: 'Be terse.' }],
       skills: [{ name: 'review', description: 'Review code', body: '# steps' }],
-      mcp_servers: [{ name: 'github', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] }],
+      mcp_servers: [
+        {
+          name: 'github',
+          transport: 'stdio',
+          command: 'npx',
+          args: ['-y', 'pkg'],
+        },
+      ],
     };
     await copilotAdapter.write(ir, 'project', cwd, {});
     const re = await copilotAdapter.read('project', cwd);

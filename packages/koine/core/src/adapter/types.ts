@@ -42,7 +42,7 @@ export interface WriteReport {
 export type EventMap = Partial<Record<CanonicalEvent, string | null>>;
 
 /**
- * The contract every agentir adapter implements. Adapters are pure: given the
+ * The contract every koine adapter implements. Adapters are pure: given the
  * same input, they produce the same output. State lives in the filesystem.
  */
 export interface Adapter {
@@ -50,10 +50,15 @@ export interface Adapter {
   capabilities: AdapterCapabilities;
   /**
    * Canonical → native event mapping. Adapters without hook support may omit.
-   * Surfaced via `agentir events list --client <id>`.
+   * Surfaced via `koine events list --client <id>`.
    */
   eventMap?: EventMap;
   detect(scope: Scope, cwd: string): Promise<boolean>;
   read(scope: Scope, cwd: string): Promise<Partial<IR>>;
-  write(ir: IR, scope: Scope, cwd: string, opts: WriteOpts): Promise<WriteReport>;
+  write(
+    ir: IR,
+    scope: Scope,
+    cwd: string,
+    opts: WriteOpts,
+  ): Promise<WriteReport>;
 }

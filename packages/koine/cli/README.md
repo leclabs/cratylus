@@ -1,103 +1,103 @@
-# @leclabs/agentir
+# @leclabs/koine
 
-CLI for [agentir](../../README.md), the universal configuration translator for AI coding agents.
+CLI for [koine](../../README.md), the universal configuration translator for AI coding agents.
 
 ## Install
 
 ```bash
-npm install -g @leclabs/agentir
+npm install -g @leclabs/koine
 ```
 
 ## Quick start
 
 ```bash
 cd ~/myproject
-agentir init                  # creates .agentir/
-agentir import claude         # lifts ~/.claude/ + ./.claude/ + ./CLAUDE.md into IR
-agentir compile               # compiles to all targets in manifest
+koine init                  # creates .koine/
+koine import claude         # lifts ~/.claude/ + ./.claude/ + ./CLAUDE.md into IR
+koine compile               # compiles to all targets in manifest
 ```
 
 ## Commands
 
-### `agentir init`
+### `koine init`
 
-Bootstraps a new `.agentir/` directory with empty resource folders and a stub manifest.
+Bootstraps a new `.koine/` directory with empty resource folders and a stub manifest.
 
 ```
-agentir init [--scope user|project|local]
+koine init [--scope user|project|local]
 ```
 
-### `agentir import <client>`
+### `koine import <client>`
 
 Reads an existing client's config and lifts it into the IR.
 
 ```
-agentir import claude
-agentir import opencode --merge       # preserve hand-edited IR resources
-agentir import codex --from /other/repo
+koine import claude
+koine import opencode --merge       # preserve hand-edited IR resources
+koine import codex --from /other/repo
 ```
 
-### `agentir compile [...clients]`
+### `koine compile [...clients]`
 
 Compiles the IR to the listed clients (or all targets in `manifest.yaml` if none given).
 
 ```
-agentir compile                       # all manifest targets
-agentir compile claude opencode
-agentir compile --dry-run --explain   # preview lossy translations
-agentir compile --strict              # abort on any warning
+koine compile                       # all manifest targets
+koine compile claude opencode
+koine compile --dry-run --explain   # preview lossy translations
+koine compile --strict              # abort on any warning
 ```
 
-### `agentir diff [...clients]`
+### `koine diff [...clients]`
 
 Shows what would change on next compile, plus drift on already-emitted files.
 
 ```
-agentir diff claude
+koine diff claude
 ```
 
-### `agentir lint`
+### `koine lint`
 
 Validates the IR against schema and checks resource compatibility against declared targets.
 
 ```
-agentir lint
-agentir lint --strict                 # capability warnings → errors
+koine lint
+koine lint --strict                 # capability warnings → errors
 ```
 
-### `agentir adapters`
+### `koine adapters`
 
 Lists installed adapters and their per-resource capabilities.
 
-### `agentir events [--client <id>]`
+### `koine events [--client <id>]`
 
 Lists the canonical event taxonomy. With `--client`, shows the per-adapter mapping (✓ supported, — absent).
 
 ```
-agentir events                        # all 28 canonical events
-agentir events --client cursor        # shows 17 cursor mappings + 11 absent
+koine events                        # all 28 canonical events
+koine events --client cursor        # shows 17 cursor mappings + 11 absent
 ```
 
-### `agentir doctor`
+### `koine doctor`
 
 Diagnoses installation: IR presence, manifest validity, compile state, per-target detection, drift.
 
-### `agentir watch [...clients]`
+### `koine watch [...clients]`
 
 Auto-recompiles on IR changes (chokidar, ~300ms debounce). Ctrl-C to exit.
 
 ```
-agentir watch
-agentir watch --debounce 100
+koine watch
+koine watch --debounce 100
 ```
 
-### `agentir migrate`
+### `koine migrate`
 
 Applies IR schema migrations between versions.
 
 ```
-agentir migrate                       # use manifest's current version → latest
-agentir migrate --from 1 --to 2
+koine migrate                       # use manifest's current version → latest
+koine migrate --from 1 --to 2
 ```
 
 ## Exit codes
@@ -114,9 +114,9 @@ agentir migrate --from 1 --to 2
 
 | Variable | Effect |
 |---|---|
-| `AGENTIR_HOME` | Override `~/.agentir/` location |
-| `AGENTIR_CONFIG` | Override per-invocation manifest path |
-| `AGENTIR_LOG_LEVEL` | `error \| warn \| info \| debug` |
+| `KOINE_HOME` | Override `~/.koine/` location |
+| `KOINE_CONFIG` | Override per-invocation manifest path |
+| `KOINE_LOG_LEVEL` | `error \| warn \| info \| debug` |
 
 ## License
 
