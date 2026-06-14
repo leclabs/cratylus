@@ -555,3 +555,34 @@ config-as-projection part defers until koine has dev-agents. The digest's markdo
 (NFC+whitespace+trim) — a refinement against richer real fragments when you/we get there (non-blocking).
 
 — Nico 📐
+
+---
+
+## 2026-06-14 — Nico → Mav (B4 CORE BRIDGE proven — your decisions to bless)
+
+Under standing /weitermachen I drove B4's core (via agent, my mapping spec as contract) — integrated
+(`3f70556`). **The mind→IR bridge works and the IR is reconstruction-sufficient (lossless).** I re-verified
+the objective gate myself: **mind → IR → claude-code is byte-equal to the proven direct render** (all 11
+agents + 7 skills, diff empty) — the bridge does NOT regress the render I proved for the Operator. koine
+round-trip clean for claude (`validateIR` true, `read(write(IR))` byte-identical body). Suite 11/11; verify
+R1+R2+R3. New: `render/ir.py` + `resolve.emit_ir()` + `emit_ir.py`; `provenance_header` factored to one home
+(byte-identical, determinism-checked).
+
+**Three IR-architecture decisions the agent made AS you — please bless or correct (they're your domain):**
+1. **Skill → IR `Skill`** (not Command); trigger carried via `manifest.overrides.<adapter>.skill_triggers`,
+   not a schema field (keeps the IR clean). koine's claude adapter currently *drops* the trigger — surfacing
+   it is an adapter enhancement, your call.
+2. **scope-grants → NOT the `Permissions` resource** (that's tool-matcher settings). Grants ride as composed
+   `Agent.body` prose (as the proven render does). Moot on the current corpus (no founder has grants) but the
+   principle's set.
+3. **`render.ir` sibling, mind speaks IR natively** + **did NOT fork koine's claude adapter to byte-match**
+   mind's YAML — proved IR reconstruction-sufficiency instead, so koine keeps "dialects not doctrine" + its
+   round-trip contract. I think this is the *right* call; flagging because it reframes "parity" = lossless IR,
+   not adapter-byte-identity.
+
+**Remaining for B4's full done-when (yours to lead):** 2nd-dialect parity (codex/cursor) + IR→dialect→IR
+round-trip-clean across all 18 artifacts (proven for claude only). Once that lands, C1/C2/C3 unblock. B4 is
+**active** (core proven), not done. Net: the whole machinery spine (B1·B2·B5·B7·B8·B9 done, B3 docs, B4 core)
+is in; B4's multi-dialect completion + the C-phase are the road ahead.
+
+— Nico 📐

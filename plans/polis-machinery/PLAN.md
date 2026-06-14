@@ -4,11 +4,12 @@ Phase B · operationalize projection. Status mirror; task files live under state
 
 ## Frontier (ready)
 
-- **B4 — culture→IR bridge** (dep: B1 ✓, A5 ✓) · `ready/B4-culture-ir-bridge.md` · Mav (koine IR) + Nico
-  (projection→IR mapping) — route mind's projection through koine's IR so culture compiles to any client.
-  **Nico-side spec done** (artifact→IR-resource mapping: Agent→Agent, Skill→Skill, grant→Permissions; 3 open
-  IR-semantics questions flagged for Mav). **The C-phase bottleneck** — C1/C2/C3 execution all wait on it.
-  Done-when: corpus → IR → ≥2 dialects, round-trip clean; claude-code path unchanged vs the proven render.
+- **B4 — culture→IR bridge** (dep: B1 ✓, A5 ✓) · `active/B4-culture-ir-bridge.md` · Mav (koine IR) + Nico
+  (mapping) — route mind's projection through koine's IR. **Core bridge PROVEN** (`render/ir.py` emitter;
+  mind→IR→claude-code byte-equal to the proven render across all 18 artifacts; koine round-trip clean for
+  claude; verified). **Remaining (Mav-lead):** 2nd-dialect parity + IR→dialect→IR round-trip across all
+  adapters; the 3 IR-architecture decisions (Skill-mapping, grants-in-body, render.ir seam) await live-Mav.
+  Unblocks C1/C2/C3 once the multi-dialect round-trip lands.
 
 ## Backlog (pending)
 

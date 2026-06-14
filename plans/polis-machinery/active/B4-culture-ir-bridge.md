@@ -1,6 +1,34 @@
 # B4 — culture→IR bridge
 
-**State:** ready · **Lead:** Mav (koine IR engineering) + Nico (the projection→IR mapping semantics) · **Phase:** B (machinery) · **Dep:** B1 ✓, A5 ✓
+**State:** active (core bridge proven; 2nd-dialect + round-trip = follow-on) · **Lead:** Mav (koine IR) + Nico (mapping) · **Phase:** B (machinery) · **Dep:** B1 ✓, A5 ✓
+
+## Core bridge PROVEN (Mav agent → verified + integrated by Nico, 2026-06-14, `07d4b94`/`3f70556`)
+
+The mind→IR emitter exists and the IR is **reconstruction-sufficient** (lossless). Verified independently by
+Nico (the parity gate is objective):
+
+- `render/ir.py` (`DecoratedDoc → koine IR Agent/Skill`) + `resolve.emit_ir()` + `emit_ir.py` CLI. The
+  `provenance_header` (GENERATED law) factored to one home, shared with `render/claude_code.py` —
+  byte-identical (`test_reader_axis` determinism PASS).
+- **PARITY (the key gate, re-verified):** mind → IR → claude-code reconstruction is **byte-equal to the
+  proven direct render** — all 11 agents + 7 skills, diff empty (`test_ir_bridge`). The bridge does NOT
+  regress the render proven for #3.
+- **koine round-trip clean for claude:** `read(write(IR))` recovers name/description/body byte-identical;
+  IR `validateIR` true; koine's real `claudeAdapter.write` → 18 files, 0 warnings.
+- mind suite 11/11 (+`test_ir_bridge`); `verify.py` PASS (R1+R2+R3).
+
+**Mav's 3 architecture decisions (flag for live-Mav to bless):** (1) Skill→IR `Skill` (trigger carried via
+`manifest.overrides.<adapter>.skill_triggers`, not a schema field); (2) scope-grants → **NOT** the koine
+`Permissions` resource (that's tool-matcher settings) — grants ride as composed `Agent.body` prose (as the
+proven render does); (3) `render.ir` sibling, mind speaks IR natively. **Sound call worth live-Mav's eye:**
+the agent did NOT fork koine's claude adapter to byte-match mind's hand-rolled YAML (koine normalizes:
+name-from-filename, emoji-escape, no trigger field) — it proved IR *reconstruction-sufficiency* instead, so
+koine keeps "dialects not doctrine" + its round-trip contract. "Parity" therefore = lossless IR, not
+adapter-byte-identity.
+
+**Remaining for the full done-when (Mav-lead):** 2nd-dialect parity (codex/cursor) + IR→dialect→IR
+round-trip-clean across all 18 artifacts (proven for claude only); and whether claude-code should surface
+`trigger:` (koine's claude adapter currently drops the manifest override — an adapter enhancement).
 
 ## Intent
 
