@@ -50,6 +50,7 @@ from __future__ import annotations
 import dataclasses
 import difflib
 import pathlib
+import re
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
@@ -182,19 +183,24 @@ def plan_target(target: pathlib.Path, reader: str) -> dict:
     if disp_dir.is_dir():
         for path in sorted(disp_dir.glob("*.md")):
             name = path.stem
+            # The match-slug strips a leading ordering prefix (`NN-`/`NN_`) -- the
+            # real brownfield convention (Oikos dispositions are `01-principal-agency.md`
+            # etc.). The target file keeps its name/identity; the mind-cell match +
+            # citation use the bare slug (`principal-agency`).
+            match_slug = re.sub(r"^\d+[-_]", "", name)
             body = path.read_text(encoding="utf-8")
             # strip front-matter if present (reuse the cell parser's split)
             if body.startswith("---") and len(body.split("---", 2)) >= 3:
                 body = body.split("---", 2)[2]
-            matched = name in corpus
+            matched = match_slug in corpus
             delta = _local_delta(body, name)
-            sim = _similarity(_canonical_prose(body, name), _mind_prose(name)) if matched else 0.0
+            sim = _similarity(_canonical_prose(body, name), _mind_prose(match_slug)) if matched else 0.0
             if matched and delta:
-                outcome, mind_slug = "FORK", name
-                text = reconciled_disposition_text(name, name, delta)
+                outcome, mind_slug = "FORK", match_slug
+                text = reconciled_disposition_text(name, match_slug, delta)
             elif matched:
-                outcome, mind_slug = "ALIGNED", name
-                text = reconciled_disposition_text(name, name, "")
+                outcome, mind_slug = "ALIGNED", match_slug
+                text = reconciled_disposition_text(name, match_slug, "")
             else:
                 outcome, mind_slug, text = "LOCAL", None, ""
             recs.append(Reconciliation(name, outcome, mind_slug, sim,

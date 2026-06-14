@@ -58,7 +58,10 @@ def _build_brownfield(target: pathlib.Path) -> dict[str, str]:
     in-flight (non-culture) files."""
     (target / ".agents" / "disposition").mkdir(parents=True)
     (target / "src").mkdir(parents=True)
-    (target / ".agents" / "disposition" / "principal-agency.md").write_text(
+    # NN- ordering prefix = the real brownfield convention (Oikos: 01-principal-agency.md);
+    # exercises the match-slug prefix-stripping so a forked disposition is reconciled, not
+    # mis-classified LOCAL. (Regression guard: an unprefixed name would have hidden the gap.)
+    (target / ".agents" / "disposition" / "01-principal-agency.md").write_text(
         FORKED_DISPOSITION, encoding="utf-8")
     (target / ".agents" / "disposition" / "widget-telemetry-discipline.md").write_text(
         LOCAL_DISPOSITION, encoding="utf-8")
@@ -86,7 +89,7 @@ def main() -> int:
         target = pathlib.Path(td) / "acme-widget"
         target.mkdir()
         pre = _build_brownfield(target)
-        forked = target / ".agents" / "disposition" / "principal-agency.md"
+        forked = target / ".agents" / "disposition" / "01-principal-agency.md"
         local = target / ".agents" / "disposition" / "widget-telemetry-discipline.md"
         pre_local_sha = _sha(local)
 
@@ -102,8 +105,8 @@ def main() -> int:
 
         # The plan classifies fork vs local correctly.
         by_name = {r.name: r for r in plan["reconciliations"]}
-        if by_name.get("principal-agency") is None or by_name["principal-agency"].outcome != "FORK":
-            fails.append("PLAN-CLASS: principal-agency not classified FORK")
+        if by_name.get("01-principal-agency") is None or by_name["01-principal-agency"].outcome != "FORK":
+            fails.append("PLAN-CLASS: 01-principal-agency not classified FORK (prefix-strip match)")
         if by_name.get("widget-telemetry-discipline") is None or \
                 by_name["widget-telemetry-discipline"].outcome != "LOCAL":
             fails.append("PLAN-CLASS: widget-telemetry-discipline not classified LOCAL")
