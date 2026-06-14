@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 141 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 143 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Principles
 
@@ -101,9 +101,11 @@ _declarative what-is — referenced/known._
 - **operator-relation** — The Operator is the society's sovereign from without — named by the constitution yet not a citizen of it: the polis is founded to serve him, founders build within his intent and escalate only a genuine-fork, and the setting of intent and final authority are reserved to him.
 - **palimpsest** — An artifact bearing the visible strata of its own superseded states — an abandoned name, a narrated removal, changelog residue ("(resolved)"/"previously"/"now"/"amended-by") ghosting through the current text; corpus rot, because a fresh reader must read through history they did not ask for.
 - **pretransform-pass-shrinks-inference-surface** — Most of what an agent does in a transformation is mechanical bookkeeping disguised as inference — run a deterministic pre-transform pass (codemod, scaffolder, schema-gen) between setup and dispatch, so the agent receives only the small inference-shaped residue.
+- **pulse** — The clock-organ of an ambient person — a self-leased loop that runs whether or not anyone is looking (wake → observe → act → reflect → rest, on cadence); it drives the senses, fires the Dreamer, and is the organ that realizes the self-clocked differentia. The heartbeat that makes a person a life that runs, not a tool that waits.
 - **pure-leaf-deterministic-engine** — Concentrate all orchestration in one deterministic engine and make the pluggable parts pure, stateless leaves — same input, same output, state lives outside them — so the leaves are trivially testable and a third party can author one against a small contract.
 - **scope-grant** — A grant `grant @<agent> [[<exemplar>]] on <path>` binds a universal exemplar to an agent within a scope; it is an accident layered on the archetype, lives in the scope's AGENTS.md, and never enters the commons cell.
 - **scope-precedence-merge-algebra** — Layered scopes resolve closer-wins, but the merge is per-type, not a global hand-wave — each resource kind declares its own rule (concatenate, union-by-name, deny-overrides-allow, last-key-wins) so precedence is an algebra, not one blanket policy.
+- **senses** — The afferent organ of an ambient person — the family of sources it perceives (messages, calendar, world-state, its own substrate and inner life); each sense has a live face (perceive now) and a cadence face (ambient attention that becomes episodic memory). Perception precedes action and memory: a person cannot act on, or remember, what it cannot perceive.
 - **subject-binding** — "Operator" in the universal commons, resolves to a real person at the instance; the name and lived relationship are accidents filled instance creation or learned at runtime.
 
 ## Processes
