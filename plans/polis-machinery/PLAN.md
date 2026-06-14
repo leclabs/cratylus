@@ -4,6 +4,16 @@ Phase B · operationalize projection. Status mirror; task files live under state
 
 ## Frontier (ready)
 
+- **B7 — identity-organ verbatim-render seam** (dep: B2 ✓) · `ready/B7-identity-organ-verbatim-seam.md` ·
+  Nico (cell-side, author-first) + Mav (machinery) — *finding #2.* Both forks decided (composition +
+  cell-declared `render: verbatim`). Nico authors the cell-side first (factor the identity protocol into
+  `[[identity-memory-stack]]`'s body + mark `render: verbatim`); Mav builds the render path against it.
+  Done-when: composer resolves the identity block from the cell (no `_identity_block()` literal), R1
+  covers the organs, defs round-trip.
+- **B8 — R3 routing-manifest** (dep: B2 ✓) · `ready/B8-r3-routing-manifest.md` · Mav (emit + gate) +
+  Nico (routing unit) — mechanize B2's R3. Unit decided: the conceptualize fragment, keyed by
+  content-digest. `resolve`/`exemplify` emit a manifest; `gate_reconstruct()` gates coverage against it.
+  Done-when: an unrouted fragment FAILS, full coverage PASSES — R3 is a gate, not a NOTE.
 - **B5 — continuity-hooks** (dep: —) — fire dream / praxis advance / agent-continuity at git workflow
   boundaries (post-commit), inspired by graphify's hook. *Operator #4.* Dep-free, Mav's. Done-when: a
   commit triggers the configured continuity step; opt-in per repo.
