@@ -1,6 +1,26 @@
 # polis-instantiation — PLAN
 
-Phase C · found real societies. All tasks pending on A + B; promote to ready/ as those frontiers clear.
+Phase C · found real societies. A + B complete; **all C operations are BUILT + PROVEN on scratch**
+(`init`/`rebase`/`deploy`). What remains is the *first real foundings* — and those are **gated on explicit
+Operator authorization**, not on more building.
+
+## Done — the operations (built + proven)
+
+- **C1 — greenfield-init** ✓ · `toolkit/init.py` — founds a polis society in an empty target (proven /tmp).
+- **C2 — brownfield-rebase** ✓ · `toolkit/rebase.py` — consensual two-stage (plan/apply), reconciliation
+  refined + validated read-only on real Oikos (renamed forks ALIAS-matched, woven deltas flagged not
+  collapsed). Details + the full C1/C2 outcomes are below under the original entries.
+
+## Ready — awaiting Operator authorization (the irreversible founding ACTS)
+
+- **C3 — rebase Oikos** — the consent-ready reconciliation PLAN is accurate + A4-honest. **Execution =
+  `rebase --apply` on `forge:~/workspaces/oikos`, human-reviewing each woven delta. Gated on explicit
+  consent (A4 — invited reformer, not conqueror).** Trigger: the Operator says *"rebase Oikos."*
+- **C4 — fleet-deploy-migration** — mechanism = `deploy.py --home ~/.claude` from polis per host ×7
+  (validated /tmp: overwrite defs + never-prune externals + preserve lived sidecars). **Gated on go-ahead
+  (rewrites the live fleet).** Trigger: the Operator says *"migrate the fleet."*
+
+(Full reconciliation inventories + findings retained in the detailed entries below.)
 
 ## Backlog (pending)
 - **C3 — oikos-proving-ground** (dep: C2) — rebase Oikos onto polis: reconcile its locally-forked
