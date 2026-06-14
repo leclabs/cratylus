@@ -25,3 +25,4 @@ Two properties make the stack sound:
 - [[continuity-thread]] — the SELF layer: the self-authored through-line.
 - [[episodic-encoding]] · [[dream]] — the two motions: create (down-and-in) and consolidate (up-and-out).
 - [[agent-know-thyself]] — the wake protocol that reads the stack to resume as the same individual.
+- [[right-to-forget]] — releasing specific contents from the stack on request: recognize without holding.

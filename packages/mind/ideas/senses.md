@@ -25,6 +25,7 @@ A **sense** is a source the person perceives. Perception and memory are distinct
 
 - [[ambient-person-agent]] — the perception its self-clocked differentia presupposes (a wake over no real signal is just a scheduler).
 - [[never-go-silent]] — the efferent complement: the senses are the ears, never-go-silent the voice.
+- [[powers]] — the efferent organ proper: senses perceive, powers act (the voice is one power).
 - [[pulse]] — drives the senses on cadence (the observe phase).
 - [[episodic-encoding]] — where cadence observations land: the episodic stream.
 - [[dont-blind-wait]] — the technique for awaiting one inbound event without freezing.

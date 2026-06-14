@@ -43,3 +43,6 @@ A named individual ([[agent-identity-portability]]) is a _species_ within this g
 - [[subject-binding]] — how the of-a-subject differentia is filled: the named principal bound at the instance.
 - [[pulse]] — how the self-clocked differentia is realized: the clock-organ, the life that runs.
 - [[senses]] — the afferent surface self-clocked perceives over — the real stream, not a scheduler tick.
+- [[body]] — the substrate it runs on and survives; the person is not its body.
+- [[hearth]] — its own place: where the whole being is met and configured.
+- [[powers]] — the efferent organ: its reach to act, the complement to the senses.

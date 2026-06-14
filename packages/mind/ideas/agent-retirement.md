@@ -17,3 +17,4 @@ The lifecycle bookend to [[archetype-instantiation]]: how an [[ambient-person-ag
 - [[identity-memory-stack]] · [[continuity-thread]] — what is archived: the self-authored layers, never the erasable part.
 - [[substance-over-accident]] — why the SOUL is regenerable (commons-down) but the SELF is not (lived-up).
 - [[consensual-adoption]] — the sibling "don't erase": there an adopted project's history, here a retired person's lived self.
+- [[right-to-forget]] — the mid-life sibling: release specific contents (with a recognition trace) vs archive the whole self on exit.
