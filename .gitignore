@@ -6,6 +6,7 @@ dist/
 *.log
 .env
 .env.local
-.agentir/local/
+.koine/local/
+.claude/worktrees/
 __pycache__/
 *.pyc
