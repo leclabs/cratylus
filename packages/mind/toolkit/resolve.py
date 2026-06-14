@@ -51,6 +51,46 @@ def emit(slug: str, reader: str = "strong-llm",
     return artifact.text, artifact.body_hash, composed.body
 
 
+def emit_ir_resource(slug: str, reader: str = "strong-llm-lean") -> dict:
+    """compose -> decorate -> render.ir: one cell -> one koine IR resource dict
+    (the B4 culture->IR bridge). The harness is fixed 'claude-code' because the
+    IR carries the SAME composed body the claude-code render hashes (parity
+    anchor) -- the IR is the dialect-neutral waypoint, not a third harness form.
+    Returns the per-resource dict (tagged with its `_collection`); resolve_ir
+    aggregates these into the top-level IR container."""
+    from render import ir as render_ir  # local import: the koine-IR dialect seam
+    composed = compose.compose(slug, reader, "claude-code")
+    decorated = decorate.decorate(composed)
+    return render_ir.render(decorated)
+
+
+def emit_ir(reader: str = "strong-llm-lean", targets: tuple[str, ...] = ("claude",),
+            scope: str = "user") -> dict:
+    """The whole corpus -> a single schema-valid koine IR document (manifest +
+    agents + skills collections). The B4 emitter: mind speaks IR natively, then
+    koine's existing adapters compile it to any client. Skill `/trigger`
+    affordances ride in manifest.overrides[<target>].skill_triggers (carrier
+    keys prefixed `_` are stripped here -- the schema never sees them)."""
+    agents: list[dict] = []
+    skills: list[dict] = []
+    triggers: dict[str, str] = {}
+    for slug in cells.slugs_of_kind("agent"):
+        res = emit_ir_resource(slug, reader)
+        res.pop("_collection")
+        agents.append(res)
+    for slug in cells.slugs_of_kind("skill"):
+        res = emit_ir_resource(slug, reader)
+        res.pop("_collection")
+        trig = res.pop("_trigger", None)
+        if trig is not None:
+            triggers[res["name"]] = trig
+        skills.append(res)
+    manifest: dict = {"koine": 1, "scope": scope, "targets": list(targets)}
+    if triggers:
+        manifest["overrides"] = {t: {"skill_triggers": triggers} for t in targets}
+    return {"manifest": manifest, "agents": agents, "skills": skills}
+
+
 # Drift read-back helpers now live in render.claude_code (the harness owns its
 # format's inverse); re-exported so resolve.main()/tests keep one import surface.
 recorded_hash = render_cc.recorded_hash

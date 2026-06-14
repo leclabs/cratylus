@@ -29,6 +29,21 @@ def body_hash(body_text: str) -> str:
     return hashlib.sha256(body_text.encode("utf-8")).hexdigest()[:16]
 
 
+def provenance_header(name: str, profile: str, bh: str) -> str:
+    """The GENERATED provenance comment block ([[generated-artifact-provenance]] /
+    [[regenerate-without-clobbering]]) -- the one home for the header law, shared
+    by every dialect renderer (claude_code, ir) so the sentinel + content-hash
+    line read identically wherever a mind artifact lands. Returns the 4-line
+    comment block (no trailing newline)."""
+    return (
+        f"<!-- GENERATED from packages/mind/ideas/{name}.md by projecting its "
+        f"composed cells at the recorded reader profile.\n"
+        f"     profile: {profile}\n"
+        f"     Edit the cells and regenerate; do not hand-edit.\n"
+        f"     content-hash: sha256:{bh} (regenerate-without-clobbering ancestor) -->"
+    )
+
+
 def render(decorated: DecoratedDoc) -> RenderedArtifact:
     composed = decorated.composed
     body_text = composed.body
@@ -41,13 +56,7 @@ def render(decorated: DecoratedDoc) -> RenderedArtifact:
         lines.append(f"{key}: {val}")
     lines.append("---")
     lines.append("")
-    lines.append(
-        f"<!-- GENERATED from packages/mind/ideas/{composed.name}.md by projecting its "
-        f"composed cells at the recorded reader profile."
-    )
-    lines.append(f"     profile: {profile}")
-    lines.append("     Edit the cells and regenerate; do not hand-edit.")
-    lines.append(f"     content-hash: sha256:{bh} (regenerate-without-clobbering ancestor) -->")
+    lines.append(provenance_header(composed.name, profile, bh))
     lines.append("")
     lines.append(body_text.rstrip("\n"))
     lines.append("")
