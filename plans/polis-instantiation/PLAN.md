@@ -14,6 +14,23 @@ Phase C · found real societies. All tasks pending on A + B; promote to ready/ a
   dispositions (`principal-agency`, `semantic-whole-over-syntactic-substrate`, …) from copies to
   projections of mind's corpus. Co-developed with Mav. Done-when: Oikos draws its culture from polis,
   not a fork. *This is `cite-dont-copy` at fleet scale — the thesis demonstrated.*
+
+  > **Reconciliation map + structure (Nico, 2026-06-14 — read live from `forge:~/workspaces/oikos`).**
+  > Oikos carries **5 dispositions** in `.agents/context/disposition/`, all with a canonical mind cell:
+  > `00-definitions-over-defaults`→`[[definitions-over-defaults]]` · `01-principal-agency`→`[[principal-agency]]`
+  > · `02-greenfield-clean-slate`→`[[clean-slate]]` · `03-adopt-standards-commons`→`[[adopt-the-commons]]` ·
+  > `04-semantic-whole-over-syntactic-substrate`→`[[semantic-whole-over-syntactic-substrate]]`.
+  > **The key finding: these are NOT verbatim copies — they're mind's canonical concept SPECIALIZED to
+  > Oikos's context** (01 adds greenfield-dev framing + the tripwire + north-star refs; 04 adds a heavy
+  > UI/entity-surface specialization — "entity-situated, not admin-flat"). So the reconciliation is **not a
+  > wholesale swap (copy → projection)** but: **factor each fork into (projected mind core) + (Oikos-local
+  > delta)** — cite-don't-copy *with a delta*, the corpus's own composite pattern. C3's real shape: Oikos
+  > references `[[mind-cell]]` for the canonical core and keeps only its genuine Oikos-specialization as a
+  > local delta (the UI/greenfield specifics). Vindicates "mind is the portable commons; Oikos adopted it"
+  > — C3 makes the adoption *explicit* (project the core, localize the delta). Also present:
+  > `packages/agent-{archetypes,identity,provisioning}` + `.agents/context/` (north-star, etc.) — further
+  > reconciliation surface to map when C3 activates. **Gated on B4 (IR bridge, so Oikos can consume mind's
+  > projection) + C2 (brownfield-rebase).** The map above is the prep; execution waits on those.
 - **C4 — fleet-deploy-migration** (dep: B3) — move agent/skill deployment from `playground/packages/mind`
   to polis. **Must RECONCILE against current deployed fleet state** (Mav steward: 11 defs + 7 skills,
   corpus `8532032`, profile strong-llm-lean), not re-emit fresh — else double-deploy or orphaned
