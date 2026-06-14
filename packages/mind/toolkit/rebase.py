@@ -21,25 +21,49 @@ trespass without it. Two acts express that consent operationally:
 
 The reform touches only the **culture surface** ([[substance-over-accident]]):
 `.claude/` (projected culture) and `.agents/disposition/` (the target's
-dispositions). In-flight, non-culture content is preserved. The three
-reconciliation outcomes for a target disposition ([[cite-dont-copy]]):
+dispositions). In-flight, non-culture content is preserved. The reconciliation
+outcomes for a target disposition ([[cite-dont-copy]]):
 
+  - ALIGNED  -- a target disposition that matches a mind cell and is a near-verbatim
+                restatement of the canonical with NOTHING material beyond it.
+                Reconciles to a pure `[[slug]]` reference (the restatement safely
+                collapses into a citation -- nothing local is lost).
   - FORK     -- a target disposition that carries a mind cell's canonical concept
-                PLUS a genuine local specialization. Reconciles to: reference the
-                mind cell `[[slug]]` for the canonical core + keep ONLY the local
-                delta. Not a wholesale replace (the delta is real local work) and
-                not left alone (the core is now cited, not restated).
-  - ALIGNED  -- a target disposition that matches a mind cell with no local delta
-                beyond the canonical concept. Reconciles to a pure `[[slug]]`
-                reference (the restatement collapses into a citation).
-  - LOCAL    -- a target-specific disposition with no mind counterpart. Stays
-                local, untouched (no forced mapping onto the commons).
+                PLUS a genuine local specialization. The specialization comes in two
+                shapes, and the difference is the whole point of this reconciliation:
+                  * MARKED delta -- a `## Local delta`/`## specialization` section.
+                    The canonical core collapses into `[[slug]]`; the marked section
+                    is extracted and preserved verbatim (auto-reconcilable).
+                  * WOVEN delta -- the specialization is braided through the prose
+                    with NO marker (the real brownfield shape: Oikos weaves its
+                    framing into every paragraph). There is no clean line to cut, so
+                    a woven FORK is FLAGGED, never auto-collapsed -- collapsing it to
+                    a bare citation would silently DESTROY the local work, which is
+                    exactly the A4 conqueror failure this tool exists to prevent.
+                    Apply preserves the whole disposition pending human review (or,
+                    with --force, the Operator may opt into the lossy collapse).
+  - LOCAL    -- a target-specific disposition with no mind counterpart (not even an
+                alias). Stays local, untouched (no forced mapping onto the commons).
+
+Matching is two-tier ([[cite-dont-copy]] needs the right cell to cite):
+  - EXACT  -- the match-slug (stem minus a leading `NN-`/`NN_`) is a corpus slug.
+  - ALIAS  -- no exact slug, but the disposition is a *renamed fork* of a cell: same
+              concept, different name (Oikos `greenfield-clean-slate` IS a fork of
+              `[[clean-slate]]`). Detected by a concept-identity score (token-set /
+              jaccard overlap), best above the alias threshold.
+  Below the alias threshold -> LOCAL (genuinely no counterpart).
 
 Usage:
   rebase.py <target> --plan            read + emit the rebase plan (read-only)
   rebase.py <target> [--apply]         execute the rebase (apply is the default)
     [--reader R]                       reader profile (default strong-llm-lean)
-    [--force]                          overwrite an existing founding AGENTS.md
+    [--force]                          overwrite an existing founding AGENTS.md;
+                                       AND write the banner+verbatim reconciliation
+                                       for a flagged WOVEN fork (default: woven
+                                       forks are left BYTE-FOR-BYTE untouched,
+                                       flagged for human extraction). Even under
+                                       --force the woven delta is preserved, never
+                                       destroyed -- the banner records it on disk.
 
 The target corpus is always read from the mind package (cells.ROOT anchored to
 this file), independent of cwd. Like init, rebase lays the SOUL (generated defs),
@@ -80,13 +104,97 @@ def _find_disposition_rel(target: pathlib.Path) -> tuple[str, ...]:
 
 # A target disposition "forks" a mind cell when it both (a) names/matches a mind
 # cell AND (b) carries content beyond the canonical concept (a local delta). We
-# detect the canonical-vs-local split by section: a section whose heading marks
-# it local ("local", "delta", "specialization", "oikos", or the target's name)
-# is the delta; everything else is the restated canonical core that collapses
-# into the `[[slug]]` citation. The match itself is by slug name (the densest,
-# least-rigged signal: a disposition named `principal-agency` is about
-# [[principal-agency]]); content similarity corroborates a FORK vs an ALIGNED.
+# detect a MARKED canonical-vs-local split by section: a section whose heading
+# marks it local ("local", "delta", "specialization", or the target's name) is the
+# delta; everything else is the restated canonical core. But the real brownfield
+# shape is a WOVEN delta with no marker, so the marked split is not the only signal
+# (see below).
 LOCAL_HEADING_MARKERS = ("local", "delta", "specialization", "specialisation")
+
+# --- Thresholds, calibrated empirically against the real Oikos dispositions
+#     (.agents/context/disposition/, 5 dispositions) -- see module docstring and
+#     the report. Both are deliberately conservative: when in doubt, FLAG/keep,
+#     never silently collapse (A4 -- consensual-adoption forbids destroying local
+#     work without consent).
+#
+#  ALIAS (concept-identity, on the combined score below). A renamed fork shares a
+#  cell's *concept* under a different name. Raw `difflib` ratio is a poor identity
+#  signal here -- it is dominated by length mismatch and woven prose (the correct
+#  alias clean-slate scored only 0.10 by ratio). Token-set (jaccard) overlap is
+#  far cleaner: on the real Oikos the two true aliases score 0.50 / 0.55 jaccard
+#  while the nearest wrong candidate is 0.195 -- a 2.5x+ margin. 0.25 sits in that
+#  gap with room on both sides.
+ALIAS_THRESHOLD = 0.25
+#
+#  ALIGNED requires BOTH conditions (the contract: "similarity >= ALIGNED AND no
+#  material beyond the canonical"). Neither alone is sufficient:
+#   - SIMILARITY (canonical-prose-vs-mind-body `difflib` ratio) >= ALIGNED_THRESHOLD
+#     -- the restatement closely tracks the canonical. On the real Oikos every
+#     matched disposition weaves heavy local framing and scores 0.05-0.30 here:
+#     none is genuinely aligned. A near-copy must clear a high bar.
+#   - EXTRA-MATERIAL (fraction of the target's content tokens absent from the mind
+#     cell) <= EXTRA_MATERIAL_THRESHOLD -- the target says nothing material beyond
+#     the canonical. This is the decisive second gate: a disposition can restate
+#     the canonical VERBATIM (ratio ~0.9) and STILL append a local specialization;
+#     the ratio is dominated by the verbatim part and misses the addition, but the
+#     extra-material fraction catches it -> FORK (woven), not a lossy ALIGNED
+#     collapse. Set just above token-level noise (citations, re-titling); a real
+#     woven addition like a release-train bound lands well above it.
+ALIGNED_THRESHOLD = 0.90
+EXTRA_MATERIAL_THRESHOLD = 0.08
+
+
+def _tokens(s: str) -> set[str]:
+    """Content word-set of a body (>=4-char lowercase alpha tokens) -- the basis
+    for the concept-identity (jaccard) measure. Short tokens and punctuation drop
+    out so the signal is the substantive vocabulary, not the connective tissue."""
+    return set(re.findall(r"[a-z]{4,}", s.lower()))
+
+
+def _jaccard(a: str, b: str) -> float:
+    A, B = _tokens(a), _tokens(b)
+    if not A or not B:
+        return 0.0
+    return len(A & B) / len(A | B)
+
+
+def _extra_material(target: str, mind: str) -> float:
+    """Fraction of the TARGET's content tokens that are absent from the mind cell
+    -- how much the target says BEYOND the canonical. Directional (unlike jaccard):
+    it asks only "what does the target add?", ignoring canonical vocabulary the
+    target happens to drop. ~0 means a pure restatement; a woven local addition
+    (release-train bounds, oikos-specific framing) pushes it well up."""
+    T, M = _tokens(target), _tokens(mind)
+    if not T:
+        return 0.0
+    return len(T - M) / len(T)
+
+
+def _concept_identity(target_body: str, mind_slug: str) -> float:
+    """How strongly the target disposition is *the same concept* as a mind cell,
+    independent of its name -- the signal that recovers a renamed fork (ALIAS).
+
+    Token-set (jaccard) overlap, NOT raw `difflib` ratio. The ratio is dominated
+    by length mismatch and woven prose: the true alias `clean-slate` scored only
+    0.10 by ratio (indistinguishable from noise), but 0.50 by jaccard. On the real
+    Oikos the two true aliases score 0.50 / 0.55 jaccard while every wrong
+    candidate is <= 0.20 and a genuinely-local disposition is ~0.03 -- a clean,
+    wide separation around the 0.25 threshold. (A title-similarity arm was tried
+    and dropped: it misfires on short slug-like titles, manufacturing false
+    aliases for genuinely-local dispositions; jaccard alone separates cleanly.)"""
+    return _jaccard(target_body, _mind_prose(mind_slug))
+
+
+def _best_alias(target_body: str, corpus: set[str]) -> tuple[str | None, float]:
+    """The corpus cell whose concept the target most strongly shares, and that
+    score. Used only when there is no exact slug match -- to recover a *renamed*
+    fork (an ALIAS) rather than mis-calling it LOCAL."""
+    best_slug, best_score = None, 0.0
+    for slug in corpus:
+        score = _concept_identity(target_body, slug)
+        if score > best_score:
+            best_slug, best_score = slug, score
+    return best_slug, best_score
 
 
 @dataclasses.dataclass
@@ -96,9 +204,18 @@ class Reconciliation:
     outcome: str                   # FORK | ALIGNED | LOCAL
     mind_slug: str | None          # the canonical mind cell it reconciles to (FORK/ALIGNED)
     similarity: float              # content overlap with the mind cell's prose (0..1)
-    local_delta: str               # the preserved local specialization (FORK; '' otherwise)
+    local_delta: str               # the MARKED local specialization (FORK-marked; '' otherwise)
     source_path: pathlib.Path      # the target file read
-    reconciled_text: str           # the text apply will write (FORK/ALIGNED); '' for LOCAL
+    reconciled_text: str           # the text apply will write; '' when nothing is rewritten
+    match_kind: str = "EXACT"      # EXACT | ALIAS | NONE -- how mind_slug was found
+    delta_kind: str = "NONE"       # NONE | MARKED | WOVEN -- the shape of the specialization
+    identity: float = 0.0          # concept-identity score (the alias/match strength)
+
+    @property
+    def woven(self) -> bool:
+        """A FORK whose specialization is braided through the prose with no marked
+        section -- the one that must be FLAGGED, never auto-collapsed."""
+        return self.outcome == "FORK" and self.delta_kind == "WOVEN"
 
 
 def _split_sections(body: str) -> list[tuple[str, str]]:
@@ -177,6 +294,80 @@ def reconciled_disposition_text(name: str, mind_slug: str, local_delta: str) -> 
     return core
 
 
+def flagged_woven_text(name: str, mind_slug: str, original_body: str) -> str:
+    """Apply output for a WOVEN fork: do NOT collapse. Preserve the whole
+    disposition verbatim, prepended with a review banner that records the
+    canonical cell it specializes and the explicit decision pending. This is the
+    A4-safe default -- the local work survives the rebase intact; a human decides
+    how to extract it ([[cite-dont-copy]]) rather than the tool guessing and
+    silently destroying the specialization."""
+    banner = (
+        f"<!-- REBASE: WOVEN-DELTA. This disposition specializes [[{mind_slug}]] "
+        f"beyond the canonical, with its specialization woven through the prose "
+        f"(no marked '## Local delta' section to extract cleanly). It was NOT "
+        f"auto-collapsed to a bare citation -- doing so would silently destroy the "
+        f"local work (A4 / consensual-adoption). Review and extract the delta by "
+        f"hand: cite [[{mind_slug}]] for the canonical core, keep only what is "
+        f"genuinely local. Preserved verbatim below pending that review. -->\n\n"
+    )
+    return banner + original_body.strip() + "\n"
+
+
+def _classify(name: str, body: str, path: pathlib.Path,
+              corpus: set[str]) -> Reconciliation:
+    """Classify one target disposition. Two decisions, in order:
+
+      1. MATCH -- which mind cell (if any) does this carry the concept of?
+         EXACT match-slug in corpus; else the strongest ALIAS above threshold;
+         else NONE (-> LOCAL).
+      2. CLASSIFY a matched/aliased disposition by how much it exceeds the cell:
+         a MARKED `## delta` section -> FORK-marked (extract the section);
+         else a near-verbatim restatement with nothing material beyond it
+         (ratio >= ALIGNED_THRESHOLD AND extra-material <= EXTRA_MATERIAL_THRESHOLD)
+         -> ALIGNED; else it says more than the canonical (woven extra material)
+         -> FORK-woven (FLAGGED, never auto-collapsed)."""
+    match_slug = re.sub(r"^\d+[-_]", "", name)
+    # 1. MATCH
+    if match_slug in corpus:
+        mind_slug, match_kind = match_slug, "EXACT"
+        identity = _concept_identity(body, mind_slug)
+    else:
+        cand, score = _best_alias(body, corpus)
+        if cand is not None and score >= ALIAS_THRESHOLD:
+            mind_slug, match_kind, identity = cand, "ALIAS", score
+        else:
+            return Reconciliation(name, "LOCAL", None, 0.0, "", path, "",
+                                  match_kind="NONE", delta_kind="NONE",
+                                  identity=score)
+
+    # 2. CLASSIFY
+    marked = _local_delta(body, name)
+    mind_body = _mind_prose(mind_slug)
+    sim = _similarity(_canonical_prose(body, name), mind_body)
+    extra = _extra_material(body, mind_body)
+    if marked:
+        # A clean, human-marked seam: collapse the core, extract the section.
+        return Reconciliation(
+            name, "FORK", mind_slug, sim, marked, path,
+            reconciled_disposition_text(name, mind_slug, marked),
+            match_kind=match_kind, delta_kind="MARKED", identity=identity)
+    if sim >= ALIGNED_THRESHOLD and extra <= EXTRA_MATERIAL_THRESHOLD:
+        # Near-verbatim restatement AND nothing material beyond the canonical:
+        # the collapse to a bare citation is lossless. BOTH gates required -- a
+        # high ratio alone can hide a woven addition the ratio is too coarse to see.
+        return Reconciliation(
+            name, "ALIGNED", mind_slug, sim, "", path,
+            reconciled_disposition_text(name, mind_slug, ""),
+            match_kind=match_kind, delta_kind="NONE", identity=identity)
+    # Matched, but the target says materially MORE than the canonical and there is
+    # no marked seam to cut -> a WOVEN fork. FLAG it; preserve it whole. Never
+    # auto-collapse (that is the silent-destruction failure A4 forbids).
+    return Reconciliation(
+        name, "FORK", mind_slug, sim, "", path,
+        flagged_woven_text(name, mind_slug, body),
+        match_kind=match_kind, delta_kind="WOVEN", identity=identity)
+
+
 def plan_target(target: pathlib.Path, reader: str) -> dict:
     """Read the target read-only and produce the rebase PLAN: the culture that
     will project, the disposition reconciliations, and the preserved in-flight
@@ -196,28 +387,15 @@ def plan_target(target: pathlib.Path, reader: str) -> dict:
     if disp_dir.is_dir():
         for path in sorted(disp_dir.glob("*.md")):
             name = path.stem
-            # The match-slug strips a leading ordering prefix (`NN-`/`NN_`) -- the
-            # real brownfield convention (Oikos dispositions are `01-principal-agency.md`
-            # etc.). The target file keeps its name/identity; the mind-cell match +
-            # citation use the bare slug (`principal-agency`).
-            match_slug = re.sub(r"^\d+[-_]", "", name)
             body = path.read_text(encoding="utf-8")
             # strip front-matter if present (reuse the cell parser's split)
             if body.startswith("---") and len(body.split("---", 2)) >= 3:
                 body = body.split("---", 2)[2]
-            matched = match_slug in corpus
-            delta = _local_delta(body, name)
-            sim = _similarity(_canonical_prose(body, name), _mind_prose(match_slug)) if matched else 0.0
-            if matched and delta:
-                outcome, mind_slug = "FORK", match_slug
-                text = reconciled_disposition_text(name, match_slug, delta)
-            elif matched:
-                outcome, mind_slug = "ALIGNED", match_slug
-                text = reconciled_disposition_text(name, match_slug, "")
-            else:
-                outcome, mind_slug, text = "LOCAL", None, ""
-            recs.append(Reconciliation(name, outcome, mind_slug, sim,
-                                       delta, path, text))
+            # _classify strips a leading ordering prefix (`NN-`/`NN_`) for the
+            # match-slug -- the real brownfield convention (Oikos dispositions are
+            # `01-principal-agency.md`). The file keeps its name; the citation uses
+            # the bare slug.
+            recs.append(_classify(name, body, path, corpus))
 
     # 3. Preserved in-flight content: every file NOT on the culture surface
     #    (.claude/ projected culture, .agents/ dispositions). Reported so the
@@ -245,6 +423,7 @@ def plan_target(target: pathlib.Path, reader: str) -> dict:
         "reconciliations": recs,
         "preserved": preserved,
         "disposition_dir_exists": disp_dir.is_dir(),
+        "disposition_rel": "/".join(disp_rel),
     }
 
 
@@ -271,23 +450,45 @@ def render_plan(plan: dict) -> str:
     ]
     if not plan["reconciliations"]:
         present = "present but empty" if plan["disposition_dir_exists"] else "absent"
-        lines.append(f"   (no target dispositions -- {'/'.join(TARGET_DISPOSITION_DIR)}/ {present})")
+        lines.append(f"   (no target dispositions -- {plan['disposition_rel']}/ {present})")
+    n_woven = 0
     for r in plan["reconciliations"]:
-        if r.outcome == "FORK":
+        # how the cell was found: exact slug, or a renamed-fork alias.
+        via = "" if r.match_kind == "EXACT" else f" [ALIAS, identity {r.identity:.0%}]"
+        if r.woven:
+            n_woven += 1
             lines.append(
-                f"   FORK     {r.name:<28} -> cite [[{r.mind_slug}]] for the core "
-                f"+ keep local delta")
+                f"   FORK*    {r.name:<28} -> WOVEN-DELTA: specializes "
+                f"[[{r.mind_slug}]]{via}")
+            lines.append(
+                f"            beyond the canonical (similarity {r.similarity:.0%}; "
+                f"no marked '## delta' seam).")
+            lines.append(
+                f"            *** review/extract before collapsing -- NOT "
+                f"auto-collapsed; preserved whole pending review (or --force).")
+        elif r.outcome == "FORK":
+            lines.append(
+                f"   FORK     {r.name:<28} -> cite [[{r.mind_slug}]]{via} for the "
+                f"core + keep marked delta")
             lines.append(
                 f"            (canonical/mind similarity {r.similarity:.0%}; "
-                f"local delta preserved: {len(r.local_delta)} chars)")
+                f"marked local delta preserved: {len(r.local_delta)} chars)")
         elif r.outcome == "ALIGNED":
             lines.append(
-                f"   ALIGNED  {r.name:<28} -> collapse to a pure [[{r.mind_slug}]] "
-                f"citation (no local delta)")
+                f"   ALIGNED  {r.name:<28} -> collapse to a pure [[{r.mind_slug}]]"
+                f"{via} citation (similarity {r.similarity:.0%}, no delta)")
         else:
             lines.append(
                 f"   LOCAL    {r.name:<28} -> stays local, untouched "
                 f"(no mind counterpart)")
+    if n_woven:
+        lines += [
+            "",
+            f"   ! {n_woven} woven-delta fork(s) FLAGGED -- apply preserves each "
+            f"whole; no local work is",
+            "     silently destroyed. Extract the delta by hand (or --force the "
+            "lossy collapse).",
+        ]
     lines += [
         "",
         f"-- IN-FLIGHT WORK PRESERVED ({len(plan['preserved'])} files, "
@@ -327,18 +528,38 @@ def apply_plan(plan: dict, force: bool = False) -> int:
           f"-> {target}/.claude/")
 
     # 2. Reconcile dispositions in place.
-    n_fork = n_aligned = n_local = 0
+    n_fork = n_aligned = n_local = n_woven_kept = n_woven_forced = 0
     for r in plan["reconciliations"]:
         if r.outcome == "LOCAL":
             n_local += 1
             continue  # untouched -- no forced mapping
+        if r.woven:
+            # A4 / consensual-adoption: a woven delta has no clean seam to cut, so
+            # collapsing it would silently destroy local work. DEFAULT: leave the
+            # source BYTE-FOR-BYTE untouched (already FLAGGED in the plan for human
+            # extraction). --force: write the banner+verbatim reconciliation --
+            # still lossless (the whole delta is preserved), but recorded on disk.
+            if not force:
+                n_woven_kept += 1
+                continue
+            r.source_path.write_text(r.reconciled_text, encoding="utf-8")
+            n_woven_forced += 1
+            continue
         r.source_path.write_text(r.reconciled_text, encoding="utf-8")
         if r.outcome == "FORK":
             n_fork += 1
         else:
             n_aligned += 1
+    woven_note = ""
+    if n_woven_kept:
+        woven_note += (f", {n_woven_kept} woven-fork FLAGGED+untouched "
+                       f"(review/extract by hand)")
+    if n_woven_forced:
+        woven_note += (f", {n_woven_forced} woven-fork --force banner+verbatim "
+                       f"(delta preserved on disk)")
     print(f"  dispositions:         {n_fork} forked->core+delta, "
-          f"{n_aligned} aligned->citation, {n_local} local (untouched)")
+          f"{n_aligned} aligned->citation, {n_local} local (untouched)"
+          f"{woven_note}")
 
     # 3. Lay the founding marker (the brownfield society is now a founded polis).
     subject = (f"a brownfield project rebased onto polis "
