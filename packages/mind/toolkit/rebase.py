@@ -64,7 +64,19 @@ DEFAULT_READER = init_mod.DEFAULT_READER
 # Where a brownfield target keeps its own dispositions (the culture surface we
 # reconcile). The polis projected culture lands in .claude/ (init's concern);
 # the target's pre-existing dispositions live here.
-TARGET_DISPOSITION_DIR = (".agents", "disposition")
+# Candidate disposition locations, searched in order — real brownfield projects
+# vary: Oikos keeps them under `.agents/context/disposition/`, others at
+# `.agents/disposition/`. The first existing candidate is the target's surface.
+TARGET_DISPOSITION_DIRS = ((".agents", "disposition"), (".agents", "context", "disposition"))
+
+
+def _find_disposition_rel(target: pathlib.Path) -> tuple[str, ...]:
+    """The first candidate disposition dir that exists under target (else the
+    first candidate, as the default surface)."""
+    for cand in TARGET_DISPOSITION_DIRS:
+        if target.joinpath(*cand).is_dir():
+            return cand
+    return TARGET_DISPOSITION_DIRS[0]
 
 # A target disposition "forks" a mind cell when it both (a) names/matches a mind
 # cell AND (b) carries content beyond the canonical concept (a local delta). We
@@ -179,7 +191,8 @@ def plan_target(target: pathlib.Path, reader: str) -> dict:
 
     # 2. Reconcile the target's dispositions.
     recs: list[Reconciliation] = []
-    disp_dir = target.joinpath(*TARGET_DISPOSITION_DIR)
+    disp_rel = _find_disposition_rel(target)
+    disp_dir = target.joinpath(*disp_rel)
     if disp_dir.is_dir():
         for path in sorted(disp_dir.glob("*.md")):
             name = path.stem
@@ -218,7 +231,7 @@ def plan_target(target: pathlib.Path, reader: str) -> dict:
             parts = rel.parts
             on_culture_surface = (
                 parts[:1] == (".claude",)
-                or parts[: len(TARGET_DISPOSITION_DIR)] == TARGET_DISPOSITION_DIR
+                or parts[: len(disp_rel)] == disp_rel
                 or rel.name == "AGENTS.md"
             )
             if not on_culture_surface:

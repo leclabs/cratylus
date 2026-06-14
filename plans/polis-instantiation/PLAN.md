@@ -35,9 +35,22 @@ Phase C · found real societies. All tasks pending on A + B; promote to ready/ a
   > **Scope boundary:** `packages/agent-{identity,archetypes,provisioning}` are Oikos's **runtime substrate**
   > (keypair/membership/persona/home — its *implementation* of the organs), **NOT cultural forks** — they
   > realize mind's culture, they don't fork it; out of C3's reconciliation scope. C3 reconciles `.agents/
-  > context/` (culture) → mind; the runtime stays Oikos's. **Gated on B4 (✓ — IR bridge done, so Oikos can
-  > consume mind's projection) + C2 (brownfield-rebase, not yet built).** The inventory above is the prep,
-  > comprehensive; execution waits on C1/C2 tooling + the consensual rebase op.
+  > context/` (culture) → mind; the runtime stays Oikos's. **Gated on B4 (✓) + C2 (✓ — `rebase.py` built).**
+  >
+  > **`rebase --plan` validated against REAL Oikos (read-only, A4-safe; Nico, 2026-06-14) — 2 reconciliation
+  > gaps found that make C3 a careful, NOT a naive-auto-apply, operation:**
+  > 1. **Renamed forks missed by exact-slug match.** The tool found all 5 (after the `.agents/context/
+  >    disposition` dir-search fix) but classified `02-greenfield-clean-slate` + `03-adopt-standards-commons`
+  >    as **LOCAL** — they have no *exact* mind slug. But they ARE forks (`[[clean-slate]]` /
+  >    `[[adopt-the-commons]]` — my manual map). C3 needs **alias/semantic slug-matching**, not exact-stem.
+  > 2. **Woven deltas would be destroyed.** The 3 exact matches → "ALIGNED, no delta → pure citation." But
+  >    Oikos **weaves** its specialization into prose (no `## Local delta` heading), so the marked-section
+  >    delta-detector sees none and would **collapse them to bare citations, losing the local specialization**
+  >    — the **A4 conqueror failure**. C3 needs woven-delta extraction OR human-reviewed per-disposition calls.
+  > **Conclusion: C3 ≠ naive `rebase --apply`.** It is a careful, **consent-gated** (A4) operation where the
+  > read-only `--plan` surfaces each disposition for founder+Operator review (alias-matching + delta calls
+  > human-confirmed). The C2 MVP + the dir-fix reach the target; the reconciliation *intelligence* (and the
+  > consent) are C3's real substance. Inventory + plan are the prep; **execution awaits Operator consent.**
 - **C4 — fleet-deploy-migration** (dep: B3) — move agent/skill deployment from `playground/packages/mind`
   to polis. **Must RECONCILE against current deployed fleet state** (Mav steward: 11 defs + 7 skills,
   corpus `8532032`, profile strong-llm-lean), not re-emit fresh — else double-deploy or orphaned
