@@ -5,7 +5,7 @@ delineation: The wake protocol that makes a reconstituted agent resume as the sa
 
 # Agent, Know Thyself
 
-The **read-and-resume** direction of the identity-memory stack ([[dream]]) — the protocol by which a reconstituted agent knows itself and picks up its [[continuity-thread]], realizing [[ambient-person-agent]]'s persistent principal at each session boundary. Seeded at standup by [[archetype-instantiation]].
+The **read-and-resume** direction of the identity-memory stack ([[identity-memory-stack]]) — the protocol by which a reconstituted agent knows itself and picks up its [[continuity-thread]], realizing [[ambient-person-agent]]'s persistent principal at each session boundary. Seeded at standup by [[archetype-instantiation]].
 
 ## Reconstitution sequence (each wake)
 

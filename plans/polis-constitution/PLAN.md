@@ -4,27 +4,35 @@ Phase A · author the society's constitution as corpus. Status mirror; task file
 
 ## Frontier (ready)
 
-- **A1 — found-the-founders** · `ready/A1-found-the-founders.md`
-  Re-home `principal-ic` from path-grant (`on ./mind/*`) to a **founder-genus disposition** bound to the
-  polis subject; author the founder charter (Mav = substrate, Nico = constitution; the boundary itself).
-  *Implements Operator recommendation #1.* Done-when: nico/mav defs embody principal-ic intrinsically;
-  the stale path-grant is gone; verify PASS.
+_(empty — **Phase A complete**: all of A1–A5 done.)_
+
 
 ## Backlog (pending — promote to ready/ as deps clear)
 
-- **A2 — author-the-sociology** (dep: A1) — surface SOUL/SELF/MEMORY/EPISODIC (personhood),
-  scope-grants (authority), commons-vs-instance (cultural propagation), marks (identity) as an explicit
-  constitutional body. Done-when: each is a named cell or a coherent composite; no implicit sociology remains.
-- **A3 — the-operator-relation** (dep: A1) — name the **Operator** role: *named-but-outside* the society
-  (the sovereign founders serve, not a citizen). What founders owe the Operator; reserved authority.
-  *Open question Nico surfaced 2026-06-13.* Done-when: the Operator relation is an authored cell.
-- **A4 — consent-adoption** (dep: A1) — author the principle that brownfield adoption is **consensual**:
-  the adopting society opted in, so the founder is an *invited reformer*, not a conqueror.
-  *Operator insight.* Done-when: principle cell exists; referenced by polis-instantiation's brownfield task.
-- **A5 — foundational-structure** (dep: A2, A4) — the minimal cell/archetype set every founded
-  mind-society instantiates (the "foundational structure all societies are built on"). Done-when:
-  the founding set is enumerated as a structure cell.
+_(empty — A5 promoted to Frontier)_
 
 ## Done
 
-_(none yet)_
+- **A1 — found-the-founders** ✓ (2026-06-13) · `completed/A1-found-the-founders.md` — `principal-ic` re-homed
+  from the stale `on ./mind/*` path-grant to the **founder genus** (composer-emitted, subject-bound; roster
+  read from `founder-charter.md`'s `## Founders`); `ideas/founder-charter.md` authored (binding family's 3rd
+  member); nico/mav now lead with principal-ic; grant removed. Schema/refs/fences PASS; founder cells
+  round-trip. *Finding → machinery/C: polis has no green baseline. Unblocked A2/A3/A4.*
+- **A3 — the-operator-relation** ✓ (2026-06-13) · `completed/A3-the-operator-relation.md` — `ideas/operator-relation.md`
+  authored (kind: concept): the Operator as the sovereign *from without* — named-but-outside the society, its final
+  cause, reserved the genuine-fork + intent-setting; co-equal in manner, sovereign in authority. Civic complement to
+  subject-binding; linked from it + founder-charter. Schema/refs/fences PASS. Closes the open question.
+- **A4 — consensual-adoption** ✓ (2026-06-13) · `completed/A4-consensual-adoption.md` — `ideas/consensual-adoption.md`
+  (kind: principle): brownfield founding is consensual — the founder is an *invited reformer, not a conqueror*;
+  consent legitimizes the restructuring (sovereign-needs-charter parallel); adopt-don't-erase. Builds on A3;
+  linked from operator-relation. Schema/refs/fences PASS. *(slug `consensual-adoption`, not plan's `consent-adoption`.)*
+- **A2 — author-the-sociology** ✓ (2026-06-13) · `completed/A2-author-the-sociology.md` — audited 4 pillars;
+  authority/propagation/identity already anchored. Minted `ideas/identity-memory-stack.md` (structure) for the
+  personhood gap (the 4-layer SOUL/SELF/MEMORY/EPISODIC architecture); fixed the composer's dangling
+  `[[identity-memory-stack]]`/`[[dreamer-consolidation]]` docstring refs. Schema/refs/fences PASS (138 exemplars).
+  *Finding → machinery: the identity block is hardcoded in the composer; it should resolve from the cell.*
+- **A5 — foundational-structure** ✓ (2026-06-13) · `completed/A5-foundational-structure.md` — `ideas/politeia.md`
+  (kind: structure) enumerates the minimal constitution in five strata (personhood · identity · authority ·
+  propagation · founding) + the two founder archetypes; distinguishes the constitutional kernel (what a society
+  *is*) from craft (what it *may* do). Named `politeia` (Aristotle's constitution-of-a-polis; flagged for signify
+  review). Schema/refs/fences PASS (139 exemplars). **Capstone — Phase A complete.**

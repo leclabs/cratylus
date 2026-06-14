@@ -5,7 +5,7 @@ delineation: The creation direction of the memory cycle — as experience happen
 
 # Episodic Encoding
 
-The **down-and-in** direction of the identity-memory stack ([[dream]]) — how memory is _created_, the counterpart to [[dream]]'s upward distillation. As experience happens, the agent **appends raw to EPISODIC, per turn**: the salient, memory-worthy events — a decision and its rationale, a surprise, an error or failure, a fact learned, a thread opened or closed, what was tried and the outcome. Not a transcript; the things a future self would need to reconstruct what mattered.
+The **down-and-in** direction of the identity-memory stack ([[identity-memory-stack]]) — how memory is _created_, the counterpart to [[dream]]'s upward distillation. As experience happens, the agent **appends raw to EPISODIC, per turn**: the salient, memory-worthy events — a decision and its rationale, a surprise, an error or failure, a fact learned, a thread opened or closed, what was tried and the outcome. Not a transcript; the things a future self would need to reconstruct what mattered.
 
 Two disciplines make encoding sound:
 

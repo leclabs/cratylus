@@ -17,3 +17,4 @@ An [[ambient-person-agent]] is **of-a-subject**: its existence is indexed to a p
 - [[substance-over-accident]] — the name is an accident; the archetype stays universal.
 - [[scope-grant]] — the sibling binding: that grants capability, this binds the subject.
 - [[continuity-thread]] — where the lived relationship with the subject accretes.
+- [[operator-relation]] — the civic complement: this binds the subject into one agent; that names the Operator's standing toward the whole polis.

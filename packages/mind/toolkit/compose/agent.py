@@ -23,6 +23,36 @@ GRANT = re.compile(r"grant\s+@(\S+)\s+\[\[([a-z0-9-]+)\]\]\s+on\s+(\S+)")
 # ≜ formula ([[cite-dont-copy]]). New genus traits go here, one home.
 GENUS_DISPOSITIONS = ("semantic-whole-over-syntactic-substrate",)
 
+# Founder genus: principal-ic is essence for a founder *qua* founder (the
+# [[founder-charter]]), bound to the polis subject -- emitted by the resolver for
+# the founders, never a [[scope-grant]] on a path. The emission RULE is machinery
+# (here, beside GENUS_DISPOSITIONS); the ROSTER -- *who* the founders are -- is
+# constitution, read from the charter cell's `## Founders` section, never
+# hardcoded here ([[cite-dont-copy]]).
+FOUNDER_DISPOSITIONS = ("principal-ic",)
+FOUNDER_CHARTER = "founder-charter"
+
+
+def founder_slugs() -> tuple[str, ...]:
+    """The founder agent-slugs, read from the `## Founders` section of the
+    [[founder-charter]] cell -- the constitution names its founders, the machinery
+    only reads the roster. Returns () if the charter is absent (the corpus has no
+    founders declared yet)."""
+    if not (cells.IDEAS / f"{FOUNDER_CHARTER}.md").exists():
+        return ()
+    body = cells.parse_cell(FOUNDER_CHARTER)["body"]
+    mask = cells.fence_lines(body)
+    out: list[str] = []
+    in_section = False
+    for i, line in enumerate(body.splitlines()):
+        if line.startswith("## ") and i not in mask:
+            in_section = line.lower().startswith("## founders")
+            continue
+        if in_section and i not in mask:
+            out.extend(cells.REF.findall(line))
+    seen: set[str] = set()
+    return tuple(s for s in out if not (s in seen or seen.add(s)))
+
 
 def grants_for(agent: str) -> list[tuple[str, str]]:
     """Parse `grant @agent [[exemplar]] on path` lines from mind/AGENTS.md.
@@ -141,7 +171,7 @@ def _identity_block() -> list[str]:
     ([[ambient-person-agent]]), like grants. Binds the def (the SOUL) to its
     sibling `~/.claude/agents/<name>/{SELF,MEMORY,EPISODIC}.md` layers
     ([[identity-memory-stack]]) and the Dreamer consolidation cascade
-    ([[dreamer-consolidation]]); names the natural-language wake/dream/encode
+    ([[dream]]); names the natural-language wake/dream/encode
     triggers that fire the cycle."""
     return [
         "Identity & memory (your persistence across sessions):",
@@ -209,6 +239,8 @@ def compose_agent(slug: str, reader: str, harness: str) -> ComposedDoc:
     name = slug
     desc = cell["fm"]["delineation"]
     refs = composition_refs(cell)
+    if slug in founder_slugs():  # founder genus leads: principal-ic is essence qua founder
+        refs = list(FOUNDER_DISPOSITIONS) + [r for r in refs if r not in FOUNDER_DISPOSITIONS]
     for g in GENUS_DISPOSITIONS:  # embodied by every agent qua agent
         if g not in refs:
             refs.append(g)
