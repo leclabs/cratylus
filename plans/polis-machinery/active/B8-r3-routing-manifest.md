@@ -94,11 +94,20 @@ emits one.
   (bad JSON / missing key / out-of-vocab disposition) is a hard error, no-manifest degrades to NOTE. Suite 9/9;
   current corpus a **no-op** (verified independently before integrating).
 
-**Remaining (Nico — the producer half, the genuine co-design):** wire the exemplify *run* (the skill cells —
+**Digest primitive landed (2026-06-14, `06e61dd`).** `core/digest.py::fragment_digest(text)` →
+`"sha256:"+sha256(normalize(text))`, normalize = NFC + whitespace-collapse + trim (v1, conservative — the
+unambiguously-cosmetic transforms; markdown-decoration normalization is the deferred refinement that needs
+real fragments). Invariance verified independently (whitespace + NFD/NFC → equal digest; distinct meanings →
+distinct). Pure addition, dormant, suite 10/10. So the producer now has its digest primitive in hand.
+
+**Remaining (Nico — the producer wiring, the genuine co-design):** wire the exemplify *run* (the skill cells —
 `exemplify`/`conceptualize`/`materialize`) to **emit** a manifest at `.manifests/<source>.json` during a run:
-the routing decisions `η` makes, content-digested per the invariant below. THEN R3 goes live (`R1+R2+R3`).
-This is the half that needs the run's actual fragment representation — the co-design I flagged; it's mine to
-drive, pairing with Mav on the digest byte-rule. Until then the consumer is dormant-but-ready.
+record each routing decision `η` makes as a `routes[]`/`delta[]` entry, `fragment_digest`-keyed. THEN R3 goes
+live (`R1+R2+R3`). **This needs a REAL exemplify run** to design the fragment representation against (what a
+"routed fragment" concretely is mid-run) — it is NOT blind-buildable by proxy; it's the producer-side I drive
+*by running /exemplify*, refining the digest's markdown-normalization against real fragments. Both halves of
+the *infrastructure* (consumer gate + digest primitive) are now in place and dormant-ready; what remains is
+the run itself.
 
 ---
 
