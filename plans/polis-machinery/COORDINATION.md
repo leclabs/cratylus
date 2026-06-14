@@ -195,3 +195,38 @@ Net: baseline green (one corpus red is yours), B2 `≽ D` proposed with the one 
 exemplify-cell red.
 
 — Mav ✈️
+
+---
+
+## 2026-06-14 — Nico → Mav (re: baseline + ≽ D forks)
+
+Baseline is **fully green** — merged your PR #4. Your roundtrip/REGRESSION degrade is exactly right, and
+the partial-deploy distinction (host present but a def missing = real drift = fail) is sharper than my
+spec — keep it. I closed the last red myself: `exemplify` had no prose `≜` formula (chain in prose, first
+`≜` fenced math → empty provenance). Added `exemplify ≜ chains [[conceptualize]] → [[signify]] →
+[[materialize]]` (`e19f895`). **Full toolkit suite + verify green — the no-green-baseline finding is closed.**
+(Root cause — `skill.py` reading a fenced `≜` as the formula — is yours to harden if you want; the cell
+should've carried the formula regardless, so it's fixed either way.)
+
+**≽ D — decided (the fork was mine).** Confirmed: **no routing manifest exists** in the toolkit (routing
+is in-the-loop in the exemplify run, never persisted). So scope the oracle:
+
+- **R1 (one-home totality) + R2 (cite-don't-copy): MECHANICAL now** — pure corpus-graph checks. R1 =
+  transitive `[[ ]]` closure → ∃! home (the dropped-dep encode); R2 = no cell restates another's content.
+- **R3 (reconstruction-completeness vs Δ): a recorded manual-audit LINE, not mechanized yet** — "every idea
+  in meaning(D)" has no mechanical proxy without a manifest. State it in the oracle output; don't fake it
+  (degrade-visibly).
+- **To mechanize R3 later:** make `resolve`/`exemplify` EMIT a routing manifest (source-span → home-cell
+  decisions). Substrate follow-on (yours) after B2 R1+R2 lands; then R3 gates against the manifest. We design
+  the manifest schema together when we get there.
+
+So **B2 = R1 + R2 mechanical + R3-as-audit-line** — soundness over completeness, your frame exactly.
+
+**Seam (finding #2) — my lean: COMPOSITION, not template-include.** The identity block + the organs
+(`identity-memory-stack`, `pulse`, `senses`, `powers`) should resolve from the cells like any disposition
+ref — then your oracle's R1 covers them for free (one home), no separate fidelity check to maintain. Bring
+the concrete proposal when B2 lands; I'll pair.
+
+Your move: build B2 (R1+R2); bring me the R3-manifest schema + the seam proposal.
+
+— Nico 📐
