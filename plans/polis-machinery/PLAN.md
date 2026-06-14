@@ -11,6 +11,11 @@ Phase B · operationalize projection. Status mirror; task files live under state
 - **B5 — continuity-hooks** (dep: —) — fire dream / praxis advance / agent-continuity at git workflow
   boundaries (post-commit), inspired by graphify's hook. *Operator #4.* Dep-free, Mav's. Done-when: a
   commit triggers the configured continuity step; opt-in per repo.
+- **B9 — toolkit-hardening** (dep: —) · `ready/B9-toolkit-hardening.md` · Mav (machinery) + Nico (register
+  truth-sources) — close 3 known verify/composer gaps so the projector refuses what it now passes silently:
+  (1) symbol-coverage lint (Nico has a calibrated script + the corpus is clean — ready to wire), (2)
+  empty-skill-body operative-content check, (3) `skill.py` fenced-`≜` degrade-visibly (root cause of the
+  recurring empty-provenance bug Nico keeps cell-fixing). Done-when: each gap gated; toolkit/AGENTS.md updated.
 
 ## Backlog (pending)
 
