@@ -18,7 +18,10 @@
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "turbo run build && changeset publish",
-    "prepare": "husky"
+    "prepare": "husky",
+    "continuity:install": "sh packages/mind/toolkit/continuity/continuity-hook.sh install",
+    "continuity:uninstall": "sh packages/mind/toolkit/continuity/continuity-hook.sh uninstall",
+    "continuity:status": "sh packages/mind/toolkit/continuity/continuity-hook.sh status"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

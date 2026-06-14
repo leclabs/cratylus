@@ -44,3 +44,29 @@ disposition, rank}, delta[]: {fragment_digest, idea_gloss}}`; `disposition ∈ {
 ## Deploy
 
 Per host, sequential explicit `deploy.py` invocations — no shell-loop cleverness.
+
+## Continuity hook (B5 — repo-level praxis-advance reminder)
+
+The one **repo-level** continuity ritual is **praxis-advance**: when plan task-files move between
+their state folders (`plans/**/{pending,ready,active,completed}/`), PLAN.md — the hand-authored
+mirror — may go stale. `toolkit/continuity/` provides an **opt-in, off-by-default** post-commit hook
+that *detects this and prints a reminder* to re-mirror via `/praxis`. It **never edits PLAN.md**
+(detect → remind, never edit): auto-rewriting hand-authored prose would need a PLAN.md generator that
+doesn't exist (a future "mechanized mirror" task), and a commit-time edit wouldn't be in the commit.
+
+- **encode / dream are out of scope** — those are per-*agent* sidecar-memory ops
+  (`~/.claude/agents/<name>/{EPISODIC,MEMORY,SELF}.md`), not repo state; a repo hook can't know which
+  agent committed, so it can't meaningfully fire them. They are a separate agent-lifecycle mechanism.
+
+- **Opt-in (per-repo, never checked in).** The flag is `git config --bool polis.continuity`, stored in
+  `.git/config`. A fresh clone has it unset → the shipped `.husky/post-commit` dispatcher exits early →
+  **default commit behavior is unchanged**. Toggle via:
+  - `pnpm run continuity:install` — enable for this clone
+  - `pnpm run continuity:uninstall` — back to default off
+  - `pnpm run continuity:status` — show state
+- **Fires when enabled:** a commit touching a plan state-folder prints which plan changed + the
+  re-mirror reminder. A reminder must never fail a commit, so the worker always exits 0.
+- **Composes, never clobbers** the existing husky `pre-commit` (biome) / `commit-msg` (commitlint) —
+  `post-commit` is an additive third hook in `.husky/`. Files: `.husky/post-commit` (guarded
+  dispatcher), `toolkit/continuity/praxis-advance-nudge.sh` (the detector/reminder),
+  `toolkit/continuity/continuity-hook.sh` (the install/uninstall/status toggle).
