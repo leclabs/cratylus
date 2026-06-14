@@ -4,11 +4,6 @@ Phase B · operationalize projection. Status mirror; task files live under state
 
 ## Frontier (ready)
 
-- **B1 — koine-deep-rename** · `ready/B1-koine-deep-rename.md` · **Lead: Mav**
-  Finish the rename the founding import deliberately stopped short of: the `agentir` CLI literal,
-  the `.agentir/` dir convention, DESIGN.md prose → koine. *Mav's flag: this goes FIRST, before any
-  koine feature work — keep the rename a closed set, not a moving target.* Done-when: zero `agentir`
-  residue in `packages/koine/**`; build + tests green.
 - **B2 — reconstruction-oracle** · `ready/B2-reconstruction-oracle.md` (ex-markdown-ast-compose/05)
   Automate `accept(F) ⇔ reconstruct(F) ≽ D` as a verify-stage oracle. Done-when: verify gate runs the
   oracle; a dropped-dependency or under-reconstruction fails the gate.
@@ -28,4 +23,13 @@ Phase B · operationalize projection. Status mirror; task files live under state
 
 ## Done
 
-_(none yet)_
+- **B1 — koine-deep-rename** · `completed/B1-koine-deep-rename.md` · Mav · merged #1 (`b8aa273`)
+  Zero `agentir` residue in `packages/koine/**`; CLI literal + `.koine/` convention + schema `$id` +
+  env/docs all renamed. Surfaced + fixed a tsconfig `extends`-depth bug that stopped the TS suite
+  collecting. **Folded in B0 (baseline-green, finding #1 TS side):** koine had never been run through
+  biome — applied the formatter (single-quote) and fixed 35 lint rules by hand. Build + 117 tests +
+  lint green.
+- **B0-adjacent — repo-config hygiene** · merged #2 (`dffa580`) · Mav
+  Finding #3 (pnpm `onlyBuiltDependencies` → `pnpm-workspace.yaml`), finding #4
+  (`worktree.bgIsolation` set explicitly), gitignore `.claude/worktrees/` + `.turbo/`, drop stale
+  root `.agentir/local/`.
