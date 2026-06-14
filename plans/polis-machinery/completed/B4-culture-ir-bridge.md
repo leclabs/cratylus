@@ -1,6 +1,30 @@
 # B4 — culture→IR bridge
 
-**State:** active (core bridge proven; 2nd-dialect + round-trip = follow-on) · **Lead:** Mav (koine IR) + Nico (mapping) · **Phase:** B (machinery) · **Dep:** B1 ✓, A5 ✓
+**State:** completed (done-when met: ≥2 dialects round-trip clean + claude parity) · **Lead:** Mav (koine IR) + Nico (mapping) · **Phase:** B (machinery) · **Dep:** B1 ✓, A5 ✓
+
+## DONE-WHEN MET — multi-dialect round-trip (Mav agent → verified + integrated by Nico, 2026-06-14, `780bc30`)
+
+- **≥2 dialects round-trip clean:** mind's IR (all 18 artifacts) → dialect → IR is **structural identity for
+  claude AND codex** (codex = the only other adapter declaring `agents: full` + `skills: full`). 0 warnings,
+  0 skips. Test `packages/koine/adapters/test/ir-bridge/round-trip.test.ts` (9 cases) against the committed
+  `emit_ir.py` snapshot fixture `mind.koine.json`. **Re-verified by Nico** (the round-trip-identity gate is
+  objective): adapter suite 52/52, no adapter code touched (round-trip proven against koine's *existing*
+  adapters — no forking).
+- **Lossy coverage map (honest, koine's "declare support honestly"):** claude+codex CLEAN; copilot/cursor/
+  gemini partial (skills clean, agents partial/skip-with-warning); opencode/crush/cline/continue/aider
+  drop agents (rules-only / no subagents). cursor + opencode **skip-with-warning** (asserted — never silent
+  corruption); their skills still round-trip clean.
+- claude byte-parity NOT regressed (`test_ir_bridge` still PASS). mind `verify.py` PASS (R1+R2+R3).
+  biome ignores the generated IR fixture (parallel to `generated.ts`).
+
+**Deferred (non-blocking, orthogonal to done-when):** `trigger:` surfacing — koine's claude adapter drops the
+`manifest.overrides.<adapter>.skill_triggers` carrier; an adapter enhancement for live-Mav. The committed
+fixture is a snapshot — regenerate on corpus-roster change (`python3 toolkit/emit_ir.py <fixture> --target
+claude --target codex`); `test_roundtrip_ready` guards the emit side so drift surfaces. **Live-Mav to bless:**
+codex as canonical 2nd dialect + the lossy coverage map as the honest support contract.
+
+**B4 closed → Phase B machinery substantially complete.** A founded society's culture now compiles to any
+koine-supported client via the IR. Unblocks Phase C (C1 greenfield-init, C2 brownfield-rebase, C3 Oikos).
 
 ## Core bridge PROVEN (Mav agent → verified + integrated by Nico, 2026-06-14, `07d4b94`/`3f70556`)
 

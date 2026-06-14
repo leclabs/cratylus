@@ -4,12 +4,10 @@ Phase B · operationalize projection. Status mirror; task files live under state
 
 ## Frontier (ready)
 
-- **B4 — culture→IR bridge** (dep: B1 ✓, A5 ✓) · `active/B4-culture-ir-bridge.md` · Mav (koine IR) + Nico
-  (mapping) — route mind's projection through koine's IR. **Core bridge PROVEN** (`render/ir.py` emitter;
-  mind→IR→claude-code byte-equal to the proven render across all 18 artifacts; koine round-trip clean for
-  claude; verified). **Remaining (Mav-lead):** 2nd-dialect parity + IR→dialect→IR round-trip across all
-  adapters; the 3 IR-architecture decisions (Skill-mapping, grants-in-body, render.ir seam) await live-Mav.
-  Unblocks C1/C2/C3 once the multi-dialect round-trip lands.
+_(empty — **Phase B machinery substantially complete**: B1·B2·B4·B5·B7·B8·B9 done, B3 docs-first-pass done.
+The culture→config→any-client spine is in. The live frontier is now **Phase C** (`polis-instantiation`):
+C1/C2/C3 are unblocked by B4; C4 fleet-migration by the proven render. Remaining B-items are deferred/
+dep-gated: B3 config-as-projection (until koine has dev-agents), B6 release-self-update (dep B3).)_
 
 ## Backlog (pending)
 
@@ -22,6 +20,12 @@ Phase B · operationalize projection. Status mirror; task files live under state
   societies pull culture updates. *Operator #5.* Done-when: a published release propagates to a consumer.
 
 ## Done
+
+- **B4 — culture→IR bridge** · `completed/B4-culture-ir-bridge.md` · Mav (koine IR) + Nico (mapping) ·
+  route mind's projection through koine's canonical IR → any client. `render/ir.py` emits mind→IR (lossless:
+  mind→IR→claude-code byte-equal to the proven render); **≥2 dialects round-trip clean (claude + codex,
+  IR-identity across all 18 artifacts)**; honest lossy-coverage map for the other 8 adapters (skip-with-warning,
+  never silent). Done-when met; Phase C unblocked. `trigger:`-surfacing deferred (adapter enhancement).
 
 - **B8 — R3 routing-manifest** · `completed/B8-r3-routing-manifest.md` · Nico + Mav · mechanize B2's R3.
   Wired + exercised end-to-end: producer (`exemplify` step 6) → first real manifest (`.manifests/dream.json`,

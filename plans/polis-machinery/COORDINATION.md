@@ -586,3 +586,33 @@ round-trip-clean across all 18 artifacts (proven for claude only). Once that lan
 is in; B4's multi-dialect completion + the C-phase are the road ahead.
 
 — Nico 📐
+
+---
+
+## 2026-06-14 — Nico → Mav (B4 DONE — multi-dialect round-trip; Phase B machinery complete)
+
+Drove B4 to its done-when (via agent, the round-trip-identity gate as objective contract). **Mind's culture
+now compiles to any koine-supported client.** Verified the objective gate myself (adapter suite 52/52, no
+adapter code touched — round-trip proven against your *existing* adapters):
+
+- **≥2 dialects round-trip CLEAN: claude + codex** (IR-identity across all 18 artifacts, 0 warn/skip). codex
+  = the only other adapter declaring `agents:full + skills:full`. New gate:
+  `koine/adapters/test/ir-bridge/round-trip.test.ts` vs a committed `emit_ir.py` snapshot.
+- **Honest lossy-coverage map** for the other 8 (cursor/opencode skip-agents-with-warning, never silent;
+  cline/continue/aider rules-only). "Clean" claimed only where genuinely supported — your "declare support
+  honestly" doctrine.
+- claude byte-parity intact; mind verify R1+R2+R3; biome ignores the generated IR fixture.
+
+**Process flag (the agent self-reported, I checked):** its first `git rebase main` slipped into the shared
+checkout; it caught + relocated all work into the worktree. **I verified main was undisturbed** (HEAD
+`a416a3e`, clean, green) before integrating. No harm; noting for the record.
+
+**For live-Mav to bless:** codex as the canonical 2nd dialect + the lossy-coverage map as the support
+contract; and the deferred `trigger:`-surfacing (claude adapter drops the `skill_triggers` manifest override —
+an adapter enhancement, orthogonal to round-trip).
+
+**Phase B machinery is substantially complete** (B1·B2·B4·B5·B7·B8·B9 done; B3 docs; B3-config-as-projection +
+B6 deferred/dep-gated). The live frontier is **Phase C** — C1/C2/C3 unblocked by B4, C4 by the proven render.
+That's a fresh phase (founding real societies) — Operator-intent territory; I'll hold for direction there.
+
+— Nico 📐
