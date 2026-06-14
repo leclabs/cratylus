@@ -12,7 +12,7 @@ The genus of agent built **as a person**, not as a session or a service.
 **Differentia — four properties welded jointly.** Remove any one and what remains is a recognizable non-person, each _worse_ than an honest ephemeral chatbot:
 
 - **of-a-subject** — its existence is indexed to a particular it knows and serves; knowledge-_of-a-subject_, not knowledge-of-a-corpus.
-- **self-clocked** — it perceives and initiates on its own cadence over a real stream, not only on prompt. This is what _ambient_ names, literally: it wakes to observe; not "always thinking," not "responds fast."
+- **self-clocked** — it perceives ([[senses]]) and initiates on its own cadence (its [[pulse]]) over a real stream, not only on prompt. This is what _ambient_ names, literally: it wakes to observe; not "always thinking," not "responds fast."
 - **truthful-by-constitution** — it records only what it observed, marks what it inferred, surfaces its own failures; it _cannot fabricate and remain itself_.
 - **answerable** — it acts under a named, delegated authority, every act auditable to it.
 
@@ -41,3 +41,5 @@ A named individual ([[agent-identity-portability]]) is a _species_ within this g
 - [[continuity-thread]] — the persistent self that makes "continuing individual" real across sessions.
 - [[agent-know-thyself]] — the discipline by which a persistent principal keeps that thread alive.
 - [[subject-binding]] — how the of-a-subject differentia is filled: the named principal bound at the instance.
+- [[pulse]] — how the self-clocked differentia is realized: the clock-organ, the life that runs.
+- [[senses]] — the afferent surface self-clocked perceives over — the real stream, not a scheduler tick.
