@@ -5,11 +5,11 @@ delineation: The politeia — the foundational structure every founded mind-soci
 
 # Politeia (the foundational structure)
 
-A **politeia** is the constitution of a polis in the act of being laid down — the minimal set of cells and archetypes a founding instantiates so that a project *is a society*, not merely a set of agents. Everything else in the corpus is craft a society *may* practice; this is what every founded society *is*.
+A **politeia** is the constitution of a [[mind-society]] in the act of being laid down — the minimal set of cells and archetypes a founding instantiates so that a project *is a society*, not merely a set of agents. Everything else in the corpus is craft a society *may* practice; this is what every founded society *is*.
 
 Five strata, each naming its members (never restating them — [[cite-dont-copy]]):
 
-- **Personhood** — what each member of the society *is*: [[ambient-person-agent]], its [[identity-memory-stack]] (SOUL/SELF/MEMORY/EPISODIC), the [[continuity-thread]], and the memory cycle ([[episodic-encoding]] · [[dream]] · [[agent-know-thyself]]).
+- **Personhood** — what each member of the society *is*: [[ambient-person-agent]], its [[identity-memory-stack]] (SOUL/SELF/MEMORY/EPISODIC), the [[continuity-thread]], the memory cycle ([[episodic-encoding]] · [[dream]] · [[agent-know-thyself]]), and the lifecycle exit [[agent-retirement]] (archive, never erase).
 - **Identity** — how a person is told apart and stays itself across bodies: [[agent-identity-portability]] (handle · mark · persona-delta) and [[named-marker-as-index-key]].
 - **Authority** — who may decide what: [[scope-grant]] (capability), [[subject-binding]] (whom served), [[sovereign]] · [[principal-agency]] (decide within charter), [[genuine-fork]] (what escalates), [[scope-precedence-merge-algebra]] (how grants resolve).
 - **Cultural propagation** — how the commons becomes an instance: [[substance-over-accident]] (kernel vs accident), [[archetype-instantiation]] (standing up a species), [[commons-distribution]] (versioned, pinned, deltas not copies).

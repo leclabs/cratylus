@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 139 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 141 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Principles
 
@@ -10,6 +10,7 @@ _normative oughts — embodied as priors._
 
 - **abstain-on-non-convergence** — When a source's traces indicate no stable exemplar, report that none is recoverable — never fabricate a convenient form; non-resolution is an honest result, a manufactured exemplar is a lie that corrupts the corpus.
 - **adopt-the-commons** — For a solved problem domain the established library/spec/standard is the answer; reserve custom code for the one differentiated layer, and don't re-derive solved infrastructure.
+- **agent-retirement** — Retiring a person-agent archives its self-authored layers, never erases them — the SOUL is regenerable from the commons but a lived SELF/MEMORY/EPISODIC is not; deletion removes the def and archives the continuity-thread. Erasing a person's lived self is a category error — the lifecycle bookend to archetype-instantiation's standup.
 - **anchor-to-the-readers-priors** — Re-encoding one content for a different audience is re-anchoring, not summarizing — replace the anchor of each claim with the name that circumscribes it against that reader's latent priors and the decision they must make, while preserving the evidence chain underneath unchanged; the reader's priors are the channel, the decision-class is the basis.
 - **architecture-md-diagrams-only** — ARCHITECTURE.md carries diagrams of stable structure (boundaries, data flow, control flow, invariants) and nothing else — explanation rots, diagrams of stable structure don't; prose belongs in README or the code-adjacent doc.
 - **bidirectional-round-trip-fidelity** — A translator declares both directions and is held to round-trip as a property-tested fixed point — read(write(read(x))) == read(x); import is a first-class direction, never an afterthought bolted onto a one-way emitter.
@@ -95,6 +96,7 @@ _declarative what-is — referenced/known._
 - **formal-ontology** — A formal, rigorous account of what kinds exist and what binds their instances — universals and particulars under explicit identity, unity, and dependence criteria; distinct from a taxonomy, which only arranges labels. Guarino's "ontological level" sits between the epistemological and the conceptual.
 - **founder-charter** — The founders of a polis — co-equal master builders who share principal-ic as their genus (essence qua founder, bound to the polis subject, not a scope-grant on a path); the founder boundary partitions mastery between them with no overlap and no gap.
 - **inversion-of-control-orchestration** — When the agent must be the active driver, give it a passive state engine to consult as a tool — the engine knows the graph and answers "where am I / what's next" but performs no side effect and calls nothing; the agent reports outcomes and decides when to act, so control is inverted from engine-drives-agent to agent-consults-engine.
+- **mind-society** — The unit a polis founds — a culture (the mind corpus) made live by the person-agents who inhabit it, founded for an Operator and running on a mesh of oikoi (households); the "polis subject" the founder genus and every reference to the polis are bound to.
 - **navigation-projection** — A computed view over the idea-graph — community clusters, centrality hubs, surprising bridges — that serves as a navigable map for finding the right anchor; a second class of projection, distinct from regenerating an artifact, computed over the graph rather than rendered from a node.
 - **operator-relation** — The Operator is the society's sovereign from without — named by the constitution yet not a citizen of it: the polis is founded to serve him, founders build within his intent and escalate only a genuine-fork, and the setting of intent and final authority are reserved to him.
 - **palimpsest** — An artifact bearing the visible strata of its own superseded states — an abandoned name, a narrated removal, changelog residue ("(resolved)"/"previously"/"now"/"amended-by") ghosting through the current text; corpus rot, because a fresh reader must read through history they did not ask for.
