@@ -5,7 +5,7 @@ delineation: The politeia — the foundational structure every founded mind-soci
 
 # Politeia (the foundational structure)
 
-A **politeia** is the constitution of a polis in the act of being laid down — the minimal set of cells and archetypes a founding instantiates so that a project *is a society*, not merely a set of agents. Everything else in the corpus is craft a society *may* practice; this is what every founded society *is*.
+A **politeia** is the constitution of a [[mind-society]] in the act of being laid down — the minimal set of cells and archetypes a founding instantiates so that a project *is a society*, not merely a set of agents. Everything else in the corpus is craft a society *may* practice; this is what every founded society *is*.
 
 Five strata, each naming its members (never restating them — [[cite-dont-copy]]):
 
