@@ -7,6 +7,8 @@ trigger: /signify
 
 # Signify Skill
 
+signify ≜ binds [[precise-circumscription]] · [[anchor-routing]]
+
 Resolve from context: `C` — the concept set from [[conceptualize]], or any set under naming review.
 
 η binds [[anchor-routing]]: mint when no anchor fits — never force an ill fit.

@@ -7,6 +7,8 @@ trigger: /materialize
 
 # Materialize Skill
 
+materialize ≜ binds [[densest-faithful-point]] · [[hoare-elegance-no-permissive-defaults]]
+
 Resolve from context: `A` + contents — the anchored fragments from [[signify]], or supplied directly; `s` — the strategy, REQUIRED from the caller; `${OUTPUT_DIR}` — file strategy only.
 
 dfp binds [[densest-faithful-point]]; the refusal laws bind [[hoare-elegance-no-permissive-defaults]].

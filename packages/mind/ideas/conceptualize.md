@@ -7,6 +7,8 @@ trigger: /conceptualize
 
 # Conceptualize Skill
 
+conceptualize ≜ resolves a source's meaning to a [[mece]] concept set, binds [[semantic-whole-over-syntactic-substrate]]
+
 Resolve from context: `sources` — the input material (multi-modal).
 
 ```text
