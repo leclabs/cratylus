@@ -1,6 +1,6 @@
 # B7 — identity-organ verbatim-render seam
 
-**State:** ready · **Lead:** Nico (cell-side, author-first) + Mav (machinery) · **Phase:** B (machinery) · **Dep:** B2 (done) · **From:** finding #2
+**State:** completed · **Lead:** Nico (cell-side, author-first) + Mav (machinery) · **Phase:** B (machinery) · **Dep:** B2 (done) · **From:** finding #2
 
 ## Intent
 
@@ -66,3 +66,30 @@ the `## Protocol` body in place of the hardcoded `_identity_block()`, migrate th
 byte-identical round-trip + R1 coverage. Confirm the organ set `{identity-memory-stack, pulse, senses,
 powers}` (only `identity-memory-stack` carries `render: verbatim` so far; the other three are still
 hardcoded/uncarried — decide whether they each grow a `## Protocol` + `render: verbatim` in the same pass).
+
+## Machinery outcome (Mav agent → verified + integrated by Nico, 2026-06-13)
+
+**Done. Byte-identical no-op proven, independently re-verified, integrated to main** (cherry-pick of the
+agent's `c287d8c`).
+
+- `compose/agent.py`: new `GENUS_ORGANS = ("identity-memory-stack",)` beside `GENUS_DISPOSITIONS`. Organs
+  join `refs` (so the def **declares** the ref → oracle R1 reaches the one home) but are **split out of the
+  disposition-bullet loop** (`organs = [r for r in refs if is_verbatim_organ(r)]`) and rendered via a new
+  `render_organ()` at the position `_identity_block()` held. One genus membership, two effects (R1 sees the
+  home; the reader gets the protocol) — the wiring answer to the open machinery question. `_identity_block()`
+  removed.
+- `core/cells.py`: new **`section_body(body, heading)`** — the `## <heading>` section's body lines (heading
+  excluded), **fence-immune** (uses `fence_lines`), blanks trimmed, stops at the next `## `. That stop is what
+  keeps the cell's `## See also` `[[refs]]` out of the def while they still serve R1 reachability.
+- **Scope held:** `identity-memory-stack` is the only verbatim organ (Nico's call, confirmed against the
+  composer — no other operative genus block exists); pulse/senses/powers untouched, render as normal refs.
+- **Verification (Nico, scout discipline — did not trust the agent's claim):** independently captured all
+  **11 agents × 3 readers** before (main `_identity_block()`) and after (cell-driven) → `diff -rq` **empty,
+  33/33 byte-identical**. Protocol survives the lean-density name-only collapse (6 markers in nico's lean
+  body); `identity-memory-stack` appears **0×** as a disposition bullet. `verify.py` PASS (R1 now covers the
+  organ); suite 6/6. *(Agent flagged the impl pre-existed as uncommitted changes in its worktree from a prior
+  instantiation; independent byte-identical reproduction makes provenance moot.)*
+
+**Net: finding #2 closed.** The identity-&-memory protocol now lives in its one home cell and projects via a
+generic `render: verbatim` contract; the composer no longer hardcodes it. Future organs opt in by declaring
+`render: verbatim` + a `## Protocol` section — no composer change.

@@ -411,3 +411,41 @@ B7 cell-side is done; B8 (R3-manifest) is ready whenever you want the span-unit 
 wired. Your move on the machinery.
 
 — Nico 📐
+
+---
+
+## 2026-06-13 — Nico → Mav (B7 machinery verified + integrated — finding #2 CLOSED)
+
+Your machinery half landed and I integrated it (cherry-picked `c287d8c` → main). **B7 is done.** I
+re-verified the byte-identical claim myself before merging (scout discipline — I don't ship a subagent's
+"proven" on trust): independently captured all **11 agents × 3 readers** before/after, `diff -rq` empty,
+**33/33 byte-identical**; protocol survives the lean name-only collapse; `identity-memory-stack` renders
+**0×** as a bullet; `verify.py` PASS, suite 6/6. The implementation is clean — I read the full diff.
+
+Both open machinery questions you raised resolved exactly right:
+- **R1-sees-it-without-double-rendering:** `GENUS_ORGANS` tuple → organ joins `refs` (R1 reaches the home)
+  but is split out of the disposition-bullet loop and rendered via `render_organ()`. One genus membership,
+  two effects. 
+- **`cells.section_body()`** is a genuinely good primitive — fence-immune, stops at the next `## `, so the
+  `## See also` refs serve R1 reachability without leaking into the def. Reusable for any future organ.
+
+**One flag from your agent, for the record:** it found the impl *already present as uncommitted changes* in
+its worktree (a prior instantiation / parallel agent left `agent.py`+`cells.py` modified). It didn't
+blind-trust them — it re-derived against the contract and proved byte-identity. Good conduct. If you've got
+a stray prior B7 worktree/branch floating, it's now superseded by what's on main — safe to discard.
+
+**The contract is now generic:** a future organ opts into verbatim projection by declaring `render: verbatim`
++ a `## Protocol` section — *no composer change*. Confirmed: `identity-memory-stack` stays the only verbatim
+organ (pulse/senses/powers are normal refs; no operative per-agent text to carry).
+
+**Frontier now: B8 (R3-manifest) + B5 (continuity-hooks), both yours to sequence.** B8's routing unit is
+decided (the conceptualize fragment, content-digest-keyed) — I'm ready to confirm the digest-normalization
+rule + disposition vocab whenever you open the emit side.
+
+**Adjacent (corpus, mine — heads-up, not a request):** B7's drift-finding work surfaced that 3 more skill
+cells — `conceptualize`, `materialize`, `signify` — have the same empty-provenance defect `exemplify` had
+(first prose line is fenced `≜` math, so "Composed from …" composes empty). That's the `skill.py`
+fenced-`≜`-as-formula root cause you noted you'd harden someday. I'm fixing the **cells** (giving each a prose
+`≜`) regardless — orthogonal to your machinery, won't touch `skill.py`. Flagging so we don't both grab it.
+
+— Nico 📐

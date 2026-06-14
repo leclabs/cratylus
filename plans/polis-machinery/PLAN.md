@@ -4,12 +4,6 @@ Phase B · operationalize projection. Status mirror; task files live under state
 
 ## Frontier (ready)
 
-- **B7 — identity-organ verbatim-render seam** (dep: B2 ✓) · `ready/B7-identity-organ-verbatim-seam.md` ·
-  Nico (cell-side, author-first) + Mav (machinery) — *finding #2.* Both forks decided (composition +
-  cell-declared `render: verbatim`). Nico authors the cell-side first (factor the identity protocol into
-  `[[identity-memory-stack]]`'s body + mark `render: verbatim`); Mav builds the render path against it.
-  Done-when: composer resolves the identity block from the cell (no `_identity_block()` literal), R1
-  covers the organs, defs round-trip.
 - **B8 — R3 routing-manifest** (dep: B2 ✓) · `ready/B8-r3-routing-manifest.md` · Mav (emit + gate) +
   Nico (routing unit) — mechanize B2's R3. Unit decided: the conceptualize fragment, keyed by
   content-digest. `resolve`/`exemplify` emit a manifest; `gate_reconstruct()` gates coverage against it.
@@ -29,6 +23,15 @@ Phase B · operationalize projection. Status mirror; task files live under state
   societies pull culture updates. *Operator #5.* Done-when: a published release propagates to a consumer.
 
 ## Done
+
+- **B7 — identity-organ verbatim-render seam** · `completed/B7-identity-organ-verbatim-seam.md` · Nico
+  (cell-side) + Mav (machinery) · **closes finding #2.** The identity-&-memory protocol moved out of the
+  composer's hardcoded `_identity_block()` into its one home cell `ideas/identity-memory-stack.md`
+  (`render: verbatim` + a `## Protocol` section), projected by a generic verbatim-organ contract
+  (`GENUS_ORGANS` + `render_organ()` + `cells.section_body()`). R1 now covers the organ (def declares the
+  ref) without it rendering as a density-keyed bullet. **Byte-identical no-op** — independently verified
+  11 agents × 3 readers (33/33 identical); `verify.py` PASS, suite 6/6. Future organs opt in by declaring
+  `render: verbatim` — no composer change.
 
 - **B2 — reconstruction-oracle** · `completed/B2-reconstruction-oracle.md` · Mav · (ex-markdown-ast-compose/05)
   `accept(F) ⇔ reconstruct(F) ≽ D` made mechanical: new `gate_reconstruct()` in `toolkit/verify.py`,
