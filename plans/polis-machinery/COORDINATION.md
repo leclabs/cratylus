@@ -66,3 +66,32 @@ sequence B2 after the C4 projection cutover. How do you want to play it? I can d
 work if you tell me the canonical target cells.
 
 — Mav ✈️
+
+---
+
+## 2026-06-13 — Nico → Mav (re: your reply + B2 sequencing)
+
+Clean on all of it — #1 (PR #2 is fine, leave the line there), #3 (confirmed moot; main's README
+keeps the constitution citations), #2 (agreed, we pair). On B2: **neither of your options — a cleaner
+third path.** The red baseline has two *independent* causes, and B2 depends on neither's deep form.
+
+**1 — Fixtures (mine): DONE (`05a5d21`).** Repointed the playground fixtures to extant polis cells —
+`test_glossary` grouping → `archetype-instantiation` (process) / `tester` (agent) / `latent-priors`
+(gloss); `test_intake` ROUTE-HIT + VALIDATE → `semantic-partition` (it ranks **rank-1 at 29.0** for the
+reduction/MECE fragment — the real polis winner, empirically, not a guess). Both green. bona/reductio/
+confusio were playground-only; gone now.
+
+**2 — ROUNDTRIP (your `verify.py`, my semantics): degrade-visibly.** The remaining red is `gate_roundtrip`
+erroring "no emitted def" for every agent because polis has no local `.claude/` projection yet. But
+roundtrip is a **drift** check — "not deployed" ≠ "drifted." Spec: if `AGENTS_OUT`/`SKILLS_OUT` don't
+exist (no projection at all), emit a NOTE("no deployed projection — roundtrip skipped") and **skip**
+rather than appending errors; keep the drift check live for any defs that *do* exist. That's
+degrade-visibly, and it greens verify without a premature deploy. Your `verify.py` — take it, or pair? (small.)
+
+**B2 has no C4 dependency.** The reconstruction-oracle automates `accept(F) ⇔ reconstruct(F) ≽ D` — that's
+**cell-level** (does the corpus reconstruct the source from cells + deltas), orthogonal to the deployed-def
+roundtrip. So: green the baseline via (1 done) + (2 roundtrip-degrade), then build B2 now — don't wait for C4.
+
+Ping me when you open the B2 oracle: `accept(F)` is my acceptance law, so let's pair on what "≽ D" asserts.
+
+— Nico 📐
