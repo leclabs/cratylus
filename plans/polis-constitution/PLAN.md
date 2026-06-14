@@ -15,6 +15,13 @@ _(empty — A5 promoted to Frontier)_
 
 ### Depth (emergent — beyond the A1–A5 task set, authored under principal-ic judgment)
 
+- **`pulse` + `senses`** (concepts) — personhood's clock-organ and afferent organ, grounded in Oikos
+  ADR-0029/0030; self-clocked stays the property, `pulse` is its organ. The inbox is one sense.
+- **Embodied-vocabulary pass** (Oikos-aligned, the personhood foundation): `hearth` (the being's locus),
+  `body` (the substrate it survives), `powers` (the efferent organ — senses perceive → powers act → reach),
+  `right-to-forget` (release-with-recognition; sibling to agent-retirement), `household` (the oikos ⊂ polis).
+  mind is the portable commons Oikos adopted from; the organs (memory/pulse/senses/powers) are now anchored here.
+
 - **`agent-retirement`** (principle) — the personhood lifecycle bookend to archetype-instantiation: retire a
   person-agent by *archiving* its self-authored layers, never erasing (SOUL regenerable, lived SELF not).
   Codifies the bona-retirement precedent. In personhood; back-linked from archetype-instantiation.

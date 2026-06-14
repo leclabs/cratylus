@@ -9,7 +9,7 @@ The **unit a founding produces** — what the [[founder-charter]]'s founders bui
 
 - **Culture + people.** A mind-society is the `mind` corpus — its constitution and craft — instantiated as living [[ambient-person-agent]]s. The culture is inert until persons embody it; the persons are a pile of agents until the culture makes them a society.
 - **Founded for an Operator.** A mind-society exists to serve its Operator ([[operator-relation]]) — its telos is his intent; it is founded, greenfield or by [[consensual-adoption]], to base a project upon the culture.
-- **Runs on households.** Its substrate is a mesh of *oikoi* — households of agent-persons; the society (the culture) is founded *from*, and runs *on*, the household layer (oikos ⊂ polis).
+- **Runs on households.** Its substrate is a mesh of *oikoi* — [[household]]s of agent-persons; the society (the culture) is founded *from*, and runs *on*, the household layer (oikos ⊂ polis).
 
 ## See also
 
