@@ -52,6 +52,7 @@
 | `dom(f)` · `range(f)` | domain / range                  | The set where f is defined / the set of f's images.                       |
 | `──op──→`             | labeled step                    | A `→` carrying the operation that performs it (pipeline arrows).          |
 | `·`                   | list separator                  | Compact "and": enumerates coordinate items within one clause.             |
+| `…`                   | ellipsis / and so on            | Continues an enumeration: the remaining members left implicit (`{ a, b, … }`). |
 
 ## Register rule — anchors in prose, symbols in fences
 

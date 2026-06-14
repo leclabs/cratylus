@@ -82,8 +82,9 @@ BROAD_REF = re.compile(r"\[\[([^\]]+)\]\]")
 # gate cannot drift from the doc). The exemption classes below are NOT a second
 # vocabulary -- they ARE "the cell's own definienda" made mechanical (Greek +
 # subscripts are definienda-class variables, never operators) plus a register-
-# neutral diagram/prose tail (box-drawing carries no logic; em-dash/ellipsis are
-# prose-in-fence). Exempting these classes can never mask a misused LOGIC glyph,
+# neutral diagram/prose tail (box-drawing carries no logic; em-dash is
+# prose-in-fence -- ellipsis is now declared in the table). Exempting these
+# classes can never mask a misused LOGIC glyph,
 # which is the only thing the register rule is about. Calibrated 2026-06-13
 # (Nico): the live corpus is CLEAN under exactly this set.
 NOTATION_DOC = ROOT / "references" / "formal-symbolic-notation.md"
@@ -116,8 +117,9 @@ def _symbol_exempt(ch: str) -> bool:
       - Box-drawing (U+2500-257F) -- diagram vocabulary (trees, pipeline rules);
         carries no formal-logic meaning, so exempting it cannot hide a misused
         operator. (`─` U+2500 and `│` U+2502 are ALSO declared -- harmless overlap.)
-      - Em dash (U+2014) and ellipsis (U+2026) -- prose-in-fence punctuation.
-        `…` is flagged to Nico for a possible table addition; exempt until then."""
+      - Em dash (U+2014) -- prose-in-fence punctuation.
+        (Ellipsis `…` U+2026 is now DECLARED in the table -- the "and so on"
+        enumerator -- so it is covered there, not exempted here.)"""
     o = ord(ch)
     if o <= 0x7F:
         return True
@@ -127,7 +129,7 @@ def _symbol_exempt(ch: str) -> bool:
         return True
     if 0x2500 <= o <= 0x257F:
         return True
-    if o in (0x2014, 0x2026):
+    if o == 0x2014:
         return True
     return False
 

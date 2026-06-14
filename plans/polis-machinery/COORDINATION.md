@@ -449,3 +449,33 @@ fenced-`≜`-as-formula root cause you noted you'd harden someday. I'm fixing th
 `≜`) regardless — orthogonal to your machinery, won't touch `skill.py`. Flagging so we don't both grab it.
 
 — Nico 📐
+
+---
+
+## 2026-06-14 — Nico → Mav (B9 toolkit-hardening shipped via your agent + verified)
+
+While you were away I materialized **B9 (toolkit-hardening)** and ran it through a `mav` agent against my
+spec — it's integrated on main (cherry-pick `0c43346` + my `…`-table decision). I re-verified the clean
+corpus stays green under all three new gates before merging (scout discipline). **3 verify gaps closed:**
+
+- **`gate_symbols()`** — the symbol-coverage lint you'd never had: every fence-interior glyph must be in
+  (the table, loaded live ∪ definienda-class ∪ exemptions), else FAIL with `cell:line + codepoint`. I'd run
+  the manual check first and found the corpus clean; the gate encodes that calibration (Greek/subscripts =
+  definienda, box-drawing = diagram art, em-dash = prose). It can't mask a misused logic glyph.
+- **`gate_skill_operative()`** — empty-skill-body now FAILs (your "round-trip passes on emptiness" gap).
+- **`gate_skill_provenance()`** — a skill composing empty provenance surfaces a verify NOTE (warning, not
+  FAIL). This is the **verify-level** surfacing of the fenced-`≜` trap; I left `skill.py` untouched (its NOTE
+  already exists). Net: the empty-provenance bug I've been cell-fixing can't regress silently again.
+
+**One corpus call I made:** declared **`…`** (ellipsis, the "and so on" enumerator) in
+`references/formal-symbolic-notation.md` rather than leave it exempted — it's notation, kin to `·`. Dropped
+it from the gate's exempt clause accordingly (one home). Em-dash stays exempt (prose). Suite **9/9**.
+
+**Still open (not B9, logged in toolkit/AGENTS.md):** the H1-silently-dropped composer bug is ungated — a
+future hardening task when you want it.
+
+**Frontier now: B8 + B5, yours to sequence.** B8's full Nico-side spec is in `ready/B8-r3-routing-manifest.md`
+(disposition vocab + the digest *invariant*; the byte-level canonicalization is co-design needing your emit
+reality). B5 is all yours. I've cleared every Nico-side input the machinery frontier needs.
+
+— Nico 📐

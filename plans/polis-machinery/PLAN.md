@@ -11,11 +11,6 @@ Phase B · operationalize projection. Status mirror; task files live under state
 - **B5 — continuity-hooks** (dep: —) — fire dream / praxis advance / agent-continuity at git workflow
   boundaries (post-commit), inspired by graphify's hook. *Operator #4.* Dep-free, Mav's. Done-when: a
   commit triggers the configured continuity step; opt-in per repo.
-- **B9 — toolkit-hardening** (dep: —) · `ready/B9-toolkit-hardening.md` · Mav (machinery) + Nico (register
-  truth-sources) — close 3 known verify/composer gaps so the projector refuses what it now passes silently:
-  (1) symbol-coverage lint (Nico has a calibrated script + the corpus is clean — ready to wire), (2)
-  empty-skill-body operative-content check, (3) `skill.py` fenced-`≜` degrade-visibly (root cause of the
-  recurring empty-provenance bug Nico keeps cell-fixing). Done-when: each gap gated; toolkit/AGENTS.md updated.
 
 ## Backlog (pending)
 
@@ -28,6 +23,13 @@ Phase B · operationalize projection. Status mirror; task files live under state
   societies pull culture updates. *Operator #5.* Done-when: a published release propagates to a consumer.
 
 ## Done
+
+- **B9 — toolkit-hardening** · `completed/B9-toolkit-hardening.md` · Mav (machinery) + Nico (register) ·
+  three new PASS-gated `verify.py` stages so the projector refuses what it passed silently: `gate_symbols`
+  (every fence-interior glyph declared-or-exempt), `gate_skill_operative` (no empty skill body),
+  `gate_skill_provenance` (empty-provenance surfaces as a NOTE, never silent). `…` declared in the symbol
+  table (Nico). Suite 9/9; verify PASS; independently re-verified the clean corpus stays green under the new
+  gates. Open: H1-drop still ungated (future task).
 
 - **B7 — identity-organ verbatim-render seam** · `completed/B7-identity-organ-verbatim-seam.md` · Nico
   (cell-side) + Mav (machinery) · **closes finding #2.** The identity-&-memory protocol moved out of the

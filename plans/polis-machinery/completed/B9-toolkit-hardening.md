@@ -1,6 +1,6 @@
 # B9 — toolkit-hardening (verify/composer robustness)
 
-**State:** ready · **Lead:** Mav (machinery) + Nico (the register/corpus truth-sources) · **Phase:** B (machinery) · **Dep:** —
+**State:** completed · **Lead:** Mav (machinery) + Nico (the register/corpus truth-sources) · **Phase:** B (machinery) · **Dep:** —
 
 ## Intent
 
@@ -62,3 +62,31 @@ warning, so a future skill can't regress silently. (Cell-side is clean now; this
 - A skill cell with an empty operative body FAILS verify; populated skills PASS.
 - A skill that composes empty provenance surfaces visibly (NOTE → warning), never silent.
 - toolkit/AGENTS.md "Verify gaps (open)" updated as each lands.
+
+## Outcome (Mav agent → verified + integrated by Nico, 2026-06-14)
+
+**Done. All 3 gates shipped, independently verified, integrated** (cherry-pick of the agent's `0c43346` +
+Nico's `…`-table decision).
+
+- `verify.py` gains three PASS-gated stages (verify line now `… + symbols + operative + …`):
+  - **`gate_symbols()` (SYMBOLS)** — every fence-interior glyph ∈ (table col-1 ∪ definienda-class ∪
+    exemptions), else FAIL with `cell:line + glyph + U+codepoint`. `_declared_symbols()` loads the table
+    **live** (no frozen copy — tracks the truth source). Exemptions = Greek (U+0391–03C9), subscripts
+    (U+2080–2089, ᵢ, ⱼ), box-drawing (U+2500–257F, diagram art), em-dash. The reasoning is sound: these
+    classes carry no formal-logic meaning, so exempting them can't mask a misused operator — the lint stays
+    live on every fence.
+  - **`gate_skill_operative()` (OPERATIVE)** — a `kind: skill` needs ≥1 operative element (step / fenced
+    block / substantive prose) beyond heading + `≜` formula; a scaffold-only body FAILS.
+  - **`gate_skill_provenance()` (PROVENANCE)** — a skill composing empty provenance surfaces as a verify
+    `NOTE` (warning, not FAIL — a skill may legitimately compose from nothing), diagnosing fenced-only-`≜`
+    vs no-`≜`. Fires regardless of deploy state. Prevents the empty-provenance bug from regressing silently.
+- **`…` declared, not exempted (Nico's call).** The ellipsis in `materialize`'s `{ file, document, … }` is
+  the "and so on" enumerator (kin to `·`), genuine notation — so I added it to
+  `references/formal-symbolic-notation.md` and dropped it from the exempt clause (one home: declared, not
+  double-counted). Em-dash stays exempt (true prose punctuation).
+- **Tests:** `test_symbols`, `test_operative`, `test_provenance` added (plant-a-violation + clean-corpus,
+  matching `test_verify.py` style). **Suite 9/9**; `verify.py` PASS; clean corpus green under all new gates
+  (verified independently — the gates do not false-positive on η/cᵢ/tree-art). `toolkit/AGENTS.md` "Verify
+  gaps" updated (2 gaps struck → "Closed (B9)"; the fenced-`≜` gotcha annotated with the PROVENANCE warning).
+- **Remaining open verify gap (not B9):** the H1-silently-dropped composer bug is still ungated — logged in
+  toolkit/AGENTS.md, a future hardening task.
