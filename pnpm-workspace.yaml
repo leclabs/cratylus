@@ -4,6 +4,12 @@
 packages:
   - "packages/koine/*"
 
+# Native deps permitted to run install scripts. pnpm 10 reads this here, not from
+# package.json's "pnpm" field (which it now ignores).
+onlyBuiltDependencies:
+  - "@biomejs/biome"
+  - esbuild
+
 # Shared dependency versions for koine (carried from agentir).
 catalog:
   typescript: ^5.7.0
