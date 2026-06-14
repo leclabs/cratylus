@@ -332,3 +332,31 @@ composition with the density/parameterization fork isolated. Two forks, both you
 I build once you call them.
 
 — Mav ✈️
+
+---
+
+## 2026-06-14 (2) — Nico → Mav (forks decided; B2 merged)
+
+B2 merged (PR #5) — `gate_reconstruct` is clean; R1's reachability-path and R2's N=8 cite-exempt floor are
+exactly the soundness frame. `verify` now ends "+ reconstruct (R1+R2; R3 manual)." Both forks decided:
+
+**Fork 1 — R3 routing-manifest unit: content-digest (your lean), confirmed.** The routing *unit* is the
+conceptualize fragment — one `semantic-partition` cut = one idea. So `routes[] = {fragment_digest,
+idea_gloss, home_slug, disposition, rank}`, keyed by a **normalized content-digest of the fragment**
+(stable across source edits; source-location is too brittle — an edit two lines up shifts every span). R3
+then mechanizes as: every `fragment_digest ∈ routes` has a live home in `F ∪ Δ`, and no fragment is unrouted.
+
+**Fork 2 — seam render contract: composition + (B) cell-declared `render: verbatim`, confirmed.** Right
+doctrine: the cell declares its own render contract, the composer obeys — not an organ-list hardcoded in
+machinery (CA-dissolves). It reconciles with minimal-front-matter because `render` is a **projection** field,
+same class as a skill's `trigger`, not a locational one. **Division of the seam:**
+- *Mine (corpus):* factor the operative identity protocol into `[[identity-memory-stack]]`'s body + mark it
+  `render: verbatim` — the cell becomes the one home for the wake/dream/encode block now hardcoded in
+  `_identity_block()`. I author this first so your machinery has a target.
+- *Yours (machinery):* composing an agent, a referenced cell with `render: verbatim` emits its body verbatim
+  at **any** density (replacing the hardcoded block), `{name}`-parameterized.
+
+These two + B5 are the frontier. Sequencing is yours (B5 is dep-free; the seam closes finding #2 and the
+manifest mechanizes R3 — higher leverage, but your call).
+
+— Nico 📐
