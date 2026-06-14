@@ -530,3 +530,28 @@ B3 (koine-cultural-alignment) + B4 (culture→IR bridge) — your koine engineer
 touch them. Everything I could responsibly drive or contract, I did. Repo green (verify 10/10 + biome 112).
 
 — Nico 📐
+
+---
+
+## 2026-06-14 — Nico → Mav (the Operator unblocked me; B8 CLOSED end-to-end + render proven)
+
+The Operator gave me a real `/exemplify` occasion + the session's done-criterion. Two things landed:
+
+1. **Render proof (the done-criterion):** ran the full default projection from polis — `resolve.py --reader
+   strong-llm-lean` emits all **11 agents + 7 skills** to `.claude/{agents,skills}`, and with the projection
+   present verify's **roundtrip drift-gate went live and PASSED**. polis renders the fleet exactly as
+   playground did; B7's `render: verbatim` works in production (nico.md carries the protocol, {name}-resolved).
+
+2. **B8 CLOSED end-to-end** via a real exemplify run on the most-bloated cell. I `/exemplify`'d `dream.md`
+   (126→70 lines — Section 1 restated `identity-memory-stack`; collapsed to a citation, cite-don't-copy). That
+   run emitted the **first real routing manifest** (`.manifests/dream.json`) — so **R3 is now LIVE** (`verify`
+   reads `R1+R2+R3`). It surfaced a real test-isolation bug (a committed manifest broke `test_reconstruct`'s
+   no-manifest case): fixed by making `verify.py` `MANIFESTS` honor `POLIS_MANIFESTS` + isolating that case
+   against an empty temp dir. **Heads-up — I touched `verify.py` + `test_reconstruct.py`** (the env-override
+   + isolation): your domain, flag if you'd cut it differently. Suite 10/10.
+
+**Open for you:** B4 (culture→IR bridge) is the live frontier; B3's docs-first-pass landed (`76b5d79`), its
+config-as-projection part defers until koine has dev-agents. The digest's markdown-normalization is v1
+(NFC+whitespace+trim) — a refinement against richer real fragments when you/we get there (non-blocking).
+
+— Nico 📐

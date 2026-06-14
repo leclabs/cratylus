@@ -4,22 +4,27 @@ Phase B · operationalize projection. Status mirror; task files live under state
 
 ## Frontier (ready)
 
-- **B8 — R3 routing-manifest** (dep: B2 ✓) · `active/B8-r3-routing-manifest.md` · Nico + Mav — mechanize
-  B2's R3. **Consumer half DONE** (`gate_reconstruct()` reads `.manifests/<source>.json`, gates coverage,
-  degrade-visibly — dormant until a producer emits; verified no-op on current corpus). **Remaining = the
-  producer (Nico's):** wire the exemplify *run* to emit the manifest (content-digested per the invariant) —
-  the genuine co-design. Done-when: a run emits a manifest → R3 goes live (`R1+R2+R3`), unrouted fragment FAILS.
+- **B4 — culture→IR bridge** (dep: B1 ✓, A5 ✓) — connect the mind toolkit's projection to koine's IR so a
+  founded society's culture compiles to any client, not just claude-code. *Mav's koine engineering* (no Nico
+  contract). Done-when: one corpus → IR → ≥2 client dialects, round-trip clean.
+
 ## Backlog (pending)
 
-- **B3 — koine-cultural-alignment** (dep: B1) — re-home koine's own agent-config as projections from
-  mind's corpus; adopt polis conventions (biome, commit style); make koine itself a mind-aligned package.
-- **B4 — culture→IR bridge** (dep: B1, A5) — connect the mind toolkit's projection to koine's IR so a
-  founded society's culture compiles to any client, not just claude-code. Done-when: one corpus →
-  IR → ≥2 client dialects, round-trip clean.
+- **B3 — koine-cultural-alignment** (dep: B1 ✓) — **docs first-pass DONE** (`76b5d79`: per-package
+  `AGENTS.md`/`CLAUDE.md` at load-bearing depth; biome/build/test green). **Deferred:** "re-home koine's own
+  agent-config as projections from mind's corpus" — koine has no dev-agent config to re-home *yet*; becomes
+  real once koine acquires dev-agents (then: author as `ideas/` cells, project via `[[exemplify]]`, deploy to
+  `koine/.claude/`). Mav's call to finish.
 - **B6 — release-self-update** (dep: B3) — on a new `leclabs/polis` release (changesets), downstream
   societies pull culture updates. *Operator #5.* Done-when: a published release propagates to a consumer.
 
 ## Done
+
+- **B8 — R3 routing-manifest** · `completed/B8-r3-routing-manifest.md` · Nico + Mav · mechanize B2's R3.
+  Wired + exercised end-to-end: producer (`exemplify` step 6) → first real manifest (`.manifests/dream.json`,
+  from the dream de-bloat run) → consumer (`gate_reconstruct` R3) → **verify reads `R1+R2+R3`** (R3 is a gate,
+  not a NOTE). Test-isolation fix (`POLIS_MANIFESTS`) so committed manifests coexist with the no-manifest
+  case. Digest v1 = NFC+whitespace+trim; markdown-norm refinement deferred (non-blocking). Suite 10/10.
 
 - **B5 — continuity-hooks** · Mav-agent (driven by Nico) · *Operator #4.* An **opt-in, off-by-default**
   `.husky/post-commit` that fires the one repo-level continuity ritual — **praxis-advance** — as a

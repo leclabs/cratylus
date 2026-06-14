@@ -1,6 +1,24 @@
 # B8 — R3 routing-manifest (mechanize reconstruction-completeness)
 
-**State:** ready · **Lead:** Mav (emit + gate) + Nico (the routing unit, the acceptance semantics) · **Phase:** B (machinery) · **Dep:** B2 (done)
+**State:** completed · **Lead:** Mav (emit + gate) + Nico (the routing unit, the acceptance semantics) · **Phase:** B (machinery) · **Dep:** B2 (done)
+
+## CLOSED end-to-end (2026-06-14, `d173f6b`) — R3 live in the committed steady-state
+
+The whole loop is wired AND exercised on a real run:
+1. **Producer** — `exemplify.md` step 6 (`4c2008c`) emits `.manifests/<source>.json` on accept.
+2. **Digest** — `core.digest.fragment_digest` (`fe94c6e`), invariance-verified.
+3. **Consumer** — `gate_reconstruct()` R3 (`ef0ff00`) reads + coverage-gates, degrade-visibly.
+4. **First real manifest** — `.manifests/dream.json`, emitted by the `/exemplify dream.md` run (7
+   `fragment_digest`-keyed routes to live homes). **verify now reads `reconstruct (R1+R2+R3)`** — R3 is a
+   gate, not a NOTE.
+5. **Test-isolation fix** (surfaced by the real run): a committed manifest broke `test_reconstruct`'s
+   no-manifest case (it cleared only its own fixtures). `verify.py` `MANIFESTS` now honors `POLIS_MANIFESTS`;
+   the no-manifest case isolates against an empty temp dir. Once any real manifest exists, R3 is always live;
+   "no-manifest → NOTE" is only observable in isolation. Suite 10/10.
+
+Done-when met: a run emits a manifest → R3 goes live (`R1+R2+R3`); an unrouted/dropped fragment FAILS
+(`test_reconstruct` R3 cases). The markdown-normalization refinement (digest v1 = NFC+whitespace+trim) stays
+a future refinement against richer real fragments — non-blocking; R3 gates coverage, not digest-vs-source.
 
 ## Intent
 
