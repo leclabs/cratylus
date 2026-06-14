@@ -3,9 +3,6 @@
 Phase C · found real societies. All tasks pending on A + B; promote to ready/ as those frontiers clear.
 
 ## Backlog (pending)
-- **C2 — brownfield-rebase** (dep: A4, A5, B4, C1) — `rebase` reads an existing project's structure and
-  restructures it to align with polis, consensually (invited reformer). Done-when: an existing repo is
-  re-grounded on polis without destroying its in-flight work.
 - **C3 — oikos-proving-ground** (dep: C2) — rebase Oikos onto polis: reconcile its locally-forked
   dispositions (`principal-agency`, `semantic-whole-over-syntactic-substrate`, …) from copies to
   projections of mind's corpus. Co-developed with Mav. Done-when: Oikos draws its culture from polis,
@@ -77,6 +74,17 @@ Phase C · found real societies. All tasks pending on A + B; promote to ready/ a
   > graphify. C4 must inventory each host's externals before deploy.)
 
 ## Done
+
+- **C2 — brownfield-rebase** (dep: A4 ✓, A5 ✓, B4 ✓, C1 ✓) · `toolkit/rebase.py` · Mav-agent (Nico
+  semantics + fix + verify) — **`rebase <target>` consensually re-grounds an existing project on polis.**
+  Two-stage (A4 consensual): **`--plan`** (read-only survey: culture to project, disposition
+  reconciliations, in-flight files preserved) → **apply** (always prints the plan first). Three disposition
+  outcomes: **FORK** → cite `[[mind-cell]]` core + keep local delta; **ALIGNED** → pure citation; **LOCAL** →
+  untouched. In-flight (non-culture) content byte-preserved; clobber-guarded. **Proven on synthetic `/tmp`,
+  re-verified by Nico** (culture projected / fork→core+delta / in-flight preserved / plan-before-apply).
+  **Scout-discipline fix (Nico):** the matcher used the bare file stem, so a real Oikos disposition
+  (`01-principal-agency.md`) would mis-classify LOCAL — strip the `NN-` ordering prefix for the match/cite;
+  test hardened to the prefixed convention. **The real Oikos rebase is Operator-consent-gated (A4) — C3.**
 
 - **C1 — greenfield-init** (dep: A5 ✓, B4 ✓) · `toolkit/init.py` · Mav-agent (Nico founding-semantics +
   verify) — **`init <target>` founds a polis mind-society**: projects the 11 agents + 7 skills into
