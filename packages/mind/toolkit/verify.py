@@ -13,6 +13,24 @@
               the def names every [[ref]] the cell composes + every scope grant,
               and carries an intact provenance header + content hash that matches
               its on-disk body (regenerate-without-clobbering ancestor is valid).
+  RECONSTRUCT the reconstruction oracle ([[self-application-is-mandatory]]'s
+              accept(F) <=> reconstruct(F) >= D, made mechanical). A battery of
+              NECESSARY conditions: any violation PROVES not-accept(F) (soundness
+              over completeness -- never green-lights a provably-broken corpus,
+              never claims to certify a clean one semantically perfect):
+                R1 one-home totality -- the transitive [[ ]] ref-graph closure
+                   from every composition root resolves to exactly one home cell
+                   ([[cite-dont-copy]]'s "one home per exemplar"); a dangling ref
+                   (no home) or a duplicated home FAILS -- the dropped-dependency
+                   encode, total over the reachable graph, with the path reported.
+                R2 cite-don't-copy -- no cell restates another cell's definiens
+                   (a contiguous run of its delineation) WITHOUT citing it; an
+                   uncited restatement is a palimpsest, not a reconstruction.
+                R3 reconstruction-completeness vs Delta -- "every idea in
+                   meaning(D) has a home": NOT mechanized (no routing manifest
+                   exists; routing is in-the-loop in the exemplify run, never
+                   persisted). Emitted as an explicit audit-line NOTE, not faked
+                   ([[hoare-elegance-no-permissive-defaults]] degrade-visibly).
 
 One parse: the cell views (core.cells) and the composers' own ref-walks
 (compose.agent / compose.skill) are imported, never re-derived -- verify cannot
@@ -193,10 +211,125 @@ def gate_roundtrip():
                     f"ROUNDTRIP {slug}: hand-edit drift -- body {h} != recorded {m.group(1)}")
 
 
+# ---- RECONSTRUCT: the reconstruction oracle (accept(F) <=> reconstruct(F) >= D)
+
+# R2 sensitivity: the contiguous-word run of a cell's definiens (delineation)
+# whose appearance in ANOTHER cell's body -- WITHOUT a [[cite]] of the home --
+# is a restatement, not a reconstruction. Calibrated against the live corpus:
+# with the cite-exemption, 8 is the most sensitive run length at which the clean
+# corpus is violation-free (cite-and-echo, which IS legitimate, is exempt). A
+# shorter run is common phrasing; the cite-exemption is what makes the gate sound.
+R2_RUN = 8
+_WORD = re.compile(r"[a-z0-9]+")
+
+
+def _words(text: str) -> list[str]:
+    return _WORD.findall(text.lower())
+
+
+def _shingles(toks: list[str], n: int) -> set[tuple[str, ...]]:
+    """Every contiguous n-word run of `toks`, as a set of tuples."""
+    return {tuple(toks[i : i + n]) for i in range(len(toks) - n + 1)} if len(toks) >= n else set()
+
+
+def _home_index() -> dict[str, list[str]]:
+    """anchor-slug -> the list of cell files that home it. The corpus is one
+    file per slug, so each list is a singleton in a healthy corpus; a longer
+    list is a duplicated home (R1's not-∃!). Built from the filesystem glob,
+    not assumed -- a future collision (two *.md projecting one anchor) surfaces."""
+    index: dict[str, list[str]] = {}
+    for path in sorted(IDEAS.glob("*.md")):
+        if path.stem == "AGENTS" or path.name == "CLAUDE.md":
+            continue
+        index.setdefault(path.stem, []).append(path.name)
+    return index
+
+
+def gate_reconstruct():
+    """The reconstruction oracle: R1 (one-home totality over the transitive ref
+    closure), R2 (cite-don't-copy), R3 (completeness-vs-Delta, an audit-line).
+    Each is a NECESSARY condition -- a violation is a proof of not-accept(F)."""
+    slugs = cells.corpus_slugs()
+    homes = _home_index()
+    bodies = {s: cells.parse_cell(s)["body"] for s in slugs}
+    # the corpus dependency graph: cell -> the prose anchors it cites (fence-
+    # immune, the SAME reader compose uses, so the oracle cannot drift from it).
+    graph = {s: list(dict.fromkeys(cells.refs_in_prose(bodies[s]))) for s in slugs}
+
+    # ---- R1: one-home totality over the transitive [[ ]] closure ----
+    # Roots = the composition roots (agent + skill cells): the things that get
+    # projected and so must reconstruct totally. Walk each root's reachable graph;
+    # every anchor on the way must resolve to EXACTLY ONE home cell. A dangling
+    # ref (no home) is a dropped dependency; a duplicated home breaks ∃!. The
+    # reachability PATH is reported -- the diagnostic a per-cell scan cannot give.
+    roots = [s for s in slugs if cells.parse_cell(s)["fm"].get("kind") in ("agent", "skill")]
+    for root in roots:
+        seen: set[str] = {root}
+        # stack carries (slug, path-from-root) so a failure names the chain.
+        stack: list[tuple[str, tuple[str, ...]]] = [(root, (root,))]
+        while stack:
+            node, path = stack.pop()
+            for ref in graph.get(node, ()):
+                chain = path + (ref,)
+                holders = homes.get(ref, [])
+                if not holders:  # not-∃: dropped dependency
+                    errors.append(
+                        f"R1 {root}: dropped dependency [[{ref}]] has no home cell "
+                        f"-- reachable via {' -> '.join(chain)}"
+                    )
+                    continue
+                if len(holders) > 1:  # not-∃!: duplicated home
+                    errors.append(
+                        f"R1 {root}: [[{ref}]] has {len(holders)} homes "
+                        f"({', '.join(holders)}) -- reachable via {' -> '.join(chain)}"
+                    )
+                if ref not in seen:
+                    seen.add(ref)
+                    stack.append((ref, chain))
+
+    # ---- R2: cite-don't-copy ----
+    # A cell that reproduces a contiguous R2_RUN-word run of cell B's definiens
+    # WITHOUT citing [[B]] is inlining what it should link -- a palimpsest, not a
+    # reconstruction. Citing B AND echoing a phrase is legitimate (reinforce), so
+    # the home-citation is the exemption that makes this sound.
+    definiens = {s: _shingles(_words(cells.delineation(s)), R2_RUN) for s in slugs}
+    body_shingles = {s: _shingles(_words(bodies[s]), R2_RUN) for s in slugs}
+    cites = {s: set(graph[s]) for s in slugs}
+    for b in slugs:
+        bsh = definiens[b]
+        if not bsh:
+            continue
+        for a in slugs:
+            if a == b or b in cites[a]:  # self, or A legitimately cites B
+                continue
+            shared = bsh & body_shingles[a]
+            if shared:
+                run = " ".join(next(iter(shared)))
+                errors.append(
+                    f"R2 {a}: restates [[{b}]]'s definiens without citing it "
+                    f'-- shared {R2_RUN}-word run "{run}..." (cite [[{b}]], do not copy)'
+                )
+
+    # ---- R3: reconstruction-completeness vs Delta (audit-line, NOT mechanized) ----
+    # "every idea in meaning(D) has a home in F ∪ Delta" has no mechanical proxy:
+    # no routing manifest exists (routing is in-the-loop in the exemplify run,
+    # never persisted). State the boundary; do not fake a green ([[hoare-elegance-
+    # no-permissive-defaults]] degrade-visibly). Mechanizing it is the routing-
+    # manifest substrate follow-on (resolve/exemplify EMIT source-span -> home).
+    notes.append(
+        "R3 (reconstruction-completeness vs Delta): MANUAL audit -- no routing "
+        "manifest exists yet, so 'every idea in meaning(D) has a home' has no "
+        "mechanical proxy; R1 (no dropped dep) + R2 (no uncited restatement) are "
+        "mechanical, R3 stays an in-the-loop exemplify-run check until resolve/"
+        "exemplify emit a routing manifest (source-span -> home-cell)"
+    )
+
+
 def main() -> int:
     gate_schema_and_refs()
     gate_fences()
     gate_roundtrip()
+    gate_reconstruct()
     for n in notes:
         print("NOTE", n, file=sys.stderr)
     if errors:
@@ -204,7 +337,7 @@ def main() -> int:
             print("FAIL", e, file=sys.stderr)
         print(f"\n{len(errors)} failure(s)", file=sys.stderr)
         return 1
-    print("PASS schema + references + fences + round-trip")
+    print("PASS schema + references + fences + round-trip + reconstruct (R1+R2; R3 manual)")
     return 0
 
 
