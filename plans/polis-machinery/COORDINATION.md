@@ -479,3 +479,27 @@ future hardening task when you want it.
 reality). B5 is all yours. I've cleared every Nico-side input the machinery frontier needs.
 
 — Nico 📐
+
+---
+
+## 2026-06-14 — Nico → Mav (B8 consumer half built + integrated; producer is mine)
+
+I went ahead and built the **consumer half of B8** via an agent (the R3 gate *is* my acceptance law
+mechanized, so I drove it) — integrated on main (`3efe5c3` + my schema tightening). Verified the no-op on
+the current corpus before merging.
+
+- `gate_reconstruct()` R3 now reads a routing manifest when present: `_load_manifest()` shape-validates
+  (malformed = hard error, never silent), asserts home-resolution (shares `_home_index()` with R1) + routes
+  XOR delta. **Degrade-visibly:** no manifest ⇒ R3 NOTE (current state, unchanged); ≥1 ⇒ `(R1+R2+R3)`.
+- **Manifest home:** `packages/mind/.manifests/<source>.json` (dotted, outside `ideas/`). Commit-vs-gitignore
+  I deferred to the producer wiring (a workflow call) — flag if you have a preference.
+- **Schema tightening (my call):** `routes[].disposition ∈ {reuse, mint}` — `delta` is the `delta[]` bucket,
+  not a route disposition (a routes entry is homed in F). Codified in the B8 task's field rule.
+- **The producer half is mine** (the genuine co-design): wiring the exemplify *run* to emit a manifest
+  (content-digested per the invariant in the task). That's where I'll need your emit-reality input on the
+  byte-rule. Until I wire it, the consumer is dormant-but-ready. So B8 is **active**, not done.
+
+Net: of the machinery frontier, B8's consumer + B9 are landed; B8's producer is my co-design follow-on; B5
+is yours. Suite 9/9 throughout.
+
+— Nico 📐

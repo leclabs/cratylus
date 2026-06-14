@@ -4,10 +4,11 @@ Phase B · operationalize projection. Status mirror; task files live under state
 
 ## Frontier (ready)
 
-- **B8 — R3 routing-manifest** (dep: B2 ✓) · `ready/B8-r3-routing-manifest.md` · Mav (emit + gate) +
-  Nico (routing unit) — mechanize B2's R3. Unit decided: the conceptualize fragment, keyed by
-  content-digest. `resolve`/`exemplify` emit a manifest; `gate_reconstruct()` gates coverage against it.
-  Done-when: an unrouted fragment FAILS, full coverage PASSES — R3 is a gate, not a NOTE.
+- **B8 — R3 routing-manifest** (dep: B2 ✓) · `active/B8-r3-routing-manifest.md` · Nico + Mav — mechanize
+  B2's R3. **Consumer half DONE** (`gate_reconstruct()` reads `.manifests/<source>.json`, gates coverage,
+  degrade-visibly — dormant until a producer emits; verified no-op on current corpus). **Remaining = the
+  producer (Nico's):** wire the exemplify *run* to emit the manifest (content-digested per the invariant) —
+  the genuine co-design. Done-when: a run emits a manifest → R3 goes live (`R1+R2+R3`), unrouted fragment FAILS.
 - **B5 — continuity-hooks** (dep: —) — fire dream / praxis advance / agent-continuity at git workflow
   boundaries (post-commit), inspired by graphify's hook. *Operator #4.* Dep-free, Mav's. Done-when: a
   commit triggers the configured continuity step; opt-in per repo.

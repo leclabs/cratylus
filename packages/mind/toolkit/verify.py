@@ -439,10 +439,14 @@ def _home_index() -> dict[str, list[str]]:
 #   { source, exemplified_at, reader,
 #     routes[]: { fragment_digest, idea_gloss, home_slug, disposition, rank },
 #     delta[]:  { fragment_digest, idea_gloss } }
-# disposition vocab is total: reuse | mint | delta (see B8 Nico-side spec). A
+# disposition vocab is total over fragments: reuse | mint | delta (see B8
+# Nico-side spec). A `routes[]` entry HAS a home in F, so its disposition is
+# `reuse` or `mint` only; `delta` is not a routes disposition -- a delta fragment
+# is homed-nowhere-by-design and lives in `delta[]`, where bucket-membership IS
+# the delta disposition (so delta[] carries no `disposition` field). A
 # malformed manifest is a HARD ERROR, never a silent skip
 # ([[hoare-elegance-no-permissive-defaults]]).
-DISPOSITIONS = {"reuse", "mint", "delta"}
+ROUTE_DISPOSITIONS = {"reuse", "mint"}
 
 
 class ManifestError(Exception):
@@ -482,8 +486,9 @@ def _load_manifest(path: pathlib.Path) -> dict:
                  rw, "missing/empty 'idea_gloss'")
         _require(isinstance(r.get("home_slug"), str) and r["home_slug"] != "",
                  rw, "missing/empty 'home_slug'")
-        _require(r.get("disposition") in DISPOSITIONS, rw,
-                 f"disposition {r.get('disposition')!r} not in {sorted(DISPOSITIONS)}")
+        _require(r.get("disposition") in ROUTE_DISPOSITIONS, rw,
+                 f"disposition {r.get('disposition')!r} not in {sorted(ROUTE_DISPOSITIONS)} "
+                 f"(a routes[] entry is homed in F -> reuse|mint; delta lives in delta[])")
         _require(isinstance(r.get("rank"), (int, float)) and not isinstance(r.get("rank"), bool),
                  rw, "missing/non-numeric 'rank'")
     for i, d in enumerate(data["delta"]):
