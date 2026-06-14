@@ -21,6 +21,19 @@ Phase C · found real societies. All tasks pending on A + B; promote to ready/ a
   prune ruling = **keep all three** (Operator, 2026-06-13). Loop Mav in early. Done-when: all 7 hosts
   project from polis, reconciled, sidecars + archive untouched.
 
+  > **Drift is real — expect content-hash changes, treat them as intended (finding, 2026-06-13).** The
+  > deployed fleet artifacts are from `playground`; polis has since improved cells, so many will re-emit
+  > with new hashes. **Concrete first instance:** the deployed `exemplify` skill (`~/.claude/skills/
+  > exemplify/SKILL.md`) is content-hash `cac84367c8022f90` and **lacks** the "Composed from /conceptualize
+  > · /signify · /materialize." provenance line; polis emits `da42583bf10dab29` **with** it (the
+  > `e19f895` prose-`≜` fix). So C4 reconciliation is *not* "expect byte-identical" — it is **"diff
+  > polis-emission vs deployed; a changed hash is an intended update unless the cell is unchanged; only an
+  > UNEXPECTED diff (cell unchanged but emission differs) signals a real problem."** Method to diff without
+  > deploying: `resolve.emit(slug, reader='strong-llm-lean', harness='claude-code')` → `(full_text,
+  > body_hash, body)`. **Open (Operator, sequencing):** forward-port the polis cell-fixes into playground +
+  > redeploy now so the fleet improves *before* C4 — or let C4 carry them at source-switch? Depends on C4
+  > imminence.
+
 ## Done
 
 _(none yet)_
