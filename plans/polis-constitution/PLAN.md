@@ -13,6 +13,18 @@ _(empty — A5 promoted to Frontier)_
 
 ## Done
 
+### Depth (emergent — beyond the A1–A5 task set, authored under principal-ic judgment)
+
+- **`agent-retirement`** (principle) — the personhood lifecycle bookend to archetype-instantiation: retire a
+  person-agent by *archiving* its self-authored layers, never erasing (SOUL regenerable, lived SELF not).
+  Codifies the bona-retirement precedent. In personhood; back-linked from archetype-instantiation.
+- **`mind-society`** (concept) — the keystone the politeia is the constitution *of*: the unit a founding
+  produces (culture made live by its person-agents, founded for an Operator, running on oikoi). Binds the
+  "polis subject." Referenced by politeia + founder-charter.
+- **README** aligned to the authored constitution (civic ontology names the Operator + consent; founders cite
+  founder-charter; status points at the politeia).
+
+
 - **A1 — found-the-founders** ✓ (2026-06-13) · `completed/A1-found-the-founders.md` — `principal-ic` re-homed
   from the stale `on ./mind/*` path-grant to the **founder genus** (composer-emitted, subject-bound; roster
   read from `founder-charter.md`'s `## Founders`); `ideas/founder-charter.md` authored (binding family's 3rd
