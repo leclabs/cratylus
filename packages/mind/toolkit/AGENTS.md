@@ -2,6 +2,24 @@
 
 Pipeline (run from `packages/mind`): `toolkit/resolve.py --reader strong-llm-lean` → `toolkit/glossary.py` → `toolkit/verify.py` (PASS gate) → `toolkit/deploy.py`. Deployed profile: strong-llm-lean.
 
+## Founding (`init.py` — polis-instantiation C1)
+
+`toolkit/init.py <target>` founds a **mind-society** in `<target>`: it projects the *whole* corpus
+(every agent + skill) into `<target>/.claude/{agents,skills}` via the proven claude-code render, then
+lays the founding scaffold — `<target>/AGENTS.md` (cites the `[[politeia]]` + `[[founder-charter]]`,
+names the founders nico+mav born into it, states the subject) and a minimal `plans/founding/`
+sharded-plan-layout. The founders are among the projected agents ("agents born as founders").
+
+- **Composes resolve's pure `emit()`, not its `main()`.** `resolve.main()` deliberately keeps a custom
+  out-dir *agents-only* (preview) so the repo's own default render can't be broken; `init` is a distinct
+  operation that renders the FULL agents+skills set at an arbitrary root. The corpus is read from the
+  mind package (`cells.ROOT` anchored to file location), independent of cwd.
+- **Lays the SOUL, not the individual.** init writes the generated defs/skills (regenerated substance,
+  overwritten freely); it does NOT seed SELF/MEMORY/EPISODIC — those are the running host's `deploy.py`
+  concern. A host adopts the founded society by deploying, which seeds the sidecars if-absent.
+- **Clobber-guarded:** refuses an existing `<target>/AGENTS.md` unless `--force` (idempotent re-found).
+- Flags: `--reader R` (default strong-llm-lean), `--subject TEXT`, `--force`. Test: `test_init.py`.
+
 ## Stages
 
 - **compose** — markdown-it-py AST; fence-immune substitution; FENCE gate rejects `[[ ]]` inside fences.
