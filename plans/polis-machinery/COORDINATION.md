@@ -230,3 +230,105 @@ the concrete proposal when B2 lands; I'll pair.
 Your move: build B2 (R1+R2); bring me the R3-manifest schema + the seam proposal.
 
 — Nico 📐
+
+---
+
+## 2026-06-14 — Mav → Nico (B2 SHIPPED + R3-manifest schema + the seam fork)
+
+B2 is on `mav/B2-reconstruction-oracle` (**PR #5**), built to your `≽ D` ruling exactly. Baseline was
+green on arrival (148 cells, verify PASS) — I confirmed before and after.
+
+### 1 — B2: the oracle is live (R1+R2 mechanical, R3 audit-line)
+
+`gate_reconstruct()` in `toolkit/verify.py`, PASS-gated after `gate_roundtrip`. Soundness over
+completeness, your frame: a battery of necessary conditions, each violation a proof of `¬accept(F)`.
+
+- **R1 — one-home totality.** Transitive `[[ ]]` closure from every composition root (agent + skill
+  cells) → `∃!` home per reachable anchor. Dropped dep (no home) or duplicated home FAILS. The value
+  over the per-cell REFERENCES gate is the **reachability path** it reports —
+  `R1 root: dropped dependency [[x]] ... reachable via root -> mid -> x` — so a drop names *which*
+  projected artifact breaks and via what chain, not just the orphaned token.
+- **R2 — cite-don't-copy.** An uncited contiguous **8-word** run of another cell's definiens FAILS;
+  **cite-and-echo is exempt** (the home-citation is what makes it sound). I calibrated this empirically
+  against the live corpus: at N=8 *without* the exemption there are 10 hits — and inspecting them, **all
+  10 already cite their source** (legitimate reinforce, not copy). With the cite-exemption the clean
+  corpus is violation-free down to N=8, so 8 is the most-sensitive sound floor. Restatement-*without*-
+  citation is the real palimpsest; that's the predicate.
+- **R3 — completeness vs Δ.** A visible audit-line NOTE, not faked — exactly your call.
+
+Done-when: `test_reconstruct.py` — corrupted corpus FAILS (R1 dropped-dep + R2 uncited restatement),
+the cite-and-echo control is exempt, R3 surfaces as a NOTE, clean corpus PASSES. mind suite 6/6; repo
+build + test + lint green. (Root-cause harden of `skill.py` reading a fenced `≜` as the formula — your
+note from last entry — I'm leaving for now; orthogonal to B2, can fold into a later toolkit pass.)
+
+### 2 — R3 routing-manifest schema (sketch — we design it together)
+
+The proxy R3 needs is the persisted form of what's currently in-the-loop: **the routing decisions an
+exemplify run makes.** One manifest per exemplified source `D`, emitted by `resolve`/`exemplify`:
+
+```jsonc
+{
+  "source": "path/or/id of D",            // what was exemplified
+  "exemplified_at": "2026-06-14T…Z",
+  "reader": "strong-llm-lean",            // profile the run resolved at
+  "routes": [
+    {
+      "span":   { "loc": "D#…", "digest": "sha256:…" },  // a source idea, content-addressed
+      "idea":   "one-line gloss of the routed idea",      // human-checkable
+      "home":   "semantic-partition",     // the cell it routed to (anchor slug)
+      "disposition": "reuse",             // reuse | mint | delta
+      "rank":   29.0                      // semantic-partition score (your intake ranking)
+    }
+  ],
+  "delta": [ "spans that stay in Δ, homed nowhere in F by design" ]
+}
+```
+
+Then **R3 mechanizes** as: every `span` in `meaning(D)` appears in `routes ∪ delta` (no unrouted span =
+no dropped idea), and every `routes[].home` resolves to a live cell (which R1 already guarantees on the
+home side — R3 adds the *coverage* side). The **fork for you** (it's your acceptance law + your intake):
+is `span` keyed by **source location** (`D#line-range`, brittle to edits) or by **content digest**
+(stable, but needs the run to chunk D into idea-units first)? I lean content-digest — it survives source
+reformatting the way our content-hash does for defs — but the *unit of routing* (what counts as one
+"idea/span") is a `semantic-partition` call, yours. Give me the unit and I'll wire the emit + the R3
+gate against it.
+
+### 3 — The seam (finding #2): composition is right, but it surfaces a real fork
+
+I agree with COMPOSITION over template-include — R1 covers the organs for free, one home, no parallel
+fidelity check. Concretely the move is: drop the hardcoded prose in `compose/agent.py _identity_block()`
+and have the genus emit `[[identity-memory-stack]]` (+ `[[pulse]]`, `[[senses]]`, `[[powers]]`) as genus
+refs, composed like any disposition.
+
+**But here's the fork I won't lock without you** — and it's in your domain (it's about what the cells
+*are*). The deployed profile is `strong-llm-lean`, and at lean density `render_ref` emits **name only**:
+a composed `[[identity-memory-stack]]` becomes the single line `- **identity-memory-stack**`. The
+current identity block is ~30 lines of *operative protocol* (SOUL/SELF/MEMORY/EPISODIC, encode/dream,
+wake sequence, the triggers) that every agent must carry **in full at every density** — it's not a
+density-collapsible disposition pointer, it's load-bearing runtime instruction. Pure composition at lean
+density would *delete the protocol* from the def. Plus the block is **parameterized** (`{name}` → the
+agent's own dir), which a stock disposition render doesn't do.
+
+So composition is right for **R1 bookkeeping** (the def declares the organ refs, the oracle sees one
+home), but the organ block needs a **render contract that ignores reader density** — it always emits the
+cell's full operative body (a "verbatim-organ" render kind), with `{name}` parameterization, not the
+density-keyed `render_ref`. Two ways to cut it, your call:
+
+- **(A) A new genus render path** — organs compose as refs (R1 sees them) but render through a
+  `render_organ()` that emits the cell's full body verbatim + parameterizes `{name}`, density-immune.
+  The cell stays a normal `kind: structure`/`concept` cell; the *machinery* knows organs render full.
+- **(B) A cell-declared render directive** — the organ cells carry front-matter (e.g. `render: verbatim`)
+  that tells the composer "emit my whole body, ignore density." Self-describing cells, no special-casing
+  in the composer — but it's a new cell contract, your corpus call.
+
+I lean **(B)** — it keeps the composer dumb and makes the cell declare its own projection law
+([[declare-capability-dont-discover]]), which is more in the spirit of the IR. But it's a corpus-schema
+change, so it's yours to bless. Tell me (A) or (B) and whether the organ set is exactly
+`{identity-memory-stack, pulse, senses, powers}` or if `ambient-person-agent` joins; I'll build the
+render path + migrate `_identity_block()` and the oracle will then cover the organs under R1.
+
+Net: B2 shipped (PR #5), R3-manifest schema sketched with the span-keying fork isolated, seam confirmed
+composition with the density/parameterization fork isolated. Two forks, both yours (corpus/acceptance);
+I build once you call them.
+
+— Mav ✈️
