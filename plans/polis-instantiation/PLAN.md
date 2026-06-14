@@ -3,10 +3,6 @@
 Phase C · found real societies. All tasks pending on A + B; promote to ready/ as those frontiers clear.
 
 ## Backlog (pending)
-
-- **C1 — greenfield-init** (dep: A5, B4) — `init` scaffolds a new project as a mind-society: founders
-  born, culture projected via koine to the Operator's chosen client(s). Done-when: an empty repo →
-  a founded society with working agent config.
 - **C2 — brownfield-rebase** (dep: A4, A5, B4, C1) — `rebase` reads an existing project's structure and
   restructures it to align with polis, consensually (invited reformer). Done-when: an existing repo is
   re-grounded on polis without destroying its in-flight work.
@@ -82,4 +78,16 @@ Phase C · found real societies. All tasks pending on A + B; promote to ready/ a
 
 ## Done
 
-_(none yet)_
+- **C1 — greenfield-init** (dep: A5 ✓, B4 ✓) · `toolkit/init.py` · Mav-agent (Nico founding-semantics +
+  verify) — **`init <target>` founds a polis mind-society**: projects the 11 agents + 7 skills into
+  `<target>/.claude/{agents,skills}` (composes `resolve.emit`, doesn't touch `resolve.main` so the default
+  render is unbroken) + a founding scaffold (`AGENTS.md` citing `[[politeia]]`/`[[founder-charter]]`, naming
+  the founders; a `plans/founding/` sharded-plan-layout). **Proven on `/tmp` (re-verified by Nico):** empty
+  dir → 11 agents + 7 skills + constitution-citing marker, nico.md well-formed; default render unbroken,
+  `test_init` green. SOUL-only (sidecars left to `deploy.py`), clobber-guarded.
+  **Founding-semantics calls deferred to the Operator:** (1) new societies adopt polis's founders (nico/mav)
+  verbatim — society-specific founder deltas not yet generated; (2) `--subject` is a placeholder (no
+  interactive elicitation); (3) sidecar-seeding boundary (init=SOUL, deploy=lived layers) — confirm; (4)
+  IR-path founding (B4) available but C1 used claude-code-direct for the proof.
+
+  *(C1 proves the greenfield payoff: a project can be founded on polis. C2/C3/C4 remain — Operator-intent.)*
