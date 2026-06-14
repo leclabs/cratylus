@@ -6,7 +6,7 @@ import type { IR, Manifest } from '@leclabs/koine-core';
 import { cursorAdapter } from '../../src/cursor/index.js';
 
 const manifest = (): Manifest => ({
-  agentir: 1,
+  koine: 1,
   scope: 'project',
   targets: ['cursor'],
 });
@@ -14,7 +14,7 @@ const manifest = (): Manifest => ({
 describe('cursorAdapter', () => {
   let cwd: string;
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-cursor-'));
+    cwd = mkdtempSync(join(tmpdir(), 'koine-cursor-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

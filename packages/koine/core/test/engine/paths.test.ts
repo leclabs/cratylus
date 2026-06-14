@@ -8,27 +8,27 @@ describe('findIRRoot', () => {
   let tmp: string;
 
   beforeEach(() => {
-    tmp = mkdtempSync(join(tmpdir(), 'agentir-paths-'));
+    tmp = mkdtempSync(join(tmpdir(), 'koine-paths-'));
   });
 
   afterEach(() => {
     rmSync(tmp, { recursive: true, force: true });
   });
 
-  it('returns ~/.agentir for user scope (regardless of existence)', () => {
+  it('returns ~/.koine for user scope (regardless of existence)', () => {
     expect(findIRRoot('user', tmp)).toBe(join(homedir(), IR_DIRNAME));
   });
 
-  it('returns null for project scope when no .agentir/ exists upward', () => {
+  it('returns null for project scope when no .koine/ exists upward', () => {
     expect(findIRRoot('project', tmp)).toBeNull();
   });
 
-  it('finds .agentir/ in cwd for project scope', () => {
+  it('finds .koine/ in cwd for project scope', () => {
     mkdirSync(join(tmp, IR_DIRNAME));
     expect(findIRRoot('project', tmp)).toBe(join(tmp, IR_DIRNAME));
   });
 
-  it('walks up to find .agentir/ in an ancestor directory', () => {
+  it('walks up to find .koine/ in an ancestor directory', () => {
     mkdirSync(join(tmp, IR_DIRNAME));
     const nested = join(tmp, 'a', 'b', 'c');
     mkdirSync(nested, { recursive: true });

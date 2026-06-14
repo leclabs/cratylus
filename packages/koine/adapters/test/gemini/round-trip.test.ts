@@ -6,7 +6,7 @@ import type { IR, Manifest } from '@leclabs/koine-core';
 import { geminiAdapter } from '../../src/gemini/index.js';
 
 const manifest = (): Manifest => ({
-  agentir: 1,
+  koine: 1,
   scope: 'project',
   targets: ['gemini'],
 });
@@ -15,7 +15,7 @@ describe('geminiAdapter', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-gemini-'));
+    cwd = mkdtempSync(join(tmpdir(), 'koine-gemini-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

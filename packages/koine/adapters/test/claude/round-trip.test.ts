@@ -6,7 +6,7 @@ import type { IR, Manifest } from '@leclabs/koine-core';
 import { claudeAdapter } from '../../src/claude/index.js';
 
 const manifest = (): Manifest => ({
-  agentir: 1,
+  koine: 1,
   scope: 'project',
   targets: ['claude'],
 });
@@ -77,7 +77,7 @@ describe('claudeAdapter', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-claude-'));
+    cwd = mkdtempSync(join(tmpdir(), 'koine-claude-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });
@@ -157,7 +157,7 @@ describe('claudeAdapter', () => {
     const ir1 = await claudeAdapter.read('project', cwd);
 
     // Write to a fresh dir, then read back
-    const cwd2 = mkdtempSync(join(tmpdir(), 'agentir-claude-rt-'));
+    const cwd2 = mkdtempSync(join(tmpdir(), 'koine-claude-rt-'));
     try {
       await claudeAdapter.write({ manifest: manifest(), ...ir1 }, 'project', cwd2, {});
       const ir2 = await claudeAdapter.read('project', cwd2);

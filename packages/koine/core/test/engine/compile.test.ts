@@ -35,7 +35,7 @@ function adapter(
   };
 }
 
-const manifest: Manifest = { agentir: 1, scope: 'project', targets: ['claude'] };
+const manifest: Manifest = { koine: 1, scope: 'project', targets: ['claude'] };
 const ir: IR = { manifest };
 
 describe('compile', () => {
@@ -43,8 +43,8 @@ describe('compile', () => {
   let stateDir: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-compile-'));
-    stateDir = join(cwd, '.agentir');
+    cwd = mkdtempSync(join(tmpdir(), 'koine-compile-'));
+    stateDir = join(cwd, '.koine');
     mkdirSync(stateDir, { recursive: true });
   });
   afterEach(() => {

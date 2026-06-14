@@ -5,11 +5,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IR, Manifest } from '@leclabs/koine-core';
 import { clineAdapter } from '../../src/cline/index.js';
 
-const manifest = (): Manifest => ({ agentir: 1, scope: 'project', targets: ['cline'] });
+const manifest = (): Manifest => ({ koine: 1, scope: 'project', targets: ['cline'] });
 
 describe('clineAdapter', () => {
   let cwd: string;
-  beforeEach(() => { cwd = mkdtempSync(join(tmpdir(), 'agentir-cline-')); });
+  beforeEach(() => { cwd = mkdtempSync(join(tmpdir(), 'koine-cline-')); });
   afterEach(() => { rmSync(cwd, { recursive: true, force: true }); });
 
   it('writes multi-file rules in .clinerules/', async () => {

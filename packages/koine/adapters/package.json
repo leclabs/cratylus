@@ -1,7 +1,7 @@
 {
   "name": "@leclabs/koine-adapters",
   "version": "0.0.0",
-  "description": "Official agentir adapters for 10 AI coding clients",
+  "description": "Official koine adapters for 10 AI coding clients",
   "license": "MIT",
   "type": "module",
   "files": ["dist"],

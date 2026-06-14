@@ -19,11 +19,11 @@ export async function runWatch(opts: WatchOpts, adapters: Adapter[]): Promise<nu
   const debounceMs = opts.debounce ?? 300;
   const root = findIRRoot(scope, cwd);
   if (!root) {
-    console.error(pc.red(`agentir watch: no .agentir/ found for scope '${scope}' from ${cwd}`));
+    console.error(pc.red(`koine watch: no .koine/ found for scope '${scope}' from ${cwd}`));
     return 2;
   }
 
-  console.log(pc.bold('agentir watch'), pc.gray(`(scope: ${scope}, watching: ${root})`));
+  console.log(pc.bold('koine watch'), pc.gray(`(scope: ${scope}, watching: ${root})`));
   console.log(pc.gray(`debounce: ${debounceMs}ms · ctrl-c to exit`));
   console.log('');
 

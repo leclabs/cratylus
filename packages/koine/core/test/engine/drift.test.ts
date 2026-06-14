@@ -14,8 +14,8 @@ describe('drift', () => {
   let stateDir: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-drift-'));
-    stateDir = join(cwd, '.agentir');
+    cwd = mkdtempSync(join(tmpdir(), 'koine-drift-'));
+    stateDir = join(cwd, '.koine');
     mkdirSync(stateDir, { recursive: true });
   });
 

@@ -16,7 +16,7 @@ export async function runInit(opts: InitOpts = {}): Promise<number> {
   const root = defaultIRRoot(scope, cwd);
 
   if (existsSync(root)) {
-    console.error(pc.red(`agentir: ${root} already exists`));
+    console.error(pc.red(`koine: ${root} already exists`));
     return 1;
   }
 
@@ -25,22 +25,22 @@ export async function runInit(opts: InitOpts = {}): Promise<number> {
     await mkdir(join(root, sub), { recursive: true });
   }
 
-  const manifest: Manifest = { agentir: 1, scope, targets: [] };
+  const manifest: Manifest = { koine: 1, scope, targets: [] };
   await writeFile(
     join(root, 'manifest.yaml'),
     dump(manifest, { lineWidth: 100, noRefs: true }),
     'utf8',
   );
 
-  // For project scope, append .agentir/local to .gitignore if it exists.
+  // For project scope, append .koine/local to .gitignore if it exists.
   if (scope === 'project') {
     const gi = join(cwd, '.gitignore');
     if (existsSync(gi)) {
       const text = await readFile(gi, 'utf8');
-      if (!text.includes('.agentir/local')) {
+      if (!text.includes('.koine/local')) {
         await writeFile(
           gi,
-          text + (text.endsWith('\n') ? '' : '\n') + '.agentir/local/\n',
+          text + (text.endsWith('\n') ? '' : '\n') + '.koine/local/\n',
           'utf8',
         );
       }

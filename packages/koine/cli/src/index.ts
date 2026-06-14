@@ -35,10 +35,10 @@ const adapters: Adapter[] = [
   continueAdapter,
 ];
 
-const cli = cac('agentir');
+const cli = cac('koine');
 
 cli
-  .command('init', 'Bootstrap a new .agentir/ directory')
+  .command('init', 'Bootstrap a new .koine/ directory')
   .option('--scope <scope>', 'user | project | local', { default: 'project' })
   .action(async (opts: { scope: Scope }) => {
     process.exit(await runInit({ scope: opts.scope }));

@@ -6,7 +6,7 @@ import type { IR, Manifest } from '@leclabs/koine-core';
 import { opencodeAdapter } from '../../src/opencode/index.js';
 
 const manifest = (): Manifest => ({
-  agentir: 1,
+  koine: 1,
   scope: 'project',
   targets: ['opencode'],
 });
@@ -15,7 +15,7 @@ describe('opencodeAdapter', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-oc-'));
+    cwd = mkdtempSync(join(tmpdir(), 'koine-oc-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });
@@ -53,10 +53,10 @@ describe('opencodeAdapter', () => {
     };
     const report = await opencodeAdapter.write(ir, 'project', cwd, {});
     expect(report.warnings).toEqual([]);
-    expect(existsSync(join(cwd, '.opencode', 'plugins', 'agentir-hooks.yaml'))).toBe(true);
-    expect(existsSync(join(cwd, '.opencode', 'plugins', 'agentir-hooks.ts'))).toBe(true);
+    expect(existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.yaml'))).toBe(true);
+    expect(existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.ts'))).toBe(true);
 
-    const shim = readFileSync(join(cwd, '.opencode', 'plugins', 'agentir-hooks.ts'), 'utf8');
+    const shim = readFileSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.ts'), 'utf8');
     expect(shim).toContain('tool.execute.after'); // canonical → opencode mapping applied
     expect(shim).toContain('./fmt.sh');
   });
@@ -72,7 +72,7 @@ describe('opencodeAdapter', () => {
     const report = await opencodeAdapter.write(ir, 'project', cwd, {});
     expect(report.warnings.length).toBeGreaterThan(0);
     expect(report.skipped.length).toBeGreaterThan(0);
-    expect(existsSync(join(cwd, '.opencode', 'plugins', 'agentir-hooks.ts'))).toBe(false);
+    expect(existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.ts'))).toBe(false);
   });
 
   it('round-trips rules + hooks via the YAML sidecar', async () => {

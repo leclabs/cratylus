@@ -5,11 +5,11 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IR, Manifest } from '@leclabs/koine-core';
 import { aiderAdapter } from '../../src/aider/index.js';
 
-const manifest = (): Manifest => ({ agentir: 1, scope: 'project', targets: ['aider'] });
+const manifest = (): Manifest => ({ koine: 1, scope: 'project', targets: ['aider'] });
 
 describe('aiderAdapter', () => {
   let cwd: string;
-  beforeEach(() => { cwd = mkdtempSync(join(tmpdir(), 'agentir-aider-')); });
+  beforeEach(() => { cwd = mkdtempSync(join(tmpdir(), 'koine-aider-')); });
   afterEach(() => { rmSync(cwd, { recursive: true, force: true }); });
 
   it('writes AGENTS.md', async () => {

@@ -1,15 +1,15 @@
-# Writing an agentir adapter
+# Writing an koine adapter
 
 This guide walks through building a community adapter using the **Aider adapter** (~70 lines) as the worked example. Aider has the smallest config surface of any supported client (rules only), so it's the minimum-viable adapter shape.
 
-By the end you'll have a published `@yourname/agentir-adapter-myclient` package that the agentir CLI can target via `agentir compile myclient`.
+By the end you'll have a published `@yourname/koine-adapter-myclient` package that the koine CLI can target via `koine compile myclient`.
 
 ---
 
 ## Prerequisites
 
 ```bash
-npm install @leclabs/agentir-core
+npm install @leclabs/koine-core
 ```
 
 Optionally `vitest` for testing and `tsup` for building.
@@ -33,7 +33,7 @@ Adapters are pure: same input → same output. State lives in the filesystem.
 
 ## Step 1 — declare capabilities
 
-Tell agentir what your client supports:
+Tell koine what your client supports:
 
 ```ts
 const capabilities: AdapterCapabilities = {
@@ -56,7 +56,7 @@ const capabilities: AdapterCapabilities = {
 };
 ```
 
-The CLI's `agentir adapters` and `agentir lint` use this to surface lossy translations to users.
+The CLI's `koine adapters` and `koine lint` use this to surface lossy translations to users.
 
 ## Step 2 — paths
 
@@ -81,7 +81,7 @@ async detect(scope: Scope, cwd: string): Promise<boolean> {
 }
 ```
 
-Used by `agentir doctor` to report which targets are configured.
+Used by `koine doctor` to report which targets are configured.
 
 ## Step 4 — `read()`
 
@@ -95,7 +95,7 @@ async read(scope: Scope, cwd: string): Promise<Partial<IR>> {
 }
 ```
 
-`parseRule` is exported from `@leclabs/agentir-core` — use the shared serializers for resources that share the markdown+frontmatter shape (rules, skills, commands, agents). For YAML-shaped resources (hooks, MCP), use `parseHook` / handcraft.
+`parseRule` is exported from `@leclabs/koine-core` — use the shared serializers for resources that share the markdown+frontmatter shape (rules, skills, commands, agents). For YAML-shaped resources (hooks, MCP), use `parseHook` / handcraft.
 
 The CLI's `import` command calls this and writes the IR via the engine.
 
@@ -132,7 +132,7 @@ async write(ir: IR, scope: Scope, cwd: string, opts: WriteOpts = {}): Promise<Wr
 }
 ```
 
-**Honor `opts.dryRun`** — when true, return what *would* be written but don't touch the filesystem. The engine uses this for `agentir compile --dry-run` and `agentir diff`.
+**Honor `opts.dryRun`** — when true, return what *would* be written but don't touch the filesystem. The engine uses this for `koine compile --dry-run` and `koine diff`.
 
 **Be explicit about what you skip.** The `--explain` flag groups warnings/skips by reason — give meaningful reason strings.
 
@@ -164,9 +164,9 @@ const canonicalToMyClient: Partial<Record<CanonicalEvent, string>> = {
 };
 ```
 
-agentir's CLI surfaces this via `agentir events --client myclient`. Events not in the map → warning + skip on write.
+koine's CLI surfaces this via `koine events --client myclient`. Events not in the map → warning + skip on write.
 
-For hook *bodies*, agentir hooks are shell commands. If your client wants JS plugins or another representation, generate a thin shim that shells out to the configured `command` (see the OpenCode adapter for reference).
+For hook *bodies*, koine hooks are shell commands. If your client wants JS plugins or another representation, generate a thin shim that shells out to the configured `command` (see the OpenCode adapter for reference).
 
 ## Testing
 
@@ -176,7 +176,7 @@ Use vitest with the round-trip pattern:
 import { myAdapter } from '../src/index.js';
 
 it('round-trips rules', async () => {
-  const ir = { manifest: { agentir: 1, scope: 'project', targets: ['myclient'] }, rules: [...] };
+  const ir = { manifest: { koine: 1, scope: 'project', targets: ['myclient'] }, rules: [...] };
   await myAdapter.write(ir, 'project', tmpDir, {});
   const re = await myAdapter.read('project', tmpDir);
   expect(re.rules).toEqual(ir.rules);
@@ -189,7 +189,7 @@ it('round-trips rules', async () => {
 npm publish --access public
 ```
 
-Users install with `npm i @yourname/agentir-adapter-myclient` and pass it to the CLI via a custom adapter loader, or to the `compile` engine directly.
+Users install with `npm i @yourname/koine-adapter-myclient` and pass it to the CLI via a custom adapter loader, or to the `compile` engine directly.
 
 ## Reference adapters
 
@@ -203,4 +203,4 @@ Look at the official adapters in `packages/adapters/src/` for patterns:
 
 ## Questions?
 
-Open an issue on [leclabs/agentir](https://github.com/leclabs/agentir).
+Open an issue on [leclabs/polis](https://github.com/leclabs/polis).

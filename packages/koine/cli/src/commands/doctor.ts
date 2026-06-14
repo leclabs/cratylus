@@ -40,21 +40,21 @@ export async function runDoctor(opts: DoctorOpts, adapters: Adapter[]): Promise<
   const root = findIRRoot(scope, cwd);
   const targetRoot = root ?? defaultIRRoot(scope, cwd);
 
-  console.log(pc.bold(`agentir doctor`), pc.gray(`(scope: ${scope}, cwd: ${cwd})`));
+  console.log(pc.bold(`koine doctor`), pc.gray(`(scope: ${scope}, cwd: ${cwd})`));
   console.log('');
 
   let failures = 0;
   let warnings = 0;
 
-  // 1. .agentir/ presence
+  // 1. .koine/ presence
   if (root && existsSync(root)) {
-    console.log(fmt({ status: 'pass', label: '.agentir/ exists', detail: root }));
+    console.log(fmt({ status: 'pass', label: '.koine/ exists', detail: root }));
   } else {
     console.log(
       fmt({
         status: 'warn',
-        label: `.agentir/ not found for scope '${scope}'`,
-        detail: `would be created at ${targetRoot}; run \`agentir init\``,
+        label: `.koine/ not found for scope '${scope}'`,
+        detail: `would be created at ${targetRoot}; run \`koine init\``,
       }),
     );
     warnings++;
@@ -89,7 +89,7 @@ export async function runDoctor(opts: DoctorOpts, adapters: Adapter[]): Promise<
           fmt({
             status: 'pass',
             label: 'manifest.yaml: valid',
-            detail: `agentir v${manifest.agentir}, scope ${manifest.scope}, ${manifest.targets.length} target(s)`,
+            detail: `koine v${manifest.koine}, scope ${manifest.scope}, ${manifest.targets.length} target(s)`,
           }),
         );
       }

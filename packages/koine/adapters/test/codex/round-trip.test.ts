@@ -6,7 +6,7 @@ import type { IR, Manifest } from '@leclabs/koine-core';
 import { codexAdapter } from '../../src/codex/index.js';
 
 const manifest = (): Manifest => ({
-  agentir: 1,
+  koine: 1,
   scope: 'project',
   targets: ['codex'],
 });
@@ -15,7 +15,7 @@ describe('codexAdapter', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-codex-'));
+    cwd = mkdtempSync(join(tmpdir(), 'koine-codex-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

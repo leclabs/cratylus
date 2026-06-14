@@ -12,7 +12,7 @@ import type { IR, Manifest } from '@leclabs/koine-core';
 const adapters = [claudeAdapter, opencodeAdapter, codexAdapter, geminiAdapter, copilotAdapter];
 
 const manifest = (): Manifest => ({
-  agentir: 1,
+  koine: 1,
   scope: 'project',
   targets: adapters.map((a) => a.id),
 });
@@ -38,7 +38,7 @@ describe('Phase 2 cross-adapter portability', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-port2-'));
+    cwd = mkdtempSync(join(tmpdir(), 'koine-port2-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

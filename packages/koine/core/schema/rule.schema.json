@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://leclabs.dev/agentir/v1/rule.schema.json",
+  "$id": "https://leclabs.dev/koine/v1/rule.schema.json",
   "title": "Rule",
   "description": "A rule fragment. Markdown body with optional frontmatter. Compiled to AGENTS.md/CLAUDE.md/.cursorrules etc.",
   "type": "object",

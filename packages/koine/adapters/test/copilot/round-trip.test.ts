@@ -6,7 +6,7 @@ import type { IR, Manifest } from '@leclabs/koine-core';
 import { copilotAdapter } from '../../src/copilot/index.js';
 
 const manifest = (): Manifest => ({
-  agentir: 1,
+  koine: 1,
   scope: 'project',
   targets: ['copilot'],
 });
@@ -15,7 +15,7 @@ describe('copilotAdapter', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'agentir-copilot-'));
+    cwd = mkdtempSync(join(tmpdir(), 'koine-copilot-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

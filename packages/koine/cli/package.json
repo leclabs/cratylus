@@ -1,7 +1,7 @@
 {
   "name": "@leclabs/koine",
   "version": "0.0.0",
-  "description": "agentir CLI — universal agent configuration translator",
+  "description": "koine CLI — universal agent configuration translator",
   "license": "MIT",
   "type": "module",
   "bin": {
