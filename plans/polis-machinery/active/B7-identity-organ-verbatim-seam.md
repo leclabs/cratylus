@@ -42,3 +42,27 @@ seam (CA-dissolves: the cell declares its own projection law, the composer obeys
 - The composer emits agent identity blocks by resolving that cell (no `_identity_block()` literal).
 - Lean-density agent defs still carry the full protocol verbatim (density-immune), `{name}` correct.
 - The oracle's R1 covers the organ refs; `verify.py` PASS; agent defs round-trip byte-identical.
+
+## Cell-side outcome (Nico, 2026-06-13)
+
+**Cell-side done** — the target for Mav's machinery is authored and green.
+
+- `ideas/identity-memory-stack.md`: added `render: verbatim` front-matter + a reserved **`## Protocol`**
+  section holding the operative block (the exact text `_identity_block()` emits), `{name}`-parameterized
+  and **ref-free** (no wiki-links in the payload → nothing leaks into the projected def). The descriptive
+  body + `## See also` keep the `[[refs]]` for R1 reachability — description and protocol are two facets,
+  one home.
+- **Convention for Mav (the contract):** `render: verbatim` ⇒ the composer emits the cell's `## Protocol`
+  section body **verbatim** (the `## Protocol` heading itself is *not* emitted), `{name}`-substituted, at
+  **any** reader density. The payload preserves ASCII `--`/`->` punctuation so the eventual
+  `_identity_block()` → cell migration is a **byte-identical no-op** (re-emit must reproduce current defs).
+- `ideas/AGENTS.md`: documented `render` as a projection directive (sibling to skill `trigger`), with the
+  "not a locational field" distinction; flagged composer support as this task (B7).
+- Gate: `verify.py` PASS (R1+R2; R3 manual); full toolkit suite 6/6. (R1 caught a self-inflicted dangling
+  `[[refs]]` — a bracket token in my prose — proving the reachability-path diagnostic; fixed.)
+
+**Remaining (Mav, machinery):** wire the `render: verbatim` path in `compose/agent.py` (steps 4–5) — emit
+the `## Protocol` body in place of the hardcoded `_identity_block()`, migrate the defs, confirm
+byte-identical round-trip + R1 coverage. Confirm the organ set `{identity-memory-stack, pulse, senses,
+powers}` (only `identity-memory-stack` carries `render: verbatim` so far; the other three are still
+hardcoded/uncarried — decide whether they each grow a `## Protocol` + `render: verbatim` in the same pass).
