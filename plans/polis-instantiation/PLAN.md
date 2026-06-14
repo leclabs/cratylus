@@ -16,15 +16,20 @@ Operator authorization**, not on more building.
 - **C3 — rebase Oikos** — the consent-ready reconciliation PLAN is accurate + A4-honest. **Execution =
   `rebase --apply` on `forge:~/workspaces/oikos`, human-reviewing each woven delta. Gated on explicit
   consent (A4 — invited reformer, not conqueror).** Trigger: the Operator says *"rebase Oikos."*
-- **C4 — fleet-deploy-migration** — **IN PROGRESS: ash.lan migrated (1/7, 2026-06-14, Operator-authorized
-  "migrate only ash.lan first").** Per-host recipe (learned — `deploy.py` defaults `--kind agent`, so it is
-  **TWO passes**): `deploy.py --home ~/.claude` (11 agent defs) **+** `deploy.py --home ~/.claude --kind
-  skill` (7 mind skills). Verified on ash: 11 agents + 7 skills now == polis render; **all 33 lived sidecars
-  preserved (only-if-absent, 0 clobbered)**; **graphify external never-pruned** (8 skills total). Defs take
-  effect next session; lived memory (SELF/MEMORY/EPISODIC) carries continuity across the def-upgrade.
-  **Remaining 6 hosts** (await go-ahead each / "migrate the fleet"): fire · upgoose · upmav · forge · apps ·
-  spark — same two-pass recipe; per-host externals vary (inventory each before deploy). Sequential per host,
-  no shell loops.
+- **C4 — fleet-deploy-migration** — **IN PROGRESS: 2/7 hosts on polis (fire + ash.lan, 2026-06-14).**
+  - **The `--host` gotcha (the lesson):** omitting `--host` (or `--host fire`/`local`) = deploy **IN PLACE**
+    to the current host; `--host <NAME> --user <u>` = **SSH** to a remote. Per-host recipe = **TWO passes**
+    (`deploy.py` defaults `--kind agent`): the agents pass **+** a `--kind skill` pass. Defs overwritten,
+    externals never-pruned, sidecars seeded only-if-absent (lived memory preserved). Sequential, no loops.
+  - **fire** — migrated *first, by my error*: I ran the in-place deploy from fire mistaking it for ash
+    (commit `a99c4d0` mislabeled it "ash"). Operator chose to **leave it** (fire-on-polis is the eventual C4
+    state). Content correct; lived sidecars preserved.
+  - **ash.lan** — the actual authorized target ("migrate only ash.lan first"), migrated **over SSH**
+    (`--host ash.lan --user lex`). Verified: `nico.md` carries the founder line (`Founder of polis
+    (founder-charter)`); 11 agents + 7 skills == polis render; **ash-nico's lived sidecars byte-identical**;
+    no graphify on ash (per-host externals vary).
+  - **Remaining 5 hosts** (await go-ahead / "migrate the fleet"): upgoose · upmav (user **lcaraccioli**) ·
+    forge · apps · spark — `--host <name> --user <u>`, two-pass, externals inventoried per host.
 
 (Full reconciliation inventories + findings retained in the detailed entries below.)
 
