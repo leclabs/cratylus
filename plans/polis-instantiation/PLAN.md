@@ -64,6 +64,21 @@ Phase C · found real societies. All tasks pending on A + B; promote to ready/ a
   > body_hash, body)`. **Open (Operator, sequencing):** forward-port the polis cell-fixes into playground +
   > redeploy now so the fleet improves *before* C4 — or let C4 carry them at source-switch? Depends on C4
   > imminence.
+  >
+  > **Reconciliation inventory (Nico, 2026-06-14 — polis render vs deployed `~/.claude` on `ash`, this host).**
+  > Ran the full polis projection (`resolve.py`, the render proof for #3) and diffed the 18 artifacts against
+  > the deployed fleet:
+  > - **Agents: EXACT set match** (11 ≡ 11: arch-doc-writer, boswell, cognizant, developer, investigator,
+  >   mav, nico, planner, principal-engineer-reviewer, principal-ic, tester). → C4 is a **content-update**,
+  >   no structural add/remove on the mind set.
+  > - **Skills:** polis's 7 mind skills ≡ the 7 deployed; **`graphify` is deployed-only** (external, not
+  >   mind-projected). → C4 **must preserve externals** (never-prune; matches the keep-graphify ruling).
+  > - **No unexpected drift** at the set level (every polis artifact has a deployed counterpart; the only
+  >   deployed-extra is the external graphify). Content differs across the board (polis newer — intended).
+  > **So C4 reconciliation = update the mind-sourced set's content + never-prune each host's externals — no
+  > structural churn.** This de-risks C4: it's a content-refresh + external-preservation, not a re-layout.
+  > (Per-host externals vary — the prune ruling named graphify/find-skills/playwright-cli; this host carries
+  > graphify. C4 must inventory each host's externals before deploy.)
 
 ## Done
 
