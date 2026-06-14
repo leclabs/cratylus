@@ -20,16 +20,20 @@ This repository is the consolidation target for two efforts previously developed
 - **oikos** (a sibling project) — the *household*: ambient agent-persons living in a mesh (the runtime).
 - **polis** (here) — the *society*: the culture (`mind`) and the projection machinery (`koine`) the households are founded from.
 
-A *metropolis* founds *apoikiai* — colonies, literally *away-homes*. polis founds societies; each adopted project is a colony of its culture.
+A *metropolis* founds *apoikiai* — colonies, literally *away-homes*. polis founds societies; each adopted project is a colony of its culture, adopted by **consent** (`packages/mind/ideas/consensual-adoption.md`).
+
+Above the society stands the **Operator** — the sovereign it serves, *named-but-outside* it (`packages/mind/ideas/operator-relation.md`): the founders build within his intent and answer to him, but he is not himself a citizen.
 
 ## The two founders
 
 - **Mav** — master builder of the **infrastructure and machinery** societies need to survive (substrate).
 - **Nico** — master builder of the **constitution, people, roles, and archetypes** — the society itself, atop Mav's substrate.
 
+The founder boundary, the shared `principal-ic` genus, and the co-equal founding are authored corpus: `packages/mind/ideas/founder-charter.md`.
+
 ## Status
 
-**Founding commit.** Structure established; `mind` moved in from its prior home, `koine` imported from `agentir`. Cultural alignment of `koine` to `mind` (deep rename, re-homing config as projections of the corpus) and the constitution work are the planned next phases — see `plans/`.
+**Phase A (the constitution) is authored** — the latent sociology is now explicit corpus: personhood (the identity-memory stack), authority, cultural propagation, and the founding, gathered by the **politeia** (`packages/mind/ideas/politeia.md`), the foundational structure every founded society instantiates. Next: **Phase B** — cultural alignment of `koine` to `mind` (deep rename, re-homing config as projections of the corpus) and the projection machinery. See `plans/`.
 
 ## Toolchain
 
