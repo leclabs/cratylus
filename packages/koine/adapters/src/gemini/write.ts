@@ -1,14 +1,14 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
-  serializeAgent,
-  serializeSkill,
   type Hook,
   type IR,
   type McpServer,
   type Scope,
   type WriteOpts,
   type WriteReport,
+  serializeAgent,
+  serializeSkill,
 } from '@leclabs/koine-core';
 import { canonicalToGemini } from './events.js';
 import { paths } from './paths.js';
@@ -110,9 +110,7 @@ export async function writeGemini(
   return { written, skipped, warnings };
 }
 
-function serializeGeminiHooks(
-  hooks: Hook[],
-): Record<
+function serializeGeminiHooks(hooks: Hook[]): Record<
   string,
   Array<{
     matcher?: string;
@@ -142,7 +140,8 @@ function serializeGeminiHooks(
         hooks: [cmd],
       };
       if (hook.matcher) entry.matcher = hook.matcher;
-      (out[geminiEvent] ??= []).push(entry);
+      out[geminiEvent] ??= [];
+      out[geminiEvent].push(entry);
     }
   }
   return out;

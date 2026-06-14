@@ -1,16 +1,16 @@
 import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { load } from 'js-yaml';
 import {
-  parseRule,
-  parseSkill,
   type Hook,
   type IR,
   type McpServer,
   type Scope,
   type Skill,
+  parseRule,
+  parseSkill,
 } from '@leclabs/koine-core';
+import { load } from 'js-yaml';
 import { paths } from './paths.js';
 
 export async function readOpencode(

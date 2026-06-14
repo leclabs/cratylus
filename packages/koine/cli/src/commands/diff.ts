@@ -1,8 +1,8 @@
 import {
-  defaultIRRoot,
-  detectDrift,
   type Adapter,
   type Scope,
+  defaultIRRoot,
+  detectDrift,
 } from '@leclabs/koine-core';
 import pc from 'picocolors';
 import { runCompile } from './compile.js';

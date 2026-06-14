@@ -1,15 +1,15 @@
 import {
-  mkdtempSync,
+  existsSync,
   mkdirSync,
+  mkdtempSync,
+  readFileSync,
   rmSync,
   writeFileSync,
-  readFileSync,
-  existsSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IR, Manifest } from '@leclabs/koine-core';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { claudeAdapter } from '../../src/claude/index.js';
 
 const manifest = (): Manifest => ({

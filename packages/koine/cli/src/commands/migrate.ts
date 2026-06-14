@@ -1,14 +1,14 @@
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { dump, load } from 'js-yaml';
 import {
+  type Manifest,
+  type Scope,
   findIRRoot,
   listMigrations,
   migrate,
-  type Manifest,
-  type Scope,
 } from '@leclabs/koine-core';
+import { dump, load } from 'js-yaml';
 import pc from 'picocolors';
 
 export interface MigrateOpts {

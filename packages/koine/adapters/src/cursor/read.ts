@@ -2,13 +2,13 @@ import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
-  parseRule,
-  parseSkill,
   type Hook,
   type IR,
   type McpServer,
   type Scope,
   type Skill,
+  parseRule,
+  parseSkill,
 } from '@leclabs/koine-core';
 import { cursorToCanonical } from './events.js';
 import { paths } from './paths.js';

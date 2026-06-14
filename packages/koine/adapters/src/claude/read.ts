@@ -2,10 +2,6 @@ import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import {
-  parseAgent,
-  parseCommand,
-  parseRule,
-  parseSkill,
   type Agent,
   type Command,
   type Hook,
@@ -14,6 +10,10 @@ import {
   type Rule,
   type Scope,
   type Skill,
+  parseAgent,
+  parseCommand,
+  parseRule,
+  parseSkill,
 } from '@leclabs/koine-core';
 import { claudeToCanonical } from './events.js';
 import { paths } from './paths.js';

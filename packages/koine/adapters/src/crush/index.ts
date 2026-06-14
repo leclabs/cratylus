@@ -3,9 +3,6 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import {
-  parseRule,
-  parseSkill,
-  serializeSkill,
   type Adapter,
   type AdapterCapabilities,
   type IR,
@@ -14,6 +11,9 @@ import {
   type Skill,
   type WriteOpts,
   type WriteReport,
+  parseRule,
+  parseSkill,
+  serializeSkill,
 } from '@leclabs/koine-core';
 
 interface CrushPaths {

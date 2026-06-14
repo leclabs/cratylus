@@ -1,13 +1,13 @@
-import { mkdtempSync, rmSync, existsSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { claudeAdapter } from '@leclabs/koine-adapters/claude';
 import { codexAdapter } from '@leclabs/koine-adapters/codex';
 import { copilotAdapter } from '@leclabs/koine-adapters/copilot';
 import { geminiAdapter } from '@leclabs/koine-adapters/gemini';
 import { opencodeAdapter } from '@leclabs/koine-adapters/opencode';
 import type { IR, Manifest } from '@leclabs/koine-core';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const adapters = [
   claudeAdapter,

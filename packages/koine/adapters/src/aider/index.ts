@@ -2,13 +2,13 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
-  parseRule,
   type Adapter,
   type AdapterCapabilities,
   type IR,
   type Scope,
   type WriteOpts,
   type WriteReport,
+  parseRule,
 } from '@leclabs/koine-core';
 
 /**
@@ -75,7 +75,7 @@ export const aiderAdapter: Adapter = {
       ['hooks', 'hooks'],
     ] as const) {
       const items = ir[field];
-      if (items && items.length) {
+      if (items?.length) {
         warnings.push(
           `${label}: Aider has no ${label} support (${items.length} skipped)`,
         );

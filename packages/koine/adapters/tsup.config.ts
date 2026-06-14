@@ -1,5 +1,5 @@
-import { defineConfig } from 'tsup';
 import { readdirSync } from 'node:fs';
+import { defineConfig } from 'tsup';
 
 const adapters = readdirSync('./src', { withFileTypes: true })
   .filter((d) => d.isDirectory())

@@ -1,10 +1,10 @@
 import {
-  compile,
-  defaultIRRoot,
-  readIR,
   type Adapter,
   type CompileReport,
   type Scope,
+  compile,
+  defaultIRRoot,
+  readIR,
 } from '@leclabs/koine-core';
 import pc from 'picocolors';
 
@@ -24,7 +24,7 @@ export async function runCompile(
   const scope = opts.scope ?? 'project';
   const cwd = opts.cwd ?? process.cwd();
 
-  let ir;
+  let ir: Awaited<ReturnType<typeof readIR>>;
   try {
     ir = await readIR(scope, cwd);
   } catch (e) {

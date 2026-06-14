@@ -1,14 +1,14 @@
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { compile } from '../../src/engine/compile.js';
-import { detectDrift } from '../../src/engine/drift.js';
 import type {
   Adapter,
   AdapterCapabilities,
   WriteReport,
 } from '../../src/adapter/types.js';
+import { compile } from '../../src/engine/compile.js';
+import { detectDrift } from '../../src/engine/drift.js';
 import type { IR, Manifest } from '../../src/ir/types.js';
 
 const caps: AdapterCapabilities = {

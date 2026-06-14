@@ -1,13 +1,13 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
-  serializeSkill,
   type Hook,
   type IR,
   type McpServer,
   type Scope,
   type WriteOpts,
   type WriteReport,
+  serializeSkill,
 } from '@leclabs/koine-core';
 import { canonicalToCursor } from './events.js';
 import { paths } from './paths.js';
@@ -75,7 +75,8 @@ export async function writeCursor(
             { command: hook.command };
           if (hook.matcher) entry.matcher = hook.matcher;
           if (hook.timeout !== undefined) entry.timeout = hook.timeout;
-          (obj.hooks[cursorEvent] ??= []).push(entry);
+          obj.hooks[cursorEvent] ??= [];
+          obj.hooks[cursorEvent].push(entry);
         }
       }
       if (!opts.dryRun) {

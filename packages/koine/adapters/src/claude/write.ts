@@ -1,15 +1,15 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
-  serializeAgent,
-  serializeCommand,
-  serializeSkill,
   type Hook,
   type IR,
   type McpServer,
   type Scope,
   type WriteOpts,
   type WriteReport,
+  serializeAgent,
+  serializeCommand,
+  serializeSkill,
 } from '@leclabs/koine-core';
 import { canonicalToClaude } from './events.js';
 import { paths } from './paths.js';
@@ -162,7 +162,8 @@ function serializeClaudeHooks(
         hooks: [cmd],
       };
       if (hook.matcher) entry.matcher = hook.matcher;
-      (out[claudeEvent] ??= []).push(entry);
+      out[claudeEvent] ??= [];
+      out[claudeEvent].push(entry);
     }
   }
   return out;

@@ -1,17 +1,17 @@
 import {
-  mkdtempSync,
-  rmSync,
   mkdirSync,
-  writeFileSync,
+  mkdtempSync,
   readFileSync,
+  rmSync,
+  writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { describe, expect, it, beforeEach, afterEach } from 'vitest';
 import { claudeAdapter } from '@leclabs/koine-adapters/claude';
 import { opencodeAdapter } from '@leclabs/koine-adapters/opencode';
-import { runInit } from '../src/commands/init.js';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runImport } from '../src/commands/import.js';
+import { runInit } from '../src/commands/init.js';
 import { runWatch } from '../src/commands/watch.js';
 
 const adapters = [claudeAdapter, opencodeAdapter];

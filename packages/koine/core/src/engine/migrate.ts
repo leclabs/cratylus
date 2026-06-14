@@ -50,7 +50,9 @@ function findPath(from: number, to: number): Migration[] | null {
   ];
   const visited = new Set<number>([from]);
   while (queue.length > 0) {
-    const { version, path } = queue.shift()!;
+    const item = queue.shift();
+    if (!item) break;
+    const { version, path } = item;
     for (const m of REGISTRY) {
       if (m.from !== version || visited.has(m.to)) continue;
       const next = [...path, m];

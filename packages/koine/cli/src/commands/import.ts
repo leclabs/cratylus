@@ -1,17 +1,17 @@
+import { existsSync } from 'node:fs';
+import { mkdir } from 'node:fs/promises';
 import {
-  defaultIRRoot,
-  findIRRoot,
-  readIR,
-  writeIR,
   type Adapter,
   type Hook,
   type IR,
   type Manifest,
   type Rule,
   type Scope,
+  defaultIRRoot,
+  findIRRoot,
+  readIR,
+  writeIR,
 } from '@leclabs/koine-core';
-import { existsSync } from 'node:fs';
-import { mkdir } from 'node:fs/promises';
 import pc from 'picocolors';
 
 export interface ImportOpts {

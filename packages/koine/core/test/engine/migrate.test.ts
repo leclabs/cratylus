@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
-  migrate,
   listMigrations,
+  migrate,
   registerMigration,
 } from '../../src/engine/migrate.js';
 

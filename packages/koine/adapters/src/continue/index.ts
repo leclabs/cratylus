@@ -2,9 +2,7 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { dump, load } from 'js-yaml';
 import {
-  parseRule,
   type Adapter,
   type AdapterCapabilities,
   type IR,
@@ -12,7 +10,9 @@ import {
   type Scope,
   type WriteOpts,
   type WriteReport,
+  parseRule,
 } from '@leclabs/koine-core';
+import { dump, load } from 'js-yaml';
 
 interface ContinuePaths {
   rulesFile: string;

@@ -44,7 +44,10 @@ export function mergeIR(scopes: ScopedIR[]): IR {
     (a, b) => SCOPE_ORDER.indexOf(a.scope) - SCOPE_ORDER.indexOf(b.scope),
   );
 
-  const manifest = sorted[sorted.length - 1]!.ir.manifest;
+  // sorted is non-empty (scopes.length === 0 threw above); last scope wins.
+  const last = sorted[sorted.length - 1];
+  if (!last) throw new Error('mergeIR requires at least one scope');
+  const manifest = last.ir.manifest;
 
   const ir: IR = { manifest };
 
@@ -130,9 +133,9 @@ function mergePermissions(scopes: ScopedIR[]): Permissions | undefined {
   for (const { ir } of scopes) {
     if (!ir.permissions) continue;
     any = true;
-    ir.permissions.allow?.forEach((x) => allow.add(x));
-    ir.permissions.deny?.forEach((x) => deny.add(x));
-    ir.permissions.ask?.forEach((x) => ask.add(x));
+    for (const x of ir.permissions.allow ?? []) allow.add(x);
+    for (const x of ir.permissions.deny ?? []) deny.add(x);
+    for (const x of ir.permissions.ask ?? []) ask.add(x);
   }
   if (!any) return undefined;
 

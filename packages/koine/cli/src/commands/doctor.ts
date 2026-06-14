@@ -2,16 +2,16 @@ import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import {
+  type Adapter,
+  type Manifest,
+  STATE_FILENAME,
+  STATE_VERSION,
+  type Scope,
   defaultIRRoot,
   detectDrift,
   findIRRoot,
   formatErrors,
-  STATE_FILENAME,
-  STATE_VERSION,
   validateManifest,
-  type Adapter,
-  type Manifest,
-  type Scope,
 } from '@leclabs/koine-core';
 import { load } from 'js-yaml';
 import pc from 'picocolors';
@@ -48,7 +48,7 @@ export async function runDoctor(
   const targetRoot = root ?? defaultIRRoot(scope, cwd);
 
   console.log(
-    pc.bold(`koine doctor`),
+    pc.bold('koine doctor'),
     pc.gray(`(scope: ${scope}, cwd: ${cwd})`),
   );
   console.log('');
@@ -136,7 +136,7 @@ export async function runDoctor(
         console.log(
           fmt({
             status: 'fail',
-            label: `compile state: version mismatch`,
+            label: 'compile state: version mismatch',
             detail: `expected ${STATE_VERSION}, got ${state.version}`,
           }),
         );

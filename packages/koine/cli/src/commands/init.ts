@@ -1,8 +1,8 @@
 import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { type Manifest, type Scope, defaultIRRoot } from '@leclabs/koine-core';
 import { dump } from 'js-yaml';
-import { defaultIRRoot, type Manifest, type Scope } from '@leclabs/koine-core';
 import pc from 'picocolors';
 
 export interface InitOpts {
@@ -40,7 +40,7 @@ export async function runInit(opts: InitOpts = {}): Promise<number> {
       if (!text.includes('.koine/local')) {
         await writeFile(
           gi,
-          text + (text.endsWith('\n') ? '' : '\n') + '.koine/local/\n',
+          `${text + (text.endsWith('\n') ? '' : '\n')}.koine/local/\n`,
           'utf8',
         );
       }

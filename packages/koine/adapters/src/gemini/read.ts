@@ -2,15 +2,15 @@ import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import {
-  parseAgent,
-  parseRule,
-  parseSkill,
   type Agent,
   type Hook,
   type IR,
   type McpServer,
   type Scope,
   type Skill,
+  parseAgent,
+  parseRule,
+  parseSkill,
 } from '@leclabs/koine-core';
 import { geminiToCanonical } from './events.js';
 import { paths } from './paths.js';

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mergeIR, type ScopedIR } from '../../src/engine/merge.js';
+import { type ScopedIR, mergeIR } from '../../src/engine/merge.js';
 import type { IR, Manifest } from '../../src/ir/types.js';
 
 const baseManifest = (overrides: Partial<Manifest> = {}): Manifest => ({

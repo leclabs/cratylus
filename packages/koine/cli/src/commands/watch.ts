@@ -1,4 +1,4 @@
-import { findIRRoot, type Adapter, type Scope } from '@leclabs/koine-core';
+import { type Adapter, type Scope, findIRRoot } from '@leclabs/koine-core';
 import chokidar from 'chokidar';
 import pc from 'picocolors';
 import { runCompile } from './compile.js';

@@ -1,15 +1,15 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { dump } from 'js-yaml';
 import {
-  serializeSkill,
   type Hook,
   type IR,
   type McpServer,
   type Scope,
   type WriteOpts,
   type WriteReport,
+  serializeSkill,
 } from '@leclabs/koine-core';
+import { dump } from 'js-yaml';
 import { canonicalToOpencode } from './events.js';
 import { paths } from './paths.js';
 

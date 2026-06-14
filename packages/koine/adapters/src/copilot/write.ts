@@ -2,13 +2,13 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
-  serializeSkill,
   type Hook,
   type IR,
   type McpServer,
   type Scope,
   type WriteOpts,
   type WriteReport,
+  serializeSkill,
 } from '@leclabs/koine-core';
 import { canonicalToCopilot } from './events.js';
 import { paths } from './paths.js';
@@ -134,9 +134,7 @@ export async function writeCopilot(
   return { written, skipped, warnings };
 }
 
-function serializeHooksClaudeShape(
-  hooks: Hook[],
-): Record<
+function serializeHooksClaudeShape(hooks: Hook[]): Record<
   string,
   Array<{
     matcher?: string;
@@ -166,7 +164,8 @@ function serializeHooksClaudeShape(
         hooks: [cmd],
       };
       if (hook.matcher) entry.matcher = hook.matcher;
-      (out[copilotEvent] ??= []).push(entry);
+      out[copilotEvent] ??= [];
+      out[copilotEvent].push(entry);
     }
   }
   return out;

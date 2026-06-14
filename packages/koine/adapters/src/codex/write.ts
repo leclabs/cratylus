@@ -2,14 +2,14 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import TOML from '@iarna/toml';
 import {
-  serializeCommand,
-  serializeSkill,
   type Hook,
   type IR,
   type McpServer,
   type Scope,
   type WriteOpts,
   type WriteReport,
+  serializeCommand,
+  serializeSkill,
 } from '@leclabs/koine-core';
 import { canonicalToCodex } from './events.js';
 import { paths } from './paths.js';
@@ -135,9 +135,7 @@ export async function writeCodex(
   return { written, skipped, warnings };
 }
 
-function serializeCodexHooks(
-  hooks: Hook[],
-): Record<
+function serializeCodexHooks(hooks: Hook[]): Record<
   string,
   Array<{
     matcher?: string;
@@ -167,7 +165,8 @@ function serializeCodexHooks(
         hooks: [cmd],
       };
       if (hook.matcher) entry.matcher = hook.matcher;
-      (out[codexEvent] ??= []).push(entry);
+      out[codexEvent] ??= [];
+      out[codexEvent].push(entry);
     }
   }
   return out;

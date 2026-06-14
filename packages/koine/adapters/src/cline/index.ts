@@ -3,8 +3,6 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { basename, dirname, join } from 'node:path';
 import {
-  parseRule,
-  serializeRule,
   type Adapter,
   type AdapterCapabilities,
   type CanonicalEvent,
@@ -15,6 +13,8 @@ import {
   type Scope,
   type WriteOpts,
   type WriteReport,
+  parseRule,
+  serializeRule,
 } from '@leclabs/koine-core';
 
 const canonicalToCline: Partial<Record<CanonicalEvent, string>> = {
@@ -240,7 +240,8 @@ async function writeImpl(
             }>;
           } = { hooks: [cmd] };
           if (hook.matcher) entry.matcher = hook.matcher;
-          (obj.hooks[clineEvent] ??= []).push(entry);
+          obj.hooks[clineEvent] ??= [];
+          obj.hooks[clineEvent].push(entry);
         }
       }
       if (!opts.dryRun) {
@@ -289,7 +290,7 @@ async function writeImpl(
     ['agents', 'agents'],
   ] as const) {
     const items = ir[field];
-    if (items && items.length) {
+    if (items?.length) {
       warnings.push(
         `${label}: Cline does not support ${label} (${items.length} skipped)`,
       );

@@ -1,19 +1,19 @@
 import {
+  mkdirSync,
   mkdtempSync,
   rmSync,
-  writeFileSync,
-  mkdirSync,
-  unlinkSync,
   statSync,
+  unlinkSync,
+  writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
+  STATE_FILENAME,
   detectDrift,
   hashFile,
   recordCompileState,
-  STATE_FILENAME,
 } from '../../src/engine/drift.js';
 
 describe('drift', () => {

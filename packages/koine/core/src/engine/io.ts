@@ -4,23 +4,6 @@ import { homedir } from 'node:os';
 import { basename, join } from 'node:path';
 import { dump, load } from 'js-yaml';
 
-import {
-  parseAgent,
-  parseCommand,
-  parseHook,
-  parseRule,
-  parseSkill,
-  serializeAgent,
-  serializeCommand,
-  serializeHook,
-  serializeRule,
-  serializeSkill,
-} from '../serialize/index.js';
-import {
-  formatErrors,
-  validateIR,
-  type ValidationError,
-} from '../ir/validator.js';
 import type {
   Agent,
   Command,
@@ -34,7 +17,24 @@ import type {
   Scope,
   Skill,
 } from '../ir/types.js';
-import { findIRRoot, IR_DIRNAME, LOCAL_SUBDIR } from './paths.js';
+import {
+  type ValidationError,
+  formatErrors,
+  validateIR,
+} from '../ir/validator.js';
+import {
+  parseAgent,
+  parseCommand,
+  parseHook,
+  parseRule,
+  parseSkill,
+  serializeAgent,
+  serializeCommand,
+  serializeHook,
+  serializeRule,
+  serializeSkill,
+} from '../serialize/index.js';
+import { IR_DIRNAME, LOCAL_SUBDIR, findIRRoot } from './paths.js';
 
 export class IRValidationError extends Error {
   constructor(public errors: ValidationError[]) {
@@ -106,7 +106,7 @@ export async function readIR(scope: Scope, cwd: string): Promise<IR> {
   if (hooks.length) ir.hooks = hooks;
 
   const mcp = await readMcpServers(join(root, 'mcp', 'servers.yaml'));
-  if (mcp && mcp.length) ir.mcp_servers = mcp;
+  if (mcp?.length) ir.mcp_servers = mcp;
 
   const perms = await readYamlIfExists<Permissions>(
     join(root, 'permissions.yaml'),
@@ -186,7 +186,7 @@ export async function writeIR(
       serializeHook,
     );
   }
-  if (ir.mcp_servers && ir.mcp_servers.length) {
+  if (ir.mcp_servers?.length) {
     const dir = join(root, 'mcp');
     await mkdir(dir, { recursive: true });
     await writeFile(
