@@ -16,9 +16,15 @@ Operator authorization**, not on more building.
 - **C3 — rebase Oikos** — the consent-ready reconciliation PLAN is accurate + A4-honest. **Execution =
   `rebase --apply` on `forge:~/workspaces/oikos`, human-reviewing each woven delta. Gated on explicit
   consent (A4 — invited reformer, not conqueror).** Trigger: the Operator says *"rebase Oikos."*
-- **C4 — fleet-deploy-migration** — mechanism = `deploy.py --home ~/.claude` from polis per host ×7
-  (validated /tmp: overwrite defs + never-prune externals + preserve lived sidecars). **Gated on go-ahead
-  (rewrites the live fleet).** Trigger: the Operator says *"migrate the fleet."*
+- **C4 — fleet-deploy-migration** — **IN PROGRESS: ash.lan migrated (1/7, 2026-06-14, Operator-authorized
+  "migrate only ash.lan first").** Per-host recipe (learned — `deploy.py` defaults `--kind agent`, so it is
+  **TWO passes**): `deploy.py --home ~/.claude` (11 agent defs) **+** `deploy.py --home ~/.claude --kind
+  skill` (7 mind skills). Verified on ash: 11 agents + 7 skills now == polis render; **all 33 lived sidecars
+  preserved (only-if-absent, 0 clobbered)**; **graphify external never-pruned** (8 skills total). Defs take
+  effect next session; lived memory (SELF/MEMORY/EPISODIC) carries continuity across the def-upgrade.
+  **Remaining 6 hosts** (await go-ahead each / "migrate the fleet"): fire · upgoose · upmav · forge · apps ·
+  spark — same two-pass recipe; per-host externals vary (inventory each before deploy). Sequential per host,
+  no shell loops.
 
 (Full reconciliation inventories + findings retained in the detailed entries below.)
 
