@@ -9,8 +9,10 @@ a proof of not-accept(F) when violated ([[self-application-is-mandatory]]):
       dependency (dangling ref reachable from a composition root) FAILS.
   R2  cite-don't-copy -- a cell that restates another's definiens WITHOUT
       citing it FAILS.
-  R3  completeness-vs-Delta -- NOT mechanized; asserted to surface as a visible
-      audit-line NOTE, never a faked green.
+  R3  completeness-vs-Delta -- mechanized over the routing manifest (B8): a
+      full-coverage manifest PASSES; a route to a non-existent home (the dropped
+      idea) FAILS; a malformed manifest is a hard error; with NO manifest present
+      R3 degrades visibly to the audit-line NOTE (never a faked green).
 
 Each corruption is written to a temporary fixture cell, verify is run as a
 subprocess, the matching Rn failure is asserted, and the fixture is removed --
@@ -19,6 +21,7 @@ test_verify.py). Run: python3 toolkit/test_reconstruct.py (non-zero on failure).
 """
 from __future__ import annotations
 
+import json
 import pathlib
 import subprocess
 import sys
@@ -26,6 +29,38 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 VERIFY = ROOT / "toolkit" / "verify.py"
 IDEAS = ROOT / "ideas"
+MANIFESTS = ROOT / ".manifests"  # B8: where the R3 consumer scans for manifests
+
+# R3 fixtures: routing manifests written to .manifests/, verify run as a
+# subprocess, the matching outcome asserted, the manifest removed in finally
+# (mirrors the R1/R2 cell-fixture discipline -- REJECT, never mutate; the clean
+# corpus PASSES with the fixtures gone). home_slug 'semantic-partition' is a
+# confirmed-live cell (the empirical rank-1 intake winner); 'zz-no-such-cell'
+# resolves to no home -> the dropped idea R3 catches.
+R3_OK = MANIFESTS / "zz-r3-fixture-ok.json"
+R3_DROPPED = MANIFESTS / "zz-r3-fixture-dropped.json"
+R3_MALFORMED = MANIFESTS / "zz-r3-fixture-malformed.json"
+R3_LIVE_HOME = "semantic-partition"
+R3_DEAD_HOME = "zz-no-such-cell"
+
+
+def _manifest(routes: list[dict], delta: list[dict]) -> str:
+    return json.dumps({
+        "source": "playground/zz-r3-fixture-source.md",
+        "exemplified_at": "2026-06-14T00:00:00Z",
+        "reader": "strong-llm-lean",
+        "routes": routes,
+        "delta": delta,
+    }, indent=2)
+
+
+def _route(digest: str, home: str, disp: str = "reuse", rank: float = 29.0) -> dict:
+    return {"fragment_digest": digest, "idea_gloss": f"gloss {digest}",
+            "home_slug": home, "disposition": disp, "rank": rank}
+
+
+def _delta(digest: str) -> dict:
+    return {"fragment_digest": digest, "idea_gloss": f"delta gloss {digest}"}
 
 # R1 fixture: a `kind: agent` cell IS a composition root, so its refs are walked
 # by the oracle. It cites a slug that has no home cell -> a dropped dependency,
@@ -109,12 +144,85 @@ def main() -> int:
     finally:
         R2_FIXTURE.unlink(missing_ok=True)
 
-    # --- R3: surfaces as a visible audit-line NOTE (degrade-visibly, not faked) ---
+    # --- R3 (no manifest): degrade-visibly to the audit-line NOTE, not faked ---
+    # With .manifests/ absent (the current corpus state), R3 stays the visible
+    # NOTE and the PASS line reads "R3 manual" -- a no-op, no fake green, no FAIL.
+    MANIFESTS.mkdir(exist_ok=True)  # may exist empty; the gate scans *.json
+    for stale in MANIFESTS.glob("zz-r3-fixture-*.json"):
+        stale.unlink()  # ensure no leftover fixture from a crashed prior run
     r = run_verify()
     if "R3 (reconstruction-completeness vs Delta): MANUAL audit" not in r.stderr:
-        fails.append(f"R3: audit-line NOTE missing -- must degrade visibly:\n{r.stderr}")
+        fails.append(f"R3 no-manifest: audit-line NOTE missing -- must degrade visibly:\n{r.stderr}")
+    if "reconstruct (R1+R2; R3 manual)" not in r.stdout:
+        fails.append(f"R3 no-manifest: PASS line must read 'R3 manual':\n{r.stdout}")
+    if r.returncode != 0:
+        fails.append(f"R3 no-manifest: must stay PASS (no-op):\n{r.stderr}")
 
-    # --- CLEAN: with both fixtures gone, the real corpus PASSES the oracle ---
+    # --- R3 (full coverage): a well-formed manifest, every home live -> PASS ---
+    # Two reuse routes to a live cell + one declared-delta fragment. Coverage is
+    # total (every fragment carries a routing decision), every home_slug resolves
+    # -> R3 mechanizes and PASSES; the PASS line flips to "R1+R2+R3".
+    try:
+        R3_OK.write_text(_manifest(
+            routes=[_route("sha256:aaa1", R3_LIVE_HOME),
+                    _route("sha256:bbb2", R3_LIVE_HOME, disp="mint")],
+            delta=[_delta("sha256:ccc3")],
+        ), encoding="utf-8")
+        r = run_verify()
+        if r.returncode != 0:
+            fails.append(f"R3 coverage: full-coverage manifest must PASS:\n{r.stderr}")
+        if "reconstruct (R1+R2+R3)" not in r.stdout:
+            fails.append(f"R3 coverage: PASS line must read 'R1+R2+R3' with a manifest present:\n{r.stdout}")
+        if "R3 (reconstruction-completeness vs Delta): MANUAL audit" in r.stderr:
+            fails.append(f"R3 coverage: must NOT emit the manual NOTE when a manifest is consumed:\n{r.stderr}")
+    finally:
+        R3_OK.unlink(missing_ok=True)
+
+    # --- R3 (dropped idea): a route to a non-existent home cell -> FAIL ---
+    # The idea is claimed-homed (it carries a home_slug + disposition) but the
+    # home resolves to no live cell -> the idea is effectively homeless: the
+    # dropped idea R3 exists to catch.
+    try:
+        R3_DROPPED.write_text(_manifest(
+            routes=[_route("sha256:aaa1", R3_LIVE_HOME),
+                    _route("sha256:ddd4", R3_DEAD_HOME)],  # <- dropped idea
+            delta=[],
+        ), encoding="utf-8")
+        r = run_verify()
+        if r.returncode == 0:
+            fails.append("R3 dropped: manifest with an unrouted/dropped fragment PASSED (must fail)")
+        want = f"R3 {R3_DROPPED.name}: routes[1]"
+        if want not in r.stderr or f"[[{R3_DEAD_HOME}]]" not in r.stderr:
+            fails.append(f"R3 dropped: expected dropped-home FAIL naming [[{R3_DEAD_HOME}]], got:\n{r.stderr}")
+        if R3_DROPPED.read_text(encoding="utf-8") == "" or not R3_DROPPED.exists():
+            fails.append("R3 dropped: verify mutated/removed the fixture (must only reject)")
+    finally:
+        R3_DROPPED.unlink(missing_ok=True)
+
+    # --- R3 (malformed): a manifest violating the firm schema is a HARD ERROR ---
+    # Not a silent skip ([[hoare-elegance-no-permissive-defaults]]). Here: a route
+    # with an out-of-vocab disposition.
+    try:
+        R3_MALFORMED.write_text(json.dumps({
+            "source": "playground/zz-bad.md",
+            "exemplified_at": "2026-06-14T00:00:00Z",
+            "reader": "strong-llm-lean",
+            "routes": [{"fragment_digest": "sha256:eee5", "idea_gloss": "g",
+                        "home_slug": R3_LIVE_HOME, "disposition": "teleport", "rank": 1.0}],
+            "delta": [],
+        }), encoding="utf-8")
+        r = run_verify()
+        if r.returncode == 0:
+            fails.append("R3 malformed: out-of-vocab disposition PASSED (must be a hard error)")
+        if "R3 MANIFEST" not in r.stderr or "disposition" not in r.stderr:
+            fails.append(f"R3 malformed: expected a 'R3 MANIFEST ... disposition' hard error, got:\n{r.stderr}")
+    finally:
+        R3_MALFORMED.unlink(missing_ok=True)
+
+    # --- CLEAN: with every fixture gone, the real corpus PASSES the oracle ---
+    for stale in MANIFESTS.glob("zz-r3-fixture-*.json"):
+        stale.unlink()
+    r = run_verify()
     if r.returncode != 0:
         fails.append(f"CLEAN: oracle fails on the clean corpus:\n{r.stderr}")
 
@@ -123,7 +231,9 @@ def main() -> int:
             print("FAIL", x, file=sys.stderr)
         print(f"\n{len(fails)} failure(s)", file=sys.stderr)
         return 1
-    print("PASS reconstruct: R1 dropped-dep + R2 uncited-restatement + R3 audit-line + clean corpus")
+    print("PASS reconstruct: R1 dropped-dep + R2 uncited-restatement + R3 "
+          "(no-manifest NOTE / full-coverage PASS / dropped-fragment FAIL / "
+          "malformed hard-error) + clean corpus")
     return 0
 
 

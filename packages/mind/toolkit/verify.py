@@ -51,6 +51,7 @@ Exit non-zero on any gate failure.
 from __future__ import annotations
 
 import hashlib
+import json
 import pathlib
 import re
 import sys
@@ -66,6 +67,12 @@ ROOT = cells.ROOT
 IDEAS = cells.IDEAS
 AGENTS_OUT = ROOT.parents[1] / ".claude" / "agents"
 SKILLS_OUT = ROOT.parents[1] / ".claude" / "skills"
+# Routing manifests (B8): one per exemplified source D, emitted by the producer
+# (resolve/exemplify -- Nico's follow-on, not yet wired). The consumer here READS
+# them to gate R3. `packages/mind/.manifests/<source>.json`: a dotted sibling of
+# the .claude/ deploy outputs (pipeline artifact, not a corpus cell -- so it is
+# NOT under ideas/ and the corpus-slug glob never sees it).
+MANIFESTS = ROOT / ".manifests"
 
 KINDS = {
     "principle", "concept", "process", "utility", "structure", "classification",
@@ -136,6 +143,10 @@ def _symbol_exempt(ch: str) -> bool:
 
 errors: list[str] = []
 notes: list[str] = []
+# R3 mode for the PASS line: "manual" when no manifest is present (degrade-
+# visibly), "mechanical" when gate_reconstruct consumed >=1 manifest. Set by
+# gate_reconstruct, read by main's PASS line.
+r3_mechanical = False
 
 
 def _body_offset(text: str, body: str) -> int:
@@ -421,6 +432,70 @@ def _home_index() -> dict[str, list[str]]:
     return index
 
 
+# ---- R3 routing-manifest consumer (B8): READ a manifest, gate coverage ----
+# This half READS manifests; it does NOT produce them and does NOT compute the
+# fragment digests (the producer = resolve/exemplify emit, Nico's follow-on;
+# digest VALUES are skill-side). The schema is Nico's acceptance-law call (firm):
+#   { source, exemplified_at, reader,
+#     routes[]: { fragment_digest, idea_gloss, home_slug, disposition, rank },
+#     delta[]:  { fragment_digest, idea_gloss } }
+# disposition vocab is total: reuse | mint | delta (see B8 Nico-side spec). A
+# malformed manifest is a HARD ERROR, never a silent skip
+# ([[hoare-elegance-no-permissive-defaults]]).
+DISPOSITIONS = {"reuse", "mint", "delta"}
+
+
+class ManifestError(Exception):
+    """A manifest violated the firm schema -- a hard error, never a default-skip.
+    Carries the manifest path + the precise shape violation for the FAIL line."""
+
+
+def _require(cond: bool, where: str, msg: str) -> None:
+    if not cond:
+        raise ManifestError(f"{where}: {msg}")
+
+
+def _load_manifest(path: pathlib.Path) -> dict:
+    """Parse + shape-validate ONE routing manifest. Returns the parsed dict on a
+    well-formed manifest; raises ManifestError (caught by the gate -> a FAIL) on
+    any shape violation. Validation is total over the firm schema -- a missing
+    required key, a wrong type, or an out-of-vocab disposition all REJECT loudly.
+    We validate shape only; we do NOT recompute or normalize the digest values
+    (those are the producer's, read as-given)."""
+    where = path.name
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as e:
+        raise ManifestError(f"{where}: not valid JSON ({e})") from e
+    _require(isinstance(data, dict), where, "top level must be a JSON object")
+    for key in ("source", "exemplified_at", "reader"):
+        _require(isinstance(data.get(key), str) and data[key] != "", where,
+                 f"missing/empty string field {key!r}")
+    _require(isinstance(data.get("routes"), list), where, "'routes' must be a list")
+    _require(isinstance(data.get("delta"), list), where, "'delta' must be a list")
+    for i, r in enumerate(data["routes"]):
+        rw = f"{where} routes[{i}]"
+        _require(isinstance(r, dict), rw, "must be an object")
+        _require(isinstance(r.get("fragment_digest"), str) and r["fragment_digest"] != "",
+                 rw, "missing/empty 'fragment_digest'")
+        _require(isinstance(r.get("idea_gloss"), str) and r["idea_gloss"] != "",
+                 rw, "missing/empty 'idea_gloss'")
+        _require(isinstance(r.get("home_slug"), str) and r["home_slug"] != "",
+                 rw, "missing/empty 'home_slug'")
+        _require(r.get("disposition") in DISPOSITIONS, rw,
+                 f"disposition {r.get('disposition')!r} not in {sorted(DISPOSITIONS)}")
+        _require(isinstance(r.get("rank"), (int, float)) and not isinstance(r.get("rank"), bool),
+                 rw, "missing/non-numeric 'rank'")
+    for i, d in enumerate(data["delta"]):
+        dw = f"{where} delta[{i}]"
+        _require(isinstance(d, dict), dw, "must be an object")
+        _require(isinstance(d.get("fragment_digest"), str) and d["fragment_digest"] != "",
+                 dw, "missing/empty 'fragment_digest'")
+        _require(isinstance(d.get("idea_gloss"), str) and d["idea_gloss"] != "",
+                 dw, "missing/empty 'idea_gloss'")
+    return data
+
+
 def gate_reconstruct():
     """The reconstruction oracle: R1 (one-home totality over the transitive ref
     closure), R2 (cite-don't-copy), R3 (completeness-vs-Delta, an audit-line).
@@ -486,19 +561,82 @@ def gate_reconstruct():
                     f'-- shared {R2_RUN}-word run "{run}..." (cite [[{b}]], do not copy)'
                 )
 
-    # ---- R3: reconstruction-completeness vs Delta (audit-line, NOT mechanized) ----
-    # "every idea in meaning(D) has a home in F ∪ Delta" has no mechanical proxy:
-    # no routing manifest exists (routing is in-the-loop in the exemplify run,
-    # never persisted). State the boundary; do not fake a green ([[hoare-elegance-
-    # no-permissive-defaults]] degrade-visibly). Mechanizing it is the routing-
-    # manifest substrate follow-on (resolve/exemplify EMIT source-span -> home).
-    notes.append(
-        "R3 (reconstruction-completeness vs Delta): MANUAL audit -- no routing "
-        "manifest exists yet, so 'every idea in meaning(D) has a home' has no "
-        "mechanical proxy; R1 (no dropped dep) + R2 (no uncited restatement) are "
-        "mechanical, R3 stays an in-the-loop exemplify-run check until resolve/"
-        "exemplify emit a routing manifest (source-span -> home-cell)"
-    )
+    # ---- R3: reconstruction-completeness vs Delta ----
+    # "every idea in meaning(D) has a home in F ∪ Delta." The mechanical proxy is
+    # the routing manifest (B8): the persisted form of the in-the-loop routing
+    # decisions, one per exemplified source D, keyed by fragment content-digest.
+    # The CONSUMER half (here) reads any present manifest and gates coverage:
+    #   (a) every routes[].home_slug resolves to exactly one live cell -- R1
+    #       guarantees this on the corpus side; R3 re-asserts it over the manifest;
+    #   (b) coverage -- every fragment the manifest accounts for carries a routing
+    #       decision: routes[] (homed in F) OR delta[] (homed-nowhere by design).
+    #       A fragment with NO routing decision is the dropped idea R3 catches.
+    #       (The producer is responsible for listing every fragment; a fragment it
+    #       silently omits is invisible here -- the coverage R3 gates is "no
+    #       fragment the manifest carries lacks a disposition," the
+    #       routes-vs-delta totality the manifest itself can express.)
+    # DEGRADE-VISIBLY (mirrors gate_roundtrip): with NO manifest present -- the
+    # current state, no producer wired -- R3 stays the visible audit-line NOTE.
+    # Do not fake coverage, do not FAIL ([[hoare-elegance-no-permissive-defaults]]).
+    manifest_paths = sorted(MANIFESTS.glob("*.json")) if MANIFESTS.exists() else []
+    if not manifest_paths:
+        notes.append(
+            "R3 (reconstruction-completeness vs Delta): MANUAL audit -- no routing "
+            "manifest present (.manifests/ absent/empty), so 'every "
+            "idea in meaning(D) has a home' has no mechanical proxy; R1 (no dropped "
+            "dep) + R2 (no uncited restatement) are mechanical, R3 stays an "
+            "in-the-loop exemplify-run check until resolve/exemplify emit a routing "
+            "manifest (fragment-digest -> home-cell)"
+        )
+    else:
+        global r3_mechanical
+        r3_mechanical = True
+        for path in manifest_paths:
+            try:
+                m = _load_manifest(path)
+            except ManifestError as e:
+                # malformed manifest = a hard error, never a silent skip.
+                errors.append(f"R3 MANIFEST {e}")
+                continue
+            seen_digests: dict[str, str] = {}  # digest -> first-seen location
+            for i, r in enumerate(m["routes"]):
+                digest = r["fragment_digest"]
+                if digest in seen_digests:
+                    errors.append(
+                        f"R3 {path.name}: fragment {digest} routed twice "
+                        f"({seen_digests[digest]} and routes[{i}]) -- one fragment, "
+                        f"one routing decision"
+                    )
+                seen_digests[digest] = f"routes[{i}]"
+                # (a) home_slug resolves to exactly one live cell.
+                holders = homes.get(r["home_slug"], [])
+                if not holders:
+                    errors.append(
+                        f"R3 {path.name}: routes[{i}] ({r['idea_gloss']!r}) homes to "
+                        f"[[{r['home_slug']}]] -- no such live cell (dropped idea)"
+                    )
+                elif len(holders) > 1:
+                    errors.append(
+                        f"R3 {path.name}: routes[{i}] homes to [[{r['home_slug']}]] "
+                        f"with {len(holders)} homes ({', '.join(holders)}) -- not exactly one"
+                    )
+            for i, d in enumerate(m["delta"]):
+                digest = d["fragment_digest"]
+                if digest in seen_digests:
+                    errors.append(
+                        f"R3 {path.name}: fragment {digest} appears in both "
+                        f"{seen_digests[digest]} and delta[{i}] -- a fragment is homed "
+                        f"in F (routes) XOR in Delta (delta), never both"
+                    )
+                seen_digests[digest] = f"delta[{i}]"
+            # (b) coverage is the routes-vs-delta totality above: every listed
+            # fragment carries a decision (it is in routes OR delta) by
+            # construction. A fragment the producer drops entirely is unrouted --
+            # but it is also unlisted, so the coverage R3 can mechanize is "no
+            # listed fragment lacks a disposition," which the schema validation
+            # (disposition required + in-vocab on every routes[] entry) already
+            # enforces. The dropped-idea FAIL surfaces as a route to a
+            # non-existent home, or a malformed/under-specified entry.
 
 
 def main() -> int:
@@ -516,7 +654,8 @@ def main() -> int:
             print("FAIL", e, file=sys.stderr)
         print(f"\n{len(errors)} failure(s)", file=sys.stderr)
         return 1
-    print("PASS schema + references + fences + symbols + operative + round-trip + reconstruct (R1+R2; R3 manual)")
+    r3 = "R1+R2+R3" if r3_mechanical else "R1+R2; R3 manual"
+    print(f"PASS schema + references + fences + symbols + operative + round-trip + reconstruct ({r3})")
     return 0
 
 
