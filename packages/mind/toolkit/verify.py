@@ -9,6 +9,16 @@
               rule of references/formal-symbolic-notation.md (anchors in prose,
               symbols in fences; bind imports once at the boundary). REJECT,
               never auto-transform ([[hoare-elegance-no-permissive-defaults]]).
+  SYMBOLS     the register rule's positive form: every glyph in a fence interior
+              is in (declared symbol table ∪ definienda-class ∪ exemptions); an
+              undeclared glyph FAILS, named cell:line + codepoint. FENCE rejects
+              the anchor; SYMBOLS rejects any other stray glyph.
+  OPERATIVE   every kind:skill cell carries operative content beyond heading +
+              ≜ formula (a step, a fenced block, or substantive prose); an empty
+              skill body projects a vacuous SKILL.md and round-trips on emptiness.
+  PROVENANCE  (warning, not gate) a kind:skill that composes EMPTY provenance
+              surfaces as a NOTE -- the recurring fenced-≜-as-formula bug made
+              visible so a future skill can't regress silently.
   ROUNDTRIP   every emitted agent def reconstructs its archetype's composed set:
               the def names every [[ref]] the cell composes + every scope grant,
               and carries an intact provenance header + content hash that matches
@@ -64,6 +74,63 @@ KINDS = {
 # Broad bracket scan -- SYNTAX wellformedness only (catches piped [[a|b]] and
 # other non-slug interiors that the strict cells.REF intentionally skips).
 BROAD_REF = re.compile(r"\[\[([^\]]+)\]\]")
+
+# ---- SYMBOLS: the declared-symbol set + the calibrated exemption classes ----
+# The register rule (references/formal-symbolic-notation.md): a fenced FORMAL
+# block carries only declared symbols + the cell's own definienda. gate_symbols
+# enforces it; the symbol table is the truth source (col-1, loaded live so the
+# gate cannot drift from the doc). The exemption classes below are NOT a second
+# vocabulary -- they ARE "the cell's own definienda" made mechanical (Greek +
+# subscripts are definienda-class variables, never operators) plus a register-
+# neutral diagram/prose tail (box-drawing carries no logic; em-dash/ellipsis are
+# prose-in-fence). Exempting these classes can never mask a misused LOGIC glyph,
+# which is the only thing the register rule is about. Calibrated 2026-06-13
+# (Nico): the live corpus is CLEAN under exactly this set.
+NOTATION_DOC = ROOT / "references" / "formal-symbolic-notation.md"
+
+
+def _declared_symbols() -> set[str]:
+    """Every non-ASCII glyph in col-1 of the notation table -- loaded live from
+    the doc, so the gate tracks the truth source rather than a frozen copy
+    ([[cite-dont-copy]]). Col-1 is the first `...`-backticked field of each
+    `| ... |` table row; a field may carry several tokens (`dom(f)` · `range(f)`,
+    the `──op──→` compound, `·` the list separator -- all contribute their glyphs)."""
+    out: set[str] = set()
+    for line in NOTATION_DOC.read_text(encoding="utf-8").splitlines():
+        if not line.startswith("|"):
+            continue
+        col1 = line.strip().strip("|").split("|")[0]
+        for tok in re.findall(r"`([^`]+)`", col1):
+            out.update(ch for ch in tok if ord(ch) > 127)
+    return out
+
+
+def _symbol_exempt(ch: str) -> bool:
+    """The definienda-class + register-neutral exemptions (Nico's calibration).
+    Returns True for a glyph the register rule does not constrain:
+      - ASCII -- never a declared formal symbol's concern.
+      - Greek block (U+0391-03C9, both cases) -- definienda-class variables a
+        cell defines locally (η σ Φ Δ ρ λ μ ...), not operators.
+      - Subscript decoration (U+2080-2089 digits, U+1D62 'ᵢ', U+2C7C 'ⱼ') --
+        attaches to a definiendum (C₀, cᵢ, D₁); part of the variable name.
+      - Box-drawing (U+2500-257F) -- diagram vocabulary (trees, pipeline rules);
+        carries no formal-logic meaning, so exempting it cannot hide a misused
+        operator. (`─` U+2500 and `│` U+2502 are ALSO declared -- harmless overlap.)
+      - Em dash (U+2014) and ellipsis (U+2026) -- prose-in-fence punctuation.
+        `…` is flagged to Nico for a possible table addition; exempt until then."""
+    o = ord(ch)
+    if o <= 0x7F:
+        return True
+    if 0x0391 <= o <= 0x03C9:
+        return True
+    if 0x2080 <= o <= 0x2089 or o in (0x1D62, 0x2C7C):
+        return True
+    if 0x2500 <= o <= 0x257F:
+        return True
+    if o in (0x2014, 0x2026):
+        return True
+    return False
+
 
 errors: list[str] = []
 notes: list[str] = []
@@ -132,6 +199,113 @@ def gate_fences():
                         f"boundary and use the bare symbol in the fence "
                         f"(references/formal-symbolic-notation.md)"
                     )
+
+
+def gate_symbols():
+    """SYMBOL-COVERAGE: every glyph inside a fence interior must be in
+    (declared symbol table ∪ the cell's own definienda ∪ exemptions). The
+    register rule's positive form -- FENCE rejects [[ ]] (prose machinery in a
+    formal block); gate_symbols rejects any OTHER undeclared glyph (a stray
+    operator, a copy-pasted unicode lookalike). FAIL names cell + glyph +
+    codepoint. The definienda/exemption classes (_symbol_exempt) are the
+    calibration; the live corpus is CLEAN under it (a violation is a real
+    undeclared symbol, never a false-positive on η/cᵢ/tree-art)."""
+    declared = _declared_symbols()
+    for slug in sorted(cells.corpus_slugs()):
+        path = IDEAS / f"{slug}.md"
+        body = cells.parse_cell(slug)["body"]
+        offset = _body_offset(path.read_text(encoding="utf-8"), body)
+        for fb in cells.fenced_blocks(body):
+            interior_start = fb["start"] + (1 if fb["type"] == "fence" else 0)
+            for j, line in enumerate(fb["content"].splitlines()):
+                for ch in line:
+                    if _symbol_exempt(ch) or ch in declared:
+                        continue
+                    file_line = offset + interior_start + j + 1  # 1-based
+                    errors.append(
+                        f"SYMBOL {path.name}:{file_line}: undeclared glyph "
+                        f"{ch!r} (U+{ord(ch):04X}) in a fence -- not in the "
+                        f"symbol table, not a definiendum-class/exempt glyph "
+                        f"(references/formal-symbolic-notation.md). Declare it "
+                        f"in the table or rewrite the fence."
+                    )
+
+
+def gate_skill_operative():
+    """OPERATIVE: a `kind: skill` cell must carry operative content beyond its
+    heading + composition formula. A skill whose body is only front-matter + H1
+    + the prose `≜` line projects a vacuous SKILL.md and round-trips PASS on
+    emptiness (the body is authored, not composed, so the round-trip hash check
+    can't see the hollowness). Nico's bar: >=1 operative element after the
+    heading/formula -- a numbered/bulleted step, a fenced block, or substantive
+    prose. Structure-only (a `## ` heading with nothing under it) does NOT count.
+
+    Excluded as non-operative scaffolding: the H1, blank lines, bare `## `
+    section headings, and the single prose `≜` composition-formula line. What
+    remains must be a list item, a fenced block, or a substantive prose line."""
+    for slug in sorted(cells.slugs_of_kind("skill")):
+        path = IDEAS / f"{slug}.md"
+        body = cells.parse_cell(slug)["body"]
+        if cells.fenced_blocks(body):  # a fenced block IS operative content
+            continue
+        mask = cells.fence_lines(body)
+        operative = False
+        for i, line in enumerate(body.splitlines()):
+            if i in mask:
+                continue  # fence handled above; this branch is fence-free anyway
+            s = line.strip()
+            if not s:
+                continue
+            if s.startswith("#"):  # H1/H2 headings are scaffolding, not content
+                continue
+            if "≜" in line:  # the prose composition-formula line is scaffolding
+                continue
+            # a list step or any other substantive prose line is operative.
+            operative = True
+            break
+        if not operative:
+            errors.append(
+                f"OPERATIVE {path.name}: kind 'skill' has no operative content "
+                f"beyond heading + ≜ formula -- a skill needs >=1 step, fenced "
+                f"block, or substantive prose (an empty skill body projects a "
+                f"vacuous SKILL.md)"
+            )
+
+
+def gate_skill_provenance():
+    """PROVENANCE (warning): a `kind: skill` cell that composes EMPTY provenance
+    surfaces visibly, so a future skill cannot regress into the recurring
+    empty-provenance bug silently. Root cause: compose.skill reads the first
+    PROSE `≜` line as the composition formula and correctly ignores fenced `≜`
+    (formal math, never composition) -- but a skill whose only early `≜` is
+    fenced math then composes empty provenance. The composer NOTEs this on the
+    deploy path (compose.skill._formula_refs); this lifts it to a verify-level
+    warning that fires regardless of deploy state ([[hoare-elegance-no-
+    permissive-defaults]] degrade-visibly).
+
+    A WARNING, not a FAIL: a skill MAY legitimately compose from nothing (no
+    formula). All 7 live skills currently carry provenance, so any empty one is
+    a regression worth a human's eye -- but the composer must not refuse a
+    deliberately-provenance-free skill, so it stays a NOTE, never an error."""
+    for slug in sorted(cells.slugs_of_kind("skill")):
+        body = cells.parse_cell(slug)["body"]
+        body_lines = body.splitlines()
+        mask = cells.fence_lines(body)
+        refs = _formula_refs(slug, body_lines, mask)
+        if refs:
+            continue
+        fenced_formula = any("≜" in body_lines[i] for i in mask)
+        diag = (
+            "its only `≜` is fenced math (the recurring trap -- move the "
+            "composition formula to a prose line)"
+            if fenced_formula
+            else "no `≜` composition formula at all"
+        )
+        notes.append(
+            f"PROVENANCE {slug}.md: kind 'skill' composes EMPTY provenance "
+            f"-- {diag}. (warning, not a failure: a skill may compose from "
+            f"nothing; surfaced so it can't regress silently)"
+        )
 
 
 # where each projectable kind's emitted artifact lives.
@@ -328,6 +502,9 @@ def gate_reconstruct():
 def main() -> int:
     gate_schema_and_refs()
     gate_fences()
+    gate_symbols()
+    gate_skill_operative()
+    gate_skill_provenance()
     gate_roundtrip()
     gate_reconstruct()
     for n in notes:
@@ -337,7 +514,7 @@ def main() -> int:
             print("FAIL", e, file=sys.stderr)
         print(f"\n{len(errors)} failure(s)", file=sys.stderr)
         return 1
-    print("PASS schema + references + fences + round-trip + reconstruct (R1+R2; R3 manual)")
+    print("PASS schema + references + fences + symbols + operative + round-trip + reconstruct (R1+R2; R3 manual)")
     return 0
 
 

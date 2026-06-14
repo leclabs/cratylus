@@ -12,12 +12,17 @@ Pipeline (run from `packages/mind`): `toolkit/resolve.py --reader strong-llm-lea
 ## Gotchas (composer, `skill.py`)
 
 - Requires an H1: all body before the first H1 is **silently dropped** (known bug — contradicts degrade-visibly; fix pending).
-- The first prose `≜` line is consumed as the composition formula — boundary-bind dependencies with "binds" prose, never `X ≜ [[cell]]` in prose.
+- The first prose `≜` line is consumed as the composition formula — boundary-bind dependencies with "binds" prose, never `X ≜ [[cell]]` in prose. A skill whose only `≜` is fenced math composes **empty provenance**; this no longer regresses silently — `verify.py` `gate_skill_provenance` surfaces it as a `NOTE PROVENANCE` warning (B9).
 
 ## Verify gaps (open)
 
-- Round-trip PASSes on an empty skill body — no operative-content check yet.
-- No symbol-coverage lint. Manual check when a new law lands: fence-chars − symbol-table − definienda = ∅ (table: `references/formal-symbolic-notation.md`).
+- Requires an H1: all body before the first H1 is **silently dropped** (composer gotcha above) — not yet a verify gate.
+
+### Closed (B9)
+
+- ~~Round-trip PASSes on an empty skill body~~ → `gate_skill_operative` (OPERATIVE): a `kind: skill` needs ≥1 operative element (step / fenced block / substantive prose) beyond heading + `≜` formula.
+- ~~No symbol-coverage lint~~ → `gate_symbols` (SYMBOLS): every fence-interior glyph ∈ (table col-1 ∪ definienda-class ∪ exemptions), else FAIL with cell:line + codepoint. Exemptions = Greek (U+0391–03C9), subscripts (U+2080–2089, ᵢ, ⱼ), box-drawing (U+2500–257F diagram art), em-dash + ellipsis (prose-in-fence). Table: `references/formal-symbolic-notation.md`.
+- ~~Fenced-`≜` empty-provenance composes silently~~ → `gate_skill_provenance` (PROVENANCE warning, above).
 
 ## Deploy
 
