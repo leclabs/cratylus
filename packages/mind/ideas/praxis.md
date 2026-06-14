@@ -8,7 +8,7 @@ trigger: /praxis
 
 A skill for creating and working **durable, sharded plans** on disk. An agent reaches it by planning intent — "start a plan for X", "pick the auth plan back up", "fold these plans together" — not by memorizing a command set. Each plan is a [[sharded-plan-layout]] directory; the agent resumes from it and works it as it normally would.
 
-praxis ≜ invokes [[sharded-plan-layout]]
+praxis ≜ invokes [[sharded-plan-layout]] · binds [[clean-slate]] · [[palimpsest]]
 
 ## What it helps with
 
@@ -17,9 +17,37 @@ Surfaced by intent, not commands — state what you want and the skill does the 
 - **start a plan** — scaffold a fresh [[sharded-plan-layout]] dir from the stated intent.
 - **resume a plan** — re-attach to an existing plan and draw from the ready frontier.
 - **advance a task** — the `mv` of [[sharded-plan-layout]]; on completion promote the now-unblocked dependents and re-mirror PLAN.md.
+- **update a plan** — revise a task's (or the plan's) content in place, **depalimpsested** ([[clean-slate]]): rewrite to the clean current state and strip the superseded strata, never accreting a "previously / now / amended-by" [[palimpsest]]. The `dp` operator in the model below is that strip; re-mirror PLAN.md after.
 - **merge plans** — fold several in-scope plans into one.
 
 The one explicit affordance is **`/praxis list`** — enumerate the sharded plans in scope so you (or the agent) can see what exists and pick one up. Everything else is best reached by stating the intent.
+
+## The operations, formally
+
+State is the folder a task sits in; `R` is the prestructured dependency relation; `dp` is the de-palimpsest strip that **update** applies (binds [[clean-slate]] · [[palimpsest]]):
+
+```text
+States ≜ pending → ready → active → completed
+
+P ≜ a plan, a set of task-files
+state : P → States
+R ⊆ P × P            (t, u) ∈ R ⇔ t blocked until u completed
+
+frontier(P) ≜ { t │ t ∈ P ∧ state(t) = ready }       the open frontier = ls tasks/ready/
+PLAN.md ≜ mirror(state, R)                            derived, never authoritative
+
+start  : intent ↦ P                                  scaffold a fresh sharded-plan-layout
+resume : P ↦ frontier(P)                             re-attach, draw the ready frontier
+advance: state(t) := next(state(t))                  the mv between adjacent states
+         state(u) = completed ⇒ ∀ t ∈ promote(u) : state(t) := ready
+merge  : { P₁, P₂, … } ↦ ⋃ Pᵢ                        fold in-scope plans into one
+
+promote(u) ≜ { t │ (t, u) ∈ R ∧ state(t) = pending ∧ ∀ x : (t, x) ∈ R ⇒ state(x) = completed }
+
+dp ≜ de-palimpsest
+update : P → P ,  content(update(t)) = dp(content(t))    revise to clean current-state
+dp(dp(c)) = dp(c)                                        idempotent — no stratum survives twice
+```
 
 ## Which commit last touched a plan — ask git, never store it
 
@@ -38,3 +66,4 @@ claude-code assigns each plan session a generated name; `list` can show it besid
 
 - [[sharded-plan-layout]] — the directory structure praxis manages.
 - [[shard-by-orthogonal-concern]] — why a plan decomposes into independent units.
+- [[clean-slate]] — the disposition **update** enacts: strip the palimpsest to net-green.
