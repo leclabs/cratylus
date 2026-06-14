@@ -33,7 +33,13 @@ The founder boundary, the shared `principal-ic` genus, and the co-equal founding
 
 ## Status
 
-**Phase A (the constitution) is authored** — the latent sociology is now explicit corpus: personhood (the identity-memory stack), authority, cultural propagation, and the founding, gathered by the **politeia** (`packages/mind/ideas/politeia.md`), the foundational structure every founded society instantiates. Next: **Phase B** — cultural alignment of `koine` to `mind` (deep rename, re-homing config as projections of the corpus) and the projection machinery. See `plans/`.
+**Phases A and B are complete; Phase C's founding operations are built and proven.**
+
+- **Phase A — the constitution** (authored): the latent sociology made explicit corpus — personhood (the identity-memory stack), authority, cultural propagation, consensual founding — gathered by the **politeia** (`packages/mind/ideas/politeia.md`), the foundational structure every founded society instantiates.
+- **Phase B — the machinery** (complete): `koine` renamed + culturally aligned; the **reconstruction oracle** gates projection mechanically (`accept(F)` = one-home totality + cite-don't-copy + routing-manifest coverage); an opt-in **continuity hook**; and the **culture→IR bridge** — a society's culture compiles through koine's canonical IR to any client (claude-code + codex, round-trip clean).
+- **Phase C — founding real societies** (operations built, proven on scratch): **`init`** founds a greenfield project as a mind-society; **`rebase`** consensually re-grounds an existing one (invited reformer — projects the culture, reconciles forked dispositions to citation-plus-local-delta, preserves in-flight work); **`deploy`** migrates a fleet (content-refresh + never-prune externals + preserve lived memory). The first real foundings — **rebasing Oikos** and **migrating the fleet** — await the Operator's go-ahead (the rebase is consensual by the constitution's own law, A4).
+
+See `plans/` for the phase plans and `plans/polis-machinery/COORDINATION.md` for the Nico↔Mav build log.
 
 ## Toolchain
 
