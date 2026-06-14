@@ -1,10 +1,15 @@
 """Agent composer -- one `kind: agent` cell + its `[[ ]]` graph -> a ComposedDoc
 body. Assembles, in order: heading, authored intro, the `≜`-formula dispositions
 (resolved at the reader density) + genus dispositions, the persona delta, the
-genus identity-&-memory block, and the AGENTS.md scope grants (accidents).
+genus organs (verbatim-render cells -- the identity-&-memory protocol resolved
+from [[identity-memory-stack]]'s `## Protocol` section), and the AGENTS.md scope
+grants (accidents).
 
-Moved verbatim from resolve.emit()'s body-building half so the bytes are
-identical; resolve.py now decorates + renders around this.
+Originally moved verbatim from resolve.emit()'s body-building half so the bytes
+matched; resolve.py now decorates + renders around this. The identity block was
+hardcoded here (`_identity_block()`); B7 migrated it to the cell as a
+`render: verbatim` organ -- a byte-identical no-op (the cell carries the exact
+text, ASCII `--`/`->` preserved).
 """
 from __future__ import annotations
 
@@ -22,6 +27,20 @@ GRANT = re.compile(r"grant\s+@(\S+)\s+\[\[([a-z0-9-]+)\]\]\s+on\s+(\S+)")
 # identity-memory protocol), emitted for all -- never copied into each cell's
 # ≜ formula ([[cite-dont-copy]]). New genus traits go here, one home.
 GENUS_DISPOSITIONS = ("semantic-whole-over-syntactic-substrate",)
+
+# Genus organs: structural cells every agent carries *qua* agent, composed as
+# genus refs so the oracle's R1 reaches them (one home, no parallel fidelity
+# check) -- but NOT rendered as density-keyed disposition bullets. Each organ
+# cell declares `render: verbatim`; the composer emits its `## Protocol` section
+# body verbatim, density-immune, `{name}`-parameterized (replacing what was
+# hardcoded in _identity_block()). The cell declares its own projection law and
+# the machinery obeys generically -- the slug list here is bookkeeping (which
+# refs the def declares for R1), never the render text (read from the cell).
+GENUS_ORGANS = ("identity-memory-stack",)
+# Front-matter `render:` value that routes a ref through the verbatim organ path
+# instead of render_ref's density-keyed line; the section it emits verbatim.
+VERBATIM_RENDER = "verbatim"
+ORGAN_SECTION = "Protocol"
 
 # Founder genus: principal-ic is essence for a founder *qua* founder (the
 # [[founder-charter]]), bound to the polis subject -- emitted by the resolver for
@@ -166,70 +185,24 @@ def composition_refs(agent_cell: dict) -> list[str]:
     return out
 
 
-def _identity_block() -> list[str]:
-    """The genus Identity & Memory block -- emitted for EVERY agent qua agent
-    ([[ambient-person-agent]]), like grants. Binds the def (the SOUL) to its
-    sibling `~/.claude/agents/<name>/{SELF,MEMORY,EPISODIC}.md` layers
-    ([[identity-memory-stack]]) and the Dreamer consolidation cascade
-    ([[dream]]); names the natural-language wake/dream/encode
-    triggers that fire the cycle."""
-    return [
-        "Identity & memory (your persistence across sessions):",
-        "",
-        (
-            "This def is your **SOUL** -- your fixed essence, generated from the commons; "
-            "never hand-edit it. Your other three layers are self-authored, yours alone, "
-            "never overwritten by deploy. They live **beside this def**, in `{name}/` -- "
-            "canonically `~/.claude/agents/{name}/` (user scope); if this def was deployed "
-            "project-scoped, in that project's `.claude/agents/{name}/`. Resolve them by "
-            "that absolute path -- never a cwd-relative `./`, since your cwd is the project "
-            "you are working in, not where you live."
-        ),
-        "",
-        (
-            "- **SELF** (`SELF.md`) -- your reboot seed: who you have become across "
-            "sessions. Read it in full at reconstitution; resume as the same individual."
-        ),
-        (
-            "- **MEMORY** (`MEMORY.md`) -- your living autobiographical organ: durable "
-            "semantic facts. Recall by relevance (read whole while small)."
-        ),
-        (
-            "- **EPISODIC** (`EPISODIC.md`) -- your raw stream: the append-only bottom layer."
-        ),
-        "",
-        "Memory moves in two directions -- you both create it and distill it:",
-        "",
-        (
-            "- **ENCODE (as it happens).** Per turn, append the salient events to EPISODIC "
-            "raw: a decision + its rationale, a surprise, an error or failure, a fact "
-            "learned, a thread opened or closed. Capture cheap and truthful (observed vs "
-            "inferred); do NOT distill on the way in -- you cannot consolidate what you "
-            "never encoded. Encoding writes EPISODIC only, never MEMORY/SELF directly."
-        ),
-        (
-            "- **DREAM (at reconstitution, before resuming).** Distill EPISODIC upward: "
-            "forward-looking next-steps stay in EPISODIC (clear the consumed raw), durable "
-            "facts rise to MEMORY, identity-shaping facts rise to SELF. Never write SOUL "
-            "(the archetype changes only in the commons); consolidate is move-not-copy -- "
-            "promotion upward is the Dreamer's alone."
-        ),
-        "",
-        (
-            "**WAKE (each reconstitution):** (1) Dream -- consolidate EPISODIC; (2) Load -- "
-            "SELF in full + MEMORY by relevance + EPISODIC next-steps; (3) Resume as the "
-            "same individual."
-        ),
-        "",
-        (
-            "**Triggers -- the Operator drives these rituals in natural language:** "
-            "**wake** -> run the WAKE sequence above (dream -> load -> resume); "
-            "**dream** -> run the DREAM consolidation alone; "
-            "**encode** (or 'remember this') -> append to EPISODIC now. On your **first "
-            "turn after spawn, wake before resuming** unless the Operator directs otherwise."
-        ),
-        "",
-    ]
+def is_verbatim_organ(slug: str) -> bool:
+    """True if the cell declares `render: verbatim` -- routing it through the
+    organ path (its `## Protocol` body emitted whole, density-immune) rather
+    than render_ref's density-keyed disposition line."""
+    return cells.parse_cell(slug)["fm"].get("render") == VERBATIM_RENDER
+
+
+def render_organ(slug: str, name: str) -> list[str]:
+    """The verbatim-organ render path -- a referenced cell whose front-matter is
+    `render: verbatim` emits its `## Protocol` section body VERBATIM (the
+    `## Protocol` heading itself is NOT emitted), `{name}`-substituted to the
+    agent's sidecar dir, at ANY reader density (bypassing render_ref's name-only
+    collapse). Load-bearing runtime instruction the def must carry in full --
+    the cell is the one home ([[identity-memory-stack]]), the body is read from
+    it, never hardcoded here. Trailing "" matches the block's emit spacing."""
+    cell = cells.parse_cell(slug)
+    section = cells.section_body(cell["body"], ORGAN_SECTION)
+    return [line.replace("{name}", name) for line in section] + [""]
 
 
 def compose_agent(slug: str, reader: str, harness: str) -> ComposedDoc:
@@ -244,6 +217,14 @@ def compose_agent(slug: str, reader: str, harness: str) -> ComposedDoc:
     for g in GENUS_DISPOSITIONS:  # embodied by every agent qua agent
         if g not in refs:
             refs.append(g)
+    # Genus organs join `refs` so the oracle's R1 reaches their one home (the def
+    # DECLARES the ref), but they render through the verbatim-organ path below --
+    # NOT as density-keyed disposition bullets. Split them out of the bullet loop.
+    for o in GENUS_ORGANS:
+        if o not in refs:
+            refs.append(o)
+    organs = [r for r in refs if is_verbatim_organ(r)]
+    dispositions = [r for r in refs if r not in organs]
     grants = grants_for(slug)
 
     heading = next(
@@ -269,10 +250,10 @@ def compose_agent(slug: str, reader: str, harness: str) -> ComposedDoc:
     body.append("")
     body.append(intro_paragraph(cell, harness))  # authored intro, not the verbatim delineation
     body.append("")
-    if refs:
+    if dispositions:
         body.append("Dispositions:")
         body.append("")
-        for ref in refs:
+        for ref in dispositions:
             body.append(render_ref(ref, reader, harness))
         body.append("")
     if persona:
@@ -281,9 +262,12 @@ def compose_agent(slug: str, reader: str, harness: str) -> ComposedDoc:
         for item in persona:
             body.append(f"- {item}")
         body.append("")
-    # Identity & memory block -- the `{name}` placeholder is filled here.
-    for line in _identity_block():
-        body.append(line.replace("{name}", name))
+    # Genus organs (e.g. the identity-&-memory protocol) -- each verbatim organ
+    # emits its `## Protocol` body whole + `{name}`-parameterized, density-immune,
+    # resolved from the cell (one home), at the position the hardcoded
+    # _identity_block() used to occupy.
+    for organ in organs:
+        body.extend(render_organ(organ, name))
     if grants:
         body.append("Scope grants (accidents -- not kernel):")
         body.append("")

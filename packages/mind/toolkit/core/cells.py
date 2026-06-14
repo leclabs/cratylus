@@ -108,6 +108,37 @@ def parse_cell(slug: str) -> dict:
     return {"slug": slug, "fm": fm, "body": body}
 
 
+def section_body(body: str, heading: str) -> list[str]:
+    """The body lines of a `## <heading>` section -- the lines BETWEEN that
+    heading and the next `## ` heading (the heading itself is NOT included),
+    leading/trailing blank lines trimmed. Heading match is case-insensitive on
+    the text after `## `. Fence interiors are spanned verbatim (a `## ` inside a
+    code block never ends the section). Returns [] if the heading is absent.
+
+    Used by the `render: verbatim` organ path: a `## Protocol` section is the
+    ref-free operative payload an organ cell projects whole into a def."""
+    lines = body.splitlines()
+    mask = fence_lines(body)
+    want = heading.strip().lower()
+    out: list[str] = []
+    in_section = False
+    for i, line in enumerate(lines):
+        is_heading = line.startswith("## ") and i not in mask
+        if is_heading:
+            if in_section:  # the next ## ends the section
+                break
+            if line[3:].strip().lower() == want:
+                in_section = True
+            continue
+        if in_section:
+            out.append(line)
+    while out and not out[0].strip():  # trim surrounding blanks; caller owns spacing
+        out.pop(0)
+    while out and not out[-1].strip():
+        out.pop()
+    return out
+
+
 def delineation(slug: str) -> str:
     """The dense priors-loaded summary. Primitives/composites carry it in
     front-matter as `delineation`; skill cells carry it as `description`; gloss
