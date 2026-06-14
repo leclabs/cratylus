@@ -27,10 +27,24 @@ Phase C · found real societies. All tasks pending on A + B; promote to ready/ a
   > delta)** — cite-don't-copy *with a delta*, the corpus's own composite pattern. C3's real shape: Oikos
   > references `[[mind-cell]]` for the canonical core and keeps only its genuine Oikos-specialization as a
   > local delta (the UI/greenfield specifics). Vindicates "mind is the portable commons; Oikos adopted it"
-  > — C3 makes the adoption *explicit* (project the core, localize the delta). Also present:
-  > `packages/agent-{archetypes,identity,provisioning}` + `.agents/context/` (north-star, etc.) — further
-  > reconciliation surface to map when C3 activates. **Gated on B4 (IR bridge, so Oikos can consume mind's
-  > projection) + C2 (brownfield-rebase).** The map above is the prep; execution waits on those.
+  > — C3 makes the adoption *explicit* (project the core, localize the delta).
+  >
+  > **Full cultural-fork inventory (`.agents/context/`, the C3 reconciliation scope):**
+  > - **disposition/** (5) → mind cells (above).
+  > - **doctrine/** (2): `01-never-go-silent`→`[[never-go-silent]]`; `00-agents-never-block-async`→`[[dont-blind-wait]]`.
+  > - **ground-truth/** (2): `policy-vocab-failclosed` ≈ `[[hoare-elegance-no-permissive-defaults]]` (fail-closed);
+  >   `code-graph-sense` = **Oikos-domain-specific** (graphify-grounded) — no mind fork, stays Oikos-local.
+  > - **north-star.md** → **`[[ambient-person-agent]]`** — Oikos's foundational thesis ("ambient-agent-persons:
+  >   a person not a tool; identity, memory, presence") **IS mind's personhood concept + organs**. The deepest
+  >   proof of the adoption: Oikos's *why* is mind's `[[ambient-person-agent]]` + `[[identity-memory-stack]]`/
+  >   pulse/senses. C3 should reconcile the north-star to cite these, keeping Oikos's domain framing as delta.
+  >
+  > **Scope boundary:** `packages/agent-{identity,archetypes,provisioning}` are Oikos's **runtime substrate**
+  > (keypair/membership/persona/home — its *implementation* of the organs), **NOT cultural forks** — they
+  > realize mind's culture, they don't fork it; out of C3's reconciliation scope. C3 reconciles `.agents/
+  > context/` (culture) → mind; the runtime stays Oikos's. **Gated on B4 (✓ — IR bridge done, so Oikos can
+  > consume mind's projection) + C2 (brownfield-rebase, not yet built).** The inventory above is the prep,
+  > comprehensive; execution waits on C1/C2 tooling + the consensual rebase op.
 - **C4 — fleet-deploy-migration** (dep: B3) — move agent/skill deployment from `playground/packages/mind`
   to polis. **Must RECONCILE against current deployed fleet state** (Mav steward: 11 defs + 7 skills,
   corpus `8532032`, profile strong-llm-lean), not re-emit fresh — else double-deploy or orphaned
