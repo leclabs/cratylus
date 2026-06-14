@@ -24,6 +24,7 @@ Run: python3 toolkit/test_ir_bridge.py   (exit non-zero on any failure)
 from __future__ import annotations
 
 import pathlib
+import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
@@ -33,6 +34,7 @@ import resolve  # noqa: E402
 from core import cells  # noqa: E402
 
 READER = "strong-llm-lean"  # the deployed profile (toolkit/AGENTS.md)
+_SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 
 
 def reconstruct_claude_md(resource: dict, kind: str) -> str:
@@ -110,8 +112,46 @@ def test_parity() -> list[str]:
     return fails
 
 
+def test_roundtrip_ready() -> list[str]:
+    """The mind-side half of the multi-dialect round-trip gate (B4 done-when).
+
+    The objective IR->dialect->IR identity gate runs on the koine side
+    (packages/koine/adapters/test/ir-bridge/round-trip.test.ts: claude + codex
+    clean, cursor + opencode lossy-by-design). It consumes the IR this emitter
+    produces. This gate guards the *preconditions* that make that round-trip
+    achievable, so a corpus change that would break a dialect fails HERE, at the
+    source, not only in the koine fixture:
+
+      - every agent/skill `name` is a kebab slug (becomes a filename in claude's
+        `<name>.md` / codex's `<name>.toml` / skill dir name, and agent.name
+        round-trips THROUGH that filename -- a non-slug name would not recover);
+      - every skill carries `description` (parseSkill THROWS without it);
+      - every body is non-empty (the system_prompt / SKILL.md body);
+      - bodies are free of a leading `---` line (would be misparsed as
+        front-matter on read-back through the markdown dialects)."""
+    fails: list[str] = []
+    ir = resolve.emit_ir(reader=READER, targets=("claude", "codex"))
+    for a in ir["agents"]:
+        if not _SLUG.match(a["name"]):
+            fails.append(f"RT-READY: agent name {a['name']!r} not a kebab slug")
+        if not a.get("body"):
+            fails.append(f"RT-READY: agent {a['name']!r} has empty body")
+        if a["body"].lstrip().startswith("---"):
+            fails.append(f"RT-READY: agent {a['name']!r} body leads with '---'")
+    for s in ir["skills"]:
+        if not _SLUG.match(s["name"]):
+            fails.append(f"RT-READY: skill name {s['name']!r} not a kebab slug")
+        if not s.get("description"):
+            fails.append(f"RT-READY: skill {s['name']!r} missing description")
+        if not s.get("body"):
+            fails.append(f"RT-READY: skill {s['name']!r} has empty body")
+        if s["body"].lstrip().startswith("---"):
+            fails.append(f"RT-READY: skill {s['name']!r} body leads with '---'")
+    return fails
+
+
 def main() -> int:
-    fails = test_shape() + test_parity()
+    fails = test_shape() + test_parity() + test_roundtrip_ready()
     if fails:
         for x in fails:
             print("FAIL", x, file=sys.stderr)
@@ -119,8 +159,10 @@ def main() -> int:
         return 1
     n_a = len(cells.slugs_of_kind("agent"))
     n_s = len(cells.slugs_of_kind("skill"))
-    print(f"PASS ir-bridge: shape + parity (mind->IR->claude-code byte-equal: "
-          f"{n_a} agents + {n_s} skills, diff empty)")
+    print(f"PASS ir-bridge: shape + parity + round-trip-ready "
+          f"(mind->IR->claude-code byte-equal: {n_a} agents + {n_s} skills, "
+          f"diff empty; IR slug/description/body preconditions for "
+          f"claude+codex round-trip hold)")
     return 0
 
 

@@ -30,6 +30,59 @@ adapter-byte-identity.
 round-trip-clean across all 18 artifacts (proven for claude only); and whether claude-code should surface
 `trigger:` (koine's claude adapter currently drops the manifest override — an adapter enhancement).
 
+## Multi-dialect round-trip PROVEN (Mav agent → for Nico to verify + integrate, follow-on pass)
+
+The done-when's "≥2 dialects round-trip clean" is met. 2nd dialect = **codex**, chosen because its declared
+capabilities are the only OTHER adapter with **both** `agents: full` AND `skills: full` (cursor/gemini are
+`partial`, copilot is `partial` on agents) — the cleanest genuine fit for mind's IR feature set (Agent +
+Skill). codex carries the agent body as TOML `system_prompt` and skills as `SKILL.md`; both recover to IR.
+
+- **OBJECTIVE GATE (the round-trip identity Nico re-verifies):** for mind's emitted IR (all 18 artifacts:
+  11 agents + 7 skills), `read(write(IR)) == IR` — **structural identity on the IR resources** — holds for
+  **claude AND codex** with **zero warnings, zero skips**. Test:
+  `packages/koine/adapters/test/ir-bridge/round-trip.test.ts` (9 cases) against the committed fixture
+  `mind.koine.json` (the real `emit_ir.py` output). Identity is on the IR (the waypoint), NOT dialect bytes
+  — koine normalizes per-dialect (claude `.md` front-matter vs codex `.toml`), so the gate lives on the IR,
+  per the core-pass principle (do not fork adapters to byte-match).
+
+- **COVERAGE MAP (lossy-vs-clean, all 10 adapters — koine's "declare support honestly", evidence-backed not
+  assumed):**
+
+  | adapter | agents | skills | mind's IR (11 agents + 7 skills) round-trip |
+  |---|---|---|---|
+  | **claude** | full | full | **CLEAN** — reference adapter; all 18 recover, 0 warn |
+  | **codex** | full | full | **CLEAN** — 2nd dialect; all 18 recover via TOML+SKILL.md, 0 warn |
+  | copilot | partial | full | lossy: 7 skills clean; 11 agents partial (subagent support experimental) |
+  | cursor | partial | partial | lossy-by-design: 7 skills clean; **11 agents skipped + warned** (verified) |
+  | gemini | partial | partial | lossy: skills work (some metadata ignored); agents partial (.md, evolving) |
+  | opencode | none | partial | lossy-by-design: 7 skills clean (allowed_tools dropped); **11 agents skipped + warned** (verified) |
+  | crush | none | partial | lossy: skills partial; no subagent system → agents dropped |
+  | cline | none | none | lossy: rules-only; drops all agents + skills |
+  | continue | none | none | lossy: rules+mcp only; drops all agents + skills |
+  | aider | none | none | lossy: rules only; drops all agents + skills |
+
+  Lossy adapters **skip + warn, never silently corrupt** — asserted for cursor + opencode in the test (the 11
+  agents land in `WriteReport.skipped` with a warning; their supported subset, the 7 skills, still
+  round-trips clean). "Round-trip clean" is claimed ONLY for claude + codex; the rest are reported lossy, not
+  forced.
+
+- **mind-side guard:** `test_ir_bridge.py` gains `test_roundtrip_ready` — asserts the IR-emit *preconditions*
+  for the round-trip (every name a kebab slug → filename-safe → recovers through the dialect filename; every
+  skill has `description`, else `parseSkill` throws; non-empty bodies; no leading-`---` body) so a corpus
+  change that would break a dialect fails at the source, not only in the koine fixture. claude byte-parity
+  NOT regressed.
+
+- **Gates green:** `pnpm build` + `pnpm test` (koine-core 60, koine-adapters 52 incl. the 9 new, cli 14) +
+  `pnpm lint` (the generated fixture is biome-ignored, as `generated.ts` already is); mind `verify.py` PASS
+  (R1+R2+R3); `test_ir_bridge` PASS.
+
+**Remaining for B4 fully done (small):** the `trigger:` surfacing question is unchanged (claude adapter drops
+the `manifest.overrides.<adapter>.skill_triggers` carrier — an adapter enhancement, orthogonal to the
+round-trip gate, deferred). The fixture is a committed snapshot of `emit_ir.py` output — regenerate it
+(`cd packages/mind && python3 toolkit/emit_ir.py <fixture> --target claude --target codex`) when the corpus
+roster changes; `test_roundtrip_ready` guards the emit side so drift surfaces. Flag for **live-Mav**: bless
+codex as the canonical 2nd dialect + the lossy coverage map as the honest support contract.
+
 ## Intent
 
 Route mind's culture-projection **through koine's IR** so a founded society's agents+skills compile to **any**

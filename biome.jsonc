@@ -7,7 +7,9 @@
       "node_modules",
       "packages/mind/**",
       "**/*.generated.ts",
-      "**/generated.ts"
+      "**/generated.ts",
+      // emit_ir.py output (a generated IR artifact, not hand-authored source)
+      "**/test/ir-bridge/mind.koine.json"
     ]
   },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2 },
