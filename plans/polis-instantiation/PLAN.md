@@ -96,6 +96,16 @@ Phase C · found real societies. All tasks pending on A + B; promote to ready/ a
   > structural churn.** This de-risks C4: it's a content-refresh + external-preservation, not a re-layout.
   > (Per-host externals vary — the prune ruling named graphify/find-skills/playwright-cli; this host carries
   > graphify. C4 must inventory each host's externals before deploy.)
+  >
+  > **Deploy reconciliation VALIDATED on `/tmp` (Nico, 2026-06-14) — `deploy.py` already does it correctly.**
+  > `deploy.py --home <claude-dir>` (note: `--home` IS the `.claude` dir, writes `<home>/agents`): on a
+  > synthetic fake-fleet (stale def + external graphify + lived `nico/SELF.md`) it (1) **overwrote** the stale
+  > def with the polis def (GENERATED header), (2) **never-pruned** the external graphify (preserved), (3)
+  > **seeded sidecars only-if-absent** — reported "present, untouched (1): nico/SELF.md", the lived memory
+  > byte-intact. Real `~/.claude` confirmed untouched (`--home` honored). So C4's *mechanism* = `deploy.py`
+  > from polis, and its reconciliation (content-refresh + preserve-externals + preserve-lived-memory) is
+  > proven. **C4 execution = run `deploy.py --home ~/.claude` from polis per host (×7) — Operator go-ahead
+  > (it changes the live fleet); deploy is sequential-per-host, no shell loops.**
 
 ## Done
 
