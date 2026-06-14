@@ -16,20 +16,24 @@ Operator authorization**, not on more building.
 - **C3 — rebase Oikos** — the consent-ready reconciliation PLAN is accurate + A4-honest. **Execution =
   `rebase --apply` on `forge:~/workspaces/oikos`, human-reviewing each woven delta. Gated on explicit
   consent (A4 — invited reformer, not conqueror).** Trigger: the Operator says *"rebase Oikos."*
-- **C4 — fleet-deploy-migration** — **IN PROGRESS: 2/7 hosts on polis (fire + ash.lan, 2026-06-14).**
-  - **The `--host` gotcha (the lesson):** omitting `--host` (or `--host fire`/`local`) = deploy **IN PLACE**
-    to the current host; `--host <NAME> --user <u>` = **SSH** to a remote. Per-host recipe = **TWO passes**
-    (`deploy.py` defaults `--kind agent`): the agents pass **+** a `--kind skill` pass. Defs overwritten,
-    externals never-pruned, sidecars seeded only-if-absent (lived memory preserved). Sequential, no loops.
-  - **fire** — migrated *first, by my error*: I ran the in-place deploy from fire mistaking it for ash
-    (commit `a99c4d0` mislabeled it "ash"). Operator chose to **leave it** (fire-on-polis is the eventual C4
-    state). Content correct; lived sidecars preserved.
-  - **ash.lan** — the actual authorized target ("migrate only ash.lan first"), migrated **over SSH**
-    (`--host ash.lan --user lex`). Verified: `nico.md` carries the founder line (`Founder of polis
-    (founder-charter)`); 11 agents + 7 skills == polis render; **ash-nico's lived sidecars byte-identical**;
-    no graphify on ash (per-host externals vary).
-  - **Remaining 5 hosts** (await go-ahead / "migrate the fleet"): upgoose · upmav (user **lcaraccioli**) ·
-    forge · apps · spark — `--host <name> --user <u>`, two-pass, externals inventoried per host.
+- **C4 — fleet-deploy-migration** — **5/7 hosts on polis (2026-06-14, Operator "migrate the fleet"); 2 await
+  wake.**
+  - **The `--host` gotcha:** omitting `--host` (or `--host fire`/`local`) = deploy **IN PLACE** to the current
+    host; `--host <NAME> --user <u>` = **SSH** remote. Per-host recipe = **TWO passes** (`deploy.py` defaults
+    `--kind agent`): agents pass **+** `--kind skill` pass. Defs overwritten, **externals never-pruned**,
+    sidecars seeded **only-if-absent** (lived memory preserved). Sequential, no shell loops.
+  - **DONE (5/7), each verified — founder line present, 11 agents + 7 skills == polis render, all 33 lived
+    sidecars untouched, externals preserved:**
+    - **fire** (lex, in-place) — migrated first by my error (mislabeled "ash" in `a99c4d0`); Operator left it.
+    - **ash.lan** (lex, SSH) — the first authorized target.
+    - **forge.lan** (lex, SSH) — externals **graphify + playwright-cli** preserved.
+    - **spark.lan** (lex, SSH) — no externals.
+    - **upmav.lan** (lcaraccioli, SSH) — externals **find-skills + graphify** preserved.
+    - (The 3 kept externals from the prune ruling — graphify/find-skills/playwright-cli — all survived
+      never-prune across the hosts that carry them.)
+  - **PENDING (2/7) — unreachable at migration (retry the two-pass recipe when they wake):**
+    - **apps.lan** (lex) — host down (connect timed out).
+    - **upgoose.lan** (lcaraccioli) — asleep (macOS, sleeps often; connect timed out).
 
 (Full reconciliation inventories + findings retained in the detailed entries below.)
 
