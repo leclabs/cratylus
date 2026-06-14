@@ -55,5 +55,10 @@ export interface Adapter {
   eventMap?: EventMap;
   detect(scope: Scope, cwd: string): Promise<boolean>;
   read(scope: Scope, cwd: string): Promise<Partial<IR>>;
-  write(ir: IR, scope: Scope, cwd: string, opts: WriteOpts): Promise<WriteReport>;
+  write(
+    ir: IR,
+    scope: Scope,
+    cwd: string,
+    opts: WriteOpts,
+  ): Promise<WriteReport>;
 }

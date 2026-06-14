@@ -48,7 +48,9 @@ export const validateCommand = ajv.getSchema<Command>(commandSchema.$id)!;
 export const validateAgent = ajv.getSchema<Agent>(agentSchema.$id)!;
 export const validateHook = ajv.getSchema<Hook>(hookSchema.$id)!;
 export const validateMcpServer = ajv.getSchema<McpServer>(mcpServerSchema.$id)!;
-export const validatePermissions = ajv.getSchema<Permissions>(permissionsSchema.$id)!;
+export const validatePermissions = ajv.getSchema<Permissions>(
+  permissionsSchema.$id,
+)!;
 export const validateEnv = ajv.getSchema<EnvVars>(envSchema.$id)!;
 
 export { ajv };

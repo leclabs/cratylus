@@ -60,7 +60,12 @@ export const cursorAdapter: Adapter = {
   async read(scope: Scope, cwd: string): Promise<Partial<IR>> {
     return readCursor(scope, cwd);
   },
-  async write(ir: IR, scope: Scope, cwd: string, opts: WriteOpts): Promise<WriteReport> {
+  async write(
+    ir: IR,
+    scope: Scope,
+    cwd: string,
+    opts: WriteOpts,
+  ): Promise<WriteReport> {
     return writeCursor(ir, scope, cwd, opts);
   },
 };

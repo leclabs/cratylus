@@ -51,8 +51,12 @@ export async function writeCopilot(
   // Avoid clobbering an existing file from the Claude adapter — read it first
   // and merge our 8-event subset in.
   if (ir.hooks?.length) {
-    const compatibleHooks = ir.hooks.filter((h) => h.events.some((e) => canonicalToCopilot[e]));
-    const droppedHooks = ir.hooks.filter((h) => !h.events.some((e) => canonicalToCopilot[e]));
+    const compatibleHooks = ir.hooks.filter((h) =>
+      h.events.some((e) => canonicalToCopilot[e]),
+    );
+    const droppedHooks = ir.hooks.filter(
+      (h) => !h.events.some((e) => canonicalToCopilot[e]),
+    );
     for (const dropped of droppedHooks) {
       warnings.push(
         `hook '${dropped.id ?? '?'}': no Copilot equivalent for events ${dropped.events.join(',')}`,
@@ -74,10 +78,17 @@ export async function writeCopilot(
         }
       }
       const claudeShape = serializeHooksClaudeShape(compatibleHooks);
-      existing.hooks = { ...((existing.hooks as object) ?? {}), ...claudeShape };
+      existing.hooks = {
+        ...((existing.hooks as object) ?? {}),
+        ...claudeShape,
+      };
       if (!opts.dryRun) {
         await mkdir(dirname(p.hooksFile), { recursive: true });
-        await writeFile(p.hooksFile, `${JSON.stringify(existing, null, 2)}\n`, 'utf8');
+        await writeFile(
+          p.hooksFile,
+          `${JSON.stringify(existing, null, 2)}\n`,
+          'utf8',
+        );
       }
       written.push(p.hooksFile);
     }
@@ -98,15 +109,23 @@ export async function writeCopilot(
 
   // Phase-2 unsupported by Copilot
   if (ir.commands?.length) {
-    warnings.push(`commands: Copilot has no slash-command system (${ir.commands.length} skipped)`);
-    for (const c of ir.commands) skipped.push({ path: `commands/${c.name}.md`, reason: 'unsupported' });
+    warnings.push(
+      `commands: Copilot has no slash-command system (${ir.commands.length} skipped)`,
+    );
+    for (const c of ir.commands)
+      skipped.push({ path: `commands/${c.name}.md`, reason: 'unsupported' });
   }
   if (ir.agents?.length) {
-    warnings.push(`agents: Copilot subagent support is experimental (${ir.agents.length} skipped)`);
-    for (const a of ir.agents) skipped.push({ path: `agents/${a.name}.md`, reason: 'experimental' });
+    warnings.push(
+      `agents: Copilot subagent support is experimental (${ir.agents.length} skipped)`,
+    );
+    for (const a of ir.agents)
+      skipped.push({ path: `agents/${a.name}.md`, reason: 'experimental' });
   }
   if (ir.permissions) {
-    warnings.push('permissions: Copilot permissions live in VS Code settings; not emitted');
+    warnings.push(
+      'permissions: Copilot permissions live in VS Code settings; not emitted',
+    );
   }
   if (ir.env) {
     warnings.push('env: Copilot env lives in VS Code settings; not emitted');
@@ -117,8 +136,20 @@ export async function writeCopilot(
 
 function serializeHooksClaudeShape(
   hooks: Hook[],
-): Record<string, Array<{ matcher?: string; hooks: Array<{ type: 'command'; command: string; timeout?: number }> }>> {
-  const out: Record<string, Array<{ matcher?: string; hooks: Array<{ type: 'command'; command: string; timeout?: number }> }>> = {};
+): Record<
+  string,
+  Array<{
+    matcher?: string;
+    hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
+  }>
+> {
+  const out: Record<
+    string,
+    Array<{
+      matcher?: string;
+      hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
+    }>
+  > = {};
   for (const hook of hooks) {
     for (const event of hook.events) {
       const copilotEvent = canonicalToCopilot[event];
@@ -128,7 +159,10 @@ function serializeHooksClaudeShape(
         command: hook.command,
       };
       if (hook.timeout !== undefined) cmd.timeout = hook.timeout;
-      const entry: { matcher?: string; hooks: Array<{ type: 'command'; command: string; timeout?: number }> } = {
+      const entry: {
+        matcher?: string;
+        hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
+      } = {
         hooks: [cmd],
       };
       if (hook.matcher) entry.matcher = hook.matcher;

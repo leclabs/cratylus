@@ -17,7 +17,10 @@ export interface CompileOpts {
   cwd?: string;
 }
 
-export async function runCompile(opts: CompileOpts, adapters: Adapter[]): Promise<number> {
+export async function runCompile(
+  opts: CompileOpts,
+  adapters: Adapter[],
+): Promise<number> {
   const scope = opts.scope ?? 'project';
   const cwd = opts.cwd ?? process.cwd();
 
@@ -30,10 +33,14 @@ export async function runCompile(opts: CompileOpts, adapters: Adapter[]): Promis
   }
 
   const targetIds =
-    opts.clients && opts.clients.length > 0 ? opts.clients : ir.manifest.targets;
+    opts.clients && opts.clients.length > 0
+      ? opts.clients
+      : ir.manifest.targets;
   if (targetIds.length === 0) {
     console.error(
-      pc.yellow('koine: no targets — declare some in manifest.yaml or pass clients on CLI'),
+      pc.yellow(
+        'koine: no targets — declare some in manifest.yaml or pass clients on CLI',
+      ),
     );
     return 1;
   }
@@ -68,8 +75,12 @@ function printReport(report: CompileReport, opts: CompileOpts): void {
         ? pc.yellow(`⚠ ${r.adapter}`)
         : pc.green(`✓ ${r.adapter}`);
     const summary = r.report
-      ? formatSummary(r.report.written.length, r.report.warnings.length, r.report.skipped.length)
-      : r.error?.message ?? '';
+      ? formatSummary(
+          r.report.written.length,
+          r.report.warnings.length,
+          r.report.skipped.length,
+        )
+      : (r.error?.message ?? '');
     console.log(`${head}  ${summary}`);
 
     if (opts.explain && r.report) {
@@ -92,7 +103,9 @@ function printReport(report: CompileReport, opts: CompileOpts): void {
       if (byReason.size > 0) {
         console.log(`    ${pc.bold(pc.gray('skipped:'))}`);
         for (const [reason, paths] of byReason) {
-          console.log(`      ${pc.gray('•')} ${pc.gray(reason)} (${paths.length})`);
+          console.log(
+            `      ${pc.gray('•')} ${pc.gray(reason)} (${paths.length})`,
+          );
           for (const p of paths) console.log(`          ${pc.gray(p)}`);
         }
       }
@@ -104,11 +117,19 @@ function printReport(report: CompileReport, opts: CompileOpts): void {
   const failed = report.results.filter((r) => r.error).length;
   console.log('');
   const footerSym =
-    failed > 0 ? pc.red('✗') : report.totalWarnings > 0 ? pc.yellow('⚠') : pc.green('✓');
+    failed > 0
+      ? pc.red('✗')
+      : report.totalWarnings > 0
+        ? pc.yellow('⚠')
+        : pc.green('✓');
   const footerWords = `${adapters} adapter${adapters === 1 ? '' : 's'} · ${report.totalWritten} files written · ${report.totalWarnings} warning${report.totalWarnings === 1 ? '' : 's'} · ${report.totalSkipped} skipped${failed ? ` · ${failed} failed` : ''}`;
   console.log(`${footerSym} ${footerWords}`);
 }
 
-function formatSummary(written: number, warnings: number, skipped: number): string {
+function formatSummary(
+  written: number,
+  warnings: number,
+  skipped: number,
+): string {
   return `${written} written · ${pc.yellow(`${warnings} warn`)} · ${pc.gray(`${skipped} skip`)}`;
 }

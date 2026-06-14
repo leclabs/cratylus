@@ -7,7 +7,11 @@ import type { Hook } from '../ir/types.js';
  */
 export function parseHook(text: string, defaultId: string): Hook {
   const parsed = (load(text) ?? {}) as Partial<Hook>;
-  if (!parsed.events || !Array.isArray(parsed.events) || parsed.events.length === 0) {
+  if (
+    !parsed.events ||
+    !Array.isArray(parsed.events) ||
+    parsed.events.length === 0
+  ) {
     throw new Error(`Hook '${defaultId}': must declare at least one event`);
   }
   if (typeof parsed.command !== 'string') {

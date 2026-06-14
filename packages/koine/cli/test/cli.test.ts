@@ -28,7 +28,10 @@ function buildClaudeFixture(cwd: string): void {
       {
         hooks: {
           PostToolUse: [
-            { matcher: 'Edit', hooks: [{ type: 'command', command: './fmt.sh', timeout: 30 }] },
+            {
+              matcher: 'Edit',
+              hooks: [{ type: 'command', command: './fmt.sh', timeout: 30 }],
+            },
           ],
         },
         permissions: { allow: ['Read(*)'] },
@@ -67,13 +70,18 @@ describe('CLI commands (integration)', () => {
   it('init appends to an existing .gitignore on project scope', async () => {
     writeFileSync(join(cwd, '.gitignore'), 'node_modules/\n', 'utf8');
     await runInit({ scope: 'project', cwd });
-    expect(readFileSync(join(cwd, '.gitignore'), 'utf8')).toContain('.koine/local/');
+    expect(readFileSync(join(cwd, '.gitignore'), 'utf8')).toContain(
+      '.koine/local/',
+    );
   });
 
   it('import claude lifts a real .claude/ tree into the IR', async () => {
     buildClaudeFixture(cwd);
     await runInit({ scope: 'project', cwd });
-    const code = await runImport({ client: 'claude', scope: 'project', cwd }, adapters);
+    const code = await runImport(
+      { client: 'claude', scope: 'project', cwd },
+      adapters,
+    );
     expect(code).toBe(0);
     expect(existsSync(join(cwd, '.koine', 'rules', 'main.md'))).toBe(true);
     expect(existsSync(join(cwd, '.koine', 'hooks'))).toBe(true);
@@ -88,13 +96,24 @@ describe('CLI commands (integration)', () => {
     // Add opencode to manifest targets so default compile picks it up.
     const manifestPath = join(cwd, '.koine', 'manifest.yaml');
     const text = readFileSync(manifestPath, 'utf8');
-    writeFileSync(manifestPath, text.replace('targets:\n  - claude', 'targets:\n  - claude\n  - opencode'), 'utf8');
+    writeFileSync(
+      manifestPath,
+      text.replace(
+        'targets:\n  - claude',
+        'targets:\n  - claude\n  - opencode',
+      ),
+      'utf8',
+    );
 
     const code = await runCompile({ scope: 'project', cwd }, adapters);
     expect(code).toBe(0);
     expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
-    expect(existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.yaml'))).toBe(true);
-    expect(existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.ts'))).toBe(true);
+    expect(
+      existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.yaml')),
+    ).toBe(true);
+    expect(
+      existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.ts')),
+    ).toBe(true);
   });
 
   it('lint reports unsupported resource per declared target', async () => {
@@ -113,7 +132,10 @@ describe('CLI commands (integration)', () => {
     const text = readFileSync(manifestPath, 'utf8');
     writeFileSync(
       manifestPath,
-      text.replace('targets:\n  - claude', 'targets:\n  - claude\n  - opencode'),
+      text.replace(
+        'targets:\n  - claude',
+        'targets:\n  - claude\n  - opencode',
+      ),
       'utf8',
     );
 
@@ -126,7 +148,9 @@ describe('CLI commands (integration)', () => {
     try {
       const code = await runLint({ scope: 'project', cwd }, adapters);
       expect(code).toBe(0);
-      expect(messages.some((m) => m.includes('opencode') && m.includes('commands'))).toBe(true);
+      expect(
+        messages.some((m) => m.includes('opencode') && m.includes('commands')),
+      ).toBe(true);
     } finally {
       console.log = origLog;
     }

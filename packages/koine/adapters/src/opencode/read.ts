@@ -13,7 +13,10 @@ import {
 } from '@leclabs/koine-core';
 import { paths } from './paths.js';
 
-export async function readOpencode(scope: Scope, cwd: string): Promise<Partial<IR>> {
+export async function readOpencode(
+  scope: Scope,
+  cwd: string,
+): Promise<Partial<IR>> {
   const p = paths(scope, cwd);
   const ir: Partial<IR> = {};
 
@@ -39,7 +42,9 @@ export async function readOpencode(scope: Scope, cwd: string): Promise<Partial<I
   // MCP servers
   if (existsSync(p.mcpFile)) {
     const text = await readFile(p.mcpFile, 'utf8');
-    const parsed = JSON.parse(text) as { mcpServers?: Record<string, McpServerEntry> };
+    const parsed = JSON.parse(text) as {
+      mcpServers?: Record<string, McpServerEntry>;
+    };
     if (parsed.mcpServers) {
       ir.mcp_servers = parseMcpServers(parsed.mcpServers);
     }
@@ -75,7 +80,8 @@ function parseMcpServers(servers: Record<string, McpServerEntry>): McpServer[] {
     if (s.url) {
       const transport = s.type === 'sse' ? 'sse' : 'http';
       const server = { name, transport, url: s.url } as McpServer;
-      if (s.headers) (server as { headers?: Record<string, string> }).headers = s.headers;
+      if (s.headers)
+        (server as { headers?: Record<string, string> }).headers = s.headers;
       out.push(server);
     } else if (s.command) {
       const server = {

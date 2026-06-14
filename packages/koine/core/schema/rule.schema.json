@@ -7,8 +7,14 @@
   "required": ["id", "body"],
   "additionalProperties": false,
   "properties": {
-    "id": { "type": "string", "description": "Stable identifier; usually the source filename without extension." },
-    "body": { "type": "string", "description": "Markdown content of the rule." },
+    "id": {
+      "type": "string",
+      "description": "Stable identifier; usually the source filename without extension."
+    },
+    "body": {
+      "type": "string",
+      "description": "Markdown content of the rule."
+    },
     "targets": {
       "type": "array",
       "items": { "type": "string" },

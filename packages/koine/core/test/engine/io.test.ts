@@ -1,4 +1,10 @@
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import {
+  mkdtempSync,
+  rmSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -35,7 +41,11 @@ const fullIR = (manifest: Manifest): IR => ({
     { name: 'plan', body: 'Make a plan.', description: 'Trigger planning' },
   ],
   agents: [
-    { name: 'planner', body: 'You are the planner.', model: 'claude-sonnet-4-6' },
+    {
+      name: 'planner',
+      body: 'You are the planner.',
+      model: 'claude-sonnet-4-6',
+    },
   ],
   hooks: [
     {
@@ -119,7 +129,9 @@ describe('readIR / writeIR', () => {
       // @ts-expect-error intentionally invalid
       manifest: { koine: 99, scope: 'global', targets: [] },
     };
-    await expect(writeIR(bad, 'project', cwd)).rejects.toThrow(IRValidationError);
+    await expect(writeIR(bad, 'project', cwd)).rejects.toThrow(
+      IRValidationError,
+    );
   });
 
   it('handles a written manifest with extra fields by failing schema check on read', async () => {

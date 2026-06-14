@@ -3,11 +3,11 @@ import { join } from 'node:path';
 import type { Scope } from '@leclabs/koine-core';
 
 export interface CursorPaths {
-  rulesFile: string;     // AGENTS.md (or first .cursor/rules/*.mdc)
-  rulesDir: string;      // .cursor/rules/ for multi-file rules
+  rulesFile: string; // AGENTS.md (or first .cursor/rules/*.mdc)
+  rulesDir: string; // .cursor/rules/ for multi-file rules
   skillsDir: string;
-  hooksFile: string;     // .cursor/hooks.json
-  mcpFile: string;       // .cursor/mcp.json
+  hooksFile: string; // .cursor/hooks.json
+  mcpFile: string; // .cursor/mcp.json
   cursorDir: string;
 }
 

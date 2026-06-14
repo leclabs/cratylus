@@ -1,4 +1,7 @@
-import { parseFrontmatter, serializeFrontmatter } from '../engine/frontmatter.js';
+import {
+  parseFrontmatter,
+  serializeFrontmatter,
+} from '../engine/frontmatter.js';
 import type { Agent } from '../ir/types.js';
 
 export function parseAgent(text: string, defaultName: string): Agent {

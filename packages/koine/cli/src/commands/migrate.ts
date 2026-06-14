@@ -25,7 +25,9 @@ export async function runMigrate(opts: MigrateOpts): Promise<number> {
   const cwd = opts.cwd ?? process.cwd();
   const root = findIRRoot(scope, cwd);
   if (!root) {
-    console.error(pc.red(`koine migrate: no .koine/ found for scope '${scope}'`));
+    console.error(
+      pc.red(`koine migrate: no .koine/ found for scope '${scope}'`),
+    );
     return 2;
   }
 
@@ -53,7 +55,7 @@ export async function runMigrate(opts: MigrateOpts): Promise<number> {
   // For v1 (current) → v1, this is a no-op. When v2 ships, migrations are applied here.
   try {
     const migrated = migrate(manifest, from, to) as Manifest;
-    migrated.koine = to as 1;  // schema version field always reflects target
+    migrated.koine = to as 1; // schema version field always reflects target
     await writeFile(
       manifestPath,
       dump(migrated, { lineWidth: 100, noRefs: true }),

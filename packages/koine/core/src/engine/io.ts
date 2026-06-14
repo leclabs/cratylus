@@ -74,7 +74,11 @@ export async function readIR(scope: Scope, cwd: string): Promise<IR> {
   const manifest = await readManifest(root);
   const ir: IR = { manifest };
 
-  const rules = await readResourceDir<Rule>(join(root, 'rules'), '.md', parseRule);
+  const rules = await readResourceDir<Rule>(
+    join(root, 'rules'),
+    '.md',
+    parseRule,
+  );
   if (rules.length) ir.rules = rules;
 
   const skills = await readSkillsDir(join(root, 'skills'));
@@ -104,7 +108,9 @@ export async function readIR(scope: Scope, cwd: string): Promise<IR> {
   const mcp = await readMcpServers(join(root, 'mcp', 'servers.yaml'));
   if (mcp && mcp.length) ir.mcp_servers = mcp;
 
-  const perms = await readYamlIfExists<Permissions>(join(root, 'permissions.yaml'));
+  const perms = await readYamlIfExists<Permissions>(
+    join(root, 'permissions.yaml'),
+  );
   if (perms) ir.permissions = perms;
 
   const env = await readYamlIfExists<EnvVars>(join(root, 'env.yaml'));
@@ -123,7 +129,11 @@ export async function readIR(scope: Scope, cwd: string): Promise<IR> {
  * Existing files are overwritten. Files that no longer correspond to an IR
  * resource are NOT removed (use `clean` separately).
  */
-export async function writeIR(ir: IR, scope: Scope, cwd: string): Promise<void> {
+export async function writeIR(
+  ir: IR,
+  scope: Scope,
+  cwd: string,
+): Promise<void> {
   if (!validateIR(ir)) {
     throw new IRValidationError(formatErrors(validateIR.errors));
   }

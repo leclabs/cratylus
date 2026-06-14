@@ -26,20 +26,35 @@ describe('cursorAdapter', () => {
       rules: [{ id: 'main', body: 'Be terse.' }],
       skills: [{ name: 'review', description: 'Review code', body: '# steps' }],
       hooks: [
-        { id: 'pre-tool', events: ['tool.use.pre'], matcher: 'Edit', command: './pre.sh' },
-        { id: 'shell-pre', events: ['shell.exec.pre'], command: './shell-pre.sh' },
+        {
+          id: 'pre-tool',
+          events: ['tool.use.pre'],
+          matcher: 'Edit',
+          command: './pre.sh',
+        },
+        {
+          id: 'shell-pre',
+          events: ['shell.exec.pre'],
+          command: './shell-pre.sh',
+        },
       ],
-      mcp_servers: [{ name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] }],
+      mcp_servers: [
+        { name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] },
+      ],
     };
     const report = await cursorAdapter.write(ir, 'project', cwd, {});
     expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
-    expect(existsSync(join(cwd, '.cursor', 'skills', 'review', 'SKILL.md'))).toBe(true);
+    expect(
+      existsSync(join(cwd, '.cursor', 'skills', 'review', 'SKILL.md')),
+    ).toBe(true);
     expect(existsSync(join(cwd, '.cursor', 'hooks.json'))).toBe(true);
     expect(existsSync(join(cwd, '.cursor', 'mcp.json'))).toBe(true);
 
-    const hooks = JSON.parse(readFileSync(join(cwd, '.cursor', 'hooks.json'), 'utf8'));
-    expect(hooks.hooks.preToolUse).toBeDefined();             // tool.use.pre → preToolUse
-    expect(hooks.hooks.beforeShellExecution).toBeDefined();   // shell.exec.pre → beforeShellExecution
+    const hooks = JSON.parse(
+      readFileSync(join(cwd, '.cursor', 'hooks.json'), 'utf8'),
+    );
+    expect(hooks.hooks.preToolUse).toBeDefined(); // tool.use.pre → preToolUse
+    expect(hooks.hooks.beforeShellExecution).toBeDefined(); // shell.exec.pre → beforeShellExecution
     expect(report.warnings).toEqual([]);
   });
 
@@ -48,9 +63,17 @@ describe('cursorAdapter', () => {
       manifest: manifest(),
       rules: [{ id: 'main', body: 'Be terse.' }],
       skills: [{ name: 'review', description: 'Review code', body: '# steps' }],
-      mcp_servers: [{ name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] }],
+      mcp_servers: [
+        { name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] },
+      ],
       hooks: [
-        { id: 'fmt', events: ['tool.use.post'], matcher: 'Edit', command: './fmt.sh', timeout: 30 },
+        {
+          id: 'fmt',
+          events: ['tool.use.post'],
+          matcher: 'Edit',
+          command: './fmt.sh',
+          timeout: 30,
+        },
       ],
     };
     await cursorAdapter.write(ir, 'project', cwd, {});

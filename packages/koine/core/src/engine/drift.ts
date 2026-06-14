@@ -124,7 +124,10 @@ async function readState(stateDir: string): Promise<CompileState> {
   return parsed;
 }
 
-async function writeState(stateDir: string, state: CompileState): Promise<void> {
+async function writeState(
+  stateDir: string,
+  state: CompileState,
+): Promise<void> {
   const path = join(stateDir, STATE_FILENAME);
   await writeFile(path, `${JSON.stringify(state, null, 2)}\n`, 'utf8');
 }

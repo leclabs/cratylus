@@ -3,10 +3,10 @@ import { join } from 'node:path';
 import type { Scope } from '@leclabs/koine-core';
 
 export interface GeminiPaths {
-  rulesFile: string;     // AGENTS.md
-  settingsFile: string;  // settings.json (hooks, mcp, permissions, env)
-  agentsDir: string;     // subagent extensions
-  skillsDir: string;     // skill directories
+  rulesFile: string; // AGENTS.md
+  settingsFile: string; // settings.json (hooks, mcp, permissions, env)
+  agentsDir: string; // subagent extensions
+  skillsDir: string; // skill directories
   geminiDir: string;
 }
 

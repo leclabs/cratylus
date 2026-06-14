@@ -14,7 +14,10 @@ import { cursorToCanonical } from './events.js';
 import { paths } from './paths.js';
 
 interface CursorHooksFile {
-  hooks?: Record<string, Array<{ matcher?: string; command: string; timeout?: number }>>;
+  hooks?: Record<
+    string,
+    Array<{ matcher?: string; command: string; timeout?: number }>
+  >;
 }
 
 interface McpEntry {
@@ -26,7 +29,10 @@ interface McpEntry {
   type?: 'stdio' | 'http' | 'sse';
 }
 
-export async function readCursor(scope: Scope, cwd: string): Promise<Partial<IR>> {
+export async function readCursor(
+  scope: Scope,
+  cwd: string,
+): Promise<Partial<IR>> {
   const p = paths(scope, cwd);
   const ir: Partial<IR> = {};
 
@@ -51,14 +57,18 @@ export async function readCursor(scope: Scope, cwd: string): Promise<Partial<IR>
 
   if (existsSync(p.mcpFile)) {
     const text = await readFile(p.mcpFile, 'utf8');
-    const parsed = JSON.parse(text) as { mcpServers?: Record<string, McpEntry> };
+    const parsed = JSON.parse(text) as {
+      mcpServers?: Record<string, McpEntry>;
+    };
     if (parsed.mcpServers) ir.mcp_servers = parseMcp(parsed.mcpServers);
   }
 
   return ir;
 }
 
-function parseCursorHooks(hooks: NonNullable<CursorHooksFile['hooks']>): Hook[] {
+function parseCursorHooks(
+  hooks: NonNullable<CursorHooksFile['hooks']>,
+): Hook[] {
   const out: Hook[] = [];
   let counter = 0;
   for (const [eventName, entries] of Object.entries(hooks)) {
@@ -82,9 +92,17 @@ function parseMcp(servers: Record<string, McpEntry>): McpServer[] {
   const out: McpServer[] = [];
   for (const [name, s] of Object.entries(servers)) {
     if (s.url) {
-      out.push({ name, transport: s.type === 'sse' ? 'sse' : 'http', url: s.url } as McpServer);
+      out.push({
+        name,
+        transport: s.type === 'sse' ? 'sse' : 'http',
+        url: s.url,
+      } as McpServer);
     } else if (s.command) {
-      const server = { name, transport: 'stdio', command: s.command } as McpServer;
+      const server = {
+        name,
+        transport: 'stdio',
+        command: s.command,
+      } as McpServer;
       if (s.args) (server as { args?: string[] }).args = s.args;
       if (s.env) (server as { env?: Record<string, string> }).env = s.env;
       out.push(server);

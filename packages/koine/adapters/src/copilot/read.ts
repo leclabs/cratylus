@@ -14,7 +14,13 @@ import { copilotToCanonical } from './events.js';
 import { paths } from './paths.js';
 
 interface SettingsFile {
-  hooks?: Record<string, Array<{ matcher?: string; hooks?: Array<{ type: string; command: string; timeout?: number }> }>>;
+  hooks?: Record<
+    string,
+    Array<{
+      matcher?: string;
+      hooks?: Array<{ type: string; command: string; timeout?: number }>;
+    }>
+  >;
 }
 
 interface McpEntry {
@@ -26,7 +32,10 @@ interface McpEntry {
   type?: 'stdio' | 'http' | 'sse';
 }
 
-export async function readCopilot(scope: Scope, cwd: string): Promise<Partial<IR>> {
+export async function readCopilot(
+  scope: Scope,
+  cwd: string,
+): Promise<Partial<IR>> {
   const p = paths(scope, cwd);
   const ir: Partial<IR> = {};
 
@@ -55,7 +64,10 @@ export async function readCopilot(scope: Scope, cwd: string): Promise<Partial<IR
   // MCP
   if (existsSync(p.mcpFile)) {
     const text = await readFile(p.mcpFile, 'utf8');
-    const parsed = JSON.parse(text) as { servers?: Record<string, McpEntry>; mcpServers?: Record<string, McpEntry> };
+    const parsed = JSON.parse(text) as {
+      servers?: Record<string, McpEntry>;
+      mcpServers?: Record<string, McpEntry>;
+    };
     const servers = parsed.servers ?? parsed.mcpServers;
     if (servers) ir.mcp_servers = parseMcp(servers);
   }
@@ -63,7 +75,9 @@ export async function readCopilot(scope: Scope, cwd: string): Promise<Partial<IR
   return ir;
 }
 
-function parseCopilotHooks(claudeShape: NonNullable<SettingsFile['hooks']>): Hook[] {
+function parseCopilotHooks(
+  claudeShape: NonNullable<SettingsFile['hooks']>,
+): Hook[] {
   const out: Hook[] = [];
   let counter = 0;
   for (const [eventName, entries] of Object.entries(claudeShape)) {
@@ -90,9 +104,17 @@ function parseMcp(servers: Record<string, McpEntry>): McpServer[] {
   const out: McpServer[] = [];
   for (const [name, s] of Object.entries(servers)) {
     if (s.url) {
-      out.push({ name, transport: s.type === 'sse' ? 'sse' : 'http', url: s.url } as McpServer);
+      out.push({
+        name,
+        transport: s.type === 'sse' ? 'sse' : 'http',
+        url: s.url,
+      } as McpServer);
     } else if (s.command) {
-      const server = { name, transport: 'stdio', command: s.command } as McpServer;
+      const server = {
+        name,
+        transport: 'stdio',
+        command: s.command,
+      } as McpServer;
       if (s.args) (server as { args?: string[] }).args = s.args;
       if (s.env) (server as { env?: Record<string, string> }).env = s.env;
       out.push(server);

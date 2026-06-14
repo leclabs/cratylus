@@ -111,7 +111,11 @@ export async function writeOpencode(
     );
     if (!opts.dryRun) {
       await mkdir(dirname(p.permissionsFile), { recursive: true });
-      await writeFile(p.permissionsFile, `${JSON.stringify(ir.permissions, null, 2)}\n`, 'utf8');
+      await writeFile(
+        p.permissionsFile,
+        `${JSON.stringify(ir.permissions, null, 2)}\n`,
+        'utf8',
+      );
     }
     written.push(p.permissionsFile);
   }
@@ -120,19 +124,29 @@ export async function writeOpencode(
   if (ir.env) {
     if (!opts.dryRun) {
       await mkdir(dirname(p.envFile), { recursive: true });
-      await writeFile(p.envFile, `${JSON.stringify(ir.env, null, 2)}\n`, 'utf8');
+      await writeFile(
+        p.envFile,
+        `${JSON.stringify(ir.env, null, 2)}\n`,
+        'utf8',
+      );
     }
     written.push(p.envFile);
   }
 
   // Commands and agents — opencode has no equivalent
   if (ir.commands?.length) {
-    warnings.push(`commands: opencode has no slash-command system (${ir.commands.length} skipped)`);
-    for (const c of ir.commands) skipped.push({ path: `commands/${c.name}.md`, reason: 'unsupported' });
+    warnings.push(
+      `commands: opencode has no slash-command system (${ir.commands.length} skipped)`,
+    );
+    for (const c of ir.commands)
+      skipped.push({ path: `commands/${c.name}.md`, reason: 'unsupported' });
   }
   if (ir.agents?.length) {
-    warnings.push(`agents: opencode has no subagent system (${ir.agents.length} skipped)`);
-    for (const a of ir.agents) skipped.push({ path: `agents/${a.name}.md`, reason: 'unsupported' });
+    warnings.push(
+      `agents: opencode has no subagent system (${ir.agents.length} skipped)`,
+    );
+    for (const a of ir.agents)
+      skipped.push({ path: `agents/${a.name}.md`, reason: 'unsupported' });
   }
 
   return { written, skipped, warnings };
@@ -163,7 +177,7 @@ function generateShim(hooks: Hook[]): string {
     '',
     'function runHook(command, payload) {',
     "  spawnSync('sh', ['-c', command], {",
-    "    input: JSON.stringify(payload),",
+    '    input: JSON.stringify(payload),',
     "    stdio: ['pipe', 'inherit', 'inherit'],",
     '  });',
     '}',
@@ -195,7 +209,9 @@ function generateShim(hooks: Hook[]): string {
         matcher: hook.matcher,
       });
       if (matcherCheck) lines.push(`      ${matcherCheck}`);
-      lines.push(`      runHook(${JSON.stringify(hook.command)}, { ...input, _koine: ${meta} });`);
+      lines.push(
+        `      runHook(${JSON.stringify(hook.command)}, { ...input, _koine: ${meta} });`,
+      );
     }
     lines.push('    },');
   }
@@ -205,8 +221,9 @@ function generateShim(hooks: Hook[]): string {
   lines.push('');
   lines.push('function matcherMatches(pattern, input) {');
   lines.push('  const target = input?.tool?.name ?? input?.path ?? "";');
-  lines.push('  return new RegExp(pattern.replace(/\\*/g, ".*")).test(target);');
+  lines.push(
+    '  return new RegExp(pattern.replace(/\\*/g, ".*")).test(target);',
+  );
   lines.push('}');
   return lines.join('\n');
 }
-

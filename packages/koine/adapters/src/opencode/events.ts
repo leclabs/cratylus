@@ -19,10 +19,14 @@ export const canonicalToOpencode: Partial<Record<CanonicalEvent, string>> = {
   'shell.exec.post': 'command.executed',
   'permission.request': 'permission.asked',
   'permission.deny': 'permission.replied',
-  'notification': 'tui.toast.show',
+  notification: 'tui.toast.show',
   'context.compact.post': 'session.compacted',
 };
 
-export const opencodeToCanonical: Record<string, CanonicalEvent> = Object.fromEntries(
-  Object.entries(canonicalToOpencode).map(([canonical, oc]) => [oc, canonical as CanonicalEvent]),
-);
+export const opencodeToCanonical: Record<string, CanonicalEvent> =
+  Object.fromEntries(
+    Object.entries(canonicalToOpencode).map(([canonical, oc]) => [
+      oc,
+      canonical as CanonicalEvent,
+    ]),
+  );

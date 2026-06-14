@@ -17,9 +17,13 @@ export const canonicalToGemini: Partial<Record<CanonicalEvent, string>> = {
   'tool.use.pre': 'BeforeTool',
   'tool.use.post': 'AfterTool',
   'context.compact.pre': 'PreCompress',
-  'notification': 'Notification',
+  notification: 'Notification',
 };
 
-export const geminiToCanonical: Record<string, CanonicalEvent> = Object.fromEntries(
-  Object.entries(canonicalToGemini).map(([canonical, gemini]) => [gemini, canonical as CanonicalEvent]),
-);
+export const geminiToCanonical: Record<string, CanonicalEvent> =
+  Object.fromEntries(
+    Object.entries(canonicalToGemini).map(([canonical, gemini]) => [
+      gemini,
+      canonical as CanonicalEvent,
+    ]),
+  );

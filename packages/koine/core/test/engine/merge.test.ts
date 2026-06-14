@@ -21,12 +21,27 @@ describe('mergeIR', () => {
 
   it('returns the closest scope manifest verbatim', () => {
     const scopes: ScopedIR[] = [
-      { scope: 'user', ir: ir({ manifest: baseManifest({ scope: 'user', targets: ['claude'] }) }) },
+      {
+        scope: 'user',
+        ir: ir({
+          manifest: baseManifest({ scope: 'user', targets: ['claude'] }),
+        }),
+      },
       {
         scope: 'project',
-        ir: ir({ manifest: baseManifest({ scope: 'project', targets: ['claude', 'opencode'] }) }),
+        ir: ir({
+          manifest: baseManifest({
+            scope: 'project',
+            targets: ['claude', 'opencode'],
+          }),
+        }),
       },
-      { scope: 'local', ir: ir({ manifest: baseManifest({ scope: 'local', targets: ['codex'] }) }) },
+      {
+        scope: 'local',
+        ir: ir({
+          manifest: baseManifest({ scope: 'local', targets: ['codex'] }),
+        }),
+      },
     ];
     const merged = mergeIR(scopes);
     expect(merged.manifest.scope).toBe('local');
@@ -40,7 +55,10 @@ describe('mergeIR', () => {
     ];
     const merged = mergeIR(scopes);
     // user comes first in scope order, then project
-    expect(merged.rules?.map((r) => r.id)).toEqual(['user/main', 'project/main']);
+    expect(merged.rules?.map((r) => r.id)).toEqual([
+      'user/main',
+      'project/main',
+    ]);
     expect(merged.rules?.map((r) => r.body)).toEqual(['U', 'P']);
   });
 
@@ -106,7 +124,9 @@ describe('mergeIR', () => {
       },
       {
         scope: 'project',
-        ir: ir({ permissions: { deny: ['Bash(npm:*)'], ask: ['Bash(curl:*)'] } }),
+        ir: ir({
+          permissions: { deny: ['Bash(npm:*)'], ask: ['Bash(curl:*)'] },
+        }),
       },
     ];
     const merged = mergeIR(scopes);

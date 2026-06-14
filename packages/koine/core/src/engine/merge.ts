@@ -51,19 +51,35 @@ export function mergeIR(scopes: ScopedIR[]): IR {
   const rules = mergeRules(sorted);
   if (rules.length) ir.rules = rules;
 
-  const skills = unionBy<Skill>(sorted, (x) => x.skills, (s) => s.name);
+  const skills = unionBy<Skill>(
+    sorted,
+    (x) => x.skills,
+    (s) => s.name,
+  );
   if (skills) ir.skills = skills;
 
-  const commands = unionBy<Command>(sorted, (x) => x.commands, (c) => c.name);
+  const commands = unionBy<Command>(
+    sorted,
+    (x) => x.commands,
+    (c) => c.name,
+  );
   if (commands) ir.commands = commands;
 
-  const agents = unionBy<Agent>(sorted, (x) => x.agents, (a) => a.name);
+  const agents = unionBy<Agent>(
+    sorted,
+    (x) => x.agents,
+    (a) => a.name,
+  );
   if (agents) ir.agents = agents;
 
   const hooks = unionBy<Hook>(sorted, (x) => x.hooks, hookKey);
   if (hooks) ir.hooks = hooks;
 
-  const mcp = unionBy<McpServer>(sorted, (x) => x.mcp_servers, (m) => m.name);
+  const mcp = unionBy<McpServer>(
+    sorted,
+    (x) => x.mcp_servers,
+    (m) => m.name,
+  );
   if (mcp) ir.mcp_servers = mcp;
 
   const perms = mergePermissions(sorted);

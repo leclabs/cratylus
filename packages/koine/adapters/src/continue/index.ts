@@ -37,7 +37,14 @@ function paths(scope: Scope, cwd: string): ContinuePaths {
   };
 }
 
-interface McpEntry { command?: string; args?: string[]; env?: Record<string, string>; url?: string; type?: 'stdio' | 'http' | 'sse'; headers?: Record<string, string> }
+interface McpEntry {
+  command?: string;
+  args?: string[];
+  env?: Record<string, string>;
+  url?: string;
+  type?: 'stdio' | 'http' | 'sse';
+  headers?: Record<string, string>;
+}
 
 const capabilities: AdapterCapabilities = {
   resources: {
@@ -63,13 +70,24 @@ async function readImpl(scope: Scope, cwd: string): Promise<Partial<IR>> {
   }
 
   if (existsSync(p.configFile)) {
-    const parsed = (load(await readFile(p.configFile, 'utf8')) ?? {}) as { mcpServers?: Record<string, McpEntry> };
+    const parsed = (load(await readFile(p.configFile, 'utf8')) ?? {}) as {
+      mcpServers?: Record<string, McpEntry>;
+    };
     if (parsed.mcpServers) {
       const out: McpServer[] = [];
       for (const [name, s] of Object.entries(parsed.mcpServers)) {
-        if (s.url) out.push({ name, transport: s.type === 'sse' ? 'sse' : 'http', url: s.url } as McpServer);
+        if (s.url)
+          out.push({
+            name,
+            transport: s.type === 'sse' ? 'sse' : 'http',
+            url: s.url,
+          } as McpServer);
         else if (s.command) {
-          const server = { name, transport: 'stdio', command: s.command } as McpServer;
+          const server = {
+            name,
+            transport: 'stdio',
+            command: s.command,
+          } as McpServer;
           if (s.args) (server as { args?: string[] }).args = s.args;
           if (s.env) (server as { env?: Record<string, string> }).env = s.env;
           out.push(server);
@@ -81,7 +99,12 @@ async function readImpl(scope: Scope, cwd: string): Promise<Partial<IR>> {
   return ir;
 }
 
-async function writeImpl(ir: IR, scope: Scope, cwd: string, opts: WriteOpts = {}): Promise<WriteReport> {
+async function writeImpl(
+  ir: IR,
+  scope: Scope,
+  cwd: string,
+  opts: WriteOpts = {},
+): Promise<WriteReport> {
   const p = paths(scope, cwd);
   const written: string[] = [];
   const skipped: { path: string; reason: string }[] = [];
@@ -105,26 +128,41 @@ async function writeImpl(ir: IR, scope: Scope, cwd: string, opts: WriteOpts = {}
         if (s.env) entry.env = s.env;
         out[s.name] = entry;
       } else {
-        const entry: Record<string, unknown> = { url: s.url, type: s.transport };
+        const entry: Record<string, unknown> = {
+          url: s.url,
+          type: s.transport,
+        };
         if (s.headers) entry.headers = s.headers;
         out[s.name] = entry;
       }
     }
     if (!opts.dryRun) {
       await mkdir(dirname(p.configFile), { recursive: true });
-      await writeFile(p.configFile, dump({ mcpServers: out }, { lineWidth: 100, noRefs: true }), 'utf8');
+      await writeFile(
+        p.configFile,
+        dump({ mcpServers: out }, { lineWidth: 100, noRefs: true }),
+        'utf8',
+      );
     }
     written.push(p.configFile);
   }
 
   for (const [field, label] of [
-    ['hooks', 'hooks'], ['skills', 'skills'], ['commands', 'commands'], ['agents', 'agents'],
+    ['hooks', 'hooks'],
+    ['skills', 'skills'],
+    ['commands', 'commands'],
+    ['agents', 'agents'],
   ] as const) {
     const items = ir[field];
     if (items?.length) {
-      warnings.push(`${label}: Continue has no ${label} support (${items.length} skipped)`);
+      warnings.push(
+        `${label}: Continue has no ${label} support (${items.length} skipped)`,
+      );
       for (const i of items) {
-        const id = (i as { name?: string; id?: string }).name ?? (i as { id?: string }).id ?? '?';
+        const id =
+          (i as { name?: string; id?: string }).name ??
+          (i as { id?: string }).id ??
+          '?';
         skipped.push({ path: `${label}/${id}`, reason: 'unsupported' });
       }
     }

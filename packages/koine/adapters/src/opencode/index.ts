@@ -15,12 +15,12 @@ import { writeOpencode } from './write.js';
 const capabilities: AdapterCapabilities = {
   resources: {
     rules: 'full',
-    skills: 'partial',     // SKILL.md round-trips, but allowed_tools is dropped
+    skills: 'partial', // SKILL.md round-trips, but allowed_tools is dropped
     commands: 'none',
     agents: 'none',
-    hooks: 'partial',      // 13 of 28 canonical events mapped
+    hooks: 'partial', // 13 of 28 canonical events mapped
     mcp: 'full',
-    permissions: 'partial',// emitted as JSON; opencode's native DSL not honored
+    permissions: 'partial', // emitted as JSON; opencode's native DSL not honored
     env: 'full',
   },
   hooks: {
@@ -56,7 +56,12 @@ export const opencodeAdapter: Adapter = {
   async read(scope: Scope, cwd: string): Promise<Partial<IR>> {
     return readOpencode(scope, cwd);
   },
-  async write(ir: IR, scope: Scope, cwd: string, opts: WriteOpts): Promise<WriteReport> {
+  async write(
+    ir: IR,
+    scope: Scope,
+    cwd: string,
+    opts: WriteOpts,
+  ): Promise<WriteReport> {
     return writeOpencode(ir, scope, cwd, opts);
   },
 };

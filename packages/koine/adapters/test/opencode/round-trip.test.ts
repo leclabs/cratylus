@@ -1,4 +1,11 @@
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import {
+  mkdtempSync,
+  mkdirSync,
+  rmSync,
+  writeFileSync,
+  readFileSync,
+  existsSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -53,10 +60,17 @@ describe('opencodeAdapter', () => {
     };
     const report = await opencodeAdapter.write(ir, 'project', cwd, {});
     expect(report.warnings).toEqual([]);
-    expect(existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.yaml'))).toBe(true);
-    expect(existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.ts'))).toBe(true);
+    expect(
+      existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.yaml')),
+    ).toBe(true);
+    expect(
+      existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.ts')),
+    ).toBe(true);
 
-    const shim = readFileSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.ts'), 'utf8');
+    const shim = readFileSync(
+      join(cwd, '.opencode', 'plugins', 'koine-hooks.ts'),
+      'utf8',
+    );
     expect(shim).toContain('tool.execute.after'); // canonical → opencode mapping applied
     expect(shim).toContain('./fmt.sh');
   });
@@ -72,7 +86,9 @@ describe('opencodeAdapter', () => {
     const report = await opencodeAdapter.write(ir, 'project', cwd, {});
     expect(report.warnings.length).toBeGreaterThan(0);
     expect(report.skipped.length).toBeGreaterThan(0);
-    expect(existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.ts'))).toBe(false);
+    expect(
+      existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.ts')),
+    ).toBe(false);
   });
 
   it('round-trips rules + hooks via the YAML sidecar', async () => {
@@ -110,16 +126,28 @@ describe('opencodeAdapter', () => {
     const ir: IR = {
       manifest: manifest(),
       skills: [
-        { name: 'review', description: 'Review code', body: '# steps', allowed_tools: ['Read'] },
+        {
+          name: 'review',
+          description: 'Review code',
+          body: '# steps',
+          allowed_tools: ['Read'],
+        },
       ],
       mcp_servers: [
-        { name: 'github', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] },
+        {
+          name: 'github',
+          transport: 'stdio',
+          command: 'npx',
+          args: ['-y', 'pkg'],
+        },
       ],
       permissions: { allow: ['Read(*)'] },
       env: { DEBUG: 'true' },
     };
     const report = await opencodeAdapter.write(ir, 'project', cwd, {});
-    expect(existsSync(join(cwd, '.opencode', 'skills', 'review', 'SKILL.md'))).toBe(true);
+    expect(
+      existsSync(join(cwd, '.opencode', 'skills', 'review', 'SKILL.md')),
+    ).toBe(true);
     expect(existsSync(join(cwd, '.opencode', 'mcp.json'))).toBe(true);
     expect(existsSync(join(cwd, '.opencode', 'permissions.json'))).toBe(true);
     expect(existsSync(join(cwd, '.opencode', 'env.json'))).toBe(true);
@@ -133,7 +161,14 @@ describe('opencodeAdapter', () => {
     const ir: IR = {
       manifest: manifest(),
       skills: [{ name: 'review', description: 'Review code', body: '# steps' }],
-      mcp_servers: [{ name: 'github', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] }],
+      mcp_servers: [
+        {
+          name: 'github',
+          transport: 'stdio',
+          command: 'npx',
+          args: ['-y', 'pkg'],
+        },
+      ],
       env: { DEBUG: 'true', NODE_ENV: 'development' },
     };
     await opencodeAdapter.write(ir, 'project', cwd, {});

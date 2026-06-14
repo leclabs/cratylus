@@ -5,21 +5,35 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { IR, Manifest } from '@leclabs/koine-core';
 import { aiderAdapter } from '../../src/aider/index.js';
 
-const manifest = (): Manifest => ({ koine: 1, scope: 'project', targets: ['aider'] });
+const manifest = (): Manifest => ({
+  koine: 1,
+  scope: 'project',
+  targets: ['aider'],
+});
 
 describe('aiderAdapter', () => {
   let cwd: string;
-  beforeEach(() => { cwd = mkdtempSync(join(tmpdir(), 'koine-aider-')); });
-  afterEach(() => { rmSync(cwd, { recursive: true, force: true }); });
+  beforeEach(() => {
+    cwd = mkdtempSync(join(tmpdir(), 'koine-aider-'));
+  });
+  afterEach(() => {
+    rmSync(cwd, { recursive: true, force: true });
+  });
 
   it('writes AGENTS.md', async () => {
-    const ir: IR = { manifest: manifest(), rules: [{ id: 'main', body: 'Be terse.' }] };
+    const ir: IR = {
+      manifest: manifest(),
+      rules: [{ id: 'main', body: 'Be terse.' }],
+    };
     await aiderAdapter.write(ir, 'project', cwd, {});
     expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
   });
 
   it('round-trips rules', async () => {
-    const ir: IR = { manifest: manifest(), rules: [{ id: 'main', body: 'Be terse.' }] };
+    const ir: IR = {
+      manifest: manifest(),
+      rules: [{ id: 'main', body: 'Be terse.' }],
+    };
     await aiderAdapter.write(ir, 'project', cwd, {});
     const re = await aiderAdapter.read('project', cwd);
     expect(re.rules).toEqual(ir.rules);

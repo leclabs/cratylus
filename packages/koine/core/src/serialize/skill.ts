@@ -1,4 +1,7 @@
-import { parseFrontmatter, serializeFrontmatter } from '../engine/frontmatter.js';
+import {
+  parseFrontmatter,
+  serializeFrontmatter,
+} from '../engine/frontmatter.js';
 import type { Skill } from '../ir/types.js';
 
 /**
@@ -10,7 +13,8 @@ import type { Skill } from '../ir/types.js';
  */
 export function parseSkill(text: string, defaultName: string): Skill {
   const { frontmatter, body } = parseFrontmatter<Partial<Skill>>(text);
-  const name = typeof frontmatter.name === 'string' ? frontmatter.name : defaultName;
+  const name =
+    typeof frontmatter.name === 'string' ? frontmatter.name : defaultName;
   if (!frontmatter.description) {
     throw new Error(`Skill '${name}': frontmatter must include 'description'`);
   }
@@ -19,7 +23,8 @@ export function parseSkill(text: string, defaultName: string): Skill {
     description: frontmatter.description,
     body,
   };
-  if (frontmatter.allowed_tools) skill.allowed_tools = frontmatter.allowed_tools;
+  if (frontmatter.allowed_tools)
+    skill.allowed_tools = frontmatter.allowed_tools;
   if (frontmatter.files) skill.files = frontmatter.files;
   if (frontmatter.targets) skill.targets = frontmatter.targets;
   if (frontmatter.excludes) skill.excludes = frontmatter.excludes;

@@ -39,7 +39,8 @@ interface ClinePaths {
 }
 
 function paths(scope: Scope, cwd: string): ClinePaths {
-  const root = scope === 'user' ? join(homedir(), '.cline') : join(cwd, '.cline');
+  const root =
+    scope === 'user' ? join(homedir(), '.cline') : join(cwd, '.cline');
   return {
     clineDir: root,
     rulesDir: scope === 'user' ? join(root, 'rules') : join(cwd, '.clinerules'),
@@ -77,10 +78,23 @@ const capabilities: AdapterCapabilities = {
 };
 
 interface ClineHooksFile {
-  hooks?: Record<string, Array<{ matcher?: string; hooks?: Array<{ type: string; command: string; timeout?: number }> }>>;
+  hooks?: Record<
+    string,
+    Array<{
+      matcher?: string;
+      hooks?: Array<{ type: string; command: string; timeout?: number }>;
+    }>
+  >;
 }
 
-interface McpEntry { command?: string; args?: string[]; env?: Record<string, string>; url?: string; type?: 'stdio' | 'http' | 'sse'; headers?: Record<string, string> }
+interface McpEntry {
+  command?: string;
+  args?: string[];
+  env?: Record<string, string>;
+  url?: string;
+  type?: 'stdio' | 'http' | 'sse';
+  headers?: Record<string, string>;
+}
 
 async function readImpl(scope: Scope, cwd: string): Promise<Partial<IR>> {
   const p = paths(scope, cwd);
@@ -99,7 +113,9 @@ async function readImpl(scope: Scope, cwd: string): Promise<Partial<IR>> {
   }
 
   if (existsSync(p.hooksFile)) {
-    const settings = JSON.parse(await readFile(p.hooksFile, 'utf8')) as ClineHooksFile;
+    const settings = JSON.parse(
+      await readFile(p.hooksFile, 'utf8'),
+    ) as ClineHooksFile;
     if (settings.hooks) {
       const hooks: Hook[] = [];
       let counter = 0;
@@ -109,7 +125,11 @@ async function readImpl(scope: Scope, cwd: string): Promise<Partial<IR>> {
         for (const entry of entries) {
           for (const h of entry.hooks ?? []) {
             if (h.type !== 'command') continue;
-            const hook: Hook = { id: `${eventName.toLowerCase()}-${counter++}`, events: [canonical], command: h.command };
+            const hook: Hook = {
+              id: `${eventName.toLowerCase()}-${counter++}`,
+              events: [canonical],
+              command: h.command,
+            };
             if (entry.matcher) hook.matcher = entry.matcher;
             if (h.timeout !== undefined) hook.timeout = h.timeout;
             hooks.push(hook);
@@ -121,13 +141,24 @@ async function readImpl(scope: Scope, cwd: string): Promise<Partial<IR>> {
   }
 
   if (existsSync(p.mcpFile)) {
-    const parsed = JSON.parse(await readFile(p.mcpFile, 'utf8')) as { mcpServers?: Record<string, McpEntry> };
+    const parsed = JSON.parse(await readFile(p.mcpFile, 'utf8')) as {
+      mcpServers?: Record<string, McpEntry>;
+    };
     if (parsed.mcpServers) {
       const mcp: McpServer[] = [];
       for (const [name, s] of Object.entries(parsed.mcpServers)) {
-        if (s.url) mcp.push({ name, transport: s.type === 'sse' ? 'sse' : 'http', url: s.url } as McpServer);
+        if (s.url)
+          mcp.push({
+            name,
+            transport: s.type === 'sse' ? 'sse' : 'http',
+            url: s.url,
+          } as McpServer);
         else if (s.command) {
-          const server = { name, transport: 'stdio', command: s.command } as McpServer;
+          const server = {
+            name,
+            transport: 'stdio',
+            command: s.command,
+          } as McpServer;
           if (s.args) (server as { args?: string[] }).args = s.args;
           if (s.env) (server as { env?: Record<string, string> }).env = s.env;
           mcp.push(server);
@@ -140,7 +171,12 @@ async function readImpl(scope: Scope, cwd: string): Promise<Partial<IR>> {
   return ir;
 }
 
-async function writeImpl(ir: IR, scope: Scope, cwd: string, opts: WriteOpts = {}): Promise<WriteReport> {
+async function writeImpl(
+  ir: IR,
+  scope: Scope,
+  cwd: string,
+  opts: WriteOpts = {},
+): Promise<WriteReport> {
   const p = paths(scope, cwd);
   const written: string[] = [];
   const skipped: { path: string; reason: string }[] = [];
@@ -157,28 +193,63 @@ async function writeImpl(ir: IR, scope: Scope, cwd: string, opts: WriteOpts = {}
   }
 
   if (ir.hooks?.length) {
-    const compatible: Hook[] = ir.hooks.filter((h: Hook) => h.events.some((e) => canonicalToCline[e]));
-    const dropped: Hook[] = ir.hooks.filter((h: Hook) => !h.events.some((e) => canonicalToCline[e]));
+    const compatible: Hook[] = ir.hooks.filter((h: Hook) =>
+      h.events.some((e) => canonicalToCline[e]),
+    );
+    const dropped: Hook[] = ir.hooks.filter(
+      (h: Hook) => !h.events.some((e) => canonicalToCline[e]),
+    );
     for (const d of dropped) {
-      warnings.push(`hook '${d.id ?? '?'}': no Cline equivalent for events ${d.events.join(',')}`);
-      skipped.push({ path: `hooks/${d.id ?? '?'}.yaml`, reason: 'unsupported' });
+      warnings.push(
+        `hook '${d.id ?? '?'}': no Cline equivalent for events ${d.events.join(',')}`,
+      );
+      skipped.push({
+        path: `hooks/${d.id ?? '?'}.yaml`,
+        reason: 'unsupported',
+      });
     }
     if (compatible.length > 0) {
-      const obj: { hooks: Record<string, Array<{ matcher?: string; hooks: Array<{ type: 'command'; command: string; timeout?: number }> }>> } = { hooks: {} };
+      const obj: {
+        hooks: Record<
+          string,
+          Array<{
+            matcher?: string;
+            hooks: Array<{
+              type: 'command';
+              command: string;
+              timeout?: number;
+            }>;
+          }>
+        >;
+      } = { hooks: {} };
       for (const hook of compatible) {
         for (const e of hook.events) {
           const clineEvent = canonicalToCline[e];
           if (!clineEvent) continue;
-          const cmd: { type: 'command'; command: string; timeout?: number } = { type: 'command', command: hook.command };
+          const cmd: { type: 'command'; command: string; timeout?: number } = {
+            type: 'command',
+            command: hook.command,
+          };
           if (hook.timeout !== undefined) cmd.timeout = hook.timeout;
-          const entry: { matcher?: string; hooks: Array<{ type: 'command'; command: string; timeout?: number }> } = { hooks: [cmd] };
+          const entry: {
+            matcher?: string;
+            hooks: Array<{
+              type: 'command';
+              command: string;
+              timeout?: number;
+            }>;
+          } = { hooks: [cmd] };
           if (hook.matcher) entry.matcher = hook.matcher;
           (obj.hooks[clineEvent] ??= []).push(entry);
         }
       }
       if (!opts.dryRun) {
         await mkdir(dirname(p.hooksFile), { recursive: true });
-        await writeFile(p.hooksFile, `${JSON.stringify(obj, null, 2)}\n`, 'utf8');
+        await writeFile(
+          p.hooksFile,
+          `${JSON.stringify(obj, null, 2)}\n`,
+          'utf8',
+        );
       }
       written.push(p.hooksFile);
     }
@@ -193,14 +264,21 @@ async function writeImpl(ir: IR, scope: Scope, cwd: string, opts: WriteOpts = {}
         if (s.env) entry.env = s.env;
         out[s.name] = entry;
       } else {
-        const entry: Record<string, unknown> = { url: s.url, type: s.transport };
+        const entry: Record<string, unknown> = {
+          url: s.url,
+          type: s.transport,
+        };
         if (s.headers) entry.headers = s.headers;
         out[s.name] = entry;
       }
     }
     if (!opts.dryRun) {
       await mkdir(dirname(p.mcpFile), { recursive: true });
-      await writeFile(p.mcpFile, `${JSON.stringify({ mcpServers: out }, null, 2)}\n`, 'utf8');
+      await writeFile(
+        p.mcpFile,
+        `${JSON.stringify({ mcpServers: out }, null, 2)}\n`,
+        'utf8',
+      );
     }
     written.push(p.mcpFile);
   }
@@ -212,8 +290,14 @@ async function writeImpl(ir: IR, scope: Scope, cwd: string, opts: WriteOpts = {}
   ] as const) {
     const items = ir[field];
     if (items && items.length) {
-      warnings.push(`${label}: Cline does not support ${label} (${items.length} skipped)`);
-      for (const i of items) skipped.push({ path: `${label}/${(i as { name?: string; id?: string }).name ?? (i as { id?: string }).id ?? '?'}`, reason: 'unsupported' });
+      warnings.push(
+        `${label}: Cline does not support ${label} (${items.length} skipped)`,
+      );
+      for (const i of items)
+        skipped.push({
+          path: `${label}/${(i as { name?: string; id?: string }).name ?? (i as { id?: string }).id ?? '?'}`,
+          reason: 'unsupported',
+        });
     }
   }
 

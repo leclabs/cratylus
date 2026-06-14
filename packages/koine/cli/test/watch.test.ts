@@ -1,4 +1,10 @@
-import { mkdtempSync, rmSync, mkdirSync, writeFileSync, readFileSync } from 'node:fs';
+import {
+  mkdtempSync,
+  rmSync,
+  mkdirSync,
+  writeFileSync,
+  readFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it, beforeEach, afterEach } from 'vitest';
@@ -31,7 +37,10 @@ describe('watch', () => {
     const text = readFileSync(manifestPath, 'utf8');
     writeFileSync(
       manifestPath,
-      text.replace('targets:\n  - claude', 'targets:\n  - claude\n  - opencode'),
+      text.replace(
+        'targets:\n  - claude',
+        'targets:\n  - claude\n  - opencode',
+      ),
       'utf8',
     );
 

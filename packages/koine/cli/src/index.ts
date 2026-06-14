@@ -49,14 +49,19 @@ cli
   .option('--scope <scope>', '', { default: 'project' })
   .option('--from <path>', 'Read from this directory instead of cwd')
   .option('--merge', 'Merge into existing IR (preserve ours on conflict)')
-  .action(async (client: string, opts: { scope: Scope; from?: string; merge?: boolean }) => {
-    process.exit(
-      await runImport(
-        { client, scope: opts.scope, from: opts.from, merge: opts.merge },
-        adapters,
-      ),
-    );
-  });
+  .action(
+    async (
+      client: string,
+      opts: { scope: Scope; from?: string; merge?: boolean },
+    ) => {
+      process.exit(
+        await runImport(
+          { client, scope: opts.scope, from: opts.from, merge: opts.merge },
+          adapters,
+        ),
+      );
+    },
+  );
 
 cli
   .command('compile [...clients]', 'Compile IR to one or more clients')
@@ -67,7 +72,12 @@ cli
   .action(
     async (
       clients: string[],
-      opts: { scope: Scope; dryRun?: boolean; strict?: boolean; explain?: boolean },
+      opts: {
+        scope: Scope;
+        dryRun?: boolean;
+        strict?: boolean;
+        explain?: boolean;
+      },
     ) => {
       process.exit(
         await runCompile(
@@ -85,7 +95,10 @@ cli
   );
 
 cli
-  .command('diff [...clients]', 'Show what would change on next compile, plus drift')
+  .command(
+    'diff [...clients]',
+    'Show what would change on next compile, plus drift',
+  )
   .option('--scope <scope>', '', { default: 'project' })
   .action(async (clients: string[], opts: { scope: Scope }) => {
     process.exit(await runDiff({ clients, scope: opts.scope }, adapters));
@@ -96,22 +109,40 @@ cli
   .option('--scope <scope>', '', { default: 'project' })
   .option('--strict', 'Treat capability warnings as errors')
   .action(async (opts: { scope: Scope; strict?: boolean }) => {
-    process.exit(await runLint({ scope: opts.scope, strict: opts.strict }, adapters));
+    process.exit(
+      await runLint({ scope: opts.scope, strict: opts.strict }, adapters),
+    );
   });
 
-cli.command('adapters', 'List installed adapters and their capabilities').action(() => {
-  const RESOURCE_TYPES = ['rules', 'skills', 'commands', 'agents', 'hooks', 'mcp', 'permissions', 'env'] as const;
-  const sym = (s: string) => (s === 'full' ? '✓' : s === 'partial' ? '🟡' : '—');
-  const head = `ID${' '.repeat(8)}${RESOURCE_TYPES.map((t) => t.slice(0, 4).padEnd(5)).join('')} HOOKS  SCOPES`;
-  console.log(head);
-  for (const a of adapters) {
-    const cells = RESOURCE_TYPES.map((t) => sym(a.capabilities.resources[t]).padEnd(5)).join('');
-    const hookCount = a.capabilities.hooks.supported.length;
-    const scopes = a.capabilities.scopes.join(',');
-    console.log(`${a.id.padEnd(10)}${cells} ${String(hookCount).padStart(2)}/28  ${scopes}`);
-  }
-  process.exit(0);
-});
+cli
+  .command('adapters', 'List installed adapters and their capabilities')
+  .action(() => {
+    const RESOURCE_TYPES = [
+      'rules',
+      'skills',
+      'commands',
+      'agents',
+      'hooks',
+      'mcp',
+      'permissions',
+      'env',
+    ] as const;
+    const sym = (s: string) =>
+      s === 'full' ? '✓' : s === 'partial' ? '🟡' : '—';
+    const head = `ID${' '.repeat(8)}${RESOURCE_TYPES.map((t) => t.slice(0, 4).padEnd(5)).join('')} HOOKS  SCOPES`;
+    console.log(head);
+    for (const a of adapters) {
+      const cells = RESOURCE_TYPES.map((t) =>
+        sym(a.capabilities.resources[t]).padEnd(5),
+      ).join('');
+      const hookCount = a.capabilities.hooks.supported.length;
+      const scopes = a.capabilities.scopes.join(',');
+      console.log(
+        `${a.id.padEnd(10)}${cells} ${String(hookCount).padStart(2)}/28  ${scopes}`,
+      );
+    }
+    process.exit(0);
+  });
 
 cli
   .command('events', 'List canonical events and per-client mappings')
@@ -131,11 +162,16 @@ cli
   .command('watch [...clients]', 'Auto-recompile on IR changes')
   .option('--scope <scope>', '', { default: 'project' })
   .option('--debounce <ms>', '', { default: 300 })
-  .action(async (clients: string[], opts: { scope: Scope; debounce: number }) => {
-    process.exit(
-      await runWatch({ clients, scope: opts.scope, debounce: Number(opts.debounce) }, adapters),
-    );
-  });
+  .action(
+    async (clients: string[], opts: { scope: Scope; debounce: number }) => {
+      process.exit(
+        await runWatch(
+          { clients, scope: opts.scope, debounce: Number(opts.debounce) },
+          adapters,
+        ),
+      );
+    },
+  );
 
 cli
   .command('migrate', 'Migrate the IR schema between versions')

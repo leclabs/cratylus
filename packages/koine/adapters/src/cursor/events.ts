@@ -25,6 +25,10 @@ export const canonicalToCursor: Partial<Record<CanonicalEvent, string>> = {
   'context.compact.pre': 'preCompact',
 };
 
-export const cursorToCanonical: Record<string, CanonicalEvent> = Object.fromEntries(
-  Object.entries(canonicalToCursor).map(([canonical, cursor]) => [cursor, canonical as CanonicalEvent]),
-);
+export const cursorToCanonical: Record<string, CanonicalEvent> =
+  Object.fromEntries(
+    Object.entries(canonicalToCursor).map(([canonical, cursor]) => [
+      cursor,
+      canonical as CanonicalEvent,
+    ]),
+  );

@@ -3,12 +3,12 @@ import { join } from 'node:path';
 import type { Scope } from '@leclabs/koine-core';
 
 export interface CodexPaths {
-  rulesFile: string;        // AGENTS.md
-  configFile: string;       // ~/.codex/config.toml or <repo>/.codex/config.toml
-  promptsDir: string;       // commands as .md prompts
-  agentsDir: string;        // .toml subagent files
-  skillsDir: string;        // skills/<name>/SKILL.md
-  codexDir: string;         // .codex/ root
+  rulesFile: string; // AGENTS.md
+  configFile: string; // ~/.codex/config.toml or <repo>/.codex/config.toml
+  promptsDir: string; // commands as .md prompts
+  agentsDir: string; // .toml subagent files
+  skillsDir: string; // skills/<name>/SKILL.md
+  codexDir: string; // .codex/ root
 }
 
 /**

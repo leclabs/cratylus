@@ -19,7 +19,7 @@ export const canonicalToClaude: Partial<Record<CanonicalEvent, string>> = {
   'tool.use.fail': 'PostToolUseFailure',
   'subagent.start': 'SubagentStart',
   'subagent.end': 'SubagentStop',
-  'notification': 'Notification',
+  notification: 'Notification',
   'context.compact.pre': 'PreCompact',
   'context.compact.post': 'PostCompact',
   'file.change.external': 'FileChanged',
@@ -32,6 +32,10 @@ export const canonicalToClaude: Partial<Record<CanonicalEvent, string>> = {
 /**
  * Reverse map: Claude event name → canonical event. Used by `read()`.
  */
-export const claudeToCanonical: Record<string, CanonicalEvent> = Object.fromEntries(
-  Object.entries(canonicalToClaude).map(([canonical, claude]) => [claude, canonical as CanonicalEvent]),
-);
+export const claudeToCanonical: Record<string, CanonicalEvent> =
+  Object.fromEntries(
+    Object.entries(canonicalToClaude).map(([canonical, claude]) => [
+      claude,
+      canonical as CanonicalEvent,
+    ]),
+  );

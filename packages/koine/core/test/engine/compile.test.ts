@@ -4,7 +4,11 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { compile } from '../../src/engine/compile.js';
 import { detectDrift } from '../../src/engine/drift.js';
-import type { Adapter, AdapterCapabilities, WriteReport } from '../../src/adapter/types.js';
+import type {
+  Adapter,
+  AdapterCapabilities,
+  WriteReport,
+} from '../../src/adapter/types.js';
 import type { IR, Manifest } from '../../src/ir/types.js';
 
 const caps: AdapterCapabilities = {
@@ -73,7 +77,11 @@ describe('compile', () => {
     const broken = adapter('broken', async () => {
       throw new Error('boom');
     });
-    const ok = adapter('ok', async () => ({ written: [], skipped: [], warnings: [] }));
+    const ok = adapter('ok', async () => ({
+      written: [],
+      skipped: [],
+      warnings: [],
+    }));
     const report = await compile(ir, [broken, ok], 'project', cwd);
     expect(report.results[0]?.error?.message).toBe('boom');
     expect(report.results[1]?.error).toBeUndefined();
@@ -85,7 +93,11 @@ describe('compile', () => {
       skipped: [],
       warnings: ['something'],
     }));
-    const b = adapter('b', async () => ({ written: [], skipped: [], warnings: [] }));
+    const b = adapter('b', async () => ({
+      written: [],
+      skipped: [],
+      warnings: [],
+    }));
     const report = await compile(ir, [a, b], 'project', cwd, { strict: true });
     expect(report.results).toHaveLength(1);
     expect(report.results[0]?.error?.message).toMatch(/strict/);

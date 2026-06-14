@@ -23,8 +23,15 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "strict": { "type": "boolean", "default": false, "description": "Fail compile on any lossy translation." },
-        "drift_check": { "enum": ["warn", "error", "ignore"], "default": "warn" },
+        "strict": {
+          "type": "boolean",
+          "default": false,
+          "description": "Fail compile on any lossy translation."
+        },
+        "drift_check": {
+          "enum": ["warn", "error", "ignore"],
+          "default": "warn"
+        },
         "emit_warnings": { "type": "boolean", "default": true }
       }
     },

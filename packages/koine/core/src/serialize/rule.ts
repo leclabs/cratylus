@@ -1,4 +1,7 @@
-import { parseFrontmatter, serializeFrontmatter } from '../engine/frontmatter.js';
+import {
+  parseFrontmatter,
+  serializeFrontmatter,
+} from '../engine/frontmatter.js';
 import type { Rule } from '../ir/types.js';
 
 /**

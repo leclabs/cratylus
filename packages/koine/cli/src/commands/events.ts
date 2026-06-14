@@ -36,7 +36,10 @@ export interface EventsListOpts {
   client?: string;
 }
 
-export async function runEventsList(opts: EventsListOpts, adapters: Adapter[]): Promise<number> {
+export async function runEventsList(
+  opts: EventsListOpts,
+  adapters: Adapter[],
+): Promise<number> {
   if (!opts.client) {
     console.log(pc.bold('Canonical event taxonomy:'));
     for (const e of ALL_EVENTS) console.log(`  ${e}`);
@@ -56,10 +59,14 @@ export async function runEventsList(opts: EventsListOpts, adapters: Adapter[]): 
       console.log(`  ${pc.green('✓')} ${e.padEnd(24)} → ${native}`);
       supported++;
     } else {
-      console.log(`  ${pc.gray('—')} ${e.padEnd(24)} ${pc.gray('(no native equivalent)')}`);
+      console.log(
+        `  ${pc.gray('—')} ${e.padEnd(24)} ${pc.gray('(no native equivalent)')}`,
+      );
     }
   }
   console.log('');
-  console.log(`${supported}/${ALL_EVENTS.length} canonical events supported by ${opts.client}`);
+  console.log(
+    `${supported}/${ALL_EVENTS.length} canonical events supported by ${opts.client}`,
+  );
   return 0;
 }

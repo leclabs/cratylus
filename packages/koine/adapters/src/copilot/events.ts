@@ -18,6 +18,10 @@ export const canonicalToCopilot: Partial<Record<CanonicalEvent, string>> = {
   'turn.end': 'Stop',
 };
 
-export const copilotToCanonical: Record<string, CanonicalEvent> = Object.fromEntries(
-  Object.entries(canonicalToCopilot).map(([canonical, copilot]) => [copilot, canonical as CanonicalEvent]),
-);
+export const copilotToCanonical: Record<string, CanonicalEvent> =
+  Object.fromEntries(
+    Object.entries(canonicalToCopilot).map(([canonical, copilot]) => [
+      copilot,
+      canonical as CanonicalEvent,
+    ]),
+  );

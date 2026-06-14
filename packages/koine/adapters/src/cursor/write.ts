@@ -52,16 +52,27 @@ export async function writeCursor(
       (h: Hook) => !h.events.some((e) => canonicalToCursor[e]),
     );
     for (const d of dropped) {
-      warnings.push(`hook '${d.id ?? '?'}': no Cursor equivalent for events ${d.events.join(',')}`);
-      skipped.push({ path: `hooks/${d.id ?? '?'}.yaml`, reason: 'unsupported' });
+      warnings.push(
+        `hook '${d.id ?? '?'}': no Cursor equivalent for events ${d.events.join(',')}`,
+      );
+      skipped.push({
+        path: `hooks/${d.id ?? '?'}.yaml`,
+        reason: 'unsupported',
+      });
     }
     if (compatible.length > 0) {
-      const obj: { hooks: Record<string, Array<{ matcher?: string; command: string; timeout?: number }>> } = { hooks: {} };
+      const obj: {
+        hooks: Record<
+          string,
+          Array<{ matcher?: string; command: string; timeout?: number }>
+        >;
+      } = { hooks: {} };
       for (const hook of compatible) {
         for (const e of hook.events) {
           const cursorEvent = canonicalToCursor[e];
           if (!cursorEvent) continue;
-          const entry: { matcher?: string; command: string; timeout?: number } = { command: hook.command };
+          const entry: { matcher?: string; command: string; timeout?: number } =
+            { command: hook.command };
           if (hook.matcher) entry.matcher = hook.matcher;
           if (hook.timeout !== undefined) entry.timeout = hook.timeout;
           (obj.hooks[cursorEvent] ??= []).push(entry);
@@ -69,7 +80,11 @@ export async function writeCursor(
       }
       if (!opts.dryRun) {
         await mkdir(dirname(p.hooksFile), { recursive: true });
-        await writeFile(p.hooksFile, `${JSON.stringify(obj, null, 2)}\n`, 'utf8');
+        await writeFile(
+          p.hooksFile,
+          `${JSON.stringify(obj, null, 2)}\n`,
+          'utf8',
+        );
       }
       written.push(p.hooksFile);
     }
@@ -88,18 +103,28 @@ export async function writeCursor(
   }
 
   if (ir.commands?.length) {
-    warnings.push(`commands: Cursor has no slash-command system (${ir.commands.length} skipped)`);
-    for (const c of ir.commands) skipped.push({ path: `commands/${c.name}.md`, reason: 'unsupported' });
+    warnings.push(
+      `commands: Cursor has no slash-command system (${ir.commands.length} skipped)`,
+    );
+    for (const c of ir.commands)
+      skipped.push({ path: `commands/${c.name}.md`, reason: 'unsupported' });
   }
   if (ir.agents?.length) {
-    warnings.push(`agents: Cursor subagent support is partial (${ir.agents.length} skipped)`);
-    for (const a of ir.agents) skipped.push({ path: `agents/${a.name}.md`, reason: 'partial-support' });
+    warnings.push(
+      `agents: Cursor subagent support is partial (${ir.agents.length} skipped)`,
+    );
+    for (const a of ir.agents)
+      skipped.push({ path: `agents/${a.name}.md`, reason: 'partial-support' });
   }
   if (ir.permissions) {
-    warnings.push('permissions: Cursor uses MCP-server-level allowlist; not directly emitted');
+    warnings.push(
+      'permissions: Cursor uses MCP-server-level allowlist; not directly emitted',
+    );
   }
   if (ir.env) {
-    warnings.push('env: Cursor env lives in VS Code-style settings; not emitted');
+    warnings.push(
+      'env: Cursor env lives in VS Code-style settings; not emitted',
+    );
   }
 
   return { written, skipped, warnings };

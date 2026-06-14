@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { migrate, listMigrations, registerMigration } from '../../src/engine/migrate.js';
+import {
+  migrate,
+  listMigrations,
+  registerMigration,
+} from '../../src/engine/migrate.js';
 
 describe('migrate', () => {
   it('is a no-op when from === to', () => {
