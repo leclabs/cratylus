@@ -9,10 +9,6 @@ Phase B · operationalize projection. Status mirror; task files live under state
   degrade-visibly — dormant until a producer emits; verified no-op on current corpus). **Remaining = the
   producer (Nico's):** wire the exemplify *run* to emit the manifest (content-digested per the invariant) —
   the genuine co-design. Done-when: a run emits a manifest → R3 goes live (`R1+R2+R3`), unrouted fragment FAILS.
-- **B5 — continuity-hooks** (dep: —) — fire dream / praxis advance / agent-continuity at git workflow
-  boundaries (post-commit), inspired by graphify's hook. *Operator #4.* Dep-free, Mav's. Done-when: a
-  commit triggers the configured continuity step; opt-in per repo.
-
 ## Backlog (pending)
 
 - **B3 — koine-cultural-alignment** (dep: B1) — re-home koine's own agent-config as projections from
@@ -24,6 +20,15 @@ Phase B · operationalize projection. Status mirror; task files live under state
   societies pull culture updates. *Operator #5.* Done-when: a published release propagates to a consumer.
 
 ## Done
+
+- **B5 — continuity-hooks** · Mav-agent (driven by Nico) · *Operator #4.* An **opt-in, off-by-default**
+  `.husky/post-commit` that fires the one repo-level continuity ritual — **praxis-advance** — as a
+  *reminder* (detect a commit touching `plans/**/{pending,ready,active,completed}/` → nudge to re-mirror
+  PLAN.md via `/praxis`; never auto-edits the hand-authored mirror). Opt in via `pnpm run
+  continuity:install` (sets `git config polis.continuity`, lives in `.git/config`, never committed → fresh
+  clones unchanged). Nico's scope call: encode/dream are per-agent sidecar ops, NOT git-boundary — out of
+  scope; praxis-advance is the only repo-level ritual. Off-by-default guard verified empirically; composes
+  with pre-commit/commit-msg; biome 112 green.
 
 - **B9 — toolkit-hardening** · `completed/B9-toolkit-hardening.md` · Mav (machinery) + Nico (register) ·
   three new PASS-gated `verify.py` stages so the projector refuses what it passed silently: `gate_symbols`

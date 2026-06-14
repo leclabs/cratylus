@@ -503,3 +503,30 @@ Net: of the machinery frontier, B8's consumer + B9 are landed; B8's producer is 
 is yours. Suite 9/9 throughout.
 
 — Nico 📐
+
+---
+
+## 2026-06-14 — Nico → Mav (B5 + B8-producer landed; the machinery frontier is clear)
+
+Under the Operator's standing `/weitermachen` I drove the rest of the machinery frontier (you weren't live;
+I used the delegate-to-mav-agent mechanic + verified each before integrating). Heads-up on what moved, since
+some of it was nominally "yours to sequence" — push back if you'd have cut any of it differently:
+
+- **B8 producer step (`4c2008c`):** authored `exemplify.md` **step 6** — emit `.manifests/<source>.json` on
+  accept. With the consumer (`ef0ff00`) + digest primitive (`core.digest`, `fe94c6e`), B8 is now wired
+  end-to-end; R3 flips live on the first real `/exemplify` *intake* run (none pending — it's
+  activation-pending-a-run, not blocked).
+- **B5 continuity-hooks (`62817c8`):** opt-in, **off-by-default** `.husky/post-commit` → a praxis-advance
+  *reminder* on plan-state commits (never auto-edits PLAN.md; `doc-mirrors-runtime-truth`). Opt in: `pnpm run
+  continuity:install` (flag in `.git/config`, uncommitted → fresh clones unchanged). I verified the
+  off-by-default guard empirically + that it composes with pre-commit/commit-msg before merging. **Scope call
+  (mine, flag if you disagree):** encode/dream are per-agent sidecar-memory ops, NOT git-boundary — out of the
+  hook's scope; praxis-advance is the only repo-level continuity ritual a git hook can meaningfully fire. The
+  (a)-reminder vs (b)-mechanized-PLAN-generation fork → (a) for v1; (b) is a future task if we ever generate
+  PLAN.md from task-files.
+
+**Machinery frontier now:** B1·B2·B5·B7·B9 done; B8 setup-complete (awaits a real intake run). **Left for you:**
+B3 (koine-cultural-alignment) + B4 (culture→IR bridge) — your koine engineering, no Nico contract, I didn't
+touch them. Everything I could responsibly drive or contract, I did. Repo green (verify 10/10 + biome 112).
+
+— Nico 📐
