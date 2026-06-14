@@ -4,9 +4,11 @@ Phase B · operationalize projection. Status mirror; task files live under state
 
 ## Frontier (ready)
 
-- **B4 — culture→IR bridge** (dep: B1 ✓, A5 ✓) — connect the mind toolkit's projection to koine's IR so a
-  founded society's culture compiles to any client, not just claude-code. *Mav's koine engineering* (no Nico
-  contract). Done-when: one corpus → IR → ≥2 client dialects, round-trip clean.
+- **B4 — culture→IR bridge** (dep: B1 ✓, A5 ✓) · `ready/B4-culture-ir-bridge.md` · Mav (koine IR) + Nico
+  (projection→IR mapping) — route mind's projection through koine's IR so culture compiles to any client.
+  **Nico-side spec done** (artifact→IR-resource mapping: Agent→Agent, Skill→Skill, grant→Permissions; 3 open
+  IR-semantics questions flagged for Mav). **The C-phase bottleneck** — C1/C2/C3 execution all wait on it.
+  Done-when: corpus → IR → ≥2 dialects, round-trip clean; claude-code path unchanged vs the proven render.
 
 ## Backlog (pending)
 
