@@ -48,9 +48,20 @@ Phase C · found real societies. All tasks pending on A + B; promote to ready/ a
   >    delta-detector sees none and would **collapse them to bare citations, losing the local specialization**
   >    — the **A4 conqueror failure**. C3 needs woven-delta extraction OR human-reviewed per-disposition calls.
   > **Conclusion: C3 ≠ naive `rebase --apply`.** It is a careful, **consent-gated** (A4) operation where the
-  > read-only `--plan` surfaces each disposition for founder+Operator review (alias-matching + delta calls
-  > human-confirmed). The C2 MVP + the dir-fix reach the target; the reconciliation *intelligence* (and the
-  > consent) are C3's real substance. Inventory + plan are the prep; **execution awaits Operator consent.**
+  > read-only `--plan` surfaces each disposition for founder+Operator review.
+  >
+  > **Both gaps now CLOSED in the tool (Nico, `378e072`) — the consent-plan is accurate + A4-honest.**
+  > `rebase` reconciliation refined: (1) **jaccard-identity ALIAS-matching** recovers renamed forks
+  > (`greenfield-clean-slate`→`[[clean-slate]]` @50%, `adopt-standards-commons`→`[[adopt-the-commons]]` @55%
+  > — no longer LOCAL); (2) an **extra-material gate** detects **woven** deltas (matched cell but the target
+  > says materially more, no `## seam`) and **FLAGS them — never auto-collapses** (apply preserves each whole
+  > pending review; `--force` for a recorded-but-never-destroyed lossy collapse). Validated read-only on real
+  > Oikos (Nico re-ran): **all 5 → FORK-woven, flagged, none collapsed; both renamed forks ALIAS-matched.**
+  > Thresholds calibrated empirically (ALIAS jaccard 0.25; ALIGNED ratio 0.90; extra-material 0.08); an
+  > ALIGNED positive-control test guards against trivial "never-align." Full woven-delta *auto-extraction*
+  > stays **human-in-the-loop per A4** (no reliable prose seam — the tool flags + preserves, the founder
+  > extracts on consent). **So the Oikos rebase PLAN is consent-ready + correct; C3 execution = the Operator
+  > consents → the invited reformer applies it (human-reviewing each woven delta). Awaits Operator consent.**
 - **C4 — fleet-deploy-migration** (dep: B3) — move agent/skill deployment from `playground/packages/mind`
   to polis. **Must RECONCILE against current deployed fleet state** (Mav steward: 11 defs + 7 skills,
   corpus `8532032`, profile strong-llm-lean), not re-emit fresh — else double-deploy or orphaned
