@@ -59,7 +59,16 @@ def main() -> int:
             "strong-llm-lean/claude-code": ln,
         }
         deployed = ROOT.parents[1] / ".claude" / "agents"
-        for fa in sorted(a.glob("*.md")):
+        # REGRESSION is a DRIFT check against deployed defs: it asks whether a
+        # committed def still matches a fresh emit. "Not deployed" is not drift.
+        # If there is no projection at all, skip this axis visibly (NOTE) rather
+        # than failing every def -- the determinism/divergence/density/guard axes
+        # below need no deploy and stay live. (Mirrors verify.py gate_roundtrip.)
+        if not deployed.exists():
+            print("NOTE reader-axis: no deployed projection (.claude/agents "
+                  "absent) -- REGRESSION drift-check skipped; deploy to gate it",
+                  file=sys.stderr)
+        for fa in (sorted(a.glob("*.md")) if deployed.exists() else []):
             dep = deployed / fa.name
             if not dep.exists():
                 fails.append(f"REGRESSION {fa.name}: no deployed def at {dep}")
