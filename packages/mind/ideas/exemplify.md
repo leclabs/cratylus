@@ -35,3 +35,13 @@ accept(F) ⇔ reconstruct(F) ≽ D
 
 ¬accept(F) ⇒ ⊥
 ```
+
+6. On accept, **emit the routing manifest** — persist the run's routing decisions so the oracle's R3 (reconstruction-completeness, [[self-application-is-mandatory]]) gates mechanically instead of as an in-the-loop audit. Write `.manifests/<source>.json`: one entry per fragment `c ∈ C`, keyed by `fragment_digest` (the content-digest of `c`'s de-palimpsested text — `toolkit/core/digest.fragment_digest`, NFC + whitespace-collapse + trim, so a cosmetic source edit leaves the digest stable). A fragment homed in `F` (η resolved an existing anchor → `reuse`, or minted a new one → `mint`) goes in `routes[]`; a fragment homed nowhere by design (it lives in Δ) goes in `delta[]`. Every fragment lands in exactly one of the two — an unrouted fragment is the dropped idea R3 catches.
+
+```jsonc
+{
+  "source": "...", "exemplified_at": "...Z", "reader": "...",
+  "routes": [ { "fragment_digest": "sha256:...", "idea_gloss": "...", "home_slug": "...", "disposition": "reuse", "rank": 0.0 } ],
+  "delta":  [ { "fragment_digest": "sha256:...", "idea_gloss": "..." } ]
+}
+```

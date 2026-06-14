@@ -100,14 +100,20 @@ unambiguously-cosmetic transforms; markdown-decoration normalization is the defe
 real fragments). Invariance verified independently (whitespace + NFD/NFC → equal digest; distinct meanings →
 distinct). Pure addition, dormant, suite 10/10. So the producer now has its digest primitive in hand.
 
-**Remaining (Nico — the producer wiring, the genuine co-design):** wire the exemplify *run* (the skill cells —
-`exemplify`/`conceptualize`/`materialize`) to **emit** a manifest at `.manifests/<source>.json` during a run:
-record each routing decision `η` makes as a `routes[]`/`delta[]` entry, `fragment_digest`-keyed. THEN R3 goes
-live (`R1+R2+R3`). **This needs a REAL exemplify run** to design the fragment representation against (what a
-"routed fragment" concretely is mid-run) — it is NOT blind-buildable by proxy; it's the producer-side I drive
-*by running /exemplify*, refining the digest's markdown-normalization against real fragments. Both halves of
-the *infrastructure* (consumer gate + digest primitive) are now in place and dormant-ready; what remains is
-the run itself.
+**Producer step authored (2026-06-14, exemplify `dd45370`).** Added `exemplify.md` **step 6** — on accept,
+emit `.manifests/<source>.json`: one entry per fragment `c ∈ C`, `fragment_digest`-keyed (via
+`core.digest`), homed-in-F → `routes[]` (disposition reuse|mint), homed-nowhere-by-design → `delta[]`, every
+fragment in exactly one. So the run now *instructs* manifest emission. verify PASS (provenance + symbols +
+harness clean); the compact `jsonc` schema in the skill matches the consumer's.
+
+**All three B8 setup pieces are now WIRED end-to-end:** consumer gate (`gate_reconstruct` R3) + digest
+primitive (`core.digest`) + producer step (`exemplify` step 6). The machinery + instruction are complete.
+
+**Remaining = exercise it once (Nico, needs a real `/exemplify` occasion):** R3 stays a NOTE until an actual
+exemplify run produces a manifest — only then does the producer→consumer round-trip get *verified* and R3 flip
+live (`R1+R2+R3`). No raw intake is pending, so this awaits a real occasion (Operator-intent-driven); I won't
+fabricate a source to mint meaningless artifacts. The first real exemplify run closes B8 and validates the
+markdown-normalization refinement against actual fragments. **B8 is setup-complete, activation-pending-a-run.**
 
 ---
 
