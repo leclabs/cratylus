@@ -48,6 +48,7 @@ KINDS = {
 BROAD_REF = re.compile(r"\[\[([^\]]+)\]\]")
 
 errors: list[str] = []
+notes: list[str] = []
 
 
 def _body_offset(text: str, body: str) -> int:
@@ -125,6 +126,16 @@ def _def_path(kind: str, slug: str):
 
 
 def gate_roundtrip():
+    # ROUNDTRIP is a DRIFT check: it asks whether a deployed def still matches
+    # its archetype. "Not deployed" is not drift. If there is no projection at
+    # all (neither host dir exists), there is nothing to drift from -- skip the
+    # gate visibly (emit a NOTE) rather than failing every def.
+    if not AGENTS_OUT.exists() and not SKILLS_OUT.exists():
+        notes.append(
+            "no deployed projection (.claude/{agents,skills} absent) -- "
+            "roundtrip drift-check skipped; deploy then re-verify to gate it"
+        )
+        return
     for slug in sorted(cells.corpus_slugs()):
         cell = cells.parse_cell(slug)
         kind = cell["fm"].get("kind")
@@ -132,7 +143,14 @@ def gate_roundtrip():
             continue
         defp = _def_path(kind, slug)
         if not defp.exists():
-            errors.append(f"ROUNDTRIP {slug}: no emitted def at {defp}")
+            # host dir present but THIS def absent -> a partial deploy dropped a
+            # def: real drift, fail. host dir itself absent -> that kind was
+            # never projected: not drift, note + skip.
+            host = AGENTS_OUT if kind == "agent" else SKILLS_OUT
+            if host.exists():
+                errors.append(f"ROUNDTRIP {slug}: no emitted def at {defp}")
+            else:
+                notes.append(f"ROUNDTRIP {slug}: kind '{kind}' not projected ({host} absent) -- skipped")
             continue
         deftext = defp.read_text(encoding="utf-8")
         # composed refs -- THE composers' own walk, not a parallel one
@@ -179,6 +197,8 @@ def main() -> int:
     gate_schema_and_refs()
     gate_fences()
     gate_roundtrip()
+    for n in notes:
+        print("NOTE", n, file=sys.stderr)
     if errors:
         for e in errors:
             print("FAIL", e, file=sys.stderr)
