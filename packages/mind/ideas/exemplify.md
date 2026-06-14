@@ -7,7 +7,9 @@ trigger: /exemplify
 
 # Exemplify Skill
 
-Chains [[conceptualize]] → [[signify]] → [[materialize]] end-to-end. Each stage is independently invocable and owns its operators and failure laws; this skill owns only the chain, the strategy gate, and the acceptance law — which binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]].
+exemplify ≜ chains [[conceptualize]] → [[signify]] → [[materialize]]
+
+End-to-end, each stage independently invocable and owning its own operators and failure laws; this skill owns only the chain, the strategy gate, and the acceptance law — which binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]].
 
 1. Resolve `D` from context — the input corpus (multi-modal). Require the strategy `s` up front:
 
