@@ -29,9 +29,9 @@ def main() -> int:
         fails.append(f"COMPLETENESS: {len(listed)} listed != {len(corpus)} cells")
 
     # GROUPING: a known anchor of each family lands in the right section
-    for slug, head in [("reductio", "## Processes"),
-                       ("bona", "## Agents"),
-                       ("confusio", "## Glosses")]:
+    for slug, head in [("archetype-instantiation", "## Processes"),
+                       ("tester", "## Agents"),
+                       ("latent-priors", "## Glosses")]:
         hidx, sidx = doc.find(head), doc.find(f"- **{slug}**")
         if hidx == -1 or sidx == -1 or hidx >= sidx or "\n## " in doc[hidx + len(head):sidx]:
             fails.append(f"GROUPING: {slug} not in the {head} section")

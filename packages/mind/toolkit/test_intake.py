@@ -22,12 +22,12 @@ def main() -> int:
     fails: list[str] = []
     profiles, idf = intake.load_corpus()
 
-    # ROUTE-HIT: a reduction/MECE fragment -> reductio at rank 1
+    # ROUTE-HIT: a reduction/MECE fragment -> semantic-partition at rank 1
     c = intake.candidates(
         "cut the messy input into non-overlapping segments each matching exactly "
         "one canonical idea, re-cut if a piece fits two", profiles, idf, k=5)
-    if not c or c[0][1] != "reductio":
-        fails.append(f"ROUTE-HIT: expected reductio rank1, got {[s for _, s in c][:3]}")
+    if not c or c[0][1] != "semantic-partition":
+        fails.append(f"ROUTE-HIT: expected semantic-partition rank1, got {[s for _, s in c][:3]}")
 
     # ROUTE-HIT: a verification fragment -> tester in the top 3
     c2 = intake.candidates(
@@ -44,11 +44,11 @@ def main() -> int:
 
     # VALIDATE: (action, slug, expected_ok)
     for action, slug, want in [
-        ("route", "reductio", True),
+        ("route", "semantic-partition", True),
         ("route", "nope-not-real", False),
         ("route", "AGENTS", False),               # pseudo-cell, not an anchor
         ("route", "CLAUDE", False),
-        ("mint", "reductio", False),              # already taken -> reject
+        ("mint", "semantic-partition", False),       # already taken -> reject
         ("mint", "a-fresh-untaken-anchor", True),
         ("mint", "Bad Slug", False),              # space / caps -> reject
         ("mint", "-bad", False),                  # leading hyphen
