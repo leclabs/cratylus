@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 148 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 150 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Principles
 
@@ -174,9 +174,11 @@ _composite capabilities._
 - **conceptualize** — use this skill to conceptualize a corpus — read a multi-modal source and resolve it to its concept set (the MECE semantic primitives it projects from), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.
 - **dream** — use this skill to consolidate an agent's memory — the four-layer identity-memory stack (SOUL commons-fixed; SELF, MEMORY, EPISODIC self-authored) distilled upward by durability × orthogonality: next-steps stay in EPISODIC, durable orthogonal facts rise to MEMORY, identity-shaping facts rise to SELF, source-coupled facts leave for the source-local doc, consumed raw is cleared; SOUL is never written.
 - **exemplify** — use this skill to optimize context - strip rot, bloat, palimpsest; increase density, coherence; resolve ambiguity; discover exemplars, derive canonical anchors, materialize composable context modules under an explicitly named strategy (file | document).
+- **handoff** — use this skill to prepare a session for handoff before /clear — bring the plan's record up to date (praxis sync) and consolidate memory (dream) while context is still hot; the persist half of the session boundary, invocable as /handoff.
 - **materialize** — use this skill to realize a fragment set as artifacts under an explicitly named strategy — fragments carry (anchor, kind, content); each strategy declares its kind-consumption table ρ; an unnamed strategy or a missing ρ row refuses loudly, never defaults; stage 3 of exemplify, independently invocable.
 - **praxis** — Create and work durable, sharded plans (sharded-plan-layout dirs) — reached by planning intent, not a command grammar; task state is the folder a task-file sits in (pending/ready/active/completed), PLAN.md mirrors it, and `list` is the one explicit affordance.
 - **signify** — use this skill to name a concept set — assign each concept its semantic anchor (the densest name whose latent priors circumscribe it; injective, one name ⇔ one concept) and map each concept's dependencies into corpus ∪ delta; stage 2 of exemplify, independently invocable (every naming review is a bare /signify).
+- **wake** — use this skill to reconstitute an agent at session start — run agent-know-thyself's wake sequence (dream → load → resume) so it resumes as the same individual; the read-and-resume counterpart to /dream, invocable as /wake.
 - **weitermachen** — use this skill when the Operator utters the re-dispatch word — "weitermachen", "carry on", "proceed" — closing a check-in and returning you to execution; standing intent unchanged, execution authority re-affirmed, no fresh permission owed.
 
 ## Glosses
