@@ -6,9 +6,7 @@ trigger: /praxis
 
 # /praxis — durable sharded plans
 
-A skill for creating and working **durable, sharded plans** on disk. An agent reaches it by planning intent — "start a plan for X", "pick the auth plan back up", "fold these plans together" — not by memorizing a command set. Each plan is a [[sharded-plan-layout]] directory; the agent resumes from it and works it as it normally would.
-
-praxis ≜ invokes [[sharded-plan-layout]] · binds [[clean-slate]] · [[palimpsest]] · [[doc-mirrors-runtime-truth]]
+A skill for creating and working **durable, sharded plans** on disk. An agent reaches it by planning intent — "start a plan for X", "pick the auth plan back up", "fold these plans together" — not by memorizing a command set. Each plan is a sharded-plan-layout directory; the agent resumes from it and works it as it normally would.
 
 ## What it helps with
 
@@ -69,9 +67,5 @@ claude-code assigns each plan session a generated name; `list` can show it besid
 
 ## See also
 
-- [[sharded-plan-layout]] — the directory structure praxis manages; the realization of its states, `state`, and `frontier`.
 - [[shard-by-orthogonal-concern]] — why a plan decomposes into independent units.
-- [[doc-mirrors-runtime-truth]] — the law **sync** enforces: the runtime wins, the mirror is corrected.
-- [[clean-slate]] · [[palimpsest]] — the strip **update**'s `dp` performs.
-- [[emit-only-on-change]] — why **sync** re-derives only on change.
 - [[self-sufficient-formalism]] — the convention the formal block above follows.
