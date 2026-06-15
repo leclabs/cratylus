@@ -8,7 +8,7 @@ trigger: /praxis
 
 A skill for creating and working **durable, sharded plans** on disk. An agent reaches it by planning intent — "start a plan for X", "pick the auth plan back up", "fold these plans together" — not by memorizing a command set. Each plan is a [[sharded-plan-layout]] directory; the agent resumes from it and works it as it normally would.
 
-praxis ≜ invokes [[sharded-plan-layout]] · binds [[clean-slate]] · [[palimpsest]]
+praxis ≜ invokes [[sharded-plan-layout]] · binds [[clean-slate]] · [[palimpsest]] · [[doc-mirrors-runtime-truth]]
 
 ## What it helps with
 
@@ -16,7 +16,8 @@ Surfaced by intent, not commands — state what you want and the skill does the 
 
 - **start a plan** — scaffold a fresh [[sharded-plan-layout]] dir from the stated intent.
 - **resume a plan** — re-attach to an existing plan and draw from the ready frontier.
-- **advance a task** — the `mv` of [[sharded-plan-layout]]; on completion promote the now-unblocked dependents and re-mirror PLAN.md.
+- **advance a task** — the `mv` of [[sharded-plan-layout]]; you *assert* one decided transition (push the truth forward), then promote the now-unblocked dependents and re-mirror PLAN.md.
+- **sync a plan** — bring the record into agreement with reality: the agent did work, but its tasks may not be `mv`'d and PLAN.md not re-mirrored yet. *Observe* real progress (don't assert it), advance the genuinely-done tasks, promote the now-unblocked dependents, and re-mirror PLAN.md ([[doc-mirrors-runtime-truth]] — the runtime wins, the record is corrected). Idempotent: already-current ⇒ no-op ([[emit-only-on-change]]).
 - **update a plan** — revise a task's (or the plan's) content in place, **depalimpsested** ([[clean-slate]]): rewrite to the clean current state and strip the superseded strata, never accreting a "previously / now / amended-by" [[palimpsest]]. The `dp` operator in the model below is that strip; re-mirror PLAN.md after.
 - **merge plans** — fold several in-scope plans into one.
 
@@ -24,13 +25,14 @@ The one explicit affordance is **`/praxis list`** — enumerate the sharded plan
 
 ## The operations, formally
 
-State is the folder a task sits in; `R` is the prestructured dependency relation; `dp` is the de-palimpsest strip that **update** applies (binds [[clean-slate]] · [[palimpsest]]):
+State is the folder a task sits in; `truth` is the real-world state it should mirror — **sync** enforces `state = truth` (binds [[doc-mirrors-runtime-truth]]); `R` is the prestructured dependency relation; `dp` is the de-palimpsest strip that **update** applies (binds [[clean-slate]] · [[palimpsest]]):
 
 ```text
 States ≜ pending → ready → active → completed
 
 P ≜ a plan, a set of task-files
-state : P → States
+state : P → States                                   the recorded state — where a task-file sits
+truth : P → States                                   the real-world state — work actually done
 R ⊆ P × P            (t, u) ∈ R ⇔ t blocked until u completed
 
 frontier(P) ≜ { t │ t ∈ P ∧ state(t) = ready }       the open frontier = ls tasks/ready/
@@ -38,8 +40,10 @@ PLAN.md ≜ mirror(state, R)                            derived, never authorita
 
 start  : intent ↦ P                                  scaffold a fresh sharded-plan-layout
 resume : P ↦ frontier(P)                             re-attach, draw the ready frontier
-advance: state(t) := next(state(t))                  the mv between adjacent states
+advance: state(t) := next(state(t))                  assert one transition (the mv)
          state(u) = completed ⇒ ∀ t ∈ promote(u) : state(t) := ready
+sync   : ∀ t ∈ P : state(t) := truth(t) , then promote, then PLAN.md := mirror(state, R)
+         post: state = truth ∧ PLAN.md current        the record catches up to reality
 merge  : { P₁, P₂, … } ↦ ⋃ Pᵢ                        fold in-scope plans into one
 
 promote(u) ≜ { t │ (t, u) ∈ R ∧ state(t) = pending ∧ ∀ x : (t, x) ∈ R ⇒ state(x) = completed }
@@ -67,3 +71,4 @@ claude-code assigns each plan session a generated name; `list` can show it besid
 - [[sharded-plan-layout]] — the directory structure praxis manages.
 - [[shard-by-orthogonal-concern]] — why a plan decomposes into independent units.
 - [[clean-slate]] — the disposition **update** enacts: strip the palimpsest to net-green.
+- [[doc-mirrors-runtime-truth]] — the principle **sync** enforces: the runtime wins, the record is corrected.
