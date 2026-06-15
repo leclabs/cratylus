@@ -123,6 +123,16 @@ def main() -> int:
             fails.append(
                 f"BINDINGS-ONLY: bindings provenance wrongly warned empty:\n{r.stderr}"
             )
+        # REGRESSION (the mis-keyed `_formula_refs` NOTE): a bindings-homed skill
+        # whose only `≜` is fenced math must NOT trip the "composes empty" log.
+        # That NOTE was keyed on `≜`-absence (true here, correctly) instead of on
+        # the FINAL composition (the bindings, non-empty) -- a log contradicting
+        # reality. It must fire ONLY when ≜ and bindings are BOTH empty.
+        if "provenance composes empty" in r.stderr:
+            fails.append(
+                f"BINDINGS-ONLY: a bindings-homed fenced-≜ skill wrongly logged "
+                f"'provenance composes empty' (the mis-keyed NOTE):\n{r.stderr}"
+            )
         if f"CITE-TWICE {FIXTURE.name}" in r.stderr:
             fails.append(
                 f"BINDINGS-ONLY: no `≜` present, must not flag cite-twice:\n{r.stderr}"

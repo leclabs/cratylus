@@ -40,7 +40,10 @@ the binding; the cell's composition is DERIVED from its bindings, never restated
   - **No Bindings region** -- bindings-less skills (wake, handoff, weitermachen,
     ...): composition = the single PROSE `≜` formula's refs. A fenced `≜` is
     formal math, never composition; a skill with neither a Bindings region nor a
-    prose `≜` composes empty provenance EXPLICITLY (logged).
+    prose `≜` composes empty provenance. The empty-provenance warning is keyed on
+    the FINAL composition (≜ and bindings both empty) and lives ONCE in verify.py's
+    `gate_skill_provenance` -- never on bare `≜`-absence, which is the correct and
+    expected shape of a bindings-homed skill (cite-once).
 
 There is NO agent-style "harvest every prose ref" fallback (it would mistake
 verb-table and see-also refs for dispositions). When BOTH a Bindings region and a
@@ -54,7 +57,6 @@ substitution and formula grains skip fence interiors by construction, so a
 from __future__ import annotations
 
 import re
-import sys
 
 from core import cells
 from core.ir import ComposedDoc
@@ -115,19 +117,22 @@ def _formula_refs(slug: str, body_lines: list[str], mask: set[int]) -> list[str]
     """The composed anchors, in order, from the cell's single PROSE `≜` formula
     line. A fenced `≜` is this package's math symbol, never the composition
     formula (references/formal-symbolic-notation.md) -- a cell whose only `≜`
-    lines are fenced composes empty provenance EXPLICITLY (logged), never by
-    accidentally latching fenced math. No fallback: a skill without a prose
-    formula composes nothing (returns [])."""
+    lines are fenced reads no prose formula here, never accidentally latching
+    fenced math. No fallback: a skill without a prose formula composes nothing
+    (returns []).
+
+    PURE reader: it reports the prose `≜` refs and nothing else. The
+    empty-provenance NOTE is NOT emitted here -- `≜`-absence is not emptiness
+    when a Bindings region homes the composition (the bindings-homed skill, the
+    cite-once norm). The single home for the empty-provenance warning is
+    verify.py's `gate_skill_provenance`, keyed on the FINAL `composition_refs`
+    result (≜ AND bindings both empty) -- so a bindings-homed skill never warns.
+    Were the NOTE kept here it would fire on every bindings-homed skill (whose
+    `≜` is correctly absent), a log contradicting the composed reality."""
     formula = next(
         (l for i, l in enumerate(body_lines) if "≜" in l and i not in mask), None
     )
     if formula is None:
-        if any("≜" in body_lines[i] for i in mask):
-            print(
-                f"NOTE   {slug}: no prose ≜ formula (fenced ≜ is math, not "
-                f"composition) -- provenance composes empty",
-                file=sys.stderr,
-            )
         return []
     return list(dict.fromkeys(cells.REF.findall(formula)))  # first-seen, deduped
 
