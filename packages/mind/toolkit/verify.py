@@ -18,7 +18,13 @@
               skill body projects a vacuous SKILL.md and round-trips on emptiness.
   PROVENANCE  (warning, not gate) a kind:skill that composes EMPTY provenance
               surfaces as a NOTE -- the recurring fenced-≜-as-formula bug made
-              visible so a future skill can't regress silently.
+              visible so a future skill can't regress silently. A skill whose
+              composition is its Bindings region is NOT empty (its provenance is
+              the bindings); only a skill with neither a Bindings region nor a
+              prose ≜ warns. CITE-TWICE sub-check: a skill with BOTH a Bindings
+              region and a prose ≜ formula re-cites the same anchors at two homes
+              -- the duplication [[self-sufficient-formalism]] forbids -- surfaced
+              as a NOTE (transitional; Bindings is the composition source).
   ROUNDTRIP   every emitted agent def reconstructs its archetype's composed set:
               the def names every [[ref]] the cell composes + every scope grant,
               and carries an intact provenance header + content hash that matches
@@ -61,7 +67,11 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from core import cells  # noqa: E402  -- the ONE cell reader + AST views
 from compose.agent import composition_refs, grants_for  # noqa: E402
 from compose.harness import ref_text  # noqa: E402  -- THE ref projection
-from compose.skill import _formula_refs  # noqa: E402
+from compose.skill import (  # noqa: E402
+    _bindings_region,
+    _formula_refs,
+    composition_refs as skill_composition_refs,
+)
 from render.claude_code import recorded_profile  # noqa: E402
 
 ROOT = cells.ROOT
@@ -304,33 +314,55 @@ def gate_skill_operative():
 
 
 def gate_skill_provenance():
-    """PROVENANCE (warning): a `kind: skill` cell that composes EMPTY provenance
-    surfaces visibly, so a future skill cannot regress into the recurring
-    empty-provenance bug silently. Root cause: compose.skill reads the first
-    PROSE `≜` line as the composition formula and correctly ignores fenced `≜`
-    (formal math, never composition) -- but a skill whose only early `≜` is
-    fenced math then composes empty provenance. The composer NOTEs this on the
-    deploy path (compose.skill._formula_refs); this lifts it to a verify-level
-    warning that fires regardless of deploy state ([[hoare-elegance-no-
-    permissive-defaults]] degrade-visibly).
+    """PROVENANCE + CITE-TWICE (warnings): two NOTEs over `kind: skill` cells,
+    both mechanizing [[self-sufficient-formalism]]'s one-citation-per-anchor law.
 
-    A WARNING, not a FAIL: a skill MAY legitimately compose from nothing (no
-    formula). All 7 live skills currently carry provenance, so any empty one is
-    a regression worth a human's eye -- but the composer must not refuse a
-    deliberately-provenance-free skill, so it stays a NOTE, never an error."""
+    PROVENANCE -- a skill that composes EMPTY provenance surfaces visibly so a
+    future skill cannot regress into the recurring empty-provenance bug silently.
+    Composition source is the composer's own precedence (skill_composition_refs):
+    a Bindings region (the cite-once home) WINS; absent it, the single prose `≜`
+    formula. So a skill whose composition is its BINDINGS is NOT empty -- its
+    provenance is the bindings -- and must not warn. Only a skill with NEITHER a
+    Bindings region nor a prose `≜` (e.g. its only `≜` is fenced math) warns. A
+    WARNING, not a FAIL: a skill MAY legitimately compose from nothing.
+
+    CITE-TWICE -- a skill carrying BOTH a Bindings region AND a prose `≜` formula
+    cites the same anchors at two homes (the `≜` re-states what the bindings
+    already home). That is the duplication [[self-sufficient-formalism]] forbids,
+    mechanized. A NOTE, not a FAIL (deliberate, [[hoare-elegance-no-permissive-
+    defaults]] degrade-visibly): the only live both-present cell is praxis, a
+    transitional state pending the corpus sweep that drops the `≜`; a hard FAIL
+    would red the committed corpus until that sweep lands. Bindings is the
+    composition source meanwhile; the NOTE forces the sweep without breaking the
+    green-repo invariant. (Promote to FAIL once the sweep clears the transition.)"""
     for slug in sorted(cells.slugs_of_kind("skill")):
         body = cells.parse_cell(slug)["body"]
         body_lines = body.splitlines()
         mask = cells.fence_lines(body)
-        refs = _formula_refs(slug, body_lines, mask)
+        has_bindings = _bindings_region(body_lines, mask) is not None
+        has_prose_formula = bool(_formula_refs(slug, body_lines, mask))
+
+        # CITE-TWICE: both a Bindings region and a prose ≜ -> the ≜ re-cites the
+        # bindings' anchors. Bindings wins; the redundant ≜ is the cite-twice.
+        if has_bindings and has_prose_formula:
+            notes.append(
+                f"CITE-TWICE {slug}.md: kind 'skill' has BOTH a Bindings region "
+                f"and a prose `≜` formula -- the `≜` re-cites anchors the bindings "
+                f"already home, the duplication self-sufficient-formalism forbids. "
+                f"Bindings is the composition source; drop the redundant `≜` "
+                f"formula. (transitional NOTE -- promote to FAIL after the sweep)"
+            )
+
+        # PROVENANCE: composition is empty under the composer's precedence.
+        refs = skill_composition_refs(slug, body_lines, mask)
         if refs:
             continue
         fenced_formula = any("≜" in body_lines[i] for i in mask)
         diag = (
             "its only `≜` is fenced math (the recurring trap -- move the "
-            "composition formula to a prose line)"
+            "composition formula to a prose line, or add a Bindings region)"
             if fenced_formula
-            else "no `≜` composition formula at all"
+            else "no Bindings region and no `≜` composition formula at all"
         )
         notes.append(
             f"PROVENANCE {slug}.md: kind 'skill' composes EMPTY provenance "
@@ -382,7 +414,9 @@ def gate_roundtrip():
         else:
             body = cell["body"]
             composed = set(
-                _formula_refs(slug, body.splitlines(), cells.fence_lines(body))
+                skill_composition_refs(
+                    slug, body.splitlines(), cells.fence_lines(body)
+                )
             )
         # each composed ref must appear in the form THE composer emitted it --
         # ref_text keyed on the def's own recorded harness (a skill ref is its

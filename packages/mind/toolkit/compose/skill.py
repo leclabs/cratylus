@@ -24,14 +24,28 @@ anchors are mere provenance. The authored form:
     <pi deltas>
 
 compose_skill assembles: heading + intro + a ONE-LINE lean provenance of the
-formula anchors (names only -- the body carries the meaning, so the anchors do
+composed anchors (names only -- the body carries the meaning, so the anchors do
 not bury the operative content; cf. [[context-not-prose]]) + the authored `## `
 sections, KEEPING only the `## Harness: <target>` section and dropping the other
-well-formed harness dialects. A skill needs an explicit PROSE `≜` formula --
-fenced `≜` is formal math, never composition, and there is NO agent-style
-"harvest every ref" fallback (it would mistake verb-table and see-also refs for
-dispositions). No genus dispositions, identity block, or grants -- those are
-agent-qua-agent, not skill.
+well-formed harness dialects. No genus dispositions, identity block, or grants --
+those are agent-qua-agent, not skill.
+
+Composition source ([[self-sufficient-formalism]]: one citation per anchor, at
+the binding; the cell's composition is DERIVED from its bindings, never restated):
+
+  - **Bindings region present** -- the boundary-bindings are the single citation
+    home, so composition = every `[[ref]]` harvested from the `Bindings:`
+    paragraph (first-seen, deduped, regardless of binding verb), and the `≜`
+    formula is OPTIONAL. This is the convention's home: cite once.
+  - **No Bindings region** -- bindings-less skills (wake, handoff, weitermachen,
+    ...): composition = the single PROSE `≜` formula's refs. A fenced `≜` is
+    formal math, never composition; a skill with neither a Bindings region nor a
+    prose `≜` composes empty provenance EXPLICITLY (logged).
+
+There is NO agent-style "harvest every prose ref" fallback (it would mistake
+verb-table and see-also refs for dispositions). When BOTH a Bindings region and a
+prose `≜` are present (a cell's transitional state mid-sweep), Bindings WINS and
+verify.py flags the redundant `≜` as a cite-twice violation.
 
 Fence-awareness is AST-derived (core.cells fence_lines / markdown-it-py): the
 substitution and formula grains skip fence interiors by construction, so a
@@ -45,6 +59,14 @@ import sys
 from core import cells
 from core.ir import ComposedDoc
 from compose.harness import project_refs, ref_text
+
+# A Bindings region is a PROSE paragraph led by the token `Bindings:` (optionally
+# bolded `**Bindings:**`) -- the boundary-binding block of a formal cell, the
+# single home for each external anchor ([[self-sufficient-formalism]]). The lead
+# token is matched fence-masked like every prose grain; the paragraph runs to the
+# next blank line (markdown paragraph break). Leading whitespace is allowed so a
+# Bindings paragraph nested under a `## ` section still recognizes.
+BINDINGS_RE = re.compile(r"^\s*\*{0,2}Bindings:\*{0,2}")
 
 # A harness-variant selector header is EXACTLY `## Harness: <token>`. Only an
 # exact match is treated as a dialect to select/drop; anything else that merely
@@ -110,6 +132,59 @@ def _formula_refs(slug: str, body_lines: list[str], mask: set[int]) -> list[str]
     return list(dict.fromkeys(cells.REF.findall(formula)))  # first-seen, deduped
 
 
+def _bindings_region(body_lines: list[str], mask: set[int]) -> list[int] | None:
+    """The line indices of the cell's Bindings paragraph, or None if absent. The
+    region is the contiguous run of PROSE lines starting at the `Bindings:`-led
+    line and ending at the next blank line (a markdown paragraph break) or the
+    next `## ` heading -- the boundary-binding block of a formal cell. Fence
+    interiors (masked) are never the lead line and never extend the region: a
+    fenced `Bindings:` is content, not the binding paragraph. Returns the first
+    such paragraph (a cell has one boundary-binding block)."""
+    start = next(
+        (i for i, l in enumerate(body_lines)
+         if i not in mask and BINDINGS_RE.match(l)),
+        None,
+    )
+    if start is None:
+        return None
+    region = [start]
+    for i in range(start + 1, len(body_lines)):
+        line = body_lines[i]
+        if not line.strip():  # blank line ends the paragraph
+            break
+        if line.startswith("## ") and i not in mask:  # a heading ends it too
+            break
+        region.append(i)
+    return region
+
+
+def _bindings_refs(body_lines: list[str], mask: set[int]) -> list[str]:
+    """Every `[[ref]]` in the cell's Bindings paragraph, first-seen and deduped,
+    regardless of binding verb (realize/bind/binds/...). This is the cell's
+    composition under [[self-sufficient-formalism]]: the boundary-bindings are the
+    single citation home, so composition is harvested from them, never restated.
+    Returns [] if the cell has no Bindings region (caller falls back to `≜`)."""
+    region = _bindings_region(body_lines, mask)
+    if region is None:
+        return []
+    refs: list[str] = []
+    for i in region:
+        refs.extend(cells.REF.findall(body_lines[i]))
+    return list(dict.fromkeys(refs))  # first-seen, deduped
+
+
+def composition_refs(slug: str, body_lines: list[str], mask: set[int]) -> list[str]:
+    """The skill's composed anchors, by the [[self-sufficient-formalism]]
+    precedence: a Bindings region (the cite-once home) WINS -- composition is
+    harvested from it and the `≜` formula is optional/redundant. Absent a Bindings
+    region, composition is the single prose `≜` formula's refs (bindings-less
+    skills: wake/handoff/weitermachen). The cite-twice case (both present) is
+    flagged by verify.py, not here -- the composer just honors precedence."""
+    if _bindings_region(body_lines, mask) is not None:
+        return _bindings_refs(body_lines, mask)
+    return _formula_refs(slug, body_lines, mask)
+
+
 def compose_skill(slug: str, reader: str, harness: str) -> ComposedDoc:
     cell = cells.parse_cell(slug)
     name = slug
@@ -140,7 +215,7 @@ def compose_skill(slug: str, reader: str, harness: str) -> ComposedDoc:
             intro.append(i)
     intro_text = "\n".join(projected[i] for i in intro).strip()
 
-    refs = _formula_refs(slug, body_lines, mask)
+    refs = composition_refs(slug, body_lines, mask)
 
     out: list[str] = []
     out.append(f"# {heading}")
