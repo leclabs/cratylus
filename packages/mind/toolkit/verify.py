@@ -66,8 +66,20 @@ from render.claude_code import recorded_profile  # noqa: E402
 
 ROOT = cells.ROOT
 IDEAS = cells.IDEAS
-AGENTS_OUT = ROOT.parents[1] / ".claude" / "agents"
-SKILLS_OUT = ROOT.parents[1] / ".claude" / "skills"
+# The ROUNDTRIP drift-check reads the resolver's projection from its neutral
+# staging dir (`packages/mind/.render/`), NOT a `.claude/` tree -- the render is a
+# projection, not a deployment ([[projection-is-not-the-source]]). The core R1+R2
+# reconstruction gate (gate_reconstruct) works on the source cells alone and never
+# reads these. Must track resolve.RENDER_OUT.
+# `POLIS_RENDER` overrides the render root (mirrors POLIS_MANIFESTS) -- a fixture
+# test that injects a transient corpus cell can point the drift-check at an empty
+# dir, so "no render -> skip drift-check visibly" is deterministic regardless of
+# whatever a prior resolve run happened to leave in the real `.render/`. A
+# transient fixture cell was never rendered; absent the override its missing def
+# would read as drift the instant any real render exists on disk.
+_RENDER = pathlib.Path(os.environ["POLIS_RENDER"]) if os.environ.get("POLIS_RENDER") else ROOT / ".render"
+AGENTS_OUT = _RENDER / "agents"
+SKILLS_OUT = _RENDER / "skills"
 # Routing manifests (B8): one per exemplified source D, emitted by the producer
 # (resolve/exemplify -- Nico's follow-on, not yet wired). The consumer here READS
 # them to gate R3. `packages/mind/.manifests/<source>.json`: a dotted sibling of
@@ -343,8 +355,8 @@ def gate_roundtrip():
     # gate visibly (emit a NOTE) rather than failing every def.
     if not AGENTS_OUT.exists() and not SKILLS_OUT.exists():
         notes.append(
-            "no deployed projection (.claude/{agents,skills} absent) -- "
-            "roundtrip drift-check skipped; deploy then re-verify to gate it"
+            "no render present (.render/{agents,skills} staging absent) -- "
+            "roundtrip drift-check skipped; run resolve.py then re-verify to gate it"
         )
         return
     for slug in sorted(cells.corpus_slugs()):

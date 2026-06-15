@@ -22,7 +22,9 @@ Usage:
   --project project root for --scope project (default: cwd).
   --dry-run print actions, change nothing.
 
-Defs are read from the resolver's output dir (`.claude/agents/`). Run resolve.py first.
+Defs are read from the resolver's staging dir (`packages/mind/.render/agents/`,
+NOT a `.claude/` tree -- the render is a projection, not a deployment). Run
+resolve.py first; deploy then applies the scope accident to a real `.claude/` root.
 """
 from __future__ import annotations
 
@@ -36,8 +38,12 @@ from place import local as place_local  # noqa: E402
 from place import ssh as place_ssh  # noqa: E402
 from place import scope as place_scope  # noqa: E402
 
-DEFS = cells.ROOT.parents[1] / ".claude" / "agents"  # resolver output (agents)
-SKILLS_SRC = cells.ROOT.parents[1] / ".claude" / "skills"  # resolver output (skills)
+# Source = the resolver's neutral staging dir (`packages/mind/.render/`), NOT a
+# `.claude/` tree: the render is a projection, deploy is what applies the scope
+# accident ([[projection-is-not-the-source]] / [[scope-grant]]). Must track
+# resolve.RENDER_OUT.
+DEFS = cells.ROOT / ".render" / "agents"  # resolver output (agents)
+SKILLS_SRC = cells.ROOT / ".render" / "skills"  # resolver output (skills)
 
 
 def agent_names() -> list[str]:

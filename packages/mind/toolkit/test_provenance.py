@@ -10,9 +10,11 @@ Run: python3 toolkit/test_provenance.py   (exit non-zero on any failure)
 """
 from __future__ import annotations
 
+import os
 import pathlib
 import subprocess
 import sys
+import tempfile
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 VERIFY = ROOT / "toolkit" / "verify.py"
@@ -49,8 +51,12 @@ PROSE_FORMULA = FENCED_ONLY.replace(
 
 
 def run_verify() -> subprocess.CompletedProcess:
+    # Isolate the ROUNDTRIP drift-check: this test injects a transient corpus cell
+    # that was never rendered, so point POLIS_RENDER at an empty dir -> "no render
+    # -> skip drift-check visibly", deterministic regardless of any real `.render/`.
+    env = {**os.environ, "POLIS_RENDER": tempfile.gettempdir() + "/_polis_no_render"}
     return subprocess.run(
-        [sys.executable, str(VERIFY)], capture_output=True, text=True
+        [sys.executable, str(VERIFY)], capture_output=True, text=True, env=env
     )
 
 

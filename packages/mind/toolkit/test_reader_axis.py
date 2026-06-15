@@ -47,41 +47,43 @@ def main() -> int:
             if fa.read_bytes() != fb.read_bytes():
                 fails.append(f"DETERMINISM {fa.name}: default emit not stable")
 
-        # REGRESSION (H1): every COMMITTED deployed def is byte-identical to a
-        # fresh emit at the profile its own header RECORDS -- the def declares
-        # what it is; the test honours that, never assumes the default. A
-        # failure means cells changed without a redeploy, or the emit format
-        # drifted; either way, re-emit `.claude/agents/` and review the diff.
+        # REGRESSION (H1): every RENDERED def in the staging dir is byte-identical
+        # to a fresh emit at the profile its own header RECORDS -- the def declares
+        # what it is; the test honours that, never assumes the default. A failure
+        # means cells changed without a re-render, or the emit format drifted;
+        # either way, re-run resolve.py and review the diff. (The render is a
+        # projection in `.render/`, NOT a `.claude/` deployment -- this checks the
+        # staging projection, not any deployed scope.)
         import re as _re
         by_profile = {
             "strong-llm/claude-code": a,
             "weak-llm/claude-code": w,
             "strong-llm-lean/claude-code": ln,
         }
-        deployed = ROOT.parents[1] / ".claude" / "agents"
-        # REGRESSION is a DRIFT check against deployed defs: it asks whether a
-        # committed def still matches a fresh emit. "Not deployed" is not drift.
+        rendered = ROOT / ".render" / "agents"
+        # REGRESSION is a DRIFT check against the on-disk render: it asks whether a
+        # rendered def still matches a fresh emit. "Not rendered" is not drift.
         # If there is no projection at all, skip this axis visibly (NOTE) rather
         # than failing every def -- the determinism/divergence/density/guard axes
-        # below need no deploy and stay live. (Mirrors verify.py gate_roundtrip.)
-        if not deployed.exists():
-            print("NOTE reader-axis: no deployed projection (.claude/agents "
-                  "absent) -- REGRESSION drift-check skipped; deploy to gate it",
+        # below need no render and stay live. (Mirrors verify.py gate_roundtrip.)
+        if not rendered.exists():
+            print("NOTE reader-axis: no render present (.render/agents "
+                  "absent) -- REGRESSION drift-check skipped; run resolve.py to gate it",
                   file=sys.stderr)
-        for fa in (sorted(a.glob("*.md")) if deployed.exists() else []):
-            dep = deployed / fa.name
+        for fa in (sorted(a.glob("*.md")) if rendered.exists() else []):
+            dep = rendered / fa.name
             if not dep.exists():
-                fails.append(f"REGRESSION {fa.name}: no deployed def at {dep}")
+                fails.append(f"REGRESSION {fa.name}: no rendered def at {dep}")
                 continue
             mprof = _re.search(r"profile: (\S+)", dep.read_text(encoding="utf-8"))
             src = by_profile.get(mprof.group(1)) if mprof else None
             if src is None:
                 fails.append(f"REGRESSION {fa.name}: unreadable/unknown recorded "
-                             f"profile in deployed def")
+                             f"profile in rendered def")
             elif dep.read_bytes() != (src / fa.name).read_bytes():
                 fails.append(f"REGRESSION {fa.name}: emit at recorded profile "
-                             f"{mprof.group(1)} != committed deployed def "
-                             f"(redeploy `.claude/agents/` or reconcile)")
+                             f"{mprof.group(1)} != rendered def "
+                             f"(re-run resolve.py or reconcile)")
 
         # DIVERGENCE: weak-llm adds scaffolding the strong profile omits
         for fw in sorted(w.glob("*.md")):

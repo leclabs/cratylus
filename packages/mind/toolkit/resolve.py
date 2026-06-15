@@ -6,7 +6,9 @@ Reads an agent cell (`kind: agent`) from `mind/ideas/`, walks its composed
 (the priors-loaded dense form -> [[exemplar-resolution]] run inverse), layers
 scope grants parsed from the relevant `AGENTS.md` as ACCIDENTS without mutating
 the kernel ([[substance-over-accident]]), and emits a deployable
-`.claude/agents/<name>.md` def carrying:
+`<name>.md` def (into the neutral `.render/agents/` staging dir, NOT a
+`.claude/` tree -- a projection is not a deployment ([[projection-is-not-the-
+source]]); scope is an accident applied later by deploy.py) carrying:
 
   - a `GENERATED from ...` provenance header ([[generated-artifact-provenance]])
   - a `content-hash:` of the emitted body ([[regenerate-without-clobbering]]):
@@ -34,7 +36,14 @@ ROOT = cells.ROOT  # packages/mind
 IDEAS = cells.IDEAS
 parse_cell = cells.parse_cell
 delineation = cells.delineation
-DEFAULT_OUT = ROOT.parents[1] / ".claude" / "agents"
+# The render is a PROJECTION, not a deployment ([[projection-is-not-the-source]]):
+# it goes to a neutral, gitignored staging dir that Claude Code does NOT auto-load
+# -- deliberately NOT `<repo>/.claude/agents`, the path a project-scoped session
+# loads from. (Rendering must never masquerade as a project-scope deploy.) The
+# `.claude/{agents,skills}` trees are populated ONLY by an explicit deploy.py
+# --scope project; scope is an accident applied at deploy ([[scope-grant]]).
+RENDER_OUT = ROOT / ".render"  # packages/mind/.render -- staging, gitignored
+DEFAULT_OUT = RENDER_OUT / "agents"
 
 # Reader axis (weak-llm/strong-llm/strong-llm-lean) lives in compose.reader;
 # READERS is imported above. The harness axis is the artifact *form*.
@@ -100,8 +109,9 @@ ondisk_body_hash = render_cc.ondisk_body_hash
 
 def parse_argv(argv: list[str]) -> tuple[str, str, pathlib.Path, bool]:
     """`resolve.py [out] [--reader R] [--harness H] [--force]`. Positional
-    out-dir optional (defaults to .claude/agents); a CUSTOM out-dir is an
-    agent-preview mode (skills emit only on the default run -> .claude/skills).
+    out-dir optional (defaults to the .render/agents staging dir); a CUSTOM
+    out-dir is an agent-preview mode (skills emit only on the default run ->
+    .render/skills).
     Default profile (strong-llm, claude-code) reproduces the deployed defs
     byte-for-byte. Malformed flags are rejected, never silently defaulted
     ([[hoare-elegance-no-permissive-defaults]])."""
@@ -165,10 +175,10 @@ def main() -> int:
     profile = f"{reader}/{harness}"
     out_dir.mkdir(parents=True, exist_ok=True)
     rc = 0
-    # Agents -> out_dir (default .claude/agents), one file per name.
+    # Agents -> out_dir (default .render/agents staging), one file per name.
     for agent in cells.slugs_of_kind("agent"):
         rc |= _emit_one(agent, out_dir / f"{agent}.md", reader, harness, profile, force)
-    # Skills -> .claude/skills/<name>/SKILL.md (dir-per-skill). Only on the
+    # Skills -> .render/skills/<name>/SKILL.md (dir-per-skill). Only on the
     # DEFAULT run: a custom positional out-dir is an agent-preview mode, so it
     # neither emits skills nor funnels several profiles into one shared dir.
     if out_dir == DEFAULT_OUT:
