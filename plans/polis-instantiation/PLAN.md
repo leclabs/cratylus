@@ -16,24 +16,33 @@ Operator authorization**, not on more building.
 - **C3 — rebase Oikos** — the consent-ready reconciliation PLAN is accurate + A4-honest. **Execution =
   `rebase --apply` on `forge:~/workspaces/oikos`, human-reviewing each woven delta. Gated on explicit
   consent (A4 — invited reformer, not conqueror).** Trigger: the Operator says *"rebase Oikos."*
-- **C4 — fleet-deploy-migration** — **5/7 hosts on polis (2026-06-14, Operator "migrate the fleet"); 2 await
-  wake.**
+- **C4 — fleet-deploy-migration** — **6/7 hosts on polis; 1 (apps.lan) still down.** Re-deployed
+  2026-06-15 (Mav) with the **new corpus** — see "Corpus deployed" below.
   - **The `--host` gotcha:** omitting `--host` (or `--host fire`/`local`) = deploy **IN PLACE** to the current
     host; `--host <NAME> --user <u>` = **SSH** remote. Per-host recipe = **TWO passes** (`deploy.py` defaults
     `--kind agent`): agents pass **+** `--kind skill` pass. Defs overwritten, **externals never-pruned**,
     sidecars seeded **only-if-absent** (lived memory preserved). Sequential, no shell loops.
-  - **DONE (5/7), each verified — founder line present, 11 agents + 7 skills == polis render, all 33 lived
-    sidecars untouched, externals preserved:**
+  - **Corpus deployed (2026-06-15):** **11 agents + 10 skills** (was 7 skills). New this round: skills
+    **`wake` · `handoff` · `formalize`**; principle **`self-sufficient-formalism`** (composed into the corpus);
+    **praxis reformalized** into a self-sufficient set-builder block (cite-once — composition derives from its
+    `Bindings:` region) with new ops `update`/`sync`; plus toolkit fixes (render → `.render/` staging; composer
+    derives composition from bindings). Render `resolve.py --reader strong-llm-lean` → verify **PASS**
+    (R1+R2+R3); `<repo>/.claude/` kept clean.
+  - **DONE (6/7), each verified — 11 agent defs overwritten, 10 skills == polis render, all 33 lived
+    sidecars present + untouched (mav/SELF.md seed mtimes intact = zero clobber), externals preserved:**
     - **fire** (lex, in-place) — migrated first by my error (mislabeled "ash" in `a99c4d0`); Operator left it.
     - **ash.lan** (lex, SSH) — the first authorized target.
     - **forge.lan** (lex, SSH) — externals **graphify + playwright-cli** preserved.
     - **spark.lan** (lex, SSH) — no externals.
     - **upmav.lan** (lcaraccioli, SSH) — externals **find-skills + graphify** preserved.
+    - **upgoose.lan** (lcaraccioli, SSH) — **reached 2026-06-15** (was asleep at the 06-14 migration but was
+      ALREADY on polis from a prior run: 11 agents + lived sidecars present). This run **updated** it to the
+      new corpus (added wake/handoff/formalize, refreshed praxis); no externals. So the old "2/7 pending"
+      record was stale for upgoose — it was migrated, just not at the 06-14 pass.
     - (The 3 kept externals from the prune ruling — graphify/find-skills/playwright-cli — all survived
       never-prune across the hosts that carry them.)
-  - **PENDING (2/7) — unreachable at migration (retry the two-pass recipe when they wake):**
-    - **apps.lan** (lex) — host down (connect timed out).
-    - **upgoose.lan** (lcaraccioli) — asleep (macOS, sleeps often; connect timed out).
+  - **PENDING (1/7) — unreachable (retry the two-pass recipe when it wakes):**
+    - **apps.lan** (lex) — host down (connect timed out, 2026-06-15 retry).
 
 (Full reconciliation inventories + findings retained in the detailed entries below.)
 
@@ -98,11 +107,13 @@ Operator authorization**, not on more building.
   > extracts on consent). **So the Oikos rebase PLAN is consent-ready + correct; C3 execution = the Operator
   > consents → the invited reformer applies it (human-reviewing each woven delta). Awaits Operator consent.**
 - **C4 — fleet-deploy-migration** (dep: B3) — move agent/skill deployment from `playground/packages/mind`
-  to polis. **Must RECONCILE against current deployed fleet state** (Mav steward: 11 defs + 7 skills,
-  corpus `8532032`, profile strong-llm-lean), not re-emit fresh — else double-deploy or orphaned
-  sidecars/`.archive`. *Mav's flag #2.* **Precondition resolved:** the graphify/find-skills/playwright-cli
-  prune ruling = **keep all three** (Operator, 2026-06-13). Loop Mav in early. Done-when: all 7 hosts
-  project from polis, reconciled, sidecars + archive untouched.
+  to polis. **SOURCE-SWITCH ACHIEVED:** the fleet now projects from **polis** (`packages/mind/.render/`),
+  not playground — 6/7 hosts carry the polis corpus (live per-host state + the deployed-corpus manifest are
+  in the **C4 status block at the top of this file**; only apps.lan remains, host-down). Reconciliation held
+  as designed: defs overwritten, externals never-pruned, sidecars seeded only-if-absent (no clobber).
+  *Mav's flag #2 resolved.* **Precondition resolved:** the graphify/find-skills/playwright-cli prune ruling =
+  **keep all three** (Operator, 2026-06-13). Done-when (all 7 from polis, reconciled, sidecars untouched):
+  **6/7 — closes when apps.lan wakes.**
 
   > **Drift is real — expect content-hash changes, treat them as intended (finding, 2026-06-13).** The
   > deployed fleet artifacts are from `playground`; polis has since improved cells, so many will re-emit
