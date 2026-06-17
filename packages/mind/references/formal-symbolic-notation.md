@@ -1,59 +1,71 @@
-| Symbol                | Name                            | Meaning                                                                   |
-| --------------------- | ------------------------------- | ------------------------------------------------------------------------- |
-| `≜`                   | defined as                      | The left side is defined to mean the right side.                          |
-| `:=`                  | is assigned / defined as        | Common for definition or assignment.                                      |
-| `≡`                   | identical / equivalent          | Strict identity, logical equivalence, or congruence depending on context. |
-| `≈`                   | approximately equal / analogous | Similar, approximate, or analogically equivalent.                         |
-| `≠`                   | not equal                       | The two terms are not identical/equivalent.                               |
-| `≅`                   | isomorphic                      | Structurally equivalent though not numerically identical.                 |
-| `∴`                   | therefore                       | The conclusion follows from prior claims.                                 |
-| `∵`                   | because                         | Gives the reason, ground, or premise.                                     |
-| `→`                   | implies / leads to              | Conditional implication, causal direction, derivation, or transformation. |
-| `⇒`                   | entails / implies               | Stronger formal implication.                                              |
-| `↔`                   | mutual implication              | A implies B and B implies A.                                              |
-| `⇔`                   | if and only if                  | Biconditional equivalence.                                                |
-| `¬`                   | not                             | Negation.                                                                 |
-| `∧`                   | and                             | Conjunction.                                                              |
-| `∨`                   | or                              | Disjunction.                                                              |
-| `⊕`                   | exclusive or / direct sum       | Either-or in logic; structured combination in algebra.                    |
-| `∀`                   | for all                         | Universal quantification.                                                 |
-| `∃`                   | there exists                    | Existential quantification.                                               |
-| `∄`                   | there does not exist            | Negated existential quantification.                                       |
-| `∈`                   | element of                      | A is a member of B.                                                       |
-| `∉`                   | not element of                  | A is not a member of B.                                                   |
-| `⊂`                   | proper subset                   | A is contained in B but is not equal to B.                                |
-| `⊆`                   | subset                          | A is contained in B and may equal B.                                      |
-| `⊄`                   | not subset                      | A is not contained in B.                                                  |
-| `∅`                   | empty set                       | No members; null collection.                                              |
-| `∪`                   | union                           | Combination of members from sets.                                         |
-| `∩`                   | intersection                    | Shared members between sets.                                              |
-| `⊢`                   | proves                          | Syntactic entailment; derivable within a formal system.                   |
-| `⊨`                   | models / semantically entails   | Semantic entailment; true in all relevant interpretations/models.         |
-| `⊤`                   | truth                           | Logical truth / tautology.                                                |
-| `⊥`                   | falsehood / contradiction       | Logical falsity, contradiction, or absurdity.                             |
-| `□`                   | necessarily                     | Modal necessity.                                                          |
-| `◇`                   | possibly                        | Modal possibility.                                                        |
-| `∝`                   | proportional to                 | Varies in proportion with.                                                |
-| `∑`                   | sum                             | Aggregation or summation.                                                 |
-| `∂`                   | partial                         | Partial aspect, partial derivative, or dependent dimension.               |
-| `λ`                   | lambda abstraction              | Function abstraction or anonymous function.                               |
-| `Q.E.D.`              | quod erat demonstrandum         | “Which was to be demonstrated”; proof complete.                           |
-| `∎`                   | tombstone                       | End of proof.                                                             |
-| `│`                   | such that                       | The set-builder separator: `{ x │ P(x) }` — the x for which P holds.      |
-| `×`                   | Cartesian product               | Pairs drawn from two sets; the relation space `A × B`.                    |
-| `⋃`                   | union over a family             | n-ary union of a collection of sets.                                      |
-| `⊃`                   | proper superset                 | A contains B and is not equal to B.                                       |
-| `⊇`                   | superset                        | A contains B and may equal B.                                             |
-| `∃!`                  | there exists exactly one        | Unique existence.                                                         |
-| `⇀`                   | partial function                | Defined on only part of its domain; an element may have no image.         |
-| `↦`                   | maps to                         | The image of a specific element under a map or assignment table.          |
-| `≽`                   | equivalent or better            | Dominance order: at least as good as (house use: round-trip acceptance).  |
-| `f : A → B`           | has signature                   | f is a map from A to B; compose with `⇀` for partial maps.                |
-| `dom(f)` · `range(f)` | domain / range                  | The set where f is defined / the set of f's images.                       |
-| `──op──→`             | labeled step                    | A `→` carrying the operation that performs it (pipeline arrows).          |
-| `·`                   | list separator                  | Compact "and": enumerates coordinate items within one clause.             |
-| `…`                   | ellipsis / and so on            | Continues an enumeration: the remaining members left implicit (`{ a, b, … }`). |
+# Formal Symbolic Notation
 
-## Register rule — anchors in prose, symbols in fences
+The corpus's shared operator vocabulary — the declared table `T` of [[self-sufficient-formalism]]'s `closed(B)`. **One glyph ⇔ one sense**: injective, like [[signify]] on names — a glyph carries a single meaning across every fence, fixed by its `Sense` and pinned by its `Signature`. It is the ground `T`, so it **declares rather than derives** — the one table exempt from "every symbol registered."
 
-A fenced formal block contains **only declared symbols** from this table plus the cell's own definienda — never `[[ ]]` anchor syntax. An anchor is a **prose-register** device (composition machinery, rewritten per harness); inside a fence it is a category error, regardless of how any renderer treats it. A cross-cell operator is **bound once at the boundary**: cite the `[[anchor]]` in surrounding prose (e.g. a "Resolve from context" bullet), name the bare symbol it binds, and use only that symbol inside fences. Likewise `≜` inside a fence is always this table's math symbol — a cell's _composition formula_ (the `≜` line the composer reads) lives in prose, never in a fence.
+The registry is **agent-audience** ([[reader-prior-projection]] · [[anchor-legibility-budget]]): each row carries the dense sense-name and the type an agent-reader dereferences from its priors — no human-comprehension prose; a human reads it through an agent teacher (the floor's dereference channel, relocated off-surface). **Operators only** — a cell's local variables (Greek `η σ Φ`, subscripts `cᵢ D₀`) are its own definienda `D`, declared in-cell, never here; diagram art (box-drawing trees, pipeline rules) is layout, not logic. **Comprehensive over actual use** — a glyph earns a row by being used; an unused glyph is not pre-declared.
+
+`T` resolves the **first column only**: the meaning columns are read by agents (and humans, via a teacher), never by the gate.
+
+**Definition & comparison**
+
+| Glyph | Sense | Signature |
+| --- | --- | --- |
+| `≜` | defines | `name ≜ expr` — the left is defined to mean the right |
+| `≠` | distinct | `T × T → Prop` |
+| `≽` | dominates | `T × T → Prop` — at least as good as (house: round-trip acceptance) |
+
+**Propositional logic**
+
+| Glyph | Sense | Signature |
+| --- | --- | --- |
+| `¬` | not | `Prop → Prop` |
+| `∧` | and | `Prop × Prop → Prop` |
+| `∨` | or | `Prop × Prop → Prop` |
+| `⇒` | implies | `Prop × Prop → Prop` |
+| `⇔` | iff | `Prop × Prop → Prop` |
+| `⊥` | contradiction | `Prop` — the false constant; `… ⇒ ⊥` is "refuse / absurd" |
+| `∴` | therefore | `Prop ∴ Prop` — connective |
+| `∵` | because | `Prop ∵ Prop` — connective |
+
+**Quantifiers**
+
+| Glyph | Sense | Signature |
+| --- | --- | --- |
+| `∀` | for-all | `∀ x : Prop` |
+| `∃` | exists | `∃ x : Prop` |
+| `∄` | none-exist | `∄ x : Prop` |
+
+**Sets**
+
+| Glyph | Sense | Signature |
+| --- | --- | --- |
+| `∈` | member | `El × Set → Prop` |
+| `∉` | non-member | `El × Set → Prop` |
+| `⊆` | subset | `Set × Set → Prop` — contained, may equal |
+| `⊇` | superset | `Set × Set → Prop` — contains, may equal |
+| `∪` | union | `Set × Set → Set` |
+| `∩` | intersection | `Set × Set → Set` |
+| `⋃` | n-ary-union | `Set[Set] → Set` |
+| `∅` | empty | `Set` |
+| `×` | product | `Set × Set → Set` — the pair space `A × B` |
+| `│` | such-that | `{ x │ P(x) }` — set-builder separator |
+
+**Maps**
+
+| Glyph | Sense | Signature |
+| --- | --- | --- |
+| `→` | maps | `A → B` — the type of arrows from A to B |
+| `↦` | sends | `x ↦ y` — the image of a specific element |
+| `⇀` | partial-map | `A ⇀ B` — some elements have no image |
+| `⊨` | entails | `X ⊨ Y` — every model of X is a model of Y; a model/line satisfying a spec is the unit case |
+
+**Enumeration**
+
+| Glyph | Sense | Signature |
+| --- | --- | --- |
+| `·` | and-list | `a · b · c` — coordinate items within one clause |
+| `…` | and-so-on | `{ a, b, … }` — remaining members left implicit |
+
+## Register rule
+
+A fenced formal block carries **only** these glyphs plus the cell's own definienda — never `[[ ]]` anchor syntax (an anchor is a prose-register device; inside a fence it is a category error, regardless of how a renderer treats it). A cross-cell operator is **bound once at the boundary**: cite the `[[anchor]]` in adjacent prose, name the bare symbol it binds, then use only that symbol inside the fence ([[self-sufficient-formalism]]'s `β`). Likewise a cell's composition formula — the `≜` line the composer reads — lives in prose, never in a fence; inside a fence `≜` is always this table's *defines*.
