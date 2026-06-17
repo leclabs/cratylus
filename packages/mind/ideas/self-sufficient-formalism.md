@@ -11,8 +11,8 @@ A formal block (set-builder, signature, law) is the **signum aptissimum** of the
 B ≜ a formal block : its definition and law lines
 S ≜ symbols(B)
 T ≜ the declared notation table
-D ≜ { s │ a line of B defines s }
-β ≜ { s │ s is boundary-bound : its anchor named in adjacent prose }
+D ≜ { s | a line of B defines s }
+β ≜ { s | s is boundary-bound : its anchor named in adjacent prose }
 
 closed(B)   ⇔ S ⊆ T ∪ D ∪ β
 complete(B) ⇔ ∀ b ∈ behavior(concept) : ∃ line ∈ B : line ⊨ b
@@ -25,8 +25,8 @@ gloss(B) ≠ ∅ ⇒ ¬complete(B)
 ¬self-sufficient(B) ⇒ ⊥
 
 home(a)       ≜ the one boundary-binding of anchor a
-composition   ≜ { a │ a boundary-bound }
-cites(a)      ≜ { c │ c is a site naming anchor a }
+composition   ≜ { a | a boundary-bound }
+cites(a)      ≜ { c | c is a site naming anchor a }
 claim(c)      ≜ the proposition asserted at site c
 recite(c,a)   ⇔ c ∈ cites(a)  ∧  c ≠ home(a)
 distinct(c,a) ⇔ ¬( claim(home(a)) ⊨ claim(c) )

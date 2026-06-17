@@ -35,8 +35,8 @@ state : P → States
 truth : P → States
 R ⊆ P × P
 blocked(t) ⇔ ∃ u : (t, u) ∈ R ∧ state(u) ≠ completed
-frontier(P) ≜ { t │ t ∈ P ∧ state(t) = ready }
-promote(u) ≜ { t │ (t, u) ∈ R ∧ state(t) = pending ∧ ¬blocked(t) }
+frontier(P) ≜ { t | t ∈ P ∧ state(t) = ready }
+promote(u) ≜ { t | (t, u) ∈ R ∧ state(t) = pending ∧ ¬blocked(t) }
 dp : text → text
 dp(dp(c)) = dp(c)
 mirror : (state, R, content) → document

@@ -12,7 +12,7 @@ conceptualize ≜ resolves a source's meaning to a [[mece]] concept set, binds [
 Resolve from context: `sources` — the input material (multi-modal).
 
 ```text
-D ≜ ⋃ { content(s) │ s ∈ sources }
+D ≜ ⋃ { content(s) | s ∈ sources }
 
 boundaries(sources) ∉ inputs(CA)    ∵ files, front-matter, layout are substrate, not meaning
 
@@ -30,7 +30,7 @@ C₀ ≜ CA(D)
 
 dp ≜ de-palimpsest
 
-C ≜ { dp(c) │ c ∈ C₀, dp(c) ≠ ∅ }
+C ≜ { dp(c) | c ∈ C₀, dp(c) ≠ ∅ }
 
 exclusions are logged, never silent
 

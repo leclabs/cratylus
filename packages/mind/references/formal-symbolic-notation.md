@@ -48,7 +48,6 @@ The registry is **agent-audience** ([[reader-prior-projection]] · [[anchor-legi
 | `⋃` | n-ary-union | `Set[Set] → Set` |
 | `∅` | empty | `Set` |
 | `×` | product | `Set × Set → Set` — the pair space `A × B` |
-| `│` | such-that | `{ x │ P(x) }` — set-builder separator |
 
 **Maps**
 
@@ -69,3 +68,5 @@ The registry is **agent-audience** ([[reader-prior-projection]] · [[anchor-legi
 ## Register rule
 
 A fenced formal block carries **only** these glyphs plus the cell's own definienda — never `[[ ]]` anchor syntax (an anchor is a prose-register device; inside a fence it is a category error, regardless of how a renderer treats it). A cross-cell operator is **bound once at the boundary**: cite the `[[anchor]]` in adjacent prose, name the bare symbol it binds, then use only that symbol inside the fence ([[self-sufficient-formalism]]'s `β`). Likewise a cell's composition formula — the `≜` line the composer reads — lives in prose, never in a fence; inside a fence `≜` is always this table's *defines*.
+
+Two ASCII conventions the gate cannot enforce (both `|` and `│` exempt), so stated here: the **set-builder bar is ASCII `|`** (`{ x | P(x) }`), never box-drawing `│` (U+2502, reserved for diagram art — directory trees, pipeline rules); a **signature** is written `name : Domain → Codomain`.

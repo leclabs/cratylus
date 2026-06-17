@@ -20,7 +20,7 @@ N ≜ Name Space
 
 η ≜ signum aptissimum
 
-A ≜ { η(c) │ c ∈ dom(η) }
+A ≜ { η(c) | c ∈ dom(η) }
 
 ∀ cᵢ, cⱼ ∈ dom(η) :
     η(cᵢ) = η(cⱼ) ⇔ cᵢ = cⱼ
@@ -35,7 +35,7 @@ C ──η──→ A
 
 R ⊆ C × (C ∪ Δ)
 
-dependencies(c) ≜ { x │ (c, x) ∈ R }
+dependencies(c) ≜ { x | (c, x) ∈ R }
 
 ∀ c ∈ C : dependencies(c) ⊆ C ∪ Δ
 ```

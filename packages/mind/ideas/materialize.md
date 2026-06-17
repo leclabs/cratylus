@@ -18,7 +18,7 @@ K ≜ the closed kind set
 
 kind : A → K
 
-Φ ≜ { (a, kind(a), content(a)) │ a ∈ A }
+Φ ≜ { (a, kind(a), content(a)) | a ∈ A }
 
 ∀ (a, k, c) ∈ Φ : c = dfp(c)
 
@@ -38,7 +38,7 @@ s unnamed ∨ s ∉ S ⇒ ⊥
 
 ∃ k ∈ kinds(Φ) : k ∉ dom(ρ_s) ⇒ ⊥
 
-σ(Φ, file) ≜ { ${OUTPUT_DIR}/a.md │ (a, k, c) ∈ Φ }
+σ(Φ, file) ≜ { ${OUTPUT_DIR}/a.md | (a, k, c) ∈ Φ }
 
 ρ_file(k) ≜ front-matter (kind: k, delineation) + body
 

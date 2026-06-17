@@ -23,7 +23,7 @@ s unnamed ⇒ ⊥
 5. Accept or refuse:
 
 ```text
-F ≜ σ( { (η(c), kind(c), dfp(c)) │ c ∈ CA(⋃ content(sources)) }, s )
+F ≜ σ( { (η(c), kind(c), dfp(c)) | c ∈ CA(⋃ content(sources)) }, s )
 
 D ──CA──→ C ──η──→ A ──Φ──→ σ(·, s) ──→ F
 

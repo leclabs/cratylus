@@ -17,7 +17,7 @@ P ≜ the source prose
 E ≜ entities(P) ; O ≜ operations(P) ; L ≜ laws(P)
 
 η : E ∪ O ⇀ symbols              signify : mint a symbol, or bind an imported one to its anchor
-β ≜ { η(x) │ x is imported }     boundary-bound : its anchor named in adjacent prose
+β ≜ { η(x) | x is imported }     boundary-bound : its anchor named in adjacent prose
 
 B ≜ formalize(P) such that :
     ∀ e ∈ E      : signature(η(e)) ∈ B        declarations above
