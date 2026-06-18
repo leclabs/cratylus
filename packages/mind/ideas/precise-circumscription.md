@@ -13,9 +13,11 @@ State it as an optimization. Over candidate names, choose the one that **minimiz
 - **Too narrow / idiosyncratic** — the priors under-reach; parts of the exemplar fall outside the name (the anchor fails to cover its own idea).
 - **Best fit** — the edge of the evoked priors coincides with the edge of the exemplar.
 
-The optimum is the **smallest exact name**: Linnaeus's binomial discipline (the least name that still denotes precisely), with the edges found by Socratic elenchus (bound the idea by question and answer until it surrenders its exact extension). Density and precision are the same axis here — the densest faithful anchor is the one whose priors circumscribe most exactly; this is why an exemplar is read as a _generative form_, not a slot in a catalogue.
+The optimum is the **smallest exact name**: Linnaeus's binomial discipline (the least name that still denotes precisely), with the edges found by Socratic elenchus (bound the idea by question and answer until it surrenders its exact extension). An exemplar is therefore read as a _generative form_, not a slot in a catalogue.
 
 This is not "find a reasonable home." It is the argmin over candidate names that **every** routing and **every** compression in the method optimizes. Wherever this corpus says "best fit," it means _this_.
+
+That optimum is the **_signum aptissimum_** — the aptest sign for the exemplar. It is reader-relative only through the prior-gap: at the strong-reader limit ([[reader-prior-projection]] — reader-gap → 0) the best name for _this_ reader converges to the absolute best name, so the working anchor and the signum aptissimum coincide — **`anchor ≡ signum aptissimum`**. This convergence is the axiom the anchor method rests on.
 
 ## See also
 

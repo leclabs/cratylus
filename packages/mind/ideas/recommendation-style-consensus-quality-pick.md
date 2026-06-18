@@ -10,7 +10,7 @@ When closing with a recommendation, make **one consensus quality pick** — the 
 
 Break the rule when: the user asks for options; the trade-off is genuinely irreducible and theirs to weigh (privacy vs convenience, cost vs latency where the cost is real); or the pick is contingent on facts not yet known.
 
-This disposition must **override a strong competing base-prior** — the assistant reflex to be helpful by offering options — so it is marked `render: verbatim`. A density-keyed bare anchor loses that contest at inference (dereferenceable is not the same as wins-against-a-competing-prior); the composer therefore emits the `## Protocol` body whole into every embodying agent, density-immune. The operative form (below) and this description (above) are two facets of one structure; the verbatim payload carries no cross-references, so nothing leaks into the projected def.
+This disposition must **override a strong competing base-prior** — the assistant reflex to be helpful by offering options — so it is marked `render: verbatim` ([[reader-prior-projection]]: a contested disposition needs verbatim salience, not a density-collapsed anchor). The composer emits the `## Protocol` body whole into every embodying agent, density-immune; the operative form (below) and this description (above) are two facets of one structure, and the verbatim payload carries no cross-references, so nothing leaks into the projected def.
 
 ## Protocol
 
