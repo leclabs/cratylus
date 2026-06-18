@@ -84,12 +84,22 @@ def main() -> int:
     check("POSITIONS lean non-skill",
           render_ref("mece", "strong-llm-lean", "claude-code"), "- **mece**")
 
-    # POSITIONS -- a composed skill body: provenance + prose, end to end.
+    # POSITIONS -- a composed skill body. The projection rule applies to the
+    # composition refs, which the cite-once convention homes in ONE place: the
+    # Bindings region, emitted as the `Composed from ...` provenance line. So the
+    # projection check is scoped to that line: composed SKILL refs render as
+    # /trigger, composed non-skill refs stay bold. (Operative prose may *mention*
+    # a stage by name in bold -- e.g. exemplify's "Invoke **conceptualize**" --
+    # which is a cite-once non-ref mention, NOT an unprojected ref; the body is
+    # therefore not asserted ref-free.) exemplify composes 3 skills + ≥1 non-skill.
     body = compose_skill("exemplify", "strong-llm-lean", "claude-code").body
-    if "Composed from /conceptualize · /signify · /materialize." not in body:
-        fails.append("POSITIONS exemplify provenance: skill refs not projected")
-    if "**conceptualize**" in body or "**signify**" in body or "**materialize**" in body:
-        fails.append("POSITIONS exemplify body: a skill ref still rendered bold")
+    prov = next((l for l in body.splitlines() if l.startswith("Composed from")), "")
+    if "/conceptualize · /signify · /materialize" not in prov:
+        fails.append(f"POSITIONS exemplify provenance: skill refs not projected as /trigger: {prov!r}")
+    if "**conceptualize**" in prov or "**signify**" in prov or "**materialize**" in prov:
+        fails.append(f"POSITIONS exemplify provenance: a skill ref rendered bold, must be /trigger: {prov!r}")
+    if "**bidirectional-round-trip-fidelity**" not in prov:
+        fails.append(f"POSITIONS exemplify provenance: non-skill ref not kept typographic: {prov!r}")
 
     if fails:
         for x in fails:
