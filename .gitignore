@@ -20,3 +20,4 @@ dist/
 packages/mind/.render/
 __pycache__/
 *.pyc
+.scratchpad/
