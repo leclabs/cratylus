@@ -88,3 +88,23 @@ doesn't exist (a future "mechanized mirror" task), and a commit-time edit wouldn
   `post-commit` is an additive third hook in `.husky/`. Files: `.husky/post-commit` (guarded
   dispatcher), `toolkit/continuity/praxis-advance-nudge.sh` (the detector/reminder),
   `toolkit/continuity/continuity-hook.sh` (the install/uninstall/status toggle).
+
+## Fleet organ sync (memory-model-redesign — agent-global organs across hosts)
+
+The per-_agent_ sidecar organs (`SELF`, `MEMORY`, `EPISODIC`) are **one logical store** synced to
+every host ([[memory]] `## Portability`), so an agent wakes as the **same person** anywhere. Mechanism:
+a dedicated git repo (the "organ store") holds `<agent>/{SELF,MEMORY,EPISODIC}.md`; a host **adopts**
+it by symlinking each live organ file into the store — git then versions the real organ content (true
+history, conflicts surfaced, never silently lost). The live path (`~/.claude/agents/<name>/SELF.md`)
+keeps working, so the protocol and `deploy.py` seeder are unchanged (the if-absent guard follows the
+symlink → sees PRESENT → never clobbers).
+
+- **Portable:** the store's physical path is `$HOME`-derived per host (`/Users/lex` vs
+  `/Users/lcaraccioli`); it tracks **relative** paths only — no host-absolute path is ever written.
+  Host-specific facts go in MEMORY **content**, never per-host files.
+- **Files:** `toolkit/continuity/fleet-organs.sh` (`init|adopt|sync|status|release`),
+  `RUNBOOK-fleet-organs.md` (the procedure), `test-fleet-organs.sh` (hermetic two-host gate proof).
+  Convenience: `pnpm run organs:{status,sync,test}`.
+- **Reversible:** `release <agent>` turns the symlink back into a plain file (store untouched).
+- **Out of scope (consent-gated):** migrating a **live** running agent's organs into the store is the
+  `migrate-live-episodic` task — the mechanism is proven on a scratch agent / fixtures only.

@@ -21,7 +21,10 @@
     "prepare": "husky",
     "continuity:install": "sh packages/mind/toolkit/continuity/continuity-hook.sh install",
     "continuity:uninstall": "sh packages/mind/toolkit/continuity/continuity-hook.sh uninstall",
-    "continuity:status": "sh packages/mind/toolkit/continuity/continuity-hook.sh status"
+    "continuity:status": "sh packages/mind/toolkit/continuity/continuity-hook.sh status",
+    "organs:status": "sh packages/mind/toolkit/continuity/fleet-organs.sh status",
+    "organs:sync": "sh packages/mind/toolkit/continuity/fleet-organs.sh sync",
+    "organs:test": "sh packages/mind/toolkit/continuity/test-fleet-organs.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
