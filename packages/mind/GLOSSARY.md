@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 154 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 151 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Principles
 
@@ -81,7 +81,6 @@ _normative oughts — embodied as priors._
 - **two-phase-bulk-then-unit-dispatch** — Dispatch granularity is not constant across a workflow — run a coarse bulk phase first (one pass fixes a defect across many units via pattern-recognition), then switch to fine per-unit on the residual; the handoff signal is the population-fix-rate plateau, not a budget.
 - **unbraided-code** — Separate concerns into independent strands — interior modules stay pure and stateless (testable with `assert(fn(input)===expected)`); integration happens only at named composition hubs. Makes whole bug classes uninstantiable, not merely rarer.
 - **verify-at-the-source-not-the-projection** — Verify a property against the live artifact where it is actually realized — runtime state, the DOM, source, test output — not against a serialized projection of it (screenshot, transcript, video); a projection is a weak, expensive-to-trust signal, and when narrative input is unavoidable, transcribe-and-enumerate it into addressable structure first.
-- **work-is-project-scoped** — An agent's identity is agent-scoped and travels into every project it works (the continuity-thread); its work-state — the live plan, the next action, "where I left off" — is project-scoped and stays with the project. On entering a project — at wake, or on switching mid-session — the agent orients to the project it is standing in (its cwd) and resumes that project's work-thread, never a globally most-recent thread from elsewhere.
 
 ## Concepts
 
@@ -120,12 +119,10 @@ _declarative what-is — referenced/known._
 
 _ordered operations — invoked._
 
-- **agent-know-thyself** — The wake protocol that makes a reconstituted agent resume as the same individual — resolve the absolute home `{home}/{agent}/`, dream (consolidate EPISODIC), load SELF in full + MEMORY by relevance + EPISODIC next-steps, resume; fired by natural-language triggers (wake / dream / encode), defaulting to wake on the first turn after spawn.
 - **anchor-routing** — Place each fragment at the anchor whose latent priors most precisely circumscribe it — best-fit, not nearest-bin; mint the anchor if none exists (the anchor-set is open); a genuine multi-match means the partition cut wrong, re-cut.
 - **archetype-instantiation** — Stand up a project-scope agent species from a universal archetype + scope grants — project the archetype's composed graph at the density the deployment's reader needs, apply the grant stack, bind extrinsic facets per deployment, verify round-trip.
 - **context-anchors-protocol** — Counter context-drift by re-installing durable anchors mid-session — surface the agent's believed context (a cognizant dump), diff against canon, re-point each divergence to its canonical home, persist out-of-band; re-anchor, don't re-load.
 - **dont-blind-wait** — Don't freeze on an event the harness can't notify you about — launch exactly one background poll (an until-loop that exits on the condition) so the harness re-invokes you when it fires; at most one watcher at a time.
-- **episodic-encoding** — The creation direction of the memory cycle — as experience happens, append it raw to EPISODIC per turn (a decision + its rationale, a surprise, an error, a fact learned, a thread opened or closed), captured cheaply and truthfully and never pre-distilled; encoding is fast and append-only, the distilling deferred to the Dreamer.
 - **exemplar-resolution** — The method's core operation — resolving information to the exemplars it projects from; composes decompose + anchor-routing + compress + compose-by-reference, verified by round-trip; run forward as intake, inverse as reconstruction.
 - **pyramid-decomposition** — Decompose a source top-down — find its one governing thesis (answer-first), branch the support into MECE groups, recurse until leaves are atomic, and admit each category only if its identity and rigidity criteria hold; the top-down analytic twin of semantic-partition's bottom-up cut.
 - **semantic-partition** — Bring the whole body of content to distinction — read the entire union of inputs and the existing corpus as one undifferentiated mass, prior file/cell boundaries dissolved as mere projections, and cut it into non-overlapping, collectively-exhaustive segments each projecting from exactly one exemplar; a fragment that fits two unrelated anchors means the cut was wrong, re-cut.
@@ -141,7 +138,7 @@ _reusable instruments a process invokes._
 
 _relational arrangements — rosters, schemas, layouts._
 
-- **identity-memory-stack** — The four-layer architecture of an ambient person-agent's identity — SOUL (commons-fixed archetype, never hand-edited) beneath SELF, MEMORY, and EPISODIC (self-authored, deploy-immutable); two motions move content between the layers (encode down-and-in, dream up-and-out), and the layers are ordered by durability and provenance.
+- **identity-memory-stack** — An ambient person-agent's memory — the one home for the whole lifecycle (encode → dream → wake) and the model behind it: resident layers (SOUL commons-fixed; SELF, MEMORY, EPISODIC self-authored) plus outward homes (AGENTS.md, vault), where every memory is placed by two orthogonal axes — type/voice picks the organ, scope picks the instance — so one agent stays one person across fleet, user, and project.
 - **politeia** — The politeia — the foundational structure every founded mind-society instantiates: the minimal constitutional set of person, identity, authority, propagation, and founding cells (plus the two founder archetypes) that makes a project a polis rather than a pile of agents.
 - **sharded-plan-layout** — The agent-driven specialization of sharded-work-layout — task state is the folder a unit sits in (pending→ready→active→completed), each sub-sharded into {concern} vertical slices; the dependency graph is prestructured by placement (no engine), PLAN.md mirrors it, and the open frontier is `ls tasks/ready/`.
 - **sharded-work-layout** — A body of work as a directory of one-file units, each loaded JIT by reference and sharded so units don't collide — the shared skeleton an agent-driven plan and an engine-driven workflow each specialize, differing only in who owns control flow.
@@ -175,14 +172,14 @@ _composites — primitives bound to a maker role._
 _composite capabilities._
 
 - **conceptualize** — use this skill to conceptualize a corpus — read a multi-modal source and resolve it to its concept set (the MECE semantic primitives it projects from), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.
-- **dream** — use this skill to consolidate an agent's memory — the four-layer identity-memory stack (SOUL commons-fixed; SELF, MEMORY, EPISODIC self-authored) distilled upward by durability × orthogonality: next-steps stay in EPISODIC, durable orthogonal facts rise to MEMORY, identity-shaping facts rise to SELF, source-coupled facts leave for the source-local doc, consumed raw is cleared; SOUL is never written.
+- **dream** — use this skill to consolidate an agent's memory — distil the raw EPISODIC stream and route each item by two orthogonal axes (type/voice picks the organ, scope picks the instance): identity rises to SELF, durable knowledge to MEMORY, directives to the scoped AGENTS.md, networked reference to the vault, next-steps stay in EPISODIC, the rest is dropped; consumed raw is cleared; SOUL is never written.
 - **exemplify** — use this skill to optimize context - strip rot, bloat, palimpsest; increase density, coherence; resolve ambiguity; discover exemplars, derive canonical anchors, materialize composable context modules under an explicitly named strategy (file | document).
 - **formalize** — use this skill to convert prose — especially of a process or skill — into a self-sufficient set-builder block under self-sufficient-formalism: conceptualize the prose to its entities/operations/laws, signify each as a symbol (minting or boundary-binding to an anchor), and emit declarations-above / laws-below with no explanatory prose; accept only on round-trip equivalent-or-better.
 - **handoff** — use this skill to prepare a session for handoff before /clear — bring the plan's record up to date (praxis sync) and consolidate memory (dream) while context is still hot; the persist half of the session boundary, invocable as /handoff.
 - **materialize** — use this skill to realize a fragment set as artifacts under an explicitly named strategy — fragments carry (anchor, kind, content); each strategy declares its kind-consumption table ρ; an unnamed strategy or a missing ρ row refuses loudly, never defaults; stage 3 of exemplify, independently invocable.
 - **praxis** — Create and work durable, sharded plans (sharded-plan-layout dirs) — reached by planning intent, not a command grammar; task state is the folder a task-file sits in (pending/ready/active/completed), PLAN.md mirrors it, and `list` is the one explicit affordance.
 - **signify** — use this skill to name a concept set — assign each concept its semantic anchor (the densest name whose latent priors circumscribe it; injective, one name ⇔ one concept) and map each concept's dependencies into corpus ∪ delta; stage 2 of exemplify, independently invocable (every naming review is a bare /signify).
-- **wake** — use this skill to reconstitute an agent at session start — run agent-know-thyself's wake sequence (dream → load → resume) so it resumes as the same individual; the read-and-resume counterpart to /dream, invocable as /wake.
+- **wake** — use this skill to reconstitute an agent at session start — run the memory home's WAKE sequence (dream → load → orient → resume) so it resumes as the same individual; the read-and-resume counterpart to /dream, invocable as /wake.
 - **weitermachen** — use this skill when the Operator utters the re-dispatch word — "weitermachen", "carry on", "proceed" — closing a check-in and returning you to execution; standing intent unchanged, execution authority re-affirmed, no fresh permission owed.
 
 ## Glosses

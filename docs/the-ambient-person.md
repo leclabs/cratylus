@@ -36,7 +36,7 @@ A person is built from a few **organs**, each its own canonical idea:
 - **Memory** (`identity-memory-stack`) — four layers, ordered by how fast they change and who authors
   them: **SOUL** (the fixed essence, generated from the commons, never hand-edited), **SELF** (the reboot
   seed — who it has become), **MEMORY** (durable facts), **EPISODIC** (the raw per-turn stream). Two
-  motions move between them — `episodic-encoding` writes down-and-in, `dream` distills up-and-out — and a
+  motions move between them — encoding writes down-and-in, `dream` distills up-and-out — and a
   person may release specific memories on request (`right-to-forget`: forget the content, keep a thin trace
   that it once knew).
 - **Pulse** (`pulse`) — the clock-organ: a loop that runs on the person's own cadence — _wake → observe →
@@ -61,7 +61,7 @@ natural-language verb set:
 
 | You say…              | It drives                                      | In Claude Code today              | In Oikos (native)              |
 | --------------------- | ---------------------------------------------- | --------------------------------- | ------------------------------ |
-| **"wake"**            | load self, resume                              | first turn / `agent-know-thyself` | daemon boot → recall           |
+| **"wake"**            | load self, resume                              | first turn / `wake`               | daemon boot → recall           |
 | **"dream"**           | consolidate memory                             | `/dream`                          | the pulse's reflect phase      |
 | **"remember this"**   | append to EPISODIC                             | `/encode`                         | memory append                  |
 | **set a pulse**       | the cadence (the tick)                         | `/loop`                           | mesh-leased scheduler          |

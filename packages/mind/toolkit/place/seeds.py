@@ -20,7 +20,7 @@ what I tried and learned, my essence-as-lived.*
 
 *Read me first at session start and resume as the same individual. Snapshot the delta back
 at continuity boundaries — pre-compaction, session-end, milestone — truthfully (record the
-observed, mark the inferred). — [[agent-know-thyself]]*
+observed, mark the inferred). — [[continuity-thread]]*
 
 <!-- Seeded {today}. Empty on purpose. I fill the sections below over sessions. -->
 

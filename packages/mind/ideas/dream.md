@@ -1,16 +1,16 @@
 ---
 kind: skill
-delineation: use this skill to consolidate an agent's memory — the four-layer identity-memory stack (SOUL commons-fixed; SELF, MEMORY, EPISODIC self-authored) distilled upward by durability × orthogonality: next-steps stay in EPISODIC, durable orthogonal facts rise to MEMORY, identity-shaping facts rise to SELF, source-coupled facts leave for the source-local doc, consumed raw is cleared; SOUL is never written.
+delineation: use this skill to consolidate an agent's memory — distil the raw EPISODIC stream and route each item by two orthogonal axes (type/voice picks the organ, scope picks the instance): identity rises to SELF, durable knowledge to MEMORY, directives to the scoped AGENTS.md, networked reference to the vault, next-steps stay in EPISODIC, the rest is dropped; consumed raw is cleared; SOUL is never written.
 trigger: /dream
 ---
 
 # Dream Skill
 
-The agent's "sleep" — sleep-dependent memory consolidation (replay → schema) run as an explicit step: fires as step 1 of agent-know-thyself's wake sequence, before resuming work. The product is a **reboot seed, never a journal** ([[self-application-is-mandatory]] · [[context-not-prose]]): a scar carried up as narrative is a [[palimpsest]].
+The agent's "sleep" — sleep-dependent memory consolidation (replay → schema) run as an explicit step: fires as step 1 of the [[identity-memory-stack]] wake sequence, before resuming work. The product is a **reboot seed, never a journal** ([[self-application-is-mandatory]] · [[context-not-prose]]): a scar carried up as narrative is a [[palimpsest]].
 
-The stack it consolidates into — the layers SOUL/SELF/MEMORY/EPISODIC and their two opposite-provenance motions — is [[identity-memory-stack]]. `dream` is the **up-and-out** motion; the down-and-in counterpart `encode` binds [[episodic-encoding]]. `SOUL ∉ range(dream)` — the archetype changes only in the commons.
+The store it consolidates into — the layers and homes and their two opposite-provenance motions — is [[identity-memory-stack]]. `dream` is the **up-and-out** motion; encode (the down-and-in counterpart) is part of that same home. `SOUL ∉ range(dream)` — the archetype changes only in the commons.
 
-Bindings: `dream` invokes [[exemplify]]; it is step 1 of [[agent-know-thyself]]'s wake sequence. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: `dream` invokes [[exemplify]]; it is step 1 of the [[identity-memory-stack]] wake sequence. The symbol table is `references/formal-symbolic-notation.md`.
 
 Resolve from context:
 
@@ -19,7 +19,7 @@ Resolve from context:
 ## 1. Distillation
 
 ```text
-E ≜ raw items of AGENT_HOME/EPISODIC.md
+E ≜ raw items of AGENT_HOME/EPISODIC
 
 dream ≜ exemplify : E → I        ∵ consolidation is exemplify applied to the raw stream
 
@@ -28,20 +28,25 @@ dream ≜ exemplify : E → I        ∵ consolidation is exemplify applied to t
     instances-governing-exemplar(i) ⇒ i ↦ pointer    ∵ cite-dont-copy
 ```
 
-## 2. Routing
+## 2. Routing — two orthogonal axes
 
-dream's materialization strategy — σ(Φ_self, layers) in [[materialize]]'s terms, with ρ keyed on **durability × orthogonality** rather than kind:
+dream's materialization (σ(Φ_self, …) in [[materialize]]'s terms) routes each item by **type/voice → organ** and **scope → instance**, per [[identity-memory-stack]]:
 
 ```text
-route : I → L ∪ docs        L ≜ {SELF, MEMORY, EPISODIC}
+route : I → homes ∪ {drop}
+homes ≜ { SELF, MEMORY, EPISODIC, AGENTS.md(scope), vault }
 
-orthogonal(i) ≜ ¬∃ source artifact a : i is load-bearing for a
+voice(i) ↦ organ :
+    identity      ↦ SELF                  ∵ who I am / how I changed
+    my-knowledge  ↦ MEMORY                ∵ durable fact I carry
+    directive     ↦ AGENTS.md(scope(i))   ∵ how it's done here, for any agent
+    reference     ↦ vault                 ∵ networked domain knowledge
+    next-step     ↦ EPISODIC              ∵ forward-looking, not yet durable
+    scaffold      ↦ drop                   ∵ graduates nowhere
 
-∀ i ∈ I :
-    ¬orthogonal(i)      ⇒ i → docs(a), i ∉ L    ∵ L is read every session, competing with the loaded source for attention
-    identity-shaping(i) ⇒ i → SELF
-    durable-fact(i)     ⇒ i → MEMORY
-    next-step(i)        ⇒ i → EPISODIC
+scope(i) ∈ { agent-global, project, subtree } ↦ the instance of the organ
+one i may split to several homes
+¬resident(i) ⇒ i ∉ { SELF, MEMORY }    ∵ they load whole every wake; keep them small
 ```
 
 ## 3. Clearing
@@ -49,19 +54,20 @@ orthogonal(i) ≜ ¬∃ source artifact a : i is load-bearing for a
 ```text
 promotion ≜ move, not copy
 
-consumed raw → ∅            ∴ EPISODIC never grows unbounded
+consumed raw → ∅            ∴ EPISODIC never grows unbounded (compact: rewrite minus consumed ids, atomic)
 
-∀ layer ∈ L : layer keeps only its proper residue
+∀ home : home keeps only its proper residue
 ```
 
 ## 4. Integrated Cascade
 
 ```text
-EPISODIC ──dream──→ {SELF, MEMORY, EPISODIC}
+EPISODIC ──dream──→ { SELF, MEMORY, EPISODIC, AGENTS.md, vault }
 
-periodically : MEMORY ──dream──→ {SELF, MEMORY}
-    identity-level(i) ⇒ i → SELF
-    stale(i)          ⇒ ∅
+periodically : MEMORY ──dream──→ { SELF, MEMORY, vault }
+    identity-level(i)              ⇒ i → SELF
+    durable ∧ ¬resident-worthy(i)  ⇒ i → vault     ∵ hot index → cold corpus
+    stale(i)                       ⇒ ∅
 
 acceptance ≜ a wake-time read biases the very next action
 

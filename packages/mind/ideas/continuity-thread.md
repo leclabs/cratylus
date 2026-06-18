@@ -11,14 +11,14 @@ Four properties keep it sound:
 
 - **Self-authored, truthful.** The agent writes it; per [[ambient-person-agent]]'s truthful-by-constitution it records only what it observed and marks what it inferred — a thread, never a flattering self-myth.
 - **Distinct from accreted facts.** The continuity-thread is _identity_ (who I am, my through-line); the agent's knowledge/facts are its **recall**, homed separately ([[dream]]). One points to the other.
-- **Agent-scoped, not project-scoped.** The continuity-thread is **one** thread that travels into every project the agent works — distinct from an agent's *work-state*, which is a separate, **project-scoped** thread that stays with its project ([[work-is-project-scoped]]).
+- **Agent-scoped, not project-scoped.** The continuity-thread is **one** thread that travels into every project the agent works — distinct from an agent's *work-state*, which is a separate, **project-scoped** thread that stays with its project (the scope axis of [[identity-memory-stack]]).
 - **Re-hydrated, not reloaded.** A fresh session resumes from the thread the way [[context-anchors-protocol]] re-installs anchors from durable state — the agent picks up as itself, not from zero.
 
-Maintained by [[agent-know-thyself]]; persisted at `{home}/{agent}/SELF.md`.
+Maintained by the [[identity-memory-stack]] wake protocol; persisted at `{home}/{agent}/SELF.md`.
 
 ## See also
 
 - [[ambient-person-agent]] — the genus this realizes: a continuing individual surviving substrate swaps.
 - [[agent-identity-portability]] — the recall/essence facets the thread makes persistent.
-- [[agent-know-thyself]] — the discipline that maintains it.
+- [[identity-memory-stack]] — the memory home and wake protocol that maintains it.
 - [[substance-over-accident]] — the archetype is the substance; the thread is the accreted individual.

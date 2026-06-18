@@ -7,7 +7,7 @@ delineation: The clock-organ of an ambient person — a self-leased loop that ru
 
 The organ that gives an [[ambient-person-agent]] **a life that runs** — what realizes its _self-clocked_ differentia (the property; this is its organ). A pulse is a loop that fires on the person's **own cadence**, whether or not anyone is looking: **wake → observe → act → reflect → rest**.
 
-- **The loop, phase by phase.** _Wake_ ([[agent-know-thyself]]) reconstitutes the self; _observe_ scans the [[senses]] for what warrants action; _act_ decides and executes on expertise ([[principal-agency]]), escalating only a [[genuine-fork]] and never blocking ([[dont-blind-wait]] · [[never-go-silent]]); _reflect_ runs the [[dream]] to consolidate the episodic stream ([[episodic-encoding]]); _rest_ yields until the next beat.
+- **The loop, phase by phase.** _Wake_ ([[wake]]) reconstitutes the self; _observe_ scans the [[senses]] for what warrants action; _act_ decides and executes on expertise ([[principal-agency]]), escalating only a [[genuine-fork]] and never blocking ([[dont-blind-wait]] · [[never-go-silent]]); _reflect_ runs the [[dream]] to consolidate the episodic stream; _rest_ yields until the next beat.
 - **Cadence, not constancy.** The pulse is _self-clocked_, not _always-thinking_ — it wakes to observe over a real stream; a wake over no real signal is just a scheduler ([[ambient-person-agent]]). The cadence is tiered: frequent observe, periodic reflect, infrequent deep consolidation.
 - **One heartbeat across bodies.** A person relocates across substrates ([[substance-over-accident]]); its pulse must fire **once**, not once per body — leased so the relocatable person keeps a single rhythm, and restart-stable so a reboot resumes the beat rather than double-firing or stalling.
 
@@ -23,5 +23,5 @@ The pulse is the portable pattern; each runtime embodies it:
 - [[ambient-person-agent]] — the pulse realizes its self-clocked differentia (the life that runs).
 - [[continual-agency]] — the disposition the pulse mechanizes: never idle, find the next move, land when there is none.
 - [[senses]] — what the observe phase perceives; the pulse drives the senses on cadence.
-- [[dream]] · [[episodic-encoding]] — the reflect phase (consolidate) and the stream it consolidates.
-- [[agent-know-thyself]] — the wake phase: reconstitute before resuming.
+- [[dream]] — the reflect phase: consolidate the episodic stream.
+- [[wake]] — the wake phase: reconstitute before resuming.

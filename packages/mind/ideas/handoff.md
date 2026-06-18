@@ -16,7 +16,7 @@ The **persist-before-clear** half of the session boundary — run while context 
 ## Sequence
 
 1. **praxis sync** — reconcile the plan record to runtime truth ([[praxis]]).
-2. **dream** — consolidate memory ([[dream]]). Running it here, on hot context, is richer than the catch-up dream at [[wake]]: it captures session events that per-turn [[episodic-encoding]] may have missed, before /clear destroys them.
+2. **dream** — consolidate memory ([[dream]]). Running it here, on hot context, is richer than the catch-up dream at [[wake]]: it captures session events that per-turn encoding ([[identity-memory-stack]]) may have missed, before /clear destroys them.
 
 Then the boundary proceeds **outside** this skill — `/clear → [[wake]] → [[weitermachen]]`. handoff persists only; it does not clear, reconstitute, or re-dispatch.
 
