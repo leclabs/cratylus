@@ -17,7 +17,8 @@ Post-founding refinement backlog. Status mirror; task files live under state fol
   workflow — scope with the Operator before launching.
 - **crystallize-verbatim-salience** · Nico — competing-prior ⇒ verbatim-salience rule canon.
 - **plan-retirement-principle** · Nico — the retire-completed-plans policy as a cell.
-- **full-fleet-redeploy** · Mav (steward) — propagate the salience fix to the other ~5 hosts.
+- **full-fleet-redeploy** · Mav (steward) — propagate the salience fix to the fleet. **fire ✓ + upmav ✓**
+  (2026-06-17); remaining: forge/spark/ash + upgoose (asleep); apps dropped.
 - **prettier-markdown-adoption** · Mav + Nico — adopt Prettier for markdown canonically (the formatter is
   cosmetic reflow only — NOT the content-corruption Nico wrongly blamed; verified).
 
