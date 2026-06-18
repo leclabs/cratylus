@@ -1,6 +1,29 @@
 # fresh-optimization-pass
 
-**State:** ready — **discovery half DONE; full conformance fan-out PENDING (Workflow opt-in + Operator scope)** · **Lead:** Nico · **Source:** the rule-completion arc (2026-06-17 audit). Every cell was authored + accepted under the old **CE-only** standard; the corrected **CE ∧ ME** standard now touches all of them.
+**State:** completed via bounded audit (2026-06-17, `6bc95b5`) — the full per-cell rewrite fan-out was found **unwarranted**; residual med-findings → `audit-residual-findings` · **Lead:** Nico · **Source:** the rule-completion arc (2026-06-17 audit). Every cell was authored + accepted under the old **CE-only** standard; the corrected **CE ∧ ME** standard now touches all of them.
+
+## Bounded audit — DONE (2026-06-17, `6bc95b5`)
+
+Rather than launch a 147-agent rewrite blind, ran an **8-auditor read-only CE∧ME sweep over ALL 155 cells**
+(thematic clusters, each auditor skeptical, every finding re-verified by direct read). Outcome:
+
+- **Every flagged fusion candidate cleared as genuine MECE — ZERO merges warranted.** The whole corpus's
+  near-pairs (anchor-to-readers ↔ reader-prior-projection · anchor-legibility-budget ↔ densest-faithful-point ·
+  semantic-partition ↔ anchor-routing · adopt-the-commons ↔ commons-distribution · the provenance triad · the
+  sharded-* genus/species · principal-* genus/species · body/hearth/household · the decision-* family) are all
+  distinct, with their seams explicitly stated. This **vindicates the low-density signal** — the full fan-out is
+  not warranted; the corpus is clean modulo a handful of surgical findings.
+- **3 high-confidence findings FIXED** (`6bc95b5`): subject-binding (two authoring defects — a truncated clause +
+  a broken delineation); formalize (removed a `## Steps` prose-restatement-of-its-own-block + `## See also`,
+  prose-free now, blind-judge PASS); genuine-fork (uncited recommendation-style restatement → citation).
+- **Med-confidence findings DOCUMENTED, not rushed** → `audit-residual-findings` task. The notable one: a real
+  CE gap in `self-sufficient-formalism`'s OWN block (free `behavior`/`use`/`definition` symbols in the closure
+  law) — the keystone cell needs a careful formal fix, not a hurried one.
+
+**Verdict: the headline pass is resolved.** No fusible pair survives; `anchor ≡ signum aptissimum` is canon;
+residual over-narration is triaged (the pipeline cells are prose-free; principle cells legitimately carry brief
+*cited* glosses — not violations). The maximalist "rewrite every cell prose-free" interpretation is explicitly
+NOT pursued: the audit proved it would burn heavily to change little.
 
 ## Discovery half — DONE (2026-06-17, `6106f1d`)
 

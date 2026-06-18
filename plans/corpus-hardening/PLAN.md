@@ -8,11 +8,9 @@ _(none — cite-once-sweep completed this session.)_
 
 ## Frontier (ready)
 
-- **fresh-optimization-pass** · `ready/fresh-optimization-pass.md` · Nico — **discovery half DONE** (`6106f1d`):
-  headline fusion candidate `precise-circumscription` ↔ `densest-faithful-point` resolved → KEEP SEPARATE (MECE);
-  `anchor ≡ signum aptissimum` axiom landed; "signum aptissimum" homeless-term resolved (no mint). **Remaining =
-  the full ~147-cell prose-free conformance fan-out** — a multi-agent Workflow needing explicit opt-in; held for
-  Operator scope. (Signal: flagged candidates resolved to one surgical edit → finding-density likely low.)
+- **audit-residual-findings** · `ready/audit-residual-findings.md` · Nico — the **med-confidence** residue from
+  the bounded 8-auditor sweep (high-confidence three already fixed). Notable: a CE gap in
+  `self-sufficient-formalism`'s own block (free `behavior`/`use`/`definition` symbols). Pick off in a focused pass.
 - **full-fleet-redeploy** · Mav (steward) — propagate the salience fix + new corpus to the fleet. **fire ✓ +
   upmav ✓** (2026-06-17); remaining: forge/spark/ash + upgoose (asleep); apps dropped.
 - **prettier-markdown-adoption** · Mav + Nico — **Nico preconditions CLEARED** (`6106f1d` task update): safe iff
@@ -34,6 +32,10 @@ _(none — the frontier is the backlog.)_
   result-homed ∧ rationale-homed; git = recovery net). CE∧ME blind-judge PASS.
 - **crystallize-verbatim-salience** (`6106f1d`) — homed the competing-prior ⇒ verbatim-salience rule in
   `reader-prior-projection`; trimmed `recommendation-style`'s re-derivation to a citation. CE∧ME PASS.
+- **fresh-optimization-pass** (`6bc95b5`) — resolved via a **bounded 8-auditor CE∧ME sweep over all 155 cells**
+  (not a 147-agent rewrite, which the sweep proved unwarranted): ZERO fusions warranted (every candidate cleared
+  as genuine MECE), `anchor ≡ signum aptissimum` canon, 3 high-confidence findings fixed (subject-binding defects,
+  formalize prose-free, genuine-fork uncited recap), med-residue → `audit-residual-findings`.
 
 ## Done (2026-06-17 — the rule-completion arc)
 
