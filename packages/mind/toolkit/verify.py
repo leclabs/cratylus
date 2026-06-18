@@ -21,10 +21,11 @@
               visible so a future skill can't regress silently. A skill whose
               composition is its Bindings region is NOT empty (its provenance is
               the bindings); only a skill with neither a Bindings region nor a
-              prose ≜ warns. CITE-TWICE sub-check: a skill with BOTH a Bindings
-              region and a prose ≜ formula re-cites the same anchors at two homes
-              -- the duplication [[self-sufficient-formalism]] forbids -- surfaced
-              as a NOTE (transitional; Bindings is the composition source).
+              prose ≜ warns. CITE-TWICE (a FAIL, not a warning): a skill with BOTH
+              a Bindings region and a prose ≜ formula re-cites the same anchors at
+              two homes -- the duplication [[self-sufficient-formalism]] forbids;
+              the sweep has cleared the last transitional cell, so the gate now
+              enforces the one-citation-home law outright.
   ROUNDTRIP   every emitted agent def reconstructs its archetype's composed set:
               the def names every [[ref]] the cell composes + every scope grant,
               and carries an intact provenance header + content hash that matches
@@ -314,8 +315,9 @@ def gate_skill_operative():
 
 
 def gate_skill_provenance():
-    """PROVENANCE + CITE-TWICE (warnings): two NOTEs over `kind: skill` cells,
-    both mechanizing [[self-sufficient-formalism]]'s one-citation-per-anchor law.
+    """PROVENANCE (warning) + CITE-TWICE (FAIL): two gates over `kind: skill`
+    cells, both mechanizing [[self-sufficient-formalism]]'s one-citation-per-anchor
+    law.
 
     PROVENANCE -- a skill that composes EMPTY provenance surfaces visibly so a
     future skill cannot regress into the recurring empty-provenance bug silently.
@@ -329,12 +331,10 @@ def gate_skill_provenance():
     CITE-TWICE -- a skill carrying BOTH a Bindings region AND a prose `≜` formula
     cites the same anchors at two homes (the `≜` re-states what the bindings
     already home). That is the duplication [[self-sufficient-formalism]] forbids,
-    mechanized. A NOTE, not a FAIL (deliberate, [[hoare-elegance-no-permissive-
-    defaults]] degrade-visibly): the only live both-present cell is praxis, a
-    transitional state pending the corpus sweep that drops the `≜`; a hard FAIL
-    would red the committed corpus until that sweep lands. Bindings is the
-    composition source meanwhile; the NOTE forces the sweep without breaking the
-    green-repo invariant. (Promote to FAIL once the sweep clears the transition.)"""
+    mechanized. A hard FAIL ([[hoare-elegance-no-permissive-defaults]]): the
+    cite-once sweep has cleared the last transitional both-present cell, so the
+    gate now enforces the one-citation-home law outright -- Bindings is the sole
+    composition source; a re-citing `≜` is a violation, not a warning."""
     for slug in sorted(cells.slugs_of_kind("skill")):
         body = cells.parse_cell(slug)["body"]
         body_lines = body.splitlines()
@@ -345,12 +345,12 @@ def gate_skill_provenance():
         # CITE-TWICE: both a Bindings region and a prose ≜ -> the ≜ re-cites the
         # bindings' anchors. Bindings wins; the redundant ≜ is the cite-twice.
         if has_bindings and has_prose_formula:
-            notes.append(
+            errors.append(
                 f"CITE-TWICE {slug}.md: kind 'skill' has BOTH a Bindings region "
                 f"and a prose `≜` formula -- the `≜` re-cites anchors the bindings "
                 f"already home, the duplication self-sufficient-formalism forbids. "
-                f"Bindings is the composition source; drop the redundant `≜` "
-                f"formula. (transitional NOTE -- promote to FAIL after the sweep)"
+                f"Bindings is the sole composition source; drop the redundant `≜` "
+                f"formula."
             )
 
         # PROVENANCE: composition is empty under the composer's precedence.

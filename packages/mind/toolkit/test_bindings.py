@@ -6,9 +6,10 @@ one-citation-per-anchor contract for `kind: skill`:
     bindings (the cite-once home): resolve.py's `Composed from ...` line is
     derived from the bindings, and verify.py PASSes with NO empty-provenance
     warning (its provenance IS the bindings).
-  - A skill with BOTH a `≜` formula and a Bindings region triggers the CITE-TWICE
-    NOTE (Bindings wins; the redundant `≜` re-cites bound anchors), and Bindings
-    is the composition source -- not the `≜`.
+  - A skill with BOTH a `≜` formula and a Bindings region is a CITE-TWICE FAIL
+    (the redundant `≜` re-cites the anchors the bindings already home); the sweep
+    has cleared the last transitional cell, so the gate enforces this outright.
+    Bindings is still the composition source -- not the `≜`.
   - Precedence + dedup: the binding verb is irrelevant; refs are first-seen,
     deduped, in Bindings order.
 
@@ -69,7 +70,7 @@ s ≜ a fenced formal line : mece
 BINDINGS_ONLY_REFS = ["mece", "clean-slate", "palimpsest"]
 
 # BOTH: a prose `≜` formula AND a Bindings region. Bindings WINS (composition is
-# the bindings, not the formula); verify emits the CITE-TWICE NOTE. The `≜`
+# the bindings, not the formula); verify FAILs with CITE-TWICE. The `≜`
 # formula cites only `mece`; the bindings cite all three -- so the composition
 # source is observable (bindings != formula).
 BOTH = BINDINGS_ONLY.replace(
@@ -138,7 +139,7 @@ def main() -> int:
                 f"BINDINGS-ONLY: no `≜` present, must not flag cite-twice:\n{r.stderr}"
             )
 
-        # ---- BOTH: cite-twice NOTE, bindings is the source ----
+        # ---- BOTH: cite-twice FAIL, bindings is the source ----
         FIXTURE.write_text(BOTH, encoding="utf-8")
         cell = cells.parse_cell(FIXTURE.stem)
         body_lines = cell["body"].splitlines()
@@ -155,11 +156,11 @@ def main() -> int:
                 f"BOTH: Bindings must win -- composition {got} != {BINDINGS_ONLY_REFS}"
             )
         r = run_verify()
-        if r.returncode != 0:
-            fails.append(f"BOTH: cite-twice must be a NOTE not FAIL, verify exited "
-                         f"{r.returncode}:\n{r.stderr}")
+        if r.returncode == 0:
+            fails.append(f"BOTH: cite-twice must now FAIL (the sweep cleared the "
+                         f"transition), verify exited 0:\n{r.stderr}")
         if f"CITE-TWICE {FIXTURE.name}" not in r.stderr:
-            fails.append(f"BOTH: expected CITE-TWICE NOTE in stderr, got:\n{r.stderr}")
+            fails.append(f"BOTH: expected CITE-TWICE FAIL in stderr, got:\n{r.stderr}")
     finally:
         FIXTURE.unlink(missing_ok=True)
 
@@ -173,7 +174,7 @@ def main() -> int:
             print("FAIL", x, file=sys.stderr)
         print(f"\n{len(fails)} failure(s)", file=sys.stderr)
         return 1
-    print("PASS bindings: bindings-derived composition + cite-twice NOTE + corpus")
+    print("PASS bindings: bindings-derived composition + cite-twice FAIL + corpus")
     return 0
 
 
