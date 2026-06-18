@@ -7,9 +7,9 @@ trigger: /conceptualize
 
 # Conceptualize Skill
 
-conceptualize ≜ resolves a source's meaning to a [[mece]] concept set, binds [[semantic-whole-over-syntactic-substrate]]
-
 Resolve from context: `sources` — the input material (multi-modal).
+
+Bindings: the conceptualization `CA` resolves a source's meaning to a [[mece]] concept set; reading meaning past file/front-matter/layout substrate binds [[semantic-whole-over-syntactic-substrate]]. The symbol table is `references/formal-symbolic-notation.md`.
 
 ```text
 D ≜ ⋃ { content(s) | s ∈ sources }

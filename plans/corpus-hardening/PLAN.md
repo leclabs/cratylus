@@ -6,7 +6,7 @@ Post-founding refinement backlog. Status mirror; task files live under state fol
 
 - **cite-once-sweep** · `active/cite-once-sweep.md` · Nico — migrate the older pipeline skills to the
   Bindings-region cite-once convention, each blind-judge-gated; then promote the CITE-TWICE NOTE → FAIL.
-  **1/6 — `signify` ✓** (`materialize`·`conceptualize`·`dream`·`exemplify`·`formalize` remaining).
+  **3/6** — `signify`·`materialize`·`conceptualize` ✓ (`exemplify`·`dream`·`formalize` remaining).
 
 ## Frontier (ready)
 

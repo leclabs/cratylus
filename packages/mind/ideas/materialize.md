@@ -7,11 +7,9 @@ trigger: /materialize
 
 # Materialize Skill
 
-materialize ≜ binds [[densest-faithful-point]] · [[hoare-elegance-no-permissive-defaults]]
-
 Resolve from context: `A` + contents — the anchored fragments from [[signify]], or supplied directly; `s` — the strategy, REQUIRED from the caller; `${OUTPUT_DIR}` — file strategy only.
 
-dfp binds [[densest-faithful-point]]; the refusal laws bind [[hoare-elegance-no-permissive-defaults]].
+Bindings: `dfp` (the densest-faithful-point projection) binds [[densest-faithful-point]]; the refusal laws — `s` unnamed or `∉ S`, and a kind missing from `ρ_s`, each `⇒ ⊥` — bind [[hoare-elegance-no-permissive-defaults]]. The symbol table is `references/formal-symbolic-notation.md`.
 
 ```text
 K ≜ the closed kind set
