@@ -192,6 +192,52 @@ def is_verbatim_organ(slug: str) -> bool:
     return cells.parse_cell(slug)["fm"].get("render") == VERBATIM_RENDER
 
 
+def _is_agent(slug: str) -> bool:
+    """True if `slug` names a `kind: agent` cell -- an EMBODIED archetype a
+    composing agent inherits a composition from (e.g. principal-ic). A missing
+    cell is not an archetype (verify's REF gate owns the dangling-ref report)."""
+    try:
+        return cells.parse_cell(slug)["fm"].get("kind") == "agent"
+    except FileNotFoundError:
+        return False
+
+
+def transitive_verbatim_organs(refs: list[str]) -> list[str]:
+    """Verbatim organs reachable TRANSITIVELY through embodied-archetype refs,
+    in stable first-seen order, de-duplicated, EXCLUDING organs already in `refs`
+    (those the def cites directly). A `render: verbatim` organ embodied by an
+    archetype (principal-ic embodies [[recommendation-style-consensus-quality-pick]])
+    must reach every agent embodying that archetype (mav, the reviewer, nico via
+    founder genus) -- it OVERRIDES a competing base-prior and so must land in the
+    def WHOLE, not collapse to the archetype's bare anchor.
+
+    ONLY verbatim organs propagate. A normal (non-verbatim) disposition an
+    archetype composes stays ENCAPSULATED behind the archetype's bare anchor
+    (dereferenceable, no def bloat). The walk descends ONLY through embodied
+    archetypes (`kind: agent` refs) -- a verbatim organ is a leaf, never itself a
+    descent edge, so the recursion terminates on the (finite, acyclic-by-corpus)
+    archetype graph; a `seen` guard makes a cycle safe regardless."""
+    already = set(refs)
+    collected: list[str] = []
+    seen_archetypes: set[str] = set()
+
+    def walk(archetype: str) -> None:
+        if archetype in seen_archetypes:
+            return
+        seen_archetypes.add(archetype)
+        for ref in composition_refs(cells.parse_cell(archetype)):
+            if is_verbatim_organ(ref):
+                if ref not in already and ref not in collected:
+                    collected.append(ref)
+            elif _is_agent(ref):  # an embodied archetype: descend transitively
+                walk(ref)
+
+    for ref in refs:
+        if _is_agent(ref):
+            walk(ref)
+    return collected
+
+
 def render_organ(slug: str, name: str) -> list[str]:
     """The verbatim-organ render path -- a referenced cell whose front-matter is
     `render: verbatim` emits its `## Protocol` section body VERBATIM (the
@@ -223,7 +269,15 @@ def compose_agent(slug: str, reader: str, harness: str) -> ComposedDoc:
     for o in GENUS_ORGANS:
         if o not in refs:
             refs.append(o)
-    organs = [r for r in refs if is_verbatim_organ(r)]
+    # Transitive verbatim organs: a `render: verbatim` organ embodied by an
+    # archetype this agent embodies (principal-ic -> recommendation-style) must
+    # reach the def WHOLE -- it overrides a competing base-prior, so it cannot
+    # collapse to the archetype's bare anchor. Collected here (after founder/genus
+    # injection so embodied archetypes are in `refs`), appended to the organs that
+    # render verbatim below; NOT to the bullet dispositions. Only verbatim organs
+    # cross the archetype boundary; normal dispositions stay encapsulated.
+    inherited_organs = transitive_verbatim_organs(refs)
+    organs = [r for r in refs if is_verbatim_organ(r)] + inherited_organs
     dispositions = [r for r in refs if r not in organs]
     grants = grants_for(slug)
 

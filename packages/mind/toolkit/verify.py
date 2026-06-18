@@ -65,7 +65,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from core import cells  # noqa: E402  -- the ONE cell reader + AST views
-from compose.agent import composition_refs, grants_for  # noqa: E402
+from compose.agent import composition_refs, grants_for, is_verbatim_organ  # noqa: E402
 from compose.harness import ref_text  # noqa: E402  -- THE ref projection
 from compose.skill import (  # noqa: E402
     _bindings_region,
@@ -427,6 +427,16 @@ def gate_roundtrip():
         else:
             harness = prof.split("/", 1)[1]
             for ref in composed:
+                # Verbatim-organ exemption (generalized from genus organs): a
+                # `render: verbatim` ref renders as its `## Protocol` body, NOT
+                # its anchor token. The def DECLARES the ref in source (the cell's
+                # ≜ formula / genus list), so its composition is honored; the
+                # render carries the body, not the token, by design. This covers
+                # ANY composed verbatim organ -- genus (identity-memory-stack) OR
+                # embodied/transitive (principal-ic's recommendation-style) --
+                # whichever way the ref entered the composition.
+                if kind == "agent" and is_verbatim_organ(ref):
+                    continue
                 if ref_text(ref, harness) not in deftext:
                     errors.append(f"ROUNDTRIP {slug}: composed [[{ref}]] missing from def")
         # scope grants present (agents only -- skills carry no grants)
