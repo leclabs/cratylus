@@ -1,6 +1,11 @@
 # cite-once-sweep
 
-**State:** ready · **Lead:** Nico · **Source:** the `self-sufficient-formalism` cite-once convention; the clause refinement (`93299ae`) unblocked it.
+**State:** active (1/6 — `signify` ✓) · **Lead:** Nico · **Source:** the `self-sufficient-formalism` cite-once convention; the clause refinement (`93299ae`) unblocked it.
+
+## Progress
+
+- ✅ `signify` — `≜` formula → `Bindings:` region; deduped the twice-cited `[[anchor-routing]]`; composition derives identical (precise-circumscription · anchor-routing); verify.py PASS; blind-judge B ≽ A.
+- ⬜ `materialize` · `conceptualize` · `dream` · `exemplify` · `formalize` — remaining.
 
 ## Intent
 

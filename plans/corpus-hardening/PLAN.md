@@ -2,10 +2,14 @@
 
 Post-founding refinement backlog. Status mirror; task files live under state folders.
 
+## Active
+
+- **cite-once-sweep** · `active/cite-once-sweep.md` · Nico — migrate the older pipeline skills to the
+  Bindings-region cite-once convention, each blind-judge-gated; then promote the CITE-TWICE NOTE → FAIL.
+  **1/6 — `signify` ✓** (`materialize`·`conceptualize`·`dream`·`exemplify`·`formalize` remaining).
+
 ## Frontier (ready)
 
-- **cite-once-sweep** · `ready/cite-once-sweep.md` · Nico — migrate the older pipeline skills to the
-  Bindings-region cite-once convention, each blind-judge-gated; then promote the CITE-TWICE NOTE → FAIL.
 - **crystallize-verbatim-salience** · `ready/crystallize-verbatim-salience.md` · Nico — make the
   competing-prior ⇒ verbatim-salience rule canon (refine `reader-prior-projection`'s floor).
 - **plan-retirement-principle** · `ready/plan-retirement-principle.md` · Nico — crystallize the
