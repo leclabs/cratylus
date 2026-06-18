@@ -7,9 +7,9 @@ trigger: /exemplify
 
 # Exemplify Skill
 
-exemplify ≜ chains [[conceptualize]] → [[signify]] → [[materialize]]
+End-to-end context optimization — each stage independently invocable and owning its own operators and failure laws; this skill owns only the chain, the strategy gate, and the acceptance law.
 
-End-to-end, each stage independently invocable and owning its own operators and failure laws; this skill owns only the chain, the strategy gate, and the acceptance law — which binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]].
+Bindings: the chain invokes [[conceptualize]] → [[signify]] → [[materialize]]; the acceptance law (`accept(F) ⇔ reconstruct(F) ≽ D`) binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]]. The symbol table is `references/formal-symbolic-notation.md`.
 
 1. Resolve `D` from context — the input corpus (multi-modal). Require the strategy `s` up front:
 
@@ -17,9 +17,9 @@ End-to-end, each stage independently invocable and owning its own operators and 
 s unnamed ⇒ ⊥
 ```
 
-2. Invoke [[conceptualize]] on D → C.
-3. Invoke [[signify]] on C → A with R.
-4. Invoke [[materialize]] on (A, s) → F.
+2. Invoke **conceptualize** on D → C.
+3. Invoke **signify** on C → A with R.
+4. Invoke **materialize** on (A, s) → F.
 5. Accept or refuse:
 
 ```text
@@ -36,7 +36,7 @@ accept(F) ⇔ reconstruct(F) ≽ D
 ¬accept(F) ⇒ ⊥
 ```
 
-6. On accept, **emit the routing manifest** — persist the run's routing decisions so the oracle's R3 (reconstruction-completeness, [[self-application-is-mandatory]]) gates mechanically instead of as an in-the-loop audit. Write `.manifests/<source>.json`: one entry per fragment `c ∈ C`, keyed by `fragment_digest` (the content-digest of `c`'s de-palimpsested text — `toolkit/core/digest.fragment_digest`, NFC + whitespace-collapse + trim, so a cosmetic source edit leaves the digest stable). A fragment homed in `F` (η resolved an existing anchor → `reuse`, or minted a new one → `mint`) goes in `routes[]`; a fragment homed nowhere by design (it lives in Δ) goes in `delta[]`. Every fragment lands in exactly one of the two — an unrouted fragment is the dropped idea R3 catches.
+6. On accept, **emit the routing manifest** — persist the run's routing decisions so the oracle's R3 (reconstruction-completeness, **self-application-is-mandatory**) gates mechanically instead of as an in-the-loop audit. Write `.manifests/<source>.json`: one entry per fragment `c ∈ C`, keyed by `fragment_digest` (the content-digest of `c`'s de-palimpsested text — `toolkit/core/digest.fragment_digest`, NFC + whitespace-collapse + trim, so a cosmetic source edit leaves the digest stable). A fragment homed in `F` (η resolved an existing anchor → `reuse`, or minted a new one → `mint`) goes in `routes[]`; a fragment homed nowhere by design (it lives in Δ) goes in `delta[]`. Every fragment lands in exactly one of the two — an unrouted fragment is the dropped idea R3 catches.
 
 ```jsonc
 {

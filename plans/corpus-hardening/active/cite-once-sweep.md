@@ -1,13 +1,14 @@
 # cite-once-sweep
 
-**State:** active (3/6) · **Lead:** Nico · **Source:** the `self-sufficient-formalism` cite-once convention; the clause refinement (`93299ae`) unblocked it.
+**State:** active (4/6) · **Lead:** Nico · **Source:** the `self-sufficient-formalism` cite-once convention; the clause refinement (`93299ae`) unblocked it.
 
 ## Progress
 
 - ✅ `signify` — deduped the twice-cited `[[anchor-routing]]`; composition derives identical (precise-circumscription · anchor-routing).
 - ✅ `materialize` — deduped densest-faithful-point + hoare-elegance-no-permissive-defaults (both were twice-cited); refusal laws made concrete from the cell's own block.
 - ✅ `conceptualize` — `≜` → Bindings (mece · semantic-whole-over-syntactic-substrate); ties `CA` to prose the `≜` left implicit.
-- ⬜ `exemplify` · `dream` · `formalize` — remaining (the complex three: many prose re-citations / see-also dupes; `dream` cites `agent-know-thyself` ×3).
+- ✅ `exemplify` — `≜` → Bindings; **composition completed 3→5** (the acceptance-law deps bidirectional-round-trip-fidelity · self-application-is-mandatory were prose-bound but absent from the `≜`; faithful completion, blind-judge confirmed A's `≜` was the defective artifact); step re-citations deduped to bare operators.
+- ⬜ `dream` · `formalize` — remaining (the hardest two: `dream` has 7 refs — `exemplify` bound in a Resolve bullet w/ its pipeline formula, `agent-know-thyself` ×3; `formalize` has step re-cites + see-also dupes).
 
 Each migration: `≜` formula → `Bindings:` region (single citation home), dedupe re-citations, formal block byte-identical; gated by verify.py (composition derives identical, no CITE-TWICE/empty-provenance NOTE) + a fresh blind-judge B ≽ A.
 
