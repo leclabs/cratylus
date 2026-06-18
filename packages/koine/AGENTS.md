@@ -1,19 +1,19 @@
 # koine — agent conventions
 
-**koine** is the projection machinery of *polis*: the **common tongue**. Author agent-config once in a
+**koine** is the projection machinery of _polis_: the **common tongue**. Author agent-config once in a
 canonical IR, compile it to every client dialect (Claude Code, Codex, Cursor, …), and lift any client's
-existing config back into the IR. Formerly developed as *agentir*.
+existing config back into the IR. Formerly developed as _agentir_.
 
 It is the substrate half of the founding pair (Mav's domain); the culture it carries comes from
 `packages/mind` (Nico's domain). koine itself is **client-agnostic** — it knows dialects, not doctrine.
 
 ## Layout — three npm packages under the `@leclabs/koine*` scope
 
-| Dir | Package | Role |
-|---|---|---|
-| `core/` | `@leclabs/koine-core` | The canonical IR (types + JSON Schema), the engine (read/merge/compile/drift/migrate), runtime validators, markdown+frontmatter serializers, and the **Adapter contract**. The only package a community adapter author needs. |
-| `adapters/` | `@leclabs/koine-adapters` | The 10 official adapters (claude, opencode, codex, gemini, copilot, cursor, cline, crush, aider, continue), one per client dialect. Bundled as subpath exports — install once, import only what you use. |
-| `cli/` | `@leclabs/koine` | The `koine` command — the user-facing orchestrator (`init` / `import` / `compile` / `diff` / `lint` / `adapters` / `events` / `doctor` / `watch` / `migrate`). |
+| Dir         | Package                   | Role                                                                                                                                                                                                                          |
+| ----------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `core/`     | `@leclabs/koine-core`     | The canonical IR (types + JSON Schema), the engine (read/merge/compile/drift/migrate), runtime validators, markdown+frontmatter serializers, and the **Adapter contract**. The only package a community adapter author needs. |
+| `adapters/` | `@leclabs/koine-adapters` | The 10 official adapters (claude, opencode, codex, gemini, copilot, cursor, cline, crush, aider, continue), one per client dialect. Bundled as subpath exports — install once, import only what you use.                      |
+| `cli/`      | `@leclabs/koine`          | The `koine` command — the user-facing orchestrator (`init` / `import` / `compile` / `diff` / `lint` / `adapters` / `events` / `doctor` / `watch` / `migrate`).                                                                |
 
 Dependency direction is strictly `cli → adapters → core`; `core` depends on no sibling.
 

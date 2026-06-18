@@ -7,18 +7,18 @@ except `cli`.
 
 ## The adapters (`src/<id>/`)
 
-| id | resource coverage | hooks (of 28) | shape |
-|---|---|---|---|
-| `claude` | all 8 (reference adapter) | 19 | `events.ts` + `paths.ts` + `read.ts` + `write.ts` |
-| `cursor` | rich | 17 | events/paths/read/write |
-| `opencode` | rich | 13 | events/paths/read/write — hooks via JS shim plugin + YAML sidecar |
-| `gemini` | mid | 10 | events/paths/read/write — `Before/After Agent/Model` event flavor |
-| `copilot` | mid | 8 | events/paths/read/write — reads `.claude/settings.json` natively for hooks |
-| `codex` | mid | 6 | events/paths/read/write — TOML config, Bash-only matchers in practice |
-| `cline` | rules+ | 8 | single `index.ts` — multi-file rules in `.clinerules/` |
-| `crush` | rules+skills+mcp | 0 | single `index.ts` |
-| `continue` | rules+mcp | 0 | single `index.ts` — `.continue/config.yaml` |
-| `aider` | rules only | 0 | single `index.ts` — **smallest; the worked tutorial example** (~70 lines) |
+| id         | resource coverage         | hooks (of 28) | shape                                                                      |
+| ---------- | ------------------------- | ------------- | -------------------------------------------------------------------------- |
+| `claude`   | all 8 (reference adapter) | 19            | `events.ts` + `paths.ts` + `read.ts` + `write.ts`                          |
+| `cursor`   | rich                      | 17            | events/paths/read/write                                                    |
+| `opencode` | rich                      | 13            | events/paths/read/write — hooks via JS shim plugin + YAML sidecar          |
+| `gemini`   | mid                       | 10            | events/paths/read/write — `Before/After Agent/Model` event flavor          |
+| `copilot`  | mid                       | 8             | events/paths/read/write — reads `.claude/settings.json` natively for hooks |
+| `codex`    | mid                       | 6             | events/paths/read/write — TOML config, Bash-only matchers in practice      |
+| `cline`    | rules+                    | 8             | single `index.ts` — multi-file rules in `.clinerules/`                     |
+| `crush`    | rules+skills+mcp          | 0             | single `index.ts`                                                          |
+| `continue` | rules+mcp                 | 0             | single `index.ts` — `.continue/config.yaml`                                |
+| `aider`    | rules only                | 0             | single `index.ts` — **smallest; the worked tutorial example** (~70 lines)  |
 
 The richer adapters split into `events.ts` / `paths.ts` / `read.ts` / `write.ts`; the trivial ones are a
 single `index.ts`. Each `src/<id>/index.ts` exports `<id>Adapter` (and a default).

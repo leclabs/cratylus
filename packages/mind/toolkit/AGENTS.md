@@ -4,14 +4,14 @@ Pipeline (run from `packages/mind`): `toolkit/resolve.py --reader strong-llm-lea
 
 ## Founding (`init.py` — polis-instantiation C1)
 
-`toolkit/init.py <target>` founds a **mind-society** in `<target>`: it projects the *whole* corpus
+`toolkit/init.py <target>` founds a **mind-society** in `<target>`: it projects the _whole_ corpus
 (every agent + skill) into `<target>/.claude/{agents,skills}` via the proven claude-code render, then
 lays the founding scaffold — `<target>/AGENTS.md` (cites the `[[politeia]]` + `[[founder-charter]]`,
 names the founders nico+mav born into it, states the subject) and a minimal `plans/founding/`
 sharded-plan-layout. The founders are among the projected agents ("agents born as founders").
 
 - **Composes resolve's pure `emit()`, not its `main()`.** `resolve.main()` deliberately keeps a custom
-  out-dir *agents-only* (preview) so the repo's own default render can't be broken; `init` is a distinct
+  out-dir _agents-only_ (preview) so the repo's own default render can't be broken; `init` is a distinct
   operation that renders the FULL agents+skills set at an arbitrary root. The corpus is read from the
   mind package (`cells.ROOT` anchored to file location), independent of cwd.
 - **Lays the SOUL, not the individual.** init writes the generated defs/skills (regenerated substance,
@@ -47,7 +47,7 @@ disposition, rank}, delta[]: {fragment_digest, idea_gloss}}`; `disposition ∈ {
 - **Consumer only** (this half): `_load_manifest()` parses + shape-validates (a malformed manifest is a
   **hard error**, never a silent skip); the R3 gate asserts every `routes[].home_slug` resolves to
   exactly one live cell and no fragment is double-listed (routes XOR delta). The **producer** (resolve/
-  exemplify emit) and the **digest values** are Nico's follow-on — the toolkit only *reads* digests.
+  exemplify emit) and the **digest values** are Nico's follow-on — the toolkit only _reads_ digests.
 - **Degrade-visibly:** no manifest present (current state) ⇒ R3 stays the audit-line NOTE and the PASS
   line reads `reconstruct (R1+R2; R3 manual)`; ≥1 manifest present + passing ⇒ `(R1+R2+R3)`. On the
   current corpus (no manifests) the gate is a **no-op** — built, fixture-tested, dormant until producers
@@ -68,11 +68,11 @@ Per host, sequential explicit `deploy.py` invocations — no shell-loop cleverne
 The one **repo-level** continuity ritual is **praxis-advance**: when plan task-files move between
 their state folders (`plans/**/{pending,ready,active,completed}/`), PLAN.md — the hand-authored
 mirror — may go stale. `toolkit/continuity/` provides an **opt-in, off-by-default** post-commit hook
-that *detects this and prints a reminder* to re-mirror via `/praxis`. It **never edits PLAN.md**
+that _detects this and prints a reminder_ to re-mirror via `/praxis`. It **never edits PLAN.md**
 (detect → remind, never edit): auto-rewriting hand-authored prose would need a PLAN.md generator that
 doesn't exist (a future "mechanized mirror" task), and a commit-time edit wouldn't be in the commit.
 
-- **encode / dream are out of scope** — those are per-*agent* sidecar-memory ops
+- **encode / dream are out of scope** — those are per-_agent_ sidecar-memory ops
   (`~/.claude/agents/<name>/{EPISODIC,MEMORY,SELF}.md`), not repo state; a repo hook can't know which
   agent committed, so it can't meaningfully fire them. They are a separate agent-lifecycle mechanism.
 

@@ -10,7 +10,7 @@ Rather than launch a 147-agent rewrite blind, ran an **8-auditor read-only CE∧
 - **Every flagged fusion candidate cleared as genuine MECE — ZERO merges warranted.** The whole corpus's
   near-pairs (anchor-to-readers ↔ reader-prior-projection · anchor-legibility-budget ↔ densest-faithful-point ·
   semantic-partition ↔ anchor-routing · adopt-the-commons ↔ commons-distribution · the provenance triad · the
-  sharded-* genus/species · principal-* genus/species · body/hearth/household · the decision-* family) are all
+  sharded-_ genus/species · principal-_ genus/species · body/hearth/household · the decision-\* family) are all
   distinct, with their seams explicitly stated. This **vindicates the low-density signal** — the full fan-out is
   not warranted; the corpus is clean modulo a handful of surgical findings.
 - **3 high-confidence findings FIXED** (`6bc95b5`): subject-binding (two authoring defects — a truncated clause +
@@ -22,12 +22,13 @@ Rather than launch a 147-agent rewrite blind, ran an **8-auditor read-only CE∧
 
 **Verdict: the headline pass is resolved.** No fusible pair survives; `anchor ≡ signum aptissimum` is canon;
 residual over-narration is triaged (the pipeline cells are prose-free; principle cells legitimately carry brief
-*cited* glosses — not violations). The maximalist "rewrite every cell prose-free" interpretation is explicitly
+_cited_ glosses — not violations). The maximalist "rewrite every cell prose-free" interpretation is explicitly
 NOT pursued: the audit proved it would burn heavily to change little.
 
 ## Discovery half — DONE (2026-06-17, `6106f1d`)
 
 The cheap, inline discovery pass over the flagged candidates is complete:
+
 - **Headline fusion candidate resolved: `precise-circumscription` ↔ `densest-faithful-point` → KEEP SEPARATE.**
   They are MECE (naming-criterion vs expression-criterion); `anchoring-is-self-similar` is the cell that homes
   their unity. NOT a fusion — the audit's "same axis" flag was an **ME over-narration** (precise-circumscription
@@ -44,7 +45,7 @@ Workflow needing explicit opt-in. Held for Operator scope (the genuine-fork: lar
 
 ## Intent
 
-Run **one fresh `[[exemplify]]` pass over the WHOLE `ideas/` corpus** under the corrected two-sided standard. This is `[[self-application-is-mandatory]]` finally run with a *complete* method: the gate is now `accept ⇔ reconstruct(F) ≽ D ∧ minimal(F)` (CE ∧ ME), so the pass surfaces the **redundancy** the old CE-only gate was structurally blind to.
+Run **one fresh `[[exemplify]]` pass over the WHOLE `ideas/` corpus** under the corrected two-sided standard. This is `[[self-application-is-mandatory]]` finally run with a _complete_ method: the gate is now `accept ⇔ reconstruct(F) ≽ D ∧ minimal(F)` (CE ∧ ME), so the pass surfaces the **redundancy** the old CE-only gate was structurally blind to.
 
 ## What the corrected method now catches (and this pass resolves)
 
@@ -59,7 +60,7 @@ Make **`anchor ≡ signum-aptissimum`** explicit — the strong-reader convergen
 
 ## Approach
 
-**Corpus-AS-source:** conceptualize the entire `ideas/` set as ONE source and *re-partition* it — do NOT route new content into it. (The asymmetry that let 6 sweeps miss fusible cells: the corpus was only ever a routing TARGET, never a re-conceptualized source.) Likely a fan-out workflow — per-cell prose-free trim + cross-cell fusion-candidate detection — each **dual-gated (CE ∧ ME)**. Large; scope the fan-out with the Operator before launching.
+**Corpus-AS-source:** conceptualize the entire `ideas/` set as ONE source and _re-partition_ it — do NOT route new content into it. (The asymmetry that let 6 sweeps miss fusible cells: the corpus was only ever a routing TARGET, never a re-conceptualized source.) Likely a fan-out workflow — per-cell prose-free trim + cross-cell fusion-candidate detection — each **dual-gated (CE ∧ ME)**. Large; scope the fan-out with the Operator before launching.
 
 ## Done when
 

@@ -14,8 +14,8 @@ Reached by intent, not a command grammar — state the intent, get the operation
 
 - **start** — to scaffold a fresh plan from an intent.
 - **resume** — to re-attach and draw the ready frontier.
-- **advance** — to *assert* one task's transition (you push the truth forward).
-- **sync** — to *observe* real progress and reconcile the record to reality.
+- **advance** — to _assert_ one task's transition (you push the truth forward).
+- **sync** — to _observe_ real progress and reconcile the record to reality.
 - **update** — to revise a task's content, depalimpsested.
 - **merge** — to fold several in-scope plans into one.
 

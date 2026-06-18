@@ -11,6 +11,7 @@ markdown tooling (formatter). Not a founding phase — the ongoing refinement ba
 Prettier config, fleet deploy).
 
 **Exit criteria.**
+
 - Every formal cell uses the Bindings-region cite-once convention (the CITE-TWICE NOTE promotable to FAIL).
 - The verbatim-salience rule is canon in the corpus, not folklore in an agent's memory.
 - The salience fix is deployed fleet-wide.

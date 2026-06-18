@@ -10,7 +10,7 @@ so every host's nico/mav/reviewer/principal-ic SOUL carries the anti-menu dispos
 ## Approach
 
 Per-host sequential `deploy.py --scope user` (no shell loops). **Re-resolve at the deployed HEAD first** —
-this session's lesson: a stale `.render` deploys stale defs; verify the *deployed* artifact, never the deploy
+this session's lesson: a stale `.render` deploys stale defs; verify the _deployed_ artifact, never the deploy
 exit message. Hosts: upgoose/upmav (asleep often), forge/apps/spark, ash, fire.
 
 ## Progress (2026-06-17, Nico — /wake session)
@@ -22,7 +22,7 @@ exit message. Hosts: upgoose/upmav (asleep often), forge/apps/spark, ash, fire.
   variants all probed **unreachable** via ssh (`ConnectTimeout=2`, BatchMode); upgoose asleep. Could not deploy.
   Note also: this session's corpus work is **deploy-neutral** — `resolve.py` on `main` @ `9071c49` yields
   agent defs **byte-identical** to the deployed set (the edits were to method-meta cells + recommendation-style's
-  *description*, never the verbatim `## Protocol`). So this redeploy remains purely the salience-fix propagation
+  _description_, never the verbatim `## Protocol`). So this redeploy remains purely the salience-fix propagation
   to the unreached hosts; no new def content is pending. Awaits host reachability / next cadence.
 
 ## Done when

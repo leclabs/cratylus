@@ -5,8 +5,8 @@ folders (`pending/ → ready/ → active/ → completed/`) as deps clear.
 
 ## Active
 
-| Plan | Concern | Lead |
-|---|---|---|
+| Plan               | Concern                                                                                                                                                | Lead                             |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
 | `corpus-hardening` | Post-founding refinement: the idea-corpus cite-once sweep, crystallizing the projection insights this work proved, propagating + protecting the result | Nico (+ Mav for machinery/infra) |
 
 ## Retired

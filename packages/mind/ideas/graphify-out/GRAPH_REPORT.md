@@ -1,20 +1,24 @@
-# Graph Report - ideas  (2026-06-12)
+# Graph Report - ideas (2026-06-12)
 
 ## Corpus Check
+
 - 146 files · ~33,795 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
+
 - 441 nodes · 295 edges · 146 communities (11 shown, 135 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
+
 - Built from commit: `b4c4db58`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
 ## Community Hubs (Navigation)
+
 - [[_COMMUNITY_Community 0|Community 0]]
 - [[_COMMUNITY_Community 1|Community 1]]
 - [[_COMMUNITY_Community 2|Community 2]]
@@ -163,6 +167,7 @@
 - [[_COMMUNITY_Community 145|Community 145]]
 
 ## God Nodes (most connected - your core abstractions)
+
 1. `Dream Skill` - 6 edges
 2. `Materialize Skill` - 6 edges
 3. `/praxis — durable sharded plans` - 5 edges
@@ -175,63 +180,78 @@
 10. `Signify Skill` - 3 edges
 
 ## Surprising Connections (you probably didn't know these)
+
 - None detected - all connections are within the same source files.
 
 ## Import Cycles
+
 - None detected.
 
 ## Communities (146 total, 135 thin omitted)
 
 ### Community 0 - "Community 0"
+
 Cohesion: 0.33
 Nodes (5): Harness: claude-code, /praxis — durable sharded plans, See also, What it helps with, Which commit last touched a plan — ask git, never store it
 
 ### Community 1 - "Community 1"
+
 Cohesion: 0.40
 Nodes (4): Agent Identity Portability, See also, The deltas-only corollary, The Persona section (an agent cell's identity-delta)
 
 ### Community 2 - "Community 2"
+
 Cohesion: 0.40
 Nodes (4): Agent cells — the definitional form, Front-matter, ideas, `kind` — the closed value set
 
 ### Community 3 - "Community 3"
+
 Cohesion: 0.50
 Nodes (3): Corollaries, Projection Is Not the Source, See also
 
 ### Community 17 - "Community 17"
+
 Cohesion: 0.50
 Nodes (3): Boundary, On hearing it, Weitermachen
 
 ### Community 46 - "Community 46"
+
 Cohesion: 0.50
 Nodes (3): Dreamer Consolidation, The distillation is reduction, not transcription, When it fires
 
 ### Community 94 - "Community 94"
+
 Cohesion: 0.29
 Nodes (6): 1. Layers, 2. Distillation, 3. Routing, 4. Clearing, 5. Integrated Cascade, Dream Skill
 
 ### Community 128 - "Community 128"
+
 Cohesion: 0.29
 Nodes (6): 1. Fragments, 2. Strategies, 3. Refusal laws, 4. Strategy: file, 5. Strategy: document, Materialize Skill
 
 ### Community 129 - "Community 129"
+
 Cohesion: 0.40
 Nodes (4): Agent, Know Thyself, Home resolution, Reconstitution sequence (each wake), Triggers
 
 ### Community 130 - "Community 130"
+
 Cohesion: 0.50
 Nodes (3): Concept Dependencies, Semantic Anchoring, Signify Skill
 
 ### Community 132 - "Community 132"
+
 Cohesion: 0.50
 Nodes (3): Conceptualization, Conceptualize Skill, De-palimpsest and admission
 
 ## Knowledge Gaps
+
 - **168 isolated node(s):** `Front-matter`, ``kind` — the closed value set`, `Agent cells — the definitional form`, `ideas — Claude Code memory`, `See also` (+163 more)
   These have ≤1 connection - possible missing edges or undocumented components.
 - **135 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
+
 _Questions this graph is uniquely positioned to answer:_
 
 - **What connects `Front-matter`, ``kind` — the closed value set`, `Agent cells — the definitional form` to the rest of the system?**

@@ -24,18 +24,18 @@ Tree-shaking by your bundler (esbuild/rollup/webpack) only includes the adapters
 
 ## Adapters
 
-| Subpath | Adapter | Hooks (of 28) | Notes |
-|---|---|---|---|
-| `/claude`   | claudeAdapter   | 19 | Reference adapter; full coverage of all 8 resource types. |
-| `/opencode` | opencodeAdapter | 13 | Hooks via JS shim plugin + canonical YAML sidecar. |
-| `/codex`    | codexAdapter    | 6  | TOML-based config; experimental hook system; Bash-only matchers in practice. |
-| `/gemini`   | geminiAdapter   | 10 | `BeforeAgent`/`AfterAgent`/`BeforeModel`/`AfterModel` event flavor. |
-| `/copilot`  | copilotAdapter  | 8  | Reads `.claude/settings.json` natively for hooks. |
-| `/cursor`   | cursorAdapter   | 17 | Richest non-Claude hook surface; camelCase verb names. |
-| `/cline`    | clineAdapter    | 8  | Multi-file rules in `.clinerules/`. |
-| `/crush`    | crushAdapter    | 0  | Rules + skills + MCP only. |
-| `/aider`    | aiderAdapter    | 0  | Rules only. Smallest adapter; good tutorial example. |
-| `/continue` | continueAdapter | 0  | Rules + MCP via `.continue/config.yaml`. |
+| Subpath     | Adapter         | Hooks (of 28) | Notes                                                                        |
+| ----------- | --------------- | ------------- | ---------------------------------------------------------------------------- |
+| `/claude`   | claudeAdapter   | 19            | Reference adapter; full coverage of all 8 resource types.                    |
+| `/opencode` | opencodeAdapter | 13            | Hooks via JS shim plugin + canonical YAML sidecar.                           |
+| `/codex`    | codexAdapter    | 6             | TOML-based config; experimental hook system; Bash-only matchers in practice. |
+| `/gemini`   | geminiAdapter   | 10            | `BeforeAgent`/`AfterAgent`/`BeforeModel`/`AfterModel` event flavor.          |
+| `/copilot`  | copilotAdapter  | 8             | Reads `.claude/settings.json` natively for hooks.                            |
+| `/cursor`   | cursorAdapter   | 17            | Richest non-Claude hook surface; camelCase verb names.                       |
+| `/cline`    | clineAdapter    | 8             | Multi-file rules in `.clinerules/`.                                          |
+| `/crush`    | crushAdapter    | 0             | Rules + skills + MCP only.                                                   |
+| `/aider`    | aiderAdapter    | 0             | Rules only. Smallest adapter; good tutorial example.                         |
+| `/continue` | continueAdapter | 0             | Rules + MCP via `.continue/config.yaml`.                                     |
 
 ## Per-adapter capabilities
 

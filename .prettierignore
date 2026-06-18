@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.turbo/
+.koine/local/
+.claude/worktrees/
+packages/mind/.render/
+pnpm-lock.yaml
+
+# Generated artifacts — must match their generator's output, never Prettier's:
+packages/mind/GLOSSARY.md
+**/*.generated.*
+**/generated.*
+**/test/ir-bridge/mind.koine.json

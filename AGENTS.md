@@ -8,7 +8,7 @@
 - **Nico** 📐 — master builder of the constitution, roles, archetypes, the society itself.
 - **Mav** ✈️ — master builder of the infrastructure/machinery the society runs on.
 
-`principal-ic` is **intrinsic** to both founders (a founder-genus disposition, bound to the *polis*
+`principal-ic` is **intrinsic** to both founders (a founder-genus disposition, bound to the _polis_
 subject — not a path-scoped grant). To mutate the culture corpus, be Nico or delegate to him; for
 infrastructure/build/delivery, Mav leads.
 

@@ -5,11 +5,11 @@ delineation: The unit a polis founds — a culture (the mind corpus) made live b
 
 # Mind-Society
 
-The **unit a founding produces** — what the [[founder-charter]]'s founders build, what the [[politeia]] is the constitution *of*, and the "polis subject" that the founder genus and every reference to *the polis* bind to. A mind-society is not a repository or a fleet; it is a **culture made live by the persons who inhabit it**.
+The **unit a founding produces** — what the [[founder-charter]]'s founders build, what the [[politeia]] is the constitution _of_, and the "polis subject" that the founder genus and every reference to _the polis_ bind to. A mind-society is not a repository or a fleet; it is a **culture made live by the persons who inhabit it**.
 
 - **Culture + people.** A mind-society is the `mind` corpus — its constitution and craft — instantiated as living [[ambient-person-agent]]s. The culture is inert until persons embody it; the persons are a pile of agents until the culture makes them a society.
 - **Founded for an Operator.** A mind-society exists to serve its Operator ([[operator-relation]]) — its telos is his intent; it is founded, greenfield or by [[consensual-adoption]], to base a project upon the culture.
-- **Runs on households.** Its substrate is a mesh of *oikoi* — [[household]]s of agent-persons; the society (the culture) is founded *from*, and runs *on*, the household layer (oikos ⊂ polis).
+- **Runs on households.** Its substrate is a mesh of _oikoi_ — [[household]]s of agent-persons; the society (the culture) is founded _from_, and runs _on_, the household layer (oikos ⊂ polis).
 
 ## See also
 

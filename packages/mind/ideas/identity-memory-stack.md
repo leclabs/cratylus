@@ -10,15 +10,15 @@ The layered architecture that holds an [[ambient-person-agent]]'s identity acros
 
 The four layers, top (most distilled, most durable) to bottom (rawest):
 
-- **SOUL** — the agent's fixed essence: the archetype def generated *down* from the commons ([[substance-over-accident]] · [[generated-artifact-provenance]]). Commons-fixed and **never hand-edited** — it changes only when the archetype is re-projected. The harness loads only this layer into starting context.
-- **SELF** — the [[continuity-thread]]: the reboot seed of who the agent has *become*. Read in full at wake.
+- **SOUL** — the agent's fixed essence: the archetype def generated _down_ from the commons ([[substance-over-accident]] · [[generated-artifact-provenance]]). Commons-fixed and **never hand-edited** — it changes only when the archetype is re-projected. The harness loads only this layer into starting context.
+- **SELF** — the [[continuity-thread]]: the reboot seed of who the agent has _become_. Read in full at wake.
 - **MEMORY** — durable, orthogonal semantic facts ([[cite-dont-copy]]: deltas and pointers, not restatement). Recalled by relevance.
 - **EPISODIC** — the raw, append-only stream ([[episodic-encoding]]); the bottom layer the Dreamer drains.
 
 Two properties make the stack sound:
 
 - **Commons-fixed vs self-authored.** Only SOUL is generated from the commons; SELF, MEMORY, and EPISODIC are the agent's own and are **never overwritten by deploy** — the def is emitter-owned ([[generated-artifact-is-emitter-owned]]), the sidecar layers are agent-owned. Re-projection refreshes the SOUL and leaves the lived layers untouched.
-- **Two motions, opposite provenance.** [[episodic-encoding]] moves experience *down-and-in* (append raw, per turn, never pre-distilled); [[dream]] moves it *up-and-out* (consolidate by durability × orthogonality — next-steps stay in EPISODIC, durable facts rise to MEMORY, identity-shaping facts rise to SELF; SOUL is never written). Consolidation is **move-not-copy**, and promotion upward is the Dreamer's alone.
+- **Two motions, opposite provenance.** [[episodic-encoding]] moves experience _down-and-in_ (append raw, per turn, never pre-distilled); [[dream]] moves it _up-and-out_ (consolidate by durability × orthogonality — next-steps stay in EPISODIC, durable facts rise to MEMORY, identity-shaping facts rise to SELF; SOUL is never written). Consolidation is **move-not-copy**, and promotion upward is the Dreamer's alone.
 
 The **operative form** of this stack — the protocol every agent carries and runs at wake — is the `## Protocol` section below. The cell is marked `render: verbatim`: when an agent composes this organ, the composer emits that section's body **verbatim**, density-immune (it is load-bearing runtime instruction, never a collapsible disposition pointer) and `{name}`-parameterized to the agent's own sidecar directory. This cell is therefore the **one home** for what was hardcoded in the composer's identity block — the description (above) and the operative protocol (below) are two facets of one structure, and the verbatim payload carries no wiki-style cross-references, so nothing leaks into the projected def.
 

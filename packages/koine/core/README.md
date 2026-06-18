@@ -50,16 +50,16 @@ import {
 
 The intermediate representation is the canonical superset of every supported client's configuration surface. Resources:
 
-| Type | What |
-|---|---|
-| `Rule` | Markdown rules (CLAUDE.md / AGENTS.md / .clinerules/*) |
-| `Skill` | Agent Skills spec (SKILL.md + frontmatter) |
-| `Command` | Slash commands |
-| `Agent` | Subagents |
-| `Hook` | Lifecycle hooks (canonical event taxonomy) |
-| `McpServer` | MCP server registration (stdio or remote, discriminated union) |
-| `Permissions` | allow / deny / ask lists |
-| `EnvVars` | Flat string map |
+| Type          | What                                                           |
+| ------------- | -------------------------------------------------------------- |
+| `Rule`        | Markdown rules (CLAUDE.md / AGENTS.md / .clinerules/\*)        |
+| `Skill`       | Agent Skills spec (SKILL.md + frontmatter)                     |
+| `Command`     | Slash commands                                                 |
+| `Agent`       | Subagents                                                      |
+| `Hook`        | Lifecycle hooks (canonical event taxonomy)                     |
+| `McpServer`   | MCP server registration (stdio or remote, discriminated union) |
+| `Permissions` | allow / deny / ask lists                                       |
+| `EnvVars`     | Flat string map                                                |
 
 Full schema in `schema/*.schema.json`. TypeScript types are generated via `pnpm gen`.
 

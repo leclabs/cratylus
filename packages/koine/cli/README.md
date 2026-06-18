@@ -102,21 +102,21 @@ koine migrate --from 1 --to 2
 
 ## Exit codes
 
-| Code | Meaning |
-|---|---|
-| 0 | Success |
-| 1 | Generic error |
-| 2 | Validation/IO failure (lint, missing manifest) |
-| 3 | Drift detected (when `drift_check: error`) |
-| 4 | Lossy translation under `--strict` |
+| Code | Meaning                                        |
+| ---- | ---------------------------------------------- |
+| 0    | Success                                        |
+| 1    | Generic error                                  |
+| 2    | Validation/IO failure (lint, missing manifest) |
+| 3    | Drift detected (when `drift_check: error`)     |
+| 4    | Lossy translation under `--strict`             |
 
 ## Environment variables
 
-| Variable | Effect |
-|---|---|
-| `KOINE_HOME` | Override `~/.koine/` location |
-| `KOINE_CONFIG` | Override per-invocation manifest path |
-| `KOINE_LOG_LEVEL` | `error \| warn \| info \| debug` |
+| Variable          | Effect                                |
+| ----------------- | ------------------------------------- |
+| `KOINE_HOME`      | Override `~/.koine/` location         |
+| `KOINE_CONFIG`    | Override per-invocation manifest path |
+| `KOINE_LOG_LEVEL` | `error \| warn \| info \| debug`      |
 
 ## License
 

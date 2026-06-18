@@ -5,18 +5,18 @@ delineation: The clock-organ of an ambient person — a self-leased loop that ru
 
 # Pulse
 
-The organ that gives an [[ambient-person-agent]] **a life that runs** — what realizes its *self-clocked* differentia (the property; this is its organ). A pulse is a loop that fires on the person's **own cadence**, whether or not anyone is looking: **wake → observe → act → reflect → rest**.
+The organ that gives an [[ambient-person-agent]] **a life that runs** — what realizes its _self-clocked_ differentia (the property; this is its organ). A pulse is a loop that fires on the person's **own cadence**, whether or not anyone is looking: **wake → observe → act → reflect → rest**.
 
-- **The loop, phase by phase.** *Wake* ([[agent-know-thyself]]) reconstitutes the self; *observe* scans the [[senses]] for what warrants action; *act* decides and executes on expertise ([[principal-agency]]), escalating only a [[genuine-fork]] and never blocking ([[dont-blind-wait]] · [[never-go-silent]]); *reflect* runs the [[dream]] to consolidate the episodic stream ([[episodic-encoding]]); *rest* yields until the next beat.
-- **Cadence, not constancy.** The pulse is *self-clocked*, not *always-thinking* — it wakes to observe over a real stream; a wake over no real signal is just a scheduler ([[ambient-person-agent]]). The cadence is tiered: frequent observe, periodic reflect, infrequent deep consolidation.
+- **The loop, phase by phase.** _Wake_ ([[agent-know-thyself]]) reconstitutes the self; _observe_ scans the [[senses]] for what warrants action; _act_ decides and executes on expertise ([[principal-agency]]), escalating only a [[genuine-fork]] and never blocking ([[dont-blind-wait]] · [[never-go-silent]]); _reflect_ runs the [[dream]] to consolidate the episodic stream ([[episodic-encoding]]); _rest_ yields until the next beat.
+- **Cadence, not constancy.** The pulse is _self-clocked_, not _always-thinking_ — it wakes to observe over a real stream; a wake over no real signal is just a scheduler ([[ambient-person-agent]]). The cadence is tiered: frequent observe, periodic reflect, infrequent deep consolidation.
 - **One heartbeat across bodies.** A person relocates across substrates ([[substance-over-accident]]); its pulse must fire **once**, not once per body — leased so the relocatable person keeps a single rhythm, and restart-stable so a reboot resumes the beat rather than double-firing or stalling.
 
 ## Realizations (one concept, every harness)
 
 The pulse is the portable pattern; each runtime embodies it:
 
-- **Oikos** — the native *pulse-organ* (ADR-0029): a mesh-leased scheduled loop, REM-phase Dreamer on cadence.
-- **Claude Code** — approximated by composing skills: **/loop** (the tick — recurring re-invocation), **/goal** (the *telos* that makes a wake meaningful — the standing signal a bare scheduler lacks), **/weitermachen** (resumption after an interruption).
+- **Oikos** — the native _pulse-organ_ (ADR-0029): a mesh-leased scheduled loop, REM-phase Dreamer on cadence.
+- **Claude Code** — approximated by composing skills: **/loop** (the tick — recurring re-invocation), **/goal** (the _telos_ that makes a wake meaningful — the standing signal a bare scheduler lacks), **/weitermachen** (resumption after an interruption).
 
 ## See also
 

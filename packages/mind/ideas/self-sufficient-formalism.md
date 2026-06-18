@@ -5,7 +5,7 @@ delineation: A formal block is the signum aptissimum of its concept — closed (
 
 # Self-Sufficient Formalism
 
-A formal block (set-builder, signature, law) is the **signum aptissimum** of the concept it states ([[precise-circumscription]] · [[densest-faithful-point]]): the densest sign that carries the *whole* meaning. If prose is still required to explain what the comprehension means, the block is **incomplete** — repair the block, never prop it with prose.
+A formal block (set-builder, signature, law) is the **signum aptissimum** of the concept it states ([[precise-circumscription]] · [[densest-faithful-point]]): the densest sign that carries the _whole_ meaning. If prose is still required to explain what the comprehension means, the block is **incomplete** — repair the block, never prop it with prose.
 
 ```text
 B ≜ a formal block : its definition and law lines

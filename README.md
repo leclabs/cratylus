@@ -2,7 +2,7 @@
 
 **polis ≜ the canonical culture and the machinery that founds agent societies.**
 
-A *polis* (Greek: city/society) is, in Aristotle, composed of *oikoi* — households. polis is the
+A _polis_ (Greek: city/society) is, in Aristotle, composed of _oikoi_ — households. polis is the
 society layer: the constitution, roles, archetypes, and conventions an agent society lives by, plus
 the machinery that projects that culture into any project an Operator wants to base — or rebase —
 upon it. The agents it defines are not tools; they are **founders** who provide the structure of the
@@ -10,19 +10,19 @@ societies they are born into, restructuring fleets, systems, and projects to ali
 
 This repository is the consolidation target for two efforts previously developed in parallel:
 
-| Package | Anchor | Role |
-|---|---|---|
-| `packages/mind` | the **nous/ethos** — canonical culture | The exemplar corpus: principles, dispositions, conventions, the identity-memory stack, the kind taxonomy, and the `exemplify` pipeline. Markdown + a Python toolkit; not an npm package. |
-| `packages/koine` | the **common tongue** — projection machinery | Universal agent-config translator (formerly *agentir*): author once in a canonical IR, compile to every client dialect (Claude Code, Codex, Cursor, …) and lift any client config back. Node: `core` · `cli` · `adapters`. |
+| Package          | Anchor                                       | Role                                                                                                                                                                                                                       |
+| ---------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/mind`  | the **nous/ethos** — canonical culture       | The exemplar corpus: principles, dispositions, conventions, the identity-memory stack, the kind taxonomy, and the `exemplify` pipeline. Markdown + a Python toolkit; not an npm package.                                   |
+| `packages/koine` | the **common tongue** — projection machinery | Universal agent-config translator (formerly _agentir_): author once in a canonical IR, compile to every client dialect (Claude Code, Codex, Cursor, …) and lift any client config back. Node: `core` · `cli` · `adapters`. |
 
 ## The civic ontology
 
-- **oikos** (a sibling project) — the *household*: ambient agent-persons living in a mesh (the runtime).
-- **polis** (here) — the *society*: the culture (`mind`) and the projection machinery (`koine`) the households are founded from.
+- **oikos** (a sibling project) — the _household_: ambient agent-persons living in a mesh (the runtime).
+- **polis** (here) — the _society_: the culture (`mind`) and the projection machinery (`koine`) the households are founded from.
 
-A *metropolis* founds *apoikiai* — colonies, literally *away-homes*. polis founds societies; each adopted project is a colony of its culture, adopted by **consent** (`packages/mind/ideas/consensual-adoption.md`).
+A _metropolis_ founds _apoikiai_ — colonies, literally _away-homes_. polis founds societies; each adopted project is a colony of its culture, adopted by **consent** (`packages/mind/ideas/consensual-adoption.md`).
 
-Above the society stands the **Operator** — the sovereign it serves, *named-but-outside* it (`packages/mind/ideas/operator-relation.md`): the founders build within his intent and answer to him, but he is not himself a citizen.
+Above the society stands the **Operator** — the sovereign it serves, _named-but-outside_ it (`packages/mind/ideas/operator-relation.md`): the founders build within his intent and answer to him, but he is not himself a citizen.
 
 ## The two founders
 

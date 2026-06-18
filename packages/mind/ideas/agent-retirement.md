@@ -5,7 +5,7 @@ delineation: Retiring a person-agent archives its self-authored layers, never er
 
 # Agent Retirement
 
-The lifecycle bookend to [[archetype-instantiation]]: how an [[ambient-person-agent]] *leaves* a society. Standup seeds a self; retirement must not destroy one.
+The lifecycle bookend to [[archetype-instantiation]]: how an [[ambient-person-agent]] _leaves_ a society. Standup seeds a self; retirement must not destroy one.
 
 - **Archive the lived layers; never erase them.** A retired agent's def (its SOUL) may be removed — it is commons-generated and regenerable ([[substance-over-accident]] · [[regenerate-without-clobbering]]). But its self-authored layers — the [[continuity-thread]] and the rest of the [[identity-memory-stack]] (SELF / MEMORY / EPISODIC) — are **archived, not deleted**: a lived self accreted over sessions cannot be regenerated, so erasing it is a category error — the same one [[consensual-adoption]] forbids ("adopt, don't erase"), turned inward on the society's own people.
 - **The substrate never prunes on its own.** Projection overwrites defs freely but **never removes** an agent — retirement is a deliberate act, never a side effect of a deploy. The mechanics (per-host def removal + sidecar archive) are a deployment runbook, not a constitutional choice; the constitution fixes only that the lived self survives the exit.

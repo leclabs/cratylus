@@ -132,7 +132,7 @@ async write(ir: IR, scope: Scope, cwd: string, opts: WriteOpts = {}): Promise<Wr
 }
 ```
 
-**Honor `opts.dryRun`** — when true, return what *would* be written but don't touch the filesystem. The engine uses this for `koine compile --dry-run` and `koine diff`.
+**Honor `opts.dryRun`** — when true, return what _would_ be written but don't touch the filesystem. The engine uses this for `koine compile --dry-run` and `koine diff`.
 
 **Be explicit about what you skip.** The `--explain` flag groups warnings/skips by reason — give meaningful reason strings.
 
@@ -166,7 +166,7 @@ const canonicalToMyClient: Partial<Record<CanonicalEvent, string>> = {
 
 koine's CLI surfaces this via `koine events --client myclient`. Events not in the map → warning + skip on write.
 
-For hook *bodies*, koine hooks are shell commands. If your client wants JS plugins or another representation, generate a thin shim that shells out to the configured `command` (see the OpenCode adapter for reference).
+For hook _bodies_, koine hooks are shell commands. If your client wants JS plugins or another representation, generate a thin shim that shells out to the configured `command` (see the OpenCode adapter for reference).
 
 ## Testing
 
