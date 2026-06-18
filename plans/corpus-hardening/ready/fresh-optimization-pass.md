@@ -1,6 +1,23 @@
 # fresh-optimization-pass
 
-**State:** ready · **Lead:** Nico · **Source:** the rule-completion arc (2026-06-17 audit). Every cell was authored + accepted under the old **CE-only** standard; the corrected **CE ∧ ME** standard now touches all of them.
+**State:** ready — **discovery half DONE; full conformance fan-out PENDING (Workflow opt-in + Operator scope)** · **Lead:** Nico · **Source:** the rule-completion arc (2026-06-17 audit). Every cell was authored + accepted under the old **CE-only** standard; the corrected **CE ∧ ME** standard now touches all of them.
+
+## Discovery half — DONE (2026-06-17, `6106f1d`)
+
+The cheap, inline discovery pass over the flagged candidates is complete:
+- **Headline fusion candidate resolved: `precise-circumscription` ↔ `densest-faithful-point` → KEEP SEPARATE.**
+  They are MECE (naming-criterion vs expression-criterion); `anchoring-is-self-similar` is the cell that homes
+  their unity. NOT a fusion — the audit's "same axis" flag was an **ME over-narration** (precise-circumscription
+  inline-restated the pairing). Trimmed to a citation.
+- **`anchor ≡ signum aptissimum` axiom: LANDED** in `precise-circumscription` (strong-reader-limit convergence).
+- **"signum aptissimum" homeless-term: resolved — no mint.** Already cite-bound to precise-circumscription ·
+  densest-faithful-point in `self-sufficient-formalism` + `formalize`; illustrative in `anchor-legibility-budget`.
+- **Signal:** the flagged candidates resolved to ONE surgical edit, not a merge → finding-density on the rest of
+  the corpus is likely LOW. The full per-cell sweep is the remaining (and still-large) unknown.
+
+**Remaining = the full ~147-cell prose-free conformance fan-out** (per-cell trim + cross-cell fusion under
+CE∧ME). That is the part the task flags "scope the fan-out with the Operator before launching" — a multi-agent
+Workflow needing explicit opt-in. Held for Operator scope (the genuine-fork: large fan-out, not the cheap wins).
 
 ## Intent
 

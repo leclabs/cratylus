@@ -1,6 +1,8 @@
 # crystallize-verbatim-salience
 
-**State:** ready · **Lead:** Nico · **Source:** the recommendation-style verbatim-organ fix (`d46af93`) proved the insight in code.
+**State:** completed (2026-06-17, `6106f1d`) · **Lead:** Nico · **Source:** the recommendation-style verbatim-organ fix (`d46af93`) proved the insight in code.
+
+**DONE.** Rule homed in `reader-prior-projection.md` (the projection floor): dereferenceability necessary-not-sufficient; a contested disposition projects `render: verbatim`, not a bare anchor; `render: verbatim` documented as legit for a *disposition* (not identity-protocol-only). `recommendation-style`'s inline re-derivation trimmed to a citation (cite-once). CE∧ME blind-judge PASS; verify.py PASS.
 
 ## Intent
 

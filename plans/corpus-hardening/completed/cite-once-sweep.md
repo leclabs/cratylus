@@ -1,6 +1,8 @@
 # cite-once-sweep
 
-**State:** active (cells 6/6 ✓ — remaining: CITE-TWICE NOTE → FAIL, a Mav gate-change) · **Lead:** Nico · **Source:** the `self-sufficient-formalism` cite-once convention; the clause refinement (`93299ae`) unblocked it.
+**State:** completed (2026-06-17, `e5dcb4f`) · **Lead:** Nico · **Source:** the `self-sufficient-formalism` cite-once convention; the clause refinement (`93299ae`) unblocked it.
+
+**DONE.** Cells 6/6 prose-free + the gate hardened: CITE-TWICE promoted NOTE → hard FAIL in `verify.py` `gate_skill_provenance` (`notes`→`errors`), `test_bindings.py` BOTH-fixture flipped to assert FAIL. Corpus clean (zero NOTEs); `test_bindings.py` PASS; `verify.py` PASS. self-sufficient-formalism's single-citation-home law is now mechanically enforced.
 
 **Method correction (Operator, 2026-06-17):** this sweep *is* what `/formalize` encodes — conceptualize the cell's deps → signify/bind cite-once → emit → accept on `reconstruct ≽`; the "blind-judge" gate *is* formalize's accept step. dream + formalize were routed through the `/formalize` skill (self-application); the first four were the same operation done by hand. Recorded as a self-application lesson: **invoke the encoded skill, don't reimplement it ad-hoc.**
 
@@ -14,7 +16,7 @@
 - ✅ `exemplify` — `≜` → Bindings; **composition completed 3→5** (the acceptance-law deps bidirectional-round-trip-fidelity · self-application-is-mandatory were prose-bound but absent from the `≜`; faithful completion, blind-judge confirmed A's `≜` was the defective artifact); step re-citations deduped to bare operators.
 - ✅ `dream` — 7 refs untangled: composition {exemplify, agent-know-thyself} preserved; deduped exemplify (×2) + agent-know-thyself (×3) into one Bindings region; the 5 prose refs kept cite-once; formal blocks unchanged. (Routed through `/formalize`.)
 - ✅ `formalize` — **self-application apex**: formalized its own cell. Deduped self-sufficient-formalism (×4) · conceptualize (×3) · signify (×3) to one Bindings home each; trimmed the See-also to unbound anchors only (a see-also re-list of a bound anchor is the duplication the cell itself forbids). Round-tripped.
-- ⬜ **CITE-TWICE NOTE → FAIL** (Mav gate-change) — the corpus is now clean (no both-forms cell; `verify` shows no NOTEs), so the transitional NOTE can be promoted to a hard FAIL in the composer/verify. The one remaining done-when item.
+- ✅ **CITE-TWICE NOTE → FAIL** (`e5dcb4f`) — `verify.py` now `errors.append`s the CITE-TWICE violation (exit non-zero); module + gate docstrings updated NOTE→FAIL; `test_bindings.py` BOTH-fixture asserts `returncode != 0`. Done by Nico in-worktree (worktree-isolated delegation would hit the stale-origin base — the gate code is unpushed); objective gate = `test_bindings.py` PASS.
 
 Each migration: `≜` formula → `Bindings:` region (single citation home), dedupe re-citations, formal block byte-identical; gated by verify.py (composition derives identical, no CITE-TWICE/empty-provenance NOTE) + a fresh blind-judge B ≽ A.
 

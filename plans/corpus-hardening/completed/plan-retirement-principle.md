@@ -1,6 +1,8 @@
 # plan-retirement-principle
 
-**State:** ready · **Lead:** Nico · **Source:** Operator question (2026-06-17) + this plan's own founding (3 completed plans retired).
+**State:** completed (2026-06-17, `6106f1d`) · **Lead:** Nico · **Source:** Operator question (2026-06-17) + this plan's own founding (3 completed plans retired).
+
+**DONE.** `ideas/plan-retirement.md` minted (kind: principle): transient scaffold; retire on (a) result-in-source-of-truth ∧ (b) rationale-permanently-homed; git = recovery net; kept-completed-plan = palimpsest. Cites doc-mirrors-runtime-truth · clean-slate · palimpsest · projection-is-not-the-source · sharded-plan-layout (each once). CE∧ME blind-judge PASS (justified mint — irreducible delta = the *terminal predicate* on a plan's lifecycle, absent from clean-slate/doc-mirrors). GLOSSARY regenerated.
 
 ## Intent
 

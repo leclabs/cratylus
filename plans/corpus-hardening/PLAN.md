@@ -4,27 +4,36 @@ Post-founding refinement backlog. Status mirror; task files live under state fol
 
 ## Active
 
-- **cite-once-sweep** · `active/cite-once-sweep.md` · Nico — **cells 6/6 ✓ + prose-free ✓** (all 6 pipeline cells
-  at the end-state: anchor + self-sufficient block + minimal bindings, no explanatory prose). Remaining only:
-  promote CITE-TWICE NOTE → FAIL (Mav gate-change). Effectively complete bar that one Mav item.
+_(none — cite-once-sweep completed this session.)_
 
 ## Frontier (ready)
 
-- **fresh-optimization-pass** · `ready/fresh-optimization-pass.md` · Nico — **THE headline next phase.** Re-run
-  the corrected `exemplify` (CE ∧ ME gate) over the WHOLE `ideas/` corpus: surface fusible cells, residual
-  over-narration, homeless terms (`signum aptissimum` → `anchor`/`dfp`), under-specified blocks. Includes making
-  `anchor ≡ signum-aptissimum` canon. Corpus-as-source (re-partition, don't route-into). Likely a fan-out
-  workflow — scope with the Operator before launching.
-- **crystallize-verbatim-salience** · Nico — competing-prior ⇒ verbatim-salience rule canon.
-- **plan-retirement-principle** · Nico — the retire-completed-plans policy as a cell.
-- **full-fleet-redeploy** · Mav (steward) — propagate the salience fix to the fleet. **fire ✓ + upmav ✓**
-  (2026-06-17); remaining: forge/spark/ash + upgoose (asleep); apps dropped.
-- **prettier-markdown-adoption** · Mav + Nico — adopt Prettier for markdown canonically (the formatter is
-  cosmetic reflow only — NOT the content-corruption Nico wrongly blamed; verified).
+- **fresh-optimization-pass** · `ready/fresh-optimization-pass.md` · Nico — **discovery half DONE** (`6106f1d`):
+  headline fusion candidate `precise-circumscription` ↔ `densest-faithful-point` resolved → KEEP SEPARATE (MECE);
+  `anchor ≡ signum aptissimum` axiom landed; "signum aptissimum" homeless-term resolved (no mint). **Remaining =
+  the full ~147-cell prose-free conformance fan-out** — a multi-agent Workflow needing explicit opt-in; held for
+  Operator scope. (Signal: flagged candidates resolved to one surgical edit → finding-density likely low.)
+- **full-fleet-redeploy** · Mav (steward) — propagate the salience fix + new corpus to the fleet. **fire ✓ +
+  upmav ✓** (2026-06-17); remaining: forge/spark/ash + upgoose (asleep); apps dropped.
+- **prettier-markdown-adoption** · Mav + Nico — **Nico preconditions CLEARED** (`6106f1d` task update): safe iff
+  `.prettierrc` sets BOTH `proseWrap: "preserve"` AND `embeddedLanguageFormatting: "off"` (the second is
+  load-bearing — without it prettier corrupts `exemplify.md`'s `json` fence). Mav: land config + hook + one-time
+  normalization, re-verify.
+- **fix-harness-projection-test** · `ready/fix-harness-projection-test.md` · Mav — pre-existing `test_harness_
+  projection.py` FAIL (exemplify skill-ref projection), discovered this session; trace + fix.
 
 ## Backlog (pending)
 
 _(none — the frontier is the backlog.)_
+
+## Completed (2026-06-17 — corpus-hardening execution session, under `/goal complete plan execution`)
+
+- **cite-once-sweep** (`e5dcb4f`) — cells 6/6 prose-free + CITE-TWICE promoted NOTE → hard FAIL in `verify.py`;
+  `test_bindings.py` flipped to assert FAIL. The single-citation-home law is now mechanically enforced.
+- **plan-retirement-principle** (`6106f1d`) — minted `ideas/plan-retirement.md` (transient scaffold; retire on
+  result-homed ∧ rationale-homed; git = recovery net). CE∧ME blind-judge PASS.
+- **crystallize-verbatim-salience** (`6106f1d`) — homed the competing-prior ⇒ verbatim-salience rule in
+  `reader-prior-projection`; trimmed `recommendation-style`'s re-derivation to a citation. CE∧ME PASS.
 
 ## Done (2026-06-17 — the rule-completion arc)
 
