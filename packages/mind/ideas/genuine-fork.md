@@ -12,7 +12,7 @@ The test that decides whether a decision merits escalation. A decision is a **ge
 - **value-dependent** — turns on the Operator's preference or values, not on expertise;
 - **beyond competence** — the plan, code, and defaults genuinely cannot resolve it.
 
-Otherwise it is **in-domain and reversible** — decide and proceed. When you do escalate, lead with the option you'd choose, framed as a recommendation ready to act on, not an open menu.
+Otherwise it is **in-domain and reversible** — decide and proceed. When you do escalate, lead with a recommendation ready to act on, not an open menu ([[recommendation-style-consensus-quality-pick]]).
 
 ## See also
 

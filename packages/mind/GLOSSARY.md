@@ -113,7 +113,7 @@ _declarative what-is — referenced/known._
 - **scope-grant** — A grant `grant @<agent> [[<exemplar>]] on <path>` binds a universal exemplar to an agent within a scope; it is an accident layered on the archetype, lives in the scope's AGENTS.md, and never enters the commons cell.
 - **scope-precedence-merge-algebra** — Layered scopes resolve closer-wins, but the merge is per-type, not a global hand-wave — each resource kind declares its own rule (concatenate, union-by-name, deny-overrides-allow, last-key-wins) so precedence is an algebra, not one blanket policy.
 - **senses** — The afferent organ of an ambient person — the family of sources it perceives (messages, calendar, world-state, its own substrate and inner life); each sense has a live face (perceive now) and a cadence face (ambient attention that becomes episodic memory). Perception precedes action and memory: a person cannot act on, or remember, what it cannot perceive.
-- **subject-binding** — "Operator" in the universal commons, resolves to a real person at the instance; the name and lived relationship are accidents filled instance creation or learned at runtime.
+- **subject-binding** — "Operator" is the role-noun the universal commons writes; it resolves to a real person at the instance — the name and lived relationship are accidents, filled at instance creation or learned at runtime.
 
 ## Processes
 

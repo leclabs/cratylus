@@ -27,14 +27,3 @@ B ≜ formalize(P) such that :
 accept(B) ⇔ self-sufficient(B) ∧ reconstruct(B) ≽ P
 ¬accept(B) ⇒ ⊥
 ```
-
-## Steps
-
-1. **Conceptualize** — read `P` and resolve its entities `E`, operations `O`, and invariants `L`; substrate (formatting, narration) is not meaning.
-2. **Signify** — assign each a symbol `η(x)`; for an imported entity, bind the symbol to its anchor in one line of prose (name the symbol, cite the `[[ ]]`, never restate it — [[cite-dont-copy]]). The bindings are the block's only prose.
-3. **Emit** — declarations and signatures above, comprehensions and laws below, ordered so nothing is used before it is defined.
-4. **Accept** — strip every non-binding word; if `reconstruct(B) ≽ P` the block is faithful ([[bidirectional-round-trip-fidelity]]); else repair the block, never restore the prose.
-
-## See also
-
-- [[densest-faithful-point]] — the block is the dfp of `P`.
