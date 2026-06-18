@@ -2,7 +2,7 @@
 //
 // The mind corpus emits a single canonical koine IR (mind/toolkit/emit_ir.py;
 // the committed `mind.koine.json` fixture below is its output: 11 agents +
-// 7 skills = the 18 culture artifacts). B4's done-when is that this IR
+// 10 skills = the 21 culture artifacts). B4's done-when is that this IR
 // compiles to >=2 client dialects ROUND-TRIP CLEAN — `read(write(IR)) == IR`
 // (structural identity on the IR, not byte-identity on the dialect file;
 // koine normalizes per dialect, so identity lives on the IR waypoint).
@@ -44,9 +44,9 @@ function mindIR(targets: string[]): IR {
 }
 
 describe('B4 culture->IR bridge: the emitted IR is well-formed', () => {
-  it('carries the 18 culture artifacts (11 agents + 7 skills)', () => {
+  it('carries the 21 culture artifacts (11 agents + 10 skills)', () => {
     expect(fixture.agents).toHaveLength(11);
-    expect(fixture.skills).toHaveLength(7);
+    expect(fixture.skills).toHaveLength(10);
     for (const a of fixture.agents) {
       expect(a.name).toBeTruthy();
       expect(a.body).toBeTruthy();
@@ -77,7 +77,7 @@ describe.each([
     expect(adapter.capabilities.resources.skills).toBe('full');
   });
 
-  it('IR -> dialect -> IR recovers all 18 artifacts to identity', async () => {
+  it('IR -> dialect -> IR recovers all 21 artifacts to identity', async () => {
     const ir = mindIR([adapter.id]);
     const report = await adapter.write(ir, 'project', cwd, {});
     const re = await adapter.read('project', cwd);
