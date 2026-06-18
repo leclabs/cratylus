@@ -6,16 +6,15 @@ trigger: /dream
 
 # Dream Skill
 
-dream ≜ invokes [[exemplify]], references [[agent-know-thyself]]
-
-The agent's "sleep" — sleep-dependent memory consolidation (replay → schema) run as an explicit step: fires as step 1 of [[agent-know-thyself]]'s wake sequence, before resuming work. The product is a **reboot seed, never a journal** ([[self-application-is-mandatory]] · [[context-not-prose]]): a scar carried up as narrative is a [[palimpsest]].
+The agent's "sleep" — sleep-dependent memory consolidation (replay → schema) run as an explicit step: fires as step 1 of agent-know-thyself's wake sequence, before resuming work. The product is a **reboot seed, never a journal** ([[self-application-is-mandatory]] · [[context-not-prose]]): a scar carried up as narrative is a [[palimpsest]].
 
 The stack it consolidates into — the layers SOUL/SELF/MEMORY/EPISODIC and their two opposite-provenance motions — is [[identity-memory-stack]]. `dream` is the **up-and-out** motion; the down-and-in counterpart `encode` binds [[episodic-encoding]]. `SOUL ∉ range(dream)` — the archetype changes only in the commons.
 
+Bindings: `dream` invokes the [[exemplify]] pipeline (`D ──CA──→ C ──η──→ A ──Φ──→ σ(·, s) ──→ F`), used below as the bare operator `exemplify`; it is step 1 of [[agent-know-thyself]]'s wake sequence, consolidating that protocol's `${AGENT_HOME}` layers. The symbol table is `references/formal-symbolic-notation.md`.
+
 Resolve from context:
 
-- ${AGENT_HOME} — the agent's absolute home `{home}/{agent}/` ([[agent-know-thyself]]); each self-authored layer lives at `AGENT_HOME/<layer>.md`, for `<layer> ∈ {SELF, MEMORY, EPISODIC}`.
-- exemplify — the [[exemplify]] pipeline (`D ──CA──→ C ──η──→ A ──Φ──→ σ(·, s) ──→ F`), bound here once and used below as the bare operator `exemplify`.
+- ${AGENT_HOME} — the agent's absolute home `{home}/{agent}/`; each self-authored layer lives at `AGENT_HOME/<layer>.md`, for `<layer> ∈ {SELF, MEMORY, EPISODIC}`.
 
 ## 1. Distillation
 

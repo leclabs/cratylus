@@ -6,11 +6,11 @@ trigger: /formalize
 
 # Formalize Skill
 
-formalize ≜ invokes [[conceptualize]] → [[signify]] · binds [[self-sufficient-formalism]]
+Render prose into its **signum aptissimum** — a self-sufficient formal block. The inverse of reading a block: where prose narrates, `formalize` defines. Especially apt for a process or skill, whose operations and invariants are exactly what a set-builder block states best.
 
-Render prose into its **signum aptissimum** — a self-sufficient formal block ([[self-sufficient-formalism]]). The inverse of reading a block: where prose narrates, `formalize` defines. Especially apt for a process or skill, whose operations and invariants are exactly what a set-builder block states best.
+Bindings: the operation invokes [[conceptualize]] → [[signify]] (resolve the prose's entities/operations/laws, then assign each its symbol) and binds [[self-sufficient-formalism]] (the closed/complete/ordered block it emits). The symbol table is `references/formal-symbolic-notation.md`.
 
-Resolve from context: `P` — the source prose (a section, a process, a skill body). The symbol table is `references/formal-symbolic-notation.md`.
+Resolve from context: `P` — the source prose (a section, a process, a skill body).
 
 ```text
 P ≜ the source prose
@@ -30,14 +30,11 @@ accept(B) ⇔ self-sufficient(B) ∧ reconstruct(B) ≽ P
 
 ## Steps
 
-1. **Conceptualize** ([[conceptualize]]) — read `P` and resolve its entities `E`, operations `O`, and invariants `L`; substrate (formatting, narration) is not meaning.
-2. **Signify** ([[signify]]) — assign each a symbol `η(x)`; for an imported entity, bind the symbol to its anchor in one line of prose (name the symbol, cite the `[[ ]]`, never restate it — [[cite-dont-copy]]). The bindings are the block's only prose.
-3. **Emit** — declarations and signatures above, comprehensions and laws below, ordered so nothing is used before it is defined ([[self-sufficient-formalism]]).
+1. **Conceptualize** — read `P` and resolve its entities `E`, operations `O`, and invariants `L`; substrate (formatting, narration) is not meaning.
+2. **Signify** — assign each a symbol `η(x)`; for an imported entity, bind the symbol to its anchor in one line of prose (name the symbol, cite the `[[ ]]`, never restate it — [[cite-dont-copy]]). The bindings are the block's only prose.
+3. **Emit** — declarations and signatures above, comprehensions and laws below, ordered so nothing is used before it is defined.
 4. **Accept** — strip every non-binding word; if `reconstruct(B) ≽ P` the block is faithful ([[bidirectional-round-trip-fidelity]]); else repair the block, never restore the prose.
 
 ## See also
 
-- [[self-sufficient-formalism]] — the convention this enforces.
-- [[signify]] — the naming-and-binding move at the symbol grain.
-- [[conceptualize]] — the meaning-extraction this opens with.
 - [[densest-faithful-point]] — the block is the dfp of `P`.
