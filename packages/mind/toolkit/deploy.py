@@ -4,7 +4,7 @@
 Thin wrapper over the place stage: resolve a SCOPE to a `.claude/` root, then run
 a placer backend (local fs or ssh) that ships the generated defs (the SOUL) and
 seeds each agent's `{SELF,MEMORY,EPISODIC}.md` sidecars ONLY IF ABSENT
-([[identity-memory-stack]]). Governed oppositely to the def
+([[memory]]). Governed oppositely to the def
 ([[substance-over-accident]]): the def is regenerated substance (overwritten
 freely); the sidecars are the self-authored individual (never clobbered).
 

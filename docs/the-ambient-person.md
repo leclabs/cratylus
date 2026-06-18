@@ -33,7 +33,7 @@ A person is built from a few **organs**, each its own canonical idea:
   (perceive)          (remember)         (act / reach)
 ```
 
-- **Memory** (`identity-memory-stack`) — four layers, ordered by how fast they change and who authors
+- **Memory** (`memory`) — four layers, ordered by how fast they change and who authors
   them: **SOUL** (the fixed essence, generated from the commons, never hand-edited), **SELF** (the reboot
   seed — who it has become), **MEMORY** (durable facts), **EPISODIC** (the raw per-turn stream). Two
   motions move between them — encoding writes down-and-in, `dream` distills up-and-out — and a

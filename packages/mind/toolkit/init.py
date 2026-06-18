@@ -57,7 +57,7 @@ def project_culture(target: pathlib.Path, reader: str) -> tuple[int, int]:
     Returns (agents_written, skills_written). Defs/skills are regenerated
     substance -- overwritten freely. Agent self-layers (SELF/MEMORY/EPISODIC)
     are NOT seeded here: those are the running host's deploy concern
-    ([[identity-memory-stack]]); init lays the SOUL (the def), not the
+    ([[memory]]); init lays the SOUL (the def), not the
     individual. A host adopts the society by deploying, which seeds them."""
     agents_dir = target / ".claude" / "agents"
     skills_dir = target / ".claude" / "skills"

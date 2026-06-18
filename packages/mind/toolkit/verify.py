@@ -432,7 +432,7 @@ def gate_roundtrip():
                 # its anchor token. The def DECLARES the ref in source (the cell's
                 # ≜ formula / genus list), so its composition is honored; the
                 # render carries the body, not the token, by design. This covers
-                # ANY composed verbatim organ -- genus (identity-memory-stack) OR
+                # ANY composed verbatim organ -- genus (memory) OR
                 # embodied/transitive (principal-ic's recommendation-style) --
                 # whichever way the ref entered the composition.
                 if kind == "agent" and is_verbatim_organ(ref):

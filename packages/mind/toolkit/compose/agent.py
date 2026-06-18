@@ -2,7 +2,7 @@
 body. Assembles, in order: heading, authored intro, the `≜`-formula dispositions
 (resolved at the reader density) + genus dispositions, the persona delta, the
 genus organs (verbatim-render cells -- the identity-&-memory protocol resolved
-from [[identity-memory-stack]]'s `## Protocol` section), and the AGENTS.md scope
+from [[memory]]'s `## Protocol` section), and the AGENTS.md scope
 grants (accidents).
 
 Originally moved verbatim from resolve.emit()'s body-building half so the bytes
@@ -36,7 +36,7 @@ GENUS_DISPOSITIONS = ("semantic-whole-over-syntactic-substrate",)
 # hardcoded in _identity_block()). The cell declares its own projection law and
 # the machinery obeys generically -- the slug list here is bookkeeping (which
 # refs the def declares for R1), never the render text (read from the cell).
-GENUS_ORGANS = ("identity-memory-stack",)
+GENUS_ORGANS = ("memory",)
 # Front-matter `render:` value that routes a ref through the verbatim organ path
 # instead of render_ref's density-keyed line; the section it emits verbatim.
 VERBATIM_RENDER = "verbatim"
@@ -244,7 +244,7 @@ def render_organ(slug: str, name: str) -> list[str]:
     `## Protocol` heading itself is NOT emitted), `{name}`-substituted to the
     agent's sidecar dir, at ANY reader density (bypassing render_ref's name-only
     collapse). Load-bearing runtime instruction the def must carry in full --
-    the cell is the one home ([[identity-memory-stack]]), the body is read from
+    the cell is the one home ([[memory]]), the body is read from
     it, never hardcoded here. Trailing "" matches the block's emit spacing."""
     cell = cells.parse_cell(slug)
     section = cells.section_body(cell["body"], ORGAN_SECTION)

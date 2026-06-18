@@ -6,7 +6,7 @@
     {
       "fragment_digest": "sha256:33aa9982799a204c04f526ce2ed081af0145ea4403f17d738853fb149fe29e51",
       "idea_gloss": "the four-layer stack SOUL/SELF/MEMORY/EPISODIC and its two opposite-provenance motions",
-      "home_slug": "identity-memory-stack",
+      "home_slug": "memory",
       "disposition": "reuse",
       "rank": 1.0
     },
@@ -41,7 +41,7 @@
     {
       "fragment_digest": "sha256:de29605cb2a028eea129a2914fc793cf67a260aa0e1ab77dfc260cea96ab4faa",
       "idea_gloss": "promotion is move-not-copy; consumed raw is cleared so EPISODIC never grows unbounded",
-      "home_slug": "identity-memory-stack",
+      "home_slug": "memory",
       "disposition": "reuse",
       "rank": 1.0
     },

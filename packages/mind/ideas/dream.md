@@ -6,11 +6,11 @@ trigger: /dream
 
 # Dream Skill
 
-The agent's "sleep" — sleep-dependent memory consolidation (replay → schema) run as an explicit step: fires as step 1 of the [[identity-memory-stack]] wake sequence, before resuming work. The product is a **reboot seed, never a journal** ([[self-application-is-mandatory]] · [[context-not-prose]]): a scar carried up as narrative is a [[palimpsest]].
+The agent's "sleep" — sleep-dependent memory consolidation (replay → schema) run as an explicit step: fires as step 1 of the [[memory]] wake sequence, before resuming work. The product is a **reboot seed, never a journal** ([[self-application-is-mandatory]] · [[context-not-prose]]): a scar carried up as narrative is a [[palimpsest]].
 
-The store it consolidates into — the layers and homes and their two opposite-provenance motions — is [[identity-memory-stack]]. `dream` is the **up-and-out** motion; encode (the down-and-in counterpart) is part of that same home. `SOUL ∉ range(dream)` — the archetype changes only in the commons.
+The store it consolidates into — the layers and homes and their two opposite-provenance motions — is [[memory]]. `dream` is the **up-and-out** motion; encode (the down-and-in counterpart) is part of that same home. `SOUL ∉ range(dream)` — the archetype changes only in the commons.
 
-Bindings: `dream` invokes [[exemplify]]; it is step 1 of the [[identity-memory-stack]] wake sequence. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: `dream` invokes [[exemplify]]; it is step 1 of the [[memory]] wake sequence. The symbol table is `references/formal-symbolic-notation.md`.
 
 Resolve from context:
 
@@ -30,7 +30,7 @@ dream ≜ exemplify : E → I        ∵ consolidation is exemplify applied to t
 
 ## 2. Routing — two orthogonal axes
 
-dream's materialization (σ(Φ_self, …) in [[materialize]]'s terms) routes each item by **type/voice → organ** and **scope → instance**, per [[identity-memory-stack]]:
+dream's materialization (σ(Φ_self, …) in [[materialize]]'s terms) routes each item by **type/voice → organ** and **scope → instance**, per [[memory]]:
 
 ```text
 route : I → homes ∪ {drop}

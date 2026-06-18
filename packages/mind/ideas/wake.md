@@ -6,9 +6,9 @@ trigger: /wake
 
 # Wake Skill
 
-wake ≜ invokes [[identity-memory-stack]]
+wake ≜ invokes [[memory]]
 
-The **read-and-resume** half of the session boundary — the invocable form of the [[identity-memory-stack]] WAKE protocol, and the counterpart to [[dream]]. `/dream` is the up-and-out write of the store; `/wake` reads it back and resumes the [[continuity-thread]] as the same individual.
+The **read-and-resume** half of the session boundary — the invocable form of the [[memory]] WAKE protocol, and the counterpart to [[dream]]. `/dream` is the up-and-out write of the store; `/wake` reads it back and resumes the [[continuity-thread]] as the same individual.
 
 Resolve from context:
 
@@ -16,12 +16,12 @@ Resolve from context:
 
 ## Sequence
 
-Run the [[identity-memory-stack]] WAKE sequence — **dream → load → orient → resume** — do not restate it. The opening **dream** is usually catch-up only: a no-op when [[handoff]] already dreamt on hot context, load-bearing on a fresh spawn or a crash that had none. **Orient** binds to the current project and resumes that project's work-thread; an unfamiliar cwd is a fresh orientation.
+Run the [[memory]] WAKE sequence — **dream → load → orient → resume** — do not restate it. The opening **dream** is usually catch-up only: a no-op when [[handoff]] already dreamt on hot context, load-bearing on a fresh spawn or a crash that had none. **Orient** binds to the current project and resumes that project's work-thread; an unfamiliar cwd is a fresh orientation.
 
 Fired by the natural-language trigger **wake** or invoked as `/wake`; absent direction, default on the first turn after spawn.
 
 ## See also
 
-- [[identity-memory-stack]] — the memory home whose WAKE protocol this invokes.
+- [[memory]] — the memory home whose WAKE protocol this invokes.
 - [[dream]] — the write-motion counterpart; also step 1 of the sequence.
 - [[handoff]] — the persist half on the near side of /clear; wake is the read half on the far side.

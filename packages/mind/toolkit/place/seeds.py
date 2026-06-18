@@ -1,5 +1,5 @@
 """The three self-authored instance layers an agent carries beside its def
-([[identity-memory-stack]]). Seeded-if-absent, NEVER clobbered: the def (SOUL)
+([[memory]]). Seeded-if-absent, NEVER clobbered: the def (SOUL)
 is generated substance, overwritten freely; these are the self-authored
 individual, protected from every regen ([[substance-over-accident]]). Skills
 have no sidecars -- seeding is agent-only.
@@ -39,7 +39,7 @@ def memory_seed(name: str) -> str:
     today = _dt.date.today().isoformat()
     return f"""# {name} — memory
 
-*My living autobiographical organ ([[identity-memory-stack]]) — durable semantic facts that
+*My living autobiographical organ ([[memory]]) — durable semantic facts that
 accrue over my life and are recalled by relevance. Grown by the Dreamer
 ([[dreamer-consolidation]]); never overwritten by deploy. Read whole while small.*
 
@@ -54,7 +54,7 @@ def episodic_seed(name: str) -> str:
     today = _dt.date.today().isoformat()
     return f"""# {name} — episodic
 
-*My raw stream ([[identity-memory-stack]]) — important things appended as they happen, per turn.
+*My raw stream ([[memory]]) — important things appended as they happen, per turn.
 At reconstitution the Dreamer ([[dreamer-consolidation]]) distills this upward: next-steps stay
 here, durable facts rise to MEMORY, identity-shaping facts rise to SELF; the consumed raw clears.*
 

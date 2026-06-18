@@ -10,7 +10,7 @@ The **afferent** organ of an [[ambient-person-agent]] — how it _perceives_, th
 A **sense** is a source the person perceives. Perception and memory are distinct faculties — _you see now; you remember before_ — so every sense has **two faces**:
 
 - **Live face — perceive now.** Look at the current state on demand, within a turn (a read). A sense _is_ access; looking now is perception. Read-only.
-- **Cadence face — attention that becomes memory.** Driven by the [[pulse]]'s observe phase: perceive (idempotent per item) → enrich → emit observations → the episodic stream ([[identity-memory-stack]]). Attention feeds recall and the [[dream]] for free.
+- **Cadence face — attention that becomes memory.** Driven by the [[pulse]]'s observe phase: perceive (idempotent per item) → enrich → emit observations → the episodic stream ([[memory]]). Attention feeds recall and the [[dream]] for free.
 
 - **The inbox is one sense.** Messages — from the Operator ([[subject-binding]]) or a peer agent ([[state-transitions-as-agent-protocol]]) — are the _messaging_ sense: one channel among interoception (the self), proprioception (the substrate), and the world-senses. The afferent surface is a **family**, not a single inbox.
 - **Read-only; acting is gated.** Sensing changes nothing; anything outbound is an action behind the escalation gate ([[genuine-fork]]), and never blocks ([[dont-blind-wait]]).
@@ -27,5 +27,5 @@ A **sense** is a source the person perceives. Perception and memory are distinct
 - [[never-go-silent]] — the efferent complement: the senses are the ears, never-go-silent the voice.
 - [[powers]] — the efferent organ proper: senses perceive, powers act (the voice is one power).
 - [[pulse]] — drives the senses on cadence (the observe phase).
-- [[identity-memory-stack]] — where cadence observations land: the EPISODIC stream.
+- [[memory]] — where cadence observations land: the EPISODIC stream.
 - [[dont-blind-wait]] — the technique for awaiting one inbound event without freezing.

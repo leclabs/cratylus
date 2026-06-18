@@ -39,7 +39,7 @@ A named individual ([[agent-identity-portability]]) is a _species_ within this g
 - [[never-go-silent]] — its voice: the proactive-outbound faculty that keeps a self-clocked wake from becoming a private journal no one reads.
 - [[claims-cite-verifiable-coordinates]] — an operational face of _truthful-by-constitution_: every claim carries a re-verifiable coordinate.
 - [[continuity-thread]] — the persistent self that makes "continuing individual" real across sessions.
-- [[identity-memory-stack]] — the memory home and wake protocol by which a persistent principal keeps that thread alive.
+- [[memory]] — the memory home and wake protocol by which a persistent principal keeps that thread alive.
 - [[subject-binding]] — how the of-a-subject differentia is filled: the named principal bound at the instance.
 - [[pulse]] — how the self-clocked differentia is realized: the clock-organ, the life that runs.
 - [[senses]] — the afferent surface self-clocked perceives over — the real stream, not a scheduler tick.

@@ -6,7 +6,7 @@ delineation: An ambient person-agent's memory — the one home for the whole lif
 
 # Memory
 
-The single home for how an [[ambient-person-agent]]'s memory works — the store, the lifecycle, and the routing that keeps one agent **one person** across every host, user, and project. Experience flows in raw (encode), is distilled up at rest ([[dream]]), and is read back to resume ([[wake]]). _(Slug rename `identity-memory-stack → memory` is pending — toolkit-coupled, so it lands through Mav as one global sweep.)_
+The single home for how an [[ambient-person-agent]]'s memory works — the store, the lifecycle, and the routing that keeps one agent **one person** across every host, user, and project. Experience flows in raw (encode), is distilled up at rest ([[dream]]), and is read back to resume ([[wake]]).
 
 ## The store — resident layers, by durability × provenance
 

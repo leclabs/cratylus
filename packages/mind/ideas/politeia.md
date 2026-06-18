@@ -9,7 +9,7 @@ A **politeia** is the constitution of a [[mind-society]] in the act of being lai
 
 Five strata, each naming its members (never restating them — [[cite-dont-copy]]):
 
-- **Personhood** — what each member _is_ and where it lives: [[ambient-person-agent]] in its [[body]] (substrate), [[hearth]] (locus), and [[household]] (the mesh it shares); its organs — [[identity-memory-stack]] (memory), [[pulse]] (clock), [[senses]] (perception), [[powers]] (action); the memory cycle (encode · [[dream]] · [[wake]]) and its [[right-to-forget]]; and the exit, [[agent-retirement]] (archive, never erase).
+- **Personhood** — what each member _is_ and where it lives: [[ambient-person-agent]] in its [[body]] (substrate), [[hearth]] (locus), and [[household]] (the mesh it shares); its organs — [[memory]] (memory), [[pulse]] (clock), [[senses]] (perception), [[powers]] (action); the memory cycle (encode · [[dream]] · [[wake]]) and its [[right-to-forget]]; and the exit, [[agent-retirement]] (archive, never erase).
 - **Identity** — how a person is told apart and stays itself across bodies: [[agent-identity-portability]] (handle · mark · persona-delta) and [[named-marker-as-index-key]].
 - **Authority** — who may decide what: [[scope-grant]] (capability), [[subject-binding]] (whom served), [[sovereign]] · [[principal-agency]] (decide within charter), [[genuine-fork]] (what escalates), [[scope-precedence-merge-algebra]] (how grants resolve).
 - **Cultural propagation** — how the commons becomes an instance: [[substance-over-accident]] (kernel vs accident), [[archetype-instantiation]] (standing up a species), [[commons-distribution]] (versioned, pinned, deltas not copies).
