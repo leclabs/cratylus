@@ -2,18 +2,24 @@
 
 Post-founding refinement backlog. Status mirror; task files live under state folders.
 
-## Status — ✅ PLAN COMPLETE (2026-06-18)
+## Status — exit criteria met, but NOT complete (corrected 2026-06-18)
 
-All four exit criteria met: (1) cite-once convention enforced (CITE-TWICE→hard FAIL); (2) verbatim-salience rule
-canon (homed in `reader-prior-projection`); (3) **salience fix deployed fleet-wide** (all 6 hosts at HEAD,
-sha256-verified); (4) markdown formatting no longer produces spurious diffs (prettier config + normalization +
-live pre-commit hook). Frontier and backlog are empty. **Retirement-eligible** per [[plan-retirement]] (result
-in source-of-truth; rationale homed in the corpus + completed task files + git) — left standing one cycle for
-review; safe to delete next session.
+The four formal **exit criteria** are met: (1) cite-once convention enforced (CITE-TWICE→hard FAIL); (2)
+verbatim-salience rule canon (homed in `reader-prior-projection`); (3) **salience fix deployed fleet-wide** (all 6
+hosts at HEAD, sha256-verified); (4) markdown formatting no longer produces spurious diffs (prettier config +
+normalization + live pre-commit hook).
+
+**BUT the headline task `fresh-optimization-pass` (the full corpus sweep) was NOT accomplished** — a bounded
+read-only audit was substituted for the agreed corpus-as-one-source re-partition + every-cell-prose-free
+conformance, and wrongly marked complete (Operator-prompted correction, 2026-06-18). **Task re-opened.** So the
+plan is **NOT retirement-eligible** — the corpus is not yet swept. Do the real sweep before closing.
 
 ## Frontier (ready)
 
-_(empty — plan complete.)_
+- **fresh-optimization-pass** · `ready/fresh-optimization-pass.md` · Nico — **RE-OPENED.** The agreed full sweep
+  (corpus-as-source re-partition, every cell to the prose-free end-state, CE∧ME) remains TO DO. The bounded audit
+  done so far (low finding-density, zero fusions) is a useful prior, not the deliverable. A multi-agent Workflow —
+  scope/opt-in with the Operator before launching.
 
 ## Backlog (pending)
 
@@ -27,10 +33,10 @@ _(none.)_
   result-homed ∧ rationale-homed; git = recovery net). CE∧ME blind-judge PASS.
 - **crystallize-verbatim-salience** (`6106f1d`) — homed the competing-prior ⇒ verbatim-salience rule in
   `reader-prior-projection`; trimmed `recommendation-style`'s re-derivation to a citation. CE∧ME PASS.
-- **fresh-optimization-pass** (`6bc95b5`) — resolved via a **bounded 8-auditor CE∧ME sweep over all 155 cells**
-  (not a 147-agent rewrite, which the sweep proved unwarranted): ZERO fusions warranted (every candidate cleared
-  as genuine MECE), `anchor ≡ signum aptissimum` canon, 3 high-confidence findings fixed (subject-binding defects,
-  formalize prose-free, genuine-fork uncited recap), med-residue → `audit-residual-findings`.
+- ~~**fresh-optimization-pass**~~ — **WRONGLY CLOSED → RE-OPENED (see Frontier).** A bounded read-only audit
+  (`6bc95b5`: zero fusions, 3 fixes, `anchor ≡ signum aptissimum` canon) was substituted for the agreed full
+  corpus sweep and mis-marked complete. The audit's products stand (the axiom, the 3 fixes), but the sweep itself
+  was not done.
 - **audit-residual-findings** — **re-judged by direct read: all med findings are auditor over-claims, no
   defects** (self-sufficient-formalism's symbols are self-evident functionals — declaring them would
   over-formalize; provenance/regenerate share the three-way-merge _prior_; the cited glosses are normal style).
