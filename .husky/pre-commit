@@ -1,1 +1,11 @@
 pnpm exec biome check --staged --no-errors-on-unmatched
+
+# Markdown is biome-ignored; Prettier owns it (proseWrap:preserve +
+# embeddedLanguageFormatting:off — see .prettierrc). Gate staged markdown at
+# Prettier's fixpoint so format-on-save never produces a spurious diff. --check
+# fails loud if a file drifts; Prettier honours .prettierignore (the generated
+# GLOSSARY.md is excluded). No staged markdown -> the guard is a no-op.
+STAGED_MD=$(git diff --cached --name-only --diff-filter=ACM -- '*.md')
+if [ -n "$STAGED_MD" ]; then
+  echo "$STAGED_MD" | xargs pnpm exec prettier --check
+fi
