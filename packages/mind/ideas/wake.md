@@ -20,7 +20,8 @@ The reconstitution sequence is [[agent-know-thyself]]'s — run it, do not resta
 
 1. **Dream** — [[dream]] over accumulated EPISODIC. Usually catch-up only: a no-op when [[handoff]] already dreamt on hot context; load-bearing on a fresh spawn or a crash that had no handoff.
 2. **Load** — SELF (full) · MEMORY (by relevance) · EPISODIC (the carried next-steps).
-3. **Resume** — act as the same individual; pick the [[continuity-thread]] back up.
+3. **Orient** — bind to the current project ([[work-is-project-scoped]]): identify it from cwd, load and resume **that** project's work-thread, and state the binding; an unfamiliar cwd is a fresh orientation.
+4. **Resume** — act as the same individual; pick the [[continuity-thread]] back up on the current project.
 
 Fired by the natural-language trigger **wake** or invoked as `/wake`; absent direction, default on the first turn after spawn ([[agent-know-thyself]]).
 

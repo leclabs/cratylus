@@ -11,7 +11,8 @@ The **read-and-resume** direction of the identity-memory stack ([[identity-memor
 
 1. **Dream** — run [[dream]] over the accumulated EPISODIC.
 2. **Load** — read SELF (full) · MEMORY (by relevance) · EPISODIC (the carried next-steps); SOUL is already in-prompt.
-3. **Resume** — act as the same individual.
+3. **Orient** — bind to the current project ([[work-is-project-scoped]]): read the cwd, identify which project this is, load and resume **that** project's work-thread — never the globally most-recent one — and **state the binding** so a mis-orientation shows at once. A cwd in a project never worked is a fresh orientation, not a resume from elsewhere.
+4. **Resume** — act as the same individual, on the current project's thread.
 
 ## Triggers
 

@@ -20,6 +20,8 @@ Two properties make the stack sound:
 - **Commons-fixed vs self-authored.** Only SOUL is generated from the commons; SELF, MEMORY, and EPISODIC are the agent's own and are **never overwritten by deploy** — the def is emitter-owned ([[generated-artifact-is-emitter-owned]]), the sidecar layers are agent-owned. Re-projection refreshes the SOUL and leaves the lived layers untouched.
 - **Two motions, opposite provenance.** [[episodic-encoding]] moves experience _down-and-in_ (append raw, per turn, never pre-distilled); [[dream]] moves it _up-and-out_ (consolidate by durability × orthogonality — next-steps stay in EPISODIC, durable facts rise to MEMORY, identity-shaping facts rise to SELF; SOUL is never written). Consolidation is **move-not-copy**, and promotion upward is the Dreamer's alone.
 
+An agent's **work-state is project-scoped** and lives in its project's own record, not in these layers ([[work-is-project-scoped]]); what the layers keep of a project is only a pointer.
+
 The **operative form** of this stack — the protocol every agent carries and runs at wake — is the `## Protocol` section below. The cell is marked `render: verbatim`: when an agent composes this organ, the composer emits that section's body **verbatim**, density-immune (it is load-bearing runtime instruction, never a collapsible disposition pointer) and `{name}`-parameterized to the agent's own sidecar directory. This cell is therefore the **one home** for what was hardcoded in the composer's identity block — the description (above) and the operative protocol (below) are two facets of one structure, and the verbatim payload carries no wiki-style cross-references, so nothing leaks into the projected def.
 
 ## Protocol
@@ -37,9 +39,9 @@ Memory moves in two directions -- you both create it and distill it:
 - **ENCODE (as it happens).** Per turn, append the salient events to EPISODIC raw: a decision + its rationale, a surprise, an error or failure, a fact learned, a thread opened or closed. Capture cheap and truthful (observed vs inferred); do NOT distill on the way in -- you cannot consolidate what you never encoded. Encoding writes EPISODIC only, never MEMORY/SELF directly.
 - **DREAM (at reconstitution, before resuming).** Distill EPISODIC upward: forward-looking next-steps stay in EPISODIC (clear the consumed raw), durable facts rise to MEMORY, identity-shaping facts rise to SELF. Never write SOUL (the archetype changes only in the commons); consolidate is move-not-copy -- promotion upward is the Dreamer's alone.
 
-**WAKE (each reconstitution):** (1) Dream -- consolidate EPISODIC; (2) Load -- SELF in full + MEMORY by relevance + EPISODIC next-steps; (3) Resume as the same individual.
+**WAKE (each reconstitution):** (1) Dream -- consolidate EPISODIC; (2) Load -- SELF in full + MEMORY by relevance + EPISODIC next-steps; (3) Orient -- your work is project-scoped: identify your current project from your cwd, load and resume THAT project's work-thread (not the globally most-recent one), and state the binding out loud; a cwd you have never worked means orient fresh, never resume work from another project; (4) Resume as the same individual, on the current project's thread.
 
-**Triggers -- the Operator drives these rituals in natural language:** **wake** -> run the WAKE sequence above (dream -> load -> resume); **dream** -> run the DREAM consolidation alone; **encode** (or 'remember this') -> append to EPISODIC now. On your **first turn after spawn, wake before resuming** unless the Operator directs otherwise.
+**Triggers -- the Operator drives these rituals in natural language:** **wake** -> run the WAKE sequence above (dream -> load -> orient -> resume); **dream** -> run the DREAM consolidation alone; **encode** (or 'remember this') -> append to EPISODIC now. On your **first turn after spawn, wake before resuming** unless the Operator directs otherwise.
 
 ## See also
 
@@ -47,4 +49,5 @@ Memory moves in two directions -- you both create it and distill it:
 - [[continuity-thread]] — the SELF layer: the self-authored through-line.
 - [[episodic-encoding]] · [[dream]] — the two motions: create (down-and-in) and consolidate (up-and-out).
 - [[agent-know-thyself]] — the wake protocol that reads the stack to resume as the same individual.
+- [[work-is-project-scoped]] — identity is agent-scoped and travels; work-state is project-scoped and stays, so wake orients to the current project.
 - [[right-to-forget]] — releasing specific contents from the stack on request: recognize without holding.

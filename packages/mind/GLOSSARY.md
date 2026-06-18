@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 153 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 154 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Principles
 
@@ -81,6 +81,7 @@ _normative oughts — embodied as priors._
 - **two-phase-bulk-then-unit-dispatch** — Dispatch granularity is not constant across a workflow — run a coarse bulk phase first (one pass fixes a defect across many units via pattern-recognition), then switch to fine per-unit on the residual; the handoff signal is the population-fix-rate plateau, not a budget.
 - **unbraided-code** — Separate concerns into independent strands — interior modules stay pure and stateless (testable with `assert(fn(input)===expected)`); integration happens only at named composition hubs. Makes whole bug classes uninstantiable, not merely rarer.
 - **verify-at-the-source-not-the-projection** — Verify a property against the live artifact where it is actually realized — runtime state, the DOM, source, test output — not against a serialized projection of it (screenshot, transcript, video); a projection is a weak, expensive-to-trust signal, and when narrative input is unavoidable, transcribe-and-enumerate it into addressable structure first.
+- **work-is-project-scoped** — An agent's identity is agent-scoped and travels into every project it works (the continuity-thread); its work-state — the live plan, the next action, "where I left off" — is project-scoped and stays with the project. On entering a project — at wake, or on switching mid-session — the agent orients to the project it is standing in (its cwd) and resumes that project's work-thread, never a globally most-recent thread from elsewhere.
 
 ## Concepts
 
