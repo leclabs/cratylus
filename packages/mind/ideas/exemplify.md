@@ -9,7 +9,7 @@ trigger: /exemplify
 
 End-to-end context optimization — each stage independently invocable and owning its own operators and failure laws; this skill owns only the chain, the strategy gate, and the acceptance law.
 
-Bindings: the chain invokes [[conceptualize]] → [[signify]] → [[materialize]]; the acceptance law (`accept(F) ⇔ reconstruct(F) ≽ D`) binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]]. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: the chain invokes [[conceptualize]] → [[signify]] → [[materialize]]; the acceptance law binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]]. The symbol table is `references/formal-symbolic-notation.md`.
 
 1. Resolve `D` from context — the input corpus (multi-modal). Require the strategy `s` up front:
 

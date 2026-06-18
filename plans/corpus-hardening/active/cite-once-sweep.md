@@ -4,6 +4,8 @@
 
 **Method correction (Operator, 2026-06-17):** this sweep *is* what `/formalize` encodes — conceptualize the cell's deps → signify/bind cite-once → emit → accept on `reconstruct ≽`; the "blind-judge" gate *is* formalize's accept step. dream + formalize were routed through the `/formalize` skill (self-application); the first four were the same operation done by hand. Recorded as a self-application lesson: **invoke the encoded skill, don't reimplement it ad-hoc.**
 
+**Prose-free pass DONE (Operator audit, 2026-06-17).** The cite-once migration achieved one-citation-home but I'd *over-narrated* the Bindings regions (re-stating block content) — the same gloss-duplication the convention forbids, which the old CE-only (`B≽A`) judge was blind to. Trimmed all 6 cells to the **end-state: anchor + self-sufficient block + minimal bindings, no explanatory prose** (`signify` @ `552bf8f`, the other 5 dual-gated). Gated on **CE ∧ ME** (nothing lost AND nothing redundant) — the corrected acceptance gate. Also landed: `self-sufficient-formalism` β/ι split (`fa1a20e`) and the registry scope declaration (`051422c`).
+
 ## Progress
 
 - ✅ `signify` — deduped the twice-cited `[[anchor-routing]]`; composition derives identical (precise-circumscription · anchor-routing).

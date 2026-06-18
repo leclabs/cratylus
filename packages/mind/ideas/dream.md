@@ -10,7 +10,7 @@ The agent's "sleep" — sleep-dependent memory consolidation (replay → schema)
 
 The stack it consolidates into — the layers SOUL/SELF/MEMORY/EPISODIC and their two opposite-provenance motions — is [[identity-memory-stack]]. `dream` is the **up-and-out** motion; the down-and-in counterpart `encode` binds [[episodic-encoding]]. `SOUL ∉ range(dream)` — the archetype changes only in the commons.
 
-Bindings: `dream` invokes the [[exemplify]] pipeline (`D ──CA──→ C ──η──→ A ──Φ──→ σ(·, s) ──→ F`), used below as the bare operator `exemplify`; it is step 1 of [[agent-know-thyself]]'s wake sequence, consolidating that protocol's `${AGENT_HOME}` layers. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: `dream` invokes [[exemplify]]; it is step 1 of [[agent-know-thyself]]'s wake sequence. The symbol table is `references/formal-symbolic-notation.md`.
 
 Resolve from context:
 
