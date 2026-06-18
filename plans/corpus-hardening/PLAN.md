@@ -2,21 +2,22 @@
 
 Post-founding refinement backlog. Status mirror; task files live under state folders.
 
-## Active
+## Status — ✅ PLAN COMPLETE (2026-06-18)
 
-_(none — cite-once-sweep completed this session.)_
+All four exit criteria met: (1) cite-once convention enforced (CITE-TWICE→hard FAIL); (2) verbatim-salience rule
+canon (homed in `reader-prior-projection`); (3) **salience fix deployed fleet-wide** (all 6 hosts at HEAD,
+sha256-verified); (4) markdown formatting no longer produces spurious diffs (prettier config + normalization +
+live pre-commit hook). Frontier and backlog are empty. **Retirement-eligible** per [[plan-retirement]] (result
+in source-of-truth; rationale homed in the corpus + completed task files + git) — left standing one cycle for
+review; safe to delete next session.
 
 ## Frontier (ready)
 
-- **full-fleet-redeploy** · Mav (steward) — propagate the salience fix to the fleet. **fire ✓ + upmav ✓**
-  (2026-06-17); remaining: forge/spark/ash + upgoose — **BLOCKED: hosts physically unreachable** (TCP connect to
-  :22 times out even with the sandbox disabled — a different LAN / asleep, not a consent or sandbox gate). The
-  ONLY open item, and it cannot be closed from this machine. Deploy-neutral for all this session's work (defs
-  byte-identical), so it is purely salience-fix propagation, awaiting a host-reachable environment. apps dropped.
+_(empty — plan complete.)_
 
 ## Backlog (pending)
 
-_(none — the frontier is the backlog.)_
+_(none.)_
 
 ## Completed (2026-06-17 — corpus-hardening execution session, under `/goal complete plan execution`)
 
@@ -40,6 +41,10 @@ _(none — the frontier is the backlog.)_
   (`proseWrap:preserve`+`embeddedLanguageFormatting:off`) + `.prettierignore`, 39 md normalized to fixpoint
   (deploy-neutral), **+ pre-commit hook** (`prettier@3` devDep + `.husky/pre-commit` staged-md gate) verified
   end-to-end and committed with the hook ACTIVE. Markdown formatting no longer produces spurious diffs.
+- **full-fleet-redeploy** (2026-06-18) — fleet returned; deployed **forge/spark/ash/upgoose** at HEAD, joining
+  fire+upmav: **6/6 hosts, every `nico.md` sha256-matched the render**, salience fix present, sidecars preserved.
+  ash needed a host-key refresh (reimaged); upgoose needed `--user lcaraccioli`. The exit criterion
+  "deployed fleet-wide" is met.
 
 ## Done (2026-06-17 — the rule-completion arc)
 

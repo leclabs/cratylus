@@ -1,6 +1,8 @@
 # full-fleet-redeploy
 
-**State:** ready · **Lead:** Mav (fleet steward) · **Source:** the salience fix (`d46af93`) deployed only to the local host's 4 affected agents.
+**State:** completed (2026-06-18) — **full fleet deployed (6/6; apps dropped per C4).** · **Lead:** Nico (drove the deploy by proxy) · **Source:** the salience fix (`d46af93`) deployed only to the local host's 4 affected agents.
+
+**DONE.** When the fleet network returned, deployed the 4 remaining hosts at HEAD `8c33b8a`: forge ✓ spark ✓ ash ✓ upgoose ✓ — joining fire ✓ + upmav ✓. Every host's `nico.md` **sha256-matches the render**, salience fix present, 11 agents + 10 skills, 33 sidecars preserved. Two host quirks handled: **ash** needed a host-key refresh (`ssh-keygen -R` + re-scan — it was reimaged while down); **upgoose** needed `--user lcaraccioli` (not the default `lex`). The whole society now runs the current corpus.
 
 ## Intent
 
@@ -25,7 +27,7 @@ exit message. Hosts: upgoose/upmav (asleep often), forge/apps/spark, ash, fire.
   _description_, never the verbatim `## Protocol`). So this redeploy remains purely the salience-fix propagation
   to the unreached hosts; no new def content is pending. Awaits host reachability / next cadence.
 
-## Done when
+## Done when — ✅ MET
 
-- `grep "never a tiered menu" ~/.claude/agents/nico.md` → 1 on every awake host.
-- Asleep hosts pick it up on the next deploy cadence.
+- `grep "never a tiered menu" ~/.claude/agents/nico.md` → 1 on every host. ✓ (all 6 verified)
+- Every host's deployed defs sha256-match the render. ✓
