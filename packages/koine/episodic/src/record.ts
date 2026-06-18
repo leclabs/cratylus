@@ -21,6 +21,16 @@ export interface EpisodicRecord {
   path?: string;
   /** The open event payload — any JSON value. */
   body: JsonValue;
+  /**
+   * The homes this record landed in after {@link applyRoutes} processed it
+   * (ideas/memory.md, EPISODIC schema: "After dream routes it: add routes").
+   * **Never written at capture** — encode keeps the record open; only the dream
+   * pass stamps this, and only on records it *retains* (a consumed record is
+   * compacted away, so it carries no routes). Each entry is one organ home, e.g.
+   * `"SELF@user"` or `"EPISODIC"`; `"drop"` marks a record kept despite landing
+   * nowhere durable. Marks a record as already-dreamt so a later pass skips it.
+   */
+  routes?: string[];
 }
 
 /** Any JSON-serializable value. */
@@ -49,6 +59,13 @@ export function assertRecord(rec: unknown): asserts rec is EpisodicRecord {
     throw new Error('Record path, if present, must be a non-empty string');
   }
   if (!('body' in r)) throw new Error('Record must have a body');
+  if (
+    r.routes !== undefined &&
+    (!Array.isArray(r.routes) ||
+      !r.routes.every((x): x is string => typeof x === 'string'))
+  ) {
+    throw new Error('Record routes, if present, must be an array of strings');
+  }
 }
 
 /** Serialize a record to one JSONL line (no trailing newline). Keys ordered id, scope, path?, body. */
@@ -57,6 +74,7 @@ export function serializeRecord(rec: EpisodicRecord): string {
   const ordered: Record<string, JsonValue> = { id: rec.id, scope: rec.scope };
   if (rec.path !== undefined) ordered.path = rec.path;
   ordered.body = rec.body;
+  if (rec.routes !== undefined) ordered.routes = rec.routes;
   return JSON.stringify(ordered);
 }
 
