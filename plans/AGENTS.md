@@ -8,6 +8,7 @@ folders (`pending/ → ready/ → active/ → completed/`) as deps clear.
 | Plan               | Concern                                                                                                                                                | Lead                             |
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
 | `corpus-hardening` | Post-founding refinement: the idea-corpus cite-once sweep, crystallizing the projection insights this work proved, propagating + protecting the result | Nico (+ Mav for machinery/infra) |
+| `memory-model-redesign` | Collapse the fragmented memory-management constitution into one `memory` home + integrate the Operator's JSONL-portable-episodic design (type→organ, scope→instance; one person across the fleet) | Nico (model) + Mav (machinery) |
 
 ## Retired
 
