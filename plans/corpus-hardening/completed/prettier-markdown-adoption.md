@@ -1,6 +1,8 @@
 # prettier-markdown-adoption
 
-**State:** ready · **Lead:** Mav (config) + Nico (corpus preconditions) · **Source:** recurring VS Code markdown-format-on-save diffs (emphasis swap, table realign) — twice in one session.
+**State:** completed (2026-06-18, `a8ad719`+`f659a23`) · **Lead:** Nico (drove end-to-end by proxy under `/weitermachen`) · **Source:** recurring VS Code markdown-format-on-save diffs (emphasis swap, table realign) — twice in one session.
+
+**DONE — fully landed + verified.** (1) Preconditions cleared (the `embeddedLanguageFormatting:off` finding). (2) `.prettierrc` + `.prettierignore` (excludes generated GLOSSARY) committed; 39 md files normalized to fixpoint — verify.py PASS, fences+Protocol byte-identical, all 11 defs deploy-neutral (`f659a23`). (3) Pre-commit hook wired: `prettier@3` devDep + `.husky/pre-commit` gates staged markdown after biome; **verified end-to-end** in a build-capable worktree (unformatted→blocks, formatted→passes, no-md→biome-only, GLOSSARY→ignored-even-malformatted, biome still gates JS); the wiring commit was made with the hook ACTIVE (`a8ad719`). Format-on-save now produces zero spurious diff and the gate keeps it so.
 
 ## Intent
 

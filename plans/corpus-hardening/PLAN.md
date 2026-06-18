@@ -9,14 +9,10 @@ _(none — cite-once-sweep completed this session.)_
 ## Frontier (ready)
 
 - **full-fleet-redeploy** · Mav (steward) — propagate the salience fix to the fleet. **fire ✓ + upmav ✓**
-  (2026-06-17); remaining: forge/spark/ash + upgoose — **BLOCKED on reachability** (all probed unreachable via
-  ssh this session). Deploy-neutral for this session's corpus + prettier work (defs byte-identical). Awaits
-  reachability / next cadence. apps dropped.
-- **prettier-markdown-adoption** · Nico (config+normalize) + Mav (hook) — **config + normalization DONE** (Nico,
-  by proxy): `.prettierrc` (`proseWrap:preserve` + `embeddedLanguageFormatting:off`) + `.prettierignore` (excludes
-  the generated GLOSSARY) committed; 39 markdown files normalized to prettier's fixpoint; verify.py PASS,
-  fence/Protocol byte-identical, defs deploy-neutral. **Remaining (Mav, small):** wire prettier into the
-  pre-commit pipeline (dev-dep + `.husky/pre-commit` step) — needs `pnpm install`, the build env.
+  (2026-06-17); remaining: forge/spark/ash + upgoose — **BLOCKED: hosts physically unreachable** (TCP connect to
+  :22 times out even with the sandbox disabled — a different LAN / asleep, not a consent or sandbox gate). The
+  ONLY open item, and it cannot be closed from this machine. Deploy-neutral for all this session's work (defs
+  byte-identical), so it is purely salience-fix propagation, awaiting a host-reachable environment. apps dropped.
 
 ## Backlog (pending)
 
@@ -40,6 +36,10 @@ _(none — the frontier is the backlog.)_
 - **fix-harness-projection-test** — root cause was a **stale test, not a composer bug**: `exemplify`'s composition
   grew 3→7 + the check wrongly flagged cite-once bold mentions. Scoped the projection check to the provenance
   line; full toolkit suite **14/14 PASS**.
+- **prettier-markdown-adoption** (`f659a23`+`a8ad719`) — FULLY landed: `.prettierrc`
+  (`proseWrap:preserve`+`embeddedLanguageFormatting:off`) + `.prettierignore`, 39 md normalized to fixpoint
+  (deploy-neutral), **+ pre-commit hook** (`prettier@3` devDep + `.husky/pre-commit` staged-md gate) verified
+  end-to-end and committed with the hook ACTIVE. Markdown formatting no longer produces spurious diffs.
 
 ## Done (2026-06-17 — the rule-completion arc)
 
