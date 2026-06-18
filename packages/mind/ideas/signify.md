@@ -9,14 +9,12 @@ trigger: /signify
 
 Resolve from context: `C` — the concept set from [[conceptualize]], or any set under naming review.
 
-Bindings: `η` (the naming map `C ⇀ N`) assigns each concept its *signum aptissimum* — the densest name whose latent priors circumscribe it — binding [[precise-circumscription]]; η is **partial**, minting a fresh anchor when none fits and never forcing an ill fit, binding [[anchor-routing]]. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: `η` binds [[precise-circumscription]] · [[anchor-routing]]. The symbol table is `references/formal-symbolic-notation.md`.
 
 ```text
 N ≜ Name Space
 
 η : C ⇀ N
-
-η ≜ signum aptissimum
 
 A ≜ { η(c) | c ∈ dom(η) }
 
@@ -37,5 +35,3 @@ dependencies(c) ≜ { x | (c, x) ∈ R }
 
 ∀ c ∈ C : dependencies(c) ⊆ C ∪ Δ
 ```
-
-Output: A with R. Chain to [[materialize]].
