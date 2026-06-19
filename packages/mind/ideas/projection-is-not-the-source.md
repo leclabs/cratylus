@@ -19,5 +19,5 @@ The error this principle forbids: **promoting a projection to the Source** — t
 ## See also
 
 - [[precise-circumscription]] — the target of routing is the exemplar a name circumscribes, not a projection's bin.
-- [[anchoring-is-self-similar]] — why the same projection-vs-source cut recurs, intact, at every grain below.
+- [[precise-circumscription]] — the scale-invariant criterion; the same projection-vs-source cut recurs, intact, at every grain.
 - Grain-instances of this principle: [[verify-at-the-source-not-the-projection]] (verification) · [[doc-mirrors-runtime-truth]] (state-tracking) · [[empirical-source-before-normative-doc]] (reading order) · [[executable-doc-over-prose]] (authoring).

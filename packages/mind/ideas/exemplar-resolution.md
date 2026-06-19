@@ -14,7 +14,7 @@ CA ≜ semantic-partition
 Δ  ≜ the source's deltas beyond the corpus
 ```
 
-Compression to the [[densest-faithful-point]] runs at every grain ([[anchoring-is-self-similar]]). **Verify by round-trip** ([[self-application-is-mandatory]]); a step that can't is a finding to file.
+Compression to the [[densest-faithful-point]] runs at every grain ([[precise-circumscription]]). **Verify by round-trip** ([[self-application-is-mandatory]]); a step that can't is a finding to file.
 
 `CA + η` are the shared core: plan sharding and context-window optimization run the same pair over a different anchor-space.
 

@@ -15,5 +15,5 @@ Two operative consequences:
 ## See also
 
 - [[precise-circumscription]] — the criterion every re-fit optimizes.
-- [[anchoring-is-self-similar]] — why the method reaches its own artifacts: it is one operation at every grain.
+- [[precise-circumscription]] — the scale-invariant criterion: one operation at every grain, so the method reaches its own artifacts.
 - [[projection-is-not-the-source]] — the companion guard: don't promote a projection (or a hand-authored doc) to the Source.

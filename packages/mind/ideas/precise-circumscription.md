@@ -19,8 +19,9 @@ This is not "find a reasonable home." It is the argmin over candidate names that
 
 That optimum is the **_signum aptissimum_** — the aptest sign for the exemplar. It is reader-relative only through the prior-gap: at the strong-reader limit ([[reader-prior-projection]] — reader-gap → 0) the best name for _this_ reader converges to the absolute best name, so the working anchor and the signum aptissimum coincide — **`anchor ≡ signum aptissimum`**. This convergence is the axiom the anchor method rests on.
 
+The criterion is **scale-invariant** — the same argmin runs at every grain (token, phrase, fragment, cell, corpus), deciding a slug, a sentence, and the shape of the whole corpus identically. A _name_ is the criterion at the naming grain; an _expression_ is the same criterion at the [[densest-faithful-point]]. That self-similarity is what lets the method reach its own artifacts ([[self-application-is-mandatory]]).
+
 ## See also
 
-- [[anchoring-is-self-similar]] — the same criterion applied at every grain, from token to corpus.
 - [[anchor-to-the-readers-priors]] — the same argmin run across reader populations: re-anchor per audience, preserve the extension.
 - [[projection-is-not-the-source]] — why the target of the argmin is an exemplar, never a projection's bin.

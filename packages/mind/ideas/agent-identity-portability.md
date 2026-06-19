@@ -36,7 +36,7 @@ What is **not** persona: a behavior or method is a disposition (compose it in th
 
 ## See also
 
-- [[anchoring-is-self-similar]] — why the deltas-only discipline is the same compression at the identity grain.
+- [[precise-circumscription]] — the scale-invariant argmin at the identity grain: deltas-only is its compression.
 - [[cite-dont-copy]] — a facet points at this model; it does not transcribe it.
 - [[principal-agency]] — the canonical _essence_ facet most maker-agents reference rather than restate.
 - [[continuity-thread]] — the recall/essence facets made persistent: what carries the individual across sessions.

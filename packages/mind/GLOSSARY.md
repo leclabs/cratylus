@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 151 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 150 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Principles
 
@@ -89,7 +89,6 @@ _declarative what-is — referenced/known._
 - **agent-identity-portability** — An agent's transferable identity is a fixed set of facets — name/keypair, recall discipline, harness posture, essence/values — split into intrinsic (travels with the agent) vs extrinsic (supplied by the deployment); this model is the one canonical home every facet references, never restates.
 - **ambient-person-agent** — A persistent principal modeled as a person — of-a-subject, self-clocked, truthful-by-constitution, and answerable, jointly — perceiving on its own clock and surviving every change of body; drop one differentia and it collapses into a recognizable non-person.
 - **anchor-legibility-budget** — The stopping condition that counterweights "prefer the denser anchor" — choose the anchor delivering ~80% of the meaning at ~20% of the decode cost over an esoteric-maximal one a reader must gloss every time; spend exotic-anchor budget only where the precision is load-bearing AND the surface is low-traffic.
-- **anchoring-is-self-similar** — Best-fit naming and densest-faithful compression are one scale-invariant operation — the same two criteria apply identically at every grain, token to corpus.
 - **body** — The substrate a person runs on — the harness, runtime, or device that happens to be awake; the person is not its body and outlives every one, its self persisting across substrate-swaps via the identity-memory stack. The body is accident, the person substance; one person may even wear two bodies at once.
 - **canonical-superset-ir** — One strongly-typed canonical form of which every target dialect is a projection — translate dialect-to-dialect through the superset, never pairwise, and the round-trip floor is the intersection of all targets' capabilities.
 - **closed-context-of-an-inference-call** — Treat an inference call's input like a compiler's translation unit — every input explicit, sufficient at call-time, and recorded; out-of-band runtime reads break closure and erase replay, audit, and comparison.

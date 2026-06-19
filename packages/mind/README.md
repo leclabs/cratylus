@@ -14,10 +14,9 @@ The toolkit makes it runnable (design: [`TOOLKIT.md`](TOOLKIT.md); code: `toolki
 
 ## The foundations
 
-Four cells generate the rest; everything else is a consequence of running the method against new input.
+Three cells generate the rest; everything else is a consequence of running the method against new input.
 
-- [[precise-circumscription]] — the routing/compression criterion: best fit = the anchor of minimal symmetric difference with the exemplar's true extension.
-- [[anchoring-is-self-similar]] — that criterion is one operation at every grain, token to corpus.
+- [[precise-circumscription]] — the routing/compression criterion: best fit = the anchor of minimal symmetric difference with the exemplar's true extension; scale-invariant — one operation at every grain, token to corpus.
 - [[projection-is-not-the-source]] — every typology (a four-modality grid included) is a lossy index, never the generator; structure is by anchor only.
 - [[self-application-is-mandatory]] — the keystone: `mind` is built and judged by running its method on itself; round-trip equivalent-or-better; no anchor grandfathered.
 
