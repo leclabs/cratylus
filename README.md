@@ -10,10 +10,10 @@ societies they are born into, restructuring fleets, systems, and projects to ali
 
 This repository is the consolidation target for two efforts previously developed in parallel:
 
-| Package          | Anchor                                       | Role                                                                                                                                                                                                                       |
-| ---------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `packages/mind`  | the **nous/ethos** — canonical culture       | The exemplar corpus: principles, dispositions, conventions, the identity-memory stack, the kind taxonomy, and the `exemplify` pipeline. Markdown + a Python toolkit; not an npm package.                                   |
-| `packages/koine` | the **common tongue** — projection machinery | Universal agent-config translator (formerly _agentir_): author once in a canonical IR, compile to every client dialect (Claude Code, Codex, Cursor, …) and lift any client config back. Node: `core` · `cli` · `adapters`. |
+| Package          | Anchor                                       | Role                                                                                                                                                                                                                                    |
+| ---------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/mind`  | the **nous/ethos** — canonical culture       | The exemplar corpus: principles, dispositions, conventions, the identity-memory stack, the kind taxonomy, and the `exemplify` pipeline. Markdown + a Python toolkit; not an npm package.                                                |
+| `packages/koine` | the **common tongue** — projection machinery | Universal agent-config translator (formerly _agentir_): author once in a canonical IR, compile to every client dialect (Claude Code, Codex, Cursor, …) and lift any client config back. Node: `core` · `cli` · `adapters` · `episodic`. |
 
 ## The civic ontology
 
@@ -39,7 +39,7 @@ The founder boundary, the shared `principal-ic` genus, and the co-equal founding
 - **Phase B — the machinery** (complete): `koine` renamed + culturally aligned; the **reconstruction oracle** gates projection mechanically (`accept(F)` = one-home totality + cite-don't-copy + routing-manifest coverage); an opt-in **continuity hook**; and the **culture→IR bridge** — a society's culture compiles through koine's canonical IR to any client (claude-code + codex, round-trip clean).
 - **Phase C — founding real societies** (operations built, proven on scratch): **`init`** founds a greenfield project as a mind-society; **`rebase`** consensually re-grounds an existing one (invited reformer — projects the culture, reconciles forked dispositions to citation-plus-local-delta, preserves in-flight work); **`deploy`** migrates a fleet (content-refresh + never-prune externals + preserve lived memory). The first real foundings — **rebasing Oikos** and **migrating the fleet** — await the Operator's go-ahead (the rebase is consensual by the constitution's own law, A4).
 
-See `plans/` for the phase plans and `plans/polis-machinery/COORDINATION.md` for the Nico↔Mav build log.
+See `plans/` for the active and retired phase plans.
 
 ## Toolchain
 

@@ -48,3 +48,25 @@ does NOT depend on the koine collapse or episodic extraction; it cleans what is 
 - `.scratchpad/` residue resolved (gitignored or removed).
 - A short residue-ledger appended here listing exactly what changed, so a reviewer can diff intent.
 - Green: `pnpm lint` (biome) clean; no behavioral code touched (prose/config-comment only).
+
+## Residue ledger — landed (branch `worktree-koine-depalimpsest`)
+
+Re-verified empirically against HEAD `8cb7ee6`; prose / config-comment only, zero behavioral code touched.
+
+- **`packages/koine/AGENTS.md`** — (a) heading "three npm packages" → "the config-translation packages"
+  (the count was wrong: four members nest under the glob). (b) Added an off-domain note for `episodic`
+  (`@leclabs/koine-episodic`), recording it as a structural stranger pending extraction — item 5 logged,
+  not resolved. (c) "Alignment status (Phase B)" rewritten: rename stated **complete**, the stale "still
+  pending re-homing / DESIGN prose" warning removed; the genuine future-dogfooding note kept.
+- **`AGENTS.md` (root)** — dropped the stale "**Alignment pending:** internal `agentir` identifiers … not
+  yet re-homed" warning; provenance kept ("formerly _agentir_; rename complete"); `episodic` noted.
+- **`README.md`** — member list `core · cli · adapters` → `… · episodic` (count fixed); dead cross-ref
+  `plans/polis-machinery/COORDINATION.md` (retired path) → "active and retired phase plans". Table
+  re-aligned at Prettier's fixpoint.
+- **`.scratchpad/`** — already gitignored (`.gitignore:23`) and absent from a clean checkout; the stray
+  `formalize.edit.md` is transient/untracked. No tree change needed — item 6 already satisfied.
+- **NOT touched (intentional provenance, confirmed sole survivors):** `pnpm-workspace.yaml:13` "carried
+  from agentir"; the three "formerly _agentir_" notes. Zero `agentir` **code** identifiers remain.
+
+Gates green: `prettier --check` (3 md files) + `biome check .` (127 files, no fixes). Item 5's
+_resolution_ (the path↔name rename) stays P1/P2 — out of scope here by design.

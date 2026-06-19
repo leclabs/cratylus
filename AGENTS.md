@@ -17,9 +17,9 @@ infrastructure/build/delivery, Mav leads.
 - `packages/mind` — the exemplar corpus (`ideas/` cells + `toolkit/` projector). Markdown + Python;
   **not** an npm workspace member. Corpus rules: `packages/mind/ideas/AGENTS.md`. Mutate via
   `[[exemplify]]` (resolve → glossary → verify PASS → deploy). Round-trip is the acceptance gate.
-- `packages/koine/{core,cli,adapters}` — the config IR + translator (ex-agentir). npm scope
-  `@leclabs/koine*`. **Alignment pending:** internal `agentir` identifiers (CLI literal, `.agentir/`
-  convention, DESIGN prose) are not yet re-homed — Phase-B work, do not assume done.
+- `packages/koine/{core,cli,adapters}` — the config IR + translator (formerly _agentir_; rename
+  complete, npm scope `@leclabs/koine*`). A fourth glob member `episodic` (`@leclabs/koine-episodic`,
+  agent memory) is off-domain and under structure review (`plans/repo-structure-firstprinciples`).
 
 ## Working conventions
 

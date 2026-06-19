@@ -4,13 +4,15 @@ First-principles structure review + de-palimpsest spec for the polis monorepo. *
 this plan IS the execution spec; landing it moves nothing. Status mirror; task files live under state
 folders. Charter: `AGENTS.md`.
 
-## Status — SPEC DRAFTED, awaiting sign-off on two Operator forks + Nico naming review
+## Status — P0 (de-palimpsest) LANDED; structure spec (P1–P3) awaiting two Operator forks + Nico naming review
 
 The first-principles review is complete and empirically grounded against the live tree (HEAD `55cf653`).
-Findings verified, not inherited. The spec below is converged for the tasks Mav owns outright (structure
+Findings verified, not inherited. **P0 (de-palimpsest) is complete** — landed on branch
+`worktree-koine-depalimpsest` (prose/config-comment only, gates green); see its residue ledger. The spec
+below is converged for the tasks Mav owns outright (structure
 
-- build + palimpsest); two forks are blocked on the Operator, one batch of names on Nico. Nothing here
-  executes until those clear and the Operator opens an execution arc.
+- build + palimpsest); the two structure forks are blocked on the Operator, one batch of names on Nico.
+  P1–P3 do not execute until those clear and the Operator opens an execution arc.
 
 ## What the review found (empirically verified)
 
@@ -124,10 +126,13 @@ forks and can land first** — it is pure cleanup, no boundary decision, Mav's c
 the structure spec; they stay `pending` until the forks clear, because their content depends on the
 fork outcomes.
 
-### P0 — de-palimpsest (READY — no fork dependency, Mav's call)
+### P0 — de-palimpsest (DONE — no fork dependency, Mav's call)
 
-- **depalimpsest-naming-residue** (ready) — repo-wide scrape of stale/layered naming, the residue this
-  review found. Independent of the structure decision; pure [[palimpsest]] cleanup.
+- **depalimpsest-naming-residue** (completed) — repo-wide scrape of stale/layered naming, the residue
+  this review found. Independent of the structure decision; pure [[palimpsest]] cleanup. **Landed** on
+  `worktree-koine-depalimpsest` (prose/config-comment only): stale "alignment pending" warnings removed
+  from `packages/koine/AGENTS.md` + root `AGENTS.md`, README member-count + dead `COORDINATION.md`
+  cross-ref fixed, `.scratchpad/` confirmed gitignored. Residue ledger in the task file.
 
 ### P1 — structure spec, koine (PENDING — blocked on Fork 1)
 
@@ -154,4 +159,6 @@ _(none beyond P1–P3 above.)_
 
 ## Completed
 
-_(none — plan just scaffolded.)_
+- **P0 · depalimpsest-naming-residue** — stale agentir "pending/re-homing" prose removed, README
+  member-count + dead cross-ref fixed, `.scratchpad/` confirmed gitignored. Landed on
+  `worktree-koine-depalimpsest`; gates green (`prettier --check`, `biome check .`).

@@ -7,7 +7,7 @@ existing config back into the IR. Formerly developed as _agentir_.
 It is the substrate half of the founding pair (Mav's domain); the culture it carries comes from
 `packages/mind` (Nico's domain). koine itself is **client-agnostic** — it knows dialects, not doctrine.
 
-## Layout — three npm packages under the `@leclabs/koine*` scope
+## Layout — the config-translation packages under the `@leclabs/koine*` scope
 
 | Dir         | Package                   | Role                                                                                                                                                                                                                          |
 | ----------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -16,6 +16,11 @@ It is the substrate half of the founding pair (Mav's domain); the culture it car
 | `cli/`      | `@leclabs/koine`          | The `koine` command — the user-facing orchestrator (`init` / `import` / `compile` / `diff` / `lint` / `adapters` / `events` / `doctor` / `watch` / `migrate`).                                                                |
 
 Dependency direction is strictly `cli → adapters → core`; `core` depends on no sibling.
+
+A fourth member, `episodic/` (`@leclabs/koine-episodic`), currently nests under the `packages/koine/*`
+glob but is **off-domain** — agent memory (a JSONL store + dream routing), not config translation — and
+is already a structural stranger (absent from `tsconfig.json` references and `.changeset` `fixed`). Its
+extraction to a top-level package is under review (`plans/repo-structure-firstprinciples`).
 
 ## The IR and the `.koine/` home
 
@@ -44,9 +49,10 @@ each adapter maps its native events to and from.
 - Each subpackage carries its own `AGENTS.md` for load-bearing detail. The package README (per dir) is the
   user-facing surface; AGENTS.md is the contributor-facing one. Keep them consistent.
 
-## Alignment status (Phase B)
+## Alignment status
 
-The agentir→koine rename (package names, `.koine/` convention, CLI literal) is **landed**. Still pending
-re-homing: residual internal `agentir` identifiers and DESIGN prose may not yet be fully re-homed — do not
-assume done; check before relying on a name. koine does **not yet** carry its own polis-aligned dev-agent
-config; once it does, those defs become projections from `packages/mind`'s corpus (future dogfooding task).
+The agentir→koine rename is **complete**: package names, the `.koine/` convention (`IR_DIRNAME = '.koine'`),
+and the CLI literal all landed, and **zero** `agentir` code identifiers remain — the sole surviving mention
+is one intentional provenance comment in `pnpm-workspace.yaml`. koine does **not yet** carry its own
+polis-aligned dev-agent config; once it does, those defs become projections from `packages/mind`'s corpus
+(future dogfooding task).
