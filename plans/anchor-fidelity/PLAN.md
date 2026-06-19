@@ -19,13 +19,14 @@ the gated re-individuation.
 
 ## Backlog (pending)
 
-- **mechanize-fidelity-gate** · `pending/` · Nico spec + Mav build — **phase 3** (dep: phase 1). Automate
-  the blind-decoder gate in `verify.py` — a false anchor FAILS mechanically.
 - **gated-reindividuation** · `pending/` · Nico — **phase 4** (deps: phases 1-3 **+ Operator scale-opt-in**).
   The full multi-agent re-individuation = the real `corpus-hardening/fresh-optimization-pass`, tool-driven.
 
 ## Completed
 
+- **mechanize-fidelity-gate** (phase 3, resolved) — deterministic anchor-fidelity is infeasible
+  (heuristics over-flag legit dense anchors); the gate is the **blind-decode workflow** (`stratify-corpus` +
+  the blind-read pattern), verify.py stays structural. A false anchor is rejected by the blind-decode.
 - **land-and-recut-anchor-cluster** (phase 1, `7b54265`+`643066e`) — anchor cluster re-individuated
   (precise-circumscription = grain-neutral primitive; densest-faithful-point = expression-grain instance;
   anchoring-is-self-similar fused+deleted); exemplify acceptance law now reconstructs from anchors
