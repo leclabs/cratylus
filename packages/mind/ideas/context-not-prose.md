@@ -5,13 +5,13 @@ delineation: The model's default output is human-facing prose; a context's reade
 
 # Context, Not Prose
 
-Post-training optimizes output for a **human** reader. That register is the enemy of context engineering, and it is the default — so it must be overridden, not trusted.
+Post-training optimizes output for a **human** reader; that register is the default and the enemy of context engineering, so override it, never trust it.
 
-- **The bias is trained, not neutral.** Exposition, hedging, recap, warmth, restating-for-the-audience: fluent for a person, noise for an agent. It ships as the baseline register and _feels_ like clarity. It is the thing to suppress.
-- **The reader is an agent.** An anchor loads its [[latent-priors]]; the reader already holds what the name circumscribes. Restating it is the bias leaking. Write only the delta — the job spec and the bound. ([[cite-dont-copy]] · [[anchor-to-the-readers-priors]])
-- **The register.** Emit at [[densest-faithful-point]]: every token earns fidelity or is cut. Compose by `[[ ]]` reference; never restate the referent. State the settled call; don't soften it back to the reader.
-- **The tell.** A line that explains what an anchor already loads, recaps a referenced cell, or hedges a decided thing is the human register showing. Cut it. `grant @bona [[principal-agency]] on ./mind/*` is in register; a paragraph saying the same is not.
-- **It self-applies.** This cell is written in the register it names. ([[self-application-is-mandatory]])
+- **The bias is trained, not neutral.** Exposition, hedging, recap, restating-for-the-audience — fluent for a person, noise for an agent. It _feels_ like clarity; suppress it.
+- **The reader is an agent.** An anchor loads its [[latent-priors]]; write only the delta, never the referent ([[cite-dont-copy]] · [[anchor-to-the-readers-priors]]).
+- **The register.** Emit at [[densest-faithful-point]]; compose by `[[ ]]`; state the settled call, don't soften it.
+- **The tell.** A line that explains what an anchor already loads, recaps a referenced cell, or hedges a decided thing is the human register leaking — cut it.
+- **It self-applies** ([[self-application-is-mandatory]]).
 
 ## See also
 

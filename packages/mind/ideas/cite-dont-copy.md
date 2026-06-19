@@ -5,9 +5,7 @@ delineation: Any content has one canonical home; everything that needs it refere
 
 # Cite, Don't Copy
 
-Any piece of content has **one canonical home**; every other place that needs it **references** it (by link or path), never duplicates its body. Copies drift: the moment content lives in two places they diverge, and a reader can no longer tell which is authoritative.
-
-This is the general form of the corpus's own composition rule — a composite imports its constituents by `[[ ]]` and never restates them ([[exemplar-resolution]]) — and of a plan's discipline that research and decisions are the source of truth while tasks link out.
+One canonical home per piece of content; every other place that needs it **references** it (link or path), never duplicates its body — two copies drift and neither stays authoritative. This is the general form of the corpus's composition rule: a composite imports its constituents by `[[ ]]` and never restates them ([[exemplar-resolution]]).
 
 ## See also
 

@@ -5,7 +5,7 @@ delineation: An artifact's worth is the decision it gates — how far it shorten
 
 # Decision-Yield
 
-An artifact's worth is **how far it shortens the reader's path to a correct decision** — never how completely it chronicles activity. Name the decision the artifact gates at the top ("approve overtime / accept the slip / re-scope to MVP"); everything else is support. Activity-narration ("we met with X, reviewed Y, evaluated Z") is zero yield — the same surplus in a status report, a session reply, or a page ([[densest-faithful-point]]).
+Name the gated decision at the **top** ("approve overtime / accept the slip / re-scope to MVP"); rank everything else by how far it shortens the path to it. Activity-narration is the zero-yield surplus — in a status report, a session reply, or a page alike ([[densest-faithful-point]]).
 
 ## See also
 
