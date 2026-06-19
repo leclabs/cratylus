@@ -4,11 +4,11 @@ Status mirror; task files live under state folders. Charter: `AGENTS.md`.
 
 ## Status
 
-**All buildable work is done and Nico-reverified.** The model is settled, deployed fleet-wide (6/6 — the orient fix is live in prod), and the full portable-memory runtime has landed: `@leclabs/koine-episodic` (ULID JSONL store + dream routing + atomic compaction) and the git-backed fleet organ sync (symlink-into-store; deploy-safe, reversible). The koine IR fixture is refreshed. Two items remain, **both deliberately held**, not pending work: the consent-gated migration and a deferred vault feature.
+**The model is settled and deployed fleet-wide (6/6 — the orient fix is live in prod), and the portable-memory runtime has landed:** `@leclabs/koine-episodic` (ULID JSONL store + dream routing + atomic compaction + the **markdown→JSONL migration converter** with a no-loss gate) and the git-backed fleet organ sync (symlink-into-store; deploy-safe, reversible, now `.jsonl`-aware). The koine IR fixture is refreshed. **`migrate-live-episodic` is ACTIVE** — its machinery is built and proven, blocked only on an Operator-created remote + a Nico protocol reconciliation (see Frontier). One feature remains deliberately deferred: the vault home.
 
-## Frontier (ready — both HELD)
+## Frontier
 
-- **migrate-live-episodic** · **Mav** build + **Nico** verify — **HELD: consent-gated + Operator prerequisite.** Convert live agents' EPISODIC.md → jsonl and adopt the organ sync, no loss. Rewrites live fleet memory (the A4 reserved act) and needs a private remote the Operator creates (`gh repo create <you>/agent-organs --private`). Unblock = Operator creates the remote + gives explicit go; then per-agent backup → convert → verify-no-loss, first agent approved before the rest.
+- **migrate-live-episodic** · **Mav** build + **Nico** verify — **ACTIVE: machinery landed, blocked on two external gates.** The converter (`packages/episodic/src/migrate.ts`: `extractItems` + `migrateFile` + the `assertNoLoss` no-loss gate) is built, 49/49 green, and proven on a non-destructive dry-run of a real live EPISODIC.md; `fleet-organs.sh` now syncs `EPISODIC.jsonl` transition-safely (G1–G5 still pass). Branch `migrate-live-episodic`, unmerged. **Unblock needs:** (1) **Operator** — `gh repo create <namespace>/agent-organs --private` (verified absent under both namespaces) + explicit go; (2) **Nico** — reconcile the verbatim `## Protocol` (line 57 names `EPISODIC.md`; runtime is `EPISODIC.jsonl`), which entails a 6-host redeploy. Then per-agent backup → convert → verify-no-loss, first agent approved before the rest. Live mutation is the A4 reserved act — not started.
 - **vault-reference-home** · **Mav** — **HELD: deferred.** The Obsidian vault as the cold 5th home. Speculative until a real vault exists to integrate; revisit when there's a concrete need.
 
 ## Backlog (pending)

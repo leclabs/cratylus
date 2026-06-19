@@ -3,7 +3,7 @@
 # ONE logical store across the whole fleet ([[memory]] ## Portability).
 #
 # Mechanism: a dedicated git repo (the "organ store") holds, per agent,
-#   <agent>/{SELF,MEMORY,EPISODIC}.md
+#   <agent>/{SELF,MEMORY}.md and EPISODIC (.md pre-migration, .jsonl after)
 # A host ADOPTS the store by symlinking each live organ file
 #   ~/.claude/agents/<agent>/SELF.md  ->  <store>/<agent>/SELF.md
 # so git operates directly on the real organ content (true history + real merge
@@ -35,7 +35,11 @@ set -e
 
 ORGAN_STORE="${ORGAN_STORE:-$HOME/.claude/agents-organs}"
 AGENTS_DIR="${AGENTS_DIR:-$HOME/.claude/agents}"
-ORGANS="SELF.md MEMORY.md EPISODIC.md"
+# EPISODIC is mid-migration markdown -> JSONL (plans/memory-model-redesign,
+# migrate-live-episodic). Listing both extensions makes the sync transition-safe:
+# the [ -e ]/[ -L ] guards below skip whichever an agent does not yet have, so a
+# pre-migration agent (.md) and a migrated agent (.jsonl) both sync correctly.
+ORGANS="SELF.md MEMORY.md EPISODIC.md EPISODIC.jsonl"
 
 die() {
 	printf 'fleet-organs: %s\n' "$1" >&2
