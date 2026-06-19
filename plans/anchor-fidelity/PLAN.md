@@ -3,7 +3,15 @@
 Make "true anchor" a falsifiable, gated property; re-individuate the corpus under it. Status mirror;
 task files live under state folders. Charter + the converged model: `AGENTS.md`.
 
-## Status — COMPLETE + DEPLOYED (merged to main @ 0499b7a; fleet 6/6 redeployed)
+## Status — REOPENED (premature completion; goal NOT achieved — Operator, 2026-06-18)
+
+Phase 1's cluster re-cut + the fleet deploy are real and stand. But the plan was wrongly closed: the
+CSF model was never **integrated** (it lives in a `.proposal.md`, not a corpus cell); `conceptualize`/
+`signify`/`materialize` were **never re-formalized** around it (one line changed in `exemplify`); and the
+corpus is **still saturated with redundant prose** (restated delineations, explanatory-justification
+surplus) — which means CSF was never actually applied. The phase-2 classification measured the WRONG bar
+(primitive/composite + sentence-slugs, not prose-density) and I trusted its "2 non-conforming" as the
+deliverable — the descope failure, recurred. The real work below is RE-OPENED.
 
 The CSF acceptance model is converged (v7, five blind-`@nico` reads, objective matched) and pilot-validated
 on the real `anchor` cluster. The pipeline now has a falsifiable anchor-fidelity gate to adopt:
@@ -11,9 +19,16 @@ on the real `anchor` cluster. The pipeline now has a falsifiable anchor-fidelity
 **applying** it — landing it into the pipeline, stratifying the corpus, mechanizing the gate, and running
 the gated re-individuation.
 
-## Frontier (ready)
+## Frontier (ready) — the REAL work
 
-_(none — all phases complete; see Completed.)_
+- **integrate-csf-cell** · Nico — mint CSF as a real corpus cell (`process`/`concept`) + its symbols in
+  `references/formal-symbolic-notation.md`; `signify`/`exemplify` reference it. (Point 1.)
+- **reformalize-pipeline** · Nico — re-formalize `conceptualize`/`signify`/`materialize`/`exemplify`
+  around CSF (bipartite output, round-trip accept), replacing the untouched η/CA blocks. (Point 2.)
+- **strip-redundant-prose** · Nico — apply the bar corpus-wide: every cell to the dense end-state (no
+  restated delineation, no explanatory surplus; primitives = anchor + minimal ground-truth; composites =
+  anchor + factor-refs). STRICT bar (densest-faithful-point), verified by reading cells, not a lenient
+  workflow count. (Point 3 — the deliverable I falsely reported done.)
 
 ## Backlog (pending)
 
