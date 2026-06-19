@@ -1,6 +1,6 @@
 # stratify-corpus
 
-**State:** pending · **Owner:** Nico · **Deps.** land-and-recut-anchor-cluster (phase 1)
+**State:** active (workflow running) · **Owner:** Nico · **Deps.** land-and-recut-anchor-cluster (phase 1)
 
 **What (phase 2).** Classify all 151 `ideas/` cells as **primitive** (join-irreducible — must carry a
 `gloss`, its ground truth) or **composite** (factors into other concepts — carries only `[[ref]]`s to its
