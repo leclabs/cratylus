@@ -7,24 +7,33 @@ trigger: /exemplify
 
 # Exemplify Skill
 
-[[canonical-semantic-factorization]] run over a context corpus. exemplify **invokes** CSF — it does not re-derive it: CSF owns the factorization (conceptualize → signify → materialize) and the per-cell accept. This skill owns only what the corpus grain adds — the strategy gate, cross-`F` minimality, and the routing manifest.
+The [[canonical-semantic-factorization]] process realized over a context corpus — factor → anchor → emit, accepted by the round-trip. Each stage is independently invocable and owns its own operators and failure laws; this skill composes the three and owns the strategy gate, the acceptance law, and the routing manifest.
 
-Bindings: the factorization is [[canonical-semantic-factorization]]; the strategy gate binds [[materialize]]'s refusal law; `reconstruct ≽` binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]]; `minimal` / `fuse` — corpus-grain, no fusible pair across `F` — bind [[minimalism]] · [[precise-circumscription]]. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: the chain invokes [[conceptualize]] → [[signify]] → [[materialize]]; `reconstruct ≽` binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]] — recomposed from the **anchors**, so a name that does not fire its idea fails ([[precise-circumscription]]); `minimal` binds [[minimalism]] · [[precise-circumscription]]; the strategy gate binds [[materialize]]'s refusal law. The symbol table is `references/formal-symbolic-notation.md`.
 
 1. Resolve `D` from context — the input corpus (multi-modal). Require the strategy `s` up front; an unnamed strategy refuses loudly per [[materialize]]'s refusal law.
-
-2. `F ← ` apply [[canonical-semantic-factorization]] to `D` under `s` — CSF does factor → anchor → emit and its own per-cell accept.
-
-3. Accept at the corpus grain — bound to this run's whole input `D`, with no fusible pair across `F` — else refuse:
+2. Invoke **conceptualize** on `D` → `C`.
+3. Invoke **signify** on `C` → `A` with `R`.
+4. Invoke **materialize** on `(A, s)` → `F`.
+5. Accept or refuse — recompose `D`'s meaning from the **anchors** of `F ∪ Δ`, equivalent-or-better, with no fusible pair across `F`:
 
 ```text
-F ≜ CSF(D, s)                                  -- the factorization is canonical-semantic-factorization's
-accept(F) ⇔ reconstruct(F) ≽ D ∧ minimal(F)    -- corpus-grain: recompose ≽ the whole input D
+F ≜ σ( { (η(c), kind(c), dfp(c)) | c ∈ CA(⋃ content(sources)) }, s )
+
+D ──CA──→ C ──η──→ A ──Φ──→ σ(·, s) ──→ F
+
+∀ idea ∈ meaning(D) : ∃! home(idea) ∈ F ∪ Δ
+
+reconstruct(F) ≜ recomposition of D's meaning from the anchors of F ∪ Δ
+
 fuse(cᵢ, cⱼ) ⇔ ∃ a : a circumscribes cᵢ ∪ cⱼ with no residual distinct load
+
 minimal(F) ⇔ ¬∃ cᵢ, cⱼ ∈ F : cᵢ ≠ cⱼ ∧ fuse(cᵢ, cⱼ)
+
+accept(F) ⇔ reconstruct(F) ≽ D ∧ minimal(F)
 ```
 
-4. On accept, **emit the routing manifest** so the oracle's R3 (reconstruction-completeness, **self-application-is-mandatory**) gates mechanically. Write `.manifests/<source>.json`: one entry per source fragment (CSF's conceptualization `C`), keyed by `fragment_digest` (`toolkit/core/digest.fragment_digest`, NFC + whitespace-collapse + trim). A fragment homed in `F` (η resolved an existing anchor → `reuse`, or minted a new one → `mint`) goes in `routes[]`; one homed in Δ goes in `delta[]`. Every fragment lands in exactly one — an unrouted fragment is the dropped idea R3 catches.
+6. On accept, **emit the routing manifest** so the oracle's R3 (reconstruction-completeness, **self-application-is-mandatory**) gates mechanically. Write `.manifests/<source>.json`: one entry per fragment `c ∈ C`, keyed by `fragment_digest` (`toolkit/core/digest.fragment_digest`, NFC + whitespace-collapse + trim). A fragment homed in `F` (η resolved an existing anchor → `reuse`, or minted a new one → `mint`) goes in `routes[]`; one homed in Δ goes in `delta[]`. Every fragment lands in exactly one — an unrouted fragment is the dropped idea R3 catches.
 
 ```jsonc
 {

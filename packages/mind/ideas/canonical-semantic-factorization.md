@@ -1,25 +1,14 @@
 ---
-kind: process
-delineation: Factor a meaning into its bipartite normal form — primitives carry ground truth by value, composites carry only their factors' anchors by reference — by recomposing conceptualize → signify → materialize, accepted iff it reconstructs from its anchors alone.
+gloss: true
 ---
 
-# Canonical Semantic Factorization
+# Canonical Semantic Factorization (gloss)
 
-`CSF ≜ [[conceptualize]] → [[signify]] → [[materialize]]` — dissolve the source to its [[mece]] primitives ([[conceptualize]], over the mass whose prior boundaries are dissolved per [[semantic-partition]]), anchor each ([[signify]]), emit by kind ([[materialize]]).
+The model the [[exemplify]] process realizes. A meaning factors into a **bipartite normal form**:
 
-```text
-emit(c) :
-    prim(c) ⇒ η(c) + dfp(c)                       -- ground truth by value
-    comp(c) ⇒ η(c) + { η(f) | f ∈ factors(c) }    -- by reference, never restated
+- **Primitives** carry their ground truth _by value_ — an anchor plus its [[densest-faithful-point]] content. The floor: self-defining, glossed.
+- **Composites** carry only _references_ to their factors' anchors — cite, never restate ([[cite-dont-copy]]). A composite is the closed union of its parts.
 
-accept(c) ⇔ reconstruct(c from η alone) ≽ meaning(c) ∧ minimal
-```
+The factorization is **accepted** iff it recomposes from its anchors alone, equivalent-or-better than the source ([[self-application-is-mandatory]]), and is **minimal** — no two cells share one anchor ([[minimalism]]). A name that does not fire its idea, or prose that re-explains a cited anchor, fails the gate ([[precise-circumscription]] · [[self-sufficient-formalism]]).
 
-`minimal` binds [[minimalism]] · [[precise-circumscription]]; the recite-defect ([[self-sufficient-formalism]]) fails it — here its tell is an un-factored composite or a wrong anchor.
-
-## See also
-
-- [[conceptualize]] · [[signify]] · [[materialize]] — the three stages this recomposes; each is one stage of this process.
-- [[exemplify]] — CSF run over a context corpus to optimize it (the invocation, not a second definition).
-- [[densest-faithful-point]] — a primitive's ground-truth grain; [[cite-dont-copy]] — a composite's by-reference grain.
-- [[self-application-is-mandatory]] — the reconstruct round-trip is the accept gate.
+Realized as a process by [[exemplify]] over a context corpus — `conceptualize → signify → materialize`, accepted by the round-trip. This entry is the concept; exemplify is the operation.

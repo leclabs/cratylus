@@ -120,7 +120,6 @@ _ordered operations — invoked._
 
 - **anchor-routing** — Place each fragment at the anchor whose latent priors most precisely circumscribe it — best-fit, not nearest-bin; mint the anchor if none exists (the anchor-set is open); a genuine multi-match means the partition cut wrong, re-cut.
 - **archetype-instantiation** — Stand up a project-scope agent species from a universal archetype + scope grants — project the archetype's composed graph at the density the deployment's reader needs, apply the grant stack, bind extrinsic facets per deployment, verify round-trip.
-- **canonical-semantic-factorization** — Factor a meaning into its bipartite normal form — primitives carry ground truth by value, composites carry only their factors' anchors by reference — by recomposing conceptualize → signify → materialize, accepted iff it reconstructs from its anchors alone.
 - **context-anchors-protocol** — Counter context-drift by re-installing durable anchors mid-session — surface the agent's believed context (a cognizant dump), diff against canon, re-point each divergence to its canonical home, persist out-of-band; re-anchor, don't re-load.
 - **dont-blind-wait** — Don't freeze on an event the harness can't notify you about — launch exactly one background poll (an until-loop that exits on the condition) so the harness re-invokes you when it fires; at most one watcher at a time.
 - **exemplar-resolution** — The method's core operation — resolving information to the exemplars it projects from; composes decompose + anchor-routing + compress + compose-by-reference, verified by round-trip; run forward as intake, inverse as reconstruction.
@@ -189,6 +188,7 @@ _operator-facing explanations of dense anchors._
 - **alexander** — Prior-anchor: **Christopher Alexander** — _A Pattern Language_ · _The Timeless Way of Building_ · _The Nature of Order_; the source software borrowed "pattern" from.
 - **anchor** — An **anchor** is the dense name that labels an exemplar — the single word or short phrase a fragment is filed under.
 - **barbara-minto** — Prior-anchor: **Barbara Minto** — the **Pyramid Principle** (McKinsey; origin of **MECE**).
+- **canonical-semantic-factorization** — The model the [[exemplify]] process realizes.
 - **fowler** — Prior-anchor: **Martin Fowler** — _Refactoring_ · evolutionary architecture · pragmatic tradeoff.
 - **hickey** — Prior-anchor: **Rich Hickey** — Clojure · _Simple Made Easy_ · Hammock-Driven Development.
 - **hoare** — Prior-anchor: **C.
