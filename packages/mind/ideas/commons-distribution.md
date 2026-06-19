@@ -11,8 +11,6 @@ The `ideas/` library ships as a **shared commons** that many scopes adopt ([[ado
 - **Drift is reconciled, not lost** — [[generated-artifact-provenance]] records the ancestor; [[regenerate-without-clobbering]] runs the merge.
 - **Adopt, don't re-derive.** A scope leans on the commons for solved exemplars and writes only its genuine delta ([[adopt-the-commons]] · [[minimalism]]).
 
-This resolves the one-home-vs-many-copies tension: downstream pins and references; only the upstream cell is authoritative; reconciliation is mechanical via recorded provenance.
-
 ## See also
 
 - [[adopt-the-commons]] — the stance: for a solved domain the established commons is the answer.

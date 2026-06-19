@@ -12,8 +12,6 @@ The discipline is **transparency at the edge of the floor**, not pretending ther
 - Surface every above-floor item in an escalating, user-chosen mode — **substitute** an approximation, **skip with a warning**, or **strict-fail**. Silent loss is the failure this forbids.
 - Make the floor **inspectable** — an `explain` view shows exactly what falls outside it before any destructive step.
 
-This is the translation-grain twin of the compression optimum ([[densest-faithful-point]]): there, "lossless on essentials" means removing a token lowers fidelity; here, "lossless on the floor" means the promised intersection round-trips exactly while the surplus is declared, not discarded.
-
 ## See also
 
 - [[canonical-superset-ir]] — the intersection of targets is the floor under a superset IR.

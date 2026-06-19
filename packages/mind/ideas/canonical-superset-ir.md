@@ -12,7 +12,7 @@ Two properties make the center honest:
 - **The IR is the superset.** It carries the union of what any dialect can express; the richest dialect's form is usually the canonical shape. A canonical **vocabulary** (one shared name per concept, dialect-native names mapped onto it) is the same move at the term grain.
 - **The lossless floor is the intersection** ([[lossless-floor]]). A round-trip is byte-faithful only across the intersection of all targets' capabilities; anything the IR holds beyond a given target's reach is lossy by construction and must surface explicitly.
 
-A projection of the IR is never the IR ([[projection-is-not-the-source]]): the canonical form generates the dialects; the dialects are not abstracted back up into it.
+A projection of the IR is never the IR ([[projection-is-not-the-source]]).
 
 ## See also
 

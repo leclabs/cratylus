@@ -11,8 +11,6 @@ Build the clean target implementation, full stop. The target design is the only 
 - **No backward-compatibility by default.** Don't carry old ideas, designs, code, or docs forward; prefer the target design over an incremental hedge when the target is knowable. Strip dead code and compat shims to net-green.
 - **No precious state.** Recreatable state is disposable — don't hedge that an operation is "destructive to live state" when that state can be rebuilt; just do it, and recreate if it breaks.
 
-Why: momentum plus a clean corpus is the goal; protecting throwaway state or superseded designs is pure friction.
-
 ## See also
 
 - [[palimpsest]] — the rot this strips.

@@ -14,7 +14,7 @@ Rules:
 3. Implementation detail belongs in the relevant `README.md`, not architecture.
 4. Plans go in `plans/` ([[sharded-plan-layout]]); drafts in a sibling clearly flagged "draft, not contract."
 
-Anti-pattern: paragraphs of explanation. Explanation rots; diagrams of stable structure don't. If a paragraph seems needed, the diagram is incomplete or the paragraph belongs in `README.md`.
+Anti-pattern: paragraphs of explanation. If a paragraph seems needed, the diagram is incomplete or the paragraph belongs in `README.md`.
 
 ## See also
 

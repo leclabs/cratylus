@@ -10,8 +10,6 @@ When a real codebase **already practises** the target API, its **existing usages
 1. **Grep the practised cases first** — read how the surface is actually used in this codebase; that is the ground truth for established norms.
 2. **Fall back to authoritative docs for the gaps** the grep surfaces — genuinely new props, or APIs the repo doesn't yet exercise. These are not guessable, so the normative source is mandatory _there_ — but only there.
 
-This is a **layered source of truth**: empirical for what is already done, normative for what is needed but unprecedented. A real usage encodes its operating context — the local norms that live in no doc — which a reference page, written for the general case, cannot. The same instinct that verifies against the running artifact over its description ([[verify-at-the-source-not-the-projection]]) reads the practised code over its manual.
-
 ## See also
 
 - [[verify-at-the-source-not-the-projection]] — the verification-side twin: trust the artifact that realizes the behaviour over a description of it.

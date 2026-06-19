@@ -12,8 +12,6 @@ Why this split earns its keep:
 - **Leaves are trivially testable** — a pure function over fixtures, no setup, no teardown, golden-file and property tests fall out directly.
 - **The contract is small, so it fans out** — a third party can author a conforming leaf against a tiny declared interface plus **shared serialization primitives** the host provides (rather than hand-rolling and diverging). Reusing the shared primitives is the enforced quality baseline; hand-rolling is the smell.
 
-Navigation and decisions sit in the deterministic engine; the leaves are pure tools it invokes — orchestration concentrated in one place, work delegated to stateless leaves.
-
 ## See also
 
 - [[declare-capability-dont-discover]] — each leaf declares its capabilities as data the engine reads.

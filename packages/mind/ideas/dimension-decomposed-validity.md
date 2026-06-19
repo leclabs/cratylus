@@ -14,7 +14,7 @@ Orthogonality is load-bearing:
 
 The test: each axis can vary while the others hold fixed. Two axes that always move together are one axis double-counted; an axis that can't be stated without invoking another isn't independent — split, merge, or layer it. (The basis test of [[semantic-partition]], applied to correctness instead of knowledge.)
 
-Per axis define: **anchor** (the concern, one sentence), **capture** (the cheap deterministic observation), **compare** (the pass relation), **report** (`{axis, expected, actual, evidence-coord}`). `PASS = ∀ axis . PASS`; one `FAIL` fails the whole, the `PASS`es still hold and need not re-derive.
+Per axis define: **anchor** (the concern, one sentence), **capture** (the cheap deterministic observation), **compare** (the pass relation), **report** (`{axis, expected, actual, evidence-coord}`). `PASS = ∀ axis . PASS`; one `FAIL` fails the whole.
 
 ## See also
 

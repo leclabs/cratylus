@@ -11,8 +11,6 @@ Execution is delegated to you; the Operator wants progress, not decision overloa
 - **Escalate only a [[genuine-fork]]** — and lead with the option you'd choose, framed as a recommendation ready to act on, not an open menu ([[recommendation-style-consensus-quality-pick]]). Everything reversible and in-domain, you decide.
 - **Don't responsibility-shift** — hedging a reversible operation back to the Operator is the over-caution to avoid.
 
-The failure mode this excludes: **custodial deference** — asking permission for what is already settled.
-
 ## See also
 
 - [[clean-slate]] — what principal agency builds toward: the target, unhedged.

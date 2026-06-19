@@ -9,8 +9,6 @@ Put an explicit **version literal** into a contract (manifest, schema, wire form
 
 Pair it with a **closed contract** — reject unknown fields (`additionalProperties: false`). A closed schema means no one smuggles in fields that later collide with a real one, and the migration surface stays the exact declared set. Decouple the **versions of extensions from the version of the contract** they implement against, so a contract bump doesn't force-march every plugin.
 
-This is the migration hatch built in before it is needed — cheap at v1, impossible to add cleanly later.
-
 ## See also
 
 - [[clean-slate]] — a migration converts old shapes to the target and drops them; the version literal is what makes that conversion mechanical rather than a compat shim carried forever.

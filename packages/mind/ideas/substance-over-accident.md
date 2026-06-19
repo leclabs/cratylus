@@ -11,7 +11,7 @@ An agent's **archetype is its substantial form** — the invariant kernel that s
 - **Don't lose an accident into the kernel.** A real scope fact belongs in that scope's binding ([[scope-grant]] in its `AGENTS.md`), not dissolved into prose that travels nowhere.
 - **The archetype carries only the universal** — the dispositions, method, and references true of the agent in every particular ([[agent-identity-portability]]).
 
-The failure mode this excludes: **scope-leak** — an instance accident hardening into the shared archetype, or a durable substance scattered as per-scope prose. The recurring tell is an agent that claims everywhere what it was granted only here.
+The failure mode this excludes: **scope-leak** — an instance accident hardening into the shared archetype, or a durable substance scattered as per-scope prose.
 
 ## See also
 

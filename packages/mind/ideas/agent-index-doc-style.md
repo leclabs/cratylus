@@ -14,8 +14,6 @@ The style floor for an agent-targeted index doc (`AGENTS.md`, `CLAUDE.md`): agen
 - Route reads to the canonical home; don't restate it ([[cite-dont-copy]]).
 - Target **< 40 lines** per file unless the subject genuinely warrants more.
 
-It is the per-file floor that lets the placement rule ([[context-at-the-load-bearing-depth]]) keep every doc in the chain small.
-
 ## See also
 
 - [[context-not-prose]] — the underlying register; this is its index-doc floor.

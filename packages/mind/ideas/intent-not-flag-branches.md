@@ -14,8 +14,6 @@ Two corollaries:
 - **The argument carries the meaning.** A named-mode (tagged-union) argument is self-describing and exhaustively checkable; a boolean flag at the call site is not. Adding a variant is one new mode at the resolver, not an edit to every consumer.
 - **When routing moves to the host, delete the consumer-side branch.** Leaving a defensive call "just in case" re-introduces the per-consumer logic you just centralized.
 
-This is "express what you want, not how to get it" at the API seam: the affordance is the intent verb; the mechanism is the host's to choose.
-
 ## See also
 
 - [[decision-at-the-locus-of-need]] — the resolver behind the intent API _is_ the single deciding layer.

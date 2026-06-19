@@ -8,8 +8,6 @@ Prior-anchor: **Barbara Minto** — the **Pyramid Principle** (McKinsey; origin 
 
 Minto's discipline for structuring thought: lead with the **answer** (the governing thought at the apex), then support it with a pyramid of grouped ideas where every group is **MECE** ([[mece]]) and each level answers the question its parent raises. Introduce with **SCQA** — Situation, Complication, Question, Answer. Order the ideas within a group logically (deductive, or inductive by time / structure / degree). Vertical Q&A between levels; horizontal MECE within a level.
 
-Contributes to the structuring prior: answer-first, top-down, grouped and ordered ([[pyramid-principle]]) — communication is a pyramid, not a flat list.
-
 ## See also
 
 - [[pyramid-principle]] — the disposition this prior anchors.

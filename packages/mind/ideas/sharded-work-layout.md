@@ -16,7 +16,3 @@ Two species specialize this skeleton, differing on a single axis — **who owns 
 
 - [[sharded-plan-layout]] — an **agent** orchestrates: no engine, unit state is the folder it sits in, work is picked by a trivial rule.
 - [[sharded-workflow-layout]] — a deterministic **engine** orchestrates: ordered steps the engine walks, the agent executing one step per inference point.
-
-## See also
-
-- [[shard-by-orthogonal-concern]] — why the decomposition is MECE.

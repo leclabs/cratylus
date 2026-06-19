@@ -5,7 +5,7 @@ delineation: Lift each one-off workaround to a stable, greppable named marker th
 
 # Named Marker as Index-Key
 
-When the same workaround, residue, or shape recurs across a corpus, the leverage move is to **lift it to a stable, greppable name** and treat that name as the **index-key into a catalog** — so the next pass, human or agent, _closes_ it instead of re-discovering it. The recurring methodological signature: take a recurring entity, give it one canonical greppable token, and let the token carry the weight that scattered prose cannot.
+When the same workaround, residue, or shape recurs across a corpus, the leverage move is to **lift it to a stable, greppable name** and treat that name as the **index-key into a catalog** — so the next pass, human or agent, _closes_ it instead of re-discovering it.
 
 Mechanically, for systematic residue (stubs, dead branches, polyfills) the move is a four-part catalog row per pattern:
 

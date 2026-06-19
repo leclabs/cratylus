@@ -9,8 +9,6 @@ A generator that re-emits files it previously produced will **silently destroy h
 
 Drift detection is the **prerequisite** that makes a bidirectional import/regenerate cycle safe at all. With the recorded hash in hand you also get the **reconciliation primitive for free**: when both sides changed (the user edited downstream _and_ the canonical source moved), the recorded hash is the **common ancestor for a three-way merge** — the same answer version control gives to concurrent edits.
 
-The anti-pattern is a generator that treats its output directory as exclusively its own; the discipline is treating any emitted file as potentially co-edited and proving it pristine before clobbering it.
-
 ## See also
 
 - [[bidirectional-round-trip-fidelity]] — regeneration is the write half; drift detection makes it safe to run repeatedly.

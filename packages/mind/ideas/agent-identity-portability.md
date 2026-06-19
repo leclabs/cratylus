@@ -12,7 +12,7 @@ What makes an agent the **same agent** across deployments is a fixed, portable s
 - **harness posture** — how it meets its runtime: capability floor, output contract, interactivity, tools/model.
 - **essence / values** — its stance, dispositions, and the priors it acts from.
 
-The load-bearing split is **intrinsic vs extrinsic**: intrinsic facets travel _with_ the agent (essence, name); extrinsic facets are supplied _by_ the deployment (the keypair a host issues, the tools a harness grants). A **clone** shares the intrinsic facets and rebinds the extrinsic ones; a **singular instance** is the one binding that holds a particular keypair. Identity is portable precisely because the intrinsic core is separable from the extrinsic binding.
+The load-bearing split is **intrinsic vs extrinsic**: intrinsic facets travel _with_ the agent (essence, name); extrinsic facets are supplied _by_ the deployment (the keypair a host issues, the tools a harness grants). A **clone** shares the intrinsic facets and rebinds the extrinsic ones; a **singular instance** is the one binding that holds a particular keypair.
 
 This is the **what-is** that the `kind` ontology (`ideas/AGENTS.md`) `agent`/`persona` composites _instance_: the composite rule says an agent embodies its `principle`s, invokes its `process`es, references its `concept`s; this cell says which facets that bundle distributes across. An agent cell (e.g. [[mav]], [[nico]]) declares only its **deltas** against these facets.
 

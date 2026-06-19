@@ -7,7 +7,7 @@ delineation: Require every agent claim to carry a re-verifiable artifact coordin
 
 Require an agent to attach a **re-verifiable coordinate** to every claim it makes: `read X.vue (lines 1–150)`, `imports Y for Z`, the exact symbol — not the ungrounded summary `this handles job-posting creation`. The constraint does two things at once: it **forces grounding in the artifact** at write-time, and it **exposes hallucination on the spot**, because an agent cannot cite a coordinate it did not actually read. The citation _is_ the retrieval lineage — the claim and the evidence for it travel together.
 
-This is the claim-grain discipline of the corpus's source-over-projection stance: a claim's coordinate points back at the artifact that realizes it ([[verify-at-the-source-not-the-projection]]), so any reader (or a later pass) can re-open that coordinate and confirm. A claim without a coordinate is an assertion to be trusted; a claim with one is a pointer to be checked. Prefer the second universally — the cost is one citation, the payoff is that confident-but-wrong moves get caught at the moment they are written rather than downstream.
+This is the claim-grain discipline of the corpus's source-over-projection stance: a claim's coordinate points back at the artifact that realizes it ([[verify-at-the-source-not-the-projection]]), so any reader (or a later pass) can re-open that coordinate and confirm. A claim without a coordinate is an assertion to be trusted; a claim with one is a pointer to be checked.
 
 ## See also
 

@@ -19,7 +19,7 @@ Reached by intent, not a command grammar — state the intent, get the operation
 - **update** — to revise a task's content, depalimpsested.
 - **merge** — to fold several in-scope plans into one.
 
-The one explicit affordance is **`/praxis list`** — enumerate the sharded plans in scope. Everything else is reached by stating the intent.
+The one explicit affordance is **`/praxis list`** — enumerate the sharded plans in scope.
 
 ## The operations, formally
 

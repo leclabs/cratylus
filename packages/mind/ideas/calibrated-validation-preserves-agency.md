@@ -9,7 +9,7 @@ The depth of programmatic validation directly sets the agent's posture. Validate
 
 - **Floor — schema at the transition boundary.** A type/schema check at each state mutation (save, approve) is the cheapest deterministic guard between "the agent did the right thing" and "the state is now subtly wrong." It catches the high-frequency, low-severity drift class and hands the agent a fix-and-retry loop it can drive itself. This is the only thing the program validates.
 - **Middle — the semantic interior is the agent's job.** The actual judgement (the classification, the design, the concept induced from code) is **left unvalidated by program** — that is the autonomous work. Validating it mechanically is what collapses the agent into a procedural-checklist junior.
-- **Ceiling — a human reviewer holds the golden source.** The semantic interior is gated by a typed human-in-the-loop review, not by a schema. The schema is the floor; the human is the ceiling; the agent owns the middle.
+- **Ceiling — a human reviewer holds the golden source.** The semantic interior is gated by a typed human-in-the-loop review, not by a schema.
 
 The validator should be **agent-callable**, not a wall the agent hits after the fact. When the policy/standards check is a tool the agent invokes proactively (verify-as-you-go), behaviour shifts from optimistic-write-then-fail to in-loop fix-and-recheck — the cost of the check moves from after-the-fact CI feedback to one tool call. A proxy signal must never stand in for the real state at the floor: an indicator derived from a correlated proxy (a file's mtime standing in for workflow status) lies during transitions and breeds learned-helplessness — derive it from the authoritative state ([[doc-mirrors-runtime-truth]]).
 
