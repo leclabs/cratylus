@@ -14,6 +14,10 @@ recap trims applied CE∧ME-blind-judged (119 already clean, 5 over-trims correc
 toolkit 14/14. One residual: `arch-doc-writer`'s rendered def drifted and **rides the next fleet deploy** (batched;
 a single cosmetic trim does not warrant a standalone 6-host cycle). Retire this plan once that deploy lands.
 
+## Successor — the deeper deliverable moved to `anchor-fidelity`
+
+`fresh-optimization-pass`'s prose-trim was a _subset_. The real deliverable (corpus-as-one-source re-individuation with every anchor **proven**, not asserted) is now **`plans/anchor-fidelity/` phase 4 (`gated-reindividuation`)** — tool-driven by the CSF acceptance gate built there. This plan stays retirement-eligible; the deeper work lives there.
+
 ## Frontier (ready)
 
 _(none — the corpus sweep is done; see Completed.)_
