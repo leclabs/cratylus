@@ -208,7 +208,7 @@ def main() -> int:
         R3_DROPPED.unlink(missing_ok=True)
 
     # --- R3 (malformed): a manifest violating the firm schema is a HARD ERROR ---
-    # Not a silent skip ([[hoare-elegance-no-permissive-defaults]]). Here: a route
+    # Not a silent skip ([[no-permissive-defaults]]). Here: a route
     # with an out-of-vocab disposition.
     try:
         R3_MALFORMED.write_text(json.dumps({

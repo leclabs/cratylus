@@ -7,7 +7,7 @@
   TRIGGER      the affordance is the TARGET cell's `trigger` front-matter
                VERBATIM, never guessed from the slug (fixture whose trigger
                differs from its slug); a skill cell with no trigger fails
-               LOUD ([[hoare-elegance-no-permissive-defaults]]).
+               LOUD ([[no-permissive-defaults]]).
   POSITIONS    the projection holds in every emitted position: skill-body
                prose + provenance line (compose.skill) and agent disposition
                lines at each reader density (compose.reader).

@@ -114,7 +114,7 @@ def parse_argv(argv: list[str]) -> tuple[str, str, pathlib.Path, bool]:
     .render/skills).
     Default profile (strong-llm, claude-code) reproduces the deployed defs
     byte-for-byte. Malformed flags are rejected, never silently defaulted
-    ([[hoare-elegance-no-permissive-defaults]])."""
+    ([[no-permissive-defaults]])."""
     reader, harness, out, force = "strong-llm", "claude-code", None, False
     i = 0
     while i < len(argv):

@@ -576,7 +576,7 @@ def apply_plan(plan: dict, force: bool = False) -> int:
 def parse_argv(argv: list[str]) -> tuple[pathlib.Path, str, bool, bool]:
     """`rebase.py <target> [--plan|--apply] [--reader R] [--force]`. Malformed
     flags are rejected, never silently defaulted
-    ([[hoare-elegance-no-permissive-defaults]]). --plan and --apply are mutually
+    ([[no-permissive-defaults]]). --plan and --apply are mutually
     exclusive; apply is the default when neither is given."""
     reader, force, plan_only, apply_flag, target = DEFAULT_READER, False, False, False, None
     i = 0

@@ -8,7 +8,7 @@ stored in cells ([[projection-is-not-the-source]]).
                 legible as a name and invocable, in every position
                 (unconditional on kind x harness; no position-keyed cases).
                 The trigger is read, never guessed from the slug
-                ([[hoare-elegance-no-permissive-defaults]]).
+                ([[no-permissive-defaults]]).
   otherwise     typographic `**bold**` -- the affordance-free default form.
 """
 from __future__ import annotations

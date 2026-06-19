@@ -8,7 +8,7 @@
   FENCE       no [[ ]] anchor inside a fenced/indented code block -- the register
               rule of references/formal-symbolic-notation.md (anchors in prose,
               symbols in fences; bind imports once at the boundary). REJECT,
-              never auto-transform ([[hoare-elegance-no-permissive-defaults]]).
+              never auto-transform ([[no-permissive-defaults]]).
   SYMBOLS     the register rule's positive form: every glyph in a fence interior
               is in (declared symbol table ∪ definienda-class ∪ exemptions); an
               undeclared glyph FAILS, named cell:line + codepoint. FENCE rejects
@@ -47,7 +47,7 @@
                    meaning(D) has a home": NOT mechanized (no routing manifest
                    exists; routing is in-the-loop in the exemplify run, never
                    persisted). Emitted as an explicit audit-line NOTE, not faked
-                   ([[hoare-elegance-no-permissive-defaults]] degrade-visibly).
+                   ([[no-permissive-defaults]] degrade-visibly).
 
 One parse: the cell views (core.cells) and the composers' own ref-walks
 (compose.agent / compose.skill) are imported, never re-derived -- verify cannot
@@ -331,7 +331,7 @@ def gate_skill_provenance():
     CITE-TWICE -- a skill carrying BOTH a Bindings region AND a prose `≜` formula
     cites the same anchors at two homes (the `≜` re-states what the bindings
     already home). That is the duplication [[self-sufficient-formalism]] forbids,
-    mechanized. A hard FAIL ([[hoare-elegance-no-permissive-defaults]]): the
+    mechanized. A hard FAIL ([[no-permissive-defaults]]): the
     cite-once sweep has cleared the last transitional both-present cell, so the
     gate now enforces the one-citation-home law outright -- Bindings is the sole
     composition source; a re-citing `≜` is a violation, not a warning."""
@@ -507,7 +507,7 @@ def _home_index() -> dict[str, list[str]]:
 # is homed-nowhere-by-design and lives in `delta[]`, where bucket-membership IS
 # the delta disposition (so delta[] carries no `disposition` field). A
 # malformed manifest is a HARD ERROR, never a silent skip
-# ([[hoare-elegance-no-permissive-defaults]]).
+# ([[no-permissive-defaults]]).
 ROUTE_DISPOSITIONS = {"reuse", "mint"}
 
 
@@ -644,7 +644,7 @@ def gate_reconstruct():
     #       routes-vs-delta totality the manifest itself can express.)
     # DEGRADE-VISIBLY (mirrors gate_roundtrip): with NO manifest present -- the
     # current state, no producer wired -- R3 stays the visible audit-line NOTE.
-    # Do not fake coverage, do not FAIL ([[hoare-elegance-no-permissive-defaults]]).
+    # Do not fake coverage, do not FAIL ([[no-permissive-defaults]]).
     manifest_paths = sorted(MANIFESTS.glob("*.json")) if MANIFESTS.exists() else []
     if not manifest_paths:
         notes.append(

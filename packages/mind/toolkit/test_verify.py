@@ -2,7 +2,7 @@
 """Verify-gate tests -- the FENCE lint contract (task 03 of
 plans/markdown-ast-compose): a cell with [[x]] inside a fenced block FAILS
 loudly, named per cell:line; the same cell with the anchor bound in prose
-PASSES. Reject, never transform ([[hoare-elegance-no-permissive-defaults]]).
+PASSES. Reject, never transform ([[no-permissive-defaults]]).
 
 Run: python3 toolkit/test_verify.py   (exit non-zero on any failure)
 """

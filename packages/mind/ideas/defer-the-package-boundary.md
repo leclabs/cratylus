@@ -16,4 +16,4 @@ This is not anti-modularity (modularity inside a package is always productive) a
 - [[fowler]] — monolith-first; YAGNI at the package grain.
 - [[hickey]] — complecting cost; don't braid modularity-machinery into code that wants to stay together.
 - [[unbraided-code]] · [[composition-hub]] — within-package modularity that substitutes for premature extraction.
-- [[hoare-elegance-no-permissive-defaults]] — a silently-violated cross-boundary contract is the footgun at the package grain.
+- [[no-permissive-defaults]] — a silently-violated cross-boundary contract is the footgun at the package grain.

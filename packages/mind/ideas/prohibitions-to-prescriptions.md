@@ -9,7 +9,7 @@ Rewrite negative instructions as positive ones: `don't mutate` → `use immutabl
 
 Keep the negative form only when there is no single positive alternative — when the prohibition is genuinely universal ("never commit secrets"). That is the rare exception.
 
-**Parameter-shape corollary.** A blast-radius-expanding default is a prohibition-in-disguise ("don't forget the scope or you'll wipe everything"); the rule and its remedy are [[hoare-elegance-no-permissive-defaults]].
+**Parameter-shape corollary.** A blast-radius-expanding default is a prohibition-in-disguise ("don't forget the scope or you'll wipe everything"); the rule and its remedy are [[no-permissive-defaults]].
 
 ## See also
 

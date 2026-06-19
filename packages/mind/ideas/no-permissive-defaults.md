@@ -3,7 +3,7 @@ kind: principle
 delineation: An optional parameter whose absence expands to the most destructive or expansive interpretation is a footgun — make it required, error clearly with the discovery path, and discriminate multi-contract operations explicitly in the parameter shape.
 ---
 
-# Hoare Elegance: No Permissive Defaults
+# No Permissive Defaults
 
 [[hoare]]'s discipline is the precondition: the call fails if what must be true before it is not. Its corruption is the **permissive default** — an optional parameter that, omitted, expands to the most destructive interpretation: `copy(ids?)` where empty means _all_; `delete(filter?)` where empty means _every row_; a confirm flag defaulting to "yes".
 

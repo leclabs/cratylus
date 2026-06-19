@@ -188,7 +188,7 @@ def init(target: pathlib.Path, reader: str = DEFAULT_READER,
 
 def parse_argv(argv: list[str]) -> tuple[pathlib.Path, str, str, bool]:
     """`init.py <target> [--reader R] [--subject TEXT] [--force]`. Malformed flags
-    are rejected, never silently defaulted ([[hoare-elegance-no-permissive-defaults]])."""
+    are rejected, never silently defaulted ([[no-permissive-defaults]])."""
     reader, subject, force, target = DEFAULT_READER, DEFAULT_SUBJECT, False, None
     i = 0
     while i < len(argv):

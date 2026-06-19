@@ -73,7 +73,7 @@ BINDINGS_RE = re.compile(r"^\s*\*{0,2}Bindings:\*{0,2}")
 # A harness-variant selector header is EXACTLY `## Harness: <token>`. Only an
 # exact match is treated as a dialect to select/drop; anything else that merely
 # starts with "## Harness" (e.g. `## Harness Notes`) is an ordinary section and
-# is KEPT, never silently dropped ([[hoare-elegance-no-permissive-defaults]] --
+# is KEPT, never silently dropped ([[no-permissive-defaults]] --
 # a non-selector header degrades to visible content, not to deletion).
 HARNESS_RE = re.compile(r"^## Harness:\s*(\S+)\s*$")
 

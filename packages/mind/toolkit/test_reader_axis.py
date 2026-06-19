@@ -7,7 +7,7 @@
   DIVERGENCE   weak-llm differs from strong-llm by added kind/verb scaffolding
                (the reader-prior density delta is real, not a no-op).
   GUARD        unknown --reader / --harness profiles are rejected, never
-               silently defaulted ([[hoare-elegance-no-permissive-defaults]]).
+               silently defaulted ([[no-permissive-defaults]]).
 
 Run: python3 toolkit/test_reader_axis.py   (exit non-zero on any failure)
 """

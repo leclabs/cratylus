@@ -3,7 +3,7 @@ kind: principle
 delineation: Every new rule must retire, generalize, or refine an existing one — carry the delta, not the cumulative; an ever-growing rule corpus passes the threshold where judgment gives way to checklist execution.
 ---
 
-# Subsidiarity: Net-Zero Corrections
+# Net-Zero Correction
 
 Under a naive regime every incident adds a rule and none retracts one, so the rule corpus grows monotonically — and past a threshold the reader can no longer hold the brief; it executes the longest available checklist instead of inferring from intent. The remedy: a **net-zero correction discipline** — every new rule retires, generalizes, or refines an existing one. The delta carries, not the cumulative.
 

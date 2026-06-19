@@ -35,5 +35,5 @@ Two properties make the taxonomy load-bearing rather than decorative:
 - [[cite-dont-copy]] — the fix for Specification Bloat: one canonical home, reference don't restate.
 - [[metric-is-a-guide-not-a-target]] — Artefact Supremacy is its Goodhart twin at the artifact grain.
 - [[anchor-to-the-readers-priors]] — the human-comms reading: activity-narration is the surplus this taxonomy prunes per register.
-- [[subsidiarity-net-zero-corrections]] — the full discipline behind the Corrective-Spiral fix: carry the delta, not the cumulative.
+- [[net-zero-correction]] — the full discipline behind the Corrective-Spiral fix: carry the delta, not the cumulative.
 - [[prohibitions-to-prescriptions]] — the full discipline behind the Defensive-Prohibition fix: rewrite "don't X" as "do Y".
