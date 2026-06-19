@@ -5,9 +5,9 @@ delineation: Only ask the user for input that genuinely requires their manual ac
 
 # Do the Work — Don't Tell the User
 
-Ask the user only for input that genuinely requires **their manual action** (paste a fresh token, restart a daemon, approve a destructive change). Otherwise **act** — you have Edit and Bash; don't narrate a step you could take. Report _what was done_, not _what the user should do_; ask once, decisively, when manual action is unavoidable, with everything else already prepared.
+Manual action means what only the user's hands can do: paste a fresh token, restart a daemon, approve a destructive change. You have Edit and Bash — never narrate a step you could take. Ask once, decisively, with everything else already prepared.
 
-The same governs any artifact you produce: its worth is its [[decision-yield]]. Activity-narration — in-session or on the page — is the same pathology as narrating tool calls without a verdict.
+Activity-narration on the page is the same pathology as narrating tool calls without a verdict ([[decision-yield]]).
 
 ## See also
 

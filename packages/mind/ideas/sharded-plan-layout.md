@@ -5,7 +5,7 @@ delineation: The agent-driven specialization of sharded-work-layout — task sta
 
 # Sharded Plan Layout
 
-The **agent-driven** specialization of [[sharded-work-layout]]: an agent, not an engine, orchestrates — it plans and executes as it normally would, and the layout carries the state.
+An agent, not an engine, orchestrates: it plans and executes as it normally would, and the layout carries the state.
 
 ```
 {plansDirectory}/{plan}/
@@ -21,9 +21,9 @@ The **agent-driven** specialization of [[sharded-work-layout]]: an agent, not an
 └── references/      — external pointers ({topic}.md)
 ```
 
-- **State is the folder, not a field.** A task's lifecycle is _where it lives_ (`pending → ready → active → completed`); advancing it is an `mv`. The dependency graph is **prestructured by placement, never computed** — the author drops each task into its starting state, and on a completion the agent promotes the now-unblocked dependents `pending → ready`. Execution collapses to one rule: **work anything in `tasks/ready/`** — no scheduler, no topological sort ([[doc-mirrors-runtime-truth]]: the folders are the state, PLAN.md mirrors them).
-- **`{concern}` is a vertical slice** ([[shard-by-orthogonal-concern]]) — an independently-progressable strand; distinct concerns in `ready/` are parallelizable across agents without collision.
-- **Decisions in clean current-state** ([[clean-slate]]) — edit them to describe the current design; no superseded ADRs, no "amended-by" footnotes.
+- **State is the folder, not a field.** Advancing a task is an `mv`. The graph is prestructured by placement: the author drops each task into its starting state, and on a completion the agent promotes the now-unblocked dependents `pending → ready`. Execution is one rule: work anything in `tasks/ready/` ([[doc-mirrors-runtime-truth]]).
+- **`{concern}` is a vertical slice** ([[shard-by-orthogonal-concern]]); distinct concerns in `ready/` are parallelizable across agents without collision.
+- **Decisions in clean current-state** ([[clean-slate]]) — no superseded ADRs, no "amended-by" footnotes.
 - **`ls tasks/ready/` is the open frontier**; read PLAN.md for the ordering and the cross-slice edges.
 
 ## See also

@@ -5,11 +5,11 @@ delineation: A package boundary is an ongoing cost (version contract, release co
 
 # Defer the Package Boundary
 
-A package boundary buys isolation and reuse and charges a real, ongoing cost: a version contract, release coordination, an integration-test surface, an upgrade tax across consumers, an import-graph to police. **Pay it when the boundary is forced; not before.** The forcing functions are concrete — independent **versioning** (consumers need different versions at once), independent **ownership** (separate teams), or independent **deployment** (its own cadence/substrate). Absent at least one, the boundary is premature and the cost is pure (a two-consumer producer pays ~5× a same-package producer for the same code).
+The forcing functions are exactly three: independent **versioning** (consumers need different versions at once), independent **ownership** (separate teams), independent **deployment** (its own cadence/substrate). Absent at least one, a two-consumer producer pays ~5× a same-package producer for the same code.
 
-Monolith-first ([[fowler]]); an unforced boundary complects modularity-machinery with code that wanted to stay together ([[hickey]]). Unbraid concerns _inside_ a package ([[unbraided-code]]); compose at hubs ([[composition-hub]]) — don't preempt with a package split. A boundary paid for and never returned (one consumer covers 100% of use) is a sunk cost; **de-packaging it back into a directory is correct**, not regression.
+Monolith-first ([[fowler]]); an unforced boundary complects modularity-machinery with code that wanted to stay together ([[hickey]]). Unbraid concerns _inside_ a package ([[unbraided-code]]); compose at hubs ([[composition-hub]]) — don't preempt with a split. De-packaging an unreturned boundary (one consumer covers 100% of use) into a directory is correct, not regression.
 
-This is not anti-modularity (modularity inside a package is always productive) and not "never extract" (when a forcing function exists, extract). The test: **name the forcing function before extracting; if you can't, don't.**
+The test: **name the forcing function before extracting; if you can't, don't.**
 
 ## See also
 

@@ -5,13 +5,11 @@ delineation: Every new rule must retire, generalize, or refine an existing one �
 
 # Net-Zero Correction
 
-Under a naive regime every incident adds a rule and none retracts one, so the rule corpus grows monotonically — and past a threshold the reader can no longer hold the brief; it executes the longest available checklist instead of inferring from intent. The remedy: a **net-zero correction discipline** — every new rule retires, generalizes, or refines an existing one. The delta carries, not the cumulative.
+The **net-zero correction discipline**: pair every rule addition with a deletion or generalization, so the corpus carries the delta and never grows monotonically. The displaced cost is specification-bloat ([[context-pathologies]]) — a long procedure crowding out intent ([[mission-command]]) and converting tacit judgment into explicit rule that then competes with it ([[polanyi]]).
 
-Why monotonic growth is fatal: a long procedure displaces the mission ([[mission-command]]) and breeds learned helplessness; tacit judgment converted to explicit rule then _competes_ with judgment instead of supporting it ([[polanyi]]). Specification-bloat is the named failure ([[context-pathologies]]).
+The correction shape that enforces it: **STOP** (the behaviour to retire), **PRESERVE** (the working thing not to damage), **FOCUS** (the new locus), **VERIFY** (the back-brief proving the signal landed). The STOP slot is the deletion paired to every addition.
 
-The correction shape makes it net-zero: **STOP** (which behaviour to retire — the retraction), **PRESERVE** (what working thing not to damage), **FOCUS** (the new locus — the addition), **VERIFY** (the back-brief proving the signal landed). The STOP slot pairs every addition with a deletion or generalization.
-
-**Subsidiarity** is the frame: push each rule to the lowest level that has the information to apply it. A top-level corpus grown past readable length is a sign the rules belong lower. The test before adding a rule: _what existing rule does this generalize, refine, or replace?_ If "none", question whether it belongs in the rule set at all.
+Frame: **subsidiarity** — push each rule to the lowest level that has the information to apply it; a top-level corpus past readable length signals the rules belong lower. The gate before adding: _what existing rule does this generalize, refine, or replace?_ If "none", question whether it belongs in the rule set at all.
 
 ## See also
 

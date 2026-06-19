@@ -5,17 +5,17 @@ delineation: Before transforming an artifact you do not fully understand, captur
 
 # Golden-Master Equivalence Oracle
 
-When transforming an artifact whose behaviour you cannot fully derive in advance — porting a framework, migrating a codebase, distilling a corpus — **pin its observable behaviour as a golden master from the source first, then accept the target only when it reproduces that golden.** The oracle is **characterized from the source**, not authored as an independent spec: you run the source, record what it does, and that record becomes the equivalence test the target must pass. This is Feathers' characterization testing generalized from "legacy code under test" to **any source→target transformation**: the source is its own specification, and equivalence is decided against captured behaviour rather than against intent.
+Feathers' characterization testing generalized from "legacy code under test" to **any source→target transformation** — porting a framework, migrating a codebase, distilling a corpus.
 
-The move has a fixed order, and the order is the discipline:
+The order is the discipline:
 
-- **Generate the oracle before the transform, from the source.** A golden written after the transform, or written from what the target _should_ do, tests your assumptions, not the preserved behaviour. Capture invariants from the source while it is still the only ground truth — the oracle is downstream of the source and upstream of every transform pass.
-- **Acceptance is oracle-reproduction, not reviewer judgement.** The target is correct exactly when it reproduces the golden; a transform that breaks a golden has changed behaviour, full stop. This makes equivalence **mechanically decidable** instead of a matter of trust — the same reason a round-trip is property-tested rather than asserted ([[bidirectional-round-trip-fidelity]]).
-- **Both artifacts are first-class; neither is a view of the other.** Source-to-target transformation is _not_ projection: a projection is a derived view of one canonical source ([[projection-is-not-the-source]]), but here source and target are two independent realizations and the golden is what holds them equivalent. The oracle is the bridge that lets the target stand on its own while provably preserving what the source did.
+- **Generate the oracle before the transform, from the source** — downstream of the source, upstream of every transform pass. A golden written after, or from what the target _should_ do, pins assumptions, not preserved behaviour.
+- **Acceptance is oracle-reproduction, not reviewer judgement** — mechanically decidable, the same stance under which a round-trip is property-tested rather than asserted ([[bidirectional-round-trip-fidelity]]).
+- **Both artifacts are first-class; neither is a view of the other** — not projection ([[projection-is-not-the-source]]): two independent realizations, the golden the bridge that holds them equivalent.
 
-The golden masters are the **floor** of the transform: the slice of behaviour the transform promises to preserve exactly, captured up front ([[lossless-floor]]). Behaviour above that floor is unpinned and may legitimately change; behaviour on it must round-trip. Pin the floor from the source, transform freely above it.
+The goldens are the **floor** ([[lossless-floor]]): pin the floor from the source, transform freely above it.
 
-**Structural goldens and content-addressed staleness.** When the transform crosses paradigms and runtime semantics don't carry over, pin _structural_ invariants (props, slots, named outputs, data shape) rather than behaviour — the structural lift is then the only level at which "same artifact" stays meaningful. Tag each golden with the source it was pinned from (`sourceCommitHash`, `goldenGeneratedAt`): when the source moves the golden is stale and the transform stops trusting it — the hash _is_ the validity oracle, no human gate. **Capture once, project many** — one golden, one cheap replayable projection per target.
+**Structural goldens and content-addressed staleness.** When the transform crosses paradigms and runtime semantics don't carry over, pin _structural_ invariants (props, slots, named outputs, data shape) — the only level at which "same artifact" stays meaningful. Tag each golden with the source it was pinned from (`sourceCommitHash`, `goldenGeneratedAt`): when the source moves the golden is stale and the transform stops trusting it — the hash _is_ the validity oracle, no human gate. **Capture once, project many** — one golden, one cheap replayable projection per target.
 
 ## See also
 

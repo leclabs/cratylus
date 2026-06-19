@@ -5,16 +5,7 @@ delineation: ARCHITECTURE.md carries diagrams of stable structure (boundaries, d
 
 # ARCHITECTURE.md — Diagrams Only
 
-`ARCHITECTURE.md` is diagrams of stable structure and **nothing else**: deployment topology, container internals, state machines. Zero prose.
-
-Rules:
-
-1. Stable boundaries / data flow / control flow / invariants only.
-2. Diagram-first (Mermaid is the lingua franca); one concept per diagram, labeled edges.
-3. Implementation detail belongs in the relevant `README.md`, not architecture.
-4. Plans go in `plans/` ([[sharded-plan-layout]]); drafts in a sibling clearly flagged "draft, not contract."
-
-Anti-pattern: paragraphs of explanation. If a paragraph seems needed, the diagram is incomplete or the paragraph belongs in `README.md`.
+Diagram-first: Mermaid is the lingua franca; one concept per diagram, labeled edges. Plans go in `plans/` ([[sharded-plan-layout]]); drafts in a sibling flagged "draft, not contract." If a paragraph seems needed, the diagram is incomplete or the paragraph belongs in `README.md`.
 
 ## See also
 

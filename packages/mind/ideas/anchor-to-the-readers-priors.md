@@ -5,14 +5,12 @@ delineation: Re-encoding one content for a different audience is re-anchoring, n
 
 # Anchor to the Reader's Priors
 
-The same content, carried to a different audience, must be **re-anchored, not summarized**. A reader brings their own latent priors and faces their own decision; the name that circumscribes a claim precisely for one reader ([[precise-circumscription]]) under- or over-reaches for another. So **replace the anchor of each conclusion** with the one that fits the new reader's priors — and leave the **evidence chain underneath unchanged**. A `60%` deployment-velocity figure is invisible to a board and load-bearing to a tech lead: same fact, different anchor.
+[[precise-circumscription]] run across reader populations rather than across candidate names for one reader: the argmin is the same, but it ranges over each audience's evoked priors. A `60%` deployment-velocity figure is invisible to a board and load-bearing to a tech lead — same fact, different anchor.
 
-This is [[precise-circumscription]] applied across reader populations rather than across candidate names for one reader. Two operative rules:
+- Encode for the decision the artifact must enable, not the activity that produced it ([[decision-yield]]).
+- Moving content _up_ an altitude (engineering fact → market thesis) re-anchors only the top-level name; the conclusion stays causally connected to the technical fact beneath and the chain stays re-verifiable ([[claims-cite-verifiable-coordinates]]).
 
-- **The reader's priors are the channel; the decision-class is the basis.** What separates one audience from another is not style — it is _which priors they already carry_ and _what they must decide_. Encode for the decision the artifact has to enable, not the activity that produced it ([[decision-yield]]).
-- **Preserve the causal chain; replace only the conclusion's anchor.** Moving content _up_ an altitude (engineering fact to market thesis) is re-anchoring against higher-altitude priors while keeping the conclusion causally connected to the technical fact beneath it. The chain stays re-verifiable ([[claims-cite-verifiable-coordinates]]); only the top-level name changes. Drop the chain and you have a slogan; keep it and you have a translation.
-
-Any fixed roster of registers (IC→lead, lead→leadership, eng→business, business→exec) is a **projection** of this principle — a useful index over audiences, never the generator ([[projection-is-not-the-source]]); the audiences a given context actually has are computed from who must decide, not stored as a canonical four.
+Any fixed roster of registers (IC→lead, lead→leadership, eng→business, business→exec) is a **projection** of this principle, never the generator ([[projection-is-not-the-source]]); the audiences a context has are computed from who must decide, not stored as a canonical four.
 
 ## See also
 

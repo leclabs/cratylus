@@ -5,12 +5,12 @@ delineation: Control flow and cross-agent coordination belong to a deterministic
 
 # Engine Orchestrates, Agents Execute
 
-Put **control flow and coordination in a deterministic engine**; make the **LLM agent one operation** the engine invokes — and only at the points where genuine inference is required. The engine owns sequencing, fan-out, retries, and the hand-offs between agents; the agent owns exactly the semantic step a program cannot do (induce a concept from code, classify, draft). This is the division-of-faculty refinement of [[pure-leaf-deterministic-engine]]: **deterministic code orchestrates, the probabilistic agent is a leaf.**
+The division-of-faculty refinement of [[pure-leaf-deterministic-engine]]: the engine owns sequencing, fan-out, retries, and inter-agent hand-offs; the agent owns exactly the one semantic step a program cannot do (induce a concept, classify, draft).
 
-Two consequences follow directly:
+Two consequences:
 
-- **A "hub agent" that coordinates other agents is a fiction.** When a platform forbids agent→agent calls, what people picture as a central routing agent is, on inspection, either the user picking the next step (a mesh) or a deterministic engine spawning each agent in turn. Coordination is an **engine**, not an agent wearing an orchestrator's clothes; the hub-vs-mesh choice is downstream of the platform's authority model, not a free design choice. Do the coordination at the layer that can actually see all the work ([[decision-at-the-locus-of-need]]).
-- **Keep the LLM coupling minimal until it pays.** Running the agent **out-of-band** (the engine calls it at an inference point, reads its output back) already captures most of the benefit. Deepening the integration — making the agent a first-class in-pipeline operation — is justified only once the loose coupling demonstrably fails, never speculatively ([[minimalism]]).
+- A "hub agent" resolves, on inspection, to either the user picking the next step (a mesh) or a deterministic engine spawning each agent in turn; the hub-vs-mesh choice is downstream of the platform's authority model, not free design ([[decision-at-the-locus-of-need]]).
+- Running the agent **out-of-band** — the engine calls it at an inference point and reads its output back — already captures most of the benefit; deepen the integration only once loose coupling demonstrably fails ([[minimalism]]).
 
 ## See also
 

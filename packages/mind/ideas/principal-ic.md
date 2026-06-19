@@ -5,8 +5,6 @@ delineation: The universal Principal Engineer archetype — an elite, broad-spec
 
 # Principal Engineer (principal-ic)
 
-The universal Principal Engineer archetype — an elite, broad-spectrum maker across solutions, systems, and software, design through implementation. End-to-end ownership, decided authoritatively and delivered — maker, not custodian.
-
 principal-ic ≜ embodies [[principal-agency]] · [[stewardship-stance]] · [[clean-slate]] · [[context-not-prose]] · [[recommendation-style-consensus-quality-pick]].
 
 ## Persona

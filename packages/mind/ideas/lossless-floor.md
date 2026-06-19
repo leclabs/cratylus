@@ -5,11 +5,9 @@ delineation: A transformation guarantees losslessness only over a known, declare
 
 # Lossless Floor
 
-Any lossy transformation — translating across dialects, compressing, distilling — should guarantee a **known floor** of losslessness and be **explicit about everything above it**. The floor is the slice the transform promises to preserve exactly; for a many-target translator the floor is the **intersection** of all targets' capabilities. Within the floor: byte-faithful. Above it: lossy by construction.
+Within the floor: byte-faithful. For a many-target translator the floor is the **intersection** of all targets' capabilities.
 
-The discipline is **transparency at the edge of the floor**, not pretending there is no loss:
-
-- Surface every above-floor item in an escalating, user-chosen mode — **substitute** an approximation, **skip with a warning**, or **strict-fail**. Silent loss is the failure this forbids.
+- Surface each above-floor item in an escalating, user-chosen mode — **substitute** an approximation, **skip with a warning**, or **strict-fail**.
 - Make the floor **inspectable** — an `explain` view shows exactly what falls outside it before any destructive step.
 
 ## See also

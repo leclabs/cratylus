@@ -5,13 +5,13 @@ delineation: How much you validate an agent's output sets whether it reasons or 
 
 # Calibrated Validation Preserves Agency
 
-Validation depth sets the agent's posture: too much and it Goodharts the checker instead of the task; too little and you cannot trust the output. Split the authority by altitude:
+Split the authority by altitude:
 
-- **Floor — schema at the transition boundary.** A type/schema check at each state mutation (save, approve) is the only thing the program validates: cheap, deterministic, drives its own fix-and-retry.
-- **Middle — the semantic interior is the agent's job.** The judgement (classification, design, concept induced from code) is left unvalidated by program — mechanizing it collapses the agent into a checklist junior.
-- **Ceiling — a human reviewer holds the golden source**, gating the interior by typed review, not schema.
+- **Floor — schema at the transition boundary.** The type/schema check at each state mutation (save, approve) is the only thing the _program_ validates; it drives its own fix-and-retry.
+- **Middle — the semantic interior** (classification, design, concept induced from code) is left unvalidated by program.
+- **Ceiling — the human reviewer holds the golden source**, gating the interior by typed review, not schema.
 
-Make the validator **agent-callable** (verify-as-you-go), not a post-hoc wall — the check becomes one in-loop tool call instead of after-the-fact CI. Never let a correlated proxy stand for the real state at the floor (a file's mtime for workflow status lies during transitions) — derive from the authoritative state ([[doc-mirrors-runtime-truth]]).
+At the floor, never let a correlated proxy stand for the real state (a file's mtime for workflow status lies during transitions) — derive from the authoritative state ([[doc-mirrors-runtime-truth]]).
 
 ## See also
 

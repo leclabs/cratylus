@@ -5,7 +5,7 @@ delineation: A formal block is the signum aptissimum of its concept — closed (
 
 # Self-Sufficient Formalism
 
-A formal block (set-builder, signature, law) is the **signum aptissimum** of the concept it states ([[precise-circumscription]] · [[densest-faithful-point]]): the densest sign that carries the _whole_ meaning. If prose is still required to explain what the comprehension means, the block is **incomplete** — repair the block, never prop it with prose.
+If prose is still required to explain what a block's comprehension means, the block is **incomplete** — repair the block, never prop it with prose ([[precise-circumscription]] · [[densest-faithful-point]]).
 
 ```text
 B ≜ a formal block : its definition and law lines
@@ -34,12 +34,10 @@ distinct(c,a) ⇔ ¬( claim(home(a)) ⊨ claim(c) )
 recite(c,a) ∧ ¬distinct(c,a) ⇒ ⊥
 ```
 
-- **Closed** — every symbol resolves through one of four sources: the table (`references/formal-symbolic-notation.md`), an earlier defining line, a **`β` corpus-binding** (its anchor named in adjacent prose — [[signify]]'s move), or an **`ι` input** (its value resolved from the invocation context).
-- **Complete** — every operation, transition, and invariant of the concept is a line. A mechanic that lives only in prose is a hole in the formalism.
-- **Ordered** — declarations and signatures above (the hypotheses), comprehensions and laws below; reading top-down, no symbol is used before it is defined.
-- **One citation, at the binding** — the boundary-bindings are the **single home** for every external reference a formal cell makes. An anchor is cited once, beside the symbol it homes, and the cell's cell-grain composition (the provenance a projector emits — the "built from" line) is **derived** from those bindings, never written again. Re-citing a bound anchor — in an intro, a gloss, a see-also re-list, or a separate composition formula — is the duplication this forbids ([[cite-dont-copy]] at the citation grain). Scope: the test is the **claim, not the concept's identity**. A further mention of an already-bound anchor is a forbidden re-citation only when the binding's claim **already entails it** — a restatement that merely re-homes the anchor (a see-also, a provenance re-list, a duplicate composition line). A separate register — an intent surface, a rationale, a comparison — that asserts a claim **the binding does not establish** (even about the same, already-bound concept) is new content, not a re-citation.
+- **Closed** — `T` is `references/formal-symbolic-notation.md`; `β` names the anchor in adjacent prose ([[signify]]'s move); `ι` resolves from the invocation context.
+- **One citation, at the binding** — the boundary-bindings are the single home for each external reference, and the cell's composition (a projector's "built from" line) is **derived** from them, never written again ([[cite-dont-copy]] at the citation grain). Scope: the test is the **claim, not the concept's identity** — a further mention re-cites only when the binding's claim already entails it; a separate register (intent, rationale, comparison) asserting a claim the binding does not establish is new content.
 
-The test ([[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]]): strip every non-binding word. If meaning is lost, the block failed closed/complete/ordered — repair the block. Explanatory prose beside a formal block is therefore either **duplicative** (the block already says it) or a **symptom** (the block fails to) — never a fixture.
+The test ([[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]]): strip every non-binding word; if meaning is lost, the block failed closed/complete/ordered — repair it. Prose beside a block is therefore **duplicative** or a **symptom**, never a fixture.
 
 ## See also
 

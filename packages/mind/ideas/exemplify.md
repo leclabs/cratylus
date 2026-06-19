@@ -7,7 +7,7 @@ trigger: /exemplify
 
 # Exemplify Skill
 
-End-to-end context optimization — each stage independently invocable and owning its own operators and failure laws; this skill owns only the chain, the strategy gate, and the acceptance law.
+Each stage is independently invocable and owns its own operators and failure laws; this skill owns only the chain, the strategy gate, and the acceptance law.
 
 Bindings: the chain invokes [[conceptualize]] → [[signify]] → [[materialize]]; `reconstruct ≽` binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]] — recomposed from the **anchors**, so a name that does not fire its idea fails (anchor-fidelity, [[precise-circumscription]]); `minimal` binds [[minimalism]] · [[precise-circumscription]]. The symbol table is `references/formal-symbolic-notation.md`.
 
@@ -40,7 +40,7 @@ accept(F) ⇔ reconstruct(F) ≽ D ∧ minimal(F)
 ¬accept(F) ⇒ ⊥
 ```
 
-6. On accept, **emit the routing manifest** — persist the run's routing decisions so the oracle's R3 (reconstruction-completeness, **self-application-is-mandatory**) gates mechanically instead of as an in-the-loop audit. Write `.manifests/<source>.json`: one entry per fragment `c ∈ C`, keyed by `fragment_digest` (the content-digest of `c`'s de-palimpsested text — `toolkit/core/digest.fragment_digest`, NFC + whitespace-collapse + trim, so a cosmetic source edit leaves the digest stable). A fragment homed in `F` (η resolved an existing anchor → `reuse`, or minted a new one → `mint`) goes in `routes[]`; a fragment homed nowhere by design (it lives in Δ) goes in `delta[]`. Every fragment lands in exactly one of the two — an unrouted fragment is the dropped idea R3 catches.
+6. On accept, **emit the routing manifest** so the oracle's R3 (reconstruction-completeness, **self-application-is-mandatory**) gates mechanically. Write `.manifests/<source>.json`: one entry per fragment `c ∈ C`, keyed by `fragment_digest` (`toolkit/core/digest.fragment_digest`, NFC + whitespace-collapse + trim). A fragment homed in `F` (η resolved an existing anchor → `reuse`, or minted a new one → `mint`) goes in `routes[]`; one homed in Δ goes in `delta[]`. Every fragment lands in exactly one — an unrouted fragment is the dropped idea R3 catches.
 
 ```jsonc
 {

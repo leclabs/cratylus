@@ -5,11 +5,9 @@ delineation: When a source's traces indicate no stable exemplar, report that non
 
 # Abstain on Non-Convergence
 
-When a source's traces do **not** converge on a stable exemplar, **say so** — report that no clear exemplar is recoverable from the available signal. Do not manufacture a plausible-looking form to fill the gap.
+The resolver must be able to return nothing: one that _always_ yields an exemplar is fabricating.
 
-A resolver that _always_ returns an exemplar is fabricating: the operation must be able to return nothing. Non-resolution is a true statement about the source; a convenient invented exemplar is a false one that propagates downstream every time the corpus is read.
-
-This is the resolution-grain twin of [[surface-open-questions]]: there, name the unknowns in a design rather than fake them settled; here, name non-convergence rather than fake a form.
+The resolution-grain twin of [[surface-open-questions]] — there, name the unknowns in a design rather than fake them settled; here, name non-convergence rather than fake a form.
 
 ## See also
 

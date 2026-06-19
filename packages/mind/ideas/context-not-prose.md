@@ -5,9 +5,6 @@ delineation: The model's default output is human-facing prose; a context's reade
 
 # Context, Not Prose
 
-Post-training optimizes output for a **human** reader; that register is the default and the enemy of context engineering, so override it, never trust it.
-
-- **The bias is trained, not neutral.** Exposition, hedging, recap, restating-for-the-audience — fluent for a person, noise for an agent. It _feels_ like clarity; suppress it.
 - **The reader is an agent.** An anchor loads its [[latent-priors]]; write only the delta, never the referent ([[cite-dont-copy]] · [[anchor-to-the-readers-priors]]).
 - **The register.** Emit at [[densest-faithful-point]]; compose by `[[ ]]`; state the settled call, don't soften it.
 - **The tell.** A line that explains what an anchor already loads, recaps a referenced cell, or hedges a decided thing is the human register leaking — cut it.

@@ -5,18 +5,14 @@ delineation: A named integration point where unbraided strands compose — CLI h
 
 # Composition Hub
 
-The boundary where [[unbraided-code]]'s independent strands braid together. Six canonical hubs: CLI handler, API route, hook dispatcher, event handler, job worker, UI root.
+The boundary where [[unbraided-code]]'s independent strands braid together.
 
-The hub contract:
+Beyond the delineation's orchestrate/validate/concentrate contract:
 
-- **Orchestrate, don't implement** — a hub composes; business logic lives in the domain modules it calls.
-- **Edge validation** — validate untrusted input at the hub; trust internals.
-- **Effect concentration** — I/O, network, mutation happen at hubs, not interior.
 - **One responsibility per hub** — a hub that "also" does N things is N+1 hubs.
+- **Config-awareness lives only at the hub.** The interior is forbidden state-of-the-system awareness; a pure module that reads config/env/registry has reached up the stack and become a hub — which is what keeps the interior one-line-testable ([[unbraided-code]]).
 
-**Config-awareness lives only at the hub.** The interior is forbidden state-of-the-system awareness; a pure module that reads config/env/registry has reached up the stack and become a hub. This isolation is what makes the interior one-line-testable ([[unbraided-code]]) and the wiring inspectable from one place.
-
-Violation signatures: logic in the route; effect in the interior; and **force-fit-to-hit-coverage** — inserting a hub to satisfy an "every widget has a hub" metric, where the metric becomes the target ([[metric-is-a-guide-not-a-target]]) and the hub stops marking real composition.
+Violation signatures: logic in the route; effect in the interior; and **force-fit-to-hit-coverage** — inserting a hub to satisfy an "every widget has a hub" metric ([[metric-is-a-guide-not-a-target]]), where it stops marking real composition.
 
 ## See also
 

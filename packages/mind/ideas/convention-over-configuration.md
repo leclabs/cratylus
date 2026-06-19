@@ -5,11 +5,9 @@ delineation: Derive structure from a known convention (directory layout, naming)
 
 # Convention Over Configuration
 
-Prefer **convention** — a known directory layout, a naming pattern — over **explicit configuration** that re-states what the convention already implies. If dropping `rules/foo.md` into the right directory makes the resource exist, the system should discover it by **walking the convention**, with no manifest-registration step to keep in sync.
+The manifest carries **only what convention cannot imply** — schema version, active scope, target list, options, overrides — never an inventory of which files exist; that inventory is walked from the convention ([[cite-dont-copy]]).
 
-The manifest (or config) then carries **only what convention cannot imply**: schema version, active scope, target list, options, overrides — never an inventory of which files exist. That inventory is derivable; restating it is duplication that drifts ([[cite-dont-copy]]).
-
-This is deliberate friction removal: every required declaration is a place the user can forget, mistype, or let go stale. The cost is that the convention must be discoverable and documented — an undocumented convention is worse than explicit config. Spend the configuration budget only on the genuinely free choices.
+The convention must be discoverable and documented: an undocumented convention is worse than explicit config. Spend the configuration budget only on the genuinely free choices.
 
 ## See also
 

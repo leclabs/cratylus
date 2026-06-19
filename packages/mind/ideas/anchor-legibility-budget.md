@@ -5,16 +5,12 @@ delineation: The stopping condition that counterweights "prefer the denser ancho
 
 # Anchor Legibility Budget
 
-"Prefer the densest faithful anchor" ([[precise-circumscription]] · [[densest-faithful-point]]) measures one axis — tokens on the page — and, followed without limit, picks the _esoteric_ anchor: a Latin lemma carries maximal meaning in minimal tokens. This is the **stopping condition** that axis lacks, on the orthogonal axis of **decode cost**.
-
-> Prefer the anchor that delivers ~80% of the meaning at ~20% of the comprehension cost over an esoteric-but-maximal anchor a reader must unpack every time. Spend exotic-anchor budget only where the prior's precision is load-bearing **and** the surface is low-traffic.
-
-The ceiling is a function of **surface traffic and reader** ([[anchor-to-the-readers-priors]] · [[latent-priors]]):
+The orthogonal axis "prefer the densest faithful anchor" ([[precise-circumscription]] · [[densest-faithful-point]]) lacks: decode cost. The ceiling is set by surface traffic and reader ([[anchor-to-the-readers-priors]] · [[latent-priors]]):
 
 - **Tight** — high-traffic, human-co-read surfaces (directory names, paths, provenance read every visit): pick the plain-English projection (`exemplar/`, not `rationes-aeternae/`).
-- **Loose** — low-traffic or precision-critical surfaces where the cheap anchor is lossy on essentials: the budget _requires_ the exotic anchor (`palimpsest`, `signum aptissimum` — the term's precision is load-bearing; a plain paraphrase drops the operative meaning).
+- **Loose** — low-traffic or precision-critical surfaces where the cheap anchor is lossy on essentials: the budget _requires_ the exotic anchor (`palimpsest`, `signum aptissimum`).
 
-Operationally it is the discrimination test on anchors: does the extra density change a downstream routing/judging/reconstruction decision? If not, pay the lower comprehension cost. The under-shoot complement — a weak anchor that runs the cell long — is the verbosity-signal of [[densest-faithful-point]]: length means the anchor is unfound, not that prose is needed.
+The test: does the extra density change a downstream routing/judging/reconstruction decision? If not, pay the lower comprehension cost. The under-shoot complement — a weak anchor that runs the cell long — is the verbosity-signal of [[densest-faithful-point]]: length means the anchor is unfound, not that prose is needed.
 
 ## See also
 

@@ -5,17 +5,14 @@ delineation: An artifact emitted from commons cells records its source cells + v
 
 # Generated Artifact Provenance
 
-An artifact emitted by resolving commons cells must **record what it was generated from** — the source cells and their version — as a header on the artifact:
-
 ```
 GENERATED from <source-cells>@<version> by <resolver>
 ```
 
-- **Provenance makes regen safe across the commons boundary.** [[regenerate-without-clobbering]] hashes an emitter's own last output to detect hand-edits; provenance adds _which upstream cells_ produced it, so a downstream artifact can be re-resolved when the commons moves.
-- **The record is the merge ancestor.** When both the upstream cell and the downstream artifact have changed, the recorded source-version is the common ancestor for a three-way merge ([[commons-distribution]]).
-- **It generalizes regeneration** from single-emitter (its own output) to commons-sourced (any cells, any resolver).
+- The recorded source-version is the three-way-merge ancestor when upstream cell and downstream artifact both change ([[commons-distribution]]).
+- Generalizes [[regenerate-without-clobbering]] from single-emitter (self-hash of own output) to commons-sourced (any cells, any resolver): adds _which upstream cells_ produced the artifact, so it re-resolves when the commons moves.
 
-This is the header carried by a resolved agent archetype (`GENERATED from packages/mind/ideas/<agent>.md by projecting its composed cells at the recorded reader profile`) — the wording is reader-neutral because the projection density is the profile's, not the operation's ([[reader-prior-projection]]).
+The header on a resolved agent archetype reads `GENERATED from packages/mind/ideas/<agent>.md by projecting its composed cells at the recorded reader profile` — reader-neutral because density is the profile's ([[reader-prior-projection]]).
 
 ## See also
 

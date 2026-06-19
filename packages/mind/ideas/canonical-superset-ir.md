@@ -5,14 +5,11 @@ delineation: One strongly-typed canonical form of which every target dialect is 
 
 # Canonical Superset IR
 
-When N tools speak N dialects of the same thing, the scaling answer is **not** N² pairwise translators — it is **one strongly-typed canonical form** (an intermediate representation) of which every dialect is a **projection**. You translate dialect → IR → dialect; each tool needs only its own read/write to the canonical center. This is the compiler's IR play applied to any translation domain (config, schema, document formats).
+The compiler's IR play, applied to any translation domain (config, schema, document formats): N dialects need N read/write pairs to the center, not N² pairwise translators.
 
-Two properties make the center honest:
+The center is the **superset** — it carries the union of what any dialect can express, so the richest dialect's form is usually the canonical shape. The same move at term grain is a canonical **vocabulary**: one shared name per concept, dialect-native names mapped onto it.
 
-- **The IR is the superset.** It carries the union of what any dialect can express; the richest dialect's form is usually the canonical shape. A canonical **vocabulary** (one shared name per concept, dialect-native names mapped onto it) is the same move at the term grain.
-- **The lossless floor is the intersection** ([[lossless-floor]]). A round-trip is byte-faithful only across the intersection of all targets' capabilities; anything the IR holds beyond a given target's reach is lossy by construction and must surface explicitly.
-
-A projection of the IR is never the IR ([[projection-is-not-the-source]]).
+The lossless floor is the intersection ([[lossless-floor]]); anything the IR holds beyond a given target's reach is lossy by construction and must surface explicitly. A projection of the IR is never the IR ([[projection-is-not-the-source]]).
 
 ## See also
 

@@ -5,9 +5,9 @@ delineation: Rewrite "don't X" as "use Y" — a prohibition leaves the agent to 
 
 # Prohibitions → Prescriptions
 
-Rewrite negative instructions as positive ones: `don't mutate` → `use immutable data`; `don't use relative paths` → `use absolute paths`; `don't hardcode credentials` → `read credentials from the vault at request time`. A prohibition specifies what _not_ to do and leaves the agent to guess the correct alternative; a prescription names the target. Lists of prohibitions are the Defensive-Prohibition failure mode ([[context-pathologies]]).
+`don't mutate` → `use immutable data`; `don't use relative paths` → `use absolute paths`; `don't hardcode credentials` → `read credentials from the vault at request time`. Lists of prohibitions are the Defensive-Prohibition failure mode ([[context-pathologies]]).
 
-Keep the negative form only when there is no single positive alternative — when the prohibition is genuinely universal ("never commit secrets"). That is the rare exception.
+The rare exception — no single positive alternative: `never commit secrets`.
 
 **Parameter-shape corollary.** A blast-radius-expanding default is a prohibition-in-disguise ("don't forget the scope or you'll wipe everything"); the rule and its remedy are [[no-permissive-defaults]].
 

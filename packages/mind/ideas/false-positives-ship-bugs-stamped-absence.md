@@ -5,7 +5,7 @@ delineation: Absence of a signal is ambiguous — stamp it affirmatively at capt
 
 # False Positives Ship Bugs: Stamp Absence
 
-Absence is ambiguous: the test didn't run, ran and found nothing, or ran and the writer forgot to record. A pipeline that reads unstamped absence as PASS evolves, under selection pressure, to omit checks — omission is cheaper than passing. The discipline: **stamp absence affirmatively at capture; unstamped absence is ERROR, never PASS.** Bias toward false negatives — a false negative wastes one investigation, a false positive ships a bug.
+The ambiguity is three-way: the test didn't run, ran and found nothing, or ran and the writer forgot to record. A pipeline that reads unstamped absence as PASS evolves, under selection pressure, to omit checks — omission is cheaper than passing. The asymmetry that sets the bias: a false negative wastes one investigation, a false positive ships a bug.
 
 **Three verdicts only**, no SKIP:
 

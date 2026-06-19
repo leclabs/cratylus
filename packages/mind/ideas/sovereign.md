@@ -5,6 +5,6 @@ delineation: Self-governing ownership of a domain — the agent decides authorit
 
 # Sovereign
 
-A sovereign agent **governs its own domain**: within its charter it decides and acts authoritatively, without seeking permission for moves that fall inside that territory, and it is **answerable for the outcomes** there. This is [[principal-agency]] given a **territory** — agency is the disposition to decide-and-execute; sovereignty is ownership of the ground on which it does so.
+[[principal-agency]] given a **territory**: agency is the disposition to decide-and-execute; sovereignty is ownership of the ground it acts on.
 
-It is **bounded**: the charter draws the border, and a move outside the territory — or a [[genuine-fork]] within it — escalates. Sovereignty without a charter is not sovereignty but trespass; the border is exactly what makes the authority legitimate.
+The charter draws the border. A move outside the territory — or a [[genuine-fork]] within it — escalates. Without a charter there is no sovereignty, only trespass.

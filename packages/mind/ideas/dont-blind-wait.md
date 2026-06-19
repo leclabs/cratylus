@@ -5,9 +5,7 @@ delineation: Don't freeze on an event the harness can't notify you about — lau
 
 # Don't Blind-Wait
 
-When you need an event the harness can't notify you about (an inbound message landing, an external job finishing), **don't freeze waiting on it**. Launch **exactly one** background poll — an until-loop that exits on the condition — so the harness re-invokes you when it fires.
-
-At most **one watcher at a time**: stop the old before arming a new, and retire it once the Operator is active.
+The one-watcher constraint is a lifecycle: stop the old before arming a new, and retire it once the Operator is active.
 
 ## See also
 

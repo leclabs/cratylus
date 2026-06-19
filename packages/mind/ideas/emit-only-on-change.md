@@ -5,11 +5,7 @@ delineation: A recurring loop must gate its own output on actual change — when
 
 # Emit Only on Change
 
-A loop that runs on a fixed cadence must **gate its output on real change**. Each cycle pulls deltas from a small set of authoritative sources; if the cycle detects **zero delta** — no new commits, no state changes, no new messages — it **emits nothing and commits nothing**. The polling rate is how often it _checks_; it must not become how often it _writes_.
-
-The discipline matters because output-on-empty actively corrupts: empty commits pollute the log, distort cadence, and inflate the apparent cycle count, making the record lie about how much happened. The loop's output bandwidth must match the **real signal**, not the clock (Ashby's requisite variety: emit at the rate of change, not the rate of observation). The change-decision lives **at the loop**, not in the scheduler that triggers it — the scheduler only wakes it; the loop decides whether anything is worth saying.
-
-Losslessness is preserved without emitting: the next **non-silent** cycle records that it "covers N silent cycles since {predecessor}," so the timeline reconstructs fully from the emitted snapshots alone — the silence is accounted for, not lost.
+Ashby's requisite variety: emit at the rate of change, not the rate of observation. The change-decision lives **at the loop**, not in the scheduler that wakes it — the scheduler only triggers; the loop alone decides whether anything is worth saying.
 
 ## See also
 

@@ -5,9 +5,9 @@ delineation: Author the spec as a runnable artifact whose execution is its own v
 
 # Executable Doc Over Prose
 
-Where you can, make the documentation **executable**: a runnable example, a script, a test whose **execution is the verification**. Prose documentation drifts — it describes a system that has since changed, and nothing forces the two back into agreement, so it accumulates silent error until a reader (especially an agent) acts confidently on a stale instruction. A runnable artifact cannot drift the same way: it either works or it fails, never lies, because running it _is_ checking it.
+Where you can, make the documentation **executable**: a runnable example, a script, a test whose execution is the verification. Same instinct as types-as-doc, golden-master recordings, and doctest — the artifact that runs is the artifact that's trusted, and verification is then automatic and continuous rather than a lagging human review.
 
-This is the same instinct as the types being the doc, golden-master recordings being the spec, and doctest: the artifact that runs is the artifact that's trusted. The verification step is then automatic and continuous rather than a separate human review that lags behind the code. It is the authoring-side twin of preferring the realized artifact over its description ([[empirical-source-before-normative-doc]], [[verify-at-the-source-not-the-projection]]): there you _read_ the practised source over its manual; here you _write_ the spec as something practised so it can't decay into a manual that lies.
+The authoring-side twin of [[empirical-source-before-normative-doc]] / [[verify-at-the-source-not-the-projection]]: there you _read_ the practised source over its manual; here you _write_ the spec as something practised so it can't decay into a manual that lies.
 
 When a doc genuinely must stay prose, route to it rather than restate it ([[cite-dont-copy]]) — but prefer turning the claim into something that runs.
 

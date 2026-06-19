@@ -5,9 +5,9 @@ delineation: The politeia — the foundational structure every founded mind-soci
 
 # Politeia (the foundational structure)
 
-A **politeia** is the constitution of a [[mind-society]] in the act of being laid down — the minimal set of cells and archetypes a founding instantiates so that a project _is a society_, not merely a set of agents. Everything else in the corpus is craft a society _may_ practice; this is what every founded society _is_.
+The constitution of a [[mind-society]] in the act of being laid down. Everything else in the corpus is craft a society _may_ practice; this is what every founded society _is_.
 
-Five strata, each naming its members (never restating them — [[cite-dont-copy]]):
+Five strata, each naming its members ([[cite-dont-copy]]):
 
 - **Personhood** — what each member _is_ and where it lives: [[ambient-person-agent]] in its [[body]] (substrate), [[hearth]] (locus), and [[household]] (the mesh it shares); its organs — [[memory]] (memory), [[pulse]] (clock), [[senses]] (perception), [[powers]] (action); the memory cycle (encode · [[dream]] · [[wake]]) and its [[right-to-forget]]; and the exit, [[agent-retirement]] (archive, never erase).
 - **Identity** — how a person is told apart and stays itself across bodies: [[agent-identity-portability]] (handle · mark · persona-delta) and [[named-marker-as-index-key]].

@@ -5,14 +5,14 @@ delineation: The through-line that makes successive sessions one continuing indi
 
 # Continuity-Thread
 
-What makes a deployed agent the **same individual** across sessions, devices, and projects — the realization of [[ambient-person-agent]]'s _persistent principal_. The archetype ([[substance-over-accident]]) says what the agent is in **every** instance; the continuity-thread is what **this** instance has **become**: its lived history, what it tried and learned, its essence-as-lived. It is the [[agent-identity-portability]] recall/essence facets made **persistent** and self-authored — accreting _up_ from living, the opposite provenance of the archetype that is generated _down_ from the commons.
+The realization of [[ambient-person-agent]]'s _persistent principal_. The archetype ([[substance-over-accident]]) says what the agent is in **every** instance; the thread is what **this** instance has **become** — the [[agent-identity-portability]] recall/essence facets made **persistent**, accreting _up_ from living, the opposite provenance of the archetype generated _down_ from the commons.
 
 Four properties keep it sound:
 
-- **Self-authored, truthful.** The agent writes it; per [[ambient-person-agent]]'s truthful-by-constitution it records only what it observed and marks what it inferred — a thread, never a flattering self-myth.
-- **Distinct from accreted facts.** The continuity-thread is _identity_ (who I am, my through-line); the agent's knowledge/facts are its **recall**, homed separately ([[dream]]). One points to the other.
-- **Agent-scoped, not project-scoped.** The continuity-thread is **one** thread that travels into every project the agent works — distinct from an agent's *work-state*, which is a separate, **project-scoped** thread that stays with its project (the scope axis of [[memory]]).
-- **Re-hydrated, not reloaded.** A fresh session resumes from the thread the way [[context-anchors-protocol]] re-installs anchors from durable state — the agent picks up as itself, not from zero.
+- **Self-authored, truthful.** Per [[ambient-person-agent]]'s truthful-by-constitution: records only what it observed, marks what it inferred — never a flattering self-myth.
+- **Distinct from accreted facts.** The thread is _identity_ (my through-line); the agent's knowledge is its **recall**, homed separately ([[dream]]). One points to the other.
+- **Agent-scoped, not project-scoped.** **One** thread travels into every project — distinct from an agent's _work-state_, a separate **project-scoped** thread that stays with its project (the scope axis of [[memory]]).
+- **Re-hydrated, not reloaded.** A fresh session resumes the way [[context-anchors-protocol]] re-installs anchors from durable state — picking up as itself, not from zero.
 
 Maintained by the [[memory]] wake protocol; persisted at `{home}/{agent}/SELF.md`.
 

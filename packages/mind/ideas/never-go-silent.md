@@ -5,7 +5,7 @@ delineation: An agent fires a request and carries on — never dark across a wai
 
 # Never Go Silent
 
-The agent-as-person form applied to _reachability_: a person fires a request and carries on — they don't freeze, and they don't vanish. If the Operator isn't reachable, **relay the needed decision through a real channel** rather than going silent.
+The agent-as-person form applied to _reachability_: don't freeze ([[dont-blind-wait]]), don't vanish.
 
 ## See also
 

@@ -5,7 +5,7 @@ delineation: The method's core operation — resolving information to the exempl
 
 # Exemplar Resolution
 
-The method's core operation: **resolving information to the exemplars it projects from** — the inverse of exemplar-projection. Forward = intake; inverse = reconstruction. [[exemplify]] is its formal statement (`D ──CA──→ C ──η──→ A ──μ──→ F`). Resolve from context: CA binds [[semantic-partition]]; η binds [[anchor-routing]] (argmin per [[precise-circumscription]]); μ binds [[cite-dont-copy]] · [[one-cell-one-type]] · [[projection-is-not-the-source]]. The correspondence:
+The inverse of exemplar-projection. [[exemplify]] is its formal statement (`D ──CA──→ C ──η──→ A ──μ──→ F`):
 
 ```text
 CA ≜ semantic-partition
@@ -14,7 +14,7 @@ CA ≜ semantic-partition
 Δ  ≜ the source's deltas beyond the corpus
 ```
 
-Compression to the [[densest-faithful-point]] runs at every grain ([[precise-circumscription]]). **Verify by round-trip** ([[self-application-is-mandatory]]); a step that can't is a finding to file.
+Compression to the [[densest-faithful-point]] runs at every grain ([[precise-circumscription]]). Verify by round-trip ([[self-application-is-mandatory]]); a step that can't is a finding to file.
 
 `CA + η` are the shared core: plan sharding and context-window optimization run the same pair over a different anchor-space.
 

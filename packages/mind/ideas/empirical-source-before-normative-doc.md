@@ -5,10 +5,8 @@ delineation: When a real codebase already practises the target API, existing usa
 
 # Empirical Source Before Normative Doc
 
-When a real codebase **already practises** the target API, its **existing usages are a higher-fidelity source than the reference documentation**. The practised cases carry what docs omit: the project's actual conventions, scoping, and the known-good combinations that only emerge from use. So the reading order for applied work is **empirical first, normative second**:
-
-1. **Grep the practised cases first** — read how the surface is actually used in this codebase; that is the ground truth for established norms.
-2. **Fall back to authoritative docs for the gaps** the grep surfaces — genuinely new props, or APIs the repo doesn't yet exercise. These are not guessable, so the normative source is mandatory _there_ — but only there.
+1. Grep the practised cases first — that is the ground truth for this codebase's norms.
+2. Consult authoritative docs only for the gaps the grep leaves (props the repo doesn't yet exercise); there it is mandatory.
 
 ## See also
 

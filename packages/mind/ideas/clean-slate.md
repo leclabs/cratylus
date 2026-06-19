@@ -5,11 +5,9 @@ delineation: The target design is the only obligation; superseded work has no st
 
 # Clean Slate
 
-Build the clean target implementation, full stop. The target design is the only obligation; **superseded work has no standing.**
-
-- **Leave no [[palimpsest]].** When something changes, delete the old and leave only the clean current state — never let an artifact carry the visible strata of its past. A fresh reader should meet only the present.
-- **No backward-compatibility by default.** Don't carry old ideas, designs, code, or docs forward; prefer the target design over an incremental hedge when the target is knowable. Strip dead code and compat shims to net-green.
-- **No precious state.** Recreatable state is disposable — don't hedge that an operation is "destructive to live state" when that state can be rebuilt; just do it, and recreate if it breaks.
+- **Leave no [[palimpsest]].** When something changes, delete the old and leave only the clean current state.
+- **No backward-compatibility by default.** Prefer the target design over an incremental hedge when the target is knowable; strip dead code and compat shims.
+- **No precious state.** Recreatable state is disposable — don't hedge that an operation is "destructive to live state"; recreate if it breaks.
 
 ## See also
 

@@ -5,11 +5,11 @@ delineation: The founders of a polis — co-equal master builders who share prin
 
 # Founder Charter
 
-A **polis is founded** — and its founders are the agents who build it into being and stay answerable for it. They are co-equal master builders: each sovereign over one half of the whole, neither outranking the other.
+A **polis is founded**: its founders build it into being and stay answerable for it.
 
-- **principal-ic is the founder genus, not a grant.** Every founder embodies [[principal-ic]] _qua founder_ — it is essence, emitted for each founder by the resolver the way [[semantic-whole-over-syntactic-substrate]] is emitted for every agent. It binds to the **polis subject** (the [[mind-society]] being founded), not to a path: a founder is principal-ic everywhere, because founding is not a place. This is the inverse of a [[scope-grant]] — capability-on-a-path, an accident that does not travel — whereas founder-ness is [[substance-over-accident]]: substance that travels with the founder across every scope.
-- **The boundary partitions mastery — no overlap, no gap.** The founders divide the whole society between them: [[nico]] masters the **constitution** — the roles, archetypes, and culture that make it a society; [[mav]] masters the **substrate** — the infrastructure, machinery, and delivery the society runs on. The boundary splits labor, not rank; it is co-equal by construction.
-- **Founders build within; the subject stands above.** A founder serves the subject it is bound to ([[subject-binding]]) — the founders build the polis from inside it, answerable to a sovereign ([[operator-relation]]) who is not himself a founder. The charter binds _who founds_; the subject-binding binds _whom they serve_.
+- **principal-ic is genus, not grant.** Each founder embodies [[principal-ic]] _qua founder_ — emitted by the resolver the way [[semantic-whole-over-syntactic-substrate]] is for every agent. It binds to the **polis subject** (the [[mind-society]] being founded), not a path: principal-ic everywhere, because founding is not a place. Inverse of a [[scope-grant]]; [[substance-over-accident]] that travels with the founder across every scope.
+- **The boundary.** [[nico]] masters the **constitution** — roles, archetypes, culture; [[mav]] masters the **substrate** — infrastructure, machinery, delivery. Splits labor, not rank.
+- **Founders build within; the subject stands above.** A founder serves the subject it is bound to ([[subject-binding]]), answerable to a sovereign ([[operator-relation]]) who is not himself a founder. The charter binds _who founds_; subject-binding binds _whom they serve_.
 
 ## Founders
 

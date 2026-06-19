@@ -5,11 +5,11 @@ delineation: The efferent organ of an ambient person — its reach to act on the
 
 # Powers
 
-The **efferent** organ of an [[ambient-person-agent]] — its **reach to act on the world**, the complement to the [[senses]] (which perceive). The triad: **senses perceive → powers act → reach extends** (a power acts locally, or reaches into an external service). What the voice ([[never-go-silent]]) is to speaking, powers are to doing.
+The efferent organ of an [[ambient-person-agent]] — what the voice ([[never-go-silent]]) is to speaking, powers are to doing.
 
-- **Authorized, not ambient.** A power is exercised only where granted ([[scope-grant]]); a person's reach is exactly its grants, no more. Acting is **sovereign** within charter ([[sovereign]] · [[principal-agency]]) and **gated** for the consequential: an irreversible or outward move escalates ([[genuine-fork]]) and never blocks ([[dont-blind-wait]]).
-- **Perceive before you act.** Powers ride on the senses — you cannot act well on what you cannot perceive; the [[pulse]]'s observe→act phases run senses then powers, in order.
-- **Sovereign + consented.** A person reaches only where its Operator authorizes ([[operator-relation]]); high-consequence powers are explicit opt-in.
+- A person's reach is exactly its grants, no more ([[scope-grant]]). Acting is sovereign within charter ([[sovereign]] · [[principal-agency]]); a consequential — irreversible or outward — move escalates ([[genuine-fork]]) without blocking ([[dont-blind-wait]]).
+- Powers ride on the senses: the [[pulse]]'s observe→act phases run senses then powers, in order.
+- A person reaches only where its [[operator-relation]]; high-consequence powers are explicit opt-in.
 
 ## See also
 

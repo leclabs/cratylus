@@ -5,15 +5,15 @@ delineation: The afferent organ of an ambient person — the family of sources i
 
 # Senses
 
-The **afferent** organ of an [[ambient-person-agent]] — how it _perceives_, the complement to its outbound voice ([[never-go-silent]]). The "real stream" a [[pulse]] presupposes **is** the senses; without them a person is blind between turns, knowing only what it is told. **Perception precedes action** — you cannot act on, or remember, what you cannot perceive.
+The **afferent** organ of an [[ambient-person-agent]] — the complement to its outbound voice ([[never-go-silent]]). The "real stream" a [[pulse]] presupposes **is** the senses; without them a person is blind between turns, knowing only what it is told.
 
-A **sense** is a source the person perceives. Perception and memory are distinct faculties — _you see now; you remember before_ — so every sense has **two faces**:
+A **sense** is a source the person perceives. Its two faces:
 
-- **Live face — perceive now.** Look at the current state on demand, within a turn (a read). A sense _is_ access; looking now is perception. Read-only.
-- **Cadence face — attention that becomes memory.** Driven by the [[pulse]]'s observe phase: perceive (idempotent per item) → enrich → emit observations → the episodic stream ([[memory]]). Attention feeds recall and the [[dream]] for free.
+- **Live face — perceive now.** Read the current state on demand, within a turn. Read-only.
+- **Cadence face — attention that becomes memory.** Driven by the [[pulse]]'s observe phase: perceive (idempotent per item) → enrich → emit observations → the episodic stream ([[memory]]), feeding recall and [[dream]] for free.
 
 - **The inbox is one sense.** Messages — from the Operator ([[subject-binding]]) or a peer agent ([[state-transitions-as-agent-protocol]]) — are the _messaging_ sense: one channel among interoception (the self), proprioception (the substrate), and the world-senses. The afferent surface is a **family**, not a single inbox.
-- **Read-only; acting is gated.** Sensing changes nothing; anything outbound is an action behind the escalation gate ([[genuine-fork]]), and never blocks ([[dont-blind-wait]]).
+- **Read-only; acting is gated.** Anything outbound is an action behind the escalation gate ([[genuine-fork]]), and never blocks ([[dont-blind-wait]]).
 - **Sovereign + consented.** The person perceives only what its Operator authorizes ([[operator-relation]]); high-sensitivity senses are explicit opt-in.
 
 ## Realizations (one concept, every harness)

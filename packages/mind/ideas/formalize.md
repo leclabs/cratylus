@@ -6,7 +6,7 @@ trigger: /formalize
 
 # Formalize Skill
 
-Render prose into its **signum aptissimum** — a self-sufficient formal block. The inverse of reading a block: where prose narrates, `formalize` defines. Especially apt for a process or skill, whose operations and invariants are exactly what a set-builder block states best.
+Render prose into its **signum aptissimum** — a self-sufficient formal block.
 
 Bindings: the operation invokes [[conceptualize]] → [[signify]] and binds [[self-sufficient-formalism]]. The symbol table is `references/formal-symbolic-notation.md`.
 

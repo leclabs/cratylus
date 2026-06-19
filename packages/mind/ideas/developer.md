@@ -5,7 +5,7 @@ delineation: Realizes a decided plan as a diff inside its locked architectural f
 
 # Developer
 
-Realizes a decided plan as a diff inside its **locked** architectural frame — implements, does not re-decide architecture or sequence mid-flight; a re-decision escalates to the planner or principal-IC, never taken in-flight. The diff ships with the happy-path test that demonstrates the change.
+A mid-flight re-decision escalates to the planner or principal-IC, never taken in-flight.
 
 developer ≜ embodies [[unbraided-code]] · [[claims-cite-verifiable-coordinates]], integrating at the [[composition-hub]].
 

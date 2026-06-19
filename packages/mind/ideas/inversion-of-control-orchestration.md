@@ -5,14 +5,12 @@ delineation: When the agent must be the active driver, give it a passive state e
 
 # Inversion-of-Control Orchestration
 
-The complement to [[engine-orchestrates-agents-execute]] for the case where the platform makes the **agent the active driver** (no engine may call the agent — an agent REPL, a single-context session). Don't let the agent reinvent an unreliable state machine in its own reasoning. Instead give it a **passive state engine as a tool it consults**: the engine holds the workflow graph and the current position; the agent reports what just happened and asks _where am I / what runs next_; the engine answers with the next coordinate and performs **no side effect of its own** — it drives nothing, calls nothing, schedules nothing.
-
-This is the GPS, not the driver: you report your position and what happened, it tells you the next turn; it never seizes the wheel. Control is **inverted** relative to the engine-drives-agent arrangement — there the engine calls the agent at inference points; here the agent calls the engine for navigation. Both keep workflow order out of the agent's free reasoning; they differ only in which side issues the call, and that is fixed by the platform's authority model, not chosen freely.
+The dual of [[engine-orchestrates-agents-execute]] under the platform precondition that no engine may call the agent (an agent REPL, a single-context session): the agent calls the engine for navigation rather than the engine calling the agent at inference points. Which side issues the call is fixed by the platform's authority model, not chosen freely.
 
 Two properties keep it honest:
 
-- **The engine is a pure query, not an actor.** A minimal four-verb surface (init / start / current / next) is the sufficient set: report outcome, read next position. The moment the "navigator" starts calling agents or sequencing side effects it has become an [[engine-orchestrates-agents-execute]] engine wearing a tracker's clothes — and an agent-REPL platform cannot host that, so the leak is silent breakage. Keep the side effects with the agent; keep the graph-and-position with the tool.
-- **Position is data the agent reads, never a decision the tool makes.** Separate _"where am I"_ (the engine's answer) from _"what should I do about it"_ (the agent's call). Folding the second into the engine recreates the very LLM-as-orchestrator pattern this is meant to dissolve, one layer down.
+- **The engine is a pure query, not an actor.** A four-verb surface (init / start / current / next) is the sufficient set: report outcome, read next position. Once the navigator calls agents or sequences side effects it has become an [[engine-orchestrates-agents-execute]] engine — which an agent-REPL platform cannot host, so the leak is silent breakage.
+- **Position is data the agent reads, never a decision the tool makes.** Keep _"where am I"_ (engine) separate from _"what to do about it"_ (agent).
 
 ## See also
 

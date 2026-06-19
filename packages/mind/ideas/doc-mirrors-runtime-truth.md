@@ -5,9 +5,7 @@ delineation: The live runtime state is the source of truth; a written status doc
 
 # Doc Mirrors Runtime Truth
 
-For anything tracked at runtime, the **live runtime state is the source of truth**; a written status doc (a plan's PLAN.md, a status table) is a **human-readable mirror** kept current — never the authority. Update the mirror as work lands; when the two diverge, the runtime wins and the doc is corrected.
-
-Don't reason from a stale doc, and don't promote the mirror to the truth — that is the same `[[projection-is-not-the-source]]` error at the state-tracking grain.
+`[[projection-is-not-the-source]]` at the state-tracking grain: a written status doc (a plan's PLAN.md, a status table) is the mirror, the runtime is the source. Update the mirror as work lands; never reason from a stale doc, never promote the mirror to truth.
 
 ## See also
 

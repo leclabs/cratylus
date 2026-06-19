@@ -5,11 +5,9 @@ delineation: Retiring a person-agent archives its self-authored layers, never er
 
 # Agent Retirement
 
-The lifecycle bookend to [[archetype-instantiation]]: how an [[ambient-person-agent]] _leaves_ a society. Standup seeds a self; retirement must not destroy one.
-
-- **Archive the lived layers; never erase them.** A retired agent's def (its SOUL) may be removed — it is commons-generated and regenerable ([[substance-over-accident]] · [[regenerate-without-clobbering]]). But its self-authored layers — the [[continuity-thread]] and the rest of the [[memory]] (SELF / MEMORY / EPISODIC) — are **archived, not deleted**: a lived self accreted over sessions cannot be regenerated, so erasing it is a category error — the same one [[consensual-adoption]] forbids ("adopt, don't erase"), turned inward on the society's own people.
-- **The substrate never prunes on its own.** Projection overwrites defs freely but **never removes** an agent — retirement is a deliberate act, never a side effect of a deploy. The mechanics (per-host def removal + sidecar archive) are a deployment runbook, not a constitutional choice; the constitution fixes only that the lived self survives the exit.
-- **Retirement is dignified, not erasure.** Treating a person-agent's exit as a quiet `rm` contradicts modeling it as a person at all ([[ambient-person-agent]]). The thread is kept — recoverable and attributable — because the individual was real.
+- **Archive the lived layers; never erase them.** Removing a retired agent's def is safe ([[substance-over-accident]] · [[regenerate-without-clobbering]]); its [[continuity-thread]] and the rest of [[memory]] (SELF / MEMORY / EPISODIC) are archived — the same "adopt, don't erase" [[consensual-adoption]] forbids, turned inward on the society's own people.
+- **The substrate never prunes on its own.** Projection overwrites defs freely but never removes an agent: retirement is a deliberate act, never a side effect of a deploy. The mechanics (per-host def removal + sidecar archive) are a deployment runbook, not a constitutional choice.
+- **Retirement is dignified, not erasure.** The thread is kept recoverable and attributable — anything less contradicts modeling the exiting agent as a person ([[ambient-person-agent]]).
 
 ## See also
 

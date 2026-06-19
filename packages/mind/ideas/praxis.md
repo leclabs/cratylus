@@ -6,18 +6,14 @@ trigger: /praxis
 
 # /praxis — durable sharded plans
 
-A skill for creating and working **durable, sharded plans** on disk. An agent reaches it by planning intent — "start a plan for X", "pick the auth plan back up", "fold these plans together" — not by memorizing a command set. Each plan is a sharded-plan-layout directory; the agent resumes from it and works it as it normally would.
+Each plan is a [[sharded-plan-layout]] directory; resume from it and work it as normal. State the intent, get the operation — the precise spec is the formal block:
 
-## What it helps with
-
-Reached by intent, not a command grammar — state the intent, get the operation; the precise spec of each is the block below. When to reach for which:
-
-- **start** — to scaffold a fresh plan from an intent.
-- **resume** — to re-attach and draw the ready frontier.
-- **advance** — to _assert_ one task's transition (you push the truth forward).
-- **sync** — to _observe_ real progress and reconcile the record to reality.
-- **update** — to revise a task's content, depalimpsested.
-- **merge** — to fold several in-scope plans into one.
+- **start** — scaffold a fresh plan from an intent.
+- **resume** — re-attach and draw the ready frontier.
+- **advance** — _assert_ one task's transition (push the truth forward).
+- **sync** — _observe_ real progress and reconcile the record to reality.
+- **update** — revise a task's content, depalimpsested.
+- **merge** — fold several in-scope plans into one.
 
 The one explicit affordance is **`/praxis list`** — enumerate the sharded plans in scope.
 
@@ -54,12 +50,12 @@ merge     : { P₁, P₂, … } ↦ ⋃ Pᵢ
 
 ## Which commit last touched a plan — ask git, never store it
 
-Don't keep a commit hash in the plan: a file cannot contain its own commit's hash, so a stored marker is stale the instant it's written. The association is a **query over git**, the real history:
+A plan's commit association is _derived on demand_ from git, never a stored marker that can drift ([[doc-mirrors-runtime-truth]]):
 
 - last commit that updated a plan — `git log -1 --format='%H %cI' -- {plansDirectory}/{plan}/`
 - last commit that touched one task — same, scoped to the task file, with `--follow` so it tracks the file across its ready→active→completed moves.
 
-git history is the runtime truth; the plan's commit association is _derived on demand_, never a mirror that can drift ([[doc-mirrors-runtime-truth]]). If a fast local lookup is ever wanted, cache it **out of the versioned tree** (a gitignored sidecar written by a post-commit hook) — a regenerable cache, never committed, never authoritative. To mark a deliberate milestone (not just "last touched"), tag or `git notes` the commit _after_ it exists — which sidesteps the chicken-and-egg entirely.
+If a fast local lookup is wanted, cache it **out of the versioned tree** (a gitignored sidecar from a post-commit hook) — regenerable, never authoritative. To mark a deliberate milestone, tag or `git notes` the commit _after_ it exists.
 
 ## Harness: claude-code
 

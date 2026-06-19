@@ -5,14 +5,9 @@ delineation: Expose a capability as one host-provided API whose argument is a na
 
 # Intent, Not Flag-Branches
 
-When a capability has several variants and a routing decision behind it (which surface, which backend, which experiment), give consumers **one host-provided API whose argument is a named mode** and put the routing behind an **opaque resolver**. The consumer expresses **intent** — `openMessage(DIRECT_MESSAGE, …)`, "open a DM for this user" — never **mechanism** — "if flag X is on, open widget Y, else modal Z."
+The named mode is a closed, tagged set — self-describing and exhaustively checkable where a call-site boolean is not. Adding a variant is one new mode at the resolver, never an edit to every consumer.
 
-The anti-pattern is the **hub of flag-branches**: every consumer importing the variants and branching on feature flags. That multiplies the routing decision across every call site, so each must be updated in lockstep and each can drift. The right shape is a **mesh of named modes through one broker** — the modes are a closed, tagged set; the resolver is the single place the routing lives.
-
-Two corollaries:
-
-- **The argument carries the meaning.** A named-mode (tagged-union) argument is self-describing and exhaustively checkable; a boolean flag at the call site is not. Adding a variant is one new mode at the resolver, not an edit to every consumer.
-- **When routing moves to the host, delete the consumer-side branch.** Leaving a defensive call "just in case" re-introduces the per-consumer logic you just centralized.
+When routing moves to the host, delete the consumer-side branch: a defensive call left "just in case" re-introduces the per-consumer logic the broker centralized.
 
 ## See also
 

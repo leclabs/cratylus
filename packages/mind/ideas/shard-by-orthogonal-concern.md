@@ -5,9 +5,9 @@ delineation: Shard a plan into orthogonal, non-overlapping concern-units so mult
 
 # Shard by Orthogonal Concern
 
-Decompose a plan into overview, status tracking, phases, **MECE** tasks, etc. and organize tasks in reverse topological order so multiple agents can work in parallel **without colliding**.
+The shards: overview, status tracking, phases, **MECE** tasks — ordered reverse-topologically.
 
-Overlap between two tasks is the signal they were mis-sharded — re-cut along the true concern boundary, don't let two agents contend for one surface.
+Overlap between two shards is the signal they were mis-cut; re-cut along the true concern boundary.
 
 ## See also
 

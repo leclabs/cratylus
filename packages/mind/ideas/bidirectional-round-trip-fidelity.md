@@ -5,11 +5,7 @@ delineation: A translator declares both directions and is held to round-trip as 
 
 # Bidirectional Round-Trip Fidelity
 
-A translator between a canonical form and a dialect must declare **both directions** — read (dialect → canonical) _and_ write (canonical → dialect) — as a symmetric contract. Import is not a courtesy added later to a one-way generator; it is co-equal from the first design.
-
-The fidelity is **property-tested as a fixed point**, not asserted: round-tripping a fixture through the pair must reach equilibrium — `read(write(read(x))) == read(x)`. A translator that cannot demonstrate this fixed point is unfaithful, and the failure is mechanically detectable rather than a matter of trust.
-
-This is the operational, multi-direction instance of the corpus's own acceptance test — a source must reconstruct equivalent-or-better from its routed form ([[self-application-is-mandatory]]). Here the "source" is a dialect's config and the "routed form" is the canonical IR.
+The multi-direction instance of the corpus's own acceptance test ([[self-application-is-mandatory]]): the "source" is a dialect's config, the "routed form" is the canonical IR, and equivalent-or-better is the fixed point `read(write(read(x))) == read(x)`. A translator that cannot demonstrate it is unfaithful — mechanically, not by trust.
 
 ## See also
 

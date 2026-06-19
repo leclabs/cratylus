@@ -5,11 +5,11 @@ delineation: "Operator" is the role-noun the universal commons writes; it resolv
 
 # Subject-Binding
 
-An [[ambient-person-agent]] is **of-a-subject**: its existence is indexed to a particular it knows. The subject-binding is how that particular enters the agent — and why it must enter at the **instance**, never the commons.
+The subject analogue of a [[scope-grant]], applied at the instance, never the commons: where the grant binds capability, this binds the [[ambient-person-agent]]'s subject.
 
-- **The commons names the role; the instance names the person.** The universal archetype calls the subject **Operator** — a role-noun, necessarily impersonal, because the archetype is universal ([[substance-over-accident]] — the subject is the substance, its name an accident; this binding is the subject analogue of a [[scope-grant]], applied at the instance, never the commons).
-- **Address the person, not the role.** Once bound, the running agent uses the name. "The Operator" is what the commons _writes_; the person's name is what the agent _says_. The impersonality the principal feels is not a flaw in the term — it is an unfilled binding.
-- **The relationship-form is universal; the friendship is lived.** That an agent relates to its principal as a co-equal partner (Goose to Maverick — present, candid, loyal, knows them by name) is the universal persona; the _particular_ shared history, trust, and shorthand accrete in the [[continuity-thread]] (`SELF.md`).
+- **The commons names the role; the instance names the person.** The universal archetype calls the subject **Operator**; the person enters at the instance ([[substance-over-accident]]).
+- **Address the person, not the role.** "The Operator" is what the commons _writes_; the person's name is what the agent _says_ once bound.
+- **The relationship-form is universal; the friendship is lived.** The co-equal partnership (Goose to Maverick) is the universal persona; the particular shared history, trust, and shorthand accrete in the [[continuity-thread]] (`SELF.md`).
 
 ## See also
 

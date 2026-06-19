@@ -8,15 +8,15 @@ trigger: /handoff
 
 handoff ≜ invokes [[praxis]] · [[dream]]
 
-The **persist-before-clear** half of the session boundary — run while context is still hot, so nothing the session learned is lost to the wipe. One act reconciles two durable substrates to reality ([[doc-mirrors-runtime-truth]]):
+One act reconciles two durable substrates to reality ([[doc-mirrors-runtime-truth]]):
 
-- **work** — [[praxis]] **sync**: bring task placement + PLAN.md into agreement with what was actually done.
-- **self** — [[dream]]: consolidate EPISODIC up the [[memory]].
+- **work** — [[praxis]] **sync**: task placement + PLAN.md.
+- **self** — [[dream]]: EPISODIC up the [[memory]].
 
 ## Sequence
 
-1. **praxis sync** — reconcile the plan record to runtime truth ([[praxis]]).
-2. **dream** — consolidate memory ([[dream]]). Running it here, on hot context, is richer than the catch-up dream at [[wake]]: it captures session events that per-turn encoding ([[memory]]) may have missed, before /clear destroys them.
+1. **praxis sync** ([[praxis]]).
+2. **dream** ([[dream]]) — on hot context it captures session events that per-turn encoding ([[memory]]) missed before /clear destroys them.
 
 Then the boundary proceeds **outside** this skill — `/clear → [[wake]] → [[weitermachen]]`. handoff persists only; it does not clear, reconstitute, or re-dispatch.
 

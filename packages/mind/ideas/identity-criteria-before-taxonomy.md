@@ -5,13 +5,9 @@ delineation: Fix a category's identity and rigidity criteria before placing it i
 
 # Identity Criteria Before Taxonomy
 
-The OntoClean discipline ([[nicola-guarino]]): **do not place a category in the hierarchy until its identity is fixed.**
+The OntoClean discipline ([[nicola-guarino]]). Beyond identity and rigidity, a third axis: **Constraint** — the meta-properties bound subsumption ([[ontoclean-meta-properties]] — the rubric and its constraint table).
 
-- **Identity** — what makes two appearances the _same_ instance? A category with no identity criterion is a label, not a kind.
-- **Rigidity** — essential to every instance, or contingent?
-- **Constraint** — the meta-properties bound subsumption ([[ontoclean-meta-properties]] — the rubric and its constraint table).
-
-This is the analytic counter to recognition-by-prior-fit: where [[priors-as-light]] lets the form emerge from conceptual fit, this disposition _subjects_ each candidate category to an explicit formal test before admitting it. A clean hierarchy is engineered, not recognized.
+The analytic counter to recognition-by-prior-fit ([[priors-as-light]]): each candidate category is subjected to an explicit formal test before admission, not let to emerge from conceptual fit.
 
 ## See also
 

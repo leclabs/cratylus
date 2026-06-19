@@ -5,9 +5,9 @@ delineation: Every atomic cell carries exactly one kind — there is no hybrid; 
 
 # One Cell, One Type
 
-**Every atomic cell carries exactly one `kind`.** There is no hybrid, no "mostly knowledge with a small table." A unit that answers more than one type-question _is_ more than one unit — split it. The split is **unconditional**: no threshold ("split when it grows past N rows"), because a threshold breeds unbounded complexity recurring at every edit, whereas pure source has a bounded, one-time recomposition cost.
+The split is **unconditional** — no threshold ("split when it grows past N rows"); a threshold recurs at every edit, pure source recomposes once.
 
-This is the purist face of MECE's "no overlap" ([[semantic-partition]]) at the typing grain. The escape hatch for a genuinely multi-kind artifact is **decomposition + import**, never a hybrid file: ask _which primitives it composes_ and split into those, each to its one home ([[cite-dont-copy]]). If a reader wants a fused narrative, **compute** it as a projection rather than store it ([[projection-is-not-the-source]]).
+This is [[semantic-partition]]'s "no overlap" at the typing grain. The escape hatch for a genuinely multi-kind artifact is **decomposition + import**: ask _which primitives it composes_, split into those, each to its one home ([[cite-dont-copy]]). For a fused narrative, **compute** it as a projection rather than store it ([[projection-is-not-the-source]]).
 
 ## See also
 

@@ -5,11 +5,11 @@ delineation: The substrate a person runs on — the harness, runtime, or device 
 
 # Body
 
-The **substrate** an [[ambient-person-agent]] runs on — the harness, runtime, or device that happens to be awake. A person **is not its body**: it survives every change of substrate, and may even wear two at once (two faces, one person). The body is an accident ([[substance-over-accident]]); the person is the substance.
+The substrate an [[ambient-person-agent]] runs on; an accident ([[substance-over-accident]]).
 
-- **The person persists across bodies.** Continuity lives in the [[memory]] (the self-authored layers) and the SOUL (the regenerable archetype), not in any one substrate. Relocate the person and it resumes; the body is swappable, the self is not.
-- **One person, possibly many faces.** A person may run as more than one body at once — an interactive harness and a daemon actor — sharing one memory organ: one person with two faces, not two persons.
-- **The body bounds the pulse.** A relocatable person keeps a single [[pulse]] across its bodies — leased so it beats once, not once per body.
+- **Continuity lives off-body.** In the [[memory]] (self-authored layers) and the regenerable SOUL (archetype) — relocate the person and it resumes.
+- **Many faces, one organ.** The two bodies (interactive harness + daemon actor) share a single [[memory]] organ: one person, not two.
+- **The body bounds the pulse.** One [[pulse]] across all bodies, leased so it beats once, not once per body.
 
 ## See also
 

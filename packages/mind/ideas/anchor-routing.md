@@ -5,12 +5,11 @@ delineation: Place each fragment at the anchor whose latent priors most precisel
 
 # Anchor Routing
 
-Place each decomposed fragment at the anchor whose latent priors most precisely circumscribe the exemplar it projects from ([[precise-circumscription]]) — **recognizing the exemplar a particular projects from**, not manufacturing a category by erasing detail ([[projection-is-not-the-source]] forbids that).
+Best-fit is [[precise-circumscription]]'s argmin over the exemplar the fragment projects from — **recognizing** that exemplar, not manufacturing a category by erasing detail ([[projection-is-not-the-source]]).
 
-- **Best-fit, not nearest-bin.** The criterion is [[precise-circumscription]]'s argmin, never proximity to an existing bin.
-- **The anchor-set is open.** If no cell yet circumscribes the fragment, **mint it** — never force a fragment into an ill-fitting existing anchor to avoid creating one. [[minimalism]] forbids only duplicates and speculation, not genuine new primitives.
-- **A genuine multi-match means [[semantic-partition]] cut wrong.** If a fragment fits two _unrelated_ anchors, re-cut so each unit carries a single intelligible load.
-- **One signum over two anchors means the cut was too fine.** The dual of multi-match: if a single best-fit anchor circumscribes two existing cells with no residual distinct load, they are one concept — **fuse them** ([[minimalism]] forbids the duplicate).
+- **Mint when none fits.** [[minimalism]] forbids duplicates and speculation, not genuine new primitives.
+- **Multi-match (one fragment, two unrelated anchors)** means [[semantic-partition]] cut too coarse — re-cut so each unit carries a single intelligible load.
+- **Its dual — one best-fit anchor over two cells with no residual distinct load** — means the cut was too fine: **fuse them** ([[minimalism]]).
 
 The **anchor-space varies by use** — exemplars for the corpus, orthogonal concerns for a plan ([[shard-by-orthogonal-concern]]), context-slots for a context window — but the operation is identical.
 

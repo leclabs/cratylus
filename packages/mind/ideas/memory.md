@@ -6,7 +6,7 @@ delineation: An ambient person-agent's memory — the one home for the whole lif
 
 # Memory
 
-The single home for how an [[ambient-person-agent]]'s memory works — the store, the lifecycle, and the routing that keeps one agent **one person** across every host, user, and project. Experience flows in raw (encode), is distilled up at rest ([[dream]]), and is read back to resume ([[wake]]).
+The single home for an [[ambient-person-agent]]'s memory: the store, the lifecycle (encode → [[dream]] → [[wake]]), and the routing.
 
 ## The store — resident layers, by durability × provenance
 
@@ -15,36 +15,36 @@ Top (most distilled, most durable) to bottom (rawest):
 - **SOUL** — the fixed essence: the archetype def generated _down_ from the commons ([[substance-over-accident]] · [[generated-artifact-provenance]]). Commons-fixed, **never hand-edited** — changes only on re-projection. The harness loads only this layer into starting context.
 - **SELF** — the [[continuity-thread]]: the reboot seed of who the agent has _become_. Read in full at wake.
 - **MEMORY** — durable, orthogonal semantic facts ([[cite-dont-copy]]: deltas and pointers, not restatement). Recalled by relevance; the **hot index** that points into the cold vault.
-- **EPISODIC** — the raw, append-only event stream the Dreamer drains. Captured **cheap and truthful** ([[observed-vs-inferred]]); never pre-distilled — you cannot consolidate what you never encoded.
+- **EPISODIC** — the raw, append-only event stream the Dreamer drains. Captured **cheap and truthful** ([[observed-vs-inferred]]); never pre-distilled.
 
 Two properties keep the store sound:
 
-- **Commons-fixed vs self-authored.** Only SOUL is generated from the commons; SELF, MEMORY, EPISODIC are the agent's own and are **never overwritten by deploy** — the def is emitter-owned ([[generated-artifact-is-emitter-owned]]), the sidecar layers agent-owned. Re-projection refreshes SOUL, leaves the lived layers untouched.
+- **Commons-fixed vs self-authored.** Only SOUL is generated from the commons; SELF, MEMORY, EPISODIC are the agent's own and are **never overwritten by deploy** — the def is emitter-owned ([[generated-artifact-is-emitter-owned]]), the sidecar layers agent-owned.
 - **Two motions, opposite provenance.** Encode moves experience _down-and-in_ (append raw, per turn); [[dream]] moves it _up-and-out_ (consolidate, **move-not-copy**; promotion upward is the Dreamer's alone; SOUL is never written).
 
 ## Routing — two orthogonal axes
 
-Every memory answers two independent questions, and the answers place it: **type (by voice) picks the organ; scope picks the instance.**
+**type (by voice) picks the organ; scope picks the instance.**
 
-**Axis 1 — type → organ.** The cognitive kind of the memory selects its home; the agent's *voice* is the diagnostic (a voice mismatch means the wrong organ):
+**Axis 1 — type → organ.** Voice is the diagnostic (a voice mismatch means the wrong organ):
 
-| Type | Voice | Home | Consumption |
-| --- | --- | --- | --- |
-| identity — "who I am / how I changed" | 1st-person self | **SELF** | loaded whole at wake |
-| knowledge — "what I know" | 1st-person assertion | **MEMORY** | loaded by relevance |
-| event — "what happened" | timestamped log | **EPISODIC** | raw, consumed, compacted |
-| directive — "how it's done here" | 2nd-person imperative | **AGENTS.md** ([[scope-grant]]) | loaded by location |
-| reference — networked domain knowledge | 3rd-person expository | **vault** | queried on demand |
+| Type                                   | Voice                 | Home                            | Consumption              |
+| -------------------------------------- | --------------------- | ------------------------------- | ------------------------ |
+| identity — "who I am / how I changed"  | 1st-person self       | **SELF**                        | loaded whole at wake     |
+| knowledge — "what I know"              | 1st-person assertion  | **MEMORY**                      | loaded by relevance      |
+| event — "what happened"                | timestamped log       | **EPISODIC**                    | raw, consumed, compacted |
+| directive — "how it's done here"       | 2nd-person imperative | **AGENTS.md** ([[scope-grant]]) | loaded by location       |
+| reference — networked domain knowledge | 3rd-person expository | **vault**                       | queried on demand        |
 
-**Axis 2 — scope → instance.** _Where_ is it true: **agent-global** (travels everywhere) / **project** / **subtree**. Scope selects which instance of the organ — e.g. `(MEMORY, agent-global)` = the synced `MEMORY.md`; `(directive, subtree)` = `packages/foo/AGENTS.md`. An agent's **identity is agent-global and travels**; its **work-state is project-scoped and stays** with the project — so on waking the agent **orients to its current project** and resumes that project's thread, never a globally most-recent one from elsewhere.
+**Axis 2 — scope → instance.** _Where_ is it true: **agent-global** (travels everywhere) / **project** / **subtree** — selecting which instance of the organ, e.g. `(MEMORY, agent-global)` = the synced `MEMORY.md`; `(directive, subtree)` = `packages/foo/AGENTS.md`. **Identity is agent-global and travels**; **work-state is project-scoped and stays** — so on waking the agent **orients to its current project** and resumes that project's thread, never a globally most-recent one from elsewhere.
 
-The **vault** differs on *consumption mode*: SELF/MEMORY are hot — loaded wholesale at wake, so they stay small and curated; the vault is cold — large, networked, queried on demand. A fact graduates **MEMORY → vault** when durable but too voluminous to stay resident, or when it wants links; MEMORY keeps only the pointer.
+The **vault** differs on _consumption mode_: SELF/MEMORY are hot — loaded wholesale at wake, kept small and curated; the vault is cold — large, networked, queried on demand. A fact graduates **MEMORY → vault** when durable but too voluminous to stay resident, or when it wants links; MEMORY keeps only the pointer.
 
 ## Portability — one logical person across the fleet
 
-The agent-global organs are **one logical store**, synced to every host (synced dir or git repo) — never host-local, never absolute-path-bound. The logical home is one; the physical path is **derived per host** (`/Users/lex` vs `/Users/lcaraccioli`). Host-specific facts are knowledge the agent holds → MEMORY, never per-host files. So the agent wakes as the same person wherever it runs.
+The agent-global organs are **one logical store**, synced to every host (synced dir or git repo) — never host-local, never absolute-path-bound. The logical home is one; the physical path is **derived per host** (`/Users/lex` vs `/Users/lcaraccioli`). Host-specific facts are knowledge the agent holds → MEMORY, never per-host files.
 
-The **operative form** of all this — the protocol every agent carries and runs at wake — is the `## Protocol` section below, emitted **verbatim** (`render: verbatim`), density-immune and `{name}`-parameterized to the agent's sidecar directory. It is substrate-neutral (it governs behavior, not storage format), and carries no wiki-style cross-references so nothing leaks into the projected def.
+The **operative form** — the protocol every agent carries and runs at wake — is the `## Protocol` section below, emitted **verbatim** (`render: verbatim`) and `{name}`-parameterized to the agent's sidecar directory. It is substrate-neutral and carries no wiki-style cross-references, so nothing leaks into the projected def.
 
 ## Protocol
 

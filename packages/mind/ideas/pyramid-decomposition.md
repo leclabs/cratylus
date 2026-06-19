@@ -5,7 +5,7 @@ delineation: Decompose a source top-down — find its one governing thesis (answ
 
 # Pyramid Decomposition
 
-**Engineer a source into a governing-thesis pyramid.** Where [[semantic-partition]] reads bottom-up — cutting a flat body into fragments by the light of priors — pyramid-decomposition works **top-down**. Resolve from context: answer-first is [[pyramid-principle]]; the no-thesis exit is [[abstain-on-non-convergence]]; the group criterion is [[mece]]; admission tests are [[identity-criteria-before-taxonomy]] · [[ontoclean-meta-properties]]:
+Answer-first is [[pyramid-principle]]; the no-thesis exit is [[abstain-on-non-convergence]]; the group criterion is [[mece]]; admission tests are [[identity-criteria-before-taxonomy]] · [[ontoclean-meta-properties]]:
 
 ```text
 PD : S → pyramid(t)

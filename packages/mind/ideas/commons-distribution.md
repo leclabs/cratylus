@@ -5,11 +5,11 @@ delineation: The library ships as a versioned, adoptable commons — one canonic
 
 # Commons Distribution
 
-The `ideas/` library ships as a **shared commons** that many scopes adopt ([[adopt-the-commons]]) — the substrate for standing up species ([[archetype-instantiation]]). How distributed copies and the one canonical home coexist:
+The `ideas/` library is the shared commons ([[adopt-the-commons]]) — substrate for standing up species ([[archetype-instantiation]]). The composition:
 
-- **One home, many references.** Each exemplar has exactly one canonical home upstream ([[cite-dont-copy]]). A consuming scope **pins a version and references**, holding only its scope deltas ([[scope-grant]]) — it does not fork the cell.
-- **Drift is reconciled, not lost** — [[generated-artifact-provenance]] records the ancestor; [[regenerate-without-clobbering]] runs the merge.
-- **Adopt, don't re-derive.** A scope leans on the commons for solved exemplars and writes only its genuine delta ([[adopt-the-commons]] · [[minimalism]]).
+- **One home, many references.** One canonical home upstream ([[cite-dont-copy]]); a consuming scope pins a version + references and holds only its [[scope-grant]] deltas — it does not fork the cell.
+- **Drift sync.** [[generated-artifact-provenance]] records the ancestor; [[regenerate-without-clobbering]] runs the merge.
+- **Adopt, don't re-derive** ([[adopt-the-commons]] · [[minimalism]]).
 
 ## See also
 

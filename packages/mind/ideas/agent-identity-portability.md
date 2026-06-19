@@ -5,20 +5,20 @@ delineation: An agent's transferable identity is a fixed set of facets — name/
 
 # Agent Identity Portability
 
-What makes an agent the **same agent** across deployments is a fixed, portable set of **facets**. Each facet answers one question, and the answers — not the prose around them — are the agent's identity:
+The facets, each answering one question — the answers, not the prose, are the identity:
 
 - **name / keypair** — who it is; the stable handle and the credential that signs as it.
 - **recall** — its knowledge/memory discipline; what it carries forward and how it remembers.
 - **harness posture** — how it meets its runtime: capability floor, output contract, interactivity, tools/model.
 - **essence / values** — its stance, dispositions, and the priors it acts from.
 
-The load-bearing split is **intrinsic vs extrinsic**: intrinsic facets travel _with_ the agent (essence, name); extrinsic facets are supplied _by_ the deployment (the keypair a host issues, the tools a harness grants). A **clone** shares the intrinsic facets and rebinds the extrinsic ones; a **singular instance** is the one binding that holds a particular keypair.
+Intrinsic facets are essence and name; extrinsic are the keypair a host issues and the tools a harness grants. A **clone** shares the intrinsic facets and rebinds the extrinsic ones; a **singular instance** is the one binding that holds a particular keypair.
 
-This is the **what-is** that the `kind` ontology (`ideas/AGENTS.md`) `agent`/`persona` composites _instance_: the composite rule says an agent embodies its `principle`s, invokes its `process`es, references its `concept`s; this cell says which facets that bundle distributes across. An agent cell (e.g. [[mav]], [[nico]]) declares only its **deltas** against these facets.
+This is the **what-is** the `kind` ontology (`ideas/AGENTS.md`) `agent`/`persona` composites _instance_: it says which facets that bundle distributes across. An agent cell (e.g. [[mav]], [[nico]]) declares only its **deltas** against these facets.
 
 ## The deltas-only corollary
 
-Because this model is generic to **every** agent, it has exactly **one canonical home** — here. A facet declaration carries the agent's own payload and nothing else; the facet _model_ is referenced, never re-explained. Restating intrinsic-vs-extrinsic or the facet schema per agent is the bloat [[densest-faithful-point]] forbids — verbosity is the signal of a missing anchor. Influences are anchor links; the only prose kept is genuine delta, especially **subtractions** ("_less_ X") and **synthesis** (the one-line read-together). A facet with no agent-specific delta says so in one line.
+A facet declaration carries the agent's own payload and nothing else; the facet _model_ is referenced. Restating intrinsic-vs-extrinsic or the facet schema per agent is the bloat [[densest-faithful-point]] forbids — verbosity is the signal of a missing anchor. Influences are anchor links; kept prose is genuine delta, especially **subtractions** ("_less_ X") and **synthesis** (the one-line read-together). A facet with no agent-specific delta says so in one line.
 
 ## The Persona section (an agent cell's identity-delta)
 
@@ -32,7 +32,7 @@ An `agent` cell is written as: a one-line role **intro**, a `≜` **definitional
 - **Bond** — its relational stance (e.g. to the Operator, [[subject-binding]]).
 - **Mark** — the sensory recognition token, `emoji · hue`; each harness projects it into its own affordance (color field, avatar, line prefix) — projections are derived from the mark, never stored.
 
-What is **not** persona: a behavior or method is a disposition (compose it in the `≜`) or belongs in the role intro; an output template or frame-set is harness-posture (extrinsic, supplied by deployment). An agent with no character-delta says so in one line.
+Not persona: a behavior or method is a disposition (compose it in the `≜`) or belongs in the role intro; an output template or frame-set is harness-posture (extrinsic). An agent with no character-delta says so in one line.
 
 ## See also
 

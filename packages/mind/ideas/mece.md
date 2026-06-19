@@ -5,12 +5,9 @@ delineation: A decomposition must be Mutually Exclusive (no item falls in two gr
 
 # MECE
 
-**Mutually Exclusive, Collectively Exhaustive** (Minto, [[barbara-minto]]) — the test of a sound decomposition:
+**Mutually Exclusive, Collectively Exhaustive** (Minto, [[barbara-minto]]) — the shared partition criterion across the corpus's decompositions: [[semantic-partition]] cuts a body into MECE fragments, [[pyramid-decomposition]] branches a thesis into MECE groups, and the `kind` taxonomy is a MECE set of primitives ([[one-cell-one-type]]).
 
-- **Mutually exclusive** — no element belongs to two groups; an overlap means the cut conflated distinct categories. (At the cell grain: a fragment that fits two unrelated anchors was cut wrong — [[semantic-partition]].)
-- **Collectively exhaustive** — no element falls outside every group; a gap means a category is missing.
-
-MECE is the partition criterion shared across the corpus's decompositions: [[semantic-partition]] cuts a body into MECE fragments, [[pyramid-decomposition]] branches a thesis into MECE groups, and the `kind` taxonomy is a MECE set of primitives ([[one-cell-one-type]]).
+At the cell grain, a fragment that fits two unrelated anchors was cut wrong ([[semantic-partition]]).
 
 ## See also
 

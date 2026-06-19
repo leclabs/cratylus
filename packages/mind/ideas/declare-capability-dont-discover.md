@@ -5,14 +5,9 @@ delineation: An extension declares its capabilities and lossiness as machine-rea
 
 # Declare Capability, Don't Discover
 
-What a component can and cannot do — its capability surface, its lossiness, the slice of the canonical form it carries — must be **declared as machine-readable data**, not discovered by running its code or reading its body. A per-feature tri-state (`full | partial | none`), a supported-event set, a payload flavor: the contract lives in the type system where the host can **report, lint, and explain** it ahead of execution.
+The contract lives in the type system: a per-feature tri-state (`full | partial | none`), a supported-event set, a payload flavor — which slice of the canonical form a target carries ([[canonical-superset-ir]]). Declared lossiness is a floor you can read off the type ([[lossless-floor]]); buried lossiness no one can audit.
 
-Why declaration beats discovery:
-
-- **The host can answer "what will I lose?" before acting** — `explain` / `lint` / capability-matrix commands read the declaration, so loss is visible up front, not a surprise after a destructive write.
-- **The contract is small enough to fan out.** When the contract is a tiny declared interface plus shared primitives, a _complete_ implementation is small (a minimal adapter is dozens of lines, not hundreds) — which is what makes an open ecosystem of implementations realistic.
-
-Lossiness buried in code is lossiness no one can audit; declared lossiness is a floor you can read off the type ([[lossless-floor]]).
+Because the declared contract is a tiny interface over shared primitives, a complete implementation stays small — a minimal adapter is dozens of lines, not hundreds — which is what makes an open ecosystem of implementations realistic ([[minimalism]]).
 
 ## See also
 
