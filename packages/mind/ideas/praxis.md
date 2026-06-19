@@ -65,3 +65,4 @@ claude-code assigns each plan session a generated name; `list` can show it besid
 
 - [[shard-by-orthogonal-concern]] — why a plan decomposes into independent units.
 - [[self-sufficient-formalism]] — the convention the formal block above follows.
+- [[plan-retirement]] — a plan is a transient scaffold that retires once its result lands; the **standing plan** is the one exception that never does.
