@@ -70,3 +70,34 @@ failure mode. Fixed by running CSF the right way: by CLUSTER, conceptualize-as-o
   The genuine restatement is gone; the floor is a dense citation-graph, not messy prose. NOT chased
   to 0 (that's over-factoring — deleting legitimate citations).
 - Landed on main (f31108e), redeployed fleet.
+
+## NEXT (ready) — distribute v7 into the pipeline cells (the real CSF integration)
+
+**This is the actual remaining work. Do NOT re-derive — copy/paste from the converged source.**
+
+Source of truth: `packages/mind/canonical-semantic-factorization.v7.proposal.md` — the full composite
+formal model. Its parts ARE the submodules. Distribute each portion into its cell and wire the inputs:
+
+- **conceptualize** ← `cl_R` (closure axioms), `C_R`, `intent` `⊑_R` `⇒_R` `⊔`, `prim_R`, `gloss`, `fac_R`.
+  in: `D_R` (the reader's distinctions, from the source). out: `C_R`, `prim_R`, `gloss`, `fac_R`.
+- **signify** ← `α` (anchor), `dec_R` (decoder), `<_N`, `≺` (shortlex order). in: `C_R`. out: `α`, `≺`, `dec_R`.
+- **materialize** ← `F_R` (canonical min factorization), `CSF_R` (the BIPARTITE emit:
+  `prim ↦ ⟨α,gloss⟩` by value, `¬prim ↦ ⟨α,{α(factors)}⟩` by reference). in: `C_R,prim_R,gloss,α,≺,fac_R,s`. out: cells.
+- **exemplify** = the composite: composes the three + `REC_R` (reconstruction), `aptissimum-for-R`
+  (anchor fires gloss), the theorems (existence/uniqueness, round-trip `REC(CSF)=intent`, reader-relativity).
+  in: `D`, reader `R`, strategy `s`. The accept gate is the round-trip.
+
+Wiring = each stage's "Resolve from context" names the upstream output (`C_R` from conceptualize, `α` from signify).
+Symbols: `cl_R/C_R/prim_R/α/dec_R/fac_R/F_R/CSF_R/REC_R` are cell-local definienda (declared in-cell, NOT the
+table). Only genuine cross-cell operator glyphs (e.g. `↣` injective, `⊊` proper-subset) go in
+`references/formal-symbolic-notation.md` — add only if the symbols gate flags them.
+Keep: `canonical-semantic-factorization` stays a **gloss** (the concept); each fenced block self-sufficient.
+Then: `glossary.py` → `resolve.py` → `verify.py` PASS → deploy all 6 hosts → ff local main checkout.
+
+### Why this is the work (the session's lesson)
+
+My context was borked by optimizing each cell as a LOCAL SYNTACTIC unit (trim prose) instead of holding the
+PIPELINE as one SEMANTIC WHOLE. I conflated "cell is short + has a formal block" with "cell is a faithful CSF
+module" — they're different claims. The current conceptualize/signify/materialize are a generic cut→name→emit
+pipeline (CA/η/σ) that never surfaces CSF's bipartite core (primitive-by-value vs composite-by-reference). v7
+IS that core, already derived. Stop trimming; transcribe v7.
