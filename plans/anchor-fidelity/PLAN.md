@@ -3,7 +3,7 @@
 Make "true anchor" a falsifiable, gated property; re-individuate the corpus under it. Status mirror;
 task files live under state folders. Charter + the converged model: `AGENTS.md`.
 
-## Status — formalism DONE; application is the frontier
+## Status — COMPLETE (all phases done; pending merge-to-main + fleet redeploy)
 
 The CSF acceptance model is converged (v7, five blind-`@nico` reads, objective matched) and pilot-validated
 on the real `anchor` cluster. The pipeline now has a falsifiable anchor-fidelity gate to adopt:
@@ -13,17 +13,16 @@ the gated re-individuation.
 
 ## Frontier (ready)
 
-- **stratify-corpus** · `pending/` → active · Nico — **phase 2.** Classify all 150 cells primitive (gloss)
-  vs composite (factor-refs); enumerate the non-conforming worklist (sentence-slugs, restating composites,
-  unextracted shared primitives). Full coverage, no sampling.
+_(none — all phases complete; see Completed.)_
 
 ## Backlog (pending)
 
-- **gated-reindividuation** · `pending/` · Nico — **phase 4** (deps: phases 1-3 **+ Operator scale-opt-in**).
-  The full multi-agent re-individuation = the real `corpus-hardening/fresh-optimization-pass`, tool-driven.
 
 ## Completed
 
+- **gated-reindividuation** (phase 4, `d5746d3`) — worklist was 2 cells; both re-anchored
+  (no-permissive-defaults, net-zero-correction). Corpus round-trips under the anchor-fidelity gate.
+- **stratify-corpus** (phase 2) — 150/150 classified: 120 primitive, 30 composite, 2 non-conforming.
 - **mechanize-fidelity-gate** (phase 3, resolved) — deterministic anchor-fidelity is infeasible
   (heuristics over-flag legit dense anchors); the gate is the **blind-decode workflow** (`stratify-corpus` +
   the blind-read pattern), verify.py stays structural. A false anchor is rejected by the blind-decode.
