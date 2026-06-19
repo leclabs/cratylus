@@ -1,6 +1,5 @@
 ---
 kind: process
-name: canonical-semantic-factorization
 delineation: Factor a meaning into its bipartite normal form — primitives carry ground truth by value, composites carry only their factors' anchors by reference — by recomposing conceptualize → signify → materialize, accepted iff it reconstructs from its anchors alone.
 ---
 
