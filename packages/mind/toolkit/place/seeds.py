@@ -51,21 +51,14 @@ accrue over my life and are recalled by relevance. Grown by the Dreamer
 
 
 def episodic_seed(name: str) -> str:
-    today = _dt.date.today().isoformat()
-    return f"""# {name} — episodic
-
-*My raw stream ([[memory]]) — important things appended as they happen, per turn.
-At reconstitution the Dreamer ([[dreamer-consolidation]]) distills this upward: next-steps stay
-here, durable facts rise to MEMORY, identity-shaping facts rise to SELF; the consumed raw clears.*
-
-<!-- Seeded {today}. Append below per turn; the Dreamer drains it each wake. -->
-
-## Next steps (carried)
-
-## Stream
-
-"""
+    """An empty EPISODIC.jsonl store: zero records ([[memory]]). EPISODIC is a
+    JSONL event log -- `episodic encode` mints a ULID and appends one open record
+    per salient event. A JSONL store carries no prose, so a fresh agent seeds an
+    empty file; the protocol that governs it lives once in the SOUL's verbatim
+    Protocol organ, never duplicated into the data store."""
+    del name  # uniform (filename, seed-fn) signature; no per-name content
+    return ""
 
 
 # (filename, seed-fn) -- SOUL (the def) is generated, not seeded here.
-SEED_FILES = [("SELF.md", self_seed), ("MEMORY.md", memory_seed), ("EPISODIC.md", episodic_seed)]
+SEED_FILES = [("SELF.md", self_seed), ("MEMORY.md", memory_seed), ("EPISODIC.jsonl", episodic_seed)]

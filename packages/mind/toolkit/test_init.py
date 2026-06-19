@@ -56,7 +56,7 @@ def main() -> int:
         # the identity-memory protocol (SOUL/SELF/MEMORY/EPISODIC + WAKE).
         nico = (agents_dir / "nico.md").read_text(encoding="utf-8")
         for needle in ("name: nico", "GENERATED from", "content-hash:",
-                       "SELF.md", "MEMORY.md", "EPISODIC.md", "WAKE"):
+                       "SELF.md", "MEMORY.md", "EPISODIC.jsonl", "WAKE"):
             if needle not in nico:
                 fails.append(f"NICO-MALFORMED: founder def missing {needle!r}")
 
