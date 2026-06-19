@@ -13,7 +13,7 @@ A **sense** is a source the person perceives. Its two faces:
 - **Cadence face — attention that becomes memory.** Driven by the [[pulse]]'s observe phase: perceive (idempotent per item) → enrich → emit observations → the episodic stream ([[memory]]), feeding recall and [[dream]] for free.
 
 - **The inbox is one sense.** Messages — from the Operator ([[subject-binding]]) or a peer agent ([[state-transitions-as-agent-protocol]]) — are the _messaging_ sense: one channel among interoception (the self), proprioception (the substrate), and the world-senses. The afferent surface is a **family**, not a single inbox.
-- **Read-only; acting is gated.** Anything outbound is an action behind the escalation gate ([[genuine-fork]]), and never blocks ([[dont-blind-wait]]).
+- **Read-only.** Senses are read-only; acting is the efferent complement ([[powers]]).
 - **Sovereign + consented.** The person perceives only what its Operator authorizes ([[operator-relation]]); high-sensitivity senses are explicit opt-in.
 
 ## Realizations (one concept, every harness)
@@ -23,7 +23,7 @@ A **sense** is a source the person perceives. Its two faces:
 
 ## See also
 
-- [[ambient-person-agent]] — the perception its self-clocked differentia presupposes (a wake over no real signal is just a scheduler).
+- [[ambient-person-agent]] — the perception its self-clocked differentia presupposes.
 - [[never-go-silent]] — the efferent complement: the senses are the ears, never-go-silent the voice.
 - [[powers]] — the efferent organ proper: senses perceive, powers act (the voice is one power).
 - [[pulse]] — drives the senses on cadence (the observe phase).

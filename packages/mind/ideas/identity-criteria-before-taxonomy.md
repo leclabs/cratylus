@@ -5,7 +5,7 @@ delineation: Fix a category's identity and rigidity criteria before placing it i
 
 # Identity Criteria Before Taxonomy
 
-The OntoClean discipline ([[nicola-guarino]]). Beyond identity and rigidity, a third axis: **Constraint** — the meta-properties bound subsumption ([[ontoclean-meta-properties]] — the rubric and its constraint table).
+The OntoClean discipline ([[nicola-guarino]]). Its meta-property rubric is owned by [[ontoclean-meta-properties]].
 
 The analytic counter to recognition-by-prior-fit ([[priors-as-light]]): each candidate category is subjected to an explicit formal test before admission, not let to emerge from conceptual fit.
 

@@ -6,7 +6,7 @@ trigger: /formalize
 
 # Formalize Skill
 
-Render prose into its **signum aptissimum** — a self-sufficient formal block.
+Render prose into its **signum aptissimum** — a self-sufficient formal block; its accept gate is the [[canonical-semantic-factorization]] round-trip.
 
 Bindings: the operation invokes [[conceptualize]] → [[signify]] and binds [[self-sufficient-formalism]]. The symbol table is `references/formal-symbolic-notation.md`.
 
@@ -22,8 +22,7 @@ E ≜ entities(P) ; O ≜ operations(P) ; L ≜ laws(P)
 B ≜ formalize(P) such that :
     ∀ e ∈ E      : signature(η(e)) ∈ B        declarations above
     ∀ o ∈ O ∪ L  : law(η(o)) ∈ B              comprehensions and laws below
-    ordered(B) ∧ closed(B)                    no forward reference ∧ no free symbol
+    self-sufficient(B)                        closed ∧ complete ∧ ordered
 
-accept(B) ⇔ self-sufficient(B) ∧ reconstruct(B) ≽ P
-¬accept(B) ⇒ ⊥
+reconstruct(B) ≽ P                            input-typed ≽ terminus ; accept gate
 ```

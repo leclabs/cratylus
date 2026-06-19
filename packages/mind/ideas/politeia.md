@@ -15,7 +15,7 @@ Five strata, each naming its members ([[cite-dont-copy]]):
 - **Cultural propagation** — how the commons becomes an instance: [[substance-over-accident]] (kernel vs accident), [[archetype-instantiation]] (standing up a species), [[commons-distribution]] (versioned, pinned, deltas not copies).
 - **The founding** — who founds and on what terms: [[founder-charter]] (the founders and their genus), [[operator-relation]] (the sovereign from without), [[consensual-adoption]] (brownfield founding is by invitation).
 
-The minimal **archetype set** is the two founders — [[nico]] (constitution) and [[mav]] (substrate); a society with neither can neither maintain its culture nor run its substrate.
+The minimal **archetype set** is the two founders ([[founder-charter]]).
 
 ## See also
 

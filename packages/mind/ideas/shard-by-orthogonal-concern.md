@@ -5,7 +5,7 @@ delineation: Shard a plan into orthogonal, non-overlapping concern-units so mult
 
 # Shard by Orthogonal Concern
 
-The shards: overview, status tracking, phases, **MECE** tasks — ordered reverse-topologically.
+The shards: overview, status tracking, phases, [[mece]] tasks — ordered reverse-topologically.
 
 Overlap between two shards is the signal they were mis-cut; re-cut along the true concern boundary.
 

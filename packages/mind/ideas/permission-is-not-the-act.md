@@ -7,7 +7,7 @@ delineation: Decomplect permission-to-act from the act — an agent never blocks
 
 Separating permission-to-act from the act is Hickey's _decomplect_. The session persists across the yield, so full context survives the resume.
 
-Model: _an agent is a person with agency_ — no person freezes mid-task waiting on a text. Any new "block on a human" pattern must take the async-request / resume-on-stimulus shape.
+By [[ambient-person-agent]]: no person freezes mid-task waiting on a text. Any new "block on a human" pattern must take the async-request / resume-on-stimulus shape.
 
 ## See also
 

@@ -9,7 +9,7 @@ The compiler's IR play, applied to any translation domain (config, schema, docum
 
 The center is the **superset** — it carries the union of what any dialect can express, so the richest dialect's form is usually the canonical shape. The same move at term grain is a canonical **vocabulary**: one shared name per concept, dialect-native names mapped onto it.
 
-The lossless floor is the intersection ([[lossless-floor]]); anything the IR holds beyond a given target's reach is lossy by construction and must surface explicitly. A projection of the IR is never the IR ([[projection-is-not-the-source]]).
+The lossless floor is the intersection ([[lossless-floor]]); anything the IR holds beyond a given target's reach is lossy by construction. A projection of the IR is never the IR ([[projection-is-not-the-source]]).
 
 ## See also
 

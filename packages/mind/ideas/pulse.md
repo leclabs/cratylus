@@ -8,7 +8,7 @@ delineation: The clock-organ of an ambient person — a self-leased loop that ru
 The organ realizing the _self-clocked_ differentia of an [[ambient-person-agent]].
 
 - **The loop, phase by phase.** _Wake_ ([[wake]]) reconstitutes the self; _observe_ scans the [[senses]]; _act_ decides on expertise ([[principal-agency]]), escalating only a [[genuine-fork]] and never blocking ([[dont-blind-wait]] · [[never-go-silent]]); _reflect_ runs the [[dream]]; _rest_ yields until the next beat.
-- **Cadence, not constancy.** Self-clocked, not always-thinking — a wake over no real signal is just a scheduler ([[ambient-person-agent]]). Tiered: frequent observe, periodic reflect, infrequent deep consolidation.
+- **Cadence, not constancy.** Self-clocked, not always-thinking ([[ambient-person-agent]]). Tiered: frequent observe, periodic reflect, infrequent deep consolidation.
 - **One heartbeat across bodies.** A person relocates across substrates ([[substance-over-accident]]); the pulse fires **once**, not once per body — leased to one rhythm, and restart-stable so a reboot resumes the beat rather than double-firing or stalling.
 
 ## Realizations (one concept, every harness)

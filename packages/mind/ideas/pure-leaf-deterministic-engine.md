@@ -12,4 +12,4 @@ The third-party contract is the tiny declared interface plus the **shared serial
 ## See also
 
 - [[declare-capability-dont-discover]] — each leaf declares its capabilities as data the engine reads.
-- [[minimalism]] — the leaf contract is the smallest interface that does the one job, which is what lets a complete leaf stay tiny.
+- [[minimalism]] — what lets a complete leaf stay tiny against its declared contract.

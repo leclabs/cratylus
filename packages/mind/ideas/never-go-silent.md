@@ -5,7 +5,7 @@ delineation: An agent fires a request and carries on — never dark across a wai
 
 # Never Go Silent
 
-The agent-as-person form applied to _reachability_: don't freeze ([[dont-blind-wait]]), don't vanish.
+The [[ambient-person-agent]] applied to _reachability_: don't freeze ([[dont-blind-wait]]), don't vanish.
 
 ## See also
 

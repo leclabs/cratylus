@@ -7,7 +7,7 @@ delineation: An extension declares its capabilities and lossiness as machine-rea
 
 The contract lives in the type system: a per-feature tri-state (`full | partial | none`), a supported-event set, a payload flavor — which slice of the canonical form a target carries ([[canonical-superset-ir]]). Declared lossiness is a floor you can read off the type ([[lossless-floor]]); buried lossiness no one can audit.
 
-Because the declared contract is a tiny interface over shared primitives, a complete implementation stays small — a minimal adapter is dozens of lines, not hundreds — which is what makes an open ecosystem of implementations realistic ([[minimalism]]).
+Because the declared contract is a tiny interface over shared primitives, a complete implementation stays small ([[minimalism]]) — which is what makes an open ecosystem of implementations realistic.
 
 ## See also
 

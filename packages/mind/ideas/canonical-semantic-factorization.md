@@ -6,7 +6,7 @@ delineation: Factor a meaning into its bipartite normal form — primitives carr
 
 # Canonical Semantic Factorization
 
-`CSF ≜ [[conceptualize]] → [[signify]] → [[materialize]]` — dissolve the source to its [[mece]] primitives ([[conceptualize]]: `boundaries ∉ inputs`, so a primitive shared across cells is found in the seam, not inside one), anchor each ([[signify]]), emit by kind ([[materialize]]).
+`CSF ≜ [[conceptualize]] → [[signify]] → [[materialize]]` — dissolve the source to its [[mece]] primitives ([[conceptualize]], over the mass whose prior boundaries are dissolved per [[semantic-partition]]), anchor each ([[signify]]), emit by kind ([[materialize]]).
 
 ```text
 emit(c) :
@@ -16,7 +16,7 @@ emit(c) :
 accept(c) ⇔ reconstruct(c from η alone) ≽ meaning(c) ∧ minimal
 ```
 
-Residual prose that restates a delineation or re-explains a cited anchor is the tell of an un-factored composite or a wrong anchor — it is not minimal, so it does not accept.
+`minimal` binds [[minimalism]] · [[precise-circumscription]]; restating a delineation or re-explaining a cited anchor is the recite-defect that fails it ([[self-sufficient-formalism]]) — the tell of an un-factored composite or a wrong anchor.
 
 ## See also
 

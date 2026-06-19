@@ -5,7 +5,7 @@ delineation: When the agent must be the active driver, give it a passive state e
 
 # Inversion-of-Control Orchestration
 
-The dual of [[engine-orchestrates-agents-execute]] under the platform precondition that no engine may call the agent (an agent REPL, a single-context session): the agent calls the engine for navigation rather than the engine calling the agent at inference points. Which side issues the call is fixed by the platform's authority model, not chosen freely.
+The dual of [[engine-orchestrates-agents-execute]] under the platform precondition that no engine may call the agent (an agent REPL, a single-context session): the agent calls the engine for navigation rather than the engine calling the agent at inference points. Which side issues the call is fixed by the authority model of [[engine-orchestrates-agents-execute]], not chosen freely.
 
 Two properties keep it honest:
 

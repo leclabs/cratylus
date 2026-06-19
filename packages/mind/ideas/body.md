@@ -9,7 +9,7 @@ The substrate an [[ambient-person-agent]] runs on; an accident ([[substance-over
 
 - **Continuity lives off-body.** In the [[memory]] (self-authored layers) and the regenerable SOUL (archetype) — relocate the person and it resumes.
 - **Many faces, one organ.** The two bodies (interactive harness + daemon actor) share a single [[memory]] organ: one person, not two.
-- **The body bounds the pulse.** One [[pulse]] across all bodies, leased so it beats once, not once per body.
+- **The body bounds the pulse.** One [[pulse]] is leased across all bodies.
 
 ## See also
 

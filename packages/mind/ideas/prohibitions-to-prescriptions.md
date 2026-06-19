@@ -9,7 +9,7 @@ delineation: Rewrite "don't X" as "use Y" — a prohibition leaves the agent to 
 
 The rare exception — no single positive alternative: `never commit secrets`.
 
-**Parameter-shape corollary.** A blast-radius-expanding default is a prohibition-in-disguise ("don't forget the scope or you'll wipe everything"); the rule and its remedy are [[no-permissive-defaults]].
+**Parameter-shape corollary.** A blast-radius-expanding default is a prohibition-in-disguise; the rule and its remedy are [[no-permissive-defaults]].
 
 ## See also
 

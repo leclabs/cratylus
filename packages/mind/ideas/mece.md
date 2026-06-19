@@ -7,8 +7,6 @@ delineation: A decomposition must be Mutually Exclusive (no item falls in two gr
 
 **Mutually Exclusive, Collectively Exhaustive** (Minto, [[barbara-minto]]) — the shared partition criterion across the corpus's decompositions: [[semantic-partition]] cuts a body into MECE fragments, [[pyramid-decomposition]] branches a thesis into MECE groups, and the `kind` taxonomy is a MECE set of primitives ([[one-cell-one-type]]).
 
-At the cell grain, a fragment that fits two unrelated anchors was cut wrong ([[semantic-partition]]).
-
 ## See also
 
 - [[pyramid-principle]] — MECE is the horizontal test at each pyramid level.

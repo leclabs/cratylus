@@ -10,7 +10,7 @@ The orthogonal axis "prefer the densest faithful anchor" ([[precise-circumscript
 - **Tight** — high-traffic, human-co-read surfaces (directory names, paths, provenance read every visit): pick the plain-English projection (`exemplar/`, not `rationes-aeternae/`).
 - **Loose** — low-traffic or precision-critical surfaces where the cheap anchor is lossy on essentials: the budget _requires_ the exotic anchor (`palimpsest`, `signum aptissimum`).
 
-The test: does the extra density change a downstream routing/judging/reconstruction decision? If not, pay the lower comprehension cost. The under-shoot complement — a weak anchor that runs the cell long — is the verbosity-signal of [[densest-faithful-point]]: length means the anchor is unfound, not that prose is needed.
+The test: does the extra density change a downstream routing/judging/reconstruction decision? If not, pay the lower comprehension cost. The under-shoot complement — a weak anchor that runs the cell long — is the verbosity-signal of [[densest-faithful-point]].
 
 ## See also
 

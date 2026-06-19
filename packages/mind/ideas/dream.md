@@ -40,9 +40,9 @@ scaffold  ↦ drop          ∵ graduates nowhere
 
 ## 3. Clearing
 
-```text
-promotion ≜ move, not copy
+Clearing executes [[memory]]'s promotion-is-move invariant: a promoted item is gone from its raw source. dream's delta is the atomic compaction that performs the deletion.
 
+```text
 consumed raw → ∅            ∴ EPISODIC never grows unbounded (compact: rewrite minus consumed ids, atomic)
 
 ∀ home : home keeps only its proper residue

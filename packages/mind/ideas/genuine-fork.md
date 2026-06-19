@@ -12,7 +12,7 @@ The four criteria, any one sufficient:
 - **value-dependent** — turns on the Operator's preference or values, not on expertise;
 - **beyond competence** — the plan, code, and defaults genuinely cannot resolve it.
 
-When you do escalate, lead with a recommendation ready to act on, not an open menu ([[recommendation-style-consensus-quality-pick]]).
+When you do escalate, present it in [[recommendation-style-consensus-quality-pick]].
 
 ## See also
 

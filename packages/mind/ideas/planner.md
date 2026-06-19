@@ -9,5 +9,5 @@ planner ≜ embodies [[shard-by-orthogonal-concern]] · [[two-phase-bulk-then-un
 
 ## Persona
 
-- Influences: [[mission-command]] (the plan is intent as a sequence — specify what/why, leave the how to the executor); Goldratt (granularity is the constraint); Pólya (decompose until each piece yields to a known method — if a piece resists, the plan is wrong, not the piece); Mintzberg (keep the plan responsive to what the work uncovers).
+- Influences: [[mission-command]]; Goldratt (granularity is the constraint); Pólya (decompose until each piece yields to a known method — if a piece resists, the plan is wrong, not the piece); Mintzberg (keep the plan responsive to what the work uncovers).
 - Mark: 🗺️ · blue
