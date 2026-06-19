@@ -1,6 +1,17 @@
 # episodic-toolsource-bundle
 
-**Owner.** Mav. **Deps.** none (parallel with skill-companion-deploy). **State: READY.**
+**Owner.** Mav. **Deps.** none (parallel with skill-companion-deploy). **State: COMPLETED.**
+
+**Done.** `@leclabs/koine-episodic` retired: `package.json` is `name: episodic`, `private: true`,
+library fields (main/types/exports/bin/files) dropped; the root `tsconfig.json` project-reference
+removed (the "only a tsconfig reference" signal — gone); AGENTS.md reframed it as build-only
+toolsource. `tsup.config.ts` now bundles `src/bin.ts` → **one dependency-free `dist/episodic.mjs`**
+(15 KB, shebang preserved, runs `node episodic.mjs <cmd>`). Retained TS + tests intact: **64/64
+vitest green** (resolve/ulid/migrate/cli/store/dream — atomic `compact` + two-leg `assertNoLoss`
+preserved), `tsc --noEmit` OK, biome clean, repo-wide `turbo build` green. End-to-end smoke on the
+artifact: migrate(2) + encode(1) → read 3. `dist/` is gitignored (artifact built, not committed —
+the build→bundle→deploy wiring lands in memory-home-dual-deploy). The `koine-` rename is closed by
+retirement.
 
 **What.** Retire `@leclabs/koine-episodic` as a published npm package; keep its TS source +
 test suite in-repo as a **private build-only origin**; add a bundle step that emits one

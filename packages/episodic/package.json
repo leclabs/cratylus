@@ -1,21 +1,10 @@
 {
-  "name": "@leclabs/koine-episodic",
+  "name": "episodic",
   "version": "0.0.0",
-  "description": "Portable JSONL EPISODIC event store — ULID-keyed append-only encode + scope-relative resolveFile",
+  "private": true,
+  "description": "Build-only toolsource for the `episodic` memory tool — bundled into the memory skill (memory-tool-bundling), not a published library",
   "license": "MIT",
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
-  "bin": {
-    "episodic": "./dist/bin.js"
-  },
-  "files": ["dist"],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",

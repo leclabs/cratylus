@@ -19,9 +19,11 @@ infrastructure/build/delivery, Mav leads.
   `[[exemplify]]` (resolve → glossary → verify PASS → deploy). Round-trip is the acceptance gate.
 - `packages/koine` — the config IR + translator (`@leclabs/koine`, formerly _agentir_). **One package**;
   `core` / `adapters` / `cli` are source areas under `src/`, exposed via subpath exports + a `koine` bin.
-- `packages/episodic` — the portable agent-memory store (`@leclabs/koine-episodic`): JSONL event store +
-  dream routing. A different domain, zero-coupled to koine; extracted from `packages/koine` in the
-  structure pass (`plans/repo-structure-firstprinciples`). Name keeps the `koine-` prefix pending a rename.
+- `packages/episodic` — **build-only toolsource** (private; anchor `episodic`) for the agent-memory
+  runtime: a JSONL event store + dream routing + the md→JSONL migration. Not a published library (zero
+  importers) — `tsup` bundles `src/bin.ts` into one dependency-free `dist/episodic.mjs` that the `memory`
+  skill carries to every host (`plans/memory-tool-bundling`). The `@leclabs/koine-episodic` npm identity is
+  retired; the long-pending `koine-` rename is closed by that retirement.
 
 ## Working conventions
 

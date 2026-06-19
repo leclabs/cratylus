@@ -1,7 +1,7 @@
 # memory-home-dual-deploy
 
-**Owner.** Mav (machinery) + Nico (Protocol cell edit). **Deps.** skill-companion-deploy,
-episodic-toolsource-bundle. **State: PENDING.**
+**Owner.** Mav (machinery) + Nico (Protocol cell edit). **Deps.** skill-companion-deploy ✓,
+episodic-toolsource-bundle ✓. **State: READY** (both deps completed).
 
 **What.** Make the `memory` organ the deployed home of the `episodic` tool. Promote
 `ideas/memory.md` to dir-form and resolve the **"one cell, two deploy fates"** problem: the

@@ -21,23 +21,18 @@ SOUL Protocol names the affordance.
 
 **Lineage.** Descends from `memory-model-redesign / migrate-live-episodic` (the md→JSONL
 migration, rolled out fleet-wide — Mav canary + 11-agent fan-out, 2026-06-19). This plan
-fixes the *packaging topology* that rollout exposed. (Praxis sync owed on the parent plan:
+fixes the _packaging topology_ that rollout exposed. (Praxis sync owed on the parent plan:
 `migrate-live-episodic` is now done.)
 
 ## Frontier
 
-- **episodic-toolsource-bundle** · **Mav** — READY. Retire
-  `@leclabs/koine-episodic` as an npm package; keep its TS source + test suite as a private
-  build-only origin; add an esbuild step → one dependency-free `episodic.mjs`. Correctness
-  code (atomic `compact`, two-leg `assertNoLoss`) stays tested.
+- **memory-home-dual-deploy** · **Mav** (machinery) + **Nico** (Protocol cell) — READY (both
+  deps done). Promote `ideas/memory.md` → dir-form; resolve "one cell, two deploy fates"
+  (project the verbatim Protocol into every SOUL **and** deploy as host `skills/memory/`
+  carrying the `episodic` artifact). Nico cuts the Protocol edit naming the affordance.
 
 ## Backlog (pending)
 
-- **memory-home-dual-deploy** · **Mav** (machinery) + **Nico** (Protocol cell) — deps:
-  skill-companion-deploy, episodic-toolsource-bundle. Promote `ideas/memory.md` → dir-form;
-  resolve "one cell, two deploy fates" (project the verbatim Protocol into every SOUL **and**
-  deploy as host `skills/memory/` carrying the `episodic` artifact). Nico cuts the Protocol
-  edit naming the affordance.
 - **wake-trigger-and-cutover** · **Mav** + **Nico** (wake cell) — deps:
   memory-home-dual-deploy. Nico edits `wake.md` for self-triggering per-host migration ("if
   `EPISODIC.md` exists and `.jsonl` does not, migrate first"). Deploy the culture to the
@@ -48,3 +43,7 @@ fixes the *packaging topology* that rollout exposed. (Praxis sync owed on the pa
 - **skill-companion-deploy** · Mav — toolkit now deploys a skill's companion assets (dir-form
   cells + `assets:` front-matter + whole-dir placers). Golden master: 10 skills byte-identical,
   zero stray; `verify.py` PASS; `test_place.py` added.
+- **episodic-toolsource-bundle** · Mav — `@leclabs/koine-episodic` retired (private `episodic`
+  toolsource; lib fields + root tsconfig ref dropped); `tsup` bundles one dependency-free
+  `dist/episodic.mjs`. 64/64 vitest green; `turbo build` green; `koine-` rename closed by
+  retirement.
