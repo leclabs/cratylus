@@ -2,24 +2,21 @@
 
 Post-founding refinement backlog. Status mirror; task files live under state folders.
 
-## Status — exit criteria met, but NOT complete (corrected 2026-06-18)
+## Status — COMPLETE (2026-06-18); retirement-eligible pending one batched deploy
 
-The four formal **exit criteria** are met: (1) cite-once convention enforced (CITE-TWICE→hard FAIL); (2)
-verbatim-salience rule canon (homed in `reader-prior-projection`); (3) **salience fix deployed fleet-wide** (all 6
-hosts at HEAD, sha256-verified); (4) markdown formatting no longer produces spurious diffs (prettier config +
-normalization + live pre-commit hook).
+All exit criteria met AND the headline sweep is genuinely run: (1) cite-once convention enforced
+(CITE-TWICE→hard FAIL); (2) verbatim-salience rule canon (homed in `reader-prior-projection`); (3) salience fix
+deployed fleet-wide (6 hosts, sha256-verified); (4) markdown formatting no longer produces spurious diffs.
 
-**BUT the headline task `fresh-optimization-pass` (the full corpus sweep) was NOT accomplished** — a bounded
-read-only audit was substituted for the agreed corpus-as-one-source re-partition + every-cell-prose-free
-conformance, and wrongly marked complete (Operator-prompted correction, 2026-06-18). **Task re-opened.** So the
-plan is **NOT retirement-eligible** — the corpus is not yet swept. Do the real sweep before closing.
+**The headline `fresh-optimization-pass` (the full corpus sweep) is now DONE for real** (`5042653`): all 151
+`ideas/` cells re-conceptualized as one source — **zero** structural candidates (partition sound), 27 redundant-
+recap trims applied CE∧ME-blind-judged (119 already clean, 5 over-trims correctly rejected), `verify.py` PASS +
+toolkit 14/14. One residual: `arch-doc-writer`'s rendered def drifted and **rides the next fleet deploy** (batched;
+a single cosmetic trim does not warrant a standalone 6-host cycle). Retire this plan once that deploy lands.
 
 ## Frontier (ready)
 
-- **fresh-optimization-pass** · `ready/fresh-optimization-pass.md` · Nico — **RE-OPENED.** The agreed full sweep
-  (corpus-as-source re-partition, every cell to the prose-free end-state, CE∧ME) remains TO DO. The bounded audit
-  done so far (low finding-density, zero fusions) is a useful prior, not the deliverable. A multi-agent Workflow —
-  scope/opt-in with the Operator before launching.
+_(none — the corpus sweep is done; see Completed.)_
 
 ## Backlog (pending)
 
@@ -33,10 +30,13 @@ _(none.)_
   result-homed ∧ rationale-homed; git = recovery net). CE∧ME blind-judge PASS.
 - **crystallize-verbatim-salience** (`6106f1d`) — homed the competing-prior ⇒ verbatim-salience rule in
   `reader-prior-projection`; trimmed `recommendation-style`'s re-derivation to a citation. CE∧ME PASS.
-- ~~**fresh-optimization-pass**~~ — **WRONGLY CLOSED → RE-OPENED (see Frontier).** A bounded read-only audit
-  (`6bc95b5`: zero fusions, 3 fixes, `anchor ≡ signum aptissimum` canon) was substituted for the agreed full
-  corpus sweep and mis-marked complete. The audit's products stand (the axiom, the 3 fixes), but the sweep itself
-  was not done.
+- **fresh-optimization-pass** (`5042653`) — **DONE for real** (`completed/fresh-optimization-pass.md`). The
+  agreed corpus-as-one-source sweep: multi-agent Workflow over all 151 cells, **zero** structural candidates
+  (no fusion/homeless/MECE — partition sound), 27 redundant-recap trims applied, each blind-judged **CE∧ME**
+  (`reconstruct ≽ D ∧ minimal`); 119 already clean, 5 over-trims correctly rejected by the judge. Gate
+  Nico-reverified: `verify.py` PASS (round-trip+reconstruct R1+R2+R3), toolkit 14/14, prettier clean. The earlier
+  bounded audit (`6bc95b5`: the axiom + 3 fixes) stands as a prior; this is the deliverable it was not. Residual:
+  `arch-doc-writer` projection drift rides the next batched fleet deploy.
 - **audit-residual-findings** — **re-judged by direct read: all med findings are auditor over-claims, no
   defects** (self-sufficient-formalism's symbols are self-evident functionals — declaring them would
   over-formalize; provenance/regenerate share the three-way-merge _prior_; the cited glosses are normal style).
