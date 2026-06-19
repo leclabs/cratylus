@@ -5,7 +5,11 @@ pnpm exec biome check --staged --no-errors-on-unmatched
 # Prettier's fixpoint so format-on-save never produces a spurious diff. --check
 # fails loud if a file drifts; Prettier honours .prettierignore (the generated
 # GLOSSARY.md is excluded). No staged markdown -> the guard is a no-op.
-STAGED_MD=$(git diff --cached --name-only --diff-filter=ACM -- '*.md')
+#
+# Skip symlinks: plans/ uses CLAUDE.md -> AGENTS.md symlinks (house convention);
+# Prettier refuses to format symbolic links, and the real content is the
+# AGENTS.md target it already checks. -f keeps only regular files.
+STAGED_MD=$(git diff --cached --name-only --diff-filter=ACM -- '*.md' | while IFS= read -r f; do [ -f "$f" ] && [ ! -L "$f" ] && printf '%s\n' "$f"; done)
 if [ -n "$STAGED_MD" ]; then
   echo "$STAGED_MD" | xargs pnpm exec prettier --check
 fi

@@ -11,3 +11,7 @@ packages/mind/GLOSSARY.md
 **/*.generated.*
 **/generated.*
 **/test/ir-bridge/mind.koine.json
+
+# plans/ CLAUDE.md are symlinks to AGENTS.md (house convention); Prettier can't follow
+# symlinks and the real content is the AGENTS.md it already checks.
+plans/**/CLAUDE.md

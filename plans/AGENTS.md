@@ -5,10 +5,11 @@ folders (`pending/ → ready/ → active/ → completed/`) as deps clear.
 
 ## Active
 
-| Plan               | Concern                                                                                                                                                | Lead                             |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
-| `corpus-hardening` | Post-founding refinement: the idea-corpus cite-once sweep, crystallizing the projection insights this work proved, propagating + protecting the result | Nico (+ Mav for machinery/infra) |
-| `memory-model-redesign` | Collapse the fragmented memory-management constitution into one `memory` home + integrate the Operator's JSONL-portable-episodic design (type→organ, scope→instance; one person across the fleet) | Nico (model) + Mav (machinery) |
+| Plan                             | Concern                                                                                                                                                                                                | Lead                                     |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| `corpus-hardening`               | Post-founding refinement: the idea-corpus cite-once sweep, crystallizing the projection insights this work proved, propagating + protecting the result                                                 | Nico (+ Mav for machinery/infra)         |
+| `memory-model-redesign`          | Collapse the fragmented memory-management constitution into one `memory` home + integrate the Operator's JSONL-portable-episodic design (type→organ, scope→instance; one person across the fleet)      | Nico (model) + Mav (machinery)           |
+| `repo-structure-firstprinciples` | First-principles directory/package-structure review + de-palimpsest spec (collapse koine, extract episodic, flatten `packages/*`); **planning only** — the execution spec, gated on two Operator forks | Mav (structure/build); Nico signs naming |
 
 ## Retired
 
