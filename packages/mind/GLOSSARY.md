@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 151 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 152 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Principles
 
@@ -178,6 +178,7 @@ _composite capabilities._
 - **handoff** — use this skill to prepare a session for handoff before /clear — bring the plan's record up to date (praxis sync) and consolidate memory (dream) while context is still hot; the persist half of the session boundary, invocable as /handoff.
 - **materialize** — use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization `F_R`, emit the bipartite normal form `CSF_R` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.
 - **praxis** — Create and work durable, sharded plans (sharded-plan-layout dirs) — reached by planning intent, not a command grammar; task state is the folder a task-file sits in (pending/ready/active/completed), PLAN.md mirrors it, and `list` is the one explicit affordance.
+- **prior-probe** — use this skill to probe a signifier — read out the latent priors a word, phrase, or candidate name fires in the reader (`fired_R`, signify's decoder `dec_R` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of signify, for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through /signify.
 - **signify** — use this skill to name a concept set — assign each concept its injective anchor `α` (the densest name whose latent priors circumscribe it; one name ⇔ one concept), the shortlex order `≺` over anchored concepts, and the reader's decoder `dec_R` (the distinctions an anchor fires); stage 2 of exemplify, independently invocable (every naming review is a bare /signify).
 - **wake** — use this skill to reconstitute an agent at session start — run the memory home's WAKE sequence (dream → load → orient → resume) so it resumes as the same individual; the read-and-resume counterpart to /dream, invocable as /wake.
 - **weitermachen** — use this skill when the Operator utters the re-dispatch word — "weitermachen", "carry on", "proceed" — closing a check-in and returning you to execution; standing intent unchanged, execution authority re-affirmed, no fresh permission owed.
