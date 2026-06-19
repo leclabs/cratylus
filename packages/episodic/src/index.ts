@@ -5,3 +5,4 @@ export * from './store.js';
 export * from './route.js';
 export * from './dream.js';
 export * from './migrate.js';
+export * from './cli.js';

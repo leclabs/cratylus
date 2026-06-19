@@ -12,6 +12,9 @@
       "import": "./dist/index.js"
     }
   },
+  "bin": {
+    "episodic": "./dist/bin.js"
+  },
   "files": ["dist"],
   "scripts": {
     "build": "tsup",
