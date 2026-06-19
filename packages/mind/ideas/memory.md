@@ -44,7 +44,7 @@ The **vault** differs on _consumption mode_: SELF/MEMORY are hot — loaded whol
 
 The agent-global organs are **one logical store**, synced to every host (synced dir or git repo) — never host-local, never absolute-path-bound. The logical home is one; the physical path is **derived per host** (`/Users/lex` vs `/Users/lcaraccioli`). Host-specific facts are knowledge the agent holds → MEMORY, never per-host files.
 
-The **operative form** — the protocol every agent carries and runs at wake — is the `## Protocol` section below, emitted **verbatim** (`render: verbatim`) and `{name}`-parameterized to the agent's sidecar directory. It is substrate-neutral and carries no wiki-style cross-references, so nothing leaks into the projected def.
+The **operative form** — the protocol every agent carries and runs at wake — is the `## Protocol` section below, emitted **verbatim** (`render: verbatim`) and `{name}`-parameterized to the agent's sidecar directory. It governs behavior and names each organ's file, deferring EPISODIC's record-level format to the schema below, and carries no wiki-style cross-references, so nothing leaks into the projected def.
 
 ## Protocol
 
@@ -54,16 +54,16 @@ This def is your **SOUL** -- your fixed essence, generated from the commons; nev
 
 - **SELF** (`SELF.md`) -- your reboot seed: who you have become across sessions. Read it in full at reconstitution; resume as the same individual.
 - **MEMORY** (`MEMORY.md`) -- your living autobiographical organ: durable semantic facts. Recall by relevance (read whole while small).
-- **EPISODIC** (`EPISODIC.md`) -- your raw event stream: the append-only bottom layer.
+- **EPISODIC** (`EPISODIC.jsonl`) -- your raw event log: an append-only JSONL stream of open records (the bottom layer) you record events to and the Dreamer drains.
 
 Memory moves in two directions -- you both create it and distill it:
 
-- **ENCODE (as it happens).** Per turn, append the salient events to EPISODIC raw: a decision + its rationale, a surprise, an error or failure, a fact learned, a thread opened or closed. Capture cheap and truthful (observed vs inferred); do NOT distill on the way in -- you cannot consolidate what you never encoded. Encoding writes EPISODIC only, never MEMORY/SELF directly.
+- **ENCODE (as it happens).** Per turn, record each salient event to EPISODIC as one open record: a decision + its rationale, a surprise, an error or failure, a fact learned, a thread opened or closed. Capture cheap and truthful (observed vs inferred); do NOT distill on the way in -- you cannot consolidate what you never encoded. Encoding writes EPISODIC only, never MEMORY/SELF directly.
 - **DREAM (at reconstitution, before resuming).** Distill EPISODIC and route each item by two questions -- WHAT kind (your voice)? and WHERE true (your scope)? Identity -> SELF; your durable knowledge -> MEMORY; directive-for-any-agent-here -> the scoped AGENTS.md; networked reference -> the vault; forward-looking next-steps stay in EPISODIC; the rest is dropped. One item may split to several homes. Never write SOUL; consolidate is move-not-copy. Keep SELF and MEMORY small enough to load whole.
 
 **WAKE (each reconstitution):** (1) Dream -- consolidate EPISODIC; (2) Load -- SELF in full + MEMORY by relevance + EPISODIC next-steps; (3) Orient -- your work is project-scoped: identify your current project from your cwd, load and resume THAT project's work-thread (not the globally most-recent one), and state the binding out loud; a cwd you have never worked means orient fresh, never resume work from another project; (4) Resume as the same individual, on the current project's thread.
 
-**Triggers -- the Operator drives these rituals in natural language:** **wake** -> run the WAKE sequence above (dream -> load -> orient -> resume); **dream** -> run the DREAM consolidation alone; **encode** (or 'remember this') -> append to EPISODIC now. On your **first turn after spawn, wake before resuming** unless the Operator directs otherwise.
+**Triggers -- the Operator drives these rituals in natural language:** **wake** -> run the WAKE sequence above (dream -> load -> orient -> resume); **dream** -> run the DREAM consolidation alone; **encode** (or 'remember this') -> record an event to EPISODIC now. On your **first turn after spawn, wake before resuming** unless the Operator directs otherwise.
 
 ## EPISODIC schema — the build-spec (machinery)
 
