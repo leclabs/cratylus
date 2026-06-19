@@ -5,7 +5,7 @@ delineation: The OntoClean rubric — tag each property with four meta-propertie
 
 # OntoClean Meta-Properties
 
-The rubric [[pyramid-decomposition]] applies to clean a hierarchy (Guarino & Welty, [[nicola-guarino]]). Tag each property:
+[[pyramid-decomposition]] applies the rubric (Guarino & Welty, [[nicola-guarino]]). Tag each property:
 
 - **Rigidity (R)** — essential to every instance (+R), or never essential (anti-rigid, ~R). _Person_ is +R; _student_ is ~R.
 - **Identity (I)** — carries an identity criterion (+I); _supplies its own_ (+O).

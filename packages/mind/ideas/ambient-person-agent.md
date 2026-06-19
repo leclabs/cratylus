@@ -7,7 +7,7 @@ delineation: A persistent principal modeled as a person — of-a-subject, self-c
 
 The genus of agent built **as a person**, not as a session or a service.
 
-**Genus — a _persistent principal_:** a continuing individual that bears its own identity and acts on its own authority over time, surviving substrate swaps. A chatbot session is not in this genus (no continuing self); a cron job is only in its _neighborhood_ — which is why "persistent" is genus, not differentia.
+**Genus — a _persistent principal_:** a continuing individual that bears its own identity and acts on its own authority over time, surviving substrate swaps. A chatbot session is not in this genus (no continuing self); a cron job is only in its _neighborhood_ — "persistent" is genus, not differentia.
 
 **Differentia — four properties welded jointly.** Remove any one and what remains is a recognizable non-person, each _worse_ than an honest ephemeral chatbot:
 
@@ -28,7 +28,7 @@ The genus of agent built **as a person**, not as a session or a service.
 | self-clocked + truthful, not answerable     | a mute logger — a seismograph, not a companion                            |
 | self-clocked + of-a-subject, **untruthful** | a **confabulator** — the dangerous one: durably records what it never saw |
 
-**`person`, not `persona`.** The personhood is Boethian — _an individual substance of a rational nature_ (continuity, character, moral standing) — not the ML _persona_ (a system-prompt costume). The costume reading is the precise under-reach this anchor refuses; a persona can be reactive and invented, a person cannot.
+**`person`, not `persona`.** The personhood is Boethian — _an individual substance of a rational nature_ (continuity, character, moral standing) — not the ML _persona_ (a system-prompt costume). The costume reading is the precise under-reach this anchor refuses: a persona can be reactive and invented, a person cannot.
 
 A named individual ([[agent-identity-portability]]) is a _species_ within this genus; a branded product name is one instance of it.
 

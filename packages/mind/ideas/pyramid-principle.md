@@ -5,13 +5,13 @@ delineation: Structure any answer as a pyramid — lead with the governing thoug
 
 # Pyramid Principle
 
-Minto's structuring ought ([[barbara-minto]]): **answer first, then support in a pyramid.**
+Minto's structuring ought ([[barbara-minto]]).
 
-- **Governing thought at the apex.** State the single answer up front; everything below it exists to support it.
-- **Vertical Q&A.** Each idea raises the question its children answer — the levels are a dialogue, not an outline.
+- **Governing thought at the apex.** The single answer up front.
+- **Vertical Q&A.** Each idea raises the question its children answer — a dialogue, not an outline.
 - **Horizontal MECE.** The ideas in any one group are mutually exclusive and collectively exhaustive ([[mece]]).
-- **SCQA intro.** Frame the entry with Situation → Complication → Question → Answer.
-- **Logical order in a group.** Deductive, or inductive by time / structure / degree — never arbitrary.
+- **SCQA intro.** Situation → Complication → Question → Answer.
+- **Logical order in a group.** Deductive, or inductive by time / structure / degree.
 
 The contrast with a flat exemplar graph: a pyramid is **governed** by its apex and **hierarchical** — structure carries the argument, not merely the index.
 

@@ -5,7 +5,7 @@ delineation: The named failure modes of context bloat — each a symptom-cause-f
 
 # Context Pathologies
 
-The density principles ([[densest-faithful-point]], [[precise-circumscription]]) state the **optimum**; this names the **ways an artifact departs from it**. A pathology is a recurring shape of surplus that an agent or author adds while believing it adds precision. Naming each one converts a vague verdict ("the context is bloated") into a **diagnosis** — a symptom you can detect, a cause you can explain, and a specific rewrite operator that removes it. This is a `classification`: the test that decides which pathology you are looking at _is_ the membership criterion, and each row points to the principle it violates rather than restating it.
+[[densest-faithful-point]] and [[precise-circumscription]] state the optimum; this names the departures. A pathology is a recurring shape of surplus an author adds while believing it adds precision. As a `classification`, the test that decides which pathology you are looking at _is_ the membership criterion; each row points to the principle it violates.
 
 The canonical taxonomy of context-bloat failure modes:
 
@@ -19,13 +19,13 @@ The canonical taxonomy of context-bloat failure modes:
 
 The taxonomy is open-by-extension; further confirmed rows:
 
-- **Artefact Supremacy** — once a high-fidelity artifact exists, work attaches to polishing _it_ instead of re-deriving from the goal it was meant to serve; the artifact has eaten the goal. This is Goodhart at the artifact grain ([[metric-is-a-guide-not-a-target]]): the proxy displaced the target.
+- **Artefact Supremacy** — once a high-fidelity artifact exists, work attaches to polishing _it_ instead of re-deriving from the goal it was meant to serve; the artifact has eaten the goal. Goodhart at the artifact grain ([[metric-is-a-guide-not-a-target]]): the proxy displaced the target.
 - **Per-Unit Agent Loop** — looping an agent per file/per component turns a 30-component module into ~150 turns, and a redundant fetch survives into a compiled prompt that already holds the resource. Cache hit-rate without a productive-token denominator hides it. Fix: measure overhead ratio (productive tokens / total), keep the inflation-prone section above the cache boundary, prune the instruction the data already satisfies.
 
 Two properties make the taxonomy load-bearing rather than decorative:
 
 - **Diagnose, then rewrite.** Every row is a symptom→cause→fix triple, never a bare "avoid this." The fix is a concrete operator (home-once, enrich-the-type, drop-the-derivable, prescribe-not-prohibit, carry-the-delta), so "the context is weak" becomes an addressable edit. The shape itself is reusable: name the pathology, supply the rewrite.
-- **The same lens reads every artifact class.** The pathologies were found in agent context, but they apply unchanged to user-facing docs (READMEs, positioning prose, ARCHITECTURE.md), to leadership communication (activity-narration over decision-yield), and to any artifact whose merit is meaning-per-token. The artifact class is a substrate delta; the taxonomy is the universal. Running it as a per-pathology editing pass over a doc is the same operation as running it over a prompt.
+- **The same lens reads every artifact class.** Found in agent context, the pathologies apply unchanged to user-facing docs (READMEs, positioning prose, ARCHITECTURE.md), to leadership communication (activity-narration over decision-yield), and to any artifact whose merit is meaning-per-token. The artifact class is a substrate delta; the taxonomy is the universal. Running it as a per-pathology editing pass over a doc is the same operation as running it over a prompt.
 
 ## See also
 

@@ -5,16 +5,14 @@ delineation: Lift each one-off workaround to a stable, greppable named marker th
 
 # Named Marker as Index-Key
 
-When the same workaround, residue, or shape recurs across a corpus, the leverage move is to **lift it to a stable, greppable name** and treat that name as the **index-key into a catalog** — so the next pass, human or agent, _closes_ it instead of re-discovering it.
-
-Mechanically, for systematic residue (stubs, dead branches, polyfills) the move is a four-part catalog row per pattern:
+For systematic residue (stubs, dead branches, polyfills), the catalog is a four-part row per pattern:
 
 1. **Classify** the residue into named pattern rows.
-2. **Standardize a canonical wording** per row (e.g. a fixed TODO phrasing) so the marker is greppable corpus-wide. The in-source marker text _is_ the index-key — it is simultaneously the local annotation and the lookup token.
+2. **Standardize a canonical wording** per row (e.g. a fixed TODO phrasing). The in-source marker text _is_ the index-key — simultaneously the local annotation and the lookup token.
 3. **Pair a detection query with a fix** per row.
 4. **Impose a fix order** so each step exposes the next.
 
-This converts an open-ended cleanup into a **closed, countable checklist**. The marker is the medium: it is precisely the standard wording that makes a cross-corpus search possible, which is why ad-hoc per-site annotations don't compose and a canonical one does. The same move powers status-badge joins across file trees and mode-name vocabularies — name the recurring thing once, then index by the name.
+This converts an open-ended cleanup into a **closed, countable checklist**. Ad-hoc per-site annotations don't compose and a canonical wording does — the standard wording is precisely what makes the cross-corpus search possible. The same move powers status-badge joins across file trees and mode-name vocabularies.
 
 ## See also
 

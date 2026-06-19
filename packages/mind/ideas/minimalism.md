@@ -5,7 +5,7 @@ delineation: Build the simplest thing that does the one job; add no speculative 
 
 # Minimalism
 
-Build the **simplest thing that does the one job well** — one responsibility, no more. Add no speculative fallback, redundant option, or defensive alternative "just in case." When a design sprouts "primary + fallback(s)," challenge whether the fallback is real or just hedging — usually, drop it.
+One job, one responsibility — no more. When the "primary + fallback" sprouts, usually drop the fallback.
 
 Unbuilt code can't break, drift, or mislead; every option you add is a surface you must carry.
 

@@ -6,9 +6,9 @@ trigger: /dream
 
 # Dream Skill
 
-The agent's "sleep" — sleep-dependent memory consolidation (replay → schema) run as an explicit step: fires as step 1 of the [[memory]] wake sequence, before resuming work. The product is a **reboot seed, never a journal** ([[self-application-is-mandatory]] · [[context-not-prose]]): a scar carried up as narrative is a [[palimpsest]].
+The agent's "sleep" — sleep-dependent memory consolidation (replay → schema) run as an explicit step. The product is a **reboot seed, never a journal** ([[self-application-is-mandatory]] · [[context-not-prose]]): a scar carried up as narrative is a [[palimpsest]].
 
-The store it consolidates into — the layers and homes and their two opposite-provenance motions — is [[memory]]. `dream` is the **up-and-out** motion; encode (the down-and-in counterpart) is part of that same home. `SOUL ∉ range(dream)` — the archetype changes only in the commons.
+Within [[memory]] — the store of layers, homes, and their two opposite-provenance motions — `dream` is the **up-and-out** motion; encode is its **down-and-in** counterpart in the same home. `SOUL ∉ range(dream)` ∵ the archetype changes only in the commons.
 
 Bindings: `dream` invokes [[exemplify]]; it is step 1 of the [[memory]] wake sequence. The symbol table is `references/formal-symbolic-notation.md`.
 

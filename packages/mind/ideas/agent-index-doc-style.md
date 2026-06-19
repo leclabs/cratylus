@@ -5,7 +5,7 @@ delineation: The per-file style floor for an agent-targeted index doc (AGENTS.md
 
 # Agent Index-Doc Style
 
-The style floor for an agent-targeted index doc (`AGENTS.md`, `CLAUDE.md`): agent-compression in the agent register ([[context-not-prose]]), not human prose.
+The style floor for an agent-targeted index doc (`AGENTS.md`, `CLAUDE.md`): agent-compression in the agent register ([[context-not-prose]]).
 
 - Keep required preambles verbatim (e.g. the standard `/init` header).
 - Lead each section with the fact; drop transitional prose; compact bullets and inline parentheticals over paragraphs ([[densest-faithful-point]]).

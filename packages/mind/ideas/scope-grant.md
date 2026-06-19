@@ -5,15 +5,13 @@ delineation: A grant `grant @<agent> [[<exemplar>]] on <path>` binds a universal
 
 # Scope Grant
 
-A **grant** binds a universal exemplar (a commons cell) to an agent within a bounded scope:
-
 ```
 grant @<agent> [[<exemplar>]] on <path>
 ```
 
-- **It is an accident, not substance.** The grant determines the agent _here_; it never mutates the archetype ([[substance-over-accident]]). The same agent in another scope without the grant is the same agent by substance.
-- **It lives at the boundary.** A grant is declared in the scope's `AGENTS.md`, never in the commons cell it references — the commons stays universal ([[cite-dont-copy]]).
-- **It composes by reference.** The grant cites the exemplar by `[[ ]]`; it loads the exemplar's latent priors, it does not restate them.
+- **Accident, not substance.** The same agent in another scope without the grant is the same agent by substance ([[substance-over-accident]]).
+- **At the boundary.** Declared in the scope's `AGENTS.md`, never in the commons cell it references ([[cite-dont-copy]]).
+- **By reference.** The `[[ ]]` cite loads the exemplar's latent priors; it does not restate them.
 
 Read `grant @bona [[principal-agency]] on ./mind/*` as: within `./mind/*`, bona acts under principal-agency — a scoped disposition that does not travel with bona's kernel.
 
