@@ -53,18 +53,27 @@ const HTML_COMMENT_OPEN = '<!--';
 const HTML_COMMENT_CLOSE = '-->';
 const HEADING = /^##\s+(.*\S)\s*$/;
 const BULLET = /^[-*]\s+\S/;
+// A fenced-code delimiter (``` or ~~~, up to 3 spaces of indent, optional info).
+// Inside a fence, a column-0 `## ` or `- ` is code, NOT a heading/bullet.
+const FENCE = /^ {0,3}(`{3,}|~{3,})/;
 
 /**
- * Parse EPISODIC.md markdown into its ordered list of memory items. The single
- * source of truth for "what counts as content" — both {@link migrateMarkdown}
- * and {@link assertNoLoss} call this, so the converter and its proof can never
- * disagree about what an item is.
+ * Parse EPISODIC.md markdown into its ordered list of memory items, in document
+ * order. The definition of "what counts as content"; {@link migrateMarkdown}
+ * converts what it returns and {@link assertNoLoss}'s round-trip leg checks
+ * against it (a second, independent leg guards against this parser regressing).
+ *
+ * `section` is the `## ` heading an item lived under — a **label, not a unique
+ * key**: a file with two identically-titled sections yields items sharing a
+ * `section` string. Order is positional, so they still reconstruct in document
+ * order; downstream must not treat `section` as a primary key.
  */
 export function extractItems(markdown: string): EpisodicItem[] {
   const lines = markdown.split('\n');
   const items: EpisodicItem[] = [];
   let section: string | null = null; // null until the first `## ` — preamble is scaffolding
   let inComment = false;
+  let inFence = false;
   let buf: string[] = [];
 
   const flush = (): void => {
@@ -80,6 +89,20 @@ export function extractItems(markdown: string): EpisodicItem[] {
   };
 
   for (const line of lines) {
+    // Fenced code is opaque: a fence delimiter toggles the block, and while open
+    // every line is verbatim continuation of the current item — never a heading,
+    // bullet, or comment boundary. Checked FIRST so nothing inside a fence is
+    // misread (the blind spot assertNoLoss's round-trip leg could not catch).
+    if (FENCE.test(line)) {
+      buf.push(line);
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) {
+      buf.push(line);
+      continue;
+    }
+
     // HTML comment spans (possibly multi-line) are scaffolding — skip wholesale.
     if (inComment) {
       if (line.includes(HTML_COMMENT_CLOSE)) inComment = false;
@@ -146,11 +169,56 @@ export function recordsToItems(
   });
 }
 
+/** Non-blank lines of a blob, in order — the unit the independent leg counts. */
+function nonBlankLines(s: string): string[] {
+  return s.split('\n').filter((l) => l.trim().length > 0);
+}
+
 /**
- * Prove the conversion lost nothing: the items recovered from `records` must
- * equal, in order and content, the items {@link extractItems} finds in
- * `markdown`. Throws with the first divergence. This is the no-loss gate the
- * migration runs *before* it writes anything.
+ * Independent no-loss leg: every non-blank line the `items` carry must be a line
+ * of `markdown`, no more often than `markdown` contains it. Does NOT call
+ * {@link extractItems}, so it catches a parser regression that fabricates or
+ * duplicates content even when the round-trip leg (which shares the parser)
+ * would pass. (It cannot detect a *dropped* content line — an absent line is
+ * indistinguishable from intentionally-dropped scaffolding without re-parsing.)
+ */
+export function assertLinesFromSource(
+  markdown: string,
+  items: readonly EpisodicItem[],
+): void {
+  const sourceCounts = new Map<string, number>();
+  for (const l of nonBlankLines(markdown)) {
+    sourceCounts.set(l, (sourceCounts.get(l) ?? 0) + 1);
+  }
+  const itemCounts = new Map<string, number>();
+  for (const it of items) {
+    for (const l of nonBlankLines(it.text)) {
+      itemCounts.set(l, (itemCounts.get(l) ?? 0) + 1);
+    }
+  }
+  for (const [line, n] of itemCounts) {
+    if (n > (sourceCounts.get(line) ?? 0)) {
+      throw new Error(
+        `EPISODIC migration fabricated or duplicated a line absent from source (${n} > ${sourceCounts.get(line) ?? 0}): ${JSON.stringify(line)}`,
+      );
+    }
+  }
+}
+
+/**
+ * Prove the conversion lost nothing, with **two legs**:
+ *
+ *  1. *Round-trip leg* — the items recovered from `records` equal, in order and
+ *     content, the items {@link extractItems} finds in `markdown`. This shares
+ *     `extractItems`, so it proves the records faithfully encode whatever the
+ *     parser returned — not that the parser read the markdown correctly.
+ *  2. *Independent leg* — does NOT reuse `extractItems`: every non-blank line a
+ *     record carries must be a real source line, and no more often than the
+ *     source contains it. This catches fabrication or duplication (e.g. a parser
+ *     regression inventing content or a phantom section) that leg 1 cannot see.
+ *
+ * Together the gate is sound rather than merely self-consistent. Runs *before*
+ * the migration writes anything.
  */
 export function assertNoLoss(
   markdown: string,
@@ -172,6 +240,7 @@ export function assertNoLoss(
       );
     }
   }
+  assertLinesFromSource(markdown, round); // leg 2 — independent of extractItems
 }
 
 /**

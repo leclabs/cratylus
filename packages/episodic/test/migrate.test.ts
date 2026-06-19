@@ -3,6 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
+  assertLinesFromSource,
   assertNoLoss,
   extractItems,
   migrateFile,
@@ -71,6 +72,26 @@ describe('extractItems', () => {
   it('returns nothing for markdown with no ## sections', () => {
     expect(extractItems('# title\n\njust preamble, no sections\n')).toEqual([]);
   });
+
+  it('treats a column-0 ## or - inside a code fence as code, not a boundary', () => {
+    const md = [
+      '## Stream',
+      '',
+      '- item with a fenced snippet:',
+      '  ```sh',
+      '## not-a-heading',
+      '- not-a-bullet',
+      '  ```',
+      '- second real item',
+    ].join('\n');
+    const items = extractItems(md);
+    // Two real items; the fenced ## / - did NOT fabricate a section or split.
+    expect(items).toHaveLength(2);
+    expect(items.every((i) => i.section === 'Stream')).toBe(true);
+    expect(items[0]?.text).toContain('## not-a-heading');
+    expect(items[0]?.text).toContain('- not-a-bullet');
+    expect(items[1]?.text).toBe('- second real item');
+  });
 });
 
 describe('migrateMarkdown', () => {
@@ -121,6 +142,23 @@ describe('assertNoLoss', () => {
       body: { ...(r.body as object), text: 'mutated' },
     }));
     expect(() => assertNoLoss(SAMPLE, tampered)).toThrow(/diverged at item/);
+  });
+
+  it('independent leg (assertLinesFromSource) flags a line absent from source', () => {
+    // Simulates a future parser regression: an item carrying a fabricated line.
+    // This leg does not call extractItems, so it catches what the round-trip leg
+    // (which shares the parser) cannot.
+    const fabricated = [
+      { section: 'Stream', text: '- a line that never appeared in the source' },
+    ];
+    expect(() => assertLinesFromSource(SAMPLE, fabricated)).toThrow(
+      /fabricated or duplicated/,
+    );
+  });
+
+  it('independent leg passes for a faithful migration', () => {
+    const items = extractItems(SAMPLE);
+    expect(() => assertLinesFromSource(SAMPLE, items)).not.toThrow();
   });
 });
 

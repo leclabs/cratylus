@@ -93,6 +93,7 @@ usage:
   episodic migrate <src.md> <dest.jsonl> [--dry-run] [--overwrite]
 
 EPISODIC is a JSONL event log: encode mints a ULID and appends one open record.
+For a body that starts with "--", use --body=<text> or pipe via --body -.
 `;
 
 /** `encode`: mint a ULID and append one open record; print the new id. */
@@ -103,7 +104,15 @@ function runEncode(args: ParsedArgs): CliResult {
   const bodyJson = str(args.flags['body-json']);
   const bodyText = args.flags.body;
   if (bodyJson !== undefined) {
-    body = JSON.parse(bodyJson) as JsonValue;
+    try {
+      body = JSON.parse(bodyJson) as JsonValue;
+    } catch {
+      return {
+        code: 2,
+        out: '',
+        err: `--body-json is not valid JSON: ${bodyJson}\n`,
+      };
+    }
   } else if (bodyText === '-' || bodyText === true) {
     body = readStdin().replace(/\n$/, '');
   } else if (typeof bodyText === 'string') {
