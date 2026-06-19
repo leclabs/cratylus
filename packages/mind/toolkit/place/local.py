@@ -46,20 +46,27 @@ def place_agents(claude_dir: pathlib.Path, defs_dir: pathlib.Path,
 
 def place_skills(claude_dir: pathlib.Path, skills_src: pathlib.Path,
                  names: list[str], dry: bool) -> int:
-    """Copy <skills_src>/<name>/SKILL.md -> <claude_dir>/skills/<name>/SKILL.md.
-    Skills are generated substance with no sidecars -- overwrite freely."""
+    """Copy <skills_src>/<name>/ -> <claude_dir>/skills/<name>/ -- SKILL.md plus
+    any staged companion assets beside it (byte-for-byte, binary-safe). Skills
+    are generated substance with no sidecars -- overwrite freely. A skill with no
+    assets ships exactly its SKILL.md (the common case, unchanged)."""
     dest_root = claude_dir / "skills"
     copied = 0
     for name in names:
-        src = skills_src / name / "SKILL.md"
-        if not src.exists():
-            print(f"  WARN  no SKILL.md for {name} at {src}", file=sys.stderr)
+        src_dir = skills_src / name
+        if not (src_dir / "SKILL.md").exists():
+            print(f"  WARN  no SKILL.md for {name} at {src_dir / 'SKILL.md'}",
+                  file=sys.stderr)
             continue
-        dest = dest_root / name / "SKILL.md"
+        dest_dir = dest_root / name
+        files = sorted(f for f in src_dir.iterdir() if f.is_file())
         if not dry:
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_text(src.read_text(encoding="utf-8"), encoding="utf-8")
+            dest_dir.mkdir(parents=True, exist_ok=True)
+            for f in files:
+                (dest_dir / f.name).write_bytes(f.read_bytes())
         copied += 1
-        print(f"  skill {name} -> {dest}")
+        extra = [f.name for f in files if f.name != "SKILL.md"]
+        tail = f" (+{len(extra)} asset{'' if len(extra) == 1 else 's'})" if extra else ""
+        print(f"  skill {name} -> {dest_dir}/SKILL.md{tail}")
     print(f"  skills copied: {copied}")
     return 0

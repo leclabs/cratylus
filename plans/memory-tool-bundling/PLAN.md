@@ -26,11 +26,7 @@ fixes the *packaging topology* that rollout exposed. (Praxis sync owed on the pa
 
 ## Frontier
 
-- **skill-companion-deploy** · **Mav** — READY. Teach the toolkit to deploy a skill's
-  companion assets (today `place_skills` copies only `SKILL.md`). 3 sites: `core/cells.py`
-  reader (accept dir-form cells), `place/local.py` + `place/ssh.py` placers. Golden-master:
-  the 11 existing skills deploy byte-identical.
-- **episodic-toolsource-bundle** · **Mav** — READY (parallel). Retire
+- **episodic-toolsource-bundle** · **Mav** — READY. Retire
   `@leclabs/koine-episodic` as an npm package; keep its TS source + test suite as a private
   build-only origin; add an esbuild step → one dependency-free `episodic.mjs`. Correctness
   code (atomic `compact`, two-leg `assertNoLoss`) stays tested.
@@ -49,4 +45,6 @@ fixes the *packaging topology* that rollout exposed. (Praxis sync owed on the pa
 
 ## Completed
 
-_(none yet.)_
+- **skill-companion-deploy** · Mav — toolkit now deploys a skill's companion assets (dir-form
+  cells + `assets:` front-matter + whole-dir placers). Golden master: 10 skills byte-identical,
+  zero stray; `verify.py` PASS; `test_place.py` added.

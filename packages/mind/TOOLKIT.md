@@ -37,7 +37,7 @@ ideas/<slug>.md
 ## Projected kinds
 
 - **agent** → `.claude/agents/<name>.md`, plus its self-authored `<name>/{SELF,MEMORY,EPISODIC}.md` layers ([[dream]]). The def is the **SOUL** — generated substance, re-emitted freely; the layers are self-authored, seeded if-absent and never clobbered ([[substance-over-accident]]). Join key is the name ([[named-marker-as-index-key]]).
-- **skill** → `.claude/skills/<name>/SKILL.md`. Intent-routed; no sidecars.
+- **skill** → `.claude/skills/<name>/SKILL.md`. Intent-routed; no sidecars. A skill may **bundle companion assets** (scripts/binaries its runtime needs): a dir-form cell `ideas/<name>/<name>.md` declares them in front-matter `assets:` (comma-separated), and they deploy beside `SKILL.md` so the skill's runtime arm travels with it to every host — invoked at `~/.claude/skills/<name>/<asset>`. A flat cell with no assets ships exactly its `SKILL.md` (the common case).
 
 ## glossary.py — the second projector
 

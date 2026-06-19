@@ -88,11 +88,31 @@ def refs_in_prose(body: str) -> list[str]:
     return out
 
 
+def cell_dir(slug: str) -> pathlib.Path | None:
+    """The source directory of a dir-form cell `ideas/<slug>/` (body at
+    `<slug>/<slug>.md`, companion assets beside it), or None for a flat cell.
+    A cell is promoted to dir-form ONLY to carry assets; flat stays the default."""
+    d = IDEAS / slug
+    return d if (d / f"{slug}.md").exists() else None
+
+
+def cell_path(slug: str) -> pathlib.Path:
+    """The cell's body file: flat `ideas/<slug>.md`, else dir-form
+    `ideas/<slug>/<slug>.md`. Flat takes precedence; a missing cell resolves to
+    the flat path so the read raises a clear FileNotFoundError naming it."""
+    flat = IDEAS / f"{slug}.md"
+    if flat.exists():
+        return flat
+    d = cell_dir(slug)
+    return d / f"{slug}.md" if d is not None else flat
+
+
 def parse_cell(slug: str) -> dict:
-    """Read ideas/<slug>.md into {slug, fm, body}. A well-formed cell is
-    `---\\nfront\\n---\\nbody`; an opening `---` with no close is malformed and
-    the whole text is treated as body (no front-matter)."""
-    path = IDEAS / f"{slug}.md"
+    """Read a cell (flat `ideas/<slug>.md` or dir-form `ideas/<slug>/<slug>.md`)
+    into {slug, fm, body}. A well-formed cell is `---\\nfront\\n---\\nbody`; an
+    opening `---` with no close is malformed and the whole text is treated as
+    body (no front-matter)."""
+    path = cell_path(slug)
     text = path.read_text(encoding="utf-8")
     fm: dict = {}
     body = text
@@ -163,12 +183,19 @@ def delineation(slug: str) -> str:
 
 
 def corpus_slugs() -> list[str]:
-    """Every real anchor slug in the corpus, sorted -- the `ideas/*.md` stems
-    minus the non-anchor docs (AGENTS.md, CLAUDE.md)."""
-    return [
-        p.stem for p in sorted(IDEAS.glob("*.md"))
+    """Every real anchor slug in the corpus, sorted -- the flat `ideas/*.md`
+    stems plus dir-form cells `ideas/<slug>/<slug>.md`, minus the non-anchor docs
+    (AGENTS.md, CLAUDE.md). A directory under ideas/ that holds no `<dir>/<dir>.md`
+    body (e.g. graphify-out) is not a cell and is skipped."""
+    flat = [
+        p.stem for p in IDEAS.glob("*.md")
         if p.stem != "AGENTS" and p.name != "CLAUDE.md"
     ]
+    dir_form = [
+        d.name for d in IDEAS.iterdir()
+        if d.is_dir() and (d / f"{d.name}.md").exists()
+    ]
+    return sorted(set(flat) | set(dir_form))
 
 
 def slugs_of_kind(kind: str) -> list[str]:

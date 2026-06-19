@@ -1,6 +1,15 @@
 # skill-companion-deploy
 
-**Owner.** Mav. **Deps.** none. **State: READY.**
+**Owner.** Mav. **Deps.** none. **State: COMPLETED.**
+
+**Done.** Dir-form cells (`cells.cell_dir`/`cell_path`; `parse_cell`+`corpus_slugs` read
+flat-or-dir, flat-first); `resolve._stage_assets` copies front-matter `assets:` into
+`.render/skills/<name>/`; both placers (`local.py`/`ssh.py`) ship the whole staged skill dir.
+`test_place.py` green; **empirical golden master: all 10 skills deploy byte-identical, exactly
+`SKILL.md`, zero stray** (ASSET lines = 0, no cell declares assets yet); `corpus_slugs` steady
+at 151 (graphify-out excluded); `verify.py` PASS; no new regression (the one suite red,
+`test_harness_projection`, is pre-existing Nico corpus churn — confirmed via stash). TOOLKIT.md
+documents the convention + host path `~/.claude/skills/<name>/<asset>`.
 
 **What.** Teach the mind toolkit to deploy a skill's *companion assets* (scripts/binaries
 beside its `SKILL.md`), so a skill's runtime arm can ride along to every host. This is a

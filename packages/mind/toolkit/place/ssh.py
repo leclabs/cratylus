@@ -88,8 +88,9 @@ def place_agents(user: str, host: str, home: str, defs_dir: pathlib.Path,
 
 def place_skills(user: str, host: str, home: str, skills_src: pathlib.Path,
                  names: list[str], dry: bool) -> int:
-    """Ship <skills_src>/<name>/SKILL.md -> <remote>/.claude/skills/<name>/SKILL.md.
-    Skills are generated substance with no sidecars -- overwrite freely."""
+    """Ship <skills_src>/<name>/ -> <remote>/.claude/skills/<name>/ -- SKILL.md
+    plus any staged companion assets beside it. Skills are generated substance
+    with no sidecars -- overwrite freely."""
     target = f"{user}@{host}"
     claude_dir, rc = _resolve_claude_dir(target, home, dry)
     if claude_dir is None:
@@ -97,18 +98,27 @@ def place_skills(user: str, host: str, home: str, skills_src: pathlib.Path,
     skills_dir = f"{claude_dir}/skills"
     copied = 0
     for name in names:
-        src = skills_src / name / "SKILL.md"
-        if not src.exists():
-            print(f"  WARN  no SKILL.md for {name} at {src}", file=sys.stderr)
+        src_dir = skills_src / name
+        if not (src_dir / "SKILL.md").exists():
+            print(f"  WARN  no SKILL.md for {name} at {src_dir / 'SKILL.md'}",
+                  file=sys.stderr)
             continue
         remote_dir = f"{skills_dir}/{name}"
         run(["ssh", target, f"mkdir -p {shlex.quote(remote_dir)}"], dry)
+        files = sorted(f for f in src_dir.iterdir() if f.is_file())
+        failed = False
         if not dry:
-            rc, msg = run(["scp", "-q", str(src), f"{target}:{remote_dir}/SKILL.md"], dry)
-            if rc != 0:
-                print(f"  ERR scp {name}: {msg}", file=sys.stderr)
-                continue
+            for f in files:
+                rc, msg = run(["scp", "-q", str(f), f"{target}:{remote_dir}/{f.name}"], dry)
+                if rc != 0:
+                    print(f"  ERR scp {name}/{f.name}: {msg}", file=sys.stderr)
+                    failed = True
+                    break
+        if failed:
+            continue
         copied += 1
-        print(f"  skill {name} -> {target}:{remote_dir}/SKILL.md")
+        extra = [f.name for f in files if f.name != "SKILL.md"]
+        tail = f" (+{len(extra)} asset{'' if len(extra) == 1 else 's'})" if extra else ""
+        print(f"  skill {name} -> {target}:{remote_dir}/SKILL.md{tail}")
     print(f"  skills copied: {copied}")
     return 0

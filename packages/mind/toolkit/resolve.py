@@ -170,6 +170,29 @@ def _emit_one(slug: str, target: pathlib.Path, reader: str, harness: str,
     return 0
 
 
+def _stage_assets(slug: str, dest_dir: pathlib.Path) -> None:
+    """Copy a dir-form cell's declared companion assets into its rendered skill
+    dir, so the placer ships them beside SKILL.md ([[cite-dont-copy]]: the asset
+    has one source, the cell dir; .render is a faithful staging mirror). Assets
+    are declared comma-separated in front-matter `assets:` and live beside the
+    body (`ideas/<slug>/<asset>`). Byte-for-byte copy (works for binary)."""
+    decl = cells.parse_cell(slug)["fm"].get("assets", "").strip()
+    if not decl:
+        return
+    src_dir = cells.cell_dir(slug)
+    if src_dir is None:  # `assets:` on a flat cell -- it has no dir to ship from
+        print(f"  WARN  {slug} declares assets but is not a dir-form cell",
+              file=sys.stderr)
+        return
+    for name in (a.strip() for a in decl.split(",") if a.strip()):
+        src = src_dir / name
+        if not src.exists():
+            print(f"  WARN  asset {slug}/{name} not found at {src}", file=sys.stderr)
+            continue
+        (dest_dir / name).write_bytes(src.read_bytes())
+        print(f"ASSET  {slug}/{name} -> {dest_dir / name}")
+
+
 def main() -> int:
     reader, harness, out_dir, force = parse_argv(sys.argv[1:])
     profile = f"{reader}/{harness}"
@@ -178,13 +201,15 @@ def main() -> int:
     # Agents -> out_dir (default .render/agents staging), one file per name.
     for agent in cells.slugs_of_kind("agent"):
         rc |= _emit_one(agent, out_dir / f"{agent}.md", reader, harness, profile, force)
-    # Skills -> .render/skills/<name>/SKILL.md (dir-per-skill). Only on the
-    # DEFAULT run: a custom positional out-dir is an agent-preview mode, so it
-    # neither emits skills nor funnels several profiles into one shared dir.
+    # Skills -> .render/skills/<name>/SKILL.md (dir-per-skill), plus any declared
+    # companion assets staged beside it. Only on the DEFAULT run: a custom
+    # positional out-dir is an agent-preview mode, so it neither emits skills nor
+    # funnels several profiles into one shared dir.
     if out_dir == DEFAULT_OUT:
         skills_dir = DEFAULT_OUT.parent / "skills"
         for skill in cells.slugs_of_kind("skill"):
             rc |= _emit_one(skill, skills_dir / skill / "SKILL.md", reader, harness, profile, force)
+            _stage_assets(skill, skills_dir / skill)
     return rc
 
 
