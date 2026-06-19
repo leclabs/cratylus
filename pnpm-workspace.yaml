@@ -1,8 +1,9 @@
-# koine (the projection machinery) is a Node package-group.
-# packages/mind is the culture corpus — markdown + a Python toolkit, not an npm package,
-# so it is intentionally NOT a workspace member.
+# Node workspace members live directly under packages/ (one dir = one package):
+# koine (the projection machinery) and episodic (the portable memory store).
+# packages/mind is the culture corpus — markdown + a Python toolkit, not an npm
+# package — so it has no package.json and pnpm excludes it automatically.
 packages:
-  - "packages/koine/*"
+  - "packages/*"
 
 # Native deps permitted to run install scripts. pnpm 10 reads this here, not from
 # package.json's "pnpm" field (which it now ignores).
@@ -10,7 +11,7 @@ onlyBuiltDependencies:
   - "@biomejs/biome"
   - esbuild
 
-# Shared dependency versions for koine (carried from agentir).
+# Shared dependency versions for the Node packages.
 catalog:
   typescript: ^5.7.0
   tsup: ^8.3.0

@@ -5,12 +5,12 @@ folders (`pending/ → ready/ → active/ → completed/`) as deps clear.
 
 ## Active
 
-| Plan                             | Concern                                                                                                                                                                                                | Lead                                     |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
-| `corpus-hardening`               | Post-founding refinement: the idea-corpus cite-once sweep, crystallizing the projection insights this work proved, propagating + protecting the result                                                 | Nico (+ Mav for machinery/infra)         |
-| `memory-model-redesign`          | Collapse the fragmented memory-management constitution into one `memory` home + integrate the Operator's JSONL-portable-episodic design (type→organ, scope→instance; one person across the fleet)      | Nico (model) + Mav (machinery)           |
-| `repo-structure-firstprinciples` | First-principles directory/package-structure review + de-palimpsest spec (collapse koine, extract episodic, flatten `packages/*`); **planning only** — the execution spec, gated on two Operator forks | Mav (structure/build); Nico signs naming |
-| `anchor-fidelity`                | Make "true anchor" a falsifiable gated property (CSF acceptance law: aptissimum ⇒ REC(CSF)=intent) + re-individuate the corpus under it; phase 4 is the real fresh-optimization-pass                   | Nico (model/corpus); Mav (verify.py)     |
+| Plan                             | Concern                                                                                                                                                                                                                                   | Lead                                     |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| `corpus-hardening`               | Post-founding refinement: the idea-corpus cite-once sweep, crystallizing the projection insights this work proved, propagating + protecting the result                                                                                    | Nico (+ Mav for machinery/infra)         |
+| `memory-model-redesign`          | Collapse the fragmented memory-management constitution into one `memory` home + integrate the Operator's JSONL-portable-episodic design (type→organ, scope→instance; one person across the fleet)                                         | Nico (model) + Mav (machinery)           |
+| `repo-structure-firstprinciples` | **EXECUTED + merged** — koine collapsed to one `@leclabs/koine` (core/adapters/cli → `src/`), episodic extracted to `packages/episodic/`, `packages/*` flattened, de-palimpsested; all gates green. Open: episodic `koine-` rename (Nico) | Mav (structure/build); Nico signs naming |
+| `anchor-fidelity`                | Make "true anchor" a falsifiable gated property (CSF acceptance law: aptissimum ⇒ REC(CSF)=intent) + re-individuate the corpus under it; phase 4 is the real fresh-optimization-pass                                                      | Nico (model/corpus); Mav (verify.py)     |
 
 ## Retired
 

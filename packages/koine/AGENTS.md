@@ -7,27 +7,33 @@ existing config back into the IR. Formerly developed as _agentir_.
 It is the substrate half of the founding pair (Mav's domain); the culture it carries comes from
 `packages/mind` (Nico's domain). koine itself is **client-agnostic** — it knows dialects, not doctrine.
 
-## Layout — the config-translation packages under the `@leclabs/koine*` scope
+## Layout — one package, three source areas
 
-| Dir         | Package                   | Role                                                                                                                                                                                                                          |
-| ----------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `core/`     | `@leclabs/koine-core`     | The canonical IR (types + JSON Schema), the engine (read/merge/compile/drift/migrate), runtime validators, markdown+frontmatter serializers, and the **Adapter contract**. The only package a community adapter author needs. |
-| `adapters/` | `@leclabs/koine-adapters` | The 10 official adapters (claude, opencode, codex, gemini, copilot, cursor, cline, crush, aider, continue), one per client dialect. Bundled as subpath exports — install once, import only what you use.                      |
-| `cli/`      | `@leclabs/koine`          | The `koine` command — the user-facing orchestrator (`init` / `import` / `compile` / `diff` / `lint` / `adapters` / `events` / `doctor` / `watch` / `migrate`).                                                                |
+koine is a **single npm package**, `@leclabs/koine`. The former `core` / `adapters` / `cli` packages are
+now source areas under `src/`, wired through subpath `exports` plus a `bin`:
 
-Dependency direction is strictly `cli → adapters → core`; `core` depends on no sibling.
+| Source area     | Public entry                       | Role                                                                                                                                                                       |
+| --------------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/core/`     | `@leclabs/koine` (`.` / `./core`)  | The canonical IR (types + JSON Schema), the engine (read/merge/compile/drift/migrate), runtime validators, markdown+frontmatter serializers, and the **Adapter contract**. |
+| `src/adapters/` | `@leclabs/koine/adapters/<client>` | The 10 official adapters (claude, opencode, codex, gemini, copilot, cursor, cline, crush, aider, continue), one per client dialect — one subpath export each.              |
+| `src/cli/`      | `koine` (bin)                      | The user-facing orchestrator (`init` / `import` / `compile` / `diff` / `lint` / `adapters` / `events` / `doctor` / `watch` / `migrate`).                                   |
 
-A fourth member, `episodic/` (`@leclabs/koine-episodic`), currently nests under the `packages/koine/*`
-glob but is **off-domain** — agent memory (a JSONL store + dream routing), not config translation — and
-is already a structural stranger (absent from `tsconfig.json` references and `.changeset` `fixed`). Its
-extraction to a top-level package is under review (`plans/repo-structure-firstprinciples`).
+Internal dependency direction is still strictly `cli → adapters → core` (now plain relative imports);
+`core` depends on no sibling. The three were collapsed into one package because nothing external consumed
+them independently, they were never published, and the split was inherited from agentir
+([[defer-the-package-boundary]]; executed under `plans/repo-structure-firstprinciples`). The "only need
+core" story is now served by the `./core` subpath export, not a separate package.
+
+Agent memory lives in a **separate** top-level package, `@leclabs/koine-episodic` (`packages/episodic/`)
+— a different domain (JSONL store + dream routing), zero-coupled to koine. (Its name still carries the
+`koine-` prefix pending a [[signify]] rename.)
 
 ## The IR and the `.koine/` home
 
 The **IR** (intermediate representation) is the canonical superset of every supported client's config
 surface — eight resource types: `Rule`, `Skill`, `Command`, `Agent`, `Hook`, `McpServer`,
-`Permissions`, `EnvVars`. TypeScript types are **generated from JSON Schema** (`core/schema/*.schema.json`
-→ `pnpm gen`); the schema is the source of truth, not the `.ts`.
+`Permissions`, `EnvVars`. TypeScript types are **generated from JSON Schema**
+(`src/core/schema/*.schema.json` → `pnpm gen`); the schema is the source of truth, not the `.ts`.
 
 Authored IR lives in a **`.koine/`** directory (constant `IR_DIRNAME = '.koine'`), resolved per scope:
 `user` → `~/.koine/`; `project` → walk up from cwd to the nearest `.koine/`; `local` → `<root>/.koine/local/`.
@@ -45,9 +51,9 @@ each adapter maps its native events to and from.
 
 - Toolchain: pnpm workspace · turbo · biome · tsup · vitest (repo-wide — see root `AGENTS.md`).
 - Every commit green: `pnpm build` + `pnpm test` + `pnpm lint`. Biome is the formatter/linter (no eslint/prettier).
-- `core/src/ir/generated.ts` is generated — edit the schema and regenerate, never hand-edit the output.
-- Each subpackage carries its own `AGENTS.md` for load-bearing detail. The package README (per dir) is the
-  user-facing surface; AGENTS.md is the contributor-facing one. Keep them consistent.
+- `src/core/ir/generated.ts` is generated — edit the schema and regenerate (`pnpm gen`), never hand-edit.
+- This `AGENTS.md` is the single contributor surface; `README.md` is the user-facing one. Keep them
+  consistent. Tests live under `test/{core,adapters,cli}/`, mirroring `src/`.
 
 ## Alignment status
 

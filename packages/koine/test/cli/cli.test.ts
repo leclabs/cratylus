@@ -1,0 +1,158 @@
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { claudeAdapter } from '../../src/adapters/claude/index.js';
+import { opencodeAdapter } from '../../src/adapters/opencode/index.js';
+import { runCompile } from '../../src/cli/commands/compile.js';
+import { runImport } from '../../src/cli/commands/import.js';
+import { runInit } from '../../src/cli/commands/init.js';
+import { runLint } from '../../src/cli/commands/lint.js';
+
+const adapters = [claudeAdapter, opencodeAdapter];
+
+function buildClaudeFixture(cwd: string): void {
+  writeFileSync(join(cwd, 'CLAUDE.md'), '# Project rules\n\nBe terse.', 'utf8');
+  const claude = join(cwd, '.claude');
+  mkdirSync(claude, { recursive: true });
+  writeFileSync(
+    join(claude, 'settings.json'),
+    JSON.stringify(
+      {
+        hooks: {
+          PostToolUse: [
+            {
+              matcher: 'Edit',
+              hooks: [{ type: 'command', command: './fmt.sh', timeout: 30 }],
+            },
+          ],
+        },
+        permissions: { allow: ['Read(*)'] },
+      },
+      null,
+      2,
+    ),
+    'utf8',
+  );
+}
+
+describe('CLI commands (integration)', () => {
+  let cwd: string;
+
+  beforeEach(() => {
+    cwd = mkdtempSync(join(tmpdir(), 'koine-cli-'));
+  });
+  afterEach(() => {
+    rmSync(cwd, { recursive: true, force: true });
+  });
+
+  it('init creates .koine/ with manifest and resource dirs', async () => {
+    const code = await runInit({ scope: 'project', cwd });
+    expect(code).toBe(0);
+    expect(existsSync(join(cwd, '.koine', 'manifest.yaml'))).toBe(true);
+    expect(existsSync(join(cwd, '.koine', 'rules'))).toBe(true);
+    expect(existsSync(join(cwd, '.koine', 'hooks'))).toBe(true);
+  });
+
+  it('init refuses to overwrite an existing .koine/', async () => {
+    await runInit({ scope: 'project', cwd });
+    const code = await runInit({ scope: 'project', cwd });
+    expect(code).toBe(1);
+  });
+
+  it('init appends to an existing .gitignore on project scope', async () => {
+    writeFileSync(join(cwd, '.gitignore'), 'node_modules/\n', 'utf8');
+    await runInit({ scope: 'project', cwd });
+    expect(readFileSync(join(cwd, '.gitignore'), 'utf8')).toContain(
+      '.koine/local/',
+    );
+  });
+
+  it('import claude lifts a real .claude/ tree into the IR', async () => {
+    buildClaudeFixture(cwd);
+    await runInit({ scope: 'project', cwd });
+    const code = await runImport(
+      { client: 'claude', scope: 'project', cwd },
+      adapters,
+    );
+    expect(code).toBe(0);
+    expect(existsSync(join(cwd, '.koine', 'rules', 'main.md'))).toBe(true);
+    expect(existsSync(join(cwd, '.koine', 'hooks'))).toBe(true);
+    expect(existsSync(join(cwd, '.koine', 'permissions.yaml'))).toBe(true);
+  });
+
+  it('full flow: init → import claude → compile opencode produces opencode files', async () => {
+    buildClaudeFixture(cwd);
+    await runInit({ scope: 'project', cwd });
+    await runImport({ client: 'claude', scope: 'project', cwd }, adapters);
+
+    // Add opencode to manifest targets so default compile picks it up.
+    const manifestPath = join(cwd, '.koine', 'manifest.yaml');
+    const text = readFileSync(manifestPath, 'utf8');
+    writeFileSync(
+      manifestPath,
+      text.replace(
+        'targets:\n  - claude',
+        'targets:\n  - claude\n  - opencode',
+      ),
+      'utf8',
+    );
+
+    const code = await runCompile({ scope: 'project', cwd }, adapters);
+    expect(code).toBe(0);
+    expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
+    expect(
+      existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.yaml')),
+    ).toBe(true);
+    expect(
+      existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.ts')),
+    ).toBe(true);
+  });
+
+  it('lint reports unsupported resource per declared target', async () => {
+    buildClaudeFixture(cwd);
+    await runInit({ scope: 'project', cwd });
+    await runImport({ client: 'claude', scope: 'project', cwd }, adapters);
+    // Add a command (which opencode does not support) and add opencode to targets
+    const cmdDir = join(cwd, '.koine', 'commands');
+    mkdirSync(cmdDir, { recursive: true });
+    writeFileSync(
+      join(cmdDir, 'review.md'),
+      '---\ndescription: Review code\n---\nReview the diff.',
+      'utf8',
+    );
+    const manifestPath = join(cwd, '.koine', 'manifest.yaml');
+    const text = readFileSync(manifestPath, 'utf8');
+    writeFileSync(
+      manifestPath,
+      text.replace(
+        'targets:\n  - claude',
+        'targets:\n  - claude\n  - opencode',
+      ),
+      'utf8',
+    );
+
+    // Capture stdout
+    const messages: string[] = [];
+    const origLog = console.log;
+    console.log = (...args: unknown[]) => {
+      messages.push(args.join(' '));
+    };
+    try {
+      const code = await runLint({ scope: 'project', cwd }, adapters);
+      expect(code).toBe(0);
+      expect(
+        messages.some((m) => m.includes('opencode') && m.includes('commands')),
+      ).toBe(true);
+    } finally {
+      console.log = origLog;
+    }
+  });
+});

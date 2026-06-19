@@ -1,18 +1,27 @@
 # repo-structure-firstprinciples — PLAN
 
-First-principles structure review + de-palimpsest spec for the polis monorepo. **Planning only** —
-this plan IS the execution spec; landing it moves nothing. Status mirror; task files live under state
-folders. Charter: `AGENTS.md`.
+First-principles structure review + de-palimpsest spec for the polis monorepo. The review and spec are
+preserved below as the rationale of record; **all four phases are now EXECUTED** (the Operator resolved
+Fork 1 = collapse and opened the execution arc). Status mirror; task files live under state folders.
+Charter: `AGENTS.md`.
 
-## Status — P0 (de-palimpsest) LANDED; structure spec (P1–P3) awaiting two Operator forks + Nico naming review
+## Status — ALL PHASES EXECUTED (P0–P3), green, merged to main
 
-The first-principles review is complete and empirically grounded against the live tree (HEAD `55cf653`).
-Findings verified, not inherited. **P0 (de-palimpsest) is complete** — landed on branch
-`worktree-koine-depalimpsest` (prose/config-comment only, gates green); see its residue ledger. The spec
-below is converged for the tasks Mav owns outright (structure
+The first-principles review was empirically grounded against the live tree; findings verified, not
+inherited. **Fork 1 was resolved by the Operator: collapse.** All phases landed on branch
+`worktree-koine-depalimpsest` and merged to `main`:
 
-- build + palimpsest); the two structure forks are blocked on the Operator, one batch of names on Nico.
-  P1–P3 do not execute until those clear and the Operator opens an execution arc.
+- **P0 (de-palimpsest)** — stale agentir prose + dead cross-refs removed (residue ledger in its task).
+- **P1 (koine collapse)** — `core` + `adapters` + `cli` collapsed into ONE package `@leclabs/koine`;
+  they are now source areas under `src/`, exposed via subpath exports (`.` / `./core` / `./adapters/*`)
+  plus a `koine` bin. No nested package.json remains under `packages/koine`.
+- **P2 (episodic extraction)** — `@leclabs/koine-episodic` moved out to top-level `packages/episodic/`.
+  Name kept (Fork 2's _rename_ to drop the `koine-` prefix stays Nico's [[signify]] call).
+- **P3 (workspace + build coherence)** — `packages/*` flat glob, root tsconfig references reconciled,
+  `.changeset` `fixed` emptied, agentir catalog crumb dropped, IR-fixture consumer path updated.
+
+Proof: `pnpm build` + `pnpm test` (126 koine + 35 episodic) + `pnpm typecheck` + `pnpm lint` all green;
+`koine --help` runs; subpath exports + bin resolve to built targets. See the execution ledger below.
 
 ## What the review found (empirically verified)
 
@@ -134,24 +143,25 @@ fork outcomes.
   from `packages/koine/AGENTS.md` + root `AGENTS.md`, README member-count + dead `COORDINATION.md`
   cross-ref fixed, `.scratchpad/` confirmed gitignored. Residue ledger in the task file.
 
-### P1 — structure spec, koine (PENDING — blocked on Fork 1)
+### P1 — koine collapse (DONE — Fork 1 resolved = collapse)
 
-- **spec-koine-collapse** (pending; dep: Fork 1 = collapse) — the concrete file-level move-list +
-  exports/bin design + tsconfig/changeset/workspace edits + IR-fixture-path update + rollback for
-  collapsing core+adapters+cli into one `@leclabs/koine`.
+- **spec-koine-collapse** (completed) — `core` + `adapters` + `cli` collapsed into one `@leclabs/koine`.
+  Sources moved to `src/{core,adapters,cli}`; package-name imports rewritten to relative paths; merged
+  `package.json` (union deps, `bin`, subpath `exports` `.`/`./core`/`./adapters/*`); single `tsconfig` +
+  array `tsup.config` (lib dts + cli shebang). IR-fixture consumer path updated.
 
-### P2 — structure spec, episodic (PENDING — blocked on Fork 2)
+### P2 — episodic extraction (DONE — Fork 2 home settled; rename deferred to Nico)
 
-- **spec-episodic-extraction** (pending; dep: Fork 2 = home+name) — the move + (optional) rename
-  file-list, the import/exports impact, tsconfig/changeset/workspace edits, the `memory-model-redesign`
-  cross-plan reconciliation, and rollback.
+- **spec-episodic-extraction** (completed) — `@leclabs/koine-episodic` moved to top-level
+  `packages/episodic/` (Fork 2 option (a): move, keep name). `tsconfig` extends-depth fixed. Zero import
+  impact (nobody imports it). The `koine-`-prefix _rename_ remains Nico's [[signify]] call and must
+  reconcile with `memory-model-redesign`'s stated home.
 
-### P3 — workspace + build coherence (PENDING — depends on P1+P2 shapes)
+### P3 — workspace + build coherence (DONE)
 
-- **spec-workspace-glob-and-config** (pending; deps: spec-koine-collapse, spec-episodic-extraction) —
-  flatten `packages/*` glob, reconcile `tsconfig.json` references, `.changeset/config.json`
-  (`fixed`/`access`), turbo, catalog comment de-agentir, root loose-file + `.scratchpad`/`docs` hygiene
-  review. The integration task that makes the build green after P1+P2.
+- **spec-workspace-glob-and-config** (completed) — flattened to `packages/*`; root `tsconfig`
+  references → `packages/koine` + `packages/episodic`; `.changeset` `fixed` emptied; agentir catalog
+  crumb dropped. Build/test/typecheck/lint green across both packages.
 
 ## Backlog (pending)
 
@@ -160,5 +170,22 @@ _(none beyond P1–P3 above.)_
 ## Completed
 
 - **P0 · depalimpsest-naming-residue** — stale agentir "pending/re-homing" prose removed, README
-  member-count + dead cross-ref fixed, `.scratchpad/` confirmed gitignored. Landed on
-  `worktree-koine-depalimpsest`; gates green (`prettier --check`, `biome check .`).
+  member-count + dead cross-ref fixed, `.scratchpad/` confirmed gitignored. Gates green.
+- **P1 · spec-koine-collapse** — `core`+`adapters`+`cli` → one `@leclabs/koine`; sources under
+  `src/{core,adapters,cli}`; subpath exports + `bin`; imports relativized.
+- **P2 · spec-episodic-extraction** — `@leclabs/koine-episodic` → `packages/episodic/` (name kept;
+  rename = Nico follow-up).
+- **P3 · spec-workspace-glob-and-config** — `packages/*` glob, tsconfig refs, changeset `fixed`,
+  catalog crumb. Build + test (126 + 35) + typecheck + lint all green; merged to `main`.
+
+## Execution ledger (2026-06-18, branch `worktree-koine-depalimpsest`)
+
+- **Layout:** `packages/koine/src/{core,adapters,cli}` (was three packages), `packages/koine/test/{core,
+adapters,cli}`, `src/core/schema` + `src/core/scripts` (gen). `packages/episodic/` pulled out.
+- **Proof of single package:** exactly two `package.json` under `packages/` — `@leclabs/koine` +
+  `@leclabs/koine-episodic`; zero nested package.json under `koine`. `koine --help` runs; `.`/`./core`/
+  `./adapters/<client>` exports + `bin` resolve to built `dist/` targets.
+- **Gates:** `pnpm build`, `pnpm test` (koine 126 / episodic 35), `pnpm typecheck`, `pnpm lint` — all
+  green on a fresh `pnpm install`.
+- **Open follow-up (Nico):** rename `@leclabs/koine-episodic` to drop the `koine-` prefix ([[signify]]),
+  reconciled with `memory-model-redesign`'s stated home — the one piece of Fork 2 not Mav's to decide.

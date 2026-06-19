@@ -116,7 +116,7 @@ def test_roundtrip_ready() -> list[str]:
     """The mind-side half of the multi-dialect round-trip gate (B4 done-when).
 
     The objective IR->dialect->IR identity gate runs on the koine side
-    (packages/koine/adapters/test/ir-bridge/round-trip.test.ts: claude + codex
+    (packages/koine/test/adapters/ir-bridge/round-trip.test.ts: claude + codex
     clean, cursor + opencode lossy-by-design). It consumes the IR this emitter
     produces. This gate guards the *preconditions* that make that round-trip
     achievable, so a corpus change that would break a dialect fails HERE, at the

@@ -1,9 +1,5 @@
 {
   "extends": "./tsconfig.base.json",
   "files": [],
-  "references": [
-    { "path": "packages/koine/core" },
-    { "path": "packages/koine/cli" },
-    { "path": "packages/koine/adapters" }
-  ]
+  "references": [{ "path": "packages/koine" }, { "path": "packages/episodic" }]
 }
