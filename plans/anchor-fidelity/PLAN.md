@@ -13,15 +13,12 @@ the gated re-individuation.
 
 ## Frontier (ready)
 
-- **land-and-recut-anchor-cluster** · `ready/` · Nico — **phase 1.** Fold CSF into `signify` (compute
-  `CSF_R`) + `exemplify` (round-trip acceptance law); re-individuate the `anchor` cluster (extract the
-  argmin primitive, re-express `densest-faithful-point`, fuse `anchoring-is-self-similar`, keep `anchor`).
-  Proves the tool on the hardest cluster before the rest of the corpus. `verify.py` PASS + blind-read clean.
+- **stratify-corpus** · `pending/` → active · Nico — **phase 2.** Classify all 150 cells primitive (gloss)
+  vs composite (factor-refs); enumerate the non-conforming worklist (sentence-slugs, restating composites,
+  unextracted shared primitives). Full coverage, no sampling.
 
 ## Backlog (pending)
 
-- **stratify-corpus** · `pending/` · Nico — **phase 2** (dep: phase 1). Classify all 151 cells
-  primitive (gloss) vs composite (factor-refs); enumerate the non-conforming worklist.
 - **mechanize-fidelity-gate** · `pending/` · Nico spec + Mav build — **phase 3** (dep: phase 1). Automate
   the blind-decoder gate in `verify.py` — a false anchor FAILS mechanically.
 - **gated-reindividuation** · `pending/` · Nico — **phase 4** (deps: phases 1-3 **+ Operator scale-opt-in**).
@@ -29,6 +26,10 @@ the gated re-individuation.
 
 ## Completed
 
+- **land-and-recut-anchor-cluster** (phase 1, `7b54265`+`643066e`) — anchor cluster re-individuated
+  (precise-circumscription = grain-neutral primitive; densest-faithful-point = expression-grain instance;
+  anchoring-is-self-similar fused+deleted); exemplify acceptance law now reconstructs from anchors
+  (anchor-fidelity gate). verify.py PASS, toolkit 14/14, blind-@nico confirmed clean.
 - **csf-formalism** — the converged CSF v7 model (acceptance law + bipartite primitives/composites +
   round-trip gate). Five blind-`@nico` reads; v6 reader: "the formal core closes."
 - **csf-pilot-validation** — ran CSF on the `anchor` cluster: found the unextracted argmin primitive,
