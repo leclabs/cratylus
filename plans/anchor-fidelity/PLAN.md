@@ -3,7 +3,16 @@
 Make "true anchor" a falsifiable, gated property; re-individuate the corpus under it. Status mirror;
 task files live under state folders. Charter + the converged model: `AGENTS.md`.
 
-## Status — REAL WORK DONE (2026-06-19): corpus minimal + CSF skill integrated
+## Status — COMPLETE (2026-06-20): v7 distributed into the pipeline; blind-equivalence verified
+
+**The plan is done.** The v7 acceptance model is now corpus structure: exemplify = pure composition
+of conceptualize → signify → materialize, gated by `valid`; canonical-semantic-factorization promoted
+gloss→concept holding the model (REC_R, aptissimum, the structural theorems, valid); the registry gained
+℘ ⊔ ⊊ ↣ ≺. Two blind readers independently reconstructed the model from the rebuilt cells and from
+`v7.proposal.md` and judged them **equivalent** (only noted subtraction: the inert FCA relations
+⊑_R/⇒_R, deliberately dropped as non-firing). Landed `57c4ac1`, pushed, fleet-deployed 5/6 (upmav asleep).
+
+### Prior status — REAL WORK DONE (2026-06-19): corpus minimal + CSF skill integrated
 
 Phase 1's cluster re-cut + the fleet deploy are real and stand. But the plan was wrongly closed: the
 CSF model was never **integrated** (it lives in a `.proposal.md`, not a corpus cell); `conceptualize`/
@@ -71,7 +80,14 @@ failure mode. Fixed by running CSF the right way: by CLUSTER, conceptualize-as-o
   to 0 (that's over-factoring — deleting legitimate citations).
 - Landed on main (f31108e), redeployed fleet.
 
-## NEXT (ready) — distribute v7 into the pipeline cells (the real CSF integration)
+## DONE (2026-06-20) — v7 distributed into the pipeline cells (commit 57c4ac1)
+
+**Completed.** Clean-slated conceptualize/signify/materialize and rebuilt them from v7; promoted CSF
+gloss→concept (the acceptance model); exemplify reduced to pure composition gated by `valid` (a bound
+proposition, not a loose citation). verify.py PASS (schema+refs+fences+symbols+operative+round-trip+
+reconstruct), blind-equivalence PASS. Deployed fire/forge/spark/ash/upgoose (sha256-verified); upmav
+rides the next deploy. **Residual judgment call:** ⊑_R/⇒_R left dropped (inert in v7 itself; nico
+recommends keeping dropped) — restore only if literal v7-completeness is wanted. Mapping below = as-built.
 
 **This is the actual remaining work. Do NOT re-derive — copy/paste from the converged source.**
 
