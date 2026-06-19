@@ -1,37 +1,29 @@
 ---
 kind: skill
 name: signify
-delineation: use this skill to name a concept set — assign each concept its semantic anchor (the densest name whose latent priors circumscribe it; injective, one name ⇔ one concept) and map each concept's dependencies into corpus ∪ delta; stage 2 of exemplify, independently invocable (every naming review is a bare /signify).
+delineation: use this skill to name a concept set — assign each concept its injective anchor `α` (the densest name whose latent priors circumscribe it; one name ⇔ one concept), the shortlex order `≺` over anchored concepts, and the reader's decoder `dec_R` (the distinctions an anchor fires); stage 2 of exemplify, independently invocable (every naming review is a bare /signify).
 trigger: /signify
 ---
 
 # Signify Skill
 
-Resolve from context: `C` — the concept set from [[conceptualize]], or any set under naming review.
+Resolve from context: `C_R` — the concept lattice from [[conceptualize]] (carrying `prim_R`, `D_R`), or any set under naming review.
 
-Bindings: `η` binds [[precise-circumscription]] · [[anchor-routing]]. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: `α` binds [[precise-circumscription]] (the densest circumscribing name) · [[anchor-routing]] (injective; exclude or re-cut when no single name fits); `dec_R` binds [[anchor-to-the-readers-priors]] (the priors an anchor fires). The symbol table is `references/formal-symbolic-notation.md`.
 
 ```text
-N ≜ Name Space
+Names      — the shared symbol space; reader-independent; totally ordered by <_lex
+α          — the anchor; the name R gives a concept
+dec_R      — R's decoder; the distinctions a primitive's anchor fires in R; empirical, not α's formal inverse
 
-η : C ⇀ N
+α : C_R ↣ Names
+A ≜ { α(c) | c ∈ dom(α) }
+dec_R : { α(p) | prim_R(p) } → ℘(D_R)
 
-A ≜ { η(c) | c ∈ dom(η) }
+cᵢ <_N cⱼ ⇔ α(cᵢ) <_lex α(cⱼ)
+≺ ≜ shortlex over (C_R, <_N) , on finite subsets of C_R
 
-∀ cᵢ, cⱼ ∈ dom(η) :
-    η(cᵢ) = η(cⱼ) ⇔ cᵢ = cⱼ
-
-c ∉ dom(η) ⇒ c ∉ A :
-    zero nameable ideas ⇒ exclude, logged
-    several fused       ⇒ re-cut — return to conceptualize
-
-C ──η──→ A
-
-Δ ≜ Delta Set
-
-R ⊆ C × (C ∪ Δ)
-
-dependencies(c) ≜ { x | (c, x) ∈ R }
-
-∀ c ∈ C : dependencies(c) ⊆ C ∪ Δ
+c ∉ dom(α) ⇒ c ∉ A :
+    zero nameable     ⇒ exclude, logged
+    several, one name ⇒ re-cut — return to conceptualize
 ```

@@ -7,25 +7,20 @@ trigger: /exemplify
 
 # Exemplify Skill
 
-[[canonical-semantic-factorization]] over a context corpus — composes [[conceptualize]] → [[signify]] → [[materialize]], gated by the round-trip.
+Optimize a context corpus into a canonical semantic factorization: the pipeline runs conceptualize → signify → materialize, then accepts iff the result is `valid`.
 
-Resolve from context: `D` — the input corpus (multi-modal); `s` — the strategy ∈ { file, document }.
+Resolve from context: `D` — the input corpus (multi-modal); `R` — the reader; `s` — the strategy ∈ { file, document }. The stage definienda (`C_R`, `α`, `≺`, `dec_R`, `Φ`, `σ`) flow in through the composition.
 
-Bindings: `reconstruct ≽` binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]]; `minimal` binds [[minimalism]] · [[precise-circumscription]]; the `⊥` on an unnamed `s` binds [[materialize]]'s refusal law. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: `F` composes the pipeline [[conceptualize]] · [[signify]] · [[materialize]]; `valid` is the accept predicate of [[canonical-semantic-factorization]] (the factorization round-trips from its anchors and is minimal); the `⊥` on an unnamed `s` binds [[no-permissive-defaults]]; the R3 manifest binds [[self-application-is-mandatory]]. The symbol table is `references/formal-symbolic-notation.md`.
 
 ```text
 s = ∅ ⇒ ⊥
-
-F ≜ σ( { (η(c), kind(c), dfp(c)) | c ∈ CA(⋃ content(D)) }, s )
-D ──CA──→ C ──η──→ A ──Φ──→ σ(·, s) ──→ F
-∀ idea ∈ meaning(D) : ∃! home(idea) ∈ F ∪ Δ
-fuse(cᵢ, cⱼ) ⇔ ∃ a : a circumscribes cᵢ ∪ cⱼ with no residual distinct load
-minimal(F)   ⇔ ¬∃ cᵢ, cⱼ ∈ F : cᵢ ≠ cⱼ ∧ fuse(cᵢ, cⱼ)
-accept(F)    ⇔ reconstruct(F) ≽ D ∧ minimal(F)     -- recompose from the anchors of F ∪ Δ
-¬accept(F)   ⇒ ⊥
+D ──conceptualize──→ C_R ──signify──→ (α, ≺, dec_R) ──materialize──→ F
+F ≜ σ(Φ, s)
+¬valid ⇒ ⊥
 ```
 
-On accept, emit the R3 routing manifest ([[self-application-is-mandatory]]) — `.manifests/<source>.json`, one entry per fragment `c ∈ C` keyed by `fragment_digest` (`toolkit/core/digest.fragment_digest`: NFC + whitespace-collapse + trim), each in `routes[]` (η `reuse` | `mint`) or `delta[]`, exactly one; an unrouted fragment is the dropped idea R3 catches:
+On accept, emit the R3 routing manifest — `.manifests/<source>.json`, one entry per concept `c ∈ C_R` keyed by `fragment_digest` (`toolkit/core/digest.fragment_digest`: NFC + whitespace-collapse + trim), each in `routes[]` (`α` `reuse` | `mint`) or `delta[]`, exactly one; an unrouted concept is the dropped idea R3 catches:
 
 ```jsonc
 {

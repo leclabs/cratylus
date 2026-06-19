@@ -8,11 +8,12 @@ The registry is **agent-audience** ([[reader-prior-projection]] · [[anchor-legi
 
 **Definition & comparison**
 
-| Glyph | Sense     | Signature                                                           |
-| ----- | --------- | ------------------------------------------------------------------- |
-| `≜`   | defines   | `name ≜ expr` — the left is defined to mean the right               |
-| `≠`   | distinct  | `T × T → Prop`                                                      |
-| `≽`   | dominates | `T × T → Prop` — at least as good as (house: round-trip acceptance) |
+| Glyph | Sense     | Signature                                                                     |
+| ----- | --------- | ----------------------------------------------------------------------------- |
+| `≜`   | defines   | `name ≜ expr` — the left is defined to mean the right                         |
+| `≠`   | distinct  | `T × T → Prop`                                                                |
+| `≽`   | dominates | `T × T → Prop` — at least as good as (house: round-trip acceptance)           |
+| `≺`   | precedes  | `T × T → Prop` — the canonical order (house: shortlex over anchored concepts) |
 
 **Propositional logic**
 
@@ -37,26 +38,30 @@ The registry is **agent-audience** ([[reader-prior-projection]] · [[anchor-legi
 
 **Sets**
 
-| Glyph | Sense        | Signature                                  |
-| ----- | ------------ | ------------------------------------------ |
-| `∈`   | member       | `El × Set → Prop`                          |
-| `∉`   | non-member   | `El × Set → Prop`                          |
-| `⊆`   | subset       | `Set × Set → Prop` — contained, may equal  |
-| `⊇`   | superset     | `Set × Set → Prop` — contains, may equal   |
-| `∪`   | union        | `Set × Set → Set`                          |
-| `∩`   | intersection | `Set × Set → Set`                          |
-| `⋃`   | n-ary-union  | `Set[Set] → Set`                           |
-| `∅`   | empty        | `Set`                                      |
-| `×`   | product      | `Set × Set → Set` — the pair space `A × B` |
+| Glyph | Sense         | Signature                                                                   |
+| ----- | ------------- | --------------------------------------------------------------------------- |
+| `∈`   | member        | `El × Set → Prop`                                                           |
+| `∉`   | non-member    | `El × Set → Prop`                                                           |
+| `⊆`   | subset        | `Set × Set → Prop` — contained, may equal                                   |
+| `⊇`   | superset      | `Set × Set → Prop` — contains, may equal                                    |
+| `∪`   | union         | `Set × Set → Set`                                                           |
+| `∩`   | intersection  | `Set × Set → Set`                                                           |
+| `⋃`   | n-ary-union   | `Set[Set] → Set`                                                            |
+| `∅`   | empty         | `Set`                                                                       |
+| `×`   | product       | `Set × Set → Set` — the pair space `A × B`                                  |
+| `℘`   | power-set     | `Set → Set[Set]` — the set of all subsets                                   |
+| `⊊`   | proper-subset | `Set × Set → Prop` — contained, not equal                                   |
+| `⊔`   | join          | `Set[El] → El` — least upper bound (house: closure of the union of intents) |
 
 **Maps**
 
-| Glyph | Sense       | Signature                                                                                   |
-| ----- | ----------- | ------------------------------------------------------------------------------------------- |
-| `→`   | maps        | `A → B` — the type of arrows from A to B                                                    |
-| `↦`   | sends       | `x ↦ y` — the image of a specific element                                                   |
-| `⇀`   | partial-map | `A ⇀ B` — some elements have no image                                                       |
-| `⊨`   | entails     | `X ⊨ Y` — every model of X is a model of Y; a model/line satisfying a spec is the unit case |
+| Glyph | Sense         | Signature                                                                                   |
+| ----- | ------------- | ------------------------------------------------------------------------------------------- |
+| `→`   | maps          | `A → B` — the type of arrows from A to B                                                    |
+| `↦`   | sends         | `x ↦ y` — the image of a specific element                                                   |
+| `⇀`   | partial-map   | `A ⇀ B` — some elements have no image                                                       |
+| `↣`   | injective-map | `A ↣ B` — distinct inputs send to distinct images                                           |
+| `⊨`   | entails       | `X ⊨ Y` — every model of X is a model of Y; a model/line satisfying a spec is the unit case |
 
 **Enumeration**
 
