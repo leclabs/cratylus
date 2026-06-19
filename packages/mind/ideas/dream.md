@@ -28,25 +28,14 @@ dream ≜ exemplify : E → I        ∵ consolidation is exemplify applied to t
     instances-governing-exemplar(i) ⇒ i ↦ pointer    ∵ cite-dont-copy
 ```
 
-## 2. Routing — two orthogonal axes
+## 2. Routing
 
-dream's materialization (σ(Φ_self, …) in [[materialize]]'s terms) routes each item by **type/voice → organ** and **scope → instance**, per [[memory]]:
+route(I) by [[memory]]'s two axes — type/voice → organ, scope → instance. dream's materialization (σ(Φ_self) in [[materialize]]'s terms) adds only the two consolidation-only outcomes the store's resident routing has no slot for:
 
 ```text
-route : I → homes ∪ {drop}
-homes ≜ { SELF, MEMORY, EPISODIC, AGENTS.md(scope), vault }
-
-voice(i) ↦ organ :
-    identity      ↦ SELF                  ∵ who I am / how I changed
-    my-knowledge  ↦ MEMORY                ∵ durable fact I carry
-    directive     ↦ AGENTS.md(scope(i))   ∵ how it's done here, for any agent
-    reference     ↦ vault                 ∵ networked domain knowledge
-    next-step     ↦ EPISODIC              ∵ forward-looking, not yet durable
-    scaffold      ↦ drop                   ∵ graduates nowhere
-
-scope(i) ∈ { agent-global, project, subtree } ↦ the instance of the organ
-one i may split to several homes
-¬resident(i) ⇒ i ∉ { SELF, MEMORY }    ∵ they load whole every wake; keep them small
+route : I → organs(memory) ∪ { EPISODIC, drop }
+next-step ↦ EPISODIC      ∵ forward-looking, not yet durable
+scaffold  ↦ drop          ∵ graduates nowhere
 ```
 
 ## 3. Clearing

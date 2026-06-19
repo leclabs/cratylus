@@ -1,22 +1,26 @@
 ---
-kind: skill
+kind: process
 name: canonical-semantic-factorization
-delineation: Factor a meaning into its anchored primitives and composites — a primitive carries its own ground truth, a composite carries only references to its factors — so every cell is minimal prose composited from anchors, accepted iff it reconstructs from those anchors alone.
-trigger: /csf
+delineation: Factor a meaning into its bipartite normal form — primitives carry ground truth by value, composites carry only their factors' anchors by reference — by recomposing conceptualize → signify → materialize, accepted iff it reconstructs from its anchors alone.
 ---
 
 # Canonical Semantic Factorization
 
-The form [[signify]] resolves to and [[exemplify]] accepts.
+`CSF ≜ [[conceptualize]] → [[signify]] → [[materialize]]` — dissolve the source to its [[mece]] primitives ([[conceptualize]]: `boundaries ∉ inputs`, so a primitive shared across cells is found in the seam, not inside one), anchor each ([[signify]]), emit by kind ([[materialize]]).
 
-- **Factor** the meaning into [[mece]] concepts; each is **primitive** (join-irreducible — no set of other concepts composes it) or **composite** (the closed union of named factors). A descriptive multi-word slug is an unfactored composite ([[anchor-routing]] — re-cut or fuse).
-- **Anchor** each concept with its [[precise-circumscription]] signum; the slug _is_ the anchor.
-- **Emit by kind.** A **primitive** = anchor + its ground truth at the [[densest-faithful-point]] (the gloss only it can carry). A **composite** = anchor + the names of its factors ([[cite-dont-copy]]); it inks only the delta over them, never restating a factor.
-- **Accept by round-trip.** The cell must reconstruct from its **anchors alone** ([[self-application-is-mandatory]]). Prose that restates a delineation or re-explains a cited anchor is the signal of a missing or wrong anchor — it fails.
+```text
+emit(c) :
+    prim(c) ⇒ η(c) + dfp(c)                       -- ground truth by value
+    comp(c) ⇒ η(c) + { η(f) | f ∈ factors(c) }    -- by reference, never restated
+
+accept(c) ⇔ reconstruct(c from η alone) ≽ meaning(c) ∧ minimal
+```
+
+Residual prose that restates a delineation or re-explains a cited anchor is the tell of an un-factored composite or a wrong anchor — it is not minimal, so it does not accept.
 
 ## See also
 
-- [[signify]] — the naming stage this is the factoring discipline of.
-- [[exemplify]] — the pipeline whose acceptance law is this round-trip.
-- [[one-cell-one-type]] — a primitive is exactly one kind; a composite bundles them.
-- [[self-sufficient-formalism]] — the formal-block grain of the same bipartite discipline.
+- [[conceptualize]] · [[signify]] · [[materialize]] — the three stages this recomposes; each is one stage of this process.
+- [[exemplify]] — CSF run over a context corpus to optimize it (the invocation, not a second definition).
+- [[densest-faithful-point]] — a primitive's ground-truth grain; [[cite-dont-copy]] — a composite's by-reference grain.
+- [[self-application-is-mandatory]] — the reconstruct round-trip is the accept gate.

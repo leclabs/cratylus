@@ -9,7 +9,7 @@ trigger: /materialize
 
 Resolve from context: `A` + contents — the anchored fragments from [[signify]], or supplied directly; `s` — the strategy, REQUIRED from the caller; `${OUTPUT_DIR}` — file strategy only.
 
-Bindings: `dfp` binds [[densest-faithful-point]]; the refusal laws bind [[no-permissive-defaults]]; emit-by-kind is [[canonical-semantic-factorization]]. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: `dfp` binds [[densest-faithful-point]]; the refusal laws bind [[no-permissive-defaults]]. The symbol table is `references/formal-symbolic-notation.md`.
 
 ```text
 K ≜ the closed kind set

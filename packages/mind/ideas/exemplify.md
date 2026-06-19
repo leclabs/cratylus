@@ -7,9 +7,9 @@ trigger: /exemplify
 
 # Exemplify Skill
 
-Each stage is independently invocable and owns its own operators and failure laws; this skill owns only the chain, the strategy gate, and the acceptance law.
+[[canonical-semantic-factorization]] run over a context corpus — not a second definition of it. Each stage is independently invocable and owns its own operators and failure laws; this skill owns only the strategy gate, the routing manifest, and the corpus-grain lift of CSF's accept (no fusible pair across `F`).
 
-Bindings: the chain invokes [[conceptualize]] → [[signify]] → [[materialize]]; `reconstruct ≽` binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]] — recomposed from the **anchors**, so a name that does not fire its idea fails (anchor-fidelity, [[precise-circumscription]]); `minimal` binds [[minimalism]] · [[precise-circumscription]]; the accept law is the [[canonical-semantic-factorization]] round-trip. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: the chain invokes [[conceptualize]] → [[signify]] → [[materialize]]; `reconstruct ≽` binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]] — recomposed from the **anchors**, so a name that does not fire its idea fails (anchor-fidelity, [[precise-circumscription]]); `minimal` binds [[minimalism]] · [[precise-circumscription]]. The symbol table is `references/formal-symbolic-notation.md`.
 
 1. Resolve `D` from context — the input corpus (multi-modal). Require the strategy `s` up front:
 

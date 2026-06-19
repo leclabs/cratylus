@@ -120,6 +120,7 @@ _ordered operations — invoked._
 
 - **anchor-routing** — Place each fragment at the anchor whose latent priors most precisely circumscribe it — best-fit, not nearest-bin; mint the anchor if none exists (the anchor-set is open); a genuine multi-match means the partition cut wrong, re-cut.
 - **archetype-instantiation** — Stand up a project-scope agent species from a universal archetype + scope grants — project the archetype's composed graph at the density the deployment's reader needs, apply the grant stack, bind extrinsic facets per deployment, verify round-trip.
+- **canonical-semantic-factorization** — Factor a meaning into its bipartite normal form — primitives carry ground truth by value, composites carry only their factors' anchors by reference — by recomposing conceptualize → signify → materialize, accepted iff it reconstructs from its anchors alone.
 - **context-anchors-protocol** — Counter context-drift by re-installing durable anchors mid-session — surface the agent's believed context (a cognizant dump), diff against canon, re-point each divergence to its canonical home, persist out-of-band; re-anchor, don't re-load.
 - **dont-blind-wait** — Don't freeze on an event the harness can't notify you about — launch exactly one background poll (an until-loop that exits on the condition) so the harness re-invokes you when it fires; at most one watcher at a time.
 - **exemplar-resolution** — The method's core operation — resolving information to the exemplars it projects from; composes decompose + anchor-routing + compress + compose-by-reference, verified by round-trip; run forward as intake, inverse as reconstruction.
@@ -170,7 +171,6 @@ _composites — primitives bound to a maker role._
 
 _composite capabilities._
 
-- **canonical-semantic-factorization** — Factor a meaning into its anchored primitives and composites — a primitive carries its own ground truth, a composite carries only references to its factors — so every cell is minimal prose composited from anchors, accepted iff it reconstructs from those anchors alone.
 - **conceptualize** — use this skill to conceptualize a corpus — read a multi-modal source and resolve it to its concept set (the MECE semantic primitives it projects from), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.
 - **dream** — use this skill to consolidate an agent's memory — distil the raw EPISODIC stream and route each item by two orthogonal axes (type/voice picks the organ, scope picks the instance): identity rises to SELF, durable knowledge to MEMORY, directives to the scoped AGENTS.md, networked reference to the vault, next-steps stay in EPISODIC, the rest is dropped; consumed raw is cleared; SOUL is never written.
 - **exemplify** — use this skill to optimize context - strip rot, bloat, palimpsest; increase density, coherence; resolve ambiguity; discover exemplars, derive canonical anchors, materialize composable context modules under an explicitly named strategy (file | document).
