@@ -9,7 +9,7 @@ trigger: /signify
 
 Resolve from context: `C` — the concept set from [[conceptualize]], or any set under naming review.
 
-Bindings: `η` binds [[precise-circumscription]] · [[anchor-routing]]. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: `η` binds [[precise-circumscription]] · [[anchor-routing]]; the factorization η serves is [[canonical-semantic-factorization]]. The symbol table is `references/formal-symbolic-notation.md`.
 
 ```text
 N ≜ Name Space
