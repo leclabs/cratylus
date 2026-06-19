@@ -52,3 +52,21 @@ _(none — the real work is done; see Completed.)_
 - **csf-pilot-validation** — ran CSF on the `anchor` cluster: found the unextracted argmin primitive,
   caught the `do-the-work-dont-tell-the-user` sentence-slug, surfaced the `minimalism` fusion question.
   Model validated on real data; cleared to land.
+
+## Cross-cell factorization (2026-06-19) — the actual CSF run
+
+The per-cell strip (rounds prior) was blind to CROSS-cell duplication by construction — the
+failure mode. Fixed by running CSF the right way: by CLUSTER, conceptualize-as-one-source.
+
+- **CSF redefined as a `process`** — the recomposition `conceptualize → signify → materialize`
+  - the bipartite accept; modules stay clean (composite cites factors, no cycle). exemplify cites
+    CSF as its corpus-grain invocation, not a second definition.
+- **cluster-find method** — one agent per cluster reads ALL its cells as one source, sees the seams.
+  Round 1: 33 found → 31 factored. Round 2: 20 (delineation-level) → 21 factored. Total 52 cross-cell
+  restatements homed-once-and-cited.
+- **Convergence: 33 → 20 → 20 (plateau).** Read the residual: ~6 are fence-mandated formal blocks
+  (the FENCE rule forbids [[refs]] in a fence; self-sufficient-formalism requires closure), the rest
+  are legitimate citations the finder false-positives (cells I'd already factored re-flagged — proof).
+  The genuine restatement is gone; the floor is a dense citation-graph, not messy prose. NOT chased
+  to 0 (that's over-factoring — deleting legitimate citations).
+- Landed on main (f31108e), redeployed fleet.
