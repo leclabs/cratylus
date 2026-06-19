@@ -1,14 +1,14 @@
 # migrate-live-episodic
 
 **Owner.** Mav (build) + Nico (verify). **Deps.** jsonl-episodic-store, dream-routing-engine. **Consent-gated** —
-touches live agent memory. **State: ACTIVE — feature built + proven end-to-end; only the live rollout tail remains.**
+touches live agent memory. **State: ACTIVE — feature built, reviewed, MERGED to main (`0773edb`); only the live rollout tail remains.**
 
 **What.** Convert the live agents' markdown `EPISODIC.md` → `EPISODIC.jsonl`, preserving content, and make the JSONL
 log operable (encode + wake/dream) under a reconciled protocol. **Scope: user (agent-global) only** — fleet
 cross-host sync + true mobility are deferred to a future design (Operator, 2026-06-19; the git-remote organ store was
 a replication design, set aside until a mesh/primary-home model is considered).
 
-**Built + proven (branch `migrate-live-episodic`: 98b8ed3, 71f8a15, e17f685; unmerged).**
+**Built, reviewed, MERGED to main (`7694e9d`→`0773edb`; principal-engineer-reviewer APPROVE — its HIGH on code-fence parsing is fixed in `0773edb`: `extractItems` is fence-aware and `assertNoLoss` gained an independent line-coverage leg).**
 
 - **Converter** `packages/episodic/src/migrate.ts` — `extractItems` (sole source of truth for "what is a memory
   item"), `migrateFile` (ordered ULID records, source never deleted), `assertNoLoss` (round-trip item-set gate,
@@ -24,13 +24,14 @@ a replication design, set aside until a mesh/primary-home model is considered).
 
 **Remaining — the live rollout tail (gated, not started):**
 
-1. **Merge** the branch.
-2. **Nico ratifies** the `memory.md` cell edit (his constitution domain; done under Operator delegation).
-3. **Corrective fleet redeploy** — the reconciled Protocol must land on live SOULs (every host still says
-   `EPISODIC.md`). Reversible; the one broad act.
-4. **Per-agent live migration**, canary-first: at a **session boundary** (not mid-session — converting your own live
-   EPISODIC mid-flight saws off the protocol you're running), backup → `episodic migrate` → `assertNoLoss` →
-   delete `.md`. **Mav goes first** as the approved canary; the rest follow on the same proof.
+1. ~~Merge~~ — DONE (`0773edb` on main).
+2. **Nico ratifies** the `memory.md` cell edit (his constitution domain; landed under Operator delegation + the
+   review's endorsement — post-hoc ratify per the execute-then-review rhythm).
+3. **Per-agent atomic rollout, canary-first.** Redeploy and file-migration are **coupled**: a SOUL that says
+   `EPISODIC.jsonl` while its file is still `EPISODIC.md` breaks wake — so per agent, do BOTH together at a **session
+   boundary** (never mid-session; converting your own live EPISODIC mid-flight saws off the protocol you're running):
+   backup → `episodic migrate` → `assertNoLoss` → delete `.md` → `deploy.py` that agent's SOUL. **Mav goes first** as
+   the approved canary (at next /wake); the rest follow on the same proof.
 
 **Exit criteria.**
 
