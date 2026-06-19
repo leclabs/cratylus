@@ -3,7 +3,7 @@
 Make "true anchor" a falsifiable, gated property; re-individuate the corpus under it. Status mirror;
 task files live under state folders. Charter + the converged model: `AGENTS.md`.
 
-## Status — COMPLETE (all phases done; pending merge-to-main + fleet redeploy)
+## Status — COMPLETE + DEPLOYED (merged to main @ 0499b7a; fleet 6/6 redeployed)
 
 The CSF acceptance model is converged (v7, five blind-`@nico` reads, objective matched) and pilot-validated
 on the real `anchor` cluster. The pipeline now has a falsifiable anchor-fidelity gate to adopt:
@@ -16,7 +16,6 @@ the gated re-individuation.
 _(none — all phases complete; see Completed.)_
 
 ## Backlog (pending)
-
 
 ## Completed
 
