@@ -9,7 +9,7 @@ trigger: /exemplify
 
 End-to-end context optimization — each stage independently invocable and owning its own operators and failure laws; this skill owns only the chain, the strategy gate, and the acceptance law.
 
-Bindings: the chain invokes [[conceptualize]] → [[signify]] → [[materialize]]; `reconstruct ≽` binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]], `minimal` binds [[minimalism]] · [[precise-circumscription]]. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: the chain invokes [[conceptualize]] → [[signify]] → [[materialize]]; `reconstruct ≽` binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]] — recomposed from the **anchors**, so a name that does not fire its idea fails (anchor-fidelity, [[precise-circumscription]]); `minimal` binds [[minimalism]] · [[precise-circumscription]]. The symbol table is `references/formal-symbolic-notation.md`.
 
 1. Resolve `D` from context — the input corpus (multi-modal). Require the strategy `s` up front:
 
@@ -29,7 +29,7 @@ D ──CA──→ C ──η──→ A ──Φ──→ σ(·, s) ──→ 
 
 ∀ idea ∈ meaning(D) : ∃! home(idea) ∈ F ∪ Δ
 
-reconstruct(F) ≜ recomposition of D's meaning from F ∪ Δ
+reconstruct(F) ≜ recomposition of D's meaning from the anchors of F ∪ Δ — each name fired by the reader's priors alone
 
 fuse(cᵢ, cⱼ) ⇔ ∃ a : a circumscribes cᵢ ∪ cⱼ with no residual distinct load
 
