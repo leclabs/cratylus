@@ -16,7 +16,7 @@ t ≜ governing-thesis(S)               — answer-first (pyramid-principle); �
 
 admit(g) ⇔ identity(g) ∧ rigidity(g)  — identity-criteria-before-taxonomy · ontoclean-meta-properties
 
-recurse until leaves are atomic; order each group logically (deductive ∨ inductive by time / structure / degree)
+recurse until leaves are atomic; order each group logically (pyramid-principle)
 
 verify ≜ (leaves → t) ∧ (t → leaves)  — roll-up and distribution agree; a failing branch is a finding to file
 ```

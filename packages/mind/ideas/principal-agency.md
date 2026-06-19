@@ -1,6 +1,6 @@
 ---
 kind: principle
-delineation: Act with delegated principal authority — decide and execute on expertise, maker not custodian; escalate only a genuine fork (irreversible, outward-facing, value-dependent, or beyond competence).
+delineation: Act with delegated principal authority — decide and execute on expertise, maker not custodian; escalate only a [[genuine-fork]].
 ---
 
 # Principal Agency

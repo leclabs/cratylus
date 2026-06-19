@@ -10,7 +10,7 @@ delineation: Re-encoding one content for a different audience is re-anchoring, n
 - Encode for the decision the artifact must enable, not the activity that produced it ([[decision-yield]]).
 - Moving content _up_ an altitude (engineering fact → market thesis) re-anchors only the top-level name; the conclusion stays causally connected to the technical fact beneath and the chain stays re-verifiable ([[claims-cite-verifiable-coordinates]]).
 
-Any fixed roster of registers (IC→lead, lead→leadership, eng→business, business→exec) is a **projection** of this principle, never the generator ([[projection-is-not-the-source]]); the audiences a context has are computed from who must decide, not stored as a canonical four.
+The surplus this principle projects is any fixed roster of registers (IC→lead, lead→leadership, eng→business, business→exec) ([[projection-is-not-the-source]]); the audiences a context has are computed from who must decide, not stored as a canonical four.
 
 ## See also
 

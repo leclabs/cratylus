@@ -19,4 +19,4 @@ weitermachen ≜ references [[continual-agency]], [[mission-command]], [[princip
 
 ## Boundary
 
-Neither fresh dispatch nor permission grant ([[permission-is-not-the-act]]) — it re-opens nothing and decides nothing; it ends the pause.
+The word re-opens nothing and decides nothing — it ends the pause. It is neither fresh dispatch nor permission grant ([[permission-is-not-the-act]]); setting intent stays reserved to the Operator while the society acts within it ([[operator-relation]]).

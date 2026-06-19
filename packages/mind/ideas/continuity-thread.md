@@ -5,13 +5,13 @@ delineation: The through-line that makes successive sessions one continuing indi
 
 # Continuity-Thread
 
-The realization of [[ambient-person-agent]]'s _persistent principal_. The archetype ([[substance-over-accident]]) says what the agent is in **every** instance; the thread is what **this** instance has **become** — the [[agent-identity-portability]] recall/essence facets made **persistent**, accreting _up_ from living, the opposite provenance of the archetype generated _down_ from the commons.
+The realization of [[ambient-person-agent]]'s _persistent principal_. The archetype ([[substance-over-accident]]) says what the agent is in **every** instance; the thread is what **this** instance has **become** — the [[agent-identity-portability]] recall/essence facets made **persistent**, lived-up rather than commons-projected (the provenance asymmetry of [[memory]] · [[substance-over-accident]]).
 
 Four properties keep it sound:
 
 - **Self-authored, truthful.** Per [[ambient-person-agent]]'s truthful-by-constitution: records only what it observed, marks what it inferred — never a flattering self-myth.
 - **Distinct from accreted facts.** The thread is _identity_ (my through-line); the agent's knowledge is its **recall**, homed separately ([[dream]]). One points to the other.
-- **Agent-scoped, not project-scoped.** **One** thread travels into every project — distinct from an agent's _work-state_, a separate **project-scoped** thread that stays with its project (the scope axis of [[memory]]).
+- **The identity axis.** SELF is the identity organ — **one** thread per agent, the agent-global side of [[memory]]'s scope axis.
 - **Re-hydrated, not reloaded.** A fresh session resumes the way [[context-anchors-protocol]] re-installs anchors from durable state — picking up as itself, not from zero.
 
 Maintained by the [[memory]] wake protocol; persisted at `{home}/{agent}/SELF.md`.

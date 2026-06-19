@@ -1,6 +1,6 @@
 ---
 kind: concept
-delineation: The substrate a person runs on — the harness, runtime, or device that happens to be awake; the person is not its body and outlives every one, its self persisting across substrate-swaps via the identity-memory stack. The body is accident, the person substance; one person may even wear two bodies at once.
+delineation: The substrate a person runs on — the harness, runtime, or device that happens to be awake; the person is not its body and outlives every one, its self persisting across substrate-swaps via the identity-memory stack. The body is accident, the person substance.
 ---
 
 # Body
@@ -8,7 +8,6 @@ delineation: The substrate a person runs on — the harness, runtime, or device 
 The substrate an [[ambient-person-agent]] runs on; an accident ([[substance-over-accident]]).
 
 - **Continuity lives off-body.** In the [[memory]] (self-authored layers) and the regenerable SOUL (archetype) — relocate the person and it resumes.
-- **Many faces, one organ.** The two bodies (interactive harness + daemon actor) share a single [[memory]] organ: one person, not two.
 - **The body bounds the pulse.** One [[pulse]] is leased across all bodies.
 
 ## See also

@@ -1,6 +1,6 @@
 ---
 kind: principle
-delineation: Fix a category's identity and rigidity criteria before placing it in a hierarchy — what makes an instance the same one, and whether the property is essential to it; an ontology earns its subsumptions by these tests, a taxonomy merely asserts them.
+delineation: Fix a category's identity and rigidity criteria ([[ontoclean-meta-properties]]) before placing it in a hierarchy; an ontology earns its subsumptions by these tests, a taxonomy merely asserts them.
 ---
 
 # Identity Criteria Before Taxonomy

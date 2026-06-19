@@ -16,7 +16,7 @@ emit(c) :
 accept(c) ⇔ reconstruct(c from η alone) ≽ meaning(c) ∧ minimal
 ```
 
-`minimal` binds [[minimalism]] · [[precise-circumscription]]; restating a delineation or re-explaining a cited anchor is the recite-defect that fails it ([[self-sufficient-formalism]]) — the tell of an un-factored composite or a wrong anchor.
+`minimal` binds [[minimalism]] · [[precise-circumscription]]; the recite-defect ([[self-sufficient-formalism]]) fails it — here its tell is an un-factored composite or a wrong anchor.
 
 ## See also
 

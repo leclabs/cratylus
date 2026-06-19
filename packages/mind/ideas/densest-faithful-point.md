@@ -9,7 +9,7 @@ delineation: The single optimum of any expression — the point where removing a
 
 Corollary: verbosity's missing anchor is the **same argmin as [[precise-circumscription]]**, read at the expression grain.
 
-Corollary: **named anti-density patterns are surplus this optimum dissolves** — redundant qualifiers ("very"), filler transitions ("in addition to this"), hedging ("should probably"), activity-narration over outcome, generic value-claims: the catalogue of "adding a token does not raise fit," not a separate teaching. Any fixed authoring budget (N concepts per unit, M tokens per concept, a principles/examples ratio) is a **scope-bound parameterization** of this optimum, not a second criterion: the universal is "sit at the point," the numbers are a delta a substrate supplies.
+Corollary: **named anti-density patterns are surplus this optimum dissolves** — redundant qualifiers ("very"), filler transitions ("in addition to this"), hedging ("should probably"), activity-narration over outcome, generic value-claims: the catalogue of "adding a token does not raise fit," not a separate teaching. Any fixed authoring budget (N concepts per unit, M tokens per concept, a principles/examples ratio) is a **scope-bound projection** of this optimum — a [[projection-is-not-the-source]] of "sit at the point."
 
 ## See also
 

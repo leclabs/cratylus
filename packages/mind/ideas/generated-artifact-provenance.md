@@ -1,6 +1,6 @@
 ---
 kind: principle
-delineation: An artifact emitted from commons cells records its source cells + version (the `GENERATED from …` header); on regen that record is the common ancestor for three-way merge.
+delineation: An artifact emitted from commons cells records its source cells + version (the `GENERATED from …` header), keying that recorded ancestor to upstream cell identity across scopes.
 ---
 
 # Generated Artifact Provenance
