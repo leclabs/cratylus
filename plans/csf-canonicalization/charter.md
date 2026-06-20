@@ -1,6 +1,6 @@
 # csf-canonicalization — Charter (A0 · gate-0)
 
-**Slice.** A0 · gate-0 · standalone. **Owner.** Nico (+ Operator sign-off). **State.** Drafted; awaiting
+**Slice.** A0 · gate-0 · standalone. **Owner.** Nico (+ Operator sign-off). **State.** SIGNED OFF (Operator, 2026-06-20); was awaiting
 sign-off. No machine slice (β onward) executes until the criteria below are locked.
 
 **Purpose.** Define success for `csf-canonicalization` so it is **falsifiable before any machine slice
@@ -55,18 +55,18 @@ The corrected CSF op-chain is the spine:
 `resolve → semanticPartition → depalimpsest → distill(primitive ∨ deepestFaithfulComposite) →
 canonical_anchor(= σ*_R) → coalescence(merge same-anchor units) → CSF`.
 
-| Slice                      | What it delivers, in σ\*\_R terms                                                                                                                                                                                                                                                                  |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **A0** charter             | Defines success falsifiably **before** machine work — fixes `R` per use (corpus = LLM; layman door = human→LLM), the acceptance tests, and the target structure. Gates β. _(this document)_                                                                                                       |
-| **ε** praxis-update        | Embeds `task-is-an-implementation-spec` + `parallelizable-vertical-slice`→fan-out into [[praxis]]. Delivers the **authoring discipline** that lets every later slice be a self-sufficient spec. Independent of σ\*\_R mechanics; parallel.                                                          |
-| **ζ** disposition-defect   | Roots-causes why `recommendation-style-consensus-quality-pick` did not fire in `principal-ic` (projection density-collapse vs embodiment gap) and fixes the machinery. Protects the **render fidelity** `σ*_R` depends on — a disposition that silently drops is a `σ*_R` that lies (`L1` broken). |
-| **μ** projector-block-refs | Extends koine's composer to resolve `[[glossary#^block-ref]]` during projection. **Prerequisite for the new primitive-addressing** — without it the locked structure cannot project, so γ2 re-home depends on μ. (Mav.)                                                                            |
-| **α1** concept-contract    | The `concept` data type `⟨gloss, anchor?, factorization?⟩`; homes the σ\*\_R vocabulary (`dec_R`, `≅_R`, `len`, `C_R`) natively rather than borrowed. Gives the machine atoms a **typed object** to program against.                                                                              |
-| **α2** anchor=σ\*\_R       | Formalizes `canonical_anchor = σ*_R` in the CSF reference; retires `signum_aptissimum`. The **definitional correction** — makes "canonical" mean the reader-parameterized operator everywhere downstream cites it.                                                                                |
+| Slice                      | What it delivers, in σ\*\_R terms                                                                                                                                                                                                                                                                              |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A0** charter             | Defines success falsifiably **before** machine work — fixes `R` per use (corpus = LLM; layman door = human→LLM), the acceptance tests, and the target structure. Gates β. _(this document)_                                                                                                                    |
+| **ε** praxis-update        | Embeds `task-is-an-implementation-spec` + `parallelizable-vertical-slice`→fan-out into [[praxis]]. Delivers the **authoring discipline** that lets every later slice be a self-sufficient spec. Independent of σ\*\_R mechanics; parallel.                                                                     |
+| **ζ** disposition-defect   | Roots-causes why `recommendation-style-consensus-quality-pick` did not fire in `principal-ic` (projection density-collapse vs embodiment gap) and fixes the machinery. Protects the **render fidelity** `σ*_R` depends on — a disposition that silently drops is a `σ*_R` that lies (`L1` broken).             |
+| **μ** projector-block-refs | Extends koine's composer to resolve `[[lexicon#^block-ref]]` during projection. **Prerequisite for the new primitive-addressing** — without it the locked structure cannot project, so γ2 re-home depends on μ. (Mav.)                                                                                         |
+| **α1** concept-contract    | The `concept` data type `⟨gloss, anchor?, factorization?⟩`; homes the σ\*\_R vocabulary (`dec_R`, `≅_R`, `len`, `C_R`) natively rather than borrowed. Gives the machine atoms a **typed object** to program against.                                                                                           |
+| **α2** anchor=σ\*\_R       | Formalizes `canonical_anchor = σ*_R` in the CSF reference; retires `signum_aptissimum`. The **definitional correction** — makes "canonical" mean the reader-parameterized operator everywhere downstream cites it.                                                                                             |
 | **β** machine-atoms        | One vertical slice per atom (`conceptualize`+`probe` · `signify` · `materialize` · `exemplify` · `validate`): blind-name each atom's own concept (`σ*_LLM`), reconcile its process cell to the σ\*\_R/CSF ops, program to the concept-contract, validate, redeploy. Delivers **the corrected machine itself.** |
-| **γ1** corpus-audit        | Dogfoods the corrected machine over the **whole-repo content** (the concept/fragment is the unit, not the file): blind-signify each fragment → `σ*_LLM` → `{keep / re-anchor / coalesce / re-cut / re-home}` worklist. Delivers **the falsified gap** between stored anchors and true `σ*_LLM`.    |
-| **γ2** corpus-apply        | Executes the worklist: re-anchor to `σ*_LLM`, coalesce, re-cut, **home primitives as glossary blocks + composites into `mind/{kind}/{organ}/`**, rewire refs, regen, round-trip + reconstruct gate, redeploy. Delivers **the canonicalized substrate** — `σ*_LLM(C)` actually written down.       |
-| **δ** layman-door          | `elicit`(σ\*\_human) → CSF → recompose domain skills → compose agents-as-persons; demo one toy domain. Delivers **the self-extension door** — the objective's "on a layman's behalf" made real.                                                                                                  |
+| **γ1** corpus-audit        | Dogfoods the corrected machine over the **whole-repo content** (the concept/fragment is the unit, not the file): blind-signify each fragment → `σ*_LLM` → `{keep / re-anchor / coalesce / re-cut / re-home}` worklist. Delivers **the falsified gap** between stored anchors and true `σ*_LLM`.                |
+| **γ2** corpus-apply        | Executes the worklist: re-anchor to `σ*_LLM`, coalesce, re-cut, **home primitives as lexicon blocks + composites into `mind/{kind}/{organ}/`**, rewire refs, regen, round-trip + reconstruct gate, redeploy. Delivers **the canonicalized substrate** — `σ*_LLM(C)` actually written down.                     |
+| **δ** layman-door          | `elicit`(σ\*\_human) → CSF → recompose domain skills → compose agents-as-persons; demo one toy domain. Delivers **the self-extension door** — the objective's "on a layman's behalf" made real.                                                                                                                |
 
 ---
 
@@ -100,11 +100,11 @@ readers ([[signifier-star-r]] `L4` — `σ*_R` differs per `R`):
   _Testable:_ each atom's process cell cites the corrected op-chain; the pipeline round-trips on a known cell.
 
 - **A4 — primitives are block-addressable; composites are organ-homed.** As a polis-developer, I want
-  primitives to live as block-referenceable glossary entries (`[[glossary#^anchor]]`) and composites under
+  primitives to live as block-referenceable lexicon entries (`[[lexicon#^anchor]]`) and composites under
   `mind/{kind}/{organ}/{fragment}`, so that "filenames are not corpus boundaries" is concrete and the
   projector can compose by block-ref.
   _Testable:_ after γ2, primitives resolve as glossary blocks, composites sit under their organ, and koine
-  (post-μ) projects a composite by resolving its `[[glossary#^anchor]]` refs.
+  (post-μ) projects a composite by resolving its `[[lexicon#^anchor]]` refs.
 
 - **A5 — the corpus reconstructs equivalent-or-better.** As a polis-developer, I want the canonicalized
   corpus to pass round-trip + reconstruct (`≅_R` / `L1`): the source reconstructs equivalent-or-better from
@@ -161,7 +161,7 @@ falsification of A1 — it is what the prior blind audit ran when it found ~8/10
 - Gates: **A1** (anchor = `σ*_R`), **A2** (the corrected definition, measured by the audit it enables),
   **A4** (primitives blind-signify to their glossary-block anchor; composites to their fragment name).
 
-### Test shape 3 — round-trip + reconstruct equivalence (L1 / ≅\_R)
+### Test shape 3 — round-trip + reconstruct equivalence (L1 / ≅_R)
 
 Project the canonicalized corpus, then have a fresh reader **reconstruct** the source concept from the routed
 cells + deltas. PASS iff reconstruction is `≅_R` equivalent-or-better (`L1`: `dec_R(σ*_R(c)) ≅_R c`). This is
@@ -180,7 +180,7 @@ cells + deltas. PASS iff reconstruction is `≅_R` equivalent-or-better (`L1`: `
 | A2        | Shape 2 (audit enabled by the corrected definition)                            |
 | A3        | Shape 1 (pipeline round-trips on a known cell, fresh subagent)                 |
 | A4        | Shape 2 (blind-signify to anchor) + Shape 3 (composite projects after re-home) |
-| A5        | Shape 3 (round-trip + reconstruct ≅\_R)                                        |
+| A5        | Shape 3 (round-trip + reconstruct ≅_R)                                         |
 | A6        | Structural check at β-validate (reader + write-discipline declared)            |
 | B1        | Shape 1 (elicit converges from σ\*\_human, fresh subagent)                     |
 | B2        | Shape 1 (δ toy-domain demo end-to-end, fresh subagent)                         |
@@ -197,17 +197,17 @@ and μ (projector) can depend on it.
 ### 4.1 Two homes, by kind
 
 - **Primitives** (`concept · principle · process · utility · structure · classification`) home in the
-  **glossary** as **block-referenceable entries**, addressed `[[glossary#^anchor]]` — **not as files**. A
+  **lexicon** as **block-referenceable entries**, addressed `[[lexicon#^anchor]]` — **not as files**. A
   primitive is a glossary _block_, not a file. This is what "filenames are not corpus boundaries" means
   concretely.
 - **Composites** (`agent · skill · persona · task · pattern · runbook · troubleshooting`) land in
   **`mind/{kind}/{organ}/{fragment}`** — keyed by composite `kind`, then the MECE agent-anatomy **organ**
   (the STANCE / CONATUS partition of `docs/agent-conceptual-anatomy.md`) — and compose primitives via
-  `[[glossary#^anchor]]` block-refs. Fragments typed by **koine IR**.
+  `[[lexicon#^anchor]]` block-refs. Fragments typed by **koine IR**.
 
 ### 4.2 The projector requirement (slice μ)
 
-The new primitive-addressing requires the composer to **resolve `[[glossary#^block-ref]]` block-references
+The new primitive-addressing requires the composer to **resolve `[[lexicon#^block-ref]]` block-references
 during projection**. Today koine resolves whole-file `[[anchor]]` refs; it does not resolve into a block
 within a file. **Slice μ (Mav)** extends the composer to do so. **γ2 re-home and μ are coupled** — the
 re-home cannot project until μ lands; μ is a hard dependency of γ2.
@@ -233,7 +233,7 @@ repeal:
   coordinate of the exemplar itself** — a scope-accident made explicit, consistent with
   [[substance-over-accident]]: the organ is substance for a composite-fragment, not accident.
 - **For primitives the rule is _strengthened_, not broken.** A primitive moves from one-file-per-cell to
-  one-_block_-per-cell in a shared glossary. Its address is still its anchor (`[[glossary#^anchor]]`); only
+  one-_block_-per-cell in a shared **lexicon**. Its address is still its anchor (`[[lexicon#^anchor]]`); only
   the carrier changes from file to block. "Structure is by anchor" holds verbatim — the anchor still _is_ the
   address.
 
@@ -248,18 +248,18 @@ Two distinct objects share the word "glossary"; the charter keeps them separate:
 - **`GLOSSARY.md` today** is a _generated_ human-reader projection of `ideas/` (`toolkit/glossary.py`; its
   own header: "a second projection of the same source-graph … the projection is not the source"). It is a
   `σ*_human` **render**, downstream of the source.
-- **The target "glossary"** of §4.1 is a **source home** — the canonical store of primitive blocks, each a
-  `σ*_LLM` entry addressed `[[glossary#^anchor]]`. This is **`σ*_LLM`, the source**, not a human render.
+- **The target source-home** of §4.1 (now named **`lexicon`**) is the canonical store of primitive blocks, each a
+  `σ*_LLM` entry addressed `[[lexicon#^anchor]]`. This is **`σ*_LLM`, the source**, not a human render.
 
 These are not in conflict; they are the **two readers of the same primitive set**
 ([[llm-native-source-human-render-at-boundary]]): the canonical primitive home is `R = LLM` (the source
 blocks), and the human-facing gloss is a **boundary render** (`σ*_human`) computed lazily at human consumption
 and **never stored beside the source**. The existing `gloss: true` cells are recast the same way: a gloss cell
 is the `σ*_human` render of a dense anchor, not a second source. γ2 must therefore name the two objects
-distinctly so the source-glossary (primitive blocks) is not confused with the projection-glossary (the
-generated human index). **Recommended:** the source home is named to avoid collision with the generated
-`GLOSSARY.md` (e.g. a `glossary` source that the human `GLOSSARY.md` continues to project from) — a naming
-call flagged to the Operator in the summary below.
+distinctly so the source primitive-store is not confused with the projection-glossary (the generated human
+index). **LOCKED (Operator, 2026-06-20):** the source home is **`lexicon`** — primitive blocks addressed
+`[[lexicon#^anchor]]`; the generated **`GLOSSARY.md`** keeps its name and projects _from_ `lexicon`. A
+distinct word (not lowercase `glossary`) avoids the macOS case-insensitive path collision with `GLOSSARY.md`.
 
 ---
 
@@ -269,3 +269,9 @@ This charter is accepted when **the Operator reviews and agrees** the objectives
 criteria), blind-validation strategy, and the locked target-structure decision. **No machine slice (β
 onward) starts until these criteria are locked.** A0 is the one slice in this plan that requires Operator
 sign-off as its gate.
+
+**SIGNED OFF — Operator, 2026-06-20.** Both reserved calls ratified: (1) the composite-layer
+`{kind}/{organ}` directory reversal is **locked** (recast-as-scope-accident per §4.3; supersedes
+`structure-by-anchor-only` for composites, strengthens it for primitives); (2) the source primitive-home
+is named **`lexicon`** (§4.4), refs `[[lexicon#^anchor]]`, `GLOSSARY.md` projects from it. The machine
+spine (μ · β · γ · δ) is unblocked.
