@@ -27,6 +27,37 @@ sharded-plan-layout. The founders are among the projected agents ("agents born a
 - **place** — defs/skills overwritten freely; SELF/MEMORY/EPISODIC seeded only-if-absent; **never prunes** — agent deletion = manual per-host def rm + sidecar archive.
 - **skill projection** — `[[x]]` → `/trigger` (kind×harness); trigger read verbatim from cell front-matter.
 
+## Dual-deploy: `deploy: skill-dir` (memory-home-dual-deploy)
+
+Deployment is a projection axis **orthogonal to `kind`** (a cell has one kind; how it deploys is a
+separate accident). The `memory` organ (`kind: structure`, `render: verbatim`) must do BOTH: project its
+`## Protocol` verbatim into every agent SOUL **and** deploy as a host `skills/memory/` dir carrying the
+bundled `episodic` tool ("one cell, two deploy fates"). Resolved by two front-matter flags:
+
+- **`deploy: skill-dir`** — adds a NON-skill cell to the skill deploy set (`cells.slugs_deploying_as_skill()`
+  = `kind:skill` ∪ `deploy:skill-dir`, used by `resolve.main` and `deploy.py --kind skill`). Such a cell
+  renders SKILL.md via `resolve.emit_skill_dir` — its **ref-free `## Tool` section** emitted verbatim
+  (heading dropped), NOT the skill composer (which assumes a skill's H1 + `≜` shape). The `## Tool` body
+  ships to a host where `[[ ]]` can't resolve, so it must be ref-free + operative (like `## Protocol`).
+- **`bundle: <relpath>`** — a BUILD-ARTIFACT companion (distinct from `assets:`, which are committed
+  cell-dir files). Sourced relative to `cells.ROOT` (= `packages/mind`); staged by basename beside
+  SKILL.md by `resolve._stage_bundle`. memory → `bundle: ../episodic/dist/episodic.mjs`.
+- **`skill_description:`** (optional) — host-side **discovery** copy for the SKILL.md `description` (a
+  one-line "what is this, when do I reach for it"), distinct from the cell's reconstruction-grade
+  `delineation`. `emit_skill_dir` prefers it; falls back to `delineation`.
+
+**Build before deploy.** `bundle:` reads a build OUTPUT (`dist/`, gitignored). Run the toolsource build
+first — `pnpm --filter episodic build` (or `pnpm build` / `turbo build`, which CI/pre-commit run) — else
+`resolve.py` **hard-errors** (never silently ships a tool-less home). Pipeline becomes: `pnpm --filter
+episodic build` → `resolve.py` → `glossary.py` → `verify.py` → `deploy.py`. Host invocation of the landed
+tool: `node ~/.claude/skills/memory/episodic.mjs encode --home ~/.claude/agents/<name> --scope user --body
+'…'`. Test: `test_place.py §5`.
+
+**Coupling law (rollout).** A SOUL whose ENCODE bullet names `~/.claude/skills/memory/episodic.mjs` breaks
+if that host has no memory skill — so deploying the new agent SOULs and the `memory` skill dir to a live
+host must be **atomic** (`--kind agent` + `--kind skill` together, per host). The fleet rollout itself is
+the `wake-trigger-and-cutover` task.
+
 ## Gotchas (composer, `skill.py`)
 
 - Requires an H1: all body before the first H1 is **silently dropped** (known bug — contradicts degrade-visibly; fix pending).

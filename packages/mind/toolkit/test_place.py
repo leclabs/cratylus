@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
-"""skill-companion-deploy tests: dir-form cells (`ideas/<slug>/<slug>.md` beside
-companion assets), asset staging into .render, and the placer shipping a skill's
-whole dir (SKILL.md + assets) -- WHILE a flat, asset-less skill still ships
-exactly its SKILL.md and nothing more (the golden-master invariant).
+"""skill-companion-deploy + memory-home-dual-deploy tests.
+
+skill-companion-deploy: dir-form cells (`ideas/<slug>/<slug>.md` beside companion
+assets), asset staging into .render, and the placer shipping a skill's whole dir
+(SKILL.md + assets) -- WHILE a flat, asset-less skill still ships exactly its
+SKILL.md and nothing more (the golden-master invariant).
+
+memory-home-dual-deploy (§5): a `deploy: skill-dir` organ (NOT kind: skill) joins
+the skill deploy set, renders SKILL.md from its `## Tool` section (the skill
+composer's H1/≜ shape NOT required), and stages a `bundle:` build artifact --
+with hard-error guards for a missing `## Tool` or an unbuilt artifact.
 
 Run: python3 toolkit/test_place.py   (exit non-zero on any failure)
 """
@@ -104,13 +111,98 @@ def main() -> int:
         if (got, rc) != (want, 0):
             fails.append(f"HOME-RESOLVE({home!r}): got {(got, rc)}, want {(want, 0)}")
 
+    # --- 5. dual-deploy ("one cell, two deploy fates", memory-home-dual-deploy):
+    # a `deploy: skill-dir` organ (NOT kind: skill) joins the skill deploy set,
+    # renders SKILL.md from its `## Tool` section, and stages a `bundle:` build
+    # artifact -- while a plain structure cell stays out of the set. ---
+    with tempfile.TemporaryDirectory() as td:
+        root = pathlib.Path(td)
+        ideas = root / "ideas"
+        # the organ-home: structure kind, deploys as a skill dir, bundles a tool.
+        _write(ideas / "org.md",
+               "---\nkind: structure\ndeploy: skill-dir\n"
+               "bundle: art/tool.mjs\ndelineation: the organ home.\n---\n"
+               "# Org\n\nintro\n\n## Tool\n\nrun `tool.mjs encode`.\n\n"
+               "## See also\n\n- [[x]]\n")
+        _write(ideas / "plain.md",
+               "---\nkind: structure\n---\n# Plain\n\na plain structure cell\n")
+        _write(ideas / "sk.md", "---\nkind: skill\n---\n# Sk\n\nflat skill\n")
+        (root / "art").mkdir()
+        (root / "art" / "tool.mjs").write_bytes(b"#!/usr/bin/env node\nTOOL\n")
+
+        old_ideas, old_root = cells.IDEAS, cells.ROOT
+        cells.IDEAS, cells.ROOT = ideas, root
+        cells.reset_storage_caches()
+        try:
+            # deploy-set membership: union of kind:skill and deploy:skill-dir;
+            # the plain structure cell is excluded.
+            if cells.slugs_deploying_as_skill() != ["org", "sk"]:
+                fails.append(f"DEPLOY-SET: {cells.slugs_deploying_as_skill()} "
+                             f"(want [org, sk]; plain excluded)")
+            if not cells.deploys_as_skill_dir("org"):
+                fails.append("SKILL-DIR-FLAG: org not recognized as deploy: skill-dir")
+            if cells.deploys_as_skill_dir("sk"):
+                fails.append("SKILL-DIR-FLAG: a kind:skill cell must not be skill-dir")
+            if cells.deploys_as_skill_dir("plain"):
+                fails.append("SKILL-DIR-FLAG: a plain structure cell must not be skill-dir")
+
+            # SKILL.md render: name + description + provenance header + the `## Tool`
+            # body verbatim (heading itself dropped); the composer's H1/≜ shape is
+            # NOT required of an organ cell.
+            text, bh, _ = resolve_mod.emit_skill_dir("org", "strong-llm-lean", "claude-code")
+            if "name: org" not in text or "description: the organ home." not in text:
+                fails.append("SKILLDIR-FM: name/description not emitted")
+            if "run `tool.mjs encode`." not in text:
+                fails.append("SKILLDIR-BODY: `## Tool` body not emitted")
+            if "## Tool" in text:
+                fails.append("SKILLDIR-HEADING: the `## Tool` heading leaked into SKILL.md")
+            if "intro" in text or "## See also" in text:
+                fails.append("SKILLDIR-LEAK: non-Tool sections leaked into SKILL.md")
+            if f"content-hash: sha256:{bh}" not in text:
+                fails.append("SKILLDIR-HASH: provenance content-hash absent/mismatched")
+
+            # bundle staging: build artifact copied byte-identical; a cell with no
+            # `bundle:` is a no-op.
+            with tempfile.TemporaryDirectory() as sd:
+                dest = pathlib.Path(sd)
+                resolve_mod._stage_bundle("org", dest)
+                if (dest / "tool.mjs").read_bytes() != b"#!/usr/bin/env node\nTOOL\n":
+                    fails.append("STAGE-BUNDLE: artifact not staged byte-identical")
+                resolve_mod._stage_bundle("sk", dest)  # no `bundle:` -> no-op
+                if list(dest.iterdir()) != [dest / "tool.mjs"]:
+                    fails.append("STAGE-BUNDLE-NOOP: bundle-less cell staged something")
+
+            # degrade-visibly: a skill-dir cell with no `## Tool` is a hard error,
+            # and an unbuilt bundle artifact is a hard error (never a silent skip).
+            _write(ideas / "notool.md",
+                   "---\nkind: structure\ndeploy: skill-dir\ndelineation: x.\n---\n# N\n\nbody\n")
+            _write(ideas / "missing.md",
+                   "---\nkind: structure\ndeploy: skill-dir\nbundle: art/gone.mjs\n"
+                   "delineation: x.\n---\n# M\n\n## Tool\n\nt\n")
+            cells.reset_storage_caches()
+            try:
+                resolve_mod.emit_skill_dir("notool", "strong-llm-lean", "claude-code")
+                fails.append("NOTOOL-GUARD: a missing `## Tool` did not hard-error")
+            except SystemExit:
+                pass
+            try:
+                with tempfile.TemporaryDirectory() as sd2:
+                    resolve_mod._stage_bundle("missing", pathlib.Path(sd2))
+                fails.append("MISSING-BUNDLE-GUARD: an unbuilt artifact did not hard-error")
+            except SystemExit:
+                pass
+        finally:
+            cells.IDEAS, cells.ROOT = old_ideas, old_root
+            cells.reset_storage_caches()
+
     if fails:
         for x in fails:
             print("FAIL", x, file=sys.stderr)
         print(f"\n{len(fails)} failure(s)", file=sys.stderr)
         return 1
     print("PASS place: dir-form cells + asset staging + whole-dir deploy "
-          "(asset-less skill ships exactly SKILL.md)")
+          "(asset-less skill ships exactly SKILL.md) + deploy: skill-dir organ "
+          "(SKILL.md from `## Tool` + bundle staging, hard-error guards)")
     return 0
 
 

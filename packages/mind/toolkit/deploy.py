@@ -64,7 +64,11 @@ def main() -> int:
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args()
 
-    names = cells.slugs_of_kind(args.kind)
+    # --kind skill deploys the full skill-dir set: kind:skill cells PLUS any
+    # `deploy: skill-dir` organ (e.g. memory, which carries the bundled episodic
+    # tool). --kind agent stays the kind:agent species.
+    names = (cells.slugs_deploying_as_skill() if args.kind == "skill"
+             else cells.slugs_of_kind(args.kind))
     if args.only:
         want = [n.strip() for n in args.only.split(",") if n.strip()]
         unknown = [n for n in want if n not in names]

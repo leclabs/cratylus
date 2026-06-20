@@ -365,3 +365,31 @@ def slugs_of_kind(kind: str) -> list[str]:
     """Every corpus slug whose front-matter `kind` matches -- the deployable
     species of a given kind (e.g. 'agent', 'skill'), sorted."""
     return [s for s in corpus_slugs() if parse_cell(s)["fm"].get("kind") == kind]
+
+
+# Deployment is a projection axis ORTHOGONAL to `kind` (a cell has exactly one
+# kind; how it deploys is a separate accident). `deploy: skill-dir` lets a
+# non-skill cell ALSO place as a host `skills/<slug>/` dir -- e.g. the `memory`
+# organ (kind: structure) both projects its `## Protocol` verbatim into SOULs AND
+# deploys as the home that carries the bundled `episodic` tool ("one cell, two
+# deploy fates", memory-home-dual-deploy).
+DEPLOY_AS_SKILL_DIR = "skill-dir"
+
+
+def deploys_as_skill_dir(slug: str) -> bool:
+    """True if a cell deploys as a host skill dir WITHOUT being `kind: skill` --
+    it carries `deploy: skill-dir`. Such a cell renders SKILL.md via the
+    dedicated skill-dir path (its `## Tool` section), not the skill composer."""
+    fm = parse_cell(slug)["fm"]
+    return fm.get("kind") != "skill" and fm.get("deploy") == DEPLOY_AS_SKILL_DIR
+
+
+def slugs_deploying_as_skill() -> list[str]:
+    """Every slug that places as a host `skills/<slug>/` dir: the `kind: skill`
+    cells plus any `deploy: skill-dir` cell. The deploy set for `--kind skill`,
+    sorted. One name per dir ([[named-marker-as-index-key]])."""
+    out = [
+        s for s in corpus_slugs()
+        if parse_cell(s)["fm"].get("kind") == "skill" or deploys_as_skill_dir(s)
+    ]
+    return sorted(out)

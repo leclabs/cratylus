@@ -12,25 +12,30 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 ## Status mirror
 
-| Task                       | State   | Owner                                  | Origin                |
-| -------------------------- | ------- | -------------------------------------- | --------------------- |
-| `memory-home-dual-deploy`  | ready   | Mav (machinery) + Nico (Protocol edit) | memory-tool-bundling  |
-| `vault-reference-home`     | ready   | Mav                                    | memory-model-redesign |
-| `wake-trigger-and-cutover` | pending | Mav (machinery) + Nico (wake edit)     | memory-tool-bundling  |
+| Task                       | State   | Owner                              | Origin                |
+| -------------------------- | ------- | ---------------------------------- | --------------------- |
+| `vault-reference-home`     | ready   | Mav                                | memory-model-redesign |
+| `wake-trigger-and-cutover` | pending | Mav (machinery) + Nico (wake edit) | memory-tool-bundling  |
 
 ### ready
 
-- **memory-home-dual-deploy** — make the `memory` organ the deployed home of the `episodic` tool;
-  resolve "one cell, two deploy fates" (verbatim SOUL projection ∧ host `skills/memory/` dir carrying the
-  bundled artifact). Deps (both ✓ on main): skill-companion-deploy, episodic-toolsource-bundle.
 - **vault-reference-home** — the Obsidian vault as the 5th memory home (cold, on-demand). Lower
   priority; not load-bearing for wake.
 
 ### pending
 
 - **wake-trigger-and-cutover** — self-triggering per-host EPISODIC migration at wake + fleet cutover to
-  the bundled tool; removes the last package remnants. Deps: memory-home-dual-deploy.
+  the bundled tool; removes the last package remnants. **Dep `memory-home-dual-deploy` now ✓** — unblocked,
+  promotable to ready. This is the live atomic per-host rollout (new agent SOULs + the `memory` skill
+  together, per the coupling law).
 
+> **Done 2026-06-20:** `memory-home-dual-deploy` (→ `completed/`). The `memory` organ now deploys as the
+> host `skills/memory/` home carrying the bundled `episodic` tool, via a `deploy: skill-dir` + `bundle:`
+> axis orthogonal to `kind` (the γ2-B lexicon-block layout retired the task's original "dir-form" framing).
+> Nico authored the `## Protocol` ENCODE affordance line (the single, enumerated SOUL delta across 11
+> agents) + the `## Tool` SKILL.md section (CE ∧ ME PASS). `verify.py` PASS; 17/17 tests; deploy proven.
+> **Live fleet rollout deferred to `wake-trigger-and-cutover`.**
+>
 > **Done 2026-06-20:** `fleet-redeploy-lcaraccioli-catchup` (→ `completed/`). Brought upmav/upgoose to
 > σ\*\_R; surfaced + fixed a `--home` footgun that had silently mis-deployed the _whole_ remote fleet
 > (corrected ash/forge/spark too). Hardened `place/ssh.py` so an explicit home dir self-corrects to

@@ -148,10 +148,46 @@ def parse_argv(argv: list[str]) -> tuple[str, str, pathlib.Path, bool]:
     return reader, harness, out or DEFAULT_OUT, force
 
 
+def emit_skill_dir(slug: str, reader: str = "strong-llm",
+                   harness: str = "claude-code") -> tuple[str, str, str]:
+    """Render a `deploy: skill-dir` cell -- a NON-skill organ that ALSO deploys as
+    a host skill dir (e.g. `memory`, which both projects `## Protocol` verbatim
+    into SOULs AND carries the bundled `episodic` tool) -- to a SKILL.md. The body
+    is the cell's `## Tool` section emitted VERBATIM (the heading itself dropped),
+    NOT routed through the skill composer (which assumes a skill cell's H1 + `≜`
+    formula). Front-matter is `name` (slug) + `description` (delineation); the
+    standard provenance header + body content-hash ride so the drift/profile
+    guards apply identically. The `## Tool` section must be ref-free + operative
+    (like `## Protocol`): it ships to a host where `[[ ]]` cannot resolve. Returns
+    (full text, body-hash, body). Same shape as emit() so _emit_one dispatches on
+    either."""
+    cell = cells.parse_cell(slug)
+    section = cells.section_body(cell["body"], "Tool")
+    if not section:
+        sys.exit(f"{slug}: `deploy: skill-dir` needs a non-empty `## Tool` section "
+                 f"(the SKILL.md operative body) -- none found "
+                 f"([[no-permissive-defaults]])")
+    body = "\n".join(section).rstrip("\n") + "\n"
+    bh = render_cc.body_hash(body)
+    profile = f"{reader}/{harness}"
+    # SKILL.md `description` is host-side DISCOVERY copy (a one-line "what is this,
+    # when do I reach for it"), a different job from the cell's reconstruction-grade
+    # `delineation`. Prefer an explicit `skill_description:`; fall back to delineation.
+    desc = cells.parse_cell(slug)["fm"].get("skill_description", "").strip() \
+        or cells.delineation(slug)
+    lines = [
+        "---", f"name: {slug}", f"description: {desc}", "---", "",
+        render_cc.provenance_header(slug, profile, bh), "", body.rstrip("\n"), "",
+    ]
+    return "\n".join(lines), bh, body
+
+
 def _emit_one(slug: str, target: pathlib.Path, reader: str, harness: str,
-              profile: str, force: bool) -> int:
-    """Drift/profile-guarded emit of one cell to `target`. Returns 0 on write,
-    1 on a guarded refusal ([[regenerate-without-clobbering]])."""
+              profile: str, force: bool, emit_fn=emit) -> int:
+    """Drift/profile-guarded emit of one cell to `target`. `emit_fn` selects the
+    renderer ((slug, reader, harness) -> (text, hash, body)): the default emit()
+    for kind:agent/skill, emit_skill_dir for a `deploy: skill-dir` organ. Returns
+    0 on write, 1 on a guarded refusal ([[regenerate-without-clobbering]])."""
     rec = recorded_hash(target)
     cur = ondisk_body_hash(target)
     if rec is not None and cur is not None and rec != cur:
@@ -163,7 +199,7 @@ def _emit_one(slug: str, target: pathlib.Path, reader: str, harness: str,
         print(f"PROFILE {slug}: deployed as {prof}, refusing to overwrite with "
               f"{profile} -- pass --force to switch profile", file=sys.stderr)
         return 1
-    out, body_hash, _ = emit(slug, reader, harness)
+    out, body_hash, _ = emit_fn(slug, reader, harness)
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(out, encoding="utf-8")
     print(f"EMIT   {slug} -> {target}  [{profile}]  content-hash sha256:{body_hash}")
@@ -193,6 +229,28 @@ def _stage_assets(slug: str, dest_dir: pathlib.Path) -> None:
         print(f"ASSET  {slug}/{name} -> {dest_dir / name}")
 
 
+def _stage_bundle(slug: str, dest_dir: pathlib.Path) -> None:
+    """Copy a cell's declared BUILD-ARTIFACT bundles into its rendered skill dir.
+    Distinct from `_stage_assets` (committed cell-dir companions): a `bundle:` is
+    a build OUTPUT (e.g. the dependency-free `episodic` toolsource at
+    `../episodic/dist/episodic.mjs`), gitignored at source and sourced relative to
+    the corpus root (`cells.ROOT` = packages/mind). Comma-separated paths; each
+    staged under its basename, byte-for-byte (binary-safe). A declared-but-unbuilt
+    artifact is a HARD ERROR ([[no-permissive-defaults]]) -- never silently ship a
+    home without its tool."""
+    decl = cells.parse_cell(slug)["fm"].get("bundle", "").strip()
+    if not decl:
+        return
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    for spec in (b.strip() for b in decl.split(",") if b.strip()):
+        src = (cells.ROOT / spec).resolve()
+        if not src.is_file():
+            sys.exit(f"{slug}: bundle {spec!r} not built at {src} -- build it first "
+                     f"(e.g. `pnpm --filter episodic build`)")
+        (dest_dir / src.name).write_bytes(src.read_bytes())
+        print(f"BUNDLE {slug}/{src.name} -> {dest_dir / src.name}")
+
+
 def main() -> int:
     reader, harness, out_dir, force = parse_argv(sys.argv[1:])
     profile = f"{reader}/{harness}"
@@ -207,9 +265,12 @@ def main() -> int:
     # funnels several profiles into one shared dir.
     if out_dir == DEFAULT_OUT:
         skills_dir = DEFAULT_OUT.parent / "skills"
-        for skill in cells.slugs_of_kind("skill"):
-            rc |= _emit_one(skill, skills_dir / skill / "SKILL.md", reader, harness, profile, force)
-            _stage_assets(skill, skills_dir / skill)
+        for skill in cells.slugs_deploying_as_skill():
+            sk_dir = skills_dir / skill
+            emit_fn = emit_skill_dir if cells.deploys_as_skill_dir(skill) else emit
+            rc |= _emit_one(skill, sk_dir / "SKILL.md", reader, harness, profile, force, emit_fn)
+            _stage_assets(skill, sk_dir)   # committed cell-dir companions
+            _stage_bundle(skill, sk_dir)   # build-artifact bundles (e.g. episodic)
     return rc
 
 
