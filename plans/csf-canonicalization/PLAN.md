@@ -93,4 +93,4 @@ Operator's informed go (see `audit-worklist.md` §"Scope note"). The **fleet red
 likewise gated on this initiative branch merging to `main`.
 
 > Mirror note: **ε · ζ · A2(α1) · A1 · A3 · A4 · A5 · B1(γ1) · C1(δ) → `completed/`**; **A0
-> `charter.md`** signed off. `pending/` holds only **B2 (→γ2-B)**. `/praxis sync` reconciles.
+> `charter.md`** signed off. `pending/` is empty; **γ2-B** is scoped as a self-sufficient impl spec in `ready/gamma2b-restructure.md` (the old B2 stub — re-anchor/coalesce — was done in γ2-A and is retired). `/praxis sync` reconciles.
