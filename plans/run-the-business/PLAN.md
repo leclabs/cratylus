@@ -12,22 +12,26 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 ## Status mirror
 
-| Task                       | State   | Owner                              | Origin                |
-| -------------------------- | ------- | ---------------------------------- | --------------------- |
-| `vault-reference-home`     | ready   | Mav                                | memory-model-redesign |
-| `wake-trigger-and-cutover` | pending | Mav (machinery) + Nico (wake edit) | memory-tool-bundling  |
+| Task                   | State | Owner | Origin                |
+| ---------------------- | ----- | ----- | --------------------- |
+| `vault-reference-home` | ready | Mav   | memory-model-redesign |
 
 ### ready
 
 - **vault-reference-home** — the Obsidian vault as the 5th memory home (cold, on-demand). Lower
   priority; not load-bearing for wake.
 
-### pending
-
-- **wake-trigger-and-cutover** — self-triggering per-host EPISODIC migration at wake + fleet cutover to
-  the bundled tool; removes the last package remnants. **Dep `memory-home-dual-deploy` now ✓** — unblocked,
-  promotable to ready. This is the live atomic per-host rollout (new agent SOULs + the `memory` skill
-  together, per the coupling law).
+> **Done 2026-06-20:** `wake-trigger-and-cutover` (→ `completed/`). Closes the memory-tool-bundling tail
+> and the `memory-model-redesign` live-rollout tail. Nico added the wake-cell migrate-if-needed step
+> (`feat(corpus)` `b37323c`, verify PASS); Mav scrubbed the retired `@leclabs/koine-episodic` library
+> identity — removed the dead `src/index.ts` barrel, rewrote the episodic README/AGENTS/CLAUDE + koine
+> reference (`docs(episodic)` `f3dc5eb`). **Fleet cutover deployed & verified live (the tree, not deploy
+> stdout) on all 6 hosts:** each carries `skills/memory/episodic.mjs` (15357 B), SOULs name the
+> `episodic.mjs encode` affordance, wake carries the migrate step, sidecars sha256-untouched. Tool proven
+> end-to-end on **fire** (encode mints+appends; migrate is 2-leg no-loss). **Open (Operator):** only fire
+> has `node`+`claude` on PATH — the other 5 read as corpus replicas with no agent runtime; if any host
+> agents, they need `node` provisioned. Legacy `EPISODIC.md` lingers beside `.jsonl` on remotes (harmless;
+> wake-migrate no-ops when `.jsonl` present).
 
 > **Done 2026-06-20:** `memory-home-dual-deploy` (→ `completed/`). The `memory` organ now deploys as the
 > host `skills/memory/` home carrying the bundled `episodic` tool, via a `deploy: skill-dir` + `bundle:`
