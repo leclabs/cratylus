@@ -19,16 +19,18 @@ canonical anchor is legible to whoever asked **because it is canonical** (one le
 
 ## Tasks
 
-| Task                                                          | Phase        | State     | Depends      |
-| ------------------------------------------------------------- | ------------ | --------- | ------------ |
-| A1 blind-test every atom name → canonical anchor              | A machine    | **ready** | —            |
-| A2 define the `concept` contract (the interface)              | A machine    | **ready** | —            |
-| A3 reconcile process cells to the reference CSF formalization | A machine    | pending   | A1, A2       |
-| A4 fold `probe` into `conceptualize` (verify blind)           | A machine    | pending   | A1           |
-| A5 correctly-named validate + two-audience surface            | A machine    | pending   | A1, A3       |
-| B1 full-corpus blind canonical-anchor audit (dogfood)         | B self-apply | pending   | A3           |
-| B2 re-anchor, coalesce, re-cut, gate, redeploy                | B self-apply | pending   | B1           |
-| C1 layman self-extension flow                                 | C product    | pending   | A, B         |
-| C2 fix the disposition-projection defect                      | C product    | pending   | — (parallel) |
+| Task                                                            | Phase        | State     | Depends      |
+| --------------------------------------------------------------- | ------------ | --------- | ------------ |
+| A0 charter: objectives, user stories, blind-validation strategy | 0 charter    | **ready** | —            |
+| A1 blind-test every atom name → canonical anchor                | A machine    | pending   | A0           |
+| A2 define the `concept` contract (the interface)                | A machine    | pending   | A0           |
+| A3 reconcile process cells to the reference CSF formalization   | A machine    | pending   | A1, A2       |
+| A4 fold `probe` into `conceptualize` (verify blind)             | A machine    | pending   | A1           |
+| A5 correctly-named validate + two-audience surface              | A machine    | pending   | A1, A3       |
+| B1 full-corpus blind canonical-anchor audit (dogfood)           | B self-apply | pending   | A3           |
+| B2 re-anchor, coalesce, re-cut, gate, redeploy                  | B self-apply | pending   | B1           |
+| C1 layman self-extension flow                                   | C product    | pending   | A, B         |
+| C2 fix the disposition-projection defect                        | C product    | pending   | — (parallel) |
 
-Frontier: **A1, A2**.
+Frontier: **A0** — the charter gates all execution; objectives + user stories + blind-validation
+strategy must be agreed before Phase A starts.
