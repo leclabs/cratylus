@@ -35,7 +35,17 @@ def _resolve_claude_dir(target: str, home: str, dry: bool) -> tuple[str | None, 
             print(f"  ERR could not resolve remote $HOME: {msg}", file=sys.stderr)
             return None, 2
         return f"{remote_home}/.claude", 0
-    return home, 0  # caller supplied an explicit absolute path
+    # Explicit path. The flag is named --home; unify with local user_scope
+    # (which appends `.claude`). A home that is NOT already the `.claude` dir
+    # gets it appended -- LOUDLY -- so passing a bare home dir (e.g.
+    # `/Users/lex`) can never again silently litter `<home>/{agents,skills}`
+    # beside the real `<home>/.claude`. A path already ending in `.claude` is
+    # used verbatim (back-compat).
+    p = home.rstrip("/")
+    if pathlib.PurePosixPath(p).name != ".claude":
+        print(f"  NOTE --home {home!r} is a home dir -> deploying to {p}/.claude", file=sys.stderr)
+        return f"{p}/.claude", 0
+    return p, 0
 
 
 def place_agents(user: str, host: str, home: str, defs_dir: pathlib.Path,

@@ -16,6 +16,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from core import cells  # noqa: E402
 import resolve as resolve_mod  # noqa: E402
 from place import local as local_place  # noqa: E402
+from place import ssh as ssh_place  # noqa: E402
 
 
 def _write(p: pathlib.Path, text: str) -> None:
@@ -87,6 +88,21 @@ def main() -> int:
                     fails.append("STAGE-NOOP: asset-less cell staged something")
         finally:
             cells.IDEAS = old
+
+    # --- 4. Remote --home resolution: a bare home dir gets `.claude` appended
+    # (never silently litters <home>/{agents,skills}); a `.claude` dir is verbatim.
+    # dry=True keeps `run()` from touching the network; the resolution under test
+    # is pure string logic. ---
+    cases = [
+        ("/Users/lex", "/Users/lex/.claude"),        # bare home -> append (the footgun)
+        ("/home/lex/", "/home/lex/.claude"),          # trailing slash tolerated
+        ("/Users/lex/.claude", "/Users/lex/.claude"), # already .claude -> verbatim
+        ("~/.claude", "$HOME/.claude"),               # default special-case (dry $HOME)
+    ]
+    for home, want in cases:
+        got, rc = ssh_place._resolve_claude_dir("user@host", home, dry=True)
+        if (got, rc) != (want, 0):
+            fails.append(f"HOME-RESOLVE({home!r}): got {(got, rc)}, want {(want, 0)}")
 
     if fails:
         for x in fails:

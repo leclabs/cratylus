@@ -63,6 +63,16 @@ disposition, rank}, delta[]: {fragment_digest, idea_gloss}}`; `disposition ∈ {
 
 Per host, sequential explicit `deploy.py` invocations — no shell-loop cleverness.
 
+- **`--home` is the user's HOME dir** (e.g. `/Users/lex`, `/home/lex` on Linux, `/Users/lcaraccioli`);
+  `deploy.py` resolves the `.claude/` root under it. **Omitting `--home` is correct everywhere** — it
+  defaults to `~/.claude`, expanded server-side per host, so the macOS-vs-Linux path difference needs no
+  flag. Passing a bare home dir self-corrects (a loud `NOTE` + `.claude` appended); a path already ending
+  in `.claude` is used verbatim. (Hardening for a past footgun where `--home /Users/lex` was treated as
+  the `.claude` dir itself and silently littered `<home>/{agents,skills}` beside the real `~/.claude`.)
+- **Verify what LANDED, not what deploy printed** — `deploy.py` reports its intended copies; confirm
+  on-host at `~/.claude/{agents,skills}` (count + a content check, e.g. a known new skill present). A
+  wrong target path prints "copied" while the live tree is untouched.
+
 ## Continuity hook (B5 — repo-level praxis-advance reminder)
 
 The one **repo-level** continuity ritual is **praxis-advance**: when plan task-files move between
