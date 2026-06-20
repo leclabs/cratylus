@@ -25,5 +25,3 @@ filter(K) ≜ Y(ask(K)) if yes ; K \ Y(ask(K)) if no    -- keep the half consist
 stop(K) ⇔ | K | = 1 ∨ bal(ask(K)) > θ                 -- one survives, or no question is worth its burden
 elicit ≜ from K = C_R, iterate filter until stop ; return t = the one surviving candidate
 ```
-
-Composed from [[conceptualize]] · [[latent-priors]] · [[priors-as-light]] · [[signify]].

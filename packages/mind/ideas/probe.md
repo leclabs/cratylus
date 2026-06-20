@@ -20,5 +20,3 @@ fired_R(a) = dec_R(a)              ,  a ∈ dom(dec_R)      -- agrees with signi
 concept_R(w) ≜ cl_R(fired_R(w))                          -- the concept w circumscribes in R
 probe(w) ≜ ( fired_R(w), concept_R(w) )                  -- readout only; α and C_R unchanged
 ```
-
-Composed from [[signify]] · [[conceptualize]] · [[latent-priors]] · [[priors-as-light]] · [[precise-circumscription]].
