@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 158 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 159 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Principles
 
@@ -98,6 +98,7 @@ _declarative what-is — referenced/known._
 - **closed-context-of-an-inference-call** — Treat an inference call's input like a compiler's translation unit — every input explicit, sufficient at call-time, and recorded; out-of-band runtime reads break closure and erase replay, audit, and comparison.
 - **commons-distribution** — The library ships as a versioned, adoptable commons — one canonical home upstream; a consuming scope pins a version and holds references + scope deltas, not copies; drift reconciled via recorded source-version + three-way merge.
 - **composition-hub** — A named integration point where unbraided strands compose — CLI handler, API route, hook dispatcher, event handler, job worker, UI root. Orchestrates without implementing; concentrates effects, validation, and config-awareness at the edge.
+- **concept-contract** — the first-class data type every CSF module programs to — a record `⟨ gloss , anchor? , factorization? ⟩` (the meaning by value, optionally its anchor, optionally its factorization); producers emit it, consumers take it, so modules bind the contract not each other — the narrow waist of the pipeline.
 - **continuity-thread** — The through-line that makes successive sessions one continuing individual — an agent's accreted, self-authored identity (lived history + essence-as-lived), distinct from its universal archetype; persisted out-of-band and re-hydrated each session so the agent resumes as the same self, not a fresh instance.
 - **decision-identity** — The acceptance test for a projection's fidelity — a reader of a given type reaches the same load-bearing verdict from the projection as from the source; identity of the decision, not of the wording, is what must be preserved across the round-trip.
 - **formal-ontology** — A formal, rigorous account of what kinds exist and what binds their instances — universals and particulars under the formal meta-property rubric ([[ontoclean-meta-properties]]); distinct from a taxonomy ([[identity-criteria-before-taxonomy]]). Guarino's "ontological level" sits between the epistemological and the conceptual.
