@@ -1,5 +1,13 @@
 # γ2-B — Physical restructure: lexicon blocks + `mind/{kind}/{organ}/` (impl spec)
 
+> **EXECUTED & gated 2026-06-20** (commit `13f3e75`). Decisions taken: **D1 = bare `[[anchor]]` refs**
+> (storage-polymorphic resolution; the explicit `[[lexicon#^anchor]]` form stays available but is not
+> required — best serves "the anchor is the address"); **D2 = per-kind lexicon files**
+> (`lexicon/<kind>.md`, incl. `lexicon/gloss.md`); **D3 = verbatim-chunk blocks** (`<!-- ^<anchor> -->` +
+> the exact original cell bytes → byte-identical `parse_cell`). Acceptance MET: **`diff -rq` of the
+> rendered fleet pre/post = empty** (zero behavior change), `verify.py` PASS (R1+R2+R3), 17/17 toolkit
+> tests. Owed: the conventions-doc sync (Nico) + the post-merge fleet redeploy.
+
 **Slice.** γ2-B · the plan's final slice · **owner split:** Mav (toolkit storage layer) + Nico (corpus
 migration). **State.** Scoped (this spec), awaiting execution go. Re-cut to `[[self-sufficient-task]]`.
 
