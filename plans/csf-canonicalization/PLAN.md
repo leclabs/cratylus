@@ -53,8 +53,8 @@ during composition (slice **μ**).
 | **ε** praxis-update        | embed `task-is-an-implementation-spec` + `parallelizable-vertical-slice`→fan-out into [[praxis]] (+ supporting cells); regen render; verify                                                                                                                                                           | done    | —      | 1             |
 | **ζ** disposition-defect   | `recommendation-style-consensus-quality-pick` did not fire in `principal-ic`; root-cause (projection density-collapse vs embodiment gap — apply session's homeless-concept / taxonomic-supply finding) → machinery fix → regression                                                                   | done    | —      | 1             |
 | **μ** projector-block-refs | extend koine's composer to resolve `[[glossary#^block-ref]]` block-references during projection (the new primitive-addressing) — **Mav**                                                                                                                                                              | pending | A0     | 1             |
-| **α1** concept-contract    | the `concept` data type `⟨gloss, anchor?, factorization?⟩`; home σ\*\_R vocab (`dec_R`, `≅_R`, length, `C_R`) here, not borrowed                                                                                                                                                                      | pending | thesis | 1             |
-| **α2** anchor=σ\*\_R       | formalize `canonical_anchor = σ*_R` in the CSF reference; retire `signum_aptissimum`                                                                                                                                                                                                                  | pending | thesis | 1             |
+| **α1** concept-contract    | the `concept` data type `⟨gloss, anchor?, factorization?⟩`; home σ\*\_R vocab (`dec_R`, `≅_R`, length, `C_R`) here, not borrowed                                                                                                                                                                      | done    | thesis | 1             |
+| **α2** anchor=σ\*\_R       | formalize `canonical_anchor = σ*_R` in the CSF reference; retire `signum_aptissimum`                                                                                                                                                                                                                  | done    | thesis | 1             |
 | **β** machine-atoms        | one vertical slice **per atom**: blind-name (σ\*\_LLM of the atom's concept) → reconcile its process cell to the σ\*\_R/CSF ops + program to the concept-contract → validate → redeploy. Atoms: `conceptualize`(+fold `probe`) · `signify` · `materialize` · `exemplify` · `validate`(mint true name) | pending | α1, α2 | **5**         |
 | **γ1** corpus-audit        | dogfood corrected machine over the **whole-repo content** (not just `ideas/`; the concept/fragment is the unit, not the file): blind-signify each fragment → σ\*\_LLM → `{keep / re-anchor / coalesce / re-cut / re-home}` worklist                                                                   | pending | β      | **N batches** |
 | **γ2** corpus-apply        | execute worklist: re-anchor to σ\*\_LLM, coalesce, re-cut, **home primitives as glossary blocks + composites into `mind/{kind}/{organ}/`**, rewire refs to `[[glossary#^anchor]]` (whole-repo sweep), regen glossary, round-trip + reconstruct gate, redeploy fleet                                   | pending | γ1, μ  | join          |
@@ -63,17 +63,25 @@ during composition (slice **μ**).
 **Surface invariant (carried into A5/β-validate):** atoms are developer/agent-internal (R=LLM); `elicit`
 is the layman door (R=human). Producers are pure reads; namer/realizer/validator commit.
 
-## Frontier — precomputed (5-wide; 2 landed, A0 in review)
+## Frontier — precomputed (4 landed; A0 gate-0 awaiting Operator sign-off)
 
-**ε ✓ · ζ ✓ landed** (2026-06-20): praxis now carries `self-sufficient-task` + `fan-out-the-frontier`
-(`a647309`); the verbatim-organ silent-density-collapse hole is closed by a positive body-presence gate +
-regression (`9fea5f5`). **A0 charter delivered** (`826212b`) — **awaiting Operator sign-off** (gate-0; the
-two reserved calls: the `glossary` source-home name collision, and ratifying the composite-layer
-`{kind}/{organ}` directory reversal). The σ\*\_R thesis **landed** (Nico: [[prompt-engineering]] ·
-[[signifier-star-r]] · [[llm-native-source-human-render-at-boundary]]; verify + blind-equivalence PASS),
-so **α1/α2 are unblocked** — promote them from `pending/` (A2-concept-contract, A3-reconcile-csf) to
-impl-spec `ready/` and execute next. **μ** (Mav, koine block-refs) and **β** (5-wide) gate on the A0
-sign-off; **γ1** fans across cell-batches after β; γ2 joins (+μ); δ after β+γ2.
+**ε ✓ · ζ ✓ · α1 ✓ · α2 ✓ landed** (2026-06-20):
+
+- **ε** — praxis now carries `self-sufficient-task` + `fan-out-the-frontier` (`a647309`).
+- **ζ** — verbatim-organ silent-density-collapse hole closed by a positive body-presence gate + regression (`9fea5f5`); the disposition fires (no menu on repro).
+- **α1** — `[[concept-contract]]` cell: `⟨gloss, anchor?, factorization?⟩`, the CSF narrow waist; homes the interface, cites the σ\*\_R field-math (`ac68749`).
+- **α2** — `canonical_anchor = σ\*\_R` formalized in the CSF reference; reader-blind `signum_aptissimum` retired (redefined as σ\*\_R's strong-reader-limit instance, one home in `precise-circumscription`) (`2bb406f`).
+
+**A0 charter delivered** (`826212b`) — **GATE-0, awaiting Operator sign-off**, the live blocker for the
+whole remaining spine. Two reserved irreducible calls (the charter's §4.4 / §4.3): (1) the **`glossary`
+source-home name collision** (today's generated `GLOSSARY.md` vs. a new primitive-block source home);
+(2) ratifying the **composite-layer `{kind}/{organ}` directory reversal** — it supersedes
+`structure-by-anchor-only` / `[[projection-is-not-the-source]]`, a constitution-premise change.
+
+**Blocked on that sign-off:** **μ** (Mav, koine block-refs; dep A0) · **β** (5-wide machine-atoms;
+gate-0 stops machine work until the criteria lock) · **γ1** (after β) · **γ2** (joins +μ) · **δ** (after
+β+γ2). A3-reconcile-csf stays `pending/` — its canonical_anchor piece is subsumed by α2; the rest
+(reconcile each process cell to the CSF ops, program to the concept-contract) folds into **β**.
 
 > Mirror note: **ε · ζ → `completed/`**; **A0 `charter.md`** delivered (sign-off pending). `pending/`
 > holds the pre-cut backlog (A1–A5, B1, B2, C1) that folds into slices **α / β / γ / δ**, re-cut into
