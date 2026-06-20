@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regression guard for slice ζ (disposition-projection-defect).
 
-A `render: verbatim` organ (e.g. [[recommendation-style-consensus-quality-pick]],
+A `render: verbatim` organ (e.g. [[consensus-quality-pick]],
 the load-bearing decide-don't-menu disposition) MUST project its `## Protocol`
 body WHOLE into every embodying agent's def. The historical defect was a silent
 *density-collapse*: the disposition read as a soft lean, got compressed away in
@@ -30,7 +30,7 @@ VERIFY = ROOT / "toolkit" / "verify.py"
 RENDER = ROOT / ".render"
 sys.path.insert(0, str(ROOT / "toolkit"))
 
-ORGAN = "recommendation-style-consensus-quality-pick"
+ORGAN = "consensus-quality-pick"
 AGENT = "principal-ic"  # embodies the organ; the slice's named repro subject
 
 

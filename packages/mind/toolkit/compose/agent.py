@@ -90,7 +90,7 @@ def grants_for(agent: str) -> list[tuple[str, str]]:
 
 def persona_delta(agent_cell: dict, harness: str) -> list[str]:
     """The agent cell's `## Persona` bullets -- the genuine identity delta
-    ([[agent-identity-portability]] deltas-only). Returns a list of bullet items
+    ([[agent-identity-facets]] deltas-only). Returns a list of bullet items
     (emitted as a markdown list, never a '; '-joined run-on); [[x]] -> its
     harness projection (compose.harness), dropping the 'Deltas against ...'
     framing line."""
@@ -208,7 +208,7 @@ def transitive_verbatim_organs(refs: list[str]) -> list[str]:
     """Verbatim organs reachable TRANSITIVELY through embodied-archetype refs,
     in stable first-seen order, de-duplicated, EXCLUDING organs already in `refs`
     (those the def cites directly). A `render: verbatim` organ embodied by an
-    archetype (principal-ic embodies [[recommendation-style-consensus-quality-pick]])
+    archetype (principal-ic embodies [[consensus-quality-pick]])
     must reach every agent embodying that archetype (mav, the reviewer, nico via
     founder genus) -- it OVERRIDES a competing base-prior and so must land in the
     def WHOLE, not collapse to the archetype's bare anchor.
@@ -287,7 +287,7 @@ def compose_agent(slug: str, reader: str, harness: str) -> ComposedDoc:
         (l[2:].strip() for l in cell["body"].splitlines() if l.startswith("# ")),
         slug,
     )
-    # Mark facet ([[agent-identity-portability]]): lifted out of the persona
+    # Mark facet ([[agent-identity-facets]]): lifted out of the persona
     # bullets -- it projects into heading/front-matter, never re-listed as prose.
     persona = persona_delta(cell, harness)
     mark = ""
@@ -313,7 +313,7 @@ def compose_agent(slug: str, reader: str, harness: str) -> ComposedDoc:
             body.append(render_ref(ref, reader, harness))
         body.append("")
     if persona:
-        body.append("Persona (delta against agent-identity-portability):")
+        body.append("Persona (delta against agent-identity-facets):")
         body.append("")
         for item in persona:
             body.append(f"- {item}")

@@ -27,7 +27,7 @@ class ComposedDoc:
     delineation: str    # the cell's one-line bound (decorator may lift to frontmatter)
     reader: str         # density profile the body was composed at
     harness: str        # target harness -- selects the renderer
-    mark: str = ""      # recognition token "emoji · hue" (agent-identity-portability mark facet)
+    mark: str = ""      # recognition token "emoji · hue" (agent-identity-facets mark facet)
 
 
 @dataclass(frozen=True)

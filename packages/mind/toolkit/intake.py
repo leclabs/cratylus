@@ -5,7 +5,7 @@ The reduction `put` (raw -> source-graph) is irreducibly semantic: a model runs
 [[reductio]] and routes each fragment to its best-fit exemplar, or mints a new
 one when the fragment is homeless ([[anchor-routing]] -- never force an ill-fit).
 A pure-Python tool cannot make that judgment. What it CAN do is remove the
-mechanical toil around it ([[pretransform-pass-shrinks-inference-surface]]):
+mechanical toil around it ([[pretransform-shrinks-inference-surface]]):
 
   candidates()  lexical pre-filter -- rank the corpus anchors by IDF-weighted
                 token overlap with a fragment (slug-tokens boosted, since the
