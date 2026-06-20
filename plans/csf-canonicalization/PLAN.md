@@ -47,23 +47,24 @@ during composition (slice **μ**).
 
 ## Slices
 
-| Slice                      | Vertical (end-to-end)                                                                                                                                                                                                                                                                                 | State   | Deps   | Fan-out       |
-| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------ | ------------- |
-| **A0** charter             | objectives · user-stories · blind-validation strategy, **in σ\*\_R terms**                                                                                                                                                                                                                            | done    | —      | 1             |
-| **ε** praxis-update        | embed `task-is-an-implementation-spec` + `parallelizable-vertical-slice`→fan-out into [[praxis]] (+ supporting cells); regen render; verify                                                                                                                                                           | done    | —      | 1             |
-| **ζ** disposition-defect   | `recommendation-style-consensus-quality-pick` did not fire in `principal-ic`; root-cause (projection density-collapse vs embodiment gap — apply session's homeless-concept / taxonomic-supply finding) → machinery fix → regression                                                                   | done    | —      | 1             |
-| **μ** projector-block-refs | extend koine's composer to resolve `[[lexicon#^block-ref]]` block-references during projection (the new primitive-addressing) — **Mav**                                                                                                                                                               | done    | A0     | 1             |
-| **α1** concept-contract    | the `concept` data type `⟨gloss, anchor?, factorization?⟩`; home σ\*\_R vocab (`dec_R`, `≅_R`, length, `C_R`) here, not borrowed                                                                                                                                                                      | done    | thesis | 1             |
-| **α2** anchor=σ\*\_R       | formalize `canonical_anchor = σ*_R` in the CSF reference; retire `signum_aptissimum`                                                                                                                                                                                                                  | done    | thesis | 1             |
-| **β** machine-atoms        | one vertical slice **per atom**: blind-name (σ\*\_LLM of the atom's concept) → reconcile its process cell to the σ\*\_R/CSF ops + program to the concept-contract → validate → redeploy. Atoms: `conceptualize`(+fold `probe`) · `signify` · `materialize` · `exemplify` · `validate`(mint true name) | done    | α1, α2 | **5**         |
-| **γ1** corpus-audit        | dogfood corrected machine over the **whole-repo content** (not just `ideas/`; the concept/fragment is the unit, not the file): blind-signify each fragment → σ\*\_LLM → `{keep / re-anchor / coalesce / re-cut / re-home}` worklist                                                                   | done    | β      | **N batches** |
-| **γ2** corpus-apply        | execute worklist: re-anchor to σ\*\_LLM, coalesce, re-cut, **home primitives as lexicon blocks + composites into `mind/{kind}/{organ}/`**, rewire refs to `[[lexicon#^anchor]]` (whole-repo sweep), regen glossary, round-trip + reconstruct gate, redeploy fleet                                     | pending | γ1, μ  | join          |
-| **δ** layman-door          | `elicit`(σ\*\_human) → CSF → recompose domain skills → compose agents-as-persons; demo one toy domain                                                                                                                                                                                                 | pending | β, γ2  | 1             |
+| Slice                      | Vertical (end-to-end)                                                                                                                                                                                                                                                                                 | State   | Deps    | Fan-out       |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------- | ------------- |
+| **A0** charter             | objectives · user-stories · blind-validation strategy, **in σ\*\_R terms**                                                                                                                                                                                                                            | done    | —       | 1             |
+| **ε** praxis-update        | embed `task-is-an-implementation-spec` + `parallelizable-vertical-slice`→fan-out into [[praxis]] (+ supporting cells); regen render; verify                                                                                                                                                           | done    | —       | 1             |
+| **ζ** disposition-defect   | `recommendation-style-consensus-quality-pick` did not fire in `principal-ic`; root-cause (projection density-collapse vs embodiment gap — apply session's homeless-concept / taxonomic-supply finding) → machinery fix → regression                                                                   | done    | —       | 1             |
+| **μ** projector-block-refs | extend koine's composer to resolve `[[lexicon#^block-ref]]` block-references during projection (the new primitive-addressing) — **Mav**                                                                                                                                                               | done    | A0      | 1             |
+| **α1** concept-contract    | the `concept` data type `⟨gloss, anchor?, factorization?⟩`; home σ\*\_R vocab (`dec_R`, `≅_R`, length, `C_R`) here, not borrowed                                                                                                                                                                      | done    | thesis  | 1             |
+| **α2** anchor=σ\*\_R       | formalize `canonical_anchor = σ*_R` in the CSF reference; retire `signum_aptissimum`                                                                                                                                                                                                                  | done    | thesis  | 1             |
+| **β** machine-atoms        | one vertical slice **per atom**: blind-name (σ\*\_LLM of the atom's concept) → reconcile its process cell to the σ\*\_R/CSF ops + program to the concept-contract → validate → redeploy. Atoms: `conceptualize`(+fold `probe`) · `signify` · `materialize` · `exemplify` · `validate`(mint true name) | done    | α1, α2  | **5**         |
+| **γ1** corpus-audit        | dogfood corrected machine over the **whole-repo content** (not just `ideas/`; the concept/fragment is the unit, not the file): blind-signify each fragment → σ\*\_LLM → `{keep / re-anchor / coalesce / re-cut / re-home}` worklist                                                                   | done    | β       | **N batches** |
+| **γ2-A** re-anchor         | apply the γ1 worklist: re-anchor 14 drifted cells to σ\*\_LLM, coalesce `anchor`→`signifier-star-r`, re-home `latent-priors`, fix `exemplar-resolution` notation; whole-repo ref rewire; round-trip + reconstruct gate                                                                                | done    | γ1      | 1             |
+| **γ2-B** restructure       | physical re-home: primitives → `lexicon` blocks + composites → `mind/{kind}/{organ}/`, rewire refs to `[[lexicon#^anchor]]`, regen, gate, **redeploy fleet**. Needs a toolkit-storage rewrite (μ built the READ side only). Acceptance: projection-invariant byte-identity                            | pending | γ2-A, μ | 1             |
+| **δ** layman-door          | `elicit`(σ\*\_human) → CSF → recompose domain skills → compose agents-as-persons; demo one toy domain                                                                                                                                                                                                 | done    | β, γ2A  | 1             |
 
 **Surface invariant (carried into A5/β-validate):** atoms are developer/agent-internal (R=LLM); `elicit`
 is the layman door (R=human). Producers are pure reads; namer/realizer/validator commit.
 
-## Frontier — precomputed (A0 gate signed off; 6 slices landed; γ1 is the live frontier)
+## Frontier — 10 of 11 slices landed; only γ2-B (physical restructure) remains
 
 **A0 gate-0 SIGNED OFF** (Operator, 2026-06-20, `0d289c9`): the `{kind}/{organ}` directory reversal is
 ratified and the primitive source-home is named **`lexicon`** (`[[lexicon#^anchor]]`; `GLOSSARY.md`
@@ -76,9 +77,20 @@ projects from it). **ε ✓ · ζ ✓ · α1 ✓ · α2 ✓ · β ✓ · μ ✓ 
 - **β** — CSF atoms reconciled to the σ\*\_R op-chain, each programmed to `[[concept-contract]]`; the unnamed gate minted as **`accept`**; `probe` kept standalone on evidence (`6715b0b`). Subsumes A1/A3/A4/A5.
 - **μ** — the projector resolves `[[lexicon#^block-ref]]` end-to-end (parse → extract → compose → render at both readers → validate, R1 totality + dangling detection); 17/17 toolkit tests green (`1a7e15a`). **NB:** the plan said "koine's composer," but the projection machinery is the mind toolkit (`compose/` + `cells.py`) — corrected in flight.
 
-**Live frontier — γ1** (corpus audit; dep β ✓). **γ2** unblocked-after-γ1 (dep μ ✓ also met) — the
-whole-repo re-home + **fleet redeploy**, highest blast-radius slice. **δ** after β+γ2.
+Then landed (2026-06-20): **γ1 ✓** (`e8d3dc5`, audit-worklist: ~90% canonical; 6 parallel blind
+auditors) · **γ2-A ✓** (`a0a8243` + toolkit sync `a261ce3`: 14 re-anchors to σ\*\_LLM, `anchor`
+coalesced, `latent-priors` re-homed, `exemplar-resolution` notation fixed, whole-repo ref rewire,
+verify PASS) · **δ ✓** (`8f9c3b9`: `self-extend` layman door + `layman-door.md` design doc + worked
+meal-planning demo / agent-as-person "Remy").
 
-> Mirror note: **ε · ζ · α1(A2) · A1 · A3 · A4 · A5 → `completed/`**; **A0 `charter.md`** signed off.
-> `pending/` now holds **B1 (→γ1) · B2 (→γ2) · C1 (→δ)** — re-cut into impl-spec form on promotion.
-> `/praxis sync` reconciles.
+**Only remaining: γ2-B** (physical restructure — primitives → `lexicon` blocks, composites →
+`mind/{kind}/{organ}/`). **The work revealed it is a separable, under-scoped slice:** μ delivered the
+block-ref READ side, but homing a primitive AS a lexicon block needs a toolkit-STORAGE rewrite
+(`corpus_slugs`/`cell_path`/`parse_cell`/`glossary`/`verify`). Its acceptance bar is clean and safe —
+**projection-invariant byte-identity** (the rendered SOULs unchanged; the layout change is source-only) —
+but it is a large architectural change ending in an irreversible **fleet redeploy**, awaiting the
+Operator's informed go (see `audit-worklist.md` §"Scope note"). The **fleet redeploy owed for γ2-A** is
+likewise gated on this initiative branch merging to `main`.
+
+> Mirror note: **ε · ζ · A2(α1) · A1 · A3 · A4 · A5 · B1(γ1) · C1(δ) → `completed/`**; **A0
+> `charter.md`** signed off. `pending/` holds only **B2 (→γ2-B)**. `/praxis sync` reconciles.
