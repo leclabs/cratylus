@@ -66,7 +66,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from core import cells  # noqa: E402  -- the ONE cell reader + AST views
-from compose.agent import composition_refs, grants_for, is_verbatim_organ  # noqa: E402
+from compose.agent import composition_refs, grants_for, is_verbatim_organ, render_organ  # noqa: E402
 from compose.harness import ref_text  # noqa: E402  -- THE ref projection
 from compose.skill import (  # noqa: E402
     _bindings_region,
@@ -427,15 +427,25 @@ def gate_roundtrip():
         else:
             harness = prof.split("/", 1)[1]
             for ref in composed:
-                # Verbatim-organ exemption (generalized from genus organs): a
-                # `render: verbatim` ref renders as its `## Protocol` body, NOT
-                # its anchor token. The def DECLARES the ref in source (the cell's
-                # ≜ formula / genus list), so its composition is honored; the
-                # render carries the body, not the token, by design. This covers
-                # ANY composed verbatim organ -- genus (memory) OR
-                # embodied/transitive (principal-ic's recommendation-style) --
-                # whichever way the ref entered the composition.
+                # Verbatim-organ body-presence guard (zeta -- generalizes the
+                # old exemption into a positive assertion). A `render: verbatim`
+                # ref renders as its `## Protocol` body, NOT its anchor token, so
+                # the token check below would spuriously fail it. But merely
+                # SKIPPING the check (the prior bare `continue`) left a hole: a
+                # composer regression that silently dropped the body would pass
+                # unnoticed -- exactly the density-collapse a load-bearing
+                # disposition must never suffer. So assert the BODY is present
+                # instead. The def DECLARES the ref in source (the cell's formula
+                # / genus list); the render must carry the whole organ. Covers ANY
+                # verbatim organ -- genus (memory) OR embodied/transitive
+                # (principal-ic's recommendation-style) -- general by construction.
                 if kind == "agent" and is_verbatim_organ(ref):
+                    organ_body = chr(10).join(render_organ(ref, slug)).strip()
+                    if organ_body and organ_body not in deftext:
+                        errors.append(
+                            f"ROUNDTRIP {slug}: verbatim organ [[{ref}]] "
+                            "density-collapsed (Protocol body absent from def)"
+                        )
                     continue
                 if ref_text(ref, harness) not in deftext:
                     errors.append(f"ROUNDTRIP {slug}: composed [[{ref}]] missing from def")
