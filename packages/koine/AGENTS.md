@@ -24,9 +24,10 @@ them independently, they were never published, and the split was inherited from 
 ([[defer-the-package-boundary]]; executed under `plans/repo-structure-firstprinciples`). The "only need
 core" story is now served by the `./core` subpath export, not a separate package.
 
-Agent memory lives in a **separate** top-level package, `@leclabs/koine-episodic` (`packages/episodic/`)
-— a different domain (JSONL store + dream routing), zero-coupled to koine. (Its name still carries the
-`koine-` prefix pending a [[signify]] rename.)
+Agent memory lives in a **separate** top-level package, `episodic` (`packages/episodic/`) — a different
+domain (JSONL store + dream routing), zero-coupled to koine. It is a private **build-only toolsource**
+(bundled into the `memory` skill, not a published library); the old `@leclabs/koine-episodic` npm
+identity — and with it the long-pending `koine-` rename — was retired by that change.
 
 ## The IR and the `.koine/` home
 
