@@ -98,7 +98,7 @@ def main() -> int:
         fails.append(f"POSITIONS exemplify provenance: skill refs not projected as /trigger: {prov!r}")
     if "**conceptualize**" in prov or "**signify**" in prov or "**materialize**" in prov:
         fails.append(f"POSITIONS exemplify provenance: a skill ref rendered bold, must be /trigger: {prov!r}")
-    if "**bidirectional-round-trip-fidelity**" not in prov:
+    if "**self-application-is-mandatory**" not in prov:
         fails.append(f"POSITIONS exemplify provenance: non-skill ref not kept typographic: {prov!r}")
 
     if fails:

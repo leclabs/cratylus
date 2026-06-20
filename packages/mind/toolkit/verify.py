@@ -208,6 +208,18 @@ def gate_schema_and_refs():
                 errors.append(f"REF {path.name}: piped link [[{raw}]] forbidden")
                 raw = raw.split("|")[0]
             tok = raw.strip()
+            # block-ref (slice μ): `[[<file>#^<block>]]` resolves to one block in a
+            # shared source file (the lexicon). Validate BOTH the file is a live
+            # cell AND the block exists -- a dangling block-ref is as broken as a
+            # dangling anchor, and was previously skipped as a "placeholder".
+            br = cells.parse_block_ref(tok)
+            if br is not None:
+                fileslug, blockid = br
+                if fileslug not in slugs:
+                    errors.append(f"REF {path.name}: block-ref [[{tok}]] -> no {fileslug}.md")
+                elif cells.block_body(fileslug, blockid) is None:
+                    errors.append(f"REF {path.name}: block-ref [[{tok}]] -> no ^{blockid} block in {fileslug}.md")
+                continue
             # skip syntactic placeholders: empty `[[ ]]`, template `[[<x>]]`
             if not tok or not re.fullmatch(r"[a-z0-9-]+", tok):
                 continue

@@ -20,6 +20,24 @@ IDEAS = ROOT / "ideas"
 # `[[anchor]]` reference -- kebab-case slug only (placeholders like `[[<x>]]`
 # and piped links are intentionally NOT matched here).
 REF = re.compile(r"\[\[([a-z0-9-]+)\]\]")
+# Block-ref grammar (slice μ): `[[<file>#^<block>]]` -- an Obsidian block reference
+# addressing one block within a shared source file (the `lexicon` of primitive
+# blocks: a primitive is a block, not a file -- csf-canonicalization §4.1). Both
+# segments are anchors. Kept SEPARATE from REF so plain-anchor consumers are
+# unaffected; the block-aware consumers (verify validation, projection) opt in.
+BLOCK_REF = re.compile(r"\[\[([a-z0-9-]+)#\^([a-z0-9-]+)\]\]")
+# ANY_REF: one `[[ ]]` whose inside is a plain anchor OR a block-ref -- the
+# projection grain (project_refs) substitutes both. Captures the WHOLE inner
+# token (`anchor` or `file#^block`); callers normalize via ref_display.
+ANY_REF = re.compile(r"\[\[([a-z0-9-]+(?:#\^[a-z0-9-]+)?)\]\]")
+
+
+def ref_display(token: str) -> str:
+    """The display anchor of a ref token: the block-id for a block-ref
+    `file#^block` (the primitive's own anchor), else the token unchanged. One
+    home for the block-ref -> name rule ([[cite-dont-copy]])."""
+    br = parse_block_ref(token)
+    return br[1] if br else token
 
 # The ONE CommonMark parser ([[cite-dont-copy]] at the engine grain). The AST
 # decides what is a fence; no caller re-derives fences with its own regex.
@@ -84,7 +102,13 @@ def refs_in_prose(body: str) -> list[str]:
     out: list[str] = []
     for i, line in enumerate(body.splitlines()):
         if i not in mask:
-            out.extend(REF.findall(line))
+            # block-refs (slice μ) normalize to their lexicon-FILE home so the R1
+            # totality walk sees the file as the dependency (the block's own
+            # existence is gated separately by gate_schema_and_refs). Plain
+            # anchors pass through unchanged.
+            for tok in ANY_REF.findall(line):
+                br = parse_block_ref(tok)
+                out.append(br[0] if br is not None else tok)
     return out
 
 
@@ -159,11 +183,58 @@ def section_body(body: str, heading: str) -> list[str]:
     return out
 
 
+def parse_block_ref(token: str):
+    """`<file>#^<block>` -> (file, block); None if the token is not a block-ref.
+    `token` is the inside of a `[[ ]]` (no brackets)."""
+    m = re.fullmatch(r"([a-z0-9-]+)#\^([a-z0-9-]+)", token.strip())
+    return (m.group(1), m.group(2)) if m else None
+
+
+def block_body(file_slug: str, block_id: str):
+    """The text of the block tagged ` ^<block_id>` in `<file_slug>.md` -- the
+    Obsidian block-reference target for `[[<file_slug>#^<block_id>]]` (slice μ:
+    the lexicon's primitive-block addressing). A block is the contiguous run of
+    non-blank, non-heading lines ending on the line that carries the marker;
+    returns that text with the trailing marker stripped, or None if the file or
+    the block is absent. Fence interiors are spanned verbatim (a marker inside a
+    code block is not a block tag). The one resolver every block-aware consumer
+    reads -- never hand-rolled elsewhere ([[cite-dont-copy]])."""
+    try:
+        cell = parse_cell(file_slug)
+    except FileNotFoundError:
+        return None
+    lines = cell["body"].splitlines()
+    mask = fence_lines(cell["body"])
+    marker = f"^{block_id}"
+    end = None
+    for i, line in enumerate(lines):
+        if i not in mask and line.rstrip().endswith(marker):
+            end = i
+            break
+    if end is None:
+        return None
+    start = end
+    while start > 0:
+        prev = lines[start - 1]
+        if not prev.strip() or prev.startswith("#"):
+            break
+        start -= 1
+    block = lines[start:end + 1]
+    block[-1] = block[-1].rstrip()
+    if block[-1].endswith(marker):
+        block[-1] = block[-1][:-len(marker)].rstrip()
+    text = "\n".join(block).strip()
+    return text or None
+
+
 def delineation(slug: str) -> str:
     """The dense priors-loaded summary. Primitives/composites carry it in
     front-matter as `delineation`; skill cells carry it as `description`; gloss
     cells have neither -> fall back to the first substantive body sentence (the
     gloss's own one-line definition)."""
+    br = parse_block_ref(slug)
+    if br is not None:  # a block-ref's delineation IS its lexicon block body
+        return block_body(br[0], br[1]) or ""
     cell = parse_cell(slug)
     d = cell["fm"].get("delineation", "").strip()
     if d:

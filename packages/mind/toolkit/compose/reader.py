@@ -34,6 +34,8 @@ VERB_WORD = {"Invokes": "invoke", "Embodies": "embody", "References": "reference
 def cue_for(slug: str) -> str | None:
     """The weak-llm composition cue for a constituent: '<kind>, <verb>' (or
     'gloss, reference' for a kind-less influence anchor)."""
+    if cells.parse_block_ref(slug) is not None:  # a lexicon primitive block (slice μ)
+        return "primitive, reference"
     fm = cells.parse_cell(slug)["fm"]
     kind = fm.get("kind")
     if kind:

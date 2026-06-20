@@ -18,6 +18,9 @@ from core import cells
 
 def ref_text(slug: str, harness: str) -> str:
     """The inline projection of one resolved `[[slug]]` for `harness`."""
+    br = cells.parse_block_ref(slug)
+    if br is not None:  # a lexicon primitive block: name = block-id, no affordance
+        return f"**{br[1]}**"
     if harness == "claude-code":
         try:
             fm = cells.parse_cell(slug)["fm"]
@@ -41,4 +44,4 @@ def project_refs(text: str, harness: str) -> str:
     """`[[x]]` -> its harness projection across one PROSE grain. Callers mask
     fence interiors first (core.cells.fence_lines) -- the AST decides the
     register; this transform only ever sees prose."""
-    return cells.REF.sub(lambda m: ref_text(m.group(1), harness), text)
+    return cells.ANY_REF.sub(lambda m: ref_text(m.group(1), harness), text)

@@ -161,7 +161,7 @@ def composition_refs(agent_cell: dict) -> list[str]:
     out: list[str] = []
     for i, line in enumerate(lines):
         if "≜" in line and i not in mask:
-            for slug in cells.REF.findall(line):
+            for slug in cells.ANY_REF.findall(line):
                 if slug not in seen:
                     seen.add(slug)
                     out.append(slug)
@@ -178,7 +178,7 @@ def composition_refs(agent_cell: dict) -> list[str]:
         if line.startswith("## ") and i not in mask:
             in_persona = line.lower().startswith("## persona")
         if not in_persona and i not in mask:
-            for slug in cells.REF.findall(line):
+            for slug in cells.ANY_REF.findall(line):
                 if slug not in seen:
                     seen.add(slug)
                     out.append(slug)
@@ -189,6 +189,8 @@ def is_verbatim_organ(slug: str) -> bool:
     """True if the cell declares `render: verbatim` -- routing it through the
     organ path (its `## Protocol` body emitted whole, density-immune) rather
     than render_ref's density-keyed disposition line."""
+    if cells.parse_block_ref(slug) is not None:  # a lexicon primitive is never an organ
+        return False
     return cells.parse_cell(slug)["fm"].get("render") == VERBATIM_RENDER
 
 
