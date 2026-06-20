@@ -36,6 +36,24 @@ DIRTY_LINE = 11
 
 CLEAN = DIRTY.replace("x ≜ [[mece]]", "x ≜ mece")
 
+# VERBATIM-REF gate: a `render: verbatim` cell's `## Protocol` (and a
+# `deploy: skill-dir` cell's `## Tool`) ships verbatim where `[[ ]]` cannot
+# resolve, so a ref -- even to a LIVE cell (REFERENCES would PASS it) -- must FAIL.
+VERBATIM_FIXTURE = ROOT / "ideas" / "zz-verbatim-ref-fixture.md"
+VERBATIM_DIRTY = """---
+kind: concept
+render: verbatim
+delineation: verbatim-ref fixture -- temporary, written and removed by test_verify.py
+---
+
+# Verbatim Ref Fixture
+
+## Protocol
+
+an organ shipped verbatim must not cite [[mece]] -- it lands where refs cannot resolve.
+"""
+VERBATIM_CLEAN = VERBATIM_DIRTY.replace("cite [[mece]] -- it", "cite anything -- it")
+
 
 def run_verify() -> subprocess.CompletedProcess:
     # Isolate the ROUNDTRIP drift-check: this test injects a transient corpus cell
@@ -71,6 +89,25 @@ def main() -> int:
     finally:
         FIXTURE.unlink(missing_ok=True)
 
+    # VERBATIM-REF: a ref in a `render: verbatim` `## Protocol` FAILs (even though
+    # [[mece]] is a LIVE cell -> REFERENCES alone would PASS it); a ref-free
+    # Protocol PASSes. The contract the verbatim-ship paths now enforce.
+    try:
+        VERBATIM_FIXTURE.write_text(VERBATIM_DIRTY, encoding="utf-8")
+        r = run_verify()
+        if r.returncode == 0:
+            fails.append("VERBATIM-REJECT: [[mece]] in a verbatim `## Protocol` passed verify (must fail)")
+        for want in (f"VERBATIM-REF {VERBATIM_FIXTURE.name}", "[[mece]]", "## Protocol"):
+            if want not in r.stderr:
+                fails.append(f"VERBATIM-REJECT: expected {want!r} in stderr, got:\n{r.stderr}")
+        # ref-free Protocol passes the gate
+        VERBATIM_FIXTURE.write_text(VERBATIM_CLEAN, encoding="utf-8")
+        r = run_verify()
+        if r.returncode != 0:
+            fails.append(f"VERBATIM-CLEAN: ref-free verbatim Protocol failed verify:\n{r.stderr}")
+    finally:
+        VERBATIM_FIXTURE.unlink(missing_ok=True)
+
     # FULL CORPUS: with the fixture gone, the real corpus passes the gate
     r = run_verify()
     if r.returncode != 0:
@@ -81,7 +118,7 @@ def main() -> int:
             print("FAIL", x, file=sys.stderr)
         print(f"\n{len(fails)} failure(s)", file=sys.stderr)
         return 1
-    print("PASS verify: fence-lint reject + clean + corpus")
+    print("PASS verify: fence-lint reject + clean + verbatim-ref reject + clean + corpus")
     return 0
 
 

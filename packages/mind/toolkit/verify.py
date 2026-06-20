@@ -66,7 +66,9 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from core import cells  # noqa: E402  -- the ONE cell reader + AST views
-from compose.agent import composition_refs, grants_for, is_verbatim_organ, render_organ  # noqa: E402
+from compose.agent import (  # noqa: E402
+    ORGAN_SECTION, composition_refs, grants_for, is_verbatim_organ, render_organ,
+)
 from compose.harness import ref_text  # noqa: E402  -- THE ref projection
 from compose.skill import (  # noqa: E402
     _bindings_region,
@@ -283,6 +285,39 @@ def gate_symbols():
                         f"(references/formal-symbolic-notation.md). Declare it "
                         f"in the table or rewrite the fence."
                     )
+
+
+def gate_verbatim_ref_free():
+    """VERBATIM-REF-FREE: a section emitted VERBATIM to a host or SOUL must carry
+    no `[[ ]]` outside fences. Such a section lands where anchors cannot resolve
+    (a SOUL has no projector; a host SKILL.md is read by a non-corpus agent), so a
+    ref would ship literally -- and a ref to a LIVE cell slips REFERENCES, which
+    only checks resolvability, not register. Covers the two verbatim-ship paths:
+    a `render: verbatim` cell's `## Protocol` (organ -> every SOUL, compose.agent.
+    render_organ) and a `deploy: skill-dir` cell's `## Tool` (-> host SKILL.md,
+    resolve.emit_skill_dir). The positive form of the contract those paths assert
+    in prose but did not enforce."""
+    for slug in sorted(cells.corpus_slugs()):
+        body = cells.parse_cell(slug)["body"]
+        headings = []
+        if is_verbatim_organ(slug):
+            headings.append(ORGAN_SECTION)            # "Protocol" -> SOUL
+        if cells.deploys_as_skill_dir(slug):
+            headings.append("Tool")                   # -> host SKILL.md
+        if not headings:
+            continue
+        path = cells.cell_path(slug)
+        lines = body.splitlines()
+        for heading in headings:
+            section = cells.section_body(body, heading)
+            for ref in cells.refs_in_prose("\n".join(section)):
+                ln = next((i for i, ln in enumerate(lines) if f"[[{ref}" in ln), None)
+                where = f":{_body_offset(path.read_text(encoding='utf-8'), body) + ln + 1}" if ln is not None else ""
+                errors.append(
+                    f"VERBATIM-REF {path.name}{where}: [[{ref}]] in the verbatim "
+                    f"`## {heading}` section -- it ships where [[ ]] cannot resolve. "
+                    f"Bind at the boundary and inline the resolved form."
+                )
 
 
 def gate_skill_operative():
@@ -743,6 +778,7 @@ def main() -> int:
     gate_schema_and_refs()
     gate_fences()
     gate_symbols()
+    gate_verbatim_ref_free()
     gate_skill_operative()
     gate_skill_provenance()
     gate_roundtrip()
@@ -755,7 +791,7 @@ def main() -> int:
         print(f"\n{len(errors)} failure(s)", file=sys.stderr)
         return 1
     r3 = "R1+R2+R3" if r3_mechanical else "R1+R2; R3 manual"
-    print(f"PASS schema + references + fences + symbols + operative + round-trip + reconstruct ({r3})")
+    print(f"PASS schema + references + fences + symbols + verbatim-ref-free + operative + round-trip + reconstruct ({r3})")
     return 0
 
 
