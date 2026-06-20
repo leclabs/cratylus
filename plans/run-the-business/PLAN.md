@@ -12,11 +12,12 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 ## Status mirror
 
-| Task                       | State   | Owner                                  | Origin                |
-| -------------------------- | ------- | -------------------------------------- | --------------------- |
-| `memory-home-dual-deploy`  | ready   | Mav (machinery) + Nico (Protocol edit) | memory-tool-bundling  |
-| `vault-reference-home`     | ready   | Mav                                    | memory-model-redesign |
-| `wake-trigger-and-cutover` | pending | Mav (machinery) + Nico (wake edit)     | memory-tool-bundling  |
+| Task                                 | State   | Owner                                  | Origin                |
+| ------------------------------------ | ------- | -------------------------------------- | --------------------- |
+| `memory-home-dual-deploy`            | ready   | Mav (machinery) + Nico (Protocol edit) | memory-tool-bundling  |
+| `vault-reference-home`               | ready   | Mav                                    | memory-model-redesign |
+| `wake-trigger-and-cutover`           | pending | Mav (machinery) + Nico (wake edit)     | memory-tool-bundling  |
+| `fleet-redeploy-lcaraccioli-catchup` | pending | Mav                                    | csf-canonicalization  |
 
 ### ready
 
@@ -30,6 +31,8 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 - **wake-trigger-and-cutover** — self-triggering per-host EPISODIC migration at wake + fleet cutover to
   the bundled tool; removes the last package remnants. Deps: memory-home-dual-deploy.
+- **fleet-redeploy-lcaraccioli-catchup** — redeploy `upmav`/`upgoose` (lcaraccioli, off-network during the
+  csf redeploy) to the σ\*\_R corpus on origin/main when reachable. Use `accept-new` on first contact.
 
 ## See also
 

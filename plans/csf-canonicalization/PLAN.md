@@ -92,9 +92,13 @@ primitives+gloss → 7 `lexicon/` files, 24 composites → `mind/{kind}/{organ}/
 refs · D2 per-kind lexicon · D3 verbatim-chunk blocks (`completed/gamma2b-restructure.md`). Conventions
 doc reconciled to the new homes (Nico).
 
-**Plan complete.** Two Operator-gated steps remain for the whole initiative branch (not γ2-B alone):
-**merge to `main`**, then the **one fleet redeploy** (owed for γ2-A renames + γ2-B; golden-master
-byte-diff, externals never-pruned, sidecars untouched).
+**Plan complete & DELIVERED** (2026-06-20). Merged to `main` + pushed (`origin/main` @ `96d334a`, 22
+commits). **Fleet redeployed** golden-master-clean to all four reachable lex hosts — **fire · ash · forge
+· spark** (11 agents + 13 skills each; fire's sidecars untouched, the reimaged/fresh hosts seeded
+if-absent — zero clobber). **upmav · upgoose** (lcaraccioli) were off-network → catch-up task in
+**run-the-business** (`fleet-redeploy-lcaraccioli-catchup`). This initiative is **retirement-ready** (result
+in SoT on main; rationale homed in `charter.md` · `audit-worklist.md` · `layman-door.md` ·
+`completed/gamma2b-restructure.md`).
 
 > Mirror note: **ε · ζ · A2(α1) · A1 · A3 · A4 · A5 · B1(γ1) · C1(δ) → `completed/`**; **A0
 > `charter.md`** signed off. `pending/` is empty; **γ2-B** is scoped as a self-sufficient impl spec in `ready/gamma2b-restructure.md` (the old B2 stub — re-anchor/coalesce — was done in γ2-A and is retired). `/praxis sync` reconciles.
