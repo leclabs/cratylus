@@ -52,12 +52,12 @@ carries `~/.claude/skills/memory/episodic.mjs` (15357 B) + the updated SOULs (Pr
 `episodic.mjs encode` affordance, home-substituted) + the wake migrate step; sidecars sha256-untouched
 (`layers present, untouched (33)` every host). Canary-first on **fire** (local): encode through the
 _landed_ tool mints a ULID + appends; migrate of a scratch `.md`→`.jsonl` is 2-leg no-loss (2 items,
-continuation preserved, source kept). Self-migration mechanism proven on the agent-hosting host.
+continuation preserved, source kept), then proven again on remote **ash** (macOS) and **forge** (Linux).
 
-**Open for the Operator (topology).** Only **fire** has `node` + `claude` on PATH; the other 5 hosts
-(ash/forge/spark/upmav/upgoose) read as corpus replicas with no agent runtime. The node-based memory
-tool only runs where agents run — so the cutover is fully live on fire, and a no-op-until-provisioned
-replica copy elsewhere. If any of ash/upmav/upgoose actually host agents, they need `node` installed
-(forge/spark are Linux with no node at all). Legacy `EPISODIC.md` lingers beside `.jsonl` on the
-remotes — harmless (wake-migrate no-ops when `.jsonl` present); a later hygiene sweep can remove it
-after a per-host content check.
+**Runtime confirmed on every host.** Each leclabs host provisions `node` v24.16.0 and `claude` via
+**mise** (`~/.local/share/mise`, shimmed onto PATH in `~/.zshrc`). The tool runs end-to-end on all 6
+(macOS + Linux) — encode + migrate verified on ash and forge directly. (An earlier probe wrongly read
+node as absent: `bash -lc`/`zsh -lc` are _login_ shells and don't source `~/.zshrc`, where mise lives;
+a real agent session sources the interactive profile, so `node` resolves. Lesson: probe runtime with
+an interactive shell, not a login shell.) Legacy `EPISODIC.md` lingers beside `.jsonl` on the remotes —
+harmless (wake-migrate no-ops when `.jsonl` present); a later hygiene sweep can remove it.

@@ -28,10 +28,10 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 > reference (`docs(episodic)` `f3dc5eb`). **Fleet cutover deployed & verified live (the tree, not deploy
 > stdout) on all 6 hosts:** each carries `skills/memory/episodic.mjs` (15357 B), SOULs name the
 > `episodic.mjs encode` affordance, wake carries the migrate step, sidecars sha256-untouched. Tool proven
-> end-to-end on **fire** (encode mints+appends; migrate is 2-leg no-loss). **Open (Operator):** only fire
-> has `node`+`claude` on PATH — the other 5 read as corpus replicas with no agent runtime; if any host
-> agents, they need `node` provisioned. Legacy `EPISODIC.md` lingers beside `.jsonl` on remotes (harmless;
-> wake-migrate no-ops when `.jsonl` present).
+> end-to-end on **all 6 hosts** — encode mints+appends and migrate is 2-leg no-loss, run via the
+> mise-provisioned `node` v24.16.0 (`~/.local/share/mise`) + `claude` present on every host
+> (fire/ash/forge/spark/upmav/upgoose; macOS + Linux). Legacy `EPISODIC.md` lingers beside `.jsonl` on
+> remotes (harmless; wake-migrate no-ops when `.jsonl` present — a later hygiene sweep can clear it).
 
 > **Done 2026-06-20:** `memory-home-dual-deploy` (→ `completed/`). The `memory` organ now deploys as the
 > host `skills/memory/` home carrying the bundled `episodic` tool, via a `deploy: skill-dir` + `bundle:`
