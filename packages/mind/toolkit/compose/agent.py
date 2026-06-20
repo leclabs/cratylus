@@ -57,7 +57,7 @@ def founder_slugs() -> tuple[str, ...]:
     [[founder-charter]] cell -- the constitution names its founders, the machinery
     only reads the roster. Returns () if the charter is absent (the corpus has no
     founders declared yet)."""
-    if not (cells.IDEAS / f"{FOUNDER_CHARTER}.md").exists():
+    if not cells.exists(FOUNDER_CHARTER):
         return ()
     body = cells.parse_cell(FOUNDER_CHARTER)["body"]
     mask = cells.fence_lines(body)

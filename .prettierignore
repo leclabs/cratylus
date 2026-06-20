@@ -15,3 +15,7 @@ packages/mind/GLOSSARY.md
 # plans/ CLAUDE.md are symlinks to AGENTS.md (house convention); Prettier can't follow
 # symlinks and the real content is the AGENTS.md it already checks.
 plans/**/CLAUDE.md
+
+# γ2-B: lexicon files are verbatim cell-block STORAGE (byte-identity contract),
+# not free-form markdown — exempt like the generated render/glossary above.
+packages/mind/lexicon/

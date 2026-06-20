@@ -16,6 +16,8 @@ from markdown_it import MarkdownIt
 # core/ is one level deeper than toolkit/, so the package root is parents[2].
 ROOT = pathlib.Path(__file__).resolve().parents[2]  # packages/mind
 IDEAS = ROOT / "ideas"
+LEXICON = ROOT / "lexicon"  # γ2-B: primitive blocks, per-kind files lexicon/<kind>.md
+MINDDIR = ROOT / "mind"     # γ2-B: composites, mind/<kind>/<organ>/<slug>.md
 
 # `[[anchor]]` reference -- kebab-case slug only (placeholders like `[[<x>]]`
 # and piped links are intentionally NOT matched here).
@@ -112,6 +114,87 @@ def refs_in_prose(body: str) -> list[str]:
     return out
 
 
+# γ2-B lexicon block delimiter: `<!-- ^<anchor> -->` on its own line opens a
+# primitive block whose body is the VERBATIM original cell text (front matter
+# included) up to the next marker -- so parse_cell reconstructs a byte-identical
+# dict and the projection is storage-invariant ([[regenerate-without-clobbering]]).
+_LEX_MARKER = re.compile(r"^<!-- \^([a-z0-9-]+) -->$", re.M)
+# Indexes are cached per corpus-ROOT (IDEAS.parent) so monkeypatching cells.IDEAS
+# to an isolated fixture corpus moves the lexicon/mind homes with it -- a single
+# patch isolates the whole storage layer.
+_lex_cache: dict = {}
+_comp_cache: dict = {}
+
+
+def reset_storage_caches() -> None:
+    """Drop the lexicon/composite indexes (tests that write fixtures mid-run)."""
+    _lex_cache.clear()
+    _comp_cache.clear()
+
+
+def _lexicon_index() -> dict:
+    """slug -> (lexicon_file, verbatim_cell_text) for every primitive block in
+    `<root>/lexicon/<kind>.md`, keyed on the live corpus root."""
+    root = IDEAS.parent
+    if root not in _lex_cache:
+        out: dict = {}
+        lexdir = root / "lexicon"
+        if lexdir.is_dir():
+            for f in sorted(lexdir.glob("*.md")):
+                text = f.read_text(encoding="utf-8")
+                marks = list(_LEX_MARKER.finditer(text))
+                for i, m in enumerate(marks):
+                    start = m.end() + 1  # past the marker line's trailing newline
+                    end = marks[i + 1].start() if i + 1 < len(marks) else len(text)
+                    out[m.group(1)] = (f, text[start:end])
+        _lex_cache[root] = out
+    return _lex_cache[root]
+
+
+def _composite_index() -> dict:
+    """slug -> path for composites at `<root>/mind/<kind>/<organ>/<slug>.md`."""
+    root = IDEAS.parent
+    if root not in _comp_cache:
+        out: dict = {}
+        minddir = root / "mind"
+        if minddir.is_dir():
+            for q in sorted(minddir.glob("*/*/*.md")):
+                out[q.stem] = q
+        _comp_cache[root] = out
+    return _comp_cache[root]
+
+
+def _cell_text(slug: str) -> str:
+    """The raw `---fm---body` text of a cell, from whichever home holds it:
+    flat ideas file -> dir-form -> composite mind/<kind>/<organ>/ -> lexicon block.
+    A file home wins over a lexicon block (back-compat during migration)."""
+    flat = IDEAS / f"{slug}.md"
+    if flat.exists():
+        return flat.read_text(encoding="utf-8")
+    d = cell_dir(slug)
+    if d is not None:
+        return (d / f"{slug}.md").read_text(encoding="utf-8")
+    comp = _composite_index().get(slug)
+    if comp is not None:
+        return comp.read_text(encoding="utf-8")
+    lex = _lexicon_index().get(slug)
+    if lex is not None:
+        return lex[1]
+    raise FileNotFoundError(
+        f"no cell for {slug!r}: absent in ideas/, mind/<kind>/<organ>/, lexicon/"
+    )
+
+
+def exists(slug: str) -> bool:
+    """True if `slug` names a live cell in any home (file or lexicon block)."""
+    return (
+        (IDEAS / f"{slug}.md").exists()
+        or cell_dir(slug) is not None
+        or slug in _composite_index()
+        or slug in _lexicon_index()
+    )
+
+
 def cell_dir(slug: str) -> pathlib.Path | None:
     """The source directory of a dir-form cell `ideas/<slug>/` (body at
     `<slug>/<slug>.md`, companion assets beside it), or None for a flat cell.
@@ -128,7 +211,15 @@ def cell_path(slug: str) -> pathlib.Path:
     if flat.exists():
         return flat
     d = cell_dir(slug)
-    return d / f"{slug}.md" if d is not None else flat
+    if d is not None:
+        return d / f"{slug}.md"
+    comp = _composite_index().get(slug)
+    if comp is not None:
+        return comp
+    lex = _lexicon_index().get(slug)
+    if lex is not None:
+        return lex[0]  # the lexicon FILE (display/error locator; block via _cell_text)
+    return flat  # missing -> flat path for a clear FileNotFoundError
 
 
 def parse_cell(slug: str) -> dict:
@@ -136,8 +227,7 @@ def parse_cell(slug: str) -> dict:
     into {slug, fm, body}. A well-formed cell is `---\\nfront\\n---\\nbody`; an
     opening `---` with no close is malformed and the whole text is treated as
     body (no front-matter)."""
-    path = cell_path(slug)
-    text = path.read_text(encoding="utf-8")
+    text = _cell_text(slug)
     fm: dict = {}
     body = text
     if text.startswith("---"):
@@ -266,7 +356,9 @@ def corpus_slugs() -> list[str]:
         d.name for d in IDEAS.iterdir()
         if d.is_dir() and (d / f"{d.name}.md").exists()
     ]
-    return sorted(set(flat) | set(dir_form))
+    composite = list(_composite_index().keys())   # mind/<kind>/<organ>/<slug>.md
+    lexicon = list(_lexicon_index().keys())        # lexicon/<kind>.md blocks
+    return sorted(set(flat) | set(dir_form) | set(composite) | set(lexicon))
 
 
 def slugs_of_kind(kind: str) -> list[str]:

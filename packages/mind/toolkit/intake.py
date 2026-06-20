@@ -106,7 +106,7 @@ def validate(action: str, slug: str) -> tuple[bool, str]:
             return (False, f"mint slug {slug!r} is not well-formed kebab-case")
         if not any(c.isalpha() for c in slug):
             return (False, f"mint slug {slug!r} must contain a letter (not all-digits)")
-        if slug in corpus or (cells.IDEAS / f"{slug}.md").exists():
+        if slug in corpus or cells.exists(slug):
             return (False, f"mint slug {slug!r} already taken -- route to it or pick another")
         return (True, "ok")
     return (False, f"unknown action {action!r} (route|mint)")

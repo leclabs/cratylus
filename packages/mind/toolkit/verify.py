@@ -187,7 +187,7 @@ def _body_offset(text: str, body: str) -> int:
 def gate_schema_and_refs():
     slugs = set(cells.corpus_slugs())
     for slug in sorted(slugs):
-        path = IDEAS / f"{slug}.md"
+        path = cells.cell_path(slug)
         cell = cells.parse_cell(slug)
         fm, body = cell["fm"], cell["body"]
         # SCHEMA
@@ -233,7 +233,7 @@ def gate_fences():
     never silently transformed or skipped. Template placeholders ([[<x>]])
     follow the corpus-wide convention: not anchors, not flagged."""
     for slug in sorted(cells.corpus_slugs()):
-        path = IDEAS / f"{slug}.md"
+        path = cells.cell_path(slug)
         text = path.read_text(encoding="utf-8")
         body = cells.parse_cell(slug)["body"]
         offset = _body_offset(text, body)
@@ -266,7 +266,7 @@ def gate_symbols():
     undeclared symbol, never a false-positive on η/cᵢ/tree-art)."""
     declared = _declared_symbols()
     for slug in sorted(cells.corpus_slugs()):
-        path = IDEAS / f"{slug}.md"
+        path = cells.cell_path(slug)
         body = cells.parse_cell(slug)["body"]
         offset = _body_offset(path.read_text(encoding="utf-8"), body)
         for fb in cells.fenced_blocks(body):
@@ -298,7 +298,7 @@ def gate_skill_operative():
     section headings, and the single prose `≜` composition-formula line. What
     remains must be a list item, a fenced block, or a substantive prose line."""
     for slug in sorted(cells.slugs_of_kind("skill")):
-        path = IDEAS / f"{slug}.md"
+        path = cells.cell_path(slug)
         body = cells.parse_cell(slug)["body"]
         if cells.fenced_blocks(body):  # a fenced block IS operative content
             continue
@@ -509,10 +509,21 @@ def _home_index() -> dict[str, list[str]]:
     list is a duplicated home (R1's not-∃!). Built from the filesystem glob,
     not assumed -- a future collision (two *.md projecting one anchor) surfaces."""
     index: dict[str, list[str]] = {}
+    # flat ideas cells
     for path in sorted(IDEAS.glob("*.md")):
         if path.stem == "AGENTS" or path.name == "CLAUDE.md":
             continue
         index.setdefault(path.stem, []).append(path.name)
+    # dir-form ideas cells
+    for d in sorted(IDEAS.iterdir()):
+        if d.is_dir() and (d / f"{d.name}.md").exists():
+            index.setdefault(d.name, []).append(f"{d.name}/{d.name}.md")
+    # composites: mind/<kind>/<organ>/<slug>.md (γ2-B)
+    for slug, path in cells._composite_index().items():
+        index.setdefault(slug, []).append(str(path.relative_to(cells.ROOT)))
+    # primitive blocks: lexicon/<kind>.md#^<slug> (γ2-B)
+    for slug, (lex_file, _text) in cells._lexicon_index().items():
+        index.setdefault(slug, []).append(f"{lex_file.name}#^{slug}")
     return index
 
 
