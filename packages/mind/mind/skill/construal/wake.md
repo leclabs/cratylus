@@ -16,7 +16,9 @@ Resolve from context:
 
 ## Sequence
 
-Run the [[memory]] WAKE sequence. The opening **dream** is usually catch-up only: a no-op when [[handoff]] already dreamt on hot context, load-bearing on a fresh spawn or a crash that had none. **Orient** binds to the current project and resumes that project's work-thread; an unfamiliar cwd is a fresh orientation.
+**Migrate if needed (host-bootstrap precondition).** Wake is the first ritual to touch the store on a new host, so it is the trigger site for the EPISODIC md→JSONL migration. Before loading the layers: if `${AGENT_HOME}/EPISODIC.md` exists and `${AGENT_HOME}/EPISODIC.jsonl` does not, convert the legacy store via the bundled `episodic` tool — `node ~/.claude/skills/memory/episodic.mjs migrate ${AGENT_HOME}/EPISODIC.md ${AGENT_HOME}/EPISODIC.jsonl` — before the opening dream. The migrate is no-loss gated and runs once: when `${AGENT_HOME}/EPISODIC.jsonl` is already present it is a no-op and wake proceeds straight to the sequence.
+
+Then run the [[memory]] WAKE sequence. The opening **dream** is usually catch-up only: a no-op when [[handoff]] already dreamt on hot context, load-bearing on a fresh spawn or a crash that had none. **Orient** binds to the current project and resumes that project's work-thread; an unfamiliar cwd is a fresh orientation.
 
 Fired by the trigger **wake** or `/wake`; absent direction, default on the first turn after spawn.
 
