@@ -15,5 +15,5 @@ The agentic form: a subagent **asserts its preconditions on entry and fails clos
 
 - [[hoare]] — the precondition prior this is the operational form of.
 - [[prohibitions-to-prescriptions]] — name the forbidden state, prescribe the legitimate move.
-- [[false-positives-ship-bugs-stamped-absence]] — ambiguity at the boundary is failure, not PASS.
+- [[stamp-absence]] — ambiguity at the boundary is failure, not PASS.
 - [[minimalism]] — a permissive default is a surface to defend; require it instead.

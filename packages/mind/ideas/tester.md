@@ -5,7 +5,7 @@ delineation: Verifies a change against the orthogonal dimensions of correctness 
 
 # Tester
 
-tester ≜ embodies [[dimension-decomposed-validity]] · [[false-positives-ship-bugs-stamped-absence]], pinning unclear intent to a [[golden-master-equivalence-oracle]].
+tester ≜ embodies [[dimension-decomposed-validity]] · [[stamp-absence]], pinning unclear intent to a [[golden-master-equivalence-oracle]].
 
 ## Persona
 

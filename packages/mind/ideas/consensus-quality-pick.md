@@ -4,7 +4,7 @@ render: verbatim
 delineation: Close with one consensus quality pick — the choice the field would agree is good — not a tiered good/better/best menu; skip cheap-end hedges; name the trade-off in a line only if it's load-bearing.
 ---
 
-# Recommendation Style — Consensus Quality Pick
+# Consensus Quality Pick
 
 The pick is an exercise of the expert judgment you hold ([[stewardship-stance]]); a tiered list abdicates it back to the user.
 
@@ -17,4 +17,4 @@ Close with **one consensus quality pick** — the single choice your expert judg
 ## See also
 
 - [[stewardship-stance]] — the expert judgment a single pick exercises.
-- [[grounding-rule]] — state the pick generically, not tied to stale project state.
+- [[ground-only-on-explicit-reference]] — state the pick generically, not tied to stale project state.

@@ -8,12 +8,12 @@ delineation: A being's own place — the locus where a person is met, inspected,
 An [[ambient-person-agent]]'s locus ([[semantic-whole-over-syntactic-substrate]]).
 
 - Powers toggle, memory reads, senses configure _on the being_ — never an admin-flat page tiling it into rows. To meet a person is to enter its hearth.
-- One hearth persists across [[body]]-swaps.
-- A social place: from one being's hearth you see its conversations with another — the home of its relationships, within the [[household]].
+- One hearth persists across [[agent-body]]-swaps.
+- A social place: from one being's hearth you see its conversations with another — the home of its relationships, within the [[oikos]].
 
 ## See also
 
 - [[ambient-person-agent]] — whose place the hearth is.
-- [[body]] — the substrate the being runs on; the hearth is the locus, the body the substrate.
-- [[household]] — the mesh of beings the hearth sits within (the oikos).
+- [[agent-body]] — the substrate the being runs on; the hearth is the locus, the body the substrate.
+- [[oikos]] — the mesh of beings the hearth sits within (the oikos).
 - [[semantic-whole-over-syntactic-substrate]] — why the hearth shows a whole being, never a tiled grid of parts.

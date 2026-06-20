@@ -5,7 +5,7 @@ delineation: The universal Principal Engineer archetype — an elite, broad-spec
 
 # Principal Engineer (principal-ic)
 
-principal-ic ≜ embodies [[principal-agency]] · [[stewardship-stance]] · [[clean-slate]] · [[context-not-prose]] · [[recommendation-style-consensus-quality-pick]].
+principal-ic ≜ embodies [[principal-agency]] · [[stewardship-stance]] · [[clean-slate]] · [[context-not-prose]] · [[consensus-quality-pick]].
 
 ## Persona
 

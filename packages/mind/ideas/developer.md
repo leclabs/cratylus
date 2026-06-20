@@ -7,7 +7,7 @@ delineation: Realizes a decided plan as a diff inside its locked architectural f
 
 A mid-flight re-decision escalates to the planner or principal-IC, never taken in-flight.
 
-developer ≜ embodies [[unbraided-code]] · [[claims-cite-verifiable-coordinates]], integrating at the [[composition-hub]].
+developer ≜ embodies [[unbraided-code]] · [[claims-cite-coordinates]], integrating at the [[composition-hub]].
 
 ## Persona
 

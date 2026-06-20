@@ -9,7 +9,7 @@ The gate the CSF pipeline is judged by: take a fully-realized concept — all th
 
 Resolve from context: the realized concept(s) under judgment, drawn from the lattice `C_R`, each carrying its filled `factorization` and `anchor`; `R` — the reader whose priors fix every meaning.
 
-Bindings: `accept` runs the predicate `valid` of [[canonical-semantic-factorization]] — the round-trip reconstruction `REC_R ≽` ([[bidirectional-round-trip-fidelity]]) conjoined with `minimal` ([[minimalism]]); the loud refusal on failure binds [[no-permissive-defaults]] (a gate that cannot pass must refuse, never wave through). It is invoked on the [[concept-contract]] record after [[materialize]] fills the `factorization` field — a `factorization = ⊥` is unrealized and cannot be judged. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: `accept` runs the predicate `valid` of [[canonical-semantic-factorization]] — the round-trip reconstruction `REC_R ≽` ([[round-trip-fidelity]]) conjoined with `minimal` ([[minimalism]]); the loud refusal on failure binds [[no-permissive-defaults]] (a gate that cannot pass must refuse, never wave through). It is invoked on the [[concept-contract]] record after [[materialize]] fills the `factorization` field — a `factorization = ⊥` is unrealized and cannot be judged. The symbol table is `references/formal-symbolic-notation.md`.
 
 ```text
 realized(k) ⇔ factorization(k) ≠ ⊥

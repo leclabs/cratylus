@@ -19,7 +19,7 @@ The canonical taxonomy of context-bloat failure modes:
 
 The taxonomy is open-by-extension; further confirmed rows:
 
-- **Artefact Supremacy** — once a high-fidelity artifact exists, work attaches to polishing _it_ instead of re-deriving from the goal it was meant to serve; the artifact has eaten the goal. Goodhart at the artifact grain ([[metric-is-a-guide-not-a-target]]): the proxy displaced the target.
+- **Artefact Supremacy** — once a high-fidelity artifact exists, work attaches to polishing _it_ instead of re-deriving from the goal it was meant to serve; the artifact has eaten the goal. Goodhart at the artifact grain ([[goodharts-law]]): the proxy displaced the target.
 - **Per-Unit Agent Loop** — looping an agent per file/per component turns a 30-component module into ~150 turns, and a redundant fetch survives into a compiled prompt that already holds the resource. Cache hit-rate without a productive-token denominator hides it. Fix: measure overhead ratio (productive tokens / total), keep the inflation-prone section above the cache boundary, prune the instruction the data already satisfies.
 
 Two properties make the taxonomy load-bearing rather than decorative:
@@ -33,7 +33,7 @@ Two properties make the taxonomy load-bearing rather than decorative:
 - [[precise-circumscription]] — Edge Case Cascade and Redundant Framing are failures to find the circumscribing name.
 - [[minimalism]] — Premature Elaboration is the speculative-fallback smell this principle forbids.
 - [[cite-dont-copy]] — the fix for Specification Bloat: one canonical home, reference don't restate.
-- [[metric-is-a-guide-not-a-target]] — Artefact Supremacy is its Goodhart twin at the artifact grain.
+- [[goodharts-law]] — Artefact Supremacy is its Goodhart twin at the artifact grain.
 - [[anchor-to-the-readers-priors]] — the human-comms reading: activity-narration is the surplus this taxonomy prunes per register.
 - [[net-zero-correction]] — the full discipline behind the Corrective-Spiral fix: carry the delta, not the cumulative.
 - [[prohibitions-to-prescriptions]] — the full discipline behind the Defensive-Prohibition fix: rewrite "don't X" as "do Y".

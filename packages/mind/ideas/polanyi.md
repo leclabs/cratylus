@@ -16,5 +16,5 @@ Three loadings:
 
 ## See also
 
-- [[claims-cite-verifiable-coordinates]] — externalize the inference path, not just the conclusion.
+- [[claims-cite-coordinates]] — externalize the inference path, not just the conclusion.
 - [[investigator]] — the archetype that lives this: report the path, not the guess.

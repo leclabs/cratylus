@@ -12,4 +12,4 @@ The resolution-grain twin of [[surface-open-questions]] — there, name the unkn
 ## See also
 
 - [[surface-open-questions]] — the same honesty discipline at the design-doc grain.
-- [[priors-as-light]] — abstain when even the priors find no fit, not at the first surface ambiguity.
+- [[read-by-priors-not-surface]] — abstain when even the priors find no fit, not at the first surface ambiguity.

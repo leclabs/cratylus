@@ -3,7 +3,7 @@ kind: concept
 delineation: When the agent must be the active driver, give it a passive state engine to consult as a tool — the engine knows the graph and answers "where am I / what's next" but performs no side effect and calls nothing; the agent reports outcomes and decides when to act, so control is inverted from engine-drives-agent to agent-consults-engine.
 ---
 
-# Inversion-of-Control Orchestration
+# Agent Consults Engine
 
 The dual of [[engine-orchestrates-agents-execute]] under the platform precondition that no engine may call the agent (an agent REPL, a single-context session): the agent calls the engine for navigation rather than the engine calling the agent at inference points. Which side issues the call is fixed, not chosen freely ([[engine-orchestrates-agents-execute]]).
 

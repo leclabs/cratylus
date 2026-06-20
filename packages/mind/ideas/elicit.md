@@ -9,7 +9,7 @@ trigger: /elicit
 
 Resolve from context: `t` — the operator's intended concept, hidden and unobserved; `R` — the reader whose priors seed the belief `μ`; the operator is the oracle answering each query yes or no.
 
-Bindings: `C_R` (the concept lattice the search ranges over) and `D_R` (its distinctions — each a candidate question) are [[conceptualize]]'s space, where a concept is a closed set of distinctions, so `q ∈ c` asks whether concept `c` draws distinction `q`; the prior mass `μ` is the reader's own [[latent-priors]] · [[priors-as-light]] over what the operator likely means — the light by which the agent knows which question discriminates; the one surviving concept crystallizes into a name through [[signify]]. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: `C_R` (the concept lattice the search ranges over) and `D_R` (its distinctions — each a candidate question) are [[conceptualize]]'s space, where a concept is a closed set of distinctions, so `q ∈ c` asks whether concept `c` draws distinction `q`; the prior mass `μ` is the reader's own [[latent-priors]] · [[read-by-priors-not-surface]] over what the operator likely means — the light by which the agent knows which question discriminates; the one surviving concept crystallizes into a name through [[signify]]. The symbol table is `references/formal-symbolic-notation.md`.
 
 ```text
 t          — the operator's hidden target concept; t ∈ C_R, unobserved

@@ -3,7 +3,7 @@ kind: concept
 delineation: Most of what an agent does in a transformation is mechanical bookkeeping disguised as inference — run a deterministic pre-transform pass (codemod, scaffolder, schema-gen) between setup and dispatch, so the agent receives only the small inference-shaped residue.
 ---
 
-# Pre-Transform Pass Shrinks the Inference Surface
+# Pre-Transform Shrinks the Inference Surface
 
 Calibration: "rewrite these 80 components" is ~70 mechanical (find the call site, swap the import, rename, preserve the argument shape) and ~10 needing judgment — the residue is the agent's actual surface area.
 

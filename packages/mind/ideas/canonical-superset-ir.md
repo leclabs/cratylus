@@ -13,6 +13,6 @@ The round-trip floor is governed by [[lossless-floor]]. A projection of the IR i
 
 ## See also
 
-- [[bidirectional-round-trip-fidelity]] — the property that proves a dialect is a faithful projection of the IR.
+- [[round-trip-fidelity]] — the property that proves a dialect is a faithful projection of the IR.
 - [[declare-capability-dont-discover]] — how each target declares which slice of the IR it can carry.
 - [[projection-is-not-the-source]] — the IR is the generator; each dialect is one lossy address over it.

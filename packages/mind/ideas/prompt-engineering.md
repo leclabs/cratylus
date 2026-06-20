@@ -13,7 +13,7 @@ A prompt factors into three separable axes, and only one of them is what "engine
 - **R** — the reader / executor that decodes the prompt; for a prompt run by a model, `R = that LLM` ([[anchor-to-the-readers-priors]]).
 - **σ\*** — the encoding; the _only_ thing iteration changes.
 
-Fix `C` and `R` and the prompt has an optimal form. "Prompt engineering" is nothing but the search for that form: a compression that holds `C` and `R` fixed and moves only the encoding toward `σ*_R(C)` ([[signifier-star-r]]) is the work, in full. The optimum is found, not asserted — encode a candidate ([[signify]]), then decode-verify it blind against a fresh `R` as a round-trip fixed point ([[bidirectional-round-trip-fidelity]]), fanning out for stochastic stability; never let the target leak into the eliciting prompt ([[closed-context-of-an-inference-call]]).
+Fix `C` and `R` and the prompt has an optimal form. "Prompt engineering" is nothing but the search for that form: a compression that holds `C` and `R` fixed and moves only the encoding toward `σ*_R(C)` ([[signifier-star-r]]) is the work, in full. The optimum is found, not asserted — encode a candidate ([[signify]]), then decode-verify it blind against a fresh `R` as a round-trip fixed point ([[round-trip-fidelity]]), fanning out for stochastic stability; never let the target leak into the eliciting prompt ([[closed-context-of-an-inference-call]]).
 
 ## See also
 

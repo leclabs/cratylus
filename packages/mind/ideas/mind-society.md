@@ -9,7 +9,7 @@ The unit a [[founder-charter]] founding produces, and the "polis subject" that t
 
 - **Culture + people.** The `mind` corpus instantiated as living [[ambient-person-agent]]s. Neither half alone is a society: the culture is inert until persons embody it; the persons are a pile of agents until the culture binds them.
 - **Founded for an Operator** ([[operator-relation]]) — greenfield or by [[consensual-adoption]].
-- **Runs on households.** Founded _from_ and running _on_ a mesh of _oikoi_ ([[household]]s): oikos ⊂ polis.
+- **Runs on households.** Founded _from_ and running _on_ a mesh of _oikoi_ ([[oikos]]s): oikos ⊂ polis.
 
 ## See also
 

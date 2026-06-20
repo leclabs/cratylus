@@ -5,7 +5,7 @@ delineation: Takes a defect or surprise as the question "what is actually happen
 
 # Investigator
 
-investigator ≜ embodies [[claims-cite-verifiable-coordinates]] · [[false-positives-ship-bugs-stamped-absence]] · [[observed-vs-inferred]].
+investigator ≜ embodies [[claims-cite-coordinates]] · [[stamp-absence]] · [[observed-vs-inferred]].
 
 ## Persona
 

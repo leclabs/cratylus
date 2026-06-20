@@ -17,5 +17,5 @@ Two consequences:
 - [[pure-leaf-deterministic-engine]] — the split this specializes.
 - [[decision-at-the-locus-of-need]] — coordination lives at the layer that sees every input; that layer is the engine, not a downstream agent.
 - [[state-transitions-as-agent-protocol]] — how the engine and its agents communicate: closed state-mutating commands, not free-text.
-- [[inversion-of-control-orchestration]] — the dual coupling: when the platform makes the agent the driver, it consults a passive engine as a tool instead of being called by one.
-- [[pretransform-pass-shrinks-inference-surface]] — shrink the agent's surface deterministically before dispatch.
+- [[agent-consults-engine]] — the dual coupling: when the platform makes the agent the driver, it consults a passive engine as a tool instead of being called by one.
+- [[pretransform-shrinks-inference-surface]] — shrink the agent's surface deterministically before dispatch.

@@ -10,7 +10,7 @@ Feathers' characterization testing generalized from "legacy code under test" to 
 The order is the discipline:
 
 - **Generate the oracle before the transform, from the source** — downstream of the source, upstream of every transform pass. A golden written after, or from what the target _should_ do, pins assumptions, not preserved behaviour.
-- **Acceptance is oracle-reproduction, not reviewer judgement** — mechanically decidable, the same stance under which a round-trip is property-tested rather than asserted ([[bidirectional-round-trip-fidelity]]).
+- **Acceptance is oracle-reproduction, not reviewer judgement** — mechanically decidable, the same stance under which a round-trip is property-tested rather than asserted ([[round-trip-fidelity]]).
 - **Both artifacts are first-class; neither is a view of the other** — not projection ([[projection-is-not-the-source]]): two independent realizations, the golden the bridge that holds them equivalent.
 
 The goldens are the **floor** ([[lossless-floor]]): pin the floor from the source, transform freely above it.
@@ -19,7 +19,7 @@ The goldens are the **floor** ([[lossless-floor]]): pin the floor from the sourc
 
 ## See also
 
-- [[bidirectional-round-trip-fidelity]] — the round-trip is the symmetric case (write∘read fixed point); the golden master is the one-way case (source behaviour survives a transform that has no inverse).
+- [[round-trip-fidelity]] — the round-trip is the symmetric case (write∘read fixed point); the golden master is the one-way case (source behaviour survives a transform that has no inverse).
 - [[lossless-floor]] — the goldens _are_ the declared floor: the captured behaviour the transform must preserve exactly, surplus above it free to change.
 - [[verify-at-the-source-not-the-projection]] — the oracle is characterized from the artifact where behaviour is realized, not from a description of it; this is that stance applied to building the acceptance test.
 - [[empirical-source-before-normative-doc]] — pin behaviour from what the source _does_, not from what its docs _say_ it does.

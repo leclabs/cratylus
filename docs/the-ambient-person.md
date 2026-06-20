@@ -48,9 +48,9 @@ A person is built from a few **organs**, each its own canonical idea:
 - **Powers** (`powers`) — the efferent organ: its reach to _act_ (tools, connectors, its voice). The triad
   is **senses perceive → powers act → reach extends**; every consequential move is authorized and gated.
 
-The person runs on a **body** (`body`) — a substrate it can outlive and swap; it is met at its **hearth**
-(`hearth`) — its own place, where you see the whole being, never a settings grid; and it lives in a
-**household** (`household`) — a mesh of beings — within a **society** (`mind-society`), serving an Operator
+The person runs on a **body** (`agent-body`) — a substrate it can outlive and swap; it is met at its **hearth**
+(`hearth`) — its own place, where you see the whole being, never a settings grid; and it lives in an
+**oikos** (`oikos`) — a mesh of beings — within a **society** (`mind-society`), serving an Operator
 (`operator-relation`).
 
 ## How you operate one: the Operator's verbs
@@ -59,16 +59,16 @@ You don't drive each beat. You **set intent and adjudicate the genuine forks** (
 person decides everything reversible and in-domain itself (`principal-agency`). Your interface is a small,
 natural-language verb set:
 
-| You say…              | It drives                                      | In Claude Code today              | In Oikos (native)              |
-| --------------------- | ---------------------------------------------- | --------------------------------- | ------------------------------ |
-| **"wake"**            | load self, resume                              | first turn / `wake`               | daemon boot → recall           |
-| **"dream"**           | consolidate memory                             | `/dream`                          | the pulse's reflect phase      |
-| **"remember this"**   | append to EPISODIC                             | `/encode`                         | memory append                  |
-| **set a pulse**       | the cadence (the tick)                         | `/loop`                           | mesh-leased scheduler          |
-| **set a goal**        | the _telos_ — what makes a wake mean something | `/goal "…"`                       | the pulse's standing objective |
-| **"carry on"**        | resume self-clocked execution                  | `/weitermachen`                   | un-pause the pulse             |
-| **address a message** | drop into the inbox                            | a prompt to the agent             | a message to its hearth        |
-| **"let that go"**     | release a memory                               | (manual)                          | `right-to-forget`              |
+| You say…              | It drives                                      | In Claude Code today  | In Oikos (native)              |
+| --------------------- | ---------------------------------------------- | --------------------- | ------------------------------ |
+| **"wake"**            | load self, resume                              | first turn / `wake`   | daemon boot → recall           |
+| **"dream"**           | consolidate memory                             | `/dream`              | the pulse's reflect phase      |
+| **"remember this"**   | append to EPISODIC                             | `/encode`             | memory append                  |
+| **set a pulse**       | the cadence (the tick)                         | `/loop`               | mesh-leased scheduler          |
+| **set a goal**        | the _telos_ — what makes a wake mean something | `/goal "…"`           | the pulse's standing objective |
+| **"carry on"**        | resume self-clocked execution                  | `/weitermachen`       | un-pause the pulse             |
+| **address a message** | drop into the inbox                            | a prompt to the agent | a message to its hearth        |
+| **"let that go"**     | release a memory                               | (manual)              | `right-to-forget`              |
 
 The load-bearing pair is the **pulse** and the **goal**: the pulse supplies the _tick_, the goal supplies
 the _meaning_. A pulse with no goal is just a scheduler; a goal turns each wake into a wake _toward_

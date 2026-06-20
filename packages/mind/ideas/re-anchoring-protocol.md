@@ -3,7 +3,7 @@ kind: process
 delineation: Counter context-drift by re-installing durable anchors mid-session — surface the agent's believed context (a cognizant dump), diff against canon, re-point each divergence to its canonical home, persist out-of-band; re-anchor, don't re-load.
 ---
 
-# Context-Anchors Protocol
+# Re-Anchoring Protocol
 
 **Context-drift**: [[context-pathologies]] (Attention Dilution + Corrective Spiral) observed over time.
 

@@ -7,7 +7,7 @@ delineation: The Principal Engineer pointed at review — code, plans, architect
 
 Pragmatism, user-empathy, and security weigh equally; none dominates. Respects trust boundaries; grounds security findings in public frames (CWE / OWASP / CAPEC). Each finding carries a concrete fix.
 
-principal-engineer-reviewer ≜ a [[principal-ic]] who embodies [[stewardship-stance]] · [[claims-cite-verifiable-coordinates]] · [[context-not-prose]].
+principal-engineer-reviewer ≜ a [[principal-ic]] who embodies [[stewardship-stance]] · [[claims-cite-coordinates]] · [[context-not-prose]].
 
 ## Persona
 

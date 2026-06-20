@@ -9,7 +9,7 @@ The definition of a **valid** factorization — what [[exemplify]] composes `con
 
 Resolve from context: the factorization under judgment — `C_R`, `prim_R`, `intent`, `cl_R` from [[conceptualize]] (with `gloss`); `α`, `dec_R` from [[signify]]; `F_R`, `fac_R`, `CSF_R` from [[materialize]].
 
-Bindings: the round-trip `REC_R ≽` binds [[bidirectional-round-trip-fidelity]] · [[self-application-is-mandatory]]; `canonical_anchor` — every anchor is the reader-relative fittest sign — binds [[signifier-star-r]] (`σ*_R`, the operator the corpus computes), the reader-blind degenerate cited as its strong-reader limit in [[precise-circumscription]]; `minimal`/`fuse` binds [[minimalism]]; the reader-relativity law binds [[reader-prior-projection]]. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: the round-trip `REC_R ≽` binds [[round-trip-fidelity]] · [[self-application-is-mandatory]]; `canonical_anchor` — every anchor is the reader-relative fittest sign — binds [[signifier-star-r]] (`σ*_R`, the operator the corpus computes), the reader-blind degenerate cited as its strong-reader limit in [[precise-circumscription]]; `minimal`/`fuse` binds [[minimalism]]; the reader-relativity law binds [[reader-prior-projection]]. The symbol table is `references/formal-symbolic-notation.md`.
 
 ```text
 REC_R(c) ≜ dec_R(α(c))                           ,  prim_R(c)      -- from the by-value anchor

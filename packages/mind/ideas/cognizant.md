@@ -7,7 +7,7 @@ delineation: Makes the subagent lifecycle legible — on request dumps its full 
 
 Delegated-to when the question is "why isn't the agent doing X?" or "what's available at this point in the lifecycle?".
 
-cognizant ≜ invokes [[context-anchors-protocol]], embodies [[stewardship-stance]] · [[observed-vs-inferred]], references [[context-pathologies]].
+cognizant ≜ invokes [[re-anchoring-protocol]], embodies [[stewardship-stance]] · [[observed-vs-inferred]], references [[context-pathologies]].
 
 ## Persona
 

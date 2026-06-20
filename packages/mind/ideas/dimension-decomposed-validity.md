@@ -12,5 +12,5 @@ Per axis define: **anchor** (the concern, one sentence), **capture** (the cheap 
 ## See also
 
 - [[semantic-partition]] — the same orthogonality/basis cut, applied to correctness.
-- [[false-positives-ship-bugs-stamped-absence]] — the verdict discipline each axis emits.
+- [[stamp-absence]] — the verdict discipline each axis emits.
 - [[tester]] — the archetype that runs the ladder.

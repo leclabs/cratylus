@@ -12,7 +12,7 @@ verify.py    gates the graph (schema · refs · round-trip)
 deploy.py    ships artifacts to a scope; seeds SELF/MEMORY/EPISODIC (never clobbers)
 ```
 
-`put` (intake) and `get` (projection) are lens halves ([[bidirectional-round-trip-fidelity]]); `verify.py` enforces the round-trip ([[self-application-is-mandatory]]). The source-of-truth is the `ideas/` cells — every artifact is a regenerable projection ([[projection-is-not-the-source]]).
+`put` (intake) and `get` (projection) are lens halves ([[round-trip-fidelity]]); `verify.py` enforces the round-trip ([[self-application-is-mandatory]]). The source-of-truth is the `ideas/` cells — every artifact is a regenerable projection ([[projection-is-not-the-source]]).
 
 ## The projection pipeline (`get`)
 
@@ -49,7 +49,7 @@ Four gates: **schema** (every cell is `kind` ∈ closed-set + `delineation`, or 
 
 ## intake.py — the reduction scaffold (`put`)
 
-The deterministic scaffold around the irreducibly-semantic call ([[anchor-routing]] — never force an ill-fit): `candidates()` (an IDF-weighted lexical pre-filter that shrinks the corpus to top-k routing candidates, [[pretransform-pass-shrinks-inference-surface]]; slug-tokens boosted since the name carries the meaning) and `validate()` (route/mint check: target exists · slug well-formed · MECE-unique). The `semantic-partition` cut and the route-vs-mint judgment stay with the model.
+The deterministic scaffold around the irreducibly-semantic call ([[anchor-routing]] — never force an ill-fit): `candidates()` (an IDF-weighted lexical pre-filter that shrinks the corpus to top-k routing candidates, [[pretransform-shrinks-inference-surface]]; slug-tokens boosted since the name carries the meaning) and `validate()` (route/mint check: target exists · slug well-formed · MECE-unique). The `semantic-partition` cut and the route-vs-mint judgment stay with the model.
 
 ## See also
 

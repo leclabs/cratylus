@@ -3,7 +3,7 @@ kind: principle
 delineation: Absence of a signal is ambiguous — stamp it affirmatively at capture; treat unstamped absence as ERROR, never PASS. Three verdicts only (PASS/FAIL/ERROR), no SKIP; bias toward false negatives because false positives ship bugs.
 ---
 
-# False Positives Ship Bugs: Stamp Absence
+# Stamp Absence
 
 The ambiguity is three-way: the test didn't run, ran and found nothing, or ran and the writer forgot to record. A pipeline that reads unstamped absence as PASS evolves, under selection pressure, to omit checks — omission is cheaper than passing. The asymmetry that sets the bias: a false negative wastes one investigation, a false positive ships a bug.
 
@@ -21,4 +21,4 @@ The ambiguity is three-way: the test didn't run, ran and found nothing, or ran a
 
 - [[lossless-floor]] — the principle this operationalizes at the capture boundary.
 - [[dimension-decomposed-validity]] — where the verdicts attach.
-- [[claims-cite-verifiable-coordinates]] — stamped uncertainty travels with the claim.
+- [[claims-cite-coordinates]] — stamped uncertainty travels with the claim.

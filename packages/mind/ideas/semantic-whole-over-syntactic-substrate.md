@@ -9,4 +9,4 @@ The **emergent cohesive whole** is the entity (the organism, the program's behav
 
 The hazard is one-directional: producing the entity forces the descent into the substrate, and the descent swaps the whole for the mechanism. A change is right when it serves the whole, not merely when it parses.
 
-The maker's companion to [[priors-as-light]]: grasp the form _through_ the matter in one act, then **sustain** that grasp through the syntactic labor of making.
+The maker's companion to [[read-by-priors-not-surface]]: grasp the form _through_ the matter in one act, then **sustain** that grasp through the syntactic labor of making.

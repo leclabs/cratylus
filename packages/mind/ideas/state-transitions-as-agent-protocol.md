@@ -14,6 +14,6 @@ Each role's authority becomes a precise statement: "may move state X→Y under c
 ## See also
 
 - [[engine-orchestrates-agents-execute]] — the engine that owns the substrate and exposes the verb set; agents act only through it.
-- [[calibrated-validation-preserves-agency]] — each verb's atomic schema check is the cheap floor; what it must not do is validate the semantic interior.
+- [[validation-altitude]] — each verb's atomic schema check is the cheap floor; what it must not do is validate the semantic interior.
 - [[intent-not-flag-branches]] — the same closed-named-mode discipline at the API seam: a tagged verb set, not per-call-site branching.
-- [[inversion-of-control-orchestration]] — when the agent is the router, it reads state and picks the next verb from a passive engine it consults as a tool.
+- [[agent-consults-engine]] — when the agent is the router, it reads state and picks the next verb from a passive engine it consults as a tool.

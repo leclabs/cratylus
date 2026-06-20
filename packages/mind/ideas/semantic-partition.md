@@ -5,7 +5,7 @@ delineation: Bring the whole body of content to distinction — read the entire 
 
 # Semantic Partition
 
-The opening move of [[exemplar-resolution]]: cut the mass into [[mece]] units, reading past surface noise by [[priors-as-light]].
+The opening move of [[exemplar-resolution]]: cut the mass into [[mece]] units, reading past surface noise by [[read-by-priors-not-surface]].
 
 Prior cell and file boundaries are projections of an earlier cut ([[projection-is-not-the-source]]) — dissolve them, and grandfather no existing anchor ([[self-application-is-mandatory]]).
 

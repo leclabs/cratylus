@@ -140,7 +140,7 @@ readers ([[signifier-star-r]] `L4` — `σ*_R` differs per `R`):
 **Principle.** A criterion is met only when a **blind** test confirms it — lock the answer first, then put
 the question to a fresh reader that cannot see the answer ([[closed-context-of-an-inference-call]]). This is
 `σ*_R`'s own acceptance discipline: encode a candidate, then **decode-verify it blind** against a fresh `R`
-as a round-trip fixed point ([[bidirectional-round-trip-fidelity]]), fanning out for stochastic stability.
+as a round-trip fixed point ([[round-trip-fidelity]]), fanning out for stochastic stability.
 Three test shapes, each mapped to the criteria it gates:
 
 ### Test shape 1 — lock-answer-first → fresh general-purpose subagent

@@ -3,7 +3,7 @@ kind: concept
 delineation: An agent's transferable identity is a fixed set of facets — name/keypair, recall discipline, harness posture, essence/values — split into intrinsic (travels with the agent) vs extrinsic (supplied by the deployment); this model is the one canonical home every facet references, never restates.
 ---
 
-# Agent Identity Portability
+# Agent Identity Facets
 
 The facets, each answering one question — the answers, not the prose, are the identity:
 

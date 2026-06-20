@@ -3,7 +3,7 @@ kind: principle
 delineation: How much you validate an agent's output sets whether it reasons or merely iterates against the checker — so validate cheaply at the transition boundary (schema/type, the floor), leave the semantic interior to the agent (the middle), gate that with a human reviewer (the ceiling), and make the validator agent-callable so it verifies in-loop instead of being a wall it hits after the fact.
 ---
 
-# Calibrated Validation Preserves Agency
+# Validation Altitude
 
 Split the authority by altitude:
 
@@ -16,5 +16,5 @@ At the floor, never let a correlated proxy stand for the real state (a file's mt
 ## See also
 
 - [[state-transitions-as-agent-protocol]] — the transition boundary where the schema floor sits.
-- [[metric-is-a-guide-not-a-target]] — the agent-Goodhart twin: a quality _metric_ as target force-fits, as an over-deep _validator_ does.
+- [[goodharts-law]] — the agent-Goodhart twin: a quality _metric_ as target force-fits, as an over-deep _validator_ does.
 - [[genuine-fork]] — the human-ceiling gate is the escalation analog: agent decides the reversible interior, reviewer owns the fork.
