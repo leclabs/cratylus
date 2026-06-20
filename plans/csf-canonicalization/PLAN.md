@@ -49,9 +49,9 @@ during composition (slice **μ**).
 
 | Slice                      | Vertical (end-to-end)                                                                                                                                                                                                                                                                                 | State   | Deps   | Fan-out       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------ | ------------- |
-| **A0** charter             | objectives · user-stories · blind-validation strategy, **in σ\*\_R terms**                                                                                                                                                                                                                            | ready   | —      | 1             |
-| **ε** praxis-update        | embed `task-is-an-implementation-spec` + `parallelizable-vertical-slice`→fan-out into [[praxis]] (+ supporting cells); regen render; verify                                                                                                                                                           | ready   | —      | 1             |
-| **ζ** disposition-defect   | `recommendation-style-consensus-quality-pick` did not fire in `principal-ic`; root-cause (projection density-collapse vs embodiment gap — apply session's homeless-concept / taxonomic-supply finding) → machinery fix → regression                                                                   | ready   | —      | 1             |
+| **A0** charter             | objectives · user-stories · blind-validation strategy, **in σ\*\_R terms**                                                                                                                                                                                                                            | review  | —      | 1             |
+| **ε** praxis-update        | embed `task-is-an-implementation-spec` + `parallelizable-vertical-slice`→fan-out into [[praxis]] (+ supporting cells); regen render; verify                                                                                                                                                           | done    | —      | 1             |
+| **ζ** disposition-defect   | `recommendation-style-consensus-quality-pick` did not fire in `principal-ic`; root-cause (projection density-collapse vs embodiment gap — apply session's homeless-concept / taxonomic-supply finding) → machinery fix → regression                                                                   | done    | —      | 1             |
 | **μ** projector-block-refs | extend koine's composer to resolve `[[glossary#^block-ref]]` block-references during projection (the new primitive-addressing) — **Mav**                                                                                                                                                              | pending | A0     | 1             |
 | **α1** concept-contract    | the `concept` data type `⟨gloss, anchor?, factorization?⟩`; home σ\*\_R vocab (`dec_R`, `≅_R`, length, `C_R`) here, not borrowed                                                                                                                                                                      | pending | thesis | 1             |
 | **α2** anchor=σ\*\_R       | formalize `canonical_anchor = σ*_R` in the CSF reference; retire `signum_aptissimum`                                                                                                                                                                                                                  | pending | thesis | 1             |
@@ -63,13 +63,18 @@ during composition (slice **μ**).
 **Surface invariant (carried into A5/β-validate):** atoms are developer/agent-internal (R=LLM); `elicit`
 is the layman door (R=human). Producers are pure reads; namer/realizer/validator commit.
 
-## Frontier — precomputed, **fan out NOW** (5-wide)
+## Frontier — precomputed (5-wide; 2 landed, A0 in review)
 
-**A0 · ε · ζ · α1 · α2** — independent vertical slices, dispatch in parallel.
-The σ\*\_R thesis **landed** (Nico: [[prompt-engineering]] · [[signifier-star-r]] ·
-[[llm-native-source-human-render-at-boundary]]; verify + blind-equivalence PASS), so **α1/α2 are now
-unblocked**. **β** fans 5-wide after α; **γ1** fans across cell-batches after β; γ2 joins; δ after β+γ2.
+**ε ✓ · ζ ✓ landed** (2026-06-20): praxis now carries `self-sufficient-task` + `fan-out-the-frontier`
+(`a647309`); the verbatim-organ silent-density-collapse hole is closed by a positive body-presence gate +
+regression (`9fea5f5`). **A0 charter delivered** (`826212b`) — **awaiting Operator sign-off** (gate-0; the
+two reserved calls: the `glossary` source-home name collision, and ratifying the composite-layer
+`{kind}/{organ}` directory reversal). The σ\*\_R thesis **landed** (Nico: [[prompt-engineering]] ·
+[[signifier-star-r]] · [[llm-native-source-human-render-at-boundary]]; verify + blind-equivalence PASS),
+so **α1/α2 are unblocked** — promote them from `pending/` (A2-concept-contract, A3-reconcile-csf) to
+impl-spec `ready/` and execute next. **μ** (Mav, koine block-refs) and **β** (5-wide) gate on the A0
+sign-off; **γ1** fans across cell-batches after β; γ2 joins (+μ); δ after β+γ2.
 
-> Mirror note: frontier **A0 · ε · ζ** are now materialized as implementation-spec task files in
-> `ready/`. `pending/` still holds the pre-cut backlog (A1–A5, B1, B2, C1) that folds into slices
-> **β / γ / δ**, re-cut into impl-spec form on promotion (just-in-time). `/praxis sync` reconciles.
+> Mirror note: **ε · ζ → `completed/`**; **A0 `charter.md`** delivered (sign-off pending). `pending/`
+> holds the pre-cut backlog (A1–A5, B1, B2, C1) that folds into slices **α / β / γ / δ**, re-cut into
+> impl-spec form on promotion (just-in-time). `/praxis sync` reconciles.
