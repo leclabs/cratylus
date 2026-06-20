@@ -23,6 +23,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from core import cells  # noqa: E402
 import resolve as resolve_mod  # noqa: E402
 from place import local as local_place  # noqa: E402
+from place import scope as place_scope  # noqa: E402
 from place import ssh as ssh_place  # noqa: E402
 
 
@@ -110,6 +111,22 @@ def main() -> int:
         got, rc = ssh_place._resolve_claude_dir("user@host", home, dry=True)
         if (got, rc) != (want, 0):
             fails.append(f"HOME-RESOLVE({home!r}): got {(got, rc)}, want {(want, 0)}")
+
+    # local user_scope mirrors the remote resolver: a bare --home self-corrects
+    # (.claude appended); a `.claude` path is verbatim. Closes the local half of
+    # the footgun the ssh path fixed in f6197f8 (an explicit --home was taken
+    # verbatim, littering <home>/{agents,skills} beside the real ~/.claude).
+    local_cases = [
+        ("/Users/lex", "/Users/lex/.claude"),          # bare home -> append
+        ("/home/lex/", "/home/lex/.claude"),            # trailing slash tolerated
+        ("/Users/lex/.claude", "/Users/lex/.claude"),   # already .claude -> verbatim
+    ]
+    for home, want in local_cases:
+        got = str(place_scope.user_scope(home))
+        if got != want:
+            fails.append(f"USER-SCOPE({home!r}): got {got!r}, want {want!r}")
+    if place_scope.user_scope(None) != pathlib.Path.home() / ".claude":
+        fails.append("USER-SCOPE(None): default is not $HOME/.claude")
 
     # --- 5. dual-deploy ("one cell, two deploy fates", memory-home-dual-deploy):
     # a `deploy: skill-dir` organ (NOT kind: skill) joins the skill deploy set,

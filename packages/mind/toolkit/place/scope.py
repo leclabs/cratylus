@@ -13,14 +13,25 @@ gitignore concern not yet needed by any kind (agents/skills are versioned).
 from __future__ import annotations
 
 import pathlib
+import sys
 
 
 def user_scope(home: str | None = None) -> pathlib.Path:
-    """User scope claude dir: <home>/.claude. An explicit `home` is taken as the
-    `.claude` dir verbatim (back-compat with deploy --home); else $HOME/.claude."""
-    if home:
-        return pathlib.Path(home).expanduser()
-    return pathlib.Path.home() / ".claude"
+    """User scope claude dir: <home>/.claude. `--home` is the user's HOME dir, so a
+    bare home self-corrects -- `.claude` appended, LOUDLY -- while a path already
+    ending in `.claude` is used verbatim (back-compat). This mirrors the remote
+    placer's `_resolve_claude_dir`: before, LOCAL took an explicit `--home`
+    verbatim, so `--home /Users/lex` littered `/Users/lex/{agents,skills}` beside
+    the real `~/.claude` -- the same footgun fixed for ssh in f6197f8, here closed
+    for the local path too. No `--home` -> $HOME/.claude."""
+    if not home:
+        return pathlib.Path.home() / ".claude"
+    p = pathlib.Path(home).expanduser()
+    if p.name == ".claude":
+        return p
+    print(f"  NOTE --home {home!r} is a home dir -> deploying to {p / '.claude'}",
+          file=sys.stderr)
+    return p / ".claude"
 
 
 def project_scope(project: str | None = None) -> pathlib.Path:
