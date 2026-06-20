@@ -1,6 +1,6 @@
 ---
 kind: principle
-delineation: A formal block is the signum aptissimum of its concept — closed (every symbol declared, defined-above, corpus-bound `β`, or input-resolved `ι`), complete (every operation and law a line), ordered (definitions before use); prose reduces to those bindings — `β` the single home for each external anchor (cited once, the cell's composition) and `ι` the input interface — so explanatory or duplicated prose is a defect.
+delineation: A formal block is the `σ*_R` of its concept — the reader-relative fittest sign — closed (every symbol declared, defined-above, corpus-bound `β`, or input-resolved `ι`), complete (every operation and law a line), ordered (definitions before use); prose reduces to those bindings — `β` the single home for each external anchor (cited once, the cell's composition) and `ι` the input interface — so explanatory or duplicated prose is a defect.
 ---
 
 # Self-Sufficient Formalism

@@ -6,7 +6,7 @@ trigger: /formalize
 
 # Formalize Skill
 
-Render prose into its **signum aptissimum** — a self-sufficient formal block; its accept gate is the [[canonical-semantic-factorization]] round-trip.
+Render prose into its `σ*_R` ([[signifier-star-r]]) — the reader-relative fittest sign, a self-sufficient formal block; its accept gate is the [[canonical-semantic-factorization]] round-trip.
 
 Bindings: the operation invokes [[conceptualize]] → [[signify]] and binds [[self-sufficient-formalism]]. The symbol table is `references/formal-symbolic-notation.md`.
 

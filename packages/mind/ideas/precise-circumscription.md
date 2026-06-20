@@ -17,12 +17,12 @@ The optimum is the **smallest exact name**: Linnaeus's binomial discipline (the 
 
 This is not "find a reasonable home." Wherever this corpus says "best fit," it means _this_ argmin.
 
-That optimum is the **_signum aptissimum_** — the aptest sign for the exemplar. It is reader-relative only through the prior-gap: at the strong-reader limit ([[reader-prior-projection]] — reader-gap → 0) the best name for _this_ reader converges to the absolute best name, so working anchor and signum aptissimum coincide — **`anchor ≡ signum aptissimum`**. This convergence is the axiom the anchor method rests on.
+That optimum is `σ*_R` ([[signifier-star-r]]) — the reader-relative fittest sign for the exemplar; the argmin is **always** indexed by a reader `R`, never reader-blind. Its **strong-reader-limit instance** is the **_signum aptissimum_**: at the strong-reader limit ([[reader-prior-projection]] — reader-gap → 0) the fittest sign for _this_ reader converges to the absolute fittest sign, so working anchor and that limit coincide — **`anchor ≡ σ*_R`**, and `signum aptissimum ≜ σ*_R` at that limit. This convergence is the axiom the anchor method rests on; this cell is the one home of the limit instance, cited (not restated) wherever the reader-blind degenerate is meant.
 
 The criterion is **scale-invariant** — the same argmin runs at every grain (token, phrase, fragment, cell, corpus), deciding a slug, a sentence, and the shape of the whole corpus identically. A _name_ is the criterion at the naming grain; an _expression_ is the same criterion at the [[densest-faithful-point]]. That self-similarity is what lets the method reach its own artifacts ([[self-application-is-mandatory]]).
 
 ## See also
 
-- [[signifier-star-r]] — this argmin written as a named operator `σ*_R(C)`, with the reader-index `R` made explicit; `signum aptissimum` is `σ*_R(C)` at the strong-reader limit.
+- [[signifier-star-r]] — this argmin written as a named operator `σ*_R(C)`, with the reader-index `R` made explicit; `signum aptissimum` is homed here as `σ*_R(C)` at the strong-reader limit.
 - [[anchor-to-the-readers-priors]] — the same argmin run across reader populations: re-anchor per audience, preserve the extension.
 - [[projection-is-not-the-source]] — why the target of the argmin is an exemplar, never a projection's bin.
