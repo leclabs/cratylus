@@ -31,3 +31,17 @@ infrastructure/build/delivery, Mav leads.
 - `pre-commit` runs biome. Every commit green: `pnpm build` + `pnpm test` + `pnpm lint`.
 - Push context to the load-bearing depth: repo-wide invariants here; package-load-bearing context in
   the package's own `AGENTS.md` / `CLAUDE.md`.
+
+## Memory vault (the cold 5th home)
+
+The corpus keeps the `vault` abstract (substance-over-accident); this polis instance binds it concretely
+(directive — `(directive, project)` + agent-held MEMORY for the host-derived path):
+
+- **Personal vault** — the fleet-synced Obsidian git repo at `~/workspaces/obsidian/` (`leclabs/obsidian`,
+  `~`-relative so it resolves per host). An agent graduates durable-but-voluminous knowledge here under its
+  own namespace `agents/<name>/`, as sharded one-topic notes; reads the whole vault on demand.
+- **Project vault** — this repo's `docs/`. Project-scoped reference knowledge (evergreen concept notes,
+  ADR rationale `AGENTS.md` only points to, domain maps) lives there.
+- **Graduation is a dream-time act.** A fact moves MEMORY → vault when durable but too voluminous to stay
+  resident (or when it wants links); MEMORY keeps only a one-line pointer (hot index → cold corpus). The
+  vault is queried on demand (file reads / graphify / Obsidian), never loaded at wake.
