@@ -7,22 +7,26 @@ trigger: /materialize
 
 # Materialize Skill
 
-Resolve from context: `C_R` — the concept lattice from [[conceptualize]] (carrying `prim_R`, `gloss`, `fac_R`); `α`, `≺` — the anchor and order from [[signify]]; `s` — the strategy, REQUIRED from the caller; `${OUTPUT_DIR}` — file strategy only.
+The chain's emit op: `CSF`. Select each concept's canonical factorization, emit the bipartite normal form `CSF_R`, and realize it as artifacts under a named strategy. This stage `realize`s the [[concept-contract]] record: it fills the `factorization` field, preserving the `gloss` and `anchor` — and an unnamed concept (`anchor = ⊥`) cannot be realized.
 
-Bindings: `dfp` binds [[densest-faithful-point]] (a primitive's stored gloss); the by-reference composite emit binds [[cite-dont-copy]] (cite factor-anchors, never restate); the refusal laws bind [[no-permissive-defaults]]. The symbol table is `references/formal-symbolic-notation.md`.
+Resolve from context: the `name`d [[concept-contract]] records — each carrying its `gloss` and `anchor` field, drawn from the lattice `C_R` (with `prim_R`, `gloss`, `fac_R`, the order `≺`); `s` — the strategy, REQUIRED from the caller; `${OUTPUT_DIR}` — file strategy only.
+
+Bindings: `dfp` binds [[densest-faithful-point]] (a primitive's stored gloss); `CSF_R` reads each unit's `anchor` from the [[concept-contract]] record (never recomputes it) and emits the composite by reference [[cite-dont-copy]] (cite factor-anchors, never restate); the refusal laws bind [[no-permissive-defaults]]; the stage fills the `factorization` field of [[concept-contract]] (`gloss`, `anchor` preserved; `¬named ⇒ realize = ⊥`). The symbol table is `references/formal-symbolic-notation.md`.
 
 ```text
 K          — the closed kind set
 
 F_R(m) ≜ min_≺ fac_R(m)
-CSF_R(c) ≜ ( α(c) , dfp(gloss(c)) )               ,  prim_R(c)
-CSF_R(c) ≜ ( α(c) , { α(p) | p ∈ F_R(c) } )        ,  ¬prim_R(c)
+CSF_R(c) ≜ ( anchor(c) , dfp(gloss(c)) )            ,  prim_R(c)       -- anchor read from the record, not recomputed
+CSF_R(c) ≜ ( anchor(c) , { anchor(p) | p ∈ F_R(c) } ) ,  ¬prim_R(c)
+realize(k) fills factorization(k) ≜ CSF_R(k) ; gloss(k), anchor(k) preserved
+anchor(k) = ⊥ ⇒ realize(k) = ⊥                    -- cannot realize an unnamed concept
 
 prose(c) ≜ render(CSF_R(c), R)
 prose(c) is a projection, never stored beside CSF_R(c)
 
 kind : C_R → K
-Φ ≜ { (α(c), kind(c), CSF_R(c)) | c ∈ C_R }
+Φ ≜ { (anchor(c), kind(c), CSF_R(c)) | c ∈ C_R }
 
 S ≜ { file, document, … }
 σ : Φ × S → artifacts
@@ -31,7 +35,7 @@ S ≜ { file, document, … }
 s unnamed ∨ s ∉ S ⇒ ⊥
 ∃ k ∈ kinds(Φ) : k ∉ dom(ρ_s) ⇒ ⊥
 
-σ(Φ, file) ≜ { ${OUTPUT_DIR}/α(c).md | (α(c), k, x) ∈ Φ }
+σ(Φ, file) ≜ { ${OUTPUT_DIR}/anchor(c).md | (anchor(c), k, x) ∈ Φ }
 ρ_file(k) ≜ front-matter (kind: k, delineation) + body
 ∀ f ∈ σ(Φ, file) : ∃! (a, k, x) ∈ Φ : content(f) = x
 

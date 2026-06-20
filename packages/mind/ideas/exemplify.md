@@ -7,17 +7,16 @@ trigger: /exemplify
 
 # Exemplify Skill
 
-Optimize a context corpus into a canonical semantic factorization: the pipeline runs conceptualize → signify → materialize, then accepts iff the result is `valid`.
+Optimize a context corpus into a canonical semantic factorization: the pipeline composes `produce → name → realize` over the one [[concept-contract]] record, then the gate accepts iff the result is `valid`.
 
-Resolve from context: `D` — the input corpus (multi-modal); `R` — the reader; `s` — the strategy ∈ { file, document }. The stage definienda (`C_R`, `α`, `≺`, `dec_R`, `Φ`, `σ`) flow in through the composition.
+Resolve from context: `D` — the input corpus (multi-modal); `R` — the reader; `s` — the strategy ∈ { file, document }. The stages flow the [[concept-contract]] record forward, each filling its field; the gate reads the realized record.
 
-Bindings: `F` composes the pipeline [[conceptualize]] · [[signify]] · [[materialize]]; `valid` is the accept predicate of [[canonical-semantic-factorization]] (the factorization round-trips from its anchors and is minimal); the `⊥` on an unnamed `s` binds [[no-permissive-defaults]]; the R3 manifest binds [[self-application-is-mandatory]]. The symbol table is `references/formal-symbolic-notation.md`.
+Bindings: the pipeline composes [[conceptualize]] (`produce` — fills `gloss`) · [[signify]] (`name` — fills `anchor`) · [[materialize]] (`realize` — fills `factorization`), each a function over the [[concept-contract]] record naming no peer; [[accept]] gates the result on `valid` of [[canonical-semantic-factorization]] (the factorization round-trips from its anchors and is minimal), refusing loudly otherwise; the `⊥` on an unnamed `s` binds [[no-permissive-defaults]]; the R3 manifest binds [[self-application-is-mandatory]]. The symbol table is `references/formal-symbolic-notation.md`.
 
 ```text
 s = ∅ ⇒ ⊥
-D ──conceptualize──→ C_R ──signify──→ (α, ≺, dec_R) ──materialize──→ F
-F ≜ σ(Φ, s)
-¬valid ⇒ ⊥
+F(D) ≜ realize( name( produce(D) ) )             -- each stage fills one field of the Concept record
+exemplify(D) ≜ accept( F(D) )                    -- accept refuses unless valid
 ```
 
 On accept, emit the R3 routing manifest — `.manifests/<source>.json`, one entry per concept `c ∈ C_R` keyed by `fragment_digest` (`toolkit/core/digest.fragment_digest`: NFC + whitespace-collapse + trim), each in `routes[]` (`α` `reuse` | `mint`) or `delta[]`, exactly one; an unrouted concept is the dropped idea R3 catches:

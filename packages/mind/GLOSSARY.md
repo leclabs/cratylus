@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 159 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 160 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Principles
 
@@ -125,6 +125,7 @@ _declarative what-is — referenced/known._
 
 _ordered operations — invoked._
 
+- **accept** — the pipeline's acceptance gate — run the corpus's own acceptance test on a fully-realized factorization and commit the accept/reject verdict, refusing loudly when it fails; accept iff `valid` (the bipartite normal form reconstructs equivalent-or-better from its anchors and is minimal), so a factorization that loses meaning or carries a redundant concept never passes.
 - **anchor-routing** — Place each fragment at the anchor whose latent priors most precisely circumscribe it — best-fit, not nearest-bin; mint the anchor if none exists (the anchor-set is open); a genuine multi-match means the partition cut wrong, re-cut.
 - **archetype-instantiation** — Stand up a project-scope agent species from a universal archetype + scope grants — project the archetype's composed graph at the density the deployment's reader needs, apply the grant stack, bind extrinsic facets per deployment, verify round-trip.
 - **context-anchors-protocol** — Counter context-drift by re-installing durable anchors mid-session — surface the agent's believed context (a cognizant dump), diff against canon, re-point each divergence to its canonical home, persist out-of-band; re-anchor, don't re-load.
@@ -186,7 +187,7 @@ _composite capabilities._
 - **materialize** — use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization `F_R`, emit the bipartite normal form `CSF_R` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.
 - **praxis** — Create and work durable, sharded plans (sharded-plan-layout dirs) — reached by planning intent, not a command grammar; task state is the folder a task-file sits in (pending/ready/active/completed), PLAN.md mirrors it, and `list` is the one explicit affordance.
 - **probe** — use this skill to probe a signifier — read out the latent priors a word, phrase, or candidate name fires in the reader (`fired_R`, signify's decoder `dec_R` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of signify, for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through /signify.
-- **signify** — use this skill to name a concept set — assign each concept its injective anchor `α` (the densest name whose latent priors circumscribe it; one name ⇔ one concept), the shortlex order `≺` over anchored concepts, and the reader's decoder `dec_R` (the distinctions an anchor fires); stage 2 of exemplify, independently invocable (every naming review is a bare /signify).
+- **signify** — use this skill to name a concept set — assign each concept its injective canonical anchor `α(c) = σ*_R(c)` (the reader-relative fittest sign, whose latent priors circumscribe exactly it; one name ⇔ one concept), then coalesce concepts that resolve to the same anchor; emits the shortlex order `≺` and the decoder `dec_R`; stage 2 of exemplify, independently invocable (every naming review is a bare /signify).
 - **wake** — use this skill to reconstitute an agent at session start — run the memory home's WAKE sequence (dream → load → orient → resume) so it resumes as the same individual; the read-and-resume counterpart to /dream, invocable as /wake.
 - **weitermachen** — use this skill when the Operator utters the re-dispatch word — "weitermachen", "carry on", "proceed" — closing a check-in and returning you to execution; standing intent unchanged, execution authority re-affirmed, no fresh permission owed.
 
