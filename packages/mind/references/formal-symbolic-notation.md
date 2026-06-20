@@ -8,12 +8,13 @@ The registry is **agent-audience** ([[reader-prior-projection]] · [[anchor-legi
 
 **Definition & comparison**
 
-| Glyph | Sense     | Signature                                                                     |
-| ----- | --------- | ----------------------------------------------------------------------------- |
-| `≜`   | defines   | `name ≜ expr` — the left is defined to mean the right                         |
-| `≠`   | distinct  | `T × T → Prop`                                                                |
-| `≽`   | dominates | `T × T → Prop` — at least as good as (house: round-trip acceptance)           |
-| `≺`   | precedes  | `T × T → Prop` — the canonical order (house: shortlex over anchored concepts) |
+| Glyph | Sense             | Signature                                                                                                 |
+| ----- | ----------------- | --------------------------------------------------------------------------------------------------------- |
+| `≜`   | defines           | `name ≜ expr` — the left is defined to mean the right                                                     |
+| `≠`   | distinct          | `T × T → Prop`                                                                                            |
+| `≽`   | dominates         | `T × T → Prop` — at least as good as (house: round-trip acceptance)                                       |
+| `≅_R` | reader-isomorphic | `𝒞_R × 𝒞_R → Prop` — R holds both as the same distinction, zero residue (the exact case of `≽` both ways) |
+| `≺`   | precedes          | `T × T → Prop` — the canonical order (house: shortlex over anchored concepts)                             |
 
 **Propositional logic**
 

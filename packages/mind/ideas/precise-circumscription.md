@@ -23,5 +23,6 @@ The criterion is **scale-invariant** — the same argmin runs at every grain (to
 
 ## See also
 
+- [[signifier-star-r]] — this argmin written as a named operator `σ*_R(C)`, with the reader-index `R` made explicit; `signum aptissimum` is `σ*_R(C)` at the strong-reader limit.
 - [[anchor-to-the-readers-priors]] — the same argmin run across reader populations: re-anchor per audience, preserve the extension.
 - [[projection-is-not-the-source]] — why the target of the argmin is an exemplar, never a projection's bin.

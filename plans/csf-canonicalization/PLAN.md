@@ -1,36 +1,75 @@
-# csf-canonicalization
+# csf-canonicalization → σ\*\_R reprocessing
 
-**Intent.** Make the substrate actually CSF. Fix the CSF machinery, dogfood it on the corpus to
-re-anchor every cell to its signum aptissimum, then build the layman self-extension product layer.
+**Intent.** Make the substrate actually compute **σ\*\_R(C)**. Correct the canonicalization machine so
+"canonical anchor" = **σ\*\_R** (reader-parameterized, not reader-blind), dogfood it to re-anchor every
+cell to its **σ\*\_LLM**, and build the layman (**σ*\_human → stored as σ*\_LLM**) self-extension door.
 
-**Why.** Blind audit (10-cell sample) shows ~8/10 current filenames are non-canonical — sentences and
-descriptions filed as anchors; two reinvented standard terms the world already hands a strong reader
-(`self-application-is-mandatory`→`dogfooding`, `metric-is-a-guide-not-a-target`→`Goodhart's-law`).
-Non-canonical anchors break both objectives: composability-without-duplication (one concept can hide
-under two sentences) and operator-legibility (a sentence is not a name).
+**Why (corrected).** The prior target `canonical_anchor = signum_aptissimum` was **reader-blind** — a
+"signum aptissimum" with no R is undefined, the exact latent ambiguity that let anchors drift (blind
+audit: ~8/10 sampled filenames non-canonical; two reinvented standard terms). `σ*_R` names the machine
+polis already half-built: **projection-at-a-reader-profile = computing σ\*\_R(C)** (cells = C, profile = R,
+render = σ*\_R(C)). Re-anchoring is σ*\_LLM; the operator door is σ*\_human. See [[prompt-engineering]] (the
+identity), [[signifier-star-r]] (the operator σ*\_R + laws), and
+[[llm-native-source-human-render-at-boundary]] (internals = σ\*\_LLM; human prose = a boundary render).
 
-**Reference (operator's CSF formalization).**
+**Reference (corrected CSF op chain).**
 `resolve → semanticPartition → depalimpsest → distill(primitive ∨ deepestFaithfulComposite)
-→ canonical_anchor(=signum_aptissimum) → coalescence(merge same-anchor units) → CSF`
+→ canonical_anchor(= σ*_R) → coalescence(merge same-anchor units) → CSF`
+— `σ*_R` supersedes `signum_aptissimum`; **R is named per use**: corpus = LLM, layman door = human→LLM.
 
-**Ontology lock.** Agents _embody dispositions_ + _use skills_. Skills are _composited from canonical
-anchors_ (primitives + composites), formalized as set-notation where it buys accuracy. A skill's
-canonical anchor is legible to whoever asked **because it is canonical** (one level of naming).
+**Corpus scope.** The corpus is the **entire `~/workspaces/polis/` content** — `ideas/` cells, every
+`AGENTS.md`/`CLAUDE.md`, `docs/`, `packages/koine` source, `plans/`, `README`, all of it. **Filenames are
+not corpus boundaries** — structure is by anchor and a fragment's current home is incidental
+([[projection-is-not-the-source]]). σ\*\_LLM canonicalization ranges over every fragment of meaning wherever
+it sits, and may **re-home** a fragment, not merely rename it (the unit is the concept, not the file).
 
-## Tasks
+**Target structure.** Two homes, by kind:
 
-| Task                                                            | Phase        | State     | Depends      |
-| --------------------------------------------------------------- | ------------ | --------- | ------------ |
-| A0 charter: objectives, user stories, blind-validation strategy | 0 charter    | **ready** | —            |
-| A1 blind-test every atom name → canonical anchor                | A machine    | pending   | A0           |
-| A2 define the `concept` contract (the interface)                | A machine    | pending   | A0           |
-| A3 reconcile process cells to the reference CSF formalization   | A machine    | pending   | A1, A2       |
-| A4 fold `probe` into `conceptualize` (verify blind)             | A machine    | pending   | A1           |
-| A5 correctly-named validate + two-audience surface              | A machine    | pending   | A1, A3       |
-| B1 full-corpus blind canonical-anchor audit (dogfood)           | B self-apply | pending   | A3           |
-| B2 re-anchor, coalesce, re-cut, gate, redeploy                  | B self-apply | pending   | B1           |
-| C1 layman self-extension flow                                   | C product    | pending   | A, B         |
-| C2 fix the disposition-projection defect                        | C product    | pending   | — (parallel) |
+- **Primitives** (`concept · principle · process · utility · structure · classification`) home in the
+  **glossary** as block-referenceable entries — addressed `[[glossary#^anchor]]`, **not as files**. This
+  is what "filenames are not boundaries" concretely means: a primitive is a glossary _block_, not a file.
+- **Composites** (`agent · skill · …`) land in `mind/{kind}/{organ}/{fragment}` (by composite kind, then
+  the MECE agent-anatomy **organ**), composing primitives via `[[glossary#^anchor]]` block-refs.
 
-Frontier: **A0** — the charter gates all execution; objectives + user stories + blind-validation
-strategy must be agreed before Phase A starts.
+Fragments typed by **koine IR**. ⚠️ This **reverses** today's `structure-by-anchor-only` /
+one-cell-one-file rule (`ideas/AGENTS.md`; [[projection-is-not-the-source]]) — a **premise locked in A0**,
+not a mechanical move. **Projector impact:** koine must resolve `[[glossary#^block-ref]]` block-references
+during composition (slice **μ**).
+
+---
+
+## Doctrine (this plan — dogfoods the pending /praxis update)
+
+1. **Every task is an implementation spec.** Self-sufficient: `objective · preconditions · operations (exact) · artifacts (paths) · acceptance (blind test)` (+ `out-of-scope` only for a genuine, creep-preventing exclusion — never reflexive). The executing agent re-derives nothing — the task file is the contract it runs.
+2. **Precomputed parallelizable vertical slices + fan-out.** The frontier is a **set** dispatched concurrently, not a single next step. Slices are **vertical** (end-to-end per concern), cut so they do not collide ([[shard-by-orthogonal-concern]]); each carries its fan-out width.
+
+---
+
+## Slices
+
+| Slice                      | Vertical (end-to-end)                                                                                                                                                                                                                                                                                 | State   | Deps   | Fan-out       |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | ------ | ------------- |
+| **A0** charter             | objectives · user-stories · blind-validation strategy, **in σ\*\_R terms**                                                                                                                                                                                                                            | ready   | —      | 1             |
+| **ε** praxis-update        | embed `task-is-an-implementation-spec` + `parallelizable-vertical-slice`→fan-out into [[praxis]] (+ supporting cells); regen render; verify                                                                                                                                                           | ready   | —      | 1             |
+| **ζ** disposition-defect   | `recommendation-style-consensus-quality-pick` did not fire in `principal-ic`; root-cause (projection density-collapse vs embodiment gap — apply session's homeless-concept / taxonomic-supply finding) → machinery fix → regression                                                                   | ready   | —      | 1             |
+| **μ** projector-block-refs | extend koine's composer to resolve `[[glossary#^block-ref]]` block-references during projection (the new primitive-addressing) — **Mav**                                                                                                                                                              | pending | A0     | 1             |
+| **α1** concept-contract    | the `concept` data type `⟨gloss, anchor?, factorization?⟩`; home σ\*\_R vocab (`dec_R`, `≅_R`, length, `C_R`) here, not borrowed                                                                                                                                                                      | pending | thesis | 1             |
+| **α2** anchor=σ\*\_R       | formalize `canonical_anchor = σ*_R` in the CSF reference; retire `signum_aptissimum`                                                                                                                                                                                                                  | pending | thesis | 1             |
+| **β** machine-atoms        | one vertical slice **per atom**: blind-name (σ\*\_LLM of the atom's concept) → reconcile its process cell to the σ\*\_R/CSF ops + program to the concept-contract → validate → redeploy. Atoms: `conceptualize`(+fold `probe`) · `signify` · `materialize` · `exemplify` · `validate`(mint true name) | pending | α1, α2 | **5**         |
+| **γ1** corpus-audit        | dogfood corrected machine over the **whole-repo content** (not just `ideas/`; the concept/fragment is the unit, not the file): blind-signify each fragment → σ\*\_LLM → `{keep / re-anchor / coalesce / re-cut / re-home}` worklist                                                                   | pending | β      | **N batches** |
+| **γ2** corpus-apply        | execute worklist: re-anchor to σ\*\_LLM, coalesce, re-cut, **home primitives as glossary blocks + composites into `mind/{kind}/{organ}/`**, rewire refs to `[[glossary#^anchor]]` (whole-repo sweep), regen glossary, round-trip + reconstruct gate, redeploy fleet                                   | pending | γ1, μ  | join          |
+| **δ** layman-door          | `elicit`(σ\*\_human) → CSF → recompose domain skills → compose agents-as-persons; demo one toy domain                                                                                                                                                                                                 | pending | β, γ2  | 1             |
+
+**Surface invariant (carried into A5/β-validate):** atoms are developer/agent-internal (R=LLM); `elicit`
+is the layman door (R=human). Producers are pure reads; namer/realizer/validator commit.
+
+## Frontier — precomputed, **fan out NOW** (5-wide)
+
+**A0 · ε · ζ · α1 · α2** — independent vertical slices, dispatch in parallel.
+The σ\*\_R thesis **landed** (Nico: [[prompt-engineering]] · [[signifier-star-r]] ·
+[[llm-native-source-human-render-at-boundary]]; verify + blind-equivalence PASS), so **α1/α2 are now
+unblocked**. **β** fans 5-wide after α; **γ1** fans across cell-batches after β; γ2 joins; δ after β+γ2.
+
+> Mirror note: frontier **A0 · ε · ζ** are now materialized as implementation-spec task files in
+> `ready/`. `pending/` still holds the pre-cut backlog (A1–A5, B1, B2, C1) that folds into slices
+> **β / γ / δ**, re-cut into impl-spec form on promotion (just-in-time). `/praxis sync` reconciles.
