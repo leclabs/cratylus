@@ -1,8 +1,9 @@
 # sharded-memory-store
 
-**State: DESIGN — spine specified.** Architecture decided (`0001`); the verb interface (the
-load-bearing seam) is now specified (`0002`). Remaining phases build off it. Mav owns the interface +
-`episodic` core + shard machinery + migration; Nico owns the constitution half.
+**State: DESIGN — spine + layout fixed.** Architecture decided (`0001`); the verb interface (the
+load-bearing seam) specified (`0002`); the on-disk shard layout fixed (`0003`). Build phases now have a
+concrete target. Mav owns the interface + `episodic` core + shard machinery + migration; Nico owns the
+constitution half.
 
 ## Decisions
 
@@ -14,22 +15,30 @@ graduate · forget`, each with signature + side-effect contract + error modes; s
   transport-agnostic. Today's `EpisodicStore.{encode, read}` = `encode` + load-whole `recall`; the spec
   widens that seam. CLI = transport now, MCP = future transport over the same verbs; `migrate` = a
   bootstrap admin op, not a steady-state verb.
+- `0003-shard-layout` — **Accepted.** Granularity follows access pattern: `MEMORY` shards (one memory
+  per `MEMORY/<ulid>.md`, frontmatter-tagged, recalled by relevance); `SELF` stays a coherent monolith
+  (the reboot seed, loaded whole — _flagged for Nico Phase-3 ratification_); `EPISODIC` already
+  record-sharded. Hot = ULID-named under the home; cold = kebab topic-notes in the vault; `forget` →
+  `.archive/`. The filing table is the blind-test bar.
 
 ## Phases
 
 | #   | Phase               | Lead       | State | Gist                                                              |
 | --- | ------------------- | ---------- | ----- | ----------------------------------------------------------------- |
 | 1   | Verb interface spec | Mav        | ✅    | the load-bearing seam (`0002`)                                    |
-| 2   | Shard layout        | Mav + Nico | next  | granularity (fact vs topic), dir model, frontmatter, naming       |
+| 2   | Shard layout        | Mav + Nico | ✅    | granularity + dir model + frontmatter + naming (`0003`)           |
 | 3   | Constitution update | Nico       |       | [[memory]] resident-layers + [[dream]]/[[wake]] for sharded files |
 | 4   | No-loss migration   | Mav        |       | monolithic → sharded, 11 agents, two-leg gate                     |
 | 5   | Recall index        | Mav        |       | grep → FTS5 → sqlite-vec — only when load-whole breaks (D6)       |
 | 6   | Reconciliation      | Mav        |       | `consolidate` updates contradicting facts, not just appends (D7)  |
 
-**Next pick:** Phase 2 — `shard-layout` (the spine now anchors it).
+**Next pick:** Phase 4 — `no-loss migration` (Mav; mechanical now that `0003` fixes the target).
+Phase 3 (Nico, constitution) runs in parallel — `0003` flags the SELF-monolith call + dream/wake updates
+it needs to ratify.
 
 ## See also
 
-- `decisions/0001-memory-store-architecture.md` · `decisions/0002-verb-interface.md` — the spine.
+- `decisions/0001-memory-store-architecture.md` · `decisions/0002-verb-interface.md` ·
+  `decisions/0003-shard-layout.md` — the spine.
 - `../run-the-business/completed/vault-reference-home.md` — sharded notes in a namespaced home; this
   extends sharding inward to SELF/MEMORY.
