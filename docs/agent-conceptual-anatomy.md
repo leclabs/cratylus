@@ -1,18 +1,7 @@
 # Conceptual Anatomy of an AI Agent
 
 > **Reference knowledge — do not re-derive.** This is the canonical **σ\*\_LLM** render of the agent's
-> conceptual anatomy: the MECE organ set (**STANCE / CONATUS**) that the corpus restructure uses for
-> `mind/{kind}/{organ}/`. It was a hard lift — the artifact whose investigation surfaced
-> `prompt-engineering ≡ σ*_R(C)` ([[prompt-engineering]] · [[signifier-star-r]] ·
-> [[llm-native-source-human-render-at-boundary]]).
->
-> Provenance: the σ*\_R session, 2026-06-20. Full research home in obsidian
-> `Reference/context-engineering/conceptual-anatomy-of-an-ai-agent/` (v1 = richer render; v2, below, =
-> the σ*\_LLM-compressed canonical). Produced **blind** by a fresh model under the verified winning
-> prompt. The seam that took the whole investigation to surface: the **dispositional** organ
-> (`Heuristics` / `Disposition-Memory` — the standing lean) splitting from **voice**
-> (`Persona` / `Comportment`) and from **rules** (`Charter`). That `comes-across` vs `inclined-to-do`
-> axis _is_ the STANCE/CONATUS top-level partition below.
+> conceptual anatomy: the MECE organ set (**STANCE / CONATUS**)
 
 ---
 
