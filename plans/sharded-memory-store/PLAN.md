@@ -23,18 +23,21 @@ graduate · forget`, each with signature + side-effect contract + error modes; s
 
 ## Phases
 
-| #   | Phase               | Lead       | State | Gist                                                              |
-| --- | ------------------- | ---------- | ----- | ----------------------------------------------------------------- |
-| 1   | Verb interface spec | Mav        | ✅    | the load-bearing seam (`0002`)                                    |
-| 2   | Shard layout        | Mav + Nico | ✅    | granularity + dir model + frontmatter + naming (`0003`)           |
-| 3   | Constitution update | Nico       |       | [[memory]] resident-layers + [[dream]]/[[wake]] for sharded files |
-| 4   | No-loss migration   | Mav        |       | monolithic → sharded, 11 agents, two-leg gate                     |
-| 5   | Recall index        | Mav        |       | grep → FTS5 → sqlite-vec — only when load-whole breaks (D6)       |
-| 6   | Reconciliation      | Mav        |       | `consolidate` updates contradicting facts, not just appends (D7)  |
+| #   | Phase               | Lead       | State | Gist                                                                 |
+| --- | ------------------- | ---------- | ----- | -------------------------------------------------------------------- |
+| 1   | Verb interface spec | Mav        | ✅    | the load-bearing seam (`0002`)                                       |
+| 2   | Shard layout        | Mav + Nico | ✅    | granularity + dir model + frontmatter + naming (`0003`)              |
+| 3   | Constitution update | Nico       |       | [[memory]] resident-layers + [[dream]]/[[wake]] for sharded files    |
+| 4   | No-loss migration   | Mav        | 🔨    | lib+tests done (`migrate-memory.ts`); CLI + live rollout gated on §3 |
+| 5   | Recall index        | Mav        |       | grep → FTS5 → sqlite-vec — only when load-whole breaks (D6)          |
+| 6   | Reconciliation      | Mav        |       | `consolidate` updates contradicting facts, not just appends (D7)     |
 
-**Next pick:** Phase 4 — `no-loss migration` (Mav; mechanical now that `0003` fixes the target).
-Phase 3 (Nico, constitution) runs in parallel — `0003` flags the SELF-monolith call + dream/wake updates
-it needs to ratify.
+**In progress:** Phase 4 — the `MEMORY.md` → `MEMORY/<ulid>.md` sharding migration is built and
+fixture-tested (`packages/episodic/src/migrate-memory.ts`; reuses the proven `extractItems` + two-leg
+no-loss gate). **Remaining tail:** the `episodic migrate-memory` CLI subcommand + the live per-agent
+rollout — both gated on **Phase 3** (Nico's `[[dream]]`/`[[wake]]` reading `MEMORY/*.md`), since sharding
+a live MEMORY while wake still reads the monolith saws off the running protocol. **Next pick:** hand
+Phase 3 to Nico (it unblocks the Phase-4 cutover), or build the CLI shim while it lands.
 
 ## See also
 

@@ -48,6 +48,17 @@ gated** by two independent legs: a round-trip leg and `assertLinesFromSource` (r
 source line-multiset — catches fabrication/dup against the RAW input, not just self-consistency). Never
 deletes the source; dryRun + overwrite-guard. `wake` self-triggers it on a fresh host.
 
+## The MEMORY sharding migration (`src/migrate-memory.ts`)
+
+The semantic sibling: converts a monolithic `MEMORY.md` (fact bullets under `## ` sections) into one
+`MEMORY/<ulid>.md` shard per fact, per `sharded-memory-store/decisions/0003-shard-layout`. **Reuses the
+same parser (`extractItems`) and two-leg no-loss gate** as the EPISODIC migration. Bodies are VERBATIM;
+the `0003` relevance frontmatter (`topic`/`kind`/`basis`) is the Dreamer's later `consolidate` job, not
+mechanically derived — shards carry only `id` + `migrated: MEMORY.md` + `section`. Never deletes the
+source; dryRun + overwrite-guard. **Library + fixture-tests only so far**; the CLI subcommand and the
+LIVE per-agent rollout are gated on constitution Phase 3 (`[[dream]]`/`[[wake]]` reading `MEMORY/*.md`) —
+sharding a live MEMORY while wake still reads the monolith saws off the running protocol.
+
 ## Gates
 
 `pnpm build` + `pnpm test` + `pnpm typecheck` green; `biome check` clean. The bundle is `dist/episodic.mjs`
