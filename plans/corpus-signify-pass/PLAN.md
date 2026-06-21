@@ -37,6 +37,25 @@ committed (a generated artifact) and stale (its header cites the retired `ideas/
 **Net:** no longer a prose-trim — a ground-up re-derivation of the corpus on the real kind taxonomy at σ\*\_LLM.
 The `mind-structure-flatten` sequencing note below is obsolete.
 
+## Session findings — 2026-06-20 (principal-self elicited; the Construal organ)
+
+`principal-self` was **elicited live with the Operator** ahead of the pipeline (it is the "apply first"
+cluster) — recorded in `decisions/0001-principal-self.md`. Key results the re-charter must carry:
+
+- **The "real kinds" ARE the agent-anatomy organs.** The σ\*\_LLM render of the runtime ontology lives at
+  `docs/agent-conceptual-anatomy.md` (22 organs, STANCE / CONATUS). `principal-self` files under the
+  **Construal** organ (the agent's working self-framing), not Heuristics — the role-binding is the frame
+  from which decisive ownership flows; `principal-agency` / no-menu / don't-hedge are its downstream
+  expressions (which is why one construal coalesces the cluster).
+- **Recovered concept:** `construal: principal := agent, delegate := operator`. The formal **line** is the
+  σ\*\_LLM invoker; the slug `principal-self` is only a referenceable handle. Mint as `render: verbatim`
+  (irreducible invoker — the legitimate verbatim case). `conatus:` as the label was rejected: clean readers
+  fired self-preservation / corrigibility-failure off it (see ADR).
+- **R = LLM invariant** (codify into `[[signifier-star-r]]` + `[[llm-native-source-human-render-at-boundary]]`)
+  and the **verbatim split** (salience = forbidden; procedure / irreducible-invoker = allowed) — both in the ADR.
+
+`signify-star-r-pass` (Nico) is ready to apply `principal-self` first once the re-charter greenlights execution.
+
 ## Ready frontier
 
 | Task                            | Concern | Owner |
