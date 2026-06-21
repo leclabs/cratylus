@@ -5,9 +5,10 @@ folders (`pending/ → ready/ → active/ → completed/`) as deps clear.
 
 ## Active
 
-| Plan               | Concern                                                                                                                                                                                 | Lead                  |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Currently holds the live tails of the retired memory-tool-bundling + memory-model-redesign initiatives. | Mav + Nico (per task) |
+| Plan                   | Concern                                                                                                                                                                                                                | Lead                  |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `sharded-memory-store` | Reshape the memory store: sharded files behind a stable verb interface (`encode/recall/consolidate/graduate/forget`); files are truth, any DB a derived index; CLI-over-shell now, MCP a future adapter. Design-first. | Mav + Nico            |
+| `run-the-business`     | The standing plan — live backlog + standalone tasks; perpetual (never retires). Currently holds the live tails of the retired memory-tool-bundling + memory-model-redesign initiatives.                                | Mav + Nico (per task) |
 
 ## Retired
 

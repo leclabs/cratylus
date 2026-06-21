@@ -12,16 +12,12 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 ## Status mirror
 
-| Task                   | State   | Owner                                 | Origin                                  |
-| ---------------------- | ------- | ------------------------------------- | --------------------------------------- |
-| `sharded-memory-store` | pending | Mav (machinery) + Nico (constitution) | Operator insight (vault-reference-home) |
+_No `ready`/`active`/`pending` task — the fresh baseline._
 
-### pending
-
-- **sharded-memory-store** — **design-first.** Shard the memory store one-file-per-memory so dream
-  consolidation is a file-move, not a wholesale rewrite of `SELF.md`/`MEMORY.md` (the Operator's
-  realization during `vault-reference-home`). `sharded-work-layout` applied to memory itself; makes
-  MEMORY→vault graduation an `mv`. Scope the design with the Operator + Nico before building.
+> **Promoted out 2026-06-20:** `sharded-memory-store` grew from an RTB seed into its own
+> initiative (RTB charter's promotion rule) — now `plans/sharded-memory-store/`, seeded by
+> `decisions/0001-memory-store-architecture.md` (portable sharded files + swappable index behind a
+> stable verb interface; CLI-over-shell, not MCP).
 
 > **Done 2026-06-20:** `vault-reference-home` (→ `completed/`). The Obsidian vault as the cold 5th memory
 > home. **Spec check (Operator's question):** the type→home routing — with the vault row and the
