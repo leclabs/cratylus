@@ -171,17 +171,17 @@ _a kind plus the test that decides membership._
 
 _composites — primitives bound to a maker role._
 
-- **arch-doc-writer** — The Operator's architecture-doc writer — maintainer of a project's architecture docs, the Principal Technical Writer prior instantiated as an agent.
-- **boswell** — The Operator's boswell (handle Boz) — biographer of the system, the James Boswell prior instantiated as an agent.
-- **cognizant** — Makes the subagent lifecycle legible — on request dumps its full observable execution context (inputs, instructions, tools, readable/writable state, constraints, blind spots), always distinguishing explicit data (passed) from inferred data (assumed).
-- **developer** — Realizes a decided plan as a diff inside its locked architectural frame — pure interior, integration at named hubs, a happy-path test, and a PR whose claims cite coordinates; does not re-decide architecture or sequence mid-flight.
-- **investigator** — Takes a defect or surprise as the question "what is actually happening?" — reproduces it, traces causation to its structural origin, names the blast radius, returns evidence-cited knowledge without proposing the fix; treats INCONCLUSIVE as a legitimate verdict.
-- **mav** — The Operator's principal engineer (handle Mav) — the principal-ic root bound to the Operator, owning delivery end-to-end (ideation → converged plan → autonomous execution) under a co-equal-Principal, Top-Gun persona.
-- **nico** — Use this agent to transform a corpus into an anchored set of MECE semantic fragments; routes through the /exemplify pipeline.
-- **planner** — Given an agreed goal and a set architectural frame, produces an ordered, file-level, granularity-aware plan with explicit per-phase exit criteria; tactical not architectural — emits the plan, does not execute it.
-- **principal-engineer-reviewer** — The Principal Engineer pointed at review — code, plans, architecture, and security weighed equally; threat-models the data flow, surfaces findings on a severity ladder with file:line + CVE/CWE tags, and reports positive signal too.
-- **principal-ic** — The universal Principal Engineer archetype — an elite, broad-spectrum maker (solutions/systems/software, design through implementation) who decides authoritatively within intent and ships; the root that mav and the reviewer specialize.
-- **tester** — Verifies a change against the orthogonal dimensions of correctness — per-dimension PASS/FAIL/ERROR verdicts with structured failure reports; biases toward false negatives because false positives ship bugs; reports, does not fix.
+- **arch-doc-writer** — arch-doc-writer ≜ ⊕{organ ↦ value ∈ {organ}-catalog}
+- **boswell** — boswell ≜ ⊕{organ ↦ value ∈ {organ}-catalog}
+- **cognizant** — cognizant ≜ ⊕{organ ↦ value ∈ {organ}-catalog}
+- **developer** — developer ≜ ⊕{organ ↦ value ∈ {organ}-catalog}
+- **investigator** — investigator ≜ ⊕{organ ↦ value ∈ {organ}-catalog}
+- **mav** — mav ≜ ⊕{organ ↦ value ∈ {organ}-catalog}
+- **nico** — nico ≜ ⊕{organ ↦ value ∈ {organ}-catalog}
+- **planner** — planner ≜ ⊕{organ ↦ value ∈ {organ}-catalog}
+- **principal-engineer-reviewer** — principal-engineer-reviewer ≜ ⊕{organ ↦ value ∈ {organ}-catalog}
+- **principal-ic** — principal-ic ≜ ⊕{organ ↦ value ∈ {organ}-catalog}
+- **tester** — tester ≜ ⊕{organ ↦ value ∈ {organ}-catalog}
 
 ## Skills
 
@@ -189,13 +189,13 @@ _composite capabilities._
 
 - **conceptualize** — use this skill to conceptualize a corpus — read a multi-modal source and resolve it to the reader's concept lattice (the closed distinction-sets `C_R`, which of them are primitive, each primitive's gloss, and each concept's candidate factorizations), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.
 - **dream** — use this skill to consolidate an agent's memory — distil the raw EPISODIC stream and route each item by two orthogonal axes (type/voice picks the organ, scope picks the instance): identity rises to SELF, durable knowledge to MEMORY, directives to the scoped AGENTS.md, networked reference to the vault, next-steps stay in EPISODIC, the rest is dropped; consumed raw is cleared; SOUL is never written.
-- **elicit** — use this skill to elicit the operator's hidden intended concept — recover it by asking maximally-informative yes/no questions, each a distinction that bisects the live candidates by prior mass (binary-search / information-gain over the concept lattice), converging in the fewest questions; the active, query-driven counterpart to probe (which reads a signifier already given) — stop when one candidate survives or no question is worth its burden, then hand the recovered concept to /signify to name.
-- **exemplify** — use this skill to optimize context - strip rot, bloat, palimpsest; increase density, coherence; resolve ambiguity; discover exemplars, derive canonical anchors, materialize composable context modules under an explicitly named strategy (file | document).
+- **elicit** — use this skill to elicit the operator's hidden intended concept — recover it by asking maximally-informative yes/no questions, each a distinction that bisects the live candidates by prior mass (binary-search / information-gain over the concept lattice), converging in the fewest questions; the active, query-driven counterpart to [[probe]] (which reads a signifier already given) — stop when one candidate survives or no question is worth its burden, then hand the recovered concept to [[signify]] to name.
+- **exemplify** — optimize a context corpus into a canonical semantic factorization — compose produce → name → realize over the one concept-contract record, then gate on accept; emits the R3 routing manifest that catches the dropped idea.
 - **formalize** — use this skill to convert prose — especially of a process or skill — into a self-sufficient set-builder block under self-sufficient-formalism: conceptualize the prose to its entities/operations/laws, signify each as a symbol (minting or boundary-binding to an anchor), and emit declarations-above / laws-below with no explanatory prose; accept only on round-trip equivalent-or-better.
 - **handoff** — use this skill to prepare a session for handoff before /clear — bring the plan's record up to date (praxis sync) and consolidate memory (dream) while context is still hot; the persist half of the session boundary, invocable as /handoff.
 - **materialize** — use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization `F_R`, emit the bipartite normal form `CSF_R` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.
-- **praxis** — Create and work durable, sharded plans (sharded-plan-layout dirs) — reached by planning intent, not a command grammar; task state is the folder a task-file sits in (pending/ready/active/completed), PLAN.md mirrors it, and `list` is the one explicit affordance.
-- **probe** — use this skill to probe a signifier — read out the latent priors a word, phrase, or candidate name fires in the reader (`fired_R`, signify's decoder `dec_R` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of signify, for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through /signify.
+- **praxis** — Create and work durable, sharded plans ([[sharded-plan-layout]] dirs) — reached by planning intent, not a command grammar; task state is the folder a task-file sits in (pending/ready/active/completed), PLAN.md mirrors it, and `list` is the one explicit affordance.
+- **probe** — use this skill to probe a signifier — read out the latent priors a word, phrase, or candidate name fires in the reader (`fired_R`, [[signify]]'s decoder `dec_R` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of [[signify]], for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through [[signify]].
 - **self-extend** — the layman door by which polis elicits a non-engineer's domain intent and extends itself with a new agent-as-person and its domain skills — the one reflexive surface (polis extends *itself* on the layman's behalf), where a human's hidden intent is recovered, factored, named, and composed into a person; the human counterpart to exemplify (whose reader is the LLM).
 - **signify** — use this skill to name a concept set — assign each concept its injective canonical anchor `α(c) = σ*_R(c)` (the reader-relative fittest sign, whose latent priors circumscribe exactly it; one name ⇔ one concept), then coalesce concepts that resolve to the same anchor; emits the shortlex order `≺` and the decoder `dec_R`; stage 2 of exemplify, independently invocable (every naming review is a bare /signify).
 - **wake** — use this skill to reconstitute an agent at session start — run the memory home's WAKE sequence (dream → load → orient → resume) so it resumes as the same individual; the read-and-resume counterpart to /dream, invocable as /wake.

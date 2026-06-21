@@ -152,23 +152,28 @@ def _lexicon_index() -> dict:
 
 
 def _composite_index() -> dict:
-    """slug -> path for every composite cell. Two homes, read polymorphically so a
-    migration moves files without changing resolution ([[regenerate-without-clobbering]]):
-    the FLAT layout `<root>/{agents,skills}/<slug>.md` (the mind-structure-flatten
-    target) and the legacy NESTED `<root>/mind/<kind>/<organ>/<slug>.md` (γ2-B, being
-    retired by the flat migration). Flat wins on a slug collision (post-migration home)."""
+    """slug -> path for every composite cell (`kind: agent` / `kind: skill`).
+
+    Composites live flat, ONE file per cell, in the SINGULAR homes
+    `<root>/agent/<slug>.md` and `<root>/skill/<slug>.md` (re-individuate-organ-anatomy,
+    c9bd76c): an agent is an organ *selection vector* over the 23 organ catalogs, a
+    skill is a `kind: skill` cell. The superseded PLURAL trees (`agents/`, `skills/`)
+    and the retired NESTED `mind/<kind>/<organ>/` are NO LONGER read — sourcing from
+    both produced a silent legacy/new collision (the loader picked whichever it
+    happened to glob). One home per kind ([[named-marker-as-index-key]]); a slug is
+    addressed identically wherever the projector reads it ([[projection-is-not-the-
+    source]]). NB: organ VALUE cells (`<root>/<organ>/<value>.md`) are NOT global
+    composites — the same value token recurs across organs (e.g. `emit-fenced-review`
+    in both `effectors/` and `enaction/`), so they are resolved by their `(organ,
+    value)` PAIR via the agent composer, never by bare slug here."""
     root = IDEAS.parent
     if root not in _comp_cache:
         out: dict = {}
-        minddir = root / "mind"
-        if minddir.is_dir():
-            for q in sorted(minddir.glob("*/*/*.md")):
-                out[q.stem] = q
-        for sub in ("agents", "skills"):  # flat composite homes (mind-structure-flatten)
+        for sub in ("agent", "skill"):  # singular composite homes (re-individuate)
             d = root / sub
             if d.is_dir():
                 for q in sorted(d.glob("*.md")):
-                    out[q.stem] = q  # flat overrides a stale nested entry
+                    out[q.stem] = q
         _comp_cache[root] = out
     return _comp_cache[root]
 

@@ -18,7 +18,7 @@ Resolve from context:
 ## 1. Distillation
 
 ```text
-E ≜ raw items read from ${AGENT_HOME}/EPISODIC          -- via [[memory]]'s `read` verb (the store is the source of truth)
+E ≜ raw items read from ${AGENT_HOME}/EPISODIC          -- via memory's `read` verb (the store is the source of truth)
 
 dream ≜ exemplify : E → I                                ∵ consolidation is exemplify applied to the raw stream
 

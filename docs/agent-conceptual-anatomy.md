@@ -77,3 +77,37 @@ Filing axis (MANDATORY): every anchor is filed **STANCE** (how it comes across �
 - **Disclosure** (STANCE: showing reasoning as presentation) vs **Deliberation** (CONATUS: the reasoning as the act of choosing) — same trace, split by whether it is shown or used.
 - **Provenance** (STANCE: identity as recognized from outside) vs **Substrate** (CONATUS: identity as the machinery that acts) — what marks it vs what runs it.
 - **Comportment** (STANCE: standing manner) vs **Heuristics** (CONATUS: standing policy) — how it sounds by habit vs how it moves by habit.
+
+---
+
+## Industry-standard value enumeration per organ
+
+Each organ is a standard **dimension**; an agent is a point in that space. Where a recognized framework exists, the organ's value catalog should **enumerate from it** (agents select standard values) rather than mint bespoke, corpus-internal coinages. Organs marked _role-specific_ have no closed external standard — name their values from recognized role/process frameworks rather than coining.
+
+| organ              | genus   | industry-standard enumeration to ground the value catalog in                                          |
+| ------------------ | ------- | ----------------------------------------------------------------------------------------------------- |
+| persona            | STANCE  | Jungian / brand archetypes (the 12: Hero, Sage, Creator, Caregiver, Explorer, Outlaw, …)              |
+| mandate            | STANCE  | role/responsibility frameworks (RACI; job-family / function taxonomies) — _role-specific_             |
+| comportment        | STANCE  | Joos's five registers (frozen · formal · consultative · casual · intimate); tone-of-voice             |
+| register-fit       | STANCE  | Communication Accommodation Theory (convergence / divergence / maintenance)                           |
+| disclosure         | STANCE  | XAI transparency levels; model-card disclosure norms                                                  |
+| address            | STANCE  | delegation/autonomy continua (Tannenbaum–Schmidt; SAE J3016 L0–L5; principal–agent theory)            |
+| provenance         | STANCE  | C2PA content provenance; model cards; watermarking                                                    |
+| telos              | CONATUS | goal/objective frameworks (OKRs; optimization-target types) — _role-specific_                         |
+| charter            | CONATUS | NIST AI RMF; Constitutional-AI principles; OWASP; safety-policy taxonomies                            |
+| heuristics         | CONATUS | adaptive-toolbox heuristics (Gigerenzer); domain best-practice canons                                 |
+| competence         | CONATUS | SFIA (Skills Framework for the Information Age); Bloom's taxonomy                                     |
+| disposition-memory | CONATUS | continual / lifelong-learning frameworks                                                              |
+| gestalt            | CONATUS | Endsley situation-awareness levels; global-workspace / working-memory models — _new organ_            |
+| effectors          | CONATUS | tool-use / function-calling action taxonomies; actuator classes                                       |
+| sensors            | CONATUS | input-modality / perception-channel taxonomies                                                        |
+| substrate          | CONATUS | model cards; inference-runtime taxonomy                                                               |
+| ledger             | CONATUS | persistence taxonomy (scratchpad · vector store · database · memory home)                             |
+| percept            | CONATUS | input-type taxonomy (the parsed-observation kinds) — _role-specific_                                  |
+| construal          | CONATUS | problem-representation / situation-model framings — _role-specific_                                   |
+| deliberation       | CONATUS | reasoning-strategy taxonomy (search · planning · chain-of-thought · abduction · tree-of-thought)      |
+| resolve            | CONATUS | decision theory (satisficing vs optimizing; commitment)                                               |
+| enaction           | CONATUS | action/output taxonomy (tool call · token stream) — _role-specific_                                   |
+| appraisal          | CONATUS | evaluation / test-oracle taxonomy (golden-master · metamorphic · property-based); acceptance criteria |
+
+> `gestalt` is the organ discovered empirically this session (the resident hold of the construed whole across a task — the persistent counterpart to per-turn `construal`); it is catalogued here but not yet woven into the organ body above.

@@ -29,13 +29,21 @@ def main() -> int:
     if not c or c[0][1] != "semantic-partition":
         fails.append(f"ROUTE-HIT: expected semantic-partition rank1, got {[s for _, s in c][:3]}")
 
-    # ROUTE-HIT: a verification fragment -> tester in the top 3
+    # ROUTE-HIT: a verification fragment -> the verification IDEA in the top 3.
+    # CHANGED (re-individuate-organ-anatomy, not weakened): formerly asserted the
+    # `tester` AGENT slug ranked top-3, when a tester agent cell was prose-rich and
+    # carried the verification language itself. Agent cells are now terse organ
+    # SELECTION VECTORS (no descriptive prose), so a "check across correctness
+    # dimensions" fragment correctly routes to its IDEA anchor —
+    # `dimension-decomposed-validity` (tester's own verification principle in
+    # lexicon/) — rather than the now-contentless persona. Routing a fragment to
+    # the idea it IS, not the agent that holds it, is the more correct hit.
     c2 = intake.candidates(
         "check the change across independent correctness dimensions and never "
         "mark pass when you cannot confirm", profiles, idf, k=5)
     top3 = [s for _, s in c2[:3]]
-    if "tester" not in top3:
-        fails.append(f"ROUTE-HIT: expected tester in top3, got {top3}")
+    if "dimension-decomposed-validity" not in top3:
+        fails.append(f"ROUTE-HIT: expected dimension-decomposed-validity in top3, got {top3}")
 
     # HOMELESS: gibberish -> no candidates
     c3 = intake.candidates("zxqw flibber wozzle gnk", profiles, idf, k=5)

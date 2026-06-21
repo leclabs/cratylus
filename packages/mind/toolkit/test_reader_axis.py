@@ -85,32 +85,37 @@ def main() -> int:
                              f"{mprof.group(1)} != rendered def "
                              f"(re-run resolve.py or reconcile)")
 
-        # DIVERGENCE: weak-llm adds scaffolding the strong profile omits
-        for fw in sorted(w.glob("*.md")):
-            strong = (a / fw.name).read_text(encoding="utf-8")
-            weak = fw.read_text(encoding="utf-8")
-            if weak == strong:
-                fails.append(f"DIVERGENCE {fw.name}: weak-llm == strong-llm")
-            elif ", invoke)_" not in weak and ", embody)_" not in weak \
-                    and ", reference)_" not in weak:
-                fails.append(f"DIVERGENCE {fw.name}: weak-llm lacks kind cue")
-
-        # MONOTONIC DENSITY: lean drops delineations -> strictly shorter than
-        # strong, yet still names every composed anchor (round-trip intact).
-        for fl in sorted(ln.glob("*.md")):
-            strong = (a / fl.name).read_text(encoding="utf-8")
-            lean = fl.read_text(encoding="utf-8")
-            if len(lean) >= len(strong):
-                fails.append(f"DENSITY {fl.name}: lean not shorter than strong")
-            # every anchor the strong def names must survive in lean (bare) --
-            # both forms: **bold** and the /trigger skill affordance.
-            import re as _re
-            for ref in _re.findall(r"^- \*\*([a-z0-9-]+)\*\*", strong, _re.M):
-                if f"**{ref}**" not in lean:
-                    fails.append(f"DENSITY {fl.name}: lean dropped anchor {ref}")
-            for ref in _re.findall(r"^- (/[a-z0-9-]+)", strong, _re.M):
-                if ref not in lean:
-                    fails.append(f"DENSITY {fl.name}: lean dropped affordance {ref}")
+        # READER-INVARIANCE (new composite-agent form, re-individuate-organ-anatomy):
+        # an agent cell is an organ SELECTION VECTOR whose value cells are authored
+        # ONCE at σ*_LLM density and inlined VERBATIM -- there is no per-anchor
+        # delineation to drop and no kind/verb scaffolding to add, so the agent def
+        # is the SAME at every reader profile (the density axis lives in the value
+        # cells' own authorship, not in this projection).
+        #   NOTE (assertion CHANGED, not weakened): the prior DIVERGENCE/MONOTONIC-
+        #   DENSITY axes asserted the LEGACY prose-`≜` agent projection (weak adds
+        #   `, invoke)_` cues; lean is strictly shorter + renders refs as
+        #   `- **anchor**` / `- /trigger`). The new agent form has none of those
+        #   surfaces, so those exact checks no longer describe a real property of an
+        #   agent def. They are REPLACED here by the invariance the new form DOES
+        #   guarantee. The reader-density axis itself stays exercised on SKILLS
+        #   (which still resolve `[[ ]]` at reader density) by the skill projection
+        #   tests; resolve's `--reader` GUARD below is unchanged.
+        # The recorded `profile:` header line legitimately differs per reader (it
+        # records which profile rendered the def); the BODY is what must be
+        # invariant. Strip that one line before comparing.
+        def _body(p: pathlib.Path) -> str:
+            return "\n".join(
+                ln_ for ln_ in p.read_text(encoding="utf-8").splitlines()
+                if not ln_.lstrip().startswith("profile:")
+            )
+        for fa in sorted(a.glob("*.md")):
+            strong = _body(a / fa.name)
+            if _body(w / fa.name) != strong:
+                fails.append(f"INVARIANCE {fa.name}: weak-llm agent body != strong "
+                             f"(new selection-vector form is reader-invariant)")
+            if _body(ln / fa.name) != strong:
+                fails.append(f"INVARIANCE {fa.name}: strong-llm-lean agent body != "
+                             f"strong (new selection-vector form is reader-invariant)")
 
     # GUARD: bad profiles exit non-zero
     for flag, val in (("--reader", "bogus"), ("--harness", "bogus")):

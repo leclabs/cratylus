@@ -29,6 +29,20 @@ def body_hash(body_text: str) -> str:
     return hashlib.sha256(body_text.encode("utf-8")).hexdigest()[:16]
 
 
+def _source_path(name: str) -> str:
+    """The repo-relative source path of the cell `name` projects from -- the TRUE
+    home the reader is told to edit ([[generated-artifact-provenance]] honesty),
+    resolved through the loader so it tracks the live layout (`agent/<name>.md`,
+    `skill/<name>.md`, a lexicon file, ...). Falls back to `ideas/<name>.md` if the
+    cell can't be located (a synthesized/preview name)."""
+    from core import cells  # local import: render must not hard-depend on the loader at module load
+    try:
+        p = cells.cell_path(name)
+        return str(p.relative_to(cells.ROOT.parents[1]))  # repo root = parents[1] of packages/mind
+    except Exception:
+        return f"packages/mind/ideas/{name}.md"
+
+
 def provenance_header(name: str, profile: str, bh: str) -> str:
     """The GENERATED provenance comment block ([[generated-artifact-provenance]] /
     [[regenerate-without-clobbering]]) -- the one home for the header law, shared
@@ -36,7 +50,7 @@ def provenance_header(name: str, profile: str, bh: str) -> str:
     line read identically wherever a mind artifact lands. Returns the 4-line
     comment block (no trailing newline)."""
     return (
-        f"<!-- GENERATED from packages/mind/ideas/{name}.md by projecting its "
+        f"<!-- GENERATED from {_source_path(name)} by projecting its "
         f"composed cells at the recorded reader profile.\n"
         f"     profile: {profile}\n"
         f"     Edit the cells and regenerate; do not hand-edit.\n"

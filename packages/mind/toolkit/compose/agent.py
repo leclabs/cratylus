@@ -278,10 +278,216 @@ def render_organ(slug: str, name: str) -> list[str]:
     return [line.replace("{name}", name) for line in section] + [""]
 
 
+# --- new composite-agent form (re-individuate-organ-anatomy, c9bd76c) -----------
+# An agent cell's body is an organ SELECTION VECTOR over the 23 organ catalogs:
+# a schema formula `<name> ≜ ⊕{organ ↦ value ∈ {organ}-catalog}` then one
+# `organ value` (or `organ {v1 · v2 · …}`) line per organ, each value resolving to
+# `<root>/<organ>/<value>.md`. The composer INLINES each chosen value cell's body
+# under a readable `## <Organ>` heading -> a full, human/LLM-readable def. This is
+# a DISTINCT projection from the legacy prose-`≜`-formula form (still used by the
+# verify/round-trip fixtures); the two are told apart by the schema sentinel below.
+SELECTION_FORMULA = "⊕{organ ↦"  # the canonical new-form formula's signature
+
+# The 23 organ catalogs an agent selects over -- a value line whose first token is
+# one of these is an organ selection (NOT prose). Derived from the on-disk catalog
+# dirs so a new organ needs no code change: a dir holding a README.md + ≥1 value
+# cell IS an organ catalog. Cached on the corpus root (moves with cells.ROOT).
+_organ_cache: dict = {}
+
+
+def organ_catalogs() -> set[str]:
+    """The organ-catalog directory names under the corpus root -- every dir that
+    carries a README.md (the human-facing organ gloss) and at least one value
+    cell. The closed set an agent's selection vector ranges over."""
+    root = cells.ROOT
+    if root not in _organ_cache:
+        out: set[str] = set()
+        for d in sorted(root.iterdir()):
+            if d.is_dir() and (d / "README.md").exists():
+                if any(p.name != "README.md" for p in d.glob("*.md")):
+                    out.add(d.name)
+        _organ_cache[root] = out
+    return _organ_cache[root]
+
+
+def is_selection_form(cell: dict) -> bool:
+    """True if an agent cell is the new organ-selection-vector form (carries the
+    `⊕{organ ↦ …}` schema formula), vs the legacy prose-`≜` composition form."""
+    mask = cells.fence_lines(cell["body"])
+    for i, line in enumerate(cell["body"].splitlines()):
+        if i not in mask and SELECTION_FORMULA in line:
+            return True
+    return False
+
+
+def organ_title(organ: str) -> str:
+    """A readable `## ` heading for an organ dir name: `register-fit` ->
+    `Register-Fit`, `disposition-memory` -> `Disposition-Memory`."""
+    return "-".join(w.capitalize() for w in organ.split("-"))
+
+
+def _strip_value(tok: str) -> str:
+    """Normalize one selection value token to its bare anchor. The corpus authors a
+    selection value in EITHER surface -- bare `guarino-formal-ontologist` or the
+    wikilink `[[guarino-formal-ontologist]]` -- so both must resolve to the same
+    `<organ>/<value>.md` cell. Strips surrounding `[[ ]]` and whitespace."""
+    tok = tok.strip()
+    m = re.fullmatch(r"\[\[([a-z0-9-]+)\]\]", tok)
+    return m.group(1) if m else tok
+
+
+def parse_selection(cell: dict) -> list[tuple[str, list[str]]]:
+    """The agent's organ selections in source order: a list of
+    `(organ, [value, …])` for every body line `organ value` or
+    `organ {v1 · v2 · …}` whose first token is a live organ catalog. A value is
+    authored bare or as a `[[wikilink]]` (both normalize to the bare anchor). The
+    schema formula line, headings, blanks, and fenced lines are skipped."""
+    catalogs = organ_catalogs()
+    mask = cells.fence_lines(cell["body"])
+    out: list[tuple[str, list[str]]] = []
+    for i, line in enumerate(cell["body"].splitlines()):
+        if i in mask:
+            continue
+        s = line.strip()
+        if not s or s.startswith("#") or SELECTION_FORMULA in s:
+            continue
+        parts = s.split(None, 1)
+        if len(parts) != 2:
+            continue
+        organ, rest = parts[0], parts[1].strip()
+        if organ not in catalogs:
+            continue
+        if rest.startswith("{") and rest.endswith("}"):
+            values = [_strip_value(v) for v in rest[1:-1].split("·") if v.strip()]
+        else:
+            values = [_strip_value(rest)]
+        out.append((organ, [v for v in values if v]))
+    return out
+
+
+def value_cell_path(organ: str, value: str):
+    """The source path of an organ VALUE cell `<root>/<organ>/<value>.md`, or
+    None if absent. Resolved by the `(organ, value)` PAIR -- NOT a bare slug --
+    because a value token recurs across organs (`emit-fenced-review` lives in
+    both `effectors/` and `enaction/`), so a global-slug lookup would be
+    ambiguous ([[precise-circumscription]])."""
+    p = cells.ROOT / organ / f"{value}.md"
+    return p if p.is_file() else None
+
+
+def value_cell_body(organ: str, value: str) -> str:
+    """The inlined body of an organ value cell: its text with the `---fm---`
+    front-matter stripped and the trailing `holders:` bookkeeping line dropped
+    (the holders roster is corpus provenance, not part of the projected def).
+    A missing value cell degrades VISIBLY to a marker line ([[degrade-visibly]])
+    rather than a silent gap -- verify owns the dangling-ref FAIL."""
+    p = value_cell_path(organ, value)
+    if p is None:
+        return f"_(unresolved organ value `{organ}/{value}` -- no cell)_"
+    text = p.read_text(encoding="utf-8")
+    body = text
+    if text.startswith("---"):
+        parts = text.split("---", 2)
+        if len(parts) >= 3:
+            body = parts[2]
+    kept = [
+        ln for ln in body.splitlines()
+        if not ln.strip().lower().startswith("holders:")
+    ]
+    return "\n".join(kept).strip()
+
+
+def _persona_value(selection: list[tuple[str, list[str]]]) -> str | None:
+    """The agent's chosen `persona` value (its first selected value), the source
+    of the def's description + mark."""
+    for organ, values in selection:
+        if organ == "persona" and values:
+            return values[0]
+    return None
+
+
+def _mark_from_persona(persona_value: str | None) -> str:
+    """The `emoji · hue` mark facet, parsed from the persona value cell's trailing
+    `<emoji>·<hue>` token (the last `· `-separated element before `holders:`,
+    e.g. `✈️·green`). Returns '' if no such token is found."""
+    if persona_value is None:
+        return ""
+    p = value_cell_path("persona", persona_value)
+    if p is None:
+        return ""
+    body = value_cell_body("persona", persona_value)
+    m = re.search(r"([^\s·]+)·(cyan|green|blue|red|orange|purple|yellow|"
+                  r"magenta|teal|gray|grey|pink|indigo|violet|amber|lime)\b", body)
+    return f"{m.group(1)} · {m.group(2)}" if m else ""
+
+
+def _definiens(organ: str, value: str | None) -> str:
+    """The dense one-line definiens of a value cell: the text after its `≜` on the
+    first defining line (the σ*_LLM bound). Falls back to the whole first line."""
+    if value is None:
+        return ""
+    body = value_cell_body(organ, value)
+    for line in body.splitlines():
+        s = line.strip()
+        if not s:
+            continue
+        if "≜" in s:
+            return s.split("≜", 1)[1].strip()
+        return s
+    return ""
+
+
+def compose_agent_selection(slug: str, reader: str, harness: str) -> ComposedDoc:
+    """New-form composer: inline an agent's organ SELECTION VECTOR into a full def.
+    Each `organ value` line -> a `## <Organ>` section carrying the chosen value
+    cell(s)' body inlined ([[cite-dont-copy]] at the projection grain: the value
+    cell is the one home, the def is its faithful projection). The `description`
+    front-matter is the persona definiens; the mark (emoji·hue) is parsed from the
+    persona cell."""
+    cell = cells.parse_cell(slug)
+    name = slug
+    heading = next(
+        (l[2:].strip() for l in cell["body"].splitlines() if l.startswith("# ")),
+        slug,
+    )
+    selection = parse_selection(cell)
+    persona_value = _persona_value(selection)
+    mark = _mark_from_persona(persona_value)
+    emoji = mark.split("·", 1)[0].strip() if mark else ""
+    if emoji:
+        heading = f"{emoji} {heading}"
+    # Description = the persona definiens (who the agent is), the router-match copy.
+    desc = _definiens("persona", persona_value) or slug
+
+    body: list[str] = []
+    body.append(f"# {heading}")
+    body.append("")
+    body.append(f"**{slug}** — an agent composited from its organ anatomy: each "
+                f"section below is one organ's selected value, inlined from the "
+                f"`packages/mind/<organ>/` catalogs.")
+    body.append("")
+    for organ, values in selection:
+        body.append(f"## {organ_title(organ)}")
+        body.append("")
+        for value in values:
+            body.append(value_cell_body(organ, value))
+            body.append("")
+    body_text = "\n".join(body).rstrip() + "\n"
+    return ComposedDoc(
+        name=name, kind="agent", heading=heading, body=body_text,
+        delineation=desc, reader=reader, harness=harness, mark=mark,
+    )
+
+
 def compose_agent(slug: str, reader: str, harness: str) -> ComposedDoc:
     """Assemble the agent def body (no front-matter, no provenance header). The
-    returned `body` is the exact text resolve.py hashes + frames."""
+    returned `body` is the exact text resolve.py hashes + frames. Dispatches on
+    the cell's FORM: the new organ-selection vector (`⊕{organ ↦ …}`) inlines its
+    organ value cells; the legacy prose-`≜` form walks its `[[ ]]` composition
+    graph (still exercised by the verify/round-trip fixtures)."""
     cell = cells.parse_cell(slug)
+    if is_selection_form(cell):
+        return compose_agent_selection(slug, reader, harness)
     name = slug
     desc = cell["fm"]["delineation"]
     refs = composition_refs(cell)

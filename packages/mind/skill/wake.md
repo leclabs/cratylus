@@ -24,7 +24,7 @@ Then run the [[memory]] WAKE sequence:
 ```text
 WAKE ≜ dream → load → orient → resume
 
-dream   — [[dream]]; usually catch-up only — a no-op when [[handoff]] already dreamt on hot context,
+dream   — dream; usually catch-up only — a no-op when handoff already dreamt on hot context,
           load-bearing on a fresh spawn or a crash that had none.
 load    — read the resident layers ${AGENT_HOME}/{SELF, MEMORY} (EPISODIC via the runtime `read` verb).
 orient  — bind to the current project, resume that project's work-thread; an unfamiliar cwd is a fresh orientation.

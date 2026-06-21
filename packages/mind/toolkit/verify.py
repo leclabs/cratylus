@@ -195,15 +195,39 @@ def gate_schema_and_refs():
         # SCHEMA
         if fm.get("gloss") == "true":
             pass
+        elif fm.get("kind") == "agent":
+            # A composite AGENT cell (re-individuate-organ-anatomy) is an organ
+            # SELECTION VECTOR; its description is COMPOSED from the chosen persona
+            # organ, not stored in front-matter -- requiring a redundant
+            # `delineation:` copy would violate cite-once ([[cite-dont-copy]]). The
+            # selection vector's well-formedness is gated by REFERENCES (every organ
+            # value resolves) and the round-trip oracle, not by a stored definiens.
+            pass
         elif fm.get("kind") in KINDS and fm.get("delineation"):
             pass
         else:
-            errors.append(f"SCHEMA {path.name}: needs (kind in set + delineation) or gloss:true")
+            errors.append(f"SCHEMA {path.name}: needs (kind:agent) or (kind in set + delineation) or gloss:true")
         # REFERENCES -- prose grain: the same refs compose reads (fences are out
         # of register and gated by FENCE below); front-matter is prose too.
         mask = cells.fence_lines(body)
+        # A new-form agent cell's `organ [[value]]` selection lines are ORGAN-scoped
+        # refs (resolved by the `(organ, value)` pair, gated by gate_agent_organ_refs)
+        # -- NOT global anchors. Exclude them from this GLOBAL-anchor walk, else a
+        # per-organ value like `persona [[principal-tech-writer]]` is misread as a
+        # dangling top-level anchor. Any OTHER prose ref in the cell still validates
+        # globally. (Skipped only when the cell is the selection-vector form.)
+        skip_lines: set[int] = set()
+        if fm.get("kind") == "agent":
+            from compose import agent as _agent_mod
+            if _agent_mod.is_selection_form(cell):
+                catalogs = _agent_mod.organ_catalogs()
+                for i, l in enumerate(body.splitlines()):
+                    head = l.strip().split(None, 1)[0] if l.strip() else ""
+                    if head in catalogs:
+                        skip_lines.add(i)
         prose_text = "\n".join(
-            l for i, l in enumerate(body.splitlines()) if i not in mask
+            l for i, l in enumerate(body.splitlines())
+            if i not in mask and i not in skip_lines
         ) + "\n" + " ".join(fm.values())
         for raw in BROAD_REF.findall(prose_text):
             if "|" in raw:
@@ -227,6 +251,32 @@ def gate_schema_and_refs():
                 continue
             if tok not in slugs:
                 errors.append(f"REF {path.name}: dangling [[{tok}]] -> no {tok}.md")
+
+
+def gate_agent_organ_refs():
+    """Every organ selection in a new-form agent cell resolves to a live value
+    cell `<organ>/<value>.md` (re-individuate-organ-anatomy). The new agent body
+    is an organ SELECTION VECTOR (`organ value` / `organ {v1 · v2}` lines), NOT a
+    `[[ ]]` graph -- so gate_schema_and_refs's REFERENCES walk (which reads
+    wikilinks) never sees these refs. This gate closes that hole: a dropped or
+    mistyped organ value FAILs loudly here ([[no-permissive-defaults]] /
+    [[degrade-visibly]]) instead of projecting a `_(unresolved …)_` marker into
+    the def. Resolution is by the `(organ, value)` PAIR -- a value token recurs
+    across organs (`emit-fenced-review` ∈ effectors ∩ enaction). The selection
+    grammar is read through the composer's parser ([[cite-dont-copy]] at the code
+    grain), never re-derived here."""
+    from compose import agent as _agent
+    for slug in cells.slugs_of_kind("agent"):
+        cell = cells.parse_cell(slug)
+        if not _agent.is_selection_form(cell):
+            continue  # a legacy prose-formula agent is gated by REFERENCES above
+        for organ, values in _agent.parse_selection(cell):
+            for value in values:
+                if _agent.value_cell_path(organ, value) is None:
+                    errors.append(
+                        f"ORGAN {slug}.md: selection `{organ} {value}` -> no value "
+                        f"cell at {organ}/{value}.md (dangling organ ref)"
+                    )
 
 
 def gate_fences():
@@ -638,9 +688,31 @@ def gate_reconstruct():
     slugs = cells.corpus_slugs()
     homes = _home_index()
     bodies = {s: cells.parse_cell(s)["body"] for s in slugs}
+    from compose import agent as _agent_mod
+
+    def _cell_refs(s: str) -> list[str]:
+        """The GLOBAL-anchor prose refs of a cell, fence-immune. For a new-form
+        agent (organ SELECTION VECTOR), the `organ [[value]]` lines are ORGAN-scoped
+        refs resolved per-`(organ, value)` pair (gated by gate_agent_organ_refs),
+        NOT global anchors -- excluded here so R1's global one-home walk doesn't
+        misread `persona [[principal-tech-writer]]` as a dangling top-level anchor.
+        Every other prose ref still enters the graph."""
+        cell = cells.parse_cell(s)
+        if cell["fm"].get("kind") == "agent" and _agent_mod.is_selection_form(cell):
+            catalogs = _agent_mod.organ_catalogs()
+            mask = cells.fence_lines(cell["body"])
+            kept = []
+            for i, l in enumerate(cell["body"].splitlines()):
+                head = l.strip().split(None, 1)[0] if l.strip() else ""
+                if i in mask or head in catalogs:
+                    continue
+                kept.append(l)
+            return list(dict.fromkeys(cells.refs_in_prose("\n".join(kept))))
+        return list(dict.fromkeys(cells.refs_in_prose(bodies[s])))
+
     # the corpus dependency graph: cell -> the prose anchors it cites (fence-
     # immune, the SAME reader compose uses, so the oracle cannot drift from it).
-    graph = {s: list(dict.fromkeys(cells.refs_in_prose(bodies[s]))) for s in slugs}
+    graph = {s: _cell_refs(s) for s in slugs}
 
     # ---- R1: one-home totality over the transitive [[ ]] closure ----
     # Roots = the composition roots (agent + skill cells): the things that get
@@ -776,6 +848,7 @@ def gate_reconstruct():
 
 def main() -> int:
     gate_schema_and_refs()
+    gate_agent_organ_refs()
     gate_fences()
     gate_symbols()
     gate_verbatim_ref_free()
