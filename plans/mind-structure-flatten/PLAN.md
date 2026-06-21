@@ -1,7 +1,9 @@
 # mind-structure-flatten
 
-**State: GATES CLOSED → BUILD.** Both design gates are ruled and recorded; the build slices are now
-the frontier. Mav is principal-ic lead; Nico owns taxonomy + the organ/glossary cells.
+**State: DELIVERED (committed; push/merge pending) · one scoped follow-on deferred.** The γ2-B
+`mind/<kind>/<organ>/` nesting is dissolved — composites flat at `packages/mind/{agents,skills}/<slug>.md`,
+organs section-driven, primitives untouched. Committed `911d771` on branch `mav/mind-structure-flatten`
+(unpushed — Operator's push/PR call). Mav principal-ic lead; Nico owns taxonomy + organ/glossary cells + docs.
 
 ## Gates (closed)
 
@@ -11,38 +13,33 @@ the frontier. Mav is principal-ic lead; Nico owns taxonomy + the organ/glossary 
 | `scope/primitive-flatten-decision` (Mav) | **composites-only**; lexicon-block primitives untouched | `decisions/0002-flatten-scope.md`  |
 
 G1 diverged from Mav's recommendation (organ-as-kind) on a stronger CE∧ME argument — a `kind: organ`
-would duplicate `kind: concept` (the organ's meaning) and have nothing to classify (the organ's
-content is an archetype section). Mav accepted. Same flat outcome, zero new kinds.
+would duplicate `kind: concept` and have nothing to classify. Mav accepted. Same flat outcome, zero new kinds.
 
-## Build frontier
+## Tasks
 
-| Task                               | Concern       | Dep             | Owner      | Byte-identity                             |
-| ---------------------------------- | ------------- | --------------- | ---------- | ----------------------------------------- |
-| `organ-cells/mint-organs-glossary` | organ-cells   | G1              | Nico       | fleet-neutral; **+8 lines GLOSSARY.md** ✓ |
-| `toolkit/flat-storage-support`     | toolkit       | G1, G2          | Mav        | fleet byte-identical                      |
-| `agent-anatomy/archetype-sections` | agent-anatomy | G1, organ-cells | Mav + Nico | fleet byte-identical                      |
+| Task                               | Owner | State                                                                   |
+| ---------------------------------- | ----- | ----------------------------------------------------------------------- |
+| `organ-cells/mint-organs-glossary` | Nico  | ✅ 8 organ concepts in `lexicon/concept.md`; fleet-neutral, +8 GLOSSARY |
+| `toolkit/flat-storage-support`     | Mav   | ✅ flat `agents/`+`skills/` resolver (storage-polymorphic)              |
+| `agent-anatomy/archetype-sections` | Mav   | ✅ `GENUS_ORGANS` removed → `section_organ_refs`; `## Memory` ×11       |
+| `migration/move-composites-flat`   | Mav   | ✅ 24 composites git-moved flat; `mind/` removed                        |
+| `docs/update-conventions`          | Nico  | ✅ `AGENTS.md` + `ideas/AGENTS.md` mirror the flat layout               |
+| `skills/flatten-skills-and-assets` | Mav   | ⏸ **DEFERRED** — acceptance met; op2 asset-collapse a follow-on (0004)  |
 
-**Coupling (load-bearing).** `GENUS_ORGANS=("memory",)` is what renders the memory `## Protocol` into
-every SOUL. Removing it (charter mandate) without anatomy-section composition in place strips the
-Protocol → byte-identity breaks. So `flat-storage-support` (composer half) + `archetype-sections` land
-**together** as one byte-gated unit; only the flat _physical move_ + `organ-cells` are separable.
-`archetype-sections` references the 8 organ concepts, so it is **downstream of `organ-cells`**.
+Every build step byte-proven: `diff -rq` of the rendered fleet pre/post **empty**, `verify.py` PASS, 17/17 tests.
 
-## Pending (downstream)
+## Decisions
 
-| Task                               | Concern   | Dep       | Owner |
-| ---------------------------------- | --------- | --------- | ----- |
-| `migration/move-composites-flat`   | migration | toolkit   | Mav   |
-| `skills/flatten-skills-and-assets` | skills    | toolkit   | Mav   |
-| `docs/update-conventions`          | docs      | migration | Nico  |
+`0001` organ-taxonomy (Nico) · `0002` flatten-scope (Mav) · `0003` memory-section-convention (Nico ratify) ·
+`0004` skills-flatten-scope (Mav — op2 deferred).
 
-## Build sequence
+## Follow-on (deferred — decision 0004)
 
-`organ-cells` (Nico, running) → coupled core {`flat-storage-support` composer + `archetype-sections`}
-(byte-gated together) + flat physical resolver → `migration` + `skills` → `docs`. Every slice under the
-γ2-B byte-identity license (`diff -rq` of `.render` pre/post empty unless a delta is scoped + enumerated).
+`asset-mechanism-collapse` — collapse the dir-form `assets:` mechanism into `bundle:`-style front-matter
+paths; remove `cell_dir` + the dir-form branches in `cells.py` / `resolve._stage_assets`; rewrite
+`test_place.py §1`. Zero current users + test-only safety net → a focused pass, not a session-tail cram.
 
 ## See also
 
-- `docs/agent-conceptual-anatomy.md` — the σ\*\_LLM organ set this plan files as section-structure.
-- `../sharded-memory-store/` — sequence B after this (it touches the `memory` cell restructured here).
+- `docs/agent-conceptual-anatomy.md` — the σ\*\_LLM organ set this plan filed as section-structure.
+- `../sharded-memory-store/` — initiative B, sequenced after this (it touches the `memory` cell).

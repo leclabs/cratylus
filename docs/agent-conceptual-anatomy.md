@@ -1,7 +1,9 @@
 # Conceptual Anatomy of an AI Agent
 
 > **Reference knowledge — do not re-derive.** This is the canonical **σ\*\_LLM** render of the agent's
-> conceptual anatomy: the MECE organ set (**STANCE / CONATUS**)
+> conceptual anatomy: the MECE organ set (**STANCE / CONATUS**). Full research home in obsidian
+> `Reference/context-engineering/conceptual-anatomy-of-an-ai-agent/`; produced blind by a fresh model
+> under the verified σ\*\_R-session prompt (2026-06-20).
 
 ---
 
