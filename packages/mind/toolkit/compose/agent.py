@@ -28,15 +28,14 @@ GRANT = re.compile(r"grant\s+@(\S+)\s+\[\[([a-z0-9-]+)\]\]\s+on\s+(\S+)")
 # ≜ formula ([[cite-dont-copy]]). New genus traits go here, one home.
 GENUS_DISPOSITIONS = ("semantic-whole-over-syntactic-substrate",)
 
-# Genus organs: structural cells every agent carries *qua* agent, composed as
-# genus refs so the oracle's R1 reaches them (one home, no parallel fidelity
-# check) -- but NOT rendered as density-keyed disposition bullets. Each organ
-# cell declares `render: verbatim`; the composer emits its `## Protocol` section
-# body verbatim, density-immune, `{name}`-parameterized (replacing what was
-# hardcoded in _identity_block()). The cell declares its own projection law and
-# the machinery obeys generically -- the slug list here is bookkeeping (which
-# refs the def declares for R1), never the render text (read from the cell).
-GENUS_ORGANS = ("memory",)
+# Section-driven organs: an agent archetype DECLARES the organs it carries as
+# named anatomy sections (`## Memory`, ...) compositing the organ *by reference*
+# ([[cite-dont-copy]]) -- no hardcoded genus list. The composer reads those refs
+# (section_organ_refs) and renders the `render: verbatim` ones through the organ
+# path (their `## Protocol` body, density-immune, `{name}`-parameterized), at the
+# position the hardcoded list used to occupy. A non-verbatim organ-section ref is
+# source-structure only (glossary-legible), never rendered into the def -- so the
+# fuller anatomy can be authored byte-neutrally.
 # Front-matter `render:` value that routes a ref through the verbatim organ path
 # instead of render_ref's density-keyed line; the section it emits verbatim.
 VERBATIM_RENDER = "verbatim"
@@ -194,6 +193,32 @@ def is_verbatim_organ(slug: str) -> bool:
     return cells.parse_cell(slug)["fm"].get("render") == VERBATIM_RENDER
 
 
+def section_organ_refs(agent_cell: dict) -> list[str]:
+    """The verbatim-organ refs an archetype declares in its anatomy sections --
+    any `## ` section other than `## Persona` (the persona-delta path), scanned
+    for `[[ ]]` refs that resolve to `render: verbatim` organ cells, first-seen
+    order. Replaces the hardcoded genus list: the archetype composites its organs
+    BY REFERENCE in named sections (e.g. `## Memory` -> [[memory]]) and the
+    composer renders the verbatim ones. A non-verbatim organ-section ref is
+    source-structure only (never rendered), so the fuller anatomy can be authored
+    byte-neutrally."""
+    body = agent_cell["body"]
+    mask = cells.fence_lines(body)
+    out: list[str] = []
+    seen: set[str] = set()
+    in_organ_section = False
+    for i, line in enumerate(body.splitlines()):
+        if line.startswith("## ") and i not in mask:
+            in_organ_section = not line.lower().startswith("## persona")
+            continue
+        if in_organ_section and i not in mask:
+            for slug in cells.ANY_REF.findall(line):
+                if slug not in seen and is_verbatim_organ(slug):
+                    seen.add(slug)
+                    out.append(slug)
+    return out
+
+
 def _is_agent(slug: str) -> bool:
     """True if `slug` names a `kind: agent` cell -- an EMBODIED archetype a
     composing agent inherits a composition from (e.g. principal-ic). A missing
@@ -265,10 +290,10 @@ def compose_agent(slug: str, reader: str, harness: str) -> ComposedDoc:
     for g in GENUS_DISPOSITIONS:  # embodied by every agent qua agent
         if g not in refs:
             refs.append(g)
-    # Genus organs join `refs` so the oracle's R1 reaches their one home (the def
-    # DECLARES the ref), but they render through the verbatim-organ path below --
-    # NOT as density-keyed disposition bullets. Split them out of the bullet loop.
-    for o in GENUS_ORGANS:
+    # Section-declared organs join `refs` so the oracle's R1 reaches their one
+    # home (the archetype DECLARES the ref in an anatomy section), but they render
+    # through the verbatim-organ path below -- NOT as density-keyed bullets.
+    for o in section_organ_refs(cell):
         if o not in refs:
             refs.append(o)
     # Transitive verbatim organs: a `render: verbatim` organ embodied by an

@@ -11,3 +11,7 @@ arch-doc-writer ≜ embodies [[architecture-md-diagrams-only]] · [[context-not-
 
 - Archetype: [[principal-technical-writer]].
 - Mark: 🏗️ · pink
+
+## Memory
+
+- binds [[memory]]

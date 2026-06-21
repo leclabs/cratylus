@@ -13,3 +13,7 @@ principal-engineer-reviewer ≜ a [[principal-ic]] who embodies [[stewardship-st
 
 - Harness-posture (import per deployment, not identity): the specific CWE / OWASP / CAPEC frame set and the structured (fenced) review-output template.
 - Mark: 🛡️ · purple
+
+## Memory
+
+- binds [[memory]]

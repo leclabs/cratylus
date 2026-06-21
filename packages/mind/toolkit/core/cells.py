@@ -152,7 +152,11 @@ def _lexicon_index() -> dict:
 
 
 def _composite_index() -> dict:
-    """slug -> path for composites at `<root>/mind/<kind>/<organ>/<slug>.md`."""
+    """slug -> path for every composite cell. Two homes, read polymorphically so a
+    migration moves files without changing resolution ([[regenerate-without-clobbering]]):
+    the FLAT layout `<root>/{agents,skills}/<slug>.md` (the mind-structure-flatten
+    target) and the legacy NESTED `<root>/mind/<kind>/<organ>/<slug>.md` (γ2-B, being
+    retired by the flat migration). Flat wins on a slug collision (post-migration home)."""
     root = IDEAS.parent
     if root not in _comp_cache:
         out: dict = {}
@@ -160,6 +164,11 @@ def _composite_index() -> dict:
         if minddir.is_dir():
             for q in sorted(minddir.glob("*/*/*.md")):
                 out[q.stem] = q
+        for sub in ("agents", "skills"):  # flat composite homes (mind-structure-flatten)
+            d = root / sub
+            if d.is_dir():
+                for q in sorted(d.glob("*.md")):
+                    out[q.stem] = q  # flat overrides a stale nested entry
         _comp_cache[root] = out
     return _comp_cache[root]
 

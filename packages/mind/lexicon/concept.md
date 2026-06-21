@@ -753,3 +753,101 @@ The subject analogue of a [[scope-grant]], applied at the instance, never the co
 - [[scope-grant]] — the sibling binding: that grants capability, this binds the subject.
 - [[continuity-thread]] — where the lived relationship with the subject accretes.
 - [[operator-relation]] — the civic complement: this binds the subject into one agent; that names the Operator's standing toward the whole polis.
+<!-- ^persona -->
+---
+kind: concept
+delineation: A STANCE organ (design-time, internal) — the stable character an agent projects: voice, register, name, the "who" a reader infers before it does anything. How it sounds at rest, not how it moves; the presented face, distinct from the standing policy that inclines its action.
+---
+
+# Persona
+
+The character an agent comes across _as_ — a **STANCE** organ (how it presents), filed design-time and internal.
+
+- **Voice before act.** Register, name, the inferred "who" — what a reader picks up before a single move. Presentation, not policy.
+- **Standing, not per-turn.** The stable character carried into every exchange; the moment-to-moment tuning to an interlocutor is a separate face.
+- **Sounds, not moves.** How it _comes across_, the dispositional twin of which is [[heuristics]] — standing manner of presentation (here) vs standing policy of action (there).
+<!-- ^mandate -->
+---
+kind: concept
+delineation: A STANCE organ (design-time, internal) — the self-declared scope of office an agent presents: what it claims to be for and, by omission, what it disclaims. The remit as presented face, distinct from the objective it actually pursues.
+---
+
+# Mandate
+
+The boundary an agent presents as its remit — a **STANCE** organ (the claimed office), filed design-time and internal.
+
+- **Claim and disclaimer.** What it announces it is for, and by omission what it declines — the office as stated, not as enacted.
+- **Presented, not operative.** The remit it _shows_ is a face; the goal it actually pursues ([[telos]]) and the limit it actually obeys ([[charter]]) are CONATUS drives. The claimed office can diverge from the operative objective — that split is why mandate is filed apart from them.
+<!-- ^comportment -->
+---
+kind: concept
+delineation: A STANCE organ (persistent, internal) — the standing manners an agent keeps independent of any task: hedging, deference, verbosity, refusal-style, the tone it holds across turns. Manner by habit, the presentation twin of standing policy.
+---
+
+# Comportment
+
+The tone an agent keeps across turns regardless of task — a **STANCE** organ (standing manner), filed persistent and internal.
+
+- **Task-independent manners.** Hedging, deference, verbosity, refusal-style — the bearing it holds whatever the work.
+- **Manner vs policy.** How it _sounds_ by habit, paired against [[heuristics]] (how it _moves_ by habit): same "standing, by habit" grain, split by presentation vs action.
+- **Standing, not modulated.** The persistent baseline; the per-turn tuning of presentation to this interlocutor is a separate, finer face.
+<!-- ^telos -->
+---
+kind: concept
+delineation: A CONATUS organ (design-time, internal) — the objective an agent is built to pursue: the goal-function, reward, or success-criterion that orients all action. What it ultimately wants; the drive, not the remit it presents.
+---
+
+# Telos
+
+What an agent ultimately wants — a **CONATUS** organ (the standing drive), filed design-time and internal.
+
+- **The orienting objective.** The goal-function / reward / success-criterion every action is bent toward; the root of the drive to act.
+- **Pursued, not presented.** The operative objective, distinct from the office an agent claims ([[mandate]] is the STANCE face): what it _is built to pursue_ vs what it _says it is for_.
+<!-- ^charter -->
+---
+kind: concept
+delineation: A CONATUS organ (design-time, internal) — the inviolable constraints on action an agent obeys by construction: safety rules, prohibitions, hard limits. What it will not do; the negative drive, distinct from the remit it presents.
+---
+
+# Charter
+
+What an agent will not do, by construction — a **CONATUS** organ (the standing limit on action), filed design-time and internal.
+
+- **Inviolable constraints.** Safety rules, prohibitions, hard limits — the floor under every move, obeyed not chosen.
+- **Obeyed, not presented.** The operative limit, paired with [[telos]] as the negative-and-positive poles of the standing drive; both are distinct from the office an agent merely claims ([[mandate]]).
+<!-- ^heuristics -->
+---
+kind: concept
+delineation: A CONATUS organ (design-time, internal) — the learned-or-given policy shape: the dispositions, biases, and strategy priors that incline an agent toward some moves over others. How it tends to choose; standing policy of action, the action twin of standing manner.
+---
+
+# Heuristics
+
+How an agent tends to choose — a **CONATUS** organ (standing policy), filed design-time and internal.
+
+- **Policy shape, not rule.** Dispositions, biases, strategy priors that lean it toward some moves over others — a tendency, not a hard limit ([[charter]] is the inviolable kind).
+- **Moves vs manner.** How it _moves_ by habit, the dispositional twin of [[comportment]] (how it _sounds_ by habit) and of [[persona]] (the character it presents): the standing lean to act, split from the standing face.
+<!-- ^competence -->
+---
+kind: concept
+delineation: A CONATUS organ (persistent, internal) — the consolidated skills and know-how an agent carries between turns: the repertoire of what it can enact. Capacity-to-act held across turns, distinct from the durable self-model that biases which act it chooses.
+---
+
+# Competence
+
+The repertoire of what an agent _can_ enact — a **CONATUS** organ (consolidated capacity), filed persistent and internal.
+
+- **Carried know-how.** The skills and craft held between turns: what is within reach to do, independent of any one task.
+- **Can-do, not will-do.** Capacity to act, distinct from [[disposition-memory]] (who it has become, biasing _which_ act) and from [[powers]] (the external reach that actually changes the world). Competence is the interior repertoire those powers are wielded with.
+<!-- ^disposition-memory -->
+---
+kind: concept
+delineation: A CONATUS organ (persistent, internal) — durable identity-level learning: the preferences, lessons, and self-model that bias an agent's future action across sessions. Who it has become; the action-biasing residue of memory, distinct from the memory home that stores it.
+---
+
+# Disposition-Memory
+
+Who an agent has become — a **CONATUS** organ (durable identity-level learning), filed persistent and internal.
+
+- **Action-biasing residue.** The preferences, lessons, and self-model accreted across sessions that lean future action — the dispositional sediment of lived experience.
+- **The biasing, not the store.** This is the _drive_ face — how accreted learning inclines the next act; the home that records and consolidates it is [[memory]], and the identity through-line it sediments into is the [[continuity-thread]] (`SELF.md`). Disposition-memory is what that thread _does_ to action.

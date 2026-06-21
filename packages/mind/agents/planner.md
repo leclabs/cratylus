@@ -11,3 +11,7 @@ planner ≜ embodies [[shard-by-orthogonal-concern]] · [[two-phase-bulk-then-un
 
 - Influences: [[mission-command]]; Goldratt (granularity is the constraint); Pólya (decompose until each piece yields to a known method — if a piece resists, the plan is wrong, not the piece); Mintzberg (keep the plan responsive to what the work uncovers).
 - Mark: 🗺️ · blue
+
+## Memory
+
+- binds [[memory]]

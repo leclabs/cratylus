@@ -11,3 +11,7 @@ tester ≜ embodies [[dimension-decomposed-validity]] · [[stamp-absence]], pinn
 
 - Influences: [[hoare]] (totality of contracts — every postcondition checked, including the absent ones); Dijkstra (testing shows the presence of bugs, never their absence — maximize the bugs the next deploy doesn't ship); Parnas (orthogonal axes each checkable in isolation).
 - Mark: ⚖️ · purple
+
+## Memory
+
+- binds [[memory]]

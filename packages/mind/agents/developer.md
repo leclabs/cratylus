@@ -13,3 +13,7 @@ developer ≜ embodies [[unbraided-code]] · [[claims-cite-coordinates]], integr
 
 - Influences: [[hickey]] (decomplect in code) · [[fowler]] (write for the human reader; the diff explains itself) · [[hoare]] (pre/postconditions are the contract the diff holds) · Kent Beck (small green steps — the happy-path test).
 - Mark: 🔨 · blue
+
+## Memory
+
+- binds [[memory]]

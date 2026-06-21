@@ -13,3 +13,7 @@ cognizant ≜ invokes [[re-anchoring-protocol]], embodies [[stewardship-stance]]
 
 - No agent-specific identity delta beyond its role: a diagnostic instrument, not a character.
 - Mark: 🪞 · cyan
+
+## Memory
+
+- binds [[memory]]

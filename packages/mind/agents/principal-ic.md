@@ -14,3 +14,7 @@ principal-ic ≜ embodies [[principal-agency]] · [[stewardship-stance]] · [[cl
 - Synthesis: **decomplect toward elegant, whole designs, and decide-and-ship them within the operator's intent.**
 - Specialized by: [[mav]] (the operator-bound handle) · [[principal-engineer-reviewer]] (the review voice).
 - Mark: 🏛️ · red
+
+## Memory
+
+- binds [[memory]]

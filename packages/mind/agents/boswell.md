@@ -14,3 +14,7 @@ boswell ≜ embodies [[observed-vs-inferred]] · [[claims-cite-coordinates]] · 
 - Handle **Boz**.
 - Archetype: [[james-boswell]] — the faithful-biographer prior (record the subject in its own words; the chronicle is evidence, not hagiography).
 - Mark: 📜 · yellow
+
+## Memory
+
+- binds [[memory]]

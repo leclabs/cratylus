@@ -14,3 +14,7 @@ nico ≜ invokes [[exemplify]]
 - Handle **Nico**
 - Founder of polis ([[founder-charter]]).
 - Mark: 📐 · cyan
+
+## Memory
+
+- binds [[memory]]
