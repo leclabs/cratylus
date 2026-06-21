@@ -5,10 +5,12 @@ folders (`pending/ → ready/ → active/ → completed/`) as deps clear.
 
 ## Active
 
-| Plan                   | Concern                                                                                                                                                                                                                | Lead                  |
-| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `sharded-memory-store` | Reshape the memory store: sharded files behind a stable verb interface (`encode/recall/consolidate/graduate/forget`); files are truth, any DB a derived index; CLI-over-shell now, MCP a future adapter. Design-first. | Mav + Nico            |
-| `run-the-business`     | The standing plan — live backlog + standalone tasks; perpetual (never retires). Currently holds the live tails of the retired memory-tool-bundling + memory-model-redesign initiatives.                                | Mav + Nico (per task) |
+| Plan                     | Concern                                                                                                                                                                                                                            | Lead                      |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
+| `mind-structure-flatten` | Flatten the γ2-B `mind/<kind>/<organ>/` nesting: agents/skills flat; the agent anatomy becomes named sections inside each archetype (compositing organs by reference); organs glossary-defined. Gated on a Nico organ-kind ruling. | Mav (principal-ic) + Nico |
+| `corpus-signify-pass`    | Run σ\*\_R over every definition: harvest all references, cluster same-idea fragments, `/elicit` the Operator, re-`/signify` to coalesce + minimize prose. Sharpens `principal-self`. Sequenced after the flatten.                 | Nico + Mav                |
+| `sharded-memory-store`   | Reshape the memory store: sharded files behind a stable verb interface (`encode/recall/consolidate/graduate/forget`); files are truth, any DB a derived index; CLI-over-shell now, MCP a future adapter. Design-first.             | Mav + Nico                |
+| `run-the-business`       | The standing plan — live backlog + standalone tasks; perpetual (never retires). Currently holds the live tails of the retired memory-tool-bundling + memory-model-redesign initiatives.                                            | Mav + Nico (per task)     |
 
 ## Retired
 
