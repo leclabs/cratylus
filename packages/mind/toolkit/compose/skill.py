@@ -63,12 +63,16 @@ from core.ir import ComposedDoc
 from compose.harness import project_refs, ref_text
 
 # A Bindings region is a PROSE paragraph led by the token `Bindings:` (optionally
-# bolded `**Bindings:**`) -- the boundary-binding block of a formal cell, the
-# single home for each external anchor ([[self-sufficient-formalism]]). The lead
-# token is matched fence-masked like every prose grain; the paragraph runs to the
-# next blank line (markdown paragraph break). Leading whitespace is allowed so a
-# Bindings paragraph nested under a `## ` section still recognizes.
-BINDINGS_RE = re.compile(r"^\s*\*{0,2}Bindings:\*{0,2}")
+# bolded `**Bindings:**`), with an OPTIONAL parenthetical qualifier before the
+# colon (`Bindings (cite-once):`) -- the boundary-binding block of a formal cell,
+# the single home for each external anchor ([[self-sufficient-formalism]]). The
+# qualifier is annotation only; the region's MEANING is unchanged, so the lead
+# token recognizes with or without it (generalize the matcher, never force the
+# corpus to strip a meaningful note -- else a fenced-only `≜` composes EMPTY
+# provenance and the skill ships dependency-blind). Matched fence-masked like
+# every prose grain; the paragraph runs to the next blank line. Leading whitespace
+# is allowed so a Bindings paragraph nested under a `## ` section still recognizes.
+BINDINGS_RE = re.compile(r"^\s*\*{0,2}Bindings\b\s*(?:\([^)]*\))?\s*:\*{0,2}")
 
 # A harness-variant selector header is EXACTLY `## Harness: <token>`. Only an
 # exact match is treated as a dialect to select/drop; anything else that merely
