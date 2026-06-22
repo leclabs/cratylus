@@ -15,23 +15,25 @@ repair-memory-trio ┘            │                                     ├─
                                 └─────────────────────────────────────┘
 ```
 
-frontier(P) = { founder-organ-binding } — the 3-wide entry frontier is DONE (agents ∧ skills ∧ trio).
+frontier(P) = { exemplify-corpus-pile } — entry frontier + founder-organ-binding DONE.
 
 ## tasks
 
-| task                    | state     | dep                            | slice                                                                                           |
-| ----------------------- | --------- | ------------------------------ | ----------------------------------------------------------------------------------------------- | --- | ------------------------- |
-| exemplify-agents        | completed | ∅                              | agents — 11 certified accept=valid; 1 real drop fixed (reviewer stewardship); manifests emitted |
-| exemplify-skills        | completed | ∅                              | skills — 11 certified accept=valid, 0 dropped; manifests emitted                                |
-| repair-memory-trio      | completed | ∅                              | dream/wake precision-fixed to real `episodic.mjs` verbs {encode,read,migrate}; 0 skills minted  |
-| founder-organ-binding   | ready     | agents ∧ skills ∧ trio ✓       | compose — checkpoint; decision 0001; bind `principal:=agent ^ delegate:=operator` in nico+mav   |
-| exemplify-corpus-pile   | pending   | founder-organ-binding          | corpus — lexicon ∪ GLOSSARY as ONE D (filenames=accidents)                                      |
-| zero-dangling-gate      | pending   | corpus ∧ founder-organ-binding | gate — repo-wide                                                                                | D   | =0 wikilinks + round-trip |
-| compress-founder-memory | pending   | gate                           | memory — exemplify SELF/MEMORY ≤50 ln; purge episodics ∖ nico-this-session                      |
+| task                    | state     | dep                            | slice                                                                                                     |
+| ----------------------- | --------- | ------------------------------ | --------------------------------------------------------------------------------------------------------- | --- | ------------------------- |
+| exemplify-agents        | completed | ∅                              | agents — 11 certified accept=valid; 1 real drop fixed (reviewer stewardship); manifests emitted           |
+| exemplify-skills        | completed | ∅                              | skills — 11 certified accept=valid, 0 dropped; manifests emitted                                          |
+| repair-memory-trio      | completed | ∅                              | dream/wake precision-fixed to real `episodic.mjs` verbs {encode,read,migrate}; 0 skills minted            |
+| founder-organ-binding   | completed | agents ∧ skills ∧ trio ✓       | compose — decision 0001 RULED `address`; binding already realized (nico+mav `address [[principal-self]]`) |
+| exemplify-corpus-pile   | ready     | founder-organ-binding ✓        | corpus — lexicon ∪ GLOSSARY as ONE D (filenames=accidents)                                                |
+| zero-dangling-gate      | pending   | corpus ∧ founder-organ-binding | gate — repo-wide                                                                                          | D   | =0 wikilinks + round-trip |
+| compress-founder-memory | pending   | gate                           | memory — exemplify SELF/MEMORY ≤50 ln; purge episodics ∖ nico-this-session                                |
 
 ## decisions
 
-- `0001-founder-agency-organ` — OPEN. organ home for the founder agency construal (default `address`).
+- `0001-founder-agency-organ` — RULED `address`. footing-toward-interlocutor (STANCE); re-permission +
+  escalation clauses are corollaries, not the seed. Blind reader independently derived `address`. Binding
+  was already realized in the corpus pre-ruling; ruling ratifies it.
 - `0002-r3-manifest-producer` — LANDED. the R3 manifest PRODUCER was unbuilt (toolkit AGENTS.md: "Nico's
   follow-on"); built `toolkit/emit_manifest.py` (records the certified factorization's homing) + extended
   verify.py R3 to resolve ORGAN-scoped `<organ>/<value>` home_slugs by the (organ,value) pair. See the ADR.
