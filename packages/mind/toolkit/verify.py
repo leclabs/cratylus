@@ -815,8 +815,19 @@ def gate_reconstruct():
                         f"one routing decision"
                     )
                 seen_digests[digest] = f"routes[{i}]"
-                # (a) home_slug resolves to exactly one live cell.
-                holders = homes.get(r["home_slug"], [])
+                # (a) home_slug resolves to exactly one live cell. An ORGAN-scoped
+                # slug `<organ>/<value>` (new-form agent route) is resolved by the
+                # (organ, value) PAIR -- a value token recurs across organs, so the
+                # bare slug is ambiguous; the pair is the unique home (mirrors
+                # gate_agent_organ_refs). A bare slug uses the global home-index.
+                home_slug = r["home_slug"]
+                if "/" in home_slug:
+                    from compose import agent as _agent_r3
+                    organ, value = home_slug.split("/", 1)
+                    p = _agent_r3.value_cell_path(organ, value)
+                    holders = [f"{home_slug}.md"] if p is not None else []
+                else:
+                    holders = homes.get(home_slug, [])
                 if not holders:
                     errors.append(
                         f"R3 {path.name}: routes[{i}] ({r['idea_gloss']!r}) homes to "

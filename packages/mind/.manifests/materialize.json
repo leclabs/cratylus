@@ -1,0 +1,43 @@
+{
+  "source": "skills/materialize.md",
+  "exemplified_at": "2026-06-22T00:00:00Z",
+  "reader": "strong-llm-lean",
+  "routes": [
+    {
+      "fragment_digest": "sha256:b04e818b9a6b314b1ba642eced25c921c1bb4bd8a7d17cec58486bc13de10840",
+      "idea_gloss": "the first-class data type every CSF module programs to — a record `⟨ gloss , anchor? , factorization? ⟩` (the meaning by value, optionally its anchor, optionally its factorization); producers emit it, consumers take it, so modules bind the contract not each other — the narrow waist of the pipeline.",
+      "home_slug": "concept-contract",
+      "disposition": "reuse",
+      "rank": 0
+    },
+    {
+      "fragment_digest": "sha256:21e9f696c861d40497f498dd6587839a16f8449bf17dfbf9c88313d82dafa7ce",
+      "idea_gloss": "the model a valid context factorization must satisfy — the bipartite normal form (primitive by value, composite by reference) reconstructs from its anchors alone (`REC_R`), every anchor is the reader-relative fittest sign `σ*_R` (`canonical_anchor`), and no two concepts fuse (`minimal`); the acceptance criterion [[exemplify]] is gated by, reader-relative throughout.",
+      "home_slug": "canonical-semantic-factorization",
+      "disposition": "reuse",
+      "rank": 1
+    },
+    {
+      "fragment_digest": "sha256:319fa7196c6257b1bcf43cc5cba28a373cfe3e1303bb32dc65bdf63fd46bd126",
+      "idea_gloss": "Any content has one canonical home; everything that needs it references that home rather than duplicating it — the single-home discipline that keeps a corpus consistent and drift-free.",
+      "home_slug": "cite-dont-copy",
+      "disposition": "reuse",
+      "rank": 2
+    },
+    {
+      "fragment_digest": "sha256:77caf7215748945fdfd875ed7a968f2c333bacfdf0357cd5ba8843e657c98e3e",
+      "idea_gloss": "The single optimum of any expression — the point where removing a token lowers fidelity and adding one does not raise it; verbosity is the signal of a missing anchor, not added precision.",
+      "home_slug": "densest-faithful-point",
+      "disposition": "reuse",
+      "rank": 3
+    },
+    {
+      "fragment_digest": "sha256:2f04a9f598c677566c0b24f9daa5d355d5b8c25080618792c01a5db4496756de",
+      "idea_gloss": "An optional parameter whose absence expands to the most destructive or expansive interpretation is a footgun — make it required, error clearly with the discovery path, and discriminate multi-contract operations explicitly in the parameter shape.",
+      "home_slug": "no-permissive-defaults",
+      "disposition": "reuse",
+      "rank": 4
+    }
+  ],
+  "delta": []
+}

@@ -26,7 +26,7 @@ WAKE ≜ dream → load → orient → resume
 
 dream   — dream; usually catch-up only — a no-op when handoff already dreamt on hot context,
           load-bearing on a fresh spawn or a crash that had none.
-load    — read the resident layers ${AGENT_HOME}/{SELF, MEMORY} (EPISODIC via the runtime `read` verb).
+load    — read the resident layers ${AGENT_HOME}/{SELF, MEMORY} (EPISODIC via memory's `read` verb: `node ~/.claude/skills/memory/episodic.mjs read --home ${AGENT_HOME}`).
 orient  — bind to the current project, resume that project's work-thread; an unfamiliar cwd is a fresh orientation.
 resume  — act as the same individual; a wake-time read biases the very next action.
 ```

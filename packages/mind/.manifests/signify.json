@@ -1,0 +1,71 @@
+{
+  "source": "skills/signify.md",
+  "exemplified_at": "2026-06-22T00:00:00Z",
+  "reader": "strong-llm-lean",
+  "routes": [
+    {
+      "fragment_digest": "sha256:2f17873b9e461d9982fa3fbfc22834f4881227a46ee37685cc1f886d1067bc08",
+      "idea_gloss": "optimize a context corpus into a canonical semantic factorization — compose produce → name → realize over the one concept-contract record, then gate on accept; emits the R3 routing manifest that catches the dropped idea.",
+      "home_slug": "exemplify",
+      "disposition": "reuse",
+      "rank": 0
+    },
+    {
+      "fragment_digest": "sha256:b04e818b9a6b314b1ba642eced25c921c1bb4bd8a7d17cec58486bc13de10840",
+      "idea_gloss": "the first-class data type every CSF module programs to — a record `⟨ gloss , anchor? , factorization? ⟩` (the meaning by value, optionally its anchor, optionally its factorization); producers emit it, consumers take it, so modules bind the contract not each other — the narrow waist of the pipeline.",
+      "home_slug": "concept-contract",
+      "disposition": "reuse",
+      "rank": 1
+    },
+    {
+      "fragment_digest": "sha256:699ac6bafbf6baf34cf02316939c66bfc9c4504d5f80bf01e9d2496abc8c9828",
+      "idea_gloss": "use this skill to conceptualize a corpus — read a multi-modal source and resolve it to the reader's concept lattice (the closed distinction-sets `C_R`, which of them are primitive, each primitive's gloss, and each concept's candidate factorizations), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.",
+      "home_slug": "conceptualize",
+      "disposition": "reuse",
+      "rank": 2
+    },
+    {
+      "fragment_digest": "sha256:d382e359ef84c465ad8c87631addc9047c04c0a924c5caa691053d8ca0b8486f",
+      "idea_gloss": "use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization `F_R`, emit the bipartite normal form `CSF_R` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.",
+      "home_slug": "materialize",
+      "disposition": "reuse",
+      "rank": 3
+    },
+    {
+      "fragment_digest": "sha256:c2c199aa755a249bc934c5b717b819a3b63aae6c00ea7a9d59cb8868c5013f7d",
+      "idea_gloss": "σ*_R(C) — the reader-relative optimal signifier; the shortest name whose decode in reader R reconstructs concept C with zero residue (`argmin |α| s.t. dec_R(α) ≅_R C`, shortlex tie-break). The named operator the whole method computes; the `*` is the standard optimizer superscript, R the only novel index (the reader).",
+      "home_slug": "signifier-star-r",
+      "disposition": "reuse",
+      "rank": 4
+    },
+    {
+      "fragment_digest": "sha256:771efb23e2ad4010c65a8246305b87fa0bb99a6747b68b998df6236a02ac5001",
+      "idea_gloss": "Best fit is the anchor whose evoked latent priors have minimal symmetric difference with the exemplar's true extension — the single criterion every routing and every compression in the method optimizes.",
+      "home_slug": "precise-circumscription",
+      "disposition": "reuse",
+      "rank": 5
+    },
+    {
+      "fragment_digest": "sha256:0f061c14ee8abc60645975112dfcd16dbe0333df7c10ab61d08cf47180abaeb2",
+      "idea_gloss": "Place each fragment at the anchor whose latent priors most precisely circumscribe it — best-fit, not nearest-bin; mint the anchor if none exists (the anchor-set is open); a genuine multi-match means the partition cut wrong, re-cut.",
+      "home_slug": "anchor-routing",
+      "disposition": "reuse",
+      "rank": 6
+    },
+    {
+      "fragment_digest": "sha256:ccf2e01ef88c52751a99d0a10ea2cdb90db106c4db39123aa3352c4b3b942944",
+      "idea_gloss": "Build the simplest thing that does the one job; add no speculative fallback, redundant option, or defensive alternative — when a design sprouts \"primary + fallback,\" challenge whether the fallback is real or just hedging.",
+      "home_slug": "minimalism",
+      "disposition": "reuse",
+      "rank": 7
+    },
+    {
+      "fragment_digest": "sha256:acfccc8e968c2d9429ae5b43da139907ba2a9b7c5f4ce9430026d946121e5876",
+      "idea_gloss": "Re-encoding one content for a different audience is re-anchoring, not summarizing — replace the anchor of each claim with the name that circumscribes it against that reader's latent priors and the decision they must make, while preserving the evidence chain underneath unchanged; the reader's priors are the channel, the decision-class is the basis.",
+      "home_slug": "anchor-to-the-readers-priors",
+      "disposition": "reuse",
+      "rank": 8
+    }
+  ],
+  "delta": []
+}

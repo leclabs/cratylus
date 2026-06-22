@@ -1,0 +1,78 @@
+{
+  "source": "skills/conceptualize.md",
+  "exemplified_at": "2026-06-22T00:00:00Z",
+  "reader": "strong-llm-lean",
+  "routes": [
+    {
+      "fragment_digest": "sha256:2f17873b9e461d9982fa3fbfc22834f4881227a46ee37685cc1f886d1067bc08",
+      "idea_gloss": "optimize a context corpus into a canonical semantic factorization — compose produce → name → realize over the one concept-contract record, then gate on accept; emits the R3 routing manifest that catches the dropped idea.",
+      "home_slug": "exemplify",
+      "disposition": "reuse",
+      "rank": 0
+    },
+    {
+      "fragment_digest": "sha256:b04e818b9a6b314b1ba642eced25c921c1bb4bd8a7d17cec58486bc13de10840",
+      "idea_gloss": "the first-class data type every CSF module programs to — a record `⟨ gloss , anchor? , factorization? ⟩` (the meaning by value, optionally its anchor, optionally its factorization); producers emit it, consumers take it, so modules bind the contract not each other — the narrow waist of the pipeline.",
+      "home_slug": "concept-contract",
+      "disposition": "reuse",
+      "rank": 1
+    },
+    {
+      "fragment_digest": "sha256:5311ebf18614deabe4a02f21eb39c992ba8b90262a4168642c04cf0de0c926a3",
+      "idea_gloss": "use this skill to name a concept set — assign each concept its injective canonical anchor `α(c) = σ*_R(c)` (the reader-relative fittest sign, whose latent priors circumscribe exactly it; one name ⇔ one concept), then coalesce concepts that resolve to the same anchor; emits the shortlex order `≺` and the decoder `dec_R`; stage 2 of exemplify, independently invocable (every naming review is a bare /signify).",
+      "home_slug": "signify",
+      "disposition": "reuse",
+      "rank": 2
+    },
+    {
+      "fragment_digest": "sha256:d382e359ef84c465ad8c87631addc9047c04c0a924c5caa691053d8ca0b8486f",
+      "idea_gloss": "use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization `F_R`, emit the bipartite normal form `CSF_R` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.",
+      "home_slug": "materialize",
+      "disposition": "reuse",
+      "rank": 3
+    },
+    {
+      "fragment_digest": "sha256:933e5dc393bbd5e3468c6cd71d3b6f87859a2b23c100fb4e3a28c74d8e5129a7",
+      "idea_gloss": "Bring the whole body of content to distinction — read the entire union of inputs and the existing corpus as one undifferentiated mass, prior file/cell boundaries dissolved as mere projections, and cut it into non-overlapping, collectively-exhaustive segments each projecting from exactly one exemplar; a fragment that fits two unrelated anchors means the cut was wrong, re-cut.",
+      "home_slug": "semantic-partition",
+      "disposition": "reuse",
+      "rank": 4
+    },
+    {
+      "fragment_digest": "sha256:152fdad07e778302c071a76d2acec76fa5e52bddec6fc5976f593621fa1164f2",
+      "idea_gloss": "Reason about an entity as its emergent cohesive whole — one integrated semantic thing — and keep holding that whole while you build; the substrate it is built on (DNA's codons, a file's format, code's tokens) is syntactic, a required accident, and satisfying that syntax must never replace your grasp of the whole with the mechanism. The image holds; the syntax is only the accident.",
+      "home_slug": "semantic-whole-over-syntactic-substrate",
+      "disposition": "reuse",
+      "rank": 5
+    },
+    {
+      "fragment_digest": "sha256:c948d44973c52ad3d848599022c9483abb1cfaca25ab38aa4278a5a83b5376f1",
+      "idea_gloss": "An artifact bearing the visible strata of its own superseded states — an abandoned name, a narrated removal, changelog residue (\"(resolved)\"/\"previously\"/\"now\"/\"amended-by\") ghosting through the current text; corpus rot, because a fresh reader must read through history they did not ask for.",
+      "home_slug": "palimpsest",
+      "disposition": "reuse",
+      "rank": 6
+    },
+    {
+      "fragment_digest": "sha256:e5971bd57978da2b91eed6daea6c74f4dbbb734b8beec23b413819fe08c02b92",
+      "idea_gloss": "The target design is the only obligation; superseded work has no standing — strip the palimpsest to net-green, refuse backward-compat hedges, and treat recreatable state as disposable.",
+      "home_slug": "clean-slate",
+      "disposition": "reuse",
+      "rank": 7
+    },
+    {
+      "fragment_digest": "sha256:53f02cf25e751e8888c5d992a184f6a7e411e073add459330839f13991986e80",
+      "idea_gloss": "A decomposition must be Mutually Exclusive (no item falls in two groups) and Collectively Exhaustive (no item falls outside all groups) — no overlaps, no gaps; an overlap means the cut conflated two categories, a gap means one is missing.",
+      "home_slug": "mece",
+      "disposition": "reuse",
+      "rank": 8
+    },
+    {
+      "fragment_digest": "sha256:77caf7215748945fdfd875ed7a968f2c333bacfdf0357cd5ba8843e657c98e3e",
+      "idea_gloss": "The single optimum of any expression — the point where removing a token lowers fidelity and adding one does not raise it; verbosity is the signal of a missing anchor, not added precision.",
+      "home_slug": "densest-faithful-point",
+      "disposition": "reuse",
+      "rank": 9
+    }
+  ],
+  "delta": []
+}

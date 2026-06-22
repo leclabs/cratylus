@@ -44,6 +44,12 @@ R3_DROPPED = MANIFESTS / "zz-r3-fixture-dropped.json"
 R3_MALFORMED = MANIFESTS / "zz-r3-fixture-malformed.json"
 R3_LIVE_HOME = "semantic-partition"
 R3_DEAD_HOME = "zz-no-such-cell"
+R3_ORGAN = MANIFESTS / "zz-r3-fixture-organ.json"
+# organ-SCOPED routes (new-form agent): `<organ>/<value>` resolves by the
+# (organ, value) PAIR -- a value token recurs across organs, so the pair is the
+# unique home (re-individuate-organ-anatomy). A live pair + a dead pair:
+R3_LIVE_ORGAN = "persona/guarino-formal-ontologist"  # nico's persona value cell
+R3_DEAD_ORGAN = "persona/zz-no-such-organ-value"
 
 
 def _manifest(routes: list[dict], delta: list[dict]) -> str:
@@ -226,6 +232,27 @@ def main() -> int:
             fails.append(f"R3 malformed: expected a 'R3 MANIFEST ... disposition' hard error, got:\n{r.stderr}")
     finally:
         R3_MALFORMED.unlink(missing_ok=True)
+
+    # --- R3 (organ-scoped route): `<organ>/<value>` resolves by the (organ,value)
+    # PAIR, not the global home-index. A live pair PASSES; a dead pair is the
+    # dropped-idea FAIL (mirrors gate_agent_organ_refs' resolution). ---
+    try:
+        R3_ORGAN.write_text(_manifest(
+            routes=[_route("sha256:org1", R3_LIVE_ORGAN)], delta=[],
+        ), encoding="utf-8")
+        r = run_verify()
+        if r.returncode != 0:
+            fails.append(f"R3 organ-scoped: live (organ,value) route must PASS:\n{r.stderr}")
+        R3_ORGAN.write_text(_manifest(
+            routes=[_route("sha256:org2", R3_DEAD_ORGAN)], delta=[],  # <- dead pair
+        ), encoding="utf-8")
+        r = run_verify()
+        if r.returncode == 0:
+            fails.append("R3 organ-scoped: dead (organ,value) route PASSED (must fail as dropped idea)")
+        if f"[[{R3_DEAD_ORGAN}]]" not in r.stderr:
+            fails.append(f"R3 organ-scoped: expected dropped-home FAIL naming [[{R3_DEAD_ORGAN}]], got:\n{r.stderr}")
+    finally:
+        R3_ORGAN.unlink(missing_ok=True)
 
     # --- CLEAN: with every fixture gone, the real corpus PASSES the oracle ---
     for stale in MANIFESTS.glob("zz-r3-fixture-*.json"):

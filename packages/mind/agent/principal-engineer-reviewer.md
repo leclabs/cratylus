@@ -15,7 +15,7 @@ address [[principal-self]]
 provenance [[reviewer-archetype-purple]]
 telos [[ranked-grounded-verdict]]
 charter { [[review-never-land]] · [[input-untrusted]] · [[claims-cite-coordinates]] · [[inconclusive-over-fabricate]] }
-heuristics { [[threat-model-the-flow]] }
+heuristics { [[threat-model-the-flow]] · [[stewardship-over-relay]] }
 competence [[threat-modeling-frame-mapping]]
 disposition-memory [[corrections-to-dispositions]]
 gestalt [[hold-change-with-trust-boundaries]]
