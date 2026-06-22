@@ -37,6 +37,9 @@ frontier(P) = { exemplify-corpus-pile } — entry frontier + founder-organ-bindi
 - `0002-r3-manifest-producer` — LANDED. the R3 manifest PRODUCER was unbuilt (toolkit AGENTS.md: "Nico's
   follow-on"); built `toolkit/emit_manifest.py` (records the certified factorization's homing) + extended
   verify.py R3 to resolve ORGAN-scoped `<organ>/<value>` home_slugs by the (organ,value) pair. See the ADR.
+- `0003-lexicon-kind-mapping` — RULED. the 7 lexicon kinds become 7 kind-DIRS (`concept/ principle/ gloss/
+process/ structure/ classification/ utility/`), one cell/block; dedup/fold overlay for collisions. Blind
+  reader independently endorsed own-dirs (OntoClean: rigid corpus-vocab ≠ anti-rigid organ-values). See ADR.
 
 ## notes
 
@@ -49,3 +52,8 @@ frontier(P) = { exemplify-corpus-pile } — entry frontier + founder-organ-bindi
   toolkit tests + the new organ-scoped R3 case. 2 soft notes await an Operator call (see ADR 0002).
 - **NOT deployed** — the 4 cell edits (reviewer composite, stewardship holders, dream, wake) are
   corpus-side only; fleet redeploy is a downstream `run-the-business` concern, not this plan.
+- **exemplify-corpus-pile decomposition (2026-06-22, in progress):** 141 unhomed lexicon blocks (40
+  danglers) → densify pass at R=LLM (collapse-not-preserve; NOT a verbatim relocation). Design LOCKED
+  (ADR 0003, blind-endorsed). Execution phases: (1) whole-pile dedup-ROUTING (gloss-level, one body →
+  `research/lexicon-routing.md`); (2) fan-out DENSIFY per the routing table → mint `{kind}/{α}.md`;
+  (3) RETIRE `lexicon/*` + `GLOSSARY.md`; manifests + verify. Phase 1 dispatched.
