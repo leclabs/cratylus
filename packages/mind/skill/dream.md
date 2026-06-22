@@ -55,9 +55,10 @@ consumed raw → ∅            ∴ EPISODIC never grows unbounded   (rewrite mi
 ```text
 EPISODIC ──dream──→ { SELF, MEMORY, EPISODIC, AGENTS.md, vault }
 
-periodically : MEMORY ──dream──→ { SELF, MEMORY, vault }
+periodically : MEMORY ──dream──→ { SELF, MEMORY, vault }   ∵ depalimpsest the resident set vs current ground-truth, ¬only drop stale
     identity-level(i)              ⇒ i → SELF
     durable ∧ ¬resident-worthy(i)  ⇒ i → vault     ∵ hot index → cold corpus
+    superseded(i)                  ⇒ ∅              ∵ a newer resident fact overturned i's referent — palimpsest, ¬merely stale (unused)
     stale(i)                       ⇒ ∅
 
 acceptance ≜ a wake-time read biases the very next action
