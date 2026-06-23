@@ -12,13 +12,15 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 ## Status mirror
 
-**Ready / active:** none — fresh baseline (2026-06-23). `completed/` swept (git is the recovery net).
+**Ready:** `fleet-deploy-catchup` — deploy the `canonical-organ-values` corpus (`main` @ `5eaaa45`) to the
+5 fleet hosts that were **ssh-unreachable** during the 2026-06-23 rollout (forge · spark · ash · upmav ·
+upgoose). `fire` is live + verified. Probe with **ssh, not ping**.
 
-**Active initiative:** `canonical-organ-values` (own sharded plan) — re-derive the organ value catalog from
-blind model introspection, classify each organ open-vs-closed, purge bespoke per-agent values for a
-generalized opinionated LLM-reader set, rename `weitermachen → carry-on`, and add the layman agent-builder
-skill. The retired `asleep-host-catchup` tail (ash + upgoose) **folds into that plan's final fleet
-redeploy**, which ships the new corpus to all 6 hosts (superseding the old per-host catch-up).
+**Done 2026-06-23:** `canonical-organ-values` (retired — own sharded plan, decision docs kept). Re-derived
+the organ value catalog from blind model introspection (48+28 blind agents, 2 rounds each), classified every
+organ open-vs-closed, purged ~60 bespoke per-agent cells for a generalized opinionated LLM-reader set,
+rewired all 11 agents, renamed `weitermachen → carry-on`, added the `build-agent` layman wizard. Landed
+`main` @ `5eaaa45`; `fire` deployed + verified. Remote propagation → `fleet-deploy-catchup` above.
 
 **Proposed next initiative (awaiting Operator go):** `fleet-organ-sync` — founder memory stores are per-host
 and **UNSYNCED** (`~/.claude` is not a synced repo), so they fork and each re-accumulates palimpsest. They

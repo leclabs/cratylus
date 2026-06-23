@@ -14,3 +14,7 @@ do ≜ `pnpm --filter episodic build` → `resolve.py` → `glossary.py` → `ve
 acc ⊨ per host: deployed SOULs + skills match `.render` (sha256 + grep a known new line); memory skill
 `episodic.mjs` intact (`rawFile`); self-authored SELF/MEMORY/EPISODIC layers untouched. Founder-store hygiene
 check on nico/mav MEMORY (de-palimpsest if heavy). Verify what LANDED, not the deploy message. → `completed/`.
+
+## Outcome (2026-06-23)
+
+fire (local orchestrator) DEPLOYED + VERIFIED: 11 SOULs + 15 skills landed; nico sha256 parity with .render; all 11 SOULs carry the ENCODE protocol; memory/episodic.mjs present; carry-on + build-agent present; stale weitermachen skill pruned; memory layers untouched. main @ 5eaaa45 pushed. The 5 remote hosts (forge/spark/ash/upmav/upgoose) were UNREACHABLE via ssh (network/VPN down or asleep) — escape tested (sandbox disabled), genuine external wall. Remote propagation handed to RTB ready/fleet-deploy-catchup.md.

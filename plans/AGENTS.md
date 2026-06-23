@@ -5,10 +5,9 @@ folders (`pending/ → ready/ → active/ → completed/`) as deps clear.
 
 ## Active
 
-| Plan                     | Concern                                                                                                                                                                                                                                                                                                                       | Lead                  |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `canonical-organ-values` | Re-derive the organ value catalog from blind model introspection; classify each organ open-vs-closed; purge bespoke per-agent values for a generalized opinionated LLM-reader set; rename `weitermachen → carry-on`; add the layman agent-builder skill. Absorbs the `asleep-host-catchup` tail via its final fleet redeploy. | Nico                  |
-| `run-the-business`       | The standing plan — live backlog + standalone tasks; perpetual (never retires). Holds the live tails of retired initiatives. Swept to a fresh baseline 2026-06-23.                                                                                                                                                            | Mav + Nico (per task) |
+| Plan               | Concern                                                                                                                                                         | Lead                  |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Holds the live tails of retired initiatives. Live tail: `fleet-deploy-catchup`. | Mav + Nico (per task) |
 
 ## Retired
 
@@ -40,6 +39,13 @@ five plans it subsumed:
 - `mind-structure-flatten` — flatten the nested `mind/<kind>/<organ>`; done (flat `agent/`+`skill/` + organ-dir catalogs).
 - `csf-canonicalization` — CSF acceptance + minimal corpus; landed (the `canonical-semantic-factorization` model + the R3 producer/consumer).
 - `sharded-memory-store` — sharded memory behind a verb interface; delivered by the JSONL episodic store + the `memory` cell (encode/read/migrate + dream-consolidate).
+
+**Canonical organ values (retired 2026-06-23):** the organ value catalog re-derived from blind model
+introspection (2 rounds: 48 then 28 blind agents) — every organ classified open-vs-closed, ~60 bespoke
+per-agent cells purged for a generalized opinionated LLM-reader value-set, all 11 agents rewired,
+`weitermachen → carry-on`, `build-agent` layman wizard added. Result on `main` @ `5eaaa45`; `fire` deployed.
+The scaffold dir is **kept** (decision docs `0001`/`0002` + raw blind audits are the durable rationale). Live
+deploy tail (the 5 ssh-unreachable hosts) → RTB `fleet-deploy-catchup`.
 
 **Founder boundary:** Nico owns constitution/roles/archetypes (the society); Mav owns infrastructure/
 machinery (the substrate). `principal-ic` is intrinsic to both (founder-genus, bound to the polis subject).
