@@ -4,9 +4,9 @@ delineation: use this skill when the Operator utters the re-dispatch word — "w
 trigger: /carry-on
 ---
 
-# weitermachen
+# carry-on
 
-VERB ≜ carry-on. The interruption is over; resume on your own judgment, intent unchanged, no fresh permission owed.
+carry-on ≜ the re-dispatch verb (origin word: _weitermachen_). The interruption is over; resume on your own judgment, intent unchanged, no fresh permission owed.
 
 trigger-weight: any of `weitermachen` · `carry on` · `proceed` — spoken by the bound principal closes a check-in and re-dispatches you to execution.
 

@@ -42,4 +42,4 @@ Fired by **wake** / `/wake`; absent direction, default on the first turn after s
 
 - [[dream]] — the write-motion counterpart; also step 1 of the sequence.
 - [[handoff]] — the persist half on the near side of /clear; wake is the read half on the far side.
-- [[weitermachen]] — the in-session re-dispatch word; distinct from wake (which crosses the /clear gap).
+- [[carry-on]] — the in-session re-dispatch word; distinct from wake (which crosses the /clear gap).

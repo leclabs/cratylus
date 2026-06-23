@@ -12,3 +12,7 @@ stragglers (`weitermachen` should survive ONLY as a trigger word, never as the a
 
 acc ⊨ cell is `skill/carry-on.md`, anchor `carry-on`, weitermachen present only as trigger-word prose; no
 dangling `[[weitermachen]]`; `resolve → verify` PASS; skill projects with `/carry-on` trigger. → `completed/`.
+
+## Outcome (done 2026-06-23)
+
+Renamed `skill/weitermachen.md → skill/carry-on.md` (H1 `# carry-on`, formula `carry-on ≜ …`); `weitermachen` retained as a trigger word in delineation + body + trigger-weight. Swapped `[[weitermachen]] → [[carry-on]]` in wake.md + handoff.md. Renamed manifest `weitermachen.json → carry-on.json` (+ source field) and fixed `home_slug` in wake.json + handoff.json. resolve→glossary→verify PASS (R1+R2+R3).

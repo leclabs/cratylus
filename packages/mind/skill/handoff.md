@@ -18,4 +18,4 @@ Two truths it stands on (declared here — handoff owns no external def):
 Laws:
 
 - **Order.** [[praxis]] sync, **then** [[dream]] — dream runs on hot context so it captures the session events that per-turn encoding missed, before /clear destroys them.
-- **Scope: persist-only.** The boundary proceeds **outside** this skill: `/clear` then [[wake]] then [[weitermachen]]. handoff does not clear, reconstitute, or re-dispatch.
+- **Scope: persist-only.** The boundary proceeds **outside** this skill: `/clear` then [[wake]] then [[carry-on]]. handoff does not clear, reconstitute, or re-dispatch.
