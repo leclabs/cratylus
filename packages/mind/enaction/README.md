@@ -13,8 +13,9 @@ itself — the move made flesh as an artifact.
 
 A value cell in this organ is one named **enaction signature** — the characteristic _shape of output_
 an agent emits when it acts. It names the artifact form (diff, table, plan, finding, dump, chronicle,
-review, answer) and the discipline that production obeys. Each cell carries a `holders:` line naming
-the archetypes that composite it; a signature is the action an agent is built to ship.
+review, answer) and the discipline that production obeys. A signature is the action an agent is built
+to ship; an agent binds it by citing it (`enaction [[signature]]`) in its `agent/<name>.md` selection
+vector — that vector is the source of truth for who holds it.
 
 A recurring discipline across the corpus is **R=LLM density** — emitting at the register fitted to a
 machine reader (terse, coordinate-cited, no human-prose padding), the working register most of these
@@ -38,16 +39,9 @@ agents act in.
 
 ## How an agent composites enaction
 
-An agent does not inline an output format; it _holds_ an enaction signature. Each cell names its
-`holders:`, and an agent's archetype gathers the signature it ships:
-
-- **boswell** holds `emit-chronicle-entry`; **investigator** holds `emit-cited-finding`;
-  **cognizant** holds `emit-context-dump`.
-- **developer** holds `emit-diff-test-pr`; **arch-doc-writer** holds `emit-doc-edit`;
-  **planner** holds `emit-sharded-plan`.
-- **principal-engineer-reviewer** holds `emit-fenced-review`; **tester** holds `emit-verdict-table`.
-- **nico** holds `exemplify-pass-or-dense-answer`; **principal-ic** holds `ship-artifact-ink-delta`;
-  **mav** holds `ship-code-plan-build`.
+An agent does not inline an output format; it _holds_ an enaction signature. The agent binds the
+signature it ships by citing it (`enaction [[signature]]`) in its `agent/<name>.md` selection vector
+— that vector is the single source of truth for who holds what.
 
 Enaction is where each agent's role becomes visible as a thing in the world: the specialists each
 ship one characteristic artifact (a finding, a table, a plan, a review), while the principal genera

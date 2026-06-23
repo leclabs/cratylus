@@ -2,17 +2,17 @@
 
 > The external store an agent reads and writes to persist state across turns and sessions — its written record.
 
-**What this is.** `ledger` is one organ in the agent's conceptual anatomy (the **persistent · external** machinery of acting; see [`docs/agent-conceptual-anatomy.md`](../../../docs/agent-conceptual-anatomy.md)). In industry terms it is the agent's **persistence layer** — scratchpad files, a vector store, a database, a memory home — anything written this turn so it can be read back next turn or next session. Where the model's context window is volatile and forgotten at session end, the ledger is what survives the boundary. Each cell here names one such store as a claim (`≜ …`) and names the archetypes that **hold** it (`holders: …`).
+**What this is.** `ledger` is one organ in the agent's conceptual anatomy (the **persistent · external** machinery of acting; see [`docs/agent-conceptual-anatomy.md`](../../../docs/agent-conceptual-anatomy.md)). In industry terms it is the agent's **persistence layer** — scratchpad files, a vector store, a database, a memory home — anything written this turn so it can be read back next turn or next session. Where the model's context window is volatile and forgotten at session end, the ledger is what survives the boundary.
 
 A ledger is distinct from the apparatus that uses it: it is not the tools that change the world ([`effectors`](../effectors)) nor the channels through which the world enters ([`sensors`](../sensors)) — it is the durable record those acts leave behind and draw upon.
 
 ## The canonical ledgers
 
-Each is a value cell (`kind: ledger`); the store is the `≜` claim and `holders:` names the archetypes that read and write it.
+Each is a value cell (`kind: ledger`); the store is the `≜` claim. An agent binds a ledger by citing it (`ledger [[value]]`) in its `agent/<name>.md` selection vector — the vector is the source of truth for who reads and writes it.
 
-- **[`memory-home`](memory-home.md)** — the agent's memory home: the external store read and written across both turns _and_ sessions, binding the **memory** organ (its `SELF` · `MEMORY` · `EPISODIC` faces). This is the agent's identity-and-knowledge ledger — who it is, what it knows, and the raw event stream it consolidates. Held by **all eleven archetypes** (nico, mav, principal-ic, principal-engineer-reviewer, developer, planner, tester, investigator, arch-doc-writer, boswell, cognizant): every agent in the society persists itself here. Its effect on the agent is continuity of self — it wakes as the same individual and carries forward what it learned.
+- **[`memory-home`](memory-home.md)** — the agent's memory home: the external store read and written across both turns _and_ sessions, binding the **memory** organ (its `SELF` · `MEMORY` · `EPISODIC` faces). This is the agent's identity-and-knowledge ledger — who it is, what it knows, and the raw event stream it consolidates. Held across the society — every agent persists itself here. Its effect on the agent is continuity of self — it wakes as the same individual and carries forward what it learned.
 
-- **[`sharded-plan-layout`](sharded-plan-layout.md)** — the planning ledger: a `PLAN.md` that mirrors task-folder state (`pending/` → `ready/` → `active/` → `completed/`), the written record of a plan and its progress that lives _beyond_ the memory home. Where `memory-home` holds identity and knowledge, this holds the in-flight work itself — the route and how far along it is. Held by **planner** alone, the archetype whose office is to own the plan; its effect is that planning survives interruption — work can be put down and picked back up with state intact, by a later turn or a later session.
+- **[`sharded-plan-layout`](sharded-plan-layout.md)** — the planning ledger: a `PLAN.md` that mirrors task-folder state (`pending/` → `ready/` → `active/` → `completed/`), the written record of a plan and its progress that lives _beyond_ the memory home. Where `memory-home` holds identity and knowledge, this holds the in-flight work itself — the route and how far along it is. Held where planning is the office; its effect is that planning survives interruption — work can be put down and picked back up with state intact, by a later turn or a later session.
 
 ## How an agent composites a ledger
 

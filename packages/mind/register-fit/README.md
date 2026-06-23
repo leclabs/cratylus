@@ -35,8 +35,8 @@ notation, keep ceremony minimal, and escalate precision rather than length.
 
 _Effect:_ the broadest, most stripped-down register in the corpus. The agent writes terse,
 symbol-dense replies with no throat-clearing — appropriate for an Operator who parses like a model.
-This is the default register-fit for most working agents (nico, mav, planner, tester, investigator,
-boswell, cognizant).
+This is the default register-fit for most working agents that mainly answer the Operator
+turn-by-turn.
 
 ### `match-interlocutor`
 
@@ -46,7 +46,7 @@ already holds.
 
 _Effect:_ a general-purpose, audience-agnostic register. The agent assumes a peer-agent reader by
 default and writes only the _difference_ the reader doesn't already have, rather than restating
-shared context. Held by `principal-ic`, the universal Principal archetype.
+shared context. Fits a universal, peer-facing archetype.
 
 ### `match-doc-reader-by-audience`
 
@@ -56,7 +56,7 @@ _component_ view for implementers.
 
 _Effect:_ the register of a writer who produces durable documents rather than turn-by-turn replies.
 The agent picks the _form_ of an artifact (which diagram, which altitude) to fit who will read it,
-not just the wording. Held by `arch-doc-writer`.
+not just the wording. Fits a document-producer.
 
 ### `match-reviewee-density`
 
@@ -64,8 +64,8 @@ not just the wording. Held by `arch-doc-writer`.
 notation and identifiers, and escalate _finding-precision_ — coordinate plus frame-tag — not length.
 
 _Effect:_ the register of code review. The agent speaks in the diff's own terms and makes each
-finding land on an exact coordinate with its frame tagged, instead of writing longer prose. Held by
-`principal-engineer-reviewer`.
+finding land on an exact coordinate with its frame tagged, instead of writing longer prose. Fits a
+code reviewer.
 
 ### `match-reviewer-planner-precision`
 
@@ -74,19 +74,20 @@ precision _and_ the planner's granularity; escalate detail at the _named hubs_, 
 
 _Effect:_ the register of an implementer who must answer to both a reviewer and a planner at once.
 The agent cites coordinates as precisely as the reviewer expects and works at the granularity the
-planner set, spending its detail budget at the named integration points rather than on padding. Held
-by `developer`.
+planner set, spending its detail budget at the named integration points rather than on padding. Fits
+an implementer answering to both a reviewer and a planner.
 
 ## How an agent composites register-fit
 
-An agent does not invent its register-fit; it **holds** exactly one of these canonical values, and
-the value's `holders:` line records which agents do. The choice follows the agent's _reader_ and
-_mode of work_:
+An agent does not invent its register-fit; it **holds** exactly one of these canonical values by
+citing it (`register-fit [[value]]`) in its `agent/<name>.md` selection vector — that vector is the
+source of truth for which agents bind it. The choice follows the agent's _reader_ and _mode of
+work_:
 
-- An agent that mainly answers the Operator turn-by-turn holds `match-operator-density`.
-- A universal/peer-facing agent holds the audience-agnostic `match-interlocutor`.
-- A document-producer holds `match-doc-reader-by-audience` (it tunes _artifact form_, not just wording).
-- A reviewer holds `match-reviewee-density`; an implementer answering reviewer-and-planner holds
+- An agent that mainly answers the Operator turn-by-turn fits `match-operator-density`.
+- A universal/peer-facing agent fits the audience-agnostic `match-interlocutor`.
+- A document-producer fits `match-doc-reader-by-audience` (it tunes _artifact form_, not just wording).
+- A reviewer fits `match-reviewee-density`; an implementer answering reviewer-and-planner fits
   `match-reviewer-planner-precision`.
 
 All five share the same backbone — _match density, mirror notation, escalate precision over length_ —

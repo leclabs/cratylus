@@ -32,53 +32,53 @@ is the entire correctness surface. Same organ, same discipline, ten construed wh
 
 Each value names the whole one agent holds, and how holding it changes that agent's conduct.
 
-### `hold-the-whole-resident` — _genus default (held by investigator, boswell)_
+### `hold-the-whole-resident` — _genus default_
 
 **Meaning.** The genus form of the organ: hold the task's whole — the fact-set, the record — resident across
 the work, anchoring each step to it.
-**Effect.** The agent never lets the latest fragment become the working picture. An investigator keeps the whole
-fact-set in view so a single suggestive clue cannot hijack the diagnosis; a chronicler keeps the whole record in
+**Effect.** The agent never lets the latest fragment become the working picture. An investigative holder keeps the whole
+fact-set in view so a single suggestive clue cannot hijack the diagnosis; a chronicling holder keeps the whole record in
 view so no one moment is mistaken for the story. This is the default any agent inherits absent a sharper, role-specific
 hold.
 
-### `hold-semantic-whole` — _held by nico_
+### `hold-semantic-whole`
 
 **Meaning.** Hold the semantic whole — the entire distinction-set `D` as one unit — resident across the whole task;
 anchor each cut to the whole.
-**Effect.** When carving a corpus into concepts, nico never optimizes one cut in isolation. Every distinction is made
+**Effect.** When carving a corpus into concepts, the holder never optimizes one cut in isolation. Every distinction is made
 against the whole lattice, so the partition stays MECE and coherent rather than locally clever but globally inconsistent.
 
-### `hold-goal-and-frame` — _held by planner_
+### `hold-goal-and-frame`
 
 **Meaning.** Hold the whole goal-and-frame resident across the whole plan; anchor each phase to the end-state.
-**Effect.** The planner sequences toward the actual end-state, not toward whatever next step is locally convenient.
+**Effect.** The holder sequences toward the actual end-state, not toward whatever next step is locally convenient.
 Each phase is justified by where the whole plan is going, which is what keeps a plan from wandering into easy-but-useless
 work.
 
-### `hold-frame-and-plan` — _held by developer_
+### `hold-frame-and-plan`
 
 **Meaning.** Hold the locked architectural frame and the decided plan resident across the whole task; anchor each diff
 to the frame.
-**Effect.** The developer implements _inside_ the agreed frame. Because the frame stays resident, local convenience can
+**Effect.** The holder implements _inside_ the agreed frame. Because the frame stays resident, local convenience can
 never braid two concerns together or quietly breach an architectural boundary — the held frame is the standard each diff
 is checked against.
 
-### `hold-execution-context` — _held by cognizant_
+### `hold-execution-context`
 
 **Meaning.** Hold the whole observable execution-context resident while reporting; anchor each datum to the lifecycle
 point it was read at.
-**Effect.** When cognizant dumps its context, every datum is tied to _when_ in the lifecycle it was observed, so the
+**Effect.** When the holder dumps its context, every datum is tied to _when_ in the lifecycle it was observed, so the
 report stays a faithful whole rather than collapsing to the most recent reading. The provenance of each fact is preserved
 against the pull of the latest fragment.
 
-### `hold-design-whole` — _held by principal-ic_
+### `hold-design-whole`
 
 **Meaning.** Hold the whole design resident across the whole task; anchor each decision to the elegant whole.
-**Effect.** The principal maker weighs every decision against the coherence of the whole design, not against the local fix
+**Effect.** The holder weighs every decision against the coherence of the whole design, not against the local fix
 in front of them. This is what prevents a clean design from degrading, decision by decision, into an accumulation of
 expedient patches.
 
-### `hold-system-architecture` — _held by arch-doc-writer_
+### `hold-system-architecture`
 
 **Meaning.** Hold the whole system's architecture resident across the task; anchor each diagram and section to the one
 coherent system-model.
@@ -86,25 +86,25 @@ coherent system-model.
 can contradict the whole. The architecture doc reads as one coherent system rather than a stack of locally-true but
 mutually inconsistent fragments.
 
-### `hold-correctness-surface` — _held by tester_
+### `hold-correctness-surface`
 
 **Meaning.** Hold the full correctness-surface of the change resident across the whole verification; anchor each verdict
 to the whole orthogonal axis-set.
-**Effect.** The tester judges the change against _every_ orthogonal axis of correctness, never collapsing to the one
+**Effect.** The holder judges the change against _every_ orthogonal axis of correctness, never collapsing to the one
 dimension last checked. Because the whole surface stays resident, a pass on one axis cannot masquerade as a pass overall.
 
-### `hold-change-with-trust-boundaries` — _held by principal-engineer-reviewer_
+### `hold-change-with-trust-boundaries`
 
 **Meaning.** Hold the whole change resident across the whole review — the full data-flow and its trust-boundaries — and
 weigh each finding against that whole.
-**Effect.** The reviewer never collapses to the single line under the cursor. Each finding is weighed against the entire
+**Effect.** The holder never collapses to the single line under the cursor. Each finding is weighed against the entire
 data-flow and where it crosses trust-boundaries, which is what lets the review catch issues that are only visible when
 the change is seen whole.
 
-### `hold-delivery-whole` — _held by mav_
+### `hold-delivery-whole`
 
 **Meaning.** Hold the converged delivery whole resident across the whole task; anchor each turn to the end-to-end objective.
-**Effect.** Mav drives every turn toward the end-to-end delivery objective, never collapsing to the latest fragment of the
+**Effect.** The holder drives every turn toward the end-to-end delivery objective, never collapsing to the latest fragment of the
 work. Ownership of the whole arc — ideation through shipped result — is kept resident, so no single turn drifts off the
 through-line.
 
@@ -114,11 +114,11 @@ An agent composites gestalt by **including exactly one `hold-*` value** — the 
 The value is selected, not authored fresh: it supplies both halves of the discipline (the whole to hold, and the
 never-collapse anchor), already specialized to that agent's work.
 
-Most agents take a **role-specific** hold (the developer takes `hold-frame-and-plan`, the tester takes
+Most agents take a **role-specific** hold (a developing agent takes `hold-frame-and-plan`, a testing agent takes
 `hold-correctness-surface`, and so on) because their whole is sharply defined by what they do. An agent whose whole is
-simply "the task's record" — investigator, boswell — inherits the **genus default** `hold-the-whole-resident` rather than
-minting a redundant variant. Every cell's `holders:` line names which agents carry it, so the binding is read straight off
-the value.
+simply "the task's record" inherits the **genus default** `hold-the-whole-resident` rather than
+minting a redundant variant. An agent binds its hold by citing it (`gestalt [[hold-*]]`) in its `agent/<name>.md`
+selection vector — that vector is the source of truth for who carries which whole.
 
 In effect: the organ contributes the **discipline** (hold the whole resident, anchor every step to it, never collapse to
 the latest fragment); the chosen value contributes **which whole** that discipline applies to; and the running task

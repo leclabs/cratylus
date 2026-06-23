@@ -10,9 +10,7 @@ actually _able_ to do. It is the durable craft an agent brings to the table, ind
 single task.
 
 A value cell in this organ is one named **competence** — a coherent bundle of mastered methods,
-vocabularies, and disciplines that travels with whichever agents _hold_ it. Each cell carries a
-`holders:` line naming the archetypes that composite it; one competence may be held by several
-agents, and one agent composites several competences.
+vocabularies, and disciplines that travels with whichever agents _hold_ it.
 
 ## The canonical competences
 
@@ -35,18 +33,9 @@ agents, and one agent composites several competences.
 
 ## How an agent composites competence
 
-An agent does not inline these skills; it _holds_ them. Each competence cell names its `holders:`,
-and an agent's archetype gathers the set it brings. The repertoire is additive and shared:
-
-- **nico** holds `exemplify-pipeline`, `sigma-signify`, `ontoclean`, and `praxis-sharded-planning`.
-- **mav** holds `e2e-delivery-toolchain` and `praxis-sharded-planning`.
-- **principal-ic** holds `broad-spectrum-making`.
-- **developer** holds `in-frame-implementation`; **planner** holds `tactical-decomposition`.
-- **investigator** (`causal-tracing-falsification`), **tester** (`validity-analysis-oracles`),
-  **principal-engineer-reviewer** (`threat-modeling-frame-mapping`), **arch-doc-writer**
-  (`c4-arc42-drift-repair`), **boswell** (`documentary-biography`), and **cognizant**
-  (`re-anchoring-introspection`) each hold their specialty; investigator and boswell also hold
-  `praxis-sharded-planning`.
+An agent does not inline these skills; it _holds_ them. An agent binds a competence by citing it
+(`competence [[value]]`) in its `agent/<name>.md` selection vector — that vector is the single
+source of truth for which agent gathers which competence. The repertoire is additive and shared.
 
 The same competence reaching several agents (e.g. `praxis-sharded-planning` across nico, mav,
 investigator, and boswell) is the point: competence is the _shared craft layer_, factored once and

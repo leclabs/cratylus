@@ -377,10 +377,11 @@ def value_cell_path(organ: str, value: str):
 
 def value_cell_body(organ: str, value: str) -> str:
     """The inlined body of an organ value cell: its text with the `---fm---`
-    front-matter stripped and the trailing `holders:` bookkeeping line dropped
-    (the holders roster is corpus provenance, not part of the projected def).
-    A missing value cell degrades VISIBLY to a marker line ([[degrade-visibly]])
-    rather than a silent gap -- verify owns the dangling-ref FAIL."""
+    front-matter stripped. A missing value cell degrades VISIBLY to a marker
+    line ([[degrade-visibly]]) rather than a silent gap -- verify owns the
+    dangling-ref FAIL. (Holding is a FORWARD relation -- an agent binds a value
+    by citing it in its selection vector, the single source of truth -- so the
+    value cell carries no holders roster to strip; gate_no_holders enforces it.)"""
     p = value_cell_path(organ, value)
     if p is None:
         return f"_(unresolved organ value `{organ}/{value}` -- no cell)_"
@@ -390,11 +391,7 @@ def value_cell_body(organ: str, value: str) -> str:
         parts = text.split("---", 2)
         if len(parts) >= 3:
             body = parts[2]
-    kept = [
-        ln for ln in body.splitlines()
-        if not ln.strip().lower().startswith("holders:")
-    ]
-    return "\n".join(kept).strip()
+    return body.strip()
 
 
 def _persona_value(selection: list[tuple[str, list[str]]]) -> str | None:
@@ -408,8 +405,7 @@ def _persona_value(selection: list[tuple[str, list[str]]]) -> str | None:
 
 def _mark_from_persona(persona_value: str | None) -> str:
     """The `emoji · hue` mark facet, parsed from the persona value cell's trailing
-    `<emoji>·<hue>` token (the last `· `-separated element before `holders:`,
-    e.g. `✈️·green`). Returns '' if no such token is found."""
+    `<emoji>·<hue>` token (e.g. `✈️·green`). Returns '' if no such token is found."""
     if persona_value is None:
         return ""
     p = value_cell_path("persona", persona_value)

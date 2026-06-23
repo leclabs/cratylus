@@ -279,6 +279,26 @@ def gate_agent_organ_refs():
                     )
 
 
+def gate_no_holders():
+    """NO-HOLDERS: a cell must not carry a `holders:` line. Holding is a FORWARD
+    relation -- an agent binds a value by CITING it (`organ [[value]]`) in its
+    organ-selection vector (`agent/<name>.md`), the single source of truth for who
+    holds what. A `holders:` roster on the value cell is a reverse-index that
+    duplicates that binding ([[cite-once]]) -- it drifts from the vectors and
+    re-palimpsests. The cite IS the binding; the roster is forbidden. (README
+    glosses describe the organ + values; they name no specific holders either.)"""
+    for slug in sorted(cells.corpus_slugs()):
+        cell = cells.parse_cell(slug)
+        for ln in cell["body"].splitlines():
+            if ln.strip().lower().startswith("holders:"):
+                errors.append(
+                    f"NO-HOLDERS {cells.cell_path(slug).name}: carries a `holders:` "
+                    f"line -- holding is forward (an agent vector cites the value); a "
+                    f"value-cell holders roster is a forbidden reverse-index"
+                )
+                break
+
+
 def gate_fences():
     """No anchor inside a code block, ever -- a fenced [[x]] is a category
     error (prose machinery in the formal register) and is REJECTED loudly,
@@ -860,6 +880,7 @@ def gate_reconstruct():
 def main() -> int:
     gate_schema_and_refs()
     gate_agent_organ_refs()
+    gate_no_holders()
     gate_fences()
     gate_symbols()
     gate_verbatim_ref_free()
@@ -875,7 +896,7 @@ def main() -> int:
         print(f"\n{len(errors)} failure(s)", file=sys.stderr)
         return 1
     r3 = "R1+R2+R3" if r3_mechanical else "R1+R2; R3 manual"
-    print(f"PASS schema + references + fences + symbols + verbatim-ref-free + operative + round-trip + reconstruct ({r3})")
+    print(f"PASS schema + references + no-holders + fences + symbols + verbatim-ref-free + operative + round-trip + reconstruct ({r3})")
     return 0
 
 
