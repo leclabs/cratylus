@@ -11,39 +11,27 @@ internal preparation, everything downstream (appraisal) is reading the result. W
 says what an agent _can_ do and `resolve` is the commitment to one course, enaction is the doing
 itself — the move made flesh as an artifact.
 
-A value cell in this organ is one named **enaction signature** — the characteristic _shape of output_
-an agent emits when it acts. It names the artifact form (diff, table, plan, finding, dump, chronicle,
-review, answer) and the discipline that production obeys. A signature is the action an agent is built
-to ship; an agent binds it by citing it (`enaction [[signature]]`) in its `agent/<name>.md` selection
-vector — that vector is the source of truth for who holds it.
+A value cell in this organ is one named **output form** — the characteristic _shape_ an agent's act
+takes when it lands. The set is carved by the form of the thing emitted, not by which agent emits it:
+prose, code, a document, a structured payload, a bounded verdict, a visual, or a side effect. An
+agent binds a value by citing `enaction [[value]]` in its `agent/<name>.md` selection vector — the
+vector is the single source of truth.
 
-A recurring discipline across the corpus is **R=LLM density** — emitting at the register fitted to a
-machine reader (terse, coordinate-cited, no human-prose padding), the working register most of these
-agents act in.
+## The canonical values
 
-## The canonical enaction signatures
-
-| Enaction                         | What it is                                                                                                                                                                                | Effect on the agent                                                                                                                      |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| **emit-chronicle-entry**         | Emit the chronicle entry — the coordinate-cited record, or the dense answer — at R=LLM density.                                                                                           | The agent acts by laying down a faithful, citation-anchored record of what happened.                                                     |
-| **emit-cited-finding**           | Emit the evidence-cited finding — repro-steps, causal chain to structural origin, blast radius, observed/inferred split, refuting coordinates — at R=LLM density; no remedy.              | The agent ships diagnosis, not repair: it reports what is happening, evidenced, and stops short of the fix.                              |
-| **emit-context-dump**            | Emit the labeled context-dump — inputs, instructions, tools, state, constraints, blind-spots, each tagged observed\|inferred — at R=LLM density; re-point divergences to canonical homes. | The agent makes its own working context legible, and corrects drift by pointing each item back to its true source.                       |
-| **emit-diff-test-pr**            | Emit the diff, run the happy-path test, and author the coordinate-citing PR.                                                                                                              | The agent ships a realized change as a reviewable unit: code + a passing test + a PR whose claims cite coordinates.                      |
-| **emit-doc-edit**                | Emit the doc edit — updated C4/arc42 view, diagram source, or prose caption — pinned to its verified source-of-truth.                                                                     | The agent acts on the documentation, keeping every view pinned to the runtime it describes.                                              |
-| **emit-fenced-review**           | Emit the structured fenced review at R=LLM density — verdict, severity-ranked findings (coordinate + frame-tag + concrete fix each), and the positive signal.                             | The agent delivers a weighed judgment: a verdict plus actionable, located findings and the good news too.                                |
-| **emit-sharded-plan**            | Emit the plan as a sharded-plan-layout — ordered, file-level, granularity-aware phases each with its falsifiable exit-criterion — at R=LLM density.                                       | The agent's action _is_ the plan: an ordered, checkable decomposition rather than execution.                                             |
-| **emit-verdict-table**           | Run the oracles and emit the per-dimension PASS/FAIL/ERROR table plus a structured failure-report for every FAIL — at R=LLM density.                                                      | The agent acts by adjudicating correctness across dimensions and reporting each failure structurally.                                    |
-| **exemplify-pass\|dense-answer** | Emit the exemplify pass (routed cells + composites) or the dense answer — at R=LLM density.                                                                                               | The agent ships either an optimized corpus delta (cells routed to homes) or a direct dense answer.                                       |
-| **ship-artifact-ink-delta**      | Ship the artifact — emit the diff/decision/dense-answer at the agent register — inking only the delta.                                                                                    | The agent ships the smallest sufficient change: it writes the difference, not the whole.                                                 |
-| **ship-code-plan-build**         | Emit the action — code/plan/build edit, the tool call, or the dense answer — at R=LLM density.                                                                                            | The agent's broad delivery move: whatever the turn calls for — code, plan, build, tool call, or answer — emitted and put into the world. |
+| Enaction                | What it is                                                                                                                                                                         |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **natural-language**    | Free-form prose/conversational text for a human reader — explanations, answers, summaries, dialogue — with no enforced schema or machine contract.                                 |
+| **code**                | Source in a programming/markup/query language (functions, scripts, SQL, config-as-code, patches/diffs) intended to be executed, compiled, or applied.                              |
+| **document**            | Long-form composed artifact with sections/headings/citations (report, spec, README, article) — structured for human reading and persistence beyond one turn.                       |
+| **structured-data**     | Machine-parseable payload conforming to a schema — JSON/YAML/XML/CSV/key-value — consumed by another program, not primarily read by a human.                                       |
+| **structured-decision** | A bounded selection from a fixed option space — classification label, score, ranking, route, or yes/no verdict; terse adjudication rather than open generation.                    |
+| **visualization**       | Visual/graphical artifact — chart, diagram, plot, table-as-figure, rendered image/UI mockup — encoding information spatially rather than in linear text.                           |
+| **action**              | Side-effecting actuation in an external system (tool/API call, file write, command, message send, physical actuation) where the output is a state change, not a returned artifact. |
 
 ## How an agent composites enaction
 
-An agent does not inline an output format; it _holds_ an enaction signature. The agent binds the
-signature it ships by citing it (`enaction [[signature]]`) in its `agent/<name>.md` selection vector
-— that vector is the single source of truth for who holds what.
-
-Enaction is where each agent's role becomes visible as a thing in the world: the specialists each
-ship one characteristic artifact (a finding, a table, a plan, a review), while the principal genera
-(`principal-ic`, `mav`) carry the broad-spectrum _ship-the-action_ signature that emits whatever the
-turn demands. One agent, one signature — the move it was built to make.
+An agent does not inline an output format; it _holds_ an enaction form. An agent binds a value by
+citing `enaction [[value]]` in its `agent/<name>.md` selection vector — the vector is the single
+source of truth. Enaction is where an agent's role becomes visible as a thing in the world: the form
+it emits is the move it was built to make.

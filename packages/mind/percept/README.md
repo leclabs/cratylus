@@ -2,28 +2,26 @@
 
 > The concrete input as taken up this turn: the parsed observation that opens the cycle.
 
-**What this is.** `percept` is one organ in the agent's conceptual anatomy (the **per-turn · external** input; see [`docs/agent-conceptual-anatomy.md`](../../../docs/agent-conceptual-anatomy.md)). In the industry vocabulary it is the agent's **input parse** — the single observation that arrives at the top of one act of the agent loop and gets read as "here is what I am being handed _this turn_." Where [`sensors`](../sensors) is the standing channel by which the world _can_ enter, a percept is the one thing that _did_ enter now, already construed into the shape its holder reads.
+**What this is.** `percept` is one organ in the agent's conceptual anatomy (the **per-turn · external** input; see [`docs/agent-conceptual-anatomy.md`](../../../docs/agent-conceptual-anatomy.md)). In the industry vocabulary it is the agent's **input parse** — the single observation that arrives at the top of one act of the agent loop and gets read as "here is what I am being handed _this turn_." Where [`sensors`](../sensors) is the standing channel by which the world _can_ enter, a percept is the one thing that _did_ enter now, already construed into the shape the agent reads.
 
-A percept is not raw bytes and not yet an interpretation — it is the **opening of the turn**: the diff, directive, report, or request, parsed into the question the agent's archetype is built to answer. Each cell here states one such opening (`≜ …`); an agent binds a percept by citing it (`percept [[opening]]`) in its `agent/<name>.md` selection vector — that vector is the source of truth for who holds it, i.e. the agents for whom that is the canonical first thing seen. The percepts are holder-specific: a reviewer opens on a change to weigh, a tester on a change to exercise, an investigator on an anomaly to explain. They mirror the [`mandate`](../mandate) set one office to one input — what an agent is _for_ determines what it _first sees_.
+A percept is not raw bytes and not yet an interpretation — it is the **opening of the turn**: the message, result, event, or request, parsed into the question the agent is built to answer. The dimension this organ governs is the **turn-opening input type**: _what kind of thing_ started this turn. The values below partition that space — every turn opens on exactly one of them.
 
 ## The canonical percepts
 
 Each is a value cell (`kind: percept`); the opening observation is the `≜` claim.
 
-- **[`change-to-review`](change-to-review.md)** — a change to review: a diff, plan, architecture-sketch, or codebase-region, parsed as the turn's opening. The holder reads it as material to weigh, not to write.
+- **[`user-message`](user-message.md)** — a natural-language directive, query, or reply from a human user/operator/interlocutor opens the turn; the agent's primary intent-bearing input channel.
 
-- **[`change-under-test-or-suite-result`](change-under-test-or-suite-result.md)** — a change-under-test, a diff, or a suite-result, parsed as the turn's opening. The holder reads it as something to exercise and judge PASS/FAIL, whether the artifact itself or the verdict a run already produced.
+- **[`tool-result`](tool-result.md)** — the return value, output, or error of a tool/function/build/query the agent itself invoked opens the turn; the world's reply to a prior action.
 
-- **[`defect-or-surprise`](defect-or-surprise.md)** — a defect-report, surprising observation, or tool-result, parsed as the turn's opening question **"what is actually happening?"**. The holder reads it as an anomaly to be explained, not yet a thing to be fixed.
+- **[`agent-message`](agent-message.md)** — a message from another agent (request, delegation, response, or broadcast) over an inter-agent channel opens the turn; peer/orchestrator input distinct from a human's.
 
-- **[`fragment-or-directive-or-tool-result`](fragment-or-directive-or-tool-result.md)** — an artifact/codebase/corpus fragment, an operator directive, or a tool/build result, parsed as the turn's opening. The broad maker's input: any of source material, an instruction, or the outcome of a prior action.
+- **[`environment-event`](environment-event.md)** — an unsolicited external occurrence the agent subscribed to — sensor reading, webhook, file/state change, message-queue delivery — opens the turn; pushed, not requested.
 
-- **[`goal-frame-or-refine`](goal-frame-or-refine.md)** — an agreed goal plus a set architectural-frame, or a directive to refine/advance the standing plan, parsed as the turn's opening. The holder reads it as the raw material of a route to be laid out, with the frame already fixed by someone else.
+- **[`scheduled-trigger`](scheduled-trigger.md)** — a time-based fire — cron, timer, interval, or deadline — opens the turn with no external content payload; the clock is the percept.
 
-- **[`introspection-request`](introspection-request.md)** — an introspection request ("why isn't the agent doing X?" / "what is available at this lifecycle-point?") or a re-anchoring trigger, parsed as the turn's opening. The holder reads it as a demand to surface execution context, not to act on it.
+- **[`introspection-request`](introspection-request.md)** — a request for the agent to examine its own state, config, capabilities, or reasoning — self-report or self-audit — opens the turn; the subject sensed is the agent itself.
 
-- **[`plan-step-or-feedback`](plan-step-or-feedback.md)** — a plan-step, a frame-coordinate, or reviewer/tester feedback, parsed as the turn's opening. The implementer's input: the next unit of work to realize, or the correction that redirects it.
+## How an agent binds a percept
 
-## How an agent composites a percept
-
-An agent does not invent its percept each turn — it **holds** one. Each archetype cell in [`agents/`](../agents) imports its percept by reference (`[[ ]]`, never restating it — [[cite-dont-copy]]); the resolver inlines the held percept as the lens through which that agent reads the turn's input. Because each office holds a distinct opening, the same incoming material lands as a different first question depending on who receives it — a diff is "material to weigh" to the reviewer, "a thing to exercise" to the tester, "the next unit to build" to the developer. The percept is where an agent's mandate meets the world: it fixes what counts as the start of work.
+An agent binds a value by citing `percept [[value]]` in its `agent/<name>.md` selection vector — the vector is the single source of truth. The resolver inlines the cited cell by reference (`[[ ]]`, never restated — [[cite-dont-copy]]) as the lens through which that agent reads the turn's opening. Because each office may bind a distinct opening, the same incoming material can land as a different first question depending on the binding. The percept is where an agent's mandate meets the world: it fixes what counts as the start of work.
