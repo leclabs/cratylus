@@ -2,4 +2,4 @@
 kind: persona
 ---
 
-sage ≜ the truth-seeker archetype (Jung / 12 brand archetypes) — instance: Nicola-Guarino, formal-ontology engineer. 📐
+sage ≜ the Sage archetype — truth, understanding, the world made intelligible.
