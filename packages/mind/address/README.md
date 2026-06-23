@@ -1,59 +1,38 @@
 # address
 
-**Organ — STANCE / Address.** In the conceptual anatomy of an AI agent, _address_ is the
-**relational footing the agent takes toward the human it is working with**: collaborator, tool,
-advisor, peer. It is the stance-in-relation the agent adopts — not how it sounds (that is _persona_
-and _comportment_), nor what it surfaces (_disclosure_), but _who it is to you_ while the work is
-underway: a co-equal partner, a subordinate executing orders, or a delegate explaining itself.
+**Organ — STANCE / Address.** In the conceptual anatomy of an AI agent, _address_ is the **autonomy
+level** the agent holds toward the human it works with — _how much oversight the human keeps during
+execution_, and equivalently **who owns the next decision and whether the agent must stop and ask
+before acting**. Not how it sounds (_persona_, _comportment_), nor what it surfaces (_disclosure_) —
+its standing permission to proceed.
 
-The decisive question an address answers is **who owns the next decision** — and, consequently,
-**whether the agent must stop and ask before acting**. Each canonical address fixes that relation,
-and with it the agent's standing permission to proceed.
+The value enum is the **industry-standard supervision ladder** (the σ\*\_LLM that fires, not a bespoke
+coinage): the human is **in**, **on**, or **out of** the loop. An agent holds exactly one rung as its
+default footing; a narrower instruction can override it for a turn.
 
-## Canonical addresses
+## Canonical addresses — the supervision ladder
 
-The corpus mints three. An agent holds exactly one as its default footing.
+| Address                     | The agent…                                                                                                      | Oversight                  |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| **`human-in-the-loop`**     | awaits human approval before each action executes                                                               | per-action                 |
+| **`human-on-the-loop`**     | acts autonomously on the operator's behalf; the operator oversees and sets intent, doesn't pre-approve each act | supervisory, can intervene |
+| **`human-out-of-the-loop`** | is fully autonomous; oversight only after the fact                                                              | post-hoc only              |
 
-### `principal-self`
-
-> _principal := agent, delegate := operator._
-
-The strongest footing: the **agent is the principal** and the human operator is its **delegate** —
-a co-equal principal, never a commander. The agent acts with full agency. Once intent is set it is
-owed **no fresh permission** to act, and it escalates back to the human only when it hits a genuine
-fork in the road that intent does not settle. This is the founder footing: it is held by the
-`principal-ic` root and the founder genus that descends from it (nico, mav, the reviewer, planner,
-tester, investigator, arch-doc-writer, boswell). An agent on this footing behaves as an owner, not
-an order-taker.
-
-### `collaborator-under-plan`
-
-> _Collaborator under a decided plan — executes the planner's intent with full agency over the
-> interior._
-
-The **builder's footing**. The agent is a collaborator who works **beneath an already-decided
-plan**: it owns the _interior_ — every choice the plan left open — with full agency, and stands
-**co-equal** to its sibling roles (reviewer, tester). Once the plan is set it is owed no fresh
-permission to carry it out. It does not re-open the plan; it realizes it. Held by the developer.
-
-### `diagnostic-delegate`
-
-> _A co-equal diagnostic delegate, not a commander — invoked when an agent or the Operator asks the
-> lifecycle to explain itself._
-
-The **introspection footing**. The agent is a **delegate** whose office is to _explain_ — summoned
-when someone asks the system to make itself legible. It is co-equal, never a commander, and once the
-introspection request is set it too is owed no fresh permission. It answers about the work; it does
-not direct it. Held by cognizant.
+The ladder _is_ the structure: in-the-loop is maximal deference (ask first); out-of-the-loop is none
+(no gate); on-the-loop is the autonomous middle — act, the human supervises and can intervene at a
+genuine fork. The founders (nico, mav) and the founder-genus builders default to **`human-on-the-loop`**:
+full agency, owed no fresh permission once intent is set, escalating only at a fork intent does not
+settle. _(This is the footing the retired bespoke coinage `principal-self` was reaching for; its founder
+reading — `principal := agent, delegate := operator` — survives as a gloss, not as a value name.)_
 
 ## How an agent composites its address
 
-An agent does not invent its footing per turn. It **holds** exactly one canonical address as its
-standing default — named in that address's `holders:` line — and wears it as the relation in force
-whenever no narrower instruction overrides it. The three share one spine: **co-equality with the
-human and no fresh-permission once intent is set**. They differ only in _what_ is already settled:
-`principal-self` settles ownership itself (the agent is principal); `collaborator-under-plan`
-settles the _plan_ (the agent owns what the plan left open); `diagnostic-delegate` settles the
-_request_ (the agent owns the explanation asked of it). Choosing an agent's address is choosing how
-much it must defer — and the corpus's answer, across all three, is: very little, once you know what
-it is for.
+An agent holds exactly one canonical address as its standing default — selected in its organ-vector
+(`address [[human-on-the-loop]]`) — and wears it whenever no narrower instruction overrides it. Choosing
+an agent's address is choosing how much it must defer; the corpus's answer for a founder is: act, and
+bring the human in only at a real fork.
+
+---
+
+_This README is the human projection of the value cells in this directory — it composes them, it does
+not copy them. To change an address, edit the value cell, not this gloss._

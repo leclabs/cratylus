@@ -1,50 +1,66 @@
 # ideas
 
-**`ideas` ≜ the exemplars** — the canonical, _productive_ forms after which artifacts are made and against which they are judged.
+**`ideas` ≜ the exemplar corpus** — the canonical forms that **project into deployed agents and skills**.
+`mind` exists ONLY to be the lean, canonical context-source for a mind-society; it is **not an encyclopedia
+of ideas**. A fragment earns its place by being an **organ value**, a **skill substance**, or a
+constitution-scaffold an agent/skill composes — otherwise it is dead context and drops.
 
-Each cell is one exemplar. A cell's **slug is its anchor**: the densest name whose latent priors most precisely circumscribe the idea. The slug addresses the cell wherever it lives — the toolkit is **storage-polymorphic**: `cells.parse_cell(slug)` returns the identical `{slug, fm, body}` dict regardless of home, so `[[anchor]]` resolves the same and the projection is byte-identical.
+Each cell is one exemplar. A cell's **slug is its anchor**: the densest name (the reader-relative fittest
+sign, σ\*\_R) whose latent priors most precisely circumscribe the idea. The toolkit is **storage-polymorphic**
+— `cells.parse_cell(slug)` returns the same `{slug, fm, body}` regardless of home, so `[[anchor]]` resolves
+identically and the projection is byte-identical.
 
-## Where cells live
+## Where cells live — by the agent anatomy
 
-A cell's home is fixed by its `kind` — two carriers, one resolver:
+The corpus is organized by the **conceptual anatomy of an agent** (the MECE organ set), not by an
+idea-typology:
 
-- **Primitives** (`principle · concept · process · utility · structure · classification`, plus `gloss` cells) are **blocks** in `packages/mind/lexicon/<kind>.md` — every `principle` a block in `lexicon/principle.md`, every gloss a block in `lexicon/gloss.md`. A block opens with a `<!-- ^<anchor> -->` marker on its own line and runs to the next marker; its body is the verbatim cell text (front-matter included). The **anchor is still the address** — only the carrier changed (one-file-per-cell → one-block-per-cell), so `[[anchor]]` resolves unchanged; a block is also addressable cross-file as `[[<file>#^<anchor>]]` (Obsidian block-ref). `ideas/` no longer holds primitive cells.
-- **Composites** (`agent · skill`) live **flat**, one file per cell — `packages/mind/agents/<slug>.md` and `packages/mind/skills/<slug>.md` (e.g. `agents/nico.md`, `skills/exemplify.md`). There is **no `<organ>` directory level**: an agent embodies **many** organs at once, so filing it under one organ-directory is a category error (the anatomy _decomposes_ each agent; it does not _partition the set of agents_). The agent anatomy lives **inside** the archetype as named **sections** that composite each organ **by reference** ([[cite-dont-copy]]) — see the anatomy-section model under _Agent cells_.
-- Legacy flat (`ideas/<slug>.md`) and dir-form (`ideas/<slug>/<slug>.md`, for a cell carrying companion assets) homes still resolve — a file home wins over a lexicon block (migration back-compat).
+- **Organ value-cells** — `packages/mind/<organ>/<value>.md`, `kind: <organ>`. Each organ is a directory
+  holding its enumerated values (e.g. `address/human-on-the-loop.md`, `persona/sage.md`); the organ's
+  `README.md` is the human projection composing them. An **enum-organ**'s values are members of the model's
+  own native enum — sourced by **blind model introspection** (the recognized industry-standard term, the
+  σ\*\_LLM that fires), never a coinage. An **open-organ**'s values are named per agent (mandate · telos ·
+  competence · instructions · construal · persona · provenance — where identity lives).
+- **Agents** — `packages/mind/agent/<name>.md`, `kind: agent`. An **organ-selection vector**:
+  `<name> ≜ ⊕{organ ↦ value}`, then one `organ [[value]]` line per organ it fills.
+- **Skills** — `packages/mind/skill/<name>.md`, `kind: skill`. A **self-sufficient set-builder**: a formal
+  block that absorbs its own concepts; a prose `Bindings:` region names live sibling skills. `trigger:` and
+  `delineation:` ride the front-matter.
+- **Special organ-home cells** — `packages/mind/ideas/<name>.md`: cells that are neither an organ value nor a
+  composite. Today only `memory.md` — the memory organ-home (a `render: verbatim` protocol, a `deploy: skill-dir`
+  directive, and the bundled `episodic` runtime), whose `## Protocol` the composer projects into every SOUL as genus.
 
-## Front-matter
+## Front-matter — minimal
 
-- `kind` — the ontological primitive (closed set below). It **governs composition** and selects a cell's carrier: a primitive's `kind` selects its `lexicon/<kind>.md` block-file; a composite (`agent · skill`) lives flat under `agents/` or `skills/` by its kind. See the structure doctrine below.
-- `delineation` — the one-line bound; the dense summary that resolves into composites (e.g. agent defs).
-- `gloss: true` — marks an operator-facing glossary cell (a human-readable explanation of a dense anchor). Excluded from the compiled particulars; its slug is the anchor it explains.
-- `render: verbatim` — _(projection directive, optional)_ marks an **organ** cell whose operative body must reach every composing agent **whole and density-immune** — load-bearing runtime instruction, not a density-collapsible disposition pointer. The composer emits the cell's `## Protocol` section **verbatim** at any reader profile, `{name}`-parameterized to the agent's sidecar directory. Like a skill's `trigger`, it governs _how the cell projects_, not where it lives. Such an organ is discovered by **anatomy-section composition**: an archetype declares it as a named `## ` section (other than `## Persona`) that references the organ — e.g. `## Memory` → `- binds [[memory]]` — and the composer renders the `render: verbatim` ones it finds; a non-verbatim organ-section ref is byte-neutral source-structure. There is **no hardcoded genus-organ list** (the former `GENUS_ORGANS`/`_identity_block()` is retired).
+- `kind` — the **anatomy slot**: an organ name (the cell is a value in that organ), or `agent` / `skill`
+  (a composite). It governs how the cell projects. (`memory.md` carries a legacy `kind: structure` as the one
+  special organ-home cell.)
+- `delineation` — the one-line bound; the dense summary that resolves into composites.
+- **Projection directives** (optional) — `trigger` (a skill's invocation token), or the trio `render: verbatim`,
+  `deploy`, and `bundle` (an organ cell whose operative body must ship whole and density-immune). These declare
+  _how_ a cell projects, never an abstraction level — the carrier never promotes a projection to the Source.
 
-> **Structure doctrine.** Altitude is still unstored — one operation at every grain ([[precise-circumscription]]); front-matter stays minimal: `kind` + `delineation` (+ `gloss`), plus optional **projection directives** (`trigger` for skills, `render` for organs) — these declare _how a cell projects_, never an abstraction level. The carrier never promotes a projection to the Source ([[projection-is-not-the-source]]):
->
-> - **Primitives — structure is by anchor.** A primitive is a `lexicon` _block_ addressed by its anchor; the anchor **is** the address. No typology became its home.
-> - **Composites — flat; the anatomy is section-structure, not a directory coordinate.** An `agent`/`skill` lives flat by `kind` (`agents/<slug>.md`, `skills/<slug>.md`); the organ axis is **not** a path level. `organ` names a **role in the decomposition of one agent** ([[substance-over-accident]]) — a named anatomy **section** inside the archetype that composites its organ **by reference** ([[cite-dont-copy]]), never a directory the archetype is filed under. No `kind: organ` exists: a composable organ's _meaning_ is a `kind: concept` glossary cell (hover-legible); its _content_ for a given agent is that agent's section. (Ruling: `plans/mind-structure-flatten/decisions/0001-organ-taxonomy.md`.)
->
-> The remaining genuine accident, **scope**, is still applied by an `AGENTS.md` grant ([[scope-grant]] · [[substance-over-accident]]), never a cell field.
+## `kind` — the anatomy IS the taxonomy
 
-## `kind` — the closed value set
+There is no idea-typology. The former 7-primitive set (`principle · concept · process · utility · structure ·
+classification · gloss`) and its `lexicon/<kind>.md` + `GLOSSARY.md` carriers were **demolished** in the
+2026-06-22 rebuild. A cell's `kind` is now the **role it plays composing an agent or skill**: an **organ value**
+(`kind: <organ>`), an **`agent`**, or a **`skill`**. The organ set is the MECE anatomy
+(`docs/agent-conceptual-anatomy.md`); a candidate that is none of these is dead context and drops — the tell of
+the rebuild was that ~100 of 141 old blocks were referenced by nothing.
 
-**Primitives** (every fragment is exactly one — [[one-cell-one-type]]):
+## Agent cells — the organ-selection vector
 
-- `principle` — a normative ought: rule, stance, disposition, doctrine, preference, policy. Embodied as a prior.
-- `concept` — a declarative what-is: definition, model, fact. Referenced/known.
-- `process` — an ordered operation: steps, workflow. Invoked.
-- `utility` — a reusable instrument a process invokes: template, rubric, tool.
-- `structure` — a relational arrangement: roster, schema, index, layout.
-- `classification` — a kind plus the test that decides membership.
+An `agent` cell is a **selection over the anatomy**: a `# <name>` heading, the formula
+`<name> ≜ ⊕{organ ↦ value}`, then one `organ [[value]]` line per organ it fills (e.g. `persona [[sage]]`,
+`address [[human-on-the-loop]]`). The composer inlines each selected value's body — plus the `memory`
+`## Protocol` as genus — to project the deployed SOUL. **Composition reads from the `organ [[value]]` lines
+alone.** The ENUM organs select a model-native member; the OPEN organs carry the agent's named identity.
 
-**Composites** (a bundle of primitives bound for a purpose; imports constituents by `[[ ]]`, never restates):
+## Skill cells — the self-sufficient set-builder
 
-- `agent` · `skill`.
-
-These are the two composition kinds — each home is a flat carrier (`agents/`, `skills/`). Earlier drafts listed `persona · task · pattern · runbook · troubleshooting` as composite kinds; those are **organs**, not kinds — `persona` and `ledger` are anatomy roles an agent (and, for `ledger`, a skill) _embodies_, so they partition _within_ a single agent, they do not name a composition kind. `kind` is the composition rule (an `agent` embodies its `principle`s as priors, invokes its `process`es, references its `concept`s); `organ` is the MECE anatomy slot, carried as a named **section by reference** inside the archetype — never a `kind`, never a directory. The closure is the point — a candidate new "kind" resolves to one of the primitives, to `agent`, or to `skill`; no eighth primitive appears.
-
-## Agent cells — the definitional form
-
-An `agent` cell is written as a **definition**, not a bulleted list: a one-line role intro, then a formula `<name> ≜ invokes [[…]], embodies [[…]], references [[…]]` (its composed dispositions — the **one** place composition lives), then a `## Persona` section carrying only its identity-deltas (handle · archetype · influences · subtractions · synthesis · bond; defined in [[agent-identity-facets]]). `≜` ("is defined as") is the package's own notation (`mind ≜ the exemplar corpus`). Composition reads from that line **alone** — refs in the intro or persona are not dispositions. To this the resolver adds a small set of **genus dispositions** every agent embodies _qua_ agent (e.g. `semantic-whole-over-syntactic-substrate`), emitted for all rather than copied into each formula ([[cite-dont-copy]]) — like the identity-memory protocol.
-
-Beyond `## Persona`, an archetype may carry **anatomy sections** — one named `## ` section per organ it embodies, each compositing its organ **by reference** ([[cite-dont-copy]]): `## Memory` → `- binds [[memory]]`. The composer renders the `render: verbatim` organs it discovers in these sections (replacing the old hardcoded genus-organ list); other organ-section refs are byte-neutral source-structure, so the fuller anatomy can be authored without changing what projects. The organ _concepts_ named here are glossed in `lexicon/concept.md` (the 8 composable organs) or `docs/agent-conceptual-anatomy.md` (the runtime/apparatus organs).
+A `skill` cell is a self-sufficient **set-builder block** that declares its own entities/operations/laws, so it
+needs no external `[[refs]]` to project (Claude-Code progressive-disclosure ships only name + `delineation` at
+selection — the name must carry the trigger-weight, never hide meaning in the body). Live sibling skills are
+named in a prose `Bindings:` region, from which the composer derives composition; a used fence symbol is
+β-bound in adjacent prose, never `[[cited]]`.
