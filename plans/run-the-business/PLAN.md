@@ -12,7 +12,22 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 ## Status mirror
 
-_No `ready`/`active`/`pending` task — the fresh baseline._
+**Ready:** `asleep-host-catchup` — deploy `main`@`4a95ff7` + founder-store hygiene to **ash** + **upgoose**
+(both asleep during the 2026-06-22/23 rollout; probe with **ssh, not ping**).
+
+**Proposed next initiative (awaiting Operator go):** `fleet-organ-sync` — founder memory stores are per-host
+and **UNSYNCED** (`~/.claude` is not a synced repo), so they fork and each re-accumulates palimpsest (forge's
+mav hit 891 lines). They are meant to be ONE user-scoped individual ("travels with the agent"). Per-host
+de-palimpsest is a mop; the durable fix is a working **fleet organ sync** (Mav-led machinery; Nico co-specs
+the memory-cell contract). This is the structural root of the recurring-palimpsest problem.
+
+> **Done 2026-06-23:** `episodic-raw-store-home` (→ `completed/`). Raw EPISODIC capture is **agent-home only**;
+> `scope` is a routing **tag**, never a storage-location selector (root-caused the stray repo-root
+> `EPISODIC.jsonl`). Runtime `rawFile()` + 2 regression tests (74/74 green); memory-cell contract sharpened;
+> `.gitignore` guards the memory stores. Rode along: a **fleet memory + corpus-doc de-palimpsest** — nico/mav
+> stores (fire; forge mav 891→386 lines) and 4 corpus structure docs (`AGENTS.md` ×2, `ideas/AGENTS.md`,
+> `address/README.md`) rewritten from the demolished pre-rebuild world to the rebuilt form; the retired
+> `principal-self` re-grounded to `human-on-the-loop`. `main`@`4a95ff7`, deployed + verified fire/forge/spark/upmav.
 
 > **Promoted out 2026-06-20:** `sharded-memory-store` grew from an RTB seed into its own
 > initiative (RTB charter's promotion rule) — now `plans/sharded-memory-store/`, seeded by
