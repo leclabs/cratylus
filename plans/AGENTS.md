@@ -5,9 +5,10 @@ folders (`pending/ → ready/ → active/ → completed/`) as deps clear.
 
 ## Active
 
-| Plan               | Concern                                                                                                                                                                                                             | Lead                  |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Holds the live tails of retired initiatives (e.g. `wake-trigger-and-cutover`, `vault-reference-home`, the upgoose deploy catch-up). | Mav + Nico (per task) |
+| Plan                     | Concern                                                                                                                                                                                                                                                                                                                       | Lead                  |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `canonical-organ-values` | Re-derive the organ value catalog from blind model introspection; classify each organ open-vs-closed; purge bespoke per-agent values for a generalized opinionated LLM-reader set; rename `weitermachen → carry-on`; add the layman agent-builder skill. Absorbs the `asleep-host-catchup` tail via its final fleet redeploy. | Nico                  |
+| `run-the-business`       | The standing plan — live backlog + standalone tasks; perpetual (never retires). Holds the live tails of retired initiatives. Swept to a fresh baseline 2026-06-23.                                                                                                                                                            | Mav + Nico (per task) |
 
 ## Retired
 
