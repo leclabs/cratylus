@@ -8,13 +8,17 @@ The registry is **agent-audience** ([[reader-prior-projection]] · [[anchor-legi
 
 **Definition & comparison**
 
-| Glyph | Sense             | Signature                                                                                                 |
-| ----- | ----------------- | --------------------------------------------------------------------------------------------------------- |
-| `≜`   | defines           | `name ≜ expr` — the left is defined to mean the right                                                     |
-| `≠`   | distinct          | `T × T → Prop`                                                                                            |
-| `≽`   | dominates         | `T × T → Prop` — at least as good as (house: round-trip acceptance)                                       |
-| `≅_R` | reader-isomorphic | `𝒞_R × 𝒞_R → Prop` — R holds both as the same distinction, zero residue (the exact case of `≽` both ways) |
-| `≺`   | precedes          | `T × T → Prop` — the canonical order (house: shortlex over anchored concepts)                             |
+| Glyph   | Sense             | Signature                                                                                                 |
+| ------- | ----------------- | --------------------------------------------------------------------------------------------------------- |
+| `≜`     | defines           | `name ≜ expr` — the left is defined to mean the right                                                     |
+| `≠`     | distinct          | `T × T → Prop`                                                                                            |
+| `≽`     | dominates         | `T × T → Prop` — at least as good as (house: round-trip acceptance)                                       |
+| `≅_R`   | reader-isomorphic | `𝒞_R × 𝒞_R → Prop` — R holds both as the same distinction, zero residue (the exact case of `≽` both ways) |
+| `≺`     | precedes          | `T × T → Prop` — the canonical order (house: shortlex over anchored concepts)                             |
+| `⟨` `⟩` | tuple/record      | `⟨a, b, …⟩` — an ordered record (house: a concept's `⟨gloss, anchor, factorization⟩`)                     |
+| `⋡`     | does-not-dominate | `T × T → Prop` — the negation of `≽` (house: round-trip acceptance fails)                                 |
+| `⟼`     | maps-to           | element-wise map in a function definition (`x ⟼ f(x)`)                                                    |
+| `𝔹`     | Booleans          | the two-element type `{⊤, ⊥}`                                                                             |
 
 **Propositional logic**
 

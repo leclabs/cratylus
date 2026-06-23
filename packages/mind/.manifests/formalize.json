@@ -1,43 +1,7 @@
 {
-  "source": "skills/formalize.md",
+  "source": "skill/formalize.md",
   "exemplified_at": "2026-06-22T00:00:00Z",
   "reader": "strong-llm-lean",
-  "routes": [
-    {
-      "fragment_digest": "sha256:c2c199aa755a249bc934c5b717b819a3b63aae6c00ea7a9d59cb8868c5013f7d",
-      "idea_gloss": "σ*_R(C) — the reader-relative optimal signifier; the shortest name whose decode in reader R reconstructs concept C with zero residue (`argmin |α| s.t. dec_R(α) ≅_R C`, shortlex tie-break). The named operator the whole method computes; the `*` is the standard optimizer superscript, R the only novel index (the reader).",
-      "home_slug": "signifier-star-r",
-      "disposition": "reuse",
-      "rank": 0
-    },
-    {
-      "fragment_digest": "sha256:21e9f696c861d40497f498dd6587839a16f8449bf17dfbf9c88313d82dafa7ce",
-      "idea_gloss": "the model a valid context factorization must satisfy — the bipartite normal form (primitive by value, composite by reference) reconstructs from its anchors alone (`REC_R`), every anchor is the reader-relative fittest sign `σ*_R` (`canonical_anchor`), and no two concepts fuse (`minimal`); the acceptance criterion [[exemplify]] is gated by, reader-relative throughout.",
-      "home_slug": "canonical-semantic-factorization",
-      "disposition": "reuse",
-      "rank": 1
-    },
-    {
-      "fragment_digest": "sha256:699ac6bafbf6baf34cf02316939c66bfc9c4504d5f80bf01e9d2496abc8c9828",
-      "idea_gloss": "use this skill to conceptualize a corpus — read a multi-modal source and resolve it to the reader's concept lattice (the closed distinction-sets `C_R`, which of them are primitive, each primitive's gloss, and each concept's candidate factorizations), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.",
-      "home_slug": "conceptualize",
-      "disposition": "reuse",
-      "rank": 2
-    },
-    {
-      "fragment_digest": "sha256:5311ebf18614deabe4a02f21eb39c992ba8b90262a4168642c04cf0de0c926a3",
-      "idea_gloss": "use this skill to name a concept set — assign each concept its injective canonical anchor `α(c) = σ*_R(c)` (the reader-relative fittest sign, whose latent priors circumscribe exactly it; one name ⇔ one concept), then coalesce concepts that resolve to the same anchor; emits the shortlex order `≺` and the decoder `dec_R`; stage 2 of exemplify, independently invocable (every naming review is a bare /signify).",
-      "home_slug": "signify",
-      "disposition": "reuse",
-      "rank": 3
-    },
-    {
-      "fragment_digest": "sha256:028196e3c329fe29b0031d5158df9ea8570ec63297b4e007c7ff7b7918b7e26d",
-      "idea_gloss": "A formal block is the `σ*_R` of its concept — the reader-relative fittest sign — closed (every symbol declared, defined-above, corpus-bound `β`, or input-resolved `ι`), complete (every operation and law a line), ordered (definitions before use); prose reduces to those bindings — `β` the single home for each external anchor (cited once, the cell's composition) and `ι` the input interface — so explanatory or duplicated prose is a defect.",
-      "home_slug": "self-sufficient-formalism",
-      "disposition": "reuse",
-      "rank": 4
-    }
-  ],
+  "routes": [],
   "delta": []
 }

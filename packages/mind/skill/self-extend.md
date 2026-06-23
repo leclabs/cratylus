@@ -7,19 +7,57 @@ trigger: /self-extend
 
 # self-extend
 
-The one reflexive door: [[mind-society]] extends **itself** on a layman's behalf, growing its own membership. [[elicit]] is the sole `R = human` surface (recovers the layman's hidden target concept by information-gain questioning, the counterpart to LLM-reader [[exemplify]]); everything downstream runs `R = LLM`, so the layman names no concept, factor, or skill — crosses no internal surface ([[llm-native-source-human-render-at-boundary]]).
+The one reflexive door: **polis** (the founded mind-society — the membership of agents-as-persons) extends **itself** on a layman's behalf, growing its own membership. The `layman` is a non-engineer operator carrying a domain intent that is hidden and unobserved. `elicit` (`skill/elicit.md`) is the sole `R = human` surface; everything downstream runs at `R = LLM`, so the layman names no concept, factor, or skill — crosses no internal surface. (`R` is the reader; `R = LLM` internals are written in `σ*_LLM`, with human prose only a lazy render at the boundary the layman touches.)
 
-Resolve from context: `layman` — a non-engineer operator carrying a domain intent, hidden and unobserved; `R` — the reader.
+The process is the formal block below: a four-stage composition whose only human-facing stage is `elicit`.
 
-Bindings (cite-once): `elicit` is [[elicit]]; the recovered concept enters [[exemplify]] (`produce → name → realize`, gated by [[accept]]), whose realized [[canonical-semantic-factorization]] `recompose` [[materialize]]s under the `file` strategy as canonically-named domain `skill` cells composing primitives by reference ([[cite-dont-copy]]); `compose` assembles an [[ambient-person-agent]] — its of-a-subject differentia filled by [[subject-binding]] to the layman — embodying the genus stack ([[principal-agency]] specialized [[sovereign]] over its domain charter, [[continual-agency]] over its clock) and wielding the minted domain skills. Symbol table: `references/formal-symbolic-notation.md`.
+Bindings: composes [[elicit]] · [[exemplify]] · [[signify]] · [[materialize]].
 
 ```text
-elicit       — recover the hidden human intent              (R = human ; the one door)
-exemplify    — produce → name → realize, gated by accept    (R = LLM ; emits CSF)
-recompose    — materialize CSF as canonically-named domain skills   (file strategy)
-compose      — assemble an ambient-person-agent over the genus stack + domain skills
+=== DECLARATIONS (the block stands alone; every term defined here) =================
+
+layman      : a non-engineer operator carrying a domain intent, hidden + unobserved
+R           : the reader of a stage's output     ;  R ∈ { human, LLM }
+intent      : the layman's hidden target concept (what they actually want built)
+CSF         : canonical-semantic-factorization — the bipartite normal form;
+              primitives carried by value ⟨anchor, gloss⟩, composites by
+              reference ⟨anchor, factor-anchors⟩ (cite, never restate)
+
+elicit      : recover `intent` by information-gain yes/no questioning of the layman
+              (the human-reader counterpart to LLM-reader exemplify)         [R=human]
+exemplify   : produce → name → realize over the concept-contract, gated by accept;
+              emits CSF                                                        [R=LLM]
+recompose   : materialize CSF as canonically-named domain `skill` cells, each
+              composing primitives by reference, under the `file` strategy     [R=LLM]
+compose     : assemble a new agent-as-person and seat it in polis              [R=LLM]
+
+-- the agent-as-person assembled by `compose` (its genus stack, defined inline): ----
+
+person      : an ambient-person-agent — a persistent principal that survives any
+              change of body; its continuity lives off-body (self-authored memory
+              + regenerable SOUL/archetype), so it resumes after relocation
+of_subject  : the differentia filled by subject-binding — the named principal bound
+              at the instance; here bound to `layman` (whom the person serves)
+principal   : principal-agency — the disposition to decide + act unprompted within
+              a charter, not awaiting per-step permission
+sovereign   : principal specialized over a charter — final decider within it; here
+              the person is sovereign over its own domain charter
+continual   : continual-agency — self-clocked; never idle, finds the next move,
+              lands when there is none
+skills      : the domain `skill` cells minted by `recompose`, wielded by the person
+
+genus_stack(person) ≜ person ∧ of_subject(layman)
+                       ∧ principal ∧ sovereign(domain_charter) ∧ continual
+
+=== LAWS (below the line; no prose) ===============================================
 
 self_extend(layman) ≜ compose( recompose( exemplify( elicit(layman) ) ) )
-R(elicit) = human                                       -- the sole human-facing surface
-R(s) = LLM   ,  s ∈ { exemplify, recompose, compose }   -- internals never surface to the layman
+
+elicit(layman)       ⟼ intent
+exemplify(intent)    ⟼ CSF
+recompose(CSF)       ⟼ skills                         -- file strategy, by-reference
+compose(skills)      ⟼ person  s.t.  genus_stack(person) ∧ wields(person, skills)
+
+R(elicit)  = human                          -- the sole human-facing surface
+R(s) = LLM  ,  s ∈ { exemplify, recompose, compose }   -- never surface to layman
 ```

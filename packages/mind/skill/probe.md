@@ -7,16 +7,50 @@ trigger: /probe
 
 # probe
 
-Forward, no-commit inverse of [[signify]]: read a signifier `w` already given and return the priors it fires plus the concept it circumscribes, committing nothing — the active counterpart [[elicit]] instead queries an oracle for a target not yet signified. Resolve from context: `w` — the signifier under probe (a word, phrase, or candidate name); `R` — the reader whose priors are the instrument.
+Forward, no-commit inverse of signify: read a signifier `w` already given and return the priors it fires plus the concept it circumscribes, committing nothing — the active counterpart elicit instead queries an oracle for a target not yet signified. Resolve from context: `w` — the signifier under probe (a word, phrase, or candidate name); `R` — the reader whose priors are the instrument. `fired_R` generalizes signify's decoder `dec_R` off its assigned anchors; the lattice `C_R`, the closure `cl_R`, and the distinction space `D_R` come from conceptualize. Symbol table: `references/formal-symbolic-notation.md`.
 
-Bindings (cite-once): `fired_R` extends `dec_R`, [[signify]]'s empirical decoder (carrying `Names`, the anchor map `α`), from assigned anchors to any signifier — the fired priors are the reader's [[latent-priors]] under [[read-by-priors-not-surface]]; `D_R`, the closure `cl_R`, the lattice `C_R` are [[conceptualize]]'s distinction space; `concept_R` closes the fired priors into the concept `w` circumscribes. _discover_ reads the concept latent in a given name; _experiment_ weighs candidate names against a target by [[precise-circumscription]]; a keeper crystallizes through [[signify]]. Symbol table: `references/formal-symbolic-notation.md`.
+Bindings: inverse of [[signify]]; counterpart to [[elicit]]; draws the lattice from [[conceptualize]].
 
 ```text
+DECLARATIONS
+
+R          — the reader whose priors are the instrument (an LLM, or a well-read person)
+D_R        — R's distinction space: the structured knowledge R can draw on
+℘(D_R)     — the powerset of D_R; a set of fired priors is a region of D_R
+cl_R       — R's closure: the smallest concept containing a set of priors
+C_R        — R's concept lattice: the cl_R-closed subsets of D_R
+
+latent-priors(w, R)  — the understanding w carries in R BEFORE any definition:
+                       the associations, connotations, structured knowledge R unpacks
+                       from the token alone; a region of D_R
+
+read-by-priors-not-surface — recognition rule: resolve w by the form its priors evoke,
+                       not by surface wording; noise is trace, not the meaning
+
+anchor-to-readers-priors — fit is reader-relative: w's fired priors are R-indexed;
+                       precise for one R may be opaque for another
+
+precise-circumscription(w, C, R) — w fits C iff latent-priors(w,R) circumscribe C:
+                       cover C's full extent and reach nothing beyond it
+                       (too-broad ⇒ false inclusion; too-narrow ⇒ fails to cover)
+
+Names      — the signifiers R can read
+dec_R      — signify's decoder: dec_R(a) = the priors anchor a fires, defined on
+             assigned anchors  dom(dec_R) ⊆ Names
 w          — a signifier under probe; w ∈ Names, need not lie in dom(dec_R)
-fired_R    — the priors w evokes in R; signify's decoder, generalized off its anchors
+
+LAWS
 
 fired_R : Names → ℘(D_R)
-fired_R(a) = dec_R(a)              ,  a ∈ dom(dec_R)      -- agrees with signify on assigned anchors
-concept_R(w) ≜ cl_R(fired_R(w))                          -- the concept w circumscribes in R
-probe(w) ≜ ( fired_R(w), concept_R(w) )                  -- readout only; α and C_R unchanged
+fired_R(w) ≜ latent-priors(w, R)                        -- the priors w evokes in R
+fired_R(a)  = dec_R(a)              ,  a ∈ dom(dec_R)    -- agrees with signify on assigned anchors
+
+concept_R(w) ≜ cl_R(fired_R(w))                         -- the concept w circumscribes in R
+
+probe(w) ≜ ( fired_R(w), concept_R(w) )                 -- readout only; nothing committed
+                                                        -- α and C_R unchanged
+
+-- discover    : read concept_R(w) latent in a given name w
+-- experiment  : weigh candidate names {w_i} against a target C by
+--               precise-circumscription(w_i, C, R); a keeper crystallizes through signify
 ```

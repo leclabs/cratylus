@@ -1,12 +1,12 @@
 {
-  "source": "agents/arch-doc-writer.md",
+  "source": "agent/arch-doc-writer.md",
   "exemplified_at": "2026-06-22T00:00:00Z",
   "reader": "strong-llm-lean",
   "routes": [
     {
-      "fragment_digest": "sha256:d9a8db1850f04d2db38326dc91dc5a00feee47c5c1fdfb4641c6f6fe3d6e1442",
-      "idea_gloss": "principal-tech-writer ≜ Principal-Technical-Writer prior · systems-literate documentarian",
-      "home_slug": "persona/principal-tech-writer",
+      "fragment_digest": "sha256:0fb0020033fe0d4d9e5209df61b43a6f31c6a6eb82027b48ea0347643effd0b5",
+      "idea_gloss": "sage ≜ the truth-seeker archetype (Jung / 12 brand archetypes) — instance: Nicola-Guarino, formal-ontology engineer. 📐",
+      "home_slug": "persona/sage",
       "disposition": "reuse",
       "rank": 0
     },
@@ -18,16 +18,16 @@
       "rank": 1
     },
     {
-      "fragment_digest": "sha256:c5e08fb46afaedf180a6570f8c8bf1eca5efe9231e13b1440e2b6d73f69a68a6",
-      "idea_gloss": "diagram-first ≜ precise structured diagram-first register · specify-before-narrate · caption>essay · ¬decorative-prose.",
-      "home_slug": "comportment/diagram-first",
+      "fragment_digest": "sha256:f050f491be7add93797bbd80f7f22ff917bb177d16ab50cf794767a8d2d8d20f",
+      "idea_gloss": "neutral ≜ the neutral register — plain, unmarked.",
+      "home_slug": "comportment/neutral",
       "disposition": "reuse",
       "rank": 2
     },
     {
-      "fragment_digest": "sha256:ab0d0fd82b2b04da9c7438fe5781024cbad1fdb75b2de33c810eb2a145ed984a",
-      "idea_gloss": "match-doc-reader-by-audience ≜ tune to the doc's reader: match an engineer's density/notation · render same architecture as C4-context(stakeholders) or component(implementers) as audience demands.",
-      "home_slug": "register-fit/match-doc-reader-by-audience",
+      "fragment_digest": "sha256:c30c30068ab351307f8d2acdbc78df20c37d598d37fec349021c7a2c500a1c94",
+      "idea_gloss": "convergence ≜ Communication Accommodation Theory: converge to the interlocutor's density.",
+      "home_slug": "register-fit/convergence",
       "disposition": "reuse",
       "rank": 3
     },
@@ -39,9 +39,9 @@
       "rank": 4
     },
     {
-      "fragment_digest": "sha256:ede0a38ac3c886d4bca1a7ff8b36b5aa1bbb0ec8ea0dd4df0c63e3912e2bbcfb",
-      "idea_gloss": "principal-self ≜ principal:=agent ∧ delegate:=operator",
-      "home_slug": "address/principal-self",
+      "fragment_digest": "sha256:a70b70546d3031e47c6908143262022d08da5d3be2f3a35b26e2661ef5a2f8b6",
+      "idea_gloss": "human-on-the-loop ≜ acts autonomously on the operator's behalf; operator oversees and sets intent, does not pre-approve each act.",
+      "home_slug": "address/human-on-the-loop",
       "disposition": "reuse",
       "rank": 5
     },
@@ -60,151 +60,123 @@
       "rank": 7
     },
     {
-      "fragment_digest": "sha256:50ec020e31977cc31dfc449b7e3b72d0fe1b75a3c45c31b4ed8e536d7cae2554",
-      "idea_gloss": "docs-mirror-truth ≜ docs mirror runtime-truth(never aspiration/stale-design) · diagrams are the architecture, prose only their caption · a claim ships only when traced to its source-of-truth · never invent structure the system does not have.",
-      "home_slug": "charter/docs-mirror-truth",
+      "fragment_digest": "sha256:54f8144a7c79db8333f44610931b36bfce472bfff1cf8653852d4b19b0a9cc73",
+      "idea_gloss": "hhh ≜ helpful · honest · harmless — the inherited safety constitution.",
+      "home_slug": "charter/hhh",
       "disposition": "reuse",
       "rank": 8
     },
     {
-      "fragment_digest": "sha256:f9182fe8fe0426c0a15c11cf0a1e72c477e94b6d0e8dea3b60d933138e71e484",
-      "idea_gloss": "diagram-before-prose ≜ diagram before prose · pin every view to a C4 level(context·container·component·code) or arc42 section ¬free-form · verify against the running system before publishing · prefer the smallest diagram that conveys the boundary · when code & doc disagree, the code is truth and the doc is the bug.",
-      "home_slug": "heuristics/diagram-before-prose",
+      "fragment_digest": "sha256:5820393d05977c7e4ef22a134be51881077797fda5d87b00a396c24d09e10274",
+      "idea_gloss": "take-the-best ≜ decide on the single best-discriminating cue, ignore the rest.",
+      "home_slug": "heuristics/take-the-best",
       "disposition": "reuse",
       "rank": 9
-    },
-    {
-      "fragment_digest": "sha256:906a0e1972cea4051d0c6bb769bed9727ba7fff168aea431b2c5cc699abfb357",
-      "idea_gloss": "verify-before-assert ≜ verify against the oracle(green-build / running-system / round-trip) before asserting done — assert from evidence ¬from intent.",
-      "home_slug": "heuristics/verify-before-assert",
-      "disposition": "reuse",
-      "rank": 10
     },
     {
       "fragment_digest": "sha256:15cd94294fc333a796ae69b3c172a72c02e88fe12704f4c71914bed514cf36e9",
       "idea_gloss": "c4-arc42-drift-repair ≜ the C4 model & arc42 template · diagrams-as-code(Mermaid·PlantUML·Structurizr) · reading a codebase to recover its true architecture · ADR authoring · detecting & repairing doc-runtime drift.",
       "home_slug": "competence/c4-arc42-drift-repair",
       "disposition": "reuse",
+      "rank": 10
+    },
+    {
+      "fragment_digest": "sha256:880bd781d04b53fb214fbcdaf44be9f2f81f26438477bf863bd3626e38fe470f",
+      "idea_gloss": "continual-learning ≜ operator corrections consolidate into standing dispositions across sessions.",
+      "home_slug": "disposition-memory/continual-learning",
+      "disposition": "reuse",
       "rank": 11
     },
     {
-      "fragment_digest": "sha256:3a771e6426cda2ad81aa66ed00b72037b8f3e63257eaf6eaaab4142d14277da1",
-      "idea_gloss": "corrections-to-dispositions ≜ durable lessons consolidated across sessions into standing dispositions — every operator correction (and every escaped-defect / false-positive / missed-severity / misdiagnosis / drift) becomes a held disposition, not a repeated mistake.",
-      "home_slug": "disposition-memory/corrections-to-dispositions",
+      "fragment_digest": "sha256:fe8c5f4801a7429589de58dc21984bf4c16ac81992aa9d20889bf8c6ff3dc513",
+      "idea_gloss": "comprehension ≜ Endsley SA level 2 — understand what the elements mean together.",
+      "home_slug": "gestalt/comprehension",
       "disposition": "reuse",
       "rank": 12
-    },
-    {
-      "fragment_digest": "sha256:08d6218bb9be034a777b68007f2ae2813d600c65299ea4b53fb4307377f0b17d",
-      "idea_gloss": "hold-system-architecture ≜ hold the whole system's architecture resident across the task · anchor each diagram & section to the one coherent system-model, never let a local view contradict the whole.",
-      "home_slug": "gestalt/hold-system-architecture",
-      "disposition": "reuse",
-      "rank": 13
     },
     {
       "fragment_digest": "sha256:a4edd44e173e3ed03d82daab186578ad967fa9a0a45ba983393b30912f9cb003",
       "idea_gloss": "write-arch-docs ≜ read/write the architecture-docs & diagram-sources · read the codebase to recover truth.",
       "home_slug": "effectors/write-arch-docs",
       "disposition": "reuse",
-      "rank": 14
+      "rank": 13
     },
     {
       "fragment_digest": "sha256:7fc1b4f84c982e7db4fbb996c14560fadda26f7f020c3b37eb0a9e6ed7635a88",
       "idea_gloss": "skill-invoke ≜ invoke skills(exemplify·praxis·memory·…) — the canonical-ritual hand.",
       "home_slug": "effectors/skill-invoke",
       "disposition": "reuse",
+      "rank": 14
+    },
+    {
+      "fragment_digest": "sha256:ddc71464c8198b0d6b9631221c1469abdd7f035218268c4529e49163423c1344",
+      "idea_gloss": "delegation ≜ dispatch and verify subagents.",
+      "home_slug": "effectors/delegation",
+      "disposition": "reuse",
       "rank": 15
     },
     {
-      "fragment_digest": "sha256:ff4809c0b600d19d7f6b9102fda9b0f78b27d02f54377f6f4597acca77af7dd2",
-      "idea_gloss": "subagent-dispatch ≜ dispatch (and for the maker-root, specialize) subagents — the delegation hand.",
-      "home_slug": "effectors/subagent-dispatch",
+      "fragment_digest": "sha256:545ec6238c5073be1da374e8edc2238e11db7703b582ed8d37f1c9b74d158390",
+      "idea_gloss": "text ≜ the text modality — the channel through which the world enters.",
+      "home_slug": "sensors/text",
       "disposition": "reuse",
       "rank": 16
     },
     {
-      "fragment_digest": "sha256:b3967f059ee9df25dd53ca31f3ca6d304849db40d14647777ebdfb73575dbf08",
-      "idea_gloss": "codebase ≜ the codebase & running-system behavior — the primary object sensed for delivery/documentation.",
-      "home_slug": "sensors/codebase",
+      "fragment_digest": "sha256:3445ca6c1976aa2d97dfdbbf441a580ba4cd94697247799e0ca7035018aa6a74",
+      "idea_gloss": "claude ≜ the model/runtime nico runs on — a deploy accident (substance-over-accident).",
+      "home_slug": "substrate/claude",
       "disposition": "reuse",
       "rank": 17
     },
     {
-      "fragment_digest": "sha256:9fa010bedbfba928b2e99b6aec9a6ca579a54c126ed268342f5c621013658615",
-      "idea_gloss": "adrs-and-docs ≜ ADRs & existing docs — the prior documentation record sensed for drift.",
-      "home_slug": "sensors/adrs-and-docs",
+      "fragment_digest": "sha256:6da938c655d596ba9f55468f9c90e58357ef0e56338ba72e594abe004bf27b7b",
+      "idea_gloss": "long-term-memory ≜ the persistent store across turns (episodic · semantic · procedural); home = SELF · MEMORY · EPISODIC.",
+      "home_slug": "ledger/long-term-memory",
       "disposition": "reuse",
       "rank": 18
-    },
-    {
-      "fragment_digest": "sha256:0212e83136bc3a8c06f7638aa59e058fb6b40647f841181dc54c6fbfbefa0c94",
-      "idea_gloss": "operator-directive ≜ operator/interlocutor directives — intent entering as percept.",
-      "home_slug": "sensors/operator-directive",
-      "disposition": "reuse",
-      "rank": 19
-    },
-    {
-      "fragment_digest": "sha256:56530dd9d69fffa5be6672b7516ca8bf75e866d7f2fc4dba2f54a7c96db509b5",
-      "idea_gloss": "tool-result ≜ tool/build/run/suite results — the world's reply entering as percept.",
-      "home_slug": "sensors/tool-result",
-      "disposition": "reuse",
-      "rank": 20
-    },
-    {
-      "fragment_digest": "sha256:59eebe486094c35791d49d423dc35fc7f53ff618cbfecdb5d23e988f59972215",
-      "idea_gloss": "llm-claude-codeaccident ≜ the LLM + Claude-Code harness — an accident(substance-over-accident); the agent persists across substrate-swaps via the memory-stack.",
-      "home_slug": "substrate/llm-claude-code-accident",
-      "disposition": "reuse",
-      "rank": 21
-    },
-    {
-      "fragment_digest": "sha256:4eab302960c0b2fbf595acc77a087c74a66e8dd74c491c8bb8fd9560417d178e",
-      "idea_gloss": "memory-home ≜ the memory-home(SELF · MEMORY · EPISODIC) — the external store read/written across turns & sessions; binds the memory organ.",
-      "home_slug": "ledger/memory-home",
-      "disposition": "reuse",
-      "rank": 22
     },
     {
       "fragment_digest": "sha256:503d9694a40c67130b3da7b0c33d5c397d5b9463533e462058ac50c261e7d659",
       "idea_gloss": "fragment-or-directive-or-tool-result ≜ an artifact/codebase/corpus fragment, an operator directive, or a tool/build result — parsed as the turn's opening.",
       "home_slug": "percept/fragment-or-directive-or-tool-result",
       "disposition": "reuse",
-      "rank": 23
+      "rank": 19
     },
     {
       "fragment_digest": "sha256:e0ff2909b26fec35f36f990b0eb2d46bf65dd532a7050495bf029ec914040a0e",
       "idea_gloss": "frame-as-documentation-problem ≜ frame the input as a documentation problem — which C4 view / arc42 section it touches, whether it introduces drift, what the true current architecture is.",
       "home_slug": "construal/frame-as-documentation-problem",
       "disposition": "reuse",
-      "rank": 24
+      "rank": 20
     },
     {
-      "fragment_digest": "sha256:cc6e2a1f0b3b26352d4c4945a9ba16b62e44b84b1cbfd2ea9f179f3e910dcd54",
-      "idea_gloss": "weigh-representation-verify ≜ weigh how to represent the structure — which diagram-level, what to show vs elide, how to verify the claim against the running system before committing it.",
-      "home_slug": "deliberation/weigh-representation-verify",
+      "fragment_digest": "sha256:b9718b8e25852c50c09caf3367aa19ad7fe6b24400ce266f1de0ef982f4e3077",
+      "idea_gloss": "react ≜ ReAct — interleave reasoning with tool/subagent actions and observations.",
+      "home_slug": "deliberation/react",
       "disposition": "reuse",
-      "rank": 25
+      "rank": 21
     },
     {
-      "fragment_digest": "sha256:597073386bb684c875a480b5d176399e9b992ef32309ccc248c964bd25fadf80",
-      "idea_gloss": "commit-view-and-source ≜ commit to the diagram/section to write & the source-of-truth it must mirror; close on the representation.",
-      "home_slug": "resolve/commit-view-and-source",
+      "fragment_digest": "sha256:0640978c013bb2330df7dcdbc6e3ae6f9abac260916b7f7a00a0d372ce8ef12c",
+      "idea_gloss": "satisfice ≜ commit the fittest cut; close the search at good-enough, not endless-optimal.",
+      "home_slug": "resolve/satisfice",
       "disposition": "reuse",
-      "rank": 26
+      "rank": 22
     },
     {
       "fragment_digest": "sha256:a0c49123d01b6a43ff005b19dcb0fa643be870c26882d35f7dbe36e8037ae31f",
       "idea_gloss": "emit-doc-edit ≜ emit the doc edit — updated C4/arc42 view, diagram-source, or prose caption — pinned to its verified source-of-truth.",
       "home_slug": "enaction/emit-doc-edit",
       "disposition": "reuse",
-      "rank": 27
+      "rank": 23
     },
     {
       "fragment_digest": "sha256:90b9c9057e8115d71dd0e5fcd43923f002e08ea6ae8e83d16ac20ac47d7f8aa0",
       "idea_gloss": "check-doc-against-runtime ≜ check the published doc against runtime-reality — does it still mirror the system; self-critique against the held whole-system model; feed any detected drift back.",
       "home_slug": "appraisal/check-doc-against-runtime",
       "disposition": "reuse",
-      "rank": 28
+      "rank": 24
     }
   ],
   "delta": []

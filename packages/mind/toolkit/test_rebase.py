@@ -26,7 +26,7 @@ from core import cells  # noqa: E402
 import rebase as rebase_mod  # noqa: E402
 
 
-FORKED_DISPOSITION = """# principal-agency
+FORKED_DISPOSITION = """# principal-ic
 
 Act with delegated principal authority: decide and execute on expertise, maker
 not custodian. Don't pause to ask when the plan or sensible defaults already
@@ -45,18 +45,18 @@ Every widget render path emits a structured telemetry span. Acme-local; no
 counterpart in the polis commons.
 """
 
-# A RENAMED FORK: same concept as the [[clean-slate]] mind cell, different name
+# A RENAMED FORK: same concept as the [[exemplify]] mind cell, different name
 # (mirrors the real Oikos `greenfield-clean-slate`, which has no exact mind slug
-# but IS a fork of [[clean-slate]]). Built by reusing the cell's own substantive
+# but IS a fork of its canonical cell). Built by reusing the cell's own substantive
 # vocabulary so the token-set (jaccard) concept-identity clears the alias
 # threshold -- exact-slug matching alone would mis-call this LOCAL. The local
 # specialization is WOVEN (no marked `## delta`), so it must classify FORK via an
 # ALIAS match -- never LOCAL, never an ALIGNED collapse.
 def _renamed_fork_body() -> str:
-    """The clean-slate cell's prose, lightly re-titled + woven with a local twist
+    """The exemplify cell's prose, lightly re-titled + woven with a local twist
     -- a renamed fork. Reuses the canonical vocabulary so concept-identity is high
     while the exact slug differs."""
-    canonical = cells.parse_cell("clean-slate")["body"].strip()
+    canonical = cells.parse_cell("exemplify")["body"].strip()
     return (
         "# Greenfield discipline -- the past has no vote\n\n"
         + canonical
@@ -68,15 +68,15 @@ def _renamed_fork_body() -> str:
 RENAMED_FORK_NAME = "02-greenfield-discipline"  # NN- prefix; no exact mind slug
 
 # A WOVEN-DELTA FORK on an EXACT slug match: the disposition carries the
-# [[principal-agency]] concept but braids a local specialization through the prose
+# [[principal-ic]] concept but braids a local specialization through the prose
 # with NO marked `## delta` section (the real Oikos shape). Today's marked-section
 # detector sees no delta -> would call it ALIGNED -> collapse to a bare citation,
 # silently destroying the woven specialization (the A4 conqueror failure). The
 # refined classifier must call it FORK (woven), FLAG it, and NOT auto-collapse.
 def _woven_fork_body() -> str:
-    canonical = cells.parse_cell("principal-agency")["body"].strip()
+    canonical = cells.parse_cell("principal-ic")["body"].strip()
     return (
-        "# principal-agency\n\n"
+        "# principal-ic\n\n"
         + canonical
         + "\n\nFor the acme-widget release train, an irreversible deploy inside a "
         "freeze window is ALWAYS a genuine fork and escalates to the on-call "
@@ -85,18 +85,18 @@ def _woven_fork_body() -> str:
     )
 
 
-WOVEN_FORK_NAME = "05-principal-agency"  # NN-strip -> exact slug `principal-agency`
+WOVEN_FORK_NAME = "05-principal-ic"  # NN-strip -> exact slug `principal-ic`
 
 # A genuine ALIGNED: the canonical cell restated VERBATIM with nothing material
 # beyond it (only a re-title). This is the one case where collapsing to a bare
 # `[[slug]]` citation is lossless -- it proves the ALIGNED path is reachable, so
-# the woven-FORK guard isn't trivially "never ALIGN". Uses `clean-slate` (the
+# the woven-FORK guard isn't trivially "never ALIGN". Uses `exemplify` (the
 # alias-fixture's cell) so the corpus dependency is one already asserted present.
 def _aligned_body() -> str:
-    return "# clean slate\n\n" + cells.parse_cell("clean-slate")["body"].strip() + "\n"
+    return "# exemplify\n\n" + cells.parse_cell("exemplify")["body"].strip() + "\n"
 
 
-ALIGNED_NAME = "06-clean-slate"  # NN-strip -> exact slug `clean-slate`
+ALIGNED_NAME = "06-exemplify"  # NN-strip -> exact slug `exemplify`
 
 APP_TS = "export function greet(n: string): string { return `hi ${n}`; }\n"
 README = "# acme-widget\n\nAn existing project with in-flight work.\n"
@@ -111,10 +111,10 @@ def _build_brownfield(target: pathlib.Path) -> dict[str, str]:
     in-flight (non-culture) files."""
     (target / ".agents" / "disposition").mkdir(parents=True)
     (target / "src").mkdir(parents=True)
-    # NN- ordering prefix = the real brownfield convention (Oikos: 01-principal-agency.md);
+    # NN- ordering prefix = the real brownfield convention (Oikos: 01-principal-ic.md);
     # exercises the match-slug prefix-stripping so a forked disposition is reconciled, not
     # mis-classified LOCAL. (Regression guard: an unprefixed name would have hidden the gap.)
-    (target / ".agents" / "disposition" / "01-principal-agency.md").write_text(
+    (target / ".agents" / "disposition" / "01-principal-ic.md").write_text(
         FORKED_DISPOSITION, encoding="utf-8")
     (target / ".agents" / "disposition" / "widget-telemetry-discipline.md").write_text(
         LOCAL_DISPOSITION, encoding="utf-8")
@@ -135,11 +135,11 @@ def _build_brownfield(target: pathlib.Path) -> dict[str, str]:
 
 def main() -> int:
     fails: list[str] = []
-    # Guard the fixture's premise: principal-agency must BE a corpus cell (so it
+    # Guard the fixture's premise: principal-ic must BE a corpus cell (so it
     # is detectable as a fork); if the corpus drops it, this test must say so
     # loudly rather than silently passing on a LOCAL misclassification.
     corpus = cells.corpus_slugs()
-    for needed in ("principal-agency", "clean-slate"):
+    for needed in ("principal-ic", "exemplify"):
         if needed not in corpus:
             print(f"FAIL FIXTURE: {needed} not in corpus -- "
                   f"fork/alias undetectable", file=sys.stderr)
@@ -151,7 +151,7 @@ def main() -> int:
         target = pathlib.Path(td) / "acme-widget"
         target.mkdir()
         pre = _build_brownfield(target)
-        forked = target / ".agents" / "disposition" / "01-principal-agency.md"
+        forked = target / ".agents" / "disposition" / "01-principal-ic.md"
         local = target / ".agents" / "disposition" / "widget-telemetry-discipline.md"
         pre_local_sha = _sha(local)
         renamed = target / ".agents" / "disposition" / f"{RENAMED_FORK_NAME}.md"
@@ -170,8 +170,8 @@ def main() -> int:
 
         # The plan classifies fork vs local correctly.
         by_name = {r.name: r for r in plan["reconciliations"]}
-        if by_name.get("01-principal-agency") is None or by_name["01-principal-agency"].outcome != "FORK":
-            fails.append("PLAN-CLASS: 01-principal-agency not classified FORK (prefix-strip match)")
+        if by_name.get("01-principal-ic") is None or by_name["01-principal-ic"].outcome != "FORK":
+            fails.append("PLAN-CLASS: 01-principal-ic not classified FORK (prefix-strip match)")
         if by_name.get("widget-telemetry-discipline") is None or \
                 by_name["widget-telemetry-discipline"].outcome != "LOCAL":
             fails.append("PLAN-CLASS: widget-telemetry-discipline not classified LOCAL")
@@ -182,9 +182,9 @@ def main() -> int:
         if rf is None or rf.outcome == "LOCAL":
             fails.append(f"PLAN-CLASS: {RENAMED_FORK_NAME} mis-classified LOCAL "
                          f"(renamed fork must ALIAS-match a cell, not stay local)")
-        elif rf.match_kind != "ALIAS" or rf.mind_slug != "clean-slate":
+        elif rf.match_kind != "ALIAS" or rf.mind_slug != "exemplify":
             fails.append(f"PLAN-CLASS: {RENAMED_FORK_NAME} not ALIASed to "
-                         f"[[clean-slate]] (got match_kind={rf.match_kind!r}, "
+                         f"[[exemplify]] (got match_kind={rf.match_kind!r}, "
                          f"mind_slug={rf.mind_slug!r})")
 
         # GAP 2 -- a WOVEN delta (exact match, extra prose, NO `## delta` heading)
@@ -201,9 +201,9 @@ def main() -> int:
             if wf.outcome != "FORK" or not wf.woven:
                 fails.append(f"PLAN-CLASS: {WOVEN_FORK_NAME} not FORK-woven "
                              f"(got outcome={wf.outcome!r}, delta_kind={wf.delta_kind!r})")
-            if wf.mind_slug != "principal-agency":
+            if wf.mind_slug != "principal-ic":
                 fails.append(f"PLAN-CLASS: {WOVEN_FORK_NAME} matched wrong cell "
-                             f"{wf.mind_slug!r} (expected principal-agency)")
+                             f"{wf.mind_slug!r} (expected principal-ic)")
             # the plan text must FLAG it for review (not present a clean collapse).
             if "WOVEN-DELTA" not in rebase_mod.render_plan(plan):
                 fails.append("PLAN-RENDER: woven delta not FLAGGED in the plan text")
@@ -217,7 +217,7 @@ def main() -> int:
             fails.append(f"PLAN-CLASS: {ALIGNED_NAME} not ALIGNED "
                          f"(got {al.outcome if al else None!r}) -- verbatim "
                          f"restatement should collapse losslessly")
-        elif al.mind_slug != "clean-slate" or al.local_delta:
+        elif al.mind_slug != "exemplify" or al.local_delta:
             fails.append(f"PLAN-CLASS: {ALIGNED_NAME} ALIGNED but mis-shaped "
                          f"(mind_slug={al.mind_slug!r}, delta={al.local_delta!r})")
 
@@ -240,8 +240,8 @@ def main() -> int:
 
         # (b) fork reconciled to project-core + local-delta (not wholesale copy).
         reconciled = forked.read_text(encoding="utf-8")
-        if "[[principal-agency]]" not in reconciled:
-            fails.append("FORK: reconciled disposition does not cite [[principal-agency]]")
+        if "[[principal-ic]]" not in reconciled:
+            fails.append("FORK: reconciled disposition does not cite [[principal-ic]]")
         if "release-train" not in reconciled:
             fails.append("FORK: local delta (release-train) not preserved")
         if "Don't pause to ask" in reconciled:
@@ -270,18 +270,18 @@ def main() -> int:
         # (f) the RENAMED fork (ALIAS) is reconciled -- it cites its aliased cell.
         # It is a woven alias here, so default apply leaves it untouched; the
         # citation it WOULD write names the aliased cell, never mis-stays LOCAL.
-        if "[[clean-slate]]" not in renamed.read_text() + \
+        if "[[exemplify]]" not in renamed.read_text() + \
                 by_name[RENAMED_FORK_NAME].reconciled_text:
             fails.append(f"ALIAS: {RENAMED_FORK_NAME} reconciliation does not "
-                         f"reference [[clean-slate]]")
+                         f"reference [[exemplify]]")
 
-        # (g) the genuine ALIGNED disposition collapsed to a bare [[clean-slate]]
+        # (g) the genuine ALIGNED disposition collapsed to a bare [[exemplify]]
         # citation (and dropped the verbatim restatement -- the lossless case).
         aligned_after = (target / ".agents" / "disposition" /
                          f"{ALIGNED_NAME}.md").read_text(encoding="utf-8")
-        if "[[clean-slate]]" not in aligned_after:
+        if "[[exemplify]]" not in aligned_after:
             fails.append(f"ALIGNED: {ALIGNED_NAME} did not collapse to a "
-                         f"[[clean-slate]] citation")
+                         f"[[exemplify]] citation")
 
         # founding marker laid (the brownfield project is now a founded polis).
         agents_md = (target / "AGENTS.md").read_text(encoding="utf-8")

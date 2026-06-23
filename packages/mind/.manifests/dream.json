@@ -1,56 +1,28 @@
 {
-  "source": "skills/dream.md",
+  "source": "skill/dream.md",
   "exemplified_at": "2026-06-22T00:00:00Z",
   "reader": "strong-llm-lean",
   "routes": [
     {
-      "fragment_digest": "sha256:2f17873b9e461d9982fa3fbfc22834f4881227a46ee37685cc1f886d1067bc08",
+      "fragment_digest": "sha256:b619afefa9709abdc73cc54ac1f6dbe087b87f2a95ed67d03d861ad9a52535f2",
       "idea_gloss": "optimize a context corpus into a canonical semantic factorization — compose produce → name → realize over the one concept-contract record, then gate on accept; emits the R3 routing manifest that catches the dropped idea.",
       "home_slug": "exemplify",
       "disposition": "reuse",
       "rank": 0
     },
     {
-      "fragment_digest": "sha256:d382e359ef84c465ad8c87631addc9047c04c0a924c5caa691053d8ca0b8486f",
+      "fragment_digest": "sha256:87ccfc656390849252afb1fd55f655b252734450c69e5d4330a9bbf3dda62e64",
       "idea_gloss": "use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization `F_R`, emit the bipartite normal form `CSF_R` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.",
       "home_slug": "materialize",
       "disposition": "reuse",
       "rank": 1
     },
     {
-      "fragment_digest": "sha256:22b107dfdcde45000c4d16a346fa80950a30b12dc52e1af3dd2d3e2bdf911841",
-      "idea_gloss": "An ambient person-agent's memory — the one home for the whole lifecycle (encode → dream → wake) and the model behind it: resident layers (SOUL commons-fixed; SELF, MEMORY, EPISODIC self-authored) plus outward homes (AGENTS.md, vault), where every memory is placed by two orthogonal axes — type/voice picks the organ, scope picks the instance — so one agent stays one person across fleet, user, and project.",
-      "home_slug": "memory",
-      "disposition": "reuse",
-      "rank": 2
-    },
-    {
-      "fragment_digest": "sha256:eeae6d006df5b7908e60fcd5889857e48d096c2925b65619e32d0ea403b27c9a",
-      "idea_gloss": "The library is built and judged by running its own method on itself — every artifact, including this corpus's own cells and docs, is a source subject to decompose → route → reconstruct; round-trip equivalent-or-better is the acceptance test, and no anchor is grandfathered.",
-      "home_slug": "self-application-is-mandatory",
-      "disposition": "reuse",
-      "rank": 3
-    },
-    {
-      "fragment_digest": "sha256:1c3821be051459fb91254c92cf0625f592af9a46abce525899ad0bde24ca1dd0",
-      "idea_gloss": "The model's default output is human-facing prose; a context's reader is an agent whose priors an anchor already loads. Default to the agent register — densest faithful point, by-reference, ink only the delta — and treat the prose-for-humans style as a trained bias to override, not a neutral baseline.",
-      "home_slug": "context-not-prose",
-      "disposition": "reuse",
-      "rank": 4
-    },
-    {
-      "fragment_digest": "sha256:c948d44973c52ad3d848599022c9483abb1cfaca25ab38aa4278a5a83b5376f1",
-      "idea_gloss": "An artifact bearing the visible strata of its own superseded states — an abandoned name, a narrated removal, changelog residue (\"(resolved)\"/\"previously\"/\"now\"/\"amended-by\") ghosting through the current text; corpus rot, because a fresh reader must read through history they did not ask for.",
-      "home_slug": "palimpsest",
-      "disposition": "reuse",
-      "rank": 5
-    },
-    {
-      "fragment_digest": "sha256:b1d469ad86a8f6258821fd381b34296a886323904db10120a8898001d9668c3c",
-      "idea_gloss": "use this skill to reconstitute an agent at session start — run the memory home's WAKE sequence (dream → load → orient → resume) so it resumes as the same individual; the read-and-resume counterpart to /dream, invocable as /wake.",
+      "fragment_digest": "sha256:d114965f5f6ebbf593f14c08d3333c41150b8bd9de1b09a1d567e115f4a269fc",
+      "idea_gloss": "use this skill to reconstitute an agent at session start — run the WAKE sequence (dream → load → orient → resume) so it resumes as the same individual; the read-and-resume counterpart to /dream, invocable as /wake.",
       "home_slug": "wake",
       "disposition": "reuse",
-      "rank": 6
+      "rank": 2
     }
   ],
   "delta": []

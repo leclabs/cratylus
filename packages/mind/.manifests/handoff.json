@@ -1,49 +1,35 @@
 {
-  "source": "skills/handoff.md",
+  "source": "skill/handoff.md",
   "exemplified_at": "2026-06-22T00:00:00Z",
   "reader": "strong-llm-lean",
   "routes": [
     {
-      "fragment_digest": "sha256:d5a60455cf6e4d269cbe4aa24bd60d6250c0e59e3816359174068b1b4b7cd55e",
-      "idea_gloss": "Create and work durable, sharded plans ([[sharded-plan-layout]] dirs) — reached by planning intent, not a command grammar; task state is the folder a task-file sits in (pending/ready/active/completed), PLAN.md mirrors it, and `list` is the one explicit affordance.",
+      "fragment_digest": "sha256:7c8533f1a2a8e526e59477faf46cc40f2d32292313ccc33e682ad2effb5aba77",
+      "idea_gloss": "Create and work durable, sharded plans (sharded-plan-layout dirs) — reached by planning intent, not a command grammar; task state is the folder a task-file sits in (pending/ready/active/completed), PLAN.md mirrors it, and `list` is the one explicit affordance.",
       "home_slug": "praxis",
       "disposition": "reuse",
       "rank": 0
     },
     {
-      "fragment_digest": "sha256:fd4e766e0fd566079c9fa6097f912581af26615b7e92e86ca067223aebe15542",
+      "fragment_digest": "sha256:3b5975c9800f325ff9d5b97e3e77c9755128dc76909c71dbc55ce743de1e51b5",
       "idea_gloss": "use this skill to consolidate an agent's memory — distil the raw EPISODIC stream and route each item by two orthogonal axes (type/voice picks the organ, scope picks the instance): identity rises to SELF, durable knowledge to MEMORY, directives to the scoped AGENTS.md, networked reference to the vault, next-steps stay in EPISODIC, the rest is dropped; consumed raw is cleared; SOUL is never written.",
       "home_slug": "dream",
       "disposition": "reuse",
       "rank": 1
     },
     {
-      "fragment_digest": "sha256:8b23e56aeb8ee251c8fc7db2a1232e5dc8f642a8ba25f9f635be51d7bccace88",
-      "idea_gloss": "The live runtime state is the source of truth; a written status doc is a mirror kept current, never the authority — keep them in sync, and when they diverge the runtime wins.",
-      "home_slug": "doc-mirrors-runtime-truth",
+      "fragment_digest": "sha256:d114965f5f6ebbf593f14c08d3333c41150b8bd9de1b09a1d567e115f4a269fc",
+      "idea_gloss": "use this skill to reconstitute an agent at session start — run the WAKE sequence (dream → load → orient → resume) so it resumes as the same individual; the read-and-resume counterpart to /dream, invocable as /wake.",
+      "home_slug": "wake",
       "disposition": "reuse",
       "rank": 2
     },
     {
-      "fragment_digest": "sha256:22b107dfdcde45000c4d16a346fa80950a30b12dc52e1af3dd2d3e2bdf911841",
-      "idea_gloss": "An ambient person-agent's memory — the one home for the whole lifecycle (encode → dream → wake) and the model behind it: resident layers (SOUL commons-fixed; SELF, MEMORY, EPISODIC self-authored) plus outward homes (AGENTS.md, vault), where every memory is placed by two orthogonal axes — type/voice picks the organ, scope picks the instance — so one agent stays one person across fleet, user, and project.",
-      "home_slug": "memory",
-      "disposition": "reuse",
-      "rank": 3
-    },
-    {
-      "fragment_digest": "sha256:b1d469ad86a8f6258821fd381b34296a886323904db10120a8898001d9668c3c",
-      "idea_gloss": "use this skill to reconstitute an agent at session start — run the memory home's WAKE sequence (dream → load → orient → resume) so it resumes as the same individual; the read-and-resume counterpart to /dream, invocable as /wake.",
-      "home_slug": "wake",
-      "disposition": "reuse",
-      "rank": 4
-    },
-    {
-      "fragment_digest": "sha256:ae56753f3edfd1ef81aa3ec8582086fd9234ada0e9ae4a9a11fecf1e76de0fb3",
+      "fragment_digest": "sha256:19bbd60eef23885c5f6be4e69ae5bfaa3f7c76939185d27a7590f3f34848e305",
       "idea_gloss": "use this skill when the Operator utters the re-dispatch word — \"weitermachen\", \"carry on\", \"proceed\" — closing a check-in and returning you to execution; standing intent unchanged, execution authority re-affirmed, no fresh permission owed.",
       "home_slug": "weitermachen",
       "disposition": "reuse",
-      "rank": 5
+      "rank": 3
     }
   ],
   "delta": []

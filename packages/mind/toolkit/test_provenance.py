@@ -4,7 +4,9 @@ contract: a `kind: skill` whose only early `≜` is FENCED math composes empty
 provenance, and verify surfaces it as a NOTE (a warning, NOT a failure -- a skill
 may legitimately compose from nothing). The recurring empty-provenance bug can no
 longer regress silently. A skill with a PROSE `≜` formula raises no warning, and
-the clean corpus (all 7 real skills carry provenance) stays warning-free + green.
+the clean corpus warns ONLY for the known compose-nothing allowlist
+{praxis, weitermachen} (both legitimately compose NO sibling skill) -- no OTHER
+real skill warns, and verify stays green.
 
 Run: python3 toolkit/test_provenance.py   (exit non-zero on any failure)
 """
@@ -46,8 +48,13 @@ zz ≜ mece
 # PROSE-FORMULA: a real prose `≜` line -> non-empty provenance -> no warning.
 PROSE_FORMULA = FENCED_ONLY.replace(
     "intro prose, no prose formula.",
-    "zz-provenance-fixture ≜ references [[mece]]",
+    "zz-provenance-fixture ≜ references [[signify]]",
 )
+
+# Skills that legitimately compose NO sibling skill -> they warn empty provenance
+# by design (not a regression). The CORPUS invariant exempts exactly these and
+# asserts NO OTHER skill warns.
+COMPOSE_NOTHING_ALLOWLIST = {"praxis", "weitermachen"}
 
 
 def run_verify() -> subprocess.CompletedProcess:
@@ -88,12 +95,25 @@ def main() -> int:
     finally:
         FIXTURE.unlink(missing_ok=True)
 
-    # FULL CORPUS: no real skill warns empty provenance; verify is green
+    # FULL CORPUS: verify is green, and the ONLY skills warning empty provenance
+    # are the known compose-nothing allowlist {praxis, weitermachen}. Any OTHER
+    # warning is a regression -- the assertion still bites, just exempts the two
+    # skills that compose no sibling by design.
     r = run_verify()
     if r.returncode != 0:
         fails.append(f"CORPUS: verify fails on the clean corpus:\n{r.stderr}")
-    if "PROVENANCE " in r.stderr:
-        fails.append(f"CORPUS: a real skill warned empty provenance:\n{r.stderr}")
+    warned = {
+        line.split("PROVENANCE ", 1)[1].split(".md", 1)[0].strip()
+        for line in r.stderr.splitlines()
+        if "PROVENANCE " in line
+    }
+    unexpected = warned - COMPOSE_NOTHING_ALLOWLIST
+    if unexpected:
+        fails.append(
+            f"CORPUS: a real skill (outside the compose-nothing allowlist "
+            f"{sorted(COMPOSE_NOTHING_ALLOWLIST)}) warned empty provenance: "
+            f"{sorted(unexpected)}\n{r.stderr}"
+        )
 
     if fails:
         for x in fails:

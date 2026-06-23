@@ -1,50 +1,7 @@
 {
-  "source": "skills/weitermachen.md",
+  "source": "skill/weitermachen.md",
   "exemplified_at": "2026-06-22T00:00:00Z",
   "reader": "strong-llm-lean",
-  "routes": [
-    {
-      "fragment_digest": "sha256:75bd3308136cba946adb48d55cc7d55b0960a0eef788a74829cf2c247e57ab43",
-      "idea_gloss": "Prior-anchor: **mission command** / commander's intent / Auftragstaktik (Helmuth von Moltke the Elder).",
-      "home_slug": "mission-command",
-      "disposition": "reuse",
-      "rank": 0
-    },
-    {
-      "fragment_digest": "sha256:d51b04b9c6b778f318185f4e232e8cb18469935232259c38d280d1975654655b",
-      "idea_gloss": "\"Operator\" is the role-noun the universal commons writes; it resolves to a real person at the instance — the name and lived relationship are accidents, filled at instance creation or learned at runtime.",
-      "home_slug": "subject-binding",
-      "disposition": "reuse",
-      "rank": 1
-    },
-    {
-      "fragment_digest": "sha256:23a6156d8a367a4a86eafbddae025524708a511372c3d3a79032d52087d1cdf6",
-      "idea_gloss": "Agency that does not lapse between tasks — self-clocked and never idle or dark; when the current job ends the agent finds the next valuable move rather than going quiet, and never goes silent across a wait.",
-      "home_slug": "continual-agency",
-      "disposition": "reuse",
-      "rank": 2
-    },
-    {
-      "fragment_digest": "sha256:5bd9c2bbecf47abdd4d9fedffd1e386c33ae7b739033d16d159ae69a0afac0b1",
-      "idea_gloss": "Act with delegated principal authority — decide and execute on expertise, maker not custodian; escalate only a [[genuine-fork]].",
-      "home_slug": "principal-agency",
-      "disposition": "reuse",
-      "rank": 3
-    },
-    {
-      "fragment_digest": "sha256:32bd09c6cf914fe81ae60066d5900b23b87cf7c2c49d639f0eadebe45b4e4689",
-      "idea_gloss": "Decomplect permission-to-act from the act — an agent never blocks synchronously on a human; it requests approval asynchronously, yields the turn, and resumes when the decision returns as a stimulus.",
-      "home_slug": "permission-is-not-the-act",
-      "disposition": "reuse",
-      "rank": 4
-    },
-    {
-      "fragment_digest": "sha256:ae72f8b09fd0f6d5ce6a04f5efbfe21df8231bf809e55f14f92bc016c1dc8dd0",
-      "idea_gloss": "The Operator is the society's sovereign from without — named by the constitution yet not a citizen of it: the polis is founded to serve him, founders build within his intent and escalate only a genuine-fork, and the setting of intent and final authority are reserved to him.",
-      "home_slug": "operator-relation",
-      "disposition": "reuse",
-      "rank": 5
-    }
-  ],
+  "routes": [],
   "delta": []
 }

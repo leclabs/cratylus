@@ -42,7 +42,7 @@ FIXTURE = ROOT / "ideas" / "zz-bindings-fixture.md"
 
 # BINDINGS-ONLY: a `Bindings:` paragraph, NO prose `≜` formula. Composition is
 # harvested from the bindings; the binding verbs vary (realize/bind) and a ref is
-# repeated (mece) to prove first-seen dedup. An operative bullet keeps OPERATIVE
+# repeated (signify) to prove first-seen dedup. An operative bullet keeps OPERATIVE
 # satisfied so we isolate the provenance behaviour.
 BINDINGS_ONLY = """---
 kind: skill
@@ -56,10 +56,10 @@ intro prose, no prose formula here.
 
 ## The operations, formally
 
-Bindings: `s` (a symbol) realizes [[mece]]; `t` binds [[clean-slate]] · [[palimpsest]]; `u` re-cites [[mece]].
+Bindings: `s` (a symbol) realizes [[signify]]; `t` binds [[exemplify]] · [[formalize]]; `u` re-cites [[signify]].
 
 ```text
-s ≜ a fenced formal line : mece
+s ≜ a fenced formal line : signify
 ```
 
 ## What it helps with
@@ -67,15 +67,15 @@ s ≜ a fenced formal line : mece
 - **a real step** — substantive operative content so OPERATIVE passes.
 """
 # bindings order, first-seen, deduped:
-BINDINGS_ONLY_REFS = ["mece", "clean-slate", "palimpsest"]
+BINDINGS_ONLY_REFS = ["signify", "exemplify", "formalize"]
 
 # BOTH: a prose `≜` formula AND a Bindings region. Bindings WINS (composition is
 # the bindings, not the formula); verify FAILs with CITE-TWICE. The `≜`
-# formula cites only `mece`; the bindings cite all three -- so the composition
+# formula cites only `signify`; the bindings cite all three -- so the composition
 # source is observable (bindings != formula).
 BOTH = BINDINGS_ONLY.replace(
     "intro prose, no prose formula here.",
-    "zz-bindings-fixture ≜ references [[mece]]",
+    "zz-bindings-fixture ≜ references [[signify]]",
 )
 
 
@@ -110,7 +110,8 @@ def main() -> int:
             )
         # the emitted SKILL body carries a `Composed from ...` line from bindings
         doc = compose_skill(FIXTURE.stem, "strong-llm-lean", "claude-code")
-        want_line = "Composed from **mece** · **clean-slate** · **palimpsest**."
+        # the refs are live SKILL anchors -> rendered in /trigger affordance form
+        want_line = "Composed from /signify · /exemplify · /formalize."
         if want_line not in doc.body:
             fails.append(
                 f"BINDINGS-ONLY: expected {want_line!r} in composed body, got:\n{doc.body}"
@@ -147,8 +148,8 @@ def main() -> int:
         # both signals present
         if _bindings_region(body_lines, mask) is None:
             fails.append("BOTH: Bindings region not recognized alongside ≜")
-        if _formula_refs(FIXTURE.stem, body_lines, mask) != ["mece"]:
-            fails.append("BOTH: prose `≜` formula refs should be [mece]")
+        if _formula_refs(FIXTURE.stem, body_lines, mask) != ["signify"]:
+            fails.append("BOTH: prose `≜` formula refs should be [signify]")
         # Bindings WINS: composition is the bindings (3 refs), not the formula (1)
         got = composition_refs(FIXTURE.stem, body_lines, mask)
         if got != BINDINGS_ONLY_REFS:

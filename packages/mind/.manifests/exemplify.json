@@ -1,63 +1,28 @@
 {
-  "source": "skills/exemplify.md",
+  "source": "skill/exemplify.md",
   "exemplified_at": "2026-06-22T00:00:00Z",
   "reader": "strong-llm-lean",
   "routes": [
     {
-      "fragment_digest": "sha256:b04e818b9a6b314b1ba642eced25c921c1bb4bd8a7d17cec58486bc13de10840",
-      "idea_gloss": "the first-class data type every CSF module programs to — a record `⟨ gloss , anchor? , factorization? ⟩` (the meaning by value, optionally its anchor, optionally its factorization); producers emit it, consumers take it, so modules bind the contract not each other — the narrow waist of the pipeline.",
-      "home_slug": "concept-contract",
+      "fragment_digest": "sha256:cc45f8db1ac757bc4cb5e38513f43fe40ac897f4fdc689525b3fd37de8cd444a",
+      "idea_gloss": "use this skill to conceptualize a corpus — read a multi-modal source and resolve it to the reader's concept lattice (the closed distinction-sets `C_R`, which of them are primitive, each primitive's gloss, and each concept's candidate factorizations), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.",
+      "home_slug": "conceptualize",
       "disposition": "reuse",
       "rank": 0
     },
     {
-      "fragment_digest": "sha256:699ac6bafbf6baf34cf02316939c66bfc9c4504d5f80bf01e9d2496abc8c9828",
-      "idea_gloss": "use this skill to conceptualize a corpus — read a multi-modal source and resolve it to the reader's concept lattice (the closed distinction-sets `C_R`, which of them are primitive, each primitive's gloss, and each concept's candidate factorizations), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.",
-      "home_slug": "conceptualize",
+      "fragment_digest": "sha256:6e98ef9cce9cda159ee93299f941c5f3d1aba99062f4971a42cfaea77bbb6154",
+      "idea_gloss": "use this skill to name a concept set — assign each concept its injective canonical anchor `α(c) = σ*_R(c)` (the reader-relative fittest sign, whose latent priors circumscribe exactly it; one name ⇔ one concept), then coalesce concepts that resolve to the same anchor; emits the shortlex order `≺` and the decoder `dec_R`; stage 2 of exemplify, independently invocable (every naming review is a bare /signify).",
+      "home_slug": "signify",
       "disposition": "reuse",
       "rank": 1
     },
     {
-      "fragment_digest": "sha256:5311ebf18614deabe4a02f21eb39c992ba8b90262a4168642c04cf0de0c926a3",
-      "idea_gloss": "use this skill to name a concept set — assign each concept its injective canonical anchor `α(c) = σ*_R(c)` (the reader-relative fittest sign, whose latent priors circumscribe exactly it; one name ⇔ one concept), then coalesce concepts that resolve to the same anchor; emits the shortlex order `≺` and the decoder `dec_R`; stage 2 of exemplify, independently invocable (every naming review is a bare /signify).",
-      "home_slug": "signify",
-      "disposition": "reuse",
-      "rank": 2
-    },
-    {
-      "fragment_digest": "sha256:d382e359ef84c465ad8c87631addc9047c04c0a924c5caa691053d8ca0b8486f",
+      "fragment_digest": "sha256:87ccfc656390849252afb1fd55f655b252734450c69e5d4330a9bbf3dda62e64",
       "idea_gloss": "use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization `F_R`, emit the bipartite normal form `CSF_R` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.",
       "home_slug": "materialize",
       "disposition": "reuse",
-      "rank": 3
-    },
-    {
-      "fragment_digest": "sha256:4884cb5c95a5a128cc6d3651de4bbd3530b6b9282d35c12aa9f5a3a576108682",
-      "idea_gloss": "the pipeline's acceptance gate — run the corpus's own acceptance test on a fully-realized factorization and commit the accept/reject verdict, refusing loudly when it fails; accept iff `valid` (the bipartite normal form reconstructs equivalent-or-better from its anchors and is minimal), so a factorization that loses meaning or carries a redundant concept never passes.",
-      "home_slug": "accept",
-      "disposition": "reuse",
-      "rank": 4
-    },
-    {
-      "fragment_digest": "sha256:21e9f696c861d40497f498dd6587839a16f8449bf17dfbf9c88313d82dafa7ce",
-      "idea_gloss": "the model a valid context factorization must satisfy — the bipartite normal form (primitive by value, composite by reference) reconstructs from its anchors alone (`REC_R`), every anchor is the reader-relative fittest sign `σ*_R` (`canonical_anchor`), and no two concepts fuse (`minimal`); the acceptance criterion [[exemplify]] is gated by, reader-relative throughout.",
-      "home_slug": "canonical-semantic-factorization",
-      "disposition": "reuse",
-      "rank": 5
-    },
-    {
-      "fragment_digest": "sha256:2f04a9f598c677566c0b24f9daa5d355d5b8c25080618792c01a5db4496756de",
-      "idea_gloss": "An optional parameter whose absence expands to the most destructive or expansive interpretation is a footgun — make it required, error clearly with the discovery path, and discriminate multi-contract operations explicitly in the parameter shape.",
-      "home_slug": "no-permissive-defaults",
-      "disposition": "reuse",
-      "rank": 6
-    },
-    {
-      "fragment_digest": "sha256:eeae6d006df5b7908e60fcd5889857e48d096c2925b65619e32d0ea403b27c9a",
-      "idea_gloss": "The library is built and judged by running its own method on itself — every artifact, including this corpus's own cells and docs, is a source subject to decompose → route → reconstruct; round-trip equivalent-or-better is the acceptance test, and no anchor is grandfathered.",
-      "home_slug": "self-application-is-mandatory",
-      "disposition": "reuse",
-      "rank": 7
+      "rank": 2
     }
   ],
   "delta": []

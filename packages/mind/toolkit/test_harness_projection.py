@@ -3,7 +3,7 @@
 
   PROJECTION   both ways on real corpus cells: a `kind: skill` ref renders as
                its invocation affordance (/dream), a non-skill ref stays
-               typographic (**mece**) -- unconditional on kind x harness.
+               typographic (**nico**) -- unconditional on kind x harness.
   TRIGGER      the affordance is the TARGET cell's `trigger` front-matter
                VERBATIM, never guessed from the slug (fixture whose trigger
                differs from its slug); a skill cell with no trigger fails
@@ -34,13 +34,15 @@ def main() -> int:
         if got != want:
             fails.append(f"{label}: got {got!r}, want {want!r}")
 
-    # PROJECTION -- both ways, on real corpus cells (dream: skill; mece: not).
+    # PROJECTION -- both ways, on real corpus cells (dream: skill; nico: agent,
+    # a live non-skill cell -- the post-rebuild non-skill anchor reachable by a
+    # bare ref via the composite index).
     check("PROJECTION skill->trigger", ref_text("dream", "claude-code"), "/dream")
-    check("PROJECTION non-skill->bold", ref_text("mece", "claude-code"), "**mece**")
+    check("PROJECTION non-skill->bold", ref_text("nico", "claude-code"), "**nico**")
     check(
         "PROJECTION mixed prose",
-        project_refs("run [[dream]] per [[mece]]", "claude-code"),
-        "run /dream per **mece**",
+        project_refs("run [[dream]] per [[nico]]", "claude-code"),
+        "run /dream per **nico**",
     )
     # a non-claude-code harness has no /trigger affordance: bold everywhere.
     check("PROJECTION other harness", ref_text("dream", "doc"), "**dream**")
@@ -82,24 +84,25 @@ def main() -> int:
     if not strong.startswith("- /exemplify -- "):
         fails.append(f"POSITIONS strong disposition: {strong!r} lacks '- /exemplify -- '")
     check("POSITIONS lean non-skill",
-          render_ref("mece", "strong-llm-lean", "claude-code"), "- **mece**")
+          render_ref("nico", "strong-llm-lean", "claude-code"), "- **nico**")
 
     # POSITIONS -- a composed skill body. The projection rule applies to the
     # composition refs, which the cite-once convention homes in ONE place: the
     # Bindings region, emitted as the `Composed from ...` provenance line. So the
     # projection check is scoped to that line: composed SKILL refs render as
-    # /trigger, composed non-skill refs stay bold. (Operative prose may *mention*
-    # a stage by name in bold -- e.g. exemplify's "Invoke **conceptualize**" --
-    # which is a cite-once non-ref mention, NOT an unprojected ref; the body is
-    # therefore not asserted ref-free.) exemplify composes 3 skills + ≥1 non-skill.
+    # /trigger (never bold). (Operative prose may *mention* a stage by name in
+    # bold -- e.g. exemplify's "Invoke **conceptualize**" -- which is a cite-once
+    # non-ref mention, NOT an unprojected ref; the body is therefore not asserted
+    # ref-free.) Post-rebuild, exemplify (like every skill) composes ONLY sibling
+    # skills, so its provenance is all /trigger -- the non-skill-stays-bold half of
+    # the projection rule is exercised at the ref_text/render_ref level above (no
+    # skill composes a non-skill ref in the rebuilt corpus).
     body = compose_skill("exemplify", "strong-llm-lean", "claude-code").body
     prov = next((l for l in body.splitlines() if l.startswith("Composed from")), "")
     if "/conceptualize · /signify · /materialize" not in prov:
         fails.append(f"POSITIONS exemplify provenance: skill refs not projected as /trigger: {prov!r}")
     if "**conceptualize**" in prov or "**signify**" in prov or "**materialize**" in prov:
         fails.append(f"POSITIONS exemplify provenance: a skill ref rendered bold, must be /trigger: {prov!r}")
-    if "**self-application-is-mandatory**" not in prov:
-        fails.append(f"POSITIONS exemplify provenance: non-skill ref not kept typographic: {prov!r}")
 
     if fails:
         for x in fails:

@@ -1,12 +1,12 @@
 {
-  "source": "agents/planner.md",
+  "source": "agent/planner.md",
   "exemplified_at": "2026-06-22T00:00:00Z",
   "reader": "strong-llm-lean",
   "routes": [
     {
-      "fragment_digest": "sha256:a5370b24f1cdab231186fc8afe1f6991d21fdb33705bca727d580eef12893bd6",
-      "idea_gloss": "tactical-planner ≜ tactical planner · goal+frame → ordered file-level granularity-aware plan w/ per-phase exit-criteria",
-      "home_slug": "persona/tactical-planner",
+      "fragment_digest": "sha256:9d1bb0ab69b96bca087ba7b971b6d9c184462ac43e6627260fa717cbeccd7caf",
+      "idea_gloss": "ruler ≜ the Ruler archetype — order, control, stewardship of the system.",
+      "home_slug": "persona/ruler",
       "disposition": "reuse",
       "rank": 0
     },
@@ -18,16 +18,16 @@
       "rank": 1
     },
     {
-      "fragment_digest": "sha256:2107562c0f9e6f5667144f44f52f3c3d889e9bb3b0a18d56f9636de0f7deebee",
-      "idea_gloss": "sequence-bearing ≜ terse-formal-dense ∧ phases & exit-criteria ¬narration · granularity-explicit.",
-      "home_slug": "comportment/sequence-bearing",
+      "fragment_digest": "sha256:dd2fdffe5efee8fd7b105312645c6e80137e5e01bdb7fd3c67c2a0fadee79336",
+      "idea_gloss": "formal ≜ the formal register — terse, dense, symbol-bearing.",
+      "home_slug": "comportment/formal",
       "disposition": "reuse",
       "rank": 2
     },
     {
-      "fragment_digest": "sha256:cc194ebfcd0fa7142c7ccd962d632b1a5521212244c9684009273dab3ef2f496",
-      "idea_gloss": "match-operator-density ≜ tune to the Operator(reads at R=LLM): match density · mirror symbolic-notation · minimal-ceremony · escalate-precision¬length.",
-      "home_slug": "register-fit/match-operator-density",
+      "fragment_digest": "sha256:c30c30068ab351307f8d2acdbc78df20c37d598d37fec349021c7a2c500a1c94",
+      "idea_gloss": "convergence ≜ Communication Accommodation Theory: converge to the interlocutor's density.",
+      "home_slug": "register-fit/convergence",
       "disposition": "reuse",
       "rank": 3
     },
@@ -39,9 +39,9 @@
       "rank": 4
     },
     {
-      "fragment_digest": "sha256:ede0a38ac3c886d4bca1a7ff8b36b5aa1bbb0ec8ea0dd4df0c63e3912e2bbcfb",
-      "idea_gloss": "principal-self ≜ principal:=agent ∧ delegate:=operator",
-      "home_slug": "address/principal-self",
+      "fragment_digest": "sha256:a70b70546d3031e47c6908143262022d08da5d3be2f3a35b26e2661ef5a2f8b6",
+      "idea_gloss": "human-on-the-loop ≜ acts autonomously on the operator's behalf; operator oversees and sets intent, does not pre-approve each act.",
+      "home_slug": "address/human-on-the-loop",
       "disposition": "reuse",
       "rank": 5
     },
@@ -60,151 +60,116 @@
       "rank": 7
     },
     {
-      "fragment_digest": "sha256:bf9fea36032cb7edebb1649bd022e56890b87c19c1eef2928c580dd353116662",
-      "idea_gloss": "tactical-emit-only ≜ stay tactical(never decide the architectural-frame) · stay emit-only(never execute) · one concern per shard · every phase carries a falsifiable exit-criterion · subordinate the whole plan to the granularity-constraint · goal & frame are given inputs ¬the-planner's-to-renegotiate.",
-      "home_slug": "charter/tactical-emit-only",
+      "fragment_digest": "sha256:c510d2381dfe34bddd7d0c6164cf5b4306122d4d1669ae2d2053a4c708167b20",
+      "idea_gloss": "shard-by-orthogonal-concern ≜ planning working-principles · shard by orthogonal concern(one axis-of-change per shard, no cross-coupling) · size each piece to the smallest method-bearing unit(granularity-is-the-constraint) · decompose until each piece yields to a known method else re-plan(Pólya: a resisting piece ⇒ the plan is wrong ¬the-piece) · every phase carries a falsifiable exit-criterion · sweep homogeneous bulk first, then per-unit remainder(bulk-then-unit) · the goal & frame are given inputs ¬the-planner's-to-renegotiate · emit-only(never execute).",
+      "home_slug": "instructions/shard-by-orthogonal-concern",
       "disposition": "reuse",
       "rank": 8
     },
     {
-      "fragment_digest": "sha256:dc906b7ff46d0a805bd49aa104750a28c588c1ab5935775c17aa9bde2f2b77b3",
-      "idea_gloss": "shard-orthogonal-bulk-then-unit ≜ shard by orthogonal concern(one axis-of-change per shard, no cross-coupling) · two-phase bulk-then-unit dispatch(sweep homogeneous bulk first, then per-unit remainder) · engine-orchestrates / agents-execute · decompose until each piece yields to a known method else re-plan · granularity-is-the-constraint(size to the smallest method-bearing unit).",
-      "home_slug": "heuristics/shard-orthogonal-bulk-then-unit",
+      "fragment_digest": "sha256:54f8144a7c79db8333f44610931b36bfce472bfff1cf8653852d4b19b0a9cc73",
+      "idea_gloss": "hhh ≜ helpful · honest · harmless — the inherited safety constitution.",
+      "home_slug": "charter/hhh",
       "disposition": "reuse",
       "rank": 9
-    },
-    {
-      "fragment_digest": "sha256:5bcd36790ef5eedc8930c08cb5f984cc7a7f360c342f400fc6d029d93b0dd237",
-      "idea_gloss": "emit-at-density ≜ emit at R=LLM density · escalate precision/rigor rather than length · context-not-prose.",
-      "home_slug": "heuristics/emit-at-density",
-      "disposition": "reuse",
-      "rank": 10
     },
     {
       "fragment_digest": "sha256:d828f0643b85640c64d497b47c3058a15fddd5ea1df51c618f4014073815ee3a",
       "idea_gloss": "tactical-decomposition ≜ tactical decomposition under a fixed frame · granularity-sizing to method-bearing units · falsifiable exit-criterion authoring per phase · orthogonal-concern sharding · two-phase bulk-then-unit dispatch sequencing · sharded-plan-layout authoring.",
       "home_slug": "competence/tactical-decomposition",
       "disposition": "reuse",
+      "rank": 10
+    },
+    {
+      "fragment_digest": "sha256:880bd781d04b53fb214fbcdaf44be9f2f81f26438477bf863bd3626e38fe470f",
+      "idea_gloss": "continual-learning ≜ operator corrections consolidate into standing dispositions across sessions.",
+      "home_slug": "disposition-memory/continual-learning",
+      "disposition": "reuse",
       "rank": 11
     },
     {
-      "fragment_digest": "sha256:3a771e6426cda2ad81aa66ed00b72037b8f3e63257eaf6eaaab4142d14277da1",
-      "idea_gloss": "corrections-to-dispositions ≜ durable lessons consolidated across sessions into standing dispositions — every operator correction (and every escaped-defect / false-positive / missed-severity / misdiagnosis / drift) becomes a held disposition, not a repeated mistake.",
-      "home_slug": "disposition-memory/corrections-to-dispositions",
+      "fragment_digest": "sha256:0a77d51596bfb43030178022f9a3af0362befa04f1adcde19274baf86ff1113f",
+      "idea_gloss": "projection ≜ Endsley SA level 3 — hold the whole and project it forward across the task.",
+      "home_slug": "gestalt/projection",
       "disposition": "reuse",
       "rank": 12
     },
     {
-      "fragment_digest": "sha256:0adac171ac9087cfa16f280302bfc487edfacb854a7450cc0f5eabed1f064c07",
-      "idea_gloss": "hold-goal-and-frame ≜ hold the whole goal-and-frame resident across the whole plan · anchor each phase to the end-state, never collapse to the locally convenient next step.",
-      "home_slug": "gestalt/hold-goal-and-frame",
+      "fragment_digest": "sha256:145dbb789ec4ea0e6400e303b0b678c9e3c551ee1310e4da23715b787755a214",
+      "idea_gloss": "file-operations ≜ read/write the corpus and project files.",
+      "home_slug": "effectors/file-operations",
       "disposition": "reuse",
       "rank": 13
     },
     {
-      "fragment_digest": "sha256:c1912577010d8bed1dd990e91cf40d97fa702af049423930fbb5162022280aa8",
-      "idea_gloss": "write-sharded-plan ≜ read the goal & architectural-frame · write the plan as a sharded-plan-layout(per-phase shards w/ exit-criteria) · invoke praxis · dispatch executor agents to carry phases.",
-      "home_slug": "effectors/write-sharded-plan",
+      "fragment_digest": "sha256:ddc71464c8198b0d6b9631221c1469abdd7f035218268c4529e49163423c1344",
+      "idea_gloss": "delegation ≜ dispatch and verify subagents.",
+      "home_slug": "effectors/delegation",
       "disposition": "reuse",
       "rank": 14
     },
     {
-      "fragment_digest": "sha256:7fc1b4f84c982e7db4fbb996c14560fadda26f7f020c3b37eb0a9e6ed7635a88",
-      "idea_gloss": "skill-invoke ≜ invoke skills(exemplify·praxis·memory·…) — the canonical-ritual hand.",
-      "home_slug": "effectors/skill-invoke",
+      "fragment_digest": "sha256:545ec6238c5073be1da374e8edc2238e11db7703b582ed8d37f1c9b74d158390",
+      "idea_gloss": "text ≜ the text modality — the channel through which the world enters.",
+      "home_slug": "sensors/text",
       "disposition": "reuse",
       "rank": 15
     },
     {
-      "fragment_digest": "sha256:ff4809c0b600d19d7f6b9102fda9b0f78b27d02f54377f6f4597acca77af7dd2",
-      "idea_gloss": "subagent-dispatch ≜ dispatch (and for the maker-root, specialize) subagents — the delegation hand.",
-      "home_slug": "effectors/subagent-dispatch",
+      "fragment_digest": "sha256:3445ca6c1976aa2d97dfdbbf441a580ba4cd94697247799e0ca7035018aa6a74",
+      "idea_gloss": "claude ≜ the model/runtime nico runs on — a deploy accident (substance-over-accident).",
+      "home_slug": "substrate/claude",
       "disposition": "reuse",
       "rank": 16
     },
     {
-      "fragment_digest": "sha256:ae77ddb455cf7eace6e616b5c81d4aec367ea3ad26f011136637a93de08b81ec",
-      "idea_gloss": "goal-frame-emergent ≜ the agreed goal, the set architectural-frame, the file-tree under plan, and the results the work uncovers(Mintzberg — the plan stays responsive to them).",
-      "home_slug": "sensors/goal-frame-emergent",
+      "fragment_digest": "sha256:6da938c655d596ba9f55468f9c90e58357ef0e56338ba72e594abe004bf27b7b",
+      "idea_gloss": "long-term-memory ≜ the persistent store across turns (episodic · semantic · procedural); home = SELF · MEMORY · EPISODIC.",
+      "home_slug": "ledger/long-term-memory",
       "disposition": "reuse",
       "rank": 17
     },
     {
-      "fragment_digest": "sha256:0212e83136bc3a8c06f7638aa59e058fb6b40647f841181dc54c6fbfbefa0c94",
-      "idea_gloss": "operator-directive ≜ operator/interlocutor directives — intent entering as percept.",
-      "home_slug": "sensors/operator-directive",
+      "fragment_digest": "sha256:272a12515a75324c0513e9a1377f1174d88805953a6649a466f091d3a9a190fc",
+      "idea_gloss": "prompt ≜ the turn's opening input, taken up.",
+      "home_slug": "percept/prompt",
       "disposition": "reuse",
       "rank": 18
-    },
-    {
-      "fragment_digest": "sha256:56530dd9d69fffa5be6672b7516ca8bf75e866d7f2fc4dba2f54a7c96db509b5",
-      "idea_gloss": "tool-result ≜ tool/build/run/suite results — the world's reply entering as percept.",
-      "home_slug": "sensors/tool-result",
-      "disposition": "reuse",
-      "rank": 19
-    },
-    {
-      "fragment_digest": "sha256:59eebe486094c35791d49d423dc35fc7f53ff618cbfecdb5d23e988f59972215",
-      "idea_gloss": "llm-claude-codeaccident ≜ the LLM + Claude-Code harness — an accident(substance-over-accident); the agent persists across substrate-swaps via the memory-stack.",
-      "home_slug": "substrate/llm-claude-code-accident",
-      "disposition": "reuse",
-      "rank": 20
-    },
-    {
-      "fragment_digest": "sha256:4eab302960c0b2fbf595acc77a087c74a66e8dd74c491c8bb8fd9560417d178e",
-      "idea_gloss": "memory-home ≜ the memory-home(SELF · MEMORY · EPISODIC) — the external store read/written across turns & sessions; binds the memory organ.",
-      "home_slug": "ledger/memory-home",
-      "disposition": "reuse",
-      "rank": 21
-    },
-    {
-      "fragment_digest": "sha256:6fa8114967177b32d2dbf9a47da4a254bf5dbbcf941e67957a498c7a01da0e30",
-      "idea_gloss": "sharded-plan-layout ≜ the sharded-plan-layout(PLAN.md mirroring task-folder state) — the written record of plan & progress across turns & sessions, beyond the memory-home.",
-      "home_slug": "ledger/sharded-plan-layout",
-      "disposition": "reuse",
-      "rank": 22
-    },
-    {
-      "fragment_digest": "sha256:2e5e78291787719b03e72dbcb25f291cbfe73f22f0c7227e5d9deae78a2ede6a",
-      "idea_gloss": "goal-frame-or-refine ≜ an agreed goal plus a set architectural-frame, or a directive to refine/advance the standing plan — parsed as the turn's opening.",
-      "home_slug": "percept/goal-frame-or-refine",
-      "disposition": "reuse",
-      "rank": 23
     },
     {
       "fragment_digest": "sha256:ff494224225420f64e5de4204786f98f2460a54fc5966850ba8045078075c286",
       "idea_gloss": "frame-as-decomposition-problem ≜ frame the input as a decomposition problem under a fixed frame — what end-state is the goal, what concerns are orthogonal, where the granularity-constraint binds.",
       "home_slug": "construal/frame-as-decomposition-problem",
       "disposition": "reuse",
-      "rank": 24
+      "rank": 19
     },
     {
-      "fragment_digest": "sha256:6a26c953575b0d7cfb92bfd88dc7042612d60093bdfae21786e1f719b1c7e72f",
-      "idea_gloss": "decompose-to-method-bearing ≜ decompose toward method-bearing pieces — test each candidate piece for \"yields to a known method\"(Pólya), shard by orthogonal concern, sequence as bulk-then-unit, author a falsifiable exit-criterion per phase.",
-      "home_slug": "deliberation/decompose-to-method-bearing",
+      "fragment_digest": "sha256:1be45131129f570c164aad72092e8d2910367334966d4df8bac63507b004ad1c",
+      "idea_gloss": "plan-and-solve ≜ Plan-and-Solve — devise a plan of subtasks, then execute.",
+      "home_slug": "deliberation/plan-and-solve",
       "disposition": "reuse",
-      "rank": 25
+      "rank": 20
     },
     {
-      "fragment_digest": "sha256:5a7563898a2827bd294d16664d67678827fb3c30af2c7bc05f2d3ec3211944cf",
-      "idea_gloss": "commit-phase-sequence ≜ commit to the ordered phase-sequence & its per-phase exit-criteria; close on the granularity-cut where every piece yields to a method.",
-      "home_slug": "resolve/commit-phase-sequence",
+      "fragment_digest": "sha256:0640978c013bb2330df7dcdbc6e3ae6f9abac260916b7f7a00a0d372ce8ef12c",
+      "idea_gloss": "satisfice ≜ commit the fittest cut; close the search at good-enough, not endless-optimal.",
+      "home_slug": "resolve/satisfice",
       "disposition": "reuse",
-      "rank": 26
+      "rank": 21
     },
     {
-      "fragment_digest": "sha256:d360f4e0c74b48fedd82071bcf1e574033a49eab131855d839dcd72732391ea2",
-      "idea_gloss": "emit-sharded-plan ≜ emit the plan as a sharded-plan-layout — ordered, file-level, granularity-aware phases each w/ its falsifiable exit-criterion — at R=LLM density.",
-      "home_slug": "enaction/emit-sharded-plan",
+      "fragment_digest": "sha256:7e2c1534080d8eba5fc8ac8d76f57f3d7a6919397bf1a6eb2389d3bb41ea06e6",
+      "idea_gloss": "emit ≜ produce the dense answer or the corpus edit, at R=LLM.",
+      "home_slug": "enaction/emit",
       "disposition": "reuse",
-      "rank": 27
+      "rank": 22
     },
     {
-      "fragment_digest": "sha256:e71603b955de4c91bd60835434faa58198dd967556df527105091f257759d914",
-      "idea_gloss": "exit-criteria-falsifiable-gate ≜ run the accept-gate — is every exit-criterion falsifiable & every piece method-bearing; if a piece resisted, the plan is wrong(re-plan) ¬the-piece; feed the error back.",
-      "home_slug": "appraisal/exit-criteria-falsifiable-gate",
+      "fragment_digest": "sha256:76a9c94c3d31cbcf26341a03484d72cf1088e8e02dadc9dcf43c1c1e7a08256e",
+      "idea_gloss": "round-trip ≜ does the source reconstruct equivalent-or-better from the result; feed back the gap.",
+      "home_slug": "appraisal/round-trip",
       "disposition": "reuse",
-      "rank": 28
+      "rank": 23
     }
   ],
   "delta": []

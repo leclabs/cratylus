@@ -25,16 +25,16 @@ delineation: fence-lint fixture -- temporary, written and removed by test_verify
 
 # Fence Lint Fixture
 
-prose citing [[mece]].
+prose citing [[signify]].
 
 ```text
-x ≜ [[mece]]
+x ≜ [[signify]]
 ```
 """
 # the anchor on file line 11 is inside the fence -> FENCE must name :11
 DIRTY_LINE = 11
 
-CLEAN = DIRTY.replace("x ≜ [[mece]]", "x ≜ mece")
+CLEAN = DIRTY.replace("x ≜ [[signify]]", "x ≜ signify")
 
 # VERBATIM-REF gate: a `render: verbatim` cell's `## Protocol` (and a
 # `deploy: skill-dir` cell's `## Tool`) ships verbatim where `[[ ]]` cannot
@@ -50,9 +50,9 @@ delineation: verbatim-ref fixture -- temporary, written and removed by test_veri
 
 ## Protocol
 
-an organ shipped verbatim must not cite [[mece]] -- it lands where refs cannot resolve.
+an organ shipped verbatim must not cite [[signify]] -- it lands where refs cannot resolve.
 """
-VERBATIM_CLEAN = VERBATIM_DIRTY.replace("cite [[mece]] -- it", "cite anything -- it")
+VERBATIM_CLEAN = VERBATIM_DIRTY.replace("cite [[signify]] -- it", "cite anything -- it")
 
 
 def run_verify() -> subprocess.CompletedProcess:
@@ -72,8 +72,8 @@ def main() -> int:
         FIXTURE.write_text(DIRTY, encoding="utf-8")
         r = run_verify()
         if r.returncode == 0:
-            fails.append("FENCE-REJECT: fenced [[mece]] passed verify (must fail)")
-        want = f"FENCE {FIXTURE.name}:{DIRTY_LINE}: [[mece]]"
+            fails.append("FENCE-REJECT: fenced [[signify]] passed verify (must fail)")
+        want = f"FENCE {FIXTURE.name}:{DIRTY_LINE}: [[signify]]"
         if want not in r.stderr:
             fails.append(f"FENCE-REJECT: expected {want!r} in stderr, got:\n{r.stderr}")
 
@@ -90,14 +90,14 @@ def main() -> int:
         FIXTURE.unlink(missing_ok=True)
 
     # VERBATIM-REF: a ref in a `render: verbatim` `## Protocol` FAILs (even though
-    # [[mece]] is a LIVE cell -> REFERENCES alone would PASS it); a ref-free
+    # [[signify]] is a LIVE cell -> REFERENCES alone would PASS it); a ref-free
     # Protocol PASSes. The contract the verbatim-ship paths now enforce.
     try:
         VERBATIM_FIXTURE.write_text(VERBATIM_DIRTY, encoding="utf-8")
         r = run_verify()
         if r.returncode == 0:
-            fails.append("VERBATIM-REJECT: [[mece]] in a verbatim `## Protocol` passed verify (must fail)")
-        for want in (f"VERBATIM-REF {VERBATIM_FIXTURE.name}", "[[mece]]", "## Protocol"):
+            fails.append("VERBATIM-REJECT: [[signify]] in a verbatim `## Protocol` passed verify (must fail)")
+        for want in (f"VERBATIM-REF {VERBATIM_FIXTURE.name}", "[[signify]]", "## Protocol"):
             if want not in r.stderr:
                 fails.append(f"VERBATIM-REJECT: expected {want!r} in stderr, got:\n{r.stderr}")
         # ref-free Protocol passes the gate

@@ -7,16 +7,37 @@ trigger: /exemplify
 
 # Exemplify
 
-The CSF pipeline as one composition over the [[concept-contract]] record: each stage fills one field, then the gate reads the realized record and refuses unless `valid`.
+The CSF pipeline as one composition: three stages each fill one field of a single record, then a gate reads the realized record and refuses unless it is valid. Composes the three sibling stages — each a function over the same record, naming no peer. The symbol table is `references/formal-symbolic-notation.md`.
+
+Bindings: composes [[conceptualize]] (`produce`) · [[signify]] (`name`) · [[materialize]] (`realize`).
 
 Resolve from context: `D` — the input corpus (multi-modal); `R` — the reader whose priors fix every meaning; `s` — the strategy ∈ { file, document }.
 
-Bindings: the pipeline composes [[conceptualize]] (`produce` — fills `gloss`) · [[signify]] (`name` — fills `anchor`) · [[materialize]] (`realize` — fills `factorization`), each a function over the [[concept-contract]] record naming no peer; [[accept]] gates on `valid` of [[canonical-semantic-factorization]] (the factorization round-trips from its anchors and is minimal), refusing loudly otherwise; the `⊥` on an unnamed `s` binds [[no-permissive-defaults]] (`ρ_s` total over the kinds in scope else `⊥`); the R3 manifest binds [[self-application-is-mandatory]]. The symbol table is `references/formal-symbolic-notation.md`.
+The fenced block declares every term it uses; no term is borrowed by reference.
 
 ```text
-s = ∅ ⇒ ⊥
-F(D)        ≜ realize( name( produce(D) ) )      -- each stage fills one field of the Concept record
-exemplify(D) ≜ accept( F(D) )                    -- accept refuses unless valid
+-- Concept-contract: the one record the pipeline programs to (the narrow waist) --
+Concept     ≜ ⟨ gloss , anchor? , factorization? ⟩       -- meaning by value; anchor, factorization optional
+produce     : D → Concept                                 -- conceptualize: fills gloss   (cut at meaning joints)
+name        : Concept → Concept                           -- signify:       fills anchor  (each concept → its σ*_R)
+realize     : Concept → Concept                           -- materialize:   fills factorization (bipartite normal form)
+realized(k) ⇔ factorization(k) ≠ ⊥
+
+-- Canonical-semantic-factorization: the model a valid factorization must satisfy --
+valid(k)    ⇔ REC_R(k) ≽ k  ∧  minimal(k)                 -- round-trips equivalent-or-better from anchors, and no two concepts fuse
+                                                          --   REC_R = reconstruction from anchors (by value if primitive, by reference if composite)
+
+-- No-permissive-defaults: an unnamed strategy refuses, never waves through --
+s = ∅ ⇒ ⊥                                                 -- ρ_s must be total over the kinds in scope, else ⊥
+
+-- The pipeline --
+F(D)         ≜ realize( name( produce(D) ) )              -- each stage fills one field of the Concept record
+exemplify(D) ≜ accept( F(D) )
+
+-- Accept: the gate; self-application is mandatory (the corpus's own test, no anchor grandfathered) --
+accept(k)   ≜ ⊥          ,  ¬realized(k)                  -- cannot judge an unrealized concept
+accept(k)   ≜ k          ,  valid(k)                      -- pass: verdict carries the work forward unchanged
+accept(k)   ≜ ⊥          ,  ¬valid(k)                     -- refuse: loud, never a silent drop
 ```
 
 On accept, emit the **R3 routing manifest** — `.manifests/<source>.json`, one entry per concept `c ∈ C_R` keyed by `fragment_digest` (`toolkit/core/digest.fragment_digest`: NFC + whitespace-collapse + trim), each in `routes[]` (`α` · `reuse` | `mint`) or `delta[]`, exactly one. An unrouted concept is the dropped idea R3 catches.

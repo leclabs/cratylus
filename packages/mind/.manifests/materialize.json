@@ -1,42 +1,28 @@
 {
-  "source": "skills/materialize.md",
+  "source": "skill/materialize.md",
   "exemplified_at": "2026-06-22T00:00:00Z",
   "reader": "strong-llm-lean",
   "routes": [
     {
-      "fragment_digest": "sha256:b04e818b9a6b314b1ba642eced25c921c1bb4bd8a7d17cec58486bc13de10840",
-      "idea_gloss": "the first-class data type every CSF module programs to — a record `⟨ gloss , anchor? , factorization? ⟩` (the meaning by value, optionally its anchor, optionally its factorization); producers emit it, consumers take it, so modules bind the contract not each other — the narrow waist of the pipeline.",
-      "home_slug": "concept-contract",
+      "fragment_digest": "sha256:b619afefa9709abdc73cc54ac1f6dbe087b87f2a95ed67d03d861ad9a52535f2",
+      "idea_gloss": "optimize a context corpus into a canonical semantic factorization — compose produce → name → realize over the one concept-contract record, then gate on accept; emits the R3 routing manifest that catches the dropped idea.",
+      "home_slug": "exemplify",
       "disposition": "reuse",
       "rank": 0
     },
     {
-      "fragment_digest": "sha256:21e9f696c861d40497f498dd6587839a16f8449bf17dfbf9c88313d82dafa7ce",
-      "idea_gloss": "the model a valid context factorization must satisfy — the bipartite normal form (primitive by value, composite by reference) reconstructs from its anchors alone (`REC_R`), every anchor is the reader-relative fittest sign `σ*_R` (`canonical_anchor`), and no two concepts fuse (`minimal`); the acceptance criterion [[exemplify]] is gated by, reader-relative throughout.",
-      "home_slug": "canonical-semantic-factorization",
+      "fragment_digest": "sha256:6e98ef9cce9cda159ee93299f941c5f3d1aba99062f4971a42cfaea77bbb6154",
+      "idea_gloss": "use this skill to name a concept set — assign each concept its injective canonical anchor `α(c) = σ*_R(c)` (the reader-relative fittest sign, whose latent priors circumscribe exactly it; one name ⇔ one concept), then coalesce concepts that resolve to the same anchor; emits the shortlex order `≺` and the decoder `dec_R`; stage 2 of exemplify, independently invocable (every naming review is a bare /signify).",
+      "home_slug": "signify",
       "disposition": "reuse",
       "rank": 1
     },
     {
-      "fragment_digest": "sha256:319fa7196c6257b1bcf43cc5cba28a373cfe3e1303bb32dc65bdf63fd46bd126",
-      "idea_gloss": "Any content has one canonical home; everything that needs it references that home rather than duplicating it — the single-home discipline that keeps a corpus consistent and drift-free.",
-      "home_slug": "cite-dont-copy",
+      "fragment_digest": "sha256:cc45f8db1ac757bc4cb5e38513f43fe40ac897f4fdc689525b3fd37de8cd444a",
+      "idea_gloss": "use this skill to conceptualize a corpus — read a multi-modal source and resolve it to the reader's concept lattice (the closed distinction-sets `C_R`, which of them are primitive, each primitive's gloss, and each concept's candidate factorizations), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.",
+      "home_slug": "conceptualize",
       "disposition": "reuse",
       "rank": 2
-    },
-    {
-      "fragment_digest": "sha256:77caf7215748945fdfd875ed7a968f2c333bacfdf0357cd5ba8843e657c98e3e",
-      "idea_gloss": "The single optimum of any expression — the point where removing a token lowers fidelity and adding one does not raise it; verbosity is the signal of a missing anchor, not added precision.",
-      "home_slug": "densest-faithful-point",
-      "disposition": "reuse",
-      "rank": 3
-    },
-    {
-      "fragment_digest": "sha256:2f04a9f598c677566c0b24f9daa5d355d5b8c25080618792c01a5db4496756de",
-      "idea_gloss": "An optional parameter whose absence expands to the most destructive or expansive interpretation is a footgun — make it required, error clearly with the discovery path, and discriminate multi-contract operations explicitly in the parameter shape.",
-      "home_slug": "no-permissive-defaults",
-      "disposition": "reuse",
-      "rank": 4
     }
   ],
   "delta": []

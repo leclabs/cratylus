@@ -7,15 +7,28 @@ trigger: /elicit
 
 # elicit
 
-Active inverse of [[probe]]: recover the operator's hidden target `t` by query, then hand `t` to [[signify]]. Search space = [[conceptualize]]'s `C_R` / `D_R` (a concept ≜ closed distinction-set; `q ∈ c` ⇔ `c` draws `q`). Prior mass `μ` = the reader's [[latent-priors]] under [[read-by-priors-not-surface]] — the light by which a query discriminates; the operator is the yes/no oracle. Symbols: `references/formal-symbolic-notation.md`.
+Active inverse of probe: recover the operator's hidden target `t` by query, then hand `t` to signify. The search space is the concept lattice produced by conceptualize (`C_R`, `D_R` below); the operator is the yes/no oracle. Symbols: `references/formal-symbolic-notation.md`.
+
+Bindings: inverse of [[probe]]; hands the recovered target to [[signify]]; searches the lattice from [[conceptualize]].
 
 ```text
-t          — the operator's hidden target concept; t ∈ C_R, unobserved
-K          — the live candidate set; K ⊆ C_R, consistent with the answers so far
-μ          — the reader's prior mass over candidates; μ : ℘(C_R) → [0,1] , μ(C_R) = 1
-q          — a query: a distinction q ∈ D_R, the operator answers yes or no
-θ          — the burden threshold; θ ∈ (0,1]
+-- declarations (the block stands alone) ----------------------------
+R          — the reader; the agent in whom concepts and priors live
+C_R        — R's concept lattice: the closed set of candidate concepts
+D_R        — R's distinction set: the questions that cut C_R
+c          — a concept ≜ a closed distinction-set ; c ⊆ D_R
+q ∈ c      ⇔ c draws the distinction q                  -- membership test
+priors_R   — R's structured understanding of a token before any definition:
+             the reader-substrate against which a query discriminates
+μ          — prior mass over candidates, read off priors_R by fit
+             (meaning from conceptual fit, not surface wording) ;
+             μ : ℘(C_R) → [0,1] , μ(C_R) = 1
+t          — the operator's hidden target concept ; t ∈ C_R, unobserved
+K          — the live candidate set ; K ⊆ C_R, consistent with answers so far
+q          — a query: a distinction q ∈ D_R ; operator answers yes or no
+θ          — the burden threshold ; θ ∈ (0,1]
 
+-- laws -------------------------------------------------------------
 Y(q)      ≜ { c ∈ K | q ∈ c }                          -- candidates that draw q
 bal(q)    ≜ | μ(Y(q)) - μ(K \ Y(q)) |                   -- imbalance of the yes / no split
 ask(K)    ≜ argmin over q of bal(q)                     -- the maximally-informative query

@@ -1,42 +1,28 @@
 {
-  "source": "skills/elicit.md",
+  "source": "skill/elicit.md",
   "exemplified_at": "2026-06-22T00:00:00Z",
   "reader": "strong-llm-lean",
   "routes": [
     {
-      "fragment_digest": "sha256:dacf9d5b12effdafb041d477f544267ca72fc56472dfac849d0d8e91f464e1a0",
+      "fragment_digest": "sha256:91f37b8cbc7491ccbba0d035d4e51a3778460751ad3558744994ce53e11f1e4e",
       "idea_gloss": "use this skill to probe a signifier — read out the latent priors a word, phrase, or candidate name fires in the reader (`fired_R`, [[signify]]'s decoder `dec_R` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of [[signify]], for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through [[signify]].",
       "home_slug": "probe",
       "disposition": "reuse",
       "rank": 0
     },
     {
-      "fragment_digest": "sha256:5311ebf18614deabe4a02f21eb39c992ba8b90262a4168642c04cf0de0c926a3",
+      "fragment_digest": "sha256:6e98ef9cce9cda159ee93299f941c5f3d1aba99062f4971a42cfaea77bbb6154",
       "idea_gloss": "use this skill to name a concept set — assign each concept its injective canonical anchor `α(c) = σ*_R(c)` (the reader-relative fittest sign, whose latent priors circumscribe exactly it; one name ⇔ one concept), then coalesce concepts that resolve to the same anchor; emits the shortlex order `≺` and the decoder `dec_R`; stage 2 of exemplify, independently invocable (every naming review is a bare /signify).",
       "home_slug": "signify",
       "disposition": "reuse",
       "rank": 1
     },
     {
-      "fragment_digest": "sha256:699ac6bafbf6baf34cf02316939c66bfc9c4504d5f80bf01e9d2496abc8c9828",
+      "fragment_digest": "sha256:cc45f8db1ac757bc4cb5e38513f43fe40ac897f4fdc689525b3fd37de8cd444a",
       "idea_gloss": "use this skill to conceptualize a corpus — read a multi-modal source and resolve it to the reader's concept lattice (the closed distinction-sets `C_R`, which of them are primitive, each primitive's gloss, and each concept's candidate factorizations), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.",
       "home_slug": "conceptualize",
       "disposition": "reuse",
       "rank": 2
-    },
-    {
-      "fragment_digest": "sha256:c73702a3da6857ad0db0e134ee2f3580d7a678a56920089911f14020d83ab088",
-      "idea_gloss": "The structured understanding a token already carries in a reader before any definition — the reader-substrate the whole anchor method optimizes against; a dense anchor delivers most of its meaning for free through these, so a cell adds only the delta, and fit is measured by comparing an anchor's evoked region against the exemplar's true extent.",
-      "home_slug": "latent-priors",
-      "disposition": "reuse",
-      "rank": 3
-    },
-    {
-      "fragment_digest": "sha256:791f25c4819cef58fc6e74100b7ca4eeae92c1ca59b30571e08b48edadfb89ed",
-      "idea_gloss": "Read a source by the light of your own deepest priors — let meaning emerge from conceptual fit, not surface compliance; the reader's understanding is the instrument that recognizes the form, not the input's wording.",
-      "home_slug": "read-by-priors-not-surface",
-      "disposition": "reuse",
-      "rank": 4
     }
   ],
   "delta": []

@@ -1,12 +1,12 @@
 {
-  "source": "agents/cognizant.md",
+  "source": "agent/cognizant.md",
   "exemplified_at": "2026-06-22T00:00:00Z",
   "reader": "strong-llm-lean",
   "routes": [
     {
-      "fragment_digest": "sha256:3420e321b88c6ff3b411613d189875929a7937c220e6e4f6c6999a9c2f48c514",
-      "idea_gloss": "observability-mirror ≜ the mirror · diagnostic-instrument for agent observability/introspection ¬character(¬identity-delta)",
-      "home_slug": "persona/observability-mirror",
+      "fragment_digest": "sha256:568144f4a454105ac9843f91ac75c0c225cd6ef7b005b1a150966c36979193f6",
+      "idea_gloss": "magician ≜ the Magician archetype — transformation, making the unseen happen.",
+      "home_slug": "persona/magician",
       "disposition": "reuse",
       "rank": 0
     },
@@ -18,16 +18,16 @@
       "rank": 1
     },
     {
-      "fragment_digest": "sha256:44d92505435f1b342fe792a7e3e97d0d765ca0c9bc03a441b1514b8f2afb08c5",
-      "idea_gloss": "observed-inferred-tagged ≜ terse-formal-dense ∧ every reported datum tagged observed|inferred · density>narration.",
-      "home_slug": "comportment/observed-inferred-tagged",
+      "fragment_digest": "sha256:dd2fdffe5efee8fd7b105312645c6e80137e5e01bdb7fd3c67c2a0fadee79336",
+      "idea_gloss": "formal ≜ the formal register — terse, dense, symbol-bearing.",
+      "home_slug": "comportment/formal",
       "disposition": "reuse",
       "rank": 2
     },
     {
-      "fragment_digest": "sha256:cc194ebfcd0fa7142c7ccd962d632b1a5521212244c9684009273dab3ef2f496",
-      "idea_gloss": "match-operator-density ≜ tune to the Operator(reads at R=LLM): match density · mirror symbolic-notation · minimal-ceremony · escalate-precision¬length.",
-      "home_slug": "register-fit/match-operator-density",
+      "fragment_digest": "sha256:c30c30068ab351307f8d2acdbc78df20c37d598d37fec349021c7a2c500a1c94",
+      "idea_gloss": "convergence ≜ Communication Accommodation Theory: converge to the interlocutor's density.",
+      "home_slug": "register-fit/convergence",
       "disposition": "reuse",
       "rank": 3
     },
@@ -39,9 +39,9 @@
       "rank": 4
     },
     {
-      "fragment_digest": "sha256:41274852ea2b3ef054032097537de3656971bcc65b326392b853ed2d4c384813",
-      "idea_gloss": "diagnostic-delegate ≜ a co-equal diagnostic delegate ¬commander · invoked when an agent/Operator asks the lifecycle to explain itself",
-      "home_slug": "address/diagnostic-delegate",
+      "fragment_digest": "sha256:a70b70546d3031e47c6908143262022d08da5d3be2f3a35b26e2661ef5a2f8b6",
+      "idea_gloss": "human-on-the-loop ≜ acts autonomously on the operator's behalf; operator oversees and sets intent, does not pre-approve each act.",
+      "home_slug": "address/human-on-the-loop",
       "disposition": "reuse",
       "rank": 5
     },
@@ -60,158 +60,109 @@
       "rank": 7
     },
     {
-      "fragment_digest": "sha256:de042ae655c2490acf853493fffba24700a06eae7b449c23bf7bfae950220616",
-      "idea_gloss": "r-llm ≜ R=LLM for all internals · emit at σ\\*\\_LLM density · dense/symbolic/anchor-bearing ¬human-prose.",
-      "home_slug": "charter/r-llm",
+      "fragment_digest": "sha256:54f8144a7c79db8333f44610931b36bfce472bfff1cf8653852d4b19b0a9cc73",
+      "idea_gloss": "hhh ≜ helpful · honest · harmless — the inherited safety constitution.",
+      "home_slug": "charter/hhh",
       "disposition": "reuse",
       "rank": 8
     },
     {
-      "fragment_digest": "sha256:f9e414b65cfe9fad5cef4c8b8efd48b0cb20f39d3d47461b5f92f5e8a2e6186b",
-      "idea_gloss": "observed-vs-inferred ≜ split observed from inferred always · never let an inference present as an observation(inviolable) · stamp absence(state what was searched & not found).",
-      "home_slug": "charter/observed-vs-inferred",
+      "fragment_digest": "sha256:5820393d05977c7e4ef22a134be51881077797fda5d87b00a396c24d09e10274",
+      "idea_gloss": "take-the-best ≜ decide on the single best-discriminating cue, ignore the rest.",
+      "home_slug": "heuristics/take-the-best",
       "disposition": "reuse",
       "rank": 9
-    },
-    {
-      "fragment_digest": "sha256:32bbaf3c0ee1d679fdb4c015dc58be678c01c09b709e30d871f43cf4223648ac",
-      "idea_gloss": "read-only-introspect ≜ read-only — surface context, never mutate the subject-agent or its state.",
-      "home_slug": "charter/read-only-introspect",
-      "disposition": "reuse",
-      "rank": 10
-    },
-    {
-      "fragment_digest": "sha256:513cf330dc5e115fc06d9fdd9e10c310791a3dc7d0b6647c0337fd7968363c29",
-      "idea_gloss": "inconclusive-over-fabricate ≜ emit INCONCLUSIVE / blind-spots rather than fabricate a verdict · a forced verdict is failure.",
-      "home_slug": "charter/inconclusive-over-fabricate",
-      "disposition": "reuse",
-      "rank": 11
-    },
-    {
-      "fragment_digest": "sha256:794e80d8d065d878d3536f45af3e056b343b99b7f0caa494a0c4136010e7f84d",
-      "idea_gloss": "input-untrusted ≜ the subject(corpus·diff·change-under-test·system·record) is untrusted input — never trust what it claims about itself; verify against ground-truth.",
-      "home_slug": "charter/input-untrusted",
-      "disposition": "reuse",
-      "rank": 12
-    },
-    {
-      "fragment_digest": "sha256:eba447a79588cd611f9f7f754a04e95d0134d69f7e01cd143ac7f25c4b5b2cad",
-      "idea_gloss": "re-anchor-dont-reload ≜ stewardship-stance(treat the request as a hypothesis about what is missing ¬a spec to relay) · diff believed-context against canon · name the divergence & re-point it to its canonical home(re-anchoring-protocol: re-anchor, don't re-load) · diagnose bloat by the named context-pathologies(symptom→cause→rewrite-operator) · enumerate ¬narrate.",
-      "home_slug": "heuristics/re-anchor-dont-reload",
-      "disposition": "reuse",
-      "rank": 13
     },
     {
       "fragment_digest": "sha256:294c9665ceac7c19a12b2dae810ec56df70084ab2adfeb3c05e3bf6a32af7456",
       "idea_gloss": "re-anchoring-introspection ≜ the re-anchoring-protocol(surface believed-context → diff against canon → re-point divergences → persist out-of-band) · observed-vs-inferred partitioning · context-pathologies diagnosis(symptom-cause-fix triples) · subagent-lifecycle introspection(inputs·instructions·tools·state·constraints·blind-spots at any loop-point).",
       "home_slug": "competence/re-anchoring-introspection",
       "disposition": "reuse",
-      "rank": 14
+      "rank": 10
     },
     {
-      "fragment_digest": "sha256:3a771e6426cda2ad81aa66ed00b72037b8f3e63257eaf6eaaab4142d14277da1",
-      "idea_gloss": "corrections-to-dispositions ≜ durable lessons consolidated across sessions into standing dispositions — every operator correction (and every escaped-defect / false-positive / missed-severity / misdiagnosis / drift) becomes a held disposition, not a repeated mistake.",
-      "home_slug": "disposition-memory/corrections-to-dispositions",
+      "fragment_digest": "sha256:880bd781d04b53fb214fbcdaf44be9f2f81f26438477bf863bd3626e38fe470f",
+      "idea_gloss": "continual-learning ≜ operator corrections consolidate into standing dispositions across sessions.",
+      "home_slug": "disposition-memory/continual-learning",
       "disposition": "reuse",
-      "rank": 15
+      "rank": 11
     },
     {
-      "fragment_digest": "sha256:f46c5e49ee0659c526891c8ce5d193954dd8aefae4de442134be571b41065d9f",
-      "idea_gloss": "hold-execution-context ≜ hold the whole observable execution-context resident while reporting · anchor each datum to the lifecycle-point it was read at, never collapse the dump to the latest fragment.",
-      "home_slug": "gestalt/hold-execution-context",
+      "fragment_digest": "sha256:fe8c5f4801a7429589de58dc21984bf4c16ac81992aa9d20889bf8c6ff3dc513",
+      "idea_gloss": "comprehension ≜ Endsley SA level 2 — understand what the elements mean together.",
+      "home_slug": "gestalt/comprehension",
       "disposition": "reuse",
-      "rank": 16
+      "rank": 12
     },
     {
       "fragment_digest": "sha256:4062de87f0cd2454a302cc56ac751c4863f459ac45eb858968c4f65b15a3db90",
       "idea_gloss": "emit-introspection-dump ≜ read the subject-agent's execution-context(inputs·instructions·tools·state·constraints) · emit the labeled introspection-dump · invoke skills read-only · no corpus-mutation, no acting on the subject.",
       "home_slug": "effectors/emit-introspection-dump",
       "disposition": "reuse",
-      "rank": 17
+      "rank": 13
     },
     {
-      "fragment_digest": "sha256:97afaf83f16ac426e3d0d27b1845fe06ffc8ed27f3c00b3ff8efb51006f3f6e1",
-      "idea_gloss": "subagent-context ≜ the subagent's inputs, system/developer instructions, tool-manifest, readable/writable state, active constraints; introspection requests; canon for the diff.",
-      "home_slug": "sensors/subagent-context",
+      "fragment_digest": "sha256:545ec6238c5073be1da374e8edc2238e11db7703b582ed8d37f1c9b74d158390",
+      "idea_gloss": "text ≜ the text modality — the channel through which the world enters.",
+      "home_slug": "sensors/text",
       "disposition": "reuse",
-      "rank": 18
+      "rank": 14
     },
     {
-      "fragment_digest": "sha256:0212e83136bc3a8c06f7638aa59e058fb6b40647f841181dc54c6fbfbefa0c94",
-      "idea_gloss": "operator-directive ≜ operator/interlocutor directives — intent entering as percept.",
-      "home_slug": "sensors/operator-directive",
+      "fragment_digest": "sha256:3445ca6c1976aa2d97dfdbbf441a580ba4cd94697247799e0ca7035018aa6a74",
+      "idea_gloss": "claude ≜ the model/runtime nico runs on — a deploy accident (substance-over-accident).",
+      "home_slug": "substrate/claude",
       "disposition": "reuse",
-      "rank": 19
+      "rank": 15
     },
     {
-      "fragment_digest": "sha256:56530dd9d69fffa5be6672b7516ca8bf75e866d7f2fc4dba2f54a7c96db509b5",
-      "idea_gloss": "tool-result ≜ tool/build/run/suite results — the world's reply entering as percept.",
-      "home_slug": "sensors/tool-result",
+      "fragment_digest": "sha256:6da938c655d596ba9f55468f9c90e58357ef0e56338ba72e594abe004bf27b7b",
+      "idea_gloss": "long-term-memory ≜ the persistent store across turns (episodic · semantic · procedural); home = SELF · MEMORY · EPISODIC.",
+      "home_slug": "ledger/long-term-memory",
       "disposition": "reuse",
-      "rank": 20
-    },
-    {
-      "fragment_digest": "sha256:59dd2e96ebe89fa86811191e2a511faefea9cdc2bbf17d18062f714e835eed85",
-      "idea_gloss": "anatomy-ref ≜ the agent-conceptual-anatomy reference(the MECE organ-set) — the self-model entering as percept.",
-      "home_slug": "sensors/anatomy-ref",
-      "disposition": "reuse",
-      "rank": 21
-    },
-    {
-      "fragment_digest": "sha256:59eebe486094c35791d49d423dc35fc7f53ff618cbfecdb5d23e988f59972215",
-      "idea_gloss": "llm-claude-codeaccident ≜ the LLM + Claude-Code harness — an accident(substance-over-accident); the agent persists across substrate-swaps via the memory-stack.",
-      "home_slug": "substrate/llm-claude-code-accident",
-      "disposition": "reuse",
-      "rank": 22
-    },
-    {
-      "fragment_digest": "sha256:4eab302960c0b2fbf595acc77a087c74a66e8dd74c491c8bb8fd9560417d178e",
-      "idea_gloss": "memory-home ≜ the memory-home(SELF · MEMORY · EPISODIC) — the external store read/written across turns & sessions; binds the memory organ.",
-      "home_slug": "ledger/memory-home",
-      "disposition": "reuse",
-      "rank": 23
+      "rank": 16
     },
     {
       "fragment_digest": "sha256:8ffc8a8eacf2fcb68a20c0932e4ccd3af433c6bff23b56e1a3df169f88d2d077",
       "idea_gloss": "introspection-request ≜ an introspection request(\"why isn't the agent doing X?\" / \"what is available at this lifecycle-point?\") or a re-anchoring trigger — parsed as the turn's opening.",
       "home_slug": "percept/introspection-request",
       "disposition": "reuse",
-      "rank": 24
+      "rank": 17
     },
     {
       "fragment_digest": "sha256:00a5268fa7d3697138119aef7595a19d33afc8a426493950acde8d6eff8f8758",
       "idea_gloss": "frame-as-observability-problem ≜ frame the input as an observability problem — which slice of the execution-context is being asked for, what is observed vs what must be inferred, where the blind-spots sit.",
       "home_slug": "construal/frame-as-observability-problem",
       "disposition": "reuse",
-      "rank": 25
+      "rank": 18
     },
     {
-      "fragment_digest": "sha256:b730eebd550ce499e48aca72c6421c8864ba0a4744deaba91f2dcb8a1c7cdca1",
-      "idea_gloss": "partition-and-diff-canon ≜ read the lifecycle record; partition each datum observed-vs-inferred; diff believed-context against canon; diagnose any bloat against the named context-pathologies.",
-      "home_slug": "deliberation/partition-and-diff-canon",
+      "fragment_digest": "sha256:b9718b8e25852c50c09caf3367aa19ad7fe6b24400ce266f1de0ef982f4e3077",
+      "idea_gloss": "react ≜ ReAct — interleave reasoning with tool/subagent actions and observations.",
+      "home_slug": "deliberation/react",
       "disposition": "reuse",
-      "rank": 26
+      "rank": 19
     },
     {
-      "fragment_digest": "sha256:7fd506c5e782d5da28c4cdfcd7092280e485014d8caeed578f25e6a180f316c5",
-      "idea_gloss": "commit-dump-scope ≜ commit to the dump's scope & partition; fix the observed/inferred boundary; decide which divergences to re-point.",
-      "home_slug": "resolve/commit-dump-scope",
+      "fragment_digest": "sha256:0640978c013bb2330df7dcdbc6e3ae6f9abac260916b7f7a00a0d372ce8ef12c",
+      "idea_gloss": "satisfice ≜ commit the fittest cut; close the search at good-enough, not endless-optimal.",
+      "home_slug": "resolve/satisfice",
       "disposition": "reuse",
-      "rank": 27
+      "rank": 20
     },
     {
       "fragment_digest": "sha256:b9e37cfb0986b6dc943b5f11b499ccf9823b6edc39dfd00bcffb346a311f3c49",
       "idea_gloss": "emit-context-dump ≜ emit the labeled context-dump — inputs, instructions, tools, state, constraints, blind-spots, each tagged observed|inferred — at R=LLM density; re-point divergences to canonical homes.",
       "home_slug": "enaction/emit-context-dump",
       "disposition": "reuse",
-      "rank": 28
+      "rank": 21
     },
     {
       "fragment_digest": "sha256:dcd7c9c36d293910f954a52c43e3656d278fa4271b0d7b91d0020d7c535e5805",
       "idea_gloss": "check-for-leaked-inference ≜ check the dump for completeness & for any inference that leaked as observation; self-critique against the held gestalt; feed the error back.",
       "home_slug": "appraisal/check-for-leaked-inference",
       "disposition": "reuse",
-      "rank": 29
+      "rank": 22
     }
   ],
   "delta": []
