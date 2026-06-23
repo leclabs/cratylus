@@ -12,15 +12,14 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 ## Status mirror
 
-**Ready:** `fleet-deploy-catchup` — deploy the `canonical-organ-values` corpus (`main` @ `5eaaa45`) to the
-5 fleet hosts that were **ssh-unreachable** during the 2026-06-23 rollout (forge · spark · ash · upmav ·
-upgoose). `fire` is live + verified. Probe with **ssh, not ping**.
+**Ready / active:** none — fresh baseline.
 
-**Done 2026-06-23:** `canonical-organ-values` (retired — own sharded plan, decision docs kept). Re-derived
-the organ value catalog from blind model introspection (48+28 blind agents, 2 rounds each), classified every
-organ open-vs-closed, purged ~60 bespoke per-agent cells for a generalized opinionated LLM-reader set,
-rewired all 11 agents, renamed `weitermachen → carry-on`, added the `build-agent` layman wizard. Landed
-`main` @ `5eaaa45`; `fire` deployed + verified. Remote propagation → `fleet-deploy-catchup` above.
+**Done 2026-06-23:** `canonical-organ-values` (retired — own sharded plan, decision docs kept) + its
+`fleet-deploy-catchup` tail. Re-derived the organ value catalog from blind model introspection (48+28 blind
+agents, 2 rounds each), classified every organ open-vs-closed, purged ~60 bespoke per-agent cells for a
+generalized opinionated LLM-reader set, rewired all 11 agents, renamed `weitermachen → carry-on`, added the
+`build-agent` layman wizard. Landed `main` @ `510c66e`; **fleet 6/6 deployed + verified** (fire · forge ·
+spark · ash · upmav · upgoose — nico sha parity `df337e…`, zero bespoke, memory layers untouched).
 
 **Proposed next initiative (awaiting Operator go):** `fleet-organ-sync` — founder memory stores are per-host
 and **UNSYNCED** (`~/.claude` is not a synced repo), so they fork and each re-accumulates palimpsest. They

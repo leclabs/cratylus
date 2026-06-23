@@ -5,9 +5,9 @@ folders (`pending/ → ready/ → active/ → completed/`) as deps clear.
 
 ## Active
 
-| Plan               | Concern                                                                                                                                                         | Lead                  |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Holds the live tails of retired initiatives. Live tail: `fleet-deploy-catchup`. | Mav + Nico (per task) |
+| Plan               | Concern                                                                                                                                                                  | Lead                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
+| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Holds the live tails of retired initiatives. No active tail (fresh baseline 2026-06-23). | Mav + Nico (per task) |
 
 ## Retired
 
@@ -43,9 +43,9 @@ five plans it subsumed:
 **Canonical organ values (retired 2026-06-23):** the organ value catalog re-derived from blind model
 introspection (2 rounds: 48 then 28 blind agents) — every organ classified open-vs-closed, ~60 bespoke
 per-agent cells purged for a generalized opinionated LLM-reader value-set, all 11 agents rewired,
-`weitermachen → carry-on`, `build-agent` layman wizard added. Result on `main` @ `5eaaa45`; `fire` deployed.
-The scaffold dir is **kept** (decision docs `0001`/`0002` + raw blind audits are the durable rationale). Live
-deploy tail (the 5 ssh-unreachable hosts) → RTB `fleet-deploy-catchup`.
+`weitermachen → carry-on`, `build-agent` layman wizard added. Result on `main` @ `510c66e`; **fleet 6/6
+deployed + verified** (the 5 initially-unreachable hosts caught up via RTB `fleet-deploy-catchup`, now closed).
+The scaffold dir is **kept** (decision docs `0001`/`0002` + raw blind audits are the durable rationale).
 
 **Founder boundary:** Nico owns constitution/roles/archetypes (the society); Mav owns infrastructure/
 machinery (the substrate). `principal-ic` is intrinsic to both (founder-genus, bound to the polis subject).
