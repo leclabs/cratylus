@@ -472,6 +472,14 @@ def compose_agent_selection(slug: str, reader: str, harness: str) -> ComposedDoc
         for value in values:
             body.append(value_cell_body(organ, value))
             body.append("")
+    # Genus: every agent carries the memory protocol verbatim ({name}-parameterized)
+    # -- the encode/wake/dream discipline. `memory` is the deploy:skill-dir,
+    # render:verbatim cell; its `## Protocol` projects into every SOUL (the bundled
+    # `episodic` tool ships separately as the host memory skill). One home, projected.
+    if cells.exists("memory") and is_verbatim_organ("memory"):
+        body.append("## Memory")
+        body.append("")
+        body.extend(render_organ("memory", name))
     body_text = "\n".join(body).rstrip() + "\n"
     return ComposedDoc(
         name=name, kind="agent", heading=heading, body=body_text,
