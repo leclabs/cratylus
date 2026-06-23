@@ -89,10 +89,13 @@ const USAGE = `episodic — portable EPISODIC JSONL store
 usage:
   episodic encode --home <dir> [--scope user|project:<key>] [--path <p>] \\
                   (--body <text> | --body-json <json> | --body -)
-  episodic read   --home <dir> [--scope user] [--path <p>] [--count]
+  episodic read   --home <dir> [--scope <tag>] [--path <p>] [--count]
   episodic migrate <src.md> <dest.jsonl> [--dry-run] [--overwrite]
 
 EPISODIC is a JSONL event log: encode mints a ULID and appends one open record.
+The raw log is ALWAYS the agent home (--home); --scope is a routing TAG written
+onto the record (and, on read, an optional filter over it), never a store
+location — capture never writes into a project tree.
 For a body that starts with "--", use --body=<text> or pipe via --body -.
 `;
 
@@ -133,12 +136,21 @@ function runEncode(args: ParsedArgs): CliResult {
   return { code: 0, out: `${rec.id}\n`, err: '' };
 }
 
-/** `read`: list records (or `--count`) from a (scope, path) store. */
+/**
+ * `read`: list records (or `--count`) from the home-anchored RAW LOG. `--scope`
+ * is a routing-tag FILTER over the records, never a store selector — the raw log
+ * is always the agent home (ideas/memory.md, raw capture is single-store).
+ */
 function runRead(args: ParsedArgs): CliResult {
-  const scope: Scope = assertScope(str(args.flags.scope) ?? 'user');
+  const scopeFilter = str(args.flags.scope);
+  if (scopeFilter !== undefined) assertScope(scopeFilter); // validate if given
   const path = str(args.flags.path) ?? DEFAULT_EPISODIC_PATH;
   const store = new EpisodicStore({ env: hostEnvFrom(args.flags) });
-  const records = store.read(scope, path);
+  const all = store.read(path);
+  const records =
+    scopeFilter === undefined
+      ? all
+      : all.filter((r) => r.scope === scopeFilter);
   if (args.flags.count === true)
     return { code: 0, out: `${records.length}\n`, err: '' };
   return {

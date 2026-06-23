@@ -93,13 +93,14 @@ export interface CompactOptions {
 
 export function compact(
   store: EpisodicStore,
-  scope: EpisodicRecord['scope'],
   path: string | undefined,
   consumedIds: Iterable<string>,
   opts: CompactOptions = {},
 ): { removed: string[]; kept: EpisodicRecord[] } {
   const { stamp, rename = fs.renameSync } = opts;
-  const file = store.fileFor(scope, path);
+  // Compaction always rewrites the home-anchored RAW LOG, never a scope-resolved
+  // target file. The record's scope is a routing tag, not a store selector.
+  const file = store.rawFile(path);
   const consumed = new Set(consumedIds);
   if (!fs.existsSync(file)) return { removed: [], kept: [] };
 
@@ -176,11 +177,10 @@ function routeLabel(target: RouteTarget): string {
  */
 export function applyRoutes(
   store: EpisodicStore,
-  scope: EpisodicRecord['scope'],
   path: string | undefined,
   classifier: Classifier,
 ): DreamResult {
-  const records = store.read(scope, path);
+  const records = store.read(path);
   const consumed: string[] = [];
   const retained: string[] = [];
   const landed: string[] = [];
@@ -221,6 +221,6 @@ export function applyRoutes(
   }
 
   // One atomic rewrite: drop consumed records, stamp routes on retained ones.
-  compact(store, scope, path, consumed, { stamp });
+  compact(store, path, consumed, { stamp });
   return { consumed, retained, landed };
 }

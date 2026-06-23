@@ -1,4 +1,10 @@
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -58,6 +64,33 @@ describe('encode', () => {
     expect(r.code).toBe(1);
     expect(r.err).toMatch(/--home/);
   });
+
+  it('a project-scoped encode lands in the agent HOME log, never the project tree (--scope is a routing tag)', () => {
+    const projectRoot = join(home, 'project-tree');
+    const r = main([
+      'encode',
+      '--home',
+      home,
+      '--scope',
+      'project:polis',
+      '--project-key',
+      'polis',
+      '--project-root',
+      projectRoot,
+      '--body',
+      'project-true event',
+    ]);
+    expect(r.code).toBe(0);
+
+    // The record carries its scope as a tag, but lands in --home/EPISODIC.jsonl.
+    const records = parseLines(
+      readFileSync(join(home, 'EPISODIC.jsonl'), 'utf8'),
+    );
+    expect(records).toHaveLength(1);
+    expect(records[0]?.scope).toBe('project:polis');
+    // Structural guarantee: nothing written under the project root at all.
+    expect(existsSync(projectRoot)).toBe(false);
+  });
 });
 
 describe('read', () => {
@@ -72,6 +105,30 @@ describe('read', () => {
   it('returns 0 for an absent store', () => {
     const r = main(['read', '--home', home, '--count']);
     expect(r.out.trim()).toBe('0');
+  });
+
+  it('--scope filters by routing tag over the single home log', () => {
+    main(['encode', '--home', home, '--scope', 'user', '--body', 'u']);
+    main([
+      'encode',
+      '--home',
+      home,
+      '--scope',
+      'project:polis',
+      '--project-key',
+      'polis',
+      '--project-root',
+      join(home, 'pt'),
+      '--body',
+      'p',
+    ]);
+    expect(main(['read', '--home', home, '--count']).out.trim()).toBe('2');
+    expect(
+      main(['read', '--home', home, '--scope', 'user', '--count']).out.trim(),
+    ).toBe('1');
+    const filtered = main(['read', '--home', home, '--scope', 'project:polis']);
+    expect(filtered.out.trim().split('\n')).toHaveLength(1);
+    expect(JSON.parse(filtered.out.trim()).body).toBe('p');
   });
 });
 

@@ -36,12 +36,16 @@ afterEach(() => {
   rmSync(home, { recursive: true, force: true });
 });
 
-/** Read the surviving EPISODIC records from the default user store. */
+/** Read the surviving EPISODIC records from the home-anchored raw log. */
 function survivors(): ReturnType<typeof parseRecord>[] {
-  return store.read('user');
+  return store.read();
 }
 
-/** Read a routed organ home's full text (empty string if absent). */
+/**
+ * Read a routed organ home's full text (empty string if absent). These are
+ * routed dream TARGETS (SELF.md/MEMORY.md/…), still resolved scope-aware via
+ * `fileFor` — distinct from the home-anchored raw log read by {@link survivors}.
+ */
 function homeText(scopePath: string): string {
   const file = store.fileFor('user', scopePath);
   return existsSync(file) ? readFileSync(file, 'utf8') : '';
@@ -93,7 +97,7 @@ describe('applyRoutes — mixed batch with a deterministic stub classifier', () 
       return decisions[kind] ?? { targets: [] };
     };
 
-    const result = applyRoutes(store, 'user', undefined, stub);
+    const result = applyRoutes(store, undefined, stub);
 
     // Each organ received its content.
     expect(homeText('SELF.md')).toContain('c-identity');
@@ -127,7 +131,7 @@ describe('applyRoutes — mixed batch with a deterministic stub classifier', () 
   it('scaffold (drop) lands nowhere: no organ file is created for a dropped record', () => {
     store.encode({ scope: 'user', body: { kind: 'scaffold' } });
     const stub: Classifier = () => ({ targets: [] });
-    applyRoutes(store, 'user', undefined, stub);
+    applyRoutes(store, undefined, stub);
 
     expect(survivors()).toHaveLength(0); // consumed
     // No stray organ files written.
@@ -149,7 +153,7 @@ describe('applyRoutes — mixed batch with a deterministic stub classifier', () 
         { organ: 'EPISODIC' },
       ],
     });
-    applyRoutes(store, 'user', undefined, stub);
+    applyRoutes(store, undefined, stub);
 
     const left = survivors();
     expect(left).toHaveLength(1);
@@ -163,7 +167,7 @@ describe('applyRoutes — mixed batch with a deterministic stub classifier', () 
     const noContent: Classifier = () => ({
       targets: [{ organ: 'SELF', path: 'SELF.md' }],
     });
-    expect(() => applyRoutes(store, 'user', undefined, noContent)).toThrow(
+    expect(() => applyRoutes(store, undefined, noContent)).toThrow(
       /no content/,
     );
 
@@ -171,7 +175,7 @@ describe('applyRoutes — mixed batch with a deterministic stub classifier', () 
       // @ts-expect-error deliberately omitting required path for a SELF target
       targets: [{ organ: 'SELF', content: 'x' }],
     });
-    expect(() => applyRoutes(store, 'user', undefined, noPath)).toThrow(
+    expect(() => applyRoutes(store, undefined, noPath)).toThrow(
       /scope-relative path/,
     );
   });
@@ -183,12 +187,12 @@ describe('compact — atomic, idempotent, crash-safe', () => {
     const b = store.encode({ scope: 'user', body: 'b' });
     const c = store.encode({ scope: 'user', body: 'c' });
 
-    const { removed, kept } = compact(store, 'user', undefined, [b.id]);
+    const { removed, kept } = compact(store, undefined, [b.id]);
     expect(removed).toEqual([b.id]);
     expect(kept.map((r) => r.id)).toEqual([a.id, c.id]);
 
     // Byte-verify the rewritten file is exactly a + c lines, in order.
-    const raw = readFileSync(store.fileFor('user'), 'utf8');
+    const raw = readFileSync(store.rawFile(), 'utf8');
     const lines = raw.split('\n').filter((l) => l.length > 0);
     expect(lines).toHaveLength(2);
     expect(parseRecord(lines[0]).id).toBe(a.id);
@@ -200,10 +204,10 @@ describe('compact — atomic, idempotent, crash-safe', () => {
     const b = store.encode({ scope: 'user', body: 'b' });
     store.encode({ scope: 'user', body: 'c' });
 
-    compact(store, 'user', undefined, [b.id]);
-    const after1 = readFileSync(store.fileFor('user'), 'utf8');
-    const second = compact(store, 'user', undefined, [b.id]);
-    const after2 = readFileSync(store.fileFor('user'), 'utf8');
+    compact(store, undefined, [b.id]);
+    const after1 = readFileSync(store.rawFile(), 'utf8');
+    const second = compact(store, undefined, [b.id]);
+    const after2 = readFileSync(store.rawFile(), 'utf8');
 
     expect(second.removed).toEqual([]); // already gone
     expect(after2).toBe(after1); // byte-identical
@@ -212,17 +216,15 @@ describe('compact — atomic, idempotent, crash-safe', () => {
   it('consuming an absent id leaves the file byte-for-byte untouched', () => {
     store.encode({ scope: 'user', body: 'a' });
     store.encode({ scope: 'user', body: 'b' });
-    const before = readFileSync(store.fileFor('user'), 'utf8');
+    const before = readFileSync(store.rawFile(), 'utf8');
 
-    const res = compact(store, 'user', undefined, [
-      '01BX5ZZKBKACTAV9WEVGEMMVRZ',
-    ]);
+    const res = compact(store, undefined, ['01BX5ZZKBKACTAV9WEVGEMMVRZ']);
     expect(res.removed).toEqual([]);
-    expect(readFileSync(store.fileFor('user'), 'utf8')).toBe(before);
+    expect(readFileSync(store.rawFile(), 'utf8')).toBe(before);
   });
 
   it('a non-existent store compacts to empty without error', () => {
-    const res = compact(store, 'user', 'never-written.jsonl', ['anything']);
+    const res = compact(store, 'never-written.jsonl', ['anything']);
     expect(res).toEqual({ removed: [], kept: [] });
   });
 
@@ -230,16 +232,16 @@ describe('compact — atomic, idempotent, crash-safe', () => {
     const a = store.encode({ scope: 'user', body: 'a' });
     const b = store.encode({ scope: 'user', body: 'b' });
     const c = store.encode({ scope: 'user', body: 'c' });
-    const file = store.fileFor('user');
+    const file = store.rawFile();
     const before = readFileSync(file, 'utf8');
 
     // Crash exactly at the atomic publish point, via the injectable rename seam.
     const crash = () => {
       throw new Error('simulated crash during rename');
     };
-    expect(() =>
-      compact(store, 'user', undefined, [b.id], { rename: crash }),
-    ).toThrow(/simulated crash/);
+    expect(() => compact(store, undefined, [b.id], { rename: crash })).toThrow(
+      /simulated crash/,
+    );
 
     // The original log is byte-identical — no unconsumed record lost.
     expect(readFileSync(file, 'utf8')).toBe(before);
@@ -251,7 +253,7 @@ describe('compact — atomic, idempotent, crash-safe', () => {
     expect(orphans).toEqual([]);
 
     // And a retry after the "crash" succeeds cleanly.
-    const retry = compact(store, 'user', undefined, [b.id]);
+    const retry = compact(store, undefined, [b.id]);
     expect(retry.removed).toEqual([b.id]);
     expect(survivors().map((r) => r.id)).toEqual([a.id, c.id]);
   });
@@ -261,7 +263,7 @@ describe('compact — atomic, idempotent, crash-safe', () => {
     const b = store.encode({ scope: 'user', body: 'b' });
     const stamp = new Map([[a.id, ['MEMORY@user']]]);
 
-    compact(store, 'user', undefined, [b.id], { stamp });
+    compact(store, undefined, [b.id], { stamp });
     const left = survivors();
     expect(left.map((r) => r.id)).toEqual([a.id]);
     expect(left[0].routes).toEqual(['MEMORY@user']);
@@ -281,13 +283,13 @@ describe('applyRoutes — end-to-end idempotency over multiple cycles', () => {
       };
     };
 
-    applyRoutes(store, 'user', undefined, stub);
+    applyRoutes(store, undefined, stub);
     const afterFirst = homeText('MEMORY.md');
     expect(afterFirst).toContain('fact-1');
     expect(survivors()).toHaveLength(0); // consumed, log drained
 
     // Second cycle: nothing left to route → MEMORY unchanged (no duplicate land).
-    applyRoutes(store, 'user', undefined, stub);
+    applyRoutes(store, undefined, stub);
     expect(homeText('MEMORY.md')).toBe(afterFirst);
   });
 });

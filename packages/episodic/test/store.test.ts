@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -38,7 +38,7 @@ afterEach(() => {
 describe('encode', () => {
   it('appends a valid ULID-keyed JSONL line to the default store', () => {
     const rec = store.encode({ scope: 'user', body: { note: 'first event' } });
-    const file = store.fileFor('user');
+    const file = store.rawFile();
     expect(file).toBe(join(home, '.claude/agents/mav', DEFAULT_EPISODIC_PATH));
 
     const raw = readFileSync(file, 'utf8');
@@ -53,7 +53,7 @@ describe('encode', () => {
   it('is append-only: multiple encodes accumulate, ids sort lexicographically by mint order', () => {
     const bodies = ['a', 'b', 'c', 'd'];
     const written = bodies.map((b) => store.encode({ scope: 'user', body: b }));
-    const lines = parseLines(readFileSync(store.fileFor('user'), 'utf8'));
+    const lines = parseLines(readFileSync(store.rawFile(), 'utf8'));
     expect(lines).toEqual(written);
 
     const ids = lines.map((r) => r.id);
@@ -70,7 +70,32 @@ describe('encode', () => {
       body: 2,
     });
     expect(b.path).toBe('sub/EPISODIC.jsonl');
-    expect(store.read('project:polis', 'sub/EPISODIC.jsonl')).toEqual([b]);
+    // The explicit path selects the raw-log filename WITHIN the agent home — the
+    // project:polis scope is a routing tag, not a store location.
+    expect(store.read('sub/EPISODIC.jsonl')).toEqual([b]);
+  });
+
+  it('raw capture is single-store: a project-scoped encode lands in the agent HOME, never the project tree', () => {
+    const projectRoot = join(home, 'workspaces/polis');
+    const rec = store.encode({
+      scope: 'project:polis',
+      body: { note: 'project-true event' },
+    });
+
+    // The record carries its scope as a routing TAG...
+    expect(rec.scope).toBe('project:polis');
+    // ...but the raw log is the agent home, NOT projectRoot/EPISODIC.jsonl.
+    expect(store.rawFile()).toBe(
+      join(home, '.claude/agents/mav', DEFAULT_EPISODIC_PATH),
+    );
+    expect(readFileSync(store.rawFile(), 'utf8').trim()).toBe(
+      serializeRecord(rec),
+    );
+    // Structural guarantee: NOTHING was written under the project tree.
+    expect(existsSync(join(projectRoot, DEFAULT_EPISODIC_PATH))).toBe(false);
+    expect(existsSync(projectRoot)).toBe(false);
+    // And read (home-anchored) returns it without any scope selector.
+    expect(store.read()).toEqual([rec]);
   });
 
   it('keeps body open — accepts arbitrary JSON without forcing a kind', () => {
@@ -92,7 +117,7 @@ describe('encode', () => {
 
 describe('read', () => {
   it('returns [] for a non-existent store', () => {
-    expect(store.read('user')).toEqual([]);
+    expect(store.read()).toEqual([]);
   });
 });
 

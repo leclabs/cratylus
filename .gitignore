@@ -21,3 +21,7 @@ packages/mind/.render/
 __pycache__/
 *.pyc
 .scratchpad/
+# Agent memory stores are per-agent home state — never repo-tracked (raw EPISODIC capture is agent-home only).
+EPISODIC.jsonl
+MEMORY.md
+SELF.md
