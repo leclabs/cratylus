@@ -20,3 +20,7 @@ do ≜
 
 acc ⊨ no bespoke cell remains; `gate_agent_organ_refs` PASS (every vector resolves); verify PASS; tests green;
 the source reconstructs ≽ from the new catalog. → `completed/`, then T8.
+
+## Outcome (done 2026-06-23)
+
+Materialized per 0002. 91 generalized value cells created; ~60 bespoke cells + 11 stale agent manifests deleted; all 11 agent vectors rewired; persona/sage de-contaminated; 14 organ READMEs rewritten; test_provenance allowlist updated for carry-on. verify PASS (R1+R2+R3 + no-holders); toolkit 15/15; gate_agent_organ_refs clean. Commits 7689fc1 (core) + READMEs.

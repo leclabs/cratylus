@@ -17,3 +17,7 @@ layman-facing. Map every organ → its question + option-glosses (default first)
 
 acc ⊨ skill projects (verify PASS, operative gate); a dry run produces a valid selection vector from layman
 answers; defaults are first; covers all surviving organs. → `completed/`.
+
+## Outcome (done 2026-06-23)
+
+Shipped skill/build-agent.md (trigger /build-agent): layman organ-by-organ wizard, default-first options for all organs, composes selection vector + deploys; complements self-extend. verify PASS; 15/15.
