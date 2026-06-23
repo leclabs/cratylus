@@ -22,3 +22,7 @@ structured output ≜ `{organ, openOrClosed, values:[{name, reference, justifica
 
 acc ⊨ all 24 organs have an R1 verdict; results judged by Nico (flag thin/hand-wavy ones); R1 table recorded
 in this task file before → `completed/`. NO corpus mutation in T1 (audit only).
+
+## Outcome (done 2026-06-23)
+
+See `decisions/0001-organ-classification.md`. 48 blind agents, 2 consistent rounds; raw in `decisions/audit-raw-r1r2.json`. 10 organs CLOSED, 14 OPEN; confidence high (no extra probe needed).

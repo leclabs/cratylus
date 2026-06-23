@@ -7,9 +7,9 @@ generalized opinionated LLM-reader set. Charter + acceptance: `AGENTS.md`.
 
 | Task                      | State     | Concern                                                                                    |
 | ------------------------- | --------- | ------------------------------------------------------------------------------------------ |
-| `T1 blind-audit-r1`       | active    | Fan out 1 blind subagent/organ: canonical values + reference + justification + open/closed |
-| `T2 blind-audit-r2`       | pending   | Second blind set, same questions; verify consistency vs R1                                 |
-| `T3 probe-and-classify`   | pending   | Probe low-confidence organs; emit authoritative open-vs-closed + closed enums              |
+| `T1 blind-audit-r1`       | completed | Fan out 1 blind subagent/organ: canonical values + reference + justification + open/closed |
+| `T2 blind-audit-r2`       | completed | Second blind set, same questions; verify consistency vs R1                                 |
+| `T3 probe-and-classify`   | completed | Probe low-confidence organs; emit authoritative open-vs-closed + closed enums              |
 | `T4 open-value-gen`       | pending   | Blind-source generalized opinionated value-sets for open organs (LLM-reader rendered)      |
 | `T5 purge-bespoke`        | pending   | Remove bespoke values; install survivors; rewire 11 agents + READMEs; exemplify; verify    |
 | `T6 rename-carry-on`      | completed | `weitermachen.md → carry-on.md`; H1 carry-on; keep weitermachen as trigger word            |

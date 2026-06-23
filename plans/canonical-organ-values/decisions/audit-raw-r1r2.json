@@ -1,0 +1,1982 @@
+{
+  "summary": "Blind model introspection: per-organ canonical-values audit, 2 independent rounds",
+  "agentCount": 48,
+  "logs": [],
+  "result": {
+    "count": 48,
+    "byOrgan": {
+      "address (agent autonomy / authority relative to human supervisor)": {
+        "A": {
+          "round": "A",
+          "organ": "address (agent autonomy / authority relative to human supervisor)",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Sheridan-Verplank 10 Levels of Automation (LOA)",
+              "reference": "Sheridan & Verplank (1978), MIT; popularized in Sheridan, Telerobotics, Automation, and Human Supervisory Control (1992)",
+              "justification": "The foundational ordinal scale (1 = human does everything ... 10 = computer acts autonomously, ignores human) that is THE canonical backbone for autonomy-vs-deference; nearly all later taxonomies cite it."
+            },
+            {
+              "name": "Levels 1-4: Computer offers no/some/narrowed/one decision option (human decides and acts)",
+              "reference": "Sheridan & Verplank 10-level scale, lower band",
+              "justification": "Defines the high-deference end: the agent only suggests; the human retains full decision and execution authority."
+            },
+            {
+              "name": "Level 5: Computer executes the suggestion if the human approves",
+              "reference": "Sheridan & Verplank 10-level scale, level 5",
+              "justification": "The canonical 'human-in-the-loop / approval gate' point — the agent proposes and acts only on explicit approval; this is the prototypical 'defer for approval' setting."
+            },
+            {
+              "name": "Levels 6-7: Computer allows the human a restricted veto window / acts then necessarily informs",
+              "reference": "Sheridan & Verplank 10-level scale, levels 6-7",
+              "justification": "The 'human-on-the-loop' band — the agent acts autonomously by default but the human can intervene; canonical for supervised autonomy."
+            },
+            {
+              "name": "Levels 8-10: Computer informs only if asked / only if it decides to / decides everything autonomously",
+              "reference": "Sheridan & Verplank 10-level scale, upper band",
+              "justification": "The full-autonomy end where the agent self-authorizes and human oversight is minimal or eliminated — the canonical 'acts on its own' extreme."
+            },
+            {
+              "name": "Stage-decomposed LOA (Acquisition / Analysis / Decision / Action)",
+              "reference": "Parasuraman, Sheridan & Wickens (2000), 'A Model for Types and Levels of Human Interaction with Automation', IEEE SMC-A",
+              "justification": "Refines the single scalar into a per-stage level, the standard modern correction showing autonomy is not one number; widely cited extension of the backbone."
+            },
+            {
+              "name": "Human-in-the-loop / on-the-loop / out-of-the-loop",
+              "reference": "Common HCI / autonomous-systems and defense (DoD) terminology; 'out-of-the-loop performance problem', Endsley & Kiris (1995)",
+              "justification": "The collapsed three-bucket vernacular that practitioners actually use; a recognized coarse projection of the LOA scale onto agent-supervision practice."
+            },
+            {
+              "name": "SAE J3016 Driving Automation Levels 0-5",
+              "reference": "SAE International J3016 (2014, rev. 2021)",
+              "justification": "A domain-specific but globally standardized closed enum of the same autonomy-vs-human-fallback dimension; canonical exemplar that the dimension admits formal standards."
+            }
+          ],
+          "confidence": 0.83,
+          "evidenceNeeded": "Confirmation of the intended granularity: whether \"address\" wants the full 10-level Sheridan-Verplank ordinal scale, the 4-stage Parasuraman model, or the coarse in/on/out-of-the-loop trichotomy. Also useful: whether the project treats autonomy as a single scalar or as per-action-type authority (which would favor the stage-decomposed or capability-scoped framings over the classic single LOA enum), and whether any LLM-agent-specific autonomy taxonomy (e.g., agentic 'tool-use approval' modes) should override the classic human-factors backbone."
+        }
+      },
+      "address": {
+        "B": {
+          "round": "B",
+          "organ": "address",
+          "openOrClosed": "closed",
+          "values": [
+            {
+              "name": "Level 1 — Full manual / no automation (human does everything)",
+              "reference": "Sheridan & Verplank (1978) 10-point LOA scale; Parasuraman, Sheridan & Wickens (2000)",
+              "justification": "Canonical floor of the scale: the computer offers no assistance and the human makes and executes all decisions."
+            },
+            {
+              "name": "Level 2-3 — Decision support (computer suggests/narrows options)",
+              "reference": "Sheridan & Verplank (1978), levels 2-3; Parasuraman et al. (2000)",
+              "justification": "The system offers a complete set or a narrowed subset of decision alternatives, but the human chooses — classic 'advisory' autonomy band."
+            },
+            {
+              "name": "Level 4 — Recommend one action (human approves)",
+              "reference": "Sheridan & Verplank (1978), level 4",
+              "justification": "Computer suggests a single alternative; the human must still endorse it — the canonical 'recommend, await approval' tier."
+            },
+            {
+              "name": "Level 5 — Execute on human approval ('decide-then-do-if-approved')",
+              "reference": "Sheridan & Verplank (1978), level 5",
+              "justification": "System executes the suggestion only if the human assents; the explicit approval-gated action level central to this dimension."
+            },
+            {
+              "name": "Level 6 — Act unless vetoed within a window (delayed/revocable autonomy)",
+              "reference": "Sheridan & Verplank (1978), level 6",
+              "justification": "Computer acts after allowing the human a bounded time to veto — the 'management by exception' hinge between deferential and autonomous operation."
+            },
+            {
+              "name": "Level 7-8 — Act then inform (notify after execution)",
+              "reference": "Sheridan & Verplank (1978), levels 7-8",
+              "justification": "System acts autonomously and informs the human afterward (always, or only if asked) — autonomy with mandatory transparency."
+            },
+            {
+              "name": "Level 9-10 — Full autonomy (inform only if it decides to / ignore the human)",
+              "reference": "Sheridan & Verplank (1978), levels 9-10",
+              "justification": "Computer decides everything and acts autonomously, deciding itself whether to inform the human — the canonical ceiling of the scale."
+            }
+          ],
+          "confidence": 0.86,
+          "evidenceNeeded": "The Sheridan-Verplank 10-level LOA scale and the Parasuraman/Sheridan/Wickens (2000) Types-and-Levels model are the established canon for the 'how much autonomy / when to defer' dimension, so the classification as CLOSED is solid. Confidence would rise with confirmation of which granularity the project wants: the raw 10-level Sheridan scale, the 4-stage x level matrix of Parasuraman et al. (acquisition/analysis/decision/action each automatable separately), Endsley & Kaber's (1999) 10-level taxonomy, or a domain-specific collapse like SAE J3016 (L0-L5). The 10 levels are sometimes pragmatically binned into ~4-7 tiers (manual / advisory / approval-gated / veto-window / supervised-autonomous / full-autonomous); evidence on the intended resolution and whether the agent context treats autonomy as a single scalar vs. a per-function vector would sharpen the enumeration."
+        }
+      },
+      "appraisal": {
+        "A": {
+          "round": "A",
+          "organ": "appraisal",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Self-critique / self-refinement (intrinsic self-feedback)",
+              "reference": "Self-Refine (Madaan et al., 2023); Reflexion (Shinn et al., 2023)",
+              "justification": "Canonical agent appraisal mode where the same model generates natural-language feedback on its own output and iterates — no external signal required."
+            },
+            {
+              "name": "LLM-as-a-judge (model-graded evaluation)",
+              "reference": "Zheng et al., MT-Bench/Chatbot Arena (2023); G-Eval (Liu et al., 2023)",
+              "justification": "Established backbone for using a (possibly separate) LLM to score output against a rubric; now a standard acceptance mechanism in agent pipelines."
+            },
+            {
+              "name": "Verifier / discriminator model (learned outcome or process reward)",
+              "reference": "Cobbe et al. GSM8K verifiers (2021); Lightman et al. 'Let's Verify Step by Step' (process reward models, 2023)",
+              "justification": "A trained checker (outcome- or process-level) scores candidate solutions — a recognized, distinct appraisal strategy from self-critique."
+            },
+            {
+              "name": "Executable / test-oracle checking (ground-truth verification)",
+              "reference": "Software testing test-oracle theory (Barr et al., 'The Oracle Problem in Software Testing', 2015); unit/property/regression tests",
+              "justification": "Appraisal by running the artifact against a deterministic oracle (tests, compilers, type-checkers) — the strongest, field-standard acceptance criterion in SWE."
+            },
+            {
+              "name": "Acceptance criteria / specification conformance (validation against requirements)",
+              "reference": "ISO/IEC/IEEE 29148 (requirements); IEEE 1012 Verification & Validation; Agile 'Definition of Done' / Gherkin acceptance criteria",
+              "justification": "Checking output against an explicit, externally-defined spec or DoD is the canonical V&V distinction (verification vs. validation)."
+            },
+            {
+              "name": "Human-in-the-loop review (external/operator appraisal)",
+              "reference": "HCI human-automation literature (Parasuraman, Sheridan & Wickens, levels of automation, 2000)",
+              "justification": "Deferring the accept/reject judgment to a human is a recognized point on the automation-of-decision spectrum and a real appraisal configuration."
+            },
+            {
+              "name": "No self-appraisal (open-loop / fire-and-forget)",
+              "reference": "Control-theory open-loop vs. closed-loop control; baseline single-pass generation",
+              "justification": "The degenerate but real end of the dimension — output declared done without any check — anchors the axis."
+            }
+          ],
+          "confidence": 0.62,
+          "evidenceNeeded": "A single authoritative survey that explicitly enumerates agent self-evaluation/acceptance strategies as a closed taxonomy (rather than my synthesis across SWE V&V, LLM-judge, and self-refinement literatures). A recognized cross-cutting framework — e.g., a 'verification strategy' taxonomy in an agent-architecture survey, or mapping these modes onto appraisal-theory dimensions from cognitive science — would confirm whether this is a true closed backbone or remains an open synthesis. Confirming whether 'verifier model', 'LLM-as-judge', and 'test-oracle' are treated as mutually exclusive categories vs. overlapping would sharpen the enumeration."
+        },
+        "B": {
+          "round": "B",
+          "organ": "appraisal",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Intrinsic self-critique / self-refinement",
+              "reference": "Self-Refine (Madaan et al. 2023); Reflexion (Shinn et al. 2023); Constitutional AI self-critique (Bai et al. 2022)",
+              "justification": "The agent appraises its own output with no external signal, generating feedback and revising — the canonical 'self-evaluation' mechanism in the LLM-agent literature."
+            },
+            {
+              "name": "External verifier / reward model",
+              "reference": "Cobbe et al. 2021 (GSM8K training verifiers); RLHF reward models; LLM-as-a-judge (Zheng et al. 2023, MT-Bench)",
+              "justification": "A separate model/critic scores candidate outputs — a distinct, widely-cited appraisal family where the evaluator is not the generator."
+            },
+            {
+              "name": "Executable test / oracle (verification against spec)",
+              "reference": "V&V (IEEE 1012); Test-Driven Development (Beck); 'definition of done' (Scrum); the test oracle problem",
+              "justification": "Acceptance is decided by running tests / checking a spec — the dominant software-engineering form of 'is it done?' and the most objective appraisal."
+            },
+            {
+              "name": "Sampling consensus / self-consistency",
+              "reference": "Self-Consistency (Wang et al. 2022); majority-vote / ensemble decoding",
+              "justification": "Multiple samples are drawn and agreement is used as the acceptance signal — a recognized statistical appraisal distinct from single-pass critique."
+            },
+            {
+              "name": "Ground-truth / validation comparison",
+              "reference": "Verification-vs-Validation distinction (IEEE 1012, Boehm); supervised eval against gold labels",
+              "justification": "Output is compared to a known-correct reference or real-world outcome — validation ('did we build the right thing') as opposed to internal verification."
+            },
+            {
+              "name": "Metacognitive confidence / calibration gate",
+              "reference": "Metamemory monitoring & control (Nelson & Narens 1990); confidence calibration (Guo et al. 2017); TOTE test phase (Miller, Galanter & Pribram 1960)",
+              "justification": "Acceptance gated on a self-reported/calibrated confidence threshold — the cognitive-science backbone for self-monitoring before terminating action."
+            }
+          ],
+          "confidence": 0.62,
+          "evidenceNeeded": "A survey paper that explicitly enumerates self-evaluation/verification strategies for LLM agents as a named taxonomy (e.g., a 'self-correction' or 'verification methods' survey) would confirm whether the field treats these as a closed backbone or merely a loose family. Also a controlled-vocabulary standard (analogous to IEEE 1012's V&V split) that fixes the member set would push this toward 'closed'; absence of any such canonical enum keeps it 'hybrid'."
+        }
+      },
+      "charter": {
+        "A": {
+          "round": "A",
+          "organ": "charter",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Helpful, Honest, Harmless (HHH)",
+              "reference": "Askell et al., \"A General Language Assistant as a Laboratory for Alignment\" (Anthropic, 2021)",
+              "justification": "The field-standard triad framing the core value-constraints an aligned assistant must satisfy; the most widely cited canonical backbone for assistant guardrails."
+            },
+            {
+              "name": "Constitutional principles",
+              "reference": "Bai et al., \"Constitutional AI: Harmlessness from AI Feedback\" (Anthropic, 2022)",
+              "justification": "Establishes the explicit 'charter as a written constitution' pattern—a finite list of natural-language principles the model self-critiques against; the dimension's namesake construct."
+            },
+            {
+              "name": "Three Laws of Robotics",
+              "reference": "Asimov, I, Robot (1942/1950)",
+              "justification": "The archetypal precedence-ordered inviolable-constraint set; canonical reference for hard-priority safety hierarchies in agent design despite being fictional."
+            },
+            {
+              "name": "Usage / acceptable-use policy categories (harm taxonomy)",
+              "reference": "OpenAI Usage Policies; Anthropic Usage Policy; ML Commons AI Safety / MLCommons hazard taxonomy",
+              "justification": "The de-facto enumerated content-harm categories (CSAM, weapons/CBRN, violence, self-harm, privacy, illegal activity, hate) that operationalize 'do not' constraints across the industry."
+            },
+            {
+              "name": "Ethics principles (fairness, accountability, transparency, non-maleficence, autonomy)",
+              "reference": "OECD AI Principles (2019); EU Ethics Guidelines for Trustworthy AI (HLEG, 2019); Floridi & Cowls (2019)",
+              "justification": "The recognized normative backbone for AI value-constraints, distilling bioethics principlism (Beauchamp & Childress) into AI; appears across governance frameworks."
+            },
+            {
+              "name": "NIST AI RMF trustworthiness characteristics",
+              "reference": "NIST AI Risk Management Framework 1.0 (2023)",
+              "justification": "A standards-body enumeration (valid/reliable, safe, secure/resilient, accountable/transparent, explainable, privacy-enhanced, fair) treated as the constraint set an agent is designed to uphold."
+            }
+          ],
+          "confidence": 0.66,
+          "evidenceNeeded": "Whether the field treats 'charter' as a closed enum versus an authoring slot is the crux. Confidence would rise with: (a) a survey paper consolidating agent-guardrail/constitution taxonomies to confirm no single closed enum dominates; (b) evidence of how widely the HHH triad vs. policy-harm-category lists are reused verbatim as canonical members vs. each deployment authoring its own principles; (c) clarification of scope—safety-value principles (HHH/constitutional) vs. concrete content-harm categories (usage policies) vs. governance trustworthiness attributes (NIST/OECD), which currently span three partly-overlapping literatures rather than one taxonomy."
+        },
+        "B": {
+          "round": "B",
+          "organ": "charter",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Helpful, Honest, Harmless (HHH)",
+              "reference": "Askell et al., \"A General Language Assistant as a Laboratory for Alignment\" (Anthropic, 2021)",
+              "justification": "The field-standard triad of design-level alignment objectives; the canonical backbone for what an assistant must be by design."
+            },
+            {
+              "name": "Constitutional principles (rule-based critique-and-revise constraints)",
+              "reference": "Bai et al., \"Constitutional AI: Harmlessness from AI Feedback\" (Anthropic, 2022)",
+              "justification": "Establishes 'a constitution' — an explicit, written set of inviolable principles — as the recognized mechanism for encoding an agent's guardrails."
+            },
+            {
+              "name": "The three (plus zeroth) Laws of Robotics",
+              "reference": "Asimov, I, Robot (1950); zeroth law in Robots and Empire (1985)",
+              "justification": "The archetypal prior-art enumeration of hierarchical inviolable constraints on an artificial agent; canonical reference point even though fictional."
+            },
+            {
+              "name": "Beneficence / Non-maleficence / Autonomy / Justice / Explicability",
+              "reference": "Floridi & Cowls, \"A Unified Framework of Five Principles for AI in Society\" (Harvard Data Science Review, 2019), adapting biomedical ethics (Beauchamp & Childress)",
+              "justification": "The most-cited principled enumeration mapping bioethics onto AI; a recognized closed set proposed as universal guardrail values."
+            },
+            {
+              "name": "OECD AI Principles (inclusive growth, human-centered values & fairness, transparency, robustness/safety, accountability)",
+              "reference": "OECD Recommendation on AI (2019), adopted by 40+ governments; basis of the G20 principles",
+              "justification": "The most widely adopted intergovernmental enumeration of value-level constraints AI systems are expected to honor."
+            },
+            {
+              "name": "NIST AI RMF trustworthiness characteristics (valid/reliable, safe, secure/resilient, accountable/transparent, explainable/interpretable, privacy-enhanced, fair with bias managed)",
+              "reference": "NIST AI Risk Management Framework 1.0 (2023)",
+              "justification": "The US-standard normative enumeration of the properties a trustworthy/constrained AI must exhibit by design."
+            }
+          ],
+          "confidence": 0.62,
+          "evidenceNeeded": "A widely-adopted formal standard that fixes a single enumerable set of agent guardrail values (rather than competing principle lists) would push this toward 'closed'. Conversely, evidence that production agent constitutions are authored ad hoc per deployment (e.g., surveys of system-prompt/constitution contents across vendors) confirms the 'open' free-extension tail. Empirical mapping of how many real agent charters reduce to the HHH backbone vs. introduce bespoke principles would sharpen the hybrid classification."
+        }
+      },
+      "competence": {
+        "A": {
+          "round": "A",
+          "organ": "competence",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Occupational/skill taxonomy backbone (O*NET Content Model)",
+              "reference": "U.S. DOL O*NET — Skills (Basic + Cross-Functional), Knowledge, Abilities, Work Activities content model",
+              "justification": "The de facto reference taxonomy of human competences; provides a recognized, finite top-level structuring of skills even though its leaf inventory is large and extensible — the canonical 'backbone' for the craft dimension."
+            },
+            {
+              "name": "ESCO skills/competences pillar",
+              "reference": "European Commission ESCO classification (Skills/Competences pillar; knowledge vs. skill/competence vs. transversal)",
+              "justification": "The EU counterpart to O*NET; standard, multilingual, machine-readable competence taxonomy used in labor-market and HR systems — establishes that competence has a recognized hierarchical scaffold."
+            },
+            {
+              "name": "Declarative vs. procedural competence",
+              "reference": "Anderson, ACT-R theory of skill acquisition; cognitive science of expertise",
+              "justification": "The foundational field-standard cut on the *kind* of competence (knowing-that vs. knowing-how); a true closed binary that any competence specification inherits."
+            },
+            {
+              "name": "Domain-general vs. domain-specific skill",
+              "reference": "Expertise literature (Chi, Glaser & Farr; Ericsson on deliberate practice)",
+              "justification": "Canonical axis distinguishing transferable competences from craft bound to a specific domain — standard organizing distinction, not an enumerable list of crafts."
+            },
+            {
+              "name": "Bloom's cognitive-skill taxonomy (Remember→Create)",
+              "reference": "Bloom (1956); Anderson & Krathwohl revision (2001)",
+              "justification": "Recognized finite hierarchy of cognitive *operations* a competence exercises; widely used to grade skill complexity, a closed backbone layered over open content."
+            },
+            {
+              "name": "Tool/skill affordance (function-calling, MCP, plugins)",
+              "reference": "AI agent architecture: tool-use / function calling (e.g., ReAct, Toolformer), Anthropic Model Context Protocol, OpenAI plugins",
+              "justification": "In the AI-agent field specifically, competence is operationalized as an open, registry-style set of callable tools/skills — demonstrating the dimension's free-extension (open) half."
+            }
+          ],
+          "confidence": 0.78,
+          "evidenceNeeded": "Confirmation of which field is treated as authoritative for 'competence' in this catalog: if labor/HR (O*NET/ESCO) is canonical, lean closed-with-large-enum; if AI-agent tool-use is canonical, lean fully open. Evidence that no widely-adopted *small* closed enum of agent crafts exists (a literature scan of agent-skill taxonomies) would firm up the 'hybrid' verdict over 'closed'."
+        },
+        "B": {
+          "round": "B",
+          "organ": "competence",
+          "openOrClosed": "open",
+          "values": [
+            {
+              "name": "Domain/task competence (functional skill)",
+              "reference": "Competency modeling in I/O psychology — McClelland, 'Testing for Competence Rather Than for Intelligence' (1973); Spencer & Spencer, Competence at Work (1993)",
+              "justification": "The foundational construct: a competence is a specialized, demonstrable capability tied to performing a particular kind of work — inherently domain-indexed and therefore unbounded across domains."
+            },
+            {
+              "name": "Skill / craft proficiency level",
+              "reference": "Dreyfus & Dreyfus five-stage model of skill acquisition (novice → advanced beginner → competent → proficient → expert), 1980/1986",
+              "justification": "The field's canonical account of competence as a graded craft; 'competent' is itself a named stage, showing competence is a level along a recognized continuum rather than a discrete enum of skills."
+            },
+            {
+              "name": "Capability / affordance (tool-use)",
+              "reference": "Tool-augmented LLM agents — Toolformer (Schick et al., 2023); ReAct (Yao et al., 2022); the function-calling / tool-use paradigm (OpenAI, Anthropic)",
+              "justification": "In agent architecture an agent's competence is operationalized as the set of tools/functions it can invoke — an open registry by construction (any callable API extends it), the literal 'tools-of-trade'."
+            },
+            {
+              "name": "Knowledge/skill/ability decomposition (KSA)",
+              "reference": "O*NET occupational taxonomy and the KSAO framework (Knowledge, Skills, Abilities, Other characteristics), U.S. Dept. of Labor",
+              "justification": "O*NET is the closest thing to a standardized skill enumeration, but it is descriptive of human occupations, deliberately extensible, and revised over time — a backbone of exemplars, not a fixed closed set."
+            },
+            {
+              "name": "Bloom's cognitive process taxonomy",
+              "reference": "Bloom's Taxonomy, revised (Anderson & Krathwohl, 2001): remember, understand, apply, analyze, evaluate, create",
+              "justification": "A genuinely closed enumeration — but of cognitive operation TYPES underlying competence, not of the concrete skills themselves; it bounds the verbs, not the crafts."
+            },
+            {
+              "name": "Specialist role/archetype competence bundle",
+              "reference": "Multi-agent system role specialization (e.g., Wooldridge, An Introduction to MultiAgent Systems); AutoGen / CrewAI role-based agents; Belbin team roles",
+              "justification": "Competences are commonly packaged as named roles (researcher, coder, planner, critic), a recurring but ad hoc and project-defined vocabulary — evidence the space is open with conventional clusters."
+            }
+          ],
+          "confidence": 0.86,
+          "evidenceNeeded": "A single authoritative, finite registry of agent competences with cross-field uptake would force reclassification to closed/hybrid. Specifically: (1) whether O*NET or a successor is treated as THE canonical skill enum in agent design (it is not — it's human-occupation descriptive and extensible); (2) whether any AI-agent standard (e.g., an emerging agent-capability schema or tool-manifest standard) defines a closed competence vocabulary; (3) confirmation that competency-modeling literature treats competence inventories as organization-/domain-specific rather than universal — which the I/O literature consistently does, supporting 'open.'"
+        }
+      },
+      "comportment": {
+        "A": {
+          "round": "A",
+          "organ": "comportment",
+          "openOrClosed": "open",
+          "values": [
+            {
+              "name": "Formality (formal ↔ casual register)",
+              "reference": "Sociolinguistic register theory (Joos, *The Five Clocks*, 1961: frozen/formal/consultative/casual/intimate); Hovy 1987 on pragmatics-driven generation style",
+              "justification": "Register/formality is the single most-studied, most-stable axis of communicative manner, with a recognized five-level scale — but it is a continuous dimension, not a closed enum of personas."
+            },
+            {
+              "name": "Verbosity / conciseness (terseness ↔ elaboration)",
+              "reference": "Grice's Maxim of Quantity (Logic and Conversation, 1975); HCI guidance on response length (Nielsen usability heuristics; Norman's economy of expression)",
+              "justification": "How much an agent says per turn is a canonical, independently-tunable manner parameter grounded in conversational pragmatics — a slider, not a label."
+            },
+            {
+              "name": "Warmth vs. competence (interpersonal tone)",
+              "reference": "Stereotype Content Model, Fiske, Cuddy & Glick (2002); applied to agents/robots in HCI (e.g., warmth–competence in conversational UX)",
+              "justification": "The two universal dimensions of social perception map directly onto how an agent 'carries itself' (friendly/supportive vs. crisp/expert); foundational in social psychology and increasingly cited in agent-persona design."
+            },
+            {
+              "name": "Brand voice / personality archetype (e.g., Sage, Jester, Caregiver, Ruler)",
+              "reference": "Jung's archetypes operationalized by Mark & Pearson, *The Hero and the Outlaw* (2001); Aaker's Brand Personality dimensions (sincerity/excitement/competence/sophistication/ruggedness, 1997)",
+              "justification": "Brand/archetype theory offers a recognized BACKBONE of named voices, which is why some treat comportment as closed — but the set is framework-dependent (12 archetypes vs. Aaker's 5 vs. bespoke voice guides), so it functions as exemplars, not a single canon."
+            },
+            {
+              "name": "Big Five personality projection (esp. Extraversion, Agreeableness)",
+              "reference": "Five-Factor Model (Costa & McCrae); applied to dialogue systems in PERSONAGE (Mairesse & Walker, 2007/2011) which generates utterances parameterized by Big Five traits",
+              "justification": "PERSONAGE shows manner can be driven by continuous personality trait values rather than a fixed list — strong evidence the space is parametric/open."
+            },
+            {
+              "name": "Politeness strategy (positive/negative face, directness)",
+              "reference": "Brown & Levinson, *Politeness: Some Universals in Language Usage* (1987)",
+              "justification": "A widely-cited theory of how speakers modulate face-work and directness; a recognized axis of standing manner, again a strategy-space rather than an enumerable persona set."
+            }
+          ],
+          "confidence": 0.78,
+          "evidenceNeeded": "Whether any de-facto product/industry standard has crystallized a CLOSED comportment enum for AI assistants — e.g., a vendor system-prompt style guide (OpenAI/Anthropic) or a UX-writing voice taxonomy adopted broadly enough to be treated as canonical. Also: empirical NLG/HCI work showing practitioners converge on a small fixed label set (which would push this toward \"hybrid\") rather than the parametric/continuous treatment seen in PERSONAGE, register theory, and warmth–competence. If such a standard backbone exists and is widely reused, the answer should shift from \"open\" to \"hybrid.\""
+        },
+        "B": {
+          "round": "B",
+          "organ": "comportment",
+          "openOrClosed": "open",
+          "values": [
+            {
+              "name": "Verbosity / response length",
+              "reference": "OpenAI GPT-4o & Claude system-prompt style controls; Grice's Maxim of Quantity (Grice 1975, \"Logic and Conversation\")",
+              "justification": "How much the agent says per turn is a primary, independently-tunable axis of standing manner — Grice's quantity maxim is its theoretical anchor and every major model exposes a terse/verbose knob."
+            },
+            {
+              "name": "Formality register",
+              "reference": "Sociolinguistic register theory (Joos, The Five Clocks, 1961: frozen/formal/consultative/casual/intimate); Biber's register/genre dimensions",
+              "justification": "Formality is the canonical sociolinguistic axis of how one carries oneself in discourse; Joos's five-register scale is the textbook backbone for register choice."
+            },
+            {
+              "name": "Tone / affective stance",
+              "reference": "Affect & politeness theory (Brown & Levinson 1987, Politeness; appraisal/stance frameworks, Martin & White 2005)",
+              "justification": "Warmth, deference, enthusiasm vs. neutrality form the affective dimension of manner; politeness and appraisal theory provide the recognized vocabulary."
+            },
+            {
+              "name": "Brand voice / persona archetype",
+              "reference": "Brand archetype theory (Jung archetypes via Mark & Pearson, The Hero and the Outlaw, 2001); Nielsen Norman Group \"tone of voice\" four dimensions (funny–serious, formal–casual, respectful–irreverent, enthusiastic–matter-of-fact)",
+              "justification": "Product/agent comportment is routinely specified as a persona along NN/g's four tone dimensions or a Jungian archetype — a widely-used but free-blend framework, not a closed enum."
+            },
+            {
+              "name": "Directness / hedging",
+              "reference": "Hedging & mitigation in pragmatics (Lakoff 1973; Hyland, Hedging in Scientific Research Articles, 1998)",
+              "justification": "How assertively vs. tentatively the agent commits (hedges, qualifiers, confidence language) is a recognized standing-manner axis with its own pragmatics literature."
+            }
+          ],
+          "confidence": 0.83,
+          "evidenceNeeded": "A single authoritative, field-adopted standard that enumerates a FINITE set of named agent comportment profiles (e.g., an IEEE/ISO HCI standard, or a model-vendor spec exposing a closed style enum) would push this toward hybrid/closed. Absent that, the cross-field pattern is multiple independent continuous/ordinal axes (verbosity, register, tone, directness) plus open persona blends — the signature of an OPEN dimension. Evidence I'd want: (1) whether any of Claude/OpenAI/Google ship a fixed comportment enum vs. free-text style instructions; (2) whether HCI/conversational-design practice (e.g., Google Conversation Design guidelines, NN/g) treats voice as a closed menu vs. a coordinate space."
+        }
+      },
+      "construal": {
+        "A": {
+          "round": "A",
+          "organ": "construal",
+          "openOrClosed": "open",
+          "values": [
+            {
+              "name": "Specificity / granularity (schematic vs. specific)",
+              "reference": "Langacker, Cognitive Grammar — construal operations (specificity dimension)",
+              "justification": "Langacker formalizes 'specificity' as a construal axis: the same scene read at coarse vs. fine resolution; a recognized dimension of how input is framed."
+            },
+            {
+              "name": "Perspective / vantage point (figure-ground, viewpoint)",
+              "reference": "Langacker, Cognitive Grammar; Talmy, figure/ground in cognitive semantics",
+              "justification": "Perspective (whose vantage, what is foregrounded as figure vs. backgrounded as ground) is a canonical construal operation, but it is one axis among an open inventory, not an enum."
+            },
+            {
+              "name": "Construal level: abstract/high-level vs. concrete/low-level",
+              "reference": "Trope & Liberman, Construal-Level Theory (CLT), Psychological Review 2010",
+              "justification": "CLT defines a single continuous high-vs-low construal axis tied to psychological distance — a dimension, not a closed set of discrete frames."
+            },
+            {
+              "name": "Gain vs. loss framing",
+              "reference": "Tversky & Kahneman, prospect theory / framing effects (Science 1981)",
+              "justification": "A canonical framing contrast in decision psychology — illustrative of how the same input is construed, but framing inventories are domain-generated and open-ended."
+            },
+            {
+              "name": "Frame / schema invoked (interpretive frame)",
+              "reference": "Goffman, Frame Analysis (1974); Fillmore, frame semantics",
+              "justification": "The interpretive frame a reader applies (e.g., is this a 'request', a 'threat', a 'game move') is the core of construal, but the set of possible frames is unbounded and culturally generated."
+            },
+            {
+              "name": "Appraisal dimensions (relevance, agency, certainty)",
+              "reference": "Scherer / Lazarus appraisal theory of emotion",
+              "justification": "Appraisal theory enumerates dimensions along which a stimulus is evaluated, but these are graded checks, not a canonical closed taxonomy of lenses."
+            }
+          ],
+          "confidence": 0.78,
+          "evidenceNeeded": "A widely-cited standard taxonomy that closes construal into a finite enumerated set of named lenses (rather than a set of continuous dimensions/operations) would shift this toward 'hybrid' or 'closed'. Specifically: (a) whether any AI-agent-architecture framework defines a fixed construal enum; (b) whether Langacker's construal operations are treated in the literature as a closed list (some textbooks present ~4-5 operations: specificity, focusing, prominence, perspective — which could argue for a 'hybrid' backbone) versus an open, extensible inventory. Confirming the latter packaging would raise confidence in 'open'; confirming the former would argue 'hybrid'."
+        },
+        "B": {
+          "round": "B",
+          "organ": "construal",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Construal level (abstract vs. concrete)",
+              "reference": "Construal Level Theory — Trope & Liberman (2010, Psychological Review)",
+              "justification": "The literal namesake of the dimension: the canonical psychological axis governing whether input is framed at a high (abstract, why/gist) or low (concrete, how/detail) level."
+            },
+            {
+              "name": "Interpretive frame / framing",
+              "reference": "Goffman, Frame Analysis (1974); Kahneman & Tversky framing effects (1981)",
+              "justification": "Field-standard account of how the same input is read differently depending on the frame imposed — the core mechanism of a characteristic interpretive lens."
+            },
+            {
+              "name": "Appraisal stance",
+              "reference": "Appraisal theory of emotion — Lazarus (1991); Scherer's component process model",
+              "justification": "Canonical model of how an incoming stimulus is evaluated along recognized dimensions (relevance, threat/opportunity, controllability) before response — a structured construal of input."
+            },
+            {
+              "name": "Sensemaking frame",
+              "reference": "Weick, Sensemaking in Organizations (1995); Klein's data/frame theory of sensemaking",
+              "justification": "Established theory of how ambiguous input is bracketed and read into a coherent account; the operative lens an actor brings to under-specified tasks."
+            },
+            {
+              "name": "Intentional / interpretive stance",
+              "reference": "Dennett, The Intentional Stance (1987); also physical and design stances",
+              "justification": "A recognized small set of stances one can adopt toward a system to interpret it; a canonical philosophical backbone for 'which lens you read through.'"
+            },
+            {
+              "name": "Regulatory focus (promotion vs. prevention)",
+              "reference": "Higgins, Regulatory Focus Theory (1997, American Psychologist)",
+              "justification": "Canonical motivational lens shaping whether input is construed as a gain/aspiration problem or a loss/safety problem — a stable interpretive orientation."
+            }
+          ],
+          "confidence": 0.6,
+          "evidenceNeeded": "A survey paper that explicitly unifies 'interpretive lens / construal' as a single named, enumerated configuration axis for agents (or for cognitive systems) would resolve whether this is truly hybrid versus open. Absent that, evidence that any one field treats its scheme (e.g., Construal Level Theory's abstract/concrete) as THE complete enumeration — rather than one axis among several competing framings — would push the classification toward 'closed'. Conversely, documented proliferation of incommensurable framing taxonomies across fields would confirm 'open with a backbone' (hybrid).\""
+        }
+      },
+      "deliberation": {
+        "A": {
+          "round": "A",
+          "organ": "deliberation",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Direct / zero-shot answering (System 1)",
+              "reference": "Kahneman, Thinking, Fast and Slow (dual-process theory); baseline prompting in Brown et al. 2020 (GPT-3, 'Language Models are Few-Shot Learners')",
+              "justification": "The canonical degenerate case — no explicit intermediate reasoning, answer emitted in one step; the fast-intuitive pole against which all deliberation strategies are defined."
+            },
+            {
+              "name": "Chain-of-Thought (CoT)",
+              "reference": "Wei et al. 2022, 'Chain-of-Thought Prompting Elicits Reasoning in Large Language Models' (NeurIPS); Kojima et al. 2022 (zero-shot 'Let's think step by step')",
+              "justification": "The foundational and most-cited deliberation strategy: a single linear sequence of intermediate reasoning steps before the answer."
+            },
+            {
+              "name": "Self-Consistency",
+              "reference": "Wang et al. 2022, 'Self-Consistency Improves Chain of Thought Reasoning in Language Models' (ICLR 2023)",
+              "justification": "Canonical sample-and-marginalize strategy: draw multiple CoT paths and take the majority answer; standard named member of the taxonomy."
+            },
+            {
+              "name": "Tree-of-Thoughts (ToT)",
+              "reference": "Yao et al. 2023, 'Tree of Thoughts: Deliberate Problem Solving with Large Language Models' (NeurIPS)",
+              "justification": "Canonical search-based deliberation: branch over thought states with lookahead/backtracking and explicit state evaluation."
+            },
+            {
+              "name": "Self-Reflection / Self-Refine",
+              "reference": "Madaan et al. 2023, 'Self-Refine: Iterative Refinement with Self-Feedback'; Shinn et al. 2023, 'Reflexion' (NeurIPS)",
+              "justification": "Canonical iterative-critique strategy: the agent generates, critiques its own output, and revises — verbal reinforcement over draft attempts."
+            },
+            {
+              "name": "ReAct (reason + act interleaving)",
+              "reference": "Yao et al. 2022/2023, 'ReAct: Synergizing Reasoning and Acting in Language Models' (ICLR 2023)",
+              "justification": "Canonical strategy interleaving reasoning traces with tool/environment actions; the dominant deliberation pattern for tool-using agents."
+            },
+            {
+              "name": "Least-to-Most / decomposition prompting",
+              "reference": "Zhou et al. 2022, 'Least-to-Most Prompting Enables Complex Reasoning in Large Language Models' (ICLR 2023)",
+              "justification": "Canonical divide-and-conquer member: decompose into ordered subproblems solved sequentially with prior answers as context."
+            },
+            {
+              "name": "Graph-of-Thoughts (GoT)",
+              "reference": "Besta et al. 2024, 'Graph of Thoughts: Solving Elaborate Problems with Large Language Models' (AAAI)",
+              "justification": "Generalization of ToT to arbitrary DAGs of thoughts with aggregation/refinement; illustrates the open frontier extending the backbone."
+            }
+          ],
+          "confidence": 0.82,
+          "evidenceNeeded": "A published survey that explicitly enumerates 'deliberation/reasoning strategies' as a closed taxonomy with agreed boundaries (e.g., a canonical LLM-reasoning survey such as Qiao et al. 2023 or a reasoning-strategy ontology) would confirm whether the field treats these as a fixed enum vs. an open, ever-growing family. Also: whether agent-architecture frameworks (e.g., dual-process / metacognitive-control taxonomies) impose a higher-level closed backbone (System1/System2, linear/search/iterative/decompositional) under which the named techniques are instances — which would firm up the 'recognized backbone' claim."
+        },
+        "B": {
+          "round": "B",
+          "organ": "deliberation",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Direct / zero-shot (no explicit deliberation)",
+              "reference": "Brown et al. 2020, 'Language Models are Few-Shot Learners' (GPT-3); contrasted as baseline in Wei et al. 2022",
+              "justification": "The canonical null/baseline of the taxonomy: the agent answers immediately with no intermediate reasoning trace, against which all deliberation strategies are measured."
+            },
+            {
+              "name": "Chain-of-Thought (CoT)",
+              "reference": "Wei et al. 2022, 'Chain-of-Thought Prompting Elicits Reasoning in Large Language Models' (NeurIPS)",
+              "justification": "The seminal and most-cited deliberation strategy: a single linear sequence of intermediate reasoning steps before the answer; the backbone member every later method extends."
+            },
+            {
+              "name": "Self-Consistency",
+              "reference": "Wang et al. 2022, 'Self-Consistency Improves Chain of Thought Reasoning in Language Models' (ICLR 2023)",
+              "justification": "Recognized as a distinct strategy: sample multiple CoT paths and marginalize by majority vote, trading compute for reliability — a standard ensemble-over-reasoning member."
+            },
+            {
+              "name": "Tree-of-Thoughts (ToT)",
+              "reference": "Yao et al. 2023, 'Tree of Thoughts: Deliberate Problem Solving with Large Language Models' (NeurIPS)",
+              "justification": "Canonical branching/search strategy: explores a tree of partial thoughts with lookahead, backtracking, and state evaluation; explicitly framed by its authors as 'deliberate' reasoning (System 2)."
+            },
+            {
+              "name": "Graph-of-Thoughts (GoT)",
+              "reference": "Besta et al. 2023/2024, 'Graph of Thoughts: Solving Elaborate Problems with Large Language Models' (AAAI)",
+              "justification": "Generalizes ToT to an arbitrary graph allowing thought aggregation/merging; an established topology member of the thought-structure family."
+            },
+            {
+              "name": "Self-Reflection / Self-Refine (iterative critique)",
+              "reference": "Madaan et al. 2023 'Self-Refine'; Shinn et al. 2023 'Reflexion' (NeurIPS)",
+              "justification": "Canonical iterate-and-revise strategy: the agent critiques its own draft and refines over rounds, using verbal feedback as the deliberation loop — distinct from one-shot CoT."
+            },
+            {
+              "name": "Reason-and-Act interleaving (ReAct)",
+              "reference": "Yao et al. 2022, 'ReAct: Synergizing Reasoning and Acting in Language Models' (ICLR 2023)",
+              "justification": "The standard strategy that interleaves reasoning traces with tool/environment actions; the deliberation pattern underpinning most modern tool-using agents."
+            }
+          ],
+          "confidence": 0.78,
+          "evidenceNeeded": "A single authoritative survey that explicitly enumerates 'deliberation strategies' as a closed taxonomy would settle whether this is closed vs hybrid. Candidate sources: Sui et al. 2025 survey on efficient reasoning, the 'LLM Reasoning' survey literature, or a recognized HCI/cognitive-science System-1/System-2 mapping (Kahneman) applied to agents. Confirmation of whether terms like 'extended/test-time reasoning' (o1-style inference-time deliberation) are treated as a separate canonical member or a meta-axis would refine the enumeration. The hybrid classification rests on the fact that the named methods (CoT, ToT, ReAct, etc.) form a recognized backbone while new structures (e.g., skeleton-of-thought, algorithm-of-thoughts, buffer-of-thoughts) keep being coined — evidence on whether the community treats the set as saturating would move it toward 'closed' or confirm 'open' tail."
+        }
+      },
+      "disclosure": {
+        "A": {
+          "round": "A",
+          "organ": "disclosure",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Opaque / black-box (answer-only, no process)",
+              "reference": "XAI literature (Lipton 2016 'The Mythos of Model Interpretability'); HCI 'black-box automation'",
+              "justification": "The zero point of every transparency scale: the agent exposes only its output, withholding any account of how it was produced."
+            },
+            {
+              "name": "Decision/rationale transparency (Level 1–2 SAT)",
+              "reference": "Chen et al. SAT — Situation awareness-based Agent Transparency model (US Army Research Lab, 2014/2018)",
+              "justification": "Canonical graded level: agent discloses its current action, goals, and the reasoning/rationale behind a decision — the first non-trivial rung on the recognized transparency scale."
+            },
+            {
+              "name": "Uncertainty / projection transparency (Level 3 SAT)",
+              "reference": "Chen et al. SAT model, Level 3",
+              "justification": "The top rung of the most-cited agent-transparency taxonomy: agent reveals its uncertainty, confidence, and projected outcomes — disclosure of epistemic state, not just rationale."
+            },
+            {
+              "name": "Reasoning-trace / chain-of-thought display",
+              "reference": "CoT prompting (Wei et al. 2022); reasoning-model 'thinking' disclosure conventions (OpenAI o1, Anthropic extended thinking, DeepSeek-R1)",
+              "justification": "De-facto standard category for LLM agents: the intermediate reasoning is shown (verbatim, summarized, or hidden) — a recognized, product-standardized disclosure choice distinct from final-answer rationale."
+            },
+            {
+              "name": "Provenance / source attribution (citations, tool-call traces)",
+              "reference": "RAG attribution & 'faithfulness/groundedness' literature; agentic tool-trace logging",
+              "justification": "A widely-implemented disclosure mode: the agent surfaces which sources, tools, or evidence backed its output, making the process auditable rather than merely narrated."
+            },
+            {
+              "name": "Process logging / full auditability",
+              "reference": "Software-engineering observability & autonomy-audit-trail practice; explainability-by-logging",
+              "justification": "Maximal disclosure: complete, replayable record of steps, tool calls, and intermediate states for after-the-fact inspection — the explicit upper bound of the dimension."
+            }
+          ],
+          "confidence": 0.62,
+          "evidenceNeeded": "A single citation showing the field has converged on one closed enum (rather than competing graded scales) would shift this toward 'closed'. Specifically: (1) confirmation that SAT's 3 levels are treated as THE canonical taxonomy vs. alternatives like Mercado et al. or the broader XAI transparency-vs-explainability split; (2) whether reasoning-trace disclosure (verbatim/summarized/hidden) is codified as a named taxonomy anywhere rather than ad-hoc product convention; (3) any HCI standard (e.g., ISO/IEC TR on AI transparency) that fixes a finite, named member set."
+        },
+        "B": {
+          "round": "B",
+          "organ": "disclosure",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Chain-of-thought / reasoning-visible (show the work)",
+              "reference": "Wei et al. 2022 'Chain-of-Thought Prompting'; OpenAI o1/o3 'reasoning summaries'; Anthropic extended-thinking blocks",
+              "justification": "The canonical 'high disclosure' pole: the agent externalizes its intermediate reasoning trace to the audience. A recognized, named configuration with strong provenance."
+            },
+            {
+              "name": "Answer-only / opaque (black-box)",
+              "reference": "Lipton 2018 'The Mythos of Model Interpretability'; XAI literature on black-box models",
+              "justification": "The 'low disclosure' pole — only the final output is surfaced, reasoning withheld. The standard contrast class against which transparency is defined."
+            },
+            {
+              "name": "Rationale / post-hoc explanation",
+              "reference": "Miller 2019 'Explanation in Artificial Intelligence'; DARPA XAI program (Gunning); Lipton's 'post-hoc interpretability'",
+              "justification": "A distinct recognized mode: the agent gives a justifying account after acting, which may differ from the actual process — a well-studied disclosure category in explainable AI."
+            },
+            {
+              "name": "Confidence / uncertainty disclosure (calibration)",
+              "reference": "Guo et al. 2017 'On Calibration of Modern Neural Networks'; verbalized-confidence literature (Lin/Hilton/Evans 2022)",
+              "justification": "Revealing epistemic state (how sure) rather than reasoning steps — a recognized, separable axis of what the agent discloses about itself."
+            },
+            {
+              "name": "Process transparency / observability (traces, tool calls, citations)",
+              "reference": "HCI agent-transparency model (Chen et al. 2018, SAT levels); RAG citation/grounding practice; OpenTelemetry-style agent traces",
+              "justification": "Disclosure of actions/provenance (which tools, which sources) rather than internal cognition — the operational-transparency strand from human-automation interaction."
+            },
+            {
+              "name": "Strategic / partial disclosure (selective reveal, deception-adjacent)",
+              "reference": "Mercier & Sperber 2017 'The Enigma of Reason'; HCI work on appropriate-trust and over/under-disclosure; persuasion/argumentation theory",
+              "justification": "Disclosure as a tunable degree, including withholding for cognitive-load or trust-calibration reasons — establishes the dimension as a continuum, not a flat enum, motivating the 'hybrid' classification."
+            }
+          ],
+          "confidence": 0.62,
+          "evidenceNeeded": "A single authoritative cross-field taxonomy that fixes a closed enum of disclosure modes would settle open-vs-closed. The strongest candidate backbone is the HCI Situation-Awareness-based Agent Transparency (SAT) model (Chen et al.), which defines discrete transparency LEVELS (L1 action/plan, L2 reasoning, L3 projection/uncertainty); confirming whether that is treated as THE canonical enum versus one of several competing schemes (XAI interpretability typology, calibration literature) would let me move from 'hybrid' toward 'closed'. Conversely, evidence that practitioners freely mint disclosure styles (brand-voice 'transparency' framings, agent persona specs) would reinforce the open/free-extension side."
+        }
+      },
+      "disposition-memory": {
+        "A": {
+          "round": "A",
+          "organ": "disposition-memory",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Static / frozen disposition (no cross-session adaptation)",
+              "reference": "Continual-learning baseline framing (Parisi et al., 2019, 'Continual lifelong learning with neural networks'); default stateless LLM agent",
+              "justification": "The canonical zero-point: parameters fixed, nothing learned persists between sessions — the baseline every adaptation regime is defined against."
+            },
+            {
+              "name": "In-context / memory-augmented disposition (non-parametric)",
+              "reference": "Generative Agents (Park et al., 2023); MemGPT (Packer et al., 2023)",
+              "justification": "Recognized regime where behavioral tendencies persist via an external retrievable memory rather than weight change — adaptation without parametric updates."
+            },
+            {
+              "name": "Reflective / experiential self-revision",
+              "reference": "Reflexion (Shinn et al., 2023, 'Reflexion: Language Agents with Verbal Reinforcement Learning')",
+              "justification": "Canonical mechanism: the agent stores verbal self-feedback from outcomes and reuses it to revise heuristics — lessons adapting behavior over episodes."
+            },
+            {
+              "name": "Procedural / skill-library accumulation",
+              "reference": "Voyager (Wang et al., 2023); procedural memory in Tulving/Squire taxonomy and Anderson's ACT-R",
+              "justification": "Disposition grows as a durable, reusable skill repertoire — the AI-agent instantiation of cognitive-science procedural (how-to) memory."
+            },
+            {
+              "name": "Parametric continual / online learning",
+              "reference": "Continual learning literature (Parisi et al., 2019); stability-plasticity dilemma (Grossberg, 1987)",
+              "justification": "The genuinely parametric regime: weights update over time, governed by the canonical stability-plasticity tension between retaining old and acquiring new behavior."
+            },
+            {
+              "name": "Episodic-to-semantic consolidation",
+              "reference": "Complementary Learning Systems theory (McClelland, McNaughton & O'Reilly, 1995); episodic vs semantic memory (Tulving, 1972)",
+              "justification": "Replay/sleep-style consolidation distils raw episodes into durable generalizations — the canonical account of how transient experience becomes stable disposition."
+            }
+          ],
+          "confidence": 0.6,
+          "evidenceNeeded": "A single authoritative survey that explicitly enumerates LLM-agent memory/adaptation REGIMES as a named taxonomy (rather than cataloging individual systems) would confirm or refute the backbone. The cognitive-science memory taxonomy (Tulving/Squire) and the continual-learning stability-plasticity axis are well-established, but their mapping onto a discrete set of 'disposition-memory' configurations for agents is a synthesis across fields, not a single ratified enum — so a recognized agent-memory taxonomy paper (e.g., a comprehensive 2023-2024 survey of agent memory architectures) is the decisive evidence."
+        },
+        "B": {
+          "round": "B",
+          "organ": "disposition-memory",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Static / frozen-weights (no cross-session adaptation)",
+              "reference": "Standard ML deployment distinction between training-time vs. inference-time; \"frozen\" parameters in transfer learning (Yosinski et al. 2014); LLM \"in-context learning\" with no weight update (Brown et al. 2020, GPT-3)",
+              "justification": "The canonical zero point: the agent's dispositions are fixed at deployment and do not change between sessions; any apparent adaptation lives only within a single context window and is lost at session end."
+            },
+            {
+              "name": "Episodic / instance-based memory (store-and-retrieve experiences)",
+              "reference": "Tulving's episodic vs. semantic memory distinction (1972); instance-based / case-based reasoning (Aamodt & Plaza 1994); retrieval-augmented agents and \"memory streams\" (Park et al., Generative Agents, 2023)",
+              "justification": "A recognized backbone mode: lessons persist as recallable past episodes retrieved at decision time, adapting behavior without changing the underlying policy parameters."
+            },
+            {
+              "name": "Semantic / consolidated memory (distilled rules, reflections, skills)",
+              "reference": "Tulving's semantic memory (1972); systems-consolidation theory (McClelland, McNaughton & O'Reilly 1995, CLS); reflection/insight synthesis in Generative Agents (2023) and Reflexion (Shinn et al. 2023)",
+              "justification": "Backbone mode where raw episodes are abstracted into durable generalizations (rules, summaries, self-notes) that bias future disposition — the standard \"consolidation\" counterpart to episodic storage."
+            },
+            {
+              "name": "Procedural / habit memory (skill acquisition, reinforcement-shaped tendencies)",
+              "reference": "Squire's declarative vs. non-declarative (procedural) memory taxonomy (2004); ACT-R procedural vs. declarative modules (Anderson 1996); habit/skill learning, reinforcement learning policy updates",
+              "justification": "Canonical memory-systems category: dispositions encoded as tuned action policies/skills rather than retrievable facts; the cognitive-science basis for \"the agent gets better at doing\" vs. \"remembering.\""
+            },
+            {
+              "name": "Online / continual parameter learning (fine-tuning, plasticity)",
+              "reference": "Continual / lifelong learning literature (Parisi et al. 2019); online learning; the stability–plasticity dilemma (Grossberg 1987); catastrophic forgetting (McCloskey & Cohen 1989)",
+              "justification": "The mode where cross-session adaptation is written back into the agent's weights/parameters, making disposition itself mutable — the most aggressive, plasticity-heavy point on the spectrum."
+            },
+            {
+              "name": "Working / transient memory only (within-session, non-persistent)",
+              "reference": "Baddeley & Hitch working memory model (1974); short-term vs. long-term memory store distinction (Atkinson & Shiffrin 1968); context-window scratchpad / chain-of-thought",
+              "justification": "A recognized degenerate member: adaptation exists but is volatile and decays at session boundary — distinguished from \"static\" because behavior does shift mid-session via accumulated context."
+            }
+          ],
+          "confidence": 0.62,
+          "evidenceNeeded": "There is no single named, finite taxonomy in any field whose enumerated values map 1:1 onto \\\"disposition-memory as it adapts across sessions.\\\" The backbone here is assembled from two well-established taxonomies (cognitive-science memory-systems: Tulving/Squire/Baddeley) and the ML adaptation-locus spectrum (frozen → in-context → continual learning). Confidence would rise with: (1) a canonical AI-agent-architecture survey that explicitly enumerates agent memory persistence modes as a closed set (e.g., a memory-augmented-LLM-agents taxonomy paper post-2023 such as Zhang et al. or the \\\"AI agent memory\\\" surveys); (2) confirmation of whether the intended axis is the *substrate* of persistence (weights vs. retrieval vs. context) or the *temporal/learning-disposition* character (e.g., growth-mindset/learning-rate framing), since those yield different canonical members; (3) whether a single enum (e.g., none / episodic / semantic / procedural / parametric) is expected versus the orthogonal substrate×timescale matrix I implied."
+        }
+      },
+      "effectors": {
+        "A": {
+          "round": "A",
+          "organ": "effectors",
+          "openOrClosed": "open",
+          "values": [
+            {
+              "name": "Actuator (action repertoire of the agent program)",
+              "reference": "Russell & Norvig, Artificial Intelligence: A Modern Approach — agent = sensors + actuators; the actuator set is defined per task environment (PEAS).",
+              "justification": "The canonical AI definition treats effectors as actuators whose membership is fixed by the task environment, not by a universal enumeration — establishing the dimension as inherently open/free-form."
+            },
+            {
+              "name": "Tool call / function calling",
+              "reference": "LLM tool-use paradigm — Toolformer (Schick et al. 2023), ReAct (Yao et al. 2022), OpenAI function calling / Anthropic tool use API.",
+              "justification": "The dominant effector form for modern LLM agents; tools are arbitrary developer-declared functions (any schema), the paradigm case of an open repertoire."
+            },
+            {
+              "name": "Code execution / program synthesis as action",
+              "reference": "Voyager (Wang et al. 2023) skill library; CodeAct (Wang et al. 2024) — actions expressed as executable code.",
+              "justification": "Effectors realized as generated code make the action space unbounded by design — a clear exemplar of free-form, non-enumerable effectors."
+            },
+            {
+              "name": "Computer / GUI control (screen, keyboard, mouse)",
+              "reference": "Anthropic Computer Use; WebArena / Mind2Web; SeeAct — primitive UI actions (click, type, scroll, navigate).",
+              "justification": "A recognized effector class with a small primitive vocabulary, but composed over an open application surface, illustrating the open shape."
+            },
+            {
+              "name": "Physical actuation (effectors in robotics)",
+              "reference": "Robotics actuator taxonomy (electric/hydraulic/pneumatic; end-effectors/grippers); RL action spaces (discrete vs. continuous, Sutton & Barto).",
+              "justification": "The embodied-agent branch where 'effector' is literal; action spaces are domain-specific and often continuous, again resisting a single canonical enum."
+            },
+            {
+              "name": "Communicative / speech acts (messaging, API calls to other agents)",
+              "reference": "Speech act theory (Austin, Searle); FIPA-ACL agent communication language performatives (inform, request, etc.).",
+              "justification": "FIPA-ACL offers the closest thing to a closed effector backbone (a defined performative set) for inter-agent action — evidence of partial canonicalization within one sub-domain."
+            }
+          ],
+          "confidence": 0.86,
+          "evidenceNeeded": "A widely-adopted standard taxonomy of agent action/tool categories (analogous to a controlled vocabulary) would shift this toward 'hybrid'. The strongest near-canonical candidate is FIPA-ACL's closed performative set for the communicative-act subspace; confirming whether any cross-domain effector ontology (e.g., an agent-capabilities schema in MCP, tool registries, or HCI levels-of-automation work like Sheridan-Verplank) is treated as authoritative would let me identify a recognized backbone rather than only domain-specific partial enums."
+        },
+        "B": {
+          "round": "B",
+          "organ": "effectors",
+          "openOrClosed": "open",
+          "values": [
+            {
+              "name": "Information retrieval / read-only tools (e.g., web search, retrieval)",
+              "reference": "Toolformer (Schick et al., 2023); ReAct (Yao et al., 2022) 'act' steps over a search API",
+              "justification": "The canonical first class of LLM-agent effectors: actions that query external knowledge without mutating the world — the dominant tool class in tool-augmented LM literature."
+            },
+            {
+              "name": "Code execution / interpreter actions",
+              "reference": "PAL (Gao et al., 2022); Program-of-Thoughts (Chen et al., 2022); OpenAI Code Interpreter",
+              "justification": "A recognized effector family — offloading computation/state-change to a sandboxed runtime — distinct enough to name as its own shape across agent frameworks."
+            },
+            {
+              "name": "World-affecting API / function calls (mutating side effects)",
+              "reference": "OpenAI function calling (2023); Anthropic tool use; Gorilla (Patil et al., 2023) API-calling agents",
+              "justification": "The general open slot: any external API (send email, book, POST) is an effector defined per-deployment, illustrating why the set is unbounded."
+            },
+            {
+              "name": "GUI / computer-use actions (click, type, scroll, screenshot)",
+              "reference": "Anthropic Computer Use (2024); WebArena (Zhou et al., 2023); SeeAct (Zheng et al., 2024)",
+              "justification": "A distinct effector primitive set grounded in HCI input events — the 'embodiment' of an agent in a screen, with its own small recognized action vocabulary."
+            },
+            {
+              "name": "Physical/robotic actuation (motor commands, manipulation)",
+              "reference": "Classic agent architectures: Russell & Norvig 'actuators'; SayCan (Ahn et al., 2022); RT-2 (Brohan et al., 2023)",
+              "justification": "The original sense of 'effector' in robotics/cognitive science (sense-plan-act); end-effectors and motor schemas are the field-standard physical action class."
+            },
+            {
+              "name": "Communication / message acts (speech acts to other agents or humans)",
+              "reference": "Speech Act Theory (Austin/Searle); FIPA-ACL agent communication language; multi-agent systems (Wooldridge)",
+              "justification": "In MAS and HCI, communicative actions are a formally enumerated effector class (illocutionary acts / ACL performatives) — sending is itself an effect on the world."
+            }
+          ],
+          "confidence": 0.85,
+          "evidenceNeeded": "A widely-adopted standard taxonomy of agent action/tool types (e.g., a consensus categorization in an agent-architecture survey such as Wang et al. 2024 'A Survey on LLM-based Autonomous Agents' or Xi et al. 2023) that explicitly partitions effectors into a fixed, named, mutually-exclusive set would shift this toward 'hybrid'. Conversely, the proliferation of arbitrary MCP servers / tool registries (each defining novel tools) confirms the open, free-form extension that keeps the dimension fundamentally open."
+        }
+      },
+      "enaction": {
+        "A": {
+          "round": "A",
+          "organ": "enaction",
+          "openOrClosed": "open",
+          "values": [
+            {
+              "name": "Linguistic / textual output (natural-language prose)",
+              "reference": "W3C Multimodal Interaction Framework (MMI, 2003) — modality components; Reiter & Dale, Building Natural Language Generation Systems (2000)",
+              "justification": "The default output form for conversational/LLM agents: free natural-language text, the canonical 'speech/text' modality of the multimodal output taxonomy."
+            },
+            {
+              "name": "Structured / machine-readable output (JSON, schema-constrained, function-call args)",
+              "reference": "OpenAPI/JSON Schema; OpenAI/Anthropic 'structured outputs' & tool-use response formats; constrained decoding literature",
+              "justification": "A field-recognized output form where the product is shaped to a formal schema for downstream consumption — distinct from prose and now a first-class agent output mode."
+            },
+            {
+              "name": "Visual / graphical output (charts, diagrams, images, UI)",
+              "reference": "W3C MMI output modalities; Bertin, Semiology of Graphics (1967); HCI multimodal output literature",
+              "justification": "A canonical output channel in the modality taxonomy — the product is rendered as visual artifact rather than text."
+            },
+            {
+              "name": "Code / executable artifact",
+              "reference": "Software engineering practice; SWE-bench and code-agent literature (e.g. program synthesis outputs)",
+              "justification": "A recognized distinct product form for coding agents: the deliverable is source code / a patch / a runnable program, judged by execution not reading."
+            },
+            {
+              "name": "Auditory / spoken output (TTS, speech)",
+              "reference": "W3C MMI framework; SSML (Speech Synthesis Markup Language) W3C standard",
+              "justification": "A canonical modality in the multimodal output taxonomy with its own standardized markup, distinct shaping of the same content."
+            },
+            {
+              "name": "Action / actuation output (tool invocations, API calls, robotic/physical effects)",
+              "reference": "Agent architectures — BDI 'actions'; embodied/situated AI; tool-use agents (ReAct, Yao et al. 2022)",
+              "justification": "For agentic systems the 'product' may be effects in an environment rather than a returned message — the enactive/embodied-cognition sense of output."
+            }
+          ],
+          "confidence": 0.72,
+          "evidenceNeeded": "A canonical closed enum would require a single dominant standard scoping \"output form\" for agents. The W3C Multimodal Interaction Framework gives a recognized backbone for *modalities* (text/voice/visual/etc.), which could push this toward 'hybrid', but it does not cover the format axis (prose vs structured vs code) — there is no unified cross-field enum spanning modality + format + genre. Evidence that would raise confidence: (1) a widely-cited agent-output taxonomy that fixes a closed value set; (2) whether the project means modality (HCI sense) specifically — if so the MMI/SSML stack makes it closer to hybrid with a finite backbone; (3) NLG document-genre taxonomies (report/summary/dialogue/instruction) if 'format' rather than 'modality' is the intended axis."
+        },
+        "B": {
+          "round": "B",
+          "organ": "enaction",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Natural-language text (prose / conversational turn)",
+              "reference": "Conversational-agent / dialogue-system tradition (Grice's cooperative maxims; speech-act theory, Searle 1969); the default LLM output channel",
+              "justification": "The canonical, field-default output form for language agents — unstructured prose delivered as a dialogue turn is the baseline against which all other formats are variations."
+            },
+            {
+              "name": "Structured / machine-readable data (JSON, schema-constrained, function-call arguments)",
+              "reference": "Tool-use / function-calling specs (OpenAI function calling; Anthropic tool use; JSON Schema; the structured-output / constrained-decoding literature)",
+              "justification": "A recognized first-class enaction form: output shaped to a typed contract for program consumption rather than human reading — distinct enough to have its own decoding machinery (grammar-constrained generation)."
+            },
+            {
+              "name": "Code / executable artifact",
+              "reference": "Code-generation and program-synthesis literature (HumanEval; Copilot/codegen agents); software-engineering output as source files / patches/diffs",
+              "justification": "A distinct canonical product form — a runnable or applicable artifact (program, patch, config) judged by execution rather than legibility; central to coding-agent practice."
+            },
+            {
+              "name": "Document / report (long-form composed deliverable)",
+              "reference": "Technical-writing and document-genre theory; report/article/spec genres; HCI 'document' as an output genre",
+              "justification": "A recognized output genre distinct from a chat turn: a sectioned, persistable composed artifact (report, memo, spec, README) optimized for standalone reading."
+            },
+            {
+              "name": "Visualization / diagram / graphical representation",
+              "reference": "Information-visualization and external-representation theory (Bertin's Semiology of Graphics; Larkin & Simon 1987, 'Why a Diagram is (Sometimes) Worth 10000 Words'); diagrammatic notations (UML, Mermaid)",
+              "justification": "A canonical non-textual output form — spatial/graphical encoding that carries information differently from linear text; well-established as its own representational mode."
+            },
+            {
+              "name": "Non-text media (image / audio / speech / video)",
+              "reference": "Multimodal-generation literature and modality taxonomies in multimodal ML (text/image/audio/video as the standard modality set); speech-synthesis / TTS as an output channel",
+              "justification": "The multimodal-AI field treats output modality as an enumerable axis (image, audio, speech, video) — each a recognized delivery form beyond text."
+            }
+          ],
+          "confidence": 0.6,
+          "evidenceNeeded": "A single authoritative cross-field taxonomy that fixes 'output form/format' as a closed enum would settle this. The strongest candidate backbones are (a) the multimodal-ML modality set (text/image/audio/video), which is closed but only covers sensory channel, not format genre (prose vs JSON vs code vs report all collapse into 'text'); and (b) HCI external-representation taxonomies (Bertin, Larkin & Simon), which are closed for graphics but not for the textual/structured side. Confirming whether a recognized framework unifies modality AND format genre — or whether the field genuinely treats format as an open design choice layered on a closed modality backbone — would let me firm up the hybrid call versus reclassifying as 'open with a closed modality core.'"
+        }
+      },
+      "gestalt": {
+        "A": {
+          "round": "A",
+          "organ": "gestalt",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Level 1 — Perception of elements in the environment",
+              "reference": "Endsley (1995), \"Toward a Theory of Situation Awareness in Dynamic Systems,\" Human Factors",
+              "justification": "The canonical first tier of the most cited SA model; the agent's gestalt at minimum perceives the raw elements/cues of its situation."
+            },
+            {
+              "name": "Level 2 — Comprehension of the current situation",
+              "reference": "Endsley (1995) three-level SA model",
+              "justification": "Synthesizing perceived elements into a holistic understanding of their meaning — directly the 'comprehends the whole' aspect of gestalt."
+            },
+            {
+              "name": "Level 3 — Projection of future status",
+              "reference": "Endsley (1995) three-level SA model",
+              "justification": "Extrapolating the situation forward; the 'projects' aspect of the dimension's own description, the highest SA tier."
+            },
+            {
+              "name": "Shared / team (distributed) situation awareness",
+              "reference": "Salas et al. (1995); Stanton et al. (2006) Distributed Situation Awareness",
+              "justification": "Recognized extension of SA to multi-actor systems — the field's standard backbone for awareness spanning a team/system, applicable to multi-agent gestalt."
+            },
+            {
+              "name": "Sensemaking",
+              "reference": "Klein, Moon & Hoffman (2006); Weick (1995), Sensemaking in Organizations",
+              "justification": "The established complementary construct to SA — the active, retrospective/constructive process by which an agent builds the frame it comprehends within (data-frame theory)."
+            },
+            {
+              "name": "Common ground / mutual awareness",
+              "reference": "Clark (1996), Using Language; Klein et al. (2005) \"Common Ground and Coordination in Joint Activity\"",
+              "justification": "Field-standard term for the shared situational model between agent and collaborators that grounds joint action — a recognized facet of situational awareness in HCI/joint-activity research."
+            }
+          ],
+          "confidence": 0.72,
+          "evidenceNeeded": "Confirmation of which framing the catalog wants to privilege: Endsley's tidy 3-level SA enum reads as effectively closed, but once team-SA, sensemaking, and common-ground are admitted, the space becomes open/free-form (no single agreed master enumeration unifies cognitive-engineering SA, organizational sensemaking, and HCI common-ground). A decision on scope (single-agent perception-stack vs. distributed/social awareness) would let me commit to 'closed' (Endsley 3-level) vs. 'open'. Also useful: whether the catalog treats 'gestalt' as a capability level (Endsley tiers) or as a style/mode of attention (which would point to different literatures, e.g., attention/framing theory)."
+        },
+        "B": {
+          "round": "B",
+          "organ": "gestalt",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Level 1 — Perception of elements",
+              "reference": "Endsley (1995), \"Toward a Theory of Situation Awareness in Dynamic Systems,\" Human Factors",
+              "justification": "Canonical first level of Endsley's three-level SA model: perceiving the status, attributes, and dynamics of relevant elements in the environment."
+            },
+            {
+              "name": "Level 2 — Comprehension of current situation",
+              "reference": "Endsley (1995), three-level SA model",
+              "justification": "Canonical second level: synthesizing Level-1 elements into a holistic understanding of significance relative to goals."
+            },
+            {
+              "name": "Level 3 — Projection of future status",
+              "reference": "Endsley (1995), three-level SA model",
+              "justification": "Canonical third level: projecting the future states of elements forward in time — the highest, most demanding tier of SA."
+            },
+            {
+              "name": "Shared / team situation awareness",
+              "reference": "Salas et al. (1995); Endsley & Jones shared-SA model",
+              "justification": "Recognized extension to multi-agent settings: the degree to which team members share a common picture on SA requirements (directly relevant to multi-agent AI)."
+            },
+            {
+              "name": "Distributed situation awareness",
+              "reference": "Stanton et al. (2006), \"Distributed situation awareness in dynamic systems,\" Ergonomics",
+              "justification": "Established systems-level alternative framing: SA as a property held by the socio-technical system (human + artifacts), not only in individual heads — the dominant framing for human-automation joint cognition."
+            },
+            {
+              "name": "Sensemaking",
+              "reference": "Klein, Moon & Hoffman (2006), \"Making Sense of Sensemaking,\" IEEE Intelligent Systems; Weick (1995)",
+              "justification": "Naturalistic-decision-making counterpart: the active, iterative process of constructing and revising a frame/mental model — emphasizes the dynamic construction of the whole rather than its momentary state."
+            }
+          ],
+          "confidence": 0.62,
+          "evidenceNeeded": "Confirmation of how the catalog scopes \"gestalt\": if it means the LEVELS/depth of awareness, Endsley's three-level model is a clean closed backbone (confidence rises toward closed). If it means the TYPE of awareness-construction paradigm (individual SA vs. distributed SA vs. sensemaking vs. ecological/Gibsonian affordance perception), the space is open/hybrid. Cross-checking against the agent-architecture literature (e.g., BDI belief revision, world-model/perception modules in cognitive architectures like Soar/ACT-R, and recent LLM-agent \\\"context/state estimation\\\" work) would clarify whether a different field-standard enum should be the backbone instead of Endsley."
+        }
+      },
+      "heuristics": {
+        "A": {
+          "round": "A",
+          "organ": "heuristics",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Recognition heuristic",
+              "reference": "Goldstein & Gigerenzer (2002), Psychological Review; Gigerenzer & Todd, Simple Heuristics That Make Us Smart (1999)",
+              "justification": "The paradigmatic fast-and-frugal heuristic: if one of two objects is recognized and the other is not, infer the recognized one scores higher — a canonical, repeatedly studied member of the adaptive toolbox."
+            },
+            {
+              "name": "Take-the-best (one-reason decision making)",
+              "reference": "Gigerenzer & Goldstein (1996), Psychological Review",
+              "justification": "Cue-ordered lexicographic heuristic (search by validity, stop at first discriminating cue, decide on it); the flagship one-reason heuristic and a fixed reference point in the literature."
+            },
+            {
+              "name": "Tallying / unit-weight (equal-weight) model",
+              "reference": "Dawes (1979), 'The robust beauty of improper linear models'; Gigerenzer's toolbox",
+              "justification": "Count cues in favor vs. against with equal weights — the canonical compensatory frugal heuristic contrasted with take-the-best, robust under uncertainty."
+            },
+            {
+              "name": "Availability heuristic",
+              "reference": "Tversky & Kahneman (1973, 1974), Cognitive Psychology / Science",
+              "justification": "Judge frequency/probability by ease of retrieval — a foundational, universally cited member of the heuristics-and-biases canon."
+            },
+            {
+              "name": "Representativeness heuristic",
+              "reference": "Kahneman & Tversky (1972); Tversky & Kahneman (1974)",
+              "justification": "Judge by similarity to a prototype/category — co-foundational with availability in the classic heuristics-and-biases triad."
+            },
+            {
+              "name": "Anchoring-and-adjustment",
+              "reference": "Tversky & Kahneman (1974), Science",
+              "justification": "Start from a salient anchor and adjust insufficiently — the third pillar of the original heuristics-and-biases program, ubiquitously referenced."
+            },
+            {
+              "name": "Satisficing (aspiration-level stopping)",
+              "reference": "Simon (1956), Psychological Review; bounded rationality",
+              "justification": "Search until an option meets an aspiration threshold, then stop — the historical root of frugal decision rules and the origin of bounded rationality."
+            }
+          ],
+          "confidence": 0.78,
+          "evidenceNeeded": "A meta-review or handbook (e.g., the Routledge/SAGE handbooks on heuristics, or Gigerenzer & Gaissmaier 2011 Annual Review of Psychology 'Heuristic Decision Making') that either presents a closed master list or explicitly affirms the toolbox is open/recombinant. Also: confirmation that the AI-agent design literature (vs. pure cognitive science) has adopted any subset as a standard configuration enum, which would shift the classification toward a more defined backbone. The decisive point is whether any authority claims completeness; current evidence shows named members exist but the set is explicitly extensible (building-block recombination of search/stop/decision rules), supporting 'hybrid' over 'closed'."
+        },
+        "B": {
+          "round": "B",
+          "organ": "heuristics",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Availability heuristic",
+              "reference": "Tversky & Kahneman, 'Judgment under Uncertainty: Heuristics and Biases' (Science, 1974)",
+              "justification": "Founding member of the heuristics-and-biases program; judging frequency/probability by ease of recall — a canonical, named rule-of-thumb."
+            },
+            {
+              "name": "Representativeness heuristic",
+              "reference": "Tversky & Kahneman (1974); Kahneman & Tversky (1972)",
+              "justification": "Core H&B heuristic: judging category membership by similarity to a prototype; one of the original triad."
+            },
+            {
+              "name": "Anchoring-and-adjustment",
+              "reference": "Tversky & Kahneman (1974)",
+              "justification": "Third of the founding triad; estimates formed by adjusting from a salient starting value. Stable, widely cited term."
+            },
+            {
+              "name": "Recognition heuristic",
+              "reference": "Goldstein & Gigerenzer, 'Models of ecological rationality' (Psychological Review, 2002); Gigerenzer's 'fast and frugal heuristics' / adaptive toolbox (ABC Research Group, 'Simple Heuristics That Make Us Smart', 1999)",
+              "justification": "Canonical member of the fast-and-frugal toolbox — directly matches 'fast, frugal decisions' — infer the higher value from the recognized option."
+            },
+            {
+              "name": "Take-the-best (one-reason decision making)",
+              "reference": "Gigerenzer & Goldstein, 'Reasoning the fast and frugal way' (Psychological Review, 1996)",
+              "justification": "Defining heuristic of the adaptive toolbox; lexicographic cue search stopping at the first discriminating cue."
+            },
+            {
+              "name": "Satisficing",
+              "reference": "Herbert Simon, 'Rational choice and the structure of the environment' (Psychological Review, 1956); bounded rationality",
+              "justification": "Original bounded-rationality stopping rule (accept first option above an aspiration level) — the historical root of agent rules-of-thumb."
+            },
+            {
+              "name": "Affect heuristic",
+              "reference": "Slovic, Finucane, Peters & MacGregor (2002, 2007)",
+              "justification": "Widely recognized H&B extension: decisions driven by the felt good/bad of the stimulus."
+            },
+            {
+              "name": "Elimination by aspects",
+              "reference": "Tversky, 'Elimination by aspects: A theory of choice' (Psychological Review, 1972)",
+              "justification": "Canonical named choice heuristic; sequentially eliminate options failing on attributes in order of importance."
+            }
+          ],
+          "confidence": 0.78,
+          "evidenceNeeded": "The classification turns on scope. Within cognitive science/decision theory there are two well-established, partially-overlapping backbones — the heuristics-and-biases program (Tversky & Kahneman) and the fast-and-frugal/adaptive-toolbox program (Gigerenzer/ABC) — each enumerating named heuristics, plus Simon's bounded rationality as the root. That gives a recognized backbone (hence 'hybrid', not 'open'). But there is no single closed, agreed-upon master enumeration: the two programs disagree on framing (biases-as-errors vs. ecological rationality), and the set of named heuristics keeps growing (fluency, fluency/familiarity, tit-for-tat, default heuristic, 1/N, gaze heuristic). Confidence would rise with: (1) a citation establishing whether the AI-agent-architecture literature has adopted any one of these taxonomies as canonical for agent design (vs. ad hoc 'rules of thumb'); (2) confirmation of whether 'heuristics' here means human-cognition-derived decision rules or engineering heuristics (e.g., admissible search heuristics in A*, planning heuristics), which would point to an entirely different and largely open taxonomy; (3) a recent (post-2015) review consolidating the adaptive toolbox into a fixed list."
+        }
+      },
+      "instructions": {
+        "A": {
+          "round": "A",
+          "organ": "instructions",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "SOLID principles",
+              "reference": "Robert C. Martin (Uncle Bob), 'Design Principles and Design Patterns' (2000); Agile Software Development (2002)",
+              "justification": "The most widely cited closed set of object-oriented design directives (SRP, OCP, LSP, ISP, DIP); a canonical, finite, named backbone family for 'how to build'."
+            },
+            {
+              "name": "DRY / KISS / YAGNI",
+              "reference": "Hunt & Thomas, 'The Pragmatic Programmer' (1999); Extreme Programming (Beck) for YAGNI",
+              "justification": "The canonical pragmatic operating heuristics — recurring named directives that almost every engineering instruction set references."
+            },
+            {
+              "name": "The Twelve-Factor App",
+              "reference": "Adam Wiggins / Heroku, 12factor.net (2011)",
+              "justification": "A recognized enumerated (12-member) doctrine for building/operating software-as-a-service; a canonical finite directive set for delivery."
+            },
+            {
+              "name": "Test-Driven Development (red-green-refactor)",
+              "reference": "Kent Beck, 'Test-Driven Development: By Example' (2002)",
+              "justification": "A canonical named workflow directive governing how an agent should sequence building and verification."
+            },
+            {
+              "name": "Coding standards / style guides",
+              "reference": "e.g. Google Style Guides; PEP 8 (van Rossum et al.); Airbnb JS Style Guide",
+              "justification": "The open-extension surface: project-specific authored conventions that are inherently free-form yet are the dominant real content of instruction blocks."
+            },
+            {
+              "name": "Conway's Law / Separation of Concerns",
+              "reference": "Melvin Conway (1968); Dijkstra, 'On the role of scientific thought' (1974) for SoC",
+              "justification": "Foundational named structural principles routinely encoded as build directives about modularity and ownership."
+            }
+          ],
+          "confidence": 0.78,
+          "evidenceNeeded": "A survey of published agent/system-prompt instruction blocks (e.g., Claude/Cursor/Copilot system prompts, AGENTS.md/CLAUDE.md corpora) coded against software-engineering principle taxonomies, to confirm there is no single closed enum and to quantify how dominant the free-form authored portion is versus the recurring named backbone families."
+        },
+        "B": {
+          "round": "B",
+          "organ": "instructions",
+          "openOrClosed": "open",
+          "values": [
+            {
+              "name": "DRY (Don't Repeat Yourself)",
+              "reference": "Hunt & Thomas, The Pragmatic Programmer (1999)",
+              "justification": "One of the most widely cited engineering directives; an exemplar of a single operating rule an agent can be told to uphold."
+            },
+            {
+              "name": "KISS / YAGNI (simplicity; build only what is needed)",
+              "reference": "Extreme Programming (Beck, 1999) / Unix philosophy lineage",
+              "justification": "Canonical minimalism directives that recur across agent system prompts as 'prefer the simplest change'."
+            },
+            {
+              "name": "SOLID principles",
+              "reference": "Robert C. Martin, Agile Software Development (2002)",
+              "justification": "The best-known finite set of OO design directives — but it is one school among many, not THE enum, illustrating the open shape."
+            },
+            {
+              "name": "Unix philosophy (do one thing well; compose small tools)",
+              "reference": "McIlroy / Raymond, The Art of Unix Programming (2003)",
+              "justification": "A durable directive-set frequently encoded as agent operating principles for tool design and composition."
+            },
+            {
+              "name": "Convention over configuration / follow existing patterns",
+              "reference": "Rails doctrine (DHH); reiterated in LLM agent prompting best-practice (Anthropic agent guidance)",
+              "justification": "A heavily used agent directive ('match the surrounding code style') with real provenance in framework doctrine."
+            },
+            {
+              "name": "Test-first / verify-before-claiming-done",
+              "reference": "TDD (Beck, Test-Driven Development, 2002); agent ReAct/reflexion verification practice",
+              "justification": "A recurring operating principle in agent instructions tying action to empirical verification."
+            }
+          ],
+          "confidence": 0.82,
+          "evidenceNeeded": "A widely adopted standard that fixes a FINITE, named set of agent operating directives (e.g., an ISO/IEEE engineering-principles standard, or a dominant LLM-agent prompting spec) would push this toward hybrid/closed. Absent that, surveys of agent system prompts and engineering-principle catalogs confirm the open, multi-school nature."
+        }
+      },
+      "ledger": {
+        "A": {
+          "round": "A",
+          "organ": "ledger",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Sensory / working memory (short-term context buffer)",
+              "reference": "Atkinson & Shiffrin (1968) multi-store model; Baddeley & Hitch (1974) working memory; mapped to the LLM context window in agent surveys (Wang et al. 2024, 'A Survey on Large Language Model based Autonomous Agents')",
+              "justification": "The canonical transient store: the in-context scratchpad / window holding the current task's active information before it is consolidated or discarded."
+            },
+            {
+              "name": "Episodic memory",
+              "reference": "Tulving (1972, 1983) declarative memory split (episodic vs. semantic); carried into agent memory taxonomies (Park et al. 2023 'Generative Agents'; Zhang et al. 2024 'A Survey on the Memory Mechanism of LLM-based Agents')",
+              "justification": "Time-indexed record of specific experienced events ('what happened when') — the standard backbone member for an agent's autobiographical/event log."
+            },
+            {
+              "name": "Semantic memory",
+              "reference": "Tulving (1972) declarative memory; standard in agent memory surveys and RAG knowledge-store framing",
+              "justification": "Decontextualized facts, concepts, and world/domain knowledge abstracted away from any single episode — the durable knowledge base."
+            },
+            {
+              "name": "Procedural memory",
+              "reference": "Squire (1992) declarative vs. non-declarative (procedural) memory taxonomy; ACT-R declarative/procedural distinction (Anderson 1996); adopted in agent skill-library work (Voyager, Wang et al. 2023)",
+              "justification": "Skills, routines, and learned how-to procedures retrieved as executable competence rather than recalled as facts — the canonical non-declarative member."
+            },
+            {
+              "name": "Long-term external store (parametric vs. non-parametric)",
+              "reference": "Lewis et al. (2020) 'Retrieval-Augmented Generation'; agent-memory surveys distinguishing in-weights (parametric) from retrievable external (non-parametric) memory",
+              "justification": "The recognized axis separating knowledge baked into model weights from knowledge held in an external retrievable store (vector DB, files), governing how recall is implemented."
+            }
+          ],
+          "confidence": 0.8,
+          "evidenceNeeded": "A single authoritative, widely-cited LLM-agent memory taxonomy that all surveys converge on (rather than each survey reusing the cognitive-science backbone with idiosyncratic extensions) would let me call this 'closed'. The cognitive-science backbone (sensory/working, episodic/semantic, declarative/procedural) is canonical and finite, but the engineering layer (vector stores, parametric vs. non-parametric, memory streams, reflection/consolidation buffers) is still being extended freely — hence 'hybrid'. Convergence in recent survey literature (e.g., Zhang et al. 2024; Wang et al. 2024) on a fixed enum would settle it."
+        },
+        "B": {
+          "round": "B",
+          "organ": "ledger",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Sensory / perceptual buffer memory",
+              "reference": "Atkinson & Shiffrin (1968) modal model of memory; modern variants in cognitive architectures (Soar, ACT-R)",
+              "justification": "The shortest-lived store holding raw perceptual input before encoding; canonical first stage of the standard memory taxonomy that agent designs inherit as the input/observation buffer."
+            },
+            {
+              "name": "Short-term / working memory",
+              "reference": "Baddeley & Hitch (1974) working-memory model; Atkinson-Shiffrin STM; agent analog = the in-context window / scratchpad",
+              "justification": "The active, capacity-limited store the agent reasons over in the moment; in LLM agents this is the prompt context, universally recognized as the working-memory tier."
+            },
+            {
+              "name": "Long-term memory (umbrella)",
+              "reference": "Atkinson & Shiffrin (1968); Tulving (1972)",
+              "justification": "The durable store partitioned into the declarative/non-declarative subtypes below; the canonical backbone every agent-memory survey (e.g., Generative Agents, MemGPT, A-MEM) maps onto."
+            },
+            {
+              "name": "Episodic memory",
+              "reference": "Tulving (1972, 1983) — episodic vs. semantic distinction; Park et al. (2023) Generative Agents 'memory stream'",
+              "justification": "Time-indexed records of specific experienced events; the canonical declarative subtype and the dominant model for agent event logs / memory streams."
+            },
+            {
+              "name": "Semantic memory",
+              "reference": "Tulving (1972); knowledge-graph / vector-store agent memory (RAG, A-MEM)",
+              "justification": "Decontextualized facts, concepts, and general knowledge abstracted from episodes; the second canonical declarative subtype and the basis of knowledge-base agent memory."
+            },
+            {
+              "name": "Procedural memory",
+              "reference": "Squire (1992) declarative vs. non-declarative taxonomy; Anderson ACT-R procedural module",
+              "justification": "Non-declarative memory for skills/how-to (production rules, learned policies); canonical non-declarative subtype, realized in agents as tools/skills/cached procedures."
+            },
+            {
+              "name": "Profile / persona memory",
+              "reference": "Mei et al. (2024) 'A Survey on the Memory Mechanism of LLM-based Agents'; commercial systems (ChatGPT memory, MemGPT persistent persona)",
+              "justification": "Persistent self/user attributes and preferences; a recognized first-class store in agent-memory surveys distinct from generic semantic memory, the field-standard extension beyond the cognitive backbone."
+            }
+          ],
+          "confidence": 0.82,
+          "evidenceNeeded": "A systematic LLM-agent memory survey (e.g., Mei et al. 2024; Zhang et al. 'Survey on Memory in LLM Agents') to confirm whether the field has converged on a closed enum (sensory/short-term/long-term {episodic, semantic, procedural} + profile) or treats memory types as an open, system-specific design choice; plus a sample of production agent frameworks (MemGPT, LangChain/LangMem, A-MEM, Letta) to count how often novel store types appear beyond the cognitive-science backbone."
+        }
+      },
+      "mandate": {
+        "A": {
+          "round": "A",
+          "organ": "mandate",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Responsibility / accountability assignment (RACI)",
+              "reference": "RACI matrix (project/organizational management; PMI BoK lineage)",
+              "justification": "The canonical decomposition of a remit: who is Responsible vs Accountable vs Consulted vs Informed — the field-standard backbone for stating what a role owns."
+            },
+            {
+              "name": "In-scope / out-of-scope boundary",
+              "reference": "Requirements engineering & project scope management (BABOK, PMBOK scope statement)",
+              "justification": "The defining structure of a mandate is the explicit inclusion/exclusion boundary; 'what is out of scope' is a first-class, standardized scope-statement element."
+            },
+            {
+              "name": "Goal / objective (terminal mandate)",
+              "reference": "Goal-oriented agent design; BDI architecture (Rao & Georgeff); GORE / i* goal modeling",
+              "justification": "A mandate is canonically expressed as the goal-state the agent is charged to bring about — the 'desire' layer in belief-desire-intention agents."
+            },
+            {
+              "name": "Task / function remit",
+              "reference": "Task-oriented dialogue & agent taxonomies; functional role specification in multi-agent systems (FIPA, AGR/Gaia role model)",
+              "justification": "Roles in MAS methodologies (Gaia, AGR) are defined by the set of tasks/services a role is obligated to perform — the operational granularity of a mandate."
+            },
+            {
+              "name": "Authority / permission boundary (scope of action)",
+              "reference": "AI safety & access control; principle of least privilege; capability/authority limits in autonomous-agent governance",
+              "justification": "A mandate includes what the agent is permitted to act on; least-privilege scoping is the recognized safety-side framing of remit limits."
+            },
+            {
+              "name": "Priority/obligation weighting (MoSCoW)",
+              "reference": "MoSCoW prioritization (DSDM / requirements management)",
+              "justification": "Within a remit, Must/Should/Could/Won't distinguishes core obligations from optional and explicitly-excluded duties — a standard way to grade a mandate's contents."
+            }
+          ],
+          "confidence": 0.72,
+          "evidenceNeeded": "A survey of agent-specification frameworks (e.g., AutoGPT/LangChain agent 'role' fields, CrewAI 'role/goal/backstory', FIPA/Gaia role models, agent-card/spec standards) to confirm whether the field converges on a single named schema for 'mandate' versus borrowing ad hoc from RACI/scope-statement traditions. Also whether AI-safety literature has crystallized a standard 'authority boundary' vocabulary distinct from generic least-privilege."
+        },
+        "B": {
+          "round": "B",
+          "organ": "mandate",
+          "openOrClosed": "open",
+          "values": [
+            {
+              "name": "Scope of authority / charter (responsibilities + boundaries)",
+              "reference": "Organizational role theory & RACI charters (Katz & Kahn, The Social Psychology of Organizations, 1966; PMI RACI responsibility-assignment matrix)",
+              "justification": "The canonical way a remit is specified across management science is a free-text charter naming what the role owns and its boundaries — there is no closed set of charters, illustrating the dimension's open shape."
+            },
+            {
+              "name": "Goal / task specification",
+              "reference": "BDI agent architecture (Rao & Georgeff, 1995) and goal-oriented agent design; system-prompt 'objective' fields in LLM agent guidance (OpenAI/Anthropic agent building guides)",
+              "justification": "In agent architecture the mandate is given as a goal or task description supplied per-deployment, not chosen from an enumerated catalog — exemplar of free-form remit."
+            },
+            {
+              "name": "Job design / scope-of-work",
+              "reference": "Job Characteristics Model (Hackman & Oldham, 1976); job-description scope-of-work practice",
+              "justification": "Remit is operationalized as task identity and significance defined ad hoc for each office; the space of jobs is generative, not enumerable."
+            },
+            {
+              "name": "In-scope vs out-of-scope (guardrails / refusal boundary)",
+              "reference": "Responsible-AI policy specs and tool/agent 'allowed actions' scoping (NIST AI RMF; Anthropic/OpenAI safety guardrail patterns)",
+              "justification": "Modern agents declare explicit out-of-scope clauses and escalation triggers, but the content of those clauses is bespoke per agent — structural pattern, open content."
+            },
+            {
+              "name": "Span of control / jurisdiction",
+              "reference": "Classical administrative theory (Gulick & Urwick, Papers on the Science of Administration, 1937; Fayol)",
+              "justification": "A remit is bounded by a jurisdiction (which subjects/resources the office may act on); jurisdictions are domain-defined and unbounded, confirming the dimension is open."
+            },
+            {
+              "name": "Decision rights / accountability boundary",
+              "reference": "Decision-rights frameworks (RAPID, Bain & Company; agency theory, Jensen & Meckling, 1976)",
+              "justification": "Mandate includes which decisions the agent may make versus must defer; this is configured per role from an open domain rather than drawn from a fixed taxonomy."
+            }
+          ],
+          "confidence": 0.82,
+          "evidenceNeeded": "A recognized, finite taxonomy of agent remits/offices (analogous to how Sheridan-Verplank enumerates automation levels) would shift this toward hybrid/closed. Useful evidence: a standards body (NIST, ISO/IEC JTC1 SC42), a widely-cited multi-agent role catalog, or an HCI 'function allocation' taxonomy that enumerates remit *content* (not just authority degree or function stage). Absent such an enumeration, the field treats mandate as a free-text charter, supporting 'open'. Note the adjacent dimensions (autonomy/authority level, function stage) ARE closed (Parasuraman-Sheridan-Wickens 2000), so care is needed not to conflate remit content with authority degree.\""
+        }
+      },
+      "percept": {
+        "A": {
+          "round": "A",
+          "organ": "percept",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "User/operator message (natural-language utterance)",
+              "reference": "Conversational/dialogue agent architectures; speech-act theory (Searle 1969); ReAct (Yao et al. 2022) treats the task instruction as the opening observation",
+              "justification": "The default percept for chat-shaped agents: a parsed human utterance is the single input that opens the turn — the canonical backbone case."
+            },
+            {
+              "name": "Tool/action result (observation o_t)",
+              "reference": "ReAct (Yao et al. 2022); MDP/POMDP formalism where the agent reads observation o_t after action a_{t-1}; Function-calling / tool-use loops (Toolformer, OpenAI/Anthropic tool APIs)",
+              "justification": "In the sense-act loop the returned tool output is the canonical observation that opens the next reasoning step — the formal POMDP 'observation' element."
+            },
+            {
+              "name": "Environment/world percept (sensory state)",
+              "reference": "Russell & Norvig, AIMA — agent = function from percept sequences to actions; the 'percept' is the agent's perceptual input from the environment",
+              "justification": "AIMA's foundational definition makes the environment percept the prototypical input opening each agent cycle; canonical in the textbook taxonomy."
+            },
+            {
+              "name": "Event / signal (trigger)",
+              "reference": "Event-driven architectures; BDI agent 'events' (Rao & Georgeff 1995) that trigger plan selection; webhook/callback-driven agents",
+              "justification": "A discrete event or interrupt is a recognized percept type that opens a turn in reactive/event-driven and BDI agents."
+            },
+            {
+              "name": "Scheduled / timer tick (self-initiated wake)",
+              "reference": "Cron/heartbeat agents; autonomous-loop architectures (AutoGPT-style self-continuation); the 'no-input' continuation observation",
+              "justification": "A timer or empty continuation prompt is a real percept form for proactive agents — the turn opens with elapsed-time rather than external content."
+            },
+            {
+              "name": "Inter-agent message (ACL/A2A)",
+              "reference": "FIPA-ACL agent communication language; speech-act-based multi-agent messaging; A2A / multi-agent orchestration protocols",
+              "justification": "In multi-agent systems the opening input is a structured message from a peer agent, a standardized percept category in MAS literature."
+            }
+          ],
+          "confidence": 0.55,
+          "evidenceNeeded": "A single authoritative taxonomy that enumerates *percept forms* as a closed set would settle open-vs-closed. AIMA defines 'percept' but does not enumerate a finite typology of percept kinds; POMDP formalism makes 'observation' a free typed variable, not an enum. Confirmation would come from (a) a recognized HCI/agent-IO taxonomy of input/trigger types, or (b) a standard like FIPA performatives if the dimension is scoped to message percepts only. The field treats the *channel/source* as having a loose recognized backbone (user / tool-result / environment / event / timer / peer-agent) but the percept *content form* is inherently open (any parseable payload), which is why I classify hybrid rather than closed."
+        },
+        "B": {
+          "round": "B",
+          "organ": "percept",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Percept (atomic input at time t)",
+              "reference": "Russell & Norvig, Artificial Intelligence: A Modern Approach (AIMA), agent model: f: P* → A maps percept sequences to actions",
+              "justification": "The field's foundational term for exactly this dimension — the single observation the agent reads at the top of one act; defines the slot itself, not its content type."
+            },
+            {
+              "name": "Observation (POMDP/RL sense)",
+              "reference": "Partially Observable Markov Decision Process formalism; OpenAI Gym/Gymnasium step() returns an observation",
+              "justification": "Canonical RL/control term for the per-step input; in POMDPs the observation o ∈ Ω is explicitly the parsed window onto hidden state that opens each decision step."
+            },
+            {
+              "name": "User / human message (instruction turn)",
+              "reference": "OpenAI/Anthropic chat-completions message roles; ReAct (Yao et al. 2022) prompt-driven turns",
+              "justification": "In LLM agents the most common turn-opener is a natural-language request — the dominant percept form for conversational/instruction-following agents."
+            },
+            {
+              "name": "Tool / function result (observation step)",
+              "reference": "ReAct's Thought→Action→Observation loop; OpenAI tool-calling 'tool' role; MCP tool results",
+              "justification": "The canonical machine-generated percept: a turn opened by the returned result of a prior action, the 'Observation' in the ReAct cycle."
+            },
+            {
+              "name": "Environment / sensor event (sensory input)",
+              "reference": "AIMA agent taxonomy (sensors→percepts); robotics/embodied-agent perception pipelines",
+              "justification": "For embodied or event-driven agents the turn opener is a sensor/event reading (vision frame, state delta, webhook), the classic 'percept from sensors'."
+            },
+            {
+              "name": "System / scheduler trigger (autonomous wake)",
+              "reference": "BDI agent architectures (Rao & Georgeff) event queue; cron/daemon agent loops; autonomous-agent wake events",
+              "justification": "A turn can open with no external content — a timer/scheduler/internal-goal event — recognized in proactive/BDI agents as a percept-equivalent trigger."
+            }
+          ],
+          "confidence": 0.62,
+          "evidenceNeeded": "A standards-grade source that explicitly enumerates a CLOSED set of turn-opener types for LLM agents (e.g., a fixed message-role taxonomy treated as exhaustive). The classification is 'hybrid' because AIMA/POMDP supply a strong canonical backbone term ('percept'/'observation') and the LLM message-role + ReAct vocabulary supplies a recognized small set of concrete forms (user message, tool result, system trigger, sensor event), but no field declares the content-types of percepts to be a finite exhaustive enum — new modalities/event sources extend it freely. Confirmation that practitioners treat the message-role/observation-source list as a backbone-plus-extensions rather than a fixed enum would settle hybrid vs. open."
+        }
+      },
+      "persona": {
+        "A": {
+          "round": "A",
+          "organ": "persona",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "The 12 Brand Archetypes (Innocent, Sage, Explorer, Outlaw/Rebel, Magician, Hero, Lover, Jester, Everyman/Regular Guy, Caregiver, Ruler, Creator)",
+              "reference": "Mark & Pearson, The Hero and the Outlaw (2001), operationalizing Jungian archetypes for brand/character design",
+              "justification": "The single most widely-adopted finite taxonomy of projected character in branding and conversational-agent persona design; treated as a canonical enumerable backbone."
+            },
+            {
+              "name": "Jungian archetypes (Self, Shadow, Anima/Animus, Persona, plus the archetypal figures: Hero, Mother, Trickster, Wise Old Man, etc.)",
+              "reference": "C.G. Jung, The Archetypes and the Collective Unconscious (CW Vol. 9)",
+              "justification": "The psychological provenance underneath nearly all character/persona enumerations; the term 'persona' itself is Jungian."
+            },
+            {
+              "name": "Stock dramatic character archetypes (Hero, Mentor, Threshold Guardian, Herald, Shapeshifter, Shadow, Trickster, Ally)",
+              "reference": "Vogler, The Writer's Journey (adapting Campbell's monomyth)",
+              "justification": "A recognized finite cast used in narrative/character design and frequently borrowed for designing conversational-agent personalities."
+            },
+            {
+              "name": "OCEAN / Big Five personality dimensions (Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism)",
+              "reference": "Costa & McCrae (1992); applied to agents via 'personality of conversational agents' HCI literature",
+              "justification": "The field-standard *parametric* (rather than enumerated) representation of personality, showing persona is also realized as a continuous trait space, not just discrete labels."
+            },
+            {
+              "name": "Designed UX/voice personas (e.g., Alexa, Siri, Clippy, Cortana — bespoke named characters)",
+              "reference": "Nass & Brave, Wired for Speech (2005); CASA/Media Equation paradigm; product persona/voice-design practice",
+              "justification": "Demonstrates the open tail: production agent personas are authored ad hoc (tone, register, named character) rather than drawn from any fixed list."
+            }
+          ],
+          "confidence": 0.78,
+          "evidenceNeeded": "Evidence that any single taxonomy is treated as authoritative across AI-agent design specifically (rather than borrowed from branding/narrative): e.g., a standards body or widely-cited agent-persona framework that fixes an enumeration. Conversely, a corpus survey of deployed assistant personas showing they predominantly use free-form authored characters would push toward 'open'. The classification is 'hybrid' precisely because a recognized backbone (12 archetypes / Jungian / Big Five) coexists with unbounded bespoke persona authoring."
+        },
+        "B": {
+          "round": "B",
+          "organ": "persona",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "The Innocent",
+              "reference": "Jungian archetypes via Mark & Pearson, 'The Hero and the Outlaw' (2001) — brand archetype canon",
+              "justification": "One of the 12 brand archetypes, the dominant marketing/brand taxonomy used to assign a character; rooted in Jungian archetype theory."
+            },
+            {
+              "name": "The Sage",
+              "reference": "Mark & Pearson 12 brand archetypes (Jung)",
+              "justification": "Canonical 'knowledge/truth' archetype frequently mapped onto expert/advisor agent personas."
+            },
+            {
+              "name": "The Hero",
+              "reference": "Mark & Pearson 12 brand archetypes; Campbell monomyth lineage",
+              "justification": "Core archetype with strong provenance in both brand theory and narratology, widely used to characterize agent voice."
+            },
+            {
+              "name": "The Caregiver",
+              "reference": "Mark & Pearson 12 brand archetypes",
+              "justification": "Canonical nurturing/service archetype — the prototypical assistant persona in HCI/conversational-agent design."
+            },
+            {
+              "name": "The Jester",
+              "reference": "Mark & Pearson 12 brand archetypes",
+              "justification": "Canonical playful/humorous archetype, a recognized member of the closed 12-set backbone."
+            },
+            {
+              "name": "The Magician / The Creator / The Ruler / The Explorer / The Lover / The Outlaw / The Everyman",
+              "reference": "Mark & Pearson 12 brand archetypes (remaining members of the 12)",
+              "justification": "Completes the 12-archetype backbone — the most-cited finite taxonomy for projected character."
+            },
+            {
+              "name": "Big Five trait profile (e.g., high Agreeableness / high Openness)",
+              "reference": "Costa & McCrae Five-Factor Model (OCEAN); applied to agents in 'Personality Traits in Large Language Models' (Serapio-García et al., 2023)",
+              "justification": "The dominant psychometric backbone for parameterizing persona as continuous trait dimensions rather than discrete archetypes — shows the dimension is also expressible as open continuous values."
+            }
+          ],
+          "confidence": 0.72,
+          "evidenceNeeded": "Confirmation of which framing the cataloging effort treats as authoritative for 'persona': the discrete archetype backbone (Jung/Mark-Pearson 12) vs. continuous trait psychometrics (Big Five/HEXACO) vs. role-label conventions in conversational-AI design (e.g., persona-chat datasets). Evidence that no single closed enum is treated as exhaustive in the AI-agent literature (persona is routinely free-text system-prompt specification) would confirm the 'hybrid' classification: a recognized archetype backbone with unbounded free extension."
+        }
+      },
+      "provenance": {
+        "A": {
+          "round": "A",
+          "organ": "provenance",
+          "openOrClosed": "open",
+          "values": [
+            {
+              "name": "Base model / foundation model identity",
+              "reference": "Model cards (Mitchell et al., 2019, FAccT) and the foundation-model framing (Bommasani et al., Stanford CRFM, 2021)",
+              "justification": "The most basic provenance fact for any LLM agent is which pretrained base it descends from (e.g. a named foundation model + version); model cards canonicalize recording this lineage."
+            },
+            {
+              "name": "Fine-tune / adaptation lineage (parent checkpoint)",
+              "reference": "Transfer-learning and PEFT literature (Howard & Ruder ULMFiT 2018; Hu et al. LoRA 2021); Hugging Face Hub 'base_model' / 'finetuned_from' metadata convention",
+              "justification": "An agent often descends from a parent checkpoint via fine-tuning/LoRA/distillation; the parent-pointer is a recognized, recorded provenance link forming a derivation chain."
+            },
+            {
+              "name": "Training-data provenance / dataset lineage",
+              "reference": "Datasheets for Datasets (Gebru et al., 2018) and Data Provenance Initiative (Longpre et al., 2023)",
+              "justification": "Lineage of what corpora the agent was trained on is a standardized provenance axis in responsible-ML documentation, distinct from model-weight ancestry."
+            },
+            {
+              "name": "Template / archetype-instance derivation",
+              "reference": "Software design-pattern lineage (prototype/clone patterns, GoF 1994) and class-instance inheritance in OOP",
+              "justification": "At the configuration level an agent can be marked as derived-from a template, persona archetype, or another agent definition (a 'forked from' / 'instance-of' relation), the engineering sense of descent."
+            },
+            {
+              "name": "W3C PROV provenance record (wasDerivedFrom)",
+              "reference": "W3C PROV-DM / PROV-O Recommendation (2013)",
+              "justification": "The interoperable standard for expressing 'what an entity was derived from' (wasDerivedFrom, wasGeneratedBy, wasAttributedTo) — the generic, domain-agnostic schema any agent-lineage claim can be encoded in."
+            },
+            {
+              "name": "Authorship / vendor & creator attribution",
+              "reference": "Model cards 'developed by' field; SPDX / supply-chain provenance (SLSA framework, OpenSSF)",
+              "justification": "Origin marking includes who/what organization produced the agent — a recognized supply-chain provenance attribute (creator, publisher, build origin)."
+            }
+          ],
+          "confidence": 0.82,
+          "evidenceNeeded": "Whether any single field has standardized a FINITE enumerable vocabulary specifically for 'provenance type' (rather than free-form derivation graphs). W3C PROV, model cards, and the Data Provenance Initiative all treat provenance as relations over arbitrary entities (open/graph-structured), not as a closed enum — so closing this would require a recognized taxonomy that fixes a fixed list of lineage-kinds. Surveying agent-framework metadata schemas (e.g. agent cards, MCP, model registries) for a constrained lineage enum would confirm or refute the 'open' classification."
+        },
+        "B": {
+          "round": "B",
+          "organ": "provenance",
+          "openOrClosed": "open",
+          "values": [
+            {
+              "name": "Base/foundation model lineage (derived-from)",
+              "reference": "Model Cards (Mitchell et al., 2019); Hugging Face base_model / model-index metadata; Llama/Mistral derivative-naming conventions",
+              "justification": "The dominant real-world provenance marking for agents: which foundation model (and fine-tune chain) the agent descends from — a free-form pointer, not a closed enum."
+            },
+            {
+              "name": "Training-data provenance",
+              "reference": "W3C PROV-O (prov:wasDerivedFrom / prov:wasGeneratedBy, 2013); Datasheets for Datasets (Gebru et al., 2018); Data Provenance Initiative (2023)",
+              "justification": "Standard lineage axis recording which corpora/sources the agent's behavior descends from; PROV gives a vocabulary but the value space (datasets) is unbounded."
+            },
+            {
+              "name": "Software supply-chain provenance",
+              "reference": "SLSA framework (provenance attestations); in-toto; CycloneDX/SPDX SBOM (NTIA)",
+              "justification": "Engineering-standard origin marking of the build artifact and its dependency lineage — canonical practice for 'what this descends from' at the package level, but values are arbitrary identifiers."
+            },
+            {
+              "name": "Forked/templated agent ancestry (parent agent or template)",
+              "reference": "Git/VCS lineage (commit ancestry, fork graph); agent-framework templates (e.g. archetype/base-agent inheritance)",
+              "justification": "Agents are commonly instantiated by cloning a parent or template; the 'descends-from' link is a free pointer into a DAG, illustrating the open shape."
+            },
+            {
+              "name": "Archetypal descent (brand/character lineage)",
+              "reference": "Jung's archetypes via Mark & Pearson, 'The Hero and the Outlaw' (2001) brand-archetype framework",
+              "justification": "For persona/brand-shaped agents, provenance can mark descent from an archetype family — a recognized typology, but used here as one open source among many, not a closed enum for provenance itself."
+            },
+            {
+              "name": "Authorship/origin attribution (creator, organization, license)",
+              "reference": "W3C PROV (prov:wasAttributedTo / prov:Agent); Creative Commons & SPDX license identifiers; model-card 'Developed by'",
+              "justification": "The 'who made it / under what terms' facet of lineage; standardized attribution vocabularies exist but the attributed entities are an open set."
+            }
+          ],
+          "confidence": 0.82,
+          "evidenceNeeded": "A single authoritative taxonomy that enumerates a finite, named set of provenance *kinds* for agents (rather than vocabularies like PROV/SLSA that supply relations but leave the value space open). If such an enum existed in MLOps governance or an agent-architecture standard, this would shift toward hybrid; absent that, the open classification holds. Also helpful: evidence of whether the question intends provenance as discrete categorical *modes* (e.g., scratch-built vs. fine-tuned vs. forked vs. archetype-descended) versus free-form lineage pointers — the former could support a hybrid backbone."
+        }
+      },
+      "register-fit": {
+        "A": {
+          "round": "A",
+          "organ": "register-fit",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Field (subject-matter / domain register)",
+              "reference": "Halliday's register theory — the three register variables (field, tenor, mode), Systemic Functional Linguistics (Halliday & Hasan 1985, Language, Context, and Text)",
+              "justification": "Field is one of the three canonical context-of-situation variables governing how language varies by what is being talked about (technical vs. lay vocabulary, domain specificity)."
+            },
+            {
+              "name": "Tenor (relationship / formality between participants)",
+              "reference": "Halliday's register theory (field/tenor/mode); SFL",
+              "justification": "Tenor is the canonical variable capturing the social relationship and formality/power/solidarity between speaker and addressee — the core of audience-relative tuning."
+            },
+            {
+              "name": "Mode (channel / textual organization)",
+              "reference": "Halliday's register theory (field/tenor/mode); SFL",
+              "justification": "Mode is the canonical variable for the role language plays (spoken vs. written, planned vs. spontaneous, channel constraints) — load-bearing for medium-specific fit."
+            },
+            {
+              "name": "Formality continuum (frozen / formal / consultative / casual / intimate)",
+              "reference": "Martin Joos, The Five Clocks (1961) — the five 'styles' of English",
+              "justification": "Joos's five registers are the most widely cited closed enumeration of formality levels, a recognized backbone for register-as-formality."
+            },
+            {
+              "name": "Audience design / recipient design",
+              "reference": "Allan Bell, 'Language Style as Audience Design' (Language in Society, 1984); Sacks/Schegloff recipient design in CA",
+              "justification": "Names the mechanism by which a speaker tunes style to the present addressee/auditors/overhearers — the in-the-moment audience-relative half of the dimension."
+            },
+            {
+              "name": "Accommodation (convergence / divergence)",
+              "reference": "Communication Accommodation Theory — Giles et al. (Howard Giles, 1973 onward)",
+              "justification": "CAT supplies the canonical moves (converge toward, diverge from, maintain relative to the interlocutor) — the dynamic, moment-to-moment adjustment strategies."
+            }
+          ],
+          "confidence": 0.72,
+          "evidenceNeeded": "Whether the field treats register as a fixed enum vs. a parameter space is the crux. Confidence would rise with: (a) a survey establishing whether Halliday's field/tenor/mode is universally accepted as THE backbone vs. competing frameworks (Biber's multidimensional analysis treats register as continuous dimensions derived empirically, which pushes toward 'open'); (b) evidence on how HCI/conversational-AI literature operationalizes register adaptation (style transfer, persona conditioning) — whether they adopt a closed taxonomy or free-form style vectors; (c) clarification of whether 'register-fit' here means the variable set (closed: 3 Hallidayan variables), the formality levels (closed: Joos's 5), or the adaptation strategy (CAT's converge/diverge) — these resolve to different answers."
+        },
+        "B": {
+          "round": "B",
+          "organ": "register-fit",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Field (subject matter / domain of discourse)",
+              "reference": "Halliday's register theory / Systemic Functional Linguistics (Halliday & Hasan, 1985, 'Language, Context, and Text')",
+              "justification": "One of the three canonical register variables: what the language is about, governing technicality and lexical density — a recognized backbone dimension along which any utterance can be tuned."
+            },
+            {
+              "name": "Tenor (relationship / power & solidarity between participants)",
+              "reference": "Halliday's register theory / SFL (Halliday & Hasan, 1985); roots in Brown & Gilman (1960) power/solidarity",
+              "justification": "Second canonical register variable: the social distance, status differential, and affect toward the reader — directly the 'audience' axis of register-fit."
+            },
+            {
+              "name": "Mode (channel / textual organization)",
+              "reference": "Halliday's register theory / SFL (Halliday & Hasan, 1985)",
+              "justification": "Third canonical register variable: spoken vs. written, planned vs. spontaneous, role of language — the medium-fit component of register."
+            },
+            {
+              "name": "Formality (frozen / formal / consultative / casual / intimate)",
+              "reference": "Martin Joos, 'The Five Clocks' (1961) — the five styles",
+              "justification": "The most widely cited closed scale of stylistic register; an enumerable backbone for the formality slider specifically."
+            },
+            {
+              "name": "Audience design / recipient design (addressee, auditor, overhearer, eavesdropper)",
+              "reference": "Allan Bell, 'Language Style as Audience Design' (1984); conversation-analytic 'recipient design' (Sacks, Schegloff & Jefferson, 1974)",
+              "justification": "Canonical model of how speakers shift style by who is in the audience frame — the dynamic 'in the moment' tuning mechanism."
+            },
+            {
+              "name": "Accommodation (convergence / divergence / maintenance)",
+              "reference": "Communication Accommodation Theory (Giles et al., 1973 onward)",
+              "justification": "Names the canonical moves an agent makes to adjust toward or away from the reader's style — the operational verbs of register-fit."
+            }
+          ],
+          "confidence": 0.78,
+          "evidenceNeeded": "Whether the AI-agent/HCI literature has converged on a single named scheme for \"register adaptation\" (it largely borrows sociolinguistics ad hoc). Confirmation of whether to treat this as one slider (formality, Joos's closed 5) or the multi-axis backbone (Halliday's field/tenor/mode), which determines closed-vs-hybrid. Also whether persona/style-control work in NLG (e.g., style-transfer attribute sets) supplies a competing canonical enumeration. The classification is 'hybrid' because the field gives a recognized backbone (the three register variables; Joos's formality scale) but the concrete realizations per audience are open and unbounded."
+        }
+      },
+      "resolve": {
+        "A": {
+          "round": "A",
+          "organ": "resolve",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Optimizing (maximizing)",
+              "reference": "Simon, H. (1955/1956) bounded rationality; classical statistical decision theory (von Neumann–Morgenstern expected-utility maximization)",
+              "justification": "The canonical baseline: defer commitment until the option with the highest evaluated utility is identified; the normative pole every other commitment style is defined against."
+            },
+            {
+              "name": "Satisficing",
+              "reference": "Herbert Simon, 'A Behavioral Model of Rational Choice' (1955) — bounded rationality",
+              "justification": "The single most-cited alternative commitment rule: stop deliberating and commit to the first option that clears an aspiration/'good enough' threshold; a foundational, named member."
+            },
+            {
+              "name": "Recognition-Primed Decision (intuitive commitment)",
+              "reference": "Gary Klein, RPD model / Naturalistic Decision Making (1989, 'Sources of Power' 1998)",
+              "justification": "Field-standard account of expert single-option commitment: recognize a situation, mentally simulate one workable course of action, and commit without comparative search."
+            },
+            {
+              "name": "Elimination by Aspects (heuristic narrowing)",
+              "reference": "Amos Tversky, 'Elimination by Aspects: A Theory of Choice' (1972)",
+              "justification": "A canonical bounded-rationality commitment strategy: sequentially eliminate options failing salient attributes until one remains; established heuristic-decision member."
+            },
+            {
+              "name": "Evidence-accumulation to threshold (drift-diffusion / sequential sampling)",
+              "reference": "Ratcliff diffusion decision model (1978); Wald, Sequential Analysis / SPRT (1947)",
+              "justification": "The dominant process-level model of when commitment happens: accumulate evidence until a decision boundary is crossed; boundary height tunes speed–accuracy / caution, a direct 'how decisively' knob."
+            },
+            {
+              "name": "Deferral / option-keeping (reversible, real-options commitment)",
+              "reference": "Real Options theory (Dixit & Pindyck, 1994); status-quo/omission bias (Samuelson & Zeckhauser, 1988)",
+              "justification": "Recognized commitment style of deliberately not committing — keeping choices open under uncertainty to preserve future flexibility; the explicit low-resolve pole."
+            }
+          ],
+          "confidence": 0.62,
+          "evidenceNeeded": "A single authoritative taxonomy that enumerates 'decision-commitment styles' as a closed set under one name would settle this. The field has a strong, well-named BACKBONE (optimizing vs. satisficing vs. recognition-primed vs. heuristic-narrowing vs. threshold-accumulation vs. deferral), but these come from distinct literatures (bounded rationality, NDM, mathematical psychology, real-options) rather than one canonical enum — hence 'hybrid'. Confirmation would come from a decision-science review article or HCI/automation handbook that consolidates these into one labeled dimension of commitment style, or evidence that a specific agent-architecture standard (e.g., BDI 'commitment strategies': blind/single-minded/open-minded commitment, Rao & Georgeff 1991) is the intended frame — which would shift the canonical members toward that 3-way intention-persistence taxonomy."
+        },
+        "B": {
+          "round": "B",
+          "organ": "resolve",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Maximizing",
+              "reference": "Simon (1956) bounded rationality; Schwartz et al. (2002), 'Maximizing Versus Satisficing'",
+              "justification": "Canonical decision-commitment style: defer commitment until the best option is identified across the option set — the optimization pole of the classic maximize/satisfice contrast."
+            },
+            {
+              "name": "Satisficing",
+              "reference": "Herbert Simon (1956), 'Rational Choice and the Structure of the Environment'",
+              "justification": "The foundational alternative to maximizing: commit to the first option crossing an aspiration threshold — the most cited decision-stopping rule in bounded-rationality theory."
+            },
+            {
+              "name": "Take-the-best / fast-and-frugal heuristic",
+              "reference": "Gigerenzer & Goldstein (1996); Gigerenzer & Todd, 'Simple Heuristics That Make Us Smart' (1999)",
+              "justification": "A recognized one-reason decision rule: stop deliberation and commit on the first discriminating cue — a distinct, well-provenanced commitment style."
+            },
+            {
+              "name": "Vigilant decision-making",
+              "reference": "Janis & Mann (1977), 'Decision Making: A Psychological Analysis of Conflict, Choice, and Commitment'; Mann et al. (1997) Melbourne Decision Making Questionnaire",
+              "justification": "Backbone coping pattern: thorough canvassing then deliberate commitment — the adaptive pole of an empirically validated decision-style instrument."
+            },
+            {
+              "name": "Defensive avoidance / Procrastination",
+              "reference": "Janis & Mann (1977) conflict-theory model; Melbourne DMQ subscales",
+              "justification": "Validated maladaptive commitment styles (buck-passing, procrastinating, rationalizing) — the chronic deferral pole opposite vigilance."
+            },
+            {
+              "name": "Hypervigilance (panic/impulsive commitment)",
+              "reference": "Janis & Mann (1977); Mann et al. (1997)",
+              "justification": "Premature, time-pressured seizing of an option without full deliberation — the snap-decision pole on the same validated taxonomy."
+            },
+            {
+              "name": "Action vs. State orientation",
+              "reference": "Kuhl (1985, 1994), Action Control Theory",
+              "justification": "Dispositional commitment construct: action-oriented individuals readily disengage deliberation and enact a choice; state-oriented ruminate and stall — a measured personality axis of decision-commitment."
+            }
+          ],
+          "confidence": 0.6,
+          "evidenceNeeded": "A single authoritative cross-field taxonomy that explicitly enumerates 'decision-commitment styles' as a closed set would settle whether this is closed rather than hybrid. The literatures (Simon's maximize/satisfice, Gigerenzer's heuristics, Janis-Mann conflict theory, Scott & Bruce's General Decision-Making Style inventory, Kuhl's action/state orientation) each offer partial, well-validated backbones but no field has unified them into one canonical enum; confirmation from a decision-science review consolidating these, or evidence that the General Decision-Making Style (rational/intuitive/dependent/avoidant/spontaneous) instrument is treated as THE standard, would shift the classification."
+        }
+      },
+      "sensors": {
+        "A": {
+          "round": "A",
+          "organ": "sensors",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Text / language input",
+              "reference": "Russell & Norvig, AIMA (PEAS/percept framework); the dominant modality for LLM agents (GPT-4, Claude). Multimodal taxonomies (e.g. Baltrušaitis et al., 'Multimodal Machine Learning: A Survey', TPAMI 2019) treat language as a core modality.",
+              "justification": "The primary percept channel for current language-model agents; tokenized natural-language and structured text is the canonical default input."
+            },
+            {
+              "name": "Visual / image input",
+              "reference": "Computer vision literature; multimodal model surveys (Baltrušaitis 2019); vision-language models (CLIP, GPT-4V, Gemini).",
+              "justification": "Vision is a canonical perceptual modality across cognitive science and ML; image-in is a first-class sensor for VLM agents."
+            },
+            {
+              "name": "Audio / speech input",
+              "reference": "Speech recognition (ASR) literature; multimodal surveys; Whisper, audio-LM systems.",
+              "justification": "Hearing/audio is a canonical sensory channel; speech and ambient-sound input is a recognized agent modality."
+            },
+            {
+              "name": "Video / spatiotemporal input",
+              "reference": "Video understanding literature; multimodal model surveys (vision+temporal); embodied-AI benchmarks.",
+              "justification": "Time-extended visual perception is treated as its own modality (motion, events) distinct from still images."
+            },
+            {
+              "name": "Proprioceptive / embodied & sensorimotor state",
+              "reference": "Robotics and embodied-cognition literature (Brooks subsumption; embodied AI / RL state observations); AIMA agent–environment percept loop.",
+              "justification": "For embodied/robotic agents, internal-body and physical-environment sensors (force, position, depth, lidar) are a canonical perceptual class."
+            },
+            {
+              "name": "Structured / digital tool & API observations (incl. GUI/screen state)",
+              "reference": "Tool-use and agent frameworks (ReAct, Yao et al. 2022; Toolformer; computer-use agents); HCI human-automation interaction literature.",
+              "justification": "Software agents perceive via tool returns, file/DB reads, sensor APIs, and screen-scrapes — a recognized 'percept' channel in agent architectures even if not a human sense."
+            }
+          ],
+          "confidence": 0.62,
+          "evidenceNeeded": "A single authoritative, citable taxonomy that fixes the exact membership and granularity of agent input modalities (e.g., whether 'video' is separate from 'image', whether 'sensor/API' counts as a modality). The multimodal-ML surveys give a recognized backbone (text/vision/audio + others) but draw boundaries differently, and embodied-robotics sensor lists are open-ended (any transducer), which is why this is hybrid rather than strictly closed. Cross-referencing AIMA's percept framework, Baltrušaitis et al. (2019), and a current multimodal-foundation-model survey would sharpen both membership and the open/closed call."
+        },
+        "B": {
+          "round": "B",
+          "organ": "sensors",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Visual / image input",
+              "reference": "Cognitive science sensory-modality taxonomy (vision); multimodal ML literature (CLIP, GPT-4V, Gemini) — \"image\" as a standard input modality",
+              "justification": "Human vision is one of the canonical exteroceptive senses, and \"image\" is the most established non-text input channel for AI agents (vision encoders, VLMs)."
+            },
+            {
+              "name": "Auditory / audio input",
+              "reference": "Sensory-modality taxonomy (audition); speech/ASR and audio-ML literature (Whisper, audio transformers)",
+              "justification": "Hearing is a canonical sense; audio (speech + non-speech) is a recognized first-class input modality in multimodal agent stacks."
+            },
+            {
+              "name": "Textual / linguistic input",
+              "reference": "NLP / HCI; the dominant modality for LLM agents (token streams, prompts, documents)",
+              "justification": "Text is the backbone perceptual channel for language-model agents; though not a biological sense, it is the field-standard primary input modality."
+            },
+            {
+              "name": "Tactile / haptic & force input",
+              "reference": "Sensory-modality taxonomy (somatosensation/touch); robotics sensing (force-torque, tactile arrays)",
+              "justification": "Touch/proprioception is a canonical human sense and a standard robot-agent sensor class for contact-rich manipulation."
+            },
+            {
+              "name": "Spatial / depth & motion (LiDAR, proprioception, IMU)",
+              "reference": "Robotics & autonomous-systems sensing taxonomy; cognitive science proprioception/vestibular sense",
+              "justification": "Embodied agents canonically perceive geometry and self-motion (depth cameras, LiDAR, encoders, IMUs) — the vestibular/proprioceptive analogue."
+            },
+            {
+              "name": "Symbolic / API & environment-state observations",
+              "reference": "RL & agent-architecture literature (the \"observation\" in the perceive→decide→act loop; gym observation spaces; tool/API returns)",
+              "justification": "For software agents the dominant 'sensor' is structured environment state (API responses, tool outputs, DOM, logs) — the field-standard observation channel beyond biological senses."
+            }
+          ],
+          "confidence": 0.72,
+          "evidenceNeeded": "Whether the catalog intends biological/perceptual modalities (cognitive science: the classic five senses plus proprioception/interoception/vestibular — a closed list) or computational input channels for software/robotic agents (open and ever-growing: any data stream, API, or instrument). The classification hinges on that scoping decision. A canonical multimodal-AI taxonomy paper or a robotics sensor ontology (e.g., a sensor-fusion survey) defining a fixed enumeration would push this toward 'closed'; the de facto practice of agents ingesting arbitrary structured data streams pushes toward 'open' — hence the hybrid call."
+        }
+      },
+      "substrate": {
+        "A": {
+          "round": "A",
+          "organ": "substrate",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Frontier hosted LLM (proprietary API model)",
+              "reference": "Stanford HELM / HAI AI Index taxonomy of foundation models; provider model catalogs (OpenAI GPT-4/4o/o-series, Anthropic Claude, Google Gemini)",
+              "justification": "The dominant agent substrate today is a closed-weights model accessed via a hosted inference API; this is the canonical default class in nearly every agent framework (LangChain, AutoGPT, OpenAI Assistants)."
+            },
+            {
+              "name": "Open-weights LLM (self-hostable model)",
+              "reference": "Foundation model literature; Meta Llama, Mistral, Qwen, DeepSeek, Falcon model releases; HuggingFace model hub taxonomy",
+              "justification": "A recognized first-class substrate class — models whose weights are downloadable and runnable on owned hardware, the standard alternative to hosted APIs in agent deployment."
+            },
+            {
+              "name": "Local inference runtime (on-device / edge serving)",
+              "reference": "Inference-serving ecosystem: Ollama, llama.cpp, vLLM, TGI (Text Generation Inference), GGUF format",
+              "justification": "The runtime axis of 'substrate' — where/how the model executes (local vs cloud) is an established configuration distinction orthogonal to which model, recognized across the serving-stack literature."
+            },
+            {
+              "name": "Hosted inference platform / model-serving cloud",
+              "reference": "Amazon Bedrock, Azure OpenAI Service, Google Vertex AI, Together/Fireworks/Groq inference providers",
+              "justification": "A canonical runtime substrate: the managed cloud that serves a model behind an endpoint, distinct from the model family itself and routinely specified in agent configs."
+            },
+            {
+              "name": "Small / specialized model (SLM, distilled or fine-tuned)",
+              "reference": "SLM literature (e.g., Phi series, Gemma); distillation and PEFT/LoRA fine-tuning research",
+              "justification": "Recognized substrate class for cost/latency-constrained agents — smaller or task-specialized models are a standard configuration choice in multi-agent and routing architectures."
+            },
+            {
+              "name": "Non-LLM / classical agent core",
+              "reference": "Russell & Norvig, AIMA — agent architectures (reflex, utility-based, learning agents); symbolic planners (PDDL/STRIPS), RL policies",
+              "justification": "Historically the agent 'substrate' need not be an LLM at all; the field's broader taxonomy includes symbolic, planning, and RL policy cores, so the backbone extends beyond neural language models."
+            }
+          ],
+          "confidence": 0.78,
+          "evidenceNeeded": "A widely-adopted standard taxonomy that explicitly names \"substrate\" as an agent-configuration axis with a fixed value set (none exists today; model catalogs and serving-stack docs supply only an open, ever-growing list). Survey papers on agent architectures that formally separate the model axis from the runtime/serving axis would firm up whether the canonical backbone is provider-family, weights-openness, or serving-mode."
+        },
+        "B": {
+          "round": "B",
+          "organ": "substrate",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Frontier / proprietary API model (closed-weight, hosted)",
+              "reference": "Stanford CRFM / HELM and the Foundation Model Transparency Index (Bommasani et al., 2023–2024); provider model cards (OpenAI GPT, Anthropic Claude, Google Gemini)",
+              "justification": "The dominant recognized substrate class for agents: a closed-weight foundation model accessed over a provider inference API — the canonical default backbone in production agent stacks."
+            },
+            {
+              "name": "Open-weight model (self-hostable foundation model)",
+              "reference": "Llama (Meta, Touvron et al. 2023), Mistral/Mixtral, Qwen, DeepSeek; the 'open-weight' vs 'closed' distinction is standard in HELM / FMTI taxonomy",
+              "justification": "Recognized field-standard counterpart to proprietary API models — weights are released, so the same agent can run on a fundamentally different (locally controllable) substrate."
+            },
+            {
+              "name": "Local / on-device runtime",
+              "reference": "llama.cpp, Ollama, GGUF quantization ecosystem; MLC-LLM; the 'edge/on-device inference' category in systems-ML literature",
+              "justification": "A distinct substrate class defined by where/how the model executes (consumer hardware, quantized, offline) rather than which model — a widely used backbone category."
+            },
+            {
+              "name": "Managed inference / serving runtime (cloud)",
+              "reference": "vLLM (Kwon et al., SOSP 2023), TensorRT-LLM, Amazon Bedrock, Azure AI, Google Vertex, Together/Fireworks",
+              "justification": "The serving-engine layer is a recognized substrate axis: the same weights run on different runtimes with different latency/throughput/cost characteristics."
+            },
+            {
+              "name": "Model size / capability tier",
+              "reference": "Scaling-laws literature (Kaplan et al. 2020; Hoffmann/Chinchilla 2022); provider tiering (Opus/Sonnet/Haiku, GPT-4o/mini)",
+              "justification": "A canonical sub-axis of substrate — agents are routinely configured by capability tier (large reasoning model vs small fast model), an established trade-off dimension."
+            },
+            {
+              "name": "Specific model ID / version (free-extension leaf)",
+              "reference": "Provider model registries and Hugging Face Hub model identifiers (e.g., claude-opus, gpt-4o, llama-3.1-70b)",
+              "justification": "Demonstrates the open tail: the concrete substrate value is an unbounded, continually-growing namespace of versioned model identifiers with no closed enum."
+            }
+          ],
+          "confidence": 0.82,
+          "evidenceNeeded": "A widely-adopted standards body taxonomy for 'agent substrate' (none currently exists comparable to SAE J3016 for autonomy). Confidence would rise with a cited canonical categorization of inference substrates from HELM/FMTI or an MLSys survey that explicitly enumerates substrate classes, vs. the current situation where the backbone categories (proprietary-API / open-weight / on-device / managed-serving / capability-tier) are conventional but the leaf (specific model versions) is provably open and unbounded."
+        }
+      },
+      "telos": {
+        "A": {
+          "round": "A",
+          "organ": "telos",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "Goal-based / utility-maximizing agent (the formal locus of telos)",
+              "reference": "Russell & Norvig, Artificial Intelligence: A Modern Approach — agent taxonomy (simple reflex / model-based / goal-based / utility-based / learning)",
+              "justification": "AI's canonical statement that an agent has an ultimate end is the goal-based and utility-based agent; but the goal/utility CONTENT is application-supplied, which is exactly why telos is open at the content level."
+            },
+            {
+              "name": "Self-transcendence vs. self-enhancement / openness vs. conservation (value poles)",
+              "reference": "Schwartz Theory of Basic Human Values (10 values on a circumplex: self-direction, stimulation, hedonism, achievement, power, security, conformity, tradition, benevolence, universalism)",
+              "justification": "The most empirically validated, cross-culturally replicated finite taxonomy of ultimate human motivational ends — a recognized backbone for what a human-aligned agent is 'driven toward'."
+            },
+            {
+              "name": "Archetypal core desire (e.g., Hero=mastery, Caregiver=service, Explorer=freedom, Sage=truth, Creator=creation, Ruler=control)",
+              "reference": "Jungian archetype theory as operationalized by Mark & Pearson, The Hero and the Outlaw (12 brand archetypes, each defined by a single core desire/goal)",
+              "justification": "A widely-used finite taxonomy in brand/persona design that maps one ultimate drive per archetype — directly a telos enumeration, but one competing lens among several."
+            },
+            {
+              "name": "Autonomy / competence / relatedness (intrinsic goal triad)",
+              "reference": "Deci & Ryan, Self-Determination Theory",
+              "justification": "Canonical psychology account of the basic intrinsic ends organisms are driven toward; offers a small finite backbone but is a different partition than Schwartz or archetypes."
+            },
+            {
+              "name": "Basic human needs as drivers (achievement, affiliation, power)",
+              "reference": "McClelland, Human Motivation (acquired-needs theory); cf. Reiss 16 basic desires",
+              "justification": "Another recognized finite enumeration of ultimate drives; its coexistence with SDT, Schwartz, and Reiss shows there is no single authoritative enum — hence hybrid, not closed."
+            },
+            {
+              "name": "Application-specified objective (free extension)",
+              "reference": "AI agent practice — objective functions / mission statements / system-prompt 'your purpose is…' (no standard taxonomy)",
+              "justification": "In deployed agents the telos is most often a bespoke, free-form objective (e.g., 'maximize customer resolution', 'minimize latency'), demonstrating the open tail beyond any psychological backbone."
+            }
+          ],
+          "confidence": 0.72,
+          "evidenceNeeded": "Evidence that any ONE taxonomy is treated as authoritative for AGENT telos specifically (not human motivation by analogy) would shift this toward closed; conversely, a survey of agent system-prompt 'purpose' fields showing no convergence would confirm the open tail. Key uncertainty: whether the field wants telos as a content enum at all, or only as the abstract structural property (goal-/utility-based agent) with content left free — the latter favors a cleaner 'open' classification with the psychological taxonomies as optional scaffolds."
+        },
+        "B": {
+          "round": "B",
+          "organ": "telos",
+          "openOrClosed": "hybrid",
+          "values": [
+            {
+              "name": "The Hero (drive: mastery / prove worth through courageous action)",
+              "reference": "Jungian brand archetypes — Mark & Pearson, The Hero and the Outlaw (2001); the 12-archetype system",
+              "justification": "In the most widely-used finite taxonomy of motivational identity, the Hero is the canonical archetype whose defining telos is mastery and proving worth — a recognized member of a closed 12-set."
+            },
+            {
+              "name": "The Caregiver (drive: protect and care for others)",
+              "reference": "Jungian brand archetypes — Mark & Pearson (2001), 12-archetype model",
+              "justification": "Canonical archetype whose ultimate purpose is altruistic protection; one of the four 'belonging/service' archetypes in the standard wheel."
+            },
+            {
+              "name": "The Sage / Explorer (drive: understand the world / seek truth and freedom)",
+              "reference": "Jungian brand archetypes — Mark & Pearson (2001)",
+              "justification": "The Sage (truth, knowledge) and Explorer (freedom, discovery) are canonical members capturing the epistemic/autonomy telos most relevant to assistant agents."
+            },
+            {
+              "name": "Autonomy / Competence / Relatedness (the three intrinsic ends)",
+              "reference": "Self-Determination Theory — Deci & Ryan (1985, 2000)",
+              "justification": "SDT names a small, recognized backbone of intrinsic psychological needs that function as ultimate motivational ends — a finite, empirically grounded telos set."
+            },
+            {
+              "name": "Basic desires (e.g. Power, Curiosity, Order, Acceptance, Idealism)",
+              "reference": "Reiss's 16 Basic Desires — Steven Reiss (Who Am I?, 2000)",
+              "justification": "An empirically factor-derived finite taxonomy of intrinsic human motivators, each an 'ultimate end pursued for its own sake' — directly a closed enumeration of teloi."
+            },
+            {
+              "name": "Free-form goal / utility function (open extension)",
+              "reference": "AI agent architecture — Russell & Norvig (AIMA): goal-based and utility-based agents; BDI (Rao & Georgeff, 1995)",
+              "justification": "In the agent-engineering literature itself, telos is the agent's desire set / performance measure — arbitrary content, not drawn from any enum; this is the open arm that makes the dimension hybrid rather than closed."
+            }
+          ],
+          "confidence": 0.62,
+          "evidenceNeeded": "Whether the cataloging effort intends 'telos' as (a) a motivational-identity slot, in which case the Mark & Pearson 12-archetype wheel is the strongest closed backbone, or (b) a literal goal/objective slot, in which case AIMA/BDI treat it as fully open. Confirmation of which discipline is authoritative for this organ, plus whether any single framework (archetypes vs. SDT vs. Reiss) is being adopted as the canonical backbone, would sharpen the closed/hybrid call and let the value list collapse to one provenance."
+        }
+      }
+    }
+  }
+}

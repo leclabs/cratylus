@@ -13,3 +13,7 @@ not). Cross-check against the existing catalog ONLY at adjudication time (never 
 
 acc ⊨ a complete table `organ → {open|closed, canonical-enum?, reference}` with high confidence; the open-set
 (input to T4) and the closed-set (input to T5) named. Audit/decision only — no cell writes yet.
+
+## Outcome (done 2026-06-23)
+
+See `decisions/0001-organ-classification.md`. 48 blind agents, 2 consistent rounds; raw in `decisions/audit-raw-r1r2.json`. 10 organs CLOSED, 14 OPEN; confidence high (no extra probe needed).
