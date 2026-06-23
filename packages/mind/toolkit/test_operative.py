@@ -30,7 +30,7 @@ trigger: /zz-operative-fixture
 
 # Operative Fixture Skill
 
-zz-operative-fixture ≜ references [[mece]]
+zz-operative-fixture ≜ references [[signify]]
 
 ## What it helps with
 """

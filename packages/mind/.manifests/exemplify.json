@@ -1,0 +1,29 @@
+{
+  "source": "skill/exemplify.md",
+  "exemplified_at": "2026-06-22T00:00:00Z",
+  "reader": "strong-llm-lean",
+  "routes": [
+    {
+      "fragment_digest": "sha256:cc45f8db1ac757bc4cb5e38513f43fe40ac897f4fdc689525b3fd37de8cd444a",
+      "idea_gloss": "use this skill to conceptualize a corpus — read a multi-modal source and resolve it to the reader's concept lattice (the closed distinction-sets `C_R`, which of them are primitive, each primitive's gloss, and each concept's candidate factorizations), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.",
+      "home_slug": "conceptualize",
+      "disposition": "reuse",
+      "rank": 0
+    },
+    {
+      "fragment_digest": "sha256:6e98ef9cce9cda159ee93299f941c5f3d1aba99062f4971a42cfaea77bbb6154",
+      "idea_gloss": "use this skill to name a concept set — assign each concept its injective canonical anchor `α(c) = σ*_R(c)` (the reader-relative fittest sign, whose latent priors circumscribe exactly it; one name ⇔ one concept), then coalesce concepts that resolve to the same anchor; emits the shortlex order `≺` and the decoder `dec_R`; stage 2 of exemplify, independently invocable (every naming review is a bare /signify).",
+      "home_slug": "signify",
+      "disposition": "reuse",
+      "rank": 1
+    },
+    {
+      "fragment_digest": "sha256:87ccfc656390849252afb1fd55f655b252734450c69e5d4330a9bbf3dda62e64",
+      "idea_gloss": "use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization `F_R`, emit the bipartite normal form `CSF_R` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.",
+      "home_slug": "materialize",
+      "disposition": "reuse",
+      "rank": 2
+    }
+  ],
+  "delta": []
+}

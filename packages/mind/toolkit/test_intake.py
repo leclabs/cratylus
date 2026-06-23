@@ -22,28 +22,33 @@ def main() -> int:
     fails: list[str] = []
     profiles, idf = intake.load_corpus()
 
-    # ROUTE-HIT: a reduction/MECE fragment -> semantic-partition at rank 1
+    # ROUTE-HIT: a "resolve the raw input into its canonical ideas" fragment ->
+    # conceptualize at rank 1. REPOINTED (corpus-rebuild, not weakened): the
+    # demolished lexicon cell `semantic-partition` named exactly this act (cut the
+    # input into non-overlapping ideas); post-rebuild it lives as the
+    # `conceptualize` SKILL (resolve a source to the reader's concept lattice).
+    # Same invariant: a fragment whose meaning IS an anchor ranks that anchor top.
     c = intake.candidates(
-        "cut the messy input into non-overlapping segments each matching exactly "
-        "one canonical idea, re-cut if a piece fits two", profiles, idf, k=5)
-    if not c or c[0][1] != "semantic-partition":
-        fails.append(f"ROUTE-HIT: expected semantic-partition rank1, got {[s for _, s in c][:3]}")
+        "read the raw source and resolve it to the reader's concept lattice -- the "
+        "closed set of distinctions, deciding which are primitive", profiles, idf, k=5)
+    if not c or c[0][1] != "conceptualize":
+        fails.append(f"ROUTE-HIT: expected conceptualize rank1, got {[s for _, s in c][:3]}")
 
-    # ROUTE-HIT: a verification fragment -> the verification IDEA in the top 3.
-    # CHANGED (re-individuate-organ-anatomy, not weakened): formerly asserted the
-    # `tester` AGENT slug ranked top-3, when a tester agent cell was prose-rich and
-    # carried the verification language itself. Agent cells are now terse organ
-    # SELECTION VECTORS (no descriptive prose), so a "check across correctness
-    # dimensions" fragment correctly routes to its IDEA anchor —
-    # `dimension-decomposed-validity` (tester's own verification principle in
-    # lexicon/) — rather than the now-contentless persona. Routing a fragment to
-    # the idea it IS, not the agent that holds it, is the more correct hit.
+    # ROUTE-HIT: a naming fragment -> signify in the top 3. REPOINTED
+    # (re-individuate-organ-anatomy): formerly asserted the `tester` AGENT slug
+    # (verification routing), when a tester agent cell was prose-rich and carried
+    # the verification language itself. Agent cells are now terse organ SELECTION
+    # VECTORS with a formulaic `⊕{organ ↦ value}` delineation (no descriptive
+    # prose), so an agent is no longer content-routable -- the verification-routing
+    # case is RETIRED BY RESTRUCTURE. The route-hit invariant (a fragment whose
+    # meaning IS an anchor ranks top) is preserved on a live content-bearing SKILL:
+    # a "name each concept its canonical anchor" fragment routes to `signify`.
     c2 = intake.candidates(
-        "check the change across independent correctness dimensions and never "
-        "mark pass when you cannot confirm", profiles, idf, k=5)
+        "assign each concept its canonical anchor name -- one name, one concept -- "
+        "and coalesce concepts that resolve to the same name", profiles, idf, k=5)
     top3 = [s for _, s in c2[:3]]
-    if "dimension-decomposed-validity" not in top3:
-        fails.append(f"ROUTE-HIT: expected dimension-decomposed-validity in top3, got {top3}")
+    if "signify" not in top3:
+        fails.append(f"ROUTE-HIT: expected signify in top3, got {top3}")
 
     # HOMELESS: gibberish -> no candidates
     c3 = intake.candidates("zxqw flibber wozzle gnk", profiles, idf, k=5)
@@ -52,18 +57,18 @@ def main() -> int:
 
     # VALIDATE: (action, slug, expected_ok)
     for action, slug, want in [
-        ("route", "semantic-partition", True),
+        ("route", "conceptualize", True),         # live corpus anchor
         ("route", "nope-not-real", False),
         ("route", "AGENTS", False),               # pseudo-cell, not an anchor
         ("route", "CLAUDE", False),
-        ("mint", "semantic-partition", False),       # already taken -> reject
+        ("mint", "conceptualize", False),         # already taken -> reject
         ("mint", "a-fresh-untaken-anchor", True),
         ("mint", "Bad Slug", False),              # space / caps -> reject
         ("mint", "-bad", False),                  # leading hyphen
         ("mint", "bad-", False),                  # trailing hyphen
         ("mint", "dou--ble", False),              # double hyphen
         ("mint", "123", False),                   # all-digits
-        ("mint", "anchor-routing", False),        # existing corpus anchor
+        ("mint", "signify", False),               # existing corpus anchor
     ]:
         ok, _ = intake.validate(action, slug)
         if ok != want:

@@ -21,17 +21,17 @@ The readers are LLMs, and **an LLM already attaches rich meaning to the best wor
 
 ## A second densification — formal blocks (hypothesis)
 
-Name-density swaps prose for the best **word**. A **formal block** (set-builder, signature, law) applies the same move to a *process or rule*: it states the concept as its densest faithful sign instead of narrating it. **Hypothesis (held, not proven):** a self-sufficient block is mechanically denser *and* more verifiable than the prose, and the gain comes from structure, not style.
+Name-density swaps prose for the best **word**. A **formal block** (set-builder, signature, law) applies the same move to a _process or rule_: it states the concept as its densest faithful sign instead of narrating it. **Hypothesis (held, not proven):** a self-sufficient block is mechanically denser _and_ more verifiable than the prose, and the gain comes from structure, not style.
 
 Three structural laws make it self-sufficient, each closing a prose failure:
 
 - **closed** — every symbol resolves (notation table, a defining line above, a named corpus anchor, or a resolved input); no hand-waved term survives.
-- **complete** — every behavior of the concept is a *line*; a mechanic that lives only in prose becomes a visible missing line.
+- **complete** — every behavior of the concept is a _line_; a mechanic that lives only in prose becomes a visible missing line.
 - **ordered** — declarations above, laws below; no symbol used before it is defined.
 
 The accept gate is a round-trip: `reconstruct(B) ≽ P` — read the block back to prose with no side knowledge and confirm it recovers the source equivalent-or-better. Unlike "is this paraphrase faithful?", that gate is checkable.
 
-Toy — the prose *"a library lends a book to a member only when the book is on the shelf and the member is in good standing; lending takes the book off the shelf and records it against the member; good standing means no overdue loans"* becomes:
+Toy — the prose _"a library lends a book to a member only when the book is on the shelf and the member is in good standing; lending takes the book off the shelf and records it against the member; good standing means no overdue loans"_ becomes:
 
 ```text
 M ≜ members ; B ≜ books ; L ≜ loans

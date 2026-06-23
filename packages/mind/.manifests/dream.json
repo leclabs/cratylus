@@ -1,56 +1,28 @@
 {
-  "source": "packages/mind/ideas/dream.md",
-  "exemplified_at": "2026-06-14T00:00:00Z",
+  "source": "skill/dream.md",
+  "exemplified_at": "2026-06-22T00:00:00Z",
   "reader": "strong-llm-lean",
   "routes": [
     {
-      "fragment_digest": "sha256:33aa9982799a204c04f526ce2ed081af0145ea4403f17d738853fb149fe29e51",
-      "idea_gloss": "the four-layer stack SOUL/SELF/MEMORY/EPISODIC and its two opposite-provenance motions",
-      "home_slug": "memory",
+      "fragment_digest": "sha256:b619afefa9709abdc73cc54ac1f6dbe087b87f2a95ed67d03d861ad9a52535f2",
+      "idea_gloss": "optimize a context corpus into a canonical semantic factorization — compose produce → name → realize over the one concept-contract record, then gate on accept; emits the R3 routing manifest that catches the dropped idea.",
+      "home_slug": "exemplify",
       "disposition": "reuse",
-      "rank": 1.0
+      "rank": 0
     },
     {
-      "fragment_digest": "sha256:436cc34a574d3cb5be8fd0facedda772aea153b1c280243c381769ca7240a518",
-      "idea_gloss": "consolidation is the exemplify pipeline applied to the raw EPISODIC stream",
-      "home_slug": "dream",
+      "fragment_digest": "sha256:87ccfc656390849252afb1fd55f655b252734450c69e5d4330a9bbf3dda62e64",
+      "idea_gloss": "use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization `F_R`, emit the bipartite normal form `CSF_R` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.",
+      "home_slug": "materialize",
       "disposition": "reuse",
-      "rank": 1.0
+      "rank": 1
     },
     {
-      "fragment_digest": "sha256:4c25add9269a089b65ba62de48f29a9a64554e5c90e566d1b7b3f889c7921055",
-      "idea_gloss": "each distilled item is taken to its densest-faithful-point",
-      "home_slug": "densest-faithful-point",
+      "fragment_digest": "sha256:d114965f5f6ebbf593f14c08d3333c41150b8bd9de1b09a1d567e115f4a269fc",
+      "idea_gloss": "use this skill to reconstitute an agent at session start — run the WAKE sequence (dream → load → orient → resume) so it resumes as the same individual; the read-and-resume counterpart to /dream, invocable as /wake.",
+      "home_slug": "wake",
       "disposition": "reuse",
-      "rank": 1.0
-    },
-    {
-      "fragment_digest": "sha256:03ab0a7e8ae2df0d52797adde2523f55a84b154c4d105edbf7865e3ac8dbc33f",
-      "idea_gloss": "an instance-governing exemplar is cited as a pointer, never copied up",
-      "home_slug": "cite-dont-copy",
-      "disposition": "reuse",
-      "rank": 1.0
-    },
-    {
-      "fragment_digest": "sha256:e0f4c642d3cebbceafca70da04d35edab820aa398b8417512d140fca0090927b",
-      "idea_gloss": "route distilled items by durability times orthogonality: SELF/MEMORY/EPISODIC or out to the source-local doc",
-      "home_slug": "dream",
-      "disposition": "reuse",
-      "rank": 1.0
-    },
-    {
-      "fragment_digest": "sha256:de29605cb2a028eea129a2914fc793cf67a260aa0e1ab77dfc260cea96ab4faa",
-      "idea_gloss": "promotion is move-not-copy; consumed raw is cleared so EPISODIC never grows unbounded",
-      "home_slug": "memory",
-      "disposition": "reuse",
-      "rank": 1.0
-    },
-    {
-      "fragment_digest": "sha256:1835a389b23522131074ad45982deba2e00c684200f26ca6e19e3306d9e4f81d",
-      "idea_gloss": "the periodic MEMORY cascade and the one-glance acceptance test that biases the next action",
-      "home_slug": "dream",
-      "disposition": "reuse",
-      "rank": 1.0
+      "rank": 2
     }
   ],
   "delta": []

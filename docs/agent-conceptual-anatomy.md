@@ -37,9 +37,11 @@ Filing axis (MANDATORY): every anchor is filed **STANCE** (how it comes across �
 
 **Telos** _(design-time · internal)_ — the objective it is built to pursue: the goal-function, reward, or success-criterion that orients all action. What it ultimately wants.
 
-**Charter** _(design-time · internal)_ — the inviolable constraints on action: safety rules, prohibitions, hard limits. What it will not do, by construction.
+**Charter** _(design-time · internal)_ — the inviolable **values/safety constitution**: helpful·honest·harmless, the FATE/CAI principle cluster. What it will not violate, by construction. (Sourced scope: charter is the _values_ layer — not engineering directives.)
 
-**Heuristics** _(design-time · internal)_ — the learned-or-given policy shape: the dispositions, biases, and strategy priors that incline it toward some moves over others. How it tends to choose.
+**Instructions** _(design-time · internal)_ — the standing **engineering directives / working principles** the agent operates by (the system-prompt "instructions" component): e.g. first-principles, zero-trust, DRY. How it is told to work. (Added — sourcing showed charter=values and heuristics=cognitive leave an agent's working-principles homeless; this organ is their home.)
+
+**Heuristics** _(design-time · internal)_ — the **cognitive fast-and-frugal shortcuts / biases** it decides by under uncertainty (Gigerenzer / Kahneman–Tversky): recognition, take-the-best, satisficing, anchoring. How it shortcuts. (Sourced scope: the _cognitive-shortcut_ enum — distinct from engineering directives, which are Instructions.)
 
 **Competence** _(persistent · internal)_ — the consolidated skills and know-how it carries between turns: the repertoire of what it _can_ enact.
 
