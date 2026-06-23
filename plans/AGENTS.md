@@ -5,12 +5,9 @@ folders (`pending/ → ready/ → active/ → completed/`) as deps clear.
 
 ## Active
 
-| Plan                     | Concern                                                                                                                                                                                                                            | Lead                      |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------- |
-| `mind-structure-flatten` | Flatten the γ2-B `mind/<kind>/<organ>/` nesting: agents/skills flat; the agent anatomy becomes named sections inside each archetype (compositing organs by reference); organs glossary-defined. Gated on a Nico organ-kind ruling. | Mav (principal-ic) + Nico |
-| `corpus-signify-pass`    | Run σ\*\_R over every definition: harvest all references, cluster same-idea fragments, `/elicit` the Operator, re-`/signify` to coalesce + minimize prose. Sharpens `principal-self`. Sequenced after the flatten.                 | Nico + Mav                |
-| `sharded-memory-store`   | Reshape the memory store: sharded files behind a stable verb interface (`encode/recall/consolidate/graduate/forget`); files are truth, any DB a derived index; CLI-over-shell now, MCP a future adapter. Design-first.             | Mav + Nico                |
-| `run-the-business`       | The standing plan — live backlog + standalone tasks; perpetual (never retires). Currently holds the live tails of the retired memory-tool-bundling + memory-model-redesign initiatives.                                            | Mav + Nico (per task)     |
+| Plan               | Concern                                                                                                                                                                                                             | Lead                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Holds the live tails of retired initiatives (e.g. `wake-trigger-and-cutover`, `vault-reference-home`, the upgoose deploy catch-up). | Mav + Nico (per task) |
 
 ## Retired
 
@@ -31,6 +28,17 @@ A completed scaffold is removed once the source subsumes the result and the rati
 - `anchor-fidelity` — "true anchor" made a falsifiable gated property (CSF acceptance law) + the corpus re-individuated minimal; minted the `canonical-semantic-factorization` cell. Result: minimal corpus + `verify.py` fidelity gate.
 - `memory-model-redesign` — memory constitution collapsed to one `memory` home + JSONL-portable episodic; fleet migrated. Result: the memory cells + `packages/episodic` + the live JSONL fleet. Live tail (`vault-reference-home`) → RTB.
 - `memory-tool-bundling` — a skill's runtime arm travels with the skill (companion-asset deploy + episodic bundled as a toolsource). Result on main: `98bd5b3`, `7087282`. Live tail (`memory-home-dual-deploy`, `wake-trigger-and-cutover`) → RTB.
+
+**Corpus rebuild (retired 2026-06-22):** the `mind` corpus rebuilt from sourced model-native enums — agents
+as organ-selection vectors, skills as self-sufficient set-builder, `lexicon/`+`GLOSSARY` demolished, the
+`memory` cell restored. Result on main: `819c58c` (rebuild) + `f649b20` (memory); deployed fleet-wide. The
+five plans it subsumed:
+
+- `corpus-reindividuation` — re-individuate the corpus → MECE cells; superseded wholesale by the rebuild.
+- `corpus-signify-pass` — σ\*\_R over every definition; absorbed into the rebuild's signification (firing-anchor enums sourced by blind model introspection).
+- `mind-structure-flatten` — flatten the nested `mind/<kind>/<organ>`; done (flat `agent/`+`skill/` + organ-dir catalogs).
+- `csf-canonicalization` — CSF acceptance + minimal corpus; landed (the `canonical-semantic-factorization` model + the R3 producer/consumer).
+- `sharded-memory-store` — sharded memory behind a verb interface; delivered by the JSONL episodic store + the `memory` cell (encode/read/migrate + dream-consolidate).
 
 **Founder boundary:** Nico owns constitution/roles/archetypes (the society); Mav owns infrastructure/
 machinery (the substrate). `principal-ic` is intrinsic to both (founder-genus, bound to the polis subject).
