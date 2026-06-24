@@ -2,7 +2,7 @@
 
 <!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
-> 26 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
+> 27 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 
 ## Structures
 
@@ -39,6 +39,7 @@ _composite capabilities._
 - **exemplify** — optimize a context corpus into a canonical semantic factorization — compose produce → name → realize over the one concept-contract record, then gate on accept; emits the R3 routing manifest that catches the dropped idea.
 - **formalize** — use this skill to convert prose — especially of a process or skill — into a self-sufficient set-builder block under self-sufficient-formalism: conceptualize the prose to its entities/operations/laws, signify each as a symbol (minting or boundary-binding to an anchor), and emit declarations-above / laws-below with no explanatory prose; accept only on round-trip equivalent-or-better.
 - **handoff** — use this skill to prepare a session for handoff before /clear — bring the plan's record up to date (praxis sync) and consolidate memory (dream) while context is still hot; the persist half of the session boundary, invocable as /handoff.
+- **introspect** — use this skill to introspect an agent's organ configuration — recover each organ's DEFINED value (its SOUL / organ-vector selection) and INDEPENDENTLY observe the runtime value actually in effect this session, compare organ-by-organ, and for every divergence name the cause (harness override · deploy drift · profile projection · transient elevation like carry-on · composer-dropped facet · unobservable); emits a per-organ def-vs-runtime table plus a summary of material divergences. Reach for it to self-audit configuration or to chase a definition↔runtime mismatch (the color/mark regression class).
 - **materialize** — use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization `F_R`, emit the bipartite normal form `CSF_R` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.
 - **praxis** — Create and work durable, sharded plans (sharded-plan-layout dirs) — reached by planning intent, not a command grammar; task state is the folder a task-file sits in (pending/ready/active/completed), PLAN.md mirrors it, and `list` is the one explicit affordance.
 - **probe** — use this skill to probe a signifier — read out the latent priors a word, phrase, or candidate name fires in the reader (`fired_R`, [[signify]]'s decoder `dec_R` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of [[signify]], for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through [[signify]].
