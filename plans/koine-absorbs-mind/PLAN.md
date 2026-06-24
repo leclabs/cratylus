@@ -32,19 +32,26 @@ T5.1 T5.2 T5.3 T5.4 organ hygiene — independent, run on the CURRENT markdown c
 
 ## Frontier (ready)
 
-| Task     | Lane     | What                                                                                        |
-| -------- | -------- | ------------------------------------------------------------------------------------------- |
-| **T1.2** | Mav+Nico | Agents → ESM modules composed by import + spread (`base.ts` + deltas); byte-identical SOULs |
+| Task     | Lane | What                                                                                                                       |
+| -------- | ---- | -------------------------------------------------------------------------------------------------------------------------- |
+| **T2.1** | Mav  | Wire the projection into koine's **claude adapter** — project the whole corpus to `.claude/{agents,skills}` byte-identical |
 
-T1.2 needs the **agent claude-projection** (assemble a SOUL from organ fragments + genus/memory
-injection) to prove byte-identical — couple it with the start of T2.1, as T1.1 coupled with its projector.
+**🎉 Phase 1 complete** — the entire markdown→TS inversion holds: ~150 fragments + 15 skills + **11
+agent SOULs** all project byte-identical from typed TS source. The projectors (`fragmentToMarkdown`,
+`skillToMarkdown`, `agentToClaudeMd`) live in `packages/mind/src/toolkit/`; T2.1 moves them into koine's
+claude adapter and projects the full deploy artifact set. **T3.1 (deploy-engine)** can run in parallel.
 
-**Follow-up (small):** the anatomy `Skill.composition` should become a lazy thunk `() => Skill[]` (or
-prove the skill graph acyclic) — the migration found real cycles (conceptualize↔exemplify↔signify↔
-materialize, elicit↔probe) and used string anchors via a `SkillCell` superset as the cycle-safe stopgap.
+**Open follow-ups (small, deferred):**
+
+- `Skill.composition` → lazy thunk `() => Skill[]` (skill graph has real cycles; string-anchor stopgap in use).
+- Per-agent organ **order** is carried by a second `ResolvedAgent` export; consider an `order: Organ[]` on `Agent`.
+- **T0.2 doc reconciled below:** `base` currently = the memory protocol only (the richer floor is T4.1).
 
 ## Completed
 
+- **T1.2** — all 11 agents → TS modules (spread form) + agent claude-projection; SOULs byte-identical.
+  Ground truth: selection-vector path injects only `## Memory`; founder-genus is in provenance text;
+  `instructions`/`heuristics` made optional on the Agent type. Commit `d7af48e`.
 - **T1.1 + T1.3** — all 155 organ value-cells + 15 skills migrated to typed TS modules under
   `packages/mind/src/`, every one projecting **byte-identical** to its markdown (non-vacuous test).
   Formal-block skill (`introspect`) round-trips. Commits `8288e19` (spike), `af0f268` (full).
