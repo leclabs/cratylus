@@ -36,7 +36,10 @@ T5.1 T5.2 T5.3 T5.4 organ hygiene — independent, run on the CURRENT markdown c
 | -------- | -------- | ------------------------------------------------------------------------------------------ |
 | **T1.1** | Mav+Nico | Migrate organ value-cells → typed TS fragment modules (codegen; byte-identical round-trip) |
 
-T1.2 (agents via spread) + T1.3 (skills) unblock once T1.1 lands.
+**T1.1 in progress** — the inversion is **proven** on a 5-cell slice (commit `8288e19`): `mind` is now a
+TS workspace member; codegen + `fragmentToMarkdown` round-trip byte-identical. Remaining: migrate all
+~150 value-cells, and probe the **skill formal-block** (multi-line/fenced) round-trip — the one unproven
+risk (T1.3). T1.2 (agents via spread) + T1.3 (skills) unblock as T1.1 completes.
 
 ## Completed
 
