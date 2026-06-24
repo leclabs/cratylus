@@ -198,8 +198,13 @@ export interface Agent {
   // CONATUS — standing drives
   readonly telos: Telos;
   readonly charter: readonly Charter[]; // SET
-  readonly instructions: readonly Instructions[]; // SET
-  readonly heuristics: readonly Heuristics[]; // SET
+  // `instructions` (the engineering-directive methodology organ) and `heuristics`
+  // (the cognitive-shortcut organ) are OPTIONAL — not every agent carries them
+  // (in the live corpus: instructions 4/11, heuristics 8/11). The other 22 organs
+  // are required (every agent fills them). Omission ⇒ no `## Instructions` /
+  // `## Heuristics` section in the projected SOUL.
+  readonly instructions?: readonly Instructions[]; // SET, optional
+  readonly heuristics?: readonly Heuristics[]; // SET, optional
   readonly competence: readonly Competence[]; // SET
   readonly dispositionMemory: DispositionMemory;
   readonly gestalt: Gestalt;

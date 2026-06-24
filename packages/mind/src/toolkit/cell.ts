@@ -51,6 +51,14 @@ export interface ParsedSkill {
   readonly body: string;
 }
 
+/** A parsed `kind: agent` selection-vector cell. */
+export interface ParsedAgent {
+  /** The agent name (H1 / file slug). */
+  readonly name: string;
+  /** The organ selections in SOURCE ORDER: `[organ, [value, …]]` per line. */
+  readonly selection: readonly (readonly [Organ, readonly string[]])[];
+}
+
 /** The definition connective. */
 const DEF = ' ≜ ';
 
@@ -222,4 +230,86 @@ export function parseSkill(raw: string, fileSlug: string): ParsedSkill {
     composition,
     body,
   };
+}
+
+/** The 24 organ-catalog names — the valid first token of a selection line. */
+const ORGAN_NAMES = new Set<string>([
+  'address',
+  'persona',
+  'mandate',
+  'comportment',
+  'register-fit',
+  'disclosure',
+  'provenance',
+  'telos',
+  'charter',
+  'instructions',
+  'heuristics',
+  'competence',
+  'disposition-memory',
+  'gestalt',
+  'effectors',
+  'sensors',
+  'substrate',
+  'ledger',
+  'percept',
+  'construal',
+  'deliberation',
+  'resolve',
+  'enaction',
+  'appraisal',
+]);
+
+/** Strip a selection value token to its bare anchor (`[[x]]` or `x` → `x`). */
+function stripValue(tok: string): string {
+  const t = tok.trim();
+  const m = t.match(/^\[\[([a-z0-9-]+)\]\]$/);
+  return m ? (m[1] as string) : t;
+}
+
+/**
+ * Parse a `kind: agent` selection-vector cell. Mirrors the Python
+ * `compose_agent_selection.parse_selection`: each body line whose first token is
+ * an organ name is a selection `organ value` or `organ { v1 · v2 · … }`; values
+ * are authored bare or as `[[wikilink]]` (both normalize). The schema formula
+ * line (`name ≜ ⊕{organ ↦ value}`), headings, blanks, and fenced lines are
+ * skipped. Selection order = SOURCE order (load-bearing for byte-identity).
+ */
+export function parseAgent(raw: string, fileSlug: string): ParsedAgent {
+  const { body } = splitCanonical(raw);
+  const fence = fenceMask(body);
+  const lines = body.split('\n');
+
+  const h1 = lines.find((l, i) => l.startsWith('# ') && !fence.has(i));
+  const name = h1 ? h1.slice(2).trim() : fileSlug;
+
+  const selection: (readonly [Organ, readonly string[]])[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    if (fence.has(i)) {
+      continue;
+    }
+    const s = (lines[i] as string).trim();
+    if (!s || s.startsWith('#') || s.includes('⊕{organ ↦')) {
+      continue;
+    }
+    const sp = s.indexOf(' ');
+    if (sp === -1) {
+      continue;
+    }
+    const organ = s.slice(0, sp);
+    const rest = s.slice(sp + 1).trim();
+    if (!ORGAN_NAMES.has(organ)) {
+      continue;
+    }
+    const values =
+      rest.startsWith('{') && rest.endsWith('}')
+        ? rest
+            .slice(1, -1)
+            .split('·')
+            .map(stripValue)
+            .filter((v) => v)
+        : [stripValue(rest)].filter((v) => v);
+    selection.push([organ as Organ, values]);
+  }
+  return { name, selection };
 }

@@ -16,8 +16,10 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import {
+  type ParsedAgent,
   type ParsedCell,
   type ParsedSkill,
+  parseAgent,
   parseCell,
   parseSkill,
 } from './cell.js';
@@ -149,6 +151,139 @@ export function codegenSkill(cellPath: string): {
   return { skill, module: emitSkillModule(skill) };
 }
 
+/** The 5 SET organs (array fields on `Agent`); all others are scalar. */
+const SET_ORGANS = new Set([
+  'charter',
+  'competence',
+  'effectors',
+  'heuristics',
+  'instructions',
+]);
+
+/** organ name (kebab) → the `Agent` field name (camelCase). */
+function organField(organ: string): string {
+  return camelSlug(organ);
+}
+
+/**
+ * Emit an agent module. Two exports:
+ *   - `<name>: Agent` — the T0.2 baseline/delta spread form `{ ...base, … }` (the
+ *     typed authoring surface; scalar organs one fragment, set organs arrays).
+ *   - `<name>Resolved: ResolvedAgent` — the projection input carrying the SOURCE
+ *     organ ORDER (load-bearing for byte-identity), the same imported fragments,
+ *     the mark, the description (persona definiens), the source path, and the
+ *     memory protocol from base.
+ * Founders (nico, mav) spread `founderBase`; all others spread `base`.
+ */
+export function emitAgentModule(agent: ParsedAgent, fileSlug: string): string {
+  const camelName = camelSlug(agent.name);
+  const isFounder = fileSlug === 'nico' || fileSlug === 'mav';
+  const baseConst = isFounder ? 'founderBase' : 'base';
+
+  // Collect fragment imports: each (organ, value) → `../organs/<organ>/<value>.js`.
+  const imports: string[] = [];
+  const importedNames = new Map<string, string>(); // `${organ}/${value}` → local id
+  for (const [organ, values] of agent.selection) {
+    for (const value of values) {
+      const key = `${organ}/${value}`;
+      if (importedNames.has(key)) {
+        continue;
+      }
+      const local = `${camelSlug(value)}_${camelSlug(organ)}`;
+      importedNames.set(key, local);
+      imports.push(
+        `import { ${camelSlug(value)} as ${local} } from '../organs/${organ}/${value}.js';`,
+      );
+    }
+  }
+  imports.sort();
+
+  const ref = (organ: string, value: string) =>
+    importedNames.get(`${organ}/${value}`) as string;
+
+  // The persona fragment (description source) + provenance fragment (mark source).
+  const personaSel = agent.selection.find(([o]) => o === 'persona');
+  const provenanceSel = agent.selection.find(([o]) => o === 'provenance');
+  const personaRef = personaSel?.[1][0]
+    ? ref('persona', personaSel[1][0])
+    : undefined;
+  const provenanceRef = provenanceSel?.[1][0]
+    ? ref('provenance', provenanceSel[1][0])
+    : undefined;
+
+  // The Agent spread form: one field per organ (scalar = fragment, set = array).
+  const agentFields: string[] = [
+    `  ...${baseConst},`,
+    `  name: '${agent.name}',`,
+  ];
+  for (const [organ, values] of agent.selection) {
+    const field = organField(organ);
+    if (SET_ORGANS.has(organ)) {
+      agentFields.push(
+        `  ${field}: [${values.map((v) => ref(organ, v)).join(', ')}],`,
+      );
+    } else {
+      agentFields.push(`  ${field}: ${ref(organ, values[0] as string)},`);
+    }
+  }
+
+  // The ResolvedAgent: ordered organs (title + fragments), mark, description, etc.
+  const organEntries = agent.selection.map(([organ, values]) => {
+    const frags = values.map((v) => ref(organ, v)).join(', ');
+    return `    ['${organTitleOf(organ)}', [${frags}]],`;
+  });
+
+  const lines: string[] = [
+    `import type { Agent } from '@leclabs/koine/anatomy';`,
+    `import { ${baseConst} } from './base.js';`,
+    `import type { ResolvedAgent } from '../toolkit/agent-projection.js';`,
+    ...imports,
+    '',
+    `export const ${camelName}: Agent = {`,
+    ...agentFields,
+    '};',
+    '',
+    `export const ${camelName}Resolved: ResolvedAgent = {`,
+    `  name: '${agent.name}',`,
+    personaRef
+      ? `  description: ${personaRef}.definiens,`
+      : `  description: '${agent.name}',`,
+    provenanceRef ? `  mark: ${provenanceRef}.mark,` : '',
+    `  sourcePath: 'packages/mind/agent/${fileSlug}.md',`,
+    `  memoryProtocol: ${baseConst}.memoryProtocol,`,
+    '  organs: [',
+    ...organEntries,
+    '  ],',
+    '};',
+    '',
+  ].filter((l) => l !== '');
+  return lines.join('\n');
+}
+
+/** `register-fit` → `Register-Fit` (mirror of agentProjection.organTitle). */
+function organTitleOf(organ: string): string {
+  return organ
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join('-');
+}
+
+/** Read an agent cell file → parsed agent + emitted module source. */
+export function codegenAgent(cellPath: string): {
+  agent: ParsedAgent;
+  module: string;
+} {
+  const raw = readFileSync(cellPath, 'utf8');
+  const fileSlug = basename(cellPath).replace(/\.md$/, '');
+  const agent = parseAgent(raw, fileSlug);
+  return { agent, module: emitAgentModule(agent, fileSlug) };
+}
+
+/** A cell is an agent iff its front-matter `kind:` is `agent`. */
+function isAgentCell(raw: string): boolean {
+  return /^kind:\s*agent\s*$/m.test(raw);
+}
+
 /** A cell is a skill iff its front-matter `kind:` is `skill`. */
 function isSkillCell(raw: string): boolean {
   return /^kind:\s*skill\s*$/m.test(raw);
@@ -168,6 +303,11 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     if (isSkillCell(raw)) {
       ({ module } = codegenSkill(cellPath));
       const outDir = join(srcRoot, 'skills');
+      mkdirSync(outDir, { recursive: true });
+      outPath = join(outDir, `${base}.ts`);
+    } else if (isAgentCell(raw)) {
+      ({ module } = codegenAgent(cellPath));
+      const outDir = join(srcRoot, 'agents');
       mkdirSync(outDir, { recursive: true });
       outPath = join(outDir, `${base}.ts`);
     } else {
