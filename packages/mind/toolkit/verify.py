@@ -279,6 +279,35 @@ def gate_agent_organ_refs():
                     )
 
 
+def gate_mark():
+    """MARK: every new-form `kind: agent` cell composes a NON-EMPTY emblem
+    (glyph·color mark). The mark is decoration's SOURCE for the def's `color`
+    front-matter + H1 glyph (`decorate/agent.py`, gated `if composed.mark:`); an
+    empty mark silently drops both. gate_agent_organ_refs only checks that each
+    organ value RESOLVES to a live cell -- a provenance value whose body lacks a
+    `glyph·color` token (or a future composer reading the wrong organ) still
+    resolves yet yields mark="". This gate closes that silent-drop class
+    ([[degrade-visibly]] / [[no-permissive-defaults]]).
+
+    The mark is derived the SAME way the composer does -- provenance-first,
+    persona-fallback -- through the composer's own helpers ([[cite-dont-copy]] at
+    the code grain), so gate and composer can never disagree. Legacy prose-formula
+    agents are out of scope (the mark there is a persona-bullet, gated elsewhere)."""
+    from compose import agent as _agent
+    for slug in cells.slugs_of_kind("agent"):
+        cell = cells.parse_cell(slug)
+        if not _agent.is_selection_form(cell):
+            continue  # legacy prose-formula agents are out of scope
+        selection = _agent.parse_selection(cell)
+        mark = (_agent._mark_from_provenance(selection)
+                or _agent._mark_from_persona(_agent._persona_value(selection)))
+        if not mark:
+            errors.append(
+                f"MARK {slug}.md: composes an empty emblem (no glyph·color) -- "
+                f"check the selected provenance value carries a `glyph·color` token"
+            )
+
+
 def gate_no_holders():
     """NO-HOLDERS: a cell must not carry a `holders:` line. Holding is a FORWARD
     relation -- an agent binds a value by CITING it (`organ [[value]]`) in its
@@ -880,6 +909,7 @@ def gate_reconstruct():
 def main() -> int:
     gate_schema_and_refs()
     gate_agent_organ_refs()
+    gate_mark()
     gate_no_holders()
     gate_fences()
     gate_symbols()
@@ -896,7 +926,7 @@ def main() -> int:
         print(f"\n{len(errors)} failure(s)", file=sys.stderr)
         return 1
     r3 = "R1+R2+R3" if r3_mechanical else "R1+R2; R3 manual"
-    print(f"PASS schema + references + no-holders + fences + symbols + verbatim-ref-free + operative + round-trip + reconstruct ({r3})")
+    print(f"PASS schema + references + no-holders + fences + symbols + verbatim-ref-free + operative + round-trip + reconstruct ({r3}) + mark")
     return 0
 
 
