@@ -23,11 +23,10 @@ spark · ash · upmav · upgoose — nico sha parity `df337e…`, zero bespoke, 
 
 **Memory model (Operator decision, 2026-06-23): memory is LOCAL-PER-HOST.** `fleet-organ-sync` is
 **declined** — a single shared organ store clobbers each host's legitimate local context, and fleet-wide
-memory isn't practical for this simple/open-source library. Deploy pushes only the **SOUL** (regenerable def
-
-- skills), never memory content (if-absent seed, never clobber). Per-host divergence is fine by design; the
-  only memory hygiene that matters is keeping the **primary host's** store (fire) clean. The earlier
-  "fleet-divergence is the structural root" framing is retired.
+memory isn't practical for this simple/open-source library. Deploy pushes only the **SOUL** (the regenerable
+def and skills), never memory content (if-absent seed, never clobber). Per-host divergence is fine by design;
+the only memory hygiene that matters is keeping the **primary host's** store (fire) clean. The earlier
+"fleet-divergence is the structural root" framing is retired.
 
 ## See also
 
