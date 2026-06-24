@@ -30,16 +30,25 @@ T1.2 + T2.2 + T0.2 ──> T4.1 baseline/delta rollout ────────�
 T5.1 T5.2 T5.3 T5.4 organ hygiene — independent, run on the CURRENT markdown corpus now
 ```
 
-## Frontier (ready — fan out concurrently)
+## Frontier (ready)
 
-| Task     | Lane     | What                                                                                             |
-| -------- | -------- | ------------------------------------------------------------------------------------------------ |
-| **T0.1** | Mav+Nico | The anatomy as TS types (organ types + Agent/Skill/Fragment) — the contract                      |
-| **T0.2** | Nico     | Baseline/delta + the two resets (agent-base in mind, harness reset in adapter); spread semantics |
-| **T5.1** | Nico     | Resolve `zero-trust` ⊂ `input-untrusted`                                                         |
-| **T5.2** | Nico     | `dont-reinvent-the-wheel` → `invoke-the-canonical`                                               |
-| **T5.3** | Nico     | Enabling-tone convention, scoped to `instructions`                                               |
-| **T5.4** | Nico     | Precedence doc; correct "instructions = fallback"; reconcile `ideas/AGENTS.md:22`                |
+| Task     | Lane     | What                                                                        |
+| -------- | -------- | --------------------------------------------------------------------------- |
+| **T0.1** | Mav+Nico | The anatomy as TS types (organ types + Agent/Skill/Fragment) — the contract |
+
+Once T0.1 lands, the T1.\* module-migration tasks become ready (fan-out resumes).
+
+## Completed
+
+- **T0.2** — baseline/delta + two-reset model → `docs/baseline-delta-model.md` (spread-merge,
+  inherit-by-omission, adapter-side delta-over-target; `base.ts` decision; `claude` filed under the adapter).
+- **T5.1** — `zero-trust` narrowed to the methodology slice (overlap with `input-untrusted` removed).
+- **T5.2** — `dont-reinvent-the-wheel` → `invoke-the-canonical` (prescriptive); selectors repointed.
+- **T5.3** — enabling-tone convention added to `instructions/README` (scoped, charter stays negative).
+- **T5.4** — `instructions` reclassified as a coined catalog (not open, not a fallback); authoring
+  precedence documented in `ideas/AGENTS.md`.
+
+_(Commits: `5d16fa1` corpus hygiene · T0.2 spec doc.)_
 
 ## Pending
 
