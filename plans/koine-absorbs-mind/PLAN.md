@@ -69,7 +69,7 @@ _(Commits: `5d16fa1` corpus hygiene · T0.2 spec doc.)_
 
 ## Pending
 
-T1.2 agents (ESM+spread) · T1.3 skills→modules · T2.1 claude projection · T2.2 adapter reset/delta · T2.3 density variants · T2.4 multi-harness · T3.1 deploy-engine · T4.1 baseline/delta rollout · T6.1 cutover.
+T2.2 adapter reset/delta · T2.3 density variants · T2.4 multi-harness · T3.1 deploy-engine · T4.1 baseline/delta rollout · T6.1 cutover.
 
 ## What dissolved (vs the first draft)
 
