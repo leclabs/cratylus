@@ -1,3 +1,4 @@
+import type { ResolvedAgent } from '@leclabs/koine/adapters/claude';
 import type { Agent } from '@leclabs/koine/anatomy';
 import { humanOnTheLoop as humanOnTheLoop_address } from '../organs/address/human-on-the-loop.js';
 import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_appraisal } from '../organs/appraisal/acceptance-criteria-check.js';
@@ -25,7 +26,6 @@ import { satisfice as satisfice_resolve } from '../organs/resolve/satisfice.js';
 import { text as text_sensors } from '../organs/sensors/text.js';
 import { claude as claude_substrate } from '../organs/substrate/claude.js';
 import { delivery as delivery_telos } from '../organs/telos/delivery.js';
-import type { ResolvedAgent } from '../toolkit/agent-projection.js';
 import { base } from './base.js';
 export const planner: Agent = {
   ...base,

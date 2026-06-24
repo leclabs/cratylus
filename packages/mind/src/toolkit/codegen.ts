@@ -235,8 +235,8 @@ export function emitAgentModule(agent: ParsedAgent, fileSlug: string): string {
 
   const lines: string[] = [
     `import type { Agent } from '@leclabs/koine/anatomy';`,
+    `import type { ResolvedAgent } from '@leclabs/koine/adapters/claude';`,
     `import { ${baseConst} } from './base.js';`,
-    `import type { ResolvedAgent } from '../toolkit/agent-projection.js';`,
     ...imports,
     '',
     `export const ${camelName}: Agent = {`,

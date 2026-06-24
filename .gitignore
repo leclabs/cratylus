@@ -18,6 +18,9 @@ dist/
 # target is user-scope ~/.claude per host (C4); a `<repo>/.claude/{agents,skills}` tree
 # may exist ONLY as an explicit `deploy.py --scope project` opt-in by a downstream adopter.
 packages/mind/.render/
+# The standalone TS projection (resolve.py's TS counterpart, src/toolkit/project-cli.ts).
+# Same neutral-staging rationale as .render/ above; regenerable, never a deploy.
+packages/mind/.render-ts/
 # Fleet deploy topology carries env-specific SSH usernames — local-only.
 # Committed template: .polis.config.example. Schema: docs/polis-config-schema.md
 .polis.config

@@ -1,0 +1,216 @@
+// The consumer projection command — a thin mind BUILD STEP that imports koine's
+// claude adapter and runs it over mind's typed agent/skill modules, writing the
+// full SOUL/SKILL tree to disk. The PROJECTION LOGIC lives in koine
+// (`@leclabs/koine/adapters/claude`); this step only walks mind's modules and
+// wires them to it (mind = koine's source). The TS counterpart of
+// `toolkit/resolve.py main()`.
+//
+// Usage:  tsx src/toolkit/project-cli.ts [--out <dir>] [--profile <reader/harness>]
+//   default out:     packages/mind/.render-ts   (gitignored; never the Python .render)
+//   default profile: strong-llm-lean/claude-code (the deployed profile)
+
+import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { glob } from 'node:fs/promises';
+import { dirname, join } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import {
+  type ResolvedAgent,
+  type ResolvedSkill,
+  agentToClaudeMd,
+  skillToClaudeMd,
+} from '@leclabs/koine/adapters/claude';
+import type { SkillCell } from './skill-cell.js';
+
+const here = dirname(fileURLToPath(import.meta.url));
+const mindRoot = join(here, '..', '..');
+const agentsModDir = join(mindRoot, 'src', 'agents');
+const skillsModDir = join(mindRoot, 'src', 'skills');
+
+interface Args {
+  out: string;
+  profile: string;
+}
+
+function parseArgs(argv: string[]): Args {
+  let out = join(mindRoot, '.render-ts');
+  let profile = 'strong-llm-lean/claude-code';
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === '--out') {
+      const v = argv[++i];
+      if (!v) {
+        throw new Error('--out requires a value');
+      }
+      out = v;
+    } else if (a === '--profile') {
+      const v = argv[++i];
+      if (!v) {
+        throw new Error('--profile requires a value');
+      }
+      profile = v;
+    } else {
+      throw new Error(`unknown arg ${a}`);
+    }
+  }
+  return { out, profile };
+}
+
+async function moduleNames(dir: string): Promise<string[]> {
+  const names: string[] = [];
+  for await (const p of glob('*.ts', { cwd: dir })) {
+    if (p !== 'base.ts') {
+      names.push(p.replace(/\.ts$/, ''));
+    }
+  }
+  return names.sort();
+}
+
+/** The `<name>Resolved: ResolvedAgent` export of an agent module. */
+async function resolvedAgentOf(modPath: string): Promise<ResolvedAgent> {
+  const mod = (await import(pathToFileURL(modPath).href)) as Record<
+    string,
+    unknown
+  >;
+  const key = Object.keys(mod).find((k) => k.endsWith('Resolved'));
+  if (!key) {
+    throw new Error(`${modPath}: no *Resolved export`);
+  }
+  return mod[key] as ResolvedAgent;
+}
+
+/** The first `SkillCell` export of a skill module. */
+async function skillCellOf(modPath: string): Promise<SkillCell> {
+  const mod = (await import(pathToFileURL(modPath).href)) as Record<
+    string,
+    unknown
+  >;
+  const key = Object.keys(mod).find((k) => k !== 'default');
+  return mod[key as string] as SkillCell;
+}
+
+async function projectAgents(out: string, profile: string): Promise<number> {
+  const dir = join(out, 'agents');
+  mkdirSync(dir, { recursive: true });
+  let n = 0;
+  for (const name of await moduleNames(agentsModDir)) {
+    const resolved = await resolvedAgentOf(join(agentsModDir, `${name}.ts`));
+    writeFileSync(join(dir, `${name}.md`), agentToClaudeMd(resolved, profile));
+    process.stdout.write(`EMIT agent ${name}\n`);
+    n++;
+  }
+  return n;
+}
+
+async function projectSkills(out: string, profile: string): Promise<number> {
+  const names = await moduleNames(skillsModDir);
+  const cells = new Map<string, SkillCell>();
+  for (const name of names) {
+    cells.set(name, await skillCellOf(join(skillsModDir, `${name}.ts`)));
+  }
+  // The ref projector: a `[[slug]]` whose target is a known skill → its `/trigger`;
+  // any other slug → typographic `**slug**` (mirrors compose.harness.ref_text).
+  const refProject = (slug: string): string => {
+    const cell = cells.get(slug);
+    return cell ? cell.trigger : `**${slug}**`;
+  };
+
+  let n = 0;
+  for (const name of names) {
+    const cell = cells.get(name) as SkillCell;
+    const resolved: ResolvedSkill = {
+      name: cell.name,
+      trigger: cell.trigger,
+      delineation: cell.delineation,
+      body: cell.body,
+      composedFrom: cell.composition.map(refProject),
+      sourcePath: `packages/mind/skill/${name}.md`,
+    };
+    const dir = join(out, 'skills', name);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(
+      join(dir, 'SKILL.md'),
+      skillToClaudeMd(resolved, refProject, profile),
+    );
+    process.stdout.write(`EMIT skill ${name}\n`);
+    n++;
+  }
+  return n;
+}
+
+/**
+ * The `memory` dual-deploy dir (`deploy: skill-dir`): its `## Tool` section is the
+ * SKILL.md body VERBATIM, and the bundled `episodic.mjs` ships beside it. Sourced
+ * from `ideas/memory.md` (the one home) + the episodic build artifact.
+ */
+async function projectMemorySkill(out: string, profile: string): Promise<void> {
+  const { readFileSync } = await import('node:fs');
+  const memRaw = readFileSync(join(mindRoot, 'ideas', 'memory.md'), 'utf8');
+  const memBody = memRaw.split('---').slice(2).join('---');
+  const toolSection = sectionBody(memBody, 'Tool');
+  const fm =
+    frontField(memRaw, 'skill_description') ||
+    frontField(memRaw, 'delineation');
+  const resolved: ResolvedSkill = {
+    name: 'memory',
+    trigger: '', // memory has no /trigger (a protocol home, not a command)
+    delineation: fm,
+    skillDescription: frontField(memRaw, 'skill_description') || fm,
+    body: '',
+    composedFrom: [],
+    sourcePath: 'packages/mind/ideas/memory.md',
+    toolSection,
+  };
+  const dir = join(out, 'skills', 'memory');
+  mkdirSync(dir, { recursive: true });
+  writeFileSync(
+    join(dir, 'SKILL.md'),
+    skillToClaudeMd(resolved, (s) => `**${s}**`, profile),
+  );
+  // Bundle the built episodic.mjs (the host memory tool) beside SKILL.md.
+  const bundle = join(mindRoot, '..', 'episodic', 'dist', 'episodic.mjs');
+  copyFileSync(bundle, join(dir, 'episodic.mjs'));
+  process.stdout.write('EMIT skill memory (dual-deploy + episodic.mjs)\n');
+}
+
+/** The `## <heading>` section body of a cell, blank-trimmed (mirrors section_body). */
+function sectionBody(body: string, heading: string): string {
+  const want = `## ${heading}`.toLowerCase();
+  const out: string[] = [];
+  let inSection = false;
+  for (const line of body.split('\n')) {
+    if (line.startsWith('## ')) {
+      if (inSection) {
+        break;
+      }
+      if (line.toLowerCase() === want) {
+        inSection = true;
+      }
+      continue;
+    }
+    if (inSection) {
+      out.push(line);
+    }
+  }
+  while (out.length && out[0]?.trim() === '') {
+    out.shift();
+  }
+  while (out.length && out[out.length - 1]?.trim() === '') {
+    out.pop();
+  }
+  return out.join('\n');
+}
+
+function frontField(raw: string, key: string): string {
+  const m = raw.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'));
+  return m?.[1]?.trim() ?? '';
+}
+
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const args = parseArgs(process.argv.slice(2));
+  const a = await projectAgents(args.out, args.profile);
+  const s = await projectSkills(args.out, args.profile);
+  await projectMemorySkill(args.out, args.profile);
+  process.stdout.write(
+    `projected ${a} agents + ${s + 1} skills to ${args.out}\n`,
+  );
+}

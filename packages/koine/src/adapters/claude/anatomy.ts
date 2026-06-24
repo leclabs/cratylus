@@ -1,0 +1,327 @@
+// The claude-code projection of the agent ANATOMY: assemble a full SOUL `.md`
+// (front-matter + provenance header + `## Organ` sections + the `## Memory` genus
+// block) from a typed agent's organ-fragment modules; and project a skill cell to
+// its composed SKILL.md. This is koine's claude adapter owning "project a typed
+// Agent/Skill to claude-code markdown" — the inversion's projection-to-disk path.
+//
+// Distinct from this adapter's IR serialize path (`write.ts` / `serializeAgent`):
+// that projects the config-IR resources; THIS projects the anatomy SOULs. Two
+// concepts, one adapter, no collision (mirrors `@leclabs/koine/anatomy` sitting
+// beside the core IR `Agent`/`Skill`).
+//
+// Transcribed from the mind Python toolkit, not reinvented — the byte-anchor is
+// `packages/mind/.render/{agents,skills}` (regen via `python3 toolkit/resolve.py
+// --reader strong-llm-lean`). The three Python agent stages and their mirrors:
+//   compose_agent_selection → `agentBody`
+//   decorate/agent.decorate → `frontMatter`
+//   render/claude_code.render → `agentToClaudeMd`
+// And for skills: `compose_skill` + `emit_skill_dir` → `skillToClaudeMd`.
+
+import { createHash } from 'node:crypto';
+import type { Fragment, Mark } from '../../anatomy/index.js';
+
+// ── Agent projection ────────────────────────────────────────────────────────
+
+/** A resolved agent ready to project: name, ordered organs, fragments, mark. */
+export interface ResolvedAgent {
+  readonly name: string;
+  /**
+   * The organ sections in SOURCE ORDER. Each is `[organTitle, [fragment, …]]` —
+   * a set organ carries several fragments under one heading, a scalar one.
+   */
+  readonly organs: readonly (readonly [string, readonly Fragment[]])[];
+  /** The emoji·hue mark (from the provenance fragment), or undefined. */
+  readonly mark?: Mark;
+  /** The agent description = the persona fragment's definiens. */
+  readonly description: string;
+  /** The repo-relative source path (for the provenance header). */
+  readonly sourcePath: string;
+  /** The `{name}`-parameterized memory protocol (the genus block). */
+  readonly memoryProtocol: string;
+}
+
+/** `register-fit` → `Register-Fit`, `disposition-memory` → `Disposition-Memory`. */
+export function organTitle(organ: string): string {
+  return organ
+    .split('-')
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join('-');
+}
+
+/** A fragment's inlined body in an agent def: the stripped `<slug> ≜ <definiens>`. */
+function fragmentBody(f: Fragment): string {
+  return `${f.slug} ≜ ${f.definiens}`;
+}
+
+/** sha256[:16] of a body — the drift anchor (mirrors Python `body_hash`). */
+export function bodyHash(body: string): string {
+  return createHash('sha256').update(body, 'utf8').digest('hex').slice(0, 16);
+}
+
+/** The 4-line GENERATED provenance comment (mirrors `provenance_header`). */
+export function provenanceHeader(
+  sourcePath: string,
+  profile: string,
+  bh: string,
+): string {
+  return `<!-- GENERATED from ${sourcePath} by projecting its composed cells at the recorded reader profile.
+     profile: ${profile}
+     Edit the cells and regenerate; do not hand-edit.
+     content-hash: sha256:${bh} (regenerate-without-clobbering ancestor) -->`;
+}
+
+/**
+ * The agent def BODY (no front-matter / header) — the exact text the renderer
+ * hashes. Mirrors `compose_agent_selection`: `# <emoji> <name>`, then per organ a
+ * `## <Organ-Title>` heading + each value's inlined body (blank-separated), then
+ * the `## Memory` genus block ({name}-substituted). Closed `rstrip() + "\n"`.
+ */
+export function agentBody(a: ResolvedAgent): string {
+  const emoji = a.mark?.emoji ?? '';
+  const heading = emoji ? `${emoji} ${a.name}` : a.name;
+  const out: string[] = [`# ${heading}`, ''];
+  for (const [title, frags] of a.organs) {
+    out.push(`## ${title}`, '');
+    for (const f of frags) {
+      out.push(fragmentBody(f), '');
+    }
+  }
+  out.push('## Memory', '');
+  out.push(a.memoryProtocol.replaceAll('{name}', a.name), '');
+  return `${out.join('\n').replace(/\n+$/, '')}\n`;
+}
+
+/** The front-matter (mirrors `decorate/agent.decorate`): name, description, color. */
+function agentFrontMatter(a: ResolvedAgent): string[] {
+  let description = a.description;
+  const fm: string[] = [`name: ${a.name}`];
+  if (a.mark) {
+    const { emoji, hue } = a.mark;
+    if (emoji) {
+      description = `${emoji} ${a.description}`;
+    }
+    fm.push(`description: ${description}`);
+    if (hue) {
+      fm.push(`color: ${hue}`);
+    }
+  } else {
+    fm.push(`description: ${description}`);
+  }
+  return fm;
+}
+
+/** Frame a body as a claude artifact: front-matter + provenance header + body. */
+function frameClaudeMd(
+  frontMatter: string[],
+  sourcePath: string,
+  profile: string,
+  body: string,
+): string {
+  const bh = bodyHash(body);
+  const lines: string[] = ['---', ...frontMatter, '---', ''];
+  lines.push(provenanceHeader(sourcePath, profile, bh), '');
+  lines.push(body.replace(/\n+$/, ''), '');
+  return lines.join('\n');
+}
+
+/**
+ * The full claude-code SOUL for an agent (mirrors `render/claude_code.render`).
+ * `profile` is `<reader>/<harness>` (default the deployed `strong-llm-lean/claude-code`).
+ */
+export function agentToClaudeMd(
+  a: ResolvedAgent,
+  profile = 'strong-llm-lean/claude-code',
+): string {
+  return frameClaudeMd(
+    agentFrontMatter(a),
+    a.sourcePath,
+    profile,
+    agentBody(a),
+  );
+}
+
+// ── Skill projection ────────────────────────────────────────────────────────
+
+/** A resolved skill ready to project to its composed SKILL.md. */
+export interface ResolvedSkill {
+  readonly name: string;
+  readonly trigger: string;
+  /** Front-matter `delineation` (the SKILL.md `description`). */
+  readonly delineation: string;
+  /**
+   * Optional host-discovery copy (`skill_description:`). When present it is the
+   * SKILL.md `description` instead of `delineation` (the `deploy: skill-dir` path).
+   */
+  readonly skillDescription?: string;
+  /** The verbatim canonical cell body (`split('---',2)[2]`). */
+  readonly body: string;
+  /** The composed-anchor provenance names, already harness-projected (or []). */
+  readonly composedFrom: readonly string[];
+  /** The repo-relative source path (for the provenance header). */
+  readonly sourcePath: string;
+  /**
+   * A `deploy: skill-dir` cell (e.g. `memory`) emits its `## Tool` section body
+   * VERBATIM as the SKILL.md body, NOT the composed skill body. When set, this is
+   * that section text and the composed-body path is bypassed.
+   */
+  readonly toolSection?: string;
+}
+
+const REF_RE = /\[\[([a-z0-9-]+)\]\]/g;
+
+/** ``` fenced-block line indices (markers included) — mirrors `fence_lines`. */
+function fenceMask(body: string): Set<number> {
+  const lines = body.split('\n');
+  const mask = new Set<number>();
+  let open = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if ((lines[i] as string).startsWith('```')) {
+      if (open === -1) {
+        open = i;
+      } else {
+        for (let j = open; j <= i; j++) {
+          mask.add(j);
+        }
+        open = -1;
+      }
+    }
+  }
+  return mask;
+}
+
+/**
+ * The composed SKILL.md body (mirrors `compose_skill`): drop the prose `≜`
+ * formula line (the composition formula, consumed not emitted) and its trailing
+ * blank, project `[[refs]]` on prose lines via `refProject`, KEEP the
+ * `## Harness: <target>` selector (re-headed) and drop other-harness selectors,
+ * append a one-line "Composed from …" provenance when refs exist. Fence interiors
+ * pass through verbatim. Returns `rstrip() + "\n"`.
+ */
+export function skillBody(
+  s: ResolvedSkill,
+  refProject: (slug: string) => string,
+  harness = 'claude-code',
+): string {
+  // `deploy: skill-dir` (memory): the `## Tool` section verbatim, no composition.
+  if (s.toolSection !== undefined) {
+    return `${s.toolSection.replace(/\n+$/, '')}\n`;
+  }
+
+  const fence = fenceMask(s.body);
+  const lines = s.body.split('\n');
+  const project = (l: string, i: number) =>
+    fence.has(i)
+      ? l
+      : l.replace(REF_RE, (_m, slug) => refProject(slug as string));
+
+  // Section structure: preamble (before first `## `) then sections.
+  const out: string[] = [];
+  // Heading (first `# `), intro (preamble minus the `≜` formula), then sections.
+  let h1Seen = false;
+  let i = 0;
+  // Preamble.
+  const preamble: string[] = [];
+  for (; i < lines.length; i++) {
+    const l = lines[i] as string;
+    if (l.startsWith('## ') && !fence.has(i)) {
+      break;
+    }
+    if (l.startsWith('# ') && !h1Seen && !fence.has(i)) {
+      h1Seen = true;
+      out.push(l);
+      out.push('');
+      continue;
+    }
+    if (l.includes('≜') && !fence.has(i)) {
+      continue; // the prose formula line is dropped
+    }
+    if (h1Seen) {
+      preamble.push(project(l, i));
+    }
+  }
+  const introText = preamble.join('\n').replace(/^\n+/, '').replace(/\n+$/, '');
+  if (introText) {
+    out.push(introText, '');
+  }
+  if (s.composedFrom.length) {
+    out.push(`Composed from ${s.composedFrom.join(' · ')}.`, '');
+  }
+
+  // Sections (each `## ` heading to the next), harness selector handling.
+  const harnessRe = /^## Harness:\s*(\S+)\s*$/;
+  let curHead: string | null = null;
+  let curBody: string[] = [];
+  const flush = () => {
+    if (curHead === null) {
+      return;
+    }
+    const m = curHead.match(harnessRe);
+    if (m) {
+      if (m[1] !== harness) {
+        curHead = null;
+        curBody = [];
+        return;
+      }
+      out.push(`## Harness (${harness})`);
+    } else {
+      out.push(curHead);
+    }
+    for (const b of curBody) {
+      out.push(b);
+    }
+    while (out.length && out[out.length - 1] === '') {
+      out.pop();
+    }
+    out.push('');
+    curHead = null;
+    curBody = [];
+  };
+  for (; i < lines.length; i++) {
+    const l = lines[i] as string;
+    if (l.startsWith('## ') && !fence.has(i)) {
+      flush();
+      curHead = l;
+    } else if (curHead !== null) {
+      curBody.push(project(l, i));
+    }
+  }
+  flush();
+
+  return `${out.join('\n').replace(/\n+$/, '')}\n`;
+}
+
+/**
+ * The skill SKILL.md front-matter. A composed `kind: skill` cell carries
+ * `name / description / trigger`; a `deploy: skill-dir` cell (the `toolSection`
+ * path, e.g. `memory`) carries only `name / description` — no `trigger` line
+ * (mirrors `emit_skill_dir`, which has no command affordance).
+ */
+function skillFrontMatter(s: ResolvedSkill): string[] {
+  const fm = [
+    `name: ${s.name}`,
+    `description: ${s.skillDescription ?? s.delineation}`,
+  ];
+  if (s.toolSection === undefined) {
+    fm.push(`trigger: ${s.trigger}`);
+  }
+  return fm;
+}
+
+/**
+ * The full composed SKILL.md for a skill (mirrors `compose_skill` + render, or
+ * `emit_skill_dir` for a `deploy: skill-dir` cell). `refProject` maps a `[[slug]]`
+ * to its harness affordance (a skill → its `/trigger`, else `**slug**`).
+ */
+export function skillToClaudeMd(
+  s: ResolvedSkill,
+  refProject: (slug: string) => string,
+  profile = 'strong-llm-lean/claude-code',
+  harness = 'claude-code',
+): string {
+  return frameClaudeMd(
+    skillFrontMatter(s),
+    s.sourcePath,
+    profile,
+    skillBody(s, refProject, harness),
+  );
+}

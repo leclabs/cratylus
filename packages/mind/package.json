@@ -8,7 +8,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "codegen": "tsx src/toolkit/codegen.ts"
+    "codegen": "tsx src/toolkit/codegen.ts",
+    "project": "tsx src/toolkit/project-cli.ts"
   },
   "dependencies": {
     "@leclabs/koine": "workspace:*"

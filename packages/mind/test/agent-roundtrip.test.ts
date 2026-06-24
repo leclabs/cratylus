@@ -10,11 +10,11 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { describe, expect, it } from 'vitest';
 import {
   type ResolvedAgent,
   agentToClaudeMd,
-} from '../src/toolkit/agent-projection.js';
+} from '@leclabs/koine/adapters/claude';
+import { describe, expect, it } from 'vitest';
 
 const mindRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const agentsDir = join(mindRoot, 'src', 'agents');

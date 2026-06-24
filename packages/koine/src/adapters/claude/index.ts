@@ -78,3 +78,16 @@ export const claudeAdapter: Adapter = {
 export default claudeAdapter;
 export { paths } from './paths.js';
 export { canonicalToClaude, claudeToCanonical } from './events.js';
+// The anatomy→claude-code SOUL/SKILL projection (the inversion's projection path,
+// distinct from the IR serialize path above).
+export {
+  type ResolvedAgent,
+  type ResolvedSkill,
+  agentToClaudeMd,
+  skillToClaudeMd,
+  agentBody,
+  skillBody,
+  bodyHash,
+  organTitle,
+  provenanceHeader,
+} from './anatomy.js';

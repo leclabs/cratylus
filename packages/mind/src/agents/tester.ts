@@ -1,3 +1,4 @@
+import type { ResolvedAgent } from '@leclabs/koine/adapters/claude';
 import type { Agent } from '@leclabs/koine/anatomy';
 import { humanOnTheLoop as humanOnTheLoop_address } from '../organs/address/human-on-the-loop.js';
 import { executableTestOracle as executableTestOracle_appraisal } from '../organs/appraisal/executable-test-oracle.js';
@@ -26,7 +27,6 @@ import { optimize as optimize_resolve } from '../organs/resolve/optimize.js';
 import { text as text_sensors } from '../organs/sensors/text.js';
 import { claude as claude_substrate } from '../organs/substrate/claude.js';
 import { thoroughness as thoroughness_telos } from '../organs/telos/thoroughness.js';
-import type { ResolvedAgent } from '../toolkit/agent-projection.js';
 import { base } from './base.js';
 export const tester: Agent = {
   ...base,
