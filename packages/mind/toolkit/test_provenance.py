@@ -5,7 +5,7 @@ provenance, and verify surfaces it as a NOTE (a warning, NOT a failure -- a skil
 may legitimately compose from nothing). The recurring empty-provenance bug can no
 longer regress silently. A skill with a PROSE `≜` formula raises no warning, and
 the clean corpus warns ONLY for the known compose-nothing allowlist
-{praxis, carry-on, build-agent} (both legitimately compose NO sibling skill) -- no OTHER
+{praxis, carry-on, create-agent} (both legitimately compose NO sibling skill) -- no OTHER
 real skill warns, and verify stays green.
 
 Run: python3 toolkit/test_provenance.py   (exit non-zero on any failure)
@@ -54,7 +54,7 @@ PROSE_FORMULA = FENCED_ONLY.replace(
 # Skills that legitimately compose NO sibling skill -> they warn empty provenance
 # by design (not a regression). The CORPUS invariant exempts exactly these and
 # asserts NO OTHER skill warns.
-COMPOSE_NOTHING_ALLOWLIST = {"praxis", "carry-on", "build-agent"}
+COMPOSE_NOTHING_ALLOWLIST = {"praxis", "carry-on", "create-agent"}
 
 
 def run_verify() -> subprocess.CompletedProcess:
@@ -96,7 +96,7 @@ def main() -> int:
         FIXTURE.unlink(missing_ok=True)
 
     # FULL CORPUS: verify is green, and the ONLY skills warning empty provenance
-    # are the known compose-nothing allowlist {praxis, carry-on, build-agent}. Any OTHER
+    # are the known compose-nothing allowlist {praxis, carry-on, create-agent}. Any OTHER
     # warning is a regression -- the assertion still bites, just exempts the two
     # skills that compose no sibling by design.
     r = run_verify()
