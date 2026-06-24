@@ -18,6 +18,10 @@ dist/
 # target is user-scope ~/.claude per host (C4); a `<repo>/.claude/{agents,skills}` tree
 # may exist ONLY as an explicit `deploy.py --scope project` opt-in by a downstream adopter.
 packages/mind/.render/
+# Fleet deploy topology carries env-specific SSH usernames — local-only.
+# Committed template: .polis.config.example. Schema: docs/polis-config-schema.md
+.polis.config
+!.polis.config.example
 __pycache__/
 *.pyc
 .scratchpad/

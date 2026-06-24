@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "reader": "strong-llm-lean",
+  "fleet": {
+    "hosts": ["fire", "forge", "spark"],
+    "exclude": []
+  },
+  "host": {
+    "fire": { "local": true },
+    "forge": { "user": "YOUR_SSH_USER" },
+    "spark": { "user": "YOUR_SSH_USER", "hostname": "spark.lan", "home": "~/.claude" }
+  }
+}
