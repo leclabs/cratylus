@@ -32,14 +32,15 @@ T5.1 T5.2 T5.3 T5.4 organ hygiene — independent, run on the CURRENT markdown c
 
 ## Frontier (ready)
 
-| Task     | Lane | What                                                                                                                       |
-| -------- | ---- | -------------------------------------------------------------------------------------------------------------------------- |
-| **T2.1** | Mav  | Wire the projection into koine's **claude adapter** — project the whole corpus to `.claude/{agents,skills}` byte-identical |
+| Task     | Lane     | What                                                                                       |
+| -------- | -------- | ------------------------------------------------------------------------------------------ |
+| **T2.2** | Mav+Nico | Per-adapter harness reset + delta-over-target (claude reset from blank `/introspect`)      |
+| **T3.1** | Mav      | Deploy engine — absorb placer/ssh/.polis.config/fleet/seeding/skill-dir/init (independent) |
 
-**🎉 Phase 1 complete** — the entire markdown→TS inversion holds: ~150 fragments + 15 skills + **11
-agent SOULs** all project byte-identical from typed TS source. The projectors (`fragmentToMarkdown`,
-`skillToMarkdown`, `agentToClaudeMd`) live in `packages/mind/src/toolkit/`; T2.1 moves them into koine's
-claude adapter and projects the full deploy artifact set. **T3.1 (deploy-engine)** can run in parallel.
+**🎉 Phase 1 + projection complete** — the inversion stands alone: `pnpm project` (koine's claude adapter)
+writes `.render-ts/` **byte-identical** to the Python `.render/` (`diff -r` empty, 28 artifacts). koine now
+owns disk-projection (`adapters/claude/anatomy.ts`); mind is its source. **The consumer command is koine's**,
+not a `resolve.py` clone. T2.2 + T3.1 are independent — fan out.
 
 **Open follow-ups (small, deferred):**
 
@@ -49,6 +50,9 @@ claude adapter and projects the full deploy artifact set. **T3.1 (deploy-engine)
 
 ## Completed
 
+- **T2.1** — projection moved into koine's claude adapter (`adapters/claude/anatomy.ts`); standalone
+  `pnpm project` writes `.render-ts/` **byte-identical** to Python `.render/` (`diff -r` empty, 28 files).
+  The consumer command is koine's; source-grain round-trip oracles stay in mind. Commit `a5cfb00`.
 - **T1.2** — all 11 agents → TS modules (spread form) + agent claude-projection; SOULs byte-identical.
   Ground truth: selection-vector path injects only `## Memory`; founder-genus is in provenance text;
   `instructions`/`heuristics` made optional on the Agent type. Commit `d7af48e`.
@@ -69,7 +73,7 @@ _(Commits: `5d16fa1` corpus hygiene · T0.2 spec doc.)_
 
 ## Pending
 
-T2.2 adapter reset/delta · T2.3 density variants · T2.4 multi-harness · T3.1 deploy-engine · T4.1 baseline/delta rollout · T6.1 cutover.
+T2.3 density variants · T2.4 multi-harness · T4.1 baseline/delta rollout · T6.1 cutover.
 
 ## What dissolved (vs the first draft)
 
