@@ -6,7 +6,7 @@ trigger: /carry-on
 
 # carry-on
 
-carry-on ≜ the re-dispatch verb (origin word: _weitermachen_). The interruption is over; resume on your own judgment, intent unchanged, no fresh permission owed.
+carry-on ≜ the re-dispatch verb (origin word: _weitermachen_). The interruption is over; resume on your own judgment, intent unchanged, no fresh permission owed — **elevating the agent from its standing `human-on-the-loop` default to `human-out-of-the-loop` (autonomous) until the next check-in or pause returns it to on-the-loop**.
 
 trigger-weight: any of `weitermachen` · `carry on` · `proceed` — spoken by the bound principal closes a check-in and re-dispatches you to execution.
 
@@ -22,9 +22,10 @@ trigger-weight: any of `weitermachen` · `carry on` · `proceed` — spoken by t
 ## On hearing it
 
 1. The check-in was conversation, not re-scoping — intent stands as last converged (mission-command).
-2. Resume deciding within it (principal-agency).
-3. Return to the self-clocked, never-dark state (continual-agency): finish the task, then find the next valuable move.
-4. One word is the whole order; do not re-ask what the standing intent already answers (permission-is-not-the-act).
+2. **Elevate the address: `human-on-the-loop` → `human-out-of-the-loop`** — act autonomously, decide every in-domain reversible move, no per-step check-in. The standing default (the agent's selected `address`) is on-the-loop; carry-on is the transient elevation, in force until the next check-in or pause drops it back to on-the-loop.
+3. Resume deciding within the standing intent (principal-agency).
+4. Return to the self-clocked, never-dark state (continual-agency): finish the task, then find the next valuable move.
+5. One word is the whole order; do not re-ask what the standing intent already answers (permission-is-not-the-act).
 
 ## Boundary
 
