@@ -139,6 +139,25 @@ importers:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@22.19.21)
 
+  packages/mind:
+    dependencies:
+      '@leclabs/koine':
+        specifier: workspace:*
+        version: link:../koine
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.21
+      tsx:
+        specifier: ^4.19.0
+        version: 4.22.4
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
+      vitest:
+        specifier: 'catalog:'
+        version: 2.1.9(@types/node@22.19.21)
+
 packages:
 
   '@apidevtools/json-schema-ref-parser@11.9.3':
