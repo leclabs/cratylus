@@ -403,6 +403,10 @@ def _persona_value(selection: list[tuple[str, list[str]]]) -> str | None:
     return None
 
 
+_MARK = re.compile(r"([^\s·]+)·(cyan|green|blue|red|orange|purple|yellow|"
+                   r"magenta|teal|gray|grey|pink|indigo|violet|amber|lime)\b")
+
+
 def _mark_from_persona(persona_value: str | None) -> str:
     """The `emoji · hue` mark facet, parsed from the persona value cell's trailing
     `<emoji>·<hue>` token (e.g. `✈️·green`). Returns '' if no such token is found."""
@@ -412,8 +416,31 @@ def _mark_from_persona(persona_value: str | None) -> str:
     if p is None:
         return ""
     body = value_cell_body("persona", persona_value)
-    m = re.search(r"([^\s·]+)·(cyan|green|blue|red|orange|purple|yellow|"
-                  r"magenta|teal|gray|grey|pink|indigo|violet|amber|lime)\b", body)
+    m = _MARK.search(body)
+    return f"{m.group(1)} · {m.group(2)}" if m else ""
+
+
+def _provenance_value(selection: list[tuple[str, list[str]]]) -> str | None:
+    """The agent's chosen `provenance` value (its first selected provenance value),
+    the source of the emblem mark since the `<emoji>·<hue>` token migrated from the
+    persona organ into provenance."""
+    for organ, values in selection:
+        if organ == "provenance" and values:
+            return values[0]
+    return None
+
+
+def _mark_from_provenance(selection: list[tuple[str, list[str]]]) -> str:
+    """The `emoji · hue` mark facet, parsed from the selected provenance value cell's
+    `<emoji>·<hue>` token (e.g. `✈️·green`). The emblem lives in provenance now;
+    returns '' if no provenance value is selected or it carries no such token."""
+    value = _provenance_value(selection)
+    if value is None:
+        return ""
+    if value_cell_path("provenance", value) is None:
+        return ""
+    body = value_cell_body("provenance", value)
+    m = _MARK.search(body)
     return f"{m.group(1)} · {m.group(2)}" if m else ""
 
 
@@ -439,7 +466,7 @@ def compose_agent_selection(slug: str, reader: str, harness: str) -> ComposedDoc
     cell(s)' body inlined ([[cite-dont-copy]] at the projection grain: the value
     cell is the one home, the def is its faithful projection). The `description`
     front-matter is the persona definiens; the mark (emoji·hue) is parsed from the
-    persona cell."""
+    selected provenance value (persona fallback for legacy cells)."""
     cell = cells.parse_cell(slug)
     name = slug
     heading = next(
@@ -448,7 +475,9 @@ def compose_agent_selection(slug: str, reader: str, harness: str) -> ComposedDoc
     )
     selection = parse_selection(cell)
     persona_value = _persona_value(selection)
-    mark = _mark_from_persona(persona_value)
+    # Mark (emoji·hue) now lives in the provenance organ; fall back to a legacy
+    # persona-carried mark for zero-regression on any un-migrated cell.
+    mark = _mark_from_provenance(selection) or _mark_from_persona(persona_value)
     emoji = mark.split("·", 1)[0].strip() if mark else ""
     if emoji:
         heading = f"{emoji} {heading}"
@@ -457,10 +486,6 @@ def compose_agent_selection(slug: str, reader: str, harness: str) -> ComposedDoc
 
     body: list[str] = []
     body.append(f"# {heading}")
-    body.append("")
-    body.append(f"**{slug}** — an agent composited from its organ anatomy: each "
-                f"section below is one organ's selected value, inlined from the "
-                f"`packages/mind/<organ>/` catalogs.")
     body.append("")
     for organ, values in selection:
         body.append(f"## {organ_title(organ)}")
