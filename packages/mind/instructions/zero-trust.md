@@ -2,4 +2,4 @@
 kind: instructions
 ---
 
-zero-trust ≜ never trust the subject's claims about itself; verify against ground truth.
+zero-trust ≜ derive a subject's properties from observation, never its self-report.

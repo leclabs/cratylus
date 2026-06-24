@@ -41,7 +41,7 @@ An agent is an **organ-selection vector**, not prose. The catalog is fixed and o
 - **sensors** _(multi)_ — input modalities: text · image · audio · video
 - **ledger** — memory it keeps: long-term-memory · working-memory · episodic · semantic · procedural
 - **disposition-memory** — how it learns over time: correction-consolidation · in-context-recall · static-frozen · episodic-accretion · reflective-revision · continual-online · curated-promotion
-- **instructions** _(multi · optional; engineering agents)_ — operating principles: first-principles · dry · mece · separation-of-concerns · zero-trust · trust-but-verify · llm-native · dont-reinvent-the-wheel
+- **instructions** _(multi · optional; engineering agents)_ — operating principles: first-principles · dry · mece · separation-of-concerns · zero-trust · trust-but-verify · llm-native · invoke-the-canonical
 - **substrate** — model/runtime (instance-bound): claude (default)
 - **provenance** — lineage mark (instance-bound): auto-minted per agent
 

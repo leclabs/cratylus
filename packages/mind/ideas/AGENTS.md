@@ -20,7 +20,11 @@ idea-typology:
   `README.md` is the human projection composing them. An **enum-organ**'s values are members of the model's
   own native enum — sourced by **blind model introspection** (the recognized industry-standard term, the
   σ\*\_LLM that fires), never a coinage. An **open-organ**'s values are named per agent (mandate · telos ·
-  competence · instructions · construal · persona · provenance — where identity lives).
+  competence · construal · persona · provenance — where identity lives). A **coined catalog**
+  (charter · heuristics · instructions) is a closed, corpus-authored set of canonical directives —
+  neither per-agent-open nor model-native-enum; `instructions` is the methodology organ (working
+  principles), **not** a fallback or catch-all. **Authoring precedence:** pick the correct organ → bind a
+  canonical value from its catalog/enum → author bespoke prose only when none fits.
 - **Agents** — `packages/mind/agent/<name>.md`, `kind: agent`. An **organ-selection vector**:
   `<name> ≜ ⊕{organ ↦ value}`, then one `organ [[value]]` line per organ it fills.
 - **Skills** — `packages/mind/skill/<name>.md`, `kind: skill`. A **self-sufficient set-builder**: a formal
