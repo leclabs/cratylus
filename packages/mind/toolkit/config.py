@@ -28,11 +28,17 @@ home)` params and enumerates the fleet.
 from __future__ import annotations
 
 import json
+import os
 import pathlib
 from dataclasses import dataclass
 
 SCHEMA_VERSION = 1
 CONFIG_NAME = ".polis.config"
+# Explicit config-path override (an alternate topology file). Honored before the
+# repo-root search -- lets an operator (or a hermetic test) point deploy.py at a
+# config other than the one beside `.git`. An absent override falls through to the
+# repo-root `.polis.config`.
+CONFIG_ENV = "POLIS_CONFIG"
 
 
 class ConfigError(Exception):
@@ -64,8 +70,16 @@ def repo_root(start: pathlib.Path | None = None) -> pathlib.Path:
 
 
 def config_path(root: pathlib.Path | None = None) -> pathlib.Path:
-    """The `.polis.config` path at the repo root (whether or not it exists)."""
-    return (root or repo_root()) / CONFIG_NAME
+    """The `.polis.config` path to read (whether or not it exists). The
+    `POLIS_CONFIG` env override wins when set (an explicit alternate topology
+    file); else the `.polis.config` beside the repo root. An explicit `root`
+    argument (test/internal) still takes precedence over the env override."""
+    if root is not None:
+        return root / CONFIG_NAME
+    override = os.environ.get(CONFIG_ENV)
+    if override:
+        return pathlib.Path(override)
+    return repo_root() / CONFIG_NAME
 
 
 def load_config(root: pathlib.Path | None = None) -> dict | None:

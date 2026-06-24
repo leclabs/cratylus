@@ -6,7 +6,9 @@ The canonical, deterministic source of truth for **per-host deployment parameter
 "unreachable" when the real fault was a wrong SSH user, `lex` vs `lcaraccioli`).
 
 - **Format:** JSON (zero-dep read in both Python `json` and JS — `koine` is Python+JS).
-- **Location:** repo root, `.polis.config`.
+- **Location:** repo root, `.polis.config`. The `POLIS_CONFIG` env var overrides the path (point the
+  deployer at an alternate topology file; also how the test suite stays hermetic). An explicit `root`
+  argument still wins over the env override.
 - **Tracking:** the real `.polis.config` is **gitignored** (carries env-specific SSH usernames); a
   placeholder **`.polis.config.example`** is committed as the template. Copy it and fill in real hosts.
 
