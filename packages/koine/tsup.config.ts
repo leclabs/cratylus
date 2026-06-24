@@ -8,7 +8,10 @@ const adapters = readdirSync('./src/adapters', { withFileTypes: true })
   .filter((d) => d.isDirectory())
   .map((d) => d.name);
 
-const libEntry: Record<string, string> = { 'core/index': 'src/core/index.ts' };
+const libEntry: Record<string, string> = {
+  'core/index': 'src/core/index.ts',
+  'anatomy/index': 'src/anatomy/index.ts',
+};
 for (const a of adapters) {
   libEntry[`adapters/${a}/index`] = `src/adapters/${a}/index.ts`;
 }

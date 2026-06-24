@@ -1,5 +1,11 @@
 # Conceptual Anatomy of an AI Agent
 
+> **The contract is the TypeScript; this is its projection.** As of T0.1
+> (`plans/koine-absorbs-mind`), the anatomy IS a **TypeScript type system** —
+> `packages/koine/src/anatomy/index.ts`, exported from `@leclabs/koine/anatomy`. Those types are the
+> source of truth (genus · classification · arity · the 24-organ `Organ` union · `Fragment` · `Agent` ·
+> `Skill`); this prose is their human-readable mirror. Keep them consistent; the `.ts` wins on conflict.
+
 > **Reference knowledge — do not re-derive.** This is the canonical **σ\*\_LLM** render of the agent's
 > conceptual anatomy: the MECE organ set (**STANCE / CONATUS**). Full research home in obsidian
 > `Reference/context-engineering/conceptual-anatomy-of-an-ai-agent/`; produced blind by a fresh model
