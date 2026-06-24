@@ -21,10 +21,13 @@ generalized opinionated LLM-reader set, rewired all 11 agents, renamed `weiterma
 `build-agent` layman wizard. Landed `main` @ `510c66e`; **fleet 6/6 deployed + verified** (fire · forge ·
 spark · ash · upmav · upgoose — nico sha parity `df337e…`, zero bespoke, memory layers untouched).
 
-**Proposed next initiative (awaiting Operator go):** `fleet-organ-sync` — founder memory stores are per-host
-and **UNSYNCED** (`~/.claude` is not a synced repo), so they fork and each re-accumulates palimpsest. They
-are meant to be ONE user-scoped individual ("travels with the agent"). Per-host de-palimpsest is a mop; the
-durable fix is a working **fleet organ sync** (Mav-led machinery; Nico co-specs the memory-cell contract).
+**Memory model (Operator decision, 2026-06-23): memory is LOCAL-PER-HOST.** `fleet-organ-sync` is
+**declined** — a single shared organ store clobbers each host's legitimate local context, and fleet-wide
+memory isn't practical for this simple/open-source library. Deploy pushes only the **SOUL** (regenerable def
+
+- skills), never memory content (if-absent seed, never clobber). Per-host divergence is fine by design; the
+  only memory hygiene that matters is keeping the **primary host's** store (fire) clean. The earlier
+  "fleet-divergence is the structural root" framing is retired.
 
 ## See also
 
