@@ -1,6 +1,13 @@
-// Shared cell grammar for the T1.1 spike: parse a `<organ>/<value>.md` cell into
-// its structural parts, and define the canonical "cell body" the round-trip
-// targets byte-for-byte.
+// Shared cell grammar for the mind→TS migration. Parses a `<organ>/<value>.md`
+// or `skill/<name>.md` cell into its structural parts, and defines the canonical
+// "cell body" the round-trip targets byte-for-byte.
+//
+// BYTE-ANCHOR — the canonical body is exactly what the Python toolkit's
+// `core.cells.parse_cell` returns: `raw.split('---', 2)[2]` — everything after
+// the second `---`. For a value-cell that is `\n\n<slug> ≜ <definiens>\n`; for a
+// skill it is `\n\n# <verb>\n…\n`. The leading `\n\n` (the newline closing the
+// front-matter fence + the blank line before the body) is PART of the body and
+// must be reproduced. We mirror the Python split exactly — do not reinvent.
 //
 // A value-cell is uniform:
 //
@@ -10,74 +17,96 @@
 //
 //     <slug> ≜ <definiens>
 //
-// (front-matter, one blank line, one definition line, trailing newline). The
-// "body" the composer inlines — and the byte-anchor the round-trip targets — is
-// everything after the front-matter block, i.e. the `<slug> ≜ <definiens>\n`
-// line. We keep the body verbatim; the mark (📐·cyan) is parsed out as metadata
-// but stays INLINE in the definiens, so projection is byte-exact by construction.
+// The mark (📐·cyan) is parsed out as metadata but stays INLINE in the definiens,
+// so projection is byte-exact by construction (we never re-synthesize it).
 
 import type { Mark, Organ } from '@leclabs/koine/anatomy';
 
+/** A parsed organ value-cell. */
 export interface ParsedCell {
-  /** The organ (front-matter `kind:`). */
   readonly organ: Organ;
-  /** The cell anchor, left of `≜`. */
   readonly slug: string;
   /** Everything right of `≜ ` on the definition line (mark stays inline). */
   readonly definiens: string;
-  /** The emoji·hue mark, if one is embedded in the definiens. */
   readonly mark?: Mark;
-  /** The canonical cell body the round-trip must reproduce byte-for-byte. */
+  /** The canonical cell body (`split('---',2)[2]`) — the round-trip byte-anchor. */
+  readonly body: string;
+}
+
+/** A parsed `kind: skill` cell. */
+export interface ParsedSkill {
+  /** Front-matter `name:` (falls back to the file slug). */
+  readonly name: string;
+  /** Front-matter `trigger:` (e.g. `/introspect`). */
+  readonly trigger: string;
+  /** Front-matter `delineation:`. */
+  readonly delineation: string;
+  /** The H1 verb (the `# <verb>` heading text). */
+  readonly verb: string;
+  /** The first fenced block's interior (the self-sufficient set-builder), if any. */
+  readonly formalBlock: string;
+  /** Sibling-skill anchors harvested from the prose `≜` formula / Bindings region. */
+  readonly composition: readonly string[];
+  /** The canonical cell body (`split('---',2)[2]`) — the round-trip byte-anchor. */
   readonly body: string;
 }
 
 /** The definition connective. */
 const DEF = ' ≜ ';
 
-/**
- * The mark token: an emoji glyph, a middot, a lowercase hue word — with NO
- * spaces around the inner `·` (distinguishing `📐·cyan` from the ` · ` segment
- * separators). Emoji are matched by Extended_Pictographic + optional VS16/joins.
- */
-const MARK_RE = /(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)·([a-z]+)/u;
+const MARK_RE =
+  /(\p{Extended_Pictographic}(?:️|‍\p{Extended_Pictographic})*)·([a-z]+)/u;
 
-/** Split front-matter from body. Returns `{ frontMatter, body }`. */
-function splitFrontMatter(raw: string): { frontMatter: string; body: string } {
-  if (!raw.startsWith('---\n')) {
+/** Every `[[anchor]]` token (slug only), mirroring the Python `cells.REF`. */
+const REF_RE = /\[\[([a-z0-9-]+)\]\]/g;
+
+/** A front-matter field value, or `''` if absent. Mirrors the Python `: ` split. */
+function frontField(frontMatter: string, key: string): string {
+  const m = frontMatter.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'));
+  return m?.[1]?.trim() ?? '';
+}
+
+/**
+ * Split a raw cell into front-matter and the CANONICAL body, mirroring the
+ * Python `parse_cell`: `raw.split('---', 2)` → `body = parts[2]` (the leading
+ * `\n` after the closing `---` is kept). Throws on a malformed cell.
+ */
+function splitCanonical(raw: string): { frontMatter: string; body: string } {
+  if (!raw.startsWith('---')) {
     throw new Error('cell: missing front-matter open fence');
   }
-  const close = raw.indexOf('\n---\n', 4);
-  if (close === -1) {
+  // raw.split('---', 2) in Python keeps the remainder in parts[2]; JS `split`
+  // with a limit DROPS the remainder, so replicate the Python 3-way split.
+  const first = raw.indexOf('---');
+  const second = raw.indexOf('---', first + 3);
+  if (second === -1) {
     throw new Error('cell: missing front-matter close fence');
   }
-  const frontMatter = raw.slice(0, close + 5); // through "\n---\n"
-  let body = raw.slice(close + 5);
-  // Drop exactly one separator blank line between front-matter and body.
-  if (body.startsWith('\n')) {
-    body = body.slice(1);
-  }
+  const frontMatter = raw.slice(first + 3, second);
+  const body = raw.slice(second + 3);
   return { frontMatter, body };
 }
 
 /** Parse the organ off the front-matter `kind:` line. */
-function organFromFrontMatter(frontMatter: string): Organ {
-  const m = frontMatter.match(/^kind:\s*(.+)$/m);
-  if (!m?.[1]) {
+function organFrom(frontMatter: string): Organ {
+  const kind = frontField(frontMatter, 'kind');
+  if (!kind) {
     throw new Error('cell: front-matter has no `kind:`');
   }
-  return m[1].trim() as Organ;
+  return kind as Organ;
 }
 
-/** Parse a raw `.md` cell string into its structural parts. */
+/** Parse a raw `.md` organ value-cell into its structural parts. */
 export function parseCell(raw: string): ParsedCell {
-  const { frontMatter, body } = splitFrontMatter(raw);
-  const organ = organFromFrontMatter(frontMatter);
+  const { frontMatter, body } = splitCanonical(raw);
+  const organ = organFrom(frontMatter);
 
-  const line = body.endsWith('\n') ? body.slice(0, -1) : body;
-  const at = line.indexOf(DEF);
-  if (at === -1) {
-    throw new Error(`cell: definition line lacks "${DEF.trim()}" connective: ${line}`);
+  // The definition line is the single non-blank body line.
+  const line = body.split('\n').find((l) => l.includes(DEF));
+  if (line === undefined) {
+    throw new Error(`cell: no definition line with "${DEF.trim()}"`);
   }
+  const at = line.indexOf(DEF);
   const slug = line.slice(0, at);
   const definiens = line.slice(at + DEF.length);
 
@@ -87,4 +116,110 @@ export function parseCell(raw: string): ParsedCell {
     : undefined;
 
   return { organ, slug, definiens, mark, body };
+}
+
+/** The interior of the first fenced ``` ``` block in `body`, or `''` if none. */
+function firstFenceInterior(body: string): string {
+  const lines = body.split('\n');
+  let open = -1;
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i] as string;
+    if (l.startsWith('```')) {
+      if (open === -1) {
+        open = i;
+      } else {
+        return lines.slice(open + 1, i).join('\n');
+      }
+    }
+  }
+  return '';
+}
+
+/** Refs in the cell's single prose `≜` formula line (fenced `≜` is math, skipped). */
+function formulaRefs(body: string): string[] {
+  const fence = fenceMask(body);
+  const lines = body.split('\n');
+  const formula = lines.find((l, i) => l.includes('≜') && !fence.has(i));
+  if (formula === undefined) {
+    return [];
+  }
+  return dedupe([...formula.matchAll(REF_RE)].map((m) => m[1] as string));
+}
+
+/** Refs in the cell's `Bindings:` paragraph (the cite-once home), if present. */
+function bindingsRefs(body: string): string[] {
+  const fence = fenceMask(body);
+  const lines = body.split('\n');
+  const start = lines.findIndex(
+    (l, i) =>
+      !fence.has(i) && /^\s*\*{0,2}Bindings\b\s*(?:\([^)]*\))?\s*:/.test(l),
+  );
+  if (start === -1) {
+    return [];
+  }
+  const refs: string[] = [];
+  for (let i = start; i < lines.length; i++) {
+    const l = lines[i] as string;
+    if (
+      i > start &&
+      (l.trim() === '' || (l.startsWith('## ') && !fence.has(i)))
+    ) {
+      break;
+    }
+    refs.push(...[...l.matchAll(REF_RE)].map((m) => m[1] as string));
+  }
+  return dedupe(refs);
+}
+
+/** Line indices inside a ``` fenced block (markers included). Mirrors `fence_lines`. */
+function fenceMask(body: string): Set<number> {
+  const lines = body.split('\n');
+  const mask = new Set<number>();
+  let open = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if ((lines[i] as string).startsWith('```')) {
+      if (open === -1) {
+        open = i;
+      } else {
+        for (let j = open; j <= i; j++) {
+          mask.add(j);
+        }
+        open = -1;
+      }
+    }
+  }
+  return mask;
+}
+
+function dedupe(xs: string[]): string[] {
+  return [...new Set(xs)];
+}
+
+/**
+ * Parse a `kind: skill` cell. Composition precedence mirrors the Python
+ * `composition_refs`: a Bindings region (cite-once home) WINS; absent it, the
+ * prose `≜` formula's refs. The verb is the H1 text; the formalBlock is the
+ * first fenced block's interior.
+ */
+export function parseSkill(raw: string, fileSlug: string): ParsedSkill {
+  const { frontMatter, body } = splitCanonical(raw);
+  const fence = fenceMask(body);
+  const lines = body.split('\n');
+
+  const h1 = lines.find((l, i) => l.startsWith('# ') && !fence.has(i));
+  const verb = h1 ? h1.slice(2).trim() : fileSlug;
+
+  const composition = bindingsRefs(body).length
+    ? bindingsRefs(body)
+    : formulaRefs(body);
+
+  return {
+    name: frontField(frontMatter, 'name') || fileSlug,
+    trigger: frontField(frontMatter, 'trigger'),
+    delineation: frontField(frontMatter, 'delineation'),
+    verb,
+    formalBlock: firstFenceInterior(body),
+    composition,
+    body,
+  };
 }
