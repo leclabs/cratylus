@@ -32,17 +32,22 @@ T5.1 T5.2 T5.3 T5.4 organ hygiene — independent, run on the CURRENT markdown c
 
 ## Frontier (ready)
 
-| Task     | Lane     | What                                                                                       |
-| -------- | -------- | ------------------------------------------------------------------------------------------ |
-| **T1.1** | Mav+Nico | Migrate organ value-cells → typed TS fragment modules (codegen; byte-identical round-trip) |
+| Task     | Lane     | What                                                                                        |
+| -------- | -------- | ------------------------------------------------------------------------------------------- |
+| **T1.2** | Mav+Nico | Agents → ESM modules composed by import + spread (`base.ts` + deltas); byte-identical SOULs |
 
-**T1.1 in progress** — the inversion is **proven** on a 5-cell slice (commit `8288e19`): `mind` is now a
-TS workspace member; codegen + `fragmentToMarkdown` round-trip byte-identical. Remaining: migrate all
-~150 value-cells, and probe the **skill formal-block** (multi-line/fenced) round-trip — the one unproven
-risk (T1.3). T1.2 (agents via spread) + T1.3 (skills) unblock as T1.1 completes.
+T1.2 needs the **agent claude-projection** (assemble a SOUL from organ fragments + genus/memory
+injection) to prove byte-identical — couple it with the start of T2.1, as T1.1 coupled with its projector.
+
+**Follow-up (small):** the anatomy `Skill.composition` should become a lazy thunk `() => Skill[]` (or
+prove the skill graph acyclic) — the migration found real cycles (conceptualize↔exemplify↔signify↔
+materialize, elicit↔probe) and used string anchors via a `SkillCell` superset as the cycle-safe stopgap.
 
 ## Completed
 
+- **T1.1 + T1.3** — all 155 organ value-cells + 15 skills migrated to typed TS modules under
+  `packages/mind/src/`, every one projecting **byte-identical** to its markdown (non-vacuous test).
+  Formal-block skill (`introspect`) round-trips. Commits `8288e19` (spike), `af0f268` (full).
 - **T0.1** — anatomy as TS types → `@leclabs/koine/anatomy` (24 organ types + Agent/Skill/Fragment;
   wrong organ/arity = compile error). Commit `db41ffe`.
 - **T0.2** — baseline/delta + two-reset model → `docs/baseline-delta-model.md` (spread-merge,
