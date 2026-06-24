@@ -32,14 +32,16 @@ T5.1 T5.2 T5.3 T5.4 organ hygiene — independent, run on the CURRENT markdown c
 
 ## Frontier (ready)
 
-| Task     | Lane     | What                                                                        |
-| -------- | -------- | --------------------------------------------------------------------------- |
-| **T0.1** | Mav+Nico | The anatomy as TS types (organ types + Agent/Skill/Fragment) — the contract |
+| Task     | Lane     | What                                                                                       |
+| -------- | -------- | ------------------------------------------------------------------------------------------ |
+| **T1.1** | Mav+Nico | Migrate organ value-cells → typed TS fragment modules (codegen; byte-identical round-trip) |
 
-Once T0.1 lands, the T1.\* module-migration tasks become ready (fan-out resumes).
+T1.2 (agents via spread) + T1.3 (skills) unblock once T1.1 lands.
 
 ## Completed
 
+- **T0.1** — anatomy as TS types → `@leclabs/koine/anatomy` (24 organ types + Agent/Skill/Fragment;
+  wrong organ/arity = compile error). Commit `db41ffe`.
 - **T0.2** — baseline/delta + two-reset model → `docs/baseline-delta-model.md` (spread-merge,
   inherit-by-omission, adapter-side delta-over-target; `base.ts` decision; `claude` filed under the adapter).
 - **T5.1** — `zero-trust` narrowed to the methodology slice (overlap with `input-untrusted` removed).
@@ -52,7 +54,7 @@ _(Commits: `5d16fa1` corpus hygiene · T0.2 spec doc.)_
 
 ## Pending
 
-T1.1 fragments→modules · T1.2 agents (ESM+spread) · T1.3 skills→modules · T2.1 claude projection · T2.2 adapter reset/delta · T2.3 density variants · T2.4 multi-harness · T3.1 deploy-engine · T4.1 baseline/delta rollout · T6.1 cutover.
+T1.2 agents (ESM+spread) · T1.3 skills→modules · T2.1 claude projection · T2.2 adapter reset/delta · T2.3 density variants · T2.4 multi-harness · T3.1 deploy-engine · T4.1 baseline/delta rollout · T6.1 cutover.
 
 ## What dissolved (vs the first draft)
 
