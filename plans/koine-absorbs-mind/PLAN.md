@@ -32,12 +32,18 @@ T5.1 T5.2 T5.3 T5.4 organ hygiene — independent, run on the CURRENT markdown c
 
 ## Frontier (ready)
 
-**Frontier cleared — T2.2 + T3.1 both landed (local main, unpushed).** The inversion now stands end to
-end: TS source → koine claude-adapter projection (byte-identical) → koine deploy layer (parity with the
-Python placer). What remains is **rollout/cutover** (now unblocked): T4.1 (agents as true minimal deltas,
-the omit-to-inherit flip), T2.3 (reader density), T2.4 (multi-harness, free), T6.1 (retire the Python
-toolkit), T6.2 (rehome build-provenance out of the injected SOUL). **Outward gate held**: nothing pushed,
-no fleet redeploy — awaiting Operator consent (also still pending: the organ-hygiene SOUL redeploy).
+**Phase 2/3 complete + pushed** (T2.1–T2.4, T3.1, T5.x). The inversion stands end to end: TS source →
+koine projection (claude + codex, byte-identical) → koine deploy + catalog. What remains: **T6.1 cutover**,
+**T4.1** (minimal-delta agents), **T6.2** (rehome build-provenance).
+
+**T6.1 cutover — RESEQUENCED (Nico, sequencing-error correction).** Cutover (delete the 184 dual-maintained
+`.md` cells + the Python toolkit → `.ts` sole source) was wrongly parked behind T4.1/extraction. It is
+**independent of both** (extraction moves `.ts` cells; cutover deletes `.md`+Python — orthogonal). And the
+byte-identity oracle's job is **done** (TS proven byte-identical end-to-end), so `.md`-as-anchor is obsolete.
+**Cutover should run BEFORE T4.1** — the dual-maintenance taxes every corpus edit 2× (felt all session), and
+removing it makes the T4.1 agent rewrites one-file. **Real blocker (not extraction):** port `verify.py`'s
+gate-suite to TS (Mav-lane), and decide `glossary`/`emit_manifest`/`intake`/`rebase` keep-or-drop (Nico).
+**Outward gate held**: fleet redeploy awaits Operator (also pending: organ-hygiene SOUL redeploy).
 
 **Open follow-ups (small, deferred):**
 
