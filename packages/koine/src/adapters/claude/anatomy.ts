@@ -21,6 +21,74 @@ import { createHash } from 'node:crypto';
 import type { Fragment, Mark, Organ } from '../../anatomy/index.js';
 import type { HarnessReset } from './harness-reset.js';
 
+// ── Reader-density axis (port of mind toolkit `compose/reader.py`) ────────────
+// Reader density is a PROJECTION PARAMETER, never a property of the source: the
+// SAME typed fragments project at three densities that close progressively larger
+// prior-gaps. It is ORTHOGONAL to the harness affordance (how a `[[ref]]` name
+// prints — `/trigger` vs `**bold**`): density decides how much SCAFFOLDING wraps
+// that name. The Python byte-anchor is `resolve.py --reader <density>`.
+//
+//   strong-llm-lean   name only — the name is the pointer        (density → 0)
+//   strong-llm        name + delineation                         (safe default)
+//   weak-llm          + an explicit kind/verb cue                (max scaffold)
+//
+// NOTE on the current corpus: density-aware ref EXPANSION (`densityRef`) is the
+// ported mechanism, but it only governs LIST-ITEM `- <ref>` surfaces. The deployed
+// corpus has none: agents are organ-selection vectors whose value-cells are inlined
+// verbatim (no per-anchor delineation to drop, no cue to add), and skills emit a
+// LEAN one-line provenance (names only, by spec — `skill.py`: "names only, never
+// the full delineations") plus harness-only inline refs. So the projected body is
+// byte-identical at all three densities on this corpus — only the recorded
+// `profile:` header line changes. The mechanism is parameterized and exercised so a
+// future density-varying surface honors it; it is not a no-op by accident.
+
+/** The reader-prior density axis — a projection parameter, not a source property. */
+export type ReaderDensity = 'strong-llm-lean' | 'strong-llm' | 'weak-llm';
+
+const READER_DENSITIES: readonly ReaderDensity[] = [
+  'strong-llm-lean',
+  'strong-llm',
+  'weak-llm',
+];
+
+/** Whether a string is one of the three reader densities (CLI guard). */
+export function isReaderDensity(s: string): s is ReaderDensity {
+  return (READER_DENSITIES as readonly string[]).includes(s);
+}
+
+/** Derive the recorded `profile:` value (`<density>/<harness>`). */
+export function densityProfile(
+  density: ReaderDensity,
+  harness = 'claude-code',
+): string {
+  return `${density}/${harness}`;
+}
+
+/**
+ * One resolved-anchor LIST-ITEM line at the given density (port of `reader.py`
+ * `render_ref`). `name` is the already-harness-projected anchor (a skill →
+ * `/trigger`, else `**slug**`); `delineation` is the anchor's one-line bound; `cue`
+ * is the weak-llm `<kind>, <verb>` scaffold (or `undefined` when the slug has no
+ * kind cue). Mirrors:
+ *   strong-llm-lean → `- <name>`                      (the name is the pointer)
+ *   weak-llm        → `- <name> _(<cue>)_ -- <delin>` (cue present)
+ *   else            → `- <name> -- <delineation>`     (strong-llm; weak w/o cue)
+ */
+export function densityRef(
+  name: string,
+  density: ReaderDensity,
+  delineation: string,
+  cue?: string,
+): string {
+  if (density === 'strong-llm-lean') {
+    return `- ${name}`;
+  }
+  if (density === 'weak-llm' && cue) {
+    return `- ${name} _(${cue})_ -- ${delineation}`;
+  }
+  return `- ${name} -- ${delineation}`;
+}
+
 // ── Agent projection ────────────────────────────────────────────────────────
 
 /** A resolved agent ready to project: name, ordered organs, fragments, mark. */

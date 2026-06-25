@@ -83,6 +83,7 @@ export { canonicalToClaude, claudeToCanonical } from './events.js';
 export {
   type ResolvedAgent,
   type ResolvedSkill,
+  type ReaderDensity,
   agentToClaudeMd,
   projectAgentDelta,
   subtractReset,
@@ -92,6 +93,9 @@ export {
   bodyHash,
   organTitle,
   provenanceHeader,
+  densityProfile,
+  densityRef,
+  isReaderDensity,
 } from './anatomy.js';
 // The claude HARNESS RESET (omit-to-inherit basis) + its type. `claude` is a
 // harness, never a mind agent — so the reset lives in the adapter, not mind.

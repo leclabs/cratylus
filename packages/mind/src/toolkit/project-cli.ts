@@ -5,18 +5,29 @@
 // wires them to it (mind = koine's source). The TS counterpart of
 // `toolkit/resolve.py main()`.
 //
-// Usage:  tsx src/toolkit/project-cli.ts [--out <dir>] [--profile <reader/harness>]
+// Usage:  tsx src/toolkit/project-cli.ts [--out <dir>] [--density <reader>]
+//                                        [--profile <reader/harness>]
 //   default out:     packages/mind/.render-ts   (gitignored; never the Python .render)
-//   default profile: strong-llm-lean/claude-code (the deployed profile)
+//   default density: strong-llm-lean (the deployed reader; → profile
+//                    strong-llm-lean/claude-code)
+//
+// Reader density is the PRIMARY knob — `--density strong-llm-lean|strong-llm|weak-llm`
+// — and is just a PROJECTION PARAMETER, never a property of the source modules: the
+// same typed fragments project at the chosen density. It maps to the recorded
+// `profile:` header as `<density>/claude-code`. `--profile` is the explicit escape
+// hatch (full `<reader>/<harness>` control); it overrides `--density` when given.
 
 import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
+  type ReaderDensity,
   type ResolvedAgent,
   type ResolvedSkill,
   agentToClaudeMd,
+  densityProfile,
+  isReaderDensity,
   skillToClaudeMd,
 } from '@leclabs/koine/adapters/claude';
 import type { SkillCell } from './skill-cell.js';
@@ -33,7 +44,8 @@ interface Args {
 
 function parseArgs(argv: string[]): Args {
   let out = join(mindRoot, '.render-ts');
-  let profile = 'strong-llm-lean/claude-code';
+  let density: ReaderDensity = 'strong-llm-lean';
+  let profile: string | undefined;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--out') {
@@ -42,6 +54,17 @@ function parseArgs(argv: string[]): Args {
         throw new Error('--out requires a value');
       }
       out = v;
+    } else if (a === '--density') {
+      const v = argv[++i];
+      if (!v) {
+        throw new Error('--density requires a value');
+      }
+      if (!isReaderDensity(v)) {
+        throw new Error(
+          `unknown --density ${v} (want strong-llm-lean | strong-llm | weak-llm)`,
+        );
+      }
+      density = v;
     } else if (a === '--profile') {
       const v = argv[++i];
       if (!v) {
@@ -52,7 +75,8 @@ function parseArgs(argv: string[]): Args {
       throw new Error(`unknown arg ${a}`);
     }
   }
-  return { out, profile };
+  // `--profile` (explicit `<reader>/<harness>`) wins; else derive from `--density`.
+  return { out, profile: profile ?? densityProfile(density) };
 }
 
 async function moduleNames(dir: string): Promise<string[]> {
