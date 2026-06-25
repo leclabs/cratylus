@@ -28,3 +28,13 @@ corroborate with the web, and compare against the current corpus values.
 ## Out of scope
 
 Address (C1, the worked starter). The discovery mechanism (C3).
+
+## Done — round 1 (2026-06-24)
+
+Blind gap-audit of the 4 open organs (mandate·telos·competence·construal) via 4 clean unprimed instances,
+diffed against the live `koine catalog` baseline. Finding: the corpus was already blind-derived, so gaps are
+few. **Minted 2** genuine gaps — `mandate/converse` (dialogue-as-deliverable agent) + `construal/adversarial`
+(break-it / attacker's-stance lens) — both verify.py PASS, byte-identical, auto-surfaced by `koine catalog`
+(drift-proof via C3). Rationale + deferred candidates + the competence abstraction-mismatch finding:
+`decisions/0001-round1-gap-audit.md`. **Follow-ups (new round if wanted):** MECE-gate monitor / synthesizing /
+optimizing; domain-framed competence re-audit; `human-in-command` as a charter value (carry-in from C1).

@@ -20,17 +20,16 @@ clause, never the human explanatory paragraph — prose-bloat = wrong-anchor sig
 values (a new value must carve a genuinely distinct distinction, not duplicate one). Round-trip /
 byte-identical projection holds. Lane: Nico = catalog content + create-agent contract; Mav = `koine catalog` CLI.
 
-## Frontier (ready)
+## Status
 
-**C3 + C1 done.** C2 is the remaining task.
+**C1 + C2 + C3 all done** (round 1). The plan's thrust is delivered: the builder discovers the catalog
+drift-free (C3), and the catalog gained its first blind-audited gaps (C2). Optional follow-up rounds below.
 
-## Pending
+## Pending (optional next rounds)
 
-- **C2** — **organ-library robustness**: blind-introspection round (the `canonical-organ-values`
-  methodology) over the OPEN organs; widen genuinely-sparse value-sets so `create-agent` has fuller
-  option-spaces. Mint only real gaps (no bloat); each value R=LLM-dense + MECE + gated. **Carry-in from
-  C1:** evaluate `human-in-command` (the HATL/governance axis) as a possible **charter** value vs the
-  existing `human-oversight` / `scope-of-authority` / `accountability` — a different organ than `address`.
+- **C2-r2** — MECE-gate the deferred candidates (`monitor` mandate; `synthesizing` / `optimizing` construal);
+  a **domain-framed competence re-audit** (round 1 surfaced capabilities, not domains); evaluate
+  `human-in-command` (the C1 carry-in) as a **charter** value. See `decisions/0001-round1-gap-audit.md`.
 
 ## Completed
 
