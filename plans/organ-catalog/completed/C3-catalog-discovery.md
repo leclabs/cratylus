@@ -36,3 +36,15 @@ would force manual table edits and still rot. The catalog must be discovered, no
 
 Adding values (C1/C2). The recommended-default _ranking_ policy can stay a thin per-organ ordering hint in
 the corpus; designing a richer ranking is a follow-up.
+
+## Done (2026-06-24)
+
+`koine catalog` enumeration verb landed (Mav): `enumerateCatalog` + CLI (`koine catalog [--json]`) + a
+runtime `ANATOMY` descriptor that is **type-derived** (`MetaOf<OrganAlias>` projects each `Fragment`'s
+phantom axis/kind/arity, so a wrong entry is a COMPILE error — single-sourced, drift-proof). koine commits
+`4b5dca0` (a pre-existing T3.1 typecheck bug it caught + fixed) + `8f457b9` (catalog). Consumer half (Nico):
+`create-agent` rewritten to **discover via `koine catalog`** — the embedded value-table is gone; the skill's
+option-space now tracks the corpus with zero drift (`b3576e6`). Nico re-verified independently incl. the live
+verb (24 organs, correct axis/kind/arity), byte-identical `create-agent` SKILL.md, verify.py PASS, and
+**typecheck** (the gate I'd been omitting — see below). Note: the T3.1 typecheck-red was shipped because the
+repo's "green triad" (build+test+lint) omits `typecheck`; **typecheck is now part of the re-verify gate.**

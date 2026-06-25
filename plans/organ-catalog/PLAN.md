@@ -22,16 +22,25 @@ byte-identical projection holds. Lane: Nico = catalog content + create-agent con
 
 ## Frontier (ready)
 
-| Task   | Lane     | What                                                                                                                                                             |
-| ------ | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **C3** | Nico+Mav | **De-drift the builder**: single-source the catalog; `koine catalog` enumeration verb; `create-agent` discovers via it (drop the embedded table). ENABLES C1/C2. |
-| **C1** | Nico     | **Address autonomy-ladder enrichment**: add `human-beside-the-loop` + `human-above-the-loop` (blind-verified, MECE vs the existing 3).                           |
+**C3 + C1 done.** C2 is the remaining task.
 
 ## Pending
 
 - **C2** — **organ-library robustness**: blind-introspection round (the `canonical-organ-values`
   methodology) over the OPEN organs; widen genuinely-sparse value-sets so `create-agent` has fuller
-  option-spaces. Mint only real gaps (no bloat); each value R=LLM-dense + MECE + gated.
+  option-spaces. Mint only real gaps (no bloat); each value R=LLM-dense + MECE + gated. **Carry-in from
+  C1:** evaluate `human-in-command` (the HATL/governance axis) as a possible **charter** value vs the
+  existing `human-oversight` / `scope-of-authority` / `accountability` — a different organ than `address`.
+
+## Completed
+
+- **C3** — `koine catalog` enumeration verb (type-derived `ANATOMY` descriptor, drift-proof) +
+  `create-agent` rewritten to discover via it (embedded table gone). The builder's option-space now tracks
+  the corpus with zero drift. Commits `4b5dca0` + `8f457b9` (koine) · `b3576e6` (skill).
+- **C1** — **negative result**: the blind σ\*\_LLM/MECE gate rejected both candidates from `address`
+  (`human-beside-the-loop` collapses into on-the-loop; `human-above-the-loop` is off-axis = governance /
+  human-in-command). Enum stays `in/on/out`; the governance axis was folded into the sharpened
+  `human-out-of-the-loop` definiens (`ab2a84f`) and carried to C2 as a charter question.
 
 ## Notes
 

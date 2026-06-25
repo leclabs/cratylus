@@ -36,3 +36,15 @@ ladder**: `human-in-the-loop` (asks first) · `human-on-the-loop` (acts, you can
 ## Out of scope
 
 The other organs (C2). Re-deciding the existing 3.
+
+## Done (2026-06-24) — NEGATIVE result: both candidates rejected from `address`
+
+The blind σ\*\_LLM/MECE gate (2 clean instances, unpolluted) converged: `in/on/out` are the genuine distinct
+trichotomy on ONE axis (real-time control); **`human-beside-the-loop` collapses into on-the-loop** (niche
+coinage ≈ human-machine-teaming) — DROPPED; **`human-above-the-loop` is real but OFF-AXIS** — it rides the
+governance/authority axis (established name **human-in-command**), not a fourth degree of real-time autonomy
+— so it is NOT an `address` value. Net: **no new `address` values** (the enum stays in/on/out). This is the
+"drop rather than bloat" outcome the gate exists for. The HATL/in-command axis is the "intent-before /
+audit-after" envelope — folded into the sharpened `human-out-of-the-loop` definiens (commit `ab2a84f`).
+**Carried to C2:** evaluate `human-in-command` as a possible **charter/governance** value (vs the existing
+`human-oversight` / `scope-of-authority` / `accountability`) — a different organ, not address.
