@@ -109,3 +109,19 @@ sidecars untouched. **Effective next spawn.**
 - **Follow-ups:** `principal-ic` slug/agent rename (the inverted term still lives in the principal-ic agent
   - scattered refs) — the broader convention sweep; P1 reusable `intent-driven` catalog value (generic, for
     create-agent) and P3 construal/telos reinforcers — optional now that the genus carries the stance.
+
+## `principal-ic` genus rework — TRUE SCOPE (bigger than a tag)
+
+Investigation (`c8c451c`+): `principal-ic` is the **genus-root AGENT** (ruler/orchestrate, 🏛️ red) that
+~6 agents specialize from — _"the principal-agency root mav & the reviewer specialize"_. The inverted term
+`principal-ic` / `principal-agency` lives across: the root agent + its provenance; **6 agents' provenance**
+(developer, reviewer, tester, diagnostic-delegate, nico, mav); `carry-on` skill; `base.ts`/`make-base`;
+the **Python toolkit** (`compose/agent.py`, `verify.py`, `init.py`, `rebase.py`, `emit_manifest.py`);
+and docs (`baseline-delta-model`, `the-ambient-person`, `generic-extraction-proposal`).
+
+**Design decisions to settle first (not mechanical):** (a) does the root agent rename or **dissolve** now
+that the founder-genus moved into each founder's own provenance identity? (b) what do the 6 specializers
+inherit — the intent-driven-expert genus, by what name? (c) `principal-agency` → the intent-driven anchor
+(grounded in the prior blind work; re-gate the genus name before commit). **Toolkit refs land at cutover**
+(T6.1 deletes the Python toolkit — don't churn it twice). **Execute as a focused effort (fresh context),
+not mid-other-work** — a half-done genus root is worse than scoped.
