@@ -4,7 +4,7 @@
 `koine-absorbs-mind` T6.1 — the typed modules under `src/` are the **sole source** and **koine** is the
 only projection + deploy machinery. What remains here:
 
-- **`continuity/`** — the repo-level praxis-advance post-commit hook (opt-in) + the fleet-organs shell.
+- **`continuity/`** — the repo-level praxis-advance post-commit hook (opt-in).
 - **`guardrail/`** — the stance-guardrail Stop/SubagentStop hook (opt-in).
 - this doc — the **`koine deploy` runbook** (below) and the two hooks.
 
@@ -117,13 +117,7 @@ default `stance-judge.sh` → headless `claude -p` haiku). Files in `toolkit/gua
 `pnpm run stanceguard:{install,uninstall,status,test}`. **Full mechanism + rubric:
 `toolkit/guardrail/README.md`.**
 
-## Fleet organ sync (memory-model-redesign — the dropped approach)
-
-> Superseded — memory is **local-per-host** (Operator decision 2026-06-23); fleet-wide organ sync was
-> declined (a shared store clobbers each host's local context). The `toolkit/continuity/fleet-organs.sh`
-> shell + its runbook remain for reference; deploy seeds SELF/MEMORY/EPISODIC if-absent and never syncs.
-
-The per-_agent_ sidecar organs (`SELF`, `MEMORY`, `EPISODIC`) were proposed as **one logical store** synced
-to every host via a dedicated git "organ store" a host adopts by symlinking each live organ file into it.
-Files: `toolkit/continuity/fleet-organs.sh` (`init|adopt|sync|status|release`), `RUNBOOK-fleet-organs.md`,
-`test-fleet-organs.sh`. Convenience: `pnpm run organs:{status,sync,test}`.
+> **Note — fleet organ sync was dropped.** Memory is **local-per-host** (Operator decision 2026-06-23):
+> a shared organ store clobbers each host's local context, so fleet-wide sync was declined and its shell
+> (`fleet-organs.sh` + runbook + `organs:*` scripts) deleted. Deploy seeds SELF/MEMORY/EPISODIC if-absent
+> and never syncs; per-host divergence is by design (hygiene = keep `fire` clean).
