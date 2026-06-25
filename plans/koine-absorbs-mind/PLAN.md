@@ -34,7 +34,8 @@ T5.1 T5.2 T5.3 T5.4 organ hygiene — independent, run on the CURRENT markdown c
 
 **Phase 2/3 complete + pushed** (T2.1–T2.4, T3.1, T5.x). The inversion stands end to end: TS source →
 koine projection (claude + codex, byte-identical) → koine deploy + catalog. **T6.1 cutover is COMPLETE.**
-What remains: **T4.1** (minimal-delta agents), **T6.2** (rehome build-provenance).
+What remains: **T6.3** (hooks → koine — the last toolkit capability; active, Mav-led), **T4.1**
+(minimal-delta agents), **T6.2** (rehome build-provenance).
 
 **T6.1 cutover — COMPLETE (2026-06-24, Operator-driven /carry-on).** All 7 sub-shards landed (now in
 `completed/`). **koine is the ONLY projection + deploy machinery** — the Python `toolkit/` (48 modules:
