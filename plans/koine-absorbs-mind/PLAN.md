@@ -33,17 +33,27 @@ T5.1 T5.2 T5.3 T5.4 organ hygiene — independent, run on the CURRENT markdown c
 ## Frontier (ready)
 
 **Phase 2/3 complete + pushed** (T2.1–T2.4, T3.1, T5.x). The inversion stands end to end: TS source →
-koine projection (claude + codex, byte-identical) → koine deploy + catalog. What remains: **T6.1 cutover**,
-**T4.1** (minimal-delta agents), **T6.2** (rehome build-provenance).
+koine projection (claude + codex, byte-identical) → koine deploy + catalog. What remains: **T6.1 cutover**
+(now sharded, the active focus), **T4.1** (minimal-delta agents), **T6.2** (rehome build-provenance).
 
-**T6.1 cutover — RESEQUENCED (Nico, sequencing-error correction).** Cutover (delete the 184 dual-maintained
-`.md` cells + the Python toolkit → `.ts` sole source) was wrongly parked behind T4.1/extraction. It is
-**independent of both** (extraction moves `.ts` cells; cutover deletes `.md`+Python — orthogonal). And the
-byte-identity oracle's job is **done** (TS proven byte-identical end-to-end), so `.md`-as-anchor is obsolete.
-**Cutover should run BEFORE T4.1** — the dual-maintenance taxes every corpus edit 2× (felt all session), and
-removing it makes the T4.1 agent rewrites one-file. **Real blocker (not extraction):** port `verify.py`'s
-gate-suite to TS (Mav-lane), and decide `glossary`/`emit_manifest`/`intake`/`rebase` keep-or-drop (Nico).
-**Outward gate held**: fleet redeploy awaits Operator (also pending: organ-hygiene SOUL redeploy).
+**T6.1 cutover — SHARDED into an executable spec (2026-06-24, Operator-driven, /carry-on to done).** Deep-dive
+confirmed koine is **feature-complete** to project AND deploy mind alone (deploy parity-proven vs Python,
+179 tests), and **most `verify.py` gates DISSOLVE into `tsc` + the module system** once `.ts` is sole source
+(wrong organ/arity = compile error; one-module = one-home R1; import = cite-don't-copy; round-trip oracle's
+job done). So the cutover is mostly **delete + rewire + redeploy**, not new engine work. Seven sub-shards:
+
+| Shard                                                      | Concern          | Lane     | Deps      |
+| ---------------------------------------------------------- | ---------------- | -------- | --------- |
+| **T6.1a** koine-only deploy path                           | deploy machinery | Mav      | — (ready) |
+| **T6.1b** mission-command + principal-ic=elite-IC          | corpus content   | Nico     | — (ready) |
+| **T6.1c** verify gate-survivability (dissolve/port)        | verification     | Nico+Mav | — (ready) |
+| **T6.1d** retire auxiliary Python (keep-or-drop)           | tooling scope    | Nico     | — (ready) |
+| **T6.1e** delete legacy `.md` + Python + round-trip oracle | deletion         | Nico+Mav | a,c,d     |
+| **T6.1f** docs reframe (koine-only, .ts-is-source)         | docs             | Nico     | e         |
+| **T6.1g** redeploy all agents+skills via koine ONLY        | rollout          | Nico     | a,b,e     |
+
+**Frontier (ready, fan-out 4):** T6.1a · T6.1b · T6.1c · T6.1d — dispatched concurrently (Mav: a + c-port;
+Nico: b + d). **Outward act T6.1g (fleet redeploy) is Operator-AUTHORIZED** (the named done-state), no longer held.
 
 **Open follow-ups (small, deferred):**
 
@@ -85,7 +95,7 @@ _(Commits: `5d16fa1` corpus hygiene · T0.2 spec doc.)_
 
 ## Pending
 
-T2.3 density variants · T2.4 multi-harness · T4.1 baseline/delta rollout · T6.1 cutover.
+T4.1 baseline/delta rollout · T6.1 cutover (sharded: T6.1a–g; a/b/c/d ready, e/f/g blocked) · T6.2 provenance-out-of-context.
 
 ## What dissolved (vs the first draft)
 
