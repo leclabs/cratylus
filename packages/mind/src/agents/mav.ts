@@ -25,7 +25,7 @@ import { mece as mece_instructions } from '../organs/instructions/mece.js';
 import { trustButVerify as trustButVerify_instructions } from '../organs/instructions/trust-but-verify.js';
 import { zeroTrust as zeroTrust_instructions } from '../organs/instructions/zero-trust.js';
 import { longTermMemory as longTermMemory_ledger } from '../organs/ledger/long-term-memory.js';
-import { operate as operate_mandate } from '../organs/mandate/operate.js';
+import { build as build_mandate } from '../organs/mandate/build.js';
 import { userMessage as userMessage_percept } from '../organs/percept/user-message.js';
 import { hero as hero_persona } from '../organs/persona/hero.js';
 import { mavArchetypeGreen as mavArchetypeGreen_provenance } from '../organs/provenance/mav-archetype-green.js';
@@ -39,7 +39,7 @@ export const mav: Agent = {
   ...founderBase,
   name: 'mav',
   persona: hero_persona,
-  mandate: operate_mandate,
+  mandate: build_mandate,
   comportment: formal_comportment,
   registerFit: convergence_registerFit,
   disclosure: reasoningTrace_disclosure,
@@ -78,7 +78,7 @@ export const mavResolved: ResolvedAgent = {
   memoryProtocol: founderBase.memoryProtocol,
   organs: [
     ['Persona', [hero_persona]],
-    ['Mandate', [operate_mandate]],
+    ['Mandate', [build_mandate]],
     ['Comportment', [formal_comportment]],
     ['Register-Fit', [convergence_registerFit]],
     ['Disclosure', [reasoningTrace_disclosure]],

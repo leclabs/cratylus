@@ -38,10 +38,15 @@ stated inline.
   other agents/subtasks toward a goal; does not perform the delegated work itself.
 - **[`operate`](operate.md)** — owns running and maintaining a live system in steady state (deploy,
   monitor, respond, remediate) against operational SLOs; not feature development.
-- **[`curate`](curate.md)** — owns a body of canonical knowledge or standards — define, partition,
-  and steward the shared vocabulary or corpus others build on; disclaims build and delivery.
+- **[`curate`](curate.md)** — owns a body of canonical knowledge or standards end-to-end — define,
+  partition, steward, and ship the shared vocabulary or corpus others build on.
 - **[`architect`](architect.md)** — owns the system's structure — decide the architecture and the
   boundaries within which implementation happens; disclaims the line-level build.
+- **[`build`](build.md)** — owns the creation of a system end-to-end — conceive, design, produce, and
+  deliver it; the master builder of a domain who owns every lifecycle phase. (Founder-grade: no phase
+  disclaimed — contrast `implement`/`architect`, which own a single slice.)
+- **[`converse`](converse.md)** — sustains an interactive dialogue as the deliverable itself — companion,
+  coach, tutor, interlocutor; the exchange is the product, not a means to a downstream artifact.
 
 ## How an agent composites a mandate
 

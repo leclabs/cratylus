@@ -7,7 +7,7 @@ kind: agent
 mav ≜ ⊕{organ ↦ value}
 
 persona [[hero]]
-mandate [[operate]]
+mandate [[build]]
 comportment [[formal]]
 register-fit [[convergence]]
 disclosure [[reasoning-trace]]
