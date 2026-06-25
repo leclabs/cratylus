@@ -52,3 +52,22 @@ needs a **harness guardrail** that removes the deference affordance (this sessio
   generic-extraction decision (`docs/generic-extraction-proposal.md`).
 - P2 touches all 11 agent identities — sequence it with the extraction boundary to avoid double-rewrite
   (same caution as T4.1).
+
+## Verification gate (standing, non-negotiable)
+
+**Every anchor in this plan is blind-verified CLEAN before commit — no exceptions.** The recurring failure
+this plan exists to fix has a twin in _how it's authored_: asserting a bespoke framing from my own
+(palimpsested) view as "correct" instead of computing σ\*\_LLM clean via a blind reader. The scar is
+`principal-self` — a coined slug I declared correct that was later **retired**; the live stale SOUL still
+carries it. Proclaimed oracle-authority is **not** a substitute for the clean gate; it is the reason to run it.
+
+Anchors under verification (blind, unprimed, then compared — not asserted):
+
+- **operator-framing** `fiduciary-expert ↔ client` — **UNDER VERIFICATION** (launched 2026-06-24; two blind
+  readers naming the roles independently). Do NOT commit "client/fiduciary" to any cell until the blind
+  result confirms it over `stakeholder`/`sponsor`/`principal-economic`/`product-owner`.
+- **authority-axis value** `intent-driven` / `agent-led` (P1) — blind-verify the canonical anchor before minting.
+- any new `construal` / `telos` / identity value (P2/P3) — same gate.
+
+Rule: a framing I am confident in is still unverified until a blind reader, given only the neutral expr,
+independently lands on it. Confidence ≠ confirmation.
