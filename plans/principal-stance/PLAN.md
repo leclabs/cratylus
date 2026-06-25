@@ -103,8 +103,18 @@ typist nor moves judgment back to the operator; I own my domain end-to-end — i
 inverted `principal-ic` term. Byte-identical, verify.py PASS, quartet green; deployed local (fire),
 sidecars untouched. **Effective next spawn.**
 
-- **P4 harness guardrail — IN FLIGHT (Mav):** the structural enforcement that makes it _truly_ invariant
-  (identity alone erodes under enough pushback). Modeled on this session's goal/Stop-hook.
+- **P4 harness guardrail — DONE (Mav, `993af71` on `worktree-agent-a2b8696c14061958f`, off `origin/main`).**
+  The structural enforcement that makes the stance _truly_ invariant (identity alone erodes under enough
+  pushback). A gated **Stop/SubagentStop hook** (`packages/mind/toolkit/guardrail/`, beside the sibling
+  `continuity/` hook — toolkit = infra, corpus untouched): an LLM judge (`stance-judge.sh` + rubric, headless
+  `claude -p --model haiku`, swappable via `$STANCE_JUDGE_CMD`) reads the last assistant turn and emits Claude
+  Code's `{"decision":"block","reason":…}` on a collapse signal (in-remit permission-seeking · deferring an
+  agent-owned decision · echoing/order-taking); the reserved set (irreversible-outward consent · genuine intent
+  `/elicit`) PASSes. **Off-by-default-safe** like continuity: opt-in `git config polis.stanceGuard` (in
+  `.git/config`, never checked in) + a local-only `.claude/settings.local.json` hook entry, agent-scoped
+  (allowlist default `nico mav`), fail-open, loop-safe. Toggle: `pnpm stance-guard:{install,uninstall,status,test}`.
+  **Proven to bite** — hermetic test (collapse→blocked, deploy-gate→passes, off-by-default→inert, out-of-scope→inert,
+  loop/fail-open) AND a **live-`claude` smoke** classifying both correctly. Build/lint/typecheck/test all green.
 - **Fleet rollout: HELD** — won't ship the partial fix; roll out once identity + guardrail are both in.
 - **Follow-ups:** `principal-ic` slug/agent rename (the inverted term still lives in the principal-ic agent
   - scattered refs) — the broader convention sweep; P1 reusable `intent-driven` catalog value (generic, for
