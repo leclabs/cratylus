@@ -10,7 +10,8 @@ import { cursorAdapter } from '../adapters/cursor/index.js';
 import { geminiAdapter } from '../adapters/gemini/index.js';
 import { opencodeAdapter } from '../adapters/opencode/index.js';
 import type { Adapter, Scope } from '../core/index.js';
-import type { DeployKind } from '../deploy/index.js';
+import type { DeployKind, Scope as DeployScope } from '../deploy/index.js';
+import { runCatalog } from './commands/catalog.js';
 import { runCompile } from './commands/compile.js';
 import { parseCompanions, runDeploy } from './commands/deploy.js';
 import { runDiff } from './commands/diff.js';
@@ -276,7 +277,7 @@ cli
           bundleBaseRoot: opts.bundleBaseRoot,
           companions,
           kind: opts.kind,
-          scope: opts.scope as Scope,
+          scope: opts.scope as DeployScope,
           host: opts.host ?? null,
           user: opts.user ?? null,
           home: opts.home ?? null,
@@ -332,6 +333,20 @@ cli
       );
     },
   );
+
+cli
+  .command(
+    'catalog',
+    'Enumerate the organ-value catalog of a corpus (discover the option-space)',
+  )
+  .option(
+    '--corpus <dir>',
+    "corpus organs/ dir (default: mind's src/organs when present)",
+  )
+  .option('--json', 'emit the machine contract as JSON instead of a table')
+  .action(async (opts: { corpus?: string; json?: boolean }) => {
+    process.exit(await runCatalog({ corpus: opts.corpus, json: opts.json }));
+  });
 
 cli.help();
 cli.version(VERSION);
