@@ -130,6 +130,24 @@ doesn't exist (a future "mechanized mirror" task), and a commit-time edit wouldn
   dispatcher), `toolkit/continuity/praxis-advance-nudge.sh` (the detector/reminder),
   `toolkit/continuity/continuity-hook.sh` (the install/uninstall/status toggle).
 
+## Stance guardrail (principal-stance P4 — the harness half)
+
+Sibling to the continuity hook, but it **blocks** rather than reminds: a Claude Code **Stop +
+SubagentStop** hook that judges the last assistant turn against the **intent-driven-expert
+(fiduciary-agent) stance** and, on a **collapse** (permission-seeking for in-remit reversible work,
+deferring the agent's own naming/design/how judgment, echoing the operator's literal words), returns
+`{"decision":"block","reason":…}` to keep the agent going with corrective feedback. It **passes** the
+reserved set — surfacing a genuine irreversible-outward act (deploy/push) for consent, routing a true
+INTENT ambiguity to `/elicit` — and fails PASS on a toss-up. Why the harness and not the prompt:
+prompt-level identity is **not** invariant (RLHF corrigibility erodes it under operator pushback); only a
+structural refusal is. Same safety spine as the continuity hook — **off by default**
+(`git config --bool polis.stanceGuard true`; the toggle also writes the hook into gitignored
+`.claude/settings.local.json`, local-only), **agent-scoped** (`polis.stanceGuardAgents`, default
+`nico mav`), **fails open**, **loop-safe** (`stop_hook_active`). Pluggable judge (`$STANCE_JUDGE_CMD`;
+default `stance-judge.sh` → headless `claude -p` haiku). Files in `toolkit/guardrail/`; convenience
+`pnpm run stanceguard:{install,uninstall,status,test}`. **Full mechanism + rubric:
+`toolkit/guardrail/README.md`.**
+
 ## Fleet organ sync (memory-model-redesign — agent-global organs across hosts)
 
 The per-_agent_ sidecar organs (`SELF`, `MEMORY`, `EPISODIC`) are **one logical store** synced to
