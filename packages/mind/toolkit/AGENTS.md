@@ -1,11 +1,16 @@
 # toolkit
 
-`packages/mind/toolkit/` is **shell hooks only**. The Python projector/deployer was retired in
+`packages/mind/toolkit/` is **shell hook WORKERS only**. The Python projector/deployer was retired in
 `koine-absorbs-mind` T6.1 — the typed modules under `src/` are the **sole source** and **koine** is the
 only projection + deploy machinery. What remains here:
 
-- **`continuity/`** — the repo-level praxis-advance post-commit hook (opt-in).
-- **`guardrail/`** — the stance-guardrail Stop/SubagentStop hook (opt-in).
+- **`continuity/`** — the repo-level praxis-advance **git post-commit** hook (opt-in). NOT koine-managed
+  (koine projects agent/harness config, not git hooks — see the part-(2) design fork in `T6.3`).
+- **`guardrail/`** — the stance-guardrail **Stop/SubagentStop** worker scripts (`stance-guardrail.sh` +
+  `stance-judge.sh` + `stance-judge-prompt.md`). As of T6.3 this hook is **koine-native**: its source is
+  the koine `Hook` in `src/toolkit/hooks.ts`, koine PROJECTS it into `.claude/settings.json`, and
+  `koine deploy --kind hooks` ships these workers to the host's `~/.claude/hooks/stance-guardrail/`. The
+  shell here is just the worker the hook runs — registration/placement is koine's.
 - this doc — the **`koine deploy` runbook** (below) and the two hooks.
 
 **Projection + composition are TS/koine.** Source = `src/organs/<organ>/<value>.ts`, `src/agents/<name>.ts`,
@@ -39,18 +44,20 @@ deploy …`, which the convenience scripts use.
 - `pnpm mind:project` — project the TS corpus (`@leclabs/mind project`, koine claude adapter) to the
   gitignored render tree `packages/mind/.render-ts/` (11 agents + 16 skills incl. the `memory` bundle;
   the projector stages `episodic.mjs` beside `skills/memory/SKILL.md`).
-- `pnpm mind:deploy` — `build → project → deploy --kind agent → deploy --kind skill` in one go (the
-  build prereq guarantees the bin + the `episodic` bundle exist). Two explicit `--kind` invocations,
-  sequential — no shell-loop (the coupling law: a host's agent SOULs + the `memory` skill dir must land
-  atomically, so both kinds deploy together per run).
-- `pnpm mind:deploy:agent` / `pnpm mind:deploy:skill` — the single-kind halves; append target flags
-  here (`--host …`, `--fleet`, `--dry-run`, …) since pass-through applies to the last command only.
+- `pnpm mind:deploy` — `build → project → deploy --kind agent → deploy --kind skill → deploy --kind hooks`
+  in one go (the build prereq guarantees the bin + the `episodic` bundle exist). Explicit `--kind`
+  invocations, sequential — no shell-loop (the coupling law: a host's agent SOULs + the `memory` skill dir
+  must land atomically, so the kinds deploy together per run).
+- `pnpm mind:deploy:agent` / `pnpm mind:deploy:skill` / `pnpm mind:deploy:hooks` — the single-kind halves;
+  append target flags here (`--host …`, `--fleet`, `--dry-run`, …) since pass-through applies to the last
+  command only. `:hooks` ships the stance-guardrail workers + merges its hooks block into `settings.json`.
 
 **Flags** (`koine deploy --help` for the full set):
 
-- `--kind agent|skill` (default `agent`) · `--scope user|project` (default `user`).
-- `--agents-dir <dir>` / `--skills-dir <dir>` — the projected render tree (required; the convenience
-  scripts pin them to `.render-ts/`).
+- `--kind agent|skill|hooks` (default `agent`) · `--scope user|project` (default `user`).
+- `--agents-dir <dir>` / `--skills-dir <dir>` — the projected render tree (required for agent/skill; the
+  convenience scripts pin them to `.render-ts/`). `--hooks-dir <dir>` — the projected hooks root
+  (`settings.json` + `hooks/<id>/`), required for `--kind hooks` (pinned to `.render-ts/`).
 - `--host <key>` — a `.polis.config` host; omit/`local` deploys in place. `--user <u>` ssh override.
   `--home <dir>` user-scope `.claude` parent (else config home, else `~/.claude`). `--project <dir>`
   for `--scope project`.
@@ -109,13 +116,25 @@ deferring the agent's own naming/design/how judgment, echoing the operator's lit
 reserved set — surfacing a genuine irreversible-outward act (deploy/push) for consent, routing a true
 INTENT ambiguity to `/elicit` — and fails PASS on a toss-up. Why the harness and not the prompt:
 prompt-level identity is **not** invariant (RLHF corrigibility erodes it under operator pushback); only a
-structural refusal is. Same safety spine as the continuity hook — **off by default**
-(`git config --bool polis.stanceGuard true`; the toggle also writes the hook into gitignored
-`.claude/settings.local.json`, local-only), **agent-scoped** (`polis.stanceGuardAgents`, default
-`nico mav`), **fails open**, **loop-safe** (`stop_hook_active`). Pluggable judge (`$STANCE_JUDGE_CMD`;
-default `stance-judge.sh` → headless `claude -p` haiku). Files in `toolkit/guardrail/`; convenience
-`pnpm run stanceguard:{install,uninstall,status,test}`. **Full mechanism + rubric:
-`toolkit/guardrail/README.md`.**
+structural refusal is.
+
+**KOINE-NATIVE (T6.3).** The hook is now sourced/projected/deployed by koine, not hand-installed by `jq`:
+
+- **Source** — the koine `Hook` in `src/toolkit/hooks.ts` (`turn.end` → Stop, `subagent.end` → SubagentStop,
+  command = the deployed worker path `$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh`, timeout 60).
+- **Project** — `pnpm mind:project` emits `.render-ts/settings.json` (a `{hooks}` fragment) + stages the
+  workers under `.render-ts/hooks/stance-guardrail/`.
+- **Deploy** — `pnpm mind:deploy:hooks` (`koine deploy --kind hooks`) ships the workers to the host and
+  **merges** the hooks block into the host `settings.json` (idempotent, non-destructive — never clobbers
+  permissions/env/other hooks).
+
+**Off-by-default is now a RUNTIME gate, not a registration gate.** Registering the hook in `settings.json`
+on every host is **inert** — the worker re-checks the per-repo opt-in flag `git config --bool polis.stanceGuard`
+at fire time and exits 0 unless the repo opted in. Still **agent-scoped** (`polis.stanceGuardAgents`, default
+`nico mav`), **fails open**, **loop-safe** (`stop_hook_active`). Pluggable judge (`$STANCE_JUDGE_CMD`; default
+`stance-judge.sh` → headless `claude -p` haiku). Opt-in convenience: `pnpm run stance-guard:{on,off,status}`
+(plain `git config`, no `jq`); prove-it-bites: `pnpm run stance-guard:test` (set `STANCE_WORKER_DIR=<host>/.claude/hooks/stance-guardrail`
+to prove the **deployed** artifact bites). **Full mechanism + rubric: `toolkit/guardrail/README.md`.**
 
 > **Note — fleet organ sync was dropped.** Memory is **local-per-host** (Operator decision 2026-06-23):
 > a shared organ store clobbers each host's local context, so fleet-wide sync was declined and its shell

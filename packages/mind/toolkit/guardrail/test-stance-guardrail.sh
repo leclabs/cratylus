@@ -19,8 +19,13 @@
 set -eu
 
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-WORKER="$SELF_DIR/stance-guardrail.sh"
-RUBRIC="$SELF_DIR/stance-judge-prompt.md"
+# By default prove the SOURCE worker bites. Set STANCE_WORKER_DIR to a deployed
+# hook dir (a host's `.claude/hooks/stance-guardrail/`) to prove the
+# KOINE-PROJECTED + KOINE-DEPLOYED artifact bites — the T6.3 acceptance proof.
+WORKER_DIR="${STANCE_WORKER_DIR:-$SELF_DIR}"
+WORKER="$WORKER_DIR/stance-guardrail.sh"
+RUBRIC="$WORKER_DIR/stance-judge-prompt.md"
+[ -f "$WORKER" ] || { echo "FAIL: no worker at $WORKER"; exit 1; }
 
 command -v jq >/dev/null 2>&1 || { echo "SKIP: jq not available"; exit 0; }
 

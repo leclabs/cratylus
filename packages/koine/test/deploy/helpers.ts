@@ -39,6 +39,35 @@ export function buildRenderTree(root: string): {
   return { agentsDir, skillsDir };
 }
 
+/** A hooks render tree: `<root>/settings.json` (a `{hooks}` fragment with a
+ *  Stop + SubagentStop command) + `<root>/hooks/stance-guardrail/<assets>`. */
+export function buildHooksTree(root: string): { hooksDir: string } {
+  const cmd = 'sh "$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh"';
+  const settings = {
+    hooks: {
+      Stop: [{ hooks: [{ type: 'command', command: cmd, timeout: 60 }] }],
+      SubagentStop: [
+        { hooks: [{ type: 'command', command: cmd, timeout: 60 }] },
+      ],
+    },
+  };
+  writeFileSync(
+    join(root, 'settings.json'),
+    `${JSON.stringify(settings, null, 2)}\n`,
+    'utf-8',
+  );
+  const hookDir = join(root, 'hooks', 'stance-guardrail');
+  mkdirSync(hookDir, { recursive: true });
+  for (const f of [
+    'stance-guardrail.sh',
+    'stance-judge.sh',
+    'stance-judge-prompt.md',
+  ]) {
+    writeFileSync(join(hookDir, f), `# ${f}\n`, 'utf-8');
+  }
+  return { hooksDir: root };
+}
+
 /** A bundle source root with the built `episodic.mjs` present. */
 export function buildBundleSrc(root: string, present = true): string {
   const dist = join(root, 'episodic', 'dist');

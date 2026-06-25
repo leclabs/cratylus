@@ -203,6 +203,10 @@ cli
     'Render tree skills/ dir (the projected skill dirs)',
   )
   .option(
+    '--hooks-dir <dir>',
+    'Render tree hooks root (settings.json + hooks/<id>/); required for --kind hooks',
+  )
+  .option(
     '--bundle-base-root <dir>',
     'Root that skill `bundle:` specs resolve against',
   )
@@ -214,7 +218,7 @@ cli
     '--assets <decls>',
     'skill committed companions: <skill>=<spec>[,…] (warn if absent)',
   )
-  .option('--kind <kind>', 'agent | skill', { default: 'agent' })
+  .option('--kind <kind>', 'agent | skill | hooks', { default: 'agent' })
   .option('--scope <scope>', 'user | project', { default: 'user' })
   .option(
     '--host <host>',
@@ -243,6 +247,7 @@ cli
     async (opts: {
       agentsDir?: string;
       skillsDir?: string;
+      hooksDir?: string;
       bundleBaseRoot?: string;
       bundle?: string;
       assets?: string;
@@ -257,7 +262,16 @@ cli
       only?: string;
       dryRun?: boolean;
     }) => {
-      if (!opts.agentsDir || !opts.skillsDir) {
+      // `hooks` ships from a single hooks render root; agent/skill ship from the
+      // agents/ + skills/ dirs. Validate the kind-appropriate inputs.
+      if (opts.kind === 'hooks') {
+        if (!opts.hooksDir) {
+          console.error(
+            'koine deploy: --hooks-dir is required for --kind hooks',
+          );
+          process.exit(1);
+        }
+      } else if (!opts.agentsDir || !opts.skillsDir) {
         console.error(
           'koine deploy: --agents-dir and --skills-dir are required',
         );
@@ -272,8 +286,10 @@ cli
       }
       process.exit(
         await runDeploy({
-          agentsDir: opts.agentsDir,
-          skillsDir: opts.skillsDir,
+          // For --kind hooks the dirs are unused; pass placeholders.
+          agentsDir: opts.agentsDir ?? '',
+          skillsDir: opts.skillsDir ?? '',
+          hooksDir: opts.hooksDir,
           bundleBaseRoot: opts.bundleBaseRoot,
           companions,
           kind: opts.kind,

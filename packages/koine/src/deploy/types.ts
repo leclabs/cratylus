@@ -18,6 +18,10 @@ export interface RenderTree {
   // Root the `bundle:` specs resolve against (Python: cells.ROOT). Required
   // only when some skill declares `bundle`.
   bundleBaseRoot?: string;
+  // Dir holding the projected hooks fragment: `<hooksDir>/settings.json` (the
+  // `{hooks}` block) + `<hooksDir>/hooks/<id>/<asset>` (worker scripts). Used
+  // by the `hooks` deploy kind. Optional; absent ⇒ nothing to place.
+  hooksDir?: string;
 }
 
 /** What a placer did for one agent/skill kind on one host. */
@@ -45,7 +49,7 @@ export interface PlaceResult {
   report: PlaceReport;
 }
 
-export type DeployKind = 'agent' | 'skill';
+export type DeployKind = 'agent' | 'skill' | 'hooks';
 
 export interface PlaceOpts {
   dry: boolean;
