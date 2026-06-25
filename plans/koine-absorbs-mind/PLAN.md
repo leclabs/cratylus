@@ -43,8 +43,8 @@ the `.ts` modules under `src/` are the **sole source**; the byte-identity round-
 (`projection-stability` + the ported `skill-shape`/`symbols` vitest gates replace it; the rest dissolved
 into `tsc`). Authority terminology fixed: **mission-command** (Auftragstaktik) is the anchor,
 `principal-agency` retired, `principal-ic` ≜ the most elite IC. Docs reframed to koine-only. **Redeployed
-via `koine deploy` ONLY** to fire/forge/spark/upmav (sha256-verified byte-identical on forge); **ash
-deferred** (asleep, catches up on reachability), **upgoose** the intentional manual canary.
+via `koine deploy` ONLY — fleet 6/6** (fire/forge/spark/upmav/ash/upgoose), all sha256-verified
+byte-identical (nico.md `43d023a…` on every host; Auftragstaktik + elite-IC + memory bundle present).
 
 **Open follow-ups (small, deferred):**
 
