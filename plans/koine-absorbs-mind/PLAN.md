@@ -32,15 +32,14 @@ T5.1 T5.2 T5.3 T5.4 organ hygiene — independent, run on the CURRENT markdown c
 
 ## Frontier (ready)
 
-| Task     | Lane     | What                                                                                       |
-| -------- | -------- | ------------------------------------------------------------------------------------------ |
-| **T2.2** | Mav+Nico | Per-adapter harness reset + delta-over-target (claude reset from blank `/introspect`)      |
-| **T3.1** | Mav      | Deploy engine — absorb placer/ssh/.polis.config/fleet/seeding/skill-dir/init (independent) |
+| Task     | Lane | What                                                                                      |
+| -------- | ---- | ----------------------------------------------------------------------------------------- |
+| **T3.1** | Mav  | Deploy engine — absorb placer/ssh/.polis.config/fleet/seeding/skill-dir/init (**active**) |
 
-**🎉 Phase 1 + projection complete** — the inversion stands alone: `pnpm project` (koine's claude adapter)
-writes `.render-ts/` **byte-identical** to the Python `.render/` (`diff -r` empty, 28 artifacts). koine now
-owns disk-projection (`adapters/claude/anatomy.ts`); mind is its source. **The consumer command is koine's**,
-not a `resolve.py` clone. T2.2 + T3.1 are independent — fan out.
+**🎉 Phase 1 + projection + T2.2 complete** — the inversion stands alone (`pnpm project` byte-identical to
+Python `.render/`), and the claude adapter now carries its **harness reset + delta-over-target** (T2.2,
+additive/non-breaking). **T3.1 (deploy engine) is in progress** — the last frontier task before the
+T4.1 rollout / T6.1 cutover open up.
 
 **Open follow-ups (small, deferred):**
 
@@ -50,6 +49,10 @@ not a `resolve.py` clone. T2.2 + T3.1 are independent — fan out.
 
 ## Completed
 
+- **T2.2** — claude harness reset (`adapters/claude/harness-reset.ts`, 10 organs) + opt-in
+  `projectAgentDelta`/`subtractReset` (set→difference, scalar→omit-on-match). **Additive, non-breaking**:
+  default projection byte-identical (oracle green); reset ratified from a blind bare-`/introspect`. Flip
+  to minimal-by-default deferred to T4.1. Nico re-verified all gates independently. Commit `b33ac9b`.
 - **T2.1** — projection moved into koine's claude adapter (`adapters/claude/anatomy.ts`); standalone
   `pnpm project` writes `.render-ts/` **byte-identical** to Python `.render/` (`diff -r` empty, 28 files).
   The consumer command is koine's; source-grain round-trip oracles stay in mind. Commit `a5cfb00`.
