@@ -164,6 +164,98 @@ export type SetOrgan =
   | 'heuristics'
   | 'instructions';
 
+// ── The runtime organ descriptor (axis / kind / arity) ──────────────────────
+// The per-organ `Fragment<O,G,C,A>` aliases above carry an organ's genus,
+// classification, and arity at the TYPE level — phantom params that erase at
+// runtime. A consumer that needs this metadata at runtime (e.g. `koine catalog`)
+// can't read the types, so `ANATOMY` mirrors them as data. It is SINGLE-SOURCED:
+// each entry's value type is `MetaOf<TheOrgansFragmentAlias>`, which projects the
+// alias's `G/C/A` params back out — so a wrong axis/kind/arity here is a COMPILE
+// error, not a silent drift. The keyed object type forces every one of the 24
+// organs to be present (a missing organ is a compile error; an extra key has no
+// declared type and is rejected). `test/catalog/anatomy-descriptor` further
+// asserts the keyset is EXACTLY the 24 `Organ` literals at runtime.
+
+/** The runtime-readable metadata for one organ (axis = genus). */
+export interface OrganMeta {
+  /** The MECE filing axis (the `Genus` of the organ's fragments). */
+  readonly axis: Genus;
+  /** How the value-catalog is sourced (the `Classification`). */
+  readonly kind: Classification;
+  /** Whether the organ field holds one fragment or many (the `Arity`). */
+  readonly arity: Arity;
+}
+
+/** Project a per-organ `Fragment` alias's phantom params into an `OrganMeta`. */
+type MetaOf<F> = F extends Fragment<Organ, infer G, infer C, infer A>
+  ? { readonly axis: G; readonly kind: C; readonly arity: A }
+  : never;
+
+/**
+ * The runtime mirror of the 24 per-organ `Fragment` aliases. Each value is typed
+ * as `MetaOf<…>` of that organ's alias, so the data cannot disagree with the
+ * type. This is the one runtime home for organ metadata — `koine catalog` reads
+ * it, never a second hand-kept copy.
+ */
+export const ANATOMY: {
+  readonly address: MetaOf<Address>;
+  readonly persona: MetaOf<Persona>;
+  readonly mandate: MetaOf<Mandate>;
+  readonly comportment: MetaOf<Comportment>;
+  readonly 'register-fit': MetaOf<RegisterFit>;
+  readonly disclosure: MetaOf<Disclosure>;
+  readonly provenance: MetaOf<Provenance>;
+  readonly telos: MetaOf<Telos>;
+  readonly charter: MetaOf<Charter>;
+  readonly instructions: MetaOf<Instructions>;
+  readonly heuristics: MetaOf<Heuristics>;
+  readonly competence: MetaOf<Competence>;
+  readonly 'disposition-memory': MetaOf<DispositionMemory>;
+  readonly gestalt: MetaOf<Gestalt>;
+  readonly effectors: MetaOf<Effectors>;
+  readonly sensors: MetaOf<Sensors>;
+  readonly substrate: MetaOf<Substrate>;
+  readonly ledger: MetaOf<Ledger>;
+  readonly percept: MetaOf<Percept>;
+  readonly construal: MetaOf<Construal>;
+  readonly deliberation: MetaOf<Deliberation>;
+  readonly resolve: MetaOf<Resolve>;
+  readonly enaction: MetaOf<Enaction>;
+  readonly appraisal: MetaOf<Appraisal>;
+} = {
+  // STANCE
+  address: { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
+  persona: { axis: 'STANCE', kind: 'open', arity: 'scalar' },
+  mandate: { axis: 'STANCE', kind: 'open', arity: 'scalar' },
+  comportment: { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
+  'register-fit': { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
+  disclosure: { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
+  provenance: { axis: 'STANCE', kind: 'open', arity: 'scalar' },
+  // CONATUS — standing drives
+  telos: { axis: 'CONATUS', kind: 'open', arity: 'scalar' },
+  charter: { axis: 'CONATUS', kind: 'coined', arity: 'set' },
+  instructions: { axis: 'CONATUS', kind: 'coined', arity: 'set' },
+  heuristics: { axis: 'CONATUS', kind: 'coined', arity: 'set' },
+  competence: { axis: 'CONATUS', kind: 'open', arity: 'set' },
+  'disposition-memory': { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  gestalt: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  // CONATUS — apparatus
+  effectors: { axis: 'CONATUS', kind: 'enum', arity: 'set' },
+  sensors: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  substrate: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  ledger: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  // CONATUS — per-turn act
+  percept: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  construal: { axis: 'CONATUS', kind: 'open', arity: 'scalar' },
+  deliberation: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  resolve: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  enaction: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  appraisal: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+};
+
+/** Every organ name, in anatomy (STANCE-then-CONATUS) declaration order. */
+export const ORGAN_NAMES = Object.keys(ANATOMY) as readonly Organ[];
+
 // ── The Agent: a typed organ-selection vector ───────────────────────────────
 
 /**

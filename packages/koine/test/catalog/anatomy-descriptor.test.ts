@@ -1,0 +1,82 @@
+// The runtime organ-metadata descriptor (`ANATOMY`) is SINGLE-SOURCED against
+// the per-organ `Fragment` TYPE aliases. The type-level guard lives in
+// `anatomy-descriptor.test-d.ts` (each entry typed `MetaOf<TheAlias>`, so a
+// wrong axis/kind/arity is a COMPILE error). This file is the RUNTIME guard:
+// the keyset is EXACTLY the 24 organ literals — no missing organ, no extra key,
+// no drift between the descriptor and the corpus's actual organ dirs.
+
+import { readdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+import { ANATOMY, ORGAN_NAMES, type Organ } from '../../src/anatomy/index.js';
+
+// The 24 organ literals, copied here as the INDEPENDENT oracle (this list is
+// authored from the `Organ` union in the anatomy doc; if the union grows/shrinks
+// this test must be updated alongside `ANATOMY`, which is exactly the point —
+// adding an organ forces touching its metadata AND this assertion together).
+const THE_24: readonly Organ[] = [
+  'address',
+  'persona',
+  'mandate',
+  'comportment',
+  'register-fit',
+  'disclosure',
+  'provenance',
+  'telos',
+  'charter',
+  'instructions',
+  'heuristics',
+  'competence',
+  'disposition-memory',
+  'gestalt',
+  'effectors',
+  'sensors',
+  'substrate',
+  'ledger',
+  'percept',
+  'construal',
+  'deliberation',
+  'resolve',
+  'enaction',
+  'appraisal',
+];
+
+describe('ANATOMY descriptor', () => {
+  it('has exactly the 24 organs as keys (no missing, no extra)', () => {
+    expect([...ORGAN_NAMES].sort()).toEqual([...THE_24].sort());
+    expect(Object.keys(ANATOMY)).toHaveLength(24);
+  });
+
+  it('every axis/kind/arity is a legal value', () => {
+    for (const organ of ORGAN_NAMES) {
+      const m = ANATOMY[organ];
+      expect(['STANCE', 'CONATUS']).toContain(m.axis);
+      expect(['enum', 'open', 'coined']).toContain(m.kind);
+      expect(['scalar', 'set']).toContain(m.arity);
+    }
+  });
+
+  it('the five set organs are exactly the set-arity entries', () => {
+    const setOrgans = ORGAN_NAMES.filter((o) => ANATOMY[o].arity === 'set');
+    expect([...setOrgans].sort()).toEqual(
+      [
+        'charter',
+        'competence',
+        'effectors',
+        'heuristics',
+        'instructions',
+      ].sort(),
+    );
+  });
+
+  it('matches the actual organ dirs in mind (no descriptor↔corpus drift)', () => {
+    const here = dirname(fileURLToPath(import.meta.url));
+    const mindOrgans = join(here, '..', '..', '..', 'mind', 'src', 'organs');
+    const dirs = readdirSync(mindOrgans, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => d.name)
+      .sort();
+    expect(dirs).toEqual([...ORGAN_NAMES].sort());
+  });
+});
