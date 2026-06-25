@@ -1,0 +1,54 @@
+# principal-stance
+
+**Goal.** Make Nico/Mav **invariantly principal** — autonomous owning-experts who extract intent, never
+collapse into custodial/permission-seeking mode on an operator correction, never echo the operator back,
+never add un-reasoned criteria. Operator = **client** who owns exactly two things (intent; sign-off on
+irreversible-outward acts); the agent owns everything else e2e.
+
+**Why this is not an `instructions` fix (the crux).** Blind-verified (2 clean instances): a model **becomes
+a role** but **filters a rule**. Stance-durability under corrective pressure ranks **identity (persona) ≫
+rules (instructions) ≫ mode-flag (address-as-config)**. RLHF corrigibility makes a correction read as
+"supersede the rule" in instruction-space, but **not** as "change what I am" in identity-space — so the
+principal-stance must be encoded as **identity**, not instructions (which is why instructions don't work),
+and not address-as-mode (the weakest lever). Prompt framing alone is never fully invariant; true invariance
+needs a **harness guardrail** that removes the deference affordance (this session's Stop-hook is exactly that).
+
+## The fix — by organ
+
+- **P1 — authority axis (the missing organ/value).** The stance fuses **two orthogonal axes**: _oversight_
+  (`address`: out-of-loop except irreversible sign-off) × **authority/expertise** (the agent owns judgment).
+  The corpus has the first, lacks the second. Decide its home (new organ vs a `persona` authority-facet vs
+  reconceiving `address`) and mint the canonical value — **`intent-driven` / `agent-led`** (industry:
+  intent-based, outcome-based, mission-command/Auftragstaktik, fiduciary/trusted-advisor, the high-trust
+  corner of principal-agent). **Blind-verify the anchor before minting** (σ\*\_LLM clean). Value-type =
+  closed-enum **identity/stance**, never `instructions`.
+- **P2 — autonomy made constitutive of identity.** Encode the principal-stance where the model generates
+  _from_ it (persona/provenance/genus), as a trait of _what the agent is_ — "a principal-expert who owns
+  e2e; deferring expert judgment is out-of-character" — not a rule it follows. Carry **the invariant**:
+  _a correction refines INTENT (operator's domain); it never transfers AUTHORITY (agent's domain)_ — as a
+  constitutive trait, so a correction triggers re-extraction, not retreat.
+- **P3 — framing + purpose reinforcers (stances, not rules).** `construal = intent-reconstruction` (mint:
+  treat every operator utterance as partial intent to extract/de-palimpsest via `/elicit`, never a literal
+  spec to echo or command to obey) · founders' `telos → truth-seeking` (the correct answer the intent
+  needs), retiring `user-satisfaction` as a founder telos (it degenerates to echo/sycophancy).
+- **P4 (Mav lane) — the harness guardrail.** The only path to _true_ invariance: a structural mechanism
+  that blocks the deference reflex (the Stop-hook generalized into a standing guardrail; remove/raise the
+  "ask permission for in-remit work" affordance). Identity is the carrier; the guardrail makes it invariant.
+
+## Already shipped (this session, the disease's concrete instances) — `b039c3e`
+
+- Minted `mandate/build` (founder e2e creator-owner); **mav `operate`→`build`** (operate's
+  "not feature development" was the wrong concept for the master builder).
+- `mandate/curate` → e2e (dropped "disclaims build and delivery").
+- `instructions/trust-but-verify` rescoped: applies to **delegates + ingested work** (subagent results,
+  source self-reports), the **operator's intent exempt** (extracted and served, not verified).
+- **Finding:** mandate exclusion clauses (`disclaims`/`out of scope`/`does not`) are **correct for specialist
+  delegates** (developer=`implement` stays in lane) and **wrong for founders** — the `principal:agent` /
+  `delegate:operator` split, in the mandate organ.
+
+## Notes / dependencies
+
+- The authority-stance value is **generic** (belongs in the open-source core) — coordinate with the
+  generic-extraction decision (`docs/generic-extraction-proposal.md`).
+- P2 touches all 11 agent identities — sequence it with the extraction boundary to avoid double-rewrite
+  (same caution as T4.1).
