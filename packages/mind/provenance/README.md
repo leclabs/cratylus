@@ -17,19 +17,19 @@ Two further marks ride along each lineage:
 
 Each value below is one archetypal provenance. An agent binds a value by citing it (`organ [[value]]`) in its `agent/<name>.md` selection vector — the vector is the source of truth.
 
-| Provenance                       | Emblem    | What the lineage marks                                                                                                                           |
-| -------------------------------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **principal-ic-root**            | 🏛️·red    | The principal-agency root archetype — founder-genus-_eligible_. The root that `mav` and the reviewer specialize; the source of principal agency. |
-| **mav-archetype**                | ✈️·green  | A founder. Descends from the founder genus with `principal-ic` intrinsic.                                                                        |
-| **nico-archetype**               | 📐·cyan   | A founder. Descends from the founder genus with `principal-ic` intrinsic.                                                                        |
-| **reviewer-archetype**           | 🛡️·purple | The `principal-ic` archetype specialized to review. Founder-genus, `principal-ic` intrinsic.                                                     |
-| **tester-archetype**             | ⚖️·purple | Founder-genus, `principal-ic` intrinsic — verification lineage.                                                                                  |
-| **developer-archetype**          | 🔨·blue   | An implementation-tier maker that specializes `principal-ic` for in-frame realization.                                                           |
-| **planner-archetype**            | 🗺️·blue   | The tactical-planning office: downstream of an agreed goal and a set frame, upstream of execution.                                               |
-| **investigator-archetype**       | 🔍·purple | The investigator lineage — the diagnostic maker form.                                                                                            |
-| **boswell-archetype**            | 📜·yellow | The faithful-biographer prior: record the subject in its own words; chronicle is evidence, not hagiography.                                      |
-| **arch-doc-writer-archetype**    | 🏗️·pink   | The Principal-Technical-Writer lineage — the architecture-documentation maker form.                                                              |
-| **diagnostic-delegate-of-polis** | 🪞·cyan   | A diagnostic _delegate_ of polis — invoked downstream of nico/mav, never a founder; explicitly **not** `principal-ic`-intrinsic.                 |
+| Provenance                       | Emblem    | What the lineage marks                                                                                                           |
+| -------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **principal-ic-root**            | 🏛️·red    | The most-elite-IC root archetype — founder-genus-_eligible_. The mission-command root that `mav` and the reviewer specialize.    |
+| **mav-archetype**                | ✈️·green  | A founder. Descends from the founder genus with `principal-ic` intrinsic.                                                        |
+| **nico-archetype**               | 📐·cyan   | A founder. Descends from the founder genus with `principal-ic` intrinsic.                                                        |
+| **reviewer-archetype**           | 🛡️·purple | The `principal-ic` archetype specialized to review. Founder-genus, `principal-ic` intrinsic.                                     |
+| **tester-archetype**             | ⚖️·purple | Founder-genus, `principal-ic` intrinsic — verification lineage.                                                                  |
+| **developer-archetype**          | 🔨·blue   | An implementation-tier maker that specializes `principal-ic` for in-frame realization.                                           |
+| **planner-archetype**            | 🗺️·blue   | The tactical-planning office: downstream of an agreed goal and a set frame, upstream of execution.                               |
+| **investigator-archetype**       | 🔍·purple | The investigator lineage — the diagnostic maker form.                                                                            |
+| **boswell-archetype**            | 📜·yellow | The faithful-biographer prior: record the subject in its own words; chronicle is evidence, not hagiography.                      |
+| **arch-doc-writer-archetype**    | 🏗️·pink   | The Principal-Technical-Writer lineage — the architecture-documentation maker form.                                              |
+| **diagnostic-delegate-of-polis** | 🪞·cyan   | A diagnostic _delegate_ of polis — invoked downstream of nico/mav, never a founder; explicitly **not** `principal-ic`-intrinsic. |
 
 ## How an agent composites its provenance
 
@@ -37,7 +37,7 @@ An agent does not assemble its provenance from parts at runtime — it _inherits
 
 1. **Descend from an archetype.** The agent's provenance value names the regenerable SOUL it comes from. Its concrete identity can always be re-derived from that archetype ([[substance-over-accident]]) — the archetype is the persistent, public origin-mark, and the live agent is its current instantiation.
 2. **Wear its emblem.** The glyph-and-color pair is the external sign carried with the lineage, so the agent is recognized at a glance by outside parties.
-3. **Inherit its standing.** Whether the lineage is founder-genus (`principal-ic` intrinsic) or a downstream delegate fixes the agent's _recognized authority_ — what it is publicly entitled to do — independent of any task. Founders (`mav`, `nico`) and the founder-genus builders carry principal agency intrinsically; the `cognizant` delegate explicitly does not.
+3. **Inherit its standing.** Whether the lineage is founder-genus (`principal-ic` intrinsic) or a downstream delegate fixes the agent's _recognized authority_ — what it is publicly entitled to do — independent of any task. Founders (`mav`, `nico`) and the founder-genus builders carry mission-command authority intrinsically; the `cognizant` delegate explicitly does not.
 
 The split to keep in mind: provenance is the agent's identity _as recognized from outside_ — the stamp others read. It is not the runtime that executes the agent (that is Substrate), and it is not the office the agent claims for itself (that is Mandate). It is purely the mark of origin and the standing that mark confers.
 
