@@ -71,3 +71,23 @@ Anchors under verification (blind, unprimed, then compared — not asserted):
 
 Rule: a framing I am confident in is still unverified until a blind reader, given only the neutral expr,
 independently lands on it. Confidence ≠ confirmation.
+
+## Blind-verification RESULT (2026-06-24) — operator-framing RESOLVED + a convention-fork
+
+Two clean unprimed readers converged. **Confirmed:** the canonical framing of the operator↔AI delegation
+is **`principal` (operator) ↔ `agent`/`fiduciary` (the AI)** — agency + fiduciary law. The AI's duty is
+**fiduciary** (loyalty to the principal's _true intent_, not literal instruction). Human-role ranking:
+**principal > client > sponsor > product-owner > beneficiary > stakeholder**.
+
+- **REFUTED:** my asserted `client` (ranked #2 — less structurally exact) and the operator's `stakeholder`
+  (ranked last — a superset; omits intent-supply/authority/duty). The gate caught BOTH un-verified guesses.
+- **INVERSION EXPOSED (the big one):** canonically `principal` = the **operator** (delegator), `agent` =
+  the **AI**. This is the _opposite_ of the corpus's `principal := agent` / **`principal-ic`** (seniority
+  sense). `principal-self` (already retired) was not merely bespoke — it was **inverted from canon**. This
+  is the recurring "I asserted a bespoke framing as correct" failure, now demonstrated at the root term.
+
+**CONVENTION-FORK (Operator ratification — touches founder-genus identity + interacts with extraction):**
+adopt canonical `principal(operator) ↔ fiduciary-agent(AI)` and **rework `principal-ic`** (the agent is the
+fiduciary-agent with full delegated authority, NOT "the principal"); vs. keep the seniority-`principal` and
+manage the collision. **Recommendation: adopt canonical** (dodges the overload; the AI is literally "the
+agent"; `fiduciary` carries the duty-to-true-intent). NOT executed — flagged for ratification.
