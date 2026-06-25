@@ -30,7 +30,10 @@ infrastructure/build/delivery, Mav leads.
 ## Working conventions
 
 - Conventional Commits, header ≤100 chars (commitlint, `commit-msg` hook).
-- `pre-commit` runs biome. Every commit green: `pnpm build` + `pnpm test` + `pnpm lint`.
+- `pre-commit` runs biome. Every commit green: `pnpm build` + `pnpm test` + `pnpm lint` + `pnpm typecheck`.
+  Typecheck is the **`pre-push`** gate (not pre-commit): tsup/esbuild strip types, so `build` passes with
+  real `tsc` errors and biome doesn't typecheck — `tsc --noEmit` is the only catch for that class, gated at
+  push (the main-bound boundary) where turbo's content cache keeps it ~instant.
 - Push context to the load-bearing depth: repo-wide invariants here; package-load-bearing context in
   the package's own `AGENTS.md` / `CLAUDE.md`.
 

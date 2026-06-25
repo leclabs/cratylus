@@ -1,0 +1,9 @@
+# Typecheck gate · the last line before code reaches main.
+#
+# tsup/esbuild strip types, so `pnpm build` passes with real `tsc` errors and
+# `pnpm lint` (biome) doesn't typecheck — `tsc --noEmit` is the only thing that
+# catches that class. It runs here (pre-push), not pre-commit: full-monorepo tsc
+# on every commit is too slow for that path, and push is the actual main-bound
+# boundary we must defend. `turbo run typecheck` is content-cached, so this is
+# ~instant when nothing relevant changed and only re-runs affected packages.
+pnpm typecheck

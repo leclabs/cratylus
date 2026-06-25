@@ -51,7 +51,8 @@ each adapter maps its native events to and from.
 ## Conventions
 
 - Toolchain: pnpm workspace · turbo · biome · tsup · vitest (repo-wide — see root `AGENTS.md`).
-- Every commit green: `pnpm build` + `pnpm test` + `pnpm lint`. Biome is the formatter/linter (no eslint/prettier).
+- Every commit green: `pnpm build` + `pnpm test` + `pnpm lint` + `pnpm typecheck` (the last enforced at `pre-push`;
+  see root `AGENTS.md`). Biome is the formatter/linter (no eslint/prettier).
 - `src/core/ir/generated.ts` is generated — edit the schema and regenerate (`pnpm gen`), never hand-edit.
 - This `AGENTS.md` is the single contributor surface; `README.md` is the user-facing one. Keep them
   consistent. Tests live under `test/{core,adapters,cli}/`, mirroring `src/`.
