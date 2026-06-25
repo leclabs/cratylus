@@ -90,7 +90,60 @@ disposition, rank}, delta[]: {fragment_digest, idea_gloss}}`; `disposition ∈ {
 - ~~No symbol-coverage lint~~ → `gate_symbols` (SYMBOLS): every fence-interior glyph ∈ (table col-1 ∪ definienda-class ∪ exemptions), else FAIL with cell:line + codepoint. Exemptions = Greek (U+0391–03C9), subscripts (U+2080–2089, ᵢ, ⱼ), box-drawing (U+2500–257F diagram art), em-dash (prose-in-fence). (Ellipsis `…` is **declared** in the table — the "and so on" enumerator — not exempted.) Table: `references/formal-symbolic-notation.md`.
 - ~~Fenced-`≜` empty-provenance composes silently~~ → `gate_skill_provenance` (PROVENANCE warning, above).
 
-## Deploy
+## Deploy — `koine deploy` (the canonical path, koine-absorbs-mind T6.1a)
+
+`koine deploy` is the **sole, documented, runnable** deployer; it replaces `deploy.py` (deleted in
+T6.1e). It ships an already-PROJECTED render tree (`agents/` + `skills/`) to a host `.claude/`, a
+byte-identical TS port of `place/local.py` + `place/ssh.py` (proven by `packages/koine/test/deploy/
+parity.test.ts` — both placers over the same render tree into scratch targets, asserted byte-for-byte;
+it is the green oracle for this deploy's correctness, and `koine deploy --dry-run` enumerates exactly
+the agents+skills that test pins).
+
+**The bin.** `pnpm build` emits the `koine` bin (`@leclabs/koine` `bin.koine` → `dist/cli/index.js`,
+shebang'd + executable). When koine is on PATH the operator command is literally `koine deploy …`; the
+host-independent invocation (no bin-symlink dependency) is `node packages/koine/dist/cli/index.js
+deploy …`, which the convenience scripts use.
+
+**Whole-corpus convenience (run from repo root):**
+
+- `pnpm mind:project` — project the TS corpus (`@leclabs/mind project`, koine claude adapter) to the
+  gitignored render tree `packages/mind/.render-ts/` (11 agents + 16 skills incl. the `memory` bundle;
+  the projector stages `episodic.mjs` beside `skills/memory/SKILL.md`).
+- `pnpm mind:deploy` — `build → project → deploy --kind agent → deploy --kind skill` in one go (the
+  build prereq guarantees the bin + the `episodic` bundle exist). Two explicit `--kind` invocations,
+  sequential — no shell-loop (the coupling law: a host's agent SOULs + the `memory` skill dir must land
+  atomically, so both kinds deploy together per run).
+- `pnpm mind:deploy:agent` / `pnpm mind:deploy:skill` — the single-kind halves; append target flags
+  here (`--host …`, `--fleet`, `--dry-run`, …) since pass-through applies to the last command only.
+
+**Flags** (`koine deploy --help` for the full set):
+
+- `--kind agent|skill` (default `agent`) · `--scope user|project` (default `user`).
+- `--agents-dir <dir>` / `--skills-dir <dir>` — the projected render tree (required; the convenience
+  scripts pin them to `.render-ts/`).
+- `--host <key>` — a `.polis.config` host; omit/`local` deploys in place. `--user <u>` ssh override.
+  `--home <dir>` user-scope `.claude` parent (else config home, else `~/.claude`). `--project <dir>`
+  for `--scope project`.
+- `--fleet` — deploy every `fleet.hosts` minus `fleet.exclude` (needs `.polis.config`). `--exclude
+<hosts>` adds to the fleet exclude. `--only <names>` — single-host: defs to deploy; `--fleet`: hosts
+  to restrict to.
+- `--bundle <skill>=<spec>[,…]` — a build-artifact companion (hard-errors if the build output is
+  absent — never ships a tool-less `memory`). `--assets <skill>=<spec>[,…]` — committed companions
+  (warn if absent). `--bundle-base-root <dir>` — root `bundle:` specs resolve against. **Not needed by
+  the convenience path**: the projector already stages `episodic.mjs` into the render tree, so deploy
+  ships it as a present asset (`memory → … (+1 asset)`).
+- `--dry-run` — print actions, change nothing (the blind-test: `pnpm mind:deploy:skill --dry-run
+--scope user` lists all 16 skills + the memory asset; `:agent` lists all 11 agents).
+
+**Seed-if-absent** (unchanged contract): defs/skills overwrite freely; SELF/MEMORY/EPISODIC are seeded
+only-if-absent (never clobbered) and **never pruned** — agent deletion is a manual per-host def `rm` +
+sidecar archive.
+
+**Verify what LANDED, not what deploy printed** — confirm on-host at `~/.claude/{agents,skills}` (count
+
+- a content check). A wrong target path prints "copied" while the live tree is untouched.
+
+### Legacy: `deploy.py` (retired in T6.1e)
 
 Per host, sequential explicit `deploy.py` invocations — no shell-loop cleverness.
 

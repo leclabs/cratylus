@@ -1,0 +1,210 @@
+// SYMBOLS gate — the TS port of `toolkit/verify.py` `gate_symbols` (koine-absorbs-mind
+// T6.1c). The register rule (`references/formal-symbolic-notation.md`): a fenced FORMAL
+// block carries ONLY declared symbols plus the cell's own definienda. This gate is the
+// positive form — every fence-interior glyph in each fragment / skill `.ts` definiens
+// must be in (the declared table col-1 ∪ the calibrated exemption classes); an
+// undeclared glyph FAILS, named cell + glyph + codepoint.
+//
+// SOURCE-GRAIN, not markdown: the TS modules are the source now (the `.md` is a
+// projection). The "fence interior" of a skill is its `body`'s fenced block(s) (which is
+// exactly the pre-extracted `formalBlock`); of a fragment it is any fenced block in its
+// `definiens` (the current corpus has none — provenance `glyph·color` marks live in
+// PROSE, never a fence, so they are out of register-scope, exactly as the Python gate
+// only ever scanned fence interiors). The declared table is loaded LIVE from the doc so
+// the gate tracks the truth source rather than a frozen copy (`_declared_symbols`).
+//
+// NON-VACUOUS: an injected undeclared glyph inside a fence is caught; the live corpus
+// passes. Both halves are asserted below.
+
+import { readFileSync } from 'node:fs';
+import { glob } from 'node:fs/promises';
+import { dirname, join, relative } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import type { Fragment } from '@leclabs/koine/anatomy';
+import { describe, expect, it } from 'vitest';
+import type { SkillCell } from '../src/toolkit/skill-cell.js';
+
+const mindRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const srcRoot = join(mindRoot, 'src');
+const notationDoc = join(mindRoot, 'references', 'formal-symbolic-notation.md');
+
+/**
+ * Every non-ASCII glyph in col-1 of the notation table — loaded live from the doc
+ * (mirrors verify.py `_declared_symbols`). Col-1 is the first `…`-backticked field of
+ * each `| … |` table row; a field may carry several tokens, each contributing its
+ * glyphs.
+ */
+function declaredSymbols(): Set<string> {
+  const out = new Set<string>();
+  for (const line of readFileSync(notationDoc, 'utf8').split('\n')) {
+    if (!line.startsWith('|')) {
+      continue;
+    }
+    const col1 = line.trim().replace(/^\|/, '').split('|')[0] ?? '';
+    for (const m of col1.matchAll(/`([^`]+)`/g)) {
+      for (const ch of m[1] as string) {
+        if ((ch.codePointAt(0) ?? 0) > 127) {
+          out.add(ch);
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * The definienda-class + register-neutral exemptions (mirrors verify.py
+ * `_symbol_exempt`). True for a glyph the register rule does not constrain:
+ *   - ASCII (≤ U+007F) — never a declared formal symbol's concern.
+ *   - Greek block (U+0391–03C9) — definienda-class variables (η σ Φ Δ ρ λ μ …).
+ *   - Subscripts (U+2080–2089 digits, U+1D62 'ᵢ', U+2C7C 'ⱼ') — part of a name (C₀ cᵢ).
+ *   - Box-drawing (U+2500–257F) — diagram art (trees, pipeline rules); no logic.
+ *   - Em dash (U+2014) — prose-in-fence punctuation.
+ * (Ellipsis `…` U+2026 is DECLARED in the table, not exempted here.)
+ */
+function symbolExempt(ch: string): boolean {
+  const o = ch.codePointAt(0) ?? 0;
+  if (o <= 0x7f) {
+    return true;
+  }
+  if (o >= 0x0391 && o <= 0x03c9) {
+    return true;
+  }
+  if ((o >= 0x2080 && o <= 0x2089) || o === 0x1d62 || o === 0x2c7c) {
+    return true;
+  }
+  if (o >= 0x2500 && o <= 0x257f) {
+    return true;
+  }
+  if (o === 0x2014) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * The interiors of every ``` fenced block in `text`, each as a `{ line, content }`
+ * record (line = 1-based interior start, for diagnostics). Mirrors the Python fence
+ * walk: a line starting with ``` toggles in/out; interior lines are between markers.
+ */
+function fenceInteriors(
+  text: string,
+): Array<{ line: number; content: string }> {
+  const lines = text.split('\n');
+  const out: Array<{ line: number; content: string }> = [];
+  let open = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if ((lines[i] as string).startsWith('```')) {
+      if (open === -1) {
+        open = i;
+      } else {
+        out.push({
+          line: open + 2, // 1-based first interior line
+          content: lines.slice(open + 1, i).join('\n'),
+        });
+        open = -1;
+      }
+    }
+  }
+  return out;
+}
+
+/** Every undeclared, non-exempt glyph in the fence interiors of `text`. */
+function offendingGlyphs(
+  label: string,
+  text: string,
+  declared: Set<string>,
+): string[] {
+  const errs: string[] = [];
+  for (const fb of fenceInteriors(text)) {
+    const flines = fb.content.split('\n');
+    for (let j = 0; j < flines.length; j++) {
+      for (const ch of flines[j] as string) {
+        if (symbolExempt(ch) || declared.has(ch)) {
+          continue;
+        }
+        const cp = (ch.codePointAt(0) ?? 0)
+          .toString(16)
+          .toUpperCase()
+          .padStart(4, '0');
+        errs.push(
+          `SYMBOL ${label}:${fb.line + j}: undeclared glyph ${JSON.stringify(ch)} (U+${cp}) in a fence — not in the symbol table, not a definiendum-class/exempt glyph`,
+        );
+      }
+    }
+  }
+  return errs;
+}
+
+async function firstExport<T>(modPath: string): Promise<T> {
+  const mod = (await import(pathToFileURL(modPath).href)) as Record<
+    string,
+    unknown
+  >;
+  const key = Object.keys(mod).find((k) => k !== 'default');
+  return mod[key as string] as T;
+}
+
+async function collect(pattern: string): Promise<string[]> {
+  const out: string[] = [];
+  for await (const p of glob(pattern, { cwd: srcRoot })) {
+    out.push(p);
+  }
+  return out.sort();
+}
+
+describe('SYMBOLS gate — fence-interior glyph coverage', () => {
+  const declared = declaredSymbols();
+
+  it('the declared table loads (sanity: the core operators are present)', () => {
+    // Guards against a silently-empty table making the gate vacuous.
+    expect(declared.size).toBeGreaterThan(20);
+    for (const g of ['≜', '∈', '→', '⇔', '℘', '∀']) {
+      expect(declared.has(g)).toBe(true);
+    }
+  });
+
+  it('every skill formalBlock uses only declared / exempt glyphs', async () => {
+    const modules = await collect('skills/*.ts');
+    expect(modules.length).toBe(15);
+    const failures: string[] = [];
+    for (const rel of modules) {
+      const s = await firstExport<SkillCell>(join(srcRoot, rel));
+      // The `body` carries the projected fence(s); its interior == `formalBlock`.
+      failures.push(...offendingGlyphs(`skill ${s.name}`, s.body, declared));
+    }
+    expect(failures, failures.join('\n')).toEqual([]);
+  });
+
+  it('every fragment definiens uses only declared / exempt glyphs in any fence', async () => {
+    const modules = await collect('organs/**/*.ts');
+    expect(modules.length).toBeGreaterThan(100);
+    const failures: string[] = [];
+    for (const rel of modules) {
+      const f = await firstExport<Fragment>(join(srcRoot, rel));
+      const label = `fragment ${relative('organs', rel).replace(/\.ts$/, '')}`;
+      failures.push(...offendingGlyphs(label, f.definiens, declared));
+    }
+    expect(failures, failures.join('\n')).toEqual([]);
+  });
+
+  // ── NON-VACUOUS: the gate BITES on an injected violation ──────────────────────
+  it('FAILS on an undeclared glyph injected inside a fence', () => {
+    // ✗ (U+2717) is not in the table, not Greek/subscript/box-drawing/em-dash.
+    const poisoned = [
+      '\n# poison\n',
+      '```text\nDECLARATIONS\n  x ✗ y   -- undeclared operator smuggled into a fence\n```\n',
+    ].join('');
+    const offenders = offendingGlyphs('fixture poison', poisoned, declared);
+    expect(offenders.length).toBe(1);
+    expect(offenders[0]).toContain('U+2717');
+    expect(offenders[0]).toContain('in a fence');
+  });
+
+  it('PASSES the same glyph when it sits in PROSE (no fence) — register-scoped', () => {
+    // A bare ✗ outside any fence is out of the gate's scope (it scans fence
+    // interiors only) — exactly why provenance `glyph·color` marks never trip it.
+    const prose = '\n# ok\n\nthis ✗ is prose, not a fenced formal block\n';
+    expect(offendingGlyphs('fixture prose', prose, declared)).toEqual([]);
+  });
+});
