@@ -10,7 +10,7 @@
 
 `mind` is also a **shareable commons** ([[commons-distribution]]) for standing up agents. Eleven archetypes live here as `kind: agent` cells — the reducer [[bona]] and the engineer [[mav]], plus a builder team ([[principal-ic]], [[developer]], [[planner]], [[tester]], [[investigator]], [[principal-engineer-reviewer]], [[boswell]], [[cognizant]], [[arch-doc-writer]]). Each is an **archetype** — an agent's substantial form ([[substance-over-accident]]); a project-scope **species** is stood up by [[archetype-instantiation]] from that archetype plus scope grants ([[scope-grant]]). The aim: an agent inherits _how to do things right_ from strong anchors that load its priors, instead of a human over-explaining per project.
 
-The toolkit makes it runnable (design: [`TOOLKIT.md`](TOOLKIT.md); code: `toolkit/`): a resolver walks an archetype's `[[ ]]` graph, inlines each delineation, applies the scope grants, and emits a deployable agent def carrying its provenance ([[generated-artifact-provenance]]) under a drift guard ([[regenerate-without-clobbering]]).
+**koine** makes it runnable: each archetype is a typed TS module (`src/agents/<name>.ts`) composed by ESM `import` + object-spread over the anatomy types (`@leclabs/koine/anatomy`); the koine claude adapter projects it to a deployable agent def carrying its provenance (under a content-hash drift guard), and `koine deploy` ships it (`pnpm mind:project` / `pnpm mind:deploy`). markdown is the projection, the `.ts` modules are the source.
 
 ## The foundations
 

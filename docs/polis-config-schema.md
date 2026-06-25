@@ -1,7 +1,7 @@
 # `.polis.config` — fleet deployment topology (schema)
 
 The canonical, deterministic source of truth for **per-host deployment parameters**. It exists so
-`toolkit/deploy.py` resolves _who_ and _where_ to deploy without per-host tribal knowledge or
+`koine deploy` resolves _who_ and _where_ to deploy without per-host tribal knowledge or
 `--user`/`--host` defaulting to the current shell user (the failure that made `upmav` look
 "unreachable" when the real fault was a wrong SSH user, `lex` vs `lcaraccioli`).
 
@@ -39,7 +39,7 @@ The canonical, deterministic source of truth for **per-host deployment parameter
 | `host.<name>.local`    | bool     | no   | `true` ⇒ deploy in-place (no SSH). At most one host should be `local`. Default `false`.                |
 | `host.<name>.user`     | string   | cond | SSH user. **Required unless `local: true`.** No default-to-current-user.                               |
 | `host.<name>.hostname` | string   | no   | SSH target when it differs from `<name>` (alias / FQDN / `.lan`). Default: `<name>`.                   |
-| `host.<name>.home`     | string   | no   | Remote `.claude` parent. Default: omit (`deploy.py` defaults to `~/.claude`, expanded server-side).    |
+| `host.<name>.home`     | string   | no   | Remote `.claude` parent. Default: omit (`koine deploy` defaults to `~/.claude`, expanded server-side). |
 
 ## Resolution precedence (consumer contract)
 
@@ -63,11 +63,11 @@ A conforming consumer **hard-errors** (never silently proceeds) when:
 
 ## `--fleet` mode
 
-`deploy.py --fleet --kind agent` iterates `fleet.hosts` minus `fleet.exclude`, deploying each host with
+`koine deploy --fleet --kind agent` iterates `fleet.hosts` minus `fleet.exclude`, deploying each host with
 its resolved params, and reports a per-host result (landed / unreachable-deferred / failed). One
 deterministic command replaces the hand-typed per-host loop. `--exclude <h>` may add to the config's
 `exclude` for a single run; `--only <h,...>` restricts to a subset.
 
 ---
 
-_Schema owned by nico (curate). The `deploy.py` consumer that enforces this contract is toolkit/Mav._
+_Schema owned by nico (curate). The `koine deploy` consumer (koine `src/deploy/config.ts`) enforces this contract — Mav's lane._

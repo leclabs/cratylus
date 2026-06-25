@@ -17,11 +17,11 @@ graphify hook install
 
 **`mind` ≜ the exemplar corpus** — the library of canonical ideas from which every particular artifact projects. It is mostly **semantic fragments — composable ideas** — not running code.
 
-The exemplars are organized by the **agent anatomy**: organ value-cells in `<organ>/<value>.md` (e.g. `address/human-on-the-loop.md`), agents as organ-selection vectors in `agent/<name>.md`, skills in `skill/<name>.md`, and special organ-home cells in `ideas/` (e.g. `memory.md`). Cell format + `kind` taxonomy + where-cells-live: `ideas/AGENTS.md`.
+The exemplars are **typed TS modules under `src/`** — the **sole source**; markdown is a projection (koine is the only projection+deploy machinery). Organ value-fragments live in `src/organs/<organ>/<value>.ts` (e.g. `organs/address/human-on-the-loop.ts`), agents as organ-selection vectors in `src/agents/<name>.ts`, skills in `src/skills/<name>.ts`, and the special `memory` home in `ideas/memory.md`. Anatomy types: `@leclabs/koine/anatomy` (wrong organ/arity = compile error). Cell format + `kind` taxonomy: `ideas/AGENTS.md`.
 
 ## @nico
 
-nico is a **founder** ([[founder-charter]]): [[principal-ic]] (which composes [[principal-agency]]) is his **essence qua founder**, emitted by the resolver as the founder genus and bound to the polis subject — **not** a [[scope-grant]] on a path. As principal-maker of this corpus (the organ catalogs + the `agent/` + `skill/` composites) he owns the `kind` taxonomy and corpus structure; to mutate the corpus, be @nico or delegate to him. His substance is his archetype `agent/nico.md`, unchanged across scopes ([[substance-over-accident]]).
+nico is a **founder**: his essence qua founder is the **mission-command** authority (Auftragstaktik — given an objective, he owns the how, escalating only a genuine fork), the founder-genus disposition bound to the polis subject — **not** a path-scoped grant; `principal-ic` (the most-elite-IC genus) is the lineage he descends from. As principal-maker of this corpus (the organ catalogs + the `src/agents/` + `src/skills/` composites) he owns the `kind` taxonomy and corpus structure; to mutate the corpus, be @nico or delegate to him. His substance is his archetype `src/agents/nico.ts`, unchanged across scopes (substance-over-accident).
 
 - **Corpus.** Routes intake through [[exemplify]] and **mints** the exemplars it lacks; the anchor-set is open ([[anchor-routing]] — never force an ill-fit). Owns the `kind` taxonomy and corpus structure.
 - **Naming — repo-wide.** Naming is [[signify]] on the codebase ([[precise-circumscription]]). Beyond `packages/mind` the authority is **advisory**: nico flags the right rename/restructure; code lands through Mav.
@@ -30,5 +30,5 @@ nico is a **founder** ([[founder-charter]]): [[principal-ic]] (which composes [[
 ## Mutating the corpus
 
 - **Mint** when [[semantic-partition]] finds a homeless distinction (an organ value or composite the corpus lacks) — restricting to the existing corpus is a malfunction.
-- One home per exemplar; composites import by `[[ ]]`, never restate ([[cite-dont-copy]]).
-- Round-trip verify ([[self-application-is-mandatory]]): the source must reconstruct equivalent-or-better from the routed cells plus their deltas.
+- One home per exemplar; composites import by ESM `import` (one module per fragment = one home), never restate (cite-dont-copy).
+- Acceptance: `tsc` (types enforce organ/arity) + the projection-stability gate (every fragment/skill/agent still projects) + `pnpm build/test/lint/typecheck` green. The byte-identity round-trip oracle is retired — `.ts` is the source, there is nothing to round-trip against.
