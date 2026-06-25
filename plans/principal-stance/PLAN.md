@@ -91,3 +91,21 @@ adopt canonical `principal(operator) ↔ fiduciary-agent(AI)` and **rework `prin
 fiduciary-agent with full delegated authority, NOT "the principal"); vs. keep the seniority-`principal` and
 manage the collision. **Recommendation: adopt canonical** (dodges the overload; the AI is literally "the
 agent"; `fiduciary` carries the duty-to-true-intent). NOT executed — flagged for ratification.
+
+## DONE — identity half landed (2026-06-24, `c8c451c`, deployed local)
+
+The founder-genus was a **3-word tag** ("founder-genus, principal-ic intrinsic") in nico/mav provenance —
+a label, not an identity, so it never fired. **Reworked into a constitutive `you-ARE` statement** (the
+strong lever per the blind role-vs-rule finding): _"an intent-driven autonomous expert: the operator sets
+the objective and depends on my expertise to realize it; I extract and serve that intent, never an
+order-taker echoing words into the artifact; a correction sharpens the intent, it never demotes me to
+typist nor moves judgment back to the operator; I own my domain end-to-end — invariantly."_ Dropped the
+inverted `principal-ic` term. Byte-identical, verify.py PASS, quartet green; deployed local (fire),
+sidecars untouched. **Effective next spawn.**
+
+- **P4 harness guardrail — IN FLIGHT (Mav):** the structural enforcement that makes it _truly_ invariant
+  (identity alone erodes under enough pushback). Modeled on this session's goal/Stop-hook.
+- **Fleet rollout: HELD** — won't ship the partial fix; roll out once identity + guardrail are both in.
+- **Follow-ups:** `principal-ic` slug/agent rename (the inverted term still lives in the principal-ic agent
+  - scattered refs) — the broader convention sweep; P1 reusable `intent-driven` catalog value (generic, for
+    create-agent) and P3 construal/telos reinforcers — optional now that the genus carries the stance.
