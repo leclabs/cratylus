@@ -5,9 +5,11 @@ folders (`pending/ → ready/ → active/ → completed/`) as deps clear.
 
 ## Active
 
-| Plan               | Concern                                                                                                                                                                  | Lead                  |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
-| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Holds the live tails of retired initiatives. No active tail (fresh baseline 2026-06-23). | Mav + Nico (per task) |
+| Plan                 | Concern                                                                                                                                                                                          | Lead                         |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------- |
+| `koine-absorbs-mind` | THE INVERSION — TS modules are source, markdown a projection; koine owns anatomy types + projection + deploy. Frontier cleared (T2.2 + T3.1 done, unpushed); rollout/cutover remain (T4.1/T6.1). | Nico (corpus) + Mav (engine) |
+| `organ-catalog`      | Enrich the organ value-set (more real distinctions per organ) + make it discoverable by `create-agent` (single-source + `koine catalog`, kill the embedded-table drift).                         | Nico (content) + Mav (CLI)   |
+| `run-the-business`   | The standing plan — live backlog + standalone tasks; perpetual (never retires). Holds the live tails of retired initiatives. No active tail (fresh baseline 2026-06-23).                         | Mav + Nico (per task)        |
 
 ## Retired
 

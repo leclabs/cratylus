@@ -32,14 +32,12 @@ T5.1 T5.2 T5.3 T5.4 organ hygiene — independent, run on the CURRENT markdown c
 
 ## Frontier (ready)
 
-| Task     | Lane | What                                                                                      |
-| -------- | ---- | ----------------------------------------------------------------------------------------- |
-| **T3.1** | Mav  | Deploy engine — absorb placer/ssh/.polis.config/fleet/seeding/skill-dir/init (**active**) |
-
-**🎉 Phase 1 + projection + T2.2 complete** — the inversion stands alone (`pnpm project` byte-identical to
-Python `.render/`), and the claude adapter now carries its **harness reset + delta-over-target** (T2.2,
-additive/non-breaking). **T3.1 (deploy engine) is in progress** — the last frontier task before the
-T4.1 rollout / T6.1 cutover open up.
+**Frontier cleared — T2.2 + T3.1 both landed (local main, unpushed).** The inversion now stands end to
+end: TS source → koine claude-adapter projection (byte-identical) → koine deploy layer (parity with the
+Python placer). What remains is **rollout/cutover** (now unblocked): T4.1 (agents as true minimal deltas,
+the omit-to-inherit flip), T2.3 (reader density), T2.4 (multi-harness, free), T6.1 (retire the Python
+toolkit), T6.2 (rehome build-provenance out of the injected SOUL). **Outward gate held**: nothing pushed,
+no fleet redeploy — awaiting Operator consent (also still pending: the organ-hygiene SOUL redeploy).
 
 **Open follow-ups (small, deferred):**
 
@@ -49,6 +47,11 @@ T4.1 rollout / T6.1 cutover open up.
 
 ## Completed
 
+- **T3.1** — koine **deploy layer** (`src/deploy/` + `koine deploy`/`koine found`): `.polis.config`
+  precedence/validation, fleet resolution, seed-if-absent (never-clobber, EPISODIC empty `.jsonl`),
+  bundle hard-error, scope/bare-home guard, never-prunes, founding. **parity.test.ts** = byte-identical
+  vs Python `place/local.py` (179 deploy tests). `found` (not `init`, taken); deploy consumes a render
+  tree (doctrine-agnostic). Nico re-verified all gates incl. never-clobber by direct read. Commit `4a3e066`.
 - **T2.2** — claude harness reset (`adapters/claude/harness-reset.ts`, 10 organs) + opt-in
   `projectAgentDelta`/`subtractReset` (set→difference, scalar→omit-on-match). **Additive, non-breaking**:
   default projection byte-identical (oracle green); reset ratified from a blind bare-`/introspect`. Flip
