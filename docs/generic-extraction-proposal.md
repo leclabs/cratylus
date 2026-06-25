@@ -33,8 +33,8 @@ choice baked into the generic path. Both are minor cleanups, not blockers.
 koine is generic. The split runs **through `mind`**: a generic **anatomy/catalog/skills core** vs a
 **polis instance** (the 11 agents + provenance + substrate picks + naming/config). So:
 
-- **Generic** = koine (engine) + mind-core (anatomy types live in koine; the value catalog + generic skills
-  - base). The reusable "compose-an-agent-from-organs" library.
+- **Generic** = koine (engine) + mind-core: anatomy types (in koine), the value catalog, the generic skills,
+  and `base`. The reusable "compose-an-agent-from-organs" library.
 - **Instance** = a polis package/dir holding the 11 agent selection-vectors + their provenance marks +
   `.polis.config` + the bound `AGENTS.md`. "A specific society built on the generic core."
 
