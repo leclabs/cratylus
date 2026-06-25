@@ -34,8 +34,19 @@ T5.1 T5.2 T5.3 T5.4 organ hygiene — independent, run on the CURRENT markdown c
 
 **Phase 2/3 complete + pushed** (T2.1–T2.4, T3.1, T5.x). The inversion stands end to end: TS source →
 koine projection (claude + codex, byte-identical) → koine deploy + catalog. **T6.1 cutover is COMPLETE.**
-What remains: **T6.3** (hooks → koine — the last toolkit capability; active, Mav-led), **T4.1**
-(minimal-delta agents), **T6.2** (rehome build-provenance).
+**T6.3 (hooks → koine) is COMPLETE.** What remains: **T4.1** (minimal-delta agents),
+**T6.2** (rehome build-provenance).
+
+**T6.3 — hooks onto koine machinery (2026-06-25, Mav + Nico).** The last toolkit capability. **Stance
+guardrail → koine-native**: sourced as a koine `Hook` (`src/toolkit/hooks.ts`), projected into
+`.claude/settings.json` (Stop + SubagentStop) by the claude adapter, deployed by a new `koine deploy
+--kind hooks` (worker → `~/.claude/hooks/stance-guardrail/`, settings.json **merged non-destructively**);
+off-by-default moved from registration to runtime (`git config polis.stanceGuard`), so registering it
+fleet-wide is inert until opt-in. The `jq`/`settings.local.json` toggle is retired. Deployed via koine to
+fire/forge/spark/upmav/upgoose (worker sha-verified on forge); ash deferred (asleep). Bite-proven
+(`stance-guard:test`, live judge). **Continuity nudge: stays a husky git hook** (Nico's call) — it's a
+git-event repo-workflow hook, not agent-config; koine's IR is agent-lifecycle events, a different
+substrate, so it is correctly out of koine scope (that was already how the existing impl did it).
 
 **T6.1 cutover — COMPLETE (2026-06-24, Operator-driven /carry-on).** All 7 sub-shards landed (now in
 `completed/`). **koine is the ONLY projection + deploy machinery** — the Python `toolkit/` (48 modules:

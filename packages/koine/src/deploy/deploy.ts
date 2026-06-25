@@ -235,7 +235,9 @@ export function deploySingle(opts: DeploySingleOpts): DeploySingleResult {
   const warn = opts.warn ?? (() => {});
   const cfg = opts.cfg;
   const names = resolveNames(opts.kind, opts.tree, opts.only);
-  log(`${opts.kind}s (${names.length}): ${names.join(', ')}`);
+  log(
+    `${opts.kind.endsWith('s') ? opts.kind : `${opts.kind}s`} (${names.length}): ${names.join(', ')}`,
+  );
 
   let hp: HostParams;
   if (opts.host == null || opts.host === 'local') {
@@ -321,7 +323,9 @@ export function deployFleet(opts: DeployFleetOpts): FleetResult {
   if (excluded.length) {
     log(`    excluded (never touched): ${excluded.join(', ')}`);
   }
-  log(`    ${opts.kind}s (${names.length}): ${names.join(', ')}`);
+  log(
+    `    ${opts.kind.endsWith('s') ? opts.kind : `${opts.kind}s`} (${names.length}): ${names.join(', ')}`,
+  );
 
   const results: FleetResult['results'] = [];
   for (const hp of resolved) {
