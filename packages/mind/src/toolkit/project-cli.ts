@@ -28,8 +28,10 @@ import {
   agentToClaudeMd,
   densityProfile,
   isReaderDensity,
+  serializeClaudeHooksReport,
   skillToClaudeMd,
 } from '@leclabs/koine/adapters/claude';
+import { hookSources } from './hooks.js';
 import type { SkillCell } from './skill-cell.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -196,6 +198,51 @@ async function projectMemorySkill(out: string, profile: string): Promise<void> {
   process.stdout.write('EMIT skill memory (dual-deploy + episodic.mjs)\n');
 }
 
+/**
+ * Project the koine `Hook` sources into the render tree:
+ *   - `settings.json` — the `{hooks}` block (claude adapter `serializeClaudeHooks`,
+ *     canonical `turn.end`/`subagent.end` → `Stop`/`SubagentStop`). A SETTINGS
+ *     FRAGMENT (hooks only); deploy MERGES it into the host's settings.json so it
+ *     never clobbers permissions/env/other keys.
+ *   - `hooks/<id>/` — the worker scripts staged beside it as deployable assets.
+ * Off-by-default is preserved at RUNTIME (the worker re-checks the per-repo
+ * git-config opt-in), so registering the hook on every host stays inert until a
+ * repo opts in — registration is now koine-managed, not a hand-rolled `jq` edit.
+ */
+async function projectHooks(out: string): Promise<number> {
+  const { hooks, warnings, skipped } = serializeClaudeHooksReport(
+    hookSources.map((s) => s.hook),
+  );
+  for (const w of warnings) {
+    process.stderr.write(`WARN hook: ${w}\n`);
+  }
+  for (const s of skipped) {
+    process.stderr.write(`SKIP hook ${s.path}: ${s.reason}\n`);
+  }
+  mkdirSync(out, { recursive: true });
+  writeFileSync(
+    join(out, 'settings.json'),
+    `${JSON.stringify({ hooks }, null, 2)}\n`,
+  );
+  process.stdout.write(
+    `EMIT settings.json (hooks: ${Object.keys(hooks).join(', ')})\n`,
+  );
+  // Stage each hook's worker scripts under hooks/<id>/ in the render tree.
+  let n = 0;
+  for (const src of hookSources) {
+    const destDir = join(out, 'hooks', src.hook.id ?? 'unnamed');
+    mkdirSync(destDir, { recursive: true });
+    for (const asset of src.assets) {
+      copyFileSync(join(mindRoot, src.assetDir, asset), join(destDir, asset));
+    }
+    process.stdout.write(
+      `EMIT hook ${src.hook.id} (+${src.assets.length} worker asset${src.assets.length === 1 ? '' : 's'})\n`,
+    );
+    n++;
+  }
+  return n;
+}
+
 /** The `## <heading>` section body of a cell, blank-trimmed (mirrors section_body). */
 function sectionBody(body: string, heading: string): string {
   const want = `## ${heading}`.toLowerCase();
@@ -234,7 +281,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const a = await projectAgents(args.out, args.profile);
   const s = await projectSkills(args.out, args.profile);
   await projectMemorySkill(args.out, args.profile);
+  const h = await projectHooks(args.out);
   process.stdout.write(
-    `projected ${a} agents + ${s + 1} skills to ${args.out}\n`,
+    `projected ${a} agents + ${s + 1} skills + ${h} hook(s) to ${args.out}\n`,
   );
 }

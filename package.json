@@ -18,7 +18,8 @@
     "mind:project": "pnpm --filter @leclabs/mind project",
     "mind:deploy:agent": "node packages/koine/dist/cli/index.js deploy --kind agent --agents-dir packages/mind/.render-ts/agents --skills-dir packages/mind/.render-ts/skills",
     "mind:deploy:skill": "node packages/koine/dist/cli/index.js deploy --kind skill --agents-dir packages/mind/.render-ts/agents --skills-dir packages/mind/.render-ts/skills",
-    "mind:deploy": "pnpm build && pnpm mind:project && pnpm mind:deploy:agent && pnpm mind:deploy:skill",
+    "mind:deploy:hooks": "node packages/koine/dist/cli/index.js deploy --kind hooks --hooks-dir packages/mind/.render-ts",
+    "mind:deploy": "pnpm build && pnpm mind:project && pnpm mind:deploy:agent && pnpm mind:deploy:skill && pnpm mind:deploy:hooks",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "turbo run build && changeset publish",
@@ -26,9 +27,9 @@
     "continuity:install": "sh packages/mind/toolkit/continuity/continuity-hook.sh install",
     "continuity:uninstall": "sh packages/mind/toolkit/continuity/continuity-hook.sh uninstall",
     "continuity:status": "sh packages/mind/toolkit/continuity/continuity-hook.sh status",
-    "stance-guard:install": "sh packages/mind/toolkit/guardrail/stance-guard-toggle.sh install",
-    "stance-guard:uninstall": "sh packages/mind/toolkit/guardrail/stance-guard-toggle.sh uninstall",
-    "stance-guard:status": "sh packages/mind/toolkit/guardrail/stance-guard-toggle.sh status",
+    "stance-guard:on": "git config --bool polis.stanceGuard true",
+    "stance-guard:off": "git config --unset polis.stanceGuard",
+    "stance-guard:status": "git config --bool polis.stanceGuard || echo 'disabled (default)'",
     "stance-guard:test": "sh packages/mind/toolkit/guardrail/test-stance-guardrail.sh"
   },
   "devDependencies": {

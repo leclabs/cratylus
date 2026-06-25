@@ -25,11 +25,13 @@ import {
   fleetTargets,
   resolveHost,
 } from './config.js';
+import { hookTreeNames, placeHooksLocal } from './hooks.js';
 import { placeAgentsLocal, placeSkillsLocal } from './local.js';
 import { projectScope, userScope } from './scope.js';
 import {
   type SshPlaceOpts,
   placeAgentsSsh,
+  placeHooksSsh,
   placeSkillsSsh,
   realRunner,
 } from './ssh.js';
@@ -63,6 +65,9 @@ export interface DeployOpts {
  *  the `<name>.md` files in agentsDir; skills are the `<name>/` dirs (with a
  *  SKILL.md) in skillsDir. */
 export function treeNames(kind: DeployKind, tree: RenderTree): string[] {
+  if (kind === 'hooks') {
+    return tree.hooksDir ? hookTreeNames(tree.hooksDir) : [];
+  }
   if (kind === 'skill') {
     if (!existsSync(tree.skillsDir)) {
       return [];
@@ -132,6 +137,14 @@ function deployLocal(
     (opts.warn ?? (() => {}))(scopeRes.note.message);
   }
   log(`=== LOCAL deploy -> ${scopeRes.claudeDir} ===`);
+  if (opts.kind === 'hooks') {
+    return placeHooksLocal(
+      scopeRes.claudeDir,
+      opts.tree,
+      names,
+      placeOpts(opts),
+    );
+  }
   if (opts.kind === 'skill') {
     return placeSkillsLocal(
       scopeRes.claudeDir,
@@ -159,6 +172,16 @@ function deployRemote(
   log(
     `=== REMOTE deploy -> ${hp.user}@${hp.hostname}:${home} (host key '${hp.name}') ===`,
   );
+  if (opts.kind === 'hooks') {
+    return placeHooksSsh(
+      hp.user as string,
+      hp.hostname,
+      home,
+      opts.tree,
+      names,
+      placeOpts(opts),
+    );
+  }
   if (opts.kind === 'skill') {
     return placeSkillsSsh(
       hp.user as string,

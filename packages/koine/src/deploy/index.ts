@@ -63,7 +63,14 @@ export {
 export { placeAgentsLocal, placeSkillsLocal } from './local.js';
 
 export {
+  hookTreeNames,
+  mergeHooksSettings,
+  placeHooksLocal,
+} from './hooks.js';
+
+export {
   placeAgentsSsh,
+  placeHooksSsh,
   placeSkillsSsh,
   realRunner,
   shQuote,

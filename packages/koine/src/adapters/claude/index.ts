@@ -104,3 +104,10 @@ export {
   type HarnessOrganReset,
   claudeHarnessReset,
 } from './harness-reset.js';
+// The hook → settings.json `hooks` block serializer (the IR-resource projection
+// path), exposed standalone so a plugin (mind) can project a hooks-only
+// settings fragment without driving the whole `writeClaude` tree.
+export {
+  type ClaudeHooksBlock,
+  serializeClaudeHooksReport,
+} from './write.js';

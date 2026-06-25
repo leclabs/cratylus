@@ -7,10 +7,19 @@
 // real network) — production passes the real `ssh`/`scp` runner.
 
 import { spawnSync } from 'node:child_process';
-import { existsSync, readdirSync, statSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { resolve as resolvePath } from 'node:path';
 import { basename as posixBasename } from 'node:path/posix';
 import { stageAssets, stageBundle } from './bundle.js';
+import { mergeHooksSettings } from './hooks.js';
 import { SEED_FILES } from './seeds.js';
 import {
   type CommandResult,
@@ -255,5 +264,123 @@ export function placeSkillsSsh(
     log(`  skill ${name} -> ${target}:${remoteDir}/SKILL.md${tail}`);
   }
   log(`  skills copied: ${report.copied}`);
+  return { rc: 0, report };
+}
+
+/** Ship hook worker scripts to `<remote>/.claude/hooks/<id>/` and MERGE the
+ *  projected hooks block into the remote settings.json. The merge runs LOCALLY
+ *  (no remote `jq` assumed): read the remote settings.json via `ssh cat`, merge
+ *  with `mergeHooksSettings`, scp the merged file back — idempotent and
+ *  non-destructive (existing permissions/env/other hooks preserved). */
+export function placeHooksSsh(
+  user: string,
+  host: string,
+  home: string,
+  tree: RenderTree,
+  names: string[],
+  opts: SshPlaceOpts,
+): PlaceResult {
+  const log = opts.log ?? (() => {});
+  const warn = opts.warn ?? (() => {});
+  const run = opts.runner ?? realRunner(opts.dry);
+  const report = emptyReport();
+  const hooksDir = tree.hooksDir;
+  if (!hooksDir) {
+    warn('  WARN  no hooksDir in render tree; nothing to place');
+    return { rc: 0, report };
+  }
+  const target = `${user}@${host}`;
+  const resolved = resolveClaudeDir(target, home, run, opts.dry, warn);
+  if (resolved.claudeDir === null) {
+    return { rc: resolved.rc, report };
+  }
+  const remoteHooks = `${resolved.claudeDir}/hooks`;
+  for (const name of names) {
+    const srcDir = resolvePath(hooksDir, 'hooks', name);
+    if (!existsSync(srcDir)) {
+      warn(`  WARN  no hook dir for ${name} at ${srcDir}`);
+      report.warnings.push(`no hook dir for ${name}`);
+      continue;
+    }
+    const remoteDir = `${remoteHooks}/${name}`;
+    run(['ssh', target, `mkdir -p ${shQuote(remoteDir)}`]);
+    const files = readdirSync(srcDir)
+      .filter((f) => statSync(resolvePath(srcDir, f)).isFile())
+      .sort();
+    let failed = false;
+    if (!opts.dry) {
+      for (const f of files) {
+        const r = run([
+          'scp',
+          '-q',
+          resolvePath(srcDir, f),
+          `${target}:${remoteDir}/${f}`,
+        ]);
+        if (r.rc !== 0) {
+          warn(`  ERR scp ${name}/${f}: ${r.out}`);
+          failed = true;
+          break;
+        }
+      }
+    }
+    if (failed) {
+      continue;
+    }
+    report.copied += 1;
+    log(
+      `  hook ${name} -> ${target}:${remoteDir}/ (+${files.length} asset(s))`,
+    );
+  }
+  // Merge the hooks block into the remote settings.json (read → merge → write).
+  const fragFile = resolvePath(hooksDir, 'settings.json');
+  if (existsSync(fragFile)) {
+    const incoming =
+      (
+        JSON.parse(readFileSync(fragFile, 'utf-8')) as {
+          hooks?: Record<string, unknown>;
+        }
+      ).hooks ?? {};
+    if (Object.keys(incoming).length > 0) {
+      const remoteSettings = `${resolved.claudeDir}/settings.json`;
+      let existing: Record<string, unknown> = {};
+      if (!opts.dry) {
+        const r = run([
+          'ssh',
+          target,
+          `cat ${shQuote(remoteSettings)} 2>/dev/null || echo '{}'`,
+        ]);
+        try {
+          existing = JSON.parse(r.out.trim() || '{}') as Record<
+            string,
+            unknown
+          >;
+        } catch {
+          warn('  WARN remote settings.json unparseable; starting from {}');
+          existing = {};
+        }
+      }
+      const { settings, added } = mergeHooksSettings(
+        existing,
+        incoming as Record<string, never>,
+      );
+      if (!opts.dry) {
+        const tmp = resolvePath(
+          mkdtempSync(resolvePath(tmpdir(), 'koine-hooks-')),
+          'settings.json',
+        );
+        writeFileSync(tmp, `${JSON.stringify(settings, null, 2)}\n`);
+        run(['ssh', target, `mkdir -p ${shQuote(resolved.claudeDir)}`]);
+        const r = run(['scp', '-q', tmp, `${target}:${remoteSettings}`]);
+        if (r.rc !== 0) {
+          warn(`  ERR scp settings.json: ${r.out}`);
+        }
+      }
+      log(
+        `  settings.json: merged hooks for [${Object.keys(incoming).join(', ')}] ` +
+          `(+${added} new) -> ${target}:${remoteSettings}`,
+      );
+    }
+  }
+  log(`  hooks copied: ${report.copied}`);
   return { rc: 0, report };
 }

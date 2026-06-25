@@ -119,24 +119,37 @@ export async function writeClaude(
   return { written, skipped, warnings };
 }
 
-function serializeClaudeHooks(
-  hooks: Hook[],
-  warnings: string[],
-  skipped: { path: string; reason: string }[],
-): Record<
+/** The Claude `settings.json` `hooks` block shape: native-event → entries, each
+ *  entry an optional matcher + one-or-more command hooks. */
+export type ClaudeHooksBlock = Record<
   string,
   Array<{
     matcher?: string;
     hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
   }>
-> {
-  const out: Record<
-    string,
-    Array<{
-      matcher?: string;
-      hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
-    }>
-  > = {};
+>;
+
+/** Serialize koine `Hook` IR into the Claude `settings.json` `hooks` block,
+ *  collecting per-event losses. The standalone (no caller-allocated arrays)
+ *  public entry used by mind's hook projector; `writeClaude` uses the
+ *  array-threaded internal `serializeClaudeHooks` directly. */
+export function serializeClaudeHooksReport(hooks: Hook[]): {
+  hooks: ClaudeHooksBlock;
+  warnings: string[];
+  skipped: { path: string; reason: string }[];
+} {
+  const warnings: string[] = [];
+  const skipped: { path: string; reason: string }[] = [];
+  const block = serializeClaudeHooks(hooks, warnings, skipped);
+  return { hooks: block, warnings, skipped };
+}
+
+function serializeClaudeHooks(
+  hooks: Hook[],
+  warnings: string[],
+  skipped: { path: string; reason: string }[],
+): ClaudeHooksBlock {
+  const out: ClaudeHooksBlock = {};
   for (const hook of hooks) {
     for (const event of hook.events) {
       const claudeEvent = canonicalToClaude[event];

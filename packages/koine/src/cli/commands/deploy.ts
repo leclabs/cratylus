@@ -22,6 +22,8 @@ export interface DeployCmdOpts {
   // The render tree to deploy.
   agentsDir: string;
   skillsDir: string;
+  // Render tree hooks root (settings.json + hooks/<id>/); --kind hooks only.
+  hooksDir?: string;
   // Per-skill bundle/asset companion declarations + the bundle base root.
   companions?: Record<string, SkillCompanions>;
   bundleBaseRoot?: string;
@@ -88,6 +90,7 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
   const tree: RenderTree = {
     agentsDir: opts.agentsDir,
     skillsDir: opts.skillsDir,
+    hooksDir: opts.hooksDir,
     companions: opts.companions,
     bundleBaseRoot: opts.bundleBaseRoot,
   };
