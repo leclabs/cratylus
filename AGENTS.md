@@ -14,9 +14,11 @@ infrastructure/build/delivery, Mav leads.
 
 ## Packages
 
-- `packages/mind` — the exemplar corpus (`ideas/` cells + `toolkit/` projector). Markdown + Python;
-  **not** an npm workspace member. Corpus rules: `packages/mind/ideas/AGENTS.md`. Mutate via
-  `[[exemplify]]` (resolve → glossary → verify PASS → deploy). Round-trip is the acceptance gate.
+- `packages/mind` — the exemplar corpus, now a **TS workspace member** (`@leclabs/mind`, deps
+  `@leclabs/koine`): organ values / agents / skills are typed modules under `src/` (the **source**), and
+  markdown is a **projection** (`pnpm project` via koine's claude adapter). The Python `toolkit/` projector
+  is dual-maintained pending retirement (`koine-absorbs-mind` T6.1 cutover). Corpus rules:
+  `packages/mind/ideas/AGENTS.md`. Mutate via `[[exemplify]]`; byte-identical round-trip is the acceptance gate.
 - `packages/koine` — the config IR + translator (`@leclabs/koine`, formerly _agentir_). **One package**;
   `core` / `adapters` / `cli` are source areas under `src/`, exposed via subpath exports + a `koine` bin.
 - `packages/episodic` — **build-only toolsource** (private; anchor `episodic`) for the agent-memory
