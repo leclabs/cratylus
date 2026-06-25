@@ -10,10 +10,10 @@
 // `~/.claude/hooks/<id>/`. This module is the single source of truth for WHERE a
 // hook fires and WHAT it runs.
 //
-// NAMING/PLACEMENT — flagged for @nico's sign-off: `src/toolkit/hooks.ts` (a
-// build-wiring sibling of `project-cli.ts`) vs. a first-class corpus `src/hooks/`
-// kind. I (Mav) chose the toolkit home because a koine Hook is infra config, not
-// a culture exemplar — but the user-facing name/home is a corpus-structure call.
+// PLACEMENT (resolved, @nico T6.3): a koine Hook is infra config, not a culture
+// exemplar, so it lives in `src/toolkit/` (build-wiring beside `project-cli.ts`),
+// NOT a first-class corpus `src/hooks/` kind. The worker scripts are co-located
+// in `src/toolkit/guardrail/` (the old shell `toolkit/` dir was consolidated here).
 
 import type { Hook } from '@leclabs/koine';
 
@@ -40,7 +40,7 @@ export const stanceGuardrailHook: Hook = {
 };
 
 /** The worker scripts koine deploy ships beside the hook entry, named relative
- *  to the toolkit guardrail source dir (`packages/mind/toolkit/guardrail/`). */
+ *  to the guardrail source dir (`packages/mind/src/toolkit/guardrail/`). */
 export const stanceGuardrailAssets: readonly string[] = [
   'stance-guardrail.sh',
   'stance-judge.sh',
@@ -64,6 +64,6 @@ export const hookSources: readonly HookSource[] = [
   {
     hook: stanceGuardrailHook,
     assets: stanceGuardrailAssets,
-    assetDir: 'toolkit/guardrail',
+    assetDir: 'src/toolkit/guardrail',
   },
 ];

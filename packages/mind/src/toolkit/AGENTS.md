@@ -1,17 +1,20 @@
-# toolkit
+# src/toolkit — projection + delivery wiring
 
-`packages/mind/toolkit/` is **shell hook WORKERS only**. The Python projector/deployer was retired in
-`koine-absorbs-mind` T6.1 — the typed modules under `src/` are the **sole source** and **koine** is the
-only projection + deploy machinery. What remains here:
+`packages/mind/src/toolkit/` is mind's **build/projection wiring** (the old shell `packages/mind/toolkit/`
+was consolidated here in T6.3; the Python projector/deployer was retired in T6.1). The typed modules under
+`src/` are the **sole source** and **koine** is the only projection + deploy machinery. Here:
 
-- **`continuity/`** — the repo-level praxis-advance **git post-commit** hook (opt-in). NOT koine-managed
-  (koine projects agent/harness config, not git hooks — see the part-(2) design fork in `T6.3`).
+- **TS wiring** — `project-cli.ts` / `project.ts` (project the corpus via koine's claude adapter),
+  `hooks.ts` (the koine `Hook` sources), `cell.ts` / `codegen.ts` / `make-base.ts` / `skill-cell.ts`.
 - **`guardrail/`** — the stance-guardrail **Stop/SubagentStop** worker scripts (`stance-guardrail.sh` +
-  `stance-judge.sh` + `stance-judge-prompt.md`). As of T6.3 this hook is **koine-native**: its source is
-  the koine `Hook` in `src/toolkit/hooks.ts`, koine PROJECTS it into `.claude/settings.json`, and
-  `koine deploy --kind hooks` ships these workers to the host's `~/.claude/hooks/stance-guardrail/`. The
-  shell here is just the worker the hook runs — registration/placement is koine's.
-- this doc — the **`koine deploy` runbook** (below) and the two hooks.
+  `stance-judge.sh` + `stance-judge-prompt.md`). The hook is **koine-native** (T6.3): its source is the
+  koine `Hook` in `hooks.ts`, koine PROJECTS it into `.claude/settings.json`, and `koine deploy --kind
+  hooks` ships these workers to `~/.claude/hooks/stance-guardrail/`. The shell is just the worker the hook
+  runs — registration/placement is koine's.
+- **`continuity/`** — the repo-level praxis-advance **git post-commit** hook (opt-in). NOT koine-managed
+  by design (koine projects agent/harness config, not git hooks — a git hook fires in git's process, a
+  different substrate). The `.husky/post-commit` dispatcher runs `continuity/praxis-advance-nudge.sh`.
+- this doc — the **`koine deploy` runbook** (below).
 
 **Projection + composition are TS/koine.** Source = `src/organs/<organ>/<value>.ts`, `src/agents/<name>.ts`,
 `src/skills/<name>.ts`, plus the `memory` home `ideas/memory.md`. Anatomy types = `@leclabs/koine/anatomy`
@@ -84,7 +87,7 @@ a content check). A wrong target path prints "copied" while the live tree is unt
 
 The one **repo-level** continuity ritual is **praxis-advance**: when plan task-files move between
 their state folders (`plans/**/{pending,ready,active,completed}/`), PLAN.md — the hand-authored
-mirror — may go stale. `toolkit/continuity/` provides an **opt-in, off-by-default** post-commit hook
+mirror — may go stale. `src/toolkit/continuity/` provides an **opt-in, off-by-default** post-commit hook
 that _detects this and prints a reminder_ to re-mirror via `/praxis`. It **never edits PLAN.md**
 (detect → remind, never edit): auto-rewriting hand-authored prose would need a PLAN.md generator that
 doesn't exist (a future "mechanized mirror" task), and a commit-time edit wouldn't be in the commit.
@@ -103,8 +106,8 @@ doesn't exist (a future "mechanized mirror" task), and a commit-time edit wouldn
   re-mirror reminder. A reminder must never fail a commit, so the worker always exits 0.
 - **Composes, never clobbers** the existing husky `pre-commit` (biome) / `commit-msg` (commitlint) —
   `post-commit` is an additive third hook in `.husky/`. Files: `.husky/post-commit` (guarded
-  dispatcher), `toolkit/continuity/praxis-advance-nudge.sh` (the detector/reminder),
-  `toolkit/continuity/continuity-hook.sh` (the install/uninstall/status toggle).
+  dispatcher), `src/toolkit/continuity/praxis-advance-nudge.sh` (the detector/reminder),
+  `src/toolkit/continuity/continuity-hook.sh` (the install/uninstall/status toggle).
 
 ## Stance guardrail (principal-stance P4 — the harness half)
 
@@ -134,7 +137,7 @@ at fire time and exits 0 unless the repo opted in. Still **agent-scoped** (`poli
 `nico mav`), **fails open**, **loop-safe** (`stop_hook_active`). Pluggable judge (`$STANCE_JUDGE_CMD`; default
 `stance-judge.sh` → headless `claude -p` haiku). Opt-in convenience: `pnpm run stance-guard:{on,off,status}`
 (plain `git config`, no `jq`); prove-it-bites: `pnpm run stance-guard:test` (set `STANCE_WORKER_DIR=<host>/.claude/hooks/stance-guardrail`
-to prove the **deployed** artifact bites). **Full mechanism + rubric: `toolkit/guardrail/README.md`.**
+to prove the **deployed** artifact bites). **Full mechanism + rubric: `src/toolkit/guardrail/README.md`.**
 
 > **Note — fleet organ sync was dropped.** Memory is **local-per-host** (Operator decision 2026-06-23):
 > a shared organ store clobbers each host's local context, so fleet-wide sync was declined and its shell

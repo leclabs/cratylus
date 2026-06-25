@@ -24,13 +24,13 @@
     "version-packages": "changeset version",
     "release": "turbo run build && changeset publish",
     "prepare": "husky",
-    "continuity:install": "sh packages/mind/toolkit/continuity/continuity-hook.sh install",
-    "continuity:uninstall": "sh packages/mind/toolkit/continuity/continuity-hook.sh uninstall",
-    "continuity:status": "sh packages/mind/toolkit/continuity/continuity-hook.sh status",
+    "continuity:install": "sh packages/mind/src/toolkit/continuity/continuity-hook.sh install",
+    "continuity:uninstall": "sh packages/mind/src/toolkit/continuity/continuity-hook.sh uninstall",
+    "continuity:status": "sh packages/mind/src/toolkit/continuity/continuity-hook.sh status",
     "stance-guard:on": "git config --bool polis.stanceGuard true",
     "stance-guard:off": "git config --unset polis.stanceGuard",
     "stance-guard:status": "git config --bool polis.stanceGuard || echo 'disabled (default)'",
-    "stance-guard:test": "sh packages/mind/toolkit/guardrail/test-stance-guardrail.sh"
+    "stance-guard:test": "sh packages/mind/src/toolkit/guardrail/test-stance-guardrail.sh"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
