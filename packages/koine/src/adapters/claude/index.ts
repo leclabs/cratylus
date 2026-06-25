@@ -84,6 +84,8 @@ export {
   type ResolvedAgent,
   type ResolvedSkill,
   agentToClaudeMd,
+  projectAgentDelta,
+  subtractReset,
   skillToClaudeMd,
   agentBody,
   skillBody,
@@ -91,3 +93,10 @@ export {
   organTitle,
   provenanceHeader,
 } from './anatomy.js';
+// The claude HARNESS RESET (omit-to-inherit basis) + its type. `claude` is a
+// harness, never a mind agent — so the reset lives in the adapter, not mind.
+export {
+  type HarnessReset,
+  type HarnessOrganReset,
+  claudeHarnessReset,
+} from './harness-reset.js';

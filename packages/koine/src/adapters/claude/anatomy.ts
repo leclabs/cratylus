@@ -18,7 +18,8 @@
 // And for skills: `compose_skill` + `emit_skill_dir` → `skillToClaudeMd`.
 
 import { createHash } from 'node:crypto';
-import type { Fragment, Mark } from '../../anatomy/index.js';
+import type { Fragment, Mark, Organ } from '../../anatomy/index.js';
+import type { HarnessReset } from './harness-reset.js';
 
 // ── Agent projection ────────────────────────────────────────────────────────
 
@@ -138,6 +139,75 @@ export function agentToClaudeMd(
     profile,
     agentBody(a),
   );
+}
+
+// ── Delta-over-target (subtract the harness reset) ───────────────────────────
+// An ADDITIVE capability on top of `agentToClaudeMd`: the DEFAULT projection is
+// unchanged (byte-identical to the Python oracle); this is a SEPARATE path that
+// subtracts the supplied harness reset so the projected SOUL carries only the
+// agent's distinctive delta. The reset declares, per organ, whether to take the
+// SET-DIFFERENCE (drop agent fragments whose slug is harness-provided) or to OMIT
+// a SCALAR organ entirely when its single value matches the reset slug. Organs
+// with no reset entry pass through untouched. An organ emptied by subtraction is
+// dropped (no empty `## Organ` heading). See `docs/baseline-delta-model.md`.
+
+/**
+ * Invert `organTitle`: recover the `Organ` slug an organ-section title came from
+ * (`Register-Fit` → `register-fit`, `Effectors` → `effectors`). The projected
+ * `ResolvedAgent.organs` carries display titles; the reset is keyed by `Organ`.
+ */
+function titleToOrgan(title: string): Organ {
+  return title.toLowerCase() as Organ;
+}
+
+/**
+ * Subtract a harness reset from a resolved agent's organ sections, returning a
+ * new `ResolvedAgent` whose `organs` carry only the agent's delta. Pure — does
+ * not mutate the input. SET organs → set-difference by slug; SCALAR organs →
+ * omitted iff the single fragment's slug equals the reset slug; emptied organs
+ * dropped; organs absent from the reset are kept verbatim.
+ */
+export function subtractReset(
+  a: ResolvedAgent,
+  reset: HarnessReset,
+): ResolvedAgent {
+  const organs: (readonly [string, readonly Fragment[]])[] = [];
+  for (const [title, frags] of a.organs) {
+    const entry = reset[titleToOrgan(title)];
+    if (!entry) {
+      organs.push([title, frags]);
+      continue;
+    }
+    const provided = new Set(entry.slugs);
+    if (entry.kind === 'scalar') {
+      // Omit the whole organ iff its single value is the harness-provided one.
+      const only = frags[0];
+      if (frags.length === 1 && only && provided.has(only.slug)) {
+        continue;
+      }
+      organs.push([title, frags]);
+      continue;
+    }
+    // SET: keep only the fragments the harness does NOT provide.
+    const kept = frags.filter((f) => !provided.has(f.slug));
+    if (kept.length > 0) {
+      organs.push([title, kept]);
+    }
+  }
+  return { ...a, organs };
+}
+
+/**
+ * The DELTA claude-code SOUL for an agent: like `agentToClaudeMd` but with the
+ * harness reset subtracted first (the separate, opt-in subtraction path). The
+ * front-matter/header framing is identical; only the organ body differs.
+ */
+export function projectAgentDelta(
+  a: ResolvedAgent,
+  reset: HarnessReset,
+  profile = 'strong-llm-lean/claude-code',
+): string {
+  return agentToClaudeMd(subtractReset(a, reset), profile);
 }
 
 // ── Skill projection ────────────────────────────────────────────────────────
