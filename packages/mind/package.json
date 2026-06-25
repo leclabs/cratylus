@@ -9,7 +9,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "codegen": "tsx src/toolkit/codegen.ts",
-    "project": "tsx src/toolkit/project-cli.ts"
+    "project": "tsx src/toolkit/project-cli.ts",
+    "project:codex": "tsx src/toolkit/project-cli-codex.ts"
   },
   "dependencies": {
     "@leclabs/koine": "workspace:*"

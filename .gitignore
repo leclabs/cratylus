@@ -21,6 +21,10 @@ packages/mind/.render/
 # The standalone TS projection (resolve.py's TS counterpart, src/toolkit/project-cli.ts).
 # Same neutral-staging rationale as .render/ above; regenerable, never a deploy.
 packages/mind/.render-ts/
+# The codex-harness projection (project-cli-codex.ts) — proof that mind reaches a
+# second koine harness for free (koine-absorbs-mind T2.4). Same neutral-staging
+# rationale; kept separate so the claude byte-identity diff stays clean.
+packages/mind/.render-ts-codex/
 # Fleet deploy topology carries env-specific SSH usernames — local-only.
 # Committed template: .polis.config.example. Schema: docs/polis-config-schema.md
 .polis.config

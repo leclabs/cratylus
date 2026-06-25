@@ -62,3 +62,19 @@ export const codexAdapter: Adapter = {
 export default codexAdapter;
 export { paths } from './paths.js';
 export { canonicalToCodex, codexToCanonical } from './events.js';
+// The anatomy→codex projection (the inversion's projection path — the second
+// harness, proving mind reaches every koine adapter for free; distinct from the
+// IR serialize path above). The composed SOUL body is harness-neutral, so the
+// `ResolvedAgent`/`ResolvedSkill` shapes are shared with the claude adapter.
+export {
+  type ResolvedAgent,
+  type ResolvedSkill,
+  agentToCodexToml,
+  agentToCodexTomlObject,
+  projectCodexAgentDelta,
+  skillToCodexMd,
+  agentsMdSurface,
+} from './anatomy.js';
+// The codex HARNESS RESET (omit-to-inherit basis, a T2.4 first pass). `codex` is a
+// harness, never a mind agent — so the reset lives in the adapter, not mind.
+export { codexHarnessReset } from './harness-reset.js';
