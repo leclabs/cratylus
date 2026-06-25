@@ -1,0 +1,259 @@
+// Remote (ssh/scp) placer — ship generated defs to a host's `.claude/` root and
+// seed each agent's sidecar layers if-absent, atomically, server-side. Same
+// substance/accident contract as the local placer; the host is the accident.
+//
+// Faithful port of `place/ssh.py`. The shell-out is funnelled through an
+// injectable `CommandRunner` so a hermetic test can substitute a fake fleet (no
+// real network) — production passes the real `ssh`/`scp` runner.
+
+import { spawnSync } from 'node:child_process';
+import { existsSync, readdirSync, statSync } from 'node:fs';
+import { resolve as resolvePath } from 'node:path';
+import { basename as posixBasename } from 'node:path/posix';
+import { stageAssets, stageBundle } from './bundle.js';
+import { SEED_FILES } from './seeds.js';
+import {
+  type CommandResult,
+  type CommandRunner,
+  type PlaceOpts,
+  type PlaceResult,
+  type RenderTree,
+  emptyReport,
+} from './types.js';
+
+/** POSIX single-quote shell-quoting (mirrors Python `shlex.quote`). */
+export function shQuote(s: string): string {
+  if (s === '') {
+    return "''";
+  }
+  if (/^[a-zA-Z0-9_@%+=:,./-]+$/.test(s)) {
+    return s;
+  }
+  return `'${s.replace(/'/g, "'\\''")}'`;
+}
+
+/** The production runner: actually invokes ssh/scp via spawnSync. Honors
+ *  `dry` (no execution, returns a sentinel). */
+export function realRunner(dry: boolean): CommandRunner {
+  return (cmd: string[]): CommandResult => {
+    if (dry) {
+      return { rc: 0, out: '(dry-run)' };
+    }
+    const [bin, ...rest] = cmd;
+    if (bin === undefined) {
+      return { rc: 1, out: 'empty command' };
+    }
+    const p = spawnSync(bin, rest, { encoding: 'utf-8' });
+    const out = `${p.stdout ?? ''}${p.stderr ?? ''}`.trim();
+    return { rc: p.status ?? 1, out };
+  };
+}
+
+export interface SshPlaceOpts extends PlaceOpts {
+  // The injectable command runner; defaults to the real ssh/scp runner.
+  runner?: CommandRunner;
+}
+
+interface ResolvedDir {
+  claudeDir: string | null;
+  rc: 0 | 2;
+}
+
+/** Reachability check + resolve `home` to an ABSOLUTE remote `.claude` dir.
+ *  Returns {claudeDir, 0} on success, {null, 2} if unreachable/unresolvable.
+ *  Never passes a literal `~` through shQuote (that suppresses tilde expansion
+ *  → writes a literal-named dir); resolves $HOME server-side. */
+function resolveClaudeDir(
+  target: string,
+  home: string,
+  run: CommandRunner,
+  dry: boolean,
+  warn: (line: string) => void,
+): ResolvedDir {
+  const reach = run([
+    'ssh',
+    '-o',
+    'ConnectTimeout=6',
+    '-o',
+    'BatchMode=yes',
+    target,
+    'true',
+  ]);
+  if (reach.rc !== 0 && !dry) {
+    warn(`  UNREACHABLE ${target} -- deferring`);
+    return { claudeDir: null, rc: 2 };
+  }
+  if (home === '~/.claude' || home === '~' || home === '~/') {
+    const r = run(['ssh', target, 'printf %s "$HOME"']);
+    const remoteHome = dry ? '$HOME' : r.out.trim();
+    if (!dry && (r.rc !== 0 || !remoteHome.startsWith('/'))) {
+      warn(`  ERR could not resolve remote $HOME: ${r.out}`);
+      return { claudeDir: null, rc: 2 };
+    }
+    return { claudeDir: `${remoteHome}/.claude`, rc: 0 };
+  }
+  // Explicit path. The flag is named --home; unify with local userScope (which
+  // appends `.claude`). A home that is NOT already the `.claude` dir gets it
+  // appended — LOUDLY — so a bare home dir can never silently litter
+  // `<home>/{agents,skills}` beside the real `<home>/.claude`. A path already
+  // ending in `.claude` is used verbatim (back-compat).
+  const p = home.replace(/\/+$/, '');
+  if (posixBasename(p) !== '.claude') {
+    warn(`  NOTE --home '${home}' is a home dir -> deploying to ${p}/.claude`);
+    return { claudeDir: `${p}/.claude`, rc: 0 };
+  }
+  return { claudeDir: p, rc: 0 };
+}
+
+/** Deploy agent defs to <user>@<host>, seeding sidecar layers if-absent. */
+export function placeAgentsSsh(
+  user: string,
+  host: string,
+  home: string,
+  defsDir: string,
+  names: string[],
+  opts: SshPlaceOpts,
+): PlaceResult {
+  const log = opts.log ?? (() => {});
+  const warn = opts.warn ?? (() => {});
+  const run = opts.runner ?? realRunner(opts.dry);
+  const report = emptyReport();
+  const target = `${user}@${host}`;
+  const resolved = resolveClaudeDir(target, home, run, opts.dry, warn);
+  if (resolved.claudeDir === null) {
+    return { rc: resolved.rc, report };
+  }
+  const agentsDir = `${resolved.claudeDir}/agents`;
+  run(['ssh', target, `mkdir -p ${shQuote(agentsDir)}`]);
+  for (const name of names) {
+    const src = resolvePath(defsDir, `${name}.md`);
+    if (!existsSync(src)) {
+      warn(`  WARN  no def for ${name} at ${src}`);
+      report.warnings.push(`no def for ${name}`);
+      continue;
+    }
+    if (!opts.dry) {
+      const r = run(['scp', '-q', src, `${target}:${agentsDir}/${name}.md`]);
+      if (r.rc !== 0) {
+        warn(`  ERR scp ${name}: ${r.out}`);
+        continue;
+      }
+    }
+    report.copied += 1;
+    const selfdir = `${agentsDir}/${name}`;
+    run(['ssh', target, `mkdir -p ${shQuote(selfdir)}`]);
+    // seed each layer if-absent, atomically, on the remote: test -e guards.
+    for (const [fname, seedfn] of SEED_FILES) {
+      const remotef = `${selfdir}/${fname}`;
+      const seed = seedfn(name);
+      const remoteCmd =
+        `if [ -e ${shQuote(remotef)} ]; then echo PRESENT; ` +
+        `else cat > ${shQuote(remotef)} <<'MIND_SEED_EOF'\n${seed}\nMIND_SEED_EOF\n echo SEEDED; fi`;
+      const r = run(['ssh', target, remoteCmd]);
+      const tag = `${name}/${fname}`;
+      if (opts.dry) {
+        report.seeded.push(`${tag}?`);
+      } else if (r.out.trim().endsWith('SEEDED')) {
+        report.seeded.push(tag);
+      } else if (r.out.trim().endsWith('PRESENT')) {
+        report.present.push(tag);
+      } else {
+        warn(`  ERR seed ${tag}: ${r.out}`);
+      }
+    }
+  }
+  log(`  defs copied: ${report.copied}`);
+  log(
+    `  layers seeded (${report.seeded.length}): ${report.seeded.join(', ') || '-'}`,
+  );
+  log(
+    `  layers present, untouched (${report.present.length}): ${report.present.join(', ') || '-'}`,
+  );
+  return { rc: 0, report };
+}
+
+/** Ship <skillsSrc>/<name>/ -> <remote>/.claude/skills/<name>/ — SKILL.md plus
+ *  any staged companion assets beside it. Skills are generated substance with
+ *  no sidecars — overwrite freely. Bundle/asset companions are staged into the
+ *  source dir first (bundle hard-errors if a build output is absent). */
+export function placeSkillsSsh(
+  user: string,
+  host: string,
+  home: string,
+  tree: RenderTree,
+  names: string[],
+  opts: SshPlaceOpts,
+): PlaceResult {
+  const log = opts.log ?? (() => {});
+  const warn = opts.warn ?? (() => {});
+  const run = opts.runner ?? realRunner(opts.dry);
+  const report = emptyReport();
+  const target = `${user}@${host}`;
+  const resolved = resolveClaudeDir(target, home, run, opts.dry, warn);
+  if (resolved.claudeDir === null) {
+    return { rc: resolved.rc, report };
+  }
+  const skillsDir = `${resolved.claudeDir}/skills`;
+  for (const name of names) {
+    const srcDir = resolvePath(tree.skillsDir, name);
+    if (!existsSync(resolvePath(srcDir, 'SKILL.md'))) {
+      warn(
+        `  WARN  no SKILL.md for ${name} at ${resolvePath(srcDir, 'SKILL.md')}`,
+      );
+      report.warnings.push(`no SKILL.md for ${name}`);
+      continue;
+    }
+    const comp = tree.companions?.[name];
+    if (comp?.assets) {
+      stageAssets(name, srcDir, comp.assets, {
+        assetBaseDir: srcDir,
+        log,
+        warn,
+      });
+    }
+    if (comp?.bundle) {
+      const baseRoot = tree.bundleBaseRoot;
+      if (!baseRoot) {
+        throw new Error(
+          `${name} declares bundle but RenderTree.bundleBaseRoot is unset`,
+        );
+      }
+      const staged = stageBundle(name, srcDir, comp.bundle, { baseRoot, log });
+      for (const b of staged) {
+        report.bundled.push(`${name}/${b}`);
+      }
+    }
+    const remoteDir = `${skillsDir}/${name}`;
+    run(['ssh', target, `mkdir -p ${shQuote(remoteDir)}`]);
+    const files = readdirSync(srcDir)
+      .filter((f) => statSync(resolvePath(srcDir, f)).isFile())
+      .sort();
+    let failed = false;
+    if (!opts.dry) {
+      for (const f of files) {
+        const r = run([
+          'scp',
+          '-q',
+          resolvePath(srcDir, f),
+          `${target}:${remoteDir}/${f}`,
+        ]);
+        if (r.rc !== 0) {
+          warn(`  ERR scp ${name}/${f}: ${r.out}`);
+          failed = true;
+          break;
+        }
+      }
+    }
+    if (failed) {
+      continue;
+    }
+    report.copied += 1;
+    const extra = files.filter((f) => f !== 'SKILL.md');
+    const tail = extra.length
+      ? ` (+${extra.length} asset${extra.length === 1 ? '' : 's'})`
+      : '';
+    log(`  skill ${name} -> ${target}:${remoteDir}/SKILL.md${tail}`);
+  }
+  log(`  skills copied: ${report.copied}`);
+  return { rc: 0, report };
+}

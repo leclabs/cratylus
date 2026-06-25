@@ -10,10 +10,13 @@ import { cursorAdapter } from '../adapters/cursor/index.js';
 import { geminiAdapter } from '../adapters/gemini/index.js';
 import { opencodeAdapter } from '../adapters/opencode/index.js';
 import type { Adapter, Scope } from '../core/index.js';
+import type { DeployKind } from '../deploy/index.js';
 import { runCompile } from './commands/compile.js';
+import { parseCompanions, runDeploy } from './commands/deploy.js';
 import { runDiff } from './commands/diff.js';
 import { runDoctor } from './commands/doctor.js';
 import { runEventsList } from './commands/events.js';
+import { runFound } from './commands/found.js';
 import { runImport } from './commands/import.js';
 import { runInit } from './commands/init.js';
 import { runLint } from './commands/lint.js';
@@ -187,6 +190,148 @@ cli
       }),
     );
   });
+
+cli
+  .command(
+    'deploy',
+    'Ship a projected render tree (agents/ + skills/) to a host .claude/ root',
+  )
+  .option('--agents-dir <dir>', 'Render tree agents/ dir (the projected defs)')
+  .option(
+    '--skills-dir <dir>',
+    'Render tree skills/ dir (the projected skill dirs)',
+  )
+  .option(
+    '--bundle-base-root <dir>',
+    'Root that skill `bundle:` specs resolve against',
+  )
+  .option(
+    '--bundle <decls>',
+    'skill build-artifact companions: <skill>=<spec>[,…] (hard-error if unbuilt)',
+  )
+  .option(
+    '--assets <decls>',
+    'skill committed companions: <skill>=<spec>[,…] (warn if absent)',
+  )
+  .option('--kind <kind>', 'agent | skill', { default: 'agent' })
+  .option('--scope <scope>', 'user | project', { default: 'user' })
+  .option(
+    '--host <host>',
+    "host key in .polis.config; omit/'local' to deploy in place",
+  )
+  .option('--user <user>', 'ssh user override (else config host.<name>.user)')
+  .option(
+    '--home <dir>',
+    'user-scope .claude parent override (else config home, else ~/.claude)',
+  )
+  .option('--project <dir>', 'project root for --scope project (default: cwd)')
+  .option(
+    '--fleet',
+    'deploy every fleet.hosts minus fleet.exclude (needs config)',
+  )
+  .option(
+    '--exclude <hosts>',
+    'comma-separated host(s) to add to the fleet exclude',
+  )
+  .option(
+    '--only <names>',
+    'single-host: names to deploy; --fleet: hosts to restrict to',
+  )
+  .option('--dry-run', 'print actions, change nothing')
+  .action(
+    async (opts: {
+      agentsDir?: string;
+      skillsDir?: string;
+      bundleBaseRoot?: string;
+      bundle?: string;
+      assets?: string;
+      kind: DeployKind;
+      scope: Scope;
+      host?: string;
+      user?: string;
+      home?: string;
+      project?: string;
+      fleet?: boolean;
+      exclude?: string;
+      only?: string;
+      dryRun?: boolean;
+    }) => {
+      if (!opts.agentsDir || !opts.skillsDir) {
+        console.error(
+          'koine deploy: --agents-dir and --skills-dir are required',
+        );
+        process.exit(1);
+      }
+      let companions: ReturnType<typeof parseCompanions>;
+      try {
+        companions = parseCompanions(opts.bundle ?? null, opts.assets ?? null);
+      } catch (e) {
+        console.error(`koine deploy: ${(e as Error).message}`);
+        process.exit(1);
+      }
+      process.exit(
+        await runDeploy({
+          agentsDir: opts.agentsDir,
+          skillsDir: opts.skillsDir,
+          bundleBaseRoot: opts.bundleBaseRoot,
+          companions,
+          kind: opts.kind,
+          scope: opts.scope as Scope,
+          host: opts.host ?? null,
+          user: opts.user ?? null,
+          home: opts.home ?? null,
+          project: opts.project ?? null,
+          fleet: opts.fleet,
+          exclude: opts.exclude ?? null,
+          only: opts.only ?? null,
+          dryRun: opts.dryRun,
+        }),
+      );
+    },
+  );
+
+cli
+  .command(
+    'found <target>',
+    'Found a mind-society in <target> (project culture + scaffold)',
+  )
+  .option('--agents-dir <dir>', 'Render tree agents/ dir (the projected defs)')
+  .option(
+    '--skills-dir <dir>',
+    'Render tree skills/ dir (the projected skill dirs)',
+  )
+  .option('--subject <text>', 'one-line statement of what this society is for')
+  .option(
+    '--force',
+    'overwrite an existing founding AGENTS.md (default: refuse)',
+  )
+  .action(
+    async (
+      target: string,
+      opts: {
+        agentsDir?: string;
+        skillsDir?: string;
+        subject?: string;
+        force?: boolean;
+      },
+    ) => {
+      if (!opts.agentsDir || !opts.skillsDir) {
+        console.error(
+          'koine found: --agents-dir and --skills-dir are required',
+        );
+        process.exit(1);
+      }
+      process.exit(
+        await runFound({
+          target,
+          agentsDir: opts.agentsDir,
+          skillsDir: opts.skillsDir,
+          subject: opts.subject,
+          force: opts.force,
+        }),
+      );
+    },
+  );
 
 cli.help();
 cli.version(VERSION);

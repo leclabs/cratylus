@@ -11,6 +11,7 @@ const adapters = readdirSync('./src/adapters', { withFileTypes: true })
 const libEntry: Record<string, string> = {
   'core/index': 'src/core/index.ts',
   'anatomy/index': 'src/anatomy/index.ts',
+  'deploy/index': 'src/deploy/index.ts',
 };
 for (const a of adapters) {
   libEntry[`adapters/${a}/index`] = `src/adapters/${a}/index.ts`;
