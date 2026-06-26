@@ -16,15 +16,15 @@
 // (ratified from a blind bare `/introspect`, DECISION 2), this is a REASONABLE
 // FIRST PASS, not a measured fixture. Codex is an Anthropic-class coding agent over
 // the SAME substrate family, so the assumptions below mirror claude's measured set:
-//   - effectors: Codex provides shell/file/code-exec + sub-agent (`agents/*.toml`).
-//   - sensors:   text + image input.
-//   - substrate/percept/enaction/address/deliberation/resolve/comportment: same
-//     defaults a general coding-agent harness provides (a turn answers a user
+//   - actions: Codex provides shell/file/code-exec + sub-agent (`agents/*.toml`).
+//   - modalities: text + image input.
+//   - model/trigger/output-format/autonomy/reasoning-strategy/satisficing/formality:
+//     same defaults a general coding-agent harness provides (a turn answers a user
 //     message in natural language, ReAct loop, satisficing, neutral register).
-//   - charter:  Codex ships the same HHH + untrusted-input safety floor.
-// The ONE deliberate divergence from claude: `substrate` is `codex` here, not
-// `claude` — a mind agent whose substrate is `claude` is NOT subtracted under
-// codex (its substrate is a real delta there). When Codex is measured by a blind
+//   - guardrails:  Codex ships the same HHH + untrusted-input safety floor.
+// The ONE deliberate divergence from claude: `model` is `codex` here, not
+// `claude` — a mind agent whose model is `claude` is NOT subtracted under
+// codex (its model is a real delta there). When Codex is measured by a blind
 // bare introspection, replace these slugs with the recorded values and promote
 // this to a conformance fixture (as `claudeHarnessReset` already is).
 
@@ -39,7 +39,7 @@ export const codexHarnessReset: HarnessReset = {
   // The Codex tool repertoire (shell/file/code-exec, sub-agent via agents/*.toml,
   // mcp). Corpus anchors an agent might also select: file-ops, delegation,
   // code-execution.
-  effectors: {
+  actions: {
     kind: 'set',
     slugs: [
       'file-ops',
@@ -51,17 +51,17 @@ export const codexHarnessReset: HarnessReset = {
     ],
   },
   // Text channel (plus image input).
-  sensors: { kind: 'set', slugs: ['text', 'image'] },
-  // The one deliberate divergence from claude: the codex substrate is `codex`.
-  substrate: { kind: 'scalar', slugs: ['codex'] },
-  percept: { kind: 'scalar', slugs: ['user-message'] },
-  enaction: { kind: 'scalar', slugs: ['natural-language'] },
-  address: { kind: 'scalar', slugs: ['human-on-the-loop'] },
-  charter: {
+  modalities: { kind: 'set', slugs: ['text', 'image'] },
+  // The one deliberate divergence from claude: the codex model is `codex`.
+  model: { kind: 'scalar', slugs: ['codex'] },
+  trigger: { kind: 'scalar', slugs: ['user-message'] },
+  'output-format': { kind: 'scalar', slugs: ['natural-language'] },
+  autonomy: { kind: 'scalar', slugs: ['human-on-the-loop'] },
+  guardrails: {
     kind: 'set',
     slugs: ['harm-avoidance', 'honesty', 'helpfulness', 'input-untrusted'],
   },
-  deliberation: { kind: 'scalar', slugs: ['react'] },
-  resolve: { kind: 'scalar', slugs: ['satisfice'] },
-  comportment: { kind: 'scalar', slugs: ['neutral'] },
+  'reasoning-strategy': { kind: 'scalar', slugs: ['react'] },
+  satisficing: { kind: 'scalar', slugs: ['satisfice'] },
+  formality: { kind: 'scalar', slugs: ['neutral'] },
 };

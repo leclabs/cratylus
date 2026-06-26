@@ -4,7 +4,7 @@
 
 > **Heuristics** _(design-time · internal)_ — the learned-or-given policy shape: the dispositions, biases, and strategy priors that incline an agent toward some moves over others. **How it tends to choose.**
 
-A heuristic is not a hard rule (that is the **Charter**, what an agent _will not do_) and not a manner of speech (that is **Comportment**, _how it sounds_). A heuristic is a **move-bias**: a standing inclination that shapes which action an agent reaches for when several are open. The Charter forbids; Comportment styles; Heuristics _incline_.
+A heuristic is not a hard rule (that is the **Guardrails**, what an agent _will not do_) and not a manner of speech (that is **Formality**, _how it sounds_). A heuristic is a **move-bias**: a standing inclination that shapes which action an agent reaches for when several are open. The Charter forbids; Formality styles; Heuristics _incline_.
 
 This organ catalogs the Gigerenzer **fast-and-frugal** heuristics — the bounded-rationality decision rules that trade exhaustive search for a good-enough move under limited time and information. Each value below is one such rule. An agent does not "have heuristics" as a monolith — it **composites a set** of them, and that set is part of what makes one agent move differently from another faced with the same task.
 

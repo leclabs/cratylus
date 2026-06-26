@@ -5,13 +5,13 @@
 // fails on the now-unused directive, so these are live negative tests.
 
 import type {
-  Address,
+  Actions,
   Agent,
-  Charter,
-  Competence,
-  Effectors,
-  Enaction,
+  Autonomy,
+  Capabilities,
   Fragment,
+  Guardrails,
+  OutputFormat,
   Persona,
   Skill,
 } from './index.js';
@@ -23,52 +23,52 @@ const persona: Persona = {
   slug: 'hero',
   definiens: 'the Hero archetype',
 };
-const address: Address = {
-  organ: 'address',
+const autonomy: Autonomy = {
+  organ: 'autonomy',
   slug: 'human-on-the-loop',
   definiens: 'on the loop',
 };
-const charterA: Charter = {
-  organ: 'charter',
+const guardrailA: Guardrails = {
+  organ: 'guardrails',
   slug: 'harm-avoidance',
   definiens: 'refuse harm',
 };
-const charterB: Charter = {
-  organ: 'charter',
+const guardrailB: Guardrails = {
+  organ: 'guardrails',
   slug: 'honesty',
   definiens: 'assert from evidence',
 };
-const competenceA: Competence = {
-  organ: 'competence',
+const capabilitiesA: Capabilities = {
+  organ: 'capabilities',
   slug: 'se',
   definiens: 'software engineering',
 };
-const effectorsA: Effectors = {
-  organ: 'effectors',
+const actionsA: Actions = {
+  organ: 'actions',
   slug: 'file-ops',
   definiens: 'mutate files',
 };
-const enactionFrag: Enaction = {
-  organ: 'enaction',
+const outputFormatFrag: OutputFormat = {
+  organ: 'output-format',
   slug: 'code',
   definiens: 'emit source',
 };
 
 // ── NEGATIVE 1: a fragment of the WRONG organ assigned to the wrong field ────
-// `effectors/emitFencedReview` ≠ `enaction/emitFencedReview` — the `organ`
+// `actions/emitFencedReview` ≠ `output-format/emitFencedReview` — the `organ`
 // literal discriminates the (organ, value) pair structurally.
 
-// @ts-expect-error — an `enaction` fragment cannot be a `Persona` (organ literal mismatch).
-const wrongOrgan: Persona = enactionFrag;
+// @ts-expect-error — an `output-format` fragment cannot be a `Persona` (organ literal mismatch).
+const wrongOrgan: Persona = outputFormatFrag;
 
-// same slug, different organ: an effectors fragment is not an enaction fragment.
-const effectorsFence: Effectors = {
-  organ: 'effectors',
+// same slug, different organ: an actions fragment is not an output-format fragment.
+const actionsFence: Actions = {
+  organ: 'actions',
   slug: 'emitFencedReview',
   definiens: 'x',
 };
-// @ts-expect-error — assigning it where an `enaction` fragment is required is rejected.
-const fenceClash: Enaction = effectorsFence;
+// @ts-expect-error — assigning it where an `output-format` fragment is required is rejected.
+const fenceClash: OutputFormat = actionsFence;
 
 // a bare organ string that is not in the `Organ` union is rejected.
 const vibes = { organ: 'vibes', slug: 'x', definiens: 'y' };
@@ -82,28 +82,28 @@ const scalarGivenArray: Agent['persona'] = [persona];
 
 // ── NEGATIVE 3: a SET organ given a SCALAR ──────────────────────────────────
 
-// @ts-expect-error — `charter` is a set; a single fragment is not assignable to `Charter[]`.
-const setGivenScalar: Agent['charter'] = charterA;
+// @ts-expect-error — `guardrails` is a set; a single fragment is not assignable to `Guardrails[]`.
+const setGivenScalar: Agent['guardrails'] = guardrailA;
 
 // ── NEGATIVE 4: the same arity faults inside a whole Agent literal ───────────
 
 const baseFixture: Agent = {
   name: 'fixture',
-  address,
+  autonomy,
   persona,
-  mandate: {
-    organ: 'mandate',
+  role: {
+    organ: 'role',
     slug: 'operate',
     definiens: 'run a live system',
   },
-  comportment: { organ: 'comportment', slug: 'formal', definiens: 'terse' },
-  registerFit: {
-    organ: 'register-fit',
+  formality: { organ: 'formality', slug: 'formal', definiens: 'terse' },
+  audienceAdaptation: {
+    organ: 'audience-adaptation',
     slug: 'convergence',
     definiens: 'converge',
   },
-  disclosure: {
-    organ: 'disclosure',
+  transparency: {
+    organ: 'transparency',
     slug: 'reasoning-trace',
     definiens: 'show the derivation',
   },
@@ -113,52 +113,68 @@ const baseFixture: Agent = {
     definiens: 'the mav archetype',
     mark: { emoji: '✈️', hue: 'green' },
   },
-  telos: { organ: 'telos', slug: 'delivery', definiens: 'ship end-to-end' },
-  charter: [charterA, charterB],
-  instructions: [
-    { organ: 'instructions', slug: 'dry', definiens: 'one home per idea' },
+  objective: {
+    organ: 'objective',
+    slug: 'delivery',
+    definiens: 'ship end-to-end',
+  },
+  guardrails: [guardrailA, guardrailB],
+  engineeringPrinciples: [
+    {
+      organ: 'engineering-principles',
+      slug: 'dry',
+      definiens: 'one home per idea',
+    },
   ],
   heuristics: [
     { organ: 'heuristics', slug: 'recognition', definiens: 'take the best' },
   ],
-  competence: [competenceA],
-  dispositionMemory: {
-    organ: 'disposition-memory',
+  capabilities: [capabilitiesA],
+  learning: {
+    organ: 'learning',
     slug: 'consolidation',
     definiens: 'consolidate',
   },
-  gestalt: {
-    organ: 'gestalt',
+  situationAwareness: {
+    organ: 'situation-awareness',
     slug: 'projection',
     definiens: 'hold the whole',
   },
-  effectors: [effectorsA],
-  sensors: { organ: 'sensors', slug: 'text', definiens: 'the text modality' },
-  substrate: {
-    organ: 'substrate',
+  actions: [actionsA],
+  modalities: {
+    organ: 'modalities',
+    slug: 'text',
+    definiens: 'the text modality',
+  },
+  model: {
+    organ: 'model',
     slug: 'claude',
     definiens: 'the model/runtime',
   },
-  ledger: { organ: 'ledger', slug: 'ltm', definiens: 'the persistent store' },
-  percept: {
-    organ: 'percept',
+  memory: { organ: 'memory', slug: 'ltm', definiens: 'the persistent store' },
+  trigger: {
+    organ: 'trigger',
     slug: 'user-message',
     definiens: 'a directive from a user',
   },
-  construal: {
-    organ: 'construal',
+  framing: {
+    organ: 'framing',
     slug: 'goal-directed',
     definiens: 'frame as objective',
   },
-  deliberation: {
-    organ: 'deliberation',
+  reasoningStrategy: {
+    organ: 'reasoning-strategy',
     slug: 'plan-and-solve',
     definiens: 'plan then execute',
   },
-  resolve: { organ: 'resolve', slug: 'optimize', definiens: 'maximize EV' },
-  enaction: enactionFrag,
-  appraisal: {
-    organ: 'appraisal',
+  satisficing: {
+    organ: 'satisficing',
+    slug: 'optimize',
+    definiens: 'maximize EV',
+  },
+  outputFormat: outputFormatFrag,
+  selfEvaluation: {
+    organ: 'self-evaluation',
     slug: 'executable-test-oracle',
     definiens: 'run against tests',
   },
@@ -170,15 +186,18 @@ const delta: Agent = {
   name: 'delta',
   base: baseFixture,
   persona: { organ: 'persona', slug: 'sage', definiens: 'the Sage archetype' }, // scalar override
-  charter: [...baseFixture.charter, charterB], // additive set
+  guardrails: [...baseFixture.guardrails, guardrailB], // additive set
 };
 void delta;
 
-// @ts-expect-error — `effectors` is a set; a scalar fragment in the Agent literal is rejected.
-const agentSetFault: Agent = { ...baseFixture, effectors: effectorsA };
+// @ts-expect-error — `actions` is a set; a scalar fragment in the Agent literal is rejected.
+const agentSetFault: Agent = { ...baseFixture, actions: actionsA };
 
-// @ts-expect-error — `enaction` is scalar; an array in the Agent literal is rejected.
-const agentScalarFault: Agent = { ...baseFixture, enaction: [enactionFrag] };
+const agentScalarFault: Agent = {
+  ...baseFixture,
+  // @ts-expect-error — `output-format` is scalar; an array in the Agent literal is rejected.
+  outputFormat: [outputFormatFrag],
+};
 
 // ── NEGATIVE 5: Skill composition is plain sibling skills (no [[ ]] strings) ──
 

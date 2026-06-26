@@ -4,7 +4,7 @@
 //
 // In the current selection-vector form every agent lists ALL organs explicitly,
 // so `base`'s organ contribution is empty; its load-bearing content is the
-// `memoryProtocol` (the genus block the projector appends as `## Memory`).
+// `memoryProtocol` (the genus block the projector appends as `## Memory Protocol`).
 // `founderBase` is `{ ...base }` — founder-genus rides each founder's provenance
 // fragment (e.g. `founder-genus, principal-ic intrinsic`), not a separate organ.
 

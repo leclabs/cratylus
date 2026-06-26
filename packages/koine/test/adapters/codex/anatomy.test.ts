@@ -36,19 +36,16 @@ function nicoLikeResolved(): ResolvedAgent {
     memoryProtocol: 'protocol for {name}',
     organs: [
       ['Persona', [frag('persona', 'sage')]],
-      ['Mandate', [frag('mandate', 'curate')]],
-      ['Comportment', [frag('comportment', 'formal')]],
-      ['Substrate', [frag('substrate', 'claude')]],
-      ['Address', [frag('address', 'human-on-the-loop')]],
-      [
-        'Effectors',
-        [frag('effectors', 'file-ops'), frag('effectors', 'delegation')],
-      ],
-      ['Sensors', [frag('sensors', 'text')]],
-      ['Percept', [frag('percept', 'user-message')]],
-      ['Enaction', [frag('enaction', 'natural-language')]],
-      ['Deliberation', [frag('deliberation', 'react')]],
-      ['Resolve', [frag('resolve', 'satisfice')]],
+      ['Role', [frag('role', 'curate')]],
+      ['Formality', [frag('formality', 'formal')]],
+      ['Model', [frag('model', 'claude')]],
+      ['Autonomy', [frag('autonomy', 'human-on-the-loop')]],
+      ['Actions', [frag('actions', 'file-ops'), frag('actions', 'delegation')]],
+      ['Modalities', [frag('modalities', 'text')]],
+      ['Trigger', [frag('trigger', 'user-message')]],
+      ['Output-Format', [frag('output-format', 'natural-language')]],
+      ['Reasoning-Strategy', [frag('reasoning-strategy', 'react')]],
+      ['Satisficing', [frag('satisficing', 'satisfice')]],
     ],
   };
 }
@@ -71,7 +68,7 @@ describe('agentToCodexToml — the codex subagent projection', () => {
     // The harness-neutral organ sections — the SAME body the claude SOUL carries.
     expect(sp).toContain('## Persona');
     expect(sp).toContain('sage ≜ sage definiens');
-    expect(sp).toContain('## Substrate');
+    expect(sp).toContain('## Model');
     // The memory genus block, {name}-substituted.
     expect(sp).toContain('protocol for nico');
     // The regenerate-don't-hand-edit provenance banner + content hash.
@@ -97,14 +94,14 @@ describe('codexHarnessReset — first-pass omit-to-inherit basis', () => {
     );
   });
 
-  it('diverges from claude ONLY on substrate (codex, not claude)', () => {
-    expect(codexHarnessReset.substrate).toEqual({
+  it('diverges from claude ONLY on model (codex, not claude)', () => {
+    expect(codexHarnessReset.model).toEqual({
       kind: 'scalar',
       slugs: ['codex'],
     });
     // Every other organ matches the claude measured reset.
     for (const organ of Object.keys(codexHarnessReset)) {
-      if (organ === 'substrate') continue;
+      if (organ === 'model') continue;
       expect(
         codexHarnessReset[organ as keyof typeof codexHarnessReset],
       ).toEqual(claudeHarnessReset[organ as keyof typeof claudeHarnessReset]);
@@ -116,12 +113,12 @@ describe('codexHarnessReset — first-pass omit-to-inherit basis', () => {
     const sp = (TOML.parse(toml) as { system_prompt: string }).system_prompt;
     // Distinctive organs kept.
     expect(sp).toContain('## Persona');
-    expect(sp).toContain('## Mandate');
-    expect(sp).toContain('## Comportment'); // formal != reset neutral → kept
+    expect(sp).toContain('## Role');
+    expect(sp).toContain('## Formality'); // formal != reset neutral → kept
     // Harness-provided organs omitted.
-    expect(sp).not.toContain('## Address');
-    expect(sp).not.toContain('## Effectors');
-    expect(sp).not.toContain('## Sensors');
+    expect(sp).not.toContain('## Autonomy');
+    expect(sp).not.toContain('## Actions');
+    expect(sp).not.toContain('## Modalities');
     // Memory genus block still frames the SOUL.
     expect(sp).toContain('## Memory');
   });
@@ -130,7 +127,7 @@ describe('codexHarnessReset — first-pass omit-to-inherit basis', () => {
     // The deliberate divergence: a claude-substrate agent on codex is NOT native.
     const toml = projectCodexAgentDelta(nicoLikeResolved(), codexHarnessReset);
     const sp = (TOML.parse(toml) as { system_prompt: string }).system_prompt;
-    expect(sp).toContain('## Substrate');
+    expect(sp).toContain('## Model');
     expect(sp).toContain('claude ≜');
   });
 });

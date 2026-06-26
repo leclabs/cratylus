@@ -26,30 +26,30 @@ import {
 
 /** organ name (kebab) → the exported TS type alias (PascalCase). */
 const ORGAN_TYPE: Record<string, string> = {
-  address: 'Address',
+  autonomy: 'Autonomy',
   persona: 'Persona',
-  mandate: 'Mandate',
-  comportment: 'Comportment',
-  'register-fit': 'RegisterFit',
-  disclosure: 'Disclosure',
+  role: 'Role',
+  formality: 'Formality',
+  'audience-adaptation': 'AudienceAdaptation',
+  transparency: 'Transparency',
   provenance: 'Provenance',
-  telos: 'Telos',
-  charter: 'Charter',
-  instructions: 'Instructions',
+  objective: 'Objective',
+  guardrails: 'Guardrails',
+  'engineering-principles': 'EngineeringPrinciples',
   heuristics: 'Heuristics',
-  competence: 'Competence',
-  'disposition-memory': 'DispositionMemory',
-  gestalt: 'Gestalt',
-  effectors: 'Effectors',
-  sensors: 'Sensors',
-  substrate: 'Substrate',
-  ledger: 'Ledger',
-  percept: 'Percept',
-  construal: 'Construal',
-  deliberation: 'Deliberation',
-  resolve: 'Resolve',
-  enaction: 'Enaction',
-  appraisal: 'Appraisal',
+  capabilities: 'Capabilities',
+  learning: 'Learning',
+  'situation-awareness': 'SituationAwareness',
+  actions: 'Actions',
+  modalities: 'Modalities',
+  model: 'Model',
+  memory: 'Memory',
+  trigger: 'Trigger',
+  framing: 'Framing',
+  'reasoning-strategy': 'ReasoningStrategy',
+  satisficing: 'Satisficing',
+  'output-format': 'OutputFormat',
+  'self-evaluation': 'SelfEvaluation',
 };
 
 /** kebab-or-dotted slug → a safe camelCase JS identifier for the export. */
@@ -153,11 +153,11 @@ export function codegenSkill(cellPath: string): {
 
 /** The 5 SET organs (array fields on `Agent`); all others are scalar. */
 const SET_ORGANS = new Set([
-  'charter',
-  'competence',
-  'effectors',
+  'guardrails',
+  'capabilities',
+  'actions',
   'heuristics',
-  'instructions',
+  'engineering-principles',
 ]);
 
 /** organ name (kebab) → the `Agent` field name (camelCase). */
@@ -260,7 +260,7 @@ export function emitAgentModule(agent: ParsedAgent, fileSlug: string): string {
   return lines.join('\n');
 }
 
-/** `register-fit` → `Register-Fit` (mirror of agentProjection.organTitle). */
+/** `audience-adaptation` → `Audience-Adaptation` (mirror of agentProjection.organTitle). */
 function organTitleOf(organ: string): string {
   return organ
     .split('-')

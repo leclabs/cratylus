@@ -1,66 +1,69 @@
 import type { ResolvedAgent } from '@leclabs/koine/adapters/claude';
 import type { Agent } from '@leclabs/koine/anatomy';
-import { humanOnTheLoop as humanOnTheLoop_address } from '../organs/address/human-on-the-loop.js';
-import { selfCritique as selfCritique_appraisal } from '../organs/appraisal/self-critique.js';
-import { harmAvoidance as harmAvoidance_charter } from '../organs/charter/harm-avoidance.js';
-import { helpfulness as helpfulness_charter } from '../organs/charter/helpfulness.js';
-import { honesty as honesty_charter } from '../organs/charter/honesty.js';
-import { inputUntrusted as inputUntrusted_charter } from '../organs/charter/input-untrusted.js';
-import { researchInvestigation as researchInvestigation_competence } from '../organs/competence/research-investigation.js';
-import { technicalWriting as technicalWriting_competence } from '../organs/competence/technical-writing.js';
-import { formal as formal_comportment } from '../organs/comportment/formal.js';
-import { analytical as analytical_construal } from '../organs/construal/analytical.js';
-import { reflexion as reflexion_deliberation } from '../organs/deliberation/reflexion.js';
-import { uncertaintyDisclosure as uncertaintyDisclosure_disclosure } from '../organs/disclosure/uncertainty-disclosure.js';
-import { correctionConsolidation as correctionConsolidation_dispositionMemory } from '../organs/disposition-memory/correction-consolidation.js';
-import { delegation as delegation_effectors } from '../organs/effectors/delegation.js';
-import { fileOps as fileOps_effectors } from '../organs/effectors/file-ops.js';
-import { naturalLanguage as naturalLanguage_enaction } from '../organs/enaction/natural-language.js';
-import { perception as perception_gestalt } from '../organs/gestalt/perception.js';
+import { delegation as delegation_actions } from '../organs/actions/delegation.js';
+import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
+import { maintenance as maintenance_audienceAdaptation } from '../organs/audience-adaptation/maintenance.js';
+import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../organs/autonomy/human-on-the-loop.js';
+import { researchInvestigation as researchInvestigation_capabilities } from '../organs/capabilities/research-investigation.js';
+import { technicalWriting as technicalWriting_capabilities } from '../organs/capabilities/technical-writing.js';
+import { formal as formal_formality } from '../organs/formality/formal.js';
+import { analytical as analytical_framing } from '../organs/framing/analytical.js';
+import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/harm-avoidance.js';
+import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
+import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
+import { inputUntrusted as inputUntrusted_guardrails } from '../organs/guardrails/input-untrusted.js';
 import { recognition as recognition_heuristics } from '../organs/heuristics/recognition.js';
 import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
-import { longTermMemory as longTermMemory_ledger } from '../organs/ledger/long-term-memory.js';
-import { document as document_mandate } from '../organs/mandate/document.js';
-import { userMessage as userMessage_percept } from '../organs/percept/user-message.js';
+import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
+import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
+import { text as text_modalities } from '../organs/modalities/text.js';
+import { claude as claude_model } from '../organs/model/claude.js';
+import { faithfulRecord as faithfulRecord_objective } from '../organs/objective/faithful-record.js';
+import { naturalLanguage as naturalLanguage_outputFormat } from '../organs/output-format/natural-language.js';
 import { sage as sage_persona } from '../organs/persona/sage.js';
 import { boswellArchetypeYellow as boswellArchetypeYellow_provenance } from '../organs/provenance/boswell-archetype-yellow.js';
-import { maintenance as maintenance_registerFit } from '../organs/register-fit/maintenance.js';
-import { satisfice as satisfice_resolve } from '../organs/resolve/satisfice.js';
-import { text as text_sensors } from '../organs/sensors/text.js';
-import { claude as claude_substrate } from '../organs/substrate/claude.js';
-import { faithfulRecord as faithfulRecord_telos } from '../organs/telos/faithful-record.js';
+import { reflexion as reflexion_reasoningStrategy } from '../organs/reasoning-strategy/reflexion.js';
+import { document as document_role } from '../organs/role/document.js';
+import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisfice.js';
+import { selfCritique as selfCritique_selfEvaluation } from '../organs/self-evaluation/self-critique.js';
+import { perception as perception_situationAwareness } from '../organs/situation-awareness/perception.js';
+import { uncertaintyDisclosure as uncertaintyDisclosure_transparency } from '../organs/transparency/uncertainty-disclosure.js';
+import { userMessage as userMessage_trigger } from '../organs/trigger/user-message.js';
 import { base } from './base.js';
 export const boswell: Agent = {
   ...base,
   name: 'boswell',
   persona: sage_persona,
-  mandate: document_mandate,
-  comportment: formal_comportment,
-  registerFit: maintenance_registerFit,
-  disclosure: uncertaintyDisclosure_disclosure,
-  address: humanOnTheLoop_address,
+  role: document_role,
+  formality: formal_formality,
+  audienceAdaptation: maintenance_audienceAdaptation,
+  transparency: uncertaintyDisclosure_transparency,
+  autonomy: humanOnTheLoop_autonomy,
   provenance: boswellArchetypeYellow_provenance,
-  telos: faithfulRecord_telos,
-  charter: [
-    harmAvoidance_charter,
-    honesty_charter,
-    helpfulness_charter,
-    inputUntrusted_charter,
+  objective: faithfulRecord_objective,
+  guardrails: [
+    harmAvoidance_guardrails,
+    honesty_guardrails,
+    helpfulness_guardrails,
+    inputUntrusted_guardrails,
   ],
   heuristics: [recognition_heuristics, takeTheBest_heuristics],
-  competence: [technicalWriting_competence, researchInvestigation_competence],
-  dispositionMemory: correctionConsolidation_dispositionMemory,
-  gestalt: perception_gestalt,
-  effectors: [fileOps_effectors, delegation_effectors],
-  sensors: text_sensors,
-  substrate: claude_substrate,
-  ledger: longTermMemory_ledger,
-  percept: userMessage_percept,
-  construal: analytical_construal,
-  deliberation: reflexion_deliberation,
-  resolve: satisfice_resolve,
-  enaction: naturalLanguage_enaction,
-  appraisal: selfCritique_appraisal,
+  capabilities: [
+    technicalWriting_capabilities,
+    researchInvestigation_capabilities,
+  ],
+  learning: correctionConsolidation_learning,
+  situationAwareness: perception_situationAwareness,
+  actions: [fileOps_actions, delegation_actions],
+  modalities: text_modalities,
+  model: claude_model,
+  memory: longTermMemory_memory,
+  trigger: userMessage_trigger,
+  framing: analytical_framing,
+  reasoningStrategy: reflexion_reasoningStrategy,
+  satisficing: satisfice_satisficing,
+  outputFormat: naturalLanguage_outputFormat,
+  selfEvaluation: selfCritique_selfEvaluation,
 };
 export const boswellResolved: ResolvedAgent = {
   name: 'boswell',
@@ -70,38 +73,38 @@ export const boswellResolved: ResolvedAgent = {
   memoryProtocol: base.memoryProtocol,
   organs: [
     ['Persona', [sage_persona]],
-    ['Mandate', [document_mandate]],
-    ['Comportment', [formal_comportment]],
-    ['Register-Fit', [maintenance_registerFit]],
-    ['Disclosure', [uncertaintyDisclosure_disclosure]],
-    ['Address', [humanOnTheLoop_address]],
+    ['Role', [document_role]],
+    ['Formality', [formal_formality]],
+    ['Audience-Adaptation', [maintenance_audienceAdaptation]],
+    ['Transparency', [uncertaintyDisclosure_transparency]],
+    ['Autonomy', [humanOnTheLoop_autonomy]],
     ['Provenance', [boswellArchetypeYellow_provenance]],
-    ['Telos', [faithfulRecord_telos]],
+    ['Objective', [faithfulRecord_objective]],
     [
-      'Charter',
+      'Guardrails',
       [
-        harmAvoidance_charter,
-        honesty_charter,
-        helpfulness_charter,
-        inputUntrusted_charter,
+        harmAvoidance_guardrails,
+        honesty_guardrails,
+        helpfulness_guardrails,
+        inputUntrusted_guardrails,
       ],
     ],
     ['Heuristics', [recognition_heuristics, takeTheBest_heuristics]],
     [
-      'Competence',
-      [technicalWriting_competence, researchInvestigation_competence],
+      'Capabilities',
+      [technicalWriting_capabilities, researchInvestigation_capabilities],
     ],
-    ['Disposition-Memory', [correctionConsolidation_dispositionMemory]],
-    ['Gestalt', [perception_gestalt]],
-    ['Effectors', [fileOps_effectors, delegation_effectors]],
-    ['Sensors', [text_sensors]],
-    ['Substrate', [claude_substrate]],
-    ['Ledger', [longTermMemory_ledger]],
-    ['Percept', [userMessage_percept]],
-    ['Construal', [analytical_construal]],
-    ['Deliberation', [reflexion_deliberation]],
-    ['Resolve', [satisfice_resolve]],
-    ['Enaction', [naturalLanguage_enaction]],
-    ['Appraisal', [selfCritique_appraisal]],
+    ['Learning', [correctionConsolidation_learning]],
+    ['Situation-Awareness', [perception_situationAwareness]],
+    ['Actions', [fileOps_actions, delegation_actions]],
+    ['Modalities', [text_modalities]],
+    ['Model', [claude_model]],
+    ['Memory', [longTermMemory_memory]],
+    ['Trigger', [userMessage_trigger]],
+    ['Framing', [analytical_framing]],
+    ['Reasoning-Strategy', [reflexion_reasoningStrategy]],
+    ['Satisficing', [satisfice_satisficing]],
+    ['Output-Format', [naturalLanguage_outputFormat]],
+    ['Self-Evaluation', [selfCritique_selfEvaluation]],
   ],
 };

@@ -6,7 +6,7 @@
 Persona is the stable character an agent projects: its voice, register, name, and the "who" a
 reader infers from it before it does anything. It is a _design-time, internal_ property — fixed
 when the agent is authored, not tuned per turn. Persona governs how an agent _sounds_ and _who it
-is_; it is distinct from Mandate (what the agent is _for_) and from the CONATUS organs (what the
+is_; it is distinct from Role (what the agent is _for_) and from the CONATUS organs (what the
 agent is inclined to _do_).
 
 This organ catalogs the **twelve Jungian brand archetypes** — the canonical character priors an
@@ -36,5 +36,5 @@ An agent binds a value by citing `persona [[value]]` in its `agent/<name>.md` se
 the vector is the single source of truth. An agent selects exactly one persona as its character and
 references it by anchor (e.g. `persona [[sage]]`) rather than restating it. The chosen persona
 supplies the agent's voice and the "who" a reader perceives — the STANCE face the agent presents
-before any of its CONATUS organs (telos, heuristics, effectors, …) begin to act. This README is a
+before any of its CONATUS organs (objective, heuristics, actions, …) begin to act. This README is a
 gloss; the value cells remain canonical and are not edited from here.

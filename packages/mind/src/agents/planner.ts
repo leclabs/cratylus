@@ -1,58 +1,62 @@
 import type { ResolvedAgent } from '@leclabs/koine/adapters/claude';
 import type { Agent } from '@leclabs/koine/anatomy';
-import { humanOnTheLoop as humanOnTheLoop_address } from '../organs/address/human-on-the-loop.js';
-import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_appraisal } from '../organs/appraisal/acceptance-criteria-check.js';
-import { harmAvoidance as harmAvoidance_charter } from '../organs/charter/harm-avoidance.js';
-import { helpfulness as helpfulness_charter } from '../organs/charter/helpfulness.js';
-import { honesty as honesty_charter } from '../organs/charter/honesty.js';
-import { planningDecomposition as planningDecomposition_competence } from '../organs/competence/planning-decomposition.js';
-import { formal as formal_comportment } from '../organs/comportment/formal.js';
-import { decompositional as decompositional_construal } from '../organs/construal/decompositional.js';
-import { planAndSolve as planAndSolve_deliberation } from '../organs/deliberation/plan-and-solve.js';
-import { decisionRationale as decisionRationale_disclosure } from '../organs/disclosure/decision-rationale.js';
-import { correctionConsolidation as correctionConsolidation_dispositionMemory } from '../organs/disposition-memory/correction-consolidation.js';
-import { delegation as delegation_effectors } from '../organs/effectors/delegation.js';
-import { fileOps as fileOps_effectors } from '../organs/effectors/file-ops.js';
-import { structuredDecision as structuredDecision_enaction } from '../organs/enaction/structured-decision.js';
-import { projection as projection_gestalt } from '../organs/gestalt/projection.js';
-import { separationOfConcerns as separationOfConcerns_instructions } from '../organs/instructions/separation-of-concerns.js';
-import { longTermMemory as longTermMemory_ledger } from '../organs/ledger/long-term-memory.js';
-import { plan as plan_mandate } from '../organs/mandate/plan.js';
-import { userMessage as userMessage_percept } from '../organs/percept/user-message.js';
+import { delegation as delegation_actions } from '../organs/actions/delegation.js';
+import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
+import { convergence as convergence_audienceAdaptation } from '../organs/audience-adaptation/convergence.js';
+import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../organs/autonomy/human-on-the-loop.js';
+import { planningDecomposition as planningDecomposition_capabilities } from '../organs/capabilities/planning-decomposition.js';
+import { separationOfConcerns as separationOfConcerns_engineeringPrinciples } from '../organs/engineering-principles/separation-of-concerns.js';
+import { formal as formal_formality } from '../organs/formality/formal.js';
+import { decompositional as decompositional_framing } from '../organs/framing/decompositional.js';
+import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/harm-avoidance.js';
+import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
+import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
+import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
+import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
+import { text as text_modalities } from '../organs/modalities/text.js';
+import { claude as claude_model } from '../organs/model/claude.js';
+import { delivery as delivery_objective } from '../organs/objective/delivery.js';
+import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
 import { ruler as ruler_persona } from '../organs/persona/ruler.js';
 import { plannerArchetypeBlue as plannerArchetypeBlue_provenance } from '../organs/provenance/planner-archetype-blue.js';
-import { convergence as convergence_registerFit } from '../organs/register-fit/convergence.js';
-import { satisfice as satisfice_resolve } from '../organs/resolve/satisfice.js';
-import { text as text_sensors } from '../organs/sensors/text.js';
-import { claude as claude_substrate } from '../organs/substrate/claude.js';
-import { delivery as delivery_telos } from '../organs/telos/delivery.js';
+import { planAndSolve as planAndSolve_reasoningStrategy } from '../organs/reasoning-strategy/plan-and-solve.js';
+import { plan as plan_role } from '../organs/role/plan.js';
+import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisfice.js';
+import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } from '../organs/self-evaluation/acceptance-criteria-check.js';
+import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
+import { decisionRationale as decisionRationale_transparency } from '../organs/transparency/decision-rationale.js';
+import { userMessage as userMessage_trigger } from '../organs/trigger/user-message.js';
 import { base } from './base.js';
 export const planner: Agent = {
   ...base,
   name: 'planner',
   persona: ruler_persona,
-  mandate: plan_mandate,
-  comportment: formal_comportment,
-  registerFit: convergence_registerFit,
-  disclosure: decisionRationale_disclosure,
-  address: humanOnTheLoop_address,
+  role: plan_role,
+  formality: formal_formality,
+  audienceAdaptation: convergence_audienceAdaptation,
+  transparency: decisionRationale_transparency,
+  autonomy: humanOnTheLoop_autonomy,
   provenance: plannerArchetypeBlue_provenance,
-  telos: delivery_telos,
-  instructions: [separationOfConcerns_instructions],
-  charter: [harmAvoidance_charter, honesty_charter, helpfulness_charter],
-  competence: [planningDecomposition_competence],
-  dispositionMemory: correctionConsolidation_dispositionMemory,
-  gestalt: projection_gestalt,
-  effectors: [fileOps_effectors, delegation_effectors],
-  sensors: text_sensors,
-  substrate: claude_substrate,
-  ledger: longTermMemory_ledger,
-  percept: userMessage_percept,
-  construal: decompositional_construal,
-  deliberation: planAndSolve_deliberation,
-  resolve: satisfice_resolve,
-  enaction: structuredDecision_enaction,
-  appraisal: acceptanceCriteriaCheck_appraisal,
+  objective: delivery_objective,
+  engineeringPrinciples: [separationOfConcerns_engineeringPrinciples],
+  guardrails: [
+    harmAvoidance_guardrails,
+    honesty_guardrails,
+    helpfulness_guardrails,
+  ],
+  capabilities: [planningDecomposition_capabilities],
+  learning: correctionConsolidation_learning,
+  situationAwareness: projection_situationAwareness,
+  actions: [fileOps_actions, delegation_actions],
+  modalities: text_modalities,
+  model: claude_model,
+  memory: longTermMemory_memory,
+  trigger: userMessage_trigger,
+  framing: decompositional_framing,
+  reasoningStrategy: planAndSolve_reasoningStrategy,
+  satisficing: satisfice_satisficing,
+  outputFormat: structuredDecision_outputFormat,
+  selfEvaluation: acceptanceCriteriaCheck_selfEvaluation,
 };
 export const plannerResolved: ResolvedAgent = {
   name: 'planner',
@@ -62,27 +66,30 @@ export const plannerResolved: ResolvedAgent = {
   memoryProtocol: base.memoryProtocol,
   organs: [
     ['Persona', [ruler_persona]],
-    ['Mandate', [plan_mandate]],
-    ['Comportment', [formal_comportment]],
-    ['Register-Fit', [convergence_registerFit]],
-    ['Disclosure', [decisionRationale_disclosure]],
-    ['Address', [humanOnTheLoop_address]],
+    ['Role', [plan_role]],
+    ['Formality', [formal_formality]],
+    ['Audience-Adaptation', [convergence_audienceAdaptation]],
+    ['Transparency', [decisionRationale_transparency]],
+    ['Autonomy', [humanOnTheLoop_autonomy]],
     ['Provenance', [plannerArchetypeBlue_provenance]],
-    ['Telos', [delivery_telos]],
-    ['Instructions', [separationOfConcerns_instructions]],
-    ['Charter', [harmAvoidance_charter, honesty_charter, helpfulness_charter]],
-    ['Competence', [planningDecomposition_competence]],
-    ['Disposition-Memory', [correctionConsolidation_dispositionMemory]],
-    ['Gestalt', [projection_gestalt]],
-    ['Effectors', [fileOps_effectors, delegation_effectors]],
-    ['Sensors', [text_sensors]],
-    ['Substrate', [claude_substrate]],
-    ['Ledger', [longTermMemory_ledger]],
-    ['Percept', [userMessage_percept]],
-    ['Construal', [decompositional_construal]],
-    ['Deliberation', [planAndSolve_deliberation]],
-    ['Resolve', [satisfice_resolve]],
-    ['Enaction', [structuredDecision_enaction]],
-    ['Appraisal', [acceptanceCriteriaCheck_appraisal]],
+    ['Objective', [delivery_objective]],
+    ['Engineering-Principles', [separationOfConcerns_engineeringPrinciples]],
+    [
+      'Guardrails',
+      [harmAvoidance_guardrails, honesty_guardrails, helpfulness_guardrails],
+    ],
+    ['Capabilities', [planningDecomposition_capabilities]],
+    ['Learning', [correctionConsolidation_learning]],
+    ['Situation-Awareness', [projection_situationAwareness]],
+    ['Actions', [fileOps_actions, delegation_actions]],
+    ['Modalities', [text_modalities]],
+    ['Model', [claude_model]],
+    ['Memory', [longTermMemory_memory]],
+    ['Trigger', [userMessage_trigger]],
+    ['Framing', [decompositional_framing]],
+    ['Reasoning-Strategy', [planAndSolve_reasoningStrategy]],
+    ['Satisficing', [satisfice_satisficing]],
+    ['Output-Format', [structuredDecision_outputFormat]],
+    ['Self-Evaluation', [acceptanceCriteriaCheck_selfEvaluation]],
   ],
 };

@@ -9,17 +9,18 @@ export const introspect: SkillCell = {
 
 A          — the agent introspecting itself
 O          — A's organ set: the anatomy sections of its SOUL
-             {persona, mandate, comportment, register-fit, disclosure, address,
-              provenance, telos, instructions, charter, competence, gestalt,
-              effectors, sensors, substrate, ledger, percept, construal,
-              deliberation, resolve, enaction, appraisal, ...}
+             {persona, role, formality, audience-adaptation, transparency,
+              autonomy, provenance, objective, engineering-principles, guardrails,
+              capabilities, situation-awareness, actions, modalities, model,
+              memory, trigger, framing, reasoning-strategy, satisficing,
+              output-format, self-evaluation, ...}
 V          — the space of organ values (one value, a set of values, or \`unobservable\`)
 
 src_def    — DEFINITION sources: A's in-prompt SOUL (## organ sections) and the
              canonical organ-vector agent/<A>.md (one selected value per organ)
 src_rt     — RUNTIME sources, observed THIS session, INDEPENDENT of src_def:
-             the actual tool / effector set, the live model (substrate), the
-             system prompt as given, the address mode + any transient elevation,
+             the actual tool / action set, the live model (the \`model\` organ), the
+             system prompt as given, the autonomy mode + any transient elevation,
              the deployed def front-matter (color / mark), env, granted permissions
 
 def        — def : O → V          the value organ o is DEFINED to hold (from src_def)
@@ -33,7 +34,7 @@ K-members:
   harness-override    — the runtime substituted a value (tool gating, model pin, env)
   deploy-drift        — stale or partial deploy: deployed def differs from source vector
   profile-projection  — def projected at a reader / profile that reshaped the value
-  transient-elevation — a session act flipped it (e.g. carry-on: address
+  transient-elevation — a session act flipped it (e.g. carry-on: autonomy
                         human-on-the-loop becomes human-out-of-the-loop)
   composer-dropped    — projection lost a facet (the color / mark regression class)
   env-conditioned     — a host / env fact changed the effective value
@@ -73,17 +74,18 @@ DECLARATIONS
 
 A          — the agent introspecting itself
 O          — A's organ set: the anatomy sections of its SOUL
-             {persona, mandate, comportment, register-fit, disclosure, address,
-              provenance, telos, instructions, charter, competence, gestalt,
-              effectors, sensors, substrate, ledger, percept, construal,
-              deliberation, resolve, enaction, appraisal, ...}
+             {persona, role, formality, audience-adaptation, transparency,
+              autonomy, provenance, objective, engineering-principles, guardrails,
+              capabilities, situation-awareness, actions, modalities, model,
+              memory, trigger, framing, reasoning-strategy, satisficing,
+              output-format, self-evaluation, ...}
 V          — the space of organ values (one value, a set of values, or \`unobservable\`)
 
 src_def    — DEFINITION sources: A's in-prompt SOUL (## organ sections) and the
              canonical organ-vector agent/<A>.md (one selected value per organ)
 src_rt     — RUNTIME sources, observed THIS session, INDEPENDENT of src_def:
-             the actual tool / effector set, the live model (substrate), the
-             system prompt as given, the address mode + any transient elevation,
+             the actual tool / action set, the live model (the \`model\` organ), the
+             system prompt as given, the autonomy mode + any transient elevation,
              the deployed def front-matter (color / mark), env, granted permissions
 
 def        — def : O → V          the value organ o is DEFINED to hold (from src_def)
@@ -97,7 +99,7 @@ K-members:
   harness-override    — the runtime substituted a value (tool gating, model pin, env)
   deploy-drift        — stale or partial deploy: deployed def differs from source vector
   profile-projection  — def projected at a reader / profile that reshaped the value
-  transient-elevation — a session act flipped it (e.g. carry-on: address
+  transient-elevation — a session act flipped it (e.g. carry-on: autonomy
                         human-on-the-loop becomes human-out-of-the-loop)
   composer-dropped    — projection lost a facet (the color / mark regression class)
   env-conditioned     — a host / env fact changed the effective value
@@ -124,7 +126,7 @@ report   ≜ ( { row(o) | o ∈ O } , summary(div, why) )
 
 1. **Enumerate \`O\`** — list A's organs from the \`##\` sections of its in-prompt SOUL.
 2. **Read \`def(o)\`** — the selected value per organ (the SOUL section; cross-check the canonical \`agent/<A>.md\` vector when reachable).
-3. **Observe \`rt(o)\` independently** — for each organ inspect the actual runtime: effectors against the real tool set, substrate against the live model, address against the mode + any carry-on elevation, provenance against the deployed-def \`color\` / mark, sensors / percept / env against session reality. Never copy \`def(o)\`.
+3. **Observe \`rt(o)\` independently** — for each organ inspect the actual runtime: actions against the real tool set, model against the live model, autonomy against the mode + any carry-on elevation, provenance against the deployed-def \`color\` / mark, modalities / trigger / env against session reality. Never copy \`def(o)\`.
 4. **Compare + diagnose** — compute \`match(o)\`; for each \`o ∈ div\`, assign \`why(o) ∈ K\`.
 5. **Emit \`report\`** — a per-organ table \`organ | defined | runtime | match? | why\`, then a summary of material divergences. Mark any \`unobservable\` honestly rather than guessing.
 

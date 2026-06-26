@@ -10,8 +10,8 @@
 // fragment of the wrong organ in the wrong field is a **compile error** — there
 // is NO JSON-Schema and NO `Ref`/resolution machinery here: "every ref resolves
 // to one home" is `tsc`, and the `(organ, value)` pair-keying is structural (the
-// `organ` literal on each fragment discriminates `effectors/emitFencedReview`
-// from `enaction/emitFencedReview`).
+// `organ` literal on each fragment discriminates `actions/emitFencedReview`
+// from `output-format/emitFencedReview`).
 //
 // Exported from `@leclabs/koine/anatomy` — a sibling subpath to the config-IR
 // `Agent`/`Skill` in `@leclabs/koine` (those are the translation shapes; THESE
@@ -37,31 +37,31 @@ export type Arity = 'scalar' | 'set';
 /** The 24 organ names — the MECE anatomy. The `Fragment.organ` discriminant. */
 export type Organ =
   // STANCE
-  | 'address'
+  | 'autonomy'
   | 'persona'
-  | 'mandate'
-  | 'comportment'
-  | 'register-fit'
-  | 'disclosure'
+  | 'role'
+  | 'formality'
+  | 'audience-adaptation'
+  | 'transparency'
   | 'provenance'
   // CONATUS
-  | 'telos'
-  | 'charter'
-  | 'instructions'
+  | 'objective'
+  | 'guardrails'
+  | 'engineering-principles'
   | 'heuristics'
-  | 'competence'
-  | 'disposition-memory'
-  | 'gestalt'
-  | 'effectors'
-  | 'sensors'
-  | 'substrate'
-  | 'ledger'
-  | 'percept'
-  | 'construal'
-  | 'deliberation'
-  | 'resolve'
-  | 'enaction'
-  | 'appraisal';
+  | 'capabilities'
+  | 'learning'
+  | 'situation-awareness'
+  | 'actions'
+  | 'modalities'
+  | 'model'
+  | 'memory'
+  | 'trigger'
+  | 'framing'
+  | 'reasoning-strategy'
+  | 'satisficing'
+  | 'output-format'
+  | 'self-evaluation';
 
 // ── The Fragment base type ──────────────────────────────────────────────────
 
@@ -76,8 +76,8 @@ export interface Mark {
  * The shape a value-cell module exports. One module = one fragment = one home.
  *
  * `organ` is a string-literal discriminant: it makes the `(organ, value)` pair
- * structural, so a fragment authored under `organs/effectors/` cannot be
- * assigned where an `organs/enaction/` fragment is expected even if both share
+ * structural, so a fragment authored under `organs/actions/` cannot be
+ * assigned where an `organs/output-format/` fragment is expected even if both share
  * the slug `emitFencedReview`. `G` / `C` / `A` carry the genus, classification,
  * and arity at the type level (phantom — present in the type, absent at runtime)
  * so tooling and the per-organ aliases stay self-describing.
@@ -111,58 +111,78 @@ export interface Fragment<
 // a set organ's field holds `T[]`.
 
 // STANCE
-export type Address = Fragment<'address', 'STANCE', 'enum', 'scalar'>;
+export type Autonomy = Fragment<'autonomy', 'STANCE', 'enum', 'scalar'>;
 export type Persona = Fragment<'persona', 'STANCE', 'open', 'scalar'>;
-export type Mandate = Fragment<'mandate', 'STANCE', 'open', 'scalar'>;
-export type Comportment = Fragment<'comportment', 'STANCE', 'enum', 'scalar'>;
-export type RegisterFit = Fragment<'register-fit', 'STANCE', 'enum', 'scalar'>;
-export type Disclosure = Fragment<'disclosure', 'STANCE', 'enum', 'scalar'>;
+export type Role = Fragment<'role', 'STANCE', 'open', 'scalar'>;
+export type Formality = Fragment<'formality', 'STANCE', 'enum', 'scalar'>;
+export type AudienceAdaptation = Fragment<
+  'audience-adaptation',
+  'STANCE',
+  'enum',
+  'scalar'
+>;
+export type Transparency = Fragment<'transparency', 'STANCE', 'enum', 'scalar'>;
 /** Carries the emoji·hue `mark` that drives the agent's color. */
 export type Provenance = Fragment<'provenance', 'STANCE', 'open', 'scalar'>;
 
 // CONATUS — standing drives
-export type Telos = Fragment<'telos', 'CONATUS', 'open', 'scalar'>;
-export type Charter = Fragment<'charter', 'CONATUS', 'coined', 'set'>;
-export type Instructions = Fragment<'instructions', 'CONATUS', 'coined', 'set'>;
+export type Objective = Fragment<'objective', 'CONATUS', 'open', 'scalar'>;
+export type Guardrails = Fragment<'guardrails', 'CONATUS', 'coined', 'set'>;
+export type EngineeringPrinciples = Fragment<
+  'engineering-principles',
+  'CONATUS',
+  'coined',
+  'set'
+>;
 export type Heuristics = Fragment<'heuristics', 'CONATUS', 'coined', 'set'>;
-export type Competence = Fragment<'competence', 'CONATUS', 'open', 'set'>;
-export type DispositionMemory = Fragment<
-  'disposition-memory',
+export type Capabilities = Fragment<'capabilities', 'CONATUS', 'open', 'set'>;
+export type Learning = Fragment<'learning', 'CONATUS', 'enum', 'scalar'>;
+export type SituationAwareness = Fragment<
+  'situation-awareness',
   'CONATUS',
   'enum',
   'scalar'
 >;
-export type Gestalt = Fragment<'gestalt', 'CONATUS', 'enum', 'scalar'>;
 
 // CONATUS — apparatus
-export type Effectors = Fragment<'effectors', 'CONATUS', 'enum', 'set'>;
-export type Sensors = Fragment<'sensors', 'CONATUS', 'enum', 'scalar'>;
-export type Substrate = Fragment<'substrate', 'CONATUS', 'enum', 'scalar'>;
-export type Ledger = Fragment<'ledger', 'CONATUS', 'enum', 'scalar'>;
+export type Actions = Fragment<'actions', 'CONATUS', 'enum', 'set'>;
+export type Modalities = Fragment<'modalities', 'CONATUS', 'enum', 'scalar'>;
+export type Model = Fragment<'model', 'CONATUS', 'enum', 'scalar'>;
+export type Memory = Fragment<'memory', 'CONATUS', 'enum', 'scalar'>;
 
 // CONATUS — per-turn act
-export type Percept = Fragment<'percept', 'CONATUS', 'enum', 'scalar'>;
-export type Construal = Fragment<'construal', 'CONATUS', 'open', 'scalar'>;
-export type Deliberation = Fragment<
-  'deliberation',
+export type Trigger = Fragment<'trigger', 'CONATUS', 'enum', 'scalar'>;
+export type Framing = Fragment<'framing', 'CONATUS', 'open', 'scalar'>;
+export type ReasoningStrategy = Fragment<
+  'reasoning-strategy',
   'CONATUS',
   'enum',
   'scalar'
 >;
-export type Resolve = Fragment<'resolve', 'CONATUS', 'enum', 'scalar'>;
-export type Enaction = Fragment<'enaction', 'CONATUS', 'enum', 'scalar'>;
-export type Appraisal = Fragment<'appraisal', 'CONATUS', 'enum', 'scalar'>;
+export type Satisficing = Fragment<'satisficing', 'CONATUS', 'enum', 'scalar'>;
+export type OutputFormat = Fragment<
+  'output-format',
+  'CONATUS',
+  'enum',
+  'scalar'
+>;
+export type SelfEvaluation = Fragment<
+  'self-evaluation',
+  'CONATUS',
+  'enum',
+  'scalar'
+>;
 
 /**
  * The five SET organs — the only organs whose `Agent` field is an array.
- * (charter · competence · effectors · heuristics · instructions)
+ * (guardrails · capabilities · actions · heuristics · engineering-principles)
  */
 export type SetOrgan =
-  | 'charter'
-  | 'competence'
-  | 'effectors'
+  | 'guardrails'
+  | 'capabilities'
+  | 'actions'
   | 'heuristics'
-  | 'instructions';
+  | 'engineering-principles';
 
 // ── The runtime organ descriptor (axis / kind / arity) ──────────────────────
 // The per-organ `Fragment<O,G,C,A>` aliases above carry an organ's genus,
@@ -198,59 +218,59 @@ type MetaOf<F> = F extends Fragment<Organ, infer G, infer C, infer A>
  * it, never a second hand-kept copy.
  */
 export const ANATOMY: {
-  readonly address: MetaOf<Address>;
+  readonly autonomy: MetaOf<Autonomy>;
   readonly persona: MetaOf<Persona>;
-  readonly mandate: MetaOf<Mandate>;
-  readonly comportment: MetaOf<Comportment>;
-  readonly 'register-fit': MetaOf<RegisterFit>;
-  readonly disclosure: MetaOf<Disclosure>;
+  readonly role: MetaOf<Role>;
+  readonly formality: MetaOf<Formality>;
+  readonly 'audience-adaptation': MetaOf<AudienceAdaptation>;
+  readonly transparency: MetaOf<Transparency>;
   readonly provenance: MetaOf<Provenance>;
-  readonly telos: MetaOf<Telos>;
-  readonly charter: MetaOf<Charter>;
-  readonly instructions: MetaOf<Instructions>;
+  readonly objective: MetaOf<Objective>;
+  readonly guardrails: MetaOf<Guardrails>;
+  readonly 'engineering-principles': MetaOf<EngineeringPrinciples>;
   readonly heuristics: MetaOf<Heuristics>;
-  readonly competence: MetaOf<Competence>;
-  readonly 'disposition-memory': MetaOf<DispositionMemory>;
-  readonly gestalt: MetaOf<Gestalt>;
-  readonly effectors: MetaOf<Effectors>;
-  readonly sensors: MetaOf<Sensors>;
-  readonly substrate: MetaOf<Substrate>;
-  readonly ledger: MetaOf<Ledger>;
-  readonly percept: MetaOf<Percept>;
-  readonly construal: MetaOf<Construal>;
-  readonly deliberation: MetaOf<Deliberation>;
-  readonly resolve: MetaOf<Resolve>;
-  readonly enaction: MetaOf<Enaction>;
-  readonly appraisal: MetaOf<Appraisal>;
+  readonly capabilities: MetaOf<Capabilities>;
+  readonly learning: MetaOf<Learning>;
+  readonly 'situation-awareness': MetaOf<SituationAwareness>;
+  readonly actions: MetaOf<Actions>;
+  readonly modalities: MetaOf<Modalities>;
+  readonly model: MetaOf<Model>;
+  readonly memory: MetaOf<Memory>;
+  readonly trigger: MetaOf<Trigger>;
+  readonly framing: MetaOf<Framing>;
+  readonly 'reasoning-strategy': MetaOf<ReasoningStrategy>;
+  readonly satisficing: MetaOf<Satisficing>;
+  readonly 'output-format': MetaOf<OutputFormat>;
+  readonly 'self-evaluation': MetaOf<SelfEvaluation>;
 } = {
   // STANCE
-  address: { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
+  autonomy: { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
   persona: { axis: 'STANCE', kind: 'open', arity: 'scalar' },
-  mandate: { axis: 'STANCE', kind: 'open', arity: 'scalar' },
-  comportment: { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
-  'register-fit': { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
-  disclosure: { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
+  role: { axis: 'STANCE', kind: 'open', arity: 'scalar' },
+  formality: { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
+  'audience-adaptation': { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
+  transparency: { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
   provenance: { axis: 'STANCE', kind: 'open', arity: 'scalar' },
   // CONATUS — standing drives
-  telos: { axis: 'CONATUS', kind: 'open', arity: 'scalar' },
-  charter: { axis: 'CONATUS', kind: 'coined', arity: 'set' },
-  instructions: { axis: 'CONATUS', kind: 'coined', arity: 'set' },
+  objective: { axis: 'CONATUS', kind: 'open', arity: 'scalar' },
+  guardrails: { axis: 'CONATUS', kind: 'coined', arity: 'set' },
+  'engineering-principles': { axis: 'CONATUS', kind: 'coined', arity: 'set' },
   heuristics: { axis: 'CONATUS', kind: 'coined', arity: 'set' },
-  competence: { axis: 'CONATUS', kind: 'open', arity: 'set' },
-  'disposition-memory': { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
-  gestalt: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  capabilities: { axis: 'CONATUS', kind: 'open', arity: 'set' },
+  learning: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  'situation-awareness': { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
   // CONATUS — apparatus
-  effectors: { axis: 'CONATUS', kind: 'enum', arity: 'set' },
-  sensors: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
-  substrate: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
-  ledger: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  actions: { axis: 'CONATUS', kind: 'enum', arity: 'set' },
+  modalities: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  model: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  memory: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
   // CONATUS — per-turn act
-  percept: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
-  construal: { axis: 'CONATUS', kind: 'open', arity: 'scalar' },
-  deliberation: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
-  resolve: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
-  enaction: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
-  appraisal: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  trigger: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  framing: { axis: 'CONATUS', kind: 'open', arity: 'scalar' },
+  'reasoning-strategy': { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  satisficing: { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  'output-format': { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
+  'self-evaluation': { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
 };
 
 /** Every organ name, in anatomy (STANCE-then-CONATUS) declaration order. */
@@ -279,41 +299,41 @@ export interface Agent {
   readonly base?: Agent;
 
   // STANCE (all scalar)
-  readonly address: Address;
+  readonly autonomy: Autonomy;
   readonly persona: Persona;
-  readonly mandate: Mandate;
-  readonly comportment: Comportment;
-  readonly registerFit: RegisterFit;
-  readonly disclosure: Disclosure;
+  readonly role: Role;
+  readonly formality: Formality;
+  readonly audienceAdaptation: AudienceAdaptation;
+  readonly transparency: Transparency;
   readonly provenance: Provenance;
 
   // CONATUS — standing drives
-  readonly telos: Telos;
-  readonly charter: readonly Charter[]; // SET
-  // `instructions` (the engineering-directive methodology organ) and `heuristics`
-  // (the cognitive-shortcut organ) are OPTIONAL — not every agent carries them
-  // (in the live corpus: instructions 4/11, heuristics 8/11). The other 22 organs
-  // are required (every agent fills them). Omission ⇒ no `## Instructions` /
-  // `## Heuristics` section in the projected SOUL.
-  readonly instructions?: readonly Instructions[]; // SET, optional
+  readonly objective: Objective;
+  readonly guardrails: readonly Guardrails[]; // SET
+  // `engineeringPrinciples` (the engineering-directive methodology organ) and
+  // `heuristics` (the cognitive-shortcut organ) are OPTIONAL — not every agent
+  // carries them (in the live corpus: engineering-principles 4/11, heuristics
+  // 8/11). The other 22 organs are required (every agent fills them). Omission ⇒
+  // no `## Engineering-Principles` / `## Heuristics` section in the projected SOUL.
+  readonly engineeringPrinciples?: readonly EngineeringPrinciples[]; // SET, optional
   readonly heuristics?: readonly Heuristics[]; // SET, optional
-  readonly competence: readonly Competence[]; // SET
-  readonly dispositionMemory: DispositionMemory;
-  readonly gestalt: Gestalt;
+  readonly capabilities: readonly Capabilities[]; // SET
+  readonly learning: Learning;
+  readonly situationAwareness: SituationAwareness;
 
   // CONATUS — apparatus
-  readonly effectors: readonly Effectors[]; // SET
-  readonly sensors: Sensors;
-  readonly substrate: Substrate;
-  readonly ledger: Ledger;
+  readonly actions: readonly Actions[]; // SET
+  readonly modalities: Modalities;
+  readonly model: Model;
+  readonly memory: Memory;
 
   // CONATUS — per-turn act
-  readonly percept: Percept;
-  readonly construal: Construal;
-  readonly deliberation: Deliberation;
-  readonly resolve: Resolve;
-  readonly enaction: Enaction;
-  readonly appraisal: Appraisal;
+  readonly trigger: Trigger;
+  readonly framing: Framing;
+  readonly reasoningStrategy: ReasoningStrategy;
+  readonly satisficing: Satisficing;
+  readonly outputFormat: OutputFormat;
+  readonly selfEvaluation: SelfEvaluation;
 }
 
 // ── The Skill: a self-sufficient set-builder cell ───────────────────────────

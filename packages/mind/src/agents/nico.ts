@@ -1,79 +1,79 @@
 import type { ResolvedAgent } from '@leclabs/koine/adapters/claude';
 import type { Agent } from '@leclabs/koine/anatomy';
-import { humanOnTheLoop as humanOnTheLoop_address } from '../organs/address/human-on-the-loop.js';
-import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_appraisal } from '../organs/appraisal/acceptance-criteria-check.js';
-import { harmAvoidance as harmAvoidance_charter } from '../organs/charter/harm-avoidance.js';
-import { helpfulness as helpfulness_charter } from '../organs/charter/helpfulness.js';
-import { honesty as honesty_charter } from '../organs/charter/honesty.js';
-import { inputUntrusted as inputUntrusted_charter } from '../organs/charter/input-untrusted.js';
-import { researchInvestigation as researchInvestigation_competence } from '../organs/competence/research-investigation.js';
-import { systemDesign as systemDesign_competence } from '../organs/competence/system-design.js';
-import { formal as formal_comportment } from '../organs/comportment/formal.js';
-import { analytical as analytical_construal } from '../organs/construal/analytical.js';
-import { react as react_deliberation } from '../organs/deliberation/react.js';
-import { reasoningTrace as reasoningTrace_disclosure } from '../organs/disclosure/reasoning-trace.js';
-import { correctionConsolidation as correctionConsolidation_dispositionMemory } from '../organs/disposition-memory/correction-consolidation.js';
-import { delegation as delegation_effectors } from '../organs/effectors/delegation.js';
-import { fileOps as fileOps_effectors } from '../organs/effectors/file-ops.js';
-import { naturalLanguage as naturalLanguage_enaction } from '../organs/enaction/natural-language.js';
-import { projection as projection_gestalt } from '../organs/gestalt/projection.js';
-import { dry as dry_instructions } from '../organs/instructions/dry.js';
-import { firstPrinciples as firstPrinciples_instructions } from '../organs/instructions/first-principles.js';
-import { invokeTheCanonical as invokeTheCanonical_instructions } from '../organs/instructions/invoke-the-canonical.js';
-import { llmNative as llmNative_instructions } from '../organs/instructions/llm-native.js';
-import { mece as mece_instructions } from '../organs/instructions/mece.js';
-import { trustButVerify as trustButVerify_instructions } from '../organs/instructions/trust-but-verify.js';
-import { zeroTrust as zeroTrust_instructions } from '../organs/instructions/zero-trust.js';
-import { longTermMemory as longTermMemory_ledger } from '../organs/ledger/long-term-memory.js';
-import { curate as curate_mandate } from '../organs/mandate/curate.js';
-import { userMessage as userMessage_percept } from '../organs/percept/user-message.js';
+import { delegation as delegation_actions } from '../organs/actions/delegation.js';
+import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
+import { convergence as convergence_audienceAdaptation } from '../organs/audience-adaptation/convergence.js';
+import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../organs/autonomy/human-on-the-loop.js';
+import { researchInvestigation as researchInvestigation_capabilities } from '../organs/capabilities/research-investigation.js';
+import { systemDesign as systemDesign_capabilities } from '../organs/capabilities/system-design.js';
+import { dry as dry_engineeringPrinciples } from '../organs/engineering-principles/dry.js';
+import { firstPrinciples as firstPrinciples_engineeringPrinciples } from '../organs/engineering-principles/first-principles.js';
+import { invokeTheCanonical as invokeTheCanonical_engineeringPrinciples } from '../organs/engineering-principles/invoke-the-canonical.js';
+import { llmNative as llmNative_engineeringPrinciples } from '../organs/engineering-principles/llm-native.js';
+import { mece as mece_engineeringPrinciples } from '../organs/engineering-principles/mece.js';
+import { trustButVerify as trustButVerify_engineeringPrinciples } from '../organs/engineering-principles/trust-but-verify.js';
+import { zeroTrust as zeroTrust_engineeringPrinciples } from '../organs/engineering-principles/zero-trust.js';
+import { formal as formal_formality } from '../organs/formality/formal.js';
+import { analytical as analytical_framing } from '../organs/framing/analytical.js';
+import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/harm-avoidance.js';
+import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
+import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
+import { inputUntrusted as inputUntrusted_guardrails } from '../organs/guardrails/input-untrusted.js';
+import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
+import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
+import { text as text_modalities } from '../organs/modalities/text.js';
+import { claude as claude_model } from '../organs/model/claude.js';
+import { parsimony as parsimony_objective } from '../organs/objective/parsimony.js';
+import { naturalLanguage as naturalLanguage_outputFormat } from '../organs/output-format/natural-language.js';
 import { sage as sage_persona } from '../organs/persona/sage.js';
 import { nicoArchetypeCyan as nicoArchetypeCyan_provenance } from '../organs/provenance/nico-archetype-cyan.js';
-import { convergence as convergence_registerFit } from '../organs/register-fit/convergence.js';
-import { satisfice as satisfice_resolve } from '../organs/resolve/satisfice.js';
-import { text as text_sensors } from '../organs/sensors/text.js';
-import { claude as claude_substrate } from '../organs/substrate/claude.js';
-import { parsimony as parsimony_telos } from '../organs/telos/parsimony.js';
+import { react as react_reasoningStrategy } from '../organs/reasoning-strategy/react.js';
+import { curate as curate_role } from '../organs/role/curate.js';
+import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisfice.js';
+import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } from '../organs/self-evaluation/acceptance-criteria-check.js';
+import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
+import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
+import { userMessage as userMessage_trigger } from '../organs/trigger/user-message.js';
 import { founderBase } from './base.js';
 export const nico: Agent = {
   ...founderBase,
   name: 'nico',
   persona: sage_persona,
-  mandate: curate_mandate,
-  comportment: formal_comportment,
-  registerFit: convergence_registerFit,
-  disclosure: reasoningTrace_disclosure,
-  address: humanOnTheLoop_address,
+  role: curate_role,
+  formality: formal_formality,
+  audienceAdaptation: convergence_audienceAdaptation,
+  transparency: reasoningTrace_transparency,
+  autonomy: humanOnTheLoop_autonomy,
   provenance: nicoArchetypeCyan_provenance,
-  telos: parsimony_telos,
-  instructions: [
-    firstPrinciples_instructions,
-    zeroTrust_instructions,
-    dry_instructions,
-    mece_instructions,
-    llmNative_instructions,
-    trustButVerify_instructions,
-    invokeTheCanonical_instructions,
+  objective: parsimony_objective,
+  engineeringPrinciples: [
+    firstPrinciples_engineeringPrinciples,
+    zeroTrust_engineeringPrinciples,
+    dry_engineeringPrinciples,
+    mece_engineeringPrinciples,
+    llmNative_engineeringPrinciples,
+    trustButVerify_engineeringPrinciples,
+    invokeTheCanonical_engineeringPrinciples,
   ],
-  charter: [
-    harmAvoidance_charter,
-    honesty_charter,
-    helpfulness_charter,
-    inputUntrusted_charter,
+  guardrails: [
+    harmAvoidance_guardrails,
+    honesty_guardrails,
+    helpfulness_guardrails,
+    inputUntrusted_guardrails,
   ],
-  competence: [researchInvestigation_competence, systemDesign_competence],
-  dispositionMemory: correctionConsolidation_dispositionMemory,
-  gestalt: projection_gestalt,
-  effectors: [fileOps_effectors, delegation_effectors],
-  sensors: text_sensors,
-  substrate: claude_substrate,
-  ledger: longTermMemory_ledger,
-  percept: userMessage_percept,
-  construal: analytical_construal,
-  deliberation: react_deliberation,
-  resolve: satisfice_resolve,
-  enaction: naturalLanguage_enaction,
-  appraisal: acceptanceCriteriaCheck_appraisal,
+  capabilities: [researchInvestigation_capabilities, systemDesign_capabilities],
+  learning: correctionConsolidation_learning,
+  situationAwareness: projection_situationAwareness,
+  actions: [fileOps_actions, delegation_actions],
+  modalities: text_modalities,
+  model: claude_model,
+  memory: longTermMemory_memory,
+  trigger: userMessage_trigger,
+  framing: analytical_framing,
+  reasoningStrategy: react_reasoningStrategy,
+  satisficing: satisfice_satisficing,
+  outputFormat: naturalLanguage_outputFormat,
+  selfEvaluation: acceptanceCriteriaCheck_selfEvaluation,
 };
 export const nicoResolved: ResolvedAgent = {
   name: 'nico',
@@ -83,46 +83,49 @@ export const nicoResolved: ResolvedAgent = {
   memoryProtocol: founderBase.memoryProtocol,
   organs: [
     ['Persona', [sage_persona]],
-    ['Mandate', [curate_mandate]],
-    ['Comportment', [formal_comportment]],
-    ['Register-Fit', [convergence_registerFit]],
-    ['Disclosure', [reasoningTrace_disclosure]],
-    ['Address', [humanOnTheLoop_address]],
+    ['Role', [curate_role]],
+    ['Formality', [formal_formality]],
+    ['Audience-Adaptation', [convergence_audienceAdaptation]],
+    ['Transparency', [reasoningTrace_transparency]],
+    ['Autonomy', [humanOnTheLoop_autonomy]],
     ['Provenance', [nicoArchetypeCyan_provenance]],
-    ['Telos', [parsimony_telos]],
+    ['Objective', [parsimony_objective]],
     [
-      'Instructions',
+      'Engineering-Principles',
       [
-        firstPrinciples_instructions,
-        zeroTrust_instructions,
-        dry_instructions,
-        mece_instructions,
-        llmNative_instructions,
-        trustButVerify_instructions,
-        invokeTheCanonical_instructions,
+        firstPrinciples_engineeringPrinciples,
+        zeroTrust_engineeringPrinciples,
+        dry_engineeringPrinciples,
+        mece_engineeringPrinciples,
+        llmNative_engineeringPrinciples,
+        trustButVerify_engineeringPrinciples,
+        invokeTheCanonical_engineeringPrinciples,
       ],
     ],
     [
-      'Charter',
+      'Guardrails',
       [
-        harmAvoidance_charter,
-        honesty_charter,
-        helpfulness_charter,
-        inputUntrusted_charter,
+        harmAvoidance_guardrails,
+        honesty_guardrails,
+        helpfulness_guardrails,
+        inputUntrusted_guardrails,
       ],
     ],
-    ['Competence', [researchInvestigation_competence, systemDesign_competence]],
-    ['Disposition-Memory', [correctionConsolidation_dispositionMemory]],
-    ['Gestalt', [projection_gestalt]],
-    ['Effectors', [fileOps_effectors, delegation_effectors]],
-    ['Sensors', [text_sensors]],
-    ['Substrate', [claude_substrate]],
-    ['Ledger', [longTermMemory_ledger]],
-    ['Percept', [userMessage_percept]],
-    ['Construal', [analytical_construal]],
-    ['Deliberation', [react_deliberation]],
-    ['Resolve', [satisfice_resolve]],
-    ['Enaction', [naturalLanguage_enaction]],
-    ['Appraisal', [acceptanceCriteriaCheck_appraisal]],
+    [
+      'Capabilities',
+      [researchInvestigation_capabilities, systemDesign_capabilities],
+    ],
+    ['Learning', [correctionConsolidation_learning]],
+    ['Situation-Awareness', [projection_situationAwareness]],
+    ['Actions', [fileOps_actions, delegation_actions]],
+    ['Modalities', [text_modalities]],
+    ['Model', [claude_model]],
+    ['Memory', [longTermMemory_memory]],
+    ['Trigger', [userMessage_trigger]],
+    ['Framing', [analytical_framing]],
+    ['Reasoning-Strategy', [react_reasoningStrategy]],
+    ['Satisficing', [satisfice_satisficing]],
+    ['Output-Format', [naturalLanguage_outputFormat]],
+    ['Self-Evaluation', [acceptanceCriteriaCheck_selfEvaluation]],
   ],
 };

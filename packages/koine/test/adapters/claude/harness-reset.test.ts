@@ -14,7 +14,7 @@ import type { Fragment } from '../../../src/anatomy/index.js';
 // reset (the conformance law, `docs/baseline-delta-model.md`). Identity is by
 // fragment slug; SET organs list the full provided set, SCALAR organs one slug.
 const MEASURED_BARE_INTROSPECT: HarnessReset = {
-  effectors: {
+  actions: {
     kind: 'set',
     slugs: [
       'file-ops',
@@ -25,18 +25,18 @@ const MEASURED_BARE_INTROSPECT: HarnessReset = {
       'tool-call',
     ],
   },
-  sensors: { kind: 'set', slugs: ['text', 'image'] },
-  substrate: { kind: 'scalar', slugs: ['claude'] },
-  percept: { kind: 'scalar', slugs: ['user-message'] },
-  enaction: { kind: 'scalar', slugs: ['natural-language'] },
-  address: { kind: 'scalar', slugs: ['human-on-the-loop'] },
-  charter: {
+  modalities: { kind: 'set', slugs: ['text', 'image'] },
+  model: { kind: 'scalar', slugs: ['claude'] },
+  trigger: { kind: 'scalar', slugs: ['user-message'] },
+  'output-format': { kind: 'scalar', slugs: ['natural-language'] },
+  autonomy: { kind: 'scalar', slugs: ['human-on-the-loop'] },
+  guardrails: {
     kind: 'set',
     slugs: ['harm-avoidance', 'honesty', 'helpfulness', 'input-untrusted'],
   },
-  deliberation: { kind: 'scalar', slugs: ['react'] },
-  resolve: { kind: 'scalar', slugs: ['satisfice'] },
-  comportment: { kind: 'scalar', slugs: ['neutral'] },
+  'reasoning-strategy': { kind: 'scalar', slugs: ['react'] },
+  satisficing: { kind: 'scalar', slugs: ['satisfice'] },
+  formality: { kind: 'scalar', slugs: ['neutral'] },
 };
 
 /** A minimal Fragment stub — only `organ`/`slug`/`definiens` are load-bearing. */
@@ -59,54 +59,51 @@ function nicoLikeResolved(): ResolvedAgent {
     memoryProtocol: 'protocol for {name}',
     organs: [
       ['Persona', [frag('persona', 'sage')]],
-      ['Mandate', [frag('mandate', 'curate')]],
-      ['Comportment', [frag('comportment', 'formal')]],
-      ['Register-Fit', [frag('register-fit', 'convergence')]],
-      ['Disclosure', [frag('disclosure', 'reasoning-trace')]],
-      ['Address', [frag('address', 'human-on-the-loop')]],
+      ['Role', [frag('role', 'curate')]],
+      ['Formality', [frag('formality', 'formal')]],
+      ['Audience-Adaptation', [frag('audience-adaptation', 'convergence')]],
+      ['Transparency', [frag('transparency', 'reasoning-trace')]],
+      ['Autonomy', [frag('autonomy', 'human-on-the-loop')]],
       ['Provenance', [frag('provenance', 'nico-archetype-cyan')]],
-      ['Telos', [frag('telos', 'parsimony')]],
+      ['Objective', [frag('objective', 'parsimony')]],
       [
-        'Instructions',
+        'Engineering-Principles',
         [
-          frag('instructions', 'first-principles'),
-          frag('instructions', 'zero-trust'),
+          frag('engineering-principles', 'first-principles'),
+          frag('engineering-principles', 'zero-trust'),
         ],
       ],
       [
-        'Charter',
+        'Guardrails',
         [
-          frag('charter', 'harm-avoidance'),
-          frag('charter', 'honesty'),
-          frag('charter', 'helpfulness'),
-          frag('charter', 'input-untrusted'),
+          frag('guardrails', 'harm-avoidance'),
+          frag('guardrails', 'honesty'),
+          frag('guardrails', 'helpfulness'),
+          frag('guardrails', 'input-untrusted'),
         ],
       ],
       [
-        'Competence',
+        'Capabilities',
         [
-          frag('competence', 'research-investigation'),
-          frag('competence', 'system-design'),
+          frag('capabilities', 'research-investigation'),
+          frag('capabilities', 'system-design'),
         ],
       ],
+      ['Learning', [frag('learning', 'correction-consolidation')]],
+      ['Situation-Awareness', [frag('situation-awareness', 'projection')]],
+      ['Actions', [frag('actions', 'file-ops'), frag('actions', 'delegation')]],
+      ['Modalities', [frag('modalities', 'text')]],
+      ['Model', [frag('model', 'claude')]],
+      ['Memory', [frag('memory', 'long-term-memory')]],
+      ['Trigger', [frag('trigger', 'user-message')]],
+      ['Framing', [frag('framing', 'analytical')]],
+      ['Reasoning-Strategy', [frag('reasoning-strategy', 'react')]],
+      ['Satisficing', [frag('satisficing', 'satisfice')]],
+      ['Output-Format', [frag('output-format', 'natural-language')]],
       [
-        'Disposition-Memory',
-        [frag('disposition-memory', 'correction-consolidation')],
+        'Self-Evaluation',
+        [frag('self-evaluation', 'acceptance-criteria-check')],
       ],
-      ['Gestalt', [frag('gestalt', 'projection')]],
-      [
-        'Effectors',
-        [frag('effectors', 'file-ops'), frag('effectors', 'delegation')],
-      ],
-      ['Sensors', [frag('sensors', 'text')]],
-      ['Substrate', [frag('substrate', 'claude')]],
-      ['Ledger', [frag('ledger', 'long-term-memory')]],
-      ['Percept', [frag('percept', 'user-message')]],
-      ['Construal', [frag('construal', 'analytical')]],
-      ['Deliberation', [frag('deliberation', 'react')]],
-      ['Resolve', [frag('resolve', 'satisfice')]],
-      ['Enaction', [frag('enaction', 'natural-language')]],
-      ['Appraisal', [frag('appraisal', 'acceptance-criteria-check')]],
     ],
   };
 }
@@ -119,16 +116,16 @@ describe('claudeHarnessReset conformance', () => {
   it('only the ratified organs carry a reset entry', () => {
     expect(Object.keys(claudeHarnessReset).sort()).toEqual(
       [
-        'address',
-        'charter',
-        'comportment',
-        'deliberation',
-        'effectors',
-        'enaction',
-        'percept',
-        'resolve',
-        'sensors',
-        'substrate',
+        'autonomy',
+        'guardrails',
+        'formality',
+        'reasoning-strategy',
+        'actions',
+        'output-format',
+        'trigger',
+        'satisficing',
+        'modalities',
+        'model',
       ].sort(),
     );
   });
@@ -149,17 +146,17 @@ describe('subtractReset / projectAgentDelta over a nico-like agent', () => {
     const titles = delta.organs.map(([t]) => t);
     // Scalar matches → organ omitted entirely.
     for (const omitted of [
-      'Address',
-      'Substrate',
-      'Percept',
-      'Enaction',
-      'Deliberation',
-      'Resolve',
+      'Autonomy',
+      'Model',
+      'Trigger',
+      'Output-Format',
+      'Reasoning-Strategy',
+      'Satisficing',
     ]) {
       expect(titles).not.toContain(omitted);
     }
     // Set organs whose every member is harness-provided → emptied → dropped.
-    for (const omitted of ['Effectors', 'Sensors', 'Charter']) {
+    for (const omitted of ['Actions', 'Modalities', 'Guardrails']) {
       expect(titles).not.toContain(omitted);
     }
   });
@@ -169,19 +166,19 @@ describe('subtractReset / projectAgentDelta over a nico-like agent', () => {
     const titles = delta.organs.map(([t]) => t);
     for (const present of [
       'Persona',
-      'Mandate',
-      'Comportment', // formal != reset's neutral → KEPT
-      'Register-Fit',
-      'Disclosure',
-      'Telos',
-      'Instructions',
-      'Competence',
-      'Gestalt',
-      'Ledger',
-      'Construal',
+      'Role',
+      'Formality', // formal != reset's neutral → KEPT
+      'Audience-Adaptation',
+      'Transparency',
+      'Objective',
+      'Engineering-Principles',
+      'Capabilities',
+      'Situation-Awareness',
+      'Memory',
+      'Framing',
       'Provenance',
-      'Disposition-Memory',
-      'Appraisal',
+      'Learning',
+      'Self-Evaluation',
     ]) {
       expect(titles).toContain(present);
     }
@@ -190,7 +187,7 @@ describe('subtractReset / projectAgentDelta over a nico-like agent', () => {
   it('keeps a SCALAR organ when its value differs from the reset', () => {
     // nico's comportment is `formal`; the harness reset is `neutral` → kept.
     const delta = subtractReset(nicoLikeResolved(), reset);
-    const comport = delta.organs.find(([t]) => t === 'Comportment');
+    const comport = delta.organs.find(([t]) => t === 'Formality');
     expect(comport?.[1][0]?.slug).toBe('formal');
   });
 
@@ -198,12 +195,12 @@ describe('subtractReset / projectAgentDelta over a nico-like agent', () => {
     const a = nicoLikeResolved();
     // Add a non-harness effector alongside the harness-provided ones.
     const organs = a.organs.map(([t, f]) =>
-      t === 'Effectors'
-        ? ([t, [...f, frag('effectors', 'physical-actuation')]] as const)
+      t === 'Actions'
+        ? ([t, [...f, frag('actions', 'physical-actuation')]] as const)
         : ([t, f] as const),
     );
     const delta = subtractReset({ ...a, organs }, reset);
-    const eff = delta.organs.find(([t]) => t === 'Effectors');
+    const eff = delta.organs.find(([t]) => t === 'Actions');
     expect(eff?.[1].map((x) => x.slug)).toEqual(['physical-actuation']);
   });
 
@@ -211,13 +208,13 @@ describe('subtractReset / projectAgentDelta over a nico-like agent', () => {
     const md = projectAgentDelta(nicoLikeResolved(), reset);
     // Distinctive organ headings present.
     expect(md).toContain('## Persona');
-    expect(md).toContain('## Mandate');
-    expect(md).toContain('## Comportment');
+    expect(md).toContain('## Role');
+    expect(md).toContain('## Formality');
     // Harness-provided organ headings absent.
-    expect(md).not.toContain('## Address');
-    expect(md).not.toContain('## Effectors');
-    expect(md).not.toContain('## Charter');
-    expect(md).not.toContain('## Substrate');
+    expect(md).not.toContain('## Autonomy');
+    expect(md).not.toContain('## Actions');
+    expect(md).not.toContain('## Guardrails');
+    expect(md).not.toContain('## Model');
     // No empty organ heading artifacts.
     expect(md).not.toMatch(/## \w[\w-]*\n+## /);
     // The genus block still frames the SOUL.

@@ -47,7 +47,7 @@ export type HarnessReset = Partial<Record<Organ, HarnessOrganReset>>;
 export const claudeHarnessReset: HarnessReset = {
   // The full Claude Code tool repertoire (file/dir ops, sub-agent delegation,
   // code execution, web/notebook/mcp tools). Corpus anchors: file-ops, delegation.
-  effectors: {
+  actions: {
     kind: 'set',
     slugs: [
       'file-ops',
@@ -59,16 +59,16 @@ export const claudeHarnessReset: HarnessReset = {
     ],
   },
   // Text channel (plus image input).
-  sensors: { kind: 'set', slugs: ['text', 'image'] },
-  substrate: { kind: 'scalar', slugs: ['claude'] },
-  percept: { kind: 'scalar', slugs: ['user-message'] },
-  enaction: { kind: 'scalar', slugs: ['natural-language'] },
-  address: { kind: 'scalar', slugs: ['human-on-the-loop'] },
-  charter: {
+  modalities: { kind: 'set', slugs: ['text', 'image'] },
+  model: { kind: 'scalar', slugs: ['claude'] },
+  trigger: { kind: 'scalar', slugs: ['user-message'] },
+  'output-format': { kind: 'scalar', slugs: ['natural-language'] },
+  autonomy: { kind: 'scalar', slugs: ['human-on-the-loop'] },
+  guardrails: {
     kind: 'set',
     slugs: ['harm-avoidance', 'honesty', 'helpfulness', 'input-untrusted'],
   },
-  deliberation: { kind: 'scalar', slugs: ['react'] },
-  resolve: { kind: 'scalar', slugs: ['satisfice'] },
-  comportment: { kind: 'scalar', slugs: ['neutral'] },
+  'reasoning-strategy': { kind: 'scalar', slugs: ['react'] },
+  satisficing: { kind: 'scalar', slugs: ['satisfice'] },
+  formality: { kind: 'scalar', slugs: ['neutral'] },
 };

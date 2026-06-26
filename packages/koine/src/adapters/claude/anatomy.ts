@@ -1,5 +1,5 @@
 // The claude-code projection of the agent ANATOMY: assemble a full SOUL `.md`
-// (front-matter + provenance header + `## Organ` sections + the `## Memory` genus
+// (front-matter + provenance header + `## Organ` sections + the `## Memory Protocol` genus
 // block) from a typed agent's organ-fragment modules; and project a skill cell to
 // its composed SKILL.md. This is koine's claude adapter owning "project a typed
 // Agent/Skill to claude-code markdown" — the inversion's projection-to-disk path.
@@ -109,7 +109,7 @@ export interface ResolvedAgent {
   readonly memoryProtocol: string;
 }
 
-/** `register-fit` → `Register-Fit`, `disposition-memory` → `Disposition-Memory`. */
+/** `audience-adaptation` → `Audience-Adaptation`, `output-format` → `Output-Format`. */
 export function organTitle(organ: string): string {
   return organ
     .split('-')
@@ -143,7 +143,7 @@ export function provenanceHeader(
  * The agent def BODY (no front-matter / header) — the exact text the renderer
  * hashes. Mirrors `compose_agent_selection`: `# <emoji> <name>`, then per organ a
  * `## <Organ-Title>` heading + each value's inlined body (blank-separated), then
- * the `## Memory` genus block ({name}-substituted). Closed `rstrip() + "\n"`.
+ * the `## Memory Protocol` genus block ({name}-substituted). Closed `rstrip() + "\n"`.
  */
 export function agentBody(a: ResolvedAgent): string {
   const emoji = a.mark?.emoji ?? '';
@@ -155,7 +155,7 @@ export function agentBody(a: ResolvedAgent): string {
       out.push(fragmentBody(f), '');
     }
   }
-  out.push('## Memory', '');
+  out.push('## Memory Protocol', '');
   out.push(a.memoryProtocol.replaceAll('{name}', a.name), '');
   return `${out.join('\n').replace(/\n+$/, '')}\n`;
 }
@@ -221,7 +221,7 @@ export function agentToClaudeMd(
 
 /**
  * Invert `organTitle`: recover the `Organ` slug an organ-section title came from
- * (`Register-Fit` → `register-fit`, `Effectors` → `effectors`). The projected
+ * (`Audience-Adaptation` → `audience-adaptation`, `Actions` → `actions`). The projected
  * `ResolvedAgent.organs` carries display titles; the reset is keyed by `Organ`.
  */
 function titleToOrgan(title: string): Organ {

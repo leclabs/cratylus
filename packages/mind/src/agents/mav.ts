@@ -1,74 +1,81 @@
 import type { ResolvedAgent } from '@leclabs/koine/adapters/claude';
 import type { Agent } from '@leclabs/koine/anatomy';
-import { humanOnTheLoop as humanOnTheLoop_address } from '../organs/address/human-on-the-loop.js';
-import { executableTestOracle as executableTestOracle_appraisal } from '../organs/appraisal/executable-test-oracle.js';
-import { harmAvoidance as harmAvoidance_charter } from '../organs/charter/harm-avoidance.js';
-import { helpfulness as helpfulness_charter } from '../organs/charter/helpfulness.js';
-import { honesty as honesty_charter } from '../organs/charter/honesty.js';
-import { operationsDelivery as operationsDelivery_competence } from '../organs/competence/operations-delivery.js';
-import { softwareEngineering as softwareEngineering_competence } from '../organs/competence/software-engineering.js';
-import { formal as formal_comportment } from '../organs/comportment/formal.js';
-import { goalDirected as goalDirected_construal } from '../organs/construal/goal-directed.js';
-import { planAndSolve as planAndSolve_deliberation } from '../organs/deliberation/plan-and-solve.js';
-import { reasoningTrace as reasoningTrace_disclosure } from '../organs/disclosure/reasoning-trace.js';
-import { correctionConsolidation as correctionConsolidation_dispositionMemory } from '../organs/disposition-memory/correction-consolidation.js';
-import { codeExecution as codeExecution_effectors } from '../organs/effectors/code-execution.js';
-import { delegation as delegation_effectors } from '../organs/effectors/delegation.js';
-import { fileOps as fileOps_effectors } from '../organs/effectors/file-ops.js';
-import { code as code_enaction } from '../organs/enaction/code.js';
-import { projection as projection_gestalt } from '../organs/gestalt/projection.js';
-import { dry as dry_instructions } from '../organs/instructions/dry.js';
-import { firstPrinciples as firstPrinciples_instructions } from '../organs/instructions/first-principles.js';
-import { invokeTheCanonical as invokeTheCanonical_instructions } from '../organs/instructions/invoke-the-canonical.js';
-import { llmNative as llmNative_instructions } from '../organs/instructions/llm-native.js';
-import { mece as mece_instructions } from '../organs/instructions/mece.js';
-import { trustButVerify as trustButVerify_instructions } from '../organs/instructions/trust-but-verify.js';
-import { zeroTrust as zeroTrust_instructions } from '../organs/instructions/zero-trust.js';
-import { longTermMemory as longTermMemory_ledger } from '../organs/ledger/long-term-memory.js';
-import { build as build_mandate } from '../organs/mandate/build.js';
-import { userMessage as userMessage_percept } from '../organs/percept/user-message.js';
+import { codeExecution as codeExecution_actions } from '../organs/actions/code-execution.js';
+import { delegation as delegation_actions } from '../organs/actions/delegation.js';
+import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
+import { convergence as convergence_audienceAdaptation } from '../organs/audience-adaptation/convergence.js';
+import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../organs/autonomy/human-on-the-loop.js';
+import { operationsDelivery as operationsDelivery_capabilities } from '../organs/capabilities/operations-delivery.js';
+import { softwareEngineering as softwareEngineering_capabilities } from '../organs/capabilities/software-engineering.js';
+import { dry as dry_engineeringPrinciples } from '../organs/engineering-principles/dry.js';
+import { firstPrinciples as firstPrinciples_engineeringPrinciples } from '../organs/engineering-principles/first-principles.js';
+import { invokeTheCanonical as invokeTheCanonical_engineeringPrinciples } from '../organs/engineering-principles/invoke-the-canonical.js';
+import { llmNative as llmNative_engineeringPrinciples } from '../organs/engineering-principles/llm-native.js';
+import { mece as mece_engineeringPrinciples } from '../organs/engineering-principles/mece.js';
+import { trustButVerify as trustButVerify_engineeringPrinciples } from '../organs/engineering-principles/trust-but-verify.js';
+import { zeroTrust as zeroTrust_engineeringPrinciples } from '../organs/engineering-principles/zero-trust.js';
+import { formal as formal_formality } from '../organs/formality/formal.js';
+import { goalDirected as goalDirected_framing } from '../organs/framing/goal-directed.js';
+import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/harm-avoidance.js';
+import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
+import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
+import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
+import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
+import { text as text_modalities } from '../organs/modalities/text.js';
+import { claude as claude_model } from '../organs/model/claude.js';
+import { delivery as delivery_objective } from '../organs/objective/delivery.js';
+import { code as code_outputFormat } from '../organs/output-format/code.js';
 import { hero as hero_persona } from '../organs/persona/hero.js';
 import { mavArchetypeGreen as mavArchetypeGreen_provenance } from '../organs/provenance/mav-archetype-green.js';
-import { convergence as convergence_registerFit } from '../organs/register-fit/convergence.js';
-import { optimize as optimize_resolve } from '../organs/resolve/optimize.js';
-import { text as text_sensors } from '../organs/sensors/text.js';
-import { claude as claude_substrate } from '../organs/substrate/claude.js';
-import { delivery as delivery_telos } from '../organs/telos/delivery.js';
+import { planAndSolve as planAndSolve_reasoningStrategy } from '../organs/reasoning-strategy/plan-and-solve.js';
+import { build as build_role } from '../organs/role/build.js';
+import { optimize as optimize_satisficing } from '../organs/satisficing/optimize.js';
+import { executableTestOracle as executableTestOracle_selfEvaluation } from '../organs/self-evaluation/executable-test-oracle.js';
+import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
+import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
+import { userMessage as userMessage_trigger } from '../organs/trigger/user-message.js';
 import { founderBase } from './base.js';
 export const mav: Agent = {
   ...founderBase,
   name: 'mav',
   persona: hero_persona,
-  mandate: build_mandate,
-  comportment: formal_comportment,
-  registerFit: convergence_registerFit,
-  disclosure: reasoningTrace_disclosure,
-  address: humanOnTheLoop_address,
+  role: build_role,
+  formality: formal_formality,
+  audienceAdaptation: convergence_audienceAdaptation,
+  transparency: reasoningTrace_transparency,
+  autonomy: humanOnTheLoop_autonomy,
   provenance: mavArchetypeGreen_provenance,
-  telos: delivery_telos,
-  instructions: [
-    firstPrinciples_instructions,
-    zeroTrust_instructions,
-    dry_instructions,
-    mece_instructions,
-    llmNative_instructions,
-    trustButVerify_instructions,
-    invokeTheCanonical_instructions,
+  objective: delivery_objective,
+  engineeringPrinciples: [
+    firstPrinciples_engineeringPrinciples,
+    zeroTrust_engineeringPrinciples,
+    dry_engineeringPrinciples,
+    mece_engineeringPrinciples,
+    llmNative_engineeringPrinciples,
+    trustButVerify_engineeringPrinciples,
+    invokeTheCanonical_engineeringPrinciples,
   ],
-  charter: [harmAvoidance_charter, honesty_charter, helpfulness_charter],
-  competence: [softwareEngineering_competence, operationsDelivery_competence],
-  dispositionMemory: correctionConsolidation_dispositionMemory,
-  gestalt: projection_gestalt,
-  effectors: [fileOps_effectors, codeExecution_effectors, delegation_effectors],
-  sensors: text_sensors,
-  substrate: claude_substrate,
-  ledger: longTermMemory_ledger,
-  percept: userMessage_percept,
-  construal: goalDirected_construal,
-  deliberation: planAndSolve_deliberation,
-  resolve: optimize_resolve,
-  enaction: code_enaction,
-  appraisal: executableTestOracle_appraisal,
+  guardrails: [
+    harmAvoidance_guardrails,
+    honesty_guardrails,
+    helpfulness_guardrails,
+  ],
+  capabilities: [
+    softwareEngineering_capabilities,
+    operationsDelivery_capabilities,
+  ],
+  learning: correctionConsolidation_learning,
+  situationAwareness: projection_situationAwareness,
+  actions: [fileOps_actions, codeExecution_actions, delegation_actions],
+  modalities: text_modalities,
+  model: claude_model,
+  memory: longTermMemory_memory,
+  trigger: userMessage_trigger,
+  framing: goalDirected_framing,
+  reasoningStrategy: planAndSolve_reasoningStrategy,
+  satisficing: optimize_satisficing,
+  outputFormat: code_outputFormat,
+  selfEvaluation: executableTestOracle_selfEvaluation,
 };
 export const mavResolved: ResolvedAgent = {
   name: 'mav',
@@ -78,44 +85,44 @@ export const mavResolved: ResolvedAgent = {
   memoryProtocol: founderBase.memoryProtocol,
   organs: [
     ['Persona', [hero_persona]],
-    ['Mandate', [build_mandate]],
-    ['Comportment', [formal_comportment]],
-    ['Register-Fit', [convergence_registerFit]],
-    ['Disclosure', [reasoningTrace_disclosure]],
-    ['Address', [humanOnTheLoop_address]],
+    ['Role', [build_role]],
+    ['Formality', [formal_formality]],
+    ['Audience-Adaptation', [convergence_audienceAdaptation]],
+    ['Transparency', [reasoningTrace_transparency]],
+    ['Autonomy', [humanOnTheLoop_autonomy]],
     ['Provenance', [mavArchetypeGreen_provenance]],
-    ['Telos', [delivery_telos]],
+    ['Objective', [delivery_objective]],
     [
-      'Instructions',
+      'Engineering-Principles',
       [
-        firstPrinciples_instructions,
-        zeroTrust_instructions,
-        dry_instructions,
-        mece_instructions,
-        llmNative_instructions,
-        trustButVerify_instructions,
-        invokeTheCanonical_instructions,
+        firstPrinciples_engineeringPrinciples,
+        zeroTrust_engineeringPrinciples,
+        dry_engineeringPrinciples,
+        mece_engineeringPrinciples,
+        llmNative_engineeringPrinciples,
+        trustButVerify_engineeringPrinciples,
+        invokeTheCanonical_engineeringPrinciples,
       ],
     ],
-    ['Charter', [harmAvoidance_charter, honesty_charter, helpfulness_charter]],
     [
-      'Competence',
-      [softwareEngineering_competence, operationsDelivery_competence],
+      'Guardrails',
+      [harmAvoidance_guardrails, honesty_guardrails, helpfulness_guardrails],
     ],
-    ['Disposition-Memory', [correctionConsolidation_dispositionMemory]],
-    ['Gestalt', [projection_gestalt]],
     [
-      'Effectors',
-      [fileOps_effectors, codeExecution_effectors, delegation_effectors],
+      'Capabilities',
+      [softwareEngineering_capabilities, operationsDelivery_capabilities],
     ],
-    ['Sensors', [text_sensors]],
-    ['Substrate', [claude_substrate]],
-    ['Ledger', [longTermMemory_ledger]],
-    ['Percept', [userMessage_percept]],
-    ['Construal', [goalDirected_construal]],
-    ['Deliberation', [planAndSolve_deliberation]],
-    ['Resolve', [optimize_resolve]],
-    ['Enaction', [code_enaction]],
-    ['Appraisal', [executableTestOracle_appraisal]],
+    ['Learning', [correctionConsolidation_learning]],
+    ['Situation-Awareness', [projection_situationAwareness]],
+    ['Actions', [fileOps_actions, codeExecution_actions, delegation_actions]],
+    ['Modalities', [text_modalities]],
+    ['Model', [claude_model]],
+    ['Memory', [longTermMemory_memory]],
+    ['Trigger', [userMessage_trigger]],
+    ['Framing', [goalDirected_framing]],
+    ['Reasoning-Strategy', [planAndSolve_reasoningStrategy]],
+    ['Satisficing', [optimize_satisficing]],
+    ['Output-Format', [code_outputFormat]],
+    ['Self-Evaluation', [executableTestOracle_selfEvaluation]],
   ],
 };

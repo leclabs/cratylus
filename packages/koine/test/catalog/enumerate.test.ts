@@ -42,7 +42,7 @@ describe('enumerateCatalog over mind', () => {
   it('the acceptance spot-checks hold', () => {
     const byOrgan = new Map(entries.map((e) => [e.organ, e]));
 
-    const address = byOrgan.get('address');
+    const address = byOrgan.get('autonomy');
     expect(address).toMatchObject({ kind: 'enum', arity: 'scalar' });
     expect(address?.values.map((v) => v.slug)).toEqual([
       'human-in-the-loop',
@@ -50,11 +50,11 @@ describe('enumerateCatalog over mind', () => {
       'human-out-of-the-loop',
     ]);
 
-    expect(byOrgan.get('charter')).toMatchObject({
+    expect(byOrgan.get('guardrails')).toMatchObject({
       kind: 'coined',
       arity: 'set',
     });
-    expect(byOrgan.get('competence')).toMatchObject({
+    expect(byOrgan.get('capabilities')).toMatchObject({
       kind: 'open',
       arity: 'set',
     });
@@ -99,14 +99,14 @@ describe('drift-proof discovery (the load-bearing property)', () => {
   });
 
   it('a value module dropped under an organ dir appears, no other change', async () => {
-    const addressDir = join(dir, 'address');
+    const addressDir = join(dir, 'autonomy');
     mkdirSync(addressDir, { recursive: true });
 
     // Before: empty organ → zero values, organ still listed with its metadata.
     let entries = await enumerateCatalog(dir);
-    const before = entries.find((e) => e.organ === 'address');
+    const before = entries.find((e) => e.organ === 'autonomy');
     expect(before).toMatchObject({
-      organ: 'address',
+      organ: 'autonomy',
       axis: 'STANCE',
       kind: 'enum',
       arity: 'scalar',
@@ -117,10 +117,10 @@ describe('drift-proof discovery (the load-bearing property)', () => {
     writeFileSync(
       join(addressDir, 'fixture-mode.ts'),
       [
-        "import type { Address } from '@leclabs/koine/anatomy';",
+        "import type { Autonomy } from '@leclabs/koine/anatomy';",
         '',
-        'export const fixtureMode: Address = {',
-        "  organ: 'address',",
+        'export const fixtureMode: Autonomy = {',
+        "  organ: 'autonomy',",
         "  slug: 'fixture-mode',",
         "  definiens: 'a discovered-only fixture value',",
         '};',
@@ -130,7 +130,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
 
     // After: it shows up — discovered, not listed.
     entries = await enumerateCatalog(dir);
-    const after = entries.find((e) => e.organ === 'address');
+    const after = entries.find((e) => e.organ === 'autonomy');
     expect(after?.values).toEqual([
       { slug: 'fixture-mode', definiens: 'a discovered-only fixture value' },
     ]);

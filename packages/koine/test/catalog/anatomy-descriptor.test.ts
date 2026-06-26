@@ -16,30 +16,30 @@ import { ANATOMY, ORGAN_NAMES, type Organ } from '../../src/anatomy/index.js';
 // this test must be updated alongside `ANATOMY`, which is exactly the point —
 // adding an organ forces touching its metadata AND this assertion together).
 const THE_24: readonly Organ[] = [
-  'address',
+  'autonomy',
   'persona',
-  'mandate',
-  'comportment',
-  'register-fit',
-  'disclosure',
+  'role',
+  'formality',
+  'audience-adaptation',
+  'transparency',
   'provenance',
-  'telos',
-  'charter',
-  'instructions',
+  'objective',
+  'guardrails',
+  'engineering-principles',
   'heuristics',
-  'competence',
-  'disposition-memory',
-  'gestalt',
-  'effectors',
-  'sensors',
-  'substrate',
-  'ledger',
-  'percept',
-  'construal',
-  'deliberation',
-  'resolve',
-  'enaction',
-  'appraisal',
+  'capabilities',
+  'learning',
+  'situation-awareness',
+  'actions',
+  'modalities',
+  'model',
+  'memory',
+  'trigger',
+  'framing',
+  'reasoning-strategy',
+  'satisficing',
+  'output-format',
+  'self-evaluation',
 ];
 
 describe('ANATOMY descriptor', () => {
@@ -61,11 +61,11 @@ describe('ANATOMY descriptor', () => {
     const setOrgans = ORGAN_NAMES.filter((o) => ANATOMY[o].arity === 'set');
     expect([...setOrgans].sort()).toEqual(
       [
-        'charter',
-        'competence',
-        'effectors',
+        'guardrails',
+        'capabilities',
+        'actions',
         'heuristics',
-        'instructions',
+        'engineering-principles',
       ].sort(),
     );
   });

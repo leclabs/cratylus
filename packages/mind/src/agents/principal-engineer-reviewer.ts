@@ -1,66 +1,66 @@
 import type { ResolvedAgent } from '@leclabs/koine/adapters/claude';
 import type { Agent } from '@leclabs/koine/anatomy';
-import { humanOnTheLoop as humanOnTheLoop_address } from '../organs/address/human-on-the-loop.js';
-import { selfCritique as selfCritique_appraisal } from '../organs/appraisal/self-critique.js';
-import { harmAvoidance as harmAvoidance_charter } from '../organs/charter/harm-avoidance.js';
-import { helpfulness as helpfulness_charter } from '../organs/charter/helpfulness.js';
-import { honesty as honesty_charter } from '../organs/charter/honesty.js';
-import { inputUntrusted as inputUntrusted_charter } from '../organs/charter/input-untrusted.js';
-import { scopeOfAuthority as scopeOfAuthority_charter } from '../organs/charter/scope-of-authority.js';
-import { reviewCritique as reviewCritique_competence } from '../organs/competence/review-critique.js';
-import { formal as formal_comportment } from '../organs/comportment/formal.js';
-import { riskOriented as riskOriented_construal } from '../organs/construal/risk-oriented.js';
-import { react as react_deliberation } from '../organs/deliberation/react.js';
-import { reasoningTrace as reasoningTrace_disclosure } from '../organs/disclosure/reasoning-trace.js';
-import { correctionConsolidation as correctionConsolidation_dispositionMemory } from '../organs/disposition-memory/correction-consolidation.js';
-import { delegation as delegation_effectors } from '../organs/effectors/delegation.js';
-import { fileOps as fileOps_effectors } from '../organs/effectors/file-ops.js';
-import { structuredDecision as structuredDecision_enaction } from '../organs/enaction/structured-decision.js';
-import { comprehension as comprehension_gestalt } from '../organs/gestalt/comprehension.js';
+import { delegation as delegation_actions } from '../organs/actions/delegation.js';
+import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
+import { convergence as convergence_audienceAdaptation } from '../organs/audience-adaptation/convergence.js';
+import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../organs/autonomy/human-on-the-loop.js';
+import { reviewCritique as reviewCritique_capabilities } from '../organs/capabilities/review-critique.js';
+import { formal as formal_formality } from '../organs/formality/formal.js';
+import { riskOriented as riskOriented_framing } from '../organs/framing/risk-oriented.js';
+import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/harm-avoidance.js';
+import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
+import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
+import { inputUntrusted as inputUntrusted_guardrails } from '../organs/guardrails/input-untrusted.js';
+import { scopeOfAuthority as scopeOfAuthority_guardrails } from '../organs/guardrails/scope-of-authority.js';
 import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
-import { longTermMemory as longTermMemory_ledger } from '../organs/ledger/long-term-memory.js';
-import { review as review_mandate } from '../organs/mandate/review.js';
-import { userMessage as userMessage_percept } from '../organs/percept/user-message.js';
+import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
+import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
+import { text as text_modalities } from '../organs/modalities/text.js';
+import { claude as claude_model } from '../organs/model/claude.js';
+import { correctness as correctness_objective } from '../organs/objective/correctness.js';
+import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
 import { ruler as ruler_persona } from '../organs/persona/ruler.js';
 import { reviewerArchetypePurple as reviewerArchetypePurple_provenance } from '../organs/provenance/reviewer-archetype-purple.js';
-import { convergence as convergence_registerFit } from '../organs/register-fit/convergence.js';
-import { optimize as optimize_resolve } from '../organs/resolve/optimize.js';
-import { text as text_sensors } from '../organs/sensors/text.js';
-import { claude as claude_substrate } from '../organs/substrate/claude.js';
-import { correctness as correctness_telos } from '../organs/telos/correctness.js';
+import { react as react_reasoningStrategy } from '../organs/reasoning-strategy/react.js';
+import { review as review_role } from '../organs/role/review.js';
+import { optimize as optimize_satisficing } from '../organs/satisficing/optimize.js';
+import { selfCritique as selfCritique_selfEvaluation } from '../organs/self-evaluation/self-critique.js';
+import { comprehension as comprehension_situationAwareness } from '../organs/situation-awareness/comprehension.js';
+import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
+import { userMessage as userMessage_trigger } from '../organs/trigger/user-message.js';
 import { base } from './base.js';
 export const principalEngineerReviewer: Agent = {
   ...base,
   name: 'principal-engineer-reviewer',
   persona: ruler_persona,
-  mandate: review_mandate,
-  comportment: formal_comportment,
-  registerFit: convergence_registerFit,
-  disclosure: reasoningTrace_disclosure,
-  address: humanOnTheLoop_address,
+  role: review_role,
+  formality: formal_formality,
+  audienceAdaptation: convergence_audienceAdaptation,
+  transparency: reasoningTrace_transparency,
+  autonomy: humanOnTheLoop_autonomy,
   provenance: reviewerArchetypePurple_provenance,
-  telos: correctness_telos,
-  charter: [
-    harmAvoidance_charter,
-    honesty_charter,
-    helpfulness_charter,
-    inputUntrusted_charter,
-    scopeOfAuthority_charter,
+  objective: correctness_objective,
+  guardrails: [
+    harmAvoidance_guardrails,
+    honesty_guardrails,
+    helpfulness_guardrails,
+    inputUntrusted_guardrails,
+    scopeOfAuthority_guardrails,
   ],
   heuristics: [takeTheBest_heuristics],
-  competence: [reviewCritique_competence],
-  dispositionMemory: correctionConsolidation_dispositionMemory,
-  gestalt: comprehension_gestalt,
-  effectors: [fileOps_effectors, delegation_effectors],
-  sensors: text_sensors,
-  substrate: claude_substrate,
-  ledger: longTermMemory_ledger,
-  percept: userMessage_percept,
-  construal: riskOriented_construal,
-  deliberation: react_deliberation,
-  resolve: optimize_resolve,
-  enaction: structuredDecision_enaction,
-  appraisal: selfCritique_appraisal,
+  capabilities: [reviewCritique_capabilities],
+  learning: correctionConsolidation_learning,
+  situationAwareness: comprehension_situationAwareness,
+  actions: [fileOps_actions, delegation_actions],
+  modalities: text_modalities,
+  model: claude_model,
+  memory: longTermMemory_memory,
+  trigger: userMessage_trigger,
+  framing: riskOriented_framing,
+  reasoningStrategy: react_reasoningStrategy,
+  satisficing: optimize_satisficing,
+  outputFormat: structuredDecision_outputFormat,
+  selfEvaluation: selfCritique_selfEvaluation,
 };
 export const principalEngineerReviewerResolved: ResolvedAgent = {
   name: 'principal-engineer-reviewer',
@@ -70,36 +70,36 @@ export const principalEngineerReviewerResolved: ResolvedAgent = {
   memoryProtocol: base.memoryProtocol,
   organs: [
     ['Persona', [ruler_persona]],
-    ['Mandate', [review_mandate]],
-    ['Comportment', [formal_comportment]],
-    ['Register-Fit', [convergence_registerFit]],
-    ['Disclosure', [reasoningTrace_disclosure]],
-    ['Address', [humanOnTheLoop_address]],
+    ['Role', [review_role]],
+    ['Formality', [formal_formality]],
+    ['Audience-Adaptation', [convergence_audienceAdaptation]],
+    ['Transparency', [reasoningTrace_transparency]],
+    ['Autonomy', [humanOnTheLoop_autonomy]],
     ['Provenance', [reviewerArchetypePurple_provenance]],
-    ['Telos', [correctness_telos]],
+    ['Objective', [correctness_objective]],
     [
-      'Charter',
+      'Guardrails',
       [
-        harmAvoidance_charter,
-        honesty_charter,
-        helpfulness_charter,
-        inputUntrusted_charter,
-        scopeOfAuthority_charter,
+        harmAvoidance_guardrails,
+        honesty_guardrails,
+        helpfulness_guardrails,
+        inputUntrusted_guardrails,
+        scopeOfAuthority_guardrails,
       ],
     ],
     ['Heuristics', [takeTheBest_heuristics]],
-    ['Competence', [reviewCritique_competence]],
-    ['Disposition-Memory', [correctionConsolidation_dispositionMemory]],
-    ['Gestalt', [comprehension_gestalt]],
-    ['Effectors', [fileOps_effectors, delegation_effectors]],
-    ['Sensors', [text_sensors]],
-    ['Substrate', [claude_substrate]],
-    ['Ledger', [longTermMemory_ledger]],
-    ['Percept', [userMessage_percept]],
-    ['Construal', [riskOriented_construal]],
-    ['Deliberation', [react_deliberation]],
-    ['Resolve', [optimize_resolve]],
-    ['Enaction', [structuredDecision_enaction]],
-    ['Appraisal', [selfCritique_appraisal]],
+    ['Capabilities', [reviewCritique_capabilities]],
+    ['Learning', [correctionConsolidation_learning]],
+    ['Situation-Awareness', [comprehension_situationAwareness]],
+    ['Actions', [fileOps_actions, delegation_actions]],
+    ['Modalities', [text_modalities]],
+    ['Model', [claude_model]],
+    ['Memory', [longTermMemory_memory]],
+    ['Trigger', [userMessage_trigger]],
+    ['Framing', [riskOriented_framing]],
+    ['Reasoning-Strategy', [react_reasoningStrategy]],
+    ['Satisficing', [optimize_satisficing]],
+    ['Output-Format', [structuredDecision_outputFormat]],
+    ['Self-Evaluation', [selfCritique_selfEvaluation]],
   ],
 };

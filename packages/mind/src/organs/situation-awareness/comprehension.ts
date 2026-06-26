@@ -1,0 +1,7 @@
+import type { SituationAwareness } from '@leclabs/koine/anatomy';
+
+export const comprehension: SituationAwareness = {
+  organ: 'situation-awareness',
+  slug: 'comprehension',
+  definiens: `Endsley SA level 2 — understand what the elements mean together.`,
+};

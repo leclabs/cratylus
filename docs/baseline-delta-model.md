@@ -26,27 +26,27 @@ TS types (T0.1) and the rollout (T4.1).
 // mind/agents/nico.ts — a delta over base, composed by import + spread
 import { base } from "./base";
 import { sage } from "../organs/persona/sage";
-import { curate } from "../organs/mandate/curate";
-import { inputUntrusted } from "../organs/charter/input-untrusted";
+import { curate } from "../organs/role/curate";
+import { inputUntrusted } from "../organs/guardrails/input-untrusted";
 
 export const nico: Agent = {
-  ...base, // inherit the polis floor (charter, memory protocol, genus, continuity…)
+  ...base, // inherit the polis floor (guardrails, memory protocol, genus, continuity…)
   name: "nico",
   persona: sage, // scalar override
-  mandate: curate, // scalar override
-  charter: [...base.charter, inputUntrusted], // additive set = array spread
-  // effectors / substrate / address / sensors / … : omitted ⇒ harness provides them at export
+  role: curate, // scalar override
+  guardrails: [...base.guardrails, inputUntrusted], // additive set = array spread
+  // actions / model / autonomy / modalities / … : omitted ⇒ harness provides them at export
 };
 ```
 
-When the claude adapter projects `nico`, it subtracts the claude harness reset — so `effectors`,
-`address`, `substrate`, etc. (provided by Claude Code) drop out of the `.md`, and only nico's
+When the claude adapter projects `nico`, it subtracts the claude harness reset — so `actions`,
+`autonomy`, `model`, etc. (provided by Claude Code) drop out of the `.md`, and only nico's
 distinctive delta is emitted.
 
 ## Decision — where the polis-universal floor lives
 
 **An explicit `mind/agents/base.ts` module** that every agent spreads — _not_ a hidden composer
-injection. Rationale: the floor (HHH charter, continuity organs, the memory protocol, genus dispositions)
+injection. Rationale: the floor (HHH guardrails, continuity organs, the memory protocol, genus dispositions)
 should be **visible in source** and composed by the same `...spread` mechanism as everything else, so
 there is one composition model, no magic. The founder genus (`principal-ic`) is a thin
 `founderBase = { ...base, ...founder-dispositions }` that the two founders spread instead of `base`.

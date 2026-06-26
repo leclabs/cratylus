@@ -19,20 +19,20 @@ describe('T2.2 nico delta-over-target (subtract the claude harness reset)', () =
     const titles = delta.organs.map(([t]) => t);
     // Scalar organs whose value == the reset slug → omitted entirely.
     for (const omitted of [
-      'Address', // human-on-the-loop
-      'Substrate', // claude
-      'Percept', // user-message
-      'Enaction', // natural-language
-      'Deliberation', // react
-      'Resolve', // satisfice
+      'Autonomy', // human-on-the-loop
+      'Model', // claude
+      'Trigger', // user-message
+      'Output-Format', // natural-language
+      'Reasoning-Strategy', // react
+      'Satisficing', // satisfice
     ]) {
       expect(titles, `${omitted} should be omitted`).not.toContain(omitted);
     }
     // Set organs whose every member is harness-provided → emptied → dropped.
     for (const omitted of [
-      'Effectors', // {file-ops, delegation} ⊆ reset
-      'Sensors', // {text} ⊆ reset
-      'Charter', // {harm-avoidance, honesty, helpfulness, input-untrusted} == reset
+      'Actions', // {file-ops, delegation} ⊆ reset
+      'Modalities', // {text} ⊆ reset
+      'Guardrails', // {harm-avoidance, honesty, helpfulness, input-untrusted} == reset
     ]) {
       expect(
         titles,
@@ -46,41 +46,41 @@ describe('T2.2 nico delta-over-target (subtract the claude harness reset)', () =
     const titles = delta.organs.map(([t]) => t);
     for (const present of [
       'Persona',
-      'Mandate', // curate
-      'Comportment', // formal != reset's neutral → KEPT
-      'Register-Fit',
-      'Disclosure',
+      'Role', // curate
+      'Formality', // formal != reset's neutral → KEPT
+      'Audience-Adaptation',
+      'Transparency',
       'Provenance',
-      'Telos',
-      'Instructions',
-      'Competence',
-      'Gestalt',
-      'Ledger',
-      'Construal',
-      'Disposition-Memory',
-      'Appraisal',
+      'Objective',
+      'Engineering-Principles',
+      'Capabilities',
+      'Situation-Awareness',
+      'Memory',
+      'Framing',
+      'Learning',
+      'Self-Evaluation',
     ]) {
       expect(titles, `${present} should be emitted`).toContain(present);
     }
   });
 
-  it("keeps Comportment because nico's `formal` != the reset's `neutral`", () => {
+  it("keeps Formality because nico's `formal` != the reset's `neutral`", () => {
     const delta = subtractReset(nicoResolved, claudeHarnessReset);
-    const comport = delta.organs.find(([t]) => t === 'Comportment');
+    const comport = delta.organs.find(([t]) => t === 'Formality');
     expect(comport?.[1][0]?.slug).toBe('formal');
   });
 
   it('the rendered delta SOUL has the distinctive headings and none of the dropped', () => {
     const md = projectAgentDelta(nicoResolved, claudeHarnessReset);
     expect(md).toContain('## Persona');
-    expect(md).toContain('## Mandate');
-    expect(md).toContain('## Comportment');
-    expect(md).toContain('## Telos');
-    expect(md).not.toContain('## Address');
-    expect(md).not.toContain('## Effectors');
-    expect(md).not.toContain('## Charter');
-    expect(md).not.toContain('## Substrate');
-    expect(md).not.toContain('## Sensors');
+    expect(md).toContain('## Role');
+    expect(md).toContain('## Formality');
+    expect(md).toContain('## Objective');
+    expect(md).not.toContain('## Autonomy');
+    expect(md).not.toContain('## Actions');
+    expect(md).not.toContain('## Guardrails');
+    expect(md).not.toContain('## Model');
+    expect(md).not.toContain('## Modalities');
     // No empty `## Organ` heading left behind by subtraction.
     expect(md).not.toMatch(/##[^\n]*\n+## /);
     // Still framed: front-matter description + the genus block.

@@ -37,8 +37,8 @@ function agentFixture(): ResolvedAgent {
     organs: [
       ['Persona', [frag('persona', 'hero')]],
       [
-        'Effectors',
-        [frag('effectors', 'file-ops'), frag('effectors', 'code-execution')],
+        'Actions',
+        [frag('actions', 'file-ops'), frag('actions', 'code-execution')],
       ],
     ],
   };
