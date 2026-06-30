@@ -1,0 +1,20 @@
+{
+  "name": "@leclabs/agent-memory",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Build-only toolsource for the `episodic` memory tool — bundled into the memory skill (memory-tool-bundling), not a published library",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,7 +1,7 @@
-# polis — agent conventions
+# agent-factory — agent conventions
 
-**polis** is the society layer: canonical culture (`packages/mind`) + projection machinery
-(`packages/koine`). See `README.md` for the thesis and the civic ontology (oikos ⊂ polis).
+**agent-factory** is the society layer: canonical culture (`packages/agent-anatomy`) + projection machinery
+(`packages/agent-forge`). See `README.md` for the thesis and the civic ontology (oikos ⊂ polis).
 
 ## The founders
 
@@ -14,16 +14,16 @@ infrastructure/build/delivery, Mav leads.
 
 ## Packages
 
-- `packages/mind` — the exemplar corpus, a **TS workspace member** (`@leclabs/mind`, deps `@leclabs/koine`)
+- `packages/agent-anatomy` — the exemplar corpus, a **TS workspace member** (`@leclabs/agent-anatomy`, deps `@leclabs/agent-forge`)
   and **koine's first opinionated plugin**: organ values / agents / skills are typed modules under `src/`
   (the **sole source**); markdown is a **projection**. koine is the **only** projection + deploy machinery
-  (`pnpm mind:project` / `pnpm mind:deploy` via koine's claude adapter); the Python `toolkit/` projector was
+  (`pnpm anatomy:project` / `pnpm anatomy:deploy` via koine's claude adapter); the Python `toolkit/` projector was
   retired in `koine-absorbs-mind` T6.1 — only the shell hooks (`toolkit/{continuity,guardrail}`) remain.
-  Corpus rules: `packages/mind/ideas/AGENTS.md`. Mutate the `.ts` source via `[[exemplify]]`; the
+  Corpus rules: `packages/agent-anatomy/ideas/AGENTS.md`. Mutate the `.ts` source via `[[exemplify]]`; the
   acceptance bar is `tsc` + the projection-stability gate (every fragment/skill/agent still projects).
-- `packages/koine` — the config IR + translator (`@leclabs/koine`, formerly _agentir_). **One package**;
-  `core` / `adapters` / `cli` are source areas under `src/`, exposed via subpath exports + a `koine` bin.
-- `packages/episodic` — **build-only toolsource** (private; anchor `episodic`) for the agent-memory
+- `packages/agent-forge` — the config IR + translator (`@leclabs/agent-forge`, formerly _agentir_). **One package**;
+  `core` / `adapters` / `cli` are source areas under `src/`, exposed via subpath exports + an `agent-forge` bin.
+- `packages/agent-memory` — **build-only toolsource** (private; anchor `episodic`) for the agent-memory
   runtime: a JSONL event store + dream routing + the md→JSONL migration. Not a published library (zero
   importers) — `tsup` bundles `src/bin.ts` into one dependency-free `dist/episodic.mjs` that the `memory`
   skill carries to every host (`plans/memory-tool-bundling`). The `@leclabs/koine-episodic` npm identity is

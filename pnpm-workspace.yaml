@@ -1,6 +1,6 @@
 # Node workspace members live directly under packages/ (one dir = one package):
 # koine (the projection machinery) and episodic (the portable memory store).
-# packages/mind is the culture corpus — markdown + a Python toolkit, not an npm
+# packages/agent-anatomy is the culture corpus — markdown + a Python toolkit, not an npm
 # package — so it has no package.json and pnpm excludes it automatically.
 packages:
   - "packages/*"

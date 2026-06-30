@@ -6,16 +6,16 @@
       "dist",
       "node_modules",
       // mind now has TS source under src/ (lint it) + test/ alongside the Python
-      // toolkit and the markdown corpus. Narrowed from a blanket packages/mind/**
+      // toolkit and the markdown corpus. Narrowed from a blanket packages/agent-anatomy/**
       // ignore when the corpus inverted to TS modules (T1.1/T1.3); the non-TS
       // trees (Python toolkit, markdown cells, graphify cache, pipeline manifests)
       // stay ignored.
-      "packages/mind/toolkit/**",
-      "packages/mind/references/**",
-      "packages/mind/docs/**",
-      "packages/mind/ideas/**",
-      "packages/mind/.manifests/**",
-      "packages/mind/**/*.md",
+      "packages/agent-anatomy/toolkit/**",
+      "packages/agent-anatomy/references/**",
+      "packages/agent-anatomy/docs/**",
+      "packages/agent-anatomy/ideas/**",
+      "packages/agent-anatomy/.manifests/**",
+      "packages/agent-anatomy/**/*.md",
       "**/*.generated.ts",
       "**/generated.ts",
       // emit_ir.py output (a generated IR artifact, not hand-authored source)
@@ -38,7 +38,10 @@
       // are emitted as backtick template literals UNIFORMLY (codegen policy —
       // handles multi-line + any embedded quote without per-string analysis), so
       // the "unused template literal" style rule does not apply to them.
-      "include": ["packages/mind/src/organs/**", "packages/mind/src/skills/**"],
+      "include": [
+        "packages/agent-anatomy/src/organs/**",
+        "packages/agent-anatomy/src/skills/**"
+      ],
       "linter": { "rules": { "style": { "noUnusedTemplateLiteral": "off" } } }
     }
   ]
