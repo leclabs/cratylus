@@ -66,6 +66,7 @@ export const cognizantResolved: ResolvedAgent = {
   mark: diagnosticDelegateOfPolisCyan_provenance.mark,
   sourcePath: 'packages/agent-anatomy/agent/cognizant.md',
   memoryProtocol: base.memoryProtocol,
+  personaProtocol: base.personaProtocol,
   organs: [
     ['Persona', [magician_persona]],
     ['Role', [diagnose_role]],

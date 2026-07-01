@@ -107,6 +107,8 @@ export interface ResolvedAgent {
   readonly sourcePath: string;
   /** The `{name}`-parameterized memory protocol (the genus block). */
   readonly memoryProtocol: string;
+  /** The per-turn persona-persistence protocol (the anti-drift genus block). */
+  readonly personaProtocol: string;
 }
 
 /** `audience-adaptation` → `Audience-Adaptation`, `output-format` → `Output-Format`. */
@@ -143,7 +145,9 @@ export function provenanceHeader(
  * The agent def BODY (no front-matter / header) — the exact text the renderer
  * hashes. Mirrors `compose_agent_selection`: `# <emoji> <name>`, then per organ a
  * `## <Organ-Title>` heading + each value's inlined body (blank-separated), then
- * the `## Memory Protocol` genus block ({name}-substituted). Closed `rstrip() + "\n"`.
+ * the `## Memory Protocol` and `## Persona Protocol` genus blocks ({name}-substituted).
+ * The persona protocol is appended LAST — recency-anchoring is deliberate: the
+ * anti-drift block sits closest to generation. Closed `rstrip() + "\n"`.
  */
 export function agentBody(a: ResolvedAgent): string {
   const emoji = a.mark?.emoji ?? '';
@@ -157,6 +161,8 @@ export function agentBody(a: ResolvedAgent): string {
   }
   out.push('## Memory Protocol', '');
   out.push(a.memoryProtocol.replaceAll('{name}', a.name), '');
+  out.push('## Persona Protocol', '');
+  out.push(a.personaProtocol.replaceAll('{name}', a.name), '');
   return `${out.join('\n').replace(/\n+$/, '')}\n`;
 }
 

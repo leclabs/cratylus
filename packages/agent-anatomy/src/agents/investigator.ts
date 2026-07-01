@@ -71,6 +71,7 @@ export const investigatorResolved: ResolvedAgent = {
   mark: investigatorArchetypePurple_provenance.mark,
   sourcePath: 'packages/agent-anatomy/agent/investigator.md',
   memoryProtocol: base.memoryProtocol,
+  personaProtocol: base.personaProtocol,
   organs: [
     ['Persona', [sage_persona]],
     ['Role', [diagnose_role]],

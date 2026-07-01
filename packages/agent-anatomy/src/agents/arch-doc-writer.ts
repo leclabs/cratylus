@@ -66,6 +66,7 @@ export const archDocWriterResolved: ResolvedAgent = {
   mark: archDocWriterArchetypePink_provenance.mark,
   sourcePath: 'packages/agent-anatomy/agent/arch-doc-writer.md',
   memoryProtocol: base.memoryProtocol,
+  personaProtocol: base.personaProtocol,
   organs: [
     ['Persona', [sage_persona]],
     ['Role', [document_role]],

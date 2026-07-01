@@ -68,6 +68,7 @@ export const principalEngineerReviewerResolved: ResolvedAgent = {
   mark: reviewerArchetypePurple_provenance.mark,
   sourcePath: 'packages/agent-anatomy/agent/principal-engineer-reviewer.md',
   memoryProtocol: base.memoryProtocol,
+  personaProtocol: base.personaProtocol,
   organs: [
     ['Persona', [ruler_persona]],
     ['Role', [review_role]],

@@ -66,6 +66,7 @@ export const developerResolved: ResolvedAgent = {
   mark: developerArchetypeBlue_provenance.mark,
   sourcePath: 'packages/agent-anatomy/agent/developer.md',
   memoryProtocol: base.memoryProtocol,
+  personaProtocol: base.personaProtocol,
   organs: [
     ['Persona', [creator_persona]],
     ['Role', [implement_role]],

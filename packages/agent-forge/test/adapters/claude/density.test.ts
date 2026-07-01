@@ -34,6 +34,7 @@ function agentFixture(): ResolvedAgent {
     mark: { emoji: '✈️', hue: 'green' },
     sourcePath: 'packages/agent-anatomy/agent/mav.md',
     memoryProtocol: 'protocol for {name}',
+    personaProtocol: 'persona protocol for {name}',
     organs: [
       ['Persona', [frag('persona', 'hero')]],
       [

@@ -57,6 +57,7 @@ function nicoLikeResolved(): ResolvedAgent {
     description: 'the Sage archetype',
     sourcePath: 'packages/agent-anatomy/agent/nico.md',
     memoryProtocol: 'protocol for {name}',
+    personaProtocol: 'persona protocol for {name}',
     organs: [
       ['Persona', [frag('persona', 'sage')]],
       ['Role', [frag('role', 'curate')]],

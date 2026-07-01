@@ -83,6 +83,7 @@ export const mavResolved: ResolvedAgent = {
   mark: mavArchetypeGreen_provenance.mark,
   sourcePath: 'packages/agent-anatomy/agent/mav.md',
   memoryProtocol: founderBase.memoryProtocol,
+  personaProtocol: founderBase.personaProtocol,
   organs: [
     ['Persona', [hero_persona]],
     ['Role', [build_role]],

@@ -31,14 +31,17 @@ idea-typology:
   block that absorbs its own concepts; a prose `Bindings:` region names live sibling skills. `trigger:` and
   `delineation:` ride the front-matter.
 - **Special organ-home cells** — `packages/agent-anatomy/ideas/<name>.md`: cells that are neither an organ value nor a
-  composite. Today only `memory.md` — the memory organ-home (a `render: verbatim` protocol, a `deploy: skill-dir`
-  directive, and the bundled `episodic` runtime), whose `## Protocol` the composer projects into every SOUL as genus.
+  composite. Today `memory.md` AND `persona.md` — each a `render: verbatim` protocol whose `## Protocol` the composer
+  projects into every SOUL as genus. `memory.md` is the memory organ-home (also a `deploy: skill-dir` directive and the
+  bundled `episodic` runtime, appended as `## Memory Protocol`); `persona.md` is the per-turn persona-persistence
+  protocol (the anti-drift countermeasure, appended LAST as `## Persona Protocol` — recency-anchored closest to
+  generation, shipping no skill dir).
 
 ## Front-matter — minimal
 
 - `kind` — the **anatomy slot**: an organ name (the cell is a value in that organ), or `agent` / `skill`
-  (a composite). It governs how the cell projects. (`memory.md` carries a legacy `kind: structure` as the one
-  special organ-home cell.)
+  (a composite). It governs how the cell projects. (`memory.md` and `persona.md` carry a legacy `kind: structure`
+  as the special organ-home cells.)
 - `delineation` — the one-line bound; the dense summary that resolves into composites.
 - **Projection directives** (optional) — `trigger` (a skill's invocation token), or the trio `render: verbatim`,
   `deploy`, and `bundle` (an organ cell whose operative body must ship whole and density-immune). These declare

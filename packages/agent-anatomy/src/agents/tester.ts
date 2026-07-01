@@ -66,6 +66,7 @@ export const testerResolved: ResolvedAgent = {
   mark: testerArchetypePurple_provenance.mark,
   sourcePath: 'packages/agent-anatomy/agent/tester.md',
   memoryProtocol: base.memoryProtocol,
+  personaProtocol: base.personaProtocol,
   organs: [
     ['Persona', [ruler_persona]],
     ['Role', [test_role]],
