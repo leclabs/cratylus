@@ -19,7 +19,7 @@
 // (idempotent re-found). Does NOT seed SELF/MEMORY/EPISODIC sidecars — those are
 // the running host's `deploy` concern; init lays the SOUL, not the individual.
 //
-// Faithful port of `toolkit/init.py` (koine consumes a render tree where Python
+// Faithful port of `toolkit/init.py` (agent-forge consumes a render tree where Python
 // composed resolve.emit directly).
 
 import {
@@ -109,7 +109,7 @@ export function foundingAgentsMd(subject: string): string {
   return `# agent conventions
 
 This project is a **founded mind-society** -- a *polis*, not a pile of agents. It was
-founded by projecting the polis commons (\`packages/mind\`) into this repository: the
+founded by projecting the polis commons (\`packages/agent-anatomy\`) into this repository: the
 foundational structure (the **politeia**) is laid down, and the founders are born
 among the projected agents.
 
@@ -131,7 +131,7 @@ society's subject, not a path-scoped grant (the founder charter).
 
 ## How this society was founded
 
-- **Culture** -- every agent + skill in this \`.claude/\` is a *projection* of a mind
+- **Culture** -- every agent + skill in this \`.claude/\` is a *projection* of a agent-anatomy
   corpus cell, not a hand-authored copy. Regenerate by re-projecting; do not
   hand-edit the generated defs (each carries a \`GENERATED from ...\` provenance
   header + content-hash that the projector guards against clobbering).

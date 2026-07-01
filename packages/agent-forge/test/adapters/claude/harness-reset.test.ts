@@ -48,14 +48,14 @@ function frag(organ: string, slug: string): Fragment {
  * A resolved-agent fixture mirroring nico's organ vector (`nicoResolved`): every
  * harness-provided organ matches the reset (so the delta path drops them) and the
  * distinctive organs (persona, mandate=curate, comportment=formal, …) remain.
- * We build it here rather than import from mind to keep the koine test self-
- * contained (koine does not depend on mind).
+ * We build it here rather than import from agent-anatomy to keep the agent-forge test self-
+ * contained (agent-forge does not depend on agent-anatomy).
  */
 function nicoLikeResolved(): ResolvedAgent {
   return {
     name: 'nico',
     description: 'the Sage archetype',
-    sourcePath: 'packages/mind/agent/nico.md',
+    sourcePath: 'packages/agent-anatomy/agent/nico.md',
     memoryProtocol: 'protocol for {name}',
     organs: [
       ['Persona', [frag('persona', 'sage')]],

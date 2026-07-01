@@ -45,7 +45,7 @@ export const validateIR = ajv.compile<IR>(irSchema);
 // above, so absence is a programming error — assert it as a checked invariant.
 function mustGetSchema<T>(id: string): ValidateFunction<T> {
   const v = ajv.getSchema<T>(id);
-  if (!v) throw new Error(`koine: schema not registered: ${id}`);
+  if (!v) throw new Error(`agent-forge: schema not registered: ${id}`);
   return v;
 }
 

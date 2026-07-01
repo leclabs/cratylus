@@ -6,7 +6,7 @@ import { geminiAdapter } from '../../../src/adapters/gemini/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
 
 const manifest = (): Manifest => ({
-  koine: 1,
+  agentForge: 1,
   scope: 'project',
   targets: ['gemini'],
 });
@@ -15,7 +15,7 @@ describe('geminiAdapter', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-gemini-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-gemini-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

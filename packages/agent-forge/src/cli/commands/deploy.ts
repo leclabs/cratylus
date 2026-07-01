@@ -1,10 +1,10 @@
-// `koine deploy` — ship an already-projected render tree (agents/ + skills/) to
+// `agent-forge deploy` — ship an already-projected render tree (agents/ + skills/) to
 // a host `.claude/` root. The deploy half of the projection↔deploy self-binding
-// (the projection is `koine` claude-adapter output; this lands it on a host).
+// (the projection is `agent-forge` claude-adapter output; this lands it on a host).
 //
 // Faithful CLI port of `toolkit/deploy.py main()`: single-host + `--fleet`,
 // per-host result codes (0 landed, 2 unreachable-deferred), and the
-// `.polis.config` topology resolution with the no-default-user hard-error.
+// `.agent-factory.config` topology resolution with the no-default-user hard-error.
 
 import pc from 'picocolors';
 import {
@@ -66,7 +66,7 @@ export function parseCompanions(
       const eq = pair.indexOf('=');
       if (eq < 0) {
         throw new Error(
-          `--${field}: '${pair}' must be <skill>=<spec> (e.g. memory=episodic/dist/episodic.mjs)`,
+          `--${field}: '${pair}' must be <skill>=<spec> (e.g. memory=agent-memory/dist/episodic.mjs)`,
         );
       }
       const skill = pair.slice(0, eq).trim();
@@ -113,7 +113,7 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
       if (cfg == null) {
         console.error(
           pc.red(
-            '--fleet needs a .polis.config (fleet topology) -- none found at repo root',
+            '--fleet needs a .agent-factory.config (fleet topology) -- none found at repo root',
           ),
         );
         return 1;
@@ -155,7 +155,7 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
       console.error(pc.red(`config error: ${e.message}`));
       return 1;
     }
-    console.error(pc.red(`koine deploy: ${(e as Error).message}`));
+    console.error(pc.red(`agent-forge deploy: ${(e as Error).message}`));
     return 1;
   }
 }

@@ -1,5 +1,5 @@
 // Re-export the auto-generated IR types as the public surface.
-// Source of truth: packages/koine/src/core/schema/*.schema.json
+// Source of truth: packages/agent-forge/src/core/schema/*.schema.json
 // Regenerate via: pnpm --filter @leclabs/agent-forge gen
 export type {
   Agent,

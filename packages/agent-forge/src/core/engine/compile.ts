@@ -11,7 +11,7 @@ export interface CompileOpts {
   explain?: boolean;
   /**
    * Directory to record `.compile-state.json` into for drift tracking.
-   * Typically the project's `.koine/` root. If undefined, drift state is not
+   * Typically the project's `.agent-forge/` root. If undefined, drift state is not
    * recorded for this compile.
    */
   stateDir?: string;

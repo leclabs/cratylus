@@ -18,7 +18,7 @@ const adapters = [
 ];
 
 const manifest = (): Manifest => ({
-  koine: 1,
+  agentForge: 1,
   scope: 'project',
   targets: adapters.map((a) => a.id),
 });
@@ -57,7 +57,7 @@ describe('Phase 2 cross-adapter portability', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-port2-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-port2-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

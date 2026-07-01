@@ -1,7 +1,7 @@
 # ideas
 
 **`ideas` ≜ the exemplar corpus** — the canonical forms that **project into deployed agents and skills**.
-`mind` exists ONLY to be the lean, canonical context-source for a mind-society; it is **not an encyclopedia
+`agent-anatomy` exists ONLY to be the lean, canonical context-source for a mind-society; it is **not an encyclopedia
 of ideas**. A fragment earns its place by being an **organ value**, a **skill substance**, or a
 constitution-scaffold an agent/skill composes — otherwise it is dead context and drops.
 
@@ -15,7 +15,7 @@ identically and the projection is byte-identical.
 The corpus is organized by the **conceptual anatomy of an agent** (the MECE organ set), not by an
 idea-typology:
 
-- **Organ value-cells** — `packages/mind/<organ>/<value>.md`, `kind: <organ>`. Each organ is a directory
+- **Organ value-cells** — `packages/agent-anatomy/<organ>/<value>.md`, `kind: <organ>`. Each organ is a directory
   holding its enumerated values (e.g. `address/human-on-the-loop.md`, `persona/sage.md`); the organ's
   `README.md` is the human projection composing them. An **enum-organ**'s values are members of the model's
   own native enum — sourced by **blind model introspection** (the recognized industry-standard term, the
@@ -25,12 +25,12 @@ idea-typology:
   neither per-agent-open nor model-native-enum; `instructions` is the methodology organ (working
   principles), **not** a fallback or catch-all. **Authoring precedence:** pick the correct organ → bind a
   canonical value from its catalog/enum → author bespoke prose only when none fits.
-- **Agents** — `packages/mind/agent/<name>.md`, `kind: agent`. An **organ-selection vector**:
+- **Agents** — `packages/agent-anatomy/agent/<name>.md`, `kind: agent`. An **organ-selection vector**:
   `<name> ≜ ⊕{organ ↦ value}`, then one `organ [[value]]` line per organ it fills.
-- **Skills** — `packages/mind/skill/<name>.md`, `kind: skill`. A **self-sufficient set-builder**: a formal
+- **Skills** — `packages/agent-anatomy/skill/<name>.md`, `kind: skill`. A **self-sufficient set-builder**: a formal
   block that absorbs its own concepts; a prose `Bindings:` region names live sibling skills. `trigger:` and
   `delineation:` ride the front-matter.
-- **Special organ-home cells** — `packages/mind/ideas/<name>.md`: cells that are neither an organ value nor a
+- **Special organ-home cells** — `packages/agent-anatomy/ideas/<name>.md`: cells that are neither an organ value nor a
   composite. Today only `memory.md` — the memory organ-home (a `render: verbatim` protocol, a `deploy: skill-dir`
   directive, and the bundled `episodic` runtime), whose `## Protocol` the composer projects into every SOUL as genus.
 

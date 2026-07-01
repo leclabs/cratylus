@@ -5,7 +5,7 @@ import type { SkillCompanions } from './bundle.js';
 
 /** The already-projected render tree the deploy layer consumes: a flat
  *  `agents/<name>.md` set + a `skills/<name>/` dir set (each with a SKILL.md
- *  plus any staged companions). The PROJECTION (mind → claude adapter) writes
+ *  plus any staged companions). The PROJECTION (agent-anatomy → claude adapter) writes
  *  this; deploy applies the scope accident to a host `.claude/` root. */
 export interface RenderTree {
   // Absolute dir holding `<name>.md` agent defs.

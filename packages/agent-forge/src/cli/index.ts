@@ -39,10 +39,10 @@ const adapters: Adapter[] = [
   continueAdapter,
 ];
 
-const cli = cac('koine');
+const cli = cac('agent-forge');
 
 cli
-  .command('init', 'Bootstrap a new .koine/ directory')
+  .command('init', 'Bootstrap a new .agent-forge/ directory')
   .option('--scope <scope>', 'user | project | local', { default: 'project' })
   .action(async (opts: { scope: Scope }) => {
     process.exit(await runInit({ scope: opts.scope }));
@@ -222,7 +222,7 @@ cli
   .option('--scope <scope>', 'user | project', { default: 'user' })
   .option(
     '--host <host>',
-    "host key in .polis.config; omit/'local' to deploy in place",
+    "host key in .agent-factory.config; omit/'local' to deploy in place",
   )
   .option('--user <user>', 'ssh user override (else config host.<name>.user)')
   .option(
@@ -267,13 +267,13 @@ cli
       if (opts.kind === 'hooks') {
         if (!opts.hooksDir) {
           console.error(
-            'koine deploy: --hooks-dir is required for --kind hooks',
+            'agent-forge deploy: --hooks-dir is required for --kind hooks',
           );
           process.exit(1);
         }
       } else if (!opts.agentsDir || !opts.skillsDir) {
         console.error(
-          'koine deploy: --agents-dir and --skills-dir are required',
+          'agent-forge deploy: --agents-dir and --skills-dir are required',
         );
         process.exit(1);
       }
@@ -281,7 +281,7 @@ cli
       try {
         companions = parseCompanions(opts.bundle ?? null, opts.assets ?? null);
       } catch (e) {
-        console.error(`koine deploy: ${(e as Error).message}`);
+        console.error(`agent-forge deploy: ${(e as Error).message}`);
         process.exit(1);
       }
       process.exit(
@@ -334,7 +334,7 @@ cli
     ) => {
       if (!opts.agentsDir || !opts.skillsDir) {
         console.error(
-          'koine found: --agents-dir and --skills-dir are required',
+          'agent-forge found: --agents-dir and --skills-dir are required',
         );
         process.exit(1);
       }
@@ -357,7 +357,7 @@ cli
   )
   .option(
     '--corpus <dir>',
-    "corpus organs/ dir (default: mind's src/organs when present)",
+    "corpus organs/ dir (default: agent-anatomy's src/organs when present)",
   )
   .option('--json', 'emit the machine contract as JSON instead of a table')
   .action(async (opts: { corpus?: string; json?: boolean }) => {

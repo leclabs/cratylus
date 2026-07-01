@@ -8,20 +8,20 @@
 // Join key is the agent NAME ([[named-marker-as-index-key]]):
 //   <name>.md (def) <-> <name>/SELF.md (self).
 //
-// Per-host topology comes from `.polis.config` (docs/polis-config-schema.md)
+// Per-host topology comes from `.agent-factory.config` (docs/agent-factory-config-schema.md)
 // when present. Resolution precedence per param: CLI flag › config host.<name>
 // › built-in default. An ABSENT config keeps legacy flag-only mode working.
 //
 // Faithful port of `toolkit/deploy.py`. The deploy layer consumes an
-// ALREADY-PROJECTED render tree; the projection itself is koine's claude
-// adapter, driven by mind's project-cli.
+// ALREADY-PROJECTED render tree; the projection itself is agent-forge's claude
+// adapter, driven by agent-anatomy's project-cli.
 
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import {
+  type AgentFactoryConfig,
   type FleetTargetsOpts,
   type HostParams,
-  type PolisConfig,
   fleetTargets,
   resolveHost,
 } from './config.js';
@@ -214,10 +214,10 @@ export function deployHost(
 }
 
 export interface DeploySingleOpts extends DeployOpts {
-  // host key in `.polis.config`; null / 'local' ⇒ deploy in place.
+  // host key in `.agent-factory.config`; null / 'local' ⇒ deploy in place.
   host?: string | null;
   user?: string | null;
-  cfg?: PolisConfig | null;
+  cfg?: AgentFactoryConfig | null;
 }
 
 export interface DeploySingleResult {
@@ -256,7 +256,7 @@ export function deploySingle(opts: DeploySingleOpts): DeploySingleResult {
     });
     if (cfg == null) {
       warn(
-        `  NOTE no .polis.config -- legacy flag-only mode for host '${opts.host}' ` +
+        `  NOTE no .agent-factory.config -- legacy flag-only mode for host '${opts.host}' ` +
           `(user=${opts.user ?? '(current)'})`,
       );
     }
@@ -283,7 +283,7 @@ export interface FleetResult {
 }
 
 export interface DeployFleetOpts extends DeployOpts {
-  cfg: PolisConfig;
+  cfg: AgentFactoryConfig;
   user?: string | null;
   exclude?: string[] | null;
   // In fleet mode `only` restricts HOSTS, not names.

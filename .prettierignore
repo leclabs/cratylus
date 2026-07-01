@@ -1,16 +1,16 @@
 node_modules/
 dist/
 .turbo/
-.koine/local/
+.agent-forge/local/
 .claude/worktrees/
-packages/mind/.render/
+packages/agent-anatomy/.render/
 pnpm-lock.yaml
 
 # Generated artifacts — must match their generator's output, never Prettier's:
-packages/mind/GLOSSARY.md
+packages/agent-anatomy/GLOSSARY.md
 **/*.generated.*
 **/generated.*
-**/test/ir-bridge/mind.koine.json
+**/test/ir-bridge/agent-anatomy.agent-forge.json
 
 # plans/ CLAUDE.md are symlinks to AGENTS.md (house convention); Prettier can't follow
 # symlinks and the real content is the AGENTS.md it already checks.
@@ -18,4 +18,4 @@ plans/**/CLAUDE.md
 
 # γ2-B: lexicon files are verbatim cell-block STORAGE (byte-identity contract),
 # not free-form markdown — exempt like the generated render/glossary above.
-packages/mind/lexicon/
+packages/agent-anatomy/lexicon/

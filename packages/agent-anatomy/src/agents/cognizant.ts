@@ -64,7 +64,7 @@ export const cognizantResolved: ResolvedAgent = {
   name: 'cognizant',
   description: magician_persona.definiens,
   mark: diagnosticDelegateOfPolisCyan_provenance.mark,
-  sourcePath: 'packages/mind/agent/cognizant.md',
+  sourcePath: 'packages/agent-anatomy/agent/cognizant.md',
   memoryProtocol: base.memoryProtocol,
   organs: [
     ['Persona', [magician_persona]],

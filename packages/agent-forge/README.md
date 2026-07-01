@@ -1,4 +1,4 @@
-# @leclabs/koine
+# @leclabs/agent-forge
 
 The universal configuration translator for AI coding agents — part of [polis](../../README.md). Author
 agent config once in a canonical IR, compile it to every client dialect (Claude Code, Codex, Cursor, …),
@@ -6,116 +6,116 @@ and lift any client's existing config back into the IR.
 
 One package, three surfaces:
 
-- **the library** (`@leclabs/koine` / `@leclabs/koine/core`) — the IR types + JSON Schema, the engine
+- **the library** (`@leclabs/agent-forge` / `@leclabs/agent-forge/core`) — the IR types + JSON Schema, the engine
   (read / merge / compile / drift / migrate), validators, serializers, and the **Adapter contract**;
-- **the adapters** (`@leclabs/koine/adapters/<client>`) — 10 official adapters, one per client dialect,
+- **the adapters** (`@leclabs/agent-forge/adapters/<client>`) — 10 official adapters, one per client dialect,
   each its own subpath export;
-- **the CLI** (`koine`) — the user-facing orchestrator.
+- **the CLI** (`agent-forge`) — the user-facing orchestrator.
 
 ## Install
 
 ```bash
-npm install -g @leclabs/koine     # the CLI
-npm install @leclabs/koine        # the library + adapters
+npm install -g @leclabs/agent-forge     # the CLI
+npm install @leclabs/agent-forge        # the library + adapters
 ```
 
 ## Library use
 
 ```ts
-import { compile, readIR } from '@leclabs/koine'; // or '@leclabs/koine/core'
-import { claudeAdapter } from '@leclabs/koine/adapters/claude';
+import { compile, readIR } from '@leclabs/agent-forge'; // or '@leclabs/agent-forge/core'
+import { claudeAdapter } from '@leclabs/agent-forge/adapters/claude';
 ```
 
 ## Quick start (CLI)
 
 ```bash
 cd ~/myproject
-koine init                  # creates .koine/
-koine import claude         # lifts ~/.claude/ + ./.claude/ + ./CLAUDE.md into IR
-koine compile               # compiles to all targets in manifest
+agent-forge init                  # creates .agent-forge/
+agent-forge import claude         # lifts ~/.claude/ + ./.claude/ + ./CLAUDE.md into IR
+agent-forge compile               # compiles to all targets in manifest
 ```
 
 ## Commands
 
-### `koine init`
+### `agent-forge init`
 
-Bootstraps a new `.koine/` directory with empty resource folders and a stub manifest.
+Bootstraps a new `.agent-forge/` directory with empty resource folders and a stub manifest.
 
 ```
-koine init [--scope user|project|local]
+agent-forge init [--scope user|project|local]
 ```
 
-### `koine import <client>`
+### `agent-forge import <client>`
 
 Reads an existing client's config and lifts it into the IR.
 
 ```
-koine import claude
-koine import opencode --merge       # preserve hand-edited IR resources
-koine import codex --from /other/repo
+agent-forge import claude
+agent-forge import opencode --merge       # preserve hand-edited IR resources
+agent-forge import codex --from /other/repo
 ```
 
-### `koine compile [...clients]`
+### `agent-forge compile [...clients]`
 
 Compiles the IR to the listed clients (or all targets in `manifest.yaml` if none given).
 
 ```
-koine compile                       # all manifest targets
-koine compile claude opencode
-koine compile --dry-run --explain   # preview lossy translations
-koine compile --strict              # abort on any warning
+agent-forge compile                       # all manifest targets
+agent-forge compile claude opencode
+agent-forge compile --dry-run --explain   # preview lossy translations
+agent-forge compile --strict              # abort on any warning
 ```
 
-### `koine diff [...clients]`
+### `agent-forge diff [...clients]`
 
 Shows what would change on next compile, plus drift on already-emitted files.
 
 ```
-koine diff claude
+agent-forge diff claude
 ```
 
-### `koine lint`
+### `agent-forge lint`
 
 Validates the IR against schema and checks resource compatibility against declared targets.
 
 ```
-koine lint
-koine lint --strict                 # capability warnings → errors
+agent-forge lint
+agent-forge lint --strict                 # capability warnings → errors
 ```
 
-### `koine adapters`
+### `agent-forge adapters`
 
 Lists installed adapters and their per-resource capabilities.
 
-### `koine events [--client <id>]`
+### `agent-forge events [--client <id>]`
 
 Lists the canonical event taxonomy. With `--client`, shows the per-adapter mapping (✓ supported, — absent).
 
 ```
-koine events                        # all 28 canonical events
-koine events --client cursor        # shows 17 cursor mappings + 11 absent
+agent-forge events                        # all 28 canonical events
+agent-forge events --client cursor        # shows 17 cursor mappings + 11 absent
 ```
 
-### `koine doctor`
+### `agent-forge doctor`
 
 Diagnoses installation: IR presence, manifest validity, compile state, per-target detection, drift.
 
-### `koine watch [...clients]`
+### `agent-forge watch [...clients]`
 
 Auto-recompiles on IR changes (chokidar, ~300ms debounce). Ctrl-C to exit.
 
 ```
-koine watch
-koine watch --debounce 100
+agent-forge watch
+agent-forge watch --debounce 100
 ```
 
-### `koine migrate`
+### `agent-forge migrate`
 
 Applies IR schema migrations between versions.
 
 ```
-koine migrate                       # use manifest's current version → latest
-koine migrate --from 1 --to 2
+agent-forge migrate                       # use manifest's current version → latest
+agent-forge migrate --from 1 --to 2
 ```
 
 ## Exit codes
@@ -130,11 +130,11 @@ koine migrate --from 1 --to 2
 
 ## Environment variables
 
-| Variable          | Effect                                |
-| ----------------- | ------------------------------------- |
-| `KOINE_HOME`      | Override `~/.koine/` location         |
-| `KOINE_CONFIG`    | Override per-invocation manifest path |
-| `KOINE_LOG_LEVEL` | `error \| warn \| info \| debug`      |
+| Variable                | Effect                                |
+| ----------------------- | ------------------------------------- |
+| `AGENT_FORGE_HOME`      | Override `~/.agent-forge/` location   |
+| `AGENT_FORGE_CONFIG`    | Override per-invocation manifest path |
+| `AGENT_FORGE_LOG_LEVEL` | `error \| warn \| info \| debug`      |
 
 ## License
 

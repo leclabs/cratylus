@@ -1,11 +1,11 @@
 // The CODEX HARNESS RESET — what the Codex CLI provides natively, the basis for
-// omit-to-inherit when projecting a mind agent through the codex adapter (mirrors
+// omit-to-inherit when projecting a agent-anatomy agent through the codex adapter (mirrors
 // `adapters/claude/harness-reset.ts`, the T2.2 pattern). When an agent's organ
 // value equals the harness-provided value, the codex adapter can SUBTRACT it at
 // export so the projected agent carries only its distinctive delta.
 //
-// `codex` is a HARNESS, never a mind agent — so this reset lives HERE in the koine
-// codex adapter, NOT as a `mind/agents/*` module. Subtraction fires per organ kind
+// `codex` is a HARNESS, never a agent-anatomy agent — so this reset lives HERE in the agent-forge
+// codex adapter, NOT as a `agent-anatomy/agents/*` module. Subtraction fires per organ kind
 // exactly as for claude (SET → set-difference; SCALAR → omit-on-match); the shared
 // `HarnessReset` type and `subtractReset` machinery are reused from the claude
 // adapter (the reset is harness-data, the subtraction is harness-neutral).
@@ -23,7 +23,7 @@
 //     message in natural language, ReAct loop, satisficing, neutral register).
 //   - guardrails:  Codex ships the same HHH + untrusted-input safety floor.
 // The ONE deliberate divergence from claude: `model` is `codex` here, not
-// `claude` — a mind agent whose model is `claude` is NOT subtracted under
+// `claude` — a agent-anatomy agent whose model is `claude` is NOT subtracted under
 // codex (its model is a real delta there). When Codex is measured by a blind
 // bare introspection, replace these slugs with the recorded values and promote
 // this to a conformance fixture (as `claudeHarnessReset` already is).

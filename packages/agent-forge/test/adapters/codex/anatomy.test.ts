@@ -19,7 +19,7 @@ import { opencodeAdapter } from '../../../src/adapters/opencode/index.js';
 import type { Fragment } from '../../../src/anatomy/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
 
-// ── Fixtures (self-contained; koine does not depend on mind) ─────────────────
+// ── Fixtures (self-contained; agent-forge does not depend on agent-anatomy) ─────────────────
 
 /** A minimal Fragment stub — only `organ`/`slug`/`definiens` are load-bearing. */
 function frag(organ: string, slug: string): Fragment {
@@ -32,7 +32,7 @@ function nicoLikeResolved(): ResolvedAgent {
     name: 'nico',
     description: 'the Sage archetype',
     mark: { emoji: '📐', hue: 'cyan' },
-    sourcePath: 'packages/mind/agent/nico.md',
+    sourcePath: 'packages/agent-anatomy/agent/nico.md',
     memoryProtocol: 'protocol for {name}',
     organs: [
       ['Persona', [frag('persona', 'sage')]],
@@ -72,7 +72,7 @@ describe('agentToCodexToml — the codex subagent projection', () => {
     // The memory genus block, {name}-substituted.
     expect(sp).toContain('protocol for nico');
     // The regenerate-don't-hand-edit provenance banner + content hash.
-    expect(sp).toContain('GENERATED from packages/mind/agent/nico.md');
+    expect(sp).toContain('GENERATED from packages/agent-anatomy/agent/nico.md');
     expect(sp).toContain('profile: strong-llm-lean/codex');
     expect(sp).toMatch(/content-hash: sha256:[0-9a-f]{16}/);
   });
@@ -141,7 +141,7 @@ describe('skillToCodexMd — the codex skill projection', () => {
     delineation: 'a demo skill',
     body: '\n\ndemo ≜ a formula consumed not emitted\n\n# demo\n\nThe verb prose with a [[wake]] ref.\n',
     composedFrom: ['/wake'],
-    sourcePath: 'packages/mind/skill/demo.md',
+    sourcePath: 'packages/agent-anatomy/skill/demo.md',
   };
 
   it('emits AgentSkills frontmatter (name + description) and no provenance comment', () => {
@@ -178,28 +178,28 @@ describe('agentsMdSurface', () => {
 });
 
 // ── Honest lossy reporting: agents-none adapters skip + warn, never corrupt ───
-// The thesis' safety leg: a mind agent projected through an adapter that declares
+// The thesis' safety leg: a agent-anatomy agent projected through an adapter that declares
 // `agents: 'none'` must be SKIPPED with a warning via the existing WriteReport,
 // NOT silently dropped or corrupted. Demonstrated on opencode + aider (both
 // declare `agents: 'none'`). We drive the IR write path (the adapter contract)
-// with a mind-derived agent IR.
+// with a agent-anatomy-derived agent IR.
 
 describe('lossy reporting for agents-none adapters (WriteReport holds)', () => {
   let cwd: string;
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-lossy-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-lossy-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });
   });
 
   const manifest = (target: string): Manifest => ({
-    koine: 1,
+    agentForge: 1,
     scope: 'project',
     targets: [target],
   });
 
-  // A mind-derived agent IR — the projection's IR-level shape (name + the composed
+  // A agent-anatomy-derived agent IR — the projection's IR-level shape (name + the composed
   // SOUL as body) carried through an adapter that cannot host agents.
   const irWithAgent = (target: string): IR => ({
     manifest: manifest(target),

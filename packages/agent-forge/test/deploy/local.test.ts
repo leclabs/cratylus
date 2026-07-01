@@ -20,9 +20,9 @@ const silent = { dry: false, log: () => {}, warn: () => {} };
 
 describe('placeAgentsLocal', () => {
   it('writes defs and seeds the three sidecars (EPISODIC is .jsonl, empty)', () => {
-    const src = tmp('koine-render-');
+    const src = tmp('agent-forge-render-');
     const { agentsDir } = buildRenderTree(src);
-    const claude = join(tmp('koine-host-'), '.claude');
+    const claude = join(tmp('agent-forge-host-'), '.claude');
 
     const r = placeAgentsLocal(claude, agentsDir, ['mav', 'nico'], silent);
     expect(r.rc).toBe(0);
@@ -46,9 +46,9 @@ describe('placeAgentsLocal', () => {
   });
 
   it('overwrites the def freely but NEVER clobbers an existing sidecar', () => {
-    const src = tmp('koine-render-');
+    const src = tmp('agent-forge-render-');
     const { agentsDir } = buildRenderTree(src);
-    const claude = join(tmp('koine-host-'), '.claude');
+    const claude = join(tmp('agent-forge-host-'), '.claude');
 
     // first deploy seeds everything
     placeAgentsLocal(claude, agentsDir, ['mav'], silent);
@@ -76,9 +76,9 @@ describe('placeAgentsLocal', () => {
   });
 
   it('never prunes: a name removed from a later deploy leaves the others standing', () => {
-    const src = tmp('koine-render-');
+    const src = tmp('agent-forge-render-');
     const { agentsDir } = buildRenderTree(src);
-    const claude = join(tmp('koine-host-'), '.claude');
+    const claude = join(tmp('agent-forge-host-'), '.claude');
     placeAgentsLocal(claude, agentsDir, ['mav', 'nico'], silent);
     // redeploy only mav — nico's landed files are not swept
     placeAgentsLocal(claude, agentsDir, ['mav'], silent);
@@ -87,9 +87,9 @@ describe('placeAgentsLocal', () => {
   });
 
   it('warns (not throws) on a missing def', () => {
-    const src = tmp('koine-render-');
+    const src = tmp('agent-forge-render-');
     const { agentsDir } = buildRenderTree(src);
-    const claude = join(tmp('koine-host-'), '.claude');
+    const claude = join(tmp('agent-forge-host-'), '.claude');
     const warns: string[] = [];
     const r = placeAgentsLocal(claude, agentsDir, ['ghost'], {
       dry: false,
@@ -101,9 +101,9 @@ describe('placeAgentsLocal', () => {
   });
 
   it('dry-run changes nothing on disk', () => {
-    const src = tmp('koine-render-');
+    const src = tmp('agent-forge-render-');
     const { agentsDir } = buildRenderTree(src);
-    const claude = join(tmp('koine-host-'), '.claude');
+    const claude = join(tmp('agent-forge-host-'), '.claude');
     placeAgentsLocal(claude, agentsDir, ['mav'], { ...silent, dry: true });
     expect(existsSync(join(claude, 'agents', 'mav.md'))).toBe(false);
   });
@@ -111,16 +111,16 @@ describe('placeAgentsLocal', () => {
 
 describe('placeSkillsLocal', () => {
   it('copies SKILL.md and stages a bundle companion (episodic.mjs)', () => {
-    const src = tmp('koine-render-');
+    const src = tmp('agent-forge-render-');
     const tree = buildRenderTree(src);
-    const bundleRoot = buildBundleSrc(tmp('koine-bundle-'), true);
-    const claude = join(tmp('koine-host-'), '.claude');
+    const bundleRoot = buildBundleSrc(tmp('agent-forge-bundle-'), true);
+    const claude = join(tmp('agent-forge-host-'), '.claude');
 
     const r = placeSkillsLocal(
       claude,
       {
         ...tree,
-        companions: { memory: { bundle: ['episodic/dist/episodic.mjs'] } },
+        companions: { memory: { bundle: ['agent-memory/dist/episodic.mjs'] } },
         bundleBaseRoot: bundleRoot,
       },
       ['wake', 'memory'],

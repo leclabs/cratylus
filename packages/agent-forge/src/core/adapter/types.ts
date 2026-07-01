@@ -42,7 +42,7 @@ export interface WriteReport {
 export type EventMap = Partial<Record<CanonicalEvent, string | null>>;
 
 /**
- * The contract every koine adapter implements. Adapters are pure: given the
+ * The contract every agent-forge adapter implements. Adapters are pure: given the
  * same input, they produce the same output. State lives in the filesystem.
  */
 export interface Adapter {
@@ -50,7 +50,7 @@ export interface Adapter {
   capabilities: AdapterCapabilities;
   /**
    * Canonical → native event mapping. Adapters without hook support may omit.
-   * Surfaced via `koine events list --client <id>`.
+   * Surfaced via `agent-forge events list --client <id>`.
    */
   eventMap?: EventMap;
   detect(scope: Scope, cwd: string): Promise<boolean>;

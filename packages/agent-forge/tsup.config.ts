@@ -3,7 +3,7 @@ import { defineConfig } from 'tsup';
 
 // One package, three source areas. The library build (core + the 10 adapters)
 // emits .d.ts and code-splits the shared core into a chunk; the CLI build is a
-// separate pass (no dts, shebang banner) so `koine` runs as an executable.
+// separate pass (no dts, shebang banner) so `agent-forge` runs as an executable.
 const adapters = readdirSync('./src/adapters', { withFileTypes: true })
   .filter((d) => d.isDirectory())
   .map((d) => d.name);

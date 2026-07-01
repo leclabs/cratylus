@@ -1,11 +1,11 @@
 # Harness-reach matrix
 
-_Which harnesses a mind agent reaches for free, and with what agent-support._
+_Which harnesses a agent-anatomy agent reaches for free, and with what agent-support._
 
 ## The thesis (koine-absorbs-mind)
 
-Because **projection IS the export adapter**, a mind agent authored ONCE reaches
-**every** koine harness for free. "Project mind to harness X" _is_ "export through the
+Because **projection IS the export adapter**, a agent-anatomy agent authored ONCE reaches
+**every** agent-forge harness for free. "Project agent-anatomy to harness X" _is_ "export through the
 X adapter." The composed SOUL body is **harness-neutral** — the same organ-section
 content whichever harness carries it; only the FRAMING differs per adapter (claude's
 `.md` SOUL vs codex's `.toml` `system_prompt`, etc.).
@@ -42,9 +42,9 @@ other harness either hosts agents lossily (`partial`) or honestly skips them (`n
 
 ## Honest lossy reporting
 
-A mind agent projected through an adapter that declares `agents: 'none'` is **skipped with a
+A agent-anatomy agent projected through an adapter that declares `agents: 'none'` is **skipped with a
 warning**, never silently dropped or corrupted — the existing `WriteReport.{warnings,skipped}`
-mechanism (`koine`'s first-class lossy-translation contract). Demonstrated in
+mechanism (`agent-forge`'s first-class lossy-translation contract). Demonstrated in
 `test/adapters/codex/anatomy.test.ts` against **opencode** and **aider** (both `agents: 'none'`):
 each emits a `warnings` entry naming the unsupported `agents` resource and a `skipped` entry per
 agent, and writes no agent artifact. The CLI surfaces these via `--explain`; `--strict` promotes
@@ -63,7 +63,7 @@ blind-introspected, replace the slugs and add the conformance assertion (as clau
 ## Reproduce
 
 ```sh
-cd packages/mind
+cd packages/agent-anatomy
 pnpm project         # claude   → .render-ts/      (byte-identical to Python .render/)
 pnpm project:codex   # codex    → .render-ts-codex/ (agents/*.toml + skills + AGENTS.md)
 pnpm project:codex -- --delta   # codex with the harness reset subtracted (omit-to-inherit)

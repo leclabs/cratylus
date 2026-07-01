@@ -6,7 +6,7 @@
 //      permissions / env / other hooks / unrelated keys).
 //
 // The merge replaces the old hand-rolled `jq` toggle: registration is now
-// koine-managed. Off-by-default is preserved at RUNTIME — the worker re-checks a
+// agent-forge-managed. Off-by-default is preserved at RUNTIME — the worker re-checks a
 // per-repo opt-in flag at fire time, so a registered-but-unopted hook is inert.
 //
 // The render tree for hooks is: `<root>/settings.json` (the hooks fragment) +

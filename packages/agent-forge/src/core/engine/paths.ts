@@ -3,17 +3,17 @@ import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import type { Scope } from '../ir/types.js';
 
-export const IR_DIRNAME = '.koine';
+export const IR_DIRNAME = '.agent-forge';
 export const LOCAL_SUBDIR = 'local';
 
 /**
  * Locate the IR directory for the given scope.
  *
- * - `user`   → `~/.koine/` (returned even if it does not exist; init creates it)
- * - `project`→ walks up from `cwd` until it finds a directory containing `.koine/`
- * - `local`  → same as `project`, but returns `<root>/.koine/local/`
+ * - `user`   → `~/.agent-forge/` (returned even if it does not exist; init creates it)
+ * - `project`→ walks up from `cwd` until it finds a directory containing `.agent-forge/`
+ * - `local`  → same as `project`, but returns `<root>/.agent-forge/local/`
  *
- * Returns `null` for project/local scopes when no `.koine/` is found between
+ * Returns `null` for project/local scopes when no `.agent-forge/` is found between
  * `cwd` and the filesystem root.
  */
 export function findIRRoot(scope: Scope, cwd: string): string | null {

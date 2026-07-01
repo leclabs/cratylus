@@ -249,7 +249,7 @@ export function emitAgentModule(agent: ParsedAgent, fileSlug: string): string {
       ? `  description: ${personaRef}.definiens,`
       : `  description: '${agent.name}',`,
     provenanceRef ? `  mark: ${provenanceRef}.mark,` : '',
-    `  sourcePath: 'packages/mind/agent/${fileSlug}.md',`,
+    `  sourcePath: 'packages/agent-anatomy/agent/${fileSlug}.md',`,
     `  memoryProtocol: ${baseConst}.memoryProtocol,`,
     '  organs: [',
     ...organEntries,

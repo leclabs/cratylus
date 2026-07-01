@@ -30,7 +30,7 @@ export interface SkillCompanions {
 }
 
 export interface StageBundlesOpts {
-  // Root the `bundle:` specs resolve against (Python: cells.ROOT = packages/mind).
+  // Root the `bundle:` specs resolve against (Python: cells.ROOT = packages/agent-anatomy).
   baseRoot: string;
   // Optional sink for the per-file log lines (defaults to no-op).
   log?: (line: string) => void;
@@ -44,7 +44,7 @@ export class BundleMissingError extends Error {
     public readonly resolvedPath: string,
   ) {
     super(
-      `${skill}: bundle '${spec}' not built at ${resolvedPath} — build it first (e.g. \`pnpm --filter episodic build\`)`,
+      `${skill}: bundle '${spec}' not built at ${resolvedPath} — build it first (e.g. \`pnpm --filter @leclabs/agent-memory build\`)`,
     );
     this.name = 'BundleMissingError';
   }

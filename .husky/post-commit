@@ -1,16 +1,16 @@
 # post-commit · continuity dispatcher (husky v9 bare-body script).
 #
 # OFF BY DEFAULT. This file ships in the tree, but does nothing unless the repo is
-# explicitly opted in via:  git config --bool polis.continuity true
+# explicitly opted in via:  git config --bool agentfactory.continuity true
 # (lives in .git/config — never checked in — so a fresh clone is opted out and a
 # normal commit behaves exactly as before.)  Enable: pnpm run continuity:install
 #
 # When opted in, dispatch the repo-level continuity ritual (praxis-advance nudge).
 # A post-commit hook must never fail the commit it follows, so failures are swallowed.
 
-[ "$(git config --bool polis.continuity 2>/dev/null)" = "true" ] || exit 0
+[ "$(git config --bool agentfactory.continuity 2>/dev/null)" = "true" ] || exit 0
 
-nudge="packages/mind/src/toolkit/continuity/praxis-advance-nudge.sh"
+nudge="packages/agent-anatomy/src/toolkit/continuity/praxis-advance-nudge.sh"
 [ -f "$nudge" ] && sh "$nudge" || true
 
 exit 0

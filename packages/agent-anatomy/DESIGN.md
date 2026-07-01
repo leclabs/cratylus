@@ -1,12 +1,12 @@
-# mind — design (first principles, industry-grounded)
+# agent-anatomy — design (first principles, industry-grounded)
 
 > Reduce raw information to a canonical idea-graph, and **regenerate semantically-equivalent artifacts for any `(reader, harness)`** under a **round-trip guarantee** — the regenerated artifact reconstructs the source's load-bearing meaning.
 
-The engineering is largely a solved problem under other names (MDE, lenses, SHACL, DITA); mind **adopts** that stack ([[adopt-the-commons]]) and adds a narrow, named novelty (§2).
+The engineering is largely a solved problem under other names (MDE, lenses, SHACL, DITA); agent-anatomy **adopts** that stack ([[adopt-the-commons]]) and adds a narrow, named novelty (§2).
 
 ## 1. Adopt the commons — the mature stack
 
-| mind's piece                                  | mature industry exemplar                                                                                         |
+| agent-anatomy's piece                         | mature industry exemplar                                                                                         |
 | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
 | canonical idea-graph + **reflexive** schema   | **MDE**: MOF/Ecore metamodel (self-describing — conforms to itself); models conform to it. Equiv. **RDF/OWL**.   |
 | schema validation; gap/dup/orphan detection   | **SHACL** (shapes validate, document, find redundancies/orphans/broken refs) = `verify.py`                       |
@@ -18,9 +18,9 @@ Adopt this stack; do not rebuild it.
 
 ## 2. The novelty (narrow, real)
 
-1. **LLM-reduction intake to best-fit prior-anchors.** Standard graph construction is _extraction_ (entities + open predicates), tolerant of redundancy; mind does _reduction_ to MECE exemplars whose identity is a **dense name carrying [[latent-priors]]** — a perfect anchor needs no description (the name _is_ the meaning; description is residual).
-2. **The reader-prior projection axis.** MDE/DITA project to syntax; mind adds an orthogonal transform parameter — the reader's prior-density ([[reader-prior-projection]]): delineation size = the reader-gap, → 0 for a reader who already holds the prior.
-3. **One composition edge.** RDF admits open predicate sets; mind constrains to a single relation (composition); projection = composition-with-context-nodes — an opinionated reduction.
+1. **LLM-reduction intake to best-fit prior-anchors.** Standard graph construction is _extraction_ (entities + open predicates), tolerant of redundancy; agent-anatomy does _reduction_ to MECE exemplars whose identity is a **dense name carrying [[latent-priors]]** — a perfect anchor needs no description (the name _is_ the meaning; description is residual).
+2. **The reader-prior projection axis.** MDE/DITA project to syntax; agent-anatomy adds an orthogonal transform parameter — the reader's prior-density ([[reader-prior-projection]]): delineation size = the reader-gap, → 0 for a reader who already holds the prior.
+3. **One composition edge.** RDF admits open predicate sets; agent-anatomy constrains to a single relation (composition); projection = composition-with-context-nodes — an opinionated reduction.
 4. **Prior-anchored frame** ([[latent-priors]]) — the _why_: the reader already holds the best word's meaning; maps formally to ontology/exemplar.
 
 ## 3. The model

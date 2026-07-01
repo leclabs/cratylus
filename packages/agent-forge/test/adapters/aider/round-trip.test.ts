@@ -6,7 +6,7 @@ import { aiderAdapter } from '../../../src/adapters/aider/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
 
 const manifest = (): Manifest => ({
-  koine: 1,
+  agentForge: 1,
   scope: 'project',
   targets: ['aider'],
 });
@@ -14,7 +14,7 @@ const manifest = (): Manifest => ({
 describe('aiderAdapter', () => {
   let cwd: string;
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-aider-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-aider-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

@@ -13,7 +13,7 @@ import type { Fragment } from '../../../src/anatomy/index.js';
 
 // Reader density (T2.3) is a PROJECTION PARAMETER, not a property of the source:
 // the same typed fragments project at three densities. The Python byte-anchor is
-// mind's `resolve.py --reader <density>` (compose/reader.py). These tests pin the
+// agent-anatomy's `resolve.py --reader <density>` (compose/reader.py). These tests pin the
 // ported mechanism (`densityRef`) and the invariance the current corpus forms
 // (selection-vector agents, lean-provenance skills) guarantee.
 
@@ -32,7 +32,7 @@ function agentFixture(): ResolvedAgent {
     name: 'mav',
     description: 'the Hero archetype',
     mark: { emoji: '✈️', hue: 'green' },
-    sourcePath: 'packages/mind/agent/mav.md',
+    sourcePath: 'packages/agent-anatomy/agent/mav.md',
     memoryProtocol: 'protocol for {name}',
     organs: [
       ['Persona', [frag('persona', 'hero')]],
@@ -51,11 +51,11 @@ function skillFixture(): ResolvedSkill {
     delineation: 'consolidate an agent’s memory',
     body: '# dream — consolidate memory\n\nDistil the EPISODIC stream.\n',
     composedFrom: ['/wake', '**signify**'],
-    sourcePath: 'packages/mind/skill/dream.md',
+    sourcePath: 'packages/agent-anatomy/skill/dream.md',
   };
 }
 
-// The ref projector mind's project-cli uses: a known skill → its /trigger, else
+// The ref projector agent-anatomy's project-cli uses: a known skill → its /trigger, else
 // **slug** (harness-only; density-blind, mirroring compose.harness.ref_text).
 const refProject = (slug: string): string =>
   slug === 'wake' ? '/wake' : `**${slug}**`;

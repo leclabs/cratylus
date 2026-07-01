@@ -2,7 +2,7 @@
   "name": "@leclabs/agent-anatomy",
   "version": "0.0.0",
   "private": true,
-  "description": "mind — the culture corpus as typed TS source (T1.1 spike scaffold). Markdown is a projection of these modules.",
+  "description": "agent-anatomy — the culture corpus as typed TS source (T1.1 spike scaffold). Markdown is a projection of these modules.",
   "license": "MIT",
   "type": "module",
   "scripts": {

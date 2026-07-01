@@ -6,7 +6,7 @@ import { clineAdapter } from '../../../src/adapters/cline/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
 
 const manifest = (): Manifest => ({
-  koine: 1,
+  agentForge: 1,
   scope: 'project',
   targets: ['cline'],
 });
@@ -14,7 +14,7 @@ const manifest = (): Manifest => ({
 describe('clineAdapter', () => {
   let cwd: string;
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-cline-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-cline-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

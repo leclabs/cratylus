@@ -1,6 +1,6 @@
 /**
  * AUTO-GENERATED. Do not edit by hand.
- * Source: packages/koine/src/core/schema/*.schema.json
+ * Source: packages/agent-forge/src/core/schema/*.schema.json
  * Regenerate: pnpm --filter @leclabs/agent-forge gen
  */
 /* eslint-disable */
@@ -41,7 +41,7 @@ export type CanonicalEvent =
 export type McpServer = StdioMcpServer | RemoteMcpServer;
 
 /**
- * The complete koine intermediate representation. Top-level container of manifest plus all resource collections.
+ * The complete agent-forge intermediate representation. Top-level container of manifest plus all resource collections.
  */
 export interface IR {
   manifest: Manifest;
@@ -55,13 +55,13 @@ export interface IR {
   env?: EnvVars;
 }
 /**
- * koine manifest. Entry point of an IR directory; declares schema version, scope, and target clients.
+ * agent-forge manifest. Entry point of an IR directory; declares schema version, scope, and target clients.
  */
 export interface Manifest {
   /**
    * IR schema version. Always 1 in v1.
    */
-  koine: 1;
+  agentForge: 1;
   scope: Scope;
   /**
    * Adapter ids this manifest compiles to (e.g. claude, opencode, codex).

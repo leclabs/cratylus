@@ -1,7 +1,7 @@
 // The claude-code projection of the agent ANATOMY: assemble a full SOUL `.md`
 // (front-matter + provenance header + `## Organ` sections + the `## Memory Protocol` genus
 // block) from a typed agent's organ-fragment modules; and project a skill cell to
-// its composed SKILL.md. This is koine's claude adapter owning "project a typed
+// its composed SKILL.md. This is agent-forge's claude adapter owning "project a typed
 // Agent/Skill to claude-code markdown" — the inversion's projection-to-disk path.
 //
 // Distinct from this adapter's IR serialize path (`write.ts` / `serializeAgent`):
@@ -9,8 +9,8 @@
 // concepts, one adapter, no collision (mirrors `@leclabs/agent-forge/anatomy` sitting
 // beside the core IR `Agent`/`Skill`).
 //
-// Transcribed from the mind Python toolkit, not reinvented — the byte-anchor is
-// `packages/mind/.render/{agents,skills}` (regen via `python3 toolkit/resolve.py
+// Transcribed from the agent-anatomy Python toolkit, not reinvented — the byte-anchor is
+// `packages/agent-anatomy/.render/{agents,skills}` (regen via `python3 toolkit/resolve.py
 // --reader strong-llm-lean`). The three Python agent stages and their mirrors:
 //   compose_agent_selection → `agentBody`
 //   decorate/agent.decorate → `frontMatter`
@@ -21,7 +21,7 @@ import { createHash } from 'node:crypto';
 import type { Fragment, Mark, Organ } from '../../anatomy/index.js';
 import type { HarnessReset } from './harness-reset.js';
 
-// ── Reader-density axis (port of mind toolkit `compose/reader.py`) ────────────
+// ── Reader-density axis (port of agent-anatomy toolkit `compose/reader.py`) ────────────
 // Reader density is a PROJECTION PARAMETER, never a property of the source: the
 // SAME typed fragments project at three densities that close progressively larger
 // prior-gaps. It is ORTHOGONAL to the harness affordance (how a `[[ref]]` name

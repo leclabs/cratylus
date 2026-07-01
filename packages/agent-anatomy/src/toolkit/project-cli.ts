@@ -1,13 +1,13 @@
-// The consumer projection command — a thin mind BUILD STEP that imports koine's
-// claude adapter and runs it over mind's typed agent/skill modules, writing the
-// full SOUL/SKILL tree to disk. The PROJECTION LOGIC lives in koine
-// (`@leclabs/agent-forge/adapters/claude`); this step only walks mind's modules and
-// wires them to it (mind = koine's source). The TS counterpart of
+// The consumer projection command — a thin agent-anatomy BUILD STEP that imports agent-forge's
+// claude adapter and runs it over agent-anatomy's typed agent/skill modules, writing the
+// full SOUL/SKILL tree to disk. The PROJECTION LOGIC lives in agent-forge
+// (`@leclabs/agent-forge/adapters/claude`); this step only walks agent-anatomy's modules and
+// wires them to it (agent-anatomy = agent-forge's source). The TS counterpart of
 // `toolkit/resolve.py main()`.
 //
 // Usage:  tsx src/toolkit/project-cli.ts [--out <dir>] [--density <reader>]
 //                                        [--profile <reader/harness>]
-//   default out:     packages/mind/.render-ts   (gitignored; never the Python .render)
+//   default out:     packages/agent-anatomy/.render-ts   (gitignored; never the Python .render)
 //   default density: strong-llm-lean (the deployed reader; → profile
 //                    strong-llm-lean/claude-code)
 //
@@ -35,9 +35,9 @@ import { hookSources } from './hooks.js';
 import type { SkillCell } from './skill-cell.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const mindRoot = join(here, '..', '..');
-const agentsModDir = join(mindRoot, 'src', 'agents');
-const skillsModDir = join(mindRoot, 'src', 'skills');
+const anatomyRoot = join(here, '..', '..');
+const agentsModDir = join(anatomyRoot, 'src', 'agents');
+const skillsModDir = join(anatomyRoot, 'src', 'skills');
 
 interface Args {
   out: string;
@@ -45,7 +45,7 @@ interface Args {
 }
 
 function parseArgs(argv: string[]): Args {
-  let out = join(mindRoot, '.render-ts');
+  let out = join(anatomyRoot, '.render-ts');
   let density: ReaderDensity = 'strong-llm-lean';
   let profile: string | undefined;
   for (let i = 0; i < argv.length; i++) {
@@ -149,7 +149,7 @@ async function projectSkills(out: string, profile: string): Promise<number> {
       delineation: cell.delineation,
       body: cell.body,
       composedFrom: cell.composition.map(refProject),
-      sourcePath: `packages/mind/skill/${name}.md`,
+      sourcePath: `packages/agent-anatomy/skill/${name}.md`,
     };
     const dir = join(out, 'skills', name);
     mkdirSync(dir, { recursive: true });
@@ -170,7 +170,7 @@ async function projectSkills(out: string, profile: string): Promise<number> {
  */
 async function projectMemorySkill(out: string, profile: string): Promise<void> {
   const { readFileSync } = await import('node:fs');
-  const memRaw = readFileSync(join(mindRoot, 'ideas', 'memory.md'), 'utf8');
+  const memRaw = readFileSync(join(anatomyRoot, 'ideas', 'memory.md'), 'utf8');
   const memBody = memRaw.split('---').slice(2).join('---');
   const toolSection = sectionBody(memBody, 'Tool');
   const fm =
@@ -183,7 +183,7 @@ async function projectMemorySkill(out: string, profile: string): Promise<void> {
     skillDescription: frontField(memRaw, 'skill_description') || fm,
     body: '',
     composedFrom: [],
-    sourcePath: 'packages/mind/ideas/memory.md',
+    sourcePath: 'packages/agent-anatomy/ideas/memory.md',
     toolSection,
   };
   const dir = join(out, 'skills', 'memory');
@@ -193,13 +193,19 @@ async function projectMemorySkill(out: string, profile: string): Promise<void> {
     skillToClaudeMd(resolved, (s) => `**${s}**`, profile),
   );
   // Bundle the built episodic.mjs (the host memory tool) beside SKILL.md.
-  const bundle = join(mindRoot, '..', 'agent-memory', 'dist', 'episodic.mjs');
+  const bundle = join(
+    anatomyRoot,
+    '..',
+    'agent-memory',
+    'dist',
+    'episodic.mjs',
+  );
   copyFileSync(bundle, join(dir, 'episodic.mjs'));
   process.stdout.write('EMIT skill memory (dual-deploy + episodic.mjs)\n');
 }
 
 /**
- * Project the koine `Hook` sources into the render tree:
+ * Project the agent-forge `Hook` sources into the render tree:
  *   - `settings.json` — the `{hooks}` block (claude adapter `serializeClaudeHooks`,
  *     canonical `turn.end`/`subagent.end` → `Stop`/`SubagentStop`). A SETTINGS
  *     FRAGMENT (hooks only); deploy MERGES it into the host's settings.json so it
@@ -207,7 +213,7 @@ async function projectMemorySkill(out: string, profile: string): Promise<void> {
  *   - `hooks/<id>/` — the worker scripts staged beside it as deployable assets.
  * Off-by-default is preserved at RUNTIME (the worker re-checks the per-repo
  * git-config opt-in), so registering the hook on every host stays inert until a
- * repo opts in — registration is now koine-managed, not a hand-rolled `jq` edit.
+ * repo opts in — registration is now agent-forge-managed, not a hand-rolled `jq` edit.
  */
 async function projectHooks(out: string): Promise<number> {
   const { hooks, warnings, skipped } = serializeClaudeHooksReport(
@@ -233,7 +239,10 @@ async function projectHooks(out: string): Promise<number> {
     const destDir = join(out, 'hooks', src.hook.id ?? 'unnamed');
     mkdirSync(destDir, { recursive: true });
     for (const asset of src.assets) {
-      copyFileSync(join(mindRoot, src.assetDir, asset), join(destDir, asset));
+      copyFileSync(
+        join(anatomyRoot, src.assetDir, asset),
+        join(destDir, asset),
+      );
     }
     process.stdout.write(
       `EMIT hook ${src.hook.id} (+${src.assets.length} worker asset${src.assets.length === 1 ? '' : 's'})\n`,

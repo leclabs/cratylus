@@ -66,7 +66,7 @@ export const principalEngineerReviewerResolved: ResolvedAgent = {
   name: 'principal-engineer-reviewer',
   description: ruler_persona.definiens,
   mark: reviewerArchetypePurple_provenance.mark,
-  sourcePath: 'packages/mind/agent/principal-engineer-reviewer.md',
+  sourcePath: 'packages/agent-anatomy/agent/principal-engineer-reviewer.md',
   memoryProtocol: base.memoryProtocol,
   organs: [
     ['Persona', [ruler_persona]],

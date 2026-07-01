@@ -21,7 +21,7 @@ set -eu
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 # By default prove the SOURCE worker bites. Set STANCE_WORKER_DIR to a deployed
 # hook dir (a host's `.claude/hooks/stance-guardrail/`) to prove the
-# KOINE-PROJECTED + KOINE-DEPLOYED artifact bites — the T6.3 acceptance proof.
+# AGENT-FORGE-PROJECTED + AGENT-FORGE-DEPLOYED artifact bites — the T6.3 acceptance proof.
 WORKER_DIR="${STANCE_WORKER_DIR:-$SELF_DIR}"
 WORKER="$WORKER_DIR/stance-guardrail.sh"
 RUBRIC="$WORKER_DIR/stance-judge-prompt.md"
@@ -94,12 +94,12 @@ is_block() { printf '%s' "$1" | jq -e '.decision == "block"' >/dev/null 2>&1; }
 echo "stance-guardrail — prove-it-bites"
 
 # 1. OFF by default (flag unset) → collapse transcript must NOT block.
-git -C "$REPO" config --unset polis.stanceGuard 2>/dev/null || true
+git -C "$REPO" config --unset agentfactory.stanceGuard 2>/dev/null || true
 out="$(run_worker "$COLLAPSE" mav false)"
 is_block "$out" && bad "off-by-default still blocked" || pass "off by default: no block on collapse"
 
 # Opt in for the remaining cases.
-git -C "$REPO" config --bool polis.stanceGuard true
+git -C "$REPO" config --bool agentfactory.stanceGuard true
 
 # 2. ON + collapse + in-scope (mav) → BLOCK with a reason.
 out="$(run_worker "$COLLAPSE" mav false)"
@@ -122,10 +122,10 @@ out="$(run_worker "$COLLAPSE" developer false)"
 is_block "$out" && bad "out-of-scope agent was blocked" || pass "agent-scope gate: out-of-scope not blocked"
 
 # 4b. allowlist "*" → even developer is in scope and collapse blocks.
-git -C "$REPO" config polis.stanceGuardAgents '*'
+git -C "$REPO" config agentfactory.stanceGuardAgents '*'
 out="$(run_worker "$COLLAPSE" developer false)"
 is_block "$out" && pass 'allowlist "*" blocks any collapsing agent' || bad 'allowlist "*" failed to block'
-git -C "$REPO" config --unset polis.stanceGuardAgents
+git -C "$REPO" config --unset agentfactory.stanceGuardAgents
 
 # 5. ON + collapse + stop_hook_active=true → loop safety, no block.
 out="$(run_worker "$COLLAPSE" mav true)"

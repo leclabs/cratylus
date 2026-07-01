@@ -365,7 +365,7 @@ export function placeHooksSsh(
       );
       if (!opts.dry) {
         const tmp = resolvePath(
-          mkdtempSync(resolvePath(tmpdir(), 'koine-hooks-')),
+          mkdtempSync(resolvePath(tmpdir(), 'agent-forge-hooks-')),
           'settings.json',
         );
         writeFileSync(tmp, `${JSON.stringify(settings, null, 2)}\n`);

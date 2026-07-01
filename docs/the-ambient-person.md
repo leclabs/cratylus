@@ -3,7 +3,7 @@
 _How an agent in a polis lives — and how you operate one._
 
 > **Provenance.** This is a human-facing **projection** of the canonical corpus in
-> `packages/mind/ideas/`. The cells named in `backticks` are the source of truth; this document is a
+> `packages/agent-anatomy/ideas/`. The cells named in `backticks` are the source of truth; this document is a
 > narrative woven from them, meant to be kept in sync with them (eventually regenerated from them). If the
 > two ever disagree, the cells win — `projection-is-not-the-source`.
 

@@ -1,5 +1,5 @@
-// `.polis.config` loader / precedence / validation — the topology resolution
-// contract (docs/polis-config-schema.md), transcribed from config.py's tests.
+// `.agent-factory.config` loader / precedence / validation — the topology resolution
+// contract (docs/agent-factory-config-schema.md), transcribed from config.py's tests.
 
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -14,7 +14,7 @@ import {
 import { tmp, writeConfig } from './helpers.js';
 
 function withConfig(root: string): void {
-  process.env[CONFIG_ENV] = join(root, '.polis.config');
+  process.env[CONFIG_ENV] = join(root, '.agent-factory.config');
 }
 
 describe('loadConfig', () => {
@@ -36,14 +36,14 @@ describe('loadConfig', () => {
 
   it('hard-errors on malformed JSON', () => {
     const root = tmp('polis-cfg-');
-    writeFileSync(join(root, '.polis.config'), '{ not json', 'utf-8');
+    writeFileSync(join(root, '.agent-factory.config'), '{ not json', 'utf-8');
     expect(() => loadConfig(root)).toThrow(ConfigError);
   });
 
   it('hard-errors on a missing schema', () => {
     const root = tmp('polis-cfg-');
     writeFileSync(
-      join(root, '.polis.config'),
+      join(root, '.agent-factory.config'),
       JSON.stringify({ host: {} }),
       'utf-8',
     );
@@ -53,7 +53,7 @@ describe('loadConfig', () => {
   it('hard-errors on an unrecognized schema version', () => {
     const root = tmp('polis-cfg-');
     writeFileSync(
-      join(root, '.polis.config'),
+      join(root, '.agent-factory.config'),
       JSON.stringify({ schema: 99, host: {} }),
       'utf-8',
     );
@@ -63,7 +63,7 @@ describe('loadConfig', () => {
   it('hard-errors on fleet<->host drift (fleet entry with no host object)', () => {
     const root = tmp('polis-cfg-');
     writeFileSync(
-      join(root, '.polis.config'),
+      join(root, '.agent-factory.config'),
       JSON.stringify({ schema: 1, fleet: { hosts: ['ghost'] }, host: {} }),
       'utf-8',
     );
@@ -73,7 +73,7 @@ describe('loadConfig', () => {
   it('hard-errors on an orphan host (host object absent from fleet.hosts)', () => {
     const root = tmp('polis-cfg-');
     writeFileSync(
-      join(root, '.polis.config'),
+      join(root, '.agent-factory.config'),
       JSON.stringify({
         schema: 1,
         fleet: { hosts: [] },
@@ -84,7 +84,7 @@ describe('loadConfig', () => {
     expect(() => loadConfig(root)).toThrow(/absent from fleet\.hosts/);
   });
 
-  it('honors the POLIS_CONFIG env override', () => {
+  it('honors the AGENT_FACTORY_CONFIG env override', () => {
     const root = writeConfig(tmp('polis-cfg-'));
     withConfig(root);
     const cfg = loadConfig();
@@ -139,7 +139,7 @@ describe('resolveHost — precedence (CLI › config › default)', () => {
   it('hard-errors when a non-local host resolves no user (no default-to-current-user)', () => {
     const root = tmp('polis-cfg-');
     writeFileSync(
-      join(root, '.polis.config'),
+      join(root, '.agent-factory.config'),
       JSON.stringify({
         schema: 1,
         fleet: { hosts: ['nouser'] },

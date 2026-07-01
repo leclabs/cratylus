@@ -17,7 +17,7 @@ import {
 import type { IR, Manifest } from '../../../src/core/ir/types.js';
 
 const baseManifest = (overrides: Partial<Manifest> = {}): Manifest => ({
-  koine: 1,
+  agentForge: 1,
   scope: 'project',
   targets: ['claude'],
   ...overrides,
@@ -69,16 +69,16 @@ const fullIR = (manifest: Manifest): IR => ({
 });
 
 describe('defaultIRRoot', () => {
-  it('returns project .koine/ for project scope', () => {
-    expect(defaultIRRoot('project', '/x/y')).toBe('/x/y/.koine');
+  it('returns project .agent-forge/ for project scope', () => {
+    expect(defaultIRRoot('project', '/x/y')).toBe('/x/y/.agent-forge');
   });
 
-  it('returns project .koine/local/ for local scope', () => {
-    expect(defaultIRRoot('local', '/x/y')).toBe('/x/y/.koine/local');
+  it('returns project .agent-forge/local/ for local scope', () => {
+    expect(defaultIRRoot('local', '/x/y')).toBe('/x/y/.agent-forge/local');
   });
 
-  it('returns ~/.koine for user scope', () => {
-    expect(defaultIRRoot('user', '/anything')).toMatch(/\.koine$/);
+  it('returns ~/.agent-forge for user scope', () => {
+    expect(defaultIRRoot('user', '/anything')).toMatch(/\.agent-forge$/);
   });
 });
 
@@ -86,7 +86,7 @@ describe('readIR / writeIR', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-io-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-io-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });
@@ -115,19 +115,19 @@ describe('readIR / writeIR', () => {
     expect(re.env).toEqual(ir.env);
   });
 
-  it('throws when no .koine/ exists', async () => {
-    await expect(readIR('project', cwd)).rejects.toThrow(/no \.koine/i);
+  it('throws when no .agent-forge/ exists', async () => {
+    await expect(readIR('project', cwd)).rejects.toThrow(/no \.agent-forge/i);
   });
 
   it('throws when manifest.yaml is missing', async () => {
-    mkdirSync(join(cwd, '.koine'));
+    mkdirSync(join(cwd, '.agent-forge'));
     await expect(readIR('project', cwd)).rejects.toThrow(/manifest/i);
   });
 
   it('throws IRValidationError on schema-invalid IR', async () => {
     const bad: IR = {
       // @ts-expect-error intentionally invalid
-      manifest: { koine: 99, scope: 'global', targets: [] },
+      manifest: { agentForge: 99, scope: 'global', targets: [] },
     };
     await expect(writeIR(bad, 'project', cwd)).rejects.toThrow(
       IRValidationError,
@@ -135,11 +135,11 @@ describe('readIR / writeIR', () => {
   });
 
   it('handles a written manifest with extra fields by failing schema check on read', async () => {
-    const root = join(cwd, '.koine');
+    const root = join(cwd, '.agent-forge');
     mkdirSync(root, { recursive: true });
     writeFileSync(
       join(root, 'manifest.yaml'),
-      'koine: 1\nscope: project\ntargets:\n  - claude\nbogus: yes\n',
+      'agentForge: 1\nscope: project\ntargets:\n  - claude\nbogus: yes\n',
       'utf8',
     );
     await expect(readIR('project', cwd)).rejects.toThrow(IRValidationError);
@@ -147,8 +147,11 @@ describe('readIR / writeIR', () => {
 
   it('writes manifest.yaml with stable formatting', async () => {
     await writeIR({ manifest: baseManifest() }, 'project', cwd);
-    const text = readFileSync(join(cwd, '.koine', 'manifest.yaml'), 'utf8');
-    expect(text).toContain('koine: 1');
+    const text = readFileSync(
+      join(cwd, '.agent-forge', 'manifest.yaml'),
+      'utf8',
+    );
+    expect(text).toContain('agentForge: 1');
     expect(text).toContain('scope: project');
   });
 });

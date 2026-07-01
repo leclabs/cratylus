@@ -32,7 +32,7 @@ export async function runImport(
   const sourceDir = opts.from ?? cwd;
   const adapter = adapters.find((a) => a.id === opts.client);
   if (!adapter) {
-    console.error(pc.red(`koine: unknown client '${opts.client}'`));
+    console.error(pc.red(`agent-forge: unknown client '${opts.client}'`));
     console.error(`available: ${adapters.map((a) => a.id).join(', ')}`);
     return 1;
   }
@@ -63,7 +63,11 @@ export async function runImport(
     conflicts = result.conflicts;
   } else {
     ir = {
-      manifest: { koine: 1, scope, targets: [opts.client] } satisfies Manifest,
+      manifest: {
+        agentForge: 1,
+        scope,
+        targets: [opts.client],
+      } satisfies Manifest,
       ...incoming,
     };
   }

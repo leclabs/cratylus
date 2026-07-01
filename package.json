@@ -2,7 +2,7 @@
   "name": "@leclabs/agent-factory",
   "version": "0.0.0",
   "private": true,
-  "description": "polis — the canonical culture (mind) and projection machinery (koine) from which agent societies are founded.",
+  "description": "agent-factory — the canonical culture (agent-anatomy) and projection machinery (agent-forge) from which agent societies are founded.",
   "type": "module",
   "packageManager": "pnpm@10.0.0",
   "engines": {
@@ -27,9 +27,9 @@
     "continuity:install": "sh packages/agent-anatomy/src/toolkit/continuity/continuity-hook.sh install",
     "continuity:uninstall": "sh packages/agent-anatomy/src/toolkit/continuity/continuity-hook.sh uninstall",
     "continuity:status": "sh packages/agent-anatomy/src/toolkit/continuity/continuity-hook.sh status",
-    "stance-guard:on": "git config --bool polis.stanceGuard true",
-    "stance-guard:off": "git config --unset polis.stanceGuard",
-    "stance-guard:status": "git config --bool polis.stanceGuard || echo 'disabled (default)'",
+    "stance-guard:on": "git config --bool agentfactory.stanceGuard true",
+    "stance-guard:off": "git config --unset agentfactory.stanceGuard",
+    "stance-guard:status": "git config --bool agentfactory.stanceGuard || echo 'disabled (default)'",
     "stance-guard:test": "sh packages/agent-anatomy/src/toolkit/guardrail/test-stance-guardrail.sh"
   },
   "devDependencies": {

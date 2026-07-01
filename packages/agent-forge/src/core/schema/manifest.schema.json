@@ -1,13 +1,13 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://leclabs.dev/koine/v1/manifest.schema.json",
+  "$id": "https://leclabs.dev/agent-forge/v1/manifest.schema.json",
   "title": "Manifest",
-  "description": "koine manifest. Entry point of an IR directory; declares schema version, scope, and target clients.",
+  "description": "agent-forge manifest. Entry point of an IR directory; declares schema version, scope, and target clients.",
   "type": "object",
-  "required": ["koine", "scope", "targets"],
+  "required": ["agentForge", "scope", "targets"],
   "additionalProperties": false,
   "properties": {
-    "koine": {
+    "agentForge": {
       "const": 1,
       "description": "IR schema version. Always 1 in v1."
     },

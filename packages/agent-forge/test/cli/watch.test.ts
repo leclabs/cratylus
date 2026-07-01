@@ -19,7 +19,7 @@ const adapters = [claudeAdapter, opencodeAdapter];
 describe('watch', () => {
   let cwd: string;
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-watch-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-watch-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });
@@ -33,7 +33,7 @@ describe('watch', () => {
     await runInit({ scope: 'project', cwd });
     await runImport({ client: 'claude', scope: 'project', cwd }, adapters);
     // Add opencode to manifest
-    const manifestPath = join(cwd, '.koine', 'manifest.yaml');
+    const manifestPath = join(cwd, '.agent-forge', 'manifest.yaml');
     const text = readFileSync(manifestPath, 'utf8');
     writeFileSync(
       manifestPath,
@@ -52,7 +52,11 @@ describe('watch', () => {
 
     // Give chokidar time to set up watchers, then trigger a change
     await new Promise((r) => setTimeout(r, 200));
-    writeFileSync(join(cwd, '.koine', 'rules', 'main.md'), '# updated', 'utf8');
+    writeFileSync(
+      join(cwd, '.agent-forge', 'rules', 'main.md'),
+      '# updated',
+      'utf8',
+    );
 
     const code = await watchPromise;
     expect(code).toBe(0);

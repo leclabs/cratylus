@@ -6,7 +6,7 @@ import { cursorAdapter } from '../../../src/adapters/cursor/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
 
 const manifest = (): Manifest => ({
-  koine: 1,
+  agentForge: 1,
   scope: 'project',
   targets: ['cursor'],
 });
@@ -14,7 +14,7 @@ const manifest = (): Manifest => ({
 describe('cursorAdapter', () => {
   let cwd: string;
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-cursor-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-cursor-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

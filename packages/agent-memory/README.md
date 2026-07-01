@@ -40,4 +40,4 @@ node ~/.claude/skills/memory/episodic.mjs encode --home ~/.claude/agents/<name> 
 front-matter stages this artifact at deploy; the pipeline runs the build before `resolve.py`.
 
 The build-spec for the store semantics (record shape, routing, portability) is the corpus:
-`packages/mind` — the `memory` and `dream` cells.
+`packages/agent-anatomy` — the `memory` and `dream` cells.

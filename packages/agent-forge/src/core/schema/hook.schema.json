@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://leclabs.dev/koine/v1/hook.schema.json",
+  "$id": "https://leclabs.dev/agent-forge/v1/hook.schema.json",
   "title": "Hook",
   "description": "A lifecycle hook. Uses the canonical event taxonomy; per-adapter mapping translates to native event names at compile time.",
   "type": "object",

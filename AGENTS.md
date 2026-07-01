@@ -15,19 +15,19 @@ infrastructure/build/delivery, Mav leads.
 ## Packages
 
 - `packages/agent-anatomy` — the exemplar corpus, a **TS workspace member** (`@leclabs/agent-anatomy`, deps `@leclabs/agent-forge`)
-  and **koine's first opinionated plugin**: organ values / agents / skills are typed modules under `src/`
-  (the **sole source**); markdown is a **projection**. koine is the **only** projection + deploy machinery
-  (`pnpm anatomy:project` / `pnpm anatomy:deploy` via koine's claude adapter); the Python `toolkit/` projector was
+  and **agent-forge's first opinionated plugin**: organ values / agents / skills are typed modules under `src/`
+  (the **sole source**); markdown is a **projection**. agent-forge is the **only** projection + deploy machinery
+  (`pnpm anatomy:project` / `pnpm anatomy:deploy` via agent-forge's claude adapter); the Python `toolkit/` projector was
   retired in `koine-absorbs-mind` T6.1 — only the shell hooks (`toolkit/{continuity,guardrail}`) remain.
   Corpus rules: `packages/agent-anatomy/ideas/AGENTS.md`. Mutate the `.ts` source via `[[exemplify]]`; the
   acceptance bar is `tsc` + the projection-stability gate (every fragment/skill/agent still projects).
-- `packages/agent-forge` — the config IR + translator (`@leclabs/agent-forge`, formerly _agentir_). **One package**;
+- `packages/agent-forge` — the config IR + translator (`@leclabs/agent-forge`). **One package**;
   `core` / `adapters` / `cli` are source areas under `src/`, exposed via subpath exports + an `agent-forge` bin.
 - `packages/agent-memory` — **build-only toolsource** (private; anchor `episodic`) for the agent-memory
   runtime: a JSONL event store + dream routing + the md→JSONL migration. Not a published library (zero
   importers) — `tsup` bundles `src/bin.ts` into one dependency-free `dist/episodic.mjs` that the `memory`
-  skill carries to every host (`plans/memory-tool-bundling`). The `@leclabs/koine-episodic` npm identity is
-  retired; the long-pending `koine-` rename is closed by that retirement.
+  skill carries to every host (`plans/memory-tool-bundling`). Its former standalone npm identity was
+  retired in favor of `@leclabs/agent-memory`.
 
 ## Working conventions
 

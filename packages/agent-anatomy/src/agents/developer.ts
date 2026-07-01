@@ -64,7 +64,7 @@ export const developerResolved: ResolvedAgent = {
   name: 'developer',
   description: creator_persona.definiens,
   mark: developerArchetypeBlue_provenance.mark,
-  sourcePath: 'packages/mind/agent/developer.md',
+  sourcePath: 'packages/agent-anatomy/agent/developer.md',
   memoryProtocol: base.memoryProtocol,
   organs: [
     ['Persona', [creator_persona]],

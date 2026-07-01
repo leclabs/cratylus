@@ -14,7 +14,7 @@
 #   per-AGENT sidecar-memory operations (~/.claude/agents/<name>/*) — not repo state,
 #   a git hook can't meaningfully fire them — so they are out of this hook's scope.
 #
-# OPT-IN: this runs only when `git config --bool polis.continuity` is true. A fresh
+# OPT-IN: this runs only when `git config --bool agentfactory.continuity` is true. A fresh
 #   clone is opted out, so default commit behavior is unchanged. See continuity-hook.sh.
 #
 # POSIX sh; no deps beyond git. Exits 0 always — a reminder must never fail a commit.

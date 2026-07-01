@@ -70,9 +70,9 @@ describe('ANATOMY descriptor', () => {
     );
   });
 
-  it('matches the actual organ dirs in mind (no descriptor↔corpus drift)', () => {
+  it('matches the actual organ dirs in agent-anatomy (no descriptor↔corpus drift)', () => {
     const here = dirname(fileURLToPath(import.meta.url));
-    const mindOrgans = join(
+    const anatomyOrgans = join(
       here,
       '..',
       '..',
@@ -81,7 +81,7 @@ describe('ANATOMY descriptor', () => {
       'src',
       'organs',
     );
-    const dirs = readdirSync(mindOrgans, { withFileTypes: true })
+    const dirs = readdirSync(anatomyOrgans, { withFileTypes: true })
       .filter((d) => d.isDirectory())
       .map((d) => d.name)
       .sort();

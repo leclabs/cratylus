@@ -1,7 +1,7 @@
 {
   "name": "@leclabs/agent-forge",
   "version": "0.0.0",
-  "description": "koine — universal agent configuration translator: canonical IR, official adapters, and CLI in one package",
+  "description": "agent-forge — universal agent configuration translator: canonical IR, official adapters, and CLI in one package",
   "license": "MIT",
   "type": "module",
   "main": "./dist/core/index.js",

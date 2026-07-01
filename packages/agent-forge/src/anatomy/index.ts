@@ -4,7 +4,7 @@
 // THIS MODULE IS THE ANATOMY CONTRACT. `docs/agent-conceptual-anatomy.md` is its
 // human projection; the prose mirrors these types, not the other way around.
 //
-// mind authors fragments / agents / skills as typed modules that import these
+// agent-anatomy authors fragments / agents / skills as typed modules that import these
 // types. Composition is ESM `import`; merge is object spread (see
 // `docs/baseline-delta-model.md`). A wrong organ→value, a wrong arity, or a
 // fragment of the wrong organ in the wrong field is a **compile error** — there
@@ -187,7 +187,7 @@ export type SetOrgan =
 // ── The runtime organ descriptor (axis / kind / arity) ──────────────────────
 // The per-organ `Fragment<O,G,C,A>` aliases above carry an organ's genus,
 // classification, and arity at the TYPE level — phantom params that erase at
-// runtime. A consumer that needs this metadata at runtime (e.g. `koine catalog`)
+// runtime. A consumer that needs this metadata at runtime (e.g. `agent-forge catalog`)
 // can't read the types, so `ANATOMY` mirrors them as data. It is SINGLE-SOURCED:
 // each entry's value type is `MetaOf<TheOrgansFragmentAlias>`, which projects the
 // alias's `G/C/A` params back out — so a wrong axis/kind/arity here is a COMPILE
@@ -214,7 +214,7 @@ type MetaOf<F> = F extends Fragment<Organ, infer G, infer C, infer A>
 /**
  * The runtime mirror of the 24 per-organ `Fragment` aliases. Each value is typed
  * as `MetaOf<…>` of that organ's alias, so the data cannot disagree with the
- * type. This is the one runtime home for organ metadata — `koine catalog` reads
+ * type. This is the one runtime home for organ metadata — `agent-forge catalog` reads
  * it, never a second hand-kept copy.
  */
 export const ANATOMY: {

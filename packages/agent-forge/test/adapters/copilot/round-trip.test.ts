@@ -13,7 +13,7 @@ import { copilotAdapter } from '../../../src/adapters/copilot/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
 
 const manifest = (): Manifest => ({
-  koine: 1,
+  agentForge: 1,
   scope: 'project',
   targets: ['copilot'],
 });
@@ -22,7 +22,7 @@ describe('copilotAdapter', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-copilot-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-copilot-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

@@ -69,7 +69,7 @@ export const boswellResolved: ResolvedAgent = {
   name: 'boswell',
   description: sage_persona.definiens,
   mark: boswellArchetypeYellow_provenance.mark,
-  sourcePath: 'packages/mind/agent/boswell.md',
+  sourcePath: 'packages/agent-anatomy/agent/boswell.md',
   memoryProtocol: base.memoryProtocol,
   organs: [
     ['Persona', [sage_persona]],

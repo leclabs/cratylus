@@ -1,6 +1,6 @@
-// `koine found <target>` — found a mind-society in a target dir (the deploy
+// `agent-forge found <target>` — found a mind-society in a target dir (the deploy
 // layer's `init` capability, named `found` at the CLI to avoid colliding with
-// `koine init`, which bootstraps a `.koine/` IR dir). Projects the full render
+// `agent-forge init`, which bootstraps a `.agent-forge/` IR dir). Projects the full render
 // tree into <target>/.claude/{agents,skills} + lays the founding AGENTS.md +
 // plans scaffold; clobber-guarded; does NOT seed sidecars.
 //

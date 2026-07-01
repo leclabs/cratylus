@@ -5,8 +5,8 @@
 // carries only the agent's distinctive delta (see `docs/baseline-delta-model.md`,
 // the "harness reset" row + the delta-over-target law).
 //
-// `claude` is a HARNESS, never a mind agent — so this reset lives HERE in the
-// koine claude adapter, NOT as a `mind/agents/*` module. Each adapter owns its
+// `claude` is a HARNESS, never a agent-anatomy agent — so this reset lives HERE in the
+// agent-forge claude adapter, NOT as a `agent-anatomy/agents/*` module. Each adapter owns its
 // own harness reset; subtraction fires per the reset's organ kind:
 //   - SET organ   → emit the SET-DIFFERENCE (drop agent fragments whose slug is
 //                   in the reset set; keep the rest).

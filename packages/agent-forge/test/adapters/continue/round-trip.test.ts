@@ -6,7 +6,7 @@ import { continueAdapter } from '../../../src/adapters/continue/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
 
 const manifest = (): Manifest => ({
-  koine: 1,
+  agentForge: 1,
   scope: 'project',
   targets: ['continue'],
 });
@@ -14,7 +14,7 @@ const manifest = (): Manifest => ({
 describe('continueAdapter', () => {
   let cwd: string;
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-continue-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-continue-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

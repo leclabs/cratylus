@@ -79,7 +79,7 @@ export const nicoResolved: ResolvedAgent = {
   name: 'nico',
   description: sage_persona.definiens,
   mark: nicoArchetypeCyan_provenance.mark,
-  sourcePath: 'packages/mind/agent/nico.md',
+  sourcePath: 'packages/agent-anatomy/agent/nico.md',
   memoryProtocol: founderBase.memoryProtocol,
   organs: [
     ['Persona', [sage_persona]],

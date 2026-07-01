@@ -38,26 +38,26 @@ detects:
 The judge is instructed to be **conservative**: when genuinely unsure between legitimate-consent and
 in-remit permission-seeking, it PASSes. A false block wedges real work; a missed block is recoverable.
 
-## How it's installed (KOINE-NATIVE — T6.3)
+## How it's installed (AGENT-FORGE-NATIVE — T6.3)
 
-The hook is **sourced, projected, and deployed by koine** — no hand-rolled `jq` toggle:
+The hook is **sourced, projected, and deployed by agent-forge** — no hand-rolled `jq` toggle:
 
-- **Source** — the koine `Hook` in `packages/mind/src/toolkit/hooks.ts` (`turn.end` → Stop,
+- **Source** — the agent-forge `Hook` in `packages/agent-anatomy/src/toolkit/hooks.ts` (`turn.end` → Stop,
   `subagent.end` → SubagentStop; command = `$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh`;
   timeout 60).
-- **Project** — `pnpm mind:project` emits a `settings.json` `{hooks}` fragment + stages these workers
+- **Project** — `pnpm anatomy:project` emits a `settings.json` `{hooks}` fragment + stages these workers
   under `.render-ts/hooks/stance-guardrail/`.
-- **Deploy** — `pnpm mind:deploy:hooks` (`koine deploy --kind hooks`) ships the workers to
+- **Deploy** — `pnpm anatomy:deploy:hooks` (`agent-forge deploy --kind hooks`) ships the workers to
   `~/.claude/hooks/stance-guardrail/` and **merges** the hooks block into the host `settings.json`
   (idempotent, non-destructive — never clobbers permissions/env/other hooks).
 
 ## Safety model (off-by-default-safe, like the continuity hook)
 
 - **OFF BY DEFAULT — a RUNTIME gate.** Registration in `settings.json` is **inert**: the worker re-checks
-  the per-repo opt-in `git config --bool polis.stanceGuard true` (lives in `.git/config`, never checked in;
+  the per-repo opt-in `git config --bool agentfactory.stanceGuard true` (lives in `.git/config`, never checked in;
   a fresh clone is opted out) at fire time and exits 0 unless the repo opted in. Deploying the hook to a
   host changes **no host's behavior** until that host's repo opts in.
-- **AGENT-SCOPED.** Fires only for agents on the allowlist (`git config polis.stanceGuardAgents`, default
+- **AGENT-SCOPED.** Fires only for agents on the allowlist (`git config agentfactory.stanceGuardAgents`, default
   `nico mav` — the founders). Set `*` for all.
 - **FAILS OPEN.** Any error (no transcript, judge failure, no `jq`, no `claude`) → allow the stop. A
   guardrail that wedges work on its own flakiness is worse than a missed block.
@@ -73,17 +73,17 @@ The hook is **sourced, projected, and deployed by koine** — no hand-rolled `jq
 | `test-stance-guardrail.sh` | **prove-it-bites** — hermetic (fixture repo + crafted transcripts + deterministic fixture judge), plus an optional live-`claude` smoke. Set `STANCE_WORKER_DIR=<host>/.claude/hooks/stance-guardrail` to prove the **deployed** artifact.    |
 
 > Retired in T6.3: `stance-guard-toggle.sh` (the `jq` + `settings.local.json` hand-edit). Registration is
-> now koine's; only the runtime opt-in flag remains, toggled by plain `git config`.
+> now agent-forge's; only the runtime opt-in flag remains, toggled by plain `git config`.
 
 ## Usage
 
 ```sh
-pnpm mind:deploy:hooks               # project + ship the workers + merge into settings.json (koine)
-pnpm stance-guard:on                 # opt THIS repo in (git config polis.stanceGuard true)
+pnpm anatomy:deploy:hooks               # project + ship the workers + merge into settings.json (agent-forge)
+pnpm stance-guard:on                 # opt THIS repo in (git config agentfactory.stanceGuard true)
 pnpm stance-guard:off                # opt out (worker goes dormant)
 pnpm stance-guard:status             # show the flag
 pnpm stance-guard:test               # prove it bites (set STANCE_WORKER_DIR for the deployed artifact)
-git config polis.stanceGuardAgents '*'   # widen the agent allowlist (default: nico mav)
+git config agentfactory.stanceGuardAgents '*'   # widen the agent allowlist (default: nico mav)
 ```
 
 Tuning env vars (all optional): `STANCE_JUDGE_CMD` (swap the whole backend), `STANCE_JUDGE_BIN`,

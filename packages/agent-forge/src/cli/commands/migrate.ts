@@ -26,19 +26,21 @@ export async function runMigrate(opts: MigrateOpts): Promise<number> {
   const root = findIRRoot(scope, cwd);
   if (!root) {
     console.error(
-      pc.red(`koine migrate: no .koine/ found for scope '${scope}'`),
+      pc.red(
+        `agent-forge migrate: no .agent-forge/ found for scope '${scope}'`,
+      ),
     );
     return 2;
   }
 
   const manifestPath = join(root, 'manifest.yaml');
   if (!existsSync(manifestPath)) {
-    console.error(pc.red('koine migrate: missing manifest.yaml'));
+    console.error(pc.red('agent-forge migrate: missing manifest.yaml'));
     return 2;
   }
 
   const manifest = load(await readFile(manifestPath, 'utf8')) as Manifest;
-  const from = opts.from ?? manifest.koine;
+  const from = opts.from ?? manifest.agentForge;
   const to = opts.to ?? CURRENT_SCHEMA_VERSION;
 
   if (from === to) {
@@ -55,7 +57,7 @@ export async function runMigrate(opts: MigrateOpts): Promise<number> {
   // For v1 (current) → v1, this is a no-op. When v2 ships, migrations are applied here.
   try {
     const migrated = migrate(manifest, from, to) as Manifest;
-    migrated.koine = to as 1; // schema version field always reflects target
+    migrated.agentForge = to as 1; // schema version field always reflects target
     await writeFile(
       manifestPath,
       dump(migrated, { lineWidth: 100, noRefs: true }),
@@ -64,7 +66,7 @@ export async function runMigrate(opts: MigrateOpts): Promise<number> {
     console.log(pc.green('✓'), `manifest schema upgraded to v${to}`);
     return 0;
   } catch (e) {
-    console.error(pc.red('koine migrate:'), (e as Error).message);
+    console.error(pc.red('agent-forge migrate:'), (e as Error).message);
     return 1;
   }
 }

@@ -1,4 +1,4 @@
-// Shared cell grammar for the mind→TS migration. Parses a `<organ>/<value>.md`
+// Shared cell grammar for the agent-anatomy→TS migration. Parses a `<organ>/<value>.md`
 // or `skill/<name>.md` cell into its structural parts, and defines the canonical
 // "cell body" the round-trip targets byte-for-byte.
 //

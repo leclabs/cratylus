@@ -16,7 +16,7 @@ export async function runInit(opts: InitOpts = {}): Promise<number> {
   const root = defaultIRRoot(scope, cwd);
 
   if (existsSync(root)) {
-    console.error(pc.red(`koine: ${root} already exists`));
+    console.error(pc.red(`agent-forge: ${root} already exists`));
     return 1;
   }
 
@@ -25,22 +25,22 @@ export async function runInit(opts: InitOpts = {}): Promise<number> {
     await mkdir(join(root, sub), { recursive: true });
   }
 
-  const manifest: Manifest = { koine: 1, scope, targets: [] };
+  const manifest: Manifest = { agentForge: 1, scope, targets: [] };
   await writeFile(
     join(root, 'manifest.yaml'),
     dump(manifest, { lineWidth: 100, noRefs: true }),
     'utf8',
   );
 
-  // For project scope, append .koine/local to .gitignore if it exists.
+  // For project scope, append .agent-forge/local to .gitignore if it exists.
   if (scope === 'project') {
     const gi = join(cwd, '.gitignore');
     if (existsSync(gi)) {
       const text = await readFile(gi, 'utf8');
-      if (!text.includes('.koine/local')) {
+      if (!text.includes('.agent-forge/local')) {
         await writeFile(
           gi,
-          `${text + (text.endsWith('\n') ? '' : '\n')}.koine/local/\n`,
+          `${text + (text.endsWith('\n') ? '' : '\n')}.agent-forge/local/\n`,
           'utf8',
         );
       }

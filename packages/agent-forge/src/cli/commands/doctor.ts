@@ -48,7 +48,7 @@ export async function runDoctor(
   const targetRoot = root ?? defaultIRRoot(scope, cwd);
 
   console.log(
-    pc.bold('koine doctor'),
+    pc.bold('agent-forge doctor'),
     pc.gray(`(scope: ${scope}, cwd: ${cwd})`),
   );
   console.log('');
@@ -56,15 +56,17 @@ export async function runDoctor(
   let failures = 0;
   let warnings = 0;
 
-  // 1. .koine/ presence
+  // 1. .agent-forge/ presence
   if (root && existsSync(root)) {
-    console.log(fmt({ status: 'pass', label: '.koine/ exists', detail: root }));
+    console.log(
+      fmt({ status: 'pass', label: '.agent-forge/ exists', detail: root }),
+    );
   } else {
     console.log(
       fmt({
         status: 'warn',
-        label: `.koine/ not found for scope '${scope}'`,
-        detail: `would be created at ${targetRoot}; run \`koine init\``,
+        label: `.agent-forge/ not found for scope '${scope}'`,
+        detail: `would be created at ${targetRoot}; run \`agent-forge init\``,
       }),
     );
     warnings++;
@@ -99,7 +101,7 @@ export async function runDoctor(
           fmt({
             status: 'pass',
             label: 'manifest.yaml: valid',
-            detail: `koine v${manifest.koine}, scope ${manifest.scope}, ${manifest.targets.length} target(s)`,
+            detail: `agent-forge v${manifest.agentForge}, scope ${manifest.scope}, ${manifest.targets.length} target(s)`,
           }),
         );
       }

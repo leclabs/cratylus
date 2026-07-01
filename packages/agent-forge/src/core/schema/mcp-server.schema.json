@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://leclabs.dev/koine/v1/mcp-server.schema.json",
+  "$id": "https://leclabs.dev/agent-forge/v1/mcp-server.schema.json",
   "title": "McpServer",
   "description": "An MCP server registration. Stdio servers use command+args; remote servers use url. Discriminated by transport.",
   "oneOf": [

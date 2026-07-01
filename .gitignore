@@ -7,7 +7,7 @@ dist/
 *.log
 .env
 .env.local
-.koine/local/
+.agent-forge/local/
 .claude/worktrees/
 # Rendered projection (derived from packages/agent-anatomy/ideas via resolve.py; regenerable).
 # A projection is NOT a deployment (projection-is-not-the-source): the render goes to a
@@ -21,14 +21,14 @@ packages/agent-anatomy/.render/
 # The standalone TS projection (resolve.py's TS counterpart, src/toolkit/project-cli.ts).
 # Same neutral-staging rationale as .render/ above; regenerable, never a deploy.
 packages/agent-anatomy/.render-ts/
-# The codex-harness projection (project-cli-codex.ts) — proof that mind reaches a
-# second koine harness for free (koine-absorbs-mind T2.4). Same neutral-staging
+# The codex-harness projection (project-cli-codex.ts) — proof that agent-anatomy reaches a
+# second agent-forge harness for free (koine-absorbs-mind T2.4). Same neutral-staging
 # rationale; kept separate so the claude byte-identity diff stays clean.
 packages/agent-anatomy/.render-ts-codex/
 # Fleet deploy topology carries env-specific SSH usernames — local-only.
-# Committed template: .polis.config.example. Schema: docs/polis-config-schema.md
-.polis.config
-!.polis.config.example
+# Committed template: .agent-factory.config.example. Schema: docs/agent-factory-config-schema.md
+.agent-factory.config
+!.agent-factory.config.example
 __pycache__/
 *.pyc
 .scratchpad/

@@ -18,12 +18,12 @@ const silent = { dry: false, log: () => {}, warn: () => {} };
 
 describe('stageBundle', () => {
   it('stages a built artifact beside SKILL.md, byte-for-byte', () => {
-    const root = buildBundleSrc(tmp('koine-bundle-'), true);
-    const destDir = tmp('koine-skill-');
+    const root = buildBundleSrc(tmp('agent-forge-bundle-'), true);
+    const destDir = tmp('agent-forge-skill-');
     const staged = stageBundle(
       'memory',
       destDir,
-      ['episodic/dist/episodic.mjs'],
+      ['agent-memory/dist/episodic.mjs'],
       {
         baseRoot: root,
       },
@@ -33,34 +33,34 @@ describe('stageBundle', () => {
   });
 
   it('HARD-ERRORS when the build output is absent (the acceptance gate)', () => {
-    const root = buildBundleSrc(tmp('koine-bundle-'), false); // NOT built
-    const destDir = tmp('koine-skill-');
+    const root = buildBundleSrc(tmp('agent-forge-bundle-'), false); // NOT built
+    const destDir = tmp('agent-forge-skill-');
     expect(() =>
-      stageBundle('memory', destDir, ['episodic/dist/episodic.mjs'], {
+      stageBundle('memory', destDir, ['agent-memory/dist/episodic.mjs'], {
         baseRoot: root,
       }),
     ).toThrow(BundleMissingError);
   });
 
   it('the hard-error names the skill, the spec, and the build hint', () => {
-    const root = buildBundleSrc(tmp('koine-bundle-'), false);
-    const destDir = tmp('koine-skill-');
+    const root = buildBundleSrc(tmp('agent-forge-bundle-'), false);
+    const destDir = tmp('agent-forge-skill-');
     try {
-      stageBundle('memory', destDir, ['episodic/dist/episodic.mjs'], {
+      stageBundle('memory', destDir, ['agent-memory/dist/episodic.mjs'], {
         baseRoot: root,
       });
       expect.unreachable('should have thrown');
     } catch (e) {
       const err = e as BundleMissingError;
       expect(err.skill).toBe('memory');
-      expect(err.spec).toBe('episodic/dist/episodic.mjs');
+      expect(err.spec).toBe('agent-memory/dist/episodic.mjs');
       expect(err.message).toMatch(/not built at/);
-      expect(err.message).toMatch(/pnpm --filter episodic build/);
+      expect(err.message).toMatch(/pnpm --filter @leclabs\/agent-memory build/);
     }
   });
 
   it('no-op when a skill declares no bundle', () => {
-    const destDir = tmp('koine-skill-');
+    const destDir = tmp('agent-forge-skill-');
     expect(stageBundle('wake', destDir, undefined, { baseRoot: '/' })).toEqual(
       [],
     );
@@ -69,16 +69,18 @@ describe('stageBundle', () => {
 
 describe('the bundle hard-error fires through the placer', () => {
   it('placeSkillsLocal throws BundleMissingError when episodic.mjs is unbuilt', () => {
-    const src = tmp('koine-render-');
+    const src = tmp('agent-forge-render-');
     const tree = buildRenderTree(src);
-    const bundleRoot = buildBundleSrc(tmp('koine-bundle-'), false); // unbuilt
-    const claude = join(tmp('koine-host-'), '.claude');
+    const bundleRoot = buildBundleSrc(tmp('agent-forge-bundle-'), false); // unbuilt
+    const claude = join(tmp('agent-forge-host-'), '.claude');
     expect(() =>
       placeSkillsLocal(
         claude,
         {
           ...tree,
-          companions: { memory: { bundle: ['episodic/dist/episodic.mjs'] } },
+          companions: {
+            memory: { bundle: ['agent-memory/dist/episodic.mjs'] },
+          },
           bundleBaseRoot: bundleRoot,
         },
         ['memory'],
@@ -90,7 +92,7 @@ describe('the bundle hard-error fires through the placer', () => {
 
 describe('stageAssets', () => {
   it('warns (not throws) on a missing committed asset', () => {
-    const cellDir = tmp('koine-cell-');
+    const cellDir = tmp('agent-forge-cell-');
     const warns: string[] = [];
     const staged = stageAssets('s', cellDir, ['missing.png'], {
       assetBaseDir: cellDir,
@@ -101,10 +103,10 @@ describe('stageAssets', () => {
   });
 
   it('stages a present committed asset', () => {
-    const cellDir = tmp('koine-cell-');
+    const cellDir = tmp('agent-forge-cell-');
     mkdirSync(cellDir, { recursive: true });
     writeFileSync(join(cellDir, 'logo.txt'), 'asset', 'utf-8');
-    const destDir = tmp('koine-skill-');
+    const destDir = tmp('agent-forge-skill-');
     const staged = stageAssets('s', destDir, ['logo.txt'], {
       assetBaseDir: cellDir,
     });

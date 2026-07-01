@@ -7,9 +7,9 @@
 //
 //   { organ, axis, kind, arity, values: [{ slug, definiens }] }   ×24
 //
-// koine owns the MECHANISM (it types the 24 organs, it knows axis/kind/arity);
+// agent-forge owns the MECHANISM (it types the 24 organs, it knows axis/kind/arity);
 // the corpus owns the DATA (the value modules). This stays doctrine-agnostic:
-// it consumes a directory of organ-module dirs, not `packages/mind` — exactly
+// it consumes a directory of organ-module dirs, not `packages/agent-anatomy` — exactly
 // the T3.1 split (the deploy layer "consumes a render tree, not the corpus").
 //
 // VALUES are DISCOVERED, not listed: drop a new module under `<organ>/` and it
@@ -81,7 +81,7 @@ function isFragment(x: unknown): x is Fragment {
 /**
  * Discover the value `Fragment`s under one organ dir (`<corpusOrgansDir>/<organ>`).
  * Imports every `*.ts` module and collects each exported `Fragment` whose
- * `organ` matches — tolerant of default OR named exports (mind uses named).
+ * `organ` matches — tolerant of default OR named exports (agent-anatomy uses named).
  */
 async function valuesOf(
   corpusOrgansDir: string,
@@ -126,7 +126,7 @@ async function valuesOf(
  * discovered under `<corpusOrgansDir>/<organ>/*.ts`.
  *
  * @param corpusOrgansDir absolute path to a corpus's `organs/` dir (the parent
- *        of the per-organ module dirs). For mind: `packages/mind/src/organs`.
+ *        of the per-organ module dirs). For agent-anatomy: `packages/agent-anatomy/src/organs`.
  */
 export async function enumerateCatalog(
   corpusOrgansDir: string,

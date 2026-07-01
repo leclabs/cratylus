@@ -1,15 +1,15 @@
 // The CODEX consumer projection command — the second-harness counterpart of
-// `project-cli.ts`. Same mind modules, same `ResolvedAgent`/`ResolvedSkill`, but
-// run through koine's CODEX adapter instead of claude: agents → `agents/<name>.toml`,
+// `project-cli.ts`. Same agent-anatomy modules, same `ResolvedAgent`/`ResolvedSkill`, but
+// run through agent-forge's CODEX adapter instead of claude: agents → `agents/<name>.toml`,
 // skills → `skills/<name>/SKILL.md`, plus the `AGENTS.md` instruction surface.
 //
-// This IS the T2.4 proof: a mind agent authored ONCE reaches a second koine harness
+// This IS the T2.4 proof: a agent-anatomy agent authored ONCE reaches a second agent-forge harness
 // for free — the only new code is which adapter functions the walk calls. The
-// PROJECTION LOGIC lives in koine (`@leclabs/agent-forge/adapters/codex`); this step only
-// walks mind's typed modules and wires them to it.
+// PROJECTION LOGIC lives in agent-forge (`@leclabs/agent-forge/adapters/codex`); this step only
+// walks agent-anatomy's typed modules and wires them to it.
 //
 // Usage:  tsx src/toolkit/project-cli-codex.ts [--out <dir>] [--profile <reader/harness>] [--delta]
-//   default out:     packages/mind/.render-ts-codex   (gitignored; separate from .render-ts)
+//   default out:     packages/agent-anatomy/.render-ts-codex   (gitignored; separate from .render-ts)
 //   default profile: strong-llm-lean/codex
 //   --delta:         subtract the codex harness reset (omit-to-inherit; first-pass reset)
 
@@ -29,9 +29,9 @@ import {
 import type { SkillCell } from './skill-cell.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const mindRoot = join(here, '..', '..');
-const agentsModDir = join(mindRoot, 'src', 'agents');
-const skillsModDir = join(mindRoot, 'src', 'skills');
+const anatomyRoot = join(here, '..', '..');
+const agentsModDir = join(anatomyRoot, 'src', 'agents');
+const skillsModDir = join(anatomyRoot, 'src', 'skills');
 
 interface Args {
   out: string;
@@ -40,7 +40,7 @@ interface Args {
 }
 
 function parseArgs(argv: string[]): Args {
-  let out = join(mindRoot, '.render-ts-codex');
+  let out = join(anatomyRoot, '.render-ts-codex');
   let profile = 'strong-llm-lean/codex';
   let delta = false;
   for (let i = 0; i < argv.length; i++) {
@@ -138,7 +138,7 @@ async function projectSkills(args: Args): Promise<number> {
       delineation: cell.delineation,
       body: cell.body,
       composedFrom: cell.composition.map(refProject),
-      sourcePath: `packages/mind/skill/${name}.md`,
+      sourcePath: `packages/agent-anatomy/skill/${name}.md`,
     };
     const dir = join(args.out, 'skills', name);
     mkdirSync(dir, { recursive: true });
@@ -156,7 +156,7 @@ async function projectSkills(args: Args): Promise<number> {
  * tool path) and is NOT carried here (codex memory wiring is a later concern).
  */
 async function projectMemorySkill(args: Args): Promise<void> {
-  const memRaw = readFileSync(join(mindRoot, 'ideas', 'memory.md'), 'utf8');
+  const memRaw = readFileSync(join(anatomyRoot, 'ideas', 'memory.md'), 'utf8');
   const memBody = memRaw.split('---').slice(2).join('---');
   const toolSection = sectionBody(memBody, 'Tool');
   const fm =
@@ -169,7 +169,7 @@ async function projectMemorySkill(args: Args): Promise<void> {
     skillDescription: frontField(memRaw, 'skill_description') || fm,
     body: '',
     composedFrom: [],
-    sourcePath: 'packages/mind/ideas/memory.md',
+    sourcePath: 'packages/agent-anatomy/ideas/memory.md',
     toolSection,
   };
   const dir = join(args.out, 'skills', 'memory');

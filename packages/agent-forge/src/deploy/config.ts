@@ -1,6 +1,6 @@
-// `.polis.config` loader + resolution contract (docs/polis-config-schema.md).
+// `.agent-factory.config` loader + resolution contract (docs/agent-factory-config-schema.md).
 //
-// The deterministic, per-host deployment-parameter source for `koine deploy`.
+// The deterministic, per-host deployment-parameter source for `agent-forge deploy`.
 // It exists so deploy resolves *who* (ssh user) and *where* (hostname / home /
 // locality) without per-host tribal knowledge or `--user` silently defaulting
 // to the current shell user — the failure that made `upmav` look "unreachable"
@@ -9,12 +9,12 @@
 // Contract (firm, owned by nico's schema; this module is the consumer that
 // enforces it):
 //
-// - JSON, repo root, `.polis.config` (gitignored; `.polis.config.example`
+// - JSON, repo root, `.agent-factory.config` (gitignored; `.agent-factory.config.example`
 //   committed).
 // - Resolution precedence per parameter, first-present wins:
 //     1. CLI flag (--user/--home/--host) — an explicit override always trumps
 //        config.
-//     2. `.polis.config` host.<name> — the deterministic per-host value.
+//     2. `.agent-factory.config` host.<name> — the deterministic per-host value.
 //     3. Built-in default — only where the schema names one (hostname→key,
 //        home→omit, local→false). `user` has NO default (non-local host
 //        lacking user is a hard error).
@@ -31,14 +31,14 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve as resolvePath } from 'node:path';
 
 export const SCHEMA_VERSION = 1;
-export const CONFIG_NAME = '.polis.config';
+export const CONFIG_NAME = '.agent-factory.config';
 // Explicit config-path override (an alternate topology file). Honored before
 // the repo-root search — lets an operator (or a hermetic test) point deploy at
 // a config other than the one beside `.git`. An absent override falls through
-// to the repo-root `.polis.config`.
-export const CONFIG_ENV = 'POLIS_CONFIG';
+// to the repo-root `.agent-factory.config`.
+export const CONFIG_ENV = 'AGENT_FACTORY_CONFIG';
 
-/** A malformed / drift / unknown-host fault in `.polis.config`. Thrown loudly
+/** A malformed / drift / unknown-host fault in `.agent-factory.config`. Thrown loudly
  *  so the CLI exits non-zero with the cause — never a silent permissive path. */
 export class ConfigError extends Error {
   constructor(message: string) {
@@ -61,7 +61,7 @@ export interface HostParams {
 
 // The validated config shape (`host` / `fleet` are loosely typed because the
 // loader shape-validates structurally before any field is read).
-export interface PolisConfig {
+export interface AgentFactoryConfig {
   schema: number;
   reader?: string;
   fleet?: { hosts?: string[]; exclude?: string[] };
@@ -71,7 +71,7 @@ export interface PolisConfig {
   >;
 }
 
-/** The repo root holding `.polis.config` — the nearest ancestor of `start`
+/** The repo root holding `.agent-factory.config` — the nearest ancestor of `start`
  *  (default: cwd) containing a `.git` dir. Falls back to cwd so a detached
  *  checkout still resolves a config beside it. */
 export function repoRoot(start?: string): string {
@@ -88,9 +88,9 @@ export function repoRoot(start?: string): string {
   }
 }
 
-/** The `.polis.config` path to read (whether or not it exists). The
- *  `POLIS_CONFIG` env override wins when set (an explicit alternate topology
- *  file); else the `.polis.config` beside the repo root. An explicit `root`
+/** The `.agent-factory.config` path to read (whether or not it exists). The
+ *  `AGENT_FACTORY_CONFIG` env override wins when set (an explicit alternate topology
+ *  file); else the `.agent-factory.config` beside the repo root. An explicit `root`
  *  argument (test/internal) still takes precedence over the env override. */
 export function configPath(root?: string): string {
   if (root !== undefined) {
@@ -103,12 +103,12 @@ export function configPath(root?: string): string {
   return resolvePath(repoRoot(), CONFIG_NAME);
 }
 
-/** Parse `.polis.config` at the repo root. Returns the validated config, or
+/** Parse `.agent-factory.config` at the repo root. Returns the validated config, or
  *  `null` if the file is ABSENT (legacy flag-only mode — a missing config is
  *  not an error). A PRESENT but malformed / wrong-schema / drifted file is a
  *  hard error (degrade-visibly): the topology source must never silently
  *  mis-resolve. */
-export function loadConfig(root?: string): PolisConfig | null {
+export function loadConfig(root?: string): AgentFactoryConfig | null {
   const p = configPath(root);
   if (!existsSync(p)) {
     return null;
@@ -166,13 +166,13 @@ export function loadConfig(root?: string): PolisConfig | null {
         `[${orphanHost.map((h) => `'${h}'`).join(', ')}]`,
     );
   }
-  return obj as unknown as PolisConfig;
+  return obj as unknown as AgentFactoryConfig;
 }
 
 export interface ResolveHostOpts {
   cliUser?: string | null;
   cliHome?: string | null;
-  cfg?: PolisConfig | null;
+  cfg?: AgentFactoryConfig | null;
   root?: string;
 }
 
@@ -205,7 +205,7 @@ export function resolveHost(
       .map((h) => `'${h}'`)
       .join(', ');
     throw new ConfigError(
-      `--host '${name}' is absent from \`.polis.config\` host.{} (known: [${known}]) — refusing a current-user fallback`,
+      `--host '${name}' is absent from \`.agent-factory.config\` host.{} (known: [${known}]) — refusing a current-user fallback`,
     );
   }
   if (
@@ -242,7 +242,7 @@ export interface FleetTargetsOpts {
  *  before any `only` subset so `--only upgoose` can never re-include an
  *  excluded host. */
 export function fleetTargets(
-  cfg: PolisConfig,
+  cfg: AgentFactoryConfig,
   opts: FleetTargetsOpts = {},
 ): string[] {
   const fleet = cfg.fleet ?? {};

@@ -39,7 +39,11 @@ function adapter(
   };
 }
 
-const manifest: Manifest = { koine: 1, scope: 'project', targets: ['claude'] };
+const manifest: Manifest = {
+  agentForge: 1,
+  scope: 'project',
+  targets: ['claude'],
+};
 const ir: IR = { manifest };
 
 describe('compile', () => {
@@ -47,8 +51,8 @@ describe('compile', () => {
   let stateDir: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-compile-'));
-    stateDir = join(cwd, '.koine');
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-compile-'));
+    stateDir = join(cwd, '.agent-forge');
     mkdirSync(stateDir, { recursive: true });
   });
   afterEach(() => {

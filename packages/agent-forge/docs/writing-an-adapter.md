@@ -1,15 +1,15 @@
-# Writing an koine adapter
+# Writing an agent-forge adapter
 
 This guide walks through building a community adapter using the **Aider adapter** (~70 lines) as the worked example. Aider has the smallest config surface of any supported client (rules only), so it's the minimum-viable adapter shape.
 
-By the end you'll have a published `@yourname/koine-adapter-myclient` package that the koine CLI can target via `koine compile myclient`.
+By the end you'll have a published `@yourname/agent-forge-adapter-myclient` package that the agent-forge CLI can target via `agent-forge compile myclient`.
 
 ---
 
 ## Prerequisites
 
 ```bash
-npm install @leclabs/koine
+npm install @leclabs/agent-forge
 ```
 
 Optionally `vitest` for testing and `tsup` for building.
@@ -33,7 +33,7 @@ Adapters are pure: same input → same output. State lives in the filesystem.
 
 ## Step 1 — declare capabilities
 
-Tell koine what your client supports:
+Tell agent-forge what your client supports:
 
 ```ts
 const capabilities: AdapterCapabilities = {
@@ -56,7 +56,7 @@ const capabilities: AdapterCapabilities = {
 };
 ```
 
-The CLI's `koine adapters` and `koine lint` use this to surface lossy translations to users.
+The CLI's `agent-forge adapters` and `agent-forge lint` use this to surface lossy translations to users.
 
 ## Step 2 — paths
 
@@ -81,7 +81,7 @@ async detect(scope: Scope, cwd: string): Promise<boolean> {
 }
 ```
 
-Used by `koine doctor` to report which targets are configured.
+Used by `agent-forge doctor` to report which targets are configured.
 
 ## Step 4 — `read()`
 
@@ -95,7 +95,7 @@ async read(scope: Scope, cwd: string): Promise<Partial<IR>> {
 }
 ```
 
-`parseRule` is exported from `@leclabs/koine/core` — use the shared serializers for resources that share the markdown+frontmatter shape (rules, skills, commands, agents). For YAML-shaped resources (hooks, MCP), use `parseHook` / handcraft.
+`parseRule` is exported from `@leclabs/agent-forge/core` — use the shared serializers for resources that share the markdown+frontmatter shape (rules, skills, commands, agents). For YAML-shaped resources (hooks, MCP), use `parseHook` / handcraft.
 
 The CLI's `import` command calls this and writes the IR via the engine.
 
@@ -132,7 +132,7 @@ async write(ir: IR, scope: Scope, cwd: string, opts: WriteOpts = {}): Promise<Wr
 }
 ```
 
-**Honor `opts.dryRun`** — when true, return what _would_ be written but don't touch the filesystem. The engine uses this for `koine compile --dry-run` and `koine diff`.
+**Honor `opts.dryRun`** — when true, return what _would_ be written but don't touch the filesystem. The engine uses this for `agent-forge compile --dry-run` and `agent-forge diff`.
 
 **Be explicit about what you skip.** The `--explain` flag groups warnings/skips by reason — give meaningful reason strings.
 
@@ -164,9 +164,9 @@ const canonicalToMyClient: Partial<Record<CanonicalEvent, string>> = {
 };
 ```
 
-koine's CLI surfaces this via `koine events --client myclient`. Events not in the map → warning + skip on write.
+agent-forge's CLI surfaces this via `agent-forge events --client myclient`. Events not in the map → warning + skip on write.
 
-For hook _bodies_, koine hooks are shell commands. If your client wants JS plugins or another representation, generate a thin shim that shells out to the configured `command` (see the OpenCode adapter for reference).
+For hook _bodies_, agent-forge hooks are shell commands. If your client wants JS plugins or another representation, generate a thin shim that shells out to the configured `command` (see the OpenCode adapter for reference).
 
 ## Testing
 
@@ -176,7 +176,7 @@ Use vitest with the round-trip pattern:
 import { myAdapter } from '../src/index.js';
 
 it('round-trips rules', async () => {
-  const ir = { manifest: { koine: 1, scope: 'project', targets: ['myclient'] }, rules: [...] };
+  const ir = { manifest: { agentForge: 1, scope: 'project', targets: ['myclient'] }, rules: [...] };
   await myAdapter.write(ir, 'project', tmpDir, {});
   const re = await myAdapter.read('project', tmpDir);
   expect(re.rules).toEqual(ir.rules);
@@ -189,7 +189,7 @@ it('round-trips rules', async () => {
 npm publish --access public
 ```
 
-Users install with `npm i @yourname/koine-adapter-myclient` and pass it to the CLI via a custom adapter loader, or to the `compile` engine directly.
+Users install with `npm i @yourname/agent-forge-adapter-myclient` and pass it to the CLI via a custom adapter loader, or to the `compile` engine directly.
 
 ## Reference adapters
 

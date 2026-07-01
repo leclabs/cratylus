@@ -47,21 +47,21 @@ describe('CLI commands (integration)', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-cli-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-cli-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });
   });
 
-  it('init creates .koine/ with manifest and resource dirs', async () => {
+  it('init creates .agent-forge/ with manifest and resource dirs', async () => {
     const code = await runInit({ scope: 'project', cwd });
     expect(code).toBe(0);
-    expect(existsSync(join(cwd, '.koine', 'manifest.yaml'))).toBe(true);
-    expect(existsSync(join(cwd, '.koine', 'rules'))).toBe(true);
-    expect(existsSync(join(cwd, '.koine', 'hooks'))).toBe(true);
+    expect(existsSync(join(cwd, '.agent-forge', 'manifest.yaml'))).toBe(true);
+    expect(existsSync(join(cwd, '.agent-forge', 'rules'))).toBe(true);
+    expect(existsSync(join(cwd, '.agent-forge', 'hooks'))).toBe(true);
   });
 
-  it('init refuses to overwrite an existing .koine/', async () => {
+  it('init refuses to overwrite an existing .agent-forge/', async () => {
     await runInit({ scope: 'project', cwd });
     const code = await runInit({ scope: 'project', cwd });
     expect(code).toBe(1);
@@ -71,7 +71,7 @@ describe('CLI commands (integration)', () => {
     writeFileSync(join(cwd, '.gitignore'), 'node_modules/\n', 'utf8');
     await runInit({ scope: 'project', cwd });
     expect(readFileSync(join(cwd, '.gitignore'), 'utf8')).toContain(
-      '.koine/local/',
+      '.agent-forge/local/',
     );
   });
 
@@ -83,9 +83,13 @@ describe('CLI commands (integration)', () => {
       adapters,
     );
     expect(code).toBe(0);
-    expect(existsSync(join(cwd, '.koine', 'rules', 'main.md'))).toBe(true);
-    expect(existsSync(join(cwd, '.koine', 'hooks'))).toBe(true);
-    expect(existsSync(join(cwd, '.koine', 'permissions.yaml'))).toBe(true);
+    expect(existsSync(join(cwd, '.agent-forge', 'rules', 'main.md'))).toBe(
+      true,
+    );
+    expect(existsSync(join(cwd, '.agent-forge', 'hooks'))).toBe(true);
+    expect(existsSync(join(cwd, '.agent-forge', 'permissions.yaml'))).toBe(
+      true,
+    );
   });
 
   it('full flow: init → import claude → compile opencode produces opencode files', async () => {
@@ -94,7 +98,7 @@ describe('CLI commands (integration)', () => {
     await runImport({ client: 'claude', scope: 'project', cwd }, adapters);
 
     // Add opencode to manifest targets so default compile picks it up.
-    const manifestPath = join(cwd, '.koine', 'manifest.yaml');
+    const manifestPath = join(cwd, '.agent-forge', 'manifest.yaml');
     const text = readFileSync(manifestPath, 'utf8');
     writeFileSync(
       manifestPath,
@@ -109,10 +113,10 @@ describe('CLI commands (integration)', () => {
     expect(code).toBe(0);
     expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
     expect(
-      existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.yaml')),
+      existsSync(join(cwd, '.opencode', 'plugins', 'agent-forge-hooks.yaml')),
     ).toBe(true);
     expect(
-      existsSync(join(cwd, '.opencode', 'plugins', 'koine-hooks.ts')),
+      existsSync(join(cwd, '.opencode', 'plugins', 'agent-forge-hooks.ts')),
     ).toBe(true);
   });
 
@@ -121,14 +125,14 @@ describe('CLI commands (integration)', () => {
     await runInit({ scope: 'project', cwd });
     await runImport({ client: 'claude', scope: 'project', cwd }, adapters);
     // Add a command (which opencode does not support) and add opencode to targets
-    const cmdDir = join(cwd, '.koine', 'commands');
+    const cmdDir = join(cwd, '.agent-forge', 'commands');
     mkdirSync(cmdDir, { recursive: true });
     writeFileSync(
       join(cmdDir, 'review.md'),
       '---\ndescription: Review code\n---\nReview the diff.',
       'utf8',
     );
-    const manifestPath = join(cwd, '.koine', 'manifest.yaml');
+    const manifestPath = join(cwd, '.agent-forge', 'manifest.yaml');
     const text = readFileSync(manifestPath, 'utf8');
     writeFileSync(
       manifestPath,

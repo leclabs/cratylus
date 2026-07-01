@@ -28,7 +28,7 @@ export async function runCompile(
   try {
     ir = await readIR(scope, cwd);
   } catch (e) {
-    console.error(pc.red(`koine: ${(e as Error).message}`));
+    console.error(pc.red(`agent-forge: ${(e as Error).message}`));
     return 2;
   }
 
@@ -39,7 +39,7 @@ export async function runCompile(
   if (targetIds.length === 0) {
     console.error(
       pc.yellow(
-        'koine: no targets — declare some in manifest.yaml or pass clients on CLI',
+        'agent-forge: no targets — declare some in manifest.yaml or pass clients on CLI',
       ),
     );
     return 1;
@@ -48,7 +48,7 @@ export async function runCompile(
   for (const id of targetIds) {
     const a = adapters.find((x) => x.id === id);
     if (!a) {
-      console.error(pc.red(`koine: unknown adapter '${id}'`));
+      console.error(pc.red(`agent-forge: unknown adapter '${id}'`));
       return 1;
     }
     targets.push(a);

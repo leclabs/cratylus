@@ -3,7 +3,7 @@ import { type ScopedIR, mergeIR } from '../../../src/core/engine/merge.js';
 import type { IR, Manifest } from '../../../src/core/ir/types.js';
 
 const baseManifest = (overrides: Partial<Manifest> = {}): Manifest => ({
-  koine: 1,
+  agentForge: 1,
   scope: 'project',
   targets: ['claude'],
   ...overrides,

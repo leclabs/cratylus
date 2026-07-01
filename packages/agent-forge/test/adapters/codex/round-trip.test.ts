@@ -6,7 +6,7 @@ import { codexAdapter } from '../../../src/adapters/codex/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
 
 const manifest = (): Manifest => ({
-  koine: 1,
+  agentForge: 1,
   scope: 'project',
   targets: ['codex'],
 });
@@ -15,7 +15,7 @@ describe('codexAdapter', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-codex-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-codex-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

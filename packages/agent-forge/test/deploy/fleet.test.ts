@@ -24,7 +24,7 @@ const silent = { log: () => {}, warn: () => {} };
 
 describe('placeAgentsSsh (fake fleet)', () => {
   it('resolves ~/.claude via $HOME, scps the def, seeds sidecars if-absent', () => {
-    const { agentsDir } = buildRenderTree(tmp('koine-render-'));
+    const { agentsDir } = buildRenderTree(tmp('agent-forge-render-'));
     const fleet = makeFleet({
       'lcaraccioli@upmav.lan': { reachable: true, home: '/Users/lcaraccioli' },
     });
@@ -57,7 +57,7 @@ describe('placeAgentsSsh (fake fleet)', () => {
   });
 
   it('NEVER clobbers an existing remote sidecar (reports PRESENT)', () => {
-    const { agentsDir } = buildRenderTree(tmp('koine-render-'));
+    const { agentsDir } = buildRenderTree(tmp('agent-forge-render-'));
     const existing = new Map<string, string>([
       ['/Users/lcaraccioli/.claude/agents/mav/SELF.md', 'LIVED HISTORY'],
     ]);
@@ -86,7 +86,7 @@ describe('placeAgentsSsh (fake fleet)', () => {
   });
 
   it('an unreachable host defers with rc=2 (never silently "landed")', () => {
-    const { agentsDir } = buildRenderTree(tmp('koine-render-'));
+    const { agentsDir } = buildRenderTree(tmp('agent-forge-render-'));
     const fleet = makeFleet({
       'lcaraccioli@dead.lan': { reachable: false, home: '/Users/lcaraccioli' },
     });
@@ -104,7 +104,7 @@ describe('placeAgentsSsh (fake fleet)', () => {
   });
 
   it('the bare-home guard fires server-side (--home /Users/x -> /Users/x/.claude)', () => {
-    const { agentsDir } = buildRenderTree(tmp('koine-render-'));
+    const { agentsDir } = buildRenderTree(tmp('agent-forge-render-'));
     const fleet = makeFleet({
       'lcaraccioli@upmav.lan': { reachable: true, home: '/Users/lcaraccioli' },
     });
@@ -129,10 +129,10 @@ describe('placeAgentsSsh (fake fleet)', () => {
 describe('deployFleet — two-host orchestration (fire local + upmav ssh)', () => {
   it('deploys fire (local) + upmav (ssh), excludes upgoose, reports per-host', () => {
     // fire is local → sandbox its .claude parent in config so we never touch $HOME.
-    const fireHome = tmp('koine-fire-home-');
+    const fireHome = tmp('agent-forge-fire-home-');
     const root = writeConfig(tmp('polis-cfg-'), fireHome);
     const cfg = loadConfig(root)!;
-    const tree = buildRenderTree(tmp('koine-render-'));
+    const tree = buildRenderTree(tmp('agent-forge-render-'));
 
     const fleet = makeFleet({
       'lcaraccioli@upmav.lan': { reachable: true, home: '/Users/lcaraccioli' },
@@ -165,10 +165,10 @@ describe('deployFleet — two-host orchestration (fire local + upmav ssh)', () =
   });
 
   it('a deferred (unreachable) host yields unreachable-deferred, fleet rc still 0', () => {
-    const fireHome = tmp('koine-fire-home-');
+    const fireHome = tmp('agent-forge-fire-home-');
     const root = writeConfig(tmp('polis-cfg-'), fireHome);
     const cfg = loadConfig(root)!;
-    const tree = buildRenderTree(tmp('koine-render-'));
+    const tree = buildRenderTree(tmp('agent-forge-render-'));
     const fleet = makeFleet({
       'lcaraccioli@upmav.lan': { reachable: false, home: '/Users/lcaraccioli' },
     });

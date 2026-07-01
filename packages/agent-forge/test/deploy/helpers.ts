@@ -1,4 +1,4 @@
-// Shared deploy-test scaffolding: build a render tree + a `.polis.config`
+// Shared deploy-test scaffolding: build a render tree + a `.agent-factory.config`
 // fixture in a temp dir, plus a fake ssh fleet (a CommandRunner that simulates
 // remote hosts in-memory) so the ssh placer is exercised hermetically — no real
 // network, no real ssh.
@@ -70,7 +70,7 @@ export function buildHooksTree(root: string): { hooksDir: string } {
 
 /** A bundle source root with the built `episodic.mjs` present. */
 export function buildBundleSrc(root: string, present = true): string {
-  const dist = join(root, 'episodic', 'dist');
+  const dist = join(root, 'agent-memory', 'dist');
   mkdirSync(dist, { recursive: true });
   if (present) {
     writeFileSync(
@@ -82,10 +82,10 @@ export function buildBundleSrc(root: string, present = true): string {
   return root;
 }
 
-/** The fixture `.polis.config`: a fire(local) + upmav(lcaraccioli) + upgoose
+/** The fixture `.agent-factory.config`: a fire(local) + upmav(lcaraccioli) + upgoose
  *  fleet, with upgoose EXCLUDED from --fleet. Mirrors the acceptance contract
  *  (`upmav=lcaraccioli`, `upgoose` excluded-from-fleet). Returns the repo-root
- *  path (the dir holding `.polis.config`). `fireHome` (optional) sandboxes the
+ *  path (the dir holding `.agent-factory.config`). `fireHome` (optional) sandboxes the
  *  local host's `.claude` parent so a fleet test never touches the real `$HOME`. */
 export function writeConfig(root: string, fireHome?: string): string {
   mkdirSync(root, { recursive: true });
@@ -100,7 +100,7 @@ export function writeConfig(root: string, fireHome?: string): string {
     },
   };
   writeFileSync(
-    join(root, '.polis.config'),
+    join(root, '.agent-factory.config'),
     JSON.stringify(cfg, null, 2),
     'utf-8',
   );

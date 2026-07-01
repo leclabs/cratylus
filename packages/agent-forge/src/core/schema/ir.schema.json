@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://leclabs.dev/koine/v1/ir.schema.json",
+  "$id": "https://leclabs.dev/agent-forge/v1/ir.schema.json",
   "title": "IR",
-  "description": "The complete koine intermediate representation. Top-level container of manifest plus all resource collections.",
+  "description": "The complete agent-forge intermediate representation. Top-level container of manifest plus all resource collections.",
   "type": "object",
   "required": ["manifest"],
   "additionalProperties": false,

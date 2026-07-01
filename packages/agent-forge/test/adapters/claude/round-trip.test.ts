@@ -13,7 +13,7 @@ import { claudeAdapter } from '../../../src/adapters/claude/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
 
 const manifest = (): Manifest => ({
-  koine: 1,
+  agentForge: 1,
   scope: 'project',
   targets: ['claude'],
 });
@@ -90,7 +90,7 @@ describe('claudeAdapter', () => {
   let cwd: string;
 
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-claude-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-claude-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });
@@ -174,7 +174,7 @@ describe('claudeAdapter', () => {
     const ir1 = await claudeAdapter.read('project', cwd);
 
     // Write to a fresh dir, then read back
-    const cwd2 = mkdtempSync(join(tmpdir(), 'koine-claude-rt-'));
+    const cwd2 = mkdtempSync(join(tmpdir(), 'agent-forge-claude-rt-'));
     try {
       await claudeAdapter.write(
         { manifest: manifest(), ...ir1 },

@@ -77,9 +77,9 @@ describe('mergeHooksSettings', () => {
 
 describe('placeHooksLocal', () => {
   it('ships worker scripts and merges into an absent settings.json', () => {
-    const src = tmp('koine-hooks-render-');
+    const src = tmp('agent-forge-hooks-render-');
     const { hooksDir } = buildHooksTree(src);
-    const claude = join(tmp('koine-hooks-host-'), '.claude');
+    const claude = join(tmp('agent-forge-hooks-host-'), '.claude');
 
     const r = placeHooksLocal(
       claude,
@@ -111,9 +111,9 @@ describe('placeHooksLocal', () => {
   });
 
   it('merges into a pre-existing settings.json without clobbering', () => {
-    const src = tmp('koine-hooks-render-');
+    const src = tmp('agent-forge-hooks-render-');
     const { hooksDir } = buildHooksTree(src);
-    const claude = join(tmp('koine-hooks-host-'), '.claude');
+    const claude = join(tmp('agent-forge-hooks-host-'), '.claude');
     // pre-seed a settings.json with other keys.
     mkdirSync(claude, { recursive: true });
     writeFileSync(
@@ -135,9 +135,9 @@ describe('placeHooksLocal', () => {
   });
 
   it('dry-run changes nothing on disk', () => {
-    const src = tmp('koine-hooks-render-');
+    const src = tmp('agent-forge-hooks-render-');
     const { hooksDir } = buildHooksTree(src);
-    const claude = join(tmp('koine-hooks-host-'), '.claude');
+    const claude = join(tmp('agent-forge-hooks-host-'), '.claude');
     placeHooksLocal(
       claude,
       { agentsDir: '', skillsDir: '', hooksDir },
@@ -151,7 +151,7 @@ describe('placeHooksLocal', () => {
 
 describe('treeNames(hooks)', () => {
   it('lists the hook ids in the render tree', () => {
-    const src = tmp('koine-hooks-render-');
+    const src = tmp('agent-forge-hooks-render-');
     const { hooksDir } = buildHooksTree(src);
     expect(
       treeNames('hooks', { agentsDir: '', skillsDir: '', hooksDir }),

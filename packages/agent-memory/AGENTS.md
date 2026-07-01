@@ -3,11 +3,11 @@
 `episodic`: the portable JSONL **EPISODIC** store + dream routing — a private **build-only toolsource**,
 bundled into the `memory` skill and deployed to every host (`plans/memory-tool-bundling`). **Not** a
 published library: zero importers, zero runtime deps. `tsup` bundles `src/bin.ts` → one dependency-free
-`dist/episodic.mjs`. The runtime that backs the `memory` cell's EPISODIC layer; zero-coupled to koine.
+`dist/episodic.mjs`. The runtime that backs the `memory` cell's EPISODIC layer; zero-coupled to agent-forge.
 
 ## The contract is in the corpus
 
-The build-spec is `packages/mind` — the `memory` and `dream` cells (EPISODIC schema, Routing,
+The build-spec is `packages/agent-anatomy` — the `memory` and `dream` cells (EPISODIC schema, Routing,
 Portability). Two invariants are load-bearing and must never regress:
 
 - **Portability.** A record stores `(scope, path)`, never an absolute `home` and never a one-way `fid`

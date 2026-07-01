@@ -24,9 +24,13 @@ import type { Fragment } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
 import type { SkillCell } from '../src/toolkit/skill-cell.js';
 
-const mindRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const srcRoot = join(mindRoot, 'src');
-const notationDoc = join(mindRoot, 'references', 'formal-symbolic-notation.md');
+const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const srcRoot = join(anatomyRoot, 'src');
+const notationDoc = join(
+  anatomyRoot,
+  'references',
+  'formal-symbolic-notation.md',
+);
 
 /**
  * Every non-ASCII glyph in col-1 of the notation table — loaded live from the doc

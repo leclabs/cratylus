@@ -81,7 +81,7 @@ export const mavResolved: ResolvedAgent = {
   name: 'mav',
   description: hero_persona.definiens,
   mark: mavArchetypeGreen_provenance.mark,
-  sourcePath: 'packages/mind/agent/mav.md',
+  sourcePath: 'packages/agent-anatomy/agent/mav.md',
   memoryProtocol: founderBase.memoryProtocol,
   organs: [
     ['Persona', [hero_persona]],

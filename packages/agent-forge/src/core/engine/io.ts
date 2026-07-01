@@ -48,7 +48,7 @@ export class IRValidationError extends Error {
 }
 
 /**
- * Canonical path of the .koine/ directory for a scope, whether or not it
+ * Canonical path of the .agent-forge/ directory for a scope, whether or not it
  * exists. Used by writeIR and init.
  */
 export function defaultIRRoot(scope: Scope, cwd: string): string {
@@ -58,7 +58,7 @@ export function defaultIRRoot(scope: Scope, cwd: string): string {
 }
 
 /**
- * Read the IR for a given scope by walking the on-disk `.koine/` directory.
+ * Read the IR for a given scope by walking the on-disk `.agent-forge/` directory.
  *
  * Throws if the directory cannot be located, the manifest is missing, or the
  * assembled IR fails schema validation.
@@ -67,7 +67,7 @@ export async function readIR(scope: Scope, cwd: string): Promise<IR> {
   const root = findIRRoot(scope, cwd);
   if (!root || !existsSync(root)) {
     throw new Error(
-      `Cannot read IR for scope '${scope}': no .koine/ found from ${cwd}`,
+      `Cannot read IR for scope '${scope}': no .agent-forge/ found from ${cwd}`,
     );
   }
 
@@ -123,7 +123,7 @@ export async function readIR(scope: Scope, cwd: string): Promise<IR> {
 }
 
 /**
- * Write an IR to disk under the canonical `.koine/` path for the given scope.
+ * Write an IR to disk under the canonical `.agent-forge/` path for the given scope.
  * Validates the IR before any writes; throws `IRValidationError` if invalid.
  *
  * Existing files are overwritten. Files that no longer correspond to an IR

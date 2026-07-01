@@ -1,6 +1,6 @@
-# mind — exemplar glossary
+# agent-anatomy — exemplar glossary
 
-<!-- GENERATED from packages/mind/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
+<!-- GENERATED from packages/agent-anatomy/ideas/ by toolkit/glossary.py (human-reader / doc-harness projection). Do not hand-edit; regenerate. -->
 
 > 27 exemplars, one browsable index — a second projection of the same source-graph that `resolve.py` renders to agent defs. Single-source publishing: the projection is not the source.
 

@@ -18,8 +18,8 @@ import { describe, expect, it } from 'vitest';
 import { fragmentToMarkdown, skillToMarkdown } from '../src/toolkit/project.js';
 import type { SkillCell } from '../src/toolkit/skill-cell.js';
 
-const mindRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const srcRoot = join(mindRoot, 'src');
+const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const srcRoot = join(anatomyRoot, 'src');
 
 async function firstExport<T>(modPath: string): Promise<T> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<

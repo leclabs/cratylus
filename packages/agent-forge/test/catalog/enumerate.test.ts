@@ -1,5 +1,5 @@
 // `enumerateCatalog` — the organ-value discovery library. Proves: (1) it
-// enumerates every one of the 24 organs from mind's modules with the correct
+// enumerates every one of the 24 organs from agent-anatomy's modules with the correct
 // axis/kind/arity; (2) the contract shape per organ; (3) values sort shortlex;
 // (4) the DRIFT-PROOF property — a value module dropped under an organ dir
 // appears in the output with no other change.
@@ -18,8 +18,8 @@ import {
 } from '../../src/catalog/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-// koine/test/catalog → up to packages → agent-anatomy/src/organs.
-const mindOrgans = join(
+// agent-forge/test/catalog → up to packages → agent-anatomy/src/organs.
+const anatomyOrgans = join(
   here,
   '..',
   '..',
@@ -29,10 +29,10 @@ const mindOrgans = join(
   'organs',
 );
 
-describe('enumerateCatalog over mind', () => {
+describe('enumerateCatalog over agent-anatomy', () => {
   let entries: CatalogEntry[];
   beforeAll(async () => {
-    entries = await enumerateCatalog(mindOrgans);
+    entries = await enumerateCatalog(anatomyOrgans);
   });
 
   it('enumerates exactly the 24 organs, in anatomy order', () => {
@@ -103,7 +103,7 @@ describe('shortlex order', () => {
 describe('drift-proof discovery (the load-bearing property)', () => {
   let dir: string;
   beforeAll(() => {
-    dir = mkdtempSync(join(tmpdir(), 'koine-catalog-'));
+    dir = mkdtempSync(join(tmpdir(), 'agent-forge-catalog-'));
   });
 
   it('a value module dropped under an organ dir appears, no other change', async () => {

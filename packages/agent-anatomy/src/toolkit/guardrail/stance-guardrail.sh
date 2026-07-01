@@ -19,7 +19,7 @@
 #   - routing a genuine INTENT ambiguity to /elicit
 #
 # SAFETY MODEL:
-#   - OFF BY DEFAULT. Does nothing unless the repo opts in (git config polis.stanceGuard true).
+#   - OFF BY DEFAULT. Does nothing unless the repo opts in (git config agentfactory.stanceGuard true).
 #   - AGENT-SCOPED. Only fires for agents on the allowlist (default: nico, mav — the founders).
 #   - FAILS OPEN. Any error (no transcript, judge failure, jq missing) → exit 0 (allow stop).
 #     A guardrail that wedges work on its own flakiness is worse than a missed block.
@@ -59,7 +59,7 @@ stop_active="$(printf '%s' "$input" | jq -r '.stop_hook_active // false' 2>/dev/
 # Resolve relative to the hook's cwd (the project), which is where the flag lives.
 cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
 [ -n "$cwd" ] && cd "$cwd" 2>/dev/null || true
-enabled="$(git config --bool polis.stanceGuard 2>/dev/null || echo false)"
+enabled="$(git config --bool agentfactory.stanceGuard 2>/dev/null || echo false)"
 [ "$enabled" = "true" ] || allow_stop
 
 # --- agent-scope gate -----------------------------------------------------------------------
@@ -67,7 +67,7 @@ enabled="$(git config --bool polis.stanceGuard 2>/dev/null || echo false)"
 # Stop hook agent_type may be absent; SubagentStop carries the subagent's name. When absent,
 # honor an explicit STANCE_GUARD_AGENTS=* opt-in only; otherwise do not enforce on unknown.
 agent_type="$(printf '%s' "$input" | jq -r '.agent_type // empty' 2>/dev/null || true)"
-allowlist="${STANCE_GUARD_AGENTS:-$(git config polis.stanceGuardAgents 2>/dev/null || echo 'nico mav')}"
+allowlist="${STANCE_GUARD_AGENTS:-$(git config agentfactory.stanceGuardAgents 2>/dev/null || echo 'nico mav')}"
 
 if [ "$allowlist" != "*" ]; then
 	[ -n "$agent_type" ] || allow_stop  # cannot identify the agent → fail open

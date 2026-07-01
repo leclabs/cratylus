@@ -30,8 +30,8 @@ const SAMPLE = `# mav — episodic
 
 ## Next steps (carried)
 
-- **koine frontier.** Stand ready for the next machinery call.
-- **OPEN follow-up** — episodic \`koine-\` rename is Nico's call.
+- **agent-forge frontier.** Stand ready for the next machinery call.
+- **OPEN follow-up** — episodic \`agent-forge-\` rename is Nico's call.
   - sub-detail: reconcile with memory-model-redesign.
 
 ## Stream
@@ -45,7 +45,7 @@ describe('extractItems', () => {
     expect(items).toHaveLength(2);
     expect(items[0]?.section).toBe('Next steps (carried)');
     expect(items[0]?.text).toBe(
-      '- **koine frontier.** Stand ready for the next machinery call.',
+      '- **agent-forge frontier.** Stand ready for the next machinery call.',
     );
   });
 

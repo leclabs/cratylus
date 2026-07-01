@@ -6,7 +6,7 @@ import { crushAdapter } from '../../../src/adapters/crush/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
 
 const manifest = (): Manifest => ({
-  koine: 1,
+  agentForge: 1,
   scope: 'project',
   targets: ['crush'],
 });
@@ -14,7 +14,7 @@ const manifest = (): Manifest => ({
 describe('crushAdapter', () => {
   let cwd: string;
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), 'koine-crush-'));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-crush-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });

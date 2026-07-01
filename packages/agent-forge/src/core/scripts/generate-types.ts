@@ -9,7 +9,7 @@ const outFile = resolve(here, '..', 'ir', 'generated.ts');
 
 const banner = `/**
  * AUTO-GENERATED. Do not edit by hand.
- * Source: packages/koine/src/core/schema/*.schema.json
+ * Source: packages/agent-forge/src/core/schema/*.schema.json
  * Regenerate: pnpm --filter @leclabs/agent-forge gen
  */
 /* eslint-disable */

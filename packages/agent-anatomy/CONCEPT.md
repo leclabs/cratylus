@@ -1,4 +1,4 @@
-# Concept — what mind does, and why it works
+# Concept — what agent-anatomy does, and why it works
 
 ## What
 

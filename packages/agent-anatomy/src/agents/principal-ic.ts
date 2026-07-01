@@ -82,7 +82,7 @@ export const principalIcResolved: ResolvedAgent = {
   name: 'principal-ic',
   description: ruler_persona.definiens,
   mark: principalIcRootRed_provenance.mark,
-  sourcePath: 'packages/mind/agent/principal-ic.md',
+  sourcePath: 'packages/agent-anatomy/agent/principal-ic.md',
   memoryProtocol: base.memoryProtocol,
   organs: [
     ['Persona', [ruler_persona]],

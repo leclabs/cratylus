@@ -62,7 +62,7 @@ export const plannerResolved: ResolvedAgent = {
   name: 'planner',
   description: ruler_persona.definiens,
   mark: plannerArchetypeBlue_provenance.mark,
-  sourcePath: 'packages/mind/agent/planner.md',
+  sourcePath: 'packages/agent-anatomy/agent/planner.md',
   memoryProtocol: base.memoryProtocol,
   organs: [
     ['Persona', [ruler_persona]],
