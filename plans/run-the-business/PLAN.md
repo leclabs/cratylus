@@ -12,7 +12,13 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 ## Status mirror
 
-**Ready / active:** none — fresh baseline.
+**Pending (tails from retired `koine-absorbs-mind`, migrated 2026-06-30):**
+
+- `minimal-delta-agents` — make each agent a minimal spread-delta over `base` (gated on the
+  generic-extraction decision).
+- `provenance-out-of-context` — rehome the `<!-- GENERATED -->` build-provenance out of the injected SOUL body.
+
+**Ready / active:** none.
 
 **Done 2026-06-23:** `canonical-organ-values` (retired — own sharded plan, decision docs kept) + its
 `fleet-deploy-catchup` tail. Re-derived the organ value catalog from blind model introspection (48+28 blind

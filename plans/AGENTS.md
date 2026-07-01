@@ -5,12 +5,9 @@ folders (`pending/ → ready/ → active/ → completed/`) as deps clear.
 
 ## Active
 
-| Plan                 | Concern                                                                                                                                                                                          | Lead                          |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------- |
-| `koine-absorbs-mind` | THE INVERSION — TS modules are source, markdown a projection; koine owns anatomy types + projection + deploy. Frontier cleared (T2.2 + T3.1 done, unpushed); rollout/cutover remain (T4.1/T6.1). | Nico (corpus) + Mav (engine)  |
-| `organ-catalog`      | Enrich the organ value-set (more real distinctions per organ) + make it discoverable by `create-agent` (single-source + `koine catalog`, kill the embedded-table drift).                         | Nico (content) + Mav (CLI)    |
-| `principal-stance`   | Make Nico/Mav invariantly principal (autonomous owning-experts, never custodial-on-correction): encode the stance as identity (not instructions), mint the authority axis, harness guardrail.    | Nico (corpus) + Mav (harness) |
-| `run-the-business`   | The standing plan — live backlog + standalone tasks; perpetual (never retires). Holds the live tails of retired initiatives. No active tail (fresh baseline 2026-06-23).                         | Mav + Nico (per task)         |
+| Plan               | Concern                                                                                                                                                                               | Lead                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Pending tails from retired `koine-absorbs-mind`: `minimal-delta-agents`, `provenance-out-of-context`. | Mav + Nico (per task) |
 
 ## Retired
 
@@ -49,6 +46,18 @@ per-agent cells purged for a generalized opinionated LLM-reader value-set, all 1
 `weitermachen → carry-on`, `build-agent` layman wizard added. Result on `main` @ `510c66e`; **fleet 6/6
 deployed + verified** (the 5 initially-unreachable hosts caught up via RTB `fleet-deploy-catchup`, now closed).
 The scaffold dir is **kept** (decision docs `0001`/`0002` + raw blind audits are the durable rationale).
+
+**agent-factory rename + inversion (retired 2026-06-30):** three initiatives wound down.
+
+- `koine-absorbs-mind` — the inversion completed: TS modules under `packages/agent-anatomy/src/` are the
+  sole source, `@leclabs/agent-forge` (ex-koine) owns the anatomy types + projection + deploy, markdown is
+  a projection. Cutover (T6.1) + koine-native hooks (T6.3) landed. The repo renamed to **agent-factory** and
+  all old names (koine/mind/episodic-package/polis-config/agentir) depalimpsested from code + runtime
+  configs. Two live tails → RTB: `minimal-delta-agents`, `provenance-out-of-context`.
+- `organ-catalog` — organ value-set enriched + made discoverable via `agent-forge catalog` (single-source,
+  killed the embedded-table drift). Also: the 21-organ re-canonicalization to industry-standard names.
+- `principal-stance` — the intent-driven-expert stance encoded as identity (not instructions), the
+  mission-command authority anchor minted, and the koine-native Stop/SubagentStop stance guardrail shipped.
 
 **Founder boundary:** Nico owns constitution/roles/archetypes (the society); Mav owns infrastructure/
 machinery (the substrate). `principal-ic` is intrinsic to both (founder-genus, bound to the polis subject).
