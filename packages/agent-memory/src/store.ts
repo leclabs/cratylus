@@ -1,5 +1,15 @@
-import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import {
+  appendFileSync,
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
+import { basename, dirname, join } from 'node:path';
 import {
   type EpisodicRecord,
   type JsonValue,
@@ -18,6 +28,18 @@ export interface EncodeInput {
   /** Scope-relative path. Defaults to {@link DEFAULT_EPISODIC_PATH}. */
   path?: string;
   body: JsonValue;
+}
+
+/** Outcome of a {@link EpisodicStore.drain}. */
+export interface DrainResult {
+  /** Absolute archive path, or null when the raw log was empty (a no-op). */
+  archived: string | null;
+  /** Number of records archived. */
+  records: number;
+  /** Retained backup filenames, newest-first. */
+  kept: string[];
+  /** Pruned (deleted) backup filenames. */
+  pruned: string[];
 }
 
 export interface EpisodicStoreOptions {
@@ -94,6 +116,41 @@ export class EpisodicStore {
     const file = this.rawFile(path);
     if (!existsSync(file)) return [];
     return parseLines(readFileSync(file, 'utf8'));
+  }
+
+  /**
+   * The dreamer's DRAIN: archive the raw log to `<home>/.bak/EPISODIC.<ULID>.jsonl`
+   * (a verified copy), then CLEAR the raw log — run after consolidating into the
+   * durable layers, so the archive is a recovery net for a bad consolidation, not a
+   * permanent copy. Backups ROTATE: only the newest `keep` (default 5) are retained
+   * and the rest pruned every drain, so `.bak/` is bounded — each archive is a single
+   * dream-cycle of raw events (small, ~constant), and an old backup's recovery value
+   * decays to zero once its dream is validated. A no-op when the raw log is empty.
+   * Backup-and-verify precede the clear, so a crash mid-drain never loses data.
+   */
+  drain(opts?: { keep?: number; path?: string }): DrainResult {
+    const keep = opts?.keep ?? 5;
+    const file = this.rawFile(opts?.path);
+    const count = this.read(opts?.path).length;
+    if (count === 0)
+      return { archived: null, records: 0, kept: [], pruned: [] };
+    const bakDir = join(dirname(file), '.bak');
+    const base = basename(file, '.jsonl');
+    mkdirSync(bakDir, { recursive: true });
+    const archive = join(bakDir, `${base}.${this.mintUlid()}.jsonl`);
+    copyFileSync(file, archive);
+    if (statSync(archive).size !== statSync(file).size)
+      throw new Error(`drain: backup verification failed for ${archive}`);
+    writeFileSync(file, '', 'utf8'); // clear: the raw is safely archived + verified
+    const prefix = `${base}.`;
+    const backups = readdirSync(bakDir)
+      .filter((n) => n.startsWith(prefix) && n.endsWith('.jsonl'))
+      .sort()
+      .reverse(); // newest-first: the ULID in the name sorts chronologically
+    const kept = backups.slice(0, keep);
+    const pruned = backups.slice(keep);
+    for (const n of pruned) rmSync(join(bakDir, n));
+    return { archived: archive, records: count, kept, pruned };
   }
 }
 

@@ -1,4 +1,10 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -33,6 +39,41 @@ beforeEach(() => {
 
 afterEach(() => {
   rmSync(home, { recursive: true, force: true });
+});
+
+describe('drain', () => {
+  it('archives the raw log to .bak/ (verified), clears it, and rotates keep-N', () => {
+    store.encode({ scope: 'user', body: 'a' });
+    store.encode({ scope: 'user', body: 'b' });
+    const bakDir = join(home, '.claude/agents/mav', '.bak');
+
+    const r1 = store.drain({ keep: 2 });
+    expect(r1.records).toBe(2);
+    expect(r1.archived).not.toBeNull();
+    expect(existsSync(r1.archived as string)).toBe(true);
+    // byte-faithful archive of the drained events
+    expect(
+      readFileSync(r1.archived as string, 'utf8')
+        .trim()
+        .split('\n'),
+    ).toHaveLength(2);
+    // raw log cleared, and the archive lives under .bak/, not as a sibling
+    expect(store.read()).toHaveLength(0);
+    expect((r1.archived as string).startsWith(bakDir)).toBe(true);
+
+    // rotation: three more drains at keep=2 leave exactly 2 archives (the newest)
+    for (const n of ['c', 'd', 'e']) {
+      store.encode({ scope: 'user', body: n });
+      store.drain({ keep: 2 });
+    }
+    expect(readdirSync(bakDir)).toHaveLength(2);
+  });
+
+  it('is a no-op on an empty raw log', () => {
+    const r = store.drain({ keep: 5 });
+    expect(r.archived).toBeNull();
+    expect(r.records).toBe(0);
+  });
 });
 
 describe('encode', () => {

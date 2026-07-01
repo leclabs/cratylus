@@ -91,6 +91,7 @@ usage:
                   (--body <text> | --body-json <json> | --body -)
   episodic read   --home <dir> [--scope <tag>] [--path <p>] [--count]
   episodic migrate <src.md> <dest.jsonl> [--dry-run] [--overwrite]
+  episodic drain  --home <dir> [--keep N] [--path <p>]
 
 EPISODIC is a JSONL event log: encode mints a ULID and appends one open record.
 The raw log is ALWAYS the agent home (--home); --scope is a routing TAG written
@@ -180,6 +181,33 @@ function runMigrate(args: ParsedArgs): CliResult {
   };
 }
 
+/**
+ * `drain`: the dreamer's post-consolidation clear. Archive the home-anchored raw
+ * log to `<home>/.bak/EPISODIC.<ULID>.jsonl` (verified), then empty it; keep only
+ * the newest `--keep N` (default 5) archives, prune the rest — so `.bak/` is
+ * bounded, never the unbounded sibling-file creep.
+ */
+function runDrain(args: ParsedArgs): CliResult {
+  const keepStr = str(args.flags.keep);
+  const keep = keepStr !== undefined ? Number.parseInt(keepStr, 10) : 5;
+  if (!Number.isInteger(keep) || keep < 0)
+    return { code: 2, out: '', err: '--keep must be a non-negative integer\n' };
+  const path = str(args.flags.path);
+  const store = new EpisodicStore({ env: hostEnvFrom(args.flags) });
+  const r = store.drain({ keep, ...(path !== undefined ? { path } : {}) });
+  if (r.archived === null)
+    return {
+      code: 0,
+      out: 'drain: nothing to archive (raw log empty)\n',
+      err: '',
+    };
+  return {
+    code: 0,
+    out: `drained ${r.records} record(s) -> ${r.archived}\n.bak/: ${r.kept.length} kept, ${r.pruned.length} pruned (keep=${keep})\n`,
+    err: '',
+  };
+}
+
 /** Dispatch one CLI invocation. Pure: returns a {@link CliResult}, performs no process IO. */
 export function main(argv: readonly string[]): CliResult {
   const [cmd, ...rest] = argv;
@@ -195,6 +223,8 @@ export function main(argv: readonly string[]): CliResult {
         return runRead(args);
       case 'migrate':
         return runMigrate(args);
+      case 'drain':
+        return runDrain(args);
       default:
         return { code: 2, out: '', err: `unknown command: ${cmd}\n\n${USAGE}` };
     }
