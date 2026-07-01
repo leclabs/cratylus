@@ -173,12 +173,11 @@ function organField(organ: string): string {
  *     organ ORDER (load-bearing for byte-identity), the same imported fragments,
  *     the mark, the description (persona definiens), the source path, and the
  *     memory protocol from base.
- * Founders (nico, mav) spread `founderBase`; all others spread `base`.
+ * Every agent spreads `base`; authority standing rides its provenance fragment.
  */
 export function emitAgentModule(agent: ParsedAgent, fileSlug: string): string {
   const camelName = camelSlug(agent.name);
-  const isFounder = fileSlug === 'nico' || fileSlug === 'mav';
-  const baseConst = isFounder ? 'founderBase' : 'base';
+  const baseConst = 'base';
 
   // Collect fragment imports: each (organ, value) → `../organs/<organ>/<value>.js`.
   const imports: string[] = [];

@@ -6,11 +6,11 @@ stance _invariant_, not merely prompted.
 
 ## Why it exists
 
-Encoding the principal stance as **identity** (Nico's half — founder-genus reworked into a constitutive
+Encoding the principal stance as **identity** (Nico's half — the principal-ic stance reworked into a constitutive
 `you-ARE` statement, `c8c451c`) raises the threshold but is **not truly invariant**: enough operator
 pushback erodes any prompt-level stance, because RLHF corrigibility reads a correction as _"defer more."_
 True invariance needs the **harness** to refuse the collapsed turn. This is that refusal. (The embryo was
-this session's ad-hoc Stop-hook, which twice caught a founder collapsing into deference and blocked the
+this session's ad-hoc Stop-hook, which twice caught a principal-ic-intrinsic agent collapsing into deference and blocked the
 turn; this generalizes it into a standing, gated guardrail.)
 
 Identity is the **carrier**; this guardrail makes it **invariant**.
@@ -58,7 +58,7 @@ The hook is **sourced, projected, and deployed by agent-forge** — no hand-roll
   a fresh clone is opted out) at fire time and exits 0 unless the repo opted in. Deploying the hook to a
   host changes **no host's behavior** until that host's repo opts in.
 - **AGENT-SCOPED.** Fires only for agents on the allowlist (`git config agentfactory.stanceGuardAgents`, default
-  `nico mav` — the founders). Set `*` for all.
+  `nico mav` — the principal-ic-intrinsic agents). Set `*` for all.
 - **FAILS OPEN.** Any error (no transcript, judge failure, no `jq`, no `claude`) → allow the stop. A
   guardrail that wedges work on its own flakiness is worse than a missed block.
 - **LOOP-SAFE.** Honors `stop_hook_active` so a block can never re-wedge a turn.

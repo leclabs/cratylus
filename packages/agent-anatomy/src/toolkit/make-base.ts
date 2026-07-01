@@ -3,9 +3,9 @@
 // (the genus blocks every agent's SOUL carries) from the canonical `ideas/memory.md`
 // and `ideas/persona.md` cells' `## Protocol` sections, so the floor has ONE home
 // (the cells) and base.ts is their projection — never a hand-copied drift.
-// `founderBase` is `{ ...base }` (founders carry their founder-genus via their
-// provenance fragment, not a separate selection organ in the current
-// selection-vector form).
+// The `principal-ic` authority standing rides each agent's provenance fragment
+// (e.g. `principal-ic intrinsic`), not a separate selection organ or base floor,
+// in the current selection-vector form.
 //
 // Run: `tsx src/toolkit/make-base.ts` (writes src/agents/base.ts).
 
@@ -68,8 +68,8 @@ const out = `// The harness-neutral polis floor every agent-anatomy agent spread
 // so \`base\`'s organ contribution is empty; its load-bearing content is the
 // \`memoryProtocol\` and \`personaProtocol\` genus blocks (the projector appends them
 // as \`## Memory Protocol\` and \`## Persona Protocol\`).
-// \`founderBase\` is \`{ ...base }\` — founder-genus rides each founder's provenance
-// fragment (e.g. \`founder-genus, principal-ic intrinsic\`), not a separate organ.
+// The \`principal-ic\` authority standing rides each agent's provenance fragment
+// (e.g. \`principal-ic intrinsic\`), not a separate base floor or organ.
 
 /** The \`{name}\`-parameterized memory protocol — the genus block, one home. */
 export const memoryProtocol = ${backtick(protocol)};
@@ -81,11 +81,6 @@ export const personaProtocol = ${backtick(personaProtocol)};
 export const base = {
   memoryProtocol,
   personaProtocol,
-} as const;
-
-/** The founder floor: base + founder genus (carried via provenance, so \`= base\`). */
-export const founderBase = {
-  ...base,
 } as const;
 `;
 

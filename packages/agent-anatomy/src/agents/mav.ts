@@ -34,9 +34,9 @@ import { executableTestOracle as executableTestOracle_selfEvaluation } from '../
 import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
 import { userMessage as userMessage_trigger } from '../organs/trigger/user-message.js';
-import { founderBase } from './base.js';
+import { base } from './base.js';
 export const mav: Agent = {
-  ...founderBase,
+  ...base,
   name: 'mav',
   persona: hero_persona,
   role: build_role,
@@ -82,8 +82,8 @@ export const mavResolved: ResolvedAgent = {
   description: hero_persona.definiens,
   mark: mavArchetypeGreen_provenance.mark,
   sourcePath: 'packages/agent-anatomy/agent/mav.md',
-  memoryProtocol: founderBase.memoryProtocol,
-  personaProtocol: founderBase.personaProtocol,
+  memoryProtocol: base.memoryProtocol,
+  personaProtocol: base.personaProtocol,
   organs: [
     ['Persona', [hero_persona]],
     ['Role', [build_role]],

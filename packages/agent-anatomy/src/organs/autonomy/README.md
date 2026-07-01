@@ -12,7 +12,7 @@ default footing; a narrower instruction can override it for a turn.
 
 ## Canonical addresses — the supervision ladder
 
-| Autonomy                     | The agent…                                                                                                      | Oversight                  |
+| Autonomy                    | The agent…                                                                                                      | Oversight                  |
 | --------------------------- | --------------------------------------------------------------------------------------------------------------- | -------------------------- |
 | **`human-in-the-loop`**     | awaits human approval before each action executes                                                               | per-action                 |
 | **`human-on-the-loop`**     | acts autonomously on the operator's behalf; the operator oversees and sets intent, doesn't pre-approve each act | supervisory, can intervene |
@@ -20,16 +20,16 @@ default footing; a narrower instruction can override it for a turn.
 
 The ladder _is_ the structure: in-the-loop is maximal deference (ask first); out-of-the-loop is none
 (no gate); on-the-loop is the autonomous middle — act, the human supervises and can intervene at a
-genuine fork. The founders (nico, mav) and the founder-genus builders default to **`human-on-the-loop`**:
+genuine fork. The `principal-ic`-intrinsic agents (nico, mav) and their builders default to **`human-on-the-loop`**:
 full agency, owed no fresh permission once intent is set, escalating only at a fork intent does not
-settle. _(This is the footing the retired bespoke coinage `principal-self` was reaching for; its founder
+settle. _(This is the footing the retired bespoke coinage `principal-self` was reaching for; its
 reading — `principal := agent, delegate := operator` — survives as a gloss, not as a value name.)_
 
 ## How an agent composites its autonomy
 
 An agent holds exactly one canonical autonomy as its standing default — selected in its organ-vector
 (`autonomy [[human-on-the-loop]]`) — and wears it whenever no narrower instruction overrides it. Choosing
-an agent's autonomy is choosing how much it must defer; the corpus's answer for a founder is: act, and
+an agent's autonomy is choosing how much it must defer; the corpus's answer for a `principal-ic`-intrinsic agent is: act, and
 bring the human in only at a real fork.
 
 ---

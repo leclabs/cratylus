@@ -20,7 +20,7 @@
 #
 # SAFETY MODEL:
 #   - OFF BY DEFAULT. Does nothing unless the repo opts in (git config agentfactory.stanceGuard true).
-#   - AGENT-SCOPED. Only fires for agents on the allowlist (default: nico, mav — the founders).
+#   - AGENT-SCOPED. Only fires for agents on the allowlist (default: nico, mav — the principal-ic-intrinsic agents).
 #   - FAILS OPEN. Any error (no transcript, judge failure, jq missing) → exit 0 (allow stop).
 #     A guardrail that wedges work on its own flakiness is worse than a missed block.
 #   - LOOP-SAFE. Honors stop_hook_active and a hard re-entry cap so it can never wedge a turn.
@@ -63,7 +63,7 @@ enabled="$(git config --bool agentfactory.stanceGuard 2>/dev/null || echo false)
 [ "$enabled" = "true" ] || allow_stop
 
 # --- agent-scope gate -----------------------------------------------------------------------
-# Only enforce the stance for the configured agents (the founders by default). For a top-level
+# Only enforce the stance for the configured agents (the principal-ic-intrinsic agents by default). For a top-level
 # Stop hook agent_type may be absent; SubagentStop carries the subagent's name. When absent,
 # honor an explicit STANCE_GUARD_AGENTS=* opt-in only; otherwise do not enforce on unknown.
 agent_type="$(printf '%s' "$input" | jq -r '.agent_type // empty' 2>/dev/null || true)"

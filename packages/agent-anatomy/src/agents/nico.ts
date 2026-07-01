@@ -34,9 +34,9 @@ import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } fro
 import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
 import { decisionRationale as decisionRationale_transparency } from '../organs/transparency/decision-rationale.js';
 import { userMessage as userMessage_trigger } from '../organs/trigger/user-message.js';
-import { founderBase } from './base.js';
+import { base } from './base.js';
 export const nico: Agent = {
-  ...founderBase,
+  ...base,
   name: 'nico',
   persona: sage_persona,
   role: curate_role,
@@ -80,8 +80,8 @@ export const nicoResolved: ResolvedAgent = {
   description: sage_persona.definiens,
   mark: nicoArchetypeCyan_provenance.mark,
   sourcePath: 'packages/agent-anatomy/agent/nico.md',
-  memoryProtocol: founderBase.memoryProtocol,
-  personaProtocol: founderBase.personaProtocol,
+  memoryProtocol: base.memoryProtocol,
+  personaProtocol: base.personaProtocol,
   organs: [
     ['Persona', [sage_persona]],
     ['Role', [curate_role]],

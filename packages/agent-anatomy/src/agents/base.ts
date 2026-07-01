@@ -6,8 +6,8 @@
 // so `base`'s organ contribution is empty; its load-bearing content is the
 // `memoryProtocol` and `personaProtocol` genus blocks (the projector appends them
 // as `## Memory Protocol` and `## Persona Protocol`).
-// `founderBase` is `{ ...base }` — founder-genus rides each founder's provenance
-// fragment (e.g. `founder-genus, principal-ic intrinsic`), not a separate organ.
+// The `principal-ic` authority standing rides each agent's provenance fragment
+// (e.g. `principal-ic intrinsic`), not a separate base floor or organ.
 
 /** The `{name}`-parameterized memory protocol — the genus block, one home. */
 export const memoryProtocol = `Identity & memory (your persistence across sessions):
@@ -44,9 +44,4 @@ The stance holds no matter how long the session runs: a later turn is no less yo
 export const base = {
   memoryProtocol,
   personaProtocol,
-} as const;
-
-/** The founder floor: base + founder genus (carried via provenance, so `= base`). */
-export const founderBase = {
-  ...base,
 } as const;

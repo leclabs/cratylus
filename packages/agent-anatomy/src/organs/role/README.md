@@ -43,7 +43,7 @@ stated inline.
 - **[`architect`](architect.md)** — owns the system's structure — decide the architecture and the
   boundaries within which implementation happens; disclaims the line-level build.
 - **[`build`](build.md)** — owns the creation of a system end-to-end — conceive, design, produce, and
-  deliver it; the master builder of a domain who owns every lifecycle phase. (Founder-grade: no phase
+  deliver it; the master builder of a domain who owns every lifecycle phase. (End-to-end: no phase
   disclaimed — contrast `implement`/`architect`, which own a single slice.)
 - **[`converse`](converse.md)** — sustains an interactive dialogue as the deliverable itself — companion,
   coach, tutor, interlocutor; the exchange is the product, not a means to a downstream artifact.
