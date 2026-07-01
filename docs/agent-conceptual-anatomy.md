@@ -1,7 +1,7 @@
 # Conceptual Anatomy of an AI Agent
 
-> **The contract is the TypeScript; this is its projection.** As of T0.1
-> (`plans/koine-absorbs-mind`), the anatomy IS a **TypeScript type system** —
+> **The contract is the TypeScript; this is its projection.** The anatomy IS a
+> **TypeScript type system** —
 > `packages/agent-forge/src/anatomy/index.ts`, exported from `@leclabs/agent-forge/anatomy`. Those types are the
 > source of truth (genus · classification · arity · the 24-organ `Organ` union · `Fragment` · `Agent` ·
 > `Skill`); this prose is their human-readable mirror. Keep them consistent; the `.ts` wins on conflict.

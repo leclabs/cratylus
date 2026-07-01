@@ -1,7 +1,7 @@
 # Node workspace members live directly under packages/ (one dir = one package):
-# agent-forge (the projection machinery) and agent-memory (the portable memory store).
-# packages/agent-anatomy is the culture corpus — markdown + a Python toolkit, not an npm
-# package — so it has no package.json and pnpm excludes it automatically.
+# agent-forge (the projection machinery), agent-memory (the portable memory store),
+# and agent-anatomy (@leclabs/agent-anatomy) — the culture corpus, itself a TS workspace
+# member: TS modules under src/ are the source, markdown is a projection.
 packages:
   - "packages/*"
 

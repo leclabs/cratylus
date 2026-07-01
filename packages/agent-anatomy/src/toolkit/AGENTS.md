@@ -31,7 +31,7 @@ source — there is nothing to round-trip against); acceptance = `tsc` + `test/p
 `pnpm anatomy:project` stages `episodic.mjs` into the render tree, and `agent-forge deploy` ships it as a present
 asset. The coupling law still holds — a host's agent SOULs + the `memory` skill dir deploy atomically.
 
-## Deploy — `agent-forge deploy` (the canonical path, koine-absorbs-mind T6.1a)
+## Deploy — `agent-forge deploy` (the canonical path)
 
 `agent-forge deploy` is the **sole, documented, runnable** deployer. It ships an already-PROJECTED render tree
 (`agents/` + `skills/`) to a host `.claude/`, a byte-identical TS port of the former `place/local.py` +

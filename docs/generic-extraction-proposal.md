@@ -1,7 +1,7 @@
 # Generic-library extraction — decision-grade proposal
 
-**Status:** proposal / analysis. Tees up the **product decision** that gates `koine-absorbs-mind` T4.1 →
-T6.1 → T6.2. Authored by Nico (architecture/structure/naming is his lane); the **go/no-go + the naming +
+**Status:** proposal / analysis. Tees up the **product decision** on generic-library extraction.
+Authored by Nico (architecture/structure/naming is his lane); the **go/no-go + the naming +
 the package boundary are the Operator's product call** — this doc informs it, does not make it.
 
 ## Why now

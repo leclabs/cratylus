@@ -22,7 +22,7 @@ packages/agent-anatomy/.render/
 # Same neutral-staging rationale as .render/ above; regenerable, never a deploy.
 packages/agent-anatomy/.render-ts/
 # The codex-harness projection (project-cli-codex.ts) — proof that agent-anatomy reaches a
-# second agent-forge harness for free (koine-absorbs-mind T2.4). Same neutral-staging
+# second agent-forge harness for free. Same neutral-staging
 # rationale; kept separate so the claude byte-identity diff stays clean.
 packages/agent-anatomy/.render-ts-codex/
 # Fleet deploy topology carries env-specific SSH usernames — local-only.

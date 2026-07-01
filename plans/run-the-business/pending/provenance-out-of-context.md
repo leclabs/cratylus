@@ -1,7 +1,6 @@
 # Rehome build-provenance out of the injected SOUL body
 
 **Lane** Nico (design) + Mav (projection) · **Status** pending.
-Migrated from the retired `koine-absorbs-mind` plan (was T6.2).
 
 ## Finding (still live — confirmed 2026-06-30)
 

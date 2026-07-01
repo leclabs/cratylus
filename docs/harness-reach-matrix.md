@@ -2,7 +2,7 @@
 
 _Which harnesses a agent-anatomy agent reaches for free, and with what agent-support._
 
-## The thesis (koine-absorbs-mind)
+## The thesis
 
 Because **projection IS the export adapter**, a agent-anatomy agent authored ONCE reaches
 **every** agent-forge harness for free. "Project agent-anatomy to harness X" _is_ "export through the

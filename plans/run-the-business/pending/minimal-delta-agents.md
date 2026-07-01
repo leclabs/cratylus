@@ -1,7 +1,6 @@
 # Minimal-delta agents (agents as spread-deltas over base)
 
 **Lane** Nico (modules) + Mav (engine) · **Status** pending — gated on the generic-extraction decision.
-Migrated from the retired `koine-absorbs-mind` plan (was T4.1).
 
 ## Scope
 

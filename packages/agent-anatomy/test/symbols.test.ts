@@ -1,5 +1,5 @@
-// SYMBOLS gate — the TS port of `toolkit/verify.py` `gate_symbols` (koine-absorbs-mind
-// T6.1c). The register rule (`references/formal-symbolic-notation.md`): a fenced FORMAL
+// SYMBOLS gate — the TS port of `toolkit/verify.py` `gate_symbols`. The register
+// rule (`references/formal-symbolic-notation.md`): a fenced FORMAL
 // block carries ONLY declared symbols plus the cell's own definienda. This gate is the
 // positive form — every fence-interior glyph in each fragment / skill `.ts` definiens
 // must be in (the declared table col-1 ∪ the calibrated exemption classes); an

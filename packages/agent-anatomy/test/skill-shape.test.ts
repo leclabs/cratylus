@@ -1,5 +1,5 @@
 // SKILL-SHAPE gate — the TS port of `toolkit/verify.py` `gate_skill_operative` +
-// the CITE-TWICE half of `gate_skill_provenance` (koine-absorbs-mind T6.1c). Two
+// the CITE-TWICE half of `gate_skill_provenance`. Two
 // laws over every `SkillCell` module:
 //
 //   OPERATIVE  — a skill carries ≥1 operative element beyond its heading + the

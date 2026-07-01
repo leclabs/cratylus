@@ -1,8 +1,7 @@
 # Baseline / delta agent model
 
 How a agent-anatomy agent is authored as a small **delta over a base**, composed with native JS, and projected
-minimally per harness. Settles plan task **T0.2** (`plans/koine-absorbs-mind`). Source-of-truth for the
-TS types (T0.1) and the rollout (T4.1).
+minimally per harness. Source-of-truth for the TS types and the rollout — now reality, not a pending plan.
 
 ## Two resets — distinct, and filed in different places
 

@@ -1,5 +1,5 @@
 // The CODEX projection of the agent ANATOMY — the second harness, proving the
-// thesis of `koine-absorbs-mind` T2.4: because projection IS the export adapter,
+// thesis: because projection IS the export adapter,
 // a agent-anatomy agent authored once reaches EVERY agent-forge harness for free. T2.1 did this
 // for claude; this mirrors it for codex.
 //
@@ -106,8 +106,8 @@ export function projectCodexAgentDelta(
  * The framing differs from `skillToClaudeMd` only in the harness token passed to
  * `skillBody` and in OMITTING the provenance HTML comment: a codex SKILL.md is a
  * plain spec file, and the content-hash banner is build-provenance the running
- * agent does not need (mirrors the same rehoming intent as `koine-absorbs-mind`
- * T6.2). Front-matter is the AgentSkills required pair.
+ * agent does not need (mirrors the same rehoming intent). Front-matter is the
+ * AgentSkills required pair.
  */
 export function skillToCodexMd(
   s: ResolvedSkill,
