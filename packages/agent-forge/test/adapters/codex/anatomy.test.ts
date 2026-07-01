@@ -72,10 +72,12 @@ describe('agentToCodexToml — the codex subagent projection', () => {
     expect(sp).toContain('## Model');
     // The memory genus block, {name}-substituted.
     expect(sp).toContain('protocol for nico');
-    // The regenerate-don't-hand-edit provenance banner + content hash.
-    expect(sp).toContain('GENERATED from packages/agent-anatomy/agent/nico.md');
-    expect(sp).toContain('profile: strong-llm-lean/codex');
-    expect(sp).toMatch(/content-hash: sha256:[0-9a-f]{16}/);
+    // NO provenance banner: the regenerate-don't-hand-edit comment + content-hash
+    // is build-provenance the running agent never consumes, so it is not injected
+    // (mirrors skillToCodexMd, which already omits it).
+    expect(sp).not.toContain('GENERATED from');
+    expect(sp).not.toContain('profile:');
+    expect(sp).not.toMatch(/content-hash: sha256:/);
   });
 
   it('omits color when the agent carries no mark hue', () => {

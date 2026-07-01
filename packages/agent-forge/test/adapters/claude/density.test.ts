@@ -131,15 +131,18 @@ describe('densityRef — port of reader.py render_ref (the density mechanism)', 
   });
 });
 
-describe('agent projection — density records the profile, body stays invariant', () => {
-  it('records <density>/claude-code in the provenance header', () => {
+describe('agent projection — no provenance header, body stays invariant', () => {
+  it('injects NO provenance banner regardless of the profile passed', () => {
     for (const d of DENSITIES) {
       const md = agentToClaudeMd(agentFixture(), densityProfile(d));
-      expect(md).toContain(`profile: ${d}/claude-code`);
+      // Build-provenance the running agent never consumes: not injected.
+      expect(md).not.toContain('GENERATED from');
+      expect(md).not.toContain('profile:');
+      expect(md).not.toMatch(/content-hash: sha256:/);
     }
   });
 
-  it('the selection-vector body is byte-identical across densities (only profile differs)', () => {
+  it('the selection-vector body is byte-identical across densities (profile records nothing)', () => {
     const strip = (md: string): string =>
       md
         .split('\n')

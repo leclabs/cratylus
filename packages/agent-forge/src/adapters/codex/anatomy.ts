@@ -24,8 +24,6 @@ import {
   type ResolvedAgent,
   type ResolvedSkill,
   agentBody,
-  bodyHash,
-  provenanceHeader,
   skillBody,
   subtractReset,
 } from '../claude/anatomy.js';
@@ -43,18 +41,17 @@ export type { ResolvedAgent, ResolvedSkill };
  * harness-neutral organ sections + memory genus block) — the SAME `agentBody` the
  * claude SOUL carries, just delivered as a TOML field instead of a `.md` body.
  *
- * `profile` (default `strong-llm-lean/codex`) is recorded as a leading provenance
- * comment inside `system_prompt` so the projected `.toml` carries the same
- * regenerate-don't-hand-edit banner + content-hash as the claude SOUL.
+ * No provenance comment is injected into `system_prompt`: the
+ * regenerate-don't-hand-edit banner + content-hash is build-provenance the running
+ * agent never consumes (mirrors `skillToCodexMd`, which already omits it).
+ * `_profile` is retained for API symmetry but no longer recorded.
  */
 export function agentToCodexTomlObject(
   a: ResolvedAgent,
-  profile = 'strong-llm-lean/codex',
+  _profile = 'strong-llm-lean/codex',
 ): Record<string, unknown> {
   const body = agentBody(a);
-  const bh = bodyHash(body);
-  const header = provenanceHeader(a.sourcePath, profile, bh);
-  const systemPrompt = `${header}\n\n${body.replace(/\n+$/, '')}\n`;
+  const systemPrompt = `${body.replace(/\n+$/, '')}\n`;
   const obj: Record<string, unknown> = {
     name: a.name,
     description: a.mark?.emoji

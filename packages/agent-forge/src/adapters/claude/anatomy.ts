@@ -185,34 +185,30 @@ function agentFrontMatter(a: ResolvedAgent): string[] {
   return fm;
 }
 
-/** Frame a body as a claude artifact: front-matter + provenance header + body. */
-function frameClaudeMd(
-  frontMatter: string[],
-  sourcePath: string,
-  profile: string,
-  body: string,
-): string {
-  const bh = bodyHash(body);
+/**
+ * Frame a body as a claude artifact: front-matter + body. No provenance header —
+ * the `<!-- GENERATED … content-hash … -->` banner is build-provenance the running
+ * agent never consumes, and it is not injected into the deployed SOUL. `bodyHash` /
+ * `provenanceHeader` remain exported as reusable primitives (a future drift reader
+ * recomputes the hash from the body); they are simply not injected here.
+ */
+function frameClaudeMd(frontMatter: string[], body: string): string {
   const lines: string[] = ['---', ...frontMatter, '---', ''];
-  lines.push(provenanceHeader(sourcePath, profile, bh), '');
   lines.push(body.replace(/\n+$/, ''), '');
   return lines.join('\n');
 }
 
 /**
  * The full claude-code SOUL for an agent (mirrors `render/claude_code.render`).
- * `profile` is `<reader>/<harness>` (default the deployed `strong-llm-lean/claude-code`).
+ * `_profile` (`<reader>/<harness>`) is retained for call-site/API symmetry but no
+ * longer recorded: the provenance banner it fed is build-provenance the running
+ * agent never consumes, so it is not injected into the deployed SOUL.
  */
 export function agentToClaudeMd(
   a: ResolvedAgent,
-  profile = 'strong-llm-lean/claude-code',
+  _profile = 'strong-llm-lean/claude-code',
 ): string {
-  return frameClaudeMd(
-    agentFrontMatter(a),
-    a.sourcePath,
-    profile,
-    agentBody(a),
-  );
+  return frameClaudeMd(agentFrontMatter(a), agentBody(a));
 }
 
 // ── Delta-over-target (subtract the harness reset) ───────────────────────────
@@ -454,18 +450,15 @@ function skillFrontMatter(s: ResolvedSkill): string[] {
 /**
  * The full composed SKILL.md for a skill (mirrors `compose_skill` + render, or
  * `emit_skill_dir` for a `deploy: skill-dir` cell). `refProject` maps a `[[slug]]`
- * to its harness affordance (a skill → its `/trigger`, else `**slug**`).
+ * to its harness affordance (a skill → its `/trigger`, else `**slug**`). `_profile`
+ * is retained for API symmetry but no longer recorded (no provenance banner is
+ * injected — build-provenance the running agent never consumes).
  */
 export function skillToClaudeMd(
   s: ResolvedSkill,
   refProject: (slug: string) => string,
-  profile = 'strong-llm-lean/claude-code',
+  _profile = 'strong-llm-lean/claude-code',
   harness = 'claude-code',
 ): string {
-  return frameClaudeMd(
-    skillFrontMatter(s),
-    s.sourcePath,
-    profile,
-    skillBody(s, refProject, harness),
-  );
+  return frameClaudeMd(skillFrontMatter(s), skillBody(s, refProject, harness));
 }
