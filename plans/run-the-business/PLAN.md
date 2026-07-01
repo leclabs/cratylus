@@ -17,6 +17,7 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 - `minimal-delta-agents` — make each agent a minimal spread-delta over `base` (gated on the
   generic-extraction decision).
 - `provenance-out-of-context` — rehome the `<!-- GENERATED -->` build-provenance out of the injected SOUL body.
+- `p4-stance-protocol-tail` — apps deploy-catchup + upgoose + SELF-retirements, after the Persona Protocol / `principal-ic-intrinsic` ship.
 
 **Ready / active:** none.
 
