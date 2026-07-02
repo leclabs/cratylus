@@ -8,18 +8,16 @@ SOUL). Design + decisions: `SPEC.md` (D1–D6).
 
 ## Status mirror
 
-**Spec authored — all shards HELD pending Operator approval of `SPEC.md`.**
+**Wave 0 complete; fire cutover verified 18/18 (staged rollout per Operator directive).**
 
-DAG: `wave(0) {runtime-lattice (Mav) · forge-seeds (Mav) · corpus-rituals-v2 (Nico)}` →
-`wave(1) {fleet-cutover-v2 ⊳ all three}` → `wave(2) {store-migration-v2 ⊳ cutover}`.
+DAG: `wave(1) {fleet-cutover-v2}` → `wave(2) {store-migration-v2 ⊳ cutover}`.
 
-**Pending (HELD):**
+**Pending:**
 
-- `runtime-lattice` — record schema + total `node` resolver + `fold` manifest (`legacy` bucket) +
-  `read --under` + lock + audit retargeted to the v2 stores + route-engine retarget.
-- `forge-seeds` — deploy `SEED_FILES` retarget to the v2 stores (kills seed-resurrection).
-- `corpus-rituals-v2` — CoALA store names + fold/total-route/in-repo law in the cells.
-- `fleet-cutover-v2` — atomic runtime + seeds + SOUL deploy; pinned v2 verb surface; no-reseed
-  proof; v1-model doc surfaces reconciled.
+- `fleet-cutover-v2` — remaining 6 hosts (fire already live + oracle-verified: derived-cwd encode ·
+  node resolver · fold determinism + legacy bucket · `--under` · audit v2 bite · lock · v2
+  skills/SOUL content); pinned verb surface; no-reseed proof; `docs/scoped-memory.md` reconciliation.
 - `store-migration-v2` — clean-slate harvest-and-drop (projection-dedup bar), judged; audit
   `scanned ≥ 2` precondition; post-deploy ABSENT re-assert; continuity smoke.
+
+**Completed:** `runtime-lattice` · `forge-seeds` · `corpus-rituals-v2`.

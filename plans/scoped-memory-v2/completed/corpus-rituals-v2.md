@@ -34,3 +34,5 @@ reader-density bar.
   return artifact.
 - Suite green (null-organ, reader-density, projection-stability, skill-shape, symbols); repo gates
   4×0.
+
+**Outcome (2026-07-02):** completed — see git; judge re-verified falsifiers live (bundle probes / fresh-seed deploy / blind-reader transcript + 36-36 suite).

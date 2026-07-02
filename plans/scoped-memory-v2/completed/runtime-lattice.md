@@ -38,3 +38,5 @@ v1-shaped records remain readable (their `scope` field is inert data, never rout
   a v1 organ name is REJECTED.
 - A seeded wrong-node resolution FAILS the suite (prove one, remove).
 - Repo gates 4×0; bundle single-file zero-dep.
+
+**Outcome (2026-07-02):** completed — see git; judge re-verified falsifiers live (bundle probes / fresh-seed deploy / blind-reader transcript + 36-36 suite).

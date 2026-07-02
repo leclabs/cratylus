@@ -21,3 +21,5 @@ never-clobber, never-prune all unchanged).
   under any input (a home carrying only v2 stores stays v1-free after deploy — the resurrection
   case is the named failing return).
 - Repo gates 4×0.
+
+**Outcome (2026-07-02):** completed — see git; judge re-verified falsifiers live (bundle probes / fresh-seed deploy / blind-reader transcript + 36-36 suite).
