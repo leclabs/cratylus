@@ -1,12 +1,12 @@
 # scoped-memory-v2 — path-provenance memory
 
-**The initiative.** Replace judgment-tagged scope (v1, field-falsified: 32/38 mis-tagged; scope-
-defection incident) with **derived path-provenance**: telemetry-first capture (harness hook journals
-write-sets; tool derives territory/host/cwd), a **marker-declared directory lattice** in place of the
-user/project/plan enum, dream as a **deterministic-fold → semantic-re-judge pipeline**, **re-dream**
-(migration = recomputation), and **CoALA-aligned stores** (`EPISODIC · SEMANTIC · PROCEDURAL`; SELF
-dissolves — stance was always SOUL's). Prior-art survey on record: composition unshipped; every leg
-proven. Design: `SPEC.md` (D1–D8).
+**The initiative.** Memory events carry mechanical file-path provenance captured by the harness
+(PostToolUse path-journal hook; the tool derives host/cwd/write-sets); **scope is a position in a
+marker-declared directory lattice** (`node(p)` = nearest ancestor boundary; markers configurable,
+launch cwd always a node), computed at consolidation — never judged at capture; dream is a
+**re-runnable fold** (deterministic lattice pass → semantic re-judge; `--replay` = migration as
+recomputation); stores are the CoALA types (`EPISODIC · SEMANTIC · PROCEDURAL`; the stance lives in
+SOUL). Design + decisions: `SPEC.md` (D1–D7).
 
 ## Status mirror
 
@@ -17,9 +17,11 @@ DAG: `wave(0) {runtime-telemetry (Mav) · telemetry-hook (Mav) · corpus-rituals
 
 **Pending (HELD):**
 
-- `runtime-telemetry` — record schema v2 + lattice resolver + fold/redream verbs + prototype harvest
-  (lock · audit-default · territory filters); oracle-suite acceptance.
+- `runtime-telemetry` — record schema + lattice resolver (`node(p)`, configurable markers) +
+  `dream fold [--replay]` manifest + `read --under` + lock + audit allow-file; oracle-suite
+  acceptance.
 - `telemetry-hook` — PostToolUse path-journal hook (agent-forge-projected, fails open, off-repo).
-- `corpus-rituals-v2` — the store dissolution + lattice/fold/out-of-territory laws in the cells.
-- `fleet-cutover-v2` — atomic runtime+hook+SOUL deploy; upmav prototype supersession verified.
-- `store-migration-v2` — SELF → SEMANTIC/PROCEDURAL split per agent, judged; continuity smoke.
+- `corpus-rituals-v2` — CoALA store names + fold/out-of-node/in-repo-policy laws in the cells.
+- `fleet-cutover-v2` — atomic runtime+hook+SOUL deploy; per-host content verification.
+- `store-migration-v2` — harvest-and-drop to the new stores (projection-dedup bar, drop-biased),
+  judged; continuity smoke.

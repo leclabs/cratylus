@@ -4,32 +4,33 @@
 
 ## Static
 
-`../SPEC.md` D2/D2a (record schema; telemetry fold-in; degradation), D3 (lattice: markers `.git`·
-`AGENTS.md`·`PLAN.md`·`$HOME`·launch-cwd; prefix order; attribute-to-writes → territory → $HOME;
-host-qualified paths), D4 (deterministic pass; legacy-compat strategy; re-dream over `.bak` archives;
-retention keep-all-compact), D7 (lock verbs · audit default-allow · territory read/drain filters —
-harvest upmav prototype: `lcaraccioli@upmav ~/.claude/skills/memory/.bak/01KWHXHMY6AC5C0162786DR1YT/`
-holds the pre-fork originals; live fork + `/tmp/episodic-oracle.sh` hold the 47-check harness to
-adapt). Source: `packages/agent-memory/src/**` (tsup → single dependency-free `dist/episodic.mjs`).
+`../SPEC.md` D2/D2a (record schema — no scope field; telemetry fold-in; cwd-only degrade), D3
+(lattice: built-in markers `{.git, package manifest, PLAN.md, $HOME}` + `memory.scopeMarkers` glob
+config in `.agent-factory.config`; `node(p)`; prefix order; attribute-to-writes → `node(cwd)`;
+host-qualified paths), D4 (deterministic pass → routing manifest; `--replay` window; retention:
+keep-all-compact for v2 records, legacy drops behind one `.bak`), D5 (lock verbs · audit default-allow
+`--allow > <home>/audit-allow.txt > none` · `--under` read filter). Source: `packages/agent-memory/src/**`
+(tsup → single dependency-free `dist/episodic.mjs`).
 
 ## Scope
 
-`packages/agent-memory/**` ONLY. (1) encode: derive `{session?, host, territory, cwd}`; fold
+`packages/agent-memory/**` ONLY. (1) encode: derive `{session?, host, cwd}`; fold
 `${AGENT_HOME}/.telemetry/<sid>.jsonl` since-last-encode into `writes`; `--paths` supplement;
-`scope_override` flag; hook-absent degrade. (2) lattice module: marker detection, node resolution,
-prefix ops, LCA-of-writes. (3) `dream fold` verb: deterministic pass emitting per-event
-`{event → node, basis}` routing manifest (JSON) for the semantic pass to consume — the tool proposes,
-the dream re-judges. (4) `redream` verb: fold over `.bak` archives + live log. (5) `drain` retention →
-keep-all-compact. (6) lock verbs + audit default-allow + `--territory` filters per D7. Backward-compat:
-v1 records readable (compat strategy); existing verb invocations unchanged.
+hook-absent degrade to cwd-only. (2) lattice module: marker detection (defaults + config globs),
+`node(p)`, prefix ops, LCA-of-writes. (3) `dream fold [--replay]` verb: deterministic pass emitting a
+per-event `{event → node, basis}` routing manifest (JSON, byte-deterministic) — the tool proposes,
+the dream's semantic pass disposes. (4) `read --under <path>` (records whose writes/cwd resolve under
+the node). (5) drain retention per D4. (6) `lock acquire|release|status` + audit default-allow.
+Backward-compat: v1-shaped records readable; unknown legacy `scope` tags surface in the manifest as
+annotations, never as routing.
 
 ## Accept (falsifiers)
 
-- Oracle suite (adapt the 47-check harness; scratch homes): telemetry fold-in (journal → writes;
-  absent journal → territory-only record); lattice: `/tmp/x` launch = own node (never $HOME); marker
-  precedence; LCA cross-scope kept raw; writeless → territory; `fold` manifest deterministic (same
-  input ⇒ byte-same output); `redream` over an archive re-emits routing under a swapped strategy;
-  legacy v1-tagged record maps tag→override; lock conflict/stale-steal; audit default-allow pickup +
-  override; `--territory` prefix semantics.
-- A seeded mis-derivation (wrong node for a known write-set) FAILS the suite (prove one, remove).
-- Repo gates 4×0; bundle stays single-file zero-dep; every existing v1 invocation shape still green.
+- Oracle-style suite on scratch homes: journal → `writes` fold-in; absent journal → cwd-only record;
+  `/tmp/x` launch = own node (never `$HOME`); config glob adds a boundary and resolution shifts;
+  LCA cross-scope kept raw in the manifest; writeless → `node(cwd)`; same input ⇒ byte-same manifest;
+  `--replay` over an archive re-emits routing under a swapped strategy; lock conflict + stale-steal;
+  audit default-allow pickup, explicit `--allow` override, pinned-count output; `--under` prefix
+  semantics incl. host-qualified paths.
+- A seeded mis-resolution (wrong node for a known write-set) FAILS the suite (prove one, remove).
+- Repo gates 4×0; bundle single-file zero-dep; every existing v1 invocation shape still green.
