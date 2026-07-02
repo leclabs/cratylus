@@ -19,7 +19,7 @@ Absorbed declarations (this skill is self-sufficient — no concept is reference
 
 - **memory** ≜ the agent's organ-home: the store-set \`{ SEMANTIC, PROCEDURAL, EPISODIC }\` (at \`\${AGENT_HOME}/<store>.md\`/\`.jsonl\`) plus the bundled \`episodic.mjs\` runtime, verb-set \`V = {encode, read, node, fold, drain, migrate, audit, lock}\`. \`encode\` is down-and-in (events recorded as they happen); \`dream\` is the **up-and-out** counterpart in the same home. **promotion-is-move**: a promoted item must be gone from its raw source. Store meanings: \`SEMANTIC\` = identity facts + durable agent-intrinsic knowledge (the hot index); \`PROCEDURAL\` = inductively generalized cross-project wisdom no projection already carries; \`EPISODIC\` = the raw time-ordered event stream + forward-looking next-steps. \`SOUL\` (the archetype) is **not** a dream output — the archetype changes only in the commons.
 - **node** ≜ the record's scope, COMPUTED never captured: \`node(cwd, host)\` = the nearest ancestor of the record's \`cwd\` (reflexive) holding a boundary marker (\`.git\` → project · package manifest → package · \`PLAN.md\` → plan · \`$HOME\` → user; markerless cwd = its own boundary; \`.git\` FILE resolves through to the primary checkout; cwd-less records → the \`legacy\` bucket). The tool's \`fold\` verb computes it — the dream never reasons a scope, it consumes the manifest.
-- **fold-then-route** ≜ [[memory]]'s placement law — pass 1 (tool): \`fold\` emits the byte-deterministic manifest \`{ id ↦ node | legacy, marker-basis }\`; pass 2 (dream): type/voice picks the organ within the manifest's node, multi-scope items split, a cross-project lesson generalizes to agent-intrinsic under the **projection-dedup bar** (already carried by SOUL/skills/gates ⇒ not stored). An \`AGENTS.md\` at a node IS the semantic organ at that scope; writing it is consolidation (dedup · net-current · move-not-copy). A caller-supplied scope anywhere is an inert tag, never routing.
+- **fold-then-route** ≜ [[memory]]'s placement law — pass 1 (tool): \`fold\` emits the byte-deterministic manifest \`{ id ↦ node | legacy, marker-basis }\`; pass 2 (dream): type picks the organ within the manifest's node, multi-scope items split, a cross-project lesson generalizes to agent-intrinsic under the **projection-dedup bar** (already carried by SOUL/skills/gates ⇒ not stored). An \`AGENTS.md\` at a node IS the semantic organ at that scope; writing it is consolidation (dedup · net-current · move-not-copy). A caller-supplied scope anywhere is an inert tag, never routing.
 - **reboot-seed-not-journal** (self-application) ≜ the product is a **reboot seed**, never a journal; the dream must itself round-trip — a wake-time read of the residue must reconstruct the agent's working state equivalent-or-better.
 - **context-not-prose** (R=LLM) ≜ emit at densest-faithful, symbol-bearing register; never human narration. \`¬graspable-in-one-glance(entry) ⇒ distill-further(entry) ∨ drop(entry)\`.
 - **palimpsest** ≜ a scar carried up as narrative, or a stale fact left overwriting a newer one. The anti-pattern dream removes: a superseded resident fact is **deleted**, not layered over.
@@ -51,7 +51,7 @@ dream ≜ exemplify : E → I                                -- consolidation is
 
 ## 2. Routing
 
-route over the fold manifest — the node is given, type/voice picks the organ. The route is TOTAL:
+route over the fold manifest — the node is given, type picks the organ (writes = direct file edits). The route is TOTAL:
 
 \`\`\`text
 route : I → { AGENTS.md@node, SEMANTIC, PROCEDURAL, vault, EPISODIC, drop }
@@ -60,7 +60,7 @@ node(i) = project/package node ↦ <node>/AGENTS.md ( voluminous ⇒ <repo>/docs
 node(i) = $HOME ∨ legacy :
     identity ∨ agent-intrinsic-durable(i) ↦ SEMANTIC   ( ¬resident-worthy ⇒ vault )
     generalized-wisdom(i)                 ↦ PROCEDURAL  ( projection-carries(i) ⇒ drop -- the dedup bar )
-    networked-ref(i)                      ↦ vault
+    networked-ref(i)                      ↦ vault   -- the instance-bound cold store (its binding lives in SEMANTIC's pointers)
     next-step(i)                          ↦ EPISODIC    -- own-node forward residue only
 scaffold                                  ↦ drop
 
@@ -72,7 +72,7 @@ AGENTS.md write = consolidation : dedup · net-current (no scar) · move-not-cop
 
 ## 3. Clearing
 
-Clear drained raw via the runtime's \`drain\` verb — \`node ~/.claude/skills/memory/episodic.mjs drain --home \${AGENT_HOME}\` (archives a rotated keep-newest-N backup under \`.bak/\` first) — never a hand-rolled copy/truncate. This realizes promotion-is-move: a promoted item is gone from its raw source.
+Clear drained raw via the runtime's \`drain\` verb — \`node ~/.claude/skills/memory/episodic.mjs drain --home \${AGENT_HOME}\` (archives a rotated keep-newest-N backup under \`.bak/\` first) — never a hand-rolled copy/truncate. Drain clears the WHOLE log: forward residue (surviving next-steps) is re-encoded AFTER the drain, then \`lock release\`. This realizes promotion-is-move: a promoted item is gone from its raw source.
 
 \`\`\`text
 consumed raw → ∅            ∴ EPISODIC never grows unbounded   (drain: verified .bak archive, then clear)

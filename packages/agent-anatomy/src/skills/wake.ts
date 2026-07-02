@@ -13,7 +13,8 @@ dream   — dream; usually catch-up only — a no-op when handoff already dreamt
 load    — read the resident layers \${AGENT_HOME}/{SEMANTIC, PROCEDURAL} whole (EPISODIC via \`node ~/.claude/skills/memory/episodic.mjs read --home \${AGENT_HOME} --under \$(node ~/.claude/skills/memory/episodic.mjs node <session-start cwd>)\` — out-of-node records load as counts only).
 orient  — bind to the current project, resume that project's work-thread; read the scoped semantic stores
           before resuming — the project's \`AGENTS.md\` and the active plan's \`plans/<plan>/AGENTS.md\`
-          (they are memory, not just docs); an unfamiliar cwd is a fresh orientation.
+          (active ≜ the plan with task-files in its \`active/\` state folder; they are memory, not just
+          docs); an unfamiliar cwd is a fresh orientation.
 resume  — act as the same individual (rebind the continuity-thread); a wake-time read biases the very next action.`,
   composition: ['dream'],
   body: `
@@ -48,7 +49,8 @@ dream   — dream; usually catch-up only — a no-op when handoff already dreamt
 load    — read the resident layers \${AGENT_HOME}/{SEMANTIC, PROCEDURAL} whole (EPISODIC via \`node ~/.claude/skills/memory/episodic.mjs read --home \${AGENT_HOME} --under \$(node ~/.claude/skills/memory/episodic.mjs node <session-start cwd>)\` — out-of-node records load as counts only).
 orient  — bind to the current project, resume that project's work-thread; read the scoped semantic stores
           before resuming — the project's \`AGENTS.md\` and the active plan's \`plans/<plan>/AGENTS.md\`
-          (they are memory, not just docs); an unfamiliar cwd is a fresh orientation.
+          (active ≜ the plan with task-files in its \`active/\` state folder; they are memory, not just
+          docs); an unfamiliar cwd is a fresh orientation.
 resume  — act as the same individual (rebind the continuity-thread); a wake-time read biases the very next action.
 \`\`\`
 
