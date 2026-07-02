@@ -24,7 +24,9 @@ CoALA types `{EPISODIC.jsonl · SEMANTIC.md · PROCEDURAL.md}` + SOUL (commons).
   markerless cwd → its own boundary; a foreign-host cwd is never resolved against the local filesystem
   (only the config-known `$HOME` prefix from `host.<name>.homedir`, else the cwd itself). Marker set
   extends via `memory.scopeMarkers` (glob list) in `.agent-factory.config`. Agents invoke the resolver
-  (`episodic node <path>`), never infer it.
+  (`episodic node <path>`), never infer it. The verb prints the BARE node path (composable:
+  `read --under "$(episodic node <cwd>)"` is the wake load line); `--json` opts into the
+  `{node, basis}` envelope.
 - **Dream = fold + route (D4, `src/fold.ts` + `src/route.ts` + `src/dream.ts`).** Pass 1 is the tool:
   `episodic fold` emits the byte-deterministic routing manifest, one `{id, node, basis}` line per record
   in log order; cwd-less (v1/migrated) records land in the explicit `legacy` bucket, never a throw.

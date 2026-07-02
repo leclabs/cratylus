@@ -104,7 +104,7 @@ usage:
   episodic encode --home <dir> [--tags <a,b>] [--path <p>] \\
                   (--body <text> | --body-json <json> | --body -)
   episodic read   --home <dir> [--under <path>] [--scope <tag>] [--path <p>] [--count]
-  episodic node   <path> [--config <file>]
+  episodic node   <path> [--json] [--config <file>]
   episodic fold   --home <dir> [--path <p>] [--config <file>]
   episodic lock   (acquire | release | status) --home <dir>
   episodic drain  --home <dir> [--keep N] [--path <p>]
@@ -121,7 +121,9 @@ node resolves a path to its boundary node: the nearest ancestor (reflexive)
 holding a marker — .git (a .git FILE resolves through to the primary
 checkout), a package manifest, PLAN.md, or $HOME; extend via
 memory.scopeMarkers globs in .agent-factory.config. Markerless => the path is
-its own boundary; nonexistent => nearest existing ancestor.
+its own boundary; nonexistent => nearest existing ancestor. Prints the BARE
+node path so it composes: read --under "$(episodic node <cwd>)". --json
+prints the {node, basis} envelope instead.
 
 fold emits the dream routing manifest: one {id, node, basis} line per record
 in log order, byte-deterministic. Records without cwd land in the "legacy"
@@ -246,14 +248,22 @@ function runRead(args: ParsedArgs): CliResult {
   };
 }
 
-/** `node <path>`: resolve a path to its boundary node; print `{node, basis}`. */
+/**
+ * `node <path>`: resolve a path to its boundary node. Default stdout is the
+ * BARE node path (newline-terminated, nothing else) so the verb composes —
+ * `read --under "$(episodic node <cwd>)"` is the wake ritual's load line, and
+ * a JSON envelope there silently matches zero records. `--json` opts into the
+ * `{node, basis}` envelope for inspection.
+ */
 function runNode(args: ParsedArgs): CliResult {
   const [path] = args.positionals;
   if (path === undefined)
     return { code: 2, out: '', err: 'node needs a <path> positional\n' };
   const cfg = nodeConfigFrom(args.flags);
   const { node, basis } = resolveNode(path, cfg.currentHost, cfg);
-  return { code: 0, out: `${JSON.stringify({ node, basis })}\n`, err: '' };
+  if (args.flags.json === true)
+    return { code: 0, out: `${JSON.stringify({ node, basis })}\n`, err: '' };
+  return { code: 0, out: `${node}\n`, err: '' };
 }
 
 /** `fold`: emit the deterministic routing manifest for the home log. */

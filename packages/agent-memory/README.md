@@ -15,7 +15,8 @@ single self-contained `dist/episodic.mjs` that the `memory` skill carries to eac
   computed at fold time.
 - `read --home <dir> [--under <node>] [--count]` — read the log back; `--under` filters same-host
   records by their resolved node (foreign-host/legacy report as counts).
-- `node <path>` — resolve a path to its boundary node `{node, basis}` over the marker lattice.
+- `node <path>` — resolve a path to its boundary node over the marker lattice. Prints the BARE node
+  path so it composes (`read --under "$(episodic node <cwd>)"`); `--json` prints `{node, basis}`.
 - `fold --home <dir>` — the deterministic dream-pass-1 routing manifest (`{id, node, basis}` per record).
 - `lock (acquire|release|status) --home <dir>` — the dream lock (`dream.lock`, stale > 2h stolen).
 - `drain --home <dir> [--keep N]` — archive + clear the raw log post-consolidation (bounded `.bak/`).

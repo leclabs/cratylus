@@ -214,16 +214,57 @@ describe('read', () => {
 });
 
 describe('node (CLI)', () => {
-  it('resolves a path to {node, basis} JSON', () => {
+  it('default output is the BARE node path, newline-terminated, nothing else', () => {
     const repo = join(root, 'repo');
     mkdirSync(join(repo, '.git'), { recursive: true });
     const deep = join(repo, 'a', 'b');
     mkdirSync(deep, { recursive: true });
     const r = main(['node', deep]);
     expect(r.code).toBe(0);
+    expect(r.out).toBe(`${repo}\n`); // exact: bare path + newline, no envelope
+  });
+
+  it('--json opts into the {node, basis} envelope', () => {
+    const repo = join(root, 'repo');
+    mkdirSync(join(repo, '.git'), { recursive: true });
+    const r = main(['node', repo, '--json']);
+    expect(r.code).toBe(0);
     const parsed = JSON.parse(r.out) as { node: string; basis: string };
     expect(parsed.node).toBe(repo);
     expect(parsed.basis).toBe('.git');
+  });
+
+  it('COMPOSES: read --under "$(node <repo-path>)" loads the in-node record (the wake load line)', () => {
+    const repo = join(root, 'repo');
+    mkdirSync(join(repo, '.git'), { recursive: true });
+    process.chdir(repo);
+    main(['encode', '--home', home, '--body', 'in-node event']);
+
+    // The composition exactly as the wake ritual shells it: the node verb's
+    // stdout (trimmed by $(...)), fed as the --under filter.
+    const nodeOut = main(['node', repo]).out.trim();
+    const composed = main([
+      'read',
+      '--home',
+      home,
+      '--under',
+      nodeOut,
+      '--count',
+    ]);
+    expect(composed.out.trim()).toBe('1');
+
+    // Falsifier: the JSON envelope as the filter matches ZERO records — the
+    // exact G1 silent-under-load defect the bare-path contract kills.
+    const envelope = main(['node', repo, '--json']).out.trim();
+    const broken = main([
+      'read',
+      '--home',
+      home,
+      '--under',
+      envelope,
+      '--count',
+    ]);
+    expect(broken.out.trim()).toBe('0');
   });
 
   it('needs a path positional', () => {
