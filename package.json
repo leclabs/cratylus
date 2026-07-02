@@ -19,7 +19,7 @@
     "anatomy:deploy:agent": "node packages/agent-forge/dist/cli/index.js deploy --kind agent --agents-dir packages/agent-anatomy/.render-ts/agents --skills-dir packages/agent-anatomy/.render-ts/skills",
     "anatomy:deploy:skill": "node packages/agent-forge/dist/cli/index.js deploy --kind skill --agents-dir packages/agent-anatomy/.render-ts/agents --skills-dir packages/agent-anatomy/.render-ts/skills",
     "anatomy:deploy:hooks": "node packages/agent-forge/dist/cli/index.js deploy --kind hooks --hooks-dir packages/agent-anatomy/.render-ts",
-    "anatomy:deploy": "pnpm build && pnpm anatomy:project && pnpm anatomy:deploy:agent && pnpm anatomy:deploy:skill && pnpm anatomy:deploy:hooks",
+    "anatomy:deploy": "pnpm build && pnpm anatomy:project && node packages/agent-forge/dist/cli/index.js deploy --agents-dir packages/agent-anatomy/.render-ts/agents --skills-dir packages/agent-anatomy/.render-ts/skills --hooks-dir packages/agent-anatomy/.render-ts",
     "changeset": "changeset",
     "version-packages": "changeset version",
     "release": "turbo run build && changeset publish",

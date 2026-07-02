@@ -10,10 +10,14 @@ import { cursorAdapter } from '../adapters/cursor/index.js';
 import { geminiAdapter } from '../adapters/gemini/index.js';
 import { opencodeAdapter } from '../adapters/opencode/index.js';
 import type { Adapter, Scope } from '../core/index.js';
-import type { DeployKind, Scope as DeployScope } from '../deploy/index.js';
+import type { Scope as DeployScope } from '../deploy/index.js';
 import { runCatalog } from './commands/catalog.js';
 import { runCompile } from './commands/compile.js';
-import { parseCompanions, runDeploy } from './commands/deploy.js';
+import {
+  type DeployKindArg,
+  parseCompanions,
+  runDeploy,
+} from './commands/deploy.js';
 import { runDiff } from './commands/diff.js';
 import { runDoctor } from './commands/doctor.js';
 import { runEventsList } from './commands/events.js';
@@ -218,7 +222,7 @@ cli
     '--assets <decls>',
     'skill committed companions: <skill>=<spec>[,…] (warn if absent)',
   )
-  .option('--kind <kind>', 'agent | skill | hooks', { default: 'agent' })
+  .option('--kind <kind>', 'agent | skill | hooks | all', { default: 'all' })
   .option('--scope <scope>', 'user | project', { default: 'user' })
   .option(
     '--host <host>',
@@ -251,7 +255,7 @@ cli
       bundleBaseRoot?: string;
       bundle?: string;
       assets?: string;
-      kind: DeployKind;
+      kind: DeployKindArg;
       scope: Scope;
       host?: string;
       user?: string;
@@ -263,8 +267,21 @@ cli
       dryRun?: boolean;
     }) => {
       // `hooks` ships from a single hooks render root; agent/skill ship from the
-      // agents/ + skills/ dirs. Validate the kind-appropriate inputs.
-      if (opts.kind === 'hooks') {
+      // agents/ + skills/ dirs; `all` ships every kind in one invocation and so
+      // needs ALL three dirs. Validate the kind-appropriate inputs.
+      if (opts.kind === 'all') {
+        const missing = [
+          !opts.agentsDir && '--agents-dir',
+          !opts.skillsDir && '--skills-dir',
+          !opts.hooksDir && '--hooks-dir',
+        ].filter(Boolean);
+        if (missing.length > 0) {
+          console.error(
+            `agent-forge deploy: --kind all requires ${missing.join(', ')}`,
+          );
+          process.exit(1);
+        }
+      } else if (opts.kind === 'hooks') {
         if (!opts.hooksDir) {
           console.error(
             'agent-forge deploy: --hooks-dir is required for --kind hooks',

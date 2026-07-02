@@ -18,6 +18,15 @@ import {
   loadConfig,
 } from '../../deploy/index.js';
 
+/** The CLI `--kind` argument: a real `DeployKind`, or the `all` sugar that
+ *  expands to every kind in ONE invocation (agent → skill → hooks) under the
+ *  SAME target resolution. `all` is a CLI-layer concept only; the deploy engine
+ *  never sees it (it is expanded here before any engine call). */
+export type DeployKindArg = DeployKind | 'all';
+
+/** The kinds `all` expands to, in deploy order. */
+export const ALL_KINDS: readonly DeployKind[] = ['agent', 'skill', 'hooks'];
+
 export interface DeployCmdOpts {
   // The render tree to deploy.
   agentsDir: string;
@@ -27,8 +36,8 @@ export interface DeployCmdOpts {
   // Per-skill bundle/asset companion declarations + the bundle base root.
   companions?: Record<string, SkillCompanions>;
   bundleBaseRoot?: string;
-  // What to ship.
-  kind: DeployKind;
+  // What to ship. `all` expands to agent → skill → hooks (same target opts).
+  kind: DeployKindArg;
   scope: Scope;
   // Topology / target.
   host?: string | null;
@@ -108,6 +117,14 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
     throw e;
   }
 
+  // Expand the `all` sugar to the concrete kinds; a single kind runs a
+  // one-element loop. Every kind reuses the EXISTING per-kind engine path with
+  // IDENTICAL target opts — so `--fleet` / `--host` / `--exclude` apply to all
+  // three (the fix for the old `&&`-chain leak where `--fleet` reached only the
+  // trailing kind). The overall rc is the first non-zero kind's rc.
+  const kinds: readonly DeployKind[] =
+    opts.kind === 'all' ? ALL_KINDS : [opts.kind];
+
   try {
     if (opts.fleet) {
       if (cfg == null) {
@@ -118,38 +135,50 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
         );
         return 1;
       }
-      const r = deployFleet({
-        kind: opts.kind,
+      let rc = 0;
+      for (const kind of kinds) {
+        const r = deployFleet({
+          kind,
+          scope: opts.scope,
+          tree,
+          cfg,
+          home: opts.home ?? null,
+          project: opts.project ?? null,
+          user: opts.user ?? null,
+          exclude: splitList(opts.exclude),
+          onlyHosts: splitList(opts.only),
+          dry: opts.dryRun ?? false,
+          log,
+          warn,
+        });
+        if (r.rc !== 0 && rc === 0) {
+          rc = r.rc;
+        }
+      }
+      return rc;
+    }
+
+    let rc = 0;
+    for (const kind of kinds) {
+      const r = deploySingle({
+        kind,
         scope: opts.scope,
         tree,
-        cfg,
+        host: opts.host ?? null,
+        user: opts.user ?? null,
         home: opts.home ?? null,
         project: opts.project ?? null,
-        user: opts.user ?? null,
-        exclude: splitList(opts.exclude),
-        onlyHosts: splitList(opts.only),
+        only: splitList(opts.only),
         dry: opts.dryRun ?? false,
+        cfg,
         log,
         warn,
       });
-      return r.rc;
+      if (r.rc !== 0 && rc === 0) {
+        rc = r.rc;
+      }
     }
-
-    const r = deploySingle({
-      kind: opts.kind,
-      scope: opts.scope,
-      tree,
-      host: opts.host ?? null,
-      user: opts.user ?? null,
-      home: opts.home ?? null,
-      project: opts.project ?? null,
-      only: splitList(opts.only),
-      dry: opts.dryRun ?? false,
-      cfg,
-      log,
-      warn,
-    });
-    return r.rc;
+    return rc;
   } catch (e) {
     if (e instanceof ConfigError) {
       console.error(pc.red(`config error: ${e.message}`));
