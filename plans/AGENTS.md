@@ -7,6 +7,7 @@ net-current only: its dir is removed and `git log -- plans/<name>/` is the recor
 
 ## Active
 
-| Plan               | Concern                                                                                                                                           | Lead                  |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Pending: `generic-extraction` (deferred — Operator product call). | Mav + Nico (per task) |
+| Plan               | Concern                                                                                                                                                                                                           | Lead                  |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Pending: `generic-extraction` (deferred — Operator product call).                                                                 | Mav + Nico (per task) |
+| `scoped-memory-v2` | Path-provenance memory: telemetry-first capture (harness path-journal hook), marker-declared directory lattice, fold + re-dream, CoALA stores (SELF dissolves). Spec authored; shards HELD for Operator approval. | Nico (lead) + Mav     |
