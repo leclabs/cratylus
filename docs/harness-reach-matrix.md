@@ -12,9 +12,9 @@ content whichever harness carries it; only the FRAMING differs per adapter (clau
 
 - **T2.1** proved this for **claude** (`adapters/claude/anatomy.ts` — `agentToClaudeMd`).
 - **T2.4** proves it for a **second** harness, **codex** (`adapters/codex/anatomy.ts` —
-  `agentToCodexToml`), reusing the shared, harness-neutral `agentBody` / `subtractReset` /
+  `agentToCodexToml`), reusing the shared, harness-neutral `agentBody` /
   `skillBody` / `ResolvedAgent` / `ResolvedSkill` machinery. The only NEW code is the codex
-  framing (the `.toml` shape + the `AGENTS.md` surface) and the codex harness reset.
+  framing (the `.toml` shape + the `AGENTS.md` surface).
 
 ## The matrix
 
@@ -50,21 +50,17 @@ each emits a `warnings` entry naming the unsupported `agents` resource and a `sk
 agent, and writes no agent artifact. The CLI surfaces these via `--explain`; `--strict` promotes
 them to errors.
 
-## Per-harness reset accuracy (out of scope, incremental)
+## Omit-to-inherit
 
-Each harness owns its **harness reset** (the omit-to-inherit basis — what the harness provides
-natively, subtracted at export so the projected agent carries only its delta). `claudeHarnessReset`
-is a **ratified fixture** (measured by a blind bare `/introspect`). `codexHarnessReset` is a
-**reasonable FIRST PASS** (T2.4 scope): it mirrors claude's organ set and subtraction kinds, with
-the one deliberate divergence that `substrate = codex` (so a `claude`-substrate agent stays a real
-delta under codex). Promoting it to a measured fixture is a later, incremental task — when Codex is
-blind-introspected, replace the slugs and add the conformance assertion (as claude already has).
+Harness-inheritance is declared **at the agent source**: an organ key set to `null` on the `Agent`
+vector projects no section and inherits whatever the target harness provides
+(`@leclabs/agent-forge/anatomy`, gated by `packages/agent-anatomy/test/null-organ.test.ts`). The
+projection is therefore identical machinery per harness — no per-harness subtraction fixture.
 
 ## Reproduce
 
 ```sh
 cd packages/agent-anatomy
-pnpm project         # claude   → .render-ts/      (byte-identical to Python .render/)
+pnpm project         # claude   → .render-ts/
 pnpm project:codex   # codex    → .render-ts-codex/ (agents/*.toml + skills + AGENTS.md)
-pnpm project:codex -- --delta   # codex with the harness reset subtracted (omit-to-inherit)
 ```

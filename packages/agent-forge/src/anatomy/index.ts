@@ -5,8 +5,8 @@
 // human projection; the prose mirrors these types, not the other way around.
 //
 // agent-anatomy authors fragments / agents / skills as typed modules that import these
-// types. Composition is ESM `import`; merge is object spread (see
-// `docs/baseline-delta-model.md`). A wrong organ→value, a wrong arity, or a
+// types. Composition is ESM `import`; an agent is a flat, explicit 24-organ
+// vector (`null` = omit-to-inherit — see `Agent`). A wrong organ→value, a wrong arity, or a
 // fragment of the wrong organ in the wrong field is a **compile error** — there
 // is NO JSON-Schema and NO `Ref`/resolution machinery here: "every ref resolves
 // to one home" is `tsc`, and the `(organ, value)` pair-keying is structural (the
