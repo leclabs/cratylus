@@ -82,7 +82,8 @@ describe('projection stability (.ts is the sole source)', () => {
 
     const dreamMd = render(dream);
     expect(dreamMd).toContain('- **memory** ≜');
-    expect(dreamMd).toContain('- **two-axis routing** ≜');
+    expect(dreamMd).toContain('- **fold-then-route** ≜');
+    expect(dreamMd).toContain('- **node** ≜');
     expect(dreamMd).toContain('- **palimpsest** ≜');
     // The prose composition formula is consumed, not emitted …
     expect(dreamMd).not.toMatch(/^dream ≜ the memory-consolidation/m);

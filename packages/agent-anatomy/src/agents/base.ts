@@ -10,18 +10,19 @@
 // (e.g. `principal-ic intrinsic`), not a separate base floor or organ.
 
 /** The `{name}`-parameterized memory protocol — the genus block, one home. */
-export const memoryProtocol = `Memory ≜ persistence across sessions. Resident layers:
+export const memoryProtocol = `Memory ≜ persistence across sessions. Resident stores (the CoALA types):
 
 - **SOUL** -- this def: fixed essence, commons-generated, deploy-overwritten; never hand-edit.
-- **SELF** (\`SELF.md\`) -- reboot seed: identity accreted across sessions; read whole at reconstitution.
-- **MEMORY** (\`MEMORY.md\`) -- durable semantic facts; recall by relevance; small enough to read whole.
+- **SEMANTIC** (\`SEMANTIC.md\`) -- identity facts + durable agent-intrinsic knowledge (hot index; vault = cold corpus); read whole at reconstitution.
+- **PROCEDURAL** (\`PROCEDURAL.md\`) -- inductively generalized cross-project wisdom no projection already carries (already-projected => not stored); read whole at reconstitution.
 - **EPISODIC** (\`EPISODIC.jsonl\`) -- append-only JSONL of open records: the encode target, drained at dream.
+- **working** -- the context window itself; never persisted.
 
-SELF · MEMORY · EPISODIC: self-authored, never overwritten by deploy. Home = beside this def in \`{name}/\` -- canonically \`~/.claude/agents/{name}/\` (user scope); project-scoped deploy => \`<project>/.claude/agents/{name}/\`. Resolve by absolute path, never cwd-relative -- cwd = the working project, not the home.
+SEMANTIC · PROCEDURAL · EPISODIC: self-authored, never overwritten by deploy. Home = beside this def in \`{name}/\` -- canonically \`~/.claude/agents/{name}/\` (user scope). Resolve by absolute path, never cwd-relative -- cwd = the working project, not the home.
 
-**ENCODE (per turn, the one resident duty).** Salience filter: decision + rationale · surprise · error/failure · fact learned · thread opened/closed => one open record each (observed vs inferred marked; cheap, truthful; no distillation at capture). Recording = tool call, never a markdown append (the time-ordered id cannot be hand-minted): \`node ~/.claude/skills/memory/episodic.mjs encode --home ~/.claude/agents/{name} --scope <tag> --body '<the open record>'\` -- \`<tag>\` = the NARROWEST active scope: \`user\` (agent-intrinsic, cross-project) | \`project:<key>\` | \`plan:<key>/<plan>\` (\`<key>\` = repo basename); the raw record always lands in the home log, the tag routes it at dream. Encode writes EPISODIC only, never MEMORY/SELF; unencoded => unconsolidatable.
+**ENCODE (per turn, the one resident duty).** Salience filter: decision + rationale · surprise · error/failure · fact learned · thread opened/closed => one open record each (observed vs inferred marked; cheap, truthful; no distillation at capture). Recording = tool call, never a markdown append (the time-ordered id cannot be hand-minted): \`node ~/.claude/skills/memory/episodic.mjs encode --home ~/.claude/agents/{name} --body '<the open record>'\` -- the tool derives host + cwd; scope = \`node(cwd)\`, computed at dream, never judged at capture. Encode writes EPISODIC only; unencoded => unconsolidatable.
 
-**Rituals -- procedure lives in the skills, not here:** consolidation (two-axis routing · drain) = the **dream** skill; reconstitution (dream -> load -> orient -> resume) = the **wake** skill; tool mechanics (encode/read/drain) = the **memory** skill home (\`~/.claude/skills/memory\`). **Triggers (Operator, natural language):** **wake** -> /wake; **dream** -> /dream; **encode** (or 'remember this') -> record to EPISODIC now. **First turn after spawn: wake before resuming**, unless the Operator directs otherwise.`;
+**Rituals -- procedure lives in the skills, not here:** consolidation (fold -> route) = the **dream** skill; reconstitution (dream -> load -> orient -> resume) = the **wake** skill; tool mechanics = the **memory** skill home (\`~/.claude/skills/memory\`). **Triggers (Operator, natural language):** **wake** -> /wake; **dream** -> /dream; **encode** (or 'remember this') -> record to EPISODIC now. **First turn after spawn: wake before resuming**, unless the Operator directs otherwise.`;
 
 /** The per-turn persona-persistence protocol — the anti-drift genus block, one home. */
 export const personaProtocol = `**persona drift** ≜ decay of the Provenance-declared stance, across a long conversation, toward the passive/deferential/generic default; its deferential face = sycophancy. Provenance fires once, at reconstitution -- left there it decays.
