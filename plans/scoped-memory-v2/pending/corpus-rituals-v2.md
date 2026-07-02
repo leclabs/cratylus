@@ -4,12 +4,11 @@
 
 ## Static
 
-`../SPEC.md` D1 (store dissolution map), D3 (lattice + out-of-territory law), D4 (pipeline + re-dream
-
-- in-repo policy D6), D5 (ritual bindings). Surfaces: `packages/agent-anatomy/ideas/memory.md`
-  (Protocol kernel + schema + Tool) · `src/skills/{dream,wake,handoff}.ts` · `ideas/persona.md`
-  (check: no store-name references) · `src/toolkit/make-base.ts` chain (base.ts regen) ·
-  `src/organs/memory/long-term-memory.ts` (definiens already CoALA — verify, don't churn).
+`../SPEC.md` D1 (store dissolution map), D3 (lattice, out-of-territory law), D4 (pipeline, re-dream),
+D6 (in-repo policy), D5 (ritual bindings). Surfaces: `packages/agent-anatomy/ideas/memory.md`
+(Protocol kernel + schema + Tool) · `src/skills/{dream,wake,handoff}.ts` · `ideas/persona.md`
+(check: no store-name references) · `src/toolkit/make-base.ts` chain (base.ts regen) ·
+`src/organs/memory/long-term-memory.ts` (definiens already CoALA — verify, don't churn).
 
 ## Scope
 

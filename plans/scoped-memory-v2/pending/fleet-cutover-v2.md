@@ -18,9 +18,9 @@ contract live: on one host, `encode` with no telemetry journal present succeeds 
 
 ## Accept (falsifiers)
 
-- Per reachable host: sha256(sample ≥3 SOULs) = render; deployed `episodic.mjs` answers `fold`
-  - `redream` + `--territory`; hook registered in `settings.json` (merged, nothing clobbered) and its
-    worker present; a scratch Edit fires one journal line (one host suffices for the live hook proof).
+- Per reachable host: sha256(sample ≥3 SOULs) = render; deployed `episodic.mjs` answers all of
+  `fold`, `redream`, `--territory`; hook registered in `settings.json` (merged, nothing clobbered) and
+  its worker present; a scratch Edit fires one journal line (one host suffices for the live hook proof).
 - upmav: prototype verbs absent from the deployed bundle; forked SKILL.md superseded (grep v2 store
   names present, `SESSIONS.jsonl` machinery text absent).
 - Log shows FLEET blocks ×7 or named unreachable-deferred; content-verify ≥3 hosts incl. one
