@@ -8,9 +8,14 @@ export const wake: SkillCell = {
   formalBlock: `WAKE ≜ dream → load → orient → resume
 
 dream   — dream; usually catch-up only — a no-op when handoff already dreamt on hot context,
-          load-bearing on a fresh spawn or a crash that had none.
+          load-bearing on a fresh spawn or a crash that had none. Exit gate: \`node
+          ~/.claude/skills/memory/episodic.mjs audit --home \${AGENT_HOME}\` — nonzero = project/plan-scoped
+          content in SELF/MEMORY (pollution); re-dream the named findings to their scoped homes before
+          proceeding.
 load    — read the resident layers \${AGENT_HOME}/{SELF, MEMORY} (EPISODIC via the runtime's \`read\` verb: \`node ~/.claude/skills/memory/episodic.mjs read --home \${AGENT_HOME}\`).
-orient  — bind to the current project, resume that project's work-thread; an unfamiliar cwd is a fresh orientation.
+orient  — bind to the current project, resume that project's work-thread; read the scoped semantic stores
+          before resuming — the project's \`AGENTS.md\` and the active plan's \`plans/<plan>/AGENTS.md\`
+          (they are memory, not just docs); an unfamiliar cwd is a fresh orientation.
 resume  — act as the same individual (rebind the continuity-thread); a wake-time read biases the very next action.`,
   composition: ['dream'],
   body: `
@@ -24,7 +29,7 @@ The session-start reconstitution. [[dream]] is the up-and-out write of the agent
 Absorbed declarations (this skill stands alone — no external concept refs):
 
 - **continuity-thread** ≜ the unbroken first-person identity carried across session boundaries; what makes the post-wake agent the same person as the pre-/clear agent. Wake's job is to rebind it.
-- **memory store** ≜ the agent's self-authored layers on disk: \`SELF\` (identity), \`MEMORY\` (durable knowledge), \`EPISODIC\` (the raw event stream). \`SOUL\` is constitutional and already in-prompt — never read from disk, never written. The store's runtime is the bundled \`episodic.mjs\` tool (verbs \`migrate\`, \`read\`), invoked below.
+- **memory store** ≜ the agent's self-authored layers on disk: \`SELF\` (identity), \`MEMORY\` (durable knowledge), \`EPISODIC\` (the raw event stream). \`SOUL\` is constitutional and already in-prompt — never read from disk, never written. The store's runtime is the bundled \`episodic.mjs\` tool (verbs \`migrate\`, \`read\`, \`audit\`), invoked below.
 
 Resolve from context:
 
@@ -40,9 +45,14 @@ Then run the WAKE sequence:
 WAKE ≜ dream → load → orient → resume
 
 dream   — dream; usually catch-up only — a no-op when handoff already dreamt on hot context,
-          load-bearing on a fresh spawn or a crash that had none.
+          load-bearing on a fresh spawn or a crash that had none. Exit gate: \`node
+          ~/.claude/skills/memory/episodic.mjs audit --home \${AGENT_HOME}\` — nonzero = project/plan-scoped
+          content in SELF/MEMORY (pollution); re-dream the named findings to their scoped homes before
+          proceeding.
 load    — read the resident layers \${AGENT_HOME}/{SELF, MEMORY} (EPISODIC via the runtime's \`read\` verb: \`node ~/.claude/skills/memory/episodic.mjs read --home \${AGENT_HOME}\`).
-orient  — bind to the current project, resume that project's work-thread; an unfamiliar cwd is a fresh orientation.
+orient  — bind to the current project, resume that project's work-thread; read the scoped semantic stores
+          before resuming — the project's \`AGENTS.md\` and the active plan's \`plans/<plan>/AGENTS.md\`
+          (they are memory, not just docs); an unfamiliar cwd is a fresh orientation.
 resume  — act as the same individual (rebind the continuity-thread); a wake-time read biases the very next action.
 \`\`\`
 

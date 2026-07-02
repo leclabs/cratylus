@@ -17,8 +17,9 @@ The agent's "sleep" — sleep-dependent consolidation (replay → schema) run as
 
 Absorbed declarations (this skill is self-sufficient — no concept is referenced out):
 
-- **memory** ≜ the agent's organ-home: the layer-set \`{ SELF, MEMORY, EPISODIC }\` (each at \`\${AGENT_HOME}/<layer>.md\`/\`.jsonl\`) plus the bundled \`episodic.mjs\` store. The store is **append-and-read**, verb-set \`V = {encode, read, migrate}\` — it exposes **no** compact/delete verb. \`encode\` is down-and-in (events recorded as they happen); \`dream\` is the **up-and-out** counterpart in the same home. **promotion-is-move**: a promoted item must be gone from its raw source. Layer meanings: \`SELF\` = the agent's identity/standing dispositions; \`MEMORY\` = durable resident knowledge (the hot index); \`EPISODIC\` = the raw time-ordered event stream + forward-looking next-steps. \`SOUL\` (the archetype) is **not** a dream output — the archetype changes only in the commons.
-- **two-axis routing** ≜ [[memory]]'s placement law — each consolidated item is placed by two orthogonal axes: **type/voice → organ** (identity vs durable-knowledge vs directive vs networked-ref vs next-step), **scope → instance** (which SELF/MEMORY/AGENTS.md/vault). dream adds the two consolidation-only outcomes the resident store has no slot for: \`EPISODIC\` (kept) and \`drop\`.
+- **memory** ≜ the agent's organ-home: the layer-set \`{ SELF, MEMORY, EPISODIC }\` (each at \`\${AGENT_HOME}/<layer>.md\`/\`.jsonl\`) plus the bundled \`episodic.mjs\` store, verb-set \`V = {encode, read, drain, migrate, audit}\`. \`encode\` is down-and-in (events recorded as they happen); \`dream\` is the **up-and-out** counterpart in the same home. **promotion-is-move**: a promoted item must be gone from its raw source. Layer meanings: \`SELF\` = the agent's identity/standing dispositions; \`MEMORY\` = durable resident knowledge (the hot index); \`EPISODIC\` = the raw time-ordered event stream + forward-looking next-steps. \`SOUL\` (the archetype) is **not** a dream output — the archetype changes only in the commons.
+- **scope** ≜ the record's second axis, tagged at encode: \`scope(i) ∈ { user, project:<key>, plan:<key>/<plan> }\` (\`<key>\` = repo basename). The lattice \`user ⊃ project ⊃ plan\`; the law is **least-scope** — a memory homes at the narrowest scope containing every context it is relevant to; widening demands evidence. Raw capture is single-store (always the agent home log); scope is a ROUTING tag, never a raw-store selector.
+- **two-axis routing** ≜ [[memory]]'s placement law — each consolidated item is placed by two orthogonal axes: **type/voice → organ** (identity vs durable-knowledge vs networked-ref vs next-step), **scope → instance** (which SELF/MEMORY/AGENTS.md/vault). An \`AGENTS.md\` at project/plan scope IS the semantic organ at that scope — part of the memory system; writing it is consolidation (dedup · net-current · move-not-copy — MEMORY's laws, applied mechanically). dream adds the two consolidation-only outcomes the resident store has no slot for: \`EPISODIC\` (kept) and \`drop\`.
 - **reboot-seed-not-journal** (self-application) ≜ the product is a **reboot seed**, never a journal; the dream must itself round-trip — a wake-time read of the residue must reconstruct the agent's working state equivalent-or-better.
 - **context-not-prose** (R=LLM) ≜ emit at densest-faithful, symbol-bearing register; never human narration. \`¬graspable-in-one-glance(entry) ⇒ distill-further(entry) ∨ drop(entry)\`.
 - **palimpsest** ≜ a scar carried up as narrative, or a stale fact left overwriting a newer one. The anti-pattern dream removes: a superseded resident fact is **deleted**, not layered over.
@@ -47,24 +48,31 @@ dream ≜ exemplify : E → I                                -- consolidation is
 
 ## 2. Routing
 
-route(I) by the two-axis routing — type/voice → organ, scope → instance:
+route(I) by the two-axis routing — scope picks the instance FIRST, then type/voice picks the organ:
 
 \`\`\`text
-route : I → organs ∪ { EPISODIC, drop }
-identity-level(i)  ↦ SELF
-durable(i)         ↦ MEMORY        ( ¬resident-worthy ⇒ vault     -- hot index → cold corpus )
-directive(i)       ↦ scoped AGENTS.md
-networked-ref(i)   ↦ vault
-next-step          ↦ EPISODIC       -- forward-looking, not yet durable
-scaffold           ↦ drop           -- graduates nowhere
+route : I → homes ∪ { EPISODIC, drop }         -- re-judge scope(i) at dream (least-scope), the encode tag is the prior
+scope(i) = plan:<key>/<plan> ↦ plans/<plan>/AGENTS.md    -- semantic AND next-steps/open-threads: the thread lives with the plan
+scope(i) = project:<key>     ↦ <repo>/AGENTS.md          ( voluminous ⇒ <repo>/docs/ -- the vault rule at scope )
+scope(i) = user :
+    identity-level(i)  ↦ SELF
+    durable(i)         ↦ MEMORY    ( ¬resident-worthy ⇒ vault     -- hot index → cold corpus )
+    networked-ref(i)   ↦ vault
+    next-step          ↦ EPISODIC   -- forward-looking, not yet durable
+scaffold               ↦ drop       -- graduates nowhere
+
+INVARIANT (pollution-free, hard) : scope(i) ∈ {project, plan} ⇒ i ∉ SELF ∧ i ∉ MEMORY
+    a cross-project lesson extracted FROM project work is re-tagged user by the dream reasoning —
+    the generalized law rises, the project fact stays at scope
+AGENTS.md write = consolidation : dedup · net-current (no scar) · move-not-copy
 \`\`\`
 
 ## 3. Clearing
 
-The store is append-and-read (\`V = {encode, read, migrate}\`) — there is **no** compact/delete verb. So clearing is **dream's own atomic act over the store**, not a runtime call: rewrite the EPISODIC file as (current minus consumed ids), atomically. This realizes promotion-is-move: a promoted item is gone from its raw source.
+Clear drained raw via the runtime's \`drain\` verb — \`node ~/.claude/skills/memory/episodic.mjs drain --home \${AGENT_HOME}\` (archives a rotated keep-newest-N backup under \`.bak/\` first) — never a hand-rolled copy/truncate. This realizes promotion-is-move: a promoted item is gone from its raw source.
 
 \`\`\`text
-consumed raw → ∅            ∴ EPISODIC never grows unbounded   (rewrite minus consumed ids, atomic)
+consumed raw → ∅            ∴ EPISODIC never grows unbounded   (drain: verified .bak archive, then clear)
 ∀ home : home keeps only its proper residue
 \`\`\`
 

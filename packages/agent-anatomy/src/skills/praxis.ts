@@ -48,6 +48,9 @@ slices(P) = argmin over admissible cuts of |R ∩ ⋃ { sᵢ × sⱼ | i ≠ j }
 # clean-slate / anti-palimpsest: dp is idempotent — net-current carries no edit-history scar.
 dp(dp(c)) = dp(c)
 # plan-retirement: a plan retires once its result lands; commit association is derived on demand, never stored.
+# plan-agents-md-is-memory: a plan's AGENTS.md is the semantic memory SINK at plan scope — part of the
+# memory system, not the plan system: dream routes plan-scoped items there (open threads · next-steps ·
+# plan-durable facts), reconciled as consolidation (dedup · net-current · move-not-copy); wake's orient reads it.
 # reader-llm-default: every praxis artifact is agent-read — ρ = LLM standing law, never per-turn discretion.
 ∀ t : ρ(content(t)) = LLM ∧ conform(content(t))              — the task-file IS the dispatch prompt (blind-dispatchable)
 ρ(PLAN.md) = LLM ∧ conform(PLAN.md)                          — the mirror is agent-read: dense, signifier-carries-load
