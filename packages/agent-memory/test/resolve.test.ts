@@ -26,10 +26,32 @@ describe('parseScope', () => {
     });
   });
 
+  it('parses plan scopes (tag grammar: plan:<key>/<plan>)', () => {
+    expect(parseScope('plan:polis/scoped-memory')).toEqual({
+      tier: 'plan',
+      key: 'polis',
+      plan: 'scoped-memory',
+    });
+  });
+
   it('rejects unknown or malformed scopes', () => {
     expect(() => parseScope('global')).toThrow();
     expect(() => parseScope('project:')).toThrow();
     expect(() => assertScope('nope')).toThrow();
+    expect(() => assertScope('bogus:x')).toThrow(/Unknown scope/);
+  });
+
+  it('rejects malformed plan scopes loudly (shape is exactly plan:<key>/<plan>)', () => {
+    expect(() => parseScope('plan:')).toThrow(/plan:<key>\/<plan>/);
+    expect(() => parseScope('plan:polis')).toThrow(/plan:<key>\/<plan>/);
+    expect(() => parseScope('plan:polis/')).toThrow(/plan:<key>\/<plan>/);
+    expect(() => parseScope('plan:/scoped-memory')).toThrow(
+      /plan:<key>\/<plan>/,
+    );
+    expect(() => parseScope('plan:polis/a/b')).toThrow(/plan:<key>\/<plan>/);
+    expect(() => parseScope('plan:polis/sco ped')).toThrow(
+      /plan:<key>\/<plan>/,
+    );
   });
 });
 
@@ -71,6 +93,32 @@ describe('resolveFile', () => {
     expect(lexProj.replace('/Users/lex', '')).toBe(
       lcarProj.replace('/Users/lcaraccioli', ''),
     );
+  });
+
+  it('resolves plan scope to projectRoot(key)/plans/<plan>/path (routed-target base)', () => {
+    // The SPEC §2 plan home: a plan-scoped dream target with path AGENTS.md
+    // lands in plans/<plan>/AGENTS.md under the project key's tree.
+    expect(resolveFile(LEX, 'plan:polis/scoped-memory', 'AGENTS.md')).toBe(
+      '/Users/lex/workspaces/polis/plans/scoped-memory/AGENTS.md',
+    );
+    // Portability holds for the plan tier too.
+    expect(
+      resolveFile(LCAR, 'plan:polis/scoped-memory', 'AGENTS.md').replace(
+        '/Users/lcaraccioli',
+        '',
+      ),
+    ).toBe(
+      resolveFile(LEX, 'plan:polis/scoped-memory', 'AGENTS.md').replace(
+        '/Users/lex',
+        '',
+      ),
+    );
+  });
+
+  it('plan scope with an unknown project key still fails loudly', () => {
+    expect(() =>
+      resolveFile(LEX, 'plan:unknown/some-plan', 'AGENTS.md'),
+    ).toThrow(/Unknown project/);
   });
 
   it('rejects absolute paths (no absolute-path storage)', () => {

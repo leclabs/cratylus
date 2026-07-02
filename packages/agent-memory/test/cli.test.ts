@@ -91,6 +91,70 @@ describe('encode', () => {
     // Structural guarantee: nothing written under the project root at all.
     expect(existsSync(projectRoot)).toBe(false);
   });
+
+  it('rejects a scope outside the grammar loudly (nonzero + the grammar named)', () => {
+    const r = main([
+      'encode',
+      '--home',
+      home,
+      '--scope',
+      'bogus:x',
+      '--body',
+      'e',
+    ]);
+    expect(r.code).not.toBe(0);
+    expect(r.err).toMatch(/Unknown scope/);
+    expect(r.err).toMatch(/plan:<key>\/<plan>/);
+    // Nothing written on a rejected encode.
+    expect(existsSync(join(home, 'EPISODIC.jsonl'))).toBe(false);
+  });
+
+  it('rejects a malformed plan scope loudly', () => {
+    const r = main([
+      'encode',
+      '--home',
+      home,
+      '--scope',
+      'plan:polis',
+      '--body',
+      'e',
+    ]);
+    expect(r.code).not.toBe(0);
+    expect(r.err).toMatch(/Malformed plan scope/);
+  });
+
+  it('a plan-scoped encode round-trips through read (tag stored + filterable)', () => {
+    const enc = main([
+      'encode',
+      '--home',
+      home,
+      '--scope',
+      'plan:polis/scoped-memory',
+      '--body',
+      'plan-true event',
+    ]);
+    expect(enc.code).toBe(0);
+    main(['encode', '--home', home, '--scope', 'user', '--body', 'user event']);
+
+    const all = main(['read', '--home', home, '--count']);
+    expect(all.out.trim()).toBe('2');
+    const filtered = main([
+      'read',
+      '--home',
+      home,
+      '--scope',
+      'plan:polis/scoped-memory',
+    ]);
+    expect(filtered.code).toBe(0);
+    const lines = filtered.out.trim().split('\n');
+    expect(lines).toHaveLength(1);
+    const rec = JSON.parse(lines[0] as string);
+    expect(rec.scope).toBe('plan:polis/scoped-memory');
+    expect(rec.body).toBe('plan-true event');
+    expect(rec.id).toBe(enc.out.trim());
+    // Single-store law unchanged: the plan tag never creates a plan tree.
+    expect(existsSync(join(home, 'plans'))).toBe(false);
+  });
 });
 
 describe('read', () => {

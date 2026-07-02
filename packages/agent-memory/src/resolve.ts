@@ -1,14 +1,19 @@
 import { isAbsolute, join, normalize, resolve, sep } from 'node:path';
 
 /**
- * Scope — *where* an EPISODIC record is true (ideas/memory.md, Routing axis 2).
- * Single-valued: one home per record. If a fact is genuinely true in both
- * tiers, the encoder routes it to the more durable one, never to both.
+ * Scope — *where* an EPISODIC record is true (ideas/memory.md, Routing axis 2;
+ * plans/scoped-memory SPEC §1: `user ⊃ project ⊃ plan`, key = repo basename).
+ * Single-valued: one home per record. If a fact is genuinely true in several
+ * tiers, the encoder routes it to the NARROWEST one (least-scope), never to all.
  *
- *  - `user`           — agent-global; travels with the agent across every host.
- *  - `project:<key>`  — project-scoped; stays with that project.
+ *  - `user`               — agent-global; travels with the agent across every host.
+ *  - `project:<key>`      — project-scoped; stays with that project.
+ *  - `plan:<key>/<plan>`  — plan-scoped; stays with `plans/<plan>/` in project `<key>`.
+ *
+ * The tag is reasoned by the AGENT at encode time (SPEC D3): the tool validates
+ * the grammar and never infers scope from cwd.
  */
-export type Scope = 'user' | `project:${string}`;
+export type Scope = 'user' | `project:${string}` | `plan:${string}`;
 
 /**
  * Host environment that turns a scope into a concrete base directory. The same
@@ -24,11 +29,18 @@ export interface HostEnv {
 }
 
 const PROJECT_PREFIX = 'project:';
+const PLAN_PREFIX = 'plan:';
 
-/** Parse a scope string into its discriminant + optional project key. */
+/** One `<key>` / `<plan>` segment: a repo-basename-shaped token, no slashes. */
+const SEGMENT_RE = /^[A-Za-z0-9._-]+$/;
+
+/** Parse a scope string into its discriminant + key (and plan, for `plan:`). */
 export function parseScope(
   scope: string,
-): { tier: 'user' } | { tier: 'project'; key: string } {
+):
+  | { tier: 'user' }
+  | { tier: 'project'; key: string }
+  | { tier: 'plan'; key: string; plan: string } {
   if (scope === 'user') return { tier: 'user' };
   if (scope.startsWith(PROJECT_PREFIX)) {
     const key = scope.slice(PROJECT_PREFIX.length);
@@ -36,8 +48,25 @@ export function parseScope(
       throw new Error(`Project scope missing key: "${scope}"`);
     return { tier: 'project', key };
   }
+  if (scope.startsWith(PLAN_PREFIX)) {
+    const rest = scope.slice(PLAN_PREFIX.length);
+    const parts = rest.split('/');
+    const [key, plan] = parts;
+    if (
+      parts.length !== 2 ||
+      key === undefined ||
+      plan === undefined ||
+      !SEGMENT_RE.test(key) ||
+      !SEGMENT_RE.test(plan)
+    ) {
+      throw new Error(
+        `Malformed plan scope: "${scope}" (expected "plan:<key>/<plan>", one slash, both segments [A-Za-z0-9._-]+)`,
+      );
+    }
+    return { tier: 'plan', key, plan };
+  }
   throw new Error(
-    `Unknown scope: "${scope}" (expected "user" or "project:<key>")`,
+    `Unknown scope: "${scope}" (expected "user", "project:<key>", or "plan:<key>/<plan>")`,
   );
 }
 
@@ -66,8 +95,13 @@ function assertSafeRelative(path: string): string {
 /**
  * Resolve `(scope, path)` to an absolute path on this host.
  *
- *   user           → agentHome()/path
- *   project:<key>  → projectRoot(key)/path
+ *   user               → agentHome()/path
+ *   project:<key>      → projectRoot(key)/path
+ *   plan:<key>/<plan>  → projectRoot(key)/plans/<plan>/path
+ *
+ * The plan tier is the ROUTED-TARGET base (SPEC §2): a plan-scoped dream target
+ * with path `AGENTS.md` lands in `plans/<plan>/AGENTS.md` under the project
+ * key's tree. Raw capture never resolves through it (single-store, D2).
  *
  * The (scope, path) pair is the *portable* identity of a store file; this
  * function is its only one-host realization. Run on two hosts with different
@@ -78,7 +112,11 @@ export function resolveFile(env: HostEnv, scope: string, path: string): string {
   const safe = assertSafeRelative(path);
   const parsed = parseScope(scope);
   const base =
-    parsed.tier === 'user' ? env.agentHome() : env.projectRoot(parsed.key);
+    parsed.tier === 'user'
+      ? env.agentHome()
+      : parsed.tier === 'project'
+        ? env.projectRoot(parsed.key)
+        : join(env.projectRoot(parsed.key), 'plans', parsed.plan);
   return resolve(join(base, safe));
 }
 

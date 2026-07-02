@@ -17,6 +17,23 @@ Portability). Two invariants are load-bearing and must never regress:
   capture time — the Dreamer adds routing later. `routes` is written **only** by the dream pass
   (`src/dream.ts`), and only onto records it retains.
 
+## Scope grammar + the audit verb (`src/resolve.ts` + `src/audit.ts`)
+
+Per `plans/scoped-memory/SPEC.md` (§1, §3, §6):
+
+- **Tag grammar** `user | project:<key> | plan:<key>/<plan>` (key = repo basename). The tool VALIDATES
+  only — unknown shapes reject loudly; the agent reasons the tag, the tool never sniffs cwd (D3). A
+  `plan:` tag is stored like any tag (raw capture stays single-store, D2); as a ROUTED dream target,
+  `resolveFile` resolves `plan:<key>/<plan>` to `projectRoot(key)/plans/<plan>/<path>` (the plan's
+  `AGENTS.md` is the canonical semantic home).
+- **`audit --home <h> [--allow <f>] [--config <f>] [--keys <f>]`** — the deterministic scope-pollution
+  detector over `<home>/{SELF,MEMORY}.md` (§6): workspace paths, plan paths, branch/PR/issue refs, and
+  repo keys (from a `.agent-factory.config` — flag, `$AGENT_FACTORY_CONFIG`, or cwd-present — plus an
+  optional keylist). Exit 1 + line-numbered findings on any unpinned hit; 0 clean. `--allow` pins
+  reviewed exceptions by EXACT matched marker text (drift-proof); a pin matching nothing is reported
+  stale on stderr without failing — the shrink-only ratchet. Enforcement site is wake (host-side, D4);
+  the unit suite proves the detector on seeded fixtures.
+
 ## ULID, not UUIDv4
 
 `id` is a ULID (`src/ulid.ts`): lexicographically time-sortable so lines order by mint time. The factory
