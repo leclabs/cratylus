@@ -1,7 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import type { EpisodicRecord, JsonValue } from './record.js';
 import { serializeRecord } from './record.js';
-import { type Scope, assertScope } from './resolve.js';
 import { DEFAULT_EPISODIC_PATH } from './store.js';
 import { monotonicFactory } from './ulid.js';
 
@@ -43,8 +42,12 @@ export interface MigratedBody {
 }
 
 export interface MigrateOptions {
-  /** Scope every migrated record is stamped with. EPISODIC is agent-global → `user`. */
-  scope?: Scope;
+  /**
+   * Legacy scope stamp for migrated records — INERT v1 data under the v2
+   * schema (migrated records carry no `cwd`, so they fold to the `legacy`
+   * bucket regardless). Kept for provenance. Default `user`.
+   */
+  scope?: string;
   /** ULID source — inject a deterministic factory in tests. Defaults to a fresh monotonic factory. */
   ulid?: () => string;
 }
@@ -138,7 +141,7 @@ export function extractItems(markdown: string): EpisodicItem[] {
 /** Build one OPEN record from an item. Exposed for symmetry with {@link recordsToItems}. */
 function itemToRecord(
   item: EpisodicItem,
-  scope: Scope,
+  scope: string,
   id: string,
 ): EpisodicRecord {
   const body: MigratedBody = {
@@ -251,7 +254,7 @@ export function migrateMarkdown(
   markdown: string,
   opts: MigrateOptions = {},
 ): EpisodicRecord[] {
-  const scope = opts.scope ?? assertScope('user');
+  const scope = opts.scope ?? 'user';
   const mint = opts.ulid ?? monotonicFactory();
   const records = extractItems(markdown).map((item) =>
     itemToRecord(item, scope, mint()),

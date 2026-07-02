@@ -1,56 +1,125 @@
 import {
+  appendFileSync,
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
+  realpathSync,
   rmSync,
+  utimesSync,
   writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { hostname, tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { main } from '../src/cli.js';
+import { shortHost } from '../src/node.js';
 import { parseLines } from '../src/store.js';
 
+let root: string;
 let home: string;
+const origCwd = process.cwd();
 
 beforeEach(() => {
-  home = mkdtempSync(join(tmpdir(), 'episodic-cli-'));
-});
-afterEach(() => {
-  rmSync(home, { recursive: true, force: true });
+  // Canonical root: recorded cwds are realpaths (macOS tmpdir is symlinked).
+  root = realpathSync(mkdtempSync(join(tmpdir(), 'episodic-cli-')));
+  home = join(root, 'agent-home');
+  mkdirSync(home, { recursive: true });
+  // Hermetic: no developer-shell config, no cwd-present config pickup.
+  vi.stubEnv('AGENT_FACTORY_CONFIG', '');
 });
 
-describe('encode', () => {
-  it('mints a ULID, appends one record, and prints the id', () => {
-    const r = main(['encode', '--home', home, '--body', 'first event']);
+afterEach(() => {
+  process.chdir(origCwd);
+  rmSync(root, { recursive: true, force: true });
+  vi.unstubAllEnvs();
+});
+
+const logRecords = () =>
+  parseLines(readFileSync(join(home, 'EPISODIC.jsonl'), 'utf8'));
+
+describe('encode — the tool derives, the caller never supplies', () => {
+  it('mints a ULID, derives {host, cwd}, appends one record, and prints the id', () => {
+    const session = join(root, 'session-dir');
+    mkdirSync(session, { recursive: true });
+    process.chdir(session);
+
+    const r = main(['encode', '--home', home, '--body', 'hello']);
     expect(r.code).toBe(0);
     const id = r.out.trim();
     expect(id).toHaveLength(26);
-    const file = join(home, 'EPISODIC.jsonl');
-    const records = parseLines(readFileSync(file, 'utf8'));
-    expect(records).toHaveLength(1);
-    expect(records[0]?.id).toBe(id);
-    expect(records[0]?.body).toBe('first event');
-    expect(records[0]?.scope).toBe('user');
+
+    const [rec] = logRecords();
+    expect(rec?.id).toBe(id);
+    expect(rec?.body).toBe('hello');
+    // Derived from the REAL process, not from any flag.
+    expect(rec?.cwd).toBe(process.cwd());
+    expect(rec?.host).toBe(shortHost(hostname()));
   });
 
-  it('accepts a JSON body via --body-json', () => {
-    const r = main(['encode', '--home', home, '--body-json', '{"k":1}']);
+  it('IGNORES a caller-supplied --cwd (cwd is derived, never an input)', () => {
+    const session = join(root, 'real-cwd');
+    mkdirSync(session, { recursive: true });
+    process.chdir(session);
+
+    const r = main(['encode', '--home', home, '--cwd', '/evil', '--body', 'x']);
     expect(r.code).toBe(0);
-    const records = parseLines(
-      readFileSync(join(home, 'EPISODIC.jsonl'), 'utf8'),
-    );
-    expect(records[0]?.body).toEqual({ k: 1 });
+    const [rec] = logRecords();
+    expect(rec?.cwd).toBe(process.cwd());
+    expect(rec?.cwd).not.toBe('/evil');
+  });
+
+  it('a --scope value is an INERT tags entry — any shape accepted, never validated, never routing', () => {
+    // v1 grammar shapes AND arbitrary shapes both pass (the tag grammar retired).
+    for (const scope of [
+      'user',
+      'project:polis',
+      'plan:polis/x',
+      'whatever!',
+    ]) {
+      const r = main([
+        'encode',
+        '--home',
+        home,
+        '--scope',
+        scope,
+        '--body',
+        'b',
+      ]);
+      expect(r.code).toBe(0);
+    }
+    const recs = logRecords();
+    expect(recs.map((r) => r.tags)).toEqual([
+      ['user'],
+      ['project:polis'],
+      ['plan:polis/x'],
+      ['whatever!'],
+    ]);
+    // Scope is not STORED as a field (SPEC D2).
+    for (const rec of recs) expect(rec.scope).toBeUndefined();
+  });
+
+  it('accepts --tags as a comma list plus a JSON body', () => {
+    const r = main([
+      'encode',
+      '--home',
+      home,
+      '--tags',
+      'a, b',
+      '--body-json',
+      '{"k":1}',
+    ]);
+    expect(r.code).toBe(0);
+    const [rec] = logRecords();
+    expect(rec?.tags).toEqual(['a', 'b']);
+    expect(rec?.body).toEqual({ k: 1 });
   });
 
   it('appends in order across calls (records stay ULID-sortable)', () => {
-    main(['encode', '--home', home, '--body', 'a']);
-    main(['encode', '--home', home, '--body', 'b']);
-    const records = parseLines(
-      readFileSync(join(home, 'EPISODIC.jsonl'), 'utf8'),
-    );
-    expect(records.map((r) => r.body)).toEqual(['a', 'b']);
-    expect((records[0]?.id ?? '') < (records[1]?.id ?? '')).toBe(true);
+    for (const b of ['1', '2', '3'])
+      main(['encode', '--home', home, '--body', b]);
+    const ids = logRecords().map((r) => r.id);
+    expect([...ids].sort()).toEqual(ids);
   });
 
   it('errors without a body source', () => {
@@ -61,99 +130,18 @@ describe('encode', () => {
 
   it('errors without --home', () => {
     const r = main(['encode', '--body', 'x']);
-    expect(r.code).toBe(1);
+    expect(r.code).not.toBe(0);
     expect(r.err).toMatch(/--home/);
   });
 
-  it('a project-scoped encode lands in the agent HOME log, never the project tree (--scope is a routing tag)', () => {
-    const projectRoot = join(home, 'project-tree');
-    const r = main([
-      'encode',
-      '--home',
-      home,
-      '--scope',
-      'project:polis',
-      '--project-key',
-      'polis',
-      '--project-root',
-      projectRoot,
-      '--body',
-      'project-true event',
-    ]);
+  it('capture never writes into the project tree (single-store)', () => {
+    const project = join(root, 'proj');
+    mkdirSync(join(project, '.git'), { recursive: true });
+    process.chdir(project);
+    const r = main(['encode', '--home', home, '--body', 'in-project']);
     expect(r.code).toBe(0);
-
-    // The record carries its scope as a tag, but lands in --home/EPISODIC.jsonl.
-    const records = parseLines(
-      readFileSync(join(home, 'EPISODIC.jsonl'), 'utf8'),
-    );
-    expect(records).toHaveLength(1);
-    expect(records[0]?.scope).toBe('project:polis');
-    // Structural guarantee: nothing written under the project root at all.
-    expect(existsSync(projectRoot)).toBe(false);
-  });
-
-  it('rejects a scope outside the grammar loudly (nonzero + the grammar named)', () => {
-    const r = main([
-      'encode',
-      '--home',
-      home,
-      '--scope',
-      'bogus:x',
-      '--body',
-      'e',
-    ]);
-    expect(r.code).not.toBe(0);
-    expect(r.err).toMatch(/Unknown scope/);
-    expect(r.err).toMatch(/plan:<key>\/<plan>/);
-    // Nothing written on a rejected encode.
-    expect(existsSync(join(home, 'EPISODIC.jsonl'))).toBe(false);
-  });
-
-  it('rejects a malformed plan scope loudly', () => {
-    const r = main([
-      'encode',
-      '--home',
-      home,
-      '--scope',
-      'plan:polis',
-      '--body',
-      'e',
-    ]);
-    expect(r.code).not.toBe(0);
-    expect(r.err).toMatch(/Malformed plan scope/);
-  });
-
-  it('a plan-scoped encode round-trips through read (tag stored + filterable)', () => {
-    const enc = main([
-      'encode',
-      '--home',
-      home,
-      '--scope',
-      'plan:polis/scoped-memory',
-      '--body',
-      'plan-true event',
-    ]);
-    expect(enc.code).toBe(0);
-    main(['encode', '--home', home, '--scope', 'user', '--body', 'user event']);
-
-    const all = main(['read', '--home', home, '--count']);
-    expect(all.out.trim()).toBe('2');
-    const filtered = main([
-      'read',
-      '--home',
-      home,
-      '--scope',
-      'plan:polis/scoped-memory',
-    ]);
-    expect(filtered.code).toBe(0);
-    const lines = filtered.out.trim().split('\n');
-    expect(lines).toHaveLength(1);
-    const rec = JSON.parse(lines[0] as string);
-    expect(rec.scope).toBe('plan:polis/scoped-memory');
-    expect(rec.body).toBe('plan-true event');
-    expect(rec.id).toBe(enc.out.trim());
-    // Single-store law unchanged: the plan tag never creates a plan tree.
-    expect(existsSync(join(home, 'plans'))).toBe(false);
+    expect(existsSync(join(project, 'EPISODIC.jsonl'))).toBe(false);
+    expect(logRecords()).toHaveLength(1);
   });
 });
 
@@ -168,64 +156,193 @@ describe('read', () => {
 
   it('returns 0 for an absent store', () => {
     const r = main(['read', '--home', home, '--count']);
+    expect(r.code).toBe(0);
     expect(r.out.trim()).toBe('0');
   });
 
-  it('--scope filters by routing tag over the single home log', () => {
+  it('--scope still filters (inert field/tag match — compat shape)', () => {
+    main(['encode', '--home', home, '--scope', 'project:polis', '--body', 'p']);
     main(['encode', '--home', home, '--scope', 'user', '--body', 'u']);
-    main([
-      'encode',
-      '--home',
-      home,
-      '--scope',
-      'project:polis',
-      '--project-key',
-      'polis',
-      '--project-root',
-      join(home, 'pt'),
-      '--body',
-      'p',
-    ]);
-    expect(main(['read', '--home', home, '--count']).out.trim()).toBe('2');
-    expect(
-      main(['read', '--home', home, '--scope', 'user', '--count']).out.trim(),
-    ).toBe('1');
-    const filtered = main(['read', '--home', home, '--scope', 'project:polis']);
-    expect(filtered.out.trim().split('\n')).toHaveLength(1);
-    expect(JSON.parse(filtered.out.trim()).body).toBe('p');
+    const r = main(['read', '--home', home, '--scope', 'project:polis']);
+    expect(r.code).toBe(0);
+    expect(r.out.trim().split('\n')).toHaveLength(1);
+    expect(r.out).toContain('"p"');
+  });
+
+  it('--under filters same-host records by node prefix; foreign-host + legacy report as counts', () => {
+    const repo = join(root, 'repo');
+    mkdirSync(join(repo, '.git'), { recursive: true });
+    const inside = join(repo, 'src');
+    mkdirSync(inside, { recursive: true });
+    const outside = join(root, 'elsewhere');
+    mkdirSync(outside, { recursive: true });
+
+    process.chdir(inside);
+    main(['encode', '--home', home, '--body', 'inside-repo']);
+    process.chdir(outside);
+    main(['encode', '--home', home, '--body', 'outside-repo']);
+
+    // Seed a foreign-host record and a legacy (cwd-less v1) record directly.
+    appendFileSync(
+      join(home, 'EPISODIC.jsonl'),
+      `${JSON.stringify({
+        id: '01BX5ZZKBKACTAV9WEVGEMMVRZ',
+        host: 'otherhost',
+        cwd: '/Users/other/work',
+        body: 'foreign',
+      })}\n${JSON.stringify({
+        id: '01BX5ZZKBKACTAV9WEVGEMMVS0',
+        scope: 'user',
+        body: 'legacy v1',
+      })}\n`,
+      'utf8',
+    );
+
+    // process.cwd() may sit under a symlinked tmpdir; encode recorded the
+    // process-reported cwd, so query --under with the recorded repo prefix.
+    const recordedRepo = logRecords()[0]?.cwd?.replace(/\/src$/, '') as string;
+    const r = main(['read', '--home', home, '--under', recordedRepo]);
+    expect(r.code).toBe(0);
+    const listed = r.out.trim().split('\n');
+    expect(listed).toHaveLength(1);
+    expect(r.out).toContain('inside-repo');
+    expect(r.out).not.toContain('outside-repo');
+    expect(r.err).toMatch(/1 matched/);
+    expect(r.err).toMatch(/foreign-host: otherhost=1/);
+    expect(r.err).toMatch(/legacy: 1/);
+  });
+});
+
+describe('node (CLI)', () => {
+  it('resolves a path to {node, basis} JSON', () => {
+    const repo = join(root, 'repo');
+    mkdirSync(join(repo, '.git'), { recursive: true });
+    const deep = join(repo, 'a', 'b');
+    mkdirSync(deep, { recursive: true });
+    const r = main(['node', deep]);
+    expect(r.code).toBe(0);
+    const parsed = JSON.parse(r.out) as { node: string; basis: string };
+    expect(parsed.node).toBe(repo);
+    expect(parsed.basis).toBe('.git');
+  });
+
+  it('needs a path positional', () => {
+    const r = main(['node']);
+    expect(r.code).toBe(2);
+  });
+});
+
+describe('fold (CLI)', () => {
+  it('emits {id, node, basis} per record in log order; cwd-less lands in legacy; byte-deterministic', () => {
+    const repo = join(root, 'repo');
+    mkdirSync(join(repo, '.git'), { recursive: true });
+    process.chdir(repo);
+    main(['encode', '--home', home, '--body', 'in-repo']);
+    // Seed a legacy v1 record (no cwd) — fold must not throw.
+    appendFileSync(
+      join(home, 'EPISODIC.jsonl'),
+      `${JSON.stringify({ id: '01BX5ZZKBKACTAV9WEVGEMMVRZ', scope: 'plan:polis/x', body: 'old' })}\n`,
+      'utf8',
+    );
+
+    const r1 = main(['fold', '--home', home]);
+    expect(r1.code).toBe(0);
+    const lines = r1.out.trim().split('\n');
+    expect(lines).toHaveLength(2);
+    const first = JSON.parse(lines[0] as string) as Record<string, string>;
+    const second = JSON.parse(lines[1] as string) as Record<string, string>;
+    expect(first.node).toBe(logRecords()[0]?.cwd); // the repo root, as recorded
+    expect(first.basis).toBe('.git');
+    expect(second).toEqual({
+      id: '01BX5ZZKBKACTAV9WEVGEMMVRZ',
+      node: 'legacy',
+      basis: 'no-cwd',
+    });
+
+    // Same log ⇒ byte-identical manifest.
+    const r2 = main(['fold', '--home', home]);
+    expect(r2.out).toBe(r1.out);
+  });
+
+  it('an empty log folds to an empty manifest', () => {
+    const r = main(['fold', '--home', home]);
+    expect(r.code).toBe(0);
+    expect(r.out).toBe('');
+  });
+});
+
+describe('lock (CLI)', () => {
+  it('acquire → held conflict → release → free', () => {
+    expect(main(['lock', 'acquire', '--home', home]).code).toBe(0);
+    const conflict = main(['lock', 'acquire', '--home', home]);
+    expect(conflict.code).toBe(1);
+    expect(conflict.err).toMatch(/lock held/);
+    expect(main(['lock', 'status', '--home', home]).out).toMatch(/held/);
+    expect(main(['lock', 'release', '--home', home]).code).toBe(0);
+    expect(main(['lock', 'status', '--home', home]).out.trim()).toBe('free');
+  });
+
+  it('steals a stale lock (mtime older than 2h)', () => {
+    expect(main(['lock', 'acquire', '--home', home]).code).toBe(0);
+    // Backdate the lock file beyond the stale threshold.
+    const lockFile = join(home, 'dream.lock');
+    const old = (Date.now() - (2 * 60 * 60 * 1000 + 60_000)) / 1000;
+    utimesSync(lockFile, old, old);
+    const r = main(['lock', 'acquire', '--home', home]);
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/stole stale lock/);
+  });
+
+  it('needs an action', () => {
+    const r = main(['lock', '--home', home]);
+    expect(r.code).toBe(2);
   });
 });
 
 describe('migrate', () => {
   it('converts a markdown EPISODIC.md to JSONL and reports the item count', () => {
-    const src = join(home, 'EPISODIC.md');
-    const dest = join(home, 'EPISODIC.jsonl');
-    writeFileSync(src, '## Next steps\n\n- one item\n- two item\n', 'utf8');
+    const src = join(root, 'EPISODIC.md');
+    writeFileSync(src, '## Stream\n- item one\n- item two\n', 'utf8');
+    const dest = join(root, 'EPISODIC.jsonl');
     const r = main(['migrate', src, dest]);
     expect(r.code).toBe(0);
     expect(r.out).toMatch(/migrated: 2 items/);
-    expect(parseLines(readFileSync(dest, 'utf8'))).toHaveLength(2);
+    const recs = parseLines(readFileSync(dest, 'utf8'));
+    expect(recs).toHaveLength(2);
+    // Migrated records are cwd-less → the legacy bucket by construction.
+    for (const rec of recs) expect(rec.cwd).toBeUndefined();
   });
 
   it('dry-run writes nothing', () => {
-    const src = join(home, 'EPISODIC.md');
-    const dest = join(home, 'EPISODIC.jsonl');
-    writeFileSync(src, '## S\n\n- x\n', 'utf8');
+    const src = join(root, 'EPISODIC.md');
+    writeFileSync(src, '## Stream\n- item\n', 'utf8');
+    const dest = join(root, 'out.jsonl');
     const r = main(['migrate', src, dest, '--dry-run']);
-    expect(r.out).toMatch(/dry-run: 1 items/);
-    expect(() => readFileSync(dest, 'utf8')).toThrow();
+    expect(r.code).toBe(0);
+    expect(existsSync(dest)).toBe(false);
   });
 
   it('needs both positionals', () => {
-    const r = main(['migrate', join(home, 'only.md')]);
+    const r = main(['migrate', 'only-src.md']);
     expect(r.code).toBe(2);
   });
 });
 
 describe('dispatch', () => {
-  it('help prints usage', () => {
-    expect(main(['help']).out).toMatch(/episodic — portable EPISODIC/);
-    expect(main([]).out).toMatch(/usage:/);
+  it('help prints usage naming the v2 verb surface', () => {
+    const r = main(['--help']);
+    expect(r.code).toBe(0);
+    for (const verb of [
+      'encode',
+      'read',
+      'node',
+      'fold',
+      'lock',
+      'drain',
+      'audit',
+      'migrate',
+    ])
+      expect(r.out).toContain(verb);
   });
 
   it('unknown command errors with usage', () => {

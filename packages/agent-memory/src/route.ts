@@ -1,37 +1,59 @@
 import type { EpisodicRecord } from './record.js';
-import type { Scope } from './resolve.js';
 
 /**
- * The cognitive **organ** a memory routes to (ideas/dream.md, §2 Routing;
- * ideas/memory.md, Routing axis 1). The agent's *voice* is the diagnostic that
- * picks the organ:
+ * The v2 route target set (plans/scoped-memory-v2 SPEC D4):
  *
- *  - `SELF`     — identity ("who I am / how I changed"); 1st-person self.
- *  - `MEMORY`   — durable knowledge ("what I know"); 1st-person assertion.
- *  - `EPISODIC` — a forward-looking next-step; stays in the raw log.
- *  - `AGENTS`   — a directive ("how it's done here, for any agent"); 2nd-person.
- *  - `vault`    — networked reference (3rd-person expository).
+ * ```
+ * route : I → { AGENTS.md@node · SEMANTIC · PROCEDURAL · vault · EPISODIC · drop }
+ * ```
  *
- * `drop` is NOT an organ — it is the absence of any target (scaffolding that
- * graduates nowhere), modeled by an empty target set on the decision.
+ *  - `SEMANTIC`   — identity facts + durable agent-intrinsic knowledge;
+ *                   `<home>/SEMANTIC.md` (the shared home partition).
+ *  - `PROCEDURAL` — inductively generalized cross-project wisdom not already
+ *                   carried by a projection; `<home>/PROCEDURAL.md`.
+ *  - `AGENTS`     — a directive at a NODE: `<node>/AGENTS.md` (versioned, the
+ *                   only in-repo write). Addressed by absolute node path.
+ *  - `vault`      — networked reference; addressed by absolute file path.
+ *  - `EPISODIC`   — a forward-looking next-step; stays in the raw log.
+ *
+ * `drop` is NOT a store — it is the absence of any target, modeled by an empty
+ * target set on the decision. The v1 organ names (`SELF`, `MEMORY`) are
+ * RETIRED: the engine rejects them loudly at apply time. Tag-grammar
+ * addressing (`scope` on a target) retired with them — targets address by
+ * node path + store name only.
  */
-export type Organ = 'SELF' | 'MEMORY' | 'EPISODIC' | 'AGENTS' | 'vault';
+export type StoreName =
+  | 'SEMANTIC'
+  | 'PROCEDURAL'
+  | 'AGENTS'
+  | 'vault'
+  | 'EPISODIC';
+
+/** The v2 store names, as a runtime-checkable set (the classifier is untyped at runtime). */
+export const V2_STORES: ReadonlySet<string> = new Set([
+  'SEMANTIC',
+  'PROCEDURAL',
+  'AGENTS',
+  'vault',
+  'EPISODIC',
+]);
 
 /**
- * A single home a record's distilled content lands in: an organ plus the
- * `(scope, path)` that selects which *instance* of that organ (Routing axis 2).
- * Resolved to an absolute file via {@link resolveFile} at apply time.
+ * A single home a record's distilled content lands in. Addressing is by
+ * absolute path, resolved from the fold manifest's `node(cwd)` — never by a
+ * scope tag:
  *
- * `path` is optional only for the EPISODIC organ (the record stays in its own
- * store, whose path is already known). Every non-EPISODIC organ must name its
- * destination file relative to the scope base — there is no implicit default
- * filename for SELF/MEMORY/AGENTS/vault, so omitting it is rejected loudly.
+ *  - `SEMANTIC` / `PROCEDURAL` — no address; they live in the agent home.
+ *  - `AGENTS` — `node` (absolute node directory) required; lands in
+ *    `<node>/AGENTS.md`.
+ *  - `vault` — `path` (absolute file) required.
+ *  - `EPISODIC` — no address, no content; the record stays in the raw log.
  */
 export interface RouteTarget {
-  organ: Organ;
-  /** Scope of the destination instance. Defaults to the record's own scope. */
-  scope?: Scope;
-  /** Scope-relative destination file. Required for every organ except EPISODIC. */
+  store: StoreName;
+  /** Absolute node directory — required for AGENTS, meaningless elsewhere. */
+  node?: string;
+  /** Absolute destination file — required for vault, meaningless elsewhere. */
   path?: string;
   /**
    * The distilled content to append to this home. The classifier produces the
@@ -44,9 +66,9 @@ export interface RouteTarget {
 /**
  * The classifier's verdict for one record: the set of homes it splits to.
  *
- *  - One target  — routed to a single organ.
- *  - ≥2 targets  — the record **splits** to several homes (ideas/dream.md:
- *    "one i may split to several homes"); the engine lands it in every one.
+ *  - One target  — routed to a single store.
+ *  - ≥2 targets  — the record **splits** to several homes; the engine lands it
+ *    in every one.
  *  - Empty set   — `drop`: consumed and removed, landing nowhere.
  *
  * A decision that includes an `EPISODIC` target means the record is retained in
@@ -58,17 +80,18 @@ export interface RouteDecision {
 }
 
 /**
- * The voice/scope classifier — the **out-of-scope** half of dream. The runtime
- * Dreamer plugs in LLM reasoning here; tests inject a deterministic stub. The
- * engine treats this as a pure function `(record) => RouteDecision` and owns
- * none of the reasoning: it only mechanically applies the verdict.
+ * The routing classifier — the **out-of-scope** half of dream (pass 2). The
+ * runtime Dreamer plugs in LLM reasoning here, working over the pass-1 fold
+ * manifest; tests inject a deterministic stub. The engine treats this as a pure
+ * function `(record) => RouteDecision` and owns none of the reasoning: it only
+ * mechanically applies the verdict.
  */
 export type Classifier = (record: EpisodicRecord) => RouteDecision;
 
-/** A record that lands nowhere — scaffolding (ideas/dream.md: `scaffold ↦ drop`). */
+/** A record that lands nowhere — scaffolding. */
 export const DROP: RouteDecision = { targets: [] };
 
 /** Convenience: does this decision keep the record in EPISODIC (vs consume it)? */
 export function isRetained(decision: RouteDecision): boolean {
-  return decision.targets.some((t) => t.organ === 'EPISODIC');
+  return decision.targets.some((t) => t.store === 'EPISODIC');
 }

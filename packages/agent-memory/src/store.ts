@@ -9,25 +9,57 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { basename, dirname, join } from 'node:path';
+import { hostname } from 'node:os';
+import {
+  basename,
+  dirname,
+  isAbsolute,
+  join,
+  normalize,
+  resolve,
+  sep,
+} from 'node:path';
+import { shortHost } from './node.js';
 import {
   type EpisodicRecord,
   type JsonValue,
   parseRecord,
   serializeRecord,
 } from './record.js';
-import { type HostEnv, type Scope, resolveFile } from './resolve.js';
 import { ulid as defaultUlid } from './ulid.js';
 
-/** Default store filename within a scope when a record carries no `path`. */
+/** Default raw-log filename within the agent home. */
 export const DEFAULT_EPISODIC_PATH = 'EPISODIC.jsonl';
 
-/** Input to {@link encode} — everything except the machine-minted `id`. */
+/**
+ * The derivation seam (SPEC D2): encode derives `{session?, host, cwd}` from
+ * the process environment — the CALLER supplies none of them. Injectable for
+ * tests; the default reads the real process.
+ */
+export interface DeriveEnv {
+  /** Absolute working directory at capture. */
+  cwd(): string;
+  /** Short hostname. */
+  host(): string;
+  /** Harness session id, when the environment carries one. */
+  session(): string | undefined;
+}
+
+/** The real process environment. */
+export const defaultDerive: DeriveEnv = {
+  cwd: () => process.cwd(),
+  host: () => shortHost(hostname()),
+  session: () => {
+    const sid = process.env.CLAUDE_SESSION_ID;
+    return sid !== undefined && sid.length > 0 ? sid : undefined;
+  },
+};
+
+/** Input to {@link EpisodicStore.encode} — the caller's share: body + optional tags. */
 export interface EncodeInput {
-  scope: Scope;
-  /** Scope-relative path. Defaults to {@link DEFAULT_EPISODIC_PATH}. */
-  path?: string;
   body: JsonValue;
+  /** Free refinement labels (SPEC D2/D4: refine, never route). */
+  tags?: string[];
 }
 
 /** Outcome of a {@link EpisodicStore.drain}. */
@@ -43,74 +75,81 @@ export interface DrainResult {
 }
 
 export interface EpisodicStoreOptions {
-  /** Host environment used to resolve (scope, path) → absolute file. */
-  env: HostEnv;
+  /** Absolute path of the agent home — the ONLY base the raw log resolves under. */
+  home: string;
   /** ULID source. Defaults to the process-wide monotonic factory; inject for tests. */
   ulid?: () => string;
+  /** Derivation seam for `{session?, host, cwd}`. Defaults to the real process. */
+  derive?: DeriveEnv;
+}
+
+/** Guard a home-relative path: relative, and never escaping the home via `..`. */
+function assertSafeRelative(path: string): string {
+  if (path.length === 0) throw new Error('Path must be non-empty');
+  if (isAbsolute(path))
+    throw new Error(`Path must be home-relative, not absolute: "${path}"`);
+  const normalized = normalize(path);
+  if (normalized === '..' || normalized.startsWith(`..${sep}`))
+    throw new Error(`Path must not escape the agent home: "${path}"`);
+  return normalized;
 }
 
 /**
- * The portable JSONL EPISODIC store. Encode is **append-only**: each call mints
- * a ULID, builds an OPEN record `{id, scope, path?, body}`, and appends one JSONL
- * line to the file resolved from `(scope, path)`. No taxonomy is forced at
- * capture; the Dreamer routes later.
+ * The portable JSONL EPISODIC store — **single-store, append-only, derived**
+ * (SPEC D2). Encode mints a ULID, derives `{session?, host, cwd}`, and appends
+ * one OPEN record to the home-anchored raw log. Scope is never stored (it is
+ * `node(cwd)`, computed at fold time); capture never writes into a repo.
  */
 export class EpisodicStore {
-  private readonly env: HostEnv;
+  readonly home: string;
   private readonly mintUlid: () => string;
+  private readonly derive: DeriveEnv;
 
   constructor(opts: EpisodicStoreOptions) {
-    this.env = opts.env;
+    if (!isAbsolute(opts.home))
+      throw new Error(`Agent home must be absolute: "${opts.home}"`);
+    this.home = resolve(opts.home);
     this.mintUlid = opts.ulid ?? defaultUlid;
+    this.derive = opts.derive ?? defaultDerive;
   }
 
   /**
-   * The absolute file a **routed dream target** with this (scope, path) resolves
-   * to, on this host. This is the SCOPE-AWARE resolver: a `project:<key>` target
-   * lands in that project's tree (`projectRoot(key)/path`). It is consumed ONLY by
-   * the dreamer's `resolveTarget` (where distilled content graduates to a SELF/
-   * MEMORY/AGENTS/vault instance) — **never** to locate the RAW capture log. Raw
-   * capture is single-store and always home-anchored; see {@link rawFile}.
-   */
-  fileFor(scope: Scope, path?: string): string {
-    return resolveFile(this.env, scope, path ?? DEFAULT_EPISODIC_PATH);
-  }
-
-  /**
-   * The absolute RAW LOG file for this host — ALWAYS the agent's own home
-   * (`agentHome()/path`), independent of any record's scope. Raw episodic capture
-   * is **single-store** (ideas/memory.md): every encode/read/compact of the raw
-   * log resolves here regardless of the record's `scope`, which is a routing TAG
-   * (consumed by the dreamer), never a selector of the raw-store location. This is
-   * the structural guarantee that capture never writes into a project working tree.
+   * The absolute RAW LOG file — ALWAYS under the agent home. Raw episodic
+   * capture is single-store: every encode/read/drain resolves here. This is
+   * the structural guarantee that capture never writes into a project tree.
    */
   rawFile(path?: string): string {
-    return resolveFile(this.env, 'user', path ?? DEFAULT_EPISODIC_PATH);
+    return resolve(
+      join(this.home, assertSafeRelative(path ?? DEFAULT_EPISODIC_PATH)),
+    );
   }
 
   /**
-   * Append one OPEN record to the home-anchored RAW LOG. Mints the ULID,
-   * serializes to JSONL, and appends (creating parent dirs as needed). The
-   * record still carries `input.scope` as its routing-tag field — but the file it
-   * lands in is {@link rawFile}, the agent home, NOT `fileFor(scope, …)`. Returns
-   * the written record.
+   * Append one OPEN record to the raw log. Mints the ULID, derives
+   * `{session?, host, cwd}` from the environment (never caller-supplied),
+   * serializes to JSONL, and appends. Returns the written record.
    */
-  encode(input: EncodeInput): EpisodicRecord {
+  encode(input: EncodeInput, path?: string): EpisodicRecord {
+    const session = this.derive.session();
     const rec: EpisodicRecord = {
       id: this.mintUlid(),
-      scope: input.scope,
-      ...(input.path !== undefined ? { path: input.path } : {}),
+      ...(session !== undefined ? { session } : {}),
+      host: this.derive.host(),
+      cwd: this.derive.cwd(),
       body: input.body,
+      ...(input.tags !== undefined && input.tags.length > 0
+        ? { tags: input.tags }
+        : {}),
     };
-    const file = this.rawFile(input.path);
+    const file = this.rawFile(path);
     mkdirSync(dirname(file), { recursive: true });
     appendFileSync(file, `${serializeRecord(rec)}\n`, 'utf8');
     return rec;
   }
 
   /**
-   * Read all records from the home-anchored RAW LOG, in file order. Returns an
-   * empty array if the file does not exist. Blank lines are skipped.
+   * Read all records from the raw log, in file order. Returns an empty array
+   * if the file does not exist. Blank lines are skipped.
    */
   read(path?: string): EpisodicRecord[] {
     const file = this.rawFile(path);
@@ -123,10 +162,9 @@ export class EpisodicStore {
    * (a verified copy), then CLEAR the raw log — run after consolidating into the
    * durable layers, so the archive is a recovery net for a bad consolidation, not a
    * permanent copy. Backups ROTATE: only the newest `keep` (default 5) are retained
-   * and the rest pruned every drain, so `.bak/` is bounded — each archive is a single
-   * dream-cycle of raw events (small, ~constant), and an old backup's recovery value
-   * decays to zero once its dream is validated. A no-op when the raw log is empty.
-   * Backup-and-verify precede the clear, so a crash mid-drain never loses data.
+   * and the rest pruned every drain, so `.bak/` is bounded. A no-op when the raw
+   * log is empty. Backup-and-verify precede the clear, so a crash mid-drain never
+   * loses data.
    */
   drain(opts?: { keep?: number; path?: string }): DrainResult {
     const keep = opts?.keep ?? 5;
@@ -163,43 +201,4 @@ export function parseLines(blob: string): EpisodicRecord[] {
     out.push(parseRecord(trimmed));
   }
   return out;
-}
-
-/**
- * A grouping key over a record's `(scope, path)` ROUTING-TAG fields, with `path`
- * normalized to {@link DEFAULT_EPISODIC_PATH} when absent. A NUL joins the two
- * parts so no scope/path containing a delimiter char can collide (a NUL cannot
- * legally appear in either). Records with an explicit default path and records
- * with none therefore key identically.
- *
- * NOTE: this is no longer a raw-STORE-location key. Raw capture is single-store
- * (always the agent home; see {@link EpisodicStore.rawFile}), so `(scope, path)`
- * is a record TAG, not a file selector. {@link groupByStore} below is therefore a
- * pure field-grouping (e.g. for batching records by routing tag) — it is not used
- * in `src/` and never selects a store file.
- */
-const STORE_KEY_DELIM = '\u0000'; // NUL: cannot appear in a scope or path, so no delimiter collision
-export function storeKey(scope: string, path?: string): string {
-  return `${scope}${STORE_KEY_DELIM}${path ?? DEFAULT_EPISODIC_PATH}`;
-}
-
-/**
- * Group records by their `(scope, path)` routing-tag fields and order each group
- * by ULID. A pure field-grouping (not a store-location selector — raw capture is
- * single-store); kept as a dreamer-side batching convenience.
- */
-export function groupByStore(
-  records: readonly EpisodicRecord[],
-): Map<string, EpisodicRecord[]> {
-  const groups = new Map<string, EpisodicRecord[]>();
-  for (const rec of records) {
-    const key = storeKey(rec.scope, rec.path);
-    const bucket = groups.get(key);
-    if (bucket) bucket.push(rec);
-    else groups.set(key, [rec]);
-  }
-  for (const bucket of groups.values()) {
-    bucket.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
-  }
-  return groups;
 }

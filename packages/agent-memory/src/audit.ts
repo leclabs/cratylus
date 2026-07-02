@@ -2,10 +2,11 @@ import { existsSync, readFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 
 /**
- * The scope-pollution auditor (plans/scoped-memory SPEC §6): a deterministic
- * detector over an agent home's USER-scope stores (`SELF.md`, `MEMORY.md`) for
- * markers that belong at project/plan scope. The post-dream invariant is that
- * both files load whole AND audit clean; this module is the falsifier.
+ * The scope-pollution auditor: a deterministic detector over an agent home's
+ * v2 resident stores (`SEMANTIC.md`, `PROCEDURAL.md` — plans/scoped-memory-v2
+ * SPEC D1/D5) for markers that belong at a project/plan node. The post-dream
+ * invariant is that both files load whole AND audit clean; this module is the
+ * falsifier and dream's exit gate.
  *
  * Deterministic by construction: fixed regex marker classes + an explicit
  * repo-key list (never cwd sniffing, never reasoning). Reviewed exceptions are
@@ -162,8 +163,8 @@ export function scanLine(
   return out;
 }
 
-/** The user-scope store files the audit covers (SPEC §6: SELF + MEMORY). */
-const AUDITED_FILES = ['SELF.md', 'MEMORY.md'] as const;
+/** The resident store files the audit covers (SPEC D5: the v2 scan set). */
+const AUDITED_FILES = ['SEMANTIC.md', 'PROCEDURAL.md'] as const;
 
 export interface AuditOptions {
   /** Reviewed exception pins — exact matched-marker texts to silence. */
@@ -173,9 +174,9 @@ export interface AuditOptions {
 }
 
 /**
- * Audit an agent home's SELF.md + MEMORY.md for scope markers. Absent files are
- * skipped (a fresh home audits clean). Pure detection — no writes, no cwd
- * dependence beyond the caller-resolved inputs.
+ * Audit an agent home's SEMANTIC.md + PROCEDURAL.md for scope markers. Absent
+ * files are skipped (a fresh home audits clean). Pure detection — no writes,
+ * no cwd dependence beyond the caller-resolved inputs.
  */
 export function auditHome(home: string, opts: AuditOptions = {}): AuditReport {
   const allow = new Set(opts.allowPins ?? []);

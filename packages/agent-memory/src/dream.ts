@@ -2,11 +2,11 @@
 // binding a test can intercept to simulate a mid-compact crash (the load-bearing
 // correctness property: a crash at rename must lose no unconsumed record).
 import * as fs from 'node:fs';
-import { dirname } from 'node:path';
+import { dirname, isAbsolute, join } from 'node:path';
 import type { EpisodicRecord } from './record.js';
 import { serializeRecord } from './record.js';
 import type { Classifier, RouteDecision, RouteTarget } from './route.js';
-import { isRetained } from './route.js';
+import { V2_STORES, isRetained } from './route.js';
 import { type EpisodicStore, parseLines } from './store.js';
 
 /**
@@ -23,10 +23,10 @@ export interface DreamResult {
 }
 
 /**
- * Append `content` to an organ home, creating parent dirs as needed. Plain
- * append — organ files (SELF.md, MEMORY.md, AGENTS.md, vault) are prose, not
- * JSONL. A single trailing newline separates entries; the caller's `content`
- * carries its own internal shape.
+ * Append `content` to a store home, creating parent dirs as needed. Plain
+ * append — store files (SEMANTIC.md, PROCEDURAL.md, AGENTS.md, vault notes)
+ * are prose, not JSONL. A single trailing newline separates entries; the
+ * caller's `content` carries its own internal shape.
  */
 function appendToHome(file: string, content: string): void {
   fs.mkdirSync(dirname(file), { recursive: true });
@@ -43,27 +43,48 @@ function appendToHome(file: string, content: string): void {
 }
 
 /**
- * Resolve a route target's destination file. The target's scope defaults to the
- * source record's own scope; its path is **required** for every organ except
- * EPISODIC (there is no implicit organ filename). EPISODIC targets resolve no
- * file — the record stays in its own store.
+ * Resolve a route target's destination file (SPEC D4). v2 addressing only:
+ *
+ *  - `SEMANTIC` / `PROCEDURAL` → `<home>/{SEMANTIC,PROCEDURAL}.md`.
+ *  - `AGENTS` → `<node>/AGENTS.md`; `node` (absolute) required.
+ *  - `vault` → `path` (absolute) required.
+ *  - `EPISODIC` → null (the record stays in the raw log).
+ *
+ * A target addressed to a RETIRED v1 organ name (`SELF`, `MEMORY`, …) — or any
+ * unknown store — is rejected loudly: the classifier is untyped at runtime, so
+ * the engine is the enforcement site.
  */
-function resolveTarget(
-  store: EpisodicStore,
-  record: EpisodicRecord,
-  target: RouteTarget,
-): string | null {
-  if (target.organ === 'EPISODIC') return null;
-  if (target.path === undefined) {
+function resolveTarget(home: string, target: RouteTarget): string | null {
+  const store = target.store as string;
+  if (!V2_STORES.has(store)) {
     throw new Error(
-      `Route target for organ ${target.organ} must name a scope-relative path`,
+      `Route target store "${store}" is not a v2 store (SEMANTIC | PROCEDURAL | AGENTS | vault | EPISODIC); the v1 organ names (SELF, MEMORY, ...) are retired — address by node path + v2 store name`,
     );
   }
-  const scope = target.scope ?? record.scope;
-  // Reuse the store's own per-host resolution seam. fileFor resolves any
-  // explicit (scope, path) — the EPISODIC default only kicks in when path is
-  // omitted, which we have already required above for every non-EPISODIC organ.
-  return store.fileFor(scope, target.path);
+  switch (target.store) {
+    case 'EPISODIC':
+      return null;
+    case 'SEMANTIC':
+      return join(home, 'SEMANTIC.md');
+    case 'PROCEDURAL':
+      return join(home, 'PROCEDURAL.md');
+    case 'AGENTS': {
+      if (target.node === undefined || !isAbsolute(target.node)) {
+        throw new Error(
+          'Route target for AGENTS must carry an absolute node directory (from the fold manifest)',
+        );
+      }
+      return join(target.node, 'AGENTS.md');
+    }
+    case 'vault': {
+      if (target.path === undefined || !isAbsolute(target.path)) {
+        throw new Error(
+          'Route target for vault must carry an absolute destination file path',
+        );
+      }
+      return target.path;
+    }
+  }
 }
 
 /**
@@ -150,15 +171,16 @@ export function compact(
 }
 
 /**
- * The audit label for one routed home: organ, qualified by its instance scope
- * when the target names one (`SELF@user`, `AGENTS@project:polis`). Bare organ
- * for EPISODIC (the record's own store) and for a target that inherits scope.
+ * The audit label for one routed home: the store name, qualified by its
+ * address when the target carries one (`AGENTS@/abs/node`, `vault@/abs/file`).
+ * Bare name for the home-anchored stores and EPISODIC.
  */
 function routeLabel(target: RouteTarget): string {
-  if (target.organ === 'EPISODIC') return 'EPISODIC';
-  return target.scope !== undefined
-    ? `${target.organ}@${target.scope}`
-    : target.organ;
+  if (target.store === 'AGENTS' && target.node !== undefined)
+    return `AGENTS@${target.node}`;
+  if (target.store === 'vault' && target.path !== undefined)
+    return `vault@${target.path}`;
+  return target.store;
 }
 
 /**
@@ -192,11 +214,11 @@ export function applyRoutes(
     const decision: RouteDecision = classifier(record);
 
     for (const target of decision.targets) {
-      const file = resolveTarget(store, record, target);
+      const file = resolveTarget(store.home, target);
       if (file === null) continue; // EPISODIC target — nothing to land
       if (target.content === undefined || target.content.length === 0) {
         throw new Error(
-          `Route target for organ ${target.organ} (${file}) carries no content`,
+          `Route target for store ${target.store} (${file}) carries no content`,
         );
       }
       appendToHome(file, target.content);

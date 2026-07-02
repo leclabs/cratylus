@@ -18,9 +18,9 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-/** A SELF.md polluted with one marker of each built-in class. */
-const POLLUTED_SELF = [
-  '# some-agent — self',
+/** A SEMANTIC.md polluted with one marker of each built-in class. */
+const POLLUTED_SEMANTIC = [
+  '# some-agent — semantic',
   'Daily driver checkout lives at ~/workspaces/polis for now.',
   'Open thread: plans/scoped-memory wave 1 is mine.',
   'Stale branch to prune: mav/B9-toolkit-hardening.',
@@ -28,58 +28,113 @@ const POLLUTED_SELF = [
   '',
 ].join('\n');
 
-const CLEAN_SELF = [
-  '# some-agent — self',
+const CLEAN_SEMANTIC = [
+  '# some-agent — semantic',
   'I verify claims empirically before building on them.',
   'The expert makes the call; deferring a call that is mine is the custodial reflex.',
   '',
 ].join('\n');
 
-describe('audit (CLI)', () => {
-  it('seeded-polluted SELF/MEMORY → exit 1 with the offending lines named', () => {
-    writeFileSync(join(home, 'SELF.md'), POLLUTED_SELF, 'utf8');
+describe('audit (CLI) — the v2 scan set {SEMANTIC.md, PROCEDURAL.md}', () => {
+  it('seeded-polluted SEMANTIC/PROCEDURAL → exit 1 with the offending lines named (the v2 scan set bites)', () => {
+    writeFileSync(join(home, 'SEMANTIC.md'), POLLUTED_SEMANTIC, 'utf8');
     writeFileSync(
-      join(home, 'MEMORY.md'),
-      '# memory\n- the deploy footgun writes beside ~/workspaces/other-repo\n',
+      join(home, 'PROCEDURAL.md'),
+      '# procedural\n- the deploy footgun writes beside ~/workspaces/other-repo\n',
       'utf8',
     );
     const r = main(['audit', '--home', home]);
     expect(r.code).toBe(1);
     expect(r.out).toMatch(
-      /SELF\.md:2: \[workspace-path\] ~\/workspaces\/polis/,
+      /SEMANTIC\.md:2: \[workspace-path\] ~\/workspaces\/polis/,
     );
-    expect(r.out).toMatch(/SELF\.md:3: \[plan-path\] plans\/scoped-memory/);
+    expect(r.out).toMatch(/SEMANTIC\.md:3: \[plan-path\] plans\/scoped-memory/);
     expect(r.out).toMatch(
-      /SELF\.md:4: \[branch-ref\] mav\/B9-toolkit-hardening/,
+      /SEMANTIC\.md:4: \[branch-ref\] mav\/B9-toolkit-hardening/,
     );
-    expect(r.out).toMatch(/SELF\.md:5: \[issue-ref\] #42/);
+    expect(r.out).toMatch(/SEMANTIC\.md:5: \[issue-ref\] #42/);
     expect(r.out).toMatch(
-      /MEMORY\.md:2: \[workspace-path\] ~\/workspaces\/other-repo/,
+      /PROCEDURAL\.md:2: \[workspace-path\] ~\/workspaces\/other-repo/,
     );
     expect(r.out).toMatch(/audit: 5 finding\(s\)/);
   });
 
-  it('clean SELF/MEMORY → exit 0', () => {
-    writeFileSync(join(home, 'SELF.md'), CLEAN_SELF, 'utf8');
-    writeFileSync(join(home, 'MEMORY.md'), '# memory\n- pure craft.\n', 'utf8');
-    const r = main(['audit', '--home', home]);
-    expect(r.code).toBe(0);
-    expect(r.out).toMatch(/audit: clean \(2 file\(s\) scanned/);
-  });
-
-  it('a home with no SELF/MEMORY audits clean (fresh spawn)', () => {
+  it('the retired v1 files are OUT of the scan set: a polluted SELF.md/MEMORY.md no longer scans', () => {
+    // Only legacy files present, both polluted — the v2 audit does not read them.
+    writeFileSync(join(home, 'SELF.md'), POLLUTED_SEMANTIC, 'utf8');
+    writeFileSync(
+      join(home, 'MEMORY.md'),
+      '# memory\n- ~/workspaces/other-repo\n',
+      'utf8',
+    );
     const r = main(['audit', '--home', home]);
     expect(r.code).toBe(0);
     expect(r.out).toMatch(/0 file\(s\) scanned/);
   });
 
-  it('--allow pins a reviewed finding → 0; a NEW unpinned finding still → 1', () => {
+  it('clean SEMANTIC/PROCEDURAL → exit 0', () => {
+    writeFileSync(join(home, 'SEMANTIC.md'), CLEAN_SEMANTIC, 'utf8');
     writeFileSync(
-      join(home, 'SELF.md'),
-      '# self\nVault pointer: ~/workspaces/obsidian holds my cold notes.\n',
+      join(home, 'PROCEDURAL.md'),
+      '# procedural\n- pure craft.\n',
       'utf8',
     );
-    const allow = join(home, 'audit-allow.txt');
+    const r = main(['audit', '--home', home]);
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/audit: clean \(2 file\(s\) scanned/);
+  });
+
+  it('a home with no stores audits clean (fresh spawn)', () => {
+    const r = main(['audit', '--home', home]);
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/0 file\(s\) scanned/);
+  });
+
+  it('DEFAULT allow-file: <home>/audit-allow.txt is picked up without --allow', () => {
+    writeFileSync(
+      join(home, 'SEMANTIC.md'),
+      '# semantic\nVault pointer: ~/workspaces/obsidian holds my cold notes.\n',
+      'utf8',
+    );
+    writeFileSync(
+      join(home, 'audit-allow.txt'),
+      '~/workspaces/obsidian\n',
+      'utf8',
+    );
+    const r = main(['audit', '--home', home]);
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/clean .*1 pinned/);
+  });
+
+  it('an EXPLICIT --allow overrides the default allow-file (default pins do not apply)', () => {
+    writeFileSync(
+      join(home, 'SEMANTIC.md'),
+      '# semantic\nVault pointer: ~/workspaces/obsidian holds my cold notes.\n',
+      'utf8',
+    );
+    // The default file would pin the finding...
+    writeFileSync(
+      join(home, 'audit-allow.txt'),
+      '~/workspaces/obsidian\n',
+      'utf8',
+    );
+    // ...but an explicit --allow with an unrelated pin takes precedence: the
+    // finding fires, and the unrelated pin is reported stale.
+    const other = join(home, 'other-allow.txt');
+    writeFileSync(other, '~/workspaces/long-gone\n', 'utf8');
+    const r = main(['audit', '--home', home, '--allow', other]);
+    expect(r.code).toBe(1);
+    expect(r.out).toMatch(/workspaces\/obsidian/);
+    expect(r.err).toMatch(/stale pin .*~\/workspaces\/long-gone/);
+  });
+
+  it('--allow pins a reviewed finding → 0; a NEW unpinned finding still → 1', () => {
+    writeFileSync(
+      join(home, 'SEMANTIC.md'),
+      '# semantic\nVault pointer: ~/workspaces/obsidian holds my cold notes.\n',
+      'utf8',
+    );
+    const allow = join(home, 'pins.txt');
     writeFileSync(allow, '~/workspaces/obsidian\n', 'utf8');
 
     // The pinned finding alone passes.
@@ -89,21 +144,21 @@ describe('audit (CLI)', () => {
 
     // A NEW unpinned marker appears → the audit still bites.
     writeFileSync(
-      join(home, 'MEMORY.md'),
-      '# memory\n- new pollution: plans/fleet-cutover is blocked\n',
+      join(home, 'PROCEDURAL.md'),
+      '# procedural\n- new pollution: plans/fleet-cutover is blocked\n',
       'utf8',
     );
     const withNew = main(['audit', '--home', home, '--allow', allow]);
     expect(withNew.code).toBe(1);
     expect(withNew.out).toMatch(
-      /MEMORY\.md:2: \[plan-path\] plans\/fleet-cutover/,
+      /PROCEDURAL\.md:2: \[plan-path\] plans\/fleet-cutover/,
     );
     expect(withNew.out).not.toMatch(/workspaces\/obsidian/);
   });
 
   it('a pin that no longer matches is reported STALE (shrink-only ratchet), exit stays 0', () => {
-    writeFileSync(join(home, 'SELF.md'), CLEAN_SELF, 'utf8');
-    const allow = join(home, 'audit-allow.txt');
+    writeFileSync(join(home, 'SEMANTIC.md'), CLEAN_SEMANTIC, 'utf8');
+    const allow = join(home, 'pins.txt');
     writeFileSync(allow, '~/workspaces/long-gone\n', 'utf8');
     const r = main(['audit', '--home', home, '--allow', allow]);
     expect(r.code).toBe(0);
@@ -112,17 +167,17 @@ describe('audit (CLI)', () => {
 
   it('--keys flags known repo keys on word boundaries', () => {
     writeFileSync(
-      join(home, 'MEMORY.md'),
-      '# memory\n- the polis gates are turbo-cached\n- metropolis is unrelated\n',
+      join(home, 'PROCEDURAL.md'),
+      '# procedural\n- the polis gates are turbo-cached\n- metropolis is unrelated\n',
       'utf8',
     );
     const keys = join(home, 'keys.txt');
     writeFileSync(keys, 'polis\n', 'utf8');
     const r = main(['audit', '--home', home, '--keys', keys]);
     expect(r.code).toBe(1);
-    expect(r.out).toMatch(/MEMORY\.md:2: \[repo-key\] polis/);
+    expect(r.out).toMatch(/PROCEDURAL\.md:2: \[repo-key\] polis/);
     // Word-boundary: "metropolis" must NOT fire the "polis" key.
-    expect(r.out).not.toMatch(/MEMORY\.md:3/);
+    expect(r.out).not.toMatch(/PROCEDURAL\.md:3/);
   });
 
   it('--config derives repo keys from a .agent-factory.config (containing repo basename)', () => {
@@ -131,13 +186,13 @@ describe('audit (CLI)', () => {
     const config = join(repoRoot, '.agent-factory.config');
     writeFileSync(config, '{"schema":1,"fleet":{"hosts":[]}}', 'utf8');
     writeFileSync(
-      join(home, 'SELF.md'),
-      '# self\nThe polis rebuild is where I broke the spell.\n',
+      join(home, 'SEMANTIC.md'),
+      '# semantic\nThe polis rebuild is where I broke the spell.\n',
       'utf8',
     );
     const r = main(['audit', '--home', home, '--config', config]);
     expect(r.code).toBe(1);
-    expect(r.out).toMatch(/SELF\.md:2: \[repo-key\] polis/);
+    expect(r.out).toMatch(/SEMANTIC\.md:2: \[repo-key\] polis/);
   });
 
   it('requires --home', () => {
