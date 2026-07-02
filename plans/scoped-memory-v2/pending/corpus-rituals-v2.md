@@ -9,7 +9,8 @@ tool, agents invoke via the memory skill), D4 (fold + total route incl. plan-nod
 in-repo law), D5 (ritual bindings). Surfaces: `packages/agent-anatomy/ideas/memory.md` (Protocol
 kernel + schema + Tool) · `src/skills/{dream,wake,handoff}.ts` · `ideas/persona.md` (verify: no
 store-name references) · `src/toolkit/make-base.ts` chain (base.ts regen) ·
-`src/organs/memory/long-term-memory.ts` (definiens already CoALA — verify, don't churn).
+`src/organs/memory/long-term-memory.ts` (its home clause names the retired stores — the definiens
+NEEDS the store-name edit; the CoALA parenthetical stays).
 
 ## Scope
 
@@ -25,9 +26,11 @@ reader-density bar.
 
 ## Accept (falsifiers)
 
-- Projected SOUL Memory Protocol names the three stores; grep finds NO live `SELF.md`/`MEMORY.md`
-  store reference in any projected artifact.
+- Projected SOUL Memory Protocol names the three stores; grep finds NO live store-sense
+  `SELF`/`MEMORY` token (bare or `.md`-suffixed) in any projected artifact.
 - dream cell carries the route as a total function (grep: no "may write"/hedge on route targets);
-  wake cell's load line names `--under`. A blind reader executes both rituals from the cells alone.
+  wake cell's load line names `--under`. Blind-reader check operationalized: a cold subagent handed
+  ONLY the projected dream + wake SKILL.md narrates both rituals correctly — its transcript is the
+  return artifact.
 - Suite green (null-organ, reader-density, projection-stability, skill-shape, symbols); repo gates
   4×0.

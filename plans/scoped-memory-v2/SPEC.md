@@ -25,12 +25,16 @@ it; the projection-dedup bar governs every write: already-projected ⇒ not stor
 Scope is not stored — it is `node(cwd)`, computed at fold time. The raw log lives in the agent home
 (`${AGENT_HOME}/EPISODIC.jsonl`) — the being's continuity; capture never writes into a repo.
 
-## D3 — Scope: `node(p)`, computed, configurable
+## D3 — Scope: `node(cwd, host)`, computed, total, configurable
 
-`node(p)` ≜ the nearest ancestor of `p` holding a boundary marker. Defaults: `.git` → project ·
-package manifest → package · `PLAN.md` → plan · `$HOME` → user; no marker ⇒ the session-start cwd is
-the boundary. Marker set extends via `memory.scopeMarkers` (glob list, `.agent-factory.config`).
-The resolver is an `agent-memory` verb — agents invoke it through the memory skill, never infer it.
+`node : (cwd, host) → path`, total over stored record fields: the nearest ancestor of `cwd`
+(reflexive — `cwd` itself qualifies) holding a boundary marker. Defaults: `.git` → project ·
+package manifest → package · `PLAN.md` → plan · `$HOME` → user (per-host `$HOME` from
+`.agent-factory.config` `host.*`); markerless `cwd` is its own boundary. A `.git` **file**
+(worktree/submodule) resolves through to the primary checkout's node; a nonexistent node folds to
+its nearest existing ancestor. Records without `cwd` fold to an explicit `legacy` bucket. Marker set
+extends via `memory.scopeMarkers` (glob list, `.agent-factory.config`). The resolver is an
+`agent-memory` verb — agents invoke it through the memory skill, never infer it.
 
 ## D4 — Dream: deterministic fold + semantic routing
 
@@ -43,18 +47,26 @@ route : I → { AGENTS.md@node (versioned) · SEMANTIC · PROCEDURAL · vault ·
 ```
 
 - A plan node's `AGENTS.md` receives that plan's next-steps/open-threads, depalimpsested on write.
-- Node-local episodic views, when a node materializes one, are **gitignored** and read by the
-  tooling via the filesystem — harness default-invisibility is expected, never a blocker. In-repo
-  writes are exactly: versioned `AGENTS.md` at nodes + gitignored node views; nothing else, ever.
+- A caller-supplied scope on any verb is an inert `tags` entry — never routing (the fold is the only
+  scope authority).
+- In-repo writes are exactly: versioned `AGENTS.md` at nodes; nothing else. Extension point (no v2
+  producer): node-local episodic views — if ever materialized, gitignored and read by the tooling
+  via the filesystem, harness default-invisibility expected.
 
 ## D5 — Rituals
 
 - **wake**: load = SEMANTIC + PROCEDURAL whole + `read --under <node(session-start cwd)>`;
   out-of-node records appear as counts only. `audit` (allow-file resolution
   `--allow > <home>/audit-allow.txt > none`) is dream's exit gate; pins are ritual state.
-- **dream**: the D4 fold; `dream.lock` (O_EXCL, stale-by-age) serializes the shared partition
-  {SEMANTIC, PROCEDURAL, drain} — same-host sessions of one agent share these regardless of project.
+- **dream**: the D4 fold; `${AGENT_HOME}/dream.lock` (O_EXCL; stale = age > 2h) serializes the
+  shared partition {SEMANTIC, PROCEDURAL, drain} — same-host sessions of one agent share these
+  regardless of project.
 - **encode duty** (kernel): cadence unchanged; the tool derives everything derivable.
+- **Coverage law**: every organ that touches the stores moves with them — deploy seeds
+  (`agent-forge` `SEED_FILES`) and the audit scan set retarget to
+  `{SEMANTIC.md, PROCEDURAL.md, EPISODIC.jsonl}`; the route engine's target set and addressing
+  retarget from the v1 organ names to node paths. A store rename that skips any of these silently
+  undoes itself.
 
 ## D6 — Migration: one-time, manual, clean-slate
 

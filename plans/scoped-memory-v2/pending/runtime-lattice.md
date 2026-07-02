@@ -14,18 +14,26 @@ verbs · audit allow-file `--allow > <home>/audit-allow.txt > none`). Source:
 ## Scope
 
 `packages/agent-memory/**` ONLY. (1) encode derives `{session?, host, cwd}`. (2) `node <path>`
-resolver verb (markers: defaults + config globs). (3) `fold` verb: live log → per-record
-`{id ↦ node, marker-basis}` manifest, byte-deterministic. (4) `read --under <path>` (records whose
-`node(cwd)` resolves under the given node; host-aware). (5) `lock acquire|release|status`.
-(6) audit allow-file default resolution + pinned-count output. Existing verb invocation shapes stay
-green; v1-shaped records remain readable (their `scope` field is inert data, never routing).
+resolver verb per SPEC D3 (total: reflexive · `.git`-file → primary checkout · nonexistent → nearest
+existing ancestor · per-host `$HOME` from config · markers: defaults + config globs). (3) `fold`
+verb: live log → per-record `{id ↦ node | legacy, marker-basis}` manifest, byte-deterministic;
+cwd-less records → the `legacy` bucket. (4) `read --under <path>`: same-host records whose
+`node(cwd)` resolves under the given node; foreign-host records report as counts. (5) `lock
+acquire|release|status` on `${AGENT_HOME}/dream.lock`, stale = age > 2h. (6) audit: scan set →
+`{SEMANTIC.md, PROCEDURAL.md}` + allow-file default resolution + pinned-count. (7) route engine
+retarget: the v1 organ target set (`SELF|MEMORY|…`) and tag-grammar addressing retire; routed
+targets address by node path + the v2 store names. Existing verb invocation shapes stay green;
+v1-shaped records remain readable (their `scope` field is inert data, never routing).
 
 ## Accept (falsifiers)
 
 - Scratch-home suite: cwd derived (not caller-supplied) on encode; `/tmp/x` session ⇒ `node` =
-  `/tmp/x` (never `$HOME`); marker precedence (PLAN.md inside a package inside a repo resolves to the
-  nearest); a config glob adds a boundary and resolution shifts; same log ⇒ byte-identical manifest;
-  `read --under` prefix semantics; lock conflict + stale-steal; audit default-allow pickup, explicit
-  `--allow` override, stale-pin report.
+  `/tmp/x` (never `$HOME`); reflexive (cwd = repo root ⇒ that root); a `.git` FILE resolves to the
+  primary checkout's node; marker precedence (PLAN.md in a package in a repo → nearest); a config
+  glob shifts resolution; cwd-less record lands in `legacy` (fold never throws); same log ⇒
+  byte-identical manifest; `read --under` prefix + foreign-host-counts semantics; lock conflict +
+  stale-steal at the 2h constant; audit: seeded polluted SEMANTIC.md → exit 1 (the v2 scan set
+  bites), default-allow pickup, explicit `--allow` override, stale-pin report; a route addressed to
+  a v1 organ name is REJECTED.
 - A seeded wrong-node resolution FAILS the suite (prove one, remove).
 - Repo gates 4×0; bundle single-file zero-dep.
