@@ -15,3 +15,5 @@ introduced by scoped-memory). The absorbed declarations are the cell's self-suff
 - Deployed `dream`/`wake` SKILL.md: no header-with-empty-body; either the declarations render or the
   section is gone with the cell law updated to match.
 - Projection-stability + skill-shape gates green.
+
+**Outcome (2026-07-02):** completed — root cause: skillBody preamble dropped every ≜-bearing line; predicate narrowed to `<name> ≜` prefix (98213d0, covers claude+codex); dream +6 / wake +2 bullets restored, only those two artifacts changed; bite-proof tests added (revert => 3 failures); fleet 7/7 content-verified (9 ≜ in deployed dream SKILL, fire+upgoose).

@@ -28,3 +28,5 @@ the cell. Land + fleet deploy in one motion; content-verify.
   the skill-absorbed copy permitted, restatement not.
 - Reader-density + projection-stability + null-organ gates green; SOULs reproject with the reduction;
   fleet content-verified.
+
+**Outcome (2026-07-02):** completed — doctrine homed in human-on-the-loop definiens (434e85c); grep-falsifier: one doctrinal home + lawful carry-on absorption; founder-genus purged from both AGENTS.md; projects to founder SOULs only (autonomy null x9); fleet 7/7 content-verified (Auftragstaktik in nico+mav, absent tester; upgoose sha=render).

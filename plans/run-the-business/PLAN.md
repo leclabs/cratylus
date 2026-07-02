@@ -14,15 +14,9 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 **Pending:**
 
-- `skill-projection-drops-absorbed-declarations` — deployed SKILL.md renders the absorbed-declarations
-  header with the bullets stripped (self-sufficiency law violated at the artifact). Render or remove —
-  decide, don't split. Lane: Mav + Nico (judge).
-- `autonomy-dry-homing` — home the mission-command substance in the `autonomy/human-on-the-loop` value
-  cell; reduce the leak sites (README · provenance · Persona Protocol). Reprojects every SOUL —
-  deliberate, separately landed + deployed. Lane: Nico.
-- `generic-extraction` — **deferred + decoupled**: the base-hierarchy coupling is dropped, so it blocks
-  nothing; a future open-source packaging concern only, not a design driver now (the library is as generic
-  as it needs to be). Proposal `docs/generic-extraction-proposal.md`; revisit iff open-sourcing goes live.
+- `generic-extraction` — **deferred**: the Operator's product call (open-source boundary + naming);
+  nothing blocks on it. Proposal `docs/generic-extraction-proposal.md`; the task file tracks only the
+  deferral. Revisit iff open-sourcing goes live.
 
 **Ready / active:** none.
 
