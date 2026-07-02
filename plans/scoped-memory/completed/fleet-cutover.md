@@ -20,3 +20,5 @@ defer idempotently (standing pattern).
   deployed `episodic.mjs` answers `audit --help`-class invocation (verb exists on-host); SOUL Memory
   Protocol contains the scope clause (grep). Log shows FLEET blocks, not LOCAL.
 - Read the deploy LOG, never the exit code; verify by content on ≥3 hosts incl. one `lcaraccioli` host.
+
+**Outcome (2026-07-02):** completed — 6/7 hosts (upgoose deferred, standing); sha256 render=fire(x3 agents)=forge=upmav; scope clause + audit verb content-verified on-host.

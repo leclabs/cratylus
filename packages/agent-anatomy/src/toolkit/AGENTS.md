@@ -84,6 +84,18 @@ sidecar archive.
 **Verify what LANDED, not what deploy printed** — confirm on-host at `~/.claude/{agents,skills}` (count +
 a content check). A wrong target path prints "copied" while the live tree is untouched.
 
+**Fleet ssh facts** (host users/topology: `.agent-factory.config` is authoritative):
+
+- Key-auth can exceed 10 s — `timeout 35 ssh -o ConnectTimeout=10 …`; a 10 s cap yields false UNREACHABLE.
+- node is on every host via mise, but mise activates only in the interactive shell — non-interactive ssh
+  sees no node (a probe artifact, never "no node"). Fix: prepend `$HOME/.local/share/mise/shims` to PATH;
+  if the shim itself errors (seen on spark), fall back to `~/.local/share/mise/installs/node/*/bin/node`.
+- `pnpm run` pass-through: NO literal `--` before flags (`pnpm anatomy:deploy --fleet`) — a passed-through
+  `--` reaches cac and the flag is silently dropped (deploy falls back LOCAL). Read the deploy log for
+  FLEET-vs-LOCAL blocks.
+- Verify destructive/remote ops by direct `ls -la` / sha256 — a nullglob convenience survey misbehaves
+  under remote zsh (false damage reports).
+
 > Legacy: the Python `deploy.py` was deleted in T6.1e; `agent-forge deploy` is the only deployer (git history recovers it).
 
 ## Continuity hook (B5 — repo-level praxis-advance reminder)

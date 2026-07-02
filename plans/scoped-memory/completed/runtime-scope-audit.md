@@ -23,3 +23,5 @@ deterministic, line-numbered findings, exit 1 on hit / 0 clean; (3) `resolveFile
 - `encode --scope plan:polis/scoped-memory` round-trips through `read`.
 - Bundle: `tsup` emits one file, `node dist/episodic.mjs audit --home <fixture>` runs with no install.
 - Gates: repo build · test · lint · typecheck green.
+
+**Outcome (2026-07-02):** completed — see git (d067048 + cd6f43a). Judge: all falsifiers re-verified ground-truth; branch-ref precision amended (cd6f43a) after live-probe FP evidence.

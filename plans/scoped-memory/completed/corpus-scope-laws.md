@@ -25,3 +25,5 @@ deploy, no migration.
   sink law. A blind reader executes dream routing from the cells alone (no SPEC access).
 - Gates: `tsc` · anatomy suite (projection-stability, reader-density, null-organ, skill-shape,
   symbols) · build · lint — all green.
+
+**Outcome (2026-07-02):** completed — see git (2172fc0). Judge: all falsifiers re-verified ground-truth; branch-ref precision amended (cd6f43a) after live-probe FP evidence.
