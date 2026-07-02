@@ -3,7 +3,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 export const signify: SkillCell = {
   name: 'signify',
   trigger: `/signify`,
-  delineation: `use this skill to name a concept set — assign each concept its injective canonical anchor \`α(c) = σ*_R(c)\` (the reader-relative fittest sign, whose latent priors circumscribe exactly it; one name ⇔ one concept), then coalesce concepts that resolve to the same anchor; emits the shortlex order \`≺\` and the decoder \`dec_R\`; stage 2 of exemplify, independently invocable (every naming review is a bare /signify).`,
+  delineation: `use this skill to name a concept set — assign each concept its injective canonical anchor \`α(c) = σ*_R(c)\` (the reader-relative fittest sign, whose latent priors circumscribe exactly it; one name ⇔ one concept), then coalesce concepts that resolve to the same anchor; emits the shortlex order \`≺\` and the decoder \`dec_R\`; stage 2 of exemplify, independently invocable (every naming review is a bare /signify); also home of the reader binding \`ρ\` — R per artifact class (default R=LLM; human iff the literal reader is human), the σ*+residue body-reduction rule, and the verbatim⇒R=LLM law.`,
   verb: `signify`,
   formalBlock: `DECLARATIONS
   R          — the reader; fixes every meaning. All operators are R-relative.
@@ -22,6 +22,12 @@ export const signify: SkillCell = {
                                               -- none exact ⇒ mint a fresh name into Names (the anchor-set is open)
   α          : C_R ↣ Names             -- the anchor; injective (one name ⇔ one concept)
 
+  Art        — artifacts: every authored surface (source cell · projection · plan · memory · message · doc).
+  readers(a) — a's operative consumers; a human reading through an agent teacher ∉ readers(a).
+  ρ          : Art → {LLM, human}      -- the reader binding: fixes the R an artifact is authored and read at
+  register(a) — the register a's body is observably authored in, ∈ {LLM, human}
+  verbatim(a) — a projects ship-whole, byte-exact: settled σ*, never re-derived at projection
+
 LAWS
   canonical_anchor :  ∀ c ∈ dom(α) :  α(c) ≜ σ*_R(c)          -- name each concept its reader-relative fittest sign
   A ≜ { α(c) | c ∈ dom(α) }
@@ -38,7 +44,28 @@ LAWS
 
   c ∉ dom(α) ⇒ c ∉ A :
       zero name circumscribes c, none mintable ⇒ exclude, logged
-      several c collapse to one name yet D_R(cᵢ) ≠ D_R(cⱼ) ⇒ the cut was wrong — return to conceptualize (re-cut)`,
+      several c collapse to one name yet D_R(cᵢ) ≠ D_R(cⱼ) ⇒ the cut was wrong — return to conceptualize (re-cut)
+
+  -- READER BINDING : ρ fixes the R every operator above is read at; binds the corpus and every projection
+  ρ(a) ≜ human  ⇔  readers(a) = {human}       -- iff the literal reader is human, alone
+  ρ(a) ≜ LLM    otherwise                     -- the invariant default; ambiguity resolves to LLM
+  ρ binds at the finest separately-consumed grain (a mixed corpus ⇒ ρ per note)
+
+  { source cell · projected SOUL · SKILL.md · hook-prompt · AGENTS.md · CLAUDE.md · plan mirror ·
+    task file · agent memory (SELF · MEMORY · EPISODIC) · skill-generated agent-artifact ·
+    agent-to-agent message (delegation prompt · subagent return) } ⊆ { a | ρ(a) = LLM }
+  { README · human doc · code comment · commit message · human chat ·
+    human-facing generated output (slack · email · report) } ⊆ { a | ρ(a) = human }
+
+  reduction (ρ(a) = LLM) — the signifier carries the load:
+      residue(c) ≜ { d ∈ D_R(c) | d ∉ fired_R(α(c)) }      -- only what the anchor's priors miss
+      ∀ c carried by a : c enters the body as ⟨α(c), residue(c)⟩   -- signify, don't explain
+      residue(c) = ∅ ⇒ c enters as α(c) alone                       -- the body collapses to the slug
+      re-stating fired_R(α(c)) in a body ⇒ ME violation             -- minimality fails: the restatement fuses into the anchor
+
+  conform(a)  ⇔  register(a) = ρ(a)           -- the gate predicate: enforced on bodies, not names only
+  verbatim(a) ⇒ ρ(a) = LLM                    -- ship-whole is composition, never a density exemption;
+                                              -- a human-register verbatim body is a defect of the cell, not a licence of the tag`,
   composition: ['exemplify', 'conceptualize', 'materialize'],
   body: `
 
@@ -70,6 +97,12 @@ DECLARATIONS
                                               -- none exact ⇒ mint a fresh name into Names (the anchor-set is open)
   α          : C_R ↣ Names             -- the anchor; injective (one name ⇔ one concept)
 
+  Art        — artifacts: every authored surface (source cell · projection · plan · memory · message · doc).
+  readers(a) — a's operative consumers; a human reading through an agent teacher ∉ readers(a).
+  ρ          : Art → {LLM, human}      -- the reader binding: fixes the R an artifact is authored and read at
+  register(a) — the register a's body is observably authored in, ∈ {LLM, human}
+  verbatim(a) — a projects ship-whole, byte-exact: settled σ*, never re-derived at projection
+
 LAWS
   canonical_anchor :  ∀ c ∈ dom(α) :  α(c) ≜ σ*_R(c)          -- name each concept its reader-relative fittest sign
   A ≜ { α(c) | c ∈ dom(α) }
@@ -87,6 +120,27 @@ LAWS
   c ∉ dom(α) ⇒ c ∉ A :
       zero name circumscribes c, none mintable ⇒ exclude, logged
       several c collapse to one name yet D_R(cᵢ) ≠ D_R(cⱼ) ⇒ the cut was wrong — return to conceptualize (re-cut)
+
+  -- READER BINDING : ρ fixes the R every operator above is read at; binds the corpus and every projection
+  ρ(a) ≜ human  ⇔  readers(a) = {human}       -- iff the literal reader is human, alone
+  ρ(a) ≜ LLM    otherwise                     -- the invariant default; ambiguity resolves to LLM
+  ρ binds at the finest separately-consumed grain (a mixed corpus ⇒ ρ per note)
+
+  { source cell · projected SOUL · SKILL.md · hook-prompt · AGENTS.md · CLAUDE.md · plan mirror ·
+    task file · agent memory (SELF · MEMORY · EPISODIC) · skill-generated agent-artifact ·
+    agent-to-agent message (delegation prompt · subagent return) } ⊆ { a | ρ(a) = LLM }
+  { README · human doc · code comment · commit message · human chat ·
+    human-facing generated output (slack · email · report) } ⊆ { a | ρ(a) = human }
+
+  reduction (ρ(a) = LLM) — the signifier carries the load:
+      residue(c) ≜ { d ∈ D_R(c) | d ∉ fired_R(α(c)) }      -- only what the anchor's priors miss
+      ∀ c carried by a : c enters the body as ⟨α(c), residue(c)⟩   -- signify, don't explain
+      residue(c) = ∅ ⇒ c enters as α(c) alone                       -- the body collapses to the slug
+      re-stating fired_R(α(c)) in a body ⇒ ME violation             -- minimality fails: the restatement fuses into the anchor
+
+  conform(a)  ⇔  register(a) = ρ(a)           -- the gate predicate: enforced on bodies, not names only
+  verbatim(a) ⇒ ρ(a) = LLM                    -- ship-whole is composition, never a density exemption;
+                                              -- a human-register verbatim body is a defect of the cell, not a licence of the tag
 \`\`\`
 `,
 };

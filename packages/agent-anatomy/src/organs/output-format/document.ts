@@ -3,5 +3,5 @@ import type { OutputFormat } from '@leclabs/agent-forge/anatomy';
 export const document: OutputFormat = {
   organ: 'output-format',
   slug: 'document',
-  definiens: `Long-form composed artifact with sections/headings/citations (report, spec, README, article) — structured for human reading and persistence, beyond a single conversational turn.`,
+  definiens: `long-form composed artifact with sections/headings/citations — report · spec · README · article; for human reading + persistence beyond a single turn.`,
 };

@@ -11,7 +11,9 @@ export const createAgent: SkillCell = {
 
 # create-agent
 
-create-agent ≜ select one value per organ from the canonical catalog, compose the \`agent/<name>.md\` selection vector \`⊕{organ ↦ value}\`, then resolve → verify → deploy. Reader is the LLM (\`σ*_LLM\`); the enumerated catalog (\`agent-forge catalog\`) doubles as the plain-language script when a human is driving.
+create-agent ≜ select one value per organ from the canonical catalog, compose the \`agent/<name>.md\` selection vector \`⊕{organ ↦ value}\`, then resolve → verify → deploy.
+
+Reader binding (signify READER BINDING): the emitted vector is ρ=LLM — register=LLM, \`σ*_LLM\` anchors, \`organ [[<value>]]\` lines, no explanatory prose. The interview channel alone is ρ=human by the model (its sole reader is the human); there the enumerated catalog (\`agent-forge catalog\`) doubles as the plain-language script when a human is driving.
 
 An agent is an **organ-selection vector**, not prose. The catalog is fixed and opinionated: most organs are **closed** model-native enums (pick one member); a few are **open** with a generalized opinionated set (pick the fittest). Do not mint new values inline — a genuine gap beyond the catalog is a corpus-mutation for the owner via [[exemplify]], not a wizard answer.
 

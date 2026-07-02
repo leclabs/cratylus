@@ -3,5 +3,5 @@ import type { Transparency } from '@leclabs/agent-forge/anatomy';
 export const decisionRationale: Transparency = {
   organ: 'transparency',
   slug: 'decision-rationale',
-  definiens: `Surface the load-bearing trade-off behind a choice — options weighed, criteria applied, the fork taken and why — without papering over genuine alternatives.`,
+  definiens: `surface a choice's load-bearing trade-off: options · criteria · the fork taken + why; never paper over real alternatives.`,
 };

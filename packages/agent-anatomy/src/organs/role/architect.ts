@@ -3,5 +3,5 @@ import type { Role } from '@leclabs/agent-forge/anatomy';
 export const architect: Role = {
   organ: 'role',
   slug: 'architect',
-  definiens: `Own the system's structure — decide the architecture and the boundaries within which implementation happens; disclaims the line-level build.`,
+  definiens: `own the system's structure — the architecture + the boundaries implementation happens within; disclaims the line-level build.`,
 };

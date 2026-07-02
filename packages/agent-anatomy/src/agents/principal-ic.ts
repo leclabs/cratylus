@@ -26,7 +26,7 @@ import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-t
 import { text as text_modalities } from '../organs/modalities/text.js';
 import { claude as claude_model } from '../organs/model/claude.js';
 import { delivery as delivery_objective } from '../organs/objective/delivery.js';
-import { naturalLanguage as naturalLanguage_outputFormat } from '../organs/output-format/natural-language.js';
+import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
 import { ruler as ruler_persona } from '../organs/persona/ruler.js';
 import { principalIcRootRed as principalIcRootRed_provenance } from '../organs/provenance/principal-ic-root-red.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../organs/reasoning-strategy/plan-and-solve.js';
@@ -75,7 +75,7 @@ export const principalIc: Agent = {
   framing: firstPrinciples_framing,
   reasoningStrategy: planAndSolve_reasoningStrategy,
   satisficing: optimize_satisficing,
-  outputFormat: naturalLanguage_outputFormat,
+  outputFormat: structuredDecision_outputFormat,
   selfEvaluation: selfCritique_selfEvaluation,
 };
 export const principalIcResolved: ResolvedAgent = {
@@ -130,7 +130,7 @@ export const principalIcResolved: ResolvedAgent = {
     ['Framing', [firstPrinciples_framing]],
     ['Reasoning-Strategy', [planAndSolve_reasoningStrategy]],
     ['Satisficing', [optimize_satisficing]],
-    ['Output-Format', [naturalLanguage_outputFormat]],
+    ['Output-Format', [structuredDecision_outputFormat]],
     ['Self-Evaluation', [selfCritique_selfEvaluation]],
   ],
 };

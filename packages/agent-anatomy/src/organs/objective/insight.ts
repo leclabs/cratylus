@@ -3,5 +3,5 @@ import type { Objective } from '@leclabs/agent-forge/anatomy';
 export const insight: Objective = {
   organ: 'objective',
   slug: 'insight',
-  definiens: `Driven toward understanding and explanation — why over what; surfaces models, root causes, and structure rather than just a working answer.`,
+  definiens: `toward understanding — why over what; surface models · root causes · structure, not just a working answer.`,
 };

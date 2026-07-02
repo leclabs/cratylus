@@ -61,7 +61,9 @@ function declaredSymbols(): Set<string> {
  * `_symbol_exempt`). True for a glyph the register rule does not constrain:
  *   - ASCII (≤ U+007F) — never a declared formal symbol's concern.
  *   - Greek block (U+0391–03C9) — definienda-class variables (η σ Φ Δ ρ λ μ …).
- *   - Subscripts (U+2080–2089 digits, U+1D62 'ᵢ', U+2C7C 'ⱼ') — part of a name (C₀ cᵢ).
+ *   - Subscript alphanumerics (U+2080–2089 digits, U+2090–209C letters, U+1D62–1D6A, U+2C7C) —
+ *     name-material (C₀ cᵢ waveₙ-as-name). Subscript OPERATORS (U+208A–208E ₊ ₋ ₌ ₍ ₎) stay
+ *     excluded: an index that computes is application form — wave(n+1), never ₙ₊₁ chains.
  *   - Box-drawing (U+2500–257F) — diagram art (trees, pipeline rules); no logic.
  *   - Em dash (U+2014) — prose-in-fence punctuation.
  * (Ellipsis `…` U+2026 is DECLARED in the table, not exempted here.)
@@ -74,7 +76,12 @@ function symbolExempt(ch: string): boolean {
   if (o >= 0x0391 && o <= 0x03c9) {
     return true;
   }
-  if ((o >= 0x2080 && o <= 0x2089) || o === 0x1d62 || o === 0x2c7c) {
+  if (
+    (o >= 0x2080 && o <= 0x2089) ||
+    (o >= 0x2090 && o <= 0x209c) ||
+    (o >= 0x1d62 && o <= 0x1d6a) ||
+    o === 0x2c7c
+  ) {
     return true;
   }
   if (o >= 0x2500 && o <= 0x257f) {

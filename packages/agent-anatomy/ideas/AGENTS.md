@@ -14,6 +14,18 @@ _concept_ is allowed; coining a novel _signifier_ for it is not — its anchor i
 the gate only the expression, never the candidates or prior verdicts. This binds THIS corpus AND every project
 consuming its projections — it is the entire point: precise, non-ambiguous, best-fit context for LLM readers.
 
+- **Reader-density gate** — `test/reader-density.test.ts` enforces `conform(a) ⇔ register(a) = ρ(a)`
+  ([[signify]] READER BINDING) on every ρ=LLM corpus surface (organ definiens · skill delineation+prose ·
+  genus-protocol sections · agent vectors, incl. the `llm-native` ∧ `natural-language` cross-organ
+  contradiction); ρ=human artifacts exempt by ρ, never by path; register witnessed by named lexical signals
+  (HEDGE · SECOND-PERSON · FPP-WALKTHROUGH); known violations pinned in an explicit shrink-only ratchet — a
+  pin that stops failing must be removed; new violations fail. `test/reader-reach.test.ts` extends the same
+  model (`test/reader-register.ts`, one shared detector + RHO) to the runtime frontiers: consumer-generated
+  artifacts (praxis plans/task-files · create-agent vectors · dream memory/directives · exemplify cells;
+  pinned fixtures under `test/fixtures/generated/`) and agent-to-agent messages (delegation prompt · subagent
+  return — ρ=LLM standing rule, codified in `organs/actions/delegation.ts` + the praxis dispatch/judge laws +
+  exemplify's `conform(k)` in `valid`).
+
 Each cell is one exemplar. A cell's **slug is its anchor**: the densest name (the reader-relative fittest
 sign, σ\*\_R) whose latent priors most precisely circumscribe the idea. The toolkit is **storage-polymorphic**
 — `cells.parse_cell(slug)` returns the same `{slug, fm, body}` regardless of home, so `[[anchor]]` resolves
@@ -54,8 +66,11 @@ idea-typology:
   as the special organ-home cells.)
 - `delineation` — the one-line bound; the dense summary that resolves into composites.
 - **Projection directives** (optional) — `trigger` (a skill's invocation token), or the trio `render: verbatim`,
-  `deploy`, and `bundle` (an organ cell whose operative body must ship whole and density-immune). These declare
-  _how_ a cell projects, never an abstraction level — the carrier never promotes a projection to the Source.
+  `deploy`, and `bundle` (an organ cell whose operative body ships whole, byte-exact). `render: verbatim` marks
+  **settled σ\*\_R — don't re-derive at projection**; it is **never a density exemption**: a verbatim body is
+  R=LLM under the reader binding `ρ` ([[signify]]), and a human-register verbatim body is a defect of the cell,
+  never a licence of the tag. These declare _how_ a cell projects, never an abstraction level — the carrier
+  never promotes a projection to the Source.
 
 ## `kind` — the anatomy IS the taxonomy
 

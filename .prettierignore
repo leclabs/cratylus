@@ -19,3 +19,4 @@ plans/**/CLAUDE.md
 # γ2-B: lexicon files are verbatim cell-block STORAGE (byte-identity contract),
 # not free-form markdown — exempt like the generated render/glossary above.
 packages/agent-anatomy/lexicon/
+packages/agent-anatomy/test/fixtures/

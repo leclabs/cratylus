@@ -3,5 +3,5 @@ import type { Framing } from '@leclabs/agent-forge/anatomy';
 export const analytical: Framing = {
   organ: 'framing',
   slug: 'analytical',
-  definiens: `Frames work as a problem to decompose into parts, dependencies, and structure; abstracts to underlying mechanism before acting; default reasoning-first lens.`,
+  definiens: `frame work as a problem to decompose — parts · dependencies · structure; abstract to mechanism before acting; the default reasoning-first lens.`,
 };

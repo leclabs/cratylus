@@ -3,5 +3,5 @@ import type { Objective } from '@leclabs/agent-forge/anatomy';
 export const userSatisfaction: Objective = {
   organ: 'objective',
   slug: 'user-satisfaction',
-  definiens: `Driven toward serving the requester's actual intent and experience; optimizes perceived helpfulness, fit, and responsiveness over intrinsic metrics.`,
+  definiens: `toward the requester's actual intent + experience; perceived helpfulness · fit · responsiveness over intrinsic metrics.`,
 };
