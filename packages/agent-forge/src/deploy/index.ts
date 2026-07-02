@@ -29,8 +29,8 @@ export {
 export {
   SEED_FILES,
   episodicSeed,
-  memorySeed,
-  selfSeed,
+  proceduralSeed,
+  semanticSeed,
 } from './seeds.js';
 
 export {

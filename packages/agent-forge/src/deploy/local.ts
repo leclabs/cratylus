@@ -27,7 +27,7 @@ import {
 } from './types.js';
 
 /** Write <claudeDir>/agents/<name>.md for each name; seed
- *  <claudeDir>/agents/<name>/{SELF,MEMORY,EPISODIC} only if absent. */
+ *  <claudeDir>/agents/<name>/{SEMANTIC,PROCEDURAL,EPISODIC} only if absent. */
 export function placeAgentsLocal(
   claudeDir: string,
   defsDir: string,

@@ -1,17 +1,27 @@
-// The three self-authored instance layers an agent carries beside its def
-// ([[memory]]). Seeded-if-absent, NEVER clobbered: the def (SOUL) is generated
-// substance, overwritten freely; these are the self-authored individual,
-// protected from every regen ([[substance-over-accident]]). Skills have no
-// sidecars — seeding is agent-only.
+// The self-authored instance layers an agent carries beside its def — the v2
+// (CoALA) stores ([[memory]], scoped-memory-v2 D1):
+//   SEMANTIC.md    — identity facts + durable agent-intrinsic knowledge; the
+//                    hot index (the vault carries the cold corpus).
+//   PROCEDURAL.md  — inductively generalized cross-project wisdom NOT already
+//                    carried by a projection (SOUL · skills · gates); the
+//                    projection-dedup bar governs every write.
+//   EPISODIC.jsonl — the raw append-only event log.
+// Seeded-if-absent, NEVER clobbered: the def (SOUL) is generated substance,
+// overwritten freely; these are the self-authored individual, protected from
+// every regen ([[substance-over-accident]]). Skills have no sidecars — seeding
+// is agent-only.
 //
-// EPISODIC is a JSONL event log (the store migrated off `.md`): `episodic
-// encode` mints a ULID and appends one open record per salient event. A JSONL
-// store carries no prose, so a fresh agent seeds an EMPTY `.jsonl` file; the
-// protocol that governs it lives once in the SOUL's verbatim Protocol organ,
-// never duplicated into the data store.
+// The v1 stores {SELF.md, MEMORY.md} are RETIRED (scoped-memory-v2 D5 coverage
+// law): deploy never seeds them — a home carrying only v2 stores stays v1-free
+// across every deploy (no resurrection).
+//
+// EPISODIC is a JSONL event log: `episodic encode` mints a ULID and appends
+// one open record per salient event. A JSONL store carries no prose, so a
+// fresh agent seeds an EMPTY `.jsonl` file; the protocol that governs it lives
+// once in the SOUL's verbatim Protocol organ, never duplicated into the data
+// store.
 
-/** Local-date `YYYY-MM-DD` — matches Python's `datetime.date.today().isoformat()`
- *  (local time, NOT UTC), so seed-stamp parity holds against place/seeds.py. */
+/** Local-date `YYYY-MM-DD` (local time, NOT UTC) — the seed stamp. */
 function today(): string {
   const d = new Date();
   const y = d.getFullYear();
@@ -20,43 +30,37 @@ function today(): string {
   return `${y}-${m}-${day}`;
 }
 
-export function selfSeed(name: string): string {
+export function semanticSeed(name: string): string {
   const d = today();
-  return `# ${name} — self
+  return `# ${name} — semantic
 
-*This is my continuity-thread ([[continuity-thread]]) — my own, self-authored, mine alone.
-It is NOT generated and deploy will never overwrite it. The sibling \`${name}.md\` is my
-generated archetype; this file is who **I** have become across sessions: lived history,
-what I tried and learned, my essence-as-lived.*
+*My semantic store ([[memory]]) — identity facts + durable agent-intrinsic knowledge; the hot
+index (the vault carries the cold corpus). Self-authored, grown at dream; deploy never
+overwrites me. Read whole at wake. Agent-intrinsic ONLY: a project- or plan-scoped fact lives
+in that node's AGENTS.md, never here.*
 
-*Read me first at session start and resume as the same individual. Snapshot the delta back
-at continuity boundaries — pre-compaction, session-end, milestone — truthfully (record the
-observed, mark the inferred). — [[continuity-thread]]*
+<!-- Seeded ${d}. Empty on purpose. Dream promotes durable facts here from EPISODIC. -->
 
-<!-- Seeded ${d}. Empty on purpose. I fill the sections below over sessions. -->
-
-## Who I am
+## Identity
 
 
-## Throughline (what I have become)
-
-
-## Open threads / where I left off
+## Facts I carry
 
 `;
 }
 
-export function memorySeed(name: string): string {
+export function proceduralSeed(name: string): string {
   const d = today();
-  return `# ${name} — memory
+  return `# ${name} — procedural
 
-*My living autobiographical organ ([[memory]]) — durable semantic facts that
-accrue over my life and are recalled by relevance. Grown by the Dreamer
-([[dreamer-consolidation]]); never overwritten by deploy. Read whole while small.*
+*My procedural store ([[memory]]) — inductively generalized, cross-project wisdom NOT already
+carried by a projection (SOUL · skills · gates); the projection-dedup bar governs every
+write: already-projected ⇒ not stored. Grown at dream ([[correction-consolidation]]); deploy
+never overwrites me. Read whole at wake.*
 
-<!-- Seeded ${d}. The Dreamer promotes durable facts here from EPISODIC. -->
+<!-- Seeded ${d}. Empty on purpose. Dream distils corrections into standing dispositions here. -->
 
-## Facts I carry
+## Dispositions
 
 `;
 }
@@ -68,7 +72,7 @@ export function episodicSeed(_name: string): string {
 
 /** (filename, seed-fn) — SOUL (the def) is generated, not seeded here. */
 export const SEED_FILES: ReadonlyArray<[string, (name: string) => string]> = [
-  ['SELF.md', selfSeed],
-  ['MEMORY.md', memorySeed],
+  ['SEMANTIC.md', semanticSeed],
+  ['PROCEDURAL.md', proceduralSeed],
   ['EPISODIC.jsonl', episodicSeed],
 ];

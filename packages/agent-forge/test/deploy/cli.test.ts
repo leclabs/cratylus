@@ -236,7 +236,7 @@ describe('runFound (greenfield founding)', () => {
       existsSync(join(target, '.claude', 'skills', 'memory', 'SKILL.md')),
     ).toBe(true);
     expect(
-      existsSync(join(target, '.claude', 'agents', 'mav', 'SELF.md')),
+      existsSync(join(target, '.claude', 'agents', 'mav', 'SEMANTIC.md')),
     ).toBe(false);
     // founding marker + subject woven in
     const agentsMd = readFileSync(join(target, 'AGENTS.md'), 'utf-8');

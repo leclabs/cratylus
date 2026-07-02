@@ -46,20 +46,29 @@ describe('placeAgentsSsh (fake fleet)', () => {
     expect(host.files.has('/Users/lcaraccioli/.claude/agents/mav.md')).toBe(
       true,
     );
-    // sidecars seeded server-side, if-absent
+    // sidecars seeded server-side, if-absent — the v2 stores, never v1
     expect(
-      host.files.has('/Users/lcaraccioli/.claude/agents/mav/SELF.md'),
+      host.files.has('/Users/lcaraccioli/.claude/agents/mav/SEMANTIC.md'),
+    ).toBe(true);
+    expect(
+      host.files.has('/Users/lcaraccioli/.claude/agents/mav/PROCEDURAL.md'),
     ).toBe(true);
     expect(
       host.files.has('/Users/lcaraccioli/.claude/agents/mav/EPISODIC.jsonl'),
     ).toBe(true);
-    expect(r.report.seeded).toContain('mav/SELF.md');
+    expect(
+      host.files.has('/Users/lcaraccioli/.claude/agents/mav/SELF.md'),
+    ).toBe(false);
+    expect(
+      host.files.has('/Users/lcaraccioli/.claude/agents/mav/MEMORY.md'),
+    ).toBe(false);
+    expect(r.report.seeded).toContain('mav/SEMANTIC.md');
   });
 
   it('NEVER clobbers an existing remote sidecar (reports PRESENT)', () => {
     const { agentsDir } = buildRenderTree(tmp('agent-forge-render-'));
     const existing = new Map<string, string>([
-      ['/Users/lcaraccioli/.claude/agents/mav/SELF.md', 'LIVED HISTORY'],
+      ['/Users/lcaraccioli/.claude/agents/mav/SEMANTIC.md', 'LIVED HISTORY'],
     ]);
     const fleet = makeFleet({
       'lcaraccioli@upmav.lan': {
@@ -77,12 +86,12 @@ describe('placeAgentsSsh (fake fleet)', () => {
       ['mav'],
       { ...silent, dry: false, runner },
     );
-    // SELF present-untouched; the other two seeded
-    expect(r.report.present).toContain('mav/SELF.md');
-    expect(r.report.seeded).toContain('mav/MEMORY.md');
-    expect(existing.get('/Users/lcaraccioli/.claude/agents/mav/SELF.md')).toBe(
-      'LIVED HISTORY',
-    );
+    // SEMANTIC present-untouched; the other two seeded
+    expect(r.report.present).toContain('mav/SEMANTIC.md');
+    expect(r.report.seeded).toContain('mav/PROCEDURAL.md');
+    expect(
+      existing.get('/Users/lcaraccioli/.claude/agents/mav/SEMANTIC.md'),
+    ).toBe('LIVED HISTORY');
   });
 
   it('an unreachable host defers with rc=2 (never silently "landed")', () => {

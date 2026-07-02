@@ -1,11 +1,20 @@
-// Local placer parity with place/local.py + seeds.py + scope.py:
+// Local placer contract (scoped-memory-v2 D1/D5):
 //   - defs overwritten freely (regenerated substance)
-//   - SELF/MEMORY/EPISODIC seeded only-if-absent; existing sidecars untouched
+//   - SEMANTIC/PROCEDURAL/EPISODIC seeded only-if-absent; existing sidecars untouched
 //   - EPISODIC seeds an EMPTY `.jsonl` (NOT `.md` — store migrated to JSONL)
+//   - the v1 stores {SELF.md, MEMORY.md} are NEVER created (no resurrection:
+//     a home carrying only v2 stores stays v1-free after deploy)
 //   - bare-home guard (self-correct + loud NOTE) / `.claude`-suffix used verbatim
 //   - never-prunes (a removed name leaves the live tree's other files standing)
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
@@ -19,7 +28,7 @@ import { buildBundleSrc, buildRenderTree, tmp } from './helpers.js';
 const silent = { dry: false, log: () => {}, warn: () => {} };
 
 describe('placeAgentsLocal', () => {
-  it('writes defs and seeds the three sidecars (EPISODIC is .jsonl, empty)', () => {
+  it('writes defs and seeds EXACTLY the three v2 sidecars (EPISODIC is .jsonl, empty)', () => {
     const src = tmp('agent-forge-render-');
     const { agentsDir } = buildRenderTree(src);
     const claude = join(tmp('agent-forge-host-'), '.claude');
@@ -30,49 +39,99 @@ describe('placeAgentsLocal', () => {
 
     // def landed
     expect(existsSync(join(claude, 'agents', 'mav.md'))).toBe(true);
-    // sidecars seeded
-    expect(existsSync(join(claude, 'agents', 'mav', 'SELF.md'))).toBe(true);
-    expect(existsSync(join(claude, 'agents', 'mav', 'MEMORY.md'))).toBe(true);
-    // EPISODIC migrated to JSONL — empty file, NOT a .md
+    // the sidecar dir holds EXACTLY the three v2 stores — nothing else
+    expect(readdirSync(join(claude, 'agents', 'mav')).sort()).toEqual([
+      'EPISODIC.jsonl',
+      'PROCEDURAL.md',
+      'SEMANTIC.md',
+    ]);
+    // v2 seed headers landed
+    expect(
+      readFileSync(join(claude, 'agents', 'mav', 'SEMANTIC.md'), 'utf-8'),
+    ).toMatch(/^# mav — semantic/);
+    expect(
+      readFileSync(join(claude, 'agents', 'mav', 'PROCEDURAL.md'), 'utf-8'),
+    ).toMatch(/^# mav — procedural/);
+    // EPISODIC is JSONL — empty file, NOT a .md
     const epi = join(claude, 'agents', 'mav', 'EPISODIC.jsonl');
-    expect(existsSync(epi)).toBe(true);
     expect(readFileSync(epi, 'utf-8')).toBe('');
-    expect(existsSync(join(claude, 'agents', 'mav', 'EPISODIC.md'))).toBe(
-      false,
-    );
+    // the retired v1 stores are NOT created
+    expect(existsSync(join(claude, 'agents', 'mav', 'SELF.md'))).toBe(false);
+    expect(existsSync(join(claude, 'agents', 'mav', 'MEMORY.md'))).toBe(false);
 
-    expect(r.report.seeded).toContain('mav/SELF.md');
+    expect(r.report.seeded).toContain('mav/SEMANTIC.md');
+    expect(r.report.seeded).toContain('mav/PROCEDURAL.md');
     expect(r.report.seeded).toContain('mav/EPISODIC.jsonl');
   });
 
-  it('overwrites the def freely but NEVER clobbers an existing sidecar', () => {
+  it('overwrites the def freely but NEVER clobbers an existing sidecar (sha+mtime proof)', () => {
     const src = tmp('agent-forge-render-');
     const { agentsDir } = buildRenderTree(src);
     const claude = join(tmp('agent-forge-host-'), '.claude');
 
     // first deploy seeds everything
     placeAgentsLocal(claude, agentsDir, ['mav'], silent);
-    // the agent edits its own SELF.md (the self-authored individual)
-    const selfPath = join(claude, 'agents', 'mav', 'SELF.md');
-    writeFileSync(selfPath, 'MY LIVED HISTORY — do not clobber', 'utf-8');
+    // the agent edits its own SEMANTIC.md (the self-authored individual)
+    const semPath = join(claude, 'agents', 'mav', 'SEMANTIC.md');
+    writeFileSync(semPath, 'MY LIVED HISTORY — do not clobber', 'utf-8');
     // the def is regenerated upstream (new substance)
     writeFileSync(join(agentsDir, 'mav.md'), '# mav def v2\n', 'utf-8');
+
+    // snapshot every sidecar (content + mtime) before the second deploy
+    const sidecarDir = join(claude, 'agents', 'mav');
+    const before = new Map(
+      readdirSync(sidecarDir).map((f) => {
+        const p = join(sidecarDir, f);
+        return [f, [readFileSync(p, 'utf-8'), statSync(p).mtimeMs]] as const;
+      }),
+    );
 
     const r = placeAgentsLocal(claude, agentsDir, ['mav'], silent);
     // def overwritten with v2
     expect(readFileSync(join(claude, 'agents', 'mav.md'), 'utf-8')).toBe(
       '# mav def v2\n',
     );
-    // sidecar UNTOUCHED
-    expect(readFileSync(selfPath, 'utf-8')).toBe(
-      'MY LIVED HISTORY — do not clobber',
-    );
+    // every sidecar byte-identical AND untouched on disk (mtime)
+    for (const [f, [content, mtime]] of before) {
+      const p = join(sidecarDir, f);
+      expect(readFileSync(p, 'utf-8')).toBe(content);
+      expect(statSync(p).mtimeMs).toBe(mtime);
+    }
     expect(r.report.present).toEqual([
-      'mav/SELF.md',
-      'mav/MEMORY.md',
+      'mav/SEMANTIC.md',
+      'mav/PROCEDURAL.md',
       'mav/EPISODIC.jsonl',
     ]);
     expect(r.report.seeded).toEqual([]);
+  });
+
+  it('RESURRECTION GUARD: a home carrying only v2 stores stays v1-free after deploy', () => {
+    const src = tmp('agent-forge-render-');
+    const { agentsDir } = buildRenderTree(src);
+    const claude = join(tmp('agent-forge-host-'), '.claude');
+
+    // a lived-in v2-only home: all three stores present + populated, no v1 files
+    const selfdir = join(claude, 'agents', 'mav');
+    mkdirSync(selfdir, { recursive: true });
+    writeFileSync(join(selfdir, 'SEMANTIC.md'), '# mav — semantic\nLIVED\n');
+    writeFileSync(join(selfdir, 'PROCEDURAL.md'), '# mav — procedural\nWISE\n');
+    writeFileSync(join(selfdir, 'EPISODIC.jsonl'), '{"id":"01X"}\n');
+
+    const r = placeAgentsLocal(claude, agentsDir, ['mav'], silent);
+    expect(r.rc).toBe(0);
+    // nothing seeded, all three reported present-untouched
+    expect(r.report.seeded).toEqual([]);
+    expect(r.report.present).toEqual([
+      'mav/SEMANTIC.md',
+      'mav/PROCEDURAL.md',
+      'mav/EPISODIC.jsonl',
+    ]);
+    // v1 is NOT resurrected under any input
+    expect(readdirSync(selfdir).sort()).toEqual([
+      'EPISODIC.jsonl',
+      'PROCEDURAL.md',
+      'SEMANTIC.md',
+    ]);
   });
 
   it('never prunes: a name removed from a later deploy leaves the others standing', () => {
@@ -83,7 +142,9 @@ describe('placeAgentsLocal', () => {
     // redeploy only mav — nico's landed files are not swept
     placeAgentsLocal(claude, agentsDir, ['mav'], silent);
     expect(existsSync(join(claude, 'agents', 'nico.md'))).toBe(true);
-    expect(existsSync(join(claude, 'agents', 'nico', 'SELF.md'))).toBe(true);
+    expect(existsSync(join(claude, 'agents', 'nico', 'SEMANTIC.md'))).toBe(
+      true,
+    );
   });
 
   it('warns (not throws) on a missing def', () => {

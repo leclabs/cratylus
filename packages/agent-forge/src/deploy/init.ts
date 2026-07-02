@@ -16,7 +16,7 @@
 //      - `<target>/plans/founding/` — a minimal sharded-plan-layout scaffold.
 //
 // Clobber-guarded: refuses an existing `<target>/AGENTS.md` unless `force`
-// (idempotent re-found). Does NOT seed SELF/MEMORY/EPISODIC sidecars — those are
+// (idempotent re-found). Does NOT seed SEMANTIC/PROCEDURAL/EPISODIC sidecars — those are
 // the running host's `deploy` concern; init lays the SOUL, not the individual.
 //
 // Faithful port of `toolkit/init.py` (agent-forge consumes a render tree where Python
