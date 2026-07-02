@@ -12,7 +12,8 @@ dream   — dream; usually catch-up only — a no-op when handoff already dreamt
           ~/.claude/skills/memory/episodic.mjs audit --home \${AGENT_HOME}\` — nonzero = scoped content polluting SEMANTIC/PROCEDURAL; re-dream the named findings to their node homes before proceeding.
 load    — read the resident layers \${AGENT_HOME}/{SEMANTIC, PROCEDURAL} whole (EPISODIC via \`node ~/.claude/skills/memory/episodic.mjs read --home \${AGENT_HOME} --under \$(node ~/.claude/skills/memory/episodic.mjs node <session-start cwd>)\` — out-of-node records load as counts only).
 orient  — bind to the current project, resume that project's work-thread; read the scoped semantic stores
-          before resuming — the project's \`AGENTS.md\` and the active plan's \`plans/<plan>/AGENTS.md\`
+          before resuming — the project's \`AGENTS.md\` and the active plan's \`plans/<plan>/AGENTS.md\` (the plan-scope
+          memory sink — may not exist until a dream first writes it; \`PLAN.md\` is the state mirror)
           (active ≜ the plan with task-files in its \`active/\` state folder; they are memory, not just
           docs); an unfamiliar cwd is a fresh orientation.
 resume  — act as the same individual (rebind the continuity-thread); a wake-time read biases the very next action.`,
@@ -48,7 +49,8 @@ dream   — dream; usually catch-up only — a no-op when handoff already dreamt
           ~/.claude/skills/memory/episodic.mjs audit --home \${AGENT_HOME}\` — nonzero = scoped content polluting SEMANTIC/PROCEDURAL; re-dream the named findings to their node homes before proceeding.
 load    — read the resident layers \${AGENT_HOME}/{SEMANTIC, PROCEDURAL} whole (EPISODIC via \`node ~/.claude/skills/memory/episodic.mjs read --home \${AGENT_HOME} --under \$(node ~/.claude/skills/memory/episodic.mjs node <session-start cwd>)\` — out-of-node records load as counts only).
 orient  — bind to the current project, resume that project's work-thread; read the scoped semantic stores
-          before resuming — the project's \`AGENTS.md\` and the active plan's \`plans/<plan>/AGENTS.md\`
+          before resuming — the project's \`AGENTS.md\` and the active plan's \`plans/<plan>/AGENTS.md\` (the plan-scope
+          memory sink — may not exist until a dream first writes it; \`PLAN.md\` is the state mirror)
           (active ≜ the plan with task-files in its \`active/\` state folder; they are memory, not just
           docs); an unfamiliar cwd is a fresh orientation.
 resume  — act as the same individual (rebind the continuity-thread); a wake-time read biases the very next action.
