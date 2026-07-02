@@ -14,6 +14,10 @@
       "packages/agent-anatomy/references/**",
       "packages/agent-anatomy/docs/**",
       "packages/agent-anatomy/ideas/**",
+      // graphify's tool-emitted cache/graph output (specimens, not source) —
+      // `**/`-anchored because turbo runs biome from the package cwd, where the
+      // repo-root-anchored `packages/agent-anatomy/ideas/**` glob does not match.
+      "**/graphify-out/**",
       "packages/agent-anatomy/.manifests/**",
       "packages/agent-anatomy/**/*.md",
       "**/*.generated.ts",
