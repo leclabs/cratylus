@@ -22,7 +22,8 @@ cwd-less records → the `legacy` bucket. (4) `read --under <path>`: same-host r
 acquire|release|status` on `${AGENT_HOME}/dream.lock`, stale = age > 2h. (6) audit: scan set →
 `{SEMANTIC.md, PROCEDURAL.md}` + allow-file default resolution + pinned-count. (7) route engine
 retarget: the v1 organ target set (`SELF|MEMORY|…`) and tag-grammar addressing retire; routed
-targets address by node path + the v2 store names. Existing verb invocation shapes stay green;
+targets address by node path + the v2 store names. (8) `packages/agent-memory/AGENTS.md` re-states
+the v2 contract (no "context oracle" / tag-grammar law survives). Existing verb invocation shapes stay green;
 v1-shaped records remain readable (their `scope` field is inert data, never routing).
 
 ## Accept (falsifiers)

@@ -11,8 +11,8 @@ All wave(0) completed task-files. **The closed v2 verb surface (pinned here, not
 Coupling: SOULs + memory skill (new bundle) land atomically per host. upmav carries
 locally-diverged memory/wake/dream skill files (restore point
 `~/.claude/skills/memory/.bak/01KWHXHMY6AC5C0162786DR1YT/`) — this deploy supersedes them. Doc
-surfaces that state the outgoing model: `docs/scoped-memory.md` + `packages/agent-memory/AGENTS.md`
-— revise to v2 or retire in this task (net-current law).
+surface stating the outgoing model: `docs/scoped-memory.md` — revise to v2 or retire in this task
+(net-current law; the runtime package's own `AGENTS.md` is runtime-lattice territory).
 
 ## Scope
 
@@ -25,7 +25,6 @@ Build → project → fleet deploy → verify → doc reconciliation. No store m
   cwd (record shows the derived value, not a caller-passed one); a no-op re-deploy over a scratch
   v2-store home creates NO `SELF.md`/`MEMORY.md` (seeds retarget proven live).
 - upmav: skill texts match the render tree byte-for-byte.
-- `docs/scoped-memory.md` + `packages/agent-memory/AGENTS.md` carry no v1-model law (grep: "context
-  oracle", tag-grammar routing).
+- `docs/scoped-memory.md` carries no v1-model law (grep: "context oracle", tag-grammar routing).
 - Log shows FLEET blocks ×7 or named unreachable-deferred; content-verify ≥3 hosts incl. one
   `lcaraccioli` host.
