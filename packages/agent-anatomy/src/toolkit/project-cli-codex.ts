@@ -8,10 +8,9 @@
 // PROJECTION LOGIC lives in agent-forge (`@leclabs/agent-forge/adapters/codex`); this step only
 // walks agent-anatomy's typed modules and wires them to it.
 //
-// Usage:  tsx src/toolkit/project-cli-codex.ts [--out <dir>] [--profile <reader/harness>] [--delta]
+// Usage:  tsx src/toolkit/project-cli-codex.ts [--out <dir>] [--profile <reader/harness>]
 //   default out:     packages/agent-anatomy/.render-ts-codex   (gitignored; separate from .render-ts)
 //   default profile: strong-llm-lean/codex
-//   --delta:         subtract the codex harness reset (omit-to-inherit; first-pass reset)
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
@@ -22,8 +21,6 @@ import {
   type ResolvedSkill,
   agentToCodexToml,
   agentsMdSurface,
-  codexHarnessReset,
-  projectCodexAgentDelta,
   skillToCodexMd,
 } from '@leclabs/agent-forge/adapters/codex';
 import type { SkillCell } from './skill-cell.js';
@@ -36,13 +33,11 @@ const skillsModDir = join(anatomyRoot, 'src', 'skills');
 interface Args {
   out: string;
   profile: string;
-  delta: boolean;
 }
 
 function parseArgs(argv: string[]): Args {
   let out = join(anatomyRoot, '.render-ts-codex');
   let profile = 'strong-llm-lean/codex';
-  let delta = false;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--out') {
@@ -57,13 +52,11 @@ function parseArgs(argv: string[]): Args {
         throw new Error('--profile requires a value');
       }
       profile = v;
-    } else if (a === '--delta') {
-      delta = true;
     } else {
       throw new Error(`unknown arg ${a}`);
     }
   }
-  return { out, profile, delta };
+  return { out, profile };
 }
 
 async function moduleNames(dir: string): Promise<string[]> {
@@ -105,10 +98,10 @@ async function projectAgents(args: Args): Promise<string[]> {
   const names: string[] = [];
   for (const name of await moduleNames(agentsModDir)) {
     const resolved = await resolvedAgentOf(join(agentsModDir, `${name}.ts`));
-    const toml = args.delta
-      ? projectCodexAgentDelta(resolved, codexHarnessReset, args.profile)
-      : agentToCodexToml(resolved, args.profile);
-    writeFileSync(join(dir, `${name}.toml`), toml);
+    writeFileSync(
+      join(dir, `${name}.toml`),
+      agentToCodexToml(resolved, args.profile),
+    );
     process.stdout.write(`EMIT codex agent ${name}\n`);
     names.push(name);
   }
@@ -222,8 +215,6 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   // The codex AGENTS.md instruction surface (the always-loaded discovery shell).
   writeFileSync(join(args.out, 'AGENTS.md'), agentsMdSurface(agentNames));
   process.stdout.write(
-    `projected ${agentNames.length} agents + ${s + 1} skills + AGENTS.md to ${args.out}${
-      args.delta ? ' (delta: codex reset subtracted)' : ''
-    }\n`,
+    `projected ${agentNames.length} agents + ${s + 1} skills + AGENTS.md to ${args.out}\n`,
   );
 }

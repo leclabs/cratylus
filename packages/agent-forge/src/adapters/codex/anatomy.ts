@@ -11,13 +11,10 @@
 //
 // The composed SOUL BODY itself is HARNESS-NEUTRAL — it is the agent's organ
 // sections, identical content whichever harness carries it. So this module REUSES
-// `agentBody` / `subtractReset` / `skillBody` / `ResolvedAgent` / `ResolvedSkill`
+// `agentBody` / `skillBody` / `ResolvedAgent` / `ResolvedSkill`
 // from the claude adapter (those are the anatomy-composition machinery, not
 // claude-specific framing) and only adds the codex-specific FRAMING: the agent
 // body → a `.toml` `system_prompt`, and the codex SKILL.md / AGENTS.md surfaces.
-//
-// Per T2.4: the codex harness reset (`codexHarnessReset`) is a reasonable
-// FIRST-PASS (accuracy out of scope) — subtract it at export via `projectAgentDelta`.
 
 import TOML from '@iarna/toml';
 import {
@@ -25,9 +22,7 @@ import {
   type ResolvedSkill,
   agentBody,
   skillBody,
-  subtractReset,
 } from '../claude/anatomy.js';
-import type { HarnessReset } from '../claude/harness-reset.js';
 
 // Re-export the shared, harness-neutral resolved shapes so a codex consumer can
 // import everything it needs from the codex adapter.
@@ -77,19 +72,6 @@ export function agentToCodexToml(
 ): string {
   const obj = agentToCodexTomlObject(a, profile);
   return TOML.stringify(obj as TOML.JsonMap);
-}
-
-/**
- * The DELTA codex `.toml` for an agent: like `agentToCodexToml` but with the
- * harness reset subtracted first (the opt-in subtraction path, mirroring claude's
- * `projectAgentDelta`). Pass `codexHarnessReset` for the codex first-pass reset.
- */
-export function projectCodexAgentDelta(
-  a: ResolvedAgent,
-  reset: HarnessReset,
-  profile = 'strong-llm-lean/codex',
-): string {
-  return agentToCodexToml(subtractReset(a, reset), profile);
 }
 
 // ── Skill projection → skills/<name>/SKILL.md ────────────────────────────────

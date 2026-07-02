@@ -85,8 +85,6 @@ export {
   type ResolvedSkill,
   type ReaderDensity,
   agentToClaudeMd,
-  projectAgentDelta,
-  subtractReset,
   skillToClaudeMd,
   agentBody,
   skillBody,
@@ -97,13 +95,6 @@ export {
   densityRef,
   isReaderDensity,
 } from './anatomy.js';
-// The claude HARNESS RESET (omit-to-inherit basis) + its type. `claude` is a
-// harness, never a agent-anatomy agent — so the reset lives in the adapter, not agent-anatomy.
-export {
-  type HarnessReset,
-  type HarnessOrganReset,
-  claudeHarnessReset,
-} from './harness-reset.js';
 // The hook → settings.json `hooks` block serializer (the IR-resource projection
 // path), exposed standalone so a plugin (agent-anatomy) can project a hooks-only
 // settings fragment without driving the whole `writeClaude` tree.

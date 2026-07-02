@@ -71,10 +71,6 @@ export {
   type ResolvedSkill,
   agentToCodexToml,
   agentToCodexTomlObject,
-  projectCodexAgentDelta,
   skillToCodexMd,
   agentsMdSurface,
 } from './anatomy.js';
-// The codex HARNESS RESET (omit-to-inherit basis, a T2.4 first pass). `codex` is a
-// harness, never a agent-anatomy agent — so the reset lives in the adapter, not agent-anatomy.
-export { codexHarnessReset } from './harness-reset.js';

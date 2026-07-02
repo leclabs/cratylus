@@ -4,15 +4,12 @@ import { join } from 'node:path';
 import TOML from '@iarna/toml';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { aiderAdapter } from '../../../src/adapters/aider/index.js';
-import { claudeHarnessReset } from '../../../src/adapters/claude/index.js';
 import {
   type ResolvedAgent,
   type ResolvedSkill,
   agentToCodexToml,
   agentToCodexTomlObject,
   agentsMdSurface,
-  codexHarnessReset,
-  projectCodexAgentDelta,
   skillToCodexMd,
 } from '../../../src/adapters/codex/index.js';
 import { opencodeAdapter } from '../../../src/adapters/opencode/index.js';
@@ -85,53 +82,6 @@ describe('agentToCodexToml — the codex subagent projection', () => {
     const parsed = TOML.parse(agentToCodexToml(a)) as Record<string, unknown>;
     expect(parsed.color).toBeUndefined();
     expect(parsed.description).toBe('the Sage archetype');
-  });
-});
-
-// ── Codex harness reset (T2.4 first pass) ────────────────────────────────────
-
-describe('codexHarnessReset — first-pass omit-to-inherit basis', () => {
-  it('mirrors claude’s reset organ set (same omit-to-inherit surface)', () => {
-    expect(Object.keys(codexHarnessReset).sort()).toEqual(
-      Object.keys(claudeHarnessReset).sort(),
-    );
-  });
-
-  it('diverges from claude ONLY on model (codex, not claude)', () => {
-    expect(codexHarnessReset.model).toEqual({
-      kind: 'scalar',
-      slugs: ['codex'],
-    });
-    // Every other organ matches the claude measured reset.
-    for (const organ of Object.keys(codexHarnessReset)) {
-      if (organ === 'model') continue;
-      expect(
-        codexHarnessReset[organ as keyof typeof codexHarnessReset],
-      ).toEqual(claudeHarnessReset[organ as keyof typeof claudeHarnessReset]);
-    }
-  });
-
-  it('projectCodexAgentDelta subtracts the harness-provided organs', () => {
-    const toml = projectCodexAgentDelta(nicoLikeResolved(), codexHarnessReset);
-    const sp = (TOML.parse(toml) as { system_prompt: string }).system_prompt;
-    // Distinctive organs kept.
-    expect(sp).toContain('## Persona');
-    expect(sp).toContain('## Role');
-    expect(sp).toContain('## Formality'); // formal != reset neutral → kept
-    // Harness-provided organs omitted.
-    expect(sp).not.toContain('## Autonomy');
-    expect(sp).not.toContain('## Actions');
-    expect(sp).not.toContain('## Modalities');
-    // Memory genus block still frames the SOUL.
-    expect(sp).toContain('## Memory');
-  });
-
-  it('KEEPS substrate=claude under the codex reset (real delta on codex)', () => {
-    // The deliberate divergence: a claude-substrate agent on codex is NOT native.
-    const toml = projectCodexAgentDelta(nicoLikeResolved(), codexHarnessReset);
-    const sp = (TOML.parse(toml) as { system_prompt: string }).system_prompt;
-    expect(sp).toContain('## Model');
-    expect(sp).toContain('claude ≜');
   });
 });
 
