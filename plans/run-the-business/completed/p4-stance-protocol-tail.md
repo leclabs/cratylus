@@ -22,3 +22,5 @@ Remaining:
 
 - `upgoose` missed the 2026-07-01/02 corpus deploys (host down, port-timeout-verified) — next fleet
   deploy covers (idempotent); verify by content + run the memory `audit` over its agent homes.
+
+**Outcome (2026-07-02):** completed — upgoose back up: full corpus deployed (sha=render), scope clause + rho=LLM law content-verified, all agent homes audit-clean; stanceGuard stays off there (canary exclusion stands). nico SELF custodial notes trimmed (redundant protocol restatement removed; lived dispositions kept). Latent autonomy-DRY extracted to its own pending task `autonomy-dry-homing`.

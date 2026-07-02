@@ -7,6 +7,6 @@ net-current only: its dir is removed and `git log -- plans/<name>/` is the recor
 
 ## Active
 
-| Plan               | Concern                                                                                                                                                                                                      | Lead                  |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
-| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Active: `p4-stance-protocol-tail`. Pending: `skill-projection-drops-absorbed-declarations`, `generic-extraction` (deferred). | Mav + Nico (per task) |
+| Plan               | Concern                                                                                                                                                                                          | Lead                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
+| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Pending: `skill-projection-drops-absorbed-declarations`, `autonomy-dry-homing`, `generic-extraction` (deferred). | Mav + Nico (per task) |

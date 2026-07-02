@@ -12,21 +12,19 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 ## Status mirror
 
-**Active:**
-
-- `p4-stance-protocol-tail` — apps rider closed (stanceGuard true + content-verified, 2026-07-02);
-  upgoose still down (canary; idempotent catch-up on next fleet deploy). mav anti-typism brake retire
-  **unblocked**: its retirement condition (intent-extraction robustly homed + enforced) is met — blind gate
-  (2/2, 2026-07-01) confirms intent-driven autonomy is a **facet of the existing `autonomy` organ** (mission
-  command), not a missing "execution organ" (that label was a pre-P4 placeholder); the disposition is
-  carried by provenance + the Persona Protocol genus and enforced by the stance-guardrail hook. Operator
-  removed the brake on upmav; nico custodial notes kept (diagnostic).
-
 **Pending:**
 
+- `skill-projection-drops-absorbed-declarations` — deployed SKILL.md renders the absorbed-declarations
+  header with the bullets stripped (self-sufficiency law violated at the artifact). Render or remove —
+  decide, don't split. Lane: Mav + Nico (judge).
+- `autonomy-dry-homing` — home the mission-command substance in the `autonomy/human-on-the-loop` value
+  cell; reduce the leak sites (README · provenance · Persona Protocol). Reprojects every SOUL —
+  deliberate, separately landed + deployed. Lane: Nico.
 - `generic-extraction` — **deferred + decoupled**: the base-hierarchy coupling is dropped, so it blocks
   nothing; a future open-source packaging concern only, not a design driver now (the library is as generic
   as it needs to be). Proposal `docs/generic-extraction-proposal.md`; revisit iff open-sourcing goes live.
+
+**Ready / active:** none.
 
 ## See also
 
