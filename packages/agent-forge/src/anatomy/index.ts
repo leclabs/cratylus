@@ -279,61 +279,56 @@ export const ORGAN_NAMES = Object.keys(ANATOMY) as readonly Organ[];
 // ── The Agent: a typed organ-selection vector ───────────────────────────────
 
 /**
- * An agent as a selection over the anatomy. Scalar organ fields hold ONE
- * fragment; the five set organs hold arrays. Arity is enforced by the field
- * types — a scalar field cannot take an array and a set field cannot take a
- * scalar, so either mistake is a compile error. Every field is required after
- * merge (completeness law); a delta-over-base supplies the omitted organs by
- * `...base` spread (see `base?`).
+ * An agent as a selection over the anatomy: a FLAT, explicit 24-organ vector
+ * (depth 1 — no base-organ hierarchy, no delta resolution; composition over
+ * inheritance). Scalar organ fields hold ONE fragment; the five set organs hold
+ * arrays. Arity is enforced by the field types — a scalar field cannot take an
+ * array and a set field cannot take a scalar, so either mistake is a compile
+ * error.
+ *
+ * Every organ key is REQUIRED (completeness law — a missing key is a compile
+ * error). A key's value is a concrete fragment **or `null`**: the explicit-unset
+ * sentinel (cf. CSS `unset`) — do NOT project this organ; inherit whatever the
+ * harness provides. The key stays visible at the agent source, self-documenting
+ * the deliberate harness-inheritance, and tracks the harness default even when
+ * it drifts (expressiveness a concrete-value-matching-a-fixture cannot give).
+ * `null` on a set organ omits the whole section (there is no partial inherit).
  */
 export interface Agent {
   /** The agent's name (its module / deploy identity). */
   readonly name: string;
 
-  /**
-   * The baseline this agent is a delta over: `{ ...base, ...overrides }`.
-   * The polis-universal floor (`agents/base.ts`) spreads in here; an agent that
-   * is itself the base omits it. Merge is object spread (scalar = field replace,
-   * additive set = array spread), NOT a resolution pass.
-   */
-  readonly base?: Agent;
-
   // STANCE (all scalar)
-  readonly autonomy: Autonomy;
-  readonly persona: Persona;
-  readonly role: Role;
-  readonly formality: Formality;
-  readonly audienceAdaptation: AudienceAdaptation;
-  readonly transparency: Transparency;
-  readonly provenance: Provenance;
+  readonly autonomy: Autonomy | null;
+  readonly persona: Persona | null;
+  readonly role: Role | null;
+  readonly formality: Formality | null;
+  readonly audienceAdaptation: AudienceAdaptation | null;
+  readonly transparency: Transparency | null;
+  readonly provenance: Provenance | null;
 
   // CONATUS — standing drives
-  readonly objective: Objective;
-  readonly guardrails: readonly Guardrails[]; // SET
-  // `engineeringPrinciples` (the engineering-directive methodology organ) and
-  // `heuristics` (the cognitive-shortcut organ) are OPTIONAL — not every agent
-  // carries them (in the live corpus: engineering-principles 4/11, heuristics
-  // 8/11). The other 22 organs are required (every agent fills them). Omission ⇒
-  // no `## Engineering-Principles` / `## Heuristics` section in the projected SOUL.
-  readonly engineeringPrinciples?: readonly EngineeringPrinciples[]; // SET, optional
-  readonly heuristics?: readonly Heuristics[]; // SET, optional
-  readonly capabilities: readonly Capabilities[]; // SET
-  readonly learning: Learning;
-  readonly situationAwareness: SituationAwareness;
+  readonly objective: Objective | null;
+  readonly guardrails: readonly Guardrails[] | null; // SET
+  readonly engineeringPrinciples: readonly EngineeringPrinciples[] | null; // SET
+  readonly heuristics: readonly Heuristics[] | null; // SET
+  readonly capabilities: readonly Capabilities[] | null; // SET
+  readonly learning: Learning | null;
+  readonly situationAwareness: SituationAwareness | null;
 
   // CONATUS — apparatus
-  readonly actions: readonly Actions[]; // SET
-  readonly modalities: Modalities;
-  readonly model: Model;
-  readonly memory: Memory;
+  readonly actions: readonly Actions[] | null; // SET
+  readonly modalities: Modalities | null;
+  readonly model: Model | null;
+  readonly memory: Memory | null;
 
   // CONATUS — per-turn act
-  readonly trigger: Trigger;
-  readonly framing: Framing;
-  readonly reasoningStrategy: ReasoningStrategy;
-  readonly satisficing: Satisficing;
-  readonly outputFormat: OutputFormat;
-  readonly selfEvaluation: SelfEvaluation;
+  readonly trigger: Trigger | null;
+  readonly framing: Framing | null;
+  readonly reasoningStrategy: ReasoningStrategy | null;
+  readonly satisficing: Satisficing | null;
+  readonly outputFormat: OutputFormat | null;
+  readonly selfEvaluation: SelfEvaluation | null;
 }
 
 // ── The Skill: a self-sufficient set-builder cell ───────────────────────────

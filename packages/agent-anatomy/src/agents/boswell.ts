@@ -3,7 +3,6 @@ import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { delegation as delegation_actions } from '../organs/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
 import { maintenance as maintenance_audienceAdaptation } from '../organs/audience-adaptation/maintenance.js';
-import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../organs/autonomy/human-on-the-loop.js';
 import { researchInvestigation as researchInvestigation_capabilities } from '../organs/capabilities/research-investigation.js';
 import { technicalWriting as technicalWriting_capabilities } from '../organs/capabilities/technical-writing.js';
 import { formal as formal_formality } from '../organs/formality/formal.js';
@@ -16,8 +15,6 @@ import { recognition as recognition_heuristics } from '../organs/heuristics/reco
 import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
-import { text as text_modalities } from '../organs/modalities/text.js';
-import { claude as claude_model } from '../organs/model/claude.js';
 import { faithfulRecord as faithfulRecord_objective } from '../organs/objective/faithful-record.js';
 import { naturalLanguage as naturalLanguage_outputFormat } from '../organs/output-format/natural-language.js';
 import { sage as sage_persona } from '../organs/persona/sage.js';
@@ -28,7 +25,6 @@ import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisf
 import { selfCritique as selfCritique_selfEvaluation } from '../organs/self-evaluation/self-critique.js';
 import { perception as perception_situationAwareness } from '../organs/situation-awareness/perception.js';
 import { uncertaintyDisclosure as uncertaintyDisclosure_transparency } from '../organs/transparency/uncertainty-disclosure.js';
-import { userMessage as userMessage_trigger } from '../organs/trigger/user-message.js';
 import { base } from './base.js';
 export const boswell: Agent = {
   ...base,
@@ -38,7 +34,7 @@ export const boswell: Agent = {
   formality: formal_formality,
   audienceAdaptation: maintenance_audienceAdaptation,
   transparency: uncertaintyDisclosure_transparency,
-  autonomy: humanOnTheLoop_autonomy,
+  autonomy: null,
   provenance: boswellArchetypeYellow_provenance,
   objective: faithfulRecord_objective,
   guardrails: [
@@ -55,15 +51,16 @@ export const boswell: Agent = {
   learning: correctionConsolidation_learning,
   situationAwareness: perception_situationAwareness,
   actions: [fileOps_actions, delegation_actions],
-  modalities: text_modalities,
-  model: claude_model,
+  modalities: null,
+  model: null,
   memory: longTermMemory_memory,
-  trigger: userMessage_trigger,
+  trigger: null,
   framing: analytical_framing,
   reasoningStrategy: reflexion_reasoningStrategy,
   satisficing: satisfice_satisficing,
   outputFormat: naturalLanguage_outputFormat,
   selfEvaluation: selfCritique_selfEvaluation,
+  engineeringPrinciples: null,
 };
 export const boswellResolved: ResolvedAgent = {
   name: 'boswell',
@@ -78,7 +75,6 @@ export const boswellResolved: ResolvedAgent = {
     ['Formality', [formal_formality]],
     ['Audience-Adaptation', [maintenance_audienceAdaptation]],
     ['Transparency', [uncertaintyDisclosure_transparency]],
-    ['Autonomy', [humanOnTheLoop_autonomy]],
     ['Provenance', [boswellArchetypeYellow_provenance]],
     ['Objective', [faithfulRecord_objective]],
     [
@@ -98,10 +94,7 @@ export const boswellResolved: ResolvedAgent = {
     ['Learning', [correctionConsolidation_learning]],
     ['Situation-Awareness', [perception_situationAwareness]],
     ['Actions', [fileOps_actions, delegation_actions]],
-    ['Modalities', [text_modalities]],
-    ['Model', [claude_model]],
     ['Memory', [longTermMemory_memory]],
-    ['Trigger', [userMessage_trigger]],
     ['Framing', [analytical_framing]],
     ['Reasoning-Strategy', [reflexion_reasoningStrategy]],
     ['Satisficing', [satisfice_satisficing]],

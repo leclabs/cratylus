@@ -180,15 +180,55 @@ const baseFixture: Agent = {
   },
 };
 
-// A valid delta-over-base: spread the base, override scalars, spread additive sets.
-const delta: Agent = {
+// ── The `null` sentinel (explicit omit-to-inherit) ──────────────────────────
+// An organ key holds a concrete fragment OR `null` (omit from projection;
+// inherit from the harness). The key itself is REQUIRED — a missing key is a
+// compile error; `null` is the only spelling of not-asserting an organ.
+
+// POSITIVE: `null`-valued keys compile — scalar and set organs alike.
+const nullSentinel: Agent = {
   ...baseFixture,
-  name: 'delta',
-  base: baseFixture,
-  persona: { organ: 'persona', slug: 'sage', definiens: 'the Sage archetype' }, // scalar override
-  guardrails: [...baseFixture.guardrails, guardrailB], // additive set
+  name: 'null-sentinel',
+  autonomy: null, // scalar organ, harness-inherited
+  engineeringPrinciples: null, // set organ, harness-inherited
+  heuristics: null, // set organ, harness-inherited
 };
-void delta;
+void nullSentinel;
+
+// NEGATIVE: a vector MISSING an organ key fails tsc (completeness law).
+// @ts-expect-error — `autonomy` is required; omission is spelled `autonomy: null`, never a missing key.
+const missingKey: Agent = {
+  name: 'missing-key',
+  persona,
+  role: baseFixture.role,
+  formality: baseFixture.formality,
+  audienceAdaptation: baseFixture.audienceAdaptation,
+  transparency: baseFixture.transparency,
+  provenance: baseFixture.provenance,
+  objective: baseFixture.objective,
+  guardrails: baseFixture.guardrails,
+  engineeringPrinciples: baseFixture.engineeringPrinciples,
+  heuristics: baseFixture.heuristics,
+  capabilities: baseFixture.capabilities,
+  learning: baseFixture.learning,
+  situationAwareness: baseFixture.situationAwareness,
+  actions: baseFixture.actions,
+  modalities: baseFixture.modalities,
+  model: baseFixture.model,
+  memory: baseFixture.memory,
+  trigger: baseFixture.trigger,
+  framing: baseFixture.framing,
+  reasoningStrategy: baseFixture.reasoningStrategy,
+  satisficing: baseFixture.satisficing,
+  outputFormat: baseFixture.outputFormat,
+  selfEvaluation: baseFixture.selfEvaluation,
+};
+void missingKey;
+
+// NEGATIVE: `undefined` is not the sentinel — only `null` spells inherit.
+// @ts-expect-error — `undefined` is not assignable to an organ key; the sentinel is `null`.
+const undefinedNotSentinel: Agent = { ...baseFixture, autonomy: undefined };
+void undefinedNotSentinel;
 
 // @ts-expect-error — `actions` is a set; a scalar fragment in the Agent literal is rejected.
 const agentSetFault: Agent = { ...baseFixture, actions: actionsA };

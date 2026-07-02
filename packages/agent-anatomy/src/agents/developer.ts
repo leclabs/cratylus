@@ -4,7 +4,6 @@ import { codeExecution as codeExecution_actions } from '../organs/actions/code-e
 import { delegation as delegation_actions } from '../organs/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../organs/audience-adaptation/convergence.js';
-import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../organs/autonomy/human-on-the-loop.js';
 import { softwareEngineering as softwareEngineering_capabilities } from '../organs/capabilities/software-engineering.js';
 import { neutral as neutral_formality } from '../organs/formality/neutral.js';
 import { goalDirected as goalDirected_framing } from '../organs/framing/goal-directed.js';
@@ -15,8 +14,6 @@ import { satisficing as satisficing_heuristics } from '../organs/heuristics/sati
 import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
-import { text as text_modalities } from '../organs/modalities/text.js';
-import { claude as claude_model } from '../organs/model/claude.js';
 import { parsimony as parsimony_objective } from '../organs/objective/parsimony.js';
 import { code as code_outputFormat } from '../organs/output-format/code.js';
 import { creator as creator_persona } from '../organs/persona/creator.js';
@@ -27,7 +24,6 @@ import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisf
 import { executableTestOracle as executableTestOracle_selfEvaluation } from '../organs/self-evaluation/executable-test-oracle.js';
 import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
-import { userMessage as userMessage_trigger } from '../organs/trigger/user-message.js';
 import { base } from './base.js';
 export const developer: Agent = {
   ...base,
@@ -37,7 +33,7 @@ export const developer: Agent = {
   formality: neutral_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: reasoningTrace_transparency,
-  autonomy: humanOnTheLoop_autonomy,
+  autonomy: null,
   provenance: developerArchetypeBlue_provenance,
   objective: parsimony_objective,
   guardrails: [
@@ -50,15 +46,16 @@ export const developer: Agent = {
   learning: correctionConsolidation_learning,
   situationAwareness: projection_situationAwareness,
   actions: [fileOps_actions, codeExecution_actions, delegation_actions],
-  modalities: text_modalities,
-  model: claude_model,
+  modalities: null,
+  model: null,
   memory: longTermMemory_memory,
-  trigger: userMessage_trigger,
+  trigger: null,
   framing: goalDirected_framing,
   reasoningStrategy: react_reasoningStrategy,
   satisficing: satisfice_satisficing,
   outputFormat: code_outputFormat,
   selfEvaluation: executableTestOracle_selfEvaluation,
+  engineeringPrinciples: null,
 };
 export const developerResolved: ResolvedAgent = {
   name: 'developer',
@@ -73,7 +70,6 @@ export const developerResolved: ResolvedAgent = {
     ['Formality', [neutral_formality]],
     ['Audience-Adaptation', [convergence_audienceAdaptation]],
     ['Transparency', [reasoningTrace_transparency]],
-    ['Autonomy', [humanOnTheLoop_autonomy]],
     ['Provenance', [developerArchetypeBlue_provenance]],
     ['Objective', [parsimony_objective]],
     [
@@ -85,10 +81,7 @@ export const developerResolved: ResolvedAgent = {
     ['Learning', [correctionConsolidation_learning]],
     ['Situation-Awareness', [projection_situationAwareness]],
     ['Actions', [fileOps_actions, codeExecution_actions, delegation_actions]],
-    ['Modalities', [text_modalities]],
-    ['Model', [claude_model]],
     ['Memory', [longTermMemory_memory]],
-    ['Trigger', [userMessage_trigger]],
     ['Framing', [goalDirected_framing]],
     ['Reasoning-Strategy', [react_reasoningStrategy]],
     ['Satisficing', [satisfice_satisficing]],

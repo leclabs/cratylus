@@ -21,8 +21,6 @@ import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/help
 import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
-import { text as text_modalities } from '../organs/modalities/text.js';
-import { claude as claude_model } from '../organs/model/claude.js';
 import { delivery as delivery_objective } from '../organs/objective/delivery.js';
 import { code as code_outputFormat } from '../organs/output-format/code.js';
 import { hero as hero_persona } from '../organs/persona/hero.js';
@@ -33,7 +31,6 @@ import { optimize as optimize_satisficing } from '../organs/satisficing/optimize
 import { executableTestOracle as executableTestOracle_selfEvaluation } from '../organs/self-evaluation/executable-test-oracle.js';
 import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
-import { userMessage as userMessage_trigger } from '../organs/trigger/user-message.js';
 import { base } from './base.js';
 export const mav: Agent = {
   ...base,
@@ -67,15 +64,16 @@ export const mav: Agent = {
   learning: correctionConsolidation_learning,
   situationAwareness: projection_situationAwareness,
   actions: [fileOps_actions, codeExecution_actions, delegation_actions],
-  modalities: text_modalities,
-  model: claude_model,
+  modalities: null,
+  model: null,
   memory: longTermMemory_memory,
-  trigger: userMessage_trigger,
+  trigger: null,
   framing: goalDirected_framing,
   reasoningStrategy: planAndSolve_reasoningStrategy,
   satisficing: optimize_satisficing,
   outputFormat: code_outputFormat,
   selfEvaluation: executableTestOracle_selfEvaluation,
+  heuristics: null,
 };
 export const mavResolved: ResolvedAgent = {
   name: 'mav',
@@ -116,10 +114,7 @@ export const mavResolved: ResolvedAgent = {
     ['Learning', [correctionConsolidation_learning]],
     ['Situation-Awareness', [projection_situationAwareness]],
     ['Actions', [fileOps_actions, codeExecution_actions, delegation_actions]],
-    ['Modalities', [text_modalities]],
-    ['Model', [claude_model]],
     ['Memory', [longTermMemory_memory]],
-    ['Trigger', [userMessage_trigger]],
     ['Framing', [goalDirected_framing]],
     ['Reasoning-Strategy', [planAndSolve_reasoningStrategy]],
     ['Satisficing', [optimize_satisficing]],

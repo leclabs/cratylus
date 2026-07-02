@@ -15,6 +15,7 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import { ORGAN_NAMES } from '@leclabs/agent-forge/anatomy';
 import {
   type ParsedAgent,
   type ParsedCell,
@@ -223,6 +224,15 @@ export function emitAgentModule(agent: ParsedAgent, fileSlug: string): string {
       );
     } else {
       agentFields.push(`  ${field}: ${ref(organ, values[0] as string)},`);
+    }
+  }
+  // Every organ key is REQUIRED on `Agent` (completeness law): an organ the
+  // cell does not select is spelled `null` — the explicit omit-to-inherit
+  // sentinel (omit from projection; inherit from the harness).
+  const selected = new Set(agent.selection.map(([organ]) => organ));
+  for (const organ of ORGAN_NAMES) {
+    if (!selected.has(organ)) {
+      agentFields.push(`  ${organField(organ)}: null,`);
     }
   }
 

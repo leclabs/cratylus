@@ -3,7 +3,6 @@ import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { codeExecution as codeExecution_actions } from '../organs/actions/code-execution.js';
 import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../organs/audience-adaptation/convergence.js';
-import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../organs/autonomy/human-on-the-loop.js';
 import { verificationTesting as verificationTesting_capabilities } from '../organs/capabilities/verification-testing.js';
 import { formal as formal_formality } from '../organs/formality/formal.js';
 import { correctnessOriented as correctnessOriented_framing } from '../organs/framing/correctness-oriented.js';
@@ -14,8 +13,6 @@ import { inputUntrusted as inputUntrusted_guardrails } from '../organs/guardrail
 import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
-import { text as text_modalities } from '../organs/modalities/text.js';
-import { claude as claude_model } from '../organs/model/claude.js';
 import { thoroughness as thoroughness_objective } from '../organs/objective/thoroughness.js';
 import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
 import { ruler as ruler_persona } from '../organs/persona/ruler.js';
@@ -36,7 +33,7 @@ export const tester: Agent = {
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: decisionRationale_transparency,
-  autonomy: humanOnTheLoop_autonomy,
+  autonomy: null,
   provenance: testerArchetypePurple_provenance,
   objective: thoroughness_objective,
   guardrails: [
@@ -50,8 +47,8 @@ export const tester: Agent = {
   learning: correctionConsolidation_learning,
   situationAwareness: comprehension_situationAwareness,
   actions: [codeExecution_actions, fileOps_actions],
-  modalities: text_modalities,
-  model: claude_model,
+  modalities: null,
+  model: null,
   memory: longTermMemory_memory,
   trigger: toolResult_trigger,
   framing: correctnessOriented_framing,
@@ -59,6 +56,7 @@ export const tester: Agent = {
   satisficing: optimize_satisficing,
   outputFormat: structuredDecision_outputFormat,
   selfEvaluation: executableTestOracle_selfEvaluation,
+  engineeringPrinciples: null,
 };
 export const testerResolved: ResolvedAgent = {
   name: 'tester',
@@ -73,7 +71,6 @@ export const testerResolved: ResolvedAgent = {
     ['Formality', [formal_formality]],
     ['Audience-Adaptation', [convergence_audienceAdaptation]],
     ['Transparency', [decisionRationale_transparency]],
-    ['Autonomy', [humanOnTheLoop_autonomy]],
     ['Provenance', [testerArchetypePurple_provenance]],
     ['Objective', [thoroughness_objective]],
     [
@@ -90,8 +87,6 @@ export const testerResolved: ResolvedAgent = {
     ['Learning', [correctionConsolidation_learning]],
     ['Situation-Awareness', [comprehension_situationAwareness]],
     ['Actions', [codeExecution_actions, fileOps_actions]],
-    ['Modalities', [text_modalities]],
-    ['Model', [claude_model]],
     ['Memory', [longTermMemory_memory]],
     ['Trigger', [toolResult_trigger]],
     ['Framing', [correctnessOriented_framing]],

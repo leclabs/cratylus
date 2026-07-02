@@ -21,8 +21,6 @@ import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
 import { inputUntrusted as inputUntrusted_guardrails } from '../organs/guardrails/input-untrusted.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
-import { text as text_modalities } from '../organs/modalities/text.js';
-import { claude as claude_model } from '../organs/model/claude.js';
 import { parsimony as parsimony_objective } from '../organs/objective/parsimony.js';
 import { visualization as visualization_outputFormat } from '../organs/output-format/visualization.js';
 import { sage as sage_persona } from '../organs/persona/sage.js';
@@ -33,7 +31,6 @@ import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisf
 import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } from '../organs/self-evaluation/acceptance-criteria-check.js';
 import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
 import { decisionRationale as decisionRationale_transparency } from '../organs/transparency/decision-rationale.js';
-import { userMessage as userMessage_trigger } from '../organs/trigger/user-message.js';
 import { base } from './base.js';
 export const nico: Agent = {
   ...base,
@@ -65,15 +62,16 @@ export const nico: Agent = {
   learning: correctionConsolidation_learning,
   situationAwareness: projection_situationAwareness,
   actions: [fileOps_actions, delegation_actions],
-  modalities: text_modalities,
-  model: claude_model,
+  modalities: null,
+  model: null,
   memory: longTermMemory_memory,
-  trigger: userMessage_trigger,
+  trigger: null,
   framing: analytical_framing,
   reasoningStrategy: react_reasoningStrategy,
   satisficing: satisfice_satisficing,
   outputFormat: visualization_outputFormat,
   selfEvaluation: acceptanceCriteriaCheck_selfEvaluation,
+  heuristics: null,
 };
 export const nicoResolved: ResolvedAgent = {
   name: 'nico',
@@ -119,10 +117,7 @@ export const nicoResolved: ResolvedAgent = {
     ['Learning', [correctionConsolidation_learning]],
     ['Situation-Awareness', [projection_situationAwareness]],
     ['Actions', [fileOps_actions, delegation_actions]],
-    ['Modalities', [text_modalities]],
-    ['Model', [claude_model]],
     ['Memory', [longTermMemory_memory]],
-    ['Trigger', [userMessage_trigger]],
     ['Framing', [analytical_framing]],
     ['Reasoning-Strategy', [react_reasoningStrategy]],
     ['Satisficing', [satisfice_satisficing]],
