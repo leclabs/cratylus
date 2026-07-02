@@ -6,9 +6,6 @@ fire/forge/spark/ash/upmav with `stanceGuard` flipped on globally.
 
 Remaining:
 
-- **apps fleet-catchup** — `apps` was unreachable during the fleet deploy; run
-  `agent-forge deploy --host apps` (agent + skill + hooks) when it is up, then
-  `git config --global agentfactory.stanceGuard true` there.
 - **upgoose** — deliberately excluded canary; `deploy --host upgoose` + `stanceGuard` if we want it in.
 - **stance SELF-cleanup** — the SOUL carries the stance live (Persona Protocol carrier + stance-guardrail
   invariance, over the `autonomy` mission-command footing), so the old memory patches are redundant.

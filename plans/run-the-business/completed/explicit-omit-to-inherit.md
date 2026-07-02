@@ -1,6 +1,18 @@
 # explicit-omit-to-inherit (organ `null` sentinel)
 
-**Lane** Nico (anatomy type + agent vectors) + Mav (claude & codex adapters) · **Status** pending.
+**Lane** Nico (anatomy type + agent vectors) + Mav (claude & codex adapters) · **Status** COMPLETED
+2026-07-02.
+
+**Outcome** — commits `88ccdb1` (type: 24 keys required, `Fragment | null`, `base?` removed; 11
+vectors null'd; codegen null emission; `test/null-organ.test.ts` gate) · `44ca1b7` (harness-reset /
+subtractReset retired, −624 lines) · `2dbdc2b` (doctrine docs reconciled; `baseline-delta-model.md`
+removed) · `b2b0d8f` (pre-existing lint red fixed). Wave-3 ruling: apparatus accidents inherit
+(model+modalities null ×11, trigger ×9 — deviants cognizant/tester keep theirs), autonomy null ×9
+per directive, substance (guardrails · memory · actions · all identity organs) stays asserted.
+Fleet redeployed + content-verified byte-identical (sha256 vs `.render-ts`) on fire/forge/upmav/apps;
+upgoose unreachable-deferred (p4-tail carries it). Rider closed by judge audit: shard-C surfaces
+already at the reader-density bar (swept in the corpus-wide remediation); no reduction available
+without meaning loss.
 
 **Supersedes the retired `minimal-delta-agents`**, which pushed the wrong direction — agents as minimal
 deltas over `base`, _deepening_ an implicit inheritance. `base.ts` already carries **no organ defaults**
@@ -56,6 +68,11 @@ deliberate stance, concrete where it does.
   untouched organs).
 - `harness-reset` / `subtractReset` retired, or reduced to a documented secondary role with the fork
   decision recorded.
+  - **FORK DECIDED (nico, 2026-07-02): RETIRE.** Audit (mav) + independent grep: zero live-path
+    consumers — `subtractReset` rode only the opt-in `projectAgentDelta` path, never
+    `anatomy:project`/`deploy`. `null` is the one home for omit-to-inherit (MECE); the set-difference
+    partial-inherit it could express has zero users (YAGNI; git recovers); retiring kills the
+    blind-introspection fixture upkeep. Reversible in-domain → decided + surfaced, not blocked on.
 - Full gates: anatomy suite (incl. reader-density agent-vector surface) · repo tsc · lint · build.
 
 ## Rider (2026-07-01, from reader-llm-default)
