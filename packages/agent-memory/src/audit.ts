@@ -63,14 +63,27 @@ const DETECTORS: ReadonlyArray<{ cls: MarkerClass; re: RegExp }> = [
 ];
 
 /**
- * The fuzzy branch form `owner/branch-name`: a slash-joined token whose tail
- * carries a `-`/`_` (the shape of a real branch name, e.g.
- * `mav/B9-toolkit-hardening`). The lookbehind excludes `@scoped/pkg-names` and
- * deeper path tails; {@link BRANCH_DENY} excludes ordinary repo-tree prefixes
- * (those are path mentions, and `plans/<x>` is already its own class).
+ * Context-anchored branch detection (the amendment: a bare fuzzy
+ * `owner/branch-with-dash` match fired on corpus-speak — `autonomy/
+ * human-on-the-loop`, `diff/round-trip` — pervasive in this fleet's SELF/MEMORY
+ * register, which would force mass allow-pinning and defeat the ratchet). A
+ * bare slash-token is a branch-ref ONLY within {@link BRANCH_CONTEXT_WINDOW}
+ * tokens of git context: a git verb/noun ({@link GIT_KEYWORD_RE}) or a
+ * commit-sha-shaped token ({@link SHA_RE}). Explicit `refs/heads/…` /
+ * `origin/…` forms carry their context lexically and stay in {@link DETECTORS}.
+ * {@link BRANCH_DENY} still excludes ordinary repo-tree prefixes (those are
+ * path mentions, and `plans/<x>` is already its own class).
  */
-const BRANCH_FUZZY_RE =
-  /(?<![\w/.@])[a-z][A-Za-z0-9._-]*\/[A-Za-z0-9._-]*[-_][A-Za-z0-9._-]+(?![\w/])/g;
+const GIT_KEYWORD_RE =
+  /^(?:branch(?:es)?|checkout|merge[ds]?|rebase[ds]?|push(?:e[ds])?|pull|prs?|mrs?)$/i;
+const SHA_RE = /^[0-9a-f]{7,40}$/i;
+/** A slash-joined ref-shaped token: letter-led first segment, slashy tail. */
+const SLASH_REF_RE = /^[A-Za-z][A-Za-z0-9._-]*\/[A-Za-z0-9._/-]+$/;
+/** Surrounding punctuation stripped per token. `@` is kept, so `@scope/pkg` stays non-ref-shaped. */
+const TOKEN_TRIM_RE = /^[`'"()[\]{}<>,.;:!?*]+|[`'"()[\]{}<>,.;:!?*]+$/g;
+const BRANCH_CONTEXT_WINDOW = 3;
+
+/** The deny-listed prefixes for the context-anchored form (ordinary repo-tree path mentions). */
 const BRANCH_DENY: ReadonlySet<string> = new Set([
   'agents',
   'apps',
@@ -87,6 +100,35 @@ const BRANCH_DENY: ReadonlySet<string> = new Set([
   'toolkit',
   'workspaces',
 ]);
+
+/** The slash-tokens in `line` that sit within the context window of git context. */
+function branchRefsInContext(line: string): string[] {
+  const tokens = line
+    .split(/\s+/)
+    .filter((t) => t.length > 0)
+    .map((t) => t.replace(TOKEN_TRIM_RE, ''));
+  const anchors: number[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i] as string;
+    if (GIT_KEYWORD_RE.test(t) || SHA_RE.test(t)) anchors.push(i);
+  }
+  if (anchors.length === 0) return [];
+  const out: string[] = [];
+  for (let i = 0; i < tokens.length; i++) {
+    const t = tokens[i] as string;
+    if (!SLASH_REF_RE.test(t)) continue;
+    if (BRANCH_DENY.has(t.slice(0, t.indexOf('/')))) continue;
+    // A token whose EVERY segment is itself a git verb/noun (`merge/push`,
+    // `pull/push`) is an act-pair enumeration, not a branch name — and it is
+    // guaranteed keyword-adjacent, so anchoring alone can never exclude it.
+    if (t.split('/').every((seg) => GIT_KEYWORD_RE.test(seg))) continue;
+    if (
+      anchors.some((a) => a !== i && Math.abs(a - i) <= BRANCH_CONTEXT_WINDOW)
+    )
+      out.push(t);
+  }
+  return out;
+}
 
 /** Escape a literal for embedding in a RegExp. */
 function escapeRe(literal: string): string {
@@ -112,10 +154,7 @@ export function scanLine(
   for (const { cls, re } of DETECTORS) {
     for (const m of line.matchAll(re)) push(cls, m[0]);
   }
-  for (const m of line.matchAll(BRANCH_FUZZY_RE)) {
-    const prefix = m[0].slice(0, m[0].indexOf('/'));
-    if (!BRANCH_DENY.has(prefix)) push('branch-ref', m[0]);
-  }
+  for (const match of branchRefsInContext(line)) push('branch-ref', match);
   for (const key of repoKeys) {
     const re = new RegExp(`(?<![\\w-])${escapeRe(key)}(?![\\w-])`, 'gi');
     for (const m of line.matchAll(re)) push('repo-key', m[0]);

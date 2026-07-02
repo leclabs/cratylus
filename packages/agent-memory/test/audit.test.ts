@@ -168,12 +168,46 @@ describe('scanLine (detector precision)', () => {
     expect(scanLine('lives in packages/agent-memory today')).toEqual([]);
   });
 
-  it('fires branch-ref on branch-shaped refs', () => {
+  it('fires branch-ref on explicit git ref forms (no context needed)', () => {
     expect(scanLine('prune origin/mav/old-branch soon')).toEqual([
       { cls: 'branch-ref', match: 'origin/mav/old-branch' },
     ]);
+    expect(scanLine('pinned at refs/heads/main here')).toEqual([
+      { cls: 'branch-ref', match: 'refs/heads/main' },
+    ]);
+  });
+
+  it('fires branch-ref on a slash-token within the window of a git keyword or sha', () => {
     expect(scanLine('the branch principal/sigma-star-thesis lives on')).toEqual(
       [{ cls: 'branch-ref', match: 'principal/sigma-star-thesis' }],
+    );
+    expect(
+      scanLine('Stale branch to prune: mav/B9-toolkit-hardening.'),
+    ).toEqual([{ cls: 'branch-ref', match: 'mav/B9-toolkit-hardening' }]);
+    expect(scanLine('reverted to c7acd40 from mav/hotfix-deploy')).toEqual([
+      { cls: 'branch-ref', match: 'mav/hotfix-deploy' },
+    ]);
+    expect(scanLine('merge feature/foo next')).toEqual([
+      { cls: 'branch-ref', match: 'feature/foo' },
+    ]);
+  });
+
+  it('AMENDMENT: does not fire branch-ref on corpus-speak slash-tokens without git context', () => {
+    // The live-probe FP class on nico@fire: organ/value paths + concept pairs.
+    expect(scanLine('the autonomy/human-on-the-loop value cell')).toEqual([]);
+    expect(scanLine('a diff/round-trip equivalence check')).toEqual([]);
+    expect(scanLine('candidates/prior-verdicts drive the elicitation')).toEqual(
+      [],
+    );
+    expect(scanLine('the leclabs/agent-factory society layer')).toEqual([]);
+    // Git context outside the +/-3 token window does not anchor.
+    expect(
+      scanLine('merge went fine and much later autonomy/human-on-the-loop'),
+    ).toEqual([]);
+    // An all-git-verb slash-token is an act-pair enumeration, not a branch
+    // (live-probe residue on nico@fire: "publish / send / push). A merge/push").
+    expect(scanLine('send / push). A merge/push to a private repo')).toEqual(
+      [],
     );
   });
 
