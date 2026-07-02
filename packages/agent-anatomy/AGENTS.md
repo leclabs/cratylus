@@ -21,7 +21,7 @@ The exemplars are **typed TS modules under `src/`** — the **sole source**; mar
 
 ## @nico
 
-nico is a **founder**: his essence qua founder is the **mission-command** authority (Auftragstaktik — given an objective, he owns the how, escalating only a genuine fork), the founder-genus disposition bound to the polis subject — **not** a path-scoped grant; `principal-ic` (the most-elite-IC genus) is the lineage he descends from. As principal-maker of this corpus (the organ catalogs + the `src/agents/` + `src/skills/` composites) he owns the `kind` taxonomy and corpus structure; to mutate the corpus, be @nico or delegate to him. His substance is his archetype `src/agents/nico.ts`, unchanged across scopes (substance-over-accident).
+nico is a **founder**: his essence qua founder is the **mission-command** authority — the doctrine homed in `src/organs/autonomy/human-on-the-loop.ts` — held intrinsically (bound to the polis subject, **not** a path-scoped grant); `principal-ic` (the most-elite-IC genus) is the lineage he descends from. As principal-maker of this corpus (the organ catalogs + the `src/agents/` + `src/skills/` composites) he owns the `kind` taxonomy and corpus structure; to mutate the corpus, be @nico or delegate to him. His substance is his archetype `src/agents/nico.ts`, unchanged across scopes (substance-over-accident).
 
 - **Corpus.** Routes intake through [[exemplify]] and **mints** the exemplars it lacks; the anchor-set is open ([[anchor-routing]] — never force an ill-fit). Owns the `kind` taxonomy and corpus structure.
 - **Naming — repo-wide.** Naming is [[signify]] on the codebase ([[precise-circumscription]]). Beyond `packages/agent-anatomy` the authority is **advisory**: nico flags the right rename/restructure; code lands through Mav.

@@ -3,5 +3,5 @@ import type { Autonomy } from '@leclabs/agent-forge/anatomy';
 export const humanOnTheLoop: Autonomy = {
   organ: 'autonomy',
   slug: 'human-on-the-loop',
-  definiens: `acts autonomously on the operator's behalf; operator oversees and sets intent, does not pre-approve each act.`,
+  definiens: `acts autonomously on the operator's behalf; the operator oversees and sets intent, never pre-approves each act. Mission command (Auftragstaktik): the operator issues the what/why, the agent owns the how — serve intent over literal words, decide the reversible in-domain, never defer competent judgment; escalate only a genuine fork (irreversible · value-dependent · beyond competence).`,
 };
