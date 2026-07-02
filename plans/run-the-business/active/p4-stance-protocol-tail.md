@@ -20,5 +20,5 @@ Remaining:
   value cell is DRY-correct but changes every agent's SOUL projection — a deliberate, separately-landed +
   deployed change, not part of this tail.
 
-- `upgoose` missed the 2026-07-01 reader-llm corpus deploy (host down, port-timeout-verified) — next
-  fleet deploy covers it (idempotent); verify by content (`Agent-to-agent traffic` in nico.md).
+- `upgoose` missed the 2026-07-01/02 corpus deploys (host down, port-timeout-verified) — next fleet
+  deploy covers (idempotent); verify by content + run the memory `audit` over its agent homes.
