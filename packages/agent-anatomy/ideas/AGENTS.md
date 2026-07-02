@@ -5,6 +5,15 @@
 of ideas**. A fragment earns its place by being an **organ value**, a **skill substance**, or a
 constitution-scaffold an agent/skill composes — otherwise it is dead context and drops.
 
+**THE INVARIANT — industry-standard alignment (this corpus's raison d'être, non-negotiable).** Every organ — its
+**name**, its **value-type**, and its catalog/enum **values** — aligns EXACTLY to an established
+industry-standard / convention: the signifier whose latent priors in the shared LLM prior carry the precise
+semantic load. **Never bespoke** — never coin a novel sign where a standard one fires (minting a homeless
+_concept_ is allowed; coining a novel _signifier_ for it is not — its anchor is still the industry-standard
+σ\*\_R). **Always blind-validated** — a subagent's cold σ\*\_R read confirms the sign fires the concept; hand
+the gate only the expression, never the candidates or prior verdicts. This binds THIS corpus AND every project
+consuming its projections — it is the entire point: precise, non-ambiguous, best-fit context for LLM readers.
+
 Each cell is one exemplar. A cell's **slug is its anchor**: the densest name (the reader-relative fittest
 sign, σ\*\_R) whose latent priors most precisely circumscribe the idea. The toolkit is **storage-polymorphic**
 — `cells.parse_cell(slug)` returns the same `{slug, fm, body}` regardless of home, so `[[anchor]]` resolves
@@ -24,7 +33,8 @@ idea-typology:
   (charter · heuristics · instructions) is a closed, corpus-authored set of canonical directives —
   neither per-agent-open nor model-native-enum; `instructions` is the methodology organ (working
   principles), **not** a fallback or catch-all. **Authoring precedence:** pick the correct organ → bind a
-  canonical value from its catalog/enum → author bespoke prose only when none fits.
+  canonical value from its catalog/enum → author a value only when none fits — and even then its anchor is
+  the industry-standard σ\*\_R (blind-validated, never a bespoke coinage), per THE INVARIANT above.
 - **Agents** — `packages/agent-anatomy/agent/<name>.md`, `kind: agent`. An **organ-selection vector**:
   `<name> ≜ ⊕{organ ↦ value}`, then one `organ [[value]]` line per organ it fills.
 - **Skills** — `packages/agent-anatomy/skill/<name>.md`, `kind: skill`. A **self-sufficient set-builder**: a formal
