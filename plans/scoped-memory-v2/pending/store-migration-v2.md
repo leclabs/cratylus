@@ -5,7 +5,7 @@
 
 ## Static
 
-`../SPEC.md` D1 (projection-dedup bar) + D7 (harvest-and-drop, drop-biased). Homes: all reachable
+`../SPEC.md` D1 (projection-dedup bar) + D6 (clean-slate harvest-and-drop). Homes: all reachable
 fleet hosts × 11 agents (rich stores: nico@fire, mav@{fire,forge,upmav}; most others near-stub).
 Laws: `.bak`-first (SELF + MEMORY + EPISODIC archived before any change) · SOUL never written ·
 audit green per home on completion.
