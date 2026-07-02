@@ -1,5 +1,13 @@
 # produce-execution-spec — the scoped-memory redesign
 
+**Status COMPLETED 2026-07-02.** Produced `../SPEC.md` (scope model · least-scope routing · encode/dream
+mechanics · `AGENTS.md`-reconciliation · enforcement `audit` verb · migration; decisions D1–D5 with
+rationale, D2 the flagged departure: single-store scope-tagged capture over per-scope raw streams) + the
+sharded build plan: `pending/{corpus-scope-laws, runtime-scope-audit}` (wave 1) → `fleet-cutover`
+(wave 2) → `depollute-migration` (wave 3), each ⟨static, scope, accept⟩ blind-dispatchable. All shards
+HELD pending Operator approval of the SPEC. Acceptance (a)–(f) satisfied; blind-test: shards pin the
+SPEC as static input and carry falsifiers a fresh reader can execute.
+
 **This task = plan the plan.** Author a decision-grade **execution spec** (in planning mode) for the
 scoped-memory redesign, seeded below. It does NOT implement — it produces the sharded build plan the
 Operator approves into execution. Author: **Nico** (memory + corpus is his lane); the design calls are his

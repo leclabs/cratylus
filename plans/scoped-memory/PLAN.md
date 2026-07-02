@@ -14,9 +14,18 @@ generalizes it into the memory + praxis systems, corpus-wide.
 
 ## Status mirror
 
-**Pending:**
+**The spec is authored (`SPEC.md`, decisions D1–D5) — shards HELD pending Operator approval.**
 
-- `produce-execution-spec` — author the decision-grade execution spec (planning mode) for the redesign;
-  the whole design lives there, then splits into its own sharded build plan. Lead: Nico.
+DAG: `wave(1) {corpus-scope-laws (Nico), runtime-scope-audit (Mav)}` →
+`wave(2) {fleet-cutover ⊳ both}` → `wave(3) {depollute-migration ⊳ fleet-cutover}`.
 
-**Ready / active / completed:** none.
+**Pending (HELD):**
+
+- `corpus-scope-laws` — the scope model into the corpus cells (memory cell + dream/wake/praxis/memory
+  skills; SPEC §5 surface table).
+- `runtime-scope-audit` — `episodic.mjs` tag grammar (`plan:` added) + the `audit` enforcement verb.
+- `fleet-cutover` — atomic corpus + bundle fleet deploy, content-verified.
+- `depollute-migration` — one-time de-pollution (mav@upmav ≈27 KB · nico@fire 13.9 KB · fleet audit),
+  move-not-copy; `audit` exits 0 everywhere.
+
+**Completed:** `produce-execution-spec`.
