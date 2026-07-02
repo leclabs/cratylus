@@ -22,3 +22,6 @@ Remaining:
   value cell; it currently leaks into the README gloss + provenance + Persona Protocol. Homing it into the
   value cell is DRY-correct but changes every agent's SOUL projection — a deliberate, separately-landed +
   deployed change, not part of this tail.
+
+- `upgoose` missed the 2026-07-01 reader-llm corpus deploy (host down, port-timeout-verified) — next
+  fleet deploy covers it (idempotent); verify by content (`Agent-to-agent traffic` in nico.md).
