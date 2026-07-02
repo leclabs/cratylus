@@ -92,7 +92,7 @@ describe('skillToCodexMd — the codex skill projection', () => {
     name: 'demo',
     trigger: '/demo',
     delineation: 'a demo skill',
-    body: '\n\ndemo ≜ a formula consumed not emitted\n\n# demo\n\nThe verb prose with a [[wake]] ref.\n',
+    body: '\n\ndemo ≜ a formula consumed not emitted\n\n# demo\n\nThe verb prose with a [[wake]] ref.\n\n- **alpha** ≜ an absorbed declaration bullet\n',
     composedFrom: ['/wake'],
     sourcePath: 'packages/agent-anatomy/skill/demo.md',
   };
@@ -112,6 +112,9 @@ describe('skillToCodexMd — the codex skill projection', () => {
     expect(md).not.toContain('a formula consumed not emitted');
     expect(md).toContain('# demo');
     expect(md).toContain('Composed from /wake.');
+    // An absorbed-declaration bullet also carries ≜ and MUST survive (the
+    // codex projection reuses the claude adapter's `skillBody`).
+    expect(md).toContain('- **alpha** ≜ an absorbed declaration bullet');
   });
 });
 

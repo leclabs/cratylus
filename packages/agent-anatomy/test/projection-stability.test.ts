@@ -11,10 +11,14 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   type ResolvedAgent,
+  type ResolvedSkill,
   agentToClaudeMd,
+  skillToClaudeMd,
 } from '@leclabs/agent-forge/adapters/claude';
 import type { Fragment } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
+import { dream } from '../src/skills/dream.js';
+import { wake } from '../src/skills/wake.js';
 import { fragmentToMarkdown, skillToMarkdown } from '../src/toolkit/project.js';
 import type { SkillCell } from '../src/toolkit/skill-cell.js';
 
@@ -54,6 +58,47 @@ describe('projection stability (.ts is the sole source)', () => {
     for (const rel of modules) {
       const s = await firstExport<SkillCell>(join(srcRoot, rel));
       expect(skillToMarkdown(s).length, rel).toBeGreaterThan(0);
+    }
+  });
+
+  // Self-sufficiency falsifier (skill-projection-drops-absorbed-declarations):
+  // the rendered SKILL.md must carry the absorbed-declaration bullets — the
+  // cell's "no concept is referenced out" mechanism — while the composition-
+  // formula line (`<name> ≜ …`) stays consumed. The regression rendered the
+  // `Absorbed declarations …:` header over an EMPTY body.
+  it('rendered dream + wake SKILL.md carry their absorbed declarations', () => {
+    const render = (cell: SkillCell): string =>
+      skillToClaudeMd(
+        {
+          name: cell.name,
+          trigger: cell.trigger,
+          delineation: cell.delineation,
+          body: cell.body,
+          composedFrom: [],
+          sourcePath: `packages/agent-anatomy/src/skills/${cell.name}.ts`,
+        } satisfies ResolvedSkill,
+        (slug) => `**${slug}**`,
+      );
+
+    const dreamMd = render(dream);
+    expect(dreamMd).toContain('- **memory** ≜');
+    expect(dreamMd).toContain('- **two-axis routing** ≜');
+    expect(dreamMd).toContain('- **palimpsest** ≜');
+    // The prose composition formula is consumed, not emitted …
+    expect(dreamMd).not.toMatch(/^dream ≜ the memory-consolidation/m);
+    // … while the fenced `dream ≜` law line renders verbatim.
+    expect(dreamMd).toContain('dream ≜ exemplify : E → I');
+
+    const wakeMd = render(wake);
+    expect(wakeMd).toContain('- **continuity-thread** ≜');
+    expect(wakeMd).toContain('- **memory store** ≜');
+    expect(wakeMd).not.toMatch(/^wake ≜/m);
+    expect(wakeMd).toContain('WAKE ≜ dream → load → orient → resume');
+
+    // The header-over-empty-body shape is asserted ABSENT: the first
+    // non-blank line after the header is a declaration bullet.
+    for (const md of [dreamMd, wakeMd]) {
+      expect(md).toMatch(/Absorbed declarations[^\n]*:\n\n- \*\*/);
     }
   });
 

@@ -261,8 +261,9 @@ function fenceMask(body: string): Set<number> {
 
 /**
  * The composed SKILL.md body (mirrors `compose_skill`): drop the prose `≜`
- * formula line (the composition formula, consumed not emitted) and its trailing
- * blank, project `[[refs]]` on prose lines via `refProject`, KEEP the
+ * composition-formula line ONLY (`<name> ≜ …`, consumed not emitted — every
+ * other `≜`-bearing preamble line, e.g. an absorbed-declaration bullet, is
+ * kept), project `[[refs]]` on prose lines via `refProject`, KEEP the
  * `## Harness: <target>` selector (re-headed) and drop other-harness selectors,
  * append a one-line "Composed from …" provenance when refs exist. Fence interiors
  * pass through verbatim. Returns `rstrip() + "\n"`.
@@ -302,8 +303,12 @@ export function skillBody(
       out.push('');
       continue;
     }
-    if (l.includes('≜') && !fence.has(i)) {
-      continue; // the prose formula line is dropped
+    // Drop ONLY the composition-formula line (`<name> ≜ …` at line start —
+    // consumed by composition, never emitted). Any other `≜`-bearing preamble
+    // line — an absorbed-declaration bullet (`- **x** ≜ …`) above all — is the
+    // cell's self-sufficiency mechanism and MUST render.
+    if (l.startsWith(`${s.name} ≜`) && !fence.has(i)) {
+      continue;
     }
     if (h1Seen) {
       preamble.push(project(l, i));
