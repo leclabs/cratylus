@@ -7,6 +7,7 @@ net-current only: its dir is removed and `git log -- plans/<name>/` is the recor
 
 ## Active
 
-| Plan               | Concern                                                                                                                                       | Lead                  |
-| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Pending: `minimal-delta-agents`, `provenance-out-of-context`. | Mav + Nico (per task) |
+| Plan               | Concern                                                                                                                                                                               | Lead                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Pending: `minimal-delta-agents`, `generic-extraction` (deferred), `p4-stance-protocol-tail`.          | Mav + Nico (per task) |
+| `scoped-memory`    | Scope-route memory so an agent's own `SELF`/`MEMORY` stay free of project/plan pollution; episodic capture + dream drain by scope. Pending: `produce-execution-spec` (plan-the-plan). | Nico                  |
