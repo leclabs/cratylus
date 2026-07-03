@@ -1,8 +1,8 @@
 /**
  * E10.S8 · Pi adapter — natural emissions (config surfaces).
  * Ground truth: pi-harness-research.RETURN.md §2 sheet ([PI#]); new-adapter
- * contract. No pi adapter exists — probes are tracked; contract assertions
- * execute post-graduation.
+ * contract. Graduated wave 5: src/adapters/pi ships — the contract
+ * assertions execute directly.
  */
 
 import { existsSync, readFileSync, rmSync } from 'node:fs';
@@ -28,15 +28,11 @@ describe('E10.S8 · pi natural emissions', () => {
     rmSync(cwd, { recursive: true, force: true });
   });
 
-  story.tracked(
-    'E10.S8',
-    'pi is on the adapter roster (new-adapter contract)',
-    () => {
-      expect(adapterById.has('pi')).toBe(true);
-    },
-  );
+  story('E10.S8', 'pi is on the adapter roster (new-adapter contract)', () => {
+    expect(adapterById.has('pi')).toBe(true);
+  });
 
-  story.tracked(
+  story(
     'E10.S8',
     'rules: root AGENTS.md lands unchanged (native walk-up concat); no .pi/AGENTS.md — that surface does not exist [PI2]',
     async () => {
@@ -62,7 +58,7 @@ describe('E10.S8 · pi natural emissions', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S8',
     'skills: .agents/skills/ tree unchanged (native discovery); frontmatter constraints enforced (name ≤64 [a-z0-9-], description required ≤1024) [PI5]',
     async () => {
@@ -98,7 +94,7 @@ describe('E10.S8 · pi natural emissions', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S8',
     'commands → prompt templates .pi/prompts/*.md with description/argument-hint frontmatter and $1/$ARGUMENTS substitution [PI7]',
     async () => {
@@ -122,7 +118,7 @@ describe('E10.S8 · pi natural emissions', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S8',
     'capabilities honest: hooks/agents/permissions absent as CONFIG surfaces (code delivery is E10.S9); mcp none by design [PI2]',
     async () => {

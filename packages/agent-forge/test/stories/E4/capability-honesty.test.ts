@@ -182,6 +182,16 @@ const GROUND_TRUTH: Record<string, Row> = {
     permissions: t('[OC8] permission DSL'),
     env: f('[OC1] {env:VAR} substitution only; no env surface'),
   },
+  pi: {
+    rules: t('[PI2] AGENTS.md|CLAUDE.md native walk-up concat'),
+    skills: t('[PI5] .agents/skills/ native discovery'),
+    commands: t('[PI7] prompt templates .pi/prompts/*.md'),
+    agents: t('[PI9] md defs + registerTool delegate — code delivery'),
+    hooks: t('[PI3] pi.on() extension events — code delivery'),
+    mcp: f('[PI2] omitted by design; extension route only'),
+    permissions: f('[PI2] no permission system — containerize or extend'),
+    env: f('[PI4] no env surface in settings'),
+  },
   zed: {
     rules: t('[ZD1]'),
     skills: t('[ZD2]'),

@@ -5,9 +5,9 @@
  * Pi deliberately omits hooks/subagents/permissions as config surfaces and
  * designates TS extensions + pi packages as the delivery path [PI2
  * §Philosophy]; the adapter must deliver the agents floor and the hooks
- * nice-to-have as generated code. No pi adapter exists — every probe imports
- * it dynamically; the rejection is the tracked gap and the follow-up
- * assertions state the documented contract for post-graduation runs.
+ * nice-to-have as generated code. Graduated wave 5: src/adapters/pi ships —
+ * every probe imports it dynamically and the contract assertions execute
+ * directly.
  */
 
 import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
@@ -57,7 +57,7 @@ describe('E5.S8 · pi plugin-delivery demonstration', () => {
     rmSync(cwd, { recursive: true, force: true });
   });
 
-  story.tracked(
+  story(
     'E5.S8',
     'skills floor discharged natively: .agents/skills/ emission, name = dirname spec-strict despite pi tolerating the deviation [PI5]',
     async () => {
@@ -82,7 +82,7 @@ describe('E5.S8 · pi plugin-delivery demonstration', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E5.S8',
     'agents via code: md defs at .pi/agents/*.md + a registerTool delegate extension per the official subagent example [PI9]',
     async () => {
@@ -106,7 +106,7 @@ describe('E5.S8 · pi plugin-delivery demonstration', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E5.S8',
     'hooks via pi.on(): tool_call veto {block, reason} · tool_result · session_start · input; unverified canonical events land in .skipped [PI3]',
     async () => {
@@ -146,7 +146,7 @@ describe('E5.S8 · pi plugin-delivery demonstration', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E5.S8',
     'one pi package: package.json {keywords:["pi-package"], pi:{extensions}} manifest; trust-gate warning on every project-scope write [PI6][PI2]',
     async () => {

@@ -12,6 +12,7 @@ import { devinAdapter } from '../adapters/devin/index.js';
 import { geminiAdapter } from '../adapters/gemini/index.js';
 import { kiloAdapter } from '../adapters/kilo/index.js';
 import { opencodeAdapter } from '../adapters/opencode/index.js';
+import { piAdapter } from '../adapters/pi/index.js';
 import { zedAdapter } from '../adapters/zed/index.js';
 import {
   type Adapter,
@@ -54,6 +55,7 @@ const adapters: Adapter[] = [
   devinAdapter,
   ampAdapter,
   kiloAdapter,
+  piAdapter,
 ];
 
 // Adapter-load lint: an invalid declaration (e.g. a resource declared

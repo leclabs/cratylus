@@ -34,6 +34,7 @@ import { devinAdapter } from '../../src/adapters/devin/index.js';
 import { geminiAdapter } from '../../src/adapters/gemini/index.js';
 import { kiloAdapter } from '../../src/adapters/kilo/index.js';
 import { opencodeAdapter } from '../../src/adapters/opencode/index.js';
+import { piAdapter } from '../../src/adapters/pi/index.js';
 import { zedAdapter } from '../../src/adapters/zed/index.js';
 import type { Adapter } from '../../src/core/index.js';
 import { EXCLUDED, STORY_IDS } from './registry.js';
@@ -84,6 +85,7 @@ export const ALL_ADAPTERS: Adapter[] = [
   geminiAdapter,
   kiloAdapter,
   opencodeAdapter,
+  piAdapter,
   zedAdapter,
 ].sort((a, b) => a.id.localeCompare(b.id));
 

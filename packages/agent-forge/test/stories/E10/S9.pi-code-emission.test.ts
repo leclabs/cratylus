@@ -1,8 +1,8 @@
 /**
  * E10.S9 · Pi code emission — hooks + agents as ONE generated pi package (the
  * F5 demonstration case). Ground truth: pi RETURN §3 capability map ([PI3]
- * [PI6][PI9]); fixtures shared with E5.S8. No pi adapter exists — tracked
- * probes; contract assertions execute post-graduation.
+ * [PI6][PI9]); fixtures shared with E5.S8. Graduated wave 5:
+ * src/adapters/pi ships — the contract assertions execute directly.
  */
 
 import {
@@ -58,7 +58,7 @@ describe('E10.S9 · pi code-emission demonstration', () => {
     rmSync(cwd, { recursive: true, force: true });
   });
 
-  story.tracked(
+  story(
     'E10.S9',
     'all code-shaped resources ship as ONE pi package; report carries the pi install line + full-system-access caution [PI6]',
     async () => {
@@ -78,7 +78,7 @@ describe('E10.S9 · pi code-emission demonstration', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S9',
     'hooks map onto pi.on() per the E5.S8 table; blocking = tool_call veto {block: true, reason}; result-mutating = tool_result [PI3]',
     async () => {
@@ -91,7 +91,7 @@ describe('E10.S9 · pi code-emission demonstration', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S9',
     'agents: subagent-pattern emission (md defs + registerTool delegate) — the future Tool-resource serializer seed [PI9]',
     async () => {
@@ -102,7 +102,7 @@ describe('E10.S9 · pi code-emission demonstration', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S9',
     'round-trip honesty: code emissions are write-only; reimport lifts config surfaces and reports foreign extension files under unlifted-surfaces — never parses TS as config [PI3]',
     async () => {
