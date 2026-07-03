@@ -19,13 +19,20 @@ close; all deps (schema · engine · exemplify) landed. Shard texts amended with
 bite-guard clause + increment-at-commit-time roster counts (zed precedent `d318b20`).
 
 **Tracked-failing: 179/43** (229 at suite birth; wave 4 −50: docs −2, ir-schema −7, zed −9,
-exemplify −13, engine-report −19).
+exemplify −13, engine-report −19). **Stale as of `codex-adapter-truth`'s landing** — this header
+predates other wave(5) siblings already on `main` ahead of this shard's base (`crush-adapter-truth`
+@9f3ebf4, `devin-adapter` @dc418f0 at minimum); reconciling it needs full wave(5) landed-state
+visibility this shard didn't have. `codex-adapter-truth`'s own verified delta: 148/40 → 131/39 (−17 =
+16 owned + 1 forced graduation) measured directly off `coverage.test.ts`'s scan-derived print at its
+base `dc418f0` and its landing commit `98a5772` — see `completed/codex-adapter-truth.RETURN.md`.
 
 **Completed:** `harness-landscape-research` · `standards-compat-research` · `pi-harness-research` ·
 `capability-user-stories` (81 stories, `stories/`) · `story-coverage-tests` (suite @0e23b36) ·
 **wave(4) whole**: `docs-assumption-audit-records` · `ir-schema-expressiveness` · `zed-adapter`
 @d318b20 · `exemplify-pipeline` @2a9de62 · `engine-report-machinery` @d36c2dc (RETURNs beside
-each; joint gates 4×0, forge 670/670; pushed).
+each; joint gates 4×0, forge 670/670; pushed). **wave(5) so far** (each independently landed —
+not a joint gate; see each RETURN for its own base/delta): `codex-adapter-truth` @98a5772 (16
+owned + 1 forced graduation, gates 4×0 forge 676/676).
 
 ## Implementation shards (pending/) — 229 tracked ids, MECE, 0 orphans
 
