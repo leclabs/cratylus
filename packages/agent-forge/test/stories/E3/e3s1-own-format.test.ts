@@ -58,7 +58,7 @@ describe('E3.S1 · own-format round-read is the identity', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E3.S1',
     'import --from <otherRepo>/.agent-forge copies the foreign IR into the local home; lint passes; source unchanged',
     async () => {

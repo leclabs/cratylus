@@ -5,6 +5,7 @@ import {
   type Scope,
   compile,
   defaultIRRoot,
+  findIRRoot,
   readIR,
 } from '../../core/index.js';
 
@@ -31,6 +32,10 @@ export async function runCompile(
     console.error(pc.red(`agent-forge: ${(e as Error).message}`));
     return 2;
   }
+
+  // Name the resolved IR home: from a nested cwd the walk-up result is not
+  // self-evident, and a dry-run report must say what it would compile.
+  console.log(pc.gray(`IR: ${findIRRoot(scope, cwd)}`));
 
   const targetIds =
     opts.clients && opts.clients.length > 0
@@ -83,11 +88,18 @@ function printReport(report: CompileReport, opts: CompileOpts): void {
       : (r.error?.message ?? '');
     console.log(`${head}  ${summary}`);
 
+    // Warnings are loss reports — always visible, never gated behind
+    // --explain (a loss the user must opt in to see is a silent loss).
+    if (r.report && r.report.warnings.length > 0) {
+      console.log(`    ${pc.bold(pc.yellow('warnings:'))}`);
+      for (const w of r.report.warnings) {
+        console.log(`      ${pc.yellow('•')} ${w}`);
+      }
+    }
+
     if (opts.explain && r.report) {
-      // Group warnings/skips for readability
-      const warnings = r.report.warnings;
       const skipped = r.report.skipped;
-      if (warnings.length === 0 && skipped.length === 0) continue;
+      if (skipped.length === 0) continue;
 
       // Skips grouped by reason
       const byReason = new Map<string, string[]>();
@@ -95,10 +107,6 @@ function printReport(report: CompileReport, opts: CompileOpts): void {
         const list = byReason.get(s.reason) ?? [];
         list.push(s.path);
         byReason.set(s.reason, list);
-      }
-      if (warnings.length > 0) {
-        console.log(`    ${pc.bold(pc.yellow('warnings:'))}`);
-        for (const w of warnings) console.log(`      ${pc.yellow('•')} ${w}`);
       }
       if (byReason.size > 0) {
         console.log(`    ${pc.bold(pc.gray('skipped:'))}`);
@@ -109,6 +117,16 @@ function printReport(report: CompileReport, opts: CompileOpts): void {
           for (const p of paths) console.log(`          ${pc.gray(p)}`);
         }
       }
+    }
+  }
+
+  // Unanswerable placements: surface each elicit question.
+  if (report.elicit.length > 0) {
+    console.log(`  ${pc.bold(pc.yellow('elicit:'))}`);
+    for (const e of report.elicit) {
+      console.log(
+        `    ${pc.yellow('?')} ${e.target} · ${e.resource} · ${e.question}`,
+      );
     }
   }
 

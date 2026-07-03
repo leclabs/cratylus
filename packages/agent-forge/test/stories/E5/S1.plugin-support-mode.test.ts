@@ -18,7 +18,7 @@
 import { expect } from 'vitest';
 import { ALL_ADAPTERS, story } from '../helpers.js';
 
-story.tracked(
+story(
   'E5.S1',
   'capability declarations admit plugin and the engine routes plugin resources to a plugin emitter',
   async () => {
@@ -46,7 +46,7 @@ story.tracked(
   },
 );
 
-story.tracked(
+story(
   'E5.S1',
   'a resource declared plugin with no plugin emitter is a lint error at adapter load',
   async () => {

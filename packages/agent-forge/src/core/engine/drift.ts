@@ -9,6 +9,8 @@ export const STATE_VERSION = 1 as const;
 export interface FileHash {
   path: string;
   hash: string;
+  /** IR resource the file realizes (`<type>/<id>`), when attributable. */
+  resource?: string;
 }
 
 export interface AdapterState {
@@ -26,6 +28,8 @@ export interface DriftEntry {
   status: 'modified' | 'missing';
   recordedHash: string;
   currentHash: string | null;
+  /** IR resource the file realizes (`<type>/<id>`), when recorded. */
+  resource?: string;
 }
 
 export interface DriftReport {
@@ -51,13 +55,18 @@ export async function recordCompileState(
   adapter: string,
   cwd: string,
   files: string[],
+  /** Optional resource attribution: emitted path → `<type>/<id>`. */
+  resourceOf?: (path: string) => string | undefined,
 ): Promise<void> {
   const state = await readState(stateDir);
   const entries: FileHash[] = [];
   for (const f of files) {
     const abs = isAbsolute(f) ? f : resolve(cwd, f);
     const rel = relative(cwd, abs);
-    entries.push({ path: rel, hash: await hashFile(abs) });
+    const entry: FileHash = { path: rel, hash: await hashFile(abs) };
+    const resource = resourceOf?.(f);
+    if (resource !== undefined) entry.resource = resource;
+    entries.push(entry);
   }
   state.adapters[adapter] = {
     files: entries,
@@ -91,6 +100,7 @@ export async function detectDrift(
         status: 'missing',
         recordedHash: entry.hash,
         currentHash: null,
+        ...(entry.resource !== undefined && { resource: entry.resource }),
       });
       continue;
     }
@@ -103,6 +113,7 @@ export async function detectDrift(
         status: 'modified',
         recordedHash: entry.hash,
         currentHash: current,
+        ...(entry.resource !== undefined && { resource: entry.resource }),
       });
     }
   }

@@ -15,7 +15,7 @@ import { captured, put, scratch } from './util.js';
 
 const fx = scratch();
 
-story.tracked(
+story(
   'E1.S4',
   'import aider reports mcp_servers/agents/skills as unsupported-by-source, not omission [AI3][AI5]',
   async () => {

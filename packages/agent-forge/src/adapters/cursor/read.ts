@@ -16,7 +16,7 @@ import { paths } from './paths.js';
 interface CursorHooksFile {
   hooks?: Record<
     string,
-    Array<{ matcher?: string; command: string; timeout?: number }>
+    Array<{ matcher?: string; command: string; timeout?: number; id?: string }>
   >;
 }
 
@@ -76,7 +76,8 @@ function parseCursorHooks(
     if (!canonical) continue;
     for (const entry of entries) {
       const hook: Hook = {
-        id: `${eventName.toLowerCase()}-${counter++}`,
+        // Prefer the embedded agent-forge id (write-side preservation, E3.S2).
+        id: entry.id ?? `${eventName.toLowerCase()}-${counter++}`,
         events: [canonical],
         command: entry.command,
       };

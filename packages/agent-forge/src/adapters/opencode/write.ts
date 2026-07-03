@@ -13,6 +13,60 @@ import {
 import { canonicalToOpencode } from './events.js';
 import { paths } from './paths.js';
 
+/**
+ * Plugin emitter for hooks: opencode has no native hook surface — delivery is
+ * a generated plugin shim (`.opencode/plugins/`) + its YAML manifest, i.e.
+ * capability `plugin` [OC5]. Registered as `pluginEmitters.hooks`; the engine
+ * routes IR hooks here at compile time.
+ */
+export async function writeOpencodeHooks(
+  ir: IR,
+  scope: Scope,
+  cwd: string,
+  opts: WriteOpts = {},
+): Promise<WriteReport> {
+  const p = paths(scope, cwd);
+  const written: string[] = [];
+  const skipped: { path: string; reason: string }[] = [];
+  const warnings: string[] = [];
+
+  const compatible: Hook[] = [];
+  for (const hook of ir.hooks ?? []) {
+    const unsupported = hook.events.filter((e) => !canonicalToOpencode[e]);
+    if (unsupported.length === hook.events.length) {
+      warnings.push(
+        `hook '${hook.id ?? '?'}': no opencode equivalent for events ${unsupported.join(',')}`,
+      );
+      skipped.push({
+        path: `hooks/${hook.id ?? '?'}.yaml`,
+        reason: `no opencode mapping for events: ${unsupported.join(',')}`,
+      });
+      continue;
+    }
+    if (unsupported.length > 0) {
+      warnings.push(
+        `hook '${hook.id ?? '?'}': partial mapping; events ${unsupported.join(',')} dropped`,
+      );
+    }
+    compatible.push(hook);
+  }
+
+  if (compatible.length > 0) {
+    if (!opts.dryRun) {
+      await mkdir(p.pluginsDir, { recursive: true });
+      await writeFile(
+        p.hooksManifestFile,
+        dump({ hooks: compatible }, { lineWidth: 100, noRefs: true }),
+        'utf8',
+      );
+      await writeFile(p.hooksShimFile, generateShim(compatible), 'utf8');
+    }
+    written.push(p.hooksManifestFile, p.hooksShimFile);
+  }
+
+  return { written, skipped, warnings };
+}
+
 export async function writeOpencode(
   ir: IR,
   scope: Scope,
@@ -34,41 +88,15 @@ export async function writeOpencode(
     written.push(p.rulesFile);
   }
 
-  // Hooks → sidecar YAML + executable JS shim
+  // Hooks are delivered via opencode's plugin system (capability `plugin`);
+  // when compiled through the engine they route to `writeOpencodeHooks`
+  // directly and never reach this function. Direct `write` calls (tests,
+  // embedders) still deliver them here for backward compatibility.
   if (ir.hooks?.length) {
-    const compatible: Hook[] = [];
-    for (const hook of ir.hooks) {
-      const unsupported = hook.events.filter((e) => !canonicalToOpencode[e]);
-      if (unsupported.length === hook.events.length) {
-        warnings.push(
-          `hook '${hook.id ?? '?'}': no opencode equivalent for events ${unsupported.join(',')}`,
-        );
-        skipped.push({
-          path: `hooks/${hook.id ?? '?'}.yaml`,
-          reason: `no opencode mapping for events: ${unsupported.join(',')}`,
-        });
-        continue;
-      }
-      if (unsupported.length > 0) {
-        warnings.push(
-          `hook '${hook.id ?? '?'}': partial mapping; events ${unsupported.join(',')} dropped`,
-        );
-      }
-      compatible.push(hook);
-    }
-
-    if (compatible.length > 0) {
-      if (!opts.dryRun) {
-        await mkdir(p.pluginsDir, { recursive: true });
-        await writeFile(
-          p.hooksManifestFile,
-          dump({ hooks: compatible }, { lineWidth: 100, noRefs: true }),
-          'utf8',
-        );
-        await writeFile(p.hooksShimFile, generateShim(compatible), 'utf8');
-      }
-      written.push(p.hooksManifestFile, p.hooksShimFile);
-    }
+    const hooksReport = await writeOpencodeHooks(ir, scope, cwd, opts);
+    written.push(...hooksReport.written);
+    skipped.push(...hooksReport.skipped);
+    warnings.push(...hooksReport.warnings);
   }
 
   // Skills (one directory per skill); allowed_tools field is dropped — opencode

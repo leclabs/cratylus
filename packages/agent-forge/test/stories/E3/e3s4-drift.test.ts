@@ -73,7 +73,7 @@ describe('E3.S4 · drift detection on emitted files', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E3.S4',
     'the drift report names the resource id, not just the file path',
     async () => {
@@ -88,7 +88,7 @@ describe('E3.S4 · drift detection on emitted files', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E3.S4',
     "manifest options.drift_check: 'error' makes compile refuse, naming the drifted file",
     async () => {
@@ -102,7 +102,7 @@ describe('E3.S4 · drift detection on emitted files', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E3.S4',
     "manifest options.drift_check: 'warn' proceeds but emits a drift warning",
     async () => {

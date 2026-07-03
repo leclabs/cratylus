@@ -20,7 +20,12 @@ interface SettingsFile {
     string,
     Array<{
       matcher?: string;
-      hooks?: Array<{ type: string; command: string; timeout?: number }>;
+      hooks?: Array<{
+        type: string;
+        command: string;
+        timeout?: number;
+        id?: string;
+      }>;
     }>
   >;
   mcpServers?: Record<string, McpEntry>;
@@ -85,7 +90,8 @@ function parseGeminiHooks(hooks: NonNullable<SettingsFile['hooks']>): Hook[] {
       for (const h of entry.hooks ?? []) {
         if (h.type !== 'command') continue;
         const hook: Hook = {
-          id: `${eventName.toLowerCase()}-${counter++}`,
+          // Prefer the embedded agent-forge id (write-side preservation, E3.S2).
+          id: h.id ?? `${eventName.toLowerCase()}-${counter++}`,
           events: [canonical],
           command: h.command,
         };

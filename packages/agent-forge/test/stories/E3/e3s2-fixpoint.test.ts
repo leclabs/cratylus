@@ -151,7 +151,7 @@ describe('E3.S2 · harness reimport after compile is a fixpoint', () => {
         },
       );
 
-      story.tracked(
+      story(
         'E3.S2',
         `${adapter.id}: hook ids survive the compile→import cycle (no undeclared loss)`,
         async () => {

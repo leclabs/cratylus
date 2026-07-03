@@ -185,7 +185,9 @@ async function writeImpl(
     for (const h of ir.hooks)
       skipped.push({
         path: `hooks/${h.id ?? '?'}.yaml`,
-        reason: 'unsupported',
+        // Self-explaining refusal: both missing surfaces named [CR4].
+        reason:
+          'no-native-no-plugin: Crush has no native hook surface and no plugin API [CR4]',
       });
   }
   for (const [field, label] of [
@@ -200,7 +202,8 @@ async function writeImpl(
       for (const i of items)
         skipped.push({
           path: `${label}/${(i as { name: string }).name}`,
-          reason: 'unsupported',
+          // Self-explaining refusal: both missing surfaces named [CR4].
+          reason: `no-native-no-plugin: Crush has no native ${label} surface and no plugin API [CR4]`,
         });
     }
   }

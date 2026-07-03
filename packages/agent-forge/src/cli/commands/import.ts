@@ -1,11 +1,15 @@
 import { existsSync } from 'node:fs';
 import { mkdir } from 'node:fs/promises';
+import { basename, dirname, join, resolve } from 'node:path';
 import pc from 'picocolors';
 import {
   type Adapter,
   type Hook,
   type IR,
+  IR_DIRNAME,
   type Manifest,
+  RESOURCE_IR_KEY,
+  type ResourceType,
   type Rule,
   type Scope,
   defaultIRRoot,
@@ -13,6 +17,11 @@ import {
   readIR,
   writeIR,
 } from '../../core/index.js';
+import { auditImport } from './import-audit.js';
+
+/** The own-format pseudo-client: `import agent-forge --from <dir>` copies a
+ *  foreign `.agent-forge/` IR into the local home. */
+const OWN_FORMAT_CLIENT = 'agent-forge';
 
 export interface ImportOpts {
   client: string;
@@ -30,10 +39,17 @@ export async function runImport(
   const scope = opts.scope ?? 'project';
   const cwd = opts.cwd ?? process.cwd();
   const sourceDir = opts.from ?? cwd;
+
+  if (opts.client === OWN_FORMAT_CLIENT) {
+    return runOwnFormatImport(opts, scope, cwd);
+  }
+
   const adapter = adapters.find((a) => a.id === opts.client);
   if (!adapter) {
     console.error(pc.red(`agent-forge: unknown client '${opts.client}'`));
-    console.error(`available: ${adapters.map((a) => a.id).join(', ')}`);
+    console.error(
+      `available: ${[...adapters.map((a) => a.id), OWN_FORMAT_CLIENT].join(', ')}`,
+    );
     return 1;
   }
 
@@ -82,6 +98,37 @@ export async function runImport(
   for (const [k, n] of Object.entries(counts)) {
     if (n > 0) console.log(`    ${k}: ${n}`);
   }
+
+  // Absent source capability is a status, never an omission: name every
+  // resource type the source client declares no surface for.
+  for (const [type, support] of Object.entries(
+    adapter.capabilities.resources,
+  )) {
+    if (support !== 'none') continue;
+    console.log(
+      `    ${RESOURCE_IR_KEY[type as ResourceType]}: unsupported-by-source (${opts.client} declares no ${type} surface)`,
+    );
+  }
+
+  // Name what the lift left behind: unrepresentable fields + unlifted files.
+  const audit = auditImport(opts.client, sourceDir, incoming);
+  for (const u of audit.unrepresentable) {
+    console.log(
+      pc.yellow(
+        `    unrepresentable-field: ${u.path} · ${u.field} (not modeled by the lifted IR)`,
+      ),
+    );
+  }
+  if (audit.unliftedSurfaces.length > 0) {
+    console.log(
+      pc.yellow(
+        `⚠ unlifted-surfaces: ${audit.unliftedSurfaces.length} documented file(s) present but not imported:`,
+      ),
+    );
+    for (const path of audit.unliftedSurfaces) {
+      console.log(`    ${pc.yellow('•')} ${path}`);
+    }
+  }
   if (conflicts.length > 0) {
     console.log('');
     console.log(
@@ -95,6 +142,51 @@ export async function runImport(
         '  re-run without --merge to take theirs, or hand-resolve in the IR.',
       ),
     );
+  }
+  return 0;
+}
+
+/**
+ * Own-format import: copy a foreign `.agent-forge/` IR into the local home.
+ * The source is read-only (never touched); the copy re-serializes through
+ * readIR/writeIR so the result is schema-valid by construction.
+ */
+async function runOwnFormatImport(
+  opts: ImportOpts,
+  scope: Scope,
+  cwd: string,
+): Promise<number> {
+  if (!opts.from) {
+    console.error(
+      pc.red(
+        `agent-forge: import ${OWN_FORMAT_CLIENT} requires --from <repo>/${IR_DIRNAME}`,
+      ),
+    );
+    return 1;
+  }
+  const from = resolve(opts.from);
+  const sourceRoot =
+    basename(from) === IR_DIRNAME ? from : join(from, IR_DIRNAME);
+  if (!existsSync(sourceRoot)) {
+    console.error(pc.red(`agent-forge: no ${IR_DIRNAME}/ at ${from}`));
+    return 1;
+  }
+
+  let foreign: IR;
+  try {
+    foreign = await readIR('project', dirname(sourceRoot));
+  } catch (e) {
+    console.error(pc.red(`agent-forge: ${(e as Error).message}`));
+    return 2;
+  }
+
+  const ir: IR = { ...foreign, manifest: { ...foreign.manifest, scope } };
+  await writeIR(ir, scope, cwd);
+
+  const root = defaultIRRoot(scope, cwd);
+  console.log(pc.green('✓'), `imported ${sourceRoot} → ${root}`);
+  for (const [k, n] of Object.entries(countResources(ir))) {
+    if (n > 0) console.log(`    ${k}: ${n}`);
   }
   return 0;
 }

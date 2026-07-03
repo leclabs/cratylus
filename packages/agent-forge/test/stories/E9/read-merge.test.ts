@@ -226,7 +226,7 @@ describe('E9.S4 · read-merge on shared files', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E9.S4',
     'recompile over drifted managed content reports the conflict instead of silently reclaiming (E3.S4 discipline)',
     async () => {

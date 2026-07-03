@@ -138,7 +138,7 @@ story(
   },
 );
 
-story.tracked(
+story(
   'E1.S1',
   'import report names every unrepresentable source field (agent permissionMode: path + field)',
   async () => {

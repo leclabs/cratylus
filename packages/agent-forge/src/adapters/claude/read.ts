@@ -27,7 +27,7 @@ interface ClaudeSettings {
 
 interface ClaudeHookEvent {
   matcher?: string;
-  hooks?: { type: string; command: string; timeout?: number }[];
+  hooks?: { type: string; command: string; timeout?: number; id?: string }[];
 }
 
 interface ClaudeMcpEntry {
@@ -111,7 +111,9 @@ function parseClaudeHooks(hooks: Record<string, ClaudeHookEvent[]>): Hook[] {
     for (const entry of entries) {
       for (const h of entry.hooks ?? []) {
         if (h.type !== 'command' || typeof h.command !== 'string') continue;
-        const id = `${claudeEvent.toLowerCase()}-${counter++}`;
+        // Prefer the embedded agent-forge id (write-side preservation, E3.S2);
+        // derive one only for hooks authored natively without it.
+        const id = h.id ?? `${claudeEvent.toLowerCase()}-${counter++}`;
         const hook: Hook = {
           id,
           events: [canonical],

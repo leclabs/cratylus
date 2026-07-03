@@ -57,7 +57,7 @@ describe('E2.S7 · IR home discoverable by walk-up', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E2.S7',
     'the dry-run report names the resolved IR path (<root>/.agent-forge)',
     async () => {

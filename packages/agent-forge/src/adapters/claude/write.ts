@@ -125,7 +125,13 @@ export type ClaudeHooksBlock = Record<
   string,
   Array<{
     matcher?: string;
-    hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
+    hooks: Array<{
+      type: 'command';
+      command: string;
+      timeout?: number;
+      /** agent-forge hook id, embedded so reimport preserves it (E3.S2). */
+      id?: string;
+    }>;
   }>
 >;
 
@@ -163,15 +169,18 @@ function serializeClaudeHooks(
         });
         continue;
       }
-      const cmd: { type: 'command'; command: string; timeout?: number } = {
+      const cmd: {
+        type: 'command';
+        command: string;
+        timeout?: number;
+        id?: string;
+      } = {
         type: 'command',
         command: hook.command,
       };
       if (hook.timeout !== undefined) cmd.timeout = hook.timeout;
-      const entry: {
-        matcher?: string;
-        hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
-      } = {
+      if (hook.id !== undefined) cmd.id = hook.id; // stable across reimport
+      const entry: ClaudeHooksBlock[string][number] = {
         hooks: [cmd],
       };
       if (hook.matcher) entry.matcher = hook.matcher;

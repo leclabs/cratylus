@@ -85,7 +85,7 @@ story(
   },
 );
 
-story.tracked(
+story(
   'E5.S7',
   'the skipped reason cites no-native-no-plugin, not a bare unsupported',
   async () => {

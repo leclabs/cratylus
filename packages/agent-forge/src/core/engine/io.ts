@@ -36,6 +36,9 @@ import {
 } from '../serialize/index.js';
 import { IR_DIRNAME, LOCAL_SUBDIR, findIRRoot } from './paths.js';
 
+/** The IR schema version this build reads and writes. */
+export const SUPPORTED_IR_VERSION = 1;
+
 export class IRValidationError extends Error {
   constructor(public errors: ValidationError[]) {
     super(
@@ -74,20 +77,32 @@ export async function readIR(scope: Scope, cwd: string): Promise<IR> {
   const manifest = await readManifest(root);
   const ir: IR = { manifest };
 
+  // Per-collection source files, index-aligned with the parsed items, so a
+  // validation refusal can name the offending file path.
+  const origins: Record<string, string[]> = {
+    rules: [],
+    skills: [],
+    commands: [],
+    agents: [],
+    hooks: [],
+  };
+
   const rules = await readResourceDir<Rule>(
     join(root, 'rules'),
     '.md',
     parseRule,
+    origins.rules,
   );
   if (rules.length) ir.rules = rules;
 
-  const skills = await readSkillsDir(join(root, 'skills'));
+  const skills = await readSkillsDir(join(root, 'skills'), origins.skills);
   if (skills.length) ir.skills = skills;
 
   const commands = await readResourceDir<Command>(
     join(root, 'commands'),
     '.md',
     parseCommand,
+    origins.commands,
   );
   if (commands.length) ir.commands = commands;
 
@@ -95,6 +110,7 @@ export async function readIR(scope: Scope, cwd: string): Promise<IR> {
     join(root, 'agents'),
     '.md',
     parseAgent,
+    origins.agents,
   );
   if (agents.length) ir.agents = agents;
 
@@ -102,6 +118,7 @@ export async function readIR(scope: Scope, cwd: string): Promise<IR> {
     join(root, 'hooks'),
     '.yaml',
     parseHook,
+    origins.hooks,
   );
   if (hooks.length) ir.hooks = hooks;
 
@@ -117,7 +134,12 @@ export async function readIR(scope: Scope, cwd: string): Promise<IR> {
   if (env) ir.env = env;
 
   if (!validateIR(ir)) {
-    throw new IRValidationError(formatErrors(validateIR.errors));
+    const errors = formatErrors(validateIR.errors).map((e) => {
+      const m = e.path.match(/^\/(rules|skills|commands|agents|hooks)\/(\d+)/);
+      const file = m ? origins[m[1] ?? '']?.[Number(m[2])] : undefined;
+      return file ? { ...e, message: `${e.message} (${file})` } : e;
+    });
+    throw new IRValidationError(errors);
   }
   return ir;
 }
@@ -223,13 +245,21 @@ async function readManifest(root: string): Promise<Manifest> {
   if (!parsed || typeof parsed !== 'object') {
     throw new Error(`manifest.yaml at ${path} must be a YAML mapping`);
   }
-  return parsed as Manifest;
+  const manifest = parsed as Manifest;
+  const found = (manifest as { agentForge?: unknown }).agentForge;
+  if (typeof found === 'number' && found !== SUPPORTED_IR_VERSION) {
+    throw new Error(
+      `manifest.yaml at ${path} declares agentForge: ${found}, but this build supports agentForge: ${SUPPORTED_IR_VERSION} — run 'agent-forge migrate' to convert the IR`,
+    );
+  }
+  return manifest;
 }
 
 async function readResourceDir<T>(
   dir: string,
   ext: string,
   parse: (text: string, defaultId: string) => T,
+  origins?: string[],
 ): Promise<T[]> {
   if (!existsSync(dir)) return [];
   const entries = await readdir(dir);
@@ -238,12 +268,22 @@ async function readResourceDir<T>(
     if (!entry.endsWith(ext)) continue;
     const id = basename(entry, ext);
     const text = await readFile(join(dir, entry), 'utf8');
-    out.push(parse(text, id));
+    const file = join(basename(dir), entry);
+    try {
+      out.push(parse(text, id));
+    } catch (e) {
+      // A parse refusal must name the offending file, not just the resource.
+      throw new Error(`${(e as Error).message} (${file})`);
+    }
+    origins?.push(file);
   }
   return out;
 }
 
-async function readSkillsDir(dir: string): Promise<Skill[]> {
+async function readSkillsDir(
+  dir: string,
+  origins?: string[],
+): Promise<Skill[]> {
   if (!existsSync(dir)) return [];
   const entries = await readdir(dir, { withFileTypes: true });
   const out: Skill[] = [];
@@ -252,7 +292,14 @@ async function readSkillsDir(dir: string): Promise<Skill[]> {
     const skillFile = join(dir, entry.name, 'SKILL.md');
     if (!existsSync(skillFile)) continue;
     const text = await readFile(skillFile, 'utf8');
-    out.push(parseSkill(text, entry.name));
+    const file = join(basename(dir), entry.name, 'SKILL.md');
+    try {
+      out.push(parseSkill(text, entry.name));
+    } catch (e) {
+      // A parse refusal must name the offending file, not just the resource.
+      throw new Error(`${(e as Error).message} (${file})`);
+    }
+    origins?.push(file);
   }
   return out;
 }

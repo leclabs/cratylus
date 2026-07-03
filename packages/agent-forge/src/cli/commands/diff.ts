@@ -48,7 +48,9 @@ export async function runDiff(
         `${adapter.id}: ${drift.drifted.length} file(s) drifted`,
       );
       for (const d of drift.drifted) {
-        console.log(`    ${pc.yellow(d.status)}: ${d.path}`);
+        console.log(
+          `    ${pc.yellow(d.status)}: ${d.path}${d.resource ? ` (resource: ${d.resource})` : ''}`,
+        );
       }
     }
   }

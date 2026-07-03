@@ -63,7 +63,7 @@ describe('E2.S5 · local-scope compile uses the local tier or refuses loudly', (
     },
   );
 
-  story.tracked(
+  story(
     'E2.S5',
     'targets without a documented local tier emit per-resource skipped entries with reason no-local-tier',
     () => {
@@ -78,7 +78,7 @@ describe('E2.S5 · local-scope compile uses the local tier or refuses loudly', (
     },
   );
 
-  story.tracked(
+  story(
     'E2.S5',
     'a target lacking a local tier never gets a fabricated file (emulation is not invented)',
     () => {
@@ -94,7 +94,7 @@ describe('E2.S5 · local-scope compile uses the local tier or refuses loudly', (
     },
   );
 
-  story.tracked(
+  story(
     'E2.S5',
     'the report carries an elicit entry (target · resource · resolution question) per no-local-tier skip',
     () => {

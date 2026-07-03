@@ -10,7 +10,7 @@ import type {
 import { canonicalToOpencode } from './events.js';
 import { paths } from './paths.js';
 import { readOpencode } from './read.js';
-import { writeOpencode } from './write.js';
+import { writeOpencode, writeOpencodeHooks } from './write.js';
 
 const capabilities: AdapterCapabilities = {
   resources: {
@@ -18,7 +18,10 @@ const capabilities: AdapterCapabilities = {
     skills: 'partial', // SKILL.md round-trips, but allowed_tools is dropped
     commands: 'none',
     agents: 'none',
-    hooks: 'partial', // 13 of 28 canonical events mapped
+    // Hooks have no native opencode config surface: delivery is a generated
+    // plugin shim in .opencode/plugins/ [OC5] — the plugin support mode
+    // (13 of 28 canonical events mapped by the shim).
+    hooks: 'plugin',
     mcp: 'full',
     permissions: 'partial', // emitted as JSON; opencode's native DSL not honored
     env: 'full',
@@ -49,6 +52,9 @@ export const opencodeAdapter: Adapter = {
   id: 'opencode',
   capabilities,
   eventMap: canonicalToOpencode,
+  pluginEmitters: {
+    hooks: writeOpencodeHooks,
+  },
   async detect(scope: Scope, cwd: string): Promise<boolean> {
     const p = paths(scope, cwd);
     return existsSync(p.opencodeDir) || existsSync(p.rulesFile);

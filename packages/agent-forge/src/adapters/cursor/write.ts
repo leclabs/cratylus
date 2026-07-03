@@ -64,17 +64,27 @@ export async function writeCursor(
       const obj: {
         hooks: Record<
           string,
-          Array<{ matcher?: string; command: string; timeout?: number }>
+          Array<{
+            matcher?: string;
+            command: string;
+            timeout?: number;
+            id?: string;
+          }>
         >;
       } = { hooks: {} };
       for (const hook of compatible) {
         for (const e of hook.events) {
           const cursorEvent = canonicalToCursor[e];
           if (!cursorEvent) continue;
-          const entry: { matcher?: string; command: string; timeout?: number } =
-            { command: hook.command };
+          const entry: {
+            matcher?: string;
+            command: string;
+            timeout?: number;
+            id?: string;
+          } = { command: hook.command };
           if (hook.matcher) entry.matcher = hook.matcher;
           if (hook.timeout !== undefined) entry.timeout = hook.timeout;
+          if (hook.id !== undefined) entry.id = hook.id; // stable across reimport
           obj.hooks[cursorEvent] ??= [];
           obj.hooks[cursorEvent].push(entry);
         }

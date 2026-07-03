@@ -110,32 +110,41 @@ export async function writeGemini(
   return { written, skipped, warnings };
 }
 
+type GeminiHookCmd = {
+  type: 'command';
+  command: string;
+  timeout?: number;
+  /** agent-forge hook id, embedded so reimport preserves it (E3.S2). */
+  id?: string;
+};
+
 function serializeGeminiHooks(hooks: Hook[]): Record<
   string,
   Array<{
     matcher?: string;
-    hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
+    hooks: GeminiHookCmd[];
   }>
 > {
   const out: Record<
     string,
     Array<{
       matcher?: string;
-      hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
+      hooks: GeminiHookCmd[];
     }>
   > = {};
   for (const hook of hooks) {
     for (const event of hook.events) {
       const geminiEvent = canonicalToGemini[event];
       if (!geminiEvent) continue;
-      const cmd: { type: 'command'; command: string; timeout?: number } = {
+      const cmd: GeminiHookCmd = {
         type: 'command',
         command: hook.command,
       };
       if (hook.timeout !== undefined) cmd.timeout = hook.timeout;
+      if (hook.id !== undefined) cmd.id = hook.id; // stable across reimport
       const entry: {
         matcher?: string;
-        hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
+        hooks: GeminiHookCmd[];
       } = {
         hooks: [cmd],
       };

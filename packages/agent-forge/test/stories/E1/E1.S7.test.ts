@@ -111,7 +111,7 @@ const SPECS: readonly FidelitySpec[] = [
 ];
 
 for (const spec of SPECS) {
-  story.tracked(
+  story(
     'E1.S7',
     `${spec.label}: every fixture file imported or reported under unlifted-surfaces ${spec.ref}`,
     async () => {

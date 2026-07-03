@@ -10,7 +10,11 @@ import { cursorAdapter } from '../adapters/cursor/index.js';
 import { geminiAdapter } from '../adapters/gemini/index.js';
 import { opencodeAdapter } from '../adapters/opencode/index.js';
 import { zedAdapter } from '../adapters/zed/index.js';
-import type { Adapter, Scope } from '../core/index.js';
+import {
+  type Adapter,
+  type Scope,
+  assertAdaptersValid,
+} from '../core/index.js';
 import type { Scope as DeployScope } from '../deploy/index.js';
 import { runCatalog } from './commands/catalog.js';
 import { runCompile } from './commands/compile.js';
@@ -45,6 +49,10 @@ const adapters: Adapter[] = [
   continueAdapter,
   zedAdapter,
 ];
+
+// Adapter-load lint: an invalid declaration (e.g. a resource declared
+// `plugin` with no plugin emitter) fails here, not as a runtime surprise.
+assertAdaptersValid(adapters);
 
 const cli = cac('agent-forge');
 
@@ -139,7 +147,7 @@ cli
       'env',
     ] as const;
     const sym = (s: string) =>
-      s === 'full' ? '✓' : s === 'partial' ? '🟡' : '—';
+      s === 'full' ? '✓' : s === 'partial' ? '🟡' : s === 'plugin' ? '🔌' : '—';
     const head = `ID${' '.repeat(8)}${RESOURCE_TYPES.map((t) => t.slice(0, 4).padEnd(5)).join('')} HOOKS  SCOPES`;
     console.log(head);
     for (const a of adapters) {

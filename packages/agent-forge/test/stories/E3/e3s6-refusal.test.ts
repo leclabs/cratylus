@@ -65,7 +65,7 @@ describe('E3.S6 · corrupt or version-skewed own-format refuses loudly', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E3.S6',
     'corrupt resource file: the refusal names the offending file path',
     async () => {
@@ -91,7 +91,7 @@ describe('E3.S6 · corrupt or version-skewed own-format refuses loudly', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E3.S6',
     'version-skew refusal names found vs supported version and points at agent-forge migrate',
     async () => {

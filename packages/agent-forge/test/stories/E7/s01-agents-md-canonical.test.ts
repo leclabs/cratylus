@@ -96,7 +96,7 @@ describe('E7.S1 · AGENTS.md canonical rules projection', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S1',
     'root AGENTS.md concatenates rules by the rule.schema order field, not array order',
     async () => {

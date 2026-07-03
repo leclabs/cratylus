@@ -6,3 +6,5 @@ export * from './io.js';
 export * from './compile.js';
 export * from './migrate.js';
 export * from './vector-projection.js';
+export * from './plugin.js';
+export * from './managed.js';
