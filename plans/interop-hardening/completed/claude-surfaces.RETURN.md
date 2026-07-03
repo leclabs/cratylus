@@ -6,10 +6,9 @@ reverted.
 
 ## Commit
 
-One commit (not yet made at time of writing this doc — see below): production `src/adapters/claude/**`
-
-- `src/adapters/claude/bundle.ts` (new) + `src/cli/commands/compile.ts` + `src/cli/index.ts`
-  (companion CLI wiring, disclosed) + all test edits + `MAP.md`/`TRACKED-FAILING.md` regen.
+`645261a` — production `src/adapters/claude/**` + new `src/adapters/claude/bundle.ts` +
+`src/cli/commands/compile.ts` + `src/cli/index.ts` (companion CLI wiring, disclosed) + all test
+edits + `MAP.md`/`TRACKED-FAILING.md` regen + this task's active→completed move.
 
 ## Owned ids (16/16 graduated — 15 tracked rows + 1 already-green regression guard)
 
@@ -150,15 +149,15 @@ declared `'regex'` from prior waves; claude was the last holdout. Flipping `matc
 completes the row, forcing `it.fails` itself to fail. Flipped `story.tracked→story`, row deleted from
 `TRACKED-FAILING.md`. Not authored as new work; a direct consequence of the owned E8.S1 matcher fix.
 
-## Gates (4×0, clean worktree)
+## Gates (4×0, clean worktree of `645261a`)
 
-Repo-wide `biome check .` — 494 files clean (post `biome check --write` on the touched set for
-formatting/import-order only, no logic changes). `packages/agent-forge`: `pnpm run build` green;
-`pnpm run typecheck` (`tsc --noEmit`) green; `pnpm exec vitest run` → **112/112 files, 694/694 tests
-green** (includes `coverage.test.ts`'s MAP.md-hash and TRACKED-FAILING.md-enumeration meta-gates).
-`pnpm --filter @leclabs/agent-anatomy test` → 36/36. `pnpm --filter @leclabs/agent-memory test` →
-121/121. [Gate law requires a clean worktree of the commit — run after committing; see the commit
-hash appended below once the commit lands.]
+`git worktree add /tmp/gate-claude-surfaces 645261a` (removed after gating, per gate law — never the
+working tree): `pnpm install --frozen-lockfile` → `pnpm build` 2/2 tasks green → `pnpm test --force`
+→ forge **112/112 files, 694/694 tests green** (includes `coverage.test.ts`'s MAP.md-hash and
+TRACKED-FAILING.md-enumeration meta-gates) + anatomy 36/36, both via the root `pnpm test` turbo
+pipeline → `pnpm --filter @leclabs/agent-memory test` (not turbo-wired at root, confirmed again this
+shard, same as every prior wave) → 121/121 → `pnpm lint` (repo-root `biome check .`) → 493 files
+clean → `pnpm --filter @leclabs/agent-forge typecheck` → clean. 4×0 confirmed.
 
 ## Design (disclosed inferences + judgment calls)
 
@@ -201,3 +200,12 @@ legacy/CLI-integration suites, invisible to a scoped story-file test run.
 - Did not touch `plans/interop-hardening/active/roster-metadata.md` (sibling in-flight task, already
   staged pending→active by someone else before this dispatch started) or `PLAN.md` (explicit
   instruction).
+- `git worktree list` shows a long tail of stale detached worktrees under `/private/tmp/`
+  (`af-mcp-rehome`, `af-pristine-eca0068`, `amp-wt`, `base-wt`, `devin-compose`, `head-verify`,
+  `mav-baseline-w`, `mav-codex-truth`, `mav-crush-truth`, `mav-gemini-w`, `mav-land`) plus
+  `/Users/lex/workspaces/.mav-w5-standards` — same class flagged in kilo-adapter.RETURN.md, several
+  pinned well behind live HEAD. Not reconciled here (out of this shard's territory); only my own
+  gate worktree (`/tmp/gate-claude-surfaces`, pinned `645261a`) was created and removed this session.
+- The stashed `wave5-mud-partials-2026-07-03` entry (`git stash list`, 10 dead-executor partials) and
+  the older `mav/sharded-memory-store` stash were both left untouched — recovery insurance for other
+  shards, not mine to drop.
