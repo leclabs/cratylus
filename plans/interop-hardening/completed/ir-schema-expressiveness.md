@@ -12,7 +12,7 @@
 
 ## Scope
 
-Change class: **schema extension** (additive; existing IR trees keep validating — the green companion tests in the same files pin that). Territory: `src/core/schema/**` · `src/core/ir/**` (regenerated) · `src/core/serialize/**` + validators as touched by new fields. NOT `src/adapters/**`.
+Change class: **schema extension** (additive; existing IR trees keep validating — the green companion tests in the same files pin that). Owned paths: `src/core/schema/**` · `src/core/ir/**` (regenerated) · `src/core/serialize/**` + validators as touched by new fields. NOT `src/adapters/**`.
 
 Extend:
 
@@ -38,4 +38,4 @@ Extend:
 - Graduation: every owned id flips `story.tracked` → `story` at its call site; its TRACKED-FAILING.md row deleted; MAP.md regenerated (`pnpm exec tsx test/stories/tools/render-map.ts`); `test/stories/coverage.test.ts` green. An owned id still tracked = fail.
 - No regression: `pnpm build && pnpm test && pnpm lint && pnpm typecheck` green in `packages/agent-forge`; zero previously-green tests broken; zero non-owned `story.tracked` call sites flipped (foreign flip = scope breach — return naming the id).
 - Story ground: E9.S1/S2/S6 + E7.S7 observable acceptance holds — the new fields survive `writeIR → readIR` value-identical (drive it, not just the suite); plain resources without the new metadata validate exactly as before.
-- Territory: production diff confined to declared territory; the graduation flip is the only test edit.
+- Owned paths: production diff confined to declared owned paths; the graduation flip is the only test edit.

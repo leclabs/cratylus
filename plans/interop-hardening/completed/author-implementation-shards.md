@@ -13,7 +13,7 @@ The tracked-failing set + story↔test map (⊳). The praxis execution-spec laws
 Cluster the tracked-failing tests by orthogonal concern (per-adapter · IR/core · pipeline ·
 output-surface); author one implementation task file per cluster into THIS plan's `pending/`
 (bug fixes, features, improvements — whatever makes that cluster pass); wire the DAG
-(maximize-fan-out; disjoint file territories per wave); sync the PLAN.md mirror. Each shard's
+(maximize-fan-out; disjoint file owned path sets per wave); sync the PLAN.md mirror. Each shard's
 accept = its cluster of tests flips to green + no regression + the mapped stories' acceptance
 observably holds (a story whose test passes but whose observable behavior still fails = the shard
 fails — tests serve stories, not themselves).

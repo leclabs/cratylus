@@ -12,7 +12,7 @@
 
 ## Scope
 
-Change class: **residual fix + graduation of cross-adapter parametrized call sites**. These call sites quantify over MANY adapters — each only graduates when every covered adapter is true, so ownership converges here after the per-adapter waves. Work = run each owned test, fix the residue it still names (any territory, now uncontended — waves 5/6 complete), flip.
+Change class: **residual fix + graduation of cross-adapter parametrized call sites**. These call sites quantify over MANY adapters — each only graduates when every covered adapter is true, so ownership converges here after the per-adapter waves. Work = run each owned test, fix the residue it still names (any owned paths, now uncontended — waves 5/6 complete), flip.
 
 Expected residue classes (not exhaustive — the tests decide): cursor/crush `matchers: regex` + copilot/gemini/cline `payload` declaration cells not covered by a per-adapter id (E4.S5/E9.S3); remote-MCP `headers` read-side lift on the 5-adapter matrix (E4.S1); stale/over-claim capability cells the per-adapter shards missed (E4.S3 two-sided honesty vs §1/§2); aider portable-core discipline — documented-absence skips, not warnings (E4.S7 zero-warnings 10/10); per-adapter importer completeness + fabricated-path silence residues (E1.S2/E1.S3 across the §3 ref sets); touched-path ⊆ documented-surfaces union (E2.S3); the amp/kilo/zed shipped-roster guard (E5.S3).
 
@@ -37,4 +37,4 @@ Expected residue classes (not exhaustive — the tests decide): cursor/crush `ma
 - Graduation: every owned id flips `story.tracked` → `story`; TRACKED-FAILING.md rows deleted; MAP.md regenerated (`pnpm exec tsx test/stories/tools/render-map.ts`); `coverage.test.ts` green. **Terminal condition: TRACKED-FAILING.md enumerates 0 call sites** — any survivor must be FUTURE-class with a written basis, else fail.
 - No regression: `pnpm build && pnpm test && pnpm lint && pnpm typecheck` green in `packages/agent-forge`; zero previously-green tests broken.
 - Story ground: the closed equations are the observable — capability declarations ≡ documented reality both directions; round-trip matrix classification complete; portable core warning-free 10/10 driven end-to-end.
-- Territory: any residue fix is fair game (uncontended wave), but each production change must trace to a named owned id; graduation flips are the only test edits.
+- Owned paths: any residue fix is fair game (uncontended wave), but each production change must trace to a named owned id; graduation flips are the only test edits.

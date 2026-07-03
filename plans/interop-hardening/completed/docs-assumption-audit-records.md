@@ -1,6 +1,6 @@
 # docs-assumption-audit-records — the pinned assumption record + the dated release-audit checklist
 
-**Lane** Nico · **wave(4)** · deps: none (docs territory; content sources exist).
+**Lane** Nico · **wave(4)** · deps: none (docs owned paths; content sources exist).
 
 ## Static
 
@@ -11,7 +11,7 @@
 
 ## Scope
 
-Change class: **docs authoring** (ρ=LLM; project-vault reference notes). Territory: `docs/**` + graduation flips.
+Change class: **docs authoring** (ρ=LLM; project-vault reference notes). Owned paths: `docs/**` + graduation flips.
 
 - **Assumption record** (E7.S10): the claude CLAUDE.md-not-AGENTS.md premise pinned as a vault note — names anthropics/claude-code issue #31005 [S49], carries [S7][S62], states the tripwire (revisit when Claude Code reads AGENTS.md natively). Path/name: derivable from the test's search predicate — read the test first.
 - **Release-audit checklist** (E10.S7): dated doc; one row per shipped adapter; every UNVERIFIED item from the RETURN sheets appears exactly once; carries the E7.S10 tripwire entry.
@@ -28,4 +28,4 @@ Change class: **docs authoring** (ρ=LLM; project-vault reference notes). Territ
 - Graduation: both ids flip `story.tracked` → `story`; TRACKED-FAILING.md rows deleted; MAP.md regenerated (`pnpm exec tsx test/stories/tools/render-map.ts`); `coverage.test.ts` green.
 - No regression: `pnpm build && pnpm test && pnpm lint && pnpm typecheck` green in `packages/agent-forge`; zero non-owned `story.tracked` flips.
 - Story ground: the docs are themselves the observable — each claim in them traces to a RETURN-sheet ref (no invented source); UNVERIFIED enumeration is complete against §2/§3 (grep the sheets, count).
-- Territory: diff confined to `docs/**` + graduation flips.
+- Owned paths: diff confined to `docs/**` + graduation flips.

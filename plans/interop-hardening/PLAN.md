@@ -23,13 +23,13 @@ both directions).
 
 ## Implementation shards (pending/) — 229 tracked ids, MECE, 0 orphans
 
-Ownership axis = file territory (`src/adapters/<id>/**` disjoint per adapter; core split
+Ownership axis = file owned paths (`src/adapters/<id>/**` disjoint per adapter; core split
 schema¦engine¦exemplify; docs separate). Cross-adapter parametrized call sites converge in wave(7).
 Graduation mechanism per shard: `story.tracked` → `story` + TRACKED-FAILING row deletion + MAP regen.
 
 **wave(4)** — roots, 5-wide:
 
-| Shard                           | Lane | Ids | Territory                                                           |
+| Shard                           | Lane | Ids | Owned paths                                                         |
 | ------------------------------- | ---- | --- | ------------------------------------------------------------------- |
 | `ir-schema-expressiveness`      | Mav  | 7   | `src/core/schema` + generated IR                                    |
 | `engine-report-machinery`       | Mav  | 19  | `src/core/engine` · adapter contract · `src/cli` (+ hook-id seam)   |
@@ -39,7 +39,7 @@ Graduation mechanism per shard: `story.tracked` → `story` + TRACKED-FAILING ro
 
 **wave(5)** — 15-wide (deps noted; roster-registration line in `src/cli/index.ts` = declared append-only seam):
 
-| Shard                    | Lane | Ids | Territory · deps                                                            |
+| Shard                    | Lane | Ids | Owned paths · deps                                                          |
 | ------------------------ | ---- | --- | --------------------------------------------------------------------------- |
 | `claude-mcp-rehoming`    | Mav  | 7   | claude MCP/settings paths · ⊳engine                                         |
 | `codex-adapter-truth`    | Mav  | 16  | `src/adapters/codex` · ⊳schema                                              |
@@ -59,14 +59,14 @@ Graduation mechanism per shard: `story.tracked` → `story` + TRACKED-FAILING ro
 
 **wave(6)** — 2-wide:
 
-| Shard             | Lane | Ids | Territory · deps                                                               |
+| Shard             | Lane | Ids | Owned paths · deps                                                             |
 | ----------------- | ---- | --- | ------------------------------------------------------------------------------ |
 | `claude-surfaces` | Mav  | 16  | claude rules/hooks/CLAUDE.md/local/plugin-bundle · ⊳claude-mcp ⊳schema ⊳engine |
 | `roster-metadata` | Nico | 4   | roster ids/aliases/status · ⊳devin                                             |
 
 **wave(7)** — terminal:
 
-| Shard                    | Lane | Ids | Territory · deps                                                           |
+| Shard                    | Lane | Ids | Owned paths · deps                                                         |
 | ------------------------ | ---- | --- | -------------------------------------------------------------------------- |
 | `convergence-graduation` | Mav  | 11  | cross-adapter equations + residue · ⊳ all adapter shards (waves 5–6) + zed |
 

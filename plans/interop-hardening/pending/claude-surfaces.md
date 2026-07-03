@@ -1,6 +1,6 @@
 # claude-surfaces — CLAUDE.md projection + managed regions, .claude/rules, local tier, hook modeling, plugin bundle
 
-**Lane** Mav · **wave(6)** · deps: ⊳claude-mcp-rehoming (same files — serial by territory) · ⊳ir-schema-expressiveness (Rule activation `paths:`) · ⊳engine-report-machinery (managed-region primitive, no-local-tier discipline).
+**Lane** Mav · **wave(6)** · deps: ⊳claude-mcp-rehoming (same files — serial by owned paths) · ⊳ir-schema-expressiveness (Rule activation `paths:`) · ⊳engine-report-machinery (managed-region primitive, no-local-tier discipline).
 
 ## Static
 
@@ -12,7 +12,7 @@
 
 ## Scope
 
-Change class: **divergence fix + plugin-bundle feature**. Territory: `src/adapters/claude/**` (rules/hooks/CLAUDE.md/local/plugin paths — MCP/settings landed in wave 5) + a compile bundling flag surface in `src/cli/commands/compile.ts` for `--as-plugin`.
+Change class: **divergence fix + plugin-bundle feature**. Owned paths: `src/adapters/claude/**` (rules/hooks/CLAUDE.md/local/plugin paths — MCP/settings landed in wave 5) + a compile bundling flag surface in `src/cli/commands/compile.ts` for `--as-plugin`.
 
 - CLAUDE.md: emitted body = exactly the `@AGENTS.md` import (+ at most a fixed managed header), rule bodies absent [S7]; hand-maintained content preserved (marker-delimited managed region, documented markers) [CC1]; foreign `statusLine` settings key survives (E3.S5).
 - Rules: non-concat rules → `.claude/rules/*.md`; `.claude/rules/*.md` with `paths:` frontmatter read; `.claude/CLAUDE.md` alt location read; local-scope rules → `CLAUDE.local.md` (the "local has no rules" warning gone) [CC1].
@@ -45,4 +45,4 @@ Change class: **divergence fix + plugin-bundle feature**. Territory: `src/adapte
 - Graduation: every owned id flips `story.tracked` → `story`; TRACKED-FAILING.md rows deleted; MAP.md regenerated (`pnpm exec tsx test/stories/tools/render-map.ts`); `coverage.test.ts` green. An owned id still tracked = fail.
 - No regression: `pnpm build && pnpm test && pnpm lint && pnpm typecheck` green in `packages/agent-forge`; zero previously-green tests broken (E8.S1 greens incl. wave-5 graduates: `.mcp.json`/`~/.claude.json`/settings-policy; E7.S5's sibling E7.S10 premise carrier: claude writes CLAUDE.md, never AGENTS.md; E3.S5 greens: hand section, forge-managed permissions); zero non-owned `story.tracked` flips (E4.S5/E9.S3 declaration call sites span other adapters — convergence-owned).
 - Story ground: drive compile+import over a repo with hand-maintained CLAUDE.md + foreign settings; observable = preserved content, managed markers, `@AGENTS.md` projection, a structurally valid plugin dir.
-- Territory: production diff confined to declared territory; graduation flips are the only test edits.
+- Owned paths: production diff confined to declared owned paths; graduation flips are the only test edits.

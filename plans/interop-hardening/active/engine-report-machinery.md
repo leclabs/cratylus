@@ -12,7 +12,7 @@
 
 ## Scope
 
-Change class: **engine feature + report-surface fix**. Territory: `src/core/engine/**` · `src/core/adapter/types.ts` · `src/cli/**`. Adapter files only for the hook-id seam below (safe: this wave completes before any adapter shard dispatches).
+Change class: **engine feature + report-surface fix**. Owned paths: `src/core/engine/**` · `src/core/adapter/types.ts` · `src/cli/**`. Adapter files only for the hook-id seam below (safe: this wave completes before any adapter shard dispatches).
 
 - **Import report**: unrepresentable-source-field entries (path + field); machine-parseable `unsupported-by-source` status for absent source capability; `unlifted-surfaces` listing for present-but-unconsumed fixture files (generic unconsumed-file detection at import).
 - **Compile report**: resolved IR path named in dry-run; per-resource `no-local-tier` skipped entries + paired elicit entries (target · resource · resolution question); no fabricated file for targets lacking a documented local tier; skip-reason vocabulary gains `no-native-no-plugin` (replaces bare `unsupported` where no native surface and no plugin emitter exist).
@@ -53,4 +53,4 @@ Change class: **engine feature + report-surface fix**. Territory: `src/core/engi
 - Graduation: every owned id flips `story.tracked` → `story`; TRACKED-FAILING.md rows deleted; MAP.md regenerated (`pnpm exec tsx test/stories/tools/render-map.ts`); `coverage.test.ts` green. An owned id still tracked = fail.
 - No regression: `pnpm build && pnpm test && pnpm lint && pnpm typecheck` green in `packages/agent-forge`; zero previously-green tests broken; zero non-owned `story.tracked` flips (foreign flip = scope breach).
 - Story ground: mapped stories' observable acceptance holds driven end-to-end (real `import`/`compile` runs against the tests' fixtures, reports inspected) — a green test over still-broken observable behavior = fail.
-- Territory: production diff confined to declared territory + the hook-id seam; graduation flips are the only test edits.
+- Owned paths: production diff confined to declared owned paths + the hook-id seam; graduation flips are the only test edits.

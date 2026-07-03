@@ -1,6 +1,6 @@
 # exemplify-pipeline — the context-optimization leg: raw context → accept-gated R=LLM artifacts
 
-**Lane** Mav · **wave(4)** · deps: none (root; new module territory).
+**Lane** Mav · **wave(4)** · deps: none (root; new module owned paths).
 
 ## Static
 
@@ -12,7 +12,7 @@
 
 ## Scope
 
-Change class: **feature (new pipeline module)**. Territory: new `src/core/exemplify/**` (or the module home the E6 probe accepts) · new `src/cli/commands/optimize.ts` (or equivalent verb) · append-only seams in `src/core/index.ts` + `src/cli/index.ts` · engine export of the organ-vector → per-target projection (E4.S8). NOT existing adapter dirs (E6.S6's aider `read:` wiring id is owned by `aider-adapter-truth`, not here).
+Change class: **feature (new pipeline module)**. Owned paths: new `src/core/exemplify/**` (or the module home the E6 probe accepts) · new `src/cli/commands/optimize.ts` (or equivalent verb) · append-only seams in `src/core/index.ts` + `src/cli/index.ts` · engine export of the organ-vector → per-target projection (E4.S8). NOT existing adapter dirs (E6.S6's aider `read:` wiring id is owned by `aider-adapter-truth`, not here).
 
 Build the documented import → optimize → compile flow:
 
@@ -47,4 +47,4 @@ Build the documented import → optimize → compile flow:
 - Graduation: every owned id flips `story.tracked` → `story`; TRACKED-FAILING.md rows deleted; MAP.md regenerated (`pnpm exec tsx test/stories/tools/render-map.ts`); `coverage.test.ts` green. An owned id still tracked = fail.
 - No regression: `pnpm build && pnpm test && pnpm lint && pnpm typecheck` green in `packages/agent-forge`; zero previously-green tests broken (E6.S6/S7/S8 green companions: raw compile stays lossless/verbatim); zero non-owned `story.tracked` flips.
 - Story ground: E6 stories' observable acceptance holds end-to-end — run the pipeline on the tests' fixture sources and inspect artifacts (manifest, cell, vector, markers), not only assertions.
-- Territory: production diff confined to the new module + declared seams; graduation flips are the only test edits.
+- Owned paths: production diff confined to the new module + declared seams; graduation flips are the only test edits.

@@ -1,6 +1,6 @@
 # zed-adapter — new config adapter: Zed (AGENTS.md · .agents/skills · context_servers)
 
-**Lane** Mav · **wave(4)** · deps: none (new territory; needs no schema/engine change).
+**Lane** Mav · **wave(4)** · deps: none (new owned paths; needs no schema/engine change).
 
 ## Static
 
@@ -11,7 +11,7 @@
 
 ## Scope
 
-Change class: **feature (new adapter)**. Territory: new `src/adapters/zed/**` + append-only roster seam (`src/cli/index.ts` import + `adapters[]` entry; subpath export in `package.json` per the existing per-adapter pattern).
+Change class: **feature (new adapter)**. Owned paths: new `src/adapters/zed/**` + append-only roster seam (`src/cli/index.ts` import + `adapters[]` entry; subpath export in `package.json` per the existing per-adapter pattern).
 
 - Rules: AGENTS.md written; shadow warning when a higher-precedence file exists [ZD1].
 - Skills: exactly `<worktree>/.agents/skills/` (no other project path) [ZD2]; frontmatter constraints enforced (name ≤64 `[a-z0-9-]`, description <1024B).
@@ -34,4 +34,4 @@ Change class: **feature (new adapter)**. Territory: new `src/adapters/zed/**` + 
 - Graduation: every owned id flips `story.tracked` → `story`; TRACKED-FAILING.md rows deleted; MAP.md regenerated (`pnpm exec tsx test/stories/tools/render-map.ts`); `coverage.test.ts` green. An owned id still tracked = fail.
 - No regression: `pnpm build && pnpm test && pnpm lint && pnpm typecheck` green in `packages/agent-forge`; zero previously-green tests broken; zero non-owned `story.tracked` flips. NOTE: `E5/S3.skills-native-guard.test.ts` id `amp / kilo / zed: …no shipped adapter at all` stays tracked until amp+kilo also ship (owned by `convergence-graduation`) — verify this shard alone does not flip it; if zed alone flips it, coordinate with the judge, never edit that call site.
 - Story ground: E10.S2 observable acceptance holds — compile a full IR against a zed target and inspect the emitted tree (paths, constraints, warnings).
-- Territory: production diff confined to `src/adapters/zed/**` + declared seams; graduation flips are the only test edits.
+- Owned paths: production diff confined to `src/adapters/zed/**` + declared seams; graduation flips are the only test edits.
