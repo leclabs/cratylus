@@ -3,8 +3,9 @@
 Floor: **F2** (output the agent-factory IR format to a conventional `.{namespace}/` folder across
 user · project · local — the `.claude/`-, `.agents/`-, `.cursor/`-class layouts). ρ=LLM. Two
 readings of F2 are both covered: (a) the IR's own home `.agent-forge/` as a well-formed namespace
-dir (S1, S2, S7); (b) compilation into each harness's `.{namespace}/` layout per scope (S3–S6).
-The (a)-vs-`.agents/` naming fork is `ELICIT-1` (COVERAGE tail). Fixture ground truth =
+dir (S1, S2, S7) — **`.agent-forge/` is the canonical IR home** (Operator ruling); (b)
+compilation into each harness's `.{namespace}/` layout per scope (S3–S6). `.agents/` is an
+**export surface**, never the IR home — the export story is E7.S3. Fixture ground truth =
 RETURN §2 sheets.
 
 ---
@@ -67,7 +68,10 @@ P: local-scope IR with 1 rule + 1 env var; targets = all 10.
 - claude: rule → `CLAUDE.local.md`, settings → `.claude/settings.local.json` [CC1][CC8] (the
   adapter's current "local has no rules" warning is gone).
 - Each target lacking a documented local tier produces a per-resource `skipped` entry naming
-  target + reason `no-local-tier`; no file invented. (Semantics fork = `ELICIT-2`.)
+  target + reason `no-local-tier`, a loud warning, AND an emitted Operator elicitation (the
+  report carries an `elicit` entry: target · resource · resolution question). Emulation is never
+  invented; the elicit is the resolution path — the skip cannot be suppressed without a recorded
+  resolution.
 
 ## E2.S6 · scope isolation — no cross-scope bleed
 

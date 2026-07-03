@@ -1,6 +1,8 @@
 # COVERAGE — stories × capabilities (CE over the floor)
 
-Library: 10 epics · 74 stories, shards `E1-…` – `E10-…` in this dir. ρ=LLM.
+Library: 10 epics · 78 stories, shards `E1-…` – `E10-…` in this dir. ρ=LLM. All six Operator
+ELICIT rulings are resolved and live in the amended stories (E1.S8 · E2.S5 · E4.S8 · E5.S8 ·
+E6.S3/S6/S8 · E7.S3 · E8.S10 · E10.S5) — no open intent forks remain.
 Floor capabilities (task contract, Operator-pinned): **F1** import any harness → IR · **F2**
 output IR to `.{namespace}/` across scopes · **F3** reimport (harness or own format) · **F4**
 accurate re-export / round-trip, losses loud · **F5** plugin-arch adapters (agents+skills floor;
@@ -16,48 +18,52 @@ the exemplify pipeline · OPERATOR — the polis Operator (ELICIT oracle, roster
 
 ## Floor matrix (capability → stories; CE check: no floor row empty)
 
-| Floor | Stories                                           |
-| ----- | ------------------------------------------------- |
-| F1    | E1.S1 E1.S2 E1.S3 E1.S4 E1.S5 E1.S6 E1.S7 · E7.S9 |
-| F2    | E2.S1 E2.S2 E2.S3 E2.S4 E2.S5 E2.S6 E2.S7         |
-| F3    | E3.S1 E3.S2 E3.S3 E3.S4 E3.S5 E3.S6               |
-| F4    | E4.S1 E4.S2 E4.S3 E4.S4 E4.S5 E4.S6 E4.S7 · E9.S4 |
-| F5    | E5.S1 E5.S2 E5.S3 E5.S4 E5.S5 E5.S6(FUTURE) E5.S7 |
-| F6    | E6.S1 E6.S2 E6.S3 E6.S4 E6.S5 E6.S6 E6.S7         |
+| Floor | Stories                                                                 |
+| ----- | ----------------------------------------------------------------------- |
+| F1    | E1.S1 E1.S2 E1.S3 E1.S4 E1.S5 E1.S6 E1.S7 E1.S8 · E7.S9                 |
+| F2    | E2.S1 E2.S2 E2.S3 E2.S4 E2.S5 E2.S6 E2.S7 · E7.S3                       |
+| F3    | E3.S1 E3.S2 E3.S3 E3.S4 E3.S5 E3.S6                                     |
+| F4    | E4.S1 E4.S2 E4.S3 E4.S4 E4.S5 E4.S6 E4.S7 E4.S8 · E9.S4                 |
+| F5    | E5.S1 E5.S2 E5.S3 E5.S4 E5.S5 E5.S6(FUTURE) E5.S7 E5.S8(RESEARCH-GATED) |
+| F6    | E6.S1 E6.S2 E6.S3 E6.S4 E6.S5 E6.S6 E6.S7 E6.S8                         |
 
 ## Story matrix (story → capabilities; primary bold; CE check: no story capability-less)
 
-| Story | Caps         | Story | Caps           | Story  | Caps               |
-| ----- | ------------ | ----- | -------------- | ------ | ------------------ |
-| E1.S1 | **F1**       | E4.S6 | **F4**         | E7.S10 | **R-std** R-roster |
-| E1.S2 | **F1** F4    | E4.S7 | **F4** R-std   | E8.S1  | **R-div** F2 F4    |
-| E1.S3 | **F1** R-div | E5.S1 | **F5**         | E8.S2  | **R-div** F2 F4    |
-| E1.S4 | **F1** F4    | E5.S2 | **F5**         | E8.S3  | **R-div** F2 F4    |
-| E1.S5 | **F1**       | E5.S3 | **F5** R-std   | E8.S4  | **R-div** F2 F4    |
-| E1.S6 | **F1** F2    | E5.S4 | **F5**         | E8.S5  | **R-div** F2 F4    |
-| E1.S7 | **F1** R-div | E5.S5 | **F5** R-div   | E8.S6  | **R-div** F2 F4    |
-| E2.S1 | **F2**       | E5.S6 | **F5** FUTURE  | E8.S7  | **R-div** F2 F4    |
-| E2.S2 | **F2** F3    | E5.S7 | **F5** F4      | E8.S8  | **R-div** F2 F4    |
-| E2.S3 | **F2**       | E6.S1 | **F6**         | E8.S9  | **R-div** F2 F4    |
-| E2.S4 | **F2**       | E6.S2 | **F6**         | E8.S10 | **R-div** F2       |
-| E2.S5 | **F2**       | E6.S3 | **F6**         | E9.S1  | **R-ir** F4        |
-| E2.S6 | **F2**       | E6.S4 | **F6**         | E9.S2  | **R-ir** R-std     |
-| E2.S7 | **F2**       | E6.S5 | **F6**         | E9.S3  | **R-ir** F4        |
-| E3.S1 | **F3**       | E6.S6 | **F6**         | E9.S4  | **R-ir** F4 F3     |
-| E3.S2 | **F3** F4    | E6.S7 | **F6** F4      | E9.S5  | **R-ir** FUTURE    |
-| E3.S3 | **F3**       | E7.S1 | **R-std** F2   | E9.S6  | **R-ir** F4        |
-| E3.S4 | **F3**       | E7.S2 | **R-std**      | E10.S1 | **R-roster** F1 F2 |
-| E3.S5 | **F3** F4    | E7.S3 | **R-std** F2   | E10.S2 | **R-roster** F1 F2 |
-| E3.S6 | **F3**       | E7.S4 | **R-std**      | E10.S3 | **R-roster** F1 F2 |
-| E4.S1 | **F4**       | E7.S5 | **R-std** F2   | E10.S4 | **R-roster** F1 F2 |
-| E4.S2 | **F4**       | E7.S6 | **R-std** F4   | E10.S5 | **R-roster**       |
-| E4.S3 | **F4** R-div | E7.S7 | **R-std** R-ir | E10.S6 | **R-roster** R-std |
-| E4.S4 | **F4** R-div | E7.S8 | **R-std**      | E10.S7 | **R-roster**       |
-| E4.S5 | **F4** R-div | E7.S9 | **R-std** F1   |        |                    |
+| Story | Caps         | Story  | Caps                  | Story  | Caps               |
+| ----- | ------------ | ------ | --------------------- | ------ | ------------------ |
+| E1.S1 | **F1**       | E4.S8  | **F4** F6             | E8.S1  | **R-div** F2 F4    |
+| E1.S2 | **F1** F4    | E5.S1  | **F5**                | E8.S2  | **R-div** F2 F4    |
+| E1.S3 | **F1** R-div | E5.S2  | **F5**                | E8.S3  | **R-div** F2 F4    |
+| E1.S4 | **F1** F4    | E5.S3  | **F5** R-std          | E8.S4  | **R-div** F2 F4    |
+| E1.S5 | **F1**       | E5.S4  | **F5**                | E8.S5  | **R-div** F2 F4    |
+| E1.S6 | **F1** F2    | E5.S5  | **F5** R-div          | E8.S6  | **R-div** F2 F4    |
+| E1.S7 | **F1** R-div | E5.S6  | **F5** FUTURE         | E8.S7  | **R-div** F2 F4    |
+| E1.S8 | **F1** F6    | E5.S7  | **F5** F4             | E8.S8  | **R-div** F2 F4    |
+| E2.S1 | **F2**       | E5.S8  | **F5** RESEARCH-GATED | E8.S9  | **R-div** F2 F4    |
+| E2.S2 | **F2** F3    | E6.S1  | **F6**                | E8.S10 | **R-div** F2       |
+| E2.S3 | **F2**       | E6.S2  | **F6**                | E9.S1  | **R-ir** F4        |
+| E2.S4 | **F2**       | E6.S3  | **F6** F1             | E9.S2  | **R-ir** R-std     |
+| E2.S5 | **F2**       | E6.S4  | **F6**                | E9.S3  | **R-ir** F4        |
+| E2.S6 | **F2**       | E6.S5  | **F6**                | E9.S4  | **R-ir** F4 F3     |
+| E2.S7 | **F2**       | E6.S6  | **F6** F4             | E9.S5  | **R-ir** FUTURE    |
+| E3.S1 | **F3**       | E6.S7  | **F6** F4             | E9.S6  | **R-ir** F4        |
+| E3.S2 | **F3** F4    | E6.S8  | **F6** R-std          | E10.S1 | **R-roster** F1 F2 |
+| E3.S3 | **F3**       | E7.S1  | **R-std** F2          | E10.S2 | **R-roster** F1 F2 |
+| E3.S4 | **F3**       | E7.S2  | **R-std**             | E10.S3 | **R-roster** F1 F2 |
+| E3.S5 | **F3** F4    | E7.S3  | **R-std** F2          | E10.S4 | **R-roster** F1 F2 |
+| E3.S6 | **F3**       | E7.S4  | **R-std**             | E10.S5 | **R-roster**       |
+| E4.S1 | **F4**       | E7.S5  | **R-std** F2          | E10.S6 | **R-roster** R-std |
+| E4.S2 | **F4**       | E7.S6  | **R-std** F4          | E10.S7 | **R-roster**       |
+| E4.S3 | **F4** R-div | E7.S7  | **R-std** R-ir        |        |                    |
+| E4.S4 | **F4** R-div | E7.S8  | **R-std**             |        |                    |
+| E4.S5 | **F4** R-div | E7.S9  | **R-std** F1          |        |                    |
+| E4.S6 | **F4**       | E7.S10 | **R-std** R-roster    |        |                    |
+| E4.S7 | **F4** R-std |        |                       |        |                    |
 
-FUTURE-status stories (excluded from the coverage-test wave, on the record): E5.S6 (tools +
+Excluded-by-marker from the coverage-test wave (on the record): FUTURE — E5.S6 (tools +
 MCP-delivery via plugins) · E9.S5 (Lsp, permission DSLs, plugins-as-deliverable,
-context-file-name knob, skill file-tree semantics).
+context-file-name knob, skill file-tree semantics); RESEARCH-GATED — E5.S8 (Pi demonstration
+harness; gate = `plans/interop-hardening/pending/pi-harness-research.md`).
 
 ## Research stories — count + ledger refs
 
@@ -82,20 +88,8 @@ Ledger refs cited (resolve in the two RETURNs):
 
 - CE over floor: every F1–F6 row non-empty ✓ (table above); every story carries ≥1 capability ✓.
 - Observable acceptance: every story's `✓:` bullets name fixture/command/path/exact check — a
-  blind test author derives pass/fail without asking; stories that defer a semantic fork do so
-  via a named ELICIT, not interpretation.
-- No invented answers: every intent-level unknown is an `ELICIT:` line below.
-
-## ELICIT — intent-level unknowns for the Operator (verbatim, collected tail)
-
-ELICIT: F2 names "a conventional `.{namespace}/` folder" with `.claude/`/`.agents/`/`.cursor/`-class examples — is the IR's own home to remain `.agent-forge/`, or move/alias to the vendor-neutral `.agents/` the standards research crowns? E2 stories assume `.agent-forge/` stands; an `.agents/` alias would touch E2.S1/S2/S7 and E7.S3's tree layout.
-
-ELICIT: "local" scope on harnesses with no documented local tier (most non-Claude targets) — skip loudly (E2.S5 as written) or emulate via a gitignored file convention per harness? Value-dependent: emulation invents a convention foreign users may trip over.
-
-ELICIT: F5's example plugin-arch harness "Pi" appears in neither research RETURN (nearest known referent: badlogic's `pi` minimal agent). Is Pi a required adapter target (⇒ needs its own research + E10-class story) or illustrative only? E5 is written harness-generic with verified plugin archs (Amp/opencode/Kilo/Cline/Claude/Gemini/Zed) as instances.
-
-ELICIT: F6 says optimized output goes "to any harness that supports it" — skills/agents-bearing harnesses only, or should rule-only harnesses also receive exemplify-optimized (R=LLM set-builder) AGENTS.md bodies? E6.S6 currently covers resource-bearing targets only.
-
-ELICIT: roster consolidation calls — (a) aider: implement the read:-wiring fix (E8.S10) or retire the target; (b) gemini: rename/alias the adapter id to antigravity or keep gemini as canonical id; (c) windsurf: ship as devin id from the start? E8.S10 and E10.S5 are written for the fix/alias branch.
-
-ELICIT: two Agent shapes exist (anatomy 24-organ vector vs config-IR Agent). For F6, is the anatomy vector the required optimized form for ALL imported agents fleet-wide, or only for polis-born agents while foreign agents optimize into the config-IR shape with organ-vector opt-in? E6.S3/S6 assume the vector is the optimized form and project it into config-IR for compile.
+  blind test author derives pass/fail without asking.
+- No open intent forks: all Operator rulings are baked into the stories; the only test-wave
+  exclusions are the explicit FUTURE / RESEARCH-GATED markers above. (`ELICIT` appears in the
+  shards only as the in-artifact mechanism of E2.S5/E6.S4 — a runtime marker the pipeline emits,
+  not an open question of this library.)

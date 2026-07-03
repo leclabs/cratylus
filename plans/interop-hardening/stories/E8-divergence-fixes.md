@@ -131,12 +131,12 @@ A: DEV · P: §2/Continue fixtures. Findings: §3/continue d1–d3.
   [CT2].
 - Prompts capability on: `.continue/prompts/*.md` with `invokable: true` [CT3].
 
-## E8.S10 · aider — functional conventions wiring (or roster call — ELICIT-5)
+## E8.S10 · aider — functional conventions wiring
 
-A: DEV · P: §2/aider fixture. Findings: §3/aider d1, d3.
+A: DEV · P: §2/aider fixture. Findings: §3/aider d1, d3. Operator ruling: aider stays on the
+roster with this fix.
 ✓:
 
 - Compile emits the conventions file AND a `.aider.conf.yml` containing `read: [<file>]` (merge-
   safe with an existing conf per E3.S5); a stock aider run actually loads the rules [AI1][AI2].
 - `~/AGENTS.md` user-scope write is gone. Scope chain home→git-root→cwd modeled on read [AI1].
-- If ELICIT-5 resolves to retire: this story voids and the roster change lands in E10.S5 instead.

@@ -6,7 +6,9 @@ nice-to-have: **hooks**; recorded-as-FUTURE: tools, MCP-delivery. ρ=LLM.
 Verified plugin architectures (RETURN §1/§2): opencode JS/TS plugins [OC5] · Amp Bun-TS plugins
 [AM2] · Kilo TS plugins [KL6] · Cline SDK `AgentPlugin` [CL8] · Claude plugins [CC4][CC5] ·
 Gemini extensions [GM6] · Zed WASM extensions (MCP-only delivery) [ZD7].
-The floor's example harness "Pi" is uncovered by both research RETURNs → `ELICIT-3`.
+**Pi is a real harness target and the DEMONSTRATION instance of plugin-delivered capabilities**
+(Operator ruling); its research is dispatched separately
+(`plans/interop-hardening/pending/pi-harness-research.md`) and gates E5.S8.
 
 ---
 
@@ -94,3 +96,19 @@ P: IR agent; target crush (no custom agents, no plugin API — open FR [CR4]).
 - Compile emits **no** agent artifact for crush; `.skipped` entry: {resource, target: crush,
   reason citing no-native-no-plugin}; `--strict` behavior documented (skip is a warning-class,
   configurable).
+
+## E5.S8 · Pi — the demonstration harness (RESEARCH-GATED)
+
+A: FLEET + OPERATOR · G: Pi demonstrates F5 end-to-end — a plugin-arch harness receiving the
+agents+skills floor (hooks nice-to-have) via adapter-emitted plugin artifacts.
+P: gated on `plans/interop-hardening/pending/pi-harness-research.md`; no Pi config surface is
+asserted before that RETURN lands (zero-trust: nothing in this library's evidence base covers
+Pi).
+✓:
+
+- Status `RESEARCH-GATED` — excluded-by-marker from the coverage-test wave (same mechanism as
+  FUTURE) here and in COVERAGE.md.
+- On research landing, this placeholder graduates (net-current replacement, not accretion) into:
+  (a) E10-class roster stories for a Pi adapter under the new-adapter contract; (b) concrete
+  E5.S2/E5.S4-class instances naming Pi as the demonstration target. Observable now: the marker,
+  the gate path, and the graduation contract are present verbatim.

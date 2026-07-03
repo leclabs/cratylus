@@ -30,13 +30,16 @@ P: IR rules scoped to `packages/a/` and root.
 - Same IR compiled for a replacement-semantics target and a concat-semantics target yields
   correct effective rules under both models (documented truth table asserted).
 
-## E7.S3 · Agent Skills to `.agents/skills/`, spec-strict core (R2)
+## E7.S3 · `.agents/` as an EXPORT surface — Agent Skills to `.agents/skills/`, spec-strict core (R2)
 
 A: FLEET · G: one authored skill tree reaches Codex/Cursor/Copilot/Gemini/Zed/Amp/Goose/Crush/
-opencode natively.
+opencode natively. `.agents/` is an export target only (Operator ruling): the IR home stays
+`.agent-forge/` (E2), and this story is the one explicit `.agents/`-tree emission story.
 P: IR skill with core + extension fields.
 ✓:
 
+- `.agents/` output is compile-produced export, never IR: no IR-format file (manifest, resource
+  folders) is ever written under `.agents/` (path guard assertion).
 - Compile emits `.agents/skills/<name>/SKILL.md` with ONLY spec fields in shared-core mode
   (`name`,`description`,`license`,`compatibility`,`metadata`,`allowed-tools` [S3]); `name` =
   parent dir name; `skills-ref validate` passes [S6] (the pinned conformance oracle — the spec is

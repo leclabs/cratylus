@@ -2,7 +2,7 @@
 
 Research-driven (beyond floor): RETURN-1 §3 "Adapter roster vs field" — no adapters for Amp, Zed,
 Windsurf/Devin, Kilo; Gemini→Antigravity and Windsurf→Devin renames; Roo sunset; aider a no-op in
-practice (E8.S10/ELICIT-5). New-adapter stories share the **new-adapter contract**: fixture from
+practice until E8.S10's fix. New-adapter stories share the **new-adapter contract**: fixture from
 RETURN-1 §2 sheet; import (E1.S2 discipline) + compile (E2.S3/S4) + round-trip (E4.S1) + honest
 capabilities (E4.S3); listed by `agent-forge adapters`. ρ=LLM.
 
@@ -63,10 +63,12 @@ A: OPERATOR · G: the adapter roster tracks the field's consolidation events wit
 statuses.
 ✓:
 
-- `agent-forge adapters` carries per-adapter status metadata: gemini → `renamed:
-antigravity-cli` (successor id or alias, ELICIT-5) [GM7]; a windsurf id aliases devin [WS7];
-  roo (if ever requested) → `sunset` pointing at cline [RO5]; aider → `functional-only-with-
-read-wiring` until E8.S10 lands (or `retired` per ELICIT-5).
+- Adapter ids follow the field (Operator ruling): **canonical ids `antigravity` and `devin`**;
+  `gemini` and `windsurf` are retained as ALIASES resolving to those canonical adapters —
+  `agent-forge adapters` lists the canonical id with its alias, and invoking either id yields the
+  identical adapter (same output tree, id-resolution assertion) [GM7][WS7].
+- Per-adapter status metadata: roo (if ever requested) → `sunset` pointing at cline [RO5]; aider
+  stays on the roster, functional via the E8.S10 read-wiring fix.
 - Importing a config for a sunset/renamed id succeeds with a status notice; compiling to one
   emits the successor's dialect or a documented refusal — never a stale dialect silently.
 

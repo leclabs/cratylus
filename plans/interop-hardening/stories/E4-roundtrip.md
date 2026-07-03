@@ -91,3 +91,19 @@ P: IR using only: plain rules (no activation metadata), spec-core SKILL.md field
 - `agent-forge compile` (all 10 targets) exits 0 with zero warnings and zero skips.
 - The "portable core" field set is documented and the fixture is generated from that
   documentation (doc drift breaks the test).
+
+## E4.S8 · post-optimization round-trip — the vector is the source, projected per-target
+
+A: FLEET · G: once exemplify elevates an agent to the 24-organ vector (E6.S3), every target
+output is a projection of that one source; reimport never forks a second truth.
+P: E6.S3's accepted vector; targets = all adapters with agents ≥ partial.
+✓:
+
+- Compile emits each target's agent from the vector via the pinned projection (organ-vector →
+  body + per-dialect frontmatter); post-elevation repo state holds exactly one source form per
+  agent — a coexisting config-IR agent file = FAIL (replacement semantics, Operator ruling).
+- Reimporting any emitted target lands in step-1 form (persona = emitted body, E1.S8) and
+  reconciles against the vector: `projection(vector) ≽ reimported persona` under the documented
+  equivalence check; any delta beyond the E4.S2 loss ledger = FAIL.
+- The relay discipline (E4.S6) holds with the vector as origin: losses enumerated per leg, diff
+  ⊆ reported fields.
