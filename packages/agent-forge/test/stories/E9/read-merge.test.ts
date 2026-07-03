@@ -142,7 +142,7 @@ describe('E9.S4 · read-merge on shared files', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E9.S4',
     'continue config.yaml: required top-level keys and foreign blocks survive; mcpServers is the documented LIST [CT1][CT4]',
     async () => {

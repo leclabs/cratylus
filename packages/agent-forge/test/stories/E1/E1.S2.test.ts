@@ -356,7 +356,6 @@ const SPECS: readonly AdapterSpec[] = [
   },
   {
     client: 'continue',
-    gap: '.continue/rules|prompts|mcpServers unread [CT2][CT3][CT4]',
     build: (cwd) => {
       put(
         cwd,

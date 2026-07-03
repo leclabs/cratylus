@@ -50,7 +50,7 @@ describe('E8.S9 · continue', () => {
 
   // --- MCP retarget [CT4][CT1] ---
 
-  story.tracked(
+  story(
     'E8.S9',
     'MCP emits to .continue/mcpServers/mcp.json or a valid LIST-form config.yaml [CT4][CT1]',
     async () => {
@@ -77,7 +77,7 @@ describe('E8.S9 · continue', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S9',
     'an existing user config.yaml is never map-clobbered [CT1]',
     async () => {
@@ -95,7 +95,7 @@ describe('E8.S9 · continue', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S9',
     'LIST-form config.yaml mcpServers lifts on read [CT4]',
     async () => {
@@ -131,22 +131,16 @@ describe('E8.S9 · continue', () => {
 
   // --- Rules home [CT2] ---
 
-  story.tracked(
-    'E8.S9',
-    'rules emit to .continue/rules/*.md [CT2]',
-    async () => {
-      const ir: IR = {
-        manifest: manifest(),
-        rules: [{ id: 'style', body: 'Use tabs.' }],
-      };
-      await continueAdapter.write(ir, 'project', cwd, {});
-      expect(existsSync(join(cwd, '.continue', 'rules', 'style.md'))).toBe(
-        true,
-      );
-    },
-  );
+  story('E8.S9', 'rules emit to .continue/rules/*.md [CT2]', async () => {
+    const ir: IR = {
+      manifest: manifest(),
+      rules: [{ id: 'style', body: 'Use tabs.' }],
+    };
+    await continueAdapter.write(ir, 'project', cwd, {});
+    expect(existsSync(join(cwd, '.continue', 'rules', 'style.md'))).toBe(true);
+  });
 
-  story.tracked(
+  story(
     'E8.S9',
     'the undocumented root AGENTS.md write is gone [CT2]',
     async () => {
@@ -159,7 +153,7 @@ describe('E8.S9 · continue', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S9',
     'the undocumented ~/.continue/AGENTS.md write is gone [CT2]',
     async () => {
@@ -175,7 +169,7 @@ describe('E8.S9 · continue', () => {
 
   // --- Prompts on [CT3] ---
 
-  story.tracked(
+  story(
     'E8.S9',
     'commands emit as invokable prompts .continue/prompts/*.md [CT3]',
     async () => {
@@ -202,7 +196,7 @@ describe('E8.S9 · continue', () => {
 
   // --- Fabricated-shape import (E1.S3) ---
 
-  story.tracked(
+  story(
     'E8.S9',
     'fabricated-shape import: root AGENTS.md lifts zero phantom rules (E1.S3) [CT2]',
     async () => {
