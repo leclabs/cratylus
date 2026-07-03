@@ -29,6 +29,7 @@ import { continueAdapter } from '../../src/adapters/continue/index.js';
 import { copilotAdapter } from '../../src/adapters/copilot/index.js';
 import { crushAdapter } from '../../src/adapters/crush/index.js';
 import { cursorAdapter } from '../../src/adapters/cursor/index.js';
+import { devinAdapter } from '../../src/adapters/devin/index.js';
 import { geminiAdapter } from '../../src/adapters/gemini/index.js';
 import { opencodeAdapter } from '../../src/adapters/opencode/index.js';
 import { zedAdapter } from '../../src/adapters/zed/index.js';
@@ -76,6 +77,7 @@ export const ALL_ADAPTERS: Adapter[] = [
   copilotAdapter,
   crushAdapter,
   cursorAdapter,
+  devinAdapter,
   geminiAdapter,
   opencodeAdapter,
   zedAdapter,

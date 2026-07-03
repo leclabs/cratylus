@@ -34,7 +34,7 @@ describe('E10.S3 · devin', () => {
     return home.home;
   };
 
-  story.tracked(
+  story(
     'E10.S3',
     'devin (or its windsurf alias) is on the adapter roster (new-adapter contract) [WS7]',
     () => {
@@ -44,7 +44,7 @@ describe('E10.S3 · devin', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S3',
     'rules emit to the preferred .devin/rules/*.md with trigger: 4-mode frontmatter [WS7][WS1]',
     async () => {
@@ -64,7 +64,7 @@ describe('E10.S3 · devin', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S3',
     'the 12k char/file rule cap is enforced — over-cap splits or warns [WS1]',
     async () => {
@@ -86,7 +86,7 @@ describe('E10.S3 · devin', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S3',
     'hooks emit to hooks.json in the snake_case 12-event dialect [WS2]',
     async () => {
@@ -114,7 +114,7 @@ describe('E10.S3 · devin', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S3',
     'workflows: commands emit to .windsurf/workflows/*.md [WS4]',
     async () => {
@@ -130,7 +130,7 @@ describe('E10.S3 · devin', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S3',
     'MCP emits to ~/.codeium/windsurf/mcp_config.json [WS5]',
     async () => {

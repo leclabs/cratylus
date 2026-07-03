@@ -124,6 +124,18 @@ const GROUND_TRUTH: Record<string, Row> = {
     permissions: t('[CU9] .cursor/cli.json permissions'),
     env: f('[CU5] per-server MCP env only; no global env surface'),
   },
+  devin: {
+    rules: t('[WS1][WS6]'),
+    skills: t('[WS3]'),
+    commands: t('[WS4] workflows .windsurf/workflows/*.md'),
+    agents: f(
+      '[WS7] Devin Local subagents announcement-level; file config unverified',
+    ),
+    hooks: t('[WS2]'),
+    mcp: t('[WS5]'),
+    permissions: f('[WS5] no native permission surface; MCP 100-tool cap only'),
+    env: f('[WS5] ${env:VAR} substitution inside mcp_config only'),
+  },
   gemini: {
     rules: t('[GM1]'),
     skills: t('[GM3]'),

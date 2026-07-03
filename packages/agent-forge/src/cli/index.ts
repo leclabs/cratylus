@@ -7,6 +7,7 @@ import { continueAdapter } from '../adapters/continue/index.js';
 import { copilotAdapter } from '../adapters/copilot/index.js';
 import { crushAdapter } from '../adapters/crush/index.js';
 import { cursorAdapter } from '../adapters/cursor/index.js';
+import { devinAdapter } from '../adapters/devin/index.js';
 import { geminiAdapter } from '../adapters/gemini/index.js';
 import { opencodeAdapter } from '../adapters/opencode/index.js';
 import { zedAdapter } from '../adapters/zed/index.js';
@@ -48,6 +49,7 @@ const adapters: Adapter[] = [
   aiderAdapter,
   continueAdapter,
   zedAdapter,
+  devinAdapter,
 ];
 
 // Adapter-load lint: an invalid declaration (e.g. a resource declared
