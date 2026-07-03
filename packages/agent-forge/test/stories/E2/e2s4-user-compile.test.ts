@@ -100,7 +100,7 @@ describe('E2.S4 · user-scope compile lands in each documented user home', () =>
     },
   );
 
-  story.tracked(
+  story(
     'E2.S4',
     'aider user scope emits ~/.aider.conf.yml — a bare ~/AGENTS.md is inert [AI1][AI2]',
     () => {

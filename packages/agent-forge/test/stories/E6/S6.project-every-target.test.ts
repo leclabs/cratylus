@@ -105,7 +105,7 @@ story(
   },
 );
 
-story.tracked(
+story(
   'E6.S6',
   'aider: emitted rules are wired for reading via .aider.conf.yml read: — aider has no auto-discovery [AI2]',
   async () => {

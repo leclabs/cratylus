@@ -49,7 +49,7 @@ describe('E8.S10 · aider', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S10',
     'compile also emits .aider.conf.yml wiring the conventions file via read: [AI1][AI2]',
     async () => {
@@ -68,7 +68,7 @@ describe('E8.S10 · aider', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S10',
     '.aider.conf.yml wiring is merge-safe with an existing conf (E3.S5) [AI1]',
     async () => {
@@ -81,7 +81,7 @@ describe('E8.S10 · aider', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S10',
     'the fabricated ~/AGENTS.md user-scope write is gone [AI1]',
     async () => {
@@ -96,7 +96,7 @@ describe('E8.S10 · aider', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S10',
     'read models the conf chain: read:-wired conventions files lift [AI1]',
     async () => {

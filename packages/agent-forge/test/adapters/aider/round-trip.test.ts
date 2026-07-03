@@ -29,14 +29,20 @@ describe('aiderAdapter', () => {
     expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
   });
 
-  it('round-trips rules', async () => {
+  it('round-trips rule bodies through the read: conf chain (aider-adapter-truth)', async () => {
+    // Post-fix: write also wires .aider.conf.yml `read:` at the conventions
+    // file, and read() follows that chain rather than a fixed bare path — so
+    // the rule id read back is derived from the wired file's stem
+    // ('AGENTS'), not the original synthetic id ('main'). Body content is the
+    // round-trip invariant that still holds [AI1][AI2].
     const ir: IR = {
       manifest: manifest(),
       rules: [{ id: 'main', body: 'Be terse.' }],
     };
     await aiderAdapter.write(ir, 'project', cwd, {});
     const re = await aiderAdapter.read('project', cwd);
-    expect(re.rules).toEqual(ir.rules);
+    expect(re.rules?.map((r) => r.body)).toEqual(ir.rules?.map((r) => r.body));
+    expect(re.rules).toEqual([{ id: 'AGENTS', body: 'Be terse.' }]);
   });
 
   it('warns about every other resource type (Aider supports nothing else)', async () => {

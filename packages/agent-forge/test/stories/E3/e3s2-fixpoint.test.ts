@@ -121,6 +121,19 @@ const stripHookIds = (hooks: Hook[] | undefined) =>
 /** Adapters whose reimport regenerates hook ids (fmt → posttooluse-0 etc.). */
 const HOOK_ID_REGENERATORS = new Set(['claude', 'cursor', 'gemini']);
 
+type RuleLike = { id: string; [k: string]: unknown };
+const stripRuleIds = (rules: RuleLike[] | undefined) =>
+  rules?.map(({ id: _id, ...rest }) => rest);
+
+/**
+ * Adapters whose reimport regenerates rule ids. aider concatenates every IR
+ * rule into ONE conventions file with no frontmatter/id slot (aider would
+ * otherwise see the bookkeeping as prompt content) — read() derives a
+ * synthetic id from the wired filename's stem (aider-adapter-truth), so the
+ * original id is not the round-trip invariant; body content is.
+ */
+const RULE_ID_REGENERATORS = new Set(['aider']);
+
 describe('E3.S2 · harness reimport after compile is a fixpoint', () => {
   for (const adapter of ALL_ADAPTERS) {
     const keys = fullKeys(adapter);
@@ -179,7 +192,14 @@ describe('E3.S2 · harness reimport after compile is a fixpoint', () => {
             const first = fixtureFor(adapter);
             const second = await cycleOnce(adapter, first, cleanup);
             for (const key of keys) {
-              expect(second[key], key).toEqual(first[key]);
+              if (key === 'rules' && RULE_ID_REGENERATORS.has(adapter.id)) {
+                expect(
+                  stripRuleIds(second.rules as RuleLike[] | undefined),
+                  key,
+                ).toEqual(stripRuleIds(first.rules as RuleLike[] | undefined));
+              } else {
+                expect(second[key], key).toEqual(first[key]);
+              }
             }
           } finally {
             for (const d of cleanup)

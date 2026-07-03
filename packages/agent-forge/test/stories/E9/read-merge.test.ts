@@ -166,7 +166,7 @@ describe('E9.S4 · read-merge on shared files', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E9.S4',
     '.aider.conf.yml: conventions wired via a merged read: entry, foreign keys preserved [AI1][AI2]',
     async () => {

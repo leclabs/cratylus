@@ -352,8 +352,12 @@ const SPECS: readonly AdapterSpec[] = [
     classes: ['rules', 'skills', 'mcp_servers', 'hooks', 'permissions'],
   },
   {
+    // Graduated by aider-adapter-truth (wave 5): read() now models the
+    // .aider.conf.yml read: chain — this fixture's wired CONVENTIONS.md
+    // lifts. Beyond that shard's owned 7 ids, but the SAME fix entails it;
+    // left `story.tracked` here it.fails would error (a passing assertion
+    // inside it.fails), so it must flip alongside the owned set.
     client: 'aider',
-    gap: 'conventions wired via read: are not lifted; no auto-discovery exists [AI2]',
     build: (cwd) => {
       put(cwd, '.aider.conf.yml', 'read: [CONVENTIONS.md]\n'); // [AI1]
       put(cwd, 'CONVENTIONS.md', '# Conventions\n\nAIDER-CONVENTIONS-MARKER\n'); // [AI2]

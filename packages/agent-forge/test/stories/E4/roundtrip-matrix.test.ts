@@ -102,8 +102,18 @@ async function roundTrip(adapterId: string, type: ResourceType): Promise<void> {
   const back = await adapter.read('project', cwd);
 
   const key = IR_KEY[type];
-  expect(comparable(back[key], type)).toEqual(
-    comparable((FIXTURES[type] as Record<string, unknown>)[key], type),
+  // aider concatenates every IR rule into one conventions file with no
+  // frontmatter/id slot (aider-adapter-truth); read() derives a synthetic id
+  // from the wired filename's stem, so 'id' is not part of the round-trip
+  // invariant for this one pair — same class as the documented hooks/id
+  // exclusion in EXCLUDED_FIELDS, scoped here to aider since every OTHER
+  // rules-'full' adapter does preserve id (via its own filename).
+  const stripId = (v: unknown): unknown =>
+    adapterId === 'aider' && type === 'rules' && Array.isArray(v)
+      ? v.map(({ id: _id, ...rest }) => rest)
+      : v;
+  expect(stripId(comparable(back[key], type))).toEqual(
+    stripId(comparable((FIXTURES[type] as Record<string, unknown>)[key], type)),
   );
 }
 
