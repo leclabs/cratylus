@@ -5,15 +5,20 @@
  * sheets): per adapter × resource type, whether the harness has a documented
  * config surface — 'present' — or none — 'absent' — with the citation ref.
  *
- * The story's honesty property is two implications:
- *   (1) declared 'none'   ⇒ ground-truth absent
- *   (2) ground-truth present ⇒ declared 'full' | 'partial'
+ * The story's honesty property is two-sided (amended 2026-07 from empirical
+ * test evidence):
+ *   under-claim leg — (1) declared 'none' ⇒ ground-truth absent;
+ *                     (2) ground-truth present ⇒ declared 'full' | 'partial';
+ *   over-claim leg  — declared 'full' | 'partial' ⇒ ground-truth present
+ *                     (a declaration must be BACKED by a documented surface;
+ *                     the empirical case this leg exists for: opencode
+ *                     env: full against no surface [OC1], §3/opencode d4).
  *
- * STALE_CELLS is the set of cells violating the property today (§3 stale
- * nones); they are asserted fixed in the tracked story. The green story
- * asserts the property on every other cell, so it bites both ways: fixing a
- * stale cell breaks the tracked test (graduation forced) and regressing an
- * honest cell breaks the green test.
+ * STALE_CELLS (under-claims) and OVER_CLAIM_CELLS are the sets violating the
+ * property today; each is asserted fixed in its tracked story. The green
+ * stories assert the property on every other cell, so the suite bites both
+ * ways: fixing a cell breaks its tracked test (graduation forced) and
+ * regressing an honest cell breaks a green test.
  *
  * Judgment calls (annotated, presence = *configurable surface* an adapter
  * could target):
@@ -156,6 +161,14 @@ const STALE_CELLS: readonly (readonly [string, ResourceType, string])[] = [
   ['crush', 'permissions', '[CR1]'],
 ] as const;
 
+/** Cells declared full|partial today with NO documented surface (over-claims). */
+const OVER_CLAIM_CELLS: readonly (readonly [string, ResourceType, string])[] = [
+  ['cline', 'permissions', '[CL2] no permission config file'],
+  ['cline', 'env', '[CL1] no env surface documented'],
+  ['crush', 'env', '[CR1] $VAR expansion only'],
+  ['opencode', 'env', '[OC1] {env:VAR} substitution only — §3/opencode d4'],
+] as const;
+
 const RESOURCE_TYPES = Object.keys(GROUND_TRUTH.claude) as ResourceType[];
 
 function violations(
@@ -168,14 +181,32 @@ function violations(
     const declared: Support = adapter.capabilities.resources[type];
     const truth = GROUND_TRUTH[adapterId]?.[type];
     if (!truth) throw new Error(`no ground truth for ${adapterId}/${type}`);
-    // The two story implications (declared none ⇒ absent; present ⇒ declared
-    // full|partial) are equivalent over Support: both fail exactly when a
-    // documented-present surface is declared 'none'. (Over-claiming — 'full'
-    // on an absent surface, e.g. opencode env — is NOT policed by this story;
-    // fidelity of non-none declarations is E4.S1's job.)
+    // Under-claim leg: the two implications (declared none ⇒ absent; present
+    // ⇒ declared full|partial) are equivalent over Support — both fail
+    // exactly when a documented-present surface is declared 'none'.
     if (declared === 'none' && truth.present) {
       out.push(
         `${adapterId}/${type}: declared none but documented present ${truth.ref}`,
+      );
+    }
+  }
+  return out;
+}
+
+/** Over-claim leg: declared full|partial must be backed by a documented surface. */
+function overClaims(
+  cells: Iterable<readonly [string, ResourceType]>,
+): string[] {
+  const out: string[] = [];
+  for (const [adapterId, type] of cells) {
+    const adapter = adapterById.get(adapterId);
+    if (!adapter) throw new Error(`unknown adapter '${adapterId}'`);
+    const declared: Support = adapter.capabilities.resources[type];
+    const truth = GROUND_TRUTH[adapterId]?.[type];
+    if (!truth) throw new Error(`no ground truth for ${adapterId}/${type}`);
+    if (declared !== 'none' && !truth.present) {
+      out.push(
+        `${adapterId}/${type}: declared ${declared} but no documented surface ${truth.ref}`,
       );
     }
   }
@@ -214,6 +245,32 @@ describe('E4.S3 · capability declarations vs documented reality', () => {
       expect(violations(STALE_CELLS.map(([a, r]) => [a, r] as const))).toEqual(
         [],
       );
+    },
+  );
+
+  story(
+    'E4.S3',
+    'over-claim leg holds on every non-listed cell: full|partial always backed by a documented surface (bites on a new unbacked claim)',
+    () => {
+      const listed = new Set(OVER_CLAIM_CELLS.map(([a, r]) => `${a}/${r}`));
+      const cells: (readonly [string, ResourceType])[] = [];
+      for (const adapterId of Object.keys(GROUND_TRUTH)) {
+        for (const type of RESOURCE_TYPES) {
+          if (!listed.has(`${adapterId}/${type}`))
+            cells.push([adapterId, type]);
+        }
+      }
+      expect(overClaims(cells)).toEqual([]);
+    },
+  );
+
+  story.tracked(
+    'E4.S3',
+    'over-claim cells retired: cline permissions+env, crush env, opencode env no longer claim undocumented surfaces [OC1][CL1][CL2][CR1]',
+    () => {
+      expect(
+        overClaims(OVER_CLAIM_CELLS.map(([a, r]) => [a, r] as const)),
+      ).toEqual([]);
     },
   );
 });

@@ -345,4 +345,41 @@ describe('E4.S4 · event taxonomy', () => {
       },
     );
   }
+
+  // ── injectivity (acceptance amended 2026-07): per adapter, the
+  // canonical→native map restricted to supported events must be INJECTIVE so
+  // native→canonical is its exact inverse — two canonical events sharing one
+  // native name make reimport unable to disambiguate. ──
+  function collisions(adapterId: string): string[] {
+    const map = requireAdapter(adapterId).eventMap ?? {};
+    const byNative = new Map<string, string>();
+    const out: string[] = [];
+    for (const [canonical, native] of Object.entries(map)) {
+      if (native == null) continue;
+      const prior = byNative.get(native);
+      if (prior) out.push(`${adapterId}: ${prior} + ${canonical} → ${native}`);
+      else byNative.set(native, canonical);
+    }
+    return out;
+  }
+
+  for (const adapter of ALL_ADAPTERS.filter(
+    (a) => a.id !== 'opencode' && a.eventMap,
+  )) {
+    story(
+      'E4.S4',
+      `${adapter.id}: canonical→native is injective (native→canonical is its exact inverse)`,
+      () => {
+        expect(collisions(adapter.id)).toEqual([]);
+      },
+    );
+  }
+
+  story.tracked(
+    'E4.S4',
+    'opencode: eventMap injective — agent.idle and turn.end must not collide on session.idle',
+    () => {
+      expect(collisions('opencode')).toEqual([]);
+    },
+  );
 });

@@ -1,7 +1,8 @@
 /**
  * Canonical story registry for the interop-hardening story library.
  * Source of truth: plans/interop-hardening/stories/ (COVERAGE.md + E*.md).
- * 78 stories, 10 epics; 3 excluded-by-marker from this coverage-test wave.
+ * 81 stories, 10 epics; 3 excluded-by-marker from this coverage-test wave.
+ * (Pi graduated 2026-07: E5.S8 live, E10.S8–S10 added, E10.S10 FUTURE.)
  */
 
 export type Exclusion = 'FUTURE' | 'RESEARCH-GATED';
@@ -29,7 +30,7 @@ const COUNTS: Record<string, number> = {
   E7: 10,
   E8: 10,
   E9: 6,
-  E10: 7,
+  E10: 10,
 };
 
 export const STORY_IDS: readonly string[] = Object.entries(COUNTS).flatMap(
@@ -39,8 +40,8 @@ export const STORY_IDS: readonly string[] = Object.entries(COUNTS).flatMap(
 /** Excluded-by-marker (COVERAGE.md, on the record): no test may reference these. */
 export const EXCLUDED: Record<string, Exclusion> = {
   'E5.S6': 'FUTURE',
-  'E5.S8': 'RESEARCH-GATED',
   'E9.S5': 'FUTURE',
+  'E10.S10': 'FUTURE',
 };
 
 export const TESTABLE_IDS: readonly string[] = STORY_IDS.filter(

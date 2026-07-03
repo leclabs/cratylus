@@ -177,4 +177,28 @@ describe('E4.S1 · declared-full round-trip matrix', () => {
       }
     },
   );
+
+  story(
+    'E4.S1',
+    'fixture law (amended 2026-07): the shared mcp fixture exercises remote `headers` — read-side drops count as failures on every remote-capable adapter',
+    () => {
+      // The matrix runs ONE fixture set against every declared-full mcp pair
+      // (completeness asserted above), so this single guard makes `headers` a
+      // mandatory exercised field for all remote-MCP-capable adapters; the
+      // empirically-surfaced class is the silent read-side drop
+      // [CX7][GM1][CL6][CU5].
+      const servers = (
+        FIXTURES.mcp as { mcp_servers: Record<string, unknown>[] }
+      ).mcp_servers;
+      const remote = servers.filter((s) => s.transport !== 'stdio');
+      expect(remote.length).toBeGreaterThan(0);
+      for (const s of remote) {
+        const headers = s.headers as Record<string, unknown> | undefined;
+        expect(
+          headers && Object.keys(headers).length > 0,
+          `remote fixture '${String(s.name)}' must carry headers`,
+        ).toBeTruthy();
+      }
+    },
+  );
 });

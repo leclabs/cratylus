@@ -119,6 +119,13 @@ describe('E8.S9 · continue', () => {
       // The block's own name field must survive the lift (today the LIST is
       // treated as a map and the server surfaces under the phantom name '0').
       expect((re.mcp_servers ?? [])[0]?.name).toBe('github');
+      // Amended acceptance [CT4]: servers are keyed by the block's `name`,
+      // never by array index — an id that is a bare integer string = FAIL.
+      for (const s of re.mcp_servers ?? []) {
+        expect(s.name, `phantom index-keyed server id '${s.name}'`).not.toMatch(
+          /^\d+$/,
+        );
+      }
     },
   );
 
