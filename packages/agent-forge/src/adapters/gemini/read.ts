@@ -113,10 +113,16 @@ function parseMcp(servers: Record<string, McpEntry>): McpServer[] {
   const out: McpServer[] = [];
   for (const [name, s] of Object.entries(servers)) {
     if (s.httpUrl) {
-      out.push({ name, transport: 'http', url: s.httpUrl } as McpServer);
+      const server = { name, transport: 'http', url: s.httpUrl } as McpServer;
+      if (s.headers)
+        (server as { headers?: Record<string, string> }).headers = s.headers;
+      out.push(server);
     } else if (s.url) {
       // `url` is SSE-only in the documented dialect [GM1][S11].
-      out.push({ name, transport: 'sse', url: s.url } as McpServer);
+      const server = { name, transport: 'sse', url: s.url } as McpServer;
+      if (s.headers)
+        (server as { headers?: Record<string, string> }).headers = s.headers;
+      out.push(server);
     } else if (s.command) {
       const server = {
         name,

@@ -168,6 +168,31 @@ async function readImpl(scope: Scope, cwd: string): Promise<Partial<IR>> {
     if (out.length) ir.mcp_servers = out;
   }
 
+  // Hooks live under `hooks.PreToolUse` of the same config home — the only
+  // documented event [CR3].
+  const hooksRaw = config?.hooks as
+    | { PreToolUse?: CrushHookEntry[] }
+    | undefined;
+  if (hooksRaw?.PreToolUse?.length) {
+    const hooks: Hook[] = hooksRaw.PreToolUse.map((h) => {
+      const hook: Hook = { events: ['tool.use.pre'], command: h.command };
+      if (h.name) hook.id = h.name;
+      if (h.matcher) hook.matcher = h.matcher;
+      if (h.timeout !== undefined) hook.timeout = h.timeout;
+      return hook;
+    });
+    ir.hooks = hooks;
+  }
+
+  // Permissions: `permissions.allowed_tools` is the only documented list
+  // [CR1] — deny/ask have no crush.json surface, so they never round-trip.
+  const permsRaw = config?.permissions as
+    | { allowed_tools?: string[] }
+    | undefined;
+  if (permsRaw?.allowed_tools?.length) {
+    ir.permissions = { allow: permsRaw.allowed_tools };
+  }
+
   return ir;
 }
 

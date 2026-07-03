@@ -131,9 +131,15 @@ function parseMcp(servers: Record<string, McpEntry>): McpServer[] {
       if (s.bearer_token_env_var)
         (server as { bearer_token_env_var?: string }).bearer_token_env_var =
           s.bearer_token_env_var;
-      if (s.http_headers)
+      if (s.http_headers) {
+        // Preserve the codex-native spelling AND lift into the portable
+        // `headers` field so a generic-authored IR round-trips (E4.S1) —
+        // codex's dialect has no separate `headers` key of its own [CX7].
         (server as { http_headers?: Record<string, string> }).http_headers =
           s.http_headers;
+        (server as { headers?: Record<string, string> }).headers =
+          s.http_headers;
+      }
       out.push(server);
     } else if (s.command) {
       const server = {

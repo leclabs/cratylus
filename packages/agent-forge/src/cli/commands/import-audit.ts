@@ -15,9 +15,10 @@
  */
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 
-import type { IR } from '../../core/index.js';
+import type { IR, Scope } from '../../core/index.js';
 import { parseFrontmatter } from '../../core/index.js';
 
 export interface UnrepresentableField {
@@ -28,6 +29,8 @@ export interface UnrepresentableField {
 export interface ImportAudit {
   unrepresentable: UnrepresentableField[];
   unliftedSurfaces: string[];
+  /** Documented-fabricated paths present on disk but never consulted (E1.S3). */
+  fabricated: string[];
 }
 
 /** camelCase → snake_case (IR field spelling). */
@@ -220,17 +223,63 @@ function auditUnlifted(
   return out;
 }
 
+// ─── fabricated (never-documented) legacy paths ────────────────────────────
+
+interface FabricatedCandidate {
+  scope: Scope;
+  /** Relative to sourceDir (project scope) or homedir() (user scope). */
+  rel: string;
+  ref: string;
+}
+
+/**
+ * Per-client documented-fabricated paths (E1 §3): a legacy/never-real path a
+ * hand-authored or older-agent-forge tree may still carry, that no
+ * documented client behavior ever consults. Read never lifts these (each
+ * adapter's own read() already excludes them); this table only NAMES their
+ * presence in the import report so the loss is loud, never silent (E1.S3).
+ */
+const FABRICATED_PATHS: Record<string, FabricatedCandidate[]> = {
+  opencode: [{ scope: 'project', rel: '.opencode/mcp.json', ref: '[OC7]' }],
+  cline: [
+    { scope: 'project', rel: '.cline/hooks.json', ref: '[CL2]' },
+    { scope: 'user', rel: '.cline/rules', ref: '[CL1]' },
+  ],
+  copilot: [
+    { scope: 'user', rel: '.config/github-copilot', ref: '[CP8]' },
+    { scope: 'project', rel: '.copilot/skills', ref: '[CP2]' },
+  ],
+  crush: [{ scope: 'project', rel: '.crush/mcp.json', ref: '[CR1]' }],
+  cursor: [{ scope: 'user', rel: '.cursor/AGENTS.md', ref: '[CU1]' }],
+};
+
+function auditFabricated(
+  client: string,
+  scope: Scope,
+  sourceDir: string,
+): string[] {
+  const out: string[] = [];
+  for (const c of FABRICATED_PATHS[client] ?? []) {
+    if (c.scope !== scope) continue;
+    const base = scope === 'user' ? homedir() : sourceDir;
+    if (existsSync(join(base, c.rel))) out.push(`${c.rel} ${c.ref}`);
+  }
+  return out;
+}
+
 /**
  * Audit one import: which documented source content did the lift leave
  * behind? Pure read-only over the source tree + the lifted IR.
  */
 export function auditImport(
   client: string,
+  scope: Scope,
   sourceDir: string,
   ir: Partial<IR>,
 ): ImportAudit {
   return {
     unrepresentable: auditUnrepresentable(client, sourceDir, ir),
     unliftedSurfaces: auditUnlifted(client, sourceDir, ir),
+    fabricated: auditFabricated(client, scope, sourceDir),
   };
 }

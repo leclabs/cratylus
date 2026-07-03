@@ -25,6 +25,7 @@ const DOCUMENTED_PROJECT_FILES: ReadonlySet<string> = new Set([
   'CLAUDE.local.md', // claude local rules file [CC1]
   '.mcp.json', // claude project MCP [CC7]
   'AGENTS.md', // codex [CX3] · cursor [CU1] · copilot [CP3] · opencode [OC3] · crush context_paths [CR2]
+  'GEMINI.md', // gemini default context file [GM1]
   '.codex/config.toml', // codex trusted-project config [CX6]
   '.codex/hooks.json', // codex hooks file [CX4]
   'opencode.json', // opencode project config (MCP lives here) [OC1][OC7]
@@ -35,12 +36,13 @@ const DOCUMENTED_PROJECT_FILES: ReadonlySet<string> = new Set([
   '.vscode/mcp.json', // copilot VS Code MCP [CP6]
   '.aider.conf.yml', // aider config chain [AI1]
   'CONVENTIONS.md', // aider conventions file (wired via read:) [AI2]
+  '.zed/settings.json', // zed context_servers (mcp) [ZD3]
 ]);
 
 const DOCUMENTED_PROJECT_PREFIXES: readonly string[] = [
   '.claude/', // claude settings/commands/agents/skills/rules [CC1][CC2][CC3][CC8]; also read by copilot skills [CP2]
   '.codex/agents/', // codex subagent TOMLs [CX1]
-  '.agents/skills/', // Agent Skills shared dir (codex [CX2], copilot [CP2], opencode [OC6], crush [CR1], cursor [CU4])
+  '.agents/skills/', // Agent Skills shared dir (codex [CX2], copilot [CP2], opencode [OC6], crush [CR1], cursor [CU4], pi [PI5])
   '.cursor/', // cursor rules/skills/hooks.json/mcp.json/commands/agents/cli.json [CU1][CU2][CU3][CU4][CU5][CU6][CU9]
   '.github/', // copilot instructions/agents/skills/prompts/hooks [CP1][CP2][CP3][CP4][CP5]
   '.gemini/', // gemini settings.json/agents/skills/commands [GM1][GM2][GM3][GM5]
@@ -54,6 +56,11 @@ const DOCUMENTED_PROJECT_PREFIXES: readonly string[] = [
   '.continue/rules/', // continue rules [CT2]
   '.continue/prompts/', // continue prompts [CT3]
   '.continue/mcpServers/', // continue MCP blocks + foreign mcp.json [CT4]
+  '.amp/', // amp settings.json + plugins (agents/commands/hooks) [AM1][AM2][AM9]
+  '.devin/rules/', // devin project rules [WS1]
+  '.windsurf/', // devin/windsurf workflows+skills+hooks.json [WS2][WS3][WS4]
+  '.kilo/', // kilo config home: rules/commands/skills/agents/plugins/kilo.jsonc [KL1]-[KL7]
+  '.pi/', // pi agents/extensions/prompts/package.json [PI6][PI7][PI9]
 ];
 // Deliberately ABSENT (fabricated per §2/§3): .opencode/mcp.json [OC7],
 // .opencode/permissions.json [OC8], .opencode/env.json [OC1], .crush/mcp.json [CR1],
@@ -116,16 +123,17 @@ describe('E2.S3 · project-scope compile lands in each documented namespace', ()
     },
   );
 
-  story.tracked(
+  story(
     'E2.S3',
     'touched-path set ⊆ union of documented per-adapter project surfaces (no fabricated paths)',
     () => {
-      // Fails today on §3 fabrications: .codex/skills/ [CX2], .copilot/ [CP2],
-      // .crush/mcp.json [CR1], .continue/config.yaml [CT1]. (opencode's
-      // .opencode/mcp.json fabrication graduated with the opencode-adapter-
-      // truth fix [OC7]; cline's .cline/mcp.json fabrication graduated with
-      // the cline-adapter-truth fix — project-scope MCP is now skip+warn,
-      // never written [CL6].)
+      // The four §3 fabrications this row once tracked (.codex/skills/ [CX2],
+      // .copilot/ [CP2], .crush/mcp.json [CR1], .continue/config.yaml [CT1])
+      // were already retired by their respective adapter-truth shards; the
+      // remaining strays convergence-graduation found were an allowlist gap,
+      // not a write-side bug — GEMINI.md, .zed/settings.json, and the
+      // amp/devin+windsurf/kilo/pi project namespaces (wave-5/6 new roster
+      // entries) were never added to the documented-surface union above.
       const strays = touched.filter((rel) => !isDocumented(rel));
       expect(strays).toEqual([]);
     },

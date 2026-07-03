@@ -42,6 +42,9 @@ interface ContinuePaths {
   promptsDir: string;
   configFile: string;
   mcpJsonFile: string;
+  /** `cn` CLI persistence: `~/.continue/permissions.yaml` — user scope only,
+   * no documented project-scope permissions surface [CT6]. */
+  permissionsFile: string;
 }
 
 function paths(scope: Scope, cwd: string): ContinuePaths {
@@ -53,7 +56,16 @@ function paths(scope: Scope, cwd: string): ContinuePaths {
     promptsDir: join(root, 'prompts'),
     configFile: join(root, 'config.yaml'),
     mcpJsonFile: join(root, 'mcpServers', 'mcp.json'),
+    permissionsFile: join(root, 'permissions.yaml'),
   };
+}
+
+/** `~/.continue/permissions.yaml` shape, mirroring the `cn` CLI's own flag
+ * names (`--allow`/`--ask`/`--exclude`) [CT6]. */
+interface PermissionsFile {
+  allow?: string[];
+  ask?: string[];
+  exclude?: string[];
 }
 
 /** One `mcpServers` LIST block ([CT4]) or map entry (mcp.json auto-detect). */
@@ -75,7 +87,9 @@ const capabilities: AdapterCapabilities = {
     agents: 'none',
     hooks: 'none',
     mcp: 'partial',
-    permissions: 'none',
+    // `cn` CLI persists ~/.continue/permissions.yaml [CT6] — user scope
+    // only, no documented project-scope surface.
+    permissions: 'partial',
     env: 'none',
   },
   hooks: { supported: [], matchers: 'none', payload: 'native' },
@@ -170,6 +184,17 @@ async function readImpl(scope: Scope, cwd: string): Promise<Partial<IR>> {
     liftServers(parsed.mcpServers, servers);
   }
   if (servers.size) ir.mcp_servers = [...servers.values()];
+
+  // permissions.yaml — user scope only [CT6]; no documented project surface.
+  if (scope === 'user' && existsSync(p.permissionsFile)) {
+    const parsed = (load(await readFile(p.permissionsFile, 'utf8')) ??
+      {}) as PermissionsFile;
+    const permissions: NonNullable<IR['permissions']> = {};
+    if (parsed.allow?.length) permissions.allow = parsed.allow;
+    if (parsed.exclude?.length) permissions.deny = parsed.exclude;
+    if (parsed.ask?.length) permissions.ask = parsed.ask;
+    if (Object.keys(permissions).length) ir.permissions = permissions;
+  }
 
   return ir;
 }
@@ -312,6 +337,35 @@ async function writeImpl(
         );
       }
       written.push(p.mcpJsonFile);
+    }
+  }
+
+  if (ir.permissions) {
+    if (scope === 'user') {
+      const file: PermissionsFile = {};
+      if (ir.permissions.allow?.length) file.allow = ir.permissions.allow;
+      if (ir.permissions.deny?.length) file.exclude = ir.permissions.deny;
+      if (ir.permissions.ask?.length) file.ask = ir.permissions.ask;
+      if (!opts.dryRun) {
+        await mkdir(dirname(p.permissionsFile), { recursive: true });
+        await writeFile(
+          p.permissionsFile,
+          dump(file, { lineWidth: 100, noRefs: true }),
+          'utf8',
+        );
+      }
+      written.push(p.permissionsFile);
+    } else {
+      // No documented project-scope permissions surface — the `cn` CLI
+      // persists only ~/.continue/permissions.yaml [CT6].
+      warnings.push(
+        'permissions: no documented Continue project-scope permissions surface — the cn CLI persists only ~/.continue/permissions.yaml [CT6]',
+      );
+      skipped.push({
+        path: 'permissions',
+        reason:
+          'no documented Continue project-scope permissions surface [CT6]',
+      });
     }
   }
 

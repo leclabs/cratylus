@@ -307,9 +307,12 @@ describe('E4.S3 · capability declarations vs documented reality', () => {
   );
 
   // opencode agents+commands graduated with opencode-adapter-truth; cline
-  // skills+workflows graduated with cline-adapter-truth — both dropped from
-  // the enumeration below; the remaining cells still violate.
-  story.tracked(
+  // skills+workflows graduated with cline-adapter-truth; the remaining six
+  // (cursor/copilot/continue/gemini commands, crush hooks+permissions)
+  // graduated with their own per-adapter shards' cell fixes; continue
+  // permissions graduated last, with convergence-graduation's
+  // ~/.continue/permissions.yaml read/write (2026-07).
+  story(
     'E4.S3',
     'stale cells: cursor/copilot/continue/gemini commands, continue permissions, crush hooks+permissions declared honestly',
     () => {

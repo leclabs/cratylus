@@ -112,7 +112,7 @@ export async function runImport(
   }
 
   // Name what the lift left behind: unrepresentable fields + unlifted files.
-  const audit = auditImport(opts.client, sourceDir, incoming);
+  const audit = auditImport(opts.client, scope, sourceDir, incoming);
   for (const u of audit.unrepresentable) {
     console.log(
       pc.yellow(
@@ -127,6 +127,16 @@ export async function runImport(
       ),
     );
     for (const path of audit.unliftedSurfaces) {
+      console.log(`    ${pc.yellow('•')} ${path}`);
+    }
+  }
+  if (audit.fabricated.length > 0) {
+    console.log(
+      pc.yellow(
+        `⚠ fabricated-path: ${audit.fabricated.length} unrecognized legacy path(s) present, never read:`,
+      ),
+    );
+    for (const path of audit.fabricated) {
       console.log(`    ${pc.yellow('•')} ${path}`);
     }
   }

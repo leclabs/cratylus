@@ -39,7 +39,8 @@ const capabilities: AdapterCapabilities = {
       'permission.request',
     ],
     matchers: 'regex',
-    payload: 'claude-json',
+    // Gemini's own hook envelope, not Claude's JSON shape [GM4] (E9.S3).
+    payload: 'native',
   },
   scopes: ['user', 'project'],
 };

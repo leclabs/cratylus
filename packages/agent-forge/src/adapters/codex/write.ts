@@ -230,7 +230,11 @@ function serializeMcp(
       const entry: Record<string, unknown> = { url: s.url };
       if (s.bearer_token_env_var)
         entry.bearer_token_env_var = s.bearer_token_env_var;
-      if (s.http_headers) entry.http_headers = s.http_headers;
+      // Codex's own field name is http_headers — no generic `headers` key
+      // exists in the dialect [CX7]; a codex-specific http_headers override
+      // wins, else the portable `headers` field is the source (E4.S1).
+      const headers = s.http_headers ?? s.headers;
+      if (headers) entry.http_headers = headers;
       out[s.name] = entry;
     }
   }

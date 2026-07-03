@@ -194,11 +194,14 @@ function parseMcp(servers: Record<string, McpEntry>): McpServer[] {
   const out: McpServer[] = [];
   for (const [name, s] of Object.entries(servers)) {
     if (s.url) {
-      out.push({
+      const server = {
         name,
         transport: s.type === 'sse' ? 'sse' : 'http',
         url: s.url,
-      } as McpServer);
+      } as McpServer;
+      if (s.headers)
+        (server as { headers?: Record<string, string> }).headers = s.headers;
+      out.push(server);
     } else if (s.command) {
       const server = {
         name,

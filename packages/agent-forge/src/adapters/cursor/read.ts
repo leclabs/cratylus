@@ -43,8 +43,12 @@ export async function readCursor(
   const ir: Partial<IR> = {};
 
   const rules: Rule[] = [];
-  // Plain/concatenated rules — AGENTS.md, no frontmatter [CU1].
-  if (existsSync(p.rulesFile)) {
+  // Plain/concatenated rules — AGENTS.md, no frontmatter [CU1]. Project scope
+  // only: `~/.cursor/AGENTS.md` has no documented file surface for User
+  // Rules (settings UI, plain text) — write never targets it (E8.S5) and
+  // read must not lift it as a phantom rule either (E1.S3, convergence-
+  // graduation 2026-07).
+  if (scope === 'project' && existsSync(p.rulesFile)) {
     const text = await readFile(p.rulesFile, 'utf8');
     rules.push(parseRule(text, 'main'));
   }

@@ -40,16 +40,19 @@ const PASSING_PAIRS: readonly Pair[] = [
   ['codex', 'rules'],
   ['codex', 'skills'],
   ['codex', 'commands'],
+  ['codex', 'mcp'],
   ['continue', 'rules'],
   ['copilot', 'rules'],
   ['copilot', 'skills'],
   ['copilot', 'commands'],
+  ['copilot', 'mcp'],
   ['crush', 'rules'],
   ['cursor', 'rules'],
   ['cursor', 'hooks'],
   ['cursor', 'mcp'],
   ['gemini', 'rules'],
   ['gemini', 'hooks'],
+  ['gemini', 'mcp'],
   ['kilo', 'mcp'],
   ['opencode', 'rules'],
   ['opencode', 'mcp'],
@@ -59,17 +62,17 @@ const PASSING_PAIRS: readonly Pair[] = [
 /**
  * Pairs declared 'full' that do NOT round-trip today, each classified with
  * its own reason:
- * - mcp: each of these adapters silently drops remote-server `headers` on
- *   read, so a RemoteMcpServer loses a schema field with no warning (mcp
- *   declared full is dishonest for these — consistent with the §3
- *   remote-MCP-shape divergences [CX7][GM1]). cursor's row graduated
- *   with the cursor-adapter-truth fix (read.ts now lifts headers/auth
- *   alongside url [CU5]) — see PASSING_PAIRS. cline's row is GONE (not
- *   dropped-then-untracked): the cline-adapter-truth fix flipped its mcp
- *   capability 'full' → 'partial' (no documented project-scope surface at
- *   all [CL6], full fidelity only at user/CLI scope) — cline/mcp is no
- *   longer in the declared-'full' set this matrix classifies, so neither
- *   PASSING_PAIRS nor TRACKED_PAIRS carries it.
+ * - mcp: codex/copilot/gemini's remote-header read-side drop (convergence-
+ *   graduation, 2026-07) — write now carries the generic `headers` field
+ *   through to each dialect's native remote-header key (codex: `http_headers`,
+ *   its only header surface [CX7]; copilot/gemini: `headers` verbatim), and
+ *   read lifts it back — see PASSING_PAIRS. cursor's row graduated earlier
+ *   with the cursor-adapter-truth fix (read.ts lifts headers/auth alongside
+ *   url [CU5]). cline's row is GONE (not dropped-then-untracked): the
+ *   cline-adapter-truth fix flipped its mcp capability 'full' → 'partial'
+ *   (no documented project-scope surface at all [CL6], full fidelity only at
+ *   user/CLI scope) — cline/mcp is no longer in the declared-'full' set this
+ *   matrix classifies, so neither PASSING_PAIRS nor TRACKED_PAIRS carries it.
  * - codex/agents: `tools`/`color` have no documented Codex agent-TOML field
  *   [CX1] — the shared agents fixture exercises both, so they are warned and
  *   dropped on write rather than fabricated, and do not survive reimport.
@@ -83,9 +86,6 @@ const PASSING_PAIRS: readonly Pair[] = [
  *   per-adapter, so the concat path is what this matrix exercises for claude.
  */
 const TRACKED_PAIRS: readonly (readonly [...Pair, reason: string])[] = [
-  ['codex', 'mcp', 'remote-mcp headers dropped on read'],
-  ['copilot', 'mcp', 'remote-mcp headers dropped on read'],
-  ['gemini', 'mcp', 'remote-mcp headers dropped on read'],
   [
     'codex',
     'agents',

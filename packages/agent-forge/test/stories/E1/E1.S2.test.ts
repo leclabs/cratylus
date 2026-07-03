@@ -323,8 +323,10 @@ const SPECS: readonly AdapterSpec[] = [
     classes: ['rules', 'skills', 'commands', 'hooks'],
   },
   {
+    // Graduated by convergence-graduation (2026-07): readImpl now also lifts
+    // hooks.PreToolUse and permissions.allowed_tools from crush.json,
+    // alongside the mcp key it already read [CR1][CR3].
     client: 'crush',
-    gap: 'crush.json mcp/hooks/permissions unread [CR1][CR3]',
     build: (cwd) => {
       put(cwd, 'AGENTS.md', '# Rules\n\nCRUSH-AGENTSMD-MARKER\n'); // context_paths [CR2]
       put(cwd, 'CRUSH.md', '# Crush rules\n\nCRUSH-CRUSHMD-MARKER\n'); // [CR2]

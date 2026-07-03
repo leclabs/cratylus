@@ -71,15 +71,19 @@ function portableIR(): IR {
  * always carries the informational @AGENTS.md-shim advisory [S7]
  * (round-trip.test.ts), so it is no longer warning-free for any
  * rules-bearing compile; the loss is real but permanent/by-design, not a
- * regression to bite on.
+ * regression to bite on. amp/kilo/zed (wave-5/6 roster additions) join here —
+ * clean on this fixture.
  */
 const CLEAN_TARGETS = [
+  'amp',
   'codex',
   'copilot',
   'crush',
   'cursor',
   'gemini',
+  'kilo',
   'opencode',
+  'zed',
 ] as const;
 
 const cleanups: string[] = [];
@@ -128,9 +132,71 @@ describe('E4.S7 · portable core', () => {
     },
   );
 
-  story.tracked(
+  /**
+   * The full 16-adapter roster's portable-core noise, each entry a
+   * permanent/by-design dialect property — not a bug to silently hide:
+   * aider/continue have no skills surface at all [AI1][CT3]; aider/pi/
+   * standards have no (or an intentionally-omitted [PI2]) MCP surface
+   * [AI5]; cline's MCP is real at user/CLI scope only, never project [CL6];
+   * devin's MCP config is user-global-only, never project-scope [WS5]; pi
+   * additionally warns that project-scope emissions are inert until the
+   * folder is trusted [PI2]; claude's concat rule imports `@AGENTS.md` per
+   * Anthropic's own documented shim [S7]. Graduation (convergence-graduation,
+   * 2026-07) asserts this DOCUMENTED-warning contract, not a literal zero —
+   * an adapter surfacing any warning/skip NOT listed here is undocumented
+   * and fails loudly.
+   */
+  const DOCUMENTED_NOISE: Record<
+    string,
+    { warnings: readonly string[]; skipped: readonly string[] }
+  > = {
+    aider: {
+      warnings: [
+        'skills: Aider has no skills support (1 skipped)',
+        'mcp: Aider has no MCP support (1 skipped)',
+      ],
+      skipped: ['skills/review'],
+    },
+    claude: {
+      warnings: [
+        "claude: CLAUDE.md's managed region imports @AGENTS.md — rule bodies are not duplicated there [S7]; author/emit AGENTS.md separately (hand-maintained, or an AGENTS.md-native target in this compile) so the import resolves",
+      ],
+      skipped: [],
+    },
+    cline: {
+      warnings: [
+        "mcp: no documented project-scope MCP surface — the extension reads VS Code globalStorage (cline_mcp_settings.json), not .cline/mcp.json; the CLI's user-scope override is the only documented file (1 server(s) skipped) [CL6]",
+      ],
+      skipped: ['mcp/github'],
+    },
+    continue: {
+      warnings: ['skills: Continue has no skills support (1 skipped)'],
+      skipped: ['skills/review'],
+    },
+    devin: {
+      warnings: [
+        'mcp: Windsurf MCP config is user-global only (~/.codeium/windsurf/mcp_config.json); not written at project scope [WS5]',
+      ],
+      skipped: ['mcp/github'],
+    },
+    pi: {
+      warnings: [
+        'mcp: pi omits MCP by design (1 skipped); the designated route is an extension [PI2]',
+        'trust: project-scope emissions under .pi/ and .agents/skills/ are inert until the folder is trusted — decisions persist in ~/.pi/agent/trust.json [PI2]',
+      ],
+      skipped: ['mcp/github'],
+    },
+    standards: {
+      warnings: [
+        'mcp: no documented neutral-standards surface — dropped, nothing fabricated',
+      ],
+      skipped: ['mcp/github'],
+    },
+  };
+
+  story(
     'E4.S7',
-    'all 10 targets compile the portable core with zero warnings and zero skips (aider drops skills+mcp [AI1][AI5]; cline warns on undocumented project-scope MCP [CL6]; continue drops skills [CT3]; claude warns the informational @AGENTS.md-shim advisory [S7])',
+    'all 16 targets compile the portable core against the documented-warning contract exactly (zero UNDOCUMENTED warnings/skips; aider drops skills+mcp [AI1][AI5]; cline warns on undocumented project-scope MCP [CL6]; continue drops skills [CT3]; devin MCP is user-global-only [WS5]; pi omits MCP by design + warns on trust [PI2]; standards has no neutral MCP surface; claude warns the informational @AGENTS.md-shim advisory [S7])',
     async () => {
       const cwd = makeTmpDir('af-e4s7-all-');
       cleanups.push(cwd);
@@ -141,8 +207,19 @@ describe('E4.S7 · portable core', () => {
         cwd,
         {},
       );
-      expect(report.totalWarnings).toBe(0);
-      expect(report.totalSkipped).toBe(0);
+      for (const r of report.results) {
+        const expected = DOCUMENTED_NOISE[r.adapter] ?? {
+          warnings: [],
+          skipped: [],
+        };
+        expect(r.report?.warnings ?? [], `${r.adapter} warnings`).toEqual(
+          expected.warnings,
+        );
+        expect(
+          (r.report?.skipped ?? []).map((s) => s.path),
+          `${r.adapter} skipped paths`,
+        ).toEqual(expected.skipped);
+      }
     },
   );
 });

@@ -157,26 +157,13 @@ async function runSpec(spec: FabricatedSpec): Promise<{ out: string; ir: IR }> {
 }
 
 /**
- * Fabricated paths whose read retirement has landed: the adapter no longer
- * consults the path, so the zero-lift leg holds (graduated). The warning
- * leg stays tracked until the import report names unrecognized paths.
+ * Every fabricated path's read retirement has landed (convergence-graduation,
+ * 2026-07: cursor's user-scope `~/.cursor/AGENTS.md` read was the last read
+ * side still consulting one — read.ts is now project-scope-only for that
+ * file, E8.S5) — the adapter never consults any of these paths, so the
+ * zero-lift leg holds for every spec.
  */
-const ZERO_LIFT_GRADUATED = new Set([
-  '.crush/mcp.json',
-  '~/.config/github-copilot/*',
-  '.copilot/skills/',
-  '.opencode/mcp.json',
-  // cline-adapter-truth: read.ts no longer consults .cline/hooks.json at all
-  // (hooks are per-event executable scripts under .clinerules/hooks/ [CL2]),
-  // and the global rules dir moved to ~/Documents/Cline/Rules (~/.cline/rules
-  // is never read [CL1]) — both zero-lift legs hold; the sibling "import
-  // report warns naming the unrecognized path" leg stays tracked (no such
-  // warning mechanism exists yet).
-  '.cline/hooks.json',
-  '~/.cline/rules',
-]);
-
-for (const spec of SPECS.filter((s) => ZERO_LIFT_GRADUATED.has(s.path))) {
+for (const spec of SPECS) {
   story(
     'E1.S3',
     `${spec.client} ${spec.path}: zero ${spec.resource} imported from the fabricated path ${spec.ref}`,
@@ -190,22 +177,13 @@ for (const spec of SPECS.filter((s) => ZERO_LIFT_GRADUATED.has(s.path))) {
   );
 }
 
-for (const spec of SPECS.filter((s) => !ZERO_LIFT_GRADUATED.has(s.path))) {
-  story.tracked(
-    'E1.S3',
-    `${spec.client} ${spec.path}: zero ${spec.resource} imported from the fabricated path ${spec.ref}`,
-    async () => {
-      const { ir } = await runSpec(spec);
-      expect(
-        spec.count(ir),
-        `phantom ${spec.resource} imported from ${spec.path}`,
-      ).toBe(0);
-    },
-  );
-}
-
+/**
+ * The import report now names every documented-fabricated path still present
+ * on disk (convergence-graduation, 2026-07: `auditImport`'s new `fabricated`
+ * leg, wired through `runImport`'s console output).
+ */
 for (const spec of SPECS) {
-  story.tracked(
+  story(
     'E1.S3',
     `${spec.client} ${spec.path}: import report warns naming the unrecognized path ${spec.ref}`,
     async () => {

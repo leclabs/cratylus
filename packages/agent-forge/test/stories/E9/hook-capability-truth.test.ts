@@ -86,9 +86,9 @@ describe('E9.S3 · hook capability declarations vs documented dialects', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E9.S3',
-    'declaration table ≡ ground truth for every classified cell (regex matchers + native payloads still shipped wrong)',
+    'declaration table ≡ ground truth for every classified cell (regex matchers + native payloads, convergence-graduation 2026-07: gemini/payload now native)',
     () => {
       expect(mismatches(true)).toEqual([]);
     },
