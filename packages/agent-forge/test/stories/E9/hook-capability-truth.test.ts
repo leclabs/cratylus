@@ -37,15 +37,15 @@ const GROUND_TRUTH: Record<string, TruthCell> = {
 };
 
 /** Cells the shipped declarations get wrong today. cursor/matchers graduated
- * with the cursor-adapter-truth fix (E4.S5/E9.S3, [CU2]) — regex declared. */
+ * with the cursor-adapter-truth fix (E4.S5/E9.S3, [CU2]) — regex declared.
+ * cline/payload + cline/matchers graduated with the cline-adapter-truth fix
+ * — native/none declared, matching [CL2][CL3]. */
 const FALSE_TODAY = new Set([
   'claude/matchers', // glob, should be regex
   'copilot/payload', // claude-json, native shape documented [CP4]
   'copilot/matchers', // glob, should be regex
   'gemini/payload', // claude-json, own envelope [GM4]
   'gemini/matchers', // glob, should be regex
-  'cline/payload', // claude-json, per-event executables [CL2]
-  'cline/matchers', // glob, should be none
   'crush/matchers', // none (whole hook surface undeclared), should be regex
 ]);
 

@@ -76,7 +76,7 @@ describe('E4.S5 · matcher semantics', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E4.S5',
     'cline: matcher on a hook warns matcher-unsupported instead of silently emitting one [CL2]',
     async () => {

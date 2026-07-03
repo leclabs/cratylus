@@ -88,7 +88,7 @@ describe('E2.S4 · user-scope compile lands in each documented user home', () =>
     },
   );
 
-  story.tracked(
+  story(
     'E2.S4',
     'cline global rules land under ~/Documents/Cline/Rules — NOT ~/.cline/rules [CL1]',
     () => {

@@ -166,6 +166,14 @@ const ZERO_LIFT_GRADUATED = new Set([
   '~/.config/github-copilot/*',
   '.copilot/skills/',
   '.opencode/mcp.json',
+  // cline-adapter-truth: read.ts no longer consults .cline/hooks.json at all
+  // (hooks are per-event executable scripts under .clinerules/hooks/ [CL2]),
+  // and the global rules dir moved to ~/Documents/Cline/Rules (~/.cline/rules
+  // is never read [CL1]) — both zero-lift legs hold; the sibling "import
+  // report warns naming the unrecognized path" leg stays tracked (no such
+  // warning mechanism exists yet).
+  '.cline/hooks.json',
+  '~/.cline/rules',
 ]);
 
 for (const spec of SPECS.filter((s) => ZERO_LIFT_GRADUATED.has(s.path))) {

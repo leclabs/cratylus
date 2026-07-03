@@ -260,9 +260,12 @@ describe('E4.S3 · capability declarations vs documented reality', () => {
     },
   );
 
+  // opencode agents+commands graduated with opencode-adapter-truth; cline
+  // skills+workflows graduated with cline-adapter-truth — both dropped from
+  // the enumeration below; the remaining cells still violate.
   story.tracked(
     'E4.S3',
-    'stale cells: opencode agents+commands, cline skills+workflows, cursor/copilot/continue/gemini commands, continue permissions, crush hooks+permissions declared honestly',
+    'stale cells: cursor/copilot/continue/gemini commands, continue permissions, crush hooks+permissions declared honestly',
     () => {
       expect(violations(STALE_CELLS.map(([a, r]) => [a, r] as const))).toEqual(
         [],
@@ -286,7 +289,7 @@ describe('E4.S3 · capability declarations vs documented reality', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E4.S3',
     'over-claim cells retired: cline permissions+env, crush env, opencode env no longer claim undocumented surfaces [OC1][CL1][CL2][CR1]',
     () => {

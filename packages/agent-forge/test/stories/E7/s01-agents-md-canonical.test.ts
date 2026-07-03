@@ -116,15 +116,14 @@ describe('E7.S1 · AGENTS.md canonical rules projection', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S1',
     'cline (AGENTS.md-native per matrix [S1]/[S22]) is served by the same root AGENTS.md artifact',
     async () => {
       const ir: IR = { manifest: manifest(NATIVE_SET), rules: orderedRules() };
       const cwd = tmp();
       await compile(ir, adapters(['cline']), 'project', cwd);
-      // Documented truth: one file serves ALL AGENTS.md-native targets. The
-      // cline adapter writes .clinerules/*.md only — no root AGENTS.md.
+      // A plain (non-glob) rule lands on the shared root AGENTS.md [S22].
       expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
       expect(readFileSync(join(cwd, 'AGENTS.md'), 'utf8')).toContain(
         'RULE-ALPHA',

@@ -71,7 +71,7 @@ describe('E7.S7 · vendor rules dirs only where activation demands', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S7',
     'cline: plain rule lands in root AGENTS.md (native reader [S22]), not as a .clinerules file',
     async () => {
@@ -79,8 +79,7 @@ describe('E7.S7 · vendor rules dirs only where activation demands', () => {
       const ir: IR = { manifest: manifest(['cline']), rules: [RULE_A] };
       await compile(ir, [adapter('cline')], 'project', cwd);
 
-      // Documented truth: rule A appears only in AGENTS.md-class outputs.
-      // The cline adapter writes .clinerules/a.md and no AGENTS.md today.
+      // Rule A appears only in AGENTS.md-class outputs.
       expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
       expect(existsSync(join(cwd, '.clinerules', 'a.md'))).toBe(false);
     },
@@ -139,7 +138,7 @@ describe('E7.S7 · vendor rules dirs only where activation demands', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S7',
     'glob rule emits .clinerules/<id>.md with paths: frontmatter preserving activation [S22]',
     async () => {

@@ -101,11 +101,14 @@ describe('E2.S3 · project-scope compile lands in each documented namespace', ()
         '.cursor/mcp.json', // cursor [CU5]
         '.gemini/agents/one.md', // gemini [GM2]
         '.gemini/skills/review/SKILL.md', // gemini [GM3]
-        '.clinerules/main.md', // cline [CL1]
+        '.cline/skills/review/SKILL.md', // cline [CL5]
         '.vscode/mcp.json', // copilot [CP6]
         '.crush/skills/review/SKILL.md', // crush [CR1]
         '.opencode/skills/review/SKILL.md', // opencode [OC6]
-        'AGENTS.md', // codex/cursor/copilot/opencode/crush [CX3][CU1][CP3][OC3][CR2]
+        // codex/cursor/copilot/opencode/crush/cline [CX3][CU1][CP3][OC3][CR2][CL1]
+        // — cline's plain 'main' rule now lands here too (AGENTS.md-native
+        // reader [S22]), not as .clinerules/main.md.
+        'AGENTS.md',
       ];
       for (const rel of expected) {
         expect(existsSync(join(cwd, rel)), `expected ${rel}`).toBe(true);
@@ -118,9 +121,11 @@ describe('E2.S3 · project-scope compile lands in each documented namespace', ()
     'touched-path set ⊆ union of documented per-adapter project surfaces (no fabricated paths)',
     () => {
       // Fails today on §3 fabrications: .codex/skills/ [CX2], .copilot/ [CP2],
-      // .cline/mcp.json [CL6], .crush/mcp.json [CR1], .continue/config.yaml
-      // [CT1]. (opencode's .opencode/mcp.json fabrication graduated with the
-      // opencode-adapter-truth fix [OC7].)
+      // .crush/mcp.json [CR1], .continue/config.yaml [CT1]. (opencode's
+      // .opencode/mcp.json fabrication graduated with the opencode-adapter-
+      // truth fix [OC7]; cline's .cline/mcp.json fabrication graduated with
+      // the cline-adapter-truth fix — project-scope MCP is now skip+warn,
+      // never written [CL6].)
       const strays = touched.filter((rel) => !isDocumented(rel));
       expect(strays).toEqual([]);
     },

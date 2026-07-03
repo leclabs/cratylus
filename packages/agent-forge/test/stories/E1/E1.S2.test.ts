@@ -303,7 +303,12 @@ const SPECS: readonly AdapterSpec[] = [
   },
   {
     client: 'cline',
-    gap: 'skills / workflows / script-hooks unread [CL2][CL4][CL5]',
+    // cline-adapter-truth: skills [CL5] and workflows [CL4] now lift. A
+    // FOREIGN (non-agent-forge) hook script — no `# agent-forge:<id>` marker
+    // — genuinely cannot recover a structured Hook; parsing arbitrary shell
+    // content isn't a documented contract, so this fixture's hand-authored
+    // `.clinerules/hooks/PreToolUse` stays unlifted [CL2].
+    gap: 'foreign (non-agent-forge) hook scripts have no structured fields to recover [CL2]',
     build: (cwd) => {
       put(cwd, '.clinerules/style.md', 'CLINE-RULE-MARKER\n'); // [CL1]
       put(cwd, '.clinerules/workflows/deploy.md', 'Deploy steps.\n'); // [CL4]

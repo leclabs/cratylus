@@ -212,7 +212,7 @@ describe('E4.S4 · event taxonomy', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E4.S4',
     'cline: fabricated TaskComplete/PreCompact are gone (documented set is 6 events) [CL2]',
     () => {

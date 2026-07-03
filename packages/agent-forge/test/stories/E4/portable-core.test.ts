@@ -124,7 +124,7 @@ describe('E4.S7 · portable core', () => {
 
   story.tracked(
     'E4.S7',
-    'all 10 targets compile the portable core with zero warnings and zero skips (aider drops skills+mcp [AI1][AI5]; cline and continue drop skills [CL5][CT3])',
+    'all 10 targets compile the portable core with zero warnings and zero skips (aider drops skills+mcp [AI1][AI5]; cline warns on undocumented project-scope MCP [CL6]; continue drops skills [CT3])',
     async () => {
       const cwd = makeTmpDir('af-e4s7-all-');
       cleanups.push(cwd);

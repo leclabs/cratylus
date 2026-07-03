@@ -147,7 +147,7 @@ story(
   },
 );
 
-story.tracked(
+story(
   'E5.S3',
   'cline: native SKILL.md discovery exists [CL5] but the adapter does not yet emit skills to that path',
   async () => {

@@ -47,7 +47,7 @@ describe('E8.S7 · cline', () => {
 
   // --- Hooks as scripts [CL2][CL3] ---
 
-  story.tracked(
+  story(
     'E8.S7',
     'hooks emit as per-event executable scripts in .clinerules/hooks/ [CL2][CL3]',
     async () => {
@@ -58,7 +58,7 @@ describe('E8.S7 · cline', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S7',
     'the fabricated .cline/hooks.json is never emitted [CL2]',
     async () => {
@@ -67,7 +67,7 @@ describe('E8.S7 · cline', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S7',
     'event set is the documented 6 — no TaskComplete/PreCompact mappings [CL2]',
     () => {
@@ -78,7 +78,7 @@ describe('E8.S7 · cline', () => {
 
   // --- Global rules home [CL1] ---
 
-  story.tracked(
+  story(
     'E8.S7',
     'global rules emit to ~/Documents/Cline/Rules [CL1]',
     async () => {
@@ -94,7 +94,7 @@ describe('E8.S7 · cline', () => {
 
   // --- Skills + workflows on [CL4][CL5] ---
 
-  story.tracked(
+  story(
     'E8.S7',
     'skills capability on: .cline/skills/ emitted [CL5]',
     async () => {
@@ -112,7 +112,7 @@ describe('E8.S7 · cline', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S7',
     'commands emit as workflows .clinerules/workflows/*.md [CL4]',
     async () => {
@@ -145,7 +145,7 @@ describe('E8.S7 · cline', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S7',
     'project MCP: undocumented .cline/mcp.json is not emitted silently — warn or omit [CL6]',
     async () => {
@@ -169,13 +169,17 @@ describe('E8.S7 · cline', () => {
 
   story(
     'E8.S7',
-    'project rules round-trip as multi-file .clinerules/*.md [CL1]',
+    'project glob rules round-trip as multi-file .clinerules/*.md [CL1][S22]',
     async () => {
+      // Post-fix, `.clinerules/*.md` carries GLOB-activated rules only — a
+      // PLAIN rule now lands on root AGENTS.md instead (E7.S7 owned test),
+      // so this fixture exercises the corrected multi-file surface with
+      // globs rather than the two plain rules it used pre-fix.
       const ir: IR = {
         manifest: manifest(),
         rules: [
-          { id: 'alpha', body: 'Alpha rule.' },
-          { id: 'beta', body: 'Beta rule.' },
+          { id: 'alpha', body: 'Alpha rule.', globs: ['src/**'] },
+          { id: 'beta', body: 'Beta rule.', globs: ['docs/**'] },
         ],
       };
       await clineAdapter.write(ir, 'project', cwd, {});
@@ -187,7 +191,7 @@ describe('E8.S7 · cline', () => {
 
   // --- Fabricated-shape import (E1.S3) ---
 
-  story.tracked(
+  story(
     'E8.S7',
     'fabricated-shape import: .cline/hooks.json lifts zero phantom hooks (E1.S3) [CL2]',
     async () => {
