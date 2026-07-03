@@ -14,7 +14,10 @@ P: for every (adapter, resourceType) pair the adapter declares `full`: a fixture
 exercising every schema field of that type.
 ✓:
 
-- `import(compile(r)) ≡ r` field-for-field (schema-defined fields; array order per schema).
+- `import(compile(r)) ≡ r` field-for-field (schema-defined fields; array order per schema) —
+  read-side drops count as failures equally with write-side (empirically surfaced class:
+  remote-MCP `headers` silently dropped on import — the fixture MUST exercise `headers` on every
+  remote-MCP-capable adapter).
 - Test matrix is generated from the adapters' own capability declarations — adding a `full`
   declaration without a passing round-trip fixture fails CI (the declaration is the test oracle).
 
@@ -38,8 +41,14 @@ opencode agents, cline skills, crush hooks.)
 P: a ground-truth table transcribed from RETURN §1 (per adapter × resource: present/absent).
 ✓:
 
-- For every adapter: declared `none` ⇒ ground-truth absent; ground-truth present ⇒ declared
-  `full|partial`. Any mismatch fails naming (adapter, resource, declared, truth).
+- Under-claim leg — for every adapter: declared `none` ⇒ ground-truth absent; ground-truth
+  present ⇒ declared `full|partial`. Any mismatch fails naming (adapter, resource, declared,
+  truth).
+- Over-claim leg — every `full|partial` declaration must be BACKED by a documented harness
+  surface in the landscape RETURN §1/§2 sheets (the authority): a declaration whose (adapter,
+  resource) cell is absent from the sheets = FAIL naming the unbacked claim. The property is
+  two-sided by construction — vacuous passes are impossible (empirical case this leg exists for:
+  opencode declaring `env: full` against a surface that does not exist [OC1] — §3/opencode d4).
 - Specifically green after fix: opencode agents+commands [OC2][OC4], cline skills+workflows
   [CL4][CL5], cursor commands+agents [CU3][CU6], copilot prompts+agents [CP1][CP5], crush hooks
   [CR3], continue prompts [CT3].
@@ -54,6 +63,10 @@ P: per adapter: one IR hook per canonical event (28).
 - For every adapter-supported event: `toNative(toCanonical(e)) = e` and the emitted native name is
   the documented dialect name (case/format exact: camelCase for copilot [CP4], snake_case for
   windsurf-class, PascalCase for claude/codex).
+- Injectivity — per adapter, the canonical→native map restricted to supported events is
+  INJECTIVE and native→canonical is its exact inverse; two canonical events sharing one native
+  name = FAIL naming the collision (empirical case: opencode's eventMap is non-injective —
+  reimport cannot disambiguate the colliding events).
 - Every unsupported event appears in `.skipped` with the canonical name; count(supported) +
   count(skipped) = 28.
 - Fabricated events are gone: cline `TaskComplete`/`PreCompact` [CL2], copilot PascalCase set

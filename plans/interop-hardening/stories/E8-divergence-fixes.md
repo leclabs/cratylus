@@ -127,6 +127,10 @@ A: DEV · P: §2/Continue fixtures. Findings: §3/continue d1–d3.
 - MCP emits to `.continue/mcpServers/mcp.json` (foreign-format autodetect home) OR as a
   `mcpServers` LIST block in a config.yaml carrying required `name`/`version`/`schema` — never a
   map-shaped whole-file clobber of the user's config.yaml [CT4][CT1].
+- Read side: importing a documented LIST-form `mcpServers` config.yaml yields IR servers keyed by
+  each block's `name` field — never by array index (empirical failure class: the LIST form
+  minting a phantom server id `0`); an imported mcp_server whose id is a bare integer string =
+  FAIL [CT4].
 - Rules → `.continue/rules/*.md`; the undocumented root/`~/.continue/AGENTS.md` write is gone
   [CT2].
 - Prompts capability on: `.continue/prompts/*.md` with `invokable: true` [CT3].
