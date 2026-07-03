@@ -12,11 +12,11 @@ It is the substrate half of the founding pair (Mav's domain); the culture it car
 agent-forge is a **single npm package**, `@leclabs/agent-forge`. The former `core` / `adapters` / `cli` packages are
 now source areas under `src/`, wired through subpath `exports` plus a `bin`:
 
-| Source area     | Public entry                             | Role                                                                                                                                                                       |
-| --------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/core/`     | `@leclabs/agent-forge` (`.` / `./core`)  | The canonical IR (types + JSON Schema), the engine (read/merge/compile/drift/migrate), runtime validators, markdown+frontmatter serializers, and the **Adapter contract**. |
-| `src/adapters/` | `@leclabs/agent-forge/adapters/<client>` | The 11 official adapters (claude, opencode, codex, gemini, copilot, cursor, cline, crush, aider, continue, zed), one per client dialect — one subpath export each.         |
-| `src/cli/`      | `agent-forge` (bin)                      | The user-facing orchestrator (`init` / `import` / `compile` / `diff` / `lint` / `adapters` / `events` / `doctor` / `watch` / `migrate`).                                   |
+| Source area     | Public entry                             | Role                                                                                                                                                                                                                          |
+| --------------- | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/core/`     | `@leclabs/agent-forge` (`.` / `./core`)  | The canonical IR (types + JSON Schema), the engine (read/merge/compile/drift/migrate), runtime validators, markdown+frontmatter serializers, and the **Adapter contract**.                                                    |
+| `src/adapters/` | `@leclabs/agent-forge/adapters/<client>` | The 16 official adapters (claude, opencode, codex, gemini, copilot, cursor, cline, crush, aider, continue, zed, amp, kilo, pi, devin, and the neutral `standards` surface), one per client dialect — one subpath export each. |
+| `src/cli/`      | `agent-forge` (bin)                      | The user-facing orchestrator (`init` / `import` / `compile` / `diff` / `lint` / `adapters` / `events` / `doctor` / `watch` / `migrate`).                                                                                      |
 
 Internal dependency direction is still strictly `cli → adapters → core` (now plain relative imports);
 `core` depends on no sibling. The three were collapsed into one package because nothing external consumed

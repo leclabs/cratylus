@@ -14,25 +14,30 @@ DAG: `wave(0) {harness-landscape-research · standards-compat-research}` →
 `wave(1) {capability-user-stories ⊳ both}` → `wave(2) {story-coverage-tests ⊳ stories}` →
 `wave(3) {author-implementation-shards ⊳ tests}` → `waves(4–7) {the 23 implementation shards below}`.
 
-**Active (wave 5, in flight):** the 15 wave(5) shards below — released 2026-07-03 post-wave-4
-close; all deps (schema · engine · exemplify) landed. Shard texts amended with the roster-growth
-bite-guard clause + increment-at-commit-time roster counts (zed precedent `d318b20`).
+**Active (wave 6):** `claude-surfaces` (⊳claude-mcp ✓ · schema ✓ · engine ✓) · `roster-metadata`
+(⊳devin ✓) — released after wave-5 close, both deps satisfied.
 
-**Tracked-failing: 179/43** (229 at suite birth; wave 4 −50: docs −2, ir-schema −7, zed −9,
-exemplify −13, engine-report −19). **Stale as of `codex-adapter-truth`'s landing** — this header
-predates other wave(5) siblings already on `main` ahead of this shard's base (`crush-adapter-truth`
-@9f3ebf4, `devin-adapter` @dc418f0 at minimum); reconciling it needs full wave(5) landed-state
-visibility this shard didn't have. `codex-adapter-truth`'s own verified delta: 148/40 → 131/39 (−17 =
-16 owned + 1 forced graduation) measured directly off `coverage.test.ts`'s scan-derived print at its
-base `dc418f0` and its landing commit `98a5772` — see `completed/codex-adapter-truth.RETURN.md`.
+**Tracked-failing: 28/15** (229 at suite birth; **wave 5 COMPLETE 2026-07-03** — all 15 shards
+landed & judged, 179→28). Roster **11→16** (5 new adapters: amp·kilo·pi·devin·standards).
+
+**Wave-5 recovery note:** all 15 shards' first-attempt executors died on the account Fable-5 limit
+mid-flight. Recovery (model switched to Opus): 3 had raced through (continue·claude-mcp·crush), devin
+was hand-replayed from its orphaned dangling commit, the remaining 11 were RE-DISPATCHED under a fresh
+model (sonnet) serially atop live HEAD — one at a time because the shared ledger (`TRACKED-FAILING.md`)
+is the serialization point. A pre-existing orphaned anatomy fixture (`memory.md`, red on any clean
+checkout) was fixed first → green base `53023a1`. Every shard judged by net-row-math + a clean-worktree
+4×0 gate. Landing chain `dc418f0`…`ca44e0b`.
 
 **Completed:** `harness-landscape-research` · `standards-compat-research` · `pi-harness-research` ·
 `capability-user-stories` (81 stories, `stories/`) · `story-coverage-tests` (suite @0e23b36) ·
 **wave(4) whole**: `docs-assumption-audit-records` · `ir-schema-expressiveness` · `zed-adapter`
 @d318b20 · `exemplify-pipeline` @2a9de62 · `engine-report-machinery` @d36c2dc (RETURNs beside
-each; joint gates 4×0, forge 670/670; pushed). **wave(5) so far** (each independently landed —
-not a joint gate; see each RETURN for its own base/delta): `codex-adapter-truth` @98a5772 (16
-owned + 1 forced graduation, gates 4×0 forge 676/676).
+each; joint gates 4×0, forge 670/670; pushed). **wave(5) WHOLE** (all 15 landed & judged, each in
+its own clean-worktree 4×0 gate; final HEAD `ca44e0b`, forge 694/694): `devin` @dc418f0 ·
+`codex` @98a5772 · `gemini` @d0fe3d6 · `copilot` @9489236 · `cursor` @884095c · `opencode` @4d1b506
+· `cline` @2998fda · `aider` @bc7abcb · `amp` @99d2c0c · `kilo` @015fde3 · `pi` @8fdef26 ·
+`standards` @7413fd9 · `continue` @4d81308 · `claude-mcp-rehoming` @eca0068 · `crush` @9f3ebf4
+(RETURNs beside each). Not yet pushed past `53023a1` — held at the wave-close push gate.
 
 ## Implementation shards (pending/) — 229 tracked ids, MECE, 0 orphans
 
