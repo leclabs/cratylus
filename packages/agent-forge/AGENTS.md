@@ -15,7 +15,7 @@ now source areas under `src/`, wired through subpath `exports` plus a `bin`:
 | Source area     | Public entry                             | Role                                                                                                                                                                       |
 | --------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/core/`     | `@leclabs/agent-forge` (`.` / `./core`)  | The canonical IR (types + JSON Schema), the engine (read/merge/compile/drift/migrate), runtime validators, markdown+frontmatter serializers, and the **Adapter contract**. |
-| `src/adapters/` | `@leclabs/agent-forge/adapters/<client>` | The 10 official adapters (claude, opencode, codex, gemini, copilot, cursor, cline, crush, aider, continue), one per client dialect — one subpath export each.              |
+| `src/adapters/` | `@leclabs/agent-forge/adapters/<client>` | The 11 official adapters (claude, opencode, codex, gemini, copilot, cursor, cline, crush, aider, continue, zed), one per client dialect — one subpath export each.         |
 | `src/cli/`      | `agent-forge` (bin)                      | The user-facing orchestrator (`init` / `import` / `compile` / `diff` / `lint` / `adapters` / `events` / `doctor` / `watch` / `migrate`).                                   |
 
 Internal dependency direction is still strictly `cli → adapters → core` (now plain relative imports);

@@ -46,7 +46,7 @@ story(
   'E6.S6',
   'zero targets excluded: every shipped adapter declares rules support and emits a rules artifact through its rules surface',
   async () => {
-    expect(ALL_ADAPTERS).toHaveLength(10);
+    expect(ALL_ADAPTERS).toHaveLength(11);
     for (const adapter of ALL_ADAPTERS) {
       // The coverage equation: no adapter is a rules-'none' island — even
       // skill-less / agent-less harnesses (aider, continue) read rules.

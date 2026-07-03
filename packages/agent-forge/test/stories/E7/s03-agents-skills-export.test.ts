@@ -39,7 +39,7 @@ afterEach(() => {
 });
 
 describe('E7.S3 · .agents/skills export surface', () => {
-  story.tracked(
+  story(
     'E7.S3',
     'compile emits .agents/skills/<name>/SKILL.md with ONLY spec fields, name = parent dir [S3][S60] (adapters emit vendor dirs only, §3 codex d1)',
     async () => {

@@ -9,6 +9,7 @@ import { crushAdapter } from '../adapters/crush/index.js';
 import { cursorAdapter } from '../adapters/cursor/index.js';
 import { geminiAdapter } from '../adapters/gemini/index.js';
 import { opencodeAdapter } from '../adapters/opencode/index.js';
+import { zedAdapter } from '../adapters/zed/index.js';
 import type { Adapter, Scope } from '../core/index.js';
 import type { Scope as DeployScope } from '../deploy/index.js';
 import { runCatalog } from './commands/catalog.js';
@@ -41,6 +42,7 @@ const adapters: Adapter[] = [
   crushAdapter,
   aiderAdapter,
   continueAdapter,
+  zedAdapter,
 ];
 
 const cli = cac('agent-forge');

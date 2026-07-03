@@ -144,6 +144,16 @@ const GROUND_TRUTH: Record<string, Row> = {
     permissions: t('[OC8] permission DSL'),
     env: f('[OC1] {env:VAR} substitution only; no env surface'),
   },
+  zed: {
+    rules: t('[ZD1]'),
+    skills: t('[ZD2]'),
+    commands: f('[ZD8] extension slash commands removed'),
+    agents: f('[ZD4][ZD6] subagent tool + ACP, not file-config'),
+    hooks: f('[ZD5] no hook system'),
+    mcp: t('[ZD3]'),
+    permissions: f('[ZD5] tool_permissions is nearest; no modeled surface'),
+    env: f('[ZD3] per-context-server env only; no global env surface'),
+  },
 };
 
 /** Cells violating the honesty property today (stale `none`s, §3). */

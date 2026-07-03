@@ -27,15 +27,11 @@ describe('E10.S2 · zed', () => {
     rmSync(cwd, { recursive: true, force: true });
   });
 
-  story.tracked(
-    'E10.S2',
-    'zed is on the adapter roster (new-adapter contract)',
-    () => {
-      expect(adapterById.has('zed')).toBe(true);
-    },
-  );
+  story('E10.S2', 'zed is on the adapter roster (new-adapter contract)', () => {
+    expect(adapterById.has('zed')).toBe(true);
+  });
 
-  story.tracked(
+  story(
     'E10.S2',
     'skills emit to exactly <worktree>/.agents/skills/ — Zed reads no other project path [ZD2]',
     async () => {
@@ -54,7 +50,7 @@ describe('E10.S2 · zed', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S2',
     'skill frontmatter constraints enforced: name ≤64 [a-z0-9-], description <1024B [ZD2]',
     async () => {
@@ -74,7 +70,7 @@ describe('E10.S2 · zed', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S2',
     'rules: AGENTS.md written with a shadow warning when a higher-precedence file exists [ZD1]',
     async () => {
@@ -92,7 +88,7 @@ describe('E10.S2 · zed', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S2',
     'MCP emits as context_servers in .zed/settings.json [ZD3]',
     async () => {
@@ -113,7 +109,7 @@ describe('E10.S2 · zed', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S2',
     'capabilities honest: hooks/commands/agents declared none [ZD5][ZD8][ZD4][ZD6]',
     async () => {

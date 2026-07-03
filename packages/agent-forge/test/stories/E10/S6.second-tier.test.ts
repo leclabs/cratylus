@@ -75,7 +75,7 @@ describe('E10.S6 · second-tier reach matrix', () => {
     );
   }
 
-  story.tracked(
+  story(
     'E10.S6',
     'standards output reaches Antigravity via .agents/skills/ [FS9]',
     async () => {
@@ -91,7 +91,7 @@ describe('E10.S6 · second-tier reach matrix', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S6',
     'standards output reaches Goose via .agents/skills/ [S54]',
     async () => {

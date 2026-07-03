@@ -31,6 +31,7 @@ import { crushAdapter } from '../../src/adapters/crush/index.js';
 import { cursorAdapter } from '../../src/adapters/cursor/index.js';
 import { geminiAdapter } from '../../src/adapters/gemini/index.js';
 import { opencodeAdapter } from '../../src/adapters/opencode/index.js';
+import { zedAdapter } from '../../src/adapters/zed/index.js';
 import type { Adapter } from '../../src/core/index.js';
 import { EXCLUDED, STORY_IDS } from './registry.js';
 
@@ -65,7 +66,7 @@ story.tracked = (id, name, fn, timeout) => {
   it.fails(`${id} · ${name} ${TRACKED_TAG}`, fn, timeout);
 };
 
-/** All 10 shipped adapters, id-sorted. */
+/** All shipped adapters, id-sorted. */
 export const ALL_ADAPTERS: Adapter[] = [
   aiderAdapter,
   claudeAdapter,
@@ -77,6 +78,7 @@ export const ALL_ADAPTERS: Adapter[] = [
   cursorAdapter,
   geminiAdapter,
   opencodeAdapter,
+  zedAdapter,
 ].sort((a, b) => a.id.localeCompare(b.id));
 
 export const adapterById = new Map(ALL_ADAPTERS.map((a) => [a.id, a]));
