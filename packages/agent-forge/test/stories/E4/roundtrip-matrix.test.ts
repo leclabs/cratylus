@@ -48,6 +48,7 @@ const PASSING_PAIRS: readonly Pair[] = [
   ['crush', 'rules'],
   ['cursor', 'rules'],
   ['cursor', 'hooks'],
+  ['cursor', 'mcp'],
   ['gemini', 'rules'],
   ['gemini', 'hooks'],
   ['opencode', 'rules'],
@@ -61,7 +62,9 @@ const PASSING_PAIRS: readonly Pair[] = [
  * - mcp: each of these adapters silently drops remote-server `headers` on
  *   read, so a RemoteMcpServer loses a schema field with no warning (mcp
  *   declared full is dishonest for these — consistent with the §3
- *   remote-MCP-shape divergences [CX7][GM1][CL6][CU5]).
+ *   remote-MCP-shape divergences [CX7][GM1][CL6]). cursor's row graduated
+ *   with the cursor-adapter-truth fix (read.ts now lifts headers/auth
+ *   alongside url [CU5]) — see PASSING_PAIRS.
  * - codex/agents: `tools`/`color` have no documented Codex agent-TOML field
  *   [CX1] — the shared agents fixture exercises both, so they are warned and
  *   dropped on write rather than fabricated, and do not survive reimport.
@@ -70,7 +73,6 @@ const TRACKED_PAIRS: readonly (readonly [...Pair, reason: string])[] = [
   ['cline', 'mcp', 'remote-mcp headers dropped on read'],
   ['codex', 'mcp', 'remote-mcp headers dropped on read'],
   ['copilot', 'mcp', 'remote-mcp headers dropped on read'],
-  ['cursor', 'mcp', 'remote-mcp headers dropped on read'],
   ['gemini', 'mcp', 'remote-mcp headers dropped on read'],
   [
     'codex',

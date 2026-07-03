@@ -53,7 +53,7 @@ async function importFixture(): Promise<{ cwd: string }> {
   return { cwd };
 }
 
-story.tracked(
+story(
   'E1.S8',
   'cursor agent lifts persona-verbatim: body byte-equal, name/description/model mapped, no organ guessed [CU3]',
   async () => {
@@ -77,7 +77,7 @@ story.tracked(
   },
 );
 
-story.tracked(
+story(
   'E1.S8',
   'raw import→export round-trip is lossless on the body: emitted cursor agent ≡ persona verbatim [CU3]',
   async () => {

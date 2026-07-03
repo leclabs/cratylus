@@ -1,12 +1,17 @@
 import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import {
+  type Agent,
+  type Command,
   type Hook,
   type IR,
   type McpServer,
+  type Rule,
   type Scope,
   type Skill,
+  parseAgent,
+  parseCommand,
   parseRule,
   parseSkill,
 } from '../../core/index.js';
@@ -26,6 +31,7 @@ interface McpEntry {
   env?: Record<string, string>;
   url?: string;
   headers?: Record<string, string>;
+  auth?: Record<string, unknown>;
   type?: 'stdio' | 'http' | 'sse';
 }
 
@@ -36,14 +42,36 @@ export async function readCursor(
   const p = paths(scope, cwd);
   const ir: Partial<IR> = {};
 
+  const rules: Rule[] = [];
+  // Plain/concatenated rules — AGENTS.md, no frontmatter [CU1].
   if (existsSync(p.rulesFile)) {
     const text = await readFile(p.rulesFile, 'utf8');
-    ir.rules = [parseRule(text, 'main')];
+    rules.push(parseRule(text, 'main'));
   }
+  // The primary rules surface — .cursor/rules/*.mdc, frontmatter
+  // description/globs/alwaysApply; `.md` in this dir is never consumed by a
+  // stock Cursor and must not be read as a rule [CU1].
+  if (existsSync(p.rulesDir)) {
+    rules.push(...(await readMdcRulesDir(p.rulesDir)));
+  }
+  if (rules.length) ir.rules = rules;
 
   if (existsSync(p.skillsDir)) {
     const skills = await readSkillsDir(p.skillsDir);
     if (skills.length) ir.skills = skills;
+  }
+
+  if (existsSync(p.agentsDir)) {
+    const agents = await readMarkdownDir<Agent>(p.agentsDir, parseAgent);
+    if (agents.length) ir.agents = agents;
+  }
+
+  if (existsSync(p.commandsDir)) {
+    const commands = await readMarkdownDir<Command>(
+      p.commandsDir,
+      parseCommand,
+    );
+    if (commands.length) ir.commands = commands;
   }
 
   if (existsSync(p.hooksFile)) {
@@ -64,6 +92,50 @@ export async function readCursor(
   }
 
   return ir;
+}
+
+/** `.cursor/rules/*.mdc` — `.md` files in this dir are never read [CU1]. */
+async function readMdcRulesDir(dir: string): Promise<Rule[]> {
+  const entries = await readdir(dir);
+  const out: Rule[] = [];
+  for (const entry of entries.sort()) {
+    if (!entry.endsWith('.mdc')) continue;
+    const id = basename(entry, '.mdc');
+    const text = await readFile(join(dir, entry), 'utf8');
+    out.push(normalizeGlobs(parseRule(text, id)));
+  }
+  return out;
+}
+
+/**
+ * The documented `.mdc` dialect allows `globs` as a comma-separated string
+ * [CU1], but the IR schema requires an array — coerce here rather than
+ * fail validation on a real-world fixture.
+ */
+function normalizeGlobs(rule: Rule): Rule {
+  const raw = (rule as unknown as { globs?: unknown }).globs;
+  if (typeof raw === 'string') {
+    rule.globs = raw
+      .split(',')
+      .map((g) => g.trim())
+      .filter(Boolean);
+  }
+  return rule;
+}
+
+async function readMarkdownDir<T>(
+  dir: string,
+  parse: (text: string, defaultName: string) => T,
+): Promise<T[]> {
+  const entries = await readdir(dir);
+  const out: T[] = [];
+  for (const entry of entries.sort()) {
+    if (!entry.endsWith('.md')) continue;
+    const name = basename(entry, '.md');
+    const text = await readFile(join(dir, entry), 'utf8');
+    out.push(parse(text, name));
+  }
+  return out;
 }
 
 function parseCursorHooks(
@@ -93,11 +165,15 @@ function parseMcp(servers: Record<string, McpEntry>): McpServer[] {
   const out: McpServer[] = [];
   for (const [name, s] of Object.entries(servers)) {
     if (s.url) {
-      out.push({
+      const server = {
         name,
         transport: s.type === 'sse' ? 'sse' : 'http',
         url: s.url,
-      } as McpServer);
+      } as McpServer;
+      if (s.headers)
+        (server as { headers?: Record<string, string> }).headers = s.headers;
+      if (s.auth) (server as { auth?: Record<string, unknown> }).auth = s.auth;
+      out.push(server);
     } else if (s.command) {
       const server = {
         name,

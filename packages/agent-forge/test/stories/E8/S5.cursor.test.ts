@@ -59,7 +59,7 @@ describe('E8.S5 · cursor', () => {
 
   // --- Hooks envelope [CU2] ---
 
-  story.tracked(
+  story(
     'E8.S5',
     'hooks.json carries the required "version": 1 [CU2]',
     async () => {
@@ -87,7 +87,7 @@ describe('E8.S5 · cursor', () => {
 
   // --- Rules .mdc [CU1] ---
 
-  story.tracked(
+  story(
     'E8.S5',
     'rules are written to .cursor/rules/*.mdc, never .md in that dir [CU1]',
     async () => {
@@ -105,7 +105,7 @@ describe('E8.S5 · cursor', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S5',
     '.cursor/rules/*.mdc fixtures are read (description/globs/alwaysApply) [CU1]',
     async () => {
@@ -124,7 +124,7 @@ describe('E8.S5 · cursor', () => {
 
   // --- Agents [CU3] + commands [CU6] ---
 
-  story.tracked(
+  story(
     'E8.S5',
     'agents emit to .cursor/agents/*.md with documented frontmatter [CU3]',
     async () => {
@@ -141,7 +141,7 @@ describe('E8.S5 · cursor', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S5',
     'commands capability on: .cursor/commands/*.md emitted [CU6]',
     async () => {
@@ -159,7 +159,7 @@ describe('E8.S5 · cursor', () => {
 
   // --- MCP [CU5] ---
 
-  story.tracked(
+  story(
     'E8.S5',
     'remote MCP drops the undocumented type key [CU5]',
     async () => {
@@ -205,7 +205,7 @@ describe('E8.S5 · cursor', () => {
 
   // --- User-scope rules file [CU1] ---
 
-  story.tracked(
+  story(
     'E8.S5',
     'the UNVERIFIED-as-consumed ~/.cursor/AGENTS.md is no longer written [CU1]',
     async () => {

@@ -148,7 +148,8 @@ const SPECS: readonly AdapterSpec[] = [
   },
   {
     client: 'cursor',
-    gap: 'agents + commands unread [CU3][CU6]',
+    // agents + commands lift as of the cursor-adapter-truth fix
+    // (E1.S8/E8.S5, [CU3][CU6]) — no longer a gap.
     build: (cwd) => {
       put(cwd, 'AGENTS.md', '# Rules\n\nCURSOR-RULE-MARKER\n'); // [CU1]
       put(

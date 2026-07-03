@@ -85,14 +85,18 @@ describe('cursorAdapter', () => {
     expect(re.hooks?.[0]?.command).toBe('./fmt.sh');
   });
 
-  it('warns about commands and unsupported features', async () => {
+  it('writes commands (capability now partial, not none [CU6]) and still warns about env', async () => {
     const ir: IR = {
       manifest: manifest(),
       commands: [{ name: 'c', body: 'b' }],
       env: { X: 'y' },
     };
     const report = await cursorAdapter.write(ir, 'project', cwd, {});
-    expect(report.warnings.some((w) => w.includes('commands'))).toBe(true);
+    // .cursor/commands/*.md is a real, documented surface [CU6] — the
+    // adapter-truth fix (E8.S5) writes it instead of warning it away.
+    expect(existsSync(join(cwd, '.cursor', 'commands', 'c.md'))).toBe(true);
+    expect(report.warnings.some((w) => w.includes('commands'))).toBe(false);
+    // env still has no documented Cursor surface.
     expect(report.warnings.some((w) => w.includes('env'))).toBe(true);
   });
 });

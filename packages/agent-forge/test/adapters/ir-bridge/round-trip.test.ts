@@ -128,32 +128,66 @@ describe('B4 round-trip: codex (color dropped per CX1)', () => {
 });
 
 // --- LOSSY-BY-DESIGN: honest skip+warn, supported subset still clean --------
-describe.each([
-  { adapter: cursorAdapter, id: 'cursor' }, // agents: partial
-  { adapter: opencodeAdapter, id: 'opencode' }, // agents: none
-])('B4 coverage honesty (lossy-by-design): $id', ({ adapter }) => {
+describe.each([{ adapter: opencodeAdapter, id: 'opencode' }])(
+  // agents: none
+  'B4 coverage honesty (lossy-by-design): $id',
+  ({ adapter }) => {
+    let cwd: string;
+    beforeEach(() => {
+      cwd = mkdtempSync(join(tmpdir(), `agent-forge-b4-lossy-${adapter.id}-`));
+    });
+    afterEach(() => {
+      rmSync(cwd, { recursive: true, force: true });
+    });
+
+    it('does not claim full agent support', () => {
+      expect(adapter.capabilities.resources.agents).not.toBe('full');
+    });
+
+    it('skips agents with a warning rather than corrupting them', async () => {
+      const ir = anatomyIR([adapter.id]);
+      const report = await adapter.write(ir, 'project', cwd, {});
+      const re = await adapter.read('project', cwd);
+      // Declared honestly: the 11 agents are skipped + warned, never silently
+      // recovered as garbage.
+      expect(report.warnings.length).toBeGreaterThan(0);
+      expect(report.skipped.length).toBe(ir.agents.length);
+      expect(re.agents ?? []).toHaveLength(0);
+      // The supported subset (skills) still round-trips clean.
+      expect(re.skills).toEqual(ir.skills);
+    });
+  },
+);
+
+// cursor no longer belongs in the lossy-by-design (whole-resource-skip) group
+// above: the cursor-adapter-truth fix (E8.S5/E1.S8, [CU3]) lifts
+// `.cursor/agents/*.md` for real. Declared support stays 'partial' because
+// the documented frontmatter is name/description/model only — same
+// field-level-drop shape as codex's `color` (§3 cursor d3/[CU3]).
+describe('B4 round-trip: cursor (color dropped per CU3; the mapped subset lifts clean)', () => {
   let cwd: string;
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), `agent-forge-b4-lossy-${adapter.id}-`));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-b4-cursor-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });
   });
 
-  it('does not claim full agent support', () => {
-    expect(adapter.capabilities.resources.agents).not.toBe('full');
+  it('declares partial agent support (documented frontmatter: name/description/model only)', () => {
+    expect(cursorAdapter.capabilities.resources.agents).toBe('partial');
   });
 
-  it('skips agents with a warning rather than corrupting them', async () => {
-    const ir = anatomyIR([adapter.id]);
-    const report = await adapter.write(ir, 'project', cwd, {});
-    const re = await adapter.read('project', cwd);
-    // Declared honestly: the 11 agents are skipped + warned, never silently
-    // recovered as garbage.
-    expect(report.warnings.length).toBeGreaterThan(0);
-    expect(report.skipped.length).toBe(ir.agents.length);
-    expect(re.agents ?? []).toHaveLength(0);
-    // The supported subset (skills) still round-trips clean.
+  it('IR -> dialect -> IR recovers agents modulo the undocumented `color` field (named-warning drop) + skills to identity', async () => {
+    const ir = anatomyIR(['cursor']);
+    const report = await cursorAdapter.write(ir, 'project', cwd, {});
+    const re = await cursorAdapter.read('project', cwd);
+    // No skip — color is a field-level drop, not a whole-resource skip [CU3].
+    expect(report.skipped).toEqual([]);
+    expect(report.warnings.some((w) => w.includes('color'))).toBe(true);
+    const withoutColor = (ir.agents ?? []).map(
+      ({ color: _color, ...rest }) => rest,
+    );
+    expect(re.agents).toEqual(withoutColor);
     expect(re.skills).toEqual(ir.skills);
   });
 });

@@ -98,7 +98,7 @@ describe('E7.S7 · vendor rules dirs only where activation demands', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S7',
     'glob rule emits .cursor/rules/<id>.mdc with description/globs/alwaysApply frontmatter [S19]',
     async () => {

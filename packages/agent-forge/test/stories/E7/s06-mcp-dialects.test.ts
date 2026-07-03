@@ -82,7 +82,7 @@ describe('E7.S6 · MCP dialect exactness per target', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S6',
     'cursor: remote entry shape is exactly {url, headers?, auth?} — no undocumented type key [S45] (§3 cursor d6)',
     async () => {

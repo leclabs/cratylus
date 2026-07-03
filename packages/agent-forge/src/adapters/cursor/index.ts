@@ -16,7 +16,11 @@ const capabilities: AdapterCapabilities = {
   resources: {
     rules: 'full',
     skills: 'partial',
-    commands: 'none',
+    // .cursor/commands/*.md is real [CU6], but the dialect carries no
+    // frontmatter (plain body = prompt) — read side is body-only, so a
+    // fixture exercising description/argument_hint/model/allowed_tools does
+    // not round-trip: 'partial', not 'full'.
+    commands: 'partial',
     agents: 'partial',
     hooks: 'full',
     mcp: 'full',
@@ -43,7 +47,8 @@ const capabilities: AdapterCapabilities = {
       'subagent.end',
       'context.compact.pre',
     ],
-    matchers: 'glob',
+    // Documented reality: Cursor hook matchers are regex, never glob [CU2].
+    matchers: 'regex',
     payload: 'native',
   },
   scopes: ['user', 'project'],
