@@ -14,17 +14,16 @@ DAG: `wave(0) {harness-landscape-research · standards-compat-research}` →
 `wave(1) {capability-user-stories ⊳ both}` → `wave(2) {story-coverage-tests ⊳ stories}` →
 `wave(3) {author-implementation-shards ⊳ tests}` → `wave(4+) {the emitted implementation shards}`.
 
+**Active:**
+
+- `capability-user-stories` — the full story library over the capability floor; consumes both
+  research RETURNs (in `completed/`, dep-fed).
+
 **Pending:**
 
-- `harness-landscape-research` — per-harness capabilities/features/configs/contracts/context shapes,
-  cited.
-- `standards-compat-research` — industry specs (Agent Skills · AGENTS.md · `.agents/`) +
-  cross-harness compatibility matrix (who reads whose formats), cited.
-- `capability-user-stories` — the full story library over the capability floor (import · IR ·
-  `.{namespace}/` output · reimport · re-export · plugin adapters · exemplify-optimization ·
-  elicit-on-ambiguity).
 - `story-coverage-tests` — an executable test per story; failing tests are the gap statement.
 - `author-implementation-shards` — one ⟨static, scope, accept⟩ shard per failing-test cluster,
   emitted into `pending/`.
 
-**Ready / active / completed:** none.
+**Completed:** `harness-landscape-research` · `standards-compat-research` (RETURN.md beside each —
+the wave-1 dep-fed inputs).
