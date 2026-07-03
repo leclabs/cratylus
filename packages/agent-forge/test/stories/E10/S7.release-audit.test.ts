@@ -66,7 +66,7 @@ function isReleaseAuditChecklist(text: string): boolean {
 }
 
 describe('E10.S7 · release-audit checklist', () => {
-  story.tracked(
+  story(
     'E10.S7',
     'a dated release-audit checklist doc exists with per-adapter rows, each UNVERIFIED item exactly once, and the E7.S10 tripwire',
     () => {

@@ -49,7 +49,7 @@ describe('E7.S10 · Claude-adopts-AGENTS.md tripwire', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S10',
     'the pinned assumption record exists in the project vault (docs/), naming issue #31005 [S49] with [S7][S62]',
     () => {
