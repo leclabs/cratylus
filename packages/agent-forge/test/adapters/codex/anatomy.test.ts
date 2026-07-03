@@ -51,18 +51,19 @@ function nicoLikeResolved(): ResolvedAgent {
 // ── Codex agent → TOML projection ────────────────────────────────────────────
 
 describe('agentToCodexToml — the codex subagent projection', () => {
-  it('emits valid TOML carrying name / description / system_prompt / color', () => {
+  it('emits valid TOML carrying name / description / developer_instructions; never color [CX1]', () => {
     const toml = agentToCodexToml(nicoLikeResolved());
     const parsed = TOML.parse(toml) as Record<string, unknown>;
     expect(parsed.name).toBe('nico');
-    expect(parsed.color).toBe('cyan');
     expect(parsed.description).toBe('📐 the Sage archetype');
-    expect(typeof parsed.system_prompt).toBe('string');
+    expect(typeof parsed.developer_instructions).toBe('string');
+    // No documented Codex agent-TOML color field — never fabricated [CX1].
+    expect(parsed.color).toBeUndefined();
   });
 
-  it('system_prompt carries the full composed SOUL body + memory genus block', () => {
+  it('developer_instructions carries the full composed SOUL body + memory genus block', () => {
     const obj = agentToCodexTomlObject(nicoLikeResolved());
-    const sp = obj.system_prompt as string;
+    const sp = obj.developer_instructions as string;
     // The harness-neutral organ sections — the SAME body the claude SOUL carries.
     expect(sp).toContain('## Persona');
     expect(sp).toContain('sage ≜ sage definiens');
@@ -77,7 +78,7 @@ describe('agentToCodexToml — the codex subagent projection', () => {
     expect(sp).not.toMatch(/content-hash: sha256:/);
   });
 
-  it('omits color when the agent carries no mark hue', () => {
+  it('omits the emoji-prefixed description when the agent carries no mark (color never emitted either way)', () => {
     const a = { ...nicoLikeResolved(), mark: undefined };
     const parsed = TOML.parse(agentToCodexToml(a)) as Record<string, unknown>;
     expect(parsed.color).toBeUndefined();
@@ -164,7 +165,7 @@ describe('lossy reporting for agents-none adapters (WriteReport holds)', () => {
         name: 'nico',
         description: '📐 the Sage archetype',
         body: agentToCodexTomlObject(nicoLikeResolved())
-          .system_prompt as string,
+          .developer_instructions as string,
       },
     ],
   });

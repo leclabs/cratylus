@@ -1,6 +1,7 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import TOML from '@iarna/toml';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { codexAdapter } from '../../../src/adapters/codex/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
@@ -41,7 +42,6 @@ describe('codexAdapter', () => {
       mcp_servers: [
         { name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] },
       ],
-      env: { DEBUG: 'true' },
     };
     const report = await codexAdapter.write(ir, 'project', cwd, {});
     expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
@@ -50,14 +50,16 @@ describe('codexAdapter', () => {
     expect(existsSync(join(cwd, '.codex', 'agents', 'planner.toml'))).toBe(
       true,
     );
+    // Skills land in .agents/skills/, NOT .codex/skills/ [CX2].
     expect(
-      existsSync(join(cwd, '.codex', 'skills', 'review', 'SKILL.md')),
+      existsSync(join(cwd, '.agents', 'skills', 'review', 'SKILL.md')),
     ).toBe(true);
+    expect(existsSync(join(cwd, '.codex', 'skills'))).toBe(false);
 
     const toml = readFileSync(join(cwd, '.codex', 'config.toml'), 'utf8');
-    expect(toml).toContain('codex_hooks = true');
+    // No fabricated `[features] codex_hooks` gate [CX4].
+    expect(toml).not.toContain('codex_hooks');
     expect(toml).toContain('Bash');
-    expect(toml).toContain('DEBUG');
     expect(report.warnings).toEqual([]);
   });
 
@@ -87,7 +89,7 @@ describe('codexAdapter', () => {
     expect(report.warnings.some((w) => w.includes('agent.idle'))).toBe(true);
   });
 
-  it('round-trips rules + commands + skills + mcp + env', async () => {
+  it('round-trips rules + commands + skills + mcp', async () => {
     const ir: IR = {
       manifest: manifest(),
       rules: [{ id: 'main', body: 'Be terse.' }],
@@ -96,7 +98,6 @@ describe('codexAdapter', () => {
       mcp_servers: [
         { name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] },
       ],
-      env: { DEBUG: 'true' },
     };
     await codexAdapter.write(ir, 'project', cwd, {});
     const re = await codexAdapter.read('project', cwd);
@@ -104,10 +105,18 @@ describe('codexAdapter', () => {
     expect(re.commands).toEqual(ir.commands);
     expect(re.skills).toEqual(ir.skills);
     expect(re.mcp_servers).toEqual(ir.mcp_servers);
-    expect(re.env).toEqual(ir.env);
   });
 
-  it('round-trips agents through TOML', async () => {
+  it('env has no documented Codex TOML shape: dropped with a named warning, not fabricated [CX6]', async () => {
+    const ir: IR = { manifest: manifest(), env: { DEBUG: 'true' } };
+    const report = await codexAdapter.write(ir, 'project', cwd, {});
+    expect(existsSync(join(cwd, '.codex', 'config.toml'))).toBe(false);
+    expect(report.warnings.some((w) => w.includes('env'))).toBe(true);
+    const re = await codexAdapter.read('project', cwd);
+    expect(re.env).toBeUndefined();
+  });
+
+  it('round-trips agents through TOML (name/description/model/body — no tools/color surface)', async () => {
     const ir: IR = {
       manifest: manifest(),
       agents: [
@@ -116,12 +125,33 @@ describe('codexAdapter', () => {
           body: 'You plan.',
           description: 'plans',
           model: 'gpt-5',
-          tools: ['Read', 'Grep'],
         },
       ],
     };
     await codexAdapter.write(ir, 'project', cwd, {});
     const re = await codexAdapter.read('project', cwd);
     expect(re.agents).toEqual(ir.agents);
+  });
+
+  it('agent tools/color are dropped with a named warning, not fabricated [CX1]', async () => {
+    const ir: IR = {
+      manifest: manifest(),
+      agents: [
+        {
+          name: 'planner',
+          body: 'You plan.',
+          tools: ['Read', 'Grep'],
+          color: 'blue',
+        },
+      ],
+    };
+    const report = await codexAdapter.write(ir, 'project', cwd, {});
+    expect(report.warnings.some((w) => w.includes('tools'))).toBe(true);
+    expect(report.warnings.some((w) => w.includes('color'))).toBe(true);
+    const obj = TOML.parse(
+      readFileSync(join(cwd, '.codex', 'agents', 'planner.toml'), 'utf8'),
+    ) as Record<string, unknown>;
+    expect('tools' in obj).toBe(false);
+    expect('color' in obj).toBe(false);
   });
 });

@@ -1,8 +1,14 @@
 /**
  * E7.S4 — `.claude/skills/` mirror of the neutral tree (R3).
  * Ground truth: §3 R3 (author once in .agents/skills/, mirror for Claude
- * Code which ignores .agents/ [S8][S49]); drift guard via doctor. No mirror
- * mode exists today — both bullets tracked.
+ * Code which ignores .agents/ [S8][S49]); drift guard via doctor.
+ *
+ * The neutral-tree half graduated as a side effect of the codex-adapter-truth
+ * fix (codex now authors into `.agents/skills/` per [CX2]), which happens to
+ * satisfy this fixture's byte-equal check against claude's independently
+ * generated SKILL.md — not a deliberate symlink/mirror mechanism, so it is
+ * fragile for a skill whose body differs per harness. The doctor drift-guard
+ * bullet still has no mirror check at all and stays tracked.
  */
 
 import {
@@ -33,7 +39,7 @@ afterEach(() => {
 });
 
 describe('E7.S4 · .claude/skills mirror of .agents/skills', () => {
-  story.tracked(
+  story(
     'E7.S4',
     '.claude/skills resolves to the identical skill set: symlink (target verified) or byte-equal copy, authored once in .agents/skills [S8]',
     async () => {

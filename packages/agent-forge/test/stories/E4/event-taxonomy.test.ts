@@ -201,7 +201,7 @@ describe('E4.S4 · event taxonomy', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E4.S4',
     'codex: fabricated PermissionRequest is gone (documented set is 7 events) [CX4]',
     () => {

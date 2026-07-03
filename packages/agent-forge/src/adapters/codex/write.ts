@@ -35,7 +35,12 @@ export async function writeCodex(
     written.push(p.rulesFile);
   }
 
-  // Config TOML — collect hooks/mcp/permissions/env into a single file
+  // Config TOML — collect hooks/mcp into a single file. `permissions`/`env`
+  // are NEVER written here: Codex's real surfaces are `approval_policy` /
+  // `sandbox_mode` (permissions) and `shell_environment_policy` (env) — a
+  // generic {allow,deny,ask} table or flat KEY=value map is a fabricated
+  // shape with no Codex reader, so the loss is named and dropped, not
+  // emitted [CX6].
   const config: Record<string, unknown> = {};
   if (ir.hooks?.length) {
     const compatible: Hook[] = ir.hooks.filter((h: Hook) =>
@@ -50,7 +55,7 @@ export async function writeCodex(
       );
       skipped.push({
         path: `hooks/${d.id ?? '?'}.yaml`,
-        reason: 'unsupported by Codex 6-event subset',
+        reason: 'unsupported by Codex 7-event subset',
       });
     }
     if (compatible.length > 0) {
@@ -68,15 +73,32 @@ export async function writeCodex(
           );
         }
       }
-      config.features = { codex_hooks: true };
+      // No `[features] codex_hooks` gate: undocumented/fabricated [CX4].
       config.hooks = serializeCodexHooks(compatible);
     }
   }
   if (ir.mcp_servers?.length) {
-    config.mcp_servers = serializeMcp(ir.mcp_servers);
+    const mcp = serializeMcp(ir.mcp_servers, warnings);
+    if (Object.keys(mcp).length > 0) config.mcp_servers = mcp;
   }
-  if (ir.permissions) config.permissions = ir.permissions;
-  if (ir.env) config.env = ir.env;
+  if (ir.permissions) {
+    warnings.push(
+      "permissions: Codex's documented surface is approval_policy/sandbox_mode, not a generic {allow,deny,ask} table — dropped [CX6]",
+    );
+    skipped.push({
+      path: 'config.toml#permissions',
+      reason: 'no documented Codex TOML shape [CX6]',
+    });
+  }
+  if (ir.env) {
+    warnings.push(
+      "env: Codex's documented surface is shell_environment_policy, not a flat KEY=value table — dropped [CX6]",
+    );
+    skipped.push({
+      path: 'config.toml#env',
+      reason: 'no documented Codex TOML shape [CX6]',
+    });
+  }
 
   if (Object.keys(config).length > 0) {
     if (!opts.dryRun) {
@@ -100,26 +122,37 @@ export async function writeCodex(
     }
   }
 
-  // Agents → agents/<name>.toml
+  // Agents → agents/<name>.toml — documented fields only: name, description,
+  // developer_instructions, model [CX1]. `tools`/`color` have no documented
+  // Codex agent-TOML field; carrying them would be fabrication, so they are
+  // dropped with a named warning rather than emitted.
   if (ir.agents?.length) {
     if (!opts.dryRun) await mkdir(p.agentsDir, { recursive: true });
     for (const agent of ir.agents) {
       const path = join(p.agentsDir, `${agent.name}.toml`);
       const obj: Record<string, unknown> = {
         name: agent.name,
-        system_prompt: agent.body,
+        developer_instructions: agent.body,
       };
       if (agent.description) obj.description = agent.description;
       if (agent.model) obj.model = agent.model;
-      if (agent.tools) obj.tools = agent.tools;
-      if (agent.color) obj.color = agent.color;
+      if (agent.tools) {
+        warnings.push(
+          `agent '${agent.name}': tools has no documented Codex agent-TOML field — dropped [CX1] (target: codex)`,
+        );
+      }
+      if (agent.color) {
+        warnings.push(
+          `agent '${agent.name}': color has no documented Codex agent-TOML field — dropped [CX1] (target: codex)`,
+        );
+      }
       if (!opts.dryRun)
         await writeFile(path, TOML.stringify(obj as TOML.JsonMap), 'utf8');
       written.push(path);
     }
   }
 
-  // Skills
+  // Skills → .agents/skills/<name>/SKILL.md — NOT .codex/skills/ [CX2].
   if (ir.skills?.length) {
     for (const skill of ir.skills) {
       const skillDir = join(p.skillsDir, skill.name);
@@ -172,7 +205,16 @@ function serializeCodexHooks(hooks: Hook[]): Record<
   return out;
 }
 
-function serializeMcp(servers: McpServer[]): Record<string, unknown> {
+/**
+ * `[mcp_servers.<name>]` per [CX7]: stdio {command,args,env}; remote
+ * {url, bearer_token_env_var?, http_headers?} — no `type` key. SSE has no
+ * documented Codex shape at all: inexpressible, so it is warned and dropped
+ * rather than silently emitted under a fabricated shape.
+ */
+function serializeMcp(
+  servers: McpServer[],
+  warnings: string[],
+): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const s of servers) {
     if (s.transport === 'stdio') {
@@ -180,9 +222,15 @@ function serializeMcp(servers: McpServer[]): Record<string, unknown> {
       if (s.args) entry.args = s.args;
       if (s.env) entry.env = s.env;
       out[s.name] = entry;
+    } else if (s.transport === 'sse') {
+      warnings.push(
+        `mcp server '${s.name}': SSE transport is inexpressible in the Codex dialect (no 'type' key, no SSE support) — dropped [CX7]`,
+      );
     } else {
-      const entry: Record<string, unknown> = { url: s.url, type: s.transport };
-      if (s.headers) entry.headers = s.headers;
+      const entry: Record<string, unknown> = { url: s.url };
+      if (s.bearer_token_env_var)
+        entry.bearer_token_env_var = s.bearer_token_env_var;
+      if (s.http_headers) entry.http_headers = s.http_headers;
       out[s.name] = entry;
     }
   }

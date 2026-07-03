@@ -18,10 +18,10 @@ const capabilities: AdapterCapabilities = {
     skills: 'full',
     commands: 'full',
     agents: 'full',
-    hooks: 'partial', // 6 events, Bash-only matchers in practice
+    hooks: 'partial', // 7 documented events [CX4], Bash-only matchers in practice
     mcp: 'full',
-    permissions: 'partial',
-    env: 'full',
+    permissions: 'partial', // approval_policy/sandbox_mode, not a generic ACL [CX6]
+    env: 'partial', // shell_environment_policy, not a flat KEY=value map [CX6]
   },
   hooks: {
     supported: [
@@ -29,7 +29,8 @@ const capabilities: AdapterCapabilities = {
       'prompt.submit',
       'tool.use.pre',
       'tool.use.post',
-      'permission.request',
+      'context.compact.pre',
+      'context.compact.post',
       'turn.end',
     ],
     matchers: 'literal', // Codex hooks effectively only respond to Bash matcher

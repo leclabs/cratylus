@@ -60,32 +60,69 @@ describe('B4 culture->IR bridge: the emitted IR is well-formed', () => {
 });
 
 // --- CLEAN dialects: read(write(IR)) == IR, zero warnings -------------------
-describe.each([
-  { adapter: claudeAdapter, id: 'claude' },
-  { adapter: codexAdapter, id: 'codex' },
-])('B4 round-trip CLEAN: $id', ({ adapter }) => {
+describe.each([{ adapter: claudeAdapter, id: 'claude' }])(
+  'B4 round-trip CLEAN: $id',
+  ({ adapter }) => {
+    let cwd: string;
+    beforeEach(() => {
+      cwd = mkdtempSync(join(tmpdir(), `agent-forge-b4-${adapter.id}-`));
+    });
+    afterEach(() => {
+      rmSync(cwd, { recursive: true, force: true });
+    });
+
+    it('declares full agent + skill support', () => {
+      expect(adapter.capabilities.resources.agents).toBe('full');
+      expect(adapter.capabilities.resources.skills).toBe('full');
+    });
+
+    it('IR -> dialect -> IR recovers all 21 artifacts to identity', async () => {
+      const ir = anatomyIR([adapter.id]);
+      const report = await adapter.write(ir, 'project', cwd, {});
+      const re = await adapter.read('project', cwd);
+      // No artifact dropped or downgraded.
+      expect(report.warnings).toEqual([]);
+      expect(report.skipped).toEqual([]);
+      // Structural identity on every agent and every skill.
+      expect(re.agents).toEqual(ir.agents);
+      expect(re.skills).toEqual(ir.skills);
+    });
+  },
+);
+
+// --- codex: CLEAN except the undocumented `color` field [CX1] --------------
+// codex's agent TOML has no documented color field (agentToCodexTomlObject /
+// write.ts drop it with a named warning rather than fabricating one), so the
+// agent-anatomy fixture — every agent carries `color` — is not a zero-loss
+// round trip here the way it is for claude. Skills are unaffected and still
+// recover to identity.
+describe('B4 round-trip: codex (color dropped per CX1)', () => {
   let cwd: string;
   beforeEach(() => {
-    cwd = mkdtempSync(join(tmpdir(), `agent-forge-b4-${adapter.id}-`));
+    cwd = mkdtempSync(join(tmpdir(), 'agent-forge-b4-codex-'));
   });
   afterEach(() => {
     rmSync(cwd, { recursive: true, force: true });
   });
 
   it('declares full agent + skill support', () => {
-    expect(adapter.capabilities.resources.agents).toBe('full');
-    expect(adapter.capabilities.resources.skills).toBe('full');
+    expect(codexAdapter.capabilities.resources.agents).toBe('full');
+    expect(codexAdapter.capabilities.resources.skills).toBe('full');
   });
 
-  it('IR -> dialect -> IR recovers all 21 artifacts to identity', async () => {
-    const ir = anatomyIR([adapter.id]);
-    const report = await adapter.write(ir, 'project', cwd, {});
-    const re = await adapter.read('project', cwd);
-    // No artifact dropped or downgraded.
-    expect(report.warnings).toEqual([]);
+  it('IR -> dialect -> IR recovers agents modulo the undocumented `color` field (named-warning drop) + skills to identity', async () => {
+    const ir = anatomyIR(['codex']);
+    const report = await codexAdapter.write(ir, 'project', cwd, {});
+    const re = await codexAdapter.read('project', cwd);
+    // No skip — color is a field-level drop, not a whole-resource skip.
     expect(report.skipped).toEqual([]);
-    // Structural identity on every agent and every skill.
-    expect(re.agents).toEqual(ir.agents);
+    // One named warning per agent (every fixture agent carries color).
+    expect(report.warnings).toHaveLength(ir.agents?.length ?? 0);
+    expect(report.warnings.every((w) => w.includes('color'))).toBe(true);
+    const withoutColor = (ir.agents ?? []).map(
+      ({ color: _color, ...rest }) => rest,
+    );
+    expect(re.agents).toEqual(withoutColor);
     expect(re.skills).toEqual(ir.skills);
   });
 });

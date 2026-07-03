@@ -190,7 +190,7 @@ describe('E7.S6 · MCP dialect exactness per target', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S6',
     'codex: remote entry carries no type key — url + bearer_token_env_var/http_headers only [S47] (§3 codex d6)',
     async () => {
@@ -210,7 +210,7 @@ describe('E7.S6 · MCP dialect exactness per target', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S6',
     'codex: SSE transport is inexpressible in the dialect and must warn per E4.S2 [S47]',
     async () => {

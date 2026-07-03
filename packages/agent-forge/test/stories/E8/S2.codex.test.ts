@@ -51,61 +51,45 @@ describe('E8.S2 · codex', () => {
 
   // --- Skills home [CX2] ---
 
-  story.tracked(
-    'E8.S2',
-    'project skills emit to .agents/skills/ [CX2]',
-    async () => {
-      await codexAdapter.write(SKILL_IR, 'project', cwd, {});
-      expect(
-        existsSync(join(cwd, '.agents', 'skills', 'review', 'SKILL.md')),
-      ).toBe(true);
-    },
-  );
+  story('E8.S2', 'project skills emit to .agents/skills/ [CX2]', async () => {
+    await codexAdapter.write(SKILL_IR, 'project', cwd, {});
+    expect(
+      existsSync(join(cwd, '.agents', 'skills', 'review', 'SKILL.md')),
+    ).toBe(true);
+  });
 
-  story.tracked(
-    'E8.S2',
-    'nothing is emitted to .codex/skills/ [CX2]',
-    async () => {
-      await codexAdapter.write(SKILL_IR, 'project', cwd, {});
-      expect(existsSync(join(cwd, '.codex', 'skills'))).toBe(false);
-    },
-  );
+  story('E8.S2', 'nothing is emitted to .codex/skills/ [CX2]', async () => {
+    await codexAdapter.write(SKILL_IR, 'project', cwd, {});
+    expect(existsSync(join(cwd, '.codex', 'skills'))).toBe(false);
+  });
 
-  story.tracked(
-    'E8.S2',
-    'user skills emit to ~/.agents/skills/ [CX2]',
-    async () => {
-      const h = useHome();
-      await codexAdapter.write(
-        { ...SKILL_IR, manifest: manifest('user') },
-        'user',
-        cwd,
-        {},
-      );
-      expect(
-        existsSync(join(h, '.agents', 'skills', 'review', 'SKILL.md')),
-      ).toBe(true);
-    },
-  );
+  story('E8.S2', 'user skills emit to ~/.agents/skills/ [CX2]', async () => {
+    const h = useHome();
+    await codexAdapter.write(
+      { ...SKILL_IR, manifest: manifest('user') },
+      'user',
+      cwd,
+      {},
+    );
+    expect(existsSync(join(h, '.agents', 'skills', 'review', 'SKILL.md'))).toBe(
+      true,
+    );
+  });
 
-  story.tracked(
-    'E8.S2',
-    'nothing is emitted to ~/.codex/skills/ [CX2]',
-    async () => {
-      const h = useHome();
-      await codexAdapter.write(
-        { ...SKILL_IR, manifest: manifest('user') },
-        'user',
-        cwd,
-        {},
-      );
-      expect(existsSync(join(h, '.codex', 'skills'))).toBe(false);
-    },
-  );
+  story('E8.S2', 'nothing is emitted to ~/.codex/skills/ [CX2]', async () => {
+    const h = useHome();
+    await codexAdapter.write(
+      { ...SKILL_IR, manifest: manifest('user') },
+      'user',
+      cwd,
+      {},
+    );
+    expect(existsSync(join(h, '.codex', 'skills'))).toBe(false);
+  });
 
   // --- Agent TOML [CX1] ---
 
-  story.tracked(
+  story(
     'E8.S2',
     'agent TOML uses documented developer_instructions field [CX1]',
     async () => {
@@ -128,7 +112,7 @@ describe('E8.S2 · codex', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S2',
     'agent TOML carries no fabricated system_prompt/tools/color keys [CX1]',
     async () => {
@@ -153,7 +137,7 @@ describe('E8.S2 · codex', () => {
 
   // --- Hooks gate + event set [CX4] ---
 
-  story.tracked(
+  story(
     'E8.S2',
     'no fabricated [features] codex_hooks gate is emitted [CX4]',
     async () => {
@@ -183,7 +167,7 @@ describe('E8.S2 · codex', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S2',
     'event map excludes undocumented PermissionRequest [CX4]',
     () => {
@@ -191,7 +175,7 @@ describe('E8.S2 · codex', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S2',
     'event map covers the documented PreCompact/PostCompact events [CX4]',
     () => {
@@ -204,7 +188,7 @@ describe('E8.S2 · codex', () => {
 
   // --- Config keys [CX6] ---
 
-  story.tracked(
+  story(
     'E8.S2',
     'no fabricated permissions/env TOML keys are emitted [CX6]',
     async () => {
@@ -223,7 +207,7 @@ describe('E8.S2 · codex', () => {
 
   // --- MCP shape [CX7] ---
 
-  story.tracked(
+  story(
     'E8.S2',
     'remote MCP emits url without the undocumented type key, no SSE [CX7]',
     async () => {
@@ -268,7 +252,7 @@ describe('E8.S2 · codex', () => {
 
   // --- Read-side lift [CX3] + fabricated import (E1.S3) ---
 
-  story.tracked(
+  story(
     'E8.S2',
     'read lifts AGENTS.override.md over AGENTS.md [CX3]',
     async () => {
@@ -285,7 +269,7 @@ describe('E8.S2 · codex', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S2',
     'fabricated-shape import: permissions/env TOML tables lift zero phantom resources (E1.S3) [CX6]',
     async () => {

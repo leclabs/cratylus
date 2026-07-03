@@ -1,16 +1,19 @@
 import type { CanonicalEvent } from '../../core/index.js';
 
 /**
- * Canonical event → Codex CLI event name. Codex hooks are experimental
- * (behind `[features] codex_hooks = true`) and currently emit only for
- * `Bash` tool calls; matchers other than 'Bash' are ineffective.
+ * Canonical event → Codex CLI event name. Documented set (7 events, PascalCase):
+ * PreToolUse, PostToolUse, PreCompact, PostCompact, SessionStart,
+ * UserPromptSubmit, Stop [CX4]. `PermissionRequest` is NOT documented and is
+ * never mapped; hooks live in `hooks.json` / `[hooks]` tables — there is no
+ * documented `[features] codex_hooks` gate.
  */
 export const canonicalToCodex: Partial<Record<CanonicalEvent, string>> = {
   'session.start': 'SessionStart',
   'prompt.submit': 'UserPromptSubmit',
   'tool.use.pre': 'PreToolUse',
   'tool.use.post': 'PostToolUse',
-  'permission.request': 'PermissionRequest',
+  'context.compact.pre': 'PreCompact',
+  'context.compact.post': 'PostCompact',
   'turn.end': 'Stop',
 };
 

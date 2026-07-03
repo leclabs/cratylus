@@ -10,7 +10,6 @@ import {
   type McpServer,
   type Scope,
   type Skill,
-  parseAgent,
   parseCommand,
   parseRule,
   parseSkill,
@@ -19,7 +18,6 @@ import { codexToCanonical } from './events.js';
 import { paths } from './paths.js';
 
 interface CodexConfig {
-  features?: { codex_hooks?: boolean };
   hooks?: Record<
     string,
     Array<{
@@ -28,8 +26,6 @@ interface CodexConfig {
     }>
   >;
   mcp_servers?: Record<string, McpEntry>;
-  permissions?: { allow?: string[]; deny?: string[]; ask?: string[] };
-  env?: Record<string, string>;
 }
 
 interface McpEntry {
@@ -37,8 +33,8 @@ interface McpEntry {
   args?: string[];
   env?: Record<string, string>;
   url?: string;
-  headers?: Record<string, string>;
-  type?: 'stdio' | 'http' | 'sse';
+  bearer_token_env_var?: string;
+  http_headers?: Record<string, string>;
 }
 
 export async function readCodex(
@@ -48,13 +44,20 @@ export async function readCodex(
   const p = paths(scope, cwd);
   const ir: Partial<IR> = {};
 
-  // Rules — AGENTS.md
-  if (existsSync(p.rulesFile)) {
+  // Rules — AGENTS.override.md lifts over AGENTS.md [CX3].
+  if (existsSync(p.overrideRulesFile)) {
+    const text = await readFile(p.overrideRulesFile, 'utf8');
+    ir.rules = [parseRule(text, 'main')];
+  } else if (existsSync(p.rulesFile)) {
     const text = await readFile(p.rulesFile, 'utf8');
     ir.rules = [parseRule(text, 'main')];
   }
 
-  // Config TOML
+  // Config TOML — hooks + mcp only. `permissions`/`env` tables are never a
+  // genuine Codex artifact (real surfaces are approval_policy/sandbox_mode +
+  // shell_environment_policy [CX6]), so a fabricated-shape table — whether
+  // hand-written or left by an older agent-forge — lifts zero phantom
+  // resources rather than being trusted at face value.
   if (existsSync(p.configFile)) {
     const text = await readFile(p.configFile, 'utf8');
     const cfg = TOML.parse(text) as unknown as CodexConfig;
@@ -65,8 +68,6 @@ export async function readCodex(
     if (cfg.mcp_servers) {
       ir.mcp_servers = parseMcp(cfg.mcp_servers);
     }
-    if (cfg.permissions) ir.permissions = cfg.permissions;
-    if (cfg.env) ir.env = cfg.env;
   }
 
   // Prompts (commands)
@@ -81,7 +82,7 @@ export async function readCodex(
     if (agents.length) ir.agents = agents;
   }
 
-  // Skills
+  // Skills — .agents/skills/, NOT .codex/skills/ [CX2].
   if (existsSync(p.skillsDir)) {
     const skills = await readSkillsDir(p.skillsDir);
     if (skills.length) ir.skills = skills;
@@ -113,15 +114,27 @@ function parseCodexHooks(hooks: NonNullable<CodexConfig['hooks']>): Hook[] {
   return out;
 }
 
+/**
+ * `[mcp_servers.<name>]` per [CX7]: stdio {command,args,env}; remote
+ * {url, bearer_token_env_var?, http_headers?} — no `type` key is documented,
+ * so none is consulted; any `url` entry is Codex's one remote shape (http).
+ */
 function parseMcp(servers: Record<string, McpEntry>): McpServer[] {
   const out: McpServer[] = [];
   for (const [name, s] of Object.entries(servers)) {
     if (s.url) {
-      out.push({
+      const server = {
         name,
-        transport: s.type === 'sse' ? 'sse' : 'http',
+        transport: 'http',
         url: s.url,
-      } as McpServer);
+      } as McpServer;
+      if (s.bearer_token_env_var)
+        (server as { bearer_token_env_var?: string }).bearer_token_env_var =
+          s.bearer_token_env_var;
+      if (s.http_headers)
+        (server as { http_headers?: Record<string, string> }).http_headers =
+          s.http_headers;
+      out.push(server);
     } else if (s.command) {
       const server = {
         name,
@@ -151,6 +164,9 @@ async function readMarkdownDir<T>(
   return out;
 }
 
+/** `agents/<name>.toml` — documented fields only: name, description,
+ * developer_instructions, model [CX1]. No `system_prompt`/`tools`/`color`:
+ * those are fabricated-shape leftovers, never lifted as if genuine. */
 async function readCodexAgentsDir(dir: string): Promise<Agent[]> {
   const entries = await readdir(dir);
   const out: Agent[] = [];
@@ -161,19 +177,15 @@ async function readCodexAgentsDir(dir: string): Promise<Agent[]> {
       name?: string;
       description?: string;
       model?: string;
-      tools?: string[];
-      color?: string;
-      system_prompt?: string;
+      developer_instructions?: string;
     };
     const name = parsed.name ?? basename(entry, '.toml');
     const agent: Agent = {
       name,
-      body: parsed.system_prompt ?? '',
+      body: parsed.developer_instructions ?? '',
     };
     if (parsed.description) agent.description = parsed.description;
     if (parsed.model) agent.model = parsed.model;
-    if (parsed.tools) agent.tools = parsed.tools;
-    if (parsed.color) agent.color = parsed.color;
     out.push(agent);
   }
   return out;

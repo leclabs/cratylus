@@ -41,8 +41,6 @@ const PASSING_PAIRS: readonly Pair[] = [
   ['codex', 'rules'],
   ['codex', 'skills'],
   ['codex', 'commands'],
-  ['codex', 'agents'],
-  ['codex', 'env'],
   ['continue', 'rules'],
   ['copilot', 'rules'],
   ['copilot', 'skills'],
@@ -58,17 +56,27 @@ const PASSING_PAIRS: readonly Pair[] = [
 ] as const;
 
 /**
- * Pairs declared 'full' that do NOT round-trip today: each of these adapters
- * silently drops remote-server `headers` on read, so a RemoteMcpServer loses
- * a schema field with no warning (mcp declared full is dishonest for these —
- * consistent with the §3 remote-MCP-shape divergences [CX7][GM1][CL6][CU5]).
+ * Pairs declared 'full' that do NOT round-trip today, each classified with
+ * its own reason:
+ * - mcp: each of these adapters silently drops remote-server `headers` on
+ *   read, so a RemoteMcpServer loses a schema field with no warning (mcp
+ *   declared full is dishonest for these — consistent with the §3
+ *   remote-MCP-shape divergences [CX7][GM1][CL6][CU5]).
+ * - codex/agents: `tools`/`color` have no documented Codex agent-TOML field
+ *   [CX1] — the shared agents fixture exercises both, so they are warned and
+ *   dropped on write rather than fabricated, and do not survive reimport.
  */
-const TRACKED_PAIRS: readonly Pair[] = [
-  ['cline', 'mcp'],
-  ['codex', 'mcp'],
-  ['copilot', 'mcp'],
-  ['cursor', 'mcp'],
-  ['gemini', 'mcp'],
+const TRACKED_PAIRS: readonly (readonly [...Pair, reason: string])[] = [
+  ['cline', 'mcp', 'remote-mcp headers dropped on read'],
+  ['codex', 'mcp', 'remote-mcp headers dropped on read'],
+  ['copilot', 'mcp', 'remote-mcp headers dropped on read'],
+  ['cursor', 'mcp', 'remote-mcp headers dropped on read'],
+  ['gemini', 'mcp', 'remote-mcp headers dropped on read'],
+  [
+    'codex',
+    'agents',
+    'tools/color have no documented Codex agent-TOML field [CX1]',
+  ],
 ] as const;
 
 const cleanups: string[] = [];
@@ -101,10 +109,10 @@ describe('E4.S1 · declared-full round-trip matrix', () => {
     });
   }
 
-  for (const [adapterId, type] of TRACKED_PAIRS) {
+  for (const [adapterId, type, reason] of TRACKED_PAIRS) {
     story.tracked(
       'E4.S1',
-      `${adapterId}/${type}: import(compile(r)) ≡ r (remote-mcp headers dropped on read)`,
+      `${adapterId}/${type}: import(compile(r)) ≡ r (${reason})`,
       async () => {
         await roundTrip(adapterId, type);
       },

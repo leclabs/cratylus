@@ -4,8 +4,10 @@
 // for claude; this mirrors it for codex.
 //
 // Codex's native agent surface differs from claude's `.md` SOUL:
-//   - a SUBAGENT is `agents/<name>.toml` — `{ name, description, system_prompt,
-//     color? }` (the same TOML shape the codex IR write path emits, `write.ts`).
+//   - a SUBAGENT is `agents/<name>.toml` — `{ name, description,
+//     developer_instructions, model? }` (the documented fields [CX1]; the
+//     same shape the codex IR write path emits, `write.ts` — no fabricated
+//     `system_prompt`/`tools`/`color`).
 //   - the always-loaded INSTRUCTION surface is `AGENTS.md` (project rules).
 //   - a SKILL is `skills/<name>/SKILL.md` (the AgentSkills spec, shared with claude).
 //
@@ -14,7 +16,7 @@
 // `agentBody` / `skillBody` / `ResolvedAgent` / `ResolvedSkill`
 // from the claude adapter (those are the anatomy-composition machinery, not
 // claude-specific framing) and only adds the codex-specific FRAMING: the agent
-// body → a `.toml` `system_prompt`, and the codex SKILL.md / AGENTS.md surfaces.
+// body → a `.toml` `developer_instructions`, and the codex SKILL.md / AGENTS.md surfaces.
 
 import TOML from '@iarna/toml';
 import {
@@ -32,11 +34,15 @@ export type { ResolvedAgent, ResolvedSkill };
 
 /**
  * The codex subagent TOML object for a resolved agent: `{ name, description,
- * system_prompt, color? }`. `system_prompt` is the composed SOUL body (the
+ * developer_instructions, model? }` — the documented codex agent-TOML fields
+ * [CX1]. `developer_instructions` is the composed SOUL body (the
  * harness-neutral organ sections + memory genus block) — the SAME `agentBody` the
  * claude SOUL carries, just delivered as a TOML field instead of a `.md` body.
+ * No `color` is emitted: Codex's agent TOML has no documented color field, so
+ * carrying `mark.hue` here would be the same fabrication [CX1] fixes on the
+ * IR write path.
  *
- * No provenance comment is injected into `system_prompt`: the
+ * No provenance comment is injected into `developer_instructions`: the
  * regenerate-don't-hand-edit banner + content-hash is build-provenance the running
  * agent never consumes (mirrors `skillToCodexMd`, which already omits it).
  * `_profile` is retained for API symmetry but no longer recorded.
@@ -46,25 +52,22 @@ export function agentToCodexTomlObject(
   _profile = 'strong-llm-lean/codex',
 ): Record<string, unknown> {
   const body = agentBody(a);
-  const systemPrompt = `${body.replace(/\n+$/, '')}\n`;
+  const developerInstructions = `${body.replace(/\n+$/, '')}\n`;
   const obj: Record<string, unknown> = {
     name: a.name,
     description: a.mark?.emoji
       ? `${a.mark.emoji} ${a.description}`
       : a.description,
-    system_prompt: systemPrompt,
+    developer_instructions: developerInstructions,
   };
-  if (a.mark?.hue) {
-    obj.color = a.mark.hue;
-  }
   return obj;
 }
 
 /**
  * The full `agents/<name>.toml` text for a resolved agent (the codex counterpart
  * of `agentToClaudeMd`). Serialized via `@iarna/toml` (the same serializer the
- * codex IR write path uses), so the multi-line `system_prompt` is a TOML `"""`
- * literal.
+ * codex IR write path uses), so the multi-line `developer_instructions` is a
+ * TOML `"""` literal.
  */
 export function agentToCodexToml(
   a: ResolvedAgent,
@@ -116,8 +119,8 @@ function frontMatterLines(fm: Record<string, unknown>): string[] {
  * subagents (the shared rules surface), so a codex workspace discovers them.
  *
  * Kept deliberately minimal — the load-bearing agent content is the `.toml`
- * `system_prompt`; this is the discovery shell (a fuller rules projection from the
- * agent-anatomy rule corpus is a later, separate concern).
+ * `developer_instructions`; this is the discovery shell (a fuller rules
+ * projection from the agent-anatomy rule corpus is a later, separate concern).
  */
 export function agentsMdSurface(agentNames: readonly string[]): string {
   const out: string[] = ['# Agents', ''];

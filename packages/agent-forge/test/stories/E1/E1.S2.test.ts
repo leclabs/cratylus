@@ -109,7 +109,8 @@ const SPECS: readonly AdapterSpec[] = [
   },
   {
     client: 'codex',
-    gap: '.agents/skills unread [CX2]',
+    // .agents/skills lift fixed alongside the codex-adapter-truth write-side
+    // fix [CX2] (paths.ts skillsDir is shared by read+write) — no longer a gap.
     build: (cwd) => {
       put(cwd, 'AGENTS.md', '# Rules\n\nCODEX-RULE-MARKER\n'); // [CX3]
       put(
