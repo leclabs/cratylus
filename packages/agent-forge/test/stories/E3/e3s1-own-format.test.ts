@@ -1,6 +1,6 @@
 /**
  * E3.S1 · own-format round-read is the identity.
- * Contract: plans/interop-hardening/stories/E3-reimport.md.
+ * Contract: test/stories/E3-reimport.md.
  */
 
 import { existsSync, rmSync } from 'node:fs';

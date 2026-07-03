@@ -1,6 +1,6 @@
 /**
  * E3.S5 · foreign content in shared files survives reimport + recompile.
- * Contract: plans/interop-hardening/stories/E3-reimport.md.
+ * Contract: test/stories/E3-reimport.md.
  * Fixes RETURN §3 cross-cutting "Write is destructive": every adapter
  * overwrites the target rules/settings file wholesale.
  */

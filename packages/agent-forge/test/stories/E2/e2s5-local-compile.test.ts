@@ -1,6 +1,6 @@
 /**
  * E2.S5 · local-scope compile uses each harness's local tier or refuses loudly.
- * Contract: plans/interop-hardening/stories/E2-ir-emission.md.
+ * Contract: test/stories/E2-ir-emission.md.
  * Claude's documented local tier: CLAUDE.local.md (rules) + .claude/settings.local.json
  * (settings) [CC1][CC8]. No other shipped target documents a local tier.
  */

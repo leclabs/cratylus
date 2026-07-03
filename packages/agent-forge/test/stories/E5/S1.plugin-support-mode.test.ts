@@ -1,7 +1,7 @@
 /**
  * E5.S1 — support mode `plugin` is a first-class capability value.
  *
- * Documented truth (plans/interop-hardening/stories/E5-plugin-adapters.md):
+ * Documented truth (test/stories/E5-plugin-adapters.md):
  * capability declarations admit `plugin` (or `{level, via: 'plugin'}`) per
  * resource; the engine routes such resources to the adapter's plugin emitter;
  * a resource declared `plugin` with no plugin emitter is a lint error at

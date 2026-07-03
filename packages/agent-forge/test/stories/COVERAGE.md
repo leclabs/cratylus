@@ -3,7 +3,7 @@
 Library: 10 epics · 81 stories, shards `E1-…` – `E10-…` in this dir. ρ=LLM. All six Operator
 ELICIT rulings are resolved and live in the amended stories (E1.S8 · E2.S5 · E4.S8 · E5.S8 ·
 E6.S3/S6/S8 · E7.S3 · E8.S10 · E10.S5) — no open intent forks remain. Pi is on the roster:
-E5.S8 live + E10.S8–S10, grounded in `../completed/pi-harness-research.RETURN.md` (`[PI#]`).
+E5.S8 live + E10.S8–S10, grounded in `plans/interop-hardening/completed/pi-harness-research.RETURN.md` (`[PI#]`).
 Floor capabilities (task contract, Operator-pinned): **F1** import any harness → IR · **F2**
 output IR to `.{namespace}/` across scopes · **F3** reimport (harness or own format) · **F4**
 accurate re-export / round-trip, losses loud · **F5** plugin-arch adapters (agents+skills floor;

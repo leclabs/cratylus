@@ -1,6 +1,6 @@
 /**
  * E2.S4 · user-scope compile lands in each harness's user-level home.
- * Contract: plans/interop-hardening/stories/E2-ir-emission.md.
+ * Contract: test/stories/E2-ir-emission.md.
  * Documented user homes per RETURN §2: ~/.claude/ [CC8], ~/.codex/ [CX6],
  * ~/.cursor/ [CU2], ~/.copilot/ [CP8] (NOT ~/.config/github-copilot/),
  * ~/.gemini/ [GM1], ~/.config/opencode/ [OC1], ~/Documents/Cline/Rules [CL1]

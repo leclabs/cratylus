@@ -1,6 +1,6 @@
 /**
  * E3.S6 · corrupt or version-skewed own-format refuses loudly.
- * Contract: plans/interop-hardening/stories/E3-reimport.md.
+ * Contract: test/stories/E3-reimport.md.
  */
 
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';

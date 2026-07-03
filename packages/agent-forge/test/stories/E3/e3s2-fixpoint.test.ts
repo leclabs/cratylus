@@ -1,6 +1,6 @@
 /**
  * E3.S2 · harness reimport after compile is a fixpoint.
- * Contract: plans/interop-hardening/stories/E3-reimport.md.
+ * Contract: test/stories/E3-reimport.md.
  *
  * Per adapter: an IR restricted to the resource types the adapter declares
  * `full` → adapter.write → `import <adapter>` into a fresh IR home → the second

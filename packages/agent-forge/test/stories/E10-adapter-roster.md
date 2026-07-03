@@ -3,7 +3,7 @@
 Research-driven (beyond floor): RETURN-1 §3 "Adapter roster vs field" — no adapters for Amp, Zed,
 Windsurf/Devin, Kilo; Gemini→Antigravity and Windsurf→Devin renames; Roo sunset; aider a no-op in
 practice until E8.S10's fix. Plus **Pi** (S8–S10), ground truth =
-`../completed/pi-harness-research.RETURN.md` (`[PI#]` refs). New-adapter stories share the
+`plans/interop-hardening/completed/pi-harness-research.RETURN.md` (`[PI#]` refs). New-adapter stories share the
 **new-adapter contract**: fixture from the harness's §2 sheet; import (E1.S2 discipline) +
 compile (E2.S3/S4) + round-trip (E4.S1) + honest capabilities (E4.S3); listed by
 `agent-forge adapters`. ρ=LLM.

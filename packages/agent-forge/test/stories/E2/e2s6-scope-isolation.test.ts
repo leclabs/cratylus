@@ -1,6 +1,6 @@
 /**
  * E2.S6 · scope isolation — no cross-scope bleed.
- * Contract: plans/interop-hardening/stories/E2-ir-emission.md.
+ * Contract: test/stories/E2-ir-emission.md.
  * Same-named rule `r` in user-scope IR (body U) and project-scope IR (body P);
  * each compiles only into the scope its manifest declares.
  */

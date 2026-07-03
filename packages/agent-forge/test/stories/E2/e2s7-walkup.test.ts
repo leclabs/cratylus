@@ -1,6 +1,6 @@
 /**
  * E2.S7 · the IR home is itself discoverable by walk-up.
- * Contract: plans/interop-hardening/stories/E2-ir-emission.md.
+ * Contract: test/stories/E2-ir-emission.md.
  */
 
 import { mkdirSync, rmSync } from 'node:fs';

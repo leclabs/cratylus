@@ -1,6 +1,6 @@
 /**
  * E2.S2 · IR write is canonical and idempotent.
- * Contract: plans/interop-hardening/stories/E2-ir-emission.md.
+ * Contract: test/stories/E2-ir-emission.md.
  */
 
 import { rmSync } from 'node:fs';

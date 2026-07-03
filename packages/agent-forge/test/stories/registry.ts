@@ -1,6 +1,6 @@
 /**
  * Canonical story registry for the interop-hardening story library.
- * Source of truth: plans/interop-hardening/stories/ (COVERAGE.md + E*.md).
+ * Source of truth: test/stories/ (COVERAGE.md + E*.md).
  * 81 stories, 10 epics; 3 excluded-by-marker from this coverage-test wave.
  * (Pi graduated 2026-07: E5.S8 live, E10.S8–S10 added, E10.S10 FUTURE.)
  */

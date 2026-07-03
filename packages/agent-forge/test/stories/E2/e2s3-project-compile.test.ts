@@ -1,6 +1,6 @@
 /**
  * E2.S3 · project-scope compile lands in each harness's project namespace dir.
- * Contract: plans/interop-hardening/stories/E2-ir-emission.md.
+ * Contract: test/stories/E2-ir-emission.md.
  *
  * The allowlist below encodes the DOCUMENTED per-adapter project surfaces from
  * RETURN §2 (fixture ground truth) — never the current adapter path tables.

@@ -1,6 +1,6 @@
 /**
  * E3.S4 · drift detection on emitted files.
- * Contract: plans/interop-hardening/stories/E3-reimport.md.
+ * Contract: test/stories/E3-reimport.md.
  */
 
 import { appendFileSync, readFileSync, rmSync, writeFileSync } from 'node:fs';

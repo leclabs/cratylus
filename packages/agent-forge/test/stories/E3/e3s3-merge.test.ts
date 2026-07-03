@@ -1,6 +1,6 @@
 /**
  * E3.S3 · --merge preserves hand-authored IR.
- * Contract: plans/interop-hardening/stories/E3-reimport.md.
+ * Contract: test/stories/E3-reimport.md.
  */
 
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';

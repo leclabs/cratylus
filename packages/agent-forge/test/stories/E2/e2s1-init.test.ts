@@ -1,6 +1,6 @@
 /**
  * E2.S1 · init bootstraps a valid IR home.
- * Contract: plans/interop-hardening/stories/E2-ir-emission.md.
+ * Contract: test/stories/E2-ir-emission.md.
  */
 
 import { existsSync, readFileSync, rmSync } from 'node:fs';

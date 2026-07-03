@@ -7,7 +7,7 @@ Verified plugin architectures (RETURN §1/§2 + pi RETURN §3): opencode JS/TS p
 Bun-TS plugins [AM2] · Kilo TS plugins [KL6] · Cline SDK `AgentPlugin` [CL8] · Claude plugins
 [CC4][CC5] · Gemini extensions [GM6] · Zed WASM extensions (MCP-only delivery) [ZD7] · **Pi TS
 extensions + pi packages** [PI3][PI6]. Pi is the DEMONSTRATION instance of plugin-delivered
-capabilities (Operator ruling); its ground truth = `../completed/pi-harness-research.RETURN.md`
+capabilities (Operator ruling); its ground truth = `plans/interop-hardening/completed/pi-harness-research.RETURN.md`
 (`[PI#]` refs resolve there) — E5.S8 is live; roster stories E10.S8–S10.
 
 ---

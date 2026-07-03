@@ -1,9 +1,11 @@
 /**
  * E10.S7 · roster release-audit ritual.
  * Ground truth: RETURN-1 §0 (4 renames/sunsets in 6 months) → a standing,
- * dated re-verification checklist must exist in plans/interop-hardening/ or
- * docs/: per-adapter rows, every §2-flagged UNVERIFIED item exactly once
- * ([CX1][OC2][WS7][CT2]), and the E7.S10 tripwire row. Read-only scan.
+ * dated re-verification checklist must exist in docs/: per-adapter rows,
+ * every §2-flagged UNVERIFIED item exactly once ([CX1][OC2][WS7][CT2]), and
+ * the E7.S10 tripwire row. Read-only scan. (The checklist's canonical home is
+ * docs/release-audit-checklist.md; the interop-hardening plan that authored it
+ * is retired — git log -- plans/interop-hardening/ is the record.)
  */
 
 import { readFileSync, readdirSync, statSync } from 'node:fs';
@@ -71,10 +73,7 @@ describe('E10.S7 · release-audit checklist', () => {
     'a dated release-audit checklist doc exists with per-adapter rows, each UNVERIFIED item exactly once, and the E7.S10 tripwire',
     () => {
       const candidates: string[] = [];
-      for (const dir of [
-        join(REPO_ROOT, 'plans', 'interop-hardening'),
-        join(REPO_ROOT, 'docs'),
-      ]) {
+      for (const dir of [join(REPO_ROOT, 'docs')]) {
         for (const file of walkMarkdown(dir)) {
           const text = readFileSync(file, 'utf8');
           if (isReleaseAuditChecklist(text)) candidates.push(file);

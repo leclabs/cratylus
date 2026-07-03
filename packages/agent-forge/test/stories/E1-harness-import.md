@@ -1,7 +1,7 @@
 # E1 · harness-import — import context from any supported harness → IR
 
 Floor: **F1** (import from any supported harness's config files → IR). ρ=LLM. Actors per
-`COVERAGE.md` legend. Fixture ground truth = `../completed/harness-landscape-research.RETURN.md`
+`COVERAGE.md` legend. Fixture ground truth = `plans/interop-hardening/completed/harness-landscape-research.RETURN.md`
 §2 per-harness config-contract sheets (cited `§2/<harness>`); ledger refs `[XX#]` resolve there.
 Story grammar: `A:` actor · `G:` goal · `P:` precondition · `✓:` observable acceptance (each
 bullet an independently checkable pass/fail).
