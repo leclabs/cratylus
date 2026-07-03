@@ -22,3 +22,12 @@ file carries the working thread._
 - **Watch (engine-report residue):** claude/gemini native hook objects now carry `id` — fleet
   settings.json gains it on next anatomy deploy; flag if Claude Code doctor complains. Drift
   default = warn. E4.S1 matrix close: convergence-graduation classifies zed's partial cells.
+- **Plan-bookkeeping residue (observed 2026-07-03, pre-copilot-dispatch):** `continue-adapter-truth`
+  code SHIPPED (4d81308, ancestor of HEAD, 9 owned ids graduated) but its task file is still
+  `active/` with no `.RETURN.md` — the executing agent died after the code commit, before the
+  plan-housekeeping commit. `opencode-adapter-truth` genuinely mid-flight (task file `active/`,
+  no landing commit found on any ref). Neither touched by the copilot dispatch (out of territory);
+  flagged for Nico's aggregate reconciliation. Baseline re-derived empirically at dispatch time:
+  HEAD `a2960df`, `TRACKED-FAILING.md` 119 rows/38 stories — trust this over any stale count in
+  an agent's own memory. Stale worktree `/private/tmp/mav-copilot-wt` (a dead prior attempt at
+  this same shard, pinned at 055cfde) removed before this dispatch's execution.

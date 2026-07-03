@@ -223,7 +223,7 @@ describe('E4.S4 · event taxonomy', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E4.S4',
     'copilot: native names use the documented camelCase dialect, not PascalCase [CP4]',
     () => {

@@ -51,7 +51,7 @@ describe('E8.S4 · copilot', () => {
 
   // --- Hooks dialect [CP4] ---
 
-  story.tracked(
+  story(
     'E8.S4',
     'hooks emit to .github/hooks/*.json in the documented {"version":1} camelCase envelope [CP4]',
     async () => {
@@ -70,7 +70,7 @@ describe('E8.S4 · copilot', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S4',
     'the ".claude/settings.json is parsed by Copilot" premise is deleted [CP4]',
     async () => {
@@ -79,16 +79,12 @@ describe('E8.S4 · copilot', () => {
     },
   );
 
-  story.tracked(
-    'E8.S4',
-    'event map is re-keyed to the camelCase dialect [CP4]',
-    () => {
-      expect(copilotAdapter.eventMap?.['tool.use.pre']).toBe('preToolUse');
-      expect(copilotAdapter.eventMap?.['session.start']).toBe('sessionStart');
-    },
-  );
+  story('E8.S4', 'event map is re-keyed to the camelCase dialect [CP4]', () => {
+    expect(copilotAdapter.eventMap?.['tool.use.pre']).toBe('preToolUse');
+    expect(copilotAdapter.eventMap?.['session.start']).toBe('sessionStart');
+  });
 
-  story.tracked(
+  story(
     'E8.S4',
     'event map covers documented permissionRequest and errorOccurred [CP4]',
     () => {
@@ -100,7 +96,7 @@ describe('E8.S4 · copilot', () => {
 
   // --- User home [CP8] ---
 
-  story.tracked(
+  story(
     'E8.S4',
     'user scope lives under ~/.copilot/ (mcp-config.json) [CP8]',
     async () => {
@@ -116,7 +112,7 @@ describe('E8.S4 · copilot', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S4',
     'nothing is emitted under the fabricated ~/.config/github-copilot/ [CP8]',
     async () => {
@@ -135,24 +131,18 @@ describe('E8.S4 · copilot', () => {
 
   // --- Skills dir [CP2] ---
 
-  story.tracked(
-    'E8.S4',
-    'repo skills emit to .github/skills/ [CP2]',
-    async () => {
-      const ir: IR = {
-        manifest: manifest(),
-        skills: [
-          { name: 'review', description: 'Review code', body: '# steps' },
-        ],
-      };
-      await copilotAdapter.write(ir, 'project', cwd, {});
-      expect(
-        existsSync(join(cwd, '.github', 'skills', 'review', 'SKILL.md')),
-      ).toBe(true);
-    },
-  );
+  story('E8.S4', 'repo skills emit to .github/skills/ [CP2]', async () => {
+    const ir: IR = {
+      manifest: manifest(),
+      skills: [{ name: 'review', description: 'Review code', body: '# steps' }],
+    };
+    await copilotAdapter.write(ir, 'project', cwd, {});
+    expect(
+      existsSync(join(cwd, '.github', 'skills', 'review', 'SKILL.md')),
+    ).toBe(true);
+  });
 
-  story.tracked(
+  story(
     'E8.S4',
     'nothing is emitted to the fabricated .copilot/skills/ [CP2]',
     async () => {
@@ -169,24 +159,18 @@ describe('E8.S4 · copilot', () => {
 
   // --- Agents [CP1] + prompts [CP5] ---
 
-  story.tracked(
-    'E8.S4',
-    'agents emit to .github/agents/*.agent.md [CP1]',
-    async () => {
-      const ir: IR = {
-        manifest: manifest(),
-        agents: [
-          { name: 'helper', body: 'You help.', description: 'A helper' },
-        ],
-      };
-      await copilotAdapter.write(ir, 'project', cwd, {});
-      expect(
-        existsSync(join(cwd, '.github', 'agents', 'helper.agent.md')),
-      ).toBe(true);
-    },
-  );
+  story('E8.S4', 'agents emit to .github/agents/*.agent.md [CP1]', async () => {
+    const ir: IR = {
+      manifest: manifest(),
+      agents: [{ name: 'helper', body: 'You help.', description: 'A helper' }],
+    };
+    await copilotAdapter.write(ir, 'project', cwd, {});
+    expect(existsSync(join(cwd, '.github', 'agents', 'helper.agent.md'))).toBe(
+      true,
+    );
+  });
 
-  story.tracked(
+  story(
     'E8.S4',
     'commands emit as prompt files .github/prompts/*.prompt.md [CP5]',
     async () => {
@@ -246,7 +230,7 @@ describe('E8.S4 · copilot', () => {
 
   // --- Fabricated-shape import (E1.S3) ---
 
-  story.tracked(
+  story(
     'E8.S4',
     'fabricated-shape import: ~/.config/github-copilot fixture lifts zero phantom resources (E1.S3) [CP8]',
     async () => {

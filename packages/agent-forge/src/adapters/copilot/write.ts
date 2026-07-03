@@ -1,17 +1,25 @@
-import { existsSync } from 'node:fs';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
   type Hook,
   type IR,
   type McpServer,
+  type Rule,
   type Scope,
   type WriteOpts,
   type WriteReport,
+  serializeAgent,
+  serializeCommand,
+  serializeFrontmatter,
   serializeSkill,
 } from '../../core/index.js';
 import { canonicalToCopilot } from './events.js';
 import { paths } from './paths.js';
+
+/** A rule with glob-scoped activation compiles to `.github/instructions/` [S57], not AGENTS.md (R6). */
+function isGlobRule(r: Rule): boolean {
+  return r.activation === 'glob' || Boolean(r.globs?.length);
+}
 
 export async function writeCopilot(
   ir: IR,
@@ -24,17 +32,51 @@ export async function writeCopilot(
   const skipped: { path: string; reason: string }[] = [];
   const warnings: string[] = [];
 
-  // Rules
+  // Rules — plain rules concatenate into the shared AGENTS.md-class root
+  // [CP3]; glob-activated rules compile individually to the documented
+  // applyTo tier [S57].
   if (ir.rules?.length) {
-    const body = ir.rules.map((r) => r.body).join('\n\n');
-    if (!opts.dryRun) {
-      await mkdir(dirname(p.rulesFile), { recursive: true });
-      await writeFile(p.rulesFile, `${body}\n`, 'utf8');
+    const concatRules = ir.rules.filter((r) => !isGlobRule(r));
+    const globRules = ir.rules.filter((r) => isGlobRule(r));
+
+    if (concatRules.length) {
+      const body = concatRules.map((r) => r.body).join('\n\n');
+      if (!opts.dryRun) {
+        await mkdir(dirname(p.rulesFile), { recursive: true });
+        await writeFile(p.rulesFile, `${body}\n`, 'utf8');
+      }
+      written.push(p.rulesFile);
     }
-    written.push(p.rulesFile);
+
+    if (globRules.length) {
+      if (p.instructionsDir) {
+        const instructionsDir = p.instructionsDir;
+        for (const rule of globRules) {
+          const file = join(instructionsDir, `${rule.id}.instructions.md`);
+          const fm: Record<string, unknown> = {
+            applyTo: (rule.globs ?? []).join(','),
+          };
+          if (rule.description !== undefined) fm.description = rule.description;
+          if (!opts.dryRun) {
+            await mkdir(instructionsDir, { recursive: true });
+            await writeFile(file, serializeFrontmatter(fm, rule.body), 'utf8');
+          }
+          written.push(file);
+        }
+      } else {
+        warnings.push(
+          `rules: glob-activated instructions have no documented personal-scope surface (${globRules.length} skipped)`,
+        );
+        for (const rule of globRules)
+          skipped.push({
+            path: `instructions/${rule.id}.instructions.md`,
+            reason: 'no documented user-scope instructions surface',
+          });
+      }
+    }
   }
 
-  // Skills
+  // Skills — Agent Skills spec directory [CP2][CP8].
   if (ir.skills?.length) {
     for (const skill of ir.skills) {
       const skillDir = join(p.skillsDir, skill.name);
@@ -47,9 +89,42 @@ export async function writeCopilot(
     }
   }
 
-  // Hooks → .claude/settings.json (Copilot reads this)
-  // Avoid clobbering an existing file from the Claude adapter — read it first
-  // and merge our 8-event subset in.
+  // Agents — GA custom agents [CP1][CP8].
+  if (ir.agents?.length) {
+    if (!opts.dryRun) await mkdir(p.agentsDir, { recursive: true });
+    for (const agent of ir.agents) {
+      const file = join(p.agentsDir, `${agent.name}.agent.md`);
+      if (!opts.dryRun) await writeFile(file, serializeAgent(agent), 'utf8');
+      written.push(file);
+    }
+  }
+
+  // Commands — prompt files → /name (VS Code) [CP5]. No documented
+  // personal-scope prompts surface.
+  if (ir.commands?.length) {
+    if (p.promptsDir) {
+      const promptsDir = p.promptsDir;
+      if (!opts.dryRun) await mkdir(promptsDir, { recursive: true });
+      for (const cmd of ir.commands) {
+        const file = join(promptsDir, `${cmd.name}.prompt.md`);
+        if (!opts.dryRun) await writeFile(file, serializeCommand(cmd), 'utf8');
+        written.push(file);
+      }
+    } else {
+      warnings.push(
+        `commands: prompt files have no documented personal-scope surface (${ir.commands.length} skipped)`,
+      );
+      for (const c of ir.commands)
+        skipped.push({
+          path: `prompts/${c.name}.prompt.md`,
+          reason: 'no documented user-scope prompts surface',
+        });
+    }
+  }
+
+  // Hooks — Copilot's own dialect: `.github/hooks/*.json` (repo) /
+  // `~/.copilot/hooks/*.json` (CLI), documented `{"version":1}` camelCase
+  // envelope, `bash`/`powershell` command fields [CP4].
   if (ir.hooks?.length) {
     const compatibleHooks = ir.hooks.filter((h) =>
       h.events.some((e) => canonicalToCopilot[e]),
@@ -62,35 +137,21 @@ export async function writeCopilot(
         `hook '${dropped.id ?? '?'}': no Copilot equivalent for events ${dropped.events.join(',')}`,
       );
       skipped.push({
-        path: `hooks/${dropped.id ?? '?'}.yaml`,
-        reason: 'unsupported by Copilot 8-event subset',
+        path: `hooks/${dropped.id ?? '?'}.json`,
+        reason: 'unsupported by Copilot documented event set',
       });
     }
     if (compatibleHooks.length > 0) {
-      let existing: Record<string, unknown> = {};
-      if (existsSync(p.hooksFile)) {
-        try {
-          existing = JSON.parse(await readFile(p.hooksFile, 'utf8'));
-        } catch {
-          warnings.push(
-            `existing ${p.hooksFile} is not valid JSON; overwriting (use Claude target if you need to coexist)`,
-          );
-        }
-      }
-      const claudeShape = serializeHooksClaudeShape(compatibleHooks);
-      existing.hooks = {
-        ...((existing.hooks as object) ?? {}),
-        ...claudeShape,
+      const file = join(p.hooksDir, 'agent-forge.json');
+      const envelope = {
+        version: 1,
+        hooks: serializeHooksCopilotShape(compatibleHooks),
       };
       if (!opts.dryRun) {
-        await mkdir(dirname(p.hooksFile), { recursive: true });
-        await writeFile(
-          p.hooksFile,
-          `${JSON.stringify(existing, null, 2)}\n`,
-          'utf8',
-        );
+        await mkdir(p.hooksDir, { recursive: true });
+        await writeFile(file, `${JSON.stringify(envelope, null, 2)}\n`, 'utf8');
       }
-      written.push(p.hooksFile);
+      written.push(file);
     }
   }
 
@@ -98,72 +159,48 @@ export async function writeCopilot(
   if (ir.mcp_servers?.length) {
     if (!opts.dryRun) {
       await mkdir(dirname(p.mcpFile), { recursive: true });
-      await writeFile(
-        p.mcpFile,
-        `${JSON.stringify({ servers: serializeMcp(ir.mcp_servers) }, null, 2)}\n`,
-        'utf8',
-      );
+      const body =
+        scope === 'user'
+          ? { mcpServers: serializeMcp(ir.mcp_servers) }
+          : { servers: serializeMcp(ir.mcp_servers) };
+      await writeFile(p.mcpFile, `${JSON.stringify(body, null, 2)}\n`, 'utf8');
     }
     written.push(p.mcpFile);
   }
 
-  // Phase-2 unsupported by Copilot
-  if (ir.commands?.length) {
-    warnings.push(
-      `commands: Copilot has no slash-command system (${ir.commands.length} skipped)`,
-    );
-    for (const c of ir.commands)
-      skipped.push({ path: `commands/${c.name}.md`, reason: 'unsupported' });
-  }
-  if (ir.agents?.length) {
-    warnings.push(
-      `agents: Copilot subagent support is experimental (${ir.agents.length} skipped)`,
-    );
-    for (const a of ir.agents)
-      skipped.push({ path: `agents/${a.name}.md`, reason: 'experimental' });
-  }
   if (ir.permissions) {
     warnings.push(
       'permissions: Copilot permissions live in VS Code settings; not emitted',
     );
   }
   if (ir.env) {
-    warnings.push('env: Copilot env lives in VS Code settings; not emitted');
+    warnings.push(
+      'env: Copilot coding-agent env lives in .github/workflows/copilot-setup-steps.yml [CP13]; not emitted',
+    );
   }
 
   return { written, skipped, warnings };
 }
 
-function serializeHooksClaudeShape(hooks: Hook[]): Record<
+function serializeHooksCopilotShape(
+  hooks: Hook[],
+): Record<
   string,
-  Array<{
-    matcher?: string;
-    hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
-  }>
+  Array<{ type: 'command'; bash: string; timeoutSec?: number }>
 > {
   const out: Record<
     string,
-    Array<{
-      matcher?: string;
-      hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
-    }>
+    Array<{ type: 'command'; bash: string; timeoutSec?: number }>
   > = {};
   for (const hook of hooks) {
     for (const event of hook.events) {
       const copilotEvent = canonicalToCopilot[event];
       if (!copilotEvent) continue;
-      const cmd: { type: 'command'; command: string; timeout?: number } = {
+      const entry: { type: 'command'; bash: string; timeoutSec?: number } = {
         type: 'command',
-        command: hook.command,
+        bash: hook.command,
       };
-      if (hook.timeout !== undefined) cmd.timeout = hook.timeout;
-      const entry: {
-        matcher?: string;
-        hooks: Array<{ type: 'command'; command: string; timeout?: number }>;
-      } = {
-        hooks: [cmd],
-      };
-      if (hook.matcher) entry.matcher = hook.matcher;
+      if (hook.timeout !== undefined) entry.timeoutSec = hook.timeout;
       out[copilotEvent] ??= [];
       out[copilotEvent].push(entry);
     }

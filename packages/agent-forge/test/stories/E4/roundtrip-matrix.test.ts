@@ -44,6 +44,7 @@ const PASSING_PAIRS: readonly Pair[] = [
   ['continue', 'rules'],
   ['copilot', 'rules'],
   ['copilot', 'skills'],
+  ['copilot', 'commands'],
   ['crush', 'rules'],
   ['cursor', 'rules'],
   ['cursor', 'hooks'],

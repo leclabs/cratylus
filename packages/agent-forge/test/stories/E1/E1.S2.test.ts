@@ -185,7 +185,6 @@ const SPECS: readonly AdapterSpec[] = [
   },
   {
     client: 'copilot',
-    gap: 'github-native skills/hooks/agents/prompts unread [CP1][CP2][CP4][CP5]',
     build: (cwd) => {
       put(cwd, 'AGENTS.md', '# Rules\n\nCOPILOT-RULE-MARKER\n'); // [CP3]
       put(

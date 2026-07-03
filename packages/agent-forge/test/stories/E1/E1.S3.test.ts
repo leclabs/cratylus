@@ -161,7 +161,11 @@ async function runSpec(spec: FabricatedSpec): Promise<{ out: string; ir: IR }> {
  * consults the path, so the zero-lift leg holds (graduated). The warning
  * leg stays tracked until the import report names unrecognized paths.
  */
-const ZERO_LIFT_GRADUATED = new Set(['.crush/mcp.json']);
+const ZERO_LIFT_GRADUATED = new Set([
+  '.crush/mcp.json',
+  '~/.config/github-copilot/*',
+  '.copilot/skills/',
+]);
 
 for (const spec of SPECS.filter((s) => ZERO_LIFT_GRADUATED.has(s.path))) {
   story(

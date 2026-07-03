@@ -76,7 +76,7 @@ describe('E2.S4 · user-scope compile lands in each documented user home', () =>
     },
   );
 
-  story.tracked(
+  story(
     'E2.S4',
     'copilot user surface is ~/.copilot/ — NOT ~/.config/github-copilot/ [CP8]',
     () => {

@@ -16,12 +16,14 @@ const capabilities: AdapterCapabilities = {
   resources: {
     rules: 'full',
     skills: 'full',
-    commands: 'none',
-    agents: 'partial', // Copilot subagent support is experimental
-    hooks: 'partial', // 8 of 28 canonical events
+    commands: 'full', // .github/prompts/*.prompt.md → /name [CP5]
+    agents: 'partial', // GA surface [CP1], but several canonical Agent fields
+    // (color/permission_mode/max_turns/temperature/mode/memory/effort) have
+    // no documented Copilot equivalent
+    hooks: 'partial', // 12 of 28 canonical events
     mcp: 'full',
-    permissions: 'none', // VS Code settings, not in scope
-    env: 'partial',
+    permissions: 'none', // hook allow/deny decisions only, no permissions config [CP4]
+    env: 'partial', // coding-agent copilot-setup-steps.yml only [CP13]
   },
   hooks: {
     supported: [
@@ -29,13 +31,17 @@ const capabilities: AdapterCapabilities = {
       'prompt.submit',
       'tool.use.pre',
       'tool.use.post',
-      'context.compact.pre',
+      'tool.use.fail',
+      'permission.request',
+      'turn.end',
+      'turn.fail',
       'subagent.start',
       'subagent.end',
-      'turn.end',
+      'notification',
+      'context.compact.pre',
     ],
-    matchers: 'glob',
-    payload: 'claude-json',
+    matchers: 'regex',
+    payload: 'native',
   },
   scopes: ['user', 'project'],
 };
@@ -48,9 +54,11 @@ export const copilotAdapter: Adapter = {
     const p = paths(scope, cwd);
     return (
       existsSync(p.rulesFile) ||
+      existsSync(p.instructionsFile) ||
       existsSync(p.skillsDir) ||
+      existsSync(p.agentsDir) ||
       existsSync(p.mcpFile) ||
-      existsSync(p.hooksFile)
+      existsSync(p.hooksDir)
     );
   },
   async read(scope: Scope, cwd: string): Promise<Partial<IR>> {

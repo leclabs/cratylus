@@ -119,7 +119,7 @@ describe('E7.S7 · vendor rules dirs only where activation demands', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S7',
     'glob rule emits .github/instructions/<id>.instructions.md with applyTo frontmatter [S57]',
     async () => {
