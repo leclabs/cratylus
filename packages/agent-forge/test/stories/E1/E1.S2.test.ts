@@ -226,7 +226,6 @@ const SPECS: readonly AdapterSpec[] = [
   },
   {
     client: 'gemini',
-    gap: 'GEMINI.md context file + commands TOML unread [GM1][GM5]',
     build: (cwd) => {
       put(cwd, 'GEMINI.md', '# Rules\n\nGEMINI-RULE-MARKER\n'); // default context file [GM1]
       put(

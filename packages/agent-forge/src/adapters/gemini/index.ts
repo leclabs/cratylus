@@ -16,12 +16,13 @@ const capabilities: AdapterCapabilities = {
   resources: {
     rules: 'full',
     skills: 'partial', // SKILL.md works; some metadata may be ignored
-    commands: 'none',
+    commands: 'partial', // .gemini/commands/*.toml: prompt/description only [GM5]
     agents: 'partial', // .md subagents; conventions evolving
     hooks: 'full', // 10 of 28 canonical events covered cleanly
     mcp: 'full',
     permissions: 'partial',
-    env: 'full',
+    env: 'partial', // real surface is .env file loading [GM1]; no IR-modeled
+    // mechanism today (settings.json has no env key — fabricated, removed)
   },
   hooks: {
     supported: [
@@ -35,8 +36,9 @@ const capabilities: AdapterCapabilities = {
       'tool.use.post',
       'context.compact.pre',
       'notification',
+      'permission.request',
     ],
-    matchers: 'glob',
+    matchers: 'regex',
     payload: 'claude-json',
   },
   scopes: ['user', 'project'],

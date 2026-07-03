@@ -39,7 +39,7 @@ describe('E8.S3 · gemini', () => {
 
   // --- Context filename [GM1] ---
 
-  story.tracked(
+  story(
     'E8.S3',
     'project rules emit to GEMINI.md, the stock context filename [GM1]',
     async () => {
@@ -52,7 +52,7 @@ describe('E8.S3 · gemini', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S3',
     'a stock install reads the result: bare AGENTS.md requires context.fileName wiring [GM1]',
     async () => {
@@ -72,21 +72,17 @@ describe('E8.S3 · gemini', () => {
     },
   );
 
-  story.tracked(
-    'E8.S3',
-    'GEMINI.md fixture lifts as rules on read [GM1]',
-    async () => {
-      writeFileSync(join(cwd, 'GEMINI.md'), 'Context rules.\n', 'utf8');
-      const re = await geminiAdapter.read('project', cwd);
-      expect(
-        (re.rules ?? []).some((r) => r.body.includes('Context rules')),
-      ).toBe(true);
-    },
-  );
+  story('E8.S3', 'GEMINI.md fixture lifts as rules on read [GM1]', async () => {
+    writeFileSync(join(cwd, 'GEMINI.md'), 'Context rules.\n', 'utf8');
+    const re = await geminiAdapter.read('project', cwd);
+    expect((re.rules ?? []).some((r) => r.body.includes('Context rules'))).toBe(
+      true,
+    );
+  });
 
   // --- Commands [GM5] ---
 
-  story.tracked(
+  story(
     'E8.S3',
     'commands capability on: .gemini/commands/*.toml with required prompt key [GM5]',
     async () => {
@@ -104,17 +100,13 @@ describe('E8.S3 · gemini', () => {
     },
   );
 
-  story.tracked(
-    'E8.S3',
-    'capabilities no longer declare commands: none [GM5]',
-    () => {
-      expect(geminiAdapter.capabilities.resources.commands).not.toBe('none');
-    },
-  );
+  story('E8.S3', 'capabilities no longer declare commands: none [GM5]', () => {
+    expect(geminiAdapter.capabilities.resources.commands).not.toBe('none');
+  });
 
   // --- MCP transports [GM1] ---
 
-  story.tracked(
+  story(
     'E8.S3',
     'SSE remote MCP emits url without the fabricated type key [GM1]',
     async () => {
@@ -134,7 +126,7 @@ describe('E8.S3 · gemini', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S3',
     'streamable-HTTP remote MCP emits httpUrl, not url [GM1]',
     async () => {
@@ -159,7 +151,7 @@ describe('E8.S3 · gemini', () => {
 
   // --- Config keys [GM1] ---
 
-  story.tracked(
+  story(
     'E8.S3',
     'no fabricated permissions/env settings.json keys are emitted [GM1]',
     async () => {
@@ -178,7 +170,7 @@ describe('E8.S3 · gemini', () => {
 
   // --- Hooks [GM4] ---
 
-  story.tracked(
+  story(
     'E8.S3',
     'event map includes the documented BeforeToolSelection event [GM4]',
     () => {
@@ -188,7 +180,7 @@ describe('E8.S3 · gemini', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S3',
     'hook capability declares regex matchers, not glob [GM4]',
     () => {
@@ -231,7 +223,7 @@ describe('E8.S3 · gemini', () => {
 
   // --- Fabricated-shape import (E1.S3) ---
 
-  story.tracked(
+  story(
     'E8.S3',
     'fabricated-shape import: settings.json permissions/env are not lifted as phantoms (E1.S3) [GM1]',
     async () => {

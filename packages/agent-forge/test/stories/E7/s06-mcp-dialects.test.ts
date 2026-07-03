@@ -145,7 +145,7 @@ describe('E7.S6 · MCP dialect exactness per target', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S6',
     'gemini: streamable-HTTP server uses httpUrl, url is SSE-only [S11] (§3 gemini d5)',
     async () => {

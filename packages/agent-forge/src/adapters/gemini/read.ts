@@ -1,8 +1,10 @@
 import { existsSync } from 'node:fs';
 import { readFile, readdir } from 'node:fs/promises';
 import { basename, join } from 'node:path';
+import TOML from '@iarna/toml';
 import {
   type Agent,
+  type Command,
   type Hook,
   type IR,
   type McpServer,
@@ -29,17 +31,17 @@ interface SettingsFile {
     }>
   >;
   mcpServers?: Record<string, McpEntry>;
-  permissions?: { allow?: string[]; deny?: string[]; ask?: string[] };
-  env?: Record<string, string>;
+  // No `permissions`/`env` fields — settings.json has no documented shape
+  // for either [GM1]; a fabricated-shape import must NOT lift them (E1.S3).
 }
 
 interface McpEntry {
   command?: string;
   args?: string[];
   env?: Record<string, string>;
-  url?: string;
+  url?: string; // SSE [GM1]
+  httpUrl?: string; // streamable HTTP [GM1][S11]
   headers?: Record<string, string>;
-  type?: 'stdio' | 'http' | 'sse';
 }
 
 export async function readGemini(
@@ -63,8 +65,6 @@ export async function readGemini(
       if (hooks.length) ir.hooks = hooks;
     }
     if (settings.mcpServers) ir.mcp_servers = parseMcp(settings.mcpServers);
-    if (settings.permissions) ir.permissions = settings.permissions;
-    if (settings.env) ir.env = settings.env;
   }
 
   if (existsSync(p.agentsDir)) {
@@ -75,6 +75,11 @@ export async function readGemini(
   if (existsSync(p.skillsDir)) {
     const skills = await readSkillsDir(p.skillsDir);
     if (skills.length) ir.skills = skills;
+  }
+
+  if (existsSync(p.commandsDir)) {
+    const commands = await readCommandsDir(p.commandsDir);
+    if (commands.length) ir.commands = commands;
   }
 
   return ir;
@@ -107,12 +112,11 @@ function parseGeminiHooks(hooks: NonNullable<SettingsFile['hooks']>): Hook[] {
 function parseMcp(servers: Record<string, McpEntry>): McpServer[] {
   const out: McpServer[] = [];
   for (const [name, s] of Object.entries(servers)) {
-    if (s.url) {
-      out.push({
-        name,
-        transport: s.type === 'sse' ? 'sse' : 'http',
-        url: s.url,
-      } as McpServer);
+    if (s.httpUrl) {
+      out.push({ name, transport: 'http', url: s.httpUrl } as McpServer);
+    } else if (s.url) {
+      // `url` is SSE-only in the documented dialect [GM1][S11].
+      out.push({ name, transport: 'sse', url: s.url } as McpServer);
     } else if (s.command) {
       const server = {
         name,
@@ -138,6 +142,28 @@ async function readMarkdownDir<T>(
     const name = basename(entry, '.md');
     const text = await readFile(join(dir, entry), 'utf8');
     out.push(parse(text, name));
+  }
+  return out;
+}
+
+/** `.gemini/commands/*.toml` — required `prompt`, optional `description`
+ * [GM5]; no namespaced-subdir scan (write side is flat, matching the IR's
+ * flat `Command.name`). */
+async function readCommandsDir(dir: string): Promise<Command[]> {
+  const entries = await readdir(dir);
+  const out: Command[] = [];
+  for (const entry of entries.sort()) {
+    if (!entry.endsWith('.toml')) continue;
+    const name = basename(entry, '.toml');
+    const text = await readFile(join(dir, entry), 'utf8');
+    const parsed = TOML.parse(text) as {
+      prompt?: string;
+      description?: string;
+    };
+    if (typeof parsed.prompt !== 'string') continue; // malformed: no required key
+    const cmd: Command = { name, body: parsed.prompt };
+    if (parsed.description) cmd.description = parsed.description;
+    out.push(cmd);
   }
   return out;
 }

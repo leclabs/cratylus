@@ -1,6 +1,7 @@
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import TOML from '@iarna/toml';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { geminiAdapter } from '../../../src/adapters/gemini/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
@@ -21,7 +22,7 @@ describe('geminiAdapter', () => {
     rmSync(cwd, { recursive: true, force: true });
   });
 
-  it('writes AGENTS.md, settings.json, agents, skills', async () => {
+  it('writes GEMINI.md, settings.json, agents, skills', async () => {
     const ir: IR = {
       manifest: manifest(),
       rules: [{ id: 'main', body: '# Rules\n\nBe terse.' }],
@@ -43,10 +44,10 @@ describe('geminiAdapter', () => {
       mcp_servers: [
         { name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] },
       ],
-      env: { DEBUG: 'true' },
     };
     const report = await geminiAdapter.write(ir, 'project', cwd, {});
-    expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
+    expect(existsSync(join(cwd, 'GEMINI.md'))).toBe(true);
+    expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(false);
     expect(existsSync(join(cwd, '.gemini', 'settings.json'))).toBe(true);
     expect(existsSync(join(cwd, '.gemini', 'agents', 'planner.md'))).toBe(true);
     expect(
@@ -59,7 +60,6 @@ describe('geminiAdapter', () => {
     expect(settings.hooks.BeforeTool).toBeDefined(); // tool.use.pre → BeforeTool
     expect(settings.hooks.AfterModel).toBeDefined(); // model.response.post → AfterModel
     expect(settings.mcpServers.gh).toBeDefined();
-    expect(settings.env.DEBUG).toBe('true');
     expect(report.warnings).toEqual([]);
   });
 
@@ -72,7 +72,7 @@ describe('geminiAdapter', () => {
     expect(report.skipped.length).toBe(1);
   });
 
-  it('round-trips rules + agents + skills + mcp + env + hooks', async () => {
+  it('round-trips rules + agents + skills + mcp + hooks', async () => {
     const ir: IR = {
       manifest: manifest(),
       rules: [{ id: 'main', body: 'Be terse.' }],
@@ -81,7 +81,6 @@ describe('geminiAdapter', () => {
       mcp_servers: [
         { name: 'gh', transport: 'stdio', command: 'npx', args: ['-y', 'pkg'] },
       ],
-      env: { DEBUG: 'true' },
       hooks: [
         {
           id: 'fmt',
@@ -97,19 +96,34 @@ describe('geminiAdapter', () => {
     expect(re.agents).toEqual(ir.agents);
     expect(re.skills).toEqual(ir.skills);
     expect(re.mcp_servers).toEqual(ir.mcp_servers);
-    expect(re.env).toEqual(ir.env);
     expect(re.hooks?.length).toBe(1);
     expect(re.hooks?.[0]?.events).toEqual(['tool.use.post']);
   });
 
-  it('warns about commands and permissions DSL', async () => {
+  it('writes commands as .gemini/commands/*.toml and warns about the permissions DSL', async () => {
     const ir: IR = {
       manifest: manifest(),
-      commands: [{ name: 'c', body: 'b' }],
+      commands: [{ name: 'c', body: 'b', description: 'C command' }],
       permissions: { allow: ['Read(*)'] },
     };
     const report = await geminiAdapter.write(ir, 'project', cwd, {});
-    expect(report.warnings.some((w) => w.includes('commands'))).toBe(true);
+    const cmdFile = join(cwd, '.gemini', 'commands', 'c.toml');
+    expect(existsSync(cmdFile)).toBe(true);
+    const parsed = TOML.parse(readFileSync(cmdFile, 'utf8')) as {
+      prompt?: string;
+      description?: string;
+    };
+    expect(parsed.prompt).toBe('b');
+    expect(parsed.description).toBe('C command');
     expect(report.warnings.some((w) => w.includes('permissions'))).toBe(true);
+
+    const settingsFile = join(cwd, '.gemini', 'settings.json');
+    const settings = existsSync(settingsFile)
+      ? (JSON.parse(readFileSync(settingsFile, 'utf8')) as Record<
+          string,
+          unknown
+        >)
+      : {};
+    expect('permissions' in settings).toBe(false);
   });
 });
