@@ -27,7 +27,16 @@ file carries the working thread._
   `active/` with no `.RETURN.md` — the executing agent died after the code commit, before the
   plan-housekeeping commit. `opencode-adapter-truth` genuinely mid-flight (task file `active/`,
   no landing commit found on any ref). Neither touched by the copilot dispatch (out of territory);
-  flagged for Nico's aggregate reconciliation. Baseline re-derived empirically at dispatch time:
-  HEAD `a2960df`, `TRACKED-FAILING.md` 119 rows/38 stories — trust this over any stale count in
-  an agent's own memory. Stale worktree `/private/tmp/mav-copilot-wt` (a dead prior attempt at
-  this same shard, pinned at 055cfde) removed before this dispatch's execution.
+  flagged for Nico's aggregate reconciliation.
+- **`copilot-adapter-truth` SHIPPED** (`0125ea8`+`9489236`, wave 5): 14/14 owned ids graduated
+  (E8.S4 fully empties), 3 forced non-owned flips (E1.S2/E1.S3 copilot specs, same
+  ZERO_LIFT_GRADUATED/gap-removal mechanism crush/continue/gemini/zed already used), 1 mandatory
+  E4.S1 matrix addition (`copilot/commands` now `full`, verified round-trips). TRACKED-FAILING
+  119/38 → 105/37. Gates 4×0 in pristine worktree @ `9489236` (forge 677, anatomy 36, memory 121).
+  Two **legacy non-story** unit-test files (`test/adapters/copilot/round-trip.test.ts`,
+  `test/cli/portability-phase2.test.ts`) still asserted the old fabrications and only surfaced at
+  the repo-wide gate (invisible to a `test/stories`-only run) — rewritten to pin the corrected
+  behavior; see completed/copilot-adapter-truth.RETURN.md for full disclosure. **General lesson
+  for remaining wave-5 adapter shards**: always grep `test/adapters/<id>/` and cross-adapter
+  fixture consumers (e.g. `test/cli/portability-phase2.test.ts`) for the adapter id, not just
+  `test/stories/` — the story-coverage suite does not shadow the legacy unit suite.
