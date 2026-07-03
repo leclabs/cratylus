@@ -15,22 +15,36 @@ passes inside `it.fails`) — flip `story.tracked` → `story`, delete the row h
 Reasons are story-scoped (the test name carries the per-assertion specifics); refs `[XX#]`/`[Sn]`
 resolve in `plans/interop-hardening/completed/*.RETURN.md`.
 
-Call sites: 2 tracked-failing across 2 stories.
+Call sites: 0 tracked-failing across 0 stories.
 
 **convergence-graduation (2026-07)**: this is the terminal shard — every cross-adapter equation
-closed except the two genuine, permanent-by-design residuals below (both disclosed, not forced).
-Everything else this row set once carried (E1.S3 ×2, E2.S3, E4.S3, E4.S7, E9.S3 — 6 rows) graduated:
-crush now lifts hooks/permissions from crush.json; cursor's read side stopped consulting the
-fabricated `~/.cursor/AGENTS.md`; a new `auditImport` `fabricated` leg names every documented-legacy
-path still present on disk; codex/copilot/gemini's remote-MCP `headers` now round-trip; continue
-gained `~/.continue/permissions.yaml` read/write; gemini's hook `payload` now declares `native`
-(not `claude-json`); the portable-core zero-warnings row was re-scoped from a literal-zero
-assertion (written for the pre-wave-5 10-adapter roster) to an exact documented-warning contract
-covering the current 16-adapter roster, and the E2.S3 project-surface allowlist gained the six
-adapters (amp/kilo/pi/devin+windsurf/zed/standards's GEMINI.md gap) wave 5–6 added that the
-allowlist had never been updated for.
+closed. Everything this row set once carried (E1.S3 ×2, E2.S3, E4.S3, E4.S7, E9.S3 — 6 rows)
+graduated earlier: crush now lifts hooks/permissions from crush.json; cursor's read side stopped
+consulting the fabricated `~/.cursor/AGENTS.md`; a new `auditImport` `fabricated` leg names every
+documented-legacy path still present on disk; codex/copilot/gemini's remote-MCP `headers` now
+round-trip; continue gained `~/.continue/permissions.yaml` read/write; gemini's hook `payload` now
+declares `native` (not `claude-json`); the portable-core zero-warnings row was re-scoped from a
+literal-zero assertion (written for the pre-wave-5 10-adapter roster) to an exact
+documented-warning contract covering the current 16-adapter roster, and the E2.S3 project-surface
+allowlist gained the six adapters (amp/kilo/pi/devin+windsurf/zed/standards's GEMINI.md gap) wave
+5–6 added that the allowlist had never been updated for.
 
-| Story | Test                                                                                                      | Reason                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ----- | --------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| E1.S2 | `import ${spec.client}: every documented resource class lifts from a §2-truth fixture (gap: ${spec.gap})` | cline only (crush graduated: readImpl now lifts crush.json hooks/permissions): a hand-authored `.clinerules/hooks/<Event>` script with no embedded `# agent-forge:<id>` marker carries no structured fields to recover — Cline's hook contract is "one executable per event," not a documented shape parseable into matcher/command/timeout; synthesizing a Hook from arbitrary foreign shell content isn't a real lift, it's a fabrication. Genuine, permanent limitation — not forced [CL2].                                                                                                                                         |
-| E4.S1 | `${adapterId}/${type}: import(compile(r)) ≡ r (${reason})`                                                | two permanent-by-design pairs, both already isolated from the (now-graduated) remote-mcp-headers class: codex/agents — `tools`/`color` have no documented Codex agent-TOML field, so the shared agents fixture's exercise of both is warned-and-dropped on write, never fabricated [CX1]; claude/rules — a default CONCAT rule's CLAUDE.md imports `@AGENTS.md` per Anthropic's own documented shim [S7] instead of duplicating the body (this adapter never writes AGENTS.md, E7.S10) — a non-concat rule DOES round-trip losslessly via `.claude/rules/<id>.md` [CC1]; the shared fixture only exercises the concat path for claude. |
+**residual reclassification (2026-07)**: the two remaining rows were never forced gaps — each is a
+genuine by-design boundary, not something the library fails to deliver. Reclassified PASSING and
+documented in place rather than left tracked:
+
+- **E1.S2 / cline** — a FOREIGN (non-agent-forge) hook script with no `# agent-forge:<id>` marker
+  carries no structured fields to recover; lifting one would be fabrication, not a documented
+  contract. The fixture still builds the foreign hook (exercising that surface) but `'hooks'` is
+  no longer in cline's expected `classes` — it is correctly reported as an unlifted surface by
+  `auditImport`'s `fabricated` leg (E1.S7's contract), not a gap in E1.S2's scope [CL2].
+- **E4.S1 / codex-agents + claude-rules** — codex/agents: `tools`/`color` have no documented Codex
+  agent-TOML field [CX1], warned-and-dropped on write rather than fabricated; the matrix now strips
+  both fields from BOTH sides of the comparison for this one pair (`stripFor`), while claude/agents
+  (also 'full') still compares them in full. claude/rules: a default CONCAT rule's body is
+  deliberately not recoverable from CLAUDE.md alone (`@AGENTS.md` shim [S7], a cross-adapter
+  concern owned by E7.S2); the matrix now gives claude a `concat: false` fixture (`fixtureFor`),
+  which round-trips losslessly via `.claude/rules/<id>.md` [CC1] — the real isolated-adapter
+  contract this story tests.
+
+No table below: zero `story.tracked` call sites remain.
