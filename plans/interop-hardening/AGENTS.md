@@ -99,3 +99,27 @@ file carries the working thread._
   attempt from the prior Fable-death session) — same reversible in-domain class as the cursor
   shard's precedent; every OTHER stale `/private/tmp/*` worktree left untouched (out of
   territory, flagged for Nico's aggregate reconciliation).
+- **`pi-adapter` SHIPPED** (`8fdef26`, wave 5, re-dispatch after a Fable-limit death on the same
+  shard): 13/13 owned ids graduated (E5.S8×4, E10.S8×5, E10.S9×4, all three stories fully
+  emptied). TRACKED-FAILING 45/21 → 32/18. Gates 4×0 in a pristine worktree @ `8fdef26` (forge
+  690, anatomy 36, memory 121 — 6th shard to reconfirm root `pnpm test` excludes agent-memory).
+  Roster 14→15. **Residue reconciliation, zero-trust**: found the prior Fable-death session's
+  actual work already committed in a stray worktree (`/private/tmp/mav-pi/wt` @ `4859fae`, 2
+  commits behind the real base — missing amp+kilo, so its own roster arithmetic was stale and NOT
+  trusted); cherry-picked onto the real base, verified the 615-line adapter source line-by-line
+  against the RETURN sheet rather than trusting the dead session's commit message, hand-resolved 5
+  conflicts, and fully re-derived both ledger files from current HEAD (TRACKED-FAILING.md rows
+  deleted by hand, MAP.md regenerated via the actual tool) rather than trusting the stray diff for
+  either. Design: single-file shape (mirrors `crush`, the named exemplar — pi's scope model is too
+  simple to warrant opencode's multi-file split); hooks+agents declared `'plugin'` (the
+  engine-report-machinery Support value) and handled both via `pluginEmitters` and directly inside
+  `write()` (amp precedent: owned tests call `write()` directly); event map is 4-for-4
+  [PI3]-verified, no padding; skill frontmatter holds the spec-strict name=dirname line even though
+  pi itself tolerates the deviation (per the shard's explicit instruction); read is deliberately
+  asymmetric with write — `.pi/extensions/*.ts` is never parsed as config, config surfaces lift,
+  code emissions are provably write-only (verified live in a real-disk smoke, not just vitest
+  fixtures). **Legacy-unit-test lesson reconfirmed inapplicable**: whole-word-grepped `pi` across
+  the entire `test/` tree — zero hits outside the six story files touched (pi is NET-NEW).
+  **Janitorial**: removed the stale dead worktree `/private/tmp/mav-pi/wt` plus its loose
+  TRACKED-FAILING-editing scratch files — same reversible in-domain class as the cursor/kilo
+  precedent; every other stale `/private/tmp/*` worktree left untouched for Nico's aggregate pass.
