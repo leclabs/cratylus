@@ -171,7 +171,7 @@ Read for comparison only: `packages/agent-forge/src/adapters/*/{index,paths,read
 
 ### claude adapter
 
-1. **MCP-in-settings.json fabricated**: `read.ts`/`write.ts` treat `mcpServers` as a `settings.json` key (both scopes) — settings.json carries only MCP _policy_ keys; server definitions live in `.mcp.json` (project) and `~/.claude.json` (user/local). Emitted user-scope MCP config is invisible to Claude Code; project scope works only because the adapter ALSO writes `.mcp.json` [CC7][CC8].
+1. **MCP-in-settings.json fabricated**: `read.ts`/`write.ts` treat `mcpServers` as a `settings.json` key (both scopes) — settings.json carries only MCP _policy_ keys; server definitions live in `.mcp.json` (project) and `~/.claude.json` (user/local). Emitted MCP config is invisible to Claude Code at EVERY scope: `paths.mcpFile` exists but is dead code — no write path consumes it (empirically confirmed by the story suite: project-scope MCP emission is tracked-failing) [CC7][CC8].
 2. **Event map fully vindicated**: all 19 mapped event names (incl. `StopFailure`, `TeammateIdle`, `PostToolUseFailure`, `PostCompact`, `FileChanged`, `ConfigChange`, `InstructionsLoaded`, `PermissionRequest`, `PermissionDenied`) exist in the documented 27+-event surface. Lossy-but-correct: unmapped events Setup, UserPromptExpansion, PostToolBatch, MessageDisplay, TaskCreated/Completed, CwdChanged, WorktreeCreate/Remove, Elicitation(Result) [CC6].
 3. **Matcher semantics wrong**: `capabilities.hooks.matchers: 'glob'` — matchers are regex or event-specific literals (FileChanged: literal `|`-split filenames), never glob [CC6].
 4. **Hook shape undermodeled**: only `type: command` + `timeout` handled; real types http/prompt/agent/mcp_tool plus `if`, `args`, `shell`, `env` fields are dropped on read and unreachable on write [CC6].
@@ -195,7 +195,7 @@ Read for comparison only: `packages/agent-forge/src/adapters/*/{index,paths,read
 1. **Rules filename wrong**: reads/writes `AGENTS.md` (both scopes); Gemini default context file is `GEMINI.md` (only reachable via `context.fileName`) — emitted rules silently ignored by a stock install [GM1].
 2. **`commands: 'none'` false**: `.gemini/commands/*.toml` (TOML `prompt`/`description`, namespaced dirs) exists; adapter's "Gemini has no slash-command system" warning is wrong [GM5].
 3. **Hooks largely right**: settings.json `hooks` + entry shape match; adapter's 10 events all real; missing `BeforeToolSelection`; matcher is **regex** (adapter declares `glob`); `timeout` is ms [GM4].
-4. **`permissions`/`env` settings keys fabricated** (adapter warns for permissions but emits anyway; emits `env` silently): real controls are `tools.core`/`excludeTools`/MCP `includeTools`, and `.env` loading [GM1].
+4. **`permissions`/`env` settings keys fabricated — write-side divergence only** (adapter warns for permissions but emits anyway; emits `env` silently; `read.ts` DOES lift both keys, so import is unaffected): real write-side controls are `tools.core`/`excludeTools`/MCP `includeTools`, and `.env` loading [GM1].
 5. **Remote MCP shape wrong**: emits `{url, type}`; Gemini distinguishes `url` (SSE) vs `httpUrl` (streamable HTTP) — HTTP servers mis-encoded; `trust`/`includeTools`/`excludeTools`/`timeout` unmodeled [GM1].
 6. Agents dir right (`.gemini/agents/*.md`); frontmatter `kind`/`temperature`/`max_turns` unmodeled (acceptable as `partial`) [GM2].
 7. Scope model misses system + system-defaults tiers (system OUTRANKS project) and extensions [GM1][GM6].
