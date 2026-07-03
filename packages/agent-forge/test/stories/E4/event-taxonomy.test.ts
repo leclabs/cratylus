@@ -290,7 +290,7 @@ describe('E4.S4 · event taxonomy', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E4.S4',
     'opencode: toCanonical(toNative(e)) = e (agent.idle and turn.end collide on session.idle)',
     () => {
@@ -375,7 +375,7 @@ describe('E4.S4 · event taxonomy', () => {
     );
   }
 
-  story.tracked(
+  story(
     'E4.S4',
     'opencode: eventMap injective — agent.idle and turn.end must not collide on session.idle',
     () => {

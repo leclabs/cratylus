@@ -96,7 +96,7 @@ describe('E9.S4 · read-merge on shared files', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E9.S4',
     'opencode.json: mcp lands under the documented "mcp" key with foreign keys preserved [OC7]',
     async () => {

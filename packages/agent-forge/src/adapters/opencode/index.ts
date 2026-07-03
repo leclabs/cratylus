@@ -16,31 +16,30 @@ const capabilities: AdapterCapabilities = {
   resources: {
     rules: 'full',
     skills: 'partial', // SKILL.md round-trips, but allowed_tools is dropped
-    commands: 'none',
-    agents: 'none',
+    // .opencode/agents/*.md [OC2] / .opencode/commands/*.md [OC4] — real
+    // surfaces, but several IR fields (color/permission_mode/max_turns/
+    // memory/effort; argument_hint/allowed_tools) have no opencode
+    // frontmatter equivalent, so 'partial' not 'full'.
+    commands: 'partial',
+    agents: 'partial',
     // Hooks have no native opencode config surface: delivery is a generated
     // plugin shim in .opencode/plugins/ [OC5] — the plugin support mode
-    // (13 of 28 canonical events mapped by the shim).
+    // (only the [OC5]-verified event names are mapped by the shim).
     hooks: 'plugin',
     mcp: 'full',
-    permissions: 'partial', // emitted as JSON; opencode's native DSL not honored
-    env: 'full',
+    // IR permissions map to opencode's own "permission" DSL — real surface,
+    // lossy translation (structured glob nesting vs IR's flat lists) [OC8].
+    permissions: 'partial',
+    // No documented env surface — {env:VAR} substitution inside other keys
+    // only, never a standalone env config [OC1].
+    env: 'none',
   },
   hooks: {
     supported: [
       'session.start',
-      'session.end',
-      'agent.idle',
-      'turn.end',
       'tool.use.pre',
       'tool.use.post',
       'file.edit.post',
-      'file.change.external',
-      'shell.exec.post',
-      'permission.request',
-      'permission.deny',
-      'notification',
-      'context.compact.post',
     ],
     matchers: 'glob',
     payload: 'shim',

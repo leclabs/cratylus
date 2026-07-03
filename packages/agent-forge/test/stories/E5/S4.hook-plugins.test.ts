@@ -12,11 +12,8 @@
  *
  * Fate split:
  * - opencode plugin shim emission + loud skip of unmappable events: GREEN;
- * - only-[OC5]-verified-names mapping: TRACKED — the current event map
- *   carries 9 unverified native names (session.deleted, session.idle,
- *   file.watcher.updated, command.executed, permission.asked,
- *   permission.replied, tui.toast.show, session.compacted — plus the
- *   session.idle widening);
+ * - only-[OC5]-verified-names mapping: GREEN as of the opencode-adapter-truth
+ *   fix — the event map was pruned to exactly the 4 verified names;
  * - kilo: TRACKED — no kilo adapter ships.
  */
 
@@ -97,7 +94,7 @@ story(
   },
 );
 
-story.tracked(
+story(
   'E5.S4',
   'opencode: only the [OC5]-verified plugin event names are mapped; unverified names are excluded until re-verified',
   () => {

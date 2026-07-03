@@ -1,13 +1,19 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { dump } from 'js-yaml';
 import {
+  type Agent,
   type Hook,
   type IR,
   type McpServer,
+  type Permissions,
   type Scope,
   type WriteOpts,
   type WriteReport,
+  mergeJsonKeys,
+  serializeCommand,
+  serializeFrontmatter,
   serializeSkill,
 } from '../../core/index.js';
 import { canonicalToOpencode } from './events.js';
@@ -67,6 +73,105 @@ export async function writeOpencodeHooks(
   return { written, skipped, warnings };
 }
 
+type OpencodeMcpEntry =
+  | {
+      type: 'local';
+      command: [string, ...string[]];
+      enabled?: boolean;
+      environment?: Record<string, string>;
+    }
+  | {
+      type: 'remote';
+      url: string;
+      headers?: Record<string, string>;
+      enabled?: boolean;
+    };
+
+function mcpEntry(s: McpServer): OpencodeMcpEntry {
+  if (s.transport === 'stdio') {
+    const head = Array.isArray(s.command) ? s.command : [s.command];
+    const command = [...head, ...(s.args ?? [])] as [string, ...string[]];
+    const entry: OpencodeMcpEntry = { type: 'local', command };
+    if (s.env) entry.environment = s.env;
+    if (s.disabled) entry.enabled = false;
+    return entry;
+  }
+  // opencode's "remote" type carries no sse/http distinction [OC7].
+  const entry: OpencodeMcpEntry = { type: 'remote', url: s.url };
+  if (s.headers) entry.headers = s.headers;
+  if (s.disabled) entry.enabled = false;
+  return entry;
+}
+
+type OpencodePermissionValue =
+  | 'allow'
+  | 'ask'
+  | 'deny'
+  | Record<string, 'allow' | 'ask' | 'deny'>;
+
+/** Parse a `Tool(arg)` / bare `Tool` IR permission pattern. */
+function splitPattern(pattern: string): { tool: string; arg?: string } {
+  const m = /^([A-Za-z_][\w]*)\((.*)\)$/.exec(pattern);
+  const tool = m?.[1];
+  if (!m || tool === undefined) return { tool: pattern.toLowerCase() };
+  return { tool: tool.toLowerCase(), arg: m[2] ?? '' };
+}
+
+/** IR permissions → opencode's `permission` DSL [OC8]. Best-effort: a bare
+ * `Tool(*)`/`Tool` pattern becomes a flat action; a scoped `Tool(glob)`
+ * nests under the tool key. Applied allow → ask → deny so a same-key
+ * collision resolves to the more restrictive action. */
+function buildPermission(
+  permissions: Permissions,
+): Record<string, OpencodePermissionValue> {
+  const out: Record<string, OpencodePermissionValue> = {};
+  const apply = (
+    patterns: string[] | undefined,
+    action: 'allow' | 'ask' | 'deny',
+  ) => {
+    for (const pattern of patterns ?? []) {
+      const { tool, arg } = splitPattern(pattern);
+      if (!arg || arg === '*') {
+        out[tool] = action;
+        continue;
+      }
+      const existing = out[tool];
+      const nested = existing && typeof existing === 'object' ? existing : {};
+      out[tool] = { ...nested, [arg]: action };
+    }
+  };
+  apply(permissions.allow, 'allow');
+  apply(permissions.ask, 'ask');
+  apply(permissions.deny, 'deny');
+  return out;
+}
+
+/** `.opencode/agents/*.md` documented frontmatter is description/mode/model/
+ * temperature/tools/permission [OC2] — `name` comes from the filename. An
+ * unset `mode` defaults to `subagent` (opencode requires the field; IR
+ * agents are subagent definitions by contract) and is disclosed via a
+ * warning at the call site, never silently fabricated. */
+function serializeOpencodeAgent(agent: Agent): string {
+  const fm: Record<string, unknown> = {};
+  if (agent.description) fm.description = agent.description;
+  fm.mode = agent.mode ?? 'subagent';
+  if (agent.model) fm.model = agent.model;
+  if (agent.temperature !== undefined) fm.temperature = agent.temperature;
+  if (agent.tools) fm.tools = agent.tools;
+  return serializeFrontmatter(fm, agent.body);
+}
+
+/** IR agent fields with no opencode frontmatter equivalent [OC2] — dropped
+ * with a named warning, same discipline as codex's `color` / cursor's
+ * broader drop set, never fabricated into the file. */
+const AGENT_UNSUPPORTED_FIELDS = [
+  'color',
+  'permission_mode',
+  'max_turns',
+  'memory',
+  'effort',
+] as const;
+
 export async function writeOpencode(
   ir: IR,
   scope: Scope,
@@ -78,7 +183,7 @@ export async function writeOpencode(
   const skipped: { path: string; reason: string }[] = [];
   const warnings: string[] = [];
 
-  // Rules → AGENTS.md
+  // Rules → AGENTS.md [OC3]
   if (ir.rules?.length) {
     const body = ir.rules.map((r) => r.body).join('\n\n');
     if (!opts.dryRun) {
@@ -118,83 +223,84 @@ export async function writeOpencode(
     }
   }
 
-  // MCP servers → .opencode/mcp.json (matches the standard mcpServers shape)
-  if (ir.mcp_servers?.length) {
-    if (!opts.dryRun) {
-      await mkdir(dirname(p.mcpFile), { recursive: true });
-      await writeFile(
-        p.mcpFile,
-        `${JSON.stringify({ mcpServers: serializeMcp(ir.mcp_servers) }, null, 2)}\n`,
-        'utf8',
-      );
-    }
-    written.push(p.mcpFile);
-  }
-
-  // Permissions — best-effort. opencode has its own DSL; we emit a JSON file
-  // and warn that it is not natively respected.
-  if (ir.permissions) {
-    warnings.push(
-      'permissions: opencode uses a different permission DSL; emitted as .opencode/permissions.json (not natively read)',
-    );
-    if (!opts.dryRun) {
-      await mkdir(dirname(p.permissionsFile), { recursive: true });
-      await writeFile(
-        p.permissionsFile,
-        `${JSON.stringify(ir.permissions, null, 2)}\n`,
-        'utf8',
-      );
-    }
-    written.push(p.permissionsFile);
-  }
-
-  // Env → JSON map
-  if (ir.env) {
-    if (!opts.dryRun) {
-      await mkdir(dirname(p.envFile), { recursive: true });
-      await writeFile(
-        p.envFile,
-        `${JSON.stringify(ir.env, null, 2)}\n`,
-        'utf8',
-      );
-    }
-    written.push(p.envFile);
-  }
-
-  // Commands and agents — opencode has no equivalent
-  if (ir.commands?.length) {
-    warnings.push(
-      `commands: opencode has no slash-command system (${ir.commands.length} skipped)`,
-    );
-    for (const c of ir.commands)
-      skipped.push({ path: `commands/${c.name}.md`, reason: 'unsupported' });
-  }
+  // Agents — .opencode/agents/*.md, `mode` field required [OC2].
   if (ir.agents?.length) {
+    const dropped = new Set<string>();
+    for (const agent of ir.agents) {
+      if (!agent.mode) {
+        warnings.push(
+          `agents: '${agent.name}' has no IR mode; defaulting to 'subagent' for opencode's required frontmatter field [OC2]`,
+        );
+      }
+      const agentFile = join(p.agentsDir, `${agent.name}.md`);
+      if (!opts.dryRun) {
+        await mkdir(p.agentsDir, { recursive: true });
+        await writeFile(agentFile, serializeOpencodeAgent(agent), 'utf8');
+      }
+      written.push(agentFile);
+      for (const f of AGENT_UNSUPPORTED_FIELDS) {
+        if ((agent as unknown as Record<string, unknown>)[f] !== undefined) {
+          dropped.add(f);
+        }
+      }
+    }
+    if (dropped.size) {
+      warnings.push(
+        `agents: opencode's documented frontmatter is description/mode/model/temperature/tools/permission — dropping ${[...dropped].join(', ')} [OC2]`,
+      );
+    }
+  }
+
+  // Commands — .opencode/commands/*.md [OC4].
+  if (ir.commands?.length) {
+    for (const command of ir.commands) {
+      const commandFile = join(p.commandsDir, `${command.name}.md`);
+      if (!opts.dryRun) {
+        await mkdir(p.commandsDir, { recursive: true });
+        await writeFile(commandFile, serializeCommand(command), 'utf8');
+      }
+      written.push(commandFile);
+    }
+  }
+
+  // MCP + permissions: keys of the ONE documented config home, opencode.json
+  // — foreign keys survive (key-scoped merge) [OC7][OC8].
+  const owned: Record<string, unknown> = {};
+
+  if (ir.mcp_servers?.length) {
+    const mcp: Record<string, OpencodeMcpEntry> = {};
+    for (const s of ir.mcp_servers) mcp[s.name] = mcpEntry(s);
+    owned.mcp = mcp;
+  }
+
+  if (ir.permissions) {
+    owned.permission = buildPermission(ir.permissions);
+  }
+
+  if (Object.keys(owned).length) {
+    if (!opts.dryRun) {
+      const existing = existsSync(p.configFile)
+        ? await readFile(p.configFile, 'utf8')
+        : undefined;
+      await mkdir(dirname(p.configFile), { recursive: true });
+      await writeFile(p.configFile, mergeJsonKeys(existing, owned), 'utf8');
+    }
+    written.push(p.configFile);
+  }
+
+  // Env — no documented standalone surface; {env:VAR} substitution inside
+  // other keys only [OC1]. Never fabricate an env.json.
+  if (ir.env && Object.keys(ir.env).length > 0) {
     warnings.push(
-      `agents: opencode has no subagent system (${ir.agents.length} skipped)`,
+      'env: opencode has no documented env config surface ({env:VAR} substitution only) — env skipped [OC1]',
     );
-    for (const a of ir.agents)
-      skipped.push({ path: `agents/${a.name}.md`, reason: 'unsupported' });
+    skipped.push({
+      path: 'env',
+      reason: 'no-native-surface: opencode has no env config key [OC1]',
+    });
   }
 
   return { written, skipped, warnings };
-}
-
-function serializeMcp(servers: McpServer[]): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const s of servers) {
-    if (s.transport === 'stdio') {
-      const entry: Record<string, unknown> = { command: s.command };
-      if (s.args) entry.args = s.args;
-      if (s.env) entry.env = s.env;
-      out[s.name] = entry;
-    } else {
-      const entry: Record<string, unknown> = { url: s.url, type: s.transport };
-      if (s.headers) entry.headers = s.headers;
-      out[s.name] = entry;
-    }
-  }
-  return out;
 }
 
 function generateShim(hooks: Hook[]): string {

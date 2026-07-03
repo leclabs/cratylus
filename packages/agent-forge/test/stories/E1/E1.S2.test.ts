@@ -261,7 +261,8 @@ const SPECS: readonly AdapterSpec[] = [
   },
   {
     client: 'opencode',
-    gap: 'opencode.json mcp/permission + agents/commands unread [OC2][OC4][OC7][OC8]',
+    // mcp/permission (opencode.json) + agents/commands lift as of the
+    // opencode-adapter-truth fix [OC2][OC4][OC7][OC8] — no longer a gap.
     build: (cwd) => {
       put(cwd, 'AGENTS.md', '# Rules\n\nOPENCODE-RULE-MARKER\n'); // [OC3]
       put(

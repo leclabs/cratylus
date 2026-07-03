@@ -137,8 +137,11 @@ describe('agentsMdSurface', () => {
 // ── Honest lossy reporting: agents-none adapters skip + warn, never corrupt ───
 // The thesis' safety leg: a agent-anatomy agent projected through an adapter that declares
 // `agents: 'none'` must be SKIPPED with a warning via the existing WriteReport,
-// NOT silently dropped or corrupted. Demonstrated on opencode + aider (both
-// declare `agents: 'none'`). We drive the IR write path (the adapter contract)
+// NOT silently dropped or corrupted. Demonstrated on aider (declares
+// `agents: 'none'`); opencode graduated to a real (partial) agents write with
+// the opencode-adapter-truth fix [OC2] — see the sibling test below, which
+// demonstrates the same safety leg for a field-level drop instead of a
+// whole-resource skip. We drive the IR write path (the adapter contract)
 // with a agent-anatomy-derived agent IR.
 
 describe('lossy reporting for agents-none adapters (WriteReport holds)', () => {
@@ -170,19 +173,23 @@ describe('lossy reporting for agents-none adapters (WriteReport holds)', () => {
     ],
   });
 
-  it('opencode (agents: none) skips + warns, writes no agent file', async () => {
-    expect(opencodeAdapter.capabilities.resources.agents).toBe('none');
+  it('opencode (agents: partial) writes the real .opencode/agents/nico.md, not a skip', async () => {
+    expect(opencodeAdapter.capabilities.resources.agents).toBe('partial');
     const report = await opencodeAdapter.write(
       irWithAgent('opencode'),
       'project',
       cwd,
       {},
     );
-    // Skipped, with a human-legible reason — not corrupted, not crashed.
-    expect(report.skipped.some((s) => s.path.includes('nico'))).toBe(true);
-    expect(report.warnings.some((w) => /agents/.test(w))).toBe(true);
-    // Nothing the adapter wrote is an agent artifact.
-    expect(report.written.some((p) => p.includes('nico'))).toBe(false);
+    // A real write, not a skip [OC2] — never corrupted, never crashed.
+    expect(report.skipped.some((s) => s.path.includes('nico'))).toBe(false);
+    expect(
+      report.written.some((p) => p.includes(join('agents', 'nico.md'))),
+    ).toBe(true);
+    // The agent had no IR mode; opencode's frontmatter requires the field, so
+    // the adapter discloses the default via a warning, never fabricates it
+    // silently.
+    expect(report.warnings.some((w) => /mode/.test(w))).toBe(true);
   });
 
   it('aider (agents: none) skips the agent cleanly (no corruption)', async () => {

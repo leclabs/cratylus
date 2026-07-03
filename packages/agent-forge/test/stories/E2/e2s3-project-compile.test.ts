@@ -118,8 +118,9 @@ describe('E2.S3 · project-scope compile lands in each documented namespace', ()
     'touched-path set ⊆ union of documented per-adapter project surfaces (no fabricated paths)',
     () => {
       // Fails today on §3 fabrications: .codex/skills/ [CX2], .copilot/ [CP2],
-      // .opencode/mcp.json [OC7], .cline/mcp.json [CL6], .crush/mcp.json [CR1],
-      // .continue/config.yaml [CT1].
+      // .cline/mcp.json [CL6], .crush/mcp.json [CR1], .continue/config.yaml
+      // [CT1]. (opencode's .opencode/mcp.json fabrication graduated with the
+      // opencode-adapter-truth fix [OC7].)
       const strays = touched.filter((rel) => !isDocumented(rel));
       expect(strays).toEqual([]);
     },

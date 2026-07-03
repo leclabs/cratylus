@@ -165,6 +165,7 @@ const ZERO_LIFT_GRADUATED = new Set([
   '.crush/mcp.json',
   '~/.config/github-copilot/*',
   '.copilot/skills/',
+  '.opencode/mcp.json',
 ]);
 
 for (const spec of SPECS.filter((s) => ZERO_LIFT_GRADUATED.has(s.path))) {

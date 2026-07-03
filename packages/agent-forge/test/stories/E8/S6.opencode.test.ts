@@ -50,7 +50,7 @@ describe('E8.S6 · opencode', () => {
 
   // --- MCP dialect [OC7] ---
 
-  story.tracked(
+  story(
     'E8.S6',
     'MCP lives under the mcp key of opencode.json, typed local, command as ARRAY [OC7]',
     async () => {
@@ -80,7 +80,7 @@ describe('E8.S6 · opencode', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S6',
     'the fabricated .opencode/mcp.json is never emitted [OC7]',
     async () => {
@@ -97,7 +97,7 @@ describe('E8.S6 · opencode', () => {
 
   // --- Agents + commands on [OC2][OC4] ---
 
-  story.tracked(
+  story(
     'E8.S6',
     'agents capability on: .opencode/agents/*.md with mode field [OC2]',
     async () => {
@@ -114,7 +114,7 @@ describe('E8.S6 · opencode', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S6',
     'commands capability on: .opencode/commands/*.md emitted [OC4]',
     async () => {
@@ -132,7 +132,7 @@ describe('E8.S6 · opencode', () => {
 
   // --- Permission key, no env.json [OC8][OC1] ---
 
-  story.tracked(
+  story(
     'E8.S6',
     'no permissions.json; IR permissions map to the permission DSL in opencode.json [OC8]',
     async () => {
@@ -150,19 +150,15 @@ describe('E8.S6 · opencode', () => {
     },
   );
 
-  story.tracked(
-    'E8.S6',
-    'no fabricated env.json is emitted [OC1]',
-    async () => {
-      const ir: IR = { manifest: manifest(), env: { DEBUG: 'true' } };
-      await opencodeAdapter.write(ir, 'project', cwd, {});
-      expect(existsSync(join(cwd, '.opencode', 'env.json'))).toBe(false);
-    },
-  );
+  story('E8.S6', 'no fabricated env.json is emitted [OC1]', async () => {
+    const ir: IR = { manifest: manifest(), env: { DEBUG: 'true' } };
+    await opencodeAdapter.write(ir, 'project', cwd, {});
+    expect(existsSync(join(cwd, '.opencode', 'env.json'))).toBe(false);
+  });
 
   // --- Hook shim event names [OC5] ---
 
-  story.tracked(
+  story(
     'E8.S6',
     'hook-plugin shim maps only [OC5]-verified event names (E5.S4)',
     () => {
@@ -202,7 +198,7 @@ describe('E8.S6 · opencode', () => {
 
   // --- Fabricated-shape import (E1.S3) ---
 
-  story.tracked(
+  story(
     'E8.S6',
     'fabricated-shape import: .opencode/{mcp,permissions,env}.json lift zero phantom resources (E1.S3) [OC7][OC8][OC1]',
     async () => {

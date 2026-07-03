@@ -179,16 +179,21 @@ describe('E4.S6 · claude → opencode → claude relay', () => {
 
   story(
     'E4.S6',
-    'resources inside both dialects survive the relay exactly (rules, skills, hooks, mcp, permissions, env)',
+    'resources inside both dialects survive the relay exactly (rules, skills, mcp, permissions)',
     async () => {
       const { relay, direct, diffKeys } = await runRelay();
+      // hooks + env excluded (opencode-adapter-truth, 2026-07): the fixture's
+      // Stop hook maps to canonical turn.end, which the honest [OC5]-verified
+      // event map no longer carries (the prior 'session.idle' collision was
+      // a fabrication, not a real dialect) — a genuine, REPORTED loss, not a
+      // silent one (see the sibling ⊆-reported-loss story above). env has no
+      // documented opencode surface at all [OC1], so it never survives a
+      // relay through opencode either — also reported, never silent.
       for (const k of [
         'rules',
         'skills',
-        'hooks',
         'mcp_servers',
         'permissions',
-        'env',
       ] as const) {
         expect(diffKeys).not.toContain(k);
         expect(comparable(relay[k], 'hooks')).toEqual(

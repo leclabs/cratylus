@@ -95,19 +95,36 @@ describe('Phase 2 cross-adapter portability', () => {
     expect(report.skipped).toEqual([]);
   });
 
-  it('opencode warns about commands + agents (unsupported), emits everything else', async () => {
+  // opencode-adapter-truth (2026-07): commands [OC4] + agents [OC2] are real
+  // surfaces (this test used to pin the fabricated "unsupported" warning);
+  // env has no documented surface at all [OC1] and is the one that's now
+  // warned-and-skipped; mcp/permission land in the one config home,
+  // opencode.json, not a fabricated .opencode/mcp.json sidecar [OC7][OC8].
+  it('opencode emits commands + agents + mcp/permission in opencode.json; warns about env (unsupported)', async () => {
     const subDir = join(cwd, 'opencode');
     const fs = await import('node:fs/promises');
     await fs.mkdir(subDir, { recursive: true });
     const report = await opencodeAdapter.write(fullIR(), 'project', subDir, {});
-    expect(report.warnings.some((w) => w.includes('commands'))).toBe(true);
-    expect(report.warnings.some((w) => w.includes('agents'))).toBe(true);
-    // Skills, mcp, env, permissions all attempted
+    expect(report.warnings.some((w) => w.includes('env'))).toBe(true);
     expect(
       existsSync(join(subDir, '.opencode', 'skills', 'review', 'SKILL.md')),
     ).toBe(true);
-    expect(existsSync(join(subDir, '.opencode', 'mcp.json'))).toBe(true);
-    expect(existsSync(join(subDir, '.opencode', 'env.json'))).toBe(true);
+    expect(existsSync(join(subDir, '.opencode', 'commands', 'plan.md'))).toBe(
+      true,
+    );
+    expect(existsSync(join(subDir, '.opencode', 'agents', 'planner.md'))).toBe(
+      true,
+    );
+    expect(existsSync(join(subDir, '.opencode', 'mcp.json'))).toBe(false);
+    expect(existsSync(join(subDir, '.opencode', 'env.json'))).toBe(false);
+    const config = JSON.parse(
+      await fs.readFile(join(subDir, 'opencode.json'), 'utf8'),
+    ) as {
+      mcp?: Record<string, unknown>;
+      permission?: Record<string, unknown>;
+    };
+    expect(config.mcp?.gh).toBeDefined();
+    expect(config.permission).toBeDefined();
   });
 
   it('codex emits TOML config + prompts/agents/skills', async () => {
