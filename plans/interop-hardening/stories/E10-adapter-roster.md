@@ -2,9 +2,11 @@
 
 Research-driven (beyond floor): RETURN-1 §3 "Adapter roster vs field" — no adapters for Amp, Zed,
 Windsurf/Devin, Kilo; Gemini→Antigravity and Windsurf→Devin renames; Roo sunset; aider a no-op in
-practice until E8.S10's fix. New-adapter stories share the **new-adapter contract**: fixture from
-RETURN-1 §2 sheet; import (E1.S2 discipline) + compile (E2.S3/S4) + round-trip (E4.S1) + honest
-capabilities (E4.S3); listed by `agent-forge adapters`. ρ=LLM.
+practice until E8.S10's fix. Plus **Pi** (S8–S10), ground truth =
+`../completed/pi-harness-research.RETURN.md` (`[PI#]` refs). New-adapter stories share the
+**new-adapter contract**: fixture from the harness's §2 sheet; import (E1.S2 discipline) +
+compile (E2.S3/S4) + round-trip (E4.S1) + honest capabilities (E4.S3); listed by
+`agent-forge adapters`. ρ=LLM.
 
 ---
 
@@ -96,5 +98,65 @@ with a standing re-verification checklist, not ad-hoc discovery.
 - A dated checklist doc exists in the plan (or docs/) listing per-adapter: source-doc URLs
   (RETURN ledgers), last-verified date, the UNVERIFIED items still open (codex agent-TOML syntax
   [CX1], opencode singular-dir alias [OC2], Devin Local subagent config [WS7], Continue AGENTS.md
-  [CT2]), and the E7.S10 tripwire. Observable: file present, every current adapter has a row,
-  every §2-flagged UNVERIFIED appears exactly once.
+  [CT2], pi trust.json schema + theme key set + subagent frontmatter superset — pi RETURN §4),
+  and the E7.S10 tripwire. Pi carries the pi RETURN's volatility note (pre-1.0, 0.80.x —
+  re-verify [PI2] before cutting fixtures into tests). Observable: file present, every current
+  adapter has a row, every §2-flagged UNVERIFIED appears exactly once.
+
+## E10.S8 · Pi adapter — natural emissions (config surfaces)
+
+A: FLEET · P: pi RETURN §2 sheet; new-adapter contract.
+✓ (beyond contract):
+
+- Rules: root `AGENTS.md` — the R1/E7.S1 artifact lands UNCHANGED (pi natively concatenates
+  `~/.pi/agent/AGENTS.md` → ancestors → cwd; `CLAUDE.md` is a co-equal alternative read on
+  import) [PI2]; no `.pi/AGENTS.md` is ever written — that surface does not exist [PI2]. System-
+  prompt surfaces (`SYSTEM.md`/`APPEND_SYSTEM.md`, both scopes) recognized on import [PI2].
+- Skills: the R2/E7.S3 `.agents/skills/` tree lands UNCHANGED (pi discovers it natively,
+  cwd→ancestors + `~/.agents/skills/`) [PI5]; no `.pi/skills/` emission needed (a second native
+  home, redundant — parsimony); frontmatter constraints enforced (`name` ≤64 `[a-z0-9-]`,
+  `description` required ≤1024 — undescribed skills are not loaded) [PI5].
+- Commands: IR commands → prompt templates `.pi/prompts/*.md` (project) /
+  `~/.pi/agent/prompts/*.md` (user); frontmatter `description`/`argument-hint`; substitution
+  mapped `$1..$n`, `$ARGUMENTS`/`$@`, `${1:-default}` [PI7].
+- Scopes: global `~/.pi/agent/` vs project `.pi/`; import honors project-over-global deep-merge
+  of `settings.json` and lifts the resource keys (`packages`, `extensions`, `skills`, `prompts`)
+  [PI4][PI2].
+- Trust gating loud (acceptance condition): every project-scope write (`.pi/*`,
+  `.agents/skills/`) appends the inert-until-trusted warning naming `~/.pi/agent/trust.json` +
+  `/trust` [PI2 §Project Trust]; a project-scope pi write without the warning = FAIL.
+- Capabilities honest: hooks/subagents/permissions/MCP declared absent as CONFIG surfaces
+  (delivery is `plugin` mode — E10.S9); MCP `none` by design [PI2].
+
+## E10.S9 · Pi code emission — hooks + agents as a generated pi package (the demonstration case)
+
+A: FLEET + DEV · P: E5.S8's fixtures; pi RETURN §3 capability map.
+✓:
+
+- All code-shaped resources ship as ONE generated pi package: `package.json` with
+  `"keywords": ["pi-package"]` and `"pi": {"extensions": [...]}` manifest [PI6]; report includes
+  the install line (`pi install ./<path>`, local = path-referenced) and the [PI6] caution that
+  packages run with full system access — review before install.
+- Hooks: extension maps canonical events per E5.S8's table onto `pi.on()`; blocking hooks use the
+  `tool_call` veto `{block: true, reason}`; result-mutating hooks use `tool_result` [PI3].
+- Agents: subagent-pattern emission per E5.S8 (md defs + `registerTool` delegate [PI9]); the
+  `registerTool` path emitted here is by design the same serializer a future Tool resource type
+  will use — pi is the demonstration instance that seeds E5.S6's graduation, which stays FUTURE
+  until the IR carries a Tool type (E9.S5).
+- Emitted TS type-checks in CI; `/reload` suffices to activate without restart (documented in
+  report) [PI3][PI2].
+- Round-trip honesty: code emissions are declared write-only (`plugin` mode, no read-back);
+  reimport of a pi fixture lifts config surfaces (E10.S8) and reports extension files under
+  `unlifted-surfaces` (E1.S7 discipline) — never parses foreign TS as config.
+
+## E10.S10 · Pi MCP — FUTURE (absent by design, mechanism named, no verified artifact)
+
+A: OPERATOR · G: pi's loudest omission is on the record with its designated path, not guessed at.
+✓:
+
+- Status `FUTURE` — excluded-by-marker from the coverage-test wave, here and in COVERAGE.md.
+- Scope recorded: pi omits MCP deliberately ("No MCP. Build CLI tools with READMEs (see Skills),
+  or build an extension that adds MCP support" [PI2][PI14]); the mechanism would be an extension
+  wrapping an MCP client and surfacing tools via `registerTool` [PI3]; no first-party artifact
+  exists and any third-party pi-package for MCP is UNVERIFIED (pi RETURN §3). No implementation
+  story may claim pi-MCP until a verified artifact or a deliberate build graduates this record.

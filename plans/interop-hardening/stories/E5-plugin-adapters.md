@@ -3,12 +3,12 @@
 Floor: **F5** (harness lacks native support for a resource but HAS a plugin architecture ⇒ the
 adapter delivers the resource via a plugin artifact). Resource floor: **agents + skills**;
 nice-to-have: **hooks**; recorded-as-FUTURE: tools, MCP-delivery. ρ=LLM.
-Verified plugin architectures (RETURN §1/§2): opencode JS/TS plugins [OC5] · Amp Bun-TS plugins
-[AM2] · Kilo TS plugins [KL6] · Cline SDK `AgentPlugin` [CL8] · Claude plugins [CC4][CC5] ·
-Gemini extensions [GM6] · Zed WASM extensions (MCP-only delivery) [ZD7].
-**Pi is a real harness target and the DEMONSTRATION instance of plugin-delivered capabilities**
-(Operator ruling); its research is dispatched separately
-(`plans/interop-hardening/pending/pi-harness-research.md`) and gates E5.S8.
+Verified plugin architectures (RETURN §1/§2 + pi RETURN §3): opencode JS/TS plugins [OC5] · Amp
+Bun-TS plugins [AM2] · Kilo TS plugins [KL6] · Cline SDK `AgentPlugin` [CL8] · Claude plugins
+[CC4][CC5] · Gemini extensions [GM6] · Zed WASM extensions (MCP-only delivery) [ZD7] · **Pi TS
+extensions + pi packages** [PI3][PI6]. Pi is the DEMONSTRATION instance of plugin-delivered
+capabilities (Operator ruling); its ground truth = `../completed/pi-harness-research.RETURN.md`
+(`[PI#]` refs resolve there) — E5.S8 is live; roster stories E10.S8–S10.
 
 ---
 
@@ -44,8 +44,8 @@ Gemini, Zed).
 ✓:
 
 - A pinned assertion table: each plugin-arch harness has native `SKILL.md` discovery
-  ([OC6][AM4][KL3][CL5][CC3][GM3][ZD2]); the adapters emit skills to those native paths; no
-  skill-via-plugin code path exists.
+  ([OC6][AM4][KL3][CL5][CC3][GM3][ZD2] · Pi [PI5]); the adapters emit skills to those native
+  paths; no skill-via-plugin code path exists.
 - If a future harness shows plugin-arch + no native skills, this story's table forces a conscious
   revisit (the guard fails on roster change, prompting a new story — not silence).
 
@@ -97,18 +97,30 @@ P: IR agent; target crush (no custom agents, no plugin API — open FR [CR4]).
   reason citing no-native-no-plugin}; `--strict` behavior documented (skip is a warning-class,
   configurable).
 
-## E5.S8 · Pi — the demonstration harness (RESEARCH-GATED)
+## E5.S8 · Pi — the live demonstration of plugin-delivered capabilities
 
-A: FLEET + OPERATOR · G: Pi demonstrates F5 end-to-end — a plugin-arch harness receiving the
-agents+skills floor (hooks nice-to-have) via adapter-emitted plugin artifacts.
-P: gated on `plans/interop-hardening/pending/pi-harness-research.md`; no Pi config surface is
-asserted before that RETURN lands (zero-trust: nothing in this library's evidence base covers
-Pi).
+A: FLEET · G: Pi demonstrates F5 end-to-end — a harness that deliberately omits hooks, subagents,
+and permissions as config-file surfaces and designates TS extensions + pi packages as the
+delivery path [PI2 §Philosophy] receives the agents floor and the hooks nice-to-have from IR as
+generated code.
+P: pi RETURN §2/§3 fixtures; IR with 1 agent + hooks on canonical PreToolUse (blocking),
+PostToolUse, SessionStart, UserPromptSubmit.
 ✓:
 
-- Status `RESEARCH-GATED` — excluded-by-marker from the coverage-test wave (same mechanism as
-  FUTURE) here and in COVERAGE.md.
-- On research landing, this placeholder graduates (net-current replacement, not accretion) into:
-  (a) E10-class roster stories for a Pi adapter under the new-adapter contract; (b) concrete
-  E5.S2/E5.S4-class instances naming Pi as the demonstration target. Observable now: the marker,
-  the gate path, and the graduation contract are present verbatim.
+- Skills floor: discharged natively, no plugin shim (E5.S3 guard) — emitted to `.agents/skills/`,
+  which pi discovers cwd→ancestors plus `~/.agents/skills/` [PI5]; emissions keep name = dirname
+  (spec-strict) even though pi tolerates the deviation [PI5].
+- Agents via code: the adapter emits the subagent pattern — agent defs as md+frontmatter
+  (name/description/tools/model + body = system prompt) at `.pi/agents/*.md` (project) /
+  `~/.pi/agent/agents/*.md` (user) plus a `registerTool` delegate extension per the official
+  subagent example [PI9]; emitted TS type-checks in CI.
+- Hooks via events: generated extension maps canonical events onto `pi.on()` (the ~30-event set
+  [PI3]): PreToolUse→`tool_call` with veto shape `{block: true, reason}` · PostToolUse→
+  `tool_result` · SessionStart→`session_start` · UserPromptSubmit→`input`; canonical events with
+  no [PI3]-verified equivalent land in `.skipped` by name (E4.S4 discipline).
+- Packaging: the code artifacts ship as ONE pi package — `package.json` with
+  `"keywords": ["pi-package"]` + `"pi"` manifest listing `extensions` [PI6]; installable via
+  `pi install ./<path>` (local, path-referenced).
+- Trust gating loud: the WriteReport warns that project-scope emissions (`.pi/*`,
+  `.agents/skills/`) are INERT until the folder is trusted (`~/.pi/agent/trust.json`, `/trust`)
+  [PI2 §Project Trust]; absence of that warning on any project-scope pi write = FAIL.
