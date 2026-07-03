@@ -8,7 +8,7 @@
  * satisfy this fixture's byte-equal check against claude's independently
  * generated SKILL.md — not a deliberate symlink/mirror mechanism, so it is
  * fragile for a skill whose body differs per harness. The doctor drift-guard
- * bullet still has no mirror check at all and stays tracked.
+ * bullet is closed by standards-surfaces (`doctor.ts` mirror-drift check).
  */
 
 import {
@@ -76,7 +76,7 @@ describe('E7.S4 · .claude/skills mirror of .agents/skills', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S4',
     'a mirror that diverges from its .agents/skills source fails agent-forge doctor (drift guard)',
     async () => {

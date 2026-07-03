@@ -1,5 +1,6 @@
-import { existsSync } from 'node:fs';
+import { existsSync, lstatSync, readdirSync, readlinkSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
+import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { load } from 'js-yaml';
 import pc from 'picocolors';
@@ -56,6 +57,59 @@ export async function runDoctor(
   let failures = 0;
   let warnings = 0;
 
+  // 0. .claude/skills mirror-drift guard (E7.S4). .agents/skills/<name> is
+  // the authored-once source; .claude/skills/<name> must resolve to the
+  // identical skill — a verified symlink, or a byte-equal SKILL.md copy.
+  // Needs no `.agent-forge/` IR home, so it runs ahead of that gate.
+  const mirrorBase = scope === 'user' ? homedir() : cwd;
+  const sourceSkillsDir = join(mirrorBase, '.agents', 'skills');
+  const mirrorSkillsDir = join(mirrorBase, '.claude', 'skills');
+  if (existsSync(mirrorSkillsDir)) {
+    let mirrorNames: string[] = [];
+    try {
+      mirrorNames = readdirSync(mirrorSkillsDir, { withFileTypes: true })
+        .filter((e) => e.isDirectory())
+        .map((e) => e.name);
+    } catch {
+      mirrorNames = [];
+    }
+    for (const name of mirrorNames) {
+      const mirrorDir = join(mirrorSkillsDir, name);
+      const sourceFile = join(sourceSkillsDir, name, 'SKILL.md');
+      if (!existsSync(sourceFile)) continue; // nothing to diverge from
+      const stat = lstatSync(mirrorDir, { throwIfNoEntry: false });
+      if (stat?.isSymbolicLink()) {
+        const target = readlinkSync(mirrorDir);
+        if (!target.includes(join('.agents', 'skills', name))) {
+          console.log(
+            fmt({
+              status: 'fail',
+              label: `.claude/skills/${name}: mirror symlink diverges from .agents/skills/${name}`,
+              detail: `link target: ${target}`,
+            }),
+          );
+          failures++;
+        }
+        continue;
+      }
+      const mirrorFile = join(mirrorDir, 'SKILL.md');
+      if (!existsSync(mirrorFile)) continue;
+      const [mirrorText, sourceText] = await Promise.all([
+        readFile(mirrorFile, 'utf8'),
+        readFile(sourceFile, 'utf8'),
+      ]);
+      if (mirrorText !== sourceText) {
+        console.log(
+          fmt({
+            status: 'fail',
+            label: `.claude/skills/${name}: mirror diverged from .agents/skills/${name} source`,
+          }),
+        );
+        failures++;
+      }
+    }
+  }
+
   // 1. .agent-forge/ presence
   if (root && existsSync(root)) {
     console.log(
@@ -72,7 +126,7 @@ export async function runDoctor(
     warnings++;
     console.log('');
     console.log(`${pc.yellow('⚠')} Skipping further checks (no IR to inspect)`);
-    return 0;
+    return failures > 0 ? 1 : 0;
   }
 
   // 2. Manifest validity

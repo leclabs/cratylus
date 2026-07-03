@@ -2,8 +2,11 @@
  * E7.S2 — nested AGENTS.md are self-sufficient (caution iii).
  * Ground truth: FAQ closest-wins replacement [S1] vs Codex root→cwd
  * concatenation [S9]; emitted nested files must stand alone, never
- * delta-encoded. Dir-scoping of rules is an E9.S2 dependency: the IR Rule
- * cannot express it yet, so both bullets are tracked.
+ * delta-encoded. Dir-scoping rides the Rule `dir` field (landed by
+ * ir-schema-expressiveness, wave 4) + the engine's nested-rules routing
+ * (standards-surfaces, `core/engine/nested-rules.ts`): a `dir`-scoped rule
+ * never reaches an adapter's own rules writer — it lands straight in
+ * `<dir>/AGENTS.md`, adapter-agnostic.
  */
 
 import { existsSync, readFileSync, rmSync } from 'node:fs';
@@ -28,13 +31,11 @@ const ROOT_BODY = 'ROOT-RULE: repo-wide invariants.';
 const SUBTREE_BODY = 'PKG-A-RULE: complete guidance for packages/a.';
 
 function scopedIR(targets: string[]): IR {
-  // Dir-scoping is not expressible in the Rule schema (E9.S2); the intended
-  // authoring is pinned here via a cast so the test bites when it lands.
-  const scoped = {
+  const scoped: Rule = {
     id: 'pkg-a',
     body: SUBTREE_BODY,
-    scope: 'packages/a',
-  } as unknown as Rule;
+    dir: 'packages/a',
+  };
   return {
     manifest: manifest(targets),
     rules: [{ id: 'root', body: ROOT_BODY }, scoped],
@@ -60,7 +61,7 @@ afterEach(() => {
 });
 
 describe('E7.S2 · nested AGENTS.md self-sufficiency', () => {
-  story.tracked(
+  story(
     'E7.S2',
     'packages/a-scoped rule emits a self-sufficient packages/a/AGENTS.md (anaphora denylist pinned; E9.S2 dep)',
     async () => {
@@ -81,7 +82,7 @@ describe('E7.S2 · nested AGENTS.md self-sufficiency', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S2',
     'same IR is correct under closest-wins replacement [S1] AND Codex root-to-cwd concatenation [S9] (truth table)',
     async () => {

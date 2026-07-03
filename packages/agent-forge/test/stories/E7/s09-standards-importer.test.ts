@@ -2,7 +2,8 @@
  * E7.S9 — standards-native import source.
  * Ground truth: a repo carrying only the neutral standards (root+nested
  * AGENTS.md [S1], .agents/skills/x [S3][S60]) lifts into IR via a DEDICATED
- * standards importer in the adapter roster. No such adapter ships today.
+ * standards importer in the adapter roster — `src/adapters/standards/`,
+ * canonical id `standards`.
  */
 
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -43,7 +44,7 @@ function standardsFixture(): string {
 }
 
 describe('E7.S9 · standards-native importer', () => {
-  story.tracked(
+  story(
     'E7.S9',
     'a dedicated standards importer is in the adapter roster and lifts root+nested AGENTS.md + .agents/skills into IR [S1][S3][S60]',
     async () => {

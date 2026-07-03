@@ -192,6 +192,16 @@ const GROUND_TRUTH: Record<string, Row> = {
     permissions: f('[PI2] no permission system — containerize or extend'),
     env: f('[PI4] no env surface in settings'),
   },
+  standards: {
+    rules: t('[S1][S9] root + nested AGENTS.md'),
+    skills: t('[S3][S60] .agents/skills/ Agent Skills spec fields only'),
+    commands: f('no neutral command-file convention documented'),
+    agents: f('no neutral subagent-file convention documented'),
+    hooks: f('no neutral hook convention documented'),
+    mcp: f('no neutral MCP convention documented'),
+    permissions: f('no neutral permissions convention documented'),
+    env: f('no neutral env convention documented'),
+  },
   zed: {
     rules: t('[ZD1]'),
     skills: t('[ZD2]'),

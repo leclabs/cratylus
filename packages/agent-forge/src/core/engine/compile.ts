@@ -1,6 +1,7 @@
 import type { Adapter, WriteOpts, WriteReport } from '../adapter/types.js';
 import type { IR, Rule, Scope } from '../ir/types.js';
 import { detectDrift, recordCompileState } from './drift.js';
+import { splitScopedRules, writeNestedRuleFiles } from './nested-rules.js';
 import { RESOURCE_IR_KEY, emitPluginResources } from './plugin.js';
 
 export interface CompileOpts {
@@ -59,6 +60,11 @@ export interface CompileReport {
  *   fabricated file.
  * - Resources declared `plugin` are routed to the adapter's plugin emitter;
  *   `write` receives the IR with those resources stripped.
+ * - A `dir`-scoped rule (E7.S2) never reaches an adapter's own rules writer:
+ *   the engine writes it straight to `<cwd>/<dir>/AGENTS.md` — one
+ *   self-sufficient neutral file per subtree, adapter-agnostic and written
+ *   once per compile — before any adapter runs; adapters see only the
+ *   root-scope rules.
  * - `manifest.options.drift_check` governs recompiling over drifted emitted
  *   files: `error` refuses (naming the drifted files), `warn` (the default)
  *   proceeds with a drift warning, `ignore` disables the check.
@@ -78,7 +84,20 @@ export async function compile(
   const elicit: ElicitEntry[] = [];
   const sortedIR = withSortedRules(ir);
   const driftMode = ir.manifest.options?.drift_check ?? 'warn';
-  const resourceOf = resourceAttributor(sortedIR);
+
+  // dir-scoped rules (E7.S2) are the shared neutral standards surface, not
+  // any one adapter's dialect: split them out and write their nested
+  // AGENTS.md files once, up front — adapters below see root-scope rules
+  // only. Dir-scoping a project-tree concept: skip at 'user' scope.
+  const { root: rootRules, scoped: scopedRules } = splitScopedRules(
+    sortedIR.rules,
+  );
+  const engineIR: IR =
+    scopedRules.size > 0 ? { ...sortedIR, rules: rootRules } : sortedIR;
+  if (scopedRules.size > 0 && scope !== 'user') {
+    await writeNestedRuleFiles(scopedRules, cwd, opts.dryRun);
+  }
+  const resourceOf = resourceAttributor(engineIR);
 
   for (const adapter of adapters) {
     const result: AdapterCompileResult = {
@@ -90,7 +109,7 @@ export async function compile(
 
       // Local tier: no documented local surface ⇒ loud skip + elicit, no file.
       if (scope === 'local' && !adapter.capabilities.scopes.includes('local')) {
-        result.report = noLocalTierReport(sortedIR, adapter.id, elicit);
+        result.report = noLocalTierReport(engineIR, adapter.id, elicit);
         results.push(result);
         continue;
       }
@@ -133,7 +152,7 @@ export async function compile(
       // adapter's write sees the IR without them.
       const { rest, reports: pluginReports } = await emitPluginResources(
         adapter,
-        sortedIR,
+        engineIR,
         scope,
         cwd,
         writeOpts,
