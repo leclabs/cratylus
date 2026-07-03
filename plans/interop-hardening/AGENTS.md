@@ -77,3 +77,25 @@ file carries the working thread._
   directly, bypassing `compile()`. **Verification discipline**: for non-owned tracked rows, run a
   targeted `--reporter=verbose` to CONFIRM the row still internally fails post-change rather than
   trusting full-suite green — cheap, worth standardizing for remaining wave-5 shards.
+- **`kilo-adapter` SHIPPED** (`8fc6240` plan-consolidation +`015fde3` code, wave 5, re-dispatch
+  after a Fable-limit death on the same shard): 6/6 owned ids graduated (E10.S4×5, E5.S4 kilo).
+  TRACKED-FAILING 52/24 → 45/21. Gates 4×0 in a pristine worktree @ `015fde3` (forge 686, anatomy
+  36, memory 121 — separate `--filter`, standing across 5 shards now). Roster 13→14. **Forced
+  non-owned graduation**: landing kilo completed the amp/kilo/zed triad, so `E5/S3`'s
+  `amp/kilo/zed: no shipped adapter` row (nominally convergence-owned, wave 7) graduated early by
+  green-suite law — flipped, not left tracked, disclosed in RETURN. **Mandatory E4.S1 addition**:
+  `kilo/mcp` added to `PASSING_PAIRS` only after independently verifying the round-trip (incl.
+  remote `headers`) in isolation first. Design: directory shape mirrors opencode (5-file split),
+  not Roo's legacy layout — Kilo is a 2026 rebuild on an opencode-derived runtime; hook
+  lifecycle-event names are a DISCLOSED INFERENCE off opencode's [OC5]-verified set (no
+  independent Kilo verification exists in the ledger), flagged in `docs/release-audit-checklist.md`
+  for re-verification. Rules/commands written body-only (no frontmatter fabrication — Kilo's
+  per-file dialect keys beyond `subtask:` are unconfirmed), same judgment-call discipline as
+  cline's workflows. **Legacy-unit-test lesson reconfirmed inapplicable**: grepped `kilo` across
+  the whole `test/` tree — zero hits outside the story files touched, because kilo is NET-NEW (no
+  prior shipped-but-wrong adapter for a legacy unit test to have pinned); the lesson's failure
+  class only bites adapters with pre-existing wrong behavior. **Janitorial**: removed a stale dead
+  worktree `/private/tmp/af-kilo-wt` (pinned 18 commits behind HEAD, uncommitted partial kilo
+  attempt from the prior Fable-death session) — same reversible in-domain class as the cursor
+  shard's precedent; every OTHER stale `/private/tmp/*` worktree left untouched (out of
+  territory, flagged for Nico's aggregate reconciliation).
