@@ -37,7 +37,7 @@ function requireAdapter(id: string) {
 }
 
 describe('E9.S4 · read-merge on shared files', () => {
-  story.tracked(
+  story(
     'E9.S4',
     'claude settings.json: foreign keys survive a compile byte-for-byte [CC8]',
     async () => {

@@ -22,7 +22,6 @@ interface ClaudeSettings {
   hooks?: Record<string, ClaudeHookEvent[]>;
   permissions?: { allow?: string[]; deny?: string[]; ask?: string[] };
   env?: Record<string, string>;
-  mcpServers?: Record<string, ClaudeMcpEntry>;
 }
 
 interface ClaudeHookEvent {
@@ -52,7 +51,9 @@ export async function readClaude(
     ir.rules = [parseRule(text, 'main')];
   }
 
-  // Settings (hooks, mcp, permissions, env)
+  // Settings (hooks, permissions, env) — policy keys only [CC8]. A
+  // `mcpServers` key in settings.json is not a documented surface and never
+  // lifts (no phantom servers from a fabricated shape).
   if (existsSync(p.settingsFile)) {
     const text = await readFile(p.settingsFile, 'utf8');
     const settings = JSON.parse(text) as ClaudeSettings;
@@ -60,21 +61,27 @@ export async function readClaude(
     if (hooks.length) ir.hooks = hooks;
     if (settings.permissions) ir.permissions = settings.permissions;
     if (settings.env) ir.env = settings.env;
-    if (settings.mcpServers) {
-      ir.mcp_servers = parseClaudeMcp(settings.mcpServers);
-    }
   }
 
-  // .mcp.json (project scope)
+  // MCP servers from the documented home per scope [CC7]: project `.mcp.json`;
+  // user `~/.claude.json` (top-level mcpServers); local `~/.claude.json`
+  // under projects[<cwd>].
   if (p.mcpFile && existsSync(p.mcpFile)) {
     const text = await readFile(p.mcpFile, 'utf8');
     const parsed = JSON.parse(text) as {
       mcpServers?: Record<string, ClaudeMcpEntry>;
+      projects?: Record<
+        string,
+        { mcpServers?: Record<string, ClaudeMcpEntry> }
+      >;
     };
-    if (parsed.mcpServers) {
-      ir.mcp_servers = (ir.mcp_servers ?? []).concat(
-        parseClaudeMcp(parsed.mcpServers),
-      );
+    const block =
+      scope === 'local'
+        ? parsed.projects?.[cwd]?.mcpServers
+        : parsed.mcpServers;
+    if (block) {
+      const servers = parseClaudeMcp(block);
+      if (servers.length) ir.mcp_servers = servers;
     }
   }
 

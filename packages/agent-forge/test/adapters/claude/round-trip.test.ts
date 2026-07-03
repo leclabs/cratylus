@@ -49,6 +49,18 @@ function buildFixture(cwd: string): void {
         },
         permissions: { allow: ['Read(*)'], deny: ['Bash(rm -rf:*)'] },
         env: { DEBUG: 'true' },
+      },
+      null,
+      2,
+    ),
+    'utf8',
+  );
+  // MCP servers live in .mcp.json at repo root [CC7] — settings.json carries
+  // policy keys only [CC8].
+  writeFileSync(
+    join(cwd, '.mcp.json'),
+    JSON.stringify(
+      {
         mcpServers: {
           github: {
             command: 'npx',

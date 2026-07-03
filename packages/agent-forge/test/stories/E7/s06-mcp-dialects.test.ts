@@ -37,7 +37,7 @@ function adapter(id: string) {
 }
 
 describe('E7.S6 · MCP dialect exactness per target', () => {
-  story.tracked(
+  story(
     'E7.S6',
     'claude project scope: servers land in repo-root .mcp.json under mcpServers [S44] (adapter writes settings.json instead, §3 claude d1)',
     async () => {

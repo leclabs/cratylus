@@ -1,4 +1,5 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
   type Hook,
@@ -7,6 +8,7 @@ import {
   type Scope,
   type WriteOpts,
   type WriteReport,
+  mergeJsonKeys,
   serializeAgent,
   serializeCommand,
   serializeSkill,
@@ -41,7 +43,10 @@ export async function writeClaude(
     }
   }
 
-  // Settings.json: hooks + permissions + env + mcpServers
+  // Settings.json: hooks + permissions + env — policy keys ONLY [CC8].
+  // `mcpServers` is NOT a settings.json key at any scope; server definitions
+  // live in the per-scope MCP home (below) [CC7]. Writes are key-scoped
+  // merges: foreign keys in an existing settings file survive untouched.
   const settings: Record<string, unknown> = {};
   if (ir.hooks?.length) {
     const claudeHooks = serializeClaudeHooks(ir.hooks, warnings, skipped);
@@ -49,20 +54,42 @@ export async function writeClaude(
   }
   if (ir.permissions) settings.permissions = ir.permissions;
   if (ir.env) settings.env = ir.env;
-  if (ir.mcp_servers?.length) {
-    settings.mcpServers = serializeClaudeMcp(ir.mcp_servers);
-  }
 
   if (Object.keys(settings).length > 0) {
     if (!opts.dryRun) {
       await mkdir(dirname(p.settingsFile), { recursive: true });
+      const existing = existsSync(p.settingsFile)
+        ? await readFile(p.settingsFile, 'utf8')
+        : undefined;
       await writeFile(
         p.settingsFile,
-        `${JSON.stringify(settings, null, 2)}\n`,
+        mergeJsonKeys(existing, settings),
         'utf8',
       );
     }
     written.push(p.settingsFile);
+  }
+
+  // MCP servers → the documented home per scope [CC7]: project `.mcp.json`
+  // (root key mcpServers); user `~/.claude.json` (top-level mcpServers);
+  // local `~/.claude.json` under projects[<cwd>]. Foreign top-level keys AND
+  // foreign server entries survive — forge upserts per server name.
+  if (ir.mcp_servers?.length && p.mcpFile) {
+    if (!opts.dryRun) {
+      await mkdir(dirname(p.mcpFile), { recursive: true });
+      const existing = existsSync(p.mcpFile)
+        ? await readFile(p.mcpFile, 'utf8')
+        : undefined;
+      await writeFile(
+        p.mcpFile,
+        mergeJsonKeys(
+          existing,
+          mcpOwnedKeys(existing, ir.mcp_servers, scope, cwd),
+        ),
+        'utf8',
+      );
+    }
+    written.push(p.mcpFile);
   }
 
   // Commands
@@ -189,6 +216,37 @@ function serializeClaudeHooks(
     }
   }
   return out;
+}
+
+/**
+ * The owned top-level key(s) for an MCP emission into `existing` [CC7]:
+ * user/project → `mcpServers` (per-server upsert over any existing block);
+ * local → `projects` with only this cwd's `mcpServers` touched.
+ */
+function mcpOwnedKeys(
+  existing: string | undefined,
+  servers: McpServer[],
+  scope: Scope,
+  cwd: string,
+): Record<string, unknown> {
+  const base: Record<string, unknown> =
+    existing === undefined || existing.trim() === ''
+      ? {}
+      : (JSON.parse(existing) as Record<string, unknown>);
+  const serialized = serializeClaudeMcp(servers);
+  if (scope === 'local') {
+    const projects = (base.projects ?? {}) as Record<string, unknown>;
+    const project = (projects[cwd] ?? {}) as Record<string, unknown>;
+    const block = (project.mcpServers ?? {}) as Record<string, unknown>;
+    return {
+      projects: {
+        ...projects,
+        [cwd]: { ...project, mcpServers: { ...block, ...serialized } },
+      },
+    };
+  }
+  const block = (base.mcpServers ?? {}) as Record<string, unknown>;
+  return { mcpServers: { ...block, ...serialized } };
 }
 
 function serializeClaudeMcp(servers: McpServer[]): Record<string, unknown> {

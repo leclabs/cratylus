@@ -52,7 +52,7 @@ describe('E8.S1 · claude', () => {
 
   // --- MCP homes [CC7][CC8] ---
 
-  story.tracked(
+  story(
     'E8.S1',
     'project-scope MCP servers emit to .mcp.json at repo root [CC7]',
     async () => {
@@ -66,7 +66,7 @@ describe('E8.S1 · claude', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S1',
     'mcpServers never appears in settings.json — policy keys only [CC8]',
     async () => {
@@ -78,7 +78,7 @@ describe('E8.S1 · claude', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S1',
     'user-scope MCP servers emit to ~/.claude.json [CC7]',
     async () => {
@@ -93,7 +93,7 @@ describe('E8.S1 · claude', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S1',
     'user-scope settings.json carries no mcpServers key [CC8]',
     async () => {
@@ -323,7 +323,7 @@ describe('E8.S1 · claude', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S1',
     'fabricated-shape import: settings.json-only mcpServers lifts zero phantom servers (E1.S3) [CC8]',
     async () => {

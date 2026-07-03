@@ -71,7 +71,7 @@ describe('E3.S5 · foreign content survives reimport + recompile', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E3.S5',
     'foreign settings key statusLine is present byte-identical after import + compile',
     () => {
