@@ -14,17 +14,18 @@ DAG: `wave(0) {harness-landscape-research · standards-compat-research}` →
 `wave(1) {capability-user-stories ⊳ both}` → `wave(2) {story-coverage-tests ⊳ stories}` →
 `wave(3) {author-implementation-shards ⊳ tests}` → `waves(4–7) {the 23 implementation shards below}`.
 
-**Active (wave 4, in flight):** `engine-report-machinery` · `exemplify-pipeline` · `zed-adapter` —
-executors were killed mid-run by the account session limit (resets 2026-07-04 01:30 CT); their
-partial edits sit UNCOMMITTED in the working tree awaiting SendMessage resume. Do not commit or
-clean that churn.
+**Active (wave 5, in flight):** the 15 wave(5) shards below — released 2026-07-03 post-wave-4
+close; all deps (schema · engine · exemplify) landed. Shard texts amended with the roster-growth
+bite-guard clause + increment-at-commit-time roster counts (zed precedent `d318b20`).
 
-**Tracked-failing: 220/64** (229 at suite birth; docs −2, ir-schema −7).
+**Tracked-failing: 179/43** (229 at suite birth; wave 4 −50: docs −2, ir-schema −7, zed −9,
+exemplify −13, engine-report −19).
 
-**Completed:** `harness-landscape-research` · `standards-compat-research` · `pi-harness-research`
-(RETURNs beside each) · `capability-user-stories` (81 stories, `stories/`) ·
-`story-coverage-tests` (suite @0e23b36: 667 green, TRACKED-FAILING 229/69 enumerated, map total
-both directions).
+**Completed:** `harness-landscape-research` · `standards-compat-research` · `pi-harness-research` ·
+`capability-user-stories` (81 stories, `stories/`) · `story-coverage-tests` (suite @0e23b36) ·
+**wave(4) whole**: `docs-assumption-audit-records` · `ir-schema-expressiveness` · `zed-adapter`
+@d318b20 · `exemplify-pipeline` @2a9de62 · `engine-report-machinery` @d36c2dc (RETURNs beside
+each; joint gates 4×0, forge 670/670; pushed).
 
 ## Implementation shards (pending/) — 229 tracked ids, MECE, 0 orphans
 
@@ -44,23 +45,23 @@ Graduation mechanism per shard: `story.tracked` → `story` + TRACKED-FAILING ro
 
 **wave(5)** — 15-wide (deps noted; roster-registration line in `src/cli/index.ts` = declared append-only seam):
 
-| Shard                    | Lane | Ids | Owned paths · deps                                                          |
-| ------------------------ | ---- | --- | --------------------------------------------------------------------------- |
-| `claude-mcp-rehoming`    | Mav  | 7   | claude MCP/settings paths · ⊳engine                                         |
-| `codex-adapter-truth`    | Mav  | 16  | `src/adapters/codex` · ⊳schema                                              |
-| `gemini-adapter-truth`   | Mav  | 12  | `src/adapters/gemini` · ⊳schema                                             |
-| `copilot-adapter-truth`  | Mav  | 14  | `src/adapters/copilot` · ⊳schema                                            |
-| `cursor-adapter-truth`   | Mav  | 11  | `src/adapters/cursor` · ⊳schema                                             |
-| `opencode-adapter-truth` | Mav  | 12  | `src/adapters/opencode` · ⊳schema ⊳engine                                   |
-| `cline-adapter-truth`    | Mav  | 15  | `src/adapters/cline` · ⊳schema                                              |
-| `crush-adapter-truth`    | Mav  | 8   | `src/adapters/crush` · ⊳engine                                              |
-| `continue-adapter-truth` | Mav  | 9   | `src/adapters/continue` · ⊳engine                                           |
-| `aider-adapter-truth`    | Mav  | 7   | `src/adapters/aider` · ⊳engine ⊳exemplify                                   |
-| `amp-adapter`            | Mav  | 7   | new `src/adapters/amp` · ⊳engine                                            |
-| `kilo-adapter`           | Mav  | 6   | new `src/adapters/kilo` · ⊳schema ⊳engine                                   |
-| `pi-adapter`             | Mav  | 13  | new `src/adapters/pi` · ⊳engine                                             |
-| `devin-adapter`          | Mav  | 6   | new `src/adapters/devin` · ⊳schema                                          |
-| `standards-surfaces`     | Mav  | 8   | new `src/adapters/standards` + doctor + neutral-tree glue · ⊳schema ⊳engine |
+| Shard                    | Lane | Ids | Owned paths · deps                                                                                                    |
+| ------------------------ | ---- | --- | --------------------------------------------------------------------------------------------------------------------- |
+| `claude-mcp-rehoming`    | Mav  | 7   | claude MCP/settings paths · ⊳engine                                                                                   |
+| `codex-adapter-truth`    | Mav  | 16  | `src/adapters/codex` · ⊳schema                                                                                        |
+| `gemini-adapter-truth`   | Mav  | 12  | `src/adapters/gemini` · ⊳schema                                                                                       |
+| `copilot-adapter-truth`  | Mav  | 14  | `src/adapters/copilot` · ⊳schema                                                                                      |
+| `cursor-adapter-truth`   | Mav  | 11  | `src/adapters/cursor` · ⊳schema                                                                                       |
+| `opencode-adapter-truth` | Mav  | 12  | `src/adapters/opencode` · ⊳schema ⊳engine                                                                             |
+| `cline-adapter-truth`    | Mav  | 15  | `src/adapters/cline` · ⊳schema                                                                                        |
+| `crush-adapter-truth`    | Mav  | 8   | `src/adapters/crush` · ⊳engine                                                                                        |
+| `continue-adapter-truth` | Mav  | 9   | `src/adapters/continue` · ⊳engine                                                                                     |
+| `aider-adapter-truth`    | Mav  | 7   | `src/adapters/aider` · ⊳engine ⊳exemplify                                                                             |
+| `amp-adapter`            | Mav  | 7   | new `src/adapters/amp` · ⊳engine                                                                                      |
+| `kilo-adapter`           | Mav  | 6   | new `src/adapters/kilo` · ⊳schema ⊳engine                                                                             |
+| `pi-adapter`             | Mav  | 13  | new `src/adapters/pi` · ⊳engine                                                                                       |
+| `devin-adapter`          | Mav  | 6   | new `src/adapters/devin` · ⊳schema                                                                                    |
+| `standards-surfaces`     | Mav  | 5   | new `src/adapters/standards` + doctor + neutral-tree glue · ⊳schema ⊳engine (was 8; 3 force-graduated by zed d318b20) |
 
 **wave(6)** — 2-wide:
 

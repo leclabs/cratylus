@@ -20,7 +20,7 @@ Change class: **feature (neutral output surface + importer)**. Owned paths: new 
 - Standards importer (E7.S9): dedicated roster importer lifting root+nested AGENTS.md + `.agents/skills` into IR [S1][S3][S60].
 - Second-tier reach (E10.S6): Antigravity + Goose rows served by the emitted `.agents/skills/` tree [FS9][S54] — via the second-tier table, no bespoke adapters (parsimony guard stays green).
 
-## Owned tracked ids (8)
+## Owned tracked ids (8 → 5 live; see amendment)
 
 | Story  | Test (call site)                                                                                                                                |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -33,9 +33,15 @@ Change class: **feature (neutral output surface + importer)**. Owned paths: new 
 | E10.S6 | `standards output reaches Antigravity via .agents/skills/ [FS9]`                                                                                |
 | E10.S6 | `standards output reaches Goose via .agents/skills/ [S54]`                                                                                      |
 
+**Amendment (post-wave-4, zed `d318b20`):** E7.S3 + the two E10.S6 rows were force-graduated by
+zed's mandatory `.agents/skills` emission (green-suite law; disclosed, judge-ratified). 5 ids
+remain to flip; the 3 graduated rows are now standing guards — your job there is keep-green, and
+the E7.S3 spec-purity serializer already exists in `src/adapters/zed/` (spec-pure SKILL.md, dashed
+`allowed-tools`) — lift/share rather than re-derive.
+
 ## Accept (falsifiers)
 
 - Graduation: every owned id flips `story.tracked` → `story`; TRACKED-FAILING.md rows deleted; MAP.md regenerated (`pnpm exec tsx test/stories/tools/render-map.ts`); `coverage.test.ts` green. An owned id still tracked = fail.
 - No regression: `pnpm build && pnpm test && pnpm lint && pnpm typecheck` green in `packages/agent-forge`; zero previously-green tests broken (E7.S3 standing guard; E7.S8 unmerged-proposals guard — no `.agents/rules/`, no frontmattered AGENTS.md; E10.S6 greens: reach rows, config-gated knobs, parsimony guard); zero non-owned `story.tracked` flips.
 - Story ground: drive compile+import; observable = a neutral tree a standards-native harness (codex walk-up, Zed/Goose skills discovery) actually consumes; importer round-trips it.
-- Owned paths: production diff confined to declared owned paths + roster seam; graduation flips are the only test edits.
+- Owned paths: production diff confined to declared owned paths + roster seam; graduation flips + the roster-growth bite-guards are the only test edits (zed precedent `d318b20`: `test/stories/helpers.ts` roster, `E6/S6` roster count, `E4/capability-honesty` GROUND_TRUTH row, `docs/release-audit-checklist.md` row — mechanical, disclose each in RETURN). Roster-count guards are increment-at-commit-time: siblings are growing the roster concurrently — re-read the count from the tree you commit atop, never a pinned number.
