@@ -14,7 +14,12 @@ DAG: `wave(0) {harness-landscape-research · standards-compat-research}` →
 `wave(1) {capability-user-stories ⊳ both}` → `wave(2) {story-coverage-tests ⊳ stories}` →
 `wave(3) {author-implementation-shards ⊳ tests}` → `waves(4–7) {the 23 implementation shards below}`.
 
-**Active:** `author-implementation-shards` (shards emitted into `pending/`; awaiting judge).
+**Active (wave 4, in flight):** `engine-report-machinery` · `exemplify-pipeline` · `zed-adapter` —
+executors were killed mid-run by the account session limit (resets 2026-07-04 01:30 CT); their
+partial edits sit UNCOMMITTED in the working tree awaiting SendMessage resume. Do not commit or
+clean that churn.
+
+**Tracked-failing: 220/64** (229 at suite birth; docs −2, ir-schema −7).
 
 **Completed:** `harness-landscape-research` · `standards-compat-research` · `pi-harness-research`
 (RETURNs beside each) · `capability-user-stories` (81 stories, `stories/`) ·

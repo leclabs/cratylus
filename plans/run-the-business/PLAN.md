@@ -12,8 +12,10 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 ## Status mirror
 
-**Pending / ready / active:** none — the backlog is empty; new standalone tasks land here as they
-arise.
+**Pending:**
+
+- `stance-guardrail-jurisdiction` — the judge must see the dispatch channel (tool_use payloads ·
+  PreToolUse binding · dispatch-echo rubric class · observable fails-open). Lane: Mav + Nico.
 
 ## See also
 
