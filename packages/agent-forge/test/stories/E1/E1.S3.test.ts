@@ -156,7 +156,28 @@ async function runSpec(spec: FabricatedSpec): Promise<{ out: string; ir: IR }> {
   return { out, ir };
 }
 
-for (const spec of SPECS) {
+/**
+ * Fabricated paths whose read retirement has landed: the adapter no longer
+ * consults the path, so the zero-lift leg holds (graduated). The warning
+ * leg stays tracked until the import report names unrecognized paths.
+ */
+const ZERO_LIFT_GRADUATED = new Set(['.crush/mcp.json']);
+
+for (const spec of SPECS.filter((s) => ZERO_LIFT_GRADUATED.has(s.path))) {
+  story(
+    'E1.S3',
+    `${spec.client} ${spec.path}: zero ${spec.resource} imported from the fabricated path ${spec.ref}`,
+    async () => {
+      const { ir } = await runSpec(spec);
+      expect(
+        spec.count(ir),
+        `phantom ${spec.resource} imported from ${spec.path}`,
+      ).toBe(0);
+    },
+  );
+}
+
+for (const spec of SPECS.filter((s) => !ZERO_LIFT_GRADUATED.has(s.path))) {
   story.tracked(
     'E1.S3',
     `${spec.client} ${spec.path}: zero ${spec.resource} imported from the fabricated path ${spec.ref}`,

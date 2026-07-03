@@ -34,7 +34,8 @@ describe('crushAdapter', () => {
     expect(
       existsSync(join(cwd, '.crush', 'skills', 'review', 'SKILL.md')),
     ).toBe(true);
-    expect(existsSync(join(cwd, '.crush', 'mcp.json'))).toBe(true);
+    expect(existsSync(join(cwd, 'crush.json'))).toBe(true);
+    expect(existsSync(join(cwd, '.crush', 'mcp.json'))).toBe(false);
   });
 
   it('round-trips rules + skills + mcp', async () => {

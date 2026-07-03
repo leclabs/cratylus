@@ -23,7 +23,7 @@ export interface AdapterCapabilities {
   resources: Record<ResourceType, Support>;
   hooks: {
     supported: CanonicalEvent[];
-    matchers: 'glob' | 'literal' | 'none';
+    matchers: 'glob' | 'regex' | 'literal' | 'none';
     payload: 'claude-json' | 'native' | 'shim';
   };
   scopes: Scope[];

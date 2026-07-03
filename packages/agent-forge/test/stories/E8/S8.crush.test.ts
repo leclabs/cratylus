@@ -54,7 +54,7 @@ describe('E8.S8 · crush', () => {
 
   // --- MCP inside crush.json [CR1] ---
 
-  story.tracked(
+  story(
     'E8.S8',
     'MCP lives under the mcp key of crush.json with required-style type [CR1]',
     async () => {
@@ -78,7 +78,7 @@ describe('E8.S8 · crush', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S8',
     'the fabricated .crush/mcp.json is never emitted [CR1]',
     async () => {
@@ -95,7 +95,7 @@ describe('E8.S8 · crush', () => {
 
   // --- Hooks on [CR3] + permissions [CR1] ---
 
-  story.tracked(
+  story(
     'E8.S8',
     'hooks capability on: hooks.PreToolUse lands in crush.json [CR3]',
     async () => {
@@ -118,7 +118,7 @@ describe('E8.S8 · crush', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S8',
     'permissions capability reflects permissions.allowed_tools [CR1]',
     () => {
@@ -128,7 +128,7 @@ describe('E8.S8 · crush', () => {
 
   // --- Global context paths [CR1][CR2] ---
 
-  story.tracked(
+  story(
     'E8.S8',
     'user rules emit to ~/.config/crush/CRUSH.md (or ~/.config/AGENTS.md) [CR1][CR2]',
     async () => {
@@ -145,7 +145,7 @@ describe('E8.S8 · crush', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S8',
     'the fabricated ~/.config/crush/AGENTS.md is not written [CR1]',
     async () => {
@@ -185,7 +185,7 @@ describe('E8.S8 · crush', () => {
 
   // --- Fabricated-shape import (E1.S3) ---
 
-  story.tracked(
+  story(
     'E8.S8',
     'fabricated-shape import: .crush/mcp.json lifts zero phantom servers (E1.S3) [CR1]',
     async () => {

@@ -119,7 +119,7 @@ describe('E9.S4 · read-merge on shared files', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E9.S4',
     'crush.json: mcp lands under the documented "mcp" key with foreign keys preserved [CR1]',
     async () => {
