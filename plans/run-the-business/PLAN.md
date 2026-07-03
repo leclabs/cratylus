@@ -12,13 +12,8 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 ## Status mirror
 
-**Pending:**
-
-- `generic-extraction` — **deferred**: the Operator's product call (open-source boundary + naming);
-  nothing blocks on it. Proposal `docs/generic-extraction-proposal.md`; the task file tracks only the
-  deferral. Revisit iff open-sourcing goes live.
-
-**Ready / active:** none.
+**Pending / ready / active:** none — the backlog is empty; new standalone tasks land here as they
+arise.
 
 ## See also
 

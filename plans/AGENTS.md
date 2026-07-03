@@ -7,6 +7,7 @@ net-current only: its dir is removed and `git log -- plans/<name>/` is the recor
 
 ## Active
 
-| Plan               | Concern                                                                                                                                           | Lead                  |
-| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
-| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). Pending: `generic-extraction` (deferred — Operator product call). | Mav + Nico (per task) |
+| Plan                | Concern                                                                                                                                                                                       | Lead                  |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `run-the-business`  | The standing plan — live backlog + standalone tasks; perpetual (never retires). Backlog currently empty.                                                                                      | Mav + Nico (per task) |
+| `interop-hardening` | Pressure-test + harden the library's capability surface: harness landscape + standards research → full user-story library → story-coverage tests (failing = the gap) → implementation shards. | Nico (lead) + Mav     |
