@@ -15,7 +15,10 @@
  * - the no-skill-via-plugin scan over src/adapters: GREEN;
  * - cline (native discovery exists [CL5], adapter declares skills: 'none'):
  *   TRACKED — the adapter does not yet discharge the floor for that harness;
- * - amp / kilo / zed rows: TRACKED — no adapter ships at all.
+ * - amp / kilo / zed rows: GRADUATED — amp and zed already shipped adapters;
+ *   kilo-adapter's landing completes the triad (all three import
+ *   successfully now), forcing this row's graduation by green-suite law
+ *   (nominally convergence-owned, wave 7 — forced early, not authored here).
  */
 
 import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
@@ -163,12 +166,12 @@ story(
   },
 );
 
-story.tracked(
+story(
   'E5.S3',
   'amp / kilo / zed: plugin-arch harnesses with native skills paths have no shipped adapter at all',
   async () => {
-    // The rows exist in the pinned table; the adapters do not — the import
-    // probe is the tracked gap (fails at the first absent module).
+    // The rows exist in the pinned table; all three adapters now ship — the
+    // import probe graduates (forced by kilo-adapter completing the triad).
     for (const id of ['amp', 'kilo', 'zed']) {
       const home: string = `../../../src/adapters/${id}/index.js`;
       const mod = (await import(home)) as Record<string, unknown>;

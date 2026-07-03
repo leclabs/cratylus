@@ -51,6 +51,7 @@ const PASSING_PAIRS: readonly Pair[] = [
   ['cursor', 'mcp'],
   ['gemini', 'rules'],
   ['gemini', 'hooks'],
+  ['kilo', 'mcp'],
   ['opencode', 'rules'],
   ['opencode', 'mcp'],
 ] as const;

@@ -32,6 +32,7 @@ import { crushAdapter } from '../../src/adapters/crush/index.js';
 import { cursorAdapter } from '../../src/adapters/cursor/index.js';
 import { devinAdapter } from '../../src/adapters/devin/index.js';
 import { geminiAdapter } from '../../src/adapters/gemini/index.js';
+import { kiloAdapter } from '../../src/adapters/kilo/index.js';
 import { opencodeAdapter } from '../../src/adapters/opencode/index.js';
 import { zedAdapter } from '../../src/adapters/zed/index.js';
 import type { Adapter } from '../../src/core/index.js';
@@ -81,6 +82,7 @@ export const ALL_ADAPTERS: Adapter[] = [
   cursorAdapter,
   devinAdapter,
   geminiAdapter,
+  kiloAdapter,
   opencodeAdapter,
   zedAdapter,
 ].sort((a, b) => a.id.localeCompare(b.id));

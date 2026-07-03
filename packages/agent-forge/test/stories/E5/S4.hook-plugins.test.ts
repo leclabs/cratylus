@@ -14,7 +14,10 @@
  * - opencode plugin shim emission + loud skip of unmappable events: GREEN;
  * - only-[OC5]-verified-names mapping: GREEN as of the opencode-adapter-truth
  *   fix — the event map was pruned to exactly the 4 verified names;
- * - kilo: TRACKED — no kilo adapter ships.
+ * - kilo: GRADUATED with kilo-adapter — the `.kilo/plugins/` artifact ships
+ *   against a canonicalToKilo map that reuses opencode's [OC5]-verified names
+ *   as a disclosed INFERENCE (shared runtime lineage, not independently
+ *   re-verified for Kilo's own plugin docs — see src/adapters/kilo/events.ts).
  */
 
 import { readFileSync, rmSync } from 'node:fs';
@@ -112,7 +115,7 @@ story(
   },
 );
 
-story.tracked(
+story(
   'E5.S4',
   'kilo: an equivalent hook-plugin artifact is emitted against @kilocode/plugin lifecycle hooks [KL6]',
   async () => {

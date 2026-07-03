@@ -46,7 +46,7 @@ describe('E10.S4 · kilo', () => {
     rmSync(cwd, { recursive: true, force: true });
   });
 
-  story.tracked(
+  story(
     'E10.S4',
     'kilo is on the adapter roster (new-adapter contract) [KL1]',
     () => {
@@ -54,7 +54,7 @@ describe('E10.S4 · kilo', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S4',
     'MCP lands in kilo.jsonc typed local|remote with command as ARRAY (E9.S1) [KL5]',
     async () => {
@@ -81,7 +81,7 @@ describe('E10.S4 · kilo', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S4',
     'agents emit to .kilo/agents/*.md with mode: frontmatter [KL1]',
     async () => {
@@ -101,7 +101,7 @@ describe('E10.S4 · kilo', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S4',
     'rules → .kilo/rules/, commands → .kilo/commands/, skills → .kilo/skills/ [KL2][KL7][KL3]',
     async () => {
@@ -125,7 +125,7 @@ describe('E10.S4 · kilo', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S4',
     'legacy .kilocode/* is recognized on import but never written [KL1]',
     async () => {

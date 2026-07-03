@@ -158,6 +158,20 @@ const GROUND_TRUTH: Record<string, Row> = {
     permissions: t('[GM1] tools.core/excludeTools controls'),
     env: t('[GM1] .env loading'),
   },
+  kilo: {
+    rules: t('[KL2][KL4]'),
+    skills: t('[KL3]'),
+    commands: t(
+      '[KL7] .kilo/commands/*.md (subtask: frontmatter, no IR analog)',
+    ),
+    agents: t('[KL1] .kilo/agents/*.md (mode: required)'),
+    hooks: t('[KL6] plugin lifecycle hooks'),
+    mcp: t('[KL5] kilo.jsonc mcp key typed local/remote, command as ARRAY'),
+    permissions: f(
+      '[KL1] permission is a per-agent frontmatter field (ordered glob rules), no project-wide config surface',
+    ),
+    env: f('[KL1] no documented env config surface'),
+  },
   opencode: {
     rules: t('[OC3]'),
     skills: t('[OC6]'),
