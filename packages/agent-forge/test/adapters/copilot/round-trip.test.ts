@@ -3,6 +3,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
@@ -28,7 +29,7 @@ describe('copilotAdapter', () => {
     rmSync(cwd, { recursive: true, force: true });
   });
 
-  it('writes AGENTS.md, skills, MCP, and hooks to Copilot-readable locations', async () => {
+  it('writes AGENTS.md, skills, MCP, and hooks to Copilot-readable locations [CP2][CP4][CP6]', async () => {
     const ir: IR = {
       manifest: manifest(),
       rules: [{ id: 'main', body: '# Rules\n\nBe terse.' }],
@@ -54,43 +55,43 @@ describe('copilotAdapter', () => {
     const report = await copilotAdapter.write(ir, 'project', cwd, {});
     expect(existsSync(join(cwd, 'AGENTS.md'))).toBe(true);
     expect(
-      existsSync(join(cwd, '.copilot', 'skills', 'review', 'SKILL.md')),
+      existsSync(join(cwd, '.github', 'skills', 'review', 'SKILL.md')),
     ).toBe(true);
     expect(existsSync(join(cwd, '.vscode', 'mcp.json'))).toBe(true);
-    expect(existsSync(join(cwd, '.claude', 'settings.json'))).toBe(true);
+    const hooksDir = join(cwd, '.github', 'hooks');
+    expect(existsSync(hooksDir)).toBe(true);
 
-    const settings = JSON.parse(
-      readFileSync(join(cwd, '.claude', 'settings.json'), 'utf8'),
+    const files = readdirSync(hooksDir).filter((f) => f.endsWith('.json'));
+    expect(files.length).toBeGreaterThan(0);
+    const envelope = JSON.parse(
+      readFileSync(join(hooksDir, files[0] as string), 'utf8'),
     );
-    expect(settings.hooks.PostToolUse).toBeDefined();
-    expect(settings.hooks.PostToolUse[0].matcher).toBe('Edit');
+    expect(envelope.version).toBe(1);
+    expect(envelope.hooks.postToolUse).toBeDefined();
     expect(report.warnings).toEqual([]);
   });
 
-  it('drops hooks that have no Copilot event equivalent', async () => {
+  it('drops hooks that have no Copilot event equivalent [CP4]', async () => {
     const ir: IR = {
       manifest: manifest(),
       hooks: [
-        // notification has no copilot equivalent (only 8 events supported)
-        { id: 'notify', events: ['notification'], command: 'echo' },
+        // file.edit.post has no documented Copilot event equivalent.
+        { id: 'notify', events: ['file.edit.post'], command: 'echo' },
       ],
     };
     const report = await copilotAdapter.write(ir, 'project', cwd, {});
     expect(report.warnings.length).toBeGreaterThan(0);
     expect(report.skipped.length).toBeGreaterThan(0);
-    expect(existsSync(join(cwd, '.claude', 'settings.json'))).toBe(false);
+    expect(existsSync(join(cwd, '.github', 'hooks'))).toBe(false);
   });
 
-  it('merges into an existing .claude/settings.json (does not clobber Claude-only fields)', async () => {
-    mkdirSync(join(cwd, '.claude'));
+  it('does not clobber a hand-authored hooks file in .github/hooks/ [CP4]', async () => {
+    mkdirSync(join(cwd, '.github', 'hooks'), { recursive: true });
     writeFileSync(
-      join(cwd, '.claude', 'settings.json'),
+      join(cwd, '.github', 'hooks', 'manual.json'),
       JSON.stringify({
-        permissions: { allow: ['Read(*)'] },
-        env: { CLAUDE_OWNED: 'yes' },
-        hooks: {
-          Stop: [{ hooks: [{ type: 'command', command: 'echo claude-stop' }] }],
-        },
+        version: 1,
+        hooks: { sessionStart: [{ type: 'command', bash: './manual.sh' }] },
       }),
       'utf8',
     );
@@ -99,13 +100,14 @@ describe('copilotAdapter', () => {
       hooks: [{ id: 'fmt', events: ['tool.use.post'], command: './fmt.sh' }],
     };
     await copilotAdapter.write(ir, 'project', cwd, {});
-    const settings = JSON.parse(
-      readFileSync(join(cwd, '.claude', 'settings.json'), 'utf8'),
+    const manual = JSON.parse(
+      readFileSync(join(cwd, '.github', 'hooks', 'manual.json'), 'utf8'),
     );
-    expect(settings.permissions).toEqual({ allow: ['Read(*)'] });
-    expect(settings.env).toEqual({ CLAUDE_OWNED: 'yes' });
-    expect(settings.hooks.Stop).toBeDefined(); // pre-existing
-    expect(settings.hooks.PostToolUse).toBeDefined(); // newly added
+    expect(manual.hooks.sessionStart).toBeDefined(); // untouched
+    const managed = JSON.parse(
+      readFileSync(join(cwd, '.github', 'hooks', 'agent-forge.json'), 'utf8'),
+    );
+    expect(managed.hooks.postToolUse).toBeDefined(); // newly added, own file
   });
 
   it('round-trips rules + skills + mcp', async () => {
@@ -129,17 +131,27 @@ describe('copilotAdapter', () => {
     expect(re.mcp_servers).toEqual(ir.mcp_servers);
   });
 
-  it('warns about unsupported resource types', async () => {
+  it('round-trips agents + commands [CP1][CP5]', async () => {
     const ir: IR = {
       manifest: manifest(),
-      commands: [{ name: 'c', body: 'b' }],
-      agents: [{ name: 'a', body: 'b' }],
+      agents: [{ name: 'helper', body: 'You help.', description: 'A helper' }],
+      commands: [
+        { name: 'deploy', body: 'Deploy the app.', description: 'Deploy' },
+      ],
+    };
+    await copilotAdapter.write(ir, 'project', cwd, {});
+    const re = await copilotAdapter.read('project', cwd);
+    expect(re.agents).toEqual(ir.agents);
+    expect(re.commands).toEqual(ir.commands);
+  });
+
+  it('warns about unsupported resource types (permissions/env) [CP4][CP13]', async () => {
+    const ir: IR = {
+      manifest: manifest(),
       permissions: { allow: ['Read(*)'] },
       env: { X: 'y' },
     };
     const report = await copilotAdapter.write(ir, 'project', cwd, {});
-    expect(report.warnings.some((w) => w.includes('commands'))).toBe(true);
-    expect(report.warnings.some((w) => w.includes('agents'))).toBe(true);
     expect(report.warnings.some((w) => w.includes('permissions'))).toBe(true);
     expect(report.warnings.some((w) => w.includes('env'))).toBe(true);
   });

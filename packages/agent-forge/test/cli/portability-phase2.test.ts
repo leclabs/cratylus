@@ -136,15 +136,20 @@ describe('Phase 2 cross-adapter portability', () => {
     expect(settings.hooks.AfterAgent).toBeDefined();
   });
 
-  it('copilot warns about commands + permissions; emits AGENTS.md, skills, mcp, hooks subset', async () => {
+  it('copilot warns about permissions; emits AGENTS.md, skills, mcp, hooks, agents, prompts [CP1][CP5]', async () => {
     const subDir = join(cwd, 'copilot');
     const fs = await import('node:fs/promises');
     await fs.mkdir(subDir, { recursive: true });
     const report = await copilotAdapter.write(fullIR(), 'project', subDir, {});
-    expect(report.warnings.some((w) => w.includes('commands'))).toBe(true);
     expect(report.warnings.some((w) => w.includes('permissions'))).toBe(true);
     expect(existsSync(join(subDir, 'AGENTS.md'))).toBe(true);
     expect(existsSync(join(subDir, '.vscode', 'mcp.json'))).toBe(true);
+    expect(
+      existsSync(join(subDir, '.github', 'agents', 'planner.agent.md')),
+    ).toBe(true);
+    expect(
+      existsSync(join(subDir, '.github', 'prompts', 'plan.prompt.md')),
+    ).toBe(true);
   });
 
   it('every adapter exposes an eventMap for the events command', () => {
