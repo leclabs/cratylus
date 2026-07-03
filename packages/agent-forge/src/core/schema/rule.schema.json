@@ -33,6 +33,27 @@
     "order": {
       "type": "number",
       "description": "Sort key for concatenation order. Lower values appear first."
+    },
+    "description": {
+      "type": "string",
+      "description": "Human-readable purpose; surfaced in dialect frontmatter (.mdc description, Windsurf/Continue description)."
+    },
+    "globs": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Canonical activation globs, adapter-mapped per dialect (.mdc globs, .instructions.md applyTo, .clinerules paths:)."
+    },
+    "activation": {
+      "enum": ["always", "auto", "glob", "manual"],
+      "description": "When the rule applies — the convergent cross-dialect vocabulary (Windsurf trigger, Cline/Continue modes, Cursor rule types)."
+    },
+    "alwaysApply": {
+      "type": "boolean",
+      "description": "Cursor-dialect always flag (.mdc alwaysApply); false with globs = glob activation."
+    },
+    "dir": {
+      "type": "string",
+      "description": "Subtree placement: compile into this directory's nested AGENTS.md instead of the root."
     }
   }
 }

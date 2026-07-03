@@ -22,6 +22,31 @@
       "items": { "type": "string" }
     },
     "color": { "type": "string" },
+    "permission_mode": {
+      "type": "string",
+      "description": "Permission stance the agent runs under (Claude permissionMode: default/plan/acceptEdits/…). Adapter-mapped or warned."
+    },
+    "max_turns": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Turn budget for a run (Claude maxTurns, Gemini max_turns)."
+    },
+    "temperature": {
+      "type": "number",
+      "description": "Sampling temperature (Gemini/opencode/Kilo)."
+    },
+    "mode": {
+      "enum": ["primary", "subagent", "all"],
+      "description": "Invocation surface the agent is offered on (Kilo/opencode mode)."
+    },
+    "memory": {
+      "type": "string",
+      "description": "Persistent-memory scope (Claude memory: user/project/local)."
+    },
+    "effort": {
+      "type": "string",
+      "description": "Reasoning-effort hint (Claude effort)."
+    },
     "targets": { "type": "array", "items": { "type": "string" } },
     "excludes": { "type": "array", "items": { "type": "string" } }
   }

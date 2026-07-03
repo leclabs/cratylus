@@ -110,6 +110,26 @@ export interface Rule {
    * Sort key for concatenation order. Lower values appear first.
    */
   order?: number;
+  /**
+   * Human-readable purpose; surfaced in dialect frontmatter (.mdc description, Windsurf/Continue description).
+   */
+  description?: string;
+  /**
+   * Canonical activation globs, adapter-mapped per dialect (.mdc globs, .instructions.md applyTo, .clinerules paths:).
+   */
+  globs?: string[];
+  /**
+   * When the rule applies — the convergent cross-dialect vocabulary (Windsurf trigger, Cline/Continue modes, Cursor rule types).
+   */
+  activation?: 'always' | 'auto' | 'glob' | 'manual';
+  /**
+   * Cursor-dialect always flag (.mdc alwaysApply); false with globs = glob activation.
+   */
+  alwaysApply?: boolean;
+  /**
+   * Subtree placement: compile into this directory's nested AGENTS.md instead of the root.
+   */
+  dir?: string;
 }
 /**
  * An Agent Skill — SKILL.md content plus optional adjacent files.
@@ -135,6 +155,32 @@ export interface Skill {
    * Paths to additional files in the skill directory, relative to the skill root.
    */
   files?: string[];
+  /**
+   * SPDX license expression for the skill content (AgentSkills spec).
+   */
+  license?: string;
+  /**
+   * Environment/version constraint the skill requires (AgentSkills spec).
+   */
+  compatibility?: string;
+  /**
+   * Arbitrary string key/value annotations (AgentSkills spec / Copilot metadata).
+   */
+  metadata?: {
+    [k: string]: string;
+  };
+  /**
+   * Activation globs: auto-surface the skill when matching files are in play (Claude paths).
+   */
+  paths?: string[];
+  /**
+   * Whether the skill is exposed as a user-invocable /command (Copilot user-invocable).
+   */
+  user_invocable?: boolean;
+  /**
+   * Bar the model from auto-invoking the skill (Claude/Copilot disable-model-invocation).
+   */
+  disable_model_invocation?: boolean;
   targets?: string[];
   excludes?: string[];
 }
@@ -170,6 +216,30 @@ export interface Agent {
   model?: string;
   tools?: string[];
   color?: string;
+  /**
+   * Permission stance the agent runs under (Claude permissionMode: default/plan/acceptEdits/…). Adapter-mapped or warned.
+   */
+  permission_mode?: string;
+  /**
+   * Turn budget for a run (Claude maxTurns, Gemini max_turns).
+   */
+  max_turns?: number;
+  /**
+   * Sampling temperature (Gemini/opencode/Kilo).
+   */
+  temperature?: number;
+  /**
+   * Invocation surface the agent is offered on (Kilo/opencode mode).
+   */
+  mode?: 'primary' | 'subagent' | 'all';
+  /**
+   * Persistent-memory scope (Claude memory: user/project/local).
+   */
+  memory?: string;
+  /**
+   * Reasoning-effort hint (Claude effort).
+   */
+  effort?: string;
   targets?: string[];
   excludes?: string[];
 }
@@ -205,11 +275,38 @@ export interface Hook {
 export interface StdioMcpServer {
   name: string;
   transport: 'stdio';
-  command: string;
+  /**
+   * Executable: a bare string (with args separate) or the argv-array form (opencode/Kilo typed local).
+   */
+  command: string | [string, ...string[]];
   args?: string[];
   env?: {
     [k: string]: string;
   };
+  /**
+   * Server registered but switched off (Cline).
+   */
+  disabled?: boolean;
+  /**
+   * Tool names pre-approved without prompting (Cline).
+   */
+  autoApprove?: string[];
+  /**
+   * Allowlist of tools exposed from this server (Gemini/Codex).
+   */
+  includeTools?: string[];
+  /**
+   * Denylist of tools hidden from this server (Gemini/Codex).
+   */
+  excludeTools?: string[];
+  /**
+   * Skip per-call confirmation for this server (Gemini).
+   */
+  trust?: boolean;
+  /**
+   * Request timeout in seconds (Gemini/Codex).
+   */
+  timeout?: number;
   targets?: string[];
   excludes?: string[];
 }
@@ -220,6 +317,47 @@ export interface RemoteMcpServer {
   headers?: {
     [k: string]: string;
   };
+  /**
+   * Static HTTP headers sent with every request (Codex remote).
+   */
+  http_headers?: {
+    [k: string]: string;
+  };
+  /**
+   * Env var whose value becomes the Authorization bearer token (Codex remote).
+   */
+  bearer_token_env_var?: string;
+  /**
+   * Structured auth config, e.g. { type: 'oauth' } (Cursor remote).
+   */
+  auth?: {
+    type: string;
+    [k: string]: unknown;
+  };
+  /**
+   * Server registered but switched off (Cline).
+   */
+  disabled?: boolean;
+  /**
+   * Tool names pre-approved without prompting (Cline).
+   */
+  autoApprove?: string[];
+  /**
+   * Allowlist of tools exposed from this server (Gemini/Codex).
+   */
+  includeTools?: string[];
+  /**
+   * Denylist of tools hidden from this server (Gemini/Codex).
+   */
+  excludeTools?: string[];
+  /**
+   * Skip per-call confirmation for this server (Gemini).
+   */
+  trust?: boolean;
+  /**
+   * Request timeout in seconds (Gemini/Codex).
+   */
+  timeout?: number;
   targets?: string[];
   excludes?: string[];
 }

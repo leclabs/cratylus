@@ -161,11 +161,56 @@ export const SCHEMA_NAME: Record<ResourceType, string> = {
  * - Hook `id`: source-filename artifact; native hook dialects have no id slot,
  *   so read() regenerates ids. Every semantic field (events, matcher, command,
  *   timeout) is compared.
+ * - E9 schema-extension fields (2026-07, `ir-schema-expressiveness`): the IR
+ *   now models the richest documented dialects ahead of adapter mapping —
+ *   rule activation/placement (E9.S2/E7.S7), agent + skill frontmatter surface
+ *   (E9.S6), mcp dialect knobs (E9.S1). Adapter emit/lift for these is owned
+ *   by the E7/E8 shards (their tracked tests pin it); when a mapping lands,
+ *   move the field from here into the fixtures so the matrix compares it.
  */
 export const EXCLUDED_FIELDS: Record<string, readonly string[]> = {
   common: ['targets', 'excludes'],
-  rules: ['concat', 'order'],
+  rules: [
+    'concat',
+    'order',
+    // E9.S2 / E7.S7 activation + placement
+    'description',
+    'globs',
+    'activation',
+    'alwaysApply',
+    'dir',
+  ],
   hooks: ['id'],
+  // E9.S6 agent frontmatter surface
+  agents: [
+    'permission_mode',
+    'max_turns',
+    'temperature',
+    'mode',
+    'memory',
+    'effort',
+  ],
+  // E9.S6 skill frontmatter surface
+  skills: [
+    'license',
+    'compatibility',
+    'metadata',
+    'paths',
+    'user_invocable',
+    'disable_model_invocation',
+  ],
+  // E9.S1 mcp dialect knobs
+  mcp: [
+    'disabled',
+    'autoApprove',
+    'includeTools',
+    'excludeTools',
+    'trust',
+    'timeout',
+    'http_headers',
+    'bearer_token_env_var',
+    'auth',
+  ],
 };
 
 function excludedFor(type: ResourceType): readonly string[] {

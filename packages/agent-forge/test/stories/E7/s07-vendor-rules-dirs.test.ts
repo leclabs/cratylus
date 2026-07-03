@@ -86,7 +86,7 @@ describe('E7.S7 · vendor rules dirs only where activation demands', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S7',
     'IR Rule carries activation metadata (globs/alwaysApply) so vendor dirs are compilable — schema rejects it today (E9 gap)',
     () => {

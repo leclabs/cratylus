@@ -31,7 +31,7 @@ describe('E9.S2 · rule activation + placement', () => {
     ).toBe(true);
   });
 
-  story.tracked(
+  story(
     'E9.S2',
     'activation metadata validates: description + globs + activation + dir [WS1][CL1][CP3][CT2][CU1][CC1]',
     () => {
@@ -48,7 +48,7 @@ describe('E9.S2 · rule activation + placement', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E9.S2',
     'each documented activation mode is schema-representable (always|auto|glob|manual)',
     () => {

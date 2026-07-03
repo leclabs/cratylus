@@ -16,11 +16,44 @@
       "properties": {
         "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
         "transport": { "const": "stdio" },
-        "command": { "type": "string" },
+        "command": {
+          "oneOf": [
+            { "type": "string" },
+            { "type": "array", "items": { "type": "string" }, "minItems": 1 }
+          ],
+          "description": "Executable: a bare string (with args separate) or the argv-array form (opencode/Kilo typed local)."
+        },
         "args": { "type": "array", "items": { "type": "string" } },
         "env": {
           "type": "object",
           "additionalProperties": { "type": "string" }
+        },
+        "disabled": {
+          "type": "boolean",
+          "description": "Server registered but switched off (Cline)."
+        },
+        "autoApprove": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tool names pre-approved without prompting (Cline)."
+        },
+        "includeTools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowlist of tools exposed from this server (Gemini/Codex)."
+        },
+        "excludeTools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Denylist of tools hidden from this server (Gemini/Codex)."
+        },
+        "trust": {
+          "type": "boolean",
+          "description": "Skip per-call confirmation for this server (Gemini)."
+        },
+        "timeout": {
+          "type": "number",
+          "description": "Request timeout in seconds (Gemini/Codex)."
         },
         "targets": { "type": "array", "items": { "type": "string" } },
         "excludes": { "type": "array", "items": { "type": "string" } }
@@ -38,6 +71,49 @@
         "headers": {
           "type": "object",
           "additionalProperties": { "type": "string" }
+        },
+        "http_headers": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Static HTTP headers sent with every request (Codex remote)."
+        },
+        "bearer_token_env_var": {
+          "type": "string",
+          "description": "Env var whose value becomes the Authorization bearer token (Codex remote)."
+        },
+        "auth": {
+          "type": "object",
+          "required": ["type"],
+          "properties": { "type": { "type": "string" } },
+          "additionalProperties": true,
+          "description": "Structured auth config, e.g. { type: 'oauth' } (Cursor remote)."
+        },
+        "disabled": {
+          "type": "boolean",
+          "description": "Server registered but switched off (Cline)."
+        },
+        "autoApprove": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Tool names pre-approved without prompting (Cline)."
+        },
+        "includeTools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowlist of tools exposed from this server (Gemini/Codex)."
+        },
+        "excludeTools": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Denylist of tools hidden from this server (Gemini/Codex)."
+        },
+        "trust": {
+          "type": "boolean",
+          "description": "Skip per-call confirmation for this server (Gemini)."
+        },
+        "timeout": {
+          "type": "number",
+          "description": "Request timeout in seconds (Gemini/Codex)."
         },
         "targets": { "type": "array", "items": { "type": "string" } },
         "excludes": { "type": "array", "items": { "type": "string" } }

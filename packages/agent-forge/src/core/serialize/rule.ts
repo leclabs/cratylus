@@ -19,6 +19,14 @@ export function parseRule(text: string, defaultId: string): Rule {
   if (frontmatter.excludes) rule.excludes = frontmatter.excludes;
   if (frontmatter.concat !== undefined) rule.concat = frontmatter.concat;
   if (frontmatter.order !== undefined) rule.order = frontmatter.order;
+  if (frontmatter.description !== undefined)
+    rule.description = frontmatter.description;
+  if (frontmatter.globs !== undefined) rule.globs = frontmatter.globs;
+  if (frontmatter.activation !== undefined)
+    rule.activation = frontmatter.activation;
+  if (frontmatter.alwaysApply !== undefined)
+    rule.alwaysApply = frontmatter.alwaysApply;
+  if (frontmatter.dir !== undefined) rule.dir = frontmatter.dir;
   return rule;
 }
 
@@ -32,5 +40,10 @@ export function serializeRule(rule: Rule): string {
   if (rule.excludes) fm.excludes = rule.excludes;
   if (rule.concat !== undefined) fm.concat = rule.concat;
   if (rule.order !== undefined) fm.order = rule.order;
+  if (rule.description !== undefined) fm.description = rule.description;
+  if (rule.globs !== undefined) fm.globs = rule.globs;
+  if (rule.activation !== undefined) fm.activation = rule.activation;
+  if (rule.alwaysApply !== undefined) fm.alwaysApply = rule.alwaysApply;
+  if (rule.dir !== undefined) fm.dir = rule.dir;
   return serializeFrontmatter(fm, rule.body);
 }

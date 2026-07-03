@@ -41,7 +41,7 @@ describe('E9.S6 · agent + skill frontmatter surface', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E9.S6',
     'agent schema represents permission_mode, max_turns, temperature, mode, memory, effort [CC2][KL1][OC2][GM2][CU3][CP1]',
     () => {
@@ -60,7 +60,7 @@ describe('E9.S6 · agent + skill frontmatter surface', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E9.S6',
     'agent mode carries the documented enum primary|subagent|all [KL1][OC2]',
     () => {
@@ -73,7 +73,7 @@ describe('E9.S6 · agent + skill frontmatter surface', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E9.S6',
     'skill schema represents license, compatibility, metadata, paths, user_invocable, disable_model_invocation [S3][CC3][CU4][CR1]',
     () => {

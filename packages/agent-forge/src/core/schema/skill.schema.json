@@ -30,6 +30,32 @@
       "items": { "type": "string" },
       "description": "Paths to additional files in the skill directory, relative to the skill root."
     },
+    "license": {
+      "type": "string",
+      "description": "SPDX license expression for the skill content (AgentSkills spec)."
+    },
+    "compatibility": {
+      "type": "string",
+      "description": "Environment/version constraint the skill requires (AgentSkills spec)."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": { "type": "string" },
+      "description": "Arbitrary string key/value annotations (AgentSkills spec / Copilot metadata)."
+    },
+    "paths": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Activation globs: auto-surface the skill when matching files are in play (Claude paths)."
+    },
+    "user_invocable": {
+      "type": "boolean",
+      "description": "Whether the skill is exposed as a user-invocable /command (Copilot user-invocable)."
+    },
+    "disable_model_invocation": {
+      "type": "boolean",
+      "description": "Bar the model from auto-invoking the skill (Claude/Copilot disable-model-invocation)."
+    },
     "targets": { "type": "array", "items": { "type": "string" } },
     "excludes": { "type": "array", "items": { "type": "string" } }
   }

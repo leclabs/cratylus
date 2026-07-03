@@ -26,6 +26,15 @@ export function parseSkill(text: string, defaultName: string): Skill {
   if (frontmatter.allowed_tools)
     skill.allowed_tools = frontmatter.allowed_tools;
   if (frontmatter.files) skill.files = frontmatter.files;
+  if (frontmatter.license !== undefined) skill.license = frontmatter.license;
+  if (frontmatter.compatibility !== undefined)
+    skill.compatibility = frontmatter.compatibility;
+  if (frontmatter.metadata !== undefined) skill.metadata = frontmatter.metadata;
+  if (frontmatter.paths !== undefined) skill.paths = frontmatter.paths;
+  if (frontmatter.user_invocable !== undefined)
+    skill.user_invocable = frontmatter.user_invocable;
+  if (frontmatter.disable_model_invocation !== undefined)
+    skill.disable_model_invocation = frontmatter.disable_model_invocation;
   if (frontmatter.targets) skill.targets = frontmatter.targets;
   if (frontmatter.excludes) skill.excludes = frontmatter.excludes;
   return skill;
@@ -42,6 +51,14 @@ export function serializeSkill(skill: Skill): string {
   };
   if (skill.allowed_tools) fm.allowed_tools = skill.allowed_tools;
   if (skill.files) fm.files = skill.files;
+  if (skill.license !== undefined) fm.license = skill.license;
+  if (skill.compatibility !== undefined) fm.compatibility = skill.compatibility;
+  if (skill.metadata !== undefined) fm.metadata = skill.metadata;
+  if (skill.paths !== undefined) fm.paths = skill.paths;
+  if (skill.user_invocable !== undefined)
+    fm.user_invocable = skill.user_invocable;
+  if (skill.disable_model_invocation !== undefined)
+    fm.disable_model_invocation = skill.disable_model_invocation;
   if (skill.targets) fm.targets = skill.targets;
   if (skill.excludes) fm.excludes = skill.excludes;
   return serializeFrontmatter(fm, skill.body);

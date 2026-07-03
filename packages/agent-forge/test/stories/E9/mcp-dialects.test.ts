@@ -106,7 +106,7 @@ describe('E9.S1 · McpServer dialect coverage', () => {
   );
 
   for (const { name, ref, server } of UNREPRESENTABLE) {
-    story.tracked('E9.S1', `schema represents ${name} ${ref}`, () => {
+    story('E9.S1', `schema represents ${name} ${ref}`, () => {
       expect(
         validateMcpServer(server),
         `expected representable: ${JSON.stringify(server)}`,
