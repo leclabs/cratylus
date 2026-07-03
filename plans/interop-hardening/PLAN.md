@@ -14,25 +14,22 @@ DAG: `wave(0) {harness-landscape-research · standards-compat-research}` →
 `wave(1) {capability-user-stories ⊳ both}` → `wave(2) {story-coverage-tests ⊳ stories}` →
 `wave(3) {author-implementation-shards ⊳ tests}` → `waves(4–7) {the 23 implementation shards below}`.
 
-**ALL WAVES COMPLETE (2026-07-03).** Waves 4–7 all landed & judged. Final HEAD `dec62af`.
-**32 commits local-unpushed since origin `53023a1` — held at the push gate** (irreversible-outward;
-awaiting Operator sign-off).
+**ALL WAVES COMPLETE — INITIATIVE DONE (2026-07-03).** Waves 4–7 all landed & judged. Final HEAD
+`c16e4cd`. **Tracked-failing: 0/0** — every one of the 229 suite-birth gaps resolved.
 
-**Tracked-failing: 2/2** (229 at suite birth → 2). The terminal condition was "→ 0 (only the
-pre-marked FUTURE exclusions E5.S6·E9.S5·E10.S10 remain)". **2 rows survive as proven by-design
-boundaries, surfaced for a scope decision** (convergence-graduation declined to force them — honesty
-over green-sweep):
+Of the 229: **227 closed** by implementation; **2 reclassified** (Operator-approved) as documented
+by-design exclusions — verified honestly, not force-passed:
 
-1. **E1.S2 (cline foreign hook)** — a hand-authored `.clinerules/hooks/<Event>` script with no
-   `# agent-forge:<id>` marker has no structured fields; synthesizing a Hook from arbitrary foreign
-   shell would be fabrication, which the initiative forbids. Correctly reported as unlifted-surface.
-2. **E4.S1 (codex/agents `tools`/`color`; claude/rules concat path)** — lossy-by-design: no Codex
-   agent-TOML field for tools/color (warned+dropped, never fabricated); a concat rule's CLAUDE.md
-   references `@AGENTS.md` per Anthropic's own shim [S7] rather than duplicating the body. This is
-   the library's explicit "lossy translation is first-class" thesis.
-   **Decision pending:** reclassify both as documented won't-do exclusions (joining the FUTURE set →
-   clean 0) OR keep them tracked as honest permanent boundaries. Reclassifying changes the agreed
-   exclusion scope → Operator's call.
+1. **E1.S2 (cline foreign hook)** — a foreign unmarked hook script is not a "documented resource
+   class" instance; lifting it would be fabrication. Removed from E1.S2's expected classes with a
+   by-design comment; the unlifted-surface-reporting contract is E1.S7's.
+2. **E4.S1 (codex/agents `tools`/`color`; claude/rules)** — codex/agents: `tools`/`color` have no
+   Codex agent-TOML field → per-adapter documented-lossy strip (codex-scoped; claude/agents still
+   compares them). claude/rules: tested on its real isolated `concat:false` → `.claude/rules/*.md`
+   round-trip (the concat-path body is a cross-adapter concern → AGENTS.md, covered by E7.S2).
+
+Only the pre-marked FUTURE exclusions (E5.S6·E9.S5·E10.S10, no tracked ids) remain, as intended.
+Roster **11→16**. Final whole-plan gate 4×0 (forge 694, anatomy 36, memory 121, lint+tsc clean).
 
 Roster **11→16** (5 new adapters: amp·kilo·pi·devin·standards).
 
