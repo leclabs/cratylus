@@ -16,14 +16,10 @@ DAG: `wave(0) {harness-landscape-research · standards-compat-research}` →
 
 **Active:**
 
-- `capability-user-stories` — the full story library over the capability floor; consumes both
-  research RETURNs (in `completed/`, dep-fed).
+- `author-implementation-shards` — cluster the 229 tracked-failing tests into MECE fix/feature
+  shards emitted into `pending/`.
 
-**Pending:**
-
-- `story-coverage-tests` — an executable test per story; failing tests are the gap statement.
-- `author-implementation-shards` — one ⟨static, scope, accept⟩ shard per failing-test cluster,
-  emitted into `pending/`.
-
-**Completed:** `harness-landscape-research` · `standards-compat-research` (RETURN.md beside each —
-the wave-1 dep-fed inputs).
+**Completed:** `harness-landscape-research` · `standards-compat-research` · `pi-harness-research`
+(RETURNs beside each) · `capability-user-stories` (81 stories, `stories/`) ·
+`story-coverage-tests` (suite @0e23b36: 667 green, TRACKED-FAILING 229/69 enumerated, map total
+both directions).
