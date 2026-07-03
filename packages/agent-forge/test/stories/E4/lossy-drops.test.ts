@@ -100,8 +100,20 @@ describe('E4.S2 · lossy drops named per loss', () => {
         ...FIXTURES.rules,
       };
       const report = await compile(ir, ALL_ADAPTERS, 'project', tmp(), {});
-      expect(report.totalWarnings).toBe(0);
-      expect(report.totalSkipped).toBe(0);
+      // claude-surfaces (2026-07), disclosed: claude's one warning here is
+      // the informational @AGENTS.md-shim advisory [S7] (round-trip.test.ts),
+      // not a resource loss — every OTHER adapter's zero-loss bar is
+      // unaffected, so it's carved out rather than dropping the bar for all.
+      const nonClaude = report.results.filter((r) => r.adapter !== 'claude');
+      for (const r of nonClaude) {
+        expect(r.report?.warnings ?? [], r.adapter).toEqual([]);
+        expect(r.report?.skipped ?? [], r.adapter).toEqual([]);
+      }
+      const claudeResult = report.results.find((r) => r.adapter === 'claude');
+      expect(claudeResult?.report?.warnings).toEqual([
+        expect.stringContaining("CLAUDE.md's managed region imports"),
+      ]);
+      expect(claudeResult?.report?.skipped).toEqual([]);
     },
   );
 });

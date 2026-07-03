@@ -65,9 +65,15 @@ function portableIR(): IR {
   };
 }
 
-/** Targets that compile the portable core clean today. */
+/**
+ * Targets that compile the portable core clean today. claude-surfaces
+ * (2026-07), disclosed: claude REMOVED — a concat rule's CLAUDE.md now
+ * always carries the informational @AGENTS.md-shim advisory [S7]
+ * (round-trip.test.ts), so it is no longer warning-free for any
+ * rules-bearing compile; the loss is real but permanent/by-design, not a
+ * regression to bite on.
+ */
 const CLEAN_TARGETS = [
-  'claude',
   'codex',
   'copilot',
   'crush',
@@ -124,7 +130,7 @@ describe('E4.S7 · portable core', () => {
 
   story.tracked(
     'E4.S7',
-    'all 10 targets compile the portable core with zero warnings and zero skips (aider drops skills+mcp [AI1][AI5]; cline warns on undocumented project-scope MCP [CL6]; continue drops skills [CT3])',
+    'all 10 targets compile the portable core with zero warnings and zero skips (aider drops skills+mcp [AI1][AI5]; cline warns on undocumented project-scope MCP [CL6]; continue drops skills [CT3]; claude warns the informational @AGENTS.md-shim advisory [S7])',
     async () => {
       const cwd = makeTmpDir('af-e4s7-all-');
       cleanups.push(cwd);

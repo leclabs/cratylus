@@ -29,7 +29,6 @@ type Pair = readonly [adapterId: string, type: ResourceType];
 /** Pairs whose declared-full round-trip holds today. */
 const PASSING_PAIRS: readonly Pair[] = [
   ['aider', 'rules'],
-  ['claude', 'rules'],
   ['claude', 'skills'],
   ['claude', 'commands'],
   ['claude', 'agents'],
@@ -74,6 +73,14 @@ const PASSING_PAIRS: readonly Pair[] = [
  * - codex/agents: `tools`/`color` have no documented Codex agent-TOML field
  *   [CX1] — the shared agents fixture exercises both, so they are warned and
  *   dropped on write rather than fabricated, and do not survive reimport.
+ * - claude/rules (claude-surfaces, 2026-07): the shared fixture's rule is a
+ *   default CONCAT rule; its CLAUDE.md now imports `@AGENTS.md` per
+ *   Anthropic's own documented shim [S7] instead of duplicating the body —
+ *   the body is deliberately not readable back from CLAUDE.md alone (this
+ *   adapter never writes AGENTS.md, E7.S10). A non-concat rule DOES still
+ *   round-trip losslessly via `.claude/rules/<id>.md` [CC1]; the fixture set
+ *   here is shared across every rules-'full' adapter and isn't parameterized
+ *   per-adapter, so the concat path is what this matrix exercises for claude.
  */
 const TRACKED_PAIRS: readonly (readonly [...Pair, reason: string])[] = [
   ['codex', 'mcp', 'remote-mcp headers dropped on read'],
@@ -83,6 +90,11 @@ const TRACKED_PAIRS: readonly (readonly [...Pair, reason: string])[] = [
     'codex',
     'agents',
     'tools/color have no documented Codex agent-TOML field [CX1]',
+  ],
+  [
+    'claude',
+    'rules',
+    'a default concat rule imports @AGENTS.md [S7], not a literal body — see docblock',
   ],
 ] as const;
 

@@ -160,7 +160,14 @@ describe('claudeAdapter', () => {
       commands: [{ name: 'review', body: 'Review the diff.' }],
     };
     const report = await claudeAdapter.write(ir, 'project', cwd, {});
-    expect(report.warnings).toEqual([]);
+    // claude-surfaces (2026-07), disclosed: a concat rule's CLAUDE.md managed
+    // region now imports @AGENTS.md rather than duplicating the body [S7] —
+    // an intentional, informational warning (not a defect) advising that
+    // AGENTS.md be authored separately (this adapter never writes it,
+    // E7.S10). Assert the one expected warning explicitly.
+    expect(report.warnings).toEqual([
+      expect.stringContaining("CLAUDE.md's managed region imports"),
+    ]);
     expect(report.skipped).toEqual([]);
     expect(report.written.some((p) => p.endsWith('CLAUDE.md'))).toBe(true);
     expect(report.written.some((p) => p.endsWith('settings.json'))).toBe(true);
@@ -196,7 +203,12 @@ describe('claudeAdapter', () => {
       );
       const ir2 = await claudeAdapter.read('project', cwd2);
       // Compare resource fields (manifest is added by caller, not by read)
-      expect(ir2.rules).toEqual(ir1.rules);
+      // claude-surfaces (2026-07), disclosed: a concat rule's body no longer
+      // round-trips through CLAUDE.md alone [S7] — write emits the
+      // @AGENTS.md-import managed region (the rule's real content lives in
+      // AGENTS.md, which this adapter never writes, E7.S10); read recovers
+      // the region's own text, not the pre-write body.
+      expect(ir2.rules).toEqual([{ id: 'main', body: '@AGENTS.md' }]);
       expect(ir2.commands).toEqual(ir1.commands);
       expect(ir2.agents).toEqual(ir1.agents);
       expect(ir2.skills).toEqual(ir1.skills);

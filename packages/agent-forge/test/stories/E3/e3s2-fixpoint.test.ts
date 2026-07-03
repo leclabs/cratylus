@@ -134,6 +134,19 @@ const stripRuleIds = (rules: RuleLike[] | undefined) =>
  */
 const RULE_ID_REGENERATORS = new Set(['aider']);
 
+/**
+ * Adapters whose 'rules' field does not round-trip a default CONCAT rule's
+ * body literally (claude-surfaces, 2026-07): claude's CLAUDE.md now imports
+ * `@AGENTS.md` per Anthropic's own documented shim [S7] instead of
+ * duplicating the body (this adapter never writes AGENTS.md itself, E7.S10)
+ * — the identical classification as E4/roundtrip-matrix.test.ts's
+ * `claude/rules` TRACKED_PAIRS entry. A non-concat rule still round-trips
+ * losslessly via `.claude/rules/<id>.md` [CC1]; this shared fixture uses the
+ * default-concat shape, so the exact-body comparison is what's excluded
+ * here — the field is still exercised (fixed-point, not skipped).
+ */
+const RULE_BODY_SHIMMED = new Set(['claude']);
+
 describe('E3.S2 · harness reimport after compile is a fixpoint', () => {
   for (const adapter of ALL_ADAPTERS) {
     const keys = fullKeys(adapter);
@@ -153,6 +166,10 @@ describe('E3.S2 · harness reimport after compile is a fixpoint', () => {
                 expect(stripHookIds(second.hooks)).toEqual(
                   stripHookIds(first.hooks),
                 );
+              } else if (key === 'rules' && RULE_BODY_SHIMMED.has(adapter.id)) {
+                expect(second.rules).toEqual([
+                  { id: 'main', body: '@AGENTS.md' },
+                ]);
               } else {
                 expect(second[key], key).toEqual(first[key]);
               }

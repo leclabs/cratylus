@@ -131,7 +131,7 @@ describe('E8.S1 · claude', () => {
 
   // --- Hook model [CC6] ---
 
-  story.tracked(
+  story(
     'E8.S1',
     'hook capability declares regex matchers, not glob [CC6]',
     () => {
@@ -139,7 +139,7 @@ describe('E8.S1 · claude', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S1',
     'non-command hook types (prompt) are lifted, not silently dropped [CC6]',
     async () => {
@@ -163,7 +163,7 @@ describe('E8.S1 · claude', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S1',
     'hook fields if/env round-trip through read → write [CC6]',
     async () => {
@@ -214,7 +214,7 @@ describe('E8.S1 · claude', () => {
 
   // --- Rules surfaces [CC1] ---
 
-  story.tracked(
+  story(
     'E8.S1',
     '.claude/rules/*.md with paths: frontmatter is read [CC1]',
     async () => {
@@ -231,7 +231,7 @@ describe('E8.S1 · claude', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S1',
     'non-concat rules are written to .claude/rules/*.md [CC1]',
     async () => {
@@ -244,7 +244,7 @@ describe('E8.S1 · claude', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E8.S1',
     'local-scope rules emit to CLAUDE.local.md [CC1]',
     async () => {
@@ -257,24 +257,20 @@ describe('E8.S1 · claude', () => {
     },
   );
 
-  story.tracked(
-    'E8.S1',
-    '.claude/CLAUDE.md alt location is read [CC1]',
-    async () => {
-      mkdirSync(join(cwd, '.claude'), { recursive: true });
-      writeFileSync(
-        join(cwd, '.claude', 'CLAUDE.md'),
-        'Alt-location rules.\n',
-        'utf8',
-      );
-      const re = await claudeAdapter.read('project', cwd);
-      expect(
-        (re.rules ?? []).some((r) => r.body.includes('Alt-location rules')),
-      ).toBe(true);
-    },
-  );
+  story('E8.S1', '.claude/CLAUDE.md alt location is read [CC1]', async () => {
+    mkdirSync(join(cwd, '.claude'), { recursive: true });
+    writeFileSync(
+      join(cwd, '.claude', 'CLAUDE.md'),
+      'Alt-location rules.\n',
+      'utf8',
+    );
+    const re = await claudeAdapter.read('project', cwd);
+    expect(
+      (re.rules ?? []).some((r) => r.body.includes('Alt-location rules')),
+    ).toBe(true);
+  });
 
-  story.tracked(
+  story(
     'E8.S1',
     'CLAUDE.md writes are non-destructive to hand-maintained content (E3.S5) [CC1]',
     async () => {
@@ -290,7 +286,12 @@ describe('E8.S1 · claude', () => {
       await claudeAdapter.write(ir, 'project', cwd, {});
       const text = readFileSync(join(cwd, 'CLAUDE.md'), 'utf8');
       expect(text).toContain('keep me around');
-      expect(text).toContain('Generated rules.');
+      // claude-surfaces (2026-07), forced/disclosed: a concat rule's managed
+      // region now imports @AGENTS.md rather than duplicating the body [S7]
+      // — "Generated rules." never lands in CLAUDE.md itself (E7.S5); the
+      // non-destructive property is what's under test here, so the check
+      // moves to the new canonical managed-region content.
+      expect(text).toContain('@AGENTS.md');
     },
   );
 

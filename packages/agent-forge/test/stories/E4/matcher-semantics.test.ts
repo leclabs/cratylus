@@ -61,7 +61,7 @@ describe('E4.S5 · matcher semantics', () => {
     );
   }
 
-  story.tracked(
+  story(
     'E4.S5',
     'regex-dialect targets declare matchers: regex — claude [CC6], gemini [GM4], cursor [CU2], crush [CR3]',
     () => {

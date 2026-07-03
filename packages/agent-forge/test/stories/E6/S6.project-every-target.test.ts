@@ -170,7 +170,13 @@ story(
           scope: 'project',
           targets: [adapter.id],
         },
-        rules: [{ id: 'conventions', body: RULE_BODY }],
+        // claude-surfaces (2026-07), disclosed: `concat: false` — a concat
+        // rule's CLAUDE.md now imports @AGENTS.md uniformly [S7], so it no
+        // longer carries a literal, verbatim-comparable body; non-concat
+        // rules still do (`.claude/rules/<id>.md` [CC1]), which is what this
+        // assertion actually needs (byte-verbatim, on SOME written surface).
+        // A no-op for every other adapter's dialect.
+        rules: [{ id: 'conventions', body: RULE_BODY, concat: false }],
         skills: [
           {
             name: 'release',

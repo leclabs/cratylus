@@ -47,7 +47,7 @@ describe('E2.S5 · local-scope compile uses the local tier or refuses loudly', (
     },
   );
 
-  story.tracked(
+  story(
     'E2.S5',
     'claude local rules land in CLAUDE.local.md; the "local has no rules" warning is gone [CC1]',
     () => {

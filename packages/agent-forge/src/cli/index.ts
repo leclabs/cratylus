@@ -98,6 +98,10 @@ cli
   .option('--dry-run', 'Skip writes; show what would change')
   .option('--strict', 'Abort on any warning or skipped resource')
   .option('--explain', 'Verbose substitution and skip explanations')
+  .option(
+    '--as-plugin <name>',
+    'Bundle the claude target as a distributable plugin (.claude-plugin/ tree) instead of the ordinary .claude/ tree',
+  )
   .action(
     async (
       clients: string[],
@@ -106,6 +110,7 @@ cli
         dryRun?: boolean;
         strict?: boolean;
         explain?: boolean;
+        asPlugin?: string;
       },
     ) => {
       process.exit(
@@ -116,6 +121,7 @@ cli
             dryRun: opts.dryRun,
             strict: opts.strict,
             explain: opts.explain,
+            asPlugin: opts.asPlugin,
           },
           adapters,
         ),

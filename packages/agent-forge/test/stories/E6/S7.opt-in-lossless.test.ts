@@ -40,7 +40,13 @@ const RAW_SKILL_BODY = '# deploy\n\nHow we deploy, verbatim raw prose.\n';
 
 const rawIR: IR = {
   manifest: { agentForge: 1, scope: 'project', targets: ['claude'] },
-  rules: [{ id: 'main', body: RAW_RULE_BODY }],
+  // claude-surfaces (2026-07), disclosed: `concat: false` — a concat rule's
+  // CLAUDE.md now imports @AGENTS.md uniformly [S7], so it no longer carries
+  // a literal, verbatim-comparable body. This story's thesis (no forced
+  // optimization; raw content survives byte-for-byte) is demonstrated
+  // through the non-concat `.claude/rules/<id>.md` surface instead, which
+  // still carries the body literally.
+  rules: [{ id: 'main', body: RAW_RULE_BODY, concat: false }],
   skills: [
     {
       name: 'deploy',
@@ -64,10 +70,11 @@ story(
   async () => {
     const report = await compile(rawIR, [claudeAdapter], 'project', cwd);
     expect(report.totalWritten).toBeGreaterThan(0);
-    // The rule body: byte-verbatim (plus the adapter's trailing newline).
-    expect(readFileSync(join(cwd, 'CLAUDE.md'), 'utf8')).toBe(
-      `${RAW_RULE_BODY}\n`,
-    );
+    // The rule body: byte-verbatim, no adapter-added newline (the non-concat
+    // `.claude/rules/main.md` dialect — plain body, no forced frontmatter or
+    // trailing newline; mirrors cline's identical convention).
+    const ruleMd = join(cwd, '.claude', 'rules', 'main.md');
+    expect(readFileSync(ruleMd, 'utf8')).toBe(RAW_RULE_BODY);
     // The skill body: verbatim inside the emitted SKILL.md.
     const skillMd = readFileSync(
       join(cwd, '.claude', 'skills', 'deploy', 'SKILL.md'),
@@ -76,7 +83,7 @@ story(
     expect(skillMd).toContain(RAW_SKILL_BODY);
     // No optimization pass intervened: the human-register phrasing survives
     // untouched (nothing rewrote 'Please always run the formatter').
-    expect(readFileSync(join(cwd, 'CLAUDE.md'), 'utf8')).toContain(
+    expect(readFileSync(ruleMd, 'utf8')).toContain(
       'Please always run the formatter',
     );
   },
@@ -135,11 +142,15 @@ story(
       concepts.length,
     );
     // COMPILE: the optimized body rides the normal path — same session.
+    // claude-surfaces (2026-07), disclosed: `concat: false` override — a
+    // concat rule's CLAUDE.md now imports @AGENTS.md uniformly [S7], so the
+    // optimized body is asserted via the non-concat `.claude/rules/<id>.md`
+    // surface instead (still literal, still same-session).
     const optimizedIR: IR = {
       manifest: { agentForge: 1, scope: 'project', targets: ['claude'] },
       rules: optimizeRules(imported.rules ?? [], {
         [rule.id]: readFileSync(join(cwd, 'optimized', 'CLAUDE.md'), 'utf8'),
-      }),
+      }).map((r) => ({ ...r, concat: false })),
     };
     const outDir = join(cwd, 'compiled');
     const report = await compile(
@@ -149,8 +160,8 @@ story(
       outDir,
     );
     expect(report.totalWritten).toBeGreaterThan(0);
-    expect(readFileSync(join(outDir, 'CLAUDE.md'), 'utf8')).toContain(
-      'format-pre-commit ≜ formatter gates every commit',
-    );
+    expect(
+      readFileSync(join(outDir, '.claude', 'rules', `${rule.id}.md`), 'utf8'),
+    ).toContain('format-pre-commit ≜ formatter gates every commit');
   },
 );

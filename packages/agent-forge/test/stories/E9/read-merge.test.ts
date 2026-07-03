@@ -73,7 +73,7 @@ describe('E9.S4 · read-merge on shared files', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E9.S4',
     'CLAUDE.md: hand-written content survives; forge rules sit in a marker-delimited managed region [CC1]',
     async () => {
@@ -92,7 +92,12 @@ describe('E9.S4 · read-merge on shared files', () => {
       expect(md).toContain('keep me — not forge-managed');
       // Managed region is delimited so the next compile can find its own text.
       expect(md).toMatch(/agent-forge/i);
-      expect(md).toContain('Be terse');
+      // claude-surfaces (2026-07), forced/disclosed: a concat rule's managed
+      // region now imports @AGENTS.md rather than duplicating the body [S7]
+      // — "Be terse" (FIXTURES.rules' body) never lands in CLAUDE.md itself
+      // (E7.S5); the managed-region-exists property is what's under test
+      // here, so the check moves to the new canonical content.
+      expect(md).toContain('@AGENTS.md');
     },
   );
 

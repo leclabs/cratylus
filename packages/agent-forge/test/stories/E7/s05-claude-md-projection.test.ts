@@ -29,7 +29,7 @@ function claude() {
 }
 
 describe('E7.S5 · CLAUDE.md = @AGENTS.md projection', () => {
-  story.tracked(
+  story(
     'E7.S5',
     'emitted CLAUDE.md body is exactly the @AGENTS.md import (+ at most a fixed managed header), rule bodies absent [S7]',
     async () => {
@@ -53,7 +53,7 @@ describe('E7.S5 · CLAUDE.md = @AGENTS.md projection', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E7.S5',
     'a pre-existing hand-maintained CLAUDE.md is preserved through compile (E3.S5 foreign-content bullet; §3 claude d5)',
     async () => {

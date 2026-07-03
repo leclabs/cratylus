@@ -5,16 +5,45 @@ import {
   type Hook,
   type IR,
   type McpServer,
+  type Rule,
   type Scope,
   type WriteOpts,
   type WriteReport,
   mergeJsonKeys,
   serializeAgent,
   serializeCommand,
+  serializeFrontmatter,
   serializeSkill,
+  upsertManagedRegion,
 } from '../../core/index.js';
 import { canonicalToClaude } from './events.js';
 import { paths } from './paths.js';
+import type { ClaudeHook } from './read.js';
+
+/** The claude-documented shim: CLAUDE.md's managed region imports the
+ *  shared, tool-agnostic rules surface rather than duplicating rule bodies
+ *  [S7] — Anthropic's own recommended pattern (Claude Code does not read
+ *  AGENTS.md natively; `@AGENTS.md` — or a symlink — is the shim). This
+ *  adapter never writes AGENTS.md itself (E7.S10): authoring it is a
+ *  separate concern (hand-maintained, or another AGENTS.md-native target in
+ *  the same compile) — surfaced as a warning below, never silently assumed. */
+const AGENTS_MD_IMPORT = '@AGENTS.md';
+
+/** A rule with `concat: false` compiles to its own `.claude/rules/<id>.md`
+ *  file [CC1]; everything else concatenates into the shared primary rules
+ *  file's managed region. */
+function isNonConcatRule(r: Rule): boolean {
+  return r.concat === false;
+}
+
+/** `.claude/rules/<id>.md` dialect: plain body, `paths:` frontmatter
+ *  carrying `globs` when present [CC1] — Claude's own key is `paths`, never
+ *  the IR's `globs` (mirrors the cline adapter's identical convention). */
+function serializeClaudeRuleFile(rule: Rule): string {
+  const fm: Record<string, unknown> = {};
+  if (rule.globs !== undefined) fm.paths = rule.globs;
+  return serializeFrontmatter(fm, rule.body);
+}
 
 export async function writeClaude(
   ir: IR,
@@ -27,19 +56,52 @@ export async function writeClaude(
   const skipped: { path: string; reason: string }[] = [];
   const warnings: string[] = [];
 
-  // Rules → CLAUDE.md (concatenated)
+  // Rules: non-concat → .claude/rules/<id>.md [CC1]; concat → the primary
+  // rules file's marker-delimited managed region (E9.S4/E3.S5 read-merge
+  // discipline — hand-maintained content outside the region survives).
   if (ir.rules?.length) {
-    if (!p.rulesFile) {
-      warnings.push(
-        `scope '${scope}' does not support rules; skipping ${ir.rules.length} rule(s)`,
-      );
-    } else {
-      const body = ir.rules.map((r) => r.body).join('\n\n');
-      if (!opts.dryRun) {
-        await mkdir(dirname(p.rulesFile), { recursive: true });
-        await writeFile(p.rulesFile, `${body}\n`, 'utf8');
+    const nonConcat = ir.rules.filter(isNonConcatRule);
+    const concatRules = ir.rules.filter((r) => !isNonConcatRule(r));
+
+    if (nonConcat.length) {
+      if (!opts.dryRun) await mkdir(p.rulesDir, { recursive: true });
+      for (const rule of nonConcat) {
+        const path = join(p.rulesDir, `${rule.id}.md`);
+        if (!opts.dryRun) {
+          await writeFile(path, serializeClaudeRuleFile(rule), 'utf8');
+        }
+        written.push(path);
       }
-      written.push(p.rulesFile);
+    }
+
+    if (concatRules.length) {
+      if (!p.rulesFile) {
+        warnings.push(
+          `scope '${scope}' does not support rules; skipping ${concatRules.length} rule(s)`,
+        );
+      } else {
+        // CLAUDE.local.md has no AGENTS.md-shim equivalent (it is the
+        // personal, never-committed local tier) — its managed region carries
+        // the concatenated bodies literally, same as before this shard.
+        const isLocal = scope === 'local';
+        const regionContent = isLocal
+          ? concatRules.map((r) => r.body).join('\n\n')
+          : AGENTS_MD_IMPORT;
+        const existing = existsSync(p.rulesFile)
+          ? await readFile(p.rulesFile, 'utf8')
+          : undefined;
+        const merged = upsertManagedRegion(existing, regionContent);
+        if (!opts.dryRun) {
+          await mkdir(dirname(p.rulesFile), { recursive: true });
+          await writeFile(p.rulesFile, merged, 'utf8');
+        }
+        written.push(p.rulesFile);
+        if (!isLocal) {
+          warnings.push(
+            `claude: CLAUDE.md's managed region imports ${AGENTS_MD_IMPORT} — rule bodies are not duplicated there [S7]; author/emit AGENTS.md separately (hand-maintained, or an AGENTS.md-native target in this compile) so the import resolves`,
+          );
+        }
+      }
     }
   }
 
@@ -147,17 +209,23 @@ export async function writeClaude(
 }
 
 /** The Claude `settings.json` `hooks` block shape: native-event → entries, each
- *  entry an optional matcher + one-or-more command hooks. */
+ *  entry an optional matcher + `if` filter + one-or-more hook commands
+ *  (`command`, or a lifted non-command type such as `prompt`) [CC6]. */
 export type ClaudeHooksBlock = Record<
   string,
   Array<{
     matcher?: string;
+    /** Permission-rule filter (v2.1.85+) [CC6]. */
+    if?: string;
     hooks: Array<{
-      type: 'command';
-      command: string;
+      type: 'command' | string;
+      command?: string;
+      /** Present when `type !== 'command'` (e.g. `type: 'prompt'`) [CC6]. */
+      prompt?: string;
       timeout?: number;
       /** agent-forge hook id, embedded so reimport preserves it (E3.S2). */
       id?: string;
+      env?: Record<string, string>;
     }>;
   }>
 >;
@@ -184,6 +252,7 @@ function serializeClaudeHooks(
 ): ClaudeHooksBlock {
   const out: ClaudeHooksBlock = {};
   for (const hook of hooks) {
+    const ch = hook as ClaudeHook;
     for (const event of hook.events) {
       const claudeEvent = canonicalToClaude[event];
       if (!claudeEvent) {
@@ -196,21 +265,21 @@ function serializeClaudeHooks(
         });
         continue;
       }
-      const cmd: {
-        type: 'command';
-        command: string;
-        timeout?: number;
-        id?: string;
-      } = {
-        type: 'command',
-        command: hook.command,
-      };
+      // A hook lifted from a non-command native type (e.g. `prompt` [CC6])
+      // carries its adapter-private `kind`; round-trip it to the SAME native
+      // shape rather than misrepresenting it as `type: command`.
+      const isPrompt = ch.kind !== undefined && ch.kind !== 'command';
+      const cmd: ClaudeHooksBlock[string][number]['hooks'][number] = isPrompt
+        ? { type: ch.kind as string, prompt: hook.command }
+        : { type: 'command', command: hook.command };
       if (hook.timeout !== undefined) cmd.timeout = hook.timeout;
       if (hook.id !== undefined) cmd.id = hook.id; // stable across reimport
+      if (ch.env !== undefined) cmd.env = ch.env;
       const entry: ClaudeHooksBlock[string][number] = {
         hooks: [cmd],
       };
       if (hook.matcher) entry.matcher = hook.matcher;
+      if (ch.if !== undefined) entry.if = ch.if;
       out[claudeEvent] ??= [];
       out[claudeEvent].push(entry);
     }
@@ -249,7 +318,11 @@ function mcpOwnedKeys(
   return { mcpServers: { ...block, ...serialized } };
 }
 
-function serializeClaudeMcp(servers: McpServer[]): Record<string, unknown> {
+/** Public so the plugin-bundle emitter (`plugin.ts`, E5.S5) can reuse the
+ *  exact same `.mcp.json` server shape without re-deriving it. */
+export function serializeClaudeMcp(
+  servers: McpServer[],
+): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const s of servers) {
     if (s.transport === 'stdio') {

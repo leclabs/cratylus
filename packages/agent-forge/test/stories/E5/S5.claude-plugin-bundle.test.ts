@@ -8,16 +8,19 @@
  * documented component layout [CC4][CC5], with `${CLAUDE_PLUGIN_ROOT}` for
  * intra-plugin paths; the dir passes Claude Code's own structural validation.
  *
- * Today no bundling mode exists: the claude adapter module exposes no
- * plugin-mode member and a plain compile emits the ordinary `.claude/` tree,
- * never a `.claude-plugin/` manifest — both facets TRACKED.
+ * claude-surfaces (2026-07), forced/disclosed: the mode is a dedicated
+ * export (`writeClaudePlugin`), not a `claudeAdapter.write()` opts flag — a
+ * plugin bundle is a distinct compile MODE (own output tree, own entry
+ * point), not a per-scope dialect emission `write()` already owns. The two
+ * call sites below were probes written before that shape was settled;
+ * updated to call the real entry point. The CLI reaches it via
+ * `compile --as-plugin <name>` (`src/cli/commands/compile.ts`).
  */
 
 import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect } from 'vitest';
 import * as claudeMod from '../../../src/adapters/claude/index.js';
-import { claudeAdapter } from '../../../src/adapters/claude/index.js';
 import type { IR } from '../../../src/core/index.js';
 import { makeTmpDir, story } from '../helpers.js';
 
@@ -63,11 +66,11 @@ afterEach(() => {
   rmSync(cwd, { recursive: true, force: true });
 });
 
-story.tracked(
+story(
   'E5.S5',
   'a full IR compiles to the documented Claude plugin tree: .claude-plugin/plugin.json + skills/ + agents/ + hooks/hooks.json + .mcp.json [CC4][CC5]',
   async () => {
-    await claudeAdapter.write(fullIR, 'project', cwd, {});
+    await claudeMod.writeClaudePlugin(fullIR, cwd, 'demo-plugin');
     // Probe: neither a plugin-mode export on the adapter module nor a
     // .claude-plugin manifest in the output exists today.
     const pluginSurface = Object.keys(claudeMod).filter((m) =>
@@ -86,11 +89,11 @@ story.tracked(
   },
 );
 
-story.tracked(
+story(
   'E5.S5',
   'the emitted plugin dir passes structural validation: plugin.json carries the required name [CC4] and hooks use ${CLAUDE_PLUGIN_ROOT}',
   async () => {
-    await claudeAdapter.write(fullIR, 'project', cwd, {});
+    await claudeMod.writeClaudePlugin(fullIR, cwd, 'demo-plugin');
     const manifestPath = join(cwd, '.claude-plugin', 'plugin.json');
     expect(
       existsSync(manifestPath),

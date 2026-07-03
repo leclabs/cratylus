@@ -84,7 +84,7 @@ describe('E3.S5 · foreign content survives reimport + recompile', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E3.S5',
     'forge-managed regions in CLAUDE.md are delimited by documented markers',
     () => {

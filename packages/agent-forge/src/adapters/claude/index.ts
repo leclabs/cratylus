@@ -45,7 +45,7 @@ const capabilities: AdapterCapabilities = {
       'permission.request',
       'permission.deny',
     ],
-    matchers: 'glob',
+    matchers: 'regex',
     payload: 'claude-json',
   },
   scopes: ['user', 'project', 'local'],
@@ -101,4 +101,9 @@ export {
 export {
   type ClaudeHooksBlock,
   serializeClaudeHooksReport,
+  serializeClaudeMcp,
 } from './write.js';
+// The Claude plugin-bundle compile mode (E5.S5) — a full IR → distributable
+// `.claude-plugin/` tree, distinct from writeClaude's per-scope `.claude/`
+// tree. Reachable via `agent-forge compile --as-plugin <name>`.
+export { writeClaudePlugin } from './bundle.js';

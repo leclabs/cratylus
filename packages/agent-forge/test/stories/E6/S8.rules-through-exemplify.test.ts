@@ -45,7 +45,12 @@ const LLM_RULE_BODY = [
 
 const rulesIR = (target: string): IR => ({
   manifest: { agentForge: 1, scope: 'project', targets: [target] },
-  rules: [{ id: 'conventions', body: LLM_RULE_BODY }],
+  // claude-surfaces (2026-07), disclosed: `concat: false` — a concat rule's
+  // CLAUDE.md now imports @AGENTS.md uniformly [S7], so the body no longer
+  // lands there byte-verbatim; non-concat rules still do (`.claude/rules/
+  // <id>.md` [CC1]), which is what the byte-verbatim story below needs. A
+  // no-op for every other adapter's dialect.
+  rules: [{ id: 'conventions', body: LLM_RULE_BODY, concat: false }],
 });
 
 let cwd: string;
@@ -151,11 +156,16 @@ story(
     });
     // Optimization rewrites BODIES, never scoping: activation/placement
     // metadata (E9.S2 class: concat/order/targeting) survives untouched.
+    // claude-surfaces (2026-07), disclosed: `concat: false` (was `true`) —
+    // an equally-valid scoping value for this untouched-by-optimize check,
+    // and the one the byte-verbatim assertion below needs from claude's
+    // dialect (its concat-rule CLAUDE.md now imports @AGENTS.md uniformly
+    // [S7]; non-concat rules still carry the body literally, [CC1]).
     const scopedRule: Rule = {
       id: 'conventions',
       body: RAW,
       order: 7,
-      concat: true,
+      concat: false,
     };
     const optimizedRules = optimizeRules([scopedRule], {
       conventions: OPTIMIZED,

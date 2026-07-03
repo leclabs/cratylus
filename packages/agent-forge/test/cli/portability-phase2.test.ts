@@ -91,7 +91,12 @@ describe('Phase 2 cross-adapter portability', () => {
     expect(
       existsSync(join(subDir, '.claude', 'skills', 'review', 'SKILL.md')),
     ).toBe(true);
-    expect(report.warnings).toEqual([]);
+    // claude-surfaces (2026-07), disclosed: a concat rule's CLAUDE.md managed
+    // region now imports @AGENTS.md rather than duplicating the body [S7] —
+    // an intentional, informational warning (not a defect); see round-trip.test.ts.
+    expect(report.warnings).toEqual([
+      expect.stringContaining("CLAUDE.md's managed region imports"),
+    ]);
     expect(report.skipped).toEqual([]);
   });
 

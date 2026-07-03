@@ -60,9 +60,36 @@ describe('E2.S6 · scope isolation — no cross-scope bleed', () => {
     'E2.S6',
     'claude: user output carries body U only, project output body P only',
     async () => {
-      await compileBothScopes('claude');
-      const userOut = readFileSync(join(home, '.claude', 'CLAUDE.md'), 'utf8');
-      const projOut = readFileSync(join(proj, 'CLAUDE.md'), 'utf8');
+      // claude-surfaces (2026-07), disclosed: a concat rule's CLAUDE.md
+      // managed region now imports @AGENTS.md uniformly [S7] — its content
+      // no longer varies with the rule body, so scope isolation is
+      // unobservable there. A non-concat rule still lands its literal body
+      // in `.claude/rules/<id>.md` [CC1], which DOES vary per scope —
+      // demonstrate isolation through that surface instead.
+      const claude = adapterById.get('claude');
+      if (!claude) throw new Error('no adapter claude');
+      const nonConcatIR = (scope: 'user' | 'project', body: string): IR => ({
+        manifest: { agentForge: 1, scope, targets: ['claude'] },
+        rules: [{ id: 'r', body, concat: false }],
+      });
+      await writeIR(nonConcatIR('user', BODY_U), 'user', proj);
+      await writeIR(nonConcatIR('project', BODY_P), 'project', proj);
+      await compile(nonConcatIR('user', BODY_U), [claude], 'user', proj, {});
+      await compile(
+        nonConcatIR('project', BODY_P),
+        [claude],
+        'project',
+        proj,
+        {},
+      );
+      const userOut = readFileSync(
+        join(home, '.claude', 'rules', 'r.md'),
+        'utf8',
+      );
+      const projOut = readFileSync(
+        join(proj, '.claude', 'rules', 'r.md'),
+        'utf8',
+      );
       expect(userOut).toContain(BODY_U);
       expect(userOut).not.toContain(BODY_P);
       expect(projOut).toContain(BODY_P);

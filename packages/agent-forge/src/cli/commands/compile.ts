@@ -1,4 +1,5 @@
 import pc from 'picocolors';
+import { writeClaudePlugin } from '../../adapters/claude/index.js';
 import {
   type Adapter,
   type CompileReport,
@@ -16,6 +17,13 @@ export interface CompileOpts {
   strict?: boolean;
   explain?: boolean;
   cwd?: string;
+  /**
+   * Bundle the claude target as a distributable plugin (E5.S5) — value is
+   * the plugin's `name` — instead of compiling the ordinary per-scope
+   * `.claude/` tree. Claude-only: pairing it with any other client is a
+   * usage error (a plugin bundle isn't a per-client dialect emission).
+   */
+  asPlugin?: string;
 }
 
 export async function runCompile(
@@ -31,6 +39,33 @@ export async function runCompile(
   } catch (e) {
     console.error(pc.red(`agent-forge: ${(e as Error).message}`));
     return 2;
+  }
+
+  if (opts.asPlugin) {
+    const targets = opts.clients ?? [];
+    if (
+      targets.length > 1 ||
+      (targets.length === 1 && targets[0] !== 'claude')
+    ) {
+      console.error(
+        pc.red(
+          'agent-forge: --as-plugin bundles the claude target only — pass no clients, or just "claude"',
+        ),
+      );
+      return 1;
+    }
+    const report = await writeClaudePlugin(ir, cwd, opts.asPlugin);
+    const head =
+      report.warnings.length > 0
+        ? pc.yellow(`⚠ claude-plugin '${opts.asPlugin}'`)
+        : pc.green(`✓ claude-plugin '${opts.asPlugin}'`);
+    console.log(
+      `${head}  ${formatSummary(report.written.length, report.warnings.length, report.skipped.length)}`,
+    );
+    for (const w of report.warnings) {
+      console.log(`    ${pc.yellow('•')} ${w}`);
+    }
+    return 0;
   }
 
   // Name the resolved IR home: from a nested cwd the walk-up result is not
