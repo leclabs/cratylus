@@ -118,6 +118,39 @@ agent-forge migrate                       # use manifest's current version → l
 agent-forge migrate --from 1 --to 2
 ```
 
+### `agent-forge optimize <source>`
+
+The exemplify leg of the documented **import → optimize → compile** flow: turn
+raw human-register context (a verbose `CLAUDE.md`, rule prose, an agent
+description) into reader=LLM artifacts, gated and ledgered.
+
+Optimization is **opt-in** — `compile` never runs it implicitly, and the raw
+compile path stays byte-verbatim. The semantic stages (conceptualize →
+signify → materialize) are LLM passes: the operating agent authors them into
+a **plan** file — `{ "concepts": [{ "gloss", "anchor", "home" | "delta" }],
+"artifacts": [{ "path", "body" }] }` — and this command is the mechanical
+frame that judges it: the accept gate (`REC ≽` — every routed anchor carried
+by its home; `minimal` — one name ⇔ one concept; `conform` — a human-register
+emission is refused), then the R3 routing manifest
+(`.manifests/<source>.json`) in which every concept appears exactly once in
+`routes[]`/`delta[]` — a withheld concept refuses loudly. Re-running over
+accepted output is a no-op: all-`reuse` routes, empty delta, byte-identical
+artifacts.
+
+```
+agent-forge optimize CLAUDE.md --plan plan.json               # gate + emit ./optimized
+agent-forge optimize CLAUDE.md --plan plan.json --out out2 \
+  --prior .manifests/CLAUDE.md.json                           # idempotent re-run
+```
+
+Missing `--plan` is a refusal, never a default. Library surface:
+`optimize` / `exemplify` / `checkCoverage` / `optimizeRules` (rules are
+first-class through the pipeline; scoping metadata is never rewritten),
+`renderSkillCell` (prose procedure → formal skill cell), `elevateAgent`
+(step-1 persona → 24-organ vector with provenance traces and `ELICIT:`
+markers at silent organs), and `projectVector` (the pinned organ-vector →
+config-IR agent projection).
+
 ## Exit codes
 
 | Code | Meaning                                        |

@@ -10,15 +10,24 @@
  * Fate split:
  * - raw-compile-unchanged: GREEN today — compile works with no optimization
  *   stage and preserves bodies byte-for-byte;
- * - the optimize flow + mechanical coverage equation: TRACKED via the
- *   pipeline entrypoint probe.
+ * - the optimize flow + mechanical coverage equation: GRADUATED — the
+ *   pipeline ships in `src/core/exemplify/`; the flow below runs
+ *   import (adapter read) → optimize (accept gate + R3 manifest) → compile
+ *   in one session, with `checkCoverage` proving routes ∪ delta = C_R.
  */
 
-import { readFileSync, rmSync } from 'node:fs';
+import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect } from 'vitest';
 import { claudeAdapter } from '../../../src/adapters/claude/index.js';
-import { type IR, compile } from '../../../src/core/index.js';
+import {
+  type ConceptRecord,
+  type IR,
+  checkCoverage,
+  compile,
+  optimize,
+  optimizeRules,
+} from '../../../src/core/index.js';
 import { makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
@@ -73,15 +82,75 @@ story(
   },
 );
 
-story.tracked(
+story(
   'E6.S7',
   'the documented import → optimize → compile flow exists end-to-end with the routes ∪ delta coverage equation checked mechanically',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
-    // Documented, once the pipeline lands: one session runs E1.S1 import →
-    // E6.S1 optimize → compile; the R3 manifest satisfies
-    // routes ∪ delta = C_R (every concept conceptualize extracted from the
-    // raw import appears exactly once — the mechanical coverage equation).
+    // IMPORT (E1.S1): lift the raw client config into the IR.
+    writeFileSync(join(cwd, 'CLAUDE.md'), RAW_RULE_BODY, 'utf8');
+    const imported = await claudeAdapter.read('project', cwd);
+    const rawRule = (imported.rules ?? [])[0];
+    expect(rawRule).toBeDefined();
+    const rule = rawRule as NonNullable<typeof rawRule>;
+    expect(rule.body).toContain('Please always run the formatter');
+    // OPTIMIZE (E6.S1): gate the LLM-authored plan over the imported source.
+    // The concepts are conceptualize's extraction from the raw import; one
+    // is consciously delta'd — the equation must still cover it.
+    const concepts: ConceptRecord[] = [
+      {
+        gloss: 'the formatter runs before every commit',
+        anchor: 'format-pre-commit',
+        home: 'CLAUDE.md',
+        rank: 0,
+      },
+      {
+        gloss: 'commit subjects stay short',
+        anchor: 'short-subjects',
+        home: 'CLAUDE.md',
+        rank: 1,
+      },
+      {
+        gloss: 'pull requests are kept small',
+        delta: true,
+      },
+    ];
+    const optimizedBody = [
+      'format-pre-commit ≜ formatter gates every commit',
+      'short-subjects ≜ commit subject minimal',
+      '',
+    ].join('\n');
+    const { manifest } = optimize({
+      source: join(cwd, 'CLAUDE.md'),
+      concepts,
+      artifacts: [{ path: 'CLAUDE.md', body: optimizedBody }],
+      outDir: join(cwd, 'optimized'),
+    });
+    // The mechanical coverage equation: routes ∪ delta = C_R, digest-exact.
+    const cov = checkCoverage(manifest, concepts);
+    expect(cov.missing).toEqual([]);
+    expect(cov.extra).toEqual([]);
+    expect(manifest.routes.length + manifest.delta.length).toBe(
+      concepts.length,
+    );
+    // COMPILE: the optimized body rides the normal path — same session.
+    const optimizedIR: IR = {
+      manifest: { agentForge: 1, scope: 'project', targets: ['claude'] },
+      rules: optimizeRules(imported.rules ?? [], {
+        [rule.id]: readFileSync(join(cwd, 'optimized', 'CLAUDE.md'), 'utf8'),
+      }),
+    };
+    const outDir = join(cwd, 'compiled');
+    const report = await compile(
+      optimizedIR,
+      [claudeAdapter],
+      'project',
+      outDir,
+    );
+    expect(report.totalWritten).toBeGreaterThan(0);
+    expect(readFileSync(join(outDir, 'CLAUDE.md'), 'utf8')).toContain(
+      'format-pre-commit ≜ formatter gates every commit',
+    );
   },
 );

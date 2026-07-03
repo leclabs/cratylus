@@ -27,6 +27,7 @@ import { runImport } from './commands/import.js';
 import { runInit } from './commands/init.js';
 import { runLint } from './commands/lint.js';
 import { runMigrate } from './commands/migrate.js';
+import { runOptimize } from './commands/optimize.js';
 import { runWatch } from './commands/watch.js';
 
 const VERSION = '0.0.0';
@@ -197,6 +198,41 @@ cli
       }),
     );
   });
+
+cli
+  .command(
+    'optimize <source>',
+    'Gate an LLM-authored exemplify plan: write R=LLM artifacts + the R3 routing manifest',
+  )
+  .option(
+    '--plan <file>',
+    'the semantic plan (concepts + artifacts) authored by the operating agent — required',
+  )
+  .option('--out <dir>', 'artifact output dir', { default: 'optimized' })
+  .option(
+    '--manifest <path>',
+    'manifest path (default .manifests/<source>.json)',
+  )
+  .option(
+    '--prior <path>',
+    'prior accepted manifest — matching digests route as reuse',
+  )
+  .action(
+    async (
+      source: string,
+      opts: { plan?: string; out?: string; manifest?: string; prior?: string },
+    ) => {
+      process.exit(
+        await runOptimize({
+          source,
+          plan: opts.plan,
+          out: opts.out,
+          manifest: opts.manifest,
+          prior: opts.prior,
+        }),
+      );
+    },
+  );
 
 cli
   .command(

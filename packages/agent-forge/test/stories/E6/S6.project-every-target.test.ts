@@ -15,16 +15,51 @@
  *   declares rules support and emits a rules artifact — GREEN;
  * - aider actually READING the emitted rules needs `read:` wiring, which the
  *   adapter does not emit (§3/aider [AI2] — no auto-discovery): TRACKED;
- * - the optimized-artifact projection itself needs the pipeline: TRACKED.
+ * - the optimized-artifact projection: GRADUATED — the pipeline ships in
+ *   `src/core/exemplify/` (cell renderer + `projectVector`), and the
+ *   optimized set rides the normal per-adapter write below.
  */
 
 import { readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect } from 'vitest';
 import { aiderAdapter } from '../../../src/adapters/aider/index.js';
-import type { IR } from '../../../src/core/index.js';
+import type { Agent as OrganVector } from '../../../src/anatomy/index.js';
+import {
+  type IR,
+  projectVector,
+  renderSkillCellBody,
+} from '../../../src/core/index.js';
 import { ALL_ADAPTERS, makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
+
+/** All 24 organ fields explicitly harness-inherited (`null`). */
+const NULL_ORGANS: Omit<OrganVector, 'name'> = {
+  autonomy: null,
+  persona: null,
+  role: null,
+  formality: null,
+  audienceAdaptation: null,
+  transparency: null,
+  provenance: null,
+  objective: null,
+  guardrails: null,
+  engineeringPrinciples: null,
+  heuristics: null,
+  capabilities: null,
+  learning: null,
+  situationAwareness: null,
+  actions: null,
+  modalities: null,
+  model: null,
+  memory: null,
+  trigger: null,
+  framing: null,
+  reasoningStrategy: null,
+  satisficing: null,
+  outputFormat: null,
+  selfEvaluation: null,
+};
 
 const RULE_BODY =
   'commit ≜ conventional-commit(type, scope, subject≤100) · gate: build ∧ lint ∧ suite-green';
@@ -92,16 +127,95 @@ story.tracked(
   },
 );
 
-story.tracked(
+story(
   'E6.S6',
   'the optimized cell, vector, and rule-set ride the normal compile to all targets; SKILL.md spec-valid at each destination, agent bodies per-target projections',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
-    // Documented, once the pipeline lands: compile the E6.S2 cell + E6.S3
-    // vector + E6.S8 rules to every manifest target; each emitted SKILL.md
-    // carries spec-valid frontmatter at destination; agent bodies derive
-    // from the vector (never a parallel config-IR copy); the R=LLM register
-    // survives — no adapter humanizes content.
+    // The optimized artifact set: the E6.S2 cell body, the E6.S3 vector
+    // PROJECTED (the vector is the source — projectVector, never a parallel
+    // config-IR copy), and an E6.S8-style optimized rule body.
+    const cellBody = renderSkillCellBody({
+      name: 'release',
+      description: 'release the package — ordered gate to published tag',
+      verb: 'release',
+      declarations: [
+        { symbol: 'green', definiens: 'the whole test suite passes' },
+        { symbol: 'tag', definiens: 'git tag at the release commit' },
+      ],
+      laws: ['¬green ⇒ ¬tag'],
+    });
+    const vector: OrganVector = {
+      ...NULL_ORGANS,
+      name: 'reviewer',
+      persona: {
+        organ: 'persona',
+        slug: 'migration-reviewer',
+        definiens: 'a meticulous migration reviewer',
+      },
+    };
+    const projected = projectVector(vector);
+    expect(projected.body).toContain('persona ≜ migration-reviewer');
+    const carriersOfAgentBody: string[] = [];
+    for (const adapter of ALL_ADAPTERS) {
+      const dir = join(cwd, `opt-${adapter.id}`);
+      const ir: IR = {
+        manifest: {
+          agentForge: 1,
+          scope: 'project',
+          targets: [adapter.id],
+        },
+        rules: [{ id: 'conventions', body: RULE_BODY }],
+        skills: [
+          {
+            name: 'release',
+            description: 'release the package — ordered gate to published tag',
+            body: cellBody,
+          },
+        ],
+        agents: [projected],
+      };
+      const report = await adapter.write(ir, 'project', dir, {});
+      // Zero targets excluded from optimization — every adapter still emits
+      // (rule-only harnesses through their rules surface).
+      expect(
+        report.written.length,
+        `${adapter.id} excluded from the optimized compile`,
+      ).toBeGreaterThan(0);
+      // Every emitted SKILL.md stays spec-valid at destination.
+      for (const p of report.written.filter((w) => w.endsWith('SKILL.md'))) {
+        const md = readFileSync(p, 'utf8');
+        expect(md).toMatch(/^---\n(?:.*\n)*?name: [a-z0-9-]+\n/);
+        expect(md).toMatch(/\ndescription: .+\n/);
+        // The R=LLM register survives — no adapter humanizes the cell.
+        expect(md).toContain('¬green ⇒ ¬tag');
+      }
+      // The optimized rule body survives byte-verbatim on some surface.
+      const ruleCarrier = report.written.find((p) => {
+        try {
+          return readFileSync(p, 'utf8').includes(RULE_BODY);
+        } catch {
+          return false;
+        }
+      });
+      expect(
+        ruleCarrier,
+        `${adapter.id}: optimized rule body not carried byte-verbatim`,
+      ).toBeDefined();
+      // Agent bodies at destination are per-target projections of the vector.
+      const agentCarrier = report.written.find((p) => {
+        try {
+          return readFileSync(p, 'utf8').includes(
+            'persona ≜ migration-reviewer',
+          );
+        } catch {
+          return false;
+        }
+      });
+      if (agentCarrier) carriersOfAgentBody.push(adapter.id);
+    }
+    // The projection reaches the agent-bearing targets (claude pinned).
+    expect(carriersOfAgentBody).toContain('claude');
   },
 );

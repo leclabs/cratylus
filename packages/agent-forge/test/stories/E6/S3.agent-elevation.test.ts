@@ -2,22 +2,19 @@
  * E6.S3 — agent elevation: step-1 persona form → full 24-organ vector, which
  * REPLACES the config-IR agent (two-step agent law, Operator ruling).
  *
- * Documented truth: exemplify+elicit elevates a step-1 agent (raw NL held
- * verbatim on the `persona` organ, E1.S8) to a typed organ-selection vector
- * (anatomy `Agent`): tsc-compiling, all 24 organ keys present, every value a
- * `Fragment` of the correct organ literal or `null`, every non-null value
- * carrying a provenance trace to input evidence; on accept the vector is the
- * agent's single source of truth (a lingering config-IR twin = FAIL) and the
- * step-1 persona content is fully recoverable (REC ≽).
+ * GRADUATED: the elevation frame ships in `src/core/exemplify/` (`elevateAgent`).
+ * The SPEC below is the LLM exemplify+elicit pass's output over the step-1
+ * text (the test plays the operating agent); the frame enforces the
+ * mechanical laws: 24-key completeness, never-invent (every concrete value
+ * carries a provenance trace — a quote is verified against the source),
+ * replacement no-loss (REC ≽: the step-1 NL recoverable from the vector),
+ * and single-source replacement (the step-1 file is removed on accept).
  *
- * Fate split:
- * - the elevation TARGET contract (24-organ vector, arities, axes) is
- *   runtime-introspectable in src/anatomy today: GREEN;
- * - the elevation act and the replacement semantics need the pipeline:
- *   TRACKED via the concrete entrypoint probe.
+ * The elevation TARGET contract (24 organs, arities, axes) stays GREEN via
+ * the runtime-introspection companion below.
  */
 
-import { existsSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect } from 'vitest';
 import {
@@ -26,6 +23,15 @@ import {
   type Organ,
   personaToDescription,
 } from '../../../src/anatomy/index.js';
+import {
+  type ElevationSpec,
+  ExemplifyRefusal,
+  ORGAN_FIELD,
+  type OrganPlan,
+  canonicalText,
+  elevateAgent,
+  renderAgentVector,
+} from '../../../src/core/index.js';
 import { makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
@@ -94,6 +100,63 @@ const STEP1_PERSONA =
   'A meticulous reviewer agent: reads every migration, flags destructive ' +
   'DDL, prefers small reversible steps, and always explains its reasoning.';
 
+/** Every organ deliberately harness-inherited unless the spec overrides. */
+const inheritAll = (): Record<Organ, OrganPlan> =>
+  Object.fromEntries(
+    ORGAN_NAMES.map((o) => [o, { kind: 'inherit' } satisfies OrganPlan]),
+  ) as Record<Organ, OrganPlan>;
+
+/** The LLM exemplify+elicit pass's output: evidence-traced organ selections.
+ *  Quotes are verbatim spans of STEP1_PERSONA (the frame verifies). */
+const SPEC: ElevationSpec = {
+  name: 'reviewer',
+  organs: {
+    ...inheritAll(),
+    persona: {
+      kind: 'value',
+      fragments: [{ slug: 'migration-reviewer', definiens: STEP1_PERSONA }],
+      evidence: { type: 'quote', note: STEP1_PERSONA },
+    },
+    role: {
+      kind: 'value',
+      fragments: [
+        {
+          slug: 'review',
+          definiens: 'review changes end-to-end before they land',
+        },
+      ],
+      evidence: { type: 'quote', note: 'reviewer agent' },
+    },
+    transparency: {
+      kind: 'value',
+      fragments: [
+        {
+          slug: 'reasoning-trace',
+          definiens: 'expose the full step-by-step derivation',
+        },
+      ],
+      evidence: { type: 'quote', note: 'always explains its reasoning' },
+    },
+    heuristics: {
+      kind: 'value',
+      fragments: [
+        {
+          slug: 'small-reversible-steps',
+          definiens: 'prefer small reversible steps',
+        },
+        {
+          slug: 'flag-destructive-ddl',
+          definiens: 'flag destructive DDL on sight',
+        },
+      ],
+      evidence: {
+        type: 'quote',
+        note: 'flags destructive DDL, prefers small reversible steps',
+      },
+    },
+  },
+};
+
 let cwd: string;
 beforeEach(() => {
   cwd = makeTmpDir();
@@ -103,32 +166,96 @@ afterEach(() => {
   rmSync(cwd, { recursive: true, force: true });
 });
 
-story.tracked(
+story(
   'E6.S3',
   'exemplify+elicit elevates the step-1 persona to a compiling 24-organ vector with a provenance trace per non-null organ',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
-    // Documented output, once the pipeline lands: a TS module exporting an
-    // anatomy `Agent` — all 24 keys, each a Fragment of the right organ
-    // literal or null, plus a sidecar provenance map (quoted span or an
-    // explicit inference tag per non-null organ; an untraced value = FAIL).
+    elevateAgent({
+      sourcePath: join(cwd, 'step1-agent.md'),
+      outDir: cwd,
+      spec: SPEC,
+    });
     const vectorModule = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorModule)).toBe(true);
+    const src = readFileSync(vectorModule, 'utf8');
+    // Typed against the anatomy contract (compiles by construction).
+    expect(src).toContain(
+      "import type { Agent } from '@leclabs/agent-forge/anatomy'",
+    );
+    expect(src).toContain('export const reviewer: Agent = {');
+    // All 24 organ fields present — a value fragment or the explicit null.
+    for (const organ of THE_24_ORGANS) {
+      expect(src, `organ field for '${organ}' missing`).toMatch(
+        new RegExp(`\\b${ORGAN_FIELD[organ]}: `),
+      );
+    }
+    // A provenance trace per non-null organ — exactly the selected set.
+    const provenance = JSON.parse(
+      readFileSync(join(cwd, 'agents', 'reviewer.provenance.json'), 'utf8'),
+    ) as Record<string, { type: string; note: string }>;
+    expect(Object.keys(provenance).sort()).toEqual([
+      'heuristics',
+      'persona',
+      'role',
+      'transparency',
+    ]);
+    for (const trace of Object.values(provenance)) {
+      expect(['quote', 'inference']).toContain(trace.type);
+      expect(trace.note.length).toBeGreaterThan(0);
+    }
+    // An organ value with no trace to input evidence = FAIL (never-invent).
+    expect(() =>
+      renderAgentVector(
+        {
+          name: 'reviewer',
+          organs: {
+            ...inheritAll(),
+            formality: {
+              kind: 'value',
+              fragments: [{ slug: 'formal', definiens: 'the formal register' }],
+              evidence: { type: 'quote', note: 'formal in tone' },
+            },
+          },
+        },
+        { sourceText: STEP1_PERSONA },
+      ),
+    ).toThrow(ExemplifyRefusal);
   },
 );
 
-story.tracked(
+story(
   'E6.S3',
   'replacement semantics: on accept the vector replaces the config-IR agent — no lingering twin, step-1 content recoverable (REC ≽)',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
-    // Documented: post-elevation repo state holds exactly ONE source form
-    // per agent. The step-1 config-IR form must be gone…
+    elevateAgent({
+      sourcePath: join(cwd, 'step1-agent.md'),
+      outDir: cwd,
+      spec: SPEC,
+    });
+    // Post-elevation repo state holds exactly ONE source form per agent:
+    // the step-1 config-IR form is gone…
     expect(existsSync(join(cwd, 'step1-agent.md'))).toBe(false);
-    // …and the vector present, additive/no-loss (the persona NL recoverable
-    // from the vector, checked by the exemplify accept gate).
-    expect(existsSync(join(cwd, 'agents', 'reviewer.ts'))).toBe(true);
+    // …and the vector present, additive/no-loss: the persona NL recoverable
+    // from the vector (REC ≽, checked by the exemplify accept gate).
+    const vectorModule = join(cwd, 'agents', 'reviewer.ts');
+    expect(existsSync(vectorModule)).toBe(true);
+    expect(canonicalText(readFileSync(vectorModule, 'utf8'))).toContain(
+      canonicalText(STEP1_PERSONA),
+    );
+    // A spec that would LOSE the step-1 content refuses — and the source
+    // survives (replacement never precedes recoverability).
+    writeFileSync(join(cwd, 'step1b.md'), STEP1_PERSONA, 'utf8');
+    expect(() =>
+      elevateAgent({
+        sourcePath: join(cwd, 'step1b.md'),
+        outDir: cwd,
+        spec: { name: 'reviewer2', organs: inheritAll() },
+      }),
+    ).toThrow(/REC/);
+    expect(existsSync(join(cwd, 'step1b.md'))).toBe(true);
   },
 );

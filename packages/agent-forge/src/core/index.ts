@@ -4,3 +4,4 @@ export * from './ir/validator.js';
 export * from './engine/index.js';
 export * from './serialize/index.js';
 export * from './adapter/types.js';
+export * from './exemplify/index.js';

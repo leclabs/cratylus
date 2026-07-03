@@ -5,3 +5,4 @@ export * from './drift.js';
 export * from './io.js';
 export * from './compile.js';
 export * from './migrate.js';
+export * from './vector-projection.js';

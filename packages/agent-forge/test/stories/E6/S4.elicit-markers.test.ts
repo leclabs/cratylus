@@ -1,22 +1,26 @@
 /**
  * E6.S4 — ambiguous organ value ⇒ `ELICIT:` marker, never an invented answer.
  *
- * Documented truth: for an agent description silent on `autonomy`,
- * `satisficing`, and `memory`, the emitted vector carries machine-greppable
- * `ELICIT:` markers at exactly those organs (null-with-marker or sidecar
- * list) with ZERO enum values invented for them; a companion elicitation
- * script exists per marker (≥2 candidate values + the one bisecting question
- * per /elicit's information-gain law); a pipeline run emitting a concrete
- * value for a silent organ FAILS the story.
- *
- * TRACKED: no exemplify/optimize entrypoint ships in this package (probe
- * enumerates the search). The fixture is deliberately silent on the three
- * organs so the assertions bite verbatim on graduation day.
+ * GRADUATED: the elevation frame ships in `src/core/exemplify/`. The fixture
+ * is silent on `autonomy`, `satisficing`, and `memory`; the SPEC (the LLM
+ * pass's output) marks exactly those organs as elicitations — ≥ 2 candidates
+ * + the one bisecting question (/elicit's information-gain law) — and the
+ * frame renders machine-greppable `ELICIT:` markers plus the sidecar script,
+ * with ZERO enum values at the silent organs. The negative leg shows the
+ * never-invent law biting: a concrete value whose evidence does not trace to
+ * the source (an invented answer) refuses.
  */
 
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect } from 'vitest';
+import { ORGAN_NAMES, type Organ } from '../../../src/anatomy/index.js';
+import {
+  type ElevationSpec,
+  ExemplifyRefusal,
+  type OrganPlan,
+  elevateAgent,
+} from '../../../src/core/index.js';
 import { makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
@@ -28,6 +32,66 @@ reports findings as fenced review blocks.`;
 
 const SILENT_ORGANS = ['autonomy', 'satisficing', 'memory'] as const;
 
+const inheritAll = (): Record<Organ, OrganPlan> =>
+  Object.fromEntries(
+    ORGAN_NAMES.map((o) => [o, { kind: 'inherit' } satisfies OrganPlan]),
+  ) as Record<Organ, OrganPlan>;
+
+/** The stated organs, evidence-quoted; the silent three as elicitations. */
+const SPEC: ElevationSpec = {
+  name: 'reviewer',
+  organs: {
+    ...inheritAll(),
+    persona: {
+      // Carries the raw NL verbatim — replacement no-loss (REC ≽).
+      kind: 'value',
+      fragments: [{ slug: 'code-reviewer', definiens: SILENT_DESCRIPTION }],
+      evidence: { type: 'quote', note: SILENT_DESCRIPTION },
+    },
+    formality: {
+      kind: 'value',
+      fragments: [{ slug: 'formal', definiens: 'the formal register' }],
+      evidence: { type: 'quote', note: 'Formal in tone' },
+    },
+    transparency: {
+      kind: 'value',
+      fragments: [
+        {
+          slug: 'reasoning-trace',
+          definiens: 'expose the step-by-step derivation',
+        },
+      ],
+      evidence: { type: 'quote', note: 'explains its reasoning step by step' },
+    },
+    'output-format': {
+      kind: 'value',
+      fragments: [
+        {
+          slug: 'fenced-review',
+          definiens: 'findings emitted as fenced review blocks',
+        },
+      ],
+      evidence: { type: 'quote', note: 'reports findings as fenced review' },
+    },
+    autonomy: {
+      kind: 'elicit',
+      candidates: ['human-on-the-loop', 'human-in-the-loop'],
+      question:
+        'may the agent act on standing intent without pre-approval of each step?',
+    },
+    satisficing: {
+      kind: 'elicit',
+      candidates: ['optimize', 'satisfice'],
+      question: 'pick the highest-value option, or the first sufficient one?',
+    },
+    memory: {
+      kind: 'elicit',
+      candidates: ['long-term-memory', 'session-only'],
+      question: 'should what it learns persist across sessions?',
+    },
+  },
+};
+
 let cwd: string;
 beforeEach(() => {
   cwd = makeTmpDir();
@@ -37,13 +101,17 @@ afterEach(() => {
   rmSync(cwd, { recursive: true, force: true });
 });
 
-story.tracked(
+story(
   'E6.S4',
   'the emitted vector carries greppable ELICIT: markers at exactly the silent organs, each with a bisecting elicitation script',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
-    // Documented, once the pipeline lands:
+    elevateAgent({
+      sourcePath: join(cwd, 'agent-description.md'),
+      outDir: cwd,
+      spec: SPEC,
+    });
     const vectorFile = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorFile)).toBe(true);
     const src = readFileSync(vectorFile, 'utf8');
@@ -71,20 +139,50 @@ story.tracked(
   },
 );
 
-story.tracked(
+story(
   'E6.S4',
   'negative: a pipeline run that invents a concrete enum value for a silent organ fails',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
-    // Documented: silence becomes a question, never a guess — the vector
-    // holds NO concrete enum value at any silent organ.
+    // Silence becomes a question, never a guess: a concrete value at a
+    // silent organ cannot trace to the source — the frame refuses it (an
+    // unfounded quote is an invented value) and leaves the source intact.
+    const invented: ElevationSpec = {
+      name: 'reviewer',
+      organs: {
+        ...SPEC.organs,
+        autonomy: {
+          kind: 'value',
+          fragments: [
+            {
+              slug: 'human-on-the-loop',
+              definiens: 'acts autonomously on the operator’s behalf',
+            },
+          ],
+          evidence: { type: 'quote', note: 'acts autonomously' },
+        },
+      },
+    };
+    expect(() =>
+      elevateAgent({
+        sourcePath: join(cwd, 'agent-description.md'),
+        outDir: cwd,
+        spec: invented,
+      }),
+    ).toThrow(ExemplifyRefusal);
+    expect(existsSync(join(cwd, 'agent-description.md'))).toBe(true);
+    // The accepted vector holds NO concrete enum value at any silent organ:
+    // the only admissible forms are null-with-marker or the sidecar list.
+    elevateAgent({
+      sourcePath: join(cwd, 'agent-description.md'),
+      outDir: cwd,
+      spec: SPEC,
+    });
     const vectorFile = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorFile)).toBe(true);
     const src = readFileSync(vectorFile, 'utf8');
     for (const organ of SILENT_ORGANS) {
-      // A concrete value would appear as `organ: { organ: '<organ>', slug: …`;
-      // the only admissible forms are null-with-marker or the sidecar list.
       expect(src).not.toMatch(
         new RegExp(`organ:\\s*'${organ}'[\\s\\S]{0,80}slug:`),
       );

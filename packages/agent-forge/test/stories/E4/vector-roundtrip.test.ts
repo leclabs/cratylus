@@ -2,20 +2,50 @@
  * E4.S8 — post-optimization round-trip: the 24-organ vector is the source,
  * projected per-target (E6.S3's pinned projection, replacement semantics).
  *
- * The vector pipeline does not exist in agent-forge yet, so the story is
- * tracked via a dynamic capability probe: the engine must expose a
- * vector-projection entry point before any of the deeper assertions
- * (single-source replacement, reimport reconciliation, relay discipline)
- * become expressible. The day the pipeline lands this fails loudly and the
- * full assertion set must be written in its place.
+ * GRADUATED: the engine exposes `projectVector` (core surface,
+ * `src/core/engine/vector-projection.ts`) — the pinned organ-vector →
+ * config-IR projection E6.S3's replacement semantics compile against. The
+ * capability probe stays (any candidate spelling satisfies it), and the
+ * projection is exercised: a vector with a persona organ projects to a
+ * config-IR agent whose body/description derive from the organ fragments.
  */
 
 import { describe, expect } from 'vitest';
 
+import type { Agent as OrganVector } from '../../../src/anatomy/index.js';
+import { projectVector } from '../../../src/core/index.js';
 import { story } from '../helpers.js';
 
+/** All 24 organ fields explicitly harness-inherited (`null`). */
+const NULL_ORGANS: Omit<OrganVector, 'name'> = {
+  autonomy: null,
+  persona: null,
+  role: null,
+  formality: null,
+  audienceAdaptation: null,
+  transparency: null,
+  provenance: null,
+  objective: null,
+  guardrails: null,
+  engineeringPrinciples: null,
+  heuristics: null,
+  capabilities: null,
+  learning: null,
+  situationAwareness: null,
+  actions: null,
+  modalities: null,
+  model: null,
+  memory: null,
+  trigger: null,
+  framing: null,
+  reasoningStrategy: null,
+  satisficing: null,
+  outputFormat: null,
+  selfEvaluation: null,
+};
+
 describe('E4.S8 · organ-vector as the one source', () => {
-  story.tracked(
+  story(
     'E4.S8',
     'engine exposes the pinned organ-vector → per-target projection (E6.S3); absent today',
     async () => {
@@ -23,8 +53,7 @@ describe('E4.S8 · organ-vector as the one source', () => {
         '../../../src/core/index.js'
       );
       // Candidate spellings for the pinned projection entry point; any one
-      // satisfies the probe. None exists today — the vector pipeline is the
-      // E6.S3 deliverable this story compiles against.
+      // satisfies the probe — `projectVector` is the one that shipped.
       const candidates = [
         'projectVector',
         'projectOrganVector',
@@ -36,6 +65,27 @@ describe('E4.S8 · organ-vector as the one source', () => {
         (name) => typeof core[name] === 'function',
       );
       expect(found.length).toBeGreaterThan(0);
+      expect(found).toContain('projectVector');
+      // Exercise the pinned projection: vector → config-IR agent, with the
+      // body a deterministic per-organ projection and the description
+      // derived from the persona organ (the vector is the ONE source).
+      const vector: OrganVector = {
+        ...NULL_ORGANS,
+        name: 'probe',
+        persona: {
+          organ: 'persona',
+          slug: 'probe-persona',
+          definiens: 'a probe persona',
+        },
+      };
+      const projected = projectVector(vector);
+      expect(projected.name).toBe('probe');
+      expect(projected.description).toBe('a probe persona');
+      expect(projected.body).toContain(
+        'persona ≜ probe-persona — a probe persona',
+      );
+      // Inherited (null) organs project to NOTHING — no phantom sections.
+      expect(projected.body).not.toContain('autonomy');
     },
   );
 });

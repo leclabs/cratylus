@@ -15,14 +15,23 @@
  * - the byte-verbatim non-humanization law on today's rules path: GREEN —
  *   every adapter must carry an R=LLM-register body through unmodified;
  * - the rule-bearing target-set equation on today's compile: GREEN;
- * - the exemplify leg itself (accept gate, optimized bodies, scoping
- *   untouched): TRACKED via the pipeline entrypoint probe.
+ * - the exemplify leg (accept gate, optimized bodies, scoping untouched):
+ *   GRADUATED — the pipeline ships in `src/core/exemplify/`; the run below
+ *   gates raw rule prose, optimizes bodies (`optimizeRules` preserves every
+ *   scoping field), and compiles the optimized text to every rule-bearing
+ *   dialect byte-verbatim.
  */
 
-import { readFileSync, rmSync } from 'node:fs';
+import { readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect } from 'vitest';
-import type { IR } from '../../../src/core/index.js';
+import {
+  ExemplifyRefusal,
+  type IR,
+  type Rule,
+  optimize,
+  optimizeRules,
+} from '../../../src/core/index.js';
 import { ALL_ADAPTERS, makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
@@ -103,18 +112,86 @@ story(
   },
 );
 
-story.tracked(
+story(
   'E6.S8',
   'rules ride the exemplify pipeline: accept-gated (conform: register = LLM) optimized bodies reach every rule-bearing dialect with scoping metadata untouched',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
-    // Documented, once the pipeline lands: raw human rule prose (the E6.S1
-    // fixture routed to Rule resources) is optimized, passes accept
-    // (register = ρ = LLM), and the OPTIMIZED text compiles byte-verbatim
-    // into each dialect surface (AGENTS.md, CLAUDE.md-projection, GEMINI.md,
-    // aider conventions + read: wiring, .continue/rules/); activation/
-    // placement metadata (E9.S2) is untouched — optimization rewrites
-    // bodies, never scoping.
+    // Raw human rule prose (the E6.S1 fixture class, routed to Rule).
+    const RAW =
+      'Hi there! Please always follow Conventional Commits, and please ' +
+      'keep the whole suite green before you push. Thanks so much!';
+    const OPTIMIZED =
+      'commit ≜ conventional-commit type · gate: suite green before push';
+    writeFileSync(join(cwd, 'rules.md'), RAW, 'utf8');
+    const concepts = [
+      {
+        gloss: 'commits follow Conventional Commits; suite green gates push',
+        anchor: 'commit',
+        home: 'rules/conventions.md',
+        rank: 0,
+      },
+    ];
+    // Accept-gated: the raw human-register body REFUSES (conform)…
+    expect(() =>
+      optimize({
+        source: join(cwd, 'rules.md'),
+        concepts,
+        artifacts: [{ path: 'rules/conventions.md', body: RAW }],
+        outDir: join(cwd, 'opt'),
+      }),
+    ).toThrow(ExemplifyRefusal);
+    // …the R=LLM body passes.
+    optimize({
+      source: join(cwd, 'rules.md'),
+      concepts,
+      artifacts: [{ path: 'rules/conventions.md', body: OPTIMIZED }],
+      outDir: join(cwd, 'opt'),
+    });
+    // Optimization rewrites BODIES, never scoping: activation/placement
+    // metadata (E9.S2 class: concat/order/targeting) survives untouched.
+    const scopedRule: Rule = {
+      id: 'conventions',
+      body: RAW,
+      order: 7,
+      concat: true,
+    };
+    const optimizedRules = optimizeRules([scopedRule], {
+      conventions: OPTIMIZED,
+    });
+    expect(optimizedRules).toEqual([{ ...scopedRule, body: OPTIMIZED }]);
+    const optimizedRule = optimizedRules[0] as Rule;
+    // Every rule-bearing dialect receives the optimized body VERBATIM:
+    // {targets receiving optimized rules} = {targets with rules ≥ partial}.
+    const declared = ALL_ADAPTERS.filter(
+      (a) => a.capabilities.resources.rules !== 'none',
+    ).map((a) => a.id);
+    const emitted: string[] = [];
+    for (const adapter of ALL_ADAPTERS) {
+      const dir = join(cwd, `opt-${adapter.id}`);
+      const report = await adapter.write(
+        {
+          manifest: { agentForge: 1, scope: 'project', targets: [adapter.id] },
+          rules: [optimizedRule],
+        },
+        'project',
+        dir,
+        {},
+      );
+      if (report.written.length > 0) emitted.push(adapter.id);
+      const carrier = report.written.find((p) => {
+        try {
+          return readFileSync(p, 'utf8').includes(OPTIMIZED);
+        } catch {
+          return false;
+        }
+      });
+      expect(
+        carrier,
+        `${adapter.id}: optimized rule body not carried byte-verbatim; written: ${report.written.join(', ')}`,
+      ).toBeDefined();
+    }
+    expect(emitted.sort()).toEqual(declared.sort());
   },
 );

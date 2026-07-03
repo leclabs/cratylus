@@ -1,21 +1,24 @@
 /**
  * E6.S2 — prose procedure → self-sufficient set-builder skill cell.
  *
- * Documented truth: a raw how-to (unstructured prose) becomes a SKILL.md
- * with frontmatter `name` + `description` (spec-valid), a verb H1, and a
- * fenced set-builder formal block — declarations-above / laws-below, every
- * symbol declared in-block (mechanically greppable symbol table); the formal
- * block alone suffices for a blind reader to re-derive the procedure's steps
- * (spot-checked against a pinned answer key).
- *
- * TRACKED: no exemplify/optimize entrypoint ships in this package. Both
- * bodies fail on the probe; the prose fixture, the structural assertions,
- * and the pinned answer key are in place for graduation day.
+ * GRADUATED: the pipeline ships in `src/core/exemplify/`. The cell SPEC
+ * below is the LLM formalize pass's output over the prose fixture (the test
+ * plays the operating agent); the frame renders the SKILL.md
+ * deterministically and enforces the mechanical cell laws (kebab name,
+ * declarations-above / laws-below, no undeclared symbol). The assertions are
+ * the pinned structural contract plus the answer-key round-trip: the formal
+ * block ALONE re-derives the procedure steps, in order.
  */
 
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect } from 'vitest';
+import {
+  type ConceptRecord,
+  type SkillCellSpec,
+  optimize,
+  renderSkillCell,
+} from '../../../src/core/index.js';
 import { makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
@@ -43,22 +46,57 @@ const ANSWER_KEY_STEPS = [
 
 const SKILL_PATH = 'skills/release/SKILL.md';
 
+/** The LLM formalize pass's output over the prose (the cell spec). */
+const CELL: SkillCellSpec = {
+  name: 'release',
+  description:
+    'release the package — clean worktree through published tag, gate ordered',
+  verb: 'release',
+  declarations: [
+    { symbol: 'clean', definiens: 'worktree holds zero uncommitted changes' },
+    { symbol: 'bump', definiens: 'package.json version := semver-next' },
+    { symbol: 'changelog', definiens: 'regenerated from merged pull requests' },
+    { symbol: 'build', definiens: 'artifacts compiled' },
+    { symbol: 'green', definiens: 'the whole test suite passes' },
+    { symbol: 'tag', definiens: 'git tag v<version> at the release commit' },
+    { symbol: 'push', definiens: 'the tag pushed to origin' },
+    { symbol: 'publish', definiens: 'workflow triggered by the pushed tag' },
+  ],
+  laws: [
+    'release ≜ clean → bump → changelog → build → green → tag → push → publish',
+    '¬green ⇒ ¬tag',
+  ],
+};
+
+/** The routing plan: each step-concept homed at the cell. */
+const CONCEPTS: ConceptRecord[] = ANSWER_KEY_STEPS.map((step, i) => ({
+  gloss: `release step ${i + 1}: ${step}`,
+  anchor: step,
+  home: SKILL_PATH,
+  rank: i,
+}));
+
 let cwd: string;
 beforeEach(() => {
   cwd = makeTmpDir();
   writeFileSync(join(cwd, 'release-howto.md'), PROSE_PROCEDURE, 'utf8');
+  optimize({
+    source: join(cwd, 'release-howto.md'),
+    concepts: CONCEPTS,
+    artifacts: [{ path: SKILL_PATH, body: renderSkillCell(CELL) }],
+    outDir: cwd,
+  });
 });
 afterEach(() => {
   rmSync(cwd, { recursive: true, force: true });
 });
 
-story.tracked(
+story(
   'E6.S2',
   'the emitted SKILL.md is a well-formed cell: name+description frontmatter, verb H1, fenced declarations-above/laws-below formal block with no undeclared symbol',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
-    // Documented output shape, once the pipeline lands:
     const skillFile = join(cwd, SKILL_PATH);
     expect(existsSync(skillFile)).toBe(true);
     const md = readFileSync(skillFile, 'utf8');
@@ -88,7 +126,7 @@ story.tracked(
   },
 );
 
-story.tracked(
+story(
   'E6.S2',
   'round-trip: the formal block alone re-derives the procedure steps of the pinned answer key',
   async () => {
