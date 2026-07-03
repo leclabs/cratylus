@@ -1,0 +1,219 @@
+/**
+ * E4.S3 — capability declarations equal documented reality.
+ *
+ * GROUND_TRUTH transcribes RETURN §1 (capability matrix) + §2 (per-harness
+ * sheets): per adapter × resource type, whether the harness has a documented
+ * config surface — 'present' — or none — 'absent' — with the citation ref.
+ *
+ * The story's honesty property is two implications:
+ *   (1) declared 'none'   ⇒ ground-truth absent
+ *   (2) ground-truth present ⇒ declared 'full' | 'partial'
+ *
+ * STALE_CELLS is the set of cells violating the property today (§3 stale
+ * nones); they are asserted fixed in the tracked story. The green story
+ * asserts the property on every other cell, so it bites both ways: fixing a
+ * stale cell breaks the tracked test (graduation forced) and regressing an
+ * honest cell breaks the green test.
+ *
+ * Judgment calls (annotated, presence = *configurable surface* an adapter
+ * could target):
+ * - aider hooks: §1 marks ◐ for lint/test shell-outs [AI4] — not an
+ *   event-driven hook surface; transcribed absent.
+ * - cline agents: ◐ native subagents are a tool, not file-config [CL7];
+ *   transcribed absent.
+ * - continue agents: the assistant IS config.yaml; no subagent surface
+ *   [CT1][CT6]; transcribed absent.
+ */
+
+import { describe, expect } from 'vitest';
+
+import type { ResourceType, Support } from '../../../src/core/index.js';
+import { ALL_ADAPTERS, adapterById, story } from '../helpers.js';
+
+type Truth = { present: boolean; ref: string };
+type Row = Record<ResourceType, Truth>;
+
+const t = (ref: string): Truth => ({ present: true, ref });
+const f = (ref: string): Truth => ({ present: false, ref });
+
+const GROUND_TRUTH: Record<string, Row> = {
+  aider: {
+    rules: t('[AI2] conventions via read:'),
+    skills: f('[AI1]'),
+    commands: f('[AI3] built-ins only'),
+    agents: f('[AI3]'),
+    hooks: f('[AI4] lint/test shell-outs are not lifecycle hooks'),
+    mcp: f('[AI5] FR open'),
+    permissions: f('[AI3]'),
+    env: f('[AI1] AIDER_* is config input, not an env surface'),
+  },
+  claude: {
+    rules: t('[CC1]'),
+    skills: t('[CC3]'),
+    commands: t('[CC3][CC5] skills double as /name + legacy .claude/commands'),
+    agents: t('[CC2]'),
+    hooks: t('[CC6]'),
+    mcp: t('[CC7]'),
+    permissions: t('[CC8] permissions.{allow,deny,ask}'),
+    env: t('[CC8] env settings key'),
+  },
+  cline: {
+    rules: t('[CL1]'),
+    skills: t('[CL5] .cline/skills + .claude/skills'),
+    commands: t('[CL4] workflows .clinerules/workflows/*.md'),
+    agents: f('[CL7] tool, not file-config'),
+    hooks: t('[CL2]'),
+    mcp: t('[CL6]'),
+    permissions: f(
+      '[CL2] hook decisions/UI toggles, no permission config file',
+    ),
+    env: f('[CL1] no env surface documented'),
+  },
+  codex: {
+    rules: t('[CX3]'),
+    skills: t('[CX2]'),
+    commands: t('[CX5] prompts (deprecated → skills)'),
+    agents: t('[CX1]'),
+    hooks: t('[CX4]'),
+    mcp: t('[CX7]'),
+    permissions: t('[CX6] approval_policy/sandbox_mode'),
+    env: t('[CX6] shell_environment_policy'),
+  },
+  continue: {
+    rules: t('[CT2]'),
+    skills: f('[CT3] absence'),
+    commands: t('[CT3] prompts invokable: true → /name'),
+    agents: f('[CT1][CT6] assistant = whole config.yaml; no subagents'),
+    hooks: f('[CT1] confirmed absent'),
+    mcp: t('[CT4]'),
+    permissions: t('[CT6] cn CLI --allow/--ask/--exclude → permissions.yaml'),
+    env: f('[CT1] no env surface documented'),
+  },
+  copilot: {
+    rules: t('[CP3]'),
+    skills: t('[CP2]'),
+    commands: t('[CP5] .github/prompts/*.prompt.md → /name'),
+    agents: t('[CP1] .github/agents/*.agent.md is GA'),
+    hooks: t('[CP4]'),
+    mcp: t('[CP6]'),
+    permissions: f('[CP4] hook allow/deny decisions, no permissions config'),
+    env: t('[CP13] copilot-setup-steps.yml env'),
+  },
+  crush: {
+    rules: t('[CR2]'),
+    skills: t('[CR1]'),
+    commands: f('[CR1] user-invocable skills; no command files'),
+    agents: f('[CR4] open FR #1807'),
+    hooks: t('[CR3] hooks.PreToolUse in crush.json'),
+    mcp: t('[CR1]'),
+    permissions: t('[CR1] permissions.allowed_tools'),
+    env: f('[CR1] $VAR expansion only; no env surface'),
+  },
+  cursor: {
+    rules: t('[CU1]'),
+    skills: t('[CU4]'),
+    commands: t('[CU6] .cursor/commands/*.md'),
+    agents: t('[CU3] .cursor/agents/*.md (2.4)'),
+    hooks: t('[CU2]'),
+    mcp: t('[CU5]'),
+    permissions: t('[CU9] .cursor/cli.json permissions'),
+    env: f('[CU5] per-server MCP env only; no global env surface'),
+  },
+  gemini: {
+    rules: t('[GM1]'),
+    skills: t('[GM3]'),
+    commands: t('[GM5] .gemini/commands/*.toml'),
+    agents: t('[GM2]'),
+    hooks: t('[GM4]'),
+    mcp: t('[GM1]'),
+    permissions: t('[GM1] tools.core/excludeTools controls'),
+    env: t('[GM1] .env loading'),
+  },
+  opencode: {
+    rules: t('[OC3]'),
+    skills: t('[OC6]'),
+    commands: t('[OC4] .opencode/commands/*.md'),
+    agents: t('[OC2] .opencode/agents/*.md + agent config key'),
+    hooks: t('[OC5] plugin events'),
+    mcp: t('[OC7]'),
+    permissions: t('[OC8] permission DSL'),
+    env: f('[OC1] {env:VAR} substitution only; no env surface'),
+  },
+};
+
+/** Cells violating the honesty property today (stale `none`s, §3). */
+const STALE_CELLS: readonly (readonly [string, ResourceType, string])[] = [
+  ['cline', 'skills', '[CL5]'],
+  ['cline', 'commands', '[CL4]'],
+  ['opencode', 'agents', '[OC2]'],
+  ['opencode', 'commands', '[OC4]'],
+  ['cursor', 'commands', '[CU6]'],
+  ['copilot', 'commands', '[CP5]'],
+  ['continue', 'commands', '[CT3]'],
+  ['continue', 'permissions', '[CT6]'],
+  ['gemini', 'commands', '[GM5]'],
+  ['crush', 'hooks', '[CR3]'],
+  ['crush', 'permissions', '[CR1]'],
+] as const;
+
+const RESOURCE_TYPES = Object.keys(GROUND_TRUTH.claude) as ResourceType[];
+
+function violations(
+  cells: Iterable<readonly [string, ResourceType]>,
+): string[] {
+  const out: string[] = [];
+  for (const [adapterId, type] of cells) {
+    const adapter = adapterById.get(adapterId);
+    if (!adapter) throw new Error(`unknown adapter '${adapterId}'`);
+    const declared: Support = adapter.capabilities.resources[type];
+    const truth = GROUND_TRUTH[adapterId]?.[type];
+    if (!truth) throw new Error(`no ground truth for ${adapterId}/${type}`);
+    // The two story implications (declared none ⇒ absent; present ⇒ declared
+    // full|partial) are equivalent over Support: both fail exactly when a
+    // documented-present surface is declared 'none'. (Over-claiming — 'full'
+    // on an absent surface, e.g. opencode env — is NOT policed by this story;
+    // fidelity of non-none declarations is E4.S1's job.)
+    if (declared === 'none' && truth.present) {
+      out.push(
+        `${adapterId}/${type}: declared none but documented present ${truth.ref}`,
+      );
+    }
+  }
+  return out;
+}
+
+describe('E4.S3 · capability declarations vs documented reality', () => {
+  story('E4.S3', 'ground truth covers every adapter × resource cell', () => {
+    expect(Object.keys(GROUND_TRUTH).sort()).toEqual(
+      ALL_ADAPTERS.map((a) => a.id).sort(),
+    );
+    for (const row of Object.values(GROUND_TRUTH)) {
+      expect(Object.keys(row).sort()).toEqual([...RESOURCE_TYPES].sort());
+    }
+  });
+
+  story(
+    'E4.S3',
+    'honest cells: declarations match documented reality (bites on regression)',
+    () => {
+      const stale = new Set(STALE_CELLS.map(([a, r]) => `${a}/${r}`));
+      const cells: (readonly [string, ResourceType])[] = [];
+      for (const adapterId of Object.keys(GROUND_TRUTH)) {
+        for (const type of RESOURCE_TYPES) {
+          if (!stale.has(`${adapterId}/${type}`)) cells.push([adapterId, type]);
+        }
+      }
+      expect(violations(cells)).toEqual([]);
+    },
+  );
+
+  story.tracked(
+    'E4.S3',
+    'stale cells: opencode agents+commands, cline skills+workflows, cursor/copilot/continue/gemini commands, continue permissions, crush hooks+permissions declared honestly',
+    () => {
+      expect(violations(STALE_CELLS.map(([a, r]) => [a, r] as const))).toEqual(
+        [],
+      );
+    },
+  );
+});
