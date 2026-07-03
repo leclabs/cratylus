@@ -256,6 +256,7 @@ async function writeImpl(
 
 export const standardsAdapter: Adapter = {
   id: 'standards',
+  status: { kind: 'current' },
   capabilities,
   async detect(scope: Scope, cwd: string): Promise<boolean> {
     if (scope !== 'project') return false;

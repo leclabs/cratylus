@@ -32,6 +32,7 @@ function adapter(
 ): Adapter {
   return {
     id,
+    status: { kind: 'current' },
     capabilities: caps,
     detect: async () => true,
     read: async () => ({}),

@@ -49,6 +49,7 @@ const capabilities: AdapterCapabilities = {
 
 export const opencodeAdapter: Adapter = {
   id: 'opencode',
+  status: { kind: 'current' },
   capabilities,
   eventMap: canonicalToOpencode,
   pluginEmitters: {

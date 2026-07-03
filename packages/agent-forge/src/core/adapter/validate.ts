@@ -39,9 +39,30 @@ export function validateAdapter(adapter: Adapter): string[] {
  * adapter fails `validateAdapter`. Called by the CLI when the roster is
  * assembled, so an invalid declaration is a lint error at adapter load — not
  * a runtime surprise.
+ *
+ * Also checks the roster's id/alias space is injective (E10.S5): two
+ * adapters silently claiming the same id or alias would make one shadow the
+ * other in every by-id lookup, undetectably.
  */
 export function assertAdaptersValid(adapters: Adapter[]): void {
   const errors = adapters.flatMap((a) => validateAdapter(a));
+
+  const ownerOf = new Map<string, string>(); // key -> owning adapter id
+  for (const a of adapters) {
+    const keys = [a.id, a.status.canonicalId, ...(a.status.aliases ?? [])];
+    for (const key of keys) {
+      if (key === undefined) continue;
+      const owner = ownerOf.get(key);
+      if (owner === undefined) {
+        ownerOf.set(key, a.id);
+      } else if (owner !== a.id) {
+        errors.push(
+          `adapter '${a.id}': id/alias '${key}' collides with adapter '${owner}'`,
+        );
+      }
+    }
+  }
+
   if (errors.length > 0) {
     throw new Error(`adapter-load lint failed:\n  ${errors.join('\n  ')}`);
   }

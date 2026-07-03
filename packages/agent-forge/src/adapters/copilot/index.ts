@@ -48,6 +48,7 @@ const capabilities: AdapterCapabilities = {
 
 export const copilotAdapter: Adapter = {
   id: 'copilot',
+  status: { kind: 'current' },
   capabilities,
   eventMap: canonicalToCopilot,
   async detect(scope: Scope, cwd: string): Promise<boolean> {

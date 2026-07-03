@@ -6,3 +6,4 @@ export * from './serialize/index.js';
 export * from './adapter/types.js';
 export * from './exemplify/index.js';
 export * from './adapter/validate.js';
+export * from './adapter/resolve.js';

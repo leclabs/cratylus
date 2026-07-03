@@ -314,6 +314,7 @@ async function writeImpl(
 
 export const crushAdapter: Adapter = {
   id: 'crush',
+  status: { kind: 'current' },
   capabilities,
   eventMap,
   async detect(scope: Scope, cwd: string): Promise<boolean> {

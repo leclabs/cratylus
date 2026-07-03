@@ -164,7 +164,16 @@ cli
     ] as const;
     const sym = (s: string) =>
       s === 'full' ? '✓' : s === 'partial' ? '🟡' : s === 'plugin' ? '🔌' : '—';
-    const head = `ID${' '.repeat(8)}${RESOURCE_TYPES.map((t) => t.slice(0, 4).padEnd(5)).join('')} HOOKS  SCOPES`;
+    // Roster fact, not folklore (E10.S5): a renamed adapter displays its
+    // field-canonical id with the legacy id(s) noted as aliases, never the
+    // reverse — naming follows the RETURN-sheet field state.
+    const statusCell = (a: (typeof adapters)[number]) =>
+      a.status.kind === 'sunset'
+        ? `sunset→${a.status.successor}`
+        : a.status.kind === 'renamed'
+          ? `renamed${a.status.aliases?.length ? ` (aka ${a.status.aliases.join(',')})` : ''}`
+          : 'current';
+    const head = `ID${' '.repeat(8)}${RESOURCE_TYPES.map((t) => t.slice(0, 4).padEnd(5)).join('')} HOOKS  SCOPES  STATUS`;
     console.log(head);
     for (const a of adapters) {
       const cells = RESOURCE_TYPES.map((t) =>
@@ -172,8 +181,9 @@ cli
       ).join('');
       const hookCount = a.capabilities.hooks.supported.length;
       const scopes = a.capabilities.scopes.join(',');
+      const displayId = a.status.canonicalId ?? a.id;
       console.log(
-        `${a.id.padEnd(10)}${cells} ${String(hookCount).padStart(2)}/28  ${scopes}`,
+        `${displayId.padEnd(10)}${cells} ${String(hookCount).padStart(2)}/28  ${scopes.padEnd(20)}${statusCell(a)}`,
       );
     }
     process.exit(0);

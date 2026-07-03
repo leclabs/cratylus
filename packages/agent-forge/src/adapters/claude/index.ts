@@ -53,6 +53,7 @@ const capabilities: AdapterCapabilities = {
 
 export const claudeAdapter: Adapter = {
   id: 'claude',
+  status: { kind: 'current' },
   capabilities,
   eventMap: canonicalToClaude,
   async detect(scope: Scope, cwd: string): Promise<boolean> {

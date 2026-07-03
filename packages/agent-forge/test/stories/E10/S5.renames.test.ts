@@ -11,7 +11,7 @@ import { ALL_ADAPTERS, adapterById, story } from '../helpers.js';
 import { importAdapter } from './probe.js';
 
 describe('E10.S5 · roster consolidation facts', () => {
-  story.tracked(
+  story(
     'E10.S5',
     'canonical id antigravity exists; gemini resolves to the identical adapter [GM7]',
     () => {
@@ -20,7 +20,7 @@ describe('E10.S5 · roster consolidation facts', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S5',
     'canonical id devin exists; windsurf resolves to the identical adapter [WS7]',
     () => {
@@ -29,7 +29,7 @@ describe('E10.S5 · roster consolidation facts', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S5',
     'per-adapter status metadata exists on the roster [GM7][WS7][RO5]',
     () => {
@@ -40,7 +40,7 @@ describe('E10.S5 · roster consolidation facts', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S5',
     'roo carries sunset status pointing at cline [RO5]',
     async () => {

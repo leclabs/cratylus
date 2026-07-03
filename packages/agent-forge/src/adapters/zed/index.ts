@@ -318,6 +318,7 @@ async function writeImpl(
 
 export const zedAdapter: Adapter = {
   id: 'zed',
+  status: { kind: 'current' },
   capabilities,
   async detect(scope: Scope, cwd: string): Promise<boolean> {
     const p = paths(scope, cwd);

@@ -56,6 +56,7 @@ const capabilities: AdapterCapabilities = {
 
 export const cursorAdapter: Adapter = {
   id: 'cursor',
+  status: { kind: 'current' },
   capabilities,
   eventMap: canonicalToCursor,
   async detect(scope: Scope, cwd: string): Promise<boolean> {

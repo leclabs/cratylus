@@ -66,6 +66,7 @@ const capabilities: AdapterCapabilities = {
 
 export const clineAdapter: Adapter = {
   id: 'cline',
+  status: { kind: 'current' },
   capabilities,
   eventMap: canonicalToCline,
   async detect(scope: Scope, cwd: string): Promise<boolean> {

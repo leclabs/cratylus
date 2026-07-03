@@ -41,6 +41,7 @@ const capabilities: AdapterCapabilities = {
 
 export const codexAdapter: Adapter = {
   id: 'codex',
+  status: { kind: 'current' },
   capabilities,
   eventMap: canonicalToCodex,
   async detect(scope: Scope, cwd: string): Promise<boolean> {

@@ -12,6 +12,7 @@ import {
   type Scope,
   defaultIRRoot,
   detectDrift,
+  findAdapter,
   findIRRoot,
   formatErrors,
   validateManifest,
@@ -229,7 +230,7 @@ export async function runDoctor(
     console.log('');
     console.log(pc.bold('Target detection:'));
     for (const targetId of manifest.targets) {
-      const adapter = adapters.find((a) => a.id === targetId);
+      const adapter = findAdapter(adapters, targetId);
       if (!adapter) {
         console.log(
           `  ${fmt({ status: 'fail', label: `${targetId}: adapter not installed` })}`,

@@ -599,6 +599,7 @@ async function writeImpl(
 
 export const piAdapter: Adapter = {
   id: 'pi',
+  status: { kind: 'current' },
   capabilities,
   eventMap: EVENT_MAP,
   pluginEmitters: {

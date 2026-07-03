@@ -46,6 +46,16 @@ const capabilities: AdapterCapabilities = {
 
 export const geminiAdapter: Adapter = {
   id: 'gemini',
+  /**
+   * Gemini CLI → Antigravity CLI (consumer serving ceased 2026-06-18,
+   * surfaces carried over) [GM7]. `.id` stays `gemini` for source/test
+   * compat; `antigravity` is the field-canonical id (E10.S5).
+   */
+  status: {
+    kind: 'renamed',
+    canonicalId: 'antigravity',
+    aliases: ['antigravity'],
+  },
   capabilities,
   eventMap: canonicalToGemini,
   async detect(scope: Scope, cwd: string): Promise<boolean> {

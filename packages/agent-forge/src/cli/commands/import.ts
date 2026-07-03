@@ -13,6 +13,7 @@ import {
   type Rule,
   type Scope,
   defaultIRRoot,
+  findAdapter,
   findIRRoot,
   readIR,
   writeIR,
@@ -44,7 +45,7 @@ export async function runImport(
     return runOwnFormatImport(opts, scope, cwd);
   }
 
-  const adapter = adapters.find((a) => a.id === opts.client);
+  const adapter = findAdapter(adapters, opts.client);
   if (!adapter) {
     console.error(pc.red(`agent-forge: unknown client '${opts.client}'`));
     console.error(

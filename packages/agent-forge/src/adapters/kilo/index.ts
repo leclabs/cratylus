@@ -58,6 +58,7 @@ const capabilities: AdapterCapabilities = {
 
 export const kiloAdapter: Adapter = {
   id: 'kilo',
+  status: { kind: 'current' },
   capabilities,
   eventMap: canonicalToKilo,
   pluginEmitters: {

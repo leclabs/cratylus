@@ -29,6 +29,31 @@ export interface AdapterCapabilities {
   scopes: Scope[];
 }
 
+/**
+ * Roster fact, not folklore (E10.S5): does this id track the field's
+ * current target, a renamed successor, or a sunset harness? Ground truth:
+ * harness-landscape-research.RETURN.md §0.
+ */
+export type AdapterStatusKind = 'current' | 'renamed' | 'sunset';
+
+export interface AdapterStatus {
+  kind: AdapterStatusKind;
+  /**
+   * Set only when this adapter's `.id` is itself the deprecated name (e.g.
+   * the `gemini` adapter's id stays `gemini` for source/test compat, but the
+   * field's canonical id is `antigravity`) — the id resolution/display
+   * should prefer. Omit when `.id` is already canonical.
+   */
+  canonicalId?: string;
+  /**
+   * Extra ids that resolve to this identical adapter object — legacy names
+   * (`gemini`, `windsurf`) and/or `canonicalId` itself. Order-independent.
+   */
+  aliases?: string[];
+  /** For `sunset`: the id whose adapter now serves this harness's users. */
+  successor?: string;
+}
+
 export interface WriteOpts {
   dryRun?: boolean;
   strict?: boolean;
@@ -66,6 +91,8 @@ export type PluginEmitter = (
  */
 export interface Adapter {
   id: string;
+  /** Roster fact: current/renamed/sunset + alias resolution (E10.S5). */
+  status: AdapterStatus;
   capabilities: AdapterCapabilities;
   /**
    * Canonical → native event mapping. Adapters without hook support may omit.

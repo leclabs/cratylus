@@ -180,6 +180,7 @@ async function writeImpl(
 
 export const aiderAdapter: Adapter = {
   id: 'aider',
+  status: { kind: 'current' },
   capabilities,
   async detect(scope: Scope, cwd: string): Promise<boolean> {
     const { conventionsPath, confPath } = paths(scope, cwd);

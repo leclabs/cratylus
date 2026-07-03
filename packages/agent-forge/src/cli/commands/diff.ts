@@ -4,6 +4,7 @@ import {
   type Scope,
   defaultIRRoot,
   detectDrift,
+  findAdapter,
 } from '../../core/index.js';
 import { runCompile } from './compile.js';
 
@@ -33,7 +34,7 @@ export async function runDiff(
   for (const id of opts.clients && opts.clients.length > 0
     ? opts.clients
     : []) {
-    const adapter = adapters.find((a) => a.id === id);
+    const adapter = findAdapter(adapters, id);
     if (!adapter) continue;
     const drift = await detectDrift(stateDir, adapter.id, cwd);
     if (drift.drifted.length === 0) {

@@ -1,5 +1,9 @@
 import pc from 'picocolors';
-import type { Adapter, CanonicalEvent } from '../../core/index.js';
+import {
+  type Adapter,
+  type CanonicalEvent,
+  findAdapter,
+} from '../../core/index.js';
 
 const ALL_EVENTS: CanonicalEvent[] = [
   'session.start',
@@ -45,7 +49,7 @@ export async function runEventsList(
     for (const e of ALL_EVENTS) console.log(`  ${e}`);
     return 0;
   }
-  const adapter = adapters.find((a) => a.id === opts.client);
+  const adapter = findAdapter(adapters, opts.client);
   if (!adapter) {
     console.error(pc.red(`unknown client '${opts.client}'`));
     return 1;

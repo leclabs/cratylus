@@ -47,6 +47,7 @@ const capabilities: AdapterCapabilities = {
 
 export const ampAdapter: Adapter = {
   id: 'amp',
+  status: { kind: 'current' },
   capabilities,
   eventMap: canonicalToAmp,
   pluginEmitters: {

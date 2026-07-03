@@ -4,6 +4,7 @@ import {
   type ResourceType,
   type Scope,
   type Support,
+  findAdapter,
   formatErrors,
   readIR,
   validateIR,
@@ -41,7 +42,7 @@ export async function runLint(
   // Capability check vs declared targets
   const issues: string[] = [];
   for (const targetId of ir.manifest.targets) {
-    const adapter = adapters.find((a) => a.id === targetId);
+    const adapter = findAdapter(adapters, targetId);
     if (!adapter) {
       issues.push(`target '${targetId}': adapter not installed`);
       continue;

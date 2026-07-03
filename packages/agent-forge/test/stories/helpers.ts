@@ -91,7 +91,17 @@ export const ALL_ADAPTERS: Adapter[] = [
   zedAdapter,
 ].sort((a, b) => a.id.localeCompare(b.id));
 
-export const adapterById = new Map(ALL_ADAPTERS.map((a) => [a.id, a]));
+/**
+ * Id → adapter, alias-inclusive: a renamed harness resolves through EITHER
+ * its legacy id or its field-canonical id to the identical object (E10.S5;
+ * `Adapter.status.{canonicalId,aliases}`).
+ */
+export const adapterById = new Map<string, Adapter>();
+for (const a of ALL_ADAPTERS) {
+  adapterById.set(a.id, a);
+  if (a.status.canonicalId) adapterById.set(a.status.canonicalId, a);
+  for (const alias of a.status.aliases ?? []) adapterById.set(alias, a);
+}
 
 /** Fresh tmp dir; caller removes (rmSync recursive) in afterEach. */
 export function makeTmpDir(prefix = 'af-stories-'): string {

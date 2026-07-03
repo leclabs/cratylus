@@ -538,13 +538,21 @@ async function writeImpl(
 
 /**
  * Construct the adapter. `windsurf` is accepted as a construction-time id for
- * pre-rename callers; roster alias/status metadata is out of scope (E10.S5).
+ * pre-rename callers. `devin` is the field-canonical id (Windsurf → Devin
+ * Desktop, 2026-06-02 [WS7]); `windsurf` resolves to the identical adapter
+ * object via the exported singleton's `status.aliases` (E10.S5) — this
+ * factory's own `windsurf`-id branch exists only for a caller that wants a
+ * standalone instance under the legacy id.
  */
 export function createDevinAdapter(
   id: 'devin' | 'windsurf' = 'devin',
 ): Adapter {
   return {
     id,
+    status:
+      id === 'devin'
+        ? { kind: 'renamed', aliases: ['windsurf'] }
+        : { kind: 'renamed', canonicalId: 'devin' },
     capabilities,
     eventMap: canonicalToDevin,
     async detect(scope: Scope, cwd: string): Promise<boolean> {

@@ -340,6 +340,7 @@ async function writeImpl(
 
 export const continueAdapter: Adapter = {
   id: 'continue',
+  status: { kind: 'current' },
   capabilities,
   async detect(scope: Scope, cwd: string): Promise<boolean> {
     return existsSync(paths(scope, cwd).continueDir);

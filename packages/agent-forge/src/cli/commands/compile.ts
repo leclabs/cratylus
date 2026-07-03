@@ -6,6 +6,7 @@ import {
   type Scope,
   compile,
   defaultIRRoot,
+  findAdapter,
   findIRRoot,
   readIR,
 } from '../../core/index.js';
@@ -86,7 +87,7 @@ export async function runCompile(
   }
   const targets: Adapter[] = [];
   for (const id of targetIds) {
-    const a = adapters.find((x) => x.id === id);
+    const a = findAdapter(adapters, id);
     if (!a) {
       console.error(pc.red(`agent-forge: unknown adapter '${id}'`));
       return 1;
