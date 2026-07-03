@@ -14,11 +14,27 @@ DAG: `wave(0) {harness-landscape-research · standards-compat-research}` →
 `wave(1) {capability-user-stories ⊳ both}` → `wave(2) {story-coverage-tests ⊳ stories}` →
 `wave(3) {author-implementation-shards ⊳ tests}` → `waves(4–7) {the 23 implementation shards below}`.
 
-**Active (wave 6):** `claude-surfaces` (⊳claude-mcp ✓ · schema ✓ · engine ✓) · `roster-metadata`
-(⊳devin ✓) — released after wave-5 close, both deps satisfied.
+**ALL WAVES COMPLETE (2026-07-03).** Waves 4–7 all landed & judged. Final HEAD `dec62af`.
+**32 commits local-unpushed since origin `53023a1` — held at the push gate** (irreversible-outward;
+awaiting Operator sign-off).
 
-**Tracked-failing: 28/15** (229 at suite birth; **wave 5 COMPLETE 2026-07-03** — all 15 shards
-landed & judged, 179→28). Roster **11→16** (5 new adapters: amp·kilo·pi·devin·standards).
+**Tracked-failing: 2/2** (229 at suite birth → 2). The terminal condition was "→ 0 (only the
+pre-marked FUTURE exclusions E5.S6·E9.S5·E10.S10 remain)". **2 rows survive as proven by-design
+boundaries, surfaced for a scope decision** (convergence-graduation declined to force them — honesty
+over green-sweep):
+
+1. **E1.S2 (cline foreign hook)** — a hand-authored `.clinerules/hooks/<Event>` script with no
+   `# agent-forge:<id>` marker has no structured fields; synthesizing a Hook from arbitrary foreign
+   shell would be fabrication, which the initiative forbids. Correctly reported as unlifted-surface.
+2. **E4.S1 (codex/agents `tools`/`color`; claude/rules concat path)** — lossy-by-design: no Codex
+   agent-TOML field for tools/color (warned+dropped, never fabricated); a concat rule's CLAUDE.md
+   references `@AGENTS.md` per Anthropic's own shim [S7] rather than duplicating the body. This is
+   the library's explicit "lossy translation is first-class" thesis.
+   **Decision pending:** reclassify both as documented won't-do exclusions (joining the FUTURE set →
+   clean 0) OR keep them tracked as honest permanent boundaries. Reclassifying changes the agreed
+   exclusion scope → Operator's call.
+
+Roster **11→16** (5 new adapters: amp·kilo·pi·devin·standards).
 
 **Wave-5 recovery note:** all 15 shards' first-attempt executors died on the account Fable-5 limit
 mid-flight. Recovery (model switched to Opus): 3 had raced through (continue·claude-mcp·crush), devin
@@ -26,7 +42,8 @@ was hand-replayed from its orphaned dangling commit, the remaining 11 were RE-DI
 model (sonnet) serially atop live HEAD — one at a time because the shared ledger (`TRACKED-FAILING.md`)
 is the serialization point. A pre-existing orphaned anatomy fixture (`memory.md`, red on any clean
 checkout) was fixed first → green base `53023a1`. Every shard judged by net-row-math + a clean-worktree
-4×0 gate. Landing chain `dc418f0`…`ca44e0b`.
+4×0 gate. Landing chain `dc418f0`…`ca44e0b`. Waves 6–7 (`claude-surfaces` @645261a · `roster-metadata`
+@401ad73 · `convergence-graduation` @2ad35c8) landed serial on the same fresh-model pipeline.
 
 **Completed:** `harness-landscape-research` · `standards-compat-research` · `pi-harness-research` ·
 `capability-user-stories` (81 stories, `stories/`) · `story-coverage-tests` (suite @0e23b36) ·
