@@ -1,9 +1,9 @@
 /**
  * E10.S1 · Amp adapter — new-adapter contract probes.
  * Ground truth: harness-landscape-research.RETURN.md §2/Amp sheet.
- * Refs [AM1][AM2][AM3][AM4]. Every probe imports the (absent) adapter
- * dynamically; the rejection is the tracked gap, and the follow-up assertions
- * state the documented contract so they execute post-graduation.
+ * Refs [AM1][AM2][AM3][AM4]. Graduated: the adapter ships at
+ * src/adapters/amp/ — the dynamic import resolves and every contract
+ * assertion executes green.
  */
 
 import { existsSync, readFileSync, readdirSync, rmSync } from 'node:fs';
@@ -29,15 +29,11 @@ describe('E10.S1 · amp', () => {
     rmSync(cwd, { recursive: true, force: true });
   });
 
-  story.tracked(
-    'E10.S1',
-    'amp is on the adapter roster (new-adapter contract)',
-    () => {
-      expect(adapterById.has('amp')).toBe(true);
-    },
-  );
+  story('E10.S1', 'amp is on the adapter roster (new-adapter contract)', () => {
+    expect(adapterById.has('amp')).toBe(true);
+  });
 
-  story.tracked(
+  story(
     'E10.S1',
     'settings: flat amp.* keys in .amp/settings.json with MCP under amp.mcpServers [AM1]',
     async () => {
@@ -64,7 +60,7 @@ describe('E10.S1 · amp', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S1',
     'skills emit to the natively-read .agents/skills/ — no bespoke dir [AM4]',
     async () => {
@@ -83,7 +79,7 @@ describe('E10.S1 · amp', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S1',
     'agents+commands+hooks ship via the plugin emitter; legacy amp.hooks never emitted [AM2][AM3]',
     async () => {
@@ -110,7 +106,7 @@ describe('E10.S1 · amp', () => {
     },
   );
 
-  story.tracked(
+  story(
     'E10.S1',
     'rules: AGENTS.md emitted and lifted on read (cwd→$HOME chain, @-imports) [AM1]',
     async () => {

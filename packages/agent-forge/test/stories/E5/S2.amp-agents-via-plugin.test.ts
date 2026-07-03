@@ -8,11 +8,8 @@
  * prompt mapped; IR fields Amp's API cannot carry are warned per the E4.S2
  * discipline.
  *
- * Today no amp adapter ships (src/adapters has no amp/ entry) — the dynamic
- * import is the tracked gap: both bodies fail at module resolution, which is
- * the intended first failure (the adapter is absent). The remaining
- * assertions pin the documented artifact so they bite the day the adapter
- * lands.
+ * Graduated: the amp adapter ships at src/adapters/amp/ — both bodies
+ * execute green against the shipped `pluginEmitters.agents`.
  */
 
 import { readFileSync, rmSync } from 'node:fs';
@@ -55,7 +52,7 @@ afterEach(() => {
   rmSync(cwd, { recursive: true, force: true });
 });
 
-story.tracked(
+story(
   'E5.S2',
   'compile emits .amp/plugins/agent-forge-agents.ts default-exporting amp.createAgent calls per IR agent [AM1][AM9]',
   async () => {
@@ -78,7 +75,7 @@ story.tracked(
   },
 );
 
-story.tracked(
+story(
   'E5.S2',
   'IR agent fields the amp.createAgent API cannot carry are warned per E4.S2 discipline',
   async () => {

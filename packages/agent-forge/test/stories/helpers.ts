@@ -22,6 +22,7 @@ import { join } from 'node:path';
 import { it } from 'vitest';
 
 import { aiderAdapter } from '../../src/adapters/aider/index.js';
+import { ampAdapter } from '../../src/adapters/amp/index.js';
 import { claudeAdapter } from '../../src/adapters/claude/index.js';
 import { clineAdapter } from '../../src/adapters/cline/index.js';
 import { codexAdapter } from '../../src/adapters/codex/index.js';
@@ -70,6 +71,7 @@ story.tracked = (id, name, fn, timeout) => {
 /** All shipped adapters, id-sorted. */
 export const ALL_ADAPTERS: Adapter[] = [
   aiderAdapter,
+  ampAdapter,
   claudeAdapter,
   clineAdapter,
   codexAdapter,

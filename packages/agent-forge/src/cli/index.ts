@@ -1,5 +1,6 @@
 import { cac } from 'cac';
 import { aiderAdapter } from '../adapters/aider/index.js';
+import { ampAdapter } from '../adapters/amp/index.js';
 import { claudeAdapter } from '../adapters/claude/index.js';
 import { clineAdapter } from '../adapters/cline/index.js';
 import { codexAdapter } from '../adapters/codex/index.js';
@@ -50,6 +51,7 @@ const adapters: Adapter[] = [
   continueAdapter,
   zedAdapter,
   devinAdapter,
+  ampAdapter,
 ];
 
 // Adapter-load lint: an invalid declaration (e.g. a resource declared

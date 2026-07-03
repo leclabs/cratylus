@@ -42,6 +42,18 @@ const t = (ref: string): Truth => ({ present: true, ref });
 const f = (ref: string): Truth => ({ present: false, ref });
 
 const GROUND_TRUTH: Record<string, Row> = {
+  amp: {
+    rules: t('[AM1]'),
+    skills: t('[AM4]'),
+    commands: t('[AM2] amp.registerCommand() plugin API'),
+    agents: t('[AM1][AM9] amp.createAgent() plugin API'),
+    hooks: t('[AM2][AM7] amp.on() event registration'),
+    mcp: t('[AM1] amp.mcpServers'),
+    permissions: f(
+      '[AM8] per-tool-call plugin decisions, no permission config file',
+    ),
+    env: f('[AM1] no documented global env surface'),
+  },
   aider: {
     rules: t('[AI2] conventions via read:'),
     skills: f('[AI1]'),
