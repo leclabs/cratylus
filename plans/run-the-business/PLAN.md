@@ -16,6 +16,9 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 - `stance-guardrail-jurisdiction` — the judge must see the dispatch channel (tool_use payloads ·
   PreToolUse binding · dispatch-echo rubric class · observable fails-open). Lane: Mav + Nico.
+- `human-docs-projection` — human end-user + contributor docs as a ρ=human projection. **Feature
+  request, intent-first**: captured as an external hypothetical; phase 1 elicits the Operator's true
+  intent, phase 2 specs (candidate solution NOT baked as spec). Lane: Nico.
 
 ## See also
 
