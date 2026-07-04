@@ -20,16 +20,17 @@ via consolidation (drain → stores); completed residue is inheritable, live-oth
 
 ```
 wave 0 (DONE):    memiso-0 session-liveness-registry           [foundation ✓]
-wave 1 (ready):   memiso-1 episodic read+drain liveness-aware  [dep memiso-0 ✓]
-                  memiso-2 orient+dream liveness-gated bind     [dep memiso-0 ✓]
-wave 2 (pending): memiso-3 integration gate                    [dep memiso-1, memiso-2]
+wave 1: memiso-1 episodic read+drain liveness-aware  DONE ✓
+        memiso-2 orient+dream liveness-gated bind     [ready · dep memiso-0 ✓]
+wave 2 (pending): memiso-3 integration gate                    [dep memiso-1 ✓, memiso-2]
 ```
 
-**Wave 0 landed (memiso-0).** The liveness registry is live in `agent-memory`
-(`src/session.ts` + `session` CLI verbs): `<home>/sessions/<id>.json`, one file per session,
-`live ⇔ registered ∧ ¬released ∧ (now−lastBeat) < 2h`, concurrency-safe by construction. Wave 1
-consumes it: memiso-1 makes `read`/`drain` exclude live-OTHER records; memiso-2 gates orient's plan-bind
-and dream on liveness.
+**Waves 0–1 code landed.** The liveness registry (`src/session.ts` + `session` verbs) and the
+liveness-aware `read --for-session` / `drain --completed-only|--for-session` (memiso-1) are live in
+`agent-memory`: a reader excludes live-OTHER records (own + completed + sessionless pass), a drain retains
+live-OTHER while consolidating all completed sessions together. Remaining: memiso-2 lifts this to the
+skill layer — orient's plan-bind gated on a plan `owner` stamp, dream's drain routed through the
+completed-only path.
 
 DoD: concurrent sessions don't collide (orient reports-not-binds a live-owned plan; read excludes
 live-other records) WHILE cross-`/clear` inherit + cross-session consolidation are preserved; the
@@ -40,12 +41,11 @@ nico-outside; injected. Commit/push GATED to the Operator.
 
 **Ready (frontier · ⚡):**
 
-- `memiso-1-episodic-scoping` — `read`/`drain` become liveness-aware (exclude live-OTHER records). Lane: Nico.
 - `memiso-2-orient-liveness-gate` — orient's plan-bind + dream gated on session liveness. Lane: Nico.
 
 **Pending:**
 
-- `memiso-3-integration-gate` — closes the sub-DAG (dep memiso-1, memiso-2). Lane: Nico.
+- `memiso-3-integration-gate` — closes the sub-DAG (dep memiso-1 ✓, memiso-2). Lane: Nico.
 - `resignify-nico-provenance-charter` — raise nico's Provenance organ VALUE from prose to the R=LLM
   charter form, UPSTREAM in the composer source. Enhancement, not a defect (prose already passes
   warm≡cold); oracle-gated dogfood. Lane: Nico.

@@ -41,3 +41,33 @@ drain --home [--completed-only | --for-session <S>] :
 Diff + a two-session transcript: A live + B live → A's read excludes B's records; B releases (completed)
 → A's read now includes B's; `drain --completed-only` folds A? No (A live) + B (completed) and leaves A;
 consolidation shows B's durable events merged into the target store.
+
+## Outcome (2026-07-04 · done)
+
+**Source touched:**
+
+- `src/session.ts` — added `liveSessions(home, now?, stale?) → Set<id>` (reuses `isLive`/`sessionStatus`;
+  the predicate is defined once).
+- `src/store.ts` — `drain` gains an optional `retain: (rec) ⇒ boolean` predicate. Absent it, the WHOLE
+  log drains via the byte-exact copy path (back-compat). With it, only the non-retained subset is archived
+  (serialize + parse-count verify) and the retained records are rewritten into the live log.
+- `src/cli.ts` — `read --for-session <S>` applies the ORTHOGONAL liveness filter (keep iff `session
+undefined ∨ == S ∨ ¬live`); `drain --completed-only | --for-session <S>` builds `retain = live-OTHER`
+  (`session ≠ undefined ∧ ≠ S ∧ live`); `--stale <ms>` overrides the window on both. USAGE updated.
+- `test/liveness-read-drain.test.ts` (NEW, 9 tests) — every falsifier.
+
+**Falsifiers cleared** (unit + bundled `dist/episodic.mjs` two-session drive):
+
+- read `--for-session A` with B live → excludes B's records (bleed closed); keeps own + sessionless. ✓
+- B released (completed) → A's read now includes B's (cross-`/clear` inherit preserved). ✓
+- `drain --completed-only` with A,B live → drains only sessionless; **retains both live**. ✓
+- `drain --for-session A` → drains own A + sessionless, **retains live-other B**. ✓
+- two completed sessions drain together in one pass (cross-session consolidation intact). ✓
+- default (no flag) read/drain unchanged (back-compat). ✓
+
+**Scope note for memiso-2/3:** `fold` (dream's pass-1 routing) is NOT liveness-filtered here — the task
+scoped exactly `read` + `drain`. The dream skill (memiso-2) composes its working set via `read
+--for-session S`, so live-other records never reach the classifier; whether `fold` itself needs the filter
+is a memiso-2/3 composition decision, surfaced here rather than silently pre-decided.
+
+Gates: pkg `test`(152) · `typecheck` · `biome` green; `build` → `dist/episodic.mjs` 42.8 KB.

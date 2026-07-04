@@ -256,6 +256,25 @@ export function listSessions(
     .map((id) => sessionStatus(home, id, now, stale));
 }
 
+/**
+ * The set of session ids currently LIVE — the orthogonal filter memiso-1's
+ * liveness-aware `read`/`drain` consume. A record whose `session` is in this set
+ * AND ≠ the reader's own is a live sibling's residue (excluded); everything else
+ * (own · completed · sessionless) is inheritable. Reuses {@link sessionStatus} —
+ * the predicate is defined once, in {@link isLive}.
+ */
+export function liveSessions(
+  home: string,
+  now: number = Date.now(),
+  stale: number = STALE_MS,
+): Set<string> {
+  return new Set(
+    listSessions(home, now, stale)
+      .filter((s) => s.state === 'live')
+      .map((s) => s.id),
+  );
+}
+
 /** Remove a session entry entirely (registry housekeeping; not a lifecycle verb). */
 export function forgetSession(home: string, id: string): { removed: boolean } {
   const file = entryPath(home, id);

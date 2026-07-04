@@ -166,20 +166,51 @@ export class EpisodicStore {
    * log is empty. Backup-and-verify precede the clear, so a crash mid-drain never
    * loses data.
    */
-  drain(opts?: { keep?: number; path?: string }): DrainResult {
+  drain(opts?: {
+    keep?: number;
+    path?: string;
+    retain?: (rec: EpisodicRecord) => boolean;
+  }): DrainResult {
     const keep = opts?.keep ?? 5;
     const file = this.rawFile(opts?.path);
-    const count = this.read(opts?.path).length;
-    if (count === 0)
+    const all = this.read(opts?.path);
+    if (all.length === 0)
       return { archived: null, records: 0, kept: [], pruned: [] };
     const bakDir = join(dirname(file), '.bak');
     const base = basename(file, '.jsonl');
+
+    // The drained/retained partition. Absent a predicate, the WHOLE log drains
+    // (retain=∅) via the byte-exact copy path — back-compat is preserved. With a
+    // predicate (memiso-1 liveness-aware drain), only the drained subset is
+    // archived and the retained records are rewritten back into the live log.
+    const retain = opts?.retain;
+    const drained = retain === undefined ? all : all.filter((r) => !retain(r));
+    if (drained.length === 0)
+      return { archived: null, records: 0, kept: [], pruned: [] };
+
     mkdirSync(bakDir, { recursive: true });
     const archive = join(bakDir, `${base}.${this.mintUlid()}.jsonl`);
-    copyFileSync(file, archive);
-    if (statSync(archive).size !== statSync(file).size)
-      throw new Error(`drain: backup verification failed for ${archive}`);
-    writeFileSync(file, '', 'utf8'); // clear: the raw is safely archived + verified
+    if (retain === undefined) {
+      // Fast path: archive the whole file by copy, verify by size, clear.
+      copyFileSync(file, archive);
+      if (statSync(archive).size !== statSync(file).size)
+        throw new Error(`drain: backup verification failed for ${archive}`);
+      writeFileSync(file, '', 'utf8'); // clear: raw is safely archived + verified
+    } else {
+      // Selective path: archive the drained records, verify the archive parses
+      // back to the same count, then rewrite the live log with only the retained.
+      const retained = all.filter((r) => retain(r));
+      const archiveBody = drained.map((r) => serializeRecord(r)).join('\n');
+      writeFileSync(archive, `${archiveBody}\n`, 'utf8');
+      if (parseLines(readFileSync(archive, 'utf8')).length !== drained.length)
+        throw new Error(`drain: backup verification failed for ${archive}`);
+      const retainedBody = retained.map((r) => serializeRecord(r)).join('\n');
+      writeFileSync(
+        file,
+        retained.length > 0 ? `${retainedBody}\n` : '',
+        'utf8',
+      );
+    }
     const prefix = `${base}.`;
     const backups = readdirSync(bakDir)
       .filter((n) => n.startsWith(prefix) && n.endsWith('.jsonl'))
@@ -188,7 +219,7 @@ export class EpisodicStore {
     const kept = backups.slice(0, keep);
     const pruned = backups.slice(keep);
     for (const n of pruned) rmSync(join(bakDir, n));
-    return { archived: archive, records: count, kept, pruned };
+    return { archived: archive, records: drained.length, kept, pruned };
   }
 }
 

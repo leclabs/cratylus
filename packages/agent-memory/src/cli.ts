@@ -15,6 +15,7 @@ import type { EpisodicRecord, JsonValue } from './record.js';
 import {
   heartbeat,
   listSessions,
+  liveSessions,
   registerSession,
   releaseSession,
   sessionStatus,
@@ -114,13 +115,14 @@ const USAGE = `episodic — the scoped-memory tool (path-scoped, v2)
 usage:
   episodic encode --home <dir> [--tags <a,b>] [--path <p>] \\
                   (--body <text> | --body-json <json> | --body -)
-  episodic read   --home <dir> [--under <path>] [--scope <tag>] [--path <p>] [--count]
+  episodic read   --home <dir> [--under <path>] [--for-session <S>] [--stale <ms>] \\
+                  [--scope <tag>] [--path <p>] [--count]
   episodic node   <path> [--json] [--config <file>]
   episodic fold   --home <dir> [--path <p>] [--config <file>]
   episodic lock   (acquire | release | status) --home <dir>
   episodic session (register | heartbeat | release | list) --home <dir> [--session <id>]
   episodic session status [<id>] --home <dir> [--json] [--stale <ms>]
-  episodic drain  --home <dir> [--keep N] [--path <p>]
+  episodic drain  --home <dir> [--keep N] [--path <p>] [--completed-only | --for-session <S>]
   episodic audit  --home <dir> [--allow <file>] [--config <file>] [--keys <file>]
   episodic migrate <src.md> <dest.jsonl> [--dry-run] [--overwrite]
 
@@ -144,6 +146,12 @@ bucket.
 
 read --under <node> lists same-host records whose node(cwd) sits under the
 given node; foreign-host and legacy records report as counts on stderr.
+--for-session <S> adds the ORTHOGONAL liveness filter (memiso-1): records of a
+LIVE OTHER session are excluded; own + completed + sessionless records pass —
+the reader resumes its own + inheritable residue, never a live sibling's.
+drain --completed-only (or --for-session <S>, which also drains the caller's own
+live S) RETAINS live-other records while draining every completed session
+together (cross-session consolidation intact); no flag ⇒ the whole log drains.
 
 lock manages <home>/dream.lock (acquire is O_EXCL; a lock older than 2h is
 stale and stolen).
@@ -219,7 +227,8 @@ function runEncode(args: ParsedArgs): CliResult {
  */
 function runRead(args: ParsedArgs): CliResult {
   const path = str(args.flags.path) ?? DEFAULT_EPISODIC_PATH;
-  const store = new EpisodicStore({ home: requireHome(args.flags) });
+  const home = requireHome(args.flags);
+  const store = new EpisodicStore({ home });
   const all = store.read(path);
 
   const scopeFilter = str(args.flags.scope);
@@ -259,6 +268,21 @@ function runRead(args: ParsedArgs): CliResult {
     err = `under ${under}: ${matched.length} matched; foreign-host: ${
       foreignParts.length > 0 ? foreignParts.join(' ') : 'none'
     }; legacy: ${legacy}\n`;
+  }
+
+  // Liveness filter (memiso-1), ORTHOGONAL to `--under`: with `--for-session
+  // <S>`, exclude records authored by a LIVE OTHER session — own, completed, and
+  // sessionless records all pass (the reader inherits its own + completed
+  // residue, never a live sibling's). Absent the flag, behavior is unchanged.
+  const forSession = str(args.flags['for-session']);
+  if (forSession !== undefined) {
+    const live = liveSetFrom(home, args.flags);
+    records = records.filter(
+      (r) =>
+        r.session === undefined ||
+        r.session === forSession ||
+        !live.has(r.session),
+    );
   }
 
   if (args.flags.count === true)
@@ -359,6 +383,14 @@ function staleFrom(flags: ParsedArgs['flags']): number | undefined {
   return n;
 }
 
+/** The live-session set for the liveness filters (memiso-1), honoring `--stale`. */
+function liveSetFrom(home: string, flags: ParsedArgs['flags']): Set<string> {
+  const stale = staleFrom(flags);
+  return stale !== undefined
+    ? liveSessions(home, Date.now(), stale)
+    : liveSessions(home);
+}
+
 /**
  * `session register|heartbeat|release|status <id>|list`: the session-liveness
  * registry (memiso-0). The mutating verbs act on the CURRENT session — its id is
@@ -451,6 +483,13 @@ function runMigrate(args: ParsedArgs): CliResult {
  * log to `<home>/.bak/EPISODIC.<ULID>.jsonl` (verified), then empty it; keep only
  * the newest `--keep N` (default 5) archives, prune the rest — so `.bak/` is
  * bounded, never the unbounded sibling-file creep.
+ *
+ * Liveness-aware (memiso-1): with `--completed-only` (or `--for-session <S>`,
+ * which additionally drains the caller's own live session S), a LIVE OTHER
+ * session's records are RETAINED — never archived, never cleared — so a
+ * concurrent sibling's residue survives the dreamer's drain. Cross-session
+ * consolidation is intact: every COMPLETED session (all not-live) still drains
+ * together. Absent both flags, the whole log drains (unchanged back-compat).
  */
 function runDrain(args: ParsedArgs): CliResult {
   const keepStr = str(args.flags.keep);
@@ -458,8 +497,28 @@ function runDrain(args: ParsedArgs): CliResult {
   if (!Number.isInteger(keep) || keep < 0)
     return { code: 2, out: '', err: '--keep must be a non-negative integer\n' };
   const path = str(args.flags.path);
-  const store = new EpisodicStore({ home: requireHome(args.flags) });
-  const r = store.drain({ keep, ...(path !== undefined ? { path } : {}) });
+  const home = requireHome(args.flags);
+  const store = new EpisodicStore({ home });
+
+  const forSession = str(args.flags['for-session']);
+  const completedOnly = args.flags['completed-only'] === true;
+  // retain(rec) = KEEP it in the live log. Keep a record iff its session is a
+  // LIVE OTHER (live ∧ ≠ S). Sessionless + completed records drain; the caller's
+  // own S drains too (S is excluded from "other"). No flag ⇒ retain nothing.
+  let retain: ((rec: EpisodicRecord) => boolean) | undefined;
+  if (forSession !== undefined || completedOnly) {
+    const live = liveSetFrom(home, args.flags);
+    retain = (rec) =>
+      rec.session !== undefined &&
+      rec.session !== forSession &&
+      live.has(rec.session);
+  }
+
+  const r = store.drain({
+    keep,
+    ...(path !== undefined ? { path } : {}),
+    ...(retain !== undefined ? { retain } : {}),
+  });
   if (r.archived === null)
     return {
       code: 0,
