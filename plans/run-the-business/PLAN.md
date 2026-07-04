@@ -10,37 +10,23 @@ periodically (git is the recovery net).
 initiatives whose larger scaffold has been wound down but whose remaining work is still live. When a
 cluster of RTB tasks grows into a coherent initiative, promote it back out into its own sharded plan.
 
-## ⚡ Highest priority — memory-session-isolation (sub-DAG, do first)
+## ✅ memory-session-isolation (sub-DAG) — COMPLETE (memiso-0..3)
 
-Fixes a live defect: two concurrent nico sessions in one node collide in memory — orient binds a plan a
-live sibling is executing (owner-blind `active/` scan), and `read --under node` bleeds a live sibling's
-forward next-steps in as the reader's own. Isolation axis must be session **liveness**, not node alone.
-Governing principle: raw working residue is session-owned-while-live; cross-session sharing happens ONLY
-via consolidation (drain → stores); completed residue is inheritable, live-other residue is invisible.
-
-```
-wave 0 (DONE):    memiso-0 session-liveness-registry           [foundation ✓]
-wave 1 (DONE): memiso-1 episodic read+drain liveness-aware  ✓
-               memiso-2 orient+dream liveness-gated bind     ✓
-wave 2 (ready): memiso-3 integration gate                    [dep memiso-1 ✓, memiso-2 ✓]
-```
-
-**Waves 0–2 landed.** Registry (`src/session.ts` + `session` verbs) · liveness-aware `read
---for-session` / `drain --completed-only` (memiso-1) · skill-layer lift (memiso-2): wake registers +
-liveness-gates orient on a plan `owner` stamp, encode heartbeats, dream reads/drains the completed-only
-path, handoff releases, the governing principle is in every SOUL genus. Remaining: memiso-3 —
-end-to-end A/B/C scenario proving no-collision + cross-`/clear` resume + cross-session consolidation.
-
-DoD: concurrent sessions don't collide (orient reports-not-binds a live-owned plan; read excludes
-live-other records) WHILE cross-`/clear` inherit + cross-session consolidation are preserved; the
-originally-reported collision no longer reproduces. Provenance: authored cold from `blank` by
-nico-outside; injected. Commit/push GATED to the Operator.
+The concurrent-session collision is fixed end-to-end. Registry (`agent-memory` `src/session.ts` +
+`session` verbs; per-session file, `live ⇔ registered ∧ ¬released ∧ (now−lastBeat) < 2h`,
+concurrency-safe by construction) · liveness-aware `read --for-session` / `drain --completed-only`
+(memiso-1) · skill-layer lift (memiso-2: wake registers + liveness-gates orient on a `plans/<plan>/.owner`
+stamp, encode heartbeats, dream reads/drains completed-only, handoff releases, the governing principle in
+every SOUL genus) · end-to-end integration gate (memiso-3: real-tool A/B/C scenario). The
+originally-reported collision — a fresh wake executing a live session's plan — no longer reproduces;
+cross-`/clear` resume + cross-session consolidation preserved. Record: `completed/memiso-{0,1,2,3}-*.md`.
 
 ## Status mirror
 
-**Ready (frontier · ⚡):**
+**Ready (frontier):** none — the memiso sub-DAG is done. The backlog below is pending prioritization.
 
-- `memiso-3-integration-gate` — end-to-end no-collision scenario; closes the sub-DAG (deps ✓). Lane: Nico.
+**Pending:**
+
 - `resignify-nico-provenance-charter` — raise nico's Provenance organ VALUE from prose to the R=LLM
   charter form, UPSTREAM in the composer source. Enhancement, not a defect (prose already passes
   warm≡cold); oracle-gated dogfood. Lane: Nico.
