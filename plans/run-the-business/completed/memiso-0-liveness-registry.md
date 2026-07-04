@@ -47,3 +47,33 @@ heartbeat` (touch) · `session release` (clean exit) · `session status <id>` / 
 
 Source paths touched + the verb contracts + a transcript proving: register→live, release→completed,
 stale-heartbeat→completed, concurrent-register→both tracked.
+
+## Outcome (2026-07-03 · done)
+
+**Source touched** (edit-SOURCE honored — no `dist`/deployed edits):
+
+- `packages/agent-memory/src/session.ts` (NEW) — the registry: per-session file under `<home>/sessions/<id>.json`,
+  atomic tmp+rename writes, `isLive` predicate, verbs `registerSession · heartbeat · releaseSession ·
+sessionStatus · listSessions` (+ `assertSafeSessionId` path-escape guard, `forgetSession` housekeeping).
+- `packages/agent-memory/src/cli.ts` — `session register|heartbeat|release|status <id>|list` wired; USAGE +
+  help paragraph; imports `session.js` + `defaultDerive`.
+- `packages/agent-memory/test/session.test.ts` (NEW, 22 tests) — every falsifier + CLI wiring.
+
+**Verb contracts.** Mutating verbs (`register`/`heartbeat`/`release`) act on the CURRENT session — id
+DERIVED from `CLAUDE_SESSION_ID` (encode's seam), `--session <id>` override. `status [<id>]` prints a bare
+`live|completed|absent` word (`--json` → `{id,state,lastBeat,released}`); `list` prints one JSON line per
+session. Liveness `live ⇔ registered ∧ ¬released ∧ (now−lastBeat) < STALE` (STALE = `lock.ts` 2h, `--stale
+<ms>` override). Registry home `<home>/sessions/` — sibling of the stores.
+
+**Concurrency-safety by construction:** distinct sessions ⇒ distinct files ⇒ no shared byte to race; each
+write lands atomically (tmp+rename, POSIX). Falsifier "two sessions registering corrupt it" is impossible.
+
+**Additive:** zero change to encode/read/fold/lock/drain/audit/migrate — proven by the full pre-existing
+suite still green (143 tests) + a live encode/read coexistence check.
+
+**Acceptance — all falsifiers cleared** (bundled `dist/episodic.mjs` drive):
+`register→live` ✓ · `release→completed` (dominates a fresh beat) ✓ · `stale/crash→completed` (never-beat +
+`--stale 0`; strict `<` boundary tested at the 2h constant) ✓ · `concurrent-register→both tracked` (id-sorted
+list, one file each, no `.tmp` residue) ✓.
+
+Gates: pkg `test`(143) · `typecheck` · `biome` green; `build` → `dist/episodic.mjs` 40.5 KB.

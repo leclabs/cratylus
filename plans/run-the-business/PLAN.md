@@ -19,11 +19,17 @@ Governing principle: raw working residue is session-owned-while-live; cross-sess
 via consolidation (drain → stores); completed residue is inheritable, live-other residue is invisible.
 
 ```
-wave 0 (ready):   memiso-0 session-liveness-registry           [foundation]
-wave 1 (pending): memiso-1 episodic read+drain liveness-aware  [dep memiso-0]
-                  memiso-2 orient+dream liveness-gated bind     [dep memiso-0]
+wave 0 (DONE):    memiso-0 session-liveness-registry           [foundation ✓]
+wave 1 (ready):   memiso-1 episodic read+drain liveness-aware  [dep memiso-0 ✓]
+                  memiso-2 orient+dream liveness-gated bind     [dep memiso-0 ✓]
 wave 2 (pending): memiso-3 integration gate                    [dep memiso-1, memiso-2]
 ```
+
+**Wave 0 landed (memiso-0).** The liveness registry is live in `agent-memory`
+(`src/session.ts` + `session` CLI verbs): `<home>/sessions/<id>.json`, one file per session,
+`live ⇔ registered ∧ ¬released ∧ (now−lastBeat) < 2h`, concurrency-safe by construction. Wave 1
+consumes it: memiso-1 makes `read`/`drain` exclude live-OTHER records; memiso-2 gates orient's plan-bind
+and dream on liveness.
 
 DoD: concurrent sessions don't collide (orient reports-not-binds a live-owned plan; read excludes
 live-other records) WHILE cross-`/clear` inherit + cross-session consolidation are preserved; the
@@ -34,12 +40,12 @@ nico-outside; injected. Commit/push GATED to the Operator.
 
 **Ready (frontier · ⚡):**
 
-- `memiso-0-session-liveness-registry` — foundational liveness primitive; start here. Lane: Nico.
+- `memiso-1-episodic-scoping` — `read`/`drain` become liveness-aware (exclude live-OTHER records). Lane: Nico.
+- `memiso-2-orient-liveness-gate` — orient's plan-bind + dream gated on session liveness. Lane: Nico.
 
 **Pending:**
 
-- `memiso-1-episodic-scoping` · `memiso-2-orient-liveness-gate` · `memiso-3-integration-gate` — the rest
-  of the memory-session-isolation sub-DAG (deps above). Lane: Nico.
+- `memiso-3-integration-gate` — closes the sub-DAG (dep memiso-1, memiso-2). Lane: Nico.
 - `resignify-nico-provenance-charter` — raise nico's Provenance organ VALUE from prose to the R=LLM
   charter form, UPSTREAM in the composer source. Enhancement, not a defect (prose already passes
   warm≡cold); oracle-gated dogfood. Lane: Nico.

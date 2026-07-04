@@ -12,7 +12,18 @@ import {
   underOrEqual,
 } from './node.js';
 import type { EpisodicRecord, JsonValue } from './record.js';
-import { DEFAULT_EPISODIC_PATH, EpisodicStore } from './store.js';
+import {
+  heartbeat,
+  listSessions,
+  registerSession,
+  releaseSession,
+  sessionStatus,
+} from './session.js';
+import {
+  DEFAULT_EPISODIC_PATH,
+  EpisodicStore,
+  defaultDerive,
+} from './store.js';
 
 /**
  * The episodic CLI — the memory protocol's tool surface (scoped-memory-v2).
@@ -107,6 +118,8 @@ usage:
   episodic node   <path> [--json] [--config <file>]
   episodic fold   --home <dir> [--path <p>] [--config <file>]
   episodic lock   (acquire | release | status) --home <dir>
+  episodic session (register | heartbeat | release | list) --home <dir> [--session <id>]
+  episodic session status [<id>] --home <dir> [--json] [--stale <ms>]
   episodic drain  --home <dir> [--keep N] [--path <p>]
   episodic audit  --home <dir> [--allow <file>] [--config <file>] [--keys <file>]
   episodic migrate <src.md> <dest.jsonl> [--dry-run] [--overwrite]
@@ -133,7 +146,18 @@ read --under <node> lists same-host records whose node(cwd) sits under the
 given node; foreign-host and legacy records report as counts on stderr.
 
 lock manages <home>/dream.lock (acquire is O_EXCL; a lock older than 2h is
-stale and stolen). audit scans <home>/{SEMANTIC,PROCEDURAL}.md for scope
+stale and stolen).
+
+session is the liveness registry (one file per session under <home>/sessions/):
+register on wake, heartbeat to touch, release on clean exit. The mutating verbs
+act on the CURRENT session (id DERIVED from the environment, like encode; or
+--session <id>). live(s) ⇔ registered ∧ not released ∧ (now − last_beat) < STALE
+(STALE = 2h, override --stale <ms>); a crash ⇒ stale ⇒ completed. status prints
+a bare live|completed|absent word (--json for {id,state,lastBeat,released});
+list prints one JSON line per registered session. Distinct sessions write
+distinct files, so the registry is concurrency-safe by construction.
+
+audit scans <home>/{SEMANTIC,PROCEDURAL}.md for scope
 markers: exit 1 + findings on any unpinned hit, 0 clean. Allow-file
 resolution: --allow > <home>/audit-allow.txt > none.
 `;
@@ -325,6 +349,85 @@ function runLock(args: ParsedArgs): CliResult {
   }
 }
 
+/** Parse an optional `--stale <ms>` override; undefined means the module default (2h). */
+function staleFrom(flags: ParsedArgs['flags']): number | undefined {
+  const s = str(flags.stale);
+  if (s === undefined) return undefined;
+  const n = Number.parseInt(s, 10);
+  if (!Number.isInteger(n) || n < 0)
+    throw new Error('--stale must be a non-negative integer (ms)');
+  return n;
+}
+
+/**
+ * `session register|heartbeat|release|status <id>|list`: the session-liveness
+ * registry (memiso-0). The mutating verbs act on the CURRENT session — its id is
+ * DERIVED from the environment (the same seam `encode` uses), with `--session
+ * <id>` as an explicit override; the caller never reasons it. `status`/`list`
+ * are read verbs: `status <id>` prints a bare liveness word (`--json` for the
+ * envelope), `list` prints one JSON line per registered session.
+ */
+function runSession(args: ParsedArgs): CliResult {
+  const [action, ...actionRest] = args.positionals;
+  const home = requireHome(args.flags);
+  const stale = staleFrom(args.flags);
+  const staleArgs = stale !== undefined ? [Date.now(), stale] : [];
+
+  const currentId = (): string => {
+    const id = str(args.flags.session) ?? defaultDerive.session();
+    if (id === undefined)
+      throw new Error(
+        'no session id: set CLAUDE_SESSION_ID or pass --session <id>',
+      );
+    return id;
+  };
+
+  switch (action) {
+    case 'register': {
+      const e = registerSession(home, currentId());
+      return { code: 0, out: `registered ${e.id}\n`, err: '' };
+    }
+    case 'heartbeat': {
+      const id = currentId();
+      const e = heartbeat(home, id);
+      return e === undefined
+        ? { code: 1, out: '', err: `unknown session: ${id}\n` }
+        : { code: 0, out: 'ok\n', err: '' };
+    }
+    case 'release': {
+      const r = releaseSession(home, currentId());
+      return {
+        code: 0,
+        out: r.released ? 'released\n' : 'no session registered\n',
+        err: '',
+      };
+    }
+    case 'status': {
+      const id = actionRest[0] ?? currentId();
+      const s = sessionStatus(home, id, ...staleArgs);
+      if (args.flags.json === true)
+        return { code: 0, out: `${JSON.stringify(s)}\n`, err: '' };
+      return { code: 0, out: `${s.state}\n`, err: '' };
+    }
+    case 'list': {
+      const list = listSessions(home, ...staleArgs);
+      return {
+        code: 0,
+        out:
+          list.map((s) => JSON.stringify(s)).join('\n') +
+          (list.length ? '\n' : ''),
+        err: '',
+      };
+    }
+    default:
+      return {
+        code: 2,
+        out: '',
+        err: 'session needs an action: register | heartbeat | release | status <id> | list\n',
+      };
+  }
+}
+
 /** `migrate`: convert a markdown EPISODIC.md to EPISODIC.jsonl (no-loss gated). */
 function runMigrate(args: ParsedArgs): CliResult {
   const [src, dest] = args.positionals;
@@ -433,6 +536,8 @@ export function main(argv: readonly string[]): CliResult {
         return runFold(args);
       case 'lock':
         return runLock(args);
+      case 'session':
+        return runSession(args);
       case 'migrate':
         return runMigrate(args);
       case 'drain':
