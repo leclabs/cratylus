@@ -19,6 +19,9 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 - `human-docs-projection` — human end-user + contributor docs as a ρ=human projection. **Feature
   request, intent-first**: captured as an external hypothetical; phase 1 elicits the Operator's true
   intent, phase 2 specs (candidate solution NOT baked as spec). Lane: Nico.
+- `readme-anatomy-nature-drift` — root `README.md` still describes `agent-anatomy` by its retired
+  material nature (Python/markdown/"not an npm package"); align to current truth (TS workspace
+  member; projector retired). Doc-only sweep. Lane: Nico.
 
 ## See also
 
