@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // T3 sweep helper: extract a fragment's meaning-bearing field, run the cold oracle,
-// print {ref, decode-head}. Pure orchestration around bin/cold-oracle.sh (isolated).
+// print {ref, decode-head}. Pure orchestration around ./cold-oracle.sh (isolated).
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
