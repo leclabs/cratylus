@@ -210,11 +210,18 @@ function runEncode(args: ParsedArgs): CliResult {
   // fold is the only scope authority. The v1 tag grammar is not validated.
   const scopeFlag = str(args.flags.scope);
   if (scopeFlag !== undefined) tags.push(scopeFlag);
-  const store = new EpisodicStore({ home: requireHome(args.flags) });
+  const home = requireHome(args.flags);
+  const store = new EpisodicStore({ home });
   const rec = store.encode(
     { body, ...(tags.length > 0 ? { tags } : {}) },
     str(args.flags.path),
   );
+  // Encode is a heartbeat: register-if-absent + touch the current session, so an
+  // actively-encoding session stays live in the registry (memiso-0 "register on
+  // wake/first-encode") — a session idle past STALE, or one never encoding,
+  // correctly falls to completed. Registration is derived, never on the default
+  // raw log path so the archive/test fixtures with no session stay sessionless.
+  if (rec.session !== undefined) registerSession(home, rec.session);
   return { code: 0, out: `${rec.id}\n`, err: '' };
 }
 

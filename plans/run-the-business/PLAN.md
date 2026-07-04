@@ -20,17 +20,16 @@ via consolidation (drain → stores); completed residue is inheritable, live-oth
 
 ```
 wave 0 (DONE):    memiso-0 session-liveness-registry           [foundation ✓]
-wave 1: memiso-1 episodic read+drain liveness-aware  DONE ✓
-        memiso-2 orient+dream liveness-gated bind     [ready · dep memiso-0 ✓]
-wave 2 (pending): memiso-3 integration gate                    [dep memiso-1 ✓, memiso-2]
+wave 1 (DONE): memiso-1 episodic read+drain liveness-aware  ✓
+               memiso-2 orient+dream liveness-gated bind     ✓
+wave 2 (ready): memiso-3 integration gate                    [dep memiso-1 ✓, memiso-2 ✓]
 ```
 
-**Waves 0–1 code landed.** The liveness registry (`src/session.ts` + `session` verbs) and the
-liveness-aware `read --for-session` / `drain --completed-only|--for-session` (memiso-1) are live in
-`agent-memory`: a reader excludes live-OTHER records (own + completed + sessionless pass), a drain retains
-live-OTHER while consolidating all completed sessions together. Remaining: memiso-2 lifts this to the
-skill layer — orient's plan-bind gated on a plan `owner` stamp, dream's drain routed through the
-completed-only path.
+**Waves 0–2 landed.** Registry (`src/session.ts` + `session` verbs) · liveness-aware `read
+--for-session` / `drain --completed-only` (memiso-1) · skill-layer lift (memiso-2): wake registers +
+liveness-gates orient on a plan `owner` stamp, encode heartbeats, dream reads/drains the completed-only
+path, handoff releases, the governing principle is in every SOUL genus. Remaining: memiso-3 —
+end-to-end A/B/C scenario proving no-collision + cross-`/clear` resume + cross-session consolidation.
 
 DoD: concurrent sessions don't collide (orient reports-not-binds a live-owned plan; read excludes
 live-other records) WHILE cross-`/clear` inherit + cross-session consolidation are preserved; the
@@ -41,11 +40,7 @@ nico-outside; injected. Commit/push GATED to the Operator.
 
 **Ready (frontier · ⚡):**
 
-- `memiso-2-orient-liveness-gate` — orient's plan-bind + dream gated on session liveness. Lane: Nico.
-
-**Pending:**
-
-- `memiso-3-integration-gate` — closes the sub-DAG (dep memiso-1 ✓, memiso-2). Lane: Nico.
+- `memiso-3-integration-gate` — end-to-end no-collision scenario; closes the sub-DAG (deps ✓). Lane: Nico.
 - `resignify-nico-provenance-charter` — raise nico's Provenance organ VALUE from prose to the R=LLM
   charter form, UPSTREAM in the composer source. Enhancement, not a defect (prose already passes
   warm≡cold); oracle-gated dogfood. Lane: Nico.

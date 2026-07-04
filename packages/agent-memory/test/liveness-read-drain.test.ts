@@ -156,3 +156,17 @@ describe('drain --completed-only / --for-session (memiso-1)', () => {
     expect(readBodies()).toEqual(['a1']); // untouched
   });
 });
+
+describe('encode heartbeats the current session (memiso-0 lifecycle)', () => {
+  it('a first encode registers the session live — no explicit register needed', () => {
+    enc('X', 'x1'); // never called `session register`
+    expect(main(['session', 'status', 'X', '--home', home]).out.trim()).toBe(
+      'live',
+    );
+  });
+
+  it('a sessionless encode registers nothing', () => {
+    enc('', 's1');
+    expect(main(['session', 'list', '--home', home]).out.trim()).toBe('');
+  });
+});

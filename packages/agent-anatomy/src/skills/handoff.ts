@@ -22,7 +22,8 @@ Two truths it stands on (declared here — handoff owns no external def):
 
 Laws:
 
-- **Order.** [[praxis]] sync, **then** [[dream]] — dream runs on hot context so it captures the session events that per-turn encoding missed, before /clear destroys them.
+- **Order.** [[praxis]] sync, **then** [[dream]], **then** \`session release\` — dream runs on hot context so it captures the session events that per-turn encoding missed, before /clear destroys them; release marks this session **completed** last.
+- **Release closes the session.** \`node ~/.claude/skills/memory/episodic.mjs session release --home \${AGENT_HOME}\` is the final persist act: it flips this session to completed in the memory registry, so its forward residue and any plan it owned become **inheritable** by the next wake (a crash that skips handoff still completes via the 2h stale window). Until release, a live sibling correctly treats this session's residue and plan-ownership as occupied.
 - **Scope: persist-only.** The boundary proceeds **outside** this skill: \`/clear\` then [[wake]] then [[carry-on]]. handoff does not clear, reconstitute, or re-dispatch.
 `,
 };

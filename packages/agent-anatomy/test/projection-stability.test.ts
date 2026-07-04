@@ -94,7 +94,9 @@ describe('projection stability (.ts is the sole source)', () => {
     expect(wakeMd).toContain('- **continuity-thread** ≜');
     expect(wakeMd).toContain('- **memory store** ≜');
     expect(wakeMd).not.toMatch(/^wake ≜/m);
-    expect(wakeMd).toContain('WAKE ≜ dream → load → orient → resume');
+    expect(wakeMd).toContain(
+      'WAKE ≜ register → dream → load → orient → resume',
+    );
 
     // The header-over-empty-body shape is asserted ABSENT: the first
     // non-blank line after the header is a declaration bullet.
