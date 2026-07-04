@@ -16,7 +16,11 @@ CoALA types `{EPISODIC.jsonl · SEMANTIC.md · PROCEDURAL.md}` + SOUL (commons).
   `{session?, host, cwd}` come from the process environment via the injectable `DeriveEnv` seam — never
   caller-supplied. No `kind`, no scope field, no `routes` at capture. The raw log is ALWAYS the agent
   home (single-store); capture never writes into a repo. `tags` refine, never route; a caller-supplied
-  `--scope` is accepted as an inert `tags` entry (compat), with no grammar validation.
+  `--scope` is accepted as an inert `tags` entry (compat), with no grammar validation. **`session` derives
+  from `CLAUDE_SESSION_ID`** (via `DeriveEnv`): unset ⇒ records are sessionless ⇒ liveness-isolation
+  degrades to node-only (a sessionless record is always drainable/inheritable, never live-protected). A
+  host that runs the harness without exporting `CLAUDE_SESSION_ID` must pass `--session <id>` explicitly to
+  keep records session-tagged.
 - **Scope is computed (D3, `src/node.ts`).** `node(cwd, host)` = the nearest ancestor of `cwd`
   (reflexive) holding a boundary marker. Defaults: `.git` (a `.git` FILE — worktree/submodule — resolves
   through to the primary checkout's node) · a package manifest (`package.json`, `pyproject.toml`,
