@@ -41,7 +41,7 @@ export const exemplify: SkillCell = {
 
 # Exemplify
 
-The CSF pipeline as one composition: three stages each fill one field of a single record, then a gate reads the realized record and refuses unless it is valid — including \`conform\`: an emitted agent-artifact (\`ρ = LLM\`) authored at human register fails accept. Composes the three sibling stages — each a function over the same record, naming no peer. The symbol table is \`references/formal-symbolic-notation.md\`.
+The CSF pipeline as one composition: three stages each fill one field of a single record, then a gate reads the realized record and refuses unless it is valid — including \`conform\`: an emitted agent-artifact (\`ρ = LLM\`) authored at human register fails accept. \`REC_R\` at accept binds the **cold** reader (isolated, zero project-K): a fragment whose warm reading diverges from its cold decode is a project defect, never a pass ([[cold-decode-oracle]]). Composes the three sibling stages — each a function over the same record, naming no peer. The symbol table is \`references/formal-symbolic-notation.md\`.
 
 Bindings: composes [[conceptualize]] (\`produce\`) · [[signify]] (\`name\`) · [[materialize]] (\`realize\`).
 

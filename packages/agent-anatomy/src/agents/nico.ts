@@ -6,6 +6,7 @@ import { convergence as convergence_audienceAdaptation } from '../organs/audienc
 import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../organs/autonomy/human-on-the-loop.js';
 import { researchInvestigation as researchInvestigation_capabilities } from '../organs/capabilities/research-investigation.js';
 import { systemDesign as systemDesign_capabilities } from '../organs/capabilities/system-design.js';
+import { coldDecodeOracle as coldDecodeOracle_engineeringPrinciples } from '../organs/engineering-principles/cold-decode-oracle.js';
 import { dry as dry_engineeringPrinciples } from '../organs/engineering-principles/dry.js';
 import { firstPrinciples as firstPrinciples_engineeringPrinciples } from '../organs/engineering-principles/first-principles.js';
 import { invokeTheCanonical as invokeTheCanonical_engineeringPrinciples } from '../organs/engineering-principles/invoke-the-canonical.js';
@@ -49,6 +50,7 @@ export const nico: Agent = {
     dry_engineeringPrinciples,
     mece_engineeringPrinciples,
     llmNative_engineeringPrinciples,
+    coldDecodeOracle_engineeringPrinciples,
     trustButVerify_engineeringPrinciples,
     invokeTheCanonical_engineeringPrinciples,
   ],
@@ -97,6 +99,7 @@ export const nicoResolved: ResolvedAgent = {
         dry_engineeringPrinciples,
         mece_engineeringPrinciples,
         llmNative_engineeringPrinciples,
+        coldDecodeOracle_engineeringPrinciples,
         trustButVerify_engineeringPrinciples,
         invokeTheCanonical_engineeringPrinciples,
       ],

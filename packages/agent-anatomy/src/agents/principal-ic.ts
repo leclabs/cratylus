@@ -5,6 +5,7 @@ import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../organs/audience-adaptation/convergence.js';
 import { softwareEngineering as softwareEngineering_capabilities } from '../organs/capabilities/software-engineering.js';
 import { systemDesign as systemDesign_capabilities } from '../organs/capabilities/system-design.js';
+import { coldDecodeOracle as coldDecodeOracle_engineeringPrinciples } from '../organs/engineering-principles/cold-decode-oracle.js';
 import { dry as dry_engineeringPrinciples } from '../organs/engineering-principles/dry.js';
 import { firstPrinciples as firstPrinciples_engineeringPrinciples } from '../organs/engineering-principles/first-principles.js';
 import { invokeTheCanonical as invokeTheCanonical_engineeringPrinciples } from '../organs/engineering-principles/invoke-the-canonical.js';
@@ -52,6 +53,7 @@ export const principalIc: Agent = {
     trustButVerify_engineeringPrinciples,
     invokeTheCanonical_engineeringPrinciples,
     llmNative_engineeringPrinciples,
+    coldDecodeOracle_engineeringPrinciples,
   ],
   guardrails: [
     harmAvoidance_guardrails,
@@ -99,6 +101,7 @@ export const principalIcResolved: ResolvedAgent = {
         trustButVerify_engineeringPrinciples,
         invokeTheCanonical_engineeringPrinciples,
         llmNative_engineeringPrinciples,
+        coldDecodeOracle_engineeringPrinciples,
       ],
     ],
     [
