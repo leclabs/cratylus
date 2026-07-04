@@ -13,9 +13,17 @@ readers(k)  — the realized artifact's operative consumers
 register(k) — the register the realized body is authored in
 conform(k)  ⇔ register(k) = ρ(k)                          -- a human-register agent-artifact is invalid
 
+-- Cold-decode gate (home: [[cold-decode-oracle]]; instrument: the isolated oracle harness — a PROCESS
+--   (scratch cwd + credentials-only config, tool-less, mood-neutral prompt), never a subagent (a subagent is warm)) --
+R_cold(f)   ≜ the isolated cold-blind decode of fragment f (a naive reader, zero project-K, from f's signifiers + inline ≜ alone)
+coldpass(k) ⇔ R_cold(body(k)) ≅_R gloss(k)  ∧  decode_warm(body(k) | K) ≅_R R_cold(body(k))
+                                                          -- m1 self-sufficient (cold ≅_R intent) ∧ m2 no competing home (warm ≅_R cold)
+                                                          --   divergence ⇒ project defect: realign project→cold-truth, never bend body→K
+
 -- Canonical-semantic-factorization: the model a valid factorization must satisfy --
-valid(k)    ⇔ REC_R(k) ≽ k  ∧  minimal(k)  ∧  conform(k)  -- round-trips equivalent-or-better from anchors, no two concepts fuse,
-                                                          --   and the body holds its reader's register
+valid(k)    ⇔ REC_R(k) ≽ k  ∧  minimal(k)  ∧  conform(k)  ∧  coldpass(k)
+                                                          -- round-trips equivalent-or-better from anchors, no two concepts fuse,
+                                                          --   the body holds its reader's register, AND the body cold-decodes to intent
                                                           --   REC_R = reconstruction from anchors (by value if primitive, by reference if composite)
 
 -- No-permissive-defaults: an unnamed strategy refuses, never waves through --
@@ -41,7 +49,7 @@ export const exemplify: SkillCell = {
 
 # Exemplify
 
-The CSF pipeline as one composition: three stages each fill one field of a single record, then a gate reads the realized record and refuses unless it is valid — including \`conform\`: an emitted agent-artifact (\`ρ = LLM\`) authored at human register fails accept. \`REC_R\` at accept binds the **cold** reader (isolated, zero project-K): a fragment whose warm reading diverges from its cold decode is a project defect, never a pass ([[cold-decode-oracle]]). Composes the three sibling stages — each a function over the same record, naming no peer. The symbol table is \`references/formal-symbolic-notation.md\`.
+The CSF pipeline as one composition: three stages each fill one field of a single record, then a gate reads the realized record and refuses unless it is valid — including \`conform\`: an emitted agent-artifact (\`ρ = LLM\`) authored at human register fails accept. Accept also **executes** the isolated cold oracle ([[cold-decode-oracle]]) on the realized body — \`coldpass\`: m1 \`R_cold ≅_R gloss\` ∧ m2 \`warm ≅_R R_cold\` — and refuses on divergence; the oracle is a PROCESS (isolated cwd + config, tool-less), never a subagent (a subagent inherits project-K and reads warm). This is the law's teeth in the authoring path. Composes the three sibling stages — each a function over the same record, naming no peer. The symbol table is \`references/formal-symbolic-notation.md\`.
 
 Bindings: composes [[conceptualize]] (\`produce\`) · [[signify]] (\`name\`) · [[materialize]] (\`realize\`).
 
