@@ -44,7 +44,7 @@ is reusable ONLY where the ratified intent endorses it — never by default.
 
 This conversation (2026-07-03 — the captured hypothetical + Nico's judgment) · the projection
 machinery: the `signify` · `materialize` · `exemplify` · `probe` · `elicit` skills (reader-binding ρ,
-σ\*_R, the R=LLM-default / human-iff-literal-human law) · `packages/agent-anatomy` (the `.ts` source →
+σ\*\_R, the R=LLM-default / human-iff-literal-human law) · `packages/agent-anatomy` (the `.ts` source →
 markdown projection; `pnpm anatomy:project`) · agent-forge as the projector.
 
 ## Accept (falsifiers)

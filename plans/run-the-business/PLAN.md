@@ -10,10 +10,39 @@ periodically (git is the recovery net).
 initiatives whose larger scaffold has been wound down but whose remaining work is still live. When a
 cluster of RTB tasks grows into a coherent initiative, promote it back out into its own sharded plan.
 
+## ⚡ Highest priority — memory-session-isolation (sub-DAG, do first)
+
+Fixes a live defect: two concurrent nico sessions in one node collide in memory — orient binds a plan a
+live sibling is executing (owner-blind `active/` scan), and `read --under node` bleeds a live sibling's
+forward next-steps in as the reader's own. Isolation axis must be session **liveness**, not node alone.
+Governing principle: raw working residue is session-owned-while-live; cross-session sharing happens ONLY
+via consolidation (drain → stores); completed residue is inheritable, live-other residue is invisible.
+
+```
+wave 0 (ready):   memiso-0 session-liveness-registry           [foundation]
+wave 1 (pending): memiso-1 episodic read+drain liveness-aware  [dep memiso-0]
+                  memiso-2 orient+dream liveness-gated bind     [dep memiso-0]
+wave 2 (pending): memiso-3 integration gate                    [dep memiso-1, memiso-2]
+```
+
+DoD: concurrent sessions don't collide (orient reports-not-binds a live-owned plan; read excludes
+live-other records) WHILE cross-`/clear` inherit + cross-session consolidation are preserved; the
+originally-reported collision no longer reproduces. Provenance: authored cold from `blank` by
+nico-outside; injected. Commit/push GATED to the Operator.
+
 ## Status mirror
+
+**Ready (frontier · ⚡):**
+
+- `memiso-0-session-liveness-registry` — foundational liveness primitive; start here. Lane: Nico.
 
 **Pending:**
 
+- `memiso-1-episodic-scoping` · `memiso-2-orient-liveness-gate` · `memiso-3-integration-gate` — the rest
+  of the memory-session-isolation sub-DAG (deps above). Lane: Nico.
+- `resignify-nico-provenance-charter` — raise nico's Provenance organ VALUE from prose to the R=LLM
+  charter form, UPSTREAM in the composer source. Enhancement, not a defect (prose already passes
+  warm≡cold); oracle-gated dogfood. Lane: Nico.
 - `stance-guardrail-jurisdiction` — the judge must see the dispatch channel (tool_use payloads ·
   PreToolUse binding · dispatch-echo rubric class · observable fails-open). Lane: Mav + Nico.
 - `human-docs-projection` — human end-user + contributor docs as a ρ=human projection. **Feature
