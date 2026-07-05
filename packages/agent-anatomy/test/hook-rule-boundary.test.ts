@@ -45,7 +45,7 @@ const repoRoot = join(anatomyRoot, '..', '..');
 // `rule` cell owns it (its committed file is a deploy target). `RATCHET` = still
 // hand-authored, deferred (witness-one + ratchet — the operator-facing bodies are
 // densified in a later lane, not force-converted here). `OUT_OF_SCOPE` = a
-// SelfAuthored memory sink exempt from REGENERABLE (`plans/**`, `ideas/`), which a
+// SelfAuthored memory sink exempt from REGENERABLE (`plans/**`), which a
 // rule cell must NEVER target. A repo AGENTS.md matching none of these FAILS the
 // suite — a new convention file cannot be silently un-owned.
 
@@ -60,13 +60,9 @@ const RATCHET_RULE_TARGETS: ReadonlySet<string> = new Set([
   'packages/agent-anatomy/src/toolkit/AGENTS.md',
 ]);
 
-/** SelfAuthored sinks (`plans/**`, `ideas/`) — a rule cell must never target these. */
+/** SelfAuthored sinks (`plans/**`) — a rule cell must never target these. */
 function isOutOfScope(rel: string): boolean {
-  return (
-    rel.startsWith('plans/') ||
-    rel.includes('/ideas/') ||
-    rel.startsWith('ideas/')
-  );
+  return rel.startsWith('plans/');
 }
 
 /** Every TRACKED `AGENTS.md` (git-listed — no node_modules/dist/render, no untracked). */
@@ -234,7 +230,7 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
     }
   });
 
-  it('no rule cell targets an out-of-scope SelfAuthored sink (plans/** · ideas/)', async () => {
+  it('no rule cell targets an out-of-scope SelfAuthored sink (plans/**)', async () => {
     for (const r of await allRuleCells()) {
       expect(
         isOutOfScope(r.targetPath),

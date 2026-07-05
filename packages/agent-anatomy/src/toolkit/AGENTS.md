@@ -27,7 +27,7 @@ was consolidated here in T6.3; the Python projector/deployer was retired in T6.1
 - this doc — the **`agent-forge deploy` runbook** (below).
 
 **Projection + composition are TS/agent-forge.** Source = `src/organs/<organ>/<value>.ts`, `src/agents/<name>.ts`,
-`src/skills/<name>.ts`, plus the `memory` home `ideas/memory.md`. Anatomy types = `@leclabs/agent-forge/anatomy`
+`src/skills/<name>.ts`, plus the special genus cells `src/genus/{memory,persona}.md`. Anatomy types = `@leclabs/agent-forge/anatomy`
 (wrong organ/arity = a compile error). Composition = ESM `import` + object-spread; projection = the agent-forge
 claude adapter (`pnpm anatomy:project`). The byte-identity round-trip oracle is **retired** (`.ts` is the
 source — there is nothing to round-trip against); acceptance = `tsc` + `test/projection-stability.test.ts`
@@ -35,7 +35,7 @@ source — there is nothing to round-trip against); acceptance = `tsc` + `test/p
 - the two ported gates `test/skill-shape.test.ts` (operative + cite-twice) and `test/symbols.test.ts`
   (fence-glyph coverage vs `references/formal-symbolic-notation.md`) + `test/reader-density.test.ts`
   (`conform(a) ⇔ register(a) = ρ(a)` — reader=human register in a ρ=LLM surface fails; explicit shrink-only
-  ratchet; rules in `ideas/AGENTS.md`) + `test/reader-reach.test.ts` (same detector via
+  ratchet; rules in `AGENTS.md` § Cell format + kind taxonomy) + `test/reader-reach.test.ts` (same detector via
   `test/reader-register.ts`, over generated-artifact fixtures + agent-to-agent message classes). Every other former `verify.py` gate
   dissolved into `tsc` or the module system (one module per fragment = one home; import = cite-don't-copy).
 

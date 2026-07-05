@@ -35,7 +35,7 @@ to \`∀c: accept(c)\`.
   (the **sole source**); markdown is a **projection**. agent-forge is the **only** projection + deploy machinery
   (\`pnpm anatomy:project\` / \`pnpm anatomy:deploy\` via agent-forge's claude adapter); the Python \`toolkit/\` projector was
   retired — only the shell hooks (\`toolkit/{continuity,guardrail}\`) remain.
-  Corpus rules: \`packages/agent-anatomy/ideas/AGENTS.md\`. Mutate the \`.ts\` source via \`[[exemplify]]\`; the
+  Corpus rules: \`packages/agent-anatomy/AGENTS.md\`. Mutate the \`.ts\` source via \`[[exemplify]]\`; the
   acceptance bar is \`tsc\` + the projection-stability gate (every fragment/skill/agent still projects).
 - \`packages/agent-forge\` — the config IR + translator (\`@leclabs/agent-forge\`). **One package**;
   \`core\` / \`adapters\` / \`cli\` are source areas under \`src/\`, exposed via subpath exports + an \`agent-forge\` bin.

@@ -166,11 +166,14 @@ async function projectSkills(out: string, profile: string): Promise<number> {
 /**
  * The `memory` dual-deploy dir (`deploy: skill-dir`): its `## Tool` section is the
  * SKILL.md body VERBATIM, and the bundled `episodic.mjs` ships beside it. Sourced
- * from `ideas/memory.md` (the one home) + the episodic build artifact.
+ * from `src/genus/memory.md` (the one home) + the episodic build artifact.
  */
 async function projectMemorySkill(out: string, profile: string): Promise<void> {
   const { readFileSync } = await import('node:fs');
-  const memRaw = readFileSync(join(anatomyRoot, 'ideas', 'memory.md'), 'utf8');
+  const memRaw = readFileSync(
+    join(anatomyRoot, 'src', 'genus', 'memory.md'),
+    'utf8',
+  );
   const memBody = memRaw.split('---').slice(2).join('---');
   const toolSection = sectionBody(memBody, 'Tool');
   const fm =
@@ -183,7 +186,7 @@ async function projectMemorySkill(out: string, profile: string): Promise<void> {
     skillDescription: frontField(memRaw, 'skill_description') || fm,
     body: '',
     composedFrom: [],
-    sourcePath: 'packages/agent-anatomy/ideas/memory.md',
+    sourcePath: 'packages/agent-anatomy/src/genus/memory.md',
     toolSection,
   };
   const dir = join(out, 'skills', 'memory');

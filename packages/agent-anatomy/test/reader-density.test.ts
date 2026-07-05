@@ -22,7 +22,7 @@
 // live-corpus margin — the 4 densified exemplars and the whole non-pinned
 // corpus sit at 0 hits, the pinned genus bodies at 5.4–5.5 second-person/100):
 //   HEDGE          — ≥2 distinct tutorial/hedge/connective patterns
-//                    (live max = 1, on pinned ideas/memory.md; seed fixture = 6)
+//                    (live max = 1, on pinned src/genus/memory.md; seed fixture = 6)
 //   SECOND-PERSON  — ≥2 hits ∧ ≥4 per 100 words (one incidental agent-address
 //                    hit is legal: carry-on delineation = 1 hit @3.1)
 //   FPP-WALKTHROUGH— ≥2 first-person-plural walkthrough tokens (live = 0)
@@ -149,7 +149,7 @@ async function allSurfaces(): Promise<Surface[]> {
     });
   }
   for (const name of ['memory.md', 'persona.md']) {
-    const raw = readFileSync(join(anatomyRoot, 'ideas', name), 'utf8');
+    const raw = readFileSync(join(srcRoot, 'genus', name), 'utf8');
     const body = raw.replace(/^---\n[\s\S]*?\n---\n/, '');
     // ρ binds at the finest separately-consumed grain: `## Protocol` projects
     // into every SOUL; the sibling sections are corpus/skill-dir surfaces.
@@ -159,7 +159,7 @@ async function allSurfaces(): Promise<Surface[]> {
         ? (section.split('\n')[0] as string).split(' — ')[0]
         : '(preamble)';
       surfaces.push({
-        label: `genus ideas/${name} ${head}`,
+        label: `genus src/genus/${name} ${head}`,
         cls: 'genus-protocol',
         text: section,
       });
@@ -218,8 +218,8 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     const genusLabels = surfaces
       .filter((s) => s.cls === 'genus-protocol')
       .map((s) => s.label);
-    expect(genusLabels).toContain('genus ideas/memory.md ## Protocol');
-    expect(genusLabels).toContain('genus ideas/persona.md ## Protocol');
+    expect(genusLabels).toContain('genus src/genus/memory.md ## Protocol');
+    expect(genusLabels).toContain('genus src/genus/persona.md ## Protocol');
     expect(
       surfaces.filter((s) => s.cls === 'organ-definiens').length,
     ).toBeGreaterThan(100);

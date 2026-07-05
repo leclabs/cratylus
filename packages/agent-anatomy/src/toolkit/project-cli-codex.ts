@@ -149,7 +149,10 @@ async function projectSkills(args: Args): Promise<number> {
  * tool path) and is NOT carried here (codex memory wiring is a later concern).
  */
 async function projectMemorySkill(args: Args): Promise<void> {
-  const memRaw = readFileSync(join(anatomyRoot, 'ideas', 'memory.md'), 'utf8');
+  const memRaw = readFileSync(
+    join(anatomyRoot, 'src', 'genus', 'memory.md'),
+    'utf8',
+  );
   const memBody = memRaw.split('---').slice(2).join('---');
   const toolSection = sectionBody(memBody, 'Tool');
   const fm =
@@ -162,7 +165,7 @@ async function projectMemorySkill(args: Args): Promise<void> {
     skillDescription: frontField(memRaw, 'skill_description') || fm,
     body: '',
     composedFrom: [],
-    sourcePath: 'packages/agent-anatomy/ideas/memory.md',
+    sourcePath: 'packages/agent-anatomy/src/genus/memory.md',
     toolSection,
   };
   const dir = join(args.out, 'skills', 'memory');
