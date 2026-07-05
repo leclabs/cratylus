@@ -1,69 +1,50 @@
-// agent-forge Hook resources sourced by agent-anatomy — the projection-machinery home for the
-// harness hooks (Mav's lane: build/tooling/delivery, NOT the culture corpus in
-// `src/{agents,skills,organs}`). Lives in `src/toolkit/` beside the projector
-// that consumes it (`project-cli.ts`), because a Hook is agent-forge CONFIG IR, not a
-// culture cell.
-//
-// agent-forge PROJECTS these into `.claude/settings.json` (claude adapter:
-// `turn.end` → Stop, `subagent.end` → SubagentStop) and agent-forge DEPLOY ships each
-// hook's worker scripts beside the settings entry as hook assets under the host
-// `~/.claude/hooks/<id>/`. This module is the single source of truth for WHERE a
-// hook fires and WHAT it runs.
-//
-// PLACEMENT (resolved, @nico T6.3): a agent-forge Hook is infra config, not a culture
-// exemplar, so it lives in `src/toolkit/` (build-wiring beside `project-cli.ts`),
-// NOT a first-class corpus `src/hooks/` kind. The worker scripts are co-located
-// in `src/toolkit/guardrail/` (the old shell `toolkit/` dir was consolidated here).
+// The agent-forge `Hook` deploy-IR + worker payloads, DERIVED from the first-class
+// `hook` source cells (`src/hooks/*.ts`). The source of truth is now the cell:
+// `hooks.ts` no longer hand-authors a `Hook` nor points at on-disk `.sh` assets —
+// it lifts the harness-substrate cells into the agent-forge `Hook` IR the projector
+// serializes into `.claude/settings.json` (claude adapter: `turn.end` → Stop,
+// `subagent.end` → SubagentStop) and carries their VERBATIM worker payloads so the
+// projector stages them under `hooks/<id>/` (no file copy — the bytes come from the
+// cell). Only `harness`-substrate cells register in settings.json; a `git`-substrate
+// cell (praxis-continuity) fires in git's process and is byte-locked but not
+// serialized here.
 
-import type { Hook } from '@leclabs/agent-forge';
+import type { CanonicalEvent, Hook } from '@leclabs/agent-forge';
+import { stanceGuardrail } from '../hooks/stance-guardrail.js';
+import type { HookCell, HookWorker } from './hook-cell.js';
 
-// ── stance guardrail (principal-stance P4 — the harness half) ───────────────
-
-/** Deployed worker location under a host `.claude/` (the agent-forge deploy target).
- *  `$HOME` is shell-expanded by the harness when it runs the hook command, so
- *  the hook resolves regardless of the harness cwd at fire time. */
-const STANCE_WORKER =
-  '$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh';
+/** The harness-substrate hook cells agent-forge projects into settings.json + hooks/<id>/. */
+export const harnessHookCells: readonly HookCell[] = [stanceGuardrail];
 
 /**
- * Stop + SubagentStop hook that structurally refuses a turn collapsing out of
- * the intent-driven-expert stance. The worker stays OFF BY DEFAULT — it
- * re-checks a per-repo git-config opt-in (`agentfactory.stanceGuard`) at fire time — so
- * registering it in settings.json on every host is inert until a repo opts in.
- * Timeout 60s (an LLM-judge call).
+ * Lift a harness-substrate hook cell into the agent-forge `Hook` deploy-IR. A
+ * harness hook's events are all `CanonicalEvent` (the 28-event vendor-neutral
+ * pivot); a `git`-substrate event (`vcs.commit.post`) has no canonical peer, so it
+ * is rejected here — a git hook must not reach settings.json.
  */
-export const stanceGuardrailHook: Hook = {
-  id: 'stance-guardrail',
-  events: ['turn.end', 'subagent.end'],
-  command: `sh "${STANCE_WORKER}"`,
-  timeout: 60,
-};
-
-/** The worker scripts agent-forge deploy ships beside the hook entry, named relative
- *  to the guardrail source dir (`packages/agent-anatomy/src/toolkit/guardrail/`). */
-export const stanceGuardrailAssets: readonly string[] = [
-  'stance-guardrail.sh',
-  'stance-judge.sh',
-  'stance-judge-prompt.md',
-];
-
-// ── the hook manifest the projector walks ───────────────────────────────────
-
-/** One source-of-truth entry per harness hook: the agent-forge `Hook` IR + the
- *  worker assets + the toolkit source dir they live in (relative to anatomyRoot).
- *  The projector serializes `hook` into settings.json and stages `assets` into
- *  the render tree under `hooks/<hook.id>/`. */
-export interface HookSource {
-  readonly hook: Hook;
-  readonly assets: readonly string[];
-  /** Source dir of the assets, relative to the agent-anatomy package root. */
-  readonly assetDir: string;
+export function hookIrOf(cell: HookCell): Hook {
+  if (cell.substrate !== 'harness') {
+    throw new Error(
+      `hookIrOf: '${cell.id}' is substrate=${cell.substrate}; only harness hooks serialize to settings.json`,
+    );
+  }
+  const events = cell.events as readonly CanonicalEvent[];
+  return {
+    id: cell.id,
+    events: [...events] as [CanonicalEvent, ...CanonicalEvent[]],
+    command: cell.command,
+    ...(cell.timeout !== undefined ? { timeout: cell.timeout } : {}),
+  };
 }
 
-export const hookSources: readonly HookSource[] = [
-  {
-    hook: stanceGuardrailHook,
-    assets: stanceGuardrailAssets,
-    assetDir: 'src/toolkit/guardrail',
-  },
-];
+/** One source-of-truth entry per harness hook: the `Hook` IR + its verbatim workers.
+ *  The projector serializes `hook` into settings.json and writes each worker's
+ *  `content` under `hooks/<hook.id>/` (byte-anchor — no on-disk copy). */
+export interface HookSource {
+  readonly hook: Hook;
+  readonly workers: readonly HookWorker[];
+}
+
+export const hookSources: readonly HookSource[] = harnessHookCells.map(
+  (cell) => ({ hook: hookIrOf(cell), workers: cell.workers }),
+);

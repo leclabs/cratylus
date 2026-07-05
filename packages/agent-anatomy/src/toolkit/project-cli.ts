@@ -17,7 +17,7 @@
 // `profile:` header as `<density>/claude-code`. `--profile` is the explicit escape
 // hatch (full `<reader>/<harness>` control); it overrides `--density` when given.
 
-import { copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { chmodSync, copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -233,19 +233,22 @@ async function projectHooks(out: string): Promise<number> {
   process.stdout.write(
     `EMIT settings.json (hooks: ${Object.keys(hooks).join(', ')})\n`,
   );
-  // Stage each hook's worker scripts under hooks/<id>/ in the render tree.
+  // Stage each hook's worker payloads under hooks/<id>/ in the render tree. The
+  // bytes come from the source cell (`worker.content`), not an on-disk copy — the
+  // cell is the sole home; the executable bit is set per `worker.executable`.
   let n = 0;
   for (const src of hookSources) {
     const destDir = join(out, 'hooks', src.hook.id ?? 'unnamed');
     mkdirSync(destDir, { recursive: true });
-    for (const asset of src.assets) {
-      copyFileSync(
-        join(anatomyRoot, src.assetDir, asset),
-        join(destDir, asset),
-      );
+    for (const worker of src.workers) {
+      const dest = join(destDir, worker.filename);
+      writeFileSync(dest, worker.content);
+      if (worker.executable) {
+        chmodSync(dest, 0o755);
+      }
     }
     process.stdout.write(
-      `EMIT hook ${src.hook.id} (+${src.assets.length} worker asset${src.assets.length === 1 ? '' : 's'})\n`,
+      `EMIT hook ${src.hook.id} (+${src.workers.length} worker${src.workers.length === 1 ? '' : 's'})\n`,
     );
     n++;
   }

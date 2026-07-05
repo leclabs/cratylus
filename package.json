@@ -17,6 +17,7 @@
     "typecheck": "turbo run typecheck",
     "anatomy:project": "pnpm --filter @leclabs/agent-anatomy project",
     "anatomy:project:human": "pnpm --filter @leclabs/agent-anatomy project:human",
+    "anatomy:project:targets": "pnpm --filter @leclabs/agent-anatomy project:targets",
     "anatomy:deploy:agent": "node packages/agent-forge/dist/cli/index.js deploy --kind agent --agents-dir packages/agent-anatomy/.render-ts/agents --skills-dir packages/agent-anatomy/.render-ts/skills",
     "anatomy:deploy:skill": "node packages/agent-forge/dist/cli/index.js deploy --kind skill --agents-dir packages/agent-anatomy/.render-ts/agents --skills-dir packages/agent-anatomy/.render-ts/skills",
     "anatomy:deploy:hooks": "node packages/agent-forge/dist/cli/index.js deploy --kind hooks --hooks-dir packages/agent-anatomy/.render-ts",

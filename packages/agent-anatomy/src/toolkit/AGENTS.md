@@ -13,14 +13,17 @@ was consolidated here in T6.3; the Python projector/deployer was retired in T6.1
   projected organ's cells; `test/projection-boundary.test.ts` byte-locks each committed README to its
   re-projection (a hand-edit fails the gate). `PROJECTED_ORGANS` in `organ-docs.ts` is the single home for
   which organs are projection-owned (E2 seeds `heuristics`; the `canon-conformance` S5 slice grows it to 24).
-- **`guardrail/`** — the stance-guardrail **Stop/SubagentStop** worker scripts (`stance-guardrail.sh` +
-  `stance-judge.sh` + `stance-judge-prompt.md`). The hook is **agent-forge-native** (T6.3): its source is the
-  agent-forge `Hook` in `hooks.ts`, agent-forge PROJECTS it into `.claude/settings.json`, and `agent-forge deploy --kind
-hooks` ships these workers to `~/.claude/hooks/stance-guardrail/`. The shell is just the worker the hook
-  runs — registration/placement is agent-forge's.
-- **`continuity/`** — the repo-level praxis-advance **git post-commit** hook (opt-in). NOT agent-forge-managed
-  by design (agent-forge projects agent/harness config, not git hooks — a git hook fires in git's process, a
-  different substrate). The `.husky/post-commit` dispatcher runs `continuity/praxis-advance-nudge.sh`.
+- **`guardrail/` + `continuity/`** — the **byte-locked deploy TARGETS** of the first-class `hook` source cells
+  (S4). The SOURCE is now the `.ts` cell (`src/hooks/stance-guardrail.ts`, `src/hooks/praxis-continuity.ts`) —
+  a `hook` cell (activation=event) owns the worker bytes VERBATIM in `workers[].content`; the committed `.sh`/
+  `.md` under `guardrail/` + `continuity/` are deploy-owned projections regenerated from the cell by
+  `pnpm anatomy:project:targets` and byte-locked by `test/hook-rule-boundary.test.ts` (a hand-edit diverges
+  from the cell and fails the gate — the E2 `project-human` pattern). `hooks.ts` DERIVES the agent-forge `Hook`
+  IR from the `harness`-substrate cell (`stance-guardrail`: `turn.end`→Stop, `subagent.end`→SubagentStop),
+  agent-forge PROJECTS it into `.claude/settings.json`, and `agent-forge deploy --kind hooks` ships the workers
+  to `~/.claude/hooks/stance-guardrail/`. `praxis-continuity` is a `git`-substrate cell — git post-commit has
+  no `CanonicalEvent` peer (event carried as `vcs.commit.post`, FLAGGED for canon review), so it is NOT
+  serialized into settings.json; the `.husky/post-commit` dispatcher runs its byte-locked worker directly.
 - this doc — the **`agent-forge deploy` runbook** (below).
 
 **Projection + composition are TS/agent-forge.** Source = `src/organs/<organ>/<value>.ts`, `src/agents/<name>.ts`,
@@ -143,10 +146,13 @@ INTENT ambiguity to `/elicit` — and fails PASS on a toss-up. Why the harness a
 prompt-level identity is **not** invariant (RLHF corrigibility erodes it under operator pushback); only a
 structural refusal is.
 
-**AGENT-FORGE-NATIVE (T6.3).** The hook is now sourced/projected/deployed by agent-forge, not hand-installed by `jq`:
+**FIRST-CLASS CELL (S4), agent-forge-projected.** The hook is a `hook` SOURCE cell; `hooks.ts` derives the
+agent-forge `Hook` IR from it and agent-forge projects/deploys — never hand-installed by `jq`:
 
-- **Source** — the agent-forge `Hook` in `src/toolkit/hooks.ts` (`turn.end` → Stop, `subagent.end` → SubagentStop,
-  command = the deployed worker path `$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh`, timeout 60).
+- **Source** — the `hook` cell `src/hooks/stance-guardrail.ts` (activation=event, substrate=harness): it OWNS
+  the worker bytes (`workers[].content`, byte-locked) + the canonical `definiens` (`accept()` target) + the
+  event binding. `hooks.ts` lifts it to the agent-forge `Hook` IR (`turn.end` → Stop, `subagent.end` →
+  SubagentStop, command = `$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh`, timeout 60).
 - **Project** — `pnpm anatomy:project` emits `.render-ts/settings.json` (a `{hooks}` fragment) + stages the
   workers under `.render-ts/hooks/stance-guardrail/`.
 - **Deploy** — `pnpm anatomy:deploy:hooks` (`agent-forge deploy --kind hooks`) ships the workers to the host and
