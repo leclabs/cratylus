@@ -7,7 +7,6 @@ net-current only: its dir is removed and `git log -- plans/<name>/` is the recor
 
 ## Active
 
-| Plan                | Concern                                                                                                                        | Lead                  |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | --------------------- |
-| `run-the-business`  | The standing plan — live backlog + standalone tasks; perpetual (never retires).                                                | Mav + Nico (per task) |
-| `canon-conformance` | Bring tracked `.ts` source to `∀c: accept(c)` vs the root model (VISION/MODEL/ENGINE/CANON); runtime = regenerated projection. | Nico + Mav            |
+| Plan               | Concern                                                                         | Lead                  |
+| ------------------ | ------------------------------------------------------------------------------- | --------------------- |
+| `run-the-business` | The standing plan — live backlog + standalone tasks; perpetual (never retires). | Mav + Nico (per task) |
