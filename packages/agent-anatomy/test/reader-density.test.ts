@@ -14,9 +14,9 @@
 //
 // REGISTER ≠ DENSITY. The gate convicts reader=human REGISTER (tutorial
 // second-person address, hedge/connective prose, human-gloss walkthrough); it
-// does NOT score density-to-the-bar — that is `remediation-fanout` judge
-// territory (calibration 2026-07-01 proved raw glue-ratio does not separate:
-// live verbose-but-LLM-register cells overlap human prose).
+// does NOT score density-to-the-bar — that is a semantic density-judge concern,
+// out of this gate's scope (calibration 2026-07-01 proved raw glue-ratio does not
+// separate: live verbose-but-LLM-register cells overlap human prose).
 //
 // SIGNAL CLASSES (thresholds frozen from the 2026-07-01 corpus sweep; each has
 // live-corpus margin — the 4 densified exemplars and the whole non-pinned
@@ -74,7 +74,7 @@ const srcRoot = join(anatomyRoot, 'src');
 
 // ── RATCHET — explicit, shrink-only ─────────────────────────────────────────────
 
-/** Known non-conforming R=LLM surfaces, pinned until wave(3) `remediation-fanout`. */
+/** Known non-conforming R=LLM surfaces — EMPTY (the corpus conforms). */
 const REGISTER_RATCHET: ReadonlySet<string> = new Set([]);
 
 /** root-cause H3: (engineering-principle, output-format) pairs that contradict. */

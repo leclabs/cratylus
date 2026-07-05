@@ -1,14 +1,21 @@
-// hook/rule boundary gate (S4) — establishes `rule` (activation=scope) and `hook`
-// (activation=event) as first-class SOURCE cells whose harness artifacts are
-// PROJECTED TARGETS, not hand-authored. Three falsifiers, held here:
+// hook/rule boundary gate (S4, corrected) — establishes `hook` (activation=event)
+// as a first-class SOURCE cell whose harness artifacts are PROJECTED TARGETS, not
+// hand-authored. `rule` (activation=scope) stays a live KIND (MODEL's 5 Kinds) with
+// ZERO corpus instances: an `AGENTS.md` at a node is NOT a rule deploy target — the
+// `src/skills/dream.ts` law is verbatim "An `AGENTS.md` at a node IS the semantic
+// organ at that scope; writing it is consolidation", so EVERY tracked AGENTS.md is a
+// dream-written SelfAuthored memory sink, exempt from REGENERABLE (MODEL
+// `SelfAuthored ∉ Target`) and OUT-OF-SCOPE for rule conversion. The S4 conversion of
+// repo-root AGENTS.md to a `rule` cell COLLIDED with that law (the first dream routing
+// a repo-scoped fact reds the byte-lock, a deploy clobbers the memory) and was
+// reverted. Three falsifiers, held here:
 //
-//   (a) BEHAVIOR-IN-CELL — every in-scope shell hook + witnessed AGENTS.md is
-//       owned by a `.ts` source cell; the committed artifact is a deploy target.
-//       Enforced by the COVERAGE table (no silent cap: every repo AGENTS.md is
-//       classified converted | ratcheted | out-of-scope, and both hook families
-//       are converted).
-//   (b) accept()/REFLEXIVE — each rule/hook cell's canonical DEFINIENS passes the
-//       static Universal floor (`accept.ts`), and the cell's targets pass REGENERABLE.
+//   (a) BEHAVIOR-IN-CELL — every in-scope shell hook is owned by a `.ts` source cell;
+//       the committed artifact is a deploy target. Enforced by the COVERAGE table
+//       (no silent cap): both hook families are converted, and every tracked AGENTS.md
+//       is classified OUT-OF-SCOPE (a memory sink no rule cell may target).
+//   (b) accept()/REFLEXIVE — each hook cell's canonical DEFINIENS passes the static
+//       Universal floor (`accept.ts`), and the cell's targets pass REGENERABLE.
 //   (c) NO-DIVERGENCE — the committed target == the source cell's bytes, byte-for-
 //       byte (`regenerateTargets --check` finds zero drift). A hand-edit fails here.
 //
@@ -31,7 +38,6 @@ import {
 } from '../src/toolkit/cold-oracle/accept.js';
 import {
   allHookCells,
-  allRuleCells,
   cellTargets,
   regenerateTargets,
 } from '../src/toolkit/project-targets.js';
@@ -39,30 +45,31 @@ import {
 const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = join(anatomyRoot, '..', '..');
 
-// ── COVERAGE — the honest converted-vs-ratcheted table (no silent cap) ──────────
+// ── COVERAGE — the honest converted-vs-out-of-scope table (no silent cap) ────────
 //
-// Every convention AGENTS.md in scope for S4 is classified here. `CONVERTED` = a
-// `rule` cell owns it (its committed file is a deploy target). `RATCHET` = still
-// hand-authored, deferred (witness-one + ratchet — the operator-facing bodies are
-// densified in a later lane, not force-converted here). `OUT_OF_SCOPE` = a
-// SelfAuthored memory sink exempt from REGENERABLE (`plans/**`), which a
-// rule cell must NEVER target. A repo AGENTS.md matching none of these FAILS the
-// suite — a new convention file cannot be silently un-owned.
+// Every convention AGENTS.md in the repo is classified here. `CONVERTED` = a `rule`
+// cell owns it (its committed file is a deploy target) — now EMPTY: an AGENTS.md is a
+// memory sink, never a rule target. `RATCHET` = a deferred hand-authored rule target —
+// also EMPTY (nothing was ever a legitimate rule target). `OUT_OF_SCOPE` = a
+// SelfAuthored node-scoped memory sink exempt from REGENERABLE (the dream-cell law),
+// which a rule cell must NEVER target — this covers EVERY tracked `*AGENTS.md`. A repo
+// AGENTS.md matching none of these FAILS the suite (a new convention file cannot be
+// silently un-owned) — but by the law, every AGENTS.md is out-of-scope, so the set is
+// exhaustive by construction.
 
-/** In-scope AGENTS.md that a `rule` cell converts (deploy target). */
-const CONVERTED_RULE_TARGETS: ReadonlySet<string> = new Set(['AGENTS.md']);
+/** In-scope AGENTS.md a `rule` cell converts — EMPTY (AGENTS.md are memory sinks). */
+const CONVERTED_RULE_TARGETS: ReadonlySet<string> = new Set([]);
 
-/** In-scope AGENTS.md still hand-authored — deferred, shrink-only ratchet. */
-const RATCHET_RULE_TARGETS: ReadonlySet<string> = new Set([
-  'packages/agent-anatomy/AGENTS.md',
-  'packages/agent-forge/AGENTS.md',
-  'packages/agent-memory/AGENTS.md',
-  'packages/agent-anatomy/src/toolkit/AGENTS.md',
-]);
+/** Deferred hand-authored rule targets — EMPTY (no AGENTS.md is a legit rule target). */
+const RATCHET_RULE_TARGETS: ReadonlySet<string> = new Set([]);
 
-/** SelfAuthored sinks (`plans/**`) — a rule cell must never target these. */
+/**
+ * Every tracked `AGENTS.md` is a SelfAuthored node-scoped memory sink (the
+ * `src/skills/dream.ts` law) — OUT-OF-SCOPE for rule conversion; a rule cell must
+ * never target one.
+ */
 function isOutOfScope(rel: string): boolean {
-  return rel.startsWith('plans/');
+  return rel.endsWith('AGENTS.md');
 }
 
 /** Every TRACKED `AGENTS.md` (git-listed — no node_modules/dist/render, no untracked). */
@@ -77,10 +84,10 @@ function repoAgentsMd(): string[] {
     .sort();
 }
 
-// ── the homes map + accept plumbing for the new cells ───────────────────────────
+// ── the homes map + accept plumbing for the hook cells ──────────────────────────
 
-/** One home per rule/hook anchor (the PARTITIONED claim over the new cells). */
-async function ruleHookHomes(): Promise<Homes> {
+/** One home per hook anchor (the PARTITIONED claim over the source cells). */
+async function hookHomes(): Promise<Homes> {
   const homes = new Map<string, string[]>();
   const add = (slug: string, id: string) => {
     const b = homes.get(slug) ?? [];
@@ -89,9 +96,6 @@ async function ruleHookHomes(): Promise<Homes> {
   };
   for (const c of await allHookCells()) {
     add(c.slug, `hook/${c.id}`);
-  }
-  for (const c of await allRuleCells()) {
-    add(c.slug, `rule/${c.id}`);
   }
   return homes;
 }
@@ -111,18 +115,25 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
     expect(ids).toEqual(['praxis-continuity', 'stance-guardrail']);
   });
 
-  it('≥1 rule cell witnesses an AGENTS.md target', async () => {
-    const rules = await allRuleCells();
-    expect(rules.length).toBeGreaterThanOrEqual(1);
-    for (const r of rules) {
-      expect(r.targetPath, `${r.id} names its scoped AGENTS.md`).toMatch(
-        /AGENTS\.md$/,
-      );
-    }
+  it('no cell target is an AGENTS.md ∧ every tracked AGENTS.md is out-of-scope', async () => {
+    // the coverage invariant, INVERTED: AGENTS.md are memory sinks, so NO projected
+    // target may be one, and EVERY tracked AGENTS.md classifies out-of-scope.
+    const agentsMdTargets = (await cellTargets())
+      .map((t) => t.path)
+      .filter((p) => p.endsWith('AGENTS.md'));
+    expect(
+      agentsMdTargets,
+      `a projected target is an AGENTS.md (memory sink): ${agentsMdTargets.join(', ')}`,
+    ).toEqual([]);
+    const notOutOfScope = repoAgentsMd().filter((rel) => !isOutOfScope(rel));
+    expect(
+      notOutOfScope,
+      `tracked AGENTS.md not out-of-scope: ${notOutOfScope.join(', ')}`,
+    ).toEqual([]);
   });
 
   // ── (c) NO-DIVERGENCE — committed target == cell bytes, byte-for-byte ──────────
-  it('every committed hook/rule target is byte-identical to its source cell', async () => {
+  it('every committed hook target is byte-identical to its source cell', async () => {
     for (const t of await cellTargets()) {
       const abs = join(repoRoot, t.path);
       expect(existsSync(abs), `${t.path} exists (${t.source})`).toBe(true);
@@ -138,21 +149,13 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
     expect(drift, `drifted targets: ${drift.join(', ')}`).toEqual([]);
   });
 
-  // ── (b) accept()/REFLEXIVE — the static Universal floor over every new cell ─────
-  it('every rule/hook cell DEFINIENS passes the static Universal floor', async () => {
-    const homes = await ruleHookHomes();
+  // ── (b) accept()/REFLEXIVE — the static Universal floor over every hook cell ─────
+  it('every hook cell DEFINIENS passes the static Universal floor', async () => {
+    const homes = await hookHomes();
     const cells: AcceptCell[] = [];
     for (const c of await allHookCells()) {
       cells.push({
         kind: 'hook',
-        slug: c.slug,
-        definiens: c.definiens,
-        refs: c.refs ?? [],
-      });
-    }
-    for (const c of await allRuleCells()) {
-      cells.push({
-        kind: 'rule',
         slug: c.slug,
         definiens: c.definiens,
         refs: c.refs ?? [],
@@ -177,19 +180,11 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
   });
 
   it('the accept ratchet is explicit + shrink-only (empty ⇔ clean floor)', async () => {
-    const homes = await ruleHookHomes();
+    const homes = await hookHomes();
     const bySlug = new Map<string, AcceptCell>();
     for (const c of await allHookCells()) {
       bySlug.set(c.slug, {
         kind: 'hook',
-        slug: c.slug,
-        definiens: c.definiens,
-        refs: c.refs ?? [],
-      });
-    }
-    for (const c of await allRuleCells()) {
-      bySlug.set(c.slug, {
-        kind: 'rule',
         slug: c.slug,
         definiens: c.definiens,
         refs: c.refs ?? [],
@@ -218,34 +213,12 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
       unclassified,
       `unclassified AGENTS.md (classify converted/ratchet/out-of-scope): ${unclassified.join(', ')}`,
     ).toEqual([]);
+    // the converted + ratchet sets are EMPTY — every AGENTS.md is a memory sink.
+    expect(CONVERTED_RULE_TARGETS.size).toBe(0);
+    expect(RATCHET_RULE_TARGETS.size).toBe(0);
   });
 
-  it('every CONVERTED target is owned by exactly one rule cell', async () => {
-    const owned = new Map<string, number>();
-    for (const r of await allRuleCells()) {
-      owned.set(r.targetPath, (owned.get(r.targetPath) ?? 0) + 1);
-    }
-    for (const path of CONVERTED_RULE_TARGETS) {
-      expect(owned.get(path), `${path} owned by one rule cell`).toBe(1);
-    }
-  });
-
-  it('no rule cell targets an out-of-scope SelfAuthored sink (plans/**)', async () => {
-    for (const r of await allRuleCells()) {
-      expect(
-        isOutOfScope(r.targetPath),
-        `rule ${r.id} targets out-of-scope ${r.targetPath}`,
-      ).toBe(false);
-    }
-  });
-
-  it('every RATCHET target still exists as a hand-authored file (shrink-only)', () => {
-    for (const rel of RATCHET_RULE_TARGETS) {
-      expect(existsSync(join(repoRoot, rel)), `${rel} present`).toBe(true);
-    }
-  });
-
-  // ── projection stability — every hook/rule cell imports + carries a payload ─────
+  // ── projection stability — every hook cell imports + carries a payload ──────────
   it('every hook cell carries ≥1 worker with non-empty content', async () => {
     for (const c of await allHookCells()) {
       expect(c.workers.length, `${c.id} has workers`).toBeGreaterThan(0);
@@ -255,12 +228,6 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
           w.targetPath,
         );
       }
-    }
-  });
-
-  it('every rule cell carries a non-empty body', async () => {
-    for (const c of await allRuleCells()) {
-      expect(c.body.length, `${c.id} body`).toBeGreaterThan(0);
     }
   });
 });

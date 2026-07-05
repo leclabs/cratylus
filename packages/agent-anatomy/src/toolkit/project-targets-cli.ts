@@ -1,4 +1,4 @@
-// CLI for `project-targets`: regenerate the committed hook/rule deploy targets from
+// CLI for `project-targets`: regenerate the committed hook deploy targets from
 // their source cells, or `--check` (diff-only, nonzero exit on drift). The runnable
 // half of the byte-lock (`test/hook-rule-boundary.test.ts` is the gate).
 //
@@ -19,12 +19,10 @@ if (check) {
     );
     process.exit(1);
   }
-  process.stdout.write(
-    'OK — every hook/rule target matches its source cell.\n',
-  );
+  process.stdout.write('OK — every hook target matches its source cell.\n');
 } else {
   process.stdout.write(
-    `regenerated ${written.length} hook/rule target(s)${
+    `regenerated ${written.length} hook target(s)${
       drift.length ? ` (${drift.length} had drifted)` : ''
     }.\n`,
   );

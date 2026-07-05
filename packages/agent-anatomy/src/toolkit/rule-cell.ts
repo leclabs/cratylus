@@ -2,18 +2,21 @@
 // `activation: rule↦scope`). A rule is HARNESS-AGNOSTIC SOURCE: the harness is
 // orthogonal until `deploy(c,adapter) = inject(content(c), realize(scope,adapter))`.
 //
+// STATUS: `rule` is a LIVE KIND with ZERO corpus instances. An `AGENTS.md` at a node
+// is NOT a rule deploy target — it is a dream-written SelfAuthored memory sink (the
+// `src/skills/dream.ts` law: "An `AGENTS.md` at a node IS the semantic organ at that
+// scope; writing it is consolidation"), exempt from REGENERABLE (MODEL
+// `SelfAuthored ∉ Target`). Treating repo-root AGENTS.md as a byte-locked rule target
+// COLLIDED with that law (the first dream routing a repo-scoped fact reds the
+// byte-lock, a deploy clobbers the memory), so that S4 conversion was reverted. This
+// type stays as the KIND definition; no cell currently instantiates it.
+//
 // The cell carries TWO separable things:
 //   1. `definiens` — the σ*-signified canonical identity. This is what `accept()`
 //      / REFLEXIVE gates; it is R=LLM and BLIND-decodes to the rule's intent.
-//   2. `body` — the VERBATIM directive payload (the byte-anchor). The committed
-//      `<scope>/AGENTS.md` at `targetPath` is a DEPLOY-OWNED target regenerated
-//      from this body (`pnpm anatomy:project:targets`) and byte-locked by
-//      `test/hook-rule-boundary.test.ts` (REGENERABLE). The claude adapter realizes
-//      `scope` → a `<dir>/AGENTS.md` the harness loads for that subtree.
-//
-// The `body` is R=human operator-facing directive prose carried verbatim as the
-// projection payload; the reader-density gate (ρ=LLM) scans organ/skill surfaces,
-// NOT rule bodies — the canonical-densification of AGENTS.md bodies is a later lane.
+//   2. `body` — the VERBATIM directive payload (the byte-anchor), regenerated to
+//      `targetPath` by `project-targets` and byte-locked. `targetPath` must NOT be
+//      any node's `AGENTS.md` (that is a memory sink, per STATUS above).
 
 /** A `rule` source cell (source grain), carrying its verbatim directive body. */
 export interface RuleCell {
