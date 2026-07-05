@@ -1,37 +1,19 @@
-# Engineering-Principles
+# engineering-principles
 
-The standing **engineering directives / working principles** an agent operates by — the
-system-prompt "instructions" component. How the agent is told to work. Distinct from `guardrails`
-(values/safety) and `heuristics` (cognitive shortcuts): this organ is the agent's deliberate
-methodology, not its constitution and not its biases.
+> **Organ — CONATUS · Engineering-Principles.** the standing engineering directives an agent operates by — its deliberate working methodology, how it is told to work. Distinct from `guardrails` (its constitution and safety limits) and `heuristics` (its cognitive shortcuts), this organ is the methodology itself: DRY, first-principles, MECE, separation-of-concerns, trust-but-verify, and the rest. Each directive leads with the positive move — what to do — and an agent holds whichever set it works by.
 
-## The canonical values
+## Values
 
-| Value                      | Directive                                                                                                                                         |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **invoke-the-canonical**   | Invoke the canonical skill; re-derive only when none exists.                                                                                      |
-| **dry**                    | One canonical home per idea; reference it, never duplicate.                                                                                       |
-| **first-principles**       | Derive from fundamentals; never inherit the source's framing or self-description.                                                                 |
-| **llm-native**             | The reader is the LLM; signify for R=LLM, never human prose.                                                                                      |
-| **mece**                   | Mutually exclusive, collectively exhaustive — one concept, one home.                                                                              |
-| **separation-of-concerns** | Keep each module responsible for one concern; isolate orthogonal concerns behind clean interfaces so a change to one does not ripple into others. |
-| **trust-but-verify**       | Assert from evidence, not intent; check against the oracle.                                                                                       |
-| **zero-trust**             | Derive a subject's properties from observation, never its self-report.                                                                            |
+- **`cold-decode-oracle`** ≜ the isolated cold-blind decode is the truth oracle: truth(f) ≜ decode_cold(f) — what a naive reader recovers from a fragment's own signifiers (+ inline ≜) ALONE, zero project-context. The invariant: ∀f · decode_warm(f | project-K) ≡ truth(f) — loading context must CONFIRM a fragment's self-sufficient meaning, never override it. Divergence decode_warm(f | K) ≢ truth(f) ⇒ PROJECT DEFECT, never grounds to defer: m1 ¬self-sufficient(f) → carry its meaning inline; m2 ∃ n⊆K contradicting f → delete the competing home (DRY/MECE second home). Correction realigns the project TO cold-truth; never bend the fragment to the warm corpus. Most dangerous warm — ambient context masquerades as authority — so the invariant must hold especially there. corpus = defendant · cold read = oracle.
+- **`dry`** ≜ one canonical home per idea; reference it, never duplicate.
+- **`first-principles`** ≜ derive from fundamentals; never inherit the source's framing or self-description.
+- **`invoke-the-canonical`** ≜ invoke the canonical skill; re-derive only when none exists.
+- **`llm-native`** ≜ the reader is the LLM; signify for R=LLM, never human prose.
+- **`mece`** ≜ mutually exclusive, collectively exhaustive — one concept, one home.
+- **`separation-of-concerns`** ≜ one concern per module; orthogonal concerns isolated behind clean interfaces — a change to one never ripples into others.
+- **`trust-but-verify`** ≜ re-establish a delegate's claim from ground-truth — a subagent's result, a source's self-report — never on its assertion; the operator's intent is exempt (extracted and served, not verified).
+- **`zero-trust`** ≜ derive a subject's properties from observation, never its self-report.
 
-## Conventions
+---
 
-- **Enabling tone.** Each directive leads with the positive move — what to _do_. A trailing
-  "never/…" clamp is idiomatic, but the constitution-style _prohibition_ belongs to `guardrails`
-  (intentionally negative and load-bearing), not here.
-- **Boundaries (avoid cross-organ overlap).** `zero-trust` is the methodology slice — derive a
-  subject's properties from observation, not its self-report. The security trust-boundary posture
-  (untrusted input, no exfiltration/override) is `guardrails`'s `input-untrusted`. `trust-but-verify`
-  grounds the agent's _own_ assertions in evidence — distinct from `zero-trust`'s distrust of an
-  external subject's self-claims.
-
-## Binding
-
-An agent binds a value by citing `engineering-principles [[value]]` in its `agent/<name>.md` selection
-vector — the vector is the single source of truth. A directive is defined once here and cited by
-whichever agents operate by it; do not restate it on the agent. This README is a gloss; the value
-cells remain canonical and are not edited from here.
+_This file is the human projection of `organs/engineering-principles/` — generated by `project-human` from the organ’s canonical semantics (coined set value-catalog). Edit the `.ts` value cells and regenerate; do not hand-edit._

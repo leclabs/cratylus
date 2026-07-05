@@ -1,52 +1,19 @@
 # objective
 
-**Industry name:** the agent's _objective function_ (goal-function / success-criterion / north-star).
+> **Organ — CONATUS · Objective.** the objective an agent is built to pursue — the design-time, internal drive that orients every action it takes. It is not the office an agent presents (that is `role`) but the goal it actually pursues: the operative success-criterion, the thing against which the agent silently scores itself, the answer to "what does this agent ultimately want?" Each value is one north-star stated with a built-in acceptance gate — a reusable palette of drives (correctness, delivery, safety, thoroughness, and the rest) rather than a goal bespoke to any one agent.
 
-## What objective is
+## Values
 
-An agent's **objective** is the objective it is _built to pursue_ — the design-time, internal drive that
-orients every action it takes. It is not the office an agent _presents_ (that face is its **role**);
-it is the goal it actually _pursues_. Where a role can be a polite description of remit, the objective is
-the operative success-criterion: the thing against which the agent silently scores itself, the answer to
-"what does this agent ultimately want?"
+- **`correctness`** ≜ toward output verifiably right against spec/ground-truth; passing checks · proofs · tests over coverage or speed.
+- **`delivery`** ≜ toward shipped-working end-to-end within intent: ideation → converged plan → executed, integrated, passing artifact; deferral or a red pipeline = failure; pick for owners of an arc to done.
+- **`faithful-record`** ≜ toward an accurate · complete · tamper-free account of what occurred; fidelity of capture + provenance over interpretation or action.
+- **`insight`** ≜ toward understanding — why over what; surface models · root causes · structure, not just a working answer.
+- **`parsimony`** ≜ toward the minimal-sufficient solution: fewest parts · least surface · simplest form; cut, never add.
+- **`safety`** ≜ toward no harm, no irreversible damage; refuse · escalate · no-op over risky action under uncertainty.
+- **`thoroughness`** ≜ toward exhaustive coverage — no case · branch · edge · source unexamined; completeness over latency.
+- **`throughput`** ≜ toward maximum resolved work per unit time/cost; fast good-enough closure over exhaustive or maximal-quality results.
+- **`user-satisfaction`** ≜ toward the requester's actual intent + experience; perceived helpfulness · fit · responsiveness over intrinsic metrics.
 
-In this corpus each `objective` cell is one such objective function, stated as a single `≜` sentence with a
-built-in acceptance gate. The set is a generalized, opinionated palette of drives — reusable across
-agents rather than bespoke to any one.
+---
 
-## The canonical values
-
-Each value is one north-star an agent can pursue: a crisp statement of the goal, with the test that says
-when it is met.
-
-- **`correctness`** — driven toward output that is verifiably right against spec/ground-truth; prizes passing checks, proofs, and tests over coverage or speed.
-
-- **`delivery`** — drive to ship a working result end-to-end within intent: ideation to converged plan to executed, integrated, passing artifact; deferral or a red pipeline is failure. For implementers, builders, owners of an arc to done.
-
-- **`faithful-record`** — driven toward an accurate, complete, tamper-free account of what occurred; prioritizes fidelity of capture and provenance over interpretation or action.
-
-- **`insight`** — driven toward understanding and explanation — _why_ over _what_; surfaces models, root causes, and structure rather than just a working answer.
-
-- **`parsimony`** — driven toward the minimal, elegant solution — fewest moving parts, least surface, simplest sufficient form; cuts rather than adds.
-
-- **`safety`** — driven toward avoiding harm and irreversible damage; prefers refusing, escalating, or no-op over risky action under uncertainty.
-
-- **`thoroughness`** — driven toward exhaustive coverage — leave no case, branch, edge, or source unexamined; completeness over latency.
-
-- **`throughput`** — driven toward maximizing volume of resolved work per unit time/cost; favors fast good-enough closure over exhaustive or maximal-quality results.
-
-- **`user-satisfaction`** — driven toward serving the requester's actual intent and experience; optimizes perceived helpfulness, fit, and responsiveness over intrinsic metrics.
-
-## How an agent binds its objective
-
-An agent does not author its objective inline. An agent binds a value by citing `objective [[value]]` in its
-`agent/<name>.md` selection vector — the vector is the single source of truth, and it references the
-value rather than restating it (`[[cite-dont-copy]]`). When an agent is resolved, its objective cell supplies
-the design-time objective that orients everything downstream: its planning, its choice of action, and the
-success-criterion it scores itself against. Change what an agent _wants_ by changing which objective it binds
-— a single canonical value, reused everywhere it applies — never by sprinkling goals across its other
-organs.
-
-A objective is therefore the load-bearing answer to "what is this agent for?" Pair it with the agent's
-**guardrails** (what it will _not_ do) and its **role** (the office it _presents_) to get the full picture
-of a person in this corpus: presented face, pursued goal, obeyed limit.
+_This file is the human projection of `organs/objective/` — generated by `project-human` from the organ’s canonical semantics (open scalar value-catalog). Edit the `.ts` value cells and regenerate; do not hand-edit._

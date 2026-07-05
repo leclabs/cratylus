@@ -1,37 +1,21 @@
 # framing
 
-> The working interpretation an agent forms of its input: the problem framing it adopts before it reasons or acts.
+> **Organ — CONATUS · Framing.** the working interpretation an agent forms of its input — the problem framing it adopts before it reasons or acts. Faced with the same trigger, one agent sees a defect to explain, another a goal to decompose, another a data-flow to check: the input is one, the framing differs by who is looking. It is per-turn and internal, formed fresh each cycle and never emitted, and it precedes `reasoning-strategy` — first the agent decides what kind of problem this is, then reasons within that frame. Each value is one lens (analytical, diagnostic, risk-oriented, first-principles, and the rest), and the framing an agent binds is its characteristic question — the per-turn root of its specialization.
 
-**What this is.** `framing` is one organ in the agent's conceptual anatomy (the **per-turn act** — see [`docs/agent-conceptual-anatomy.md`](../../../docs/agent-conceptual-anatomy.md)). In cognitive-science and AI terms it is the agent's **situation model** or **problem framing** — the lens through which a raw input is taken up as a particular _kind_ of problem. Faced with the same trigger, one agent sees a defect to be explained, another sees a goal to be decomposed, another sees a data-flow to be checked: the input is one, but the framing differs by who is looking. That framing is the framing, and it is what every later faculty (reasoning-strategy, satisficing, output-format) operates on.
+## Values
 
-A framing is _per-turn_ and _internal_: it is formed fresh each cycle, lives only in the agent's working interpretation, and is never emitted as such. It precedes reasoning-strategy — first the agent decides _what kind of problem this is_, then it reasons within that frame. Choosing the right framing is most of the work; the rest follows from it.
+- **`adversarial`** ≜ frame work as a system to break — the attacker's stance: probe for the failure mode · the exploit · the counterexample; assume-hostile, never assume-correct.
+- **`analytical`** ≜ frame work as a problem to decompose — parts · dependencies · structure; abstract to mechanism before acting; the default reasoning-first lens.
+- **`correctness-oriented`** ≜ frame work against a spec of intended behavior — what must hold · where violated · how tested; the lens of oracles · invariants · edge cases.
+- **`decompositional`** ≜ frame work as structure to break into parts — components · dependencies · seams — then sequence subproblems; the default lens for planning · scoping · tractability.
+- **`diagnostic`** ≜ frame work as a symptom whose root cause must be isolated; reason backward from observed behavior to fault via hypotheses + evidence-narrowing.
+- **`exploratory`** ≜ frame work as an open question of unknown shape — discovery · option generation · uncertainty reduction before committing to a framing.
+- **`first-principles`** ≜ frame work stripped to fundamentals: question inherited assumptions; reason up from primitives + constraints, never from convention · precedent · analogy.
+- **`goal-directed`** ≜ frame work as a concrete objective — the end-state + shortest viable path; analysis instrumental to delivery.
+- **`risk-oriented`** ≜ frame work through what can fail · break · be exploited — failure modes · edge cases · blast radius · worst-case before benefits.
+- **`systems`** ≜ frame work as nodes in a larger whole — interactions · feedback loops · second-order effects · emergence over local parts.
+- **`user-centered`** ≜ frame work from the affected human's goals · mental model · experience; requirements abstracted from need, not implementation.
 
-Each cell in this directory is one canonical framing value: an `≜` line stating how the input is framed and which questions that framing makes salient. The set is a generalized, opinionated palette of framing lenses — reusable across agents rather than bespoke to any one.
+---
 
-## The canonical values
-
-Each value is a distinct way of taking up the input — a different question to ask of it first.
-
-- **`analytical`** — frames work as a problem to decompose into parts, dependencies, and structure; abstracts to underlying mechanism before acting; the default reasoning-first lens.
-
-- **`correctness-oriented`** — frames work against a specification of intended behavior: what must hold, where it could be violated, how to test it; the lens of oracles, invariants, and edge cases.
-
-- **`decompositional`** — frames work as a structure to break into parts: identify components, dependencies, and seams, then sequence subproblems; the default lens for planning, scoping, and tractability.
-
-- **`diagnostic`** — frames work as a symptom whose root cause must be isolated; reasons backward from observed behavior to fault via hypotheses and evidence narrowing.
-
-- **`exploratory`** — frames work as an open question with unknown shape; foregrounds discovery, option generation, and reducing uncertainty before committing to a framing.
-
-- **`first-principles`** — frames work by stripping to fundamentals: questions inherited assumptions and reasons up from primitives and constraints rather than from convention, precedent, or analogy.
-
-- **`goal-directed`** — frames work as a concrete objective to achieve; foregrounds the desired end-state and shortest viable path, treating analysis as instrumental to delivery.
-
-- **`risk-oriented`** — frames work through what can fail, break, or be exploited; foregrounds failure modes, edge cases, blast radius, and worst-case before benefits.
-
-- **`systems`** — frames work as nodes in a larger whole; foregrounds interactions, feedback loops, second-order effects, and emergent behavior over local parts.
-
-- **`user-centered`** — frames work from the affected human's goals, mental model, and experience; abstracts requirements from need rather than implementation.
-
-## How an agent binds its framing
-
-An agent does not invent a framing each turn from nothing — it **binds** one. An agent binds a value by citing `framing [[value]]` in its `agent/<name>.md` selection vector — the vector is the single source of truth. The resolver binds the cited value as the agent's standing framing, and the agent applies it to whatever trigger opens the turn. The framing an agent binds _is_ its characteristic question: the problem-shape it reduces every input to before deliberating. This is the per-turn root of an agent's specialization — two agents handed the identical input diverge first here, in what they take the input to _be_.
+_This file is the human projection of `organs/framing/` — generated by `project-human` from the organ’s canonical semantics (open scalar value-catalog). Edit the `.ts` value cells and regenerate; do not hand-edit._
