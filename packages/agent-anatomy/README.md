@@ -2,7 +2,7 @@
 
 > A corpus of composable semantic fragments, each routed to the exemplar it projects from.
 
-**What this is.** `agent-anatomy` is an exemplar corpus (`agent-anatomy ≜ the exemplar corpus`); its cells are the canonical, productive forms from which every particular artifact projects (`ideas/ ≜ the exemplars`). The frame is stated in [`AGENTS.md`](AGENTS.md) and [`ideas/AGENTS.md`](ideas/AGENTS.md); the concept in [`CONCEPT.md`](CONCEPT.md).
+**What this is.** `agent-anatomy` is an exemplar corpus (`agent-anatomy ≜ the exemplar corpus`); its cells are the canonical, productive forms from which every particular artifact projects (`src/ ≜ the exemplars`). The source of truth is the root model — `VISION` · `MODEL` · `ENGINE` · `CANON` (repo root). The corpus frame + cell format is stated in [`AGENTS.md`](AGENTS.md); the concept in [`CONCEPT.md`](CONCEPT.md).
 
 **How it works.** Raw information is run through [[exemplar-resolution]]: decomposed into fragments, each routed to the anchor whose latent priors most precisely circumscribe the exemplar it projects from (or, one scope-binding down, a scope-bound particular), composed by reference, residue pruned — and verified by round-trip. The result is a corpus organized by anchor: the best prior-resolved reconstruction of the source.
 
@@ -22,6 +22,6 @@ Three cells generate the rest; everything else is a consequence of running the m
 
 ## Structure
 
-Organized **by anchor, and nothing else.** `ideas/<slug>.md` — one exemplar per cell, flat namespace, globally-unique slugs; the slug _is_ the anchor and the `[[ ]]` graph _is_ the structure. Front-matter is minimal — `kind` (the ontological primitive that governs composition; closed set in `ideas/AGENTS.md`) and `delineation` (the Socratic bound); operator-facing glosses carry `gloss: true` instead. `kind` governs composition, never directory structure — no stored altitude, no projection promoted to a directory.
+Organized **by the agent anatomy** — typed TS modules under `src/` are the **sole source**, markdown is a projection: organ value-cells `src/organs/<organ>/<value>.ts`, agents `src/agents/<name>.ts`, skills `src/skills/<name>.ts`, and the special genus cells `src/genus/{memory,persona}.md`. The slug _is_ the anchor; composition is ESM `import` (one module per fragment = one home). Front-matter is minimal — `kind` (the anatomy slot that governs how a cell projects; closed set in [`AGENTS.md`](AGENTS.md) § Cell format + kind taxonomy) and `delineation` (the one-line bound). `kind` governs composition, never directory structure.
 
 _This README is the human projection of the cells above — it composes them, it does not copy them._

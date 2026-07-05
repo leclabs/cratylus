@@ -1,13 +1,13 @@
 # Conceptual Anatomy of an AI Agent
 
-> **The contract is the TypeScript; this is its projection.** The anatomy IS a
-> **TypeScript type system** —
-> `packages/agent-forge/src/anatomy/index.ts`, exported from `@leclabs/agent-forge/anatomy`. Those types are the
-> source of truth (genus · classification · arity · the 24-organ `Organ` union · `Fragment` · `Agent` ·
-> `Skill`); this prose is their human-readable mirror. Keep them consistent; the `.ts` wins on conflict.
+> **Subordinate human reference — not a source of truth.** The source of truth is the root model
+> (`VISION` · `MODEL` · `ENGINE` · `CANON`); the typed anatomy `packages/agent-forge/src/anatomy/index.ts`
+> (`@leclabs/agent-forge/anatomy`) is its type-level contract, enforcing genus · classification · arity · the
+> 24-organ `Organ` union · `Fragment` · `Agent` · `Skill`. This prose is a human-readable mirror of that
+> anatomy — a projection, never its author; on any conflict `MODEL`/`CANON` and the `.ts` win.
 
-> **Reference knowledge — do not re-derive.** This is the canonical **σ\*\_LLM** render of the agent's
-> conceptual anatomy: the MECE organ set (**STANCE / CONATUS**). Full research home in obsidian
+> **Reference knowledge — do not re-derive.** This is the human-readable **σ\*\_human** render of the agent's
+> conceptual anatomy: the MECE organ set on the **STANCE / CONATUS** filing axis. Full research home in obsidian
 > `Reference/context-engineering/conceptual-anatomy-of-an-ai-agent/`; produced blind by a fresh model
 > under the verified σ\*\_R-session prompt (2026-06-20).
 
