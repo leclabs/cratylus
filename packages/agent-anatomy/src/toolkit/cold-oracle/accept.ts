@@ -1,0 +1,301 @@
+// accept.ts — the machine-checkable falsifier for the root model's `accept()`
+// (MODEL.md). Lifts the author-time gate from the register-only leg to the full
+//
+//   accept(a) ⇔ Universal(a) ∧ (class(a)=agent ⇒ COMPOSED(a))
+//   Universal = CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARSIMONIOUS ∧ REGENERABLE
+//
+// DIVISION OF LABOUR (the honest boundary — named, per the E1 spec's "candidate,
+// not baked" method): the six Universal legs split into a STATIC floor decided
+// here (pure, hermetic, deterministic — runs in every `pnpm test`) and a LIVE
+// authority decided by the priors-only blind cold-oracle (`./oracle.ts` →
+// `./cold-oracle.sh`, fresh /tmp, no corpus/session/root reads). The two
+// decode-shaped legs — COLD-BLIND and SIGNIFIED (α=σ*) — are genuinely oracle
+// judgments (does the fragment / anchor decode to intent under LLM-priors
+// ALONE?); the static witness is their always-on FLOOR (external-cite,
+// malformed-sign), the oracle their ceiling. The four structural legs
+// (CANONICAL·PARTITIONED·PARSIMONIOUS·REGENERABLE) are fully static. The nonce
+// positive-control (`oracle.ts`) empirically backs the SIGNIFIED floor: a sign
+// that fires NO circumscribing prior cannot be σ*.
+//
+// This module is PURE — witnesses over supplied data, zero IO. Corpus loading +
+// oracle driving live in the caller (`test/reader-density.test.ts`, `./oracle.ts`).
+
+/** The six Universal legs of `accept()` (MODEL.md). */
+export type Leg =
+  | 'CANONICAL'
+  | 'SIGNIFIED'
+  | 'COLD-BLIND'
+  | 'PARTITIONED'
+  | 'PARSIMONIOUS'
+  | 'REGENERABLE';
+
+export const UNIVERSAL_LEGS: readonly Leg[] = [
+  'CANONICAL',
+  'SIGNIFIED',
+  'COLD-BLIND',
+  'PARTITIONED',
+  'PARSIMONIOUS',
+  'REGENERABLE',
+] as const;
+
+/** A cell reduced to what the static witnesses read (the source grain). */
+export interface AcceptCell {
+  readonly kind: 'organ-value' | 'agent' | 'skill' | 'rule' | 'hook';
+  /** α(c) — the assigned anchor (the SIGN). */
+  readonly slug: string;
+  /**
+   * The organ that qualifies this concept. A concept's IDENTITY is organ-scoped:
+   * `document` as output-format and `document` as role are DISTINCT concepts that
+   * legitimately share a bare sign, disambiguated by organ (as agent vectors do:
+   * `role document` vs `output-format document`). Absent ⇒ the bare slug is the id.
+   */
+  readonly organ?: string;
+  /** D(c) — the cell body / definiens (the core fragment for a value cell). */
+  readonly definiens: string;
+  /** The anchors this cell references (imports · `[[ ]]` · composition). */
+  readonly refs: readonly string[];
+}
+
+/** A concept's home-map identity — organ-qualified when the organ is known. */
+export function conceptKey(cell: Pick<AcceptCell, 'slug' | 'organ'>): string {
+  return cell.organ ? `${cell.organ}/${cell.slug}` : cell.slug;
+}
+
+/** concept-anchor → its home cell-ids (the partition the corpus induces). */
+export type Homes = ReadonlyMap<string, readonly string[]>;
+
+/** A deploy Target — REGENERABLE quantifies over these, not over source cells. */
+export interface Target {
+  readonly path: string;
+  /** ∃c,adapter: t=deploy(c,adapter) — produced by deploy, not hand-authored. */
+  readonly deployOwned: boolean;
+  /** a hand-edit escaped the projector (¬hand-edit is required). */
+  readonly handEdited: boolean;
+  /** t ∈ SelfAuthored{SEM,PROC,EPIS} — must never be a deploy Target. */
+  readonly selfAuthored: boolean;
+}
+
+export interface LegVerdict {
+  readonly leg: Leg;
+  readonly pass: boolean;
+  /** '' when pass; the named signal(s) when convicted. */
+  readonly reason: string;
+}
+
+// ── shared lexis ──────────────────────────────────────────────────────────────
+
+/** Well-formed sign: shortlex kebab (σ* is a well-formed fittest sign). */
+const KEBAB = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
+
+/**
+ * External-cite markers — a fragment that leans on an OUTSIDE reference cannot
+ * ground in `inline-≜ ∪ Corpus ∪ LLM-priors` alone (MODEL `¬external-cite`), so
+ * it fails blind. The static floor under COLD-BLIND (the live oracle is the
+ * authority: `decode_cold(core f) = intent(f)`).
+ */
+const EXTERNAL_CITE: ReadonlyArray<readonly [string, RegExp]> = [
+  ['url', /\bhttps?:\/\//i],
+  ['section-ref', /§\s*\d/],
+  ['rfc', /\bRFC[-\s]?\d/i],
+  ['numeric-citation', /\[\d+\]/],
+  ['et-al', /\bet al\.?/i],
+  ['ibid', /\bibid\b/i],
+  [
+    'see-doc',
+    /\bsee\b[^.]*\b(doc|document|spec|specification|section|manual|paper)\b/i,
+  ],
+];
+
+/** The anchor's own lexical tokens — a proxy for fired(α)'s core field. */
+function slugTokens(slug: string): string[] {
+  return slug.split('-').filter((t) => t.length > 0);
+}
+
+// ── the five per-cell / partition witnesses ─────────────────────────────────────
+
+/**
+ * CANONICAL — ∀c∈concepts(a): ¬orphan ∧ ¬private ∧ ¬palimpsest. Static reading:
+ * every anchor the cell REFERENCES resolves to a home (¬orphan/¬private), and the
+ * body carries no superseded framing layer (¬palimpsest). Duplicate-home is NOT
+ * here — that is PARTITIONED's sole jurisdiction (DRY/MECE).
+ */
+export function canonical(cell: AcceptCell, homes: Homes): LegVerdict {
+  const orphans = cell.refs.filter((r) => !homes.has(r));
+  // palimpsest — retired framing residue (superseded semantic layer left in body).
+  const palimpsest = PALIMPSEST_TOKENS.filter(([, re]) =>
+    re.test(cell.definiens),
+  );
+  const reasons: string[] = [];
+  if (orphans.length > 0) {
+    reasons.push(`orphan-ref(${orphans.join(',')})`);
+  }
+  if (palimpsest.length > 0) {
+    reasons.push(`palimpsest(${palimpsest.map(([k]) => k).join(',')})`);
+  }
+  return {
+    leg: 'CANONICAL',
+    pass: reasons.length === 0,
+    reason: reasons.join(' · '),
+  };
+}
+
+/** Retired framing tokens — a superseded layer, not present in a clean cell. */
+const PALIMPSEST_TOKENS: ReadonlyArray<readonly [string, RegExp]> = [
+  ['polis', /\bpolis\b/i],
+  ['oikos', /\boikos\b/i],
+  ['conatus', /\bconatus\b/i],
+  ['stance-conatus', /\bstance[-\s]conatus\b/i],
+];
+
+/**
+ * SIGNIFIED — α(c)=σ*(c). Static FLOOR: α is a well-formed sign (shortlex kebab);
+ * a sign that is not even well-formed is provably ≠ σ* (σ* is a well-formed
+ * fittest sign). The σ* circumscription itself — do the anchor's fired priors
+ * pick out exactly this concept? — is the live oracle's judgment (`oracle.ts`),
+ * empirically anchored by the nonce positive control (a sign firing NO
+ * circumscribing prior cannot be σ*). NB: |home(α)|>1 is PARTITIONED's leg (one
+ * concept, many homes), NOT an injectivity failure here (which is two distinct
+ * concepts colliding on one anchor — a concept-identity judgment, oracle-side).
+ */
+export function signified(cell: AcceptCell): LegVerdict {
+  const pass = KEBAB.test(cell.slug);
+  return {
+    leg: 'SIGNIFIED',
+    pass,
+    reason: pass ? '' : `malformed-sign('${cell.slug}')`,
+  };
+}
+
+/**
+ * COLD-BLIND — decode_cold(core f) = intent(f). Static FLOOR: the fragment does
+ * not lean on an external cite (a fragment that needs an outside reference is not
+ * self-sufficient and fails blind). The AUTHORITY is the live oracle
+ * (`oracle.ts`): a cold, isolated, priors-only decode must recover intent.
+ */
+export function coldBlindStatic(cell: AcceptCell): LegVerdict {
+  const hits = EXTERNAL_CITE.filter(([, re]) => re.test(cell.definiens));
+  return {
+    leg: 'COLD-BLIND',
+    pass: hits.length === 0,
+    reason: hits.length
+      ? `external-cite(${hits.map(([k]) => k).join(',')})`
+      : '',
+  };
+}
+
+/**
+ * PARTITIONED — ∀c: |home(c)|=1 ∧ disjoint(homes) ∧ ⋃home=Corpus. Per-cell view:
+ * this cell's anchor has exactly one home. (Coverage/disjointness are asserted
+ * corpus-wide by the caller over the full `homes` map.)
+ */
+export function partitioned(cell: AcceptCell, homes: Homes): LegVerdict {
+  const key = conceptKey(cell);
+  const bearers = homes.get(key) ?? [];
+  const pass = bearers.length === 1;
+  return {
+    leg: 'PARTITIONED',
+    pass,
+    reason: pass
+      ? ''
+      : `|home('${key}')|=${bearers.length} (${bearers.join(',')})`,
+  };
+}
+
+/**
+ * PARSIMONIOUS — body(c)=⟨α(c),residue(c)⟩ ∧ residue=D∖fired(α). Static proxy: the
+ * body must not re-emit the anchor's own lexical field (residue ⊇ fired(α) ⇒ the
+ * gloss restates the name the reader already decoded). A leading self-restatement
+ * is the crisp convictable signature; the full residue=D∖fired subtraction is the
+ * oracle's finer judgment.
+ */
+export function parsimonious(cell: AcceptCell): LegVerdict {
+  const restated = slugTokens(cell.slug).filter((t) =>
+    new RegExp(`\\b${t}\\b`, 'i').test(cell.definiens),
+  );
+  return {
+    leg: 'PARSIMONIOUS',
+    pass: restated.length === 0,
+    reason: restated.length ? `restates-α(${restated.join(',')})` : '',
+  };
+}
+
+/**
+ * REGENERABLE — ∀t∈Target: t=deploy(c) ∧ deterministic ∧ deploy-owned ∧ ¬hand-edit
+ * ∧ SelfAuthored∉Target ∧ ¬deploy-writes(SelfAuthored). Global over the Target set.
+ */
+export function regenerable(targets: readonly Target[]): LegVerdict {
+  const bad = targets.flatMap((t) => {
+    const f: string[] = [];
+    if (t.selfAuthored) {
+      f.push(`self-authored∈Target(${t.path})`);
+    }
+    if (t.handEdited) {
+      f.push(`hand-edited(${t.path})`);
+    }
+    if (!t.deployOwned) {
+      f.push(`¬deploy-owned(${t.path})`);
+    }
+    return f;
+  });
+  return {
+    leg: 'REGENERABLE',
+    pass: bad.length === 0,
+    reason: bad.join(' · '),
+  };
+}
+
+// ── the composite ────────────────────────────────────────────────────────────
+
+/**
+ * The per-cell Universal verdicts (CANONICAL·SIGNIFIED·COLD-BLIND·PARTITIONED·
+ * PARSIMONIOUS). REGENERABLE is global (`regenerable`) — a cell has no Target
+ * of its own — so it is folded in by the caller with the deploy Target set.
+ */
+export function universalCell(cell: AcceptCell, homes: Homes): LegVerdict[] {
+  return [
+    canonical(cell, homes),
+    signified(cell),
+    coldBlindStatic(cell),
+    partitioned(cell, homes),
+    parsimonious(cell),
+  ];
+}
+
+/** The legs a verdict list convicts (∅ ⇒ every leg passes). */
+export function failingLegs(verdicts: readonly LegVerdict[]): Leg[] {
+  return verdicts.filter((v) => !v.pass).map((v) => v.leg);
+}
+
+// ── COMPOSED — the agent-only conjunct (light; tsc enforces organ/arity) ────────
+
+/** An agent composite: organ → selected value-anchors, in source order. */
+export interface AgentComposite {
+  readonly name: string;
+  readonly selection: ReadonlyMap<string, readonly string[]>;
+}
+
+/**
+ * COMPOSED(a) — ∄ superfluous S_on (a value selected twice in one organ is
+ * redundant). Arity ∈ NatSet and value ∈ catalog are TYPE-enforced upstream
+ * (`@leclabs/agent-forge/anatomy` — wrong organ/arity = a compile error); this
+ * catches the one class types miss: a duplicated selection within an organ set.
+ */
+export function composed(agent: AgentComposite): {
+  pass: boolean;
+  reason: string;
+} {
+  const dups: string[] = [];
+  for (const [organ, values] of agent.selection) {
+    const seen = new Set<string>();
+    for (const v of values) {
+      if (seen.has(v)) {
+        dups.push(`${organ}:${v}`);
+      }
+      seen.add(v);
+    }
+  }
+  return {
+    pass: dups.length === 0,
+    reason: dups.length ? `superfluous(${dups.join(',')})` : '',
+  };
+}

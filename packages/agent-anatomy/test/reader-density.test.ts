@@ -44,6 +44,20 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Agent, Fragment } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
+// accept() falsifier — the full Universal gate (`src/toolkit/cold-oracle/accept.ts`),
+// the register gate above being one facet of ρ-conformance, not a Universal leg.
+import {
+  type AcceptCell,
+  type Homes,
+  type Leg,
+  type LegVerdict,
+  type Target,
+  UNIVERSAL_LEGS,
+  failingLegs,
+  regenerable,
+  universalCell,
+} from '../src/toolkit/cold-oracle/accept.js';
+import { nonceControl } from '../src/toolkit/cold-oracle/oracle.js';
 import type { SkillCell } from '../src/toolkit/skill-cell.js';
 // ρ + register(a) + conform — ONE shared model (`reader-register.ts`), also
 // enforced over the runtime frontiers by `reader-reach.test.ts`; RHO mirrors
@@ -296,4 +310,221 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     // one hedge alone is NOT a conviction (threshold = 2 distinct patterns).
     expect(humanRegisterSignals('for example, a fenced block')).toEqual([]);
   });
+});
+
+// ═══ accept() FALSIFIER — the full Universal gate + per-leg seed suite ════════════
+//
+// Lifts the author-time gate from the register-only leg (above) to
+//   accept(a) ⇔ Universal(a) ∧ (agent ⇒ COMPOSED(a))
+//   Universal = CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARSIMONIOUS ∧ REGENERABLE
+// decided by the BLIND priors-only cold-oracle — a LIVE authority (gated below,
+// `COLD_ORACLE_LIVE=1`) over an always-on STATIC floor (`src/toolkit/cold-oracle/
+// accept.ts`). NON-VACUOUS: one seeded defect per leg, each convicted — and MECE
+// (each seed trips ONLY its leg). Green over one live already-conformant cell.
+
+/** A self-sufficient, parsimonious body — clean on every non-target leg. */
+const clean = 'toward the minimal residue.';
+
+interface CellSeed {
+  readonly leg: Leg;
+  readonly cell: AcceptCell;
+  readonly homes: Homes;
+}
+
+/** Five cell-level seeds — each a distinct static defect signature. */
+const CELL_SEEDS: readonly CellSeed[] = [
+  {
+    // references an anchor with NO home → orphan-ref (a dangling concept)
+    leg: 'CANONICAL',
+    cell: {
+      kind: 'organ-value',
+      slug: 'clean-anchor',
+      definiens: clean,
+      refs: ['ghost-anchor'],
+    },
+    homes: new Map([['clean-anchor', ['seed']]]),
+  },
+  {
+    // a malformed sign (whitespace) — provably ≠ σ* without the oracle
+    leg: 'SIGNIFIED',
+    cell: {
+      kind: 'organ-value',
+      slug: 'bespoke term',
+      definiens: clean,
+      refs: [],
+    },
+    homes: new Map([['bespoke term', ['seed']]]),
+  },
+  {
+    // leans on an external cite → not self-sufficient, fails blind
+    leg: 'COLD-BLIND',
+    cell: {
+      kind: 'organ-value',
+      slug: 'clean-anchor',
+      definiens: 'derive it per §2 of the upstream spec.',
+      refs: [],
+    },
+    homes: new Map([['clean-anchor', ['seed']]]),
+  },
+  {
+    // one concept, two homes → |home|=2 (partition broken)
+    leg: 'PARTITIONED',
+    cell: {
+      kind: 'organ-value',
+      slug: 'dup-anchor',
+      definiens: clean,
+      refs: [],
+    },
+    homes: new Map([['dup-anchor', ['home-a', 'home-b']]]),
+  },
+  {
+    // the body restates the anchor → residue ⊇ fired(α)
+    leg: 'PARSIMONIOUS',
+    cell: {
+      kind: 'organ-value',
+      slug: 'parsimony',
+      definiens: 'being parsimonious: parsimony is the parsimony principle.',
+      refs: [],
+    },
+    homes: new Map([['parsimony', ['seed']]]),
+  },
+];
+
+/** The REGENERABLE seed — a self-authored store leaked into the deploy Target set. */
+const REGENERABLE_SEED: readonly Target[] = [
+  {
+    path: '~/.claude/agents/mav/EPISODIC.jsonl',
+    deployOwned: false,
+    handEdited: false,
+    selfAuthored: true,
+  },
+];
+
+/** A conformant deploy Target set (a regenerated SOUL) — passes REGENERABLE. */
+const GREEN_TARGETS: readonly Target[] = [
+  {
+    path: 'agents/mav.md',
+    deployOwned: true,
+    handEdited: false,
+    selfAuthored: false,
+  },
+];
+
+/** The full six-leg verdict for a scenario (per-cell legs + the global Target leg). */
+function allSix(
+  cell: AcceptCell,
+  homes: Homes,
+  targets: readonly Target[],
+): LegVerdict[] {
+  return [...universalCell(cell, homes), regenerable(targets)];
+}
+
+// ── the live corpus (one home per organ-value anchor is the PARTITIONED claim) ───
+
+async function loadOrganHomes(): Promise<Map<string, string[]>> {
+  const homes = new Map<string, string[]>();
+  for (const rel of await collect('organs/**/*.ts')) {
+    const f = await firstExport<{ slug: string; definiens: string }>(
+      join(srcRoot, rel),
+    );
+    // concept identity is organ-qualified — `organs/<organ>/<value>.ts`. A bare
+    // slug shared across organs (`document` role vs output-format) is TWO concepts.
+    const organ = rel.split('/')[1] as string;
+    const key = `${organ}/${f.slug}`;
+    const bearers = homes.get(key) ?? [];
+    bearers.push(rel);
+    homes.set(key, bearers);
+  }
+  return homes;
+}
+
+// ── RATCHET — explicit, shrink-only (mirrors REGISTER_RATCHET; no silent pin) ─────
+//
+// A deliberately-allowed known-non-conformant cell pins here, keyed to the leg it
+// fails; every pin must STILL fail that leg (else remove it). Literal set ⇒ a pin
+// cannot be added without a reviewed edit. Empty ⇔ the gated corpus conforms.
+const ACCEPT_RATCHET: ReadonlyArray<CellSeed> = [];
+
+describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-oracle', () => {
+  it('convicts one seeded defect per Universal leg — 6/6, and MECE (only that leg)', () => {
+    const convicted = new Set<Leg>();
+    for (const seed of CELL_SEEDS) {
+      const failing = failingLegs(allSix(seed.cell, seed.homes, GREEN_TARGETS));
+      expect(failing, `${seed.leg} seed must convict exactly its leg`).toEqual([
+        seed.leg,
+      ]);
+      convicted.add(seed.leg);
+    }
+    // REGENERABLE is global (a Target-set leg) — seed a clean cell + a dirty Target set.
+    const green = {
+      kind: 'organ-value',
+      slug: 'clean-anchor',
+      definiens: clean,
+      refs: [],
+    } as const;
+    const regFailing = failingLegs(
+      allSix(green, new Map([['clean-anchor', ['seed']]]), REGENERABLE_SEED),
+    );
+    expect(regFailing, 'REGENERABLE seed must convict exactly its leg').toEqual(
+      ['REGENERABLE'],
+    );
+    convicted.add('REGENERABLE');
+    // 6/6 — every Universal leg has a convicting seed (non-vacuous).
+    expect([...convicted].sort()).toEqual([...UNIVERSAL_LEGS].sort());
+  });
+
+  it('GREEN — one already-conformant live cell passes every Universal leg', async () => {
+    const f = await firstExport<{ slug: string; definiens: string }>(
+      join(srcRoot, 'organs/objective/parsimony.ts'),
+    );
+    expect(f.slug).toBe('parsimony');
+    const cell: AcceptCell = {
+      kind: 'organ-value',
+      slug: f.slug,
+      organ: 'objective',
+      definiens: f.definiens,
+      refs: [],
+    };
+    const homes = await loadOrganHomes();
+    expect(failingLegs(allSix(cell, homes, GREEN_TARGETS))).toEqual([]);
+  });
+
+  it('PARTITIONED corpus-wide — every organ-value anchor has exactly one home', async () => {
+    const homes = await loadOrganHomes();
+    const split = [...homes].filter(([, bearers]) => bearers.length !== 1);
+    expect(homes.size).toBeGreaterThan(100);
+    expect(
+      split.map(([slug, b]) => `${slug} → {${b.join(',')}}`),
+      'organ-value anchors must partition (one home each)',
+    ).toEqual([]);
+  });
+
+  it('the accept ratchet is explicit + shrink-only — every pin still convicts', () => {
+    for (const pin of ACCEPT_RATCHET) {
+      const failing = failingLegs(allSix(pin.cell, pin.homes, GREEN_TARGETS));
+      expect(
+        failing,
+        `ratchet pin '${pin.cell.slug}' no longer fails ${pin.leg} — REMOVE it`,
+      ).toContain(pin.leg);
+    }
+    // conformance witness: the gated corpus needs no pins.
+    expect(ACCEPT_RATCHET.length).toBe(0);
+  });
+
+  // ── LIVE authority — the priors-only BLIND cold-oracle (gated integration lane) ──
+  // Hits the network + a live model (slow, non-deterministic) → opt-in only, so the
+  // hermetic floor above stays green on every commit. Run: COLD_ORACLE_LIVE=1 vitest.
+  const live = process.env.COLD_ORACLE_LIVE === '1';
+  it.runIf(live)(
+    'BLIND isolation positive control — a nonce decodes to its GENERIC prior, not a registry gloss',
+    () => {
+      const ctl = nonceControl({ model: 'sonnet' });
+      // isolation holds ⇔ the coined nonce reads as an unknown/coined term. If the
+      // corpus/registry had leaked in, it would come back with a local gloss.
+      expect(ctl.isolated, `nonce '${ctl.nonce}' → ${ctl.decode}`).toBe(true);
+      // and never carries a project-registry gloss (the σ* skill sense of `signify`).
+      expect(/injective canonical anchor|σ\*/.test(ctl.decode)).toBe(false);
+    },
+    180_000,
+  );
 });
