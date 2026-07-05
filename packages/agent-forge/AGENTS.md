@@ -1,6 +1,6 @@
 # agent-forge — agent conventions
 
-**agent-forge** is the projection machinery of _polis_: the **common tongue**. Author agent-config once in a
+**agent-forge** is the projection machinery of the canon: the **common tongue**. Author agent-config once in a
 canonical IR, compile it to every client dialect (Claude Code, Codex, Cursor, …), and lift any client's
 existing config back into the IR.
 
@@ -59,5 +59,5 @@ each adapter maps its native events to and from.
 
 ## Alignment status
 
-agent-forge does **not yet** carry its own polis-aligned dev-agent config; once it does, those defs
+agent-forge does **not yet** carry its own canon-aligned dev-agent config; once it does, those defs
 become projections from `packages/agent-anatomy`'s corpus (future dogfooding task).

@@ -4,9 +4,9 @@
 sharded initiative. It never retires (contrast [[plan-retirement]], which governs the transient initiative
 scaffolds). Sweep `completed/` periodically; git is the recovery net.
 
-**Founder boundary.** Nico owns constitution/roles/archetypes (the society); Mav owns
-infrastructure/machinery (the substrate). `principal-ic` is intrinsic to both. A task here carries its own
-owner; cross-boundary tasks name both leads.
+**Lane boundary.** Nico owns the canon (semantics — organ-values / agents / skills / rules / hooks); Mav
+owns the engine (`agent-forge` — projection / deploy / harness). `principal-ic` intrinsic to both. A task
+here carries its own owner; cross-boundary tasks name both leads.
 
 **Acceptance discipline.** Every task lands green on the repo gates (`build` · `test` · `lint` ·
 `typecheck`) + the anatomy suite (projection-stability · reader-density · null-organ · skill-shape ·

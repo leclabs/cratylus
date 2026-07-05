@@ -16,18 +16,13 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 **Pending:**
 
-- `standing-oracle-gate` — the warm≡cold law as an enforced, blocking, pre-land boundary gate (corpus-side
-  author-time gate already done; this is the source-admission boundary). Instrument exists at
-  `packages/agent-anatomy/src/toolkit/cold-oracle/`. Lane: Mav (infra) + Nico (gate semantics). _Surviving
-  tail of the retired `warm-cold-acceptance` initiative._
 - `stance-guardrail-jurisdiction` — the judge must see the dispatch channel (tool_use payloads ·
   PreToolUse binding · dispatch-echo rubric class · observable fails-open). Lane: Mav + Nico.
-- `human-docs-projection` — human end-user + contributor docs as a ρ=human projection. **Feature request,
-  intent-first**: phase 1 elicits the Operator's true intent, phase 2 specs (candidate solution NOT baked as
-  spec). Lane: Nico.
-- `readme-anatomy-nature-drift` — root `README.md` still describes `agent-anatomy` by its retired material
-  nature (Python/markdown/"not an npm package"); align to current truth (TS workspace member; projector
-  retired). Doc-only sweep. Lane: Nico.
+
+_(Folded into `plans/canon-conformance/` — the source→`accept()` conformance initiative:
+`standing-oracle-gate` → E1 acceptance-harness (the pre-land boundary; instrument at `toolkit/cold-oracle/`);
+`human-docs-projection` → E2 project-human + S5; `readme-anatomy-nature-drift` → done (README is now the
+thesis) + S5; `factor-principal-ic-standing` → S1 pattern-prover.)_
 
 ## Done — swept records (git + `completed/` are the fuller record)
 
@@ -39,5 +34,5 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 ## See also
 
-- `CLAUDE.md` — the standing-initiative context (founder split + acceptance discipline).
+- `CLAUDE.md` — the standing-initiative context (lane split + acceptance discipline).
 - `docs/warm-cold-acceptance-attestation.md` — the retired warm≡cold initiative's durable attestation.

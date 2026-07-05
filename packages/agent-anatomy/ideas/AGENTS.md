@@ -1,7 +1,7 @@
 # ideas
 
-**`ideas` ≜ the exemplar corpus** — the canonical forms that **project into deployed agents and skills**.
-`agent-anatomy` exists ONLY to be the lean, canonical context-source for a mind-society; it is **not an encyclopedia
+**`ideas` ≜ the canon** — the canonical forms that **project into deployed agents and skills**.
+`agent-anatomy` exists ONLY to be the lean, canonical context-source for the agent system; it is **not an encyclopedia
 of ideas**. A fragment earns its place by being an **organ value**, a **skill substance**, or a
 constitution-scaffold an agent/skill composes — otherwise it is dead context and drops.
 
