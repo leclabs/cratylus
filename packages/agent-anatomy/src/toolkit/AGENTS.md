@@ -6,6 +6,13 @@ was consolidated here in T6.3; the Python projector/deployer was retired in T6.1
 
 - **TS wiring** — `project-cli.ts` / `project.ts` (project the corpus via agent-forge's claude adapter),
   `hooks.ts` (the agent-forge `Hook` sources), `cell.ts` / `codegen.ts` / `make-base.ts` / `skill-cell.ts`.
+- **`project-human` (E2 boundary-projection)** — `project-human.ts` / `project-human-cli.ts` / `organ-docs.ts`
+  regenerate the projection-OWNED organ READMEs (`organs/<organ>/README.md`) from their value cells via
+  agent-forge's harness-agnostic `projectHumanOrgan` (`boundary-projection ≜ {deploy, project-human}` — a
+  human-view is `project-human(c)`, never hand-authored). Run `pnpm anatomy:project:human` after editing a
+  projected organ's cells; `test/projection-boundary.test.ts` byte-locks each committed README to its
+  re-projection (a hand-edit fails the gate). `PROJECTED_ORGANS` in `organ-docs.ts` is the single home for
+  which organs are projection-owned (E2 seeds `heuristics`; the `canon-conformance` S5 slice grows it to 24).
 - **`guardrail/`** — the stance-guardrail **Stop/SubagentStop** worker scripts (`stance-guardrail.sh` +
   `stance-judge.sh` + `stance-judge-prompt.md`). The hook is **agent-forge-native** (T6.3): its source is the
   agent-forge `Hook` in `hooks.ts`, agent-forge PROJECTS it into `.claude/settings.json`, and `agent-forge deploy --kind

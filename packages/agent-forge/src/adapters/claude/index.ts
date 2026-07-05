@@ -108,3 +108,6 @@ export {
 // `.claude-plugin/` tree, distinct from writeClaude's per-scope `.claude/`
 // tree. Reachable via `agent-forge compile --as-plugin <name>`.
 export { writeClaudePlugin } from './bundle.js';
+// The claude realization of the five activation modes — the adapter's
+// `HarnessMechanismMap` for the engine's `realize(mode, mechanisms)`.
+export { claudeMechanisms } from './mechanisms.js';

@@ -9,3 +9,4 @@ export * from './vector-projection.js';
 export * from './plugin.js';
 export * from './managed.js';
 export * from './nested-rules.js';
+export * from './boundary.js';

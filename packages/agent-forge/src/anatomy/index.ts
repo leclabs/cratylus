@@ -387,3 +387,6 @@ export function markToColor(mark: Mark): string {
 export function provenanceMark(provenance: Provenance): Mark | undefined {
   return provenance.mark;
 }
+
+// ── project-human — the harness-agnostic human-view boundary projection ───────
+export { type OrganDoc, projectHumanOrgan } from './project-human.js';
