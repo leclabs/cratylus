@@ -13,7 +13,7 @@ readers(k)  — the realized artifact's operative consumers
 register(k) — the register the realized body is authored in
 conform(k)  ⇔ register(k) = ρ(k)                          -- a human-register agent-artifact is invalid
 
--- Cold-decode gate (home: [[cold-decode-oracle]]; instrument: the isolated oracle harness — a PROCESS
+-- Cold-decode gate (home: cold-decode-oracle; instrument: the isolated oracle harness — a PROCESS
 --   (scratch cwd + credentials-only config, tool-less, mood-neutral prompt), never a subagent (a subagent is warm)) --
 R_cold(f)   ≜ the isolated cold-blind decode of fragment f (a naive reader, zero project-K, from f's signifiers + inline ≜ alone)
 coldpass(k) ⇔ R_cold(body(k)) ≅_R gloss(k)  ∧  decode_warm(body(k) | K) ≅_R R_cold(body(k))
@@ -49,9 +49,9 @@ export const exemplify: SkillCell = {
 
 # Exemplify
 
-The CSF pipeline as one composition: three stages each fill one field of a single record, then a gate reads the realized record and refuses unless it is valid — including \`conform\`: an emitted agent-artifact (\`ρ = LLM\`) authored at human register fails accept. Accept also **executes** the isolated cold oracle ([[cold-decode-oracle]]) on the realized body — \`coldpass\`: m1 \`R_cold ≅_R gloss\` ∧ m2 \`warm ≅_R R_cold\` — and refuses on divergence; the oracle is a PROCESS (isolated cwd + config, tool-less), never a subagent (a subagent inherits project-K and reads warm). This is the law's teeth in the authoring path. Composes the three sibling stages — each a function over the same record, naming no peer. The symbol table is \`references/formal-symbolic-notation.md\`.
+The CSF pipeline as one composition: three stages each fill one field of a single record, then a gate reads the realized record and refuses unless it is valid — including \`conform\`: an emitted agent-artifact (\`ρ = LLM\`) authored at human register fails accept. Accept also **executes** the isolated cold oracle (cold-decode-oracle) on the realized body — \`coldpass\`: m1 \`R_cold ≅_R gloss\` ∧ m2 \`warm ≅_R R_cold\` — and refuses on divergence; the oracle is a PROCESS (isolated cwd + config, tool-less), never a subagent (a subagent inherits project-K and reads warm). This is the law's teeth in the authoring path. Composes the three sibling stages — each a function over the same record, naming no peer. The symbol table is \`references/formal-symbolic-notation.md\`.
 
-Bindings: composes [[conceptualize]] (\`produce\`) · [[signify]] (\`name\`) · [[materialize]] (\`realize\`).
+Bindings: composes conceptualize (\`produce\`) · signify (\`name\`) · materialize (\`realize\`).
 
 Resolve from context: \`D\` — the input corpus (multi-modal); \`R\` — the reader whose priors fix every meaning; \`s\` — the strategy ∈ { file, document }.
 

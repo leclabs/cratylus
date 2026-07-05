@@ -73,7 +73,7 @@ LAWS
 
 Stage 2 of exemplify (independently invocable — every naming review is a bare /signify); the naming ops \`canonical_anchor → coalescence\`. Fills the \`anchor\` field of each concept's record, preserves its \`gloss\`, commits no \`factorization\`. Hands conceptualize (stage 1) → materialize (stage 3).
 
-Bindings: stage of [[exemplify]]; between [[conceptualize]] and [[materialize]].
+Bindings: stage of exemplify; between conceptualize and materialize.
 
 Resolve from context: the concept records under naming review — each a triple \`k = (gloss, anchor, factorization)\` carrying its \`gloss\`, drawn from the concept lattice \`C_R\` (\`prim_R\` marks primitives, \`D_R\` its distinctions) — or any set under naming review.
 

@@ -59,7 +59,7 @@ s unnamed ∨ s ∉ S ⇒ ⊥
 
 The chain's emit op: \`CSF → realize\`. Select each concept's canonical factorization, emit the bipartite normal form \`CSF_R\`, and realize it as artifacts under an explicitly named strategy. Stage 3 of exemplify — consumes the \`name\`d records signify emitted, which conceptualize first populated. This stage \`realize\`s the concept-contract record: it fills the \`factorization\` field, preserving \`gloss\` and \`anchor\` — an unnamed concept (\`anchor = ⊥\`) cannot be realized.
 
-Bindings: stage of [[exemplify]]; consumes records from [[signify]] · [[conceptualize]].
+Bindings: stage of exemplify; consumes records from signify · conceptualize.
 
 Resolve from context: the \`name\`d concept-contract records — each carrying its \`gloss\` and \`anchor\`, drawn from the lattice \`C_R\` (with \`prim_R\`, \`fac_R\`, the order \`≺\`); \`s\` — the strategy, REQUIRED from the caller; \`\${OUTPUT_DIR}\` — file strategy only. The symbol table is \`references/formal-symbolic-notation.md\`.
 

@@ -3,7 +3,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 export const elicit: SkillCell = {
   name: 'elicit',
   trigger: `/elicit`,
-  delineation: `use this skill to elicit the operator's hidden intended concept — recover it by asking maximally-informative yes/no questions, each a distinction that bisects the live candidates by prior mass (binary-search / information-gain over the concept lattice), converging in the fewest questions; the active, query-driven counterpart to [[probe]] (which reads a signifier already given) — stop when one candidate survives or no question is worth its burden, then hand the recovered concept to [[signify]] to name.`,
+  delineation: `use this skill to elicit the operator's hidden intended concept — recover it by asking maximally-informative yes/no questions, each a distinction that bisects the live candidates by prior mass (binary-search / information-gain over the concept lattice), converging in the fewest questions; the active, query-driven counterpart to probe (which reads a signifier already given) — stop when one candidate survives or no question is worth its burden, then hand the recovered concept to signify to name.`,
   verb: `elicit`,
   formalBlock: `-- declarations (the block stands alone) ----------------------------
 R          — the reader; the agent in whom concepts and priors live
@@ -35,7 +35,7 @@ elicit    ≜ from K = C_R, iterate filter until stop ; return t = the one survi
 
 Active inverse of probe: recover the operator's hidden target \`t\` by query, then hand \`t\` to signify. The search space is the concept lattice produced by conceptualize (\`C_R\`, \`D_R\` below); the operator is the yes/no oracle. Symbols: \`references/formal-symbolic-notation.md\`.
 
-Bindings: inverse of [[probe]]; hands the recovered target to [[signify]]; searches the lattice from [[conceptualize]].
+Bindings: inverse of probe; hands the recovered target to signify; searches the lattice from conceptualize.
 
 \`\`\`text
 -- declarations (the block stands alone) ----------------------------

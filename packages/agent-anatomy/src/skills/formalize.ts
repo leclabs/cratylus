@@ -44,7 +44,7 @@ Render prose into the reader-relative fittest formal block — a self-sufficient
 
 The operation invokes the sibling skills conceptualize (prose → entities/operations/laws) then signify (each term → a symbol: mint, or boundary-bind to an existing anchor). The symbol table is \`references/formal-symbolic-notation.md\`. Resolve from context: \`P\` — the source prose (a section, a process, a skill body).
 
-Bindings: composes [[conceptualize]] · [[signify]].
+Bindings: composes conceptualize · signify.
 
 \`\`\`text
 P ≜ the source prose

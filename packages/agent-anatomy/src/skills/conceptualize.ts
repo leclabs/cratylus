@@ -58,7 +58,7 @@ C_R = ∅           ⇒ ⊥                                            -- empty 
 
 Stage 1 of exemplify (independently invocable); the front of the op-chain \`resolve → partition → depalimpsest → distill\`. Emits the concept lattice \`C_R\` with each concept's \`gloss\` filled, deciding nothing about names or material form: produces the contract record with \`gloss\` set and \`anchor\`, \`factorization\` left \`⊥\`. Hands off to signify (stage 2) → materialize (stage 3).
 
-Bindings: stage of [[exemplify]]; hands off to [[signify]] · [[materialize]].
+Bindings: stage of exemplify; hands off to signify · materialize.
 
 Resolve from context: \`sources\` — input material (multi-modal); \`R\` — the reader whose priors fix every meaning.
 

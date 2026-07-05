@@ -3,7 +3,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 export const probe: SkillCell = {
   name: 'probe',
   trigger: `/probe`,
-  delineation: `use this skill to probe a signifier — read out the latent priors a word, phrase, or candidate name fires in the reader (\`fired_R\`, [[signify]]'s decoder \`dec_R\` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of [[signify]], for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through [[signify]].`,
+  delineation: `use this skill to probe a signifier — read out the latent priors a word, phrase, or candidate name fires in the reader (\`fired_R\`, signify's decoder \`dec_R\` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of signify, for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through signify.`,
   verb: `probe`,
   formalBlock: `DECLARATIONS
 
@@ -53,7 +53,7 @@ probe(w) ≜ ( fired_R(w), concept_R(w) )                 -- readout only; nothi
 
 Forward, no-commit inverse of signify: read a signifier \`w\` already given and return the priors it fires plus the concept it circumscribes, committing nothing — the active counterpart elicit instead queries an oracle for a target not yet signified. Resolve from context: \`w\` — the signifier under probe (a word, phrase, or candidate name); \`R\` — the reader whose priors are the instrument. \`fired_R\` generalizes signify's decoder \`dec_R\` off its assigned anchors; the lattice \`C_R\`, the closure \`cl_R\`, and the distinction space \`D_R\` come from conceptualize. Symbol table: \`references/formal-symbolic-notation.md\`.
 
-Bindings: inverse of [[signify]]; counterpart to [[elicit]]; draws the lattice from [[conceptualize]].
+Bindings: inverse of signify; counterpart to elicit; draws the lattice from conceptualize.
 
 \`\`\`text
 DECLARATIONS

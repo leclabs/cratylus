@@ -25,9 +25,9 @@ resume  — act as the same individual (rebind the continuity-thread); a wake-ti
 
 # Wake Skill
 
-wake ≜ invokes [[dream]] · the read-and-resume half of the session boundary
+wake ≜ invokes dream · the read-and-resume half of the session boundary
 
-The session-start reconstitution. [[dream]] is the up-and-out write of the agent's memory store; \`/wake\` reads it back and resumes the **continuity-thread** — the single individuated identity that persists across the /clear gap — so the agent resumes as the _same individual_, not a fresh instance.
+The session-start reconstitution. dream is the up-and-out write of the agent's memory store; \`/wake\` reads it back and resumes the **continuity-thread** — the single individuated identity that persists across the /clear gap — so the agent resumes as the _same individual_, not a fresh instance.
 
 Absorbed declarations (this skill stands alone — no external concept refs):
 
@@ -62,14 +62,14 @@ orient  — bind to the current project, resume that project's work-thread; read
 resume  — act as the same individual (rebind the continuity-thread); a wake-time read biases the very next action.
 \`\`\`
 
-**Session isolation (memory-session-isolation).** Raw working residue — EPISODIC forward-threads and a plan's \`active/\` ownership — is **session-owned while LIVE**: a live OTHER session's residue is INVISIBLE (no collision), while a COMPLETED session's residue is INHERITABLE (this is what makes cross-\`/clear\` resume work). The isolation axis is session **liveness**, not node alone; \`register\` publishes this session, \`--for-session\` filters the read, and the \`owner\`/\`occupied\` gate protects plan-binding. Cross-session sharing happens only through consolidation ([[dream]] drain of completed sessions), never by reading a live sibling's raw stream.
+**Session isolation (memory-session-isolation).** Raw working residue — EPISODIC forward-threads and a plan's \`active/\` ownership — is **session-owned while LIVE**: a live OTHER session's residue is INVISIBLE (no collision), while a COMPLETED session's residue is INHERITABLE (this is what makes cross-\`/clear\` resume work). The isolation axis is session **liveness**, not node alone; \`register\` publishes this session, \`--for-session\` filters the read, and the \`owner\`/\`occupied\` gate protects plan-binding. Cross-session sharing happens only through consolidation (dream drain of completed sessions), never by reading a live sibling's raw stream.
 
 Fired by **wake** / \`/wake\`; absent direction, default on the first turn after spawn.
 
 ## See also
 
-- [[dream]] — the write-motion counterpart; also step 1 of the sequence.
-- [[handoff]] — the persist half on the near side of /clear; wake is the read half on the far side.
-- [[carry-on]] — the in-session re-dispatch word; distinct from wake (which crosses the /clear gap).
+- dream — the write-motion counterpart; also step 1 of the sequence.
+- handoff — the persist half on the near side of /clear; wake is the read half on the far side.
+- carry-on — the in-session re-dispatch word; distinct from wake (which crosses the /clear gap).
 `,
 };

@@ -11,16 +11,16 @@ export const dream: SkillCell = {
 
 # Dream Skill
 
-dream ≜ the memory-consolidation ritual : EPISODIC → { AGENTS.md@node, SEMANTIC, PROCEDURAL, vault, EPISODIC } · applies [[exemplify]] then materializes via [[materialize]]
+dream ≜ the memory-consolidation ritual : EPISODIC → { AGENTS.md@node, SEMANTIC, PROCEDURAL, vault, EPISODIC } · applies exemplify then materializes via materialize
 
-The agent's "sleep" — sleep-dependent consolidation (replay → schema) run as an explicit step. dream is step 1 of the [[wake]] sequence. Symbol table: \`references/formal-symbolic-notation.md\`.
+The agent's "sleep" — sleep-dependent consolidation (replay → schema) run as an explicit step. dream is step 1 of the wake sequence. Symbol table: \`references/formal-symbolic-notation.md\`.
 
 Absorbed declarations (this skill is self-sufficient — no concept is referenced out):
 
 - **memory** ≜ the agent's organ-home: the store-set \`{ SEMANTIC, PROCEDURAL, EPISODIC }\` (at \`\${AGENT_HOME}/<store>.md\`/\`.jsonl\`) plus the bundled \`episodic.mjs\` runtime, verb-set \`V = {encode, read, node, fold, drain, migrate, audit, lock, session}\`. \`encode\` is down-and-in (events recorded as they happen; each encode also **heartbeats** the current session in the registry); \`dream\` is the **up-and-out** counterpart in the same home. **promotion-is-move**: a promoted item must be gone from its raw source. Store meanings: \`SEMANTIC\` = identity facts + durable agent-intrinsic knowledge (the hot index); \`PROCEDURAL\` = inductively generalized cross-project wisdom no projection already carries; \`EPISODIC\` = the raw time-ordered event stream + forward-looking next-steps. \`SOUL\` (the archetype) is **not** a dream output — the archetype changes only in the commons.
 - **session-liveness** ≜ the memory-session-isolation axis: raw residue is session-owned WHILE LIVE — a live OTHER session's records are INVISIBLE to a read, a COMPLETED session's are INHERITABLE. dream reads its own working set via \`read --for-session \${CLAUDE_SESSION_ID}\` (never a live sibling's stream) and clears via \`drain --completed-only\` (retains a live sibling's residue). Cross-session sharing is consolidation-only — the drain merges every COMPLETED session's records into the durable layers, so the cross-session merge is intact.
 - **node** ≜ the record's scope, COMPUTED never captured: \`node(cwd, host)\` = the nearest ancestor of the record's \`cwd\` (reflexive) holding a boundary marker (\`.git\` → project · package manifest → package · \`PLAN.md\` → plan · \`$HOME\` → user; markerless cwd = its own boundary; \`.git\` FILE resolves through to the primary checkout; cwd-less records → the \`legacy\` bucket). The tool's \`fold\` verb computes it — the dream never reasons a scope, it consumes the manifest.
-- **fold-then-route** ≜ [[memory]]'s placement law — pass 1 (tool): \`fold\` emits the byte-deterministic manifest \`{ id ↦ node | legacy, marker-basis }\`; pass 2 (dream): type picks the organ within the manifest's node, multi-scope items split, a cross-project lesson generalizes to agent-intrinsic under the **projection-dedup bar** (already carried by SOUL/skills/gates ⇒ not stored). An \`AGENTS.md\` at a node IS the semantic organ at that scope; writing it is consolidation (dedup · net-current · move-not-copy). A caller-supplied scope anywhere is an inert tag, never routing.
+- **fold-then-route** ≜ memory's placement law — pass 1 (tool): \`fold\` emits the byte-deterministic manifest \`{ id ↦ node | legacy, marker-basis }\`; pass 2 (dream): type picks the organ within the manifest's node, multi-scope items split, a cross-project lesson generalizes to agent-intrinsic under the **projection-dedup bar** (already carried by SOUL/skills/gates ⇒ not stored). An \`AGENTS.md\` at a node IS the semantic organ at that scope; writing it is consolidation (dedup · net-current · move-not-copy). A caller-supplied scope anywhere is an inert tag, never routing.
 - **reboot-seed-not-journal** (self-application) ≜ the product is a **reboot seed**, never a journal; the dream must itself round-trip — a wake-time read of the residue must reconstruct the agent's working state equivalent-or-better.
 - **context-not-prose** (R=LLM) ≜ emit at densest-faithful, symbol-bearing register; never human narration. \`¬graspable-in-one-glance(entry) ⇒ distill-further(entry) ∨ drop(entry)\`.
 - **palimpsest** ≜ a scar carried up as narrative, or a stale fact left overwriting a newer one. The anti-pattern dream removes: a superseded resident fact is **deleted**, not layered over.
@@ -98,7 +98,7 @@ acceptance ≜ a wake-time read biases the very next action   -- reboot-seed-not
 
 ## See also
 
-- [[exemplify]] · [[materialize]] — the consolidation pipeline dream applies to the raw stream.
-- [[wake]] — the read-and-resume counterpart; dream is step 1 of its sequence.
+- exemplify · materialize — the consolidation pipeline dream applies to the raw stream.
+- wake — the read-and-resume counterpart; dream is step 1 of its sequence.
 `,
 };
