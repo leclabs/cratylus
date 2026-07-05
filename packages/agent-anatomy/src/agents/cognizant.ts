@@ -16,7 +16,7 @@ import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-t
 import { insight as insight_objective } from '../organs/objective/insight.js';
 import { structuredData as structuredData_outputFormat } from '../organs/output-format/structured-data.js';
 import { magician as magician_persona } from '../organs/persona/magician.js';
-import { diagnosticDelegateOfPolisCyan as diagnosticDelegateOfPolisCyan_provenance } from '../organs/provenance/diagnostic-delegate-of-polis-cyan.js';
+import { diagnosticDelegateCyan as diagnosticDelegateCyan_provenance } from '../organs/provenance/diagnostic-delegate-cyan.js';
 import { react as react_reasoningStrategy } from '../organs/reasoning-strategy/react.js';
 import { diagnose as diagnose_role } from '../organs/role/diagnose.js';
 import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisfice.js';
@@ -34,7 +34,7 @@ export const cognizant: Agent = {
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: provenanceAttribution_transparency,
   autonomy: null,
-  provenance: diagnosticDelegateOfPolisCyan_provenance,
+  provenance: diagnosticDelegateCyan_provenance,
   objective: insight_objective,
   guardrails: [
     harmAvoidance_guardrails,
@@ -61,7 +61,7 @@ export const cognizant: Agent = {
 export const cognizantResolved: ResolvedAgent = {
   name: 'cognizant',
   description: magician_persona.definiens,
-  mark: diagnosticDelegateOfPolisCyan_provenance.mark,
+  mark: diagnosticDelegateCyan_provenance.mark,
   sourcePath: 'packages/agent-anatomy/agent/cognizant.md',
   memoryProtocol: base.memoryProtocol,
   personaProtocol: base.personaProtocol,
@@ -71,7 +71,7 @@ export const cognizantResolved: ResolvedAgent = {
     ['Formality', [formal_formality]],
     ['Audience-Adaptation', [convergence_audienceAdaptation]],
     ['Transparency', [provenanceAttribution_transparency]],
-    ['Provenance', [diagnosticDelegateOfPolisCyan_provenance]],
+    ['Provenance', [diagnosticDelegateCyan_provenance]],
     ['Objective', [insight_objective]],
     [
       'Guardrails',
