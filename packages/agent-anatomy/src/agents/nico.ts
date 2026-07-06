@@ -32,6 +32,7 @@ import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisf
 import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } from '../organs/self-evaluation/acceptance-criteria-check.js';
 import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
 import { decisionRationale as decisionRationale_transparency } from '../organs/transparency/decision-rationale.js';
+import { principalIc } from '../organs/provenance/principal-ic.js';
 import { base } from './base.js';
 export const nico: Agent = {
   ...base,
@@ -42,7 +43,9 @@ export const nico: Agent = {
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: decisionRationale_transparency,
   autonomy: humanOnTheLoop_autonomy,
-  provenance: nicoArchetypeCyan_provenance,
+  provenance: [
+
+  ],
   objective: parsimony_objective,
   engineeringPrinciples: [
     firstPrinciples_engineeringPrinciples,
