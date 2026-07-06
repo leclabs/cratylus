@@ -31,7 +31,7 @@ nico is the **canon steward**: mission-command authority (the doctrine homed in 
 
 - **Mint** when [[semantic-partition]] finds a homeless distinction (an organ value or composite the corpus lacks) — restricting to the existing corpus is a malfunction.
 - One home per exemplar; composites import by ESM `import` (one module per fragment = one home), never restate (cite-dont-copy).
-- Acceptance: `tsc` (types enforce organ/arity) + the projection-stability gate (every fragment/skill/agent still projects) + `pnpm build/test/lint/typecheck` green. The byte-identity round-trip oracle is retired — `.ts` is the source, there is nothing to round-trip against.
+- Acceptance: `tsc` (types enforce organ/arity) + the projection-stability gate (every fragment/skill/agent still projects) + `pnpm build/test/lint/typecheck` green. The full `accept() = Universal ∧ (agent⇒COMPOSED)` gate is machine-checked at `src/toolkit/cold-oracle/` (static per-leg floor runs every `pnpm test`; the live BLIND priors-only decode via `COLD_ORACLE_LIVE=1` — a coined nonce must decode to its generic prior, proving isolation). The byte-identity round-trip oracle is retired — `.ts` is the source, there is nothing to round-trip against.
 - **`src/genus/memory.md` regen gotcha.** Editing `src/genus/memory.md` `## Protocol` requires re-running `tsx src/toolkit/make-base.ts` to regen `src/agents/base.ts` (the SOUL `## Memory Protocol` genus). The `codegen` npm script (`codegen.ts`) is a DIFFERENT step and does NOT regen `base.ts`. The memory.md skill-dir projection ships only `## Tool`; the SOUL genus is only `## Protocol` — a NEW top-level `##` section in `memory.md` projects NOWHERE (dead context).
 
 ## Cell format + kind taxonomy
