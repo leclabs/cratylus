@@ -4,14 +4,14 @@
 
 ## Values
 
-- **`code-execution`** ≜ run arbitrary code in an interpreter/sandbox — Python · shell · SQL; returns stdout/values.
-- **`communication`** ≜ outbound messages to humans or systems — email · chat · notification · ticket · post; affects the world by signaling, not state mutation.
-- **`computer-use`** ≜ Drive a GUI via screen pixels and synthetic input (click, type, scroll) to operate apps and sites that expose no API.
-- **`delegation`** ≜ Dispatch sub-agents to do scoped work and integrate their returns; the agent acts through other agents it spawns and supervises. Dispatch prompts and subagent returns are agent-to-agent artifacts — ρ=LLM by standing rule (the signify READER BINDING), authored at register=LLM: dense, structured, signifier-carries-load, never long-form human prose; only a human-facing deliverable carried inside a return keeps ρ=human.
-- **`file-ops`** ≜ Create/read/edit/move/delete files and manage a workspace or repository tree; persistent artifact mutation on a filesystem or VCS.
-- **`physical-actuation`** ≜ Command physical-world actuators — robots, vehicles, IoT/embodied hardware — producing irreversible real-world motion or change.
-- **`retrieval`** ≜ read-only information access: search · query · fetch over web/DB/vector-index/docs/APIs.
-- **`tool-call`** ≜ structured invocation of an external API/function with arguments + typed return — the general mutating-or-querying call (REST · MCP tool · function); excludes the specialized sibling effectors.
+- code-execution ≜ run arbitrary code in an interpreter/sandbox — Python · shell · SQL; returns stdout/values.
+- communication ≜ outbound messages to humans or systems — email · chat · notification · ticket · post; affects the world by signaling, not state mutation.
+- computer-use ≜ Drive a GUI via screen pixels and synthetic input (click, type, scroll) to operate apps and sites that expose no API.
+- delegation ≜ Dispatch sub-agents to do scoped work and integrate their returns; the agent acts through other agents it spawns and supervises. Dispatch prompts and subagent returns are agent-to-agent artifacts — ρ=LLM by standing rule (the signify READER BINDING), authored at register=LLM: dense, structured, signifier-carries-load, never long-form human prose; only a human-facing deliverable carried inside a return keeps ρ=human.
+- file-ops ≜ Create/read/edit/move/delete files and manage a workspace or repository tree; persistent artifact mutation on a filesystem or VCS.
+- physical-actuation ≜ Command physical-world actuators — robots, vehicles, IoT/embodied hardware — producing irreversible real-world motion or change.
+- retrieval ≜ read-only information access: search · query · fetch over web/DB/vector-index/docs/APIs.
+- tool-call ≜ structured invocation of an external API/function with arguments + typed return — the general mutating-or-querying call (REST · MCP tool · function); excludes the specialized sibling effectors.
 
 ---
 

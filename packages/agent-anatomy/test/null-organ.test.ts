@@ -4,23 +4,21 @@
 // concrete fragment OR `null`; `null` ⇒ the organ is OMITTED from the
 // projection (inherited from the harness). This gate proves the whole chain per
 // agent module:
-//   vector organ = null  ⇔  no `[Title, …]` row in `<name>Resolved.organs`
-//                        ⇔  no `## Title` section in the projected SOUL
-// and, for concrete organs, the converse (row present ∧ section present).
-// It therefore also catches vector↔Resolved drift in either direction.
+//   vector organ = null  ⇔  no `## Title` section in the projected SOUL
+// (the composed `Resolved` intermediate is gone — `agentToClaudeMd` projects
+// straight from the `Agent` vector), and, for concrete organs, the converse
+// (section present).
 
 import {
   agentToClaudeMd,
   organTitle,
 } from '@leclabs/agent-forge/adapters/claude';
-import type { ResolvedAgent } from '@leclabs/agent-forge/adapters/claude';
 import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { ORGAN_NAMES } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
 
 import * as archDocWriter from '../src/agents/arch-doc-writer.js';
-import * as boswell from '../src/agents/boswell.js';
-import * as cognizant from '../src/agents/cognizant.js';
+import * as boz from '../src/agents/boz.js';
 import * as developer from '../src/agents/developer.js';
 import * as investigator from '../src/agents/investigator.js';
 import * as mav from '../src/agents/mav.js';
@@ -34,36 +32,31 @@ import * as tester from '../src/agents/tester.js';
 const fieldOf = (organ: string): keyof Agent =>
   organ.replace(/-(\w)/g, (_, c: string) => c.toUpperCase()) as keyof Agent;
 
-/** Every agent module: [vector, resolved]. */
-const MODULES: ReadonlyArray<readonly [Agent, ResolvedAgent]> = [
-  [archDocWriter.archDocWriter, archDocWriter.archDocWriterResolved],
-  [boswell.boswell, boswell.boswellResolved],
-  [cognizant.cognizant, cognizant.cognizantResolved],
-  [developer.developer, developer.developerResolved],
-  [investigator.investigator, investigator.investigatorResolved],
-  [mav.mav, mav.mavResolved],
-  [nico.nico, nico.nicoResolved],
-  [planner.planner, planner.plannerResolved],
-  [
-    principalEngineerReviewer.principalEngineerReviewer,
-    principalEngineerReviewer.principalEngineerReviewerResolved,
-  ],
-  [principalIc.principalIc, principalIc.principalIcResolved],
-  [tester.tester, tester.testerResolved],
+/** Every live agent vector (10 — boswell/cognizant deleted, `boz` added). */
+const AGENTS: readonly Agent[] = [
+  archDocWriter.archDocWriter,
+  boz.boswell,
+  developer.developer,
+  investigator.investigator,
+  mav.mav,
+  nico.nico,
+  planner.planner,
+  principalEngineerReviewer.principalEngineerReviewer,
+  principalIc.principalIc,
+  tester.tester,
 ];
 
-describe('NULL-ORGAN gate — null ⇔ no Resolved row ⇔ no SOUL section', () => {
-  for (const [agent, resolved] of MODULES) {
-    it(`${agent.name}: vector null-set matches Resolved + projection`, () => {
-      const soul = agentToClaudeMd(resolved);
-      const resolvedTitles = new Set(resolved.organs.map(([t]) => t));
+describe('NULL-ORGAN gate — null ⇔ no SOUL section', () => {
+  it('exactly the 10 live agents are under test', () => {
+    expect(AGENTS.length).toBe(10);
+  });
+
+  for (const agent of AGENTS) {
+    it(`${agent.name}: vector null-set matches the projected SOUL`, () => {
+      const soul = agentToClaudeMd(agent);
       for (const organ of ORGAN_NAMES) {
         const title = organTitle(organ);
         const isNull = agent[fieldOf(organ)] === null;
-        expect(
-          resolvedTitles.has(title),
-          `${agent.name}.${organ}: ${isNull ? 'null ⇒ no' : 'concrete ⇒ a'} Resolved row`,
-        ).toBe(!isNull);
         expect(
           soul.includes(`## ${title}`),
           `${agent.name}.${organ}: ${isNull ? 'null ⇒ no' : 'concrete ⇒ a'} \`## ${title}\` SOUL section`,

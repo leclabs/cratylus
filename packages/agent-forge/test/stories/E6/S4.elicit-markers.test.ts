@@ -37,13 +37,16 @@ const inheritAll = (): Record<Organ, OrganPlan> =>
     ORGAN_NAMES.map((o) => [o, { kind: 'inherit' } satisfies OrganPlan]),
   ) as Record<Organ, OrganPlan>;
 
-/** The stated organs, evidence-quoted; the silent three as elicitations. */
+/** The stated organs, evidence-quoted; the silent three as elicitations.
+ *  `persona` is a plain identity field now (D13), not an `Organ` fragment —
+ *  the frame would refuse it as an unknown organ key — so the raw NL
+ *  (replacement no-loss, REC ≽) is instead carried verbatim on `objective`
+ *  (an `open` scalar organ). */
 const SPEC: ElevationSpec = {
   name: 'reviewer',
   organs: {
     ...inheritAll(),
-    persona: {
-      // Carries the raw NL verbatim — replacement no-loss (REC ≽).
+    objective: {
       kind: 'value',
       fragments: [{ slug: 'code-reviewer', definiens: SILENT_DESCRIPTION }],
       evidence: { type: 'quote', note: SILENT_DESCRIPTION },

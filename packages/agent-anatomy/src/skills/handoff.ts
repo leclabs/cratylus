@@ -2,9 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const handoff: SkillCell = {
   name: 'handoff',
-  trigger: `/handoff`,
   delineation: `use this skill to prepare a session for handoff before /clear — bring the plan's record up to date (praxis sync) and consolidate memory (dream) while context is still hot; the persist half of the session boundary, invocable as /handoff.`,
-  verb: `handoff`,
   formalBlock: ``,
   composition: ['praxis', 'dream'],
   body: `

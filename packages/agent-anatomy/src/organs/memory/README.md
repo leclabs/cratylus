@@ -4,11 +4,11 @@
 
 ## Values
 
-- **`episodic`** ≜ long-term memory of past events/experiences.
-- **`long-term-memory`** ≜ the persistent store across turns (episodic · semantic · procedural); home = EPISODIC · SEMANTIC · PROCEDURAL.
-- **`procedural`** ≜ long-term skills/procedures.
-- **`semantic`** ≜ long-term factual/world knowledge.
-- **`working-memory`** ≜ short-term, in-context state for the current cycle.
+- episodic ≜ long-term memory of past events/experiences.
+- long-term-memory ≜ the persistent store across turns (episodic · semantic · procedural); home = EPISODIC · SEMANTIC · PROCEDURAL.
+- procedural ≜ long-term skills/procedures.
+- semantic ≜ long-term factual/world knowledge.
+- working-memory ≜ short-term, in-context state for the current cycle.
 
 ---
 

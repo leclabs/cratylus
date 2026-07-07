@@ -26,19 +26,10 @@ import {
   ANATOMY,
   type Arity,
   type Classification,
-  type Fragment,
   type Genus,
   ORGAN_NAMES,
   type Organ,
 } from '../anatomy/index.js';
-
-/** One discovered value of an organ: its anchor + definition body. */
-export interface CatalogValue {
-  /** The cell anchor (σ*_R) — the slug the value module exports. */
-  readonly slug: string;
-  /** The `≜ <definiens>` body. */
-  readonly definiens: string;
-}
 
 /** The discovery contract for one organ: its metadata + discovered values. */
 export interface CatalogEntry {
@@ -50,8 +41,11 @@ export interface CatalogEntry {
   readonly kind: Classification;
   /** Whether the organ holds one value or many. */
   readonly arity: Arity;
-  /** The discovered values, sorted shortlex by slug. */
-  readonly values: readonly CatalogValue[];
+  /**
+   * The discovered value bodies (each a branded-string cell, `⟨α, residue⟩`),
+   * sorted shortlex.
+   */
+  readonly values: readonly string[];
 }
 
 /**
@@ -65,30 +59,18 @@ export function shortlex(a: string, b: string): number {
   return a < b ? -1 : a > b ? 1 : 0;
 }
 
-/** Is `x` a value-cell `Fragment` (the shape every organ module exports)? */
-function isFragment(x: unknown): x is Fragment {
-  if (typeof x !== 'object' || x === null) {
-    return false;
-  }
-  const f = x as Record<string, unknown>;
-  return (
-    typeof f.organ === 'string' &&
-    typeof f.slug === 'string' &&
-    typeof f.definiens === 'string'
-  );
-}
-
 /**
- * Discover the value `Fragment`s under one organ dir (`<corpusOrgansDir>/<organ>`).
- * Imports every `*.ts` module and collects each exported `Fragment` whose
- * `organ` matches — tolerant of default OR named exports (agent-anatomy uses named).
+ * Discover the value bodies under one organ dir (`<corpusOrgansDir>/<organ>`).
+ * An organ value is now a branded STRING (`⟨α, residue⟩`); its organ home is the
+ * DIRECTORY, so every string export under `<organ>/` is one of that organ's
+ * values. Imports every `*.ts` module and collects each exported string.
  */
 async function valuesOf(
   corpusOrgansDir: string,
   organ: Organ,
-): Promise<CatalogValue[]> {
+): Promise<string[]> {
   const dir = join(corpusOrgansDir, organ);
-  const out: CatalogValue[] = [];
+  const out: string[] = [];
   const seen = new Set<string>();
   let modules: string[];
   try {
@@ -106,17 +88,13 @@ async function valuesOf(
       unknown
     >;
     for (const exported of Object.values(mod)) {
-      if (
-        isFragment(exported) &&
-        exported.organ === organ &&
-        !seen.has(exported.slug)
-      ) {
-        seen.add(exported.slug);
-        out.push({ slug: exported.slug, definiens: exported.definiens });
+      if (typeof exported === 'string' && !seen.has(exported)) {
+        seen.add(exported);
+        out.push(exported);
       }
     }
   }
-  out.sort((a, b) => shortlex(a.slug, b.slug));
+  out.sort(shortlex);
   return out;
 }
 

@@ -13,22 +13,18 @@
 //
 // The composed SOUL BODY itself is HARNESS-NEUTRAL — it is the agent's organ
 // sections, identical content whichever harness carries it. So this module REUSES
-// `agentBody` / `skillBody` / `ResolvedAgent` / `ResolvedSkill`
+// `agentBody` / `skillBody` (over the `Agent` vector + the `ResolvedSkill` shape)
 // from the claude adapter (those are the anatomy-composition machinery, not
 // claude-specific framing) and only adds the codex-specific FRAMING: the agent
 // body → a `.toml` `developer_instructions`, and the codex SKILL.md / AGENTS.md surfaces.
 
 import TOML from '@iarna/toml';
-import {
-  type ResolvedAgent,
-  type ResolvedSkill,
-  agentBody,
-  skillBody,
-} from '../claude/anatomy.js';
+import type { Agent } from '../../anatomy/index.js';
+import { type ResolvedSkill, agentBody, skillBody } from '../claude/anatomy.js';
 
-// Re-export the shared, harness-neutral resolved shapes so a codex consumer can
-// import everything it needs from the codex adapter.
-export type { ResolvedAgent, ResolvedSkill };
+// Re-export the shared, harness-neutral resolved skill shape so a codex consumer
+// can import everything it needs from the codex adapter.
+export type { ResolvedSkill };
 
 // ── Agent projection → agents/<name>.toml ────────────────────────────────────
 
@@ -48,16 +44,15 @@ export type { ResolvedAgent, ResolvedSkill };
  * `_profile` is retained for API symmetry but no longer recorded.
  */
 export function agentToCodexTomlObject(
-  a: ResolvedAgent,
+  a: Agent,
   _profile = 'strong-llm-lean/codex',
 ): Record<string, unknown> {
   const body = agentBody(a);
   const developerInstructions = `${body.replace(/\n+$/, '')}\n`;
+  const emoji = a.provenance?.mark.emoji;
   const obj: Record<string, unknown> = {
     name: a.name,
-    description: a.mark?.emoji
-      ? `${a.mark.emoji} ${a.description}`
-      : a.description,
+    description: emoji ? `${emoji} ${a.persona}` : a.persona,
     developer_instructions: developerInstructions,
   };
   return obj;
@@ -70,7 +65,7 @@ export function agentToCodexTomlObject(
  * TOML `"""` literal.
  */
 export function agentToCodexToml(
-  a: ResolvedAgent,
+  a: Agent,
   profile = 'strong-llm-lean/codex',
 ): string {
   const obj = agentToCodexTomlObject(a, profile);

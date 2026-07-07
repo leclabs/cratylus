@@ -2,9 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const createAgent: SkillCell = {
   name: 'create-agent',
-  trigger: `/create-agent`,
   delineation: `author a custom agent as an organ-selection vector — pick each organ's value from the canonical catalog (closed enums + generalized open sets), compose the agent/<name>.md vector, then resolve → verify → deploy; knows the organ anatomy. Can interview a non-engineer in plain language (one question per organ, recommending the fittest) when a human is driving.`,
-  verb: `create-agent`,
   formalBlock: ``,
   composition: [],
   body: `

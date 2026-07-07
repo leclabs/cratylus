@@ -1,17 +1,19 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The agent anatomy as a TypeScript type system.
 //
-// THIS MODULE IS THE ANATOMY CONTRACT. `docs/agent-conceptual-anatomy.md` is its
-// human projection; the prose mirrors these types, not the other way around.
+// THIS MODULE IS THE ANATOMY CONTRACT. An organ value is a per-organ **nominal-
+// branded string** — the MODEL address shape: `body(c) = ⟨α(c), residue(c)⟩`, the
+// anchor plus the leftover the anchor does not already fire (residue ∅ for a true
+// σ*). VISION: _address, don't describe._ There is NO `{organ,slug,definiens}`
+// value object, NO per-value phantom metadata — the string carries the body; the
+// module's directory (`organs/<organ>/`) is its organ home (PARTITIONED) and its
+// export name is its anchor α (SIGNIFIED).
 //
-// agent-anatomy authors fragments / agents / skills as typed modules that import these
-// types. Composition is ESM `import`; an agent is a flat, explicit 24-organ
-// vector (`null` = omit-to-inherit — see `Agent`). A wrong organ→value, a wrong arity, or a
-// fragment of the wrong organ in the wrong field is a **compile error** — there
-// is NO JSON-Schema and NO `Ref`/resolution machinery here: "every ref resolves
-// to one home" is `tsc`, and the `(organ, value)` pair-keying is structural (the
-// `organ` literal on each fragment discriminates `actions/emitFencedReview`
-// from `output-format/emitFencedReview`).
+// agent-anatomy authors organ values / agents / skills as typed modules that import
+// these types. Composition is ESM `import`; an agent is a flat, explicit organ
+// vector (`null` = omit-to-inherit — see `Agent`). A wrong organ→value or a wrong
+// arity is a **compile error** — the brand keys each string to its organ so an
+// `Actions` cannot be assigned where an `Objective` is expected.
 //
 // Exported from `@leclabs/agent-forge/anatomy` — a sibling subpath to the config-IR
 // `Agent`/`Skill` in `@leclabs/agent-forge` (those are the translation shapes; THESE
@@ -31,19 +33,22 @@ export type Genus = 'STANCE' | 'CONATUS';
  */
 export type Classification = 'enum' | 'open' | 'coined';
 
-/** Whether an organ field holds one fragment (`scalar`) or many (`set`). */
+/** Whether an organ field holds one value (`scalar`) or many (`set`). */
 export type Arity = 'scalar' | 'set';
 
-/** The 24 organ names — the MECE anatomy. The `Fragment.organ` discriminant. */
+/**
+ * The 22 FRAGMENT-organ names — the organs whose value is a branded-string cell.
+ * `persona` and `provenance` are NOT here: persona is a plain-string description on
+ * the agent (D13) and provenance is the structured `{mark}` on the agent (D3); both
+ * carry data, not a σ* residue, so neither is a value-fragment organ.
+ */
 export type Organ =
   // STANCE
   | 'autonomy'
-  | 'persona'
   | 'role'
   | 'formality'
   | 'audience-adaptation'
   | 'transparency'
-  | 'provenance'
   // CONATUS
   | 'objective'
   | 'guardrails'
@@ -63,121 +68,61 @@ export type Organ =
   | 'output-format'
   | 'self-evaluation';
 
-// ── The Fragment base type ──────────────────────────────────────────────────
+// ── The provenance mark ─────────────────────────────────────────────────────
 
-/** The emoji·hue mark a `provenance` fragment carries (drives agent color). */
+/** The emoji·hue mark an agent carries (drives its color). Data, not a σ* value. */
 export interface Mark {
   readonly emoji: string;
   /** Hue token (e.g. `green`), resolved to a terminal color by `markToColor`. */
   readonly hue: string;
 }
 
-/**
- * The shape a value-cell module exports. One module = one fragment = one home.
- *
- * `organ` is a string-literal discriminant: it makes the `(organ, value)` pair
- * structural, so a fragment authored under `organs/actions/` cannot be
- * assigned where an `organs/output-format/` fragment is expected even if both share
- * the slug `emitFencedReview`. `G` / `C` / `A` carry the genus, classification,
- * and arity at the type level (phantom — present in the type, absent at runtime)
- * so tooling and the per-organ aliases stay self-describing.
- */
-export interface Fragment<
-  O extends Organ = Organ,
-  G extends Genus = Genus,
-  C extends Classification = Classification,
-  A extends Arity = Arity,
-> {
-  /** The organ this fragment is a value of — the structural discriminant. */
-  readonly organ: O;
-  /** The cell anchor (σ*_R): the densest reader-relative name for the idea. */
-  readonly slug: string;
-  /** The definition body — `≜ <definiens>`. */
-  readonly definiens: string;
-  /** The emoji·hue mark — only `provenance` fragments carry it. */
-  readonly mark?: Mark;
+// ── Per-organ value types (branded strings) ─────────────────────────────────
+// An organ value is a bare named σ* expression: `export const x: Objective = '…'`.
+// Each per-organ type is a nominal-branded `string` — the phantom `__organ` brand
+// keys the string to its organ so `tsc` rejects a cross-organ assignment. The
+// value's content is the body ⟨α, residue⟩ (rendered `α ≜ residue`, or just `α`
+// for a true σ* whose residue is ∅).
 
-  // Phantom metadata — never read at runtime; present so the genus /
-  // classification / arity of a fragment are recoverable from its type alone.
-  readonly __genus?: G;
-  readonly __classification?: C;
-  readonly __arity?: A;
-}
-
-// ── Per-organ fragment types (24) ───────────────────────────────────────────
-// Each is a `Fragment` specialization pinned to its (organ, genus, classification,
-// arity) tuple. The arity here is the type-level fact; `Agent` (below) is what
-// actually enforces scalar-field-vs-array — a scalar organ's field holds `T`,
-// a set organ's field holds `T[]`.
+/** A branded organ-value string, keyed to organ `O`. */
+type OrganValue<O extends Organ> = string & { readonly __organ?: O };
 
 // STANCE
-export type Autonomy = Fragment<'autonomy', 'STANCE', 'enum', 'scalar'>;
-export type Persona = Fragment<'persona', 'STANCE', 'open', 'scalar'>;
-export type Role = Fragment<'role', 'STANCE', 'open', 'scalar'>;
-export type Formality = Fragment<'formality', 'STANCE', 'enum', 'scalar'>;
-export type AudienceAdaptation = Fragment<
-  'audience-adaptation',
-  'STANCE',
-  'enum',
-  'scalar'
->;
-export type Transparency = Fragment<'transparency', 'STANCE', 'enum', 'scalar'>;
-/** Carries the emoji·hue `mark` that drives the agent's color. */
-export type Provenance = Fragment<'provenance', 'STANCE', 'open', 'scalar'>;
+export type Autonomy = OrganValue<'autonomy'>;
+export type Role = OrganValue<'role'>;
+export type Formality = OrganValue<'formality'>;
+export type AudienceAdaptation = OrganValue<'audience-adaptation'>;
+export type Transparency = OrganValue<'transparency'>;
 
 // CONATUS — standing drives
-export type Objective = Fragment<'objective', 'CONATUS', 'open', 'scalar'>;
-export type Guardrails = Fragment<'guardrails', 'CONATUS', 'coined', 'set'>;
-export type EngineeringPrinciples = Fragment<
-  'engineering-principles',
-  'CONATUS',
-  'coined',
-  'set'
->;
-export type Heuristics = Fragment<'heuristics', 'CONATUS', 'coined', 'set'>;
-export type Capabilities = Fragment<'capabilities', 'CONATUS', 'open', 'set'>;
-export type Learning = Fragment<'learning', 'CONATUS', 'enum', 'scalar'>;
-export type SituationAwareness = Fragment<
-  'situation-awareness',
-  'CONATUS',
-  'enum',
-  'scalar'
->;
+export type Objective = OrganValue<'objective'>;
+export type Guardrails = OrganValue<'guardrails'>;
+export type EngineeringPrinciples = OrganValue<'engineering-principles'>;
+export type Heuristics = OrganValue<'heuristics'>;
+export type Capabilities = OrganValue<'capabilities'>;
+export type Learning = OrganValue<'learning'>;
+export type SituationAwareness = OrganValue<'situation-awareness'>;
 
 // CONATUS — apparatus
-export type Actions = Fragment<'actions', 'CONATUS', 'enum', 'set'>;
-export type Modalities = Fragment<'modalities', 'CONATUS', 'enum', 'scalar'>;
-export type Model = Fragment<'model', 'CONATUS', 'enum', 'scalar'>;
-export type Memory = Fragment<'memory', 'CONATUS', 'enum', 'scalar'>;
+export type Actions = OrganValue<'actions'>;
+export type Modalities = OrganValue<'modalities'>;
+export type Model = OrganValue<'model'>;
+export type Memory = OrganValue<'memory'>;
 
 // CONATUS — per-turn act
-export type Trigger = Fragment<'trigger', 'CONATUS', 'enum', 'scalar'>;
-export type Framing = Fragment<'framing', 'CONATUS', 'open', 'scalar'>;
-export type ReasoningStrategy = Fragment<
-  'reasoning-strategy',
-  'CONATUS',
-  'enum',
-  'scalar'
->;
-export type Satisficing = Fragment<'satisficing', 'CONATUS', 'enum', 'scalar'>;
-export type OutputFormat = Fragment<
-  'output-format',
-  'CONATUS',
-  'enum',
-  'scalar'
->;
-export type SelfEvaluation = Fragment<
-  'self-evaluation',
-  'CONATUS',
-  'enum',
-  'scalar'
->;
+export type Trigger = OrganValue<'trigger'>;
+export type Framing = OrganValue<'framing'>;
+export type ReasoningStrategy = OrganValue<'reasoning-strategy'>;
+export type Satisficing = OrganValue<'satisficing'>;
+export type OutputFormat = OrganValue<'output-format'>;
+export type SelfEvaluation = OrganValue<'self-evaluation'>;
 
 /**
- * The five SET organs — the only organs whose `Agent` field is an array.
- * (guardrails · capabilities · actions · heuristics · engineering-principles)
+ * The SET organs — the only organs whose `Agent` field is an array.
+ * (autonomy · guardrails · capabilities · actions · heuristics · engineering-principles)
  */
 export type SetOrgan =
+  | 'autonomy'
   | 'guardrails'
   | 'capabilities'
   | 'actions'
@@ -185,72 +130,32 @@ export type SetOrgan =
   | 'engineering-principles';
 
 // ── The runtime organ descriptor (axis / kind / arity) ──────────────────────
-// The per-organ `Fragment<O,G,C,A>` aliases above carry an organ's genus,
-// classification, and arity at the TYPE level — phantom params that erase at
-// runtime. A consumer that needs this metadata at runtime (e.g. `agent-forge catalog`)
-// can't read the types, so `ANATOMY` mirrors them as data. It is SINGLE-SOURCED:
-// each entry's value type is `MetaOf<TheOrgansFragmentAlias>`, which projects the
-// alias's `G/C/A` params back out — so a wrong axis/kind/arity here is a COMPILE
-// error, not a silent drift. The keyed object type forces every one of the 24
-// organs to be present (a missing organ is a compile error; an extra key has no
-// declared type and is rejected). `test/catalog/anatomy-descriptor` further
-// asserts the keyset is EXACTLY the 24 `Organ` literals at runtime.
+// A consumer that needs an organ's metadata at runtime (e.g. `agent-forge catalog`)
+// reads `ANATOMY` — the single home for organ genus/classification/arity. The keyed
+// object type forces every one of the fragment organs to be present (a missing
+// organ is a compile error; an extra key has no declared type and is rejected).
 
 /** The runtime-readable metadata for one organ (axis = genus). */
 export interface OrganMeta {
-  /** The MECE filing axis (the `Genus` of the organ's fragments). */
+  /** The MECE filing axis (the `Genus` of the organ's values). */
   readonly axis: Genus;
   /** How the value-catalog is sourced (the `Classification`). */
   readonly kind: Classification;
-  /** Whether the organ field holds one fragment or many (the `Arity`). */
+  /** Whether the organ field holds one value or many (the `Arity`). */
   readonly arity: Arity;
 }
 
-/** Project a per-organ `Fragment` alias's phantom params into an `OrganMeta`. */
-type MetaOf<F> = F extends Fragment<Organ, infer G, infer C, infer A>
-  ? { readonly axis: G; readonly kind: C; readonly arity: A }
-  : never;
-
 /**
- * The runtime mirror of the 24 per-organ `Fragment` aliases. Each value is typed
- * as `MetaOf<…>` of that organ's alias, so the data cannot disagree with the
- * type. This is the one runtime home for organ metadata — `agent-forge catalog` reads
- * it, never a second hand-kept copy.
+ * The one runtime home for organ metadata — `agent-forge catalog` reads it, never a
+ * second hand-kept copy. Keyed by organ so a missing/extra organ is a compile error.
  */
-export const ANATOMY: {
-  readonly autonomy: MetaOf<Autonomy>;
-  readonly persona: MetaOf<Persona>;
-  readonly role: MetaOf<Role>;
-  readonly formality: MetaOf<Formality>;
-  readonly 'audience-adaptation': MetaOf<AudienceAdaptation>;
-  readonly transparency: MetaOf<Transparency>;
-  readonly provenance: MetaOf<Provenance>;
-  readonly objective: MetaOf<Objective>;
-  readonly guardrails: MetaOf<Guardrails>;
-  readonly 'engineering-principles': MetaOf<EngineeringPrinciples>;
-  readonly heuristics: MetaOf<Heuristics>;
-  readonly capabilities: MetaOf<Capabilities>;
-  readonly learning: MetaOf<Learning>;
-  readonly 'situation-awareness': MetaOf<SituationAwareness>;
-  readonly actions: MetaOf<Actions>;
-  readonly modalities: MetaOf<Modalities>;
-  readonly model: MetaOf<Model>;
-  readonly memory: MetaOf<Memory>;
-  readonly trigger: MetaOf<Trigger>;
-  readonly framing: MetaOf<Framing>;
-  readonly 'reasoning-strategy': MetaOf<ReasoningStrategy>;
-  readonly satisficing: MetaOf<Satisficing>;
-  readonly 'output-format': MetaOf<OutputFormat>;
-  readonly 'self-evaluation': MetaOf<SelfEvaluation>;
-} = {
+export const ANATOMY: { readonly [O in Organ]: OrganMeta } = {
   // STANCE
-  autonomy: { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
-  persona: { axis: 'STANCE', kind: 'open', arity: 'scalar' },
+  autonomy: { axis: 'STANCE', kind: 'enum', arity: 'set' },
   role: { axis: 'STANCE', kind: 'open', arity: 'scalar' },
   formality: { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
   'audience-adaptation': { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
   transparency: { axis: 'STANCE', kind: 'enum', arity: 'scalar' },
-  provenance: { axis: 'STANCE', kind: 'open', arity: 'scalar' },
   // CONATUS — standing drives
   objective: { axis: 'CONATUS', kind: 'open', arity: 'scalar' },
   guardrails: { axis: 'CONATUS', kind: 'coined', arity: 'set' },
@@ -273,39 +178,36 @@ export const ANATOMY: {
   'self-evaluation': { axis: 'CONATUS', kind: 'enum', arity: 'scalar' },
 };
 
-/** Every organ name, in anatomy (STANCE-then-CONATUS) declaration order. */
+/** Every fragment-organ name, in anatomy (STANCE-then-CONATUS) declaration order. */
 export const ORGAN_NAMES = Object.keys(ANATOMY) as readonly Organ[];
 
 // ── The Agent: a typed organ-selection vector ───────────────────────────────
 
 /**
- * An agent as a selection over the anatomy: a FLAT, explicit 24-organ vector
- * (depth 1 — no base-organ hierarchy, no delta resolution; composition over
- * inheritance). Scalar organ fields hold ONE fragment; the five set organs hold
- * arrays. Arity is enforced by the field types — a scalar field cannot take an
- * array and a set field cannot take a scalar, so either mistake is a compile
- * error.
+ * An agent as a selection over the anatomy: a FLAT, explicit organ vector
+ * (depth 1 — composition over inheritance). Scalar organ fields hold ONE branded
+ * value; the six set organs hold arrays. Arity is enforced by the field types.
  *
- * Every organ key is REQUIRED (completeness law — a missing key is a compile
- * error). A key's value is a concrete fragment **or `null`**: the explicit-unset
- * sentinel (cf. CSS `unset`) — do NOT project this organ; inherit whatever the
- * harness provides. The key stays visible at the agent source, self-documenting
- * the deliberate harness-inheritance, and tracks the harness default even when
- * it drifts (expressiveness a concrete-value-matching-a-fixture cannot give).
- * `null` on a set organ omits the whole section (there is no partial inherit).
+ * Every organ key is REQUIRED (completeness law). A scalar organ's value is a
+ * concrete branded string **or `null`** (explicit omit-to-inherit — do NOT project
+ * this organ; inherit whatever the harness provides). `null` on a set organ omits
+ * the whole section. `persona` and `provenance` are NOT fragment organs: persona is
+ * a plain identity description, provenance the structured `{mark}` (or null).
  */
 export interface Agent {
   /** The agent's name (its module / deploy identity). */
   readonly name: string;
 
-  // STANCE (all scalar)
-  readonly autonomy: Autonomy | null;
-  readonly persona: Persona | null;
+  // STANCE
+  readonly autonomy: readonly Autonomy[] | null; // SET (composed standing, D5)
+  /** A plain identity description — NOT a σ* fragment (D13). Subsumes `description`. */
+  readonly persona: string;
   readonly role: Role | null;
   readonly formality: Formality | null;
   readonly audienceAdaptation: AudienceAdaptation | null;
   readonly transparency: Transparency | null;
-  readonly provenance: Provenance | null;
+  /** The emoji·hue mark (drives color) — data, not a fragment (D3). */
+  readonly provenance: { readonly mark: Mark } | null;
 
   // CONATUS — standing drives
   readonly objective: Objective | null;
@@ -345,47 +247,30 @@ export interface SkillDeploy {
 
 /**
  * A skill cell: a self-sufficient formal block plus the live sibling skills it
- * composes. `composition` is plain imported sibling `Skill`s — NO `[[ ]]`, NO
- * Bindings prose; the import IS the binding (one home, checked by `tsc`).
+ * composes. The name is the anchor (trigger `= /`+name; verb derivable), so neither
+ * is stored; `delineation` is the residue-tight one-line bound; `formalBlock` is the
+ * skill's PRIMARY σ* payload. `composition` is plain imported sibling `Skill`s.
  */
 export interface Skill extends SkillDeploy {
-  /** The skill name — carries the trigger-weight at progressive-disclosure. */
+  /** The skill name — the anchor; carries the trigger-weight at disclosure. */
   readonly name: string;
-  /** The invocation token (e.g. `/graphify`). */
-  readonly trigger: string;
-  /** The one-line bound that resolves into composites at selection time. */
+  /** The residue-tight one-line bound that resolves into composites at selection. */
   readonly delineation: string;
-  /** The H1 verb the formal block enacts. */
-  readonly verb: string;
   /** The self-sufficient set-builder block (declarations-above / laws-below). */
   readonly formalBlock: string;
   /** The sibling skills this one composes — plain ESM imports, no `[[ ]]`. */
   readonly composition: readonly Skill[];
 }
 
-// ── Derivation helpers (signatures + stubs) ─────────────────────────────────
+// ── Projection helpers ──────────────────────────────────────────────────────
 
 /**
- * Project a persona fragment to the agent's one-line description (the
- * `description:` front-matter the harness reads). Stub — the projection logic
- * lands with the composer migration (T2.x).
- */
-export function personaToDescription(persona: Persona): string {
-  return persona.definiens;
-}
-
-/**
- * Resolve a provenance fragment's `mark` to a terminal color. The mark's hue is
- * the source of truth; this maps it to the concrete color token a harness wants.
- * Stub — the hue→color table lands with the composer migration (T2.x).
+ * Resolve a provenance mark's hue to a terminal color. The hue is the source of
+ * truth; this maps it to the concrete color token a harness wants. (Identity for
+ * now — a richer hue→color table lands with a later projection task.)
  */
 export function markToColor(mark: Mark): string {
   return mark.hue;
-}
-
-/** Pull the `{ emoji, hue }` mark off a provenance fragment, if present. */
-export function provenanceMark(provenance: Provenance): Mark | undefined {
-  return provenance.mark;
 }
 
 // ── project-human — the harness-agnostic human-view boundary projection ───────

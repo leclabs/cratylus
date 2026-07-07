@@ -1,16 +1,22 @@
 /**
- * E6.S3 — agent elevation: step-1 persona form → full 24-organ vector, which
+ * E6.S3 — agent elevation: step-1 persona form → full 22-organ vector, which
  * REPLACES the config-IR agent (two-step agent law, Operator ruling).
  *
  * GRADUATED: the elevation frame ships in `src/core/exemplify/` (`elevateAgent`).
  * The SPEC below is the LLM exemplify+elicit pass's output over the step-1
  * text (the test plays the operating agent); the frame enforces the
- * mechanical laws: 24-key completeness, never-invent (every concrete value
+ * mechanical laws: 22-key completeness, never-invent (every concrete value
  * carries a provenance trace — a quote is verified against the source),
  * replacement no-loss (REC ≽: the step-1 NL recoverable from the vector),
  * and single-source replacement (the step-1 file is removed on accept).
  *
- * The elevation TARGET contract (24 organs, arities, axes) stays GREEN via
+ * `persona` and `provenance` are NOT `Organ` fragment members (D13/D3) — the
+ * `ElevationSpec.organs` record is keyed by the 22 fragment organs only, so
+ * this SPEC carries the step-1 raw NL on `objective` (an `open` scalar organ)
+ * rather than on a `persona` organ key (which the frame would now refuse as
+ * unknown).
+ *
+ * The elevation TARGET contract (22 organs, arities, axes) stays GREEN via
  * the runtime-introspection companion below.
  */
 
@@ -21,7 +27,6 @@ import {
   ANATOMY,
   ORGAN_NAMES,
   type Organ,
-  personaToDescription,
 } from '../../../src/anatomy/index.js';
 import {
   type ElevationSpec,
@@ -35,15 +40,13 @@ import {
 import { makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
-/** The 24 organ literals the vector must cover (anatomy declaration order). */
-const THE_24_ORGANS: readonly Organ[] = [
+/** The 22 fragment-organ literals the vector must cover (anatomy order). */
+const THE_22_ORGANS: readonly Organ[] = [
   'autonomy',
-  'persona',
   'role',
   'formality',
   'audience-adaptation',
   'transparency',
-  'provenance',
   'objective',
   'guardrails',
   'engineering-principles',
@@ -65,33 +68,28 @@ const THE_24_ORGANS: readonly Organ[] = [
 
 story(
   'E6.S3',
-  'the elevation target contract is runtime-introspectable: exactly 24 organs, 7 STANCE, 5 set organs',
+  'the elevation target contract is runtime-introspectable: exactly 22 organs, 5 STANCE, 6 set organs',
   () => {
-    // The keyset is exactly the 24 organ literals — the completeness law the
-    // elevated vector compiles against.
-    expect(ORGAN_NAMES).toHaveLength(24);
-    expect([...ORGAN_NAMES].sort()).toEqual([...THE_24_ORGANS].sort());
-    expect(Object.keys(ANATOMY).sort()).toEqual([...THE_24_ORGANS].sort());
-    // Axis split: 7 STANCE / 17 CONATUS.
+    // The keyset is exactly the 22 fragment-organ literals — the completeness
+    // law the elevated vector compiles against.
+    expect(ORGAN_NAMES).toHaveLength(22);
+    expect([...ORGAN_NAMES].sort()).toEqual([...THE_22_ORGANS].sort());
+    expect(Object.keys(ANATOMY).sort()).toEqual([...THE_22_ORGANS].sort());
+    // Axis split: 5 STANCE / 17 CONATUS (persona + provenance no longer
+    // STANCE fragment organs — D13/D3).
     const stance = ORGAN_NAMES.filter((o) => ANATOMY[o].axis === 'STANCE');
-    expect(stance).toHaveLength(7);
-    // Arity: exactly the five documented set organs take arrays.
+    expect(stance).toHaveLength(5);
+    // Arity: exactly the six documented set organs take arrays (autonomy is
+    // now a SET organ — composed standing, D5).
     const setOrgans = ORGAN_NAMES.filter((o) => ANATOMY[o].arity === 'set');
     expect([...setOrgans].sort()).toEqual([
       'actions',
+      'autonomy',
       'capabilities',
       'engineering-principles',
       'guardrails',
       'heuristics',
     ]);
-    // The step-1 → description projection is live (persona carries the raw NL).
-    expect(
-      personaToDescription({
-        organ: 'persona',
-        slug: 'raw-import',
-        definiens: 'a meticulous reviewer of database migrations',
-      }),
-    ).toBe('a meticulous reviewer of database migrations');
   },
 );
 
@@ -112,7 +110,11 @@ const SPEC: ElevationSpec = {
   name: 'reviewer',
   organs: {
     ...inheritAll(),
-    persona: {
+    // No `persona` key: persona is a plain identity field now (D13), not an
+    // `Organ` fragment — the frame refuses an unrecognized organ key. The
+    // step-1 raw NL is instead carried verbatim on `objective` (an `open`
+    // scalar organ), which satisfies replacement no-loss (REC ≽).
+    objective: {
       kind: 'value',
       fragments: [{ slug: 'migration-reviewer', definiens: STEP1_PERSONA }],
       evidence: { type: 'quote', note: STEP1_PERSONA },
@@ -168,7 +170,7 @@ afterEach(() => {
 
 story(
   'E6.S3',
-  'exemplify+elicit elevates the step-1 persona to a compiling 24-organ vector with a provenance trace per non-null organ',
+  'exemplify+elicit elevates the step-1 persona to a compiling 22-organ vector with a provenance trace per non-null organ',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
@@ -185,8 +187,8 @@ story(
       "import type { Agent } from '@leclabs/agent-forge/anatomy'",
     );
     expect(src).toContain('export const reviewer: Agent = {');
-    // All 24 organ fields present — a value fragment or the explicit null.
-    for (const organ of THE_24_ORGANS) {
+    // All 22 organ fields present — a value fragment or the explicit null.
+    for (const organ of THE_22_ORGANS) {
       expect(src, `organ field for '${organ}' missing`).toMatch(
         new RegExp(`\\b${ORGAN_FIELD[organ]}: `),
       );
@@ -197,7 +199,7 @@ story(
     ) as Record<string, { type: string; note: string }>;
     expect(Object.keys(provenance).sort()).toEqual([
       'heuristics',
-      'persona',
+      'objective',
       'role',
       'transparency',
     ]);

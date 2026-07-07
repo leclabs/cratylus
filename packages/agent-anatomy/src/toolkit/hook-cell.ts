@@ -47,13 +47,10 @@ export interface HookWorker {
 
 /** A `hook` source cell (source grain), carrying its verbatim worker payloads. */
 export interface HookCell {
-  readonly kind: 'hook';
-  /** Stable id → `hooks/<id>/`. */
+  /** Stable id → `hooks/<id>/`; the anchor α(c) (== the filename). */
   readonly id: string;
-  /** α(c) — the assigned anchor (the SIGN); usually `= id`. */
-  readonly slug: string;
-  /** σ*-signified canonical identity — the `accept()`/REFLEXIVE target. */
-  readonly definiens: string;
+  /** σ*-signified canonical identity (`body = ⟨α, residue⟩`) — the `accept()` target. */
+  readonly residue: string;
   /** Which substrate the event fires in. */
   readonly substrate: HookSubstrate;
   /** The harness-agnostic events that trigger the hook (≥1). */

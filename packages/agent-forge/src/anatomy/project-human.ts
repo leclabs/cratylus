@@ -11,7 +11,7 @@
 // read from `ANATOMY`, no clock/host/IO — so a committed organ README that diverges
 // from re-projection is a hand-edit (the falsifier), catchable by a byte diff.
 
-import { ANATOMY, type Fragment, type Organ } from './index.js';
+import { ANATOMY, type Organ } from './index.js';
 
 /**
  * The optional organ-level human gloss — `σ*_human` of the ORGAN concept itself,
@@ -33,9 +33,9 @@ function organTitle(organ: string): string {
     .join('-');
 }
 
-/** Slug-lexicographic order — the deterministic value ordering of a human-view. */
-function bySlug(a: Fragment, b: Fragment): number {
-  return a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0;
+/** Lexicographic order — the deterministic value ordering of a human-view. */
+function byBody(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
 }
 
 /**
@@ -62,12 +62,12 @@ function bySlug(a: Fragment, b: Fragment): number {
  */
 export function projectHumanOrgan(
   organ: Organ,
-  values: readonly Fragment[],
+  values: readonly string[],
   doc?: OrganDoc,
 ): string {
   const meta = ANATOMY[organ];
   const title = organTitle(organ);
-  const sorted = [...values].sort(bySlug);
+  const sorted = [...values].sort(byBody);
 
   const lines: string[] = [`# ${organ}`, ''];
   lines.push(
@@ -77,8 +77,8 @@ export function projectHumanOrgan(
     '',
   );
   lines.push('## Values', '');
-  for (const f of sorted) {
-    lines.push(`- **\`${f.slug}\`** ≜ ${f.definiens}`);
+  for (const body of sorted) {
+    lines.push(`- ${body}`);
   }
   lines.push(
     '',

@@ -1,4 +1,3 @@
-import type { ResolvedAgent } from '@leclabs/agent-forge/adapters/claude';
 import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { codeExecution as codeExecution_actions } from '../organs/actions/code-execution.js';
 import { delegation as delegation_actions } from '../organs/actions/delegation.js';
@@ -24,25 +23,21 @@ import { correctionConsolidation as correctionConsolidation_learning } from '../
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { delivery as delivery_objective } from '../organs/objective/delivery.js';
 import { code as code_outputFormat } from '../organs/output-format/code.js';
-import { master-builder as master-builder_persona } from '../organs/persona/master-builder.js';
-import { mavArchetypeGreen as mavArchetypeGreen_provenance } from '../organs/provenance/mav-archetype-green.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../organs/reasoning-strategy/plan-and-solve.js';
 import { build as build_role } from '../organs/role/build.js';
 import { optimize as optimize_satisficing } from '../organs/satisficing/optimize.js';
 import { executableTestOracle as executableTestOracle_selfEvaluation } from '../organs/self-evaluation/executable-test-oracle.js';
 import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
-import { base } from './base.js';
 export const mav: Agent = {
-  ...base,
   name: 'mav',
-  persona: master-builder_persona,
+  persona: '',
   role: build_role,
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: reasoningTrace_transparency,
-  autonomy: humanOnTheLoop_autonomy,
-  provenance: mavArchetypeGreen_provenance,
+  autonomy: [humanOnTheLoop_autonomy],
+  provenance: { mark: { emoji: '✈️', hue: 'green' } },
   objective: delivery_objective,
   engineeringPrinciples: [
     firstPrinciples_engineeringPrinciples,
@@ -76,52 +71,4 @@ export const mav: Agent = {
   outputFormat: code_outputFormat,
   selfEvaluation: executableTestOracle_selfEvaluation,
   heuristics: null,
-};
-export const mavResolved: ResolvedAgent = {
-  name: 'mav',
-  description: master-builder_persona.definiens,
-  mark: mavArchetypeGreen_provenance.mark,
-  sourcePath: 'packages/agent-anatomy/agent/mav.md',
-  memoryProtocol: base.memoryProtocol,
-  personaProtocol: base.personaProtocol,
-  organs: [
-    ['Persona', [master-builder_persona]],
-    ['Role', [build_role]],
-    ['Formality', [formal_formality]],
-    ['Audience-Adaptation', [convergence_audienceAdaptation]],
-    ['Transparency', [reasoningTrace_transparency]],
-    ['Autonomy', [humanOnTheLoop_autonomy]],
-    ['Provenance', [mavArchetypeGreen_provenance]],
-    ['Objective', [delivery_objective]],
-    [
-      'Engineering-Principles',
-      [
-        firstPrinciples_engineeringPrinciples,
-        zeroTrust_engineeringPrinciples,
-        dry_engineeringPrinciples,
-        mece_engineeringPrinciples,
-        llmNative_engineeringPrinciples,
-        coldDecodeOracle_engineeringPrinciples,
-        trustButVerify_engineeringPrinciples,
-        invokeTheCanonical_engineeringPrinciples,
-      ],
-    ],
-    [
-      'Guardrails',
-      [harmAvoidance_guardrails, honesty_guardrails, helpfulness_guardrails],
-    ],
-    [
-      'Capabilities',
-      [softwareEngineering_capabilities, operationsDelivery_capabilities],
-    ],
-    ['Learning', [correctionConsolidation_learning]],
-    ['Situation-Awareness', [projection_situationAwareness]],
-    ['Actions', [fileOps_actions, codeExecution_actions, delegation_actions]],
-    ['Memory', [longTermMemory_memory]],
-    ['Framing', [goalDirected_framing]],
-    ['Reasoning-Strategy', [planAndSolve_reasoningStrategy]],
-    ['Satisficing', [optimize_satisficing]],
-    ['Output-Format', [code_outputFormat]],
-    ['Self-Evaluation', [executableTestOracle_selfEvaluation]],
-  ],
 };

@@ -8,10 +8,8 @@ import type { HookCell } from '../toolkit/hook-cell.js';
 // realizes `event` → a `settings.json` `{hooks}` merge + `hooks/<id>/` workers.
 
 export const stanceGuardrail: HookCell = {
-  kind: 'hook',
   id: 'stance-guardrail',
-  slug: 'stance-guardrail',
-  definiens:
+  residue:
     'event-fired structural refusal of a turn that collapses the intent-driven-expert posture — judges the last turn and BLOCKS on permission-seeking · own-judgment-deferral · order-taking, while passing the reserved set (surfacing an irreversible-outward act for consent · routing a true INTENT ambiguity to elicitation); harness-invariant where prompt-level identity erodes under RLHF corrigibility.',
   substrate: 'harness',
   events: ['turn.end', 'subagent.end'],

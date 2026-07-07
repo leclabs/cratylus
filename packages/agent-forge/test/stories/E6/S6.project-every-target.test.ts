@@ -33,10 +33,9 @@ import {
 import { ALL_ADAPTERS, makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
-/** All 24 organ fields explicitly harness-inherited (`null`). */
-const NULL_ORGANS: Omit<OrganVector, 'name'> = {
+/** All 22 fragment-organ fields explicitly harness-inherited (`null`). */
+const NULL_ORGANS: Omit<OrganVector, 'name' | 'persona'> = {
   autonomy: null,
-  persona: null,
   role: null,
   formality: null,
   audienceAdaptation: null,
@@ -150,17 +149,20 @@ story(
       ],
       laws: ['¬green ⇒ ¬tag'],
     });
+    // `persona` is a plain identity string (not a fragment organ, D13) — it
+    // drives `description`; `role` is a real fragment organ, carrying the
+    // per-target-projected body line this story is actually about.
     const vector: OrganVector = {
       ...NULL_ORGANS,
       name: 'reviewer',
-      persona: {
-        organ: 'persona',
-        slug: 'migration-reviewer',
-        definiens: 'a meticulous migration reviewer',
-      },
+      persona: 'a meticulous migration reviewer',
+      role: 'migration-reviewer ≜ a meticulous migration reviewer',
     };
     const projected = projectVector(vector);
-    expect(projected.body).toContain('persona ≜ migration-reviewer');
+    expect(projected.description).toBe('a meticulous migration reviewer');
+    expect(projected.body).toContain(
+      'role ≜ migration-reviewer ≜ a meticulous migration reviewer',
+    );
     const carriersOfAgentBody: string[] = [];
     for (const adapter of ALL_ADAPTERS) {
       const dir = join(cwd, `opt-${adapter.id}`);
@@ -217,7 +219,7 @@ story(
       const agentCarrier = report.written.find((p) => {
         try {
           return readFileSync(p, 'utf8').includes(
-            'persona ≜ migration-reviewer',
+            'role ≜ migration-reviewer ≜ a meticulous migration reviewer',
           );
         } catch {
           return false;

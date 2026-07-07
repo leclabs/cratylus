@@ -8,11 +8,9 @@
  */
 
 import {
-  type Fragment,
   ORGAN_NAMES,
   type Agent as OrganVector,
   markToColor,
-  personaToDescription,
 } from '../../anatomy/index.js';
 import { ORGAN_FIELD } from '../exemplify/organ-fields.js';
 import type { Agent as IRAgent } from '../ir/types.js';
@@ -28,11 +26,11 @@ export function projectVector(vector: OrganVector): IRAgent {
   for (const organ of ORGAN_NAMES) {
     const value = vector[ORGAN_FIELD[organ]];
     if (value === null || value === undefined) continue;
-    const fragments = (
+    const values = (
       Array.isArray(value) ? value : [value]
-    ) as readonly Fragment[];
-    for (const f of fragments) {
-      lines.push(`${organ} ≜ ${f.slug} — ${f.definiens}`);
+    ) as readonly string[];
+    for (const v of values) {
+      lines.push(`${organ} ≜ ${v}`);
     }
   }
   const agent: IRAgent = {
@@ -40,7 +38,7 @@ export function projectVector(vector: OrganVector): IRAgent {
     body: `${lines.join('\n')}\n`,
   };
   if (vector.persona) {
-    agent.description = personaToDescription(vector.persona);
+    agent.description = vector.persona;
   }
   if (vector.provenance?.mark) {
     agent.color = markToColor(vector.provenance.mark);

@@ -2,9 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const dream: SkillCell = {
   name: 'dream',
-  trigger: `/dream`,
   delineation: `use this skill to consolidate an agent's memory — fold the raw EPISODIC stream (the tool computes each record's scope node from its cwd), then route by type: agent-intrinsic identity/facts to SEMANTIC, generalized cross-project wisdom to PROCEDURAL (only what no projection already carries), scoped knowledge and next-steps to the node's AGENTS.md, networked reference to the vault, the rest dropped; consumed raw is drained; SOUL is never written.`,
-  verb: `Dream Skill`,
   formalBlock: `node ~/.claude/skills/memory/episodic.mjs read --home \${AGENT_HOME} --for-session \${CLAUDE_SESSION_ID}`,
   composition: ['exemplify', 'materialize'],
   body: `

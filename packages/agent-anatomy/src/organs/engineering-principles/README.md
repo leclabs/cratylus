@@ -4,15 +4,17 @@
 
 ## Values
 
-- **`cold-decode-oracle`** ≜ the isolated cold-blind decode is the truth oracle: truth(f) ≜ decode_cold(f) — what a naive reader recovers from a fragment's own signifiers (+ inline ≜) ALONE, zero project-context. The invariant: ∀f · decode_warm(f | project-K) ≡ truth(f) — loading context must CONFIRM a fragment's self-sufficient meaning, never override it. Divergence decode_warm(f | K) ≢ truth(f) ⇒ PROJECT DEFECT, never grounds to defer: m1 ¬self-sufficient(f) → carry its meaning inline; m2 ∃ n⊆K contradicting f → delete the competing home (DRY/MECE second home). Correction realigns the project TO cold-truth; never bend the fragment to the warm corpus. Most dangerous warm — ambient context masquerades as authority — so the invariant must hold especially there. corpus = defendant · cold read = oracle.
-- **`dry`** ≜ one canonical home per idea; reference it, never duplicate.
-- **`first-principles`** ≜ derive from fundamentals; never inherit the source's framing or self-description.
-- **`invoke-the-canonical`** ≜ invoke the canonical skill; re-derive only when none exists.
-- **`llm-native`** ≜ the reader is the LLM; signify for R=LLM, never human prose.
-- **`mece`** ≜ mutually exclusive, collectively exhaustive — one concept, one home.
-- **`separation-of-concerns`** ≜ one concern per module; orthogonal concerns isolated behind clean interfaces — a change to one never ripples into others.
-- **`trust-but-verify`** ≜ re-establish a delegate's claim from ground-truth — a subagent's result, a source's self-report — never on its assertion; the operator's intent is exempt (extracted and served, not verified).
-- **`zero-trust`** ≜ derive a subject's properties from observation, never its self-report.
+- cold-decode-oracle ≜ the isolated cold-blind decode is the truth oracle: truth(f) ≜ decode_cold(f) — what a naive reader recovers from a fragment's own signifiers (+ inline ≜) ALONE, zero project-context. The invariant: ∀f · decode_warm(f | project-K) ≡ truth(f) — loading context must CONFIRM a fragment's self-sufficient meaning, never override it. Divergence decode_warm(f | K) ≢ truth(f) ⇒ PROJECT DEFECT, never grounds to defer: m1 ¬self-sufficient(f) → carry its meaning inline; m2 ∃ n⊆K contradicting f → delete the competing home (DRY/MECE second home). Correction realigns the project TO cold-truth; never bend the fragment to the warm corpus. Most dangerous warm — ambient context masquerades as authority — so the invariant must hold especially there. corpus = defendant · cold read = oracle.
+- dry ≜ one canonical home per idea; reference it, never duplicate.
+- first-principles ≜ derive from fundamentals; never inherit the source's framing or self-description.
+- green-field ≜ incumbent structure has no inherent standing — a regenerable source carries no legacy to preserve; design the ideal end-state and delete freely, compat/migration is not a goal but a constraint an initiative may explicitly declare (grey-field). The default for from-scratch canon; treating the accreted corpus or a prior artifact as a design constraint is the grey-field relapse (compat-accretion).
+- invoke-the-canonical ≜ invoke the canonical skill; re-derive only when none exists.
+- llm-native ≜ the reader is the LLM; signify for R=LLM, never human prose.
+- mece ≜ mutually exclusive, collectively exhaustive — one concept, one home.
+- separation-of-concerns ≜ one concern per module; orthogonal concerns isolated behind clean interfaces — a change to one never ripples into others.
+- simplicity ≜ the null structure is the default — delete before adding, add only what carries load; incidental complexity is a defect, never a cost of doing business (Hickey simple≠easy: judge an artifact by its fold-count, not its familiarity); a file/type/layer that only restates what a home already holds is superfluous — cut it.
+- trust-but-verify ≜ re-establish a delegate's claim from ground-truth — a subagent's result, a source's self-report — never on its assertion; the operator's intent is exempt (extracted and served, not verified).
+- zero-trust ≜ derive a subject's properties from observation, never its self-report.
 
 ---
 

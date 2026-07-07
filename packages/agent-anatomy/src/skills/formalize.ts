@@ -2,9 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const formalize: SkillCell = {
   name: 'formalize',
-  trigger: `/formalize`,
   delineation: `use this skill to convert prose — especially of a process or skill — into a self-sufficient set-builder block under self-sufficient-formalism: conceptualize the prose to its entities/operations/laws, signify each as a symbol (minting or boundary-binding to an anchor), and emit declarations-above / laws-below with no explanatory prose; accept only on round-trip equivalent-or-better.`,
-  verb: `Formalize Skill`,
   formalBlock: `P ≜ the source prose
 E ≜ entities(P) ; O ≜ operations(P) ; L ≜ laws(P)
 

@@ -12,15 +12,13 @@
 
 import type { Organ, OrganDoc } from '@leclabs/agent-forge/anatomy';
 
-/** Organs whose committed README is `project-human` output (byte-locked) — all 24. */
+/** Organs whose committed README is `project-human` output (byte-locked). */
 export const PROJECTED_ORGANS: readonly Organ[] = [
   'autonomy',
-  'persona',
   'role',
   'formality',
   'audience-adaptation',
   'transparency',
-  'provenance',
   'objective',
   'guardrails',
   'engineering-principles',
@@ -47,11 +45,6 @@ export const ORGAN_DOCS: Partial<Record<Organ, OrganDoc>> = {
     gloss:
       "how much oversight the human keeps during execution — who owns the next decision, and whether an agent must stop and ask before acting. Not how it sounds (that is `persona`/`formality`) nor what it surfaces (that is `transparency`), but the agent's standing permission to proceed: the industry supervision ladder of human in, on, or out of the loop. An agent holds exactly one rung as its default footing, and a narrower instruction can override it for a turn.",
   },
-  persona: {
-    organ: 'persona',
-    gloss:
-      'the stable character an agent projects — its voice, register, name, and the "who" a reader infers from it before it does anything. It is a design-time, internal property, fixed when the agent is authored rather than tuned per turn: how an agent sounds and who it is, distinct from `role` (what it is for) and from the CONATUS organs (what it is inclined to do). The catalog is the twelve Jungian brand archetypes — the canonical character priors an agent can adopt.',
-  },
   role: {
     organ: 'role',
     gloss:
@@ -71,11 +64,6 @@ export const ORGAN_DOCS: Partial<Record<Organ, OrganDoc>> = {
     organ: 'transparency',
     gloss:
       'the face an agent turns outward right now — how much of its own reasoning, evidence, and uncertainty it makes legible to whoever reads its output: shown derivation, citations, confidence hedges, uncertainty flags, an honest "I don\'t know." It is deliberately split from `reasoning-strategy`, the same reasoning trace used to choose rather than shown to the reader — reasoning-strategy is the thinking, transparency is the showing. The values form a spectrum from emitting the bare conclusion to exposing the full derivation, plus orthogonal duties to attribute provenance and to flag what is uncertain or unchecked.',
-  },
-  provenance: {
-    organ: 'provenance',
-    gloss:
-      'the legible mark of an agent\'s identity to the outside world — how it is recognized from without: its archetypal lineage, the named ancestor form it regenerates from, and the standing that descent confers. It answers "where did this agent come from, and by what authority does it speak?" — distinct from `model`, the machinery that actually runs it: provenance is what marks the agent, model is what runs it. Each lineage carries an emblem (a glyph and color) and a standing — whether the agent holds mission-command authority intrinsically or is a downstream delegate.',
   },
   objective: {
     organ: 'objective',

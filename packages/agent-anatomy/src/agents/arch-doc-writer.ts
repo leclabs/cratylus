@@ -1,4 +1,3 @@
-import type { ResolvedAgent } from '@leclabs/agent-forge/adapters/claude';
 import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { delegation as delegation_actions } from '../organs/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
@@ -16,16 +15,13 @@ import { correctionConsolidation as correctionConsolidation_learning } from '../
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { faithfulRecord as faithfulRecord_objective } from '../organs/objective/faithful-record.js';
 import { document as document_outputFormat } from '../organs/output-format/document.js';
-import { archDocWriterArchetypePink as archDocWriterArchetypePink_provenance } from '../organs/provenance/arch-doc-writer-archetype-pink.js';
 import { react as react_reasoningStrategy } from '../organs/reasoning-strategy/react.js';
 import { document as document_role } from '../organs/role/document.js';
 import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisfice.js';
 import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } from '../organs/self-evaluation/acceptance-criteria-check.js';
 import { comprehension as comprehension_situationAwareness } from '../organs/situation-awareness/comprehension.js';
 import { provenanceAttribution as provenanceAttribution_transparency } from '../organs/transparency/provenance-attribution.js';
-import { base } from './base.js';
 export const archDocWriter: Agent = {
-  ...base,
   name: 'arch-doc-writer',
   persona: '',
   role: document_role,
@@ -33,7 +29,7 @@ export const archDocWriter: Agent = {
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: provenanceAttribution_transparency,
   autonomy: null,
-  provenance: archDocWriterArchetypePink_provenance,
+  provenance: { mark: { emoji: '🏗️', hue: 'pink' } },
   objective: faithfulRecord_objective,
   guardrails: [
     harmAvoidance_guardrails,
@@ -55,39 +51,4 @@ export const archDocWriter: Agent = {
   outputFormat: document_outputFormat,
   selfEvaluation: acceptanceCriteriaCheck_selfEvaluation,
   engineeringPrinciples: null,
-};
-export const archDocWriterResolved: ResolvedAgent = {
-  name: 'arch-doc-writer',
-  description: sage_persona.definiens,
-  mark: archDocWriterArchetypePink_provenance.mark,
-  sourcePath: 'packages/agent-anatomy/agent/arch-doc-writer.md',
-  memoryProtocol: base.memoryProtocol,
-  personaProtocol: base.personaProtocol,
-  organs: [
-    ['Persona', [sage_persona]],
-    ['Role', [document_role]],
-    ['Formality', [neutral_formality]],
-    ['Audience-Adaptation', [convergence_audienceAdaptation]],
-    ['Transparency', [provenanceAttribution_transparency]],
-    ['Provenance', [archDocWriterArchetypePink_provenance]],
-    ['Objective', [faithfulRecord_objective]],
-    [
-      'Guardrails',
-      [harmAvoidance_guardrails, honesty_guardrails, helpfulness_guardrails],
-    ],
-    ['Heuristics', [takeTheBest_heuristics]],
-    [
-      'Capabilities',
-      [technicalWriting_capabilities, systemDesign_capabilities],
-    ],
-    ['Learning', [correctionConsolidation_learning]],
-    ['Situation-Awareness', [comprehension_situationAwareness]],
-    ['Actions', [fileOps_actions, toolCall_actions, delegation_actions]],
-    ['Memory', [longTermMemory_memory]],
-    ['Framing', [systems_framing]],
-    ['Reasoning-Strategy', [react_reasoningStrategy]],
-    ['Satisficing', [satisfice_satisficing]],
-    ['Output-Format', [document_outputFormat]],
-    ['Self-Evaluation', [acceptanceCriteriaCheck_selfEvaluation]],
-  ],
 };

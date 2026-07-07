@@ -1,5 +1,5 @@
 // `enumerateCatalog` — the organ-value discovery library. Proves: (1) it
-// enumerates every one of the 24 organs from agent-anatomy's modules with the correct
+// enumerates every one of the 22 organs from agent-anatomy's modules with the correct
 // axis/kind/arity; (2) the contract shape per organ; (3) values sort shortlex;
 // (4) the DRIFT-PROOF property — a value module dropped under an organ dir
 // appears in the output with no other change.
@@ -35,9 +35,9 @@ describe('enumerateCatalog over agent-anatomy', () => {
     entries = await enumerateCatalog(anatomyOrgans);
   });
 
-  it('enumerates exactly the 24 organs, in anatomy order', () => {
+  it('enumerates exactly the 22 organs, in anatomy order', () => {
     expect(entries.map((e) => e.organ)).toEqual([...ORGAN_NAMES]);
-    expect(entries).toHaveLength(24);
+    expect(entries).toHaveLength(22);
   });
 
   it("each organ's axis/kind/arity matches ANATOMY", () => {
@@ -50,13 +50,16 @@ describe('enumerateCatalog over agent-anatomy', () => {
   it('the acceptance spot-checks hold', () => {
     const byOrgan = new Map(entries.map((e) => [e.organ, e]));
 
-    const address = byOrgan.get('autonomy');
-    expect(address).toMatchObject({ kind: 'enum', arity: 'scalar' });
-    expect(address?.values.map((v) => v.slug)).toEqual([
-      'human-in-the-loop',
-      'human-on-the-loop',
-      'human-out-of-the-loop',
-    ]);
+    // autonomy is now a SET organ (per-agent composed standing, D5).
+    const autonomy = byOrgan.get('autonomy');
+    expect(autonomy).toMatchObject({ kind: 'enum', arity: 'set' });
+    expect(autonomy?.values).toContain('human-in-the-loop ≜ hitl');
+    expect(
+      autonomy?.values.some((v) => v.startsWith('human-on-the-loop ≜')),
+    ).toBe(true);
+    expect(
+      autonomy?.values.some((v) => v.startsWith('human-out-of-the-loop ≜')),
+    ).toBe(true);
 
     expect(byOrgan.get('guardrails')).toMatchObject({
       kind: 'coined',
@@ -68,23 +71,19 @@ describe('enumerateCatalog over agent-anatomy', () => {
     });
   });
 
-  it('every value is a {slug, definiens} pair (the contract shape)', () => {
+  it('every value is a non-empty body string (the contract shape)', () => {
     for (const e of entries) {
       for (const v of e.values) {
-        expect(Object.keys(v).sort()).toEqual(['definiens', 'slug']);
-        expect(typeof v.slug).toBe('string');
-        expect(typeof v.definiens).toBe('string');
-        expect(v.slug.length).toBeGreaterThan(0);
-        expect(v.definiens.length).toBeGreaterThan(0);
+        expect(typeof v).toBe('string');
+        expect(v.length).toBeGreaterThan(0);
       }
     }
   });
 
-  it('values are sorted shortlex by slug', () => {
+  it('values are sorted shortlex', () => {
     for (const e of entries) {
-      const slugs = e.values.map((v) => v.slug);
-      const resorted = [...slugs].sort(shortlex);
-      expect(slugs).toEqual(resorted);
+      const resorted = [...e.values].sort(shortlex);
+      expect(e.values).toEqual(resorted);
     }
   });
 });
@@ -117,7 +116,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
       organ: 'autonomy',
       axis: 'STANCE',
       kind: 'enum',
-      arity: 'scalar',
+      arity: 'set',
     });
     expect(before?.values).toEqual([]);
 
@@ -127,11 +126,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
       [
         "import type { Autonomy } from '@leclabs/agent-forge/anatomy';",
         '',
-        'export const fixtureMode: Autonomy = {',
-        "  organ: 'autonomy',",
-        "  slug: 'fixture-mode',",
-        "  definiens: 'a discovered-only fixture value',",
-        '};',
+        "export const fixtureMode: Autonomy = 'fixture-mode ≜ a discovered-only fixture value';",
         '',
       ].join('\n'),
     );
@@ -140,7 +135,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
     entries = await enumerateCatalog(dir);
     const after = entries.find((e) => e.organ === 'autonomy');
     expect(after?.values).toEqual([
-      { slug: 'fixture-mode', definiens: 'a discovered-only fixture value' },
+      'fixture-mode ≜ a discovered-only fixture value',
     ]);
   });
 

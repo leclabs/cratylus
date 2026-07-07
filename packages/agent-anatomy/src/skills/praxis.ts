@@ -80,9 +80,7 @@ sync       ≜ ∀ t ∈ P : state(t) ≠ truth(t) ⇒ state(t) := truth(t) ;
 
 export const praxis: SkillCell = {
   name: 'praxis',
-  trigger: `/praxis`,
   delineation: `use this skill to create a plan decomposed into MECE execution shards, where each shard is a self-contained task execution specification with objective, inputs, constraints, dependencies, outputs, and completion criteria.`,
-  verb: `praxis`,
   formalBlock: FORMAL_BLOCK,
   composition: [],
   body: `

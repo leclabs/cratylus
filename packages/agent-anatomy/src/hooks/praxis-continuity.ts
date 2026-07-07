@@ -11,10 +11,8 @@ import type { HookCell } from '../toolkit/hook-cell.js';
 // exception to `hook↦event`.
 
 export const praxisContinuity: HookCell = {
-  kind: 'hook',
   id: 'praxis-continuity',
-  slug: 'praxis-continuity',
-  definiens:
+  residue:
     'post-commit detector that a plan task-file crossed its state folder so the hand-authored PLAN.md mirror may be stale — prints a re-mirror nudge and never edits; git-substrate, opt-in per clone, always exits 0 so a reminder can never fail the commit it follows.',
   substrate: 'git',
   events: ['vcs.commit.post'],

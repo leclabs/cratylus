@@ -1,5 +1,4 @@
-import type { Standing } from '@leclabs/agent-forge/anatomy';
+import type { Autonomy } from '@leclabs/agent-forge/anatomy';
 
-export const selfAuthority: Standing = 'decision-authority(self)'
-export const icAuthority: Standing = `${selfAuthority} ↾ individual-contribution`
-
+export const selfAuthority: Autonomy = `decision-authority(self)`;
+export const principalIC: Autonomy = `${selfAuthority} ↾ individual-contribution ⟨intrinsic⟩`;

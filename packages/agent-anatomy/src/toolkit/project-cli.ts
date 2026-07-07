@@ -23,7 +23,6 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   type ReaderDensity,
-  type ResolvedAgent,
   type ResolvedSkill,
   agentToClaudeMd,
   densityProfile,
@@ -31,6 +30,7 @@ import {
   serializeClaudeHooksReport,
   skillToClaudeMd,
 } from '@leclabs/agent-forge/adapters/claude';
+import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { hookSources } from './hooks.js';
 import type { SkillCell } from './skill-cell.js';
 
@@ -91,17 +91,17 @@ async function moduleNames(dir: string): Promise<string[]> {
   return names.sort();
 }
 
-/** The `<name>Resolved: ResolvedAgent` export of an agent module. */
-async function resolvedAgentOf(modPath: string): Promise<ResolvedAgent> {
+/** The `<name>: Agent` vector export of an agent module. */
+async function agentOf(modPath: string): Promise<Agent> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<
     string,
     unknown
   >;
-  const key = Object.keys(mod).find((k) => k.endsWith('Resolved'));
+  const key = Object.keys(mod).find((k) => k !== 'default');
   if (!key) {
-    throw new Error(`${modPath}: no *Resolved export`);
+    throw new Error(`${modPath}: no Agent export`);
   }
-  return mod[key] as ResolvedAgent;
+  return mod[key] as Agent;
 }
 
 /** The first `SkillCell` export of a skill module. */
@@ -114,13 +114,13 @@ async function skillCellOf(modPath: string): Promise<SkillCell> {
   return mod[key as string] as SkillCell;
 }
 
-async function projectAgents(out: string, profile: string): Promise<number> {
+async function projectAgents(out: string, _profile: string): Promise<number> {
   const dir = join(out, 'agents');
   mkdirSync(dir, { recursive: true });
   let n = 0;
   for (const name of await moduleNames(agentsModDir)) {
-    const resolved = await resolvedAgentOf(join(agentsModDir, `${name}.ts`));
-    writeFileSync(join(dir, `${name}.md`), agentToClaudeMd(resolved, profile));
+    const agent = await agentOf(join(agentsModDir, `${name}.ts`));
+    writeFileSync(join(dir, `${name}.md`), agentToClaudeMd(agent));
     process.stdout.write(`EMIT agent ${name}\n`);
     n++;
   }
@@ -137,7 +137,7 @@ async function projectSkills(out: string, profile: string): Promise<number> {
   // any other slug → typographic `**slug**` (mirrors compose.harness.ref_text).
   const refProject = (slug: string): string => {
     const cell = cells.get(slug);
-    return cell ? cell.trigger : `**${slug}**`;
+    return cell ? `/${cell.name}` : `**${slug}**`;
   };
 
   let n = 0;
@@ -145,7 +145,7 @@ async function projectSkills(out: string, profile: string): Promise<number> {
     const cell = cells.get(name) as SkillCell;
     const resolved: ResolvedSkill = {
       name: cell.name,
-      trigger: cell.trigger,
+      trigger: `/${cell.name}`,
       delineation: cell.delineation,
       body: cell.body,
       composedFrom: cell.composition.map(refProject),

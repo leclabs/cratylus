@@ -42,7 +42,7 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import type { Agent, Fragment } from '@leclabs/agent-forge/anatomy';
+import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
 // accept() falsifier — the full Universal gate (`src/toolkit/cold-oracle/accept.ts`),
 // the register gate above being one facet of ρ-conformance, not a Universal leg.
@@ -128,11 +128,11 @@ async function collect(pattern: string): Promise<string[]> {
 async function allSurfaces(): Promise<Surface[]> {
   const surfaces: Surface[] = [];
   for (const rel of await collect('organs/**/*.ts')) {
-    const f = await firstExport<Fragment>(join(srcRoot, rel));
+    const f = await firstExport<string>(join(srcRoot, rel));
     surfaces.push({
       label: `organ ${relative('organs', rel).replace(/\.ts$/, '')}`,
       cls: 'organ-definiens',
-      text: f.definiens,
+      text: splitBody(f).definiens,
     });
   }
   for (const rel of await collect('skills/*.ts')) {
@@ -185,10 +185,23 @@ async function allAgents(): Promise<Array<{ rel: string; agent: Agent }>> {
   return out;
 }
 
+/** Recover {slug, definiens} from an organ value's `"<slug> ≜ <definiens>"` body. */
+function splitBody(v: string): { slug: string; definiens: string } {
+  const i = v.indexOf(' ≜ ');
+  return i < 0
+    ? { slug: v, definiens: v }
+    : { slug: v.slice(0, i), definiens: v.slice(i + 3) };
+}
+
+/** Recover just the α(c) slug (the common case). */
+function slugOf(v: string): string {
+  return splitBody(v).slug;
+}
+
 /** The contradiction pairs `agent` carries (root-cause H3). */
 function organContradictions(agent: Agent): string[] {
-  const principles = (agent.engineeringPrinciples ?? []).map((f) => f.slug);
-  const output = agent.outputFormat?.slug;
+  const principles = (agent.engineeringPrinciples ?? []).map(slugOf);
+  const output = agent.outputFormat ? slugOf(agent.outputFormat) : undefined;
   return CONTRADICTION_PAIRS.filter(
     ([p, o]) => principles.includes(p) && output === o,
   ).map(([p, o]) => `${p} ∧ ${o}`);
@@ -204,9 +217,9 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
       'organs/transparency/decision-rationale.ts',
       'organs/capabilities/research-investigation.ts',
     ]) {
-      const f = await firstExport<Fragment>(join(srcRoot, rel));
+      const f = await firstExport<string>(join(srcRoot, rel));
       expect(
-        humanRegisterSignals(f.definiens),
+        humanRegisterSignals(splitBody(f).definiens),
         `${rel} is a PASS exemplar`,
       ).toEqual([]);
     }
@@ -246,7 +259,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
 
   it('no agent vector carries a register contradiction (root-cause H3), or is pinned', async () => {
     const agents = await allAgents();
-    expect(agents.length).toBe(11);
+    expect(agents.length).toBe(10);
     const failures = agents
       .filter(
         ({ agent }) =>
@@ -424,13 +437,11 @@ function allSix(
 async function loadOrganHomes(): Promise<Map<string, string[]>> {
   const homes = new Map<string, string[]>();
   for (const rel of await collect('organs/**/*.ts')) {
-    const f = await firstExport<{ slug: string; definiens: string }>(
-      join(srcRoot, rel),
-    );
+    const v = await firstExport<string>(join(srcRoot, rel));
     // concept identity is organ-qualified — `organs/<organ>/<value>.ts`. A bare
     // slug shared across organs (`document` role vs output-format) is TWO concepts.
     const organ = rel.split('/')[1] as string;
-    const key = `${organ}/${f.slug}`;
+    const key = `${organ}/${slugOf(v)}`;
     const bearers = homes.get(key) ?? [];
     bearers.push(rel);
     homes.set(key, bearers);
@@ -474,15 +485,16 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
   });
 
   it('GREEN — one already-conformant live cell passes every Universal leg', async () => {
-    const f = await firstExport<{ slug: string; definiens: string }>(
+    const v = await firstExport<string>(
       join(srcRoot, 'organs/objective/parsimony.ts'),
     );
-    expect(f.slug).toBe('parsimony');
+    const { slug, definiens } = splitBody(v);
+    expect(slug).toBe('parsimony');
     const cell: AcceptCell = {
       kind: 'organ-value',
-      slug: f.slug,
+      slug,
       organ: 'objective',
-      definiens: f.definiens,
+      definiens,
       refs: [],
     };
     const homes = await loadOrganHomes();

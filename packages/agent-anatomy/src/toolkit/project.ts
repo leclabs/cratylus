@@ -6,15 +6,13 @@
 // with the `\n\n` that closes the front-matter fence + the blank line before the
 // body, and ends with a single trailing `\n`. We reproduce that exactly.
 
-import type { Fragment } from '@leclabs/agent-forge/anatomy';
-
 /**
- * Render a Fragment to its canonical cell body: `\n\n<slug> ≜ <definiens>\n`.
- * The body is fully determined by `{slug, definiens}` — the mark is already
- * inline in the definiens (we never re-synthesize it), so this is byte-exact.
+ * Render an organ value to its canonical cell body: `\n\n<value>\n`. An organ
+ * value is now a branded string whose content IS the body ⟨α, residue⟩, so this
+ * is the identity wrap (no field reconstruction).
  */
-export function fragmentToMarkdown(f: Fragment): string {
-  return `\n\n${f.slug} ≜ ${f.definiens}\n`;
+export function fragmentToMarkdown(value: string): string {
+  return `\n\n${value}\n`;
 }
 
 /**

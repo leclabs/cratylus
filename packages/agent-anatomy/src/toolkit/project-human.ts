@@ -8,34 +8,29 @@
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import {
-  type Fragment,
-  type Organ,
-  projectHumanOrgan,
-} from '@leclabs/agent-forge/anatomy';
+import { type Organ, projectHumanOrgan } from '@leclabs/agent-forge/anatomy';
 import { ORGAN_DOCS } from './organ-docs.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const organsRoot = join(here, '..', 'organs');
 
-/** The first non-default export of a value-cell module (its `Fragment`). */
-async function fragmentOf(modPath: string): Promise<Fragment> {
+/** Every string export of a value-cell module (its branded body ⟨α, residue⟩). */
+async function valuesOf(modPath: string): Promise<string[]> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<
     string,
     unknown
   >;
-  const key = Object.keys(mod).find((k) => k !== 'default');
-  return mod[key as string] as Fragment;
+  return Object.values(mod).filter((v): v is string => typeof v === 'string');
 }
 
-/** Load an organ's value cells from `src/organs/<organ>/*.ts`, slug-sorted. */
-export async function organValues(organ: Organ): Promise<Fragment[]> {
+/** Load an organ's value bodies from `src/organs/<organ>/*.ts`, sorted. */
+export async function organValues(organ: Organ): Promise<string[]> {
   const dir = join(organsRoot, organ);
-  const frags: Fragment[] = [];
+  const bodies: string[] = [];
   for await (const p of glob('*.ts', { cwd: dir })) {
-    frags.push(await fragmentOf(join(dir, p)));
+    bodies.push(...(await valuesOf(join(dir, p))));
   }
-  return frags.sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0));
+  return bodies.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
 }
 
 /** The canonical human-view README for an organ (`project-human` over its cells). */

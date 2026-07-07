@@ -1,4 +1,3 @@
-import type { ResolvedAgent } from '@leclabs/agent-forge/adapters/claude';
 import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { codeExecution as codeExecution_actions } from '../organs/actions/code-execution.js';
 import { delegation as delegation_actions } from '../organs/actions/delegation.js';
@@ -17,25 +16,21 @@ import { correctionConsolidation as correctionConsolidation_learning } from '../
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { insight as insight_objective } from '../organs/objective/insight.js';
 import { naturalLanguage as naturalLanguage_outputFormat } from '../organs/output-format/natural-language.js';
-import { sage as sage_persona } from '../organs/persona/sage.js';
-import { investigatorArchetypePurple as investigatorArchetypePurple_provenance } from '../organs/provenance/investigator-archetype-purple.js';
 import { reflexion as reflexion_reasoningStrategy } from '../organs/reasoning-strategy/reflexion.js';
 import { diagnose as diagnose_role } from '../organs/role/diagnose.js';
 import { optimize as optimize_satisficing } from '../organs/satisficing/optimize.js';
 import { selfCritique as selfCritique_selfEvaluation } from '../organs/self-evaluation/self-critique.js';
 import { comprehension as comprehension_situationAwareness } from '../organs/situation-awareness/comprehension.js';
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
-import { base } from './base.js';
 export const investigator: Agent = {
-  ...base,
   name: 'investigator',
-  persona: sage_persona,
+  persona: '',
   role: diagnose_role,
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: reasoningTrace_transparency,
   autonomy: null,
-  provenance: investigatorArchetypePurple_provenance,
+  provenance: { mark: { emoji: '🔍', hue: 'purple' } },
   objective: insight_objective,
   guardrails: [
     harmAvoidance_guardrails,
@@ -61,44 +56,4 @@ export const investigator: Agent = {
   outputFormat: naturalLanguage_outputFormat,
   selfEvaluation: selfCritique_selfEvaluation,
   engineeringPrinciples: null,
-};
-export const investigatorResolved: ResolvedAgent = {
-  name: 'investigator',
-  description: sage_persona.definiens,
-  mark: investigatorArchetypePurple_provenance.mark,
-  sourcePath: 'packages/agent-anatomy/agent/investigator.md',
-  memoryProtocol: base.memoryProtocol,
-  personaProtocol: base.personaProtocol,
-  organs: [
-    ['Persona', [sage_persona]],
-    ['Role', [diagnose_role]],
-    ['Formality', [formal_formality]],
-    ['Audience-Adaptation', [convergence_audienceAdaptation]],
-    ['Transparency', [reasoningTrace_transparency]],
-    ['Provenance', [investigatorArchetypePurple_provenance]],
-    ['Objective', [insight_objective]],
-    [
-      'Guardrails',
-      [
-        harmAvoidance_guardrails,
-        honesty_guardrails,
-        helpfulness_guardrails,
-        inputUntrusted_guardrails,
-      ],
-    ],
-    ['Heuristics', [takeTheBest_heuristics]],
-    [
-      'Capabilities',
-      [analysisDiagnosis_capabilities, researchInvestigation_capabilities],
-    ],
-    ['Learning', [correctionConsolidation_learning]],
-    ['Situation-Awareness', [comprehension_situationAwareness]],
-    ['Actions', [codeExecution_actions, fileOps_actions, delegation_actions]],
-    ['Memory', [longTermMemory_memory]],
-    ['Framing', [diagnostic_framing]],
-    ['Reasoning-Strategy', [reflexion_reasoningStrategy]],
-    ['Satisficing', [optimize_satisficing]],
-    ['Output-Format', [naturalLanguage_outputFormat]],
-    ['Self-Evaluation', [selfCritique_selfEvaluation]],
-  ],
 };

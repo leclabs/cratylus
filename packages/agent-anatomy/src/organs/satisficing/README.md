@@ -4,8 +4,8 @@
 
 ## Values
 
-- **`optimize`** ≜ maximize — select the option of highest expected value.
-- **`satisfice`** ≜ commit the fittest cut; close the search at good-enough, not endless-optimal.
+- optimize ≜ maximize — select the option of highest expected value.
+- satisfice ≜ commit the fittest cut; close the search at good-enough, not endless-optimal.
 
 ---
 

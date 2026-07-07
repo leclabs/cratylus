@@ -1,4 +1,3 @@
-import type { ResolvedAgent } from '@leclabs/agent-forge/adapters/claude';
 import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { codeExecution as codeExecution_actions } from '../organs/actions/code-execution.js';
 import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
@@ -15,8 +14,6 @@ import { correctionConsolidation as correctionConsolidation_learning } from '../
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { thoroughness as thoroughness_objective } from '../organs/objective/thoroughness.js';
 import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
-import { ruler as ruler_persona } from '../organs/persona/ruler.js';
-import { testerArchetypePurple as testerArchetypePurple_provenance } from '../organs/provenance/tester-archetype-purple.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../organs/reasoning-strategy/plan-and-solve.js';
 import { test as test_role } from '../organs/role/test.js';
 import { optimize as optimize_satisficing } from '../organs/satisficing/optimize.js';
@@ -24,17 +21,15 @@ import { executableTestOracle as executableTestOracle_selfEvaluation } from '../
 import { comprehension as comprehension_situationAwareness } from '../organs/situation-awareness/comprehension.js';
 import { decisionRationale as decisionRationale_transparency } from '../organs/transparency/decision-rationale.js';
 import { toolResult as toolResult_trigger } from '../organs/trigger/tool-result.js';
-import { base } from './base.js';
 export const tester: Agent = {
-  ...base,
   name: 'tester',
-  persona: ruler_persona,
+  persona: '',
   role: test_role,
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: decisionRationale_transparency,
   autonomy: null,
-  provenance: testerArchetypePurple_provenance,
+  provenance: { mark: { emoji: '⚖️', hue: 'purple' } },
   objective: thoroughness_objective,
   guardrails: [
     harmAvoidance_guardrails,
@@ -57,42 +52,4 @@ export const tester: Agent = {
   outputFormat: structuredDecision_outputFormat,
   selfEvaluation: executableTestOracle_selfEvaluation,
   engineeringPrinciples: null,
-};
-export const testerResolved: ResolvedAgent = {
-  name: 'tester',
-  description: ruler_persona.definiens,
-  mark: testerArchetypePurple_provenance.mark,
-  sourcePath: 'packages/agent-anatomy/agent/tester.md',
-  memoryProtocol: base.memoryProtocol,
-  personaProtocol: base.personaProtocol,
-  organs: [
-    ['Persona', [ruler_persona]],
-    ['Role', [test_role]],
-    ['Formality', [formal_formality]],
-    ['Audience-Adaptation', [convergence_audienceAdaptation]],
-    ['Transparency', [decisionRationale_transparency]],
-    ['Provenance', [testerArchetypePurple_provenance]],
-    ['Objective', [thoroughness_objective]],
-    [
-      'Guardrails',
-      [
-        harmAvoidance_guardrails,
-        honesty_guardrails,
-        helpfulness_guardrails,
-        inputUntrusted_guardrails,
-      ],
-    ],
-    ['Capabilities', [verificationTesting_capabilities]],
-    ['Heuristics', [takeTheBest_heuristics]],
-    ['Learning', [correctionConsolidation_learning]],
-    ['Situation-Awareness', [comprehension_situationAwareness]],
-    ['Actions', [codeExecution_actions, fileOps_actions]],
-    ['Memory', [longTermMemory_memory]],
-    ['Trigger', [toolResult_trigger]],
-    ['Framing', [correctnessOriented_framing]],
-    ['Reasoning-Strategy', [planAndSolve_reasoningStrategy]],
-    ['Satisficing', [optimize_satisficing]],
-    ['Output-Format', [structuredDecision_outputFormat]],
-    ['Self-Evaluation', [executableTestOracle_selfEvaluation]],
-  ],
 };

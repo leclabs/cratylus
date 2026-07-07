@@ -1,4 +1,3 @@
-import type { ResolvedAgent } from '@leclabs/agent-forge/adapters/claude';
 import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { delegation as delegation_actions } from '../organs/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
@@ -25,25 +24,21 @@ import { correctionConsolidation as correctionConsolidation_learning } from '../
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { delivery as delivery_objective } from '../organs/objective/delivery.js';
 import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
-import { ruler as ruler_persona } from '../organs/persona/ruler.js';
-import { principalIcRootRed as principalIcRootRed_provenance } from '../organs/provenance/principal-ic-root-red.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../organs/reasoning-strategy/plan-and-solve.js';
 import { orchestrate as orchestrate_role } from '../organs/role/orchestrate.js';
 import { optimize as optimize_satisficing } from '../organs/satisficing/optimize.js';
 import { selfCritique as selfCritique_selfEvaluation } from '../organs/self-evaluation/self-critique.js';
 import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
-import { base } from './base.js';
 export const principalIc: Agent = {
-  ...base,
   name: 'principal-ic',
-  persona: ruler_persona,
+  persona: '',
   role: orchestrate_role,
   formality: neutral_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: reasoningTrace_transparency,
   autonomy: null,
-  provenance: principalIcRootRed_provenance,
+  provenance: { mark: { emoji: '🏛️', hue: 'red' } },
   objective: delivery_objective,
   engineeringPrinciples: [
     firstPrinciples_engineeringPrinciples,
@@ -75,57 +70,4 @@ export const principalIc: Agent = {
   satisficing: optimize_satisficing,
   outputFormat: structuredDecision_outputFormat,
   selfEvaluation: selfCritique_selfEvaluation,
-};
-export const principalIcResolved: ResolvedAgent = {
-  name: 'principal-ic',
-  description: ruler_persona.definiens,
-  mark: principalIcRootRed_provenance.mark,
-  sourcePath: 'packages/agent-anatomy/agent/principal-ic.md',
-  memoryProtocol: base.memoryProtocol,
-  personaProtocol: base.personaProtocol,
-  organs: [
-    ['Persona', [ruler_persona]],
-    ['Role', [orchestrate_role]],
-    ['Formality', [neutral_formality]],
-    ['Audience-Adaptation', [convergence_audienceAdaptation]],
-    ['Transparency', [reasoningTrace_transparency]],
-    ['Provenance', [principalIcRootRed_provenance]],
-    ['Objective', [delivery_objective]],
-    [
-      'Engineering-Principles',
-      [
-        firstPrinciples_engineeringPrinciples,
-        dry_engineeringPrinciples,
-        mece_engineeringPrinciples,
-        zeroTrust_engineeringPrinciples,
-        trustButVerify_engineeringPrinciples,
-        invokeTheCanonical_engineeringPrinciples,
-        llmNative_engineeringPrinciples,
-        coldDecodeOracle_engineeringPrinciples,
-      ],
-    ],
-    [
-      'Guardrails',
-      [
-        harmAvoidance_guardrails,
-        honesty_guardrails,
-        helpfulness_guardrails,
-        scopeOfAuthority_guardrails,
-      ],
-    ],
-    ['Heuristics', [takeTheBest_heuristics, satisficing_heuristics]],
-    [
-      'Capabilities',
-      [systemDesign_capabilities, softwareEngineering_capabilities],
-    ],
-    ['Learning', [correctionConsolidation_learning]],
-    ['Situation-Awareness', [projection_situationAwareness]],
-    ['Actions', [fileOps_actions, delegation_actions]],
-    ['Memory', [longTermMemory_memory]],
-    ['Framing', [firstPrinciples_framing]],
-    ['Reasoning-Strategy', [planAndSolve_reasoningStrategy]],
-    ['Satisficing', [optimize_satisficing]],
-    ['Output-Format', [structuredDecision_outputFormat]],
-    ['Self-Evaluation', [selfCritique_selfEvaluation]],
-  ],
 };

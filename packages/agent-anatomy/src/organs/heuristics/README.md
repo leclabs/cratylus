@@ -4,11 +4,11 @@
 
 ## Values
 
-- **`anchoring`** ≜ anchor on an initial value, adjust insufficiently.
-- **`availability`** ≜ judge frequency by ease of recall.
-- **`recognition`** ≜ recognition heuristic — choose the recognized option.
-- **`satisficing`** ≜ accept the first option that meets the aspiration level.
-- **`take-the-best`** ≜ decide on the single best-discriminating cue, ignore the rest.
+- anchoring ≜ anchor on an initial value, adjust insufficiently.
+- availability ≜ judge frequency by ease of recall.
+- recognition ≜ recognition heuristic — choose the recognized option.
+- satisficing ≜ accept the first option that meets the aspiration level.
+- take-the-best ≜ decide on the single best-discriminating cue, ignore the rest.
 
 ---
 

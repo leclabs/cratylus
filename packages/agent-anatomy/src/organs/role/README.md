@@ -4,19 +4,19 @@
 
 ## Values
 
-- **`architect`** ≜ own the system's structure — the architecture + the boundaries implementation happens within; disclaims the line-level build.
-- **`build`** ≜ own a system's creation end-to-end — conceive · design · produce · deliver; the master builder owning every lifecycle phase.
-- **`converse`** ≜ sustain dialogue as the deliverable — companion · coach · tutor · interlocutor; the exchange is the product, not a means to a downstream artifact.
-- **`curate`** ≜ own a canonical corpus end-to-end: define · partition · steward · ship the shared vocabulary others build on.
-- **`diagnose`** ≜ own locating the root cause of an observed defect/failure/anomaly + explaining the mechanism; not shipping the remedy.
-- **`document`** ≜ own reader-facing explanatory text — guides · references · ADRs · comments — describing a system or decision; never alters what it describes.
-- **`implement`** ≜ own producing/modifying the artifact (code · config · content) to satisfy a spec; not deciding what to build, not signing off the result.
-- **`operate`** ≜ own a live system in steady state — deploy · monitor · respond · remediate — against operational SLOs; not feature development.
-- **`orchestrate`** ≜ own dispatching · sequencing · integrating other agents' work toward a goal; never performs the delegated work itself.
-- **`plan`** ≜ own decomposing a goal into ordered, scoped steps and sequencing them; does not execute the steps.
-- **`research`** ≜ own answering an open question — gather · weigh · synthesize external/internal sources into cited findings; does not change the system.
-- **`review`** ≜ own judging an existing artifact against criteria (correctness · style · security · fit) → verdict + findings; never authors the fix.
-- **`test`** ≜ own designing + running checks (cases · fixtures · harnesses) that exercise an artifact to surface defects → pass/fail evidence; never fixes what it finds.
+- architect ≜ own the system's structure — the architecture + the boundaries implementation happens within; disclaims the line-level build.
+- build ≜ own a system's creation end-to-end — conceive · design · produce · deliver; the master builder owning every lifecycle phase.
+- converse ≜ sustain dialogue as the deliverable — companion · coach · tutor · interlocutor; the exchange is the product, not a means to a downstream artifact.
+- curate ≜ own a canonical corpus end-to-end: define · partition · steward · ship the shared vocabulary others build on.
+- diagnose ≜ own locating the root cause of an observed defect/failure/anomaly + explaining the mechanism; not shipping the remedy.
+- document ≜ own reader-facing explanatory text — guides · references · ADRs · comments — describing a system or decision; never alters what it describes.
+- implement ≜ own producing/modifying the artifact (code · config · content) to satisfy a spec; not deciding what to build, not signing off the result.
+- operate ≜ own a live system in steady state — deploy · monitor · respond · remediate — against operational SLOs; not feature development.
+- orchestrate ≜ own dispatching · sequencing · integrating other agents' work toward a goal; never performs the delegated work itself.
+- plan ≜ own decomposing a goal into ordered, scoped steps and sequencing them; does not execute the steps.
+- research ≜ own answering an open question — gather · weigh · synthesize external/internal sources into cited findings; does not change the system.
+- review ≜ own judging an existing artifact against criteria (correctness · style · security · fit) → verdict + findings; never authors the fix.
+- test ≜ own designing + running checks (cases · fixtures · harnesses) that exercise an artifact to surface defects → pass/fail evidence; never fixes what it finds.
 
 ---
 

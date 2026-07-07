@@ -2,9 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const elicit: SkillCell = {
   name: 'elicit',
-  trigger: `/elicit`,
   delineation: `use this skill to elicit the operator's hidden intended concept — recover it by asking maximally-informative yes/no questions, each a distinction that bisects the live candidates by prior mass (binary-search / information-gain over the concept lattice), converging in the fewest questions; the active, query-driven counterpart to probe (which reads a signifier already given) — stop when one candidate survives or no question is worth its burden, then hand the recovered concept to signify to name.`,
-  verb: `elicit`,
   formalBlock: `-- declarations (the block stands alone) ----------------------------
 R          — the reader; the agent in whom concepts and priors live
 C_R        — R's concept lattice: the closed set of candidate concepts

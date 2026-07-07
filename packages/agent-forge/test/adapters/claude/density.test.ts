@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   type ReaderDensity,
-  type ResolvedAgent,
   type ResolvedSkill,
   agentToClaudeMd,
   densityProfile,
@@ -9,13 +8,12 @@ import {
   isReaderDensity,
   skillToClaudeMd,
 } from '../../../src/adapters/claude/index.js';
-import type { Fragment } from '../../../src/anatomy/index.js';
+import type { Agent } from '../../../src/anatomy/index.js';
 
-// Reader density (T2.3) is a PROJECTION PARAMETER, not a property of the source:
-// the same typed fragments project at three densities. The Python byte-anchor is
-// agent-anatomy's `resolve.py --reader <density>` (compose/reader.py). These tests pin the
-// ported mechanism (`densityRef`) and the invariance the current corpus forms
-// (selection-vector agents, lean-provenance skills) guarantee.
+// Reader density (T2.3) is a PROJECTION PARAMETER, not a property of the source.
+// These tests pin the ported list-ref mechanism (`densityRef`) and the SOUL
+// projection invariants (no build-provenance banner; deterministic body from the
+// `Agent` vector alone).
 
 const DENSITIES: readonly ReaderDensity[] = [
   'strong-llm-lean',
@@ -23,25 +21,34 @@ const DENSITIES: readonly ReaderDensity[] = [
   'weak-llm',
 ];
 
-function frag(organ: string, slug: string): Fragment {
-  return { organ, slug, definiens: `${slug} definiens` } as Fragment;
-}
-
-function agentFixture(): ResolvedAgent {
+/** A minimal mav-like `Agent` vector: persona + mark + a set organ, rest null. */
+function agentFixture(): Agent {
   return {
     name: 'mav',
-    description: 'the Master-builder archetype',
-    mark: { emoji: '✈️', hue: 'green' },
-    sourcePath: 'packages/agent-anatomy/agent/mav.md',
-    memoryProtocol: 'protocol for {name}',
-    personaProtocol: 'persona protocol for {name}',
-    organs: [
-      ['Persona', [frag('persona', 'master-builder')]],
-      [
-        'Actions',
-        [frag('actions', 'file-ops'), frag('actions', 'code-execution')],
-      ],
-    ],
+    persona: 'the master-builder — ship end-to-end',
+    provenance: { mark: { emoji: '✈️', hue: 'green' } },
+    autonomy: null,
+    role: null,
+    formality: null,
+    audienceAdaptation: null,
+    transparency: null,
+    objective: null,
+    guardrails: null,
+    engineeringPrinciples: null,
+    heuristics: null,
+    capabilities: null,
+    learning: null,
+    situationAwareness: null,
+    actions: ['file-ops ≜ mutate files', 'code-execution ≜ run code'],
+    modalities: null,
+    model: null,
+    memory: null,
+    trigger: null,
+    framing: null,
+    reasoningStrategy: null,
+    satisficing: null,
+    outputFormat: null,
+    selfEvaluation: null,
   };
 }
 
@@ -131,28 +138,24 @@ describe('densityRef — port of reader.py render_ref (the density mechanism)', 
   });
 });
 
-describe('agent projection — no provenance header, body stays invariant', () => {
-  it('injects NO provenance banner regardless of the profile passed', () => {
-    for (const d of DENSITIES) {
-      const md = agentToClaudeMd(agentFixture(), densityProfile(d));
-      // Build-provenance the running agent never consumes: not injected.
-      expect(md).not.toContain('GENERATED from');
-      expect(md).not.toContain('profile:');
-      expect(md).not.toMatch(/content-hash: sha256:/);
-    }
+describe('agent projection — no provenance header, deterministic body', () => {
+  it('injects NO build-provenance banner', () => {
+    const md = agentToClaudeMd(agentFixture());
+    // Build-provenance the running agent never consumes: not injected.
+    expect(md).not.toContain('GENERATED from');
+    expect(md).not.toContain('profile:');
+    expect(md).not.toMatch(/content-hash: sha256:/);
   });
 
-  it('the selection-vector body is byte-identical across densities (profile records nothing)', () => {
-    const strip = (md: string): string =>
-      md
-        .split('\n')
-        .filter((l) => !l.trim().startsWith('profile:'))
-        .join('\n');
-    const bodies = DENSITIES.map((d) =>
-      strip(agentToClaudeMd(agentFixture(), densityProfile(d))),
-    );
-    expect(bodies[1]).toBe(bodies[0]);
-    expect(bodies[2]).toBe(bodies[0]);
+  it('projects the vector deterministically — persona + organ sections, mark color', () => {
+    const md = agentToClaudeMd(agentFixture());
+    expect(md).toContain('## Persona');
+    expect(md).toContain('the master-builder — ship end-to-end');
+    expect(md).toContain('## Actions');
+    expect(md).toContain('file-ops ≜ mutate files');
+    expect(md).toContain('color: green');
+    // Deterministic: the same vector projects byte-identically every call.
+    expect(agentToClaudeMd(agentFixture())).toBe(md);
   });
 });
 

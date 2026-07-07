@@ -16,20 +16,23 @@
 //   2. `body` is the verbatim canonical cell body — the projection payload. The
 //      anatomy `Skill` is the COMPOSED shape; SkillCell is the SOURCE-cell shape.
 
-/** A skill cell as a typed module (source grain), carrying its verbatim body. */
+/**
+ * A skill cell as a typed module (source grain), carrying its verbatim body.
+ *
+ * The `name` is the anchor: the trigger is `/`+name and the verb is derivable, so
+ * NEITHER is stored (they restate the filename). `delineation` is the residue-tight
+ * one-line bound; `formalBlock` is the skill's PRIMARY σ* payload (its content
+ * formalization is the S/E2a task, not here).
+ */
 export interface SkillCell {
-  /** Front-matter `name:`. */
+  /** Front-matter `name:` — the anchor (trigger = `/`+name). */
   readonly name: string;
-  /** Front-matter `trigger:` (e.g. `/introspect`). */
-  readonly trigger: string;
-  /** Front-matter `delineation:`. */
+  /** Front-matter `delineation:` — the residue-tight one-line bound. */
   readonly delineation: string;
-  /** The H1 verb. */
-  readonly verb: string;
-  /** The first fenced block's interior (the self-sufficient set-builder), if any. */
+  /** The self-sufficient set-builder block (the skill's primary σ* payload). */
   readonly formalBlock: string;
   /** Sibling-skill composition anchors (cycle-safe; resolved lazily by T1.2). */
   readonly composition: readonly string[];
-  /** The canonical cell body (`split('---',2)[2]`) — the round-trip byte-anchor. */
+  /** The canonical cell body (`split('---',2)[2]`) — the projection payload. */
   readonly body: string;
 }

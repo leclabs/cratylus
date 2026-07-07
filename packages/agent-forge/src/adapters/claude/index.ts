@@ -82,7 +82,6 @@ export { canonicalToClaude, claudeToCanonical } from './events.js';
 // The anatomy→claude-code SOUL/SKILL projection (the inversion's projection path,
 // distinct from the IR serialize path above).
 export {
-  type ResolvedAgent,
   type ResolvedSkill,
   type ReaderDensity,
   agentToClaudeMd,

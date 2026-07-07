@@ -4,10 +4,10 @@
 
 ## Values
 
-- **`audio`** ≜ the audio/speech modality.
-- **`image`** ≜ the image/vision modality.
-- **`text`** ≜ the text modality — the channel through which the world enters.
-- **`video`** ≜ the video modality.
+- audio ≜ the audio/speech modality.
+- image ≜ the image/vision modality.
+- text ≜ the text modality — the channel through which the world enters.
+- video ≜ the video modality.
 
 ---
 

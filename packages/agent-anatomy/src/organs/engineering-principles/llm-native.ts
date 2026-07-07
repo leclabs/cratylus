@@ -1,7 +1,3 @@
 import type { EngineeringPrinciples } from '@leclabs/agent-forge/anatomy';
 
-export const llmNative: EngineeringPrinciples = {
-  organ: 'engineering-principles',
-  slug: 'llm-native',
-  definiens: `the reader is the LLM; signify for R=LLM, never human prose.`,
-};
+export const llmNative: EngineeringPrinciples = `llm-native ≜ the reader is the LLM; signify for R=LLM, never human prose.`;

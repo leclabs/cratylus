@@ -5,12 +5,10 @@ import type { Organ, Agent as OrganVector } from '../../anatomy/index.js';
  *  names and the vector interface's fields. */
 export const ORGAN_FIELD: Record<Organ, Exclude<keyof OrganVector, 'name'>> = {
   autonomy: 'autonomy',
-  persona: 'persona',
   role: 'role',
   formality: 'formality',
   'audience-adaptation': 'audienceAdaptation',
   transparency: 'transparency',
-  provenance: 'provenance',
   objective: 'objective',
   guardrails: 'guardrails',
   'engineering-principles': 'engineeringPrinciples',

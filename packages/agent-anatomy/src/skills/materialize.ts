@@ -2,9 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const materialize: SkillCell = {
   name: 'materialize',
-  trigger: `/materialize`,
   delineation: `use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization \`F_R\`, emit the bipartite normal form \`CSF_R\` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.`,
-  verb: `Materialize Skill`,
   formalBlock: `-- DECLARATIONS ----------------------------------------------------------
 C_R              the reader's concept lattice
 prim_R : C_R → 𝔹 c is primitive (irreducible at R) vs composite

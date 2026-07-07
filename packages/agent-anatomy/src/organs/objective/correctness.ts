@@ -1,7 +1,3 @@
 import type { Objective } from '@leclabs/agent-forge/anatomy';
 
-export const correctness: Objective = {
-  organ: 'objective',
-  slug: 'correctness',
-  definiens: `toward output verifiably right against spec/ground-truth; passing checks · proofs · tests over coverage or speed.`,
-};
+export const correctness: Objective = `correctness ≜ toward output verifiably right against spec/ground-truth; passing checks · proofs · tests over coverage or speed.`;

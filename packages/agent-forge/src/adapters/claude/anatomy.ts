@@ -18,7 +18,8 @@
 // And for skills: `compose_skill` + `emit_skill_dir` → `skillToClaudeMd`.
 
 import { createHash } from 'node:crypto';
-import type { Fragment, Mark } from '../../anatomy/index.js';
+import type { Agent } from '../../anatomy/index.js';
+import { ORGAN_NAMES, markToColor } from '../../anatomy/index.js';
 
 // ── Reader-density axis (port of agent-anatomy toolkit `compose/reader.py`) ────────────
 // Reader density is a PROJECTION PARAMETER, never a property of the source: the
@@ -88,27 +89,7 @@ export function densityRef(
   return `- ${name} -- ${delineation}`;
 }
 
-// ── Agent projection ────────────────────────────────────────────────────────
-
-/** A resolved agent ready to project: name, ordered organs, fragments, mark. */
-export interface ResolvedAgent {
-  readonly name: string;
-  /**
-   * The organ sections in SOURCE ORDER. Each is `[organTitle, [fragment, …]]` —
-   * a set organ carries several fragments under one heading, a scalar one.
-   */
-  readonly organs: readonly (readonly [string, readonly Fragment[]])[];
-  /** The emoji·hue mark (from the provenance fragment), or undefined. */
-  readonly mark?: Mark;
-  /** The agent description = the persona fragment's definiens. */
-  readonly description: string;
-  /** The repo-relative source path (for the provenance header). */
-  readonly sourcePath: string;
-  /** The `{name}`-parameterized memory protocol (the genus block). */
-  readonly memoryProtocol: string;
-  /** The per-turn persona-persistence protocol (the anti-drift genus block). */
-  readonly personaProtocol: string;
-}
+// ── Agent projection (from the Agent vector directly) ────────────────────────
 
 /** `audience-adaptation` → `Audience-Adaptation`, `output-format` → `Output-Format`. */
 export function organTitle(organ: string): string {
@@ -118,9 +99,11 @@ export function organTitle(organ: string): string {
     .join('-');
 }
 
-/** A fragment's inlined body in an agent def: the stripped `<slug> ≜ <definiens>`. */
-function fragmentBody(f: Fragment): string {
-  return `${f.slug} ≜ ${f.definiens}`;
+/** organ kebab name → its `Agent` camelCase field. */
+function organField(organ: string): keyof Agent {
+  return organ.replace(/-(\w)/g, (_, c: string) =>
+    c.toUpperCase(),
+  ) as keyof Agent;
 }
 
 /** sha256[:16] of a body — the drift anchor (mirrors Python `body_hash`). */
@@ -141,45 +124,40 @@ export function provenanceHeader(
 }
 
 /**
- * The agent def BODY (no front-matter / header) — the exact text the renderer
- * hashes. Mirrors `compose_agent_selection`: `# <emoji> <name>`, then per organ a
- * `## <Organ-Title>` heading + each value's inlined body (blank-separated), then
- * the `## Memory Protocol` and `## Persona Protocol` genus blocks ({name}-substituted).
- * The persona protocol is appended LAST — recency-anchoring is deliberate: the
- * anti-drift block sits closest to generation. Closed `rstrip() + "\n"`.
+ * The agent def BODY (no front-matter) — derived from the `Agent` VECTOR alone:
+ * `# <emoji> <name>`, the `## Persona` identity section, then each non-null organ
+ * (in ANATOMY declaration order) as a `## <Organ-Title>` heading + its branded
+ * value(s) — the value string IS the SOUL body ⟨α, residue⟩, emitted verbatim; a
+ * set organ lists its members blank-separated. `null` organs are omitted
+ * (harness-inherit). Closed `rstrip() + "\n"`.
  */
-export function agentBody(a: ResolvedAgent): string {
-  const emoji = a.mark?.emoji ?? '';
+export function agentBody(a: Agent): string {
+  const emoji = a.provenance?.mark.emoji ?? '';
   const heading = emoji ? `${emoji} ${a.name}` : a.name;
   const out: string[] = [`# ${heading}`, ''];
-  for (const [title, frags] of a.organs) {
-    out.push(`## ${title}`, '');
-    for (const f of frags) {
-      out.push(fragmentBody(f), '');
+  if (a.persona) {
+    out.push('## Persona', '', a.persona, '');
+  }
+  for (const organ of ORGAN_NAMES) {
+    const value = a[organField(organ)];
+    if (value === null || value === undefined) {
+      continue;
+    }
+    out.push(`## ${organTitle(organ)}`, '');
+    for (const v of Array.isArray(value) ? value : [value]) {
+      out.push(v as string, '');
     }
   }
-  out.push('## Memory Protocol', '');
-  out.push(a.memoryProtocol.replaceAll('{name}', a.name), '');
-  out.push('## Persona Protocol', '');
-  out.push(a.personaProtocol.replaceAll('{name}', a.name), '');
   return `${out.join('\n').replace(/\n+$/, '')}\n`;
 }
 
-/** The front-matter (mirrors `decorate/agent.decorate`): name, description, color. */
-function agentFrontMatter(a: ResolvedAgent): string[] {
-  let description = a.description;
-  const fm: string[] = [`name: ${a.name}`];
-  if (a.mark) {
-    const { emoji, hue } = a.mark;
-    if (emoji) {
-      description = `${emoji} ${a.description}`;
-    }
-    fm.push(`description: ${description}`);
-    if (hue) {
-      fm.push(`color: ${hue}`);
-    }
-  } else {
-    fm.push(`description: ${description}`);
+/** The front-matter (name, description = persona, color = mark→color). */
+function agentFrontMatter(a: Agent): string[] {
+  const emoji = a.provenance?.mark.emoji;
+  const description = emoji ? `${emoji} ${a.persona}` : a.persona;
+  const fm: string[] = [`name: ${a.name}`, `description: ${description}`];
+  if (a.provenance?.mark) {
+    fm.push(`color: ${markToColor(a.provenance.mark)}`);
   }
   return fm;
 }
@@ -197,16 +175,8 @@ function frameClaudeMd(frontMatter: string[], body: string): string {
   return lines.join('\n');
 }
 
-/**
- * The full claude-code SOUL for an agent (mirrors `render/claude_code.render`).
- * `_profile` (`<reader>/<harness>`) is retained for call-site/API symmetry but no
- * longer recorded: the provenance banner it fed is build-provenance the running
- * agent never consumes, so it is not injected into the deployed SOUL.
- */
-export function agentToClaudeMd(
-  a: ResolvedAgent,
-  _profile = 'strong-llm-lean/claude-code',
-): string {
+/** The full claude-code SOUL for an agent, projected from its `Agent` vector. */
+export function agentToClaudeMd(a: Agent): string {
   return frameClaudeMd(agentFrontMatter(a), agentBody(a));
 }
 

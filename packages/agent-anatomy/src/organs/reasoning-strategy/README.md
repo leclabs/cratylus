@@ -4,11 +4,11 @@
 
 ## Values
 
-- **`chain-of-thought`** ≜ CoT — reason in explicit intermediate steps.
-- **`plan-and-solve`** ≜ Plan-and-Solve — devise a plan of subtasks, then execute.
-- **`react`** ≜ ReAct — interleave reasoning with tool/subagent actions and observations.
-- **`reflexion`** ≜ Reflexion — verbal self-feedback stored across attempts.
-- **`tree-of-thoughts`** ≜ ToT — search a tree of reasoning paths.
+- chain-of-thought ≜ CoT — reason in explicit intermediate steps.
+- plan-and-solve ≜ Plan-and-Solve — devise a plan of subtasks, then execute.
+- react ≜ ReAct — interleave reasoning with tool/subagent actions and observations.
+- reflexion ≜ Reflexion — verbal self-feedback stored across attempts.
+- tree-of-thoughts ≜ ToT — search a tree of reasoning paths.
 
 ---
 

@@ -52,10 +52,10 @@ function renderTable(entries: CatalogEntry[]): string {
       lines.push(`  ${pc.gray('(no value modules)')}`);
     }
     for (const v of e.values) {
-      const oneLine = v.definiens.replace(/\s+/g, ' ').trim();
+      const oneLine = v.replace(/\s+/g, ' ').trim();
       const clipped =
         oneLine.length > 80 ? `${oneLine.slice(0, 79)}…` : oneLine;
-      lines.push(`  ${pc.cyan(v.slug)} ${pc.gray('≜')} ${clipped}`);
+      lines.push(`  ${pc.gray('·')} ${clipped}`);
     }
     lines.push('');
   }

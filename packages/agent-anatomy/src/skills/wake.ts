@@ -2,9 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const wake: SkillCell = {
   name: 'wake',
-  trigger: `/wake`,
   delineation: `use this skill to reconstitute an agent at session start — run the WAKE sequence (dream → load → orient → resume) so it resumes as the same individual; the read-and-resume counterpart to /dream, invocable as /wake.`,
-  verb: `Wake Skill`,
   formalBlock: `WAKE ≜ register → dream → load → orient → resume
 
 register — \`node ~/.claude/skills/memory/episodic.mjs session register --home \${AGENT_HOME}\` — mark this

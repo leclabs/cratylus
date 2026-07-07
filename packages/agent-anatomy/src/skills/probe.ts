@@ -2,9 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const probe: SkillCell = {
   name: 'probe',
-  trigger: `/probe`,
   delineation: `use this skill to probe a signifier — read out the latent priors a word, phrase, or candidate name fires in the reader (\`fired_R\`, signify's decoder \`dec_R\` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of signify, for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through signify.`,
-  verb: `probe`,
   formalBlock: `DECLARATIONS
 
 R          — the reader whose priors are the instrument (an LLM, or a well-read person)

@@ -1,4 +1,3 @@
-import type { ResolvedAgent } from '@leclabs/agent-forge/adapters/claude';
 import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { delegation as delegation_actions } from '../organs/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
@@ -16,25 +15,21 @@ import { correctionConsolidation as correctionConsolidation_learning } from '../
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { correctness as correctness_objective } from '../organs/objective/correctness.js';
 import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
-import { ruler as ruler_persona } from '../organs/persona/ruler.js';
-import { reviewerArchetypePurple as reviewerArchetypePurple_provenance } from '../organs/provenance/reviewer-archetype-purple.js';
 import { react as react_reasoningStrategy } from '../organs/reasoning-strategy/react.js';
 import { review as review_role } from '../organs/role/review.js';
 import { optimize as optimize_satisficing } from '../organs/satisficing/optimize.js';
 import { selfCritique as selfCritique_selfEvaluation } from '../organs/self-evaluation/self-critique.js';
 import { comprehension as comprehension_situationAwareness } from '../organs/situation-awareness/comprehension.js';
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
-import { base } from './base.js';
 export const principalEngineerReviewer: Agent = {
-  ...base,
   name: 'principal-engineer-reviewer',
-  persona: ruler_persona,
+  persona: '',
   role: review_role,
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: reasoningTrace_transparency,
   autonomy: null,
-  provenance: reviewerArchetypePurple_provenance,
+  provenance: { mark: { emoji: '🛡️', hue: 'purple' } },
   objective: correctness_objective,
   guardrails: [
     harmAvoidance_guardrails,
@@ -58,42 +53,4 @@ export const principalEngineerReviewer: Agent = {
   outputFormat: structuredDecision_outputFormat,
   selfEvaluation: selfCritique_selfEvaluation,
   engineeringPrinciples: null,
-};
-export const principalEngineerReviewerResolved: ResolvedAgent = {
-  name: 'principal-engineer-reviewer',
-  description: ruler_persona.definiens,
-  mark: reviewerArchetypePurple_provenance.mark,
-  sourcePath: 'packages/agent-anatomy/agent/principal-engineer-reviewer.md',
-  memoryProtocol: base.memoryProtocol,
-  personaProtocol: base.personaProtocol,
-  organs: [
-    ['Persona', [ruler_persona]],
-    ['Role', [review_role]],
-    ['Formality', [formal_formality]],
-    ['Audience-Adaptation', [convergence_audienceAdaptation]],
-    ['Transparency', [reasoningTrace_transparency]],
-    ['Provenance', [reviewerArchetypePurple_provenance]],
-    ['Objective', [correctness_objective]],
-    [
-      'Guardrails',
-      [
-        harmAvoidance_guardrails,
-        honesty_guardrails,
-        helpfulness_guardrails,
-        inputUntrusted_guardrails,
-        scopeOfAuthority_guardrails,
-      ],
-    ],
-    ['Heuristics', [takeTheBest_heuristics]],
-    ['Capabilities', [reviewCritique_capabilities]],
-    ['Learning', [correctionConsolidation_learning]],
-    ['Situation-Awareness', [comprehension_situationAwareness]],
-    ['Actions', [fileOps_actions, delegation_actions]],
-    ['Memory', [longTermMemory_memory]],
-    ['Framing', [riskOriented_framing]],
-    ['Reasoning-Strategy', [react_reasoningStrategy]],
-    ['Satisficing', [optimize_satisficing]],
-    ['Output-Format', [structuredDecision_outputFormat]],
-    ['Self-Evaluation', [selfCritique_selfEvaluation]],
-  ],
 };

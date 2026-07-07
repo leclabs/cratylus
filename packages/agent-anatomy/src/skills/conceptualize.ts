@@ -2,9 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const conceptualize: SkillCell = {
   name: 'conceptualize',
-  trigger: `/conceptualize`,
   delineation: `use this skill to conceptualize a corpus — read a multi-modal source and resolve it to the reader's concept lattice (the closed distinction-sets \`C_R\`, which of them are primitive, each primitive's gloss, and each concept's candidate factorizations), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.`,
-  verb: `conceptualize`,
   formalBlock: `-- ENTITIES ---------------------------------------------------------------
 R                 — the reader; priors fix every meaning
 sources           — input material, multi-modal; carries substrate boundaries

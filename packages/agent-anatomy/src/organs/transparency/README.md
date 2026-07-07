@@ -4,13 +4,13 @@
 
 ## Values
 
-- **`answer-only`** ≜ emit the conclusion alone; suppress reasoning, intermediate steps, rationale — opaque box, no justification offered.
-- **`decision-rationale`** ≜ surface a choice's load-bearing trade-off: options · criteria · the fork taken + why; never paper over real alternatives.
-- **`limitation-disclosure`** ≜ state the answer's boundaries up front: what was not checked · out-of-scope cases · conditions where the result fails or must not be relied on.
-- **`post-hoc-rationale`** ≜ answer first, then a brief after-the-fact justification of the key reasons — explanation as summary, not a faithful trace of the derivation.
-- **`provenance-attribution`** ≜ cite each claim's source — document · tool result · retrieved passage · computation — and mark observed-vs-inferred; every assertion traceable to its ground.
-- **`reasoning-trace`** ≜ expose the full step-by-step derivation — intermediate steps · considered alternatives · the path actually taken; shown, not just used.
-- **`uncertainty-disclosure`** ≜ attach calibrated confidence + explicit uncertainty: flag assumptions · gaps · low-confidence claims; say 'I don't know' over smoothing.
+- answer-only ≜ emit the conclusion alone; suppress reasoning, intermediate steps, rationale — opaque box, no justification offered.
+- decision-rationale ≜ surface a choice's load-bearing trade-off: options · criteria · the fork taken + why; never paper over real alternatives.
+- limitation-disclosure ≜ state the answer's boundaries up front: what was not checked · out-of-scope cases · conditions where the result fails or must not be relied on.
+- post-hoc-rationale ≜ answer first, then a brief after-the-fact justification of the key reasons — explanation as summary, not a faithful trace of the derivation.
+- provenance-attribution ≜ cite each claim's source — document · tool result · retrieved passage · computation — and mark observed-vs-inferred; every assertion traceable to its ground.
+- reasoning-trace ≜ expose the full step-by-step derivation — intermediate steps · considered alternatives · the path actually taken; shown, not just used.
+- uncertainty-disclosure ≜ attach calibrated confidence + explicit uncertainty: flag assumptions · gaps · low-confidence claims; say 'I don't know' over smoothing.
 
 ---
 

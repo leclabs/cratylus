@@ -10,12 +10,11 @@ import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
-  type ResolvedAgent,
   type ResolvedSkill,
   agentToClaudeMd,
   skillToClaudeMd,
 } from '@leclabs/agent-forge/adapters/claude';
-import type { Fragment } from '@leclabs/agent-forge/anatomy';
+import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
 import { dream } from '../src/skills/dream.js';
 import { wake } from '../src/skills/wake.js';
@@ -47,7 +46,7 @@ describe('projection stability (.ts is the sole source)', () => {
     const modules = await collect('organs/**/*.ts');
     expect(modules.length).toBeGreaterThan(100);
     for (const rel of modules) {
-      const f = await firstExport<Fragment>(join(srcRoot, rel));
+      const f = await firstExport<string>(join(srcRoot, rel));
       expect(fragmentToMarkdown(f).length, rel).toBeGreaterThan(0);
     }
   });
@@ -71,7 +70,7 @@ describe('projection stability (.ts is the sole source)', () => {
       skillToClaudeMd(
         {
           name: cell.name,
-          trigger: cell.trigger,
+          trigger: `/${cell.name}`,
           delineation: cell.delineation,
           body: cell.body,
           composedFrom: [],
@@ -109,17 +108,10 @@ describe('projection stability (.ts is the sole source)', () => {
     const modules = (await collect('agents/*.ts')).filter(
       (r) => !r.endsWith('base.ts'),
     );
-    expect(modules.length).toBe(11);
+    expect(modules.length).toBe(10);
     for (const rel of modules) {
-      const mod = (await import(
-        pathToFileURL(join(srcRoot, rel)).href
-      )) as Record<string, unknown>;
-      const resolvedKey = Object.keys(mod).find((k) => k.endsWith('Resolved'));
-      expect(resolvedKey, `${rel} exports a *Resolved agent`).toBeDefined();
-      const soul = agentToClaudeMd(
-        mod[resolvedKey as string] as ResolvedAgent,
-        'strong-llm-lean',
-      );
+      const agent = await firstExport<Agent>(join(srcRoot, rel));
+      const soul = agentToClaudeMd(agent);
       expect(soul.length, rel).toBeGreaterThan(0);
     }
   });

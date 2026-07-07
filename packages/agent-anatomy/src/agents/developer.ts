@@ -1,4 +1,3 @@
-import type { ResolvedAgent } from '@leclabs/agent-forge/adapters/claude';
 import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { codeExecution as codeExecution_actions } from '../organs/actions/code-execution.js';
 import { delegation as delegation_actions } from '../organs/actions/delegation.js';
@@ -16,25 +15,21 @@ import { correctionConsolidation as correctionConsolidation_learning } from '../
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { parsimony as parsimony_objective } from '../organs/objective/parsimony.js';
 import { code as code_outputFormat } from '../organs/output-format/code.js';
-import { creator as creator_persona } from '../organs/persona/creator.js';
-import { developerArchetypeBlue as developerArchetypeBlue_provenance } from '../organs/provenance/developer-archetype-blue.js';
 import { react as react_reasoningStrategy } from '../organs/reasoning-strategy/react.js';
 import { implement as implement_role } from '../organs/role/implement.js';
 import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisfice.js';
 import { executableTestOracle as executableTestOracle_selfEvaluation } from '../organs/self-evaluation/executable-test-oracle.js';
 import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
-import { base } from './base.js';
 export const developer: Agent = {
-  ...base,
   name: 'developer',
-  persona: creator_persona,
+  persona: '',
   role: implement_role,
   formality: neutral_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: reasoningTrace_transparency,
   autonomy: null,
-  provenance: developerArchetypeBlue_provenance,
+  provenance: { mark: { emoji: '🔨', hue: 'blue' } },
   objective: parsimony_objective,
   guardrails: [
     harmAvoidance_guardrails,
@@ -56,36 +51,4 @@ export const developer: Agent = {
   outputFormat: code_outputFormat,
   selfEvaluation: executableTestOracle_selfEvaluation,
   engineeringPrinciples: null,
-};
-export const developerResolved: ResolvedAgent = {
-  name: 'developer',
-  description: creator_persona.definiens,
-  mark: developerArchetypeBlue_provenance.mark,
-  sourcePath: 'packages/agent-anatomy/agent/developer.md',
-  memoryProtocol: base.memoryProtocol,
-  personaProtocol: base.personaProtocol,
-  organs: [
-    ['Persona', [creator_persona]],
-    ['Role', [implement_role]],
-    ['Formality', [neutral_formality]],
-    ['Audience-Adaptation', [convergence_audienceAdaptation]],
-    ['Transparency', [reasoningTrace_transparency]],
-    ['Provenance', [developerArchetypeBlue_provenance]],
-    ['Objective', [parsimony_objective]],
-    [
-      'Guardrails',
-      [harmAvoidance_guardrails, honesty_guardrails, helpfulness_guardrails],
-    ],
-    ['Heuristics', [takeTheBest_heuristics, satisficing_heuristics]],
-    ['Capabilities', [softwareEngineering_capabilities]],
-    ['Learning', [correctionConsolidation_learning]],
-    ['Situation-Awareness', [projection_situationAwareness]],
-    ['Actions', [fileOps_actions, codeExecution_actions, delegation_actions]],
-    ['Memory', [longTermMemory_memory]],
-    ['Framing', [goalDirected_framing]],
-    ['Reasoning-Strategy', [react_reasoningStrategy]],
-    ['Satisficing', [satisfice_satisficing]],
-    ['Output-Format', [code_outputFormat]],
-    ['Self-Evaluation', [executableTestOracle_selfEvaluation]],
-  ],
 };

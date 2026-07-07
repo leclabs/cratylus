@@ -20,7 +20,6 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import type { Fragment } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
 import type { SkillCell } from '../src/toolkit/skill-cell.js';
 
@@ -192,9 +191,9 @@ describe('SYMBOLS gate — fence-interior glyph coverage', () => {
     expect(modules.length).toBeGreaterThan(100);
     const failures: string[] = [];
     for (const rel of modules) {
-      const f = await firstExport<Fragment>(join(srcRoot, rel));
+      const f = await firstExport<string>(join(srcRoot, rel));
       const label = `fragment ${relative('organs', rel).replace(/\.ts$/, '')}`;
-      failures.push(...offendingGlyphs(label, f.definiens, declared));
+      failures.push(...offendingGlyphs(label, f, declared));
     }
     expect(failures, failures.join('\n')).toEqual([]);
   });

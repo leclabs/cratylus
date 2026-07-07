@@ -1,9 +1,9 @@
 // The runtime organ-metadata descriptor (`ANATOMY`) is SINGLE-SOURCED against
-// the per-organ `Fragment` TYPE aliases. The type-level guard lives in
-// `anatomy-descriptor.test-d.ts` (each entry typed `MetaOf<TheAlias>`, so a
-// wrong axis/kind/arity is a COMPILE error). This file is the RUNTIME guard:
-// the keyset is EXACTLY the 24 organ literals — no missing organ, no extra key,
-// no drift between the descriptor and the corpus's actual organ dirs.
+// the per-organ branded-string TYPE aliases. This file is the RUNTIME guard:
+// the keyset is EXACTLY the 22 fragment-organ literals — no missing organ, no
+// extra key, no drift between the descriptor and the corpus's actual organ
+// dirs (persona/provenance keep their dirs for README-only docs, but carry no
+// `.ts` value cells and are NOT `Organ` fragment members — D13/D3).
 
 import { readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -11,18 +11,18 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { ANATOMY, ORGAN_NAMES, type Organ } from '../../src/anatomy/index.js';
 
-// The 24 organ literals, copied here as the INDEPENDENT oracle (this list is
-// authored from the `Organ` union in the anatomy doc; if the union grows/shrinks
-// this test must be updated alongside `ANATOMY`, which is exactly the point —
-// adding an organ forces touching its metadata AND this assertion together).
-const THE_24: readonly Organ[] = [
+// The 22 fragment-organ literals, copied here as the INDEPENDENT oracle (this
+// list is authored from the `Organ` union in the anatomy doc; if the union
+// grows/shrinks this test must be updated alongside `ANATOMY`, which is
+// exactly the point — adding an organ forces touching its metadata AND this
+// assertion together). `persona` and `provenance` are excluded: neither is a
+// σ*-fragment organ (persona = plain string, provenance = structured `{mark}`).
+const THE_22: readonly Organ[] = [
   'autonomy',
-  'persona',
   'role',
   'formality',
   'audience-adaptation',
   'transparency',
-  'provenance',
   'objective',
   'guardrails',
   'engineering-principles',
@@ -43,9 +43,9 @@ const THE_24: readonly Organ[] = [
 ];
 
 describe('ANATOMY descriptor', () => {
-  it('has exactly the 24 organs as keys (no missing, no extra)', () => {
-    expect([...ORGAN_NAMES].sort()).toEqual([...THE_24].sort());
-    expect(Object.keys(ANATOMY)).toHaveLength(24);
+  it('has exactly the 22 organs as keys (no missing, no extra)', () => {
+    expect([...ORGAN_NAMES].sort()).toEqual([...THE_22].sort());
+    expect(Object.keys(ANATOMY)).toHaveLength(22);
   });
 
   it('every axis/kind/arity is a legal value', () => {
@@ -57,10 +57,11 @@ describe('ANATOMY descriptor', () => {
     }
   });
 
-  it('the five set organs are exactly the set-arity entries', () => {
+  it('the six set organs are exactly the set-arity entries', () => {
     const setOrgans = ORGAN_NAMES.filter((o) => ANATOMY[o].arity === 'set');
     expect([...setOrgans].sort()).toEqual(
       [
+        'autonomy',
         'guardrails',
         'capabilities',
         'actions',
@@ -81,9 +82,13 @@ describe('ANATOMY descriptor', () => {
       'src',
       'organs',
     );
+    // persona/ and provenance/ dirs still exist (README-only docs) but hold no
+    // `.ts` value cells and are not `Organ` fragment members — exclude them
+    // from the descriptor↔corpus comparison.
     const dirs = readdirSync(anatomyOrgans, { withFileTypes: true })
       .filter((d) => d.isDirectory())
       .map((d) => d.name)
+      .filter((name) => name !== 'persona' && name !== 'provenance')
       .sort();
     expect(dirs).toEqual([...ORGAN_NAMES].sort());
   });

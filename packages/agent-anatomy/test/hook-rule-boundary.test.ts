@@ -95,7 +95,7 @@ async function hookHomes(): Promise<Homes> {
     homes.set(slug, b);
   };
   for (const c of await allHookCells()) {
-    add(c.slug, `hook/${c.id}`);
+    add(c.id, `hook/${c.id}`);
   }
   return homes;
 }
@@ -156,8 +156,8 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
     for (const c of await allHookCells()) {
       cells.push({
         kind: 'hook',
-        slug: c.slug,
-        definiens: c.definiens,
+        slug: c.id,
+        definiens: c.residue,
         refs: c.refs ?? [],
       });
     }
@@ -183,10 +183,10 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
     const homes = await hookHomes();
     const bySlug = new Map<string, AcceptCell>();
     for (const c of await allHookCells()) {
-      bySlug.set(c.slug, {
+      bySlug.set(c.id, {
         kind: 'hook',
-        slug: c.slug,
-        definiens: c.definiens,
+        slug: c.id,
+        definiens: c.residue,
         refs: c.refs ?? [],
       });
     }

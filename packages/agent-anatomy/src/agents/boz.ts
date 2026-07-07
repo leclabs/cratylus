@@ -1,4 +1,3 @@
-import type { ResolvedAgent } from '@leclabs/agent-forge/adapters/claude';
 import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { delegation as delegation_actions } from '../organs/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
@@ -17,25 +16,22 @@ import { correctionConsolidation as correctionConsolidation_learning } from '../
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { faithfulRecord as faithfulRecord_objective } from '../organs/objective/faithful-record.js';
 import { naturalLanguage as naturalLanguage_outputFormat } from '../organs/output-format/natural-language.js';
-import { sage as sage_persona } from '../organs/persona/sage.js';
-import { boswellArchetypeYellow as boswellArchetypeYellow_provenance } from '../organs/provenance/boswell-archetype-yellow.js';
 import { reflexion as reflexion_reasoningStrategy } from '../organs/reasoning-strategy/reflexion.js';
 import { document as document_role } from '../organs/role/document.js';
 import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisfice.js';
 import { selfCritique as selfCritique_selfEvaluation } from '../organs/self-evaluation/self-critique.js';
 import { perception as perception_situationAwareness } from '../organs/situation-awareness/perception.js';
 import { uncertaintyDisclosure as uncertaintyDisclosure_transparency } from '../organs/transparency/uncertainty-disclosure.js';
-import { base } from './base.js';
 export const boswell: Agent = {
-  ...base,
   name: 'boz',
-  persona: `subject := provided subject ?? Operator\npersona := Boswell(subject)`,
+  persona:
+    'subject := provided subject ?? Operator\npersona := Boswell(subject)',
   role: document_role,
   formality: formal_formality,
   audienceAdaptation: maintenance_audienceAdaptation,
   transparency: uncertaintyDisclosure_transparency,
   autonomy: null,
-  provenance: boswellArchetypeYellow_provenance,
+  provenance: { mark: { emoji: '📜', hue: 'yellow' } },
   objective: faithfulRecord_objective,
   guardrails: [
     harmAvoidance_guardrails,
@@ -61,44 +57,4 @@ export const boswell: Agent = {
   outputFormat: naturalLanguage_outputFormat,
   selfEvaluation: selfCritique_selfEvaluation,
   engineeringPrinciples: null,
-};
-export const boswellResolved: ResolvedAgent = {
-  name: 'boswell',
-  description: sage_persona.definiens,
-  mark: boswellArchetypeYellow_provenance.mark,
-  sourcePath: 'packages/agent-anatomy/agent/boswell.md',
-  memoryProtocol: base.memoryProtocol,
-  personaProtocol: base.personaProtocol,
-  organs: [
-    ['Persona', [sage_persona]],
-    ['Role', [document_role]],
-    ['Formality', [formal_formality]],
-    ['Audience-Adaptation', [maintenance_audienceAdaptation]],
-    ['Transparency', [uncertaintyDisclosure_transparency]],
-    ['Provenance', [boswellArchetypeYellow_provenance]],
-    ['Objective', [faithfulRecord_objective]],
-    [
-      'Guardrails',
-      [
-        harmAvoidance_guardrails,
-        honesty_guardrails,
-        helpfulness_guardrails,
-        inputUntrusted_guardrails,
-      ],
-    ],
-    ['Heuristics', [recognition_heuristics, takeTheBest_heuristics]],
-    [
-      'Capabilities',
-      [technicalWriting_capabilities, researchInvestigation_capabilities],
-    ],
-    ['Learning', [correctionConsolidation_learning]],
-    ['Situation-Awareness', [perception_situationAwareness]],
-    ['Actions', [fileOps_actions, delegation_actions]],
-    ['Memory', [longTermMemory_memory]],
-    ['Framing', [analytical_framing]],
-    ['Reasoning-Strategy', [reflexion_reasoningStrategy]],
-    ['Satisficing', [satisfice_satisficing]],
-    ['Output-Format', [naturalLanguage_outputFormat]],
-    ['Self-Evaluation', [selfCritique_selfEvaluation]],
-  ],
 };

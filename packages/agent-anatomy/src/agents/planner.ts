@@ -1,4 +1,3 @@
-import type { ResolvedAgent } from '@leclabs/agent-forge/adapters/claude';
 import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { delegation as delegation_actions } from '../organs/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
@@ -14,25 +13,21 @@ import { correctionConsolidation as correctionConsolidation_learning } from '../
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { delivery as delivery_objective } from '../organs/objective/delivery.js';
 import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
-import { ruler as ruler_persona } from '../organs/persona/ruler.js';
-import { plannerArchetypeBlue as plannerArchetypeBlue_provenance } from '../organs/provenance/planner-archetype-blue.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../organs/reasoning-strategy/plan-and-solve.js';
 import { plan as plan_role } from '../organs/role/plan.js';
 import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisfice.js';
 import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } from '../organs/self-evaluation/acceptance-criteria-check.js';
 import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
 import { decisionRationale as decisionRationale_transparency } from '../organs/transparency/decision-rationale.js';
-import { base } from './base.js';
 export const planner: Agent = {
-  ...base,
   name: 'planner',
-  persona: ruler_persona,
+  persona: '',
   role: plan_role,
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: decisionRationale_transparency,
   autonomy: null,
-  provenance: plannerArchetypeBlue_provenance,
+  provenance: { mark: { emoji: '🗺️', hue: 'blue' } },
   objective: delivery_objective,
   engineeringPrinciples: [separationOfConcerns_engineeringPrinciples],
   guardrails: [
@@ -54,36 +49,4 @@ export const planner: Agent = {
   outputFormat: structuredDecision_outputFormat,
   selfEvaluation: acceptanceCriteriaCheck_selfEvaluation,
   heuristics: null,
-};
-export const plannerResolved: ResolvedAgent = {
-  name: 'planner',
-  description: ruler_persona.definiens,
-  mark: plannerArchetypeBlue_provenance.mark,
-  sourcePath: 'packages/agent-anatomy/agent/planner.md',
-  memoryProtocol: base.memoryProtocol,
-  personaProtocol: base.personaProtocol,
-  organs: [
-    ['Persona', [ruler_persona]],
-    ['Role', [plan_role]],
-    ['Formality', [formal_formality]],
-    ['Audience-Adaptation', [convergence_audienceAdaptation]],
-    ['Transparency', [decisionRationale_transparency]],
-    ['Provenance', [plannerArchetypeBlue_provenance]],
-    ['Objective', [delivery_objective]],
-    ['Engineering-Principles', [separationOfConcerns_engineeringPrinciples]],
-    [
-      'Guardrails',
-      [harmAvoidance_guardrails, honesty_guardrails, helpfulness_guardrails],
-    ],
-    ['Capabilities', [planningDecomposition_capabilities]],
-    ['Learning', [correctionConsolidation_learning]],
-    ['Situation-Awareness', [projection_situationAwareness]],
-    ['Actions', [fileOps_actions, delegation_actions]],
-    ['Memory', [longTermMemory_memory]],
-    ['Framing', [decompositional_framing]],
-    ['Reasoning-Strategy', [planAndSolve_reasoningStrategy]],
-    ['Satisficing', [satisfice_satisficing]],
-    ['Output-Format', [structuredDecision_outputFormat]],
-    ['Self-Evaluation', [acceptanceCriteriaCheck_selfEvaluation]],
-  ],
 };

@@ -5,7 +5,6 @@ import TOML from '@iarna/toml';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { aiderAdapter } from '../../../src/adapters/aider/index.js';
 import {
-  type ResolvedAgent,
   type ResolvedSkill,
   agentToCodexToml,
   agentToCodexTomlObject,
@@ -13,38 +12,48 @@ import {
   skillToCodexMd,
 } from '../../../src/adapters/codex/index.js';
 import { opencodeAdapter } from '../../../src/adapters/opencode/index.js';
-import type { Fragment } from '../../../src/anatomy/index.js';
+import type { Agent } from '../../../src/anatomy/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
 
 // ── Fixtures (self-contained; agent-forge does not depend on agent-anatomy) ─────────────────
 
-/** A minimal Fragment stub — only `organ`/`slug`/`definiens` are load-bearing. */
-function frag(organ: string, slug: string): Fragment {
-  return { organ, slug, definiens: `${slug} definiens` } as Fragment;
-}
-
-/** A nico-like resolved agent (mirrors `nicoResolved`); cyan-marked, sage persona. */
-function nicoLikeResolved(): ResolvedAgent {
+/**
+ * A nico-like `Agent` vector (mirrors what a nico corpus agent elevates to);
+ * cyan-marked, sage persona. Every organ key is present (completeness law);
+ * only a handful of organs carry a value, the rest are explicit `null`
+ * (omit-to-inherit). Each non-null organ value IS the SOUL body
+ * `<slug> ≜ <definiens>` — a plain branded string, no wrapper object.
+ */
+function nicoLikeAgent(): Agent {
   return {
     name: 'nico',
-    description: 'the Sage archetype',
-    mark: { emoji: '📐', hue: 'cyan' },
-    sourcePath: 'packages/agent-anatomy/agent/nico.md',
-    memoryProtocol: 'protocol for {name}',
-    personaProtocol: 'persona protocol for {name}',
-    organs: [
-      ['Persona', [frag('persona', 'sage')]],
-      ['Role', [frag('role', 'curate')]],
-      ['Formality', [frag('formality', 'formal')]],
-      ['Model', [frag('model', 'claude')]],
-      ['Autonomy', [frag('autonomy', 'human-on-the-loop')]],
-      ['Actions', [frag('actions', 'file-ops'), frag('actions', 'delegation')]],
-      ['Modalities', [frag('modalities', 'text')]],
-      ['Trigger', [frag('trigger', 'user-message')]],
-      ['Output-Format', [frag('output-format', 'natural-language')]],
-      ['Reasoning-Strategy', [frag('reasoning-strategy', 'react')]],
-      ['Satisficing', [frag('satisficing', 'satisfice')]],
+    autonomy: ['human-on-the-loop ≜ human-on-the-loop definiens'],
+    persona: 'the Sage archetype',
+    role: 'curate ≜ curate definiens',
+    formality: 'formal ≜ formal definiens',
+    audienceAdaptation: null,
+    transparency: null,
+    provenance: { mark: { emoji: '📐', hue: 'cyan' } },
+    objective: null,
+    guardrails: null,
+    engineeringPrinciples: null,
+    heuristics: null,
+    capabilities: null,
+    learning: null,
+    situationAwareness: null,
+    actions: [
+      'file-ops ≜ file-ops definiens',
+      'delegation ≜ delegation definiens',
     ],
+    modalities: 'text ≜ text definiens',
+    model: 'claude ≜ claude definiens',
+    memory: 'protocol ≜ the standing memory protocol for nico',
+    trigger: 'user-message ≜ user-message definiens',
+    framing: null,
+    reasoningStrategy: 'react ≜ react definiens',
+    satisficing: 'satisfice ≜ satisfice definiens',
+    outputFormat: 'natural-language ≜ natural-language definiens',
+    selfEvaluation: null,
   };
 }
 
@@ -52,7 +61,7 @@ function nicoLikeResolved(): ResolvedAgent {
 
 describe('agentToCodexToml — the codex subagent projection', () => {
   it('emits valid TOML carrying name / description / developer_instructions; never color [CX1]', () => {
-    const toml = agentToCodexToml(nicoLikeResolved());
+    const toml = agentToCodexToml(nicoLikeAgent());
     const parsed = TOML.parse(toml) as Record<string, unknown>;
     expect(parsed.name).toBe('nico');
     expect(parsed.description).toBe('📐 the Sage archetype');
@@ -62,14 +71,17 @@ describe('agentToCodexToml — the codex subagent projection', () => {
   });
 
   it('developer_instructions carries the full composed SOUL body + memory genus block', () => {
-    const obj = agentToCodexTomlObject(nicoLikeResolved());
+    const obj = agentToCodexTomlObject(nicoLikeAgent());
     const sp = obj.developer_instructions as string;
     // The harness-neutral organ sections — the SAME body the claude SOUL carries.
     expect(sp).toContain('## Persona');
-    expect(sp).toContain('sage ≜ sage definiens');
+    expect(sp).toContain('the Sage archetype');
     expect(sp).toContain('## Model');
-    // The memory genus block, {name}-substituted.
-    expect(sp).toContain('protocol for nico');
+    expect(sp).toContain('claude ≜ claude definiens');
+    // No more `## Memory Protocol` genus append — `memory` is a plain organ
+    // section like any other, carrying the vector's branded value verbatim.
+    expect(sp).toContain('## Memory');
+    expect(sp).toContain('protocol ≜ the standing memory protocol for nico');
     // NO provenance banner: the regenerate-don't-hand-edit comment + content-hash
     // is build-provenance the running agent never consumes, so it is not injected
     // (mirrors skillToCodexMd, which already omits it).
@@ -79,7 +91,7 @@ describe('agentToCodexToml — the codex subagent projection', () => {
   });
 
   it('omits the emoji-prefixed description when the agent carries no mark (color never emitted either way)', () => {
-    const a = { ...nicoLikeResolved(), mark: undefined };
+    const a: Agent = { ...nicoLikeAgent(), provenance: null };
     const parsed = TOML.parse(agentToCodexToml(a)) as Record<string, unknown>;
     expect(parsed.color).toBeUndefined();
     expect(parsed.description).toBe('the Sage archetype');
@@ -167,7 +179,7 @@ describe('lossy reporting for agents-none adapters (WriteReport holds)', () => {
       {
         name: 'nico',
         description: '📐 the Sage archetype',
-        body: agentToCodexTomlObject(nicoLikeResolved())
+        body: agentToCodexTomlObject(nicoLikeAgent())
           .developer_instructions as string,
       },
     ],

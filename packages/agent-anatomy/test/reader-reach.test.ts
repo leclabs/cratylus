@@ -107,8 +107,8 @@ describe('READER-REACH gate — ρ past the static corpus', () => {
 
   // ── the codification homes are standing law, not per-turn discretion ─────────
   it('the delegation organ + fan-out cells carry the ρ=LLM contract (non-regressable)', () => {
-    expect(delegation.definiens).toMatch(/ρ=LLM/);
-    expect(delegation.definiens).toMatch(/register=LLM/);
+    expect(delegation).toMatch(/ρ=LLM/);
+    expect(delegation).toMatch(/register=LLM/);
     expect(praxis.formalBlock).toContain('conform(a) ⇔ register(a) = ρ(a)');
     expect(praxis.formalBlock).toContain('¬conform(r) ⇒ ¬accept(t)(r)');
     expect(exemplify.formalBlock).toContain('conform(k)');

@@ -1,5 +1,5 @@
 // The CODEX consumer projection command — the second-harness counterpart of
-// `project-cli.ts`. Same agent-anatomy modules, same `ResolvedAgent`/`ResolvedSkill`, but
+// `project-cli.ts`. Same agent-anatomy modules (the `Agent` vector + `ResolvedSkill`), but
 // run through agent-forge's CODEX adapter instead of claude: agents → `agents/<name>.toml`,
 // skills → `skills/<name>/SKILL.md`, plus the `AGENTS.md` instruction surface.
 //
@@ -17,12 +17,12 @@ import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
-  type ResolvedAgent,
   type ResolvedSkill,
   agentToCodexToml,
   agentsMdSurface,
   skillToCodexMd,
 } from '@leclabs/agent-forge/adapters/codex';
+import type { Agent } from '@leclabs/agent-forge/anatomy';
 import type { SkillCell } from './skill-cell.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -69,17 +69,17 @@ async function moduleNames(dir: string): Promise<string[]> {
   return names.sort();
 }
 
-/** The `<name>Resolved: ResolvedAgent` export of an agent module. */
-async function resolvedAgentOf(modPath: string): Promise<ResolvedAgent> {
+/** The `<name>: Agent` vector export of an agent module. */
+async function agentOf(modPath: string): Promise<Agent> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<
     string,
     unknown
   >;
-  const key = Object.keys(mod).find((k) => k.endsWith('Resolved'));
+  const key = Object.keys(mod).find((k) => k !== 'default');
   if (!key) {
-    throw new Error(`${modPath}: no *Resolved export`);
+    throw new Error(`${modPath}: no Agent export`);
   }
-  return mod[key] as ResolvedAgent;
+  return mod[key] as Agent;
 }
 
 /** The first `SkillCell` export of a skill module. */
@@ -97,10 +97,10 @@ async function projectAgents(args: Args): Promise<string[]> {
   mkdirSync(dir, { recursive: true });
   const names: string[] = [];
   for (const name of await moduleNames(agentsModDir)) {
-    const resolved = await resolvedAgentOf(join(agentsModDir, `${name}.ts`));
+    const agent = await agentOf(join(agentsModDir, `${name}.ts`));
     writeFileSync(
       join(dir, `${name}.toml`),
-      agentToCodexToml(resolved, args.profile),
+      agentToCodexToml(agent, args.profile),
     );
     process.stdout.write(`EMIT codex agent ${name}\n`);
     names.push(name);
@@ -119,7 +119,7 @@ async function projectSkills(args: Args): Promise<number> {
   // — codex consumes the AgentSkills `/trigger` surface too).
   const refProject = (slug: string): string => {
     const cell = cells.get(slug);
-    return cell ? cell.trigger : `**${slug}**`;
+    return cell ? `/${cell.name}` : `**${slug}**`;
   };
 
   let n = 0;
@@ -127,7 +127,7 @@ async function projectSkills(args: Args): Promise<number> {
     const cell = cells.get(name) as SkillCell;
     const resolved: ResolvedSkill = {
       name: cell.name,
-      trigger: cell.trigger,
+      trigger: `/${cell.name}`,
       delineation: cell.delineation,
       body: cell.body,
       composedFrom: cell.composition.map(refProject),
