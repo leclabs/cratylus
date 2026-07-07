@@ -44,6 +44,7 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
+import { signify } from '../src/skills/signify.js';
 // accept() falsifier — the full Universal gate (`src/toolkit/cold-oracle/accept.ts`),
 // the register gate above being one facet of ρ-conformance, not a Universal leg.
 import {
@@ -58,6 +59,13 @@ import {
   universalCell,
 } from '../src/toolkit/cold-oracle/accept.js';
 import { nonceControl } from '../src/toolkit/cold-oracle/oracle.js';
+// RESIDUE gate (AC-RESIDUE) — the decidable predicate + its witnesses. Its admitted
+// value-algebra operators are READ from `operator-lexicon.ts` (DRY, one home).
+import {
+  admissibleFormalBlock,
+  admissibleSingleLine,
+} from '../src/toolkit/cold-oracle/residue.js';
+import { RESIDUE_OPERATORS } from '../src/toolkit/operator-lexicon.js';
 import type { SkillCell } from '../src/toolkit/skill-cell.js';
 // ρ + register(a) + conform — ONE shared model (`reader-register.ts`), also
 // enforced over the runtime frontiers by `reader-reach.test.ts`; RHO mirrors
@@ -539,4 +547,120 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
     },
     180_000,
   );
+});
+
+// ═══ RESIDUE gate (AC-RESIDUE) — the DEPLOYED σ* payload is formal σ*, never prose ══
+//
+// The machine-check behind AC-RESIDUE (PLAN.md): MODEL PARSIMONIOUS
+// `body(c)=⟨α,residue⟩ ∧ residue=D∖fired(α)` specialized to the DEPLOYED corpus —
+// every organ VALUE residue · every skill `delineation` · every skill `formalBlock`
+// (whole) MUST be a composable σ* expression / a `formalize` artifact / ∅, never human
+// prose (the vision's failure criterion). GOVERNING INVARIANT: every deployed artifact
+// the model reads is formal σ* under ρ, never human prose — this gate IS that
+// invariant's enforcement over the whole deployed payload set. Predicate + witnesses:
+// `src/toolkit/cold-oracle/residue.ts`; admitted operators READ from
+// `operator-lexicon.ts` (`RESIDUE_OPERATORS` — DRY, one home).
+//
+// FIXTURE-BASED bite proof, GREEN NOW: the 139 live organ values are E1's verbatim-
+// prose intermediates (`slug ≜ <old prose>`) until wave-2 (O/S/H) reduces them to σ*,
+// and delineations are likewise pre-reduction prose — so the LIVE-corpus scan is
+// `.skip`ped (C1 marker) to avoid reddening a suite full of legitimate intermediates.
+// The predicate is proven on fixtures instead: prose REJECTED (offending clause named),
+// the three σ* forms + a real `formalize` formalBlock ACCEPTED, a prose-carrying
+// formalBlock REJECTED. NON-VACUOUS: the gate BITES on prose, PASSES on σ*.
+
+describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, never prose', () => {
+  // DRY — the gate's admitted value-algebra operators ARE the lexicon's, not a copy.
+  it('reads its operator set from operator-lexicon (RESIDUE_OPERATORS — one home)', () => {
+    expect(RESIDUE_OPERATORS).toEqual(['↾', '⟨', '⟩', '${}']);
+    // the infix `↾` (∈ RESIDUE_OPERATORS) combines terms; `⟨⟩`/`${}` group a span.
+    expect(admissibleSingleLine('scope ↾ ic').admissible).toBe(true);
+    // a glyph NOT in RESIDUE_OPERATORS (a compose `⊕`) is not an admitted operator ⇒
+    // it surfaces as a non-σ* atom — member-composition is the agent's set-arity
+    // vector, NOT a cell glyph (no compose op without its own cold-verification).
+    expect(admissibleSingleLine('scope ⊕ ic').admissible).toBe(false);
+  });
+
+  // ── SINGLE-LINE (organ value residue · skill `delineation`) ────────────────────
+  it('ACCEPTS the three σ* forms — ∅ · a bare anchor · an operator application', () => {
+    for (const form of [
+      '', // ∅ — the anchor α fully fires the concept
+      'human-on-the-loop', // a bare symbol/anchor
+      'decision-authority(self) ↾ individual-contribution ⟨intrinsic⟩', // op application
+    ]) {
+      const v = admissibleSingleLine(form);
+      expect(v.admissible, `${JSON.stringify(form)} → ${v.reason}`).toBe(true);
+    }
+  });
+
+  it('REJECTS a prose residue, NAMING the offending clause (actionable for O*/S*)', () => {
+    // the live E1 intermediate for organs/autonomy/human-on-the-loop (verbatim head).
+    const prose =
+      "acts autonomously on the operator's behalf; the operator oversees and " +
+      'sets intent, never pre-approves each act.';
+    const v = admissibleSingleLine(prose);
+    expect(v.admissible).toBe(false);
+    expect(v.reason).toContain("acts autonomously on the operator's behalf");
+    expect(v.reason).toMatch(/clausal-punct|free-NL connective/);
+  });
+
+  // ── FORMAL-BLOCK (skill `formalBlock`, whole — a `formalize` artifact) ──────────
+  it('ACCEPTS a valid `formalize` formalBlock (declarations-above / laws-below)', () => {
+    const block = [
+      'DECLARATIONS',
+      '  R      — the reader; fixes every meaning',
+      '  α      : C_R ↣ Names',
+      'LAWS',
+      '  A ≜ { α(c) | c ∈ C_R }',
+      '  injective : α(cᵢ) = α(cⱼ) ⇒ cᵢ = cⱼ',
+    ].join('\n');
+    const v = admissibleFormalBlock(block);
+    expect(v.admissible, v.reason).toBe(true);
+    // …and the REAL deployed artifact: signify's formalBlock IS a formalize artifact.
+    const live = admissibleFormalBlock(signify.formalBlock);
+    expect(live.admissible, live.reason).toBe(true);
+  });
+
+  it('REJECTS a formalBlock carrying an explanatory-prose line / a #-preamble gloss', () => {
+    const prosey = [
+      'DECLARATIONS',
+      '  R      — the reader',
+      'LAWS',
+      '  We first walk the lattice and then assign a name to each concept.',
+    ].join('\n');
+    const v = admissibleFormalBlock(prosey);
+    expect(v.admissible).toBe(false);
+    expect(v.reason).toContain('explanatory-prose line');
+    expect(v.reason).toContain('We first walk the lattice');
+
+    const preamble = [
+      '# how naming works',
+      'DECLARATIONS',
+      '  R — the reader',
+    ].join('\n');
+    const w = admissibleFormalBlock(preamble);
+    expect(w.admissible).toBe(false);
+    expect(w.reason).toContain('#-preamble gloss');
+  });
+
+  // ── LIVE-corpus scan — the full AC-RESIDUE claim over the deployed payload set ──
+  // ENABLE IN C1: live residues are E1 verbatim-prose until wave-2 (O/S/H) reduces them.
+  it.skip('every deployed σ* payload is admissible (organ values · delineations · formalBlocks)', async () => {
+    const failures: string[] = [];
+    for (const rel of await collect('organs/**/*.ts')) {
+      const value = await firstExport<string>(join(srcRoot, rel));
+      const r = admissibleSingleLine(splitBody(value).definiens);
+      if (!r.admissible) failures.push(`organ ${rel}: ${r.reason}`);
+    }
+    for (const rel of await collect('skills/*.ts')) {
+      const s = await firstExport<SkillCell>(join(srcRoot, rel));
+      const d = admissibleSingleLine(s.delineation);
+      if (!d.admissible)
+        failures.push(`skill ${s.name} delineation: ${d.reason}`);
+      const f = admissibleFormalBlock(s.formalBlock);
+      if (!f.admissible)
+        failures.push(`skill ${s.name} formalBlock: ${f.reason}`);
+    }
+    expect(failures, failures.join('\n')).toEqual([]);
+  });
 });
