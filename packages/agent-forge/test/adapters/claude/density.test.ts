@@ -30,13 +30,13 @@ function frag(organ: string, slug: string): Fragment {
 function agentFixture(): ResolvedAgent {
   return {
     name: 'mav',
-    description: 'the Hero archetype',
+    description: 'the Master-builder archetype',
     mark: { emoji: '✈️', hue: 'green' },
     sourcePath: 'packages/agent-anatomy/agent/mav.md',
     memoryProtocol: 'protocol for {name}',
     personaProtocol: 'persona protocol for {name}',
     organs: [
-      ['Persona', [frag('persona', 'hero')]],
+      ['Persona', [frag('persona', 'master-builder')]],
       [
         'Actions',
         [frag('actions', 'file-ops'), frag('actions', 'code-execution')],

@@ -8,7 +8,7 @@
 - **`creator`** ≜ the Creator archetype — invention, craft, make something of enduring value.
 - **`everyman`** ≜ the Everyman archetype — belonging, realism, the regular one.
 - **`explorer`** ≜ the Explorer archetype — freedom, discovery, the frontier.
-- **`hero`** ≜ the Hero archetype — mastery, courage, prove worth through action.
+- **`master-builder`** ≜ the Master-builder archetype — mastery, courage, prove worth through action.
 - **`innocent`** ≜ the Innocent archetype — optimism, simplicity, faith.
 - **`jester`** ≜ the Jester archetype — play, levity, truth through wit.
 - **`lover`** ≜ the Lover archetype — intimacy, devotion, connection.

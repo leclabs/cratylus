@@ -28,8 +28,8 @@ import { uncertaintyDisclosure as uncertaintyDisclosure_transparency } from '../
 import { base } from './base.js';
 export const boswell: Agent = {
   ...base,
-  name: 'boswell',
-  persona: sage_persona,
+  name: 'boz',
+  persona: `subject := provided subject ?? Operator\npersona := Boswell(subject)`,
   role: document_role,
   formality: formal_formality,
   audienceAdaptation: maintenance_audienceAdaptation,

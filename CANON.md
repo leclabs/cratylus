@@ -1,16 +1,8 @@
 # CANON
 
-```
-reader ≜ human
-role   ≜ index of the canonical corpus
-scope  ≜ the validated library of semantic primitives agents compose from
-```
+<!-- `ρ=human` -->
 
-> The single source of truth: every semantic primitive — discovered, validated, and given exactly one canonical home.
-
-Each primitive lives in one source module. Human-readable views are projected from that same source that feeds composition and deployment — so what you read and what agents compose never diverge.
-
-Browse the available primitives with the `/help catalog` skill.
+Use the `/help catalog` skill to project a readable catalog.
 
 ## Relationship
 

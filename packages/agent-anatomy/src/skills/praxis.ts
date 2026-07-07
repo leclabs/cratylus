@@ -81,7 +81,7 @@ sync       ≜ ∀ t ∈ P : state(t) ≠ truth(t) ⇒ state(t) := truth(t) ;
 export const praxis: SkillCell = {
   name: 'praxis',
   trigger: `/praxis`,
-  delineation: `Create and work durable, sharded plans (sharded-plan-layout dirs) — reached by planning intent, not a command grammar; task state is the folder a task-file sits in (pending/ready/active/completed), each task-file a blind-dispatchable execution spec, the plan an explicit topo-DAG of frontier waves, PLAN.md mirrors it, and \`list\` is the one explicit affordance.`,
+  delineation: `use this skill to create a plan decomposed into MECE execution shards, where each shard is a self-contained task execution specification with objective, inputs, constraints, dependencies, outputs, and completion criteria.`,
   verb: `praxis`,
   formalBlock: FORMAL_BLOCK,
   composition: [],

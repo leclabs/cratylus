@@ -24,7 +24,7 @@ import { correctionConsolidation as correctionConsolidation_learning } from '../
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { delivery as delivery_objective } from '../organs/objective/delivery.js';
 import { code as code_outputFormat } from '../organs/output-format/code.js';
-import { hero as hero_persona } from '../organs/persona/hero.js';
+import { master-builder as master-builder_persona } from '../organs/persona/master-builder.js';
 import { mavArchetypeGreen as mavArchetypeGreen_provenance } from '../organs/provenance/mav-archetype-green.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../organs/reasoning-strategy/plan-and-solve.js';
 import { build as build_role } from '../organs/role/build.js';
@@ -36,7 +36,7 @@ import { base } from './base.js';
 export const mav: Agent = {
   ...base,
   name: 'mav',
-  persona: hero_persona,
+  persona: master-builder_persona,
   role: build_role,
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
@@ -79,13 +79,13 @@ export const mav: Agent = {
 };
 export const mavResolved: ResolvedAgent = {
   name: 'mav',
-  description: hero_persona.definiens,
+  description: master-builder_persona.definiens,
   mark: mavArchetypeGreen_provenance.mark,
   sourcePath: 'packages/agent-anatomy/agent/mav.md',
   memoryProtocol: base.memoryProtocol,
   personaProtocol: base.personaProtocol,
   organs: [
-    ['Persona', [hero_persona]],
+    ['Persona', [master-builder_persona]],
     ['Role', [build_role]],
     ['Formality', [formal_formality]],
     ['Audience-Adaptation', [convergence_audienceAdaptation]],

@@ -20,8 +20,8 @@ import type {
 
 const persona: Persona = {
   organ: 'persona',
-  slug: 'hero',
-  definiens: 'the Hero archetype',
+  slug: 'master-builder',
+  definiens: 'the Master-builder archetype',
 };
 const autonomy: Autonomy = {
   organ: 'autonomy',

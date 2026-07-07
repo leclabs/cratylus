@@ -16,7 +16,6 @@ import { correctionConsolidation as correctionConsolidation_learning } from '../
 import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { faithfulRecord as faithfulRecord_objective } from '../organs/objective/faithful-record.js';
 import { document as document_outputFormat } from '../organs/output-format/document.js';
-import { sage as sage_persona } from '../organs/persona/sage.js';
 import { archDocWriterArchetypePink as archDocWriterArchetypePink_provenance } from '../organs/provenance/arch-doc-writer-archetype-pink.js';
 import { react as react_reasoningStrategy } from '../organs/reasoning-strategy/react.js';
 import { document as document_role } from '../organs/role/document.js';
@@ -28,7 +27,7 @@ import { base } from './base.js';
 export const archDocWriter: Agent = {
   ...base,
   name: 'arch-doc-writer',
-  persona: sage_persona,
+  persona: '',
   role: document_role,
   formality: neutral_formality,
   audienceAdaptation: convergence_audienceAdaptation,
