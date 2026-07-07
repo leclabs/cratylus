@@ -647,8 +647,8 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
   });
 
   // ── LIVE-corpus scan — the full AC-RESIDUE claim over the deployed payload set ──
-  // ENABLE IN C1: live residues are E1 verbatim-prose until wave-2 (O/S/H) reduces them.
-  it.skip('every deployed σ* payload is admissible (organ values · delineations · formalBlocks)', async () => {
+  // ENABLED (C1): wave-2 (O/S/H) reduced every organ value · skill delineation · formalBlock to σ*.
+  it('every deployed σ* payload is admissible (organ values · delineations · formalBlocks)', async () => {
     const failures: string[] = [];
     for (const rel of await collect('organs/**/*.ts')) {
       const value = await firstExport<string>(join(srcRoot, rel));
