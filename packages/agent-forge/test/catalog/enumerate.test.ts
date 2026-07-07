@@ -53,12 +53,14 @@ describe('enumerateCatalog over agent-anatomy', () => {
     // autonomy is now a SET organ (per-agent composed standing, D5).
     const autonomy = byOrgan.get('autonomy');
     expect(autonomy).toMatchObject({ kind: 'enum', arity: 'set' });
-    expect(autonomy?.values).toContain('human-in-the-loop ≜ hitl');
+    // O-collapse reduced these to σ*: the loop-ladder anchors are bare (residue ∅),
+    // human-out-of-the-loop carries a `⟨…⟩` residue. No `≜ hitl`-style prose remains.
+    expect(autonomy?.values).toContain('human-in-the-loop');
     expect(
-      autonomy?.values.some((v) => v.startsWith('human-on-the-loop ≜')),
+      autonomy?.values.some((v) => v.startsWith('human-on-the-loop')),
     ).toBe(true);
     expect(
-      autonomy?.values.some((v) => v.startsWith('human-out-of-the-loop ≜')),
+      autonomy?.values.some((v) => v.startsWith('human-out-of-the-loop')),
     ).toBe(true);
 
     expect(byOrgan.get('guardrails')).toMatchObject({
