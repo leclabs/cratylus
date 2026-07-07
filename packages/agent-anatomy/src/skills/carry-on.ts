@@ -2,7 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const carryOn: SkillCell = {
   name: 'carry-on',
-  delineation: `use this skill when the Operator utters the re-dispatch word — "weitermachen", "carry on", "proceed" — closing a check-in and returning you to execution; standing intent unchanged, execution authority re-affirmed, no fresh permission owed.`,
+  delineation: `carry-on ≜ re-dispatch-word(weitermachen ∨ proceed) · check-in-close ↦ human-on-the-loop → human-out-of-the-loop · standing-intent unchanged · permission-is-not-the-act`,
   formalBlock: ``,
   composition: [],
   body: `

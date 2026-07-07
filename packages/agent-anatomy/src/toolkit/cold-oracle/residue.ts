@@ -95,8 +95,11 @@ const FORMAL_GLYPHS: ReadonlySet<string> = new Set<string>([
  * form collides on. Connectives are still caught case-insensitively, so prose still fails.
  */
 const ANCHOR = /^[A-Za-z][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*$/;
-/** A single definiendum-class variable (`ρ`, `σ`, …) — the `ρ=LLM` binding's left side. */
-const GREEK = /^[Α-ω]$/;
+/**
+ * A definiendum-class variable — a single Greek letter (`ρ`, `σ`, `α`, …), optionally
+ * star-marked (`σ*` — the project's central sign σ_llm*). The `ρ=LLM` binding's left side.
+ */
+const GREEK = /^[Α-ω]\*?$/;
 
 /**
  * Free NL articles/connectives — function words that carry clausal meaning in a

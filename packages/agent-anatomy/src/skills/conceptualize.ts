@@ -2,7 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const conceptualize: SkillCell = {
   name: 'conceptualize',
-  delineation: `use this skill to conceptualize a corpus — read a multi-modal source and resolve it to the reader's concept lattice (the closed distinction-sets \`C_R\`, which of them are primitive, each primitive's gloss, and each concept's candidate factorizations), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.`,
+  delineation: `sources ↦ C_R ⟨cl_R fixpoints⟩ · gloss ∧ prim_R ∧ fac_R candidates · anchor=⊥ ∧ material=⊥ · exemplify stage-1 · standalone-invocable`,
   formalBlock: `-- ENTITIES ---------------------------------------------------------------
 R                 — the reader; priors fix every meaning
 sources           — input material, multi-modal; carries substrate boundaries
@@ -24,7 +24,7 @@ TRIPLE            — contract record ⟨ gloss , anchor , factorization ⟩ ; t
 resolve(sources)  ≜ ⋃ { content(s) | s ∈ sources }        -- the mass, prior boundaries dissolved
 D_R               ≜ { d | d a distinction R draws over resolve(sources) }
 boundaries(sources) ∉ D_R                                 -- ∵ substrate, not meaning
-depalimpsest(d)    drops superseded strata of d           -- only live current content survives to net-green
+depalimpsest(d)   ≜ d ↾ live-strata                       -- superseded strata dropped ; net-green survives
 partition(D_R)    ⊆ ℘(D_R)                                -- cut the mass at meaning joints
 
 cl_R : ℘(D_R) → ℘(D_R)
@@ -84,7 +84,7 @@ TRIPLE            — contract record ⟨ gloss , anchor , factorization ⟩ ; t
 resolve(sources)  ≜ ⋃ { content(s) | s ∈ sources }        -- the mass, prior boundaries dissolved
 D_R               ≜ { d | d a distinction R draws over resolve(sources) }
 boundaries(sources) ∉ D_R                                 -- ∵ substrate, not meaning
-depalimpsest(d)    drops superseded strata of d           -- only live current content survives to net-green
+depalimpsest(d)   ≜ d ↾ live-strata                       -- superseded strata dropped ; net-green survives
 partition(D_R)    ⊆ ℘(D_R)                                -- cut the mass at meaning joints
 
 cl_R : ℘(D_R) → ℘(D_R)

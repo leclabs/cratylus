@@ -2,8 +2,34 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const dream: SkillCell = {
   name: 'dream',
-  delineation: `use this skill to consolidate an agent's memory — fold the raw EPISODIC stream (the tool computes each record's scope node from its cwd), then route by type: agent-intrinsic identity/facts to SEMANTIC, generalized cross-project wisdom to PROCEDURAL (only what no projection already carries), scoped knowledge and next-steps to the node's AGENTS.md, networked reference to the vault, the rest dropped; consumed raw is drained; SOUL is never written.`,
-  formalBlock: `node ~/.claude/skills/memory/episodic.mjs read --home \${AGENT_HOME} --for-session \${CLAUDE_SESSION_ID}`,
+  delineation: `memory-consolidation ↾ EPISODIC · fold ⟨node ↾ cwd⟩ · route-by-type ⟨identity ↦ SEMANTIC · generalized-wisdom ↾ ¬projection-carries ↦ PROCEDURAL · scoped ∧ next-steps ↦ AGENTS-node · networked-ref ↦ vault · rest ↦ drop⟩ · drain consumed · SOUL never-written`,
+  formalBlock: `DECLARATIONS
+memory              — agent organ-home ⟨SEMANTIC · PROCEDURAL · EPISODIC⟩ ∪ episodic.mjs runtime
+EPISODIC            — raw time-ordered event stream ∪ forward next-steps
+SEMANTIC            — identity facts ∪ durable agent-intrinsic knowledge ⟨hot index⟩
+PROCEDURAL          — generalized cross-project wisdom no projection already carries
+SOUL                — the archetype ; commons-authored ; ∉ dream outputs
+node                : cwd × host → scope ⟨nearest boundary-marker ancestor ; markerless ↦ self ; cwd-less ↦ legacy⟩
+read                : home × session → records ⟨own ∪ completed ; live-sibling ∉⟩
+fold                : home → { id ↦ node ∪ legacy }
+drain               : home → ∅ ↾ completed-sessions
+route               : record → { AGENTS-node · SEMANTIC · PROCEDURAL · vault · EPISODIC · drop }
+distill(i)          ≜ densest-faithful-point(i)
+promotion-is-move   — a promoted item ∉ its raw source
+
+LAWS
+dream ≜ read ⟨EPISODIC⟩ ↦ exemplify ↦ materialize
+∀ i ∈ read(home, session) : i = distill(i)
+node(i) ∉ { HOME · legacy } ⇒ i ∉ SEMANTIC ∧ i ∉ PROCEDURAL
+identity(i) ∨ agent-intrinsic-durable(i) ⇒ i ↦ SEMANTIC
+generalized-wisdom(i) ∧ ¬projection-carries(i) ⇒ i ↦ PROCEDURAL
+projection-carries(i) ⇒ i ↦ drop
+networked-ref(i) ⇒ i ↦ vault
+next-step(i) ⇒ i ↦ EPISODIC
+AGENTS-node write ≜ dedup ∧ net-current ∧ move-not-copy
+consumed ↦ ∅ ∴ ¬unbounded-growth(EPISODIC)
+acceptance ≜ wake-read biases next-action ⟨reboot-seed ; round-trip ≽⟩
+SOUL ∉ dream-outputs`,
   composition: ['exemplify', 'materialize'],
   body: `
 

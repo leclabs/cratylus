@@ -2,18 +2,15 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const elicit: SkillCell = {
   name: 'elicit',
-  delineation: `use this skill to elicit the operator's hidden intended concept — recover it by asking maximally-informative yes/no questions, each a distinction that bisects the live candidates by prior mass (binary-search / information-gain over the concept lattice), converging in the fewest questions; the active, query-driven counterpart to probe (which reads a signifier already given) — stop when one candidate survives or no question is worth its burden, then hand the recovered concept to signify to name.`,
+  delineation: `recover hidden-target t ∈ C_R · ask ≜ argmin bal ⟨yes-no query · bisect K⟩ ↾ μ · iterate filter ⇒ stop ⟨singleton-K ∨ bal ≽ θ⟩ · t ↦ signify · inverse-of probe`,
   formalBlock: `-- declarations (the block stands alone) ----------------------------
 R          — the reader; the agent in whom concepts and priors live
 C_R        — R's concept lattice: the closed set of candidate concepts
 D_R        — R's distinction set: the questions that cut C_R
 c          — a concept ≜ a closed distinction-set ; c ⊆ D_R
 q ∈ c      ⇔ c draws the distinction q                  -- membership test
-priors_R   — R's structured understanding of a token before any definition:
-             the reader-substrate against which a query discriminates
-μ          — prior mass over candidates, read off priors_R by fit
-             (meaning from conceptual fit, not surface wording) ;
-             μ : ℘(C_R) → [0,1] , μ(C_R) = 1
+priors_R   — R's structured understanding of a token before any definition: the reader-substrate against which a query discriminates
+μ          — prior mass over candidates, read off priors_R by fit (meaning from conceptual fit, not surface wording) ; μ : ℘(C_R) → [0,1] , μ(C_R) = 1
 t          — the operator's hidden target concept ; t ∈ C_R, unobserved
 K          — the live candidate set ; K ⊆ C_R, consistent with answers so far
 q          — a query: a distinction q ∈ D_R ; operator answers yes or no
@@ -42,11 +39,8 @@ C_R        — R's concept lattice: the closed set of candidate concepts
 D_R        — R's distinction set: the questions that cut C_R
 c          — a concept ≜ a closed distinction-set ; c ⊆ D_R
 q ∈ c      ⇔ c draws the distinction q                  -- membership test
-priors_R   — R's structured understanding of a token before any definition:
-             the reader-substrate against which a query discriminates
-μ          — prior mass over candidates, read off priors_R by fit
-             (meaning from conceptual fit, not surface wording) ;
-             μ : ℘(C_R) → [0,1] , μ(C_R) = 1
+priors_R   — R's structured understanding of a token before any definition: the reader-substrate against which a query discriminates
+μ          — prior mass over candidates, read off priors_R by fit (meaning from conceptual fit, not surface wording) ; μ : ℘(C_R) → [0,1] , μ(C_R) = 1
 t          — the operator's hidden target concept ; t ∈ C_R, unobserved
 K          — the live candidate set ; K ⊆ C_R, consistent with answers so far
 q          — a query: a distinction q ∈ D_R ; operator answers yes or no

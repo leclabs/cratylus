@@ -2,7 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const createSkill: SkillCell = {
   name: 'create-skill',
-  delineation: `author a well-formed skill cell — kind:skill front-matter (delineation + trigger), a verb H1, the first-prose-≜ composition formula with a Bindings line, and a self-sufficient set-builder formal block (declarations-above / laws-below) at R=LLM density; embodies the composer conventions, the symbol-table discipline, and the verify gates so the cell passes on the first resolve.`,
+  delineation: `skill-cell ≜ ⟨delineation · trigger · verb-H1 · composition-formula ∧ Bindings · formalBlock ⟨declarations ≺ laws⟩⟩ ↾ R=LLM · self-sufficient ∧ verify-gates ⇒ first-resolve-green`,
   formalBlock: ``,
   composition: ['formalize'],
   body: `

@@ -10,7 +10,7 @@ import type { HookCell } from '../toolkit/hook-cell.js';
 export const stanceGuardrail: HookCell = {
   id: 'stance-guardrail',
   residue:
-    'event-fired structural refusal of a turn that collapses the intent-driven-expert posture — judges the last turn and BLOCKS on permission-seeking · own-judgment-deferral · order-taking, while passing the reserved set (surfacing an irreversible-outward act for consent · routing a true INTENT ambiguity to elicitation); harness-invariant where prompt-level identity erodes under RLHF corrigibility.',
+    'structural-refusal ↾ turn-end · block ⟨intent-driven-expert-collapse⟩ ⟨permission-seeking · own-judgment-deferral · order-taking⟩ · pass ⟨reserved · irreversible-outward ↦ consent · intent-ambiguity ↦ elicit⟩ · harness-invariant ⟨prompt-identity erodes ↾ RLHF-corrigibility⟩',
   substrate: 'harness',
   events: ['turn.end', 'subagent.end'],
   command: `sh "$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh"`,

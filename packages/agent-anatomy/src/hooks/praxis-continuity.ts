@@ -13,7 +13,7 @@ import type { HookCell } from '../toolkit/hook-cell.js';
 export const praxisContinuity: HookCell = {
   id: 'praxis-continuity',
   residue:
-    'post-commit detector that a plan task-file crossed its state folder so the hand-authored PLAN.md mirror may be stale — prints a re-mirror nudge and never edits; git-substrate, opt-in per clone, always exits 0 so a reminder can never fail the commit it follows.',
+    'post-commit detector ⟨task-file crosses state-folder ⇒ plan-mirror stale⟩ · nudge re-mirror · ¬edit · opt-in ↾ clone · exit-0 ⟨reminder ¬fail-commit⟩',
   substrate: 'git',
   events: ['vcs.commit.post'],
   command:
