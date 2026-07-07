@@ -8,6 +8,7 @@ The working tree is a **deliberate, directionally-correct partial illustration**
 Operator hand-edited it to show the target shape. It is **intentionally, partially broken: `pnpm typecheck` is
 RED, and that is EXPECTED.** Do not diagnose the red as a bug or revert toward the old shape. Your job is to
 realize the intent and **make the tree green as the FIRST step**, then do the type contract below.
+
 - **INTENT already present (complete it):** `persona:` plain string on agents (nico done; others `''`);
   `provenance: {mark}` inlined; `autonomy:` composed array; `base.ts` gutted; roster = 10 agents
   (`boswell`/`cognizant` gone, `boz` added); `simplicity`/`green-field` principle cells added.
@@ -42,8 +43,11 @@ Collapse the `Fragment` machinery in `agent-forge` to the MODEL shape (`body=⟨
    - HookCell: drop `kind` (restates the type), merge `id`/`slug` into one anchor (they're the same string =
      filename), `definiens`→residue. Keep `events`/`command`/`timeout`/`workers` (behavior/bytes, not σ\*).
    - SkillCell: drop the mutually-derivable `name`/`verb`/`trigger` down to the one that isn't recoverable from
-     the filename (trigger is `/`+name; verb often == name), `delineation`→residue-tight, drop empty
-     `formalBlock`. Keep `body`/`composition` (procedural content, not a σ\* residue).
+     the filename (trigger is `/`+name; verb often == name), `delineation`→residue-tight. **KEEP the
+     `formalBlock` field** — it is NON-empty in **13/15** skills and is the skill's PRIMARY σ\* payload; its
+     CONTENT collapses to a `formalize` artifact in the S-task, NOT here. E1 is the mechanical TYPE pass:
+     preserve `formalBlock`/`body` fields; their content formalization is S/E2a. (Every skill surface is a
+     deployed artifact the model reads ⇒ formal σ\*, never left as prose — but that reduction is wave-2, not E1.)
 7. **Green-keeping codemod (deliverable).** A script that rewrites every existing `organs/**/*.ts` value from
    `{organ,slug,definiens}` → bare branded string with `residue := <old definiens verbatim>` (and the
    analogous mechanical strip for skill/hook structural fields). Runs as part of E1 so the repo typechecks the
