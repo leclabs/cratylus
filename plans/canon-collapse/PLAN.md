@@ -174,9 +174,20 @@ two steps, each compiling.
 
 ## Status mirror
 
-**Ready:** `E1-anatomy-collapse` · `E2b-structural-parsimony-gate` · `E3-operator-lexicon-module`.
-**Pending:** `E2a-residue-gate` (⊳E1,E3) · `O1..O23` (⊳E2a) · `A1..A11` (⊳E1) · `S1..S15` skill-collapse (⊳E1,E2a)
-· `H1..H2` hook-collapse (⊳E1,E2a) · `C1` (⊳A*,O*,S*,H*).
+**COMPLETE** — landing commit `a27960b` (branch `tmp-illustrate-conceptual-architecture`). Every task landed;
+whole-repo exit gate GREEN on a clean worktree (`build · test · lint · typecheck` + `E2a` AC-RESIDUE live-scan
+
+- `E2b` structural-parsimony). The corpus is formal σ\*, machine-verified.
+
+* **E1** anatomy-collapse (Fragment→branded string · ResolvedAgent/base.ts eliminated · green-keeping codemod)
+* **E3** operator-lexicon module (md symbol-table → ESM; symbols gate reads it) · **E2b** structural-parsimony gate
+* **E2a** residue gate (`admissibleSingleLine` + `admissibleFormalBlock`; reads `RESIDUE_OPERATORS`); live-scan ENABLED + green
+* **A** 10 agents (dense σ\* personas · marks from deployed SOULs · D4 memory-null) · **O** 140 organ values → true residue (+ `mission-command` partition)
+* **S** 15 skills (delineation→σ\* · formalBlock→formalize artifact; signify reader-binding `σ*_R`→`σ*` by-design) · **H** 2 hooks→residue
+* **C1** cleanup + global exit gate; persona/provenance READMEs archived (D12)
+* **E0** reverted — a reader-binding non-problem (the reader is uniformly LLM; no per-artifact inference).
+
+**push / deploy RESERVED to the Operator — not performed** (the reversible/irreversible line).
 
 ## See also
 
