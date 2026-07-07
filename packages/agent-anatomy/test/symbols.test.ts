@@ -1,5 +1,5 @@
 // SYMBOLS gate — the TS port of `toolkit/verify.py` `gate_symbols`. The register
-// rule (`references/formal-symbolic-notation.md`): a fenced FORMAL
+// rule (declared table = `src/toolkit/operator-lexicon.ts`): a fenced FORMAL
 // block carries ONLY declared symbols plus the cell's own definienda. This gate is the
 // positive form — every fence-interior glyph in each fragment / skill `.ts` definiens
 // must be in (the declared table col-1 ∪ the calibrated exemption classes); an
@@ -10,50 +10,28 @@
 // exactly the pre-extracted `formalBlock`); of a fragment it is any fenced block in its
 // `definiens` (the current corpus has none — provenance `glyph·color` marks live in
 // PROSE, never a fence, so they are out of register-scope, exactly as the Python gate
-// only ever scanned fence interiors). The declared table is loaded LIVE from the doc so
-// the gate tracks the truth source rather than a frozen copy (`_declared_symbols`).
+// only ever scanned fence interiors). The declared table IS the `operator-lexicon` source
+// module (the single home; DRY) — read directly, never a markdown projection.
 //
 // NON-VACUOUS: an injected undeclared glyph inside a fence is caught; the live corpus
 // passes. Both halves are asserted below.
 
-import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { declaredGlyphs } from '../src/toolkit/operator-lexicon.js';
 import type { SkillCell } from '../src/toolkit/skill-cell.js';
 
 const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const srcRoot = join(anatomyRoot, 'src');
-const notationDoc = join(
-  anatomyRoot,
-  'references',
-  'formal-symbolic-notation.md',
-);
 
 /**
- * Every non-ASCII glyph in col-1 of the notation table — loaded live from the doc
- * (mirrors verify.py `_declared_symbols`). Col-1 is the first `…`-backticked field of
- * each `| … |` table row; a field may carry several tokens, each contributing its
- * glyphs.
+ * Every non-ASCII declared glyph — read from the `operator-lexicon` SOURCE MODULE (the
+ * single home; DRY), NOT a markdown projection. The gate now tracks the truth source
+ * directly. (Formerly parsed col-1 of `references/formal-symbolic-notation.md`, deleted.)
  */
-function declaredSymbols(): Set<string> {
-  const out = new Set<string>();
-  for (const line of readFileSync(notationDoc, 'utf8').split('\n')) {
-    if (!line.startsWith('|')) {
-      continue;
-    }
-    const col1 = line.trim().replace(/^\|/, '').split('|')[0] ?? '';
-    for (const m of col1.matchAll(/`([^`]+)`/g)) {
-      for (const ch of m[1] as string) {
-        if ((ch.codePointAt(0) ?? 0) > 127) {
-          out.add(ch);
-        }
-      }
-    }
-  }
-  return out;
-}
+const declaredSymbols = declaredGlyphs;
 
 /**
  * The definienda-class + register-neutral exemptions (mirrors verify.py

@@ -59,7 +59,7 @@ The chain's emit op: \`CSF → realize\`. Select each concept's canonical factor
 
 Bindings: stage of exemplify; consumes records from signify · conceptualize.
 
-Resolve from context: the \`name\`d concept-contract records — each carrying its \`gloss\` and \`anchor\`, drawn from the lattice \`C_R\` (with \`prim_R\`, \`fac_R\`, the order \`≺\`); \`s\` — the strategy, REQUIRED from the caller; \`\${OUTPUT_DIR}\` — file strategy only. The symbol table is \`references/formal-symbolic-notation.md\`.
+Resolve from context: the \`name\`d concept-contract records — each carrying its \`gloss\` and \`anchor\`, drawn from the lattice \`C_R\` (with \`prim_R\`, \`fac_R\`, the order \`≺\`); \`s\` — the strategy, REQUIRED from the caller; \`\${OUTPUT_DIR}\` — file strategy only. The symbol table is \`src/toolkit/operator-lexicon.ts\`.
 
 \`\`\`text
 -- DECLARATIONS ----------------------------------------------------------

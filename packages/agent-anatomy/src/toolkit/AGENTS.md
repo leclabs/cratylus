@@ -33,7 +33,7 @@ claude adapter (`pnpm anatomy:project`). The byte-identity round-trip oracle is 
 source — there is nothing to round-trip against); acceptance = `tsc` + `test/projection-stability.test.ts`
 
 - the two ported gates `test/skill-shape.test.ts` (operative + cite-twice) and `test/symbols.test.ts`
-  (fence-glyph coverage vs `references/formal-symbolic-notation.md`) + `test/reader-density.test.ts`
+  (fence-glyph coverage vs `src/toolkit/operator-lexicon.ts`) + `test/reader-density.test.ts`
   (`conform(a) ⇔ register(a) = ρ(a)` — reader=human register in a ρ=LLM surface fails; explicit shrink-only
   ratchet; rules in `AGENTS.md` § Cell format + kind taxonomy) + `test/reader-reach.test.ts` (same detector via
   `test/reader-register.ts`, over generated-artifact fixtures + agent-to-agent message classes). Every other former `verify.py` gate

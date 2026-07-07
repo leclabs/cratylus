@@ -31,7 +31,7 @@ elicit    ≜ from K = C_R, iterate filter until stop ; return t = the one survi
 
 # elicit
 
-Active inverse of probe: recover the operator's hidden target \`t\` by query, then hand \`t\` to signify. The search space is the concept lattice produced by conceptualize (\`C_R\`, \`D_R\` below); the operator is the yes/no oracle. Symbols: \`references/formal-symbolic-notation.md\`.
+Active inverse of probe: recover the operator's hidden target \`t\` by query, then hand \`t\` to signify. The search space is the concept lattice produced by conceptualize (\`C_R\`, \`D_R\` below); the operator is the yes/no oracle. Symbols: \`src/toolkit/operator-lexicon.ts\`.
 
 Bindings: inverse of probe; hands the recovered target to signify; searches the lattice from conceptualize.
 

@@ -13,7 +13,7 @@ create-skill ≜ author a \`skill/<verb>.md\` cell that passes verify on the fir
 
 Bindings: composes formalize.
 
-Reader is the LLM (\`σ*_LLM\`). A skill is a **self-sufficient** unit: the formal block stands alone (every term defined in-cell); only live **sibling skills** are named, in prose, never restated. Symbol table: \`references/formal-symbolic-notation.md\`.
+Reader is the LLM (\`σ*_LLM\`). A skill is a **self-sufficient** unit: the formal block stands alone (every term defined in-cell); only live **sibling skills** are named, in prose, never restated. Symbol table: \`src/toolkit/operator-lexicon.ts\`.
 
 ## Conventions (each maps to a verify gate)
 

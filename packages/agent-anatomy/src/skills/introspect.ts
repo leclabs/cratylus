@@ -65,7 +65,7 @@ A standalone self-audit — no sibling skill is composed; the agent reads its ow
 - \`A\` — the agent running this skill (self); its anatomy is the organ sections of its in-prompt SOUL.
 - \`\${AGENT_HOME}\` — A's sidecar home; the deployed def is \`~/.claude/agents/<A>.md\`, the canonical source vector is the corpus \`agent/<A>.md\`.
 
-Symbol table: \`references/formal-symbolic-notation.md\`.
+Symbol table: \`src/toolkit/operator-lexicon.ts\`.
 
 \`\`\`text
 DECLARATIONS

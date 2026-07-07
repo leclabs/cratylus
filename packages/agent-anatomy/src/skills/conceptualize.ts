@@ -60,7 +60,7 @@ Bindings: stage of exemplify; hands off to signify · materialize.
 
 Resolve from context: \`sources\` — input material (multi-modal); \`R\` — the reader whose priors fix every meaning.
 
-The block below is self-sufficient: every term is declared above the law that uses it; symbol table at \`references/formal-symbolic-notation.md\`.
+The block below is self-sufficient: every term is declared above the law that uses it; symbol table at \`src/toolkit/operator-lexicon.ts\`.
 
 \`\`\`text
 -- ENTITIES ---------------------------------------------------------------

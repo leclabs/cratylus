@@ -47,7 +47,7 @@ export const exemplify: SkillCell = {
 
 # Exemplify
 
-The CSF pipeline as one composition: three stages each fill one field of a single record, then a gate reads the realized record and refuses unless it is valid — including \`conform\`: an emitted agent-artifact (\`ρ = LLM\`) authored at human register fails accept. Accept also **executes** the isolated cold oracle (cold-decode-oracle) on the realized body — \`coldpass\`: m1 \`R_cold ≅_R gloss\` ∧ m2 \`warm ≅_R R_cold\` — and refuses on divergence; the oracle is a PROCESS (isolated cwd + config, tool-less), never a subagent (a subagent inherits project-K and reads warm). This is the law's teeth in the authoring path. Composes the three sibling stages — each a function over the same record, naming no peer. The symbol table is \`references/formal-symbolic-notation.md\`.
+The CSF pipeline as one composition: three stages each fill one field of a single record, then a gate reads the realized record and refuses unless it is valid — including \`conform\`: an emitted agent-artifact (\`ρ = LLM\`) authored at human register fails accept. Accept also **executes** the isolated cold oracle (cold-decode-oracle) on the realized body — \`coldpass\`: m1 \`R_cold ≅_R gloss\` ∧ m2 \`warm ≅_R R_cold\` — and refuses on divergence; the oracle is a PROCESS (isolated cwd + config, tool-less), never a subagent (a subagent inherits project-K and reads warm). This is the law's teeth in the authoring path. Composes the three sibling stages — each a function over the same record, naming no peer. The symbol table is \`src/toolkit/operator-lexicon.ts\`.
 
 Bindings: composes conceptualize (\`produce\`) · signify (\`name\`) · materialize (\`realize\`).
 

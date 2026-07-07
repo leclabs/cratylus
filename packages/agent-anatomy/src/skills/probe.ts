@@ -49,7 +49,7 @@ probe(w) ≜ ( fired_R(w), concept_R(w) )                 -- readout only; nothi
 
 # probe
 
-Forward, no-commit inverse of signify: read a signifier \`w\` already given and return the priors it fires plus the concept it circumscribes, committing nothing — the active counterpart elicit instead queries an oracle for a target not yet signified. Resolve from context: \`w\` — the signifier under probe (a word, phrase, or candidate name); \`R\` — the reader whose priors are the instrument. \`fired_R\` generalizes signify's decoder \`dec_R\` off its assigned anchors; the lattice \`C_R\`, the closure \`cl_R\`, and the distinction space \`D_R\` come from conceptualize. Symbol table: \`references/formal-symbolic-notation.md\`.
+Forward, no-commit inverse of signify: read a signifier \`w\` already given and return the priors it fires plus the concept it circumscribes, committing nothing — the active counterpart elicit instead queries an oracle for a target not yet signified. Resolve from context: \`w\` — the signifier under probe (a word, phrase, or candidate name); \`R\` — the reader whose priors are the instrument. \`fired_R\` generalizes signify's decoder \`dec_R\` off its assigned anchors; the lattice \`C_R\`, the closure \`cl_R\`, and the distinction space \`D_R\` come from conceptualize. Symbol table: \`src/toolkit/operator-lexicon.ts\`.
 
 Bindings: inverse of signify; counterpart to elicit; draws the lattice from conceptualize.
 

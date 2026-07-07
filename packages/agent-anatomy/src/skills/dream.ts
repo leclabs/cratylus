@@ -11,7 +11,7 @@ export const dream: SkillCell = {
 
 dream ≜ the memory-consolidation ritual : EPISODIC → { AGENTS.md@node, SEMANTIC, PROCEDURAL, vault, EPISODIC } · applies exemplify then materializes via materialize
 
-The agent's "sleep" — sleep-dependent consolidation (replay → schema) run as an explicit step. dream is step 1 of the wake sequence. Symbol table: \`references/formal-symbolic-notation.md\`.
+The agent's "sleep" — sleep-dependent consolidation (replay → schema) run as an explicit step. dream is step 1 of the wake sequence. Symbol table: \`src/toolkit/operator-lexicon.ts\`.
 
 Absorbed declarations (this skill is self-sufficient — no concept is referenced out):
 

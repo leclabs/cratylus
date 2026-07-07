@@ -6,7 +6,7 @@ export const formalize: SkillCell = {
   formalBlock: `P ≜ the source prose
 E ≜ entities(P) ; O ≜ operations(P) ; L ≜ laws(P)
 
-T ≜ the declared notation table (references/formal-symbolic-notation.md)
+T ≜ the declared notation table (src/toolkit/operator-lexicon.ts)
 η : E ∪ O ⇀ symbols              signify : mint a symbol, or bind an imported one to its anchor
 β ≜ { η(x) | x imported }        boundary-bound : its anchor named in adjacent prose, cited once
 ι ≜ { s | s resolved from invocation context }
@@ -40,7 +40,7 @@ reconstruct(B) ⋡ P ⇒ ⊥                        repair the block, never prop
 
 Render prose into the reader-relative fittest formal block — a self-sufficient set-builder block whose accept gate is a round-trip that reconstructs the source equivalent-or-better.
 
-The operation invokes the sibling skills conceptualize (prose → entities/operations/laws) then signify (each term → a symbol: mint, or boundary-bind to an existing anchor). The symbol table is \`references/formal-symbolic-notation.md\`. Resolve from context: \`P\` — the source prose (a section, a process, a skill body).
+The operation invokes the sibling skills conceptualize (prose → entities/operations/laws) then signify (each term → a symbol: mint, or boundary-bind to an existing anchor). The symbol table is \`src/toolkit/operator-lexicon.ts\`. Resolve from context: \`P\` — the source prose (a section, a process, a skill body).
 
 Bindings: composes conceptualize · signify.
 
@@ -48,7 +48,7 @@ Bindings: composes conceptualize · signify.
 P ≜ the source prose
 E ≜ entities(P) ; O ≜ operations(P) ; L ≜ laws(P)
 
-T ≜ the declared notation table (references/formal-symbolic-notation.md)
+T ≜ the declared notation table (src/toolkit/operator-lexicon.ts)
 η : E ∪ O ⇀ symbols              signify : mint a symbol, or bind an imported one to its anchor
 β ≜ { η(x) | x imported }        boundary-bound : its anchor named in adjacent prose, cited once
 ι ≜ { s | s resolved from invocation context }
