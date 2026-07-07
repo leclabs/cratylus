@@ -39,7 +39,7 @@ const DECLARED = /^(\S+)\s*(?:≜|:)/gmu;
 
 /** Render the formal block (declarations-above / laws-below), validating
  *  self-sufficiency. */
-export function renderFormalBlock(spec: SkillCellSpec): string {
+export function renderBody(spec: SkillCellSpec): string {
   const reasons: string[] = [];
   if (spec.declarations.length === 0) {
     reasons.push('a cell needs at least one declaration');
@@ -70,7 +70,7 @@ export function renderFormalBlock(spec: SkillCellSpec): string {
  *  frontmatter-less, the form the config-IR `Skill.body` carries (adapters
  *  compose destination frontmatter from the IR's name/description). */
 export function renderSkillCellBody(spec: SkillCellSpec): string {
-  const block = renderFormalBlock(spec);
+  const block = renderBody(spec);
   const intro = spec.intro ? `${spec.intro}\n\n` : '';
   return `# ${spec.verb}\n\n${intro}\`\`\`text\n${block}\n\`\`\`\n`;
 }

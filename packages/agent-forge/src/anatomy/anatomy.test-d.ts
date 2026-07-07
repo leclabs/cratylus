@@ -140,14 +140,14 @@ const agentScalarFault: Agent = {
 const leaf: Skill = {
   name: 'leaf',
   description: 'a leaf skill',
-  formalBlock: 'leaf ≜ …',
+  body: 'leaf ≜ …',
   composition: [],
 };
 
 const composed: Skill = {
   name: 'composed',
   description: 'composes leaf',
-  formalBlock: 'composed ≜ …',
+  body: 'composed ≜ …',
   composition: [leaf], // imported sibling Skill, not a "[[leaf]]" string
   deployAs: 'skill-dir',
   bundle: 'dist/episodic.mjs',

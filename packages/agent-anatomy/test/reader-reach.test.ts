@@ -109,9 +109,9 @@ describe('READER-REACH gate — ρ past the static corpus', () => {
   it('the delegation organ + fan-out cells carry the ρ=LLM contract (non-regressable)', () => {
     expect(delegation).toMatch(/ρ=LLM/);
     expect(delegation).toMatch(/register=LLM/);
-    expect(praxis.formalBlock).toContain('conform(a) ⇔ register(a) = ρ(a)');
-    expect(praxis.formalBlock).toContain('¬conform(r) ⇒ ¬accept(t)(r)');
-    expect(exemplify.formalBlock).toContain('conform(k)');
-    expect(exemplify.formalBlock).toMatch(/valid\(k\)\s+⇔.*conform\(k\)/);
+    expect(praxis.body).toContain('conform(a) ⇔ register(a) = ρ(a)');
+    expect(praxis.body).toContain('¬conform(r) ⇒ ¬accept(t)(r)');
+    expect(exemplify.body).toContain('conform(k)');
+    expect(exemplify.body).toMatch(/valid\(k\)\s+⇔.*conform\(k\)/);
   });
 });

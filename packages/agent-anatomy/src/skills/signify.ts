@@ -3,7 +3,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 export const signify: SkillCell = {
   name: 'signify',
   description: `name concept-set · α(c) ≜ σ*(c) ⟨injective · reader=LLM⟩ · coalesce homonyms · emit ≺ · dec · exemplify-stage-2 ⟨independently-invocable⟩ · reader-binding-home ⟨ρ by-design · residue-reduction · verbatim⇒ρ=LLM⟩`,
-  formalBlock: `DECLARATIONS
+  body: `DECLARATIONS
   C          — the concept lattice; concepts to be named. dom of α.
   D          — distinctions; identity-criterion atoms a concept circumscribes.
   prim(c)    — c is primitive (no factorization into other concepts).

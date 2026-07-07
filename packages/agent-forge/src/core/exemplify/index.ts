@@ -20,7 +20,7 @@ export {
   type Register,
 } from './register.js';
 export {
-  renderFormalBlock,
+  renderBody,
   renderSkillCell,
   renderSkillCellBody,
   type SkillCellSpec,

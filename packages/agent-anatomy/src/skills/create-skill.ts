@@ -2,8 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const createSkill: SkillCell = {
   name: 'create-skill',
-  description: `skill-cell ≜ ⟨description · trigger · verb-H1 · composition-formula ∧ Bindings · formalBlock ⟨declarations ≺ laws⟩⟩ ↾ R=LLM · self-sufficient ∧ verify-gates ⇒ first-resolve-green`,
-  formalBlock: ``,
+  description: `skill-cell ≜ ⟨description · trigger · verb-H1 · composition-formula ∧ Bindings · body ⟨declarations ≺ laws⟩⟩ ↾ R=LLM · self-sufficient ∧ verify-gates ⇒ first-resolve-green`,
   composition: ['formalize'],
   body: `
 

@@ -62,7 +62,7 @@ import { nonceControl } from '../src/toolkit/cold-oracle/oracle.js';
 // RESIDUE gate (AC-RESIDUE) — the decidable predicate + its witnesses. Its admitted
 // value-algebra operators are READ from `operator-lexicon.ts` (DRY, one home).
 import {
-  admissibleFormalBlock,
+  admissibleBody,
   admissibleSingleLine,
 } from '../src/toolkit/cold-oracle/residue.js';
 import { RESIDUE_OPERATORS } from '../src/toolkit/operator-lexicon.js';
@@ -556,7 +556,7 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 //
 // The machine-check behind AC-RESIDUE (PLAN.md): MODEL PARSIMONIOUS
 // `body(c)=⟨α,residue⟩ ∧ residue=D∖fired(α)` specialized to the DEPLOYED corpus —
-// every organ VALUE residue · every skill `description` · every skill `formalBlock`
+// every organ VALUE residue · every skill `description` · every skill `body`
 // (whole) MUST be a composable σ* expression / a `formalize` artifact / ∅, never human
 // prose (the vision's failure criterion). GOVERNING INVARIANT: every deployed artifact
 // the model reads is formal σ* under ρ, never human prose — this gate IS that
@@ -569,8 +569,8 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 // and descriptions are likewise pre-reduction prose — so the LIVE-corpus scan is
 // `.skip`ped (C1 marker) to avoid reddening a suite full of legitimate intermediates.
 // The predicate is proven on fixtures instead: prose REJECTED (offending clause named),
-// the three σ* forms + a real `formalize` formalBlock ACCEPTED, a prose-carrying
-// formalBlock REJECTED. NON-VACUOUS: the gate BITES on prose, PASSES on σ*.
+// the three σ* forms + a real `formalize` body ACCEPTED, a prose-carrying
+// body REJECTED. NON-VACUOUS: the gate BITES on prose, PASSES on σ*.
 
 describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, never prose', () => {
   // DRY — the gate's admitted value-algebra operators ARE the lexicon's, not a copy.
@@ -607,8 +607,8 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
     expect(v.reason).toMatch(/clausal-punct|free-NL connective/);
   });
 
-  // ── FORMAL-BLOCK (skill `formalBlock`, whole — a `formalize` artifact) ──────────
-  it('ACCEPTS a valid `formalize` formalBlock (declarations-above / laws-below)', () => {
+  // ── FORMAL-BLOCK (skill `body`, whole — a `formalize` artifact) ──────────
+  it('ACCEPTS a valid `formalize` body (declarations-above / laws-below)', () => {
     const block = [
       'DECLARATIONS',
       '  R      — the reader; fixes every meaning',
@@ -617,21 +617,21 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
       '  A ≜ { α(c) | c ∈ C_R }',
       '  injective : α(cᵢ) = α(cⱼ) ⇒ cᵢ = cⱼ',
     ].join('\n');
-    const v = admissibleFormalBlock(block);
+    const v = admissibleBody(block);
     expect(v.admissible, v.reason).toBe(true);
-    // …and the REAL deployed artifact: signify's formalBlock IS a formalize artifact.
-    const live = admissibleFormalBlock(signify.formalBlock);
+    // …and the REAL deployed artifact: signify's body IS a formalize artifact.
+    const live = admissibleBody(signify.body);
     expect(live.admissible, live.reason).toBe(true);
   });
 
-  it('REJECTS a formalBlock carrying an explanatory-prose line / a #-preamble gloss', () => {
+  it('REJECTS a body carrying an explanatory-prose line / a #-preamble gloss', () => {
     const prosey = [
       'DECLARATIONS',
       '  R      — the reader',
       'LAWS',
       '  We first walk the lattice and then assign a name to each concept.',
     ].join('\n');
-    const v = admissibleFormalBlock(prosey);
+    const v = admissibleBody(prosey);
     expect(v.admissible).toBe(false);
     expect(v.reason).toContain('explanatory-prose line');
     expect(v.reason).toContain('We first walk the lattice');
@@ -641,14 +641,14 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
       'DECLARATIONS',
       '  R — the reader',
     ].join('\n');
-    const w = admissibleFormalBlock(preamble);
+    const w = admissibleBody(preamble);
     expect(w.admissible).toBe(false);
     expect(w.reason).toContain('#-preamble gloss');
   });
 
   // ── LIVE-corpus scan — the full AC-RESIDUE claim over the deployed payload set ──
-  // ENABLED (C1): wave-2 (O/S/H) reduced every organ value · skill description · formalBlock to σ*.
-  it('every deployed σ* payload is admissible (organ values · descriptions · formalBlocks)', async () => {
+  // ENABLED (C1): wave-2 (O/S/H) reduced every organ value · skill description · body to σ*.
+  it('every deployed σ* payload is admissible (organ values · descriptions · bodys)', async () => {
     const failures: string[] = [];
     for (const rel of await collect('organs/**/*.ts')) {
       const value = await firstExport<string>(join(srcRoot, rel));
@@ -660,9 +660,9 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
       const d = admissibleSingleLine(s.description);
       if (!d.admissible)
         failures.push(`skill ${s.name} description: ${d.reason}`);
-      const f = admissibleFormalBlock(s.formalBlock);
+      const f = admissibleBody(s.body);
       if (!f.admissible)
-        failures.push(`skill ${s.name} formalBlock: ${f.reason}`);
+        failures.push(`skill ${s.name} body: ${f.reason}`);
     }
     expect(failures, failures.join('\n')).toEqual([]);
   });

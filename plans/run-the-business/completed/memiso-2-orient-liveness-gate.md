@@ -47,7 +47,7 @@ B wakes → B resumes P. Plus confirmation dream drain uses the completed-only p
 - `src/skills/wake.ts` — WAKE sequence `register → dream → load → orient → resume`: a `register` step,
   `load`'s EPISODIC read gains `--for-session ${CLAUDE_SESSION_ID}`, `orient` is LIVENESS-GATED (bind an
   `active/` plan only if `owner ∈ {self, completed}`; live-other ⇒ report-not-bind). A **Session isolation**
-  body paragraph. Both formalBlock + mirrored body edited in lockstep.
+  body paragraph. Both body + mirrored body edited in lockstep.
 - `src/skills/dream.ts` — read `--for-session`, drain `--completed-only`; new `session-liveness` absorbed
   declaration; §1/§3 + verb-set `V` updated (adds `session`; notes encode heartbeats).
 - `src/skills/handoff.ts` — a **Release closes the session** law: `session release` as the final persist act.

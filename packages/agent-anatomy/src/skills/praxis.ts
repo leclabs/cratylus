@@ -81,7 +81,7 @@ sync       ≜ ∀ t ∈ P : state(t) ≠ truth(t) ⇒ state(t) := truth(t) ;
 export const praxis: SkillCell = {
   name: 'praxis',
   description: `praxis ↦ plan(MECE-shards) · shard ≜ self-sufficient-task⟨spec · inputs · deps · accept⟩ · start ↦ ⟨slices · waves⟩ · dispatch → judge → promote`,
-  formalBlock: FORMAL_BLOCK,
+  body: FORMAL_BLOCK,
   composition: [],
   body: `
 

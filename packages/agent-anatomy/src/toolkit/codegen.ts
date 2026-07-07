@@ -120,7 +120,7 @@ export function emitSkillModule(skill: ParsedSkill): string {
     `export const ${name}: SkillCell = {`,
     `  name: '${skill.name}',`,
     `  description: ${backtickLiteral(skill.description)},`,
-    `  formalBlock: ${backtickLiteral(skill.formalBlock)},`,
+    `  body: ${backtickLiteral(skill.body)},`,
     `  composition: ${composition},`,
     `  body: ${backtickLiteral(skill.body)},`,
     '};',

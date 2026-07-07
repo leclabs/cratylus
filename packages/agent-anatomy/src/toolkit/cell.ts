@@ -43,8 +43,6 @@ export interface ParsedSkill {
   readonly description: string;
   /** The H1 verb (the `# <verb>` heading text). */
   readonly verb: string;
-  /** The first fenced block's interior (the self-sufficient set-builder), if any. */
-  readonly formalBlock: string;
   /** Sibling-skill anchors harvested from the prose `≜` formula / Bindings region. */
   readonly composition: readonly string[];
   /** The canonical cell body (`split('---',2)[2]`) — the round-trip byte-anchor. */
@@ -206,7 +204,7 @@ function dedupe(xs: string[]): string[] {
 /**
  * Parse a `kind: skill` cell. Composition precedence mirrors the Python
  * `composition_refs`: a Bindings region (cite-once home) WINS; absent it, the
- * prose `≜` formula's refs. The verb is the H1 text; the formalBlock is the
+ * prose `≜` formula's refs. The verb is the H1 text; the body is the
  * first fenced block's interior.
  */
 export function parseSkill(raw: string, fileSlug: string): ParsedSkill {
@@ -226,7 +224,7 @@ export function parseSkill(raw: string, fileSlug: string): ParsedSkill {
     trigger: frontField(frontMatter, 'trigger'),
     description: frontField(frontMatter, 'description'),
     verb,
-    formalBlock: firstFenceInterior(body),
+    body: firstFenceInterior(body),
     composition,
     body,
   };

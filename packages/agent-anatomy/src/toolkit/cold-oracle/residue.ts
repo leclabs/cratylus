@@ -4,7 +4,7 @@
 // GOVERNING INVARIANT (the project's whole point): every deployed artifact the model
 // reads is formal σ* under ρ, never human prose. This leg enforces it over the whole
 // deployed σ* payload set — every organ VALUE string · every skill `description` ·
-// every skill `formalBlock` (whole). Each is read by the model as context ⇒ it MUST
+// every skill `body` (whole). Each is read by the model as context ⇒ it MUST
 // address the model's semantic space in formal σ*, never explanatory prose (the
 // vision's failure criterion). Only enumerated executable worker-bytes (HookCell
 // `command`/`workers`) are excluded — they are code, not decoded context.
@@ -23,7 +23,7 @@
 //     semantic work. On reject the verdict NAMES the offending clause (actionable for
 //     the O*/S* reduction waves).
 //
-//   FORMAL-BLOCK (skill `formalBlock`, whole) admissible ⇔ it is a `formalize`
+//   FORMAL-BLOCK (skill `body`, whole) admissible ⇔ it is a `formalize`
 //     artifact: every non-blank line is a DECLARATION (a symbol bound via `≜`/`:`/`;`/
 //     `—`), a LAW (carries a declared formal glyph — the `operator-lexicon` glyph set,
 //     the SECOND DRY read of the module), a structural header (`DECLARATIONS`/`LAWS`/a
@@ -32,7 +32,7 @@
 //     named by line number on reject.
 //
 // PURE — witnesses over supplied strings, zero IO. Corpus loading (organ values ·
-// descriptions · formalBlocks) lives in the caller (`test/reader-density.test.ts`),
+// descriptions · bodys) lives in the caller (`test/reader-density.test.ts`),
 // mirroring `structural-parsimony.ts` (a sibling `accept()` leg driven by its test).
 
 import { OPERATORS, RESIDUE_OPERATORS } from '../operator-lexicon.js';
@@ -263,7 +263,7 @@ export function admissibleSingleLine(payload: string): ResidueVerdict {
   return OK;
 }
 
-// ── formalBlock (a `formalize` artifact — declarations-above / laws-below) ─────────
+// ── body (a `formalize` artifact — declarations-above / laws-below) ─────────
 
 const SECTION_HEADER = /^(DECLARATIONS|LAWS)\b/;
 const DIVIDER = /^[-—─]{3,}$/;
@@ -282,7 +282,7 @@ function isLaw(line: string): boolean {
  * structural header/divider, or a `--`/`//` comment continuation. Rejects a free-NL
  * explanatory line or a `#`-preamble gloss, NAMED by line number.
  */
-export function admissibleFormalBlock(block: string): ResidueVerdict {
+export function admissibleBody(block: string): ResidueVerdict {
   const lines = block.split('\n');
   for (let i = 0; i < lines.length; i++) {
     const line = (lines[i] ?? '').trim();
@@ -306,6 +306,6 @@ export function admissibleResidue(
   shape: ResidueShape,
 ): ResidueVerdict {
   return shape === 'formal-block'
-    ? admissibleFormalBlock(payload)
+    ? admissibleBody(payload)
     : admissibleSingleLine(payload);
 }

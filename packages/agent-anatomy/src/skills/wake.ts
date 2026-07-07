@@ -11,7 +11,7 @@ resume — act as the same individual (rebind the continuity-thread); a wake-tim
 export const wake: SkillCell = {
   name: 'wake',
   description: `WAKE ≜ register → dream → load → orient → resume · session-start-reconstitution ↦ same-individual · counterpart(dream)`,
-  formalBlock: WAKE_BLOCK,
+  body: WAKE_BLOCK,
   composition: ['dream'],
   body: `
 

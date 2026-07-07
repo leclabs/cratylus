@@ -3,7 +3,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 export const materialize: SkillCell = {
   name: 'materialize',
   description: `realize C_R → artifacts · select F_R · emit CSF_R ⟨primitive ↦ by-value ⟨anchor gloss⟩ · composite ↦ by-reference ⟨anchor factor-anchors⟩⟩ · named-strategy s · ρ total ∨ ⊥ · exemplify-stage-3`,
-  formalBlock: `-- DECLARATIONS ----------------------------------------------------------
+  body: `-- DECLARATIONS ----------------------------------------------------------
 C_R              — the reader's concept lattice
 prim_R : C_R → 𝔹            — c primitive (irreducible at R) vs composite
 fac_R(c)         — the candidate factorizations of c (sets of factor-concepts)

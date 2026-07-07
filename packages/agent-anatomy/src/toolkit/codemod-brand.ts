@@ -7,7 +7,7 @@
 //                     (the branded-string body ⟨α, residue⟩; residue := old
 //                      definiens VERBATIM — O* later reduces it to `D ∖ fired(α)`)
 //   skill cell        drop the derivable `trigger` (= `/`+name) and `verb` lines;
-//                     keep name / description / formalBlock / composition / body
+//                     keep name / description / body / composition / body
 //   hook cell         drop `kind` (restates the type) and `slug` (== id == filename);
 //                     rename `definiens` → `residue`; keep events/command/workers
 //

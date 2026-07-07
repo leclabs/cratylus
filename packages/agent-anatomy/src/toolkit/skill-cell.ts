@@ -5,7 +5,7 @@
 // re-synthesized from fields.
 //
 // RELATION TO `@leclabs/agent-forge/anatomy`'s `Skill`: SkillCell carries the same
-// `name / trigger / description / verb / formalBlock`. It DIVERGES on two axes,
+// `name / trigger / description / verb / body`. It DIVERGES on two axes,
 // both deliberate and both flagged as findings for T1.2:
 //   1. `composition` is sibling-skill name ANCHORS (`readonly string[]`), not the
 //      anatomy's eager `readonly Skill[]` — the skill graph has genuine cycles
@@ -21,7 +21,7 @@
  *
  * The `name` is the anchor: the trigger is `/`+name and the verb is derivable, so
  * NEITHER is stored (they restate the filename). `description` is the residue-tight
- * one-line bound; `formalBlock` is the skill's PRIMARY σ* payload (its content
+ * one-line bound; `body` is the skill's PRIMARY σ* payload (its content
  * formalization is the S/E2a task, not here).
  */
 export interface SkillCell {
@@ -29,10 +29,13 @@ export interface SkillCell {
   readonly name: string;
   /** Front-matter `description:` — the residue-tight one-line bound. */
   readonly description: string;
-  /** The self-sufficient set-builder block (the skill's primary σ* payload). */
-  readonly formalBlock: string;
   /** Sibling-skill composition anchors (cycle-safe; resolved lazily by T1.2). */
   readonly composition: readonly string[];
   /** The canonical cell body (`split('---',2)[2]`) — the projection payload. */
   readonly body: string;
 }
+
+export type SkillExpression = string & {
+  readonly __tag: 'skill-expression';
+};
+

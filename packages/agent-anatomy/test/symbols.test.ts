@@ -7,7 +7,7 @@
 //
 // SOURCE-GRAIN, not markdown: the TS modules are the source now (the `.md` is a
 // projection). The "fence interior" of a skill is its `body`'s fenced block(s) (which is
-// exactly the pre-extracted `formalBlock`); of a fragment it is any fenced block in its
+// exactly the pre-extracted `body`); of a fragment it is any fenced block in its
 // `definiens` (the current corpus has none — provenance `glyph·color` marks live in
 // PROSE, never a fence, so they are out of register-scope, exactly as the Python gate
 // only ever scanned fence interiors). The declared table IS the `operator-lexicon` source
@@ -152,13 +152,13 @@ describe('SYMBOLS gate — fence-interior glyph coverage', () => {
     }
   });
 
-  it('every skill formalBlock uses only declared / exempt glyphs', async () => {
+  it('every skill body uses only declared / exempt glyphs', async () => {
     const modules = await collect('skills/*.ts');
     expect(modules.length).toBe(15);
     const failures: string[] = [];
     for (const rel of modules) {
       const s = await firstExport<SkillCell>(join(srcRoot, rel));
-      // The `body` carries the projected fence(s); its interior == `formalBlock`.
+      // The `body` carries the projected fence(s); its interior == `body`.
       failures.push(...offendingGlyphs(`skill ${s.name}`, s.body, declared));
     }
     expect(failures, failures.join('\n')).toEqual([]);

@@ -47,18 +47,18 @@ initiative is not one.
   (export `missionCommand`), value `'auftragstaktik ⟨…⟩'` (`carry-on.ts` already cites `mission-command`).
 - **D9 · Skills + hooks are in scope (MODEL `REFLEXIVE`).** All 5 Kinds satisfy Universal. The same cruft is
   present — HookCell: `kind` restates the type, `id`==`slug`==filename, `definiens` prose; SkillCell:
-  `name`/`verb`/`trigger` mutually derivable, prose `description`. **A skill's `formalBlock` is its PRIMARY σ\*
+  `name`/`verb`/`trigger` mutually derivable, prose `description`. **A skill's `body` is its PRIMARY σ\*
   payload** — the self-sufficient set-builder that IS the skill's address — NOT inert content and NOT "normally
   empty" (verified against the tree: **13/15** skills carry a substantial block, 21–138 lines). Every skill
-  surface — `description` AND `formalBlock` AND body — is a **DEPLOYED artifact the model reads as context** ⇒
-  it MUST address the model's semantic space in formal σ\*, never human prose; the formalBlock is the FIRST
+  surface — `description` AND `body` AND body — is a **DEPLOYED artifact the model reads as context** ⇒
+  it MUST address the model's semantic space in formal σ\*, never human prose; the body is the FIRST
   subject of the residue discipline, never exempt. Structural fields collapse (E2b); `definiens`/`description` →
-  residue (E2a); the whole `formalBlock` → a `formalize` artifact — declarations-above / laws-below, **zero
+  residue (E2a); the whole `body` → a `formalize` artifact — declarations-above / laws-below, **zero
   explanatory prose** (every semantic-load gloss / `#`-preamble LIFTED into formal notation, never trimmed to
   short prose nor merely deleted) (E2a). **NO executable exception** — a skill that shells out DECLARES its
   executable as a function/operation in the block (a signature line, like `praxis`'s `live : session → 𝔹`
   referencing the `episodic` runtime); the literal command string is body/projection detail. Raw code-as-bytes
-  survives ONLY in HookCell `command`/`workers` (a different Kind, not a formalBlock gloss). 15 skills, 2 hooks.
+  survives ONLY in HookCell `command`/`workers` (a different Kind, not a body gloss). 15 skills, 2 hooks.
 - **D10 · Lint reads the source module, never a markdown projection; no human glossary.** `symbols.test.ts`
   parses `references/formal-symbolic-notation.md` — a lint reading a projection. The operator/symbol lexicon
   consolidates to one ESM module `src/toolkit/operator-lexicon.ts` (E3), read by BOTH the symbols lint and the
@@ -121,7 +121,7 @@ the current tree, never a stale number in this doc.
 ## Binding acceptance criteria (encoded — the spec-creation gate)
 
 - **AC-RESIDUE** (machine-checked, `E2a`): ∀ σ\* payload — every organ **value string**, every skill
-  **`description`**, and every skill **`formalBlock`** (whole) — body = `⟨α, residue⟩` with residue a composable
+  **`description`**, and every skill **`body`** (whole) — body = `⟨α, residue⟩` with residue a composable
   σ\* expression or ∅, never prose. Each is a DEPLOYED artifact the model reads ⇒ formal σ\*, **no exemption**;
   only enumerated executable worker-bytes (HookCell `command`/`workers`) are excluded. MODEL's PARSIMONIOUS
   specialized. (Supersedes the prior "AC-FORMAL" — same intent, now MODEL-anchored: residue, not
@@ -187,9 +187,9 @@ lint · typecheck` + `E2a` AC-RESIDUE live-scan
 
 - **E1** anatomy-collapse (Fragment→branded string · ResolvedAgent/base.ts eliminated · green-keeping codemod)
 - **E3** operator-lexicon module (md symbol-table → ESM; symbols gate reads it) · **E2b** structural-parsimony gate
-- **E2a** residue gate (`admissibleSingleLine` + `admissibleFormalBlock`; reads `RESIDUE_OPERATORS`); live-scan ENABLED + green
+- **E2a** residue gate (`admissibleSingleLine` + `admissibleBody`; reads `RESIDUE_OPERATORS`); live-scan ENABLED + green
 - **A** 10 agents (dense σ\* personas · marks from deployed SOULs · D4 memory-null) · **O** 140 organ values → true residue (+ `mission-command` partition)
-- **S** 15 skills (description→σ\* · formalBlock→formalize artifact; signify reader-binding `σ*_R`→`σ*` by-design) · **H** 2 hooks→residue
+- **S** 15 skills (description→σ\* · body→formalize artifact; signify reader-binding `σ*_R`→`σ*` by-design) · **H** 2 hooks→residue
 - **C1** cleanup + global exit gate; persona/provenance READMEs archived (D12)
 - **E0** reverted — a reader-binding non-problem (the reader is uniformly LLM; no per-artifact inference).
 
