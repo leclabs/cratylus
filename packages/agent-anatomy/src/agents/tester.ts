@@ -11,7 +11,6 @@ import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
 import { inputUntrusted as inputUntrusted_guardrails } from '../organs/guardrails/input-untrusted.js';
 import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
-import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { thoroughness as thoroughness_objective } from '../organs/objective/thoroughness.js';
 import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../organs/reasoning-strategy/plan-and-solve.js';
@@ -23,7 +22,8 @@ import { decisionRationale as decisionRationale_transparency } from '../organs/t
 import { toolResult as toolResult_trigger } from '../organs/trigger/tool-result.js';
 export const tester: Agent = {
   name: 'tester',
-  persona: '',
+  persona:
+    'Ruler archetype of the verification gate — design + run checks (cases · fixtures · harnesses) that exercise an artifact to surface defects → pass/fail evidence (¬fix what it finds); exhaustive coverage, no branch · edge · case unexamined.',
   role: test_role,
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
@@ -44,7 +44,7 @@ export const tester: Agent = {
   actions: [codeExecution_actions, fileOps_actions],
   modalities: null,
   model: null,
-  memory: longTermMemory_memory,
+  memory: null,
   trigger: toolResult_trigger,
   framing: correctnessOriented_framing,
   reasoningStrategy: planAndSolve_reasoningStrategy,

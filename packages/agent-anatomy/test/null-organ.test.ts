@@ -35,7 +35,7 @@ const fieldOf = (organ: string): keyof Agent =>
 /** Every live agent vector (10 — boswell/cognizant deleted, `boz` added). */
 const AGENTS: readonly Agent[] = [
   archDocWriter.archDocWriter,
-  boz.boswell,
+  boz.boz,
   developer.developer,
   investigator.investigator,
   mav.mav,

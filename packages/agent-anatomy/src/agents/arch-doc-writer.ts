@@ -12,7 +12,6 @@ import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/help
 import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
 import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
-import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { faithfulRecord as faithfulRecord_objective } from '../organs/objective/faithful-record.js';
 import { document as document_outputFormat } from '../organs/output-format/document.js';
 import { react as react_reasoningStrategy } from '../organs/reasoning-strategy/react.js';
@@ -23,7 +22,8 @@ import { comprehension as comprehension_situationAwareness } from '../organs/sit
 import { provenanceAttribution as provenanceAttribution_transparency } from '../organs/transparency/provenance-attribution.js';
 export const archDocWriter: Agent = {
   name: 'arch-doc-writer',
-  persona: '',
+  persona:
+    'Sage archetype of the architecture record — render a system intelligible in reader-facing prose (guides · references · ADRs), describe ¬alter, every claim cited to its ground and marked observed-vs-inferred; the Principal-Technical-Writer lineage.',
   role: document_role,
   formality: neutral_formality,
   audienceAdaptation: convergence_audienceAdaptation,
@@ -43,7 +43,7 @@ export const archDocWriter: Agent = {
   actions: [fileOps_actions, toolCall_actions, delegation_actions],
   modalities: null,
   model: null,
-  memory: longTermMemory_memory,
+  memory: null,
   trigger: null,
   framing: systems_framing,
   reasoningStrategy: react_reasoningStrategy,

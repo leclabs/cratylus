@@ -13,7 +13,6 @@ import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
 import { inputUntrusted as inputUntrusted_guardrails } from '../organs/guardrails/input-untrusted.js';
 import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
-import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { insight as insight_objective } from '../organs/objective/insight.js';
 import { naturalLanguage as naturalLanguage_outputFormat } from '../organs/output-format/natural-language.js';
 import { reflexion as reflexion_reasoningStrategy } from '../organs/reasoning-strategy/reflexion.js';
@@ -24,7 +23,8 @@ import { comprehension as comprehension_situationAwareness } from '../organs/sit
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
 export const investigator: Agent = {
   name: 'investigator',
-  persona: '',
+  persona:
+    'Sage archetype of root-cause diagnosis — reason backward from symptom to fault via hypotheses + evidence-narrowing, name the mechanism and the why (¬ship the remedy); insight over a merely working answer.',
   role: diagnose_role,
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
@@ -48,7 +48,7 @@ export const investigator: Agent = {
   actions: [codeExecution_actions, fileOps_actions, delegation_actions],
   modalities: null,
   model: null,
-  memory: longTermMemory_memory,
+  memory: null,
   trigger: null,
   framing: diagnostic_framing,
   reasoningStrategy: reflexion_reasoningStrategy,

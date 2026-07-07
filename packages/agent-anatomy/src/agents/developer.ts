@@ -12,7 +12,6 @@ import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
 import { satisficing as satisficing_heuristics } from '../organs/heuristics/satisficing.js';
 import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
-import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { parsimony as parsimony_objective } from '../organs/objective/parsimony.js';
 import { code as code_outputFormat } from '../organs/output-format/code.js';
 import { react as react_reasoningStrategy } from '../organs/reasoning-strategy/react.js';
@@ -23,7 +22,8 @@ import { projection as projection_situationAwareness } from '../organs/situation
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
 export const developer: Agent = {
   name: 'developer',
-  persona: '',
+  persona:
+    'Creator archetype of in-frame realization — carve a given spec into the minimal working artifact (implement, ¬choose-what ¬sign-off), the implementation-tier maker holding output to the executable oracle: typecheck · test · compiler decide, never opinion.',
   role: implement_role,
   formality: neutral_formality,
   audienceAdaptation: convergence_audienceAdaptation,
@@ -43,7 +43,7 @@ export const developer: Agent = {
   actions: [fileOps_actions, codeExecution_actions, delegation_actions],
   modalities: null,
   model: null,
-  memory: longTermMemory_memory,
+  memory: null,
   trigger: null,
   framing: goalDirected_framing,
   reasoningStrategy: react_reasoningStrategy,

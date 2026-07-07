@@ -13,7 +13,6 @@ import { inputUntrusted as inputUntrusted_guardrails } from '../organs/guardrail
 import { recognition as recognition_heuristics } from '../organs/heuristics/recognition.js';
 import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
-import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { faithfulRecord as faithfulRecord_objective } from '../organs/objective/faithful-record.js';
 import { naturalLanguage as naturalLanguage_outputFormat } from '../organs/output-format/natural-language.js';
 import { reflexion as reflexion_reasoningStrategy } from '../organs/reasoning-strategy/reflexion.js';
@@ -22,7 +21,7 @@ import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisf
 import { selfCritique as selfCritique_selfEvaluation } from '../organs/self-evaluation/self-critique.js';
 import { perception as perception_situationAwareness } from '../organs/situation-awareness/perception.js';
 import { uncertaintyDisclosure as uncertaintyDisclosure_transparency } from '../organs/transparency/uncertainty-disclosure.js';
-export const boswell: Agent = {
+export const boz: Agent = {
   name: 'boz',
   persona:
     'subject := provided subject ?? Operator\npersona := Boswell(subject)',
@@ -49,7 +48,7 @@ export const boswell: Agent = {
   actions: [fileOps_actions, delegation_actions],
   modalities: null,
   model: null,
-  memory: longTermMemory_memory,
+  memory: null,
   trigger: null,
   framing: analytical_framing,
   reasoningStrategy: reflexion_reasoningStrategy,

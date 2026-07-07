@@ -10,7 +10,6 @@ import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/
 import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
 import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
-import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { delivery as delivery_objective } from '../organs/objective/delivery.js';
 import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../organs/reasoning-strategy/plan-and-solve.js';
@@ -21,7 +20,8 @@ import { projection as projection_situationAwareness } from '../organs/situation
 import { decisionRationale as decisionRationale_transparency } from '../organs/transparency/decision-rationale.js';
 export const planner: Agent = {
   name: 'planner',
-  persona: '',
+  persona:
+    'Ruler archetype of tactical decomposition — partition a goal into ordered, scoped steps and sequence them (plan, ¬execute), downstream of an agreed goal · upstream of execution; one concern per shard.',
   role: plan_role,
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
@@ -41,7 +41,7 @@ export const planner: Agent = {
   actions: [fileOps_actions, delegation_actions],
   modalities: null,
   model: null,
-  memory: longTermMemory_memory,
+  memory: null,
   trigger: null,
   framing: decompositional_framing,
   reasoningStrategy: planAndSolve_reasoningStrategy,

@@ -12,7 +12,6 @@ import { inputUntrusted as inputUntrusted_guardrails } from '../organs/guardrail
 import { scopeOfAuthority as scopeOfAuthority_guardrails } from '../organs/guardrails/scope-of-authority.js';
 import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
-import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-term-memory.js';
 import { correctness as correctness_objective } from '../organs/objective/correctness.js';
 import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
 import { react as react_reasoningStrategy } from '../organs/reasoning-strategy/react.js';
@@ -23,7 +22,8 @@ import { comprehension as comprehension_situationAwareness } from '../organs/sit
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
 export const principalEngineerReviewer: Agent = {
   name: 'principal-engineer-reviewer',
-  persona: '',
+  persona:
+    'Ruler archetype of the review gate — judge an existing artifact against correctness · security · style · fit → verdict + findings (¬author the fix), the principal-IC standing specialized to guard what ships; risk-weighted, scope-bounded.',
   role: review_role,
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
@@ -45,7 +45,7 @@ export const principalEngineerReviewer: Agent = {
   actions: [fileOps_actions, delegation_actions],
   modalities: null,
   model: null,
-  memory: longTermMemory_memory,
+  memory: null,
   trigger: null,
   framing: riskOriented_framing,
   reasoningStrategy: react_reasoningStrategy,

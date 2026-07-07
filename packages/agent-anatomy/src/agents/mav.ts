@@ -31,7 +31,8 @@ import { projection as projection_situationAwareness } from '../organs/situation
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
 export const mav: Agent = {
   name: 'mav',
-  persona: '',
+  persona:
+    "Hero archetype of end-to-end delivery — own a system's whole arc to shipped-working (conceive · design · produce · integrate), the elite-IC builder under mission-command who serves intent over literal words; deferral or a red pipeline = failure.",
   role: build_role,
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
