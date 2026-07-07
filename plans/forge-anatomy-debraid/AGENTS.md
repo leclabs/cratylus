@@ -74,17 +74,32 @@ bundle:…`) projects two ways — `## Protocol`→every SOUL's `## Memory Proto
   is `agent-memory` (no `packages/episodic/`). Likely CLI-supplied `--bundle`; the front-matter path is stale
   rename residue. Verify whether front-matter `bundle:` is read at all.
 
-## Reader-binding history — DO NOT re-litigate (this cost the last session dearly)
+## Reader-binding — PER-FIELD, not per-file ("exempt" was the wrong framing; Operator, definitive)
 
-The definitive model (Operator, this session): **skill `description` = σ_human\*** (the human-readable selection
-line — read by the router doing MATCHING with the skill unloaded; recognizability > density; register-exempt,
-NOT E2a-residue-gated). **skill `formalBlock`/payload = σ\*** (LLM-read, the σ\* set-builder). Two LLM-adjacent
-readers, two tasks, two registers. This is what **D14 originally said and the last session WRONGLY reverted**
-during the E0/D15 unwind — then rebuilt the inverse (description residue-gated as σ\*). The E0 flame ("projected
-artifacts are read by LLMs") was about the deployed σ\* PAYLOAD, never the description. **σ\* is fixed at
-reader=LLM (no `σ*_R` parameter); `σ_human*` is a separate fixed fn for genuinely human-facing surfaces
-(READMEs·commit-msgs·chat·the skill description).** Net: un-gate the description; gate the formalBlock. The
-`SkillExpression` brand types the σ\* payload.
+**Reader-binding is a property of each authored FIELD, not the cell/file.** There is no "σ\* cell with an exempt
+field" — the description is not an EXCEPTION to a σ\* rule, it is a σ_human\* field.
+
+- **σ\*** (formal, model-read) — the PAYLOAD fields: organ value · skill `formalBlock` · agent `persona`.
+- **σ_human\*** (human-text, selection-read) — the SELECTION-LINE fields: skill `description` · agent `description`.
+
+The old FILE-level framing was an artifact: an organ cell carries a SINGLE field (the value), which is σ\*, so
+"the organ file is σ\*" read as true — but the real statement is "the organ VALUE FIELD is σ\*." Skills/agents
+carry MULTIPLE fields with different bindings; that is where the altitude broke. σ\* is fixed at reader=LLM (no
+`σ*_R` parameter); σ_human\* is a separate fixed fn (human-facing surfaces: READMEs · commit-msgs · chat · the
+skill/agent description). **Net:** the description is σ_human\* (NOT residue-gated — not "exempt", just a
+different field-binding); `formalBlock`/persona are σ\* (gated). The `SkillExpression` brand types the σ\* payload.
+
+**⚠ AGENT DEFECT (same problem, one level up — Operator).** Agents have NO `description` field, yet
+`agent-forge/src/adapters/claude/anatomy.ts agentFrontMatter` maps **`persona` → the SOUL frontmatter
+`description:`** (`description = emoji + a.persona`). So the σ\* `persona` ships as the σ_human\* selection line
+the subagent-router reads — identical to the skill bug. **FIX: add `agent.description` (σ_human\*, → SOUL
+frontmatter `description`); `persona` stays σ\* (→ SOUL body `## Persona`); drop the persona→description map.**
+Evidence: well-formed agents in the harness roster carry "Use this agent when…" (σ_human\*) descriptions; nico/mav
+show only the archetype line — the persona leaking through.
+
+_History note: the last session WRONGLY reverted D14's correct `description`=σ_human\* during the E0/D15 unwind
+and rebuilt the inverse (description residue-gated as σ\*); the E0 flame was about the deployed σ\* PAYLOAD, never
+the description. Do not re-litigate this axis._
 
 ## Open threads / forks for the fresh session
 

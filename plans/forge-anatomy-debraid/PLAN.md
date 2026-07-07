@@ -32,10 +32,17 @@ firstFenceInterior), codegen.ts}` + its own `cold-oracle/{residue,symbols,struct
   separable-content, the anti-pattern the `formalBlock` field existed to avoid. `body` must not be stored; the
   adapter GENERATES the SKILL.md (mirror `agentBody`'s vector→SOUL generation; a generator already exists,
   disconnected, at `agent-forge/src/core/exemplify/skill-cell.ts` `renderSkillCellBody`).
-- **D-READER · skill `description` = σ_human\*, not σ\*.** Operator-definitive: the `description` is the
-  human-readable selection line (σ_human\*, register-exempt), NOT the σ\* payload. The canon-collapse work
-  wrongly residue-gated it (E2a scope) and reverted D14 which had it right. `formalBlock` is the σ\* payload
-  (LLM-read). Un-gate the description; keep `formalBlock` gated. (Full reader-binding history in `AGENTS.md`.)
+- **D-READER · reader-binding is PER-FIELD, not per-file ("exempt" was wrong framing).** Each authored field has
+  its own binding — σ\* (payload: organ value · skill `formalBlock` · agent `persona`) vs σ_human\* (selection
+  line: skill `description` · agent `description`). The file-level altitude was an artifact of organ cells having
+  ONE field (the σ\* value); skills/agents have multiple fields, different bindings. The skill `description` is
+  σ_human\* (not "exempt" — a different field-binding; NOT residue-gated); `formalBlock` is σ\* (gated). The
+  canon-collapse work wrongly residue-gated the description (E2a) and reverted D14 which had it right. (Full
+  history in `AGENTS.md`.)
+- **D-AGENT-DESC · agents need a `description` field — same bug, one level up.** Agents have NO `description`
+  field, but `agentFrontMatter` maps `persona`(σ\*) → the SOUL frontmatter `description:` — shipping the σ\*
+  identity as the σ_human\* selection line the subagent-router reads. **Add `agent.description` (σ_human\*, →
+  frontmatter); `persona` stays σ\* (→ SOUL body `## Persona`); drop the persona→description map.**
 - **D-SKILLEXPR · type the payload.** `formalBlock` should be a typed `SkillExpression` (branded σ\* string,
   parity with organ-value brands) so the gate type-checks a value instead of string-scraping a fence.
 
@@ -69,7 +76,9 @@ composed-from — the dead ref/harness/density logic is deleted, not relocated).
 1. **IR-UNIFY** — anatomy consumes agent-forge's `Skill`/`Agent` IR; retire the forked toolkit types.
 2. **ADAPTER-THIN** — strip the adapter to a generic-IR→harness map; delete the dead palimpsest.
 3. **SKILL-SHAPE** — delete `body`; `formalBlock: SkillExpression` sole payload; adapter generates SKILL.md.
-4. **READER-FIX** — `description` = σ_human\* (un-gate E2a; register-exempt); carry-on composites `${humanOutOfTheLoop}`.
+4. **READER-FIX** — per-field binding: skill `description` = σ_human\* (un-gate from E2a — not "exempt", a
+   different field); **add `agent.description`** (σ_human\*, → SOUL frontmatter) + drop the persona→description
+   map (`persona` stays σ\*); carry-on composites `${humanOutOfTheLoop}`.
 5. **GATES** — relocate/align the residue·symbols·parsimony·accept gates to the unified IR (are they anatomy's or forge's?).
 6. **(watch, maybe out-of-scope)** — memory-contract prose-duplication + `bundle:` rename drift (investigator flags in `AGENTS.md`).
 
