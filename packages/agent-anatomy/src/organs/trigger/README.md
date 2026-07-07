@@ -4,12 +4,12 @@
 
 ## Values
 
-- agent-message ≜ another agent's message — request · delegation · response · broadcast — opens the turn; peer/orchestrator input, distinct from a human's.
-- environment-event ≜ an unsolicited subscribed occurrence — sensor reading · webhook · file/state change · queue delivery — opens the turn; pushed, not requested.
-- introspection-request ≜ a request to examine own state · config · capabilities · reasoning (self-report/self-audit) opens the turn; the subject sensed is the agent itself.
-- scheduled-trigger ≜ a time-based fire — cron · timer · interval · deadline — opens the turn with no content payload; the clock is the percept.
-- tool-result ≜ the return/output/error of a tool the agent itself invoked opens the turn; the world's reply to a prior action.
-- user-message ≜ a human's natural-language directive · query · reply opens the turn; the primary intent-bearing input channel.
+- agent-message
+- environment-event
+- introspection-request
+- scheduled-trigger
+- tool-result
+- user-message
 
 ---
 

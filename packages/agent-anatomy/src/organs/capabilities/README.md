@@ -4,16 +4,16 @@
 
 ## Values
 
-- analysis-diagnosis ≜ reason over a body of evidence to conclusions: root-cause/causal tracing · quant/qual analysis · comparison · falsification · inference under uncertainty.
-- data-analytics ≜ data engineering + quantitative analysis — pipelines · transformation · statistics/ML; datasets → decision-grade evidence.
-- operations-delivery ≜ run + ship systems in their real environment: CI/CD + release toolchains · deployment · env/config management · monitoring · incident response.
-- planning-decomposition ≜ goal → ordered trackable plan: scoping · decomposition to actionable granularity · dependency sequencing · falsifiable exit criteria.
-- research-investigation ≜ gather + synthesize from sources: literature/web/code search · source triage · evidence citation · distil to a grounded answer.
-- review-critique ≜ adversarial evaluation of an artifact (code · design · plan · security posture): threat modeling · severity triage against standard frames · coordinate-cited findings in a structured template.
-- software-engineering ≜ author · modify · debug · ship code within an existing architecture: implementation · refactoring · test-writing · build/release toolchains · version-control discipline.
-- system-design ≜ decide structure ahead of code: components + contracts · patterns + boundaries · architecture documented (C4/ADR) for others to build against.
-- technical-writing ≜ written artifacts for a target reader: documentation · specs · reports · summaries · structured prose at audience-fit register.
-- verification-testing ≜ establish a change correct: oracles + regression/contract tests · validity decomposed into dimensions · structured PASS/FAIL/ERROR reports with reproducing inputs.
+- analysis-diagnosis ≜ ⟨falsification inference-under-uncertainty⟩
+- data-analytics ≜ ⟨pipelines statistics-ml⟩
+- operations-delivery ≜ ⟨ci-cd deployment monitoring incident-response⟩
+- planning-decomposition ≜ ⟨falsifiable-exit-criteria⟩
+- research-investigation
+- review-critique ≜ ⟨adversarial threat-modeling severity-triage⟩
+- software-engineering ≜ ↾ existing-architecture
+- system-design
+- technical-writing
+- verification-testing ≜ ⟨oracles contract-tests pass-fail-error⟩
 
 ---
 

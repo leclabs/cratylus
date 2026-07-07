@@ -196,8 +196,11 @@ async function allAgents(): Promise<Array<{ rel: string; agent: Agent }>> {
 /** Recover {slug, definiens} from an organ value's `"<slug> ≜ <definiens>"` body. */
 function splitBody(v: string): { slug: string; definiens: string } {
   const i = v.indexOf(' ≜ ');
+  // No ` ≜ ` = a BARE ANCHOR (residue ∅ — the ideal σ*): definiens is EMPTY, not the slug
+  // itself (the describe-era default misread ∅ as a self-restatement of α, false-convicting
+  // PARSIMONIOUS on every reduced-to-∅ value).
   return i < 0
-    ? { slug: v, definiens: v }
+    ? { slug: v, definiens: '' }
     : { slug: v.slice(0, i), definiens: v.slice(i + 3) };
 }
 

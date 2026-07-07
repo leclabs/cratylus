@@ -4,13 +4,13 @@
 
 ## Values
 
-- action ≜ side-effecting actuation in an external system — tool/API invocation · file write · command execution · message send · physical actuation; the output is a state change, not a returned artifact.
-- code ≜ source in a programming/markup/query language — functions · scripts · SQL · config-as-code · patches — to execute, compile, or apply.
-- document ≜ long-form composed artifact with sections/headings/citations — report · spec · README · article; for human reading + persistence beyond a single turn.
-- natural-language ≜ free-form prose for a human reader — explanations · answers · summaries · dialogue; no schema, no machine contract.
-- structured-data ≜ machine-parseable payload conforming to a schema — JSON/YAML/XML/CSV/key-value; consumed by a program, not primarily read by a human.
-- structured-decision ≜ a bounded selection from a fixed option space — label · score · ranking · route · yes/no verdict; terse adjudication, not open generation.
-- visualization ≜ visual/graphical artifact — chart · diagram · plot · table-as-figure · rendered image/UI mockup; information encoded spatially, not in linear text.
+- action ⟨external-state-change⟩ ⟨not-returned-artifact⟩
+- code
+- document
+- natural-language
+- structured-data
+- structured-decision
+- visualization
 
 ---
 

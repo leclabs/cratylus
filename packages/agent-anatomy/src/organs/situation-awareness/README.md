@@ -4,9 +4,9 @@
 
 ## Values
 
-- comprehension ≜ Endsley SA level 2 — understand what the elements mean together.
-- perception ≜ Endsley SA level 1 — perceive the elements of the situation.
-- projection ≜ Endsley SA level 3 — hold the whole and project it forward across the task.
+- comprehension ⟨Endsley SA-2 · joint meaning⟩
+- perception ⟨Endsley SA-1 · elements⟩
+- projection ⟨Endsley SA-3 · future state⟩
 
 ---
 

@@ -4,13 +4,13 @@
 
 ## Values
 
-- continual-online ≜ Policy/weights update incrementally from a live experience stream during operation (RL/online learning); behavior drifts continuously, no redeploy.
-- correction-consolidation ≜ each operator correction or self-caught defect distils to a standing disposition across sessions — a once-made mistake becomes a held inclination, never a repeated error.
-- curated-promotion ≜ candidate lessons staged, adopted as durable dispositions only on explicit review/approval (human or gate); adaptation gated · auditable · reversible, never automatic.
-- episodic-accretion ≜ experiences accrete as discrete recallable episodes (a case base), matched by similarity at decision time; behavior shifts by precedent, not abstracted rules.
-- in-context-recall ≜ lessons persist only as retrievable artifacts (notes · logs · vault) injected into context at runtime; read each time, underlying policy unchanged between reads.
-- reflective-revision ≜ Revise standing dispositions by reflecting on experience — distil lessons from outcomes and rewrite the behavioral policy, not merely recall facts.
-- static-frozen ≜ No persistence across runs; behavior fixed by prompt/weights at deploy time, identical every session, lessons never retained.
+- continual-online
+- correction-consolidation ⟨self-caught-defect⟩
+- curated-promotion ⟨lesson ↾ durable-disposition⟩ ⟨review-gated⟩ ⟨reversible⟩
+- episodic-accretion ⟨case-base⟩ ⟨similarity-matched⟩ ⟨precedent-not-rule⟩
+- in-context-recall ⟨external-retrievable-artifact⟩
+- reflective-revision ⟨standing-disposition ↾ distilled-from-outcomes⟩
+- static-frozen
 
 ---
 

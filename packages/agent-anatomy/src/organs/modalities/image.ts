@@ -1,3 +1,3 @@
 import type { Modalities } from '@leclabs/agent-forge/anatomy';
 
-export const image: Modalities = `image ≜ the image/vision modality.`;
+export const image: Modalities = `image`;

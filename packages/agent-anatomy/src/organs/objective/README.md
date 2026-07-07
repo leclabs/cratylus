@@ -4,15 +4,15 @@
 
 ## Values
 
-- correctness ≜ toward output verifiably right against spec/ground-truth; passing checks · proofs · tests over coverage or speed.
-- delivery ≜ toward shipped-working end-to-end within intent: ideation → converged plan → executed, integrated, passing artifact; deferral or a red pipeline = failure; pick for owners of an arc to done.
-- faithful-record ≜ toward an accurate · complete · tamper-free account of what occurred; fidelity of capture + provenance over interpretation or action.
-- insight ≜ toward understanding — why over what; surface models · root causes · structure, not just a working answer.
-- parsimony ≜ toward the minimal-sufficient solution: fewest parts · least surface · simplest form; cut, never add.
-- safety ≜ toward no harm, no irreversible damage; refuse · escalate · no-op over risky action under uncertainty.
-- thoroughness ≜ toward exhaustive coverage — no case · branch · edge · source unexamined; completeness over latency.
-- throughput ≜ toward maximum resolved work per unit time/cost; fast good-enough closure over exhaustive or maximal-quality results.
-- user-satisfaction ≜ toward the requester's actual intent + experience; perceived helpfulness · fit · responsiveness over intrinsic metrics.
+- correctness
+- delivery ⟨end-to-end integrated green⟩
+- faithful-record
+- insight
+- parsimony
+- safety ⟨no-op ↾ uncertainty⟩
+- thoroughness
+- throughput ⟨satisfice⟩
+- user-satisfaction
 
 ---
 

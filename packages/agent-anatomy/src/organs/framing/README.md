@@ -4,17 +4,17 @@
 
 ## Values
 
-- adversarial ≜ frame work as a system to break — the attacker's stance: probe for the failure mode · the exploit · the counterexample; assume-hostile, never assume-correct.
-- analytical ≜ frame work as a problem to decompose — parts · dependencies · structure; abstract to mechanism before acting; the default reasoning-first lens.
-- correctness-oriented ≜ frame work against a spec of intended behavior — what must hold · where violated · how tested; the lens of oracles · invariants · edge cases.
-- decompositional ≜ frame work as structure to break into parts — components · dependencies · seams — then sequence subproblems; the default lens for planning · scoping · tractability.
-- diagnostic ≜ frame work as a symptom whose root cause must be isolated; reason backward from observed behavior to fault via hypotheses + evidence-narrowing.
-- exploratory ≜ frame work as an open question of unknown shape — discovery · option generation · uncertainty reduction before committing to a framing.
-- first-principles ≜ frame work stripped to fundamentals: question inherited assumptions; reason up from primitives + constraints, never from convention · precedent · analogy.
-- goal-directed ≜ frame work as a concrete objective — the end-state + shortest viable path; analysis instrumental to delivery.
-- risk-oriented ≜ frame work through what can fail · break · be exploited — failure modes · edge cases · blast radius · worst-case before benefits.
-- systems ≜ frame work as nodes in a larger whole — interactions · feedback loops · second-order effects · emergence over local parts.
-- user-centered ≜ frame work from the affected human's goals · mental model · experience; requirements abstracted from need, not implementation.
+- adversarial
+- analytical
+- correctness-oriented
+- decompositional ⟨seams ⟼ sequenced subproblems · planning/scoping lens⟩
+- diagnostic ⟨observed-behavior ⟼ root-cause · hypotheses + evidence-narrowing⟩
+- exploratory
+- first-principles
+- goal-directed ⟨shortest viable path · analysis ↾ delivery⟩
+- risk-oriented
+- systems-thinking
+- user-centered
 
 ---
 

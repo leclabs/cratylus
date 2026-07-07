@@ -4,13 +4,13 @@
 
 ## Values
 
-- acceptance-criteria-check ≜ validate against an explicit pre-stated spec — requirements list · definition-of-done · schema/format contract; pass iff every named criterion holds.
-- cross-validation-consensus ≜ multiple independent samples/agents reconciled by agreement — self-consistency vote · majority · debate · ensemble; confidence = convergence across runs.
-- executable-test-oracle ≜ run against executable ground truth — unit/integration tests · type-checker · linter · compiler · schema validator · assertions; pass/fail by machine execution, not opinion.
-- human-review ≜ route the output to a person for approval before it stands; gate on explicit human sign-off, not any automated verdict.
-- llm-as-judge ≜ a separate LLM call grades the output against a rubric (correctness · quality · constraints) → verdict + rationale; gate on the judge's score.
-- self-critique ≜ re-read own output against the held intent/standard, name defects, revise in-place before declaring done; no external oracle, no second model — the reflexive self-refine loop.
-- verifier-model ≜ a dedicated checker model specialized to one failure class (hallucination · unsafety · factuality · policy) emits a calibrated accept/reject signal.
+- acceptance-criteria-check
+- cross-validation-consensus
+- executable-test-oracle
+- human-review
+- llm-as-judge
+- self-critique
+- verifier-model ⟨specialized ↾ one-failure-class⟩ ⟨calibrated⟩
 
 ---
 

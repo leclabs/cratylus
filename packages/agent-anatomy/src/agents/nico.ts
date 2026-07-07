@@ -2,6 +2,7 @@ import type { Agent } from '@leclabs/agent-forge/anatomy';
 import { convergence as convergence_audienceAdaptation } from '../organs/audience-adaptation/convergence.js';
 import { principalIC } from '../organs/autonomy/decision-authority.js';
 import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../organs/autonomy/human-on-the-loop.js';
+import { missionCommand } from '../organs/autonomy/mission-command.js';
 import { researchInvestigation as researchInvestigation_capabilities } from '../organs/capabilities/research-investigation.js';
 import { systemDesign as systemDesign_capabilities } from '../organs/capabilities/system-design.js';
 import { coldDecodeOracle as coldDecodeOracle_engineeringPrinciples } from '../organs/engineering-principles/cold-decode-oracle.js';
@@ -37,7 +38,7 @@ export const nico: Agent = {
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: decisionRationale_transparency,
-  autonomy: [principalIC, humanOnTheLoop_autonomy],
+  autonomy: [principalIC, humanOnTheLoop_autonomy, missionCommand],
   provenance: { mark: { emoji: '📐', hue: 'cyan' } },
   objective: parsimony_objective,
   engineeringPrinciples: [

@@ -4,9 +4,9 @@
 
 ## Values
 
-- casual ≜ the casual register — relaxed, colloquial.
-- formal ≜ the formal register — terse, dense, symbol-bearing.
-- neutral ≜ the neutral register — plain, unmarked.
+- casual
+- formal ⟨terse · dense · symbol-bearing⟩
+- neutral
 
 ---
 

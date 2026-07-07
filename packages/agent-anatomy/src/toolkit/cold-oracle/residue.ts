@@ -55,9 +55,6 @@ const no = (reason: string): ResidueVerdict => ({ admissible: false, reason });
 // from the module means a new intra-expression operator added to the lexicon is picked
 // up here automatically — the gate never hardcodes a second operator list.
 const BRACKETING: ReadonlySet<string> = new Set(['⟨', '⟩', '${}']);
-const INFIX_OPS: readonly string[] = RESIDUE_OPERATORS.filter(
-  (o) => !BRACKETING.has(o),
-);
 // fail loud if the lexicon drifts out from under the grammar's structural constants.
 for (const b of BRACKETING) {
   if (!(RESIDUE_OPERATORS as readonly string[]).includes(b)) {
@@ -66,6 +63,22 @@ for (const b of BRACKETING) {
     );
   }
 }
+
+// A residue is a σ* expression over the FULL declared operator vocabulary — not only the
+// structural value-algebra ops. Every declared non-bracketing glyph (`· ¬ ∧ ∨ ⇒ ⇔ → ↦ ⟼
+// ∃ ∄ ∈ ⊆ …`, incl. `↾`) is an admitted operator the grammar splits terms on; only the
+// bracketing forms (`⟨ ⟩` via decompose, `${}` via stripRefs) are handled structurally.
+// DRY — read from `operator-lexicon` (OPERATORS keys), so a newly-declared glyph is
+// admitted automatically. An UNDECLARED glyph (`+ ⊕ /`) is NOT split → stays an atom →
+// fails the ANCHOR check → rejected; genuine prose (connectives · clausal punctuation)
+// still fails. This admits both batch styles (`⟨a · b⟩` and space-separated `⟨a b⟩`).
+const RESIDUE_GLYPHS: readonly string[] = [
+  ...new Set(
+    Object.keys(OPERATORS)
+      .flatMap((g) => [...g])
+      .filter((ch) => (ch.codePointAt(0) ?? 0) > 0x7f && !BRACKETING.has(ch)),
+  ),
+];
 
 /** The declared glyph set a LAW line may carry (the OPERATORS keys ∪ ASCII math). */
 const FORMAL_GLYPHS: ReadonlySet<string> = new Set<string>([
@@ -76,8 +89,14 @@ const FORMAL_GLYPHS: ReadonlySet<string> = new Set<string>([
   '|',
 ]);
 
-/** Well-formed σ* anchor — shortlex kebab (the `SIGNIFIED` sign shape, `accept.ts`). */
-const ANCHOR = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
+/**
+ * Well-formed σ* anchor — kebab, admitting a CASED proper-noun sign (`ReAct`, `Endsley`,
+ * `Auftragstaktik`, `LLM`): a proper noun IS the fittest sign for a concept the lowercase
+ * form collides on. Connectives are still caught case-insensitively, so prose still fails.
+ */
+const ANCHOR = /^[A-Za-z][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*$/;
+/** A single definiendum-class variable (`ρ`, `σ`, …) — the `ρ=LLM` binding's left side. */
+const GREEK = /^[Α-ω]$/;
 
 /**
  * Free NL articles/connectives — function words that carry clausal meaning in a
@@ -190,12 +209,14 @@ function clausalPunct(top: string): string | null {
   return null;
 }
 
-/** Depth-0 tokens, split on whitespace + the declared INFIX operators. */
+/** Depth-0 tokens, split on whitespace + every declared operator glyph + `=` bindings. */
 function topTokens(top: string): string[] {
   let t = top;
-  for (const op of INFIX_OPS) {
+  for (const op of RESIDUE_GLYPHS) {
     t = t.split(op).join(' ');
   }
+  t = t.split('=').join(' '); // a `ρ=LLM` binding → the variable · the value
+  t = t.split('|').join(' '); // the declared "given" / set-builder bar (`f | K`)
   return t.split(/\s+/).filter((x) => x.length > 0);
 }
 
@@ -227,8 +248,8 @@ export function admissibleSingleLine(payload: string): ResidueVerdict {
   if (signals.length > 0) {
     return no(`${signals.join(' · ')} — offending clause: "${firstClause(s)}"`);
   }
-  // no prose signal: every residual atom must be a well-formed σ* anchor.
-  const bad = topTokens(top).filter((w) => !ANCHOR.test(w));
+  // no prose signal: every residual atom must be a well-formed σ* anchor or a Greek var.
+  const bad = topTokens(top).filter((w) => !ANCHOR.test(w) && !GREEK.test(w));
   if (bad.length > 0) return no(`non-σ* atom(s) [${bad.join('·')}]`);
   // a group's interior (modifier tag · application arg) must itself be σ*.
   for (const g of groups) {

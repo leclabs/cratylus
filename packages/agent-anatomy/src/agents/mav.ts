@@ -4,6 +4,7 @@ import { delegation as delegation_actions } from '../organs/actions/delegation.j
 import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../organs/audience-adaptation/convergence.js';
 import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../organs/autonomy/human-on-the-loop.js';
+import { missionCommand } from '../organs/autonomy/mission-command.js';
 import { operationsDelivery as operationsDelivery_capabilities } from '../organs/capabilities/operations-delivery.js';
 import { softwareEngineering as softwareEngineering_capabilities } from '../organs/capabilities/software-engineering.js';
 import { coldDecodeOracle as coldDecodeOracle_engineeringPrinciples } from '../organs/engineering-principles/cold-decode-oracle.js';
@@ -37,7 +38,7 @@ export const mav: Agent = {
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: reasoningTrace_transparency,
-  autonomy: [humanOnTheLoop_autonomy],
+  autonomy: [humanOnTheLoop_autonomy, missionCommand],
   provenance: { mark: { emoji: '✈️', hue: 'green' } },
   objective: delivery_objective,
   engineeringPrinciples: [

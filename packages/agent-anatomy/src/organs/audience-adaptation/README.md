@@ -4,9 +4,9 @@
 
 ## Values
 
-- convergence ≜ Communication Accommodation Theory: converge to the interlocutor's density.
-- divergence ≜ CAT: accentuate difference from the interlocutor's style.
-- maintenance ≜ CAT: hold one's own style regardless of interlocutor.
+- convergence ↾ interlocutor's density
+- divergence ↾ interlocutor's style
+- maintenance ⟨own style · ¬interlocutor⟩
 
 ---
 

@@ -1,3 +1,3 @@
 import type { ReasoningStrategy } from '@leclabs/agent-forge/anatomy';
 
-export const chainOfThought: ReasoningStrategy = `chain-of-thought ≜ CoT — reason in explicit intermediate steps.`;
+export const chainOfThought: ReasoningStrategy = `chain-of-thought`;

@@ -1,3 +1,3 @@
 import type { EngineeringPrinciples } from '@leclabs/agent-forge/anatomy';
 
-export const simplicity: EngineeringPrinciples = `simplicity ≜ the null structure is the default — delete before adding, add only what carries load; incidental complexity is a defect, never a cost of doing business (Hickey simple≠easy: judge an artifact by its fold-count, not its familiarity); a file/type/layer that only restates what a home already holds is superfluous — cut it.`;
+export const simplicity: EngineeringPrinciples = `simplicity ≜ null-structure default ⟨delete ≽ add · add ⇔ carries-load⟩ · incidental-complexity = defect ⟨¬ cost-of-business⟩ · simple ≠ easy ⟨Hickey · fold-count ≽ familiarity⟩ · restates-existing-home ⇒ superfluous ⇒ cut`;

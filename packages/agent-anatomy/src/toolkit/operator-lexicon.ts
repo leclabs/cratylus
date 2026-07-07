@@ -38,25 +38,41 @@ export const OPERATORS = {
     coldVerified: true,
   },
   '≺': { sense: 'precedes', signature: 'T × T → Prop', coldVerified: true },
+  '≡': { sense: 'identical', signature: 'T × T → Prop', coldVerified: true },
+  '≢': {
+    sense: 'not-identical',
+    signature: 'T × T → Prop',
+    coldVerified: true,
+  },
   '⟨': {
     sense: 'tuple-open / modifier-open',
-    signature: '⟨a, b, …⟩ ordered record · X⟨m⟩ modifier (position-disambiguated)',
+    signature:
+      '⟨a, b, …⟩ ordered record · X⟨m⟩ modifier (position-disambiguated)',
     coldVerified: true,
   },
   '⟩': {
     sense: 'tuple-close / modifier-close',
-    signature: '⟨a, b, …⟩ ordered record · X⟨m⟩ modifier (position-disambiguated)',
+    signature:
+      '⟨a, b, …⟩ ordered record · X⟨m⟩ modifier (position-disambiguated)',
     coldVerified: true,
   },
-  '⋡': { sense: 'does-not-dominate', signature: 'T × T → Prop', coldVerified: true },
+  '⋡': {
+    sense: 'does-not-dominate',
+    signature: 'T × T → Prop',
+    coldVerified: true,
+  },
   '⟼': { sense: 'maps-to', signature: 'x ⟼ f(x)', coldVerified: true },
-  '𝔹': { sense: 'Booleans', signature: '{⊤, ⊥}', coldVerified: true },
+  𝔹: { sense: 'Booleans', signature: '{⊤, ⊥}', coldVerified: true },
 
   // ── Propositional logic ──────────────────────────────────────────────────
   '¬': { sense: 'not', signature: 'Prop → Prop', coldVerified: true },
   '∧': { sense: 'and', signature: 'Prop × Prop → Prop', coldVerified: true },
   '∨': { sense: 'or', signature: 'Prop × Prop → Prop', coldVerified: true },
-  '⇒': { sense: 'implies', signature: 'Prop × Prop → Prop', coldVerified: true },
+  '⇒': {
+    sense: 'implies',
+    signature: 'Prop × Prop → Prop',
+    coldVerified: true,
+  },
   '⇔': { sense: 'iff', signature: 'Prop × Prop → Prop', coldVerified: true },
   '⊥': { sense: 'contradiction', signature: 'Prop', coldVerified: true },
   '∴': { sense: 'therefore', signature: 'Prop ∴ Prop', coldVerified: true },
@@ -69,16 +85,32 @@ export const OPERATORS = {
 
   // ── Sets ─────────────────────────────────────────────────────────────────
   '∈': { sense: 'member', signature: 'El × Set → Prop', coldVerified: true },
-  '∉': { sense: 'non-member', signature: 'El × Set → Prop', coldVerified: true },
+  '∉': {
+    sense: 'non-member',
+    signature: 'El × Set → Prop',
+    coldVerified: true,
+  },
   '⊆': { sense: 'subset', signature: 'Set × Set → Prop', coldVerified: true },
   '⊇': { sense: 'superset', signature: 'Set × Set → Prop', coldVerified: true },
   '∪': { sense: 'union', signature: 'Set × Set → Set', coldVerified: true },
-  '∩': { sense: 'intersection', signature: 'Set × Set → Set', coldVerified: true },
-  '⋃': { sense: 'n-ary-union', signature: 'Set[Set] → Set', coldVerified: true },
+  '∩': {
+    sense: 'intersection',
+    signature: 'Set × Set → Set',
+    coldVerified: true,
+  },
+  '⋃': {
+    sense: 'n-ary-union',
+    signature: 'Set[Set] → Set',
+    coldVerified: true,
+  },
   '∅': { sense: 'empty', signature: 'Set', coldVerified: true },
   '×': { sense: 'product', signature: 'Set × Set → Set', coldVerified: true },
-  '℘': { sense: 'power-set', signature: 'Set → Set[Set]', coldVerified: true },
-  '⊊': { sense: 'proper-subset', signature: 'Set × Set → Prop', coldVerified: true },
+  ℘: { sense: 'power-set', signature: 'Set → Set[Set]', coldVerified: true },
+  '⊊': {
+    sense: 'proper-subset',
+    signature: 'Set × Set → Prop',
+    coldVerified: true,
+  },
   '⊔': { sense: 'join', signature: 'Set[El] → El', coldVerified: true },
 
   // ── Maps ─────────────────────────────────────────────────────────────────
@@ -100,7 +132,8 @@ export const OPERATORS = {
   // ── Reference mechanism (value algebra; ASCII — contributes no gate glyph) ─
   '${}': {
     sense: 'esm-reference',
-    signature: '${cell} — template-literal interpolation of another cell, resolved at eval',
+    signature:
+      '${cell} — template-literal interpolation of another cell, resolved at eval',
     coldVerified: false,
   },
 } as const satisfies Record<Glyph, OperatorEntry>;
