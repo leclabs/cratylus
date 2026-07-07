@@ -174,18 +174,24 @@ two steps, each compiling.
 
 ## Status mirror
 
-**COMPLETE** — landing commit `a27960b` (branch `tmp-illustrate-conceptual-architecture`). Every task landed;
-whole-repo exit gate GREEN on a clean worktree (`build · test · lint · typecheck` + `E2a` AC-RESIDUE live-scan
+**COMPLETE** — true-green landing commit `7fd1c43` (branch `tmp-illustrate-conceptual-architecture`). Every task
+landed; whole-repo exit gate GREEN on a clean worktree, verified **cache-bypassed** (`--force`) — `build · test ·
+lint · typecheck` + `E2a` AC-RESIDUE live-scan
 
 - `E2b` structural-parsimony). The corpus is formal σ\*, machine-verified.
 
-* **E1** anatomy-collapse (Fragment→branded string · ResolvedAgent/base.ts eliminated · green-keeping codemod)
-* **E3** operator-lexicon module (md symbol-table → ESM; symbols gate reads it) · **E2b** structural-parsimony gate
-* **E2a** residue gate (`admissibleSingleLine` + `admissibleFormalBlock`; reads `RESIDUE_OPERATORS`); live-scan ENABLED + green
-* **A** 10 agents (dense σ\* personas · marks from deployed SOULs · D4 memory-null) · **O** 140 organ values → true residue (+ `mission-command` partition)
-* **S** 15 skills (description→σ\* · formalBlock→formalize artifact; signify reader-binding `σ*_R`→`σ*` by-design) · **H** 2 hooks→residue
-* **C1** cleanup + global exit gate; persona/provenance READMEs archived (D12)
-* **E0** reverted — a reader-binding non-problem (the reader is uniformly LLM; no per-artifact inference).
+> **Correction:** the earlier `a27960b` "green" was a **turbo-cache false positive** — `agent-forge`'s test task
+> was cached stale-green from before O reduced the autonomy values, masking `enumerate.test.ts:56` (asserting the
+> un-reduced `human-in-the-loop ≜ hitl`). mav's review of the `delineation→description` rename caught it; fixed in
+> `8c67b9b`. Lesson: gate `--force`, never trust a cached green for a done-claim.
+
+- **E1** anatomy-collapse (Fragment→branded string · ResolvedAgent/base.ts eliminated · green-keeping codemod)
+- **E3** operator-lexicon module (md symbol-table → ESM; symbols gate reads it) · **E2b** structural-parsimony gate
+- **E2a** residue gate (`admissibleSingleLine` + `admissibleFormalBlock`; reads `RESIDUE_OPERATORS`); live-scan ENABLED + green
+- **A** 10 agents (dense σ\* personas · marks from deployed SOULs · D4 memory-null) · **O** 140 organ values → true residue (+ `mission-command` partition)
+- **S** 15 skills (description→σ\* · formalBlock→formalize artifact; signify reader-binding `σ*_R`→`σ*` by-design) · **H** 2 hooks→residue
+- **C1** cleanup + global exit gate; persona/provenance READMEs archived (D12)
+- **E0** reverted — a reader-binding non-problem (the reader is uniformly LLM; no per-artifact inference).
 
 **push / deploy RESERVED to the Operator — not performed** (the reversible/irreversible line).
 
