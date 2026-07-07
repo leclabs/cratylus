@@ -5,9 +5,9 @@
 delegates ENGINE work to Mav; nico owns the plan and the corpus.
 
 **Intent.** Realign the IMPLEMENTATION to the MODEL it already declares. The `Fragment {organ, slug, definiens,
-<O,G,C,A>}` object is a *describe-era* artifact. MODEL says a fragment is an *address*, not a definition:
+<O,G,C,A>}` object is a _describe-era_ artifact. MODEL says a fragment is an _address_, not a definition:
 `body(c) = ⟨α(c), residue(c)⟩ ∧ residue(c) = D(c) ∖ fired(α(c))` (`MODEL.md:40`) — the anchor plus **only**
-the leftover the anchor doesn't already fire; `residue = ∅` for a true σ\*. VISION: *address, don't describe.*
+the leftover the anchor doesn't already fire; `residue = ∅` for a true σ\*. VISION: _address, don't describe._
 This is a **green-field rebuild** to that shape.
 
 **Green-field discipline (binding).** Incumbent structure has no standing; design the ideal, delete freely.
@@ -28,7 +28,7 @@ initiative is not one.
   type, `codegen.ts:255` (stops emitting `${name}Resolved`), the **claude AND codex** adapters
   (`adapters/{claude,codex}/anatomy.ts`), and the toolkit consumers (`project-cli.ts`, `project-cli-codex.ts`).
   Projection (mark→color, description, protocol / `{name}` substitution) lives in the adapters — REGENERABLE.
-- **D3 · provenance → `{mark:{emoji,hue}}` on the agent.** provenance carries *data*, not a σ\* residue — it is
+- **D3 · provenance → `{mark:{emoji,hue}}` on the agent.** provenance carries _data_, not a σ\* residue — it is
   not a value-fragment; it inlines on the agent. The 9 `organs/provenance/*.ts` fragments DELETED, **enumerated
   not globbed** (B5: `diagnostic-delegate-cyan.ts` has no `-archetype-`). Each agent's mark is assigned directly
   from its **deployed SOUL** (`~/.claude/agents/<agent>.md` — ground truth), NOT recovered from a fragment
@@ -47,9 +47,18 @@ initiative is not one.
   (export `missionCommand`), value `'auftragstaktik ⟨…⟩'` (`carry-on.ts` already cites `mission-command`).
 - **D9 · Skills + hooks are in scope (MODEL `REFLEXIVE`).** All 5 Kinds satisfy Universal. The same cruft is
   present — HookCell: `kind` restates the type, `id`==`slug`==filename, `definiens` prose; SkillCell:
-  `name`/`verb`/`trigger` mutually derivable, empty `formalBlock`, prose `delineation`. Structural fields
-  collapse (E2b); `definiens`/`delineation` → residue (E2a); procedural `body`/worker-bytes are content/code,
-  left as-is (not σ\* residues). 15 skills, 2 hooks.
+  `name`/`verb`/`trigger` mutually derivable, prose `delineation`. **A skill's `formalBlock` is its PRIMARY σ\*
+  payload** — the self-sufficient set-builder that IS the skill's address — NOT inert content and NOT "normally
+  empty" (verified against the tree: **13/15** skills carry a substantial block, 21–138 lines). Every skill
+  surface — `delineation` AND `formalBlock` AND body — is a **DEPLOYED artifact the model reads as context** ⇒
+  it MUST address the model's semantic space in formal σ\*, never human prose; the formalBlock is the FIRST
+  subject of the residue discipline, never exempt. Structural fields collapse (E2b); `definiens`/`delineation` →
+  residue (E2a); the whole `formalBlock` → a `formalize` artifact — declarations-above / laws-below, **zero
+  explanatory prose** (every semantic-load gloss / `#`-preamble LIFTED into formal notation, never trimmed to
+  short prose nor merely deleted) (E2a). **NO executable exception** — a skill that shells out DECLARES its
+  executable as a function/operation in the block (a signature line, like `praxis`'s `live : session → 𝔹`
+  referencing the `episodic` runtime); the literal command string is body/projection detail. Raw code-as-bytes
+  survives ONLY in HookCell `command`/`workers` (a different Kind, not a formalBlock gloss). 15 skills, 2 hooks.
 - **D10 · Lint reads the source module, never a markdown projection; no human glossary.** `symbols.test.ts`
   parses `references/formal-symbolic-notation.md` — a lint reading a projection. The operator/symbol lexicon
   consolidates to one ESM module `src/toolkit/operator-lexicon.ts` (E3), read by BOTH the symbols lint and the
@@ -77,21 +86,22 @@ initiative is not one.
   `CANON.md` (the primitives themselves). These four are the source-of-truth root; the plan reads them, never
   touches them.
 - **D13 · persona → a plain-string DESCRIPTION on the agent, not a σ\* fragment (parallel to D3 provenance→{mark}).**
-  Persona is a *presented identity*, not a universal pattern — "persona ≠ archetype" (the old cells mislabeled it
+  Persona is a _presented identity_, not a universal pattern — "persona ≠ archetype" (the old cells mislabeled it
   "the X archetype"). It carries no reusable σ\* residue and isn't shared across agents, so it's **not a value
   fragment**: it inlines on the agent as `persona: '<identity description>'`. **`Agent.persona: string`** (E1);
   the `Persona` fragment type + persona's membership in the fragment-organ catalog are removed. The **entire
   persona value-cell catalog is deleted** (the 12 Jungian archetypes + any partial cells `creator`/`explorer`/
   `master-builder`; C1) — archive the persona `README.md` per D12. Persona **subsumes `description`** (the
-  agent's one-line description was `persona.definiens`; now persona *is* that string). Each agent gets an
+  agent's one-line description was `persona.definiens`; now persona _is_ that string). Each agent gets an
   appropriate identity description (A-task; the empty `persona: ''` placeholders get filled — nico's is the
   empirical-ontologist description already inlined).
+
 ## Starting state — a DELIBERATE partial illustration (read first; do NOT be surprised)
 
 **The working tree is NOT a clean pre-collapse checkout.** The Operator hand-made directionally-correct partial
 changes to ILLUSTRATE the target, so the tree is **intentionally, partially broken**. `pnpm typecheck` is **RED,
 and that is EXPECTED** — it is not a defect to diagnose, it is scaffold to complete. Read the tree as
-*direction*, never as *breakage*. **Do not "fix" the illustration back toward the old shape** — realize the
+_direction_, never as _breakage_. **Do not "fix" the illustration back toward the old shape** — realize the
 intent, discard the scaffold, make it green.
 
 **Directional INTENT already in the tree (complete it):** persona → plain string on agents (nico done; others
@@ -110,9 +120,12 @@ the current tree, never a stale number in this doc.
 
 ## Binding acceptance criteria (encoded — the spec-creation gate)
 
-- **AC-RESIDUE** (machine-checked, `E2a`): ∀ value, body = `⟨α, residue⟩` with residue a composable σ\*
-  expression or ∅ — never prose. MODEL's PARSIMONIOUS specialized. (Supersedes the prior "AC-FORMAL" — same
-  intent, now MODEL-anchored: residue, not "formal-expression-in-general.")
+- **AC-RESIDUE** (machine-checked, `E2a`): ∀ σ\* payload — every organ **value string**, every skill
+  **`delineation`**, and every skill **`formalBlock`** (whole) — body = `⟨α, residue⟩` with residue a composable
+  σ\* expression or ∅, never prose. Each is a DEPLOYED artifact the model reads ⇒ formal σ\*, **no exemption**;
+  only enumerated executable worker-bytes (HookCell `command`/`workers`) are excluded. MODEL's PARSIMONIOUS
+  specialized. (Supersedes the prior "AC-FORMAL" — same intent, now MODEL-anchored: residue, not
+  "formal-expression-in-general.")
 - **AC-PARSIMONY** (machine-checked, `E2b`): no file/type/field restating what structure already holds —
   catches the `organ`/`slug` fields, `ResolvedAgent`, `base.ts`, the phantom metadata.
 - **AC-COLLAPSE / AC-MEMORY / AC-VECTOR**: per D2–D6.
@@ -120,8 +133,8 @@ the current tree, never a stale number in this doc.
 
 ## Slice cut + wave schedule (reviewer-fixed)
 
-Single executor per task (M7). Engine = Mav, corpus = Nico; a gate's *predicate* is nico-specified in the
-task-file, the *wiring* is Mav's execution — one executor per file. No agents⊥organs collision (B3): the
+Single executor per task (M7). Engine = Mav, corpus = Nico; a gate's _predicate_ is nico-specified in the
+task-file, the _wiring_ is Mav's execution — one executor per file. No agents⊥organs collision (B3): the
 standing lives in `organs/autonomy/`, owned by the `O` task; the `A` task only **references** it. provenance
 excluded from the organ fan-out (M5: don't formalize then delete).
 
@@ -146,7 +159,7 @@ correctly dep **E1**, dispatched in wave 2 alongside O*, never serialized behind
 
 B1/B2 mark-recovery → D3 (assign from deployed SOUL, enumerated). B3 collision → organ owns
 `decision-authority.ts`, agent references. B4 ResolvedAgent → D2 (whole-repo incl `codegen`+codex+toolkit).
-B5 glob → enumerate the 9. M1 single-wave → A* dep E1 (wave 2), only E2a is solo (a real barrier). M2/M3
+B5 glob → enumerate the 9. M1 single-wave → A\* dep E1 (wave 2), only E2a is solo (a real barrier). M2/M3
 grey-field → green-field discipline binding + the codemod replaces byte-parity ceremony. M5 → provenance
 excluded from O. M7 → single executor/task (predicate authored by nico in-spec). m1 census → **160** values
 (verify at dispatch, not 158).
@@ -156,14 +169,16 @@ excluded from O. M7 → single executor/task (predicate authored by nico in-spec
 E1 changes the value TYPE, so the 160 existing `{organ,slug,definiens}` values stop typechecking. E1's
 deliverable includes a **codemod** that mechanically rewrites each value to the bare branded string with
 `residue := old definiens verbatim` (a faithful first pass), so the repo is green the instant E1 lands. `O*`
-then *reduces* each verbatim residue to true `D∖fired(α)`. No broken intermediate; green-field ideal reached in
+then _reduces_ each verbatim residue to true `D∖fired(α)`. No broken intermediate; green-field ideal reached in
 two steps, each compiling.
 
 ## Status mirror
+
 **Ready:** `E1-anatomy-collapse` · `E2b-structural-parsimony-gate` · `E3-operator-lexicon-module`.
 **Pending:** `E2a-residue-gate` (⊳E1,E3) · `O1..O23` (⊳E2a) · `A1..A11` (⊳E1) · `S1..S15` skill-collapse (⊳E1,E2a)
 · `H1..H2` hook-collapse (⊳E1,E2a) · `C1` (⊳A*,O*,S*,H*).
 
 ## See also
+
 VISION (address-don't-describe) · `MODEL.md:40` (`body=⟨α,residue⟩`) · `packages/agent-forge/src/anatomy/index.ts`
 (the `Fragment` being collapsed).
