@@ -71,7 +71,7 @@ describe('projection stability (.ts is the sole source)', () => {
         {
           name: cell.name,
           trigger: `/${cell.name}`,
-          delineation: cell.delineation,
+          description: cell.description,
           body: cell.body,
           composedFrom: [],
           sourcePath: `packages/agent-anatomy/src/skills/${cell.name}.ts`,

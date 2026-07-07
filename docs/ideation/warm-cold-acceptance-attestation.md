@@ -28,11 +28,11 @@ including the coined anchors (`correction-consolidation`, `input-untrusted`, del
 
 The **only** divergences the sweep surfaced were in the **oracle instrument itself**, not the corpus:
 
-1. **Mood-confound.** An `explain:\n\n<f>` prompt made a skill delineation beginning "use this skill to…"
+1. **Mood-confound.** An `explain:\n\n<f>` prompt made a skill description beginning "use this skill to…"
    read as a _request to invoke a skill_; the reader hunted its skill list and returned "I don't have that
    skill" instead of decoding meaning — a FALSE divergence on 4 clean skills. Fixed: a mood-neutral prompt
    ("Restate what it means in plain language").
-2. **Truncation bug** (`sweep.mjs`): a naive first-backtick scan cut delineations at their first internal
+2. **Truncation bug** (`sweep.mjs`): a naive first-backtick scan cut descriptions at their first internal
    `` ` ``. Fixed: escape-aware extraction.
 
 A confounded oracle would have driven a false mass-realignment of 4 self-sufficient skills — the very

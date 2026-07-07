@@ -43,7 +43,7 @@ Collapse the `Fragment` machinery in `agent-forge` to the MODEL shape (`body=⟨
    - HookCell: drop `kind` (restates the type), merge `id`/`slug` into one anchor (they're the same string =
      filename), `definiens`→residue. Keep `events`/`command`/`timeout`/`workers` (behavior/bytes, not σ\*).
    - SkillCell: drop the mutually-derivable `name`/`verb`/`trigger` down to the one that isn't recoverable from
-     the filename (trigger is `/`+name; verb often == name), `delineation`→residue-tight. **KEEP the
+     the filename (trigger is `/`+name; verb often == name), `description`→residue-tight. **KEEP the
      `formalBlock` field** — it is NON-empty in **13/15** skills and is the skill's PRIMARY σ\* payload; its
      CONTENT collapses to a `formalize` artifact in the S-task, NOT here. E1 is the mechanical TYPE pass:
      preserve `formalBlock`/`body` fields; their content formalization is S/E2a. (Every skill surface is a

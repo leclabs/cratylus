@@ -40,7 +40,7 @@ accept(k)   ≜ ⊥          ,  ¬valid(k)                     -- refuse: loud, 
 
 export const exemplify: SkillCell = {
   name: 'exemplify',
-  delineation: `optimize corpus → CSF · accept(produce → name → realize) · concept-contract-record · emit R3-routing-manifest · catch dropped-idea`,
+  description: `optimize corpus → CSF · accept(produce → name → realize) · concept-contract-record · emit R3-routing-manifest · catch dropped-idea`,
   formalBlock: FORMAL_BLOCK,
   composition: ['conceptualize', 'signify', 'materialize'],
   body: `

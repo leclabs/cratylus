@@ -139,14 +139,14 @@ const agentScalarFault: Agent = {
 
 const leaf: Skill = {
   name: 'leaf',
-  delineation: 'a leaf skill',
+  description: 'a leaf skill',
   formalBlock: 'leaf ≜ …',
   composition: [],
 };
 
 const composed: Skill = {
   name: 'composed',
-  delineation: 'composes leaf',
+  description: 'composes leaf',
   formalBlock: 'composed ≜ …',
   composition: [leaf], // imported sibling Skill, not a "[[leaf]]" string
   deployAs: 'skill-dir',

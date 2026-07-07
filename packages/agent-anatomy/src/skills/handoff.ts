@@ -2,7 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const handoff: SkillCell = {
   name: 'handoff',
-  delineation: `persist session-boundary pre-clear · praxis-sync(plan-record) ∧ dream(drain EPISODIC) · hot-context`,
+  description: `persist session-boundary pre-clear · praxis-sync(plan-record) ∧ dream(drain EPISODIC) · hot-context`,
   formalBlock: ``,
   composition: ['praxis', 'dream'],
   body: `

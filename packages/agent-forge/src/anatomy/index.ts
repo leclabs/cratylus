@@ -248,14 +248,14 @@ export interface SkillDeploy {
 /**
  * A skill cell: a self-sufficient formal block plus the live sibling skills it
  * composes. The name is the anchor (trigger `= /`+name; verb derivable), so neither
- * is stored; `delineation` is the residue-tight one-line bound; `formalBlock` is the
+ * is stored; `description` is the residue-tight one-line bound; `formalBlock` is the
  * skill's PRIMARY σ* payload. `composition` is plain imported sibling `Skill`s.
  */
 export interface Skill extends SkillDeploy {
   /** The skill name — the anchor; carries the trigger-weight at disclosure. */
   readonly name: string;
   /** The residue-tight one-line bound that resolves into composites at selection. */
-  readonly delineation: string;
+  readonly description: string;
   /** The self-sufficient set-builder block (declarations-above / laws-below). */
   readonly formalBlock: string;
   /** The sibling skills this one composes — plain ESM imports, no `[[ ]]`. */

@@ -29,15 +29,15 @@ import { ORGAN_NAMES, markToColor } from '../../anatomy/index.js';
 // that name. The Python byte-anchor is `resolve.py --reader <density>`.
 //
 //   strong-llm-lean   name only — the name is the pointer        (density → 0)
-//   strong-llm        name + delineation                         (safe default)
+//   strong-llm        name + description                         (safe default)
 //   weak-llm          + an explicit kind/verb cue                (max scaffold)
 //
 // NOTE on the current corpus: density-aware ref EXPANSION (`densityRef`) is the
 // ported mechanism, but it only governs LIST-ITEM `- <ref>` surfaces. The deployed
 // corpus has none: agents are organ-selection vectors whose value-cells are inlined
-// verbatim (no per-anchor delineation to drop, no cue to add), and skills emit a
+// verbatim (no per-anchor description to drop, no cue to add), and skills emit a
 // LEAN one-line provenance (names only, by spec — `skill.py`: "names only, never
-// the full delineations") plus harness-only inline refs. So the projected body is
+// the full descriptions") plus harness-only inline refs. So the projected body is
 // byte-identical at all three densities on this corpus — only the recorded
 // `profile:` header line changes. The mechanism is parameterized and exercised so a
 // future density-varying surface honors it; it is not a no-op by accident.
@@ -67,26 +67,26 @@ export function densityProfile(
 /**
  * One resolved-anchor LIST-ITEM line at the given density (port of `reader.py`
  * `render_ref`). `name` is the already-harness-projected anchor (a skill →
- * `/trigger`, else `**slug**`); `delineation` is the anchor's one-line bound; `cue`
+ * `/trigger`, else `**slug**`); `description` is the anchor's one-line bound; `cue`
  * is the weak-llm `<kind>, <verb>` scaffold (or `undefined` when the slug has no
  * kind cue). Mirrors:
  *   strong-llm-lean → `- <name>`                      (the name is the pointer)
  *   weak-llm        → `- <name> _(<cue>)_ -- <delin>` (cue present)
- *   else            → `- <name> -- <delineation>`     (strong-llm; weak w/o cue)
+ *   else            → `- <name> -- <description>`     (strong-llm; weak w/o cue)
  */
 export function densityRef(
   name: string,
   density: ReaderDensity,
-  delineation: string,
+  description: string,
   cue?: string,
 ): string {
   if (density === 'strong-llm-lean') {
     return `- ${name}`;
   }
   if (density === 'weak-llm' && cue) {
-    return `- ${name} _(${cue})_ -- ${delineation}`;
+    return `- ${name} _(${cue})_ -- ${description}`;
   }
-  return `- ${name} -- ${delineation}`;
+  return `- ${name} -- ${description}`;
 }
 
 // ── Agent projection (from the Agent vector directly) ────────────────────────
@@ -186,11 +186,11 @@ export function agentToClaudeMd(a: Agent): string {
 export interface ResolvedSkill {
   readonly name: string;
   readonly trigger: string;
-  /** Front-matter `delineation` (the SKILL.md `description`). */
-  readonly delineation: string;
+  /** Front-matter `description` (the SKILL.md `description`). */
+  readonly description: string;
   /**
    * Optional host-discovery copy (`skill_description:`). When present it is the
-   * SKILL.md `description` instead of `delineation` (the `deploy: skill-dir` path).
+   * SKILL.md `description` instead of `description` (the `deploy: skill-dir` path).
    */
   readonly skillDescription?: string;
   /** The verbatim canonical cell body (`split('---',2)[2]`). */
@@ -344,7 +344,7 @@ export function skillBody(
 function skillFrontMatter(s: ResolvedSkill): string[] {
   const fm = [
     `name: ${s.name}`,
-    `description: ${s.skillDescription ?? s.delineation}`,
+    `description: ${s.skillDescription ?? s.description}`,
   ];
   if (s.toolSection === undefined) {
     fm.push(`trigger: ${s.trigger}`);

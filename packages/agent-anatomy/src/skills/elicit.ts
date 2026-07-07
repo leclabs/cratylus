@@ -2,7 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const elicit: SkillCell = {
   name: 'elicit',
-  delineation: `recover hidden-target t ∈ C_R · ask ≜ argmin bal ⟨yes-no query · bisect K⟩ ↾ μ · iterate filter ⇒ stop ⟨singleton-K ∨ bal ≽ θ⟩ · t ↦ signify · inverse-of probe`,
+  description: `recover hidden-target t ∈ C_R · ask ≜ argmin bal ⟨yes-no query · bisect K⟩ ↾ μ · iterate filter ⇒ stop ⟨singleton-K ∨ bal ≽ θ⟩ · t ↦ signify · inverse-of probe`,
   formalBlock: `-- declarations (the block stands alone) ----------------------------
 R          — the reader; the agent in whom concepts and priors live
 C_R        — R's concept lattice: the closed set of candidate concepts

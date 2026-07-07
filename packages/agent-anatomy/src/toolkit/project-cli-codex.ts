@@ -128,7 +128,7 @@ async function projectSkills(args: Args): Promise<number> {
     const resolved: ResolvedSkill = {
       name: cell.name,
       trigger: `/${cell.name}`,
-      delineation: cell.delineation,
+      description: cell.description,
       body: cell.body,
       composedFrom: cell.composition.map(refProject),
       sourcePath: `packages/agent-anatomy/skill/${name}.md`,
@@ -157,11 +157,11 @@ async function projectMemorySkill(args: Args): Promise<void> {
   const toolSection = sectionBody(memBody, 'Tool');
   const fm =
     frontField(memRaw, 'skill_description') ||
-    frontField(memRaw, 'delineation');
+    frontField(memRaw, 'description');
   const resolved: ResolvedSkill = {
     name: 'memory',
     trigger: '',
-    delineation: fm,
+    description: fm,
     skillDescription: frontField(memRaw, 'skill_description') || fm,
     body: '',
     composedFrom: [],

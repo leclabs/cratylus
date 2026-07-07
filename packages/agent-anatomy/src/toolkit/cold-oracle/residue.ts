@@ -3,7 +3,7 @@
 //
 // GOVERNING INVARIANT (the project's whole point): every deployed artifact the model
 // reads is formal σ* under ρ, never human prose. This leg enforces it over the whole
-// deployed σ* payload set — every organ VALUE string · every skill `delineation` ·
+// deployed σ* payload set — every organ VALUE string · every skill `description` ·
 // every skill `formalBlock` (whole). Each is read by the model as context ⇒ it MUST
 // address the model's semantic space in formal σ*, never explanatory prose (the
 // vision's failure criterion). Only enumerated executable worker-bytes (HookCell
@@ -11,7 +11,7 @@
 //
 // DECIDABLE PREDICATE (two shapes, one leg):
 //
-//   SINGLE-LINE (organ value residue · skill `delineation`) admissible ⇔
+//   SINGLE-LINE (organ value residue · skill `description`) admissible ⇔
 //       ∅  (empty — the anchor α fully fires the concept, residue=∅),  OR
 //       a σ* EXPRESSION: a symbol/anchor (shortlex kebab, opt. application `f(args)`),
 //       or the declared value-algebra operators applied over such terms. The admitted
@@ -32,7 +32,7 @@
 //     named by line number on reject.
 //
 // PURE — witnesses over supplied strings, zero IO. Corpus loading (organ values ·
-// delineations · formalBlocks) lives in the caller (`test/reader-density.test.ts`),
+// descriptions · formalBlocks) lives in the caller (`test/reader-density.test.ts`),
 // mirroring `structural-parsimony.ts` (a sibling `accept()` leg driven by its test).
 
 import { OPERATORS, RESIDUE_OPERATORS } from '../operator-lexicon.js';

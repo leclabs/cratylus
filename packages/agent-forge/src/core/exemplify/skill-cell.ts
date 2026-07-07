@@ -22,7 +22,7 @@ export interface SkillDeclaration {
 export interface SkillCellSpec {
   /** Kebab-case cell name (frontmatter `name:`). */
   name: string;
-  /** One-line delineation (frontmatter `description:`). */
+  /** One-line description (frontmatter `description:`). */
   description: string;
   /** The H1 verb the formal block enacts. */
   verb: string;

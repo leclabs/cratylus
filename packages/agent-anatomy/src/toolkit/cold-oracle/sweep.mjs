@@ -8,7 +8,7 @@ const ORACLE = new URL('./cold-oracle.sh', import.meta.url).pathname;
 const refs = process.argv.slice(2); // paths relative to agent-anatomy/
 
 // extract a named field's TS template-literal value, honoring ESCAPED backticks
-// (skill delineations contain \` around inline symbols like α(c) / C_R — a naive
+// (skill descriptions contain \` around inline symbols like α(c) / C_R — a naive
 // first-backtick scan truncates them mid-sentence). Returns the value with \`→`.
 function field(src, name) {
   const i = src.indexOf(`${name}:`);
@@ -32,9 +32,9 @@ function field(src, name) {
 
 for (const ref of refs) {
   const src = readFileSync(ref, 'utf8');
-  const text = field(src, 'definiens') ?? field(src, 'delineation');
+  const text = field(src, 'definiens') ?? field(src, 'description');
   if (!text) {
-    console.log(`\n##### ${ref}\n(no definiens/delineation found)`);
+    console.log(`\n##### ${ref}\n(no definiens/description found)`);
     continue;
   }
   let decode = '';

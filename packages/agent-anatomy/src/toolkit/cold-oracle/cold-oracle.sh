@@ -74,7 +74,7 @@ esac
 # --disallowedTools is variadic (greedy) — it would swallow a positional prompt,
 # so the prompt goes via STDIN. Tool list uses only known tool names.
 # Prompt is MOOD-NEUTRAL: "explain:\n\n<f>" is confounded for imperative-mood
-# fragments (a skill delineation starting "use this skill to…" reads as a request to
+# fragments (a skill description starting "use this skill to…" reads as a request to
 # INVOKE a skill, so a naive reader hunts its skill list instead of decoding meaning —
 # a false divergence). "Restate what it means" measures the fragment's meaning
 # regardless of grammatical mood, without leading toward any answer. (T3 finding.)

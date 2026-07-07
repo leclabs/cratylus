@@ -146,7 +146,7 @@ async function projectSkills(out: string, profile: string): Promise<number> {
     const resolved: ResolvedSkill = {
       name: cell.name,
       trigger: `/${cell.name}`,
-      delineation: cell.delineation,
+      description: cell.description,
       body: cell.body,
       composedFrom: cell.composition.map(refProject),
       sourcePath: `packages/agent-anatomy/skill/${name}.md`,
@@ -178,11 +178,11 @@ async function projectMemorySkill(out: string, profile: string): Promise<void> {
   const toolSection = sectionBody(memBody, 'Tool');
   const fm =
     frontField(memRaw, 'skill_description') ||
-    frontField(memRaw, 'delineation');
+    frontField(memRaw, 'description');
   const resolved: ResolvedSkill = {
     name: 'memory',
     trigger: '', // memory has no /trigger (a protocol home, not a command)
-    delineation: fm,
+    description: fm,
     skillDescription: frontField(memRaw, 'skill_description') || fm,
     body: '',
     composedFrom: [],

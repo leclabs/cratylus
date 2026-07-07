@@ -1,6 +1,6 @@
 ---
 kind: skill
-delineation: rotate the project's log files — cap the live log at a size threshold, shift the numbered generations, drop the eldest beyond retention; idempotent under the threshold, atomic per generation.
+description: rotate the project's log files — cap the live log at a size threshold, shift the numbered generations, drop the eldest beyond retention; idempotent under the threshold, atomic per generation.
 ---
 
 # rotate-logs

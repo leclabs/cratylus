@@ -1,7 +1,7 @@
 ---
 kind: structure
 render: verbatim
-delineation: An agent's per-turn persona persistence — the standing countermeasure to persona drift (the assigned expert stance decaying across a long conversation), re-grounding the stance at the top of every turn so a later turn is no less the agent's own than the first.
+description: An agent's per-turn persona persistence — the standing countermeasure to persona drift (the assigned expert stance decaying across a long conversation), re-grounding the stance at the top of every turn so a later turn is no less the agent's own than the first.
 ---
 
 # Persona

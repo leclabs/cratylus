@@ -104,7 +104,7 @@ describe('skillToCodexMd — the codex skill projection', () => {
   const skill: ResolvedSkill = {
     name: 'demo',
     trigger: '/demo',
-    delineation: 'a demo skill',
+    description: 'a demo skill',
     body: '\n\ndemo ≜ a formula consumed not emitted\n\n# demo\n\nThe verb prose with a [[wake]] ref.\n\n- **alpha** ≜ an absorbed declaration bullet\n',
     composedFrom: ['/wake'],
     sourcePath: 'packages/agent-anatomy/skill/demo.md',

@@ -17,7 +17,7 @@ export type Rho = 'LLM' | 'human';
 export const RHO = {
   // static corpus surfaces (reader-density.test.ts)
   'organ-definiens': 'LLM', // source cell
-  'skill-delineation': 'LLM', // progressive-disclosure surface, read by the harness LLM
+  'skill-description': 'LLM', // progressive-disclosure surface, read by the harness LLM
   'skill-prose': 'LLM', // projected SKILL.md body (outside fences)
   'genus-protocol': 'LLM', // verbatim(a) ⇒ ρ(a) = LLM — ship-whole, never a density exemption
   'agent-vector': 'LLM', // projected SOUL

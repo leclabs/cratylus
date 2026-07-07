@@ -2,7 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const formalize: SkillCell = {
   name: 'formalize',
-  delineation: `prose → self-sufficient set-builder-block · conceptualize(entities · operations · laws) · signify(mint ∨ boundary-bind anchor) · declarations-above ↦ laws-below · zero-gloss · accept ⇔ round-trip ≽ source`,
+  description: `prose → self-sufficient set-builder-block · conceptualize(entities · operations · laws) · signify(mint ∨ boundary-bind anchor) · declarations-above ↦ laws-below · zero-gloss · accept ⇔ round-trip ≽ source`,
   formalBlock: `P ≜ the source prose
 E ≜ entities(P) ; O ≜ operations(P) ; L ≜ laws(P)
 

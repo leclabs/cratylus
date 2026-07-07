@@ -2,7 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const createSkill: SkillCell = {
   name: 'create-skill',
-  delineation: `skill-cell ≜ ⟨delineation · trigger · verb-H1 · composition-formula ∧ Bindings · formalBlock ⟨declarations ≺ laws⟩⟩ ↾ R=LLM · self-sufficient ∧ verify-gates ⇒ first-resolve-green`,
+  description: `skill-cell ≜ ⟨description · trigger · verb-H1 · composition-formula ∧ Bindings · formalBlock ⟨declarations ≺ laws⟩⟩ ↾ R=LLM · self-sufficient ∧ verify-gates ⇒ first-resolve-green`,
   formalBlock: ``,
   composition: ['formalize'],
   body: `
@@ -17,7 +17,7 @@ Reader is the LLM (\`σ*_LLM\`). A skill is a **self-sufficient** unit: the form
 
 ## Conventions (each maps to a verify gate)
 
-- **Front-matter** — \`kind: skill\`; \`delineation:\` a reconstruction-grade one-liner (this + the name are ALL that is in context at skill-selection, so the delineation carries the trigger-weight — say what it is and when to reach for it); \`trigger: /verb\` (read verbatim → host \`skills/<verb>/SKILL.md\`); optional \`skill_description:\` for host-side discovery copy.
+- **Front-matter** — \`kind: skill\`; \`description:\` a reconstruction-grade one-liner (this + the name are ALL that is in context at skill-selection, so the description carries the trigger-weight — say what it is and when to reach for it); \`trigger: /verb\` (read verbatim → host \`skills/<verb>/SKILL.md\`); optional \`skill_description:\` for host-side discovery copy.
 - **H1 = the skill name, a VERB.** Progressive disclosure puts only name + description in context at selection, so the name must fire on its own. ⚠ All body **before the first H1 is silently dropped** by the composer — never put content above it.
 - **Composition formula** — the **first prose \`≜\` line** is consumed as the formula. Boundary-bind dependencies with a prose **\`Bindings: composes <a> · <b>.\`** line — never write \`X ≜ <cell>\` in prose. A skill whose only \`≜\` is fenced math composes **EMPTY provenance** (a \`NOTE\`, legitimate only for a genuinely standalone skill; otherwise add a Bindings line).
 - **Formal block** — author it via formalize: declarations **above** a \`=== … ===\` divider (every entity/operation/law named here), laws **below** (no prose). Dense, symbolic, anchor-bearing.
@@ -27,7 +27,7 @@ Reader is the LLM (\`σ*_LLM\`). A skill is a **self-sufficient** unit: the form
 
 ## Procedure
 
-1. Name the skill as a **verb**; write the \`kind: skill\` front-matter (delineation + trigger).
+1. Name the skill as a **verb**; write the \`kind: skill\` front-matter (description + trigger).
 2. Write the H1, then the first prose \`≜\` formula; add a \`Bindings:\` line iff it composes sibling skills.
 3. Author the self-sufficient formal block via formalize (declarations-above / laws-below); keep every fenced glyph in the symbol table or β-bound in adjacent prose.
 4. Resolve → verify; the cell must PASS **schema + references + fences + symbols + verbatim-ref-free + operative + provenance**. Iterate until green; then deploy as a skill.

@@ -19,7 +19,7 @@ function fixture(): ResolvedSkill {
   return {
     name: 'demo',
     trigger: '/demo',
-    delineation: 'a demo skill',
+    description: 'a demo skill',
     body: [
       '',
       '',

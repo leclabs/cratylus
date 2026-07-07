@@ -56,7 +56,7 @@ function skillFixture(): ResolvedSkill {
   return {
     name: 'dream',
     trigger: '/dream',
-    delineation: 'consolidate an agent’s memory',
+    description: 'consolidate an agent’s memory',
     body: '# dream — consolidate memory\n\nDistil the EPISODIC stream.\n',
     composedFrom: ['/wake', '**signify**'],
     sourcePath: 'packages/agent-anatomy/skill/dream.md',
@@ -107,13 +107,13 @@ describe('densityRef — port of reader.py render_ref (the density mechanism)', 
     ).toBe('- **nico**');
   });
 
-  it('strong-llm: name + delineation', () => {
+  it('strong-llm: name + description', () => {
     expect(densityRef('/exemplify', 'strong-llm', 'optimize a corpus')).toBe(
       '- /exemplify -- optimize a corpus',
     );
   });
 
-  it('weak-llm with a cue: name + cue + delineation (max scaffold)', () => {
+  it('weak-llm with a cue: name + cue + description (max scaffold)', () => {
     expect(
       densityRef(
         '/exemplify',
@@ -124,7 +124,7 @@ describe('densityRef — port of reader.py render_ref (the density mechanism)', 
     ).toBe('- /exemplify _(skill, invoke)_ -- optimize a corpus');
   });
 
-  it('weak-llm without a cue: falls back to name + delineation', () => {
+  it('weak-llm without a cue: falls back to name + description', () => {
     expect(densityRef('**x**', 'weak-llm', 'a bound')).toBe(
       '- **x** -- a bound',
     );
@@ -170,7 +170,7 @@ describe('skill projection — lean provenance is density-invariant by spec', ()
       strip(skillToClaudeMd(skillFixture(), refProject, densityProfile(d))),
     );
     // The "Composed from … " provenance is names-only at EVERY density (skill.py:
-    // "names only, never the full delineations").
+    // "names only, never the full descriptions").
     for (const b of bodies) {
       expect(b).toContain('Composed from /wake · **signify**.');
     }

@@ -2,7 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const carryOn: SkillCell = {
   name: 'carry-on',
-  delineation: `carry-on ≜ re-dispatch-word(weitermachen ∨ proceed) · check-in-close ↦ human-on-the-loop → human-out-of-the-loop · standing-intent unchanged · permission-is-not-the-act`,
+  description: `carry-on ≜ re-dispatch-word(weitermachen ∨ proceed) · check-in-close ↦ human-on-the-loop → human-out-of-the-loop · standing-intent unchanged · permission-is-not-the-act`,
   formalBlock: ``,
   composition: [],
   body: `

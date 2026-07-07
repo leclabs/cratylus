@@ -2,7 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const dream: SkillCell = {
   name: 'dream',
-  delineation: `memory-consolidation ↾ EPISODIC · fold ⟨node ↾ cwd⟩ · route-by-type ⟨identity ↦ SEMANTIC · generalized-wisdom ↾ ¬projection-carries ↦ PROCEDURAL · scoped ∧ next-steps ↦ AGENTS-node · networked-ref ↦ vault · rest ↦ drop⟩ · drain consumed · SOUL never-written`,
+  description: `memory-consolidation ↾ EPISODIC · fold ⟨node ↾ cwd⟩ · route-by-type ⟨identity ↦ SEMANTIC · generalized-wisdom ↾ ¬projection-carries ↦ PROCEDURAL · scoped ∧ next-steps ↦ AGENTS-node · networked-ref ↦ vault · rest ↦ drop⟩ · drain consumed · SOUL never-written`,
   formalBlock: `DECLARATIONS
 memory              — agent organ-home ⟨SEMANTIC · PROCEDURAL · EPISODIC⟩ ∪ episodic.mjs runtime
 EPISODIC            — raw time-ordered event stream ∪ forward next-steps

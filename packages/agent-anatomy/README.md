@@ -22,6 +22,6 @@ Three cells generate the rest; everything else is a consequence of running the m
 
 ## Structure
 
-Organized **by the agent anatomy** — typed TS modules under `src/` are the **sole source**, markdown is a projection: organ value-cells `src/organs/<organ>/<value>.ts`, agents `src/agents/<name>.ts`, skills `src/skills/<name>.ts`, and the special genus cells `src/genus/{memory,persona}.md`. The slug _is_ the anchor; composition is ESM `import` (one module per fragment = one home). Front-matter is minimal — `kind` (the anatomy slot that governs how a cell projects; closed set in [`AGENTS.md`](AGENTS.md) § Cell format + kind taxonomy) and `delineation` (the one-line bound). `kind` governs composition, never directory structure.
+Organized **by the agent anatomy** — typed TS modules under `src/` are the **sole source**, markdown is a projection: organ value-cells `src/organs/<organ>/<value>.ts`, agents `src/agents/<name>.ts`, skills `src/skills/<name>.ts`, and the special genus cells `src/genus/{memory,persona}.md`. The slug _is_ the anchor; composition is ESM `import` (one module per fragment = one home). Front-matter is minimal — `kind` (the anatomy slot that governs how a cell projects; closed set in [`AGENTS.md`](AGENTS.md) § Cell format + kind taxonomy) and `description` (the one-line bound). `kind` governs composition, never directory structure.
 
 _This README is the human projection of the cells above — it composes them, it does not copy them._

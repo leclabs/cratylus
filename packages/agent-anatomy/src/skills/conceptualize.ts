@@ -2,7 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const conceptualize: SkillCell = {
   name: 'conceptualize',
-  delineation: `sources ↦ C_R ⟨cl_R fixpoints⟩ · gloss ∧ prim_R ∧ fac_R candidates · anchor=⊥ ∧ material=⊥ · exemplify stage-1 · standalone-invocable`,
+  description: `sources ↦ C_R ⟨cl_R fixpoints⟩ · gloss ∧ prim_R ∧ fac_R candidates · anchor=⊥ ∧ material=⊥ · exemplify stage-1 · standalone-invocable`,
   formalBlock: `-- ENTITIES ---------------------------------------------------------------
 R                 — the reader; priors fix every meaning
 sources           — input material, multi-modal; carries substrate boundaries

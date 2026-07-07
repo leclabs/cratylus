@@ -27,7 +27,7 @@ probe(w) ≜ ⟨ fired_R(w) · concept_R(w) ⟩              -- readout only; no
 
 export const probe: SkillCell = {
   name: 'probe',
-  delineation: `probe(w) ↦ ⟨fired_R(w) · concept_R(w)⟩ · no-commit-inverse(signify) · discover ∨ experiment(candidate-anchors)`,
+  description: `probe(w) ↦ ⟨fired_R(w) · concept_R(w)⟩ · no-commit-inverse(signify) · discover ∨ experiment(candidate-anchors)`,
   formalBlock: FORMAL_BLOCK,
   composition: ['signify', 'elicit', 'conceptualize'],
   body: `

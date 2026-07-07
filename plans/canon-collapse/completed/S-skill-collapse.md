@@ -8,8 +8,8 @@ file-disjoint → concurrent with organs/agents/hooks.
 ## Objective
 
 Collapse one `SkillCell` to the MODEL shape (D9): strip fields that restate the type or the filename; reduce the
-`delineation` to residue σ\*; collapse the `formalBlock` — the skill's **PRIMARY σ\* payload** — to a `formalize`
-artifact. Every skill surface (`delineation` · `formalBlock` · `body`) is a **DEPLOYED artifact the model reads
+`description` to residue σ\*; collapse the `formalBlock` — the skill's **PRIMARY σ\* payload** — to a `formalize`
+artifact. Every skill surface (`description` · `formalBlock` · `body`) is a **DEPLOYED artifact the model reads
 as context** ⇒ it MUST address the model's semantic space in formal σ\*, **never human prose** (the vision's
 failure criterion). Nothing here is "left as content."
 
@@ -17,7 +17,7 @@ failure criterion). Nothing here is "left as content."
 
 - Drop the mutually-derivable handles: `trigger` (= `/`+filename), `verb` (usually == name); keep exactly one
   navigable handle (the filename/export). If a skill's `verb` genuinely differs from its name, keep it; else drop.
-- `delineation` → **residue-tight σ\*** (the progressive-disclosure one-liner: anchor + only what the anchor
+- `description` → **residue-tight σ\*** (the progressive-disclosure one-liner: anchor + only what the anchor
   doesn't fire), not a prose sentence. E2a gates it.
 - **`formalBlock` → a `formalize` artifact** (declarations-above / laws-below, **ZERO explanatory prose**):
   every semantic-load gloss / `#`-preamble LIFTED into formal notation, never trimmed to short prose nor merely
@@ -33,12 +33,12 @@ failure criterion). Nothing here is "left as content."
 ## Acceptance (falsifier)
 
 - FAIL if any field remains that is mechanically derivable from the filename (E2b REDs).
-- FAIL if `delineation` is still a free prose sentence (E2a REDs).
+- FAIL if `description` is still a free prose sentence (E2a REDs).
 - FAIL if a non-empty skill's `formalBlock` is dropped, or the `formalBlock` carries explanatory prose rather
   than a declarations-above / laws-below `formalize` artifact (E2a REDs).
-- FAIL if ANY deployed skill surface (`delineation` · `formalBlock` · `body`) reads as human prose rather than
+- FAIL if ANY deployed skill surface (`description` · `formalBlock` · `body`) reads as human prose rather than
   formal σ\* (reader-density / E2a REDs) — the vision's failure criterion.
-- FAIL if `body` semantics changed (skills are behavior — cold-decode the delineation before/after; must match).
+- FAIL if `body` semantics changed (skills are behavior — cold-decode the description before/after; must match).
 - FAIL if this task edits any file outside `src/skills/`.
 - FAIL (skill=`praxis` specifically) if the collapse drops the **agent↔agent ρ=LLM codification** in its
   dispatch/judge laws — `reader-reach.test.ts` must stay green (D11).
@@ -46,4 +46,4 @@ failure criterion). Nothing here is "left as content."
 
 ## Return
 
-Per-field kept/dropped rationale · the residue `delineation` · projection check · falsifier clearances.
+Per-field kept/dropped rationale · the residue `description` · projection check · falsifier clearances.

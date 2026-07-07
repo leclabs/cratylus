@@ -2,7 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const materialize: SkillCell = {
   name: 'materialize',
-  delineation: `realize C_R → artifacts · select F_R · emit CSF_R ⟨primitive ↦ by-value ⟨anchor gloss⟩ · composite ↦ by-reference ⟨anchor factor-anchors⟩⟩ · named-strategy s · ρ total ∨ ⊥ · exemplify-stage-3`,
+  description: `realize C_R → artifacts · select F_R · emit CSF_R ⟨primitive ↦ by-value ⟨anchor gloss⟩ · composite ↦ by-reference ⟨anchor factor-anchors⟩⟩ · named-strategy s · ρ total ∨ ⊥ · exemplify-stage-3`,
   formalBlock: `-- DECLARATIONS ----------------------------------------------------------
 C_R              — the reader's concept lattice
 prim_R : C_R → 𝔹            — c primitive (irreducible at R) vs composite
@@ -38,7 +38,7 @@ s unnamed ∨ s ∉ S ⇒ ⊥
 ∃ k ∈ kinds(Φ) : k ∉ dom(ρ_s) ⇒ ⊥
 
 σ(Φ, file) ≜ { \${OUTPUT_DIR}/anchor(c).md | (anchor(c), k, x) ∈ Φ }
-ρ_file(k) ≜ front-matter (kind: k, delineation) + body
+ρ_file(k) ≜ front-matter (kind: k, description) + body
 ∀ f ∈ σ(Φ, file) : ∃! (a, k, x) ∈ Φ : content(f) = x
 
 σ(Φ, document) ≜ one recomposed document
@@ -96,7 +96,7 @@ s unnamed ∨ s ∉ S ⇒ ⊥
 ∃ k ∈ kinds(Φ) : k ∉ dom(ρ_s) ⇒ ⊥
 
 σ(Φ, file) ≜ { \${OUTPUT_DIR}/anchor(c).md | (anchor(c), k, x) ∈ Φ }
-ρ_file(k) ≜ front-matter (kind: k, delineation) + body
+ρ_file(k) ≜ front-matter (kind: k, description) + body
 ∀ f ∈ σ(Φ, file) : ∃! (a, k, x) ∈ Φ : content(f) = x
 
 σ(Φ, document) ≜ one recomposed document

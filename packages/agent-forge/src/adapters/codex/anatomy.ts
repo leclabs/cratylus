@@ -92,7 +92,7 @@ export function skillToCodexMd(
 ): string {
   const fm: Record<string, unknown> = {
     name: s.name,
-    description: s.skillDescription ?? s.delineation,
+    description: s.skillDescription ?? s.description,
   };
   const body = skillBody(s, refProject, 'codex');
   const lines = ['---', ...frontMatterLines(fm), '---', ''];

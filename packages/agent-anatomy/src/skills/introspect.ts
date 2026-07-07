@@ -2,7 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const introspect: SkillCell = {
   name: 'introspect',
-  delineation: `per-organ def(o) vs independently-observed rt(o) · match · why(divergence) ∈ K · emit def-vs-runtime-table · summary material-divergences`,
+  description: `per-organ def(o) vs independently-observed rt(o) · match · why(divergence) ∈ K · emit def-vs-runtime-table · summary material-divergences`,
   formalBlock: `DECLARATIONS
 
 A          — the agent introspecting itself

@@ -24,7 +24,7 @@
 //   HEDGE          — ≥2 distinct tutorial/hedge/connective patterns
 //                    (live max = 1, on pinned src/genus/memory.md; seed fixture = 6)
 //   SECOND-PERSON  — ≥2 hits ∧ ≥4 per 100 words (one incidental agent-address
-//                    hit is legal: carry-on delineation = 1 hit @3.1)
+//                    hit is legal: carry-on description = 1 hit @3.1)
 //   FPP-WALKTHROUGH— ≥2 first-person-plural walkthrough tokens (live = 0)
 //
 // RATCHET — explicit, shrink-only allowlist. Empty when the corpus fully
@@ -146,9 +146,9 @@ async function allSurfaces(): Promise<Surface[]> {
   for (const rel of await collect('skills/*.ts')) {
     const s = await firstExport<SkillCell>(join(srcRoot, rel));
     surfaces.push({
-      label: `skill ${s.name} (delineation)`,
-      cls: 'skill-delineation',
-      text: s.delineation,
+      label: `skill ${s.name} (description)`,
+      cls: 'skill-description',
+      text: s.description,
     });
     surfaces.push({
       label: `skill ${s.name} (prose)`,
@@ -556,7 +556,7 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 //
 // The machine-check behind AC-RESIDUE (PLAN.md): MODEL PARSIMONIOUS
 // `body(c)=⟨α,residue⟩ ∧ residue=D∖fired(α)` specialized to the DEPLOYED corpus —
-// every organ VALUE residue · every skill `delineation` · every skill `formalBlock`
+// every organ VALUE residue · every skill `description` · every skill `formalBlock`
 // (whole) MUST be a composable σ* expression / a `formalize` artifact / ∅, never human
 // prose (the vision's failure criterion). GOVERNING INVARIANT: every deployed artifact
 // the model reads is formal σ* under ρ, never human prose — this gate IS that
@@ -566,7 +566,7 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 //
 // FIXTURE-BASED bite proof, GREEN NOW: the 139 live organ values are E1's verbatim-
 // prose intermediates (`slug ≜ <old prose>`) until wave-2 (O/S/H) reduces them to σ*,
-// and delineations are likewise pre-reduction prose — so the LIVE-corpus scan is
+// and descriptions are likewise pre-reduction prose — so the LIVE-corpus scan is
 // `.skip`ped (C1 marker) to avoid reddening a suite full of legitimate intermediates.
 // The predicate is proven on fixtures instead: prose REJECTED (offending clause named),
 // the three σ* forms + a real `formalize` formalBlock ACCEPTED, a prose-carrying
@@ -584,7 +584,7 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
     expect(admissibleSingleLine('scope ⊕ ic').admissible).toBe(false);
   });
 
-  // ── SINGLE-LINE (organ value residue · skill `delineation`) ────────────────────
+  // ── SINGLE-LINE (organ value residue · skill `description`) ────────────────────
   it('ACCEPTS the three σ* forms — ∅ · a bare anchor · an operator application', () => {
     for (const form of [
       '', // ∅ — the anchor α fully fires the concept
@@ -647,8 +647,8 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
   });
 
   // ── LIVE-corpus scan — the full AC-RESIDUE claim over the deployed payload set ──
-  // ENABLED (C1): wave-2 (O/S/H) reduced every organ value · skill delineation · formalBlock to σ*.
-  it('every deployed σ* payload is admissible (organ values · delineations · formalBlocks)', async () => {
+  // ENABLED (C1): wave-2 (O/S/H) reduced every organ value · skill description · formalBlock to σ*.
+  it('every deployed σ* payload is admissible (organ values · descriptions · formalBlocks)', async () => {
     const failures: string[] = [];
     for (const rel of await collect('organs/**/*.ts')) {
       const value = await firstExport<string>(join(srcRoot, rel));
@@ -657,9 +657,9 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
     }
     for (const rel of await collect('skills/*.ts')) {
       const s = await firstExport<SkillCell>(join(srcRoot, rel));
-      const d = admissibleSingleLine(s.delineation);
+      const d = admissibleSingleLine(s.description);
       if (!d.admissible)
-        failures.push(`skill ${s.name} delineation: ${d.reason}`);
+        failures.push(`skill ${s.name} description: ${d.reason}`);
       const f = admissibleFormalBlock(s.formalBlock);
       if (!f.admissible)
         failures.push(`skill ${s.name} formalBlock: ${f.reason}`);

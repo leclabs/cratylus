@@ -39,8 +39,8 @@ export interface ParsedSkill {
   readonly name: string;
   /** Front-matter `trigger:` (e.g. `/introspect`). */
   readonly trigger: string;
-  /** Front-matter `delineation:`. */
-  readonly delineation: string;
+  /** Front-matter `description:`. */
+  readonly description: string;
   /** The H1 verb (the `# <verb>` heading text). */
   readonly verb: string;
   /** The first fenced block's interior (the self-sufficient set-builder), if any. */
@@ -224,7 +224,7 @@ export function parseSkill(raw: string, fileSlug: string): ParsedSkill {
   return {
     name: frontField(frontMatter, 'name') || fileSlug,
     trigger: frontField(frontMatter, 'trigger'),
-    delineation: frontField(frontMatter, 'delineation'),
+    description: frontField(frontMatter, 'description'),
     verb,
     formalBlock: firstFenceInterior(body),
     composition,

@@ -2,7 +2,7 @@ import type { SkillCell } from '../toolkit/skill-cell.js';
 
 export const createAgent: SkillCell = {
   name: 'create-agent',
-  delineation: `agent ≜ ∀ organ ↦ value ↾ catalog ⟨enum ∪ open⟩ · resolve → verify → deploy · human-driver ⇒ per-organ interview ⟨recommend fittest⟩`,
+  description: `agent ≜ ∀ organ ↦ value ↾ catalog ⟨enum ∪ open⟩ · resolve → verify → deploy · human-driver ⇒ per-organ interview ⟨recommend fittest⟩`,
   formalBlock: ``,
   composition: [],
   body: `
