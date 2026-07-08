@@ -16,8 +16,10 @@ cluster of RTB tasks grows into a coherent initiative, promote it back out into 
 
 **Pending:**
 
-- `stance-guardrail-jurisdiction` — the judge must see the dispatch channel (tool_use payloads ·
-  PreToolUse binding · dispatch-echo rubric class · observable fails-open). Lane: Mav + Nico.
+- `stance-guardrail-jurisdiction` — RE-SCOPED 2026-07-08 to its live residue: Stop-guard sees `tool_use`
+  dispatch payloads + telemetry (items 1,4). The PreToolUse binding + dispatch-echo rubric (items 2,3) were
+  absorbed into `stance-guardrail-asktool` H2 (unified `stance-guardrail-pre` cell). ⊳dep asktool H1–H3.
+  Lane: Mav + Nico.
 
 _(Folded into `plans/canon-conformance/` — the source→`accept()` conformance initiative:
 `standing-oracle-gate` → E1 acceptance-harness (the pre-land boundary; instrument at `toolkit/cold-oracle/`);

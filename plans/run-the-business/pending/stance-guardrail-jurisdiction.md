@@ -1,6 +1,16 @@
 # stance-guardrail-jurisdiction — the judge must see the dispatch channel
 
-**Lane** Mav (hook machinery) + Nico (rubric doctrine, judge) · **Status** pending.
+**Lane** Mav (hook machinery) + Nico (rubric doctrine, judge) · **Status** pending · **⊳dep** `stance-guardrail-asktool` H1–H3.
+
+> **RE-SCOPED (nico, session a4d74873, 2026-07-08).** Two corrections from the staleness audit:
+> **(1) Stale edit-sites** — the `Static` list below pins `src/toolkit/guardrail/*.sh`, but those are the
+> BYTE-LOCKED PROJECTED WORKERS of the `.ts` HookCell `src/hooks/stance-guardrail.ts` (regenerate from its
+> `workers[].content`; a hand-edit reds `test/hook-rule-boundary.test.ts`). Edit the SOURCE cell, never the
+> `.sh`. **(2) Scope items 2 + 3 ABSORBED** — the PreToolUse binding + dispatch-echo rubric are unified into
+> `stance-guardrail-asktool` H2 (one generalized `stance-guardrail-pre` cell matching
+> `AskUserQuestion|Agent|SendMessage`; a second parallel PreToolUse cell would violate `PARTITIONED`). This
+> shard's LIVE residue is only items **1 (Stop-guard sees `tool_use`)** + **4 (telemetry)**, both landing on
+> the EXISTING Stop cell — see Scope below. The dispatch-channel motivation is retained for context.
 
 The stance guardrail is structurally blind to the drift class that matters most. Reviewer evidence
 (field, 2026-07-03), three mechanisms, all by construction:
@@ -18,30 +28,33 @@ Net: the drift travels through the one channel the extractor deletes, in turns i
 under a rubric that disclaims the call. Deterministic extraction over-corrected until the
 LLM-as-judge never sees the evidence.
 
-## Static
+## Static (SOURCE cell, not the projected `.sh`)
 
-`packages/agent-anatomy/src/toolkit/guardrail/{stance-guardrail.sh, stance-judge.sh,
-stance-judge-prompt.md}` · `src/toolkit/hooks.ts` (agent-forge Hook sources; PreToolUse is an
-available event) · the reviewer analysis above (the defect contract).
+`packages/agent-anatomy/src/hooks/stance-guardrail.ts` — the Stop-cell SOURCE (its `workers[].content`
+regenerate `src/toolkit/guardrail/{stance-guardrail.sh, stance-judge.sh, stance-judge-prompt.md}`,
+byte-locked by `test/hook-rule-boundary.test.ts`) · the reviewer analysis above (the defect contract).
 
-## Scope
+## Scope — LIVE residue only (items 2,3 absorbed into asktool H2)
 
-(1) **Judged surface**: include `tool_use` payloads of dispatch-class calls (Agent · SendMessage —
-the prompt/message fields) in the judged text; a pure-tool turn WITH a dispatch payload is judged,
-never skipped. (2) **PreToolUse binding**: a second hook entry judging the dispatch prompt BEFORE
-the call fires (block = the dispatch never leaves), agent-scoped like Stop; fails open; loop-safe.
-(3) **Rubric**: extend with the dispatch-echo class — a dispatch that transcribes the operator's or
-coordinator's literal words without extracted intent, or a spec whose semantic content is hollow
-relative to its cited inputs, is a collapse; the judge receives the dispatch payload + its
-immediate contract context. Keep the recusal for genuine technical-correctness calls; the boundary
-is stance-in-the-artifact, not code review. (4) **Telemetry**: judge failures/timeouts logged
-(fails-open stays, but a miss becomes observable).
+(1) **Judged surface**: in the EXISTING Stop cell's worker (`stance-guardrail.ts` →
+`stance-guardrail.sh` content), the jq extractor `map(select(.type == "text"))` drops `tool_use` blocks;
+include dispatch-class `tool_use` payloads (Agent · SendMessage prompt/message fields) in the judged text,
+and judge a pure-tool turn that carries a dispatch payload instead of `allow_stop`-skipping it. This
+lands on the Stop cell — a distinct interception point from asktool's PreToolUse pre-hoc block (defense in
+depth; the PreToolUse binding is the primary catch, this backstops turns where it failed open).
+(4) **Telemetry**: judge failures/timeouts logged (fails-open stays, but a miss becomes observable) —
+apply to the Stop worker (asktool H2 adds the same to the Pre worker).
+
+~~(2) PreToolUse binding · (3) dispatch-echo rubric~~ → **absorbed into `stance-guardrail-asktool` H2**
+(one `stance-guardrail-pre` cell over `AskUserQuestion|Agent|SendMessage`, shared rubric extension).
 
 ## Accept (falsifiers)
 
-- Replay the field case: a turn whose only content is a dispatch `tool_use` carrying a transcribed
-  spec → judged and BLOCKED (pre or post); the same turn with an intent-extracted dispatch passes.
-- A pure-text collapse still blocks (no regression on the existing class); `stop_hook_active`
-  loop-safety intact; a judge timeout produces a log line and an allow (fails-open observable).
-- `pnpm run stance-guard:test` extended with both new cases; deployed-artifact mode
-  (`STANCE_WORKER_DIR`) proves the shipped worker bites.
+- Stop-guard extractor: a turn whose content includes a dispatch `tool_use` carrying a transcribed spec
+  (with surrounding prose) → the dispatch payload reaches the judge and BLOCKS; the same with an
+  intent-extracted dispatch passes. A pure-tool dispatch turn is judged, not skipped.
+- A pure-text collapse still blocks (no regression); `stop_hook_active` loop-safety intact; a judge
+  timeout produces a log line and an allow (fails-open observable).
+- Edit the SOURCE cell; `pnpm anatomy:project:targets` regenerates the `.sh`; `test/hook-rule-boundary`
+  green. `pnpm run stance-guard:test` extended; deployed-artifact mode (`STANCE_WORKER_DIR`) proves the
+  shipped worker bites. Deploy Operator-reserved.

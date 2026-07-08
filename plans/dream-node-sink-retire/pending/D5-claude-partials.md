@@ -20,6 +20,11 @@
   framing sentence; keep the rest.
 - Root `CLAUDE.md` + root `AGENTS.md` UNTOUCHED (curated; if D4=A, root AGENTS.md is a rule-projected file).
 - Verify no build/deploy path resolves a deleted `CLAUDE.md`/`AGENTS.md` (grep code path-resolution first).
+- **NOTE (audit 2026-07-08):** the tree has 10 empty (0B) node `AGENTS.md`, but only these 8 have a
+  `CLAUDE.md` partner. The 2 orphans — `plans/canon-collapse/AGENTS.md`, `plans/forge-anatomy-debraid/AGENTS.md`
+  (no `CLAUDE.md`) — are swept by their PLAN-DIR retirement (forge-anatomy-debraid is retire-ready;
+  canon-collapse is complete), NOT by D5. D6's "any surviving `AGENTS.md`" grep must whitelist those 2 dirs
+  until their retirement lands, else it false-reds on cruft outside this shard's scope.
 
 ## Acceptance (falsifier)
 

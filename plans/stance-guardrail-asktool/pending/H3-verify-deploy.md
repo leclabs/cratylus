@@ -12,8 +12,10 @@ H1, H2 ⊳dep.
   the cell reds `test/hook-rule-boundary.test.ts`).
 - `pnpm test` (agent-anatomy) green incl. `hook-rule-boundary`; `pnpm project` emits the new `PreToolUse` hook +
   the `settings.json` render carries it.
-- **Behavioral check (isolated):** simulate a PreToolUse payload = an in-remit option-menu → the judge DENIES
-  with feedback; a genuine irreversible-consent menu → PASSES.
+- **Behavioral check (isolated), both classes:** (a) an `AskUserQuestion` PreToolUse payload = an in-remit
+  option-menu → judge DENIES; a genuine irreversible-consent menu → PASSES. (b) an `Agent`/`SendMessage`
+  PreToolUse payload = a dispatch transcribing literal words with no extracted intent → judge DENIES; an
+  intent-extracted dispatch → PASSES. (Replaces the jurisdiction shard's replay falsifier.)
 - **Do NOT deploy.** `anatomy:deploy:hooks` (merges into `~/.claude/settings.json`) is Operator-reserved.
 
 ## Acceptance

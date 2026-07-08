@@ -13,9 +13,17 @@ and RATIFY the fork retiring the sink opens: the curated root `AGENTS.md` can be
   a byte-locked rule target COLLIDED with that law (the first dream routing a repo-scoped fact reds the
   byte-lock)." `:32` — "Repo-relative committed `AGENTS.md` regenerated from `body` (byte-locked)".
 
-## The fork — RATIFY one (recommendation: A)
+## The fork — RATIFIED: A (nico, session a4d74873, 2026-07-08)
 
-- **A (recommended) — root AGENTS.md becomes a `rule` cell.** The sink collision is the ONLY stated blocker;
+**Decision: A — root AGENTS.md becomes a `rule` cell.** Rationale (VISION-grounded): VISION holds
+"harness-specific artifacts are deployment targets — not sources of truth … deterministically
+regenerated." Option B leaves the root a hand-edited source-of-truth file OUTSIDE the canon — a direct
+vision violation. `rule` is a first-class Kind (`MODEL.md`: `activation: rule↦scope`) with 0 instances;
+once the sink route retires, the ONLY stated blocker (`rule-cell.ts` sink-collision) is gone, so the root
+is eligible as a Target (`SelfAuthored ∉ Target` no longer applies — it is no longer SelfAuthored memory).
+A gives `rule` its first instance and makes the root REGENERABLE. Execute branch A below; B is retired.
+
+- **A (RATIFIED) — root AGENTS.md becomes a `rule` cell.** The sink collision is the ONLY stated blocker;
   retiring the sink removes it. Author a `rule` cell whose `body` is the curated root instruction (doctrine
   pointers · conventions · prereqs) → projected + byte-locked to `/AGENTS.md`. Gives `rule` its first instance;
   makes the root canonical (source-of-truth in the corpus, REGENERABLE), not a hand-edited file. Update
