@@ -1,10 +1,13 @@
 # dream-node-sink-retire
 
-**Status: EXECUTING (session a4d74873, 2026-07-08).** Census-grounded via `/praxis`; every edit site pinned
-to a real `file:line`, all re-confirmed exact at execution. **DONE (unit 1 — sink retirement):** D1 dream.ts
-route stripped · D2 memory.md desc · D3 wake/praxis (signify KEEP) · D5 8 CLAUDE.md partials + empty node
-AGENTS.md deleted. **PENDING (unit 2 — rule instantiation):** D4 (RATIFIED A — root AGENTS.md → first `rule`
-cell + toolkit doctrine) · D6 verify. Push/deploy Operator-reserved.
+**Status: COMPLETE — retire-ready (session a4d74873, 2026-07-08).** All 6 shards landed local; every pinned
+edit site executed exact. **Unit 1 (sink retirement, `9e16a9a`):** D1 dream.ts route stripped · D2 memory.md
+desc · D3 wake/praxis (signify KEEP) · D5 8 CLAUDE.md partials + empty node AGENTS.md deleted. **Unit 2 (rule
+instantiation):** D4 RATIFIED A — `src/rules/repo-preamble.ts` is the FIRST `rule` corpus instance, projecting
+the repo-root `AGENTS.md` byte-locked; toolkit doctrine (rule-cell.ts · project-targets.ts) + boundary test
+reconciled. D6 verify GREEN: 88 tests · zero drift · corpus grep `AGENTS-node|plan-agents-md`→0 · COLD_ORACLE
+blind-decodes the rule definiens to intent. **Push/deploy Operator-reserved.** Discrete follow-on: retire the
+plan dir (git-rm) once landed; sweep the 2 orphan plan-dir AGENTS.md remnants at their plan retirements.
 
 ## Intent
 

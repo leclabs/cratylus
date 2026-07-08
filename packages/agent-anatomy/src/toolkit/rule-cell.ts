@@ -2,21 +2,20 @@
 // `activation: rule↦scope`). A rule is HARNESS-AGNOSTIC SOURCE: the harness is
 // orthogonal until `deploy(c,adapter) = inject(content(c), realize(scope,adapter))`.
 //
-// STATUS: `rule` is a LIVE KIND with ZERO corpus instances. An `AGENTS.md` at a node
-// is NOT a rule deploy target — it is a dream-written SelfAuthored memory sink (the
-// `src/skills/dream.ts` law: "An `AGENTS.md` at a node IS the semantic organ at that
-// scope; writing it is consolidation"), exempt from REGENERABLE (MODEL
-// `SelfAuthored ∉ Target`). Treating repo-root AGENTS.md as a byte-locked rule target
-// COLLIDED with that law (the first dream routing a repo-scoped fact reds the
-// byte-lock, a deploy clobbers the memory), so that S4 conversion was reverted. This
-// type stays as the KIND definition; no cell currently instantiates it.
+// STATUS: `rule` is a LIVE KIND with ONE corpus instance — `src/rules/repo-preamble.ts`
+// (the repo-root `AGENTS.md`). This became possible when the `AGENTS.md@node` dream
+// memory-sink route was RETIRED (`src/skills/dream.ts` no longer routes any record to a
+// node/plan `AGENTS.md`): a repo-root `AGENTS.md` is no longer SelfAuthored memory, so
+// `SelfAuthored ∉ Target` no longer bars it, and it projects as a byte-locked rule
+// TARGET (the earlier S4 conversion — reverted when the sink still existed — now holds).
+// A per-NODE/per-PLAN `AGENTS.md` is simply gone (no sink); a rule cell targets only a
+// curated instruction file (today, the root), never a memory sink.
 //
 // The cell carries TWO separable things:
 //   1. `definiens` — the σ*-signified canonical identity. This is what `accept()`
 //      / REFLEXIVE gates; it is R=LLM and BLIND-decodes to the rule's intent.
 //   2. `body` — the VERBATIM directive payload (the byte-anchor), regenerated to
-//      `targetPath` by `project-targets` and byte-locked. `targetPath` must NOT be
-//      any node's `AGENTS.md` (that is a memory sink, per STATUS above).
+//      `targetPath` by `project-targets` and byte-locked.
 
 /** A `rule` source cell (source grain), carrying its verbatim directive body. */
 export interface RuleCell {

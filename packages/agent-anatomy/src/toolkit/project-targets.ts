@@ -7,9 +7,12 @@
 //   hook worker → its `worker.targetPath` (a `.sh`/`.md` the harness or `.husky/*`
 //                 dispatcher runs; executable bit set per the cell)
 //
-// `rule` is a live KIND (MODEL's 5 Kinds) but has ZERO corpus instances — an
-// AGENTS.md is a dream-written SelfAuthored memory sink (the `dream` cell law), NOT
-// a deploy target, so no `rule` cell projects here. Hooks are the sole target class.
+// `rule` is a live KIND (MODEL's 5 Kinds). Retiring the `AGENTS.md@node` dream
+// memory-sink route freed the repo-root `AGENTS.md` to become a byte-locked rule
+// TARGET (it is no longer SelfAuthored memory): `src/rules/*.ts` cells project their
+// `body` to `targetPath` here alongside the hook workers.
+//
+//   rule cell → its `targetPath` (a committed instruction file, e.g. `/AGENTS.md`)
 //
 // `regenerateTargets({ check:true })` DIFFS instead of writing (the `--check` mode):
 // a drift between a committed target and its cell's bytes is reported, never
@@ -21,6 +24,7 @@ import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { HookCell } from './hook-cell.js';
+import type { RuleCell } from './rule-cell.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const anatomyRoot = join(here, '..', '..');
@@ -54,16 +58,25 @@ export async function allHookCells(): Promise<HookCell[]> {
   return cells;
 }
 
+/** Every `rule` source cell (`src/rules/*.ts`), slug-sorted. */
+export async function allRuleCells(): Promise<RuleCell[]> {
+  const cells: RuleCell[] = [];
+  for (const rel of await collect('rules/*.ts')) {
+    cells.push(await firstExport<RuleCell>(join(srcRoot, rel)));
+  }
+  return cells;
+}
+
 /** One regenerable target: its repo-relative path + the cell bytes that own it. */
 export interface CellTarget {
   readonly path: string;
   readonly content: string;
   readonly executable: boolean;
-  readonly kind: 'hook';
+  readonly kind: 'hook' | 'rule';
   readonly source: string;
 }
 
-/** Flatten every hook worker into its committed target. */
+/** Flatten every hook worker + rule body into its committed target. */
 export async function cellTargets(): Promise<CellTarget[]> {
   const targets: CellTarget[] = [];
   for (const cell of await allHookCells()) {
@@ -76,6 +89,15 @@ export async function cellTargets(): Promise<CellTarget[]> {
         source: `${cell.id}/${w.filename}`,
       });
     }
+  }
+  for (const cell of await allRuleCells()) {
+    targets.push({
+      path: cell.targetPath,
+      content: cell.body,
+      executable: false,
+      kind: 'rule',
+      source: cell.id,
+    });
   }
   return targets;
 }
