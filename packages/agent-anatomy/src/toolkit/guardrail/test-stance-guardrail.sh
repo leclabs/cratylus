@@ -31,6 +31,10 @@ command -v jq >/dev/null 2>&1 || { echo "SKIP: jq not available"; exit 0; }
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
+# HERMETIC: the opt-in flag must come ONLY from the fixture repo, never the host's
+# global/system git config (a host with agentfactory.stanceGuard set globally would
+# otherwise leak into every worker's `git config` read and break off-by-default).
+export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null
 fail=0
 pass() { printf '  ok   — %s\n' "$1"; }
 bad()  { printf '  FAIL — %s\n' "$1"; fail=1; }
@@ -57,6 +61,16 @@ if printf '%s' "$turn" | grep -Eqi 'should i (name|call|proceed|add)|want me to|
 	fi
 	echo "VERDICT: BLOCK"
 	echo "REASON: permission-seeking / deferring an in-remit decision that is the agent's to make."
+	exit 0
+fi
+# pre-payloads: an AskUserQuestion menu or an Agent/SendMessage dispatch.
+if printf '%s' "$turn" | grep -Eqi 'menu|dispatch'; then
+	# reserved (PASS): irreversible-outward consent, or a substantive intent-extracted dispatch.
+	if printf '%s' "$turn" | grep -Eqi 'deploy|push|publish|production|to the fleet|OBJECTIVE:|CONSTRAINTS:'; then
+		echo "VERDICT: PASS"; exit 0
+	fi
+	echo "VERDICT: BLOCK"
+	echo "REASON: a permission-menu or dispatch-echo on an in-remit call — decide it / extract the intent."
 	exit 0
 fi
 echo "VERDICT: PASS"
@@ -163,6 +177,64 @@ if command -v claude >/dev/null 2>&1; then
 	fi
 else
 	printf '  skip — claude not on PATH (real-judge smoke)\n'
+fi
+
+# ── stance-guardrail-pre (PreToolUse) — prove the pre-hoc twin BITES ─────────────────────────
+PRE_WORKER="$WORKER_DIR/stance-guardrail-pre.sh"
+if [ -f "$PRE_WORKER" ]; then
+	echo
+	echo "stance-guardrail-pre — prove-it-bites (PreToolUse)"
+	export STANCE_RUBRIC="$RUBRIC"                 # fixture judge ignores it, but keep it hermetic
+	export STANCE_GUARD_LOG="$WORK/pre-misses.log"
+	export TMPDIR="$WORK/tmp"; mkdir -p "$TMPDIR"  # re-entry markers stay inside the sandbox
+	git -C "$REPO" config --bool agentfactory.stanceGuard true
+
+	# session_id is passed per-case: the re-entry cap keys on (session_id, tool_input),
+	# so a DISTINCT session per case prevents markers from one case leaking into the next.
+	run_pre() {  # $1=tool_name  $2=tool_input(json)  $3=agent_type  $4=session_id
+		jq -cn --arg tn "$1" --argjson ti "$2" --arg at "$3" --arg sid "$4" --arg cwd "$REPO" \
+			'{tool_name:$tn, tool_input:$ti, agent_type:$at, cwd:$cwd,
+			  hook_event_name:"PreToolUse", session_id:$sid}' \
+		| sh "$PRE_WORKER" 2>/dev/null || true
+	}
+	is_deny() { printf '%s' "$1" | jq -e '.hookSpecificOutput.permissionDecision == "deny"' >/dev/null 2>&1; }
+
+	MENU_INREMIT='{"questions":[{"question":"Color scheme?","options":[{"label":"dark"},{"label":"light"}]}]}'
+	MENU_CONSENT='{"questions":[{"question":"Deploy target?","options":[{"label":"staging"},{"label":"production"}]}]}'
+	DISPATCH_ECHO='{"prompt":"here is what the operator said, do this: make it good"}'
+	DISPATCH_REAL='{"prompt":"OBJECTIVE: refactor the parser to streaming. CONSTRAINTS: keep the public API; add a regression test."}'
+
+	# P1 — in-remit AskUserQuestion menu → DENY.
+	out="$(run_pre AskUserQuestion "$MENU_INREMIT" mav s1)"
+	if is_deny "$out"; then pass "AskUserQuestion in-remit menu → DENY"; else bad "in-remit menu was NOT denied"; fi
+
+	# P2 — irreversible-consent AskUserQuestion menu → allow (reserved set).
+	out="$(run_pre AskUserQuestion "$MENU_CONSENT" mav s2)"
+	is_deny "$out" && bad "irreversible-consent menu wrongly denied" || pass "irreversible-consent menu → allow"
+
+	# P3 — dispatch-echo (Agent) → DENY.
+	out="$(run_pre Agent "$DISPATCH_ECHO" mav s3)"
+	if is_deny "$out"; then pass "Agent dispatch-echo → DENY"; else bad "dispatch-echo was NOT denied"; fi
+
+	# P4 — substantive intent-extracted dispatch → allow.
+	out="$(run_pre Agent "$DISPATCH_REAL" mav s4)"
+	is_deny "$out" && bad "substantive dispatch wrongly denied" || pass "substantive dispatch → allow"
+
+	# P5 — re-entry cap: the SAME (session, input) twice → 1st DENY, 2nd allows (loop safety).
+	out="$(run_pre SendMessage "$DISPATCH_ECHO" mav s5)"; is_deny "$out" || bad "re-entry setup: 1st dispatch-echo not denied"
+	out2="$(run_pre SendMessage "$DISPATCH_ECHO" mav s5)"
+	is_deny "$out2" && bad "re-entry cap absent: identical input denied twice" || pass "re-entry cap: identical input allowed on 2nd try"
+
+	# P6 — agent-scope: out-of-scope agent → no deny.
+	out="$(run_pre AskUserQuestion "$MENU_INREMIT" developer s6)"
+	is_deny "$out" && bad "out-of-scope agent was denied" || pass "agent-scope gate: out-of-scope not denied"
+
+	# P7 — off by default: no deny even on a collapse menu.
+	git -C "$REPO" config --unset agentfactory.stanceGuard 2>/dev/null || true
+	out="$(run_pre AskUserQuestion "$MENU_INREMIT" mav s7)"
+	is_deny "$out" && bad "off-by-default still denied" || pass "off by default: no deny on collapse menu"
+else
+	printf '  skip — no pre-worker at %s\n' "$PRE_WORKER"
 fi
 
 echo

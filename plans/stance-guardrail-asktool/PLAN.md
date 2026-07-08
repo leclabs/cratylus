@@ -1,9 +1,16 @@
 # stance-guardrail-asktool
 
-**Status: SPEC (praxis) — authored + pin-verified, not executed.** Root-caused by mav (session 3287f321); pins
-re-confirmed against the live tree 2026-07-08 — `HookCell` (`toolkit/hook-cell.ts:49`) has no `matcher` field,
-`hookIrOf` (`toolkit/hooks.ts:25`) is the forward point, the worker extractor filters `.type=="text"`. Grounded;
-execution deferred.
+**Status: COMPLETE — retire-ready (session a4d74873, 2026-07-08).** Root-caused by mav (session 3287f321),
+unified + executed here. **H1 (`7b2aaaa`):** `HookCell.matcher?` + `hookIrOf` forward. **H2:**
+`src/hooks/stance-guardrail-pre.ts` — one PreToolUse cell, matcher `AskUserQuestion|Agent|SendMessage`, worker
+branches on `tool_name`, reuses the sibling Stop hook's deployed judge + rubric (DRY); rubric extended with the
+dispatch-echo class. Registered in `harnessHookCells`. **H3 GREEN:** 88 tests · byte-lock clean · projection
+emits the PreToolUse entry into settings.json · `stance-guard:test` proves the pre-worker BITES (in-remit
+menu→DENY, consent menu→allow, dispatch-echo→DENY, substantive→allow, re-entry cap, agent-scope, off-by-default)
+
+- real-claude smoke agrees; also fixed a pre-existing global-config non-hermeticity in the Stop test. Absorbs
+  RTB `stance-guardrail-jurisdiction` items 2,3 (its residue 1,4 remain, ⊳dep this). Verified against the harness
+  docs (PreToolUse carries `agent_type` for subagents; deny shape confirmed).
 
 ## Intent
 

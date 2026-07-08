@@ -10,11 +10,15 @@
 // serialized here.
 
 import type { CanonicalEvent, Hook } from '@leclabs/agent-forge';
+import { stanceGuardrailPre } from '../hooks/stance-guardrail-pre.js';
 import { stanceGuardrail } from '../hooks/stance-guardrail.js';
 import type { HookCell, HookWorker } from './hook-cell.js';
 
 /** The harness-substrate hook cells agent-forge projects into settings.json + hooks/<id>/. */
-export const harnessHookCells: readonly HookCell[] = [stanceGuardrail];
+export const harnessHookCells: readonly HookCell[] = [
+  stanceGuardrail,
+  stanceGuardrailPre,
+];
 
 /**
  * Lift a harness-substrate hook cell into the agent-forge `Hook` deploy-IR. A

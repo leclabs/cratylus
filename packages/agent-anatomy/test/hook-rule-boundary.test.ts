@@ -113,9 +113,13 @@ function targetOf(path: string): Target {
 const ACCEPT_RATCHET: ReadonlyArray<{ slug: string; leg: Leg }> = [];
 
 describe('S4 hook/rule boundary — first-class source cells, projected targets', () => {
-  it('both shell-hook families are converted to hook cells (behavior-in-cell)', async () => {
+  it('every shell-hook family is a hook cell (behavior-in-cell)', async () => {
     const ids = (await allHookCells()).map((c) => c.id).sort();
-    expect(ids).toEqual(['praxis-continuity', 'stance-guardrail']);
+    expect(ids).toEqual([
+      'praxis-continuity',
+      'stance-guardrail',
+      'stance-guardrail-pre',
+    ]);
   });
 
   it('the only AGENTS.md target is the repo-root rule; every other tracked AGENTS.md is out-of-scope', async () => {
