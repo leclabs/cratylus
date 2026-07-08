@@ -5,7 +5,7 @@ import { signify } from './signify.js';
 
 export const conceptualize: Skill = {
   name: 'conceptualize',
-  description: `use this skill to conceptualize a corpus — read a multi-modal source and resolve it to the reader's concept lattice (the closed distinction-sets \`C_R\`, which of them are primitive, each primitive's gloss, and each concept's candidate factorizations), deciding nothing about names or material form; stage 1 of exemplify, independently invocable.`,
+  description: `use this skill to extract the concepts latent in a source — which are primitive, what each means, how each factors — deciding nothing about names or form; stage 1 of exemplify.`,
   formalBlock:
     `-- ENTITIES ---------------------------------------------------------------
 R                 — the reader; priors fix every meaning

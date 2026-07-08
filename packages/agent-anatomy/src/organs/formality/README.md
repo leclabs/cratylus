@@ -5,6 +5,7 @@
 ## Values
 
 - casual
+- expansive ⟨flowing eloquent prose · unhurried · ¬symbol-bearing⟩
 - formal ⟨terse · dense · symbol-bearing⟩
 - neutral
 

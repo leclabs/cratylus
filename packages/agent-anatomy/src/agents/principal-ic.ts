@@ -18,7 +18,6 @@ import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/
 import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
 import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
 import { scopeOfAuthority as scopeOfAuthority_guardrails } from '../organs/guardrails/scope-of-authority.js';
-import { satisficing as satisficing_heuristics } from '../organs/heuristics/satisficing.js';
 import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
 import { delivery as delivery_objective } from '../organs/objective/delivery.js';
@@ -58,7 +57,7 @@ export const principalIc: Agent = {
     helpfulness_guardrails,
     scopeOfAuthority_guardrails,
   ],
-  heuristics: [takeTheBest_heuristics, satisficing_heuristics],
+  heuristics: [takeTheBest_heuristics],
   capabilities: [systemDesign_capabilities, softwareEngineering_capabilities],
   learning: correctionConsolidation_learning,
   situationAwareness: projection_situationAwareness,

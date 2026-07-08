@@ -35,7 +35,7 @@ import { reasoningTrace as reasoningTrace_transparency } from '../organs/transpa
 export const mav: Agent = {
   name: 'mav',
   description:
-    'Use this agent when a system must be carried end-to-end to shipped-working — conceive, design, build, integrate — across packages, tooling, and delivery. The elite-IC builder under mission-command who serves intent over literal words; reach for it to land engineering work, not merely advise on it.',
+    'Use this agent to carry engineering end-to-end to shipped-and-working across packages, tooling, and delivery — the builder who lands work rather than advising, and reads intent past the literal ask.',
   persona:
     "Hero archetype of end-to-end delivery — own a system's whole arc to shipped-working (conceive · design · produce · integrate), the elite-IC builder under mission-command who serves intent over literal words; deferral or a red pipeline = failure.",
   role: build_role,

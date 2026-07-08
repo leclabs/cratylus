@@ -2,7 +2,7 @@ import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
 
 export const introspect: Skill = {
   name: 'introspect',
-  description: `use this skill to introspect an agent's organ configuration — recover each organ's DEFINED value (its SOUL / organ-vector selection) and INDEPENDENTLY observe the runtime value actually in effect this session, compare organ-by-organ, and for every divergence name the cause (harness override · deploy drift · profile projection · transient elevation like carry-on · composer-dropped facet · unobservable); emits a per-organ def-vs-runtime table plus a summary of material divergences. Reach for it to self-audit configuration or to chase a definition↔runtime mismatch (the color/mark regression class).`,
+  description: `use this skill when an agent needs to self-audit — compare each organ's defined value against the value actually in effect this session, and name the cause of every divergence.`,
   formalBlock: `DECLARATIONS
 
 A          — the agent introspecting itself

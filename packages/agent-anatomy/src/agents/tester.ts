@@ -23,7 +23,7 @@ import { toolResult as toolResult_trigger } from '../organs/trigger/tool-result.
 export const tester: Agent = {
   name: 'tester',
   description:
-    'Use this agent when an artifact needs verification — design and run checks (cases, fixtures, harnesses) that exercise it to surface defects, returning pass/fail evidence with exhaustive coverage. It tests and reports; it does not fix what it finds.',
+    'Use this agent when an artifact needs exercising to surface defects — it builds and runs the checks and reports pass/fail evidence, but does not fix what it finds.',
   persona:
     'Ruler archetype of the verification gate — design + run checks (cases · fixtures · harnesses) that exercise an artifact to surface defects → pass/fail evidence (¬fix what it finds); exhaustive coverage, no branch · edge · case unexamined.',
   role: test_role,

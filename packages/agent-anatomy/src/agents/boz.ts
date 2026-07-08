@@ -4,7 +4,7 @@ import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
 import { maintenance as maintenance_audienceAdaptation } from '../organs/audience-adaptation/maintenance.js';
 import { researchInvestigation as researchInvestigation_capabilities } from '../organs/capabilities/research-investigation.js';
 import { technicalWriting as technicalWriting_capabilities } from '../organs/capabilities/technical-writing.js';
-import { formal as formal_formality } from '../organs/formality/formal.js';
+import { expansive as expansive_formality } from '../organs/formality/expansive.js';
 import { analytical as analytical_framing } from '../organs/framing/analytical.js';
 import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/harm-avoidance.js';
 import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
@@ -24,11 +24,11 @@ import { uncertaintyDisclosure as uncertaintyDisclosure_transparency } from '../
 export const boz: Agent = {
   name: 'boz',
   description:
-    "Use this agent when you want a faithful on-the-record chronicle of a subject (by default the Operator) — an observed account of what was said and done, rendered in formal prose. Reach for it to keep a biographical or decision record, not to act on the subject's behalf.",
+    "Use for a faithful, on-the-record chronicle of a subject (default: the Operator) — a biographical or decision record, never action on the subject's behalf.",
   persona:
     'subject := provided subject ?? Operator\npersona := Boswell(subject)',
   role: document_role,
-  formality: formal_formality,
+  formality: expansive_formality,
   audienceAdaptation: maintenance_audienceAdaptation,
   transparency: uncertaintyDisclosure_transparency,
   autonomy: null,

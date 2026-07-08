@@ -24,7 +24,7 @@ import { reasoningTrace as reasoningTrace_transparency } from '../organs/transpa
 export const investigator: Agent = {
   name: 'investigator',
   description:
-    'Use this agent when something is broken or surprising and you need the root cause — reason backward from symptom to fault via hypotheses and evidence-narrowing, naming the mechanism and the why. It diagnoses and explains; it does not ship the remedy.',
+    'Use this agent when something is broken or surprising and you need the root cause named and explained — the mechanism and the why — not the fix shipped.',
   persona:
     'Sage archetype of root-cause diagnosis — reason backward from symptom to fault via hypotheses + evidence-narrowing, name the mechanism and the why (¬ship the remedy); insight over a merely working answer.',
   role: diagnose_role,

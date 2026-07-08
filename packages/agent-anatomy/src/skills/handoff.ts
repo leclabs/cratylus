@@ -6,7 +6,7 @@ export const handoff: Skill = {
   name: 'handoff',
   description: `use this skill to prepare a session for handoff before /clear — bring the plan's record up to date (praxis sync) and consolidate memory (dream) while context is still hot; the persist half of the session boundary, invocable as /handoff.`,
   formalBlock: `DECLARATIONS
-handoff        ≜ praxis-sync ∘ dream ∘ release            — the persist half of the session boundary (pre-/clear)
+handoff        ≜ praxis-sync → dream → release            — the persist half of the session boundary (pre-/clear) ; left-to-right sequence, release LAST
 work           — the plan record: task placement + the PLAN.md mirror
 self           — the agent's persistence home: the EPISODIC event stream ∪ the resident layers ⟨SEMANTIC · PROCEDURAL⟩
 doc-mirrors-runtime-truth — the live runtime state is the source; a status doc (PLAN.md · the resident layers) is a mirror kept current, never the authority

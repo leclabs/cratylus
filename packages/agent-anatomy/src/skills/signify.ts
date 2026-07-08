@@ -5,7 +5,7 @@ import { materialize } from './materialize.js';
 
 export const signify: Skill = {
   name: 'signify',
-  description: `use this skill to name a concept set — assign each concept its injective canonical anchor \`α(c) = σ*_R(c)\` (the reader-relative fittest sign, whose latent priors circumscribe exactly it; one name ⇔ one concept), then coalesce concepts that resolve to the same anchor; emits the shortlex order \`≺\` and the decoder \`dec_R\`; stage 2 of exemplify, independently invocable (every naming review is a bare /signify); also home of the reader binding \`ρ\` — R per artifact class (default R=LLM; human iff the literal reader is human), the σ*+residue body-reduction rule, and the verbatim⇒R=LLM law.`,
+  description: `use this skill to name a concept — assign each its canonical anchor so one name ⇔ one concept; also the home of the reader-binding ρ (which reader an artifact is authored for); stage 2 of exemplify, independently invocable.`,
   formalBlock: `DECLARATIONS
   C          — the concept lattice; concepts to be named. dom of α.
   D          — distinctions; identity-criterion atoms a concept circumscribes.

@@ -11,7 +11,13 @@
 // knob (a dead projection parameter: the body was byte-identical at every density) and
 // no provenance banner. A skill's SKILL.md is `f(name, formalBlock, composition())`.
 
-import { chmodSync, copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import {
+  chmodSync,
+  copyFileSync,
+  mkdirSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -252,6 +258,8 @@ function frontField(raw: string, key: string): string {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = parseArgs(process.argv.slice(2));
+  // Clean the out dir first — a removed/renamed cell must not leave a stale render.
+  rmSync(args.out, { recursive: true, force: true });
   const a = await projectAgents(args.out);
   const s = await projectSkills(args.out);
   await projectMemorySkill(args.out);

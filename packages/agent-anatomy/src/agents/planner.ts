@@ -10,7 +10,7 @@ import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/
 import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
 import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
-import { delivery as delivery_objective } from '../organs/objective/delivery.js';
+import { thoroughness as thoroughness_objective } from '../organs/objective/thoroughness.js';
 import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../organs/reasoning-strategy/plan-and-solve.js';
 import { plan as plan_role } from '../organs/role/plan.js';
@@ -30,7 +30,7 @@ export const planner: Agent = {
   transparency: decisionRationale_transparency,
   autonomy: null,
   provenance: { mark: { emoji: '🗺️', hue: 'blue' } },
-  objective: delivery_objective,
+  objective: thoroughness_objective,
   engineeringPrinciples: [separationOfConcerns_engineeringPrinciples],
   guardrails: [
     harmAvoidance_guardrails,
