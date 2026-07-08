@@ -1,6 +1,9 @@
 # stance-guardrail-asktool
 
-**Status: SPEC (praxis) — authored, not executed.** Root-caused by mav (session 3287f321); execution deferred.
+**Status: SPEC (praxis) — authored + pin-verified, not executed.** Root-caused by mav (session 3287f321); pins
+re-confirmed against the live tree 2026-07-08 — `HookCell` (`toolkit/hook-cell.ts:49`) has no `matcher` field,
+`hookIrOf` (`toolkit/hooks.ts:25`) is the forward point, the worker extractor filters `.type=="text"`. Grounded;
+execution deferred.
 
 ## Intent
 
