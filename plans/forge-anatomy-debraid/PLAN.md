@@ -1,8 +1,9 @@
 # forge-anatomy-debraid
 
-**Status: BOOTSTRAP — awaiting detailed decomposition by a fresh planning session.** This session diagnosed the
-mess + captured the whole-system model (`AGENTS.md`, the memory sink); it did NOT author the shards. The next
-session wakes here, reads `AGENTS.md`, and cuts the MECE slices/waves.
+**Status: COMPLETE — all 7 shards green, committed `a581206` (local; push/deploy pending Operator).** Verified on
+a clean isolated worktree, cache bypassed: 940 pass / 1 skip / 0 fail; `COLD_ORACLE_LIVE accept()` holds ∀ corpus
+cell; projection deterministic; false-green scrutiny mutation-proved the rewritten gate tests. Diagnosis +
+whole-system model in `AGENTS.md`. Retires once the Operator lands (push + deploy) — then dir removed + dream.
 
 **Authority.** Operator granted nico **agent-forge scope** (engine) in addition to agent-anatomy (corpus) —
 "work in Mav's scope so you see the full picture." Whole-repo planning; execution delegable to Mav/developer.
@@ -71,19 +72,43 @@ composed-from — the dead ref/harness/density logic is deleted, not relocated).
 - **`7fd1c43`** — last fully-green commit (the canon-collapse landing, pre-cleanup). The clean rollback base.
 - Branch `tmp-illustrate-conceptual-architecture`.
 
-## Coarse slices (a SKETCH for the fresh session — not the final cut)
+## Design calls (resolved by the sharding session — decisions of record)
 
-1. **IR-UNIFY** — anatomy consumes agent-forge's `Skill`/`Agent` IR; retire the forked toolkit types.
-2. **ADAPTER-THIN** — strip the adapter to a generic-IR→harness map; delete the dead palimpsest.
-3. **SKILL-SHAPE** — delete `body`; `formalBlock: SkillExpression` sole payload; adapter generates SKILL.md.
-4. **READER-FIX** — per-field binding: skill `description` = σ_human\* (un-gate from E2a — not "exempt", a
-   different field); **add `agent.description`** (σ_human\*, → SOUL frontmatter) + drop the persona→description
-   map (`persona` stays σ\*); carry-on composites `${humanOutOfTheLoop}`.
-5. **GATES** — relocate/align the residue·symbols·parsimony·accept gates to the unified IR (are they anatomy's or forge's?).
-6. **(watch, maybe out-of-scope)** — memory-contract prose-duplication + `bundle:` rename drift (investigator flags in `AGENTS.md`).
+1. **`body` is GENERATED, not stored.** `SkillCell = { name · description[σ_human*] · formalBlock[σ*:
+SkillExpression] · composition }`, no `body` field; the adapter generates SKILL.md. The carry-on WIP still
+   carries a thin `body` — that is scaffolding to remove, NOT the target (storing `body = f(name, formalBlock)`
+   is the parse-to-recover / DRY anti-pattern this de-braid exists to kill). _Chosen against the literal
+   exemplar, on argument — flagged to the Operator; one word reverts to a thin authored `body`._
+2. **The cold-oracle gates STAY in anatomy** (retyped onto forge's `SkillExpression`), not migrated into forge.
+   forge is doctrine-free and depends on nothing in anatomy; the gates ARE the σ\* doctrine.
+3. **Lifecycle-callbacks = generic adapter scaffolding, not skill-scoped hooks.** Settled by the activation
+   model (`boundary.ts`: skills activate by trigger; the only event binding is the standalone `Hook` cell).
+   Skills-bind-events would be a separate new-architecture initiative — out of scope here.
 
-The fresh session must verify the MECE cut, the R (dep) edges, and the wave schedule — and re-census every claim
-against the live tree (this doc's counts/anchors rot).
+## Shards + waves (the materialized mirror — authority is the state folders, not this doc)
+
+| Wave | Shard                          | Territory                                                                                                    | State         |
+| ---- | ------------------------------ | ------------------------------------------------------------------------------------------------------------ | ------------- |
+| 0    | **S1 · IR-RESHAPE**            | forge `anatomy/index.ts`                                                                                     | `completed` ✓ |
+| 1 ∥  | **S2 · CELLS-MIGRATE**         | anatomy `skills/*` ×15 + `agents/*` ×10 (owns the skill import-flip)                                         | `completed` ✓ |
+| 1 ∥  | **S4 · GATES-RETYPE**          | anatomy `cold-oracle/*`                                                                                      | `completed` ✓ |
+| 2 ∥  | **S3 · ADAPTER-THIN**          | forge `claude/anatomy.ts` + `project-cli` + exemplify renderer + composition→lazy-thunk IR + test-d          | `completed` ✓ |
+| 2 ∥  | **S2b · FORMALBLOCK-COMPLETE** | anatomy `skills/*` ×15 — fold operative body-content into the sole-payload formalBlock                       | `completed` ✓ |
+| 3    | **S5 · TOOLKIT-RETIRE**        | anatomy `toolkit/{skill-cell,cell,codegen}` deleted + composition-wire (15) + gate-caller fixup + codex-leak | `completed` ✓ |
+| 4    | **S6 · VERIFY-GREEN**          | whole repo (clean worktree, cache-bypassed, live cold-oracle) + false-green scrutiny                         | `active`      |
+
+**Dependency edges `R`:** S1 → {S2, S4}; {S1, S2} → {S3, S2b}; {S2, S2b, S3, S4} → S5 → S6. (S3 ∥ S2b: disjoint
+territory — S3 = forge adapter, S2b = anatomy cell content.)
+
+**Execution findings (mid-flight, mine to adjudicate):** (i) **formalBlock-completeness** — with `body` dropped,
+the sole-payload formalBlock must carry all operative content; the old markdown bodies held some the formal
+block didn't (`dream` confirmed: lock-precondition + periodic cascade) → **S2b** audits + folds. The
+body-generate call HOLDS (the body was a 2nd source of truth). (ii) **composition** — forge's eager `Skill[]`
+can't express the cyclic skill graph → **lazy thunk** `() => readonly Skill[]` (S3 IR + generator; S5 wires
+cells). Both reversible, in-remit — decided, not escalated.
+**Watch (S6 reports, does not fix):** memory-contract prose-duplication + `bundle:` path drift.
+
+Re-census note: every count/anchor in the diagnosis rots — each shard RE-GREPs its territory at dispatch.
 
 ## Handoff
 

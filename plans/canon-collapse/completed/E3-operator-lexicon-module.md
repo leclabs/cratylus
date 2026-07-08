@@ -5,14 +5,14 @@
 ## Why
 
 `test/symbols.test.ts` claims "SOURCE-GRAIN, not markdown" then **parses `references/formal-symbolic-notation.md`**
-to load its symbol table — it lints against a *projection*. Per the thesis (TS source, md projection) and
+to load its symbol table — it lints against a _projection_. Per the thesis (TS source, md projection) and
 simplicity/DRY, the lexicon must be an **ESM module**; the markdown human-glossary is unnecessary (a human asks
 an agent to explain an artifact — the on-demand dereference channel, not a maintained doc).
 
 ## Spec
 
 1. **Create `src/toolkit/operator-lexicon.ts`** — the single home. `export const OPERATORS: Record<Glyph,
-   { sense: string; signature: string; coldVerified: boolean }>`. Migrate every col-1 glyph from
+{ sense: string; signature: string; coldVerified: boolean }>`. Migrate every col-1 glyph from
    `formal-symbolic-notation.md`; ADD `↾` (restriction, `coldVerified: true`) and the `⟨⟩` **dual sense**
    (tuple `⟨a,b⟩` AND modifier `X⟨m⟩`, disambiguated by position — both recorded). Dense sense-name +
    signature only; NO human-comprehension prose (agent-audience, per the md's own rule).
