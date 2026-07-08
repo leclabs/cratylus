@@ -52,9 +52,7 @@ slices(P) = argmin over admissible cuts of |R ∩ ⋃ { sᵢ × sⱼ | i ≠ j }
 -- clean-slate / anti-palimpsest: dp is idempotent — net-current carries no edit-history scar.
 dp(dp(c)) = dp(c)
 -- plan-retirement: a plan retires once its result lands; commit association is derived on demand, never stored.
--- plan-agents-md-is-memory: a plan's AGENTS.md is the semantic memory SINK at plan scope — part of the
--- memory system, not the plan system: dream routes plan-scoped items there (open threads · next-steps ·
--- plan-durable facts), reconciled as consolidation (dedup · net-current · move-not-copy); wake's orient reads it.
+-- plan-dir = PLAN.md (state mirror) + task-files in state folders (pending → ready → active → completed) ; NO AGENTS.md memory sink.
 -- session-isolation (memory-session-isolation): dispatch stamps owner(P) := self; occupied(P) ⇒ wake's orient
 -- REPORTS P, never binds it (a live sibling's active frontier is not this session's to resume). No explicit
 -- clear — a completed/stale owner makes occupied(P) false (P inheritable, cross-/clear resume preserved), and

@@ -4,7 +4,7 @@ import { materialize } from './materialize.js';
 
 export const dream: Skill = {
   name: 'dream',
-  description: `use this skill to consolidate an agent's memory — fold the raw EPISODIC stream (the tool computes each record's scope node from its cwd), then route by type: agent-intrinsic identity/facts to SEMANTIC, generalized cross-project wisdom to PROCEDURAL (only what no projection already carries), scoped knowledge and next-steps to the node's AGENTS.md, networked reference to the vault, the rest dropped; consumed raw is drained; SOUL is never written.`,
+  description: `use this skill to consolidate an agent's memory — fold the raw EPISODIC stream (the tool computes each record's scope node from its cwd), then route by type: agent-intrinsic identity/facts to SEMANTIC, generalized cross-project wisdom to PROCEDURAL (only what no projection already carries), forward next-steps to EPISODIC, networked reference to the vault, the rest dropped; consumed raw is drained; SOUL is never written.`,
   formalBlock: `DECLARATIONS
 memory              — agent organ-home ⟨SEMANTIC · PROCEDURAL · EPISODIC⟩ ∪ episodic.mjs runtime
 EPISODIC            — raw time-ordered event stream ∪ forward next-steps
@@ -17,7 +17,7 @@ node                : cwd × host → scope ⟨nearest boundary-marker ancestor 
 read                : home × session → records ⟨own ∪ completed ; live-sibling ∉⟩
 fold                : home → { id ↦ node ∪ legacy }
 drain               : home → ∅ ↾ completed-sessions ⟨--completed-only retains a live sibling ; --for-session adds self at handoff⟩
-route               : record → { AGENTS-node · SEMANTIC · PROCEDURAL · vault · EPISODIC · drop }
+route               : record → { SEMANTIC · PROCEDURAL · vault · EPISODIC · drop }
 distill(i)          ≜ densest-faithful-point(i)
 depalimpsest        — reconcile the resident set to current ground-truth ⟨¬only-drop-stale⟩
 promotion-is-move   — a promoted item ∉ its raw source
@@ -27,19 +27,15 @@ dream ≜ read ⟨EPISODIC⟩ ↦ exemplify ↦ materialize
 lock-precondition ≜ acquire(lock) before any write to {SEMANTIC · PROCEDURAL} ∨ any drain ; held-by-live-other ⇒ skip consolidation this wake ⟨raw preserved ; encode always-legal⟩
 ∀ i ∈ read(home, session) : i = distill(i)
 instances-governing-exemplar(i) ⇒ i ↦ pointer            -- cite, don't copy
-node(i) ∉ { HOME · legacy } ⇒ i ∉ SEMANTIC ∧ i ∉ PROCEDURAL
-node(i) = plan ⇒ i ↦ plans/<plan>/AGENTS.md              -- semantic ∧ open-threads ∧ next-steps ; depalimpsested on write
-node(i) = project ∨ package ⇒ i ↦ <node>/AGENTS.md       ( voluminous ⇒ <repo>/docs/ -- the vault-rule at scope )
+node(i) ∉ { HOME · legacy } ⇒ i ∉ SEMANTIC ∧ i ∉ PROCEDURAL   -- a node-scoped non-derivable gotcha ↦ code-site comment (outside dream's route) ; else drop
 identity(i) ∨ agent-intrinsic-durable(i) ⇒ i ↦ SEMANTIC
 generalized-wisdom(i) ∧ ¬projection-carries(i) ⇒ i ↦ PROCEDURAL
 projection-carries(i) ⇒ i ↦ drop
 networked-ref(i) ⇒ i ↦ vault
 next-step(i) ⇒ i ↦ EPISODIC                              -- own-node forward residue only
-AGENTS-node write ≜ dedup ∧ net-current ∧ move-not-copy
-in-repo ⇒ dream-writes = versioned AGENTS-node only ∧ ¬raw-telemetry
 drain ≜ .bak archive before clear ; forward-residue re-encoded after drain ; release(lock) last
 consumed ↦ ∅ ∴ ¬unbounded-growth(EPISODIC)
-EPISODIC ──dream──→ { AGENTS-node · SEMANTIC · PROCEDURAL · EPISODIC · vault }   -- the fold+route cascade
+EPISODIC ──dream──→ { SEMANTIC · PROCEDURAL · EPISODIC · vault }   -- the fold+route cascade
 periodic : SEMANTIC ──dream──→ { SEMANTIC · PROCEDURAL · vault }   -- depalimpsest the resident set vs current ground-truth
     generalized-wisdom(i) ∧ ¬projection-carries(i) ⇒ i ↦ PROCEDURAL   ( projection-carries(i) ⇒ ∅ )
     durable(i) ∧ ¬resident-worthy(i)               ⇒ i ↦ vault        -- hot index → cold corpus

@@ -1,8 +1,10 @@
 # dream-node-sink-retire
 
-**Status: SPEC (praxis, census-grounded) — authored, not executed.** Materialized via `/praxis` with a live
-corpus census (2026-07-08); every edit site below is pinned to a real `file:line`. Supersedes the earlier
-hand-authored stub (which missed the toolkit doctrine + the rule-cell fork). Execution deferred.
+**Status: EXECUTING (session a4d74873, 2026-07-08).** Census-grounded via `/praxis`; every edit site pinned
+to a real `file:line`, all re-confirmed exact at execution. **DONE (unit 1 — sink retirement):** D1 dream.ts
+route stripped · D2 memory.md desc · D3 wake/praxis (signify KEEP) · D5 8 CLAUDE.md partials + empty node
+AGENTS.md deleted. **PENDING (unit 2 — rule instantiation):** D4 (RATIFIED A — root AGENTS.md → first `rule`
+cell + toolkit doctrine) · D6 verify. Push/deploy Operator-reserved.
 
 ## Intent
 
