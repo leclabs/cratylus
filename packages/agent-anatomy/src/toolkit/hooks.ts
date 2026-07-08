@@ -33,6 +33,7 @@ export function hookIrOf(cell: HookCell): Hook {
     id: cell.id,
     events: [...events] as [CanonicalEvent, ...CanonicalEvent[]],
     command: cell.command,
+    ...(cell.matcher !== undefined ? { matcher: cell.matcher } : {}),
     ...(cell.timeout !== undefined ? { timeout: cell.timeout } : {}),
   };
 }

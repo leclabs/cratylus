@@ -55,6 +55,12 @@ export interface HookCell {
   readonly substrate: HookSubstrate;
   /** The harness-agnostic events that trigger the hook (≥1). */
   readonly events: readonly [HookEvent, ...HookEvent[]];
+  /**
+   * Optional per-hook tool matcher (client-native regex, e.g.
+   * `AskUserQuestion|Agent|SendMessage`). Meaningful for tool-scoped events
+   * (`tool.use.pre`); a Stop/SubagentStop hook leaves it unset.
+   */
+  readonly matcher?: string;
   /** The fire command (references the deployed worker path). */
   readonly command: string;
   /** Timeout in seconds; adapter default when omitted. */
