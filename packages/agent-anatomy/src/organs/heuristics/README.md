@@ -7,7 +7,6 @@
 - anchoring
 - availability ⟨recall-ease ↦ frequency⟩
 - recognition ⟨recognized ↦ choice⟩
-- satisficing
 - take-the-best
 
 ---

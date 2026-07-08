@@ -9,7 +9,6 @@ import { goalDirected as goalDirected_framing } from '../organs/framing/goal-dir
 import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/harm-avoidance.js';
 import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
 import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
-import { satisficing as satisficing_heuristics } from '../organs/heuristics/satisficing.js';
 import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
 import { parsimony as parsimony_objective } from '../organs/objective/parsimony.js';
@@ -38,7 +37,7 @@ export const developer: Agent = {
     honesty_guardrails,
     helpfulness_guardrails,
   ],
-  heuristics: [takeTheBest_heuristics, satisficing_heuristics],
+  heuristics: [takeTheBest_heuristics],
   capabilities: [softwareEngineering_capabilities],
   learning: correctionConsolidation_learning,
   situationAwareness: projection_situationAwareness,

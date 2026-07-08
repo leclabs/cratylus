@@ -2,7 +2,7 @@
 kind: structure
 render: verbatim
 deploy: skill-dir
-bundle: ../episodic/dist/episodic.mjs
+bundle: ../agent-memory/dist/episodic.mjs
 skill_description: The memory organ — the bundled episodic tool plus the protocol governing how an agent encodes events and consolidates them across sessions. Not a slash-command; the home its memory rituals run from.
 description: An ambient person-agent's memory — the one home for the whole lifecycle (encode → dream → wake) and the model behind it: resident stores (SOUL commons-fixed; SEMANTIC, PROCEDURAL, EPISODIC self-authored) plus outward homes (AGENTS.md at scope nodes, vault), where every record's scope is computed from its cwd (node(cwd), the nearest marker-declared ancestor directory) and its type picks the organ — so one agent stays one person across fleet, user, and project.
 ---

@@ -31,7 +31,7 @@ export const principalEngineerReviewer: Agent = {
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: reasoningTrace_transparency,
   autonomy: null,
-  provenance: { mark: { emoji: '🛡️', hue: 'purple' } },
+  provenance: { mark: { emoji: '🛡️', hue: 'red' } },
   objective: correctness_objective,
   guardrails: [
     harmAvoidance_guardrails,

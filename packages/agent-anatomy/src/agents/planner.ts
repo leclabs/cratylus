@@ -29,7 +29,7 @@ export const planner: Agent = {
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: decisionRationale_transparency,
   autonomy: null,
-  provenance: { mark: { emoji: '🗺️', hue: 'blue' } },
+  provenance: { mark: { emoji: '🗺️', hue: 'orange' } },
   objective: thoroughness_objective,
   engineeringPrinciples: [separationOfConcerns_engineeringPrinciples],
   guardrails: [
