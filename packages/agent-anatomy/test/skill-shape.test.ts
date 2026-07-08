@@ -13,8 +13,8 @@
 //                Bindings region is the sole composition home; a re-citing `≜` is a
 //                FAIL. (mirrors `gate_skill_provenance`'s CITE-TWICE.)
 //
-// SOURCE-GRAIN: the surface is each module's verbatim `body` (the canonical cell
-// body the Python gate read), not the `.md`.
+// SOURCE-GRAIN: the surface is each module's σ* `formalBlock` (the forge IR field;
+// the retired verbatim `body`'s successor), not the projected `.md`.
 //
 // NON-VACUOUS: an injected empty-body skill blocks OPERATIVE; an injected
 // both-present skill blocks CITE-TWICE; the live corpus passes both. All asserted.
@@ -22,8 +22,8 @@
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import type { Skill } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
-import type { SkillCell } from '../src/toolkit/skill-cell.js';
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');
 
@@ -122,10 +122,10 @@ async function firstExport<T>(modPath: string): Promise<T> {
   return mod[key as string] as T;
 }
 
-async function allSkills(): Promise<Array<{ rel: string; cell: SkillCell }>> {
-  const out: Array<{ rel: string; cell: SkillCell }> = [];
+async function allSkills(): Promise<Array<{ rel: string; cell: Skill }>> {
+  const out: Array<{ rel: string; cell: Skill }> = [];
   for await (const p of glob('skills/*.ts', { cwd: srcRoot })) {
-    out.push({ rel: p, cell: await firstExport<SkillCell>(join(srcRoot, p)) });
+    out.push({ rel: p, cell: await firstExport<Skill>(join(srcRoot, p)) });
   }
   return out.sort((a, b) => a.rel.localeCompare(b.rel));
 }
@@ -135,7 +135,7 @@ describe('SKILL-SHAPE gate — operative content + cite-once', () => {
     const skills = await allSkills();
     expect(skills.length).toBe(15);
     const failures = skills
-      .filter(({ cell }) => !isOperative(cell.body))
+      .filter(({ cell }) => !isOperative(cell.formalBlock))
       .map(({ cell }) => `OPERATIVE ${cell.name}: no operative content`);
     expect(failures, failures.join('\n')).toEqual([]);
   });
@@ -146,7 +146,8 @@ describe('SKILL-SHAPE gate — operative content + cite-once', () => {
     const failures = skills
       .filter(
         ({ cell }) =>
-          hasBindingsRegion(cell.body) && hasProseFormula(cell.body),
+          hasBindingsRegion(cell.formalBlock) &&
+          hasProseFormula(cell.formalBlock),
       )
       .map(
         ({ cell }) =>

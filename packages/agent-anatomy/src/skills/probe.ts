@@ -1,4 +1,7 @@
-import type { SkillCell } from '../toolkit/skill-cell.js';
+import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
+import { conceptualize } from './conceptualize.js';
+import { elicit } from './elicit.js';
+import { signify } from './signify.js';
 
 const FORMAL_BLOCK = `DECLARATIONS
 
@@ -23,23 +26,11 @@ fired_R(a) = dec_R(a) , a ∈ dom(dec_R)                 -- agrees with signify 
 concept_R(w) ≜ cl_R(fired_R(w))                        -- the concept w circumscribes in R
 probe(w) ≜ ⟨ fired_R(w) · concept_R(w) ⟩              -- readout only; nothing committed; α ∧ C_R unchanged
 -- discover : read concept_R(w) latent in a given name w
--- experiment : weigh candidate names {w_i} against a target C by precise-circumscription(w_i,C,R); a keeper crystallizes through signify`;
+-- experiment : weigh candidate names {w_i} against a target C by precise-circumscription(w_i,C,R); a keeper crystallizes through signify` as SkillExpression;
 
-export const probe: SkillCell = {
+export const probe: Skill = {
   name: 'probe',
-  description: `probe(w) ↦ ⟨fired_R(w) · concept_R(w)⟩ · no-commit-inverse(signify) · discover ∨ experiment(candidate-anchors)`,
-  body: FORMAL_BLOCK,
-  composition: ['signify', 'elicit', 'conceptualize'],
-  body: `
-
-# probe
-
-Forward, no-commit inverse of signify: read a signifier \`w\` already given and return the priors it fires plus the concept it circumscribes, committing nothing — the active counterpart elicit instead queries an oracle for a target not yet signified. Resolve from context: \`w\` — the signifier under probe (a word, phrase, or candidate name); \`R\` — the reader whose priors are the instrument. \`fired_R\` generalizes signify's decoder \`dec_R\` off its assigned anchors; the lattice \`C_R\`, the closure \`cl_R\`, and the distinction space \`D_R\` come from conceptualize. Symbol table: \`src/toolkit/operator-lexicon.ts\`.
-
-Bindings: inverse of signify; counterpart to elicit; draws the lattice from conceptualize.
-
-\`\`\`text
-${FORMAL_BLOCK}
-\`\`\`
-`,
+  description: `use this skill to probe a signifier — read out the latent priors a word, phrase, or candidate name fires in the reader (\`fired_R\`, signify's decoder \`dec_R\` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of signify, for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through signify.`,
+  formalBlock: FORMAL_BLOCK,
+  composition: () => [signify, elicit, conceptualize],
 };

@@ -10,16 +10,26 @@ import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
-  type ResolvedSkill,
   agentToClaudeMd,
   skillToClaudeMd,
 } from '@leclabs/agent-forge/adapters/claude';
-import type { Agent } from '@leclabs/agent-forge/anatomy';
+import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
 import { dream } from '../src/skills/dream.js';
 import { wake } from '../src/skills/wake.js';
-import { fragmentToMarkdown, skillToMarkdown } from '../src/toolkit/project.js';
-import type { SkillCell } from '../src/toolkit/skill-cell.js';
+import { fragmentToMarkdown } from '../src/toolkit/project.js';
+
+/** Project a skill through the forge claude adapter — `f(name, formalBlock,
+ *  composition())`, the SOLE projection path (the stored-body round-trip retired). */
+function renderSkill(s: Skill): string {
+  return skillToClaudeMd({
+    name: s.name,
+    trigger: `/${s.name}`,
+    description: s.description,
+    formalBlock: s.formalBlock,
+    composedFrom: s.composition().map((c) => `/${c.name}`),
+  });
+}
 
 const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const srcRoot = join(anatomyRoot, 'src');
@@ -55,53 +65,33 @@ describe('projection stability (.ts is the sole source)', () => {
     const modules = await collect('skills/*.ts');
     expect(modules.length).toBe(15);
     for (const rel of modules) {
-      const s = await firstExport<SkillCell>(join(srcRoot, rel));
-      expect(skillToMarkdown(s).length, rel).toBeGreaterThan(0);
+      const s = await firstExport<Skill>(join(srcRoot, rel));
+      expect(renderSkill(s).length, rel).toBeGreaterThan(0);
     }
   });
 
-  // Self-sufficiency falsifier (skill-projection-drops-absorbed-declarations):
-  // the rendered SKILL.md must carry the absorbed-declaration bullets — the
-  // cell's "no concept is referenced out" mechanism — while the composition-
-  // formula line (`<name> ≜ …`) stays consumed. The regression rendered the
-  // `Absorbed declarations …:` header over an EMPTY body.
-  it('rendered dream + wake SKILL.md carry their absorbed declarations', () => {
-    const render = (cell: SkillCell): string =>
-      skillToClaudeMd(
-        {
-          name: cell.name,
-          trigger: `/${cell.name}`,
-          description: cell.description,
-          body: cell.body,
-          composedFrom: [],
-          sourcePath: `packages/agent-anatomy/src/skills/${cell.name}.ts`,
-        } satisfies ResolvedSkill,
-        (slug) => `**${slug}**`,
-      );
-
-    const dreamMd = render(dream);
-    expect(dreamMd).toContain('- **memory** ≜');
-    expect(dreamMd).toContain('- **fold-then-route** ≜');
-    expect(dreamMd).toContain('- **node** ≜');
-    expect(dreamMd).toContain('- **palimpsest** ≜');
-    // The prose composition formula is consumed, not emitted …
-    expect(dreamMd).not.toMatch(/^dream ≜ the memory-consolidation/m);
-    // … while the fenced `dream ≜` law line renders verbatim.
-    expect(dreamMd).toContain('dream ≜ exemplify : E → I');
-
-    const wakeMd = render(wake);
-    expect(wakeMd).toContain('- **continuity-thread** ≜');
-    expect(wakeMd).toContain('- **memory store** ≜');
-    expect(wakeMd).not.toMatch(/^wake ≜/m);
-    expect(wakeMd).toContain(
-      'WAKE ≜ register → dream → load → orient → resume',
+  // De-braid model: a skill's SKILL.md is `f(name, formalBlock, composition())`,
+  // rendered VERBATIM by the forge adapter — the σ* `formalBlock` inside the fence
+  // plus a "Composed from …" provenance line from the lazy composition thunk. The
+  // retired "absorbed declarations" mechanism (composition-formula consumed, decls
+  // lifted out of a stored body) no longer exists: the formalBlock IS the whole
+  // payload. This guards that the formalBlock reaches the projection intact AND the
+  // composition thunk resolves to the live siblings' `/trigger`s.
+  it('rendered dream + wake project their formalBlock + composed-from siblings', () => {
+    const dreamMd = renderSkill(dream);
+    // the σ* formalBlock law lines render VERBATIM inside the fence …
+    expect(dreamMd).toContain(
+      'dream ≜ read ⟨EPISODIC⟩ ↦ exemplify ↦ materialize',
     );
+    expect(dreamMd).toContain('lock-precondition ≜');
+    // … and the composition thunk reaches the projected "Composed from" line.
+    expect(dreamMd).toContain('Composed from /exemplify · /materialize.');
 
-    // The header-over-empty-body shape is asserted ABSENT: the first
-    // non-blank line after the header is a declaration bullet.
-    for (const md of [dreamMd, wakeMd]) {
-      expect(md).toMatch(/Absorbed declarations[^\n]*:\n\n- \*\*/);
-    }
+    const wakeMd = renderSkill(wake);
+    expect(wakeMd).toContain(
+      'WAKE ≜ migrate? → register → dream → load → orient → resume',
+    );
+    expect(wakeMd).toContain('Composed from /dream.');
   });
 
   it('every agent resolves and projects a SOUL', async () => {

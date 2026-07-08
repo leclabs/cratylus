@@ -20,6 +20,8 @@
 // This module is PURE — witnesses over supplied data, zero IO. Corpus loading +
 // oracle driving live in the caller (`test/reader-density.test.ts`, `./oracle.ts`).
 
+import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
+
 /** The six Universal legs of `accept()` (MODEL.md). */
 export type Leg =
   | 'CANONICAL'
@@ -50,7 +52,13 @@ export interface AcceptCell {
    * `role document` vs `output-format document`). Absent ⇒ the bare slug is the id.
    */
   readonly organ?: string;
-  /** D(c) — the cell body / definiens (the core fragment for a value cell). */
+  /**
+   * D(c) — the definiens (the core σ* fragment). Sourced TYPED from the IR field,
+   * NEVER fence-scraped: an organ value's branded string, a skill's `formalBlock`
+   * (`SkillExpression` — see `acceptCellOfSkill`), or an agent's `persona`. Each is a
+   * branded string, so `string` is the widest home; the skill bridge keeps the payload
+   * the typed IR field, not a markdown scrape.
+   */
   readonly definiens: string;
   /** The anchors this cell references (imports · `[[ ]]` · composition). */
   readonly refs: readonly string[];
@@ -59,6 +67,20 @@ export interface AcceptCell {
 /** A concept's home-map identity — organ-qualified when the organ is known. */
 export function conceptKey(cell: Pick<AcceptCell, 'slug' | 'organ'>): string {
   return cell.organ ? `${cell.organ}/${cell.slug}` : cell.slug;
+}
+
+/**
+ * The typed bridge: a forge `Skill` IR cell → the `AcceptCell` grain the static legs
+ * read. The skill's PARSIMONIOUS definiens IS its `formalBlock` (`SkillExpression`) —
+ * the sole σ* payload — consumed as the typed IR field, NEVER a fence-scraped body.
+ * The σ_human* `description` is not σ* and never becomes a definiens (E2a un-gating).
+ */
+export function acceptCellOfSkill(
+  skill: Pick<Skill, 'name' | 'formalBlock'>,
+  refs: readonly string[] = [],
+): AcceptCell {
+  const formalBlock: SkillExpression = skill.formalBlock;
+  return { kind: 'skill', slug: skill.name, definiens: formalBlock, refs };
 }
 
 /** concept-anchor → its home cell-ids (the partition the corpus induces). */

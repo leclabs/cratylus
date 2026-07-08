@@ -22,8 +22,7 @@ import {
   agentsMdSurface,
   skillToCodexMd,
 } from '@leclabs/agent-forge/adapters/codex';
-import type { Agent } from '@leclabs/agent-forge/anatomy';
-import type { SkillCell } from './skill-cell.js';
+import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const anatomyRoot = join(here, '..', '..');
@@ -82,14 +81,21 @@ async function agentOf(modPath: string): Promise<Agent> {
   return mod[key] as Agent;
 }
 
-/** The first `SkillCell` export of a skill module. */
-async function skillCellOf(modPath: string): Promise<SkillCell> {
+/** The `Skill` export of a skill module (the object carrying `formalBlock`; a
+ *  module also exports its `<name>Notation` σ* string, which this skips). */
+async function skillOf(modPath: string): Promise<Skill> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<
     string,
     unknown
   >;
-  const key = Object.keys(mod).find((k) => k !== 'default');
-  return mod[key as string] as SkillCell;
+  const skill = Object.values(mod).find(
+    (v): v is Skill =>
+      typeof v === 'object' && v !== null && 'formalBlock' in v,
+  );
+  if (!skill) {
+    throw new Error(`${modPath}: no Skill export`);
+  }
+  return skill;
 }
 
 async function projectAgents(args: Args): Promise<string[]> {
@@ -110,32 +116,21 @@ async function projectAgents(args: Args): Promise<string[]> {
 
 async function projectSkills(args: Args): Promise<number> {
   const names = await moduleNames(skillsModDir);
-  const cells = new Map<string, SkillCell>();
-  for (const name of names) {
-    cells.set(name, await skillCellOf(join(skillsModDir, `${name}.ts`)));
-  }
-  // The codex ref projector: a `[[slug]]` whose target is a known skill → its
-  // `/trigger`; any other slug → typographic `**slug**` (same affordance as claude
-  // — codex consumes the AgentSkills `/trigger` surface too).
-  const refProject = (slug: string): string => {
-    const cell = cells.get(slug);
-    return cell ? `/${cell.name}` : `**${slug}**`;
-  };
-
   let n = 0;
   for (const name of names) {
-    const cell = cells.get(name) as SkillCell;
+    const cell = await skillOf(join(skillsModDir, `${name}.ts`));
     const resolved: ResolvedSkill = {
       name: cell.name,
       trigger: `/${cell.name}`,
       description: cell.description,
-      body: cell.body,
-      composedFrom: cell.composition.map(refProject),
-      sourcePath: `packages/agent-anatomy/skill/${name}.md`,
+      formalBlock: cell.formalBlock,
+      // Composed-from: the resolved sibling skills (lazy thunk), each as its
+      // `/trigger`. Every entry IS a known skill, so no slug lookup is needed.
+      composedFrom: cell.composition().map((c) => `/${c.name}`),
     };
     const dir = join(args.out, 'skills', name);
     mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, 'SKILL.md'), skillToCodexMd(resolved, refProject));
+    writeFileSync(join(dir, 'SKILL.md'), skillToCodexMd(resolved));
     process.stdout.write(`EMIT codex skill ${name}\n`);
     n++;
   }
@@ -163,17 +158,13 @@ async function projectMemorySkill(args: Args): Promise<void> {
     trigger: '',
     description: fm,
     skillDescription: frontField(memRaw, 'skill_description') || fm,
-    body: '',
+    formalBlock: '', // bypassed: the `deploy: skill-dir` toolSection path
     composedFrom: [],
-    sourcePath: 'packages/agent-anatomy/src/genus/memory.md',
     toolSection,
   };
   const dir = join(args.out, 'skills', 'memory');
   mkdirSync(dir, { recursive: true });
-  writeFileSync(
-    join(dir, 'SKILL.md'),
-    skillToCodexMd(resolved, (s) => `**${s}**`),
-  );
+  writeFileSync(join(dir, 'SKILL.md'), skillToCodexMd(resolved));
   process.stdout.write('EMIT codex skill memory (dual-deploy)\n');
 }
 

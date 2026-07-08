@@ -1,13 +1,17 @@
 // residue.ts — the machine-check behind AC-RESIDUE (PLAN.md · MODEL PARSIMONIOUS
 // `body(c)=⟨α, residue⟩ ∧ residue=D∖fired(α)` specialized to the DEPLOYED corpus).
 //
-// GOVERNING INVARIANT (the project's whole point): every deployed artifact the model
-// reads is formal σ* under ρ, never human prose. This leg enforces it over the whole
-// deployed σ* payload set — every organ VALUE string · every skill `description` ·
-// every skill `body` (whole). Each is read by the model as context ⇒ it MUST
-// address the model's semantic space in formal σ*, never explanatory prose (the
-// vision's failure criterion). Only enumerated executable worker-bytes (HookCell
-// `command`/`workers`) are excluded — they are code, not decoded context.
+// GOVERNING INVARIANT (the project's whole point): every deployed σ* artifact the
+// model reads is formal σ* under ρ, never human prose. This leg enforces it over the
+// σ* payload set — the fields whose reader binding ρ is σ* (model-read): every organ
+// VALUE string · every skill `formalBlock` (the typed `SkillExpression`) · every agent
+// `persona`. Membership is a per-FIELD partition (`RESIDUE_GATED_FIELDS` below), NOT a
+// per-file rule — the skill cell carries BOTH a σ* field (`formalBlock`) and a σ_human*
+// field (`description`). The σ_human* fields — skill `description` · agent `description`
+// (human-read selection bounds the router/subagent surfaces) — are EXEMPT by ρ
+// (`RESIDUE_EXEMPT_FIELDS`), NOT residue-gated: this REVERSES the prior over-gating of
+// `description` as σ* (the E2a fix). Enumerated executable worker-bytes (HookCell
+// `command`/`workers`) are code, not decoded context — also out.
 //
 // DECIDABLE PREDICATE (two shapes, one leg):
 //
@@ -23,7 +27,7 @@
 //     semantic work. On reject the verdict NAMES the offending clause (actionable for
 //     the O*/S* reduction waves).
 //
-//   FORMAL-BLOCK (skill `body`, whole) admissible ⇔ it is a `formalize`
+//   FORMAL-BLOCK (skill `formalBlock`, whole) admissible ⇔ it is a `formalize`
 //     artifact: every non-blank line is a DECLARATION (a symbol bound via `≜`/`:`/`;`/
 //     `—`), a LAW (carries a declared formal glyph — the `operator-lexicon` glyph set,
 //     the SECOND DRY read of the module), a structural header (`DECLARATIONS`/`LAWS`/a
@@ -32,9 +36,10 @@
 //     named by line number on reject.
 //
 // PURE — witnesses over supplied strings, zero IO. Corpus loading (organ values ·
-// descriptions · bodys) lives in the caller (`test/reader-density.test.ts`),
+// skill formalBlocks · agent personas) lives in the caller (`test/reader-density.test.ts`),
 // mirroring `structural-parsimony.ts` (a sibling `accept()` leg driven by its test).
 
+import type { SkillExpression } from '@leclabs/agent-forge/anatomy';
 import { OPERATORS, RESIDUE_OPERATORS } from '../operator-lexicon.js';
 
 export type ResidueShape = 'single-line' | 'formal-block';
@@ -309,3 +314,55 @@ export function admissibleResidue(
     ? admissibleBody(payload)
     : admissibleSingleLine(payload);
 }
+
+/**
+ * AC-RESIDUE over a skill's σ* payload — the TYPED forge `formalBlock`
+ * (`SkillExpression`), consumed as the IR field, NEVER a fence-scraped body. A
+ * `formalBlock` is a `formalize` artifact ⇒ the FORMAL-BLOCK shape. This is the sole
+ * σ* payload of a skill cell; its sibling `description` is σ_human* and un-gated.
+ */
+export function admissibleFormalBlock(
+  formalBlock: SkillExpression,
+): ResidueVerdict {
+  return admissibleBody(formalBlock);
+}
+
+// ── the per-FIELD residue partition — ρ decides membership (the gate's contract) ──
+//
+// AC-RESIDUE gates the σ* fields ONLY. A cell field's reader binding ρ decides
+// membership: σ* (model-read) ⇒ residue-gated at its shape; σ_human* (human-read
+// selection bound) ⇒ EXEMPT. This is a per-FIELD partition, NOT a per-file rule — a
+// skill cell carries a σ* field (`formalBlock`) AND a σ_human* field (`description`),
+// and an agent carries a σ* `persona` AND a σ_human* `description`.
+
+/** A cell field's reader binding — the two ρ classes the partition splits on. */
+export type ReaderBinding = 'σ*' | 'σ_human*';
+
+/** A σ*-gated field: its address + the residue shape AC-RESIDUE reads it at. */
+export interface GatedField {
+  readonly field: 'organ-value' | 'skill.formalBlock' | 'agent.persona';
+  readonly shape: ResidueShape;
+}
+
+/**
+ * The σ* fields residue/parsimony gate — the gate's field-partition contract, one
+ * home. organ value (single-line `α ≜ residue`) · skill `formalBlock` (the typed
+ * `SkillExpression`, a formalize block) · agent `persona` (single-line σ* identity).
+ * `skill.description` is DELIBERATELY ABSENT (the E2a un-gating — grep the set).
+ */
+export const RESIDUE_GATED_FIELDS: readonly GatedField[] = [
+  { field: 'organ-value', shape: 'single-line' },
+  { field: 'skill.formalBlock', shape: 'formal-block' },
+  { field: 'agent.persona', shape: 'single-line' },
+] as const;
+
+/**
+ * The σ_human* fields — human-read one-line selection bounds the router/subagent
+ * surfaces, NEVER residue-gated. `skill.description` leaves the gated set here (it was
+ * over-gated as σ*; it is σ_human*), joining `agent.description` (its one-level-up
+ * twin). Exempt by ρ, never by path.
+ */
+export const RESIDUE_EXEMPT_FIELDS: readonly (
+  | 'skill.description'
+  | 'agent.description'
+)[] = ['skill.description', 'agent.description'] as const;

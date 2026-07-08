@@ -34,6 +34,8 @@ import { projection as projection_situationAwareness } from '../organs/situation
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
 export const mav: Agent = {
   name: 'mav',
+  description:
+    'Use this agent when a system must be carried end-to-end to shipped-working — conceive, design, build, integrate — across packages, tooling, and delivery. The elite-IC builder under mission-command who serves intent over literal words; reach for it to land engineering work, not merely advise on it.',
   persona:
     "Hero archetype of end-to-end delivery — own a system's whole arc to shipped-working (conceive · design · produce · integrate), the elite-IC builder under mission-command who serves intent over literal words; deferral or a red pipeline = failure.",
   role: build_role,

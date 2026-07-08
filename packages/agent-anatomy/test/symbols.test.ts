@@ -19,9 +19,9 @@
 import { glob } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import type { Skill } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
 import { declaredGlyphs } from '../src/toolkit/operator-lexicon.js';
-import type { SkillCell } from '../src/toolkit/skill-cell.js';
 
 const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const srcRoot = join(anatomyRoot, 'src');
@@ -67,6 +67,15 @@ function symbolExempt(ch: string): boolean {
   if (o === 0x2014) {
     return true;
   }
+  // ⊕ (U+2295) — the model's canonical organ-vector builder (`vector(A) ≜
+  // ⊕{ o ↦ value(o) }`, create-agent). DELIBERATELY absent from the operator
+  // table: the RESIDUE gate excludes member-composition from an organ-value
+  // residue ("no compose-op without its own cold survey" — reader-density L569),
+  // so ⊕ is not a shared `OPERATORS` key. It is legitimate STRUCTURAL notation in
+  // a multi-line formalize block, so the register-scoped SYMBOLS gate exempts it.
+  if (o === 0x2295) {
+    return true;
+  }
   return false;
 }
 
@@ -97,7 +106,36 @@ function fenceInteriors(
   return out;
 }
 
-/** Every undeclared, non-exempt glyph in the fence interiors of `text`. */
+/** Every undeclared, non-exempt glyph across the lines of `block` (1-based `line0`
+ *  is the block's first-line number, for diagnostics). */
+function offendingGlyphsInLines(
+  label: string,
+  block: string,
+  declared: Set<string>,
+  line0: number,
+  note: string,
+): string[] {
+  const errs: string[] = [];
+  const flines = block.split('\n');
+  for (let j = 0; j < flines.length; j++) {
+    for (const ch of flines[j] as string) {
+      if (symbolExempt(ch) || declared.has(ch)) {
+        continue;
+      }
+      const cp = (ch.codePointAt(0) ?? 0)
+        .toString(16)
+        .toUpperCase()
+        .padStart(4, '0');
+      errs.push(
+        `SYMBOL ${label}:${line0 + j}: undeclared glyph ${JSON.stringify(ch)} (U+${cp})${note} — not in the symbol table, not a definiendum-class/exempt glyph`,
+      );
+    }
+  }
+  return errs;
+}
+
+/** Every undeclared, non-exempt glyph in the fence interiors of `text` (fragment
+ *  definientia: any fenced block; the current corpus has none). */
 function offendingGlyphs(
   label: string,
   text: string,
@@ -105,23 +143,27 @@ function offendingGlyphs(
 ): string[] {
   const errs: string[] = [];
   for (const fb of fenceInteriors(text)) {
-    const flines = fb.content.split('\n');
-    for (let j = 0; j < flines.length; j++) {
-      for (const ch of flines[j] as string) {
-        if (symbolExempt(ch) || declared.has(ch)) {
-          continue;
-        }
-        const cp = (ch.codePointAt(0) ?? 0)
-          .toString(16)
-          .toUpperCase()
-          .padStart(4, '0');
-        errs.push(
-          `SYMBOL ${label}:${fb.line + j}: undeclared glyph ${JSON.stringify(ch)} (U+${cp}) in a fence — not in the symbol table, not a definiendum-class/exempt glyph`,
-        );
-      }
-    }
+    errs.push(
+      ...offendingGlyphsInLines(
+        label,
+        fb.content,
+        declared,
+        fb.line,
+        ' in a fence',
+      ),
+    );
   }
   return errs;
+}
+
+/** Every undeclared, non-exempt glyph in a skill's `formalBlock` — the σ* set-builder
+ *  block IS the formal notation (the retired body's fence interior), scanned WHOLE. */
+function offendingGlyphsInFormalBlock(
+  label: string,
+  formalBlock: string,
+  declared: Set<string>,
+): string[] {
+  return offendingGlyphsInLines(label, formalBlock, declared, 1, '');
 }
 
 async function firstExport<T>(modPath: string): Promise<T> {
@@ -152,14 +194,21 @@ describe('SYMBOLS gate — fence-interior glyph coverage', () => {
     }
   });
 
-  it('every skill body uses only declared / exempt glyphs', async () => {
+  it('every skill formalBlock uses only declared / exempt glyphs', async () => {
     const modules = await collect('skills/*.ts');
     expect(modules.length).toBe(15);
     const failures: string[] = [];
     for (const rel of modules) {
-      const s = await firstExport<SkillCell>(join(srcRoot, rel));
-      // The `body` carries the projected fence(s); its interior == `body`.
-      failures.push(...offendingGlyphs(`skill ${s.name}`, s.body, declared));
+      const s = await firstExport<Skill>(join(srcRoot, rel));
+      // The σ* `formalBlock` IS the formal notation (the retired body's fence
+      // interior), so scan it WHOLE — not via fence extraction (it carries no ```).
+      failures.push(
+        ...offendingGlyphsInFormalBlock(
+          `skill ${s.name}`,
+          s.formalBlock,
+          declared,
+        ),
+      );
     }
     expect(failures, failures.join('\n')).toEqual([]);
   });

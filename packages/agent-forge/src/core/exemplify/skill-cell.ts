@@ -66,16 +66,32 @@ export function renderBody(spec: SkillCellSpec): string {
   return block;
 }
 
-/** The cell body: verb H1 + optional intro + the fenced formal block —
- *  frontmatter-less, the form the config-IR `Skill.body` carries (adapters
- *  compose destination frontmatter from the IR's name/description). */
-export function renderSkillCellBody(spec: SkillCellSpec): string {
-  const block = renderBody(spec);
-  const intro = spec.intro ? `${spec.intro}\n\n` : '';
-  return `# ${spec.verb}\n\n${intro}\`\`\`text\n${block}\n\`\`\`\n`;
+/**
+ * THE ONE skill-cell body generator — the single home both the claude/codex
+ * adapter skill projection (`@leclabs/agent-forge/adapters/claude` `skillBody`)
+ * and exemplify's standalone cell (`renderSkillCell`) render through. A PURE MAP
+ * from parts to markdown: a verb H1, optional intro prose, the fenced `text`
+ * formal block, and an optional "Composed from …" provenance line. There is NO
+ * parsing, NO `[[ref]]` projection, NO `## Harness` selection, NO `≜`-line strip
+ * — the σ* `block` is emitted VERBATIM inside the fence (the thin-generator law:
+ * SKILL.md = f(name, formalBlock, composition), never a stored/re-parsed body).
+ */
+export function renderSkillCellBody(parts: {
+  readonly verb: string;
+  readonly block: string;
+  readonly intro?: string;
+  readonly composedFrom?: readonly string[];
+}): string {
+  const intro = parts.intro ? `${parts.intro}\n\n` : '';
+  const composed = parts.composedFrom?.length
+    ? `\nComposed from ${parts.composedFrom.join(' · ')}.\n`
+    : '';
+  return `# ${parts.verb}\n\n${intro}\`\`\`text\n${parts.block}\n\`\`\`\n${composed}`;
 }
 
-/** The full standalone SKILL.md cell (frontmatter + body). */
+/** The full standalone SKILL.md cell (frontmatter + body) — exemplify's spec
+ *  path: validate the cell laws, render the block from declarations/laws, frame
+ *  it through the one body generator. */
 export function renderSkillCell(spec: SkillCellSpec): string {
   const reasons: string[] = [];
   if (!/^[a-z0-9-]+$/.test(spec.name)) {
@@ -89,5 +105,10 @@ export function renderSkillCell(spec: SkillCellSpec): string {
   }
   if (reasons.length > 0) throw new ExemplifyRefusal(reasons);
   const frontmatter = `---\nname: ${spec.name}\ndescription: ${spec.description}\n---\n\n`;
-  return `${frontmatter}${renderSkillCellBody(spec)}`;
+  const body = renderSkillCellBody({
+    verb: spec.verb,
+    block: renderBody(spec),
+    intro: spec.intro,
+  });
+  return `${frontmatter}${body}`;
 }

@@ -20,6 +20,8 @@ import { projection as projection_situationAwareness } from '../organs/situation
 import { decisionRationale as decisionRationale_transparency } from '../organs/transparency/decision-rationale.js';
 export const planner: Agent = {
   name: 'planner',
+  description:
+    'Use this agent when you have an agreed goal and need it decomposed into ordered, scoped steps — one concern per shard — sequenced for execution. It plans; it does not execute the steps it lays out.',
   persona:
     'Ruler archetype of tactical decomposition — partition a goal into ordered, scoped steps and sequence them (plan, ¬execute), downstream of an agreed goal · upstream of execution; one concern per shard.',
   role: plan_role,

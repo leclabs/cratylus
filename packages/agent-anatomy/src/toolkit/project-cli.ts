@@ -2,37 +2,27 @@
 // claude adapter and runs it over agent-anatomy's typed agent/skill modules, writing the
 // full SOUL/SKILL tree to disk. The PROJECTION LOGIC lives in agent-forge
 // (`@leclabs/agent-forge/adapters/claude`); this step only walks agent-anatomy's modules and
-// wires them to it (agent-anatomy = agent-forge's source). The TS counterpart of
-// `toolkit/resolve.py main()`.
+// wires them to it (agent-anatomy = agent-forge's source).
 //
-// Usage:  tsx src/toolkit/project-cli.ts [--out <dir>] [--density <reader>]
-//                                        [--profile <reader/harness>]
-//   default out:     packages/agent-anatomy/.render-ts   (gitignored; never the Python .render)
-//   default density: strong-llm-lean (the deployed reader; → profile
-//                    strong-llm-lean/claude-code)
+// Usage:  tsx src/toolkit/project-cli.ts [--out <dir>]
+//   default out:  packages/agent-anatomy/.render-ts   (gitignored)
 //
-// Reader density is the PRIMARY knob — `--density strong-llm-lean|strong-llm|weak-llm`
-// — and is just a PROJECTION PARAMETER, never a property of the source modules: the
-// same typed fragments project at the chosen density. It maps to the recorded
-// `profile:` header as `<density>/claude-code`. `--profile` is the explicit escape
-// hatch (full `<reader>/<harness>` control); it overrides `--density` when given.
+// Projection is a THIN MAP from the typed `Agent`/`Skill` vectors — no reader-density
+// knob (a dead projection parameter: the body was byte-identical at every density) and
+// no provenance banner. A skill's SKILL.md is `f(name, formalBlock, composition())`.
 
 import { chmodSync, copyFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
-  type ReaderDensity,
   type ResolvedSkill,
   agentToClaudeMd,
-  densityProfile,
-  isReaderDensity,
   serializeClaudeHooksReport,
   skillToClaudeMd,
 } from '@leclabs/agent-forge/adapters/claude';
-import type { Agent } from '@leclabs/agent-forge/anatomy';
+import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
 import { hookSources } from './hooks.js';
-import type { SkillCell } from './skill-cell.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const anatomyRoot = join(here, '..', '..');
@@ -41,13 +31,10 @@ const skillsModDir = join(anatomyRoot, 'src', 'skills');
 
 interface Args {
   out: string;
-  profile: string;
 }
 
 function parseArgs(argv: string[]): Args {
   let out = join(anatomyRoot, '.render-ts');
-  let density: ReaderDensity = 'strong-llm-lean';
-  let profile: string | undefined;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--out') {
@@ -56,29 +43,11 @@ function parseArgs(argv: string[]): Args {
         throw new Error('--out requires a value');
       }
       out = v;
-    } else if (a === '--density') {
-      const v = argv[++i];
-      if (!v) {
-        throw new Error('--density requires a value');
-      }
-      if (!isReaderDensity(v)) {
-        throw new Error(
-          `unknown --density ${v} (want strong-llm-lean | strong-llm | weak-llm)`,
-        );
-      }
-      density = v;
-    } else if (a === '--profile') {
-      const v = argv[++i];
-      if (!v) {
-        throw new Error('--profile requires a value');
-      }
-      profile = v;
     } else {
       throw new Error(`unknown arg ${a}`);
     }
   }
-  // `--profile` (explicit `<reader>/<harness>`) wins; else derive from `--density`.
-  return { out, profile: profile ?? densityProfile(density) };
+  return { out };
 }
 
 async function moduleNames(dir: string): Promise<string[]> {
@@ -104,17 +73,24 @@ async function agentOf(modPath: string): Promise<Agent> {
   return mod[key] as Agent;
 }
 
-/** The first `SkillCell` export of a skill module. */
-async function skillCellOf(modPath: string): Promise<SkillCell> {
+/** The `Skill` export of a skill module (the object carrying `formalBlock`; a
+ *  module also exports its `<name>Notation` σ* string, which this skips). */
+async function skillOf(modPath: string): Promise<Skill> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<
     string,
     unknown
   >;
-  const key = Object.keys(mod).find((k) => k !== 'default');
-  return mod[key as string] as SkillCell;
+  const skill = Object.values(mod).find(
+    (v): v is Skill =>
+      typeof v === 'object' && v !== null && 'formalBlock' in v,
+  );
+  if (!skill) {
+    throw new Error(`${modPath}: no Skill export`);
+  }
+  return skill;
 }
 
-async function projectAgents(out: string, _profile: string): Promise<number> {
+async function projectAgents(out: string): Promise<number> {
   const dir = join(out, 'agents');
   mkdirSync(dir, { recursive: true });
   let n = 0;
@@ -127,36 +103,23 @@ async function projectAgents(out: string, _profile: string): Promise<number> {
   return n;
 }
 
-async function projectSkills(out: string, profile: string): Promise<number> {
+async function projectSkills(out: string): Promise<number> {
   const names = await moduleNames(skillsModDir);
-  const cells = new Map<string, SkillCell>();
-  for (const name of names) {
-    cells.set(name, await skillCellOf(join(skillsModDir, `${name}.ts`)));
-  }
-  // The ref projector: a `[[slug]]` whose target is a known skill → its `/trigger`;
-  // any other slug → typographic `**slug**` (mirrors compose.harness.ref_text).
-  const refProject = (slug: string): string => {
-    const cell = cells.get(slug);
-    return cell ? `/${cell.name}` : `**${slug}**`;
-  };
-
   let n = 0;
   for (const name of names) {
-    const cell = cells.get(name) as SkillCell;
+    const cell = await skillOf(join(skillsModDir, `${name}.ts`));
     const resolved: ResolvedSkill = {
       name: cell.name,
       trigger: `/${cell.name}`,
       description: cell.description,
-      body: cell.body,
-      composedFrom: cell.composition.map(refProject),
-      sourcePath: `packages/agent-anatomy/skill/${name}.md`,
+      formalBlock: cell.formalBlock,
+      // Composed-from: the resolved sibling skills (lazy thunk), each as its
+      // `/trigger`. Every entry IS a known skill, so no slug lookup is needed.
+      composedFrom: cell.composition().map((c) => `/${c.name}`),
     };
     const dir = join(out, 'skills', name);
     mkdirSync(dir, { recursive: true });
-    writeFileSync(
-      join(dir, 'SKILL.md'),
-      skillToClaudeMd(resolved, refProject, profile),
-    );
+    writeFileSync(join(dir, 'SKILL.md'), skillToClaudeMd(resolved));
     process.stdout.write(`EMIT skill ${name}\n`);
     n++;
   }
@@ -168,7 +131,7 @@ async function projectSkills(out: string, profile: string): Promise<number> {
  * SKILL.md body VERBATIM, and the bundled `episodic.mjs` ships beside it. Sourced
  * from `src/genus/memory.md` (the one home) + the episodic build artifact.
  */
-async function projectMemorySkill(out: string, profile: string): Promise<void> {
+async function projectMemorySkill(out: string): Promise<void> {
   const { readFileSync } = await import('node:fs');
   const memRaw = readFileSync(
     join(anatomyRoot, 'src', 'genus', 'memory.md'),
@@ -184,17 +147,13 @@ async function projectMemorySkill(out: string, profile: string): Promise<void> {
     trigger: '', // memory has no /trigger (a protocol home, not a command)
     description: fm,
     skillDescription: frontField(memRaw, 'skill_description') || fm,
-    body: '',
+    formalBlock: '', // bypassed: the `deploy: skill-dir` toolSection path
     composedFrom: [],
-    sourcePath: 'packages/agent-anatomy/src/genus/memory.md',
     toolSection,
   };
   const dir = join(out, 'skills', 'memory');
   mkdirSync(dir, { recursive: true });
-  writeFileSync(
-    join(dir, 'SKILL.md'),
-    skillToClaudeMd(resolved, (s) => `**${s}**`, profile),
-  );
+  writeFileSync(join(dir, 'SKILL.md'), skillToClaudeMd(resolved));
   // Bundle the built episodic.mjs (the host memory tool) beside SKILL.md.
   const bundle = join(
     anatomyRoot,
@@ -293,9 +252,9 @@ function frontField(raw: string, key: string): string {
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = parseArgs(process.argv.slice(2));
-  const a = await projectAgents(args.out, args.profile);
-  const s = await projectSkills(args.out, args.profile);
-  await projectMemorySkill(args.out, args.profile);
+  const a = await projectAgents(args.out);
+  const s = await projectSkills(args.out);
+  await projectMemorySkill(args.out);
   const h = await projectHooks(args.out);
   process.stdout.write(
     `projected ${a} agents + ${s + 1} skills + ${h} hook(s) to ${args.out}\n`,

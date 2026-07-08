@@ -83,17 +83,11 @@ export { canonicalToClaude, claudeToCanonical } from './events.js';
 // distinct from the IR serialize path above).
 export {
   type ResolvedSkill,
-  type ReaderDensity,
   agentToClaudeMd,
   skillToClaudeMd,
   agentBody,
   skillBody,
-  bodyHash,
   organTitle,
-  provenanceHeader,
-  densityProfile,
-  densityRef,
-  isReaderDensity,
 } from './anatomy.js';
 // The hook → settings.json `hooks` block serializer (the IR-resource projection
 // path), exposed standalone so a plugin (agent-anatomy) can project a hooks-only

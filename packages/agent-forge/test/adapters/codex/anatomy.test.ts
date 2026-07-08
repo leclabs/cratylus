@@ -27,6 +27,7 @@ import type { IR, Manifest } from '../../../src/core/index.js';
 function nicoLikeAgent(): Agent {
   return {
     name: 'nico',
+    description: '📐 the Sage archetype',
     autonomy: ['human-on-the-loop ≜ human-on-the-loop definiens'],
     persona: 'the Sage archetype',
     role: 'curate ≜ curate definiens',
@@ -90,11 +91,22 @@ describe('agentToCodexToml — the codex subagent projection', () => {
     expect(sp).not.toMatch(/content-hash: sha256:/);
   });
 
-  it('omits the emoji-prefixed description when the agent carries no mark (color never emitted either way)', () => {
-    const a: Agent = { ...nicoLikeAgent(), provenance: null };
-    const parsed = TOML.parse(agentToCodexToml(a)) as Record<string, unknown>;
-    expect(parsed.color).toBeUndefined();
-    expect(parsed.description).toBe('the Sage archetype');
+  it('description IS the σ_human* `description` field verbatim, mark-independent (color never emitted)', () => {
+    // Mirrors S3's claude fix: the TOML `description` is `a.description` (the
+    // router-read σ_human* bound), NOT an emoji+persona composition — so dropping
+    // the provenance mark leaves it unchanged (persona stays σ*, carried only in
+    // developer_instructions). Mark-independence is the falsifier for the leak.
+    const marked = TOML.parse(agentToCodexToml(nicoLikeAgent())) as Record<
+      string,
+      unknown
+    >;
+    const unmarked = TOML.parse(
+      agentToCodexToml({ ...nicoLikeAgent(), provenance: null }),
+    ) as Record<string, unknown>;
+    expect(unmarked.description).toBe(marked.description); // mark-independent
+    expect(unmarked.description).toBe('📐 the Sage archetype'); // = a.description
+    expect(marked.color).toBeUndefined();
+    expect(unmarked.color).toBeUndefined();
   });
 });
 
@@ -105,13 +117,12 @@ describe('skillToCodexMd — the codex skill projection', () => {
     name: 'demo',
     trigger: '/demo',
     description: 'a demo skill',
-    body: '\n\ndemo ≜ a formula consumed not emitted\n\n# demo\n\nThe verb prose with a [[wake]] ref.\n\n- **alpha** ≜ an absorbed declaration bullet\n',
+    formalBlock: 'demo ≜ the self-sufficient set-builder block',
     composedFrom: ['/wake'],
-    sourcePath: 'packages/agent-anatomy/skill/demo.md',
   };
 
   it('emits AgentSkills frontmatter (name + description) and no provenance comment', () => {
-    const md = skillToCodexMd(skill, (s) => `/${s}`);
+    const md = skillToCodexMd(skill);
     expect(
       md.startsWith('---\nname: demo\ndescription: a demo skill\n---'),
     ).toBe(true);
@@ -120,14 +131,16 @@ describe('skillToCodexMd — the codex skill projection', () => {
     expect(md).not.toContain('trigger:');
   });
 
-  it('drops the prose ≜ formula line and keeps the verb body', () => {
-    const md = skillToCodexMd(skill, (s) => `/${s}`);
-    expect(md).not.toContain('a formula consumed not emitted');
-    expect(md).toContain('# demo');
+  it('is the thin generator: derived verb H1, fenced formalBlock verbatim, composed-from', () => {
+    const md = skillToCodexMd(skill);
+    // Verb H1 derived from the name (the anchor carries the verb).
+    expect(md).toContain('# Demo');
+    // The σ* formalBlock rides verbatim inside the fence — no parse/transform.
+    expect(md).toContain(
+      '```text\ndemo ≜ the self-sufficient set-builder block\n```',
+    );
+    // Composed-from provenance from the resolved composition.
     expect(md).toContain('Composed from /wake.');
-    // An absorbed-declaration bullet also carries ≜ and MUST survive (the
-    // codex projection reuses the claude adapter's `skillBody`).
-    expect(md).toContain('- **alpha** ≜ an absorbed declaration bullet');
   });
 });
 

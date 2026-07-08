@@ -1,6 +1,10 @@
-import type { SkillCell } from '../toolkit/skill-cell.js';
+import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
+import { conceptualize } from './conceptualize.js';
+import { materialize } from './materialize.js';
+import { signify } from './signify.js';
 
-const FORMAL_BLOCK = `-- Concept-contract: the one record the pipeline programs to (the narrow waist) --
+const FORMAL_BLOCK =
+  `-- Concept-contract: the one record the pipeline programs to (the narrow waist) --
 Concept     ≜ ⟨ gloss , anchor? , factorization? ⟩       -- meaning by value; anchor, factorization optional
 produce     : D → Concept                                 -- conceptualize: fills gloss   (cut at meaning joints)
 name        : Concept → Concept                           -- signify:       fills anchor  (each concept → its σ*_R)
@@ -36,37 +40,17 @@ exemplify(D) ≜ accept( F(D) )
 -- Accept: the gate; self-application is mandatory (the corpus's own test, no anchor grandfathered) --
 accept(k)   ≜ ⊥          ,  ¬realized(k)                  -- cannot judge an unrealized concept
 accept(k)   ≜ k          ,  valid(k)                      -- pass: verdict carries the work forward unchanged
-accept(k)   ≜ ⊥          ,  ¬valid(k)                     -- refuse: loud, never a silent drop`;
+accept(k)   ≜ ⊥          ,  ¬valid(k)                     -- refuse: loud, never a silent drop
 
-export const exemplify: SkillCell = {
+-- R3 routing manifest (emitted on accept): .manifests/<source>.json, one entry per concept c ∈ C_R,
+--   keyed by fragment_digest (NFC + whitespace-collapse + trim); each c in routes[] (α · reuse | mint) XOR delta[].
+--   An unrouted concept is the dropped idea R3 catches.
+manifest    ≜ { source , exemplified_at , reader , routes[⟨fragment_digest, idea_gloss, home_slug, disposition, rank⟩] , delta[⟨fragment_digest, idea_gloss⟩] }
+∀ c ∈ C_R : c ∈ routes ⊻ c ∈ delta                       -- exactly one; an unrouted concept ⇒ the dropped idea` as SkillExpression;
+
+export const exemplify: Skill = {
   name: 'exemplify',
-  description: `optimize corpus → CSF · accept(produce → name → realize) · concept-contract-record · emit R3-routing-manifest · catch dropped-idea`,
-  body: FORMAL_BLOCK,
-  composition: ['conceptualize', 'signify', 'materialize'],
-  body: `
-
-# Exemplify
-
-The CSF pipeline as one composition: three stages each fill one field of a single record, then a gate reads the realized record and refuses unless it is valid — including \`conform\`: an emitted agent-artifact (\`ρ = LLM\`) authored at human register fails accept. Accept also **executes** the isolated cold oracle (cold-decode-oracle) on the realized body — \`coldpass\`: m1 \`R_cold ≅_R gloss\` ∧ m2 \`warm ≅_R R_cold\` — and refuses on divergence; the oracle is a PROCESS (isolated cwd + config, tool-less), never a subagent (a subagent inherits project-K and reads warm). This is the law's teeth in the authoring path. Composes the three sibling stages — each a function over the same record, naming no peer. The symbol table is \`src/toolkit/operator-lexicon.ts\`.
-
-Bindings: composes conceptualize (\`produce\`) · signify (\`name\`) · materialize (\`realize\`).
-
-Resolve from context: \`D\` — the input corpus (multi-modal); \`R\` — the reader whose priors fix every meaning; \`s\` — the strategy ∈ { file, document }.
-
-The fenced block declares every term it uses; no term is borrowed by reference.
-
-\`\`\`text
-${FORMAL_BLOCK}
-\`\`\`
-
-On accept, emit the **R3 routing manifest** — \`.manifests/<source>.json\`, one entry per concept \`c ∈ C_R\` keyed by \`fragment_digest\` (\`toolkit/core/digest.fragment_digest\`: NFC + whitespace-collapse + trim), each in \`routes[]\` (\`α\` · \`reuse\` | \`mint\`) or \`delta[]\`, exactly one. An unrouted concept is the dropped idea R3 catches.
-
-\`\`\`jsonc
-{
-  "source": "...", "exemplified_at": "...Z", "reader": "...",
-  "routes": [ { "fragment_digest": "sha256:...", "idea_gloss": "...", "home_slug": "...", "disposition": "reuse", "rank": 0.0 } ],
-  "delta":  [ { "fragment_digest": "sha256:...", "idea_gloss": "..." } ]
-}
-\`\`\`
-`,
+  description: `optimize a context corpus into a canonical semantic factorization — compose produce → name → realize over the one concept-contract record, then gate on accept; emits the R3 routing manifest that catches the dropped idea.`,
+  formalBlock: FORMAL_BLOCK,
+  composition: () => [conceptualize, signify, materialize],
 };

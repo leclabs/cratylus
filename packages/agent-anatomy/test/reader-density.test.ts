@@ -42,7 +42,7 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import type { Agent } from '@leclabs/agent-forge/anatomy';
+import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
 import { signify } from '../src/skills/signify.js';
 // accept() falsifier — the full Universal gate (`src/toolkit/cold-oracle/accept.ts`),
@@ -63,10 +63,10 @@ import { nonceControl } from '../src/toolkit/cold-oracle/oracle.js';
 // value-algebra operators are READ from `operator-lexicon.ts` (DRY, one home).
 import {
   admissibleBody,
+  admissibleFormalBlock,
   admissibleSingleLine,
 } from '../src/toolkit/cold-oracle/residue.js';
 import { RESIDUE_OPERATORS } from '../src/toolkit/operator-lexicon.js';
-import type { SkillCell } from '../src/toolkit/skill-cell.js';
 // ρ + register(a) + conform — ONE shared model (`reader-register.ts`), also
 // enforced over the runtime frontiers by `reader-reach.test.ts`; RHO mirrors
 // the READER BINDING subset lists (signify).
@@ -101,21 +101,6 @@ interface Surface {
   readonly text: string;
 }
 
-/** Lines of `body` OUTSIDE ``` fences — fences are formal notation (symbols gate). */
-function proseOutsideFences(body: string): string {
-  let open = false;
-  return body
-    .split('\n')
-    .filter((l) => {
-      if (l.startsWith('```')) {
-        open = !open;
-        return false;
-      }
-      return !open;
-    })
-    .join('\n');
-}
-
 async function firstExport<T>(modPath: string): Promise<T> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<
     string,
@@ -144,16 +129,16 @@ async function allSurfaces(): Promise<Surface[]> {
     });
   }
   for (const rel of await collect('skills/*.ts')) {
-    const s = await firstExport<SkillCell>(join(srcRoot, rel));
+    const s = await firstExport<Skill>(join(srcRoot, rel));
+    // A skill contributes ONE ρ=LLM density surface: its `description` (σ_human*
+    // one-liner, harness-read at progressive disclosure). The `formalBlock` is pure
+    // σ* formal notation — governed by the RESIDUE gate (`admissibleFormalBlock`,
+    // which rejects explanatory prose) + the SYMBOLS gate, NOT the prose-density
+    // detector; the retired `body`'s free-prose surface no longer exists.
     surfaces.push({
       label: `skill ${s.name} (description)`,
       cls: 'skill-description',
       text: s.description,
-    });
-    surfaces.push({
-      label: `skill ${s.name} (prose)`,
-      cls: 'skill-prose',
-      text: proseOutsideFences(s.body),
     });
   }
   for (const name of ['memory.md', 'persona.md']) {
@@ -619,8 +604,8 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
     ].join('\n');
     const v = admissibleBody(block);
     expect(v.admissible, v.reason).toBe(true);
-    // …and the REAL deployed artifact: signify's body IS a formalize artifact.
-    const live = admissibleBody(signify.body);
+    // …and the REAL deployed artifact: signify's formalBlock IS a formalize artifact.
+    const live = admissibleBody(signify.formalBlock);
     expect(live.admissible, live.reason).toBe(true);
   });
 
@@ -647,8 +632,9 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
   });
 
   // ── LIVE-corpus scan — the full AC-RESIDUE claim over the deployed payload set ──
-  // ENABLED (C1): wave-2 (O/S/H) reduced every organ value · skill description · body to σ*.
-  it('every deployed σ* payload is admissible (organ values · descriptions · bodys)', async () => {
+  // ENABLED (C1): wave-2 (O/S/H) reduced every organ value + skill formalBlock to σ*.
+  // (`description` is σ_human*, not a σ* payload — gated by density, not residue.)
+  it('every deployed σ* payload is admissible (organ values · skill formalBlocks)', async () => {
     const failures: string[] = [];
     for (const rel of await collect('organs/**/*.ts')) {
       const value = await firstExport<string>(join(srcRoot, rel));
@@ -656,13 +642,12 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
       if (!r.admissible) failures.push(`organ ${rel}: ${r.reason}`);
     }
     for (const rel of await collect('skills/*.ts')) {
-      const s = await firstExport<SkillCell>(join(srcRoot, rel));
-      const d = admissibleSingleLine(s.description);
-      if (!d.admissible)
-        failures.push(`skill ${s.name} description: ${d.reason}`);
-      const f = admissibleBody(s.body);
+      const s = await firstExport<Skill>(join(srcRoot, rel));
+      // `description` is σ_human*, NOT σ* — no longer residue-gated. The sole σ*
+      // payload is `formalBlock`, gated as a FORMAL-BLOCK via the typed entry point.
+      const f = admissibleFormalBlock(s.formalBlock);
       if (!f.admissible)
-        failures.push(`skill ${s.name} body: ${f.reason}`);
+        failures.push(`skill ${s.name} formalBlock: ${f.reason}`);
     }
     expect(failures, failures.join('\n')).toEqual([]);
   });

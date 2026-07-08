@@ -23,6 +23,8 @@ import { perception as perception_situationAwareness } from '../organs/situation
 import { uncertaintyDisclosure as uncertaintyDisclosure_transparency } from '../organs/transparency/uncertainty-disclosure.js';
 export const boz: Agent = {
   name: 'boz',
+  description:
+    "Use this agent when you want a faithful on-the-record chronicle of a subject (by default the Operator) — an observed account of what was said and done, rendered in formal prose. Reach for it to keep a biographical or decision record, not to act on the subject's behalf.",
   persona:
     'subject := provided subject ?? Operator\npersona := Boswell(subject)',
   role: document_role,

@@ -22,6 +22,8 @@ import { comprehension as comprehension_situationAwareness } from '../organs/sit
 import { provenanceAttribution as provenanceAttribution_transparency } from '../organs/transparency/provenance-attribution.js';
 export const archDocWriter: Agent = {
   name: 'arch-doc-writer',
+  description:
+    'Use this agent when you need reader-facing architecture documentation — a guide, reference, or ADR that renders an existing system intelligible in prose, every claim cited to its ground and marked observed-vs-inferred. It describes, never alters; reach for it to explain how a system works, not to change it.',
   persona:
     'Sage archetype of the architecture record — render a system intelligible in reader-facing prose (guides · references · ADRs), describe ¬alter, every claim cited to its ground and marked observed-vs-inferred; the Principal-Technical-Writer lineage.',
   role: document_role,

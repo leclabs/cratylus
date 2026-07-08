@@ -49,10 +49,12 @@ export function agentToCodexTomlObject(
 ): Record<string, unknown> {
   const body = agentBody(a);
   const developerInstructions = `${body.replace(/\n+$/, '')}\n`;
-  const emoji = a.provenance?.mark.emoji;
   const obj: Record<string, unknown> = {
     name: a.name,
-    description: emoji ? `${emoji} ${a.persona}` : a.persona,
+    // σ_human* — the router-read one-line bound, NOT σ* (persona stays the model-read
+    // identity, projected into `developer_instructions` via `agentBody`). Mirrors the
+    // claude adapter's fix: the TOML `description` is `a.description`, not emoji+persona.
+    description: a.description,
     developer_instructions: developerInstructions,
   };
   return obj;
@@ -77,24 +79,17 @@ export function agentToCodexToml(
 /**
  * The codex SKILL.md for a resolved skill. Codex consumes the AgentSkills spec
  * (frontmatter `name` + `description`, then the body), the same surface claude
- * uses — so the body is the SAME composed `skillBody`, projected with the codex
- * harness selector (`## Harness: codex` sections are kept; other-harness dropped).
- *
- * The framing differs from `skillToClaudeMd` only in the harness token passed to
- * `skillBody` and in OMITTING the provenance HTML comment: a codex SKILL.md is a
- * plain spec file, and the content-hash banner is build-provenance the running
- * agent does not need (mirrors the same rehoming intent). Front-matter is the
- * AgentSkills required pair.
+ * uses — so the body is the SAME thin `skillBody` generator (`# <verb>` + fenced
+ * `formalBlock` + "Composed from …", or the `deploy: skill-dir` verbatim section).
+ * The framing differs from `skillToClaudeMd` only in the front-matter: the codex
+ * AgentSkills pair (`name` + `description`, no `trigger`).
  */
-export function skillToCodexMd(
-  s: ResolvedSkill,
-  refProject: (slug: string) => string,
-): string {
+export function skillToCodexMd(s: ResolvedSkill): string {
   const fm: Record<string, unknown> = {
     name: s.name,
     description: s.skillDescription ?? s.description,
   };
-  const body = skillBody(s, refProject, 'codex');
+  const body = skillBody(s);
   const lines = ['---', ...frontMatterLines(fm), '---', ''];
   lines.push(body.replace(/\n+$/, ''), '');
   return lines.join('\n');

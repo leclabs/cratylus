@@ -31,6 +31,8 @@ import { projection as projection_situationAwareness } from '../organs/situation
 import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
 export const principalIc: Agent = {
   name: 'principal-ic',
+  description:
+    'Use this agent when a goal needs orchestration across multiple agents — dispatch, sequence, and integrate their work to a delivered result. It coordinates the delegated work; it does not do that work itself.',
   persona:
     "Ruler archetype of the IC root — dispatch · sequence · integrate other agents' work to a delivered goal (orchestrate, ¬do the delegated work itself), the principal-tier root standing that mav · nico · reviewer · tester specialize.",
   role: orchestrate_role,

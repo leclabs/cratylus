@@ -38,6 +38,7 @@ export const OPERATORS = {
     coldVerified: true,
   },
   '≺': { sense: 'precedes', signature: 'T × T → Prop', coldVerified: true },
+  '≥': { sense: 'at-least', signature: 'T × T → Prop', coldVerified: true },
   '≡': { sense: 'identical', signature: 'T × T → Prop', coldVerified: true },
   '≢': {
     sense: 'not-identical',
@@ -68,6 +69,11 @@ export const OPERATORS = {
   '¬': { sense: 'not', signature: 'Prop → Prop', coldVerified: true },
   '∧': { sense: 'and', signature: 'Prop × Prop → Prop', coldVerified: true },
   '∨': { sense: 'or', signature: 'Prop × Prop → Prop', coldVerified: true },
+  '⊻': {
+    sense: 'exclusive-or',
+    signature: 'Prop × Prop → Prop',
+    coldVerified: true,
+  },
   '⇒': {
     sense: 'implies',
     signature: 'Prop × Prop → Prop',
@@ -122,6 +128,11 @@ export const OPERATORS = {
   '↾': {
     sense: 'restriction',
     signature: 'X ↾ Y — X narrowed to scope Y',
+    coldVerified: true,
+  },
+  '∘': {
+    sense: 'compose',
+    signature: '(B → C) × (A → B) → (A → C)',
     coldVerified: true,
   },
 

@@ -28,6 +28,7 @@ import type { Agent as OrganVector } from '../../../src/anatomy/index.js';
 import {
   type IR,
   projectVector,
+  renderBody,
   renderSkillCellBody,
 } from '../../../src/core/index.js';
 import { ALL_ADAPTERS, makeTmpDir, story } from '../helpers.js';
@@ -140,14 +141,17 @@ story(
     // PROJECTED (the vector is the source — projectVector, never a parallel
     // config-IR copy), and an E6.S8-style optimized rule body.
     const cellBody = renderSkillCellBody({
-      name: 'release',
-      description: 'release the package — ordered gate to published tag',
       verb: 'release',
-      declarations: [
-        { symbol: 'green', definiens: 'the whole test suite passes' },
-        { symbol: 'tag', definiens: 'git tag at the release commit' },
-      ],
-      laws: ['¬green ⇒ ¬tag'],
+      block: renderBody({
+        name: 'release',
+        description: 'release the package — ordered gate to published tag',
+        verb: 'release',
+        declarations: [
+          { symbol: 'green', definiens: 'the whole test suite passes' },
+          { symbol: 'tag', definiens: 'git tag at the release commit' },
+        ],
+        laws: ['¬green ⇒ ¬tag'],
+      }),
     });
     // `persona` is a plain identity string (not a fragment organ, D13) — it
     // drives `description`; `role` is a real fragment organ, carrying the

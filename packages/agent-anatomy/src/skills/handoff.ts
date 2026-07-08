@@ -1,26 +1,25 @@
-import type { SkillCell } from '../toolkit/skill-cell.js';
+import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
+import { dream } from './dream.js';
+import { praxis } from './praxis.js';
 
-export const handoff: SkillCell = {
+export const handoff: Skill = {
   name: 'handoff',
-  description: `persist session-boundary pre-clear · praxis-sync(plan-record) ∧ dream(drain EPISODIC) · hot-context`,
-  composition: ['praxis', 'dream'],
-  body: `
+  description: `use this skill to prepare a session for handoff before /clear — bring the plan's record up to date (praxis sync) and consolidate memory (dream) while context is still hot; the persist half of the session boundary, invocable as /handoff.`,
+  formalBlock: `DECLARATIONS
+handoff        ≜ praxis-sync ∘ dream ∘ release            — the persist half of the session boundary (pre-/clear)
+work           — the plan record: task placement + the PLAN.md mirror
+self           — the agent's persistence home: the EPISODIC event stream ∪ the resident layers ⟨SEMANTIC · PROCEDURAL⟩
+doc-mirrors-runtime-truth — the live runtime state is the source; a status doc (PLAN.md · the resident layers) is a mirror kept current, never the authority
+memory         — append-only EPISODIC, encoded cheap-and-raw per turn (best-effort, lossy); dream drains it up-and-out (consolidate, move-not-copy) into the resident layers
+praxis-sync    — reconcile work to reality: task-file placement ∧ PLAN.md
+dream          — drain EPISODIC on hot context → the resident layers, capturing whole-session events per-turn encoding missed
+release        ≜ \`node ~/.claude/skills/memory/episodic.mjs session release --home \${AGENT_HOME}\` — flip this session → completed in the memory registry
 
-# handoff
-
-handoff ≜ invokes praxis · dream ; the persist half of the session boundary.
-
-One act reconciles two durable substrates to reality: **work** via praxis **sync** (task placement + PLAN.md), **self** via dream (drain EPISODIC up the memory home).
-
-Two truths it stands on (declared here — handoff owns no external def):
-
-- **doc mirrors runtime truth.** The live runtime state is the source; a written status doc (PLAN.md, the EPISODIC stream's resident layers) is a **mirror kept current, never the authority**. Sync the mirror as work lands; when they diverge, the runtime wins.
-- **memory.** The agent's persistence home: an append-only **EPISODIC** event stream, encoded **cheap and raw per turn**, that dream drains **up-and-out** (consolidate, move-not-copy) into the durable resident layers. Per-turn encoding is best-effort and lossy; whole-session events survive only if drained before context dies.
-
-Laws:
-
-- **Order.** praxis sync, **then** dream, **then** \`session release\` — dream runs on hot context so it captures the session events that per-turn encoding missed, before /clear destroys them; release marks this session **completed** last.
-- **Release closes the session.** \`node ~/.claude/skills/memory/episodic.mjs session release --home \${AGENT_HOME}\` is the final persist act: it flips this session to completed in the memory registry, so its forward residue and any plan it owned become **inheritable** by the next wake (a crash that skips handoff still completes via the 2h stale window). Until release, a live sibling correctly treats this session's residue and plan-ownership as occupied.
-- **Scope: persist-only.** The boundary proceeds **outside** this skill: \`/clear\` then wake then carry-on. handoff does not clear, reconstitute, or re-dispatch.
-`,
+LAWS
+order          : praxis-sync ≺ dream ≺ release            — dream runs on hot context (before /clear destroys the session events) ; release marks completed last
+diverge(runtime, doc) ⇒ runtime wins                     -- doc-mirrors-runtime-truth: sync the mirror as work lands
+release ⇒ this-session.{forward-residue, owned-plan} ↦ inheritable   -- by the next wake ; a crash skipping handoff still completes via the 2h stale window
+¬release ⇒ a live sibling treats this session's residue ∧ plan-ownership as occupied
+scope          = persist-only                            -- /clear · wake · carry-on proceed OUTSIDE this skill; handoff does not clear, reconstitute, or re-dispatch` as SkillExpression,
+  composition: () => [praxis, dream],
 };

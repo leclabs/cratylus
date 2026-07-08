@@ -52,6 +52,7 @@ const setGivenScalar: Agent['guardrails'] = guardrailA;
 
 const baseFixture: Agent = {
   name: 'fixture',
+  description: 'the master builder — ships systems end-to-end',
   autonomy: [autonomyV],
   persona: 'the master-builder — ship end-to-end',
   role: roleV,
@@ -135,28 +136,31 @@ const agentScalarFault: Agent = {
   outputFormat: [outputFormatV],
 };
 
-// ── NEGATIVE 5: Skill composition is plain sibling skills (no [[ ]] strings) ──
+// ── NEGATIVE 5: Skill composition is a LAZY THUNK of sibling skills ──────────
+// The graph is cyclic (conceptualize↔exemplify↔…); composition is a thunk
+// `() => readonly Skill[]` so sibling refs resolve lazily (no ESM temporal-dead-
+// zone at load). The payload is `formalBlock` (σ*); there is no stored `body`.
 
 const leaf: Skill = {
   name: 'leaf',
   description: 'a leaf skill',
-  body: 'leaf ≜ …',
-  composition: [],
+  formalBlock: 'leaf ≜ …',
+  composition: () => [],
 };
 
 const composed: Skill = {
   name: 'composed',
   description: 'composes leaf',
-  body: 'composed ≜ …',
-  composition: [leaf], // imported sibling Skill, not a "[[leaf]]" string
+  formalBlock: 'composed ≜ …',
+  composition: () => [leaf], // lazy thunk of imported sibling Skills
   deployAs: 'skill-dir',
   bundle: 'dist/episodic.mjs',
   assets: ['SKILL.md'],
 };
 void composed;
 
-// @ts-expect-error — composition holds Skills, not `[[ref]]` strings.
-const stringComposition: Skill = { ...leaf, composition: ['[[leaf]]'] };
+// @ts-expect-error — composition is a thunk `() => Skill[]`, not an eager array.
+const eagerComposition: Skill = { ...leaf, composition: [leaf] };
 
 // Silence "declared but never read" for the intentional fault bindings.
 void wrongOrgan;
@@ -165,4 +169,4 @@ void scalarGivenArray;
 void setGivenScalar;
 void agentSetFault;
 void agentScalarFault;
-void stringComposition;
+void eagerComposition;

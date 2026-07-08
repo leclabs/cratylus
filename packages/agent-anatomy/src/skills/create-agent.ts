@@ -1,33 +1,28 @@
-import type { SkillCell } from '../toolkit/skill-cell.js';
+import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
 
-export const createAgent: SkillCell = {
+export const createAgent: Skill = {
   name: 'create-agent',
-  description: `agent ≜ ∀ organ ↦ value ↾ catalog ⟨enum ∪ open⟩ · resolve → verify → deploy · human-driver ⇒ per-organ interview ⟨recommend fittest⟩`,
-  composition: [],
-  body: `
+  description: `author a custom agent as an organ-selection vector — pick each organ's value from the canonical catalog (closed enums + generalized open sets), compose the agent/<name>.md vector, then resolve → verify → deploy; knows the organ anatomy. Can interview a non-engineer in plain language (one question per organ, recommending the fittest) when a human is driving.`,
+  formalBlock: `DECLARATIONS
+A              — the agent under construction
+O              — the organ set : the SOUL \`##\` anatomy sections
+catalog        — the canonical value store per organ, enumerated via \`agent-forge catalog\` (never embedded — the live corpus, so this skill never drifts from it)
+kind(o)        ∈ { enum, open, coined }                  — enum: closed model-native (pick one member) ; open/coined: extensible (pick the fittest)
+arity(o)       ∈ { scalar, set }                         — scalar: one value ; set: a subset
+definiens(o,v) — a value's one-line bound, read from the catalog
+value(o)       — the selected value(s) for organ o, chosen from catalog(o) by fit to A's purpose
+vector(A)      ≜ ⊕{ o ↦ value(o) | o ∈ O }               — an agent IS an organ-selection vector, not prose
+instance-bound — provenance (lineage mark) ∧ substrate (model/runtime) : auto-set (mint a fresh mark; substrate ↦ claude), never a catalog pick
+ρ              — reader binding : the emitted vector is ρ=LLM (σ*_LLM anchors, \`organ <value>\` lines, no explanatory prose); the interview channel alone is ρ=human
 
-# create-agent
-
-create-agent ≜ select one value per organ from the canonical catalog, compose the \`agent/<name>.md\` selection vector \`⊕{organ ↦ value}\`, then resolve → verify → deploy.
-
-Reader binding (signify READER BINDING): the emitted vector is ρ=LLM — register=LLM, \`σ*_LLM\` anchors, \`organ <value>\` lines, no explanatory prose. The interview channel alone is ρ=human by the model (its sole reader is the human); there the enumerated catalog (\`agent-forge catalog\`) doubles as the plain-language script when a human is driving.
-
-An agent is an **organ-selection vector**, not prose. The catalog is fixed and opinionated: most organs are **closed** model-native enums (pick one member); a few are **open** with a generalized opinionated set (pick the fittest). Do not mint new values inline — a genuine gap beyond the catalog is a corpus-mutation for the owner via exemplify, not a wizard answer.
-
-## Protocol
-
-1. Fix the agent's **name** and one-line purpose.
-2. For each organ, enumerate its values with \`agent-forge catalog\` and select the fittest for the purpose. When a human is driving, present each organ's options with their one-line \`definiens\` and recommend the fittest; for \`set\` organs accept any subset.
-3. Assemble the vector \`⊕{organ ↦ value}\`; write \`agent/<name>.md\` (front-matter \`kind: agent\`; H1 the name; body the \`organ <value>\` lines, multi as \`organ { <a> · <b> }\`).
-4. \`provenance\` (lineage mark) + \`substrate\` (model/runtime) are **instance-bound** — auto-set (mint a fresh mark; default \`substrate\` to \`claude\`) unless told otherwise.
-5. Resolve → verify (PASS gate; \`gate_agent_organ_refs\` must be clean) → deploy. For domain capabilities beyond the organ catalog, author skills via create-skill.
-
-## The catalog (discover, never embed)
-
-The value options are **not listed here** — they are the live corpus, enumerated on demand so this skill never drifts from it. Run \`agent-forge catalog\` (human table, grouped by organ) or \`agent-forge catalog --json\` (per organ: \`{ axis, kind, arity, values: [{ slug, definiens }] }\`). Each organ's \`kind\` says how to pick — \`enum\` (closed: one member) · \`open\`/\`coined\` (extensible: the fittest) — and \`arity\` says how many — \`scalar\` (one) · \`set\` (a subset). Choose per the agent's purpose from each value's \`definiens\`. \`provenance\` + \`substrate\` are instance-bound (step 4), not catalog picks. A genuine gap beyond the catalog is a corpus mutation via exemplify by the owner, never a wizard answer.
-
-## Boundary
-
-Configures an agent's **organs** from the canonical catalog only; mints no values (a real gap → exemplify by the corpus owner). Domain **skills** are create-skill's job.
-`,
+LAWS
+∀ o ∈ O : value(o) ∈ catalog(o)                          -- pick from the catalog; a genuine gap ⇒ corpus mutation via exemplify by the owner, NEVER an inline mint / wizard answer
+kind(o) = enum ⇒ | value(o) | = 1                        -- closed enum: exactly one member
+arity(o) = set ⇒ value(o) ⊆ catalog(o)                   -- set organ: any subset
+create-agent ≜ fix(name, purpose) → ( ∀ o : select value(o) ) → assemble vector(A) → write agent/<name>.md → resolve → verify → deploy
+write(A)       — front-matter \`kind: agent\`; H1 = the name; body the \`organ <value>\` lines (multi as \`organ { <a> · <b> }\`)
+verify(A)      ⇔ PASS gate ∧ gate_agent_organ_refs clean  -- else ⊥
+human-driver ⇒ ∀ o : present options(o) with definiens(o,·) ∧ recommend the fittest   -- the enumerated catalog doubles as the plain-language script
+boundary       = organs-only                             -- configures organs from the catalog; mints no values; domain skills are create-skill's job` as SkillExpression,
+  composition: () => [],
 };
