@@ -180,7 +180,10 @@ else
 fi
 
 # ── stance-guardrail-pre (PreToolUse) — prove the pre-hoc twin BITES ─────────────────────────
+# In the SOURCE tree both workers share a dir; when DEPLOYED they are SIBLING dirs
+# (~/.claude/hooks/stance-guardrail{,-pre}/), so fall back to the sibling.
 PRE_WORKER="$WORKER_DIR/stance-guardrail-pre.sh"
+[ -f "$PRE_WORKER" ] || PRE_WORKER="$(dirname "$WORKER_DIR")/stance-guardrail-pre/stance-guardrail-pre.sh"
 if [ -f "$PRE_WORKER" ]; then
 	echo
 	echo "stance-guardrail-pre — prove-it-bites (PreToolUse)"
