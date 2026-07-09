@@ -182,7 +182,11 @@ each depend ONLY on it; concretes wired once at the CLI composition-root ⇒ **z
   corpus-policy object; splitting into 3 ports invents complexity. `operator-lexicon` stays injected policy
   data (round-1 F3 holds; the σ\* glyph set is per-corpus notation, not general mechanism).
 
-## 2.3 Round-4 — port surface corrected + cross-round reconciliation (AUTHORITATIVE)
+## 2.3 Round-4 — port surface corrected + cross-round reconciliation (SUPERSEDED by §5)
+
+> **SUPERSEDED by §5.1** — round-4 kept `agent-contract` as the shared TYPE kernel (a 4th package); round-5
+> DROPPED the package (the kernel is IN forge). Read "agent-contract" below as "forge's TYPE kernel." The
+> Cockburn port-vs-data distinction and C1–C5 reconciliation still hold; the 4th-package framing does not.
 
 Cold SRP review: I over-stated the "5 ports." Corrected (Cockburn: a port = a behavioral driven/driving
 interface with ≥2 adapters; a single-impl config is DATA, a shape is a TYPE):
