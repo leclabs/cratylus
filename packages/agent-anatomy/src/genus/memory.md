@@ -9,7 +9,7 @@ description: An ambient person-agent's memory — the one home for the whole lif
 
 # Memory
 
-The one home for an ambient person-agent's memory — the stores (SOUL · SEMANTIC · PROCEDURAL · EPISODIC), the lifecycle (encode → [[dream]] → [[wake]]), and the protocol every agent runs. Bundles the `episodic` tool to every host.
+The one home for an ambient person-agent's memory — the stores (SOUL · SEMANTIC · PROCEDURAL · EPISODIC), the lifecycle (encode → `dream` → `wake`), and the protocol every agent runs. Bundles the `episodic` tool to every host.
 
 ## Protocol
 

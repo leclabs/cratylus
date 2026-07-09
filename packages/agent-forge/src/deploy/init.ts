@@ -1,15 +1,15 @@
 // Greenfield init (polis-instantiation) — found a mind-society in a target dir.
 //
 // `init <target>` turns an empty/target directory into a *founded polis*: not a
-// pile of agent files, but a society with the [[politeia]] (foundational
+// pile of agent files, but a society with the `politeia` (foundational
 // structure) laid down. Two acts, in order:
 //
 //   1. PROJECT THE CULTURE — copy the (already-projected) full render tree
 //      (every agent + skill, with staged companions) into
 //      `<target>/.claude/{agents,skills}`. The founders nico + mav are among
-//      the projected agents ("agents born as founders" — [[founder-charter]]).
+//      the projected agents ("agents born as founders" — `founder-charter`).
 //      Defs/skills are regenerated substance, overwritten freely
-//      ([[substance-over-accident]]).
+//      (`substance-over-accident`).
 //   2. LAY THE FOUNDING SCAFFOLD — the marker that makes the target a society:
 //      - `<target>/AGENTS.md` — cites the constitution, names the founders,
 //        states the subject. Modeled on polis's own root AGENTS.md.

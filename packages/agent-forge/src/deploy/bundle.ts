@@ -5,7 +5,7 @@
 // - `bundle:` — a BUILD-ARTIFACT companion (a build OUTPUT, e.g. the
 //   dependency-free `episodic.mjs` toolsource), sourced relative to a base root
 //   and gitignored at source. A declared-but-unbuilt artifact is a HARD ERROR
-//   ([[no-permissive-defaults]]) — never silently ship a home without its tool.
+//   (`no-permissive-defaults`) — never silently ship a home without its tool.
 // - `assets:` — committed cell-dir companions (a WARN, not a hard error, when
 //   absent: a committed asset missing is a corpus mistake to surface, not a
 //   deploy-blocking build gap).
@@ -53,7 +53,7 @@ export class BundleMissingError extends Error {
 /** Copy a skill's declared BUILD-ARTIFACT bundles into its (already-rendered)
  *  skill dir beside SKILL.md, byte-for-byte (binary-safe), each staged under
  *  its basename. A declared-but-unbuilt artifact throws `BundleMissingError`
- *  ([[no-permissive-defaults]]) — never silently ship a home without its tool.
+ *  (`no-permissive-defaults`) — never silently ship a home without its tool.
  *  Returns the staged basenames. */
 export function stageBundle(
   skill: string,

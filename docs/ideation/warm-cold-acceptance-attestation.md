@@ -3,7 +3,7 @@
 _Durable record of the `warm-cold-acceptance` initiative (2026-07-03), retained after the plan scaffold
 retired. Git is the fuller record: `git log -- plans/warm-cold-acceptance/`. The law it encodes lives in
 source at `packages/agent-anatomy/src/organs/engineering-principles/cold-decode-oracle.ts`
-([[cold-decode-oracle]]); the isolated oracle instrument at
+(`cold-decode-oracle`); the isolated oracle instrument at
 `packages/agent-anatomy/src/toolkit/cold-oracle/` (`cold-oracle.sh` + `sweep.mjs`)._
 
 ## Criterion (the law, in brief)
@@ -49,7 +49,7 @@ across the sample (incl. the plan's own artifacts). Lex ratified the sampled mea
 
 ## Standing enforcement
 
-- **Author-time (done):** [[exemplify]]'s accept gate `valid(k)` now includes
+- **Author-time (done):** `exemplify`'s accept gate `valid(k)` now includes
   `coldpass(k) ⇔ R_cold(body(k)) ≅_R gloss(k) ∧ decode_warm(body(k)|K) ≅_R R_cold(body(k))` and **executes**
   the isolated oracle on the realized body — refusing on divergence. A PROCESS, never a subagent (a subagent
   inherits project-K and reads warm).

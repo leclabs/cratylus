@@ -1,11 +1,11 @@
 // Deploy orchestrator — resolve a SCOPE to a `.claude/` root, then run a placer
 // backend (local fs or ssh) that ships the generated defs (the SOUL) and seeds
-// each agent's `{SEMANTIC,PROCEDURAL,EPISODIC}` sidecars ONLY IF ABSENT ([[memory]]).
-// Governed oppositely to the def ([[substance-over-accident]]): the def is
+// each agent's `{SEMANTIC,PROCEDURAL,EPISODIC}` sidecars ONLY IF ABSENT (`memory`).
+// Governed oppositely to the def (`substance-over-accident`): the def is
 // regenerated substance (overwritten freely); the sidecars are the
 // self-authored individual (never clobbered).
 //
-// Join key is the agent NAME ([[named-marker-as-index-key]]):
+// Join key is the agent NAME (`named-marker-as-index-key`):
 //   <name>.md (def) <-> <name>/SEMANTIC.md (the individual).
 //
 // Per-host topology comes from `.agent-factory.config` (docs/agent-factory-config-schema.md)

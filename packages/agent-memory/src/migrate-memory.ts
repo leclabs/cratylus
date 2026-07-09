@@ -33,7 +33,7 @@ import { monotonicFactory } from './ulid.js';
  *
  * **Live-rollout gated.** Building + fixture-testing this tool is self-contained
  * Mav work; APPLYING it to a live agent must wait for the constitution Phase 3
- * (`[[dream]]`/`[[wake]]` updated to read sharded `MEMORY/*.md`) — migrating an
+ * (``dream``/``wake`` updated to read sharded `MEMORY/*.md`) — migrating an
  * agent's MEMORY to shards while its wake still reads `MEMORY.md` saws off the
  * running protocol (the md→JSONL atomic-coupling lesson). This module never
  * deletes the source; the caller applies it deliberately at a session boundary.

@@ -50,7 +50,7 @@ export interface CatalogEntry {
 
 /**
  * Shortlex order: shorter strings first, ties broken lexicographically (the
- * order [[signify]] emits as `≺`). Deterministic and locale-independent.
+ * order `signify` emits as `≺`). Deterministic and locale-independent.
  */
 export function shortlex(a: string, b: string): number {
   if (a.length !== b.length) {

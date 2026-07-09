@@ -1,7 +1,7 @@
 // Local filesystem placer — copy generated defs into a `.claude/` root on this
 // host and seed each agent's sidecar layers if-absent. The def is overwritten
 // freely (generated substance); the sidecars are protected
-// ([[substance-over-accident]]). Skills are generated substance with no
+// (`substance-over-accident`). Skills are generated substance with no
 // sidecars — overwrite freely. NEVER PRUNES: agent/skill deletion is a manual
 // per-host def rm + sidecar archive, never an automatic sweep.
 //

@@ -1,6 +1,6 @@
 // Scope resolvers — each returns the `.claude/` root an artifact lands in, with
 // the explicit input that scope requires. The artifact is identical across
-// scopes; scope is the accident ([[scope-grant]]).
+// scopes; scope is the accident (`scope-grant`).
 //
 //   user     home resolver    -> <home>/.claude    (home defaults to $HOME)
 //   project  project resolver -> <project>/.claude  (project defaults to cwd)

@@ -245,12 +245,12 @@ describe('structural-parsimony gate — ¬∃ artifact restating an archetype', 
     expect(failures, failures.join('\n')).toEqual([]);
   });
 
-  it('a live legit single-ref open value (role/build → 1 agent) is not convicted', async () => {
+  it('a live legit single-ref open value (role/review → 1 agent) is not convicted', async () => {
     const corpus = await loadLiveCorpus();
     const refs = corpus.agents.filter((a) =>
-      a.organImports.includes('role/build'),
+      a.organImports.includes('role/review'),
     );
-    expect(refs.length).toBe(1); // referenced by exactly one agent (mav)…
-    expect(absorbedIdentity(corpus).convicted).not.toContain('role/build'); // …yet GREEN
+    expect(refs.length).toBe(1); // referenced by exactly one agent (principal-engineer-reviewer)…
+    expect(absorbedIdentity(corpus).convicted).not.toContain('role/review'); // …yet GREEN
   });
 });

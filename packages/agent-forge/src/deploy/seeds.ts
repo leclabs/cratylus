@@ -1,5 +1,5 @@
 // The self-authored instance layers an agent carries beside its def — the v2
-// (CoALA) stores ([[memory]], scoped-memory-v2 D1):
+// (CoALA) stores (`memory`, scoped-memory-v2 D1):
 //   SEMANTIC.md    — identity facts + durable agent-intrinsic knowledge; the
 //                    hot index (the vault carries the cold corpus).
 //   PROCEDURAL.md  — inductively generalized cross-project wisdom NOT already
@@ -8,7 +8,7 @@
 //   EPISODIC.jsonl — the raw append-only event log.
 // Seeded-if-absent, NEVER clobbered: the def (SOUL) is generated substance,
 // overwritten freely; these are the self-authored individual, protected from
-// every regen ([[substance-over-accident]]). Skills have no sidecars — seeding
+// every regen (`substance-over-accident`). Skills have no sidecars — seeding
 // is agent-only.
 //
 // The v1 stores {SELF.md, MEMORY.md} are RETIRED (scoped-memory-v2 D5 coverage
@@ -34,7 +34,7 @@ export function semanticSeed(name: string): string {
   const d = today();
   return `# ${name} — semantic
 
-*My semantic store ([[memory]]) — identity facts + durable agent-intrinsic knowledge; the hot
+*My semantic store (\`memory\`) — identity facts + durable agent-intrinsic knowledge; the hot
 index (the vault carries the cold corpus). Self-authored, grown at dream; deploy never
 overwrites me. Read whole at wake. Agent-intrinsic ONLY: a project- or plan-scoped fact lives
 in that node's AGENTS.md, never here.*
@@ -53,9 +53,9 @@ export function proceduralSeed(name: string): string {
   const d = today();
   return `# ${name} — procedural
 
-*My procedural store ([[memory]]) — inductively generalized, cross-project wisdom NOT already
+*My procedural store (\`memory\`) — inductively generalized, cross-project wisdom NOT already
 carried by a projection (SOUL · skills · gates); the projection-dedup bar governs every
-write: already-projected ⇒ not stored. Grown at dream ([[correction-consolidation]]); deploy
+write: already-projected ⇒ not stored. Grown at dream (\`correction-consolidation\`); deploy
 never overwrites me. Read whole at wake.*
 
 <!-- Seeded ${d}. Empty on purpose. Dream distils corrections into standing dispositions here. -->
@@ -65,7 +65,7 @@ never overwrites me. Read whole at wake.*
 `;
 }
 
-/** An empty EPISODIC.jsonl store: zero records ([[memory]]). */
+/** An empty EPISODIC.jsonl store: zero records (`memory`). */
 export function episodicSeed(_name: string): string {
   return '';
 }

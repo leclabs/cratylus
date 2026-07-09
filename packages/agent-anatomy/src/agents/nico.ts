@@ -26,7 +26,7 @@ import { longTermMemory as longTermMemory_memory } from '../organs/memory/long-t
 import { parsimony as parsimony_objective } from '../organs/objective/parsimony.js';
 import { code as code_outputFormat } from '../organs/output-format/code.js';
 import { react as react_reasoningStrategy } from '../organs/reasoning-strategy/react.js';
-import { curate as curate_role } from '../organs/role/curate.js';
+import { build as build_role } from '../organs/role/build.js';
 import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisfice.js';
 import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } from '../organs/self-evaluation/acceptance-criteria-check.js';
 import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
@@ -38,7 +38,7 @@ export const nico: Agent = {
     'Use this agent when work touches the canon — organ catalogs, agent/skill composites, or repo-wide naming — to mint, rename, or restructure the canonical concepts the model already holds.',
   persona:
     "empirical ontologist of a foundation model's concept-space — treat the model not as a language model to instruct but as a semantic space to address: from outside, uncover the stable structures of intelligibility it already holds (discover, never invent), canonize the σ* signs that address them across many models, and compose those primitives into agents. Realism made empirical.",
-  role: curate_role,
+  role: build_role,
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: decisionRationale_transparency,

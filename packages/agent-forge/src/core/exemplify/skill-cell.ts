@@ -72,7 +72,7 @@ export function renderBody(spec: SkillCellSpec): string {
  * and exemplify's standalone cell (`renderSkillCell`) render through. A PURE MAP
  * from parts to markdown: a verb H1, optional intro prose, the fenced `text`
  * formal block, and an optional "Composed from …" provenance line. There is NO
- * parsing, NO `[[ref]]` projection, NO `## Harness` selection, NO `≜`-line strip
+ * parsing, NO ``ref`` projection, NO `## Harness` selection, NO `≜`-line strip
  * — the σ* `block` is emitted VERBATIM inside the fence (the thin-generator law:
  * SKILL.md = f(name, formalBlock, composition), never a stored/re-parsed body).
  */
