@@ -1,9 +1,11 @@
-# NORTH-STAR — target architecture (v1, post-debate · CONVERGED)
+# NORTH-STAR — target architecture (converging via iterative cold review)
 
-Author: nico (design authority). Reviewers: 3 adversarial mavs (M1 boundaries/DI · M2 purity/dedup ·
-M3 memory/citation). F1 resolved by an isolated Ω\* cold read. ρ=LLM.
+Author: nico (design authority). Reviewed across 5 adversarial-mav rounds + isolated Ω\* cold reads. ρ=LLM.
 Grounding: `ENGINE ⊥ MODEL` (ENGINE.md); "canon is source of truth, targets are projections" (VISION).
-Status: converged; pending Operator sign-off before wave-2 execution.
+
+> **READ §5 (NET-CURRENT) FIRST** — it is the de-palimpsested single source of truth (3 packages, no
+> `agent-contract`; the one port; the memory design). §0–§4 below are the round-by-round reasoning trail and
+> are SUPERSEDED by §5 wherever they conflict.
 
 ---
 
@@ -226,3 +228,69 @@ all memory mechanics; the one real silent seam (bundle path) becomes a typed con
 - **M3-F1 kill-the-≜-formula: REBUTTED** by isolated Ω\* (self-sufficient definition ≠ palimpsest); wikilink-kill portion adopted.
 - **M1-O6 config→shared-reader vs M2-O1 config-is-non-finding: sided with M2** (disjoint field sets; stronger evidence). A1 cut.
   No surviving unaddressed objection. Convergence: 3/3 mav + nico, F1 by instrument.
+
+---
+
+## 5. NET-CURRENT (AUTHORITATIVE — de-palimpsested; supersedes §0–§4 on any conflict)
+
+§0–§4 are the reasoning trail across 5 rounds. This section is the single source of truth.
+
+### 5.1 Three packages (NO 4th `agent-contract` — dropped, anti-complexity)
+
+`agent-contract` was proposed to reach "zero peer-to-peer edges." But D-scope fixes corpus+engine (only
+HARNESS is interchangeable), and every concrete decoupling is reachable without a 4th package — which would
+only add build/version overhead to flip one benign, ACYCLIC, type-only edge. So: **3 packages.** (Operator
+may override if strict zero-peer-edges is a hard requirement.)
+
+| box                                           | ONE responsibility                             | owns                                                                                                                                                                                                                        | must NOT hold                                                  |
+| --------------------------------------------- | ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **agent-forge** (ENGINE + shared TYPE kernel) | manufacture · validate · ship                  | IR · compose · projection · deploy · accept-gate ALGORITHM · CLI · the shared TYPE kernel (anatomy types + DTO/data shapes) · the ONE port `HarnessAdapter` · sub-modules `adapters/<harness>` + the CLI `composition-root` | corpus doctrine · memory mechanism · corpus identity (`polis`) |
+| **agent-anatomy** (CANON)                     | what cells exist + the runtime individual      | corpus cells · runtime substance (guardrail `.sh` · judge-prompt) · memory CONCEPT (genus doctrine + dream/wake rituals) · the injected DATA VALUES (AcceptPolicy · FoundingTemplate · adapter-name)                        | projection/deploy tooling · memory mechanics                   |
+| **agent-memory** (MECHANISM, leaf)            | the deterministic memory tool over all 5 homes | store/retrieve/land/replace/drain + `seed()` + `BundleArtifact` descriptor                                                                                                                                                  | reasoning · content authoring · doctrine                       |
+
+Dependency edges (acyclic): `anatomy → forge` TYPE-only (erases; the one runtime value-import `project-human.ts:11`
+dies when projection moves into forge, V2). `forge CORE` imports NEITHER anatomy NOR memory. The **composition-root**
+(forge CLI, the only concrete-importing node) calls `memory.seed()`, selects the adapter by name, discovers the
+corpus dir. `anatomy → memory` bundle seam = one typed constant. Memory imports nobody.
+
+### 5.2 The one port + the injected data (Cockburn-correct)
+
+- **`HarnessAdapter`** — the ONLY behavioral port (≥2 impls: claude·codex·15 more; methods vary). Lives in forge.
+- **AcceptPolicy** {palimpsest-tokens · operator-lexicon · repo-guard} and **FoundingTemplate** (founding prose +
+  `PLAN_STATES`) — injected **DATA** (shape-types in forge, VALUES authored in anatomy). Not ports.
+- **BundleArtifact** — a descriptor **TYPE** (DTO). Not a port.
+- Doctrine-agnosticism: `accept.ts:166-169` `polis/oikos/conatus` and `init.ts` founding prose/PLAN_STATES are
+  injected out of the engine (they are DATA the engine consumes, VALUES owned by CANON).
+
+### 5.3 Memory — net design
+
+- **5 homes** (`route.ts:25`): EPISODIC (record log) + SEMANTIC · PROCEDURAL · AGENTS@node · vault (prose).
+- **Verb × home (MECE — no overlap):**
+  - EPISODIC: `encode` (append) · `read` (filtered) · `drain`/`compact` (by-id forget). — unchanged.
+  - `apply --routes '[{id,targets[]}]'`: consumes the agent's route-decisions as DATA (agent IS the classifier,
+    out-of-process — F1), lands EPISODIC records → {AGENTS@node · vault} + retain/drop. A data-adapter around
+    `compact`+`appendToHome`. **`apply` NEVER writes SEMANTIC/PROCEDURAL** (append would re-introduce palimpsest).
+  - `replace` (SEMANTIC · PROCEDURAL, and any prose home needing supersede): agent authors the WHOLE new file →
+    tool atomic-writes (`compact` tmp+rename). Whole-file only (no sub-file addressing). `replace ≡ forget` on
+    prose. Reuses the `RouteTarget` selector `{store, node?, path?}` — no new shape.
+- **Reads stay agent-direct** — resident prose is read whole by the agent (`wake.ts:9`); routing a whole-file read
+  through a subprocess is zero-capability indirection, against the tool's charter (`genus/memory.md:55`). This is
+  industry-aligned: Letta core memory is IN-CONTEXT, never read via a tool call. "Accessible via the tool" is
+  satisfied by the WRITE/edit ops (the acts the agent can't do atomically/by-id).
+- **recall (embeddings)** — vault-adapter only; OUT of the portable core (preserves runs-anywhere).
+- **working memory** = the context window; NO store.
+- **Lock:** the new prose-write verbs inherit the ritual's `lock acquire/release` (shared {SEMANTIC·PROCEDURAL}).
+- **`--describe`: DEFERRED** to the MCP transport — the CLI-phase agent discovers the taxonomy from the genus
+  doctrine it reads at wake (P5 satisfied by the genus for the CLI phase; the verb only serves a programmatic client).
+- Consolidation = the injected classifier's judgment (agent = strategy; tool = mechanism), `route.ts:82-89`.
+
+### 5.4 Principles (P1–P5, glossed so this doc is self-sufficient)
+
+P1 SINGLE-RESPONSIBILITY · P2 MECHANISM(tool)/STRATEGY(agent) SEPARATION · P3 UNIFORM-ABSTRACTION per
+operation-FAMILY (not a god-interface) · P4 PORTS-&-ADAPTERS where a boundary genuinely varies · P5
+SELF-DESCRIBING (the taxonomy is discoverable — via the genus now, a `--describe` verb when MCP lands).
+
+### 5.5 Status
+
+Converging. Architecture code-grounded + twice cold-verified. This §5 reconciles the round-1..4 palimpsest.
+Wave-2 execution (agent-contract-free) remains Operator-gated.

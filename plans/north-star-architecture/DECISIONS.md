@@ -79,3 +79,22 @@ Answers to the two reviewers' questions:
 - **§3 grain (SRP Q7):** adapters = a sub-module of forge (not a package peer); composition-root = TARGET
   (absent today). Table grain corrected.
 - **Findings B/C scope (SRP Q8):** in-remit — folded into the ledger (V-init-extended); HUMAN_MARKERS rejected.
+
+## Round-5 — convergence pass (SUPERSEDES D-contract above; see NORTH-STAR §5)
+
+- **`agent-contract` DROPPED (holistic anti-complexity, verified).** 3 packages, not 4. Concrete decouplings
+  (inject doctrine · memory-free forge core · adapter-by-name registry · type-only anatomy→forge) don't need a
+  4th package; D-scope fixes corpus+engine. Shared TYPES + the ONE port `HarnessAdapter` live in forge's
+  hardened type kernel. (D-contract's "4 ports incl SeedProvider" list is void.) Operator may override if
+  strict zero-peer-edges is a hard requirement.
+- **Memory verb×home MECE (Q2/Q3):** `apply --routes` (DATA) appends EPISODIC→{AGENTS@node·vault}+retain/drop
+  and NEVER writes SEMANTIC/PROCEDURAL; `replace` (whole-file, reuses `RouteTarget` selector) supersedes prose.
+  No overlap, no palimpsest reintroduced.
+- **`--describe` DEFERRED** to MCP transport (reconciles the 3-way): CLI-phase discoverability is served by the
+  genus doctrine the agent reads at wake; P5 met for the CLI phase. (§0.2/§2.2/DECISIONS earlier disagreed →
+  §5 is authoritative: deferred.)
+- **Reads-direct is industry-aligned, not a bar-miss:** Letta core memory is in-context (never tool-read);
+  "accessible via the tool" = the WRITE/edit ops. Resident-prose read stays agent-direct. (Operator may correct
+  if #2 literally intends tool-mediated reads.)
+- **F5 = (A) is CONVERGED** (not an open Operator call) — §2's "needs a call" wording is stale; §5 authoritative.
+- Doc-set de-palimpsested into NORTH-STAR §5 (single per-box table + net design). §0–§4 = reasoning trail.

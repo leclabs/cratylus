@@ -46,53 +46,43 @@ flowchart TB
   classDef ok fill:#1a4a2a,stroke:#2c6,color:#fff;
 ```
 
-## 2. Target — contract-centered fan-in, ZERO peer-to-peer package edges
+## 2. Target — 3 packages (NET-CURRENT §5.1; `agent-contract` dropped)
 
 ```mermaid
 flowchart TB
-  subgraph CON["agent-contract — PURE (imports NOBODY)"]
-    types["TYPE kernel: Kind · IR · Organ · SkillExpression · CanonicalEvent<br/>Hook · HookCell · BundleArtifact(DTO) · AcceptPolicy/FoundingTemplate(data shapes)"]
-    ports["behavioral PORT (only one): HarnessAdapter"]
-  end
-
-  subgraph FRG["agent-forge — ENGINE (fixed · no engine port)"]
+  subgraph FRG["agent-forge — ENGINE + shared TYPE kernel"]
+    types["TYPE kernel: Kind · IR · Organ · SkillExpression · CanonicalEvent · Hook ·<br/>HookCell · BundleArtifact(DTO) · AcceptPolicy/FoundingTemplate(data shapes)"]:::pure
+    port["the ONE behavioral port: HarnessAdapter"]:::fix
     core["core: ir · engine · serialize · exemplify · anatomy-body"]
     projection["projection/ (was toolkit)"]
-    validate["validate/ (was cold-oracle): ALGORITHM only"]
-    adpt["adapters/&lt;harness&gt; + by-name registry<br/>generic token resolver: SKILLS_DIR · AGENT_HOME · SESSION_ID"]:::fix
-    deploy["deploy/ + init: port-based · DI-pure"]
+    validate["validate/ (was cold-oracle): ALGORITHM only (policy injected)"]
+    adpt["adapters/&lt;harness&gt; + by-name registry<br/>token resolver: SKILLS_DIR · AGENT_HOME · SESSION_ID"]:::fix
+    deploy["deploy/ + init: DI-pure (core is memory-free)"]
     catalog["catalog: corpus DIR discovery"]
+    root["composition-root (CLI): the ONLY concrete-importing node"]:::fix
   end
 
-  subgraph ANA["agent-anatomy — CANON (the corpus · no corpus port)"]
+  subgraph ANA["agent-anatomy — CANON"]
     cells["cells: organs · agents · skills · hooks · rules"]
-    genus["genus/memory.md — ONE home: doctrine + BundleArtifact ref via registry"]
+    genus["genus/memory.md — ONE home: doctrine + BundleArtifact ref"]
     runtime["runtime substance: guardrail/*.sh (repo-guard = PARAM) · judge-prompt"]
-    data["INJECTED DATA: AcceptPolicy {palimpsest · operator-lexicon · repo-guard}<br/>· founding-template · adapter NAME (string)"]
+    data["injected DATA VALUES: AcceptPolicy {palimpsest · operator-lexicon · repo-guard}<br/>· founding-template · adapter NAME (string)"]
   end
 
-  subgraph MEM["agent-memory — MECHANISM (leaf, all homes)"]
-    tool["tool: encode·read·apply/land·replace·drain·audit·lock<br/>(record log EPISODIC + 4 prose homes; recall→vault only)"]
-    seed["seed() verb + BundleArtifact descriptor (a TYPE, not a port)<br/>filenames = SINGLE contract token"]
+  subgraph MEM["agent-memory — MECHANISM (leaf, all 5 homes)"]
+    tool["tool: encode·read·drain (EPISODIC) · apply --routes (DATA) · replace (prose)<br/>· seed() · lock; recall→vault only"]
   end
 
-  subgraph ROOT["CLI composition-root — ONLY node that imports concretes"]
-    wire["select adapter by-name · load memory plugin · discover corpus dir<br/>inject {policy · founding-template · seed · adapter} into forge core"]
-  end
+  ANA -->|type-only import (erases; acyclic)| types
+  root -->|calls seed() · places bundle| MEM
+  root -.->|discover corpus dir · read injected DATA| ANA
+  genus -.->|bundle: ONE typed constant| tool
+  cells -.->|"authored against"| data
 
-  FRG ==>|depends| CON
-  ANA ==>|depends type-only| CON
-  MEM ==>|depends| CON
-  ROOT ==>|depends| CON
-  ROOT -->|imports + injects via ports| FRG
-  ROOT -.->|corpus dir + policy/template DATA| ANA
-  ROOT -.->|memory plugin| MEM
-
-  note["INVARIANT: no FRG–ANA–MEM edge (forge CORE is memory-free). Seams = shared TYPES/DATA +<br/>ONE behavioral port (HarnessAdapter); concretes (memory seed(), corpus, adapter) wired once here.<br/>Aspirational: anatomy PROJECTS hook/rule cells to a dir forge DISCOVERS → drops the root's corpus edge."]
+  note["INVARIANTS: forge CORE imports NEITHER anatomy NOR memory. anatomy→forge is TYPE-only.<br/>Only the composition-root imports concretes. Memory imports nobody. No cycle.<br/>Aspirational: anatomy PROJECTS hook/rule cells to a dir forge DISCOVERS → drops even the type edge."]
 
   classDef fix fill:#1a3a5b,stroke:#4af,color:#fff;
   classDef pure fill:#1a4a2a,stroke:#2c6,color:#fff;
-  class CON pure;
 ```
 
 ## 3. Memory as a concern — current (string-seam) vs target (typed-port)
@@ -118,16 +108,14 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  CON2["agent-contract: BundleArtifact (TYPE)"]:::pure
   subgraph CANON2["CANON — the memory CONCEPT (strategy)"]
-    g2["genus/memory.md — doctrine ONE home + BundleArtifact ref via registry"]
+    g2["genus/memory.md — doctrine ONE home + BundleArtifact ref"]
     r2["skills: dream·wake·handoff — author content, decide routes"]
   end
-  FRG2["agent-forge/deploy — placement (memory-free core)"]
-  M2["agent-memory: tool over 5 homes<br/>record: encode·read·drain · prose: land·replace · seed() · apply --routes DATA"]
-  ROOT2["composition-root: calls memory seed() · places bundle"]
-  g2 ==> CON2
-  M2 ==> CON2
+  FRG2["agent-forge/deploy — placement (memory-free core; BundleArtifact TYPE lives here)"]
+  M2["agent-memory: tool over 5 homes (imports NOBODY)<br/>record: encode·read·drain · prose: replace · seed() · apply --routes DATA"]
+  ROOT2["composition-root (forge CLI): calls memory seed() · places bundle"]
+  g2 -.->|bundle: ONE typed constant| M2
   ROOT2 -.->|seed / place| M2
   ROOT2 -->|wires| FRG2
   r2 -->|"route-decisions as DATA (agent IS the classifier)"| M2
@@ -137,11 +125,14 @@ flowchart LR
 
 ## G-ledger — how the target closes each over-coupling (round-2 reviewer)
 
-- **G1 type system buried in forge** → extract `agent-contract`; anatomy+forge depend on it type-only. Residual value edge (`project-human.ts:11`) removed incrementally by the project-to-directory direction.
-- **G2 new concrete `forge → agent-memory`** → inverted: `SeedProvider` port in contract; memory implements; composition-root injects the concrete. forge core imports the PORT, not the package.
-- **G3 bundle string seam** → `BundleArtifact` contract type; genus references it via registry, not the `genus/memory.md:5` string; filenames = single contract token.
+> **Round-5 update:** `agent-contract` was DROPPED (NET-CURRENT §5.1). Read "contract" below as "forge's
+> shared TYPE kernel"; there is no 4th package. The couplings still close — just without a new package.
+
+- **G1 type system buried in forge** → HARDEN forge's type subpath as the shared kernel (no separate package); anatomy imports it TYPE-only. Residual value edge (`project-human.ts:11`) removed by the project-to-directory direction.
+- **G2 new concrete `forge → agent-memory`** → forge CORE stays memory-free; the composition-root (forge CLI) calls `memory.seed()` and places the bundle. No `SeedProvider` port (dropped, §2.3/§5.2).
+- **G3 bundle string seam** → `BundleArtifact` TYPE (in forge's kernel); genus references it via the registry, not the `genus/memory.md:5` string; filenames = single constant.
 - **G4 adapter special-cases memory** → generic path-token resolver + skills-dir; memory not special; placement spec-driven (`deploy.ts:78`); F5=(A) binds the tokens at projection.
 - **G5 anatomy imports concrete adapters** → select adapter BY NAME from a registry; `project-cli.ts:29`/`project-cli-codex.ts:24` concrete imports stop; sideways `codex/anatomy.ts:23` killed via `core/anatomy-body` (D2).
-- **G6 policy through forge + repo-guard `.sh` literal** → one `AcceptPolicy` object {palimpsest · operator-lexicon · repo-guard}, type in contract, `cold-oracle.sh:29` literal → param. Extended by V-init: `init.ts` founding-template must not name `polis` either (doctrine-agnosticism, both sites).
+- **G6 policy through forge + repo-guard `.sh` literal** → one `AcceptPolicy` DATA object {palimpsest · operator-lexicon · repo-guard} (shape-type in forge's kernel, VALUES from CANON), `cold-oracle.sh:29` literal → param. Extended by V-init: `init.ts` founding prose/PLAN_STATES must not live in the engine either (doctrine-agnosticism, both sites).
 - **G7 no composition-root** → dedicated CLI root is the ONLY concrete-importing node; `deploy/` core = port-based DI-pure. Explicit in Target §2 (`ROOT`).
 - **Open (by design):** project-to-directory is the adopted direction, not a round-1 blocker; until landed the root retains a DI-legal corpus-import edge.
