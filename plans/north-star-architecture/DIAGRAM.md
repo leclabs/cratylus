@@ -1,7 +1,9 @@
 # North-star wiring — current vs target (Mermaid, v2 · decoupled)
 
 Render in any Mermaid-aware viewer (Obsidian, GitHub, VS Code). Red = defect; blue = the fix; green = pure.
-v2 = post-decoupling review: target is contract-centered with ZERO peer-to-peer package edges.
+v3 (round-5) = **3 packages** — `agent-contract` DROPPED (NORTH-STAR §5.1); the shared TYPE kernel lives in
+forge, the one behavioral port is `HarnessAdapter`, and benign acyclic type-only edges are accepted (no 4th
+package for an aesthetic "zero peer edges").
 
 ## 1. Current state (defects)
 
@@ -73,8 +75,8 @@ flowchart TB
     tool["tool: encode·read·drain (EPISODIC) · apply --routes (DATA) · replace (prose)<br/>· seed() · lock; recall→vault only"]
   end
 
-  ANA -->|type-only import (erases; acyclic)| types
-  root -->|calls seed() · places bundle| MEM
+  ANA -->|"type-only import (erases; acyclic)"| types
+  root -->|"calls seed() · places bundle"| MEM
   root -.->|discover corpus dir · read injected DATA| ANA
   genus -.->|bundle: ONE typed constant| tool
   cells -.->|"authored against"| data

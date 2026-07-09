@@ -2,6 +2,11 @@
 
 Guard-corrected: these are in-remit reversible DESIGN calls, decided from VISION intent, not polled.
 
+> **AUTHORITATIVE = NORTH-STAR §5 + the Round-5 section at the bottom of this file.** Rounds above are the
+> decision trail. In particular D-scope's "`agent-contract` + injection ports are charter-mandated" is
+> SUPERSEDED: round-5 DROPPED `agent-contract` (the injection is DATA, not a package; 3 packages total). The
+> injection itself stands; the 4th package does not.
+
 ## D-scope — interchange axes
 
 - **harness** = core goal (VISION "realize everywhere").

@@ -11,6 +11,10 @@ Grounding: `ENGINE ⊥ MODEL` (ENGINE.md); "canon is source of truth, targets ar
 
 ## 0. Package charters (revised by debate — MECE)
 
+> **SUPERSEDED by §5.1** — §0/§0.1/§0.2 predate the round-5 drop of `agent-contract`. The authoritative
+> charter is the §5.1 three-package table. Any "agent-contract" / "forge imports agent-memory" phrasing below
+> is stale trail; read §5.1.
+
 | package                                         | question                                        | owns                                                                                                                                                                                            | may import                                                                                                  |
 | ----------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
 | **agent-forge** = ENGINE                        | how is a cell manufactured/validated/shipped?   | IR · compose · adapters · **deploy** · **projection** · catalog-discovery · the accept-gate **ALGORITHM** · CLI                                                                                 | node · own core · **`agent-contract`** (composition-root, not core, imports agent-memory + adapters — §2.3) |
@@ -96,7 +100,7 @@ agent-anatomy (CANON)                                    agent-forge (ENGINE)   
 
 | #      | violation                                                                                                                                                               | resolution                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **V1** | `deploy/seeds.ts` authors memory-store CONTENT; doctrine TRIPLED (`seeds.ts:37` ≡ `genus/memory.md:19` ≡ `route.ts:11`); forge can't import memory ⇒ copy [B1,D4,A2,A3] | **3-way split** (M3+M1+M2): (a) **content/doctrine → `genus/memory.md`** (the organ = ONE home; kills the triple); (b) **stores seed as minimal scaffold** (header + "empty; dream fills"), no doctrine paragraph (`episodicSeed` already `''`); (c) **mechanism facts → pure `agent-memory/src/seed.ts`** (filenames · seed-if-absent · v1-retirement); **forge imports it** (charter now admits memory-as-tool); placement stays portable — local write (`local.ts:63`) + ssh `cat` heredoc (`ssh.ts:155`), **no subprocess, no remote node** [M1-O3].                                                                                                                                                                   |
+| **V1** | `deploy/seeds.ts` authors memory-store CONTENT; doctrine TRIPLED (`seeds.ts:37` ≡ `genus/memory.md:19` ≡ `route.ts:11`); forge can't import memory ⇒ copy [B1,D4,A2,A3] | **3-way split** (M3+M1+M2): (a) **content/doctrine → `genus/memory.md`** (the organ = ONE home; kills the triple); (b) **stores seed as minimal scaffold** (header + "empty; dream fills"), no doctrine paragraph (`episodicSeed` already `''`); (c) **mechanism facts → pure `agent-memory/src/seed.ts`** (filenames · seed-if-absent · v1-retirement); **the composition-root calls it** (§5.1; forge core stays memory-free); placement stays portable — local write (`local.ts:63`) + ssh `cat` heredoc (`ssh.ts:155`), **no subprocess, no remote node** [M1-O3].                                                                                                                                                     |
 | **V2** | projection + accept-gate in anatomy [C1]                                                                                                                                | **projection tooling → forge** (`project*`, `project-human`, `project-targets`, `organ-docs`, `project.ts` — already import forge downward). **accept-gate SPLIT** [M1-O1, the strongest objection]: pure **leg-witness algorithm** (`canonical/signified/coldBlindStatic/partitioned/parsimonious/regenerable`) → forge; **doctrine POLICY** (palimpsest tokens `accept.ts:166-169`, operator-lexicon, repo-guard `cold-oracle.sh:29`) stays anatomy, **injected**: `universalCell(cell, homes, policy)`. Forge defines the interface; anatomy supplies corpus values. Prevents planting `polis` inside the "doctrine-agnostic" engine.                                                                                   |
 | **V3** | `hooks.ts` straddles [C1]                                                                                                                                               | generic `hookIrOf` → forge (doctrine-free); specific hook CELLS stay anatomy; **the composition root `hookSources` is the honest residual value-edge** (anatomy knows which cells exist; forge must not) [M1-O5] — or project-to-directory for the ENGINE-pure form.                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
 | **V4** | prose re-specifies tool [C3-Inv2]                                                                                                                                       | **REFINED** [M3]: delete the algorithm's **internals** (marker enum · liveness _predicate_ `age<2h` · lock O_EXCL/2h · drain `.bak`/`--keep` · record schema — the agent reads a bare `live` word, never computes it). **KEEP the CONTRACT the agent's reasoning consumes**: `scope = node(cwd)` causality + cwd-coupling (`genus/memory.md:24,26`), `node∉{HOME,legacy} ⇒ ∉{SEMANTIC,PROCEDURAL}`, encode-never-judges-scope, why `audit` can fail. Blanket-delete would strip the routing model's grounding.                                                                                                                                                                                                             |
@@ -122,6 +126,11 @@ agent-anatomy (CANON)                                    agent-forge (ENGINE)   
   ENGINE-shape decision — Operator call + possibly a dedicated mav round.
 
 ## 2.1 Decoupling deltas — ports & adapters (round-2 reviewers; see DECISIONS.md)
+
+> **SUPERSEDED by §5.1/§5.2** — this block frames `agent-contract` as THE structural target; round-5 DROPPED
+> that package (types → forge kernel; one port `HarnessAdapter`; concretes wired at the composition-root). The
+> violation ROWS below (V1, V-pkg, …) remain the wave-2 execution spec; ignore the "extract agent-contract" /
+> "forge imports it" framing.
 
 Structural move **D-contract:** extract a pure `agent-contract` package (types + ports `AcceptPolicy ·
 SeedProvider · BundleArtifact · HarnessAdapter · FoundingTemplate`, imports NOBODY); forge/anatomy/memory
@@ -194,8 +203,8 @@ whole-package dep on forge) — minimal, not gold-plated.
 
 - **C1/C3 — forge↔memory:** forge **CORE never imports agent-memory** (stays memory-free; zero-peer-edges
   holds). The seed seam lives at the **composition-root** (allowed to import concretes) OR as bytes shipped by
-  deploy; the memory tool OWNS `seed()`. The §0 charter line "forge may import agent-memory as a tool" and the
-  §3 ASCII "forge imports seed.ts" are **round-1 stale** → the importer is the composition-root, not forge core.
+  deploy; the memory tool OWNS `seed()`. The stale sites (V1, V-pkg, §0.1 "both forge … depend on") say "forge
+  imports it" — read as **composition-root imports it, forge core memory-free** (all now carry §5.1 markers).
 - **C2 — SeedProvider:** folds to a memory-tool `seed()` verb (per §0.2), NOT a contract port.
 - **C4 — BundleArtifact:** TYPE, not port; drop from any "ports" list (DIAGRAM updated).
 - **C5 — `PRINCIPLES.md §3`:** marked SUPERSEDED (asserted recall-in-core + uniform `MemoryStore` CRUD, both
@@ -248,8 +257,10 @@ may override if strict zero-peer-edges is a hard requirement.)
 | **agent-anatomy** (CANON)                     | what cells exist + the runtime individual      | corpus cells · runtime substance (guardrail `.sh` · judge-prompt) · memory CONCEPT (genus doctrine + dream/wake rituals) · the injected DATA VALUES (AcceptPolicy · FoundingTemplate · adapter-name)                        | projection/deploy tooling · memory mechanics                   |
 | **agent-memory** (MECHANISM, leaf)            | the deterministic memory tool over all 5 homes | store/retrieve/land/replace/drain + `seed()` + `BundleArtifact` descriptor                                                                                                                                                  | reasoning · content authoring · doctrine                       |
 
-Dependency edges (acyclic): `anatomy → forge` TYPE-only (erases; the one runtime value-import `project-human.ts:11`
-dies when projection moves into forge, V2). `forge CORE` imports NEITHER anatomy NOR memory. The **composition-root**
+Dependency edges (acyclic): `anatomy → forge` is 172/175 `import type` (erase at compile); the THREE runtime
+value-imports (`project-human.ts:11` `projectHumanOrgan`; `project-cli.ts:24-29` claude serializers;
+`project-cli-codex.ts:20-24` codex serializers — ALL projection/adapter tooling) die when projection moves into
+forge (V2), leaving anatomy→forge purely type-only. `forge CORE` imports NEITHER anatomy NOR memory. The **composition-root**
 (forge CLI, the only concrete-importing node) calls `memory.seed()`, selects the adapter by name, discovers the
 corpus dir. `anatomy → memory` bundle seam = one typed constant. Memory imports nobody.
 
@@ -259,20 +270,25 @@ corpus dir. `anatomy → memory` bundle seam = one typed constant. Memory import
 - **AcceptPolicy** {palimpsest-tokens · operator-lexicon · repo-guard} and **FoundingTemplate** (founding prose +
   `PLAN_STATES`) — injected **DATA** (shape-types in forge, VALUES authored in anatomy). Not ports.
 - **BundleArtifact** — a descriptor **TYPE** (DTO). Not a port.
-- Doctrine-agnosticism: `accept.ts:166-169` `polis/oikos/conatus` and `init.ts` founding prose/PLAN_STATES are
-  injected out of the engine (they are DATA the engine consumes, VALUES owned by CANON).
+- Doctrine-agnosticism (TARGET-tense): the accept POLICY tokens `polis/oikos/conatus`
+  (`toolkit/cold-oracle/accept.ts:166-169`, in **anatomy** today) STAY in anatomy as injected DATA when the accept
+  ALGORITHM relocates to forge (V2) — forge never gains them. The actual live engine leak is `init.ts` (founding
+  prose + `PLAN_STATES`, forge today) → ported to CANON via the FoundingTemplate DATA.
 
 ### 5.3 Memory — net design
 
 - **5 homes** (`route.ts:25`): EPISODIC (record log) + SEMANTIC · PROCEDURAL · AGENTS@node · vault (prose).
 - **Verb × home (MECE — no overlap):**
   - EPISODIC: `encode` (append) · `read` (filtered) · `drain`/`compact` (by-id forget). — unchanged.
-  - `apply --routes '[{id,targets[]}]'`: consumes the agent's route-decisions as DATA (agent IS the classifier,
-    out-of-process — F1), lands EPISODIC records → {AGENTS@node · vault} + retain/drop. A data-adapter around
-    `compact`+`appendToHome`. **`apply` NEVER writes SEMANTIC/PROCEDURAL** (append would re-introduce palimpsest).
-  - `replace` (SEMANTIC · PROCEDURAL, and any prose home needing supersede): agent authors the WHOLE new file →
-    tool atomic-writes (`compact` tmp+rename). Whole-file only (no sub-file addressing). `replace ≡ forget` on
-    prose. Reuses the `RouteTarget` selector `{store, node?, path?}` — no new shape.
+  - `apply --routes '[{id,targets[]}]'` = ADD-NEW: consumes the agent's route-decisions as DATA (agent IS the
+    classifier, out-of-process — F1), appends NEW EPISODIC-derived content → {AGENTS@node · vault} + retain/drop.
+    A data-adapter around `compact`+`appendToHome`. **`apply` NEVER writes SEMANTIC/PROCEDURAL** — their update is
+    ALWAYS a supersede (curated prose), so append there would re-introduce palimpsest.
+  - `replace` = SUPERSEDE, for ALL FOUR prose homes (SEMANTIC · PROCEDURAL · AGENTS@node · vault): agent authors
+    the WHOLE new file → tool atomic-writes (`compact` tmp+rename). Whole-file only (no sub-file addressing).
+    `replace ≡ forget` on prose. Reuses the `RouteTarget` selector `{store, node?, path?}` — no new shape.
+  - MECE: `apply` ADDS-NEW (AGENTS@node/vault/EPISODIC-retain); `replace` SUPERSEDES (any prose home). AGENTS@node
+    - vault take both (append a new directive/note vs supersede a stale one); SEMANTIC/PROCEDURAL are replace-only.
 - **Reads stay agent-direct** — resident prose is read whole by the agent (`wake.ts:9`); routing a whole-file read
   through a subprocess is zero-capability indirection, against the tool's charter (`genus/memory.md:55`). This is
   industry-aligned: Letta core memory is IN-CONTEXT, never read via a tool call. "Accessible via the tool" is
@@ -292,5 +308,7 @@ SELF-DESCRIBING (the taxonomy is discoverable — via the genus now, a `--descri
 
 ### 5.5 Status
 
-Converging. Architecture code-grounded + twice cold-verified. This §5 reconciles the round-1..4 palimpsest.
-Wave-2 execution (agent-contract-free) remains Operator-gated.
+**Design converged** — both round-6 terminal cold reviewers judged the ARCHITECTURE clean (drop-`agent-contract`
+verified against the real import graph; memory minimal + Letta/mem0/CoALA-aligned; SRP per box). Round-6 also
+de-palimpsested the doc-set (§0–§4 marked superseded at each stale site; §5-accuracy nits fixed). Wave-2
+execution (agent-contract-free; V-ledger in §2) remains Operator-gated.
