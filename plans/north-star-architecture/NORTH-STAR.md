@@ -33,24 +33,35 @@ Operator #2 ("all memories abstractly accessible via the tool") SUPERSEDES §0.1
 — but grounded in code + industry, the deliverable is to WIRE the write-engine THAT ALREADY EXISTS, not build
 a uniform CRUD service (anti-complexity).
 
-- **The engine exists, dead:** `dream.ts:200` `applyRoutes(store, path, Classifier)` already lands distilled
-  content into the 5 homes via an INJECTED classifier ("engine owns none of the reasoning", `route.ts:82-89`)
-  — that IS the P2 mechanism/strategy cut, realized. It has ZERO callers and NO CLI verb (`cli.ts:595-611` =
-  encode·read·fold·drain·audit·session·lock·migrate). Deliverable: expose it (an `apply`/`land` verb) + let
-  wake/dream read the resident homes through the tool.
+- **WIRE = build a data-adapter, not surface a closure (F1):** `dream.ts:200` `applyRoutes(store, path,
+Classifier)` lands content into homes via an INJECTED in-process classifier (`route.ts:82-89`) — the P2 cut
+  realized. But the classifier is a JS CLOSURE the out-of-process agent IS; a CLI subprocess can't receive it.
+  So the `apply`/`land` verb accepts the agent's route-decisions as DATA (`apply --routes '[{id,targets[]}]'`)
+  and the classifier collapses to an id→decision lookup — a data-driven adapter around `compact`+`appendToHome`,
+  NOT zero-logic. ZERO callers + no CLI verb today (`cli.ts:595-611`).
 - **Homes, not CoALA-4 types:** keep the 5 real homes `route.ts:25` (SEMANTIC·PROCEDURAL·AGENTS@node·vault·
   EPISODIC). Type (why: episodic/semantic/procedural/working) and home (where) are TWO axes; don't collapse.
-- **Two op families, not one CRUD (industry: Letta/LangMem/mem0):** (a) record homes = append/read/forget;
-  (b) resident-prose homes (SEMANTIC/PROCEDURAL) = land + **REPLACE/forget** (append-only can't depalimpsest —
-  `skills/dream.ts:22,42` requires supersede; today `applyRoutes` only appends → the real gap). Procedural =
-  prose-edit, categorically not CRUD.
+- **Two families by STORE-SHAPE, not CoALA-type (F2/F3):** (a) the ONE record log = EPISODIC (append/read +
+  existing `drain`/`compact` by-id = forget); (b) the FOUR prose homes = {SEMANTIC · PROCEDURAL · AGENTS@node ·
+  vault} — ALL append-only today (`dream.ts:224`), all with the identical depalimpsest gap
+  (`skills/dream.ts:22,42` requires supersede). Prose gets ONE new verb **`replace`** = agent authors the WHOLE
+  new file, tool atomic-writes (the `compact` tmp+rename, `dream.ts:149-159`). On prose `replace ≡ forget` —
+  do NOT mint a separate `forget`. **Pin (F4): `replace` is whole-file only — no sub-file/line/anchor addressing.**
+- **Reads stay agent-direct (F5-read):** "accessible via the tool" = the WRITES the agent can't do
+  atomically/by-id (encode·land·replace·drain) + EPISODIC read (needs the liveness/scope filter). Resident-prose
+  READ stays a plain agent file-read (`wake.ts:9`) — routing a whole-file read through a subprocess is
+  indirection for zero capability, against the tool's charter ("only the act the agent can't do by hand",
+  `genus/memory.md:55`).
+- **Lock obligation (F5):** the new prose-write verbs touch the lock-guarded {SEMANTIC·PROCEDURAL} partition
+  (`genus/memory.md:51`); they MUST inherit the ritual's `lock acquire/release` (as `drain` does) — a CLI
+  `apply`/`replace` outside the lock corrupts under concurrent dreams.
 - **P2 line:** tool owns storage/retrieval/atomic-land/replace; AGENT authors the record CONTENT + owns the
-  consolidation STRATEGY (the injected classifier's judgment). = Letta `core_memory_replace`-with-agent-text.
+  consolidation STRATEGY (the route-decision). = Letta `core_memory_replace`-with-agent-text.
 - **recall (embedding search) stays OUT of the portable core** — it breaks "runs anywhere, no install"
   (`genus/memory.md:42`, V1 no-subprocess); a vault-adapter capability, not a core per-type op.
-- **working memory = the context window, NO store** (CoALA; `genus/memory.md:22`). Question closed.
-- **Transport:** CLI portable core NOW; MCP a LATER P4 adapter over the same core (not round-1). **P5:** a
-  `--describe` verb enumerating homes+ops (self-describing) — in scope, cheap.
+- **working memory = the context window, NO store** (CoALA; `genus/memory.md:22`). Closed.
+- **Transport:** CLI portable core NOW; MCP a LATER P4 adapter over the same core. **P5 `--describe`: DEFERRED**
+  — no standard requires it for the CLI phase; its only consumer is the later MCP adapter (anti-complexity).
 - **SeedProvider fold:** the seed ACT (init-if-absent) folds into the memory tool; seed CONTENT stays CANON.
 
 **Boundary invariants (corrected):**
@@ -159,6 +170,34 @@ each depend ONLY on it; concretes wired once at the CLI composition-root ⇒ **z
   corpus-policy object; splitting into 3 ports invents complexity. `operator-lexicon` stays injected policy
   data (round-1 F3 holds; the σ\* glyph set is per-corpus notation, not general mechanism).
 
+## 2.3 Round-4 — port surface corrected + cross-round reconciliation (AUTHORITATIVE)
+
+Cold SRP review: I over-stated the "5 ports." Corrected (Cockburn: a port = a behavioral driven/driving
+interface with ≥2 adapters; a single-impl config is DATA, a shape is a TYPE):
+
+| contract member                                               | what it really is                            | why                                                                                                                       |
+| ------------------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| **HarnessAdapter**                                            | the ONE behavioral **PORT**                  | ≥2 impls (claude·codex·15 more), methods vary                                                                             |
+| **AcceptPolicy** {palimpsest · operator-lexicon · repo-guard} | injected **DATA** (a shape-TYPE in contract) | config the gate consumes; not a behavioral interface                                                                      |
+| **FoundingTemplate** (founding prose + PLAN_STATES)           | injected **DATA**                            | corpus content the engine emits; not an interface                                                                         |
+| **BundleArtifact**                                            | a descriptor **TYPE** (DTO)                  | R1-Q5 already said "type"; no behavior                                                                                    |
+| ~~SeedProvider~~                                              | **DROPPED** — not a port                     | post-V1(b) strip: single impl, no corpus content flows, nothing varies → a plain `seed(dir,name)` verb on the memory tool |
+
+⇒ **`agent-contract` = the shared TYPE kernel** (the anatomy type system + the DTO/data shapes) **+ one
+behavioral port (`HarnessAdapter`)**. It earns its keep as Fowler _separated-interface_ (removes anatomy's
+whole-package dep on forge) — minimal, not gold-plated.
+
+**Cross-round reconciliation (supersedes earlier text where it conflicts):**
+
+- **C1/C3 — forge↔memory:** forge **CORE never imports agent-memory** (stays memory-free; zero-peer-edges
+  holds). The seed seam lives at the **composition-root** (allowed to import concretes) OR as bytes shipped by
+  deploy; the memory tool OWNS `seed()`. The §0 charter line "forge may import agent-memory as a tool" and the
+  §3 ASCII "forge imports seed.ts" are **round-1 stale** → the importer is the composition-root, not forge core.
+- **C2 — SeedProvider:** folds to a memory-tool `seed()` verb (per §0.2), NOT a contract port.
+- **C4 — BundleArtifact:** TYPE, not port; drop from any "ports" list (DIAGRAM updated).
+- **C5 — `PRINCIPLES.md §3`:** marked SUPERSEDED (asserted recall-in-core + uniform `MemoryStore` CRUD, both
+  overturned by §0.2/§2.2).
+
 ## 3. Target-state wiring
 
 ```
@@ -166,14 +205,14 @@ agent-anatomy (CANON)                    agent-forge (ENGINE)                   
  organs·agents·skills·hooks(CELLS)·       core/{ir,engine,serialize,adapter,       cli: …existing…
  rules·genus (ONE home for memory          exemplify}                              + pure seed.ts (filenames·
  doctrine)                                anatomy·catalog                            seed-if-absent·v1-retire)
- runtime substance: guardrail/*.sh·       adapters/<harness>/*                     ▲ forge imports seed.ts
- judge-prompt·bundles                     core/anatomy-body (agentBody·organTitle· │  (tool dep, DAG-safe)
- accept POLICY-DATA (palimpsest·           organField — was sideways)              │
- operator-lexicon·repo-guard) ──inject──▶ projection/ (was toolkit):               │
- composition roots (hookSources,           project·project-human·project-targets   │
- project-human) ──value/or project-dir──▶ validate/ (was cold-oracle): ALGORITHM   │
-                                           only; policy injected                   │
-                                          deploy/{…,init} placement-only ──imports seed.ts──┘
+ runtime substance: guardrail/*.sh·       adapters/<harness>/*
+ judge-prompt·bundles                     core/anatomy-body (agentBody·organTitle·   composition-root
+ accept POLICY-DATA (palimpsest·           organField — was sideways)               calls memory seed()
+ operator-lexicon·repo-guard) ──inject──▶ projection/ (was toolkit):                + places bundle
+ composition roots (hookSources,           project·project-human·project-targets    ▲
+ project-human) ──value/or project-dir──▶ validate/ (was cold-oracle): ALGORITHM    │ (forge CORE is
+                                           only; policy injected                    │  memory-free)
+                                          deploy/{…,init} placement-only ───────────┘
    bundle-path: ONE exported constant ▲ (BundleMissingError already guards)
 ```
 

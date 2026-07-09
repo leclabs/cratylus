@@ -66,6 +66,11 @@ record) · read(type, filter) · recall(type, query) · consolidate(...) · forg
 
 ## 3. Per-box SRP audit — is every responsibility in its box?
 
+> **SUPERSEDED by NORTH-STAR §2.2/§2.3 (round-3/4).** The agent-memory row's "recall/…for ALL types" and the
+> `MemoryStore` uniform-CRUD / `SeedProvider` framing are overturned (recall is vault-only; two op-families, not
+> CRUD; SeedProvider dropped as a port). The authoritative port surface + per-box responsibilities live in
+> NORTH-STAR §0.2, §2.2, §2.3. Retained below for the reasoning trail.
+
 | box                          | THE one responsibility                                                                                                                                                     | ported OUT (belongs elsewhere)                                                          | must NOT absorb                                |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- | ---------------------------------------------- |
 | **agent-contract**           | the shared vocabulary: types + ports (incl. `MemoryStore`, `AcceptPolicy`, `SeedProvider`→folds into MemoryStore?, `BundleArtifact`, `HarnessAdapter`, `FoundingTemplate`) | — (pure; imports nobody)                                                                | any concrete identity literal (P4/invariant-1) |

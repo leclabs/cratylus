@@ -51,8 +51,8 @@ flowchart TB
 ```mermaid
 flowchart TB
   subgraph CON["agent-contract — PURE (imports NOBODY)"]
-    types["types: Kind · IR · Organ · SkillExpression<br/>CanonicalEvent · Hook · HookCell"]
-    ports["ports: AcceptPolicy · SeedProvider<br/>BundleArtifact · HarnessAdapter · FoundingTemplate"]
+    types["TYPE kernel: Kind · IR · Organ · SkillExpression · CanonicalEvent<br/>Hook · HookCell · BundleArtifact(DTO) · AcceptPolicy/FoundingTemplate(data shapes)"]
+    ports["behavioral PORT (only one): HarnessAdapter"]
   end
 
   subgraph FRG["agent-forge — ENGINE (fixed · no engine port)"]
@@ -71,9 +71,9 @@ flowchart TB
     data["INJECTED DATA: AcceptPolicy {palimpsest · operator-lexicon · repo-guard}<br/>· founding-template · adapter NAME (string)"]
   end
 
-  subgraph MEM["agent-memory — MECHANISM (leaf)"]
-    tool["episodic.mjs (mechanics)"]
-    seed["seed.ts: SeedProvider impl + BundleArtifact descriptor<br/>filenames = SINGLE contract token"]
+  subgraph MEM["agent-memory — MECHANISM (leaf, all homes)"]
+    tool["tool: encode·read·apply/land·replace·drain·audit·lock<br/>(record log EPISODIC + 4 prose homes; recall→vault only)"]
+    seed["seed() verb + BundleArtifact descriptor (a TYPE, not a port)<br/>filenames = SINGLE contract token"]
   end
 
   subgraph ROOT["CLI composition-root — ONLY node that imports concretes"]
@@ -88,7 +88,7 @@ flowchart TB
   ROOT -.->|corpus dir + policy/template DATA| ANA
   ROOT -.->|memory plugin| MEM
 
-  note["INVARIANT: no FRG–ANA–MEM edge. Every cross-concern seam is a contract PORT;<br/>concretes wired once here. Aspirational: anatomy PROJECTS hook/rule cells to a<br/>dir forge DISCOVERS → drops even the root's corpus edge to pure discovery."]
+  note["INVARIANT: no FRG–ANA–MEM edge (forge CORE is memory-free). Seams = shared TYPES/DATA +<br/>ONE behavioral port (HarnessAdapter); concretes (memory seed(), corpus, adapter) wired once here.<br/>Aspirational: anatomy PROJECTS hook/rule cells to a dir forge DISCOVERS → drops the root's corpus edge."]
 
   classDef fix fill:#1a3a5b,stroke:#4af,color:#fff;
   classDef pure fill:#1a4a2a,stroke:#2c6,color:#fff;
@@ -114,24 +114,24 @@ flowchart LR
   classDef bad fill:#5b1a1a,stroke:#e06,color:#fff;
 ```
 
-**3b. Target — doctrine one-home + typed ports through the contract**
+**3b. Target — doctrine one-home; tool over all homes; agent = strategy**
 
 ```mermaid
 flowchart LR
-  CON2["agent-contract: SeedProvider · BundleArtifact"]:::pure
-  subgraph CANON2["CANON — the memory CONCEPT"]
+  CON2["agent-contract: BundleArtifact (TYPE)"]:::pure
+  subgraph CANON2["CANON — the memory CONCEPT (strategy)"]
     g2["genus/memory.md — doctrine ONE home + BundleArtifact ref via registry"]
-    r2["skills: dream · wake · handoff · carry-on"]
+    r2["skills: dream·wake·handoff — author content, decide routes"]
   end
-  FRG2["agent-forge/deploy — port-based · DI-pure"]
-  M2["agent-memory: episodic.mjs + seed.ts (SeedProvider impl · BundleArtifact)"]
-  ROOT2["CLI root: inject SeedProvider + BundleArtifact"]
+  FRG2["agent-forge/deploy — placement (memory-free core)"]
+  M2["agent-memory: tool over 5 homes<br/>record: encode·read·drain · prose: land·replace · seed() · apply --routes DATA"]
+  ROOT2["composition-root: calls memory seed() · places bundle"]
   g2 ==> CON2
-  FRG2 ==> CON2
   M2 ==> CON2
+  ROOT2 -.->|seed / place| M2
   ROOT2 -->|wires| FRG2
-  ROOT2 -.->|memory plugin| M2
-  r2 -->|invoke tool| M2
+  r2 -->|"route-decisions as DATA (agent IS the classifier)"| M2
+  r2 -.->|"resident READ = plain file-read (not via tool)"| g2
   classDef pure fill:#1a4a2a,stroke:#2c6,color:#fff;
 ```
 
