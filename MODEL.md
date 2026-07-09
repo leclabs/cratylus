@@ -40,6 +40,10 @@ Universal(a) ≜ CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARS
   PARSIMONIOUS: ∀c∈Corpus: body(c)=⟨α(c),residue(c)⟩ ∧ residue(c)=D(c)∖fired(α(c))
   REGENERABLE : ∀t∈Target: (∃c:cell, adapter: t=deploy(c,adapter)) ∧ deterministic(deploy) ∧ deploy-owned(t) ∧ ¬hand-edit(t)
                 SelfAuthored{SEM,PROC,EPIS} ∉ Target ∧ ¬deploy-writes(SelfAuthored)
+  BEING/FACE  : a cell is a BEING ; deploy projects it to MANY per-harness Targets = its FACES
+                ⟨one being → {face_h}_{h∈harness}⟩ ; the being's MEMORY-HOME is single-per-being ∧
+                harness-independent ∧ ∉ any face — the continuity that makes the faces one being
+                ⟨extends SelfAuthored ∉ Target: memory is neither projected nor per-harness⟩
 
 Corpus ≜ lfp( S ↦ { c ∣ grounded(c,S) } ) ; grounded(c,S) ⇔ defn(c) resolves-in (inline-≜(c) ∪ S ∪ LLM-priors)
 REFLEXIVE : ∀x:cell, class(x)∈{skill,rule,hook} ⇒ accept(x)
