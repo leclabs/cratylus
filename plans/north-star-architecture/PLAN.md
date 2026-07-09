@@ -62,9 +62,10 @@ E1..E4 ⟵ D1                    — execution (design-dependent, fan-out)
 7. **Impurity/dup:** clock-in-template seeds, `dream.compact`, `loadNodeConfig`; `organTitle` dup; codex→claude
    sideways adapter edge. [C2 §C/§D]
 
-## D2 — memory decomposition (Operator-driven, converging; NOT yet folded into §5)
+## D2 — memory decomposition (Operator-driven; FOLDED into §6/§7 + MODEL; reviewer-converged round-2)
 
-The design continued past D1 into a memory/harness rethink. Decisions reached (Operator-affirmed direction):
+Landed this session: **§6** (memory-as-standalone-tool) + **§7** (the 4-part CoALA memory MODEL) + a `MODEL.md`
+**BEING/FACE** invariant. Both §6/§7 ran the cold-review loop. Net decisions:
 
 1. **Memory is a standalone module/tool** (`memory`, renamed from `episodic`-the-grey-field-holdover),
    installed once per host like `graphify`/`gh` (`memory install`) — NOT bundled per-harness.
@@ -83,7 +84,23 @@ The design continued past D1 into a memory/harness rethink. Decisions reached (O
    REJECTED (command-only, no reasoning-injection; against all industry convergence). Sleep-time sidecar DEFERRED.
 6. **Braid relocates:** `wake`/`handoff` → thin orchestrators calling memory's named entrypoints
    (`reconstitute`/`consolidate`); no agent skill names `episodic.mjs`; `orient` stays praxis.
+7. **§6 round-2 reviewer fixes:** FLAW-A (cross-face session bleed, `store.ts:53` claude-only) → `register`
+   binds a session id (harness-native or tool-minted). Doctrine-split reconciled (V4 + VISION): **agent-memory
+   = a CANONICAL component distributed as a standalone tool** (mechanism + authored protocol authored-once); the
+   V4 reasoning-contract RELOCATES into the module's shipped protocol, not deleted. Distribution = human
+   host-bootstrap (`uv tool install` + `memory install`, like graphify — NOT `gh`); `~/.agents/<name>` BARE (not
+   XDG); version-compat check; the stranded `stageBundle`/`BundleMissingError` mechanism (memory = sole `bundle:`
+   consumer) deleted same wave.
+8. **§7 — the 4-part CoALA taxonomy is the memory MODEL** (Working=context/no-store · Episodic · Semantic ·
+   Procedural). **`vault` EXTRACTED** (cross-host/networked = out-of-scope anti-pattern, Operator prior epoch);
+   this RETRACTS my own FLAW-B "cross-host via vault" (self-inflicted anti-pattern preservation). **Single-host
+   is the model.** `AGENTS@node` reclassified = project-scoped externalization (route-out), not a private store
+   (nico judgment; Operator may extract entirely). `replace` now covers 2 prose stores not 4. Session-memory = a
+   view over episodic.
 
-**Forward (next session):** fold D2 into `NORTH-STAR §5` as the memory/harness design + run the same cold-review
-loop; then spec wave-2 E-shards. Docs: `SESSION-LIFECYCLE.md`, `PRINCIPLES.md`, `DECISIONS.md`, `REVIEW-round2.md`.
-Nothing in `packages/` touched — design-only; all Operator-gated.
+**Forward (next session):** (a) resolve the ONE open item — Operator's call on `AGENTS@node` (keep-as-externalize
+vs extract). (b) marker-debt: a few §5/§2 ledger rows still lack per-site §6/§7 supersede markers (§6 lists them;
+not yet inline). (c) the doc is large (§0–§7 + satellites) → an eventual de-palimpsest rewrite to net-current.
+(d) spec wave-2 E-shards (incl. `episodic`→`memory` rename, `bin`+bootstrap, relocate genus+seed into module,
+delete vault from `route.ts`/`dream.ts`, register-mint session-id, per-face `turn.end` nudge hook). Nothing in
+`packages/` touched — design-only; all Operator-gated.
