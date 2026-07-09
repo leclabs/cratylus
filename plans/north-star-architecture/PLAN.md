@@ -32,14 +32,15 @@ E1..E4 ⟵ D1                    — execution (design-dependent, fan-out)
 
 ## State
 
-| task                                               | state                                           | concern                                                                     |
-| -------------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------- |
-| C1 census — package boundaries (toolkit placement) | completed                                       | ANATOMY vs FORGE concern; toolkit relocation candidates                     |
-| C2 census — forge & memory                         | completed                                       | dup/concern-mix/purity/dep-direction; the forge⊥memory D4 seam              |
-| C3 census — citation + memory prose                | completed                                       | dead `[[…]]` cruft vs live successor; genus prose-vs-tool dup               |
-| S0 — scope barriers                                | ready                                           | broaden nico/mav vision; purge dangling lane-split                          |
-| D1 — north-star synthesis + mav debate             | active (CONVERGED — awaiting Operator sign-off) | 3/3 mav reviews integrated; F1 resolved by isolated Ω\*; `NORTH-STAR.md` v1 |
-| E — execution slices (E1..E4)                      | pending                                         | design-dependent; specced after D1                                          |
+| task                                               | state                                     | concern                                                                        |
+| -------------------------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------ |
+| C1 census — package boundaries (toolkit placement) | completed                                 | ANATOMY vs FORGE concern; toolkit relocation candidates                        |
+| C2 census — forge & memory                         | completed                                 | dup/concern-mix/purity/dep-direction; the forge⊥memory D4 seam                 |
+| C3 census — citation + memory prose                | completed                                 | dead `[[…]]` cruft vs live successor; genus prose-vs-tool dup                  |
+| S0 — scope barriers                                | ready                                     | broaden nico/mav vision; purge dangling lane-split                             |
+| D1 — north-star synthesis + mav debate             | completed (CONVERGED — 6 cold rounds; §5) | design clean+code-verified; `agent-contract` DROPPED (3 pkgs); de-palimpsested |
+| D2 — memory decomposition (Operator-driven)        | active (design converging)                | standalone `memory` tool + being/faces + session-lifecycle; see below          |
+| E — execution slices (E1..E4)                      | pending                                   | design-dependent; specced after D1/D2 sign-off                                 |
 
 ## Census results (durable inputs for D1)
 
@@ -60,3 +61,29 @@ E1..E4 ⟵ D1                    — execution (design-dependent, fan-out)
    bare-anchor skill-composition successor (fork to resolve cold). [C3-Inv1]
 7. **Impurity/dup:** clock-in-template seeds, `dream.compact`, `loadNodeConfig`; `organTitle` dup; codex→claude
    sideways adapter edge. [C2 §C/§D]
+
+## D2 — memory decomposition (Operator-driven, converging; NOT yet folded into §5)
+
+The design continued past D1 into a memory/harness rethink. Decisions reached (Operator-affirmed direction):
+
+1. **Memory is a standalone module/tool** (`memory`, renamed from `episodic`-the-grey-field-holdover),
+   installed once per host like `graphify`/`gh` (`memory install`) — NOT bundled per-harness.
+2. **Being/faces ontology:** an agent is a persistent BEING; harnesses are projected FACES; **memory is the
+   continuity** that makes the faces one being ⇒ memory lives at a **harness-neutral** home `~/.agents/<name>/`
+   (XDG-aware), reachable identically from every face. (Being/faces itself → MODEL.md, not memory-internal.)
+3. **`genus/memory.md` = palimpsest → DELETE.** The boundary test: if changing where the module stores data
+   forces an edit to an anatomy "doctrine" file, the module isn't encapsulated. The agent references memory via
+   ONE thing — the `longTermMemory` organ σ\* enum. Memory module owns tool + skills + store + protocol.
+4. **F5/V8 harness-path-templating DISSOLVES** — memory tool on PATH + generic `$AGENT_HOME` + generic
+   `$AGENT_SESSION_ID` (retires `CLAUDE_SESSION_ID`) means face bodies are harness-neutral; only the FACE
+   artifacts still land per-harness (adapter `paths.ts`, unchanged). Coupling removed, not templated.
+5. **Session-lifecycle / consolidation trigger** — see `SESSION-LIFECYCLE.md` v2 (converged, 2 cold reviewers):
+   consolidation = agent hot-path (`apply`/`replace` in-turn) nudged by a threshold-gated `turn.end` (Stop)
+   hook; cold `session.start` catch-up = data-safe floor; `session.end` = mechanical `release` only; PreCompact
+   REJECTED (command-only, no reasoning-injection; against all industry convergence). Sleep-time sidecar DEFERRED.
+6. **Braid relocates:** `wake`/`handoff` → thin orchestrators calling memory's named entrypoints
+   (`reconstitute`/`consolidate`); no agent skill names `episodic.mjs`; `orient` stays praxis.
+
+**Forward (next session):** fold D2 into `NORTH-STAR §5` as the memory/harness design + run the same cold-review
+loop; then spec wave-2 E-shards. Docs: `SESSION-LIFECYCLE.md`, `PRINCIPLES.md`, `DECISIONS.md`, `REVIEW-round2.md`.
+Nothing in `packages/` touched — design-only; all Operator-gated.
