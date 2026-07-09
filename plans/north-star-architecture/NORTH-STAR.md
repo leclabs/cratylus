@@ -3,10 +3,11 @@
 Author: nico (design authority). Reviewed across 5 adversarial-mav rounds + isolated Ω\* cold reads. ρ=LLM.
 Grounding: `ENGINE ⊥ MODEL` (ENGINE.md); "canon is source of truth, targets are projections" (VISION).
 
-> **READ §5 (packages/ports) + §6 (memory/harness) — the two NET-CURRENT sections.** §5 is the de-palimpsested
-> package architecture (3 packages, no `agent-contract`, the one port). **§6 supersedes §5's memory framing**
-> (memory is a STANDALONE installed tool at `~/.agents/<name>`, `genus/memory.md` deleted, V8/F5 dissolved).
-> §0–§4 are the round-by-round reasoning trail, superseded by §5/§6 wherever they conflict.
+> **READ §5 (packages/ports) + §6 (memory packaging) + §7 (memory MODEL) — the NET-CURRENT sections.** §5 =
+> the 3-package architecture. §6 = memory as a standalone installed tool at `~/.agents/<name>` (`genus/memory.md`
+> deleted, V8/F5 dissolved). **§7 = the memory MODEL: the 4-part CoALA taxonomy (Working·Episodic·Semantic·
+> Procedural); `vault`/cross-host EXTRACTED as out-of-scope.** §7 supersedes the "5 homes" framing in §0.2/§5.3/§6.
+> §0–§4 are the reasoning trail, superseded by §5/§6/§7 on conflict.
 
 ---
 
@@ -422,3 +423,44 @@ orient → resume`; `praxis-sync → memory.consolidate → release`). Memory ex
 - Status: D2 reviewer-converged (round-2, 2 cold reviewers). Being/faces landed in MODEL. Wave-2 execution
   (rename `episodic`→`memory`, `bin` + host-bootstrap, relocate genus content + seed into the module, delete
   the stranded bundle mechanism, `register`-mint session-id, per-face nudge hook) remains Operator-gated.
+
+---
+
+## 7. Memory model = the 4-part CoALA cognitive taxonomy (AUTHORITATIVE; vault EXTRACTED)
+
+Operator-directed (weighed, endorsed on merits — CoALA / Sumers 2023, the convergent standard the round-6
+reviewer independently grounded). **Supersedes the "5 homes / type×home two-axis" framing** in §0.2, §5.3, §6.
+
+### 7.1 The taxonomy (the agent's PRIVATE memory)
+
+| type           | store                         | note                                               |
+| -------------- | ----------------------------- | -------------------------------------------------- |
+| **Working**    | none — the context window     | transient reasoning state; never persisted (CoALA) |
+| **Episodic**   | `EPISODIC.jsonl` (record log) | raw per-turn events; the encode target             |
+| **Semantic**   | `SEMANTIC.md` (prose)         | facts + identity                                   |
+| **Procedural** | `PROCEDURAL.md` (prose)       | generalized cross-project wisdom                   |
+
+That is the whole model the memory module OWNS — three private stores + working (no store), at
+`~/.agents/<name>/`. "Session memory" = a **view over episodic** (the current session's records, already
+session-tagged), not a 5th type.
+
+### 7.2 EXTRACTED (palimpsest — out of scope)
+
+- **`vault` (cross-host / networked cold corpus) → DELETE.** Cross-host continuity is an **anti-pattern for this
+  library** (Operator, prior epoch) — an orthogonal END-USER concern (a vault-vendor integration we may
+  _recommend_ later, never own). Remove `vault` from `route.ts` `StoreName`/`V2_STORES`, the `dream.ts` vault
+  case, and the genus description. **Single-host is simply the model** — this RETRACTS §6.6's "cross-host via
+  vault" (which wrongly preserved the anti-pattern); the O_EXCL lock's local-fs assumption is now just correct,
+  not a "boundary."
+- **`AGENTS@node` → RECLASSIFY (not a private store).** Project-scoped externalization — a durable lesson written
+  OUT to a project's shared, git-versioned `AGENTS.md`. Orthogonal to the private cognitive taxonomy; a
+  consolidation route-OUT (a documentation act), NOT a memory home the module owns/reconstitutes. Behavior kept;
+  reclassified. (nico judgment — Operator may extract entirely.)
+
+### 7.3 Simplifications this forces
+
+- The `replace` (prose-supersede) verb now covers **TWO** prose stores (SEMANTIC · PROCEDURAL), not four —
+  §6/SESSION-LIFECYCLE's "4 prose homes" reduces accordingly. `apply` lands EPISODIC + (route-out) the AGENTS
+  externalization.
+- The two-family split is cleaner: ONE record log (episodic) + TWO resident-prose stores (semantic/procedural).
+- `recall`/embeddings stays out of core (unchanged); working = context (unchanged).
