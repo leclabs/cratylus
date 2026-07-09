@@ -3,9 +3,10 @@
 Author: nico (design authority). Reviewed across 5 adversarial-mav rounds + isolated Ω\* cold reads. ρ=LLM.
 Grounding: `ENGINE ⊥ MODEL` (ENGINE.md); "canon is source of truth, targets are projections" (VISION).
 
-> **READ §5 (NET-CURRENT) FIRST** — it is the de-palimpsested single source of truth (3 packages, no
-> `agent-contract`; the one port; the memory design). §0–§4 below are the round-by-round reasoning trail and
-> are SUPERSEDED by §5 wherever they conflict.
+> **READ §5 (packages/ports) + §6 (memory/harness) — the two NET-CURRENT sections.** §5 is the de-palimpsested
+> package architecture (3 packages, no `agent-contract`, the one port). **§6 supersedes §5's memory framing**
+> (memory is a STANDALONE installed tool at `~/.agents/<name>`, `genus/memory.md` deleted, V8/F5 dissolved).
+> §0–§4 are the round-by-round reasoning trail, superseded by §5/§6 wherever they conflict.
 
 ---
 
@@ -281,6 +282,10 @@ corpus dir. `anatomy → memory` bundle seam = one typed constant. Memory import
 
 ### 5.3 Memory — net design
 
+> **§6 SUPERSEDES the memory LOCATION/PACKAGING below** (standalone installed tool at `~/.agents/<name>`, not a
+> forge-bundled leaf; `genus/memory.md` deleted). The verb×home MECE + reads-direct + recall-vault design here
+> STANDS; only "where memory lives + how it ships" is overridden by §6.
+
 - **5 homes** (`route.ts:25`): EPISODIC (record log) + SEMANTIC · PROCEDURAL · AGENTS@node · vault (prose).
 - **Verb × home (MECE — no overlap):**
   - EPISODIC: `encode` (append) · `read` (filtered) · `drain`/`compact` (by-id forget). — unchanged.
@@ -316,3 +321,73 @@ SELF-DESCRIBING (the taxonomy is discoverable — via the genus now, a `--descri
 verified against the real import graph; memory minimal + Letta/mem0/CoALA-aligned; SRP per box). Round-6 also
 de-palimpsested the doc-set (§0–§4 marked superseded at each stale site; §5-accuracy nits fixed). Wave-2
 execution (agent-contract-free; V-ledger in §2) remains Operator-gated.
+
+---
+
+## 6. Memory as a standalone harness-neutral module (D2 — supersedes the genus/bundle framing)
+
+Operator-driven revision. Supersedes: §0.1 (genus as bundle-seam/doctrine-home), the §5.1 agent-memory charter
+row, V6-bundle, V8/F5-strategy (harness path templating), and V-pkg/SeedProvider — see the markers at each.
+
+### 6.1 Being / faces (→ also MODEL.md)
+
+An agent is a persistent **BEING**; harnesses are its projected **FACES**. **Memory is the continuity that
+makes the many faces one being.** ⇒ memory CANNOT live under any one harness's dir — a `~/.claude/...` memory
+home would make the claude-face and codex-face _different beings_. Memory is **harness-independent infrastructure**.
+(The being/faces ontology is a MODEL/constitution concept — "what an agent IS"; the module merely _implements_
+the continuity.)
+
+### 6.2 Standalone module — installed, not bundled (like `gh` / `graphify`)
+
+- The **`memory`** CLI (renamed from `episodic` — a grey-field holdover; it manages all 5 homes, not one store),
+  **installed once per host** via `memory install`. NOT bundled into any harness skill-dir.
+- Store at the **harness-neutral** home **`~/.agents/<name>/`** (XDG-aware: `$XDG_DATA_HOME/agents/<name>`),
+  reachable identically from every face. Mirrors `gh`'s `~/.config/gh`.
+- The module owns **everything memory**: the tool, its skills (reconstitute/consolidate), its store, its
+  protocol, and the store LOCATION. A black box with a clean interface.
+- **agent-anatomy references memory via ONE thing** — the `longTermMemory` organ σ\* enum
+  (`organs/memory/long-term-memory.ts`, a single line). The agent _declares it has memory_; the module supplies
+  all mechanism+skills+doctrine.
+- **`genus/memory.md` = DELETED (palimpsest).** By the `encapsulation-boundary-test`: a "memory doctrine" cell
+  in the CANON that must change when the tool's store-path changes proves the module isn't encapsulated. A
+  standalone tool needs no per-consumer doctrine file — it IS its own interface.
+- **No forge→memory code dependency, no seed import, no bundle.** Memory self-provisions its per-agent store
+  (`memory init --home ~/.agents/<name>` on first use). Deploy's only memory concern is a **prerequisite check**
+  (is `memory` installed?). ⇒ V-pkg / SeedProvider / the bundle constant all DISSOLVE.
+
+### 6.3 Harness-genericity — V8/F5 DISSOLVES (coupling removed, not templated)
+
+The tool was already built path-agnostic (`--home` required, zero `.claude` in `agent-memory/src`). D2 removes
+the coupling we layered on top:
+
+- `memory` on PATH; generic **`$AGENT_HOME`** (`~/.agents/<name>`) + generic **`$AGENT_SESSION_ID`** (retires
+  the `CLAUDE_SESSION_ID` hard-code). Face bodies become harness-neutral literals — nothing to template.
+- **Faces** (SOUL def, skills, hooks) still land in per-harness dirs via the adapter `paths.ts` (unchanged) —
+  but they _reference_ the generic memory + home. So V8's in-body path leak is **gone**, and F5's per-harness
+  path-templating machinery for memory **evaporates**. The remaining per-harness concern is only _where the
+  face files land_ — already `paths.ts`'s job.
+
+### 6.4 Session-lifecycle / consolidation trigger (SESSION-LIFECYCLE.md v2)
+
+- **Consolidation = agent hot-path** (agent calls `apply`/`replace` in-turn) **nudged by a threshold-gated
+  `turn.end` (Stop) hook** (cheap shell count of unconsolidated `EPISODIC.jsonl` records; watermark below the
+  harness compaction point). Fires HOT ∧ LIVE. `PreCompact` REJECTED (command-only, no reasoning-injection;
+  against all industry convergence).
+- **Cold `session.start` catch-up = the data-safe FLOOR** (durable per-turn `encode` ⇒ nothing lost; the 8
+  hook-less adapters get only this floor — hot consolidation is honestly a claude-plus-few capability).
+- **`session.end` → mechanical `release` only.** `/handoff` → explicit on-demand. Sleep-time sidecar DEFERRED.
+- **Braid RELOCATES to the module:** `wake`/`handoff` → thin orchestrators (`register → memory.reconstitute →
+orient → resume`; `praxis-sync → memory.consolidate → release`). Memory exposes named entrypoints; its OWN
+  hook names its consolidation. No agent skill names `episodic.mjs`; `orient` stays a praxis concern.
+
+### 6.5 Per-box responsibilities (memory, revised)
+
+| box                                | memory responsibility                                                                                                                      |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| **agent-anatomy** (CANON)          | the `longTermMemory` organ enum ONLY; being/faces lives in MODEL. No memory doctrine/skills/tool.                                          |
+| **agent-memory** (standalone tool) | EVERYTHING memory: `memory` CLI + skills + store `~/.agents/<name>/` + protocol + lifecycle hooks. Installed, not bundled. Imports nobody. |
+| **agent-forge** (ENGINE)           | projects the FACES per-harness (adapter `paths.ts`); treats `memory` as a host PREREQUISITE (install check), not a code dep or bundle.     |
+
+### 6.6 Status
+
+D2 draft — pending the cold-review loop (same as §1–§5). Supersedes the genus/bundle memory framing above.
