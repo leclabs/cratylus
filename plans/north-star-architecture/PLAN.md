@@ -38,7 +38,7 @@ S0 (R9 scope barriers) · E7 (R7 citation cruft)   — independent
 | E1 projection→forge            | R1  | ready           | relocate toolkit projection tooling into forge                                                     |
 | E6a memory standalone tool     | R6  | ready           | rename→`memory`, bin+bootstrap, `~/.agents/<name>`, register-mint session-id, del bundle mechanism |
 | E6b memory taxonomy            | R6  | ready           | extract `vault`+`AGENTS`; 4-part CoALA model                                                       |
-| E7 citation cruft              | R7  | ready           | delete orphan `[[…]]` parser + docs:check gate                                                     |
+| E7 citation cruft              | R7  | completed       | delete orphan `[[…]]` parser + docs:check gate                                                     |
 | E2 accept-gate split           | R2  | pending⟵E1      | algorithm→forge; policy-data injected (no `polis` in engine)                                       |
 | E4 hooks split                 | R4  | pending⟵E1      | generic `hookIrOf`→forge; cells stay CANON                                                         |
 | E5 adapters by-name            | R5  | pending⟵E1      | registry selection; `core/anatomy-body`; kill sideways edge                                        |
