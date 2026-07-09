@@ -34,7 +34,7 @@ S0 (R9 scope barriers) · E7 (R7 citation cruft)   — independent
 | shard                          | R   | state           | concern                                                                                            |
 | ------------------------------ | --- | --------------- | -------------------------------------------------------------------------------------------------- |
 | C1·C2·C3 census · D1 synthesis | —   | completed       | design grounding + north-star                                                                      |
-| S0 scope-barriers              | R9  | ready           | broaden nico/mav vision; purge dangling lane-split                                                 |
+| S0 scope-barriers              | R9  | completed       | broaden nico/mav vision; purge dangling lane-split                                                 |
 | E1 projection→forge            | R1  | ready           | relocate toolkit projection tooling into forge                                                     |
 | E6a memory standalone tool     | R6  | ready           | rename→`memory`, bin+bootstrap, `~/.agents/<name>`, register-mint session-id, del bundle mechanism |
 | E6b memory taxonomy            | R6  | ready           | extract `vault`+`AGENTS`; 4-part CoALA model                                                       |
