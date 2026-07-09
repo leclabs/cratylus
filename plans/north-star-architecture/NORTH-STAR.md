@@ -9,11 +9,11 @@ Status: converged; pending Operator sign-off before wave-2 execution.
 
 ## 0. Package charters (revised by debate — MECE)
 
-| package                                         | question                                        | owns                                                                                                                                                                                            | may import                                                               |
-| ----------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| **agent-forge** = ENGINE                        | how is a cell manufactured/validated/shipped?   | IR · compose · adapters · **deploy** · **projection** · catalog-discovery · the accept-gate **ALGORITHM** · CLI                                                                                 | node · own core · **agent-memory _as a doctrine-agnostic tool_** (M1-O4) |
-| **agent-anatomy** = CANON                       | what cells exist + what an agent IS at runtime? | corpus cells · runtime substance (hook `.sh`, judge prompt, bundles) · **the accept-gate POLICY-DATA** (palimpsest tokens · operator-lexicon · repo-guard) injected into forge's gate           | `type` from forge + value at its **composition roots**                   |
-| **agent-memory** = memory MECHANISM (leaf tool) | what is the deterministic memory mechanism?     | the memory tool over ALL homes (episodic·semantic·procedural·AGENTS·vault) — store/retrieve/land/replace/forget + `seed.ts`. NOT the memory _concept_, NOT doctrine, NOT the routing reasoning. | node only (recall/embeddings live in the vault adapter, not the core)    |
+| package                                         | question                                        | owns                                                                                                                                                                                            | may import                                                                                                  |
+| ----------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **agent-forge** = ENGINE                        | how is a cell manufactured/validated/shipped?   | IR · compose · adapters · **deploy** · **projection** · catalog-discovery · the accept-gate **ALGORITHM** · CLI                                                                                 | node · own core · **`agent-contract`** (composition-root, not core, imports agent-memory + adapters — §2.3) |
+| **agent-anatomy** = CANON                       | what cells exist + what an agent IS at runtime? | corpus cells · runtime substance (hook `.sh`, judge prompt, bundles) · **the accept-gate POLICY-DATA** (palimpsest tokens · operator-lexicon · repo-guard) injected into forge's gate           | `type` from forge + value at its **composition roots**                                                      |
+| **agent-memory** = memory MECHANISM (leaf tool) | what is the deterministic memory mechanism?     | the memory tool over ALL homes (episodic·semantic·procedural·AGENTS·vault) — store/retrieve/land/replace/forget + `seed.ts`. NOT the memory _concept_, NOT doctrine, NOT the routing reasoning. | node only (recall/embeddings live in the vault adapter, not the core)                                       |
 
 **§0.1 — MEMORY IS A CROSS-CUTTING CONCERN, NOT A PACKAGE (corrected after Operator probe).**
 The memory _concept_ lives in CANON (anatomy), across three cell layers; `agent-memory` is only the mechanism.
@@ -68,7 +68,8 @@ Classifier)` lands content into homes via an INJECTED in-process classifier (`ro
 
 - **forge MUST NOT import anatomy** — reason: cycle + doctrine-agnosticism (NOT a blanket "node-only" box; that
   wrongly excluded the harmless memory tool and forced V1's bad cut). [M1-O4]
-- **forge MAY import agent-memory** as a tool — DAG-safe (memory imports nobody). Requires memory to expose real `exports`.
+- **forge CORE imports only `agent-contract`**; the **composition-root** (not core) imports concretes —
+  agent-memory's `seed()` + the selected adapter (§2.3). memory exposes real `exports`; DAG-safe (memory imports nobody).
 - **anatomy → forge is `type`-only EXCEPT the composition roots** that instantiate corpus cells against generic
   forge lifts (`hookSources`, `project-human` value-import forge TODAY — `project-human.ts:11`, `project-cli.ts:31`).
   The draft's flat "type-only" claim was FALSE. [M1-O5] Aspirational ENGINE-pure form: anatomy PROJECTS its
