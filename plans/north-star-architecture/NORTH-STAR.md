@@ -9,11 +9,11 @@ Status: converged; pending Operator sign-off before wave-2 execution.
 
 ## 0. Package charters (revised by debate — MECE)
 
-| package                                         | question                                        | owns                                                                                                                                                                                  | may import                                                               |
-| ----------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| **agent-forge** = ENGINE                        | how is a cell manufactured/validated/shipped?   | IR · compose · adapters · **deploy** · **projection** · catalog-discovery · the accept-gate **ALGORITHM** · CLI                                                                       | node · own core · **agent-memory _as a doctrine-agnostic tool_** (M1-O4) |
-| **agent-anatomy** = CANON                       | what cells exist + what an agent IS at runtime? | corpus cells · runtime substance (hook `.sh`, judge prompt, bundles) · **the accept-gate POLICY-DATA** (palimpsest tokens · operator-lexicon · repo-guard) injected into forge's gate | `type` from forge + value at its **composition roots**                   |
-| **agent-memory** = memory MECHANISM (leaf tool) | what is the deterministic memory mechanism?     | the `episodic` tool + a pure `seed.ts` (filenames · seed-if-absent · v1-retirement). NOT the memory _concept_, NOT doctrine.                                                          | node only                                                                |
+| package                                         | question                                        | owns                                                                                                                                                                                            | may import                                                               |
+| ----------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| **agent-forge** = ENGINE                        | how is a cell manufactured/validated/shipped?   | IR · compose · adapters · **deploy** · **projection** · catalog-discovery · the accept-gate **ALGORITHM** · CLI                                                                                 | node · own core · **agent-memory _as a doctrine-agnostic tool_** (M1-O4) |
+| **agent-anatomy** = CANON                       | what cells exist + what an agent IS at runtime? | corpus cells · runtime substance (hook `.sh`, judge prompt, bundles) · **the accept-gate POLICY-DATA** (palimpsest tokens · operator-lexicon · repo-guard) injected into forge's gate           | `type` from forge + value at its **composition roots**                   |
+| **agent-memory** = memory MECHANISM (leaf tool) | what is the deterministic memory mechanism?     | the memory tool over ALL homes (episodic·semantic·procedural·AGENTS·vault) — store/retrieve/land/replace/forget + `seed.ts`. NOT the memory _concept_, NOT doctrine, NOT the routing reasoning. | node only (recall/embeddings live in the vault adapter, not the core)    |
 
 **§0.1 — MEMORY IS A CROSS-CUTTING CONCERN, NOT A PACKAGE (corrected after Operator probe).**
 The memory _concept_ lives in CANON (anatomy), across three cell layers; `agent-memory` is only the mechanism.
@@ -27,6 +27,31 @@ Discipline governing the ritual skills = **V4** (express protocol + invoke + car
 never re-derive mechanics) + **V1** (doctrine's one home = the genus) + the **bundle seam** (V6, extended below).
 **DAG (clean, acyclic):** `agent-memory` imports nobody → it is BOTTOM-layer infra that BOTH forge (seed
 vocabulary, V1) AND anatomy (`genus bundle:`) depend on. Not an ENGINE⊥MODEL peer — a shared leaf tool.
+
+**§0.2 — MEMORY MECHANISM covers all homes, via WIRE+GENERALIZE not a new service (Operator #2, round-3).**
+Operator #2 ("all memories abstractly accessible via the tool") SUPERSEDES §0.1's "episodic-only mechanism"
+— but grounded in code + industry, the deliverable is to WIRE the write-engine THAT ALREADY EXISTS, not build
+a uniform CRUD service (anti-complexity).
+
+- **The engine exists, dead:** `dream.ts:200` `applyRoutes(store, path, Classifier)` already lands distilled
+  content into the 5 homes via an INJECTED classifier ("engine owns none of the reasoning", `route.ts:82-89`)
+  — that IS the P2 mechanism/strategy cut, realized. It has ZERO callers and NO CLI verb (`cli.ts:595-611` =
+  encode·read·fold·drain·audit·session·lock·migrate). Deliverable: expose it (an `apply`/`land` verb) + let
+  wake/dream read the resident homes through the tool.
+- **Homes, not CoALA-4 types:** keep the 5 real homes `route.ts:25` (SEMANTIC·PROCEDURAL·AGENTS@node·vault·
+  EPISODIC). Type (why: episodic/semantic/procedural/working) and home (where) are TWO axes; don't collapse.
+- **Two op families, not one CRUD (industry: Letta/LangMem/mem0):** (a) record homes = append/read/forget;
+  (b) resident-prose homes (SEMANTIC/PROCEDURAL) = land + **REPLACE/forget** (append-only can't depalimpsest —
+  `skills/dream.ts:22,42` requires supersede; today `applyRoutes` only appends → the real gap). Procedural =
+  prose-edit, categorically not CRUD.
+- **P2 line:** tool owns storage/retrieval/atomic-land/replace; AGENT authors the record CONTENT + owns the
+  consolidation STRATEGY (the injected classifier's judgment). = Letta `core_memory_replace`-with-agent-text.
+- **recall (embedding search) stays OUT of the portable core** — it breaks "runs anywhere, no install"
+  (`genus/memory.md:42`, V1 no-subprocess); a vault-adapter capability, not a core per-type op.
+- **working memory = the context window, NO store** (CoALA; `genus/memory.md:22`). Question closed.
+- **Transport:** CLI portable core NOW; MCP a LATER P4 adapter over the same core (not round-1). **P5:** a
+  `--describe` verb enumerating homes+ops (self-describing) — in scope, cheap.
+- **SeedProvider fold:** the seed ACT (init-if-absent) folds into the memory tool; seed CONTENT stays CANON.
 
 **Boundary invariants (corrected):**
 
@@ -113,6 +138,26 @@ each depend ONLY on it; concretes wired once at the CLI composition-root ⇒ **z
 2. The composition-root may import the memory plugin + adapters + `agent-contract`, but must **discover** the
    anatomy corpus as a DIRECTORY (`catalog/index.ts:12`), never statically import the anatomy package — else
    the forbidden forge→anatomy cycle returns.
+
+## 2.2 Round-3 deltas — memory service + SRP audit (judged trust-but-verify)
+
+**Adopted (verified real):**
+
+| #                   | violation                                                                                                                                                                                                                                                                         | resolution                                                                                                                                                                                                         |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **V-mem-service**   | the memory MECHANISM is split by home: episodic is tool-wired, but the resident-home write-engine `applyRoutes` (`dream.ts:200`) is DEAD (no caller, no CLI verb) → the agent hand-edits SEMANTIC/PROCEDURAL markdown; append-only cannot depalimpsest (`skills/dream.ts:22,42`). | wire `applyRoutes` as an `apply`/`land` CLI verb + add **replace/forget** for resident prose; wake/dream read homes via the tool; preserve the 5 homes; recall stays vault-only; `--describe` verb (P5). See §0.2. |
+| **V-init-extended** | `deploy/init.ts` leaks MORE than `polis`: `PLAN_STATES` (`:36`) duplicates praxis CANON (`skills/praxis.ts:5`), and `foundingAgentsMd`/`foundingPlanMd` (`:108,150`) are wholesale CANON founding-prose in the ENGINE.                                                            | the `FoundingTemplate` port carries the ENTIRE founding body from CANON; `PLAN_STATES` is sourced from the praxis canon, not hardcoded in forge. (Extends V-init beyond the token.)                                |
+
+**Rejected (trust-but-verify — findings that did NOT survive):**
+
+- **Two-accept-gates (SRP-A):** REJECTED. `exemplify()` (forge pipeline) and `universalCell` (anatomy cell
+  gate) share the word "accept" but are distinct concerns — `exemplify` is the SKILL's factorization gate
+  (Operator: "exemplify is a skill, obvious"). Not a duplication to unify.
+- **`HUMAN_MARKERS` doctrine-leak (SRP-B):** REJECTED. Content (`register.ts:15`) = `please`/`thanks`/`!` —
+  GENERAL human-register detection mechanism, legitimately engine-intrinsic; not corpus doctrine like `polis`.
+- **`AcceptPolicy` over-bundle:** REJECTED. {palimpsest · operator-lexicon · repo-guard} is ONE cohesive
+  corpus-policy object; splitting into 3 ports invents complexity. `operator-lexicon` stays injected policy
+  data (round-1 F3 holds; the σ\* glyph set is per-corpus notation, not general mechanism).
 
 ## 3. Target-state wiring
 

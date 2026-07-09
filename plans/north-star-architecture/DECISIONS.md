@@ -48,3 +48,34 @@ thin-generator law: `SKILL.md = f(name, block, composition, adapter-path-binding
 - **R2 owned verdicts:** all accepted — V-init (reframed: LIVE as ENGINE doctrine-agnosticism, NOT gated on
   corpus-swap — forge must not name `polis`), V-mem-contract, V-pkg (BUILD the forge→memory port edge; add
   `agent-memory` `exports`), V-diagram-§3 split current-vs-target, V-adapter-path.
+
+## Round-3 — memory service + SRP (judged trust-but-verify; see NORTH-STAR §0.2/§2.2)
+
+Answers to the two reviewers' questions:
+
+- **Memory scope (M-mem Q1 / SRP Q1):** Operator #2 SUPERSEDES §0.1 "episodic-only" — memory covers all 5
+  homes. But the deliverable = WIRE+GENERALIZE the dead `applyRoutes` engine, NOT build a uniform CRUD
+  service (anti-complexity). §0.1's "concept in CANON / mechanism in agent-memory" split HOLDS; the mechanism
+  now spans all homes.
+- **Uniform CRUD vs two-family (M-mem Q2):** two-family (record homes: append/read/forget · resident-prose:
+  land/replace/forget). Procedural = prose-edit, not CRUD.
+- **AGENTS + vault (M-mem Q3):** PRESERVED — 5 homes, not CoALA-4. Type × home are two axes.
+- **Consolidation cut (M-mem Q4):** service-owns-the-mechanism, injected-classifier reasons (= existing
+  `applyRoutes` + `Classifier`, mem0-style). Tool never reasons; agent authors content + strategy.
+- **recall/embeddings (M-mem Q5):** OUT of the portable core — vault-adapter capability (preserve
+  runs-anywhere-no-install, `genus/memory.md:42`).
+- **replace/depalimpsest (M-mem Q6):** IN scope — tool-mediated replace/forget on resident prose (append-only
+  can't supersede; `skills/dream.ts:22,42`). Curated-prose quality preserved: agent authors the prose, tool
+  owns land/replace atomicity.
+- **Transport / MCP (M-mem Q7):** CLI portable core NOW; MCP a later P4 adapter over the same core.
+- **`--describe` (M-mem Q8):** IN scope (P5, cheap).
+- **working memory (M-mem lens5):** NO store (= context window). Closed.
+- **SeedProvider fold (M-mem lens5):** seed ACT folds into the memory tool; seed CONTENT stays CANON.
+- **Two accept gates (SRP Q3):** distinct concerns, NOT unified — exemplify is the skill (Operator). REJECTED.
+- **HUMAN_MARKERS (SRP Q4):** general register-detection mechanism, stays engine. REJECTED as a leak.
+- **operator-lexicon (SRP Q5):** injected AcceptPolicy DATA (per-corpus glyph notation), NOT moved to forge.
+  `AcceptPolicy` stays one cohesive object (over-bundle split REJECTED — invents complexity).
+- **init.ts (SRP Q6):** V-init-EXTENDED to the whole founding-prose body + `PLAN_STATES` (not just tokens).
+- **§3 grain (SRP Q7):** adapters = a sub-module of forge (not a package peer); composition-root = TARGET
+  (absent today). Table grain corrected.
+- **Findings B/C scope (SRP Q8):** in-remit — folded into the ledger (V-init-extended); HUMAN_MARKERS rejected.

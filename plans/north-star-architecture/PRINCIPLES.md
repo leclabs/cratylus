@@ -10,10 +10,12 @@ Draft by nico (design authority) for adversarial review. ρ=LLM.
   irreducible REASONING (salience, judgment, consolidation policy) lives with the agent (skills). "The agent
   knows the strategy and interacts via tool calls." The tool never reasons; the agent never re-implements
   mechanics.
-- **P3 Uniform abstraction over a domain (Open–Closed)** — a domain with multiple KINDS is exposed through ONE
-  generic interface parameterized by kind; adding a kind does not fork the code. Two instances here: memory
-  TYPES (episodic·semantic·procedural·working) and harness ADAPTERS. Memory must be type-generic, not
-  episodic-special-cased.
+- **P3 Uniform abstraction over a domain (Open–Closed)** — a domain's KINDS are exposed through a generic
+  interface **per operation-FAMILY**, not one god-interface. Adding a kind within a family = data, not a fork.
+  **Caveat (industry-grounded, round-3):** distinct families stay distinct — memory has record-homes
+  (append/read/forget) AND resident-prose homes (land/**replace**/forget); procedural memory is prose-edit,
+  categorically not CRUD (Letta/LangMem/mem0). Harness ADAPTERS are the clean single-family instance. Do NOT
+  weld all memory kinds into one CRUD signature (that was the draft's overbuild — see §2 banner).
 - **P4 Ports & adapters / dependency inversion** — every cross-box seam is a CONTRACT PORT; the transport
   (CLI · MCP · lib) and the concrete implementation are ADAPTERS behind it.
 - **P5 Self-describing contract (agent as first-class client)** — the interface exposes its TAXONOMY +
@@ -21,6 +23,13 @@ Draft by nico (design authority) for adversarial review. ρ=LLM.
   a nicety.
 
 ## 2. Memory rethink — from episodic-only tool to a uniform memory SERVICE
+
+> **SUPERSEDED by NORTH-STAR §0.2/§2.2 (round-3, grounded).** Two corrections: (1) the current-state below is
+> FALSE — the resident-home write-engine `applyRoutes` (`dream.ts:200`) already exists (it is DEAD, not
+> absent); the deliverable is WIRE+GENERALIZE, not build. (2) "uniform typed CRUD service" is OVERBUILT — the
+> industry shape is two op-families (record vs resident-prose) over the 5 real homes, recall out of the
+> portable core, working memory = context (no store). Read §0.2 for the corrected target; below is retained
+> for the reasoning trail.
 
 **Defect today (SRP violation):** memory MECHANISM is split by type. `episodic.mjs` mechanically owns only
 EPISODIC (encode·read·fold·drain). SEMANTIC/PROCEDURAL are hand-authored MARKDOWN the dream skill edits by
