@@ -94,13 +94,13 @@ Landed this session: **§6** (memory-as-standalone-tool) + **§7** (the 4-part C
 8. **§7 — the 4-part CoALA taxonomy is the memory MODEL** (Working=context/no-store · Episodic · Semantic ·
    Procedural). **`vault` EXTRACTED** (cross-host/networked = out-of-scope anti-pattern, Operator prior epoch);
    this RETRACTS my own FLAW-B "cross-host via vault" (self-inflicted anti-pattern preservation). **Single-host
-   is the model.** `AGENTS@node` reclassified = project-scoped externalization (route-out), not a private store
-   (nico judgment; Operator may extract entirely). `replace` now covers 2 prose stores not 4. Session-memory = a
-   view over episodic.
+   is the model.** `AGENTS@node` **EXTRACTED from the memory module** (decided — shared/project-scoped, not
+   private cognitive; a plain file-edit, not a tool act): module owns EXACTLY Episodic/Semantic/Procedural
+   (+ Working). Project-scoped externalization stays a behavior (agent writes to the project `AGENTS.md` by hand),
+   not a store. `replace` now covers 2 prose stores not 4. Session-memory = a view over episodic.
 
-**Forward (next session):** (a) resolve the ONE open item — Operator's call on `AGENTS@node` (keep-as-externalize
-vs extract). (b) marker-debt: a few §5/§2 ledger rows still lack per-site §6/§7 supersede markers (§6 lists them;
-not yet inline). (c) the doc is large (§0–§7 + satellites) → an eventual de-palimpsest rewrite to net-current.
-(d) spec wave-2 E-shards (incl. `episodic`→`memory` rename, `bin`+bootstrap, relocate genus+seed into module,
-delete vault from `route.ts`/`dream.ts`, register-mint session-id, per-face `turn.end` nudge hook). Nothing in
-`packages/` touched — design-only; all Operator-gated.
+**Forward (next session):** (a) marker-debt: a few §5/§2 ledger rows still lack per-site §6/§7 supersede markers
+(§6 lists them; not yet inline). (b) the doc is large (§0–§7 + satellites) → an eventual de-palimpsest rewrite to
+net-current. (c) spec wave-2 E-shards (incl. `episodic`→`memory` rename, `bin`+bootstrap, relocate genus+seed into
+module, **delete BOTH `vault` and `AGENTS` from `route.ts`/`dream.ts`**, register-mint session-id, per-face
+`turn.end` nudge hook). No open design forks remain — nothing in `packages/` touched; design-only, Operator-gated.

@@ -452,10 +452,13 @@ session-tagged), not a 5th type.
   case, and the genus description. **Single-host is simply the model** — this RETRACTS §6.6's "cross-host via
   vault" (which wrongly preserved the anti-pattern); the O_EXCL lock's local-fs assumption is now just correct,
   not a "boundary."
-- **`AGENTS@node` → RECLASSIFY (not a private store).** Project-scoped externalization — a durable lesson written
-  OUT to a project's shared, git-versioned `AGENTS.md`. Orthogonal to the private cognitive taxonomy; a
-  consolidation route-OUT (a documentation act), NOT a memory home the module owns/reconstitutes. Behavior kept;
-  reclassified. (nico judgment — Operator may extract entirely.)
+- **`AGENTS@node` → EXTRACT from the memory module (decided).** It is shared/git-versioned/project-scoped —
+  not the agent's PRIVATE cognitive memory (fails the 4-part taxonomy), and appending to a project's `AGENTS.md`
+  is a plain markdown edit the agent does by hand (fails the tool's "only the act the agent can't do by hand"
+  charter). So it is NOT a memory-tool store/route — remove `AGENTS` from `route.ts` `StoreName`/`V2_STORES` +
+  the `dream.ts` AGENTS case, alongside `vault`. **Behavior preserved:** during consolidation the agent
+  recognizes a lesson is project-scoped and writes it to the project's `AGENTS.md` via normal file-ops — a
+  routing OUTCOME, not a store. Net: the module owns EXACTLY Episodic/Semantic/Procedural (+ Working-no-store).
 
 ### 7.3 Simplifications this forces
 
