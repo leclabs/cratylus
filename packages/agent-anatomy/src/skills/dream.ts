@@ -6,7 +6,7 @@ export const dream: Skill = {
   name: 'dream',
   description: `use this skill to consolidate an agent's memory — fold the raw EPISODIC stream (the tool computes each record's scope node from its cwd), then route by type: agent-intrinsic identity/facts to SEMANTIC, generalized cross-project wisdom to PROCEDURAL (only what no projection already carries), forward next-steps to EPISODIC, networked reference to the vault, the rest dropped; consumed raw is drained; SOUL is never written.`,
   formalBlock: `DECLARATIONS
-memory              — agent organ-home ⟨SEMANTIC · PROCEDURAL · EPISODIC⟩ ∪ episodic.mjs runtime
+memory              — agent organ-home ⟨SEMANTIC · PROCEDURAL · EPISODIC⟩ ∪ the memory-tool runtime
 EPISODIC            — raw time-ordered event stream ∪ forward next-steps
 SEMANTIC            — identity facts ∪ durable agent-intrinsic knowledge ⟨hot index⟩
 PROCEDURAL          — generalized cross-project wisdom no projection already carries

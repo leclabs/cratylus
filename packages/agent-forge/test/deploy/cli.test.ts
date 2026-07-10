@@ -8,34 +8,25 @@ import { describe, expect, it } from 'vitest';
 import { parseCompanions, runDeploy } from '../../src/cli/commands/deploy.js';
 import { runFound } from '../../src/cli/commands/found.js';
 import { CONFIG_ENV } from '../../src/deploy/index.js';
-import {
-  buildBundleSrc,
-  buildHooksTree,
-  buildRenderTree,
-  tmp,
-} from './helpers.js';
+import { buildHooksTree, buildRenderTree, tmp } from './helpers.js';
 
 describe('parseCompanions', () => {
-  it('parses <skill>=<spec> bundle declarations into a companions map', () => {
-    const c = parseCompanions('memory=agent-memory/dist/episodic.mjs', null);
-    expect(c).toEqual({
-      memory: { bundle: ['agent-memory/dist/episodic.mjs'] },
-    });
+  it('parses <skill>=<spec> asset declarations into a companions map', () => {
+    const c = parseCompanions('memory=logo.png');
+    expect(c).toEqual({ memory: { assets: ['logo.png'] } });
   });
 
-  it('accumulates repeated keys and merges bundle + assets', () => {
-    const c = parseCompanions('memory=a.mjs', 'memory=logo.png');
-    expect(c).toEqual({ memory: { bundle: ['a.mjs'], assets: ['logo.png'] } });
+  it('accumulates repeated keys', () => {
+    const c = parseCompanions('memory=logo.png,memory=banner.png');
+    expect(c).toEqual({ memory: { assets: ['logo.png', 'banner.png'] } });
   });
 
   it('hard-errors on a malformed (no `=`) declaration', () => {
-    expect(() => parseCompanions('memory', null)).toThrow(
-      /must be <skill>=<spec>/,
-    );
+    expect(() => parseCompanions('memory')).toThrow(/must be <skill>=<spec>/);
   });
 
   it('returns undefined when nothing is declared', () => {
-    expect(parseCompanions(null, null)).toBeUndefined();
+    expect(parseCompanions(null)).toBeUndefined();
   });
 });
 
@@ -66,35 +57,6 @@ describe('runDeploy (local single-host)', () => {
     expect(
       existsSync(join(home, '.claude', 'agents', 'mav', 'EPISODIC.jsonl')),
     ).toBe(true);
-  });
-
-  it('the bundle hard-error surfaces through the CLI (rc=1) when episodic.mjs is unbuilt', async () => {
-    process.env[CONFIG_ENV] = join(
-      tmp('polis-empty-'),
-      '.agent-factory.config',
-    );
-    const { agentsDir, skillsDir } = buildRenderTree(
-      tmp('agent-forge-render-'),
-    );
-    const unbuilt = buildBundleSrc(tmp('agent-forge-bundle-'), false); // NOT built
-    const home = tmp('agent-forge-home-');
-    const rc = await runDeploy({
-      agentsDir,
-      skillsDir,
-      kind: 'skill',
-      scope: 'user',
-      host: null,
-      home,
-      companions: { memory: { bundle: ['agent-memory/dist/episodic.mjs'] } },
-      bundleBaseRoot: unbuilt,
-      only: 'memory',
-    });
-    delete process.env[CONFIG_ENV];
-    // runDeploy catches the BundleMissingError and returns rc=1 (CLI contract);
-    // the engine itself throws BundleMissingError (covered in bundle.test.ts).
-    expect(rc).toBe(1);
-    // nothing landed (the hard-error fired before any host bytes moved)
-    expect(existsSync(join(home, '.claude', 'skills', 'memory'))).toBe(false);
   });
 
   it('--kind all deploys agent + skill + hooks in ONE invocation (local single-host)', async () => {

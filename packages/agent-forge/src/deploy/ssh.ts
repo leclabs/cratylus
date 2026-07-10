@@ -18,7 +18,7 @@ import {
 import { tmpdir } from 'node:os';
 import { resolve as resolvePath } from 'node:path';
 import { basename as posixBasename } from 'node:path/posix';
-import { stageAssets, stageBundle } from './bundle.js';
+import { stageAssets } from './bundle.js';
 import { mergeHooksSettings } from './hooks.js';
 import { SEED_FILES } from './seeds.js';
 import {
@@ -182,9 +182,9 @@ export function placeAgentsSsh(
 }
 
 /** Ship <skillsSrc>/<name>/ -> <remote>/.claude/skills/<name>/ — SKILL.md plus
- *  any staged companion assets beside it. Skills are generated substance with
- *  no sidecars — overwrite freely. Bundle/asset companions are staged into the
- *  source dir first (bundle hard-errors if a build output is absent). */
+ *  any staged committed companion assets beside it. Skills are generated
+ *  substance with no sidecars — overwrite freely. Committed `assets:` companions
+ *  are staged into the source dir first (a missing asset warns, never blocks). */
 export function placeSkillsSsh(
   user: string,
   host: string,
@@ -219,18 +219,6 @@ export function placeSkillsSsh(
         log,
         warn,
       });
-    }
-    if (comp?.bundle) {
-      const baseRoot = tree.bundleBaseRoot;
-      if (!baseRoot) {
-        throw new Error(
-          `${name} declares bundle but RenderTree.bundleBaseRoot is unset`,
-        );
-      }
-      const staged = stageBundle(name, srcDir, comp.bundle, { baseRoot, log });
-      for (const b of staged) {
-        report.bundled.push(`${name}/${b}`);
-      }
     }
     const remoteDir = `${skillsDir}/${name}`;
     run(['ssh', target, `mkdir -p ${shQuote(remoteDir)}`]);

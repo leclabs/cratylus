@@ -33,9 +33,8 @@ export interface DeployCmdOpts {
   skillsDir: string;
   // Render tree hooks root (settings.json + hooks/<id>/); --kind hooks only.
   hooksDir?: string;
-  // Per-skill bundle/asset companion declarations + the bundle base root.
+  // Per-skill committed `assets:` companion declarations.
   companions?: Record<string, SkillCompanions>;
-  bundleBaseRoot?: string;
   // What to ship. `all` expands to agent → skill → hooks (same target opts).
   kind: DeployKindArg;
   scope: Scope;
@@ -61,37 +60,31 @@ function splitList(s: string | null | undefined): string[] | null {
   return items.length ? items : null;
 }
 
-/** Parse a `--bundle skill=spec[,skill=spec...]` (or `--assets`) declaration
- *  into a companions map. Each entry binds one build-artifact (or committed
- *  asset) spec to a skill; repeated keys accumulate. Resolved against
- *  `--bundle-base-root` (bundle) / the skill's source dir (assets). */
+/** Parse a `--assets skill=spec[,skill=spec...]` declaration into a companions
+ *  map. Each entry binds one committed-asset spec to a skill; repeated keys
+ *  accumulate. Specs resolve against the skill's source dir. */
 export function parseCompanions(
-  bundle: string | null | undefined,
   assets: string | null | undefined,
 ): Record<string, SkillCompanions> | undefined {
   const map: Record<string, SkillCompanions> = {};
-  const add = (decl: string | null | undefined, field: 'bundle' | 'assets') => {
-    for (const pair of splitList(decl) ?? []) {
-      const eq = pair.indexOf('=');
-      if (eq < 0) {
-        throw new Error(
-          `--${field}: '${pair}' must be <skill>=<spec> (e.g. memory=agent-memory/dist/episodic.mjs)`,
-        );
-      }
-      const skill = pair.slice(0, eq).trim();
-      const spec = pair.slice(eq + 1).trim();
-      if (!map[skill]) {
-        map[skill] = {};
-      }
-      const c = map[skill];
-      if (!c[field]) {
-        c[field] = [];
-      }
-      c[field].push(spec);
+  for (const pair of splitList(assets) ?? []) {
+    const eq = pair.indexOf('=');
+    if (eq < 0) {
+      throw new Error(
+        `--assets: '${pair}' must be <skill>=<spec> (e.g. skill=logo.png)`,
+      );
     }
-  };
-  add(bundle, 'bundle');
-  add(assets, 'assets');
+    const skill = pair.slice(0, eq).trim();
+    const spec = pair.slice(eq + 1).trim();
+    if (!map[skill]) {
+      map[skill] = {};
+    }
+    const c = map[skill];
+    if (!c.assets) {
+      c.assets = [];
+    }
+    c.assets.push(spec);
+  }
   return Object.keys(map).length ? map : undefined;
 }
 
@@ -101,7 +94,6 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
     skillsDir: opts.skillsDir,
     hooksDir: opts.hooksDir,
     companions: opts.companions,
-    bundleBaseRoot: opts.bundleBaseRoot,
   };
   const log = (line: string) => console.log(line);
   const warn = (line: string) => console.error(line);

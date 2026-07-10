@@ -9,7 +9,7 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { hostname } from 'node:os';
+import { homedir, hostname } from 'node:os';
 import {
   basename,
   dirname,
@@ -26,10 +26,53 @@ import {
   parseRecord,
   serializeRecord,
 } from './record.js';
+import { liveSessions } from './session.js';
 import { ulid as defaultUlid } from './ulid.js';
 
 /** Default raw-log filename within the agent home. */
 export const DEFAULT_EPISODIC_PATH = 'EPISODIC.jsonl';
+
+/**
+ * The store home derived from a bare agent NAME: `~/.agents/<name>` (uv-tool
+ * style — a per-name home under the user's `.agents`, independent of any host
+ * `.claude/` layout). The CLI accepts `--name <name>` as sugar for this, so an
+ * agent addresses its own memory by identity, not by path.
+ */
+export function homeForName(name: string): string {
+  return join(homedir(), '.agents', name);
+}
+
+/**
+ * Resolve the session id an `encode` binds — the fix for the old "read ONLY
+ * `CLAUDE_SESSION_ID`" seam (which silently dropped to a sessionless record when
+ * the env was absent). Precedence: an explicit `--session` flag > the harness
+ * `CLAUDE_SESSION_ID` env > the SOLE live session registered under `<home>`.
+ * There is deliberately NO sessionless fallback: zero live sessions or an
+ * ambiguous (>1) live set both THROW, so no captured record is ever unattributed
+ * — every event is bound to a session at encode time.
+ */
+export function resolveSession(
+  home: string,
+  opts?: { flag?: string; now?: number; stale?: number },
+): string {
+  const flag = opts?.flag;
+  if (flag !== undefined && flag.length > 0) return flag;
+  const env = process.env.CLAUDE_SESSION_ID;
+  if (env !== undefined && env.length > 0) return env;
+  const now = opts?.now ?? Date.now();
+  const live =
+    opts?.stale !== undefined
+      ? [...liveSessions(home, now, opts.stale)]
+      : [...liveSessions(home, now)];
+  if (live.length === 1) return live[0] as string;
+  if (live.length === 0)
+    throw new Error(
+      'no session bound: run `memory session register` (or set CLAUDE_SESSION_ID / pass --session <id>) before encode',
+    );
+  throw new Error(
+    `ambiguous session: ${live.length} live sessions under ${home} — pass --session <id>`,
+  );
+}
 
 /**
  * The derivation seam (SPEC D2): encode derives `{session?, host, cwd}` from
@@ -45,7 +88,13 @@ export interface DeriveEnv {
   session(): string | undefined;
 }
 
-/** The real process environment. */
+/**
+ * The real process environment. `session()` here is the RAW `CLAUDE_SESSION_ID`
+ * seam ONLY — no longer the session authority: the CLI's `encode` resolves its
+ * session via {@link resolveSession} (flag > env > sole-live) and injects it, so
+ * capture is never sessionless. This default is the env-fallback that resolver
+ * consumes, not the sole source.
+ */
 export const defaultDerive: DeriveEnv = {
   cwd: () => process.cwd(),
   host: () => shortHost(hostname()),

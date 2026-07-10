@@ -134,8 +134,8 @@ async function projectSkills(out: string): Promise<number> {
 
 /**
  * The `memory` dual-deploy dir (`deploy: skill-dir`): its `## Tool` section is the
- * SKILL.md body VERBATIM, and the bundled `episodic.mjs` ships beside it. Sourced
- * from `src/genus/memory.md` (the one home) + the episodic build artifact.
+ * SKILL.md body VERBATIM, and the bundled `memory.mjs` tool ships beside it. Sourced
+ * from `src/genus/memory.md` (the one home) + the memory build artifact.
  */
 async function projectMemorySkill(out: string): Promise<void> {
   const { readFileSync } = await import('node:fs');
@@ -160,16 +160,10 @@ async function projectMemorySkill(out: string): Promise<void> {
   const dir = join(out, 'skills', 'memory');
   mkdirSync(dir, { recursive: true });
   writeFileSync(join(dir, 'SKILL.md'), skillToClaudeMd(resolved));
-  // Bundle the built episodic.mjs (the host memory tool) beside SKILL.md.
-  const bundle = join(
-    anatomyRoot,
-    '..',
-    'agent-memory',
-    'dist',
-    'episodic.mjs',
-  );
-  copyFileSync(bundle, join(dir, 'episodic.mjs'));
-  process.stdout.write('EMIT skill memory (dual-deploy + episodic.mjs)\n');
+  // Bundle the built memory.mjs (the host memory tool) beside SKILL.md.
+  const bundle = join(anatomyRoot, '..', 'agent-memory', 'dist', 'memory.mjs');
+  copyFileSync(bundle, join(dir, 'memory.mjs'));
+  process.stdout.write('EMIT skill memory (dual-deploy + memory.mjs)\n');
 }
 
 /**

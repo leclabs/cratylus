@@ -1,15 +1,18 @@
 import {
+  appendFileSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
   rmSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { hostname, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { main } from '../src/cli.js';
+import { shortHost } from '../src/node.js';
 import { parseLines } from '../src/store.js';
+import { ulid } from '../src/ulid.js';
 
 // memiso-1: `read` + `drain` become liveness-aware — a live OTHER session's
 // residue is invisible to a reader and untouched by a drain, while completed
@@ -29,8 +32,26 @@ afterEach(() => {
   rmSync(root, { recursive: true, force: true });
 });
 
-/** Encode a record authored by session `s` (empty ⇒ sessionless). */
+/**
+ * Encode a record authored by session `s`. Empty `s` ⇒ sessionless RESIDUE:
+ * `encode` now binds a session (never sessionless), so a sessionless record —
+ * legacy/foreign raw residue — is seeded directly, exactly as it arrives via
+ * import or another host. Its read/drain flow is what memiso-1 must preserve.
+ */
 const enc = (s: string, body: string): void => {
+  if (s === '') {
+    appendFileSync(
+      join(home, 'EPISODIC.jsonl'),
+      `${JSON.stringify({
+        id: ulid(),
+        host: shortHost(hostname()),
+        cwd: process.cwd(),
+        body,
+      })}\n`,
+      'utf8',
+    );
+    return;
+  }
   vi.stubEnv('CLAUDE_SESSION_ID', s);
   const r = main(['encode', '--home', home, '--body', body]);
   expect(r.code).toBe(0);
@@ -165,8 +186,8 @@ describe('encode heartbeats the current session (memiso-0 lifecycle)', () => {
     );
   });
 
-  it('a sessionless encode registers nothing', () => {
-    enc('', 's1');
+  it('sessionless residue registers nothing', () => {
+    enc('', 's1'); // raw sessionless residue (seeded directly)
     expect(main(['session', 'list', '--home', home]).out.trim()).toBe('');
   });
 });

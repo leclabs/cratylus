@@ -2,9 +2,12 @@
   "name": "@leclabs/agent-memory",
   "version": "0.0.0",
   "private": true,
-  "description": "Build-only toolsource for the `episodic` memory tool — bundled into the memory skill (memory-tool-bundling), not a published library",
+  "description": "The standalone `memory` tool — a dependency-free CLI (dist/memory.mjs) an agent runs to encode events and consolidate memory across sessions",
   "license": "MIT",
   "type": "module",
+  "bin": {
+    "memory": "./dist/memory.mjs"
+  },
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",

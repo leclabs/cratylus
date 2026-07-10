@@ -252,8 +252,6 @@ export type SkillExpression = string & { readonly __skillExpr?: true };
 export interface SkillDeploy {
   /** Deploy as a host `skills/<name>/` directory (the `memory`-style cell). */
   readonly deployAs?: 'skill-dir';
-  /** Copy a build artifact (path relative to corpus root) into the skill dir. */
-  readonly bundle?: string;
   /** Committed companion assets shipped byte-for-byte with the skill. */
   readonly assets?: readonly string[];
 }

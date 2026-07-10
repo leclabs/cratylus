@@ -174,9 +174,20 @@ describe('session — CLI wiring', () => {
     expect(main(['session', 'status', '--home', home]).out.trim()).toBe('live');
   });
 
-  it('errors when no session id is available for a mutating verb', () => {
+  it('register MINTS a uuid when neither --session nor CLAUDE_SESSION_ID is present', () => {
     vi.stubEnv('CLAUDE_SESSION_ID', '');
     const r = main(['session', 'register', '--home', home]);
+    expect(r.code).toBe(0);
+    // a real (uuid) id was bound — never sessionless.
+    const id = r.out.replace('registered ', '').trim();
+    expect(id).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+    );
+  });
+
+  it('heartbeat errors when no session id is available (only register mints)', () => {
+    vi.stubEnv('CLAUDE_SESSION_ID', '');
+    const r = main(['session', 'heartbeat', '--home', home]);
     expect(r.code).toBe(1);
     expect(r.err).toContain('no session id');
   });

@@ -36,7 +36,7 @@ S0 (R9 scope barriers) · E7 (R7 citation cruft)   — independent
 | C1·C2·C3 census · D1 synthesis | —   | completed       | design grounding + north-star                                                                      |
 | S0 scope-barriers              | R9  | completed       | broaden nico/mav vision; purge dangling lane-split                                                 |
 | E1 projection→forge            | R1  | ready           | relocate toolkit projection tooling into forge                                                     |
-| E6a memory standalone tool     | R6  | ready           | rename→`memory`, bin+bootstrap, `~/.agents/<name>`, register-mint session-id, del bundle mechanism |
+| E6a memory standalone tool     | R6  | completed       | rename→`memory`, bin+bootstrap, `~/.agents/<name>`, register-mint session-id, del bundle mechanism |
 | E6b memory taxonomy            | R6  | ready           | extract `vault`+`AGENTS`; 4-part CoALA model                                                       |
 | E7 citation cruft              | R7  | completed       | delete orphan `[[…]]` parser + docs:check gate                                                     |
 | E2 accept-gate split           | R2  | pending⟵E1      | algorithm→forge; policy-data injected (no `polis` in engine)                                       |

@@ -29,7 +29,7 @@ const derive: DeriveEnv = {
 };
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), 'episodic-'));
+  root = mkdtempSync(join(tmpdir(), 'memory-store-'));
   home = join(root, '.claude/agents/mav');
   // Frozen clock + monotonic factory: deterministic, strictly-increasing ids.
   const mint = monotonicFactory(

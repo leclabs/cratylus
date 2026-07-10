@@ -283,14 +283,6 @@ cli
     'Render tree hooks root (settings.json + hooks/<id>/); required for --kind hooks',
   )
   .option(
-    '--bundle-base-root <dir>',
-    'Root that skill `bundle:` specs resolve against',
-  )
-  .option(
-    '--bundle <decls>',
-    'skill build-artifact companions: <skill>=<spec>[,…] (hard-error if unbuilt)',
-  )
-  .option(
     '--assets <decls>',
     'skill committed companions: <skill>=<spec>[,…] (warn if absent)',
   )
@@ -324,8 +316,6 @@ cli
       agentsDir?: string;
       skillsDir?: string;
       hooksDir?: string;
-      bundleBaseRoot?: string;
-      bundle?: string;
       assets?: string;
       kind: DeployKindArg;
       scope: Scope;
@@ -368,7 +358,7 @@ cli
       }
       let companions: ReturnType<typeof parseCompanions>;
       try {
-        companions = parseCompanions(opts.bundle ?? null, opts.assets ?? null);
+        companions = parseCompanions(opts.assets ?? null);
       } catch (e) {
         console.error(`agent-forge deploy: ${(e as Error).message}`);
         process.exit(1);
@@ -379,7 +369,6 @@ cli
           agentsDir: opts.agentsDir ?? '',
           skillsDir: opts.skillsDir ?? '',
           hooksDir: opts.hooksDir,
-          bundleBaseRoot: opts.bundleBaseRoot,
           companions,
           kind: opts.kind,
           scope: opts.scope as DeployScope,

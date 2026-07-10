@@ -39,7 +39,7 @@ import { monotonicFactory } from './ulid.js';
  * deletes the source; the caller applies it deliberately at a session boundary.
  */
 
-/** Marker stamped on every shard's frontmatter, mirroring the episodic `imported`. */
+/** Marker stamped on every shard's frontmatter, mirroring the memory tool's `imported`. */
 export const MEMORY_MIGRATED_MARKER = 'MEMORY.md';
 
 /** A single sharded memory: a `MEMORY/<ulid>.md` file's identity + content. */
@@ -64,7 +64,7 @@ export interface MigrateMemoryOptions {
 /** Emit a shard's full file content: provenance frontmatter, then the verbatim body. */
 export function renderShard(id: string, section: string, body: string): string {
   // section is JSON-encoded so an arbitrary heading (colons, quotes) round-trips
-  // exactly through a trivial, dependency-free parser — episodic ships no YAML lib.
+  // exactly through a trivial, dependency-free parser — the memory tool ships no YAML lib.
   const frontmatter = [
     '---',
     `id: ${id}`,

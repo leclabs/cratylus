@@ -140,8 +140,8 @@ async function projectSkills(args: Args): Promise<number> {
 /**
  * The `memory` dual-deploy skill (`deploy: skill-dir`): its `## Tool` section is the
  * SKILL.md body VERBATIM. Codex consumes the AgentSkills spec, so the same surface
- * projects; the bundled `episodic.mjs` is a claude-runtime concern (the host memory
- * tool path) and is NOT carried here (codex memory wiring is a later concern).
+ * projects; the standalone `memory` tool is a host-runtime concern (installed on
+ * PATH) and is NOT carried here (codex memory wiring is a later concern).
  */
 async function projectMemorySkill(args: Args): Promise<void> {
   const memRaw = readFileSync(

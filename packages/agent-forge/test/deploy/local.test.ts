@@ -23,7 +23,7 @@ import {
   projectScope,
   userScope,
 } from '../../src/deploy/index.js';
-import { buildBundleSrc, buildRenderTree, tmp } from './helpers.js';
+import { buildRenderTree, tmp } from './helpers.js';
 
 const silent = { dry: false, log: () => {}, warn: () => {} };
 
@@ -171,31 +171,37 @@ describe('placeAgentsLocal', () => {
 });
 
 describe('placeSkillsLocal', () => {
-  it('copies SKILL.md and stages a bundle companion (episodic.mjs)', () => {
+  it('copies each skill dir SKILL.md to the host skills root', () => {
     const src = tmp('agent-forge-render-');
     const tree = buildRenderTree(src);
-    const bundleRoot = buildBundleSrc(tmp('agent-forge-bundle-'), true);
+    const claude = join(tmp('agent-forge-host-'), '.claude');
+
+    const r = placeSkillsLocal(claude, tree, ['wake', 'memory'], silent);
+    expect(r.rc).toBe(0);
+    expect(r.report.copied).toBe(2);
+    expect(existsSync(join(claude, 'skills', 'memory', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(claude, 'skills', 'wake', 'SKILL.md'))).toBe(true);
+  });
+
+  it('stages a committed `assets:` companion beside SKILL.md', () => {
+    const src = tmp('agent-forge-render-');
+    const tree = buildRenderTree(src);
+    // seed a committed asset in the memory skill source dir
+    writeFileSync(
+      join(tree.skillsDir, 'memory', 'logo.txt'),
+      'LOGO\n',
+      'utf-8',
+    );
     const claude = join(tmp('agent-forge-host-'), '.claude');
 
     const r = placeSkillsLocal(
       claude,
-      {
-        ...tree,
-        companions: { memory: { bundle: ['agent-memory/dist/episodic.mjs'] } },
-        bundleBaseRoot: bundleRoot,
-      },
-      ['wake', 'memory'],
+      { ...tree, companions: { memory: { assets: ['logo.txt'] } } },
+      ['memory'],
       silent,
     );
     expect(r.rc).toBe(0);
-    expect(r.report.copied).toBe(2);
-    expect(r.report.bundled).toContain('memory/episodic.mjs');
-    // SKILL.md + the staged tool both land in the host skill dir
-    expect(existsSync(join(claude, 'skills', 'memory', 'SKILL.md'))).toBe(true);
-    expect(existsSync(join(claude, 'skills', 'memory', 'episodic.mjs'))).toBe(
-      true,
-    );
-    expect(existsSync(join(claude, 'skills', 'wake', 'SKILL.md'))).toBe(true);
+    expect(existsSync(join(claude, 'skills', 'memory', 'logo.txt'))).toBe(true);
   });
 });
 

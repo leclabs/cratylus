@@ -2,9 +2,8 @@
 // already-projected render tree (agents/ + skills/) and applies the scope
 // accident to a host `.claude/` root: ships the generated defs (SOUL,
 // overwritten freely), seeds the self-authored sidecars if-absent (never
-// clobbered), stages skill-dir bundle/asset companions (bundle hard-errors if a
-// build output is absent), resolves per-host topology from `.agent-factory.config`, and
-// founds a greenfield society (`init`).
+// clobbered), stages skill-dir committed `assets:` companions, resolves per-host
+// topology from `.agent-factory.config`, and founds a greenfield society (`init`).
 //
 // Faithful TS port of agent-anatomy's Python toolkit (deploy.py / config.py / place/ /
 // init.py). The PROJECTION itself is agent-forge's claude adapter; this layer
@@ -41,12 +40,9 @@ export {
 } from './scope.js';
 
 export {
-  BundleMissingError,
   type SkillCompanions,
   type StageAssetsOpts,
-  type StageBundlesOpts,
   stageAssets,
-  stageBundle,
 } from './bundle.js';
 
 export {

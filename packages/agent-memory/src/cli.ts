@@ -1,4 +1,5 @@
-import { existsSync, readFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join, resolve } from 'node:path';
 import { auditHome, loadLines, repoKeysFromConfig } from './audit.js';
 import { foldRecords, manifestToJsonl } from './fold.js';
@@ -12,6 +13,7 @@ import {
   underOrEqual,
 } from './node.js';
 import type { EpisodicRecord, JsonValue } from './record.js';
+import { SEED_FILES } from './seeds.js';
 import {
   heartbeat,
   listSessions,
@@ -24,10 +26,17 @@ import {
   DEFAULT_EPISODIC_PATH,
   EpisodicStore,
   defaultDerive,
+  homeForName,
+  resolveSession,
 } from './store.js';
 
+/** The standalone `memory` tool version. A constant (not read from
+ *  package.json): the bundled `dist/memory.mjs` ships without its manifest when
+ *  carried beside the memory skill, so a runtime package.json read is unsafe. */
+export const VERSION = '0.0.0';
+
 /**
- * The episodic CLI — the memory protocol's tool surface (scoped-memory-v2).
+ * The memory CLI — the memory protocol's tool surface (scoped-memory-v2).
  *
  * EPISODIC is a JSONL record log (`{id, session?, host, cwd, body, tags?}`);
  * an LLM agent cannot hand-mint a ULID and must never reason scope, so both
@@ -82,11 +91,17 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
 const str = (v: string | boolean | undefined): string | undefined =>
   typeof v === 'string' ? v : undefined;
 
+/**
+ * The agent home the verb acts on: an explicit `--home <dir>` wins; else a bare
+ * `--name <name>` derives `~/.agents/<name>` (uv-tool-style, {@link homeForName}).
+ * One of the two is required.
+ */
 function requireHome(flags: ParsedArgs['flags']): string {
   const home = str(flags.home);
-  if (home === undefined)
-    throw new Error('--home <agent-home-dir> is required');
-  return resolve(home);
+  if (home !== undefined) return resolve(home);
+  const name = str(flags.name);
+  if (name !== undefined) return homeForName(name);
+  throw new Error('--home <agent-home-dir> or --name <agent-name> is required');
 }
 
 /** `--config` > `$AGENT_FACTORY_CONFIG` > a cwd-present `.agent-factory.config` > none. */
@@ -110,34 +125,46 @@ function readStdin(): string {
   }
 }
 
-const USAGE = `episodic — the scoped-memory tool (path-scoped, v2)
+const USAGE = `memory — the scoped-memory tool (path-scoped, v2)
+
+Every verb takes the agent home as --home <dir> OR --name <name> (⇒ ~/.agents/<name>).
 
 usage:
-  episodic encode --home <dir> [--tags <a,b>] [--path <p>] \\
-                  (--body <text> | --body-json <json> | --body -)
-  episodic read   --home <dir> [--under <path>] [--for-session <S>] [--stale <ms>] \\
-                  [--scope <tag>] [--path <p>] [--count]
-  episodic node   <path> [--json] [--config <file>]
-  episodic fold   --home <dir> [--path <p>] [--config <file>]
-  episodic lock   (acquire | release | status) --home <dir>
-  episodic session (register | heartbeat | release | list) --home <dir> [--session <id>]
-  episodic session status [<id>] --home <dir> [--json] [--stale <ms>]
-  episodic drain  --home <dir> [--keep N] [--path <p>] [--completed-only | --for-session <S>]
-  episodic audit  --home <dir> [--allow <file>] [--config <file>] [--keys <file>]
-  episodic migrate <src.md> <dest.jsonl> [--dry-run] [--overwrite]
+  memory --version
+  memory install
+  memory init    (--home <dir> | --name <name>)
+  memory encode  (--home <dir> | --name <name>) [--session <id>] [--tags <a,b>] [--path <p>] \\
+                 (--body <text> | --body-json <json> | --body -)
+  memory read    (--home <dir> | --name <name>) [--under <path>] [--for-session <S>] [--stale <ms>] \\
+                 [--scope <tag>] [--path <p>] [--count]
+  memory node    <path> [--json] [--config <file>]
+  memory fold    (--home <dir> | --name <name>) [--path <p>] [--config <file>]
+  memory lock    (acquire | release | status) (--home <dir> | --name <name>)
+  memory session (register | heartbeat | release | list) (--home <dir> | --name <name>) [--session <id>]
+  memory session status [<id>] (--home <dir> | --name <name>) [--json] [--stale <ms>]
+  memory drain   (--home <dir> | --name <name>) [--keep N] [--path <p>] [--completed-only | --for-session <S>]
+  memory audit   (--home <dir> | --name <name>) [--allow <file>] [--config <file>] [--keys <file>]
+  memory migrate <src.md> <dest.jsonl> [--dry-run] [--overwrite]
 
-encode appends one open record {id, session?, host, cwd, body, tags?} to the
-home log. {session?, host, cwd} are DERIVED by the tool — never caller-
-supplied. Scope is not stored: it is node(cwd), computed at fold time. A
---scope value is accepted as an inert tags entry (compat), never routing.
-For a body that starts with "--", use --body=<text> or pipe via --body -.
+install is a documented self-check (the tool installs on PATH via the package
+\`bin\`); it changes no host state. init provisions a fresh home — mkdir + seed
+the {SEMANTIC.md, PROCEDURAL.md, EPISODIC.jsonl} stores if-absent (never
+clobbered).
+
+encode appends one open record {id, session, host, cwd, body, tags?} to the
+home log. {host, cwd} are DERIVED by the tool — never caller-supplied. The
+session is bound at encode (--session > CLAUDE_SESSION_ID > the sole live
+registered session; error if none or ambiguous) so no record is sessionless.
+Scope is not stored: it is node(cwd), computed at fold time. A --scope value is
+accepted as an inert tags entry (compat), never routing. For a body that starts
+with "--", use --body=<text> or pipe via --body -.
 
 node resolves a path to its boundary node: the nearest ancestor (reflexive)
 holding a marker — .git (a .git FILE resolves through to the primary
 checkout), a package manifest, PLAN.md, or $HOME; extend via
 memory.scopeMarkers globs in .agent-factory.config. Markerless => the path is
 its own boundary; nonexistent => nearest existing ancestor. Prints the BARE
-node path so it composes: read --under "$(episodic node <cwd>)". --json
+node path so it composes: read --under "$(memory node <cwd>)". --json
 prints the {node, basis} envelope instead.
 
 fold emits the dream routing manifest: one {id, node, basis} line per record
@@ -211,17 +238,24 @@ function runEncode(args: ParsedArgs): CliResult {
   const scopeFlag = str(args.flags.scope);
   if (scopeFlag !== undefined) tags.push(scopeFlag);
   const home = requireHome(args.flags);
-  const store = new EpisodicStore({ home });
+  // Bind the session BEFORE capture (never sessionless): --session > env > the
+  // sole live registered session; throws on none/ambiguous. Inject it as the
+  // store's derive.session so the written record carries it.
+  const session = resolveSession(home, { flag: str(args.flags.session) });
+  const store = new EpisodicStore({
+    home,
+    derive: { ...defaultDerive, session: () => session },
+  });
   const rec = store.encode(
     { body, ...(tags.length > 0 ? { tags } : {}) },
     str(args.flags.path),
   );
-  // Encode is a heartbeat: register-if-absent + touch the current session, so an
+  // Encode is a heartbeat: register-if-absent + touch the bound session, so an
   // actively-encoding session stays live in the registry (memiso-0 "register on
   // wake/first-encode") — a session idle past STALE, or one never encoding,
-  // correctly falls to completed. Registration is derived, never on the default
-  // raw log path so the archive/test fixtures with no session stay sessionless.
-  if (rec.session !== undefined) registerSession(home, rec.session);
+  // correctly falls to completed. The session is always defined here (resolve
+  // threw otherwise), so every capture heartbeats its session.
+  registerSession(home, session);
   return { code: 0, out: `${rec.id}\n`, err: '' };
 }
 
@@ -306,7 +340,7 @@ function runRead(args: ParsedArgs): CliResult {
 /**
  * `node <path>`: resolve a path to its boundary node. Default stdout is the
  * BARE node path (newline-terminated, nothing else) so the verb composes —
- * `read --under "$(episodic node <cwd>)"` is the wake ritual's load line, and
+ * `read --under "$(memory node <cwd>)"` is the wake ritual's load line, and
  * a JSON envelope there silently matches zero records. `--json` opts into the
  * `{node, basis}` envelope for inspection.
  */
@@ -412,6 +446,11 @@ function runSession(args: ParsedArgs): CliResult {
   const stale = staleFrom(args.flags);
   const staleArgs = stale !== undefined ? [Date.now(), stale] : [];
 
+  // The mutating verbs heartbeat/release act on the CURRENT session — its id is
+  // --session > CLAUDE_SESSION_ID env (error if neither), since you cannot touch
+  // a session you did not first name. register is the one exception: it MINTS a
+  // uuid when neither is present, so a harness with no CLAUDE_SESSION_ID still
+  // binds a real session id (never sessionless).
   const currentId = (): string => {
     const id = str(args.flags.session) ?? defaultDerive.session();
     if (id === undefined)
@@ -423,7 +462,9 @@ function runSession(args: ParsedArgs): CliResult {
 
   switch (action) {
     case 'register': {
-      const e = registerSession(home, currentId());
+      const id =
+        str(args.flags.session) ?? defaultDerive.session() ?? randomUUID();
+      const e = registerSession(home, id);
       return { code: 0, out: `registered ${e.id}\n`, err: '' };
     }
     case 'heartbeat': {
@@ -583,15 +624,67 @@ function runAudit(args: ParsedArgs): CliResult {
   return { code: 1, out, err };
 }
 
+/**
+ * `install`: the host-bootstrap self-check. The tool installs on PATH via the
+ * package `bin` (`memory`), so there is nothing to build or link — this verb is
+ * a documented no-op that confirms the tool runs and points at `init`. Keeping
+ * it makes the uv-tool-style install flow explicit (`memory install` succeeds
+ * ⇒ the tool is on PATH) without minting any host state.
+ */
+function runInstall(): CliResult {
+  return {
+    code: 0,
+    out: `memory ${VERSION} — installed as a PATH tool (package bin: \`memory\`). No host state changed.\nProvision an agent home with: memory init --name <agent>\n`,
+    err: '',
+  };
+}
+
+/**
+ * `init`: provision a fresh agent home. Creates the home dir and seeds the
+ * self-authored stores {SEMANTIC.md, PROCEDURAL.md, EPISODIC.jsonl} IF-ABSENT —
+ * never clobbering an existing store (`substance-over-accident`). This is the
+ * seed authority (relocated out of the forge deploy path): a home is provisioned
+ * at wake-register, not at def-deploy. The seed name is `--name` (or the home's
+ * basename) — it stamps the store headings.
+ */
+function runInit(args: ParsedArgs): CliResult {
+  const home = requireHome(args.flags);
+  const name = str(args.flags.name) ?? basename(home);
+  mkdirSync(home, { recursive: true });
+  const seeded: string[] = [];
+  const present: string[] = [];
+  for (const [fname, seedfn] of SEED_FILES) {
+    const file = join(home, fname);
+    if (existsSync(file)) {
+      present.push(fname);
+    } else {
+      writeFileSync(file, seedfn(name), 'utf8');
+      seeded.push(fname);
+    }
+  }
+  return {
+    code: 0,
+    out: `init ${home}\n  seeded: ${seeded.join(', ') || '-'}\n  present, untouched: ${present.join(', ') || '-'}\n`,
+    err: '',
+  };
+}
+
 /** Dispatch one CLI invocation. Pure: returns a {@link CliResult}, performs no process IO. */
 export function main(argv: readonly string[]): CliResult {
   const [cmd, ...rest] = argv;
   if (cmd === undefined || cmd === '--help' || cmd === '-h' || cmd === 'help') {
     return { code: 0, out: USAGE, err: '' };
   }
+  if (cmd === '--version' || cmd === '-v' || cmd === 'version') {
+    return { code: 0, out: `${VERSION}\n`, err: '' };
+  }
   const args = parseArgs(rest);
   try {
     switch (cmd) {
+      case 'install':
+        return runInstall();
+      case 'init':
+        return runInit(args);
       case 'encode':
         return runEncode(args);
       case 'read':

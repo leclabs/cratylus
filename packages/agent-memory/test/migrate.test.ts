@@ -165,7 +165,7 @@ describe('assertNoLoss', () => {
 describe('migrateFile', () => {
   let dir: string;
   beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'episodic-migrate-'));
+    dir = mkdtempSync(join(tmpdir(), 'memory-migrate-'));
   });
   afterEach(() => {
     rmSync(dir, { recursive: true, force: true });

@@ -8,7 +8,7 @@ import { main } from '../src/cli.js';
 let home: string;
 
 beforeEach(() => {
-  home = mkdtempSync(join(tmpdir(), 'episodic-audit-'));
+  home = mkdtempSync(join(tmpdir(), 'memory-audit-'));
   // Hermetic: never let a developer-shell config leak repo keys into the run.
   // '' resolves to a nonexistent config path, so audit derives no keys from it.
   vi.stubEnv('AGENT_FACTORY_CONFIG', '');

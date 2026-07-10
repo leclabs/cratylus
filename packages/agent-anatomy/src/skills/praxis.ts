@@ -11,7 +11,7 @@ inputs(t) ≜ static(t) ∪ { content(u) | (t, u) ∈ R }          — dep-fed i
 accept  : P → (return → 𝔹)                                   — the falsifier: a blind test decidable from the return alone
 executor : P ⇀ agent                                          — the subagent a dispatched task runs on
 self     ≜ the current session                                — id from the harness (CLAUDE_SESSION_ID)
-live     : session → 𝔹                                        — from the memory session-registry (episodic session status): registered ∧ ¬released ∧ ¬stale
+live     : session → 𝔹                                        — from the memory session-registry (memory session status): registered ∧ ¬released ∧ ¬stale
 owner   : P ⇀ session                                         — the session holding P's active frontier (a plans/<plan>/.owner sidecar); liveness resolved via live()
 state   : P → States                                          — recorded state (the folder it occupies)
 truth   : P → States                                          — runtime ground-truth state (what actually holds)

@@ -12,12 +12,9 @@ export interface RenderTree {
   agentsDir: string;
   // Absolute dir holding `<name>/SKILL.md` skill dirs.
   skillsDir: string;
-  // Per-skill companion declarations (bundle / assets), keyed by skill name.
+  // Per-skill committed `assets:` companion declarations, keyed by skill name.
   // Optional; a skill absent here ships exactly its already-present dir files.
   companions?: Record<string, SkillCompanions>;
-  // Root the `bundle:` specs resolve against (Python: cells.ROOT). Required
-  // only when some skill declares `bundle`.
-  bundleBaseRoot?: string;
   // Dir holding the projected hooks fragment: `<hooksDir>/settings.json` (the
   // `{hooks}` block) + `<hooksDir>/hooks/<id>/<asset>` (worker scripts). Used
   // by the `hooks` deploy kind. Optional; absent ⇒ nothing to place.
@@ -32,14 +29,12 @@ export interface PlaceReport {
   seeded: string[];
   // Sidecar layers found present and left UNTOUCHED (never clobbered).
   present: string[];
-  // Skill bundles staged this run: "<skill>/<basename>".
-  bundled: string[];
   // Non-fatal warnings (missing def / SKILL.md / asset).
   warnings: string[];
 }
 
 export function emptyReport(): PlaceReport {
-  return { copied: 0, seeded: [], present: [], bundled: [], warnings: [] };
+  return { copied: 0, seeded: [], present: [], warnings: [] };
 }
 
 /** A placer's result code, mirroring deploy.py's per-host rc:

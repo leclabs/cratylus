@@ -154,7 +154,6 @@ const composed: Skill = {
   formalBlock: 'composed ≜ …',
   composition: () => [leaf], // lazy thunk of imported sibling Skills
   deployAs: 'skill-dir',
-  bundle: 'dist/episodic.mjs',
   assets: ['SKILL.md'],
 };
 void composed;

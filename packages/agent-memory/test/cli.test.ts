@@ -22,11 +22,13 @@ const origCwd = process.cwd();
 
 beforeEach(() => {
   // Canonical root: recorded cwds are realpaths (macOS tmpdir is symlinked).
-  root = realpathSync(mkdtempSync(join(tmpdir(), 'episodic-cli-')));
+  root = realpathSync(mkdtempSync(join(tmpdir(), 'memory-cli-')));
   home = join(root, 'agent-home');
   mkdirSync(home, { recursive: true });
   // Hermetic: no developer-shell config, no cwd-present config pickup.
   vi.stubEnv('AGENT_FACTORY_CONFIG', '');
+  // encode binds a session (never sessionless); the harness env supplies it.
+  vi.stubEnv('CLAUDE_SESSION_ID', 'cli-test-sess');
 });
 
 afterEach(() => {
@@ -390,5 +392,49 @@ describe('dispatch', () => {
     const r = main(['frobnicate']);
     expect(r.code).toBe(2);
     expect(r.err).toMatch(/unknown command/);
+  });
+
+  it('--version prints a version', () => {
+    const r = main(['--version']);
+    expect(r.code).toBe(0);
+    expect(r.out.trim()).toMatch(/^\d+\.\d+\.\d+/);
+  });
+
+  it('install is a documented no-op self-check', () => {
+    const r = main(['install']);
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/installed as a PATH tool/);
+  });
+});
+
+describe('init (fresh home provisioning)', () => {
+  it('seeds the three stores into a fresh home', () => {
+    const fresh = join(root, 'fresh-home');
+    const r = main(['init', '--home', fresh]);
+    expect(r.code).toBe(0);
+    for (const f of ['SEMANTIC.md', 'PROCEDURAL.md', 'EPISODIC.jsonl'])
+      expect(existsSync(join(fresh, f))).toBe(true);
+    // idempotent: a second init clobbers nothing.
+    writeFileSync(join(fresh, 'SEMANTIC.md'), 'MINE', 'utf8');
+    main(['init', '--home', fresh]);
+    expect(readFileSync(join(fresh, 'SEMANTIC.md'), 'utf8')).toBe('MINE');
+  });
+});
+
+describe('encode session binding (never sessionless)', () => {
+  it('errors when no session is resolvable (no env, no live session)', () => {
+    vi.stubEnv('CLAUDE_SESSION_ID', '');
+    const r = main(['encode', '--home', home, '--body', 'x']);
+    expect(r.code).toBe(1);
+    expect(r.err).toMatch(/no session bound/);
+  });
+
+  it('falls back to the sole live registered session', () => {
+    vi.stubEnv('CLAUDE_SESSION_ID', '');
+    main(['session', 'register', '--home', home, '--session', 'only-live']);
+    const r = main(['encode', '--home', home, '--body', 'bound']);
+    expect(r.code).toBe(0);
+    const [rec] = logRecords();
+    expect(rec?.session).toBe('only-live');
   });
 });

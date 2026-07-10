@@ -13,7 +13,7 @@ export function tmp(prefix: string): string {
 }
 
 /** A minimal but representative render tree: two agents (mav, nico) and two
- *  skills (wake = SKILL-only, memory = dual-deploy with a bundle companion). */
+ *  skills (wake = SKILL-only, memory = dual-deploy skill dir). */
 export function buildRenderTree(root: string): {
   agentsDir: string;
   skillsDir: string;
@@ -32,7 +32,8 @@ export function buildRenderTree(root: string): {
   const wake = join(skillsDir, 'wake');
   mkdirSync(wake, { recursive: true });
   writeFileSync(join(wake, 'SKILL.md'), '# wake\n', 'utf-8');
-  // memory: dual-deploy dir (SKILL.md + a bundled tool companion).
+  // memory: dual-deploy dir (SKILL.md only — the standalone `memory` tool ships
+  // via its package `bin`, no longer staged into the skill dir).
   const memory = join(skillsDir, 'memory');
   mkdirSync(memory, { recursive: true });
   writeFileSync(join(memory, 'SKILL.md'), '# memory\n', 'utf-8');
@@ -66,20 +67,6 @@ export function buildHooksTree(root: string): { hooksDir: string } {
     writeFileSync(join(hookDir, f), `# ${f}\n`, 'utf-8');
   }
   return { hooksDir: root };
-}
-
-/** A bundle source root with the built `episodic.mjs` present. */
-export function buildBundleSrc(root: string, present = true): string {
-  const dist = join(root, 'agent-memory', 'dist');
-  mkdirSync(dist, { recursive: true });
-  if (present) {
-    writeFileSync(
-      join(dist, 'episodic.mjs'),
-      '// built episodic tool\n',
-      'utf-8',
-    );
-  }
-  return root;
 }
 
 /** The fixture `.agent-factory.config`: a fire(local) + upmav(lcaraccioli) + upgoose

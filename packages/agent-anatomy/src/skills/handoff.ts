@@ -13,7 +13,7 @@ doc-mirrors-runtime-truth — the live runtime state is the source; a status doc
 memory         — append-only EPISODIC, encoded cheap-and-raw per turn (best-effort, lossy); dream drains it up-and-out (consolidate, move-not-copy) into the resident layers
 praxis-sync    — reconcile work to reality: task-file placement ∧ PLAN.md
 dream          — drain EPISODIC on hot context → the resident layers, capturing whole-session events per-turn encoding missed
-release        ≜ \`node ~/.claude/skills/memory/episodic.mjs session release --home \${AGENT_HOME}\` — flip this session → completed in the memory registry
+release        ≜ \`memory session release --home \${AGENT_HOME}\` — flip this session → completed in the memory registry
 
 LAWS
 order          : praxis-sync ≺ dream ≺ release            — dream runs on hot context (before /clear destroys the session events) ; release marks completed last

@@ -17,7 +17,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
-import { stageAssets, stageBundle } from './bundle.js';
+import { stageAssets } from './bundle.js';
 import { SEED_FILES } from './seeds.js';
 import {
   type PlaceOpts,
@@ -85,8 +85,8 @@ export function placeAgentsLocal(
 /** Copy <skillsSrc>/<name>/ -> <claudeDir>/skills/<name>/ — SKILL.md plus any
  *  staged companion assets beside it (byte-for-byte, binary-safe). Skills are
  *  generated substance with no sidecars — overwrite freely. Before copying, the
- *  deploy layer STAGES declared `bundle:`/`assets:` companions into the source
- *  skill dir (bundle hard-errors if a build output is absent). */
+ *  deploy layer STAGES declared committed `assets:` companions into the source
+ *  skill dir (a missing asset warns, never blocks). */
 export function placeSkillsLocal(
   claudeDir: string,
   tree: RenderTree,
@@ -106,9 +106,8 @@ export function placeSkillsLocal(
       report.warnings.push(`no SKILL.md for ${name}`);
       continue;
     }
-    // Stage companions into the SOURCE skill dir first (the bundle hard-error
-    // is raised here, before any host bytes move). This runs even on --dry-run:
-    // a missing build artifact is a topology fault we surface regardless.
+    // Stage committed `assets:` companions into the SOURCE skill dir first, so
+    // they copy beside SKILL.md. A missing asset is a WARN, never a hard error.
     const comp = tree.companions?.[name];
     if (comp?.assets) {
       stageAssets(name, srcDir, comp.assets, {
@@ -116,18 +115,6 @@ export function placeSkillsLocal(
         log,
         warn,
       });
-    }
-    if (comp?.bundle) {
-      const baseRoot = tree.bundleBaseRoot;
-      if (!baseRoot) {
-        throw new Error(
-          `${name} declares bundle but RenderTree.bundleBaseRoot is unset`,
-        );
-      }
-      const staged = stageBundle(name, srcDir, comp.bundle, { baseRoot, log });
-      for (const b of staged) {
-        report.bundled.push(`${name}/${b}`);
-      }
     }
     const destDir = resolvePath(destRoot, name);
     const files = readdirSync(srcDir)
