@@ -45,9 +45,28 @@ S0 (R9 scope barriers) · E7 (R7 citation cruft)   — independent
 | E6c memory verbs+lifecycle     | R6  | pending⟵E6a,E6b | `apply`/`replace`; Stop nudge hook; delete genus; orchestrators                                    |
 | E3 founding inject             | R3  | pending⟵E2      | `init.ts` doctrine → `FoundingTemplate` from CANON                                                 |
 
+## Execution finding — E1–E5 re-derived against the code (2026-07-09, nico)
+
+A deep census before executing E1 corrects the engine-refactor model. The prior forge-anatomy de-braid
+already landed the substantive decoupling: **the generic projection engine is already in forge**
+(`projectHumanOrgan`, the `Hook` config-IR, every adapter); **no forge→anatomy import exists today**.
+What remains in `agent-anatomy/src/toolkit/` are THIN composition-roots that legitimately value-import forge
+"at composition roots until project-to-dir" (§1). Consequences:
+
+- **E1 is the aspirational CAPSTONE, not the foundation.** Its literal accept ("anatomy→forge type-only; the
+  3 residual value-imports die") is reachable ONLY by the composition-root **project-to-dir** migration, which
+  NORTH-STAR §2 R4 marks **aspirational**. Decision (design authority): **defer E1's aspirational tier** out of
+  this wave, consistent with NORTH-STAR's own staging.
+- **The `E4⟵E1 · E5⟵E1` dependency is INVERTED.** E4 (generic `hookIrOf`+`HookCell` type → forge; stance
+  cells stay anatomy) and E5 (adapters-by-name registry) are the real decouplings that THIN the composition-root;
+  E1 would follow them, not precede. E2 (accept-gate algorithm→forge, policy injected) and E3 (⟵E2) are real and
+  independent of E1.
+- **Executable engine work = E4 · E5 · E2 · E3** (no E1 prerequisite). **E6a/E6b/E6c (memory) are independent**
+  (separate package). E1 → deferred capstone (revisit after E4/E5 make hooks/adapters discoverable).
+
 ## Notes
 
 - Each shard is a blind-dispatchable execution spec (static · scope · accept). Accept clauses are falsifiable
   (grep/typecheck/`project --check`/tests).
 - Deferred (not shards): MCP transport · `--describe` verb · sleep-time consolidation sidecar · finer-grained
-  per-fact memory update — all documented as future, out of wave-2.
+  per-fact memory update · **E1 aspirational project-to-dir (composition-root → forge)** — all future.
