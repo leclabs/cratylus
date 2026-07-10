@@ -74,4 +74,5 @@ export {
   agentToCodexTomlObject,
   skillToCodexMd,
   agentsMdSurface,
+  codexHarnessAdapter,
 } from './anatomy.js';

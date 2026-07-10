@@ -88,6 +88,7 @@ export {
   agentBody,
   skillBody,
   organTitle,
+  claudeHarnessAdapter,
 } from './anatomy.js';
 // The hook → settings.json `hooks` block serializer (the IR-resource projection
 // path), exposed standalone so a plugin (agent-anatomy) can project a hooks-only

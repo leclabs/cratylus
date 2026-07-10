@@ -20,7 +20,15 @@
 
 import TOML from '@iarna/toml';
 import type { Agent } from '../../anatomy/index.js';
-import { type ResolvedSkill, agentBody, skillBody } from '../claude/anatomy.js';
+// The composed SOUL body is HARNESS-NEUTRAL, so the body machinery lives in core
+// (`agentBody`/`skillBody` + the `ResolvedSkill` shape) — imported DOWNWARD from
+// core, NOT sideways from the claude adapter.
+import {
+  type ResolvedSkill,
+  agentBody,
+  skillBody,
+} from '../../core/anatomy-body.js';
+import type { HarnessAdapter } from '../../core/index.js';
 
 // Re-export the shared, harness-neutral resolved skill shape so a codex consumer
 // can import everything it needs from the codex adapter.
@@ -128,3 +136,24 @@ export function agentsMdSurface(agentNames: readonly string[]): string {
   out.push('');
   return out.join('\n');
 }
+
+// ── HarnessAdapter port ──────────────────────────────────────────────────────
+
+/**
+ * The codex realization of the `HarnessAdapter` port: agent → `<name>.toml`,
+ * skill → `SKILL.md`, plus the `AGENTS.md` instruction `surface`. No `hooks`
+ * (the codex projection does not emit a settings fragment). Wraps the concrete
+ * functions above — projection output is byte-identical to calling them directly.
+ */
+export const codexHarnessAdapter: HarnessAdapter = {
+  name: 'codex',
+  agentDef: (a) => ({
+    filename: `${a.name}.toml`,
+    content: agentToCodexToml(a),
+  }),
+  skillDef: (s) => ({ filename: 'SKILL.md', content: skillToCodexMd(s) }),
+  surface: (agentNames) => ({
+    filename: 'AGENTS.md',
+    content: agentsMdSurface(agentNames),
+  }),
+};

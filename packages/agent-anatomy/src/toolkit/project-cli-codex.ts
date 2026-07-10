@@ -4,9 +4,10 @@
 // skills → `skills/<name>/SKILL.md`, plus the `AGENTS.md` instruction surface.
 //
 // This IS the T2.4 proof: a agent-anatomy agent authored ONCE reaches a second agent-forge harness
-// for free — the only new code is which adapter functions the walk calls. The
-// PROJECTION LOGIC lives in agent-forge (`@leclabs/agent-forge/adapters/codex`); this step only
-// walks agent-anatomy's typed modules and wires them to it.
+// for free — the only new code is which harness the walk selects by name. The
+// PROJECTION LOGIC lives in agent-forge behind the `HarnessAdapter` port
+// (`adapterByName('codex')`); this step only walks agent-anatomy's typed modules
+// and wires them to it.
 //
 // Usage:  tsx src/toolkit/project-cli-codex.ts [--out <dir>] [--profile <reader/harness>]
 //   default out:     packages/agent-anatomy/.render-ts-codex   (gitignored; separate from .render-ts)
@@ -18,11 +19,13 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   type ResolvedSkill,
-  agentToCodexToml,
-  agentsMdSurface,
-  skillToCodexMd,
-} from '@leclabs/agent-forge/adapters/codex';
+  adapterByName,
+} from '@leclabs/agent-forge/adapters/registry';
 import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
+
+// The harness projection port, selected strictly BY NAME — no concrete codex
+// adapter module is imported here (the projection logic lives in forge).
+const adapter = adapterByName('codex');
 
 const here = dirname(fileURLToPath(import.meta.url));
 const anatomyRoot = join(here, '..', '..');
@@ -104,10 +107,8 @@ async function projectAgents(args: Args): Promise<string[]> {
   const names: string[] = [];
   for (const name of await moduleNames(agentsModDir)) {
     const agent = await agentOf(join(agentsModDir, `${name}.ts`));
-    writeFileSync(
-      join(dir, `${name}.toml`),
-      agentToCodexToml(agent, args.profile),
-    );
+    const { filename, content } = adapter.agentDef(agent);
+    writeFileSync(join(dir, filename), content);
     process.stdout.write(`EMIT codex agent ${name}\n`);
     names.push(name);
   }
@@ -130,7 +131,8 @@ async function projectSkills(args: Args): Promise<number> {
     };
     const dir = join(args.out, 'skills', name);
     mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, 'SKILL.md'), skillToCodexMd(resolved));
+    const { filename, content } = adapter.skillDef(resolved);
+    writeFileSync(join(dir, filename), content);
     process.stdout.write(`EMIT codex skill ${name}\n`);
     n++;
   }
@@ -142,7 +144,12 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const agentNames = await projectAgents(args);
   const s = await projectSkills(args);
   // The codex AGENTS.md instruction surface (the always-loaded discovery shell).
-  writeFileSync(join(args.out, 'AGENTS.md'), agentsMdSurface(agentNames));
+  const surface = adapter.surface;
+  if (!surface) {
+    throw new Error(`harness '${adapter.name}' has no instruction surface`);
+  }
+  const { filename, content } = surface(agentNames);
+  writeFileSync(join(args.out, filename), content);
   process.stdout.write(
     `projected ${agentNames.length} agents + ${s} skills + AGENTS.md to ${args.out}\n`,
   );

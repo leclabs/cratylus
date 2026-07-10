@@ -1,8 +1,9 @@
-// The consumer projection command — a thin agent-anatomy BUILD STEP that imports agent-forge's
-// claude adapter and runs it over agent-anatomy's typed agent/skill modules, writing the
-// full SOUL/SKILL tree to disk. The PROJECTION LOGIC lives in agent-forge
-// (`@leclabs/agent-forge/adapters/claude`); this step only walks agent-anatomy's modules and
-// wires them to it (agent-anatomy = agent-forge's source).
+// The consumer projection command — a thin agent-anatomy BUILD STEP that selects
+// forge's claude harness adapter BY NAME (`adapterByName('claude')`, never a
+// concrete adapter subpath) and runs it over agent-anatomy's typed agent/skill
+// modules, writing the full SOUL/SKILL tree to disk. The PROJECTION LOGIC lives
+// in agent-forge behind the `HarnessAdapter` port; this step only walks
+// agent-anatomy's modules and wires them to it (agent-anatomy = agent-forge's source).
 //
 // Usage:  tsx src/toolkit/project-cli.ts [--out <dir>]
 //   default out:  packages/agent-anatomy/.render-ts   (gitignored)
@@ -17,12 +18,14 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
   type ResolvedSkill,
-  agentToClaudeMd,
-  serializeClaudeHooksReport,
-  skillToClaudeMd,
-} from '@leclabs/agent-forge/adapters/claude';
+  adapterByName,
+} from '@leclabs/agent-forge/adapters/registry';
 import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
 import { hookSources } from './hooks.js';
+
+// The harness projection port, selected strictly BY NAME — no concrete claude
+// adapter module is imported here (the projection logic lives in forge).
+const adapter = adapterByName('claude');
 
 const here = dirname(fileURLToPath(import.meta.url));
 const anatomyRoot = join(here, '..', '..');
@@ -96,7 +99,8 @@ async function projectAgents(out: string): Promise<number> {
   let n = 0;
   for (const name of await moduleNames(agentsModDir)) {
     const agent = await agentOf(join(agentsModDir, `${name}.ts`));
-    writeFileSync(join(dir, `${name}.md`), agentToClaudeMd(agent));
+    const { filename, content } = adapter.agentDef(agent);
+    writeFileSync(join(dir, filename), content);
     process.stdout.write(`EMIT agent ${name}\n`);
     n++;
   }
@@ -119,7 +123,8 @@ async function projectSkills(out: string): Promise<number> {
     };
     const dir = join(out, 'skills', name);
     mkdirSync(dir, { recursive: true });
-    writeFileSync(join(dir, 'SKILL.md'), skillToClaudeMd(resolved));
+    const { filename, content } = adapter.skillDef(resolved);
+    writeFileSync(join(dir, filename), content);
     process.stdout.write(`EMIT skill ${name}\n`);
     n++;
   }
@@ -138,7 +143,11 @@ async function projectSkills(out: string): Promise<number> {
  * repo opts in — registration is now agent-forge-managed, not a hand-rolled `jq` edit.
  */
 async function projectHooks(out: string): Promise<number> {
-  const { hooks, warnings, skipped } = serializeClaudeHooksReport(
+  const projectHooksReport = adapter.hooks;
+  if (!projectHooksReport) {
+    throw new Error(`harness '${adapter.name}' does not project hooks`);
+  }
+  const { settings, warnings, skipped } = projectHooksReport(
     hookSources.map((s) => s.hook),
   );
   for (const w of warnings) {
@@ -150,10 +159,10 @@ async function projectHooks(out: string): Promise<number> {
   mkdirSync(out, { recursive: true });
   writeFileSync(
     join(out, 'settings.json'),
-    `${JSON.stringify({ hooks }, null, 2)}\n`,
+    `${JSON.stringify({ hooks: settings }, null, 2)}\n`,
   );
   process.stdout.write(
-    `EMIT settings.json (hooks: ${Object.keys(hooks).join(', ')})\n`,
+    `EMIT settings.json (hooks: ${Object.keys(settings).join(', ')})\n`,
   );
   // Stage each hook's worker payloads under hooks/<id>/ in the render tree. The
   // bytes come from the source cell (`worker.content`), not an on-disk copy — the

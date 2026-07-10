@@ -19,53 +19,24 @@
 // exemplify's standalone-cell path.
 
 import type { Agent } from '../../anatomy/index.js';
-import { ORGAN_NAMES, markToColor } from '../../anatomy/index.js';
-import { renderSkillCellBody } from '../../core/exemplify/skill-cell.js';
+import { markToColor } from '../../anatomy/index.js';
+// The harness-neutral organ→markdown-body machinery, imported DOWNWARD from core
+// (the shared helpers `agentBody`/`organTitle`/`skillBody` + the `ResolvedSkill`
+// shape). Re-exported below so existing `adapters/claude` importers are unaffected.
+import {
+  type ResolvedSkill,
+  agentBody,
+  organTitle,
+  skillBody,
+} from '../../core/anatomy-body.js';
+import type { HarnessAdapter } from '../../core/index.js';
+import { serializeClaudeHooksReport } from './write.js';
+
+// Re-export the shared, harness-neutral body machinery so `adapters/claude`
+// consumers keep importing them from here (byte-identical projection).
+export { type ResolvedSkill, agentBody, organTitle, skillBody };
 
 // ── Agent projection (from the Agent vector directly) ────────────────────────
-
-/** `audience-adaptation` → `Audience-Adaptation`, `output-format` → `Output-Format`. */
-export function organTitle(organ: string): string {
-  return organ
-    .split('-')
-    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-    .join('-');
-}
-
-/** organ kebab name → its `Agent` camelCase field. */
-function organField(organ: string): keyof Agent {
-  return organ.replace(/-(\w)/g, (_, c: string) =>
-    c.toUpperCase(),
-  ) as keyof Agent;
-}
-
-/**
- * The agent def BODY (no front-matter) — derived from the `Agent` VECTOR alone:
- * `# <emoji> <name>`, the `## Persona` identity section, then each non-null organ
- * (in ANATOMY declaration order) as a `## <Organ-Title>` heading + its branded
- * value(s) — the value string IS the SOUL body ⟨α, residue⟩, emitted verbatim; a
- * set organ lists its members blank-separated. `null` organs are omitted
- * (harness-inherit). Closed `rstrip() + "\n"`.
- */
-export function agentBody(a: Agent): string {
-  const emoji = a.provenance?.mark.emoji ?? '';
-  const heading = emoji ? `${emoji} ${a.name}` : a.name;
-  const out: string[] = [`# ${heading}`, ''];
-  if (a.persona) {
-    out.push('## Persona', '', a.persona, '');
-  }
-  for (const organ of ORGAN_NAMES) {
-    const value = a[organField(organ)];
-    if (value === null || value === undefined) {
-      continue;
-    }
-    out.push(`## ${organTitle(organ)}`, '');
-    for (const v of Array.isArray(value) ? value : [value]) {
-      out.push(v as string, '');
-    }
-  }
-  return `${out.join('\n').replace(/\n+$/, '')}\n`;
-}
 
 /**
  * The SOUL front-matter: `name`, `description`, `color`. `description` is the
@@ -95,55 +66,9 @@ export function agentToClaudeMd(a: Agent): string {
 }
 
 // ── Skill projection ────────────────────────────────────────────────────────
-
-/** A resolved skill ready to project to its SKILL.md. */
-export interface ResolvedSkill {
-  readonly name: string;
-  readonly trigger: string;
-  /** Front-matter `description` (the SKILL.md `description`). */
-  readonly description: string;
-  /**
-   * Optional host-discovery copy (`skill_description:`). When present it is the
-   * SKILL.md `description` instead of `description` (the `deploy: skill-dir` path).
-   */
-  readonly skillDescription?: string;
-  /** The σ* set-builder block (declarations-above / laws-below), emitted verbatim
-   *  inside the fence. Sourced from the `Skill.formalBlock` IR field. */
-  readonly formalBlock: string;
-  /** The composed-anchor provenance names, already harness-projected (or []). */
-  readonly composedFrom: readonly string[];
-  /**
-   * A `deploy: skill-dir` cell (e.g. `memory`) emits its `## Tool` section body
-   * VERBATIM as the SKILL.md body, NOT a generated composed body. When set, this
-   * is that section text and the generator path is bypassed.
-   */
-  readonly toolSection?: string;
-}
-
-/** The verb H1, derived from the skill name (the anchor carries the verb). */
-function deriveVerb(name: string): string {
-  const words = name.replace(/-/g, ' ');
-  return words.charAt(0).toUpperCase() + words.slice(1);
-}
-
-/**
- * The SKILL.md body for a resolved skill. A `deploy: skill-dir` cell (the
- * `toolSection` path, e.g. `memory`) emits that section VERBATIM; every other
- * cell renders through the ONE generator `renderSkillCellBody` as
- * `# <verb>` + fenced `formalBlock` + "Composed from …". Shared by the claude and
- * codex adapters. Returns `rstrip() + "\n"`.
- */
-export function skillBody(s: ResolvedSkill): string {
-  // `deploy: skill-dir` (memory): the `## Tool` section verbatim, no composition.
-  if (s.toolSection !== undefined) {
-    return `${s.toolSection.replace(/\n+$/, '')}\n`;
-  }
-  return renderSkillCellBody({
-    verb: deriveVerb(s.name),
-    block: s.formalBlock,
-    composedFrom: s.composedFrom,
-  });
-}
+// The `ResolvedSkill` shape and its `skillBody` generator live in
+// `core/anatomy-body` (harness-neutral, shared with codex) and are imported +
+// re-exported at the top of this module. Only the claude FRAMING is local.
 
 /**
  * The skill SKILL.md front-matter. A composed `kind: skill` cell carries
@@ -166,3 +91,21 @@ function skillFrontMatter(s: ResolvedSkill): string[] {
 export function skillToClaudeMd(s: ResolvedSkill): string {
   return frameClaudeMd(skillFrontMatter(s), skillBody(s));
 }
+
+// ── HarnessAdapter port ──────────────────────────────────────────────────────
+
+/**
+ * The claude realization of the `HarnessAdapter` port: agent → `<name>.md`,
+ * skill → `SKILL.md`, hooks → the `settings.json` `hooks` block fragment. No
+ * `surface` (claude has no `AGENTS.md` index). Wraps the concrete functions
+ * above — projection output is byte-identical to calling them directly.
+ */
+export const claudeHarnessAdapter: HarnessAdapter = {
+  name: 'claude',
+  agentDef: (a) => ({ filename: `${a.name}.md`, content: agentToClaudeMd(a) }),
+  skillDef: (s) => ({ filename: 'SKILL.md', content: skillToClaudeMd(s) }),
+  hooks: (hooks) => {
+    const r = serializeClaudeHooksReport([...hooks]);
+    return { settings: r.hooks, warnings: r.warnings, skipped: r.skipped };
+  },
+};
