@@ -9,8 +9,10 @@ truth is `NORTH-STAR.md` (net-current); this mirror derives the state. Owner: se
 
 - **DESIGN (done):** census `C1–C4` + synthesis `D1` → `NORTH-STAR.md` (R1–R9) + `MODEL.md` BEING/FACE.
   Supporting: `DIAGRAM.md`, `SESSION-LIFECYCLE.md`.
-- **EXECUTION (this spec):** the R1–R9 resolutions decomposed into the E-shards below. Nothing in `packages/`
-  touched yet; push/deploy remain Operator-gated.
+- **EXECUTION (done):** all executable E-shards landed on `main` — `S0` `E7` `E6a` `E6b` `E6c` `E4` `E5` `E2`
+  `E3` (each verified against its falsifiable accept + full suite green: memory 170 · anatomy 92 · forge 689,
+  typecheck 4/4). `E1` alone is DEFERRED — the aspirational composition-root project-to-dir (see the Execution
+  finding). Local commits only; **push/deploy remain Operator-gated** (not yet performed).
 
 ## Dependency graph (R)
 
