@@ -1,60 +1,45 @@
 import type { EpisodicRecord } from './record.js';
 
 /**
- * The v2 route target set (plans/scoped-memory-v2 SPEC D4):
+ * The route target set — the 4-part CoALA taxonomy's persisted stores (Working
+ * has no store):
  *
  * ```
- * route : I → { AGENTS.md@node · SEMANTIC · PROCEDURAL · vault · EPISODIC · drop }
+ * route : I → { SEMANTIC · PROCEDURAL · EPISODIC · drop }
  * ```
  *
  *  - `SEMANTIC`   — identity facts + durable agent-intrinsic knowledge;
  *                   `<home>/SEMANTIC.md` (the shared home partition).
  *  - `PROCEDURAL` — inductively generalized cross-project wisdom not already
  *                   carried by a projection; `<home>/PROCEDURAL.md`.
- *  - `AGENTS`     — a directive at a NODE: `<node>/AGENTS.md` (versioned, the
- *                   only in-repo write). Addressed by absolute node path.
- *  - `vault`      — networked reference; addressed by absolute file path.
  *  - `EPISODIC`   — a forward-looking next-step; stays in the raw log.
  *
  * `drop` is NOT a store — it is the absence of any target, modeled by an empty
  * target set on the decision. The v1 organ names (`SELF`, `MEMORY`) are
- * RETIRED: the engine rejects them loudly at apply time. Tag-grammar
- * addressing (`scope` on a target) retired with them — targets address by
- * node path + store name only.
+ * RETIRED: the engine rejects them loudly at apply time. `vault` (cross-host,
+ * networked) and `AGENTS@node` (project-scoped) are EXTRACTED — neither is
+ * private-cognitive: cross-host is an out-of-scope anti-pattern, and
+ * project-scoped externalization is a plain agent file-edit, never a route
+ * target. Targets address by store name only.
  */
-export type StoreName =
-  | 'SEMANTIC'
-  | 'PROCEDURAL'
-  | 'AGENTS'
-  | 'vault'
-  | 'EPISODIC';
+export type StoreName = 'SEMANTIC' | 'PROCEDURAL' | 'EPISODIC';
 
-/** The v2 store names, as a runtime-checkable set (the classifier is untyped at runtime). */
+/** The store names, as a runtime-checkable set (the classifier is untyped at runtime). */
 export const V2_STORES: ReadonlySet<string> = new Set([
   'SEMANTIC',
   'PROCEDURAL',
-  'AGENTS',
-  'vault',
   'EPISODIC',
 ]);
 
 /**
- * A single home a record's distilled content lands in. Addressing is by
- * absolute path, resolved from the fold manifest's `node(cwd)` — never by a
- * scope tag:
+ * A single home a record's distilled content lands in. All stores live in the
+ * agent home — there is no path addressing:
  *
- *  - `SEMANTIC` / `PROCEDURAL` — no address; they live in the agent home.
- *  - `AGENTS` — `node` (absolute node directory) required; lands in
- *    `<node>/AGENTS.md`.
- *  - `vault` — `path` (absolute file) required.
- *  - `EPISODIC` — no address, no content; the record stays in the raw log.
+ *  - `SEMANTIC` / `PROCEDURAL` — the distilled content appends to the home file.
+ *  - `EPISODIC` — no content; the record stays in the raw log.
  */
 export interface RouteTarget {
   store: StoreName;
-  /** Absolute node directory — required for AGENTS, meaningless elsewhere. */
-  node?: string;
-  /** Absolute destination file — required for vault, meaningless elsewhere. */
-  path?: string;
   /**
    * The distilled content to append to this home. The classifier produces the
    * consolidated, densest-faithful form — the engine never re-derives it.

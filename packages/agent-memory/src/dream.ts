@@ -2,7 +2,7 @@
 // binding a test can intercept to simulate a mid-compact crash (the load-bearing
 // correctness property: a crash at rename must lose no unconsumed record).
 import * as fs from 'node:fs';
-import { dirname, isAbsolute, join } from 'node:path';
+import { dirname, join } from 'node:path';
 import type { EpisodicRecord } from './record.js';
 import { serializeRecord } from './record.js';
 import type { Classifier, RouteDecision, RouteTarget } from './route.js';
@@ -24,8 +24,8 @@ export interface DreamResult {
 
 /**
  * Append `content` to a store home, creating parent dirs as needed. Plain
- * append — store files (SEMANTIC.md, PROCEDURAL.md, AGENTS.md, vault notes)
- * are prose, not JSONL. A single trailing newline separates entries; the
+ * append — the prose store files (SEMANTIC.md, PROCEDURAL.md) are not JSONL.
+ * A single trailing newline separates entries; the
  * caller's `content` carries its own internal shape.
  */
 function appendToHome(file: string, content: string): void {
@@ -46,8 +46,6 @@ function appendToHome(file: string, content: string): void {
  * Resolve a route target's destination file (SPEC D4). v2 addressing only:
  *
  *  - `SEMANTIC` / `PROCEDURAL` → `<home>/{SEMANTIC,PROCEDURAL}.md`.
- *  - `AGENTS` → `<node>/AGENTS.md`; `node` (absolute) required.
- *  - `vault` → `path` (absolute) required.
  *  - `EPISODIC` → null (the record stays in the raw log).
  *
  * A target addressed to a RETIRED v1 organ name (`SELF`, `MEMORY`, …) — or any
@@ -58,7 +56,7 @@ function resolveTarget(home: string, target: RouteTarget): string | null {
   const store = target.store as string;
   if (!V2_STORES.has(store)) {
     throw new Error(
-      `Route target store "${store}" is not a v2 store (SEMANTIC | PROCEDURAL | AGENTS | vault | EPISODIC); the v1 organ names (SELF, MEMORY, ...) are retired — address by node path + v2 store name`,
+      `Route target store "${store}" is not a store (SEMANTIC | PROCEDURAL | EPISODIC); the v1 organ names (SELF, MEMORY, ...) and the extracted vault/AGENTS targets are retired — address by store name`,
     );
   }
   switch (target.store) {
@@ -68,22 +66,6 @@ function resolveTarget(home: string, target: RouteTarget): string | null {
       return join(home, 'SEMANTIC.md');
     case 'PROCEDURAL':
       return join(home, 'PROCEDURAL.md');
-    case 'AGENTS': {
-      if (target.node === undefined || !isAbsolute(target.node)) {
-        throw new Error(
-          'Route target for AGENTS must carry an absolute node directory (from the fold manifest)',
-        );
-      }
-      return join(target.node, 'AGENTS.md');
-    }
-    case 'vault': {
-      if (target.path === undefined || !isAbsolute(target.path)) {
-        throw new Error(
-          'Route target for vault must carry an absolute destination file path',
-        );
-      }
-      return target.path;
-    }
   }
 }
 
@@ -171,15 +153,10 @@ export function compact(
 }
 
 /**
- * The audit label for one routed home: the store name, qualified by its
- * address when the target carries one (`AGENTS@/abs/node`, `vault@/abs/file`).
- * Bare name for the home-anchored stores and EPISODIC.
+ * The audit label for one routed home: the bare store name (all stores are
+ * home-anchored — SEMANTIC · PROCEDURAL · EPISODIC).
  */
 function routeLabel(target: RouteTarget): string {
-  if (target.store === 'AGENTS' && target.node !== undefined)
-    return `AGENTS@${target.node}`;
-  if (target.store === 'vault' && target.path !== undefined)
-    return `vault@${target.path}`;
   return target.store;
 }
 

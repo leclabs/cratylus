@@ -54,19 +54,13 @@ function textOf(file: string): string {
 }
 
 describe('applyRoutes — v2 store targets with a deterministic stub classifier', () => {
-  it('routes to SEMANTIC/PROCEDURAL (home), AGENTS@node, vault@path; split lands in ≥2; scaffold drops; next-step stays', () => {
-    const nodeDir = join(root, 'workspaces', 'proj');
-    mkdirSync(nodeDir, { recursive: true });
-    const vaultFile = join(root, 'vault', 'ref.md');
-
+  it('routes to SEMANTIC/PROCEDURAL (home); split lands in ≥2; scaffold drops; next-step stays', () => {
     const kinds = [
       'identity', // → SEMANTIC
       'wisdom', // → PROCEDURAL
-      'directive', // → AGENTS @ node
-      'reference', // → vault @ path
       'scaffold', // → drop
       'next-step', // → stays in EPISODIC
-      'split', // → SEMANTIC + AGENTS (two homes)
+      'split', // → SEMANTIC + PROCEDURAL (two homes)
     ];
     const written = kinds.map((kind) =>
       store.encode({ body: { kind, text: `c-${kind}` } }),
@@ -80,18 +74,12 @@ describe('applyRoutes — v2 store targets with a deterministic stub classifier'
       const decisions: Record<string, RouteDecision> = {
         identity: { targets: [{ store: 'SEMANTIC', content: text }] },
         wisdom: { targets: [{ store: 'PROCEDURAL', content: text }] },
-        directive: {
-          targets: [{ store: 'AGENTS', node: nodeDir, content: text }],
-        },
-        reference: {
-          targets: [{ store: 'vault', path: vaultFile, content: text }],
-        },
         scaffold: { targets: [] }, // drop
         'next-step': { targets: [{ store: 'EPISODIC' }] },
         split: {
           targets: [
             { store: 'SEMANTIC', content: `${text}-sem` },
-            { store: 'AGENTS', node: nodeDir, content: `${text}-agents` },
+            { store: 'PROCEDURAL', content: `${text}-proc` },
           ],
         },
       };
@@ -100,21 +88,17 @@ describe('applyRoutes — v2 store targets with a deterministic stub classifier'
 
     const result = applyRoutes(store, undefined, stub);
 
-    // Each home received its content, at the v2 addresses.
+    // Each home received its content (all stores live in the agent home).
     expect(textOf(join(home, 'SEMANTIC.md'))).toContain('c-identity');
     expect(textOf(join(home, 'SEMANTIC.md'))).toContain('c-split-sem');
     expect(textOf(join(home, 'PROCEDURAL.md'))).toContain('c-wisdom');
-    expect(textOf(join(nodeDir, 'AGENTS.md'))).toContain('c-directive');
-    expect(textOf(join(nodeDir, 'AGENTS.md'))).toContain('c-split-agents');
-    expect(textOf(vaultFile)).toContain('c-reference');
+    expect(textOf(join(home, 'PROCEDURAL.md'))).toContain('c-split-proc');
 
-    // Consumed: identity, wisdom, directive, reference, scaffold(drop), split.
+    // Consumed: identity, wisdom, scaffold(drop), split.
     expect(new Set(result.consumed)).toEqual(
       new Set([
         byKind.identity.id,
         byKind.wisdom.id,
-        byKind.directive.id,
-        byKind.reference.id,
         byKind.scaffold.id,
         byKind.split.id,
       ]),
@@ -136,7 +120,7 @@ describe('applyRoutes — v2 store targets with a deterministic stub classifier'
       targets: [{ store: 'SELF', content: 'who I am' } as any],
     });
     expect(() => applyRoutes(store, undefined, v1Self)).toThrow(
-      /"SELF" is not a v2 store.*retired/,
+      /"SELF" is not a store.*retired/,
     );
 
     const v1Memory: Classifier = () => ({
@@ -144,29 +128,13 @@ describe('applyRoutes — v2 store targets with a deterministic stub classifier'
       targets: [{ store: 'MEMORY', content: 'what I know' } as any],
     });
     expect(() => applyRoutes(store, undefined, v1Memory)).toThrow(
-      /"MEMORY" is not a v2 store/,
+      /"MEMORY" is not a store/,
     );
 
     // Enforcement precedes landing: nothing was consumed or written.
     expect(survivors()).toHaveLength(1);
     expect(existsSync(join(home, 'SELF.md'))).toBe(false);
     expect(existsSync(join(home, 'MEMORY.md'))).toBe(false);
-  });
-
-  it('AGENTS requires an absolute node; vault requires an absolute path', () => {
-    store.encode({ body: 1 });
-    const noNode: Classifier = () => ({
-      targets: [{ store: 'AGENTS', content: 'x' }],
-    });
-    expect(() => applyRoutes(store, undefined, noNode)).toThrow(
-      /absolute node directory/,
-    );
-    const relVault: Classifier = () => ({
-      targets: [{ store: 'vault', path: 'relative/ref.md', content: 'x' }],
-    });
-    expect(() => applyRoutes(store, undefined, relVault)).toThrow(
-      /absolute destination file/,
-    );
   });
 
   it('rejects a non-EPISODIC target with no content', () => {
@@ -189,13 +157,11 @@ describe('applyRoutes — v2 store targets with a deterministic stub classifier'
     expect(readdirSync(home)).toEqual([DEFAULT_EPISODIC_PATH]); // only the (now-empty) log
   });
 
-  it('a retained record is stamped with all of its routes (split + EPISODIC, address-qualified)', () => {
-    const nodeDir = join(root, 'proj');
-    mkdirSync(nodeDir, { recursive: true });
+  it('a retained record is stamped with all of its routes (split + EPISODIC)', () => {
     const rec = store.encode({ body: { kind: 'mixed' } });
     const stub: Classifier = () => ({
       targets: [
-        { store: 'AGENTS', node: nodeDir, content: 'keep-and-note' },
+        { store: 'SEMANTIC', content: 'keep-and-note' },
         { store: 'EPISODIC' },
       ],
     });
@@ -204,8 +170,8 @@ describe('applyRoutes — v2 store targets with a deterministic stub classifier'
     const left = survivors();
     expect(left).toHaveLength(1);
     expect(left[0].id).toBe(rec.id);
-    expect(left[0].routes).toEqual([`AGENTS@${nodeDir}`, 'EPISODIC']);
-    expect(textOf(join(nodeDir, 'AGENTS.md'))).toContain('keep-and-note');
+    expect(left[0].routes).toEqual(['SEMANTIC', 'EPISODIC']);
+    expect(textOf(join(home, 'SEMANTIC.md'))).toContain('keep-and-note');
   });
 });
 
