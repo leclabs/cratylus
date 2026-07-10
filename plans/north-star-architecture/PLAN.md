@@ -25,11 +25,14 @@ E6a (R6 memory pkg) ─┬─▶ E6b (R6 taxonomy: extract vault+AGENTS) ─┐
 S0 (R9 scope barriers) · E7 (R7 citation cruft)   — independent
 ```
 
-## Waves
+## Waves (executed)
 
-- **wave 0 (ready — no deps, dispatch concurrently):** `S0` · `E1` · `E6a` · `E6b` · `E7`
-- **wave 1 (pending):** `E2` ⟵E1 · `E4` ⟵E1 · `E5` ⟵E1 · `E6c` ⟵E6a,E6b
-- **wave 2 (pending):** `E3` ⟵E2
+Execution is complete; the schedule below is the record of what ran (the graph above is the design-time R,
+corrected by the Execution finding — E1 deferred, `E4/E5⟵E1` inverted).
+
+- **independent / memory:** `S0` `E7` · `E6a`→`E6b`→`E6c` — all completed.
+- **engine (no E1 prerequisite):** `E4` `E5` `E2` · `E3`⟵E2 — all completed.
+- **deferred:** `E1` (aspirational composition-root project-to-dir) — the sole open item.
 
 ## State
 
