@@ -7,7 +7,11 @@
 // Faithful CLI port of `toolkit/init.py main()`.
 
 import pc from 'picocolors';
-import { type RenderTree, initSociety } from '../../deploy/index.js';
+import {
+  DEFAULT_FOUNDING_TEMPLATE,
+  type RenderTree,
+  initSociety,
+} from '../../deploy/index.js';
 
 export interface FoundCmdOpts {
   target: string;
@@ -25,6 +29,9 @@ export async function runFound(opts: FoundCmdOpts): Promise<number> {
   const r = initSociety({
     target: opts.target,
     tree,
+    // The forge CLI is doctrine-agnostic — it founds with the engine default. A
+    // corpus with its own founding doctrine injects its template via its own path.
+    template: DEFAULT_FOUNDING_TEMPLATE,
     subject: opts.subject,
     force: opts.force,
     log: (line) => console.log(line),

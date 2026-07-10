@@ -1,8 +1,12 @@
 import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
+// The plan-layout state canon (one home) — the `States` set below derives from it;
+// a founding template sources its `planStates` from the same home (DRY). Lives in a
+// sibling module, not exported here: a skill module has exactly ONE export (its Skill).
+import { PLAN_STATES } from '../toolkit/plan-states.js';
 
 const FORMAL_BLOCK = `-- ── declarations: entities ──
 intent          ≜ the stated goal
-States          ≜ { pending, ready, active, completed }   — task-state is the folder a task-file sits in
+States          ≜ { ${PLAN_STATES.join(', ')} }   — task-state is the folder a task-file sits in
 P               ≜ a plan : a set of task-files               — sharded-plan-layout: state lives in the folder, not a field
 content : P → text                                            — a task-file's spec text
 spec    : P → ⟨static, scope, accept⟩                        — execution-spec: the shape content(t) must satisfy

@@ -11,7 +11,8 @@
     "project": "tsx src/toolkit/project-cli.ts",
     "project:codex": "tsx src/toolkit/project-cli-codex.ts",
     "project:human": "tsx src/toolkit/project-human-cli.ts",
-    "project:targets": "tsx src/toolkit/project-targets-cli.ts"
+    "project:targets": "tsx src/toolkit/project-targets-cli.ts",
+    "found": "tsx src/toolkit/found-cli.ts"
   },
   "dependencies": {
     "@leclabs/agent-forge": "workspace:*"

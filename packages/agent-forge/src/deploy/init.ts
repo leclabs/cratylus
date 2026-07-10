@@ -1,26 +1,26 @@
-// Greenfield init (polis-instantiation) — found a mind-society in a target dir.
+// Greenfield init — found an agent project in a target dir.
 //
-// `init <target>` turns an empty/target directory into a *founded polis*: not a
-// pile of agent files, but a society with the `politeia` (foundational
-// structure) laid down. Two acts, in order:
+// `init <target>` turns an empty/target directory into a *founded project*: not a
+// pile of agent files, but a project with its foundational structure laid down.
+// Two acts, in order:
 //
 //   1. PROJECT THE CULTURE — copy the (already-projected) full render tree
 //      (every agent + skill, with staged companions) into
-//      `<target>/.claude/{agents,skills}`. The founders nico + mav are among
-//      the projected agents ("agents born as founders" — `founder-charter`).
-//      Defs/skills are regenerated substance, overwritten freely
-//      (`substance-over-accident`).
-//   2. LAY THE FOUNDING SCAFFOLD — the marker that makes the target a society:
-//      - `<target>/AGENTS.md` — cites the constitution, names the founders,
-//        states the subject. Modeled on polis's own root AGENTS.md.
+//      `<target>/.claude/{agents,skills}`. Defs/skills are regenerated substance,
+//      overwritten freely (`substance-over-accident`).
+//   2. LAY THE FOUNDING SCAFFOLD — the marker that makes the target a project:
+//      - `<target>/AGENTS.md` — the founding conventions + the subject.
 //      - `<target>/plans/founding/` — a minimal sharded-plan-layout scaffold.
+//
+// This module is DOCTRINE-AGNOSTIC: what the founding documents SAY and which
+// state folders the plan scaffold materializes are injected as a
+// `FoundingTemplate` (engine declares the structure; corpus supplies the prose +
+// states). Forge ships `DEFAULT_FOUNDING_TEMPLATE`; a doctrine-bearing corpus
+// injects its own.
 //
 // Clobber-guarded: refuses an existing `<target>/AGENTS.md` unless `force`
 // (idempotent re-found). Does NOT seed SEMANTIC/PROCEDURAL/EPISODIC sidecars — those are
 // the running host's `deploy` concern; init lays the SOUL, not the individual.
-//
-// Faithful port of `toolkit/init.py` (agent-forge consumes a render tree where Python
-// composed resolve.emit directly).
 
 import {
   copyFileSync,
@@ -31,15 +31,17 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
+import type { FoundingTemplate } from './founding-template.js';
 import type { RenderTree } from './types.js';
 
-export const PLAN_STATES = ['pending', 'ready', 'active', 'completed'] as const;
 export const DEFAULT_SUBJECT =
-  "<the society's subject -- what this polis is for; the founders fill this in>";
+  "<the project's subject -- what this project is for; the founders fill this in>";
 
 export interface InitOpts {
   target: string;
   tree: RenderTree;
+  /** The founding doctrine to lay down — the prose + plan-layout states. */
+  template: FoundingTemplate;
   subject?: string;
   force?: boolean;
   log?: (line: string) => void;
@@ -105,77 +107,22 @@ function projectCulture(target: string, tree: RenderTree): [number, number] {
   return [nAgents, nSkills];
 }
 
-export function foundingAgentsMd(subject: string): string {
-  return `# agent conventions
-
-This project is a **founded mind-society** -- a *polis*, not a pile of agents. It was
-founded by projecting the polis commons (\`packages/agent-anatomy\`) into this repository: the
-foundational structure (the **politeia**) is laid down, and the founders are born
-among the projected agents.
-
-## Subject
-
-${subject}
-
-## The founders
-
-Born into this society as projected agents (\`.claude/agents/\`):
-
-- **Nico** 📐 -- master builder of the **constitution**: roles, archetypes, the
-  society itself. To mutate the culture, be Nico or delegate to him.
-- **Mav** ✈️ -- master builder of the **substrate**: the infrastructure, machinery,
-  and delivery the society runs on. For build/delivery, Mav leads.
-
-\`principal-ic\` is **intrinsic** to both founders -- the founder genus, bound to this
-society's subject, not a path-scoped grant (the founder charter).
-
-## How this society was founded
-
-- **Culture** -- every agent + skill in this \`.claude/\` is a *projection* of a agent-anatomy
-  corpus cell, not a hand-authored copy. Regenerate by re-projecting; do not
-  hand-edit the generated defs (each carries a \`GENERATED from ...\` provenance
-  header + content-hash that the projector guards against clobbering).
-- **Constitution cited, not copied** -- the founding draws on the polis *politeia*
-  (the foundational structure) and *founder-charter* (who founds, on what terms).
-  This society *is a polis* because it instantiates that structure.
-
-## Work-tracking
-
-\`plans/\` is a sharded-plan-layout: \`PLAN.md\` is the backlog + status mirror; task
-files move through state folders (\`pending/ -> ready/ -> active/ -> completed/\`) as
-dependencies clear.
-`;
-}
-
-export function foundingPlanMd(subject: string): string {
-  return `# founding -- PLAN
-
-The founding backlog of this mind-society. \`PLAN.md\` mirrors the state folders;
-task files move \`pending/ -> ready/ -> active/ -> completed/\` as deps clear.
-
-**Subject:** ${subject}
-
-## Backlog (pending)
-
-- **F1 -- state the subject** -- replace the placeholder in \`AGENTS.md\` and above
-  with this society's real subject (what this polis is for).
-- **F2 -- adopt on a host** -- deploy the founded agents to a running client so the
-  founders (nico, mav) wake with their identity-memory sidecars seeded.
-`;
-}
-
-/** Create <target>/plans/founding/{PLAN.md, pending/, ready/, active/,
- *  completed/} — a minimal sharded-plan-layout. Returns the plan dir.
+/** Create <target>/plans/founding/{PLAN.md, <state-folders>...} — a minimal
+ *  sharded-plan-layout from the injected template. Returns the plan dir.
  *  .gitkeep markers keep the empty state folders materializable in git. */
-function layPlansScaffold(target: string, subject: string): string {
+function layPlansScaffold(
+  target: string,
+  subject: string,
+  template: FoundingTemplate,
+): string {
   const planDir = resolvePath(target, 'plans', 'founding');
   mkdirSync(planDir, { recursive: true });
   writeFileSync(
     resolvePath(planDir, 'PLAN.md'),
-    foundingPlanMd(subject),
+    template.planMd(subject),
     'utf-8',
   );
-  for (const state of PLAN_STATES) {
+  for (const state of template.planStates) {
     const sd = resolvePath(planDir, state);
     mkdirSync(sd, { recursive: true });
     writeFileSync(resolvePath(sd, '.gitkeep'), '', 'utf-8');
@@ -183,34 +130,38 @@ function layPlansScaffold(target: string, subject: string): string {
   return planDir;
 }
 
-/** Found a mind-society in `target`. Returns the init result (rc 0 ok). */
+/** Found an agent project in `target` from the injected template. Returns the
+ *  init result (rc 0 ok). */
 export function initSociety(opts: InitOpts): InitResult {
   const log = opts.log ?? (() => {});
   const warn = opts.warn ?? (() => {});
   const subject = opts.subject ?? DEFAULT_SUBJECT;
+  const template = opts.template;
   const target = resolvePath(opts.target);
   const agentsMd = resolvePath(target, 'AGENTS.md');
   if (existsSync(agentsMd) && !opts.force) {
     warn(
-      `REFUSE  ${agentsMd} already exists -- this dir may already be a founded society; pass --force to overwrite the founding marker`,
+      `REFUSE  ${agentsMd} already exists -- this dir may already be a founded project; pass --force to overwrite the founding marker`,
     );
     return { rc: 1, agents: 0, skills: 0, agentsMd, planDir: '' };
   }
 
   mkdirSync(target, { recursive: true });
-  log(`=== founding a polis in ${target} ===`);
+  log(`=== founding a project in ${target} ===`);
 
   const [nAgents, nSkills] = projectCulture(target, opts.tree);
   log(
     `  culture projected: ${nAgents} agents + ${nSkills} skills -> ${target}/.claude/`,
   );
 
-  writeFileSync(agentsMd, foundingAgentsMd(subject), 'utf-8');
+  writeFileSync(agentsMd, template.agentsMd(subject), 'utf-8');
   log(`  founding marker:   ${agentsMd}`);
 
-  const planDir = layPlansScaffold(target, subject);
-  log(`  plans scaffold:    ${planDir}/ (PLAN.md + ${PLAN_STATES.join('/')})`);
+  const planDir = layPlansScaffold(target, subject, template);
+  log(
+    `  plans scaffold:    ${planDir}/ (PLAN.md + ${template.planStates.join('/')})`,
+  );
 
-  log(`=== founded: ${nAgents} founders+agents born, culture projected ===`);
+  log(`=== founded: ${nAgents} agents born, culture projected ===`);
   return { rc: 0, agents: nAgents, skills: nSkills, agentsMd, planDir };
 }

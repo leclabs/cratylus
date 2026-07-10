@@ -31,19 +31,19 @@ S0 (R9 scope barriers) · E7 (R7 citation cruft)   — independent
 
 ## State
 
-| shard                          | R   | state      | concern                                                                                            |
-| ------------------------------ | --- | ---------- | -------------------------------------------------------------------------------------------------- |
-| C1·C2·C3 census · D1 synthesis | —   | completed  | design grounding + north-star                                                                      |
-| S0 scope-barriers              | R9  | completed  | broaden nico/mav vision; purge dangling lane-split                                                 |
-| E1 projection→forge            | R1  | ready      | relocate toolkit projection tooling into forge                                                     |
-| E6a memory standalone tool     | R6  | completed  | rename→`memory`, bin+bootstrap, `~/.agents/<name>`, register-mint session-id, del bundle mechanism |
-| E6b memory taxonomy            | R6  | completed  | extract `vault`+`AGENTS`; 4-part CoALA model                                                       |
-| E7 citation cruft              | R7  | completed  | delete orphan `[[…]]` parser + docs:check gate                                                     |
-| E2 accept-gate split           | R2  | completed  | algorithm→`forge/validate`; policy-data injected (no `polis` in engine)                            |
-| E4 hooks split                 | R4  | completed  | generic `hookIrOf`+`HookCell`/`RuleCell` types → forge; cells stay CANON                           |
-| E5 adapters by-name            | R5  | completed  | `HarnessAdapter` registry (by-name); `core/anatomy-body`; killed codex→claude sideways edge        |
-| E6c memory verbs+lifecycle     | R6  | completed  | `apply`/`replace`; Stop nudge hook; delete genus; orchestrators                                    |
-| E3 founding inject             | R3  | pending⟵E2 | `init.ts` doctrine → `FoundingTemplate` from CANON                                                 |
+| shard                          | R   | state     | concern                                                                                            |
+| ------------------------------ | --- | --------- | -------------------------------------------------------------------------------------------------- |
+| C1·C2·C3 census · D1 synthesis | —   | completed | design grounding + north-star                                                                      |
+| S0 scope-barriers              | R9  | completed | broaden nico/mav vision; purge dangling lane-split                                                 |
+| E1 projection→forge            | R1  | ready     | relocate toolkit projection tooling into forge                                                     |
+| E6a memory standalone tool     | R6  | completed | rename→`memory`, bin+bootstrap, `~/.agents/<name>`, register-mint session-id, del bundle mechanism |
+| E6b memory taxonomy            | R6  | completed | extract `vault`+`AGENTS`; 4-part CoALA model                                                       |
+| E7 citation cruft              | R7  | completed | delete orphan `[[…]]` parser + docs:check gate                                                     |
+| E2 accept-gate split           | R2  | completed | algorithm→`forge/validate`; policy-data injected (no `polis` in engine)                            |
+| E4 hooks split                 | R4  | completed | generic `hookIrOf`+`HookCell`/`RuleCell` types → forge; cells stay CANON                           |
+| E5 adapters by-name            | R5  | completed | `HarnessAdapter` registry (by-name); `core/anatomy-body`; killed codex→claude sideways edge        |
+| E6c memory verbs+lifecycle     | R6  | completed | `apply`/`replace`; Stop nudge hook; delete genus; orchestrators                                    |
+| E3 founding inject             | R3  | completed | `init.ts` doctrine → `FoundingTemplate` injected from CANON                                        |
 
 ## Execution finding — E1–E5 re-derived against the code (2026-07-09, nico)
 

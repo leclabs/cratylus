@@ -89,10 +89,12 @@ export {
 } from './deploy.js';
 
 export {
+  DEFAULT_FOUNDING_TEMPLATE,
+  type FoundingTemplate,
+} from './founding-template.js';
+
+export {
   DEFAULT_SUBJECT,
-  PLAN_STATES,
-  foundingAgentsMd,
-  foundingPlanMd,
   type InitOpts,
   type InitResult,
   initSociety,
