@@ -294,3 +294,16 @@ export function markToColor(mark: Mark): string {
 
 // ── project-human — the harness-agnostic human-view boundary projection ───────
 export { type OrganDoc, projectHumanOrgan } from './project-human.js';
+
+// ── Source-cell type kernel — the generic `hook`/`rule` cell shapes ───────────
+// The doctrine-free cell shapes (`hook`/`rule`) + the generic config-IR lift. The
+// concrete cell instances live in the consuming corpus (agent-anatomy).
+export {
+  type HookCell,
+  type HookEvent,
+  type HookSource,
+  type HookSubstrate,
+  type HookWorker,
+  hookIrOf,
+} from './hook-cell.js';
+export type { RuleCell } from './rule-cell.js';

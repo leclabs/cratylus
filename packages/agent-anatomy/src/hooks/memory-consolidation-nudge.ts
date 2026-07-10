@@ -1,4 +1,4 @@
-import type { HookCell } from '../toolkit/hook-cell.js';
+import type { HookCell } from '@leclabs/agent-forge/anatomy';
 
 // memory-consolidation-nudge — an ADVISORY Stop hook (the harness half of the
 // memory-consolidation protocol). On turn.end (Stop only — NOT SubagentStop), it

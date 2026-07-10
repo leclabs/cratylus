@@ -1,4 +1,4 @@
-import type { HookCell } from '../toolkit/hook-cell.js';
+import type { HookCell } from '@leclabs/agent-forge/anatomy';
 
 // stance-guardrail-pre — the PreToolUse twin of `stance-guardrail` (the Stop cell).
 // It STRUCTURALLY REFUSES, BEFORE the call fires, a mid-turn tool call that collapses

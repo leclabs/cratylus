@@ -40,7 +40,7 @@ S0 (R9 scope barriers) · E7 (R7 citation cruft)   — independent
 | E6b memory taxonomy            | R6  | completed  | extract `vault`+`AGENTS`; 4-part CoALA model                                                       |
 | E7 citation cruft              | R7  | completed  | delete orphan `[[…]]` parser + docs:check gate                                                     |
 | E2 accept-gate split           | R2  | pending⟵E1 | algorithm→forge; policy-data injected (no `polis` in engine)                                       |
-| E4 hooks split                 | R4  | pending⟵E1 | generic `hookIrOf`→forge; cells stay CANON                                                         |
+| E4 hooks split                 | R4  | completed  | generic `hookIrOf`+`HookCell`/`RuleCell` types → forge; cells stay CANON                           |
 | E5 adapters by-name            | R5  | pending⟵E1 | registry selection; `core/anatomy-body`; kill sideways edge                                        |
 | E6c memory verbs+lifecycle     | R6  | completed  | `apply`/`replace`; Stop nudge hook; delete genus; orchestrators                                    |
 | E3 founding inject             | R3  | pending⟵E2 | `init.ts` doctrine → `FoundingTemplate` from CANON                                                 |

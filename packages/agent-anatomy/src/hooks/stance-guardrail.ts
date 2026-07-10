@@ -1,4 +1,4 @@
-import type { HookCell } from '../toolkit/hook-cell.js';
+import type { HookCell } from '@leclabs/agent-forge/anatomy';
 
 // stance-guardrail — the harness-half of the principal-stance (P4). A source
 // `hook` cell (activation=event): its canonical DEFINIENS is the σ*-signified
