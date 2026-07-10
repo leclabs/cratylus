@@ -21,7 +21,6 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
 import {
   type StructuralClass,
   type StructuralCorpus,
@@ -32,7 +31,8 @@ import {
   parseOrganValue,
   resolvedDup,
   structuralParsimony,
-} from '../src/toolkit/cold-oracle/structural-parsimony.js';
+} from '@leclabs/agent-forge/validate';
+import { describe, expect, it } from 'vitest';
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');
 

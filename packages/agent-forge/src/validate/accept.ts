@@ -4,23 +4,25 @@
 //   accept(a) ⇔ Universal(a) ∧ (class(a)=agent ⇒ COMPOSED(a))
 //   Universal = CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARSIMONIOUS ∧ REGENERABLE
 //
-// DIVISION OF LABOUR (the honest boundary — named, per the E1 spec's "candidate,
-// not baked" method): the six Universal legs split into a STATIC floor decided
-// here (pure, hermetic, deterministic — runs in every `pnpm test`) and a LIVE
-// authority decided by the priors-only blind cold-oracle (`./oracle.ts` →
-// `./cold-oracle.sh`, fresh /tmp, no corpus/session/root reads). The two
-// decode-shaped legs — COLD-BLIND and SIGNIFIED (α=σ*) — are genuinely oracle
-// judgments (does the fragment / anchor decode to intent under LLM-priors
-// ALONE?); the static witness is their always-on FLOOR (external-cite,
-// malformed-sign), the oracle their ceiling. The four structural legs
-// (CANONICAL·PARTITIONED·PARSIMONIOUS·REGENERABLE) are fully static. The nonce
-// positive-control (`oracle.ts`) empirically backs the SIGNIFIED floor: a sign
-// that fires NO circumscribing prior cannot be σ*.
+// DIVISION OF LABOUR (the honest boundary): the six Universal legs split into a
+// STATIC floor decided here (pure, hermetic, deterministic — runs in every
+// `pnpm test`) and a LIVE authority decided by the priors-only blind cold-oracle
+// (`./oracle.ts`, fresh /tmp, no corpus/session/root reads). The two decode-shaped
+// legs — COLD-BLIND and SIGNIFIED (α=σ*) — are genuinely oracle judgments (does the
+// fragment / anchor decode to intent under LLM-priors ALONE?); the static witness is
+// their always-on FLOOR (external-cite, malformed-sign), the oracle their ceiling.
+// The four structural legs (CANONICAL·PARTITIONED·PARSIMONIOUS·REGENERABLE) are fully
+// static. The nonce positive-control (`oracle.ts`) empirically backs the SIGNIFIED
+// floor: a sign that fires NO circumscribing prior cannot be σ*.
 //
-// This module is PURE — witnesses over supplied data, zero IO. Corpus loading +
-// oracle driving live in the caller (`test/reader-density.test.ts`, `./oracle.ts`).
+// This is the doctrine-agnostic ALGORITHM (agent-forge ENGINE): witnesses over
+// supplied data, zero IO, zero corpus doctrine. The corpus DATA it reads — which
+// tokens are palimpsest — is INJECTED as a `Policy` (`./policy.ts`); the DATA lives
+// in the corpus (agent-anatomy), never here. Corpus loading + oracle driving live in
+// the caller.
 
-import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
+import type { Skill, SkillExpression } from '../anatomy/index.js';
+import type { Policy } from './policy.js';
 
 /** The six Universal legs of `accept()` (MODEL.md). */
 export type Leg =
@@ -60,7 +62,7 @@ export interface AcceptCell {
    * the typed IR field, not a markdown scrape.
    */
   readonly definiens: string;
-  /** The anchors this cell references (imports · `[[ ]]` · composition). */
+  /** The anchors this cell references (imports · `ref` · composition). */
   readonly refs: readonly string[];
 }
 
@@ -139,12 +141,17 @@ function slugTokens(slug: string): string[] {
  * CANONICAL — ∀c∈concepts(a): ¬orphan ∧ ¬private ∧ ¬palimpsest. Static reading:
  * every anchor the cell REFERENCES resolves to a home (¬orphan/¬private), and the
  * body carries no superseded framing layer (¬palimpsest). Duplicate-home is NOT
- * here — that is PARTITIONED's sole jurisdiction (DRY/MECE).
+ * here — that is PARTITIONED's sole jurisdiction (DRY/MECE). The palimpsest token
+ * table is CORPUS DATA (`policy.palimpsestTokens`), injected — never baked here.
  */
-export function canonical(cell: AcceptCell, homes: Homes): LegVerdict {
+export function canonical(
+  cell: AcceptCell,
+  homes: Homes,
+  policy: Policy,
+): LegVerdict {
   const orphans = cell.refs.filter((r) => !homes.has(r));
   // palimpsest — retired framing residue (superseded semantic layer left in body).
-  const palimpsest = PALIMPSEST_TOKENS.filter(([, re]) =>
+  const palimpsest = policy.palimpsestTokens.filter(([, re]) =>
     re.test(cell.definiens),
   );
   const reasons: string[] = [];
@@ -160,14 +167,6 @@ export function canonical(cell: AcceptCell, homes: Homes): LegVerdict {
     reason: reasons.join(' · '),
   };
 }
-
-/** Retired framing tokens — a superseded layer, not present in a clean cell. */
-const PALIMPSEST_TOKENS: ReadonlyArray<readonly [string, RegExp]> = [
-  ['polis', /\bpolis\b/i],
-  ['oikos', /\boikos\b/i],
-  ['conatus', /\bconatus\b/i],
-  ['stance-conatus', /\bstance[-\s]conatus\b/i],
-];
 
 /**
  * SIGNIFIED — α(c)=σ*(c). Static FLOOR: α is a well-formed sign (shortlex kebab);
@@ -271,11 +270,16 @@ export function regenerable(targets: readonly Target[]): LegVerdict {
 /**
  * The per-cell Universal verdicts (CANONICAL·SIGNIFIED·COLD-BLIND·PARTITIONED·
  * PARSIMONIOUS). REGENERABLE is global (`regenerable`) — a cell has no Target
- * of its own — so it is folded in by the caller with the deploy Target set.
+ * of its own — so it is folded in by the caller with the deploy Target set. The
+ * injected `policy` carries the corpus DATA the legs read (palimpsest tokens).
  */
-export function universalCell(cell: AcceptCell, homes: Homes): LegVerdict[] {
+export function universalCell(
+  cell: AcceptCell,
+  homes: Homes,
+  policy: Policy,
+): LegVerdict[] {
   return [
-    canonical(cell, homes),
+    canonical(cell, homes, policy),
     signified(cell),
     coldBlindStatic(cell),
     partitioned(cell, homes),

@@ -13,6 +13,7 @@ const libEntry: Record<string, string> = {
   'anatomy/index': 'src/anatomy/index.ts',
   'deploy/index': 'src/deploy/index.ts',
   'catalog/index': 'src/catalog/index.ts',
+  'validate/index': 'src/validate/index.ts',
 };
 for (const a of adapters) {
   libEntry[`adapters/${a}/index`] = `src/adapters/${a}/index.ts`;

@@ -27,7 +27,6 @@ import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { describe, expect, it } from 'vitest';
 import {
   type AcceptCell,
   type Homes,
@@ -36,7 +35,9 @@ import {
   failingLegs,
   regenerable,
   universalCell,
-} from '../src/toolkit/cold-oracle/accept.js';
+} from '@leclabs/agent-forge/validate';
+import { describe, expect, it } from 'vitest';
+import { anatomyPolicy } from '../src/toolkit/cold-oracle/policy.js';
 import {
   allHookCells,
   allRuleCells,
@@ -181,7 +182,9 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
     }
     const failures: string[] = [];
     for (const cell of cells) {
-      const failing = failingLegs(universalCell(cell, homes)).filter(
+      const failing = failingLegs(
+        universalCell(cell, homes, anatomyPolicy),
+      ).filter(
         (leg) =>
           !ACCEPT_RATCHET.some((p) => p.slug === cell.slug && p.leg === leg),
       );
@@ -212,7 +215,7 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
       const cell = bySlug.get(pin.slug);
       expect(cell, `ratchet pin ${pin.slug} names a live cell`).toBeDefined();
       expect(
-        failingLegs(universalCell(cell as AcceptCell, homes)),
+        failingLegs(universalCell(cell as AcceptCell, homes, anatomyPolicy)),
         `pin ${pin.slug} no longer fails ${pin.leg} — REMOVE it`,
       ).toContain(pin.leg);
     }

@@ -39,7 +39,7 @@ S0 (R9 scope barriers) · E7 (R7 citation cruft)   — independent
 | E6a memory standalone tool     | R6  | completed  | rename→`memory`, bin+bootstrap, `~/.agents/<name>`, register-mint session-id, del bundle mechanism |
 | E6b memory taxonomy            | R6  | completed  | extract `vault`+`AGENTS`; 4-part CoALA model                                                       |
 | E7 citation cruft              | R7  | completed  | delete orphan `[[…]]` parser + docs:check gate                                                     |
-| E2 accept-gate split           | R2  | pending⟵E1 | algorithm→forge; policy-data injected (no `polis` in engine)                                       |
+| E2 accept-gate split           | R2  | completed  | algorithm→`forge/validate`; policy-data injected (no `polis` in engine)                            |
 | E4 hooks split                 | R4  | completed  | generic `hookIrOf`+`HookCell`/`RuleCell` types → forge; cells stay CANON                           |
 | E5 adapters by-name            | R5  | completed  | `HarnessAdapter` registry (by-name); `core/anatomy-body`; killed codex→claude sideways edge        |
 | E6c memory verbs+lifecycle     | R6  | completed  | `apply`/`replace`; Stop nudge hook; delete genus; orchestrators                                    |

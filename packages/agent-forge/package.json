@@ -30,6 +30,10 @@
       "types": "./dist/deploy/index.d.ts",
       "import": "./dist/deploy/index.js"
     },
+    "./validate": {
+      "types": "./dist/validate/index.d.ts",
+      "import": "./dist/validate/index.js"
+    },
     "./adapters/*": {
       "types": "./dist/adapters/*/index.d.ts",
       "import": "./dist/adapters/*/index.js"
