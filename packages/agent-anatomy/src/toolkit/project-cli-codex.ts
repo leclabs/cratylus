@@ -12,7 +12,7 @@
 //   default out:     packages/agent-anatomy/.render-ts-codex   (gitignored; separate from .render-ts)
 //   default profile: strong-llm-lean/codex
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -137,78 +137,13 @@ async function projectSkills(args: Args): Promise<number> {
   return n;
 }
 
-/**
- * The `memory` dual-deploy skill (`deploy: skill-dir`): its `## Tool` section is the
- * SKILL.md body VERBATIM. Codex consumes the AgentSkills spec, so the same surface
- * projects; the standalone `memory` tool is a host-runtime concern (installed on
- * PATH) and is NOT carried here (codex memory wiring is a later concern).
- */
-async function projectMemorySkill(args: Args): Promise<void> {
-  const memRaw = readFileSync(
-    join(anatomyRoot, 'src', 'genus', 'memory.md'),
-    'utf8',
-  );
-  const memBody = memRaw.split('---').slice(2).join('---');
-  const toolSection = sectionBody(memBody, 'Tool');
-  const fm =
-    frontField(memRaw, 'skill_description') ||
-    frontField(memRaw, 'description');
-  const resolved: ResolvedSkill = {
-    name: 'memory',
-    trigger: '',
-    description: fm,
-    skillDescription: frontField(memRaw, 'skill_description') || fm,
-    formalBlock: '', // bypassed: the `deploy: skill-dir` toolSection path
-    composedFrom: [],
-    toolSection,
-  };
-  const dir = join(args.out, 'skills', 'memory');
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, 'SKILL.md'), skillToCodexMd(resolved));
-  process.stdout.write('EMIT codex skill memory (dual-deploy)\n');
-}
-
-/** The `## <heading>` section body of a cell, blank-trimmed (mirrors section_body). */
-function sectionBody(body: string, heading: string): string {
-  const want = `## ${heading}`.toLowerCase();
-  const out: string[] = [];
-  let inSection = false;
-  for (const line of body.split('\n')) {
-    if (line.startsWith('## ')) {
-      if (inSection) {
-        break;
-      }
-      if (line.toLowerCase() === want) {
-        inSection = true;
-      }
-      continue;
-    }
-    if (inSection) {
-      out.push(line);
-    }
-  }
-  while (out.length && out[0]?.trim() === '') {
-    out.shift();
-  }
-  while (out.length && out[out.length - 1]?.trim() === '') {
-    out.pop();
-  }
-  return out.join('\n');
-}
-
-function frontField(raw: string, key: string): string {
-  const m = raw.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'));
-  return m?.[1]?.trim() ?? '';
-}
-
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = parseArgs(process.argv.slice(2));
   const agentNames = await projectAgents(args);
   const s = await projectSkills(args);
-  await projectMemorySkill(args);
   // The codex AGENTS.md instruction surface (the always-loaded discovery shell).
   writeFileSync(join(args.out, 'AGENTS.md'), agentsMdSurface(agentNames));
   process.stdout.write(
-    `projected ${agentNames.length} agents + ${s + 1} skills + AGENTS.md to ${args.out}\n`,
+    `projected ${agentNames.length} agents + ${s} skills + AGENTS.md to ${args.out}\n`,
   );
 }

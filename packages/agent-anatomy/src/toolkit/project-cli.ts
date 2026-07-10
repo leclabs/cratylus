@@ -11,13 +11,7 @@
 // knob (a dead projection parameter: the body was byte-identical at every density) and
 // no provenance banner. A skill's SKILL.md is `f(name, formalBlock, composition())`.
 
-import {
-  chmodSync,
-  copyFileSync,
-  mkdirSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
+import { chmodSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -133,40 +127,6 @@ async function projectSkills(out: string): Promise<number> {
 }
 
 /**
- * The `memory` dual-deploy dir (`deploy: skill-dir`): its `## Tool` section is the
- * SKILL.md body VERBATIM, and the bundled `memory.mjs` tool ships beside it. Sourced
- * from `src/genus/memory.md` (the one home) + the memory build artifact.
- */
-async function projectMemorySkill(out: string): Promise<void> {
-  const { readFileSync } = await import('node:fs');
-  const memRaw = readFileSync(
-    join(anatomyRoot, 'src', 'genus', 'memory.md'),
-    'utf8',
-  );
-  const memBody = memRaw.split('---').slice(2).join('---');
-  const toolSection = sectionBody(memBody, 'Tool');
-  const fm =
-    frontField(memRaw, 'skill_description') ||
-    frontField(memRaw, 'description');
-  const resolved: ResolvedSkill = {
-    name: 'memory',
-    trigger: '', // memory has no /trigger (a protocol home, not a command)
-    description: fm,
-    skillDescription: frontField(memRaw, 'skill_description') || fm,
-    formalBlock: '', // bypassed: the `deploy: skill-dir` toolSection path
-    composedFrom: [],
-    toolSection,
-  };
-  const dir = join(out, 'skills', 'memory');
-  mkdirSync(dir, { recursive: true });
-  writeFileSync(join(dir, 'SKILL.md'), skillToClaudeMd(resolved));
-  // Bundle the built memory.mjs (the host memory tool) beside SKILL.md.
-  const bundle = join(anatomyRoot, '..', 'agent-memory', 'dist', 'memory.mjs');
-  copyFileSync(bundle, join(dir, 'memory.mjs'));
-  process.stdout.write('EMIT skill memory (dual-deploy + memory.mjs)\n');
-}
-
-/**
  * Project the agent-forge `Hook` sources into the render tree:
  *   - `settings.json` — the `{hooks}` block (claude adapter `serializeClaudeHooks`,
  *     canonical `turn.end`/`subagent.end` → `Stop`/`SubagentStop`). A SETTINGS
@@ -217,48 +177,14 @@ async function projectHooks(out: string): Promise<number> {
   return n;
 }
 
-/** The `## <heading>` section body of a cell, blank-trimmed (mirrors section_body). */
-function sectionBody(body: string, heading: string): string {
-  const want = `## ${heading}`.toLowerCase();
-  const out: string[] = [];
-  let inSection = false;
-  for (const line of body.split('\n')) {
-    if (line.startsWith('## ')) {
-      if (inSection) {
-        break;
-      }
-      if (line.toLowerCase() === want) {
-        inSection = true;
-      }
-      continue;
-    }
-    if (inSection) {
-      out.push(line);
-    }
-  }
-  while (out.length && out[0]?.trim() === '') {
-    out.shift();
-  }
-  while (out.length && out[out.length - 1]?.trim() === '') {
-    out.pop();
-  }
-  return out.join('\n');
-}
-
-function frontField(raw: string, key: string): string {
-  const m = raw.match(new RegExp(`^${key}:\\s*(.+)$`, 'm'));
-  return m?.[1]?.trim() ?? '';
-}
-
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = parseArgs(process.argv.slice(2));
   // Clean the out dir first — a removed/renamed cell must not leave a stale render.
   rmSync(args.out, { recursive: true, force: true });
   const a = await projectAgents(args.out);
   const s = await projectSkills(args.out);
-  await projectMemorySkill(args.out);
   const h = await projectHooks(args.out);
   process.stdout.write(
-    `projected ${a} agents + ${s + 1} skills + ${h} hook(s) to ${args.out}\n`,
+    `projected ${a} agents + ${s} skills + ${h} hook(s) to ${args.out}\n`,
   );
 }

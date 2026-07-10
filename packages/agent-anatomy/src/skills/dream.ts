@@ -13,6 +13,7 @@ PROCEDURAL          — generalized cross-project wisdom no projection already c
 SOUL                — the archetype ; commons-authored ; ∉ dream outputs
 lock                — dream.lock ⟨O_EXCL ; stale ⇔ age > 2h⟩ guarding the shared {SEMANTIC · PROCEDURAL} partition — same-host sessions of one agent share it regardless of project
 node                : cwd × host → scope ⟨nearest boundary-marker ancestor ; markerless ↦ self ; cwd-less ↦ legacy⟩
+scope(i)            ≜ node(cwd(i)) COMPUTED at fold ⟨capture is scope-blind ; ¬judged-at-capture⟩ — the record carries {host, cwd}, never a scope tag
 read                : home × session → records ⟨own ∪ completed ; live-sibling ∉⟩
 fold                : home → { id ↦ node ∪ legacy }
 drain               : home → ∅ ↾ completed-sessions ⟨--completed-only retains a live sibling ; --for-session adds self at handoff⟩

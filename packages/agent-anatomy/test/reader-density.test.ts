@@ -141,7 +141,7 @@ async function allSurfaces(): Promise<Surface[]> {
       text: s.description,
     });
   }
-  for (const name of ['memory.md', 'persona.md']) {
+  for (const name of ['persona.md']) {
     const raw = readFileSync(join(srcRoot, 'genus', name), 'utf8');
     const body = raw.replace(/^---\n[\s\S]*?\n---\n/, '');
     // ρ binds at the finest separately-consumed grain: `## Protocol` projects
@@ -223,11 +223,12 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
 
   it('every ρ=LLM surface conforms, or is an explicit ratchet pin', async () => {
     const surfaces = await allSurfaces();
-    // cardinality sanity — the gate SEES the whole corpus incl. both genus protocols
+    // cardinality sanity — the gate SEES the persona genus protocol (memory's genus
+    // def was retired in E6c: its mechanism → the `memory` CLI --help, its
+    // reasoning-contract → the wake + dream skill formalBlocks).
     const genusLabels = surfaces
       .filter((s) => s.cls === 'genus-protocol')
       .map((s) => s.label);
-    expect(genusLabels).toContain('genus src/genus/memory.md ## Protocol');
     expect(genusLabels).toContain('genus src/genus/persona.md ## Protocol');
     expect(
       surfaces.filter((s) => s.cls === 'organ-definiens').length,

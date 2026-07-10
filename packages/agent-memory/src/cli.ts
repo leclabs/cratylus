@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { basename, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { auditHome, loadLines, repoKeysFromConfig } from './audit.js';
+import { applyRoutes, resolveTarget } from './dream.js';
 import { foldRecords, manifestToJsonl } from './fold.js';
 import { STALE_MS, acquireLock, lockStatus, releaseLock } from './lock.js';
 import { migrateFile } from './migrate.js';
@@ -13,6 +14,12 @@ import {
   underOrEqual,
 } from './node.js';
 import type { EpisodicRecord, JsonValue } from './record.js';
+import type {
+  Classifier,
+  RouteDecision,
+  RouteTarget,
+  StoreName,
+} from './route.js';
 import { SEED_FILES } from './seeds.js';
 import {
   heartbeat,
@@ -143,6 +150,8 @@ usage:
   memory session (register | heartbeat | release | list) (--home <dir> | --name <name>) [--session <id>]
   memory session status [<id>] (--home <dir> | --name <name>) [--json] [--stale <ms>]
   memory drain   (--home <dir> | --name <name>) [--keep N] [--path <p>] [--completed-only | --for-session <S>]
+  memory apply   (--home <dir> | --name <name>) [--path <p>] (--routes <json> | --routes -)
+  memory replace (--home <dir> | --name <name>) --store SEMANTIC|PROCEDURAL (--body <text> | --body -)
   memory audit   (--home <dir> | --name <name>) [--allow <file>] [--config <file>] [--keys <file>]
   memory migrate <src.md> <dest.jsonl> [--dry-run] [--overwrite]
 
@@ -191,6 +200,22 @@ act on the CURRENT session (id DERIVED from the environment, like encode; or
 a bare live|completed|absent word (--json for {id,state,lastBeat,released});
 list prints one JSON line per registered session. Distinct sessions write
 distinct files, so the registry is concurrency-safe by construction.
+
+apply is dream's mechanical write-back: it consumes the ROUTE DECISIONS the
+agent computed at dream (as DATA) and lands them. --routes is a JSON array
+[{"id":"<record-id>","targets":[{"store":"SEMANTIC|PROCEDURAL|EPISODIC","content":"<distilled>"}]}]
+(pipe via --routes -). For each record whose id IS listed, its decision is
+applied: SEMANTIC/PROCEDURAL targets append their content to the home prose
+store, an EPISODIC target retains the record, an empty target set drops it.
+A record NOT listed is RETAINED untouched (never dropped). The tool owns the
+reasoning of NONE of this — the agent decided; apply only executes + compacts.
+
+replace is a whole-file supersede of a resident prose store:
+--store SEMANTIC|PROCEDURAL overwrites <home>/{SEMANTIC,PROCEDURAL}.md with
+--body (or --body - from stdin). EPISODIC and any unknown store are rejected
+loudly (EPISODIC is the raw log, not a whole-file prose store). This is the
+depalimpsest write path — the agent reconciles the resident set to current
+ground-truth and supersedes the file, rather than only appending.
 
 audit scans <home>/{SEMANTIC,PROCEDURAL}.md for scope
 markers: exit 1 + findings on any unpinned hit, 0 clean. Allow-file
@@ -580,6 +605,126 @@ function runDrain(args: ParsedArgs): CliResult {
   };
 }
 
+/** One route-decision as the agent hands it in on `apply --routes`: a record id
+ *  plus the store targets it computed at dream. */
+interface RouteDecisionInput {
+  id: string;
+  targets: RouteTarget[];
+}
+
+/**
+ * `apply`: land the agent's dream ROUTE DECISIONS. `--routes <json>` is
+ * `[{id, targets:[{store, content}]}]` — the classifier the agent computed at
+ * dream, handed to the tool as DATA. A record whose id IS in the json gets its
+ * decision; a record NOT in the json is RETAINED untouched (mapped to an
+ * EPISODIC target) — NEVER dropped, since {@link applyRoutes} iterates EVERY
+ * record and an unlisted one would otherwise land nowhere and be consumed. The
+ * engine ({@link applyRoutes}) lands content + atomically compacts; store
+ * validity (SEMANTIC | PROCEDURAL | EPISODIC only) is enforced there, loudly.
+ */
+function runApply(args: ParsedArgs): CliResult {
+  const home = requireHome(args.flags);
+  const routesFlag = args.flags.routes;
+  let jsonText: string;
+  if (routesFlag === '-' || routesFlag === true) {
+    jsonText = readStdin();
+  } else if (typeof routesFlag === 'string') {
+    jsonText = routesFlag;
+  } else {
+    return {
+      code: 2,
+      out: '',
+      err: 'apply needs --routes <json> or --routes -\n',
+    };
+  }
+  let decisions: RouteDecisionInput[];
+  try {
+    const parsed = JSON.parse(jsonText) as unknown;
+    if (!Array.isArray(parsed))
+      throw new Error('--routes must be a JSON array of {id, targets}');
+    decisions = parsed as RouteDecisionInput[];
+  } catch (e) {
+    return {
+      code: 2,
+      out: '',
+      err: `--routes is not a valid decision array: ${
+        e instanceof Error ? e.message : String(e)
+      }\n`,
+    };
+  }
+  const byId = new Map<string, RouteDecision>();
+  for (const d of decisions) {
+    if (d === null || typeof d.id !== 'string' || !Array.isArray(d.targets))
+      return {
+        code: 2,
+        out: '',
+        err: 'each --routes entry needs {id: string, targets: [...]}\n',
+      };
+    byId.set(d.id, { targets: d.targets });
+  }
+  // An unlisted record is RETAINED (mapped to EPISODIC) — never consumed. This
+  // is the load-bearing safety: applyRoutes reads ALL records, so silence = drop
+  // unless we explicitly retain.
+  const classifier: Classifier = (rec) =>
+    byId.get(rec.id) ?? { targets: [{ store: 'EPISODIC' }] };
+  const store = new EpisodicStore({ home });
+  const result = applyRoutes(store, str(args.flags.path), classifier);
+  return {
+    code: 0,
+    out: `applied ${byId.size} decision(s): ${result.consumed.length} consumed, ${result.retained.length} retained, ${result.landed.length} home(s) landed\n`,
+    err: '',
+  };
+}
+
+/**
+ * `replace`: whole-file supersede of a resident prose store. `--store
+ * SEMANTIC|PROCEDURAL` overwrites `<home>/{SEMANTIC,PROCEDURAL}.md` with the
+ * `--body` (or `--body -` from stdin). Reuses the {@link resolveTarget} store
+ * selector, so EPISODIC (the raw log, not a whole-file prose store) and any
+ * unknown store are rejected loudly. This is dream's depalimpsest write path:
+ * reconcile the resident set to current ground-truth by superseding the file,
+ * not only appending. Reads of resident prose stay agent-direct (no read verb).
+ */
+function runReplace(args: ParsedArgs): CliResult {
+  const home = requireHome(args.flags);
+  const storeName = str(args.flags.store);
+  if (storeName === undefined)
+    return {
+      code: 2,
+      out: '',
+      err: 'replace needs --store SEMANTIC|PROCEDURAL\n',
+    };
+  // resolveTarget throws loudly on an unknown/retired store, and returns null for
+  // EPISODIC (which has no whole-file prose home) — both rejected here.
+  const file = resolveTarget(home, { store: storeName as StoreName });
+  if (file === null)
+    return {
+      code: 2,
+      out: '',
+      err: 'replace targets a prose store (SEMANTIC | PROCEDURAL); EPISODIC is the raw log, not a whole-file prose store\n',
+    };
+  const bodyFlag = args.flags.body;
+  let body: string;
+  if (bodyFlag === '-' || bodyFlag === true) {
+    body = readStdin();
+  } else if (typeof bodyFlag === 'string') {
+    body = bodyFlag;
+  } else {
+    return {
+      code: 2,
+      out: '',
+      err: 'replace needs --body <text> or --body -\n',
+    };
+  }
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, body.endsWith('\n') ? body : `${body}\n`, 'utf8');
+  return {
+    code: 0,
+    out: `replaced ${basename(file)} (${body.length} bytes)\n`,
+    err: '',
+  };
+}
+
 /**
  * `audit`: the scope-pollution detector over `<home>/{SEMANTIC,PROCEDURAL}.md`
  * (the v2 scan set — dream's exit gate, SPEC D5). Exit 1 + line-numbered
@@ -701,6 +846,10 @@ export function main(argv: readonly string[]): CliResult {
         return runMigrate(args);
       case 'drain':
         return runDrain(args);
+      case 'apply':
+        return runApply(args);
+      case 'replace':
+        return runReplace(args);
       case 'audit':
         return runAudit(args);
       default:

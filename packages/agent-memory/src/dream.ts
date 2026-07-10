@@ -52,7 +52,10 @@ function appendToHome(file: string, content: string): void {
  * unknown store — is rejected loudly: the classifier is untyped at runtime, so
  * the engine is the enforcement site.
  */
-function resolveTarget(home: string, target: RouteTarget): string | null {
+export function resolveTarget(
+  home: string,
+  target: RouteTarget,
+): string | null {
   const store = target.store as string;
   if (!V2_STORES.has(store)) {
     throw new Error(

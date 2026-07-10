@@ -371,6 +371,119 @@ describe('migrate', () => {
   });
 });
 
+describe('apply — land the agent’s dream route decisions', () => {
+  it('applies listed decisions (land + drop) and RETAINS unlisted records', () => {
+    const a = main(['encode', '--home', home, '--body', 'ident']).out.trim();
+    const b = main(['encode', '--home', home, '--body', 'scaffold']).out.trim();
+    const c = main(['encode', '--home', home, '--body', 'unlisted']).out.trim();
+    const routes = JSON.stringify([
+      { id: a, targets: [{ store: 'SEMANTIC', content: 'who-i-am' }] },
+      { id: b, targets: [] }, // drop
+    ]);
+    const r = main(['apply', '--home', home, '--routes', routes]);
+    expect(r.code).toBe(0);
+    expect(readFileSync(join(home, 'SEMANTIC.md'), 'utf8')).toContain(
+      'who-i-am',
+    );
+    // a consumed (landed SEMANTIC), b consumed (dropped) — c is UNLISTED, retained.
+    expect(logRecords().map((rec) => rec.id)).toEqual([c]);
+  });
+
+  it('an EPISODIC target retains the listed record too', () => {
+    const a = main([
+      'encode',
+      '--home',
+      home,
+      '--body',
+      'next-step',
+    ]).out.trim();
+    const routes = JSON.stringify([
+      { id: a, targets: [{ store: 'EPISODIC' }] },
+    ]);
+    expect(main(['apply', '--home', home, '--routes', routes]).code).toBe(0);
+    expect(logRecords().map((rec) => rec.id)).toEqual([a]);
+  });
+
+  it('routes content to PROCEDURAL as well', () => {
+    const a = main(['encode', '--home', home, '--body', 'x']).out.trim();
+    const routes = JSON.stringify([
+      { id: a, targets: [{ store: 'PROCEDURAL', content: 'a-lesson' }] },
+    ]);
+    const r = main(['apply', '--home', home, '--routes', routes]);
+    expect(r.code).toBe(0);
+    expect(readFileSync(join(home, 'PROCEDURAL.md'), 'utf8')).toContain(
+      'a-lesson',
+    );
+  });
+
+  it('rejects a route to a retired/unknown store loudly', () => {
+    const id = main(['encode', '--home', home, '--body', 'x']).out.trim();
+    const routes = JSON.stringify([
+      { id, targets: [{ store: 'SELF', content: 'q' }] },
+    ]);
+    const r = main(['apply', '--home', home, '--routes', routes]);
+    expect(r.code).toBe(1);
+    expect(r.err).toMatch(/not a store/);
+  });
+
+  it('errors on a non-array --routes', () => {
+    const r = main(['apply', '--home', home, '--routes', '{"id":"x"}']);
+    expect(r.code).toBe(2);
+    expect(r.err).toMatch(/array/);
+  });
+});
+
+describe('replace — whole-file supersede of a prose store', () => {
+  it('overwrites SEMANTIC.md with the body (supersede, not append)', () => {
+    writeFileSync(join(home, 'SEMANTIC.md'), 'OLD CONTENT\n', 'utf8');
+    const r = main([
+      'replace',
+      '--home',
+      home,
+      '--store',
+      'SEMANTIC',
+      '--body',
+      'NEW BODY',
+    ]);
+    expect(r.code).toBe(0);
+    expect(readFileSync(join(home, 'SEMANTIC.md'), 'utf8')).toBe('NEW BODY\n');
+  });
+
+  it('rejects EPISODIC loudly (raw log, not a whole-file prose store)', () => {
+    const r = main([
+      'replace',
+      '--home',
+      home,
+      '--store',
+      'EPISODIC',
+      '--body',
+      'x',
+    ]);
+    expect(r.code).toBe(2);
+    expect(r.err).toMatch(/EPISODIC is the raw log/);
+  });
+
+  it('rejects an unknown/retired store loudly', () => {
+    const r = main([
+      'replace',
+      '--home',
+      home,
+      '--store',
+      'SELF',
+      '--body',
+      'x',
+    ]);
+    expect(r.code).toBe(1);
+    expect(r.err).toMatch(/not a store/);
+  });
+
+  it('needs a body source', () => {
+    const r = main(['replace', '--home', home, '--store', 'PROCEDURAL']);
+    expect(r.code).toBe(2);
+    expect(r.err).toMatch(/--body/);
+  });
+});
+
 describe('dispatch', () => {
   it('help prints usage naming the v2 verb surface', () => {
     const r = main(['--help']);
@@ -382,6 +495,8 @@ describe('dispatch', () => {
       'fold',
       'lock',
       'drain',
+      'apply',
+      'replace',
       'audit',
       'migrate',
     ])

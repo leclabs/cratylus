@@ -10,6 +10,7 @@
 // serialized here.
 
 import type { CanonicalEvent, Hook } from '@leclabs/agent-forge';
+import { memoryConsolidationNudge } from '../hooks/memory-consolidation-nudge.js';
 import { stanceGuardrailPre } from '../hooks/stance-guardrail-pre.js';
 import { stanceGuardrail } from '../hooks/stance-guardrail.js';
 import type { HookCell, HookWorker } from './hook-cell.js';
@@ -18,6 +19,7 @@ import type { HookCell, HookWorker } from './hook-cell.js';
 export const harnessHookCells: readonly HookCell[] = [
   stanceGuardrail,
   stanceGuardrailPre,
+  memoryConsolidationNudge,
 ];
 
 /**
