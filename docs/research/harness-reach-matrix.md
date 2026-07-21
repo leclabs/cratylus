@@ -6,7 +6,7 @@ _Which harnesses a agent-anatomy agent reaches for free, and with what agent-sup
 
 Because **projection IS the export adapter**, a agent-anatomy agent authored ONCE reaches
 **every** agent-forge harness for free. "Project agent-anatomy to harness X" _is_ "export through the
-X adapter." The composed SOUL body is **harness-neutral** — the same organ-section
+X adapter." The composed SOUL body is **harness-neutral** — the same dimension-section
 content whichever harness carries it; only the FRAMING differs per adapter (claude's
 `.md` SOUL vs codex's `.toml` `system_prompt`, etc.).
 
@@ -52,9 +52,9 @@ them to errors.
 
 ## Omit-to-inherit
 
-Harness-inheritance is declared **at the agent source**: an organ key set to `null` on the `Agent`
+Harness-inheritance is declared **at the agent source**: a dimension key set to `null` on the `Agent`
 vector projects no section and inherits whatever the target harness provides
-(`@leclabs/agent-forge/anatomy`, gated by `packages/agent-anatomy/test/null-organ.test.ts`). The
+(`@leclabs/agent-forge/anatomy`, gated by `packages/agent-anatomy/test/null-dimension.test.ts`). The
 projection is therefore identical machinery per harness — no per-harness subtraction fixture.
 
 ## Reproduce

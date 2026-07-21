@@ -9,7 +9,7 @@ deterministic fold + a semantic routing pass; stores are the CoALA types.
 
 ## D1 — Stores: the CoALA types
 
-Home = `{EPISODIC.jsonl · SEMANTIC.md · PROCEDURAL.md}` + SOUL (commons; the stance lives here).
+Home = `{EPISODIC.jsonl · SEMANTIC.md · PROCEDURAL.md}` + SOUL (catalog; the stance lives here).
 working = the context window — never persisted. SEMANTIC = identity facts + durable agent-intrinsic
 knowledge (hot index; vault for cold). PROCEDURAL = inductively generalized, cross-project wisdom
 **not already carried by a projection** (SOUL · skills · gates) — `correction-consolidation` targets
@@ -62,10 +62,10 @@ route : I → { AGENTS.md@node (versioned) · SEMANTIC · PROCEDURAL · vault ·
   shared partition {SEMANTIC, PROCEDURAL, drain} — same-host sessions of one agent share these
   regardless of project.
 - **encode duty** (kernel): cadence unchanged; the tool derives everything derivable.
-- **Coverage law**: every organ that touches the stores moves with them — deploy seeds
+- **Coverage law**: every dimension that touches the stores moves with them — deploy seeds
   (`agent-forge` `SEED_FILES`) and the audit scan set retarget to
   `{SEMANTIC.md, PROCEDURAL.md, EPISODIC.jsonl}`; the route engine's target set and addressing
-  retarget from the v1 organ names to node paths. A store rename that skips any of these silently
+  retarget from the v1 dimension names to node paths. A store rename that skips any of these silently
   undoes itself.
 
 ## D6 — Migration: one-time, manual, clean-slate

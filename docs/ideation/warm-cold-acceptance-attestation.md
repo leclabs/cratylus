@@ -2,7 +2,7 @@
 
 _Durable record of the `warm-cold-acceptance` initiative (2026-07-03), retained after the plan scaffold
 retired. Git is the fuller record: `git log -- plans/warm-cold-acceptance/`. The law it encodes lives in
-source at `packages/agent-anatomy/src/organs/engineering-principles/cold-decode-oracle.ts`
+source at `packages/agent-anatomy/src/dimensions/engineering-principles/cold-decode-oracle.ts`
 (`cold-decode-oracle`); the isolated oracle instrument at
 `packages/agent-anatomy/src/toolkit/cold-oracle/` (`cold-oracle.sh` + `sweep.mjs`)._
 
@@ -20,7 +20,7 @@ The sweep found **zero fragment defects**. Every gated fragment cold-decoded to 
 warm≢cold divergence survived (m2 PASS). The self-sufficiency authoring discipline (llm-native · signify/σ\* ·
 self-sufficient-formalism · industry-standard anchors) **is** the warm≡cold property — nothing needed bending.
 
-**Coverage** (isolated oracle, `cold-oracle.sh`): all **15 skills**; **21 of 24 organ classes** directly
+**Coverage** (isolated oracle, `cold-oracle.sh`): all **15 skills**; **21 of 24 dimension classes** directly
 oracled (the other 3 are single industry-standard-term anchors, `cold ≡ standard ≡ intent` by construction);
 including the coined anchors (`correction-consolidation`, `input-untrusted`, delegation's `ρ`-reader-binding).
 

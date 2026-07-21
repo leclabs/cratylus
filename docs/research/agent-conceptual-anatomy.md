@@ -11,6 +11,12 @@
 > `Reference/context-engineering/conceptual-anatomy-of-an-ai-agent/`; produced blind by a fresh model
 > under the verified σ\*\_R-session prompt (2026-06-20).
 
+> **Nomenclature note (2026-07-21).** The canonical term for what this study calls an **organ** is now
+> **`dimension`** (core-vocab re-signification, C2: `Organ`→`Dimension`, `OrganName`→`DimensionName`, an
+> organ-value → `fragment`). This document is **preserved verbatim as the historical research record** of how
+> the anatomy was derived — its original _organ_ vocabulary is left intact on purpose; renaming the study's own
+> subject would misrepresent the record. Read _organ_ here as _dimension_ everywhere.
+
 ---
 
 # Anatomy of an AI Agent
