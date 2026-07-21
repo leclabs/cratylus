@@ -5,7 +5,7 @@ settles (`census-grounds-spec`). Supersedes north-star's deferred `E1`.
 
 > **This brief is the VERIFICATION RECORD** (why the direction is right + the resolved tensions). The converged
 > architecture now lives in **`NORTH-STAR.md`** (the single source of truth), authored after the surface + σ\*
-> census resolved Q1–Q6. One gate remains before sharding: cold-review (NORTH-STAR §8).
+> census resolved Q1–Q6, and now **LOCKED** (cold-review folded). Sharding proceeds against NORTH-STAR §8.
 
 ## Verification (nico, first-principles — NOT an echo of the Operator's framing)
 
