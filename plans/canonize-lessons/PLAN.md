@@ -17,10 +17,15 @@ carrying `cold-decode-oracle`/`llm-native` in my SOUL: understanding is not enco
 | --------------------------- | -------------------------- | --------------------------------------------------------------------------------------- | ----- |
 | M1 dream-promotion route    | mechanism (dream cell)     | the GENERAL fix — route canon-truths to the projected canon by default                  | done  |
 | L1 fittest-sign-declare     | gate + cell                | encode "declare the fittest sign, never degrade" (SYMBOLS gate = decodability registry) | done  |
-| L2 constitutional hierarchy | governing doc + ρ=LLM home | encode `llm-native ≻ VISION ≻ MODEL` + reconcile-up-the-order                           | ready |
+| L2 constitutional hierarchy | governing doc + ρ=LLM home | encode `llm-native ≻ VISION ≻ MODEL` + reconcile-up-the-order                           | done  |
 
 M1 is the headline (institutionalizes promotion); L1·L2 are the backlog it would have caught. Independent —
 dispatch concurrently (L1 before M1 only if M1 wants a new glyph).
+
+**COMPLETE (2026-07-21, session `29c7faf4`).** All three shards landed on `main`, each cold-Ω\*-verified +
+gates green: `M1` `1184851` (dream CANON-PROMOTION route; declared `≻` in the lexicon per L1) · `L1` `ea05be8`
+(declare-not-degrade at the formalize seam + gate/registry headers) · `L2` this commit (apex confidence order
+in `CANON.md` + `AGENTS.md`). Push/deploy remain Operator-reserved.
 
 ## Already canonized this session (no shard — recorded for completeness)
 
