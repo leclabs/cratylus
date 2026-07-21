@@ -14,12 +14,18 @@ decision.
   the warm prior; Operator forced the re-probe).
 - `decide.txt` (head-to-head candidate compare, ×3 each): DIMENSION → **`dimension` 3/3** (organ 0); VALUE →
   `variant` 2/3 (`fragment` 0); CORPUS → `kit` 2/3 (`anatomy` 0).
+- `min.txt` (**argmin σ\* re-probe — extension only, NO gloss, NO candidate list; the un-contaminated read**, ×3):
+  DIMENSION → **`dimension` 3/3** — SURVIVES the clean prompt (organ never reappears; parameter/attribute alt), so
+  it is robust, NOT an artifact of my leading candidate list. GENUS A → **Persona 3/3**; GENUS B → **Constitution
+  2/3** — which REFUTED the earlier `Presentation/Disposition` genus decision (that came off a leading prompt).
 
 ## Decisions (cold-INFORMED, not cold-dictated — concept-fit + blast-radius weighed)
 
-1. **`organ` → `dimension`. ADOPT.** 3/3 cold + genuinely fitter (the term of art for an independent config axis,
-   covering categorical `role` and spectrum `formality` alike) + the project's VISION is signification fidelity, so a
-   3/3-refuted CORE term must not stand. The `Genus` axis then classifies DIMENSIONS (C1: Presentation/Disposition).
+1. **`organ` → `dimension`. ADOPT (confirmed clean).** 3/3 in BOTH the candidate-compare AND the argmin re-probe —
+   robust, the term of art for an independent config axis (categorical `role` + spectrum `formality`), and the
+   project's VISION is signification fidelity so a refuted CORE term can't stand. The genus axis then classifies
+   DIMENSIONS — revised to **Persona / Constitution** (see MAPPING §FLAGGED; the earlier Presentation/Disposition was
+   contaminated). Genus A `Persona` couples to a persona-FIELD rename (`archetype`/`essence`) — its own argmin probe.
 2. **VALUE — KEEP `fragment`.** OVERRIDE the cold winner `variant`: "variant" = one-of-fixed-alternatives, which
    misfits our OPEN dimensions (authored `role`/`persona` are not variants). `fragment` is the general MODEL term
    (`fragments : cell → ℘(fragment)`) and the plugin-reviewer endorsed it. Drop the `organ-value` compound → `fragment`.

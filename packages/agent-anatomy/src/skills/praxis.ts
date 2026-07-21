@@ -46,7 +46,7 @@ waves       ≜ (wave(0), wave(1), …)                          — the dispatc
 ∀ t : ∀ p ∈ static(t) : p exists at authoring                — pin what exists; a dep-fed input is marked, never pinned
 ∀ t : ∃ r : ¬accept(t)(r)                                    — falsifiability: an acceptance no return can fail is not one
 -- census-grounds-spec: content(t) is GROUNDED by census — read the tree (paths · code · deps), delegating the
--- investigation to a subagent as needed — never a from-memory sketch. praxis-FORMAT ⊉ praxis-DONE: a shard in the
+-- investigation to a subagent as needed — never a from-memory sketch. praxis-FORMAT ≠ praxis-DONE: a shard in the
 -- correct shape is NOT a valid spec; a from-memory sketch is a STUB the live census refutes (missed scope, unseen
 -- forks). Binds EVERY task-file however it enters — start, upsert, or merge.
 ∀ t : content(t) grounded-by census(intent(t))              — authoring reads the tree ; a from-memory sketch ⇒ ¬spec

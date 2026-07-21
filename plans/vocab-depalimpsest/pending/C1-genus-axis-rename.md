@@ -1,8 +1,14 @@
-# C1 — rename the genus axis STANCE/CONATUS → Presentation/Disposition
+# C1 — rename the genus axis STANCE/CONATUS → Persona/Constitution
+
+**REVISED target (clean argmin re-probe `/tmp/cold-panel/min.txt`): `STANCE` → Persona · `CONATUS` → Constitution**
+(was Presentation/Disposition — refuted as a leading-prompt artifact; see MAPPING §FLAGGED). Genus A `Persona`
+couples to a persona-FIELD rename (`archetype`/`essence`) needing its own argmin probe, OR use `Posture` for the
+genus to keep the field — open sub-fork.
 
 **FOLDED INTO `C2`** — the genus rename is one facet of the single coherent core-vocabulary re-signification
-(`organ`→`dimension` · genus→Presentation/Disposition), executed as one sequenced pass. This file remains the
-genus-specific execution detail (esp. the `stance-guardrail` exclusion trap); C2 is the umbrella decision + spec.
+(`organ`→`dimension` · genus→Persona/Constitution), executed as one sequenced pass. This file remains the
+genus-specific execution detail (esp. the `stance-guardrail` exclusion trap — `Persona` does NOT touch it); C2 is
+the umbrella decision + spec.
 
 **GATE (why pending, not ready):** blocked on the Operator's decision to pull the genus rename into scope. It is
 NOT blocked by a task-dep — it is orthogonal to the plugin-cli redesign (organ FILING vs CLI architecture), so it

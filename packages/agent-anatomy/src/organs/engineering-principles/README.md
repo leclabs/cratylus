@@ -9,7 +9,7 @@
 - first-principles ⟨¬inherit source's framing/self-description⟩
 - green-field ⟨compat ¬goal · declarable-constraint ⇒ grey-field · accreted-corpus-as-constraint = grey-field relapse⟩
 - invoke-the-canonical ⟨skill · re-derive ⇔ ∄⟩
-- llm-native ⟨reader = LLM ⇒ signify R=LLM · ¬human-prose⟩
+- llm-native ⟨reader = LLM ⇒ signify R=LLM · ¬human-prose⟩ ⟨∴ a prompt authored for an LLM reader — subagent-dispatch · cold-read — is itself SIGNIFIED not described : definiendum ⊕ minimal-extension · ¬gloss · ¬leading-candidate-set ; cold-read ⇒ argmin-unbiased⟩
 - mece
 - separation-of-concerns
 - simplicity ≜ null-structure default ⟨delete ≽ add · add ⇔ carries-load⟩ · incidental-complexity = defect ⟨¬ cost-of-business⟩ · simple ≠ easy ⟨Hickey · fold-count ≽ familiarity⟩ · restates-existing-home ⇒ superfluous ⇒ cut

@@ -39,21 +39,23 @@ with its own signification problem (concrete candidates: `presentation`/`disposi
   jargon most readers won't parse; 'Stance' is ambiguous."_ Compare-winner: **Demeanor / Drive**;
   `Presentation / Disposition` 2nd; `Persona / Telos` last ("Persona overstates it as a mask").
 
-**Decision (nico, signification authority — cold-informed + Operator-challenged):** the genus axis SHOULD be
-renamed; `STANCE`/`CONATUS` is jargon, not the model's best-fit. Recommended signifier: **`STANCE` → Presentation ·
-`CONATUS` → Disposition.**
+**Decision (nico) — REVISED on clean evidence: `STANCE` → Persona · `CONATUS` → Constitution.**
 
-Rationale — and a correction the Operator surfaced. The unprimed cold winner for Family A was "Persona" (3/3), which
-I first called a "collision" with the `persona` field. That framing was shallow. Grounding: `persona` is NOT a peer
-organ — it is the free-text identity BODY → SOUL body (`anatomy/index.ts:207`, D13), the most identity-laden MEMBER
-of the presentation family. The cold LLM naming the AXIS "Persona" is **prototype-naming** — labelling a category by
-its most salient member, a known bias — NOT evidence the axis IS the field. The correct principle is **taxonomy
-hygiene: name a category by its DIMENSION, not a member.** "Presentation" names the dimension "how it comes across"
-and spans the A organs (autonomy·role·formality·audience-adaptation·transparency·persona·provenance); the `persona`
-field stays unchanged (a legitimate distinct member — the irreducible archetype the structured dims can't capture).
-So the cold "Persona" is DISCOUNTED for the axis (prototype bias), not adopted. "Disposition" fits a GENUS (a stable
-filing CATEGORY, not a moment's drive) over the B organs. Punchier alternative on record: **Demeanor / Drive**. NOT
-`Stance/Conatus`.
+_Retraction (why the prior decision was wrong)._ I earlier decided `Presentation / Disposition`, DISCOUNTING the
+cold "Persona" as prototype-bias (naming a category after its member). Two errors: (1) the evidence was
+CONTAMINATED — the `TERM-compare` prompt LISTED "Presentation / Disposition" as a candidate and glossed the families
+("how it COMES ACROSS / outward manner") in leading σ_human\* prose, not σ\*; (2) my prototype-bias dismissal was
+false. An **argmin σ\* re-probe** (`/tmp/cold-panel/min.txt` — concept given by EXTENSION only, no gloss, no
+candidate list, `persona` field NOT in the set) returned: Family A → **Persona 3/3** (robust — so NOT prototype-bias;
+it is the genuine fittest sign for "how an agent presents/conducts itself"); Family B → **Constitution 2/3**
+(Disposition 1/3; "policy" alt) — domain-resonant (cf. constitutional AI). The Operator was right that Persona is not
+a mere collision.
+
+_Coupled sub-fork (persona field)._ Genus A = `Persona` collides with the `persona` FIELD (the identity body → SOUL
+body). Resolution options: (a) genus `Persona` + rename the field to its narrower true role (`archetype`/`essence` —
+the free-text identity core), or (b) keep the field `persona` and use the behavioral-side alt `Posture` for the genus
+(offered 1/3 in the clean probe). Leaning (a) — honor the fittest genus sign, give the field its accurate narrower
+name — but the field rename wants its OWN argmin probe before commit. Recorded as C2's open sub-item.
 
 _Broader finding — now DECIDED in `pending/C2`: a decisive cold panel (`/tmp/cold-panel/decide.txt`, head-to-head
 ×3) resolved the core vocabulary. **`organ` → `dimension`** (3/3 cold, decisively fitter — adopted); VALUE keeps
