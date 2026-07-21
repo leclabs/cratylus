@@ -51,10 +51,12 @@ Owner: this session.
   surface is the published BRAND name (below).
 - **C1 persona-collision sub-fork — CLOSED** (cold 3/3): genus `Persona`, the colliding agent field `persona` →
   `archetype`. Folded into C2's pass.
-- **BRAND (C2) — the sole Operator-owned surface:** the published package `agent-anatomy` vs a product framing
-  `AgentKit`. nico recommends keeping `agent-anatomy`; a marketing preference is the Operator's to override.
-  Everything else proceeds on nico's decision.
-- **C2 static — RE-CENSUSED, dispatch-ready** (organ 40 · genus 5 · persona-field ~12 · ~20 tests); executing (mav).
+- **BRAND / package names — cold-DISCOVERED, not Operator-preference** (corrected: cratylism applies to package
+  names too). Minimal-prompt discovery: `forge` (engine) is cold-VALIDATED (keep); the corpus/brand name is
+  genuinely UNDER-DETERMINED (`anatomy` not refuted; `AgentKit`/`kit` neither clearly fit nor clearly disfavored
+  under neutral framing). Where the semantic evidence is genuinely silent between near-equivalents, the ONLY
+  Operator-owned layer is the external tie-breaker — npm-scope/trademark/published-version continuity — NOT the
+  fitness. A robust discovery would firm this up; nico recommends keeping `agent-anatomy` on continuity.
 
 ## Notes
 
