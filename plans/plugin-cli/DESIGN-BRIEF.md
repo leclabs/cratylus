@@ -58,9 +58,17 @@ That, not "project-to-dir purity," is the real content of recharacterized E1.
 
 1. **The plugin contract.** What does an ESM plugin export? A `definePlugin({ fragments, composites, adapters? })`
    factory returning namespaced fragments + composites, idiomatic to JS authors (the ESLint-plugin analogue).
-2. **Namespacing vs σ\*/shortlex.** How do namespaced IDs (`pkg:parsimony`) coexist with the one-anchor-one-concept
-   σ\* law + shortlex ordering? Does σ\* uniqueness become per-plugin, with cross-plugin collisions resolved by
-   `extends` order? (This is a CANON question — nico-owned.)
+2. **Namespacing vs σ\*/shortlex — RESOLVED (nico, grounded in `catalog/index.ts` + `signify`/`MODEL`).** No
+   conflict; the tension is not fatal. Grounding: an organ value's HOME is already its DIRECTORY
+   (`organs/<organ>/`), and `PARTITIONED` (`|home(c)|=1 ∧ disjoint`) makes the ORGAN a namespace _today_ — the
+   catalog discovers values per-organ-dir and there is NO cross-corpus collision check (it assumes one corpus).
+   So: **σ\* uniqueness (α(c)=σ\*(c), one fittest sign) is a per-CATALOG/per-plugin invariant** — a plugin author
+   names each concept its locally-fittest sign, unique within their catalog. Two plugins independently choosing
+   `parsimony` for similar-but-distinct concepts is NOT a σ\* violation (each is locally fittest); it is a
+   RESOLUTION event — the outer namespace becomes `<plugin>:<organ>/<anchor>`, and cross-plugin anchor collisions
+   resolve by `extends` order (last-writer-wins, ESLint model). Shortlex is a within-organ emit order — untouched.
+   **Upshot: namespacing extends the existing directory-home model; it does not rewrite σ\*.** This de-risks the
+   whole plugin direction — the anatomy is compatible.
 3. **The resolver + override primitives.** `resolve(config) → ResolvedAgentSet`: `extends` order, `replace`/
    `append`/`patch` per fragment kind, force-priority escape. Where does it live — a new `forge/src/resolve/`?
 4. **One-core-two-skins.** The shared `resolve()` both the `npx` CLI and `agents.config.ts` call. What are the
