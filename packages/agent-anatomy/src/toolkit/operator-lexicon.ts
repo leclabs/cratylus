@@ -79,6 +79,11 @@ export const OPERATORS = {
     signature: 'Prop × Prop → Prop',
     coldVerified: true,
   },
+  '⇏': {
+    sense: 'not-implies',
+    signature: 'Prop × Prop → Prop',
+    coldVerified: true,
+  },
   '⇔': { sense: 'iff', signature: 'Prop × Prop → Prop', coldVerified: true },
   '⊥': { sense: 'contradiction', signature: 'Prop', coldVerified: true },
   '∴': { sense: 'therefore', signature: 'Prop ∴ Prop', coldVerified: true },
