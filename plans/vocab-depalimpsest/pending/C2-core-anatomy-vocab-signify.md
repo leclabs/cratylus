@@ -37,14 +37,17 @@ decision.
 
 ## Execution spec (sequenced — runs after plugin-cli design locks; the largest rename in the repo)
 
-**⚠ STATIC RE-CENSUS REQUIRED before dispatch (2026-07-21, nico).** A `pin-by-grep` re-census found this
-enumeration STALE/incomplete — **825 live organ-tokens across ~30 files**. Seams the list below MISSED:
-`core/exemplify/{vector,index,organ-fields}.ts` · `core/engine/vector-projection.ts` ·
-`validate/structural-parsimony.ts` · adapters `codex/anatomy.ts` `claude/{index,anatomy,mechanisms}.ts` · ~10
-test files (`null-organ`·`projection-{boundary,stability}`·`reader-reach`·`structural-parsimony`·
-`catalog/anatomy-descriptor`·`stories/E6/S3` …). `rename-enumerates-every-organ`: complete the enumeration
-(single `rg -nw 'organ|Organ|ORGAN|OrganValue|ORGAN_NAMES'` sweep) into `static` before this becomes a blind task —
-a partial rename passes typecheck with missed seams (`gate-or-it-drifts` dual-enumeration).
+**✅ STATIC RE-CENSUSED — dispatch-ready (2026-07-21, nico).** `pin-by-grep` blast radius (re-verify at dispatch,
+it rots): **organ/dimension = 40 source files** (`rg -lw 'organ|Organ|ORGAN|OrganName|OrganValue|ORGAN_NAMES' packages -g'*.ts' | grep -v test`)
+· **genus STANCE/CONATUS = 5 source files** (`Genus` type + `axis:` metadata + organ READMEs + `organ-docs.ts`)
+· **persona-field = ~12 files** (forge `AgentVector.persona: string` type in `anatomy/index.ts`; the projector
+`core/engine/vector-projection.ts` `vector.persona → agent.description`; `core/exemplify/vector.ts`; all 10 agent
+cells' `persona:` field; `anatomy.test-d.ts`) · **~20 test files** (a separate verification wave — `null-organ`,
+`projection-{boundary,stability}`, `reader-{reach,density}`, `structural-parsimony`, `symbols`,
+`catalog/anatomy-descriptor`, `stories/E6/S3`, the `ir-bridge` golden fixture, **and `cratylism.test.ts` — its
+`ORGAN_NAMES` import + the dimension-dir leg both rename with the axis**). One coherent codemod across all four;
+verify the full suite (forge 689 · anatomy 96 · typecheck 4/4) + byte-diff projections only where the axis text
+changed.
 
 **static (blast radius, censused — INCOMPLETE, see ⚠ above):** `packages/agent-forge/src/anatomy/index.ts` (`Organ` type · `ORGAN_NAMES` ·
 `ANATOMY` map · the `Agent` interface `// STANCE/CONATUS` comments · `organField`/`organTitle`) ·
@@ -54,16 +57,21 @@ a partial rename passes typecheck with missed seams (`gate-or-it-drifts` dual-en
 `definePlugin` field (NORTH-STAR — becomes `fragments`, filed by `dimension`).
 
 **scope:** rename the DIMENSION concept `organ` → `dimension` across type/metadata/dirs/prose/tests; `organ-value`
-→ `fragment`; fold C1 (genus STANCE/CONATUS → `Persona`/`Constitution`, per MAPPING §FLAGGED — its coupled
-`persona`-member sub-fork resolves with the genus name) into the same pass (one coherent re-signification). KEEP
-`anatomy` (corpus) + `fragment` (value) per the decisions. EXCLUDE `stance-guardrail`/`stance-judge` (the
-principal-stance concept, a DIFFERENT sense — C1's census trap) + the accept-gate palimpsest guard.
+→ `fragment`; fold C1 (genus `STANCE`→`Persona` · `CONATUS`→`Constitution`; **the agent field `persona` →
+`archetype`** — the collision resolved cold, C1 CLOSED: `AgentVector.persona` type + the projector
+`vector.persona → agent.description` + all 10 agents' `persona:` field) into the same pass (one coherent
+re-signification). KEEP `anatomy` (corpus) + `fragment` (value) per the decisions. EXCLUDE `stance-guardrail`/
+`stance-judge` (the principal-stance concept, a DIFFERENT sense — C1's census trap) + the accept-gate palimpsest
+guard.
 
 **accept (falsifier):** `git grep -nwE "organ|Organ|ORGAN" packages` returns only the `stance-guardrail` /
 principal-stance exclusions + git-historical plan records — no live `organ`-as-dimension token; `Dimension` type +
-`DIMENSION_NAMES` present; the 24 dirs renamed; `pnpm typecheck` + `pnpm test` green; the projected agents/skills
-byte-diff only where the organ→dimension header text changed (intended); a cold Ω\* read of the renamed model decodes
-"an agent as a point in a dimension-space," and the `stance-guardrail` machinery is untouched.
+`DIMENSION_NAMES` present; the 22 dirs renamed; no live `STANCE`/`CONATUS` (→ `Persona`/`Constitution`); no live
+`AgentVector.persona` / agent `persona:` field (→ `archetype`), the projector maps `vector.archetype →
+agent.description`; `pnpm typecheck` (4/4) + `pnpm test` (forge 689 · anatomy 96) green; the `cratylism.test.ts`
+dimension-dir + `ORGAN_NAMES` legs pass under the renamed symbols; the projected agents/skills byte-diff only where
+the organ→dimension / genus / persona→archetype text changed (intended); a cold Ω\* read of the renamed model
+decodes "an agent as a point in a dimension-space," and the `stance-guardrail` machinery is untouched.
 
 **dep:** SEQUENCED after plugin-cli design locks (§8). Folds in C1. The BRAND choice (agent-anatomy vs AgentKit) is
 the sole Operator sign-off; the rest proceeds on nico's decision.

@@ -39,10 +39,10 @@ Owner: this session.
 
 ## Gates + open forks (Operator-owned)
 
-- **C1/C2 scope gate:** pulling the core-vocab re-signification into execution scope is the Operator's green-light
-  (a large spine rename). The signification itself is DECIDED (nico) — only scope-entry is gated. Independently
-  dispatchable once green-lit (orthogonal to plugin-cli execution; run C2 BEFORE plugin-cli P1–P7 so they build on
-  the clean vocab).
+- **C1/C2 — nico-sequenced, NOT Operator-gated** (corrected): execution is reversible (git) + not-outward, so it
+  is nico's to sequence and drive to done-locally — `push-reserved` gates only the final push, never the
+  re-signification. Run C2 BEFORE plugin-cli P1–P7 so they build on the clean vocab. The ONLY Operator-owned
+  surface is the published BRAND name (below).
 - **C1 persona-collision sub-fork:** `Persona` genus + rename the `persona` member → `archetype`/`essence` (nico
   recommends), OR `Presentation` genus keeping the member. Resolves with the genus name (see C1).
 - **BRAND (C2):** the published package `agent-anatomy` vs a product framing `AgentKit` — nico recommends keeping

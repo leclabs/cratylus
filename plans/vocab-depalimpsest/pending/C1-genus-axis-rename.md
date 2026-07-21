@@ -12,20 +12,18 @@ live target survives below.**
 genus-specific execution detail (esp. the `stance-guardrail` exclusion trap — `Persona` does NOT touch it); C2 is
 the umbrella decision + spec.
 
-**⚠ ONE OPEN SUB-FORK — the `Persona`/`persona` collision (coupled to the genus name).** Family A contains a member
-organ literally named `persona` (the archetype/essence field). Naming the genus `Persona` breaks one-name-one-concept
-unless the MEMBER is renamed. Two coherent resolutions, gated with the genus rename:
+**✅ SUB-FORK CLOSED (2026-07-21, cold-discovered) — resolution (a).** Family A's genus sign `Persona` collided
+with the agent `persona` FIELD (the character/essence description the projector maps to the SOUL). Both concepts
+were cold-probed independently and each took its fittest sign — the cratylist collision-resolution (fittest wins
+each concept; the less-fitting occupant re-signifies):
 
-- **(a) `Persona` genus + rename the member `persona` → `archetype` / `essence`** (needs its own argmin probe on
-  the member) — keeps the argmin-fittest genus name; costs a member rename.
-- **(b) `Presentation` genus + keep the member `persona`** — a 2026-07-21 collision-framed cold read favored
-  `Presentation` as the fittest NON-colliding superordinate (covers role/formality/audience/transparency/persona)
-  when the member is kept; `Posture`/`Demeanor` read as narrower sub-senses.
+- **genus A = `Persona`** — argmin 3/3, the fittest superordinate for the presentation family.
+- **agent field `persona` → `archetype`** — 3/3 for "the deep characterological archetype (Ruler/Sage/Explorer…),
+  distinct from surface presentation." `archetype` is the deep-pattern sign; `persona` (the presented mask) fits
+  the genus.
 
-Recommendation (nico): **(a)** — the argmin gave `Persona` as the concept's fittest sign; a collision is resolved
-by re-naming the less-central concept (the member field, for which `archetype`/`essence` is a strong fit), not by
-degrading the genus to its second choice. The member-rename probe settles it. Both the genus rename and the member
-rename sit behind the same Operator gate below.
+So the field rename `persona → archetype` folds into this pass. (The rejected `(b) Presentation` was a
+collision-framed second-choice — unnecessary now that the collision is resolved at the fitter occupant.)
 
 **GATE (why pending, not ready):** blocked on the Operator's decision to pull the genus rename into scope — NOT a
 task-dep (orthogonal to the plugin-cli redesign: organ FILING vs CLI architecture), so it runs independently once
