@@ -32,6 +32,9 @@ self-sufficient(B) ⇔ closed(B) ∧ complete(B) ∧ ordered(B)
 gloss(B) ≜ prose of B beyond β ∪ ι ; gloss(B) ≠ ∅ ⇒ ¬complete(B)
 ¬self-sufficient(B) ⇒ ⊥
 
+-- T is a decodability REGISTRY, not an expression cap ⟨llm-native⟩ : the fittest sign wins
+σ*_R(c) ∉ T ⇒ extend T with σ*_R(c) ⟨cold-verify dec_R⟩ ; ¬ degrade c to a weaker α ∈ T ∵ α ≠ σ*_R(c)
+
 -- accept gate : the round-trip reconstructs P equivalent-or-better
 reconstruct(B) ≽ P                            input-typed ≽ terminus ; accept
 reconstruct(B) ⋡ P ⇒ ⊥                        repair the block, never prop it with prose` as SkillExpression,

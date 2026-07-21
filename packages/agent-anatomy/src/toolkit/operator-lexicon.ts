@@ -4,6 +4,10 @@
 // `sense` and pinned by its `signature`. `T` DECLARES rather than derives — the one table
 // exempt from "every symbol registered".
 //
+// DECLARE-NOT-DEGRADE (llm-native): `T` is a decodability REGISTRY, not an expression cap.
+// When the SYMBOLS gate rejects the FITTEST sign, EXTEND `T` with it (cold-verify its
+// decode) — never swap it for a weaker declared glyph to appease the gate.
+//
 // SINGLE HOME (DRY): the ONLY source for both gates —
 //   • the SYMBOLS gate (`test/symbols.test.ts`): every fence-interior glyph must be a
 //     non-ASCII key here (∪ the calibrated exempt classes).
