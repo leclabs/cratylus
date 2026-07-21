@@ -21,7 +21,7 @@ afterEach(() => {
   for (const d of dirs.splice(0)) rmSync(d, { recursive: true, force: true });
 });
 
-/** polis repo root, resolved from this test file's location. */
+/** repo root, resolved from this test file's location. */
 const REPO_ROOT = join(
   dirname(fileURLToPath(import.meta.url)),
   '..',

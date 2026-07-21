@@ -173,7 +173,7 @@ describe('resolveNode — foreign host (the local fs is not evidence)', () => {
   it('a foreign cwd under the config-known homedir resolves to that $HOME', () => {
     const c = cfg({ hostHomes: { upmav: '/Users/lcaraccioli' } });
     expect(
-      resolveNode('/Users/lcaraccioli/workspaces/polis', 'upmav', c),
+      resolveNode('/Users/lcaraccioli/workspaces/demo', 'upmav', c),
     ).toEqual({ node: '/Users/lcaraccioli', basis: '$HOME' });
   });
 

@@ -15,7 +15,7 @@ Research categories: **R-std** (standards output/reach) · **R-div** (fabricated
 
 OWNER — human owning existing harness config(s) · AUTHOR — hand-authors IR · FLEET — operates N
 harnesses from one IR · DEV — adapter/engine developer + CI · CURATOR — corpus curator driving
-the exemplify pipeline · OPERATOR — the polis Operator (ELICIT oracle, roster decisions).
+the exemplify pipeline · OPERATOR — the project Operator (ELICIT oracle, roster decisions).
 
 ## Floor matrix (capability → stories; CE check: no floor row empty)
 

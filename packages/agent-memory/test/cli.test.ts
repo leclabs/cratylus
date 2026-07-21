@@ -73,12 +73,7 @@ describe('encode — the tool derives, the caller never supplies', () => {
 
   it('a --scope value is an INERT tags entry — any shape accepted, never validated, never routing', () => {
     // v1 grammar shapes AND arbitrary shapes both pass (the tag grammar retired).
-    for (const scope of [
-      'user',
-      'project:polis',
-      'plan:polis/x',
-      'whatever!',
-    ]) {
+    for (const scope of ['user', 'project:demo', 'plan:demo/x', 'whatever!']) {
       const r = main([
         'encode',
         '--home',
@@ -93,8 +88,8 @@ describe('encode — the tool derives, the caller never supplies', () => {
     const recs = logRecords();
     expect(recs.map((r) => r.tags)).toEqual([
       ['user'],
-      ['project:polis'],
-      ['plan:polis/x'],
+      ['project:demo'],
+      ['plan:demo/x'],
       ['whatever!'],
     ]);
     // Scope is not STORED as a field (SPEC D2).
@@ -163,9 +158,9 @@ describe('read', () => {
   });
 
   it('--scope still filters (inert field/tag match — compat shape)', () => {
-    main(['encode', '--home', home, '--scope', 'project:polis', '--body', 'p']);
+    main(['encode', '--home', home, '--scope', 'project:demo', '--body', 'p']);
     main(['encode', '--home', home, '--scope', 'user', '--body', 'u']);
-    const r = main(['read', '--home', home, '--scope', 'project:polis']);
+    const r = main(['read', '--home', home, '--scope', 'project:demo']);
     expect(r.code).toBe(0);
     expect(r.out.trim().split('\n')).toHaveLength(1);
     expect(r.out).toContain('"p"');
@@ -284,7 +279,7 @@ describe('fold (CLI)', () => {
     // Seed a legacy v1 record (no cwd) — fold must not throw.
     appendFileSync(
       join(home, 'EPISODIC.jsonl'),
-      `${JSON.stringify({ id: '01BX5ZZKBKACTAV9WEVGEMMVRZ', scope: 'plan:polis/x', body: 'old' })}\n`,
+      `${JSON.stringify({ id: '01BX5ZZKBKACTAV9WEVGEMMVRZ', scope: 'plan:demo/x', body: 'old' })}\n`,
       'utf8',
     );
 

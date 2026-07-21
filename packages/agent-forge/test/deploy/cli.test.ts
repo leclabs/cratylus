@@ -36,10 +36,7 @@ describe('parseCompanions', () => {
 describe('runDeploy (local single-host)', () => {
   it('deploys agents in-place to <home>/.claude (scope user, --home sandbox)', async () => {
     // Point config resolution at a configless temp so the run is hermetic.
-    process.env[CONFIG_ENV] = join(
-      tmp('polis-empty-'),
-      '.agent-factory.config',
-    );
+    process.env[CONFIG_ENV] = join(tmp('demo-empty-'), '.agent-factory.config');
     const { agentsDir, skillsDir } = buildRenderTree(
       tmp('agent-forge-render-'),
     );
@@ -63,10 +60,7 @@ describe('runDeploy (local single-host)', () => {
   });
 
   it('--kind all deploys agent + skill + hooks in ONE invocation (local single-host)', async () => {
-    process.env[CONFIG_ENV] = join(
-      tmp('polis-empty-'),
-      '.agent-factory.config',
-    );
+    process.env[CONFIG_ENV] = join(tmp('demo-empty-'), '.agent-factory.config');
     // agents/ + skills/ under root; hooks fragment at the render root (hooksDir).
     const root = tmp('agent-forge-render-');
     const { agentsDir, skillsDir } = buildRenderTree(root);
@@ -98,10 +92,7 @@ describe('runDeploy (local single-host)', () => {
   });
 
   it('--kind agent deploys ONLY agent (single-kind half unchanged)', async () => {
-    process.env[CONFIG_ENV] = join(
-      tmp('polis-empty-'),
-      '.agent-factory.config',
-    );
+    process.env[CONFIG_ENV] = join(tmp('demo-empty-'), '.agent-factory.config');
     const root = tmp('agent-forge-render-');
     const { agentsDir, skillsDir } = buildRenderTree(root);
     const { hooksDir } = buildHooksTree(root);
@@ -130,7 +121,7 @@ describe('runDeploy (local single-host)', () => {
     // reaches agent + skill + hooks — the OLD `&&`-chain leaked --fleet onto only
     // the trailing kind, leaving agent + skill local.
     const fireHome = tmp('agent-forge-fire-home-');
-    const cfgRoot = tmp('polis-cfg-');
+    const cfgRoot = tmp('demo-cfg-');
     writeFileSync(
       join(cfgRoot, '.agent-factory.config'),
       JSON.stringify({
@@ -163,10 +154,7 @@ describe('runDeploy (local single-host)', () => {
   });
 
   it('--fleet without a config returns rc=1 (no flag-only fleet fallback)', async () => {
-    process.env[CONFIG_ENV] = join(
-      tmp('polis-empty-'),
-      '.agent-factory.config',
-    );
+    process.env[CONFIG_ENV] = join(tmp('demo-empty-'), '.agent-factory.config');
     const { agentsDir, skillsDir } = buildRenderTree(
       tmp('agent-forge-render-'),
     );

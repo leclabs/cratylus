@@ -203,4 +203,4 @@ Look at the official adapters in `packages/adapters/src/` for patterns:
 
 ## Questions?
 
-Open an issue on [leclabs/polis](https://github.com/leclabs/polis).
+Open an issue on [leclabs/agent-factory](https://github.com/leclabs/agent-factory).

@@ -1,6 +1,6 @@
 # @leclabs/agent-forge
 
-The universal configuration translator for AI coding agents — part of [polis](../../README.md). Author
+The universal configuration translator for AI coding agents — part of [agent-factory](../../README.md). Author
 agent config once in a canonical IR, compile it to every client dialect (Claude Code, Codex, Cursor, …),
 and lift any client's existing config back into the IR.
 

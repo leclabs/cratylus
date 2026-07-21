@@ -6,7 +6,7 @@
 # criterion  ∀f · decode_warm(f | K) ≡ R_cold(f) ≡ intent.
 #
 # ISOLATION IS LOAD-BEARING (the crux of this whole plan):
-#   1. cwd = a fresh scratch dir OUTSIDE ~/workspaces/polis  → the repo's
+#   1. cwd = a fresh scratch dir OUTSIDE ~/workspaces/agent-factory  → the repo's
 #      CLAUDE.md / AGENTS.md / MEMORY never load (cwd-relative discovery misses them).
 #   2. CLAUDE_CONFIG_DIR = a fresh dir holding ONLY .credentials.json  → the deployed
 #      ~/.claude registry (agents, skills, user CLAUDE.md) never loads, so an
@@ -26,7 +26,7 @@
 #   --raw          emit only R_cold (no metadata banner)
 set -euo pipefail
 
-REPO_GUARD="$HOME/workspaces/polis"
+REPO_GUARD="$HOME/workspaces/agent-factory"
 MODEL="sonnet"
 RAW=0
 FRAGMENT=""

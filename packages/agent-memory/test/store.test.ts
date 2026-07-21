@@ -131,7 +131,7 @@ describe('read', () => {
   it('reads v1-shaped records (scope/path present) as inert data', () => {
     const v1 = {
       id: '01BX5ZZKBKACTAV9WEVGEMMVRZ',
-      scope: 'project:polis',
+      scope: 'project:demo',
       body: 'legacy event',
     };
     const file = store.rawFile();
@@ -140,7 +140,7 @@ describe('read', () => {
     const blob = `${JSON.stringify(v1)}\n${readFileSync(file, 'utf8')}`;
     const records = parseLines(blob);
     expect(records).toHaveLength(2);
-    expect(records[0]?.scope).toBe('project:polis'); // readable...
+    expect(records[0]?.scope).toBe('project:demo'); // readable...
     expect(records[0]?.cwd).toBeUndefined(); // ...and cwd-less (→ legacy bucket)
   });
 });

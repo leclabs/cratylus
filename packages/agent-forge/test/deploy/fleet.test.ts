@@ -139,7 +139,7 @@ describe('deployFleet — two-host orchestration (fire local + upmav ssh)', () =
   it('deploys fire (local) + upmav (ssh), excludes upgoose, reports per-host', () => {
     // fire is local → sandbox its .claude parent in config so we never touch $HOME.
     const fireHome = tmp('agent-forge-fire-home-');
-    const root = writeConfig(tmp('polis-cfg-'), fireHome);
+    const root = writeConfig(tmp('demo-cfg-'), fireHome);
     const cfg = loadConfig(root)!;
     const tree = buildRenderTree(tmp('agent-forge-render-'));
 
@@ -175,7 +175,7 @@ describe('deployFleet — two-host orchestration (fire local + upmav ssh)', () =
 
   it('a deferred (unreachable) host yields unreachable-deferred, fleet rc still 0', () => {
     const fireHome = tmp('agent-forge-fire-home-');
-    const root = writeConfig(tmp('polis-cfg-'), fireHome);
+    const root = writeConfig(tmp('demo-cfg-'), fireHome);
     const cfg = loadConfig(root)!;
     const tree = buildRenderTree(tmp('agent-forge-render-'));
     const fleet = makeFleet({
