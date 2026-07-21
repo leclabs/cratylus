@@ -13,6 +13,12 @@
 
 Owner: this session.
 
+> **Re-census (2026-07-21).** The founding-lexicon retirement (`polis`/`founder`/…) is **substantially already
+> done** across `packages/` + `docs/` (prior work + C2) — the plan's older census had rotted (`census-not-format`).
+> Net-current remaining after C1/C2 + A1: **B1 collapses** (narrative retired; identifiers → plugin-cli P6) · **A2
+> closed** (fixture vocab-clean) · **A3 is dream-time** (per-agent, ongoing). Effectively complete bar the P6-folded
+> identifiers and the continuous memory alignment.
+
 ## Streams (MECE by surface)
 
 - **Stream A — independent prose/fixture/memory sweep (`ready/`):** founding-lexicon sites NOT owned by the CLI
@@ -28,14 +34,14 @@ Owner: this session.
 
 ## State
 
-| shard                     | surface                             | state | concern                                                                     |
-| ------------------------- | ----------------------------------- | ----- | --------------------------------------------------------------------------- |
-| A1 prose/ideation         | docs + organ READMEs                | ready | founding vocab → concrete in prose (judgment per site)                      |
-| A2 golden fixture         | ir-bridge fixture                   | ready | founding vocab + stale SELF/MEMORY/vault model → net-current                |
-| A3 memory align           | agent stores                        | ready | nico verified clean; dream-time self-align directive for the fleet          |
-| B1 founding content       | founding-template bodies + CLI help | ready | polis/founder NARRATIVE → concrete; API identifiers deferred to plugin-cli  |
-| C1 genus rename           | `Genus` axis + dimension READMEs    | done  | STANCE/CONATUS → Persona/Constitution; persona→archetype (verified)         |
-| C2 core-vocab (organ→dim) | anatomy spine (types/dirs/tests)    | done  | organ→dimension + fragment (+ genus + persona→archetype) — LANDED, verified |
+| shard                     | surface                             | state   | concern                                                                             |
+| ------------------------- | ----------------------------------- | ------- | ----------------------------------------------------------------------------------- |
+| A1 prose/ideation         | docs (research + ideation)          | done    | organ→dimension in live docs; anatomy study PRESERVED as record (verified)          |
+| A2 golden fixture         | ir-bridge fixture                   | done    | vocab + retired memory-model already clean; stale `ideas/` = deferred fixture-maint |
+| A3 memory align           | agent stores                        | ongoing | dream-time, per-agent (incl. nico's own); aligns at each agent's next wake          |
+| B1 founding content       | founding-template bodies + CLI help | → P6    | narrative already retired; founding IDENTIFIERS restructured by plugin-cli P6       |
+| C1 genus rename           | `Genus` axis + dimension READMEs    | done    | STANCE/CONATUS → Persona/Constitution; persona→archetype (verified)                 |
+| C2 core-vocab (organ→dim) | anatomy spine (types/dirs/tests)    | done    | organ→dimension + fragment (+ genus + persona→archetype) — LANDED, verified         |
 
 ## Gates + open forks (Operator-owned)
 

@@ -1,3 +1,9 @@
+# B1 — COLLAPSED into P6 (verified 2026-07-21): founding narrative already retired
+
+> ZERO word-matched polis/founder NARRATIVE remains in the founding-template bodies + CLI help (retired by prior work). B1 (content) is a no-op. The remaining founding work is the API IDENTIFIERS (`foundPolis`/`polisFoundingTemplate`/`runFound`/`found`-verb across `found-cli.ts`, `found.ts`, `founding-template.ts`, `cli/index.ts`) — restructured by plugin-cli **P6** (found→init-via-defaults). Sequenced there, not here.
+
+---
+
 # B1 — depalimpsest the founding-CLI CONTENT strings (not the API identifiers)
 
 **static (censused 2026-07):**
