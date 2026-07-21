@@ -185,3 +185,11 @@ composition axis coherent; the final read pre-certified closure on the cycle-det
 Design LOCKED. Q1–Q7 resolved; cold-review folded. P1–P7 (§8) are the execution shards, authored
 `census-grounds-spec` against the live tree. Nothing in `packages/` touched — design record only; push/deploy
 reserved.
+
+## 11. Deferred canon-candidate (from P3, nico)
+
+A fragment authoring shape that **declares a reference** to another fragment (the §3 object-import form at the
+_authoring_ layer, beyond the current bare-σ\* value form) is a canonical **signify/cratylism** decision — deferred,
+non-blocking. P3/P4 operate on the value form; the reference-bearing node form exists in the resolver. Introduce a
+first-class reference-declaring authoring shape only when a corpus fragment must reference another (cold-verify the
+sign then).
