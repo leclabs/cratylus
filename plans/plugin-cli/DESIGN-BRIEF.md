@@ -3,6 +3,10 @@
 **Status: DESIGN, not execution.** Convergent prose (census → this brief → cold-review). Sharded only after it
 settles (`census-grounds-spec`). Supersedes north-star's deferred `E1`.
 
+> **This brief is the VERIFICATION RECORD** (why the direction is right + the resolved tensions). The converged
+> architecture now lives in **`NORTH-STAR.md`** (the single source of truth), authored after the surface + σ\*
+> census resolved Q1–Q6. One gate remains before sharding: cold-review (NORTH-STAR §8).
+
 ## Verification (nico, first-principles — NOT an echo of the Operator's framing)
 
 The Operator hypothesized "npx CLI + conventional ESM plugin (vite/eslint lineage)." I verified it against
