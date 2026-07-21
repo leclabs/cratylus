@@ -2,25 +2,25 @@ import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
 
 export const introspect: Skill = {
   name: 'introspect',
-  description: `use this skill when an agent needs to self-audit — compare each organ's defined value against the value actually in effect this session, and name the cause of every divergence.`,
+  description: `use this skill when an agent needs to self-audit — compare each dimension's defined value against the value actually in effect this session, and name the cause of every divergence.`,
   formalBlock: `DECLARATIONS
 
 A          — the agent introspecting itself
-O          — A's organ set: the SOUL anatomy \`##\` sections —
-             { persona · role · formality · audience-adaptation · transparency ·
+O          — A's dimension set: the SOUL anatomy \`##\` sections —
+             { archetype · role · formality · audience-adaptation · transparency ·
                autonomy · provenance · objective · engineering-principles · guardrails ·
                capabilities · situation-awareness · actions · modalities · model ·
                memory · trigger · framing · reasoning-strategy · satisficing ·
                output-format · self-evaluation · … }
-V          — the organ-value space : one value · a value-set · \`unobservable\`
+V          — the fragment space : one value · a value-set · \`unobservable\`
 
-src_def    — DEFINITION sources : A's in-prompt SOUL (\`##\` sections) ∪ the canonical organ-vector agent/<A>.md (one selected value per organ)
-src_rt     — RUNTIME sources, observed THIS session, INDEPENDENT of src_def : the live tool/action set · the live model (\`model\` organ) · the system prompt as given · the autonomy mode + any transient elevation · the deployed def front-matter (color · mark) · env · granted permissions
+src_def    — DEFINITION sources : A's in-prompt SOUL (\`##\` sections) ∪ the canonical dimension-vector agent/<A>.md (one selected value per dimension)
+src_rt     — RUNTIME sources, observed THIS session, INDEPENDENT of src_def : the live tool/action set · the live model (\`model\` dimension) · the system prompt as given · the autonomy mode + any transient elevation · the deployed def front-matter (color · mark) · env · granted permissions
 
-def        — def : O → V          the value organ o is DEFINED to hold (from src_def)
+def        — def : O → V          the value dimension o is DEFINED to hold (from src_def)
 rt         — rt  : O → V          the value actually IN EFFECT (from src_rt)
 match      — match : O → bool
-div        — the divergent organs
+div        — the divergent dimensions
 K          — the divergence-cause taxonomy
 why        — why : div → K        a cause assigned to each divergence
 
@@ -46,8 +46,8 @@ why(o)   ∈ K                                  , o ∈ div  -- honest \`unobser
 row(o)   ≜ ( o, def(o), rt(o), match(o), why(o) when o ∈ div )
 report   ≜ ( { row(o) | o ∈ O } , summary(div, why) )
 
--- emit one row per organ ; the summary lists only the MATERIAL divergences + causes
+-- emit one row per dimension ; the summary lists only the MATERIAL divergences + causes
 
-boundary — read-only self-audit : introspect REPORTS ∧ ¬edit(organ-vector) ∧ ¬redeploy ∧ ¬mint(V)   -- reconciling drift is create-agent's / deploy's, never introspect's ; O ∧ K are read from the live anatomy` as SkillExpression,
+boundary — read-only self-audit : introspect REPORTS ∧ ¬edit(dimension-vector) ∧ ¬redeploy ∧ ¬mint(V)   -- reconciling drift is create-agent's / deploy's, never introspect's ; O ∧ K are read from the live anatomy` as SkillExpression,
   composition: () => [],
 };

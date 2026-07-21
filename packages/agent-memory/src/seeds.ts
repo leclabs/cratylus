@@ -13,7 +13,7 @@
 // EPISODIC is a JSONL event log: `memory encode` mints a ULID and appends one
 // open record per salient event. A JSONL store carries no prose, so a fresh
 // home seeds an EMPTY `.jsonl` file; the protocol that governs it lives once in
-// the SOUL's verbatim Protocol organ, never duplicated into the data store.
+// the SOUL's verbatim Protocol dimension, never duplicated into the data store.
 
 /** Local-date `YYYY-MM-DD` (local time, NOT UTC) — the seed stamp. */
 function today(): string {

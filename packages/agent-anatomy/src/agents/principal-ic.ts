@@ -1,38 +1,38 @@
 import type { Agent } from '@leclabs/agent-forge/anatomy';
-import { delegation as delegation_actions } from '../organs/actions/delegation.js';
-import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
-import { convergence as convergence_audienceAdaptation } from '../organs/audience-adaptation/convergence.js';
-import { softwareEngineering as softwareEngineering_capabilities } from '../organs/capabilities/software-engineering.js';
-import { systemDesign as systemDesign_capabilities } from '../organs/capabilities/system-design.js';
-import { coldDecodeOracle as coldDecodeOracle_engineeringPrinciples } from '../organs/engineering-principles/cold-decode-oracle.js';
-import { dry as dry_engineeringPrinciples } from '../organs/engineering-principles/dry.js';
-import { firstPrinciples as firstPrinciples_engineeringPrinciples } from '../organs/engineering-principles/first-principles.js';
-import { invokeTheCanonical as invokeTheCanonical_engineeringPrinciples } from '../organs/engineering-principles/invoke-the-canonical.js';
-import { llmNative as llmNative_engineeringPrinciples } from '../organs/engineering-principles/llm-native.js';
-import { mece as mece_engineeringPrinciples } from '../organs/engineering-principles/mece.js';
-import { trustButVerify as trustButVerify_engineeringPrinciples } from '../organs/engineering-principles/trust-but-verify.js';
-import { zeroTrust as zeroTrust_engineeringPrinciples } from '../organs/engineering-principles/zero-trust.js';
-import { neutral as neutral_formality } from '../organs/formality/neutral.js';
-import { firstPrinciples as firstPrinciples_framing } from '../organs/framing/first-principles.js';
-import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/harm-avoidance.js';
-import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
-import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
-import { scopeOfAuthority as scopeOfAuthority_guardrails } from '../organs/guardrails/scope-of-authority.js';
-import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
-import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
-import { delivery as delivery_objective } from '../organs/objective/delivery.js';
-import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
-import { planAndSolve as planAndSolve_reasoningStrategy } from '../organs/reasoning-strategy/plan-and-solve.js';
-import { orchestrate as orchestrate_role } from '../organs/role/orchestrate.js';
-import { optimize as optimize_satisficing } from '../organs/satisficing/optimize.js';
-import { selfCritique as selfCritique_selfEvaluation } from '../organs/self-evaluation/self-critique.js';
-import { projection as projection_situationAwareness } from '../organs/situation-awareness/projection.js';
-import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
+import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
+import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
+import { convergence as convergence_audienceAdaptation } from '../dimensions/audience-adaptation/convergence.js';
+import { softwareEngineering as softwareEngineering_capabilities } from '../dimensions/capabilities/software-engineering.js';
+import { systemDesign as systemDesign_capabilities } from '../dimensions/capabilities/system-design.js';
+import { coldDecodeOracle as coldDecodeOracle_engineeringPrinciples } from '../dimensions/engineering-principles/cold-decode-oracle.js';
+import { dry as dry_engineeringPrinciples } from '../dimensions/engineering-principles/dry.js';
+import { firstPrinciples as firstPrinciples_engineeringPrinciples } from '../dimensions/engineering-principles/first-principles.js';
+import { invokeTheCanonical as invokeTheCanonical_engineeringPrinciples } from '../dimensions/engineering-principles/invoke-the-canonical.js';
+import { llmNative as llmNative_engineeringPrinciples } from '../dimensions/engineering-principles/llm-native.js';
+import { mece as mece_engineeringPrinciples } from '../dimensions/engineering-principles/mece.js';
+import { trustButVerify as trustButVerify_engineeringPrinciples } from '../dimensions/engineering-principles/trust-but-verify.js';
+import { zeroTrust as zeroTrust_engineeringPrinciples } from '../dimensions/engineering-principles/zero-trust.js';
+import { neutral as neutral_formality } from '../dimensions/formality/neutral.js';
+import { firstPrinciples as firstPrinciples_framing } from '../dimensions/framing/first-principles.js';
+import { harmAvoidance as harmAvoidance_guardrails } from '../dimensions/guardrails/harm-avoidance.js';
+import { helpfulness as helpfulness_guardrails } from '../dimensions/guardrails/helpfulness.js';
+import { honesty as honesty_guardrails } from '../dimensions/guardrails/honesty.js';
+import { scopeOfAuthority as scopeOfAuthority_guardrails } from '../dimensions/guardrails/scope-of-authority.js';
+import { takeTheBest as takeTheBest_heuristics } from '../dimensions/heuristics/take-the-best.js';
+import { correctionConsolidation as correctionConsolidation_learning } from '../dimensions/learning/correction-consolidation.js';
+import { delivery as delivery_objective } from '../dimensions/objective/delivery.js';
+import { structuredDecision as structuredDecision_outputFormat } from '../dimensions/output-format/structured-decision.js';
+import { planAndSolve as planAndSolve_reasoningStrategy } from '../dimensions/reasoning-strategy/plan-and-solve.js';
+import { orchestrate as orchestrate_role } from '../dimensions/role/orchestrate.js';
+import { optimize as optimize_satisficing } from '../dimensions/satisficing/optimize.js';
+import { selfCritique as selfCritique_selfEvaluation } from '../dimensions/self-evaluation/self-critique.js';
+import { projection as projection_situationAwareness } from '../dimensions/situation-awareness/projection.js';
+import { reasoningTrace as reasoningTrace_transparency } from '../dimensions/transparency/reasoning-trace.js';
 export const principalIc: Agent = {
   name: 'principal-ic',
   description:
     'Use this agent when a goal needs orchestration across multiple agents — dispatch, sequence, and integrate their work to a delivered result. It coordinates the delegated work; it does not do that work itself.',
-  persona:
+  archetype:
     "Ruler archetype of the IC root — dispatch · sequence · integrate other agents' work to a delivered goal (orchestrate, ¬do the delegated work itself), the principal-tier root standing that mav · nico · reviewer · tester specialize.",
   role: orchestrate_role,
   formality: neutral_formality,

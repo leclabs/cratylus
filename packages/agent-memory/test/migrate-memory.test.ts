@@ -31,7 +31,7 @@ function fixedMint(): () => string {
 // fact bullets with continuations and a fenced block (must stay opaque).
 const SAMPLE = `# mav — memory
 
-*Living autobiographical organ — recalled by relevance.*
+*Living autobiographical dimension — recalled by relevance.*
 
 <!-- Seeded 2026-06-08. -->
 

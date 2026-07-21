@@ -12,23 +12,23 @@
 // reference-count — never a prose lint), one per standing counter-example class:
 //
 //   GENUS-FLOOR       (a) — the `base.ts` class. A module M ∈ agents/ imported by
-//                           a SIBLING agent module yet selecting ZERO organs:
+//                           a SIBLING agent module yet selecting ZERO dimensions:
 //                           a shared floor spread (`...base`) into every agent,
-//                           carrying no organ-selection of its own.
-//                           ⇔ M.organImports = ∅ ∧ ∃s∈agents: M.name ∈ s.siblingImports
+//                           carrying no dimension-selection of its own.
+//                           ⇔ M.dimensionImports = ∅ ∧ ∃s∈agents: M.name ∈ s.siblingImports
 //   RESOLVED-DUP      (b) — the `ResolvedAgent` class. An export in agents/ whose
 //                           id matches /Resolved$/ or is typed `ResolvedAgent`:
 //                           a PARALLEL representation duplicating the `Agent`
 //                           vector already declared in the same module.
-//   ABSORBED-IDENTITY (c) — the provenance-mega-fragment class. An organ
+//   ABSORBED-IDENTITY (c) — the provenance-mega-fragment class. A dimension
 //                           value-cell carrying an inlinable IDENTITY token (a
 //                           `mark:{emoji,hue}`) AND referenced by ≤1 agent:
 //                           content wholly absorbed into ONE agent's identity,
-//                           not a reusable organ value. The AND is load-bearing —
+//                           not a reusable dimension value. The AND is load-bearing —
 //                           refCount≥2 is a genuine SHARED value (reusable, green),
-//                           a mark-less single-ref cell is a legit open-organ
+//                           a mark-less single-ref cell is a legit open-dimension
 //                           value (role/build, curate — green). Only mark ∧
-//                           refCount≤1 is "identity, not organ value".
+//                           refCount≤1 is "identity, not dimension value".
 //
 // GOVERNING INVARIANT (project's whole point): every deployed artifact the model
 // reads is formal σ* under ρ, never human prose — held here structurally: the
@@ -57,17 +57,17 @@ export const STRUCTURAL_CLASSES: readonly StructuralClass[] = [
 export interface AgentModule {
   /** basename sans `.ts` — the module's identity in the intra-agents graph. */
   readonly name: string;
-  /** `'<organ>/<slug>'` for each `../organs/<organ>/<slug>` import (the SELECTION). */
-  readonly organImports: readonly string[];
+  /** `'<dimension>/<slug>'` for each `../dimensions/<dimension>/<slug>` import (the SELECTION). */
+  readonly dimensionImports: readonly string[];
   /** basename of each sibling `./<name>` import (an intra-agents graph edge). */
   readonly siblingImports: readonly string[];
   /** ids of exports matching /Resolved$/ or typed `ResolvedAgent` (parallel reps). */
   readonly resolvedExports: readonly string[];
 }
 
-/** An `organs/<organ>/<slug>.ts` value-cell reduced to the reference-count grain. */
-export interface OrganValueModule {
-  readonly organ: string;
+/** An `dimensions/<dimension>/<slug>.ts` value-cell reduced to the reference-count grain. */
+export interface FragmentModule {
+  readonly dimension: string;
   readonly slug: string;
   /** exports an inlinable identity token (`mark:{emoji,hue}`) — the (c) signature. */
   readonly carriesMark: boolean;
@@ -76,7 +76,7 @@ export interface OrganValueModule {
 /** The parsed structural model the witnesses quantify over. */
 export interface StructuralCorpus {
   readonly agents: readonly AgentModule[];
-  readonly organValues: readonly OrganValueModule[];
+  readonly fragments: readonly FragmentModule[];
 }
 
 export interface StructuralVerdict {
@@ -88,18 +88,18 @@ export interface StructuralVerdict {
 
 // ── parsers (source-text → structural model; the caller supplies the text) ──────
 
-const ORGAN_IMPORT =
-  /from\s+'\.\.\/organs\/([a-z0-9-]+)\/([a-z0-9-]+)(?:\.js)?'/g;
+const DIMENSION_IMPORT =
+  /from\s+'\.\.\/dimensions\/([a-z0-9-]+)\/([a-z0-9-]+)(?:\.js)?'/g;
 const SIBLING_IMPORT = /from\s+'\.\/([a-z0-9-]+)(?:\.js)?'/g;
 const CONST_EXPORT = /export\s+const\s+(\w+)\s*(?::\s*(\w+))?/g;
 /** an identity token — `mark:` at a word boundary (not `benchmark:`). */
 const MARK_FIELD = /\bmark\s*:/;
 
 export function parseAgentModule(name: string, src: string): AgentModule {
-  const organImports: string[] = [];
-  for (const m of src.matchAll(ORGAN_IMPORT)) {
+  const dimensionImports: string[] = [];
+  for (const m of src.matchAll(DIMENSION_IMPORT)) {
     if (m[1] && m[2]) {
-      organImports.push(`${m[1]}/${m[2]}`);
+      dimensionImports.push(`${m[1]}/${m[2]}`);
     }
   }
   const siblingImports: string[] = [];
@@ -116,23 +116,23 @@ export function parseAgentModule(name: string, src: string): AgentModule {
       resolvedExports.push(id);
     }
   }
-  return { name, organImports, siblingImports, resolvedExports };
+  return { name, dimensionImports, siblingImports, resolvedExports };
 }
 
-export function parseOrganValue(
-  organ: string,
+export function parseFragment(
+  dimension: string,
   slug: string,
   src: string,
-): OrganValueModule {
-  return { organ, slug, carriesMark: MARK_FIELD.test(src) };
+): FragmentModule {
+  return { dimension, slug, carriesMark: MARK_FIELD.test(src) };
 }
 
 // ── the three witnesses ─────────────────────────────────────────────────────────
 
 /**
  * GENUS-FLOOR — an agents/ module imported by a sibling agent yet selecting no
- * organ (the `base.ts` class: a shared floor spread into every agent, ¬organ). A
- * legit agent vector imports MANY organs and no sibling; the clean tree has zero
+ * dimension (the `base.ts` class: a shared floor spread into every agent, ¬dimension). A
+ * legit agent vector imports MANY dimensions and no sibling; the clean tree has zero
  * intra-agents edges, so `convicted = ∅`.
  */
 export function genusFloor(corpus: StructuralCorpus): StructuralVerdict {
@@ -140,7 +140,9 @@ export function genusFloor(corpus: StructuralCorpus): StructuralVerdict {
     corpus.agents.flatMap((a) => a.siblingImports),
   );
   const convicted = corpus.agents
-    .filter((a) => a.organImports.length === 0 && importedBySibling.has(a.name))
+    .filter(
+      (a) => a.dimensionImports.length === 0 && importedBySibling.has(a.name),
+    )
     .map((a) => a.name);
   return { cls: 'GENUS-FLOOR', pass: convicted.length === 0, convicted };
 }
@@ -158,25 +160,26 @@ export function resolvedDup(corpus: StructuralCorpus): StructuralVerdict {
 }
 
 /**
- * ABSORBED-IDENTITY — an organ value-cell carrying an identity token (`mark`) AND
+ * ABSORBED-IDENTITY — a dimension value-cell carrying an identity token (`mark`) AND
  * referenced by ≤1 agent (the provenance-mega-fragment class: identity wholly
- * absorbed into one agent, not a reusable organ value). The AND is the guard
+ * absorbed into one agent, not a reusable dimension value). The AND is the guard
  * against false positives — refCount≥2 ⇒ genuine shared value; ¬mark ⇒ legit
- * open-organ value even at refCount=1. The clean tree carries no marked value-cell
+ * open-dimension value even at refCount=1. The clean tree carries no marked value-cell
  * (provenance collapsed to inline `provenance:{mark}` on each agent).
  */
 export function absorbedIdentity(corpus: StructuralCorpus): StructuralVerdict {
   const refCount = new Map<string, number>();
   for (const a of corpus.agents) {
-    for (const ref of a.organImports) {
+    for (const ref of a.dimensionImports) {
       refCount.set(ref, (refCount.get(ref) ?? 0) + 1);
     }
   }
-  const convicted = corpus.organValues
+  const convicted = corpus.fragments
     .filter(
-      (v) => v.carriesMark && (refCount.get(`${v.organ}/${v.slug}`) ?? 0) <= 1,
+      (v) =>
+        v.carriesMark && (refCount.get(`${v.dimension}/${v.slug}`) ?? 0) <= 1,
     )
-    .map((v) => `${v.organ}/${v.slug}`);
+    .map((v) => `${v.dimension}/${v.slug}`);
   return { cls: 'ABSORBED-IDENTITY', pass: convicted.length === 0, convicted };
 }
 

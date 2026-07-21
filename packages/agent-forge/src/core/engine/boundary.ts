@@ -7,7 +7,7 @@
 // It owns the `realize` half: the activation taxonomy (`activation(class c)`) and
 // the pure selector `realize : ActivationMode × harness-adapter → harness-mechanism`.
 // The `project-human` half — a harness-AGNOSTIC human-view, so no adapter — lives in
-// `@leclabs/agent-forge/anatomy` (`projectHumanOrgan`). Both are DETERMINISTIC pure
+// `@leclabs/agent-forge/anatomy` (`projectHumanDimension`). Both are DETERMINISTIC pure
 // functions of `source(c)`: no clock, no host, no hand-edit. A `Target`/human-view
 // reachable by any OTHER path than these two is the boundary-projection falsifier.
 
@@ -41,7 +41,7 @@ export const ACTIVATION_MODES: readonly ActivationMode[] = [
 export type CellClass = 'fragment' | 'agent' | 'rule' | 'skill' | 'hook';
 
 /**
- * `activation(class c)` — the total class→mode map. An organ value `fragment`
+ * `activation(class c)` — the total class→mode map. A dimension value `fragment`
  * only composes into the SOUL of the agent that selects it (`compose-only`, no
  * standalone artifact); an `agent` is its own `identity`; a `rule` activates by
  * `scope`; a `skill` by `trigger`; a `hook` by `event`. The `Record` over the

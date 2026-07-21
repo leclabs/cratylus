@@ -4,8 +4,8 @@
 // marked construction is a COMPILE ERROR — if the error ever disappears, `tsc`
 // fails on the now-unused directive, so these are live negative tests.
 //
-// An organ value is now a per-organ NOMINAL-BRANDED STRING (`⟨α, residue⟩`); the
-// phantom `__organ` brand keys each string to its organ so a cross-organ
+// A dimension value is now a per-dimension NOMINAL-BRANDED STRING (`⟨α, residue⟩`); the
+// phantom `__dimension` brand keys each string to its dimension so a cross-dimension
 // assignment of a TYPED value is a compile error.
 
 import type {
@@ -19,7 +19,7 @@ import type {
   Skill,
 } from './index.js';
 
-// ── Fixtures (well-typed branded organ values) ──────────────────────────────
+// ── Fixtures (well-typed branded dimension values) ──────────────────────────────
 
 const autonomyV: Autonomy = 'human-on-the-loop ≜ on the loop';
 const roleV: Role = 'operate ≜ run a live system';
@@ -29,21 +29,21 @@ const capabilitiesA: Capabilities = 'software-engineering ≜ build software';
 const actionsA: Actions = 'file-ops ≜ mutate files';
 const outputFormatV: OutputFormat = 'code ≜ emit source';
 
-// ── NEGATIVE 1: a value of the WRONG organ assigned to the wrong field ───────
-// The `__organ` brand discriminates the organ of a TYPED value structurally.
+// ── NEGATIVE 1: a value of the WRONG dimension assigned to the wrong field ───────
+// The `__dimension` brand discriminates the dimension of a TYPED value structurally.
 
-// @ts-expect-error — an `output-format` value cannot be a `Role` (organ brand mismatch).
-const wrongOrgan: Role = outputFormatV;
+// @ts-expect-error — an `output-format` value cannot be a `Role` (dimension brand mismatch).
+const wrongDimension: Role = outputFormatV;
 
 // @ts-expect-error — an `actions` value is not an `output-format` value.
 const fenceClash: OutputFormat = actionsA;
 
-// ── NEGATIVE 2: a SCALAR organ given an ARRAY ───────────────────────────────
+// ── NEGATIVE 2: a SCALAR dimension given an ARRAY ───────────────────────────────
 
 // @ts-expect-error — `role` is scalar; an array is not assignable to `Role`.
 const scalarGivenArray: Agent['role'] = [roleV];
 
-// ── NEGATIVE 3: a SET organ given a SCALAR ──────────────────────────────────
+// ── NEGATIVE 3: a SET dimension given a SCALAR ──────────────────────────────────
 
 // @ts-expect-error — `guardrails` is a set; a single value is not a `Guardrails[]`.
 const setGivenScalar: Agent['guardrails'] = guardrailA;
@@ -54,7 +54,7 @@ const baseFixture: Agent = {
   name: 'fixture',
   description: 'the master builder — ships systems end-to-end',
   autonomy: [autonomyV],
-  persona: 'the master-builder — ship end-to-end',
+  archetype: 'the master-builder — ship end-to-end',
   role: roleV,
   formality: 'formal ≜ terse',
   audienceAdaptation: 'convergence ≜ converge',
@@ -81,22 +81,22 @@ const baseFixture: Agent = {
 
 // ── The `null` sentinel (explicit omit-to-inherit) ──────────────────────────
 
-// POSITIVE: `null`-valued keys compile — scalar and set organs alike.
+// POSITIVE: `null`-valued keys compile — scalar and set dimensions alike.
 const nullSentinel: Agent = {
   ...baseFixture,
   name: 'null-sentinel',
-  autonomy: null, // set organ, harness-inherited
-  engineeringPrinciples: null, // set organ, harness-inherited
-  heuristics: null, // set organ, harness-inherited
-  role: null, // scalar organ, harness-inherited
+  autonomy: null, // set dimension, harness-inherited
+  engineeringPrinciples: null, // set dimension, harness-inherited
+  heuristics: null, // set dimension, harness-inherited
+  role: null, // scalar dimension, harness-inherited
 };
 void nullSentinel;
 
-// NEGATIVE: a vector MISSING an organ key fails tsc (completeness law).
+// NEGATIVE: a vector MISSING a dimension key fails tsc (completeness law).
 // @ts-expect-error — `autonomy` is required; omission is spelled `autonomy: null`, never a missing key.
 const missingKey: Agent = {
   name: 'missing-key',
-  persona: baseFixture.persona,
+  archetype: baseFixture.archetype,
   role: baseFixture.role,
   formality: baseFixture.formality,
   audienceAdaptation: baseFixture.audienceAdaptation,
@@ -123,7 +123,7 @@ const missingKey: Agent = {
 void missingKey;
 
 // NEGATIVE: `undefined` is not the sentinel — only `null` spells inherit.
-// @ts-expect-error — `undefined` is not assignable to an organ key; the sentinel is `null`.
+// @ts-expect-error — `undefined` is not assignable to a dimension key; the sentinel is `null`.
 const undefinedNotSentinel: Agent = { ...baseFixture, role: undefined };
 void undefinedNotSentinel;
 
@@ -162,7 +162,7 @@ void composed;
 const eagerComposition: Skill = { ...leaf, composition: [leaf] };
 
 // Silence "declared but never read" for the intentional fault bindings.
-void wrongOrgan;
+void wrongDimension;
 void fenceClash;
 void scalarGivenArray;
 void setGivenScalar;

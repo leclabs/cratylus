@@ -1,6 +1,6 @@
 // The claude-code projection of the agent ANATOMY: assemble a full SOUL `.md`
-// (front-matter + `## Organ` sections + the `## Memory Protocol` genus block) from
-// a typed agent's organ vector; and project a skill cell to its SKILL.md. This is
+// (front-matter + `## Dimension` sections + the `## Memory Protocol` genus block) from
+// a typed agent's dimension vector; and project a skill cell to its SKILL.md. This is
 // agent-forge's claude adapter owning "project a typed Agent/Skill to claude-code
 // markdown" — the inversion's projection-to-disk path.
 //
@@ -20,13 +20,13 @@
 
 import type { Agent } from '../../anatomy/index.js';
 import { markToColor } from '../../anatomy/index.js';
-// The harness-neutral organ→markdown-body machinery, imported DOWNWARD from core
-// (the shared helpers `agentBody`/`organTitle`/`skillBody` + the `ResolvedSkill`
+// The harness-neutral dimension→markdown-body machinery, imported DOWNWARD from core
+// (the shared helpers `agentBody`/`dimensionTitle`/`skillBody` + the `ResolvedSkill`
 // shape). Re-exported below so existing `adapters/claude` importers are unaffected.
 import {
   type ResolvedSkill,
   agentBody,
-  organTitle,
+  dimensionTitle,
   skillBody,
 } from '../../core/anatomy-body.js';
 import type { HarnessAdapter } from '../../core/index.js';
@@ -34,15 +34,15 @@ import { serializeClaudeHooksReport } from './write.js';
 
 // Re-export the shared, harness-neutral body machinery so `adapters/claude`
 // consumers keep importing them from here (byte-identical projection).
-export { type ResolvedSkill, agentBody, organTitle, skillBody };
+export { type ResolvedSkill, agentBody, dimensionTitle, skillBody };
 
 // ── Agent projection (from the Agent vector directly) ────────────────────────
 
 /**
  * The SOUL front-matter: `name`, `description`, `color`. `description` is the
  * agent's σ_human* `description` field VERBATIM — the human-read selection line
- * the subagent-router surfaces. It is NOT `persona` (σ*, the model-read identity
- * body, routed to `## Persona` in the body) and NOT emoji-prefixed; the mark's
+ * the subagent-router surfaces. It is NOT `archetype` (σ*, the model-read identity
+ * body, routed to `## Archetype` in the body) and NOT emoji-prefixed; the mark's
  * emoji drives `color` via `markToColor`, a separate axis.
  */
 function agentFrontMatter(a: Agent): string[] {

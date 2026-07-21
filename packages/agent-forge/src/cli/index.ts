@@ -431,11 +431,11 @@ cli
 cli
   .command(
     'catalog',
-    'Enumerate the organ-value catalog of a corpus (discover the option-space)',
+    'Enumerate the fragment catalog of a corpus (discover the option-space)',
   )
   .option(
     '--corpus <dir>',
-    "corpus organs/ dir (default: agent-anatomy's src/organs when present)",
+    "corpus dimensions/ dir (default: agent-anatomy's src/dimensions when present)",
   )
   .option('--json', 'emit the machine contract as JSON instead of a table')
   .action(async (opts: { corpus?: string; json?: boolean }) => {

@@ -1,23 +1,27 @@
-// The runtime organ-metadata descriptor (`ANATOMY`) is SINGLE-SOURCED against
-// the per-organ branded-string TYPE aliases. This file is the RUNTIME guard:
-// the keyset is EXACTLY the 22 fragment-organ literals — no missing organ, no
-// extra key, no drift between the descriptor and the corpus's actual organ
-// dirs (persona/provenance keep their dirs for README-only docs, but carry no
-// `.ts` value cells and are NOT `Organ` fragment members — D13/D3).
+// The runtime dimension-metadata descriptor (`ANATOMY`) is SINGLE-SOURCED against
+// the per-dimension branded-string TYPE aliases. This file is the RUNTIME guard:
+// the keyset is EXACTLY the 22 fragment-dimension literals — no missing dimension, no
+// extra key, no drift between the descriptor and the corpus's actual dimension
+// dirs (archetype/provenance keep their dirs for README-only docs, but carry no
+// `.ts` value cells and are NOT `Dimension` fragment members — D13/D3).
 
 import { readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { ANATOMY, ORGAN_NAMES, type Organ } from '../../src/anatomy/index.js';
+import {
+  ANATOMY,
+  DIMENSION_NAMES,
+  type Dimension,
+} from '../../src/anatomy/index.js';
 
-// The 22 fragment-organ literals, copied here as the INDEPENDENT oracle (this
-// list is authored from the `Organ` union in the anatomy doc; if the union
+// The 22 fragment-dimension literals, copied here as the INDEPENDENT oracle (this
+// list is authored from the `Dimension` union in the anatomy doc; if the union
 // grows/shrinks this test must be updated alongside `ANATOMY`, which is
-// exactly the point — adding an organ forces touching its metadata AND this
-// assertion together). `persona` and `provenance` are excluded: neither is a
-// σ*-fragment organ (persona = plain string, provenance = structured `{mark}`).
-const THE_22: readonly Organ[] = [
+// exactly the point — adding a dimension forces touching its metadata AND this
+// assertion together). `archetype` and `provenance` are excluded: neither is a
+// σ*-fragment dimension (archetype = plain string, provenance = structured `{mark}`).
+const THE_22: readonly Dimension[] = [
   'autonomy',
   'role',
   'formality',
@@ -43,23 +47,25 @@ const THE_22: readonly Organ[] = [
 ];
 
 describe('ANATOMY descriptor', () => {
-  it('has exactly the 22 organs as keys (no missing, no extra)', () => {
-    expect([...ORGAN_NAMES].sort()).toEqual([...THE_22].sort());
+  it('has exactly the 22 dimensions as keys (no missing, no extra)', () => {
+    expect([...DIMENSION_NAMES].sort()).toEqual([...THE_22].sort());
     expect(Object.keys(ANATOMY)).toHaveLength(22);
   });
 
   it('every axis/kind/arity is a legal value', () => {
-    for (const organ of ORGAN_NAMES) {
-      const m = ANATOMY[organ];
-      expect(['STANCE', 'CONATUS']).toContain(m.axis);
+    for (const dimension of DIMENSION_NAMES) {
+      const m = ANATOMY[dimension];
+      expect(['Persona', 'Constitution']).toContain(m.axis);
       expect(['enum', 'open', 'coined']).toContain(m.kind);
       expect(['scalar', 'set']).toContain(m.arity);
     }
   });
 
-  it('the six set organs are exactly the set-arity entries', () => {
-    const setOrgans = ORGAN_NAMES.filter((o) => ANATOMY[o].arity === 'set');
-    expect([...setOrgans].sort()).toEqual(
+  it('the six set dimensions are exactly the set-arity entries', () => {
+    const setDimensions = DIMENSION_NAMES.filter(
+      (o) => ANATOMY[o].arity === 'set',
+    );
+    expect([...setDimensions].sort()).toEqual(
       [
         'autonomy',
         'guardrails',
@@ -71,25 +77,25 @@ describe('ANATOMY descriptor', () => {
     );
   });
 
-  it('matches the actual organ dirs in agent-anatomy (no descriptor↔corpus drift)', () => {
+  it('matches the actual dimension dirs in agent-anatomy (no descriptor↔corpus drift)', () => {
     const here = dirname(fileURLToPath(import.meta.url));
-    const anatomyOrgans = join(
+    const anatomyDimensions = join(
       here,
       '..',
       '..',
       '..',
       'agent-anatomy',
       'src',
-      'organs',
+      'dimensions',
     );
-    // persona/ and provenance/ dirs still exist (README-only docs) but hold no
-    // `.ts` value cells and are not `Organ` fragment members — exclude them
+    // archetype/ and provenance/ dirs still exist (README-only docs) but hold no
+    // `.ts` value cells and are not `Dimension` fragment members — exclude them
     // from the descriptor↔corpus comparison.
-    const dirs = readdirSync(anatomyOrgans, { withFileTypes: true })
+    const dirs = readdirSync(anatomyDimensions, { withFileTypes: true })
       .filter((d) => d.isDirectory())
       .map((d) => d.name)
-      .filter((name) => name !== 'persona' && name !== 'provenance')
+      .filter((name) => name !== 'archetype' && name !== 'provenance')
       .sort();
-    expect(dirs).toEqual([...ORGAN_NAMES].sort());
+    expect(dirs).toEqual([...DIMENSION_NAMES].sort());
   });
 });

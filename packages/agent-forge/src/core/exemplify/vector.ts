@@ -1,55 +1,59 @@
 /**
  * Agent elevation — the exemplify+elicit leg: a step-1 agent (raw NL held
- * verbatim on the `persona` organ) → a typed 24-organ selection vector that
+ * verbatim on the `archetype` dimension) → a typed 24-dimension selection vector that
  * REPLACES the config-IR form as the agent's single source of truth.
  *
- * SEMANTIC SEAM: reading evidence out of the description — which organ a
- * span speaks to, which value it selects, which organs are SILENT and what
+ * SEMANTIC SEAM: reading evidence out of the description — which dimension a
+ * span speaks to, which value it selects, which dimensions are SILENT and what
  * the bisecting elicitation question is (/elicit's information-gain law) —
  * is an LLM pass, authored into the {@link ElevationSpec}. The frame owns the
  * mechanical laws and refuses loudly on each:
- *  - completeness: all 24 organ keys, always (inherit renders as `null`);
+ *  - completeness: all 24 dimension keys, always (inherit renders as `null`);
  *  - never-invent: a concrete value MUST carry a provenance trace — a
  *    `quote` that is verbatim-containable in the source, or an explicit
  *    `inference` tag with a note; an untraceable value is an invented value;
  *  - silence ⇒ `ELICIT:` marker (machine-greppable) + a sidecar elicitation
  *    script with ≥ 2 candidates and 1 bisecting question — never an enum;
- *  - arity: a scalar organ takes exactly one fragment;
+ *  - arity: a scalar dimension takes exactly one fragment;
  *  - replacement no-loss (REC ≽): the step-1 source text must be recoverable
  *    from the emitted vector module, else replacement would drop content.
  */
 
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { ANATOMY, ORGAN_NAMES, type Organ } from '../../anatomy/index.js';
+import {
+  ANATOMY,
+  DIMENSION_NAMES,
+  type Dimension,
+} from '../../anatomy/index.js';
 import { canonicalText } from './digest.js';
-import { ORGAN_FIELD } from './organ-fields.js';
+import { DIMENSION_FIELD } from './dimension-fields.js';
 import { ExemplifyRefusal } from './types.js';
 
-/** The provenance trace a concrete organ value must carry. */
-export interface OrganEvidence {
+/** The provenance trace a concrete dimension value must carry. */
+export interface DimensionEvidence {
   /** `quote`: `note` is a verbatim span of the source (checked). `inference`:
    *  an explicit inference tag; `note` states the inference. */
   type: 'quote' | 'inference';
   note: string;
 }
 
-/** A selected fragment (slug + definiens) for one organ value. */
-export interface OrganFragmentSpec {
+/** A selected fragment (slug + definiens) for one dimension value. */
+export interface DimensionFragmentSpec {
   slug: string;
   definiens: string;
 }
 
-/** A concrete, evidence-traced organ value. */
-export interface OrganValuePlan {
+/** A concrete, evidence-traced dimension value. */
+export interface FragmentPlan {
   kind: 'value';
-  /** Exactly one for scalar organs; one-or-more for the five set organs. */
-  fragments: readonly OrganFragmentSpec[];
-  evidence: OrganEvidence;
+  /** Exactly one for scalar dimensions; one-or-more for the five set dimensions. */
+  fragments: readonly DimensionFragmentSpec[];
+  evidence: DimensionEvidence;
 }
 
-/** A silent organ: no answer is invented — the operator is asked. */
-export interface OrganElicitPlan {
+/** A silent dimension: no answer is invented — the operator is asked. */
+export interface DimensionElicitPlan {
   kind: 'elicit';
   /** ≥ 2 candidate values the bisecting question discriminates between. */
   candidates: readonly string[];
@@ -58,28 +62,31 @@ export interface OrganElicitPlan {
 }
 
 /** Deliberate harness-inheritance (`null` in the vector). */
-export interface OrganInheritPlan {
+export interface DimensionInheritPlan {
   kind: 'inherit';
 }
 
-export type OrganPlan = OrganValuePlan | OrganElicitPlan | OrganInheritPlan;
+export type DimensionPlan =
+  | FragmentPlan
+  | DimensionElicitPlan
+  | DimensionInheritPlan;
 
 export interface ElevationSpec {
   /** The agent name (module + export identity). */
   name: string;
   /** TS export identifier; default: the name camel-cased. */
   exportName?: string;
-  /** All 24 organs — completeness is the type; runtime re-checked. */
-  organs: Record<Organ, OrganPlan>;
+  /** All 24 dimensions — completeness is the type; runtime re-checked. */
+  dimensions: Record<Dimension, DimensionPlan>;
 }
 
 export interface RenderedVector {
   /** The TS module source (`export const <name>: Agent = { … }`). */
   module: string;
-  /** Sidecar elicitation scripts, one per silent organ; null when none. */
+  /** Sidecar elicitation scripts, one per silent dimension; null when none. */
   elicit: Record<string, { candidates: string[]; question: string }> | null;
-  /** Sidecar provenance map, one trace per non-null organ. */
-  provenance: Record<string, OrganEvidence>;
+  /** Sidecar provenance map, one trace per non-null dimension. */
+  provenance: Record<string, DimensionEvidence>;
 }
 
 const camel = (s: string): string =>
@@ -89,8 +96,11 @@ function tsString(value: string): string {
   return JSON.stringify(value);
 }
 
-function renderFragment(organ: Organ, f: OrganFragmentSpec): string {
-  return `{ organ: '${organ}', slug: '${f.slug}', definiens: ${tsString(f.definiens)} }`;
+function renderFragment(
+  dimension: Dimension,
+  f: DimensionFragmentSpec,
+): string {
+  return `{ dimension: '${dimension}', slug: '${f.slug}', definiens: ${tsString(f.definiens)} }`;
 }
 
 /**
@@ -103,22 +113,24 @@ export function renderAgentVector(
   opts: { sourceText?: string } = {},
 ): RenderedVector {
   const reasons: string[] = [];
-  const organKeys = Object.keys(spec.organs) as Organ[];
-  for (const organ of ORGAN_NAMES) {
-    if (!(organ in spec.organs)) reasons.push(`missing organ '${organ}'`);
+  const dimensionKeys = Object.keys(spec.dimensions) as Dimension[];
+  for (const dimension of DIMENSION_NAMES) {
+    if (!(dimension in spec.dimensions))
+      reasons.push(`missing dimension '${dimension}'`);
   }
-  for (const key of organKeys) {
-    if (!ORGAN_NAMES.includes(key)) reasons.push(`unknown organ '${key}'`);
+  for (const key of dimensionKeys) {
+    if (!DIMENSION_NAMES.includes(key))
+      reasons.push(`unknown dimension '${key}'`);
   }
   const source =
     opts.sourceText === undefined ? undefined : canonicalText(opts.sourceText);
   const elicit: Record<string, { candidates: string[]; question: string }> = {};
-  const provenance: Record<string, OrganEvidence> = {};
+  const provenance: Record<string, DimensionEvidence> = {};
   const lines: string[] = [`  name: '${spec.name}',`];
 
-  for (const organ of ORGAN_NAMES) {
-    const plan = spec.organs[organ];
-    const field = ORGAN_FIELD[organ];
+  for (const dimension of DIMENSION_NAMES) {
+    const plan = spec.dimensions[dimension];
+    const field = DIMENSION_FIELD[dimension];
     if (plan === undefined) continue;
     if (plan.kind === 'inherit') {
       lines.push(`  ${field}: null,`);
@@ -127,25 +139,27 @@ export function renderAgentVector(
     if (plan.kind === 'elicit') {
       if (plan.candidates.length < 2) {
         reasons.push(
-          `organ '${organ}': an elicitation needs ≥ 2 candidates (a bisecting question needs a live split)`,
+          `dimension '${dimension}': an elicitation needs ≥ 2 candidates (a bisecting question needs a live split)`,
         );
       }
       if (!plan.question) {
-        reasons.push(`organ '${organ}': elicitation without a question`);
+        reasons.push(
+          `dimension '${dimension}': elicitation without a question`,
+        );
       }
-      elicit[organ] = {
+      elicit[dimension] = {
         candidates: [...plan.candidates],
         question: plan.question,
       };
       lines.push(
-        `  ${field}: null, // ELICIT: ${spec.name}.elicit.json#${organ}`,
+        `  ${field}: null, // ELICIT: ${spec.name}.elicit.json#${dimension}`,
       );
       continue;
     }
     // kind === 'value' — never-invent: a value with no trace is invented.
     if (!plan.evidence?.note) {
       reasons.push(
-        `organ '${organ}': concrete value with no provenance trace — an untraced value is an invented value`,
+        `dimension '${dimension}': concrete value with no provenance trace — an untraced value is an invented value`,
       );
       continue;
     }
@@ -155,37 +169,37 @@ export function renderAgentVector(
       !source.includes(canonicalText(plan.evidence.note))
     ) {
       reasons.push(
-        `organ '${organ}': quote evidence not found in the source — an unfounded quote is an invented value`,
+        `dimension '${dimension}': quote evidence not found in the source — an unfounded quote is an invented value`,
       );
       continue;
     }
-    const arity = ANATOMY[organ].arity;
+    const arity = ANATOMY[dimension].arity;
     if (arity === 'scalar' && plan.fragments.length !== 1) {
       reasons.push(
-        `organ '${organ}' is scalar: exactly one fragment (got ${plan.fragments.length})`,
+        `dimension '${dimension}' is scalar: exactly one fragment (got ${plan.fragments.length})`,
       );
       continue;
     }
     if (plan.fragments.length === 0) {
-      reasons.push(`organ '${organ}': value plan with zero fragments`);
+      reasons.push(`dimension '${dimension}': value plan with zero fragments`);
       continue;
     }
-    provenance[organ] = plan.evidence;
+    provenance[dimension] = plan.evidence;
     if (arity === 'set') {
       const items = plan.fragments
-        .map((f) => `    ${renderFragment(organ, f)},`)
+        .map((f) => `    ${renderFragment(dimension, f)},`)
         .join('\n');
       lines.push(`  ${field}: [\n${items}\n  ],`);
     } else {
-      const f = plan.fragments[0] as OrganFragmentSpec;
-      lines.push(`  ${field}: ${renderFragment(organ, f)},`);
+      const f = plan.fragments[0] as DimensionFragmentSpec;
+      lines.push(`  ${field}: ${renderFragment(dimension, f)},`);
     }
   }
   if (reasons.length > 0) throw new ExemplifyRefusal(reasons);
 
   const exportName = spec.exportName ?? camel(spec.name);
   const module = [
-    `/** ${spec.name} — 24-organ selection vector, elevated via exemplify+elicit`,
+    `/** ${spec.name} — 24-dimension selection vector, elevated via exemplify+elicit`,
     ` *  (agent-forge optimize). Sidecars: ${spec.name}.provenance.json${
       Object.keys(elicit).length > 0 ? ` · ${spec.name}.elicit.json` : ''
     }. */`,
@@ -235,7 +249,7 @@ export function elevateAgent(opts: ElevateOptions): ElevateResult {
   // REC ≽ at the data level: the step-1 text must be recoverable from the
   // vector's own fragment definientia (serialization escaping is irrelevant
   // to recoverability — the vector, not the TS file, is the source form).
-  const carried = Object.values(opts.spec.organs)
+  const carried = Object.values(opts.spec.dimensions)
     .flatMap((plan) => (plan.kind === 'value' ? [...plan.fragments] : []))
     .map((f) => canonicalText(f.definiens))
     .join('\n');
@@ -244,7 +258,7 @@ export function elevateAgent(opts: ElevateOptions): ElevateResult {
     !carried.includes(canonicalText(sourceText))
   ) {
     throw new ExemplifyRefusal([
-      'replacement would lose step-1 content (REC ≽ fails): the source text is not recoverable from the vector — carry it verbatim (persona organ) before replacing',
+      'replacement would lose step-1 content (REC ≽ fails): the source text is not recoverable from the vector — carry it verbatim (archetype dimension) before replacing',
     ]);
   }
   const agentsDir = join(opts.outDir, 'agents');

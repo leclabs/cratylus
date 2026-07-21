@@ -1,30 +1,30 @@
 import type { Agent } from '@leclabs/agent-forge/anatomy';
-import { delegation as delegation_actions } from '../organs/actions/delegation.js';
-import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
-import { convergence as convergence_audienceAdaptation } from '../organs/audience-adaptation/convergence.js';
-import { reviewCritique as reviewCritique_capabilities } from '../organs/capabilities/review-critique.js';
-import { formal as formal_formality } from '../organs/formality/formal.js';
-import { riskOriented as riskOriented_framing } from '../organs/framing/risk-oriented.js';
-import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/harm-avoidance.js';
-import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
-import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
-import { inputUntrusted as inputUntrusted_guardrails } from '../organs/guardrails/input-untrusted.js';
-import { scopeOfAuthority as scopeOfAuthority_guardrails } from '../organs/guardrails/scope-of-authority.js';
-import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
-import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
-import { correctness as correctness_objective } from '../organs/objective/correctness.js';
-import { structuredDecision as structuredDecision_outputFormat } from '../organs/output-format/structured-decision.js';
-import { react as react_reasoningStrategy } from '../organs/reasoning-strategy/react.js';
-import { review as review_role } from '../organs/role/review.js';
-import { optimize as optimize_satisficing } from '../organs/satisficing/optimize.js';
-import { selfCritique as selfCritique_selfEvaluation } from '../organs/self-evaluation/self-critique.js';
-import { comprehension as comprehension_situationAwareness } from '../organs/situation-awareness/comprehension.js';
-import { reasoningTrace as reasoningTrace_transparency } from '../organs/transparency/reasoning-trace.js';
+import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
+import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
+import { convergence as convergence_audienceAdaptation } from '../dimensions/audience-adaptation/convergence.js';
+import { reviewCritique as reviewCritique_capabilities } from '../dimensions/capabilities/review-critique.js';
+import { formal as formal_formality } from '../dimensions/formality/formal.js';
+import { riskOriented as riskOriented_framing } from '../dimensions/framing/risk-oriented.js';
+import { harmAvoidance as harmAvoidance_guardrails } from '../dimensions/guardrails/harm-avoidance.js';
+import { helpfulness as helpfulness_guardrails } from '../dimensions/guardrails/helpfulness.js';
+import { honesty as honesty_guardrails } from '../dimensions/guardrails/honesty.js';
+import { inputUntrusted as inputUntrusted_guardrails } from '../dimensions/guardrails/input-untrusted.js';
+import { scopeOfAuthority as scopeOfAuthority_guardrails } from '../dimensions/guardrails/scope-of-authority.js';
+import { takeTheBest as takeTheBest_heuristics } from '../dimensions/heuristics/take-the-best.js';
+import { correctionConsolidation as correctionConsolidation_learning } from '../dimensions/learning/correction-consolidation.js';
+import { correctness as correctness_objective } from '../dimensions/objective/correctness.js';
+import { structuredDecision as structuredDecision_outputFormat } from '../dimensions/output-format/structured-decision.js';
+import { react as react_reasoningStrategy } from '../dimensions/reasoning-strategy/react.js';
+import { review as review_role } from '../dimensions/role/review.js';
+import { optimize as optimize_satisficing } from '../dimensions/satisficing/optimize.js';
+import { selfCritique as selfCritique_selfEvaluation } from '../dimensions/self-evaluation/self-critique.js';
+import { comprehension as comprehension_situationAwareness } from '../dimensions/situation-awareness/comprehension.js';
+import { reasoningTrace as reasoningTrace_transparency } from '../dimensions/transparency/reasoning-trace.js';
 export const principalEngineerReviewer: Agent = {
   name: 'principal-engineer-reviewer',
   description:
     "Use this agent when a change needs a verdict before it ships — a pass/fail with findings on what's wrong; it judges and flags, never authoring the fix itself.",
-  persona:
+  archetype:
     'Ruler archetype of the review gate — judge an existing artifact against correctness · security · style · fit → verdict + findings (¬author the fix), the principal-IC standing specialized to guard what ships; risk-weighted, scope-bounded.',
   role: review_role,
   formality: formal_formality,

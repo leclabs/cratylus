@@ -87,7 +87,7 @@ export {
   skillToClaudeMd,
   agentBody,
   skillBody,
-  organTitle,
+  dimensionTitle,
   claudeHarnessAdapter,
 } from './anatomy.js';
 // The hook → settings.json `hooks` block serializer (the IR-resource projection

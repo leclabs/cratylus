@@ -3,9 +3,9 @@
 //
 // GOVERNING INVARIANT (the project's whole point): every deployed σ* artifact the
 // model reads is formal σ* under ρ, never human prose. This leg enforces it over the
-// σ* payload set — the fields whose reader binding ρ is σ* (model-read): every organ
+// σ* payload set — the fields whose reader binding ρ is σ* (model-read): every dimension
 // VALUE string · every skill `formalBlock` (the typed `SkillExpression`) · every agent
-// `persona`. Membership is a per-FIELD partition (`RESIDUE_GATED_FIELDS` below), NOT a
+// `archetype`. Membership is a per-FIELD partition (`RESIDUE_GATED_FIELDS` below), NOT a
 // per-file rule — the skill cell carries BOTH a σ* field (`formalBlock`) and a σ_human*
 // field (`description`). The σ_human* fields — skill `description` · agent `description`
 // (human-read selection bounds the router/subagent surfaces) — are EXEMPT by ρ
@@ -14,7 +14,7 @@
 //
 // DECIDABLE PREDICATE (two shapes, one leg):
 //
-//   SINGLE-LINE (organ value residue · skill `description`) admissible ⇔
+//   SINGLE-LINE (dimension value residue · skill `description`) admissible ⇔
 //       ∅  (empty — the anchor α fully fires the concept, residue=∅),  OR
 //       a σ* EXPRESSION: a symbol/anchor (shortlex kebab, opt. application `f(args)`),
 //       or the declared value-algebra operators applied over such terms. The admitted
@@ -358,27 +358,27 @@ export function admissibleFormalBlock(
 // membership: σ* (model-read) ⇒ residue-gated at its shape; σ_human* (human-read
 // selection bound) ⇒ EXEMPT. This is a per-FIELD partition, NOT a per-file rule — a
 // skill cell carries a σ* field (`formalBlock`) AND a σ_human* field (`description`),
-// and an agent carries a σ* `persona` AND a σ_human* `description`.
+// and an agent carries a σ* `archetype` AND a σ_human* `description`.
 
 /** A cell field's reader binding — the two ρ classes the partition splits on. */
 export type ReaderBinding = 'σ*' | 'σ_human*';
 
 /** A σ*-gated field: its address + the residue shape AC-RESIDUE reads it at. */
 export interface GatedField {
-  readonly field: 'organ-value' | 'skill.formalBlock' | 'agent.persona';
+  readonly field: 'fragment' | 'skill.formalBlock' | 'agent.archetype';
   readonly shape: ResidueShape;
 }
 
 /**
  * The σ* fields residue/parsimony gate — the gate's field-partition contract, one
- * home. organ value (single-line `α ≜ residue`) · skill `formalBlock` (the typed
- * `SkillExpression`, a formalize block) · agent `persona` (single-line σ* identity).
+ * home. dimension value (single-line `α ≜ residue`) · skill `formalBlock` (the typed
+ * `SkillExpression`, a formalize block) · agent `archetype` (single-line σ* identity).
  * `skill.description` is DELIBERATELY ABSENT (the E2a un-gating — grep the set).
  */
 export const RESIDUE_GATED_FIELDS: readonly GatedField[] = [
-  { field: 'organ-value', shape: 'single-line' },
+  { field: 'fragment', shape: 'single-line' },
   { field: 'skill.formalBlock', shape: 'formal-block' },
-  { field: 'agent.persona', shape: 'single-line' },
+  { field: 'agent.archetype', shape: 'single-line' },
 ] as const;
 
 /**

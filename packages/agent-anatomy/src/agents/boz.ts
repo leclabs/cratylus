@@ -1,31 +1,31 @@
 import type { Agent } from '@leclabs/agent-forge/anatomy';
-import { delegation as delegation_actions } from '../organs/actions/delegation.js';
-import { fileOps as fileOps_actions } from '../organs/actions/file-ops.js';
-import { maintenance as maintenance_audienceAdaptation } from '../organs/audience-adaptation/maintenance.js';
-import { researchInvestigation as researchInvestigation_capabilities } from '../organs/capabilities/research-investigation.js';
-import { technicalWriting as technicalWriting_capabilities } from '../organs/capabilities/technical-writing.js';
-import { expansive as expansive_formality } from '../organs/formality/expansive.js';
-import { analytical as analytical_framing } from '../organs/framing/analytical.js';
-import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/harm-avoidance.js';
-import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
-import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
-import { inputUntrusted as inputUntrusted_guardrails } from '../organs/guardrails/input-untrusted.js';
-import { recognition as recognition_heuristics } from '../organs/heuristics/recognition.js';
-import { takeTheBest as takeTheBest_heuristics } from '../organs/heuristics/take-the-best.js';
-import { correctionConsolidation as correctionConsolidation_learning } from '../organs/learning/correction-consolidation.js';
-import { faithfulRecord as faithfulRecord_objective } from '../organs/objective/faithful-record.js';
-import { naturalLanguage as naturalLanguage_outputFormat } from '../organs/output-format/natural-language.js';
-import { reflexion as reflexion_reasoningStrategy } from '../organs/reasoning-strategy/reflexion.js';
-import { document as document_role } from '../organs/role/document.js';
-import { satisfice as satisfice_satisficing } from '../organs/satisficing/satisfice.js';
-import { selfCritique as selfCritique_selfEvaluation } from '../organs/self-evaluation/self-critique.js';
-import { perception as perception_situationAwareness } from '../organs/situation-awareness/perception.js';
-import { uncertaintyDisclosure as uncertaintyDisclosure_transparency } from '../organs/transparency/uncertainty-disclosure.js';
+import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
+import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
+import { maintenance as maintenance_audienceAdaptation } from '../dimensions/audience-adaptation/maintenance.js';
+import { researchInvestigation as researchInvestigation_capabilities } from '../dimensions/capabilities/research-investigation.js';
+import { technicalWriting as technicalWriting_capabilities } from '../dimensions/capabilities/technical-writing.js';
+import { expansive as expansive_formality } from '../dimensions/formality/expansive.js';
+import { analytical as analytical_framing } from '../dimensions/framing/analytical.js';
+import { harmAvoidance as harmAvoidance_guardrails } from '../dimensions/guardrails/harm-avoidance.js';
+import { helpfulness as helpfulness_guardrails } from '../dimensions/guardrails/helpfulness.js';
+import { honesty as honesty_guardrails } from '../dimensions/guardrails/honesty.js';
+import { inputUntrusted as inputUntrusted_guardrails } from '../dimensions/guardrails/input-untrusted.js';
+import { recognition as recognition_heuristics } from '../dimensions/heuristics/recognition.js';
+import { takeTheBest as takeTheBest_heuristics } from '../dimensions/heuristics/take-the-best.js';
+import { correctionConsolidation as correctionConsolidation_learning } from '../dimensions/learning/correction-consolidation.js';
+import { faithfulRecord as faithfulRecord_objective } from '../dimensions/objective/faithful-record.js';
+import { naturalLanguage as naturalLanguage_outputFormat } from '../dimensions/output-format/natural-language.js';
+import { reflexion as reflexion_reasoningStrategy } from '../dimensions/reasoning-strategy/reflexion.js';
+import { document as document_role } from '../dimensions/role/document.js';
+import { satisfice as satisfice_satisficing } from '../dimensions/satisficing/satisfice.js';
+import { selfCritique as selfCritique_selfEvaluation } from '../dimensions/self-evaluation/self-critique.js';
+import { perception as perception_situationAwareness } from '../dimensions/situation-awareness/perception.js';
+import { uncertaintyDisclosure as uncertaintyDisclosure_transparency } from '../dimensions/transparency/uncertainty-disclosure.js';
 export const boz: Agent = {
   name: 'boz',
   description:
     "Use for a faithful, on-the-record chronicle of a subject (default: the Operator) — a biographical or decision record, never action on the subject's behalf.",
-  persona:
+  archetype:
     'subject := provided subject ?? Operator\npersona := Boswell(subject)',
   role: document_role,
   formality: expansive_formality,

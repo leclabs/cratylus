@@ -25,7 +25,7 @@
 // the suite (remove it); a new divergence is never pinnable silently.
 //
 // COVERAGE (comprehensive — all names are the discovered anchor): every
-// organ/dimension FRAGMENT (file basename == body σ*-anchor) · every composite/rule/hook
+// dimension/dimension FRAGMENT (file basename == body σ*-anchor) · every composite/rule/hook
 // cell (file basename == declared `.name`/`.id`) · every dimension DIRECTORY (dir name ==
 // a declared ANATOMY key). The file/directory structure IS the discovered naming.
 //
@@ -36,12 +36,12 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { ORGAN_NAMES } from '@leclabs/agent-forge/anatomy';
+import { DIMENSION_NAMES } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
 
 const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const srcRoot = join(anatomyRoot, 'src');
-const organsRoot = join(srcRoot, 'organs');
+const dimensionsRoot = join(srcRoot, 'dimensions');
 
 /** The σ* anchor a fragment declares: the first bareword of its template-literal body. */
 function bodyAnchor(source: string): string | null {
@@ -69,8 +69,8 @@ const RATCHET: ReadonlyMap<string, string> = new Map();
 
 async function fragmentFiles(): Promise<string[]> {
   const out: string[] = [];
-  for await (const p of glob('*/*.ts', { cwd: organsRoot }))
-    out.push(join(organsRoot, p));
+  for await (const p of glob('*/*.ts', { cwd: dimensionsRoot }))
+    out.push(join(dimensionsRoot, p));
   return out.sort();
 }
 
@@ -83,7 +83,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     const staleRatchet: string[] = [];
 
     for (const f of files) {
-      const key = relative(organsRoot, f).replace(/\.ts$/, '');
+      const key = relative(dimensionsRoot, f).replace(/\.ts$/, '');
       const anchor = bodyAnchor(readFileSync(f, 'utf-8'));
       if (!anchor) continue; // not a σ*-fragment shape (e.g. an index) — out of scope
       const file = fileAnchor(f);
@@ -134,11 +134,14 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
 
   it('every dimension DIRECTORY name is a declared ANATOMY key (dir == discovered axis)', async () => {
     const dirs: string[] = [];
-    for await (const e of glob('*', { cwd: organsRoot, withFileTypes: true })) {
+    for await (const e of glob('*', {
+      cwd: dimensionsRoot,
+      withFileTypes: true,
+    })) {
       if (e.isDirectory()) dirs.push(e.name);
     }
     expect(dirs.length).toBeGreaterThan(20); // non-vacuous: the dimension dirs are enumerated
-    const keys = new Set<string>(ORGAN_NAMES);
+    const keys = new Set<string>(DIMENSION_NAMES);
     const orphanDirs = dirs.filter((d) => !keys.has(d));
     expect(orphanDirs, `dirs not in ANATOMY: ${orphanDirs.join(', ')}`).toEqual(
       [],

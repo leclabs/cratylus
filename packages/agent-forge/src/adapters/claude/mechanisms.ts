@@ -10,8 +10,8 @@ import type { HarnessMechanismMap } from '../../core/engine/boundary.js';
 
 /** claude-code's realization of every `ActivationMode` → its `.claude/` mechanism. */
 export const claudeMechanisms: HarnessMechanismMap = {
-  // An organ value-fragment has no artifact of its own — it inlines into the SOUL
-  // of each agent that selects it (`agentBody` composes the `## Organ` sections).
+  // A dimension value-fragment has no artifact of its own — it inlines into the SOUL
+  // of each agent that selects it (`agentBody` composes the `## Dimension` sections).
   'compose-only': {
     mode: 'compose-only',
     injection: 'compose',
@@ -23,7 +23,7 @@ export const claudeMechanisms: HarnessMechanismMap = {
     mode: 'identity',
     injection: 'file',
     artifact: 'agents/<name>.md',
-    note: 'the agent SOUL (front-matter + composed organ sections)',
+    note: 'the agent SOUL (front-matter + composed dimension sections)',
   },
   // A rule activates at a directory scope — a nested `AGENTS.md` (project scope)
   // the harness loads for cells under that path.

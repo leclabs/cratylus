@@ -24,7 +24,7 @@ import { readFileSync, rmSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect } from 'vitest';
 import { aiderAdapter } from '../../../src/adapters/aider/index.js';
-import type { Agent as OrganVector } from '../../../src/anatomy/index.js';
+import type { Agent as DimensionVector } from '../../../src/anatomy/index.js';
 import {
   type IR,
   projectVector,
@@ -34,8 +34,8 @@ import {
 import { ALL_ADAPTERS, makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
-/** All 22 fragment-organ fields explicitly harness-inherited (`null`). */
-const NULL_ORGANS: Omit<OrganVector, 'name' | 'persona'> = {
+/** All 22 fragment-dimension fields explicitly harness-inherited (`null`). */
+const NULL_DIMENSIONS: Omit<DimensionVector, 'name' | 'archetype'> = {
   autonomy: null,
   role: null,
   formality: null,
@@ -153,13 +153,13 @@ story(
         laws: ['¬green ⇒ ¬tag'],
       }),
     });
-    // `persona` is a plain identity string (not a fragment organ, D13) — it
-    // drives `description`; `role` is a real fragment organ, carrying the
+    // `archetype` is a plain identity string (not a fragment dimension, D13) — it
+    // drives `description`; `role` is a real fragment dimension, carrying the
     // per-target-projected body line this story is actually about.
-    const vector: OrganVector = {
-      ...NULL_ORGANS,
+    const vector: DimensionVector = {
+      ...NULL_DIMENSIONS,
       name: 'reviewer',
-      persona: 'a meticulous migration reviewer',
+      archetype: 'a meticulous migration reviewer',
       role: 'migration-reviewer ≜ a meticulous migration reviewer',
     };
     const projected = projectVector(vector);

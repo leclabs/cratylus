@@ -3,7 +3,7 @@
 # unconsolidated EPISODIC records and, over a conservative watermark, prints a
 # non-blocking reminder to run a hot-path /dream. It NEVER blocks the turn.
 #
-# WHY (memory organ, E6c — harness half): per-turn ENCODE grows the raw
+# WHY (memory dimension, E6c — harness half): per-turn ENCODE grows the raw
 # EPISODIC log; only /dream folds + drains it. This is the ambient reminder that
 # the backlog has grown enough to be worth consolidating while context is hot.
 #
@@ -15,7 +15,7 @@
 #     no output. A reminder that misfires on its own flakiness is worse than a
 #     missed one.
 #   - Stop ONLY (turn.end). Registered on subagent.end would nudge transient
-#     sub-turns; the organ home is the top-level agent's.
+#     sub-turns; the dimension home is the top-level agent's.
 #
 # HOME DERIVATION (the Stop-env caveat): a top-level Stop hook carries NO
 # agent_type, so the home is not handed in. Best-effort, in order:

@@ -113,10 +113,10 @@ describe('applyRoutes — v2 store targets with a deterministic stub classifier'
     expect(left[0].routes).toEqual(['EPISODIC']);
   });
 
-  it('REJECTS a route addressed to a retired v1 organ name (SELF, MEMORY)', () => {
+  it('REJECTS a route addressed to a retired v1 dimension name (SELF, MEMORY)', () => {
     store.encode({ body: 'x' });
     const v1Self: Classifier = () => ({
-      // biome-ignore lint/suspicious/noExplicitAny: deliberately smuggling a retired organ past the types (the classifier is untyped at runtime)
+      // biome-ignore lint/suspicious/noExplicitAny: deliberately smuggling a retired dimension past the types (the classifier is untyped at runtime)
       targets: [{ store: 'SELF', content: 'who I am' } as any],
     });
     expect(() => applyRoutes(store, undefined, v1Self)).toThrow(

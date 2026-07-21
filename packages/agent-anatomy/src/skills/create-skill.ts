@@ -20,6 +20,6 @@ self-sufficient(block) ⇔ every term defined in-cell ∧ only live siblings nam
 operative(cell) ⇔ ∃ ≥1 operative element (a numbered step ∨ a fenced block ∨ substantive prose) beyond heading + formula   -- else OPERATIVE FAILs
 only-fenced-≜(cell) ⇒ EMPTY provenance (a NOTE)          -- legitimate only for a genuinely standalone skill ; else add a Bindings line
 create-skill ≜ name-as-verb → write fm → H1 + formula ( + Bindings iff it composes siblings ) → author block via formalize → resolve → verify( ∀ gate : PASS ) → iterate-until-green → deploy
-boundary       = the skill cell ; the deep prose→set-builder conversion is formalize's ; organ-vectors are create-agent's ; mints no organ values` as SkillExpression,
+boundary       = the skill cell ; the deep prose→set-builder conversion is formalize's ; dimension-vectors are create-agent's ; mints no dimension values` as SkillExpression,
   composition: () => [formalize],
 };

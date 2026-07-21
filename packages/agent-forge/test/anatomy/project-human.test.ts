@@ -1,15 +1,18 @@
-// project-human gate (E2): `projectHumanOrgan` is a PURE DETERMINISTIC function of
-// `(organ, values, doc)`. Proven here over a synthetic fixture — determinism
+// project-human gate (E2): `projectHumanDimension` is a PURE DETERMINISTIC function of
+// `(dimension, values, doc)`. Proven here over a synthetic fixture — determinism
 // (idempotent across runs + input-order-independent via slug sort), the closed
-// shape, and the source-only footer. The CORPUS witness (a committed organ README
+// shape, and the source-only footer. The CORPUS witness (a committed dimension README
 // that equals its re-projection byte-for-byte) lives in agent-anatomy's
 // `test/projection-boundary.test.ts`; this proves the function it depends on.
 
 import { describe, expect, it } from 'vitest';
-import { type OrganDoc, projectHumanOrgan } from '../../src/anatomy/index.js';
+import {
+  type DimensionDoc,
+  projectHumanDimension,
+} from '../../src/anatomy/index.js';
 
-// `heuristics` is a CONATUS/coined/set organ — a stable fixture for the shape.
-// Each value IS the SOUL body `<slug> ≜ <definiens>` — no `{organ,slug,definiens}`
+// `heuristics` is a Constitution/coined/set dimension — a stable fixture for the shape.
+// Each value IS the SOUL body `<slug> ≜ <definiens>` — no `{dimension,slug,definiens}`
 // wrapper (that shape is retired; the string carries the body).
 const values: readonly string[] = [
   'take-the-best ≜ decide on the one best cue.',
@@ -17,16 +20,16 @@ const values: readonly string[] = [
   'recognition ≜ choose the recognized option.',
 ];
 
-describe('projectHumanOrgan — pure deterministic human-view', () => {
+describe('projectHumanDimension — pure deterministic human-view', () => {
   it('is idempotent (same bytes across repeated projection)', () => {
-    const a = projectHumanOrgan('heuristics', values);
-    const b = projectHumanOrgan('heuristics', values);
+    const a = projectHumanDimension('heuristics', values);
+    const b = projectHumanDimension('heuristics', values);
     expect(a).toBe(b);
   });
 
   it('is input-order-independent (slug-sorted)', () => {
-    const forward = projectHumanOrgan('heuristics', values);
-    const shuffled = projectHumanOrgan('heuristics', [
+    const forward = projectHumanDimension('heuristics', values);
+    const shuffled = projectHumanDimension('heuristics', [
       values[2] as string,
       values[0] as string,
       values[1] as string,
@@ -42,10 +45,10 @@ describe('projectHumanOrgan — pure deterministic human-view', () => {
   });
 
   it('emits the closed shape: H1, genus quote, Values, footer', () => {
-    const md = projectHumanOrgan('heuristics', values);
+    const md = projectHumanDimension('heuristics', values);
     expect(md.startsWith('# heuristics\n')).toBe(true);
     expect(md).toContain(
-      '> **Organ — CONATUS · Heuristics** — a coined set organ.',
+      '> **Dimension — Constitution · Heuristics** — a coined set dimension.',
     );
     expect(md).toContain('## Values');
     expect(md).toContain('- anchoring ≜ anchor, adjust insufficiently.');
@@ -54,16 +57,16 @@ describe('projectHumanOrgan — pure deterministic human-view', () => {
     expect(md.endsWith('\n')).toBe(true);
   });
 
-  it('an OrganDoc gloss replaces the default genus line', () => {
-    const doc: OrganDoc = {
-      organ: 'heuristics',
+  it('an DimensionDoc gloss replaces the default genus line', () => {
+    const doc: DimensionDoc = {
+      dimension: 'heuristics',
       gloss:
         'the standing move-biases that incline an agent toward some choices.',
     };
-    const md = projectHumanOrgan('heuristics', values, doc);
+    const md = projectHumanDimension('heuristics', values, doc);
     expect(md).toContain(
-      '> **Organ — CONATUS · Heuristics.** the standing move-biases that incline an agent toward some choices.',
+      '> **Dimension — Constitution · Heuristics.** the standing move-biases that incline an agent toward some choices.',
     );
-    expect(md).not.toContain('— a coined set organ.');
+    expect(md).not.toContain('— a coined set dimension.');
   });
 });

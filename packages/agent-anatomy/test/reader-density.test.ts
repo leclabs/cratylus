@@ -31,7 +31,7 @@
 // conforms; a violation may only be pinned here deliberately, in the open.
 // No silent exemptions: a pinned surface that STOPS failing FAILS the suite
 // (remove the pin); a new violation is never pinnable silently (the sets are
-// literal here). Cross-organ consistency (root-cause H3): `llm-native` ∧
+// literal here). Cross-dimension consistency (root-cause H3): `llm-native` ∧
 // `natural-language` in one agent vector = a register contradiction.
 //
 // NON-VACUOUS: a seeded human-register definiens is convicted with named
@@ -89,7 +89,7 @@ const CONTRADICTION_PAIRS: ReadonlyArray<readonly [string, string]> = [
   ['llm-native', 'natural-language'],
 ];
 
-/** Agents with a known organ contradiction, pinned until the anatomy fix-class task. */
+/** Agents with a known dimension contradiction, pinned until the anatomy fix-class task. */
 const CONTRADICTION_RATCHET: ReadonlySet<string> = new Set([]);
 
 // ── surface enumeration (source grain — the projections follow the source) ──────
@@ -119,11 +119,11 @@ async function collect(pattern: string): Promise<string[]> {
 
 async function allSurfaces(): Promise<Surface[]> {
   const surfaces: Surface[] = [];
-  for (const rel of await collect('organs/**/*.ts')) {
+  for (const rel of await collect('dimensions/**/*.ts')) {
     const f = await firstExport<string>(join(srcRoot, rel));
     surfaces.push({
-      label: `organ ${relative('organs', rel).replace(/\.ts$/, '')}`,
-      cls: 'organ-definiens',
+      label: `dimension ${relative('dimensions', rel).replace(/\.ts$/, '')}`,
+      cls: 'dimension-definiens',
       text: splitBody(f).definiens,
     });
   }
@@ -177,7 +177,7 @@ async function allAgents(): Promise<Array<{ rel: string; agent: Agent }>> {
   return out;
 }
 
-/** Recover {slug, definiens} from an organ value's `"<slug> ≜ <definiens>"` body. */
+/** Recover {slug, definiens} from a dimension value's `"<slug> ≜ <definiens>"` body. */
 function splitBody(v: string): { slug: string; definiens: string } {
   const i = v.indexOf(' ≜ ');
   // No ` ≜ ` = a BARE ANCHOR (residue ∅ — the ideal σ*): definiens is EMPTY, not the slug
@@ -194,7 +194,7 @@ function slugOf(v: string): string {
 }
 
 /** The contradiction pairs `agent` carries (root-cause H3). */
-function organContradictions(agent: Agent): string[] {
+function dimensionContradictions(agent: Agent): string[] {
   const principles = (agent.engineeringPrinciples ?? []).map(slugOf);
   const output = agent.outputFormat ? slugOf(agent.outputFormat) : undefined;
   return CONTRADICTION_PAIRS.filter(
@@ -207,10 +207,10 @@ function organContradictions(agent: Agent): string[] {
 describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
   it('the 4 densified exemplars PASS (calibration anchors)', async () => {
     for (const rel of [
-      'organs/role/curate.ts',
-      'organs/objective/parsimony.ts',
-      'organs/transparency/decision-rationale.ts',
-      'organs/capabilities/research-investigation.ts',
+      'dimensions/role/curate.ts',
+      'dimensions/objective/parsimony.ts',
+      'dimensions/transparency/decision-rationale.ts',
+      'dimensions/capabilities/research-investigation.ts',
     ]) {
       const f = await firstExport<string>(join(srcRoot, rel));
       expect(
@@ -230,7 +230,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
       .map((s) => s.label);
     expect(genusLabels).toContain('genus src/genus/persona.md ## Protocol');
     expect(
-      surfaces.filter((s) => s.cls === 'organ-definiens').length,
+      surfaces.filter((s) => s.cls === 'dimension-definiens').length,
     ).toBeGreaterThan(100);
     const failures = surfaces
       .filter((s) => !conform(s.cls, s.text) && !REGISTER_RATCHET.has(s.label))
@@ -259,12 +259,12 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     const failures = agents
       .filter(
         ({ agent }) =>
-          organContradictions(agent).length > 0 &&
+          dimensionContradictions(agent).length > 0 &&
           !CONTRADICTION_RATCHET.has(agent.name),
       )
       .map(
         ({ agent }) =>
-          `CONTRADICTION ${agent.name}: ${organContradictions(agent).join(' · ')}`,
+          `CONTRADICTION ${agent.name}: ${dimensionContradictions(agent).join(' · ')}`,
       );
     expect(failures, failures.join('\n')).toEqual([]);
     // shrink-only, same law as the register ratchet
@@ -275,7 +275,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
         `contradiction pin ${name} names a live agent`,
       ).toBeDefined();
       expect(
-        organContradictions((entry as { agent: Agent }).agent).length,
+        dimensionContradictions((entry as { agent: Agent }).agent).length,
         `${name} no longer contradicts — REMOVE its ratchet pin`,
       ).toBeGreaterThan(0);
     }
@@ -292,7 +292,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     const signals = humanRegisterSignals(humanSeed);
     expect(signals.length).toBeGreaterThan(0);
     expect(signals.join(' ')).toContain('HEDGE');
-    expect(conform('organ-definiens', humanSeed)).toBe(false);
+    expect(conform('dimension-definiens', humanSeed)).toBe(false);
   });
 
   it('EXEMPTS the same human-register text when ρ(a)=human — by the model, not a path', () => {
@@ -346,7 +346,7 @@ const CELL_SEEDS: readonly CellSeed[] = [
     // references an anchor with NO home → orphan-ref (a dangling concept)
     leg: 'CANONICAL',
     cell: {
-      kind: 'organ-value',
+      kind: 'fragment',
       slug: 'clean-anchor',
       definiens: clean,
       refs: ['ghost-anchor'],
@@ -357,7 +357,7 @@ const CELL_SEEDS: readonly CellSeed[] = [
     // a malformed sign (whitespace) — provably ≠ σ* without the oracle
     leg: 'SIGNIFIED',
     cell: {
-      kind: 'organ-value',
+      kind: 'fragment',
       slug: 'bespoke term',
       definiens: clean,
       refs: [],
@@ -368,7 +368,7 @@ const CELL_SEEDS: readonly CellSeed[] = [
     // leans on an external cite → not self-sufficient, fails blind
     leg: 'COLD-BLIND',
     cell: {
-      kind: 'organ-value',
+      kind: 'fragment',
       slug: 'clean-anchor',
       definiens: 'derive it per §2 of the upstream spec.',
       refs: [],
@@ -379,7 +379,7 @@ const CELL_SEEDS: readonly CellSeed[] = [
     // one concept, two homes → |home|=2 (partition broken)
     leg: 'PARTITIONED',
     cell: {
-      kind: 'organ-value',
+      kind: 'fragment',
       slug: 'dup-anchor',
       definiens: clean,
       refs: [],
@@ -390,7 +390,7 @@ const CELL_SEEDS: readonly CellSeed[] = [
     // the body restates the anchor → residue ⊇ fired(α)
     leg: 'PARSIMONIOUS',
     cell: {
-      kind: 'organ-value',
+      kind: 'fragment',
       slug: 'parsimony',
       definiens: 'being parsimonious: parsimony is the parsimony principle.',
       refs: [],
@@ -428,16 +428,16 @@ function allSix(
   return [...universalCell(cell, homes, anatomyPolicy), regenerable(targets)];
 }
 
-// ── the live corpus (one home per organ-value anchor is the PARTITIONED claim) ───
+// ── the live corpus (one home per fragment anchor is the PARTITIONED claim) ───
 
-async function loadOrganHomes(): Promise<Map<string, string[]>> {
+async function loadDimensionHomes(): Promise<Map<string, string[]>> {
   const homes = new Map<string, string[]>();
-  for (const rel of await collect('organs/**/*.ts')) {
+  for (const rel of await collect('dimensions/**/*.ts')) {
     const v = await firstExport<string>(join(srcRoot, rel));
-    // concept identity is organ-qualified — `organs/<organ>/<value>.ts`. A bare
-    // slug shared across organs (`document` role vs output-format) is TWO concepts.
-    const organ = rel.split('/')[1] as string;
-    const key = `${organ}/${slugOf(v)}`;
+    // concept identity is dimension-qualified — `dimensions/<dimension>/<value>.ts`. A bare
+    // slug shared across dimensions (`document` role vs output-format) is TWO concepts.
+    const dimension = rel.split('/')[1] as string;
+    const key = `${dimension}/${slugOf(v)}`;
     const bearers = homes.get(key) ?? [];
     bearers.push(rel);
     homes.set(key, bearers);
@@ -464,7 +464,7 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
     }
     // REGENERABLE is global (a Target-set leg) — seed a clean cell + a dirty Target set.
     const green = {
-      kind: 'organ-value',
+      kind: 'fragment',
       slug: 'clean-anchor',
       definiens: clean,
       refs: [],
@@ -482,28 +482,28 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 
   it('GREEN — one already-conformant live cell passes every Universal leg', async () => {
     const v = await firstExport<string>(
-      join(srcRoot, 'organs/objective/parsimony.ts'),
+      join(srcRoot, 'dimensions/objective/parsimony.ts'),
     );
     const { slug, definiens } = splitBody(v);
     expect(slug).toBe('parsimony');
     const cell: AcceptCell = {
-      kind: 'organ-value',
+      kind: 'fragment',
       slug,
-      organ: 'objective',
+      dimension: 'objective',
       definiens,
       refs: [],
     };
-    const homes = await loadOrganHomes();
+    const homes = await loadDimensionHomes();
     expect(failingLegs(allSix(cell, homes, GREEN_TARGETS))).toEqual([]);
   });
 
-  it('PARTITIONED corpus-wide — every organ-value anchor has exactly one home', async () => {
-    const homes = await loadOrganHomes();
+  it('PARTITIONED corpus-wide — every fragment anchor has exactly one home', async () => {
+    const homes = await loadDimensionHomes();
     const split = [...homes].filter(([, bearers]) => bearers.length !== 1);
     expect(homes.size).toBeGreaterThan(100);
     expect(
       split.map(([slug, b]) => `${slug} → {${b.join(',')}}`),
-      'organ-value anchors must partition (one home each)',
+      'fragment anchors must partition (one home each)',
     ).toEqual([]);
   });
 
@@ -541,7 +541,7 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 //
 // The machine-check behind AC-RESIDUE (PLAN.md): MODEL PARSIMONIOUS
 // `body(c)=⟨α,residue⟩ ∧ residue=D∖fired(α)` specialized to the DEPLOYED corpus —
-// every organ VALUE residue · every skill `description` · every skill `body`
+// every dimension VALUE residue · every skill `description` · every skill `body`
 // (whole) MUST be a composable σ* expression / a `formalize` artifact / ∅, never human
 // prose (the vision's failure criterion). GOVERNING INVARIANT: every deployed artifact
 // the model reads is formal σ* under ρ, never human prose — this gate IS that
@@ -549,7 +549,7 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 // `src/toolkit/cold-oracle/residue.ts`; admitted operators READ from
 // `operator-lexicon.ts` (`RESIDUE_OPERATORS` — DRY, one home).
 //
-// FIXTURE-BASED bite proof, GREEN NOW: the 139 live organ values are E1's verbatim-
+// FIXTURE-BASED bite proof, GREEN NOW: the 139 live dimension values are E1's verbatim-
 // prose intermediates (`slug ≜ <old prose>`) until wave-2 (O/S/H) reduces them to σ*,
 // and descriptions are likewise pre-reduction prose — so the LIVE-corpus scan is
 // `.skip`ped (C1 marker) to avoid reddening a suite full of legitimate intermediates.
@@ -573,7 +573,7 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
     );
   });
 
-  // ── SINGLE-LINE (organ value residue · skill `description`) ────────────────────
+  // ── SINGLE-LINE (dimension value residue · skill `description`) ────────────────────
   it('ACCEPTS the three σ* forms — ∅ · a bare anchor · an operator application', () => {
     for (const form of [
       '', // ∅ — the anchor α fully fires the concept
@@ -586,7 +586,7 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
   });
 
   it('REJECTS a prose residue, NAMING the offending clause (actionable for O*/S*)', () => {
-    // the live E1 intermediate for organs/autonomy/human-on-the-loop (verbatim head).
+    // the live E1 intermediate for dimensions/autonomy/human-on-the-loop (verbatim head).
     const prose =
       "acts autonomously on the operator's behalf; the operator oversees and " +
       'sets intent, never pre-approves each act.';
@@ -636,14 +636,14 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
   });
 
   // ── LIVE-corpus scan — the full AC-RESIDUE claim over the deployed payload set ──
-  // ENABLED (C1): wave-2 (O/S/H) reduced every organ value + skill formalBlock to σ*.
+  // ENABLED (C1): wave-2 (O/S/H) reduced every dimension value + skill formalBlock to σ*.
   // (`description` is σ_human*, not a σ* payload — gated by density, not residue.)
-  it('every deployed σ* payload is admissible (organ values · skill formalBlocks)', async () => {
+  it('every deployed σ* payload is admissible (dimension values · skill formalBlocks)', async () => {
     const failures: string[] = [];
-    for (const rel of await collect('organs/**/*.ts')) {
+    for (const rel of await collect('dimensions/**/*.ts')) {
       const value = await firstExport<string>(join(srcRoot, rel));
       const r = admissibleSingleLine(splitBody(value).definiens, anatomyPolicy);
-      if (!r.admissible) failures.push(`organ ${rel}: ${r.reason}`);
+      if (!r.admissible) failures.push(`dimension ${rel}: ${r.reason}`);
     }
     for (const rel of await collect('skills/*.ts')) {
       const s = await firstExport<Skill>(join(srcRoot, rel));

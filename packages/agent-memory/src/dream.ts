@@ -48,7 +48,7 @@ function appendToHome(file: string, content: string): void {
  *  - `SEMANTIC` / `PROCEDURAL` → `<home>/{SEMANTIC,PROCEDURAL}.md`.
  *  - `EPISODIC` → null (the record stays in the raw log).
  *
- * A target addressed to a RETIRED v1 organ name (`SELF`, `MEMORY`, …) — or any
+ * A target addressed to a RETIRED v1 dimension name (`SELF`, `MEMORY`, …) — or any
  * unknown store — is rejected loudly: the classifier is untyped at runtime, so
  * the engine is the enforcement site.
  */
@@ -59,7 +59,7 @@ export function resolveTarget(
   const store = target.store as string;
   if (!V2_STORES.has(store)) {
     throw new Error(
-      `Route target store "${store}" is not a store (SEMANTIC | PROCEDURAL | EPISODIC); the v1 organ names (SELF, MEMORY, ...) and the extracted vault/AGENTS targets are retired — address by store name`,
+      `Route target store "${store}" is not a store (SEMANTIC | PROCEDURAL | EPISODIC); the v1 dimension names (SELF, MEMORY, ...) and the extracted vault/AGENTS targets are retired — address by store name`,
     );
   }
   switch (target.store) {

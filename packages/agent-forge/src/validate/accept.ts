@@ -44,20 +44,20 @@ export const UNIVERSAL_LEGS: readonly Leg[] = [
 
 /** A cell reduced to what the static witnesses read (the source grain). */
 export interface AcceptCell {
-  readonly kind: 'organ-value' | 'agent' | 'skill' | 'rule' | 'hook';
+  readonly kind: 'fragment' | 'agent' | 'skill' | 'rule' | 'hook';
   /** α(c) — the assigned anchor (the SIGN). */
   readonly slug: string;
   /**
-   * The organ that qualifies this concept. A concept's IDENTITY is organ-scoped:
+   * The dimension that qualifies this concept. A concept's IDENTITY is dimension-scoped:
    * `document` as output-format and `document` as role are DISTINCT concepts that
-   * legitimately share a bare sign, disambiguated by organ (as agent vectors do:
+   * legitimately share a bare sign, disambiguated by dimension (as agent vectors do:
    * `role document` vs `output-format document`). Absent ⇒ the bare slug is the id.
    */
-  readonly organ?: string;
+  readonly dimension?: string;
   /**
    * D(c) — the definiens (the core σ* fragment). Sourced TYPED from the IR field,
-   * NEVER fence-scraped: an organ value's branded string, a skill's `formalBlock`
-   * (`SkillExpression` — see `acceptCellOfSkill`), or an agent's `persona`. Each is a
+   * NEVER fence-scraped: a dimension value's branded string, a skill's `formalBlock`
+   * (`SkillExpression` — see `acceptCellOfSkill`), or an agent's `archetype`. Each is a
    * branded string, so `string` is the widest home; the skill bridge keeps the payload
    * the typed IR field, not a markdown scrape.
    */
@@ -66,9 +66,11 @@ export interface AcceptCell {
   readonly refs: readonly string[];
 }
 
-/** A concept's home-map identity — organ-qualified when the organ is known. */
-export function conceptKey(cell: Pick<AcceptCell, 'slug' | 'organ'>): string {
-  return cell.organ ? `${cell.organ}/${cell.slug}` : cell.slug;
+/** A concept's home-map identity — dimension-qualified when the dimension is known. */
+export function conceptKey(
+  cell: Pick<AcceptCell, 'slug' | 'dimension'>,
+): string {
+  return cell.dimension ? `${cell.dimension}/${cell.slug}` : cell.slug;
 }
 
 /**
@@ -292,30 +294,30 @@ export function failingLegs(verdicts: readonly LegVerdict[]): Leg[] {
   return verdicts.filter((v) => !v.pass).map((v) => v.leg);
 }
 
-// ── COMPOSED — the agent-only conjunct (light; tsc enforces organ/arity) ────────
+// ── COMPOSED — the agent-only conjunct (light; tsc enforces dimension/arity) ────────
 
-/** An agent composite: organ → selected value-anchors, in source order. */
+/** An agent composite: dimension → selected value-anchors, in source order. */
 export interface AgentComposite {
   readonly name: string;
   readonly selection: ReadonlyMap<string, readonly string[]>;
 }
 
 /**
- * COMPOSED(a) — ∄ superfluous S_on (a value selected twice in one organ is
+ * COMPOSED(a) — ∄ superfluous S_on (a value selected twice in one dimension is
  * redundant). Arity ∈ NatSet and value ∈ catalog are TYPE-enforced upstream
- * (`@leclabs/agent-forge/anatomy` — wrong organ/arity = a compile error); this
- * catches the one class types miss: a duplicated selection within an organ set.
+ * (`@leclabs/agent-forge/anatomy` — wrong dimension/arity = a compile error); this
+ * catches the one class types miss: a duplicated selection within a dimension set.
  */
 export function composed(agent: AgentComposite): {
   pass: boolean;
   reason: string;
 } {
   const dups: string[] = [];
-  for (const [organ, values] of agent.selection) {
+  for (const [dimension, values] of agent.selection) {
     const seen = new Set<string>();
     for (const v of values) {
       if (seen.has(v)) {
-        dups.push(`${organ}:${v}`);
+        dups.push(`${dimension}:${v}`);
       }
       seen.add(v);
     }

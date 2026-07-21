@@ -15,7 +15,7 @@ import type { EpisodicRecord } from './record.js';
  *  - `EPISODIC`   — a forward-looking next-step; stays in the raw log.
  *
  * `drop` is NOT a store — it is the absence of any target, modeled by an empty
- * target set on the decision. The v1 organ names (`SELF`, `MEMORY`) are
+ * target set on the decision. The v1 dimension names (`SELF`, `MEMORY`) are
  * RETIRED: the engine rejects them loudly at apply time. `vault` (cross-host,
  * networked) and `AGENTS@node` (project-scoped) are EXTRACTED — neither is
  * private-cognitive: cross-host is an out-of-scope anti-pattern, and

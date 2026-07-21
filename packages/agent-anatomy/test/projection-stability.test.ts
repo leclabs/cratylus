@@ -52,8 +52,8 @@ async function collect(pattern: string): Promise<string[]> {
 }
 
 describe('projection stability (.ts is the sole source)', () => {
-  it('every organ fragment projects non-empty', async () => {
-    const modules = await collect('organs/**/*.ts');
+  it('every dimension fragment projects non-empty', async () => {
+    const modules = await collect('dimensions/**/*.ts');
     expect(modules.length).toBeGreaterThan(100);
     for (const rel of modules) {
       const f = await firstExport<string>(join(srcRoot, rel));

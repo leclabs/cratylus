@@ -73,9 +73,9 @@ function symbolExempt(ch: string): boolean {
   if (o === 0x2014) {
     return true;
   }
-  // ⊕ (U+2295) — the model's canonical organ-vector builder (`vector(A) ≜
+  // ⊕ (U+2295) — the model's canonical dimension-vector builder (`vector(A) ≜
   // ⊕{ o ↦ value(o) }`, create-agent). DELIBERATELY absent from the operator
-  // table: the RESIDUE gate excludes member-composition from an organ-value
+  // table: the RESIDUE gate excludes member-composition from an fragment
   // residue ("no compose-op without its own cold survey" — reader-density L569),
   // so ⊕ is not a shared `OPERATORS` key. It is legitimate STRUCTURAL notation in
   // a multi-line formalize block, so the register-scoped SYMBOLS gate exempts it.
@@ -220,12 +220,12 @@ describe('SYMBOLS gate — fence-interior glyph coverage', () => {
   });
 
   it('every fragment definiens uses only declared / exempt glyphs in any fence', async () => {
-    const modules = await collect('organs/**/*.ts');
+    const modules = await collect('dimensions/**/*.ts');
     expect(modules.length).toBeGreaterThan(100);
     const failures: string[] = [];
     for (const rel of modules) {
       const f = await firstExport<string>(join(srcRoot, rel));
-      const label = `fragment ${relative('organs', rel).replace(/\.ts$/, '')}`;
+      const label = `fragment ${relative('dimensions', rel).replace(/\.ts$/, '')}`;
       failures.push(...offendingGlyphs(label, f, declared));
     }
     expect(failures, failures.join('\n')).toEqual([]);

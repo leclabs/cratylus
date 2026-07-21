@@ -11,7 +11,7 @@
 //   - the always-loaded INSTRUCTION surface is `AGENTS.md` (project rules).
 //   - a SKILL is `skills/<name>/SKILL.md` (the AgentSkills spec, shared with claude).
 //
-// The composed SOUL BODY itself is HARNESS-NEUTRAL — it is the agent's organ
+// The composed SOUL BODY itself is HARNESS-NEUTRAL — it is the agent's dimension
 // sections, identical content whichever harness carries it. So this module REUSES
 // `agentBody` / `skillBody` (over the `Agent` vector + the `ResolvedSkill` shape)
 // from the claude adapter (those are the anatomy-composition machinery, not
@@ -40,7 +40,7 @@ export type { ResolvedSkill };
  * The codex subagent TOML object for a resolved agent: `{ name, description,
  * developer_instructions, model? }` — the documented codex agent-TOML fields
  * [CX1]. `developer_instructions` is the composed SOUL body (the
- * harness-neutral organ sections + memory genus block) — the SAME `agentBody` the
+ * harness-neutral dimension sections + memory genus block) — the SAME `agentBody` the
  * claude SOUL carries, just delivered as a TOML field instead of a `.md` body.
  * No `color` is emitted: Codex's agent TOML has no documented color field, so
  * carrying `mark.hue` here would be the same fabrication [CX1] fixes on the
@@ -59,9 +59,9 @@ export function agentToCodexTomlObject(
   const developerInstructions = `${body.replace(/\n+$/, '')}\n`;
   const obj: Record<string, unknown> = {
     name: a.name,
-    // σ_human* — the router-read one-line bound, NOT σ* (persona stays the model-read
+    // σ_human* — the router-read one-line bound, NOT σ* (archetype stays the model-read
     // identity, projected into `developer_instructions` via `agentBody`). Mirrors the
-    // claude adapter's fix: the TOML `description` is `a.description`, not emoji+persona.
+    // claude adapter's fix: the TOML `description` is `a.description`, not emoji+archetype.
     description: a.description,
     developer_instructions: developerInstructions,
   };
@@ -112,7 +112,7 @@ function frontMatterLines(fm: Record<string, unknown>): string[] {
 
 /**
  * The codex `AGENTS.md` instruction surface for a set of agents. Codex's
- * always-loaded project rules file is `AGENTS.md`; the per-agent persona lives in
+ * always-loaded project rules file is `AGENTS.md`; the per-agent archetype lives in
  * `agents/<name>.toml`. This emits a thin index pointing at the projected
  * subagents (the shared rules surface), so a codex workspace discovers them.
  *
@@ -124,7 +124,7 @@ export function agentsMdSurface(agentNames: readonly string[]): string {
   const out: string[] = ['# Agents', ''];
   out.push(
     'Projected from the agent-anatomy corpus via agent-forge’s codex adapter. Each agent’s',
-    'persona is its subagent definition under `agents/<name>.toml`; invoke one by',
+    'archetype is its subagent definition under `agents/<name>.toml`; invoke one by',
     'name. Skills are under `skills/<name>/SKILL.md`.',
     '',
     '## Subagents',

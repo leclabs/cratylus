@@ -1,4 +1,4 @@
-// The HARNESS-NEUTRAL organ→markdown-body machinery: the shared helpers that map
+// The HARNESS-NEUTRAL dimension→markdown-body machinery: the shared helpers that map
 // a typed `Agent` vector / `ResolvedSkill` to its composed markdown BODY, before
 // any harness-specific framing (claude front-matter, codex TOML) wraps it.
 //
@@ -8,47 +8,47 @@
 // other. (Kills the former `codex/anatomy.ts → claude/anatomy.ts` edge.)
 
 import type { Agent } from '../anatomy/index.js';
-import { ORGAN_NAMES } from '../anatomy/index.js';
+import { DIMENSION_NAMES } from '../anatomy/index.js';
 import { renderSkillCellBody } from './exemplify/skill-cell.js';
 
-// ── Organ → markdown helpers ─────────────────────────────────────────────────
+// ── Dimension → markdown helpers ─────────────────────────────────────────────────
 
 /** `audience-adaptation` → `Audience-Adaptation`, `output-format` → `Output-Format`. */
-export function organTitle(organ: string): string {
-  return organ
+export function dimensionTitle(dimension: string): string {
+  return dimension
     .split('-')
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join('-');
 }
 
-/** organ kebab name → its `Agent` camelCase field. */
-export function organField(organ: string): keyof Agent {
-  return organ.replace(/-(\w)/g, (_, c: string) =>
+/** dimension kebab name → its `Agent` camelCase field. */
+export function dimensionField(dimension: string): keyof Agent {
+  return dimension.replace(/-(\w)/g, (_, c: string) =>
     c.toUpperCase(),
   ) as keyof Agent;
 }
 
 /**
  * The agent def BODY (no front-matter) — derived from the `Agent` VECTOR alone:
- * `# <emoji> <name>`, the `## Persona` identity section, then each non-null organ
- * (in ANATOMY declaration order) as a `## <Organ-Title>` heading + its branded
+ * `# <emoji> <name>`, the `## Archetype` identity section, then each non-null dimension
+ * (in ANATOMY declaration order) as a `## <Dimension-Title>` heading + its branded
  * value(s) — the value string IS the SOUL body ⟨α, residue⟩, emitted verbatim; a
- * set organ lists its members blank-separated. `null` organs are omitted
+ * set dimension lists its members blank-separated. `null` dimensions are omitted
  * (harness-inherit). Closed `rstrip() + "\n"`.
  */
 export function agentBody(a: Agent): string {
   const emoji = a.provenance?.mark.emoji ?? '';
   const heading = emoji ? `${emoji} ${a.name}` : a.name;
   const out: string[] = [`# ${heading}`, ''];
-  if (a.persona) {
-    out.push('## Persona', '', a.persona, '');
+  if (a.archetype) {
+    out.push('## Archetype', '', a.archetype, '');
   }
-  for (const organ of ORGAN_NAMES) {
-    const value = a[organField(organ)];
+  for (const dimension of DIMENSION_NAMES) {
+    const value = a[dimensionField(dimension)];
     if (value === null || value === undefined) {
       continue;
     }
-    out.push(`## ${organTitle(organ)}`, '');
+    out.push(`## ${dimensionTitle(dimension)}`, '');
     for (const v of Array.isArray(value) ? value : [value]) {
       out.push(v as string, '');
     }

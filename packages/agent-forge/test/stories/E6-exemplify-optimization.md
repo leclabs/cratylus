@@ -2,15 +2,15 @@
 
 Floor: **F6** (import raw context → conceptualize→signify→materialize (= exemplify) → clean
 R=LLM output for any harness that supports it; skills as self-sufficient set-builder cells,
-agents as anatomy organ-vectors; ambiguity about organ values → `ELICIT:` marker, never an
+agents as anatomy dimension-vectors; ambiguity about dimension values → `ELICIT:` marker, never an
 invented answer). ρ=LLM. Contracts: `~/.claude/skills/exemplify/SKILL.md` (accept gate: REC_R ≽,
 minimal, conform; R3 routing manifest), anatomy types
-`packages/agent-forge/src/anatomy/index.ts` (`Agent` = 24-organ vector, `Skill` = formal cell).
+`packages/agent-forge/src/anatomy/index.ts` (`Agent` = 24-dimension vector, `Skill` = formal cell).
 Operator rulings in force: **rules are a first-class resource through the pipeline** — the most
 generic context fragment, heavy overlap with AGENTS.md bodies — and optimization reaches ALL
 targets including rule-only harnesses (S6, S8). **Two-step agent law**: step 1 = raw import maps
-foreign agent NL verbatim onto the `persona` organ (E1.S8); step 2 = exemplify+elicit elevates to
-the full 24-organ vector, which then REPLACES the config-IR agent as the single source of truth
+foreign agent NL verbatim onto the `archetype` dimension (E1.S8); step 2 = exemplify+elicit elevates to
+the full 24-dimension vector, which then REPLACES the config-IR agent as the single source of truth
 (S3; round-trip consequence in E4.S8).
 
 ---
@@ -41,37 +41,37 @@ P: fixture: prose description of a multi-step procedure (no structure).
 - Round-trip: the formal block alone (no source prose) suffices for a blind reader to re-derive
   the procedure's steps (equivalence spot-check against a pinned answer key).
 
-## E6.S3 · agent elevation — step-1 persona form → full 24-organ vector, which replaces the config-IR agent
+## E6.S3 · agent elevation — step-1 archetype form → full 24-dimension vector, which replaces the config-IR agent
 
-A: CURATOR · G: a step-1 agent (persona organ carrying the raw NL verbatim, E1.S8 — or a fresh
-free-text description) is elevated by exemplify+elicit to a typed organ-selection vector; the
+A: CURATOR · G: a step-1 agent (archetype dimension carrying the raw NL verbatim, E1.S8 — or a fresh
+free-text description) is elevated by exemplify+elicit to a typed dimension-selection vector; the
 accepted vector becomes the agent's single source of truth.
 P: fixture: E1.S8's imported step-1 agent AND a paragraph describing a reviewer-ish agent with
-explicit persona, objective, and tooling cues; anatomy package importable.
+explicit archetype, objective, and tooling cues; anatomy package importable.
 ✓:
 
 - Output is a TS module exporting `Agent` (anatomy shape) that **tsc-compiles** against
-  `@leclabs/agent-forge/anatomy`; all 24 organ keys present; each value a `Fragment` of the
-  correct organ literal or `null`.
-- Every non-null organ value carries a provenance note tracing to input evidence (a quoted span
-  or an explicit inference tag); an organ value with no trace = FAIL.
+  `@leclabs/agent-forge/anatomy`; all 24 dimension keys present; each value a `Fragment` of the
+  correct dimension literal or `null`.
+- Every non-null dimension value carries a provenance note tracing to input evidence (a quoted span
+  or an explicit inference tag); a dimension value with no trace = FAIL.
 - **Replacement semantics**: on accept, the vector REPLACES the config-IR agent — post-elevation
   repo state holds exactly one source form per agent (the vector; a lingering config-IR twin =
-  FAIL). The replacement is additive/no-loss: the step-1 persona content is fully recoverable
+  FAIL). The replacement is additive/no-loss: the step-1 archetype content is fully recoverable
   from the vector (REC ≽ against the step-1 form, checked by the exemplify gate).
 
-## E6.S4 · ambiguous organ value ⇒ `ELICIT:` marker, never an invented answer
+## E6.S4 · ambiguous dimension value ⇒ `ELICIT:` marker, never an invented answer
 
 A: CURATOR + OPERATOR · G: silence in the input becomes a question for the Operator, not a guess.
 P: fixture: agent description silent on `autonomy`, `satisficing`, and `memory`.
 ✓:
 
 - The emitted vector carries `ELICIT:` markers (machine-greppable literal) at exactly those
-  organs (as the null-with-marker form or a sidecar list); zero enum values appear for them.
+  dimensions (as the null-with-marker form or a sidecar list); zero enum values appear for them.
 - A companion elicitation script exists per marker: candidate values + the bisecting question
   (per `/elicit`'s information-gain law) — assertable as: each marker has ≥2 candidates and 1
   question.
-- Negative: a pipeline run that emits a concrete value for a silent organ fails the story.
+- Negative: a pipeline run that emits a concrete value for a silent dimension fails the story.
 
 ## E6.S5 · optimization is idempotent
 

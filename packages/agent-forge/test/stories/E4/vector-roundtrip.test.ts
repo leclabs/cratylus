@@ -1,25 +1,25 @@
 /**
- * E4.S8 — post-optimization round-trip: the 22-organ vector is the source,
+ * E4.S8 — post-optimization round-trip: the 22-dimension vector is the source,
  * projected per-target (E6.S3's pinned projection, replacement semantics).
  *
  * GRADUATED: the engine exposes `projectVector` (core surface,
- * `src/core/engine/vector-projection.ts`) — the pinned organ-vector →
+ * `src/core/engine/vector-projection.ts`) — the pinned dimension-vector →
  * config-IR projection E6.S3's replacement semantics compile against. The
  * capability probe stays (any candidate spelling satisfies it), and the
- * projection is exercised: a vector with a persona string + a fragment organ
+ * projection is exercised: a vector with a archetype string + a fragment dimension
  * projects to a config-IR agent whose body/description derive from the
- * vector — persona is a plain field (not a σ*-fragment organ, D13), so it
- * drives ONLY `description`, never a `## Persona`/`persona ≜` body line.
+ * vector — archetype is a plain field (not a σ*-fragment dimension, D13), so it
+ * drives ONLY `description`, never a `## Archetype`/`archetype ≜` body line.
  */
 
 import { describe, expect } from 'vitest';
 
-import type { Agent as OrganVector } from '../../../src/anatomy/index.js';
+import type { Agent as DimensionVector } from '../../../src/anatomy/index.js';
 import { projectVector } from '../../../src/core/index.js';
 import { story } from '../helpers.js';
 
-/** All 22 fragment-organ fields explicitly harness-inherited (`null`). */
-const NULL_ORGANS: Omit<OrganVector, 'name' | 'persona'> = {
+/** All 22 fragment-dimension fields explicitly harness-inherited (`null`). */
+const NULL_DIMENSIONS: Omit<DimensionVector, 'name' | 'archetype'> = {
   autonomy: null,
   role: null,
   formality: null,
@@ -45,10 +45,10 @@ const NULL_ORGANS: Omit<OrganVector, 'name' | 'persona'> = {
   selfEvaluation: null,
 };
 
-describe('E4.S8 · organ-vector as the one source', () => {
+describe('E4.S8 · dimension-vector as the one source', () => {
   story(
     'E4.S8',
-    'engine exposes the pinned organ-vector → per-target projection (E6.S3); absent today',
+    'engine exposes the pinned dimension-vector → per-target projection (E6.S3); absent today',
     async () => {
       const core: Record<string, unknown> = await import(
         '../../../src/core/index.js'
@@ -57,8 +57,8 @@ describe('E4.S8 · organ-vector as the one source', () => {
       // satisfies the probe — `projectVector` is the one that shipped.
       const candidates = [
         'projectVector',
-        'projectOrganVector',
-        'organVectorToIR',
+        'projectDimensionVector',
+        'dimensionVectorToIR',
         'compileVector',
         'vectorProjection',
       ];
@@ -68,24 +68,24 @@ describe('E4.S8 · organ-vector as the one source', () => {
       expect(found.length).toBeGreaterThan(0);
       expect(found).toContain('projectVector');
       // Exercise the pinned projection: vector → config-IR agent, with the
-      // body a deterministic per-organ projection and the description
-      // derived from the plain `persona` field (the vector is the ONE source).
-      const vector: OrganVector = {
-        ...NULL_ORGANS,
+      // body a deterministic per-dimension projection and the description
+      // derived from the plain `archetype` field (the vector is the ONE source).
+      const vector: DimensionVector = {
+        ...NULL_DIMENSIONS,
         name: 'probe',
-        persona: 'a probe persona',
+        archetype: 'a probe archetype',
         role: 'probe-role ≜ a probe role definiens',
       };
       const projected = projectVector(vector);
       expect(projected.name).toBe('probe');
-      expect(projected.description).toBe('a probe persona');
+      expect(projected.description).toBe('a probe archetype');
       expect(projected.body).toContain(
         'role ≜ probe-role ≜ a probe role definiens',
       );
-      // `persona` is a plain description field, not a fragment organ — it
+      // `archetype` is a plain description field, not a fragment dimension — it
       // drives `description` only, never a body line.
-      expect(projected.body).not.toContain('persona ≜');
-      // Inherited (null) organs project to NOTHING — no phantom sections.
+      expect(projected.body).not.toContain('archetype ≜');
+      // Inherited (null) dimensions project to NOTHING — no phantom sections.
       expect(projected.body).not.toContain('autonomy');
     },
   );

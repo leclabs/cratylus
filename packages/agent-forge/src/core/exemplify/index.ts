@@ -13,7 +13,7 @@ export {
   optimizeRules,
   readManifest,
 } from './pipeline.js';
-export { ORGAN_FIELD } from './organ-fields.js';
+export { DIMENSION_FIELD } from './dimension-fields.js';
 export {
   classifyRegister,
   humanMarkerHits,
@@ -43,11 +43,11 @@ export {
   type ElevateOptions,
   type ElevateResult,
   type ElevationSpec,
-  type OrganElicitPlan,
-  type OrganEvidence,
-  type OrganFragmentSpec,
-  type OrganInheritPlan,
-  type OrganPlan,
-  type OrganValuePlan,
+  type DimensionElicitPlan,
+  type DimensionEvidence,
+  type DimensionFragmentSpec,
+  type DimensionInheritPlan,
+  type DimensionPlan,
+  type FragmentPlan,
   type RenderedVector,
 } from './vector.js';

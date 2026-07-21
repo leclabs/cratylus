@@ -19,9 +19,9 @@ import type { IR, Manifest } from '../../../src/core/index.js';
 
 /**
  * A nico-like `Agent` vector (mirrors what a nico corpus agent elevates to);
- * cyan-marked, sage persona. Every organ key is present (completeness law);
- * only a handful of organs carry a value, the rest are explicit `null`
- * (omit-to-inherit). Each non-null organ value IS the SOUL body
+ * cyan-marked, sage archetype. Every dimension key is present (completeness law);
+ * only a handful of dimensions carry a value, the rest are explicit `null`
+ * (omit-to-inherit). Each non-null dimension value IS the SOUL body
  * `<slug> ≜ <definiens>` — a plain branded string, no wrapper object.
  */
 function nicoLikeAgent(): Agent {
@@ -29,7 +29,7 @@ function nicoLikeAgent(): Agent {
     name: 'nico',
     description: '📐 the Sage archetype',
     autonomy: ['human-on-the-loop ≜ human-on-the-loop definiens'],
-    persona: 'the Sage archetype',
+    archetype: 'the Sage archetype',
     role: 'curate ≜ curate definiens',
     formality: 'formal ≜ formal definiens',
     audienceAdaptation: null,
@@ -74,12 +74,12 @@ describe('agentToCodexToml — the codex subagent projection', () => {
   it('developer_instructions carries the full composed SOUL body + memory genus block', () => {
     const obj = agentToCodexTomlObject(nicoLikeAgent());
     const sp = obj.developer_instructions as string;
-    // The harness-neutral organ sections — the SAME body the claude SOUL carries.
-    expect(sp).toContain('## Persona');
+    // The harness-neutral dimension sections — the SAME body the claude SOUL carries.
+    expect(sp).toContain('## Archetype');
     expect(sp).toContain('the Sage archetype');
     expect(sp).toContain('## Model');
     expect(sp).toContain('claude ≜ claude definiens');
-    // No more `## Memory Protocol` genus append — `memory` is a plain organ
+    // No more `## Memory Protocol` genus append — `memory` is a plain dimension
     // section like any other, carrying the vector's branded value verbatim.
     expect(sp).toContain('## Memory');
     expect(sp).toContain('protocol ≜ the standing memory protocol for nico');
@@ -93,8 +93,8 @@ describe('agentToCodexToml — the codex subagent projection', () => {
 
   it('description IS the σ_human* `description` field verbatim, mark-independent (color never emitted)', () => {
     // Mirrors S3's claude fix: the TOML `description` is `a.description` (the
-    // router-read σ_human* bound), NOT an emoji+persona composition — so dropping
-    // the provenance mark leaves it unchanged (persona stays σ*, carried only in
+    // router-read σ_human* bound), NOT an emoji+archetype composition — so dropping
+    // the provenance mark leaves it unchanged (archetype stays σ*, carried only in
     // developer_instructions). Mark-independence is the falsifier for the leak.
     const marked = TOML.parse(agentToCodexToml(nicoLikeAgent())) as Record<
       string,

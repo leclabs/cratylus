@@ -11,7 +11,7 @@
 //     source (real base.ts · real nicoResolved · real mavArchetypeGreen) RED, each
 //     on exactly its class (MECE).
 //   NEGATIVE control — the live tree GREENs on all three classes, AND a legit
-//     reusable organ value (≥2 agents) + a legit single-ref mark-less open value
+//     reusable dimension value (≥2 agents) + a legit single-ref mark-less open value
 //     (role/build, referenced once) stay GREEN (the false-positive guards).
 //
 // GOVERNING INVARIANT held structurally: the corpus admits no artifact existing
@@ -28,7 +28,7 @@ import {
   failingClasses,
   genusFloor,
   parseAgentModule,
-  parseOrganValue,
+  parseFragment,
   resolvedDup,
   structuralParsimony,
 } from '@leclabs/agent-forge/validate';
@@ -52,17 +52,17 @@ async function loadLiveCorpus(): Promise<StructuralCorpus> {
       readFileSync(join(srcRoot, rel), 'utf8'),
     ),
   );
-  const organValues = (await collect('organs/**/*.ts')).map((rel) => {
-    const parts = rel.split('/'); // organs/<organ>/<slug>.ts
-    const organ = parts[1] as string;
+  const fragments = (await collect('dimensions/**/*.ts')).map((rel) => {
+    const parts = rel.split('/'); // dimensions/<dimension>/<slug>.ts
+    const dimension = parts[1] as string;
     const slug = basename(parts[2] as string, '.ts');
-    return parseOrganValue(
-      organ,
+    return parseFragment(
+      dimension,
       slug,
       readFileSync(join(srcRoot, rel), 'utf8'),
     );
   });
-  return { agents, organValues };
+  return { agents, fragments };
 }
 
 // ═══ POSITIVE CONTROL — the VERBATIM deleted cruft (held-out fixtures) ════════════
@@ -73,8 +73,8 @@ async function loadLiveCorpus(): Promise<StructuralCorpus> {
 /** (a) the real `src/agents/base.ts` — a genus floor spread into every agent. */
 const BASE_TS = `// delete this file and set the values in the agent definitions directly i.e. packages/agent-anatomy/src/agents/*.ts.
 
-export const memoryProtocol = \`\` // duplicative garbage, memory should be set on the organ in the agent
-export const personaProtocol = \`\` // same as above except for persona.
+export const memoryProtocol = \`\` // duplicative garbage, memory should be set on the dimension in the agent
+export const personaProtocol = \`\` // same as above except for archetype.
 
 export const base = {
   memoryProtocol,
@@ -84,7 +84,7 @@ export const base = {
 
 /** a real agent that spreads the floor (\`...base\`) — supplies the graph edge. */
 const AGENT_SPREADING_BASE = `import type { Agent } from '@leclabs/agent-forge/anatomy';
-import { curate as curate_role } from '../organs/role/curate.js';
+import { curate as curate_role } from '../dimensions/role/curate.js';
 import { base } from './base.js';
 export const nico: Agent = { ...base, name: 'nico', role: curate_role };
 `;
@@ -92,12 +92,12 @@ export const nico: Agent = { ...base, name: 'nico', role: curate_role };
 /** (b) the real \`nicoResolved: ResolvedAgent\` — a parallel rep of the Agent vector. */
 const AGENT_WITH_RESOLVED = `import type { ResolvedAgent } from '@leclabs/agent-forge/adapters/claude';
 import type { Agent } from '@leclabs/agent-forge/anatomy';
-import { curate as curate_role } from '../organs/role/curate.js';
+import { curate as curate_role } from '../dimensions/role/curate.js';
 export const nico: Agent = { name: 'nico', role: curate_role };
 export const nicoResolved: ResolvedAgent = {
   name: 'nico',
-  description: nico.persona,
-  organs: [['Role', [curate_role]]],
+  description: nico.archetype,
+  dimensions: [['Role', [curate_role]]],
 };
 `;
 
@@ -105,7 +105,7 @@ export const nicoResolved: ResolvedAgent = {
 const MAV_ARCHETYPE_GREEN = `import type { Provenance } from '@leclabs/agent-forge/anatomy';
 
 export const mavArchetypeGreen: Provenance = {
-  organ: 'provenance',
+  dimension: 'provenance',
   slug: 'mav-archetype-green',
   definiens: \`the mav archetype(regenerable SOUL) · ✈️·green · principal-tier individual-contributor authority, held intrinsically — the elite-IC delivery lineage mav descends from, bound to the agent-subject, ¬path-scoped grant.\`,
   mark: { emoji: '✈️', hue: 'green' },
@@ -114,7 +114,7 @@ export const mavArchetypeGreen: Provenance = {
 
 /** an agent selecting the mega-fragment — the sole reference (refCount = 1). */
 const AGENT_SELECTING_MEGA_FRAGMENT = `import type { Agent } from '@leclabs/agent-forge/anatomy';
-import { mavArchetypeGreen as mavArchetypeGreen_provenance } from '../organs/provenance/mav-archetype-green.js';
+import { mavArchetypeGreen as mavArchetypeGreen_provenance } from '../dimensions/provenance/mav-archetype-green.js';
 export const mav: Agent = { name: 'mav', provenance: mavArchetypeGreen_provenance };
 `;
 
@@ -123,18 +123,18 @@ const GENUS_FLOOR_FIXTURE: StructuralCorpus = {
     parseAgentModule('base', BASE_TS),
     parseAgentModule('nico', AGENT_SPREADING_BASE),
   ],
-  organValues: [],
+  fragments: [],
 };
 
 const RESOLVED_DUP_FIXTURE: StructuralCorpus = {
   agents: [parseAgentModule('nico', AGENT_WITH_RESOLVED)],
-  organValues: [],
+  fragments: [],
 };
 
 const ABSORBED_IDENTITY_FIXTURE: StructuralCorpus = {
   agents: [parseAgentModule('mav', AGENT_SELECTING_MEGA_FRAGMENT)],
-  organValues: [
-    parseOrganValue('provenance', 'mav-archetype-green', MAV_ARCHETYPE_GREEN),
+  fragments: [
+    parseFragment('provenance', 'mav-archetype-green', MAV_ARCHETYPE_GREEN),
   ],
 };
 
@@ -146,33 +146,33 @@ const SHARED_MARK_VALUE: StructuralCorpus = {
   agents: [
     parseAgentModule(
       'a',
-      "import { x } from '../organs/provenance/shared-lineage.js';\nexport const a = 1;",
+      "import { x } from '../dimensions/provenance/shared-lineage.js';\nexport const a = 1;",
     ),
     parseAgentModule(
       'b',
-      "import { x } from '../organs/provenance/shared-lineage.js';\nexport const b = 1;",
+      "import { x } from '../dimensions/provenance/shared-lineage.js';\nexport const b = 1;",
     ),
   ],
-  organValues: [
-    parseOrganValue(
+  fragments: [
+    parseFragment(
       'provenance',
       'shared-lineage',
-      "export const sharedLineage = { organ: 'provenance', slug: 'shared-lineage', mark: { emoji: '🔱', hue: 'gold' } };",
+      "export const sharedLineage = { dimension: 'provenance', slug: 'shared-lineage', mark: { emoji: '🔱', hue: 'gold' } };",
     ),
   ],
 };
 
-/** a mark-LESS value referenced by exactly ONE agent — a legit open-organ value
+/** a mark-LESS value referenced by exactly ONE agent — a legit open-dimension value
  * (role/build, curate). Single-ref ALONE must not convict (¬mark ⇒ green). */
-const SINGLE_REF_ORGAN_VALUE: StructuralCorpus = {
+const SINGLE_REF_DIMENSION_VALUE: StructuralCorpus = {
   agents: [
     parseAgentModule(
       'mav',
-      "import { build as build_role } from '../organs/role/build.js';\nexport const mav = 1;",
+      "import { build as build_role } from '../dimensions/role/build.js';\nexport const mav = 1;",
     ),
   ],
-  organValues: [
-    parseOrganValue(
+  fragments: [
+    parseFragment(
       'role',
       'build',
       'export const build: Role = `build ≜ own the artifact.`;',
@@ -229,7 +229,7 @@ describe('structural-parsimony gate — ¬∃ artifact restating an archetype', 
   });
 
   it('a mark-less value referenced by exactly one agent is GREEN (single-ref ≠ cruft)', () => {
-    expect(absorbedIdentity(SINGLE_REF_ORGAN_VALUE).convicted).toEqual([]);
+    expect(absorbedIdentity(SINGLE_REF_DIMENSION_VALUE).convicted).toEqual([]);
   });
 
   // ── LIVE TREE: GREEN on every class (regression-prevention floor) ─────────────
@@ -237,7 +237,7 @@ describe('structural-parsimony gate — ¬∃ artifact restating an archetype', 
     const corpus = await loadLiveCorpus();
     // cardinality sanity — the loader SEES the whole corpus.
     expect(corpus.agents.length).toBe(10);
-    expect(corpus.organValues.length).toBeGreaterThan(100);
+    expect(corpus.fragments.length).toBeGreaterThan(100);
     const verdicts = structuralParsimony(corpus);
     const failures = verdicts
       .filter((v) => !v.pass)
@@ -248,7 +248,7 @@ describe('structural-parsimony gate — ¬∃ artifact restating an archetype', 
   it('a live legit single-ref open value (role/review → 1 agent) is not convicted', async () => {
     const corpus = await loadLiveCorpus();
     const refs = corpus.agents.filter((a) =>
-      a.organImports.includes('role/review'),
+      a.dimensionImports.includes('role/review'),
     );
     expect(refs.length).toBe(1); // referenced by exactly one agent (principal-engineer-reviewer)…
     expect(absorbedIdentity(corpus).convicted).not.toContain('role/review'); // …yet GREEN

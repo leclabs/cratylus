@@ -1,18 +1,18 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The organ-value catalog enumerator.
+// The fragment catalog enumerator.
 //
-// `enumerateCatalog(corpusOrgansDir)` walks a corpus's `<organ>/*.ts` value
-// modules, joins each organ's discovered values with the organ's runtime
+// `enumerateCatalog(corpusDimensionsDir)` walks a corpus's `<dimension>/*.ts` value
+// modules, joins each dimension's discovered values with the dimension's runtime
 // metadata (`ANATOMY` in `../anatomy`), and emits the discovery contract:
 //
-//   { organ, axis, kind, arity, values: [{ slug, definiens }] }   ×24
+//   { dimension, axis, kind, arity, values: [{ slug, definiens }] }   ×24
 //
-// agent-forge owns the MECHANISM (it types the 24 organs, it knows axis/kind/arity);
+// agent-forge owns the MECHANISM (it types the 24 dimensions, it knows axis/kind/arity);
 // the corpus owns the DATA (the value modules). This stays doctrine-agnostic:
-// it consumes a directory of organ-module dirs, not `packages/agent-anatomy` — exactly
+// it consumes a directory of dimension-module dirs, not `packages/agent-anatomy` — exactly
 // the T3.1 split (the deploy layer "consumes a render tree, not the corpus").
 //
-// VALUES are DISCOVERED, not listed: drop a new module under `<organ>/` and it
+// VALUES are DISCOVERED, not listed: drop a new module under `<dimension>/` and it
 // appears with zero other edits. RUNTIME TS IMPORT: each module is a typed
 // `Fragment` whose only `import` is a type-only `import type { … }`, which
 // erases at compile time — so node (v24+, type-stripping) imports the modules
@@ -26,20 +26,20 @@ import {
   ANATOMY,
   type Arity,
   type Classification,
+  DIMENSION_NAMES,
+  type Dimension,
   type Genus,
-  ORGAN_NAMES,
-  type Organ,
 } from '../anatomy/index.js';
 
-/** The discovery contract for one organ: its metadata + discovered values. */
+/** The discovery contract for one dimension: its metadata + discovered values. */
 export interface CatalogEntry {
-  /** The organ name (e.g. `address`). */
-  readonly organ: Organ;
+  /** The dimension name (e.g. `address`). */
+  readonly dimension: Dimension;
   /** The MECE filing axis. */
   readonly axis: Genus;
   /** Open/closed classification — `enum | open | coined`. */
   readonly kind: Classification;
-  /** Whether the organ holds one value or many. */
+  /** Whether the dimension holds one value or many. */
   readonly arity: Arity;
   /**
    * The discovered value bodies (each a branded-string cell, `⟨α, residue⟩`),
@@ -60,16 +60,16 @@ export function shortlex(a: string, b: string): number {
 }
 
 /**
- * Discover the value bodies under one organ dir (`<corpusOrgansDir>/<organ>`).
- * An organ value is now a branded STRING (`⟨α, residue⟩`); its organ home is the
- * DIRECTORY, so every string export under `<organ>/` is one of that organ's
+ * Discover the value bodies under one dimension dir (`<corpusDimensionsDir>/<dimension>`).
+ * A dimension value is now a branded STRING (`⟨α, residue⟩`); its dimension home is the
+ * DIRECTORY, so every string export under `<dimension>/` is one of that dimension's
  * values. Imports every `*.ts` module and collects each exported string.
  */
 async function valuesOf(
-  corpusOrgansDir: string,
-  organ: Organ,
+  corpusDimensionsDir: string,
+  dimension: Dimension,
 ): Promise<string[]> {
-  const dir = join(corpusOrgansDir, organ);
+  const dir = join(corpusDimensionsDir, dimension);
   const out: string[] = [];
   const seen = new Set<string>();
   let modules: string[];
@@ -79,7 +79,7 @@ async function valuesOf(
       modules.push(p);
     }
   } catch {
-    // An organ with no module dir yet contributes no values (still listed).
+    // A dimension with no module dir yet contributes no values (still listed).
     return out;
   }
   for (const rel of modules.sort()) {
@@ -99,25 +99,25 @@ async function valuesOf(
 }
 
 /**
- * Enumerate the full organ-value catalog of a corpus. For each of the 24 organs
+ * Enumerate the full fragment catalog of a corpus. For each of the 24 dimensions
  * (in anatomy declaration order), joins `ANATOMY` metadata with the values
- * discovered under `<corpusOrgansDir>/<organ>/*.ts`.
+ * discovered under `<corpusDimensionsDir>/<dimension>/*.ts`.
  *
- * @param corpusOrgansDir absolute path to a corpus's `organs/` dir (the parent
- *        of the per-organ module dirs). For agent-anatomy: `packages/agent-anatomy/src/organs`.
+ * @param corpusDimensionsDir absolute path to a corpus's `dimensions/` dir (the parent
+ *        of the per-dimension module dirs). For agent-anatomy: `packages/agent-anatomy/src/dimensions`.
  */
 export async function enumerateCatalog(
-  corpusOrgansDir: string,
+  corpusDimensionsDir: string,
 ): Promise<CatalogEntry[]> {
   const entries: CatalogEntry[] = [];
-  for (const organ of ORGAN_NAMES) {
-    const meta = ANATOMY[organ];
+  for (const dimension of DIMENSION_NAMES) {
+    const meta = ANATOMY[dimension];
     entries.push({
-      organ,
+      dimension,
       axis: meta.axis,
       kind: meta.kind,
       arity: meta.arity,
-      values: await valuesOf(corpusOrgansDir, organ),
+      values: await valuesOf(corpusDimensionsDir, dimension),
     });
   }
   return entries;

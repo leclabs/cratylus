@@ -248,7 +248,7 @@ describe('scanLine (detector precision)', () => {
   });
 
   it('AMENDMENT: does not fire branch-ref on corpus-speak slash-tokens without git context', () => {
-    // The live-probe FP class on nico@fire: organ/value paths + concept pairs.
+    // The live-probe FP class on nico@fire: dimension/value paths + concept pairs.
     expect(scanLine('the autonomy/human-on-the-loop value cell')).toEqual([]);
     expect(scanLine('a diff/round-trip equivalence check')).toEqual([]);
     expect(scanLine('candidates/prior-verdicts drive the elicitation')).toEqual(

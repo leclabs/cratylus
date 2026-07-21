@@ -1,14 +1,14 @@
 /**
- * E1.S8 · foreign agent NL → verbatim Persona organ (step 1 of the
+ * E1.S8 · foreign agent NL → verbatim Persona dimension (step 1 of the
  * two-step agent law). A cursor `.cursor/agents/rev.md` [CU3] imports
  * without interpretation: the prose body lands VERBATIM on the anatomy
- * vector's `persona` organ (observable at the IR boundary as the agent
+ * vector's `archetype` dimension (observable at the IR boundary as the agent
  * body, byte-equal after the library's own documented frontmatter
- * extraction); name/description/model map to their homes; NO other organ
+ * extraction); name/description/model map to their homes; NO other dimension
  * is guessed (no invented fields). Step 2 (elevation) is E6.S3.
  *
- * The 24-organ vector contract lives at src/anatomy (Agent: persona +
- * 23 further organs, null = inherit); until the importer emits it, the
+ * The 24-dimension vector contract lives at src/anatomy (Agent: archetype +
+ * 23 further dimensions, null = inherit); until the importer emits it, the
  * executable projection of the law is: body verbatim + zero fields beyond
  * the mapped set + body-is-data (no resource fabricated from body text).
  */
@@ -55,7 +55,7 @@ async function importFixture(): Promise<{ cwd: string }> {
 
 story(
   'E1.S8',
-  'cursor agent lifts persona-verbatim: body byte-equal, name/description/model mapped, no organ guessed [CU3]',
+  'cursor agent lifts archetype-verbatim: body byte-equal, name/description/model mapped, no dimension guessed [CU3]',
   async () => {
     const { cwd } = await importFixture();
     const ir = await readIR('project', cwd);
@@ -66,10 +66,10 @@ story(
     ).toBeDefined();
     if (!agent) return;
 
-    expect(agent.body).toBe(EXPECTED_BODY); // persona verbatim
+    expect(agent.body).toBe(EXPECTED_BODY); // archetype verbatim
     expect(agent.description).toBe('Reviews diffs');
     expect(agent.model).toBe('gpt-5.2-codex');
-    // every organ beyond the mapped set stays null — no invented values
+    // every dimension beyond the mapped set stays null — no invented values
     const invented = Object.keys(agent).filter(
       (k) => !MAPPED_FIELDS.includes(k),
     );
@@ -79,7 +79,7 @@ story(
 
 story(
   'E1.S8',
-  'raw import→export round-trip is lossless on the body: emitted cursor agent ≡ persona verbatim [CU3]',
+  'raw import→export round-trip is lossless on the body: emitted cursor agent ≡ archetype verbatim [CU3]',
   async () => {
     const { cwd } = await importFixture();
     const ir = await readIR('project', cwd);

@@ -147,8 +147,8 @@ Missing `--plan` is a refusal, never a default. Library surface:
 `optimize` / `exemplify` / `checkCoverage` / `optimizeRules` (rules are
 first-class through the pipeline; scoping metadata is never rewritten),
 `renderSkillCell` (prose procedure → formal skill cell), `elevateAgent`
-(step-1 persona → 24-organ vector with provenance traces and `ELICIT:`
-markers at silent organs), and `projectVector` (the pinned organ-vector →
+(step-1 archetype → 24-dimension vector with provenance traces and `ELICIT:`
+markers at silent dimensions), and `projectVector` (the pinned dimension-vector →
 config-IR agent projection).
 
 ## Exit codes

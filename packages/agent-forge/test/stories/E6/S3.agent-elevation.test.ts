@@ -1,5 +1,5 @@
 /**
- * E6.S3 — agent elevation: step-1 persona form → full 22-organ vector, which
+ * E6.S3 — agent elevation: step-1 archetype form → full 22-dimension vector, which
  * REPLACES the config-IR agent (two-step agent law, Operator ruling).
  *
  * GRADUATED: the elevation frame ships in `src/core/exemplify/` (`elevateAgent`).
@@ -10,13 +10,13 @@
  * replacement no-loss (REC ≽: the step-1 NL recoverable from the vector),
  * and single-source replacement (the step-1 file is removed on accept).
  *
- * `persona` and `provenance` are NOT `Organ` fragment members (D13/D3) — the
- * `ElevationSpec.organs` record is keyed by the 22 fragment organs only, so
- * this SPEC carries the step-1 raw NL on `objective` (an `open` scalar organ)
- * rather than on a `persona` organ key (which the frame would now refuse as
+ * `archetype` and `provenance` are NOT `Dimension` fragment members (D13/D3) — the
+ * `ElevationSpec.dimensions` record is keyed by the 22 fragment dimensions only, so
+ * this SPEC carries the step-1 raw NL on `objective` (an `open` scalar dimension)
+ * rather than on a `archetype` dimension key (which the frame would now refuse as
  * unknown).
  *
- * The elevation TARGET contract (22 organs, arities, axes) stays GREEN via
+ * The elevation TARGET contract (22 dimensions, arities, axes) stays GREEN via
  * the runtime-introspection companion below.
  */
 
@@ -25,14 +25,14 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, expect } from 'vitest';
 import {
   ANATOMY,
-  ORGAN_NAMES,
-  type Organ,
+  DIMENSION_NAMES,
+  type Dimension,
 } from '../../../src/anatomy/index.js';
 import {
+  DIMENSION_FIELD,
+  type DimensionPlan,
   type ElevationSpec,
   ExemplifyRefusal,
-  ORGAN_FIELD,
-  type OrganPlan,
   canonicalText,
   elevateAgent,
   renderAgentVector,
@@ -40,8 +40,8 @@ import {
 import { makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
-/** The 22 fragment-organ literals the vector must cover (anatomy order). */
-const THE_22_ORGANS: readonly Organ[] = [
+/** The 22 fragment-dimension literals the vector must cover (anatomy order). */
+const THE_22_DIMENSIONS: readonly Dimension[] = [
   'autonomy',
   'role',
   'formality',
@@ -68,21 +68,25 @@ const THE_22_ORGANS: readonly Organ[] = [
 
 story(
   'E6.S3',
-  'the elevation target contract is runtime-introspectable: exactly 22 organs, 5 STANCE, 6 set organs',
+  'the elevation target contract is runtime-introspectable: exactly 22 dimensions, 5 Persona, 6 set dimensions',
   () => {
-    // The keyset is exactly the 22 fragment-organ literals — the completeness
+    // The keyset is exactly the 22 fragment-dimension literals — the completeness
     // law the elevated vector compiles against.
-    expect(ORGAN_NAMES).toHaveLength(22);
-    expect([...ORGAN_NAMES].sort()).toEqual([...THE_22_ORGANS].sort());
-    expect(Object.keys(ANATOMY).sort()).toEqual([...THE_22_ORGANS].sort());
-    // Axis split: 5 STANCE / 17 CONATUS (persona + provenance no longer
-    // STANCE fragment organs — D13/D3).
-    const stance = ORGAN_NAMES.filter((o) => ANATOMY[o].axis === 'STANCE');
-    expect(stance).toHaveLength(5);
-    // Arity: exactly the six documented set organs take arrays (autonomy is
-    // now a SET organ — composed standing, D5).
-    const setOrgans = ORGAN_NAMES.filter((o) => ANATOMY[o].arity === 'set');
-    expect([...setOrgans].sort()).toEqual([
+    expect(DIMENSION_NAMES).toHaveLength(22);
+    expect([...DIMENSION_NAMES].sort()).toEqual([...THE_22_DIMENSIONS].sort());
+    expect(Object.keys(ANATOMY).sort()).toEqual([...THE_22_DIMENSIONS].sort());
+    // Axis split: 5 Persona / 17 Constitution (archetype + provenance no longer
+    // Persona fragment dimensions — D13/D3).
+    const persona = DIMENSION_NAMES.filter(
+      (o) => ANATOMY[o].axis === 'Persona',
+    );
+    expect(persona).toHaveLength(5);
+    // Arity: exactly the six documented set dimensions take arrays (autonomy is
+    // now a SET dimension — composed standing, D5).
+    const setDimensions = DIMENSION_NAMES.filter(
+      (o) => ANATOMY[o].arity === 'set',
+    );
+    expect([...setDimensions].sort()).toEqual([
       'actions',
       'autonomy',
       'capabilities',
@@ -93,27 +97,30 @@ story(
   },
 );
 
-/** A step-1 agent: the foreign NL verbatim on the persona organ (E1.S8). */
+/** A step-1 agent: the foreign NL verbatim on the archetype dimension (E1.S8). */
 const STEP1_PERSONA =
   'A meticulous reviewer agent: reads every migration, flags destructive ' +
   'DDL, prefers small reversible steps, and always explains its reasoning.';
 
-/** Every organ deliberately harness-inherited unless the spec overrides. */
-const inheritAll = (): Record<Organ, OrganPlan> =>
+/** Every dimension deliberately harness-inherited unless the spec overrides. */
+const inheritAll = (): Record<Dimension, DimensionPlan> =>
   Object.fromEntries(
-    ORGAN_NAMES.map((o) => [o, { kind: 'inherit' } satisfies OrganPlan]),
-  ) as Record<Organ, OrganPlan>;
+    DIMENSION_NAMES.map((o) => [
+      o,
+      { kind: 'inherit' } satisfies DimensionPlan,
+    ]),
+  ) as Record<Dimension, DimensionPlan>;
 
-/** The LLM exemplify+elicit pass's output: evidence-traced organ selections.
+/** The LLM exemplify+elicit pass's output: evidence-traced dimension selections.
  *  Quotes are verbatim spans of STEP1_PERSONA (the frame verifies). */
 const SPEC: ElevationSpec = {
   name: 'reviewer',
-  organs: {
+  dimensions: {
     ...inheritAll(),
-    // No `persona` key: persona is a plain identity field now (D13), not an
-    // `Organ` fragment — the frame refuses an unrecognized organ key. The
+    // No `archetype` key: archetype is a plain identity field now (D13), not an
+    // `Dimension` fragment — the frame refuses an unrecognized dimension key. The
     // step-1 raw NL is instead carried verbatim on `objective` (an `open`
-    // scalar organ), which satisfies replacement no-loss (REC ≽).
+    // scalar dimension), which satisfies replacement no-loss (REC ≽).
     objective: {
       kind: 'value',
       fragments: [{ slug: 'migration-reviewer', definiens: STEP1_PERSONA }],
@@ -170,7 +177,7 @@ afterEach(() => {
 
 story(
   'E6.S3',
-  'exemplify+elicit elevates the step-1 persona to a compiling 22-organ vector with a provenance trace per non-null organ',
+  'exemplify+elicit elevates the step-1 archetype to a compiling 22-dimension vector with a provenance trace per non-null dimension',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
@@ -187,13 +194,13 @@ story(
       "import type { Agent } from '@leclabs/agent-forge/anatomy'",
     );
     expect(src).toContain('export const reviewer: Agent = {');
-    // All 22 organ fields present — a value fragment or the explicit null.
-    for (const organ of THE_22_ORGANS) {
-      expect(src, `organ field for '${organ}' missing`).toMatch(
-        new RegExp(`\\b${ORGAN_FIELD[organ]}: `),
+    // All 22 dimension fields present — a value fragment or the explicit null.
+    for (const dimension of THE_22_DIMENSIONS) {
+      expect(src, `dimension field for '${dimension}' missing`).toMatch(
+        new RegExp(`\\b${DIMENSION_FIELD[dimension]}: `),
       );
     }
-    // A provenance trace per non-null organ — exactly the selected set.
+    // A provenance trace per non-null dimension — exactly the selected set.
     const provenance = JSON.parse(
       readFileSync(join(cwd, 'agents', 'reviewer.provenance.json'), 'utf8'),
     ) as Record<string, { type: string; note: string }>;
@@ -207,12 +214,12 @@ story(
       expect(['quote', 'inference']).toContain(trace.type);
       expect(trace.note.length).toBeGreaterThan(0);
     }
-    // An organ value with no trace to input evidence = FAIL (never-invent).
+    // A dimension value with no trace to input evidence = FAIL (never-invent).
     expect(() =>
       renderAgentVector(
         {
           name: 'reviewer',
-          organs: {
+          dimensions: {
             ...inheritAll(),
             formality: {
               kind: 'value',
@@ -241,7 +248,7 @@ story(
     // Post-elevation repo state holds exactly ONE source form per agent:
     // the step-1 config-IR form is gone…
     expect(existsSync(join(cwd, 'step1-agent.md'))).toBe(false);
-    // …and the vector present, additive/no-loss: the persona NL recoverable
+    // …and the vector present, additive/no-loss: the archetype NL recoverable
     // from the vector (REC ≽, checked by the exemplify accept gate).
     const vectorModule = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorModule)).toBe(true);
@@ -255,7 +262,7 @@ story(
       elevateAgent({
         sourcePath: join(cwd, 'step1b.md'),
         outDir: cwd,
-        spec: { name: 'reviewer2', organs: inheritAll() },
+        spec: { name: 'reviewer2', dimensions: inheritAll() },
       }),
     ).toThrow(/REC/);
     expect(existsSync(join(cwd, 'step1b.md'))).toBe(true);

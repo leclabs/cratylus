@@ -1,7 +1,7 @@
-// `enumerateCatalog` — the organ-value discovery library. Proves: (1) it
-// enumerates every one of the 22 organs from agent-anatomy's modules with the correct
-// axis/kind/arity; (2) the contract shape per organ; (3) values sort shortlex;
-// (4) the DRIFT-PROOF property — a value module dropped under an organ dir
+// `enumerateCatalog` — the fragment discovery library. Proves: (1) it
+// enumerates every one of the 22 dimensions from agent-anatomy's modules with the correct
+// axis/kind/arity; (2) the contract shape per dimension; (3) values sort shortlex;
+// (4) the DRIFT-PROOF property — a value module dropped under a dimension dir
 // appears in the output with no other change.
 
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -10,7 +10,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { ANATOMY, ORGAN_NAMES } from '../../src/anatomy/index.js';
+import { ANATOMY, DIMENSION_NAMES } from '../../src/anatomy/index.js';
 import {
   type CatalogEntry,
   enumerateCatalog,
@@ -18,40 +18,40 @@ import {
 } from '../../src/catalog/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-// agent-forge/test/catalog → up to packages → agent-anatomy/src/organs.
-const anatomyOrgans = join(
+// agent-forge/test/catalog → up to packages → agent-anatomy/src/dimensions.
+const anatomyDimensions = join(
   here,
   '..',
   '..',
   '..',
   'agent-anatomy',
   'src',
-  'organs',
+  'dimensions',
 );
 
 describe('enumerateCatalog over agent-anatomy', () => {
   let entries: CatalogEntry[];
   beforeAll(async () => {
-    entries = await enumerateCatalog(anatomyOrgans);
+    entries = await enumerateCatalog(anatomyDimensions);
   });
 
-  it('enumerates exactly the 22 organs, in anatomy order', () => {
-    expect(entries.map((e) => e.organ)).toEqual([...ORGAN_NAMES]);
+  it('enumerates exactly the 22 dimensions, in anatomy order', () => {
+    expect(entries.map((e) => e.dimension)).toEqual([...DIMENSION_NAMES]);
     expect(entries).toHaveLength(22);
   });
 
-  it("each organ's axis/kind/arity matches ANATOMY", () => {
+  it("each dimension's axis/kind/arity matches ANATOMY", () => {
     for (const e of entries) {
-      const meta = ANATOMY[e.organ];
+      const meta = ANATOMY[e.dimension];
       expect({ axis: e.axis, kind: e.kind, arity: e.arity }).toEqual(meta);
     }
   });
 
   it('the acceptance spot-checks hold', () => {
-    const byOrgan = new Map(entries.map((e) => [e.organ, e]));
+    const byDimension = new Map(entries.map((e) => [e.dimension, e]));
 
-    // autonomy is now a SET organ (per-agent composed standing, D5).
-    const autonomy = byOrgan.get('autonomy');
+    // autonomy is now a SET dimension (per-agent composed standing, D5).
+    const autonomy = byDimension.get('autonomy');
     expect(autonomy).toMatchObject({ kind: 'enum', arity: 'set' });
     // O-collapse reduced these to σ*: the loop-ladder anchors are bare (residue ∅),
     // human-out-of-the-loop carries a `⟨…⟩` residue. No `≜ hitl`-style prose remains.
@@ -63,11 +63,11 @@ describe('enumerateCatalog over agent-anatomy', () => {
       autonomy?.values.some((v) => v.startsWith('human-out-of-the-loop')),
     ).toBe(true);
 
-    expect(byOrgan.get('guardrails')).toMatchObject({
+    expect(byDimension.get('guardrails')).toMatchObject({
       kind: 'coined',
       arity: 'set',
     });
-    expect(byOrgan.get('capabilities')).toMatchObject({
+    expect(byDimension.get('capabilities')).toMatchObject({
       kind: 'open',
       arity: 'set',
     });
@@ -107,16 +107,16 @@ describe('drift-proof discovery (the load-bearing property)', () => {
     dir = mkdtempSync(join(tmpdir(), 'agent-forge-catalog-'));
   });
 
-  it('a value module dropped under an organ dir appears, no other change', async () => {
+  it('a value module dropped under a dimension dir appears, no other change', async () => {
     const addressDir = join(dir, 'autonomy');
     mkdirSync(addressDir, { recursive: true });
 
-    // Before: empty organ → zero values, organ still listed with its metadata.
+    // Before: empty dimension → zero values, dimension still listed with its metadata.
     let entries = await enumerateCatalog(dir);
-    const before = entries.find((e) => e.organ === 'autonomy');
+    const before = entries.find((e) => e.dimension === 'autonomy');
     expect(before).toMatchObject({
-      organ: 'autonomy',
-      axis: 'STANCE',
+      dimension: 'autonomy',
+      axis: 'Persona',
       kind: 'enum',
       arity: 'set',
     });
@@ -135,7 +135,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
 
     // After: it shows up — discovered, not listed.
     entries = await enumerateCatalog(dir);
-    const after = entries.find((e) => e.organ === 'autonomy');
+    const after = entries.find((e) => e.dimension === 'autonomy');
     expect(after?.values).toEqual([
       'fixture-mode ≜ a discovered-only fixture value',
     ]);

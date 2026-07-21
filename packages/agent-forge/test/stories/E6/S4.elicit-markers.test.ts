@@ -1,12 +1,12 @@
 /**
- * E6.S4 — ambiguous organ value ⇒ `ELICIT:` marker, never an invented answer.
+ * E6.S4 — ambiguous dimension value ⇒ `ELICIT:` marker, never an invented answer.
  *
  * GRADUATED: the elevation frame ships in `src/core/exemplify/`. The fixture
  * is silent on `autonomy`, `satisficing`, and `memory`; the SPEC (the LLM
- * pass's output) marks exactly those organs as elicitations — ≥ 2 candidates
+ * pass's output) marks exactly those dimensions as elicitations — ≥ 2 candidates
  * + the one bisecting question (/elicit's information-gain law) — and the
  * frame renders machine-greppable `ELICIT:` markers plus the sidecar script,
- * with ZERO enum values at the silent organs. The negative leg shows the
+ * with ZERO enum values at the silent dimensions. The negative leg shows the
  * never-invent law biting: a concrete value whose evidence does not trace to
  * the source (an invented answer) refuses.
  */
@@ -14,11 +14,11 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect } from 'vitest';
-import { ORGAN_NAMES, type Organ } from '../../../src/anatomy/index.js';
+import { DIMENSION_NAMES, type Dimension } from '../../../src/anatomy/index.js';
 import {
+  type DimensionPlan,
   type ElevationSpec,
   ExemplifyRefusal,
-  type OrganPlan,
   elevateAgent,
 } from '../../../src/core/index.js';
 import { makeTmpDir, story } from '../helpers.js';
@@ -30,21 +30,24 @@ const SILENT_DESCRIPTION = `A code-review agent. Formal in tone, always
 explains its reasoning step by step, works on TypeScript codebases, and
 reports findings as fenced review blocks.`;
 
-const SILENT_ORGANS = ['autonomy', 'satisficing', 'memory'] as const;
+const SILENT_DIMENSIONS = ['autonomy', 'satisficing', 'memory'] as const;
 
-const inheritAll = (): Record<Organ, OrganPlan> =>
+const inheritAll = (): Record<Dimension, DimensionPlan> =>
   Object.fromEntries(
-    ORGAN_NAMES.map((o) => [o, { kind: 'inherit' } satisfies OrganPlan]),
-  ) as Record<Organ, OrganPlan>;
+    DIMENSION_NAMES.map((o) => [
+      o,
+      { kind: 'inherit' } satisfies DimensionPlan,
+    ]),
+  ) as Record<Dimension, DimensionPlan>;
 
-/** The stated organs, evidence-quoted; the silent three as elicitations.
- *  `persona` is a plain identity field now (D13), not an `Organ` fragment —
- *  the frame would refuse it as an unknown organ key — so the raw NL
+/** The stated dimensions, evidence-quoted; the silent three as elicitations.
+ *  `archetype` is a plain identity field now (D13), not an `Dimension` fragment —
+ *  the frame would refuse it as an unknown dimension key — so the raw NL
  *  (replacement no-loss, REC ≽) is instead carried verbatim on `objective`
- *  (an `open` scalar organ). */
+ *  (an `open` scalar dimension). */
 const SPEC: ElevationSpec = {
   name: 'reviewer',
-  organs: {
+  dimensions: {
     ...inheritAll(),
     objective: {
       kind: 'value',
@@ -106,7 +109,7 @@ afterEach(() => {
 
 story(
   'E6.S4',
-  'the emitted vector carries greppable ELICIT: markers at exactly the silent organs, each with a bisecting elicitation script',
+  'the emitted vector carries greppable ELICIT: markers at exactly the silent dimensions, each with a bisecting elicitation script',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
@@ -118,11 +121,11 @@ story(
     const vectorFile = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorFile)).toBe(true);
     const src = readFileSync(vectorFile, 'utf8');
-    // The literal marker, machine-greppable, at exactly the silent organs.
-    for (const organ of SILENT_ORGANS) {
-      expect(src).toMatch(new RegExp(`${organ}[\\s\\S]{0,120}ELICIT:`));
+    // The literal marker, machine-greppable, at exactly the silent dimensions.
+    for (const dimension of SILENT_DIMENSIONS) {
+      expect(src).toMatch(new RegExp(`${dimension}[\\s\\S]{0,120}ELICIT:`));
     }
-    expect(src.match(/ELICIT:/g) ?? []).toHaveLength(SILENT_ORGANS.length);
+    expect(src.match(/ELICIT:/g) ?? []).toHaveLength(SILENT_DIMENSIONS.length);
     // A companion elicitation script per marker: ≥2 candidates + 1 question.
     const scriptFile = join(cwd, 'agents', 'reviewer.elicit.json');
     expect(existsSync(scriptFile)).toBe(true);
@@ -130,11 +133,11 @@ story(
       string,
       { candidates?: string[]; question?: string }
     >;
-    for (const organ of SILENT_ORGANS) {
-      const entry = script[organ];
+    for (const dimension of SILENT_DIMENSIONS) {
+      const entry = script[dimension];
       expect(
         entry,
-        `no elicitation entry for silent organ '${organ}'`,
+        `no elicitation entry for silent dimension '${dimension}'`,
       ).toBeDefined();
       expect(entry?.candidates?.length ?? 0).toBeGreaterThanOrEqual(2);
       expect(typeof entry?.question).toBe('string');
@@ -144,17 +147,17 @@ story(
 
 story(
   'E6.S4',
-  'negative: a pipeline run that invents a concrete enum value for a silent organ fails',
+  'negative: a pipeline run that invents a concrete enum value for a silent dimension fails',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
     // Silence becomes a question, never a guess: a concrete value at a
-    // silent organ cannot trace to the source — the frame refuses it (an
+    // silent dimension cannot trace to the source — the frame refuses it (an
     // unfounded quote is an invented value) and leaves the source intact.
     const invented: ElevationSpec = {
       name: 'reviewer',
-      organs: {
-        ...SPEC.organs,
+      dimensions: {
+        ...SPEC.dimensions,
         autonomy: {
           kind: 'value',
           fragments: [
@@ -175,7 +178,7 @@ story(
       }),
     ).toThrow(ExemplifyRefusal);
     expect(existsSync(join(cwd, 'agent-description.md'))).toBe(true);
-    // The accepted vector holds NO concrete enum value at any silent organ:
+    // The accepted vector holds NO concrete enum value at any silent dimension:
     // the only admissible forms are null-with-marker or the sidecar list.
     elevateAgent({
       sourcePath: join(cwd, 'agent-description.md'),
@@ -185,9 +188,9 @@ story(
     const vectorFile = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorFile)).toBe(true);
     const src = readFileSync(vectorFile, 'utf8');
-    for (const organ of SILENT_ORGANS) {
+    for (const dimension of SILENT_DIMENSIONS) {
       expect(src).not.toMatch(
-        new RegExp(`organ:\\s*'${organ}'[\\s\\S]{0,80}slug:`),
+        new RegExp(`dimension:\\s*'${dimension}'[\\s\\S]{0,80}slug:`),
       );
     }
   },

@@ -1,10 +1,10 @@
-// `agent-forge catalog [--corpus <dir>] [--json]` — enumerate an organ-value catalog
+// `agent-forge catalog [--corpus <dir>] [--json]` — enumerate an fragment catalog
 // so a builder can DISCOVER the live option-space instead of hard-coding it.
 //
-// agent-forge owns the mechanism (it types the 24 organs via `ANATOMY`); the corpus
-// supplies the data (the value modules under `<corpus>/<organ>/*.ts`). Default
-// `--corpus` resolves to agent-anatomy's `src/organs` when that sibling exists in this
-// monorepo — a convenience default, still overridable for ANY organ-module
+// agent-forge owns the mechanism (it types the 24 dimensions via `ANATOMY`); the corpus
+// supplies the data (the value modules under `<corpus>/<dimension>/*.ts`). Default
+// `--corpus` resolves to agent-anatomy's `src/dimensions` when that sibling exists in this
+// monorepo — a convenience default, still overridable for ANY dimension-module
 // corpus (agent-forge stays doctrine-agnostic; agent-anatomy is just the default data dir).
 
 import { existsSync } from 'node:fs';
@@ -14,14 +14,14 @@ import pc from 'picocolors';
 import { type CatalogEntry, enumerateCatalog } from '../../catalog/index.js';
 
 export interface CatalogCmdOpts {
-  /** Corpus `organs/` dir; defaults to agent-anatomy's `src/organs` when present. */
+  /** Corpus `dimensions/` dir; defaults to agent-anatomy's `src/dimensions` when present. */
   corpus?: string;
   /** Emit the machine contract as JSON instead of the human table. */
   json?: boolean;
 }
 
 /**
- * Resolve the default corpus organs dir: agent-anatomy's `src/organs`, located relative
+ * Resolve the default corpus dimensions dir: agent-anatomy's `src/dimensions`, located relative
  * to this package (works from both `src/` under tsx and `dist/` at runtime).
  * Returns undefined if no such sibling exists (then `--corpus` is required).
  */
@@ -35,16 +35,16 @@ function defaultCorpus(): string | undefined {
     '..',
     'agent-anatomy',
     'src',
-    'organs',
+    'dimensions',
   );
   return existsSync(candidate) ? candidate : undefined;
 }
 
-/** Render the catalog as a human-readable table grouped by organ. */
+/** Render the catalog as a human-readable table grouped by dimension. */
 function renderTable(entries: CatalogEntry[]): string {
   const lines: string[] = [];
   for (const e of entries) {
-    const head = `${pc.bold(e.organ)} ${pc.gray(
+    const head = `${pc.bold(e.dimension)} ${pc.gray(
       `[${e.axis} · ${e.kind} · ${e.arity}]`,
     )} ${pc.gray(`(${e.values.length})`)}`;
     lines.push(head);
@@ -66,13 +66,13 @@ export async function runCatalog(opts: CatalogCmdOpts): Promise<number> {
   const corpus = opts.corpus ? resolve(opts.corpus) : defaultCorpus();
   if (!corpus) {
     console.error(
-      'agent-forge catalog: no --corpus given and no default agent-anatomy/src/organs found',
+      'agent-forge catalog: no --corpus given and no default agent-anatomy/src/dimensions found',
     );
     return 1;
   }
   if (!existsSync(corpus)) {
     console.error(
-      `agent-forge catalog: corpus organs dir not found: ${corpus}`,
+      `agent-forge catalog: corpus dimensions dir not found: ${corpus}`,
     );
     return 1;
   }
@@ -83,7 +83,7 @@ export async function runCatalog(opts: CatalogCmdOpts): Promise<number> {
     const total = entries.reduce((n, e) => n + e.values.length, 0);
     console.log(
       pc.bold('agent-forge catalog'),
-      pc.gray(`(${entries.length} organs, ${total} values — ${corpus})`),
+      pc.gray(`(${entries.length} dimensions, ${total} values — ${corpus})`),
     );
     console.log('');
     process.stdout.write(renderTable(entries));

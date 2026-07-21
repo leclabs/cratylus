@@ -8,7 +8,7 @@
 //      projects by the skills AS CODIFIED (each cell now carries the ρ=LLM
 //      discipline in its own laws) and pinned here; each must conform.
 //   2. AGENT↔AGENT messages — delegation prompts + subagent returns, ρ=LLM by
-//      standing rule (codified: `organs/actions/delegation.ts` definiens; the
+//      standing rule (codified: `dimensions/actions/delegation.ts` definiens; the
 //      dispatch/judge laws in `skills/praxis.ts`; `conform(k)` in exemplify's
 //      `valid`). The codification is asserted non-regressable below.
 //
@@ -22,7 +22,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { delegation } from '../src/organs/actions/delegation.js';
+import { delegation } from '../src/dimensions/actions/delegation.js';
 import { exemplify } from '../src/skills/exemplify.js';
 import { praxis } from '../src/skills/praxis.js';
 import {
@@ -106,7 +106,7 @@ describe('READER-REACH gate — ρ past the static corpus', () => {
   });
 
   // ── the codification homes are standing law, not per-turn discretion ─────────
-  it('the delegation organ + fan-out cells carry the ρ=LLM contract (non-regressable)', () => {
+  it('the delegation dimension + fan-out cells carry the ρ=LLM contract (non-regressable)', () => {
     expect(delegation).toMatch(/ρ=LLM/);
     expect(delegation).toMatch(/register=LLM/);
     expect(praxis.formalBlock).toContain('conform(a) ⇔ register(a) = ρ(a)');

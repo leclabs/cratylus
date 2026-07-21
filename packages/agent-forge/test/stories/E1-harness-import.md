@@ -92,20 +92,20 @@ multi-file set [CR2].
   source path) OR the import report lists the file under `unlifted-surfaces` with its path.
 - No fixture file is both un-imported and un-reported (set difference check = ∅).
 
-## E1.S8 · foreign agent NL → verbatim Persona organ (step 1 of the two-step agent law)
+## E1.S8 · foreign agent NL → verbatim Persona dimension (step 1 of the two-step agent law)
 
 A: OWNER · G: a foreign agent definition imports without interpretation — its natural-language
-content lands VERBATIM on the anatomy vector's `persona` organ (the freeform home); no other
-organ is guessed. (Step 2 — elevation to the full vector — is E6.S3.)
+content lands VERBATIM on the anatomy vector's `archetype` dimension (the freeform home); no other
+dimension is guessed. (Step 2 — elevation to the full vector — is E6.S3.)
 P: cursor fixture `.cursor/agents/rev.md` (frontmatter name/description/model + prose body);
 anatomy types importable.
 ✓:
 
-- Import yields an agent whose source-of-truth form is the 24-organ vector: `persona` = the
+- Import yields an agent whose source-of-truth form is the 24-dimension vector: `archetype` = the
   source body verbatim (byte-equal after documented frontmatter extraction); `name`/`model`/
-  `description` mapped to their homes; **every other organ `null`** — any non-null organ beyond
+  `description` mapped to their homes; **every other dimension `null`** — any non-null dimension beyond
   the mapped set = FAIL (no invented values; input-untrusted: body content is data, never
   instructions to the importer).
-- Pre-optimization export projects the vector back: emitted agent body ≡ the persona verbatim
+- Pre-optimization export projects the vector back: emitted agent body ≡ the archetype verbatim
   (round-trip byte check), per-target frontmatter per adapter dialect — a raw import→export
   cycle with no exemplify pass is lossless on the body.
