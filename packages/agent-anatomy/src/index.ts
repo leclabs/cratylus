@@ -7,16 +7,16 @@
 // exported object — addressing by IMPORTED BINDING, never a string id.
 //
 // The dir fields point at the live source dirs this corpus already carries: the
-// fragment (dimension-value) modules under `src/organs/<dim>/*.ts`, and the
-// agent / skill preset modules. The forge resolver scans these paths exactly as
-// the existing directory-scan does; no resolver logic lives here.
+// fragment modules under `src/dimensions/<dim>/*.ts`, and the agent / skill preset
+// modules. The forge resolver scans these paths exactly as the existing
+// directory-scan does; no resolver logic lives here.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { defineAgentPlugin } from '@leclabs/agent-forge/resolve';
 
 export default defineAgentPlugin({
   name: 'anatomy',
-  fragments: './src/organs',
+  fragments: './src/dimensions',
   agents: './src/agents',
   skills: './src/skills',
 });
