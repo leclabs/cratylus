@@ -54,10 +54,10 @@ a partial rename passes typecheck with missed seams (`gate-or-it-drifts` dual-en
 `definePlugin` field (NORTH-STAR — becomes `fragments`, filed by `dimension`).
 
 **scope:** rename the DIMENSION concept `organ` → `dimension` across type/metadata/dirs/prose/tests; `organ-value`
-→ `fragment`; fold C1 (genus STANCE/CONATUS → Presentation/Disposition) into the same pass (one coherent
-re-signification). KEEP `anatomy` (corpus) + `fragment` (value) per the decisions. EXCLUDE `stance-guardrail`/
-`stance-judge` (the principal-stance concept, a DIFFERENT sense — C1's census trap) + the accept-gate palimpsest
-guard.
+→ `fragment`; fold C1 (genus STANCE/CONATUS → `Persona`/`Constitution`, per MAPPING §FLAGGED — its coupled
+`persona`-member sub-fork resolves with the genus name) into the same pass (one coherent re-signification). KEEP
+`anatomy` (corpus) + `fragment` (value) per the decisions. EXCLUDE `stance-guardrail`/`stance-judge` (the
+principal-stance concept, a DIFFERENT sense — C1's census trap) + the accept-gate palimpsest guard.
 
 **accept (falsifier):** `git grep -nwE "organ|Organ|ORGAN" packages` returns only the `stance-guardrail` /
 principal-stance exclusions + git-historical plan records — no live `organ`-as-dimension token; `Dimension` type +
