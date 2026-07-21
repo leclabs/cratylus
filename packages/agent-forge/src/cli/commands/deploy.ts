@@ -7,7 +7,9 @@
 // `.agent-factory.config` topology resolution with the no-default-user hard-error.
 
 import pc from 'picocolors';
+import { resolveDeployConfig } from '../../config/index.js';
 import {
+  type AgentFactoryConfig,
   ConfigError,
   type DeployKind,
   type RenderTree,
@@ -15,7 +17,6 @@ import {
   type SkillCompanions,
   deployFleet,
   deploySingle,
-  loadConfig,
 } from '../../deploy/index.js';
 
 /** The CLI `--kind` argument: a real `DeployKind`, or the `all` sugar that
@@ -98,9 +99,12 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
   const log = (line: string) => console.log(line);
   const warn = (line: string) => console.error(line);
 
-  let cfg: ReturnType<typeof loadConfig>;
+  // Prefer the code-config topology (`agents.config.ts` `deploy` field) over the
+  // legacy `.agent-factory.config` JSON — the P4-deferred cutover, now single-homed
+  // in `resolveDeployConfig` (config subsumes the JSON; JSON is the fallback).
+  let cfg: AgentFactoryConfig | null;
   try {
-    cfg = loadConfig();
+    cfg = await resolveDeployConfig(opts.project ?? process.cwd());
   } catch (e) {
     if (e instanceof ConfigError) {
       console.error(pc.red(`config error: ${e.message}`));

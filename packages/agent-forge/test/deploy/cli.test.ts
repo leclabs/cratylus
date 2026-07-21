@@ -1,13 +1,16 @@
-// CLI-level wiring proof for `agent-forge deploy` (local single-host) + `agent-forge found`
-// (greenfield founding). The engine itself is covered exhaustively elsewhere;
-// these assert the command layer threads opts → engine and reports the rc.
+// CLI-level wiring proof for `agent-forge deploy` (local single-host) + the
+// greenfield `scaffoldProject` engine. The engine itself is covered exhaustively
+// elsewhere; these assert the command layer threads opts → engine and reports the rc.
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseCompanions, runDeploy } from '../../src/cli/commands/deploy.js';
-import { runFound } from '../../src/cli/commands/found.js';
-import { CONFIG_ENV } from '../../src/deploy/index.js';
+import {
+  CONFIG_ENV,
+  DEFAULT_PROJECT_TEMPLATE,
+  scaffoldProject,
+} from '../../src/deploy/index.js';
 import { buildHooksTree, buildRenderTree, tmp } from './helpers.js';
 
 describe('parseCompanions', () => {
@@ -179,20 +182,20 @@ describe('runDeploy (local single-host)', () => {
   });
 });
 
-describe('runFound (greenfield founding)', () => {
-  it('projects the culture + lays AGENTS.md + plans scaffold', async () => {
+describe('scaffoldProject (greenfield scaffold)', () => {
+  it('projects the culture + lays AGENTS.md + plans scaffold', () => {
     const { agentsDir, skillsDir } = buildRenderTree(
       tmp('agent-forge-render-'),
     );
-    const target = tmp('agent-forge-found-');
-    const rc = await runFound({
+    const target = tmp('agent-forge-scaffold-');
+    const r = scaffoldProject({
       target,
-      agentsDir,
-      skillsDir,
-      subject: 'a test society',
+      tree: { agentsDir, skillsDir },
+      template: DEFAULT_PROJECT_TEMPLATE,
+      subject: 'a test project',
     });
-    expect(rc).toBe(0);
-    // culture projected (no sidecars — founding lays the SOUL, not the individual)
+    expect(r.rc).toBe(0);
+    // culture projected (no sidecars — scaffold lays the SOUL, not the individual)
     expect(existsSync(join(target, '.claude', 'agents', 'mav.md'))).toBe(true);
     expect(
       existsSync(join(target, '.claude', 'skills', 'memory', 'SKILL.md')),
@@ -200,9 +203,9 @@ describe('runFound (greenfield founding)', () => {
     expect(
       existsSync(join(target, '.claude', 'agents', 'mav', 'SEMANTIC.md')),
     ).toBe(false);
-    // founding marker + subject woven in
+    // project marker + subject woven in
     const agentsMd = readFileSync(join(target, 'AGENTS.md'), 'utf-8');
-    expect(agentsMd).toMatch(/a test society/);
+    expect(agentsMd).toMatch(/a test project/);
     // plans scaffold
     expect(existsSync(join(target, 'plans', 'founding', 'PLAN.md'))).toBe(true);
     expect(
@@ -210,27 +213,38 @@ describe('runFound (greenfield founding)', () => {
     ).toBe(true);
   });
 
-  it('refuses to clobber an existing AGENTS.md without --force', async () => {
+  it('refuses to clobber an existing AGENTS.md without --force', () => {
     const { agentsDir, skillsDir } = buildRenderTree(
       tmp('agent-forge-render-'),
     );
-    const target = tmp('agent-forge-found-');
-    expect(await runFound({ target, agentsDir, skillsDir, subject: 's' })).toBe(
-      0,
-    );
-    // second run refuses
-    expect(await runFound({ target, agentsDir, skillsDir, subject: 's' })).toBe(
-      1,
-    );
-    // --force re-founds
+    const target = tmp('agent-forge-scaffold-');
+    const tree = { agentsDir, skillsDir };
     expect(
-      await runFound({
+      scaffoldProject({
         target,
-        agentsDir,
-        skillsDir,
+        tree,
+        template: DEFAULT_PROJECT_TEMPLATE,
+        subject: 's',
+      }).rc,
+    ).toBe(0);
+    // second run refuses
+    expect(
+      scaffoldProject({
+        target,
+        tree,
+        template: DEFAULT_PROJECT_TEMPLATE,
+        subject: 's',
+      }).rc,
+    ).toBe(1);
+    // --force re-scaffolds
+    expect(
+      scaffoldProject({
+        target,
+        tree,
+        template: DEFAULT_PROJECT_TEMPLATE,
         subject: 's',
         force: true,
-      }),
+      }).rc,
     ).toBe(0);
   });
 });

@@ -33,7 +33,6 @@ import {
 import { runDiff } from './commands/diff.js';
 import { runDoctor } from './commands/doctor.js';
 import { runEventsList } from './commands/events.js';
-import { runFound } from './commands/found.js';
 import { runImport } from './commands/import.js';
 import { runInit } from './commands/init.js';
 import { runLint } from './commands/lint.js';
@@ -407,49 +406,6 @@ cli
           exclude: opts.exclude ?? null,
           only: opts.only ?? null,
           dryRun: opts.dryRun,
-        }),
-      );
-    },
-  );
-
-cli
-  .command(
-    'found <target>',
-    'Found a mind-society in <target> (project culture + scaffold)',
-  )
-  .option('--agents-dir <dir>', 'Render tree agents/ dir (the projected defs)')
-  .option(
-    '--skills-dir <dir>',
-    'Render tree skills/ dir (the projected skill dirs)',
-  )
-  .option('--subject <text>', 'one-line statement of what this society is for')
-  .option(
-    '--force',
-    'overwrite an existing founding AGENTS.md (default: refuse)',
-  )
-  .action(
-    async (
-      target: string,
-      opts: {
-        agentsDir?: string;
-        skillsDir?: string;
-        subject?: string;
-        force?: boolean;
-      },
-    ) => {
-      if (!opts.agentsDir || !opts.skillsDir) {
-        console.error(
-          'agent-forge found: --agents-dir and --skills-dir are required',
-        );
-        process.exit(1);
-      }
-      process.exit(
-        await runFound({
-          target,
-          agentsDir: opts.agentsDir,
-          skillsDir: opts.skillsDir,
-          subject: opts.subject,
-          force: opts.force,
         }),
       );
     },

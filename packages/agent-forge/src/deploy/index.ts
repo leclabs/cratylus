@@ -3,7 +3,8 @@
 // accident to a host `.claude/` root: ships the generated defs (SOUL,
 // overwritten freely), seeds the self-authored sidecars if-absent (never
 // clobbered), stages skill-dir committed `assets:` companions, resolves per-host
-// topology from `.agent-factory.config`, and founds a greenfield society (`init`).
+// topology from `.agent-factory.config`, and scaffolds a greenfield project
+// (`scaffoldProject`).
 //
 // Faithful TS port of agent-anatomy's Python toolkit (deploy.py / config.py / place/ /
 // init.py). The PROJECTION itself is agent-forge's claude adapter; this layer
@@ -89,13 +90,13 @@ export {
 } from './deploy.js';
 
 export {
-  DEFAULT_FOUNDING_TEMPLATE,
-  type FoundingTemplate,
-} from './founding-template.js';
+  DEFAULT_PROJECT_TEMPLATE,
+  type ProjectTemplate,
+} from './project-template.js';
 
 export {
   DEFAULT_SUBJECT,
-  type InitOpts,
-  type InitResult,
-  initSociety,
+  type ScaffoldProjectOpts,
+  type ScaffoldProjectResult,
+  scaffoldProject,
 } from './init.js';

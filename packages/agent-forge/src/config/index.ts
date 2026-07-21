@@ -14,6 +14,7 @@ export {
   loadAgentsConfig,
   loadPlugins,
   resolveAgentsConfig,
+  resolveDeployConfig,
 } from './loader.js';
 export {
   type AddResult,

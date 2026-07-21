@@ -1,18 +1,18 @@
-// found-cli.ts — the anatomy-side FOUNDING PATH: found a polis in a target dir by
-// injecting agent-anatomy's `polisFoundingTemplate` (the corpus founding doctrine)
-// into the doctrine-agnostic `initSociety` ENGINE (`@leclabs/agent-forge/deploy`).
-// This is the composition root that binds the polis DATA to the forge engine — the
-// forge CLI (`agent-forge found`) stays doctrine-agnostic (engine default); THIS
-// path is where the polis doctrine is injected.
+// scaffold-cli.ts — the anatomy-side SCAFFOLD PATH: scaffold a project in a target
+// dir by injecting agent-anatomy's `anatomyProjectTemplate` (the corpus project
+// doctrine) into the doctrine-agnostic `scaffoldProject` ENGINE
+// (`@leclabs/agent-forge/deploy`). This is the composition root that binds the
+// anatomy project DATA to the forge engine — the engine stays doctrine-agnostic;
+// THIS path is where the anatomy project doctrine is injected.
 //
-// Usage:  tsx src/toolkit/found-cli.ts --target <dir> [--agents-dir <dir>]
-//                                       [--skills-dir <dir>] [--subject <text>] [--force]
+// Usage:  tsx src/toolkit/scaffold-cli.ts --target <dir> [--agents-dir <dir>]
+//                                          [--skills-dir <dir>] [--subject <text>] [--force]
 //   default render tree:  <anatomyRoot>/.render-ts/{agents,skills}  (from project-cli)
 
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { type RenderTree, initSociety } from '@leclabs/agent-forge/deploy';
-import { polisFoundingTemplate } from './founding-template.js';
+import { type RenderTree, scaffoldProject } from '@leclabs/agent-forge/deploy';
+import { anatomyProjectTemplate } from './project-template.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const anatomyRoot = join(here, '..', '..');
@@ -54,16 +54,16 @@ function parseArgs(argv: string[]): Args {
   return { target, agentsDir, skillsDir, subject, force };
 }
 
-/** Found a polis: inject the polis founding template into the forge engine. */
-export function foundPolis(args: Args): number {
+/** Scaffold an anatomy project: inject the anatomy project template into the engine. */
+export function scaffoldAnatomyProject(args: Args): number {
   const tree: RenderTree = {
     agentsDir: args.agentsDir,
     skillsDir: args.skillsDir,
   };
-  const r = initSociety({
+  const r = scaffoldProject({
     target: args.target,
     tree,
-    template: polisFoundingTemplate,
+    template: anatomyProjectTemplate,
     subject: args.subject,
     force: args.force,
     log: (line) => process.stdout.write(`${line}\n`),
@@ -73,5 +73,5 @@ export function foundPolis(args: Args): number {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  process.exit(foundPolis(parseArgs(process.argv.slice(2))));
+  process.exit(scaffoldAnatomyProject(parseArgs(process.argv.slice(2))));
 }

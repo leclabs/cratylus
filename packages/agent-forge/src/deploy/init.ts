@@ -1,26 +1,26 @@
-// Greenfield init — found an agent project in a target dir.
+// Greenfield scaffold — scaffold an agent project in a target dir.
 //
-// `init <target>` turns an empty/target directory into a *founded project*: not a
-// pile of agent files, but a project with its foundational structure laid down.
-// Two acts, in order:
+// `scaffoldProject` turns an empty/target directory into a *project*: not a pile
+// of agent files, but a project with its structure laid down. Two acts, in order:
 //
 //   1. PROJECT THE CULTURE — copy the (already-projected) full render tree
 //      (every agent + skill, with staged companions) into
 //      `<target>/.claude/{agents,skills}`. Defs/skills are regenerated substance,
 //      overwritten freely (`substance-over-accident`).
-//   2. LAY THE FOUNDING SCAFFOLD — the marker that makes the target a project:
-//      - `<target>/AGENTS.md` — the founding conventions + the subject.
+//   2. LAY THE PROJECT SCAFFOLD — the marker that makes the target a project:
+//      - `<target>/AGENTS.md` — the project conventions + the subject.
 //      - `<target>/plans/founding/` — a minimal sharded-plan-layout scaffold.
 //
-// This module is DOCTRINE-AGNOSTIC: what the founding documents SAY and which
+// This module is DOCTRINE-AGNOSTIC: what the project documents SAY and which
 // state folders the plan scaffold materializes are injected as a
-// `FoundingTemplate` (engine declares the structure; corpus supplies the prose +
-// states). Forge ships `DEFAULT_FOUNDING_TEMPLATE`; a doctrine-bearing corpus
+// `ProjectTemplate` (engine declares the structure; corpus supplies the prose +
+// states). Forge ships `DEFAULT_PROJECT_TEMPLATE`; a doctrine-bearing corpus
 // injects its own.
 //
 // Clobber-guarded: refuses an existing `<target>/AGENTS.md` unless `force`
-// (idempotent re-found). Does NOT seed SEMANTIC/PROCEDURAL/EPISODIC sidecars — those are
-// the running host's `deploy` concern; init lays the SOUL, not the individual.
+// (idempotent re-scaffold). Does NOT seed SEMANTIC/PROCEDURAL/EPISODIC sidecars —
+// those are the running host's `deploy` concern; scaffold lays the SOUL, not the
+// individual.
 
 import {
   copyFileSync,
@@ -31,24 +31,24 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
-import type { FoundingTemplate } from './founding-template.js';
+import type { ProjectTemplate } from './project-template.js';
 import type { RenderTree } from './types.js';
 
 export const DEFAULT_SUBJECT =
-  "<the project's subject -- what this project is for; the founders fill this in>";
+  "<the project's subject -- what this project is for; the project's authors fill this in>";
 
-export interface InitOpts {
+export interface ScaffoldProjectOpts {
   target: string;
   tree: RenderTree;
-  /** The founding doctrine to lay down — the prose + plan-layout states. */
-  template: FoundingTemplate;
+  /** The project doctrine to lay down — the prose + plan-layout states. */
+  template: ProjectTemplate;
   subject?: string;
   force?: boolean;
   log?: (line: string) => void;
   warn?: (line: string) => void;
 }
 
-export interface InitResult {
+export interface ScaffoldProjectResult {
   rc: number;
   agents: number;
   skills: number;
@@ -113,7 +113,7 @@ function projectCulture(target: string, tree: RenderTree): [number, number] {
 function layPlansScaffold(
   target: string,
   subject: string,
-  template: FoundingTemplate,
+  template: ProjectTemplate,
 ): string {
   const planDir = resolvePath(target, 'plans', 'founding');
   mkdirSync(planDir, { recursive: true });
@@ -130,9 +130,11 @@ function layPlansScaffold(
   return planDir;
 }
 
-/** Found an agent project in `target` from the injected template. Returns the
- *  init result (rc 0 ok). */
-export function initSociety(opts: InitOpts): InitResult {
+/** Scaffold an agent project in `target` from the injected template. Returns the
+ *  scaffold result (rc 0 ok). */
+export function scaffoldProject(
+  opts: ScaffoldProjectOpts,
+): ScaffoldProjectResult {
   const log = opts.log ?? (() => {});
   const warn = opts.warn ?? (() => {});
   const subject = opts.subject ?? DEFAULT_SUBJECT;
@@ -141,13 +143,13 @@ export function initSociety(opts: InitOpts): InitResult {
   const agentsMd = resolvePath(target, 'AGENTS.md');
   if (existsSync(agentsMd) && !opts.force) {
     warn(
-      `REFUSE  ${agentsMd} already exists -- this dir may already be a founded project; pass --force to overwrite the founding marker`,
+      `REFUSE  ${agentsMd} already exists -- this dir may already be a project; pass --force to overwrite the project marker`,
     );
     return { rc: 1, agents: 0, skills: 0, agentsMd, planDir: '' };
   }
 
   mkdirSync(target, { recursive: true });
-  log(`=== founding a project in ${target} ===`);
+  log(`=== scaffolding a project in ${target} ===`);
 
   const [nAgents, nSkills] = projectCulture(target, opts.tree);
   log(
@@ -155,13 +157,13 @@ export function initSociety(opts: InitOpts): InitResult {
   );
 
   writeFileSync(agentsMd, template.agentsMd(subject), 'utf-8');
-  log(`  founding marker:   ${agentsMd}`);
+  log(`  project marker:    ${agentsMd}`);
 
   const planDir = layPlansScaffold(target, subject, template);
   log(
     `  plans scaffold:    ${planDir}/ (PLAN.md + ${template.planStates.join('/')})`,
   );
 
-  log(`=== founded: ${nAgents} agents born, culture projected ===`);
+  log(`=== scaffolded: ${nAgents} agents, culture projected ===`);
   return { rc: 0, agents: nAgents, skills: nSkills, agentsMd, planDir };
 }
