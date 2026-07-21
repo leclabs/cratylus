@@ -1,10 +1,10 @@
 # P1 — establish the plugin contract + make agent-anatomy the first plugin
 
-**static (censused):** `packages/agent-forge/src/anatomy/index.ts` (`OrganValue<K>` types · `ANATOMY` map ·
-`ORGAN_NAMES` — the fragment-kind surface a plugin exposes) · `packages/agent-forge/package.json` (the `exports`
-map — `./anatomy`/`./catalog`/`./deploy` today; ADD a `./resolve` or `./plugin` subpath) ·
-`packages/agent-anatomy/package.json` (`"private": true`, NO `exports`/`files` today) ·
-`packages/agent-anatomy/src/{agents,skills,organs}/` (the dirs the anatomy plugin points at) ·
+**static (censused; C2 landed — dimension/fragment vocab):** `packages/agent-forge/src/anatomy/index.ts`
+(`Fragment<D>` types · `ANATOMY` map · `DIMENSION_NAMES` — the fragment-kind surface a plugin exposes) ·
+`packages/agent-forge/package.json` (the `exports` map — `./anatomy`/`./catalog`/`./deploy` today; ADD a
+`./resolve` or `./plugin` subpath) · `packages/agent-anatomy/package.json` (`"private": true`, NO `exports`/`files`
+today) · `packages/agent-anatomy/src/{agents,skills,dimensions}/` (the dirs the anatomy plugin points at) ·
 `plans/plugin-cli/NORTH-STAR.md` §2·§3 (contract shape).
 
 **scope:** mint the plugin contract in the forge CORE (doctrine-agnostic) and make agent-anatomy the first plugin
