@@ -16,8 +16,8 @@ author     : Intent → cell
 normalize  : cell → cell ; normalize ⊨ PARSIMONIOUS
 verify     : fragment → Bool ; verify(f) ⇔ decode_cold(core f) = intent(f)
 validate   : cell → cell ∪ {⊥} ; validate(c) = (c if accept(c) else ⊥) ; verify ⊑ validate
-select     : agent → (OrganName ⇸ ℘(organ-value))
-compose    : (OrganName ⇸ ℘(organ-value)) → IR ; compose(select(a)) = ir(a) ∧ ir(a) ⊑ content(a)
+select     : agent → (DimensionName ⇸ ℘(fragment))
+compose    : (DimensionName ⇸ ℘(fragment)) → IR ; compose(select(a)) = ir(a) ∧ ir(a) ⊑ content(a)
 realize    : ActivationMode × harness-adapter → harness-mechanism
 inject     : context × harness-mechanism → Target
 

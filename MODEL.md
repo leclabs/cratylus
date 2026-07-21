@@ -7,7 +7,7 @@ scope  ≜ implementation-independent acceptance criteria
 ```
 
 ```
-Kind ≜ {organ-value, agent, rule, skill, hook}
+Kind ≜ {fragment, agent, rule, skill, hook}
 cell ; class : cell → Kind
 Intent ; intent : fragment → Intent
 Sign ; σ* : concept → Sign ; α : concept → Sign, injective
@@ -16,13 +16,13 @@ concepts : cell → ℘(Corpus) ; fragments : cell → ℘(fragment) ; content :
 
 ActivationMode ≜ {compose-only, identity, scope, trigger, event}
 activation : Kind → ActivationMode
-             organ-value↦compose-only ; agent↦identity ; rule↦scope ; skill↦trigger ; hook↦event
+             fragment↦compose-only ; agent↦identity ; rule↦scope ; skill↦trigger ; hook↦event
 
 NatSet ≜ {null, one, many} ; null={0} ; one={1} ; many={n∈ℕ: n≥1}
-OrganName ; catalog : OrganName → ℘(organ-value) ; arity : OrganName → NatSet
+DimensionName ; catalog : DimensionName → ℘(fragment) ; arity : DimensionName → NatSet
 Target ≜ harness-declaration-artifact
 
-author : Intent → cell ; compose : (OrganName ⇸ ℘(organ-value)) → IR ; ir : agent → IR ; deploy : cell × harness-adapter → Target
+author : Intent → cell ; compose : (DimensionName ⇸ ℘(fragment)) → IR ; ir : agent → IR ; deploy : cell × harness-adapter → Target
 author-valid ⇔ accept ; deploy-valid ⇔ REGENERABLE
 
 accept(a) ⇔ Universal(a) ∧ (class(a)=agent ⇒ COMPOSED(a))
