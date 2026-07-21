@@ -23,3 +23,8 @@
 anatomy default set; `init` scaffolds that file; `add` appends to `extends`; `compose --dry-run` prints the
 resolved set and writes nothing; the config/topology fork is resolved + documented in the code; a new loader test +
 `pnpm -C packages/agent-forge typecheck` green. **dep:** P2, P3 (wave 2).
+
+**SEAM (ratified from P2, nico):** P1's `AgentPlugin` carries only dir strings; P2's resolver folds a
+`LoadedPlugin = { name, contributions: PatchEntry[] }`. **P4 must wire the load step:** `AgentPlugin` dirs →
+`LoadedPlugin` (scan each dir to fragment `contributions`) before calling `resolve()`. P3's multi-plugin discovery
+produces the per-plugin fragment enumeration this load consumes.

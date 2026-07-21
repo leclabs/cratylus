@@ -19,3 +19,7 @@
 with namespaced IDs; two distinct plugins sharing an anchor do NOT collide at discovery; a cross-plugin reference
 cycle throws a named error; a new discovery test + `pnpm -C packages/agent-forge typecheck` green; a cold Ω\* read
 decodes "fragments discovered per-plugin, addressed by import, resolved late." **dep:** P1 (wave 1).
+
+**FEEDS THE LOADER (ratified from P2):** P3's per-plugin fragment enumeration is what P4's load step turns into
+P2's `LoadedPlugin.contributions` (the fold atoms). Enumerate fragments with their imported-binding identity so the
+resolver keys its `ResolvedAgentSet.fragments` map by object identity (object-import addressing, not string ids).
