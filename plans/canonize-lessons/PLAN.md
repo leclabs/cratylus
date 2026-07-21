@@ -15,7 +15,7 @@ carrying `cold-decode-oracle`/`llm-native` in my SOUL: understanding is not enco
 
 | shard                       | seam                       | concern                                                                                 | state |
 | --------------------------- | -------------------------- | --------------------------------------------------------------------------------------- | ----- |
-| M1 dream-promotion route    | mechanism (dream cell)     | the GENERAL fix — route canon-truths to the projected canon by default                  | ready |
+| M1 dream-promotion route    | mechanism (dream cell)     | the GENERAL fix — route canon-truths to the projected canon by default                  | done  |
 | L1 fittest-sign-declare     | gate + cell                | encode "declare the fittest sign, never degrade" (SYMBOLS gate = decodability registry) | ready |
 | L2 constitutional hierarchy | governing doc + ρ=LLM home | encode `llm-native ≻ VISION ≻ MODEL` + reconcile-up-the-order                           | ready |
 

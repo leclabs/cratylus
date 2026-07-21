@@ -32,6 +32,11 @@ export const OPERATORS = {
   '≜': { sense: 'defines', signature: 'name ≜ expr', coldVerified: true },
   '≠': { sense: 'distinct', signature: 'T × T → Prop', coldVerified: true },
   '≽': { sense: 'dominates', signature: 'T × T → Prop', coldVerified: true },
+  '≻': {
+    sense: 'strictly-dominates',
+    signature: 'T × T → Prop',
+    coldVerified: true,
+  },
   '≅': {
     sense: 'reader-isomorphic',
     signature: '𝒞 × 𝒞 → Prop',
