@@ -24,6 +24,8 @@ Owner: this session.
 > (not done) but folds into P6 — P6's scope covers narrative + identifiers + the found→init rebuild on the SAME
 > `founding-template.ts`, so it is one executor, not a separate B1 dispatch that would collide.
 
+> **Sanity-review (2026-07-21, principal-engineer-reviewer, git-grep discipline):** 6/6 vocab claims PASS, 0 false-green — C1/C2/A1 genuinely clean (proven non-vacuous), founding/A2/U1 correctly still-dirty. ONE catch folded in: U1 omitted the `agent-memory` test fixtures (`project:polis`/`~/workspaces/polis`) — now in U1, with the `audit.test.ts` polis-DETECTION fixtures KEPT (they test the retirement feature).
+
 ## Streams (MECE by surface)
 
 - **Stream A — independent prose/fixture/memory sweep (`ready/`):** founding-lexicon sites NOT owned by the CLI
@@ -39,15 +41,15 @@ Owner: this session.
 
 ## State
 
-| shard                     | surface                                             | state   | concern                                                                                                                                            |
-| ------------------------- | --------------------------------------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A1 prose/ideation         | docs (research + ideation)                          | done    | organ→dimension in live docs; anatomy study PRESERVED as record (verified)                                                                         |
-| A2 golden fixture         | ir-bridge fixture                                   | ready   | RE-OPENED: fixture holds stale-generated `polis` — regenerate from clean source cells                                                              |
-| A3 memory align           | agent stores                                        | ongoing | dream-time, per-agent (incl. nico's own); aligns at each agent's next wake                                                                         |
-| B1 founding content       | founding-template bodies + CLI help                 | → P6    | polis/founder NARRATIVE is LIVE (≥7 hits) — NOT retired; P6's scope covers it (narrative + identifiers + rebuild, one file — no separate dispatch) |
-| U1 unscoped polis refs    | cold-oracle.sh · forge README/docs · test tmp-names | ready   | `REPO_GUARD=~/workspaces/polis` (old repo name) · external polis links · `polis-*` tmp dirs                                                        |
-| C1 genus rename           | `Genus` axis + dimension READMEs                    | done    | STANCE/CONATUS → Persona/Constitution; persona→archetype (verified)                                                                                |
-| C2 core-vocab (organ→dim) | anatomy spine (types/dirs/tests)                    | done    | organ→dimension + fragment (+ genus + persona→archetype) — LANDED, verified                                                                        |
+| shard                     | surface                                                                  | state   | concern                                                                                                                                            |
+| ------------------------- | ------------------------------------------------------------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1 prose/ideation         | docs (research + ideation)                                               | done    | organ→dimension in live docs; anatomy study PRESERVED as record (verified)                                                                         |
+| A2 golden fixture         | ir-bridge fixture                                                        | ready   | RE-OPENED: fixture holds stale-generated `polis` — regenerate from clean source cells                                                              |
+| A3 memory align           | agent stores                                                             | ongoing | dream-time, per-agent (incl. nico's own); aligns at each agent's next wake                                                                         |
+| B1 founding content       | founding-template bodies + CLI help                                      | → P6    | polis/founder NARRATIVE is LIVE (≥7 hits) — NOT retired; P6's scope covers it (narrative + identifiers + rebuild, one file — no separate dispatch) |
+| U1 unscoped polis refs    | cold-oracle.sh · forge README/docs · test tmp-names + agent-memory tests | ready   | `REPO_GUARD=~/workspaces/polis` (old repo name) · external polis links · `polis-*` tmp dirs                                                        |
+| C1 genus rename           | `Genus` axis + dimension READMEs                                         | done    | STANCE/CONATUS → Persona/Constitution; persona→archetype (verified)                                                                                |
+| C2 core-vocab (organ→dim) | anatomy spine (types/dirs/tests)                                         | done    | organ→dimension + fragment (+ genus + persona→archetype) — LANDED, verified                                                                        |
 
 ## Gates + open forks (Operator-owned)
 
