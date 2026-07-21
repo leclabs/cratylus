@@ -1,20 +1,19 @@
 # P3 — object-import addressing + multi-plugin catalog discovery
 
-**static (censused):** `packages/agent-forge/src/catalog/index.ts` (`enumerateCatalog(corpusOrgansDir)` — walks
-ONE corpus's `<organ>/*.ts` per `ORGAN_NAMES` × `ANATOMY`; `valuesOf`; single-corpus, NO cross-corpus collision
-check) · `packages/agent-forge/src/anatomy/index.ts` (`ORGAN_NAMES` · `ANATOMY`) · `plans/plugin-cli/NORTH-STAR.md`
-§3 · **dep-fed:** P1's `AgentPlugin` contract.
+**static (censused; re-verify at dispatch):** `packages/agent-forge/src/catalog/index.ts`
+(`enumerateCatalog(corpusDimensionsDir)` — walks ONE corpus's `<dimension>/*.ts` per `DIMENSION_NAMES` × `ANATOMY`;
+`valuesOf`; single-corpus, NO cross-corpus collision check) · `packages/agent-forge/src/anatomy/index.ts`
+(`DIMENSION_NAMES` · `ANATOMY`) · `plans/plugin-cli/NORTH-STAR.md` §3 · **dep-fed:** P1's `AgentPlugin` contract.
 
 **scope:** generalize discovery + addressing from single-corpus to multi-plugin:
 
-- lift `enumerateCatalog` from one `corpusOrgansDir` to the fragment dirs of EACH extended plugin; identity is
+- lift `enumerateCatalog` from one `corpusDimensionsDir` to the fragment dirs of EACH extended plugin; identity is
   namespaced by the plugin `name` segment (a per-plugin invariant — two plugins may both name a concept `parsimony`
   without collision; that is a resolution event, not a σ\* violation).
 - fragment cross-references resolve by **imported binding** = a late-bound node identity (reads the RESOLVED value,
   post-patch — NORTH-STAR §3), never a string ID; enforce **acyclicity** (a reference cycle throws).
-- **ORDERING GOTCHA (censused):** the live symbols are `organ`/`ORGAN_NAMES`/`corpusOrgansDir`. The
-  `organ → dimension` rename is `vocab-depalimpsest/C2`, SEQUENCED AFTER plugin-cli locks — do NOT rename here; pin
-  the current symbols and let C2 sweep them.
+- **VOCAB (C2 LANDED):** the live symbols are `dimension`/`DIMENSION_NAMES`/`corpusDimensionsDir`/`Fragment` — build
+  on them directly (the earlier "pin organ, C2 sweeps later" ordering note is moot; C2 already swept).
 
 **accept (falsifier):** `enumerateCatalog` (or its multi-plugin successor) enumerates fragments across ≥2 plugins
 with namespaced IDs; two distinct plugins sharing an anchor do NOT collide at discovery; a cross-plugin reference
