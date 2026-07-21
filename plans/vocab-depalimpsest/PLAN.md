@@ -28,14 +28,14 @@ Owner: this session.
 
 ## State
 
-| shard                     | surface                             | state  | concern                                                                    |
-| ------------------------- | ----------------------------------- | ------ | -------------------------------------------------------------------------- |
-| A1 prose/ideation         | docs + organ READMEs                | ready  | founding vocab → concrete in prose (judgment per site)                     |
-| A2 golden fixture         | ir-bridge fixture                   | ready  | founding vocab + stale SELF/MEMORY/vault model → net-current               |
-| A3 memory align           | agent stores                        | ready  | nico verified clean; dream-time self-align directive for the fleet         |
-| B1 founding content       | founding-template bodies + CLI help | ready  | polis/founder NARRATIVE → concrete; API identifiers deferred to plugin-cli |
-| C1 genus rename           | `Genus` axis + organ READMEs        | active | STANCE/CONATUS → Persona/Constitution; persona→archetype (sub-fork CLOSED) |
-| C2 core-vocab (organ→dim) | anatomy spine (types/dirs/tests)    | active | organ→dimension + fragment (+ genus + persona→archetype); DISPATCHED (mav) |
+| shard                     | surface                             | state | concern                                                                     |
+| ------------------------- | ----------------------------------- | ----- | --------------------------------------------------------------------------- |
+| A1 prose/ideation         | docs + organ READMEs                | ready | founding vocab → concrete in prose (judgment per site)                      |
+| A2 golden fixture         | ir-bridge fixture                   | ready | founding vocab + stale SELF/MEMORY/vault model → net-current                |
+| A3 memory align           | agent stores                        | ready | nico verified clean; dream-time self-align directive for the fleet          |
+| B1 founding content       | founding-template bodies + CLI help | ready | polis/founder NARRATIVE → concrete; API identifiers deferred to plugin-cli  |
+| C1 genus rename           | `Genus` axis + dimension READMEs    | done  | STANCE/CONATUS → Persona/Constitution; persona→archetype (verified)         |
+| C2 core-vocab (organ→dim) | anatomy spine (types/dirs/tests)    | done  | organ→dimension + fragment (+ genus + persona→archetype) — LANDED, verified |
 
 ## Gates + open forks (Operator-owned)
 
