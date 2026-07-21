@@ -28,11 +28,13 @@ already enforces it in cell bodies and STAYS. Owner: this session.
 | A3 memory align     | agent stores                        | ready | nico verified clean; dream-time self-align directive for the fleet         |
 | B1 founding content | founding-template bodies + CLI help | ready | polis/founder NARRATIVE → concrete; API identifiers deferred to plugin-cli |
 
-## Deferred fork
+## Deferred fork — CAPTURED
 
-The `STANCE`/`CONATUS` genus axis — a structural primitive the accept-gate itself flags as palimpsest, but too
-load-bearing for a mechanical sweep. Excluded from every shard; wants a dedicated signify pass. See
-`MAPPING.md §FLAGGED`. Operator's ruling pending.
+The `STANCE`/`CONATUS` genus axis is now a **full census-grounded spec: `pending/C1-genus-axis-rename.md`**
+(recommendation `STANCE`→Presentation · `CONATUS`→Disposition; cold-panel evidence in `MAPPING.md §FLAGGED`).
+State = pending, GATED on the Operator green-lighting it into scope (not a task-dep — orthogonal to plugin-cli, so
+independently dispatchable once green-lit). Captured so it is not forgotten; the census already surfaced the
+critical trap (the `stance-guardrail` machinery is a DIFFERENT concept — excluded from the rename).
 
 ## Notes
 
