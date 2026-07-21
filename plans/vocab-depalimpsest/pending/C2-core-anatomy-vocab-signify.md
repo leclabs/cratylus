@@ -37,7 +37,16 @@ decision.
 
 ## Execution spec (sequenced — runs after plugin-cli design locks; the largest rename in the repo)
 
-**static (blast radius, censused):** `packages/agent-forge/src/anatomy/index.ts` (`Organ` type · `ORGAN_NAMES` ·
+**⚠ STATIC RE-CENSUS REQUIRED before dispatch (2026-07-21, nico).** A `pin-by-grep` re-census found this
+enumeration STALE/incomplete — **825 live organ-tokens across ~30 files**. Seams the list below MISSED:
+`core/exemplify/{vector,index,organ-fields}.ts` · `core/engine/vector-projection.ts` ·
+`validate/structural-parsimony.ts` · adapters `codex/anatomy.ts` `claude/{index,anatomy,mechanisms}.ts` · ~10
+test files (`null-organ`·`projection-{boundary,stability}`·`reader-reach`·`structural-parsimony`·
+`catalog/anatomy-descriptor`·`stories/E6/S3` …). `rename-enumerates-every-organ`: complete the enumeration
+(single `rg -nw 'organ|Organ|ORGAN|OrganValue|ORGAN_NAMES'` sweep) into `static` before this becomes a blind task —
+a partial rename passes typecheck with missed seams (`gate-or-it-drifts` dual-enumeration).
+
+**static (blast radius, censused — INCOMPLETE, see ⚠ above):** `packages/agent-forge/src/anatomy/index.ts` (`Organ` type · `ORGAN_NAMES` ·
 `ANATOMY` map · the `Agent` interface `// STANCE/CONATUS` comments · `organField`/`organTitle`) ·
 `core/anatomy-body.ts` (`agentBody` organ-walk) · `catalog/index.ts` + `catalog/enumerate` (per-organ scan) ·
 `validate/` (accept-gate organ refs) · every `packages/agent-anatomy/src/organs/*/` DIRECTORY (24) + their READMEs ·
