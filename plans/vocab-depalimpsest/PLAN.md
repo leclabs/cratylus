@@ -43,12 +43,12 @@ Owner: this session.
   is nico's to sequence and drive to done-locally — `push-reserved` gates only the final push, never the
   re-signification. Run C2 BEFORE plugin-cli P1–P7 so they build on the clean vocab. The ONLY Operator-owned
   surface is the published BRAND name (below).
-- **C1 persona-collision sub-fork:** `Persona` genus + rename the `persona` member → `archetype`/`essence` (nico
-  recommends), OR `Presentation` genus keeping the member. Resolves with the genus name (see C1).
-- **BRAND (C2):** the published package `agent-anatomy` vs a product framing `AgentKit` — nico recommends keeping
-  `agent-anatomy`; a marketing preference is the Operator's to override. Everything else proceeds on nico's decision.
-- **C2 static is STALE** — flagged for a full `pin-by-grep` re-census (825 organ-tokens / ~30 files) before it is a
-  blind task; see C2 ⚠.
+- **C1 persona-collision sub-fork — CLOSED** (cold 3/3): genus `Persona`, the colliding agent field `persona` →
+  `archetype`. Folded into C2's pass.
+- **BRAND (C2) — the sole Operator-owned surface:** the published package `agent-anatomy` vs a product framing
+  `AgentKit`. nico recommends keeping `agent-anatomy`; a marketing preference is the Operator's to override.
+  Everything else proceeds on nico's decision.
+- **C2 static — RE-CENSUSED, dispatch-ready** (organ 40 · genus 5 · persona-field ~12 · ~20 tests); executing (mav).
 
 ## Notes
 
