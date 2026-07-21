@@ -52,11 +52,12 @@ function fileAnchor(path: string): string {
   return basename(path, '.ts');
 }
 
-// Shrink-only. `<dimension>/<file>` → the divergent body-anchor it must reconcile to.
-const RATCHET: ReadonlyMap<string, string> = new Map([
-  ['autonomy/mission-command', 'auftragstaktik'],
-  ['framing/systems', 'systems-thinking'],
-]);
+// Shrink-only allowlist of known filename≠anchor divergences. EMPTY — the corpus fully
+// conforms: the two founding divergences were reconciled by cold-discovery of the fitter
+// sign (autonomy: body `auftragstaktik` → `mission-command`, the sign that decodes
+// reliably across model populations; framing: file `systems` → `systems-thinking`, the
+// file renamed to the discovered anchor). A future divergence is never pinnable silently.
+const RATCHET: ReadonlyMap<string, string> = new Map();
 
 async function fragmentFiles(): Promise<string[]> {
   const out: string[] = [];
@@ -95,12 +96,13 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     ).toEqual([]);
   });
 
-  it('is non-vacuous — a synthetic gloss-over-anchor fragment is convicted', () => {
+  it('is non-vacuous — a gloss filename over a different body-anchor diverges', () => {
+    // a fictional cell: body declares the discovered anchor, file is a coined gloss
     const synthetic =
-      'export const missionCommand: Autonomy = `auftragstaktik ⟨escalate ⇔ fork⟩`;';
+      'export const someValue: Framing = `discovered-anchor ⟨…⟩`;';
     const anchor = bodyAnchor(synthetic);
-    expect(anchor).toBe('auftragstaktik');
-    // file 'mission-command.ts' would carry anchor 'auftragstaktik' → divergence caught
-    expect(anchor).not.toBe('mission-command');
+    const file = 'coined-gloss'; // basename that is a gloss, not the anchor
+    expect(anchor).toBe('discovered-anchor');
+    expect(anchor !== file).toBe(true); // the gate's divergence predicate convicts it
   });
 });

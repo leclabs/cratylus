@@ -4,12 +4,12 @@
 
 ## Values
 
-- auftragstaktik ⟨escalate ⇔ fork(irreversible · value · competence)⟩
 - decision-authority(self)
 - decision-authority(self) ↾ individual-contribution ⟨intrinsic⟩
 - human-in-the-loop
 - human-on-the-loop
 - human-out-of-the-loop ⟨intent-before · audit-after⟩
+- mission-command ⟨escalate ⇔ fork(irreversible · value · competence)⟩
 
 ---
 

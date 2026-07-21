@@ -1,3 +1,3 @@
 import type { Framing } from '@leclabs/agent-forge/anatomy';
 
-export const systems: Framing = `systems-thinking`;
+export const systemsThinking: Framing = `systems-thinking`;

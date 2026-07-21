@@ -6,7 +6,7 @@ import { convergence as convergence_audienceAdaptation } from '../organs/audienc
 import { systemDesign as systemDesign_capabilities } from '../organs/capabilities/system-design.js';
 import { technicalWriting as technicalWriting_capabilities } from '../organs/capabilities/technical-writing.js';
 import { neutral as neutral_formality } from '../organs/formality/neutral.js';
-import { systems as systems_framing } from '../organs/framing/systems.js';
+import { systemsThinking as systemsThinking_framing } from '../organs/framing/systems-thinking.js';
 import { harmAvoidance as harmAvoidance_guardrails } from '../organs/guardrails/harm-avoidance.js';
 import { helpfulness as helpfulness_guardrails } from '../organs/guardrails/helpfulness.js';
 import { honesty as honesty_guardrails } from '../organs/guardrails/honesty.js';
@@ -47,7 +47,7 @@ export const archDocWriter: Agent = {
   model: null,
   memory: null,
   trigger: null,
-  framing: systems_framing,
+  framing: systemsThinking_framing,
   reasoningStrategy: react_reasoningStrategy,
   satisficing: satisfice_satisficing,
   outputFormat: document_outputFormat,
