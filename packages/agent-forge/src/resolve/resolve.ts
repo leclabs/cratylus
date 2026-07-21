@@ -294,8 +294,12 @@ function applyOp(acc: unknown, op: PatchOp, value: unknown): unknown {
  * Validate the late-bound reference graph over the defined nodes: every edge must
  * point at a defined node (else DanglingReferenceError), and the graph must be
  * ACYCLIC (else ReferenceCycleError). DFS with a recursion stack finds a back-edge.
+ *
+ * EXPORTED for reuse by the multi-plugin fragment discovery (P3): the same acyclicity
+ * law that guards resolve-time also guards discovery-time, so a cross-plugin reference
+ * cycle is caught the moment fragments are enumerated (NORTH-STAR §3), not only at fold.
  */
-function validateReferenceGraph(defined: ReadonlySet<Fragment>): void {
+export function validateReferenceGraph(defined: ReadonlySet<Fragment>): void {
   // Dangling: an edge to a fragment no extended plugin defines.
   for (const node of defined) {
     for (const ref of node.references ?? []) {
