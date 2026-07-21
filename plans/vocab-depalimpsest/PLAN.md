@@ -20,8 +20,9 @@ Owner: this session.
 > `polisFoundingTemplate`/`runFound`/`found`-verb + `found-cli.ts`/`plan-states.ts`) · **A2** (ir-bridge fixture —
 > stale-generated `"Founder of polis"`; source personas are clean) · **UNSCOPED surfaces** (below). Only the
 > `policy.ts` palimpsest guard is intentional (it CONVICTS polis in CELL bodies — but the template/CLI/tests/docs
-> are NOT cells, so the guard does not cover them). B1 and A2 are RE-OPENED; B1 does NOT collapse into P6 (distinct
-> concerns: B1 = narrative, P6 = identifiers+restructure).
+> are NOT cells, so the guard does not cover them). A2 + U1 are RE-OPENED (separate shards); B1's narrative is LIVE
+> (not done) but folds into P6 — P6's scope covers narrative + identifiers + the found→init rebuild on the SAME
+> `founding-template.ts`, so it is one executor, not a separate B1 dispatch that would collide.
 
 ## Streams (MECE by surface)
 
