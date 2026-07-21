@@ -11,18 +11,22 @@ already enforces it in cell bodies and STAYS. Owner: this session.
 - **Stream A — independent prose/fixture/memory sweep (this plan, `ready/`):** the palimpsest sites NOT owned by
   the CLI redesign. `A1` prose/ideation · `A2` golden fixture (+ retired memory model) · `A3` agent-memory
   dream-time alignment. No cross-shard deps — dispatch concurrently.
-- **Stream B — the founding-CLI layer (FOLDED into `plans/plugin-cli/`):** `found.ts`, `cli/index.ts`,
-  `founding-template.ts`, `found-cli.ts`, `plan-states.ts` carry the heaviest vocab AND are the exact code the
-  npx/plugin redesign rebuilds. Sweeping then redesigning is double-work (`grey-field`) — so the founding-layer
-  depalimpsest is a REQUIREMENT of the plugin-cli redesign, not a shard here.
+- **Stream B — the founding-CLI layer (SPLIT: content now · identifiers deferred).** A census (2026-07) split
+  this layer along a MECE seam: (i) `B1` the CONTENT/doctrine strings — the polis/mind-society/founder narrative
+  written into a founded project's `AGENTS.md`/`PLAN.md` + help + comments — is wrong NOW, user-visible, and
+  independent of the (unconverged) redesign → a READY shard here. (ii) the API IDENTIFIERS (`found` verb,
+  `FoundingTemplate`/`foundPolis`/`polisFoundingTemplate`/`runFound`) are RESTRUCTURED by the plugin-cli redesign
+  ("founding" → npx-init-via-defaults-package), so renaming-then-restructuring is double-work — FOLDED into
+  `plans/plugin-cli/` (DESIGN-BRIEF Q7), not swept here.
 
 ## State
 
-| shard             | surface              | state | concern                                                            |
-| ----------------- | -------------------- | ----- | ------------------------------------------------------------------ |
-| A1 prose/ideation | docs + organ READMEs | ready | retired vocab → concrete in prose (judgment per site)              |
-| A2 golden fixture | ir-bridge fixture    | ready | founding vocab + stale SELF/MEMORY/vault model → net-current       |
-| A3 memory align   | agent stores         | ready | nico verified clean; dream-time self-align directive for the fleet |
+| shard               | surface                             | state | concern                                                                    |
+| ------------------- | ----------------------------------- | ----- | -------------------------------------------------------------------------- |
+| A1 prose/ideation   | docs + organ READMEs                | ready | retired vocab → concrete in prose (judgment per site)                      |
+| A2 golden fixture   | ir-bridge fixture                   | ready | founding vocab + stale SELF/MEMORY/vault model → net-current               |
+| A3 memory align     | agent stores                        | ready | nico verified clean; dream-time self-align directive for the fleet         |
+| B1 founding content | founding-template bodies + CLI help | ready | polis/founder NARRATIVE → concrete; API identifiers deferred to plugin-cli |
 
 ## Deferred fork
 

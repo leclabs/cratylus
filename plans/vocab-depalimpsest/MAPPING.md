@@ -30,8 +30,25 @@ gate lists `conatus` as a palimpsest token — an INTERNAL CONTRADICTION (a core
 gate rejects). Evidence to keep: it is a live structural primitive; renaming it is a large MECE-model refactor
 with its own signification problem (concrete candidates: `presentation`/`disposition`? `demeanor`/`drive`?).
 
-**Decision (nico):** OUT of this sweep. The Operator named "society/polis/politeia and the like" — not the
-genus axis — and it is structurally load-bearing, so a mechanical sweep must not touch it. It wants a dedicated
-signification pass (probe → signify → cold-review), NOT a find-replace. Recorded here as the corpus's one
-remaining vocabulary contradiction, for the Operator's eventual ruling. Every sweep shard EXCLUDES the
-`Genus`-axis `STANCE`/`CONATUS` tokens explicitly.
+**Cold-panel verdict (2026-07 — isolated `claude -p` ×5 from `/tmp`, no project context, results in
+`/tmp/cold-panel/results.txt`).** Confirms the vocabulary was polluted at authoring:
+
+- **Unprimed (3/3), given only the two families' glosses:** Family A (how it comes across) → **Persona** ×3
+  (unanimous); Family B (what it's inclined to do) → **Policy** ×2 / **Disposition** ×1.
+- **Primed comparison of 6 candidate pairs:** `Stance / Conatus` ranked **5th of 6** — _"'Conatus' is obscure
+  jargon most readers won't parse; 'Stance' is ambiguous."_ Compare-winner: **Demeanor / Drive**;
+  `Presentation / Disposition` 2nd; `Persona / Telos` last ("Persona overstates it as a mask").
+
+**Decision (nico, signification authority — cold-informed):** the genus axis SHOULD be renamed; `STANCE`/`CONATUS`
+is jargon, not the model's best-fit. Recommended signifier: **`STANCE` → Presentation · `CONATUS` → Disposition.**
+Rationale over the cold favourites: the unprimed winner "Persona" COLLIDES with the existing `persona` organ (a
+genus label must not shadow a member); "Presentation" is its non-colliding sibling and spans the A organs
+(autonomy·role·formality·audience-adaptation·transparency·persona·provenance) cleanly. "Disposition" best fits a
+GENUS (a stable filing CATEGORY, not a moment's drive) over the B organs (objective·guardrails·principles·
+reasoning-strategy·satisficing·capabilities). Punchier alternative if preferred: **Demeanor / Drive** (the cold
+compare-winner). NOT `Stance/Conatus`.
+
+**Still OUT of the mechanical sweep.** Renaming a `Genus` axis is a large structural refactor (the type +
+per-organ metadata + docs + the accept-gate token list) — it needs its OWN census-grounded execution spec
+(`census-grounds-spec`), authored when the Operator green-lights pulling it into scope. Every sweep shard EXCLUDES
+the `Genus`-axis tokens until then.
