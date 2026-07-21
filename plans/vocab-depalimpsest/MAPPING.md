@@ -39,14 +39,26 @@ with its own signification problem (concrete candidates: `presentation`/`disposi
   jargon most readers won't parse; 'Stance' is ambiguous."_ Compare-winner: **Demeanor / Drive**;
   `Presentation / Disposition` 2nd; `Persona / Telos` last ("Persona overstates it as a mask").
 
-**Decision (nico, signification authority — cold-informed):** the genus axis SHOULD be renamed; `STANCE`/`CONATUS`
-is jargon, not the model's best-fit. Recommended signifier: **`STANCE` → Presentation · `CONATUS` → Disposition.**
-Rationale over the cold favourites: the unprimed winner "Persona" COLLIDES with the existing `persona` organ (a
-genus label must not shadow a member); "Presentation" is its non-colliding sibling and spans the A organs
-(autonomy·role·formality·audience-adaptation·transparency·persona·provenance) cleanly. "Disposition" best fits a
-GENUS (a stable filing CATEGORY, not a moment's drive) over the B organs (objective·guardrails·principles·
-reasoning-strategy·satisficing·capabilities). Punchier alternative if preferred: **Demeanor / Drive** (the cold
-compare-winner). NOT `Stance/Conatus`.
+**Decision (nico, signification authority — cold-informed + Operator-challenged):** the genus axis SHOULD be
+renamed; `STANCE`/`CONATUS` is jargon, not the model's best-fit. Recommended signifier: **`STANCE` → Presentation ·
+`CONATUS` → Disposition.**
+
+Rationale — and a correction the Operator surfaced. The unprimed cold winner for Family A was "Persona" (3/3), which
+I first called a "collision" with the `persona` field. That framing was shallow. Grounding: `persona` is NOT a peer
+organ — it is the free-text identity BODY → SOUL body (`anatomy/index.ts:207`, D13), the most identity-laden MEMBER
+of the presentation family. The cold LLM naming the AXIS "Persona" is **prototype-naming** — labelling a category by
+its most salient member, a known bias — NOT evidence the axis IS the field. The correct principle is **taxonomy
+hygiene: name a category by its DIMENSION, not a member.** "Presentation" names the dimension "how it comes across"
+and spans the A organs (autonomy·role·formality·audience-adaptation·transparency·persona·provenance); the `persona`
+field stays unchanged (a legitimate distinct member — the irreducible archetype the structured dims can't capture).
+So the cold "Persona" is DISCOUNTED for the axis (prototype bias), not adopted. "Disposition" fits a GENUS (a stable
+filing CATEGORY, not a moment's drive) over the B organs. Punchier alternative on record: **Demeanor / Drive**. NOT
+`Stance/Conatus`.
+
+_Broader signal (cold-review corroborated): the anatomy's biology metaphor carries signification debt — an isolated
+cold review of the plugin API independently flagged `organ` as mis-signifying ("reads as parts of ONE agent, not a
+shared fragment library"). The `organ`→`fragment`/`namespace` re-signification is folded into the plugin-cli work
+(`NORTH-STAR §6`); the genus rename (C1) is one facet of the same vocabulary cleanup._
 
 **Still OUT of the mechanical sweep.** Renaming a `Genus` axis is a large structural refactor (the type +
 per-organ metadata + docs + the accept-gate token list) — it needs its OWN census-grounded execution spec

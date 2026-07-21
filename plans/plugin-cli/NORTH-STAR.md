@@ -109,7 +109,32 @@ term; the ESLint/Vite industry standard for exactly this), and the Claude-output
   - provenance · P6 founding-CLI restructure (absorbs vocab Stream-B identifier rename) · P7 naming re-signify
     (`--as-plugin` → claude-bundle). Deps: P2←P1 · P3←P1 · P4←P2,P3 · P5←P2 · P6←P4.
 
+## 10. Cold-review outcome (isolated Ω\* ×4 — `/tmp/cold-panel/review.txt`)
+
+The SHAPE is validated ("a reasonable, ESLint/Tailwind-like mental model, not fundamentally broken"), but the review
+surfaced one real design gap + a naming pass, so the design **does NOT lock** — one revision required before shards:
+
+1. **DESIGN GAP — the two-namespace incoherence (flagged independently ×2).** `extends: [base, my]` uses imported
+   JS OBJECTS, but a fragment-level `extends: "base:organ/name"` uses a colon STRING needing a separate resolver —
+   "what does `base` mean" has two answers. FIX: **unify on object-imports; a fragment references another via the
+   imported binding, never a string ID.** This ALSO resolves review-point that ESLint FLAT-config deliberately
+   DROPPED the `"plugin:foo/bar"` string scheme (magic prefix inference) — copying it re-imports a rejected pattern.
+   Namespacing (Q2) stays a per-plugin invariant, but the ADDRESS is the imported object, not a `<plugin>:<organ>/`
+   string. (Corrects §3/§4's string-address sketch.)
+2. **NAMING re-signify (mis-signifiers, both reviewers):** `organs` → `fragments`/`namespaces` (the biology
+   metaphor reads as "parts of ONE agent," not a shared library — the exact concern the Operator raised re persona) ·
+   `overrides` → `patches`/`customize` (collides with ESLint's file-glob `overrides` — a muscle-memory landmine) ·
+   `patch` strategy → `merge` (JSON-Patch vs Merge-Patch ambiguity) · `definePlugin` → `defineAgentPlugin` (webpack
+   `DefinePlugin` prior) · `composite` → `preset` (undefined in the schema; collapse the agents/skills/composite
+   synonym set). Attribution: **Nuxt-lineage, not Vite** (vite/rollup plugins are bare factory fns, no `definePlugin`).
+3. **v1 REQUIREMENTS the walkthrough proved a first-timer needs:** (a) a DISCOVERY command listing extendable
+   fragment IDs (no source-archaeology) — elevate `catalog`/`explain`; (b) `compose --dry-run` + a local `file:`
+   link workflow BEFORE publish; (c) LOUD failure on a missing `extends` target; (d) documented deterministic
+   multi-plugin merge order. (a)+(c) partly exist (catalog + resolve-time validation) — make them first-class.
+
 ## 9. Status
 
-Design grounded + verified + Q1–Q6 resolved (Q7 folded). No open architecture forks. Cold-review is the one
-remaining gate before execution shards. Nothing in `packages/` touched — design record only; push/deploy reserved.
+Design grounded + verified + Q1–Q6 resolved (Q7 folded); cold-review DONE. The architecture SHAPE is validated;
+**one revision pass required before shards** — unify on object-import addressing (§10.1), apply the naming
+re-signify (§10.2), elevate discovery/dry-run to v1 (§10.3). After that revision the design LOCKS and P1–P7
+(§8) are authored `census-grounds-spec`. Nothing in `packages/` touched — design record only; push/deploy reserved.
