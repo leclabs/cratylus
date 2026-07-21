@@ -109,11 +109,48 @@ export interface ResolveConfig {
 
 // ── The resolved output ──────────────────────────────────────────────────────
 
-/** One node's fold result. */
+/**
+ * The SOURCE of one fold contribution — WHERE it came from, for provenance
+ * reporting (`explain`, NORTH-STAR §5). A plugin's originating contribution
+ * (`kind: 'plugin'`, carrying the plugin `name`) or a consumer patch
+ * (`kind: 'patch'`, carrying its `index` in the `patches` array). This is the
+ * attribution `explain` reads off to say which plugin/patch a fragment came from.
+ */
+export type ContributionSource =
+  | { readonly kind: 'plugin'; readonly name: string }
+  | { readonly kind: 'patch'; readonly index: number };
+
+/**
+ * One contribution in a node's resolved fold, recorded in FOLD ORDER (non-forced
+ * in collection order, then forced by ascending priority — the order actually
+ * applied). Its `source` attributes it to a plugin or a patch; `op`/`value`/`force`
+ * mirror the `PatchEntry`; `reset` is true iff this op RESET the accumulator (a
+ * `replace`, which discards the prior). The last `reset` in the list is the EFFECTIVE
+ * BASE that the subsequent `append`/`merge` accumulated onto — so this list cold-decodes
+ * "why this fragment won its final value" (NORTH-STAR §5 falsifier).
+ */
+export interface FragmentContribution {
+  readonly source: ContributionSource;
+  readonly op: PatchOp;
+  /** The contributed value BEFORE folding (interpreted per `op`). */
+  readonly value: unknown;
+  /** The force priority, when this contribution was hoisted (else absent). */
+  readonly force?: number;
+  /** True iff this op reset the accumulator (`replace`) — discarded the prior. */
+  readonly reset: boolean;
+}
+
+/** One node's fold result — its value plus the source-attributed fold that produced it. */
 export interface ResolvedFragment {
   readonly fragment: Fragment;
   /** The folded value (`replace` reset / `append`·`merge` accumulation). */
   readonly value: unknown;
+  /**
+   * The ordered fold that produced `value`, each contribution attributed to its
+   * plugin/patch source (NORTH-STAR §5 provenance). In fold order, so the last
+   * `reset` is the base and the tail accumulates onto it.
+   */
+  readonly provenance: readonly FragmentContribution[];
 }
 
 /**
@@ -199,16 +236,23 @@ export function resolve(config: ResolveConfig): ResolvedAgentSet {
   const patches = config.patches ?? [];
 
   // Collection order = extends position (plugin order, then contribution order),
-  // then patches position. This index IS the non-forced precedence.
-  const pluginEntries: PatchEntry[] = [];
+  // then patches position. This index IS the non-forced precedence. Each entry is
+  // TAGGED with its source so the fold can attribute provenance (NORTH-STAR §5).
+  const pluginEntries: SourcedEntry[] = [];
   for (const plugin of config.extends) {
-    for (const c of plugin.contributions) pluginEntries.push(c);
+    const source: ContributionSource = { kind: 'plugin', name: plugin.name };
+    for (const c of plugin.contributions)
+      pluginEntries.push({ entry: c, source });
   }
-  const ordered: PatchEntry[] = [...pluginEntries, ...patches];
+  const patchEntries: SourcedEntry[] = patches.map((entry, index) => ({
+    entry,
+    source: { kind: 'patch', index },
+  }));
+  const ordered: SourcedEntry[] = [...pluginEntries, ...patchEntries];
 
   // A node is DEFINED only by an extended plugin's contribution — never by a patch.
   const defined = new Set<Fragment>();
-  for (const e of pluginEntries) defined.add(e.target);
+  for (const e of pluginEntries) defined.add(e.entry.target);
 
   // (1) missing extends target — a patch onto an undefined fragment.
   for (const p of patches) {
@@ -216,9 +260,9 @@ export function resolve(config: ResolveConfig): ResolvedAgentSet {
   }
 
   // (2) illegal op for kind — over every contribution, plugin- or consumer-authored.
-  for (const e of ordered) {
-    if (!LEGAL_OPS[e.target.kind].has(e.op)) {
-      throw new IllegalOpForKindError(e.target, e.op);
+  for (const { entry } of ordered) {
+    if (!LEGAL_OPS[entry.target.kind].has(entry.op)) {
+      throw new IllegalOpForKindError(entry.target, entry.op);
     }
   }
 
@@ -226,46 +270,68 @@ export function resolve(config: ResolveConfig): ResolvedAgentSet {
   validateReferenceGraph(defined);
 
   // Group contributions by target node, preserving collection order.
-  const byNode = new Map<Fragment, PatchEntry[]>();
+  const byNode = new Map<Fragment, SourcedEntry[]>();
   for (const e of ordered) {
-    const list = byNode.get(e.target);
+    const list = byNode.get(e.entry.target);
     if (list) list.push(e);
-    else byNode.set(e.target, [e]);
+    else byNode.set(e.entry.target, [e]);
   }
 
-  // (4) fold each node — force-tie check happens inside foldNode.
+  // (4) fold each node — force-tie check + provenance capture happen in foldNode.
   const fragments = new Map<Fragment, ResolvedFragment>();
   for (const [node, entries] of byNode) {
-    fragments.set(node, { fragment: node, value: foldNode(node, entries) });
+    const { value, provenance } = foldNode(node, entries);
+    fragments.set(node, { fragment: node, value, provenance });
   }
 
   return { fragments };
 }
 
+/** A `PatchEntry` tagged with WHERE it came from, so the fold can attribute provenance. */
+interface SourcedEntry {
+  readonly entry: PatchEntry;
+  readonly source: ContributionSource;
+}
+
 /**
- * Fold one node's contributions by the FOLD LAW. Non-forced entries fold in
- * collection order; forced entries fold AFTER, sorted by ascending priority so the
- * highest priority lands last (force folds last). A duplicate forced priority ties.
+ * Fold one node's contributions by the FOLD LAW, capturing the source-attributed
+ * fold trace alongside the value. Non-forced entries fold in collection order;
+ * forced entries fold AFTER, sorted by ascending priority so the highest priority
+ * lands last (force folds last). A duplicate forced priority ties. The returned
+ * `provenance` is in fold order — one `FragmentContribution` per applied entry.
  */
-function foldNode(node: Fragment, entries: readonly PatchEntry[]): unknown {
-  const nonForced = entries.filter((e) => e.force === undefined);
-  const forced = entries.filter((e) => e.force !== undefined);
+function foldNode(
+  node: Fragment,
+  entries: readonly SourcedEntry[],
+): { value: unknown; provenance: FragmentContribution[] } {
+  const nonForced = entries.filter((e) => e.entry.force === undefined);
+  const forced = entries.filter((e) => e.entry.force !== undefined);
 
   // Force-priority tie — two forced entries at one priority has no deterministic last.
   const seen = new Set<number>();
   for (const e of forced) {
-    const p = e.force as number;
+    const p = e.entry.force as number;
     if (seen.has(p)) throw new ForcePriorityTieError(node, p);
     seen.add(p);
   }
   const forcedSorted = [...forced].sort(
-    (a, b) => (a.force as number) - (b.force as number),
+    (a, b) => (a.entry.force as number) - (b.entry.force as number),
   );
 
   const order = [...nonForced, ...forcedSorted];
   let acc: unknown;
-  for (const e of order) acc = applyOp(acc, e.op, e.value);
-  return acc;
+  const provenance: FragmentContribution[] = [];
+  for (const { entry, source } of order) {
+    acc = applyOp(acc, entry.op, entry.value);
+    provenance.push({
+      source,
+      op: entry.op,
+      value: entry.value,
+      ...(entry.force !== undefined ? { force: entry.force } : {}),
+      reset: entry.op === 'replace',
+    });
+  }
+  return { value: acc, provenance };
 }
 
 /** Apply one op over the accumulator. `replace` resets; `append`/`merge` accumulate. */

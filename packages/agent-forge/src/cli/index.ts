@@ -33,6 +33,7 @@ import {
 import { runDiff } from './commands/diff.js';
 import { runDoctor } from './commands/doctor.js';
 import { runEventsList } from './commands/events.js';
+import { runExplain } from './commands/explain.js';
 import { runImport } from './commands/import.js';
 import { runInit } from './commands/init.js';
 import { runLint } from './commands/lint.js';
@@ -413,17 +414,48 @@ cli
 
 cli
   .command(
-    'catalog',
-    'Enumerate the fragment catalog of a corpus (discover the option-space)',
+    'explain [agent]',
+    'Report each resolved fragment’s provenance: source plugin/patch + final value',
   )
+  .option('--config <path>', 'config file (default: <cwd>/agents.config.ts)')
+  .option('--json', 'emit the machine contract as JSON instead of the report')
+  .action(
+    async (
+      agent: string | undefined,
+      opts: { config?: string; json?: boolean },
+    ) => {
+      process.exit(
+        await runExplain({ agent, config: opts.config, json: opts.json }),
+      );
+    },
+  );
+
+cli
+  .command(
+    'catalog [agent]',
+    'Discover extendable fragment IDs across all extended plugins (or a corpus census)',
+  )
+  .option('--config <path>', 'config file (default: <cwd>/agents.config.ts)')
   .option(
     '--corpus <dir>',
-    "corpus dimensions/ dir (default: agent-anatomy's src/dimensions when present)",
+    "force the per-dimension corpus census (default: agent-anatomy's src/dimensions)",
   )
   .option('--json', 'emit the machine contract as JSON instead of a table')
-  .action(async (opts: { corpus?: string; json?: boolean }) => {
-    process.exit(await runCatalog({ corpus: opts.corpus, json: opts.json }));
-  });
+  .action(
+    async (
+      agent: string | undefined,
+      opts: { config?: string; corpus?: string; json?: boolean },
+    ) => {
+      process.exit(
+        await runCatalog({
+          agent,
+          config: opts.config,
+          corpus: opts.corpus,
+          json: opts.json,
+        }),
+      );
+    },
+  );
 
 cli.help();
 cli.version(VERSION);

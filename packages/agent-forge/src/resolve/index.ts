@@ -2,8 +2,10 @@
 // resolver (extends / patches / replace·append·merge·force) joins it here.
 export { type AgentPlugin, defineAgentPlugin } from './plugin.js';
 export {
+  type ContributionSource,
   DanglingReferenceError,
   type Fragment,
+  type FragmentContribution,
   type FragmentKind,
   ForcePriorityTieError,
   IllegalOpForKindError,
