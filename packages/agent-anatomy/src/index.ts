@@ -10,13 +10,25 @@
 // fragment modules under `src/dimensions/<dim>/*.ts`, and the agent / skill preset
 // modules. The forge resolver scans these paths exactly as the existing
 // directory-scan does; no resolver logic lives here.
+//
+// SELF-LOCATION (why absolute, not `'./src/dimensions'`): a consumer `extends`
+// this plugin by importing the OBJECT, which has lost its package-root provenance
+// — a bare relative dir would be unresolvable to the config-is-code loader,
+// wherever the package is installed. So the plugin resolves its own dirs against
+// `import.meta.url` at definition time; the loader consumes the absolute paths
+// verbatim. This module is at `src/index.ts`, so the dirs are its siblings.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { fileURLToPath } from 'node:url';
 import { defineAgentPlugin } from '@leclabs/agent-forge/resolve';
+
+/** Resolve a sibling dir of this module to an absolute path (self-location). */
+const dir = (rel: string): string =>
+  fileURLToPath(new URL(rel, import.meta.url));
 
 export default defineAgentPlugin({
   name: 'anatomy',
-  fragments: './src/dimensions',
-  agents: './src/agents',
-  skills: './src/skills',
+  fragments: dir('./dimensions'),
+  agents: dir('./agents'),
+  skills: dir('./skills'),
 });

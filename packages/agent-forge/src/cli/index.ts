@@ -21,8 +21,10 @@ import {
   assertAdaptersValid,
 } from '../core/index.js';
 import type { Scope as DeployScope } from '../deploy/index.js';
+import { runAdd } from './commands/add.js';
 import { runCatalog } from './commands/catalog.js';
 import { runCompile } from './commands/compile.js';
+import { runCompose } from './commands/compose.js';
 import {
   type DeployKindArg,
   parseCompanions,
@@ -67,10 +69,35 @@ assertAdaptersValid(adapters);
 const cli = cac('agent-forge');
 
 cli
-  .command('init', 'Bootstrap a new .agent-forge/ directory')
+  .command(
+    'init',
+    'Bootstrap a new .agent-forge/ directory + scaffold agents.config.ts',
+  )
   .option('--scope <scope>', 'user | project | local', { default: 'project' })
   .action(async (opts: { scope: Scope }) => {
     process.exit(await runInit({ scope: opts.scope }));
+  });
+
+cli
+  .command(
+    'add <plugin>',
+    'Wire a plugin package into agents.config.ts extends',
+  )
+  .action(async (plugin: string) => {
+    process.exit(await runAdd({ plugin }));
+  });
+
+cli
+  .command(
+    'compose',
+    'Load agents.config.ts, resolve the plugin set, and print it (config-is-code)',
+  )
+  .option('--config <path>', 'config file (default: <cwd>/agents.config.ts)')
+  .option('--dry-run', 'print the resolved set; write nothing')
+  .action(async (opts: { config?: string; dryRun?: boolean }) => {
+    process.exit(
+      await runCompose({ config: opts.config, dryRun: opts.dryRun }),
+    );
   });
 
 cli

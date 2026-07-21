@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { dump } from 'js-yaml';
 import pc from 'picocolors';
+import { scaffoldAgentsConfig } from '../../config/index.js';
 import { type Manifest, type Scope, defaultIRRoot } from '../../core/index.js';
 
 export interface InitOpts {
@@ -48,5 +49,20 @@ export async function runInit(opts: InitOpts = {}): Promise<number> {
   }
 
   console.log(pc.green('✓'), `initialized ${root}`);
+
+  // Scaffold the config-is-code home (NORTH-STAR §5): `agents.config.ts` with the
+  // zero-config default `extends: [anatomy]`. Project-scoped only — it is a
+  // project-root artifact, not a per-user (`--scope user`) concern. Idempotent:
+  // an existing config is left untouched. (P6's founding-CLI restructure folds
+  // `found`→`init`-via-defaults; P4 adds the config scaffold non-breakingly.)
+  if (scope === 'project') {
+    const scaffold = await scaffoldAgentsConfig(cwd);
+    console.log(
+      scaffold.created ? pc.green('✓') : pc.gray('•'),
+      scaffold.created
+        ? `scaffolded ${scaffold.path} (extends: [anatomy])`
+        : `${scaffold.path} already exists — left untouched`,
+    );
+  }
   return 0;
 }

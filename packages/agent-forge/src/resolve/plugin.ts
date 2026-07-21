@@ -26,9 +26,15 @@ import type { Adapter } from '../core/adapter/types.js';
 /**
  * An agent-plugin: a package's declaration of which directories supply its
  * fragments and presets, plus any harness adapters it ships. Every dir field is
- * a path STRING relative to the plugin package root — the resolver scans it
- * per-dimension exactly as the existing directory-scan does. Fields are optional
- * so a plugin may ship only fragments, only presets, only adapters, or any mix.
+ * a path STRING the loader scans per-dimension exactly as the existing
+ * directory-scan does. Fields are optional so a plugin may ship only fragments,
+ * only presets, only adapters, or any mix.
+ *
+ * DIR RESOLUTION: an imported plugin OBJECT loses its package-root provenance, so
+ * a plugin SELF-LOCATES its dirs to ABSOLUTE paths against its own
+ * `import.meta.url` (see `agent-anatomy`'s default export) — the config-is-code
+ * loader (`config/loader.ts`) uses those verbatim, and resolves a RELATIVE dir
+ * against the config file's dir only as a local/dev fallback.
  */
 export interface AgentPlugin {
   /** The namespace segment — reporting + per-plugin σ* uniqueness. NOT an address. */

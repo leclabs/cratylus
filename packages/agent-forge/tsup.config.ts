@@ -15,6 +15,7 @@ const libEntry: Record<string, string> = {
   'catalog/index': 'src/catalog/index.ts',
   'validate/index': 'src/validate/index.ts',
   'resolve/index': 'src/resolve/index.ts',
+  'config/index': 'src/config/index.ts',
 };
 for (const a of adapters) {
   libEntry[`adapters/${a}/index`] = `src/adapters/${a}/index.ts`;

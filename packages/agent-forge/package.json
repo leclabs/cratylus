@@ -30,6 +30,10 @@
       "types": "./dist/resolve/index.d.ts",
       "import": "./dist/resolve/index.js"
     },
+    "./config": {
+      "types": "./dist/config/index.d.ts",
+      "import": "./dist/config/index.js"
+    },
     "./deploy": {
       "types": "./dist/deploy/index.d.ts",
       "import": "./dist/deploy/index.js"
