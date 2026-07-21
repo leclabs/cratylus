@@ -55,13 +55,12 @@ So the cold "Persona" is DISCOUNTED for the axis (prototype bias), not adopted. 
 filing CATEGORY, not a moment's drive) over the B organs. Punchier alternative on record: **Demeanor / Drive**. NOT
 `Stance/Conatus`.
 
-_Broader signal — now its own gated task `pending/C2`: the anatomy's core metaphor carries signification debt. A
-fresh UNPRIMED cold probe (`/tmp/cold-panel/altitude.txt`) found `organ`/`anatomy` in **0 of 4** reads — the model's
-natural terms are module/primitive (per-agent) and **trait/fragment** (shared unit), and it explicitly rejects
-"organ" for a shareable piece. This indicates the ORIGINAL "anatomy/organs" signify was primed/biased, not a clean
-cold read (`apparatus-under-zero-trust`; nico's altitude-defense of "organ" was refuted by the probe). Confirming +
-choosing replacements is a full signify pass with real blast radius (the package IS `agent-anatomy`) → `C2`. C1
-(genus) and C2 (core vocab) are two facets of one cleanup._
+_Broader finding — now DECIDED in `pending/C2`: a decisive cold panel (`/tmp/cold-panel/decide.txt`, head-to-head
+×3) resolved the core vocabulary. **`organ` → `dimension`** (3/3 cold, decisively fitter — adopted); VALUE keeps
+`fragment` and CORPUS keeps `anatomy` (cold winners `variant`/`kit` overridden on concept-fit). The genus rename
+(C1) folds into C2 as one coherent re-signification; execution is sequenced after the plugin-cli design locks. Only
+the published BRAND (`agent-anatomy` vs `AgentKit`) is left as an Operator value-call. See `C2` for the decision +
+spec._
 
 **Still OUT of the mechanical sweep.** Renaming a `Genus` axis is a large structural refactor (the type +
 per-organ metadata + docs + the accept-gate token list) — it needs its OWN census-grounded execution spec
