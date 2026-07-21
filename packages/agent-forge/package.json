@@ -26,6 +26,10 @@
       "types": "./dist/catalog/index.d.ts",
       "import": "./dist/catalog/index.js"
     },
+    "./resolve": {
+      "types": "./dist/resolve/index.d.ts",
+      "import": "./dist/resolve/index.js"
+    },
     "./deploy": {
       "types": "./dist/deploy/index.d.ts",
       "import": "./dist/deploy/index.js"
