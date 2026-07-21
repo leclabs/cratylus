@@ -121,12 +121,16 @@ surfaced one real design gap + a naming pass, so the design **does NOT lock** �
    DROPPED the `"plugin:foo/bar"` string scheme (magic prefix inference) — copying it re-imports a rejected pattern.
    Namespacing (Q2) stays a per-plugin invariant, but the ADDRESS is the imported object, not a `<plugin>:<organ>/`
    string. (Corrects §3/§4's string-address sketch.)
-2. **NAMING re-signify (mis-signifiers, both reviewers):** `organs` → `fragments`/`namespaces` (the biology
-   metaphor reads as "parts of ONE agent," not a shared library — the exact concern the Operator raised re persona) ·
-   `overrides` → `patches`/`customize` (collides with ESLint's file-glob `overrides` — a muscle-memory landmine) ·
-   `patch` strategy → `merge` (JSON-Patch vs Merge-Patch ambiguity) · `definePlugin` → `defineAgentPlugin` (webpack
-   `DefinePlugin` prior) · `composite` → `preset` (undefined in the schema; collapse the agents/skills/composite
-   synonym set). Attribution: **Nuxt-lineage, not Vite** (vite/rollup plugins are bare factory fns, no `definePlugin`).
+2. **NAMING re-signify (mis-signifiers, both reviewers):** `overrides` → `patches`/`customize` (collides with
+   ESLint's file-glob `overrides` — a muscle-memory landmine) · `patch` strategy → `merge` (JSON-Patch vs
+   Merge-Patch ambiguity) · `definePlugin` → `defineAgentPlugin` (webpack `DefinePlugin` prior) · `composite` →
+   `preset` (undefined in the schema; collapse the agents/skills/composite synonym set). Attribution: **Nuxt-lineage,
+   not Vite** (vite/rollup plugins are bare factory fns, no `definePlugin`).
+   **The `organs` plugin-field name is DEFERRED to `vocab-depalimpsest/pending/C2`** — a fresh unprimed cold probe
+   found `organ`/`anatomy` in 0 of 4 reads (natural terms: module/primitive/**trait/fragment**), so the objection is
+   not merely a plugin-field nit but a core-vocabulary question under its own signify pass; the plugin field name
+   follows C2's outcome (`fragment` is the likely landing — it is already the MODEL term). nico's earlier
+   altitude-defense of "organ" was refuted by the probe.
 3. **v1 REQUIREMENTS the walkthrough proved a first-timer needs:** (a) a DISCOVERY command listing extendable
    fragment IDs (no source-archaeology) — elevate `catalog`/`explain`; (b) `compose --dry-run` + a local `file:`
    link workflow BEFORE publish; (c) LOUD failure on a missing `extends` target; (d) documented deterministic

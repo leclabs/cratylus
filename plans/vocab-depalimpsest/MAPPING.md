@@ -55,10 +55,13 @@ So the cold "Persona" is DISCOUNTED for the axis (prototype bias), not adopted. 
 filing CATEGORY, not a moment's drive) over the B organs. Punchier alternative on record: **Demeanor / Drive**. NOT
 `Stance/Conatus`.
 
-_Broader signal (cold-review corroborated): the anatomy's biology metaphor carries signification debt — an isolated
-cold review of the plugin API independently flagged `organ` as mis-signifying ("reads as parts of ONE agent, not a
-shared fragment library"). The `organ`→`fragment`/`namespace` re-signification is folded into the plugin-cli work
-(`NORTH-STAR §6`); the genus rename (C1) is one facet of the same vocabulary cleanup._
+_Broader signal — now its own gated task `pending/C2`: the anatomy's core metaphor carries signification debt. A
+fresh UNPRIMED cold probe (`/tmp/cold-panel/altitude.txt`) found `organ`/`anatomy` in **0 of 4** reads — the model's
+natural terms are module/primitive (per-agent) and **trait/fragment** (shared unit), and it explicitly rejects
+"organ" for a shareable piece. This indicates the ORIGINAL "anatomy/organs" signify was primed/biased, not a clean
+cold read (`apparatus-under-zero-trust`; nico's altitude-defense of "organ" was refuted by the probe). Confirming +
+choosing replacements is a full signify pass with real blast radius (the package IS `agent-anatomy`) → `C2`. C1
+(genus) and C2 (core vocab) are two facets of one cleanup._
 
 **Still OUT of the mechanical sweep.** Renaming a `Genus` axis is a large structural refactor (the type +
 per-organ metadata + docs + the accept-gate token list) — it needs its OWN census-grounded execution spec
