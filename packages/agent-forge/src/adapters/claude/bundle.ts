@@ -3,7 +3,7 @@
 // required [CC4]) + `skills/` + `agents/` + `hooks/hooks.json` + `.mcp.json`,
 // matching the documented component layout [CC4][CC5]. Distinct from
 // `writeClaude`'s ordinary per-scope `.claude/` tree: this is the plugin
-// architecture used as a CARRIER, reachable via `compile --as-plugin <name>`
+// architecture used as a CARRIER, reachable via `compile --as-claude-bundle <name>`
 // (`src/cli/commands/compile.ts`) or directly, as here.
 //
 // Named `bundle.ts`, not `plugin.ts`: `src/core/engine/plugin.ts` already

@@ -66,7 +66,7 @@ P: IR hook (canonical PreToolUse, command payload); targets opencode [OC5], kilo
 
 A: FLEET · G: one IR compiles to a distributable Claude plugin (the plugin arch used as a
 _carrier_, closing §3/claude d6 "plugins unmodeled" on the write side).
-P: IR with skills + agents + hooks + mcp servers; a `--as-plugin <name>` (or manifest override)
+P: IR with skills + agents + hooks + mcp servers; a `--as-claude-bundle <name>` (or manifest override)
 compile mode for target claude.
 ✓:
 

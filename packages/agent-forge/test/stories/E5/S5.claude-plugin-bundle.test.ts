@@ -2,7 +2,7 @@
  * E5.S5 — Claude plugin as a bundling target.
  *
  * Documented truth: one IR (skills + agents + hooks + mcp servers) compiles —
- * via a `--as-plugin <name>` / manifest-override mode — to a distributable
+ * via a `--as-claude-bundle <name>` / manifest-override mode — to a distributable
  * Claude plugin: `.claude-plugin/plugin.json` (`name` required [CC4]) +
  * `skills/` + `agents/` + `hooks/hooks.json` + `.mcp.json`, matching the
  * documented component layout [CC4][CC5], with `${CLAUDE_PLUGIN_ROOT}` for
@@ -14,7 +14,7 @@
  * point), not a per-scope dialect emission `write()` already owns. The two
  * call sites below were probes written before that shape was settled;
  * updated to call the real entry point. The CLI reaches it via
- * `compile --as-plugin <name>` (`src/cli/commands/compile.ts`).
+ * `compile --as-claude-bundle <name>` (`src/cli/commands/compile.ts`).
  */
 
 import { existsSync, readFileSync, rmSync } from 'node:fs';
@@ -79,7 +79,7 @@ story(
     const manifestPath = join(cwd, '.claude-plugin', 'plugin.json');
     expect(
       existsSync(manifestPath) || pluginSurface.length > 0,
-      `no --as-plugin bundling mode: no .claude-plugin/plugin.json emitted and no plugin-mode member on the claude adapter module (searched exports: ${Object.keys(claudeMod).join(', ')})`,
+      `no --as-claude-bundle bundling mode: no .claude-plugin/plugin.json emitted and no plugin-mode member on the claude adapter module (searched exports: ${Object.keys(claudeMod).join(', ')})`,
     ).toBe(true);
     // The documented component layout, once the mode lands:
     expect(existsSync(join(cwd, 'skills', 'demo-cell', 'SKILL.md'))).toBe(true);

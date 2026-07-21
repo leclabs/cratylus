@@ -24,7 +24,7 @@ export interface CompileOpts {
    * `.claude/` tree. Claude-only: pairing it with any other client is a
    * usage error (a plugin bundle isn't a per-client dialect emission).
    */
-  asPlugin?: string;
+  asClaudeBundle?: string;
 }
 
 export async function runCompile(
@@ -42,7 +42,7 @@ export async function runCompile(
     return 2;
   }
 
-  if (opts.asPlugin) {
+  if (opts.asClaudeBundle) {
     const targets = opts.clients ?? [];
     if (
       targets.length > 1 ||
@@ -50,16 +50,16 @@ export async function runCompile(
     ) {
       console.error(
         pc.red(
-          'agent-forge: --as-plugin bundles the claude target only — pass no clients, or just "claude"',
+          'agent-forge: --as-claude-bundle bundles the claude target only — pass no clients, or just "claude"',
         ),
       );
       return 1;
     }
-    const report = await writeClaudePlugin(ir, cwd, opts.asPlugin);
+    const report = await writeClaudePlugin(ir, cwd, opts.asClaudeBundle);
     const head =
       report.warnings.length > 0
-        ? pc.yellow(`⚠ claude-plugin '${opts.asPlugin}'`)
-        : pc.green(`✓ claude-plugin '${opts.asPlugin}'`);
+        ? pc.yellow(`⚠ claude-plugin '${opts.asClaudeBundle}'`)
+        : pc.green(`✓ claude-plugin '${opts.asClaudeBundle}'`);
     console.log(
       `${head}  ${formatSummary(report.written.length, report.warnings.length, report.skipped.length)}`,
     );
