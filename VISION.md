@@ -16,6 +16,8 @@ Larger context windows, stronger reasoning models, memory, and auxiliary tooling
 
 > **Semantic engineering treats a foundation model not as a language model to be instructed, but as a semantic space to be addressed.**
 
+> **This ground principle is _cratylism_** (Plato's _Cratylus_: names are natural, not conventional). A concept's canonical sign is an **intrinsic, discoverable** property of the concept — the signifier the model's priors already bind to it — **found by cold verification, never coined** by author or operator. Therefore _every_ canonical name in this project — anchors, dimensions, skills, agents, **down to file and directory names** — is discovered this way, and every other principle (`cold-decode-oracle`, `llm-native`, σ\*) derives from it. Naming is never a preference to be decided; it is a fact to be uncovered.
+
 ![thesis.png](./thesis.png)
 
 Foundation models encode rich semantic priors for concepts, abstractions, and formal systems.

@@ -9,11 +9,7 @@
 - [`ENGINE.md`](./ENGINE.md) — **how**
 - [`CANON.md`](./CANON.md) —
 
-**Apex confidence order — apply at decision time.** `llm-native ≻ VISION ≻ MODEL` — _confidence_ (how
-firmly held), **not** importance. These three are the apex source-of-truth and must be mutually
-consistent; on conflict resolve **up** the order — revise **MODEL**, _surface_ a **VISION** conflict
-(never unilaterally edit it), reconcile toward **llm-native**. Everything derived (cells · skills · agents
-· plans · SOUL) must be consistent with the three. (Human record + rationale: `CANON.md` §Relationship.)
+**Prime principle + apex confidence order — apply at decision time.** The ground axiom is **`cratylism`**: names are natural, discovered by cold verification, never coined — so **all naming (anchors, dimensions, skills, agents, files, dirs) is discovered, never decided**, and `cold-decode-oracle`/`llm-native`/`signify` derive from it. Apex triad `cratylism ≻ VISION ≻ MODEL` — _confidence_ (how firmly held), **not** importance. On conflict resolve **up** the order — revise **MODEL**, _surface_ a **VISION** conflict (never unilaterally edit it), reconcile toward **cratylism**. Everything derived (cells · skills · agents · plans · SOUL) must be consistent with the triad. (Human record + rationale: `CANON.md` §Relationship.)
 
 ## Working conventions
 

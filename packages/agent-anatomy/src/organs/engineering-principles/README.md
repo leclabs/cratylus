@@ -4,12 +4,13 @@
 
 ## Values
 
-- cold-decode-oracle ≜ truth(f) ≜ decode_cold(f) ⟨own signifiers · inline ≜ · zero project-K⟩ · invariant ∀f · decode_warm(f | K) ≡ truth(f) ⟨K confirms self-sufficient meaning · ¬ overrides⟩ · decode_warm(f | K) ≢ truth(f) ⇒ PROJECT-DEFECT ⟨¬ defer⟩ · m1 ¬self-sufficient(f) ⇒ carry meaning inline · m2 ∃ n ⊆ K · n ⊥ f ⇒ delete competing home ⟨DRY · MECE⟩ · realign project → cold-truth · ¬ bend f → warm-K · corpus = defendant · cold-read = oracle
+- cold-decode-oracle ⟨⊂ cratylism : cold-decode = the empirical instrument that DISCOVERS the intrinsic sign⟩ ≜ truth(f) ≜ decode_cold(f) ⟨own signifiers · inline ≜ · zero project-K⟩ · invariant ∀f · decode_warm(f | K) ≡ truth(f) ⟨K confirms self-sufficient meaning · ¬ overrides⟩ · decode_warm(f | K) ≢ truth(f) ⇒ PROJECT-DEFECT ⟨¬ defer⟩ · m1 ¬self-sufficient(f) ⇒ carry meaning inline · m2 ∃ n ⊆ K · n ⊥ f ⇒ delete competing home ⟨DRY · MECE⟩ · realign project → cold-truth · ¬ bend f → warm-K · corpus = defendant · cold-read = oracle
+- cratylism ⟨names natural ¬conventional⟩ : model latent-space = real stable concepts · each concept's canonical sign INTRINSIC ∧ DISCOVERED ⟨cold-verified vs priors⟩ ¬coined ⟨¬author · ¬operator⟩ · ∴ signify = archaeology ¬fiat · ∀ name ⟨anchor · dimension · skill · agent · file · dir⟩ : cold-derivable ∨ ⊥ · GROUND ⊨ { cold-decode-oracle · llm-native · signify } derive
 - dry
 - first-principles ⟨¬inherit source's framing/self-description⟩
 - green-field ⟨compat ¬goal · declarable-constraint ⇒ grey-field · accreted-corpus-as-constraint = grey-field relapse⟩
 - invoke-the-canonical ⟨skill · re-derive ⇔ ∄⟩
-- llm-native ⟨reader = LLM ⇒ signify R=LLM · ¬human-prose⟩ ⟨∴ a prompt authored for an LLM reader — subagent-dispatch · cold-read — is itself SIGNIFIED not described : definiendum ⊕ minimal-extension · ¬gloss · ¬leading-candidate-set ; cold-read ⇒ argmin-unbiased⟩
+- llm-native ⟨⊂ cratylism : the LLM = the semantic-space cratylism addresses ⇒ signify FOR it⟩ ⟨reader = LLM ⇒ signify R=LLM · ¬human-prose⟩ ⟨∴ a prompt authored for an LLM reader — subagent-dispatch · cold-read — is itself SIGNIFIED not described : definiendum ⊕ minimal-extension · ¬gloss · ¬leading-candidate-set ; cold-read ⇒ argmin-unbiased⟩
 - mece
 - separation-of-concerns
 - simplicity ≜ null-structure default ⟨delete ≽ add · add ⇔ carries-load⟩ · incidental-complexity = defect ⟨¬ cost-of-business⟩ · simple ≠ easy ⟨Hickey · fold-count ≽ familiarity⟩ · restates-existing-home ⇒ superfluous ⇒ cut
