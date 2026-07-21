@@ -13,11 +13,15 @@
 
 Owner: this session.
 
-> **Re-census (2026-07-21).** The founding-lexicon retirement (`polis`/`founder`/…) is **substantially already
-> done** across `packages/` + `docs/` (prior work + C2) — the plan's older census had rotted (`census-not-format`).
-> Net-current remaining after C1/C2 + A1: **B1 collapses** (narrative retired; identifiers → plugin-cli P6) · **A2
-> closed** (fixture vocab-clean) · **A3 is dream-time** (per-agent, ongoing). Effectively complete bar the P6-folded
-> identifiers and the continuous memory alignment.
+> **Re-census RETRACTED (2026-07-21) — the founding-lexicon is NOT retired.** An earlier "mostly done" claim came
+> from a silently-erroring grep (`rg -nwE` — rg has no `-E`; `2>/dev/null` swallowed the error → false-empty →
+> false-green; `apparatus-under-zero-trust`). `git grep -in polis` shows it live across: **B1** (founding-template
+> narrative — `polisAgentsMd`/`polisPlanMd`, ≥7 hits, B1's own census was RIGHT) · **P6** (identifiers `foundPolis`/
+> `polisFoundingTemplate`/`runFound`/`found`-verb + `found-cli.ts`/`plan-states.ts`) · **A2** (ir-bridge fixture —
+> stale-generated `"Founder of polis"`; source personas are clean) · **UNSCOPED surfaces** (below). Only the
+> `policy.ts` palimpsest guard is intentional (it CONVICTS polis in CELL bodies — but the template/CLI/tests/docs
+> are NOT cells, so the guard does not cover them). B1 and A2 are RE-OPENED; B1 does NOT collapse into P6 (distinct
+> concerns: B1 = narrative, P6 = identifiers+restructure).
 
 ## Streams (MECE by surface)
 
@@ -34,14 +38,15 @@ Owner: this session.
 
 ## State
 
-| shard                     | surface                             | state   | concern                                                                             |
-| ------------------------- | ----------------------------------- | ------- | ----------------------------------------------------------------------------------- |
-| A1 prose/ideation         | docs (research + ideation)          | done    | organ→dimension in live docs; anatomy study PRESERVED as record (verified)          |
-| A2 golden fixture         | ir-bridge fixture                   | done    | vocab + retired memory-model already clean; stale `ideas/` = deferred fixture-maint |
-| A3 memory align           | agent stores                        | ongoing | dream-time, per-agent (incl. nico's own); aligns at each agent's next wake          |
-| B1 founding content       | founding-template bodies + CLI help | → P6    | narrative already retired; founding IDENTIFIERS restructured by plugin-cli P6       |
-| C1 genus rename           | `Genus` axis + dimension READMEs    | done    | STANCE/CONATUS → Persona/Constitution; persona→archetype (verified)                 |
-| C2 core-vocab (organ→dim) | anatomy spine (types/dirs/tests)    | done    | organ→dimension + fragment (+ genus + persona→archetype) — LANDED, verified         |
+| shard                     | surface                                             | state   | concern                                                                                     |
+| ------------------------- | --------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------- |
+| A1 prose/ideation         | docs (research + ideation)                          | done    | organ→dimension in live docs; anatomy study PRESERVED as record (verified)                  |
+| A2 golden fixture         | ir-bridge fixture                                   | ready   | RE-OPENED: fixture holds stale-generated `polis` — regenerate from clean source cells       |
+| A3 memory align           | agent stores                                        | ongoing | dream-time, per-agent (incl. nico's own); aligns at each agent's next wake                  |
+| B1 founding content       | founding-template bodies + CLI help                 | ready   | RE-OPENED: polis/founder NARRATIVE is LIVE (≥7 hits); retire per its census                 |
+| U1 unscoped polis refs    | cold-oracle.sh · forge README/docs · test tmp-names | ready   | `REPO_GUARD=~/workspaces/polis` (old repo name) · external polis links · `polis-*` tmp dirs |
+| C1 genus rename           | `Genus` axis + dimension READMEs                    | done    | STANCE/CONATUS → Persona/Constitution; persona→archetype (verified)                         |
+| C2 core-vocab (organ→dim) | anatomy spine (types/dirs/tests)                    | done    | organ→dimension + fragment (+ genus + persona→archetype) — LANDED, verified                 |
 
 ## Gates + open forks (Operator-owned)
 

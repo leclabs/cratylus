@@ -1,9 +1,3 @@
-# A2 — CLOSED (verified 2026-07-21): vocab + retired memory-model already clean
-
-> The ir-bridge golden fixture carries ZERO founding-vocab / organ / SELF·MEMORY·vault tokens (retired by C2 + prior work). VOCAB scope DONE. Residual (out of vocab scope, non-blocking): ~21 stale `ideas/` path refs — the round-trip test is content-agnostic + green, so cosmetic; a fixture regen (emit_ir) is deferred fixture-maintenance, not vocab.
-
----
-
 # A2 — reconcile the stale golden fixture (palimpsest vocab + retired memory model)
 
 **static:** `packages/agent-forge/test/adapters/ir-bridge/agent-anatomy.agent-forge.json` ·
