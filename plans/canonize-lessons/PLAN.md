@@ -27,6 +27,12 @@ gates green: `M1` `1184851` (dream CANON-PROMOTION route; declared `≻` in the 
 (declare-not-degrade at the formalize seam + gate/registry headers) · `L2` this commit (apex confidence order
 in `CANON.md` + `AGENTS.md`). Push/deploy remain Operator-reserved.
 
+> **L2's apex SUPERSEDED (2026-07-21, same session).** L2 encoded `llm-native ≻ VISION ≻ MODEL`, but `llm-native`
+> was masquerading as the ground. The true prime principle is **`cratylism`** (names are natural/discovered, not
+> coined — the empirical-ontology thesis VISION already states); `llm-native`/`cold-decode-oracle`/`signify` derive
+> from it. Net-current apex in `CANON.md`/`AGENTS.md` is **`cratylism ≻ VISION ≻ MODEL`**, and the naming invariant
+> is now a standing gate (`test/cratylism.test.ts`). This L2 record is kept as history; the apex it named is stale.
+
 ## Already canonized this session (no shard — recorded for completeness)
 
 - **σ\*-dispatch-prompt law** → the `llm-native` fragment (commit `393fb3e`). ✓ projected cell.
