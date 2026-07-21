@@ -11,8 +11,8 @@ truth is `NORTH-STAR.md` (net-current); this mirror derives the state. Owner: se
   Supporting: `DIAGRAM.md`, `SESSION-LIFECYCLE.md`.
 - **EXECUTION (done):** all executable E-shards landed on `main` — `S0` `E7` `E6a` `E6b` `E6c` `E4` `E5` `E2`
   `E3` (each verified against its falsifiable accept + full suite green: memory 170 · anatomy 92 · forge 689,
-  typecheck 4/4). `E1` alone is DEFERRED — the aspirational composition-root project-to-dir (see the Execution
-  finding). Local commits only; **push/deploy remain Operator-gated** (not yet performed).
+  typecheck 4/4). `E1` alone is **CLOSED — SUPERSEDED by plugin-cli P1** (see the Execution finding); moved out of
+  the frontier to `completed/`. Local commits only; **push/deploy remain Operator-gated** (not yet performed).
 
 ## Dependency graph (R)
 
@@ -32,7 +32,8 @@ corrected by the Execution finding — E1 deferred, `E4/E5⟵E1` inverted).
 
 - **independent / memory:** `S0` `E7` · `E6a`→`E6b`→`E6c` — all completed.
 - **engine (no E1 prerequisite):** `E4` `E5` `E2` · `E3`⟵E2 — all completed.
-- **deferred:** `E1` (aspirational composition-root project-to-dir) — the sole open item.
+- **closed:** `E1` — SUPERSEDED by plugin-cli P1 (anatomy-as-plugin absorbs the R1 decoupling). No open items;
+  the plan is fully closed.
 
 ## State
 
@@ -40,7 +41,7 @@ corrected by the Execution finding — E1 deferred, `E4/E5⟵E1` inverted).
 | ------------------------------ | --- | --------- | -------------------------------------------------------------------------------------------------- |
 | C1·C2·C3 census · D1 synthesis | —   | completed | design grounding + north-star                                                                      |
 | S0 scope-barriers              | R9  | completed | broaden nico/mav vision; purge dangling lane-split                                                 |
-| E1 projection→forge            | R1  | ready     | relocate toolkit projection tooling into forge                                                     |
+| E1 projection→forge            | R1  | closed    | relocate toolkit projection tooling into forge — SUPERSEDED by plugin-cli P1 (not executed here)   |
 | E6a memory standalone tool     | R6  | completed | rename→`memory`, bin+bootstrap, `~/.agents/<name>`, register-mint session-id, del bundle mechanism |
 | E6b memory taxonomy            | R6  | completed | extract `vault`+`AGENTS`; 4-part CoALA model                                                       |
 | E7 citation cruft              | R7  | completed | delete orphan `[[…]]` parser + docs:check gate                                                     |
