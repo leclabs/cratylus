@@ -17,15 +17,15 @@ hand-authored from the outline. Execution touches `packages/` (real code) + will
 
 ## Shards (MECE — one concern each, census-grounded)
 
-| shard                           | seam                              | concern                                                                                  | state |
-| ------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------- | ----- |
-| P1 anatomy-as-plugin            | forge core + anatomy pkg          | mint `defineAgentPlugin` contract; make anatomy the first (publishable) plugin           | ready |
-| P2 resolver + patch primitives  | `forge/src/resolve/`              | `resolve()` — the ordered-fold merge core (replace/append/merge/force · loud validation) | ready |
-| P3 object-import addressing     | `forge/src/catalog` + resolve     | multi-plugin discovery + late-bound binding identity + acyclicity                        | ready |
-| P4 config loader + init/add     | `forge` config + CLI              | `agents.config.ts` (config-is-code) loader · `init`(zero-config)/`add` · `--dry-run`     | ready |
-| P5 explain + provenance         | `forge` CLI                       | `explain <agent>` provenance + first-class `catalog` discovery                           | ready |
-| P6 founding restructure + vocab | `found`/founding-template surface | `found`→`init`-via-defaults; absorbs vocab Stream-B API-identifier rename                | ready |
-| P7 re-signify `--as-plugin`     | `compile` + claude bundle         | free "plugin" for the authoring unit: `--as-plugin` → `--as-claude-bundle`               | ready |
+| shard                           | seam                              | concern                                                                                  | state  |
+| ------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------- | ------ |
+| P1 anatomy-as-plugin            | forge core + anatomy pkg          | mint `defineAgentPlugin` contract; make anatomy the first (publishable) plugin           | done   |
+| P2 resolver + patch primitives  | `forge/src/resolve/`              | `resolve()` — the ordered-fold merge core (replace/append/merge/force · loud validation) | active |
+| P3 object-import addressing     | `forge/src/catalog` + resolve     | multi-plugin discovery + late-bound binding identity + acyclicity                        | ready  |
+| P4 config loader + init/add     | `forge` config + CLI              | `agents.config.ts` (config-is-code) loader · `init`(zero-config)/`add` · `--dry-run`     | ready  |
+| P5 explain + provenance         | `forge` CLI                       | `explain <agent>` provenance + first-class `catalog` discovery                           | ready  |
+| P6 founding restructure + vocab | `found`/founding-template surface | `found`→`init`-via-defaults; absorbs vocab Stream-B API-identifier rename                | ready  |
+| P7 re-signify `--as-plugin`     | `compile` + claude bundle         | free "plugin" for the authoring unit: `--as-plugin` → `--as-claude-bundle`               | done   |
 
 ## Dependencies (R) + waves
 
