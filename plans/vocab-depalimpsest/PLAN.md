@@ -41,15 +41,15 @@ Owner: this session.
 
 ## State
 
-| shard                     | surface                                                                  | state   | concern                                                                                                                                            |
-| ------------------------- | ------------------------------------------------------------------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| A1 prose/ideation         | docs (research + ideation)                                               | done    | organ→dimension in live docs; anatomy study PRESERVED as record (verified)                                                                         |
-| A2 golden fixture         | ir-bridge fixture                                                        | ready   | RE-OPENED: fixture holds stale-generated `polis` — regenerate from clean source cells                                                              |
-| A3 memory align           | agent stores                                                             | ongoing | dream-time, per-agent (incl. nico's own); aligns at each agent's next wake                                                                         |
-| B1 founding content       | founding-template bodies + CLI help                                      | → P6    | polis/founder NARRATIVE is LIVE (≥7 hits) — NOT retired; P6's scope covers it (narrative + identifiers + rebuild, one file — no separate dispatch) |
-| U1 unscoped polis refs    | cold-oracle.sh · forge README/docs · test tmp-names + agent-memory tests | ready   | `REPO_GUARD=~/workspaces/polis` (old repo name) · external polis links · `polis-*` tmp dirs                                                        |
-| C1 genus rename           | `Genus` axis + dimension READMEs                                         | done    | STANCE/CONATUS → Persona/Constitution; persona→archetype (verified)                                                                                |
-| C2 core-vocab (organ→dim) | anatomy spine (types/dirs/tests)                                         | done    | organ→dimension + fragment (+ genus + persona→archetype) — LANDED, verified                                                                        |
+| shard                     | surface                                                                  | state   | concern                                                                                                      |
+| ------------------------- | ------------------------------------------------------------------------ | ------- | ------------------------------------------------------------------------------------------------------------ |
+| A1 prose/ideation         | docs (research + ideation)                                               | done    | organ→dimension in live docs; anatomy study PRESERVED as record (verified)                                   |
+| A2 golden fixture         | ir-bridge fixture                                                        | ready   | RE-OPENED: fixture holds stale-generated `polis` — regenerate from clean source cells                        |
+| A3 memory align           | agent stores                                                             | ongoing | dream-time, per-agent (incl. nico's own); aligns at each agent's next wake                                   |
+| B1 founding content       | founding-template bodies + CLI help                                      | done    | narrative + identifiers RETIRED by plugin-cli P6 (found→init/scaffold rebuild); polis-accept EMPTY, verified |
+| U1 unscoped polis refs    | cold-oracle.sh · forge README/docs · test tmp-names + agent-memory tests | ready   | `REPO_GUARD=~/workspaces/polis` (old repo name) · external polis links · `polis-*` tmp dirs                  |
+| C1 genus rename           | `Genus` axis + dimension READMEs                                         | done    | STANCE/CONATUS → Persona/Constitution; persona→archetype (verified)                                          |
+| C2 core-vocab (organ→dim) | anatomy spine (types/dirs/tests)                                         | done    | organ→dimension + fragment (+ genus + persona→archetype) — LANDED, verified                                  |
 
 ## Gates + open forks (Operator-owned)
 
