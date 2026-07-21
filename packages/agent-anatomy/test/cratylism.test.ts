@@ -24,10 +24,10 @@
 // is in fact the fitter sign). NO silent exemptions: a pin that STOPS diverging FAILS
 // the suite (remove it); a new divergence is never pinnable silently.
 //
-// COVERAGE: engineering-principles + every organ/dimension FRAGMENT (the paradigm case
-// — each fragment is one discovered concept-sign). Composite/rule/hook cells declare
-// identity via `.name`/`.id`; their filename↔identity check is a stated extension, not
-// yet asserted here (no silent cap — declared).
+// COVERAGE (comprehensive — all names are the discovered anchor): every
+// organ/dimension FRAGMENT (file basename == body σ*-anchor) · every composite/rule/hook
+// cell (file basename == declared `.name`/`.id`) · every dimension DIRECTORY (dir name ==
+// a declared ANATOMY key). The file/directory structure IS the discovered naming.
 //
 // NON-VACUOUS: a synthetic fragment whose basename ≠ its body-anchor is convicted; the
 // live corpus (minus the ratchet) passes. Both asserted below.
@@ -36,14 +36,22 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { ORGAN_NAMES } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
 
 const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const organsRoot = join(anatomyRoot, 'src', 'organs');
+const srcRoot = join(anatomyRoot, 'src');
+const organsRoot = join(srcRoot, 'organs');
 
 /** The σ* anchor a fragment declares: the first bareword of its template-literal body. */
 function bodyAnchor(source: string): string | null {
   const m = source.match(/export const \w+: \w+ = `([a-z0-9-]+)/);
+  return m ? m[1] : null;
+}
+
+/** The declared identity a composite/rule/hook cell carries: its first `name`/`id`. */
+function declaredId(source: string): string | null {
+  const m = source.match(/\b(?:name|id): '([a-z0-9-]+)'/);
   return m ? m[1] : null;
 }
 
@@ -104,5 +112,36 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     const file = 'coined-gloss'; // basename that is a gloss, not the anchor
     expect(anchor).toBe('discovered-anchor');
     expect(anchor !== file).toBe(true); // the gate's divergence predicate convicts it
+  });
+
+  it('every composite/rule/hook file basename == its declared identity (name/id)', async () => {
+    const divergences: string[] = [];
+    let checked = 0;
+    for (const kind of ['skills', 'agents', 'rules', 'hooks']) {
+      for await (const p of glob('*.ts', { cwd: join(srcRoot, kind) })) {
+        const f = join(srcRoot, kind, p);
+        const id = declaredId(readFileSync(f, 'utf-8'));
+        if (!id) continue; // no declared identity (e.g. a barrel) — out of scope
+        checked++;
+        const file = basename(p, '.ts');
+        if (id !== file)
+          divergences.push(`${kind}/${p}: file '${file}' ≠ id '${id}'`);
+      }
+    }
+    expect(checked).toBeGreaterThan(20); // non-vacuous: identities were actually extracted
+    expect(divergences, divergences.join('\n')).toEqual([]);
+  });
+
+  it('every dimension DIRECTORY name is a declared ANATOMY key (dir == discovered axis)', async () => {
+    const dirs: string[] = [];
+    for await (const e of glob('*', { cwd: organsRoot, withFileTypes: true })) {
+      if (e.isDirectory()) dirs.push(e.name);
+    }
+    expect(dirs.length).toBeGreaterThan(20); // non-vacuous: the dimension dirs are enumerated
+    const keys = new Set<string>(ORGAN_NAMES);
+    const orphanDirs = dirs.filter((d) => !keys.has(d));
+    expect(orphanDirs, `dirs not in ANATOMY: ${orphanDirs.join(', ')}`).toEqual(
+      [],
+    );
   });
 });
