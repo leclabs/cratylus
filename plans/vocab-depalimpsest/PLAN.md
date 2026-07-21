@@ -11,7 +11,7 @@
    **`fragment`**, corpus keeps **`anatomy`**. This is the larger spine change; it runs AFTER the plugin-cli design
    locked (now met) so the spine isn't churned mid-design.
 
-Owner: this session.
+Owner: this session. **VOCAB COMPLETE (2026-07-21)** bar A3 (continuous dream-time): C1·C2·A1·A2·U1 done, B1 landed via plugin-cli P6; comprehensive `git grep polis` over packages/ (minus the intentional guard + detection-test) is EMPTY, proven non-vacuous.
 
 > **Re-census RETRACTED (2026-07-21) — the founding-lexicon is NOT retired.** An earlier "mostly done" claim came
 > from a silently-erroring grep (`rg -nwE` — rg has no `-E`; `2>/dev/null` swallowed the error → false-empty →
@@ -47,7 +47,7 @@ Owner: this session.
 | A2 golden fixture         | ir-bridge fixture                                                        | done    | fixture reconciled (hand-frozen — emit_ir pipeline gone); polis-accept EMPTY, verified                       |
 | A3 memory align           | agent stores                                                             | ongoing | dream-time, per-agent (incl. nico's own); aligns at each agent's next wake                                   |
 | B1 founding content       | founding-template bodies + CLI help                                      | done    | narrative + identifiers RETIRED by plugin-cli P6 (found→init/scaffold rebuild); polis-accept EMPTY, verified |
-| U1 unscoped polis refs    | cold-oracle.sh · forge README/docs · test tmp-names + agent-memory tests | ready   | `REPO_GUARD=~/workspaces/polis` (old repo name) · external polis links · `polis-*` tmp dirs                  |
+| U1 unscoped polis refs    | cold-oracle.sh · forge README/docs · test tmp-names + agent-memory tests | done    | REPO_GUARD→agent-factory (rename confirmed via remote); links+examples updated; audit-detection KEPT         |
 | C1 genus rename           | `Genus` axis + dimension READMEs                                         | done    | STANCE/CONATUS → Persona/Constitution; persona→archetype (verified)                                          |
 | C2 core-vocab (organ→dim) | anatomy spine (types/dirs/tests)                                         | done    | organ→dimension + fragment (+ genus + persona→archetype) — LANDED, verified                                  |
 
