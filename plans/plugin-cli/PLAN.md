@@ -5,8 +5,7 @@ once, realize behavior everywhere; the canon is the source of truth, targets are
 **package-manager + merge-resolver over a config-cascade graph** (ESLint-flat lineage) where nodes are `fragments`
 (dimension-values) and `presets` (agents/skills), npm is distribution, and every artifact is a projection of the
 resolved graph. The design is **LOCKED** — the single source of truth is [`NORTH-STAR.md`](./NORTH-STAR.md)
-(verification record: [`DESIGN-BRIEF.md`](./DESIGN-BRIEF.md)); this file mirrors execution state. Owner: this
-session.
+(verification record: [`DESIGN-BRIEF.md`](./DESIGN-BRIEF.md)); this file mirrors execution state. **EXECUTION COMPLETE (2026-07-21): P1–P7 all landed + verified (forge 726, typecheck 4/4); local commits only, push/deploy Operator-reserved.** Owner: this session.
 
 ## Design → execution (why now)
 
