@@ -13,6 +13,7 @@ spec    : P → ⟨static, scope, accept⟩                        — execution
 static  : P → ℘(path)                                         — pinned inputs: repo paths that exist at authoring time
 inputs(t) ≜ static(t) ∪ { content(u) | (t, u) ∈ R }          — dep-fed inputs = the completed deps' task-files, read at dispatch
 accept  : P → (return → 𝔹)                                   — the falsifier: a blind test decidable from the return alone
+census  : intent → ⟨scope, static, deps⟩                     — the grounding READ of the tree (paths · code · deps) a spec's shape derives from ; delegable to a subagent
 executor : P ⇀ agent                                          — the subagent a dispatched task runs on
 self     ≜ the current session                                — id from the harness (CLAUDE_SESSION_ID)
 live     : session → 𝔹                                        — from the memory session-registry (memory session status): registered ∧ ¬released ∧ ¬stale
@@ -44,6 +45,11 @@ waves       ≜ (wave(0), wave(1), …)                          — the dispatc
 ∀ t : content(t) ⊨ spec(t)
 ∀ t : ∀ p ∈ static(t) : p exists at authoring                — pin what exists; a dep-fed input is marked, never pinned
 ∀ t : ∃ r : ¬accept(t)(r)                                    — falsifiability: an acceptance no return can fail is not one
+-- census-grounds-spec: content(t) is GROUNDED by census — read the tree (paths · code · deps), delegating the
+-- investigation to a subagent as needed — never a from-memory sketch. praxis-FORMAT ⊉ praxis-DONE: a shard in the
+-- correct shape is NOT a valid spec; a from-memory sketch is a STUB the live census refutes (missed scope, unseen
+-- forks). Binds EVERY task-file however it enters — start, upsert, or merge.
+∀ t : content(t) grounded-by census(intent(t))              — authoring reads the tree ; a from-memory sketch ⇒ ¬spec
 -- shard-by-orthogonal-concern: slices are cut along orthogonal boundaries, each end-to-end on one concern.
 ⋃ slices(P) = P                                              — collectively exhaustive (slices cover the plan)
 ∀ s₁, s₂ ∈ slices(P) : s₁ ≠ s₂ ⇒ s₁ ∩ s₂ = ∅                — mutually exclusive (slices don't collide)
@@ -68,6 +74,7 @@ dp(dp(c)) = dp(c)
 
 -- ── operations ──
 start     : intent ↦ (P, slices(P), waves)                  — cut into vertical slices + emit the dispatch schedule up front
+upsert    : (P, intent) ↦ P' ≜ author census-grounded t(s) ∧ P' = P ∪ {t} ∧ re-slice ∧ re-mirror   — add work to a live plan under the SAME grounding as start (census-grounds-spec)
 list      : ↦ ℘(P)                                          — enumerate the in-scope plans (the one explicit /praxis command affordance)
 resume    : P ↦ frontier(P)                                 — re-attach and surface the fan-out set
 dispatch   ≜ ∀ t ∈ frontier(P) concurrently : state(t) := active ∧ owner(P) := self ∧ executor(t) runs content(t)   — dispatch stamps ownership; the frontier IS the dispatch set
