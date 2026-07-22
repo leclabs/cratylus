@@ -9,7 +9,7 @@
 //
 // agent-forge owns the MECHANISM (it types the 24 dimensions, it knows axis/kind/arity);
 // the corpus owns the DATA (the value modules). This stays doctrine-agnostic:
-// it consumes a directory of dimension-module dirs, not `packages/agent-anatomy` — exactly
+// it consumes a directory of dimension-module dirs, not `packages/agent-canon` — exactly
 // the T3.1 split (the deploy layer "consumes a render tree, not the corpus").
 //
 // VALUES are DISCOVERED, not listed: drop a new module under `<dimension>/` and it
@@ -109,7 +109,7 @@ async function valuesOf(
  * discovered under `<corpusDimensionsDir>/<dimension>/*.ts`.
  *
  * @param corpusDimensionsDir absolute path to a corpus's `dimensions/` dir (the parent
- *        of the per-dimension module dirs). For agent-anatomy: `packages/agent-anatomy/src/dimensions`.
+ *        of the per-dimension module dirs). For agent-canon: `packages/agent-canon/src/dimensions`.
  */
 export async function enumerateCatalog(
   corpusDimensionsDir: string,

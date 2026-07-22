@@ -91,7 +91,7 @@ export {
   claudeHarnessAdapter,
 } from './anatomy.js';
 // The hook → settings.json `hooks` block serializer (the IR-resource projection
-// path), exposed standalone so a plugin (agent-anatomy) can project a hooks-only
+// path), exposed standalone so a plugin (agent-canon) can project a hooks-only
 // settings fragment without driving the whole `writeClaude` tree.
 export {
   type ClaudeHooksBlock,

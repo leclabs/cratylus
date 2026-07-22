@@ -18,7 +18,7 @@
 // This is the doctrine-agnostic ALGORITHM (agent-forge ENGINE): witnesses over
 // supplied data, zero IO, zero corpus doctrine. The corpus DATA it reads — which
 // tokens are palimpsest — is INJECTED as a `Policy` (`./policy.ts`); the DATA lives
-// in the corpus (agent-anatomy), never here. Corpus loading + oracle driving live in
+// in the corpus (agent-canon), never here. Corpus loading + oracle driving live in
 // the caller.
 
 import type { Skill, SkillExpression } from '../anatomy/index.js';

@@ -65,7 +65,7 @@ export default codexAdapter;
 export { paths } from './paths.js';
 export { canonicalToCodex, codexToCanonical } from './events.js';
 // The anatomy→codex projection (the inversion's projection path — the second
-// harness, proving agent-anatomy reaches every agent-forge adapter for free; distinct from the
+// harness, proving agent-canon reaches every agent-forge adapter for free; distinct from the
 // IR serialize path above). The composed SOUL body is harness-neutral, so the
 // `ResolvedSkill` shape is shared with the claude adapter.
 export {

@@ -15,7 +15,7 @@ import { opencodeAdapter } from '../../../src/adapters/opencode/index.js';
 import type { Agent } from '../../../src/anatomy/index.js';
 import type { IR, Manifest } from '../../../src/core/index.js';
 
-// ── Fixtures (self-contained; agent-forge does not depend on agent-anatomy) ─────────────────
+// ── Fixtures (self-contained; agent-forge does not depend on agent-canon) ─────────────────
 
 /**
  * A nico-like `Agent` vector (mirrors what a nico corpus agent elevates to);
@@ -160,14 +160,14 @@ describe('agentsMdSurface', () => {
 });
 
 // ── Honest lossy reporting: agents-none adapters skip + warn, never corrupt ───
-// The thesis' safety leg: a agent-anatomy agent projected through an adapter that declares
+// The thesis' safety leg: a agent-canon agent projected through an adapter that declares
 // `agents: 'none'` must be SKIPPED with a warning via the existing WriteReport,
 // NOT silently dropped or corrupted. Demonstrated on aider (declares
 // `agents: 'none'`); opencode graduated to a real (partial) agents write with
 // the opencode-adapter-truth fix [OC2] — see the sibling test below, which
 // demonstrates the same safety leg for a field-level drop instead of a
 // whole-resource skip. We drive the IR write path (the adapter contract)
-// with a agent-anatomy-derived agent IR.
+// with a agent-canon-derived agent IR.
 
 describe('lossy reporting for agents-none adapters (WriteReport holds)', () => {
   let cwd: string;
@@ -184,7 +184,7 @@ describe('lossy reporting for agents-none adapters (WriteReport holds)', () => {
     targets: [target],
   });
 
-  // A agent-anatomy-derived agent IR — the projection's IR-level shape (name + the composed
+  // A agent-canon-derived agent IR — the projection's IR-level shape (name + the composed
   // SOUL as body) carried through an adapter that cannot host agents.
   const irWithAgent = (target: string): IR => ({
     manifest: manifest(target),

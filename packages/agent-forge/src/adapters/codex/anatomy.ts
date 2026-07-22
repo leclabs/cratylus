@@ -1,6 +1,6 @@
 // The CODEX projection of the agent ANATOMY — the second harness, proving the
 // thesis: because projection IS the export adapter,
-// a agent-anatomy agent authored once reaches EVERY agent-forge harness for free. T2.1 did this
+// a agent-canon agent authored once reaches EVERY agent-forge harness for free. T2.1 did this
 // for claude; this mirrors it for codex.
 //
 // Codex's native agent surface differs from claude's `.md` SOUL:
@@ -118,12 +118,12 @@ function frontMatterLines(fm: Record<string, unknown>): string[] {
  *
  * Kept deliberately minimal — the load-bearing agent content is the `.toml`
  * `developer_instructions`; this is the discovery shell (a fuller rules
- * projection from the agent-anatomy rule corpus is a later, separate concern).
+ * projection from the agent-canon rule corpus is a later, separate concern).
  */
 export function agentsMdSurface(agentNames: readonly string[]): string {
   const out: string[] = ['# Agents', ''];
   out.push(
-    'Projected from the agent-anatomy corpus via agent-forge’s codex adapter. Each agent’s',
+    'Projected from the agent-canon corpus via agent-forge’s codex adapter. Each agent’s',
     'archetype is its subagent definition under `agents/<name>.toml`; invoke one by',
     'name. Skills are under `skills/<name>/SKILL.md`.',
     '',

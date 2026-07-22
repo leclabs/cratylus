@@ -14,7 +14,7 @@
 //
 // Faithful port of `toolkit/deploy.py`. The deploy layer consumes an
 // ALREADY-PROJECTED render tree; the projection itself is agent-forge's claude
-// adapter, driven by agent-anatomy's project-cli.
+// adapter, driven by agent-canon's project-cli.
 
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';

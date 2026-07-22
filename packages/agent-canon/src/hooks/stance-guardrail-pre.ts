@@ -25,7 +25,7 @@ export const stanceGuardrailPre: HookCell = {
     {
       filename: 'stance-guardrail-pre.sh',
       targetPath:
-        'packages/agent-anatomy/src/toolkit/guardrail/stance-guardrail-pre.sh',
+        'packages/agent-canon/src/toolkit/guardrail/stance-guardrail-pre.sh',
       executable: true,
       content: `#!/usr/bin/env sh
 # stance-guardrail-pre — a PreToolUse hook that STRUCTURALLY REFUSES a mid-turn tool

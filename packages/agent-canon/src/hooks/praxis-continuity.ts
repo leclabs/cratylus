@@ -17,13 +17,13 @@ export const praxisContinuity: HookCell = {
   substrate: 'git',
   events: ['vcs.commit.post'],
   command:
-    'sh packages/agent-anatomy/src/toolkit/continuity/praxis-advance-nudge.sh',
+    'sh packages/agent-canon/src/toolkit/continuity/praxis-advance-nudge.sh',
   refs: [],
   workers: [
     {
       filename: 'continuity-hook.sh',
       targetPath:
-        'packages/agent-anatomy/src/toolkit/continuity/continuity-hook.sh',
+        'packages/agent-canon/src/toolkit/continuity/continuity-hook.sh',
       executable: true,
       content: `#!/usr/bin/env sh
 # continuity-hook — opt this repo in/out of the post-commit continuity ritual.
@@ -67,7 +67,7 @@ esac
     {
       filename: 'praxis-advance-nudge.sh',
       targetPath:
-        'packages/agent-anatomy/src/toolkit/continuity/praxis-advance-nudge.sh',
+        'packages/agent-canon/src/toolkit/continuity/praxis-advance-nudge.sh',
       executable: true,
       content: `#!/usr/bin/env sh
 # praxis-advance-nudge — the repo-level continuity ritual, as a post-commit reminder.

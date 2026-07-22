@@ -1,5 +1,5 @@
 // `enumerateCatalog` — the fragment discovery library. Proves: (1) it
-// enumerates every one of the 22 dimensions from agent-anatomy's modules with the correct
+// enumerates every one of the 22 dimensions from agent-canon's modules with the correct
 // axis/kind/arity; (2) the contract shape per dimension; (3) values sort shortlex;
 // (4) the DRIFT-PROOF property — a value module dropped under a dimension dir
 // appears in the output with no other change.
@@ -18,18 +18,18 @@ import {
 } from '../../src/catalog/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-// agent-forge/test/catalog → up to packages → agent-anatomy/src/dimensions.
+// agent-forge/test/catalog → up to packages → agent-canon/src/dimensions.
 const anatomyDimensions = join(
   here,
   '..',
   '..',
   '..',
-  'agent-anatomy',
+  'agent-canon',
   'src',
   'dimensions',
 );
 
-describe('enumerateCatalog over agent-anatomy', () => {
+describe('enumerateCatalog over agent-canon', () => {
   let entries: CatalogEntry[];
   beforeAll(async () => {
     entries = await enumerateCatalog(anatomyDimensions);

@@ -4,7 +4,7 @@
 //      resolve() yields the fragment values (ordered fold, plugin order preserved);
 //  (2) an `agents.config.ts` (TS/ESM) loads with NO build step and resolves through
 //      the same path — with `extends` as a REAL cross-module import;
-//  (3) `extends: [anatomy]` (the real anatomy dimensions) resolves to the anatomy
+//  (3) `extends: [canon]` (the real canon dimensions) resolves to the canon
 //      default fragment set;
 //  (4) the fork is resolved: the deploy topology is a field on `AgentsConfig`,
 //      read by `deployTopologyOf` and bridged to the legacy consumer shape.
@@ -26,9 +26,9 @@ import { resolveHost } from '../../src/deploy/config.js';
 import type { AgentPlugin } from '../../src/resolve/plugin.js';
 import { resolve } from '../../src/resolve/resolve.js';
 
-/** The real anatomy corpus dimensions dir, located relative to this test file. */
-const ANATOMY_DIMENSIONS = fileURLToPath(
-  new URL('../../../agent-anatomy/src/dimensions', import.meta.url),
+/** The real canon corpus dimensions dir, located relative to this test file. */
+const CANON_DIMENSIONS = fileURLToPath(
+  new URL('../../../agent-canon/src/dimensions', import.meta.url),
 );
 
 /** Write `export const <name> = '<body>'` under `<dir>/<dimension>/<file>.ts`. */
@@ -144,24 +144,24 @@ describe('agents.config.ts — loads with NO build step + resolves', () => {
   });
 });
 
-describe('extends: [anatomy] — resolves to the anatomy default set', () => {
-  it('resolves the real anatomy dimensions through the load step + resolve()', async () => {
-    // The anatomy plugin self-locates to this absolute dir at runtime; the test
+describe('extends: [canon] — resolves to the canon default set', () => {
+  it('resolves the real canon dimensions through the load step + resolve()', async () => {
+    // The canon plugin self-locates to this absolute dir at runtime; the test
     // supplies the same dir directly (forge cannot bare-import the peer package).
-    const anatomy: AgentPlugin = {
-      name: 'anatomy',
-      fragments: ANATOMY_DIMENSIONS,
+    const canon: AgentPlugin = {
+      name: 'canon',
+      fragments: CANON_DIMENSIONS,
     };
-    const config: AgentsConfig = { extends: [anatomy], patches: [] };
+    const config: AgentsConfig = { extends: [canon], patches: [] };
     const resolved = await resolveAgentsConfig(config);
 
-    // The full anatomy fragment catalog resolved (141 modules in the corpus).
+    // The full canon fragment catalog resolved (141 modules in the corpus).
     expect(resolved.fragments.size).toBeGreaterThan(100);
     const byId = new Map(
       [...resolved.fragments.values()].map((r) => [r.fragment.id, r.value]),
     );
-    // A known anatomy fragment resolved to its branded-string body.
-    expect(byId.get('anatomy:objective/parsimony')).toBe('parsimony');
+    // A known canon fragment resolved to its branded-string body.
+    expect(byId.get('canon:objective/parsimony')).toBe('parsimony');
   });
 });
 

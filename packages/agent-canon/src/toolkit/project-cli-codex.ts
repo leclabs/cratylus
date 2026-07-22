@@ -1,16 +1,16 @@
 // The CODEX consumer projection command — the second-harness counterpart of
-// `project-cli.ts`. Same agent-anatomy modules (the `Agent` vector + `ResolvedSkill`), but
+// `project-cli.ts`. Same agent-canon modules (the `Agent` vector + `ResolvedSkill`), but
 // run through agent-forge's CODEX adapter instead of claude: agents → `agents/<name>.toml`,
 // skills → `skills/<name>/SKILL.md`, plus the `AGENTS.md` instruction surface.
 //
-// This IS the T2.4 proof: a agent-anatomy agent authored ONCE reaches a second agent-forge harness
+// This IS the T2.4 proof: a agent-canon agent authored ONCE reaches a second agent-forge harness
 // for free — the only new code is which harness the walk selects by name. The
 // PROJECTION LOGIC lives in agent-forge behind the `HarnessAdapter` port
-// (`adapterByName('codex')`); this step only walks agent-anatomy's typed modules
+// (`adapterByName('codex')`); this step only walks agent-canon's typed modules
 // and wires them to it.
 //
 // Usage:  tsx src/toolkit/project-cli-codex.ts [--out <dir>] [--profile <reader/harness>]
-//   default out:     packages/agent-anatomy/.render-ts-codex   (gitignored; separate from .render-ts)
+//   default out:     packages/agent-canon/.render-ts-codex   (gitignored; separate from .render-ts)
 //   default profile: strong-llm-lean/codex
 
 import { mkdirSync, writeFileSync } from 'node:fs';

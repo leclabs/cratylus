@@ -1,5 +1,5 @@
 // scaffold-cli.ts — the anatomy-side SCAFFOLD PATH: scaffold a project in a target
-// dir by injecting agent-anatomy's `anatomyProjectTemplate` (the corpus project
+// dir by injecting agent-canon's `anatomyProjectTemplate` (the corpus project
 // doctrine) into the doctrine-agnostic `scaffoldProject` ENGINE
 // (`@leclabs/agent-forge/deploy`). This is the composition root that binds the
 // anatomy project DATA to the forge engine — the engine stays doctrine-agnostic;

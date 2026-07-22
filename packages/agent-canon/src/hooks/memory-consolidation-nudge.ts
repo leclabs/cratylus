@@ -45,7 +45,7 @@ export const memoryConsolidationNudge: HookCell = {
     {
       filename: 'memory-consolidation-nudge.sh',
       targetPath:
-        'packages/agent-anatomy/src/toolkit/guardrail/memory-consolidation-nudge.sh',
+        'packages/agent-canon/src/toolkit/guardrail/memory-consolidation-nudge.sh',
       executable: true,
       content: `#!/usr/bin/env sh
 # memory-consolidation-nudge — an ADVISORY Stop hook. It counts the agent's

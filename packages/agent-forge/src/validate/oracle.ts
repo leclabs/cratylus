@@ -16,7 +16,7 @@
 // This is the doctrine-agnostic ALGORITHM (agent-forge ENGINE): the isolation-driving
 // protocol + the no-prior detection. The one corpus-coupled datum — WHICH isolation
 // script (it carries the corpus's repo-path guard) — is INJECTED as `scriptPath`; the
-// script itself is a corpus asset (agent-anatomy), never bundled here.
+// script itself is a corpus asset (agent-canon), never bundled here.
 //
 // These calls hit the network + a live model — SLOW and non-deterministic. They
 // are NOT part of the hermetic `pnpm test` floor; the caller gates them behind

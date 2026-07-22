@@ -6,7 +6,7 @@
 // topology from `.agent-factory.config`, and scaffolds a greenfield project
 // (`scaffoldProject`).
 //
-// Faithful TS port of agent-anatomy's Python toolkit (deploy.py / config.py / place/ /
+// Faithful TS port of agent-canon's Python toolkit (deploy.py / config.py / place/ /
 // init.py). The PROJECTION itself is agent-forge's claude adapter; this layer
 // consumes its output.
 

@@ -1,12 +1,12 @@
-// The consumer projection command — a thin agent-anatomy BUILD STEP that selects
+// The consumer projection command — a thin agent-canon BUILD STEP that selects
 // forge's claude harness adapter BY NAME (`adapterByName('claude')`, never a
-// concrete adapter subpath) and runs it over agent-anatomy's typed agent/skill
+// concrete adapter subpath) and runs it over agent-canon's typed agent/skill
 // modules, writing the full SOUL/SKILL tree to disk. The PROJECTION LOGIC lives
 // in agent-forge behind the `HarnessAdapter` port; this step only walks
-// agent-anatomy's modules and wires them to it (agent-anatomy = agent-forge's source).
+// agent-canon's modules and wires them to it (agent-canon = agent-forge's source).
 //
 // Usage:  tsx src/toolkit/project-cli.ts [--out <dir>]
-//   default out:  packages/agent-anatomy/.render-ts   (gitignored)
+//   default out:  packages/agent-canon/.render-ts   (gitignored)
 //
 // Projection is a THIN MAP from the typed `Agent`/`Skill` vectors — no reader-density
 // knob (a dead projection parameter: the body was byte-identical at every density) and

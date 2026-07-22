@@ -1,5 +1,5 @@
 // The ONE behavioral PORT for anatomy→harness projection. A `HarnessAdapter`
-// captures the projection operations a consumer (agent-anatomy's project CLIs)
+// captures the projection operations a consumer (agent-canon's project CLIs)
 // needs to render its typed `Agent`/`ResolvedSkill`/`Hook` vectors to a harness's
 // on-disk surface — WITHOUT naming a concrete adapter module. A consumer selects
 // an implementation strictly BY NAME (`adapterByName('claude' | 'codex')`), so no

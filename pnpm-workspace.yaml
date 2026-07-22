@@ -1,6 +1,6 @@
 # Node workspace members live directly under packages/ (one dir = one package):
 # agent-forge (the projection machinery), agent-memory (the portable memory store),
-# and agent-anatomy (@leclabs/agent-anatomy) — the culture corpus, itself a TS workspace
+# and agent-canon (@leclabs/agent-canon) — the culture corpus, itself a TS workspace
 # member: TS modules under src/ are the source, markdown is a projection.
 packages:
   - "packages/*"

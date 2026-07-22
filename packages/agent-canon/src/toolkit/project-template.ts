@@ -1,4 +1,4 @@
-// project-template.ts — agent-anatomy's project DOCTRINE, the corpus DATA injected
+// project-template.ts — agent-canon's project DOCTRINE, the corpus DATA injected
 // into the doctrine-agnostic `scaffoldProject` ENGINE (`@leclabs/agent-forge/deploy`).
 // The engine declares the `ProjectTemplate` SHAPE (project prose + plan-layout
 // states); THIS module supplies the anatomy substance: the project prose +
@@ -14,7 +14,7 @@ function projectAgentsMd(subject: string): string {
   return `# agent conventions
 
 This is an **agent project** -- a working set of agents, not a pile of files. It was
-scaffolded by projecting the agent-anatomy catalog (\`packages/agent-anatomy\`) into this
+scaffolded by projecting the agent-canon catalog (\`packages/agent-canon\`) into this
 repository: the project structure is laid down, and the built-in agents are projected
 alongside it.
 
@@ -37,7 +37,7 @@ to this project's subject, not a path-scoped grant.
 ## How this project was scaffolded
 
 - **Culture** -- every agent + skill in this \`.claude/\` is a *projection* of an
-  agent-anatomy catalog cell, not a hand-authored copy. Regenerate by re-projecting;
+  agent-canon catalog cell, not a hand-authored copy. Regenerate by re-projecting;
   do not hand-edit the generated defs (each carries a \`GENERATED from ...\` provenance
   header + content-hash that the projector guards against clobbering).
 - **Structure projected, not copied** -- the scaffold draws on the anatomy catalog's
@@ -69,7 +69,7 @@ task files move \`pending/ -> ready/ -> active/ -> completed/\` as deps clear.
 }
 
 /**
- * The anatomy project template — agent-anatomy's project doctrine, injected into
+ * The anatomy project template — agent-canon's project doctrine, injected into
  * the engine's `scaffoldProject`. `planStates` is the praxis CANON, not a local
  * literal.
  */

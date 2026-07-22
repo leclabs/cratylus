@@ -20,7 +20,7 @@
 //
 // MODULE RESOLUTION (the concern P3 handed to P4): an imported plugin OBJECT has
 // lost its package-root provenance, so a `fragments` dir must resolve to an
-// ABSOLUTE path. A plugin SELF-LOCATES its dirs (anatomy resolves them against its
+// ABSOLUTE path. A plugin SELF-LOCATES its dirs (canon resolves them against its
 // own `import.meta.url`), which works wherever the package is installed. A
 // RELATIVE dir is resolved against `rootDir` (the config file's dir by default) as
 // a local/dev fallback — e.g. a `file:`-linked pre-publish plugin.
@@ -53,7 +53,7 @@ import { CONFIG_FILE } from './scaffold.js';
 export class ConfigShapeError extends Error {
   constructor(readonly configPath: string) {
     super(
-      `${configPath}: not a valid agents.config — expected a default export with an \`extends\` array (e.g. \`export default defineAgentsConfig({ extends: [anatomy], patches: [] })\`)`,
+      `${configPath}: not a valid agents.config — expected a default export with an \`extends\` array (e.g. \`export default defineAgentsConfig({ extends: [canon], patches: [] })\`)`,
     );
     this.name = 'ConfigShapeError';
   }

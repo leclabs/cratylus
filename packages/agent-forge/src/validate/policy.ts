@@ -1,5 +1,5 @@
 // policy.ts — the corpus POLICY the doctrine-agnostic validate ALGORITHM consumes
-// by INJECTION. The engine declares this SHAPE; a corpus (agent-anatomy) supplies
+// by INJECTION. The engine declares this SHAPE; a corpus (agent-canon) supplies
 // the DATA — its palimpsest table, its operator lexicon. NOTHING here is ever
 // populated inside the engine: planting a specific palimpsest token, an operator
 // glyph, or a repo path in a doctrine-agnostic module would fuse algorithm to one

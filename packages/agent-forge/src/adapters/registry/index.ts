@@ -4,7 +4,7 @@
 // wired `HarnessAdapter`; an unknown name throws.
 //
 // This is the only module that names the concrete harness adapters; a consumer
-// (agent-anatomy's project CLIs) depends solely on the `HarnessAdapter` port and
+// (agent-canon's project CLIs) depends solely on the `HarnessAdapter` port and
 // this selector, so adding a harness never edits the consumer.
 
 import type { HarnessAdapter } from '../../core/index.js';

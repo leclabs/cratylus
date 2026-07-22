@@ -1,7 +1,7 @@
 // The `project-human` wiring for the dimension READMEs: read a dimension's value cells
 // from `src/dimensions/<dimension>/` and render its human-view via agent-forge's
 // harness-agnostic `projectHumanDimension`. The PROJECTION LOGIC is agent-forge's; this
-// step only walks agent-anatomy's value cells and wires them to it (agent-anatomy =
+// step only walks agent-canon's value cells and wires them to it (agent-canon =
 // agent-forge's source). Shared by the writer CLI (`project-human-cli.ts`) and the
 // byte-lock gate (`test/projection-boundary.test.ts`) — one renderer, one home.
 

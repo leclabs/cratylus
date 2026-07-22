@@ -1,7 +1,7 @@
 {
-  "name": "@leclabs/agent-anatomy",
+  "name": "@leclabs/agent-canon",
   "version": "0.0.0",
-  "description": "agent-anatomy — the culture corpus as typed TS source (T1.1 spike scaffold). Markdown is a projection of these modules.",
+  "description": "agent-canon — the culture corpus as typed TS source (T1.1 spike scaffold). Markdown is a projection of these modules.",
   "license": "MIT",
   "type": "module",
   "exports": {

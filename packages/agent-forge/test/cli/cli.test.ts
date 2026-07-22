@@ -21,9 +21,9 @@ import type { AgentPlugin } from '../../src/resolve/plugin.js';
 
 const adapters = [claudeAdapter, opencodeAdapter];
 
-/** The real anatomy corpus dimensions dir — the default plugin's fragment source. */
-const ANATOMY_DIMENSIONS = fileURLToPath(
-  new URL('../../../agent-anatomy/src/dimensions', import.meta.url),
+/** The real canon corpus dimensions dir — the default plugin's fragment source. */
+const CANON_DIMENSIONS = fileURLToPath(
+  new URL('../../../agent-canon/src/dimensions', import.meta.url),
 );
 
 function buildClaudeFixture(cwd: string): void {
@@ -85,31 +85,31 @@ describe('CLI commands (integration)', () => {
 
   it('init scaffolds a project from the default plugin, resolvable through resolve()', async () => {
     // (1) init on an empty dir scaffolds the config-is-code home whose zero-config
-    // default `extends: [anatomy]` — the default is A PACKAGE, not a baked template.
+    // default `extends: [canon]` — the default is A PACKAGE, not a baked template.
     const code = await runInit({ scope: 'project', cwd });
     expect(code).toBe(0);
     const configSrc = readFileSync(join(cwd, 'agents.config.ts'), 'utf8');
-    expect(configSrc).toContain("import anatomy from '@leclabs/agent-anatomy'");
-    expect(configSrc).toMatch(/extends:\s*\[anatomy\]/);
+    expect(configSrc).toContain("import canon from '@leclabs/agent-canon'");
+    expect(configSrc).toMatch(/extends:\s*\[canon\]/);
     expect(configSrc).toMatch(/patches:\s*\[\]/);
 
     // (2) that default plugin resolves through the NORMAL resolve() with empty
-    // patches → the anatomy default fragment set (defaults-are-a-package, §2). The
-    // anatomy plugin self-locates its dirs at runtime; the test supplies the same
+    // patches → the canon default fragment set (defaults-are-a-package, §2). The
+    // canon plugin self-locates its dirs at runtime; the test supplies the same
     // dir directly (forge cannot bare-import the peer package).
-    const anatomy: AgentPlugin = {
-      name: 'anatomy',
-      fragments: ANATOMY_DIMENSIONS,
+    const canon: AgentPlugin = {
+      name: 'canon',
+      fragments: CANON_DIMENSIONS,
     };
     const resolved = await resolveAgentsConfig({
-      extends: [anatomy],
+      extends: [canon],
       patches: [],
     });
     expect(resolved.fragments.size).toBeGreaterThan(100);
     const byId = new Map(
       [...resolved.fragments.values()].map((r) => [r.fragment.id, r.value]),
     );
-    expect(byId.get('anatomy:objective/parsimony')).toBe('parsimony');
+    expect(byId.get('canon:objective/parsimony')).toBe('parsimony');
   });
 
   it('import claude lifts a real .claude/ tree into the IR', async () => {

@@ -2,7 +2,7 @@
 // `(dimension, values, doc)`. Proven here over a synthetic fixture — determinism
 // (idempotent across runs + input-order-independent via slug sort), the closed
 // shape, and the source-only footer. The CORPUS witness (a committed dimension README
-// that equals its re-projection byte-for-byte) lives in agent-anatomy's
+// that equals its re-projection byte-for-byte) lives in agent-canon's
 // `test/projection-boundary.test.ts`; this proves the function it depends on.
 
 import { describe, expect, it } from 'vitest';

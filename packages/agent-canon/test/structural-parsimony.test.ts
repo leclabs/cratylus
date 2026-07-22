@@ -71,7 +71,7 @@ async function loadLiveCorpus(): Promise<StructuralCorpus> {
 // the real accretion.
 
 /** (a) the real `src/agents/base.ts` — a genus floor spread into every agent. */
-const BASE_TS = `// delete this file and set the values in the agent definitions directly i.e. packages/agent-anatomy/src/agents/*.ts.
+const BASE_TS = `// delete this file and set the values in the agent definitions directly i.e. packages/agent-canon/src/agents/*.ts.
 
 export const memoryProtocol = \`\` // duplicative garbage, memory should be set on the dimension in the agent
 export const personaProtocol = \`\` // same as above except for archetype.

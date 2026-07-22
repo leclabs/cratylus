@@ -77,14 +77,14 @@ describe('ANATOMY descriptor', () => {
     );
   });
 
-  it('matches the actual dimension dirs in agent-anatomy (no descriptor↔corpus drift)', () => {
+  it('matches the actual dimension dirs in agent-canon (no descriptor↔corpus drift)', () => {
     const here = dirname(fileURLToPath(import.meta.url));
     const anatomyDimensions = join(
       here,
       '..',
       '..',
       '..',
-      'agent-anatomy',
+      'agent-canon',
       'src',
       'dimensions',
     );

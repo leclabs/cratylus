@@ -232,7 +232,7 @@ export type ClaudeHooksBlock = Record<
 
 /** Serialize agent-forge `Hook` IR into the Claude `settings.json` `hooks` block,
  *  collecting per-event losses. The standalone (no caller-allocated arrays)
- *  public entry used by agent-anatomy's hook projector; `writeClaude` uses the
+ *  public entry used by agent-canon's hook projector; `writeClaude` uses the
  *  array-threaded internal `serializeClaudeHooks` directly. */
 export function serializeClaudeHooksReport(hooks: Hook[]): {
   hooks: ClaudeHooksBlock;

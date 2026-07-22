@@ -42,7 +42,7 @@ in-remit permission-seeking, it PASSes. A false block wedges real work; a missed
 
 The hook is **sourced, projected, and deployed by agent-forge** — no hand-rolled `jq` toggle:
 
-- **Source** — the agent-forge `Hook` in `packages/agent-anatomy/src/toolkit/hooks.ts` (`turn.end` → Stop,
+- **Source** — the agent-forge `Hook` in `packages/agent-canon/src/toolkit/hooks.ts` (`turn.end` → Stop,
   `subagent.end` → SubagentStop; command = `$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh`;
   timeout 60).
 - **Project** — `pnpm anatomy:project` emits a `settings.json` `{hooks}` fragment + stages these workers

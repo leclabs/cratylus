@@ -5,12 +5,12 @@
 // reusable **fragments** (dimension-values) and **presets** (agents / skills),
 // so the forge resolver can scan them. It formalizes the discovery already done
 // by the directory-scan (`catalog/enumerateCatalog` globs `<corpus>/<dim>/*.ts`;
-// anatomy globs `agents/*.ts` / `skills/*.ts`) into "which dirs, from which
+// canon globs `agents/*.ts` / `skills/*.ts`) into "which dirs, from which
 // package." The package's own `defineAgentPlugin(...)` DEFAULT export is the
 // plugin; a consumer `extends` it by IMPORTING that object.
 //
 // ADDRESSING IS BY IMPORTED BINDING, NEVER A STRING ID (NORTH-STAR §3). A
-// consumer wires a plugin in by passing the imported object (`extends: [anatomy]`),
+// consumer wires a plugin in by passing the imported object (`extends: [canon]`),
 // and a fragment references another via its imported JS binding — there is NO
 // `<plugin>:<dim>/<anchor>` magic-string scheme (the pattern ESLint flat-config
 // deliberately dropped). `name` is only the namespace SEGMENT for reporting /
@@ -32,7 +32,7 @@ import type { Adapter } from '../core/adapter/types.js';
  *
  * DIR RESOLUTION: an imported plugin OBJECT loses its package-root provenance, so
  * a plugin SELF-LOCATES its dirs to ABSOLUTE paths against its own
- * `import.meta.url` (see `agent-anatomy`'s default export) — the config-is-code
+ * `import.meta.url` (see `agent-canon`'s default export) — the config-is-code
  * loader (`config/loader.ts`) uses those verbatim, and resolves a RELATIVE dir
  * against the config file's dir only as a local/dev fallback.
  */

@@ -9,7 +9,7 @@
 // module's directory (`dimensions/<dimension>/`) is its dimension home (PARTITIONED) and its
 // export name is its anchor α (SIGNIFIED).
 //
-// agent-anatomy authors dimension values / agents / skills as typed modules that import
+// agent-canon authors dimension values / agents / skills as typed modules that import
 // these types. Composition is ESM `import`; an agent is a flat, explicit dimension
 // vector (`null` = omit-to-inherit — see `Agent`). A wrong dimension→value or a wrong
 // arity is a **compile error** — the brand keys each string to its dimension so an
@@ -305,7 +305,7 @@ export { type DimensionDoc, projectHumanDimension } from './project-human.js';
 
 // ── Source-cell type kernel — the generic `hook`/`rule` cell shapes ───────────
 // The doctrine-free cell shapes (`hook`/`rule`) + the generic config-IR lift. The
-// concrete cell instances live in the consuming corpus (agent-anatomy).
+// concrete cell instances live in the consuming corpus (agent-canon).
 export {
   type HookCell,
   type HookEvent,

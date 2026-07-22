@@ -5,25 +5,25 @@
     "ignore": [
       "dist",
       "node_modules",
-      // agent-anatomy now has TS source under src/ (lint it) + test/ alongside the Python
-      // toolkit and the markdown corpus. Narrowed from a blanket packages/agent-anatomy/**
+      // agent-canon now has TS source under src/ (lint it) + test/ alongside the Python
+      // toolkit and the markdown corpus. Narrowed from a blanket packages/agent-canon/**
       // ignore when the corpus inverted to TS modules (T1.1/T1.3); the non-TS
       // trees (Python toolkit, markdown cells, graphify cache, pipeline manifests)
       // stay ignored.
-      "packages/agent-anatomy/toolkit/**",
-      "packages/agent-anatomy/references/**",
-      "packages/agent-anatomy/docs/**",
-      "packages/agent-anatomy/ideas/**",
+      "packages/agent-canon/toolkit/**",
+      "packages/agent-canon/references/**",
+      "packages/agent-canon/docs/**",
+      "packages/agent-canon/ideas/**",
       // graphify's tool-emitted cache/graph output (specimens, not source) —
       // `**/`-anchored because turbo runs biome from the package cwd, where the
-      // repo-root-anchored `packages/agent-anatomy/ideas/**` glob does not match.
+      // repo-root-anchored `packages/agent-canon/ideas/**` glob does not match.
       "**/graphify-out/**",
-      "packages/agent-anatomy/.manifests/**",
-      "packages/agent-anatomy/**/*.md",
+      "packages/agent-canon/.manifests/**",
+      "packages/agent-canon/**/*.md",
       "**/*.generated.ts",
       "**/generated.ts",
       // emit_ir.py output (a generated IR artifact, not hand-authored source)
-      "**/ir-bridge/agent-anatomy.agent-forge.json"
+      "**/ir-bridge/agent-canon.agent-forge.json"
     ]
   },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2 },
@@ -38,13 +38,13 @@
       "linter": { "rules": { "style": { "noNonNullAssertion": "off" } } }
     },
     {
-      // Generated agent-anatomy fragment / skill modules: their definiens / verbatim body
+      // Generated agent-canon fragment / skill modules: their definiens / verbatim body
       // are emitted as backtick template literals UNIFORMLY (codegen policy —
       // handles multi-line + any embedded quote without per-string analysis), so
       // the "unused template literal" style rule does not apply to them.
       "include": [
-        "packages/agent-anatomy/src/dimensions/**",
-        "packages/agent-anatomy/src/skills/**"
+        "packages/agent-canon/src/dimensions/**",
+        "packages/agent-canon/src/skills/**"
       ],
       "linter": { "rules": { "style": { "noUnusedTemplateLiteral": "off" } } }
     }

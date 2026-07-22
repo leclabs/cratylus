@@ -15,7 +15,7 @@
 // agent-forge owns the mechanism (it types the 24 dimensions via `ANATOMY`); the
 // corpus/plugins supply the data. Mode selection: `--corpus` forces the corpus
 // view; else a present config drives the cross-plugin view; else the default
-// agent-anatomy corpus is the fallback (zero-arg keeps working in this monorepo).
+// agent-canon corpus is the fallback (zero-arg keeps working in this monorepo).
 
 import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -44,19 +44,19 @@ interface PluginCatalog {
 }
 
 /**
- * Resolve the default corpus dimensions dir: agent-anatomy's `src/dimensions`, located relative
+ * Resolve the default corpus dimensions dir: agent-canon's `src/dimensions`, located relative
  * to this package (works from both `src/` under tsx and `dist/` at runtime).
  * Returns undefined if no such sibling exists (then `--corpus`/config is required).
  */
 function defaultCorpus(): string | undefined {
   const here = dirname(fileURLToPath(import.meta.url));
-  // here = <agent-forge>/dist/cli  or  <agent-forge>/src/cli  →  up to <packages>, into agent-anatomy.
+  // here = <agent-forge>/dist/cli  or  <agent-forge>/src/cli  →  up to <packages>, into agent-canon.
   const candidate = resolve(
     here,
     '..',
     '..',
     '..',
-    'agent-anatomy',
+    'agent-canon',
     'src',
     'dimensions',
   );
@@ -185,11 +185,11 @@ export async function runCatalog(opts: CatalogCmdOpts): Promise<number> {
     }
   }
 
-  // Else fall back to the default agent-anatomy corpus (zero-arg keeps working).
+  // Else fall back to the default agent-canon corpus (zero-arg keeps working).
   const fallback = defaultCorpus();
   if (!fallback) {
     console.error(
-      `agent-forge catalog: no ${CONFIG_FILE}, no --corpus, and no default agent-anatomy/src/dimensions found`,
+      `agent-forge catalog: no ${CONFIG_FILE}, no --corpus, and no default agent-canon/src/dimensions found`,
     );
     return 1;
   }

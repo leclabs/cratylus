@@ -18,7 +18,7 @@ export {
 } from './loader.js';
 export {
   type AddResult,
-  ANATOMY_PACKAGE,
+  CANON_PACKAGE,
   CONFIG_FILE,
   ConfigEditError,
   type ScaffoldResult,

@@ -9,7 +9,7 @@
 //
 // Forge ships `DEFAULT_PROJECT_TEMPLATE` so the engine scaffolds a valid project
 // STANDALONE, with generic prose. A corpus with its own project doctrine (e.g.
-// agent-anatomy) supplies its own `ProjectTemplate` and injects it through its own
+// agent-canon) supplies its own `ProjectTemplate` and injects it through its own
 // scaffold path.
 
 /**

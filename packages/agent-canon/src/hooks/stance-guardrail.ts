@@ -20,7 +20,7 @@ export const stanceGuardrail: HookCell = {
     {
       filename: 'stance-guardrail.sh',
       targetPath:
-        'packages/agent-anatomy/src/toolkit/guardrail/stance-guardrail.sh',
+        'packages/agent-canon/src/toolkit/guardrail/stance-guardrail.sh',
       executable: true,
       content: `#!/usr/bin/env sh
 # stance-guardrail — a Stop / SubagentStop hook that STRUCTURALLY REFUSES a turn in which an
@@ -153,8 +153,7 @@ exit 0
     },
     {
       filename: 'stance-judge.sh',
-      targetPath:
-        'packages/agent-anatomy/src/toolkit/guardrail/stance-judge.sh',
+      targetPath: 'packages/agent-canon/src/toolkit/guardrail/stance-judge.sh',
       executable: true,
       content: `#!/usr/bin/env sh
 # stance-judge — the DEFAULT judge backend for the stance guardrail.
@@ -224,7 +223,7 @@ echo "$verdict" | grep -E '^(VERDICT|REASON):' || {
     {
       filename: 'stance-judge-prompt.md',
       targetPath:
-        'packages/agent-anatomy/src/toolkit/guardrail/stance-judge-prompt.md',
+        'packages/agent-canon/src/toolkit/guardrail/stance-judge-prompt.md',
       executable: false,
       content: `# Stance judge — the intent-driven-expert rubric
 

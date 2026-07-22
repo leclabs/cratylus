@@ -1,5 +1,5 @@
 // P4 — the two scaffold verbs' write side: `scaffoldAgentsConfig` (init) and
-// `addPlugin` (add). Proves init scaffolds `extends: [anatomy]`, and add appends a
+// `addPlugin` (add). Proves init scaffolds `extends: [canon]`, and add appends a
 // real import + extends member (idempotent, loud on an unrecognized shape).
 
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
@@ -20,12 +20,12 @@ describe('scaffoldAgentsConfig — the init zero-config default', () => {
   });
   afterEach(() => rmSync(cwd, { recursive: true, force: true }));
 
-  it('writes agents.config.ts extending [anatomy] with empty patches', async () => {
+  it('writes agents.config.ts extending [canon] with empty patches', async () => {
     const res = await scaffoldAgentsConfig(cwd);
     expect(res.created).toBe(true);
     const src = readFileSync(join(cwd, 'agents.config.ts'), 'utf8');
-    expect(src).toContain("import anatomy from '@leclabs/agent-anatomy'");
-    expect(src).toMatch(/extends:\s*\[anatomy\]/);
+    expect(src).toContain("import canon from '@leclabs/agent-canon'");
+    expect(src).toMatch(/extends:\s*\[canon\]/);
     expect(src).toMatch(/patches:\s*\[\]/);
   });
 
@@ -52,7 +52,7 @@ describe('addPlugin — wire a plugin into extends', () => {
     expect(res.ident).toBe('agentX');
     const src = readFileSync(join(cwd, 'agents.config.ts'), 'utf8');
     expect(src).toContain("import agentX from '@acme/agent-x'");
-    expect(src).toMatch(/extends:\s*\[anatomy,\s*agentX\]/);
+    expect(src).toMatch(/extends:\s*\[canon,\s*agentX\]/);
   });
 
   it('is idempotent — re-adding the same package does not rewrite', async () => {
@@ -72,7 +72,7 @@ describe('addPlugin — wire a plugin into extends', () => {
   });
 
   it('derives safe identifiers from package specifiers', () => {
-    expect(identForPackage('@leclabs/agent-anatomy')).toBe('agentAnatomy');
+    expect(identForPackage('@leclabs/agent-canon')).toBe('agentCanon');
     expect(identForPackage('foo-bar_baz')).toBe('fooBarBaz');
     expect(identForPackage('@acme/9lives')).toBe('_9lives');
   });

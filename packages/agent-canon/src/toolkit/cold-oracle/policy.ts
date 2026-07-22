@@ -1,6 +1,6 @@
 // policy.ts — the corpus POLICY DATA the doctrine-agnostic validate ALGORITHM
 // (`@leclabs/agent-forge/validate`) consumes by injection. The engine declares the
-// `Policy` SHAPE; THIS module is agent-anatomy's canon supplying the DATA — the
+// `Policy` SHAPE; THIS module is agent-canon's canon supplying the DATA — the
 // specific tokens THIS corpus treats as palimpsest, and THIS corpus's operator
 // lexicon. Injected at every call site (`universalCell(cell, homes, anatomyPolicy)`,
 // `admissibleSingleLine(payload, anatomyPolicy)`), never baked into the engine.

@@ -5,7 +5,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
 const ORACLE = new URL('./cold-oracle.sh', import.meta.url).pathname;
-const refs = process.argv.slice(2); // paths relative to agent-anatomy/
+const refs = process.argv.slice(2); // paths relative to agent-canon/
 
 // extract a named field's TS template-literal value, honoring ESCAPED backticks
 // (skill descriptions contain \` around inline symbols like α(c) / C_R — a naive

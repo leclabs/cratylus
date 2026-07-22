@@ -438,7 +438,7 @@ cli
   .option('--config <path>', 'config file (default: <cwd>/agents.config.ts)')
   .option(
     '--corpus <dir>',
-    "force the per-dimension corpus census (default: agent-anatomy's src/dimensions)",
+    "force the per-dimension corpus census (default: agent-canon's src/dimensions)",
   )
   .option('--json', 'emit the machine contract as JSON instead of a table')
   .action(

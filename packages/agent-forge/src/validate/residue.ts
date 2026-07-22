@@ -34,7 +34,7 @@
 //
 // This is the doctrine-agnostic ALGORITHM (agent-forge ENGINE): witnesses over supplied
 // strings, zero IO. The operator lexicon it reads is CORPUS DATA, injected as a `Policy`
-// (`./policy.ts`) — the DATA lives in the corpus (agent-anatomy), never here. Corpus
+// (`./policy.ts`) — the DATA lives in the corpus (agent-canon), never here. Corpus
 // loading lives in the caller.
 
 import type { SkillExpression } from '../anatomy/index.js';

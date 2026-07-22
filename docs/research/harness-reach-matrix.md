@@ -1,11 +1,11 @@
 # Harness-reach matrix
 
-_Which harnesses a agent-anatomy agent reaches for free, and with what agent-support._
+_Which harnesses a agent-canon agent reaches for free, and with what agent-support._
 
 ## The thesis
 
-Because **projection IS the export adapter**, a agent-anatomy agent authored ONCE reaches
-**every** agent-forge harness for free. "Project agent-anatomy to harness X" _is_ "export through the
+Because **projection IS the export adapter**, a agent-canon agent authored ONCE reaches
+**every** agent-forge harness for free. "Project agent-canon to harness X" _is_ "export through the
 X adapter." The composed SOUL body is **harness-neutral** — the same dimension-section
 content whichever harness carries it; only the FRAMING differs per adapter (claude's
 `.md` SOUL vs codex's `.toml` `system_prompt`, etc.).
@@ -42,7 +42,7 @@ other harness either hosts agents lossily (`partial`) or honestly skips them (`n
 
 ## Honest lossy reporting
 
-A agent-anatomy agent projected through an adapter that declares `agents: 'none'` is **skipped with a
+A agent-canon agent projected through an adapter that declares `agents: 'none'` is **skipped with a
 warning**, never silently dropped or corrupted — the existing `WriteReport.{warnings,skipped}`
 mechanism (`agent-forge`'s first-class lossy-translation contract). Demonstrated in
 `test/adapters/codex/anatomy.test.ts` against **opencode** and **aider** (both `agents: 'none'`):
@@ -54,13 +54,13 @@ them to errors.
 
 Harness-inheritance is declared **at the agent source**: a dimension key set to `null` on the `Agent`
 vector projects no section and inherits whatever the target harness provides
-(`@leclabs/agent-forge/anatomy`, gated by `packages/agent-anatomy/test/null-dimension.test.ts`). The
+(`@leclabs/agent-forge/anatomy`, gated by `packages/agent-canon/test/null-dimension.test.ts`). The
 projection is therefore identical machinery per harness — no per-harness subtraction fixture.
 
 ## Reproduce
 
 ```sh
-cd packages/agent-anatomy
+cd packages/agent-canon
 pnpm project         # claude   → .render-ts/
 pnpm project:codex   # codex    → .render-ts-codex/ (agents/*.toml + skills + AGENTS.md)
 ```

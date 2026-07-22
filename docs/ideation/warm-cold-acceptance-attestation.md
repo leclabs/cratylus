@@ -2,9 +2,9 @@
 
 _Durable record of the `warm-cold-acceptance` initiative (2026-07-03), retained after the plan scaffold
 retired. Git is the fuller record: `git log -- plans/warm-cold-acceptance/`. The law it encodes lives in
-source at `packages/agent-anatomy/src/dimensions/engineering-principles/cold-decode-oracle.ts`
+source at `packages/agent-canon/src/dimensions/engineering-principles/cold-decode-oracle.ts`
 (`cold-decode-oracle`); the isolated oracle instrument at
-`packages/agent-anatomy/src/toolkit/cold-oracle/` (`cold-oracle.sh` + `sweep.mjs`)._
+`packages/agent-canon/src/toolkit/cold-oracle/` (`cold-oracle.sh` + `sweep.mjs`)._
 
 ## Criterion (the law, in brief)
 

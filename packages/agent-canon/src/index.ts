@@ -1,9 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// agent-anatomy AS A PLUGIN — the package's `defineAgentPlugin` default export.
+// agent-canon AS A PLUGIN — the package's `defineAgentPlugin` default export.
 //
-// This makes agent-anatomy the FIRST agent-plugin: the baseline catalog + golden
+// This makes agent-canon the FIRST agent-plugin: the baseline catalog + golden
 // example + zero-config default, distributed as a peer plugin (not special-cased
-// as "the corpus"). A consumer `npm i @leclabs/agent-anatomy` then `extends` this
+// as "the corpus"). A consumer `npm i @leclabs/agent-canon` then `extends` this
 // exported object — addressing by IMPORTED BINDING, never a string id.
 //
 // The dir fields point at the live source dirs this corpus already carries: the
@@ -27,7 +27,7 @@ const dir = (rel: string): string =>
   fileURLToPath(new URL(rel, import.meta.url));
 
 export default defineAgentPlugin({
-  name: 'anatomy',
+  name: 'canon',
   fragments: dir('./dimensions'),
   agents: dir('./agents'),
   skills: dir('./skills'),

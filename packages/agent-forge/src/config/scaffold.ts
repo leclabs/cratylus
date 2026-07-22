@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // Scaffold + edit `agents.config.ts` — the write side of the two scaffold verbs.
 //
-// `scaffoldAgentsConfig` writes the ZERO-CONFIG default: `extends: [anatomy]`
-// (the anatomy default plugin) + empty `patches`. `addPlugin` WIRES a plugin into
+// `scaffoldAgentsConfig` writes the ZERO-CONFIG default: `extends: [canon]`
+// (the canon default plugin) + empty `patches`. `addPlugin` WIRES a plugin into
 // `extends` by editing the config SOURCE (config is code — the edit adds a real
 // `import` + appends the binding to the `extends` array). Both operate on the
 // canonical scaffold shape; `addPlugin` refuses LOUDLY on an unrecognized shape
@@ -16,19 +16,19 @@ import { join } from 'node:path';
 /** The config-is-code home filename. */
 export const CONFIG_FILE = 'agents.config.ts';
 
-/** The anatomy default plugin package — the zero-config `extends` member. */
-export const ANATOMY_PACKAGE = '@leclabs/agent-anatomy';
+/** The canon default plugin package — the zero-config `extends` member. */
+export const CANON_PACKAGE = '@leclabs/agent-canon';
 
-/** The zero-config scaffold: anatomy through the resolver with empty patches. */
+/** The zero-config scaffold: canon through the resolver with empty patches. */
 export const SCAFFOLD_SOURCE = `import { defineAgentsConfig } from '@leclabs/agent-forge/config';
-import anatomy from '${ANATOMY_PACKAGE}';
+import canon from '${CANON_PACKAGE}';
 
 // agent-forge — config is code. This is the SINGLE config home.
 // \`extends\` are REAL imports: type-checked, IDE-complete, no build step.
-// Zero-config default = the anatomy plugin through the resolver, empty patches.
+// Zero-config default = the canon plugin through the resolver, empty patches.
 // Wire more plugins with \`agent-forge add <package>\`.
 export default defineAgentsConfig({
-  extends: [anatomy],
+  extends: [canon],
   patches: [],
 });
 `;

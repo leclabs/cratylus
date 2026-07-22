@@ -219,7 +219,7 @@ describe('scanLine (detector precision)', () => {
   });
 
   it('does not fire branch-ref on @scoped packages or repo-tree paths', () => {
-    expect(scanLine('import from @leclabs/agent-anatomy')).toEqual([]);
+    expect(scanLine('import from @leclabs/agent-canon')).toEqual([]);
     expect(scanLine('lives in packages/agent-memory today')).toEqual([]);
   });
 

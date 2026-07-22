@@ -1,4 +1,4 @@
-// oracle.ts — agent-anatomy's policy binding for the LIVE blind cold-oracle. The
+// oracle.ts — agent-canon's policy binding for the LIVE blind cold-oracle. The
 // pure isolation-driving ALGORITHM lives in the engine
 // (`@leclabs/agent-forge/validate` `oracle.ts`); THIS module injects the one
 // corpus-coupled datum it needs — WHICH isolation script — binding it to the
