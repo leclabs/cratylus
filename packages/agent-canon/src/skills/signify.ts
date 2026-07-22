@@ -16,7 +16,7 @@ export const signify: Skill = {
   fired      : Names → ℘(D)           -- the latent priors a name fires (reader = LLM, fixed)
   dec        : Names ⇀ ℘(D)           -- the decoder ≜ fired ↾ assigned anchors; a primitive anchor's fired distinctions
   circ(n,c)  ⇔ fired(n) = D(c)        -- n circumscribes c exactly: fires its distinctions, no surplus, no deficit
-  σ*         : C → Names              -- σ_llm*, the fittest sign: the densest name circumscribing c (reader = LLM)
+  σ*         : C → Names              -- the fittest sign: the densest name circumscribing c (reader = LLM)
   σ*(c)      ≜ argmin_{n : circ(n,c)} |n|    -- densest among the exact-circumscribing names (shortlex tie-break)
                                              -- none exact ⇒ mint a fresh name into Names (the anchor-set is open)
   α          : C ↣ Names              -- the anchor; injective (one name ⇔ one concept)

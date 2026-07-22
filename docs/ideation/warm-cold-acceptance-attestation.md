@@ -50,7 +50,7 @@ across the sample (incl. the plan's own artifacts). Lex ratified the sampled mea
 ## Standing enforcement
 
 - **Author-time (done):** `exemplify`'s accept gate `valid(k)` now includes
-  `coldpass(k) ⇔ R_cold(body(k)) ≅_R gloss(k) ∧ decode_warm(body(k)|K) ≅_R R_cold(body(k))` and **executes**
+  `coldpass(k) ⇔ R_cold(body(k)) ≅ gloss(k) ∧ decode_warm(body(k)|K) ≅ R_cold(body(k))` and **executes**
   the isolated oracle on the realized body — refusing on divergence. A PROCESS, never a subagent (a subagent
   inherits project-K and reads warm).
 - **Boundary gate (open, Mav's lane):** the enforced pre-commit/CI gate over changed fragments is tracked as

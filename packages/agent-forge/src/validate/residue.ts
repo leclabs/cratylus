@@ -110,7 +110,7 @@ function grammarOf(policy: Policy): Grammar {
 const ANCHOR = /^[A-Za-z][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*$/;
 /**
  * A definiendum-class variable — a single Greek letter (`ρ`, `σ`, `α`, …), optionally
- * star-marked (`σ*` — the project's central sign σ_llm*). The `ρ=LLM` binding's left side.
+ * star-marked (`σ*` — the project's central sign). The `ρ=LLM` binding's left side.
  */
 const GREEK = /^[Α-ω]\*?$/;
 

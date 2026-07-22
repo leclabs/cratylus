@@ -7,7 +7,7 @@ const FORMAL_BLOCK =
   `-- Concept-contract: the one record the pipeline programs to (the narrow waist) --
 Concept     ≜ ⟨ gloss , anchor? , factorization? ⟩       -- meaning by value; anchor, factorization optional
 produce     : D → Concept                                 -- conceptualize: fills gloss   (cut at meaning joints)
-name        : Concept → Concept                           -- signify:       fills anchor  (each concept → its σ*_R)
+name        : Concept → Concept                           -- signify:       fills anchor  (each concept → its σ*)
 realize     : Concept → Concept                           -- materialize:   fills factorization (bipartite normal form)
 realized(k) ⇔ factorization(k) ≠ ⊥
 
@@ -20,8 +20,8 @@ conform(k)  ⇔ register(k) = ρ(k)                          -- a human-register
 -- Cold-decode gate (home: cold-decode-oracle; instrument: the isolated oracle harness — a PROCESS
 --   (scratch cwd + credentials-only config, tool-less, mood-neutral prompt), never a subagent (a subagent is warm)) --
 R_cold(f)   ≜ the isolated cold-blind decode of fragment f (a naive reader, zero project-K, from f's signifiers + inline ≜ alone)
-coldpass(k) ⇔ R_cold(body(k)) ≅_R gloss(k)  ∧  decode_warm(body(k) | K) ≅_R R_cold(body(k))
-                                                          -- m1 self-sufficient (cold ≅_R intent) ∧ m2 no competing home (warm ≅_R cold)
+coldpass(k) ⇔ R_cold(body(k)) ≅ gloss(k)  ∧  decode_warm(body(k) | K) ≅ R_cold(body(k))
+                                                          -- m1 self-sufficient (cold ≅ intent) ∧ m2 no competing home (warm ≅ cold)
                                                           --   divergence ⇒ project defect: realign project→cold-truth, never bend body→K
 
 -- Canonical-semantic-factorization: the model a valid factorization must satisfy --

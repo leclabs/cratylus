@@ -13,7 +13,7 @@ definiens(o,v) — a value's one-line bound, read from the catalog
 value(o)       — the selected value(s) for dimension o, chosen from catalog(o) by fit to A's purpose
 vector(A)      ≜ ⊕{ o ↦ value(o) | o ∈ O }               — an agent IS a dimension-selection vector, not prose
 instance-bound — provenance (lineage mark) ∧ substrate (model/runtime) : auto-set (mint a fresh mark; substrate ↦ claude), never a catalog pick
-ρ              — reader binding : the emitted vector is ρ=LLM (σ*_LLM anchors, \`dimension <value>\` lines, no explanatory prose); the interview channel alone is ρ=human
+ρ              — reader binding : the emitted vector is ρ=LLM (σ* anchors, \`dimension <value>\` lines, no explanatory prose); the interview channel alone is ρ=human
 
 LAWS
 ∀ o ∈ O : value(o) ∈ catalog(o)                          -- pick from the catalog; a genuine gap ⇒ corpus mutation via exemplify by the owner, NEVER an inline mint / wizard answer

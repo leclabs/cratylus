@@ -3,7 +3,7 @@
  *
  * SEMANTIC SEAM (the load-bearing boundary of this module): the pipeline's
  * three stages — conceptualize (cut the source at meaning joints, fill
- * `gloss`), signify (assign each concept its canonical anchor σ*_R, fill
+ * `gloss`), signify (assign each concept its canonical anchor σ*, fill
  * `anchor`), materialize (realize the artifacts, fill the routed bodies) —
  * are LLM passes. This code NEVER performs them. The operating agent authors
  * their output as an {@link ExemplifyInput} plan (concepts + artifacts); the
@@ -26,7 +26,7 @@
 export interface ConceptRecord {
   /** The meaning by value (densest-faithful-point) — conceptualize's field. */
   gloss: string;
-  /** The canonical anchor σ*_R — signify's field. Required when routed. */
+  /** The canonical anchor σ* — signify's field. Required when routed. */
   anchor?: string;
   /** Composite factorization as factor ANCHORS (cite-by-ref, never content). */
   factors?: readonly string[];

@@ -1,12 +1,12 @@
 // project-human ≜ the harness-AGNOSTIC half of boundary-projection: render a
 // canonical cell to its human-view. The model law
 //
-//   project-human(c) = ⟨ σ*_human(k) : k ∈ concepts(c) ⟩
+//   project-human(c) = ⟨ σ_human*(k) : k ∈ concepts(c) ⟩
 //
 // A human-view is COMPOSED from the human-signs of the cell's concepts — never
 // authored at the boundary. `projectHumanDimension` realizes it for the DIMENSION unit:
-// its concepts are the dimension itself (σ*_human = the optional `DimensionDoc.gloss`) and
-// its value cells (σ*_human = each value's `slug ≜ definiens`). The output is a
+// its concepts are the dimension itself (σ_human* = the optional `DimensionDoc.gloss`) and
+// its value cells (σ_human* = each value's `slug ≜ definiens`). The output is a
 // PURE DETERMINISTIC function of `(dimension, values, doc)` — sort is by slug, meta is
 // read from `ANATOMY`, no clock/host/IO — so a committed dimension README that diverges
 // from re-projection is a hand-edit (the falsifier), catchable by a byte diff.
@@ -14,7 +14,7 @@
 import { ANATOMY, type Dimension } from './index.js';
 
 /**
- * The optional dimension-level human gloss — `σ*_human` of the DIMENSION concept itself,
+ * The optional dimension-level human gloss — `σ_human*` of the DIMENSION concept itself,
  * composed by `projectHumanDimension` above the value list. Source-owned; when a
  * projected dimension has no `DimensionDoc`, a default genus line from `ANATOMY` meta
  * stands in its place.

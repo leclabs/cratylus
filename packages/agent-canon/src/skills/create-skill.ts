@@ -10,12 +10,12 @@ fm             — front-matter : \`kind: skill\` ∧ \`description\` (reconstru
 H1             — the skill name, a VERB (fires on its own at selection ; body BEFORE the first H1 is silently dropped by the composer)
 formula        — the first prose \`≜\` line, consumed as the composition formula
 Bindings       — a prose \`Bindings: composes <a> · <b>.\` line — boundary-binds sibling deps ; never write \`X ≜ <cell>\` in prose
-block          — the self-sufficient set-builder block, authored via formalize : declarations above a \`=== … ===\` divider, laws below (no prose), at σ*_LLM density
-xref           — a sibling / corpus concept cited by its bare σ*_LLM anchor (the wikilink form is retired), cited once
+block          — the self-sufficient set-builder block, authored via formalize : declarations above a \`=== … ===\` divider, laws below (no prose), at σ* density
+xref           — a sibling / corpus concept cited by its bare σ* anchor (the wikilink form is retired), cited once
 gate           ∈ { schema, references, fences, symbols, verbatim-ref-free, operative, provenance }   — the verify gate-set
 
 LAWS
-self-sufficient(block) ⇔ every term defined in-cell ∧ only live siblings named (in prose), never restated   -- reader = LLM (σ*_LLM)
+self-sufficient(block) ⇔ every term defined in-cell ∧ only live siblings named (in prose), never restated   -- reader = LLM (σ*)
 ∀ glyph ∈ fences(cell) : glyph ∈ symbol-table ∪ definienda(cell) ∪ exemptions(Greek · subscript · box-drawing · em-dash)   -- else the SYMBOLS gate FAILs with its codepoint
 operative(cell) ⇔ ∃ ≥1 operative element (a numbered step ∨ a fenced block ∨ substantive prose) beyond heading + formula   -- else OPERATIVE FAILs
 only-fenced-≜(cell) ⇒ EMPTY provenance (a NOTE)          -- legitimate only for a genuinely standalone skill ; else add a Bindings line

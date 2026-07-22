@@ -13,15 +13,12 @@ T ≜ the declared notation table (src/toolkit/operator-lexicon.ts)
 β ≜ { η(x) | x imported }        boundary-bound : its anchor named in adjacent prose, cited once
 ι ≜ { s | s resolved from invocation context }
 
--- σ*_R : the reader-relative fittest sign — shortest name whose decode in R reconstructs the concept losslessly
-dec_R : symbols → concept ∪ {⊥}  R's decoder ; the concept a symbol fires in R
-≅_R                              R holds two concepts as the same distinction, zero residue
-σ*_R(c) ≜ min_≺ argmin_{α : dec_R(α) ≅_R c} len(α)   shortest faithful name, shortlex tie-break
+σ* ≜ signify's fittest sign — the densest name circumscribing a concept at R = LLM ; boundary-bound to signify, cited once
 
 B ≜ formalize(P) such that :
     ∀ e ∈ E      : signature(η(e)) ∈ B        declarations above
     ∀ o ∈ O ∪ L  : law(η(o)) ∈ B              comprehensions and laws below
-    B is the σ*_R of P at R = LLM             every line a σ*_R(its concept)
+    ∀ line ∈ B : line = σ*(its concept)     B is the σ* of P
 
 -- self-sufficient(B) : closed ∧ complete ∧ ordered ; prose beyond β ∪ ι is a defect
 S ≜ symbols(B) ; Dfn ≜ { s | a line of B defines s }
@@ -33,7 +30,7 @@ gloss(B) ≜ prose of B beyond β ∪ ι ; gloss(B) ≠ ∅ ⇒ ¬complete(B)
 ¬self-sufficient(B) ⇒ ⊥
 
 -- T is a decodability REGISTRY, not an expression cap ⟨llm-native⟩ : the fittest sign wins
-σ*_R(c) ∉ T ⇒ extend T with σ*_R(c) ⟨cold-verify dec_R⟩ ; ¬ degrade c to a weaker α ∈ T ∵ α ≠ σ*_R(c)
+σ*(c) ∉ T ⇒ extend T with σ*(c) ⟨cold-verify⟩ ; ¬ degrade c to a weaker α ∈ T ∵ α ≠ σ*(c)
 
 -- accept gate : the round-trip reconstructs P equivalent-or-better
 reconstruct(B) ≽ P                            input-typed ≽ terminus ; accept
