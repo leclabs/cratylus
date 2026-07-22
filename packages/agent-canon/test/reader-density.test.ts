@@ -64,7 +64,7 @@ import { signify } from '../src/skills/signify.js';
 import { nonceControl } from '../src/toolkit/cold-oracle/oracle.js';
 // The injected corpus POLICY DATA (palimpsest table + operator lexicon) the
 // doctrine-agnostic validate ALGORITHM consumes — passed at every gate call site.
-import { anatomyPolicy } from '../src/toolkit/cold-oracle/policy.js';
+import { canonPolicy } from '../src/toolkit/cold-oracle/policy.js';
 import { RESIDUE_OPERATORS } from '../src/toolkit/operator-lexicon.js';
 // ρ + register(a) + conform — ONE shared model (`reader-register.ts`), also
 // enforced over the runtime frontiers by `reader-reach.test.ts`; RHO mirrors
@@ -425,7 +425,7 @@ function allSix(
   homes: Homes,
   targets: readonly Target[],
 ): LegVerdict[] {
-  return [...universalCell(cell, homes, anatomyPolicy), regenerable(targets)];
+  return [...universalCell(cell, homes, canonPolicy), regenerable(targets)];
 }
 
 // ── the live corpus (one home per fragment anchor is the PARTITIONED claim) ───
@@ -562,13 +562,13 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
   it('reads its operator set from operator-lexicon (RESIDUE_OPERATORS — one home)', () => {
     expect(RESIDUE_OPERATORS).toEqual(['↾', '⟨', '⟩', '${}']);
     // the infix `↾` (∈ RESIDUE_OPERATORS) combines terms; `⟨⟩`/`${}` group a span.
-    expect(admissibleSingleLine('scope ↾ ic', anatomyPolicy).admissible).toBe(
+    expect(admissibleSingleLine('scope ↾ ic', canonPolicy).admissible).toBe(
       true,
     );
     // a glyph NOT in RESIDUE_OPERATORS (a compose `⊕`) is not an admitted operator ⇒
     // it surfaces as a non-σ* atom — member-composition is the agent's set-arity
     // vector, NOT a cell glyph (no compose op without its own cold-verification).
-    expect(admissibleSingleLine('scope ⊕ ic', anatomyPolicy).admissible).toBe(
+    expect(admissibleSingleLine('scope ⊕ ic', canonPolicy).admissible).toBe(
       false,
     );
   });
@@ -580,7 +580,7 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
       'human-on-the-loop', // a bare symbol/anchor
       'decision-authority(self) ↾ individual-contribution ⟨intrinsic⟩', // op application
     ]) {
-      const v = admissibleSingleLine(form, anatomyPolicy);
+      const v = admissibleSingleLine(form, canonPolicy);
       expect(v.admissible, `${JSON.stringify(form)} → ${v.reason}`).toBe(true);
     }
   });
@@ -590,7 +590,7 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
     const prose =
       "acts autonomously on the operator's behalf; the operator oversees and " +
       'sets intent, never pre-approves each act.';
-    const v = admissibleSingleLine(prose, anatomyPolicy);
+    const v = admissibleSingleLine(prose, canonPolicy);
     expect(v.admissible).toBe(false);
     expect(v.reason).toContain("acts autonomously on the operator's behalf");
     expect(v.reason).toMatch(/clausal-punct|free-NL connective/);
@@ -606,10 +606,10 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
       '  A ≜ { α(c) | c ∈ C_R }',
       '  injective : α(cᵢ) = α(cⱼ) ⇒ cᵢ = cⱼ',
     ].join('\n');
-    const v = admissibleBody(block, anatomyPolicy);
+    const v = admissibleBody(block, canonPolicy);
     expect(v.admissible, v.reason).toBe(true);
     // …and the REAL deployed artifact: signify's formalBlock IS a formalize artifact.
-    const live = admissibleBody(signify.formalBlock, anatomyPolicy);
+    const live = admissibleBody(signify.formalBlock, canonPolicy);
     expect(live.admissible, live.reason).toBe(true);
   });
 
@@ -620,7 +620,7 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
       'LAWS',
       '  We first walk the lattice and then assign a name to each concept.',
     ].join('\n');
-    const v = admissibleBody(prosey, anatomyPolicy);
+    const v = admissibleBody(prosey, canonPolicy);
     expect(v.admissible).toBe(false);
     expect(v.reason).toContain('explanatory-prose line');
     expect(v.reason).toContain('We first walk the lattice');
@@ -630,7 +630,7 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
       'DECLARATIONS',
       '  R — the reader',
     ].join('\n');
-    const w = admissibleBody(preamble, anatomyPolicy);
+    const w = admissibleBody(preamble, canonPolicy);
     expect(w.admissible).toBe(false);
     expect(w.reason).toContain('#-preamble gloss');
   });
@@ -642,14 +642,14 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
     const failures: string[] = [];
     for (const rel of await collect('dimensions/**/*.ts')) {
       const value = await firstExport<string>(join(srcRoot, rel));
-      const r = admissibleSingleLine(splitBody(value).definiens, anatomyPolicy);
+      const r = admissibleSingleLine(splitBody(value).definiens, canonPolicy);
       if (!r.admissible) failures.push(`dimension ${rel}: ${r.reason}`);
     }
     for (const rel of await collect('skills/*.ts')) {
       const s = await firstExport<Skill>(join(srcRoot, rel));
       // `description` is σ_human*, NOT σ* — no longer residue-gated. The sole σ*
       // payload is `formalBlock`, gated as a FORMAL-BLOCK via the typed entry point.
-      const f = admissibleFormalBlock(s.formalBlock, anatomyPolicy);
+      const f = admissibleFormalBlock(s.formalBlock, canonPolicy);
       if (!f.admissible)
         failures.push(`skill ${s.name} formalBlock: ${f.reason}`);
     }

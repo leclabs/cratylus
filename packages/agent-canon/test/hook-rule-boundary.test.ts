@@ -37,7 +37,7 @@ import {
   universalCell,
 } from '@leclabs/agent-forge/validate';
 import { describe, expect, it } from 'vitest';
-import { anatomyPolicy } from '../src/toolkit/cold-oracle/policy.js';
+import { canonPolicy } from '../src/toolkit/cold-oracle/policy.js';
 import {
   allHookCells,
   allRuleCells,
@@ -183,7 +183,7 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
     const failures: string[] = [];
     for (const cell of cells) {
       const failing = failingLegs(
-        universalCell(cell, homes, anatomyPolicy),
+        universalCell(cell, homes, canonPolicy),
       ).filter(
         (leg) =>
           !ACCEPT_RATCHET.some((p) => p.slug === cell.slug && p.leg === leg),
@@ -215,7 +215,7 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
       const cell = bySlug.get(pin.slug);
       expect(cell, `ratchet pin ${pin.slug} names a live cell`).toBeDefined();
       expect(
-        failingLegs(universalCell(cell as AcceptCell, homes, anatomyPolicy)),
+        failingLegs(universalCell(cell as AcceptCell, homes, canonPolicy)),
         `pin ${pin.slug} no longer fails ${pin.leg} — REMOVE it`,
       ).toContain(pin.leg);
     }
