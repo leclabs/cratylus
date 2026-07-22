@@ -36,3 +36,11 @@ __pycache__/
 EPISODIC.jsonl
 MEMORY.md
 SELF.md
+# graphify knowledge-graph. Track ONLY graph.json — the single file with explicit track-intent
+# (.gitattributes merge=graphify; a merge driver is meaningless for an ignored file). Everything else
+# under graphify-out/ is regenerable from it or ephemeral (GRAPH_REPORT.md, graph.html, cost.json,
+# manifest.json, the .graphify_* working index, cache/) — rebuilt by `graphify update`, kept out of git
+# to avoid churn/bloat. packages/graphify-out/ is a stray second graph (root resolved to packages/).
+graphify-out/*
+!graphify-out/graph.json
+packages/graphify-out/

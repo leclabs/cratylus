@@ -20,3 +20,7 @@ plans/**/CLAUDE.md
 # not free-form markdown — exempt like the generated render/glossary above.
 packages/agent-canon/lexicon/
 packages/agent-canon/test/fixtures/
+
+# graphify tool-emitted outputs (graph.json, GRAPH_REPORT.md) — specimens, not source;
+# must match graphify's output, never Prettier's (biome already ignores **/graphify-out/**).
+**/graphify-out/
