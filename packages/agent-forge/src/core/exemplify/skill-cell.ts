@@ -81,12 +81,16 @@ export function renderSkillCellBody(parts: {
   readonly block: string;
   readonly intro?: string;
   readonly composedFrom?: readonly string[];
+  /** OPTIONAL doctrine-agnostic leading block (verbatim), emitted directly under the
+   *  verb H1, above the formal block — a consumer's founding-doctrine carry. */
+  readonly preamble?: string;
 }): string {
+  const preamble = parts.preamble ? `${parts.preamble}\n\n` : '';
   const intro = parts.intro ? `${parts.intro}\n\n` : '';
   const composed = parts.composedFrom?.length
     ? `\nComposed from ${parts.composedFrom.join(' · ')}.\n`
     : '';
-  return `# ${parts.verb}\n\n${intro}\`\`\`text\n${parts.block}\n\`\`\`\n${composed}`;
+  return `# ${parts.verb}\n\n${preamble}${intro}\`\`\`text\n${parts.block}\n\`\`\`\n${composed}`;
 }
 
 /** The full standalone SKILL.md cell (frontmatter + body) — exemplify's spec

@@ -21,6 +21,7 @@ import {
   adapterByName,
 } from '@leclabs/agent-forge/adapters/registry';
 import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
+import { foundingDoctrine } from '../genus/founding-doctrine.js';
 import { hookSources } from './hooks.js';
 
 // The harness projection port, selected strictly BY NAME — no concrete claude
@@ -99,7 +100,12 @@ async function projectAgents(out: string): Promise<number> {
   let n = 0;
   for (const name of await moduleNames(agentsModDir)) {
     const agent = await agentOf(join(agentsModDir, `${name}.ts`));
-    const { filename, content } = adapter.agentDef(agent);
+    // Stamp the founding doctrine intrinsically (ONE home, `../genus/founding-doctrine`)
+    // so the axiom rides the projected SOUL bytes, not ambient repo context.
+    const { filename, content } = adapter.agentDef({
+      ...agent,
+      preamble: foundingDoctrine,
+    });
     writeFileSync(join(dir, filename), content);
     process.stdout.write(`EMIT agent ${name}\n`);
     n++;
@@ -120,6 +126,9 @@ async function projectSkills(out: string): Promise<number> {
       // Composed-from: the resolved sibling skills (lazy thunk), each as its
       // `/trigger`. Every entry IS a known skill, so no slug lookup is needed.
       composedFrom: cell.composition().map((c) => `/${c.name}`),
+      // The founding doctrine, intrinsic — so a FOREIGN agent invoking this skill
+      // still holds the axiom (ONE home, `../genus/founding-doctrine`).
+      preamble: foundingDoctrine,
     };
     const dir = join(out, 'skills', name);
     mkdirSync(dir, { recursive: true });

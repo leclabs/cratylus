@@ -40,6 +40,11 @@ export function agentBody(a: Agent): string {
   const emoji = a.provenance?.mark.emoji ?? '';
   const heading = emoji ? `${emoji} ${a.name}` : a.name;
   const out: string[] = [`# ${heading}`, ''];
+  // Doctrine-agnostic leading block (verbatim), above `## Archetype` — the consumer's
+  // founding-doctrine carry when set; the engine knows only that it leads.
+  if (a.preamble) {
+    out.push(a.preamble, '');
+  }
   if (a.archetype) {
     out.push('## Archetype', '', a.archetype, '');
   }
@@ -74,6 +79,12 @@ export interface ResolvedSkill {
   readonly formalBlock: string;
   /** The composed-anchor provenance names, already harness-projected (or []). */
   readonly composedFrom: readonly string[];
+  /** OPTIONAL doctrine-AGNOSTIC leading block, emitted VERBATIM as the SKILL.md's
+   *  first section (above the fenced formal block, or above the `## Tool` section for
+   *  a `deploy: skill-dir` cell). The engine knows only "a leading block"; a consumer
+   *  fills it (agent-canon injects its founding doctrine so a FOREIGN agent invoking
+   *  the skill still holds the axiom). Absent ⇒ omitted. */
+  readonly preamble?: string;
   /**
    * A `deploy: skill-dir` cell (e.g. `memory`) emits its `## Tool` section body
    * VERBATIM as the SKILL.md body, NOT a generated composed body. When set, this
@@ -98,11 +109,13 @@ function deriveVerb(name: string): string {
 export function skillBody(s: ResolvedSkill): string {
   // `deploy: skill-dir` (memory): the `## Tool` section verbatim, no composition.
   if (s.toolSection !== undefined) {
-    return `${s.toolSection.replace(/\n+$/, '')}\n`;
+    const pre = s.preamble ? `${s.preamble}\n\n` : '';
+    return `${pre}${s.toolSection.replace(/\n+$/, '')}\n`;
   }
   return renderSkillCellBody({
     verb: deriveVerb(s.name),
     block: s.formalBlock,
     composedFrom: s.composedFrom,
+    preamble: s.preamble,
   });
 }

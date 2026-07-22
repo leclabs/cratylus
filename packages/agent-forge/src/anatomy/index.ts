@@ -209,6 +209,12 @@ export interface Agent {
    *  `description:` the subagent-router reads (NOT σ*). The one-level-up twin of
    *  the skill `description`. */
   readonly description: string;
+  /** OPTIONAL doctrine-AGNOSTIC leading block, emitted VERBATIM above `## Archetype`
+   *  by `agentBody`. The engine knows only "a leading block"; a consumer fills it
+   *  (agent-canon injects its founding doctrine so the axiom rides every SOUL,
+   *  intrinsic to the projected bytes rather than ambient repo context). Absent ⇒
+   *  omitted. */
+  readonly preamble?: string;
 
   // Persona
   readonly autonomy: readonly Autonomy[] | null; // SET (composed standing, D5)
