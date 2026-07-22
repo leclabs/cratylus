@@ -63,9 +63,12 @@ enabled="$(git config --bool agentfactory.stanceGuard 2>/dev/null || echo false)
 [ "$enabled" = "true" ] || allow_stop
 
 # --- agent-scope gate -----------------------------------------------------------------------
-# Only enforce the stance for the configured agents (the principal-ic-intrinsic agents by default). For a top-level
-# Stop hook agent_type may be absent; SubagentStop carries the subagent's name. When absent,
-# honor an explicit STANCE_GUARD_AGENTS=* opt-in only; otherwise do not enforce on unknown.
+# Only enforce the stance for the configured agents (the principal-ic-intrinsic agents by default).
+# agent_type identifies the agent (verified by an introspective-hook capture): it is PRESENT for an
+# --agent / @mention launch — top-level INCLUDED (a session started as @nico reports agent_type=nico)
+# — and for every SubagentStop; it is ABSENT only for a DEFAULT top-level session (plain claude, no
+# --agent). When absent we do NOT enforce: a session that never declared itself a principal should not
+# get the principal rubric. STANCE_GUARD_AGENTS=* overrides to enforce on everyone (a blunt instrument).
 agent_type="$(printf '%s' "$input" | jq -r '.agent_type // empty' 2>/dev/null || true)"
 allowlist="${STANCE_GUARD_AGENTS:-$(git config agentfactory.stanceGuardAgents 2>/dev/null || echo 'nico mav')}"
 
