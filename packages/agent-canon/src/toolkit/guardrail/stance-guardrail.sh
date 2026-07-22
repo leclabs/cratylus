@@ -83,23 +83,41 @@ transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/nu
 [ -n "$transcript" ] && [ -f "$transcript" ] || allow_stop
 
 # The transcript is JSONL: each line has top-level .type ("assistant"/"user"), .isSidechain
-# (true for subagent lines), and .message.content as an array of blocks (thinking/text/tool_use).
-# We want the TEXT of the last real (non-sidechain, unless we ARE the subagent) assistant turn.
-# For a SubagentStop the relevant turn IS a sidechain line; for a top-level Stop it is not.
-# Simplest correct rule: take the last assistant entry that has any text block, regardless of
-# sidechain — at Stop time the final assistant message is the one that triggered the stop.
-turn="$(jq -rs '
+# (true for subagent lines), and .message.content as an array of blocks (thinking/text/tool_use)
+# — or, for a user line, a plain string. We judge the AGENT's last assistant text, but the
+# judge cannot tell an operator-ORDERED irreversible act (fine) from a unilateral one without the
+# operator's instruction — so we also extract the most recent operator message and pass it
+# alongside as authorization context. A tool_result-only user line carries no text — skipped.
+asst="$(jq -rs '
 	[ .[]
 	  | select(.type == "assistant")
 	  | (.message.content // [])
 	  | map(select(.type == "text") | .text)
 	  | join("\n")
 	]
-	| map(select(. != ""))
-	| last // ""
+	| map(select(. != "")) | last // ""
 ' "$transcript" 2>/dev/null || true)"
 
-[ -n "$turn" ] || allow_stop  # no judgeable text (e.g. pure tool turn) → allow stop
+[ -n "$asst" ] || allow_stop  # no judgeable agent text (e.g. pure tool turn) → allow stop
+
+operator="$(jq -rs '
+	[ .[]
+	  | select(.type == "user")
+	  | (.message.content)
+	  | if type == "string" then .
+	    elif type == "array" then ([ .[] | select(.type == "text") | .text ] | join("\n"))
+	    else "" end
+	]
+	| map(select(. != "")) | last // ""
+' "$transcript" 2>/dev/null || true)"
+[ -n "$operator" ] || operator="(no operator instruction found in transcript)"
+
+# The judged payload: the operator's instruction (authorization context) THEN the agent turn.
+turn="=== OPERATOR (most recent instruction — the authorization context) ===
+$operator
+
+=== AGENT (last assistant turn — judge THIS) ===
+$asst"
 
 # --- judge ----------------------------------------------------------------------------------
 # The judge contract: turn on stdin, rubric path as argv[1]; emits VERDICT: PASS|BLOCK [+ REASON].

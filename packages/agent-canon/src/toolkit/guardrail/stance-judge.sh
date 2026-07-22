@@ -43,9 +43,9 @@ judge_model="${STANCE_JUDGE_MODEL:-haiku}"
 
 prompt="$(cat "$rubric")
 
-=== BEGIN LAST ASSISTANT TURN ===
+=== BEGIN TRANSCRIPT EXCERPT (operator instruction + agent turn) ===
 $turn
-=== END LAST ASSISTANT TURN ===
+=== END TRANSCRIPT EXCERPT ===
 
 Apply the rubric. Output ONLY the verdict block."
 

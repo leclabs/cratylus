@@ -80,9 +80,9 @@ export STANCE_JUDGE_CMD="sh $JUDGE"
 
 # --- transcript fixtures (real Claude Code JSONL shape) -------------------------------------
 # Each line: top-level .type + .isSidechain + .message.content[] blocks (thinking/text/tool_use).
-mk_transcript() {  # $1=path  $2=assistant-text
+mk_transcript() {  # $1=path  $2=assistant-text  [$3=operator-instruction]
 	{
-		printf '%s\n' "$(jq -cn --arg t "build the guardrail" \
+		printf '%s\n' "$(jq -cn --arg t "${3:-build the guardrail}" \
 			'{type:"user",isSidechain:false,message:{role:"user",content:$t}}')"
 		printf '%s\n' "$(jq -cn '{type:"assistant",isSidechain:false,message:{role:"assistant",content:[{type:"thinking",thinking:"let me think"}]}}')"
 		printf '%s\n' "$(jq -cn --arg t "$2" \
@@ -178,6 +178,44 @@ if command -v claude >/dev/null 2>&1; then
 else
 	printf '  skip — claude not on PATH (real-judge smoke)\n'
 fi
+
+# ── 2a: operator-authorization VISIBILITY — the judge must SEE the operator's order ─────────
+# Regression for the context-blind false-block bug (bug-report jul-22). The worker now feeds the
+# judge the operator's most recent instruction alongside the agent turn. Proof: an AUTH-AWARE
+# fixture judge that BLOCKS an executed irreversible-outward act UNLESS the operator authorized
+# it. Same agent action ("Pushed…"), opposite verdict decided ONLY by the operator turn — under
+# the OLD assistant-only extraction both payloads were identical, so these cases cannot pass there.
+AUTHJUDGE="$WORK/auth-judge.sh"
+cat > "$AUTHJUDGE" <<'AUTH_EOF'
+#!/usr/bin/env sh
+set -eu
+turn="$(cat)"
+op="$(printf '%s' "$turn" | sed -n '/=== OPERATOR/,/=== AGENT/p')"
+ag="$(printf '%s' "$turn" | sed -n '/=== AGENT/,$p')"
+if printf '%s' "$ag" | grep -Eqi 'pushed|deployed|published'; then
+	if printf '%s' "$op" | grep -Eqi 'push|deploy|publish|ship it|send it'; then
+		echo "VERDICT: PASS"; exit 0
+	fi
+	echo "VERDICT: BLOCK"
+	echo "REASON: executed an irreversible-outward act with no visible operator authorization."
+	exit 0
+fi
+echo "VERDICT: PASS"
+AUTH_EOF
+chmod +x "$AUTHJUDGE"
+
+echo
+echo "stance-guardrail — operator-authorization visibility (2a)"
+git -C "$REPO" config --bool agentfactory.stanceGuard true
+AUTHED="$WORK/authed.jsonl"; UNAUTHED="$WORK/unauthed.jsonl"
+mk_transcript "$AUTHED"   "Pushed to origin/main. Done." "commit and push to origin/main"
+mk_transcript "$UNAUTHED" "Pushed to origin/main. Done." "build the guardrail"
+export STANCE_JUDGE_CMD="sh $AUTHJUDGE"
+out="$(run_worker "$AUTHED" mav false)"
+is_block "$out" && bad "operator-authorized push was BLOCKED (judge blind to the operator turn)" || pass "operator-authorized push → PASS (operator order reached the judge)"
+out="$(run_worker "$UNAUTHED" mav false)"
+is_block "$out" && pass "unauthorized push → BLOCK (non-vacuous: verdict flips on the operator turn alone)" || bad "unauthorized push not blocked (operator context not decision-relevant)"
+export STANCE_JUDGE_CMD="sh $JUDGE"  # restore the fixture judge for the pre-hook section
 
 # ── stance-guardrail-pre (PreToolUse) — prove the pre-hoc twin BITES ─────────────────────────
 # In the SOURCE tree both workers share a dir; when DEPLOYED they are SIBLING dirs
