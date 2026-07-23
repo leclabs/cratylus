@@ -29,7 +29,7 @@ X ⊆ Y               ⇒ cl_R(X) ⊆ cl_R(Y)
 cl_R(cl_R(X))       = cl_R(X)
 ∀ d ∈ D_R           : d ∉ cl_R(D_R \\ {d})
 MECE(C_R)           ⇔ ( ∀ c≠c' ∈ C_R : intent(c) ≠ intent(c') ) ∧ ( cl_R(D_R) = ⊔ C_R )
-MECE(C_R)
+⊨ MECE(C_R)
 C_R = ∅             ⇒ ⊥` as SkillExpression,
   composition: () => [exemplify, signify, materialize],
 };
