@@ -18,23 +18,50 @@ Four words in the operator's framing — *development time, build time, runtime,
 resolve to **seven** distinct phases. The current system fuses several of them, which is why they
 cannot be reasoned about separately.
 
-| # | Phase | Input → Output | Owner | Host-specific? |
-|---|-------|----------------|-------|----------------|
-| 1 | **authoring** | intent → hand-written `.ts` under `src/` | human + nico | no |
-| 2 | **compile** | `src/` → `dist/` (tsup) | turbo | no |
-| 3 | **projection** | canon cells → harness-agnostic IR | agent-canon toolkit | no |
-| 4 | **packaging** | `dist/` + manifest → tarball / registry artifact | pnpm / npm | no |
-| 5 | **installation** | package → a global node prefix on a host | npm / pnpm — **not us** | yes |
-| 6 | **realization** | IR → harness declaration artifacts in the harness config home | our CLI, **running on the host** | yes |
-| 7 | **execution** | harness reads declarations; skill shims call `agent-runtime` | the harness | yes |
+| # | Phase | Input → Output | Runs where | Owner |
+|---|-------|----------------|-----------|-------|
+| 1 | **authoring** | intent → hand-written `.ts` under `src/` | our repo | human + nico |
+| 2 | **compile** | `src/` → `dist/` (tsup) | our repo | turbo |
+| 3 | **packaging** | `dist/` + manifest → tarball / registry artifact | our repo | pnpm / npm |
+| 4 | **installation** | package → the consumer's project or global prefix | **consumer** | npm / pnpm — *not us* |
+| 5 | **composition** | `extends: [pluginA, pluginB, …]` → one merged cell set | **consumer** | our build core |
+| 6 | **projection** | composed cells → harness-agnostic IR | **consumer** | our build core + plugins |
+| 7 | **realization** | IR → harness declaration artifacts in the config home | **consumer** | our build core |
+| 8 | **execution** | harness reads declarations; skills invoke runtime capabilities | **consumer** | the harness + our runtime |
 
-**The cut that governs everything:** phases 1–4 are host-independent and belong in the *package*;
-phases 5–7 are host-specific and belong on the *host*. Anything harness-agnostic ships pre-computed;
-anything host- or harness-specific is computed at the site.
+**The cut that governs everything:** phases 1–3 are ours and ship as *code*; phases 4–8 run at the
+consumer's site. **Nothing is pre-rendered.** Projection is a build the *consumer* runs, because what
+gets projected depends on a composition only the consumer knows.
 
-Note that **projection (3) and realization (6) are different acts** and are currently both called
-"deploy". Projection is canon → IR: semantic, host-blind. Realization is IR → `~/.claude/…`:
-mechanical, host-bound. They belong on opposite sides of the packaging boundary.
+### Why projection cannot be pre-computed — the vite correspondence
+
+| | vite | agent-factory |
+|---|------|---------------|
+| build core | `vite` | `@leclabs/agent-forge` |
+| **build-time plugin** | `vite-plugin-*`, listed in `vite.config.ts` `plugins: []` | **`AgentPlugin`**, listed in `agents.config.ts` `extends: []` — e.g. `@leclabs/agent-canon` |
+| build invocation | `vite build` | `<cli> build` / `deploy` |
+| build output | `dist/` assets | realized harness declarations |
+| runtime core | vite dev server / preview | `@leclabs/agent-runtime` |
+| **runtime plugin** | — | **`RuntimePlugin`** — `@leclabs/agent-memory`, event-tap |
+
+A vite plugin ships **code that runs during the user's build**, not pre-rendered output — because the
+user composes plugins the author never saw. Ours is the same: `extends: [canon, mine, third-party]` is
+resolvable only at the consumer's site. Pre-rendering projection would make composition structurally
+impossible, since N pre-rendered markdown trees cannot be merged. **`agent-canon` is a build-time
+plugin and must ship as code.**
+
+Two consequences follow immediately:
+
+- **`agent-canon`'s unpublishability is now BLOCKING, not optional.** It must build to `dist/` with
+  real `exports`/`files`, exactly like any vite plugin. Shipping `./src/index.ts` with `files:["src"]`
+  is not viable for a package the consumer's build must import.
+- **The consumer needs the build core, not merely the runtime.** This is precisely S9's "one core, two
+  skins": a dev machine resolves both faces; a runtime-only host resolves only runtime verbs and fails
+  loud on a build verb.
+
+Note that **projection (6) and realization (7) remain different acts**, both currently called "deploy".
+Projection is composed-cells → IR: semantic, harness-blind. Realization is IR → `~/.claude/…`:
+mechanical, harness-bound. Both are consumer-side; only the second knows the harness.
 
 **My own agent declaration, traced through the phases** — the concrete instance the operator asked
 about:
@@ -255,10 +282,10 @@ These are already logged in `plans/agent-runtime/PLAN.md:33-36`; this work force
 - **FORK-4 (binary brand) — signify.** Must be *derived*, not coined; S9's own falsifier demands a
   candidate-free cold-oracle with a negative control. This is my remit and I will run it, but it is
   gated on the prose-vs-shim decision above, because that decides how many homes the name has.
-- **Projection placement — my call, taken.** Projection (3) ships **pre-computed** inside the package.
-  It is host-independent by construction, and shipping it keeps the consumer's install free of a
-  TypeScript toolchain — which also sidesteps `agent-canon`'s type-stripping problem for the common
-  case. Canon then needs to be publishable as *data*, not necessarily as *code*. Noted for review.
+- **Projection placement — SETTLED (operator, correcting me).** Projection runs at the **consumer's
+  build time**, never pre-computed. I had proposed pre-rendering; that is wrong, because it forecloses
+  plugin composition — the defining property of the build-time-plugin architecture. `agent-canon` ships
+  as **code**, and its `dist/` build is now a blocking prerequisite rather than a nice-to-have.
 
 ### Live breakage this census surfaced (unrelated to parity, worth fixing now)
 
@@ -267,7 +294,43 @@ These are already logged in `plans/agent-runtime/PLAN.md:33-36`; this work force
 deploy never prunes and the retire step only removes the directory when empty. Any agent reading that
 skill is following instructions to a removed binary.
 
-## 7. Method
+## 7. Remote fleet distribution before a public registry
+
+The question: with no registry, how does a *remote* host install our packages the way a consumer would?
+
+**There is no `ssh:host:path` package protocol.** npm/pnpm accept `file:`/`link:` (same filesystem),
+`git+ssh://` (a git remote, not an arbitrary path), and `https://` tarball URLs. Nothing resolves a
+package over a bare ssh path.
+
+**The industry-standard answer is a private registry — Verdaccio.** It is the default choice for
+exactly this situation: a lightweight npm registry that proxies upstream npm and hosts your own scopes.
+It gives *true* parity, because the consumer command becomes literally the consumer command:
+
+```
+# on the build host
+verdaccio &                                     # :4873, proxies npmjs upstream
+pnpm -r publish --registry http://localhost:4873
+
+# on each fleet host — over an ssh reverse tunnel, no public exposure
+ssh -R 4873:localhost:4873 <host>
+npm i -g @leclabs/<cli> --registry http://localhost:4873
+```
+
+This is the strongest available parity short of publishing: same registry protocol, same resolver, same
+`npm i -g`, same `workspace:*` → concrete-range rewriting on publish. It also exercises the publish path
+itself, which would have caught the broken `changeset publish` described in §5.
+
+**A second option, no daemon:** `git+ssh://` against the monorepo, with a `prepare` script so npm builds
+on install. Weaker — it needs each package to be independently installable from a repo subdirectory,
+which a monorepo does not give you for free.
+
+**Sequencing decision (operator's, adopted):** defer remote-fleet distribution. Verdaccio is the target
+mechanism when it is needed and should not be re-litigated then; but it is *not* a prerequisite for the
+work that matters now. Local development parity via `pnpm add -g .` plus `tsup --watch` is the focus,
+because it is where the architecture is actually validated — and because the capability-declaration
+defect (§3) and the canon-build defect (§1) must be fixed regardless of how bits reach a remote host.
+
+## 8. Method
 
 `DESIGN → SPEC → EXECUTE`. This document is the design. Execution shards are authored only after it
 settles, and cite it. No primitive-by-primitive editing before the target is frozen.
