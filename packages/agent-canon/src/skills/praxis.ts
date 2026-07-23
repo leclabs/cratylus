@@ -27,6 +27,15 @@ PLAN.md ≜ mirror(state, R, content)
 dp : text → text                                             — de-palimpsest: strip superseded scar-tissue to net-current
 ρ, register : text → {LLM, human}                            — reader binding · observed register (home: signify READER BINDING)
 conform(a) ⇔ register(a) = ρ(a)
+Phase    ≜ { proposed, in-flight, landed, retired }          — a plan's lifecycle phase (plan-level; distinct from States)
+Plans    ≜ { P | P a plan on disk }                          — the plan-set : in-scope ∪ archived
+commit   ≜ a VCS commit
+commits  : P → ℘(commit)                                     — the commits in P's VCS history
+lands    : commit × P → 𝔹                                    — c is the trunk merge of P's result
+landing  : P ⇀ commit                                        — P's landing-commit, computed from VCS on demand
+stored   : P → ℘(commit)                                     — commit refs P persists on disk (sidecar · PLAN.md · content)
+archived : P → 𝔹                                             — P's dir resides under plans/.retired/ (folder-as-state)
+phase    : P → Phase                                         — runtime plan-phase, derived (no stored field)
 
 -- ── declarations: derived sets ──
 blocked(t)  ⇔ ∃ u : (t, u) ∈ R ∧ state(u) ≠ completed
@@ -38,6 +47,11 @@ W(n)        ≜ ⋃ { wave(i) | i <= n }
 wave(0)     ≜ { t | ∄ u : (t, u) ∈ R }
 wave(n+1)   ≜ { t | t ∉ W(n) ∧ ∀ u : (t, u) ∈ R ⇒ u ∈ W(n) }
 waves       ≜ (wave(0), wave(1), …)
+dispatched(P) ⇔ ∃ t ∈ P : state(t) ∈ { active, completed }
+done(P)       ⇔ ∀ t ∈ P : state(t) = completed
+landed(P)     ⇔ landing(P) defined ∧ ¬ archived(P)
+inscope(P)    ⇔ ¬ archived(P)
+nextPhase     ≜ { proposed ↦ in-flight, in-flight ↦ landed, landed ↦ retired, retired ↦ retired }
 
 -- ── laws ──
 ∀ t : content(t) ⊨ spec(t)
@@ -51,7 +65,17 @@ slices(P) = argmin over admissible cuts of |R ∩ ⋃ { sᵢ × sⱼ | i ≠ j }
 |frontier(P)| = 1 ⇒ slices mis-cut
 (state, R, content) ≽ PLAN.md                               — authority order: PLAN.md is downstream, never the source
 dp(dp(c)) = dp(c)
--- plan-retirement: a plan retires once its result lands; commit association is derived on demand, never stored.
+archived(P)                              ⇒ phase(P) = retired
+landed(P)                                ⇒ phase(P) = landed
+dispatched(P) ∧ ¬ landed(P) ∧ ¬ archived(P) ⇒ phase(P) = in-flight
+¬ dispatched(P) ∧ ¬ archived(P)          ⇒ phase(P) = proposed
+landing(P) = c ⇔ lands(c, P)
+∀ c, c' : lands(c, P) ∧ lands(c', P) ⇒ c = c'
+∀ P : stored(P) = ∅
+list = { P ∈ Plans | inscope(P) }
+retire(P) defined ⇔ landed(P)
+∀ P : content(retire(P)) = content(P)
+∀ P : retire(P) ∈ Plans
 ∀ t : ρ(content(t)) = LLM ∧ conform(content(t))
 ρ(PLAN.md) = LLM ∧ conform(PLAN.md)
 ∀ t, r : ρ(r) = LLM ∧ (¬conform(r) ⇒ ¬accept(t)(r))
@@ -70,7 +94,9 @@ merge     : { P₁, P₂, … } ↦ ⋃ Pᵢ
 sync       ≜ ∀ t ∈ P : state(t) ≠ truth(t) ⇒ state(t) := truth(t) ;
              ∀ u ∈ P : ∀ d ∈ promote(u) : state(d) := ready ;
              PLAN.md ≠ mirror(state, R, content) ⇒ PLAN.md := mirror(state, R, content)
-             post : state = truth ∧ PLAN.md = mirror(state, R, content)` as SkillExpression;
+             post : state = truth ∧ PLAN.md = mirror(state, R, content)
+retire    : P ↦ P' ≜ relocate dir(P) under plans/.retired/ ; pre landed(P) ; post phase(P) = retired ∧ content(P') = content(P)
+landingOf : P ↦ landing(P)                                   — recompute from VCS each call ; write nothing` as SkillExpression;
 
 export const praxis: Skill = {
   name: 'praxis',

@@ -32,11 +32,11 @@ const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');
  * Not-yet-drained blocks — reported by the worklist, not failed. Removed one-by-one as t2
  * drains each; the anti-stale assertion below keeps this == exactly the currently-flagged set.
  */
-// praxis retains ONE finding: the `-- plan-retirement: …` line, ruled ADMISSIBLE
-// negative-boundary-prose by nico (formalizing an otherwise-empty plan-lifecycle algebra
-// is premature — a latent design-task, not a defect). The gate cannot mechanically
-// recognize deferred-formalization boundary-prose, so it stays reported-only here.
-const ALLOW_LIST = new Set<string>(['praxis']);
+// Empty: the corpus is fully drained. praxis was the last residual — its former
+// `-- plan-retirement: …` line has been formalized into the plan-set-dynamics algebra
+// (Phase / landing / retire) and now scans to 0 findings, so it is off the list. Every
+// block is now held self-sufficient by the regression guard; nothing is reported-only.
+const ALLOW_LIST = new Set<string>([]);
 
 async function firstExport<T>(modPath: string): Promise<T> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<
