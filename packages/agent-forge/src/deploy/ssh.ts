@@ -44,6 +44,23 @@ export function shQuote(s: string): string {
   return `'${s.replace(/'/g, "'\\''")}'`;
 }
 
+/**
+ * Wrap a remote command so ssh runs it under the user's INTERACTIVE shell
+ * (`$SHELL -ic`, falling back to `zsh` — the fleet's shell — when `$SHELL` is
+ * unset). The fleet activates its version manager (mise) in the interactive rc
+ * (`.zshrc`), NOT in `.zshenv`/`.zprofile`, so this is the only shell form that
+ * puts the mise-managed `node`/`npm` — and, after install, the reshimmed
+ * `agent-runtime` bin — on PATH. A bare `ssh host 'npm …'` is non-interactive:
+ * mise never sources, so `npm` is `command not found`; a login shell (`-lc`) is
+ * no better and on a host with a system node surfaces only `/usr` npm (→ EACCES
+ * on a global install). The command is single-quoted so its own quoting survives
+ * the extra shell hop, and `${SHELL:-zsh}` expands on the remote (double-quoted
+ * so a space in the shell path is safe).
+ */
+export function interactiveShellCmd(cmd: string): string {
+  return `"\${SHELL:-zsh}" -ic ${shQuote(cmd)}`;
+}
+
 /** The production runner: actually invokes ssh/scp via spawnSync. Honors
  *  `dry` (no execution, returns a sentinel). */
 export function realRunner(dry: boolean): CommandRunner {

@@ -172,7 +172,7 @@ describe('runtime-install (ssh)', () => {
    *  first `cat`, and reports the resolvability probe RESOLVED. Records every call. */
   function sshRunner(
     calls: string[][],
-    opts: { stamp?: string } = {},
+    opts: { stamp?: string; prefixOut?: string } = {},
   ): CommandRunner {
     return (cmd: string[]): CommandResult => {
       calls.push(cmd);
@@ -180,8 +180,14 @@ describe('runtime-install (ssh)', () => {
       if (cmd[0] === 'ssh') {
         if (script.includes('printf %s "$HOME"'))
           return { rc: 0, out: '/home/remote' };
-        if (script.trim() === 'npm prefix -g')
-          return { rc: 0, out: '/home/remote/.local' };
+        // The prefix probe now runs through the interactive-shell wrap
+        // (`"${SHELL:-zsh}" -ic 'npm prefix -g'`) so mise is sourced — match the
+        // wrapped form, and simulate a noisy interactive banner before the path.
+        if (script.includes('npm prefix -g'))
+          return {
+            rc: 0,
+            out: `mise: mounting shims\n${opts.prefixOut ?? '/home/remote/.local'}`,
+          };
         if (script.includes('cat ') && script.includes('.bundle-fingerprint'))
           return { rc: 0, out: opts.stamp ?? '' };
         if (script.includes('printf RESOLVED'))
@@ -210,11 +216,35 @@ describe('runtime-install (ssh)', () => {
     );
     expect(joined.some((s) => s.includes('printf RESOLVED'))).toBe(true);
     expect(joined.some((s) => s.includes('.bundle-fingerprint'))).toBe(true);
+    // BOTH remote npm invocations run through the interactive-shell wrap so the
+    // version manager (mise) is sourced — the fleet-remote defect fix. A noisy
+    // interactive banner before the prefix must NOT poison prefix resolution.
+    expect(
+      joined.some((s) => s.includes('-ic') && s.includes('npm prefix -g')),
+    ).toBe(true);
+    expect(
+      joined.some((s) => s.includes('-ic') && s.includes('npm install -g')),
+    ).toBe(true);
     // Retire the old memory footprint on the remote.
     expect(
       joined.some((s) => s.includes('rm -f') && s.includes('/bin/memory')),
     ).toBe(true);
     void flat;
+  });
+
+  it('refuses a SYSTEM /usr prefix (needs root → EACCES) instead of forcing a broken install', () => {
+    const calls: string[][] = [];
+    const r = installRuntimeSsh('me@host', {
+      dry: false,
+      bundle: BUNDLE,
+      runner: sshRunner(calls, { prefixOut: '/usr' }),
+    });
+    // Honest refusal: no scp, no install attempt against an unwritable prefix.
+    expect(r.installed).toBe(false);
+    expect(calls.some((c) => c[0] === 'scp')).toBe(false);
+    expect(calls.some((c) => c.join(' ').includes('npm install -g'))).toBe(
+      false,
+    );
   });
 
   it('is idempotent over ssh: a matching remote stamp skips the install', () => {

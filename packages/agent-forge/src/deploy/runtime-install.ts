@@ -37,7 +37,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { realRunner, shQuote } from './ssh.js';
+import { interactiveShellCmd, realRunner, shQuote } from './ssh.js';
 import type { CommandRunner } from './types.js';
 
 /**
@@ -263,6 +263,20 @@ function runtimeResolvable(prefix: string): boolean {
   );
 }
 
+/** The last absolute-path line in combined stdout+stderr — robust to the init
+ *  noise (mise/atuin banners, prompt escapes) an interactive `-ic` remote shell
+ *  can prepend before `npm prefix -g`'s answer. Falls back to a plain trim. */
+function lastPathLine(out: string): string {
+  const lines = out
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean);
+  for (let i = lines.length - 1; i >= 0; i--) {
+    if ((lines[i] as string).startsWith('/')) return lines[i] as string;
+  }
+  return out.trim();
+}
+
 /** Resolve the host's npm global prefix (`npm prefix -g`) — its `bin/` is on PATH. */
 function localGlobalPrefix(run: CommandRunner): string {
   const r = run(['npm', 'prefix', '-g']);
@@ -327,17 +341,29 @@ export function installRuntimeSsh(
     }
   }
 
-  // Resolve the remote prefix (override ▸ remote `npm prefix -g`).
+  // Resolve the remote prefix (override ▸ remote `npm prefix -g`). Run through the
+  // user's INTERACTIVE shell so the version manager (mise) is sourced and `npm`
+  // resolves to the USER-writable mise node prefix — never the system `/usr` node.
+  // (A bare non-interactive `ssh host 'npm …'` never sources mise: `command not
+  // found`, or on a host with a system node an EACCES `/usr` install.)
   let prefix = opts.prefix ?? '';
   if (prefix === '') {
     if (opts.dry) {
       prefix = '$(npm prefix -g)';
     } else {
-      const pr = run(['ssh', target, 'npm prefix -g']);
-      prefix = pr.out.trim();
+      const pr = run(['ssh', target, interactiveShellCmd('npm prefix -g')]);
+      // Take the last absolute-path line — an interactive shell can prepend
+      // init noise (mise/atuin banners) on the combined stdout+stderr.
+      prefix = lastPathLine(pr.out);
       if (pr.rc !== 0 || !prefix.startsWith('/')) {
         warn(
-          `  ERR could not resolve remote npm prefix on ${target}: ${pr.out}`,
+          `  ERR could not resolve remote npm prefix on ${target} (no user node manager active in the interactive shell?): ${pr.out}`,
+        );
+        return { installed: false };
+      }
+      if (prefix === '/usr' || prefix.startsWith('/usr/')) {
+        warn(
+          `  ERR remote npm on ${target} resolved to the SYSTEM prefix ${prefix} — a global install there needs root (EACCES). ${target} needs a USER node manager (e.g. mise with a global node pinned) active in its interactive shell.`,
         );
         return { installed: false };
       }
@@ -384,7 +410,12 @@ export function installRuntimeSsh(
   const inst = run([
     'ssh',
     target,
-    `npm install -g --prefix ${shQuote(prefix)} ${remoteTars.map(shQuote).join(' ')}`,
+    // Same interactive-shell wrap as the prefix probe: the install runs through
+    // the mise-sourced `npm`, landing the bundle in the user-writable prefix and
+    // triggering mise's post-install reshim of the `agent-runtime` bin.
+    interactiveShellCmd(
+      `npm install -g --prefix ${shQuote(prefix)} ${remoteTars.map(shQuote).join(' ')}`,
+    ),
   ]);
   // Verify by RESOLVABILITY (bin + runtime package present), not the exit code — a
   // remote version-manager reshim can taint it. `printf RESOLVED` only when both land.
