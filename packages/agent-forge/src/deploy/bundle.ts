@@ -13,8 +13,37 @@
 //
 // Faithful port of `resolve._stage_assets`.
 
-import { copyFileSync, existsSync, mkdirSync } from 'node:fs';
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  statSync,
+} from 'node:fs';
 import { basename, resolve as resolvePath } from 'node:path';
+
+/** Recursively collect every file under `dir`, as paths RELATIVE to `dir`
+ *  (POSIX `/` separators), sorted deterministically. Used by the skill placers
+ *  to recurse a skill dir's co-located `scripts/`, `references/`, `assets/`
+ *  companions instead of copying only its top-level files — the caller mkdirs
+ *  each dest parent to preserve the subtree structure. */
+export function walkSkillFiles(dir: string): string[] {
+  const out: string[] = [];
+  const walk = (rel: string): void => {
+    const abs = rel ? resolvePath(dir, rel) : dir;
+    for (const entry of readdirSync(abs).sort()) {
+      const childRel = rel ? `${rel}/${entry}` : entry;
+      const st = statSync(resolvePath(dir, childRel));
+      if (st.isDirectory()) {
+        walk(childRel);
+      } else if (st.isFile()) {
+        out.push(childRel);
+      }
+    }
+  };
+  walk('');
+  return out;
+}
 
 /** One skill's committed companion-file declarations. `assets` paths are
  *  committed companions (warn if missing), relative to the declaring source's

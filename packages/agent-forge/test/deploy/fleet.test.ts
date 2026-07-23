@@ -6,11 +6,14 @@
 //   - the bare-home guard server-side; `~/.claude` resolved via $HOME
 //   - per-host result codes: 0 landed, 2 unreachable-deferred
 
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   deployFleet,
   loadConfig,
   placeAgentsSsh,
+  placeSkillsSsh,
 } from '../../src/deploy/index.js';
 import {
   buildRenderTree,
@@ -132,6 +135,77 @@ describe('placeAgentsSsh (fake fleet)', () => {
       true,
     );
     expect(notes.join('\n')).toMatch(/is a home dir -> deploying to/);
+  });
+});
+
+describe('placeSkillsSsh (fake fleet) — co-located recursion', () => {
+  it('recurses a skill dir subtree (scripts/references) to the remote; scp -p preserves mode', () => {
+    const tree = buildRenderTree(tmp('agent-forge-render-'));
+    // a skill dir carrying co-located companions in nested subdirs
+    const recur = join(tree.skillsDir, 'recur');
+    mkdirSync(join(recur, 'scripts'), { recursive: true });
+    mkdirSync(join(recur, 'references'), { recursive: true });
+    writeFileSync(join(recur, 'SKILL.md'), '# recur\n');
+    writeFileSync(join(recur, 'scripts', 'x.mjs'), '#!/usr/bin/env node\n');
+    writeFileSync(join(recur, 'references', 'y.md'), '# y\n');
+
+    const fleet = makeFleet({
+      'lcaraccioli@upmav.lan': { reachable: true, home: '/Users/lcaraccioli' },
+    });
+    const runner = fakeRunner(fleet);
+    const r = placeSkillsSsh(
+      'lcaraccioli',
+      'upmav.lan',
+      '~/.claude',
+      tree,
+      ['recur'],
+      { ...silent, dry: false, runner },
+    );
+    expect(r.rc).toBe(0);
+    expect(r.report.copied).toBe(1);
+
+    const host = fleet.hosts.get('lcaraccioli@upmav.lan')!;
+    const base = '/Users/lcaraccioli/.claude/skills/recur';
+    // (3) the whole subtree scp'd to the mirrored remote paths
+    expect(host.files.has(`${base}/SKILL.md`)).toBe(true);
+    expect(host.files.has(`${base}/scripts/x.mjs`)).toBe(true);
+    expect(host.files.has(`${base}/references/y.md`)).toBe(true);
+    // every scp is mode-preserving (`-p`) so exec bits ride the hop
+    const scpCalls = fleet.calls.filter((c) => c[0] === 'scp');
+    expect(scpCalls.length).toBe(3);
+    expect(scpCalls.every((c) => c.includes('-p'))).toBe(true);
+    // the nested remote subdirs were pre-created
+    const mkdirs = fleet.calls
+      .filter(
+        (c) => c[0] === 'ssh' && String(c[c.length - 1]).startsWith('mkdir -p'),
+      )
+      .map((c) => String(c[c.length - 1]));
+    expect(mkdirs.some((m) => m.includes(`${base}/scripts`))).toBe(true);
+    expect(mkdirs.some((m) => m.includes(`${base}/references`))).toBe(true);
+  });
+
+  it('a flat SKILL.md-only skill scps exactly one file (no regression)', () => {
+    const tree = buildRenderTree(tmp('agent-forge-render-'));
+    const fleet = makeFleet({
+      'lcaraccioli@upmav.lan': { reachable: true, home: '/Users/lcaraccioli' },
+    });
+    const runner = fakeRunner(fleet);
+    const r = placeSkillsSsh(
+      'lcaraccioli',
+      'upmav.lan',
+      '~/.claude',
+      tree,
+      ['wake'],
+      { ...silent, dry: false, runner },
+    );
+    expect(r.rc).toBe(0);
+    const host = fleet.hosts.get('lcaraccioli@upmav.lan')!;
+    const skillFiles = [...host.files.keys()].filter((p) =>
+      p.startsWith('/Users/lcaraccioli/.claude/skills/wake/'),
+    );
+    expect(skillFiles).toEqual([
+      '/Users/lcaraccioli/.claude/skills/wake/SKILL.md',
+    ]);
   });
 });
 

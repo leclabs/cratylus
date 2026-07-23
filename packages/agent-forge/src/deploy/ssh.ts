@@ -17,8 +17,11 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve as resolvePath } from 'node:path';
-import { basename as posixBasename } from 'node:path/posix';
-import { stageAssets } from './bundle.js';
+import {
+  basename as posixBasename,
+  dirname as posixDirname,
+} from 'node:path/posix';
+import { stageAssets, walkSkillFiles } from './bundle.js';
 import { mergeHooksSettings } from './hooks.js';
 import { SEED_FILES } from './seeds.js';
 import {
@@ -222,20 +225,33 @@ export function placeSkillsSsh(
     }
     const remoteDir = `${skillsDir}/${name}`;
     run(['ssh', target, `mkdir -p ${shQuote(remoteDir)}`]);
-    const files = readdirSync(srcDir)
-      .filter((f) => statSync(resolvePath(srcDir, f)).isFile())
-      .sort();
+    // Recurse the WHOLE skill dir: co-located `scripts/`, `references/`,
+    // `assets/` subtrees ride along, structure preserved on the remote.
+    const files = walkSkillFiles(srcDir);
     let failed = false;
     if (!opts.dry) {
-      for (const f of files) {
+      // Pre-create each needed remote subdir so nested files land intact.
+      const subdirs = new Set<string>();
+      for (const rel of files) {
+        const d = posixDirname(rel);
+        if (d !== '.') {
+          subdirs.add(d);
+        }
+      }
+      for (const d of [...subdirs].sort()) {
+        run(['ssh', target, `mkdir -p ${shQuote(`${remoteDir}/${d}`)}`]);
+      }
+      for (const rel of files) {
+        // `-p` preserves mode → exec bits on `scripts/*` survive the hop.
         const r = run([
           'scp',
           '-q',
-          resolvePath(srcDir, f),
-          `${target}:${remoteDir}/${f}`,
+          '-p',
+          resolvePath(srcDir, rel),
+          `${target}:${remoteDir}/${rel}`,
         ]);
         if (r.rc !== 0) {
-          warn(`  ERR scp ${name}/${f}: ${r.out}`);
+          warn(`  ERR scp ${name}/${rel}: ${r.out}`);
           failed = true;
           break;
         }

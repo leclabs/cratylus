@@ -8,6 +8,7 @@
 //   - never-prunes (a removed name leaves the live tree's other files standing)
 
 import {
+  chmodSync,
   existsSync,
   mkdirSync,
   readFileSync,
@@ -181,6 +182,46 @@ describe('placeSkillsLocal', () => {
     expect(r.report.copied).toBe(2);
     expect(existsSync(join(claude, 'skills', 'memory', 'SKILL.md'))).toBe(true);
     expect(existsSync(join(claude, 'skills', 'wake', 'SKILL.md'))).toBe(true);
+  });
+
+  it('recurses nested subdirs (scripts/references) preserving structure + exec bit', () => {
+    const src = tmp('agent-forge-render-');
+    const tree = buildRenderTree(src);
+    // a skill dir carrying co-located companions in nested subdirs
+    const recur = join(tree.skillsDir, 'recur');
+    mkdirSync(join(recur, 'scripts'), { recursive: true });
+    mkdirSync(join(recur, 'references'), { recursive: true });
+    writeFileSync(join(recur, 'SKILL.md'), '# recur\n', 'utf-8');
+    const script = join(recur, 'scripts', 'x.mjs');
+    writeFileSync(script, '#!/usr/bin/env node\n', 'utf-8');
+    chmodSync(script, 0o755); // exec bit set at source
+    writeFileSync(join(recur, 'references', 'y.md'), '# y\n', 'utf-8');
+
+    const claude = join(tmp('agent-forge-host-'), '.claude');
+    const r = placeSkillsLocal(claude, tree, ['recur'], silent);
+    expect(r.rc).toBe(0);
+    expect(r.report.copied).toBe(1);
+
+    // (1) the subtree lands INTACT at the mirrored dest paths
+    const destScript = join(claude, 'skills', 'recur', 'scripts', 'x.mjs');
+    expect(readFileSync(destScript, 'utf-8')).toBe('#!/usr/bin/env node\n');
+    expect(
+      readFileSync(
+        join(claude, 'skills', 'recur', 'references', 'y.md'),
+        'utf-8',
+      ),
+    ).toBe('# y\n');
+    // (2) exec bit preserved on scripts/*
+    expect(statSync(destScript).mode & 0o111).not.toBe(0);
+  });
+
+  it('a flat SKILL.md-only skill deploys exactly one file (no regression)', () => {
+    const src = tmp('agent-forge-render-');
+    const tree = buildRenderTree(src);
+    const claude = join(tmp('agent-forge-host-'), '.claude');
+    placeSkillsLocal(claude, tree, ['wake'], silent);
+    // wake is SKILL.md-only — dest holds exactly that, no phantom subdirs
+    expect(readdirSync(join(claude, 'skills', 'wake'))).toEqual(['SKILL.md']);
   });
 
   it('stages a committed `assets:` companion beside SKILL.md', () => {

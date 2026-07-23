@@ -44,6 +44,7 @@ export {
   type SkillCompanions,
   type StageAssetsOpts,
   stageAssets,
+  walkSkillFiles,
 } from './bundle.js';
 
 export {

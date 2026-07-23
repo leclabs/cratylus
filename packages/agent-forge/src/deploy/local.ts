@@ -8,16 +8,16 @@
 // Faithful port of `place/local.py`.
 
 import {
+  chmodSync,
   copyFileSync,
   existsSync,
   mkdirSync,
   readFileSync,
-  readdirSync,
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { resolve as resolvePath } from 'node:path';
-import { stageAssets } from './bundle.js';
+import { dirname, resolve as resolvePath } from 'node:path';
+import { stageAssets, walkSkillFiles } from './bundle.js';
 import { SEED_FILES } from './seeds.js';
 import {
   type PlaceOpts,
@@ -117,13 +117,19 @@ export function placeSkillsLocal(
       });
     }
     const destDir = resolvePath(destRoot, name);
-    const files = readdirSync(srcDir)
-      .filter((f) => statSync(resolvePath(srcDir, f)).isFile())
-      .sort();
+    // Recurse the WHOLE skill dir: co-located `scripts/`, `references/`,
+    // `assets/` subtrees ride along, structure preserved.
+    const files = walkSkillFiles(srcDir);
     if (!opts.dry) {
       mkdirSync(destDir, { recursive: true });
-      for (const f of files) {
-        copyFileSync(resolvePath(srcDir, f), resolvePath(destDir, f));
+      for (const rel of files) {
+        const srcFile = resolvePath(srcDir, rel);
+        const destFile = resolvePath(destDir, rel);
+        mkdirSync(dirname(destFile), { recursive: true });
+        copyFileSync(srcFile, destFile);
+        // Preserve mode so exec bits on `scripts/*` survive the copy
+        // (copyFileSync does not carry the source mode).
+        chmodSync(destFile, statSync(srcFile).mode);
       }
     }
     report.copied += 1;
