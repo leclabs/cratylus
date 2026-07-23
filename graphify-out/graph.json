@@ -1671,8 +1671,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_canon_src_dimensions_capabilities_system_design",
-      "community": 26,
-      "community_name": "Story: Release Audit",
+      "community": 45,
+      "community_name": "forge/config: config/index.ts",
       "norm_label": "system-design.ts"
     },
     {
@@ -2716,8 +2716,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_canon_src_dimensions_self_evaluation_acceptance_criteria_check",
-      "community": 45,
-      "community_name": "forge/config: config/index.ts",
+      "community": 26,
+      "community_name": "Story: Release Audit",
       "norm_label": "acceptance-criteria-check.ts"
     },
     {
@@ -14265,8 +14265,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "packages_agent_forge_src_core_engine_compile_compilereport",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 136,
+      "community_name": "canon/toolkit: sweep.mjs",
       "norm_label": "compilereport"
     },
     {
@@ -16080,8 +16080,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "packages_agent_forge_src_core_ir_validator_validatemcpserver",
-      "community": 41,
-      "community_name": "canon/dimensions: boz.ts",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "validatemcpserver"
     },
     {
@@ -17521,8 +17521,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_agent_forge_src_core_schema_hook_schema_properties_targets",
-      "community": 73,
-      "community_name": "canon/toolkit: project-cli-codex.ts",
+      "community": 144,
+      "community_name": "forge/core: memory",
       "norm_label": "targets"
     },
     {
@@ -17532,8 +17532,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_agent_forge_src_core_schema_hook_schema_targets_type",
-      "community": 73,
-      "community_name": "canon/toolkit: project-cli-codex.ts",
+      "community": 144,
+      "community_name": "forge/core: memory",
       "norm_label": "type"
     },
     {
@@ -17565,8 +17565,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "packages_agent_forge_src_core_schema_hook_schema_properties_excludes",
-      "community": 144,
-      "community_name": "forge/core: memory",
+      "community": 73,
+      "community_name": "canon/toolkit: project-cli-codex.ts",
       "norm_label": "excludes"
     },
     {
@@ -17576,8 +17576,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "packages_agent_forge_src_core_schema_hook_schema_excludes_type",
-      "community": 144,
-      "community_name": "forge/core: memory",
+      "community": 73,
+      "community_name": "canon/toolkit: project-cli-codex.ts",
       "norm_label": "type"
     },
     {
@@ -25122,8 +25122,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s1_amp_test",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "s1.amp.test.ts"
     },
     {
@@ -25133,8 +25133,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s1_amp_test_manifest",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "manifest()"
     },
     {
@@ -25144,8 +25144,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s2_zed_test",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "s2.zed.test.ts"
     },
     {
@@ -25155,8 +25155,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s2_zed_test_manifest",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "manifest()"
     },
     {
@@ -25166,8 +25166,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s3_devin_test",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "s3.devin.test.ts"
     },
     {
@@ -25177,8 +25177,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s3_devin_test_manifest",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "manifest()"
     },
     {
@@ -25188,8 +25188,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s4_kilo_test",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "s4.kilo.test.ts"
     },
     {
@@ -25199,8 +25199,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s4_kilo_test_manifest",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "manifest()"
     },
     {
@@ -25210,8 +25210,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s4_kilo_test_parsejsonc",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "parsejsonc()"
     },
     {
@@ -25221,8 +25221,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s4_kilo_test_readkiloconfig",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "readkiloconfig()"
     },
     {
@@ -25232,8 +25232,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s5_renames_test",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "s5.renames.test.ts"
     },
     {
@@ -25243,8 +25243,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s6_second_tier_test",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "s6.second-tier.test.ts"
     },
     {
@@ -25254,8 +25254,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s6_second_tier_test_manifest",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "manifest()"
     },
     {
@@ -25265,8 +25265,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s6_second_tier_test_agents_md_rows",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "agents_md_rows"
     },
     {
@@ -25276,8 +25276,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s6_second_tier_test_cfg_rows",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "cfg_rows"
     },
     {
@@ -25287,8 +25287,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s6_second_tier_test_second_tier_ids",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "second_tier_ids"
     },
     {
@@ -25298,8 +25298,8 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s6_second_tier_test_buildstandardstree",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "buildstandardstree()"
     },
     {
@@ -25375,8 +25375,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s8_pi_natural_test",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "s8.pi-natural.test.ts"
     },
     {
@@ -25386,8 +25386,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s8_pi_natural_test_manifest",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "manifest()"
     },
     {
@@ -25397,8 +25397,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s9_pi_code_emission_test",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "s9.pi-code-emission.test.ts"
     },
     {
@@ -25408,8 +25408,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s9_pi_code_emission_test_manifest",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "manifest()"
     },
     {
@@ -25419,8 +25419,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_s9_pi_code_emission_test_code_ir",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "code_ir()"
     },
     {
@@ -25441,8 +25441,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_probe",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "e10/probe.ts"
     },
     {
@@ -25452,8 +25452,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e10_probe_importadapter",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "importadapter()"
     },
     {
@@ -25595,8 +25595,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e2_e2s5_local_compile_test",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 136,
+      "community_name": "canon/toolkit: sweep.mjs",
       "norm_label": "e2s5-local-compile.test.ts"
     },
     {
@@ -25606,8 +25606,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e2_e2s5_local_compile_test_all_ids",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 136,
+      "community_name": "canon/toolkit: sweep.mjs",
       "norm_label": "all_ids"
     },
     {
@@ -25617,8 +25617,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e2_e2s5_local_compile_test_localir",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 136,
+      "community_name": "canon/toolkit: sweep.mjs",
       "norm_label": "localir()"
     },
     {
@@ -25749,8 +25749,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s2_fixpoint_test",
-      "community": 139,
-      "community_name": "import.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "e3s2-fixpoint.test.ts"
     },
     {
@@ -25760,8 +25760,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s2_fixpoint_test_irresourcekey",
-      "community": 139,
-      "community_name": "import.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "irresourcekey"
     },
     {
@@ -25771,8 +25771,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s2_fixpoint_test_key_of",
-      "community": 139,
-      "community_name": "import.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "key_of"
     },
     {
@@ -25782,8 +25782,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s2_fixpoint_test_fullkeys",
-      "community": 139,
-      "community_name": "import.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "fullkeys()"
     },
     {
@@ -25793,8 +25793,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s2_fixpoint_test_fixturefor",
-      "community": 139,
-      "community_name": "import.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "fixturefor()"
     },
     {
@@ -25815,8 +25815,8 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s2_fixpoint_test_striphookids",
-      "community": 139,
-      "community_name": "import.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "striphookids()"
     },
     {
@@ -25826,8 +25826,8 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s2_fixpoint_test_hook_id_regenerators",
-      "community": 139,
-      "community_name": "import.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "hook_id_regenerators"
     },
     {
@@ -25837,8 +25837,8 @@
       "source_location": "L124",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s2_fixpoint_test_rulelike",
-      "community": 139,
-      "community_name": "import.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "rulelike"
     },
     {
@@ -25848,8 +25848,8 @@
       "source_location": "L125",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s2_fixpoint_test_stripruleids",
-      "community": 139,
-      "community_name": "import.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "stripruleids()"
     },
     {
@@ -25859,8 +25859,8 @@
       "source_location": "L135",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s2_fixpoint_test_rule_id_regenerators",
-      "community": 139,
-      "community_name": "import.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "rule_id_regenerators"
     },
     {
@@ -25870,8 +25870,8 @@
       "source_location": "L148",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s2_fixpoint_test_rule_body_shimmed",
-      "community": 139,
-      "community_name": "import.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "rule_body_shimmed"
     },
     {
@@ -25914,8 +25914,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s4_drift_test",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "e3s4-drift.test.ts"
     },
     {
@@ -25925,8 +25925,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s4_drift_test_agent_file",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "agent_file"
     },
     {
@@ -25936,8 +25936,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s4_drift_test_driftir",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "driftir()"
     },
     {
@@ -25947,8 +25947,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s4_drift_test_compileclaude",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "compileclaude()"
     },
     {
@@ -25958,8 +25958,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s5_foreign_content_test",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "e3s5-foreign-content.test.ts"
     },
     {
@@ -25969,8 +25969,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_e3s5_foreign_content_test_status_line",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "status_line"
     },
     {
@@ -26035,8 +26035,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e3_lib_captureconsole",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "captureconsole()"
     },
     {
@@ -26750,8 +26750,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e5_s1_plugin_support_mode_test",
-      "community": 41,
-      "community_name": "canon/dimensions: boz.ts",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "s1.plugin-support-mode.test.ts"
     },
     {
@@ -26794,8 +26794,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e5_s3_skills_native_guard_test",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "s3.skills-native-guard.test.ts"
     },
     {
@@ -26805,8 +26805,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e5_s3_skills_native_guard_test_plugin_arch_harnesses",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "plugin_arch_harnesses"
     },
     {
@@ -26816,8 +26816,8 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e5_s3_skills_native_guard_test_skillir",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "skillir()"
     },
     {
@@ -26904,8 +26904,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e5_s8_pi_demonstration_test",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "s8.pi-demonstration.test.ts"
     },
     {
@@ -26915,8 +26915,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e5_s8_pi_demonstration_test_manifest",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "manifest()"
     },
     {
@@ -26926,8 +26926,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e5_s8_pi_demonstration_test_demo_ir",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "demo_ir()"
     },
     {
@@ -27751,8 +27751,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e7_s09_standards_importer_test",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 41,
+      "community_name": "canon/dimensions: boz.ts",
       "norm_label": "s09-standards-importer.test.ts"
     },
     {
@@ -27762,8 +27762,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e7_s09_standards_importer_test_candidate_ids",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 41,
+      "community_name": "canon/dimensions: boz.ts",
       "norm_label": "candidate_ids"
     },
     {
@@ -27773,8 +27773,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e7_s09_standards_importer_test_dirs",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 41,
+      "community_name": "canon/dimensions: boz.ts",
       "norm_label": "dirs"
     },
     {
@@ -27784,8 +27784,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e7_s09_standards_importer_test_standardsfixture",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 41,
+      "community_name": "canon/dimensions: boz.ts",
       "norm_label": "standardsfixture()"
     },
     {
@@ -28224,8 +28224,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e9_agent_skill_surface_test",
-      "community": 41,
-      "community_name": "canon/dimensions: boz.ts",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "agent-skill-surface.test.ts"
     },
     {
@@ -28290,8 +28290,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e9_mcp_dialects_test",
-      "community": 41,
-      "community_name": "canon/dimensions: boz.ts",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "mcp-dialects.test.ts"
     },
     {
@@ -28301,8 +28301,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e9_mcp_dialects_test_fixture",
-      "community": 41,
-      "community_name": "canon/dimensions: boz.ts",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "fixture"
     },
     {
@@ -28312,8 +28312,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e9_mcp_dialects_test_unrepresentable",
-      "community": 41,
-      "community_name": "canon/dimensions: boz.ts",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "unrepresentable"
     },
     {
@@ -28367,8 +28367,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_e9_rule_activation_test",
-      "community": 41,
-      "community_name": "canon/dimensions: boz.ts",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "rule-activation.test.ts"
     },
     {
@@ -28444,8 +28444,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_helpers_assertknown",
-      "community": 41,
-      "community_name": "canon/dimensions: boz.ts",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "assertknown()"
     },
     {
@@ -28466,8 +28466,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_helpers_story",
-      "community": 41,
-      "community_name": "canon/dimensions: boz.ts",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "story()"
     },
     {
@@ -28488,8 +28488,8 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_helpers_adapterbyid",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 250,
+      "community_name": "hook-capability-truth.test.ts",
       "norm_label": "adapterbyid"
     },
     {
@@ -28499,8 +28499,8 @@
       "source_location": "L107",
       "_origin": "ast",
       "id": "packages_agent_forge_test_stories_helpers_maketmpdir",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 41,
+      "community_name": "canon/dimensions: boz.ts",
       "norm_label": "maketmpdir()"
     },
     {
@@ -33512,7 +33512,7 @@
       "label": "Intent",
       "file_type": "document",
       "source_file": "plans/plan-set-dynamics/PLAN.md",
-      "source_location": "L6",
+      "source_location": "L7",
       "_origin": "ast",
       "id": "plans_plan_set_dynamics_plan_intent",
       "community": 169,
@@ -33523,7 +33523,7 @@
       "label": "Ground truth (census, 2026-07-22)",
       "file_type": "document",
       "source_file": "plans/plan-set-dynamics/PLAN.md",
-      "source_location": "L26",
+      "source_location": "L27",
       "_origin": "ast",
       "id": "plans_plan_set_dynamics_plan_ground_truth_census_2026_07_22",
       "community": 169,
@@ -33534,7 +33534,7 @@
       "label": "Slices (MECE, vertical concern)",
       "file_type": "document",
       "source_file": "plans/plan-set-dynamics/PLAN.md",
-      "source_location": "L37",
+      "source_location": "L38",
       "_origin": "ast",
       "id": "plans_plan_set_dynamics_plan_slices_mece_vertical_concern",
       "community": 169,
@@ -33545,7 +33545,7 @@
       "label": "Dependencies & waves",
       "file_type": "document",
       "source_file": "plans/plan-set-dynamics/PLAN.md",
-      "source_location": "L48",
+      "source_location": "L49",
       "_origin": "ast",
       "id": "plans_plan_set_dynamics_plan_dependencies_waves",
       "community": 169,
@@ -33556,188 +33556,12 @@
       "label": "Not in scope",
       "file_type": "document",
       "source_file": "plans/plan-set-dynamics/PLAN.md",
-      "source_location": "L55",
+      "source_location": "L56",
       "_origin": "ast",
       "id": "plans_plan_set_dynamics_plan_not_in_scope",
       "community": 169,
       "community_name": "plan-set-dynamics",
       "norm_label": "not in scope"
-    },
-    {
-      "label": "t2-realize-the-mechanism.md",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t2_realize_the_mechanism",
-      "community": 149,
-      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
-      "norm_label": "t2-realize-the-mechanism.md"
-    },
-    {
-      "label": "t2 \u2014 realize the plan-set-dynamics mechanism",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
-      "community": 149,
-      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
-      "norm_label": "t2 \u2014 realize the plan-set-dynamics mechanism"
-    },
-    {
-      "label": "Objective",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L3",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_objective",
-      "community": 149,
-      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
-      "norm_label": "objective"
-    },
-    {
-      "label": "Inputs",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L9",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_inputs",
-      "community": 149,
-      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
-      "norm_label": "inputs"
-    },
-    {
-      "label": "Constraints",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L20",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_constraints",
-      "community": 149,
-      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
-      "norm_label": "constraints"
-    },
-    {
-      "label": "Dependencies",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L31",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_dependencies",
-      "community": 149,
-      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
-      "norm_label": "dependencies"
-    },
-    {
-      "label": "Outputs",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L35",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_outputs",
-      "community": 149,
-      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
-      "norm_label": "outputs"
-    },
-    {
-      "label": "Acceptance (blind, falsifiable)",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L40",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_acceptance_blind_falsifiable",
-      "community": 149,
-      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
-      "norm_label": "acceptance (blind, falsifiable)"
-    },
-    {
-      "label": "t3-land-notation-resolve-residue.md",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue",
-      "community": 154,
-      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
-      "norm_label": "t3-land-notation-resolve-residue.md"
-    },
-    {
-      "label": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
-      "community": 154,
-      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
-      "norm_label": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue"
-    },
-    {
-      "label": "Objective",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L3",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_objective",
-      "community": 154,
-      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
-      "norm_label": "objective"
-    },
-    {
-      "label": "Inputs",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L9",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_inputs",
-      "community": 154,
-      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
-      "norm_label": "inputs"
-    },
-    {
-      "label": "Constraints",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L19",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_constraints",
-      "community": 154,
-      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
-      "norm_label": "constraints"
-    },
-    {
-      "label": "Dependencies",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L29",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_dependencies",
-      "community": 154,
-      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
-      "norm_label": "dependencies"
-    },
-    {
-      "label": "Outputs",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L33",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_outputs",
-      "community": 154,
-      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
-      "norm_label": "outputs"
-    },
-    {
-      "label": "Acceptance (blind, falsifiable)",
-      "file_type": "document",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L40",
-      "_origin": "ast",
-      "id": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_acceptance_blind_falsifiable",
-      "community": 154,
-      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
-      "norm_label": "acceptance (blind, falsifiable)"
     },
     {
       "label": "t1-design-the-tier.md",
@@ -33825,6 +33649,182 @@
       "id": "plans_plan_set_dynamics_completed_t1_design_the_tier_acceptance_blind_falsifiable",
       "community": 165,
       "community_name": "t1 \u2014 design the plan-set-dynamics tier",
+      "norm_label": "acceptance (blind, falsifiable)"
+    },
+    {
+      "label": "t2-realize-the-mechanism.md",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism",
+      "community": 91,
+      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
+      "norm_label": "t2-realize-the-mechanism.md"
+    },
+    {
+      "label": "t2 \u2014 realize the plan-set-dynamics mechanism",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
+      "community": 91,
+      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
+      "norm_label": "t2 \u2014 realize the plan-set-dynamics mechanism"
+    },
+    {
+      "label": "Objective",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_objective",
+      "community": 91,
+      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
+      "norm_label": "objective"
+    },
+    {
+      "label": "Inputs",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_inputs",
+      "community": 91,
+      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
+      "norm_label": "inputs"
+    },
+    {
+      "label": "Constraints",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L20",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_constraints",
+      "community": 91,
+      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
+      "norm_label": "constraints"
+    },
+    {
+      "label": "Dependencies",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_dependencies",
+      "community": 91,
+      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
+      "norm_label": "dependencies"
+    },
+    {
+      "label": "Outputs",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L35",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_outputs",
+      "community": 91,
+      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
+      "norm_label": "outputs"
+    },
+    {
+      "label": "Acceptance (blind, falsifiable)",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L40",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_acceptance_blind_falsifiable",
+      "community": 91,
+      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
+      "norm_label": "acceptance (blind, falsifiable)"
+    },
+    {
+      "label": "t3-land-notation-resolve-residue.md",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue",
+      "community": 95,
+      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
+      "norm_label": "t3-land-notation-resolve-residue.md"
+    },
+    {
+      "label": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
+      "community": 95,
+      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
+      "norm_label": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue"
+    },
+    {
+      "label": "Objective",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_objective",
+      "community": 95,
+      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
+      "norm_label": "objective"
+    },
+    {
+      "label": "Inputs",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_inputs",
+      "community": 95,
+      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
+      "norm_label": "inputs"
+    },
+    {
+      "label": "Constraints",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L19",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_constraints",
+      "community": 95,
+      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
+      "norm_label": "constraints"
+    },
+    {
+      "label": "Dependencies",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_dependencies",
+      "community": 95,
+      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
+      "norm_label": "dependencies"
+    },
+    {
+      "label": "Outputs",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L33",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_outputs",
+      "community": 95,
+      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
+      "norm_label": "outputs"
+    },
+    {
+      "label": "Acceptance (blind, falsifiable)",
+      "file_type": "document",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L40",
+      "_origin": "ast",
+      "id": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_acceptance_blind_falsifiable",
+      "community": 95,
+      "community_name": "t3 \u2014 land the notation, reconcile docs, resolve the plan-retirement residue",
       "norm_label": "acceptance (blind, falsifiable)"
     },
     {
@@ -111260,7 +111260,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plans/plan-set-dynamics/PLAN.md",
-      "source_location": "L48",
+      "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast",
       "source": "plans_plan_set_dynamics_plan_plan_set_dynamics",
@@ -111271,7 +111271,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plans/plan-set-dynamics/PLAN.md",
-      "source_location": "L26",
+      "source_location": "L27",
       "weight": 1.0,
       "_origin": "ast",
       "source": "plans_plan_set_dynamics_plan_plan_set_dynamics",
@@ -111282,7 +111282,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plans/plan-set-dynamics/PLAN.md",
-      "source_location": "L6",
+      "source_location": "L7",
       "weight": 1.0,
       "_origin": "ast",
       "source": "plans_plan_set_dynamics_plan_plan_set_dynamics",
@@ -111293,7 +111293,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plans/plan-set-dynamics/PLAN.md",
-      "source_location": "L55",
+      "source_location": "L56",
       "weight": 1.0,
       "_origin": "ast",
       "source": "plans_plan_set_dynamics_plan_plan_set_dynamics",
@@ -111304,165 +111304,11 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plans/plan-set-dynamics/PLAN.md",
-      "source_location": "L37",
+      "source_location": "L38",
       "weight": 1.0,
       "_origin": "ast",
       "source": "plans_plan_set_dynamics_plan_plan_set_dynamics",
       "target": "plans_plan_set_dynamics_plan_slices_mece_vertical_concern",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L1",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t2_realize_the_mechanism",
-      "target": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L40",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
-      "target": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_acceptance_blind_falsifiable",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L20",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
-      "target": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_constraints",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L31",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
-      "target": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_dependencies",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L9",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
-      "target": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_inputs",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
-      "target": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_objective",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t2-realize-the-mechanism.md",
-      "source_location": "L35",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
-      "target": "plans_plan_set_dynamics_active_t2_realize_the_mechanism_outputs",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L1",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue",
-      "target": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L40",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
-      "target": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_acceptance_blind_falsifiable",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L19",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
-      "target": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_constraints",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L29",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
-      "target": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_dependencies",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L9",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
-      "target": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_inputs",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
-      "target": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_objective",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/plan-set-dynamics/active/t3-land-notation-resolve-residue.md",
-      "source_location": "L33",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
-      "target": "plans_plan_set_dynamics_active_t3_land_notation_resolve_residue_outputs",
       "confidence_score": 1.0
     },
     {
@@ -111540,6 +111386,160 @@
       "_origin": "ast",
       "source": "plans_plan_set_dynamics_completed_t1_design_the_tier_t1_design_the_plan_set_dynamics_tier",
       "target": "plans_plan_set_dynamics_completed_t1_design_the_tier_outputs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism",
+      "target": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L40",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
+      "target": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_acceptance_blind_falsifiable",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L20",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
+      "target": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_constraints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L31",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
+      "target": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_dependencies",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
+      "target": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_inputs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
+      "target": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_objective",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t2-realize-the-mechanism.md",
+      "source_location": "L35",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_t2_realize_the_plan_set_dynamics_mechanism",
+      "target": "plans_plan_set_dynamics_completed_t2_realize_the_mechanism_outputs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue",
+      "target": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L40",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
+      "target": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_acceptance_blind_falsifiable",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L19",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
+      "target": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_constraints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L29",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
+      "target": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_dependencies",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
+      "target": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_inputs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
+      "target": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_objective",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/plan-set-dynamics/completed/t3-land-notation-resolve-residue.md",
+      "source_location": "L33",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_t3_land_the_notation_reconcile_docs_resolve_the_plan_retirement_residue",
+      "target": "plans_plan_set_dynamics_completed_t3_land_notation_resolve_residue_outputs",
       "confidence_score": 1.0
     },
     {
@@ -112688,5 +112688,5 @@
       "source_file": "packages/agent-forge/test/stories/E6-exemplify-optimization.md"
     }
   ],
-  "built_at_commit": "62043c1e7ca2eb95cd9b2eab012147e7ca7d1921"
+  "built_at_commit": "27aa9a9488c26348b16533b904480f0966065c8f"
 }

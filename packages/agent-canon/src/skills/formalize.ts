@@ -16,9 +16,9 @@ T ≜ the declared notation table (src/toolkit/operator-lexicon.ts)
 σ* ≜ signify's fittest sign
 
 B ≜ formalize(P) such that :
-    ∀ e ∈ E      : signature(η(e)) ∈ B        declarations above
-    ∀ o ∈ O ∪ L  : law(η(o)) ∈ B              comprehensions and laws below
-    ∀ line ∈ B : line = σ*(its concept)     B is the σ* of P
+    ∀ e ∈ E      : signature(η(e)) ∈ B
+    ∀ o ∈ O ∪ L  : law(η(o)) ∈ B
+    ∀ line ∈ B : line = σ*(its concept)
 
 S ≜ symbols(B) ; Dfn ≜ { s | a line of B defines s }
 closed(B)   ⇔ S ⊆ T ∪ Dfn ∪ β ∪ ι
@@ -30,7 +30,7 @@ gloss(B) ≜ prose of B beyond β ∪ ι ; gloss(B) ≠ ∅ ⇒ ¬complete(B)
 
 σ*(c) ∉ T ⇒ extend T with σ*(c) ⟨cold-verify⟩ ; ¬ degrade c to a weaker α ∈ T ∵ α ≠ σ*(c)
 
-reconstruct(B) ≽ P                            input-typed ≽ terminus ; accept
-reconstruct(B) ⋡ P ⇒ ⊥                        repair the block, never prop it with prose` as SkillExpression,
+reconstruct(B) ≽ P
+reconstruct(B) ⋡ P ⇒ ⊥` as SkillExpression,
   composition: () => [conceptualize, signify],
 };
