@@ -27,6 +27,12 @@ import {
 } from './config.js';
 import { hookTreeNames, placeHooksLocal } from './hooks.js';
 import { placeAgentsLocal, placeSkillsLocal } from './local.js';
+import {
+  type RuntimeBundle,
+  buildRuntimeBundle,
+  installRuntimeLocal,
+  installRuntimeSsh,
+} from './runtime-install.js';
 import { projectScope, userScope } from './scope.js';
 import {
   type SshPlaceOpts,
@@ -59,6 +65,19 @@ export interface DeployOpts {
   runner?: CommandRunner;
   log?: (line: string) => void;
   warn?: (line: string) => void;
+  // ── S7 per-host runtime install (FORK-3) ────────────────────────────────
+  // Opt-in the runtime-install step (bundle + flat co-install of
+  // `@leclabs/agent-runtime` + capability plugins). Runs once per host, on the
+  // `agent` kind. Default OFF at the engine boundary so the placement engine's
+  // pure tests stay hermetic; the `deploy` CLI turns it ON. Idempotent.
+  runtimeInstall?: boolean;
+  // Override the install prefix (default: the host's npm global prefix). A test
+  // points this at a temp dir; production leaves it unset.
+  runtimePrefix?: string | null;
+  // Override the monorepo root the bundle is packed from (default: discovered).
+  monorepoRoot?: string | null;
+  // A pre-built bundle reused across fleet hosts (pack once per deploy).
+  runtimeBundle?: RuntimeBundle | null;
 }
 
 /** Names available to deploy for a kind, read from the render tree. Agents are
@@ -153,12 +172,27 @@ function deployLocal(
       placeOpts(opts),
     );
   }
-  return placeAgentsLocal(
+  const result = placeAgentsLocal(
     scopeRes.claudeDir,
     opts.tree.agentsDir,
     names,
     placeOpts(opts),
   );
+  // After placing agent artifacts, ensure the per-host runtime is installed so a
+  // deployed skill's `agent-runtime <cap> <verb>` shim resolves (S7/FORK-3). Once
+  // per host, on the `agent` kind; idempotent + version-pinned.
+  if (opts.runtimeInstall) {
+    installRuntimeLocal(scopeRes.claudeDir, {
+      dry: opts.dry ?? false,
+      log,
+      warn: opts.warn,
+      runner: opts.runner,
+      prefix: opts.runtimePrefix ?? null,
+      monorepoRoot: opts.monorepoRoot ?? null,
+      bundle: opts.runtimeBundle ?? null,
+    });
+  }
+  return result;
 }
 
 /** Deploy over ssh to a resolved non-local host (user@hostname:<home>). */
@@ -192,7 +226,7 @@ function deployRemote(
       placeOpts(opts),
     );
   }
-  return placeAgentsSsh(
+  const result = placeAgentsSsh(
     hp.user as string,
     hp.hostname,
     home,
@@ -200,6 +234,20 @@ function deployRemote(
     names,
     placeOpts(opts),
   );
+  // Ensure the remote runtime is installed (S7/FORK-3) once per host, on `agent`.
+  // Skipped when the host was unreachable (rc 2) — nothing to install against.
+  if (opts.runtimeInstall && result.rc === 0) {
+    installRuntimeSsh(`${hp.user}@${hp.hostname}`, {
+      dry: opts.dry ?? false,
+      log,
+      warn: opts.warn,
+      runner: opts.runner,
+      prefix: opts.runtimePrefix ?? null,
+      monorepoRoot: opts.monorepoRoot ?? null,
+      bundle: opts.runtimeBundle ?? null,
+    });
+  }
+  return result;
 }
 
 /** Deploy to one resolved host — locality from its params, not a magic name. */
@@ -327,13 +375,32 @@ export function deployFleet(opts: DeployFleetOpts): FleetResult {
     `    ${opts.kind.endsWith('s') ? opts.kind : `${opts.kind}s`} (${names.length}): ${names.join(', ')}`,
   );
 
+  // Pack the runtime bundle ONCE for the whole fleet (a re-pack per host is
+  // wasteful and the artifact is identical); each host reuses it. Only when the
+  // install is on, the kind is `agent`, and a bundle was not already supplied.
+  let fleetBundle = opts.runtimeBundle ?? null;
+  if (
+    opts.runtimeInstall &&
+    opts.kind === 'agent' &&
+    !fleetBundle &&
+    !opts.dry
+  ) {
+    fleetBundle = buildRuntimeBundle({
+      dry: false,
+      log,
+      warn: opts.warn,
+      runner: opts.runner,
+      monorepoRoot: opts.monorepoRoot ?? null,
+    });
+  }
+
   const results: FleetResult['results'] = [];
   for (const hp of resolved) {
     const where = hp.local
       ? `local ${hp.home ?? '~/.claude'}`
       : `${hp.user}@${hp.hostname}:${hp.home ?? '~/.claude'}`;
     log(`\n--- host '${hp.name}' -> ${where} ---`);
-    const r = deployHost(hp, names, { ...opts });
+    const r = deployHost(hp, names, { ...opts, runtimeBundle: fleetBundle });
     const rc = r.rc;
     const status: FleetHostStatus = opts.dry
       ? 'dry-run'

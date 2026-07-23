@@ -338,6 +338,14 @@ cli
     'single-host: names to deploy; --fleet: hosts to restrict to',
   )
   .option('--dry-run', 'print actions, change nothing')
+  .option(
+    '--no-runtime-install',
+    'skip the per-host runtime install (default: bundle + flat co-install agent-runtime + capabilities)',
+  )
+  .option(
+    '--runtime-prefix <dir>',
+    'install prefix for the runtime bundle (default: the host npm global prefix, already on PATH)',
+  )
   .action(
     async (opts: {
       agentsDir?: string;
@@ -354,6 +362,8 @@ cli
       exclude?: string;
       only?: string;
       dryRun?: boolean;
+      runtimeInstall?: boolean;
+      runtimePrefix?: string;
     }) => {
       // `hooks` ships from a single hooks render root; agent/skill ship from the
       // agents/ + skills/ dirs; `all` ships every kind in one invocation and so
@@ -407,6 +417,9 @@ cli
           exclude: opts.exclude ?? null,
           only: opts.only ?? null,
           dryRun: opts.dryRun,
+          // cac maps `--no-runtime-install` to `runtimeInstall === false`.
+          noRuntimeInstall: opts.runtimeInstall === false,
+          runtimePrefix: opts.runtimePrefix ?? null,
         }),
       );
     },

@@ -48,6 +48,10 @@ export interface DeployCmdOpts {
   exclude?: string | null;
   only?: string | null;
   dryRun?: boolean;
+  // S7: skip the per-host runtime-install step (default: install). Override the
+  // install prefix (default: the host's npm global prefix, already on PATH).
+  noRuntimeInstall?: boolean;
+  runtimePrefix?: string | null;
 }
 
 function splitList(s: string | null | undefined): string[] | null {
@@ -144,6 +148,8 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
           exclude: splitList(opts.exclude),
           onlyHosts: splitList(opts.only),
           dry: opts.dryRun ?? false,
+          runtimeInstall: !opts.noRuntimeInstall,
+          runtimePrefix: opts.runtimePrefix ?? null,
           log,
           warn,
         });
@@ -166,6 +172,8 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
         project: opts.project ?? null,
         only: splitList(opts.only),
         dry: opts.dryRun ?? false,
+        runtimeInstall: !opts.noRuntimeInstall,
+        runtimePrefix: opts.runtimePrefix ?? null,
         cfg,
         log,
         warn,

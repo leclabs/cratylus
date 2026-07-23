@@ -91,6 +91,18 @@ export {
 } from './deploy.js';
 
 export {
+  type RuntimeBundle,
+  type RuntimeInstallOpts,
+  RUNTIME_BIN,
+  RUNTIME_BUNDLE_PACKAGES,
+  RUNTIME_STAMP_REL,
+  buildRuntimeBundle,
+  installRuntimeLocal,
+  installRuntimeSsh,
+  resolveMonorepoRoot,
+} from './runtime-install.js';
+
+export {
   DEFAULT_PROJECT_TEMPLATE,
   type ProjectTemplate,
 } from './project-template.js';

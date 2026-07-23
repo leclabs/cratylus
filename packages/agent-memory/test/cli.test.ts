@@ -510,10 +510,10 @@ describe('dispatch', () => {
     expect(r.out.trim()).toMatch(/^\d+\.\d+\.\d+/);
   });
 
-  it('install is a documented no-op self-check', () => {
+  it('install is RETIRED — an unknown command (runtime placed per host by deploy)', () => {
     const r = main(['install']);
-    expect(r.code).toBe(0);
-    expect(r.out).toMatch(/installed as a PATH tool/);
+    expect(r.code).toBe(2);
+    expect(r.err).toMatch(/unknown command: install/);
   });
 });
 

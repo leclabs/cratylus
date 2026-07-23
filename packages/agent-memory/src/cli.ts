@@ -145,7 +145,6 @@ Every verb takes the agent home as --home <dir> OR --name <name> (⇒ ~/.agents/
 
 usage:
   memory --version
-  memory install
   memory init    (--home <dir> | --name <name>)
   memory encode  (--home <dir> | --name <name>) [--session <id>] [--tags <a,b>] [--path <p>] \\
                  (--body <text> | --body-json <json> | --body -)
@@ -163,10 +162,10 @@ usage:
   memory audit   (--home <dir> | --name <name>) [--allow <file>] [--config <file>] [--keys <file>]
   memory migrate <src.md> <dest.jsonl> [--dry-run] [--overwrite]
 
-install is a documented self-check (the tool installs on PATH via the package
-\`bin\`); it changes no host state. init provisions a fresh home — mkdir + seed
-the {SEMANTIC.md, PROCEDURAL.md, EPISODIC.jsonl} stores if-absent (never
-clobbered).
+init provisions a fresh home — mkdir + seed the {SEMANTIC.md, PROCEDURAL.md,
+EPISODIC.jsonl} stores if-absent (never clobbered). (The old \`install\`
+self-check is RETIRED — the runtime is placed per host by agent-forge deploy's
+runtime-install step, not by a tool self-check.)
 
 encode appends one open record {id, session, host, cwd, body, tags?} to the
 home log. {host, cwd} are DERIVED by the tool — never caller-supplied. The
@@ -786,21 +785,6 @@ function runAudit(args: ParsedArgs): CliResult {
 }
 
 /**
- * `install`: the host-bootstrap self-check. The tool installs on PATH via the
- * package `bin` (`memory`), so there is nothing to build or link — this verb is
- * a documented no-op that confirms the tool runs and points at `init`. Keeping
- * it makes the uv-tool-style install flow explicit (`memory install` succeeds
- * ⇒ the tool is on PATH) without minting any host state.
- */
-function runInstall(): CliResult {
-  return {
-    code: 0,
-    out: `memory ${VERSION} — installed as a PATH tool (package bin: \`memory\`). No host state changed.\nProvision an agent home with: memory init --name <agent>\n`,
-    err: '',
-  };
-}
-
-/**
  * `init`: provision a fresh agent home. Creates the home dir and seeds the
  * self-authored stores {SEMANTIC.md, PROCEDURAL.md, EPISODIC.jsonl} IF-ABSENT —
  * never clobbering an existing store (`substance-over-accident`). This is the
@@ -842,8 +826,6 @@ export function main(argv: readonly string[]): CliResult {
   const args = parseArgs(rest);
   try {
     switch (cmd) {
-      case 'install':
-        return runInstall();
       case 'init':
         return runInit(args);
       case 'encode':
