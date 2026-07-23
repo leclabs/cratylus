@@ -1,4 +1,14 @@
-# T3 — mechanism (pending · wave 1 · deps T1)
+# T3 — mechanism (ABSORBED into `agent-runtime/S5` · was pending · wave 1 · deps T1)
+
+> **⛔ ABSORBED-BY `agent-runtime/S5` (event-tap-capability) — do NOT execute as-is.**
+> The `event-tap.sh` mechanism + passive logger specified below are absorbed into the `agent-runtime`
+> runtime-plugin architecture: event-tap becomes a **`RuntimePlugin` implementing the `EventTapHost`
+> port**, with the claude settings.json realization as a **capability impl**, invoked
+> `agent-runtime tap <verb>`. The non-interference contract + install/inspect/uninstall/status behavior
+> below are the substance S5 realizes — carry them forward as the S5 capability spec, not as a standalone
+> canon `.sh`. See `plans/agent-runtime/SUPERSESSION.md`. Historical spec follows.
+
+---
 
 ## Objective
 

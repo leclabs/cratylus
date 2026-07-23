@@ -1,4 +1,13 @@
-# T5 — integrate (pending · wave 2 · deps T1, T2, T3, T4)
+# T5 — integrate (SUPERSEDED · was pending · wave 2 · deps T1, T2, T3, T4)
+
+> **⛔ RE-CUT under `agent-runtime/S10` (integrate-smoke) — do NOT execute as-is.**
+> This slice proved the T4 dep-free-bundle runtime-companion pattern end-to-end; that pattern is
+> superseded by the `agent-runtime` thin-shim architecture (see T4's banner + `agent-runtime/S6`+`S8`).
+> The end-to-end proof re-cuts as `agent-runtime/S10`: project → deploy (+per-host runtime install,
+> `agent-runtime/S7`) → deployed thin-shim invokes `agent-runtime <capability> <verb>` on the host.
+> Retained for the reasoning trail only — see `plans/agent-runtime/SUPERSESSION.md`. Historical spec follows.
+
+---
 
 ## Objective
 

@@ -1,4 +1,15 @@
-# T2 — assets-bridge (ready · wave 0 · deps ∅)
+# T2 — assets-bridge (SUPERSEDED · was ready · wave 0 · deps ∅)
+
+> **⛔ SUPERSEDED-BY `agent-runtime/S6`+`S8` — do NOT execute for event-tap.**
+> This slice existed to make a skill's `assets:` companion ship a `.sh` beside SKILL.md. Under the
+> `agent-runtime` thin-shim architecture the event-tap mechanism lives in a **runtime plugin** installed
+> per-host (`agent-runtime/S7`), and the projected skill is a thin shim → `agent-runtime tap <verb>`; no
+> per-skill `.sh` asset ships, so the `assets:` projection gap is off event-tap's path. (The general
+> `assets:`-staging idea is not destroyed — it is git-restorable and could be revived as its own concern
+> if a non-runtime skill ever needs it — but it is NOT part of this effort chain.) See
+> `plans/agent-runtime/SUPERSESSION.md`. Historical spec follows.
+
+---
 
 ## Objective
 

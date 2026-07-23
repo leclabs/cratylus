@@ -1,4 +1,12 @@
-# T1 — derive-verbs (ready · wave 0 · deps ∅)
+# T1 — derive-verbs (SURVIVES → feeds `agent-runtime/S5` · was ready · wave 0 · deps ∅)
+
+> **✅ SURVIVES.** event-tap reshapes into an `agent-runtime` runtime capability (see
+> `plans/event-tap/PLAN.md` STATUS + `plans/agent-runtime/SUPERSESSION.md`). This slice's deliverable —
+> the cold-derived, cratylism-gated sub-verb set + confirmed anchor — is a live INPUT to
+> `agent-runtime/S5` (event-tap-capability), where the verbs become `agent-runtime tap <verb>`. Execute
+> or reuse as the naming input to S5; nothing here is dead. Spec follows unchanged.
+
+---
 
 ## Objective
 

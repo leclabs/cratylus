@@ -1,4 +1,14 @@
-# T4 — compose-build (pending · wave 1 · deps T1, T3)
+# T4 — compose-build (SUPERSEDED · was pending · wave 1 · deps T1, T3)
+
+> **⛔ SUPERSEDED-BY `agent-runtime/S6` (forge-build-integration) + `agent-runtime/S8` (skills-rewire) — do NOT execute.**
+> The dep-free-bundle composition specified below is the DEAD design. `agent-runtime` decomplects a
+> **runtime host** from the build host: a projected skill script becomes a **thin shim →
+> `agent-runtime <capability> <verb>`**, not a dependency-free `.mjs` composed at projection. S6
+> reverses this slice (forge projects thin shims against runtime ports); the capability logic lives in
+> a runtime plugin, installed per-host by `agent-runtime/S7`. Retained for the reasoning trail only —
+> see `plans/agent-runtime/SUPERSESSION.md`. Historical spec follows.
+
+---
 
 ## Objective
 

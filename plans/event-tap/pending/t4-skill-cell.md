@@ -1,4 +1,14 @@
-# T4 — skill-cell (pending · wave 1 · deps T1)
+# T4 — skill-cell (ABSORBED into `agent-runtime/S8` · was pending · wave 1 · deps T1)
+
+> **⛔ ABSORBED-BY `agent-runtime/S8` (skills-rewire) — do NOT execute as-is.**
+> The `event-tap.ts` cell below is reshaped into a **thin-shim skill** under the `agent-runtime`
+> architecture — projected against the runtime port, dispatching to `agent-runtime tap <verb>` rather
+> than carrying/declaring an `assets: ['event-tap.sh']` companion. The cell's naming/description/gate
+> obligations carry forward into S8; the `assets:`-companion coupling is dropped (see T2). Count-bump
+> discipline still applies wherever the shim cell lands. See `plans/agent-runtime/SUPERSESSION.md`.
+> Historical spec follows.
+
+---
 
 ## Objective
 

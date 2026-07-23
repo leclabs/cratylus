@@ -1,4 +1,14 @@
-# T5 — integrate-deploy (pending · wave 2 · deps T2, T3, T4)
+# T5 — integrate-deploy (RE-CUT under `agent-runtime/S7`+`S10` · was pending · wave 2 · deps T2, T3, T4)
+
+> **⛔ RE-CUT under `agent-runtime/S7` (deploy-runtime-install) + `agent-runtime/S10` (integrate-smoke) — do NOT execute as-is.**
+> Integration/deploy of event-tap now flows through the runtime host: `agent-runtime/S7` guarantees the
+> per-host `agent-runtime` + event-tap plugin install (dissolving the ship-the-`.sh` step), and
+> `agent-runtime/S10` runs the e2e smoke (project → deploy+install → deployed thin-shim invokes
+> `agent-runtime tap <verb>` on the host → verify). The clean-worktree gate + FLEET/push-reserved
+> discipline below carry forward to those slices. See `plans/agent-runtime/SUPERSESSION.md`. Historical
+> spec follows.
+
+---
 
 ## Objective
 
