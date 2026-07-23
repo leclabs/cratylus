@@ -41,7 +41,7 @@ async function firstExport<T>(modPath: string): Promise<T> {
 
 async function loadSkills(): Promise<Skill[]> {
   const out: Skill[] = [];
-  for await (const p of glob('skills/*.ts', { cwd: srcRoot })) {
+  for await (const p of glob('skills/*/skill.ts', { cwd: srcRoot })) {
     out.push(await firstExport<Skill>(join(srcRoot, p)));
   }
   return out;

@@ -1,7 +1,7 @@
 import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
-import { conceptualize } from './conceptualize.js';
-import { exemplify } from './exemplify.js';
-import { signify } from './signify.js';
+import { conceptualize } from '../conceptualize/skill.js';
+import { exemplify } from '../exemplify/skill.js';
+import { signify } from '../signify/skill.js';
 
 export const materialize: Skill = {
   name: 'materialize',

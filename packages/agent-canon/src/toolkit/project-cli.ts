@@ -64,6 +64,15 @@ async function moduleNames(dir: string): Promise<string[]> {
   return names.sort();
 }
 
+/** Skill cells are self-contained dirs: `<name>/skill.ts`; the name is the dir. */
+async function skillNames(dir: string): Promise<string[]> {
+  const names: string[] = [];
+  for await (const p of glob('*/skill.ts', { cwd: dir })) {
+    names.push(dirname(p));
+  }
+  return names.sort();
+}
+
 /** The `<name>: Agent` vector export of an agent module. */
 async function agentOf(modPath: string): Promise<Agent> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<
@@ -114,10 +123,10 @@ async function projectAgents(out: string): Promise<number> {
 }
 
 async function projectSkills(out: string): Promise<number> {
-  const names = await moduleNames(skillsModDir);
+  const names = await skillNames(skillsModDir);
   let n = 0;
   for (const name of names) {
-    const cell = await skillOf(join(skillsModDir, `${name}.ts`));
+    const cell = await skillOf(join(skillsModDir, name, 'skill.ts'));
     const resolved: ResolvedSkill = {
       name: cell.name,
       trigger: `/${cell.name}`,

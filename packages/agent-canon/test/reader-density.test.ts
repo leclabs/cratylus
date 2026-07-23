@@ -60,7 +60,7 @@ import {
   universalCell,
 } from '@leclabs/agent-forge/validate';
 import { describe, expect, it } from 'vitest';
-import { signify } from '../src/skills/signify.js';
+import { signify } from '../src/skills/signify/skill.js';
 import { nonceControl } from '../src/toolkit/cold-oracle/oracle.js';
 // The injected corpus POLICY DATA (palimpsest table + operator lexicon) the
 // doctrine-agnostic validate ALGORITHM consumes — passed at every gate call site.
@@ -127,7 +127,7 @@ async function allSurfaces(): Promise<Surface[]> {
       text: splitBody(f).definiens,
     });
   }
-  for (const rel of await collect('skills/*.ts')) {
+  for (const rel of await collect('skills/*/skill.ts')) {
     const s = await firstExport<Skill>(join(srcRoot, rel));
     // A skill contributes ONE ρ=LLM density surface: its `description` (σ_human*
     // one-liner, harness-read at progressive disclosure). The `formalBlock` is pure
@@ -645,7 +645,7 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
       const r = admissibleSingleLine(splitBody(value).definiens, canonPolicy);
       if (!r.admissible) failures.push(`dimension ${rel}: ${r.reason}`);
     }
-    for (const rel of await collect('skills/*.ts')) {
+    for (const rel of await collect('skills/*/skill.ts')) {
       const s = await firstExport<Skill>(join(srcRoot, rel));
       // `description` is σ_human*, NOT σ* — no longer residue-gated. The sole σ*
       // payload is `formalBlock`, gated as a FORMAL-BLOCK via the typed entry point.

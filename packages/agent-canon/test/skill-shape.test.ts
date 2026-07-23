@@ -87,7 +87,7 @@ async function firstExport<T>(modPath: string): Promise<T> {
 
 async function allSkills(): Promise<Array<{ rel: string; cell: Skill }>> {
   const out: Array<{ rel: string; cell: Skill }> = [];
-  for await (const p of glob('skills/*.ts', { cwd: srcRoot })) {
+  for await (const p of glob('skills/*/skill.ts', { cwd: srcRoot })) {
     out.push({ rel: p, cell: await firstExport<Skill>(join(srcRoot, p)) });
   }
   return out.sort((a, b) => a.rel.localeCompare(b.rel));
