@@ -17,27 +17,27 @@ gloss : C_R → text          — a primitive's stored meaning
 kind : C_R → K              — the cell's kind
 K                — the closed kind set
 
-concept-contract ≜ record(gloss, anchor, factorization)   -- the unit threaded through the chain
-dfp(g) ≜ densest-faithful-point(g)                         -- minimal text recovering g w/o loss; a primitive's stored gloss
-cite-by-ref ≜ composite stores factor-anchors ∧ ¬restate factor-content   -- one home, cited once
+concept-contract ≜ record(gloss, anchor, factorization)
+dfp(g) ≜ densest-faithful-point(g)
+cite-by-ref ≜ composite stores factor-anchors ∧ ¬restate factor-content
 CSF ≜ bipartite-normal-form: primitive↦⟨anchor,gloss⟩ by value ; composite↦⟨anchor,factor-anchors⟩ by reference
 realize ≜ dispatch artifact-form per kind through a named strategy s
-loud-refusal ≜ s unnamed ∨ ρ_s not total over live kinds ⇒ ⊥   -- no permissive default, refuse don't guess
+loud-refusal ≜ s unnamed ∨ ρ_s not total over live kinds ⇒ ⊥
 
 -- LAWS -------------------------------------------------------------------
 F_R(m) ≜ min_≺ fac_R(m)
-CSF_R(c) ≜ ( anchor(c) , dfp(gloss(c)) )              ,  prim_R(c)     -- anchor read from the record, not recomputed
-CSF_R(c) ≜ ( anchor(c) , { anchor(p) | p ∈ F_R(c) } ) ,  ¬prim_R(c)   -- cite-by-ref: factor-anchors, never factor content
+CSF_R(c) ≜ ( anchor(c) , dfp(gloss(c)) )              ,  prim_R(c)
+CSF_R(c) ≜ ( anchor(c) , { anchor(p) | p ∈ F_R(c) } ) ,  ¬prim_R(c)
 realize(k) fills factorization(k) ≜ CSF_R(k) ; gloss(k), anchor(k) preserved
-anchor(k) = ⊥ ⇒ realize(k) = ⊥                        -- cannot realize an unnamed concept
+anchor(k) = ⊥ ⇒ realize(k) = ⊥
 
-prose(c) ≜ render(CSF_R(c), R)                        -- a projection, never stored beside CSF_R(c)
+prose(c) ≜ render(CSF_R(c), R)
 
 Φ ≜ { (anchor(c), kind(c), CSF_R(c)) | c ∈ C_R }
 S ≜ { file, document, … }
 σ : Φ × S → artifacts
 ρ_s : K → form_s
-σ well-defined ⇔ ρ_s total over kinds(Φ)             -- loud-refusal:
+σ well-defined ⇔ ρ_s total over kinds(Φ)
 s unnamed ∨ s ∉ S ⇒ ⊥
 ∃ k ∈ kinds(Φ) : k ∉ dom(ρ_s) ⇒ ⊥
 

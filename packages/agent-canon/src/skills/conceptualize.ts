@@ -18,40 +18,33 @@ TRIPLE            — contract record ⟨ gloss , anchor , factorization ⟩ ; t
                     fields filled by stage: conceptualize→gloss, signify→anchor, materialize→factorization;
                     an unfilled field is ⊥ and a consumer tolerates its absence
 
--- substrate-vs-meaning: file/cell/front-matter/layout boundaries are projections of an
--- earlier cut, not meaning — dissolve them; cut at meaning joints, grandfather no boundary
--- palimpsest: an artifact bearing strata of its own superseded states (abandoned names,
--- narrated removals, changelog residue); net-green = those strata stripped, only live content survives
--- densest-faithful-point: the gloss optimum — removing a token lowers fidelity, adding one does not raise it
-
 -- OPERATIONS --------------------------------------------------------------
-resolve(sources)  ≜ ⋃ { content(s) | s ∈ sources }        -- the mass, prior boundaries dissolved
+resolve(sources)  ≜ ⋃ { content(s) | s ∈ sources }
 D_R               ≜ { d | d a distinction R draws over resolve(sources) }
-boundaries(sources) ∉ D_R                                 -- ∵ substrate, not meaning
-depalimpsest(d)   ≜ d ↾ live-strata                       -- superseded strata dropped ; net-green survives
-partition(D_R)    ⊆ ℘(D_R)                                -- cut the mass at meaning joints
+boundaries(sources) ∉ D_R
+depalimpsest(d)   ≜ d ↾ live-strata
+partition(D_R)    ⊆ ℘(D_R)
 
 cl_R : ℘(D_R) → ℘(D_R)
 cl_R(X)           ⊇ X
 X ⊆ Y             ⇒ cl_R(X) ⊆ cl_R(Y)
 cl_R(cl_R(X))     = cl_R(X)
-∀ d ∈ D_R         : d ∉ cl_R(D_R \\ {d})                   -- each atom independent
+∀ d ∈ D_R         : d ∉ cl_R(D_R \\ {d})
 
-C_R               ≜ { X ⊆ D_R | cl_R(X) = X }            -- the concepts: closed sets
+C_R               ≜ { X ⊆ D_R | cl_R(X) = X }
 intent(c)         ≜ c
 ⊔ P               ≜ cl_R(⋃ { intent(c) | c ∈ P })   ,  P ⊆ C_R
 
-prim_R(c)         ⇔ ∄ P ⊆ C_R \\ {c} : ⊔ P = intent(c)    -- primitive: no factoring covers it
-gloss(c)          ≜ intent(c)                        ,  prim_R(c)   -- stored at densest-faithful-point
-fac_R(m)          ≜ { P ⊆ C_R \\ {m} | ⊔ P = intent(m) ∧ ∄ Q ⊊ P : ⊔ Q = intent(m) }   -- deepest faithful factorizations
-distill(c)        ≜ prim_R(c) ∨ fac_R(c) ≠ ∅             -- each concept is primitive or has a deepest faithful factorization
+prim_R(c)         ⇔ ∄ P ⊆ C_R \\ {c} : ⊔ P = intent(c)
+gloss(c)          ≜ intent(c)                        ,  prim_R(c)
+fac_R(m)          ≜ { P ⊆ C_R \\ {m} | ⊔ P = intent(m) ∧ ∄ Q ⊊ P : ⊔ Q = intent(m) }
+distill(c)        ≜ prim_R(c) ∨ fac_R(c) ≠ ∅
 
-produce(sources)  ≜ { ( gloss(c), ⊥, ⊥ ) | c ∈ C_R }    -- TRIPLE per concept: gloss filled, anchor & factorization ⊥
+produce(sources)  ≜ { ( gloss(c), ⊥, ⊥ ) | c ∈ C_R }
 
 -- LAWS -------------------------------------------------------------------
-MECE(C_R)         ⇔ ( ∀ c≠c' ∈ C_R : intent(c) ≠ intent(c') )   -- mutually exclusive: distinct closed sets
-                    ∧ ( cl_R(D_R) = ⊔ C_R )                     -- collectively exhaustive: closure spans D_R
--- MECE is forced by the cl_R axioms over C_R: idempotent closure ⇒ no overlap, ⊔ C_R = cl_R(D_R) ⇒ no gap
-C_R = ∅           ⇒ ⊥                                            -- empty lattice is a malfunction, refuse loudly` as SkillExpression,
+MECE(C_R)         ⇔ ( ∀ c≠c' ∈ C_R : intent(c) ≠ intent(c') )
+                    ∧ ( cl_R(D_R) = ⊔ C_R )
+C_R = ∅           ⇒ ⊥` as SkillExpression,
   composition: () => [exemplify, signify, materialize],
 };

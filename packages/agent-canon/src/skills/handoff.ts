@@ -6,7 +6,7 @@ export const handoff: Skill = {
   name: 'handoff',
   description: `use this skill to prepare a session for handoff before /clear — bring the plan's record up to date (praxis sync) and consolidate memory (dream) while context is still hot; the persist half of the session boundary, invocable as /handoff.`,
   formalBlock: `DECLARATIONS
-handoff        ≜ praxis-sync → dream → release            — the persist half of the session boundary (pre-/clear) ; left-to-right sequence, release LAST
+handoff        ≜ praxis-sync → dream → release
 work           — the plan record: task placement + the PLAN.md mirror
 self           — the agent's persistence home: the EPISODIC event stream ∪ the resident layers ⟨SEMANTIC · PROCEDURAL⟩
 doc-mirrors-runtime-truth — the live runtime state is the source; a status doc (PLAN.md · the resident layers) is a mirror kept current, never the authority
@@ -17,9 +17,9 @@ release        ≜ \`memory session release --home \${AGENT_HOME}\` — flip thi
 
 LAWS
 order          : praxis-sync ≺ dream ≺ release            — dream runs on hot context (before /clear destroys the session events) ; release marks completed last
-diverge(runtime, doc) ⇒ runtime wins                     -- doc-mirrors-runtime-truth: sync the mirror as work lands
-release ⇒ this-session.{forward-residue, owned-plan} ↦ inheritable   -- by the next wake ; a crash skipping handoff still completes via the 2h stale window
+diverge(runtime, doc) ⇒ runtime wins
+release ⇒ this-session.{forward-residue, owned-plan} ↦ inheritable
 ¬release ⇒ a live sibling treats this session's residue ∧ plan-ownership as occupied
-scope          = persist-only                            -- /clear · wake · carry-on proceed OUTSIDE this skill; handoff does not clear, reconstitute, or re-dispatch` as SkillExpression,
+scope          = persist-only` as SkillExpression,
   composition: () => [praxis, dream],
 };

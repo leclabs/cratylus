@@ -38,15 +38,13 @@ unobservable        — runtime value not inspectable ; report as such, never gu
 observe-independently — rt(o) read from src_rt ALONE ; rt(o) ≜ def(o) FORBIDDEN (vacuous — hides every divergence)
 
 def(o)   ∈ V                                  , o ∈ O
-rt(o)    ∈ V                                  , o ∈ O    -- OBSERVED, never inferred
-match(o) ≜ ( def(o) = rt(o) )                            -- equal in EFFECT, not in spelling
+rt(o)    ∈ V                                  , o ∈ O
+match(o) ≜ ( def(o) = rt(o) )
 div      ≜ { o ∈ O | ¬ match(o) }
-why(o)   ∈ K                                  , o ∈ div  -- honest \`unobservable\` allowed
+why(o)   ∈ K                                  , o ∈ div
 
 row(o)   ≜ ( o, def(o), rt(o), match(o), why(o) when o ∈ div )
 report   ≜ ( { row(o) | o ∈ O } , summary(div, why) )
-
--- emit one row per dimension ; the summary lists only the MATERIAL divergences + causes
 
 boundary — read-only self-audit : introspect REPORTS ∧ ¬edit(dimension-vector) ∧ ¬redeploy ∧ ¬mint(V)   -- reconciling drift is create-agent's / deploy's, never introspect's ; O ∧ K are read from the live anatomy` as SkillExpression,
   composition: () => [],
