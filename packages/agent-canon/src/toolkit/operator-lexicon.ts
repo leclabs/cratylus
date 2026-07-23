@@ -154,6 +154,14 @@ export const OPERATORS = {
   '·': { sense: 'and-list', signature: 'a · b · c', coldVerified: true },
   '…': { sense: 'and-so-on', signature: '{ a, b, … }', coldVerified: true },
 
+  // ── Provenance / representation (ASCII — contributes no gate glyph) ────────
+  '@': {
+    sense:
+      'resides-at / sourced-from — the authoritative on-disk or subsystem home of a fact',
+    signature: 'fact @ location',
+    coldVerified: true,
+  },
+
   // ── Reference mechanism (value algebra; ASCII — contributes no gate glyph) ─
   '${}': {
     sense: 'esm-reference',

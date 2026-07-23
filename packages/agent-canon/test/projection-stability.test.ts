@@ -89,7 +89,7 @@ describe('projection stability (.ts is the sole source)', () => {
 
     const wakeMd = renderSkill(wake);
     expect(wakeMd).toContain(
-      'WAKE ≜ migrate? → register → dream → load → orient → resume',
+      'WAKE ≜ resolve → migrate? → register → dream → load → orient → resume',
     );
     expect(wakeMd).toContain('Composed from /dream.');
   });

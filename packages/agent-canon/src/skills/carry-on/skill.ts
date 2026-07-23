@@ -5,7 +5,7 @@ const carryOnNotation: SkillExpression = `carry-on ≜
     · check-in-close ↦ human-on-the-loop → human-out-of-the-loop
     · standing-intent unchanged
     · resume execution ⟨own judgment · reversible-in-domain decided · no fresh permission owed⟩
-    · permission-is-not-the-act — the word ends the pause ; ¬fresh-dispatch ∧ ¬permission-grant
+    · ¬fresh-dispatch ∧ ¬permission-grant
 ` as SkillExpression;
 
 export const carryOn: Skill = {
