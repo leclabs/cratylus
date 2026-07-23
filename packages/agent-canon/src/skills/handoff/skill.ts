@@ -2,24 +2,25 @@ import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
 import { dream } from '../dream/skill.js';
 import { praxis } from '../praxis/skill.js';
 
+const FORMAL_BLOCK = `handoff        ≜ praxis-sync → dream → release
+self           ≜ session⟨CLAUDE_SESSION_ID⟩
+agent          ≜ this agent's name
+praxis-sync    ≜ sync @ praxis
+dream          ≜ drain⟨EPISODIC⟩ @ dream
+release        ≜ \`memory session release --name <agent>\` ∴ released(self)
+registered, released, stale : session → 𝔹
+live           : session → 𝔹
+
+order          : praxis-sync ≺ dream ≺ release
+registered, released, stale @ memory-session-registry
+live(s)        ⇔ registered(s) ∧ ¬ released(s) ∧ ¬ stale(s)
+live(self)     ⇒ self.{forward-residue, owned-plan} occupied
+¬ live(self)   ⇒ self.{forward-residue, owned-plan} inheritable
+scope          = persist-only` as SkillExpression;
+
 export const handoff: Skill = {
   name: 'handoff',
   description: `use this skill to prepare a session for handoff before /clear — bring the plan's record up to date (praxis sync) and consolidate memory (dream) while context is still hot; the persist half of the session boundary, invocable as /handoff.`,
-  formalBlock: `DECLARATIONS
-handoff        ≜ praxis-sync → dream → release
-work           — the plan record: task placement + the PLAN.md mirror
-self           — the agent's persistence home: the EPISODIC event stream ∪ the resident layers ⟨SEMANTIC · PROCEDURAL⟩
-doc-mirrors-runtime-truth — the live runtime state is the source; a status doc (PLAN.md · the resident layers) is a mirror kept current, never the authority
-memory         — append-only EPISODIC, encoded cheap-and-raw per turn (best-effort, lossy); dream drains it up-and-out (consolidate, move-not-copy) into the resident layers
-praxis-sync    — reconcile work to reality: task-file placement ∧ PLAN.md
-dream          — drain EPISODIC on hot context → the resident layers, capturing whole-session events per-turn encoding missed
-release        ≜ \`memory session release --name <self>\` — flip this session → completed in the memory registry; --name <self> self-resolves the home (\$AGENT_HOME override else ~/.agents/<self>), no hardcoded path
-
-LAWS
-order          : praxis-sync ≺ dream ≺ release            — dream runs on hot context (before /clear destroys the session events) ; release marks completed last
-diverge(runtime, doc) ⇒ runtime wins
-release ⇒ this-session.{forward-residue, owned-plan} ↦ inheritable
-¬release ⇒ a live sibling treats this session's residue ∧ plan-ownership as occupied
-scope          = persist-only` as SkillExpression,
+  formalBlock: FORMAL_BLOCK,
   composition: () => [praxis, dream],
 };

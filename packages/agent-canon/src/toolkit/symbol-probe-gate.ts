@@ -77,44 +77,41 @@ export function ledgerOf(readouts: readonly ProbeReadout[]): ProbeLedger {
 
 // ── Declaration extraction — the DETERMINISTIC leg ──────────────────────────────
 //
-// A skill formalBlock is `DECLARATIONS … LAWS …`. Only the DECLARATIONS region binds a
-// fresh symbol to a gloss (the σ* target); LAWS wield already-declared symbols + register
-// operators. We extract obligations from DECLARATIONS only.
+// The drained corpus is HEADERLESS and ZERO-COMMENT: `DECLARATIONS`/`LAWS` markers no longer
+// separate declarations from laws, so extraction can no longer key off headers. Instead we
+// extract by FORM, scanning the WHOLE block. A line binds a fresh symbol — and thus raises an
+// obligation — iff its LHS is a symbol token (identifier, optionally with `(args)` and/or
+// subscripts/superscripts: `σ*`, `circ(n,c)`, `fired_R`, `<_lex`, `|n|`) IMMEDIATELY followed
+// by a binding operator ` : ` (signature), ` ≜ `, or ` ⇔ `. Law/proposition lines are rejected:
+// an LHS bearing a quantifier (`∀`/`∃`) or a relation over existing symbols (`∀ d ∈ D_R : …`,
+// `X ⊆ Y ⇒ …`, `a = b`, `dispatch(P) ⇒ …`) is not a fresh binding.
 
-/** The DECLARATIONS region of a formal block (between the `DECLARATIONS` header and the
- *  `LAWS` header, or block end). Header-line match is whitespace-tolerant + case-exact. */
-export function declarationsRegion(formalBlock: string): string {
-  const lines = formalBlock.split('\n');
-  let start = -1;
-  let end = lines.length;
-  for (let i = 0; i < lines.length; i++) {
-    const t = (lines[i] as string).trim();
-    if (start === -1) {
-      if (t === 'DECLARATIONS') {
-        start = i + 1;
-      }
-    } else if (t === 'LAWS') {
-      end = i;
-      break;
-    }
-  }
-  if (start === -1) {
-    return '';
-  }
-  return lines.slice(start, end).join('\n');
-}
-
-const EM_DASH = '—'; // — gloss separator
+const EM_DASH = '—'; // — gloss separator (fixtures; the live corpus is zero-comment)
 const DEFINE = '≜'; // ≜
 const IFF = '⇔'; // ⇔
 
+/** The binding operators whose LHS is a freshly-bound symbol (leftmost wins). */
+const BIND_OPS = [' : ', ` ${DEFINE} `, ` ${IFF} `];
+
 /**
- * Split one declaration line into ⟨symbol, assignedConcept⟩, or `null` when the line is not
- * a symbol-assigning declaration (blank, a sub-comment, a continuation). The gloss is the
- * assigned concept the round-trip must recover. Precedence:
- *   1. ` — gloss`      → symbol = LHS, concept = the em-dash gloss (the canonical form).
- *   2. `… -- gloss`    → concept = the trailing comment; symbol = LHS up to `:`/`≜`/`⇔`.
- *   3. `sym : sig` / `sym ≜ def` / `sym ⇔ def` → symbol = LHS, concept = the RHS definiens.
+ * A well-formed fresh-symbol LHS: a single symbol token, no internal whitespace and no law /
+ * relation / quantifier glyph. This is what discriminates a DECLARATION (`circ(n,c) ⇔ …`,
+ * `σ* : C → Names`) from a LAW that merely contains a binding operator (`∀ c ∈ dom(α) : …`,
+ * `cᵢ <_N cⱼ ⇔ …`, `{ n : circ(n,c) } = …`): a law's LHS carries a quantifier, a set-builder,
+ * or a relational operator, or splits across whitespace. `<` / `|` / `,` / `_` / `*` / `(` `)`
+ * are admitted so `<_lex`, `|n|`, `readers(a)`, `circ(n,c)` still read as fresh symbols.
+ */
+function isFreshSymbolLhs(lhs: string): boolean {
+  return lhs !== '' && !/[∀∃∈∉⊆⊇⊊=⇒∧∨⊻⊨\s]/u.test(lhs);
+}
+
+/**
+ * Split one line into ⟨symbol, assignedConcept⟩, or `null` when it is not a fresh-symbol
+ * binding (blank, a law/proposition, a citation with no binding op, a continuation). The RHS
+ * is the assigned concept the round-trip must recover. Recognized binding forms:
+ *   1. `sym — gloss`  → the em-dash gloss form (fixtures; the drained corpus carries none).
+ *   2. `sym : sig` / `sym ≜ def` / `sym ⇔ def` → concept = the RHS definiens (leftmost op).
+ * In both cases the LHS must pass `isFreshSymbolLhs`, else the line is a law and yields null.
  */
 export function splitDeclaration(
   line: string,
@@ -123,49 +120,49 @@ export function splitDeclaration(
   if (raw === '') {
     return null;
   }
-  // A pure comment line (`-- …`) declares nothing.
-  if (raw.startsWith('--')) {
-    return null;
-  }
 
+  // Em-dash gloss form `sym — concept` (kept for fixtures; the live corpus is zero-comment).
   const em = raw.indexOf(EM_DASH);
   if (em !== -1) {
     const symbol = raw.slice(0, em).trim();
     const concept = raw.slice(em + 1).trim();
-    return symbol && concept ? { symbol, assignedConcept: concept } : null;
+    return isFreshSymbolLhs(symbol) && concept
+      ? { symbol, assignedConcept: concept }
+      : null;
   }
 
   // Locate the leftmost binding operator among ` : `, ` ≜ `, ` ⇔ `.
-  const ops = [' : ', ` ${DEFINE} `, ` ${IFF} `];
   let cut = -1;
-  for (const op of ops) {
+  for (const op of BIND_OPS) {
     const idx = raw.indexOf(op);
     if (idx !== -1 && (cut === -1 || idx < cut)) {
       cut = idx;
     }
   }
   if (cut === -1) {
-    return null;
+    return null; // no binding operator ⇒ not a declaration (a law, a citation, prose)
   }
   const symbol = raw.slice(0, cut).trim();
-  let rhs = raw
+  const rhs = raw
     .slice(cut)
     .replace(/^\s*[:≜⇔]\s*/u, '')
     .trim();
-  // Prefer a trailing `-- gloss` as the assigned concept when present.
-  const comment = rhs.indexOf('--');
-  if (comment !== -1) {
-    const gloss = rhs.slice(comment + 2).trim();
-    if (gloss) {
-      rhs = gloss;
-    } else {
-      rhs = rhs.slice(0, comment).trim();
-    }
-  }
-  return symbol && rhs ? { symbol, assignedConcept: rhs } : null;
+  return isFreshSymbolLhs(symbol) && rhs
+    ? { symbol, assignedConcept: rhs }
+    : null;
 }
 
-/** Every ProbeObligation a cell's formal block raises (its DECLARATIONS, extracted). */
+/** The declaration lines of a formal block, inferred by FORM (not by `DECLARATIONS`/`LAWS`
+ *  headers, which the drained corpus no longer carries): every line whose LHS binds a fresh
+ *  symbol. Retained as the region `obligationsOf` extracts over the whole block. */
+export function declarationsRegion(formalBlock: string): string {
+  return formalBlock
+    .split('\n')
+    .filter((line) => splitDeclaration(line) !== null)
+    .join('\n');
+}
+
+/** Every ProbeObligation a cell's formal block raises (its fresh-symbol bindings, by form). */
 export function obligationsOf(
   cell: string,
   formalBlock: string,

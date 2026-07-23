@@ -8,9 +8,9 @@ export const formalize: Skill = {
   formalBlock: `P ≜ the source prose
 E ≜ entities(P) ; O ≜ operations(P) ; L ≜ laws(P)
 
-T ≜ the declared notation table (src/toolkit/operator-lexicon.ts)
-η : E ∪ O ⇀ symbols              signify : mint a symbol, or bind an imported one to its anchor
-β ≜ { η(x) | x imported }        boundary-bound : its anchor named in adjacent prose, cited once
+T ≜ the declared notation table @ src/toolkit/operator-lexicon.ts
+η : E ∪ O ⇀ symbols @ signify
+β ≜ { s | s imported, its anchor cited once in adjacent notation }
 ι ≜ { s | s resolved from invocation context }
 
 σ* ≜ signify's fittest sign
@@ -28,7 +28,7 @@ self-sufficient(B) ⇔ closed(B) ∧ complete(B) ∧ ordered(B)
 gloss(B) ≜ prose of B beyond β ∪ ι ; gloss(B) ≠ ∅ ⇒ ¬complete(B)
 ¬self-sufficient(B) ⇒ ⊥
 
-σ*(c) ∉ T ⇒ extend T with σ*(c) ⟨cold-verify⟩ ; ¬ degrade c to a weaker α ∈ T ∵ α ≠ σ*(c)
+σ*(c) ∉ T ⇒ extend T with σ*(c) ⟨cold-verify⟩ ; ¬ degrade c to a weaker α ∈ T ∵ α ≠ σ*(c) ⟨llm-native⟩
 
 reconstruct(B) ≽ P
 reconstruct(B) ⋡ P ⇒ ⊥` as SkillExpression,

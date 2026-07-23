@@ -6,16 +6,14 @@ import { signify } from '../signify/skill.js';
 export const materialize: Skill = {
   name: 'materialize',
   description: `use this skill to realize a concept lattice as artifacts — select each concept's canonical factorization \`F_R\`, emit the bipartite normal form \`CSF_R\` (a primitive by value as ⟨anchor, gloss⟩, a composite by reference as ⟨anchor, factor-anchors⟩), then realize under an explicitly named strategy whose kind-consumption table ρ refuses loudly when unnamed; stage 3 of exemplify, independently invocable.`,
-  formalBlock:
-    `-- DECLARATIONS ----------------------------------------------------------
-C_R              — the reader's concept lattice
-prim_R : C_R → 𝔹            — c primitive (irreducible at R) vs composite
-fac_R(c)         — the candidate factorizations of c (sets of factor-concepts)
-≺                — the shortlex order over factorizations
-anchor : C_R → sign ∪ {⊥}   — the assigned sign ; ⊥ = unnamed
-gloss : C_R → text          — a primitive's stored meaning
-kind : C_R → K              — the cell's kind
-K                — the closed kind set
+  formalBlock: `C_R ≜ reader R's concept lattice
+prim_R : C_R → 𝔹
+fac_R : C_R → ℘(℘(C_R))
+≺ ≜ shortlex order over factorizations
+anchor : C_R → sign ∪ {⊥}
+gloss : C_R → text
+kind : C_R → K
+K ≜ the closed kind set
 
 concept-contract ≜ record(gloss, anchor, factorization)
 dfp(g) ≜ densest-faithful-point(g)
@@ -24,7 +22,6 @@ CSF ≜ bipartite-normal-form: primitive↦⟨anchor,gloss⟩ by value ; composi
 realize ≜ dispatch artifact-form per kind through a named strategy s
 loud-refusal ≜ s unnamed ∨ ρ_s not total over live kinds ⇒ ⊥
 
--- LAWS -------------------------------------------------------------------
 F_R(m) ≜ min_≺ fac_R(m)
 CSF_R(c) ≜ ( anchor(c) , dfp(gloss(c)) )              ,  prim_R(c)
 CSF_R(c) ≜ ( anchor(c) , { anchor(p) | p ∈ F_R(c) } ) ,  ¬prim_R(c)
@@ -32,6 +29,7 @@ realize(k) fills factorization(k) ≜ CSF_R(k) ; gloss(k), anchor(k) preserved
 anchor(k) = ⊥ ⇒ realize(k) = ⊥
 
 prose(c) ≜ render(CSF_R(c), R)
+CSF_R(c) ≽ prose(c)
 
 Φ ≜ { (anchor(c), kind(c), CSF_R(c)) | c ∈ C_R }
 S ≜ { file, document, … }
