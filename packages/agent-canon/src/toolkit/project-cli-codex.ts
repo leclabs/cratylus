@@ -23,6 +23,7 @@ import {
 } from '@leclabs/agent-forge/adapters/registry';
 import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
 import { foundingDoctrine } from '../genus/founding-doctrine.js';
+import { emitRuntimeShim } from './runtime-shim.js';
 
 // The harness projection port, selected strictly BY NAME — no concrete codex
 // adapter module is imported here (the projection logic lives in forge).
@@ -149,7 +150,16 @@ async function projectSkills(args: Args): Promise<number> {
     mkdirSync(dir, { recursive: true });
     const { filename, content } = adapter.skillDef(resolved);
     writeFileSync(join(dir, filename), content);
-    process.stdout.write(`EMIT codex skill ${name}\n`);
+    // A runtime-capability skill ALSO gets a thin shim `scripts/<capability>.mjs`
+    // → `agent-runtime <capability>` (NOT a bundled impl); others: SKILL.md only.
+    if (cell.runtime) {
+      emitRuntimeShim(dir, cell.runtime.capability);
+      process.stdout.write(
+        `EMIT codex skill ${name} (+runtime shim scripts/${cell.runtime.capability}.mjs)\n`,
+      );
+    } else {
+      process.stdout.write(`EMIT codex skill ${name}\n`);
+    }
     n++;
   }
   return n;

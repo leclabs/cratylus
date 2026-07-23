@@ -2,17 +2,31 @@
   "name": "@leclabs/agent-memory",
   "version": "0.0.0",
   "private": true,
-  "description": "The standalone `memory` tool — a dependency-free CLI (dist/memory.mjs) an agent runs to encode events and consolidate memory across sessions",
+  "//": "FORK-3 (publish) unresolved: kept private:true. Drop the flag when the publish story lands — the bin-drop + strategy impl do not block on it.",
+  "description": "@leclabs/agent-memory — the memory runtime-capability plugin: a MemoryStrategy over an EPISODIC store + the CoALA consolidation verbs. Reached via `agent-runtime memory <verb>` (no `memory` bin). Owns the store seed templates.",
   "license": "MIT",
   "type": "module",
-  "bin": {
-    "memory": "./dist/memory.mjs"
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./seedTemplates": {
+      "types": "./dist/seeds.d.ts",
+      "import": "./dist/seeds.js"
+    }
   },
+  "files": ["dist"],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@leclabs/agent-runtime": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

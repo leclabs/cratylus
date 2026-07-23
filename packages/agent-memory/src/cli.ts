@@ -20,7 +20,7 @@ import type {
   RouteTarget,
   StoreName,
 } from './route.js';
-import { SEED_FILES } from './seeds.js';
+import { seedTemplates } from './seeds.js';
 import {
   heartbeat,
   listSessions,
@@ -814,7 +814,7 @@ function runInit(args: ParsedArgs): CliResult {
   mkdirSync(home, { recursive: true });
   const seeded: string[] = [];
   const present: string[] = [];
-  for (const [fname, seedfn] of SEED_FILES) {
+  for (const [fname, seedfn] of seedTemplates) {
     const file = join(home, fname);
     if (existsSync(file)) {
       present.push(fname);

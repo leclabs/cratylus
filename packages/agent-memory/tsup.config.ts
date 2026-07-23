@@ -1,17 +1,20 @@
 import { defineConfig } from 'tsup';
 
-// Build-only toolsource → ONE self-contained, dependency-free artifact
-// (`dist/memory.mjs`) — the standalone `memory` tool. Installed on PATH via the
-// package `bin` (`memory`) and carried to every host beside the memory skill.
-// This is NOT a library: no dts, no `index.ts` exports surface, no multi-entry —
-// just the bundled CLI. `src/bin.ts` carries the shebang, so the artifact runs
-// as `memory <cmd>` (or `node memory.mjs <cmd>`).
+// agent-memory is now a LIBRARY (contra its old single bundled `memory.mjs` CLI):
+// it is a runtime-capability plugin, so it emits `.d.ts` and exposes its `exports`
+// subpaths one-for-one — `.` (the runtimePlugin + AgentMemory + main + seedTemplates
+// barrel) and `./seedTemplates` (the seed templates agent-forge S6 imports). There
+// is NO `bin` pass: the old top-level `memory` binary is dropped (npm scope-strip →
+// global `memory` collision); verbs are reached via `agent-runtime memory <verb>`.
+// `@leclabs/agent-runtime` stays external (a workspace dep, not inlined).
 export default defineConfig({
-  entry: { memory: 'src/bin.ts' },
+  entry: {
+    index: 'src/index.ts',
+    seeds: 'src/seeds.ts',
+  },
   format: ['esm'],
-  outExtension: () => ({ js: '.mjs' }),
-  bundle: true,
-  treeshake: true,
-  dts: false,
+  dts: true,
   clean: true,
+  splitting: true,
+  sourcemap: true,
 });

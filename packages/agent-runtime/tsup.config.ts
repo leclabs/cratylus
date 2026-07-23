@@ -1,20 +1,34 @@
 import { defineConfig } from 'tsup';
 
-// agent-runtime IS a library (contra agent-memory's single bundled CLI): it emits
-// .d.ts for every entry and exposes one entry per `exports` subpath, so a consumer
-// imports the contract (`.`), a single port (`./ports/*`), or the event taxonomy
-// (`./events`) with types intact. No CLI/bin pass — that is a later shard. The
-// entries mirror the package.json `exports` map one-for-one.
-export default defineConfig({
-  entry: {
-    index: 'src/index.ts',
-    events: 'src/events.ts',
-    'ports/memory': 'src/ports/memory.ts',
-    'ports/event-tap': 'src/ports/event-tap.ts',
+// agent-runtime is a library AND (as of S3) a thin bin. The LIBRARY pass emits .d.ts
+// for every entry and exposes one entry per `exports` subpath — the S1 contracts
+// (`.`, `./events`, `./ports/*`) plus the S3 kernel (`./loader`, `./dispatch`) — so a
+// consumer imports the contract, a port, or the runtime kernel with types intact.
+// The BIN pass is separate (no dts, shebang banner) so `agent-runtime` runs as an
+// executable; the bin name is a placeholder S9 rebrands.
+export default defineConfig([
+  {
+    entry: {
+      index: 'src/index.ts',
+      loader: 'src/loader.ts',
+      dispatch: 'src/dispatch.ts',
+      events: 'src/events.ts',
+      'ports/memory': 'src/ports/memory.ts',
+      'ports/event-tap': 'src/ports/event-tap.ts',
+      'capabilities/event-tap': 'src/capabilities/event-tap/index.ts',
+    },
+    format: ['esm'],
+    dts: true,
+    clean: true,
+    splitting: true,
+    sourcemap: true,
   },
-  format: ['esm'],
-  dts: true,
-  clean: true,
-  splitting: true,
-  sourcemap: true,
-});
+  {
+    entry: { bin: 'src/bin.ts' },
+    format: ['esm'],
+    dts: false,
+    clean: false,
+    sourcemap: true,
+    banner: { js: '#!/usr/bin/env node' },
+  },
+]);

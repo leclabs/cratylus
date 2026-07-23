@@ -20,10 +20,20 @@
 // are the dimension-selection shapes — distinct concepts, distinct homes).
 // ─────────────────────────────────────────────────────────────────────────────
 
+import type { RuntimePlugin } from '@leclabs/agent-runtime';
+
 // ── Type-level metadata axes ────────────────────────────────────────────────
 
 /** The MECE filing axis: how the agent comes across vs what it is inclined to do. */
 export type Genus = 'Persona' | 'Constitution';
+
+/**
+ * A runtime CAPABILITY name — DISCOVERED from S1's `RuntimePlugin` port keys
+ * (`memory` · `eventTap`), never coined here (cratylism): the runtime contract is
+ * the sole home of the capability set, and a `Skill.runtime` declaration selects
+ * one of its ports. This is the ONLY reach across the BUILD→RUNTIME seam and it is
+ * type-only — the build DAG stays forge→runtime, acyclic (runtime NEVER →forge). */
+export type RuntimeCapability = keyof Omit<RuntimePlugin, 'name'>;
 
 /**
  * How a dimension's value-catalog is sourced:
@@ -268,6 +278,14 @@ export interface SkillDeploy {
   readonly deployAs?: 'skill-dir';
   /** Committed companion assets shipped byte-for-byte with the skill. */
   readonly assets?: readonly string[];
+  /**
+   * The RUNTIME capability this skill is a face of. When set, the projection ALSO
+   * emits a THIN SHIM `scripts/<capability>.mjs` that forwards to the host-installed
+   * `agent-runtime <capability>` CLI — NOT a bundle of the impl (the capability logic
+   * lives host-side behind the runtime port, installed per-host by agent-runtime/S7).
+   * Absent ⇒ SKILL.md only (unchanged). This REVERSES the superseded dep-free-bundle
+   * design (skills-refactor T4). */
+  readonly runtime?: { readonly capability: RuntimeCapability };
 }
 
 /**
