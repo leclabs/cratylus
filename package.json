@@ -16,7 +16,6 @@
     "format": "biome format --write .",
     "typecheck": "turbo run typecheck",
     "canon:project": "pnpm --filter @leclabs/agent-canon project",
-    "canon:project:human": "pnpm --filter @leclabs/agent-canon project:human",
     "canon:project:targets": "pnpm --filter @leclabs/agent-canon project:targets",
     "canon:deploy:agent": "node packages/agent-forge/dist/cli/index.js deploy --kind agent --agents-dir packages/agent-canon/.render-ts/agents --skills-dir packages/agent-canon/.render-ts/skills",
     "canon:deploy:skill": "node packages/agent-forge/dist/cli/index.js deploy --kind skill --agents-dir packages/agent-canon/.render-ts/agents --skills-dir packages/agent-canon/.render-ts/skills",

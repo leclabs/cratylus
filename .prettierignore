@@ -11,7 +11,6 @@ packages/agent-canon/GLOSSARY.md
 **/*.generated.*
 **/generated.*
 **/test/ir-bridge/agent-canon.agent-forge.json
-packages/agent-canon/src/dimensions/*/README.md
 
 # plans/ CLAUDE.md are symlinks to AGENTS.md (house convention); Prettier can't follow
 # symlinks and the real content is the AGENTS.md it already checks.

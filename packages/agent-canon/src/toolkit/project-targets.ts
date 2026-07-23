@@ -1,6 +1,5 @@
 // `project-targets` — regenerate the committed DEPLOY TARGETS of the `hook` source
-// cells (`src/hooks/*.ts`) from the cells themselves. The analogue of E2's
-// `project-human` (which regenerates dimension READMEs): the cell owns the bytes; the
+// cells (`src/hooks/*.ts`) from the cells themselves: the cell owns the bytes; the
 // committed target is a deploy-owned projection, byte-locked by
 // `test/hook-rule-boundary.test.ts`.
 //
