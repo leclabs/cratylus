@@ -11,7 +11,7 @@ D           ≜ the identity-criterion atoms a concept circumscribes
 prim(c)     ≜ c has no factorization into other concepts
 Names       ≜ the shared symbol space
 <_lex       : total order on Names
-k           ≜ ⟨gloss, anchor, factorization⟩
+concept-record ≜ ⟨gloss, anchor, factorization⟩
 fired       : Names → ℘(D)
 dec         : Names ⇀ ℘(D)
 circ(n,c)   ⇔ fired(n) = D(c)

@@ -3,15 +3,15 @@ import { conceptualize } from '../conceptualize/skill.js';
 import { materialize } from '../materialize/skill.js';
 import { signify } from '../signify/skill.js';
 
-const FORMAL_BLOCK = `Concept            ≜ ⟨ gloss , anchor? , factorization? ⟩
+const FORMAL_BLOCK = `concept-record     ≜ ⟨ gloss , anchor? , factorization? ⟩
 D                  ≜ the source corpus
 C_R                ≜ reader R's concept lattice @ conceptualize
-produce            : D → Concept @ conceptualize
-name               : Concept → Concept @ signify
-realize            : Concept → Concept @ materialize
-readers            : Concept → ℘({ LLM, human })
-ρ, register        : Concept → { LLM, human }
-REC_R              : Concept → Concept @ materialize
+produce            : D → concept-record @ conceptualize
+name               : concept-record → concept-record @ signify
+realize            : concept-record → concept-record @ materialize
+readers            : concept-record → ℘({ LLM, human })
+ρ, register        : concept-record → { LLM, human }
+REC_R              : concept-record → concept-record @ materialize
 R_cold(f)          ≜ the isolated cold-blind decode of fragment f (a naive reader, zero project-K, from f's signifiers + inline ≜ alone)
 body(k)            ≜ cell k's authored surface ⟨front-matter excluded⟩
 decode_warm(f | K) ≜ fragment f's warm decode, reader free to consult K
@@ -41,7 +41,7 @@ accept(k)    ≜ ⊥ , ¬valid(k)` as SkillExpression;
 
 export const exemplify: Skill = {
   name: 'exemplify',
-  description: `optimize a context corpus into a canonical semantic factorization — compose produce → name → realize over the one concept-contract record, then gate on accept; emits the R3 routing manifest that catches the dropped idea.`,
+  description: `optimize a context corpus into a canonical semantic factorization — compose produce → name → realize over the one concept-record, then gate on accept; emits the R3 routing manifest that catches the dropped idea.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [conceptualize, signify, materialize],
 };

@@ -8,7 +8,7 @@ export const conceptualize: Skill = {
   description: `use this skill to extract the concepts latent in a source — which are primitive, what each means, how each factors — deciding nothing about names or form; stage 1 of exemplify.`,
   formalBlock: `R                   ≜ reader ⟨priors fix every meaning⟩
 sources             ≜ input material ⟨multi-modal · bears substrate-boundaries⟩
-TRIPLE              ≜ ⟨ gloss , anchor? , factorization? ⟩
+concept-record      ≜ ⟨ gloss , anchor? , factorization? ⟩
 resolve(sources)    ≜ ⋃ { content(s) | s ∈ sources }
 D_R                 ≜ { d | d a distinction R draws over resolve(sources) } ⟨finite⟩
 depalimpsest(d)     ≜ d ↾ live-strata

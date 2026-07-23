@@ -15,7 +15,7 @@ gloss : C_R → text
 kind : C_R → K
 K ≜ the closed kind set
 
-concept-contract ≜ record(gloss, anchor, factorization)
+concept-record   ≜ record(gloss, anchor, factorization)
 dfp(g) ≜ densest-faithful-point(g)
 cite-by-ref ≜ composite stores factor-anchors ∧ ¬restate factor-content
 CSF ≜ bipartite-normal-form: primitive↦⟨anchor,gloss⟩ by value ; composite↦⟨anchor,factor-anchors⟩ by reference
