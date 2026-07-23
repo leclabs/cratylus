@@ -7,7 +7,7 @@ scope  ≜ pipeline realizing MODEL invariants + boundary projections rendering 
 ```
 
 ```
-{class, activation, content, catalog, concepts, fragments, accept, COMPOSED, PARSIMONIOUS, SIGNIFIED, CANONICAL, REGENERABLE, σ*, intent, decode_cold, core, ir} ⊂ MODEL
+{class, activation, content, catalog, concepts, fragments, accept, COMPOSED, PARSIMONIOUS, SIGNIFIED, CANONICAL, REGENERABLE, σ*, α, intent, decode_cold, core, ir} ⊂ MODEL
 canon ≜ {c:cell ∣ accept(c)}
 valid(canon) ⇒ deterministic(deploy) ∧ ∀stage∈pipeline: preserves(stage, MODEL-invariants)
 
@@ -15,7 +15,9 @@ discover   : Intent → Sign ; discover realized-by {signify, conceptualize, eli
 author     : Intent → cell
 normalize  : cell → cell ; normalize ⊨ PARSIMONIOUS
 verify     : fragment → Bool ; verify(f) ⇔ decode_cold(core f) = intent(f)
-validate   : cell → cell ∪ {⊥} ; validate(c) = (c if accept(c) else ⊥) ; verify ⊑ validate
+signify-verify : symbol → Bool ; signify-verify(w) ⇔ concept_R(w) = α⁻¹(w)         -- probe round-trip @ reader=LLM ; α injective (MODEL) ⇒ α⁻¹(w) = the concept w is assigned
+canonizable(skill) ⇒ ∀ w ∈ declarations(skill) : signify-verify(w)                 -- formal blocks ARE the symbolic-σ* regression suite
+validate   : cell → cell ∪ {⊥} ; validate(c) = (c if accept(c) else ⊥) ; verify ⊑ validate ; signify-verify ⊑ validate
 select     : agent → (DimensionName ⇸ ℘(fragment))
 compose    : (DimensionName ⇸ ℘(fragment)) → IR ; compose(select(a)) = ir(a) ∧ ir(a) ⊑ content(a)
 realize    : ActivationMode × harness-adapter → harness-mechanism
