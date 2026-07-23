@@ -1,0 +1,36 @@
+# T4 — compose-build (pending · wave 1 · deps T1, T3)
+
+## Objective
+
+Give agent-canon a build that **composes** a skill's TS **domain module** ⊕ a forge **adapter impl**
+into a **dependency-free standalone `.mjs`**, and wire `projectSkills` to emit it into `skills/<name>/scripts/`.
+
+## Dep-fed inputs
+
+- **T1** — the reshaped `projectSkills` (glob `skills/*/skill.ts`) this composition hooks into.
+- **T3** — the `EventTapHost` port + `EventTapHostClaude` impl to compose against/with.
+
+## Static inputs (pinned, path:line from census a013fad)
+
+- `packages/agent-memory/tsup.config.ts` — the bundling precedent (`bundle:true, treeshake:true, format:['esm'], outExtension .mjs, dts:false`) producing `dist/memory.mjs`.
+- `packages/agent-canon/package.json:14-23` — scripts today (NO `build`; a tsup build must be added).
+- `packages/agent-canon/src/toolkit/project-cli.ts:116-141` — `projectSkills` (where composition emits).
+
+## Constraints
+
+- Add a tsup build to agent-canon (mirror `agent-memory`) that bundles domain⊕adapter → ONE `.mjs` with **no external imports** (runs under bare `node` on any host, no `node_modules`).
+- A skill DECLARES its runtime companion (e.g. a `runtime?: { entry, port }` field on the `Skill` cell, or a convention `skills/<name>/scripts/<x>.ts`); `projectSkills` selects the **target adapter's** port impl (via `adapterByName`) and composes it in at projection → `skills/<name>/scripts/<x>.mjs`.
+- Composition selects the impl by the **projection target** (claude), keeping SOURCE harness-agnostic — same discipline as cells→SKILL.md.
+- Skills with NO runtime companion emit no `scripts/` (unchanged). Do not perturb the SKILL.md emission (T1's projection-stability must still hold for cells).
+
+## Outputs
+
+An agent-canon tsup build; `projectSkills` composing runtime companions; a SAMPLE domain module proving the pipeline.
+
+## Accept (blind falsifier)
+
+REJECTED if: the bundled `.mjs` has any external `import`/`require` of a non-bundled module (not dep-free);
+OR composition leaks the adapter selection into the domain source; OR `project` stops emitting a valid
+SKILL.md for cells; OR a companion-less skill gains a spurious `scripts/`. ACCEPTED when: a sample domain
+module (coding to `EventTapHost`) ⊕ `EventTapHostClaude` compose+bundle → a standalone `.mjs` (grep-proven
+no external imports) that, run, installs a tap; and `project` emits it under `skills/<sample>/scripts/`.
