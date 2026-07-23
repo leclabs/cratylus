@@ -5,32 +5,29 @@ import { signify } from '../signify/skill.js';
 
 const FORMAL_BLOCK = `concept-record     ≜ ⟨ gloss , anchor? , factorization? ⟩
 D                  ≜ the source corpus
-C_R                ≜ reader R's concept lattice @ conceptualize
+C                  ≜ concept lattice @ conceptualize
 produce            : D → concept-record @ conceptualize
 name               : concept-record → concept-record @ signify
 realize            : concept-record → concept-record @ materialize
-readers            : concept-record → ℘({ LLM, human })
-ρ, register        : concept-record → { LLM, human }
-REC_R              : concept-record → concept-record @ materialize
+REC                : concept-record → concept-record @ materialize
 R_cold(f)          ≜ the isolated cold-blind decode of fragment f (a naive reader, zero project-K, from f's signifiers + inline ≜ alone)
 body(k)            ≜ cell k's authored surface ⟨front-matter excluded⟩
 decode_warm(f | K) ≜ fragment f's warm decode, reader free to consult K
 K                  ≜ project-K, the warm knowledge (project corpus) a reader already holds
 R_cold, decode_warm, coldpass, K @ cold-decode-oracle
 minimal            @ signify
+conform            @ signify
 Cells              ≜ every authored cell, self included
 fragment_digest(f) ≜ digest( trim( collapse-whitespace( NFC(f) ) ) )
 manifest           ≜ { source , exemplified_at , reader , routes[⟨fragment_digest, idea_gloss, home_slug, disposition, rank⟩] , delta[⟨fragment_digest, idea_gloss⟩] }
 
 realized(k) ⇔ factorization(k) ≠ ⊥
-conform(k)  ⇔ register(k) = ρ(k)
-ρ(k)        ≜ human ⇔ readers(k) = { human } ; LLM otherwise
 coldpass(k) ⇔ R_cold(body(k)) ≅ gloss(k) ∧ decode_warm(body(k) | K) ≅ R_cold(body(k))
-valid(k)    ⇔ REC_R(k) ≽ k ∧ minimal(k) ∧ conform(k) ∧ coldpass(k)
+valid(k)    ⇔ REC(k) ≽ k ∧ minimal(k) ∧ conform(k) ∧ coldpass(k)
 produce ↦ gloss ; name ↦ anchor ; realize ↦ factorization
 ∀ k ∈ Cells : accept(k) defined
 disposition ∈ { reuse, mint }
-∀ c ∈ C_R : c ∈ routes ⊻ c ∈ delta
+∀ c ∈ C : c ∈ routes ⊻ c ∈ delta
 accept(F(D)) = F(D) ⇒ manifest @ .manifests/<source>.json
 
 F(D)         ≜ realize( name( produce(D) ) )

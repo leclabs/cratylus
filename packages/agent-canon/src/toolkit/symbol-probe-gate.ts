@@ -99,7 +99,7 @@ const BIND_OPS = [' : ', ` ${DEFINE} `, ` ${IFF} `];
  * `σ* : C → Names`) from a LAW that merely contains a binding operator (`∀ c ∈ dom(α) : …`,
  * `cᵢ <_N cⱼ ⇔ …`, `{ n : circ(n,c) } = …`): a law's LHS carries a quantifier, a set-builder,
  * or a relational operator, or splits across whitespace. `<` / `|` / `,` / `_` / `*` / `(` `)`
- * are admitted so `<_lex`, `|n|`, `readers(a)`, `circ(n,c)` still read as fresh symbols.
+ * are admitted so `<_lex`, `|n|`, `register(a)`, `circ(n,c)` still read as fresh symbols.
  */
 function isFreshSymbolLhs(lhs: string): boolean {
   return lhs !== '' && !/[∀∃∈∉⊆⊇⊊=⇒∧∨⊻⊨\s]/u.test(lhs);

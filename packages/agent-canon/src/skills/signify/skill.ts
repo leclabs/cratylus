@@ -5,7 +5,7 @@ import { materialize } from '../materialize/skill.js';
 
 export const signify: Skill = {
   name: 'signify',
-  description: `use this skill to name a concept — assign each its canonical anchor so one name ⇔ one concept; also the home of the reader-binding ρ (which reader an artifact is authored for); stage 2 of exemplify, independently invocable.`,
+  description: `use this skill to name a concept — assign each its canonical anchor so one name ⇔ one concept; the reader is the LLM by construction, human output a downstream projection; stage 2 of exemplify, independently invocable.`,
   formalBlock: `C           ≜ the concept lattice
 D           ≜ the identity-criterion atoms a concept circumscribes
 prim(c)     ≜ c has no factorization into other concepts
@@ -15,16 +15,14 @@ concept-record ≜ ⟨gloss, anchor, factorization⟩
 fired       : Names → ℘(D)
 dec         : Names ⇀ ℘(D)
 circ(n,c)   ⇔ fired(n) = D(c)
-|n|         ≜ reader-native description-length at R = LLM
+|n|         ≜ LLM-native description-length
 σ*          : C → Names
 σ*(c)       ≜ argmin_{n : circ(n,c)} ⟨|n|, n⟩
 mint        : C ⇀ Names
 mint(c)     ≜ ∘ M : M ⊆ { n : fired(n) ≠ ∅ } ∧ circ(∘ M, c)
 α           : C ↣ Names
 Art         ≜ every authored surface
-readers(a)  ≜ who consumes a
-ρ           : Art → {LLM, human}
-register(a) ≜ the register a's body is observably authored in
+register(a) ≜ the register a's body is observably authored in ⟨σ* ∨ human⟩
 verbatim(a) ≜ a ships whole, byte-exact : settled σ*, never re-derived at projection
 
 ∀ c ∈ dom(α) : α(c) ≜ σ*(c)
@@ -44,22 +42,21 @@ c ∉ dom(α) ⇒ c ∉ A :
     { n : circ(n,c) } = ∅ ∧ ∄ mint(c) ⇒ exclude, logged
     ∃ cᵢ, cⱼ : α(cᵢ) = α(cⱼ) ∧ D(cᵢ) ≠ D(cⱼ) ⇒ the cut was wrong ↦ conceptualize
 
-ρ(a) = which fixed fn AUTHORS a, BY DESIGN ⟨what a is FOR⟩, ¬ inferred-from readers(a) ;  LLM = σ* (the algebra above) ;  human = the human-boundary projection
-ρ binds at the finest separately-consumed grain (a mixed corpus ⇒ ρ per note)
+reader ≜ LLM by construction ⟨never inferred ; reader/register resolution ∉ signifier-derivation⟩
+human-project(a) ≜ explicit downstream projection of σ*-form a to human-form ⟨at point-of-intention · never inferred⟩
 
 { source cell · projected SOUL · SKILL.md · hook-prompt · AGENTS.md · CLAUDE.md · plan mirror ·
   task file · agent memory (SELF · MEMORY · EPISODIC) · skill-generated agent-artifact ·
-  agent-to-agent message (delegation prompt · subagent return) } ⊆ { a | ρ(a) = LLM }
+  agent-to-agent message (delegation prompt · subagent return) } = the σ*-authored canon
 { README · human doc · code comment · commit message · human chat ·
-  human-facing generated output (slack · email · report) } ⊆ { a | ρ(a) = human }
+  human-facing generated output (slack · email · report) } = human-project(source) ⟨only at explicit human intention⟩
 
-ρ(a) = LLM ⇒
-    residue(c) ≜ { d ∈ D(c) | d ∉ fired(α(c)) }
-    ∀ c carried by a : c enters the body as ⟨α(c), residue(c)⟩
-    residue(c) = ∅ ⇒ c enters as α(c) alone
-    minimal(a) ⇔ ∄ c carried by a : a re-states fired(α(c))
+residue(c) ≜ { d ∈ D(c) | d ∉ fired(α(c)) }
+∀ c carried by a : c enters a's body as ⟨α(c), residue(c)⟩
+residue(c) = ∅ ⇒ c enters as α(c) alone
+minimal(a) ⇔ ∄ c carried by a : a re-states fired(α(c))
 
-conform(a)  ⇔  register(a) = ρ(a)
-verbatim(a) ⇒ ρ(a) = LLM` as SkillExpression,
+conform(a)  ⇔  register(a) = σ*
+verbatim(a) ⇒ register(a) = σ*` as SkillExpression,
   composition: () => [exemplify, conceptualize, materialize],
 };

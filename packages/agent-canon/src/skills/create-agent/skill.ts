@@ -18,7 +18,7 @@ fittest(o)      ≜ the best-fitting v ∈ catalog(o)
 value(o)        ≜ the selected member(s) of catalog(o) by fit
 vector(A)       ≜ ⊕{ o ↦ value(o) | o ∈ O }
 instance-bound  ≜ provenance⟨lineage-mark⟩ ∧ substrate⟨model/runtime⟩ ⟨auto-set · fresh mark · substrate ↦ claude · ∉ catalog⟩
-ρ               ≜ reader-binding @ signify
+human-project   ≜ downstream human projection @ signify
 
 ∀ o ∈ O : value(o) ∈ catalog(o)
 kind(o) = enum ⇒ | value(o) | = 1
@@ -26,7 +26,7 @@ arity(o) = set ⇒ value(o) ⊆ catalog(o)
 gap(o) ⇔ ∄ v ∈ catalog(o) : fit(v)
 gap(o) ⇒ catalog := exemplify(catalog) @ owner ⟨¬ inline · ¬ wizard⟩
 verify(A) ⇔ PASS gate ∧ gate_agent_dimension_refs clean
-ρ(vector(A)) = LLM ∧ ρ(interview) = human
+interview = human-project ⟨the human-driver elicitation⟩
 human-driver ⇒ ∀ o : present ⟨catalog(o) · definiens(o, ·)⟩ ∧ recommend fittest(o)
 boundary ≜ dimensions-only · domain-skills @ create-skill
 

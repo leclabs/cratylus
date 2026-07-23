@@ -106,12 +106,19 @@ describe('READER-REACH gate — ρ past the static corpus', () => {
   });
 
   // ── the codification homes are standing law, not per-turn discretion ─────────
-  it('the delegation dimension + fan-out cells carry the ρ=LLM contract (non-regressable)', () => {
-    expect(delegation).toMatch(/ρ=LLM/);
-    expect(delegation).toMatch(/register=LLM/);
-    expect(praxis.formalBlock).toContain('conform(a) ⇔ register(a) = ρ(a)');
+  it('the delegation dimension + fan-out cells carry the σ* contract (non-regressable)', () => {
+    // reader = LLM by construction: delegation returns are σ* (dense, no
+    // long-form prose); a human-facing carried deliverable is an explicit
+    // human-project. No ρ/register inference anywhere in signifier-derivation.
+    expect(delegation).toMatch(/return ↦ σ\*/);
+    expect(delegation).toMatch(/¬long-form-prose/);
+    expect(delegation).toMatch(/human-project ↾ carried-deliverable/);
+    expect(delegation).not.toMatch(/ρ=/);
+    expect(praxis.formalBlock).toContain('conform @ signify');
     expect(praxis.formalBlock).toContain('¬conform(r) ⇒ ¬accept(t)(r)');
+    expect(praxis.formalBlock).not.toMatch(/ρ\(/);
     expect(exemplify.formalBlock).toContain('conform(k)');
     expect(exemplify.formalBlock).toMatch(/valid\(k\)\s+⇔.*conform\(k\)/);
+    expect(exemplify.formalBlock).not.toMatch(/readers|ρ\(/);
   });
 });

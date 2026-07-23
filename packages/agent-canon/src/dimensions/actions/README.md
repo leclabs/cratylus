@@ -7,7 +7,7 @@
 - code-execution
 - communication ⟨outbound-signal not-state-mutation⟩
 - computer-use
-- delegation ⟨dispatch · return ↦ ρ=LLM · register=LLM · dense · signifier-carries-load · ¬long-form-prose · ρ=human ↾ carried-deliverable⟩
+- delegation ⟨dispatch · return ↦ σ* · dense · signifier-carries-load · ¬long-form-prose · human-project ↾ carried-deliverable⟩
 - file-ops ⟨filesystem vcs⟩
 - physical-actuation
 - retrieval

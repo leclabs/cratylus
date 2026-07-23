@@ -26,8 +26,7 @@ slices  : P → ℘(℘(P))
 mirror  : (state, R, content) → document
 PLAN.md ≜ mirror(state, R, content)
 depalimpsest(c) ≜ c ↾ live-strata
-ρ, register : text → {LLM, human}
-conform(a) ⇔ register(a) = ρ(a)
+conform @ signify
 Phase    ≜ { proposed, in-flight, landed, retired }
 Plans    ≜ { P | P a plan on disk }
 commit   ≜ a VCS commit
@@ -82,9 +81,9 @@ list = { P ∈ Plans | inscope(P) }
 retire(P) defined ⇔ landed(P)
 ∀ P : content(retire(P)) = content(P)
 ∀ P : retire(P) ∈ Plans
-∀ t : ρ(content(t)) = LLM ∧ conform(content(t))
-ρ(PLAN.md) = LLM ∧ conform(PLAN.md)
-∀ t, r : ρ(r) = LLM ∧ (¬conform(r) ⇒ ¬accept(t)(r))
+∀ t : conform(content(t))
+⊨ conform(PLAN.md)
+∀ t, r : ¬conform(r) ⇒ ¬accept(t)(r)
 
 start     : intent ↦ (P, slices(P), waves)
 upsert    : (P, intent) ↦ P' ≜ author census-grounded t(s) ∧ P' = P ∪ {t} ∧ re-slice ∧ re-mirror

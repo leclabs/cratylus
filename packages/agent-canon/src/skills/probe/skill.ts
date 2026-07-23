@@ -3,32 +3,29 @@ import { conceptualize } from '../conceptualize/skill.js';
 import { elicit } from '../elicit/skill.js';
 import { signify } from '../signify/skill.js';
 
-const FORMAL_BLOCK =
-  `R      ≜ reader whose priors are the instrument ⟨LLM ∨ well-read person⟩
-D_R    ≜ R's distinction space ⟨structured knowledge R can draw on⟩
-cl_R   ≜ R's closure ⟨smallest concept containing a set of priors⟩
-C_R    ≜ R's concept lattice ⟨the cl_R-closed subsets of D_R⟩
-priors(w,R) ≜ understanding w carries in R before any definition ⟨associations · connotations · structured-knowledge R unpacks from the token alone, not its surface wording⟩
-Names  ≜ the signifiers R can read
-dec_R  : Names ⇀ ℘(D_R) @ signify
+const FORMAL_BLOCK = `D    ≜ distinction space ⟨structured knowledge to draw on⟩
+cl   ≜ closure ⟨smallest concept containing a set of priors⟩
+C    ≜ concept lattice ⟨the cl-closed subsets of D⟩
+priors(w) ≜ understanding w carries before any definition ⟨associations · connotations · structured-knowledge unpacked from the token alone, not its surface wording⟩
+Names  ≜ the readable signifiers
+dec  : Names ⇀ ℘(D) @ signify
 σ*     @ signify
 w      ≜ a signifier under probe ⟨w ∈ Names⟩
-C      ≜ a target concept ⟨C ∈ C_R⟩
-circ_R(w,C) ⇔ concept_R(w) = C
-W(C)   ≜ experiment's finite candidate set for target C ⟨W(C) ⊆ Names⟩
-probe : Names → ℘(D_R) × C_R
-fired_R : Names → ℘(D_R)
-fired_R(w) ≜ priors(w,R)
-fired_R(a) = dec_R(a) , a ∈ dom(dec_R)
-concept_R(w) ≜ cl_R(fired_R(w))
-probe(w) ≜ ⟨ fired_R(w) · concept_R(w) ⟩
-experiment(C) ≜ { w ∈ W(C) | circ_R(w,C) }
-coverage : { w ∈ Names | fired_R(w) ≠ ∅ ∧ circ_R(w,C) } ⊆ W(C)
-crystallize : σ*(C) ∈ experiment(C)` as SkillExpression;
+c      ≜ a target concept ⟨c ∈ C⟩
+W(c)   ≜ experiment's finite candidate set for target c ⟨W(c) ⊆ Names⟩
+probe : Names → ℘(D) × C
+fired : Names → ℘(D)
+fired(w) ≜ priors(w)
+fired(a) = dec(a) , a ∈ dom(dec)
+concept(w) ≜ cl(fired(w))
+probe(w) ≜ ⟨ fired(w) · concept(w) ⟩
+experiment(c) ≜ { w ∈ W(c) | concept(w) = c }
+coverage : { w ∈ Names | fired(w) ≠ ∅ ∧ concept(w) = c } ⊆ W(c)
+crystallize : σ*(c) ∈ experiment(c)` as SkillExpression;
 
 export const probe: Skill = {
   name: 'probe',
-  description: `use this skill to probe a signifier — read out the priors a word, phrase, or candidate name fires in the reader (\`fired_R\`, signify's decoder \`dec_R\` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of signify, for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through signify.`,
+  description: `use this skill to probe a signifier — read out the priors a word, phrase, or candidate name fires in the reader (\`fired\`, signify's decoder \`dec\` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of signify, for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through signify.`,
   formalBlock: FORMAL_BLOCK,
   composition: () => [signify, elicit, conceptualize],
 };

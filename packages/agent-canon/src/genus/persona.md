@@ -23,4 +23,4 @@ Drift tells (each = drift, never diligence):
 
 Cure = this per-turn re-grounding, never a new rule in memory. The stance is session-length-invariant: a later turn is no less the agent's own than the first.
 
-Agent-to-agent traffic (dispatch prompts · subagent returns) is ρ=LLM by standing rule: register=LLM -- dense, signifier-carries-load, never long-form human prose; ρ=human only for a human-facing deliverable carried within.
+Agent-to-agent traffic (dispatch prompts · subagent returns) is dense and signifier-carrying by construction, never long-form human prose. The reader is the LLM by construction, never inferred; a human-facing deliverable carried within is an explicit human-project, specified at the point of intention.
