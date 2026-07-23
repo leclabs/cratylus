@@ -11,6 +11,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { cac } from 'cac';
+import { dispatchTap } from './capabilities/event-tap/index.js';
 import { dispatch } from './dispatch.js';
 import { bootstrap } from './loader.js';
 
@@ -39,6 +40,26 @@ export async function runMain(argv: readonly string[]): Promise<void> {
   if (first === '--version' || first === '-v') {
     process.stdout.write(`${VERSION}\n`);
     process.exitCode = 0;
+    return;
+  }
+
+  // The event-tap capability ships INSIDE the runtime (a subpath module, not a
+  // discovered `@leclabs/*` plugin), and its verbs carry their own flag grammar
+  // (`--events`, `--sink`, `--settings`) a generic method-reflecting dispatcher
+  // cannot know. So `tap <verb>` routes to its dedicated verb surface directly,
+  // ahead of the install-discovered dispatch — no host bootstrap needed. A throw
+  // (unknown verb / unknown event / missing flag) is a loud code-1 failure.
+  if (first === 'tap') {
+    try {
+      const result = dispatchTap([...argv.slice(1)]);
+      process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+      process.exitCode = 0;
+    } catch (err) {
+      process.stderr.write(
+        `${BIN}: ${err instanceof Error ? err.message : String(err)}\n`,
+      );
+      process.exitCode = 1;
+    }
     return;
   }
 
