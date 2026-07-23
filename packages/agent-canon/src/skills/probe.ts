@@ -17,16 +17,18 @@ precise-circumscription(w,C,R) — w fits C ⇔ latent-priors(w,R) circumscribe 
 Names — the signifiers R can read
 dec_R — signify's decoder: dec_R(a) = the priors anchor a fires, dom(dec_R) ⊆ Names
 w — a signifier under probe; w ∈ Names, need not lie in dom(dec_R)
+W(C) — experiment's finite candidate set, weighed against target C ; W(C) ⊆ Names
 
 LAWS
 
 fired_R : Names → ℘(D_R)
-fired_R(w) ≜ latent-priors(w,R)                        -- the priors w evokes in R
-fired_R(a) = dec_R(a) , a ∈ dom(dec_R)                 -- agrees with signify on assigned anchors
-concept_R(w) ≜ cl_R(fired_R(w))                        -- the concept w circumscribes in R
-probe(w) ≜ ⟨ fired_R(w) · concept_R(w) ⟩              -- readout only; nothing committed; α ∧ C_R unchanged
--- discover : read concept_R(w) latent in a given name w
--- experiment : weigh candidate names {w_i} against a target C by precise-circumscription(w_i,C,R); a keeper crystallizes through signify` as SkillExpression;
+fired_R(w) ≜ latent-priors(w,R)
+fired_R(a) = dec_R(a) , a ∈ dom(dec_R)
+concept_R(w) ≜ cl_R(fired_R(w))
+probe(w) ≜ ⟨ fired_R(w) · concept_R(w) ⟩
+experiment(C) ≜ { w ∈ W(C) | precise-circumscription(w,C,R) }
+coverage : { w ∈ Names | fired_R(w) ≠ ∅ ∧ precise-circumscription(w,C,R) } ⊆ W(C)
+crystallize : σ*(C) ∈ experiment(C)` as SkillExpression;
 
 export const probe: Skill = {
   name: 'probe',
