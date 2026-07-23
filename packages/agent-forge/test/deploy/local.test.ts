@@ -16,7 +16,7 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   placeAgentsLocal,
@@ -41,24 +41,33 @@ describe('placeAgentsLocal', () => {
     // def landed
     expect(existsSync(join(claude, 'agents', 'mav.md'))).toBe(true);
     // the sidecar dir holds EXACTLY the three v2 stores — nothing else
-    expect(readdirSync(join(claude, 'agents', 'mav')).sort()).toEqual([
-      'EPISODIC.jsonl',
-      'PROCEDURAL.md',
-      'SEMANTIC.md',
-    ]);
+    // (sidecars seed to the harness-neutral `.agents` sibling of `.claude`)
+    expect(readdirSync(join(dirname(claude), '.agents', 'mav')).sort()).toEqual(
+      ['EPISODIC.jsonl', 'PROCEDURAL.md', 'SEMANTIC.md'],
+    );
     // v2 seed headers landed
     expect(
-      readFileSync(join(claude, 'agents', 'mav', 'SEMANTIC.md'), 'utf-8'),
+      readFileSync(
+        join(dirname(claude), '.agents', 'mav', 'SEMANTIC.md'),
+        'utf-8',
+      ),
     ).toMatch(/^# mav — semantic/);
     expect(
-      readFileSync(join(claude, 'agents', 'mav', 'PROCEDURAL.md'), 'utf-8'),
+      readFileSync(
+        join(dirname(claude), '.agents', 'mav', 'PROCEDURAL.md'),
+        'utf-8',
+      ),
     ).toMatch(/^# mav — procedural/);
     // EPISODIC is JSONL — empty file, NOT a .md
-    const epi = join(claude, 'agents', 'mav', 'EPISODIC.jsonl');
+    const epi = join(dirname(claude), '.agents', 'mav', 'EPISODIC.jsonl');
     expect(readFileSync(epi, 'utf-8')).toBe('');
     // the retired v1 stores are NOT created
-    expect(existsSync(join(claude, 'agents', 'mav', 'SELF.md'))).toBe(false);
-    expect(existsSync(join(claude, 'agents', 'mav', 'MEMORY.md'))).toBe(false);
+    expect(existsSync(join(dirname(claude), '.agents', 'mav', 'SELF.md'))).toBe(
+      false,
+    );
+    expect(
+      existsSync(join(dirname(claude), '.agents', 'mav', 'MEMORY.md')),
+    ).toBe(false);
 
     expect(r.report.seeded).toContain('mav/SEMANTIC.md');
     expect(r.report.seeded).toContain('mav/PROCEDURAL.md');
@@ -73,13 +82,13 @@ describe('placeAgentsLocal', () => {
     // first deploy seeds everything
     placeAgentsLocal(claude, agentsDir, ['mav'], silent);
     // the agent edits its own SEMANTIC.md (the self-authored individual)
-    const semPath = join(claude, 'agents', 'mav', 'SEMANTIC.md');
+    const semPath = join(dirname(claude), '.agents', 'mav', 'SEMANTIC.md');
     writeFileSync(semPath, 'MY LIVED HISTORY — do not clobber', 'utf-8');
     // the def is regenerated upstream (new substance)
     writeFileSync(join(agentsDir, 'mav.md'), '# mav def v2\n', 'utf-8');
 
     // snapshot every sidecar (content + mtime) before the second deploy
-    const sidecarDir = join(claude, 'agents', 'mav');
+    const sidecarDir = join(dirname(claude), '.agents', 'mav');
     const before = new Map(
       readdirSync(sidecarDir).map((f) => {
         const p = join(sidecarDir, f);
@@ -112,7 +121,7 @@ describe('placeAgentsLocal', () => {
     const claude = join(tmp('agent-forge-host-'), '.claude');
 
     // a lived-in v2-only home: all three stores present + populated, no v1 files
-    const selfdir = join(claude, 'agents', 'mav');
+    const selfdir = join(dirname(claude), '.agents', 'mav');
     mkdirSync(selfdir, { recursive: true });
     writeFileSync(join(selfdir, 'SEMANTIC.md'), '# mav — semantic\nLIVED\n');
     writeFileSync(join(selfdir, 'PROCEDURAL.md'), '# mav — procedural\nWISE\n');
@@ -143,9 +152,9 @@ describe('placeAgentsLocal', () => {
     // redeploy only mav — nico's landed files are not swept
     placeAgentsLocal(claude, agentsDir, ['mav'], silent);
     expect(existsSync(join(claude, 'agents', 'nico.md'))).toBe(true);
-    expect(existsSync(join(claude, 'agents', 'nico', 'SEMANTIC.md'))).toBe(
-      true,
-    );
+    expect(
+      existsSync(join(dirname(claude), '.agents', 'nico', 'SEMANTIC.md')),
+    ).toBe(true);
   });
 
   it('warns (not throws) on a missing def', () => {

@@ -136,6 +136,10 @@ export function placeAgentsSsh(
     return { rc: resolved.rc, report };
   }
   const agentsDir = `${resolved.claudeDir}/agents`;
+  // Memory sidecars go to the harness-NEUTRAL home <home>/.agents/<name> (sibling
+  // of .claude, mirroring agent-memory `homeForName`) — NOT under .claude/agents,
+  // where only the <name>.md declaration lives.
+  const memHome = resolved.claudeDir.replace(/\.claude$/, '.agents');
   run(['ssh', target, `mkdir -p ${shQuote(agentsDir)}`]);
   for (const name of names) {
     const src = resolvePath(defsDir, `${name}.md`);
@@ -152,7 +156,7 @@ export function placeAgentsSsh(
       }
     }
     report.copied += 1;
-    const selfdir = `${agentsDir}/${name}`;
+    const selfdir = `${memHome}/${name}`;
     run(['ssh', target, `mkdir -p ${shQuote(selfdir)}`]);
     // seed each layer if-absent, atomically, on the remote: test -e guards.
     for (const [fname, seedfn] of SEED_FILES) {

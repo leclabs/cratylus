@@ -26,8 +26,10 @@ import {
   emptyReport,
 } from './types.js';
 
-/** Write <claudeDir>/agents/<name>.md for each name; seed
- *  <claudeDir>/agents/<name>/{SEMANTIC,PROCEDURAL,EPISODIC} only if absent. */
+/** Write <claudeDir>/agents/<name>.md for each name (the harness-specific
+ *  declaration); seed the harness-NEUTRAL memory home
+ *  <home>/.agents/<name>/{SEMANTIC,PROCEDURAL,EPISODIC} (a sibling of .claude,
+ *  mirroring agent-memory `homeForName`) only if absent. */
 export function placeAgentsLocal(
   claudeDir: string,
   defsDir: string,
@@ -56,7 +58,10 @@ export function placeAgentsLocal(
       );
     }
     report.copied += 1;
-    const selfdir = resolvePath(agents, name);
+    // Memory sidecars live in the harness-NEUTRAL home ~/.agents/<name> (mirrors
+    // agent-memory `homeForName`), a sibling of `.claude` — NOT under
+    // `.claude/agents` (Claude-specific; only <name>.md declaration lives there).
+    const selfdir = resolvePath(claudeDir, '..', '.agents', name);
     if (!opts.dry) {
       mkdirSync(selfdir, { recursive: true });
     }

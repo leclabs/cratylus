@@ -99,16 +99,23 @@ const str = (v: string | boolean | undefined): string | undefined =>
   typeof v === 'string' ? v : undefined;
 
 /**
- * The agent home the verb acts on: an explicit `--home <dir>` wins; else a bare
+ * The agent home the verb acts on, resolved override-first with an intelligent
+ * default (the `configPathFrom` pattern): an explicit `--home <dir>` flag wins;
+ * else the `$AGENT_HOME` env (the consumer's deployment override); else a bare
  * `--name <name>` derives `~/.agents/<name>` (uv-tool-style, {@link homeForName}).
- * One of the two is required.
+ * A caller that passes `--name <self>` gets the canonical home with no hardcoded
+ * path, and a deployment may still override via `$AGENT_HOME`. One is required.
  */
 function requireHome(flags: ParsedArgs['flags']): string {
   const home = str(flags.home);
   if (home !== undefined) return resolve(home);
+  const env = process.env.AGENT_HOME;
+  if (env !== undefined && env !== '') return resolve(env);
   const name = str(flags.name);
   if (name !== undefined) return homeForName(name);
-  throw new Error('--home <agent-home-dir> or --name <agent-name> is required');
+  throw new Error(
+    '--home <dir>, $AGENT_HOME, or --name <agent-name> is required',
+  );
 }
 
 /** `--config` > `$AGENT_FACTORY_CONFIG` > a cwd-present `.agent-factory.config` > none. */
@@ -145,6 +152,7 @@ usage:
   memory read    (--home <dir> | --name <name>) [--under <path>] [--for-session <S>] [--stale <ms>] \\
                  [--scope <tag>] [--path <p>] [--count]
   memory node    <path> [--json] [--config <file>]
+  memory home    (--home <dir> | --name <name>)   -- print the resolved agent home
   memory fold    (--home <dir> | --name <name>) [--path <p>] [--config <file>]
   memory lock    (acquire | release | status) (--home <dir> | --name <name>)
   memory session (register | heartbeat | release | list) (--home <dir> | --name <name>) [--session <id>]
@@ -378,6 +386,14 @@ function runNode(args: ParsedArgs): CliResult {
   if (args.flags.json === true)
     return { code: 0, out: `${JSON.stringify({ node, basis })}\n`, err: '' };
   return { code: 0, out: `${node}\n`, err: '' };
+}
+
+/** `home`: print the resolved agent home — the same `--home` > `$AGENT_HOME` >
+ *  `--name` resolution every verb shares. Lets a skill bind
+ *  `AGENT_HOME=$(memory home --name <self>)` to the canonical `~/.agents/<name>`
+ *  (or an explicit override) with no hardcoded path in the skill text. */
+function runHome(args: ParsedArgs): CliResult {
+  return { code: 0, out: `${requireHome(args.flags)}\n`, err: '' };
 }
 
 /** `fold`: emit the deterministic routing manifest for the home log. */
@@ -836,6 +852,8 @@ export function main(argv: readonly string[]): CliResult {
         return runRead(args);
       case 'node':
         return runNode(args);
+      case 'home':
+        return runHome(args);
       case 'fold':
         return runFold(args);
       case 'lock':

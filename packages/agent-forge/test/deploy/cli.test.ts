@@ -54,9 +54,9 @@ describe('runDeploy (local single-host)', () => {
     expect(rc).toBe(0);
     // bare-home guard appended .claude
     expect(existsSync(join(home, '.claude', 'agents', 'mav.md'))).toBe(true);
-    expect(
-      existsSync(join(home, '.claude', 'agents', 'mav', 'EPISODIC.jsonl')),
-    ).toBe(true);
+    expect(existsSync(join(home, '.agents', 'mav', 'EPISODIC.jsonl'))).toBe(
+      true,
+    );
   });
 
   it('--kind all deploys agent + skill + hooks in ONE invocation (local single-host)', async () => {
@@ -81,7 +81,9 @@ describe('runDeploy (local single-host)', () => {
     const cd = join(home, '.claude');
     // agent kind landed
     expect(existsSync(join(cd, 'agents', 'mav.md'))).toBe(true);
-    expect(existsSync(join(cd, 'agents', 'mav', 'EPISODIC.jsonl'))).toBe(true);
+    expect(existsSync(join(home, '.agents', 'mav', 'EPISODIC.jsonl'))).toBe(
+      true,
+    );
     // skill kind landed
     expect(existsSync(join(cd, 'skills', 'wake', 'SKILL.md'))).toBe(true);
     // hooks kind landed (worker scripts + merged settings.json)
@@ -188,9 +190,9 @@ describe('scaffoldProject (greenfield scaffold)', () => {
     expect(
       existsSync(join(target, '.claude', 'skills', 'memory', 'SKILL.md')),
     ).toBe(true);
-    expect(
-      existsSync(join(target, '.claude', 'agents', 'mav', 'SEMANTIC.md')),
-    ).toBe(false);
+    expect(existsSync(join(target, '.agents', 'mav', 'SEMANTIC.md'))).toBe(
+      false,
+    );
     // project marker + subject woven in
     const agentsMd = readFileSync(join(target, 'AGENTS.md'), 'utf-8');
     expect(agentsMd).toMatch(/a test project/);

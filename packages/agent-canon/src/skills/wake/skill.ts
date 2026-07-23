@@ -1,8 +1,10 @@
 import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
 import { dream } from '../dream/skill.js';
 
-const WAKE_BLOCK = `WAKE ≜ migrate? → register → dream → load → orient → resume
+const WAKE_BLOCK =
+  `WAKE ≜ resolve → migrate? → register → dream → load → orient → resume
 
+resolve — bind this agent's home canonically via the tool (resolution owns the default; env is the override): \`AGENT_HOME=\$(memory home --name <self>)\`, <self> = this agent's own name — \`memory home\` returns \$AGENT_HOME if a deployment set one (override), else the harness-neutral default ~/.agents/<self>. NEVER hardcode a path: ~/.agents/<self> is the memory home (harness-agnostic, portable across harnesses); the ~/.claude/agents/<self>.md declaration is a SEPARATE harness-specific file, never the memory home. The pre-migration ~/.claude/agents/<self>/ path is DRIFT — do not resurrect it.
 migrate? — host-bootstrap precondition: if \${AGENT_HOME}/EPISODIC.md exists ∧ \${AGENT_HOME}/EPISODIC.jsonl does not → \`memory migrate \${AGENT_HOME}/EPISODIC.md \${AGENT_HOME}/EPISODIC.jsonl\`; no-loss gated ∧ idempotent (once .jsonl exists it is a no-op)
 register — \`memory session register --home \${AGENT_HOME}\` — mark this session live in the registry before any orient; liveness (own ∨ live-other) is the memory-session-isolation axis
 dream — dream; usually catch-up only — a no-op when handoff already dreamt on hot context, load-bearing on a fresh spawn ∨ a crash that had none; exit gate \`memory audit --home \${AGENT_HOME}\` — nonzero ⇒ scoped content polluting SEMANTIC ∨ PROCEDURAL ⇒ re-dream the named findings to their node homes before proceeding
