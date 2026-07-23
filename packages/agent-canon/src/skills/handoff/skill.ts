@@ -7,7 +7,7 @@ self           ≜ session⟨CLAUDE_SESSION_ID⟩
 agent          ≜ this agent's name
 praxis-sync    ≜ sync @ praxis
 dream          ≜ drain⟨EPISODIC⟩ @ dream
-release        ≜ \`memory session release --name <agent>\` ∴ released(self)
+release        ≜ \`agent-runtime memory session release --name <agent>\` ∴ released(self)
 registered, released, stale : session → 𝔹
 live           : session → 𝔹
 
