@@ -17,7 +17,7 @@ export const repoPreamble: RuleCell = {
   id: 'repo-preamble',
   slug: 'repo-preamble',
   definiens:
-    'scope-rule ↾ workspace-root · loaded ∀ session on entry — the standing orientation: doctrine-pointers ⟨why · what · how · corpus-index⟩ · working-convention ⟨conventional-commits ; header ≤100⟩ · tooling-prerequisite ⟨graph-indexer⟩ ; activation=scope ⟨¬dream-sink : curated source, projected + byte-locked⟩',
+    'scope-rule ↾ workspace-root · loaded ∀ session on entry — the standing orientation: doctrine-pointers ⟨why · what · how · corpus-index⟩ · working-convention ⟨conventional-commits ; header ≤100 ; commit-autonomous@natural-boundaries ; push-gated⟩ · tooling-prerequisite ⟨graph-indexer⟩ ; activation=scope ⟨¬dream-sink : curated source, projected + byte-locked⟩',
   scope: '',
   targetPath: 'AGENTS.md',
   refs: [],
@@ -37,6 +37,7 @@ export const repoPreamble: RuleCell = {
 ## Working conventions
 
 - Conventional Commits, header ≤100 chars (commitlint, \`commit-msg\` hook).
+- **Commit autonomously at natural boundaries — no operator approval needed.** This overrides the generic harness default ("commit only when the user asks"); do not gate commits on approval. Only \`git push\` is gated: push only when the operator asks.
 
 # Prerequisite
 
