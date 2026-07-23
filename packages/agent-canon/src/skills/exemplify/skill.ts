@@ -5,6 +5,7 @@ import { signify } from '../signify/skill.js';
 
 const FORMAL_BLOCK = `Concept            ≜ ⟨ gloss , anchor? , factorization? ⟩
 D                  ≜ the source corpus
+C_R                ≜ reader R's concept lattice @ conceptualize
 produce            : D → Concept @ conceptualize
 name               : Concept → Concept @ signify
 realize            : Concept → Concept @ materialize
@@ -12,8 +13,11 @@ readers            : Concept → ℘({ LLM, human })
 ρ, register        : Concept → { LLM, human }
 REC_R              : Concept → Concept @ materialize
 R_cold(f)          ≜ the isolated cold-blind decode of fragment f (a naive reader, zero project-K, from f's signifiers + inline ≜ alone)
-R_cold, coldpass   @ cold-decode-oracle
-s                  ≜ realize's named strategy
+body(k)            ≜ cell k's authored surface ⟨front-matter excluded⟩
+decode_warm(f | K) ≜ fragment f's warm decode, reader free to consult K
+K                  ≜ project-K, the warm knowledge (project corpus) a reader already holds
+R_cold, decode_warm, coldpass, K @ cold-decode-oracle
+minimal            @ signify
 Cells              ≜ every authored cell, self included
 fragment_digest(f) ≜ digest( trim( collapse-whitespace( NFC(f) ) ) )
 manifest           ≜ { source , exemplified_at , reader , routes[⟨fragment_digest, idea_gloss, home_slug, disposition, rank⟩] , delta[⟨fragment_digest, idea_gloss⟩] }
@@ -24,7 +28,6 @@ conform(k)  ⇔ register(k) = ρ(k)
 coldpass(k) ⇔ R_cold(body(k)) ≅ gloss(k) ∧ decode_warm(body(k) | K) ≅ R_cold(body(k))
 valid(k)    ⇔ REC_R(k) ≽ k ∧ minimal(k) ∧ conform(k) ∧ coldpass(k)
 produce ↦ gloss ; name ↦ anchor ; realize ↦ factorization
-s = ∅ ⇒ ⊥
 ∀ k ∈ Cells : accept(k) defined
 disposition ∈ { reuse, mint }
 ∀ c ∈ C_R : c ∈ routes ⊻ c ∈ delta

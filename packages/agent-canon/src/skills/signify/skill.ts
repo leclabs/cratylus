@@ -57,7 +57,7 @@ c ∉ dom(α) ⇒ c ∉ A :
     residue(c) ≜ { d ∈ D(c) | d ∉ fired(α(c)) }
     ∀ c carried by a : c enters the body as ⟨α(c), residue(c)⟩
     residue(c) = ∅ ⇒ c enters as α(c) alone
-    a re-states fired(α(c)) ⇒ ¬ minimal(a)
+    minimal(a) ⇔ ∄ c carried by a : a re-states fired(α(c))
 
 conform(a)  ⇔  register(a) = ρ(a)
 verbatim(a) ⇒ ρ(a) = LLM` as SkillExpression,
