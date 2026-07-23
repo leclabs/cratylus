@@ -1,5 +1,5 @@
 import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
-import { dream } from './dream.js';
+import { dream } from '../dream/skill.js';
 
 const WAKE_BLOCK = `WAKE ≜ migrate? → register → dream → load → orient → resume
 

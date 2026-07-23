@@ -23,8 +23,8 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { delegation } from '../src/dimensions/actions/delegation.js';
-import { exemplify } from '../src/skills/exemplify.js';
-import { praxis } from '../src/skills/praxis.js';
+import { exemplify } from '../src/skills/exemplify/skill.js';
+import { praxis } from '../src/skills/praxis/skill.js';
 import {
   type ArtClass,
   conform,

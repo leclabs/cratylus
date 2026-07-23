@@ -118,12 +118,17 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     const divergences: string[] = [];
     let checked = 0;
     for (const kind of ['skills', 'agents', 'rules', 'hooks']) {
-      for await (const p of glob('*.ts', { cwd: join(srcRoot, kind) })) {
+      // Skill cells are self-contained dirs `skills/<name>/skill.ts`: the
+      // discovered sign is the DIRECTORY name (`name==parent-dir`), not the
+      // uniform `skill` basename. Every other kind is still a flat `<id>.ts`.
+      const isSkillDir = kind === 'skills';
+      const pattern = isSkillDir ? '*/skill.ts' : '*.ts';
+      for await (const p of glob(pattern, { cwd: join(srcRoot, kind) })) {
         const f = join(srcRoot, kind, p);
         const id = declaredId(readFileSync(f, 'utf-8'));
         if (!id) continue; // no declared identity (e.g. a barrel) — out of scope
         checked++;
-        const file = basename(p, '.ts');
+        const file = isSkillDir ? dirname(p) : basename(p, '.ts');
         if (id !== file)
           divergences.push(`${kind}/${p}: file '${file}' ≠ id '${id}'`);
       }

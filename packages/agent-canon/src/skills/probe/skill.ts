@@ -1,7 +1,7 @@
 import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
-import { conceptualize } from './conceptualize.js';
-import { elicit } from './elicit.js';
-import { signify } from './signify.js';
+import { conceptualize } from '../conceptualize/skill.js';
+import { elicit } from '../elicit/skill.js';
+import { signify } from '../signify/skill.js';
 
 const FORMAL_BLOCK = `DECLARATIONS
 

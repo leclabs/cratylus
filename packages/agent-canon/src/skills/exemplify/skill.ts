@@ -1,7 +1,7 @@
 import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
-import { conceptualize } from './conceptualize.js';
-import { materialize } from './materialize.js';
-import { signify } from './signify.js';
+import { conceptualize } from '../conceptualize/skill.js';
+import { materialize } from '../materialize/skill.js';
+import { signify } from '../signify/skill.js';
 
 const FORMAL_BLOCK = `-- Concept-contract --
 Concept     ≜ ⟨ gloss , anchor? , factorization? ⟩

@@ -1,6 +1,6 @@
 import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
-import { dream } from './dream.js';
-import { praxis } from './praxis.js';
+import { dream } from '../dream/skill.js';
+import { praxis } from '../praxis/skill.js';
 
 export const handoff: Skill = {
   name: 'handoff',

@@ -15,8 +15,8 @@ import {
 } from '@leclabs/agent-forge/adapters/claude';
 import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
-import { dream } from '../src/skills/dream.js';
-import { wake } from '../src/skills/wake.js';
+import { dream } from '../src/skills/dream/skill.js';
+import { wake } from '../src/skills/wake/skill.js';
 import { fragmentToMarkdown } from '../src/toolkit/project.js';
 
 /** Project a skill through the forge claude adapter — `f(name, formalBlock,
@@ -62,7 +62,7 @@ describe('projection stability (.ts is the sole source)', () => {
   });
 
   it('every skill projects non-empty', async () => {
-    const modules = await collect('skills/*.ts');
+    const modules = await collect('skills/*/skill.ts');
     expect(modules.length).toBe(15);
     for (const rel of modules) {
       const s = await firstExport<Skill>(join(srcRoot, rel));

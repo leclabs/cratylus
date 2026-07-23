@@ -52,7 +52,7 @@ async function scanCorpus(): Promise<{
   byName: Map<string, BlockScan>;
 }> {
   const rels: string[] = [];
-  for await (const p of glob('skills/*.ts', { cwd: srcRoot })) {
+  for await (const p of glob('skills/*/skill.ts', { cwd: srcRoot })) {
     rels.push(p);
   }
   rels.sort();
@@ -112,7 +112,7 @@ describe('SELF-SUFFICIENCY gate — formal-block prose (law/def annotations)', (
 
   // ── ACCEPTANCE 3: no false positive on the already-drained reference sub-blocks ──────────
   it('the drained signify σ*-cluster carries no finding (whole DECLARATIONS section clean)', async () => {
-    const block = await blockOf('skills/signify.ts');
+    const block = await blockOf('skills/signify/skill.ts');
     const findings = scanFormalBlock('signify', block);
     // The σ*-cluster: fired · dec · circ · |n| · σ* · mint · α. Its two `--` primitive glosses
     // (on `fired` and `α`) are admissible declaration glosses — the discriminating true-negative.
@@ -134,7 +134,7 @@ describe('SELF-SUFFICIENCY gate — formal-block prose (law/def annotations)', (
   });
 
   it('the drained probe experiment/coverage lines carry no finding', async () => {
-    const block = await blockOf('skills/probe.ts');
+    const block = await blockOf('skills/probe/skill.ts');
     const findings = scanFormalBlock('probe', block);
     const drained = lineNumbersOf(
       block,
