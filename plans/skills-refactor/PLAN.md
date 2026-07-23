@@ -2,6 +2,8 @@
 
 > Runtime folder-state is authority; this doc is downstream. Owner: `cda9ac7e` (`.owner`). Reader = LLM.
 
+> **STATUS (2026-07-22): WAVE 0 COMPLETE + INTEGRATED.** T1·T2·T3 merged into `canon/signify-symbolic-notation` (`d8f2a30`) — clean, zero conflicts. Green: agent-canon 119 pass, agent-forge 734 pass, typecheck 4/4, projection emits 15 skills from the reshaped `skill.ts` dirs. (2 pre-existing doc-story reds — `E7/s10`, `E10/S7`, from `5ddfcc4` decruft — are UNRELATED to E1; a separate fix.) **NEXT: wave 1 = T4 compose-build** (deps T1,T3 — both landed).
+
 ## Intent
 
 Reshape agent-canon skills to the **standardized Agent Skills shape** — self-contained
