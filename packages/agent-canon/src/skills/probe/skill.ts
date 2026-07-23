@@ -14,7 +14,7 @@ dec_R  : Names ⇀ ℘(D_R) @ signify
 σ*     @ signify
 w      ≜ a signifier under probe ⟨w ∈ Names⟩
 C      ≜ a target concept ⟨C ∈ C_R⟩
-precise-circumscription(w,C,R) ⇔ concept_R(w) = C
+circ_R(w,C) ⇔ concept_R(w) = C
 W(C)   ≜ experiment's finite candidate set for target C ⟨W(C) ⊆ Names⟩
 probe : Names → ℘(D_R) × C_R
 fired_R : Names → ℘(D_R)
@@ -22,8 +22,8 @@ fired_R(w) ≜ priors(w,R)
 fired_R(a) = dec_R(a) , a ∈ dom(dec_R)
 concept_R(w) ≜ cl_R(fired_R(w))
 probe(w) ≜ ⟨ fired_R(w) · concept_R(w) ⟩
-experiment(C) ≜ { w ∈ W(C) | precise-circumscription(w,C,R) }
-coverage : { w ∈ Names | fired_R(w) ≠ ∅ ∧ precise-circumscription(w,C,R) } ⊆ W(C)
+experiment(C) ≜ { w ∈ W(C) | circ_R(w,C) }
+coverage : { w ∈ Names | fired_R(w) ≠ ∅ ∧ circ_R(w,C) } ⊆ W(C)
 crystallize : σ*(C) ∈ experiment(C)` as SkillExpression;
 
 export const probe: Skill = {
