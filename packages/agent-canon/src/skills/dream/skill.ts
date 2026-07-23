@@ -18,7 +18,7 @@ read                : home × session → records ⟨own ∪ completed ; live-si
 fold                : home → { id ↦ node ∪ legacy }
 drain               : home → ∅ ↾ completed-sessions ⟨--completed-only retains a live sibling ; --for-session adds self at handoff⟩
 route               : record → { SEMANTIC · PROCEDURAL · CANON-PROMOTION · EPISODIC · drop }
-distill(i)          ≜ densest-faithful-point(i)
+dfp(i)              ≜ densest-faithful-point(i)
 depalimpsest        ≜ reconcile the resident set to current ground-truth ⟨¬only-drop-stale⟩
 promotion-is-move   ≜ a promoted item ∉ its raw source
 canon-truth(i)      ⇔ i binds ≥1 agent-type ∨ the fleet ∨ is a mechanism/governance-fact ⟨¬ this-agent-only⟩
@@ -26,7 +26,7 @@ CANON-PROMOTION(i)  ≜ author i into its strongest seam ⟨gate ≻ cell ≻ go
 
 dream ≜ read ⟨EPISODIC⟩ ↦ exemplify ↦ materialize
 lock-precondition ≜ acquire(lock) before any write to {SEMANTIC · PROCEDURAL} ∨ any drain ; held-by-live-other ⇒ skip consolidation this wake ⟨raw preserved ; encode always-legal⟩
-∀ i ∈ read(home, session) : i = distill(i)
+∀ i ∈ read(home, session) : i = dfp(i)
 instances-governing-exemplar(i) ⇒ i ↦ pointer
 node(i) ∉ { HOME · legacy } ⇒ i ∉ SEMANTIC ∧ i ∉ PROCEDURAL
 identity(i) ∨ agent-intrinsic-durable(i) ⇒ i ↦ SEMANTIC

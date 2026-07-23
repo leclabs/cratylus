@@ -18,9 +18,10 @@ C_R                 ≜ { X ⊆ D_R | cl_R(X) = X }
 intent(c)           ≜ c
 ⊔ P                 ≜ cl_R(⋃ { intent(c) | c ∈ P })   ,  P ⊆ C_R
 prim_R(c)           ⇔ ∄ P ⊆ C_R \\ {c} : ⊔ P = intent(c)
-gloss(c)            ≜ densest-faithful-point(intent(c))   ,  prim_R(c)
+dfp(g)              ≜ densest-faithful-point(g)
+gloss(c)            ≜ dfp(intent(c))   ,  prim_R(c)
 fac_R(m)            ≜ { P ⊆ C_R \\ {m} | ⊔ P = intent(m) ∧ ∄ Q ⊊ P : ⊔ Q = intent(m) }
-distill(c)          ≜ prim_R(c) ∨ fac_R(c) ≠ ∅
+distillable(c)      ≜ prim_R(c) ∨ fac_R(c) ≠ ∅
 produce(sources)    ≜ { ( gloss(c), ⊥, ⊥ ) | c ∈ C_R }
 
 boundaries(sources) ∉ D_R
