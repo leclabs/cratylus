@@ -61,18 +61,19 @@ currently has zero real importers and the projection bypasses it entirely.
 
 ## Ordering constraint
 
-S1 → S2 → S3 must precede S4, and S4 must precede S5. The bin name is currently pasted across skill
-prose; **the brand must not be derived until the name has exactly one home**, or the rename becomes a
-multi-site edit in generated markdown no compiler checks.
+**Actual order, as executed:** S1 → S3 → S4 → S2 → S5 → S6. The originally-planned
+S1 → S2 → S3 → S4 was wrong: S2 needs the third package, whose bin name is the brand,
+so S2 could not precede S4; and S4 could not precede S3, because deriving a name pasted
+across skill prose yields a half-completed rename in markdown no compiler checks.
 
-| #   | shard                                                  | why it is where it is                                        |
-| --- | ------------------------------------------------------ | ------------------------------------------------------------ |
-| S1  | complete the runtime-shim seam                         | unblocks everything; the mechanism is unusable today         |
-| S2  | declare capabilities as real dependencies              | the hermeticity defect; must land before any host reinstalls |
-| S3  | rewrite `wake` + `handoff` formal blocks onto the shim | removes the bin name from prose                              |
-| S4  | derive the CLI brand (signify)                         | safe only once S3 leaves one home for the name               |
-| S5  | `agent-canon` builds to `dist/` + is installable       | blocking for consumer-side projection                        |
-| S6  | local dev-loop parity (`pnpm add -g .` + watch)        | the acceptance test for the whole design                     |
+| #   | shard                                                  | why it is where it is                                                     |
+| --- | ------------------------------------------------------ | ------------------------------------------------------------------------- |
+| S1  | complete the runtime-shim seam                         | unblocks everything; the mechanism was never usable                       |
+| S3  | rewrite `wake` + `handoff` formal blocks onto the shim | gives the bin name exactly one home                                       |
+| S4  | derive the CLI brand (signify)                         | safe only once S3 leaves one home; did **not** converge, no longer blocks |
+| S2  | declare capabilities as real dependencies              | the hermeticity defect; needs the third package                           |
+| S5  | `agent-canon` builds to `dist/` + is installable       | blocking for consumer-side projection                                     |
+| S6  | local dev-loop parity (`pnpm add -g .` + watch)        | the acceptance test for the whole design                                  |
 
 ---
 
