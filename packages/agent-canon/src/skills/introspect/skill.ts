@@ -22,8 +22,9 @@ transient-elevation ≜ a session act flipped it ⟨carry-on : autonomy human-on
 composer-dropped    ≜ projection dropped a facet ⟨the color/mark regression class⟩
 env-conditioned     ≜ a host/env fact changed the effective value
 unobservable        ≜ runtime value ¬ inspectable ∴ report-as-such ∧ ¬ guess
-misnomer            ≜ def faithfully in effect yet the wrong sign for its concept ⟨match(o) ∧ decode(o) ≇ intent(o) — a signification defect at def, ¬ a configuration one; the class that hides when rt conforms to a def that is itself mis-signified⟩
-K          ≜ { harness-override · deploy-drift · profile-projection · transient-elevation · composer-dropped · env-conditioned · unobservable · misnomer }
+misnomer            ≜ def faithfully in effect yet the wrong sign for its concept ⟨match(o) ∧ ¬ signifies(o) · a signification defect at def, ¬ a configuration one; the class that hides when rt conforms to a def that is itself mis-signified⟩
+K_cfg      ≜ { harness-override · deploy-drift · profile-projection · transient-elevation · composer-dropped · env-conditioned · unobservable }
+K          ≜ K_cfg ∪ { misnomer }
 
 ∀ o ∈ O : rt(o) @ src_rt
 ¬ ( rt ≜ def )
@@ -31,8 +32,7 @@ match(o)     ≜ def(o) ≅ rt(o)
 signifies(o) ≜ decode(o) ≅ intent(o)
 sound(o)     ≜ match(o) ∧ signifies(o)
 div          ≜ { o ∈ O | ¬ sound(o) }
-match(o) ∧ signifies(o) ⇏ div ∋ o
-¬ match(o)                ⇒ why(o) ∈ K ∖ { misnomer }
+¬ match(o)                ⇒ why(o) ∈ K_cfg
 match(o) ∧ ¬ signifies(o) ⇒ why(o) = misnomer
 why(o)       ∈ K , o ∈ div
 row(o)       ≜ ⟨ o, def(o), rt(o), match(o), signifies(o), why(o) ↾ o ∈ div ⟩
@@ -41,7 +41,7 @@ report       ≜ ⟨ { row(o) | o ∈ O }, summary ⟩
 introspect(A) ≜ report
 
 ¬ edit(agent/<A>.md) ∧ ¬ redeploy ∧ ¬ mint(V)
-why(o) ∈ K ∖ { misnomer } ⇒ reconcile @ { create-agent · deploy }
+why(o) ∈ K_cfg            ⇒ reconcile @ { create-agent · deploy }
 why(o) = misnomer         ⇒ reconcile @ signify ≺ { create-agent · deploy }
 O · K        @ live-anatomy` as SkillExpression,
   composition: () => [],
