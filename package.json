@@ -2,7 +2,7 @@
   "name": "@leclabs/agent-factory",
   "version": "0.0.0",
   "private": true,
-  "description": "agent-factory — the canonical culture (agent-canon) and projection machinery (agent-forge) from which agent societies are founded.",
+  "description": "agent-factory \u2014 the canonical culture (agent-canon) and projection machinery (agent-forge) from which agent societies are founded.",
   "type": "module",
   "packageManager": "pnpm@10.0.0",
   "engines": {
@@ -31,7 +31,8 @@
     "stance-guard:on": "git config --bool agentfactory.stanceGuard true",
     "stance-guard:off": "git config --unset agentfactory.stanceGuard",
     "stance-guard:status": "git config --bool agentfactory.stanceGuard || echo 'disabled (default)'",
-    "stance-guard:test": "sh packages/agent-canon/src/toolkit/guardrail/test-stance-guardrail.sh"
+    "stance-guard:test": "sh packages/agent-canon/src/toolkit/guardrail/test-stance-guardrail.sh",
+    "dev": "turbo run dev --parallel"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

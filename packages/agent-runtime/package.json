@@ -48,7 +48,8 @@
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "dev": "tsup --watch"
   },
   "dependencies": {
     "cac": "catalog:"

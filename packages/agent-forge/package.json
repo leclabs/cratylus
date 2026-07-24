@@ -1,7 +1,7 @@
 {
   "name": "@leclabs/agent-forge",
   "version": "0.0.0",
-  "description": "agent-forge — universal agent configuration translator: canonical IR, official adapters, and CLI in one package",
+  "description": "agent-forge \u2014 universal agent configuration translator: canonical IR, official adapters, and CLI in one package",
   "license": "MIT",
   "type": "module",
   "main": "./dist/core/index.js",
@@ -47,13 +47,16 @@
       "import": "./dist/adapters/*/index.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "gen": "tsx src/core/scripts/generate-types.ts",
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "clean": "rm -rf dist src/core/ir/generated.ts"
+    "clean": "rm -rf dist src/core/ir/generated.ts",
+    "dev": "tsup --watch"
   },
   "dependencies": {
     "@leclabs/agent-runtime": "workspace:*",

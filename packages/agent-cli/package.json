@@ -2,18 +2,21 @@
   "name": "@leclabs/agent-cli",
   "version": "0.0.0",
   "private": true,
-  "//": "The INSTALLABLE UNIT — the one package a consumer installs globally. It DECLARES its capability packages as real dependencies, so `npm i -g` resolves them under an isolated store. agent-runtime stays the contract leaf and must NOT depend on a capability (that would cycle: every capability depends on the runtime).",
-  "description": "@leclabs/agent-cli — the single entry point: the runtime dispatcher plus its declared capability plugins. Bin name is a placeholder pending the brand derivation.",
+  "//": "The INSTALLABLE UNIT \u2014 the one package a consumer installs globally. It DECLARES its capability packages as real dependencies, so `npm i -g` resolves them under an isolated store. agent-runtime stays the contract leaf and must NOT depend on a capability (that would cycle: every capability depends on the runtime).",
+  "description": "@leclabs/agent-cli \u2014 the single entry point: the runtime dispatcher plus its declared capability plugins. Bin name is a placeholder pending the brand derivation.",
   "license": "MIT",
   "type": "module",
   "bin": {
     "agent-runtime": "./dist/bin.js"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "dev": "tsup --watch"
   },
   "dependencies": {
     "@leclabs/agent-memory": "workspace:*",

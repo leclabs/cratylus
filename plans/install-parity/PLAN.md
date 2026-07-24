@@ -16,8 +16,44 @@ is the target mechanism; not a prerequisite).
 | S3 wake/handoff onto the shim       | **DONE**                          | `cae76b7` |
 | S2 declared-dependency capabilities | **DONE**                          | `cd10503` |
 | S4 CLI brand                        | **DOES NOT CONVERGE** — see below | —         |
-| S5 `agent-canon` installable        | scope enlarged — see below        | —         |
-| S6 local dev-loop parity            | not started                       | —         |
+| S5 `agent-canon` installable        | **DONE**                          | `b84c959` |
+| S6 local dev-loop parity            | **DONE**                          | see below |
+
+### S6 — `pnpm add -g .` LINKS, it does not copy
+
+The premise this shard started from was that `pnpm add -g .` packs workspace siblings
+into the isolated global store, making it a hermeticity test. **Measured, it does not.**
+For a package inside a pnpm workspace it symlinks straight back into the checkout:
+
+```
+$PNPM_HOME/global/v11/…/node_modules/@leclabs/agent-cli
+  -> …/packages/agent-cli          (a link, not a copy)
+```
+
+and its capabilities resolve through the workspace's own `node_modules`. So it is
+**not** a consumer-parity proof — the global bin is reading monorepo build output.
+
+That cuts both ways, and both are useful:
+
+- **As a dev loop it is better than advertised.** Because it links, a rebuild is
+  immediately live on the global bin — there is no re-install step, which dissolves the
+  "TypeScript gotcha" (snapshot staleness) that motivated the watch-mode workaround.
+  `pnpm dev` (turbo, parallel `tsup --watch` / `tsc --watch`) is all the loop needs.
+- **Hermeticity must be proven by the packed tarball**, which is a separate act:
+
+```
+pnpm -C packages/agent-cli pack
+npm install <tgz> …        # clean dir, no monorepo
+```
+
+**Both legs verified.** Hermetic: packing runtime+memory+cli and npm-installing into a
+clean directory yields 4 packages and a bin that dispatches `memory home` correctly with
+no checkout present. Canon likewise loads and scans (10 agents, 15 skills) from an
+installed copy outside the workspace.
+
+**Acceptance met** for the runtime face. The build face (`deploy`/`project`) still ships
+as the separate `agent-forge` bin; unifying them under one name is S9/S4 work, and S4
+has not converged.
 
 ### Re-sequencing (S3 → S4 → S2, not S1 → S2 → S3 → S4)
 
