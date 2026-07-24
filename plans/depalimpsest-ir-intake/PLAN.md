@@ -49,19 +49,53 @@ deletion happens only once nothing live points into the doomed tree.
 
 ## Shards
 
-| id     | shard                       | concern      | deps       | wave | state   |
-| ------ | --------------------------- | ------------ | ---------- | ---- | ------- |
-| **S1** | `dead-plugin-adapter-field` | contract     | —          | 0    | ready   |
-| **S2** | `event-vocabulary-rehome`   | vocabulary   | —          | 0    | ready   |
-| **S5** | `module-scan-subpath`       | package-seam | —          | 0    | ready   |
-| **S7** | `readme-reground`           | doc          | —          | 0    | ready   |
-| **S3** | `hooks-serializer-extract`  | projection   | S2         | 1    | pending |
-| **S4** | `adapter-barrel-split`      | adapters     | S3         | 2    | pending |
-| **S6** | `ir-lineage-excise`         | excision     | S1, S4, S5 | 3    | pending |
+| id     | shard                       | concern      | deps       | wave | state         | commit    |
+| ------ | --------------------------- | ------------ | ---------- | ---- | ------------- | --------- |
+| **S1** | `dead-plugin-adapter-field` | contract     | —          | 0    | **completed** | `9232224` |
+| **S2** | `event-vocabulary-rehome`   | vocabulary   | —          | 0    | **completed** | `87c0f79` |
+| **S5** | `module-scan-subpath`       | package-seam | —          | 0    | **completed** | `927d484` |
+| **S7** | `readme-reground`           | doc          | —          | 0    | **completed** | `523e3ad` |
+| **S3** | `hooks-serializer-extract`  | projection   | S2         | 1    | ready         | —         |
+| **S4** | `adapter-barrel-split`      | adapters     | S3         | 2    | pending       | —         |
+| **S6** | `ir-lineage-excise`         | excision     | S1, S4, S5 | 3    | pending       | —         |
 
 `R = {(S3,S2), (S4,S3), (S6,S1), (S6,S4), (S6,S5)}`
 
 waves `{S1,S2,S5,S7} → {S3} → {S4} → {S6}` · frontier fan-out at wave 0 = **4**.
+
+### Wave 0 — closed, with two authoring defects of my own
+
+Full suite re-run on the **merged** state (`turbo run test --force`, 0 cached / 7 tasks): green. Per-shard
+green does not prove the combination.
+
+Two falsifiers **I wrote were vacuous**, both caught by the executors, not by me:
+
+- **S7's static input** pinned `README.md:33-35`. The root `README.md` is a five-line thesis stub; the
+  offending headline lives in `packages/agent-forge/README.md`. I verified the path **existed** and never
+  opened the lines. DESIGN §7a inherited the same error, copied from the census unverified.
+  **Pin the claim, not just the path.**
+- **S2's stated falsifier** (`rg -n "core/ir" src/{anatomy,project}/`) returned clean **at HEAD too** —
+  `hook-cell.ts` reached the IR through `../core/index.js`, a string containing no `core/ir`. A textual
+  grep cannot see a transitive reach. The executor replaced it with a **resolution-level** falsifier
+  (transitive relative-import closure), which is the right instrument. Verified independently:
+  `hook-cell.ts` reaches 3 modules, 0 in the IR lineage; control walk from `core/adapter/types.ts`
+  reaches 2, proving the walker works.
+
+Carry into remaining shards: **prefer a reachability oracle over a substring oracle** whenever the claim
+is "X no longer depends on Y."
+
+### What wave 0 surfaced beyond its own scope
+
+- **The forge README was substantially fiction.** An env-var table (`AGENT_FORGE_HOME/CONFIG/LOG_LEVEL`)
+  with zero consumers — forge's source reads no environment at all; exit codes 2/3/4 when every live
+  command returns 0 or 1; "10 official adapters" against 17 dirs and a 2-harness registry. All cut.
+- **A two-resolver `$ref` trap (S2).** `ir.schema.json` refs `hook.schema.json`; **ajv resolves `$ref` in
+  URI space against `$id`, while json-schema-ref-parser resolves the same string on the filesystem.**
+  Rewriting the ref satisfies the generator and breaks the validator (95 test files); leaving it does the
+  inverse. Resolved by leaving `ir.schema.json` byte-identical and putting the path knowledge in the
+  legacy generator's file-reader — which S6 deletes anyway.
+- **Biome, not prettier, owns JSON here** (`biome check --staged` in pre-commit). Pre-existing biome debt
+  in `agent-forge/package.json` surfaces on first touch.
 
 ## Scale
 
