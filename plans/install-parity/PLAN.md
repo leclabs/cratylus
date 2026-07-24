@@ -85,8 +85,21 @@ matched nothing, which is not a pass.
 the checkout. The consumer-projected artifacts are **byte-identical** to what the
 retired path produced, and `fire` is now deployed from this path.
 
-Remaining: `project` does not yet emit hooks (still canon-side), and the build face
-still ships as the separate `agent-forge` bin.
+**Hooks closed too** (`f57c1d5`). A plugin declares a hooks dir; the shared projector
+emits `settings.json` + workers from the CELL bytes, filtered to harness substrate so a
+git-substrate cell never reaches settings (verified non-vacuously: 4 cells in source, 3
+projected). `canon:project` no longer has its own hook projector — agents, skills and
+hooks all travel the one path.
+
+Dir-scanning surfaced a silent behavioral change: it imposes ALPHABETICAL order where
+the composition root encoded intent (the blocking stance gate ran before the
+non-blocking nudge). `HookCell` now carries an explicit `order`, so the emitted
+settings.json is byte-identical to deployed rather than incidentally reordered.
+
+**`fire` is now fully deployed from the consumer path** — 10 agents, 15 skills, 3 hooks,
+via `~/.agent-site` with npm-installed packages and no path into the checkout.
+
+Remaining: the build face still ships as the separate `agent-forge` bin (S4/S9).
 
 The only thing that produces a render tree is `pnpm canon:project`, a **monorepo script**
 that dir-scans `src/agents` / `src/skills` directly and **bypasses the plugin resolver**.
