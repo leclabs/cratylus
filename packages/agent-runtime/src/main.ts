@@ -1,5 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The runtime BIN — a thin cac CLI over the loader+dispatch node app.
+// The runtime MAIN — the thin cac CLI over the loader+dispatch node app.
+//
+// This module EXPORTS runMain; it does not invoke it. The invoking bin lives in
+// the installable CLI package, which DECLARES its capability packages as real
+// dependencies and passes them in — so capability resolution succeeds because the
+// dependency is declared, not because a flat co-install happened to co-locate a
+// sibling (the ambient-resolution defect this replaces).
 //
 // Mirrors agent-forge's `cac`-based thin-CLI: cac owns branding + `--help` /
 // `--version`; the dynamic `<capability> <verb> [args]` stream is routed by the
@@ -7,13 +13,15 @@
 // table). `runMain` bootstraps the host from host-installed capability packages,
 // dispatches, and maps the pure {@link DispatchResult} to stdio + exit code.
 //
-// BIN NAME `agent-runtime` is a PLACEHOLDER — S9 (FORK-4) rebrands it.
+// BIN NAME `agent-runtime` is a PLACEHOLDER — the brand derivation has not
+// converged; it lives in exactly one place so the rebrand stays a one-line change.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { cac } from 'cac';
 import { dispatchTap } from './capabilities/event-tap/index.js';
 import { dispatch } from './dispatch.js';
-import { bootstrap } from './loader.js';
+import { RuntimeHost, bootstrap } from './loader.js';
+import type { RuntimePlugin } from './plugin.js';
 
 /** The runtime bin version. A constant (not read from package.json): the bundled
  *  bin ships without its manifest, so a runtime package.json read is unsafe. */
@@ -22,7 +30,17 @@ export const VERSION = '0.0.0';
 const BIN = 'agent-runtime';
 
 /** Bin entrypoint: brand + help/version via cac, else bootstrap → dispatch → stdio. */
-export async function runMain(argv: readonly string[]): Promise<void> {
+/** Options for {@link runMain}. `plugins` are DECLARED capability plugins supplied
+ *  by the installable CLI package; when present they are registered directly and
+ *  ambient discovery is skipped, which is what makes an isolated install work. */
+export interface RunMainOpts {
+  readonly plugins?: readonly RuntimePlugin[];
+}
+
+export async function runMain(
+  argv: readonly string[],
+  opts: RunMainOpts = {},
+): Promise<void> {
   const cli = cac(BIN);
   cli.command(
     '[capability] [verb]',
@@ -63,16 +81,12 @@ export async function runMain(argv: readonly string[]): Promise<void> {
     return;
   }
 
-  const host = await bootstrap();
+  const host =
+    opts.plugins && opts.plugins.length > 0
+      ? opts.plugins.reduce((h, p) => h.register(p), new RuntimeHost())
+      : await bootstrap();
   const { code, out, err } = await dispatch(host, argv);
   if (out) process.stdout.write(out);
   if (err) process.stderr.write(err);
   process.exitCode = code;
 }
-
-runMain(process.argv.slice(2)).catch((err: unknown) => {
-  process.stderr.write(
-    `${BIN}: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}\n`,
-  );
-  process.exitCode = 1;
-});

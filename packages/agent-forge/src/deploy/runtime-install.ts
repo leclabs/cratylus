@@ -50,6 +50,11 @@ import type { CommandRunner } from './types.js';
 export const RUNTIME_BUNDLE_PACKAGES = [
   'agent-runtime',
   'agent-memory',
+  // The installable CLI carries the BIN and DECLARES the capability packages as
+  // real dependencies. It must ship in the bundle or the install lands no bin at
+  // all. Its presence also means capability resolution no longer depends on this
+  // installer's flat co-location — that ambient coupling is what the CLI replaces.
+  'agent-cli',
 ] as const;
 
 /** Where the bundle fingerprint is stamped, relative to the install prefix — inside

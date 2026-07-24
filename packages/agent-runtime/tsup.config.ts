@@ -12,6 +12,7 @@ export default defineConfig([
       index: 'src/index.ts',
       loader: 'src/loader.ts',
       dispatch: 'src/dispatch.ts',
+      main: 'src/main.ts',
       events: 'src/events.ts',
       'ports/memory': 'src/ports/memory.ts',
       'ports/event-tap': 'src/ports/event-tap.ts',
@@ -22,13 +23,5 @@ export default defineConfig([
     clean: true,
     splitting: true,
     sourcemap: true,
-  },
-  {
-    entry: { bin: 'src/bin.ts' },
-    format: ['esm'],
-    dts: false,
-    clean: false,
-    sourcemap: true,
-    banner: { js: '#!/usr/bin/env node' },
   },
 ]);

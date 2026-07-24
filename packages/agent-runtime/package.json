@@ -2,14 +2,11 @@
   "name": "@leclabs/agent-runtime",
   "version": "0.0.0",
   "private": true,
-  "description": "@leclabs/agent-runtime — the per-host RUNTIME contract leaf: capability port interfaces (MemoryStrategy, EventTapHost), the RuntimePlugin face, and the runtime-owned lifecycle-event taxonomy. Pure types + identity helper, zero @leclabs deps.",
+  "description": "@leclabs/agent-runtime \u2014 the per-host RUNTIME contract leaf: capability port interfaces (MemoryStrategy, EventTapHost), the RuntimePlugin face, and the runtime-owned lifecycle-event taxonomy. Pure types + identity helper, zero @leclabs deps.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "bin": {
-    "agent-runtime": "./dist/bin.js"
-  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -38,9 +35,15 @@
     "./capabilities/event-tap": {
       "types": "./dist/capabilities/event-tap.d.ts",
       "import": "./dist/capabilities/event-tap.js"
+    },
+    "./main": {
+      "types": "./dist/main.d.ts",
+      "import": "./dist/main.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
