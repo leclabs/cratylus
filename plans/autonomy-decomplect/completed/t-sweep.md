@@ -43,3 +43,40 @@ hide the seams. Reconcile all of them and prove nothing dangles.
   both source and generated artifacts.
 - **Falsifier:** any dangling old-anchor reference; a generated fixture hand-edited instead of
   regenerated; or a "clean" grep with no proven-matching control.
+
+---
+
+## Findings (executed) — green; anchor preserved ⇒ no dangling reference
+
+T-mece appended a residue (`human-on-the-loop` → `human-on-the-loop ⟨resting ·
+phase-state⟩`) rather than renaming, so by construction **no old anchor dangles** —
+every `human-on-the-loop` reference remains a valid prefix/substring.
+
+**The sweep surfaced two REAL cross-cell defects** the per-shard verification missed
+(the value of a full-suite dogfood): my T-persist/T-introspect-K formalBlocks carried
+glyphs failing the SYMBOLS registry (`ℓ`, `≇`, `∋`, `∖`) and an em-dash failing the
+zero-comment self-sufficiency gate. Fixed toward the fitter sign in `7c34ec3`
+(register-clean), not by degrading — semantics unchanged.
+
+**Non-vacuous grep proofs:**
+- new value LIVE in projection: `human-on-the-loop ⟨resting · phase-state⟩` present
+  in nico.md + mav.md (control `## Autonomy` matches — non-vacuous). ✓
+- no EXACT-equality assertion of bare `'human-on-the-loop'` in any source test. ✓
+- `enumerate.test.ts` uses `.startsWith('human-on-the-loop')` — holds under the
+  residue append. ✓
+
+**Green gate:** `pnpm typecheck` 8/8, `pnpm test` 7/7 (agent-forge 121 · agent-canon
+14 · agent-memory 13 · agent-runtime 3), `pnpm canon:project` clean.
+
+**Generated fixtures:**
+- `test/fixtures/generated/agent-vector.md` — the agent is `scribe`, a FIXTURE-ONLY
+  agent (no live `scribe.ts`); self-contained, unaffected by the live-cell change.
+- `test/adapters/ir-bridge/agent-canon.agent-forge.json` — a frozen IR snapshot for
+  adapter round-trip identity (regenerated manually via `emit_ir.py`), read statically.
+  It carries ZERO `human-on-the-loop`, so my change does not touch it.
+
+**Out-of-scope note (surfaced, not fixed):** that json still carries `principal-ic`
+— stale since the pole fix `ef1ce87` (principalIC→principalSelf), which predates this
+plan and is explicitly Not-in-scope here. Regenerating would bundle the out-of-scope
+pole change and require the Python toolchain, violating "diff is exactly the anchor
+change." Flagged for a separate fixture-refresh task.
