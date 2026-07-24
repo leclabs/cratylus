@@ -21,14 +21,11 @@
 // beside it in `resolve/` as its own concern.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { Adapter } from '../core/adapter/types.js';
-
 /**
  * An agent-plugin: a package's declaration of which directories supply its
- * fragments and presets, plus any harness adapters it ships. Every dir field is
- * a path STRING the loader scans per-dimension exactly as the existing
- * directory-scan does. Fields are optional so a plugin may ship only fragments,
- * only presets, only adapters, or any mix.
+ * fragments and presets. Every dir field is a path STRING the loader scans
+ * per-dimension exactly as the existing directory-scan does. Fields are optional
+ * so a plugin may ship only fragments, only presets, or any mix.
  *
  * DIR RESOLUTION: an imported plugin OBJECT loses its package-root provenance, so
  * a plugin SELF-LOCATES its dirs to ABSOLUTE paths against its own
@@ -55,8 +52,6 @@ export interface AgentPlugin {
   readonly preamble?: string;
   /** Dir of hook cell modules this plugin contributes (harness-substrate only). */
   readonly hooks?: string;
-  /** Harness adapters this plugin ships (registered into the emitter registry). */
-  readonly adapters?: readonly Adapter[];
 }
 
 /**
