@@ -91,6 +91,14 @@ export interface ResolvedSkill {
    * is that section text and the generator path is bypassed.
    */
   readonly toolSection?: string;
+  /**
+   * The RUNTIME capability this skill is a face of (mirrors `Skill.runtime`). When
+   * set, the projection emits a thin shim beside the SKILL.md and the body BINDS it
+   * — without this the shim is unreachable: the cell would carry a script it cannot
+   * name, which is why every skill fell back to embedding the bin name in prose.
+   * Plain `string` (not `RuntimeCapability`) keeps core free of an anatomy import.
+   */
+  readonly runtime?: { readonly capability: string };
 }
 
 /** The verb H1, derived from the skill name (the anchor carries the verb). */
@@ -117,5 +125,6 @@ export function skillBody(s: ResolvedSkill): string {
     block: s.formalBlock,
     composedFrom: s.composedFrom,
     preamble: s.preamble,
+    runtime: s.runtime,
   });
 }

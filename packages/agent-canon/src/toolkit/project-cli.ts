@@ -139,6 +139,10 @@ async function projectSkills(out: string): Promise<number> {
       // The founding doctrine, intrinsic — so a FOREIGN agent invoking this skill
       // still holds the axiom (ONE home, `../genus/founding-doctrine`).
       preamble: foundingDoctrine,
+      // Carry the runtime capability so the BODY can bind the shim emitted below.
+      // Without this the shim lands on disk unreachable — the cell would hold a
+      // script it cannot name.
+      runtime: cell.runtime,
     };
     const dir = join(out, 'skills', name);
     mkdirSync(dir, { recursive: true });
