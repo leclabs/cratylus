@@ -18,6 +18,10 @@ import {
   readManagedRegion,
 } from '../../core/index.js';
 import { claudeToCanonical } from './events.js';
+// `ClaudeHook` — the adapter-private Hook extension — lives with the serializer
+// that consumes it (`hooks.ts`), so the live projection reaches neither this
+// module nor `write.ts` (S3).
+import type { ClaudeHook } from './hooks.js';
 import { paths } from './paths.js';
 
 interface ClaudeSettings {
@@ -42,20 +46,6 @@ interface ClaudeHookEvent {
   /** Permission-rule filter (v2.1.85+) [CC6]. */
   if?: string;
   hooks?: ClaudeHookCommand[];
-}
-
-/**
- * Adapter-private Hook extension fields — never part of the canonical IR
- * schema, carried only so a read→write round trip inside THIS adapter stays
- * lossless for Claude-specific hook shape ([CC6]: `if` filter, per-command
- * `env`, non-command `type`s like `prompt`). A cross-adapter consumer sees a
- * plain `Hook` (structurally compatible; the extra keys are simply ignored).
- */
-export interface ClaudeHook extends Hook {
-  if?: string;
-  env?: Record<string, string>;
-  /** Native hook `type` when not `'command'` (e.g. `'prompt'`) [CC6]. */
-  kind?: string;
 }
 
 interface ClaudeMcpEntry {

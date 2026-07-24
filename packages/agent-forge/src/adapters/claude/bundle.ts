@@ -20,11 +20,8 @@ import {
   serializeAgent,
   serializeSkill,
 } from '../../core/index.js';
-import {
-  type ClaudeHooksBlock,
-  serializeClaudeHooksReport,
-  serializeClaudeMcp,
-} from './write.js';
+import { type ClaudeHooksBlock, serializeClaudeHooksReport } from './hooks.js';
+import { serializeClaudeMcp } from './write.js';
 
 /** The documented intra-plugin path substitution [CC4][CC5]: a plugin may
  *  install anywhere, so bundled hook commands run relative to the plugin's

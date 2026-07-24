@@ -2,7 +2,6 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import {
-  type Hook,
   type IR,
   type McpServer,
   type Rule,
@@ -16,9 +15,10 @@ import {
   serializeSkill,
   upsertManagedRegion,
 } from '../../core/index.js';
-import { canonicalToClaude } from './events.js';
+// The hooks serializer lives beside `anatomy.ts` (S3): hook projection is not an
+// IR concern, and the live projection path must not reach into this module.
+import { serializeClaudeHooks } from './hooks.js';
 import { paths } from './paths.js';
-import type { ClaudeHook } from './read.js';
 
 /** The claude-documented shim: CLAUDE.md's managed region imports the
  *  shared, tool-agnostic rules surface rather than duplicating rule bodies
@@ -206,85 +206,6 @@ export async function writeClaude(
   }
 
   return { written, skipped, warnings };
-}
-
-/** The Claude `settings.json` `hooks` block shape: native-event → entries, each
- *  entry an optional matcher + `if` filter + one-or-more hook commands
- *  (`command`, or a lifted non-command type such as `prompt`) [CC6]. */
-export type ClaudeHooksBlock = Record<
-  string,
-  Array<{
-    matcher?: string;
-    /** Permission-rule filter (v2.1.85+) [CC6]. */
-    if?: string;
-    hooks: Array<{
-      type: 'command' | string;
-      command?: string;
-      /** Present when `type !== 'command'` (e.g. `type: 'prompt'`) [CC6]. */
-      prompt?: string;
-      timeout?: number;
-      /** agent-forge hook id, embedded so reimport preserves it (E3.S2). */
-      id?: string;
-      env?: Record<string, string>;
-    }>;
-  }>
->;
-
-/** Serialize agent-forge `Hook` IR into the Claude `settings.json` `hooks` block,
- *  collecting per-event losses. The standalone (no caller-allocated arrays)
- *  public entry used by agent-canon's hook projector; `writeClaude` uses the
- *  array-threaded internal `serializeClaudeHooks` directly. */
-export function serializeClaudeHooksReport(hooks: Hook[]): {
-  hooks: ClaudeHooksBlock;
-  warnings: string[];
-  skipped: { path: string; reason: string }[];
-} {
-  const warnings: string[] = [];
-  const skipped: { path: string; reason: string }[] = [];
-  const block = serializeClaudeHooks(hooks, warnings, skipped);
-  return { hooks: block, warnings, skipped };
-}
-
-function serializeClaudeHooks(
-  hooks: Hook[],
-  warnings: string[],
-  skipped: { path: string; reason: string }[],
-): ClaudeHooksBlock {
-  const out: ClaudeHooksBlock = {};
-  for (const hook of hooks) {
-    const ch = hook as ClaudeHook;
-    for (const event of hook.events) {
-      const claudeEvent = canonicalToClaude[event];
-      if (!claudeEvent) {
-        warnings.push(
-          `hook '${hook.id ?? '?'}': canonical event '${event}' has no Claude equivalent`,
-        );
-        skipped.push({
-          path: `hooks/${hook.id ?? '?'}.yaml`,
-          reason: `no Claude mapping for ${event}`,
-        });
-        continue;
-      }
-      // A hook lifted from a non-command native type (e.g. `prompt` [CC6])
-      // carries its adapter-private `kind`; round-trip it to the SAME native
-      // shape rather than misrepresenting it as `type: command`.
-      const isPrompt = ch.kind !== undefined && ch.kind !== 'command';
-      const cmd: ClaudeHooksBlock[string][number]['hooks'][number] = isPrompt
-        ? { type: ch.kind as string, prompt: hook.command }
-        : { type: 'command', command: hook.command };
-      if (hook.timeout !== undefined) cmd.timeout = hook.timeout;
-      if (hook.id !== undefined) cmd.id = hook.id; // stable across reimport
-      if (ch.env !== undefined) cmd.env = ch.env;
-      const entry: ClaudeHooksBlock[string][number] = {
-        hooks: [cmd],
-      };
-      if (hook.matcher) entry.matcher = hook.matcher;
-      if (ch.if !== undefined) entry.if = ch.if;
-      out[claudeEvent] ??= [];
-      out[claudeEvent].push(entry);
-    }
-  }
-  return out;
 }
 
 /**

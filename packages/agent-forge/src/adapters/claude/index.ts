@@ -90,14 +90,16 @@ export {
   dimensionTitle,
   claudeHarnessAdapter,
 } from './anatomy.js';
-// The hook → settings.json `hooks` block serializer (the IR-resource projection
-// path), exposed standalone so a plugin (agent-canon) can project a hooks-only
-// settings fragment without driving the whole `writeClaude` tree.
+// The hook → settings.json `hooks` block serializer, standalone by construction
+// (S3): it lives in `hooks.ts` beside the anatomy projection, imports only
+// `core/hook` + the event map, and is driven BOTH by `claudeHarnessAdapter.hooks`
+// and by `writeClaude` — one function emitting those bytes, never two.
 export {
   type ClaudeHooksBlock,
+  type ClaudeHook,
   serializeClaudeHooksReport,
-  serializeClaudeMcp,
-} from './write.js';
+} from './hooks.js';
+export { serializeClaudeMcp } from './write.js';
 // The Claude plugin-bundle compile mode (E5.S5) — a full IR → distributable
 // `.claude-plugin/` tree, distinct from writeClaude's per-scope `.claude/`
 // tree. Reachable via `agent-forge compile --as-claude-bundle <name>`.

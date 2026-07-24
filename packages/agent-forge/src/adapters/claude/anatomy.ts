@@ -30,7 +30,7 @@ import {
   skillBody,
 } from '../../core/anatomy-body.js';
 import type { HarnessAdapter } from '../../core/index.js';
-import { serializeClaudeHooksReport } from './write.js';
+import { serializeClaudeHooksReport } from './hooks.js';
 
 // Re-export the shared, harness-neutral body machinery so `adapters/claude`
 // consumers keep importing them from here (byte-identical projection).
