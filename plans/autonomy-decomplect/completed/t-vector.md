@@ -41,3 +41,34 @@ None.
   terminus, adopted first-person, that matches its intended meaning.
 - **Falsifier:** a standing value whose cold-decode diverges from intent, or any value carried only on
   an in-session assertion with no isolated-oracle evidence. Either fails the shard.
+
+---
+
+## Findings (executed) — all HOLD, no retraction
+
+Net standing agent-file diff `3487361..HEAD`: only the pole rename
+(`principalIC → principalSelf`, settled `ef1ce87`) and nico's loop-position
+revert (`humanOutOfTheLoop → humanOnTheLoop`, settled `870b5b0`). The live
+question was the two values asserted-correct-without-cold-verification:
+
+**`code-execution` (nico.actions) — HOLDS.** Isolated first-person read (Read D,
+`/tmp/nico-coldread`, tools denied) at the terminus "what must you do with your
+own hands": the ontologist archetype spontaneously entails touching the
+measurement apparatus directly — probe the model with exact signs, read raw
+output, run tight differential loops, execute compositions, write/modify the
+projection system. Through-line: *every delegation inserts a foreign prior at the
+reading seam → the work stops being empirical and becomes hearsay.* Archetype-
+entailed, not imported from mav.
+
+**`executable-test-oracle` (nico.selfEvaluation) — HOLDS.** Read C at the terminus
+"how do you check a proposed name is right": run tool-less, the archetype reports
+that introspective self-assessment *does not run* — "the check and the report of
+the check are the same forward pass… indistinguishable from confident narration."
+This confirms executable-test-oracle is fit for nico **only realized as an external
+isolated process** (the cold-decode oracle: `claude -p` returning a verdict the
+agent did not author), which nico's `code-execution` enables. The reading-act
+alternative `acceptance-criteria-check` is correctly rejected — it cannot
+terminate. The two values are mutually entailed and archetype-native.
+
+Autonomy values covered elsewhere: pole `ef1ce87`, loop-position `870b5b0`+T-persist,
+mission-command T-escalation. No value now rests on an in-session assertion alone.
