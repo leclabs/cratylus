@@ -14,35 +14,35 @@ own disk, rather than an install target that receives the output of another host
 
 ## 1. The gap, stated as an ontology
 
-Four words in the operator's framing — *development time, build time, runtime, deployed artifacts* —
+Four words in the operator's framing — _development time, build time, runtime, deployed artifacts_ —
 resolve to **seven** distinct phases. The current system fuses several of them, which is why they
 cannot be reasoned about separately.
 
-| # | Phase | Input → Output | Runs where | Owner |
-|---|-------|----------------|-----------|-------|
-| 1 | **authoring** | intent → hand-written `.ts` under `src/` | our repo | human + nico |
-| 2 | **compile** | `src/` → `dist/` (tsup) | our repo | turbo |
-| 3 | **packaging** | `dist/` + manifest → tarball / registry artifact | our repo | pnpm / npm |
-| 4 | **installation** | package → the consumer's project or global prefix | **consumer** | npm / pnpm — *not us* |
-| 5 | **composition** | `extends: [pluginA, pluginB, …]` → one merged cell set | **consumer** | our build core |
-| 6 | **projection** | composed cells → harness-agnostic IR | **consumer** | our build core + plugins |
-| 7 | **realization** | IR → harness declaration artifacts in the config home | **consumer** | our build core |
-| 8 | **execution** | harness reads declarations; skills invoke runtime capabilities | **consumer** | the harness + our runtime |
+| #   | Phase            | Input → Output                                                 | Runs where   | Owner                     |
+| --- | ---------------- | -------------------------------------------------------------- | ------------ | ------------------------- |
+| 1   | **authoring**    | intent → hand-written `.ts` under `src/`                       | our repo     | human + nico              |
+| 2   | **compile**      | `src/` → `dist/` (tsup)                                        | our repo     | turbo                     |
+| 3   | **packaging**    | `dist/` + manifest → tarball / registry artifact               | our repo     | pnpm / npm                |
+| 4   | **installation** | package → the consumer's project or global prefix              | **consumer** | npm / pnpm — _not us_     |
+| 5   | **composition**  | `extends: [pluginA, pluginB, …]` → one merged cell set         | **consumer** | our build core            |
+| 6   | **projection**   | composed cells → harness-agnostic IR                           | **consumer** | our build core + plugins  |
+| 7   | **realization**  | IR → harness declaration artifacts in the config home          | **consumer** | our build core            |
+| 8   | **execution**    | harness reads declarations; skills invoke runtime capabilities | **consumer** | the harness + our runtime |
 
-**The cut that governs everything:** phases 1–3 are ours and ship as *code*; phases 4–8 run at the
-consumer's site. **Nothing is pre-rendered.** Projection is a build the *consumer* runs, because what
+**The cut that governs everything:** phases 1–3 are ours and ship as _code_; phases 4–8 run at the
+consumer's site. **Nothing is pre-rendered.** Projection is a build the _consumer_ runs, because what
 gets projected depends on a composition only the consumer knows.
 
 ### Why projection cannot be pre-computed — the vite correspondence
 
-| | vite | agent-factory |
-|---|------|---------------|
-| build core | `vite` | `@leclabs/agent-forge` |
+|                       | vite                                                      | agent-factory                                                                               |
+| --------------------- | --------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| build core            | `vite`                                                    | `@leclabs/agent-forge`                                                                      |
 | **build-time plugin** | `vite-plugin-*`, listed in `vite.config.ts` `plugins: []` | **`AgentPlugin`**, listed in `agents.config.ts` `extends: []` — e.g. `@leclabs/agent-canon` |
-| build invocation | `vite build` | `<cli> build` / `deploy` |
-| build output | `dist/` assets | realized harness declarations |
-| runtime core | vite dev server / preview | `@leclabs/agent-runtime` |
-| **runtime plugin** | — | **`RuntimePlugin`** — `@leclabs/agent-memory`, event-tap |
+| build invocation      | `vite build`                                              | `<cli> build` / `deploy`                                                                    |
+| build output          | `dist/` assets                                            | realized harness declarations                                                               |
+| runtime core          | vite dev server / preview                                 | `@leclabs/agent-runtime`                                                                    |
+| **runtime plugin**    | —                                                         | **`RuntimePlugin`** — `@leclabs/agent-memory`, event-tap                                    |
 
 A vite plugin ships **code that runs during the user's build**, not pre-rendered output — because the
 user composes plugins the author never saw. Ours is the same: `extends: [canon, mine, third-party]` is
@@ -85,7 +85,7 @@ from a build host, which is why these cannot be reasoned about separately today.
 
 **The fleet is 7 hosts**, declared in the **gitignored** `.agent-factory.config`: `fire` (local),
 `forge`, `spark`, `ash`, `apps`, `upmav`, `upgoose`. The committed `.agent-factory.config.example`
-declares a *different* 3-host set and has drifted from the live file. `docs/agent-factory-config-schema.md`
+declares a _different_ 3-host set and has drifted from the live file. `docs/agent-factory-config-schema.md`
 is cited from three source files and **does not exist**.
 
 - **`upmav` has no checkout of `agent-factory`.** It never authors, compiles, projects, or packages.
@@ -110,7 +110,7 @@ is cited from three source files and **does not exist**.
 
 ### Where the monorepo coupling actually is
 
-I initially placed this coupling in the *installed artifact*. That is **wrong**, and the census
+I initially placed this coupling in the _installed artifact_. That is **wrong**, and the census
 disproves it: `~/.claude/agents/*.md` and the entire `.render-ts` tree contain **zero** references to
 `agent-factory`, `packages/…`, `pnpm-workspace`, or any absolute checkout path. Deployed skills invoke
 only the `agent-runtime` bin on `PATH`; hook workers reference only `$HOME` paths and `jq`/`git`.
@@ -119,14 +119,14 @@ only the `agent-runtime` bin on `PATH`; hook workers reference only `$HOME` path
 The coupling is in the **deploy act itself**, and there it is total. Deploy cannot run without the
 monorepo checkout because:
 
-1. the CLI is invoked as a *path* — `node packages/agent-forge/dist/cli/index.js`, never as an
+1. the CLI is invoked as a _path_ — `node packages/agent-forge/dist/cli/index.js`, never as an
    installed bin;
 2. `buildRuntimeBundle` walks up from its own `dist/` location to `pnpm-workspace.yaml` and requires
    `<root>/packages/{agent-runtime,agent-memory}` plus a working `pnpm`;
 3. the fleet topology is read from `<nearest .git>/.agent-factory.config`;
 4. the render tree is `packages/agent-canon/.render-ts`, gitignored and unpublished.
 
-If `agent-forge` were installed *outside* a workspace, `defaultMonorepoRoot()` would throw and
+If `agent-forge` were installed _outside_ a workspace, `defaultMonorepoRoot()` would throw and
 `--no-runtime-install` would become mandatory. **That is the parity gap in one sentence: the consumer
 has no monorepo, so the consumer cannot run the act we run.**
 
@@ -134,7 +134,7 @@ has no monorepo, so the consumer cannot run the act we run.**
 
 - **`pnpm pack` runs no build.** Neither `agent-runtime` nor `agent-memory` declares `prepack` or
   `prepare`, so whatever `dist/` happens to be on disk is what ships. A stale `dist` ships stale bytes
-  silently. This is a live false-green: the fingerprint stamp hashes the *tarball*, so a stale-but-
+  silently. This is a live false-green: the fingerprint stamp hashes the _tarball_, so a stale-but-
   consistent bundle reads as "current."
 - **`agent-canon` is outside the build graph.** It declares no `build` script, so turbo never
   schedules it. Its real build — `pnpm canon:project` → `.render-ts` — is unmodelled by turbo and
@@ -155,7 +155,7 @@ That co-location is a property of **our installer**, not of the package. Consequ
 
 1. A consumer running `npm i -g @leclabs/agent-runtime` gets **no memory capability**. The install
    succeeds, the bin works, and `agent-runtime memory …` reports the capability absent.
-2. `pnpm add -g .` — whose isolated global store gives each package only its *declared* dependencies —
+2. `pnpm add -g .` — whose isolated global store gives each package only its _declared_ dependencies —
    would break discovery on our own fleet.
 
 This is not an argument against the operator's proposal. It is the proposal working as intended: the
@@ -164,7 +164,7 @@ isolated store is a **hermeticity test**, and it fails a design that was relying
 **Resolution — the vite model, applied.** The unit of installation becomes **one thin CLI client**
 that declares its capability packages as **real dependencies**. The consumer installs one thing.
 Discovery may keep its dynamic-`import()` mechanism, but it then resolves because the dependency is
-*declared*, not because a sibling happens to be co-located. This is how vite resolves plugins:
+_declared_, not because a sibling happens to be co-located. This is how vite resolves plugins:
 declared in the consuming project, never ambiently discovered.
 
 ## 4. Target architecture
@@ -189,7 +189,7 @@ than fetching them from the registry, so no publish is required to exercise the 
 
 **Fleet deployment becomes N sibling development environments**, each running the development path on
 its own disk. The only thing crossing the network is `git`. A fleet command, if we keep one, is an
-orchestrator that runs *on each host exactly what a human would run there* — it never packs on one
+orchestrator that runs _on each host exactly what a human would run there_ — it never packs on one
 host for another.
 
 ### What this deletes
@@ -199,7 +199,7 @@ host for another.
 - the bundle fingerprint stamp — npm's own version + integrity already answers idempotency
 - the interactive-shell remote prefix probe and its `lastPathLine` noise-stripping
 - `buildRuntimeBundle`'s walk to `pnpm-workspace.yaml`, and the invocation of the deploy CLI as a
-  *path into the checkout* rather than as an installed bin — **the structural form of the whole gap:
+  _path into the checkout_ rather than as an installed bin — **the structural form of the whole gap:
   the act we run is one the consumer cannot run**
 
 ### What this does not fix, and must be handled separately
@@ -212,14 +212,14 @@ set, so the deployed set should converge to it rather than union with it.
 
 `pnpm add -g .` is a snapshot: source edits do not sync to the global bin. The answer is the one the
 operator's material names — `tsup --watch` so `dist/` is always current, plus `pnpm link` from a
-consumer project when the isolated global store caches stale files. Note this *weakens* the
+consumer project when the isolated global store caches stale files. Note this _weakens_ the
 hermeticity test, so linking is a development convenience and must never be the path a gate verifies.
 
 ### A simplification this yields
 
 A host that deploys **to itself** needs no fleet topology at all. `.agent-factory.config` — gitignored,
 drifted from its committed example, and documented by a schema file that does not exist — is needed
-only by an *orchestrator* that reaches across hosts. Under sibling symmetry it shrinks to a
+only by an _orchestrator_ that reaches across hosts. Under sibling symmetry it shrinks to a
 convenience for "run this on all my machines," and stops being load-bearing for correctness.
 
 ### Prerequisites this exposes
@@ -234,12 +234,12 @@ convenience for "run this on all my machines," and stops being load-bearing for 
 - **Node version drift** across the fleet should be pinned, since the installed artifact is now built
   per-host rather than once centrally.
 
-## 5. There is no working consumer path to align *to* — yet
+## 5. There is no working consumer path to align _to_ — yet
 
 The census found that the intended consumer mechanism is scaffolded but **never exercised**:
 
 - `agent-forge init` writes an `agents.config.ts` containing `import canon from '@leclabs/agent-canon'`
-  + `defineAgentsConfig({ extends: [canon] })`. That is the designed consumer surface.
+  - `defineAgentsConfig({ extends: [canon] })`. That is the designed consumer surface.
 - **`@leclabs/agent-canon`'s `AgentPlugin` default export has zero live consumers.** There is not one
   real `import … from '@leclabs/agent-canon'` anywhere in the repo — only two string assertions in
   tests. No package lists it as a dependency; root `node_modules/` has no `@leclabs/` dir at all.
@@ -275,11 +275,11 @@ the shim was for.
 These are already logged in `plans/agent-runtime/PLAN.md:33-36`; this work forces both.
 
 - **FORK-3 (publish story) — operator.** Public npm vs private registry vs monorepo-bundled tarball.
-  Currently resolved *de facto* as monorepo-bundled-tarball, which is exactly the mechanism this design
+  Currently resolved _de facto_ as monorepo-bundled-tarball, which is exactly the mechanism this design
   retires. Sibling-host symmetry does **not** require publishing (local `workspace:*` packing suffices),
   so this fork can stay open — but the `private: true` flags on `agent-runtime`/`agent-memory` and the
   broken `changeset publish` must be settled before any first stable release.
-- **FORK-4 (binary brand) — signify.** Must be *derived*, not coined; S9's own falsifier demands a
+- **FORK-4 (binary brand) — signify.** Must be _derived_, not coined; S9's own falsifier demands a
   candidate-free cold-oracle with a negative control. This is my remit and I will run it, but it is
   gated on the prose-vs-shim decision above, because that decides how many homes the name has.
 - **Projection placement — SETTLED (operator, correcting me).** Projection runs at the **consumer's
@@ -296,7 +296,7 @@ skill is following instructions to a removed binary.
 
 ## 7. Remote fleet distribution before a public registry
 
-The question: with no registry, how does a *remote* host install our packages the way a consumer would?
+The question: with no registry, how does a _remote_ host install our packages the way a consumer would?
 
 **There is no `ssh:host:path` package protocol.** npm/pnpm accept `file:`/`link:` (same filesystem),
 `git+ssh://` (a git remote, not an arbitrary path), and `https://` tarball URLs. Nothing resolves a
@@ -304,7 +304,7 @@ package over a bare ssh path.
 
 **The industry-standard answer is a private registry — Verdaccio.** It is the default choice for
 exactly this situation: a lightweight npm registry that proxies upstream npm and hosts your own scopes.
-It gives *true* parity, because the consumer command becomes literally the consumer command:
+It gives _true_ parity, because the consumer command becomes literally the consumer command:
 
 ```
 # on the build host
@@ -325,7 +325,7 @@ on install. Weaker — it needs each package to be independently installable fro
 which a monorepo does not give you for free.
 
 **Sequencing decision (operator's, adopted):** defer remote-fleet distribution. Verdaccio is the target
-mechanism when it is needed and should not be re-litigated then; but it is *not* a prerequisite for the
+mechanism when it is needed and should not be re-litigated then; but it is _not_ a prerequisite for the
 work that matters now. Local development parity via `pnpm add -g .` plus `tsup --watch` is the focus,
 because it is where the architecture is actually validated — and because the capability-declaration
 defect (§3) and the canon-build defect (§1) must be fixed regardless of how bits reach a remote host.

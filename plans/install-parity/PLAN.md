@@ -14,14 +14,14 @@ S1 → S2 → S3 must precede S4, and S4 must precede S5. The bin name is curren
 prose; **the brand must not be derived until the name has exactly one home**, or the rename becomes a
 multi-site edit in generated markdown no compiler checks.
 
-| # | shard | why it is where it is |
-|---|-------|----------------------|
-| S1 | complete the runtime-shim seam | unblocks everything; the mechanism is unusable today |
-| S2 | declare capabilities as real dependencies | the hermeticity defect; must land before any host reinstalls |
-| S3 | rewrite `wake` + `handoff` formal blocks onto the shim | removes the bin name from prose |
-| S4 | derive the CLI brand (signify) | safe only once S3 leaves one home for the name |
-| S5 | `agent-canon` builds to `dist/` + is installable | blocking for consumer-side projection |
-| S6 | local dev-loop parity (`pnpm add -g .` + watch) | the acceptance test for the whole design |
+| #   | shard                                                  | why it is where it is                                        |
+| --- | ------------------------------------------------------ | ------------------------------------------------------------ |
+| S1  | complete the runtime-shim seam                         | unblocks everything; the mechanism is unusable today         |
+| S2  | declare capabilities as real dependencies              | the hermeticity defect; must land before any host reinstalls |
+| S3  | rewrite `wake` + `handoff` formal blocks onto the shim | removes the bin name from prose                              |
+| S4  | derive the CLI brand (signify)                         | safe only once S3 leaves one home for the name               |
+| S5  | `agent-canon` builds to `dist/` + is installable       | blocking for consumer-side projection                        |
+| S6  | local dev-loop parity (`pnpm add -g .` + watch)        | the acceptance test for the whole design                     |
 
 ---
 
@@ -52,7 +52,7 @@ isolated store (`pnpm add -g .`) breaks discovery outright.
 
 **Fix.** The installable unit declares its capability packages as real dependencies — the vite model.
 `discover()` may keep dynamic `import()`, but resolution must succeed because the dependency is
-*declared*, not because a sibling happens to be co-located.
+_declared_, not because a sibling happens to be co-located.
 
 **Outputs.** Declared-dependency capability resolution; a test that proves resolution under an
 **isolated** install layout, not merely a flat one.
