@@ -16,16 +16,33 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { runtimePlugin as memory } from '@leclabs/agent-memory';
+import { discoverConfigured } from '@leclabs/agent-runtime/loader';
 import { runMain } from '@leclabs/agent-runtime/main';
 
 const BIN = 'agent-runtime';
 
-/** The capability set this CLI ships with, each a declared dependency above. */
-const PLUGINS = [memory];
+/**
+ * The capability set this CLI SHIPS WITH — the zero-config default, each a
+ * declared dependency above. It is a default, not a fixture: a host that declares
+ * providers in its runtime config overrides this entirely, which is what makes a
+ * MemoryStrategy genuinely swappable rather than plugin-shaped.
+ */
+const BUNDLED = [memory];
 
-runMain(process.argv.slice(2), { plugins: PLUGINS }).catch((err: unknown) => {
+const fail = (err: unknown): void => {
   process.stderr.write(
     `${BIN}: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}\n`,
   );
   process.exitCode = 1;
-});
+};
+
+// Provider resolution must fail through the SAME reporting path as everything
+// else: a top-level await that throws surfaces as an unhandled rejection and a
+// node stack trace, which reads as a crash rather than "your config names a
+// provider that is not installed here".
+try {
+  const plugins = (await discoverConfigured()) ?? BUNDLED;
+  await runMain(process.argv.slice(2), { plugins });
+} catch (err) {
+  fail(err);
+}

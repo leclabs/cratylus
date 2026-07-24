@@ -16,9 +16,13 @@
 // plugin that provides no capability each fails LOUD — never a silent last-wins.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { createRequire } from 'node:module';
+import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import type { RuntimePlugin } from './plugin.js';
 import type { EventTapHost } from './ports/event-tap.js';
 import type { MemoryStrategy } from './ports/memory.js';
+import { loadRuntimeConfig } from './runtime-config.js';
 
 /**
  * The capability keyspace — the dispatch `<capability>` axis. One entry per
@@ -138,6 +142,49 @@ export class RuntimeHost {
  * this as capability packages land.
  */
 export const KNOWN_CAPABILITY_PACKAGES = ['@leclabs/agent-memory'] as const;
+
+/**
+ * Load the capability providers this HOST declares, resolving each specifier
+ * against the configured root. Returns `null` when no config is present — the
+ * caller then falls back to its bundled default set, so zero-config still works.
+ *
+ * This is what makes a strategy SWAPPABLE: without it the provider was fixed at
+ * build time by a static import, and the MemoryStrategy port could never have a
+ * second implementation in practice.
+ */
+export async function discoverConfigured(): Promise<RuntimePlugin[] | null> {
+  const cfg = loadRuntimeConfig();
+  if (cfg === null) return null;
+  const require = createRequire(
+    join(cfg.resolveFrom ?? process.cwd(), 'noop.js'),
+  );
+  const found: RuntimePlugin[] = [];
+  for (const spec of cfg.capabilities) {
+    // Resolve from the CONFIGURED root, then import by file URL: a globally
+    // installed bin cannot see a package it does not declare, so resolving from
+    // the site is the only way a third-party provider loads under an isolated store.
+    let resolved: string;
+    try {
+      resolved = require.resolve(spec);
+    } catch {
+      throw new Error(
+        `runtime: capability provider '${spec}' is declared in the host config but not resolvable from ${cfg.resolveFrom ?? process.cwd()} — install it there`,
+      );
+    }
+    const mod = (await import(pathToFileURL(resolved).href)) as Record<
+      string,
+      unknown
+    >;
+    const rp = mod.runtimePlugin;
+    if (!isRuntimePlugin(rp)) {
+      throw new Error(
+        `runtime: '${spec}' is declared as a capability provider but exports no 'runtimePlugin'`,
+      );
+    }
+    found.push(rp);
+  }
+  return found;
+}
 
 /**
  * A "specifier did not resolve" import failure — the package is not installed on
