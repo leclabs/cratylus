@@ -37,6 +37,27 @@ whose generator no longer exists.
 - `partition-then-prune`: before removing a directory, grep for **code** path-resolution into it, not just
   prose mentions.
 
+**Carried in from waves 0–2 — read before starting.**
+
+- **The reach mechanism was `export *`, not the dual barrel.** S4 measured `adapters/claude/anatomy.ts`
+  independently reaching all 26 IR modules through a single **type-only**
+  `import type { HarnessAdapter } from '../../core/index.js'`. A barrel that `export *`s a lineage makes
+  even a type-only import a full-lineage edge, and it is invisible to grep. Expect the same shape
+  elsewhere; name the **defining module**, never the barrel.
+- **The dual barrel resolves itself here.** `adapters/claude/index.ts` still exports both kinds on disk
+  because `agent-canon`'s `null-dimension` and `projection-stability` tests import anatomy symbols from
+  `@leclabs/agent-forge/adapters/claude`. Deleting `read.ts`/`write.ts` leaves that barrel anatomy-only
+  for free — no contract change needed.
+- **`import.meta.resolve` is NOT an existence oracle.** It matched a bogus `./adapters/*` subpath without
+  stat-ing the target. Use `await import()` for any resolution claim; only a real load proves a
+  declared-but-unbuilt path fails.
+- **Do NOT rename `Adapter` / `HarnessAdapter`.** Once this shard lands, `HarnessAdapter` becomes the only
+  adapter and its qualifier goes dead — so the anchor genuinely wants re-deriving. That is a `signify`
+  act with a cold-derivation obligation and it is **the plan owner's**, not an executor's. Report the
+  dead qualifier; change nothing.
+- `tsup.config.ts` enumerates `readdirSync('./src/adapters')` and `package.json` maps `./adapters/*`, so
+  the two enumerations stay in sync automatically as adapter dirs are deleted. Verify, don't assume.
+
 **Dependencies.** S1, S4 (transitively S2, S3), S5.
 
 **Outputs.** One pipeline in the package; `src/core/` holding only what the projection path uses; an

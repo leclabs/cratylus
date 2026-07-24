@@ -5,7 +5,7 @@
 > **Anchor owed.** `depalimpsest-ir-intake` is the operator's working handle, not a discovered anchor.
 > Cold-derive before it canonizes (cratylism: names are discovered, never decided).
 
-**Status: IN-FLIGHT — waves 0 and 1 landed (S1, S2, S5, S7, S3). S4 active; S6 pending.**
+**Status: IN-FLIGHT — waves 0-2 landed (S1, S2, S5, S7, S3, S4). S6 active — the excision.**
 
 ## Intent
 
@@ -56,7 +56,7 @@ deletion happens only once nothing live points into the doomed tree.
 | **S5** | `module-scan-subpath`       | package-seam | —          | 0    | **completed** | `927d484` |
 | **S7** | `readme-reground`           | doc          | —          | 0    | **completed** | `523e3ad` |
 | **S3** | `hooks-serializer-extract`  | projection   | S2         | 1    | **completed** | `716cfdb` |
-| **S4** | `adapter-barrel-split`      | adapters     | S3         | 2    | pending       | —         |
+| **S4** | `adapter-barrel-split`      | adapters     | S3         | 2    | **completed** | `ebdfb05` |
 | **S6** | `ir-lineage-excise`         | excision     | S1, S4, S5 | 3    | pending       | —         |
 
 `R = {(S3,S2), (S4,S3), (S6,S1), (S6,S4), (S6,S5)}`
