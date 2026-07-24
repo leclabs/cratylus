@@ -10,7 +10,6 @@ export {
   checkCoverage,
   exemplify,
   optimize,
-  optimizeRules,
   readManifest,
 } from './pipeline.js';
 export { DIMENSION_FIELD } from './dimension-fields.js';

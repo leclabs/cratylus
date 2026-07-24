@@ -1,82 +1,26 @@
 import { cac } from 'cac';
-import { aiderAdapter } from '../adapters/aider/index.js';
-import { ampAdapter } from '../adapters/amp/index.js';
-import { claudeAdapter } from '../adapters/claude/index.js';
-import { clineAdapter } from '../adapters/cline/index.js';
-import { codexAdapter } from '../adapters/codex/index.js';
-import { continueAdapter } from '../adapters/continue/index.js';
-import { copilotAdapter } from '../adapters/copilot/index.js';
-import { crushAdapter } from '../adapters/crush/index.js';
-import { cursorAdapter } from '../adapters/cursor/index.js';
-import { devinAdapter } from '../adapters/devin/index.js';
-import { geminiAdapter } from '../adapters/gemini/index.js';
-import { kiloAdapter } from '../adapters/kilo/index.js';
-import { opencodeAdapter } from '../adapters/opencode/index.js';
-import { piAdapter } from '../adapters/pi/index.js';
-import { standardsAdapter } from '../adapters/standards/index.js';
-import { zedAdapter } from '../adapters/zed/index.js';
-import {
-  type Adapter,
-  type Scope,
-  assertAdaptersValid,
-} from '../core/index.js';
 import type { Scope as DeployScope } from '../deploy/index.js';
 import { runAdd } from './commands/add.js';
 import { runCatalog } from './commands/catalog.js';
-import { runCompile } from './commands/compile.js';
 import { runCompose } from './commands/compose.js';
 import {
   type DeployKindArg,
   parseCompanions,
   runDeploy,
 } from './commands/deploy.js';
-import { runDiff } from './commands/diff.js';
-import { runDoctor } from './commands/doctor.js';
-import { runEventsList } from './commands/events.js';
 import { runExplain } from './commands/explain.js';
-import { runImport } from './commands/import.js';
 import { runInit } from './commands/init.js';
-import { runLint } from './commands/lint.js';
-import { runMigrate } from './commands/migrate.js';
 import { runOptimize } from './commands/optimize.js';
 import { runProject } from './commands/project.js';
-import { runWatch } from './commands/watch.js';
 
 const VERSION = '0.0.0';
-
-const adapters: Adapter[] = [
-  claudeAdapter,
-  opencodeAdapter,
-  codexAdapter,
-  geminiAdapter,
-  copilotAdapter,
-  cursorAdapter,
-  clineAdapter,
-  crushAdapter,
-  aiderAdapter,
-  continueAdapter,
-  zedAdapter,
-  devinAdapter,
-  ampAdapter,
-  kiloAdapter,
-  piAdapter,
-  standardsAdapter,
-];
-
-// Adapter-load lint: an invalid declaration (e.g. a resource declared
-// `plugin` with no plugin emitter) fails here, not as a runtime surprise.
-assertAdaptersValid(adapters);
 
 const cli = cac('agent-forge');
 
 cli
-  .command(
-    'init',
-    'Bootstrap a new .agent-forge/ directory + scaffold agents.config.ts',
-  )
-  .option('--scope <scope>', 'user | project | local', { default: 'project' })
-  .action(async (opts: { scope: Scope }) => {
-    process.exit(await runInit({ scope: opts.scope }));
+  .command('init', 'Scaffold agents.config.ts from the default plugin')
+  .action(async () => {
+    process.exit(await runInit());
   });
 
 cli
@@ -115,166 +59,6 @@ cli
         config: opts.config,
         out: opts.out,
         harness: opts.harness,
-      }),
-    );
-  });
-
-cli
-  .command('import <client>', 'Lift a client config into the IR')
-  .option('--scope <scope>', '', { default: 'project' })
-  .option('--from <path>', 'Read from this directory instead of cwd')
-  .option('--merge', 'Merge into existing IR (preserve ours on conflict)')
-  .action(
-    async (
-      client: string,
-      opts: { scope: Scope; from?: string; merge?: boolean },
-    ) => {
-      process.exit(
-        await runImport(
-          { client, scope: opts.scope, from: opts.from, merge: opts.merge },
-          adapters,
-        ),
-      );
-    },
-  );
-
-cli
-  .command('compile [...clients]', 'Compile IR to one or more clients')
-  .option('--scope <scope>', '', { default: 'project' })
-  .option('--dry-run', 'Skip writes; show what would change')
-  .option('--strict', 'Abort on any warning or skipped resource')
-  .option('--explain', 'Verbose substitution and skip explanations')
-  .option(
-    '--as-claude-bundle <name>',
-    'Bundle the claude target as a distributable plugin (.claude-plugin/ tree) instead of the ordinary .claude/ tree',
-  )
-  .action(
-    async (
-      clients: string[],
-      opts: {
-        scope: Scope;
-        dryRun?: boolean;
-        strict?: boolean;
-        explain?: boolean;
-        asClaudeBundle?: string;
-      },
-    ) => {
-      process.exit(
-        await runCompile(
-          {
-            clients,
-            scope: opts.scope,
-            dryRun: opts.dryRun,
-            strict: opts.strict,
-            explain: opts.explain,
-            asClaudeBundle: opts.asClaudeBundle,
-          },
-          adapters,
-        ),
-      );
-    },
-  );
-
-cli
-  .command(
-    'diff [...clients]',
-    'Show what would change on next compile, plus drift',
-  )
-  .option('--scope <scope>', '', { default: 'project' })
-  .action(async (clients: string[], opts: { scope: Scope }) => {
-    process.exit(await runDiff({ clients, scope: opts.scope }, adapters));
-  });
-
-cli
-  .command('lint', 'Validate the IR against schema and adapter capabilities')
-  .option('--scope <scope>', '', { default: 'project' })
-  .option('--strict', 'Treat capability warnings as errors')
-  .action(async (opts: { scope: Scope; strict?: boolean }) => {
-    process.exit(
-      await runLint({ scope: opts.scope, strict: opts.strict }, adapters),
-    );
-  });
-
-cli
-  .command('adapters', 'List installed adapters and their capabilities')
-  .action(() => {
-    const RESOURCE_TYPES = [
-      'rules',
-      'skills',
-      'commands',
-      'agents',
-      'hooks',
-      'mcp',
-      'permissions',
-      'env',
-    ] as const;
-    const sym = (s: string) =>
-      s === 'full' ? '✓' : s === 'partial' ? '🟡' : s === 'plugin' ? '🔌' : '—';
-    // Roster fact, not folklore (E10.S5): a renamed adapter displays its
-    // field-canonical id with the legacy id(s) noted as aliases, never the
-    // reverse — naming follows the RETURN-sheet field state.
-    const statusCell = (a: (typeof adapters)[number]) =>
-      a.status.kind === 'sunset'
-        ? `sunset→${a.status.successor}`
-        : a.status.kind === 'renamed'
-          ? `renamed${a.status.aliases?.length ? ` (aka ${a.status.aliases.join(',')})` : ''}`
-          : 'current';
-    const head = `ID${' '.repeat(8)}${RESOURCE_TYPES.map((t) => t.slice(0, 4).padEnd(5)).join('')} HOOKS  SCOPES  STATUS`;
-    console.log(head);
-    for (const a of adapters) {
-      const cells = RESOURCE_TYPES.map((t) =>
-        sym(a.capabilities.resources[t]).padEnd(5),
-      ).join('');
-      const hookCount = a.capabilities.hooks.supported.length;
-      const scopes = a.capabilities.scopes.join(',');
-      const displayId = a.status.canonicalId ?? a.id;
-      console.log(
-        `${displayId.padEnd(10)}${cells} ${String(hookCount).padStart(2)}/28  ${scopes.padEnd(20)}${statusCell(a)}`,
-      );
-    }
-    process.exit(0);
-  });
-
-cli
-  .command('events', 'List canonical events and per-client mappings')
-  .option('--client <id>', 'Show mapping for a specific adapter')
-  .action(async (opts: { client?: string }) => {
-    process.exit(await runEventsList({ client: opts.client }, adapters));
-  });
-
-cli
-  .command('doctor', 'Diagnose installation, manifest, and target detection')
-  .option('--scope <scope>', '', { default: 'project' })
-  .action(async (opts: { scope: Scope }) => {
-    process.exit(await runDoctor({ scope: opts.scope }, adapters));
-  });
-
-cli
-  .command('watch [...clients]', 'Auto-recompile on IR changes')
-  .option('--scope <scope>', '', { default: 'project' })
-  .option('--debounce <ms>', '', { default: 300 })
-  .action(
-    async (clients: string[], opts: { scope: Scope; debounce: number }) => {
-      process.exit(
-        await runWatch(
-          { clients, scope: opts.scope, debounce: Number(opts.debounce) },
-          adapters,
-        ),
-      );
-    },
-  );
-
-cli
-  .command('migrate', 'Migrate the IR schema between versions')
-  .option('--from <n>', 'Source schema version (defaults to manifest)')
-  .option('--to <n>', 'Target schema version (defaults to latest)')
-  .option('--scope <scope>', '', { default: 'project' })
-  .action(async (opts: { from?: string; to?: string; scope: Scope }) => {
-    process.exit(
-      await runMigrate({
-        from: opts.from !== undefined ? Number(opts.from) : undefined,
-        to: opts.to !== undefined ? Number(opts.to) : undefined,
-        scope: opts.scope,
       }),
     );
   });
@@ -345,7 +129,7 @@ cli
       hooksDir?: string;
       assets?: string;
       kind: DeployKindArg;
-      scope: Scope;
+      scope: DeployScope;
       home?: string;
       project?: string;
       only?: string;
@@ -394,7 +178,7 @@ cli
           hooksDir: opts.hooksDir,
           companions,
           kind: opts.kind,
-          scope: opts.scope as DeployScope,
+          scope: opts.scope,
           home: opts.home ?? null,
           project: opts.project ?? null,
           only: opts.only ?? null,
@@ -451,4 +235,18 @@ cli
 
 cli.help();
 cli.version(VERSION);
-cli.parse();
+
+// An unknown verb must FAIL, loudly and by name. cac's default is to parse an
+// unrecognized command into the (absent) global command and exit 0 silently —
+// so `agent-forge compile` would have looked like a success long after `compile`
+// was deleted. depalimpsest-ir-intake S6 removed nine verbs; this guard is what
+// makes their removal observable instead of silent.
+const parsed = cli.parse(process.argv, { run: false });
+if (!cli.matchedCommand && parsed.args.length > 0) {
+  const known = cli.commands.map((c) => c.name).join(', ');
+  console.error(
+    `agent-forge: unknown command '${parsed.args[0]}' (known: ${known})`,
+  );
+  process.exit(1);
+}
+cli.runMatchedCommand();

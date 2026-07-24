@@ -5,9 +5,8 @@
 //
 // Codex's native agent surface differs from claude's `.md` SOUL:
 //   - a SUBAGENT is `agents/<name>.toml` — `{ name, description,
-//     developer_instructions, model? }` (the documented fields [CX1]; the
-//     same shape the codex IR write path emits, `write.ts` — no fabricated
-//     `system_prompt`/`tools`/`color`).
+//     developer_instructions, model? }` (the documented fields [CX1] — no
+//     fabricated `system_prompt`/`tools`/`color`).
 //   - the always-loaded INSTRUCTION surface is `AGENTS.md` (project rules).
 //   - a SKILL is `skills/<name>/SKILL.md` (the AgentSkills spec, shared with claude).
 //
@@ -28,9 +27,8 @@ import {
   agentBody,
   skillBody,
 } from '../../core/anatomy-body.js';
-// The projection PORT, imported from its defining module and NOT through the
-// `core/index.js` barrel — see the note in `adapters/claude/anatomy.ts`: the
-// barrel re-exports the whole IR lineage.
+// The projection PORT, imported from its DEFINING module — see the note in
+// `adapters/claude/anatomy.ts`.
 import type { HarnessAdapter } from '../../core/harness-adapter.js';
 
 // Re-export the shared, harness-neutral resolved skill shape so a codex consumer
@@ -47,7 +45,7 @@ export type { ResolvedSkill };
  * claude SOUL carries, just delivered as a TOML field instead of a `.md` body.
  * No `color` is emitted: Codex's agent TOML has no documented color field, so
  * carrying `mark.hue` here would be the same fabrication [CX1] fixes on the
- * IR write path.
+ * codex TOML surface.
  *
  * No provenance comment is injected into `developer_instructions`: the
  * regenerate-don't-hand-edit banner + content-hash is build-provenance the running
@@ -74,7 +72,7 @@ export function agentToCodexTomlObject(
 /**
  * The full `agents/<name>.toml` text for a resolved agent (the codex counterpart
  * of `agentToClaudeMd`). Serialized via `@iarna/toml` (the same serializer the
- * codex IR write path uses), so the multi-line `developer_instructions` is a
+ * codex TOML surface uses), so the multi-line `developer_instructions` is a
  * TOML `"""` literal.
  */
 export function agentToCodexToml(

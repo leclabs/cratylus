@@ -4,10 +4,9 @@
 // agent-forge's claude adapter owning "project a typed Agent/Skill to claude-code
 // markdown" — the inversion's projection-to-disk path.
 //
-// Distinct from this adapter's IR serialize path (`write.ts` / `serializeAgent`):
-// that projects the config-IR resources; THIS projects the anatomy SOULs. Two
-// concepts, one adapter, no collision (mirrors `@leclabs/agent-forge/anatomy` sitting
-// beside the core IR `Agent`/`Skill`).
+// This used to be one of TWO projections in this adapter, the other being the IR
+// serialize path (`write.ts` / `serializeAgent`) over a config-IR. That lineage was
+// excised (depalimpsest-ir-intake S6); there is one projection here now.
 //
 // THIN GENERATOR: both surfaces are a pure map from a typed vector — the agent SOUL
 // from an `Agent`, the SKILL.md from a `ResolvedSkill` (`f(name, formalBlock,
@@ -29,10 +28,12 @@ import {
   dimensionTitle,
   skillBody,
 } from '../../core/anatomy-body.js';
-// The projection PORT, imported from its defining module and NOT through the
-// `core/index.js` barrel: the barrel re-exports the IR lineage (`core/{ir,engine,
-// serialize,adapter}`), so one barrel-shaped type import would drag all 26 of
-// those modules into every projection consumer's closure.
+// The projection PORT, imported from its DEFINING module. This was load-bearing
+// while a `core/index.js` barrel existed: it `export *`ed the IR lineage, so one
+// barrel-shaped type import dragged all 26 of those modules into every projection
+// consumer's closure — invisible to a substring grep. The barrel and the lineage
+// are both gone; naming the defining module stays the rule, so no future barrel
+// can quietly re-create the edge.
 import type { HarnessAdapter } from '../../core/harness-adapter.js';
 import { serializeClaudeHooksReport } from './hooks.js';
 

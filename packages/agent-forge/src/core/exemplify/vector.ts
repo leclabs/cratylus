@@ -1,7 +1,7 @@
 /**
  * Agent elevation — the exemplify+elicit leg: a step-1 agent (raw NL held
  * verbatim on the `archetype` dimension) → a typed 24-dimension selection vector that
- * REPLACES the config-IR form as the agent's single source of truth.
+ * REPLACES the free-text source form as the agent's single source of truth.
  *
  * SEMANTIC SEAM: reading evidence out of the description — which dimension a
  * span speaks to, which value it selects, which dimensions are SILENT and what
@@ -218,7 +218,7 @@ export function renderAgentVector(
 }
 
 export interface ElevateOptions {
-  /** The step-1 config-IR form; REMOVED on accept (replacement semantics). */
+  /** The free-text source form; REMOVED on accept (replacement semantics). */
   sourcePath?: string;
   /** Source text override (else read from `sourcePath`). */
   sourceText?: string;
@@ -237,7 +237,7 @@ export interface ElevateResult {
  * Elevate: render the vector, enforce replacement no-loss (REC ≽ — the
  * step-1 text must be recoverable from the module), write
  * `agents/<name>.ts` + sidecars, then REPLACE the step-1 source (no
- * lingering config-IR twin).
+ * lingering source twin).
  */
 export function elevateAgent(opts: ElevateOptions): ElevateResult {
   const sourceText =

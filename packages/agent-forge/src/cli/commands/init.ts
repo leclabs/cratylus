@@ -1,82 +1,42 @@
 // `agent-forge init` — scaffold a project from the default plugin.
 //
-// `init` turns a directory into an agent project two ways, in order:
-//   1. bootstrap the `.agent-forge/` IR home (manifest + resource dirs);
-//   2. scaffold `agents.config.ts` — the config-is-code home whose zero-config
-//      default `extends: [canon]` (empty `patches`). The default is A PACKAGE
-//      (the agent-canon plugin), never a special-cased template: composing that
-//      config runs the canon default through the normal `resolve()`
-//      (NORTH-STAR §2). `agent-forge add <plugin>` wires more plugins in.
+// `init` scaffolds `agents.config.ts` — the config-is-code home whose
+// zero-config default `extends: [canon]` (empty `patches`). The default is A
+// PACKAGE (the agent-canon plugin), never a special-cased template: composing
+// that config runs the canon default through the normal `resolve()`
+// (NORTH-STAR §2). `agent-forge add <plugin>` wires more plugins in.
 //
 // The retired greenfield-founding CLI (`found`) is subsumed here: the project is
 // scaffolded FROM the default plugin (resolved through `resolve()`), not from a
 // baked-in founding template.
+//
+// depalimpsest-ir-intake S6: `init` used to ALSO bootstrap a `.agent-forge/` IR
+// home (manifest.yaml + six resource dirs) and append `.agent-forge/local/` to
+// .gitignore. That was the entry point of the excised IR-intake lineage — with
+// no `import`, `compile`, or IR left, the directory has no producer and no
+// consumer. The `--scope` option went with it: it selected the IR root and
+// nothing else, so keeping it would be a parse-and-ignore flag.
 
-import { existsSync } from 'node:fs';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
-import { dump } from 'js-yaml';
 import pc from 'picocolors';
 import { scaffoldAgentsConfig } from '../../config/index.js';
-import { type Manifest, type Scope, defaultIRRoot } from '../../core/index.js';
 
 export interface InitOpts {
-  scope?: Scope;
   cwd?: string;
 }
 
 export async function runInit(opts: InitOpts = {}): Promise<number> {
-  const scope = opts.scope ?? 'project';
   const cwd = opts.cwd ?? process.cwd();
-  const root = defaultIRRoot(scope, cwd);
-
-  if (existsSync(root)) {
-    console.error(pc.red(`agent-forge: ${root} already exists`));
-    return 1;
-  }
-
-  await mkdir(root, { recursive: true });
-  for (const sub of ['rules', 'skills', 'commands', 'agents', 'hooks', 'mcp']) {
-    await mkdir(join(root, sub), { recursive: true });
-  }
-
-  const manifest: Manifest = { agentForge: 1, scope, targets: [] };
-  await writeFile(
-    join(root, 'manifest.yaml'),
-    dump(manifest, { lineWidth: 100, noRefs: true }),
-    'utf8',
-  );
-
-  // For project scope, append .agent-forge/local to .gitignore if it exists.
-  if (scope === 'project') {
-    const gi = join(cwd, '.gitignore');
-    if (existsSync(gi)) {
-      const text = await readFile(gi, 'utf8');
-      if (!text.includes('.agent-forge/local')) {
-        await writeFile(
-          gi,
-          `${text + (text.endsWith('\n') ? '' : '\n')}.agent-forge/local/\n`,
-          'utf8',
-        );
-      }
-    }
-  }
-
-  console.log(pc.green('✓'), `initialized ${root}`);
 
   // Scaffold the config-is-code home (NORTH-STAR §5): `agents.config.ts` with the
   // zero-config default `extends: [canon]` (the default IS the canon plugin,
   // resolved through `resolve()` — defaults-are-a-package, NORTH-STAR §2).
-  // Project-scoped only — it is a project-root artifact, not a per-user
-  // (`--scope user`) concern. Idempotent: an existing config is left untouched.
-  if (scope === 'project') {
-    const scaffold = await scaffoldAgentsConfig(cwd);
-    console.log(
-      scaffold.created ? pc.green('✓') : pc.gray('•'),
-      scaffold.created
-        ? `scaffolded ${scaffold.path} (extends: [canon])`
-        : `${scaffold.path} already exists — left untouched`,
-    );
-  }
+  // Idempotent: an existing config is left untouched.
+  const scaffold = await scaffoldAgentsConfig(cwd);
+  console.log(
+    scaffold.created ? pc.green('✓') : pc.gray('•'),
+    scaffold.created
+      ? `scaffolded ${scaffold.path} (extends: [canon])`
+      : `${scaffold.path} already exists — left untouched`,
+  );
   return 0;
 }

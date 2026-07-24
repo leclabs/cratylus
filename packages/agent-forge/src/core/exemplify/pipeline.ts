@@ -1,7 +1,6 @@
 /**
  * The pipeline composition `exemplify(D) ≜ accept( realize( name( produce(D) ) ) )`
- * over the LLM-authored plan, plus the writing wrapper `optimize` and the
- * rules leg `optimizeRules`.
+ * over the LLM-authored plan, plus the writing wrapper `optimize`.
  *
  * Stage validators (`produce` · `name` · `realize`) check the mechanical laws
  * of each stage's OUTPUT — the stage act itself is an LLM pass (see
@@ -14,7 +13,6 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join } from 'node:path';
-import type { Rule } from '../ir/types.js';
 import { canonicalText, fragmentDigest } from './digest.js';
 import { classifyRegister, humanMarkerHits } from './register.js';
 import {
@@ -225,38 +223,4 @@ export function checkCoverage(
     missing: [...conceptDigests].filter((d) => !manifestDigests.has(d)),
     extra: [...manifestDigests].filter((d) => !conceptDigests.has(d)),
   };
-}
-
-/**
- * Rules through exemplify (first-class): swap each rule's BODY for its
- * accept-gated optimized text, leaving every scoping/placement field
- * (`targets` · `excludes` · `concat` · `order`) untouched — optimization
- * rewrites bodies, never scoping. A rule without an entry passes through
- * unchanged (opt-in); an entry naming no rule refuses (a dropped idea).
- */
-export function optimizeRules(
-  rules: readonly Rule[],
-  optimizedBodies: Readonly<Record<string, string>>,
-): Rule[] {
-  const reasons: string[] = [];
-  const ids = new Set(rules.map((r) => r.id));
-  for (const id of Object.keys(optimizedBodies)) {
-    if (!ids.has(id)) {
-      reasons.push(`optimized body for unknown rule '${id}'`);
-      continue;
-    }
-    const body = optimizedBodies[id] as string;
-    if (classifyRegister(body) === 'human') {
-      const markers = [...new Set(humanMarkerHits(body))].slice(0, 6);
-      reasons.push(
-        `conform fails for rule '${id}': human-register body (ρ = LLM); markers: ${markers.join(', ')}`,
-      );
-    }
-  }
-  if (reasons.length > 0) throw new ExemplifyRefusal(reasons);
-  return rules.map((r) =>
-    r.id in optimizedBodies
-      ? { ...r, body: optimizedBodies[r.id] as string }
-      : { ...r },
-  );
 }

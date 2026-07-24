@@ -7,16 +7,16 @@
 // (agent-canon's project CLIs) depends solely on the `HarnessAdapter` port and
 // this selector, so adding a harness never edits the consumer.
 
-// Every import below is PROJECTION-SIDE by construction (S4). Each harness's
-// `<harness>/index.ts` is a DUAL barrel — it exports both the IR `Adapter`
-// (`detect`/`read`/`write`) and the projection `HarnessAdapter`
-// (`agentDef`/`skillDef`/`hooks`) — so resolving the registry through it dragged
+// Every import below names a DEFINING module, never a barrel. Historically this
+// mattered acutely: each `<harness>/index.ts` was a DUAL barrel exporting both an
+// IR `Adapter` (`detect`/`read`/`write`) and the projection `HarnessAdapter`
+// (`agentDef`/`skillDef`/`hooks`), so resolving the registry through it dragged
 // the entire IR lineage (26 modules under `core/{ir,engine,serialize,adapter}/`)
-// into every projection consumer. The two kinds are unrelated; this registry
-// names only the anatomy module that defines the projection kind, and only the
-// `core/harness-adapter.js` module that defines its port. Neither `core/index.js`
-// nor `<harness>/index.js` may be reintroduced here: both are barrels over the
-// IR lineage, and the reach is transitive — invisible to a substring grep.
+// into every projection consumer — a transitive reach invisible to a substring
+// grep. That lineage was excised (depalimpsest-ir-intake S6) and the harness
+// barrels are projection-only now, but the rule stands on its own: import the
+// module that DEFINES the symbol, so no future barrel can silently re-create the
+// edge.
 import type { HarnessAdapter } from '../../core/harness-adapter.js';
 import { claudeHarnessAdapter } from '../claude/anatomy.js';
 import { codexHarnessAdapter } from '../codex/anatomy.js';
