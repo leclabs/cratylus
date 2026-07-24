@@ -8,3 +8,4 @@ export * from './exemplify/index.js';
 export * from './adapter/validate.js';
 export * from './adapter/resolve.js';
 export * from './harness-adapter.js';
+export * from './module-scan.js';

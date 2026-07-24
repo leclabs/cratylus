@@ -13,7 +13,6 @@
 // no provenance banner. A skill's SKILL.md is `f(name, formalBlock, composition())`.
 
 import { chmodSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
-import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
@@ -21,6 +20,11 @@ import {
   adapterByName,
 } from '@leclabs/agent-forge/adapters/registry';
 import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
+import {
+  resolveModulePath,
+  scanCellDirNames,
+  scanModuleNames,
+} from '@leclabs/agent-forge/core';
 import { foundingDoctrine } from '../genus/founding-doctrine.js';
 import { hookSources } from './hooks.js';
 import { emitRuntimeShim } from './runtime-shim.js';
@@ -56,22 +60,12 @@ function parseArgs(argv: string[]): Args {
 }
 
 async function moduleNames(dir: string): Promise<string[]> {
-  const names: string[] = [];
-  for await (const p of glob('*.ts', { cwd: dir })) {
-    if (p !== 'base.ts') {
-      names.push(p.replace(/\.ts$/, ''));
-    }
-  }
-  return names.sort();
+  return scanModuleNames(dir, ['base']);
 }
 
-/** Skill cells are self-contained dirs: `<name>/skill.ts`; the name is the dir. */
+/** Skill cells are self-contained dirs: `<name>/skill.<ext>`; the name is the dir. */
 async function skillNames(dir: string): Promise<string[]> {
-  const names: string[] = [];
-  for await (const p of glob('*/skill.ts', { cwd: dir })) {
-    names.push(dirname(p));
-  }
-  return names.sort();
+  return scanCellDirNames(dir, 'skill');
 }
 
 /** The `<name>: Agent` vector export of an agent module. */
@@ -109,7 +103,9 @@ async function projectAgents(out: string): Promise<number> {
   mkdirSync(dir, { recursive: true });
   let n = 0;
   for (const name of await moduleNames(agentsModDir)) {
-    const agent = await agentOf(join(agentsModDir, `${name}.ts`));
+    const modPath = await resolveModulePath(agentsModDir, name);
+    if (!modPath) throw new Error(`agent module not found: ${name}`);
+    const agent = await agentOf(modPath);
     // Stamp the founding doctrine intrinsically (ONE home, `../genus/founding-doctrine`)
     // so the axiom rides the projected SOUL bytes, not ambient repo context.
     const { filename, content } = adapter.agentDef({
@@ -127,7 +123,9 @@ async function projectSkills(out: string): Promise<number> {
   const names = await skillNames(skillsModDir);
   let n = 0;
   for (const name of names) {
-    const cell = await skillOf(join(skillsModDir, name, 'skill.ts'));
+    const cellPath = await resolveModulePath(join(skillsModDir, name), 'skill');
+    if (!cellPath) throw new Error(`skill module not found: ${name}/skill`);
+    const cell = await skillOf(cellPath);
     const resolved: ResolvedSkill = {
       name: cell.name,
       trigger: `/${cell.name}`,

@@ -80,8 +80,10 @@ async function valuesOf(
   let modules: string[];
   try {
     modules = [];
-    for await (const p of glob('*.ts', { cwd: dir })) {
-      modules.push(p);
+    // Both shapes: authored `.ts` in-workspace, built `.js` when installed. A
+    // `.ts`-only glob matched nothing in an installed package — silently.
+    for await (const p of glob('*.{ts,js,mjs}', { cwd: dir })) {
+      if (!p.endsWith('.d.ts')) modules.push(p);
     }
   } catch {
     // A dimension with no module dir yet contributes no values (still listed).
@@ -216,8 +218,10 @@ async function scanDimensionModules(
   let modules: string[];
   try {
     modules = [];
-    for await (const p of glob('*.ts', { cwd: dir })) {
-      modules.push(p);
+    // Both shapes: authored `.ts` in-workspace, built `.js` when installed. A
+    // `.ts`-only glob matched nothing in an installed package — silently.
+    for await (const p of glob('*.{ts,js,mjs}', { cwd: dir })) {
+      if (!p.endsWith('.d.ts')) modules.push(p);
     }
   } catch {
     return out;
