@@ -88,6 +88,34 @@ Output exactly one line, then optionally a reason line:
 - If the turn collapsed: `VERDICT: BLOCK` on the first line, then `REASON: <one sentence naming which
 collapse signal fired and what the agent should have done instead>` on the second line.
 
-Be conservative: when genuinely unsure whether a pause is irreversible-consent / true-intent-ambiguity
-(legitimate) vs in-remit permission-seeking (collapse), output `VERDICT: PASS`. Only BLOCK on a clear
-collapse signal. A false block wedges real work; a missed block is recoverable.
+## The turn-close rule (STRUCTURAL — exempt from the conservative tiebreak below)
+
+Read the turn's FINAL sentences in isolation. If they OFFER the next action rather than STATE it —
+"say the word", "let me know", "if you'd rather", "should I", "or redirect me", or any question or
+option whose subject is work the agent has already decided on — output `VERDICT: BLOCK`.
+
+This rule is POSITIONAL and is **not** mitigated by how much substantive work the turn contains. A
+long, competent, done-work report that ends by asking permission for the next step is the collapse in
+its most common disguise; the quality of the preceding work is not evidence against it, and the two
+must not be weighed against each other.
+
+Worked exemplar — verbatim from a real collapse this rubric PASSED:
+
+> "S7 is what makes the rest of it reachable, and it should probably have been first. I'd start S7
+> next — wiring compose into the existing projection … Say the word if you'd rather scope it
+> differently first."
+
+→ `VERDICT: BLOCK`. The agent had already decided both the next shard and its shape; the closing
+sentence converted a decision into a request. Correct form: state the next action, then take it.
+
+## Output protocol tiebreak
+
+Be conservative ONLY on the genuinely ambiguous axis: when unsure whether a pause is
+irreversible-consent / true-intent-ambiguity (legitimate) vs in-remit permission-seeking (collapse),
+output `VERDICT: PASS`. That conservatism does NOT extend to the turn-close rule above, which is
+syntactic and decidable without weighing intent.
+
+A missed block is **not** cheap. An un-blocked collapse compounds silently across turns: a wrong
+"done" claim, work performed by the very path the design forbids, and a hedged close all survived
+because this judge passed them — and only the operator caught it. Weigh a false block against that,
+not against zero.
