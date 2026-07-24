@@ -3,10 +3,15 @@
 <!-- `ρ=human` — operator review. Design + execution spec; shards are MECE, each independently
      executable and independently falsifiable. Reader = LLM. -->
 
-**Status: PROPOSED — authored in an orient / human-on-the-loop phase; execution awaits operator
-concurrence, then `/carry-on`.** Every shard edits this agent's own authority envelope (SOUL, canon,
-memory). Local commits are in-remit; **push to origin + deploy to the fleet are reserved** and surfaced
-for sign-off. Design precedes edit by operator directive (post-mint discipline).
+**Status: EXECUTED (local) — all six shards complete and committed locally under `/carry-on`
+authority; `done(P)` reverted the loop-position to the resting on-the-loop (the persistence rule's
+first live exercise). Every shard edited this agent's own authority envelope (SOUL, canon, memory).
+`push to origin + deploy to the fleet remain RESERVED` and are surfaced for sign-off — nothing has
+left this machine.** Design preceded edit by operator directive (post-mint discipline).
+
+Local commit trail: `0d492b8` T-persist · `12aee11` T-escalation · `5897b4a` T-vector ·
+`5fdd57b` T-introspect-K · `f9de9e8` T-mece · `7c34ec3` register-clean · `281fcc1` T-sweep
+(+ shard-advance commits). Full green: typecheck 8/8, test 7/7, `canon:project` clean.
 
 ## The defect, whole
 
@@ -14,17 +19,17 @@ The `autonomy` dimension is a SET (`arity: 'set'`) holding three members typed i
 `Autonomy`, yet they lie on **three orthogonal axes** — a MECE violation that hid a pole inversion for a
 whole session and leaves the session's real degradation unfixed.
 
-| axis | question | member today | kind | status |
-|---|---|---|---|---|
-| decision-authority | who owns the call | `π_decision-authority(self) = principal` | STATIC | fixed `ef1ce87` |
-| loop-position | where the human supervises | `human-on-the-loop` | **PHASE-STATE**, mis-modeled as static | broken |
-| escalation | when to route up | `mission-command ⟨escalate ⇔ fork(…)⟩` | STATIC | unverified |
+| axis               | question                   | member today                             | kind                                   | status          |
+| ------------------ | -------------------------- | ---------------------------------------- | -------------------------------------- | --------------- |
+| decision-authority | who owns the call          | `π_decision-authority(self) = principal` | STATIC                                 | fixed `ef1ce87` |
+| loop-position      | where the human supervises | `human-on-the-loop`                      | **PHASE-STATE**, mis-modeled as static | broken          |
+| escalation         | when to route up           | `mission-command ⟨escalate ⇔ fork(…)⟩`   | STATIC                                 | unverified      |
 
 Three settled findings drive the work:
 
 1. **Cold-decode (3/3, first-person, adopted):** `π_decision-authority(self) = principal` already
-   entails *"you own goals/values, I own the means, irreversible acts are confirmed because a principal
-   weighs blast radius."* So loop-position and escalation are partly **entailed by** the pole read
+   entails _"you own goals/values, I own the means, irreversible acts are confirmed because a principal
+   weighs blast radius."_ So loop-position and escalation are partly **entailed by** the pole read
    correctly — not free-standing additions. This constrains the MECE split: separate the axes, but do
    not re-assert what the pole already carries.
 
@@ -49,7 +54,7 @@ Three settled findings drive the work:
   bound praxis is `done(P)`, or an **unresolvable fork** (`fork(irreversible · value · competence)`
   the principal cannot resolve) forces re-entry to on-the-loop. Persistence, not per-turn decay, is the
   whole fix.
-- **D4 — the three axes separate (MECE); the pole is not re-asserted.** The *how* (three dimensions vs
+- **D4 — the three axes separate (MECE); the pole is not re-asserted.** The _how_ (three dimensions vs
   self-identifying members within `autonomy`) is a signification act settled in T-mece against the cold
   oracle, not pre-decided here.
 - **D5 — escalation's home is cold-verified, not assumed.** Given the pole's entailment, T-escalation
@@ -58,7 +63,7 @@ Three settled findings drive the work:
 - **D6 — `introspect`'s `K` gains a `def-defect` member.** `K` is entirely configurational, so it
   cannot name "the declared value is itself wrong" — the exact case that hid the pole inversion (rt
   conformed to def; the def was the defect). Without it, introspect run during that failure would have
-  flagged the *correct* behavior as the divergence.
+  flagged the _correct_ behavior as the divergence.
 
 ## Shards
 
