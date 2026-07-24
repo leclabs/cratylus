@@ -86,11 +86,8 @@ package resolved through the ordinary resolver, not a baked-in template. An exis
 untouched.
 
 ```
-agent-forge init [--scope user|project|local]     # default: project
+agent-forge init
 ```
-
-`init` also creates a `.agent-forge/` directory. That belongs to the legacy surface described at the
-bottom of this page; the pipeline above never reads it.
 
 ### `agent-forge add <plugin>`
 
@@ -220,15 +217,26 @@ Every command above exits `0` on success and `1` on failure. Refusals — a miss
 
 ## Also in the binary
 
-`agent-forge --help` lists more verbs than this page documents: `import`, `compile`, `diff`, `lint`,
-`watch`, `migrate`, `adapters`, `events`, `doctor`, `optimize`. They belong to an older and separate
-lineage — a config transpiler that lifted an existing harness's files into an intermediate
-representation under `.agent-forge/` and compiled that back out to other clients.
+`agent-forge optimize <source> --plan <file>` gates an LLM-authored exemplify plan: it checks the
+accept laws (`REC ≽` · `minimal` · `conform`), writes the accepted R=LLM artifacts, and emits the R3
+routing manifest. It is opt-in and stands beside the pipeline rather than inside it.
 
-That lineage is not part of the pipeline described above and shares no data with it. It also runs
-against the direction this project exists to establish, because it takes a harness's own configuration
-as its source of truth. It is left undocumented here rather than presented as a second way to use the
-tool.
+## What used to be here
+
+Earlier versions of this binary carried a second, disjoint lineage behind the same name: `import`,
+`compile`, `diff`, `lint`, `watch`, `migrate`, `adapters`, `events`, `doctor` — a config transpiler
+that lifted an existing harness's files into an intermediate representation under `.agent-forge/`
+and compiled that back out to sixteen other clients.
+
+It shared no data with the pipeline above, and it ran against the direction this project exists to
+establish: it took a harness's own configuration as its source of truth, where the canon is authored
+and runtime artifacts are projections that never author meaning. It has been deleted, not deprecated
+— those verbs error as unknown, and there is no IR, no `.agent-forge/` directory, and no adapter
+roster left behind them.
+
+Lifting an existing setup is still genuinely useful onboarding; its **target** was what was wrong.
+The valuable form is `import → cells` (into the canon), not `import → IR` (into a rival source of
+truth). That is a future plan with its own derivation to do, and is deliberately not promised here.
 
 ## License
 
