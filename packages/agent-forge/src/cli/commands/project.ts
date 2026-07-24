@@ -59,7 +59,8 @@ export async function runProject(opts: ProjectCmdOpts = {}): Promise<number> {
 
   process.stdout.write(
     `\n${pc.green('✓')} projected ${report.agents} agent(s) + ${report.skills} skill(s)` +
-      `${report.shims > 0 ? ` + ${report.shims} runtime shim(s)` : ''} → ${out}\n` +
+      `${report.shims > 0 ? ` + ${report.shims} runtime shim(s)` : ''}` +
+      `${report.hooks > 0 ? ` + ${report.hooks} hook(s)` : ''} → ${out}\n` +
       `${pc.gray(`ship it with: agent-forge deploy --agents-dir ${join(out, 'agents')} --skills-dir ${join(out, 'skills')}`)}\n`,
   );
   return 0;
