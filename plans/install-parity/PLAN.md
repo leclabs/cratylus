@@ -26,7 +26,7 @@ ever a stand-in for a registry we are about to have.
 | S5 `agent-canon` installable        | **DONE**                          | `b84c959` |
 | S6 local dev-loop parity            | **DONE** — falsifier actually run | see below |
 | S7 compose → render tree            | **DONE**                          | `650480e` |
-| S8 deploy is local-only             | **READY**                         | —         |
+| S8 deploy is local-only             | **DONE** — falsifier 119→0        | `a995224` |
 
 ### S6 — `pnpm add -g .` LINKS, it does not copy
 
