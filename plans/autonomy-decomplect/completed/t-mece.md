@@ -49,3 +49,38 @@ members within `autonomy` — is decided here against the oracle and the MODEL, 
 - **Falsifier:** two members cold-decode to overlapping concepts; or any member restates what the pole
   already entails; or loop-position is re-encoded as a static co-equal value; or the split leaves a
   dangling reference (caught by T-sweep, but a structural miss here fails the shard).
+
+---
+
+## Decision (executed) — self-identifying members, NOT new dimensions
+
+**How settled:** grounded in MODEL + the oracle, not preference. MODEL's PARTITIONED
+(`|home(c)|=1 ∧ disjoint(homes)`) requires each axis-concept one signified home — it
+does NOT force three Dimensions; three self-identifying members satisfy it. With
+`parsimony` (nico's objective), the corpus precedent (`π_decision-authority(self) =
+principal` already self-identifies), and autonomy-as-composed-standing (D5), the
+resolution is members-within-`autonomy`, not a catalog explosion (22→24). Type
+separation would not have prevented the pole inversion (a mis-signified scalar
+dimension fails identically); the actual guard is introspect's `misnomer` axis
+(T-introspect-K), so the structural minimalism loses no defect coverage.
+
+**The MECE structure (cold-verified):**
+```
+π_decision-authority(self) = principal              — who-decides
+human-on-the-loop ⟨resting · phase-state⟩           — where-the-human-sits
+mission-command ⟨escalate ⇔ fork(irreversible · value · competence)⟩ — when-escalate
+```
+Cold read (isolated, tools denied) attributes each line to exactly one aspect (who
+decides / how the human watches / when to escalate), reads line 2 as changeable (the
+`⟨resting · phase-state⟩` residue is the tell — defeats the static-co-equal
+falsifier), finds no overlap, and confirms no line re-asserts the pole (lines 2–3
+presuppose it, never restate).
+
+**Only value change:** `human-on-the-loop` → `human-on-the-loop ⟨resting · phase-state⟩`.
+The π-prefix form was rejected as over-applying decision-authority's
+`pole-value ≠ counterpart-role` disambiguation where it isn't needed (bare
+`human-on-the-loop` does not invert at R=self). Anchor preserved ⇒ `.startsWith`
+catalog tests hold; residue-suffix matches the corpus pattern
+(`human-out-of-the-loop ⟨intent-before · audit-after⟩`). decision-authority +
+mission-command unchanged (T-vector / T-escalation). No MODEL/anatomy change.
+Reference reconciliation → T-sweep.
