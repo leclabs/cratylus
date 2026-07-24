@@ -5,7 +5,7 @@
 > **Anchor owed.** `depalimpsest-ir-intake` is the operator's working handle, not a discovered anchor.
 > Cold-derive before it canonizes (cratylism: names are discovered, never decided).
 
-**Status: IN-FLIGHT — waves 0-2 landed (S1, S2, S5, S7, S3, S4). S6 active — the excision.**
+**Status: LANDED — all 7 shards completed. One pipeline remains. Two naming acts owed (below).**
 
 ## Intent
 
@@ -57,7 +57,7 @@ deletion happens only once nothing live points into the doomed tree.
 | **S7** | `readme-reground`           | doc          | —          | 0    | **completed** | `523e3ad` |
 | **S3** | `hooks-serializer-extract`  | projection   | S2         | 1    | **completed** | `716cfdb` |
 | **S4** | `adapter-barrel-split`      | adapters     | S3         | 2    | **completed** | `ebdfb05` |
-| **S6** | `ir-lineage-excise`         | excision     | S1, S4, S5 | 3    | **active**    | —         |
+| **S6** | `ir-lineage-excise`         | excision     | S1, S4, S5 | 3    | **completed** | `30dd32b` |
 
 `R = {(S3,S2), (S4,S3), (S6,S1), (S6,S4), (S6,S5)}`
 
@@ -129,6 +129,60 @@ than `Hook`, so it is a separate lineage — **not** the fork this plan forbids,
 But it is a second hand-maintained copy of the Claude settings hook-block shape, and
 `plans/agent-runtime/PLAN.md:26` already records the coupling question as FORK-1. Wants its own census;
 not scoped here.
+
+### Wave 3 — excised
+
+`fd2ae76` tests · `30dd32b` source · `abf975d` package surface · `6a64cbd` init contract · `014fb37` docs.
+**242 files, −30,744 lines.** Source 7,332 lines survive; tests 3,857 (was 18,768).
+
+Verified independently: falsifier 10 files → **0** with a live control of 9 through the same instrument;
+every IR directory gone **including `core/index.ts`**, the barrel whose `export *` was the actual
+entanglement mechanism; suite 7/7 at 0 cached; deployed tree byte-identical (`settings.json` sha
+`8e21ace4…07205`, matching the pinned prior-wave value, `diff -r` clean over all 63 files).
+
+**The defect that would have made this whole plan unobservable.** cac parses an unrecognized command into
+the absent global command and exits **0, silently** — `agent-forge compile` looked like a _success_ after
+its implementation was deleted. A removed verb was indistinguishable from a working one by exit code.
+Guard added (`cli/index.ts`, `parse({run:false})` + `matchedCommand`). Now removed verbs fail at the
+**parser** site with a named-alternatives message, while a surviving verb like `compose` fails at the
+**command-body** site — same `rc=1`, different site. This is the session's `rc`-is-a-low-cardinality-oracle
+lesson at its sharpest: here the low-cardinality value was **0**, i.e. success.
+
+**`.` and `./core` exports deleted, not repaired.** After the cut the core barrel had zero source
+consumers, and 197 of 205 cross-package imports already use `/anatomy` with **zero** using the root. The
+package has no single root _concept_ — it is a set of named surfaces. Pointing `.` at a residue barrel
+would describe the package falsely, and a barrel that `export *`s a lineage is the exact invisible edge
+this plan spent three waves cutting. `import '@leclabs/agent-forge'` now fails honestly with
+`ERR_PACKAGE_PATH_NOT_EXPORTED` (verified).
+
+**The carried-in oracle trap reproduced exactly:** `import.meta.resolve` _resolved_ both bogus
+`./adapters/*` paths; only a real `await import()` caught them. Confirmed as a genuine hazard, not a
+one-off.
+
+Four things my shard input list got wrong or missed:
+
+- **`init` was a live verb with a dead half** — it bootstrapped `.agent-forge/` _and_ scaffolded
+  `agents.config.ts`, and held 2 of the 10 falsifier hits. Surgery, not deletion. Its `--scope` flag
+  selected only the IR root, so keeping it would have been a parse-and-ignore flag; removed, and `init`
+  is now idempotent with two new tests pinning that.
+- **Stories E5 and E8 were absent from my list** (932 + 2,314 lines), both pure IR round-trips; and **E6
+  was not wholly safe** — 2 of its 8 stories rode the compile path. E6.S7 was **narrowed, not deleted**:
+  its `checkCoverage` ledger leg survives verbatim because `checkCoverage` survives.
+- **The `adapters` roster verb** was not among the nine I named, but its subject _is_ the IR `Adapter`
+  capability table. Removed.
+- **Six dependencies went dead** with the cut (`ajv`, `ajv-formats`, `chokidar`, `gray-matter`, `js-yaml`,
+  `@types/js-yaml`), removed with the lockfile synced. `zod` was **already** dead at `HEAD~2` —
+  pre-existing debt, reported and deliberately left rather than swept into an unrelated change.
+
+## Owed, and mine — two naming acts
+
+Both are `signify` acts under cratylism, so neither was delegated and neither is done:
+
+1. **`HarnessAdapter` is now the only adapter kind in the package.** No bare `Adapter` type exists. The
+   qualifier is dead weight on the surviving anchor, which wants re-deriving against the post-excision
+   shape. Executors were instructed to report it and change nothing; they did.
+2. **This plan's own directory name.** `depalimpsest-ir-intake` is the operator's working handle, never
+   cold-derived. It rides into `.retired/` un-canonized, which is honest but unfinished.
 
 ## Scale
 
