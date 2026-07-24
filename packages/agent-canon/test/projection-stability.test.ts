@@ -88,9 +88,12 @@ describe('projection stability (.ts is the sole source)', () => {
     expect(dreamMd).toContain('Composed from /exemplify · /materialize.');
 
     const wakeMd = renderSkill(wake);
-    expect(wakeMd).toContain(
-      'WAKE ≜ resolve → migrate? → register → dream → load → orient → resume',
-    );
+    // Derived from the CELL, not a copied literal: a hardcoded first line pins the
+    // block's current wording, so an intentional rewrite reads as a regression and
+    // the test rots into a change-detector. What projection stability actually
+    // claims is that the formalBlock reaches the artifact VERBATIM — assert that.
+    expect(wakeMd).toContain(wake.formalBlock);
+    expect(wake.formalBlock.split('\n')[0]).toMatch(/^WAKE ≜ /);
     expect(wakeMd).toContain('Composed from /dream.');
   });
 
