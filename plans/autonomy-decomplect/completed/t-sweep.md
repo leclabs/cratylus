@@ -59,6 +59,7 @@ zero-comment self-sufficiency gate. Fixed toward the fitter sign in `7c34ec3`
 (register-clean), not by degrading — semantics unchanged.
 
 **Non-vacuous grep proofs:**
+
 - new value LIVE in projection: `human-on-the-loop ⟨resting · phase-state⟩` present
   in nico.md + mav.md (control `## Autonomy` matches — non-vacuous). ✓
 - no EXACT-equality assertion of bare `'human-on-the-loop'` in any source test. ✓
@@ -69,14 +70,20 @@ zero-comment self-sufficiency gate. Fixed toward the fitter sign in `7c34ec3`
 14 · agent-memory 13 · agent-runtime 3), `pnpm canon:project` clean.
 
 **Generated fixtures:**
+
 - `test/fixtures/generated/agent-vector.md` — the agent is `scribe`, a FIXTURE-ONLY
   agent (no live `scribe.ts`); self-contained, unaffected by the live-cell change.
 - `test/adapters/ir-bridge/agent-canon.agent-forge.json` — a frozen IR snapshot for
   adapter round-trip identity (regenerated manually via `emit_ir.py`), read statically.
   It carries ZERO `human-on-the-loop`, so my change does not touch it.
 
-**Out-of-scope note (surfaced, not fixed):** that json still carries `principal-ic`
-— stale since the pole fix `ef1ce87` (principalIC→principalSelf), which predates this
-plan and is explicitly Not-in-scope here. Regenerating would bundle the out-of-scope
-pole change and require the Python toolchain, violating "diff is exactly the anchor
-change." Flagged for a separate fixture-refresh task.
+**Correction (an earlier draft of this note was WRONG).** I first flagged the json as
+"carrying stale `principal-ic` from the pole fix `ef1ce87`." That was a token-collision
+misread (`confidence ≠ confirmation`): `principalIC` (the retired autonomy _pole_ value,
+renamed `principalSelf` in `ef1ce87`) does NOT appear in the json at all. The
+`principal-ic` that IS in the json is a different, LIVE concept — the Principal Engineer
+_archetype_ (`src/agents/principal-ic.ts`), a disposition root nico/mav/reviewer
+specialize. `rg -o` stripped the context and I asserted staleness from a bare token
+match. No `ef1ce87`-era autonomy staleness exists in the json. The json is a frozen
+snapshot generated from the now-removed `ideas/*.md` architecture (a valid fixed IR for
+adapter round-trip identity, not tracking live agents) — orthogonal to this change.
