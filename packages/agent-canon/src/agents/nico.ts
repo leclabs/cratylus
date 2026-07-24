@@ -4,7 +4,7 @@ import { delegation as delegation_actions } from '../dimensions/actions/delegati
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../dimensions/audience-adaptation/convergence.js';
 import { principalIC } from '../dimensions/autonomy/decision-authority.js';
-import { humanOutOfTheLoop as humanOutOfTheLoop_autonomy } from '../dimensions/autonomy/human-out-of-the-loop.js';
+import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../dimensions/autonomy/human-on-the-loop.js';
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
 import { researchInvestigation as researchInvestigation_capabilities } from '../dimensions/capabilities/research-investigation.js';
 import { systemDesign as systemDesign_capabilities } from '../dimensions/capabilities/system-design.js';
@@ -44,13 +44,7 @@ export const nico: Agent = {
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: decisionRationale_transparency,
-  // human-on-the-loop is a RELATIONAL anchor read at R=self — the exact form
-  // `relational-anchor-inverts-under-self-reference` convicts. That law was applied
-  // to decision-authority(self) and left the adjacent member of the SAME vector
-  // unconverted, so at every terminus this vector supplied "return control". The
-  // recurring cession was the identity BINDING, not eroding; escalation semantics
-  // are already carried by mission-command, so nothing is lost by the conversion.
-  autonomy: [principalIC, humanOutOfTheLoop_autonomy, missionCommand],
+  autonomy: [principalIC, humanOnTheLoop_autonomy, missionCommand],
   provenance: { mark: { emoji: '📐', hue: 'cyan' } },
   objective: parsimony_objective,
   engineeringPrinciples: [
