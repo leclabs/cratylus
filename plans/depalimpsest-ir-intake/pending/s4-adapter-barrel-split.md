@@ -31,9 +31,34 @@ the IR lineage appears to threaten the live projection.
 **Outputs.** `adapters/registry/` importing only projection-side modules; the IR `Adapter` reachable only
 from the IR lineage; each harness barrel exporting one kind, not two.
 
-**Completion criteria (falsifier).** `rg -n "core/adapter" packages/agent-forge/src/adapters/registry/`
-returns nothing, control proven; a dependency trace from `src/project/index.ts` reaches **no** module
-under `core/{ir,engine,serialize,adapter}/`; full `pnpm test` green; the local dogfood still lands 10
-agents / 15 skills / 3 hooks. REJECTED if the registry still resolves through a dual barrel; if the trace
-is asserted from reading imports rather than actually traced; if an adapter is renamed here; or if the
-`./adapters/*` subpath breaks for an installed consumer.
+**Completion criteria (falsifier) — measured at HEAD before authoring, per "run the falsifier first".**
+
+The two falsifiers originally written here were **vacuous**, and are replaced:
+
+- ~~`rg -n "core/adapter" src/adapters/registry/`~~ — returns **0 at HEAD**. The registry imports
+  `../claude/index.js`; the IR reach is **transitive through the barrel**, and a substring grep cannot
+  see it. This is the exact error the plan's wave-0 note warns about.
+- ~~a trace from `src/project/index.ts`~~ — reaches **13 modules, 0 IR-lineage at HEAD**. The projection
+  core takes `HarnessAdapter` as an **injected parameter** (`project/index.ts:26,51`) and never imports
+  the registry, so it is already decoupled. Anchoring here measures nothing.
+
+**The real measurement — reachability from the registry, which is what actually braids:**
+
+| entry (at HEAD)                  | modules reached | IR-lineage reached                  |
+| -------------------------------- | --------------- | ----------------------------------- |
+| `src/adapters/registry/index.ts` | 69              | **26**                              |
+| `src/cli/commands/project.ts`    | 79              | **26** (inherited via the registry) |
+| `src/project/index.ts`           | 13              | 0 (already clean)                   |
+
+**PASS** ⇔ the transitive relative-import closure from `src/adapters/registry/index.ts` contains **zero**
+modules under `core/{ir,engine,serialize,adapter}/` — i.e. **26 → 0** — and the closure from
+`src/cli/commands/project.ts` likewise drops to 0. Report both before/after counts. The walker must be
+demonstrated live by a control that still reaches the IR lineage from a known IR consumer
+(`src/core/adapter/types.ts` reaches 2).
+
+Plus: full `pnpm test` green (`turbo --force`, report cached count); the local dogfood still lands 10
+agents / 15 skills / 3 hooks with `settings.json` byte-identical.
+
+REJECTED if the registry still resolves through a dual barrel; if the claim rests on a substring grep
+rather than a traced closure; if the control walk is not shown to reach the IR lineage today; if an
+adapter is renamed here; or if the `./adapters/*` subpath breaks for an installed consumer.
