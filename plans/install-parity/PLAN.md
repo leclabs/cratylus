@@ -10,15 +10,15 @@ is the target mechanism; not a prerequisite).
 
 ## Progress
 
-| shard                               | state                                | commit    |
-| ----------------------------------- | ------------------------------------ | --------- |
-| S1 shim seam                        | **DONE**                             | `ad45999` |
-| S3 wake/handoff onto the shim       | **DONE**                             | `cae76b7` |
-| S2 declared-dependency capabilities | **DONE**                             | `cd10503` |
-| S4 CLI brand                        | **DOES NOT CONVERGE** — see below    | —         |
-| S5 `agent-canon` installable        | **DONE**                             | `b84c959` |
-| S6 local dev-loop parity            | **PARTIAL** — install yes, deploy no | see below |
-| S7 compose → render tree            | **THE MISSING LINK** — not started   | —         |
+| shard                               | state                             | commit    |
+| ----------------------------------- | --------------------------------- | --------- |
+| S1 shim seam                        | **DONE**                          | `ad45999` |
+| S3 wake/handoff onto the shim       | **DONE**                          | `cae76b7` |
+| S2 declared-dependency capabilities | **DONE**                          | `cd10503` |
+| S4 CLI brand                        | **DOES NOT CONVERGE** — see below | —         |
+| S5 `agent-canon` installable        | **DONE**                          | `b84c959` |
+| S6 local dev-loop parity            | **DONE** — falsifier actually run | see below |
+| S7 compose → render tree            | **DONE**                          | `650480e` |
 
 ### S6 — `pnpm add -g .` LINKS, it does not copy
 
@@ -69,8 +69,24 @@ npm-installed, no monorepo):
 | `agent-forge compile claude` | ❌ **0 files written** — the composed set never reaches the IR                         |
 | `agent-forge deploy`         | ❌ requires a render tree nothing produces                                             |
 
-`compose` ends with its own note: _"materializing the resolved set (compose → render
-tree) lands in a later shard; nothing was written."_ That later shard is this one.
+**CLOSED by `650480e`.** `agent-forge project` materializes the resolved set, and
+`canon:project` now makes the SAME call over the same plugin — one path, ridden by
+both. Keeping a second dir-scanning projector is precisely what let the consumer path
+rot unnoticed.
+
+A defect this surfaced: the founding doctrine was stamped by canon's build SCRIPT, so
+consumer-projected cells silently lost the axiom — the ambient dependence
+`intrinsic ⟨¬ambient⟩` forbids. It now travels ON the plugin. It was caught only
+because a falsifier's CONTROL was vacuous: the grep came back clean while the control
+matched nothing, which is not a pass.
+
+**Verified on `fire` through the consumer path**, not merely in a sandbox: a real site
+(`~/.agent-site`) with packages npm-installed, `init → project → deploy`, no path into
+the checkout. The consumer-projected artifacts are **byte-identical** to what the
+retired path produced, and `fire` is now deployed from this path.
+
+Remaining: `project` does not yet emit hooks (still canon-side), and the build face
+still ships as the separate `agent-forge` bin.
 
 The only thing that produces a render tree is `pnpm canon:project`, a **monorepo script**
 that dir-scans `src/agents` / `src/skills` directly and **bypasses the plugin resolver**.
