@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,7 +25,7 @@ describe('CLI commands (integration)', () => {
   it('init scaffolds a project from the default plugin, resolvable through resolve()', async () => {
     // (1) init on an empty dir scaffolds the config-is-code home whose zero-config
     // default `extends: [canon]` — the default is A PACKAGE, not a baked template.
-    const code = await runInit({ scope: 'project', cwd });
+    const code = await runInit({ cwd });
     expect(code).toBe(0);
     const configSrc = readFileSync(join(cwd, 'agents.config.ts'), 'utf8');
     expect(configSrc).toContain("import canon from '@leclabs/agent-canon'");
@@ -49,5 +49,20 @@ describe('CLI commands (integration)', () => {
       [...resolved.fragments.values()].map((r) => [r.fragment.id, r.value]),
     );
     expect(byId.get('canon:objective/parsimony')).toBe('parsimony');
+  });
+
+  it('init is idempotent: an existing agents.config.ts is left untouched', async () => {
+    // The old `init` refused a second run because `.agent-forge/` already
+    // existed. With the IR home gone, `init` is exactly the config scaffold,
+    // and the scaffold is idempotent rather than refusing.
+    expect(await runInit({ cwd })).toBe(0);
+    const first = readFileSync(join(cwd, 'agents.config.ts'), 'utf8');
+    expect(await runInit({ cwd })).toBe(0);
+    expect(readFileSync(join(cwd, 'agents.config.ts'), 'utf8')).toBe(first);
+  });
+
+  it('init writes no .agent-forge/ IR home', async () => {
+    expect(await runInit({ cwd })).toBe(0);
+    expect(existsSync(join(cwd, '.agent-forge'))).toBe(false);
   });
 });
