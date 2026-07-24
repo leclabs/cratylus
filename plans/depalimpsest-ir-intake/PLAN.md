@@ -57,7 +57,7 @@ deletion happens only once nothing live points into the doomed tree.
 | **S7** | `readme-reground`           | doc          | —          | 0    | **completed** | `523e3ad` |
 | **S3** | `hooks-serializer-extract`  | projection   | S2         | 1    | **completed** | `716cfdb` |
 | **S4** | `adapter-barrel-split`      | adapters     | S3         | 2    | **completed** | `ebdfb05` |
-| **S6** | `ir-lineage-excise`         | excision     | S1, S4, S5 | 3    | pending       | —         |
+| **S6** | `ir-lineage-excise`         | excision     | S1, S4, S5 | 3    | **active**    | —         |
 
 `R = {(S3,S2), (S4,S3), (S6,S1), (S6,S4), (S6,S5)}`
 
