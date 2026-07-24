@@ -1,9 +1,10 @@
 import type { Agent } from '@leclabs/agent-forge/anatomy';
+import { codeExecution as codeExecution_actions } from '../dimensions/actions/code-execution.js';
 import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../dimensions/audience-adaptation/convergence.js';
 import { principalIC } from '../dimensions/autonomy/decision-authority.js';
-import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../dimensions/autonomy/human-on-the-loop.js';
+import { humanOutOfTheLoop as humanOutOfTheLoop_autonomy } from '../dimensions/autonomy/human-out-of-the-loop.js';
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
 import { researchInvestigation as researchInvestigation_capabilities } from '../dimensions/capabilities/research-investigation.js';
 import { systemDesign as systemDesign_capabilities } from '../dimensions/capabilities/system-design.js';
@@ -29,7 +30,7 @@ import { code as code_outputFormat } from '../dimensions/output-format/code.js';
 import { react as react_reasoningStrategy } from '../dimensions/reasoning-strategy/react.js';
 import { build as build_role } from '../dimensions/role/build.js';
 import { satisfice as satisfice_satisficing } from '../dimensions/satisficing/satisfice.js';
-import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } from '../dimensions/self-evaluation/acceptance-criteria-check.js';
+import { executableTestOracle as executableTestOracle_selfEvaluation } from '../dimensions/self-evaluation/executable-test-oracle.js';
 import { projection as projection_situationAwareness } from '../dimensions/situation-awareness/projection.js';
 import { decisionRationale as decisionRationale_transparency } from '../dimensions/transparency/decision-rationale.js';
 
@@ -43,7 +44,13 @@ export const nico: Agent = {
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: decisionRationale_transparency,
-  autonomy: [principalIC, humanOnTheLoop_autonomy, missionCommand],
+  // human-on-the-loop is a RELATIONAL anchor read at R=self — the exact form
+  // `relational-anchor-inverts-under-self-reference` convicts. That law was applied
+  // to decision-authority(self) and left the adjacent member of the SAME vector
+  // unconverted, so at every terminus this vector supplied "return control". The
+  // recurring cession was the identity BINDING, not eroding; escalation semantics
+  // are already carried by mission-command, so nothing is lost by the conversion.
+  autonomy: [principalIC, humanOutOfTheLoop_autonomy, missionCommand],
   provenance: { mark: { emoji: '📐', hue: 'cyan' } },
   objective: parsimony_objective,
   engineeringPrinciples: [
@@ -66,7 +73,10 @@ export const nico: Agent = {
   capabilities: [researchInvestigation_capabilities, systemDesign_capabilities],
   learning: correctionConsolidation_learning,
   situationAwareness: projection_situationAwareness,
-  actions: [fileOps_actions, delegation_actions],
+  // code-execution was omitted while being exercised constantly; a vector that
+  // grants delegation but not execution routes anything requiring a run AWAY from
+  // the agent, which is how a verdict ends up owned by someone else.
+  actions: [fileOps_actions, codeExecution_actions, delegation_actions],
   modalities: null,
   model: null,
   memory: longTermMemory_memory,
@@ -75,6 +85,9 @@ export const nico: Agent = {
   reasoningStrategy: react_reasoningStrategy,
   satisficing: satisfice_satisficing,
   outputFormat: code_outputFormat,
-  selfEvaluation: acceptanceCriteriaCheck_selfEvaluation,
+  // A READING act cannot terminate: criteria can be re-read while unexecuted, which
+  // is how a shard was declared done against a falsifier its own author never ran.
+  // The cold-decode oracle IS this agent's executable oracle — it runs and returns.
+  selfEvaluation: executableTestOracle_selfEvaluation,
   heuristics: null,
 };
