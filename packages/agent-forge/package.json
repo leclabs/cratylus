@@ -1,23 +1,13 @@
 {
   "name": "@leclabs/agent-forge",
   "version": "0.0.0",
-  "description": "agent-forge \u2014 universal agent configuration translator: canonical IR, official adapters, and CLI in one package",
+  "description": "agent-forge — the projection machinery: anatomy types, plugin resolution, and the canon → harness render/deploy CLI",
   "license": "MIT",
   "type": "module",
-  "main": "./dist/core/index.js",
-  "types": "./dist/core/index.d.ts",
   "bin": {
     "agent-forge": "./dist/cli/index.js"
   },
   "exports": {
-    ".": {
-      "types": "./dist/core/index.d.ts",
-      "import": "./dist/core/index.js"
-    },
-    "./core": {
-      "types": "./dist/core/index.d.ts",
-      "import": "./dist/core/index.js"
-    },
     "./module-scan": {
       "types": "./dist/core/module-scan.d.ts",
       "import": "./dist/core/module-scan.js"
@@ -57,28 +47,22 @@
   },
   "files": ["dist"],
   "scripts": {
-    "gen": "tsx src/core/hook/generate.ts && tsx src/core/scripts/generate-types.ts",
+    "gen": "tsx src/core/hook/generate.ts",
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "clean": "rm -rf dist src/core/ir/generated.ts src/core/hook/generated.ts",
+    "clean": "rm -rf dist src/core/hook/generated.ts",
     "dev": "tsup --watch",
     "prepack": "pnpm run build"
   },
   "dependencies": {
     "@leclabs/agent-runtime": "workspace:*",
     "@iarna/toml": "catalog:",
-    "ajv": "^8.17.0",
-    "ajv-formats": "^3.0.1",
     "cac": "catalog:",
-    "chokidar": "catalog:",
-    "gray-matter": "catalog:",
-    "js-yaml": "catalog:",
     "picocolors": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
-    "@types/js-yaml": "catalog:",
     "@types/node": "catalog:",
     "json-schema-to-typescript": "^15.0.0",
     "tsup": "catalog:",

@@ -1,19 +1,23 @@
 import { readdirSync } from 'node:fs';
 import { defineConfig } from 'tsup';
 
-// One package, three source areas. The library build (core + the 10 adapters)
-// emits .d.ts and code-splits the shared core into a chunk; the CLI build is a
-// separate pass (no dts, shebang banner) so `agent-forge` runs as an executable.
+// One package, two build passes. The library build emits .d.ts and code-splits
+// shared modules into chunks; the CLI build is a separate pass (no dts, shebang
+// banner) so `agent-forge` runs as an executable.
+//
+// depalimpsest-ir-intake S6: there is no `core/index` entry any more. The core
+// barrel was deleted with the IR-intake lineage it `export *`ed — it had no
+// remaining source consumer, and a barrel over a lineage turns even a type-only
+// import into a full-lineage edge (invisible to grep). Every entry below names
+// a defining module or a real surface index, never a residue barrel.
 const adapters = readdirSync('./src/adapters', { withFileTypes: true })
   .filter((d) => d.isDirectory())
   .map((d) => d.name);
 
 const libEntry: Record<string, string> = {
-  'core/index': 'src/core/index.ts',
-  // Its own entry, not just a re-export through the core barrel: `./module-scan`
-  // is a package subpath so a consumer can take module scanning WITHOUT pulling
-  // the whole core surface. An `exports` map and this list are two enumerations
-  // of one fact — add here and there together or the subpath resolves to nothing.
+  // `./module-scan` is a package subpath so a consumer can take module scanning
+  // on its own. An `exports` map and this list are two enumerations of one fact
+  // — add here and there together or the subpath resolves to nothing.
   'core/module-scan': 'src/core/module-scan.ts',
   'anatomy/index': 'src/anatomy/index.ts',
   'deploy/index': 'src/deploy/index.ts',
