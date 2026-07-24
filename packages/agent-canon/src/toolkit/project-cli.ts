@@ -24,7 +24,7 @@ import {
   resolveModulePath,
   scanCellDirNames,
   scanModuleNames,
-} from '@leclabs/agent-forge/core';
+} from '@leclabs/agent-forge/module-scan';
 import { projectPluginSet } from '@leclabs/agent-forge/project';
 import canonPlugin from '../index.js';
 import { hookSources } from './hooks.js';

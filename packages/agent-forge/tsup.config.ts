@@ -10,6 +10,11 @@ const adapters = readdirSync('./src/adapters', { withFileTypes: true })
 
 const libEntry: Record<string, string> = {
   'core/index': 'src/core/index.ts',
+  // Its own entry, not just a re-export through the core barrel: `./module-scan`
+  // is a package subpath so a consumer can take module scanning WITHOUT pulling
+  // the whole core surface. An `exports` map and this list are two enumerations
+  // of one fact — add here and there together or the subpath resolves to nothing.
+  'core/module-scan': 'src/core/module-scan.ts',
   'anatomy/index': 'src/anatomy/index.ts',
   'deploy/index': 'src/deploy/index.ts',
   'project/index': 'src/project/index.ts',
