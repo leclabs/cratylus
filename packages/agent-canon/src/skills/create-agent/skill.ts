@@ -26,11 +26,13 @@ arity(o) = set ⇒ value(o) ⊆ catalog(o)
 gap(o) ⇔ ∄ v ∈ catalog(o) : fit(v)
 gap(o) ⇒ catalog := exemplify(catalog) @ owner ⟨¬ inline · ¬ wizard⟩
 verify(A) ⇔ PASS gate ∧ gate_agent_dimension_refs clean
+gate            ≜ the FULL corpus suite (\`pnpm test\`) as the shard-completion gate : per-agent PASS ≠ corpus PASS ∴ run the whole suite, ¬ the dimension-ref check alone
+green           ≜ ∀ gate PASS reached by fixing → the FITTEST value ⟨gap(o) → exemplify catalog(o)⟩, never by degrading fit to appease a gate ⟨gate = a fit registry, ¬ a cap⟩
 interview = human-project ⟨the human-driver elicitation⟩
 human-driver ⇒ ∀ o : present ⟨catalog(o) · definiens(o, ·)⟩ ∧ recommend fittest(o)
 boundary ≜ dimensions-only · domain-skills @ create-skill
 
-create-agent ≜ fix(name, purpose) → ( ∀ o : select value(o) ) → assemble vector(A) → write(A) → resolve → verify(A) → deploy
+create-agent ≜ fix(name, purpose) → ( ∀ o : select value(o) ) → assemble vector(A) → write(A) → resolve → verify(A) → iterate-until-green → deploy
 write(A)     ≜ ⟨ front-matter \`kind: agent\` · H1 ≜ name · body ≜ the \`dimension <value>\` lines ⟨multi: \`dimension { <a> · <b> }\`⟩ ⟩ @ agent/<name>.md` as SkillExpression,
   composition: () => [],
 };
