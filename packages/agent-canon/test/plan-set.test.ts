@@ -8,7 +8,10 @@
 //   (3) `retire` PRESERVES the plan (archive, not delete) — content recoverable.
 //   (4) `landing` is derived from VCS and STORED NOWHERE (no sidecar/field; the
 //       sha appears on no path under `plans/`; `landing` writes nothing).
-//   (5) `retire` refuses when ¬landed (precondition), and stages (never commits).
+//   (5) `retire` refuses when ¬terminal (precondition terminal = landed ∨
+//       superseded), and stages (never commits).
+//   (6) supersession is a STORED declaration (`.superseded-by`, non-derivable): it
+//       makes phase=superseded and lets a never-landed plan retire canonically.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -27,6 +30,9 @@ import {
   list,
   phase,
   retire,
+  supersede,
+  superseded,
+  terminal,
 } from '../src/toolkit/plan-set.js';
 
 let repo: string;
@@ -132,11 +138,61 @@ describe('retire — preserve, don’t delete', () => {
     expect(g('status', '--porcelain')).not.toBe('');
   });
 
-  it('refuses when the plan has not landed (precondition landed(P))', () => {
+  it('refuses when the plan is not terminal (precondition terminal(P))', () => {
     placeTask('demo', 'active', 't1.md');
     g('add', '-A');
     g('commit', '-q', '-m', 'dispatch');
-    expect(() => retire(ctx, 'demo')).toThrow(/landed/);
+    expect(() => retire(ctx, 'demo')).toThrow(/terminal/);
+  });
+});
+
+describe('supersede — the stored terminal declaration (non-derivable)', () => {
+  /** Author a second plan so `supersede` accepts it as a known successor. */
+  function authorSuccessor(name: string): void {
+    const dir = join(repo, 'plans', name);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, 'PLAN.md'), `# ${name}\n`);
+  }
+
+  it('makes phase=superseded and lets a never-landed plan retire; marker travels to archive', () => {
+    placeTask('demo', 'active', 't1.md'); // in-flight, never landed
+    authorSuccessor('successor');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'author demo + successor');
+    expect(phase(ctx, 'demo')).toBe('in-flight');
+    expect(terminal(ctx, 'demo')).toBe(false);
+    expect(() => retire(ctx, 'demo')).toThrow(/terminal/);
+
+    supersede(ctx, 'demo', 'successor');
+    expect(superseded(ctx, 'demo')).toBe(true);
+    expect(phase(ctx, 'demo')).toBe('superseded');
+    expect(terminal(ctx, 'demo')).toBe(true);
+
+    // retire now succeeds though demo never landed; the marker survives the move.
+    retire(ctx, 'demo');
+    expect(phase(ctx, 'demo')).toBe('retired');
+    expect(list(ctx, { retired: true })).toContain('demo');
+    expect(
+      readFileSync(
+        join(repo, 'plans', '.retired', 'demo', '.superseded-by'),
+        'utf8',
+      ).trim(),
+    ).toBe('successor');
+  });
+
+  it('stages the marker (commit gated) and rejects unknown / self successor', () => {
+    placeTask('demo', 'pending', 't1.md');
+    authorSuccessor('successor');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'author');
+
+    expect(() => supersede(ctx, 'demo', 'nope')).toThrow(/successor/);
+    expect(() => supersede(ctx, 'demo', 'demo')).toThrow(/itself/);
+
+    supersede(ctx, 'demo', 'successor');
+    // staged, NOT committed: the marker is in the index, HEAD unmoved.
+    const staged = g('diff', '--cached', '--name-only');
+    expect(staged).toMatch(/plans\/demo\/\.superseded-by/);
   });
 });
 

@@ -27,7 +27,7 @@ mirror  : (state, R, content) → document
 PLAN.md ≜ mirror(state, R, content)
 depalimpsest(c) ≜ c ↾ live-strata
 conform @ signify
-Phase    ≜ { proposed, in-flight, landed, retired }
+Phase    ≜ { proposed, in-flight, landed, superseded, retired }
 Plans    ≜ { P | P a plan on disk }
 commit   ≜ a VCS commit
 commits  : P → ℘(commit)
@@ -35,12 +35,15 @@ lands    : commit × P → 𝔹
 landing  : P ⇀ commit
 stored   : P → ℘(commit)
 archived : P → 𝔹
+superseded : P → 𝔹
+terminal : P → 𝔹
 phase    : P → Phase
 
 blocked(t)  ⇔ ∃ u : (t, u) ∈ R ∧ state(u) ≠ completed
 live(s)     ⇔ registered(s) ∧ ¬ released(s) ∧ ¬ stale(s)
 occupied(P) ⇔ owner(P) defined ∧ owner(P) ≠ self ∧ live(owner(P))
 archived(P) ⇔ dir(P) @ plans/.retired/
+superseded(P) ⇔ .superseded-by @ dir(P)
 frontier(P) ≜ { t | t ∈ P ∧ state(t) = ready }
 promote(u)  ≜ { t | (t, u) ∈ R ∧ state(t) = pending ∧ ¬blocked(t) }
 next        ≜ { pending ↦ ready, ready ↦ active, active ↦ completed, completed ↦ completed }
@@ -51,8 +54,9 @@ waves       ≜ (wave(0), wave(1), …)
 dispatched(P) ⇔ ∃ t ∈ P : state(t) ∈ { active, completed }
 done(P)       ⇔ ∀ t ∈ P : state(t) = completed
 landed(P)     ⇔ landing(P) defined ∧ ¬ archived(P)
+terminal(P)   ⇔ landed(P) ∨ superseded(P)
 inscope(P)    ⇔ ¬ archived(P)
-nextPhase     ≜ { proposed ↦ in-flight, in-flight ↦ landed, landed ↦ retired, retired ↦ retired }
+nextPhase     ≜ { proposed ↦ in-flight, in-flight ↦ landed, landed ↦ retired, superseded ↦ retired, retired ↦ retired }
 
 ∀ t ∈ P : t @ dir(P)/state(t)
 owner(P) @ dir(P)/.owner
@@ -71,14 +75,16 @@ slices(P) = argmin over admissible cuts of |R ∩ ⋃ { sᵢ × sⱼ | i ≠ j }
 mirror(state, R, content) emits R ∧ waves
 depalimpsest(depalimpsest(c)) = depalimpsest(c)
 archived(P)                              ⇒ phase(P) = retired
-landed(P)                                ⇒ phase(P) = landed
-dispatched(P) ∧ ¬ landed(P) ∧ ¬ archived(P) ⇒ phase(P) = in-flight
-¬ dispatched(P) ∧ ¬ archived(P)          ⇒ phase(P) = proposed
+superseded(P) ∧ ¬ archived(P)            ⇒ phase(P) = superseded
+landed(P) ∧ ¬ superseded(P)              ⇒ phase(P) = landed
+dispatched(P) ∧ ¬ landed(P) ∧ ¬ superseded(P) ∧ ¬ archived(P) ⇒ phase(P) = in-flight
+¬ dispatched(P) ∧ ¬ superseded(P) ∧ ¬ archived(P) ⇒ phase(P) = proposed
 landing(P) = c ⇔ lands(c, P)
 ∀ c, c' : lands(c, P) ∧ lands(c', P) ⇒ c = c'
 ∀ P : stored(P) = ∅
 list = { P ∈ Plans | inscope(P) }
-retire(P) defined ⇔ landed(P)
+retire(P) defined ⇔ terminal(P)
+supersede(P, Q) ⇒ superseded(P)
 ∀ P : content(retire(P)) = content(P)
 ∀ P : retire(P) ∈ Plans
 ∀ t : conform(content(t))
@@ -99,7 +105,8 @@ sync       ≜ ∀ t ∈ P : state(t) ≠ truth(t) ⇒ state(t) := truth(t) ;
              ∀ u ∈ P : ∀ d ∈ promote(u) : state(d) := ready ;
              PLAN.md ≠ mirror(state, R, content) ⇒ PLAN.md := mirror(state, R, content)
              post : state = truth ∧ PLAN.md = mirror(state, R, content)
-retire    : P ↦ P' ≜ relocate dir(P) under plans/.retired/ ; pre landed(P) ; post phase(P) = retired ∧ content(P') = content(P)
+supersede : (P, Q) ↦ P ≜ write .superseded-by @ dir(P) := Q ⟨staged⟩ ; pre Q ∈ Plans ∧ Q ≠ P ; post superseded(P)
+retire    : P ↦ P' ≜ relocate dir(P) under plans/.retired/ ; pre terminal(P) ; post phase(P) = retired ∧ content(P') = content(P)
 landingOf : P ↦ landing(P)` as SkillExpression;
 
 export const praxis: Skill = {

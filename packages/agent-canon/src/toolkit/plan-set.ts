@@ -11,12 +11,19 @@
 //     and written NOWHERE (`∀P: stored(P)=∅` — no sidecar, no PLAN.md field, no
 //     cache). `phase` likewise is a pure readout, never a stored field.
 //
+// The ONE admitted stored signal is SUPERSESSION (`.superseded-by`): "P's work
+// relocated to successor Q" cannot be derived from residence+git, so it is the sole
+// fact this module stores — a tracked dotfile. This does not violate the discipline
+// (never store what you CAN derive); it records what is inherently non-derivable.
+// It widens the retire trigger from `landed` to `terminal = landed ∨ superseded`,
+// so a superseded plan retires canonically instead of being hand-archived.
+//
 // ENGINE untouched, `PLAN_STATES` untouched: the plan tier adds no task-state
 // folder and no scaffold path — only the lazily-`mkdir`ed `plans/.retired/`
 // container, created by `retire`.
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readdirSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PLAN_STATES } from './plan-states.js';
@@ -24,14 +31,26 @@ import { PLAN_STATES } from './plan-states.js';
 /** On-disk container for retired plans; dot-prefixed ⇒ auto-excluded from `list`. */
 export const RETIRED_DIR = '.retired';
 
-/** A plan's lifecycle phase (plan-level; distinct from the task-level `States`). */
-export type Phase = 'proposed' | 'in-flight' | 'landed' | 'retired';
+/** In-plan marker naming the successor a plan's work relocated to; its presence
+ *  makes the plan `superseded` (a terminal phase). Supersession is NOT derivable
+ *  from residence+git — it is the one relation this module stores, a tracked dotfile. */
+export const SUPERSEDED_MARKER = '.superseded-by';
 
-/** The abstract succession map (mirrors the task machine's `next`). */
+/** A plan's lifecycle phase (plan-level; distinct from the task-level `States`). */
+export type Phase =
+  | 'proposed'
+  | 'in-flight'
+  | 'landed'
+  | 'superseded'
+  | 'retired';
+
+/** The abstract succession map (mirrors the task machine's `next`). `superseded` is
+ *  an off-chain terminal (reachable from any pre-terminal phase) that leads to `retired`. */
 export const nextPhase: Readonly<Record<Phase, Phase>> = {
   proposed: 'in-flight',
   'in-flight': 'landed',
   landed: 'retired',
+  superseded: 'retired',
   retired: 'retired',
 };
 
@@ -114,6 +133,57 @@ export function inscope(ctx: PlanSetContext, plan: string): boolean {
   return !archived(ctx, plan);
 }
 
+// ── supersession — the one STORED signal (non-derivable), a tracked marker ──
+
+/** The successor named in P's `.superseded-by` marker, or `undefined` if P bears none. */
+export function supersededBy(
+  ctx: PlanSetContext,
+  plan: string,
+): string | undefined {
+  try {
+    const body = readFileSync(
+      join(ctx.repoRoot, PLANS, plan, SUPERSEDED_MARKER),
+      'utf8',
+    ).trim();
+    return body.length > 0 ? body : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** `superseded(P)` — P bears a `.superseded-by` marker (its work relocated to a
+ *  successor). A STORED declaration: supersession cannot be derived from git. */
+export function superseded(ctx: PlanSetContext, plan: string): boolean {
+  return supersededBy(ctx, plan) !== undefined;
+}
+
+/**
+ * `supersede : (P, by) ↦ P` — declare P's work relocated to successor `by` by
+ * writing + STAGING the `.superseded-by` marker (commit gated, like `retire`).
+ * `by` must be a known plan (in-scope ∨ retired) and not P itself.
+ */
+export function supersede(ctx: PlanSetContext, plan: string, by: string): void {
+  const successor = by.trim();
+  if (successor.length === 0) {
+    throw new Error('supersede: a non-empty successor plan name is required');
+  }
+  if (successor === plan) {
+    throw new Error('supersede: a plan cannot supersede itself');
+  }
+  const known = new Set([...list(ctx), ...list(ctx, { retired: true })]);
+  if (!known.has(plan)) {
+    throw new Error(`supersede: unknown plan '${plan}'`);
+  }
+  if (!known.has(successor)) {
+    throw new Error(
+      `supersede: unknown successor plan '${successor}' (in-scope or retired)`,
+    );
+  }
+  const rel = `${PLANS}/${plan}/${SUPERSEDED_MARKER}`;
+  writeFileSync(join(ctx.repoRoot, rel), `${successor}\n`);
+  git(ctx, ['add', '--', rel]);
+}
+
 // ── the landing relation — computed from VCS on demand, written NOWHERE ──
 
 /** Is P "done" (all task-files under `completed/`, ≥1) in the tree at `sha`? */
@@ -187,21 +257,33 @@ export function landing(ctx: PlanSetContext, plan: string): string | undefined {
 /** `landingOf : P ↦ landing(P)` — recompute from VCS each call; write nothing. */
 export const landingOf = landing;
 
-/** `landing(P) defined ∧ ¬archived(P)` — phase-3 test / retirement trigger. */
+/** `landing(P) defined ∧ ¬archived(P)` — the plan's result landed on trunk. */
 export function landed(ctx: PlanSetContext, plan: string): boolean {
   return !archived(ctx, plan) && landing(ctx, plan) !== undefined;
+}
+
+/** `terminal(P) ⇔ landed(P) ∨ superseded(P)` — P has no remaining live work, so it
+ *  may retire: its result LANDED, or it was SUPERSEDED (work relocated). The retire
+ *  trigger. */
+export function terminal(ctx: PlanSetContext, plan: string): boolean {
+  return landed(ctx, plan) || superseded(ctx, plan);
 }
 
 // ── the plan-phase readout (total, priority-ordered, mutually exclusive) ──
 
 /**
- * `phase : P → Phase` — a pure derivation over {archived, landed, dispatched},
- * never a stored field. Priority: archived ⇒ retired · landed ⇒ landed ·
- * dispatched ⇒ in-flight · else ⇒ proposed (DESIGN §3(1)).
+ * `phase : P → Phase` — a pure derivation over {archived, superseded, landed,
+ * dispatched}, never a stored field. Priority: archived ⇒ retired · superseded ⇒
+ * superseded · landed ⇒ landed · dispatched ⇒ in-flight · else ⇒ proposed. An
+ * explicit supersession declaration outranks the derived landed/in-flight readout
+ * (DESIGN §3(1)).
  */
 export function phase(ctx: PlanSetContext, plan: string): Phase {
   if (archived(ctx, plan)) {
     return 'retired';
+  }
+  if (superseded(ctx, plan)) {
+    return 'superseded';
   }
   if (landing(ctx, plan) !== undefined) {
     return 'landed';
@@ -254,13 +336,14 @@ export function list(
 
 /**
  * `retire : P ↦ P'` — relocate `dir(P)` under `plans/.retired/` via `git mv`
- * (content + history preserved: a move, not a delete). Precondition `landed(P)`.
- * Leaves the move STAGED — the commit is gated (no `git commit`, no `git push`).
+ * (content + history preserved: a move, not a delete). Precondition `terminal(P)`
+ * (`landed(P) ∨ superseded(P)`). Leaves the move STAGED — the commit is gated (no
+ * `git commit`, no `git push`).
  */
 export function retire(ctx: PlanSetContext, plan: string): void {
-  if (!landed(ctx, plan)) {
+  if (!terminal(ctx, plan)) {
     throw new Error(
-      `retire: precondition landed(${plan}) not met (a plan retires only once its result lands)`,
+      `retire: precondition terminal(${plan}) not met (a plan retires once its result LANDS or it is SUPERSEDED)`,
     );
   }
   mkdirSync(join(ctx.repoRoot, PLANS, RETIRED_DIR), { recursive: true });
