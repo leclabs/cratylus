@@ -60,7 +60,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "clean": "rm -rf dist src/core/ir/generated.ts",
-    "dev": "tsup --watch"
+    "dev": "tsup --watch",
+    "prepack": "pnpm run build"
   },
   "dependencies": {
     "@leclabs/agent-runtime": "workspace:*",

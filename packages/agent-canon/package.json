@@ -23,7 +23,8 @@
     "scaffold": "tsx src/toolkit/scaffold-cli.ts",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rm -rf dist",
-    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput"
+    "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "prepack": "pnpm run build"
   },
   "dependencies": {
     "@leclabs/agent-forge": "workspace:*"
