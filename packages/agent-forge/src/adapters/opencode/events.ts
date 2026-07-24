@@ -1,4 +1,4 @@
-import type { CanonicalEvent } from '../../core/index.js';
+import type { CanonicalEvent } from '../../core/hook/index.js';
 
 /**
  * Canonical event → OpenCode plugin event name — ONLY the [OC5]-verified

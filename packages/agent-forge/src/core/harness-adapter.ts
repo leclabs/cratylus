@@ -13,7 +13,7 @@
 
 import type { Agent } from '../anatomy/index.js';
 import type { ResolvedSkill } from './anatomy-body.js';
-import type { Hook } from './index.js';
+import type { Hook } from './hook/index.js';
 
 /** A single projected artifact: the harness-owned filename + its bytes. */
 export interface HarnessProjection {

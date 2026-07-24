@@ -1,4 +1,4 @@
-import type { CanonicalEvent } from '../../core/index.js';
+import type { CanonicalEvent } from '../../core/hook/index.js';
 
 /**
  * Canonical event → Copilot native event name (camelCase dialect).

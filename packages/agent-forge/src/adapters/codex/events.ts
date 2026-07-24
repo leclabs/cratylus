@@ -1,4 +1,4 @@
-import type { CanonicalEvent } from '../../core/index.js';
+import type { CanonicalEvent } from '../../core/hook/index.js';
 
 /**
  * Canonical event → Codex CLI event name. Documented set (7 events, PascalCase):

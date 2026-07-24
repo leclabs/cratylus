@@ -57,11 +57,11 @@
   },
   "files": ["dist"],
   "scripts": {
-    "gen": "tsx src/core/scripts/generate-types.ts",
+    "gen": "tsx src/core/hook/generate.ts && tsx src/core/scripts/generate-types.ts",
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "clean": "rm -rf dist src/core/ir/generated.ts",
+    "clean": "rm -rf dist src/core/ir/generated.ts src/core/hook/generated.ts",
     "dev": "tsup --watch",
     "prepack": "pnpm run build"
   },

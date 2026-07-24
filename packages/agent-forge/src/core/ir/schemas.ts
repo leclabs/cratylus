@@ -1,7 +1,7 @@
+import hookSchema from '../hook/hook.schema.json' with { type: 'json' };
 import agentSchema from '../schema/agent.schema.json' with { type: 'json' };
 import commandSchema from '../schema/command.schema.json' with { type: 'json' };
 import envSchema from '../schema/env.schema.json' with { type: 'json' };
-import hookSchema from '../schema/hook.schema.json' with { type: 'json' };
 import irSchema from '../schema/ir.schema.json' with { type: 'json' };
 import manifestSchema from '../schema/manifest.schema.json' with {
   type: 'json',

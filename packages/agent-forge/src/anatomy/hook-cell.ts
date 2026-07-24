@@ -21,7 +21,7 @@
 // config-IR lift. The concrete cell instances (the harness-substrate cells, their
 // verbatim workers) live in the consuming corpus, not here.
 
-import type { CanonicalEvent, Hook } from '../core/index.js';
+import type { CanonicalEvent, Hook } from '../core/hook/index.js';
 
 /**
  * A hook's event in HARNESS-AGNOSTIC terms. `harness`-substrate hooks bind a

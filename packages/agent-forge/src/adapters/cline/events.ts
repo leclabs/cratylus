@@ -1,4 +1,4 @@
-import type { CanonicalEvent } from '../../core/index.js';
+import type { CanonicalEvent } from '../../core/hook/index.js';
 
 /**
  * Cline's documented hook event set is exactly 6 names — no

@@ -21,15 +21,22 @@ import type { ResourceType } from '../../../src/core/index.js';
 const HERE = dirname(fileURLToPath(import.meta.url));
 export const SCHEMA_DIR = join(HERE, '../../../src/core/schema');
 
+/** Schemas that live outside `core/schema` because they are owned by a module
+ *  of their own — `hook.schema.json` travels with `core/hook`'s generator. */
+const SCHEMA_DIR_OF: Record<string, string> = {
+  hook: join(HERE, '../../../src/core/hook'),
+};
+
 export function readSchema(name: string): Record<string, unknown> {
+  const dir = SCHEMA_DIR_OF[name] ?? SCHEMA_DIR;
   return JSON.parse(
-    readFileSync(join(SCHEMA_DIR, `${name}.schema.json`), 'utf8'),
+    readFileSync(join(dir, `${name}.schema.json`), 'utf8'),
   ) as Record<string, unknown>;
 }
 
 /**
  * The 28 canonical events, derived from the schema enum (the source of truth
- * behind src/core/ir/generated.ts) rather than hardcoded.
+ * behind src/core/hook/generated.ts) rather than hardcoded.
  */
 export function canonicalEvents(): CanonicalEvent[] {
   const schema = readSchema('hook') as {
