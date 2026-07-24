@@ -335,8 +335,13 @@ The stages, in their own definiens (forge CLI ⊕ ENGINE):
 | `add`     | wire a plugin package into `extends`                                                                       |
 | `compose` | load the config, resolve the plugin set (config-is-code)                                                   |
 | `project` | materialize the resolved set into a **render tree**                                                        |
-| `compile` | IR → client artifacts                                                                                      |
 | `deploy`  | ship a projected render tree to a host `.claude/` root — ENGINE: `inject(content(c), realize(…, adapter))` |
+
+`compile` is deliberately **absent** from that list. It is the terminal step of a **second, disjoint
+pipeline** (`import <client> → compile`) whose source of truth is a `.agent-forge/` IR lifted from an
+existing harness config — a rival source that shares no data with the plugin set, and that writes
+`.claude/` itself rather than feeding `deploy`. Censused with file:line evidence in DESIGN §7a. An
+earlier draft of this section listed `compile` as a stage; that was wrong.
 
 Ask of each disputed concern **which stage it is**. Three answers, all "none":
 

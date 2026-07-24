@@ -313,12 +313,52 @@ sufficient for the interim: per host, install the packages, then run the ordinar
 `init → project → deploy` locally.
 
 **Why this is structural and not merely a scheduling call.** Both retired concerns map to **no stage of
-the pipeline ontology** (`init · add · compose · project · compile · deploy`). Installing the packages
+the pipeline ontology** (`init · add · compose · project · deploy` — see §7a on why `compile` is not in
+that list). Installing the packages
 is a **precondition** to the pipeline — `init` cannot run before the CLI exists. Iterating hosts is an
 **outer loop** over the entire pipeline; `fleet-deploy.sh` _is_ that loop, and forge is its body. And
 remote _placement_ collapses into the same loop: `deploy`'s Target is a `.claude/` root resolved by
 `userScope`/`projectScope` — a directory — so reaching another machine's directory is transport the
 outer loop already performed by ssh-ing there. Crossing one boundary two ways is the palimpsest.
+
+## 7a. `compile` is not a stage — it is a second, opposed pipeline
+
+Recorded 2026-07-24, censused with file:line evidence. An earlier draft of §7 cited the ontology as
+`init · add · compose · project · compile · deploy`, a single six-stage line. **That was wrong**, and
+the error is worth keeping visible because it is the same defect class §7 exists to name.
+
+`packages/agent-forge` carries **two disjoint pipelines sharing one binary**:
+
+|                 | **A — canon projection (live)**                  | **B — IR transpiler (off the path)**                       |
+| --------------- | ------------------------------------------------ | ---------------------------------------------------------- |
+| entry           | `init → add → compose`                           | `import <client>`                                          |
+| source of truth | `agents.config.ts` plugin set — **TS cells**     | `.agent-forge/` IR, lifted from an existing harness config |
+| terminal        | `project → deploy`                               | `compile [...clients]`                                     |
+| writes          | `.render/` → `.claude/`                          | `.claude/` **directly**                                    |
+| renderer        | `claudeHarnessAdapter.agentDef` (anatomy vector) | `serializeAgent()` (IR frontmatter)                        |
+| registry        | `adapters/registry` — 2 harnesses                | `core/adapter` — ~16 clients                               |
+
+They share no data. `projectPluginSet` never calls `readIR`/`writeIR`; the only IR writers are
+`import` and `migrate`. Evidence that B is off the deployment path: **no `.agent-forge/` exists
+anywhere in the repo**; **no package script invokes `compile` or `import`**; `canon:deploy` is
+`build → canon:project → deploy`, with `compile` absent; and every story test bootstraps `writeIR(<synthetic
+fixture>)` first — there is no test where a plugin set produces an IR. This plan's own §S7 table records
+`agent-forge compile claude → 0 files written — the composed set never reaches the IR`, a gap closed by
+**adding `project`**, not by connecting compose to the IR.
+
+**B does not merely sit unused — it runs against VISION.** `import` takes an existing harness config as
+the source of truth and derives from it. VISION's thesis is the inverse: the canon is authored, and
+runtime artifacts are projections that never author meaning. B is residue of forge's pre-VISION identity
+as a harness-config transpiler.
+
+**The salvageable intent.** Lifting an existing setup is genuinely useful as onboarding — but its target
+is wrong. The valuable form is `import → cells` (into the canon), not `import → IR` (into a rival source
+of truth). That reframing, not the current 4k lines, is what should survive.
+
+**Open, operator-facing.** Retiring B is a product-identity call, not a law-determined one, so it is not
+taken here. Two facts make it live rather than academic: `compile` and `deploy` are **two writers of the
+same `.claude/` destination**, and `README.md` still advertises `init → import → compile` as the headline
+flow — the documented product is the one that is off the path.
 
 **Consequence for §4.** The retirement of the `pnpm pack` → `scp` → remote `npm install -g` path is no
 longer conditional on a replacement being first-classed inside forge. There is no replacement inside
