@@ -8,6 +8,57 @@ time; `agent-canon` is a build-time plugin shipping as code). Fleet clean-slate 
 purged of project artifacts, memory homes preserved. Remote-fleet distribution **DEFERRED** (verdaccio
 is the target mechanism; not a prerequisite).
 
+## Progress
+
+| shard                               | state                             | commit    |
+| ----------------------------------- | --------------------------------- | --------- |
+| S1 shim seam                        | **DONE**                          | `ad45999` |
+| S3 wake/handoff onto the shim       | **DONE**                          | `cae76b7` |
+| S2 declared-dependency capabilities | **DONE**                          | `cd10503` |
+| S4 CLI brand                        | **DOES NOT CONVERGE** — see below | —         |
+| S5 `agent-canon` installable        | scope enlarged — see below        | —         |
+| S6 local dev-loop parity            | not started                       | —         |
+
+### Re-sequencing (S3 → S4 → S2, not S1 → S2 → S3 → S4)
+
+`agent-runtime` **cannot** declare a capability package: every capability depends on
+the runtime for its contracts, so the edge cycles. A type-only import does not save it
+— turbo's `^build` follows devDependencies too. The declared-dependency fix therefore
+_requires_ the third package (`agent-cli`), which is what the vite model predicts:
+core, plugins, and an installable unit that composes them.
+
+### S4 — negative result, recorded rather than forced
+
+Six candidate-free concept-alone cold runs yielded `forge`×2, `rig`×2, `conduit`,
+`foundry`. **The negative control fails**: concept-alone does not regenerate a single
+anchor, so the anchor is _not yet discovered_ and must not be coined (cratylism).
+
+Diagnostic: `forge`/`foundry` are one metaphor family naming only the **build** face —
+the oracle returns the genus (a build tool), not the species (a dual-faced single entry
+point). Either the definiendum is still under-specified, or the concept lives in a gap.
+
+Measured collision data (the oracle _guesses_ collisions badly — always measure):
+scope-stripping means the binding constraint is a **bin on PATH**, not an npm package
+name. `forge` ships `bin:{forge}` at 5.4k downloads/month plus Foundry's `forge` —
+genuinely disqualified. `rig` is a dead 2013 package with no bin; `rig-rs` is a Rust
+_library_, not a PATH binary, so the oracle's stated collision is not real for us.
+
+**No longer blocking.** S1+S3 gave the bin name exactly one home, so the rebrand is a
+one-line change whenever the anchor resolves.
+
+### S5 — scope enlarged by a silent failure mode
+
+Shipping built `.js` is necessary but **not sufficient**: every module scan hardcodes a
+`*.ts` glob — `catalog/enumerateCatalog` over `<corpus>/<dim>/*.ts`, canon over
+`agents/*.ts` and `*/skill.ts`. An installed package would be scanned for `.ts` and
+match **nothing, silently** (a zero-match glob is an empty list, not an error). The
+build must also preserve per-module structure, so bundling is ruled out — the scan
+depends on one file per cell.
+
+S5 is therefore three concerns, not one: (a) structure-preserving build, (b) scans that
+accept the built extension, (c) the `AgentPlugin` consumer path made live at all — it
+currently has zero real importers and the projection bypasses it entirely.
+
 ## Ordering constraint
 
 S1 → S2 → S3 must precede S4, and S4 must precede S5. The bin name is currently pasted across skill
