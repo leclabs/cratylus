@@ -39,6 +39,7 @@ import { runInit } from './commands/init.js';
 import { runLint } from './commands/lint.js';
 import { runMigrate } from './commands/migrate.js';
 import { runOptimize } from './commands/optimize.js';
+import { runProject } from './commands/project.js';
 import { runWatch } from './commands/watch.js';
 
 const VERSION = '0.0.0';
@@ -97,6 +98,24 @@ cli
   .action(async (opts: { config?: string; dryRun?: boolean }) => {
     process.exit(
       await runCompose({ config: opts.config, dryRun: opts.dryRun }),
+    );
+  });
+
+cli
+  .command(
+    'project',
+    'Materialize the resolved plugin set into a render tree (compose → render tree)',
+  )
+  .option('--config <path>', 'config file (default: <cwd>/agents.config.ts)')
+  .option('--out <dir>', 'render-tree root (default: <cwd>/.render)')
+  .option('--harness <name>', 'harness adapter (default: claude)')
+  .action(async (opts: { config?: string; out?: string; harness?: string }) => {
+    process.exit(
+      await runProject({
+        config: opts.config,
+        out: opts.out,
+        harness: opts.harness,
+      }),
     );
   });
 

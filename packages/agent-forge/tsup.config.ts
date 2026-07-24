@@ -12,6 +12,7 @@ const libEntry: Record<string, string> = {
   'core/index': 'src/core/index.ts',
   'anatomy/index': 'src/anatomy/index.ts',
   'deploy/index': 'src/deploy/index.ts',
+  'project/index': 'src/project/index.ts',
   'catalog/index': 'src/catalog/index.ts',
   'validate/index': 'src/validate/index.ts',
   'resolve/index': 'src/resolve/index.ts',

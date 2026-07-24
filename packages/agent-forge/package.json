@@ -45,6 +45,10 @@
     "./adapters/*": {
       "types": "./dist/adapters/*/index.d.ts",
       "import": "./dist/adapters/*/index.js"
+    },
+    "./project": {
+      "types": "./dist/project/index.d.ts",
+      "import": "./dist/project/index.js"
     }
   },
   "files": [

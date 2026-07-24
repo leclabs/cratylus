@@ -21,6 +21,7 @@
 
 import { fileURLToPath } from 'node:url';
 import { defineAgentPlugin } from '@leclabs/agent-forge/resolve';
+import { foundingDoctrine } from './genus/founding-doctrine.js';
 
 /** Resolve a sibling dir of this module to an absolute path (self-location). */
 const dir = (rel: string): string =>
@@ -31,4 +32,6 @@ export default defineAgentPlugin({
   fragments: dir('./dimensions'),
   agents: dir('./agents'),
   skills: dir('./skills'),
+  // The axiom rides the PLUGIN, so it survives projection by any consumer.
+  preamble: foundingDoctrine,
 });

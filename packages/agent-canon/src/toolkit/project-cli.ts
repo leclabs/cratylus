@@ -25,7 +25,8 @@ import {
   scanCellDirNames,
   scanModuleNames,
 } from '@leclabs/agent-forge/core';
-import { foundingDoctrine } from '../genus/founding-doctrine.js';
+import { projectPluginSet } from '@leclabs/agent-forge/project';
+import canonPlugin from '../index.js';
 import { hookSources } from './hooks.js';
 import { emitRuntimeShim } from './runtime-shim.js';
 
@@ -98,68 +99,20 @@ async function skillOf(modPath: string): Promise<Skill> {
   return skill;
 }
 
-async function projectAgents(out: string): Promise<number> {
-  const dir = join(out, 'agents');
-  mkdirSync(dir, { recursive: true });
-  let n = 0;
-  for (const name of await moduleNames(agentsModDir)) {
-    const modPath = await resolveModulePath(agentsModDir, name);
-    if (!modPath) throw new Error(`agent module not found: ${name}`);
-    const agent = await agentOf(modPath);
-    // Stamp the founding doctrine intrinsically (ONE home, `../genus/founding-doctrine`)
-    // so the axiom rides the projected SOUL bytes, not ambient repo context.
-    const { filename, content } = adapter.agentDef({
-      ...agent,
-      preamble: foundingDoctrine,
-    });
-    writeFileSync(join(dir, filename), content);
-    process.stdout.write(`EMIT agent ${name}\n`);
-    n++;
-  }
-  return n;
-}
-
-async function projectSkills(out: string): Promise<number> {
-  const names = await skillNames(skillsModDir);
-  let n = 0;
-  for (const name of names) {
-    const cellPath = await resolveModulePath(join(skillsModDir, name), 'skill');
-    if (!cellPath) throw new Error(`skill module not found: ${name}/skill`);
-    const cell = await skillOf(cellPath);
-    const resolved: ResolvedSkill = {
-      name: cell.name,
-      trigger: `/${cell.name}`,
-      description: cell.description,
-      formalBlock: cell.formalBlock,
-      // Composed-from: the resolved sibling skills (lazy thunk), each as its
-      // `/trigger`. Every entry IS a known skill, so no slug lookup is needed.
-      composedFrom: cell.composition().map((c) => `/${c.name}`),
-      // The founding doctrine, intrinsic — so a FOREIGN agent invoking this skill
-      // still holds the axiom (ONE home, `../genus/founding-doctrine`).
-      preamble: foundingDoctrine,
-      // Carry the runtime capability so the BODY can bind the shim emitted below.
-      // Without this the shim lands on disk unreachable — the cell would hold a
-      // script it cannot name.
-      runtime: cell.runtime,
-    };
-    const dir = join(out, 'skills', name);
-    mkdirSync(dir, { recursive: true });
-    const { filename, content } = adapter.skillDef(resolved);
-    writeFileSync(join(dir, filename), content);
-    // A skill that is a face of a runtime capability ALSO gets a thin shim
-    // `scripts/<capability>.mjs` → `agent-runtime <capability>` (NOT a bundled impl).
-    // A skill WITHOUT `runtime` emits SKILL.md only (unchanged).
-    if (cell.runtime) {
-      emitRuntimeShim(dir, cell.runtime.capability);
-      process.stdout.write(
-        `EMIT skill ${name} (+runtime shim scripts/${cell.runtime.capability}.mjs)\n`,
-      );
-    } else {
-      process.stdout.write(`EMIT skill ${name}\n`);
-    }
-    n++;
-  }
-  return n;
+async function projectCells(out: string): Promise<{
+  agents: number;
+  skills: number;
+}> {
+  // The SAME call a consumer's `agent-forge project` makes — the corpus is just
+  // one plugin in the set. Keeping a second dir-scanning projector here is what
+  // let the consumer path rot unnoticed; there is now one path, and we ride it.
+  const { agents, skills } = await projectPluginSet({
+    plugins: [canonPlugin],
+    out,
+    adapter,
+    log: (line) => process.stdout.write(`${line}\n`),
+  });
+  return { agents, skills };
 }
 
 /**
@@ -221,10 +174,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const args = parseArgs(process.argv.slice(2));
   // Clean the out dir first — a removed/renamed cell must not leave a stale render.
   rmSync(args.out, { recursive: true, force: true });
-  const a = await projectAgents(args.out);
-  const s = await projectSkills(args.out);
+  const { agents, skills } = await projectCells(args.out);
   const h = await projectHooks(args.out);
   process.stdout.write(
-    `projected ${a} agents + ${s} skills + ${h} hook(s) to ${args.out}\n`,
+    `projected ${agents} agents + ${skills} skills + ${h} hook(s) to ${args.out}\n`,
   );
 }

@@ -45,6 +45,14 @@ export interface AgentPlugin {
   readonly agents?: string;
   /** Preset SKILL dir, package-relative — scanned `<dir>/*.ts`. */
   readonly skills?: string;
+  /**
+   * A doctrine-agnostic leading block stamped into every cell this plugin
+   * contributes. It must travel WITH the plugin: a consumer projecting an extended
+   * plugin has no access to the plugin's own repo context, so an axiom left behind
+   * in the corpus's build script would silently vanish from consumer-projected
+   * cells — exactly the ambient-dependence the doctrine forbids.
+   */
+  readonly preamble?: string;
   /** Harness adapters this plugin ships (registered into the emitter registry). */
   readonly adapters?: readonly Adapter[];
 }
