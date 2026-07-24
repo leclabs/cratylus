@@ -1,21 +1,18 @@
-// `agent-forge deploy` — ship an already-projected render tree (agents/ + skills/) to
-// a host `.claude/` root. The deploy half of the projection↔deploy self-binding
-// (the projection is `agent-forge` claude-adapter output; this lands it on a host).
+// `agent-forge deploy` — place an already-projected render tree (agents/ +
+// skills/) into the LOCAL `.claude/` root. The deploy half of the
+// projection↔deploy self-binding (the projection is `agent-forge`
+// claude-adapter output; this lands it locally).
 //
-// Faithful CLI port of `toolkit/deploy.py main()`: single-host + `--fleet`,
-// per-host result codes (0 landed, 2 unreachable-deferred), and the
-// `.agent-factory.config` topology resolution with the no-default-user hard-error.
+// Local-only by construction: installing the packages on a host is npm's job,
+// and iterating hosts is the operator's outer loop around the whole pipeline.
+// Neither is a stage, so neither is here.
 
 import pc from 'picocolors';
-import { resolveDeployConfig } from '../../config/index.js';
 import {
-  type AgentFactoryConfig,
-  ConfigError,
   type DeployKind,
   type RenderTree,
   type Scope,
   type SkillCompanions,
-  deployFleet,
   deploySingle,
 } from '../../deploy/index.js';
 
@@ -39,19 +36,11 @@ export interface DeployCmdOpts {
   // What to ship. `all` expands to agent → skill → hooks (same target opts).
   kind: DeployKindArg;
   scope: Scope;
-  // Topology / target.
-  host?: string | null;
-  user?: string | null;
+  // Target — the local `.claude/` root the scope resolves to.
   home?: string | null;
   project?: string | null;
-  fleet?: boolean;
-  exclude?: string | null;
   only?: string | null;
   dryRun?: boolean;
-  // S7: skip the per-host runtime-install step (default: install). Override the
-  // install prefix (default: the host's npm global prefix, already on PATH).
-  noRuntimeInstall?: boolean;
-  runtimePrefix?: string | null;
 }
 
 function splitList(s: string | null | undefined): string[] | null {
@@ -103,78 +92,23 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
   const log = (line: string) => console.log(line);
   const warn = (line: string) => console.error(line);
 
-  // Prefer the code-config topology (`agents.config.ts` `deploy` field) over the
-  // legacy `.agent-factory.config` JSON — the P4-deferred cutover, now single-homed
-  // in `resolveDeployConfig` (config subsumes the JSON; JSON is the fallback).
-  let cfg: AgentFactoryConfig | null;
-  try {
-    cfg = await resolveDeployConfig(opts.project ?? process.cwd());
-  } catch (e) {
-    if (e instanceof ConfigError) {
-      console.error(pc.red(`config error: ${e.message}`));
-      return 1;
-    }
-    throw e;
-  }
-
   // Expand the `all` sugar to the concrete kinds; a single kind runs a
   // one-element loop. Every kind reuses the EXISTING per-kind engine path with
-  // IDENTICAL target opts — so `--fleet` / `--host` / `--exclude` apply to all
-  // three (the fix for the old `&&`-chain leak where `--fleet` reached only the
-  // trailing kind). The overall rc is the first non-zero kind's rc.
+  // IDENTICAL target opts. The overall rc is the first non-zero kind's rc.
   const kinds: readonly DeployKind[] =
     opts.kind === 'all' ? ALL_KINDS : [opts.kind];
 
   try {
-    if (opts.fleet) {
-      if (cfg == null) {
-        console.error(
-          pc.red(
-            '--fleet needs a .agent-factory.config (fleet topology) -- none found at repo root',
-          ),
-        );
-        return 1;
-      }
-      let rc = 0;
-      for (const kind of kinds) {
-        const r = deployFleet({
-          kind,
-          scope: opts.scope,
-          tree,
-          cfg,
-          home: opts.home ?? null,
-          project: opts.project ?? null,
-          user: opts.user ?? null,
-          exclude: splitList(opts.exclude),
-          onlyHosts: splitList(opts.only),
-          dry: opts.dryRun ?? false,
-          runtimeInstall: !opts.noRuntimeInstall,
-          runtimePrefix: opts.runtimePrefix ?? null,
-          log,
-          warn,
-        });
-        if (r.rc !== 0 && rc === 0) {
-          rc = r.rc;
-        }
-      }
-      return rc;
-    }
-
     let rc = 0;
     for (const kind of kinds) {
       const r = deploySingle({
         kind,
         scope: opts.scope,
         tree,
-        host: opts.host ?? null,
-        user: opts.user ?? null,
         home: opts.home ?? null,
         project: opts.project ?? null,
         only: splitList(opts.only),
         dry: opts.dryRun ?? false,
-        runtimeInstall: !opts.noRuntimeInstall,
-        runtimePrefix: opts.runtimePrefix ?? null,
-        cfg,
         log,
         warn,
       });
@@ -184,10 +118,6 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
     }
     return rc;
   } catch (e) {
-    if (e instanceof ConfigError) {
-      console.error(pc.red(`config error: ${e.message}`));
-      return 1;
-    }
     console.error(pc.red(`agent-forge deploy: ${(e as Error).message}`));
     return 1;
   }

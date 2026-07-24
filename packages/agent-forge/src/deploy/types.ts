@@ -1,5 +1,4 @@
-// Shared deploy-layer types — the render-tree input, placer reports, and the
-// injectable IO seams that keep the ssh placer hermetically testable.
+// Shared deploy-layer types — the render-tree input and the placer reports.
 
 import type { SkillCompanions } from './bundle.js';
 
@@ -37,8 +36,7 @@ export function emptyReport(): PlaceReport {
   return { copied: 0, seeded: [], present: [], warnings: [] };
 }
 
-/** A placer's result code, mirroring deploy.py's per-host rc:
- *  0 landed (or dry-run) · 2 unreachable-deferred. */
+/** A placer's result code: 0 landed (or dry-run) · 2 target unavailable. */
 export interface PlaceResult {
   rc: 0 | 2;
   report: PlaceReport;
@@ -51,15 +49,3 @@ export interface PlaceOpts {
   log?: (line: string) => void;
   warn?: (line: string) => void;
 }
-
-// ── ssh IO seam ──────────────────────────────────────────────────────────
-// The ssh placer shells out to `ssh`/`scp`. A `CommandRunner` injection point
-// lets a hermetic test substitute a fake fleet (no real network) while the
-// production default runs the real binaries.
-
-export interface CommandResult {
-  rc: number;
-  out: string;
-}
-
-export type CommandRunner = (cmd: string[]) => CommandResult;

@@ -77,7 +77,7 @@ export function episodicSeed(_name: string): string {
 //     export { seedTemplates as SEED_FILES } from '@leclabs/agent-memory';
 // (add `@leclabs/agent-memory: workspace:*` to forge deps — DAG stays acyclic:
 // forge→agent-memory). Until that export is resolvable in the tree these templates
-// remain the FALLBACK so the deploy seed sites (local.ts / ssh.ts) stay green;
+// remain the FALLBACK so the deploy seed site (local.ts) stays green;
 // removing them now would break the build against a not-yet-landed import. See S6
 // report + plans/agent-runtime coordination (S4 concurrent).
 /** (filename, seed-fn) — SOUL (the def) is generated, not seeded here. */

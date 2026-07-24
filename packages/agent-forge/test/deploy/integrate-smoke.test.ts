@@ -4,9 +4,9 @@
 // Proves the whole loop end-to-end on a clean, hermetic fixture — NON-VACUOUS at
 // every leg (a capability provably RAN, not merely that a process spawned):
 //
-//   project → deploy → per-host runtime-install → a DEPLOYED thin-shim invokes
-//   `agent-runtime memory <verb>` AND `agent-runtime tap <verb>` on the target,
-//   and the capability's effect is READ BACK.
+//   project → deploy → a DEPLOYED thin-shim invokes `agent-runtime memory <verb>`
+//   AND `agent-runtime tap <verb>` on the target, and the capability's effect is
+//   READ BACK.
 //
 //   L0 project : a skill declaring runtime:{capability:'memory'} emits a THIN SHIM
 //                `scripts/memory.mjs` (a forwarder to the host `agent-runtime
@@ -14,9 +14,10 @@
 //                pins; here the shim is consumed + PROVEN to drive the real bin).
 //   L1 deploy  : `placeSkillsLocal` copies the skill dir mode-preserving into a
 //                TEMP target `.claude/` — the shim's exec bit survives.
-//   L2 install : the REAL S7 `installRuntimeLocal` (real `pnpm pack` +
-//                `npm install -g --prefix`) lands `agent-runtime` + agent-memory
-//                co-installed + RESOLVABLE in a temp prefix (NO fake runner).
+//   (setup)    : the runtime packages are installed into a temp npm prefix. This
+//                is a PRECONDITION, not a stage — installing packages on a host is
+//                npm's job, never deploy's — so it is plain test setup here, and
+//                nothing about it is an assertion on agent-forge.
 //   L3 memory  : the DEPLOYED shim `… memory encode`→`read` round-trips a record —
 //                the store file on disk carries the body, the read returns the id.
 //   L4 tap     : `agent-runtime tap install`→`status`(attached)→`remove` merges a
@@ -25,7 +26,7 @@
 //
 // HERMETIC: a scoped temp target/prefix/home, `GIT_CONFIG_GLOBAL=/dev/null`, and
 // `--home`/`--settings` passed explicitly — the operator's real `~/.agents`,
-// `~/.claude`, and fleet are NEVER touched. LOCAL only (no ssh, no fleet).
+// `~/.claude`, and npm prefix are NEVER touched. Deploy is local-only.
 //
 // This test does the REAL pack+install, so it is heavier than the unit suites;
 // each leg carries an explicit generous timeout.
@@ -41,13 +42,16 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { afterAll, describe, expect, it } from 'vitest';
-import {
-  RUNTIME_BIN,
-  installRuntimeLocal,
-  placeSkillsLocal,
-} from '../../src/deploy/index.js';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { placeSkillsLocal } from '../../src/deploy/index.js';
 import { tmp } from './helpers.js';
+
+/** The bin the installed runtime CLI puts on PATH. */
+const RUNTIME_BIN = 'agent-runtime';
+
+/** The workspace packages the temp prefix needs so `agent-runtime <cap> <verb>`
+ *  resolves: the CLI carrying the bin, the contract leaf, the capability. */
+const RUNTIME_PACKAGES = ['agent-runtime', 'agent-memory', 'agent-cli'];
 
 /**
  * The canonical thin-shim CONTENT for a runtime capability — a self-contained node
@@ -88,7 +92,7 @@ afterAll(() => {
   // reaps tmp). Nothing under the operator's real home/prefix was ever written.
 });
 
-describe('S10 integrate-smoke — project→deploy→install→invoke→verify', () => {
+describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
   const deployedShim = join(
     targetClaude,
     'skills',
@@ -96,6 +100,41 @@ describe('S10 integrate-smoke — project→deploy→install→invoke→verify',
     'scripts',
     'memory.mjs',
   );
+
+  // PRECONDITION (not a stage, not an assertion): put the runtime packages in a
+  // temp npm prefix so the deployed shim has an `agent-runtime` to drive. On a
+  // real host this is `npm i -g @leclabs/agent-cli`; here the un-published
+  // workspace packages are packed and co-installed to reach the same state.
+  beforeAll(() => {
+    const stage = join(root, 'tarballs');
+    mkdirSync(stage, { recursive: true });
+    const repoRoot = join(import.meta.dirname, '..', '..', '..', '..');
+    const tarballs = RUNTIME_PACKAGES.map((pkg) => {
+      const out = execFileSync(
+        'pnpm',
+        [
+          '-C',
+          join(repoRoot, 'packages', pkg),
+          'pack',
+          '--pack-destination',
+          stage,
+        ],
+        { encoding: 'utf-8' },
+      );
+      return out.trim().split('\n').pop() as string;
+    });
+    try {
+      execFileSync('npm', ['install', '-g', '--prefix', prefix, ...tarballs], {
+        encoding: 'utf-8',
+        stdio: 'pipe',
+      });
+    } catch {
+      // npm's exit code can be tainted by a version-manager reshim; the real
+      // oracle is artifact resolvability, checked next.
+    }
+    // Guard, so an unmet precondition fails legibly instead of as a shim error.
+    expect(existsSync(join(prefix, 'bin', RUNTIME_BIN))).toBe(true);
+  }, 180_000);
 
   it('L0 project: a runtime:{capability:memory} skill emits an executable thin shim → agent-runtime memory', () => {
     const skillDir = join(projectSkills, SKILL);
@@ -133,18 +172,6 @@ describe('S10 integrate-smoke — project→deploy→install→invoke→verify',
     expect(existsSync(deployedShim)).toBe(true);
     expect(statSync(deployedShim).mode & 0o111).not.toBe(0);
   });
-
-  it('L2 install: the REAL runtime-install lands agent-runtime + agent-memory co-installed & resolvable', () => {
-    const r = installRuntimeLocal(targetClaude, { dry: false, prefix });
-    expect(r.installed).toBe(true);
-    expect(r.prefix).toBe(prefix);
-    // Resolvability oracle: the bin on PATH + BOTH packages as siblings in ONE
-    // node_modules — exactly what the loader's discover() needs.
-    expect(existsSync(join(prefix, 'bin', RUNTIME_BIN))).toBe(true);
-    const modules = join(prefix, 'lib', 'node_modules', '@leclabs');
-    expect(existsSync(join(modules, 'agent-runtime'))).toBe(true);
-    expect(existsSync(join(modules, 'agent-memory'))).toBe(true);
-  }, 120_000);
 
   it('L3 memory leg: the DEPLOYED shim round-trips a record (encode→read), proven on disk', () => {
     // encode via the deployed shim → the shim spawns `agent-runtime memory encode`.

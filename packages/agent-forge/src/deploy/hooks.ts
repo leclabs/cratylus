@@ -53,7 +53,7 @@ function hasCommand(entries: HookEntry[], command: string): boolean {
  * a clone, idempotently: for each event, append each incoming entry only if no
  * existing entry already registers the same command. Returns the merged settings
  * + the count of entries actually added (0 ⇒ already present, a no-op write).
- * Pure — no IO — so it is unit-testable and reused by the local + ssh placers.
+ * Pure — no IO — so it is unit-testable independently of the placer.
  */
 export function mergeHooksSettings(
   existing: Record<string, unknown>,

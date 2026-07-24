@@ -317,7 +317,7 @@ cli
 cli
   .command(
     'deploy',
-    'Ship a projected render tree (agents/ + skills/) to a host .claude/ root',
+    'Place a projected render tree (agents/ + skills/) into the local .claude/ root',
   )
   .option('--agents-dir <dir>', 'Render tree agents/ dir (the projected defs)')
   .option(
@@ -334,37 +334,10 @@ cli
   )
   .option('--kind <kind>', 'agent | skill | hooks | all', { default: 'all' })
   .option('--scope <scope>', 'user | project', { default: 'user' })
-  .option(
-    '--host <host>',
-    "host key in .agent-factory.config; omit/'local' to deploy in place",
-  )
-  .option('--user <user>', 'ssh user override (else config host.<name>.user)')
-  .option(
-    '--home <dir>',
-    'user-scope .claude parent override (else config home, else ~/.claude)',
-  )
+  .option('--home <dir>', 'user-scope .claude parent override (else ~/.claude)')
   .option('--project <dir>', 'project root for --scope project (default: cwd)')
-  .option(
-    '--fleet',
-    'deploy every fleet.hosts minus fleet.exclude (needs config)',
-  )
-  .option(
-    '--exclude <hosts>',
-    'comma-separated host(s) to add to the fleet exclude',
-  )
-  .option(
-    '--only <names>',
-    'single-host: names to deploy; --fleet: hosts to restrict to',
-  )
+  .option('--only <names>', 'comma-separated names to deploy')
   .option('--dry-run', 'print actions, change nothing')
-  .option(
-    '--no-runtime-install',
-    'skip the per-host runtime install (default: bundle + flat co-install agent-runtime + capabilities)',
-  )
-  .option(
-    '--runtime-prefix <dir>',
-    'install prefix for the runtime bundle (default: the host npm global prefix, already on PATH)',
-  )
   .action(
     async (opts: {
       agentsDir?: string;
@@ -373,16 +346,10 @@ cli
       assets?: string;
       kind: DeployKindArg;
       scope: Scope;
-      host?: string;
-      user?: string;
       home?: string;
       project?: string;
-      fleet?: boolean;
-      exclude?: string;
       only?: string;
       dryRun?: boolean;
-      runtimeInstall?: boolean;
-      runtimePrefix?: string;
     }) => {
       // `hooks` ships from a single hooks render root; agent/skill ship from the
       // agents/ + skills/ dirs; `all` ships every kind in one invocation and so
@@ -428,17 +395,10 @@ cli
           companions,
           kind: opts.kind,
           scope: opts.scope as DeployScope,
-          host: opts.host ?? null,
-          user: opts.user ?? null,
           home: opts.home ?? null,
           project: opts.project ?? null,
-          fleet: opts.fleet,
-          exclude: opts.exclude ?? null,
           only: opts.only ?? null,
           dryRun: opts.dryRun,
-          // cac maps `--no-runtime-install` to `runtimeInstall === false`.
-          noRuntimeInstall: opts.runtimeInstall === false,
-          runtimePrefix: opts.runtimePrefix ?? null,
         }),
       );
     },

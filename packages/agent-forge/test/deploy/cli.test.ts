@@ -2,12 +2,11 @@
 // greenfield `scaffoldProject` engine. The engine itself is covered exhaustively
 // elsewhere; these assert the command layer threads opts → engine and reports the rc.
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseCompanions, runDeploy } from '../../src/cli/commands/deploy.js';
 import {
-  CONFIG_ENV,
   DEFAULT_PROJECT_TEMPLATE,
   scaffoldProject,
 } from '../../src/deploy/index.js';
@@ -33,10 +32,8 @@ describe('parseCompanions', () => {
   });
 });
 
-describe('runDeploy (local single-host)', () => {
+describe('runDeploy (local)', () => {
   it('deploys agents in-place to <home>/.claude (scope user, --home sandbox)', async () => {
-    // Point config resolution at a configless temp so the run is hermetic.
-    process.env[CONFIG_ENV] = join(tmp('demo-empty-'), '.agent-factory.config');
     const { agentsDir, skillsDir } = buildRenderTree(
       tmp('agent-forge-render-'),
     );
@@ -46,11 +43,9 @@ describe('runDeploy (local single-host)', () => {
       skillsDir,
       kind: 'agent',
       scope: 'user',
-      host: null, // local
       home,
       dryRun: false,
     });
-    delete process.env[CONFIG_ENV];
     expect(rc).toBe(0);
     // bare-home guard appended .claude
     expect(existsSync(join(home, '.claude', 'agents', 'mav.md'))).toBe(true);
@@ -59,8 +54,7 @@ describe('runDeploy (local single-host)', () => {
     );
   });
 
-  it('--kind all deploys agent + skill + hooks in ONE invocation (local single-host)', async () => {
-    process.env[CONFIG_ENV] = join(tmp('demo-empty-'), '.agent-factory.config');
+  it('--kind all deploys agent + skill + hooks in ONE invocation', async () => {
     // agents/ + skills/ under root; hooks fragment at the render root (hooksDir).
     const root = tmp('agent-forge-render-');
     const { agentsDir, skillsDir } = buildRenderTree(root);
@@ -72,11 +66,9 @@ describe('runDeploy (local single-host)', () => {
       hooksDir,
       kind: 'all',
       scope: 'user',
-      host: null, // local
       home,
       dryRun: false,
     });
-    delete process.env[CONFIG_ENV];
     expect(rc).toBe(0);
     const cd = join(home, '.claude');
     // agent kind landed
@@ -94,7 +86,6 @@ describe('runDeploy (local single-host)', () => {
   });
 
   it('--kind agent deploys ONLY agent (single-kind half unchanged)', async () => {
-    process.env[CONFIG_ENV] = join(tmp('demo-empty-'), '.agent-factory.config');
     const root = tmp('agent-forge-render-');
     const { agentsDir, skillsDir } = buildRenderTree(root);
     const { hooksDir } = buildHooksTree(root);
@@ -105,70 +96,15 @@ describe('runDeploy (local single-host)', () => {
       hooksDir,
       kind: 'agent',
       scope: 'user',
-      host: null,
       home,
       dryRun: false,
     });
-    delete process.env[CONFIG_ENV];
     expect(rc).toBe(0);
     const cd = join(home, '.claude');
     expect(existsSync(join(cd, 'agents', 'mav.md'))).toBe(true);
     // skill + hooks kinds were NOT touched
     expect(existsSync(join(cd, 'skills'))).toBe(false);
     expect(existsSync(join(cd, 'settings.json'))).toBe(false);
-  });
-
-  it('--kind all + --fleet applies the fleet target to ALL three kinds (regression: the trailing-step leak)', async () => {
-    // A single LOCAL fleet host so the run is hermetic (no ssh). Proves --fleet
-    // reaches agent + skill + hooks — the OLD `&&`-chain leaked --fleet onto only
-    // the trailing kind, leaving agent + skill local.
-    const fireHome = tmp('agent-forge-fire-home-');
-    const cfgRoot = tmp('demo-cfg-');
-    writeFileSync(
-      join(cfgRoot, '.agent-factory.config'),
-      JSON.stringify({
-        schema: 1,
-        reader: 'strong-llm-lean',
-        fleet: { hosts: ['fire'], exclude: [] },
-        host: { fire: { local: true, home: fireHome } },
-      }),
-      'utf-8',
-    );
-    process.env[CONFIG_ENV] = join(cfgRoot, '.agent-factory.config');
-    const root = tmp('agent-forge-render-');
-    const { agentsDir, skillsDir } = buildRenderTree(root);
-    const { hooksDir } = buildHooksTree(root);
-    const rc = await runDeploy({
-      agentsDir,
-      skillsDir,
-      hooksDir,
-      kind: 'all',
-      scope: 'user',
-      fleet: true,
-      dryRun: false,
-    });
-    delete process.env[CONFIG_ENV];
-    expect(rc).toBe(0);
-    const cd = join(fireHome, '.claude');
-    expect(existsSync(join(cd, 'agents', 'mav.md'))).toBe(true); // agent fleet-landed
-    expect(existsSync(join(cd, 'skills', 'wake', 'SKILL.md'))).toBe(true); // skill fleet-landed
-    expect(existsSync(join(cd, 'settings.json'))).toBe(true); // hooks fleet-landed
-  });
-
-  it('--fleet without a config returns rc=1 (no flag-only fleet fallback)', async () => {
-    process.env[CONFIG_ENV] = join(tmp('demo-empty-'), '.agent-factory.config');
-    const { agentsDir, skillsDir } = buildRenderTree(
-      tmp('agent-forge-render-'),
-    );
-    const rc = await runDeploy({
-      agentsDir,
-      skillsDir,
-      kind: 'agent',
-      scope: 'user',
-      fleet: true,
-    });
-    delete process.env[CONFIG_ENV];
-    expect(rc).toBe(1);
   });
 });
 

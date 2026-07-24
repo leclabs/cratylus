@@ -34,7 +34,6 @@ import {
   type PluginFragmentSource,
   discoverPluginFragments,
 } from '../catalog/index.js';
-import { type AgentFactoryConfig, loadConfig } from '../deploy/config.js';
 import type { AgentPlugin } from '../resolve/plugin.js';
 import {
   type LoadedPlugin,
@@ -42,12 +41,7 @@ import {
   type ResolvedAgentSet,
   resolve,
 } from '../resolve/resolve.js';
-import {
-  type AgentsConfig,
-  deployTopologyOf,
-  toAgentFactoryConfig,
-} from './config.js';
-import { CONFIG_FILE } from './scaffold.js';
+import type { AgentsConfig } from './config.js';
 
 /** A file that does not default-export a well-formed `AgentsConfig`. Loud, never silent. */
 export class ConfigShapeError extends Error {
@@ -157,27 +151,4 @@ export async function composeFromFile(
   const config = await loadAgentsConfig(abs);
   const resolved = await resolveAgentsConfig(config, dirname(abs));
   return { config, resolved };
-}
-
-/**
- * Resolve the deploy TOPOLOGY, preferring the code-config over the legacy JSON
- * (the seam P4 deferred to P6). If `<cwd>/agents.config.ts` exists and declares a
- * `deploy` topology, that topology is bridged to the legacy `AgentFactoryConfig`
- * consumer shape (`toAgentFactoryConfig`) and returned — so the existing deploy
- * resolver folds the code-config UNCHANGED (subsumption, not a parallel resolver;
- * config/config.ts fork resolution). Otherwise the `.agent-factory.config` JSON is
- * the fallback (`loadConfig` — repo-root resolved, `null` when absent). This is the
- * SINGLE cutover point: `deploy`'s call sites read topology through here, so the
- * code-config wins wherever a project declares one.
- */
-export async function resolveDeployConfig(
-  cwd: string = process.cwd(),
-): Promise<AgentFactoryConfig | null> {
-  const codeConfigPath = join(cwd, CONFIG_FILE);
-  if (existsSync(codeConfigPath)) {
-    const config = await loadAgentsConfig(codeConfigPath);
-    const topology = deployTopologyOf(config);
-    if (topology) return toAgentFactoryConfig(topology);
-  }
-  return loadConfig();
 }

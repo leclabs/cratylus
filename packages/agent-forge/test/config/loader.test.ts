@@ -1,13 +1,11 @@
 // P4 — the config-is-code loader + THE LOAD STEP (AgentPlugin dirs → LoadedPlugin
-// → resolve()) + the config/topology fork. Proves:
+// → resolve()). Proves:
 //  (1) the load step lifts each discovered fragment → a `replace` contribution and
 //      resolve() yields the fragment values (ordered fold, plugin order preserved);
 //  (2) an `agents.config.ts` (TS/ESM) loads with NO build step and resolves through
 //      the same path — with `extends` as a REAL cross-module import;
 //  (3) `extends: [canon]` (the real canon dimensions) resolves to the canon
-//      default fragment set;
-//  (4) the fork is resolved: the deploy topology is a field on `AgentsConfig`,
-//      read by `deployTopologyOf` and bridged to the legacy consumer shape.
+//      default fragment set.
 
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -17,12 +15,9 @@ import { describe, expect, it } from 'vitest';
 import {
   type AgentsConfig,
   composeFromFile,
-  deployTopologyOf,
   loadPlugins,
   resolveAgentsConfig,
-  toAgentFactoryConfig,
 } from '../../src/config/index.js';
-import { resolveHost } from '../../src/deploy/config.js';
 import type { AgentPlugin } from '../../src/resolve/plugin.js';
 import { resolve } from '../../src/resolve/resolve.js';
 
@@ -162,35 +157,5 @@ describe('extends: [canon] — resolves to the canon default set', () => {
     );
     // A known canon fragment resolved to its branded-string body.
     expect(byId.get('canon:objective/parsimony')).toBe('parsimony');
-  });
-});
-
-describe('config/topology fork — RESOLVED (agents.config.ts subsumes the JSON)', () => {
-  it('carries the deploy topology as a field, read + bridged to the legacy shape', () => {
-    const config: AgentsConfig = {
-      extends: [],
-      deploy: {
-        fleet: { hosts: ['upmav'] },
-        host: { upmav: { user: 'lcaraccioli', hostname: 'upmav.local' } },
-      },
-    };
-
-    // The topology is a first-class field, not a separate JSON file.
-    const topology = deployTopologyOf(config);
-    expect(topology?.host.upmav?.user).toBe('lcaraccioli');
-
-    // Bridged to the legacy consumer shape → the EXISTING deploy resolver folds
-    // it unchanged (proof of subsumption, not a parallel resolver).
-    const afc = toAgentFactoryConfig(topology!);
-    const params = resolveHost('upmav', { cfg: afc });
-    expect(params).toMatchObject({
-      user: 'lcaraccioli',
-      hostname: 'upmav.local',
-      local: false,
-    });
-  });
-
-  it('deployTopologyOf returns null when no topology is declared', () => {
-    expect(deployTopologyOf({ extends: [] })).toBeNull();
   });
 });
