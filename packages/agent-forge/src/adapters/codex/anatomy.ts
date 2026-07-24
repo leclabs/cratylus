@@ -28,7 +28,10 @@ import {
   agentBody,
   skillBody,
 } from '../../core/anatomy-body.js';
-import type { HarnessAdapter } from '../../core/index.js';
+// The projection PORT, imported from its defining module and NOT through the
+// `core/index.js` barrel — see the note in `adapters/claude/anatomy.ts`: the
+// barrel re-exports the whole IR lineage.
+import type { HarnessAdapter } from '../../core/harness-adapter.js';
 
 // Re-export the shared, harness-neutral resolved skill shape so a codex consumer
 // can import everything it needs from the codex adapter.

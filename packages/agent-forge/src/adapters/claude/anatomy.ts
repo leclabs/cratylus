@@ -29,7 +29,11 @@ import {
   dimensionTitle,
   skillBody,
 } from '../../core/anatomy-body.js';
-import type { HarnessAdapter } from '../../core/index.js';
+// The projection PORT, imported from its defining module and NOT through the
+// `core/index.js` barrel: the barrel re-exports the IR lineage (`core/{ir,engine,
+// serialize,adapter}`), so one barrel-shaped type import would drag all 26 of
+// those modules into every projection consumer's closure.
+import type { HarnessAdapter } from '../../core/harness-adapter.js';
 import { serializeClaudeHooksReport } from './hooks.js';
 
 // Re-export the shared, harness-neutral body machinery so `adapters/claude`
