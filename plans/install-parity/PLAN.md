@@ -274,3 +274,12 @@ interactive-shell prefix probe. Superseded by per-host build + install; see DESI
   now that each host builds what it installs.
 - `.agent-factory.config` is gitignored, its committed example has drifted, and its cited schema doc
   does not exist.
+
+## Open distribution tail (encapsulation gap, 2026-07-24)
+
+The fleet consumer-path deploy was executed from an ephemeral `/tmp` script all session — NOT
+encapsulated. Rescued to `plans/install-parity/fleet-deploy.sh` so the workflow survives. It is the
+pragmatic fleet form of the consumer path (pack centrally → ship tarballs → per-host
+`npm install → init → project → deploy`, no monorepo), and the concrete replacement for
+`runtime-install.ts`'s retired scp path. **Open:** first-class it as an `agent-forge fleet-deploy`
+command (design work), then delete `runtime-install.ts`'s scp half per DESIGN §4.
