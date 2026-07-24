@@ -267,6 +267,30 @@ export interface InitResult {
  * `node`/`fold` compute scope). Implemented by the agent-memory runtime plugin;
  * this port owns none of the mechanism, only its shape.
  */
+/**
+ * Everything a WAKING session needs, resolved BY the strategy.
+ *
+ * This exists so a caller never composes primitives to wake. Composition is what
+ * leaks strategy: to assemble a wake from `home` + `migrate` + `session register`
+ * + `read`, a caller must know that memory HAS a home path, that it may need a
+ * format migration, and how scope is computed — none of which survives a different
+ * strategy (a remote or vector-backed memory has no home path and nothing to
+ * migrate). The strategy binds its own home, performs whatever preparation it
+ * requires, and returns the state to load.
+ */
+export interface SessionBegin {
+  /** The registered session id (minted when absent — never sessionless). */
+  readonly session: string;
+  /** Identity + durable agent-intrinsic knowledge, whole. */
+  readonly semantic: string;
+  /** Generalized cross-project wisdom, whole. */
+  readonly procedural: string;
+  /** The raw stream this session may see, already scoped by the strategy. */
+  readonly episodic: readonly EpisodicRecord[];
+  /** Consolidation is owed before proceeding (a crashed/undreamt predecessor). */
+  readonly consolidationOwed: boolean;
+}
+
 export interface MemoryStrategy {
   /**
    * Resolve the agent home this strategy binds to — the strategy's LAW, applied
@@ -338,6 +362,15 @@ export interface MemoryStrategy {
     opts?: { id?: string; stale?: number },
   ): SessionStatus;
   session(action: 'list', opts?: { stale?: number }): SessionEntry[];
+  /**
+   * Begin a session: prepare this agent's memory and return what to load. The
+   * ONE verb a wake protocol calls — see {@link SessionBegin} for why the
+   * primitives must not be composed by the caller.
+   */
+  session(
+    action: 'begin',
+    opts?: { id?: string; under?: string },
+  ): SessionBegin;
 
   /**
    * The dreamer's post-consolidation clear: archive the raw log (verified) then

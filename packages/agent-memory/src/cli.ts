@@ -36,6 +36,7 @@ import {
   homeForName,
   resolveSession,
 } from './store.js';
+import { AgentMemory } from './strategy.js';
 
 /** The standalone `memory` tool version. A constant (not read from
  *  package.json): the bundled `dist/memory.mjs` ships without its manifest when
@@ -501,6 +502,20 @@ function runSession(args: ParsedArgs): CliResult {
   };
 
   switch (action) {
+    case 'begin': {
+      // The wake-facing verb. Delegates to the STRATEGY rather than re-composing
+      // primitives here: the strategy owns home layout and store format, so it is
+      // the only place that can decide whether a migration is owed.
+      const strategy = new AgentMemory({
+        ...(str(args.flags.name) ? { name: str(args.flags.name) } : {}),
+        ...(str(args.flags.home) ? { home: str(args.flags.home) } : {}),
+      });
+      const r = strategy.session('begin', {
+        ...(str(args.flags.session) ? { id: str(args.flags.session) } : {}),
+        ...(str(args.flags.under) ? { under: str(args.flags.under) } : {}),
+      });
+      return { code: 0, out: `${JSON.stringify(r, null, 2)}\n`, err: '' };
+    }
     case 'register': {
       const id =
         str(args.flags.session) ?? defaultDerive.session() ?? randomUUID();
@@ -543,7 +558,7 @@ function runSession(args: ParsedArgs): CliResult {
       return {
         code: 2,
         out: '',
-        err: 'session needs an action: register | heartbeat | release | status <id> | list\n',
+        err: 'session needs an action: begin | register | heartbeat | release | status <id> | list\n',
       };
   }
 }

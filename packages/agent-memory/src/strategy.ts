@@ -15,7 +15,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import type {
   ApplyResult,
@@ -36,6 +36,7 @@ import type {
   NodeResolution,
   ReadQuery,
   RouteDecision,
+  SessionBegin,
   SessionEntry,
   SessionStatus,
 } from '@leclabs/agent-runtime';
@@ -265,9 +266,13 @@ export class AgentMemory implements MemoryStrategy {
   ): SessionStatus;
   session(action: 'list', opts?: { stale?: number }): SessionEntry[];
   session(
-    action: 'register' | 'heartbeat' | 'release' | 'status' | 'list',
-    opts: { id?: string; stale?: number } = {},
-  ): SessionEntry | SessionStatus | SessionEntry[] {
+    action: 'begin',
+    opts?: { id?: string; under?: string },
+  ): SessionBegin;
+  session(
+    action: 'register' | 'heartbeat' | 'release' | 'status' | 'list' | 'begin',
+    opts: { id?: string; stale?: number; under?: string } = {},
+  ): SessionEntry | SessionStatus | SessionEntry[] | SessionBegin {
     const home = this.home();
     const staleArgs: [number, number] | [] =
       opts.stale !== undefined ? [Date.now(), opts.stale] : [];
@@ -284,6 +289,26 @@ export class AgentMemory implements MemoryStrategy {
     };
 
     switch (action) {
+      case 'begin': {
+        // The whole session-start sequence, kept INSIDE the strategy: this file
+        // owns the home layout and the store format, so it is the only correct
+        // place to decide whether a migration is owed. A caller composing these
+        // primitives would have to know both.
+        this.migrateIfOwed();
+        const id = opts.id ?? defaultDerive.session() ?? randomUUID();
+        const entry = this.toEntry(registerSession(home, id));
+        const findings = this.audit().findings.length;
+        return {
+          session: entry.id,
+          semantic: this.readStore('SEMANTIC'),
+          procedural: this.readStore('PROCEDURAL'),
+          episodic: this.read({
+            forSession: entry.id,
+            ...(opts.under ? { under: opts.under } : {}),
+          }),
+          consolidationOwed: findings > 0,
+        };
+      }
       case 'register': {
         // register is the one verb that MINTS an id when none is present.
         const id = opts.id ?? defaultDerive.session() ?? randomUUID();
@@ -350,6 +375,27 @@ export class AgentMemory implements MemoryStrategy {
       ...(opts.path !== undefined ? { path: opts.path } : {}),
       ...(retain !== undefined ? { retain } : {}),
     });
+  }
+
+  /** Read a prose store whole; absent reads as empty (a fresh home is not an error). */
+  private readStore(store: 'SEMANTIC' | 'PROCEDURAL'): string {
+    const p = join(this.home(), `${store}.md`);
+    return existsSync(p) ? readFileSync(p, 'utf-8') : '';
+  }
+
+  /**
+   * Perform any store-format migration this strategy owes, idempotently. THIS is
+   * where format knowledge belongs: the legacy markdown log predates the jsonl
+   * stream, and only the strategy knows both. A caller that had to ask "is a
+   * migration owed?" would be reasoning about a file format it must not see.
+   */
+  private migrateIfOwed(): void {
+    const home = this.home();
+    const legacy = join(home, 'EPISODIC.md');
+    const current = join(home, 'EPISODIC.jsonl');
+    if (existsSync(legacy) && !existsSync(current)) {
+      this.migrate(legacy, current);
+    }
   }
 
   /**
