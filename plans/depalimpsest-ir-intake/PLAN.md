@@ -5,7 +5,7 @@
 > **Anchor owed.** `depalimpsest-ir-intake` is the operator's working handle, not a discovered anchor.
 > Cold-derive before it canonizes (cratylism: names are discovered, never decided).
 
-**Status: PROPOSED — sharded, wave 0 ready, nothing dispatched.**
+**Status: IN-FLIGHT — waves 0 and 1 landed (S1, S2, S5, S7, S3). S4 active; S6 pending.**
 
 ## Intent
 
@@ -55,7 +55,7 @@ deletion happens only once nothing live points into the doomed tree.
 | **S2** | `event-vocabulary-rehome`   | vocabulary   | —          | 0    | **completed** | `87c0f79` |
 | **S5** | `module-scan-subpath`       | package-seam | —          | 0    | **completed** | `927d484` |
 | **S7** | `readme-reground`           | doc          | —          | 0    | **completed** | `523e3ad` |
-| **S3** | `hooks-serializer-extract`  | projection   | S2         | 1    | ready         | —         |
+| **S3** | `hooks-serializer-extract`  | projection   | S2         | 1    | **completed** | `716cfdb` |
 | **S4** | `adapter-barrel-split`      | adapters     | S3         | 2    | pending       | —         |
 | **S6** | `ir-lineage-excise`         | excision     | S1, S4, S5 | 3    | pending       | —         |
 
@@ -96,6 +96,39 @@ is "X no longer depends on Y."
   legacy generator's file-reader — which S6 deletes anyway.
 - **Biome, not prettier, owns JSON here** (`biome check --staged` in pre-commit). Pre-existing biome debt
   in `agent-forge/package.json` surfaces on first touch.
+
+### Wave 1 — the braid is cut
+
+`716cfdb`. The serializer now lives at `adapters/claude/hooks.ts`, typed against S2's `core/hook/` home;
+`write.ts` calls the **same** function, so there is one emitter, not two. Verified independently with the
+control the shard demanded: the closure from `adapters/claude/anatomy.ts` reaches `write.ts` **YES at
+HEAD~1 (59 modules) → NO at HEAD (57)**.
+
+Two things the shard did not anticipate, both handled correctly:
+
+- **The braid had a second strand.** The serializer also depended on `ClaudeHook` (the adapter-private
+  `if`/`env`/`kind` extension) defined in `read.ts`, whose own closure runs through `core/index.js` into
+  `core/ir`. Extracting only the serializer would have left the live path reaching the IR lineage via
+  `read.ts` instead of `write.ts` — the same defect one file over. Relocated into `hooks.ts`; `read.ts`
+  now imports it. Relocation, not deletion — S6's territory intact.
+- **A substring grep would have reported this shard FAILING.** `git grep "write\.ts" -- anatomy.ts` still
+  hits, on a prose mention in a header comment. Grep says dirty; resolution says clean; resolution is
+  right. The inverse of the wave-0 error, and further reason to prefer the reachability oracle.
+
+**My dispatch spec for S3 named a vacuous entry point** (`project/index.ts`), for the same reason S4's
+did: the projection core takes `HarnessAdapter` as an injected parameter and never imports an adapter, so
+its closure is 13 modules and reached `write.ts` = NO before any work. Caught independently by the
+executor and by me, minutes apart. Standing correction now applied: **run every falsifier against HEAD at
+authoring and confirm it fails.**
+
+### Out of scope, found in passing — a third hook-block shape
+
+`packages/agent-runtime/src/capabilities/event-tap/claude-serialize.ts` declares its **own**
+`ClaudeHooksBlock` and serializer. It does not import agent-forge and serializes `LifecycleEvent` rather
+than `Hook`, so it is a separate lineage — **not** the fork this plan forbids, and correctly left alone.
+But it is a second hand-maintained copy of the Claude settings hook-block shape, and
+`plans/agent-runtime/PLAN.md:26` already records the coupling question as FORK-1. Wants its own census;
+not scoped here.
 
 ## Scale
 
