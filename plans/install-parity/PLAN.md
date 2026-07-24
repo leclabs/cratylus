@@ -5,8 +5,15 @@ executable and independently verifiable.
 
 **Status 2026-07-23.** Design settled + operator-corrected (projection runs at the consumer's build
 time; `agent-canon` is a build-time plugin shipping as code). Fleet clean-slate **DONE** — all 7 hosts
-purged of project artifacts, memory homes preserved. Remote-fleet distribution **DEFERRED** (verdaccio
-is the target mechanism; not a prerequisite).
+purged of project artifacts, memory homes preserved.
+
+**Status 2026-07-24 — SCOPE CUT (operator).** Remote-fleet distribution is **not agent-factory's
+concern at all**, and verdaccio is **RETIRED** (DESIGN §7 rewritten net-current). Distribution is
+npm's: dev versions published from GitHub PR builds, installed on the home lab only if needed;
+otherwise wait for the merge and install the stable release from the public registry the standard
+way. Cross-host orchestration is an operator-local home-lab tool, and its present ephemeral form
+(`fleet-deploy.sh`) is sufficient until then. No interim mechanism gets built — the interim was only
+ever a stand-in for a registry we are about to have.
 
 ## Progress
 
@@ -19,6 +26,7 @@ is the target mechanism; not a prerequisite).
 | S5 `agent-canon` installable        | **DONE**                          | `b84c959` |
 | S6 local dev-loop parity            | **DONE** — falsifier actually run | see below |
 | S7 compose → render tree            | **DONE**                          | `650480e` |
+| S8 deploy is local-only             | **READY**                         | —         |
 
 ### S6 — `pnpm add -g .` LINKS, it does not copy
 
@@ -261,6 +269,43 @@ make deploy work outside the workspace.
 
 ---
 
+## S8 — `deploy` is local-only (the stage-ontology cut)
+
+**Defect.** `deploy` carries two concerns that map to **no stage** of the pipeline ontology: package
+**distribution** (a precondition to `init`) and **fleet iteration** (an outer loop over the whole
+pipeline). Neither has a live caller — `fleet-deploy.sh`, the endorsed path, ssh's to each host itself
+and invokes `agent-forge deploy … --no-runtime-install` **locally** there. See _Distribution tail_ above
+for the derivation.
+
+**Fix.** Remove every concern outside the ontology; keep `deploy` = place a render tree into the local
+`.claude/` root.
+
+- Delete `deploy/runtime-install.ts` (both `installRuntimeLocal` and `installRuntimeSsh`,
+  `buildRuntimeBundle`, the fingerprint stamp) and `deploy/ssh.ts`.
+- Delete `deployRemote`, `deployFleet`, `deployHost`'s locality branch, and the `runtimeInstall` /
+  `runtimePrefix` / `monorepoRoot` / `runtimeBundle` options from `DeployOpts`.
+- Delete the host/fleet topology in `deploy/config.ts` (`resolveHost`, `fleetTargets`, `HostParams`) and
+  the `deploy` field's topology role in `config/config.ts` (`deployTopologyOf`, `toAgentFactoryConfig`).
+- Delete the `--host` / `--user` / `--fleet` / `--exclude` / `--no-runtime-install` CLI surface.
+- Delete `test/deploy/{fleet,runtime-install,config}.test.ts` and the remote legs of `cli.test.ts`,
+  `integrate-smoke.test.ts`, `helpers.ts`, `test/config/loader.test.ts`.
+
+**Constraint — deletion, not deprecation.** No compatibility shim, no `@deprecated` alias, no flag that
+accepts-and-ignores. Grey-field: the incumbent has no standing, and a retained-but-dead surface is the
+palimpsest this shard exists to remove. `.agent-factory.config` goes with it (its rot is listed under
+_Carried forward_; it is removed, not repaired).
+
+**Outputs.** `agent-forge deploy` with a local-only surface; `packages/agent-forge/src/deploy/` free of
+ssh and of any monorepo-packing; the full corpus suite green.
+
+**Completion criteria (falsifier).** REJECTED if `rg -n 'ssh|scp|pnpm pack|fleet' packages/agent-forge/src`
+returns a live (non-comment) hit; if any deleted flag still parses instead of erroring as unknown; if a
+deprecation shim ships in place of a deletion; if `deploy` still resolves a host by name; or if the
+suite is made green by deleting an assertion rather than the surface it covered. The grep control must
+be non-vacuous — prove it matches before the cut.
+
+---
+
 ## Retired by this plan
 
 The `pnpm pack` → `scp` → remote `npm install -g` path, its fingerprint stamp, and its
@@ -275,11 +320,47 @@ interactive-shell prefix probe. Superseded by per-host build + install; see DESI
 - `.agent-factory.config` is gitignored, its committed example has drifted, and its cited schema doc
   does not exist.
 
-## Open distribution tail (encapsulation gap, 2026-07-24)
+## Distribution tail — CLOSED by the stage ontology (2026-07-24)
 
-The fleet consumer-path deploy was executed from an ephemeral `/tmp` script all session — NOT
-encapsulated. Rescued to `plans/install-parity/fleet-deploy.sh` so the workflow survives. It is the
-pragmatic fleet form of the consumer path (pack centrally → ship tarballs → per-host
-`npm install → init → project → deploy`, no monorepo), and the concrete replacement for
-`runtime-install.ts`'s retired scp path. **Open:** first-class it as an `agent-forge fleet-deploy`
-command (design work), then delete `runtime-install.ts`'s scp half per DESIGN §4.
+The fleet consumer-path deploy was executed from an ephemeral `/tmp` script, rescued to
+`plans/install-parity/fleet-deploy.sh` so the workflow survives. The open item was to first-class it
+as an `agent-forge fleet-deploy` command. **That item is retired, not deferred** — and the operator's
+descope is not the only reason. The package's own **stage ontology** rules it out by construction.
+
+The stages, in their own definiens (forge CLI ⊕ ENGINE):
+
+| stage     | definiens                                                                                                  |
+| --------- | ---------------------------------------------------------------------------------------------------------- |
+| `init`    | bootstrap `.agent-forge/` + scaffold `agents.config.ts`                                                    |
+| `add`     | wire a plugin package into `extends`                                                                       |
+| `compose` | load the config, resolve the plugin set (config-is-code)                                                   |
+| `project` | materialize the resolved set into a **render tree**                                                        |
+| `compile` | IR → client artifacts                                                                                      |
+| `deploy`  | ship a projected render tree to a host `.claude/` root — ENGINE: `inject(content(c), realize(…, adapter))` |
+
+Ask of each disputed concern **which stage it is**. Three answers, all "none":
+
+- **Package installation is a PRECONDITION, not a stage.** `init` cannot run until the CLI exists.
+  `runtime-install.ts` is therefore outside the ontology — it entered only because no registry was
+  available to be the precondition instead. A registry now is; the module goes.
+- **Fleet iteration is an OUTER LOOP over the whole pipeline**, one iteration per host — exactly the
+  shape of `fleet-deploy.sh` (per host: install packages, then `init → project → deploy` locally).
+  The script is the loop; forge is the loop **body**. A loop does not belong inside its own body.
+- **Remote placement collapses into that loop.** `deploy`'s Target is a `.claude/` root resolved by
+  `userScope`/`projectScope` — a directory. Reaching another machine's directory is transport, and the
+  outer loop already crossed that boundary by ssh-ing there. Two ways to cross one boundary is the
+  palimpsest, so the ssh placement backend goes with it.
+
+**Boundary, stated positively:** `agent-forge deploy` places a render tree into the **local**
+`.claude/` root. Getting the packages onto a host is **npm's**; doing it on N hosts is the
+**operator's loop**. Neither is a stage, so neither is agent-factory's.
+
+**Consequent cut — S8 below:** delete `deploy/runtime-install.ts`,
+`deploy/ssh.ts`, `deployRemote`, `deployFleet`, the host/fleet topology in `deploy/config.ts`, and the
+`--host`/`--user`/`--fleet`/`--exclude`/`--no-runtime-install` CLI surface. This also dissolves the
+rotting `.agent-factory.config` (gitignored, committed example drifted, cited schema doc absent) —
+already listed under _Carried forward_ as a known rot, now removed rather than repaired.
+
+`fleet-deploy.sh` stays with this plan as the operator-local ephemeral it is; it rides into
+`.retired/` with the plan and remains runnable and versioned there. It is not agent-factory's
+artifact, so it gets no home in the product tree.

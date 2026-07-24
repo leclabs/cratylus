@@ -294,41 +294,36 @@ These are already logged in `plans/agent-runtime/PLAN.md:33-36`; this work force
 deploy never prunes and the retire step only removes the directory when empty. Any agent reading that
 skill is following instructions to a removed binary.
 
-## 7. Remote fleet distribution before a public registry
+## 7. Distribution is not agent-factory's concern
 
-The question: with no registry, how does a _remote_ host install our packages the way a consumer would?
+The question this section used to ask — with no registry, how does a _remote_ host install our packages
+the way a consumer would? — is **dissolved, not answered** (operator, 2026-07-24).
 
-**There is no `ssh:host:path` package protocol.** npm/pnpm accept `file:`/`link:` (same filesystem),
-`git+ssh://` (a git remote, not an arbitrary path), and `https://` tarball URLs. Nothing resolves a
-package over a bare ssh path.
+**Distribution is npm's.** Dev versions are published from GitHub PR builds and installed on the home
+lab only if a change is needed before merge; otherwise the merge lands a stable release and the home lab
+installs it from the public registry the standard way. Every candidate interim mechanism — a private
+registry (verdaccio, over an ssh reverse tunnel), `git+ssh://` against the monorepo with a `prepare`
+script, packed tarballs shipped by scp — existed **only** to stand in for a registry. Building one now
+buys an elaborate temporary apparatus for the short window before we have the real thing, so none is
+built. Verdaccio is **retired as a target**, not deferred.
 
-**The industry-standard answer is a private registry — Verdaccio.** It is the default choice for
-exactly this situation: a lightweight npm registry that proxies upstream npm and hosts your own scopes.
-It gives _true_ parity, because the consumer command becomes literally the consumer command:
+**Cross-host orchestration is the operator's.** Running the pipeline on N hosts is a home-lab-specific
+tool, not a product feature. Its present ephemeral form (`plans/install-parity/fleet-deploy.sh`) is
+sufficient for the interim: per host, install the packages, then run the ordinary consumer sequence
+`init → project → deploy` locally.
 
-```
-# on the build host
-verdaccio &                                     # :4873, proxies npmjs upstream
-pnpm -r publish --registry http://localhost:4873
+**Why this is structural and not merely a scheduling call.** Both retired concerns map to **no stage of
+the pipeline ontology** (`init · add · compose · project · compile · deploy`). Installing the packages
+is a **precondition** to the pipeline — `init` cannot run before the CLI exists. Iterating hosts is an
+**outer loop** over the entire pipeline; `fleet-deploy.sh` _is_ that loop, and forge is its body. And
+remote _placement_ collapses into the same loop: `deploy`'s Target is a `.claude/` root resolved by
+`userScope`/`projectScope` — a directory — so reaching another machine's directory is transport the
+outer loop already performed by ssh-ing there. Crossing one boundary two ways is the palimpsest.
 
-# on each fleet host — over an ssh reverse tunnel, no public exposure
-ssh -R 4873:localhost:4873 <host>
-npm i -g @leclabs/<cli> --registry http://localhost:4873
-```
-
-This is the strongest available parity short of publishing: same registry protocol, same resolver, same
-`npm i -g`, same `workspace:*` → concrete-range rewriting on publish. It also exercises the publish path
-itself, which would have caught the broken `changeset publish` described in §5.
-
-**A second option, no daemon:** `git+ssh://` against the monorepo, with a `prepare` script so npm builds
-on install. Weaker — it needs each package to be independently installable from a repo subdirectory,
-which a monorepo does not give you for free.
-
-**Sequencing decision (operator's, adopted):** defer remote-fleet distribution. Verdaccio is the target
-mechanism when it is needed and should not be re-litigated then; but it is _not_ a prerequisite for the
-work that matters now. Local development parity via `pnpm add -g .` plus `tsup --watch` is the focus,
-because it is where the architecture is actually validated — and because the capability-declaration
-defect (§3) and the canon-build defect (§1) must be fixed regardless of how bits reach a remote host.
+**Consequence for §4.** The retirement of the `pnpm pack` → `scp` → remote `npm install -g` path is no
+longer conditional on a replacement being first-classed inside forge. There is no replacement inside
+forge, by design: `agent-forge deploy` places a render tree into the **local** `.claude/` root, and
+everything outside that is npm's or the operator's.
 
 ## 8. Method
 
