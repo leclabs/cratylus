@@ -13,7 +13,15 @@
 const ENTRY_RE =
   /exemplif|optimi[sz]e|conceptuali[sz]e|signify|materiali[sz]e/i;
 
-/** Candidate module homes outside the public core/engine surfaces. */
+/**
+ * Candidate module homes an exemplify/optimize entrypoint could occupy.
+ *
+ * depalimpsest-ir-intake S6: the probe used to also enumerate `src/core`'s
+ * barrel and `src/core/engine`. Both are gone — the engine belonged to the
+ * excised IR-intake lineage, and the core barrel was deleted with it (it had
+ * no remaining source consumer). The probe now names defining modules only,
+ * never a barrel.
+ */
 const CANDIDATE_HOMES = [
   '../../../src/exemplify/index.js',
   '../../../src/optimize/index.js',
@@ -30,24 +38,6 @@ export interface PipelineProbe {
 export async function probePipeline(): Promise<PipelineProbe> {
   const searched: string[] = [];
   const found: string[] = [];
-
-  const core = (await import('../../../src/core/index.js')) as Record<
-    string,
-    unknown
-  >;
-  const engine = (await import('../../../src/core/engine/index.js')) as Record<
-    string,
-    unknown
-  >;
-  for (const [home, mod] of [
-    ['src/core (public surface)', core],
-    ['src/core/engine', engine],
-  ] as const) {
-    for (const member of Object.keys(mod)) {
-      searched.push(`${home}#${member}`);
-      if (ENTRY_RE.test(member)) found.push(`${home}#${member}`);
-    }
-  }
 
   for (const home of CANDIDATE_HOMES) {
     const spec: string = home; // widened: resolved at runtime, not by tsc

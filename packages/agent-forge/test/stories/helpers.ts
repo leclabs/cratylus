@@ -1,5 +1,5 @@
 /**
- * Story-test harness for the interop-hardening coverage wave.
+ * Story-test harness for the story library.
  *
  * Every test in test/stories/E<n>/ MUST be declared through `story` /
  * `story.tracked` — never bare `it`/`test` (enforced by coverage.test.ts).
@@ -21,23 +21,6 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { it } from 'vitest';
 
-import { aiderAdapter } from '../../src/adapters/aider/index.js';
-import { ampAdapter } from '../../src/adapters/amp/index.js';
-import { claudeAdapter } from '../../src/adapters/claude/index.js';
-import { clineAdapter } from '../../src/adapters/cline/index.js';
-import { codexAdapter } from '../../src/adapters/codex/index.js';
-import { continueAdapter } from '../../src/adapters/continue/index.js';
-import { copilotAdapter } from '../../src/adapters/copilot/index.js';
-import { crushAdapter } from '../../src/adapters/crush/index.js';
-import { cursorAdapter } from '../../src/adapters/cursor/index.js';
-import { devinAdapter } from '../../src/adapters/devin/index.js';
-import { geminiAdapter } from '../../src/adapters/gemini/index.js';
-import { kiloAdapter } from '../../src/adapters/kilo/index.js';
-import { opencodeAdapter } from '../../src/adapters/opencode/index.js';
-import { piAdapter } from '../../src/adapters/pi/index.js';
-import { standardsAdapter } from '../../src/adapters/standards/index.js';
-import { zedAdapter } from '../../src/adapters/zed/index.js';
-import type { Adapter } from '../../src/core/index.js';
 import { EXCLUDED, STORY_IDS } from './registry.js';
 
 export const TRACKED_TAG = '[TRACKED-FAILING]';
@@ -70,38 +53,6 @@ story.tracked = (id, name, fn, timeout) => {
   assertKnown(id);
   it.fails(`${id} · ${name} ${TRACKED_TAG}`, fn, timeout);
 };
-
-/** All shipped adapters, id-sorted. */
-export const ALL_ADAPTERS: Adapter[] = [
-  aiderAdapter,
-  ampAdapter,
-  claudeAdapter,
-  clineAdapter,
-  codexAdapter,
-  continueAdapter,
-  copilotAdapter,
-  crushAdapter,
-  cursorAdapter,
-  devinAdapter,
-  geminiAdapter,
-  kiloAdapter,
-  opencodeAdapter,
-  piAdapter,
-  standardsAdapter,
-  zedAdapter,
-].sort((a, b) => a.id.localeCompare(b.id));
-
-/**
- * Id → adapter, alias-inclusive: a renamed harness resolves through EITHER
- * its legacy id or its field-canonical id to the identical object (E10.S5;
- * `Adapter.status.{canonicalId,aliases}`).
- */
-export const adapterById = new Map<string, Adapter>();
-for (const a of ALL_ADAPTERS) {
-  adapterById.set(a.id, a);
-  if (a.status.canonicalId) adapterById.set(a.status.canonicalId, a);
-  for (const alias of a.status.aliases ?? []) adapterById.set(alias, a);
-}
 
 /** Fresh tmp dir; caller removes (rmSync recursive) in afterEach. */
 export function makeTmpDir(prefix = 'af-stories-'): string {

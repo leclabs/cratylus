@@ -6,12 +6,16 @@ agents as anatomy dimension-vectors; ambiguity about dimension values → `ELICI
 invented answer). ρ=LLM. Contracts: `~/.claude/skills/exemplify/SKILL.md` (accept gate: REC_R ≽,
 minimal, conform; R3 routing manifest), anatomy types
 `packages/agent-forge/src/anatomy/index.ts` (`Agent` = 24-dimension vector, `Skill` = formal cell).
-Operator rulings in force: **rules are a first-class resource through the pipeline** — the most
-generic context fragment, heavy overlap with AGENTS.md bodies — and optimization reaches ALL
-targets including rule-only harnesses (S6, S8). **Two-step agent law**: step 1 = raw import maps
-foreign agent NL verbatim onto the `archetype` dimension (E1.S8); step 2 = exemplify+elicit elevates to
-the full 24-dimension vector, which then REPLACES the config-IR agent as the single source of truth
-(S3; round-trip consequence in E4.S8).
+
+**depalimpsest-ir-intake S6 (2026-07).** The IR-intake lineage was excised. Two Operator rulings
+this epic carried were rulings ABOUT that lineage and lapse with it: "rules are a first-class
+resource through the pipeline, reaching ALL compile targets including rule-only harnesses"
+(S6, S8 — both RETIRED below), and the two-step agent law's step 1 ("raw import maps foreign
+agent NL verbatim onto the `archetype` dimension", E1.S8, with its round-trip consequence in
+E4.S8). What survives of the two-step law is step 2, which no longer depends on step 1: exemplify
+
+- elicit elevates a free-text description to the full 24-dimension vector, and the accepted vector
+  is the agent's single source of truth (S3).
 
 ---
 
@@ -41,13 +45,12 @@ P: fixture: prose description of a multi-step procedure (no structure).
 - Round-trip: the formal block alone (no source prose) suffices for a blind reader to re-derive
   the procedure's steps (equivalence spot-check against a pinned answer key).
 
-## E6.S3 · agent elevation — step-1 archetype form → full 24-dimension vector, which replaces the config-IR agent
+## E6.S3 · agent elevation — free-text description → full 24-dimension vector, which is the agent's source of truth
 
-A: CURATOR · G: a step-1 agent (archetype dimension carrying the raw NL verbatim, E1.S8 — or a fresh
-free-text description) is elevated by exemplify+elicit to a typed dimension-selection vector; the
-accepted vector becomes the agent's single source of truth.
-P: fixture: E1.S8's imported step-1 agent AND a paragraph describing a reviewer-ish agent with
-explicit archetype, objective, and tooling cues; anatomy package importable.
+A: CURATOR · G: a free-text agent description is elevated by exemplify+elicit to a typed
+dimension-selection vector; the accepted vector becomes the agent's single source of truth.
+P: fixture: a paragraph describing a reviewer-ish agent with explicit archetype, objective, and
+tooling cues; anatomy package importable.
 ✓:
 
 - Output is a TS module exporting `Agent` (anatomy shape) that **tsc-compiles** against
@@ -55,10 +58,10 @@ explicit archetype, objective, and tooling cues; anatomy package importable.
   correct dimension literal or `null`.
 - Every non-null dimension value carries a provenance note tracing to input evidence (a quoted span
   or an explicit inference tag); a dimension value with no trace = FAIL.
-- **Replacement semantics**: on accept, the vector REPLACES the config-IR agent — post-elevation
-  repo state holds exactly one source form per agent (the vector; a lingering config-IR twin =
-  FAIL). The replacement is additive/no-loss: the step-1 archetype content is fully recoverable
-  from the vector (REC ≽ against the step-1 form, checked by the exemplify gate).
+- **Replacement semantics**: on accept, the vector is the agent's one source form — post-elevation
+  repo state holds exactly one source form per agent (a lingering parallel twin = FAIL). The
+  replacement is additive/no-loss: the source description's content is fully recoverable from the
+  vector (REC ≽ against the source form, checked by the exemplify gate).
 
 ## E6.S4 · ambiguous dimension value ⇒ `ELICIT:` marker, never an invented answer
 
@@ -82,50 +85,35 @@ P: E6.S1's accepted output as input.
 - Second run's accept passes with `routes[]` all `reuse`, `delta[] = ∅`, and byte-identical
   artifacts (or a semantically-empty diff per the pinned equivalence checker).
 
-## E6.S6 · optimized artifacts project to EVERY target — rule-only harnesses included
+## E6.S6 · RETIRED — optimized artifacts project to EVERY target
 
-A: FLEET · G: the optimized cell/vector/rule-set rides the normal compile path to ALL targets;
-the vector is the source, projected per-target (never a parallel config-IR copy).
-P: E6.S2 skill + E6.S3 accepted vector + E6.S8 optimized rules; targets = every manifest target,
-including rule-only harnesses (aider, second-tier AGENTS.md readers).
+**RETIRED (depalimpsest-ir-intake S6).** This story asserted that the optimized cell/vector/rule
+set rides the `compile` path to every adapter target, rule-only harnesses included. `compile`, the
+IR, and the 16-adapter roster were excised; the story has no subject left and no test may reference
+its id. It also carried `projectVector` (anatomy vector → IR agent), a dead vestige swept in the
+same shard.
+
+## E6.S7 · optimization is lossless-by-the-ledger
+
+A: OWNER · G: an owner can optimize raw context and still prove nothing was semantically dropped
+between raw and optimized.
+P: E6.S1 optimize over a raw human-register source.
 ✓:
 
-- Compile succeeds; each emitted SKILL.md remains spec-valid at destination (`skills-ref
-validate` on every emitted copy); agent bodies are per-target PROJECTIONS of the vector
-  (projection pinned; R=LLM register survives — no adapter "humanizes" content).
-- Rule-only targets receive the exemplify-optimized R=LLM rule bodies through their rules
-  surface; coverage check: **zero targets are excluded from optimization** on the ground of
-  lacking skill/agent support.
-- Per-resource unsupport still follows E4.S2/E5.S7 loudness (skip named), but never excludes the
-  target from the resources it does read.
+- The R3 manifest's `routes ∪ delta` covers every concept the conceptualize stage extracted
+  (coverage equation `routes ∪ delta = C_R` checked mechanically, digest-exact, via
+  `checkCoverage`); a consciously delta'd concept appears on the ledger as delta, never silently
+  dropped.
 
-## E6.S7 · optimization is opt-in and lossless-by-the-ledger
+**Narrowed (depalimpsest-ir-intake S6).** This story also asserted a documented
+`import` → optimize → `compile` flow end-to-end in one session, and that the raw, un-optimized
+`compile` remained available unchanged (optimization never a forced pass). Both legs asserted the
+excised IR pipeline. The ledger leg above is the half whose subject survives and is kept with its
+assertions intact.
 
-A: OWNER · G: an owner can import raw config, optimize, and still prove nothing was semantically
-dropped between raw and optimized.
-P: E1.S1 import → E6.S1 optimize.
-✓:
+## E6.S8 · RETIRED — rules through exemplify
 
-- A documented flow (`import` → optimize → `compile`) exists end-to-end in one session; the R3
-  manifest's `routes ∪ delta` covers every concept the conceptualize stage extracted from the raw
-  import (coverage equation checked mechanically).
-- Raw, un-optimized compile remains available unchanged (optimization never becomes a forced
-  pass).
-
-## E6.S8 · rules through exemplify — first-class, to every rule-bearing target
-
-A: CURATOR · G: rules — the most generic context fragment — ride the same pipeline as
-agents/skills/hooks: raw rule prose → exemplify → R=LLM rule bodies emitted to every target that
-reads rules, including rule-only harnesses.
-P: raw human-register rule prose (the E6.S1 fixture routed to Rule resources); targets = every
-adapter with rules ≥ partial + the E7 standards outputs (AGENTS.md/CLAUDE.md class).
-✓:
-
-- Optimized Rule bodies pass the exemplify accept gate (conform: register = ρ = LLM) and compile
-  into each dialect's rules surface (AGENTS.md, CLAUDE.md-projection, GEMINI.md, aider
-  conventions+`read:` wiring, `.continue/rules/`); emitted bodies are the optimized text verbatim
-  (byte-check — no adapter re-humanizes).
-- Rule-only targets (no skills/agents support) receive the optimized bodies; assertion: the set
-  {targets receiving optimized rules} = {targets with rules ≥ partial} exactly.
-- Activation/placement metadata (E9.S2) survives optimization untouched (optimization rewrites
-  bodies, never scoping).
+**RETIRED (depalimpsest-ir-intake S6).** This story asserted `optimizeRules` rewriting IR `Rule`
+bodies and compiling them into each dialect's rules surface. The IR `Rule`, its only producer
+(`import`), its only consumer (`compile`), and `optimizeRules` itself are all gone. No test may
+reference this id.

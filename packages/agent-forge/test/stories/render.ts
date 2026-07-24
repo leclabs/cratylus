@@ -45,7 +45,7 @@ export function renderMap(refs: StoryRef[]): string {
   }
 
   const lines: string[] = [];
-  lines.push('# story↔test map — interop-hardening coverage wave');
+  lines.push('# story↔test map — the agent-forge story library');
   lines.push('');
   lines.push(
     'GENERATED — do not hand-edit. Regenerate: `pnpm exec tsx test/stories/tools/render-map.ts`',

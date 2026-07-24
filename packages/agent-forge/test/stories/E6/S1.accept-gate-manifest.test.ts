@@ -19,7 +19,7 @@ import {
   ExemplifyRefusal,
   classifyRegister,
   optimize,
-} from '../../../src/core/index.js';
+} from '../../../src/core/exemplify/index.js';
 import { makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 

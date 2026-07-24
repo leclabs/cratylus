@@ -1,36 +1,23 @@
 /**
- * Canonical story registry for the interop-hardening story library.
+ * Canonical story registry for the story library.
  * Source of truth: test/stories/ (COVERAGE.md + E*.md).
- * 81 stories, 10 epics; 3 excluded-by-marker from this coverage-test wave.
- * (Pi graduated 2026-07: E5.S8 live, E10.S8–S10 added, E10.S10 FUTURE.)
+ *
+ * depalimpsest-ir-intake S6 (2026-07): the IR-intake lineage was excised, and
+ * with it nine of the ten epics — E1–E5, E7–E10 were all harness-interop
+ * stories over `import`/`compile`/the 16-adapter roster, whose entire subject
+ * is gone. E6 (exemplify-optimization) is the one epic whose subject survives:
+ * `src/core/exemplify/` and the `optimize` verb. Within E6, two stories were
+ * retired with the lineage they rode (see EXCLUDED).
  */
 
-export type Exclusion = 'FUTURE' | 'RESEARCH-GATED';
+export type Exclusion = 'FUTURE' | 'RESEARCH-GATED' | 'RETIRED';
 
 export const EPICS: Record<string, string> = {
-  E1: 'harness-import',
-  E2: 'ir-emission',
-  E3: 'reimport',
-  E4: 'roundtrip',
-  E5: 'plugin-adapters',
   E6: 'exemplify-optimization',
-  E7: 'standards-reach',
-  E8: 'divergence-fixes',
-  E9: 'ir-expressiveness',
-  E10: 'adapter-roster',
 };
 
 const COUNTS: Record<string, number> = {
-  E1: 8,
-  E2: 7,
-  E3: 6,
-  E4: 8,
-  E5: 8,
   E6: 8,
-  E7: 10,
-  E8: 10,
-  E9: 6,
-  E10: 10,
 };
 
 export const STORY_IDS: readonly string[] = Object.entries(COUNTS).flatMap(
@@ -39,9 +26,12 @@ export const STORY_IDS: readonly string[] = Object.entries(COUNTS).flatMap(
 
 /** Excluded-by-marker (COVERAGE.md, on the record): no test may reference these. */
 export const EXCLUDED: Record<string, Exclusion> = {
-  'E5.S6': 'FUTURE',
-  'E9.S5': 'FUTURE',
-  'E10.S10': 'FUTURE',
+  // Both rode the IR compile path: S6 asserted optimized artifacts projecting
+  // to every adapter target through `compile`, S8 asserted `optimizeRules`
+  // rewriting IR `Rule` bodies. Both subjects were excised in S6 of
+  // depalimpsest-ir-intake; the ids stay so the numbering keeps its meaning.
+  'E6.S6': 'RETIRED',
+  'E6.S8': 'RETIRED',
 };
 
 export const TESTABLE_IDS: readonly string[] = STORY_IDS.filter(

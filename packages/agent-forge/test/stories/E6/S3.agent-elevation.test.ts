@@ -1,18 +1,23 @@
 /**
- * E6.S3 — agent elevation: step-1 archetype form → full 22-dimension vector, which
- * REPLACES the config-IR agent (two-step agent law, Operator ruling).
+ * E6.S3 — agent elevation: a free-text source form → full 22-dimension vector,
+ * which becomes the agent's one source of truth.
+ *
+ * depalimpsest-ir-intake S6: the "step-1" of the two-step agent law was `import`
+ * mapping foreign agent NL onto a dimension — that lineage is excised, so the
+ * source form below is simply a free-text persona file. `elevateAgent`'s
+ * behavior is unchanged and every assertion here is unchanged.
  *
  * GRADUATED: the elevation frame ships in `src/core/exemplify/` (`elevateAgent`).
- * The SPEC below is the LLM exemplify+elicit pass's output over the step-1
- * text (the test plays the operating agent); the frame enforces the
+ * The SPEC below is the LLM exemplify+elicit pass's output over the source text
+ * (the test plays the operating agent); the frame enforces the
  * mechanical laws: 22-key completeness, never-invent (every concrete value
  * carries a provenance trace — a quote is verified against the source),
- * replacement no-loss (REC ≽: the step-1 NL recoverable from the vector),
- * and single-source replacement (the step-1 file is removed on accept).
+ * replacement no-loss (REC ≽: the source NL recoverable from the vector),
+ * and single-source replacement (the source file is removed on accept).
  *
  * `archetype` and `provenance` are NOT `Dimension` fragment members (D13/D3) — the
  * `ElevationSpec.dimensions` record is keyed by the 22 fragment dimensions only, so
- * this SPEC carries the step-1 raw NL on `objective` (an `open` scalar dimension)
+ * this SPEC carries the source raw NL on `objective` (an `open` scalar dimension)
  * rather than on a `archetype` dimension key (which the frame would now refuse as
  * unknown).
  *
@@ -36,7 +41,7 @@ import {
   canonicalText,
   elevateAgent,
   renderAgentVector,
-} from '../../../src/core/index.js';
+} from '../../../src/core/exemplify/index.js';
 import { makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
@@ -97,8 +102,8 @@ story(
   },
 );
 
-/** A step-1 agent: the foreign NL verbatim on the archetype dimension (E1.S8). */
-const STEP1_PERSONA =
+/** The free-text source form: a persona paragraph, no structure. */
+const SOURCE_PERSONA =
   'A meticulous reviewer agent: reads every migration, flags destructive ' +
   'DDL, prefers small reversible steps, and always explains its reasoning.';
 
@@ -112,19 +117,19 @@ const inheritAll = (): Record<Dimension, DimensionPlan> =>
   ) as Record<Dimension, DimensionPlan>;
 
 /** The LLM exemplify+elicit pass's output: evidence-traced dimension selections.
- *  Quotes are verbatim spans of STEP1_PERSONA (the frame verifies). */
+ *  Quotes are verbatim spans of SOURCE_PERSONA (the frame verifies). */
 const SPEC: ElevationSpec = {
   name: 'reviewer',
   dimensions: {
     ...inheritAll(),
     // No `archetype` key: archetype is a plain identity field now (D13), not an
     // `Dimension` fragment — the frame refuses an unrecognized dimension key. The
-    // step-1 raw NL is instead carried verbatim on `objective` (an `open`
+    // source raw NL is instead carried verbatim on `objective` (an `open`
     // scalar dimension), which satisfies replacement no-loss (REC ≽).
     objective: {
       kind: 'value',
-      fragments: [{ slug: 'migration-reviewer', definiens: STEP1_PERSONA }],
-      evidence: { type: 'quote', note: STEP1_PERSONA },
+      fragments: [{ slug: 'migration-reviewer', definiens: SOURCE_PERSONA }],
+      evidence: { type: 'quote', note: SOURCE_PERSONA },
     },
     role: {
       kind: 'value',
@@ -169,7 +174,7 @@ const SPEC: ElevationSpec = {
 let cwd: string;
 beforeEach(() => {
   cwd = makeTmpDir();
-  writeFileSync(join(cwd, 'step1-agent.md'), STEP1_PERSONA, 'utf8');
+  writeFileSync(join(cwd, 'source-agent.md'), SOURCE_PERSONA, 'utf8');
 });
 afterEach(() => {
   rmSync(cwd, { recursive: true, force: true });
@@ -177,12 +182,12 @@ afterEach(() => {
 
 story(
   'E6.S3',
-  'exemplify+elicit elevates the step-1 archetype to a compiling 22-dimension vector with a provenance trace per non-null dimension',
+  'exemplify+elicit elevates a free-text source form to a compiling 22-dimension vector with a provenance trace per non-null dimension',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
     elevateAgent({
-      sourcePath: join(cwd, 'step1-agent.md'),
+      sourcePath: join(cwd, 'source-agent.md'),
       outDir: cwd,
       spec: SPEC,
     });
@@ -228,7 +233,7 @@ story(
             },
           },
         },
-        { sourceText: STEP1_PERSONA },
+        { sourceText: SOURCE_PERSONA },
       ),
     ).toThrow(ExemplifyRefusal);
   },
@@ -236,35 +241,35 @@ story(
 
 story(
   'E6.S3',
-  'replacement semantics: on accept the vector replaces the config-IR agent — no lingering twin, step-1 content recoverable (REC ≽)',
+  'replacement semantics: on accept the vector is the one source form — no lingering twin, source content recoverable (REC ≽)',
   async () => {
     const probe = await probePipeline();
     expect(probe.found, probeMessage(probe)).not.toEqual([]);
     elevateAgent({
-      sourcePath: join(cwd, 'step1-agent.md'),
+      sourcePath: join(cwd, 'source-agent.md'),
       outDir: cwd,
       spec: SPEC,
     });
     // Post-elevation repo state holds exactly ONE source form per agent:
-    // the step-1 config-IR form is gone…
-    expect(existsSync(join(cwd, 'step1-agent.md'))).toBe(false);
-    // …and the vector present, additive/no-loss: the archetype NL recoverable
+    // the free-text source form is gone…
+    expect(existsSync(join(cwd, 'source-agent.md'))).toBe(false);
+    // …and the vector present, additive/no-loss: the source NL recoverable
     // from the vector (REC ≽, checked by the exemplify accept gate).
     const vectorModule = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorModule)).toBe(true);
     expect(canonicalText(readFileSync(vectorModule, 'utf8'))).toContain(
-      canonicalText(STEP1_PERSONA),
+      canonicalText(SOURCE_PERSONA),
     );
-    // A spec that would LOSE the step-1 content refuses — and the source
+    // A spec that would LOSE the source content refuses — and the source
     // survives (replacement never precedes recoverability).
-    writeFileSync(join(cwd, 'step1b.md'), STEP1_PERSONA, 'utf8');
+    writeFileSync(join(cwd, 'source-b.md'), SOURCE_PERSONA, 'utf8');
     expect(() =>
       elevateAgent({
-        sourcePath: join(cwd, 'step1b.md'),
+        sourcePath: join(cwd, 'source-b.md'),
         outDir: cwd,
         spec: { name: 'reviewer2', dimensions: inheritAll() },
       }),
     ).toThrow(/REC/);
-    expect(existsSync(join(cwd, 'step1b.md'))).toBe(true);
+    expect(existsSync(join(cwd, 'source-b.md'))).toBe(true);
   },
 );
