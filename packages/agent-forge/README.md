@@ -1,173 +1,234 @@
 # @leclabs/agent-forge
 
-The universal configuration translator for AI coding agents — part of [agent-factory](../../README.md). Author
-agent config once in a canonical IR, compile it to every client dialect (Claude Code, Codex, Cursor, …),
-and lift any client's existing config back into the IR.
+The build core for [agent-factory](../../README.md).
 
-One package, three surfaces:
+Agents, skills, and hooks are **authored** as typed TypeScript cells inside plugin packages. A project
+declares which plugins it extends; `agent-forge` resolves that set into one merged canon and projects it
+into harness artifacts on the local machine.
 
-- **the library** (`@leclabs/agent-forge` / `@leclabs/agent-forge/core`) — the IR types + JSON Schema, the engine
-  (read / merge / compile / drift / migrate), validators, serializers, and the **Adapter contract**;
-- **the adapters** (`@leclabs/agent-forge/adapters/<client>`) — 10 official adapters, one per client dialect,
-  each its own subpath export;
-- **the CLI** (`agent-forge`) — the user-facing orchestrator.
+The direction matters. The canon is the source; `~/.claude/` is a projection of it. Nothing in this
+pipeline reads a harness's existing configuration and treats it as truth.
+
+## The pipeline
+
+```text
+init → add → compose → project → deploy
+```
+
+| Stage     | What it does                                                                 |
+| --------- | ---------------------------------------------------------------------------- |
+| `init`    | scaffolds `agents.config.ts` in the project root, extending the canon plugin |
+| `add`     | wires another plugin package into that config's `extends`                    |
+| `compose` | resolves the plugin set into one merged fragment set, and prints it          |
+| `project` | renders the resolved set into a render tree (`.render/`)                     |
+| `deploy`  | places the render tree into the local `.claude/` root                        |
+
+Projection goes from composed cells to harness artifacts **directly**. The claude and codex harness
+adapters render agent definitions, skill directories, and hook trees from the resolved cells; there is
+no intermediate exchange format between the two, and no stage of this pipeline reads or writes one.
+
+Composition is why projection cannot be pre-rendered and shipped. Which cells exist, and what each
+resolves to, depends on the plugin set a consumer declares — a set the plugin authors never saw. So
+`agent-forge` ships as **code that runs during the consumer's build**, the way a bundler plugin does,
+and `project` runs on the consumer's machine.
 
 ## Install
 
+The CLI and the plugins are ordinary npm packages. Install the CLI globally, and each plugin into the
+project that extends it:
+
 ```bash
 npm install -g @leclabs/agent-forge     # the CLI
-npm install @leclabs/agent-forge        # the library + adapters
+npm install @leclabs/agent-canon        # a plugin — the canon
 ```
 
-## Library use
+A plugin that has not been published yet can be linked from disk instead:
 
-```ts
-import { compile, readIR } from '@leclabs/agent-forge'; // or '@leclabs/agent-forge/core'
-import { claudeAdapter } from '@leclabs/agent-forge/adapters/claude';
+```bash
+npm i @leclabs/agent-canon@file:../agent-canon
 ```
 
-## Quick start (CLI)
+## Quick start
 
 ```bash
 cd ~/myproject
-agent-forge init                  # creates .agent-forge/
-agent-forge import claude         # lifts ~/.claude/ + ./.claude/ + ./CLAUDE.md into IR
-agent-forge compile               # compiles to all targets in manifest
+
+agent-forge init            # scaffolds agents.config.ts (extends: [canon])
+agent-forge compose         # inspect the resolved fragment set
+agent-forge project         # render into ./.render
+agent-forge deploy \
+  --agents-dir .render/agents \
+  --skills-dir .render/skills \
+  --hooks-dir  .render       # place into ~/.claude
+```
+
+`init` writes a config that already extends the canon, so the shortest useful path skips `add`
+entirely. Adding a second plugin is what `add` is for.
+
+The scaffolded config is real, type-checked TypeScript — `extends` entries are imports, not strings:
+
+```ts
+import { defineAgentsConfig } from '@leclabs/agent-forge/config';
+import canon from '@leclabs/agent-canon';
+
+export default defineAgentsConfig({
+  extends: [canon],
+  patches: [],
+});
 ```
 
 ## Commands
 
 ### `agent-forge init`
 
-Bootstraps a new `.agent-forge/` directory with empty resource folders and a stub manifest.
+Scaffolds `agents.config.ts` with the zero-config default `extends: [canon]`. The default is a
+package resolved through the ordinary resolver, not a baked-in template. An existing config is left
+untouched.
 
 ```
-agent-forge init [--scope user|project|local]
+agent-forge init [--scope user|project|local]     # default: project
 ```
 
-### `agent-forge import <client>`
+`init` also creates a `.agent-forge/` directory. That belongs to the legacy surface described at the
+bottom of this page; the pipeline above never reads it.
 
-Reads an existing client's config and lifts it into the IR.
+### `agent-forge add <plugin>`
 
-```
-agent-forge import claude
-agent-forge import opencode --merge       # preserve hand-edited IR resources
-agent-forge import codex --from /other/repo
-```
-
-### `agent-forge compile [...clients]`
-
-Compiles the IR to the listed clients (or all targets in `manifest.yaml` if none given).
+Inserts a real `import` for the package and appends its binding to `extends`. Idempotent — re-adding a
+wired plugin reports no change. The npm install is deliberately left to you rather than run, and is
+printed as the next step.
 
 ```
-agent-forge compile                       # all manifest targets
-agent-forge compile claude opencode
-agent-forge compile --dry-run --explain   # preview lossy translations
-agent-forge compile --strict              # abort on any warning
+agent-forge add @acme/agent-plugin
 ```
 
-### `agent-forge diff [...clients]`
+### `agent-forge compose`
 
-Shows what would change on next compile, plus drift on already-emitted files.
-
-```
-agent-forge diff claude
-```
-
-### `agent-forge lint`
-
-Validates the IR against schema and checks resource compatibility against declared targets.
+Loads the config, resolves the plugin set, and prints every resolved fragment with its value. Writes
+nothing.
 
 ```
-agent-forge lint
-agent-forge lint --strict                 # capability warnings → errors
+agent-forge compose
+agent-forge compose --dry-run                     # same, stated explicitly
+agent-forge compose --config ./other.config.ts
 ```
 
-### `agent-forge adapters`
+### `agent-forge project`
 
-Lists installed adapters and their per-resource capabilities.
-
-### `agent-forge events [--client <id>]`
-
-Lists the canonical event taxonomy. With `--client`, shows the per-adapter mapping (✓ supported, — absent).
+Materializes the resolved set into a render tree: `agents/`, `skills/`, `hooks/`, and a `settings.json`
+carrying the hook registrations. Skills that need a runtime companion get their shim emitted alongside
+them.
 
 ```
-agent-forge events                        # all 28 canonical events
-agent-forge events --client cursor        # shows 17 cursor mappings + 11 absent
+agent-forge project [--config <path>] [--out <dir>] [--harness claude|codex]
 ```
 
-### `agent-forge doctor`
-
-Diagnoses installation: IR presence, manifest validity, compile state, per-target detection, drift.
-
-### `agent-forge watch [...clients]`
-
-Auto-recompiles on IR changes (chokidar, ~300ms debounce). Ctrl-C to exit.
+Defaults: config `<cwd>/agents.config.ts`, out `<cwd>/.render`, harness `claude`. On success it prints
+the counts it wrote and the exact `deploy` invocation that ships them.
 
 ```
-agent-forge watch
-agent-forge watch --debounce 100
+agent-forge project --out ./build --harness codex
 ```
 
-### `agent-forge migrate`
+### `agent-forge deploy`
 
-Applies IR schema migrations between versions.
-
-```
-agent-forge migrate                       # use manifest's current version → latest
-agent-forge migrate --from 1 --to 2
-```
-
-### `agent-forge optimize <source>`
-
-The exemplify leg of the documented **import → optimize → compile** flow: turn
-raw human-register context (a verbose `CLAUDE.md`, rule prose, an agent
-description) into reader=LLM artifacts, gated and ledgered.
-
-Optimization is **opt-in** — `compile` never runs it implicitly, and the raw
-compile path stays byte-verbatim. The semantic stages (conceptualize →
-signify → materialize) are LLM passes: the operating agent authors them into
-a **plan** file — `{ "concepts": [{ "gloss", "anchor", "home" | "delta" }],
-"artifacts": [{ "path", "body" }] }` — and this command is the mechanical
-frame that judges it: the accept gate (`REC ≽` — every routed anchor carried
-by its home; `minimal` — one name ⇔ one concept; `conform` — a human-register
-emission is refused), then the R3 routing manifest
-(`.manifests/<source>.json`) in which every concept appears exactly once in
-`routes[]`/`delta[]` — a withheld concept refuses loudly. Re-running over
-accepted output is a no-op: all-`reuse` routes, empty delta, byte-identical
-artifacts.
+Places an already-projected render tree into the **local** `.claude/` root. Agent definitions and skill
+directories are copied; `settings.json` hook registrations are merged into any existing file rather
+than replacing it. Each deployed agent also gets its memory layers seeded, and existing layers are left
+untouched.
 
 ```
-agent-forge optimize CLAUDE.md --plan plan.json               # gate + emit ./optimized
-agent-forge optimize CLAUDE.md --plan plan.json --out out2 \
-  --prior .manifests/CLAUDE.md.json                           # idempotent re-run
+agent-forge deploy --agents-dir <dir> --skills-dir <dir> --hooks-dir <dir>
 ```
 
-Missing `--plan` is a refusal, never a default. Library surface:
-`optimize` / `exemplify` / `checkCoverage` / `optimizeRules` (rules are
-first-class through the pipeline; scoping metadata is never rewritten),
-`renderSkillCell` (prose procedure → formal skill cell), `elevateAgent`
-(step-1 archetype → 24-dimension vector with provenance traces and `ELICIT:`
-markers at silent dimensions), and `projectVector` (the pinned dimension-vector →
-config-IR agent projection).
+| Option               | Effect                                                   |
+| -------------------- | -------------------------------------------------------- |
+| `--agents-dir <dir>` | render tree `agents/` — the projected definitions        |
+| `--skills-dir <dir>` | render tree `skills/` — the projected skill directories  |
+| `--hooks-dir <dir>`  | render tree hooks root (`settings.json` + `hooks/<id>/`) |
+| `--kind <kind>`      | `agent` \| `skill` \| `hooks` \| `all` (default `all`)   |
+| `--scope <scope>`    | `user` \| `project` (default `user`)                     |
+| `--home <dir>`       | user-scope `.claude` parent, instead of `~`              |
+| `--project <dir>`    | project root for `--scope project` (default cwd)         |
+| `--only <names>`     | comma-separated names to deploy                          |
+| `--assets <decls>`   | committed skill companions, `<skill>=<spec>[,…]`         |
+| `--dry-run`          | print the actions and change nothing                     |
+
+Which directories are required depends on `--kind`: `all` requires all three, `hooks` requires only
+`--hooks-dir`, and `agent` or `skill` require `--agents-dir` and `--skills-dir`. Passing less is a
+refusal, not a partial run.
+
+### `agent-forge explain [agent]`
+
+Reports each resolved fragment's provenance — the contributing plugin or patch, the operation, and the
+final value. The optional argument is declared `[agent]`, and today it acts as a substring filter over
+fragment ids, so pass a fragment id fragment rather than an agent name.
+
+```
+agent-forge explain                       # every fragment
+agent-forge explain fileOps               # just the ones whose id contains 'fileOps'
+agent-forge explain --json
+```
+
+### `agent-forge catalog [agent]`
+
+Lists the extendable fragment ids across every extended plugin — what `add` and `patches` have to aim
+at.
+
+```
+agent-forge catalog
+agent-forge catalog --json
+agent-forge catalog --corpus <dir>        # per-dimension corpus census instead
+```
+
+## Where the boundaries are
+
+Three concerns look adjacent to this pipeline and are deliberately outside it.
+
+**Delivery is npm's.** Getting `@leclabs/agent-forge` and the plugin packages onto a machine is an
+ordinary package install. It is a _precondition_ of the pipeline, not a stage of it — `init` cannot run
+before the CLI exists.
+
+**Projection is local.** `deploy` writes to a `.claude/` root on the machine it runs on, resolved from
+`--scope`, `--home`, and `--project`. It has no transport, no host list, and no remote mode.
+
+**Running it across many hosts is yours.** Iterating a fleet is an outer loop _around_ the whole
+pipeline, and it is a site-specific concern rather than a feature of this tool. The loop ssh's to each
+host, installs the packages, and runs the ordinary local sequence there. `agent-forge` is the body of
+that loop, not the loop.
+
+## Library surface
+
+The CLI is a thin shell over exported functions. The subpaths that back the pipeline:
+
+```ts
+import { defineAgentsConfig, loadAgentsConfig, addPlugin } from '@leclabs/agent-forge/config';
+import { resolve, defineAgentPlugin } from '@leclabs/agent-forge/resolve';
+import { projectPluginSet } from '@leclabs/agent-forge/project';
+import { deploySingle, userScope, projectScope } from '@leclabs/agent-forge/deploy';
+import { adapterByName } from '@leclabs/agent-forge/adapters/registry';
+```
+
+`adapterByName` is the single selection point for a harness adapter — `'claude'` or `'codex'` — so a
+consumer depends on the adapter port and this selector rather than on a concrete harness module.
+Plugin authors also want `@leclabs/agent-forge/anatomy` for the cell types.
 
 ## Exit codes
 
-| Code | Meaning                                        |
-| ---- | ---------------------------------------------- |
-| 0    | Success                                        |
-| 1    | Generic error                                  |
-| 2    | Validation/IO failure (lint, missing manifest) |
-| 3    | Drift detected (when `drift_check: error`)     |
-| 4    | Lossy translation under `--strict`             |
+Every command above exits `0` on success and `1` on failure. Refusals — a missing config, an empty
+`extends`, a missing required directory — are failures, reported on stderr with the reason.
 
-## Environment variables
+## Also in the binary
 
-| Variable                | Effect                                |
-| ----------------------- | ------------------------------------- |
-| `AGENT_FORGE_HOME`      | Override `~/.agent-forge/` location   |
-| `AGENT_FORGE_CONFIG`    | Override per-invocation manifest path |
-| `AGENT_FORGE_LOG_LEVEL` | `error \| warn \| info \| debug`      |
+`agent-forge --help` lists more verbs than this page documents: `import`, `compile`, `diff`, `lint`,
+`watch`, `migrate`, `adapters`, `events`, `doctor`, `optimize`. They belong to an older and separate
+lineage — a config transpiler that lifted an existing harness's files into an intermediate
+representation under `.agent-forge/` and compiled that back out to other clients.
+
+That lineage is not part of the pipeline described above and shares no data with it. It also runs
+against the direction this project exists to establish, because it takes a harness's own configuration
+as its source of truth. It is left undocumented here rather than presented as a second way to use the
+tool.
 
 ## License
 
