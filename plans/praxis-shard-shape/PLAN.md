@@ -2,22 +2,23 @@
 
 <!-- `ρ=human` — operator review. Reader = LLM. -->
 
-**Status: PROPOSED.** A single atomic hardening of the praxis skill. Local commit is in-remit; **push +
-deploy reserved** for sign-off.
+**Status: LANDED.** The single atomic hardening shipped: the praxis formalBlock now carries the 6-field
+shard-document shape in σ\*, reconciled with `spec`, cold-verified. Local commit landed; **push + deploy
+reserved** for sign-off.
 
 ## The gap
 
 The praxis skill carries the shard-document shape in **two granularities that don't match**:
 
 - **formalBlock** (σ\*, the model-read payload): `spec : P → ⟨static, scope, accept⟩` — a 3-tuple.
-- **description** (σ_human\*, the one-line selector): *"each shard is a self-contained task execution
-  specification with objective, inputs, constraints, dependencies, outputs, and completion criteria"* —
+- **description** (`σ_human*`, the one-line selector): "each shard is a self-contained task execution
+  specification with objective, inputs, constraints, dependencies, outputs, and completion criteria" —
   the full 6-field template.
 
 Both project into `SKILL.md`, so a reader who reads the whole artifact sees the template. But the σ\*
 payload — the part an LLM reads as authoritative — carries only the terse 3-tuple. A reader working from
 the formalBlock alone produces a 3-field shard, not the 6-field one. The operational fidelity that made
-this session's shards well-formed lives in the *selector line*, not the payload — one deploy convention
+this session's shards well-formed lives in the _selector line_, not the payload — one deploy convention
 away from being lost.
 
 ## The fix
@@ -32,7 +33,10 @@ formal-block law (`self-sufficient(block) ⇔ every term defined in-cell`; no pr
 
 ## Shard
 
-- **T-shape** — formalize the shard-document shape into the praxis formalBlock (single atomic concern).
+- **T-shape** — ✓ COMPLETED. Formalized the 6-field shard-document shape (objective · inputs ·
+  constraints · dependencies · outputs · acceptance) into the praxis formalBlock, reconciled with `spec`
+  over existing terms (`intent`/`inputs`/`accept` + new `constraints`/`outputs`/`deps`); acceptance bound
+  to the `∃ r : ¬accept(t)(r)` falsifier law. Cold-decode PASS (`completed/cold-decode.md`).
 
 Genuinely one concern (formalize + its verification-as-acceptance); `|frontier|=1` here is atomicity,
 not a mis-cut.

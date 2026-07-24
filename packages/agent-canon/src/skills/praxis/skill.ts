@@ -8,10 +8,13 @@ const FORMAL_BLOCK = `intent          ≜ the stated goal
 States          ≜ { ${PLAN_STATES.join(', ')} }
 P               ≜ a plan : a set of task-files
 content : P → text
-spec    : P → ⟨static, scope, accept⟩
 static  : P → ℘(path)
+constraints : P → ℘(invariant)
+outputs : P → ℘(artifact)
 inputs(t) ≜ static(t) ∪ { content(u) | (t, u) ∈ R }
+deps(t)   ≜ { u | (t, u) ∈ R }
 accept  : P → (return → 𝔹)
+spec(t) ≜ ⟨ intent(t), inputs(t), constraints(t), deps(t), outputs(t), accept(t) ⟩
 census  : intent → ⟨scope, static, deps⟩
 executor : P ⇀ agent
 self     ≜ session⟨CLAUDE_SESSION_ID⟩
