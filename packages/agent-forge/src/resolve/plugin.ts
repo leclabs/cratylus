@@ -53,6 +53,8 @@ export interface AgentPlugin {
    * cells — exactly the ambient-dependence the doctrine forbids.
    */
   readonly preamble?: string;
+  /** Dir of hook cell modules this plugin contributes (harness-substrate only). */
+  readonly hooks?: string;
   /** Harness adapters this plugin ships (registered into the emitter registry). */
   readonly adapters?: readonly Adapter[];
 }

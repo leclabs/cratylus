@@ -13,10 +13,15 @@
 // are in the set — which is the whole point of a build-time plugin architecture.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import type { Agent, Skill } from '../anatomy/index.js';
+import {
+  type Agent,
+  type HookCell,
+  type Skill,
+  hookIrOf,
+} from '../anatomy/index.js';
 import type { ResolvedSkill } from '../core/anatomy-body.js';
 import type { HarnessAdapter } from '../core/harness-adapter.js';
 import {
@@ -33,6 +38,8 @@ export interface ProjectablePlugin {
   readonly skills?: string;
   /** Leading block stamped into this plugin's cells; travels with the plugin. */
   readonly preamble?: string;
+  /** Dir of hook cell modules this plugin contributes. */
+  readonly hooks?: string;
 }
 
 export interface ProjectOpts {
@@ -61,6 +68,7 @@ export interface ProjectReport {
   readonly agents: number;
   readonly skills: number;
   readonly shims: number;
+  readonly hooks: number;
 }
 
 /** The `<name>: Agent` vector export of an agent module. */
@@ -86,6 +94,19 @@ async function skillOf(modPath: string): Promise<Skill> {
   );
   if (!skill) throw new Error(`${modPath}: no Skill export`);
   return skill;
+}
+
+/** The `HookCell` export of a hook module (the object carrying `substrate`). */
+async function hookOf(modPath: string): Promise<HookCell | null> {
+  const mod = (await import(pathToFileURL(modPath).href)) as Record<
+    string,
+    unknown
+  >;
+  const cell = Object.values(mod).find(
+    (v): v is HookCell =>
+      typeof v === 'object' && v !== null && 'substrate' in v && 'workers' in v,
+  );
+  return cell ?? null;
 }
 
 /**
@@ -177,7 +198,66 @@ export async function projectPluginSet(
     skills++;
   }
 
-  return { agents, skills, shims };
+  // Hooks. Only `harness`-substrate cells register in settings.json; a
+  // `git`-substrate cell fires in git's own process and must never be serialized
+  // here, so it is filtered BEFORE the lift (which refuses it loudly anyway).
+  const hookCells: HookCell[] = [];
+  for (const p of opts.plugins) {
+    if (!p.hooks) continue;
+    for (const n of await scanModuleNames(p.hooks)) {
+      const modPath = await resolveModulePath(p.hooks, n);
+      if (!modPath) continue;
+      const cell = await hookOf(modPath);
+      if (cell && cell.substrate === 'harness') hookCells.push(cell);
+    }
+  }
+
+  hookCells.sort(
+    (a, b) =>
+      (a.order ?? Number.MAX_SAFE_INTEGER) -
+        (b.order ?? Number.MAX_SAFE_INTEGER) || a.id.localeCompare(b.id),
+  );
+
+  let hooks = 0;
+  if (hookCells.length > 0) {
+    const renderHooks = opts.adapter.hooks;
+    if (!renderHooks) {
+      throw new Error(
+        `harness '${opts.adapter.name}' does not project hooks, but the plugin set contributes ${hookCells.length}`,
+      );
+    }
+    const sources = hookCells.map((cell) => ({
+      hook: hookIrOf(cell),
+      workers: cell.workers,
+    }));
+    const { settings, warnings, skipped } = renderHooks(
+      sources.map((s) => s.hook),
+    );
+    for (const w of warnings) log(`WARN hook: ${w}`);
+    for (const sk of skipped) log(`SKIP hook ${sk.path}: ${sk.reason}`);
+    mkdirSync(opts.out, { recursive: true });
+    writeFileSync(
+      join(opts.out, 'settings.json'),
+      `${JSON.stringify({ hooks: settings }, null, 2)}\n`,
+    );
+    log(`EMIT settings.json (hooks: ${Object.keys(settings).join(', ')})`);
+    for (const src of sources) {
+      const destDir = join(opts.out, 'hooks', src.hook.id ?? 'unnamed');
+      mkdirSync(destDir, { recursive: true });
+      for (const worker of src.workers) {
+        const dest = join(destDir, worker.filename);
+        // Bytes come from the CELL, never an on-disk copy — the cell is the home.
+        writeFileSync(dest, worker.content);
+        if (worker.executable) chmodSync(dest, 0o755);
+      }
+      log(
+        `EMIT hook ${src.hook.id} (+${src.workers.length} worker${src.workers.length === 1 ? '' : 's'})`,
+      );
+      hooks++;
+    }
+  }
+
+  return { agents, skills, shims, hooks };
 }
 
 export { emitRuntimeShim } from './runtime-shim.js';

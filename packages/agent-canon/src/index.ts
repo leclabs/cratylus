@@ -34,4 +34,5 @@ export default defineAgentPlugin({
   skills: dir('./skills'),
   // The axiom rides the PLUGIN, so it survives projection by any consumer.
   preamble: foundingDoctrine,
+  hooks: dir('./hooks'),
 });

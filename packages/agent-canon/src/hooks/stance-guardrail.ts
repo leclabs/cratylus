@@ -12,6 +12,7 @@ export const stanceGuardrail: HookCell = {
   residue:
     'structural-refusal ↾ turn-end · block ⟨intent-driven-expert-collapse⟩ ⟨permission-seeking · own-judgment-deferral · order-taking⟩ · pass ⟨reserved · irreversible-outward ↦ consent · intent-ambiguity ↦ elicit⟩ · harness-invariant ⟨prompt-identity erodes ↾ RLHF-corrigibility⟩',
   substrate: 'harness',
+  order: 0,
   events: ['turn.end', 'subagent.end'],
   command: `sh "$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh"`,
   timeout: 60,

@@ -16,6 +16,7 @@ export const stanceGuardrailPre: HookCell = {
   residue:
     'structural-refusal ↾ mid-turn tool-call · deny-before-fire ⟨the call never leaves⟩ ⟨intent-driven-expert-collapse⟩ ⟨permission-menu ⟨AskUserQuestion⟩ · dispatch-echo ⟨Agent · SendMessage : literal-transcription ∄ extracted-intent⟩⟩ · pass ⟨reserved · irreversible-outward-consent · substantive-dispatch · intent-ambiguity ↦ elicit⟩ · shared judge-backend ⟨sibling⟩ · loop-safe ⟨re-entry-cap : ¬deny identical twice⟩',
   substrate: 'harness',
+  order: 1,
   events: ['tool.use.pre'],
   matcher: 'AskUserQuestion|Agent|SendMessage',
   command: `sh "$HOME/.claude/hooks/stance-guardrail-pre/stance-guardrail-pre.sh"`,

@@ -55,6 +55,13 @@ export interface HookCell {
   /** Which substrate the event fires in. */
   readonly substrate: HookSubstrate;
   /** The harness-agnostic events that trigger the hook (≥1). */
+  /**
+   * Explicit run order within an event. A dir-scan would otherwise impose
+   * ALPHABETICAL order, silently reordering hooks whose sequence is semantic — a
+   * blocking gate must evaluate before a non-blocking nudge. Lower runs first;
+   * unset sorts last, then by id.
+   */
+  readonly order?: number;
   readonly events: readonly [HookEvent, ...HookEvent[]];
   /**
    * Optional per-hook tool matcher (client-native regex, e.g.
