@@ -7,7 +7,7 @@ self           ≜ session⟨CLAUDE_SESSION_ID⟩
 agent          ≜ this agent's name
 praxis-sync    ≜ sync @ praxis
 dream          ≜ drain⟨EPISODIC⟩ @ dream
-release        ≜ \`agent-runtime memory session release --name <agent>\` ∴ released(self)
+release        ≜ \`scripts/memory.mjs session release --name <agent>\` ∴ released(self)
 registered, released, stale : session → 𝔹
 live           : session → 𝔹
 
@@ -22,5 +22,6 @@ export const handoff: Skill = {
   name: 'handoff',
   description: `use this skill to prepare a session for handoff before /clear — bring the plan's record up to date (praxis sync) and consolidate memory (dream) while context is still hot; the persist half of the session boundary, invocable as /handoff.`,
   formalBlock: FORMAL_BLOCK,
+  runtime: { capability: 'memory' },
   composition: () => [praxis, dream],
 };

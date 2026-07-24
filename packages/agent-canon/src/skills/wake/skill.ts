@@ -37,18 +37,19 @@ EPISODIC-only ∴ ¬ encoded ⇒ ¬ consolidatable
 wake-read ⊨ next-action ⟨bias⟩
 resume ⊨ encode
 
-resolve   ≜ \`AGENT_HOME=\$(agent-runtime memory home --name <agent>)\`
-migrate?  ≜ (\${AGENT_HOME}/EPISODIC.md exists ∧ ¬ \${AGENT_HOME}/EPISODIC.jsonl exists) ⇒ \`agent-runtime memory migrate \${AGENT_HOME}/EPISODIC.md \${AGENT_HOME}/EPISODIC.jsonl\` ⟨no-loss · idempotent⟩
-register  ≜ \`agent-runtime memory session register --home \${AGENT_HOME}\` ∴ registered(self)
-dream     ≜ catch-up ⟨handoff-dreamt ⇒ no-op ; fresh-spawn ∨ crashed-undreamt ⇒ load-bearing⟩ ; \`agent-runtime memory audit --home \${AGENT_HOME}\` ≠ 0 ⇒ scoped-content @ { SEMANTIC · PROCEDURAL } ∴ dream(findings) ≺ proceed
-load      ≜ read⟨SEMANTIC · PROCEDURAL⟩ whole ∧ read⟨EPISODIC⟩ := \`agent-runtime memory read --home \${AGENT_HOME} --for-session \${CLAUDE_SESSION_ID} --under \$(agent-runtime memory node <session-start-cwd>)\`
+resolve   ≜ \`AGENT_HOME=\$(scripts/memory.mjs home --name <agent>)\`
+migrate?  ≜ (\${AGENT_HOME}/EPISODIC.md exists ∧ ¬ \${AGENT_HOME}/EPISODIC.jsonl exists) ⇒ \`scripts/memory.mjs migrate \${AGENT_HOME}/EPISODIC.md \${AGENT_HOME}/EPISODIC.jsonl\` ⟨no-loss · idempotent⟩
+register  ≜ \`scripts/memory.mjs session register --home \${AGENT_HOME}\` ∴ registered(self)
+dream     ≜ catch-up ⟨handoff-dreamt ⇒ no-op ; fresh-spawn ∨ crashed-undreamt ⇒ load-bearing⟩ ; \`scripts/memory.mjs audit --home \${AGENT_HOME}\` ≠ 0 ⇒ scoped-content @ { SEMANTIC · PROCEDURAL } ∴ dream(findings) ≺ proceed
+load      ≜ read⟨SEMANTIC · PROCEDURAL⟩ whole ∧ read⟨EPISODIC⟩ := \`scripts/memory.mjs read --home \${AGENT_HOME} --for-session \${CLAUDE_SESSION_ID} --under \$(scripts/memory.mjs node <session-start-cwd>)\`
 orient    ≜ read ground ≺ ( bind(P) ∧ bind(work-thread) )
 resume    ≜ rebind(continuity-thread) ∴ act-as(same-individual)
-encode    ≜ standing-duty ↾ per-turn ; ∀ e ∈ salient : \`agent-runtime memory encode --home \${AGENT_HOME} --body '<open record>'\` ; tool ↦ ⟨id · host · cwd⟩` as SkillExpression;
+encode    ≜ standing-duty ↾ per-turn ; ∀ e ∈ salient : \`scripts/memory.mjs encode --home \${AGENT_HOME} --body '<open record>'\` ; tool ↦ ⟨id · host · cwd⟩` as SkillExpression;
 
 export const wake: Skill = {
   name: 'wake',
   description: `use this skill to reconstitute an agent at session start — run the WAKE sequence (dream → load → orient → resume) so it resumes as the same individual; the read-and-resume counterpart to /dream, invocable as /wake.`,
   formalBlock: WAKE_BLOCK,
+  runtime: { capability: 'memory' },
   composition: () => [dream],
 };
