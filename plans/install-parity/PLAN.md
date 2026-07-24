@@ -10,14 +10,15 @@ is the target mechanism; not a prerequisite).
 
 ## Progress
 
-| shard                               | state                             | commit    |
-| ----------------------------------- | --------------------------------- | --------- |
-| S1 shim seam                        | **DONE**                          | `ad45999` |
-| S3 wake/handoff onto the shim       | **DONE**                          | `cae76b7` |
-| S2 declared-dependency capabilities | **DONE**                          | `cd10503` |
-| S4 CLI brand                        | **DOES NOT CONVERGE** — see below | —         |
-| S5 `agent-canon` installable        | **DONE**                          | `b84c959` |
-| S6 local dev-loop parity            | **DONE**                          | see below |
+| shard                               | state                                | commit    |
+| ----------------------------------- | ------------------------------------ | --------- |
+| S1 shim seam                        | **DONE**                             | `ad45999` |
+| S3 wake/handoff onto the shim       | **DONE**                             | `cae76b7` |
+| S2 declared-dependency capabilities | **DONE**                             | `cd10503` |
+| S4 CLI brand                        | **DOES NOT CONVERGE** — see below    | —         |
+| S5 `agent-canon` installable        | **DONE**                             | `b84c959` |
+| S6 local dev-loop parity            | **PARTIAL** — install yes, deploy no | see below |
+| S7 compose → render tree            | **THE MISSING LINK** — not started   | —         |
 
 ### S6 — `pnpm add -g .` LINKS, it does not copy
 
@@ -51,9 +52,34 @@ clean directory yields 4 packages and a bin that dispatches `memory home` correc
 no checkout present. Canon likewise loads and scans (10 agents, 15 skills) from an
 installed copy outside the workspace.
 
-**Acceptance met** for the runtime face. The build face (`deploy`/`project`) still ships
-as the separate `agent-forge` bin; unifying them under one name is S9/S4 work, and S4
-has not converged.
+**Install parity: met.** **Deployment parity: NOT met** — see S7. I initially recorded
+S6 as done; that was wrong, and the redeploy to `fire` that followed used the RETIRED
+path (`pnpm canon:project` + the CLI invoked as a path into the checkout), which is
+precisely the act the design says a consumer cannot perform.
+
+### S7 — compose → render tree (the missing link)
+
+Measured end-to-end from a clean consumer install (`/tmp/iso-canon`: all packages
+npm-installed, no monorepo):
+
+| step                         | result                                                                                 |
+| ---------------------------- | -------------------------------------------------------------------------------------- |
+| `agent-forge init`           | ✅ scaffolds `agents.config.ts` with `extends: [canon]`                                |
+| `agent-forge compose`        | ✅ resolves the installed canon plugin, enumerates every fragment — **writes nothing** |
+| `agent-forge compile claude` | ❌ **0 files written** — the composed set never reaches the IR                         |
+| `agent-forge deploy`         | ❌ requires a render tree nothing produces                                             |
+
+`compose` ends with its own note: _"materializing the resolved set (compose → render
+tree) lands in a later shard; nothing was written."_ That later shard is this one.
+
+The only thing that produces a render tree is `pnpm canon:project`, a **monorepo script**
+that dir-scans `src/agents` / `src/skills` directly and **bypasses the plugin resolver**.
+So the resolver path is live for _resolution_ but dead for _materialization_, and the
+corpus's own projection does not travel it.
+
+Until S7 lands, consumer-side projection — the operator's correction that projection runs
+at the consumer's build time — is not reachable, and every deployment necessarily uses
+the retired path.
 
 ### Re-sequencing (S3 → S4 → S2, not S1 → S2 → S3 → S4)
 
