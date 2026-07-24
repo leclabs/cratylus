@@ -18,10 +18,8 @@
 #   scp fleet-deploy.sh <pkgs>.tgz host:~/.agent-tars/
 #   ssh host "${SHELL:-zsh} -ic 'sh ~/.agent-tars/fleet-deploy.sh'"
 
-#!/usr/bin/env sh
-# Consumer-path deploy, run ON the host. NO `set -e`: a mise/asdf postinstall
-# reshim taints npm's exit code even when the install landed (documented in
-# runtime-install.ts). The success oracle is artifact RESOLVABILITY, not rc.
+# NO `set -e`: rc is tainted by a mise/asdf reshim (LESSON 2 above) — the
+# success oracle is artifact RESOLVABILITY, not rc.
 T="$HOME/.agent-tars"; S="$HOME/.agent-site"
 # Idempotency: a bin symlink left by an earlier layout (when agent-runtime owned
 # the bin) makes npm abort the whole install with EEXIST rather than replace it.
