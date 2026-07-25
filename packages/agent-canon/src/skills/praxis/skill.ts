@@ -14,6 +14,7 @@ outputs : P → ℘(artifact)
 inputs(t) ≜ static(t) ∪ { content(u) | (t, u) ∈ R }
 deps(t)   ≜ { u | (t, u) ∈ R }
 accept  : P → (return → 𝔹)
+pre     : P → return
 spec(t) ≜ ⟨ intent(t), inputs(t), constraints(t), deps(t), outputs(t), accept(t) ⟩
 census  : intent → ⟨scope, static, deps⟩
 executor : P ⇀ agent
@@ -67,6 +68,8 @@ registered, released, stale @ memory-session-registry
 ∀ t : content(t) ⊨ spec(t)
 ∀ t : ∀ p ∈ static(t) : p exists at authoring
 ∀ t : ∃ r : ¬accept(t)(r)
+∀ t : ¬accept(t)(pre(t))
+∀ t : accept(t)(pre(t)) ⇒ ¬(content(t) ⊨ spec(t))
 ∀ t : content(t) grounded-by census(intent(t))
 ∀ t : ¬(content(t) grounded-by census(intent(t))) ⇒ ¬(content(t) ⊨ spec(t))
 ∀ t : census(intent(t)) delegable-to agent
