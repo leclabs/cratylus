@@ -6,17 +6,19 @@ Discover, validate, and canonize the semantic addresses already recognized by fo
 
 ## Problem
 
-Prompt engineering treats behavior as an emergent property of authored natural language. Context engineering broadens the material surrounding a request, but usually preserves the same underlying assumption: meaning is supplied to the model through runtime context.
+Prompt engineering treats behavior as an emergent property of authored natural language. Context engineering broadens the material surrounding a request, but usually preserves the same underlying assumption: meaning is supplied to the model through natural language subject to misinterpretation.
 
 As prompts and contexts evolve through iterative refinement, they accumulate ambiguity, redundancy, hidden assumptions, corrective patches, and contextual noise. The result is greater context consumption with weaker specification integrity: conceptual drift, inconsistent behavior, hidden collisions, and unpredictable execution.
 
-Larger context windows, stronger reasoning models, memory, and auxiliary tooling alleviate these symptoms. They do not address the underlying cause: intended behavior is still specified indirectly through prose assembled at runtime.
+Larger context windows, stronger reasoning models, memory, and auxiliary tooling alleviate these symptoms without addressing the cause: meaning is still conveyed by description, in a medium that admits misinterpretation.
+
+This project takes the opposite route — discovering and canonizing the semantic addresses a foundation model already recognizes, so intent is **addressed** rather than **described**.
 
 ## Thesis
 
 > **A foundation model is not merely an engine to be instructed. It is a semantic space to be addressed.**
 
-Foundation models encode rich priors for concepts, abstractions, relationships, and formal systems. The central engineering task is therefore not to invent increasingly elaborate descriptions of intended behavior, but to discover the canonical signifiers that most precisely and reproducibly address those latent semantics.
+foundation models encode rich priors for concepts, abstractions, relationships, and formal systems. The central engineering task is therefore not to invent increasingly elaborate descriptions of intended behavior, but to discover the canonical signifiers that most precisely and reproducibly address those latent semantics.
 
 These signifiers are **canonical semantic addresses**: model-native expressions whose interpretation is discovered through cold verification rather than assigned by author preference.
 
