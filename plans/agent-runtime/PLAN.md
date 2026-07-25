@@ -2,7 +2,7 @@
 
 > Runtime folder-state is authority; this doc is a derived mirror. Owner: `5e12e138` (`.owner`). Reader = LLM.
 
-> **STATUS — COMPLETE (2026-07-23).** S1–S8 + S10 landed + integrated + green; the runtime-plugin architecture is delivered and dogfood-proven end-to-end (project → deploy+install → deployed thin-shim invokes `agent-runtime memory`/`tap` → verified, hermetic). **S9 (unified CLI brand, FORK-4) DEFERRED as optional** — the runtime bin `agent-runtime` suffices; S10's real deps reframed to {S7,S8}. Commits: `521ee2d` plan · `0058841`/`b6f6b2d` w0 · `2b6f293` w1 · `961cc4a`/`55f9af8` w2 · S10 (this). Two integration defects the unit tests hid were caught by the REAL dogfoods (S7 VerbArgs↔signature; S10 `tap`-word routing) — both fixed. Baseline reds E7/S10 + E10/S7 (docs tripwires) are pre-existing, out of scope. FLEET redeploy + push RESERVED (operator).
+> **STATUS — COMPLETE (2026-07-23).** S1–S8 + S10 landed + integrated + green; the runtime-plugin architecture is delivered and dogfood-proven end-to-end (project → deploy+install → deployed thin-shim invokes `agent-runtime memory`/`tap` → verified, hermetic). **S9 (unified CLI brand, FORK-4) BLOCKED → `plans/discipline-anchor`** (same question as install-parity S4; consolidated to one home 2026-07-25) — the runtime bin `agent-runtime` suffices; S10's real deps reframed to {S7,S8}. Commits: `521ee2d` plan · `0058841`/`b6f6b2d` w0 · `2b6f293` w1 · `961cc4a`/`55f9af8` w2 · S10 (this). Two integration defects the unit tests hid were caught by the REAL dogfoods (S7 VerbArgs↔signature; S10 `tap`-word routing) — both fixed. Baseline reds E7/S10 + E10/S7 (docs tripwires) are pre-existing, out of scope. FLEET redeploy + push RESERVED (operator).
 
 ## Intent
 

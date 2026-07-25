@@ -22,7 +22,7 @@ ever a stand-in for a registry we are about to have.
 | S1 shim seam                        | **DONE**                          | `ad45999` |
 | S3 wake/handoff onto the shim       | **DONE**                          | `cae76b7` |
 | S2 declared-dependency capabilities | **DONE**                          | `cd10503` |
-| S4 CLI brand                        | **DOES NOT CONVERGE** — see below | —         |
+| S4 CLI brand                        | **BLOCKED** → `discipline-anchor` | —         |
 | S5 `agent-canon` installable        | **DONE**                          | `b84c959` |
 | S6 local dev-loop parity            | **DONE** — falsifier actually run | see below |
 | S7 compose → render tree            | **DONE**                          | `650480e` |
