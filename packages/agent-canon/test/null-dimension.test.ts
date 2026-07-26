@@ -51,6 +51,32 @@ describe('NULL-DIMENSION gate — null ⇔ no SOUL section', () => {
     expect(AGENTS.length).toBe(10);
   });
 
+  it('is non-vacuous — the gate FAILS an agent whose null-set contradicts its SOUL', () => {
+    // Every assertion below is over CLEAN vectors, so all ten pass whether the
+    // correspondence is really checked or the section lookup silently stopped
+    // matching. Convict it: null a dimension the agent actually carries, and the
+    // projected SOUL must still show its section — the exact contradiction the
+    // gate exists to catch.
+    const carrier = AGENTS.find((a) => a.transparency !== null) as Agent;
+    expect(carrier, 'an agent carrying transparency').toBeDefined();
+
+    const soul = agentToClaudeMd(carrier);
+    const section = `## ${dimensionTitle('transparency')}`;
+
+    // control: a CARRIED dimension does render its section, so the lookup works
+    expect(soul.includes(section), 'control: carried ⇒ section present').toBe(
+      true,
+    );
+
+    // conviction: an agent CLAIMING null while the SOUL still renders the section
+    // is exactly the contradiction the per-agent assertions above test for —
+    // `soul.includes(section)` must be !isNull, and here both are true.
+    const liar = { ...carrier, transparency: null } as Agent;
+    const isNull = liar[fieldOf('transparency')] === null;
+    expect(isNull).toBe(true);
+    expect(soul.includes(section) === !isNull).toBe(false);
+  });
+
   for (const agent of AGENTS) {
     it(`${agent.name}: vector null-set matches the projected SOUL`, () => {
       const soul = agentToClaudeMd(agent);

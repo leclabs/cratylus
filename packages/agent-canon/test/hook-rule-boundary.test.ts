@@ -156,6 +156,24 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
     }
   });
 
+  it('is non-vacuous — the byte-identity predicate FAILS on one mutated character', async () => {
+    // The gate above passes on a clean tree whether its comparison is real or has
+    // silently become a no-op. Convict it by running THE SAME predicate over a
+    // live target's own bytes, perturbed by a single trailing space.
+    const identical = (committed: string, cell: string): boolean =>
+      committed === cell;
+
+    const targets = await cellTargets();
+    expect(targets.length, 'a target to convict with').toBeGreaterThan(0);
+    const t = targets[0] as { path: string; content: string };
+
+    // the control: the real bytes must PASS, or the fixture proves nothing
+    const real = readFileSync(join(repoRoot, t.path), 'utf8');
+    expect(identical(real, t.content), `${t.path} control`).toBe(true);
+    // the conviction: one character of drift must be caught
+    expect(identical(`${real} `, t.content)).toBe(false);
+  });
+
   it('regenerateTargets --check reports zero drift (deterministic projection)', async () => {
     const { drift } = await regenerateTargets({ check: true });
     expect(drift, `drifted targets: ${drift.join(', ')}`).toEqual([]);

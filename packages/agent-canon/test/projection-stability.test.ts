@@ -52,13 +52,33 @@ async function collect(pattern: string): Promise<string[]> {
 }
 
 describe('projection stability (.ts is the sole source)', () => {
-  it('every dimension fragment projects non-empty', async () => {
+  it('every dimension fragment projects non-empty AND carries its own text', async () => {
+    // `fragmentToMarkdown` is `\n\n${value}\n`, so its output is length ≥ 3 for
+    // EVERY input including the empty string: the old `length > 0` assertion was
+    // a tautology that no corpus could ever fail. The real invariants are that
+    // the fragment itself is non-empty and that projection CARRIES it.
     const modules = await collect('dimensions/**/*.ts');
     expect(modules.length).toBeGreaterThan(100);
     for (const rel of modules) {
       const f = await firstExport<string>(join(srcRoot, rel));
-      expect(fragmentToMarkdown(f).length, rel).toBeGreaterThan(0);
+      expect(f.trim().length, `${rel}: fragment is non-empty`).toBeGreaterThan(
+        0,
+      );
+      expect(fragmentToMarkdown(f), `${rel}: projection carries it`).toContain(
+        f,
+      );
     }
+  });
+
+  it('is non-vacuous — the strengthened predicate FAILS an empty fragment', () => {
+    // control: a real fragment satisfies both legs
+    const real = 'a real fragment';
+    expect(real.trim().length).toBeGreaterThan(0);
+    expect(fragmentToMarkdown(real)).toContain(real);
+    // conviction: an empty one is caught by the non-emptiness leg — and would NOT
+    // have been caught by the length-of-projection leg it replaces.
+    expect(''.trim().length).toBe(0);
+    expect(fragmentToMarkdown('').length).toBeGreaterThan(0);
   });
 
   it('every skill projects non-empty', async () => {
@@ -66,7 +86,12 @@ describe('projection stability (.ts is the sole source)', () => {
     expect(modules.length).toBe(15);
     for (const rel of modules) {
       const s = await firstExport<Skill>(join(srcRoot, rel));
-      expect(renderSkill(s).length, rel).toBeGreaterThan(0);
+      const rendered = renderSkill(s);
+      expect(rendered.length, rel).toBeGreaterThan(0);
+      // carries the cell's own identity, not merely some non-empty wrapper
+      expect(rendered, `${rel}: rendering carries the skill name`).toContain(
+        s.name,
+      );
     }
   });
 
