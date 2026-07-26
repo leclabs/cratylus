@@ -21,6 +21,8 @@
 #   elect               print the plan the election order picks, bind nothing
 #   file <plan> <symptom>...   stub a pending shard; no census, no re-slice, no re-mirror
 #   frontier            the shards workable right now in the bound plan
+#   land <plan>         record landing(P) — the carrier that makes `terminal` readable
+#   retire <plan>       relocate under .retired/; refuses unless terminal(P)
 #
 # POSIX sh, no deps beyond git/coreutils. Run from anywhere in the repo.
 
@@ -36,6 +38,13 @@ die() { printf 'praxis: %s\n' "$1" >&2; exit 2; }
 phase_of() {
 	p="$1"
 	[ -e "$p/.superseded-by" ] && { printf 'superseded'; return; }
+	# landed(P) ⇔ landing(P) defined. `landing` is a commit relation, and a
+	# relation with no on-disk carrier is not readable — which is why this
+	# readout could previously only ever say proposed or in-flight. `.landed`
+	# is that carrier, exactly parallel to `.superseded-by`, and it is what
+	# makes `terminal(P) ⇒ retire(P)` mechanically checkable instead of a rule
+	# someone has to remember.
+	[ -e "$p/.landed" ] && { printf 'landed'; return; }
 	# dispatched(P) ⇔ ∃ t : state(t) ∈ {active, completed}. Test each folder alone:
 	# `ls -A a b` prints "a:" headers, so a two-arg test reads empty dirs as non-empty.
 	if [ -n "$(ls -A "$p/active" 2>/dev/null || true)" ] ||
@@ -92,6 +101,35 @@ cmd_bind() {
 	printf 'bound: %s\n' "$1"
 }
 
+# land — record landing(P). `terminal(P) ⇒ retire(P)` is an OBLIGATION in the
+# cell, so landing a plan tells you immediately that a retire is owed.
+cmd_land() {
+	[ -n "$1" ] || die 'land needs a plan name'
+	[ -d "$PLANS/$1" ] || die "no such plan: $1"
+	done_count=$(count "$PLANS/$1/pending")
+	done_count=$((done_count + $(count "$PLANS/$1/ready") + $(count "$PLANS/$1/active")))
+	[ "$done_count" = "0" ] || printf 'warning: %s has %s unfinished shard(s); landing anyway\n' "$1" "$done_count" >&2
+	git rev-parse HEAD > "$PLANS/$1/.landed" 2>/dev/null || printf 'unknown\n' > "$PLANS/$1/.landed"
+	printf 'landed: %s at %s\n' "$1" "$(cut -c1-8 < "$PLANS/$1/.landed")"
+	printf '  terminal(P) ⇒ retire(P) — run `praxis retire %s` to discharge it.\n' "$1"
+}
+
+# retire — pre terminal(P). The precondition is now checkable, which is the point.
+cmd_retire() {
+	[ -n "$1" ] || die 'retire needs a plan name'
+	p="$PLANS/$1"
+	[ -d "$p" ] || die "no such plan: $1"
+	ph=$(phase_of "$p")
+	case "$ph" in
+	landed | superseded) ;;
+	*) die "retire(P) requires terminal(P); $1 is $ph" ;;
+	esac
+	mkdir -p "$PLANS/.retired"
+	rm -f "$p/.bound"
+	git mv "$p" "$PLANS/.retired/$1" 2>/dev/null || mv "$p" "$PLANS/.retired/$1"
+	printf 'retired: %s (was %s)\n' "$1" "$ph"
+}
+
 cmd_frontier() {
 	b=$(bound_plan || true)
 	[ -n "$b" ] || die 'no bound plan'
@@ -135,9 +173,11 @@ verb="${1:-status}"
 [ $# -gt 0 ] && shift
 case "$verb" in
 status) cmd_status ;;
+land) cmd_land "$@" ;;
+retire) cmd_retire "$@" ;;
 bind) cmd_bind "$@" ;;
 elect) cmd_elect ;;
 file) cmd_file "$@" ;;
 frontier) cmd_frontier ;;
-*) die "usage: praxis {status|bind <plan>|elect|file <plan> <symptom>|frontier}" ;;
+*) die "usage: praxis {status|bind <plan>|elect|file <plan> <symptom>|frontier|land <plan>|retire <plan>}" ;;
 esac
