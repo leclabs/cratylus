@@ -28,7 +28,6 @@ import {
 import { projectPluginSet } from '@leclabs/agent-forge/project';
 import canonPlugin from '../index.js';
 import { hookSources } from './hooks.js';
-import { emitRuntimeShim } from './runtime-shim.js';
 
 // The harness projection port, selected strictly BY NAME — no concrete claude
 // adapter module is imported here (the projection logic lives in forge).

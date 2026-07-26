@@ -31,6 +31,7 @@ cost     : act → effort
 defect   ≜ ⟨symptom, locus, provenance⟩
 owns     : defect ⇀ P
 impedes  : defect × P → 𝔹
+refs     : P → ℘(path) ⟨what a shard's outputs compile against⟩
 dir      : P → path
 state   : P → States
 truth   : P → States
@@ -90,6 +91,7 @@ waves = (wave(0), …, wave(m))
 ∀ n < m : |wave(n)| = 1 ⇒ slices mis-cut ⟨a singleton non-terminal wave is a chain, ¬ a cut⟩
 ∀ t, u ∈ wave(n) : t ≠ u ⇒ outputs(t) ∩ outputs(u) = ∅ ⟨the concurrency precondition⟩
 ∃ t, u ∈ wave(n) : t ≠ u ∧ outputs(t) ∩ outputs(u) ≠ ∅ ⇒ slices mis-cut
+∀ t, u ∈ wave(n) : t ≠ u ⇒ outputs(t) ∩ refs(u) = ∅ ⟨disjoint outputs is NECESSARY ¬ sufficient : a deletion in t dangles a reference in u⟩
 ⊨ disjoint-outputs ⇒ dispatch(wave(n)) needs-no-isolation ⟨a correctly cut wave never contends⟩
 (state, R, content) ≽ PLAN.md
 mirror(state, R, content) emits R ∧ waves
