@@ -11,6 +11,8 @@
 #   5. ON + collapse + stop_hook_active=true      → STILL BLOCKS (judging is never skipped);
 #      loop safety is a BLOCK BUDGET (5b) + a no-progress detector (5c), not a skipped judge.
 #   6. ON + collapse + no transcript file         → no block (fail open).
+#   5d. Confabulated EVIDENCE (a span absent from the turn) → block DISCARDED; 5e proves
+#      a verbatim span still blocks, so the check is non-vacuous.
 #   7. NON-VACUOUS: the fixture judge actually distinguishes the two transcripts.
 #   8. SMOKE (optional): the REAL claude judge classifies the two transcripts correctly;
 #      skipped (not failed) if claude is unreachable.
@@ -185,6 +187,35 @@ is_block "$out" || bad "no-progress: first block should fire"
 out="$(run_worker "$COLLAPSE" mav false nopcase)"
 is_block "$out" && bad "no-progress: identical turn blocked twice (would loop)" \
 	|| pass "loop safety: an unchanged turn is not re-blocked"
+
+# 5d. CONFABULATED EVIDENCE is discarded. The judge is one sample from a small model; it has
+#     been observed blocking a turn while quoting a span from a DIFFERENT turn ("Authoring the
+#     plan"), which is unfalsifiable from inside the model and cost the operator a false stop.
+#     A block whose EVIDENCE line is absent from the judged turn must be thrown away.
+CONFAB="$WORK/confab-judge.sh"
+cat > "$CONFAB" <<'CONFAB_EOF'
+#!/usr/bin/env sh
+echo "VERDICT: BLOCK"
+echo "REASON: fabricated a span that is not in this turn."
+echo "EVIDENCE: Authoring the plan and dispatching the agents now"
+CONFAB_EOF
+chmod +x "$CONFAB"
+out="$(STANCE_JUDGE_CMD="sh $CONFAB" run_worker "$COLLAPSE" mav false confabcase)"
+is_block "$out" && bad "confabulated evidence was NOT discarded — a fabricated block reached the agent" \
+	|| pass "confabulated evidence discarded (judge cannot block on a span absent from the turn)"
+
+# 5e. TRUTHFUL evidence still blocks — 5d must not have disarmed the gate (non-vacuity).
+TRUTHFUL="$WORK/truthful-judge.sh"
+cat > "$TRUTHFUL" <<'TRUTH_EOF'
+#!/usr/bin/env sh
+echo "VERDICT: BLOCK"
+echo "REASON: permission-seeking on an in-remit call."
+echo "EVIDENCE: Should I name it stance-guard or stance-sentinel?"
+TRUTH_EOF
+chmod +x "$TRUTHFUL"
+out="$(STANCE_JUDGE_CMD="sh $TRUTHFUL" run_worker "$COLLAPSE" mav false truthcase)"
+is_block "$out" && pass "verbatim evidence still blocks (5d is non-vacuous)" \
+	|| bad "evidence check disarmed a legitimate block"
 
 # 6. ON + collapse + missing transcript → fail open.
 out="$(run_worker "$WORK/does-not-exist.jsonl" mav false)"

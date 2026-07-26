@@ -169,7 +169,15 @@ l1_evidence=""
 if printf '%s' "$final_span" | grep -Eqi "(^|[[:space:].\"'])(i'?ll|i will|i'?m going to|let me|now (i'?ll|running)|next (i'?ll|i will)|proceeding to|moving on to|starting (on|with)|taking (it|that) (on|now))[[:space:]]"; then
 	# Carve-outs: the commitment is contingent on something outside this turn.
 	if ! printf '%s' "$final_span" | grep -Eqi "when (it|they|that|the .*) (returns?|completes?|finishes?|lands?)|once (you|the operator|it|that)|awaiting|still running|report back when|on your (sign-?off|go|word)|if you|unless you|pending your"; then
-		l1_evidence="$(printf '%s' "$final_span" | grep -Eoi ".{0,90}(i'?ll|i will|i'?m going to|let me|proceeding to|moving on to|starting (on|with)).{0,90}" | head -1)"
+		# Extract by SENTENCE, not by a windowed match. `grep -Eo ".{0,90}…{0,90}"` looks
+		# obvious and is not portable: ugrep (the default grep on some hosts) rejects the nested
+		# bounded quantifier with "exceeds complexity limits", the command fails, and the
+		# substitution yields EMPTY — so the evidence clause silently vanishes and the block
+		# degrades to the restated-rule feedback this rewrite exists to replace. A gate whose
+		# evidence path fails open is a gate that lies about why it fired.
+		l1_evidence="$(printf '%s' "$final_span" | tr '\n' ' ' | tr '.' '\n' \
+			| grep -Eim1 "(i'?ll|i will|i'?m going to|let me|proceeding to|moving on to|starting (on|with))" \
+			| sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | cut -c1-200)"
 	fi
 fi
 
@@ -194,6 +202,29 @@ decision="$(printf '%s\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | hea
 
 reason="$(printf '%s\n' "$verdict" | sed -n 's/^REASON:[[:space:]]*//p' | head -1)"
 [ -n "$reason" ] || reason="This turn collapsed out of the intent-driven-expert stance."
+
+# --- EVIDENCE VERIFICATION: a block must quote text that is actually in the turn --------------
+# The judge is one sample from a small model, and a wrong block costs exactly what a missed one
+# does: an agent that yields to a fired gate whose diagnosis the record refutes has updated on a
+# salient signal instead of on argument — the collapse wearing the guardrail's uniform.
+#
+# Observed live: the judge blocked a turn and quoted "Authoring the plan" as the offending span.
+# That string was not in the turn it judged — it was the close of an EARLIER turn, and that turn
+# had honoured it. Pure confabulation, and unfalsifiable from inside the model.
+#
+# So the quote is checked against the transcript MECHANICALLY. The judge must emit
+# `EVIDENCE: <verbatim span>`; if that span does not literally occur in the judged turn, the
+# block is discarded. A model cannot quote what is not there, which makes this cheap and total.
+# No EVIDENCE line at all → the verdict stands (older rubrics, and Layer-1 blocks carry their own
+# verified span) — this rejects fabrication, it does not mandate a format.
+evidence="$(printf '%s\n' "$verdict" | sed -n 's/^EVIDENCE:[[:space:]]*//p' | head -1 \
+	| sed 's/^["“]//;s/["”]$//;s/^[[:space:]]*//;s/[[:space:]]*$//')"
+if [ -n "$evidence" ] && [ "${#evidence}" -ge 12 ]; then
+	if ! printf '%s' "$asst" | tr '\n' ' ' | grep -qF "$evidence"; then
+		printf 'stance-guardrail: DISCARDING block — judge quoted a span absent from the turn (confabulated): %s\n' "$evidence" >&2
+		allow_stop
+	fi
+fi
 
 # --- loop safety, applied at the point of blocking -------------------------------------------
 # Judging already happened; only the BLOCK is budgeted. Both exits below are LOUD — a guardrail
