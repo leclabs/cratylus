@@ -22,7 +22,7 @@ ever a stand-in for a registry we are about to have.
 | S1 shim seam                        | **DONE**                          | `ad45999` |
 | S3 wake/handoff onto the shim       | **DONE**                          | `cae76b7` |
 | S2 declared-dependency capabilities | **DONE**                          | `cd10503` |
-| S4 CLI brand                        | **BLOCKED** → `discipline-anchor` | —         |
+| S4 CLI brand                        | **OPEN** — re-derive, not blocked | —         |
 | S5 `agent-canon` installable        | **DONE**                          | `b84c959` |
 | S6 local dev-loop parity            | **DONE** — falsifier actually run | see below |
 | S7 compose → render tree            | **DONE**                          | `650480e` |
@@ -144,6 +144,21 @@ _library_, not a PATH binary, so the oracle's stated collision is not real for u
 
 **No longer blocking.** S1+S3 gave the bin name exactly one home, so the rebrand is a
 one-line change whenever the anchor resolves.
+
+**Re-scoped 2026-07-26 (mav).** The progress table had this row as `BLOCKED → discipline-anchor`,
+contradicting the line directly above it. The edge is cut, and the shard is **OPEN**, not blocked:
+
+- `discipline-anchor` **ran** and returned ⊥ — the discipline has no sign in the priors, convergently
+  (abstention 3/3, best candidate 3/8). So this shard was queued behind something that will never arrive.
+- The two differentiae that scattered _that_ derivation, per its ablation, are _discovered-not-invented_
+  and _cold-test-is-sole-standing_ — properties of the methodology. A **bin on PATH** carries neither.
+  Removing them sharpened convergence to 2/2, which is the altitude this shard occupies.
+- S4's own diagnostic already pointed here: the oracle returned the **genus** (a build tool) because the
+  definiendum was under-specified — a rig defect, fixable, and categorically unlike the gap found above.
+
+So: re-run S4's derivation on its own terms, handing over the full differentia of a _dual-faced single
+entry point_ rather than the build face alone. Keep the measured collision data — `forge` is genuinely
+disqualified (bin on PATH ×2), `rig`'s stated collision is not real for us.
 
 ### S5 — scope enlarged by a silent failure mode
 

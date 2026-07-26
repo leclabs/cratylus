@@ -3,7 +3,8 @@
 > Working handle, **not** an anchor — `compiler`/`projector` are operator-floated candidates held as
 > concepts, not adopted as names. Reader = LLM.
 
-**Status: PROPOSED — census owed before sharding. Naming blocked on `discipline-anchor`.**
+**Status: PROPOSED — census owed before sharding. Naming NO LONGER blocked on `discipline-anchor` (edge
+cut 2026-07-26; see §Naming). Derive the package anchors at this altitude, where the priors converge.**
 
 ## Intent (operator hypothesis, 2026-07-25)
 
@@ -103,4 +104,21 @@ exactly as self-floated ones do. Neither is adopted. Two cautions for whoever de
 - **`projector`** is closer, since `project` is already a discovered verb in the pipeline — but a name
   taken because it echoes an existing verb is still a coinage unless it survives candidate-free derivation.
 
-Derivation runs **after** `discipline-anchor`: package names are projections of what the discipline is.
+**Blocking edge CUT 2026-07-26 (mav).** This line previously read: _"Derivation runs after
+`discipline-anchor`: package names are projections of what the discipline is."_ That was an inference,
+and the `discipline-anchor` run of 2026-07-26 supplies evidence against it.
+
+The anchor derivation returned **⊥** — not "not yet", but _absent_: the naming-discipline lexicon is
+Hermogenean throughout, so the location in sign-space is occupied by its own inverse, and abstention
+converged harder (3/3) than any candidate (3/8). Waiting on it is therefore waiting on nothing.
+
+More decisively, its **ablation localizes the failure**. Two differentiae caused the scatter and nothing
+else did: _discovered-not-invented_ (D2) and _the cold test is sole standing_ (D3). Remove them and
+convergence sharpens to 2/2. Both are properties of the **methodology**, not of an artifact. The two
+concerns here — harness-**blind** semantic resolution, harness-**bound** realization (§table above) —
+carry neither in their definiendum, so a derivation at _this_ altitude is not contaminated by the residue
+that broke the one above it. That is precisely the region the ablation showed converging.
+
+Naming a compiler does not require first naming compiler science. **Derive here, at this altitude, now.**
+Full differentia still required (an under-specified definiendum yields the genus — `install-parity` S4's
+six failures), and the candidate cautions above still bind.

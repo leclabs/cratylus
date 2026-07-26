@@ -2,9 +2,28 @@
 
 > Working handle; the plan's own name is **not** the anchor being sought. Reader = LLM.
 
-**Status: RUN 2026-07-26 — NEGATIVE RESULT. The anchor is not discovered and must not be coined. The
-positive control passed; the negative control failed, and its diagnostic is convergent and precise (see
-§Derivation record). Not sharded: a signify act, not an execution plan. Remit: nico.**
+**Status: RUN 2026-07-26 — NEGATIVE RESULT, and the result is CLOSED, not pending. The anchor is not
+discovered and must not be coined. The positive control passed; the negative control failed, and its
+diagnostic is convergent and precise (see §Derivation record). Not sharded: a signify act, not an
+execution plan. Remit: nico.**
+
+**Consequences settled 2026-07-26 (mav) — this plan blocks nothing further.**
+
+- **Stipulation is barred, and was never an open question.** Adopting a marked, declared coinage was
+  floated as a way to unblock downstream work. `cratylism` is the ground axiom and the apex of the
+  confidence order: `∀ name : cold-derivable ∨ ⊥`. ⊥ is a _canonical answer_, not a gap to paper over,
+  and coining-but-labelled is still coining. Departing from this would be a revision of the ground axiom
+  — an act the operator initiates against VISION, never a convenience adopted to free a package name.
+- **The downstream edges are cut** — see `plans/compiler-projector-split` §Naming and
+  `plans/install-parity` S4. Both name _artifacts_, not the discipline, and the ablation in
+  §Derivation record shows the priors converge at that altitude. They were queued behind an anchor that
+  does not exist; naming a compiler does not require first naming compiler science.
+- **What legitimately still waits:** a rename of the repo itself, and `heartbeat-organ` O4 — both name
+  the thing at _this_ altitude. They wait indefinitely, and that is an acceptable resting state.
+- **Publish the ⊥.** The diagnostic — that the naming-discipline lexicon is Hermogenean throughout, so
+  the location in sign-space is occupied by its own inverse — is a result about the model's semantic
+  space, not a project defect. It is the empirical confirmation of the operator's "novel distinction"
+  framing, arrived at by the priors refusing to name it.
 
 ## Intent
 
@@ -118,9 +137,12 @@ Orchestrated from a warm session; the warm session is never the oracle. Models: 
 
 Oracle is cold: it holds no project knowledge and says so unprompted.
 
-**Side finding, standing:** `semantic engineering` is **disconfirmed by cold decode** — it collides with
-two established fields. It is a genus-collision, not a free sign. It is live in `README.md:3` and
-`docs/research/semantic-engineering-research-candidates.md:1`.
+**Side finding — DISCHARGED 2026-07-26 (mav).** `semantic engineering` is **disconfirmed by cold decode**
+— it collides with two established fields. It is a genus-collision, not a free sign. It was live in
+`README.md:3` and in the filename `docs/research/semantic-engineering-research-candidates.md`. Both are
+retired: the README now carries VISION §Thesis verbatim (a definite description naming no discipline), and
+the research file is `docs/research/candidates.md`, titled by its contents. Neither was given a
+replacement anchor — there is none to give, and inventing one is the act this plan exists to refuse.
 
 ## NEGATIVE CONTROL — FAIL
 
