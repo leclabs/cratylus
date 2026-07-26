@@ -11,9 +11,13 @@
 // the consumer's projection are now the same call over the same plugin dirs. The
 // difference between "our corpus" and "a consumer's config" is only WHICH plugins
 // are in the set — which is the whole point of a build-time plugin architecture.
+//
+// RENDERING IS NOT WRITING. Projection returns the artifact tree; `writeRenderTree`
+// (./write.ts) puts it on disk. This module opens no file descriptor — that is a
+// LOAD-BEARING property, not tidiness: it is what makes "what does this plugin set
+// project?" an answerable question instead of a tmpdir excavation.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { chmodSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
@@ -29,7 +33,7 @@ import {
   scanCellDirNames,
   scanModuleNames,
 } from '../core/module-scan.js';
-import { emitRuntimeShim } from './runtime-shim.js';
+import { runtimeShimContent } from './runtime-shim.js';
 
 /** The plugin fields projection consumes — the dirs a plugin contributes cells from. */
 export interface ProjectablePlugin {
@@ -45,8 +49,6 @@ export interface ProjectablePlugin {
 export interface ProjectOpts {
   /** The resolved plugin set, in `extends` order. */
   readonly plugins: readonly ProjectablePlugin[];
-  /** Render-tree root; `agents/` and `skills/` are written beneath it. */
-  readonly out: string;
   /** The harness adapter that renders each cell. */
   readonly adapter: HarnessAdapter;
   /**
@@ -69,6 +71,32 @@ export interface ProjectReport {
   readonly skills: number;
   readonly shims: number;
   readonly hooks: number;
+}
+
+/**
+ * ONE projected artifact: its path RELATIVE to the render-tree root, plus its bytes.
+ * `HarnessAdapter` already hands back `{ filename, content }` per cell; this is that
+ * pair once the projection has decided which subtree the cell belongs under.
+ */
+export interface ProjectedFile {
+  /** Path relative to the render-tree root, e.g. `skills/wake/SKILL.md`. */
+  readonly path: string;
+  readonly content: string;
+  /** 0755 on write (shims, hook workers). Absent ⇒ ambient umask. */
+  readonly executable?: boolean;
+}
+
+/**
+ * What a plugin set projects to: every artifact as bytes, plus the counts.
+ *
+ * DELIBERATELY a local structural type, and deliberately unnamed beyond that. This
+ * is NOT MODEL's `IR`: `ir : agent → IR` is AGENT-scoped and is already realized by
+ * the `Agent` interface. A whole-plugin-set aggregate is a different thing that no
+ * grounding doc declares, and minting a canonical anchor for it is a cratylism act
+ * this seam is not entitled to perform.
+ */
+export interface ProjectedTree extends ProjectReport {
+  readonly files: readonly ProjectedFile[];
 }
 
 /** The `<name>: Agent` vector export of an agent module. */
@@ -110,7 +138,8 @@ async function hookOf(modPath: string): Promise<HookCell | null> {
 }
 
 /**
- * Project every cell contributed by the plugin set into a render tree.
+ * Project every cell contributed by the plugin set into an artifact tree. Writes
+ * nothing — hand the result to `writeRenderTree(out, tree.files)`.
  *
  * Later plugins in `extends` order win on a name collision — the same precedence
  * `resolve()` gives fragments, so a consumer can override a canon cell by shipping
@@ -118,13 +147,12 @@ async function hookOf(modPath: string): Promise<HookCell | null> {
  */
 export async function projectPluginSet(
   opts: ProjectOpts,
-): Promise<ProjectReport> {
+): Promise<ProjectedTree> {
   const log = opts.log ?? (() => {});
-  const agentsOut = join(opts.out, 'agents');
-  const skillsOut = join(opts.out, 'skills');
+  const files: ProjectedFile[] = [];
 
   // Collect by name across plugins first, so an override is resolved BEFORE any
-  // write and can be logged rather than discovered as a clobbered file.
+  // cell is rendered and can be logged rather than discovered as a clobbered file.
   const agentSrc = new Map<string, Src>();
   const skillSrc = new Map<string, Src>();
   for (const p of opts.plugins) {
@@ -153,7 +181,6 @@ export async function projectPluginSet(
   }
 
   let agents = 0;
-  if (agentSrc.size > 0) mkdirSync(agentsOut, { recursive: true });
   for (const [name, { dir, preamble: pre }] of [...agentSrc].sort()) {
     const modPath = await resolveModulePath(dir, name);
     if (!modPath) throw new Error(`agent module not found: ${name}`);
@@ -162,7 +189,7 @@ export async function projectPluginSet(
       ...agent,
       ...((pre ?? opts.preamble) ? { preamble: pre ?? opts.preamble } : {}),
     });
-    writeFileSync(join(agentsOut, filename), content);
+    files.push({ path: join('agents', filename), content });
     log(`EMIT agent ${name}`);
     agents++;
   }
@@ -182,12 +209,15 @@ export async function projectPluginSet(
       ...((pre ?? opts.preamble) ? { preamble: pre ?? opts.preamble } : {}),
       runtime: cell.runtime,
     };
-    const cellOut = join(skillsOut, name);
-    mkdirSync(cellOut, { recursive: true });
+    const cellOut = join('skills', name);
     const { filename, content } = opts.adapter.skillDef(resolved);
-    writeFileSync(join(cellOut, filename), content);
+    files.push({ path: join(cellOut, filename), content });
     if (cell.runtime) {
-      emitRuntimeShim(cellOut, cell.runtime.capability);
+      files.push({
+        path: join(cellOut, 'scripts', `${cell.runtime.capability}.mjs`),
+        content: runtimeShimContent(cell.runtime.capability),
+        executable: true,
+      });
       log(
         `EMIT skill ${name} (+runtime shim scripts/${cell.runtime.capability}.mjs)`,
       );
@@ -235,20 +265,20 @@ export async function projectPluginSet(
     );
     for (const w of warnings) log(`WARN hook: ${w}`);
     for (const sk of skipped) log(`SKIP hook ${sk.path}: ${sk.reason}`);
-    mkdirSync(opts.out, { recursive: true });
-    writeFileSync(
-      join(opts.out, 'settings.json'),
-      `${JSON.stringify({ hooks: settings }, null, 2)}\n`,
-    );
+    files.push({
+      path: 'settings.json',
+      content: `${JSON.stringify({ hooks: settings }, null, 2)}\n`,
+    });
     log(`EMIT settings.json (hooks: ${Object.keys(settings).join(', ')})`);
     for (const src of sources) {
-      const destDir = join(opts.out, 'hooks', src.hook.id ?? 'unnamed');
-      mkdirSync(destDir, { recursive: true });
+      const destDir = join('hooks', src.hook.id ?? 'unnamed');
       for (const worker of src.workers) {
-        const dest = join(destDir, worker.filename);
         // Bytes come from the CELL, never an on-disk copy — the cell is the home.
-        writeFileSync(dest, worker.content);
-        if (worker.executable) chmodSync(dest, 0o755);
+        files.push({
+          path: join(destDir, worker.filename),
+          content: worker.content,
+          ...(worker.executable ? { executable: true } : {}),
+        });
       }
       log(
         `EMIT hook ${src.hook.id} (+${src.workers.length} worker${src.workers.length === 1 ? '' : 's'})`,
@@ -257,7 +287,8 @@ export async function projectPluginSet(
     }
   }
 
-  return { agents, skills, shims, hooks };
+  return { files, agents, skills, shims, hooks };
 }
 
 export { emitRuntimeShim } from './runtime-shim.js';
+export { writeRenderTree } from './write.js';
