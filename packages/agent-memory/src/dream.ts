@@ -3,6 +3,7 @@
 // correctness property: a crash at rename must lose no unconsumed record).
 import * as fs from 'node:fs';
 import { dirname, join } from 'node:path';
+import { STORE_WATERMARK, ceilingRefusal, refusesAppend } from './audit.js';
 import type { EpisodicRecord } from './record.js';
 import { serializeRecord } from './record.js';
 import type { Classifier, RouteDecision, RouteTarget } from './route.js';
@@ -27,14 +28,32 @@ export interface DreamResult {
  * append — the prose store files (SEMANTIC.md, PROCEDURAL.md) are not JSONL.
  * A single trailing newline separates entries; the
  * caller's `content` carries its own internal shape.
+ *
+ * **This is the ceiling's enforcement site for growth.** It is the single
+ * landing site for ALL prose-store growth — reached by {@link applyRoutes} and
+ * therefore by `apply` and `rollover` alike — so one guard here bounds every
+ * append path. An append that would take the store past `ceiling` THROWS
+ * ({@link ceilingRefusal} names the store, the ceiling, and the overage).
+ *
+ * Refuse, never truncate: cutting a prose store at a byte offset would destroy
+ * content silently and mid-entry. The whole point of the bound is to force an
+ * eviction JUDGEMENT — performing the eviction mechanically defeats it.
  */
-function appendToHome(file: string, content: string): void {
+function appendToHome(
+  file: string,
+  content: string,
+  ceiling: number = STORE_WATERMARK,
+): void {
+  const body = content.endsWith('\n') ? content : `${content}\n`;
+  const before = fs.existsSync(file) ? fs.statSync(file).size : 0;
+  const after = before + Buffer.byteLength(body, 'utf8');
+  if (refusesAppend(after, ceiling))
+    throw new Error(ceilingRefusal(file, after, ceiling));
   fs.mkdirSync(dirname(file), { recursive: true });
   // Open for append; fsync so a crash after landing but before compaction still
   // has the durable content (landing-before-compaction is the safe ordering).
   const fd = fs.openSync(file, 'a');
   try {
-    const body = content.endsWith('\n') ? content : `${content}\n`;
     fs.writeSync(fd, body, null, 'utf8');
     fs.fsyncSync(fd);
   } finally {
@@ -163,6 +182,11 @@ function routeLabel(target: RouteTarget): string {
   return target.store;
 }
 
+export interface ApplyOptions {
+  /** Byte ceiling per prose store; defaults to {@link STORE_WATERMARK}. */
+  watermark?: number;
+}
+
 /**
  * The dream pass over one `(scope, path)` EPISODIC store: classify each record,
  * land its distilled content in every routed home, then **atomically compact**
@@ -176,12 +200,20 @@ function routeLabel(target: RouteTarget): string {
  *
  * The `classifier` is injected — the engine owns none of the voice/scope
  * reasoning. Returns a {@link DreamResult} describing what moved.
+ *
+ * A landing that would push a prose store past its byte ceiling THROWS
+ * ({@link appendToHome}) — the pass stops there, having landed whatever came
+ * before it and compacted nothing, so no record is lost and re-running after
+ * the eviction is safe (landing is idempotent-at-compaction by the same
+ * ordering argument above).
  */
 export function applyRoutes(
   store: EpisodicStore,
   path: string | undefined,
   classifier: Classifier,
+  opts: ApplyOptions = {},
 ): DreamResult {
+  const ceiling = opts.watermark ?? STORE_WATERMARK;
   const records = store.read(path);
   const consumed: string[] = [];
   const retained: string[] = [];
@@ -201,7 +233,7 @@ export function applyRoutes(
           `Route target for store ${target.store} (${file}) carries no content`,
         );
       }
-      appendToHome(file, target.content);
+      appendToHome(file, target.content, ceiling);
       if (!landedSet.has(file)) {
         landedSet.add(file);
         landed.push(file);

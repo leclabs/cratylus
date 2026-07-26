@@ -1,7 +1,20 @@
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
-import { auditHome, loadLines, repoKeysFromConfig } from './audit.js';
+import {
+  STORE_WATERMARK,
+  auditHome,
+  ceilingRefusal,
+  loadLines,
+  refusesReplace,
+  repoKeysFromConfig,
+} from './audit.js';
 import { applyRoutes, resolveTarget } from './dream.js';
 import { foldRecords, manifestToJsonl } from './fold.js';
 import {
@@ -307,6 +320,18 @@ replace is a whole-file supersede of a resident prose store:
 loudly (EPISODIC is the raw log, not a whole-file prose store). This is the
 depalimpsest write path — the agent reconciles the resident set to current
 ground-truth and supersedes the file, rather than only appending.
+
+Both prose-store write paths are BOUNDED by a per-store byte ceiling
+(${STORE_WATERMARK}B; audit reports a store over it as pressure). The two
+predicates differ, deliberately:
+  append  (apply, rollover)  accepts <=> bytes(after) <= ceiling
+  replace                    accepts <=> bytes(after) <= ceiling
+                                      OR bytes(after) < bytes(before)
+So a store already over the ceiling is frozen to SHRINK, never bricked: appends
+refuse, but any strictly smaller replace lands — it converges across successive
+dreams. Nothing is ever truncated for you. WHAT to evict is the agent's
+judgement; the tool only refuses, and its refusal names the store, the ceiling,
+and the overage so the eviction has a budget.
 
 audit scans <home>/{SEMANTIC,PROCEDURAL}.md for scope
 markers: exit 1 + findings on any unpinned hit, 0 clean. Allow-file
@@ -871,6 +896,11 @@ function runGet(args: ParsedArgs): CliResult {
  * unknown store are rejected loudly. This is dream's depalimpsest write path:
  * reconcile the resident set to current ground-truth by superseding the file,
  * not only appending. Reads of resident prose stay agent-direct (no read verb).
+ *
+ * **The ceiling's other predicate.** This is the one write that may leave a
+ * store over the byte ceiling: it accepts any STRICT shrink as well as any
+ * result that fits. That asymmetry against the append guard is what keeps an
+ * over-ceiling store repairable rather than bricked — see `refusesReplace`.
  */
 function runReplace(args: ParsedArgs): CliResult {
   const home = requireHome(args.flags);
@@ -915,8 +945,17 @@ function replaceGuarded(args: ParsedArgs, home: string): CliResult {
       err: 'replace needs --body <text> or --body -\n',
     };
   }
+  const text = body.endsWith('\n') ? body : `${body}\n`;
+  // The ceiling, on the OTHER predicate from append's. `replace` additionally
+  // accepts any STRICT shrink, so a store already over the line stays
+  // repairable — see `refusesReplace`. This is the depalimpsest write, i.e. the
+  // very act an over-ceiling store is refused an append in order to force.
+  const after = Buffer.byteLength(text, 'utf8');
+  const before = existsSync(file) ? statSync(file).size : 0;
+  if (refusesReplace(before, after))
+    return { code: 1, out: '', err: `${ceilingRefusal(file, after)}\n` };
   mkdirSync(dirname(file), { recursive: true });
-  writeFileSync(file, body.endsWith('\n') ? body : `${body}\n`, 'utf8');
+  writeFileSync(file, text, 'utf8');
   return {
     code: 0,
     out: `replaced ${basename(file)} (${body.length} bytes)\n`,
