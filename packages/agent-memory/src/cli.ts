@@ -29,6 +29,7 @@ import type {
 import { seedTemplates } from './seeds.js';
 import {
   heartbeat,
+  homeOfSession,
   listSessions,
   liveSessions,
   registerSession,
@@ -131,7 +132,7 @@ const VERB_FLAGS: Readonly<Record<string, readonly string[]>> = {
     'json',
   ],
   node: ['json', 'config'],
-  home: HOME_FLAGS,
+  home: [...HOME_FLAGS, 'session'],
   fold: [...HOME_FLAGS, 'path', 'config'],
   lock: [...HOME_FLAGS, 'stale', 'session'],
   session: [...HOME_FLAGS, 'session', 'json', 'stale', 'under'],
@@ -145,7 +146,7 @@ const VERB_FLAGS: Readonly<Record<string, readonly string[]>> = {
   ],
   apply: [...HOME_FLAGS, 'path', 'routes', 'session'],
   replace: [...HOME_FLAGS, 'store', 'body', 'session'],
-  audit: [...HOME_FLAGS, 'allow', 'config', 'keys'],
+  audit: [...HOME_FLAGS, 'allow', 'config', 'keys', 'owed'],
   migrate: ['dry-run', 'overwrite'],
 };
 
@@ -213,7 +214,7 @@ usage:
   memory read    (--home <dir> | --name <name>) [--under <path>] [--for-session <S>] [--stale <ms>] \\
                  [--scope <tag>] [--path <p>] [--count]
   memory node    <path> [--json] [--config <file>]
-  memory home    (--home <dir> | --name <name>)   -- print the resolved agent home
+  memory home    (--home <dir> | --name <name> | --session <id>)   -- print the resolved agent home
   memory fold    (--home <dir> | --name <name>) [--path <p>] [--config <file>]
   memory lock    (acquire | release | status) (--home <dir> | --name <name>) [--session <id>]
   memory session (register | heartbeat | release | list) (--home <dir> | --name <name>) [--session <id>]
@@ -222,7 +223,7 @@ usage:
                  [--completed-only | --for-session <S>]
   memory apply   (--home <dir> | --name <name>) [--path <p>] [--session <id>] (--routes <json> | --routes -)
   memory replace (--home <dir> | --name <name>) [--session <id>] --store SEMANTIC|PROCEDURAL (--body <text> | --body -)
-  memory audit   (--home <dir> | --name <name>) [--allow <file>] [--config <file>] [--keys <file>]
+  memory audit   (--home <dir> | --name <name>) [--allow <file>] [--config <file>] [--keys <file>] [--owed]
   memory migrate <src.md> <dest.jsonl> [--dry-run] [--overwrite]
 
 init provisions a fresh home — mkdir + seed the {SEMANTIC.md, PROCEDURAL.md,
@@ -455,6 +456,18 @@ function runNode(args: ParsedArgs): CliResult {
  *  `AGENT_HOME=$(memory home --name <self>)` to the canonical `~/.agents/<name>`
  *  (or an explicit override) with no hardcoded path in the skill text. */
 function runHome(args: ParsedArgs): CliResult {
+  // `--session <id>`: resolve the home OWNING that session, by asking the
+  // registry rather than by knowing the layout. This exists for harness faces
+  // (a Stop hook carries a session_id but no agent identity), so that a face
+  // never has to scan `~/.agents/*` itself — the being's memory home is not a
+  // thing a face may read.
+  const sid = str(args.flags.session);
+  if (sid !== undefined) {
+    const found = homeOfSession(sid);
+    if (found === undefined)
+      return { code: 1, out: '', err: `no home owns session ${sid}\n` };
+    return { code: 0, out: `${found}\n`, err: '' };
+  }
   return { code: 0, out: `${requireHome(args.flags)}\n`, err: '' };
 }
 
@@ -871,6 +884,15 @@ function replaceGuarded(args: ParsedArgs, home: string): CliResult {
 function runAudit(args: ParsedArgs): CliResult {
   const home = requireHome(args.flags);
 
+  // `--owed`: the backlog verdict, ONE home for the predicate. The nudge hook
+  // used to compute its own count by awk-ing the raw log, which put a second
+  // home on the same concept and made a harness face read the store layout.
+  if (args.flags.owed === true) {
+    const mem = new AgentMemory({ home });
+    const owed = mem.consolidationOwed();
+    return { code: 0, out: `${owed ? 'owed' : 'clear'}\n`, err: '' };
+  }
+
   const defaultAllow = join(home, 'audit-allow.txt');
   const allowFile =
     str(args.flags.allow) ??
@@ -887,6 +909,8 @@ function runAudit(args: ParsedArgs): CliResult {
   const report = auditHome(home, { allowPins, repoKeys });
 
   let out = '';
+  for (const p of report.pressure)
+    out += `${basename(p.file)}: ${p.bytes}B over the ${p.watermark}B watermark — depalimpsest owed\n`;
   for (const f of report.findings)
     out += `${basename(f.file)}:${f.line}: [${f.cls}] ${f.match}\n`;
   let err = '';

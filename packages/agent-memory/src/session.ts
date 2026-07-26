@@ -7,7 +7,7 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { hostname } from 'node:os';
+import { homedir, hostname } from 'node:os';
 import { join } from 'node:path';
 import { STALE_MS } from './lock.js';
 
@@ -281,4 +281,28 @@ export function forgetSession(home: string, id: string): { removed: boolean } {
   if (!existsSync(file)) return { removed: false };
   rmSync(file);
   return { removed: true };
+}
+
+/**
+ * The agent home that owns a session id — the registry answers it, so a caller
+ * never scans `~/.agents/*` itself. Falls back to the sole home when exactly
+ * one exists; returns undefined when nothing resolves, so callers fail silent
+ * rather than fabricate a home.
+ */
+export function homeOfSession(
+  id: string,
+  agentsRoot: string = join(homedir(), '.agents'),
+): string | undefined {
+  let homes: string[];
+  try {
+    homes = readdirSync(agentsRoot, { withFileTypes: true })
+      .filter((d) => d.isDirectory())
+      .map((d) => join(agentsRoot, d.name));
+  } catch {
+    return undefined;
+  }
+  for (const home of homes) {
+    if (existsSync(join(sessionsDir(home), `${id}.json`))) return home;
+  }
+  return homes.length === 1 ? homes[0] : undefined;
 }

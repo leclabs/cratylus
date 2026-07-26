@@ -34,6 +34,23 @@ export interface AuditFinding {
   match: string;
 }
 
+/**
+ * A store that has outgrown the size at which loading it whole stays affordable.
+ * NOT an {@link AuditFinding}: nothing in the file is wrong, so it has no line
+ * and no matched text — it is a property of the store, not of a line in it.
+ *
+ * This is the quantity the machinery was blind to. Every other audit signal is
+ * a PURITY predicate, so a store could grow without bound and still report
+ * clean; `depalimpsest` had no fireable trigger because nothing measured size.
+ */
+export interface StorePressure {
+  /** Absolute path of the store that is over. */
+  file: string;
+  bytes: number;
+  /** The byte watermark it exceeded. */
+  watermark: number;
+}
+
 /** The audit verdict: unpinned findings fail; pins and stale pins are reported. */
 export interface AuditReport {
   /** Findings NOT covered by an allow pin — any entry here fails the audit. */
@@ -44,7 +61,24 @@ export interface AuditReport {
   stalePins: string[];
   /** Store files actually scanned (absent files are skipped, not errors). */
   scanned: string[];
+  /** Stores over the byte watermark — dream's `depalimpsest` trigger. */
+  pressure: StorePressure[];
 }
+
+/**
+ * Default byte watermark per whole-read prose store. Wake loads SEMANTIC and
+ * PROCEDURAL in full on every session, so their size is a per-session context
+ * cost, not a disk cost. Set below the point where that read starts to crowd
+ * out the work it is supposed to serve.
+ */
+export const STORE_WATERMARK = 16_000;
+
+/**
+ * Default backlog watermark: unfolded EPISODIC records past which a dream is
+ * owed. Conservative and below the harness compaction point, so the signal
+ * arrives while there is still room to act on it.
+ */
+export const BACKLOG_WATERMARK = 12;
 
 /** Fixed marker-class regexes. Each must be `g`-flagged (scanned via matchAll). */
 const DETECTORS: ReadonlyArray<{ cls: MarkerClass; re: RegExp }> = [
@@ -171,6 +205,8 @@ export interface AuditOptions {
   allowPins?: readonly string[];
   /** Known repo keys (from `.agent-factory.config` and/or a keylist file). */
   repoKeys?: readonly string[];
+  /** Byte watermark per store; defaults to {@link STORE_WATERMARK}. */
+  watermark?: number;
 }
 
 /**
@@ -185,12 +221,17 @@ export function auditHome(home: string, opts: AuditOptions = {}): AuditReport {
   const pinned: AuditFinding[] = [];
   const matchedPins = new Set<string>();
   const scanned: string[] = [];
+  const watermark = opts.watermark ?? STORE_WATERMARK;
+  const pressure: StorePressure[] = [];
 
   for (const name of AUDITED_FILES) {
     const file = join(home, name);
     if (!existsSync(file)) continue;
     scanned.push(file);
-    const lines = readFileSync(file, 'utf8').split('\n');
+    const text = readFileSync(file, 'utf8');
+    const bytes = Buffer.byteLength(text, 'utf8');
+    if (bytes > watermark) pressure.push({ file, bytes, watermark });
+    const lines = text.split('\n');
     for (let i = 0; i < lines.length; i++) {
       const lineText = lines[i] as string;
       for (const { cls, match } of scanLine(lineText, repoKeys)) {
@@ -206,7 +247,7 @@ export function auditHome(home: string, opts: AuditOptions = {}): AuditReport {
   }
 
   const stalePins = [...allow].filter((p) => !matchedPins.has(p));
-  return { findings, pinned, stalePins, scanned };
+  return { findings, pinned, stalePins, scanned, pressure };
 }
 
 /**

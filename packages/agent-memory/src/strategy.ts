@@ -40,7 +40,12 @@ import type {
   SessionEntry,
   SessionStatus,
 } from '@leclabs/agent-runtime';
-import { auditHome, loadLines, repoKeysFromConfig } from './audit.js';
+import {
+  BACKLOG_WATERMARK,
+  auditHome,
+  loadLines,
+  repoKeysFromConfig,
+} from './audit.js';
 import { applyRoutes, resolveTarget } from './dream.js';
 import { foldRecords } from './fold.js';
 import { acquireLock, lockStatus, releaseLock } from './lock.js';
@@ -297,7 +302,13 @@ export class AgentMemory implements MemoryStrategy {
         this.migrateIfOwed();
         const id = opts.id ?? defaultDerive.session() ?? randomUUID();
         const entry = this.toEntry(registerSession(home, id));
-        const findings = this.audit().findings.length;
+        // consolidationOwed is a BACKLOG predicate, and its name says so. It
+        // used to be `audit().findings.length > 0` — a PURITY measure, which
+        // meant a store could grow without bound and still report nothing owed,
+        // and an un-drained EPISODIC raised no signal at all. Three causes now,
+        // each of which a dream actually discharges: raw records waiting to be
+        // folded, a store over its byte watermark (the `depalimpsest` trigger),
+        // and scope pollution (the original signal, retained).
         return {
           session: entry.id,
           semantic: this.readStore('SEMANTIC'),
@@ -306,7 +317,7 @@ export class AgentMemory implements MemoryStrategy {
             forSession: entry.id,
             ...(opts.under ? { under: opts.under } : {}),
           }),
-          consolidationOwed: findings > 0,
+          consolidationOwed: this.consolidationOwed(),
         };
       }
       case 'register': {
@@ -384,6 +395,24 @@ export class AgentMemory implements MemoryStrategy {
   }
 
   /**
+   * Is a dream owed? ONE home for the predicate — the shell-side nudge hook
+   * previously computed its own backlog count by `awk`-ing the raw log, which
+   * put a second home on the same concept and made a harness face read the
+   * being's store layout.
+   *
+   * Owed on any of three, each of which a dream discharges: unfolded records
+   * waiting in the raw log, a prose store over its byte watermark, or scope
+   * pollution. Size is included because it is the trigger `depalimpsest` has
+   * always lacked — a purity-only predicate reports a 39 KB store as clean.
+   */
+  consolidationOwed(opts: { backlogWatermark?: number } = {}): boolean {
+    const backlogWatermark = opts.backlogWatermark ?? BACKLOG_WATERMARK;
+    if (this.read().length >= backlogWatermark) return true;
+    const report = this.audit();
+    return report.pressure.length > 0 || report.findings.length > 0;
+  }
+
+  /**
    * Perform any store-format migration this strategy owes, idempotently. THIS is
    * where format knowledge belongs: the legacy markdown log predates the jsonl
    * stream, and only the strategy knows both. A caller that had to ask "is a
@@ -447,12 +476,17 @@ export class AgentMemory implements MemoryStrategy {
     if (configPath !== undefined && existsSync(configPath))
       repoKeys.push(...repoKeysFromConfig(configPath));
 
-    const report = auditHome(home, { allowPins, repoKeys });
+    const report = auditHome(home, {
+      allowPins,
+      repoKeys,
+      ...(opts.watermark !== undefined ? { watermark: opts.watermark } : {}),
+    });
     return {
       findings: report.findings,
       scanned: report.scanned,
       pinned: report.pinned.map((p) => p.match),
       stalePins: report.stalePins,
+      pressure: report.pressure,
     };
   }
 

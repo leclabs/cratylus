@@ -212,6 +212,18 @@ export interface AuditFinding {
 }
 
 /** `audit` report over `<home>/{SEMANTIC,PROCEDURAL}.md` — dream's exit gate. */
+/**
+ * A store over the size at which loading it whole stays affordable. NOT an
+ * {@link AuditFinding}: nothing in the file is wrong, so it carries no line and
+ * no matched text — it is a property of the store rather than of a line in it.
+ */
+export interface StorePressure {
+  file: string;
+  bytes: number;
+  /** The byte watermark it exceeded. */
+  watermark: number;
+}
+
 export interface AuditReport {
   findings: AuditFinding[];
   /** Files scanned. */
@@ -220,12 +232,21 @@ export interface AuditReport {
   pinned: string[];
   /** Allow pins that matched nothing (the ratchet shrinks these at review). */
   stalePins: string[];
+  /**
+   * Stores over the byte watermark. This is the QUANTITY signal the report
+   * previously lacked: every other field is a purity predicate, so a store
+   * could grow without bound and still audit clean — leaving `depalimpsest`
+   * with no condition that could ever fire it.
+   */
+  pressure: StorePressure[];
 }
 
 /** `audit` inputs — allow-file, repo keys, and node config, all explicit. */
 export interface AuditOptions {
   /** Allow-file path; else `<home>/audit-allow.txt` if present; else none. */
   allowFile?: string;
+  /** Byte watermark per store; the strategy supplies the default. */
+  watermark?: number;
   /** Repo-specific keys the detector treats as expected (never sniffed). */
   repoKeys?: string[];
   /** Node-marker config path (`.agent-factory.config`) override. */
