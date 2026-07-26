@@ -11,8 +11,14 @@
 // `memory home --session` and `memory audit --owed` — go through real verb
 // dispatch into the real memory strategy.
 
-import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync, spawnSync } from 'node:child_process';
+import {
+  chmodSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -90,13 +96,29 @@ function registerSession(home: string, sid: string): void {
   );
 }
 
-/** Run the worker with HOME=root (so ~/.agents resolves here), given env + stdin. */
+/**
+ * Run the worker with HOME=root (so ~/.agents resolves here), given env + stdin.
+ *
+ * EXIT STATUS IS ASSERTED, stderr is not: the worker routes every runtime call
+ * through `2>/dev/null`, so stderr is empty by design and asserting on it would be
+ * a dark check. The distinction that matters — "the runtime said clear" vs "the
+ * runtime never answered" — is now carried in STDOUT by the worker itself.
+ */
 function run(env: Record<string, string> = {}, stdin = '{}'): string {
-  return execFileSync('sh', [worker], {
+  const res = spawnSync('sh', [worker], {
     input: stdin,
     encoding: 'utf8',
     env: { ...process.env, HOME: root, MEMORY_BIN: binShim, ...env },
   });
+  expect(
+    res.error,
+    `worker failed to spawn: ${res.error?.message}`,
+  ).toBeUndefined();
+  expect(
+    res.status,
+    `worker exited ${res.status}; stderr:\n${res.stderr}`,
+  ).toBe(0);
+  return res.stdout;
 }
 
 describe('memory-consolidation-nudge — advisory when owed, silent when clear', () => {
@@ -106,6 +128,36 @@ describe('memory-consolidation-nudge — advisory when owed, silent when clear',
     expect(out).toMatch(/MEMORY —/);
     expect(out).toMatch(/\/dream/);
     expect(out).not.toContain('"decision"'); // ADVISORY — never a block decision
+  });
+
+  // The distinction the old harness could not draw, as a permanent fixture. A broken
+  // shim and a clear verdict produce the SAME observable — empty stdout, exit 0 — so
+  // without this the suite cannot tell a working silence from a broken one, and a
+  // shim regression would surface only as a confusing flake in whichever case wanted
+  // a nudge.
+  it('REFUSES to read a broken runtime as a clear verdict', () => {
+    const home = seedHome('mav', 40); // owed — a working shim MUST nudge here
+    const broken = join(root, 'broken-bin');
+    writeFileSync(broken, '#!/bin/sh\necho "boom" >&2\nexit 3\n');
+    chmodSync(broken, 0o755);
+    const res = spawnSync('sh', [worker], {
+      input: '{}',
+      encoding: 'utf8',
+      env: {
+        ...process.env,
+        HOME: root,
+        MEMORY_BIN: broken,
+        CLAUDE_AGENT_HOME: home,
+      },
+    });
+    // Still must not block — advisory is advisory, whatever went wrong.
+    expect(res.status).toBe(0);
+    // And it must NOT be silent. Silence is the "clear" verdict; emitting it here
+    // would report a clean bill of health from a runtime that never answered.
+    expect(res.stdout).toMatch(/did not answer/);
+    expect(res.stdout).toMatch(/not a clear verdict/);
+    // The worker swallows the shim's stderr on purpose, so it carries no signal.
+    expect(res.stderr).toBe('');
   });
 
   it('is silent when the runtime reports clear', () => {

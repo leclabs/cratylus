@@ -55,9 +55,18 @@ fi
 [ -n "$home" ] || exit 0
 
 # --- ask whether a dream is owed ------------------------------------------------
-verdict="$("$MEM" memory audit --home "$home" --owed 2>/dev/null || true)"
-
-if [ "$verdict" = "owed" ]; then
-	printf 'MEMORY — a consolidation is owed (unfolded records, an oversized store, or scope drift). Consider a hot-path /dream to fold, drain and depalimpsest while context is hot.\n'
+# The verdict and the FAILURE are separated deliberately. Every runtime call here is
+# `2>/dev/null || true` so a reminder can never fail a turn — correct, but it made an
+# unreachable runtime yield an EMPTY verdict, which is exactly what "clear" yields. So
+# a broken runtime read as a clean bill of health, silently and forever: the nudge
+# would stop existing and nothing would say so. `if signal absent then pass` is a
+# bypass by omission; this inverts it to `if signal absent then SAY SO`, while still
+# never blocking.
+if verdict="$("$MEM" memory audit --home "$home" --owed 2>/dev/null)"; then
+	if [ "$verdict" = "owed" ]; then
+		printf 'MEMORY — a consolidation is owed (unfolded records, an oversized store, or scope drift). Consider a hot-path /dream to fold, drain and depalimpsest while context is hot.\n'
+	fi
+else
+	printf 'MEMORY — the runtime did not answer whether a consolidation is owed (`%s memory audit` failed). The nudge is BLIND until that is fixed; this is not a clear verdict.\n' "$MEM"
 fi
 exit 0
