@@ -15,8 +15,22 @@ to produce.
 ## Standing constraint from the operator
 
 **Reorganization and bug-fixing, not a redesign.** Mechanism maximized; inference reserved for where
-it is genuinely needed. A proposal that rewrites the store is out of contract — say so and propose
-the smaller thing.
+it is genuinely needed. A proposal that rewrites the store **or the fold engine** is out of contract
+— say so and propose the smaller thing.
+
+## Deployment constraints — every proposal is judged against these
+
+Restored from the retired S3, where they were load-bearing and were dropped in the merge. Without
+them a verdict like "adopt Zep/Graphiti" reads as admissible when it is not.
+
+- **local-first** · file-backed markdown stores · **no network** · **no embedding service assumed**
+- must run inside a Stop/skill hook · portable across hosts
+- any new dependency must be named, with its licence and weight, and justified against the above
+
+**This bites R1's actual verdict.** R1 recommends lifting Graphiti's cheap-to-expensive resolution
+ladder — exact normalized match → **cosine similarity** → LLM for survivors. The middle rung assumes
+an embedding service. S3 must either drop that rung, name a local embedding path and price it, or
+show the outer two rungs suffice. Do not carry the ladder in wholesale.
 
 ## The five decisions this spec must take
 

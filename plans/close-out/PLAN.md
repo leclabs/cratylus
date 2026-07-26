@@ -61,23 +61,24 @@ Three defects are **shipping today** and were owned by no shard:
 
 ## Slices (MECE vertical · one concern end-to-end · outputs disjoint within a wave)
 
-| id     | slice                                                                                                              | concern      | deps       | wave | state   |
-| ------ | ------------------------------------------------------------------------------------------------------------------ | ------------ | ---------- | ---- | ------- |
-| **V1** | `runtime-shim-dedup` — delete the divergent canon fork; codex uses the forge shim; drop the dead import            | live bug     | —          | 0    | ready   |
-| **V2** | `residue-validation` — reject a non-string residue element loudly; align three disagreeing docstrings              | data loss    | —          | 0    | ready   |
-| **V3** | `node-scope-severance` — `node()` is provenance, not scope; stop laundering orphans into the global store          | routing      | —          | 0    | ready   |
-| **V4** | `deploy-prune` — converge the deploy target to the render tree; kill the orphan `memory` skill                     | live bug     | —          | 0    | ready   |
-| **V6** | `guardrail-boundary` — re-measure turn-730 at N=20; reconcile the two colliding rules or record the boundary       | calibration  | —          | 0    | ready   |
-| **V7** | `projection-io-extraction` — `projectPluginSet` returns an artifact tree; writes move to the caller                | architecture | —          | 0    | ready   |
-| **R1** | `memory-prior-art` — write-time signal vs drain-time inference, in shipped systems; adopt-or-build verdict         | research     | —          | 0    | ready   |
-| **V5** | `bin-name-single-home` — collapse 7 bin-name homes to 1 under the placeholder; the work S4 claimed was done        | hygiene      | V1         | 1    | pending |
-| **V8** | `resolver-projection-pipe` — the resolver's fold output never reaches the projector; measure impact, fix or record | correctness  | V7         | 1    | pending |
-| **S3** | `memory-execution-spec` — the architectural remedy: write-time signal, admission test, dedup, migration            | spec         | R1, V2, V3 | 1    | pending |
-| **V9** | `heartbeat-mechanism` — port, drain, two host adapters, sampling gate, under an explicitly provisional path        | capability   | —          | 2    | pending |
+| id      | slice                                                                                                              | concern      | deps       | wave | state    |
+| ------- | ------------------------------------------------------------------------------------------------------------------ | ------------ | ---------- | ---- | -------- |
+| **V1**  | `runtime-shim-dedup` — delete the divergent canon fork; codex uses the forge shim; drop the dead import            | live bug     | —          | 0    | ready    |
+| **V2**  | `residue-validation` — reject a non-string residue element loudly; align three disagreeing docstrings              | data loss    | —          | 0    | ready    |
+| **V3**  | `node-scope-severance` — `node()` is provenance, not scope; stop laundering orphans into the global store          | routing      | —          | 0    | ready    |
+| **V4**  | `deploy-prune` — converge the deploy target to the render tree; kill the orphan `memory` skill                     | live bug     | —          | 0    | ready    |
+| **V6**  | `guardrail-boundary` — re-measure turn-730 at N=20; reconcile the two colliding rules or record the boundary       | calibration  | —          | 0    | ready    |
+| **V7**  | `projection-io-extraction` — `projectPluginSet` returns an artifact tree; writes move to the caller                | architecture | —          | 0    | ready    |
+| **R1**  | `memory-prior-art` — write-time signal vs drain-time inference, in shipped systems; adopt-or-build verdict         | research     | —          | 0    | **DONE** |
+| **V10** | `event-tap-skill-cell` — the capability is built and has NO agent-facing surface; a false supersession hid it      | live gap     | —          | 0    | ready    |
+| **V5**  | `bin-name-single-home` — collapse 7 bin-name homes to 1 under the placeholder; the work S4 claimed was done        | hygiene      | V1         | 1    | pending  |
+| **V8**  | `resolver-projection-pipe` — the resolver's fold output never reaches the projector; measure impact, fix or record | correctness  | V7         | 1    | pending  |
+| **S3**  | `memory-execution-spec` — the architectural remedy: write-time signal, admission test, dedup, migration            | spec         | R1, V2, V3 | 1    | pending  |
+| **V9**  | `heartbeat-mechanism` — port, drain, two host adapters, sampling gate, under an explicitly provisional path        | capability   | —          | 2    | pending  |
 
 ```text
 R = {(V5,V1), (V8,V7), (S3,R1), (S3,V2), (S3,V3)}
-wave(0) = { V1, V2, V3, V4, V6, V7, R1 }
+wave(0) = { V1, V2, V3, V4, V6, V7, V10, R1 }
 wave(1) = { V5, V8, S3 }
 wave(2) = { V9 }
 ```
@@ -92,13 +93,14 @@ is either shipping-broken or load-bearing for the memory work the operator named
 
 `⊥` is a legal terminal answer for every one of these. None may be coined around.
 
-| item                     | gate                                                                                                                            |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| CLI brand anchor         | returned ⊥ once under an under-specified definiendum; re-run with the full differentia. Gates the rename                        |
-| heartbeat anchors        | organ · signal · store. Must handle the collision with `ports/memory.ts:399`, where `heartbeat` is already a session-lease verb |
-| bin rename sweep         | deps the brand anchor. V5 does everything that does not need the name                                                           |
-| publish flags            | `private:true` ×3, `changesets ignore: []`. Softly gated — publishing under a placeholder burns the PATH name                   |
-| repo name · heartbeat O4 | wait indefinitely; an acceptable resting state per `discipline-anchor`                                                          |
+| item                     | gate                                                                                                                                                                                                                                                                               |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| CLI brand anchor         | returned ⊥ once under an under-specified definiendum; re-run with the full differentia. Gates the rename                                                                                                                                                                           |
+| heartbeat anchors        | organ · signal · store. Must handle the collision with `ports/memory.ts:399`, where `heartbeat` is already a session-lease verb                                                                                                                                                    |
+| bin rename sweep         | deps the brand anchor. V5 does everything that does not need the name                                                                                                                                                                                                              |
+| publish flags            | `private:true` ×3, `changesets ignore: []`. Softly gated — publishing under a placeholder burns the PATH name                                                                                                                                                                      |
+| repo name · heartbeat O4 | wait indefinitely; an acceptable resting state per `discipline-anchor`                                                                                                                                                                                                             |
+| event-tap verb pair      | `install`/**`remove`** breaks the house `install`/`uninstall` pair used by `continuity-hook.sh` and `stance-guardrail.sh`; `read` vs `inspect` likewise. Shipped un-derived — the port method names were mirrored, not oracled. Narrow re-derivation owed; 4 call sites, cheap now |
 
 ### Canon-reconciliation flags — nico's, resolve in ONE loop
 
@@ -125,6 +127,27 @@ One already retracted (`e00c837`, a false `principal-ic` staleness claim). **A t
 today:** the symbols gate validates fence glyphs against `operator-lexicon` but never checks that an
 `X @ home` boundary-binding resolves to a real declaration in that home — which is how
 `carry-on`'s `active @ praxis` stayed dangling. Filed as `pending/x-symbols-gate-…`.
+
+### Retired-plan audit (2026-07-26) — four plans were retired carrying ten unfinished shards
+
+`terminal(P) ⇒ retire(P)` was honoured; `retire(P) ⇔ terminal(P)` was not. Verdicts, grounded:
+
+- **ABSORBED, verified** — event-tap T3 (→ S5, falsifier and all), T5 (→ S10), skills-refactor T4
+  (absorbed _by reversal_: the dep-free bundle was replaced by the thin shim, which strictly
+  dominates it for the same acceptance) and T5 (→ S10).
+- **CORRECTLY ABANDONED** — event-tap T2 assets-bridge. Zero live consumers; the runtime-shim path
+  covers every motivating case. Residue is a **lying type**: `anatomy/index.ts:279-280` advertises
+  "companion assets shipped byte-for-byte" and the projection never reads `cell.assets`. Filed.
+- **WRONGLY ABANDONED** — event-tap **T4**, recorded as absorbed into S8 by
+  `SUPERSESSION.md:32`. S8 is memory-only; the claim is false against code and the work vanished
+  silently. Recovered as **V10**.
+- **DUPLICATE** — memory R1/R2/S3, re-authored here. R2 was executed by the census. The merge
+  dropped R1/S3's buy-vs-build constraint set, which R1's own verdict then walked into (a cosine
+  rung assuming an embedding service); restored into S3.
+
+**The lesson, for the praxis:** a supersession claim is a _claim_. `SUPERSESSION.md:32` asserted an
+absorption that the absorbing shard's own falsifier disproves, and nothing checked it. Retiring on an
+unverified supersession is how work disappears without anyone deciding to drop it.
 
 ## Superseded
 
