@@ -15,6 +15,7 @@
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
     "typecheck": "turbo run typecheck",
+    "typecheck:test": "turbo run typecheck:test",
     "canon:project": "pnpm --filter @leclabs/agent-canon project",
     "canon:project:targets": "pnpm --filter @leclabs/agent-canon project:targets",
     "canon:deploy:agent": "node packages/agent-forge/dist/cli/index.js deploy --kind agent --agents-dir packages/agent-canon/.render-ts/agents --skills-dir packages/agent-canon/.render-ts/skills",

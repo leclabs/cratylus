@@ -8,6 +8,15 @@
 # ~instant when nothing relevant changed and only re-runs affected packages.
 pnpm typecheck
 
+# Test-typecheck gate · added 2026-07-26. `pnpm typecheck` above only ever saw
+# `src/**` — every package's `include` stopped there — so all 77 files under
+# `test/**` were transpiled by vitest and typechecked by NOTHING, through an
+# entire delivery wave. Widening `include` cannot work: `rootDir` is `src` for
+# the build, so test files come back as TS6059. Each package therefore carries a
+# `tsconfig.test.json` that drops rootDir and emits nothing. Separate task, not
+# folded into `typecheck`, so the build config stays untouched.
+pnpm typecheck:test
+
 # Test gate · added 2026-07-26 after the guardrail cell drifted from its workers
 # through THREE commits without anything noticing. `hook-rule-boundary.test.ts`
 # had been red the whole time; nothing ran it. A gate nobody runs is not a gate.

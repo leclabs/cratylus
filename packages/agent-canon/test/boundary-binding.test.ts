@@ -79,12 +79,14 @@ function unresolved(skills: Map<string, Skill>): string[] {
     for (const line of String(skill.formalBlock).split('\n')) {
       const m = BINDING.exec(line.trim());
       if (!m) continue;
-      const home = skills.get(m[2]);
+      const [, borrowed, homeName] = m;
+      if (borrowed === undefined || homeName === undefined) continue;
+      const home = skills.get(homeName);
       if (!home) continue; // conceptual home, not a skill — out of scope
-      for (const sym of borrowedNames(m[1])) {
+      for (const sym of borrowedNames(borrowed)) {
         if (!declares(String(home.formalBlock), sym)) {
           bad.push(
-            `${name}: \`${sym} @ ${m[2]}\` — ${m[2]} declares no \`${sym}\``,
+            `${name}: \`${sym} @ ${homeName}\` — ${homeName} declares no \`${sym}\``,
           );
         }
       }

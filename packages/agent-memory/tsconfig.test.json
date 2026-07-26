@@ -1,0 +1,14 @@
+// Typecheck-only config for `test/**` — see `typecheck:test` in package.json.
+//
+// The build/typecheck config pins `rootDir` to keep `dist` shaped, which makes
+// every file under `test/` a TS6059 ("not under rootDir"). This config drops
+// rootDir to the package root and emits nothing, so tests are typechecked
+// without touching tsup's build or the emitted output.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "rootDir": "."
+  },
+  "include": ["src/**/*", "test/**/*", "vitest.config.ts"]
+}

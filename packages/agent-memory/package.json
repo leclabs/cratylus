@@ -22,6 +22,7 @@
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
+    "typecheck:test": "tsc -p tsconfig.test.json",
     "test": "vitest run",
     "clean": "rm -rf dist",
     "dev": "tsup --watch",

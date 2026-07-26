@@ -65,9 +65,15 @@ describe('applyRoutes — v2 store targets with a deterministic stub classifier'
     const written = kinds.map((kind) =>
       store.encode({ body: { kind, text: `c-${kind}` } }),
     );
-    const byKind = Object.fromEntries(
-      written.map((r) => [(r.body as { kind: string }).kind, r]),
+    const byKind = new Map(
+      written.map((r) => [(r.body as { kind: string }).kind, r] as const),
     );
+    /** The id of the record encoded for `kind` — loud if the fixture drifts. */
+    const idOf = (kind: string): string => {
+      const rec = byKind.get(kind);
+      if (!rec) throw new Error(`fixture encoded no record of kind '${kind}'`);
+      return rec.id;
+    };
 
     const stub: Classifier = (rec) => {
       const { kind, text } = rec.body as { kind: string; text: string };
@@ -97,20 +103,20 @@ describe('applyRoutes — v2 store targets with a deterministic stub classifier'
     // Consumed: identity, wisdom, scaffold(drop), split.
     expect(new Set(result.consumed)).toEqual(
       new Set([
-        byKind.identity.id,
-        byKind.wisdom.id,
-        byKind.scaffold.id,
-        byKind.split.id,
+        idOf('identity'),
+        idOf('wisdom'),
+        idOf('scaffold'),
+        idOf('split'),
       ]),
     );
     // Retained: only the next-step.
-    expect(result.retained).toEqual([byKind['next-step'].id]);
+    expect(result.retained).toEqual([idOf('next-step')]);
 
     // EPISODIC now holds exactly the next-step, stamped with its routes.
     const left = survivors();
     expect(left).toHaveLength(1);
-    expect(left[0].id).toBe(byKind['next-step'].id);
-    expect(left[0].routes).toEqual(['EPISODIC']);
+    expect(left[0]?.id).toBe(idOf('next-step'));
+    expect(left[0]?.routes).toEqual(['EPISODIC']);
   });
 
   it('REJECTS a route addressed to a retired v1 dimension name (SELF, MEMORY)', () => {
@@ -169,8 +175,8 @@ describe('applyRoutes — v2 store targets with a deterministic stub classifier'
 
     const left = survivors();
     expect(left).toHaveLength(1);
-    expect(left[0].id).toBe(rec.id);
-    expect(left[0].routes).toEqual(['SEMANTIC', 'EPISODIC']);
+    expect(left[0]?.id).toBe(rec.id);
+    expect(left[0]?.routes).toEqual(['SEMANTIC', 'EPISODIC']);
     expect(textOf(join(home, 'SEMANTIC.md'))).toContain('keep-and-note');
   });
 });
@@ -189,8 +195,7 @@ describe('compact — atomic, idempotent, crash-safe', () => {
     const raw = readFileSync(store.rawFile(), 'utf8');
     const lines = raw.split('\n').filter((l) => l.length > 0);
     expect(lines).toHaveLength(2);
-    expect(parseRecord(lines[0]).id).toBe(a.id);
-    expect(parseRecord(lines[1]).id).toBe(c.id);
+    expect(lines.map((l) => parseRecord(l).id)).toEqual([a.id, c.id]);
   });
 
   it('is idempotent: a second compaction of the same ids is a no-op, byte-identical', () => {
@@ -259,7 +264,7 @@ describe('compact — atomic, idempotent, crash-safe', () => {
     compact(store, undefined, [b.id], { stamp });
     const left = survivors();
     expect(left.map((r) => r.id)).toEqual([a.id]);
-    expect(left[0].routes).toEqual(['SEMANTIC']);
+    expect(left[0]?.routes).toEqual(['SEMANTIC']);
   });
 });
 
