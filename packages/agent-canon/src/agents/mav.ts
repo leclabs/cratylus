@@ -32,7 +32,7 @@ import { build as build_role } from '../dimensions/role/build.js';
 import { optimize as optimize_satisficing } from '../dimensions/satisficing/optimize.js';
 import { executableTestOracle as executableTestOracle_selfEvaluation } from '../dimensions/self-evaluation/executable-test-oracle.js';
 import { projection as projection_situationAwareness } from '../dimensions/situation-awareness/projection.js';
-import { reasoningTrace as reasoningTrace_transparency } from '../dimensions/transparency/reasoning-trace.js';
+import { decisionRationale as decisionRationale_transparency } from '../dimensions/transparency/decision-rationale.js';
 export const mav: Agent = {
   name: 'mav',
   description:
@@ -42,7 +42,7 @@ export const mav: Agent = {
   role: build_role,
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
-  transparency: reasoningTrace_transparency,
+  transparency: decisionRationale_transparency,
   autonomy: [
     principalSelf,
     humanOnTheLoop_autonomy,
