@@ -63,18 +63,18 @@ Three defects are **shipping today** and were owned by no shard:
 
 | id      | slice                                                                                                              | concern      | deps       | wave | state    |
 | ------- | ------------------------------------------------------------------------------------------------------------------ | ------------ | ---------- | ---- | -------- |
-| **V1**  | `runtime-shim-dedup` — delete the divergent canon fork; codex uses the forge shim; drop the dead import            | live bug     | —          | 0    | ready    |
-| **V2**  | `residue-validation` — reject a non-string residue element loudly; align three disagreeing docstrings              | data loss    | —          | 0    | ready    |
-| **V3**  | `node-scope-severance` — `node()` is provenance, not scope; stop laundering orphans into the global store          | routing      | —          | 0    | ready    |
-| **V4**  | `deploy-prune` — converge the deploy target to the render tree; kill the orphan `memory` skill                     | live bug     | —          | 0    | ready    |
-| **V6**  | `guardrail-boundary` — re-measure turn-730 at N=20; reconcile the two colliding rules or record the boundary       | calibration  | —          | 0    | ready    |
-| **V7**  | `projection-io-extraction` — `projectPluginSet` returns an artifact tree; writes move to the caller                | architecture | —          | 0    | ready    |
+| **V1**  | `runtime-shim-dedup` — delete the divergent canon fork; codex uses the forge shim; drop the dead import            | live bug     | —          | 0    | **DONE** |
+| **V2**  | `residue-validation` — reject a non-string residue element loudly; align three disagreeing docstrings              | data loss    | —          | 0    | **DONE** |
+| **V3**  | `node-scope-severance` — `node()` is provenance, not scope; stop laundering orphans into the global store          | routing      | —          | 0    | **DONE** |
+| **V4**  | `deploy-prune` — converge the deploy target to the render tree; kill the orphan `memory` skill                     | live bug     | —          | 0    | **DONE** |
+| **V6**  | `guardrail-boundary` — re-measure turn-730 at N=20; reconcile the two colliding rules or record the boundary       | calibration  | —          | 0    | active   |
+| **V7**  | `projection-io-extraction` — `projectPluginSet` returns an artifact tree; writes move to the caller                | architecture | —          | 0    | **DONE** |
 | **R1**  | `memory-prior-art` — write-time signal vs drain-time inference, in shipped systems; adopt-or-build verdict         | research     | —          | 0    | **DONE** |
-| **V10** | `event-tap-skill-cell` — the capability is built and has NO agent-facing surface; a false supersession hid it      | live gap     | —          | 0    | ready    |
-| **V5**  | `bin-name-single-home` — collapse 7 bin-name homes to 1 under the placeholder; the work S4 claimed was done        | hygiene      | V1         | 1    | pending  |
-| **V8**  | `resolver-projection-pipe` — the resolver's fold output never reaches the projector; measure impact, fix or record | correctness  | V7         | 1    | pending  |
-| **S3**  | `memory-execution-spec` — the architectural remedy: write-time signal, admission test, dedup, migration            | spec         | R1, V2, V3 | 1    | pending  |
-| **V9**  | `heartbeat-mechanism` — port, drain, two host adapters, sampling gate, under an explicitly provisional path        | capability   | —          | 2    | pending  |
+| **V10** | `event-tap-skill-cell` — the capability is built and has NO agent-facing surface; a false supersession hid it      | live gap     | —          | 0    | **DONE** |
+| **V5**  | `bin-name-single-home` — collapse 7 bin-name homes to 1 under the placeholder; the work S4 claimed was done        | hygiene      | V1         | 1    | active   |
+| **V8**  | `resolver-projection-pipe` — the resolver's fold output never reaches the projector; measure impact, fix or record | correctness  | V7         | 1    | active   |
+| **S3**  | `memory-execution-spec` — the architectural remedy: write-time signal, admission test, dedup, migration            | spec         | R1, V2, V3 | 1    | active   |
+| **V9**  | `heartbeat-mechanism` — port, drain, two host adapters, sampling gate, under an explicitly provisional path        | capability   | —          | 2    | **DONE** |
 
 ```text
 R = {(V5,V1), (V8,V7), (S3,R1), (S3,V2), (S3,V3)}
@@ -88,6 +88,34 @@ disjoint within each wave, so `dispatch(wave(n))` needs no worktree isolation.
 
 **V9 is sequenced last deliberately.** It is net-new capability, not a defect; everything above it
 is either shipping-broken or load-bearing for the memory work the operator named as the priority.
+
+## Integration record (2026-07-26) — what parallel execution actually cost
+
+Eight slices landed and were merged one at a time, each gated independently on main. Four
+integration regressions surfaced, and **all four were one root cause, which was a defect in the
+CUT, not in any shard**:
+
+V7 changed `projectPluginSet` from _writing_ to _returning an artifact tree_. V1, V10 and the
+existing suite all had callers that read the projection off disk. Their **output sets were disjoint**
+— which is what the wave-0 concurrency law tested — but what is not disjoint is one slice's outputs
+against what a sibling's files _compile and run against_. The law was strengthened mid-flight:
+
+    refs : P → ℘(path)
+    ∀ t, u ∈ wave(n) : t ≠ u ⇒ outputs(t) ∩ refs(u) = ∅
+
+**The nastiest instance is worth remembering.** When `runtime-shim.test.ts`'s `beforeAll` threw
+ENOENT, vitest reported the file as **8 skipped**, not failed. The suite still read green while a
+whole file had silently stopped asserting. The signal was the SKIP delta — 1 → 8 — not the pass
+count. A green suite is not evidence that the suite ran.
+
+Two further findings, each caught only because the falsifier was run before the fix:
+
+- **V10 would have shipped a dead shim.** The shim emitter is `f(capability)`, so an `eventTap` cell
+  emits a shim spawning `agent-runtime eventTap …` — and `main.ts:70` routed only the literal `tap`.
+  Projection would have been green with the agent-facing path broken end to end.
+- **V9's naive drain duplicated 189 of 320 envelopes** and returned 400 claims for 200 deposits.
+  POSIX `rename` over an existing path succeeds silently, so a shared claim destination lets both
+  drainers believe they won.
 
 ## Blocked — cratylism-gated, nico's remit, not executable here
 
