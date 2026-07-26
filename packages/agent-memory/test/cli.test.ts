@@ -681,6 +681,57 @@ describe('rollover — land, drain and re-seed with no gap between them', () => 
     expect(after[0]?.body).toBe('carry this forward');
   });
 
+  it('REFUSES a double-wrapped residue entry, naming index, type and wanted shape', () => {
+    const id = encoded('a durable law');
+    const routes = JSON.stringify([
+      { id, targets: [{ store: 'PROCEDURAL', content: 'a durable law' }] },
+    ]);
+    const r = main([
+      'rollover',
+      '--home',
+      home,
+      '--session',
+      'mine',
+      '--routes',
+      routes,
+      '--residue',
+      JSON.stringify([{ body: 'x' }]),
+    ]);
+    expect(r.code).not.toBe(0);
+    expect(r.err).toContain('--residue[0]');
+    expect(r.err).toContain('object');
+    expect(r.err).toContain('{"body":');
+    expect(r.err).toContain('bare string');
+    // refused BEFORE the destructive half — nothing landed, nothing drained
+    expect(
+      main(['get', '--home', home, '--store', 'PROCEDURAL']).out,
+    ).not.toContain('a durable law');
+    expect(logRecords()).toHaveLength(1);
+  });
+
+  it('REFUSES non-string residue entries — number, null', () => {
+    for (const [bad, shown] of [
+      ['[1]', 'number'],
+      ['[null]', 'null'],
+    ] as const) {
+      const r = main([
+        'rollover',
+        '--home',
+        home,
+        '--session',
+        'mine',
+        '--routes',
+        '[]',
+        '--residue',
+        bad,
+      ]);
+      expect(r.code).not.toBe(0);
+      expect(r.err).toContain('--residue[0]');
+      expect(r.err).toContain(shown);
+      expect(r.err).toContain('bare string');
+    }
+  });
+
   it('re-seeds nothing when no residue is carried', () => {
     const id = encoded('consumed');
     const routes = JSON.stringify([
