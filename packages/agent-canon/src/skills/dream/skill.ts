@@ -4,7 +4,7 @@ import { materialize } from '../materialize/skill.js';
 
 export const dream: Skill = {
   name: 'dream',
-  description: `use this skill to consolidate an agent's memory — fold the raw EPISODIC stream (the tool computes each record's scope node from its cwd), then route by type: agent-intrinsic identity/facts to SEMANTIC, generalized cross-project wisdom to PROCEDURAL (only what no projection already carries), a fleet/system/mechanism truth promoted into the projected+gated canon (or emitted as a canon-candidate task) rather than parked in private memory, forward next-steps to EPISODIC, the rest dropped; consumed raw is drained; SOUL is never written.`,
+  description: `use this skill to consolidate an agent's memory — fold the raw EPISODIC stream (the tool computes each record's capture node from its cwd — provenance, not what the record is about), then route by type: agent-intrinsic identity/facts to SEMANTIC, generalized cross-project wisdom to PROCEDURAL (only what no projection already carries), a fleet/system/mechanism truth promoted into the projected+gated canon (or emitted as a canon-candidate task) rather than parked in private memory, forward next-steps to EPISODIC, the rest dropped; consumed raw is drained; SOUL is never written.`,
   formalBlock:
     `memory              ≜ agent dimension-home ⟨SEMANTIC · PROCEDURAL · EPISODIC⟩ ∪ the memory-tool runtime
 EPISODIC            ≜ raw time-ordered event stream ∪ forward next-steps
@@ -12,8 +12,9 @@ SEMANTIC            ≜ identity facts ∪ durable agent-intrinsic knowledge ⟨
 PROCEDURAL          ≜ generalized cross-project wisdom no projection already carries
 SOUL                ≜ the archetype ; commons-authored ; ∉ dream outputs
 lock                ≜ dream.lock ⟨O_EXCL ; stale ⇔ age > 2h⟩ guarding the {SEMANTIC · PROCEDURAL} partition ⟨shared by all same-host sessions of one agent ; ¬ project-scoped⟩ ; \`scripts/memory.mjs lock (acquire|release|status) --name <agent>\`
-node                : cwd × host → scope ⟨nearest boundary-marker ancestor ; markerless ↦ self ; cwd-less ↦ legacy⟩
-scope(i)            ≜ node(cwd(i)) COMPUTED at fold ⟨capture is scope-blind ; ¬judged-at-capture⟩
+node                : cwd × host → provenance ⟨WHERE-captured ; nearest boundary-marker ancestor ; markerless ↦ self ; cwd-less ∨ vanished-cwd ↦ legacy⟩
+scope(i)            ≜ what i is ABOUT ⟨read from text(i) ; ¬ node(i) : provenance ≠ scope⟩
+project-referential ≜ scope(i) ↾ one particular project ⟨text(i) names a repo-key ∨ workspace-path ∨ plan-path ∨ branch-ref ∨ issue-ref ; gate detects exactly these⟩
 read                : home × session → records ⟨own ∪ completed ; live-sibling ∉⟩ ; \`scripts/memory.mjs read --name <agent> --for-session <self>\`
 fold                : home → { id ↦ node ∪ legacy } ; \`scripts/memory.mjs fold --name <agent>\`
 drain               : home → ∅ ↾ completed-sessions ⟨--completed-only retains a live sibling ; --for-session adds self at handoff⟩ ; \`scripts/memory.mjs drain --name <agent> --completed-only\`
@@ -32,7 +33,7 @@ dream ≜ read ⟨EPISODIC⟩ ↦ exemplify ↦ materialize
 lock-precondition ≜ acquire(lock) before any write to {SEMANTIC · PROCEDURAL} ∨ any drain ; held-by-live-other ⇒ skip consolidation this wake ⟨raw preserved ; encode always-legal⟩
 ∀ i ∈ read(home, session) : i = dfp(i)
 instances-governing-exemplar(i) ⇒ i ↦ pointer
-node(i) ∉ { HOME · legacy } ⇒ i ∉ SEMANTIC ∧ i ∉ PROCEDURAL
+project-referential(i) ⇒ i ∉ SEMANTIC ∧ i ∉ PROCEDURAL ⟨generalize past the instance ∨ drop ; node(i) binds NOTHING here⟩
 identity(i) ∨ agent-intrinsic-durable(i) ⇒ i ↦ SEMANTIC
 generalized-wisdom(i) ∧ ¬projection-carries(i) ∧ canon-truth(i)  ⇒ i ↦ CANON-PROMOTION
 generalized-wisdom(i) ∧ ¬projection-carries(i) ∧ ¬canon-truth(i) ⇒ i ↦ PROCEDURAL

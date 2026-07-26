@@ -13,8 +13,17 @@ import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
  * nearest ancestor of `cwd` (reflexive: `cwd` itself qualifies) holding a
  * boundary marker. **Total** over stored record fields: every `(cwd, host)`
  * resolves to some node; a nonexistent `cwd` folds to its nearest existing
- * ancestor first; a markerless `cwd` is its own boundary. Scope is COMPUTED
- * here, never reasoned by an agent and never stored on a record.
+ * ancestor first; a markerless `cwd` is its own boundary.
+ *
+ * What this computes is PROVENANCE — *where a record was captured*, never *what
+ * it is about*. Nothing may read a node as a content-scope judgement (the dream
+ * routing law used to, and was thereby unsatisfiable for every in-repo record).
+ * Provenance is COMPUTED here, never reasoned by an agent, never stored on a
+ * record.
+ *
+ * The fold-to-ancestor is inference, and it is bounded: it may stand on a
+ * MARKER, never on `$HOME`/`markerless`. A vanished `cwd` whose walk finds no
+ * marker resolves to `vanished-cwd` in the `legacy` bucket — see the walk.
  *
  * Default markers: `.git` (project; a `.git` FILE — worktree/submodule —
  * resolves through to the primary checkout's node) · a package manifest
@@ -27,6 +36,15 @@ import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
  * sourced from `.agent-factory.config` `host.<name>.homedir`; otherwise the
  * cwd is its own boundary (the honest total answer).
  */
+
+/**
+ * The bucket for a record whose node is not MEASURABLE. One bucket, one name:
+ * this is `fold.LEGACY_NODE`'s bucket (a cwd-less record) — a vanished cwd with
+ * no marker to stand on is the same unmeasured state, reached differently.
+ * Declared here rather than imported because `fold` imports `node`, never the
+ * reverse.
+ */
+const LEGACY_NODE = 'legacy';
 
 /** The default boundary-marker set (SPEC D3). Order = tie-break order within a dir. */
 export const DEFAULT_MARKERS: readonly string[] = [
@@ -52,13 +70,14 @@ export interface NodeConfig {
 
 /** A resolved node: the boundary directory + which marker established it. */
 export interface NodeResolution {
-  /** Absolute path of the boundary directory. */
+  /** Absolute path of the boundary directory, or `legacy` when unmeasurable. */
   node: string;
   /**
    * The marker basis: a marker pattern (`.git`, `PLAN.md`, a config glob),
    * `.git-file` (worktree/submodule resolved to primary), `$HOME`,
-   * `markerless` (cwd is its own boundary), or `foreign-cwd` (foreign host,
-   * no config home covers the cwd).
+   * `markerless` (cwd is its own boundary), `foreign-cwd` (foreign host, no
+   * config home covers the cwd), or `vanished-cwd` (the cwd is gone and the
+   * fold found no marker to stand on — node is `legacy`).
    */
   basis: string;
 }
@@ -166,9 +185,13 @@ export function resolveNode(
     return { node: p, basis: 'foreign-cwd' };
   }
 
-  // A nonexistent cwd folds to its nearest existing ancestor (SPEC D3).
+  // A nonexistent cwd folds to its nearest existing ancestor (SPEC D3). The
+  // fold is INFERENCE, and this loop is the only place that knows it happened —
+  // so carry the fact out rather than discarding it.
   let start = p;
+  let vanished = false;
   while (!existsSync(start)) {
+    vanished = true;
     const parent = dirname(start);
     if (parent === start) break;
     start = parent;
@@ -180,9 +203,21 @@ export function resolveNode(
   start = canonical(start);
 
   // Walk up from `start` (reflexive). Nearest marker wins, of any kind.
+  //
+  // A VANISHED cwd narrows what the walk is entitled to conclude. A MARKER
+  // ancestor is still evidence: `<repo>/build/x`, deleted since capture, is
+  // unambiguously a record of `<repo>`. But `$HOME` and `markerless` are the
+  // walk running OUT of evidence, and for a vanished cwd that is not a finding
+  // — it is an ORPHAN. Returning `$HOME` there LAUNDERS a renamed-away repo's
+  // records into the `user` boundary, indistinguishable from a session
+  // genuinely run from `~` (the live shape: `~/workspaces` bears no marker, so
+  // every renamed repo under it resolved to `$HOME`). The durable stores gate
+  // on exactly that distinction, so the honest answer is the legacy bucket.
+  const orphan: NodeResolution = { node: LEGACY_NODE, basis: 'vanished-cwd' };
   let dir = start;
   for (;;) {
-    if (dir === cfg.currentHome) return { node: dir, basis: '$HOME' };
+    if (dir === cfg.currentHome)
+      return vanished ? orphan : { node: dir, basis: '$HOME' };
     const hit = markerIn(dir, cfg.markers);
     if (hit !== null) {
       if (hit.marker === '.git') {
@@ -205,8 +240,9 @@ export function resolveNode(
     dir = parent;
   }
 
-  // No marker anywhere up the chain: the cwd is its own boundary.
-  return { node: start, basis: 'markerless' };
+  // No marker anywhere up the chain: the cwd is its own boundary — unless the
+  // cwd is gone, in which case `start` is an ancestor nobody measured.
+  return vanished ? orphan : { node: start, basis: 'markerless' };
 }
 
 /**
