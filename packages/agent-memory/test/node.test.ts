@@ -8,6 +8,10 @@ import {
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+// The legacy bucket is ONE bucket: `fold`'s cwd-less records and `node`'s
+// unmeasurable (vanished-cwd) ones land in the same place. Imported from `fold`
+// so the test proves the identity rather than restating the literal.
+import { LEGACY_NODE } from '../src/fold.js';
 import {
   DEFAULT_MARKERS,
   type NodeConfig,
@@ -112,19 +116,48 @@ describe('resolveNode — marker lattice (SPEC D3)', () => {
     expect(resolveNode(deep, 'testhost', cfg()).node).toBe(primary);
   });
 
-  it('a nonexistent cwd folds to its nearest existing ancestor', () => {
+  it('a nonexistent cwd folds to its nearest existing ancestor — WHERE A MARKER STANDS', () => {
     const repo = join(root, 'repo');
     mkdirSync(join(repo, '.git'), { recursive: true });
     // Deleted-since-capture subdir: still the repo node.
     expect(
       resolveNode(join(repo, 'gone', 'deeper'), 'testhost', cfg()).node,
     ).toBe(repo);
-    // Markerless nonexistent: nearest existing ancestor is its own boundary.
+  });
+
+  // ── Face B (V3): the fold is INFERENCE. It may stand on a marker; it may not
+  //    invent a `$HOME`/`markerless` boundary out of the walk running dry.
+  it('a VANISHED cwd is never laundered into $HOME — it folds to the legacy bucket', () => {
+    const home = cfg().currentHome;
+    // The live shape on this box: `~/workspaces` exists and carries NO marker,
+    // so a renamed-away repo under it walked clean through to `$HOME` and became
+    // indistinguishable from a session genuinely run from `~`.
+    const area = join(home, 'workspaces');
+    mkdirSync(area, { recursive: true });
+    expect(
+      resolveNode(join(area, 'renamed-away', 'src'), 'testhost', cfg()),
+    ).toEqual({ node: LEGACY_NODE, basis: 'vanished-cwd' });
+
+    // Same shape with no home above it: a markerless ancestor is equally no evidence.
     const bare = join(root, 'bare');
     mkdirSync(bare, { recursive: true });
     expect(resolveNode(join(bare, 'never', 'was'), 'testhost', cfg())).toEqual({
-      node: bare,
-      basis: 'markerless',
+      node: LEGACY_NODE,
+      basis: 'vanished-cwd',
+    });
+
+    // The exonerating pair — the severance costs nothing that was measured.
+    // A LIVE markerless dir under home is still `$HOME`…
+    expect(resolveNode(area, 'testhost', cfg())).toEqual({
+      node: home,
+      basis: '$HOME',
+    });
+    // …and a vanished subdir of a LIVE repo is still that repo.
+    const repo = join(area, 'repo');
+    mkdirSync(join(repo, '.git'), { recursive: true });
+    expect(resolveNode(join(repo, 'build', 'x'), 'testhost', cfg())).toEqual({
+      node: repo,
+      basis: '.git',
     });
   });
 
