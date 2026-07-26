@@ -406,3 +406,39 @@ describe('consolidationOwed reads the pressure it already read', () => {
     expect(new AgentMemory({ home }).consolidationOwed()).toBe(false);
   });
 });
+
+// ─── (6) the PORT path takes the same ceiling as the CLI path ───────────────
+//
+// `AgentMemory.replace` is the `MemoryStrategy.replace` implementation — a SECOND
+// write path into the same prose file, and it took no ceiling at all. M1 guarded
+// `cli.replaceGuarded` and `dream.appendToHome`; a bound that binds only the entry
+// point someone happened to exercise is not a bound. Latent, not live (nothing
+// in-tree calls the port method today), which is exactly when it is cheapest to
+// close and hardest to notice.
+
+describe('AgentMemory.replace — the port path honours the ceiling', () => {
+  it('CONVICTS: refuses an over-ceiling write that is not a strict shrink', () => {
+    seedStore('PROCEDURAL', LIVE_BLOAT);
+    const mem = new AgentMemory({ home });
+    // Same size as what is already there: over the ceiling and not a shrink.
+    expect(() => mem.replace('PROCEDURAL', 'x'.repeat(LIVE_BLOAT))).toThrow(
+      /store ceiling/,
+    );
+    expect(sizeOf('PROCEDURAL')).toBe(LIVE_BLOAT);
+  });
+
+  it('EXONERATES: a strict shrink is allowed even while still over the ceiling', () => {
+    seedStore('PROCEDURAL', LIVE_BLOAT);
+    const mem = new AgentMemory({ home });
+    // Still above 8 000 — the escape must not require reaching the ceiling in
+    // one step, or an over-ceiling store can never be repaired incrementally.
+    mem.replace('PROCEDURAL', 'x'.repeat(10_000));
+    expect(sizeOf('PROCEDURAL')).toBe(10_001);
+  });
+
+  it('EXONERATES: an ordinary under-ceiling write is untouched', () => {
+    const mem = new AgentMemory({ home });
+    mem.replace('SEMANTIC', 'x'.repeat(100));
+    expect(sizeOf('SEMANTIC')).toBe(101);
+  });
+});

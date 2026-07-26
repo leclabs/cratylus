@@ -15,7 +15,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import type {
   ApplyResult,
@@ -42,8 +48,10 @@ import type {
 } from '@leclabs/agent-runtime';
 import {
   BACKLOG_WATERMARK,
+  STORE_WATERMARK,
   auditHome,
   loadLines,
+  refusesReplace,
   repoKeysFromConfig,
 } from './audit.js';
 import { applyRoutes, resolveTarget } from './dream.js';
@@ -477,8 +485,21 @@ export class AgentMemory implements MemoryStrategy {
       throw new Error(
         'replace targets a prose store (SEMANTIC | PROCEDURAL); EPISODIC is the raw log, not a whole-file prose store',
       );
+    const text = body.endsWith('\n') ? body : `${body}\n`;
+    // The SAME asymmetric predicate the CLI's `replaceGuarded` takes. This method
+    // is the port implementation (`MemoryStrategy.replace`), a second write path
+    // into the same file — and it took no ceiling at all, so the bound bound only
+    // the path that happened to be exercised. A guard with a sibling entry point
+    // that skips it is not a guard. Strict shrink still escapes: an over-ceiling
+    // store must remain repairable, or the ceiling bricks it.
+    const before = existsSync(file) ? statSync(file).size : 0;
+    const after = Buffer.byteLength(text, 'utf8');
+    if (refusesReplace(before, after))
+      throw new Error(
+        `${store}.md would be ${after}B, over the ${STORE_WATERMARK}B store ceiling, and is not a strict shrink from ${before}B. Refused — distil it smaller, or shrink first.`,
+      );
     mkdirSync(dirname(file), { recursive: true });
-    writeFileSync(file, body.endsWith('\n') ? body : `${body}\n`, 'utf8');
+    writeFileSync(file, text, 'utf8');
   }
 
   /**
