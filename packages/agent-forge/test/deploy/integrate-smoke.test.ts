@@ -20,7 +20,7 @@
 //                nothing about it is an assertion on agent-forge.
 //   L3 memory  : the DEPLOYED shim `… memory encode`→`read` round-trips a record —
 //                the store file on disk carries the body, the read returns the id.
-//   L4 tap     : `agent-runtime tap install`→`status`(attached)→`remove` merges a
+//   L4 tap     : `agent-runtime tap install`→`status`(attached)→`uninstall` merges a
 //                passive logger into a temp settings.json and removes it with ZERO
 //                RESIDUE (the target file restored, our tap id gone).
 //
@@ -252,11 +252,11 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     expect(record?.body).toBe(NONCE);
   }, 60_000);
 
-  it('L4 event-tap leg: the DEPLOYED shim drives install→status(attached)→remove with ZERO RESIDUE', () => {
+  it('L4 event-tap leg: the DEPLOYED shim drives install→status(attached)→uninstall with ZERO RESIDUE', () => {
     const settings = join(targetClaude, 'settings.json');
     const sink = join(root, 'capture.log');
     // Seed a settings file with a FOREIGN key + a foreign hook — the tap must
-    // preserve both across install/remove.
+    // preserve both across install/uninstall.
     const baseline = `${JSON.stringify(
       {
         env: { FOO: 'bar' },
@@ -301,8 +301,8 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     expect(merged).toContain('echo foreign');
     expect(merged).toContain('agent-runtime-event-tap');
 
-    // remove — surgical: our entry gone, foreign spared, status detached.
-    runTap('remove');
+    // uninstall — surgical: our entry gone, foreign spared, status detached.
+    runTap('uninstall');
     const detached = JSON.parse(runTap('status')) as {
       status: { attached: boolean };
     };

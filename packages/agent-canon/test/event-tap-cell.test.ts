@@ -118,7 +118,7 @@ describe('event-tap cell — the capability has an agent-facing surface', () => 
   it('the verbs the cell names EQUAL the runtime TapVerb union', () => {
     const verbs = runtimeVerbs();
     // Non-vacuous: the union really was parsed, and it is the known four.
-    expect(verbs).toEqual(['install', 'read', 'remove', 'status']);
+    expect(verbs).toEqual(['install', 'read', 'status', 'uninstall']);
     expect(cellVerbs(eventTap.formalBlock)).toEqual(verbs);
     // …and every verb carries an invocation line naming the shim.
     for (const verb of verbs) {
@@ -132,13 +132,12 @@ describe('event-tap cell — the capability has an agent-facing surface', () => 
   // ── The parity check BITES — otherwise it is green whether or not they agree ─────
   it('is non-vacuous — a drifted verb set is CONVICTED on either side', () => {
     const verbs = runtimeVerbs();
-    // Drift on the CELL side: a cell that renamed `remove` to `uninstall`.
-    const driftedCell =
-      'verb         ∈ { install · uninstall · read · status }';
+    // Drift on the CELL side: a cell that renamed `uninstall` to `detach`.
+    const driftedCell = 'verb         ∈ { install · detach · read · status }';
     expect(cellVerbs(driftedCell)).not.toEqual(verbs);
     // Drift on the RUNTIME side: the union grows a verb the cell never names.
     const driftedUnion =
-      "export type TapVerb = 'install' | 'remove' | 'read' | 'status' | 'flush';";
+      "export type TapVerb = 'install' | 'uninstall' | 'read' | 'status' | 'flush';";
     expect(unionVerbs(driftedUnion)).not.toEqual(
       cellVerbs(eventTap.formalBlock),
     );

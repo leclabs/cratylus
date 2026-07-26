@@ -2,7 +2,7 @@
 //   (1) `tap install --events … --sink …` merges a PASSIVE logger into a test
 //       settings.json, preserving foreign top-level keys AND foreign per-event
 //       entries;
-//   (2) `tap remove` surgically drops ONLY the TAP_ID entry (file restored byte
+//   (2) `tap uninstall` surgically drops ONLY the TAP_ID entry (file restored byte
 //       -for-byte; zero residue — no bare `hooks: {}`);
 //   (3) `tap status`/`tap read` reflect the real installed state, derived from the
 //       target file (correct across separate processes);
@@ -99,7 +99,7 @@ describe('tap install (accept 1: merge + preserve)', () => {
   });
 });
 
-describe('tap remove (accept 2: zero residue)', () => {
+describe('tap uninstall (accept 2: zero residue)', () => {
   it('restores a fixture with no prior hooks byte-for-byte', () => {
     const { settingsPath, sinkPath } = fixture();
     const before = seed(settingsPath, {
@@ -117,7 +117,7 @@ describe('tap remove (accept 2: zero residue)', () => {
       settingsPath,
     ]);
     expect(read(settingsPath).hooks?.Stop).toHaveLength(1);
-    dispatchTap(['remove', '--settings', settingsPath]);
+    dispatchTap(['uninstall', '--settings', settingsPath]);
 
     // exact prior state — the hooks key is GONE, not left as `{}`
     expect(readFileSync(settingsPath, 'utf8')).toBe(before);
@@ -141,7 +141,7 @@ describe('tap remove (accept 2: zero residue)', () => {
       settingsPath,
     ]);
     expect(read(settingsPath).hooks?.Stop).toHaveLength(2);
-    dispatchTap(['remove', '--settings', settingsPath]);
+    dispatchTap(['uninstall', '--settings', settingsPath]);
 
     const after = read(settingsPath);
     expect(after.hooks?.Stop).toHaveLength(1);
@@ -172,7 +172,7 @@ describe('tap status / read (accept 3: reflect state across processes)', () => {
     expect(s.status.attached).toBe(true);
     expect([...s.status.events].sort()).toEqual(['session.start', 'turn.end']);
 
-    dispatchTap(['remove', '--settings', settingsPath]);
+    dispatchTap(['uninstall', '--settings', settingsPath]);
     expect(dispatchTap(['status', '--settings', settingsPath])).toEqual({
       verb: 'status',
       status: { attached: false, events: [] },

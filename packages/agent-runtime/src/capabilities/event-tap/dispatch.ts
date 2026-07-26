@@ -4,7 +4,7 @@
 // The runtime kernel (S3) routes `agent-runtime tap <verb>` here: the tap owns
 // the arg-parse for its own flags (`--events`, `--sink`, `--settings`) that a
 // generic method-reflecting dispatcher cannot know. Verb → port method:
-//   install → installTap · remove → removeTap · read → readCapture · status → status
+//   install → installTap · uninstall → removeTap · read → readCapture · status → status
 // Unknown verb / unknown lifecycle event fails LOUD (throws) — never a silent
 // no-op (matches the kernel's fail-loud contract).
 // ─────────────────────────────────────────────────────────────────────────────
@@ -18,18 +18,18 @@ import type {
 import { EventTapHostClaude } from './claude.js';
 
 /** The verbs the tap capability exposes, each routing to one port method. */
-export type TapVerb = 'install' | 'remove' | 'read' | 'status';
+export type TapVerb = 'install' | 'uninstall' | 'read' | 'status';
 
 /** A verb's outcome, discriminated by verb — the value the kernel serializes. */
 export type TapResult =
   | { verb: 'install'; events: LifecycleEvent[]; sink: string }
-  | { verb: 'remove' }
+  | { verb: 'uninstall' }
   | { verb: 'read'; records: CaptureRow[] }
   | { verb: 'status'; status: TapStatus };
 
 const VERBS: ReadonlySet<string> = new Set([
   'install',
-  'remove',
+  'uninstall',
   'read',
   'status',
 ]);
@@ -86,7 +86,7 @@ export function dispatchTap(argv: string[], host?: EventTapHost): TapResult {
   const [verb, ...rest] = argv;
   if (verb === undefined || !VERBS.has(verb)) {
     throw new Error(
-      `tap: unknown verb '${verb ?? ''}' (expected install|remove|read|status)`,
+      `tap: unknown verb '${verb ?? ''}' (expected install|uninstall|read|status)`,
     );
   }
   const flags = parseFlags(rest);
@@ -103,9 +103,9 @@ export function dispatchTap(argv: string[], host?: EventTapHost): TapResult {
       tap.installTap(events, { path: sink });
       return { verb: 'install', events, sink };
     }
-    case 'remove':
+    case 'uninstall':
       tap.removeTap();
-      return { verb: 'remove' };
+      return { verb: 'uninstall' };
     case 'read':
       return { verb: 'read', records: tap.readCapture() };
     case 'status':
