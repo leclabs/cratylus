@@ -313,9 +313,28 @@ function withResolvedBodies(
  * Project every cell contributed by the plugin set into an artifact tree. Writes
  * nothing — hand the result to `writeRenderTree(out, tree.files)`.
  *
- * Later plugins in `extends` order win on a name collision — the same precedence
- * `resolve()` gives fragments, so a consumer can override a canon cell by shipping
- * one of the same name. The winner is reported, never silently applied.
+ * Later plugins in `extends` order win on a name collision, so a consumer can
+ * override a canon CELL by shipping one of the same name. The winner is reported,
+ * never silently applied.
+ *
+ * This is NOT "the same precedence `resolve()` gives fragments" — that claim was
+ * here and it was false. Cells and fragments override ASYMMETRICALLY, deliberately:
+ *
+ *   cell     — collides BY NAME, later plugin wins (here)
+ *   fragment — does NOT collide. `discoverPluginFragments` mints a distinct node
+ *              per plugin (`catalog/index.ts:270-274`, id `<plugin>:<dim>/<export>`),
+ *              so two plugins naming `parsimony` yield two nodes, not a contest.
+ *
+ * The asymmetry is right and worth keeping. A cell is a COMPOSITION — a local
+ * assembly choice, and overriding one changes only that cell. A fragment is
+ * canonical VOCABULARY: overriding it by name would silently redefine a concept
+ * everywhere any agent selects it, across the whole plugin set, with no site
+ * naming the change. Per-plugin fragment identity makes that impossible by
+ * construction rather than by discipline.
+ *
+ * Consequence a consumer must know: you can override canon's `investigator`; you
+ * cannot override canon's `objective/insight`. To change a fragment's body, patch
+ * its node — see `discoverFragments` / `resolveFragmentBodies` below.
  */
 export async function projectPluginSet(
   opts: ProjectOpts,
