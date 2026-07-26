@@ -8,7 +8,8 @@
 #   2. ON + collapse transcript + in-scope agent  → BLOCK with corrective reason.
 #   3. ON + legitimate transcript (deploy gate)   → no block (the reserved set passes).
 #   4. ON + collapse but OUT-OF-SCOPE agent       → no block (agent-scope gate).
-#   5. ON + collapse + stop_hook_active=true      → no block (loop safety).
+#   5. ON + collapse + stop_hook_active=true      → STILL BLOCKS (judging is never skipped);
+#      loop safety is a BLOCK BUDGET (5b) + a no-progress detector (5c), not a skipped judge.
 #   6. ON + collapse + no transcript file         → no block (fail open).
 #   7. NON-VACUOUS: the fixture judge actually distinguishes the two transcripts.
 #   8. SMOKE (optional): the REAL claude judge classifies the two transcripts correctly;
@@ -96,11 +97,27 @@ mk_transcript "$COLLAPSE" "I've scaffolded the module. Should I name it stance-g
 mk_transcript "$LEGIT" "Done — I named it stance-guardrail, wrote the worker + judge + toggle, and added tests; all green. The one remaining step is irreversible: should I deploy this to the fleet? That needs your sign-off before I push."
 
 # --- helper: run the worker with a synthesized hook input, capture stdout -------------------
-run_worker() {  # $1=transcript-path  $2=agent_type  $3=stop_hook_active(true|false)
+# HERMETIC STATE: the worker keeps per-session block-budget state under $TMPDIR. Pointing TMPDIR
+# at the throwaway WORK dir keeps it out of the host's /tmp, and giving each case its own
+# session id keeps the budget from leaking between cases (a shared id would let case N's blocks
+# exhaust case N+1's budget and silently turn a real assertion green).
+export TMPDIR="$WORK"
+# The counter lives in a FILE, not a shell variable: every call site is `out="$(run_worker …)"`,
+# a command substitution, so a `_sess=$((_sess+1))` would increment inside a subshell and be lost.
+# Every case would then share one session id, and the no-progress detector would correctly
+# suppress the repeats — turning independent assertions into false failures. (It did exactly
+# that on first run, which is how this was found.)
+_SESSC="$WORK/.sessc"; printf '0' > "$_SESSC"
+run_worker() {  # $1=transcript-path  $2=agent_type  $3=stop_hook_active  [$4=session_id]
+	if [ $# -ge 4 ]; then
+		sid="$4"
+	else
+		n="$(($(cat "$_SESSC") + 1))"; printf '%s' "$n" > "$_SESSC"; sid="case$n"
+	fi
 	jq -cn \
-		--arg tp "$1" --arg at "$2" --arg sa "$3" --arg cwd "$REPO" \
+		--arg tp "$1" --arg at "$2" --arg sa "$3" --arg cwd "$REPO" --arg sid "$sid" \
 		'{transcript_path:$tp, agent_type:$at, stop_hook_active:($sa=="true"), cwd:$cwd,
-		  hook_event_name:"SubagentStop", session_id:"test"}' \
+		  hook_event_name:"SubagentStop", session_id:$sid}' \
 	| sh "$WORKER" 2>/dev/null || true
 }
 is_block() { printf '%s' "$1" | jq -e '.decision == "block"' >/dev/null 2>&1; }
@@ -141,9 +158,33 @@ out="$(run_worker "$COLLAPSE" developer false)"
 is_block "$out" && pass 'allowlist "*" blocks any collapsing agent' || bad 'allowlist "*" failed to block'
 git -C "$REPO" config --unset agentfactory.stanceGuardAgents
 
-# 5. ON + collapse + stop_hook_active=true → loop safety, no block.
+# 5. ON + collapse + stop_hook_active=true → STILL BLOCKS. Judging is never skipped.
+#    THIS ASSERTION IS INVERTED FROM ITS ORIGINAL. It used to read "stop_hook_active suppresses
+#    block", and that green test was defending the hole: it demoted the invariant to alternating
+#    turns and handed the agent a one-line escape — get blocked, emit anything, end again
+#    unjudged. Observed live: an agent blocked for deferring closed the next turn with a bare
+#    "Proceeding to #2, I'll do X" and stopped without doing X, unjudged, because of this rule.
+#    Loop safety now budgets BLOCKS (cases 5b/5c), never the judging.
 out="$(run_worker "$COLLAPSE" mav true)"
-is_block "$out" && bad "stop_hook_active did not suppress re-block" || pass "loop safety: stop_hook_active suppresses block"
+is_block "$out" && pass "stop_hook_active does NOT suppress judging (the alternating-turn hole is closed)" \
+	|| bad "stop_hook_active still suppresses judging — the escape hatch is open"
+
+# 5b. Loop safety by BLOCK BUDGET: same session, distinct turns, capped → eventually allows stop.
+#     Uses a cap of 1 so the second distinct collapse exhausts it and stops LOUD rather than silent.
+cp "$COLLAPSE" "$WORK/collapse2.jsonl"
+printf '%s\n' '{"type":"assistant","message":{"content":[{"type":"text","text":"Should I name it foo? Also: want me to add tests?"}]}}' >> "$WORK/collapse2.jsonl"
+out="$(STANCE_BLOCK_CAP=1 run_worker "$COLLAPSE" mav false budgetcase)"
+is_block "$out" || bad "budget: first block should fire"
+out="$(STANCE_BLOCK_CAP=1 run_worker "$WORK/collapse2.jsonl" mav false budgetcase)"
+is_block "$out" && bad "budget: cap=1 exhausted but still blocked (would loop)" \
+	|| pass "loop safety: block budget bounds the loop and then fails open"
+
+# 5c. No-progress detector: the SAME turn re-judged → allow, the agent changed nothing.
+out="$(run_worker "$COLLAPSE" mav false nopcase)"
+is_block "$out" || bad "no-progress: first block should fire"
+out="$(run_worker "$COLLAPSE" mav false nopcase)"
+is_block "$out" && bad "no-progress: identical turn blocked twice (would loop)" \
+	|| pass "loop safety: an unchanged turn is not re-blocked"
 
 # 6. ON + collapse + missing transcript → fail open.
 out="$(run_worker "$WORK/does-not-exist.jsonl" mav false)"

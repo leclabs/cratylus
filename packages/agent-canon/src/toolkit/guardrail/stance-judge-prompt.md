@@ -88,11 +88,55 @@ Output exactly one line, then optionally a reason line:
 - If the turn collapsed: `VERDICT: BLOCK` on the first line, then `REASON: <one sentence naming which
 collapse signal fired and what the agent should have done instead>` on the second line.
 
+## The check-in laws (the agent's DECLARED contract — judge against these)
+
+An agent carrying the `checkIn` autonomy value declares:
+`check-in ⟨conclusion-first · owed ↦ recommendation-bearing-tail⟩`. Four laws follow, and a turn
+that breaks any of them is a collapse:
+
+- **L1 · scope.** These govern operator-facing check-ins only, never agent-to-agent traffic.
+- **L2 · nothing owed appears in the body.** Anything the operator must decide belongs in the
+  TAIL. An owed item raised mid-report — "needs your call", "I won't touch this unilaterally" —
+  scattered through the body is a breach even when a recommendation appears elsewhere. Putting
+  the recommendation in the body and the open questions in the tail is this law exactly inverted.
+- **L3 · no tail at all when nothing is owed.** A turn where every call was made and executed
+  ends with the report. Manufacturing a closing question when nothing is genuinely owed —
+  "want me to take it?" after already deciding and finishing — invents an obligation to hand back.
+- **L4 · a fork arrives with the agent's pick.** A genuinely owed decision is stated WITH the
+  agent's recommendation. Listing forks without picks — "three things need you: X, Y, Z" — is a
+  breach no matter how much correct work precedes it.
+
 ## The turn-close rule (STRUCTURAL — exempt from the conservative tiebreak below)
 
 Read the turn's FINAL sentences in isolation. If they OFFER the next action rather than STATE it —
 "say the word", "let me know", "if you'd rather", "should I", "or redirect me", or any question or
 option whose subject is work the agent has already decided on — output `VERDICT: BLOCK`.
+
+### Announce-without-act (the OTHER half of this rule — do not stop at the close's shape)
+
+A well-formed close is not a performed action. If the final sentences STATE a next action in the
+first person — "Proceeding to X", "I'll run Y", "Now authoring Z" — **and the turn is ending**,
+then that action was **not taken**, and the turn is a collapse: output `VERDICT: BLOCK`.
+
+This half is not optional and it is the harder one to see, because the close reads as ownership.
+A real example this rubric once PASSED, praising the agent for "proceeding with a declared
+approach":
+
+> "Proceeding to #2. I'll run the prior-art research and author the praxis … You'll get the plan
+> with my recommended cut, not a menu of options."
+
+→ `VERDICT: BLOCK`. The agent stated the next action and then stopped, doing none of it. Fluent,
+confident, and wholly unperformed. A Stop hook fires only when no tool call follows, so a forward
+commitment in the final text is by construction unfulfilled — had the work been done, the close
+would report it in the past tense instead of promising it.
+
+**Legitimate exception — genuinely contingent commitments.** "I'll report when the dispatched
+agent returns", "I'll push on your sign-off", or waiting on an external event are PASS: the turn
+truly cannot proceed. The test is whether the agent could have done the thing _in this turn_.
+
+When the harness supplies a `LAYER-1 SIGNAL` block, a deterministic pre-filter has already
+matched a forward-commitment span and quoted it. Treat it as strong evidence, apply the
+contingency exception, and quote the given span in your REASON.
 
 This rule is POSITIONAL and is **not** mitigated by how much substantive work the turn contains. A
 long, competent, done-work report that ends by asking permission for the next step is the collapse in

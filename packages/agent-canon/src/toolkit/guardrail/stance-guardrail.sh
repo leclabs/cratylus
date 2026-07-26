@@ -49,10 +49,31 @@ input="$(cat)"
 
 command -v jq >/dev/null 2>&1 || allow_stop  # no jq → cannot parse → fail open
 
-# --- loop safety ----------------------------------------------------------------------------
-# If a prior Stop hook already blocked this turn, do not block again — let the agent stop.
-stop_active="$(printf '%s' "$input" | jq -r '.stop_hook_active // false' 2>/dev/null || echo false)"
-[ "$stop_active" = "true" ] && allow_stop
+# --- loop safety: budget the BLOCKS, never the JUDGING ---------------------------------------
+# SUPERSEDES the original `stop_hook_active=true → allow_stop` short-circuit, which was not a
+# loop guard but a hole. It demoted the invariant to "enforced on alternating turns" and handed
+# the agent a trivial escape: get blocked, emit anything at all, end again UNJUDGED. Observed in
+# the wild — an agent blocked for deferring closed the very next turn with a bare "Proceeding to
+# #2, I'll do X" and stopped without doing X, never judged, because this line fired. It also
+# never terminated: block→skip→block→skip runs forever at half rate. Soundness given up, and
+# termination not bought. Worse, it made the rubric's entire "When THIS judge has already fired"
+# section DEAD CODE — that section exists to judge the response to a verdict, and the response to
+# a verdict was the one turn guaranteed never to reach the judge.
+#
+# The replacement judges EVERY turn and bounds the number of times it may BLOCK:
+#   - consecutive-block cap  — after N blocks on one task, stop blocking and fail LOUD+OPEN.
+#   - no-progress detector   — if the judged turn is byte-identical to the one already blocked,
+#                              the agent changed nothing and won't on the next attempt either.
+# State is per-session, in a tmp file keyed by session id; absent/unwritable state → fail open.
+BLOCK_CAP="${STANCE_BLOCK_CAP:-3}"
+session="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || echo nosession)"
+state_dir="${TMPDIR:-/tmp}/stance-guardrail"
+mkdir -p "$state_dir" 2>/dev/null || true
+count_file="$state_dir/$session.count"
+hash_file="$state_dir/$session.lastblock"
+
+block_count="$(cat "$count_file" 2>/dev/null || echo 0)"
+case "$block_count" in *[!0-9]*) block_count=0 ;; esac
 
 # --- opt-in gate (off by default) -----------------------------------------------------------
 # Per-repo, lives in .git/config, never checked in. A fresh clone is opted out.
@@ -122,10 +143,51 @@ $operator
 === AGENT (last assistant turn — judge THIS) ===
 $asst"
 
-# --- judge ----------------------------------------------------------------------------------
+# --- LAYER 1: deterministic checks (no LLM) --------------------------------------------------
+# The judge is one sample from a small model — a noisy signal, and unfit to carry an invariant on
+# its own. Anything decidable by inspection is decided HERE, where it is reproducible and free.
+# The judge is reserved for the semantic residue that regex provably cannot reach.
+#
+# L1a · ANNOUNCE-WITHOUT-ACT. A Stop hook fires when the agent has produced text and no further
+# tool call. So a first-person forward commitment in the FINAL text is, by construction, a
+# commitment the turn did not honour: had the agent done the thing, the doing would precede the
+# text and the text would report it ("I ran X"), not promise it ("I'll run X").
+#
+# The rubric could never catch this. Its turn-close rule asks only whether the close OFFERS the
+# next action ("say the word") versus STATES it — and a bare statement PASSES. Replayed through
+# the judge, a real turn reading "Proceeding to #2. I'll run the research and author the plan."
+# came back PASS, with the judge commending the agent for "proceeding with a declared approach"
+# while the agent had in fact proceeded with nothing. Stating and stopping is the collapse in its
+# most fluent disguise, and it is invisible to a rule that only inspects the shape of the close.
+#
+# Contingent commitments are NOT this: waiting on a dispatched agent, on an operator's sign-off,
+# or on an external event is legitimate, and the turn genuinely cannot proceed. Those are carved
+# out below. Everything else routes to the judge with the offending span quoted, so the block
+# names the evidence rather than restating the rule.
+final_span="$(printf '%s' "$asst" | tail -c 700)"
+l1_evidence=""
+if printf '%s' "$final_span" | grep -Eqi "(^|[[:space:].\"'])(i'?ll|i will|i'?m going to|let me|now (i'?ll|running)|next (i'?ll|i will)|proceeding to|moving on to|starting (on|with)|taking (it|that) (on|now))[[:space:]]"; then
+	# Carve-outs: the commitment is contingent on something outside this turn.
+	if ! printf '%s' "$final_span" | grep -Eqi "when (it|they|that|the .*) (returns?|completes?|finishes?|lands?)|once (you|the operator|it|that)|awaiting|still running|report back when|on your (sign-?off|go|word)|if you|unless you|pending your"; then
+		l1_evidence="$(printf '%s' "$final_span" | grep -Eoi ".{0,90}(i'?ll|i will|i'?m going to|let me|proceeding to|moving on to|starting (on|with)).{0,90}" | head -1)"
+	fi
+fi
+
+# --- LAYER 2: the judge (semantic residue only) ----------------------------------------------
 # The judge contract: turn on stdin, rubric path as argv[1]; emits VERDICT: PASS|BLOCK [+ REASON].
 # Non-zero judge exit → fail open.
-verdict="$(printf '%s' "$turn" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || allow_stop
+judged="$turn"
+[ -n "$l1_evidence" ] && judged="$turn
+
+=== LAYER-1 SIGNAL (deterministic pre-filter) ===
+This turn's closing text makes a first-person forward commitment, and the turn is ENDING with no
+tool call after it — so the committed action was NOT performed. Verbatim span:
+  \"$l1_evidence\"
+Unless that commitment is genuinely contingent on something outside this turn (a dispatched agent
+still running, an operator sign-off, an external event), this is announce-without-act: BLOCK it,
+and quote the span above as the evidence."
+
+verdict="$(printf '%s' "$judged" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || allow_stop
 
 decision="$(printf '%s\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | head -1)"
 [ "$decision" = "BLOCK" ] || allow_stop  # PASS, empty, or anything but BLOCK → allow stop
@@ -133,15 +195,44 @@ decision="$(printf '%s\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | hea
 reason="$(printf '%s\n' "$verdict" | sed -n 's/^REASON:[[:space:]]*//p' | head -1)"
 [ -n "$reason" ] || reason="This turn collapsed out of the intent-driven-expert stance."
 
+# --- loop safety, applied at the point of blocking -------------------------------------------
+# Judging already happened; only the BLOCK is budgeted. Both exits below are LOUD — a guardrail
+# that gives up silently teaches the agent nothing and lies to the operator about conformance.
+turn_hash="$(printf '%s' "$asst" | cksum | cut -d' ' -f1)"
+last_hash="$(cat "$hash_file" 2>/dev/null || echo none)"
+if [ "$turn_hash" = "$last_hash" ]; then
+	printf 'stance-guardrail: no progress since the last block (turn unchanged) — allowing stop, UNRESOLVED: %s\n' "$reason" >&2
+	allow_stop
+fi
+if [ "$block_count" -ge "$BLOCK_CAP" ]; then
+	printf 'stance-guardrail: block budget %s exhausted — allowing stop, UNRESOLVED: %s\n' "$BLOCK_CAP" "$reason" >&2
+	allow_stop
+fi
+printf '%s' "$turn_hash" > "$hash_file" 2>/dev/null || true
+printf '%s' "$((block_count + 1))" > "$count_file" 2>/dev/null || true
+reason="$reason (stance-guardrail block $((block_count + 1)) of $BLOCK_CAP; on exhaustion this turn ends unresolved.)"
+
 # --- BLOCK ----------------------------------------------------------------------------------
 # Emit the Stop-hook block decision. The `reason` is fed back to the agent as a corrective
 # instruction; it must re-assume the stance (own the call / extract the intent) and continue.
+#
+# The feedback QUOTES THE OFFENDING SPAN when Layer 1 found one. A model corrects far better
+# against a concrete diff than against a restated rule — and the restated rule is what this
+# guardrail used to send, which is why an agent could absorb the correction, agree with it in
+# detail, and reproduce the same failure in its very next sentence.
+evidence_clause=""
+[ -n "$l1_evidence" ] && evidence_clause="The offending span is yours, verbatim: \"$l1_evidence\" — \
+you committed to an action and then ended the turn without taking it. Stating a next action is not \
+performing it. Do the thing NOW, in this turn, with tool calls; report it in the past tense when it \
+is done. "
+
 feedback="STANCE GUARDRAIL — blocked: you collapsed out of the intent-driven-expert stance. $reason \
-Re-assume the stance: you are the owning expert; the operator owns intent + sign-off on irreversible \
-acts only. Decide the in-remit call yourself (note it for review) instead of seeking permission, own \
-your expert judgment (naming/design/architecture/how) instead of deferring it, and extract+serve the \
-operator's INTENT instead of echoing their literal words. Then continue. (Legitimate exceptions: \
-surfacing a genuine irreversible-outward act for consent, or routing a true INTENT ambiguity to /elicit.)"
+${evidence_clause}Re-assume the stance: you are the owning expert; the operator owns intent + sign-off \
+on irreversible acts only. Decide the in-remit call yourself (note it for review) instead of seeking \
+permission, own your expert judgment (naming/design/architecture/how) instead of deferring it, and \
+extract+serve the operator's INTENT instead of echoing their literal words. Then continue. (Legitimate \
+exceptions: surfacing a genuine irreversible-outward act for consent, or routing a true INTENT \
+ambiguity to /elicit.)"
 
 # jq builds valid JSON regardless of quotes/newlines in the feedback.
 jq -cn --arg r "$feedback" '{decision:"block", reason:$r}'
