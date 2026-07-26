@@ -241,6 +241,8 @@ usage:
   memory replace (--home <dir> | --name <name>) [--session <id>] --store SEMANTIC|PROCEDURAL (--body <text> | --body -)
   memory rollover (--home <dir> | --name <name>) (--routes <json> | --routes -) [--residue <json>] \\
                  [--session <id>] [--keep N] [--completed-only | --for-session <S>]
+                 --residue is a JSON array of record BODIES as bare strings —
+                 '["carry this forward"]', never '[{"body":"…"}]'.
   memory audit   (--home <dir> | --name <name>) [--allow <file>] [--config <file>] [--keys <file>] [--owed]
   memory migrate <src.md> <dest.jsonl> [--dry-run] [--overwrite]
 
@@ -922,6 +924,75 @@ function replaceGuarded(args: ParsedArgs, home: string): CliResult {
   };
 }
 
+/** The JSON kind of a value, as an error message says it: `null`, `array`, `object`, or the typeof. */
+function jsonKindOf(v: unknown): string {
+  if (v === null) return 'null';
+  if (Array.isArray(v)) return 'array';
+  return typeof v;
+}
+
+/**
+ * Parse + validate `--residue` into the BODIES it must be: bare strings.
+ *
+ * `EpisodicRecord.body` is `JsonValue`, so *every* JSON value type-checks as a
+ * body — an unchecked `as JsonValue` therefore accepts the one shape callers
+ * most naturally send, `[{"body":"x"}]` (a record, not a body), and writes a
+ * record whose body is the wrapper `{"body":"x"}`. `assertRecord` never catches
+ * it: it only checks `'body' in r`. The corruption surfaces nowhere until a
+ * reader finds a dict where prose belongs. So the shape is checked HERE, at the
+ * boundary, and a wrapper is REFUSED — never unwrapped, since coercing it would
+ * hide the same bug in the next caller.
+ */
+function parseResidue(
+  flag: ParsedArgs['flags'][string] | undefined,
+): { bodies: string[] } | { err: string } {
+  const text =
+    flag === '-' || flag === true
+      ? readStdin()
+      : typeof flag === 'string'
+        ? flag
+        : '';
+  if (text.trim().length === 0) return { bodies: [] };
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(text);
+  } catch (e) {
+    return {
+      err: `--residue is not valid JSON: ${
+        e instanceof Error ? e.message : String(e)
+      }\n`,
+    };
+  }
+  if (!Array.isArray(parsed))
+    return {
+      err: `--residue must be a JSON array of record bodies, got ${jsonKindOf(parsed)} — wanted ["carry this forward", …]\n`,
+    };
+
+  const bodies: string[] = [];
+  for (const [i, entry] of parsed.entries()) {
+    if (typeof entry === 'string') {
+      bodies.push(entry);
+      continue;
+    }
+    const wrapped =
+      typeof entry === 'object' &&
+      entry !== null &&
+      !Array.isArray(entry) &&
+      'body' in entry;
+    const lines = [
+      `--residue[${i}] must be a record body as a bare string, got ${jsonKindOf(entry)}`,
+    ];
+    if (wrapped)
+      lines.push(
+        '  --residue takes BODIES, not records — pass the body itself, not a {"body": …} wrapper',
+      );
+    lines.push('  wanted: --residue \'["carry this forward"]\'');
+    return { err: `${lines.join('\n')}\n` };
+  }
+  return { bodies };
+}
+
 /**
  * `rollover`: land the routing decisions, archive + empty the raw pile, and put
  * the carry-forward residue back — as ONE operation under ONE lock.
@@ -932,51 +1003,32 @@ function replaceGuarded(args: ParsedArgs, home: string): CliResult {
  * step loses it with no trace. Closing that gap is the whole point.
  *
  * `--routes` takes the same decision array as `apply`; `--residue` takes the
- * records to re-encode after the drain.
+ * record BODIES to re-encode after the drain — a JSON array of bare strings
+ * (`["carry this forward"]`), NOT records. It is validated up front, before the
+ * destructive half runs: refusing after the drain would lose the very forward
+ * state this verb exists to preserve.
  */
 function runRollover(args: ParsedArgs): CliResult {
   const home = requireHome(args.flags);
   const session = resolveSession(home, { flag: str(args.flags.session) });
   const release = guardPartitionWrite(home, session);
   try {
+    const residue = parseResidue(args.flags.residue);
+    if ('err' in residue) return { code: 2, out: '', err: residue.err };
+
     const applied = applyGuarded(args, home);
     if (applied.code !== 0) return applied;
     const drained = drainGuarded(args, home);
     if (drained.code !== 0) return drained;
 
     let reseeded = 0;
-    const residueFlag = args.flags.residue;
-    const residueText =
-      residueFlag === '-' || residueFlag === true
-        ? readStdin()
-        : typeof residueFlag === 'string'
-          ? residueFlag
-          : '';
-    if (residueText.trim().length > 0) {
-      let bodies: unknown;
-      try {
-        bodies = JSON.parse(residueText);
-      } catch (e) {
-        return {
-          code: 2,
-          out: '',
-          err: `--residue is not valid JSON: ${
-            e instanceof Error ? e.message : String(e)
-          }\n`,
-        };
-      }
-      if (!Array.isArray(bodies))
-        return {
-          code: 2,
-          out: '',
-          err: '--residue must be a JSON array of record bodies\n',
-        };
+    if (residue.bodies.length > 0) {
       const store = new EpisodicStore({
         home,
         derive: { ...defaultDerive, session: () => session },
       });
-      for (const body of bodies) {
-        store.encode({ body: body as JsonValue }, str(args.flags.path));
+      for (const body of residue.bodies) {
+        store.encode({ body }, str(args.flags.path));
         reseeded++;
       }
     }
