@@ -3,8 +3,8 @@
 > Working handle, **not** an anchor. Reader = LLM. Runtime folder-state is authority; this doc is a
 > derived mirror.
 
-**Status: IN-FLIGHT, bound (`.bound`). Authored 2026-07-26 (mav) by merging the seven open plans
-under a grounded three-way census.** `merge : { P₁, P₂, … } ↦ ⋃ Pᵢ`. Each source plan is superseded
+**Status: ALL 17 SHARDS COMPLETE (2026-07-26). Still BOUND and NOT landed** — 9 filed stubs remain in `pending/`, so `done(P)` is false by its own definition. Those are defects discovered during execution and recorded rather than chased; they are this plan's frontier now. Originally: Authored 2026-07-26 (mav) by merging the seven open plans
+under a grounded three-way census.\*\* `merge : { P₁, P₂, … } ↦ ⋃ Pᵢ`. Each source plan is superseded
 by this one and retired; its content survives under `plans/.retired/` as the record.
 
 ## Why one plan
@@ -67,7 +67,7 @@ Three defects are **shipping today** and were owned by no shard:
 | **V2**  | `residue-validation` — reject a non-string residue element loudly; align three disagreeing docstrings              | data loss    | —          | 0    | **DONE** |
 | **V3**  | `node-scope-severance` — `node()` is provenance, not scope; stop laundering orphans into the global store          | routing      | —          | 0    | **DONE** |
 | **V4**  | `deploy-prune` — converge the deploy target to the render tree; kill the orphan `memory` skill                     | live bug     | —          | 0    | **DONE** |
-| **V6**  | `guardrail-boundary` — re-measure turn-730 at N=20; reconcile the two colliding rules or record the boundary       | calibration  | —          | 0    | active   |
+| **V6**  | `guardrail-boundary` — re-measure turn-730 at N=20; reconcile the two colliding rules or record the boundary       | calibration  | —          | 0    | **DONE** |
 | **V7**  | `projection-io-extraction` — `projectPluginSet` returns an artifact tree; writes move to the caller                | architecture | —          | 0    | **DONE** |
 | **R1**  | `memory-prior-art` — write-time signal vs drain-time inference, in shipped systems; adopt-or-build verdict         | research     | —          | 0    | **DONE** |
 | **V10** | `event-tap-skill-cell` — the capability is built and has NO agent-facing surface; a false supersession hid it      | live gap     | —          | 0    | **DONE** |
@@ -76,7 +76,7 @@ Three defects are **shipping today** and were owned by no shard:
 | **S3**  | `memory-execution-spec` — the architectural remedy: write-time signal, admission test, dedup, migration            | spec         | R1, V2, V3 | 1    | **DONE** |
 | **M1**  | `store-ceiling-enforced` — the 16 kB bound existed and never fired; recalibrate and enforce at the landing site    | memory       | S3         | 1    | **DONE** |
 | **M3**  | `cell-verb-roster-gate` — the verb roster has three homes and only two are gated                                   | memory       | S3         | 1    | **DONE** |
-| **M2**  | `dream-cell-pressure-seam` — the cell cannot see the trigger the tool measures                                     | memory       | M1, M3     | 2    | active   |
+| **M2**  | `dream-cell-pressure-seam` — the cell cannot see the trigger the tool measures                                     | memory       | M1, M3     | 2    | **DONE** |
 | **V9**  | `heartbeat-mechanism` — port, drain, two host adapters, sampling gate, under an explicitly provisional path        | capability   | —          | 2    | **DONE** |
 
 ```text
