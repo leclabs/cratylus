@@ -161,6 +161,10 @@ const VERB_FLAGS: Readonly<Record<string, readonly string[]>> = {
   migrate: ['dry-run', 'overwrite'],
 };
 
+/** The command set `main` dispatches — the authoritative source the runtime's
+ *  `MEMORY_VERBS` roster must equal (pinned by `test/verb-roster.test.ts`). */
+export const CLI_VERBS: readonly string[] = Object.keys(VERB_FLAGS);
+
 /** The USAGE lines naming this verb — what `memory <verb> --help` prints. */
 function usageFor(verb: string): string {
   const lines = USAGE.split('\n').filter((l) =>

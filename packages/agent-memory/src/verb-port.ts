@@ -27,6 +27,13 @@ import { main } from './cli.js';
  * The memory verbs the runtime dispatches — the `cli.ts` command set minus the
  * meta words (`--version`/`--help`) and the RETIRED `install` self-check (S7: the
  * per-host runtime install replaces it). One handler is minted per name below.
+ *
+ * SECOND ENUMERATION, GATED. This list and `cli.ts`'s per-verb flag table are two
+ * homes for one set, and they diverge SILENTLY: a verb present in `cli.ts` but
+ * missing here typechecks, passes every unit test, and is simply unreachable
+ * through the runtime — which is how `get` and `rollover` shipped dead. The
+ * equality is pinned by `test/verb-roster.test.ts`; do not add a verb to one
+ * without the other.
  */
 export const MEMORY_VERBS = [
   'init',
@@ -40,7 +47,9 @@ export const MEMORY_VERBS = [
   'migrate',
   'drain',
   'apply',
+  'get',
   'replace',
+  'rollover',
   'audit',
 ] as const;
 
