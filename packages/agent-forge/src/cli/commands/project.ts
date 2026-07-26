@@ -16,6 +16,7 @@ import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
   type ProjectablePlugin,
   projectPluginSet,
+  writeRenderTree,
 } from '../../project/index.js';
 
 export interface ProjectCmdOpts {
@@ -50,12 +51,14 @@ export async function runProject(opts: ProjectCmdOpts = {}): Promise<number> {
   const out = resolve(opts.out ?? join(cwd, '.render'));
   const adapter = adapterByName(opts.harness ?? 'claude');
 
+  // Render, THEN write — the projector hands back the artifact tree and this
+  // command is the one writer. A projection that throws leaves no half-tree.
   const report = await projectPluginSet({
     plugins,
-    out,
     adapter,
     log: (line) => process.stdout.write(`${line}\n`),
   });
+  writeRenderTree(out, report.files);
 
   process.stdout.write(
     `\n${pc.green('✓')} projected ${report.agents} agent(s) + ${report.skills} skill(s)` +

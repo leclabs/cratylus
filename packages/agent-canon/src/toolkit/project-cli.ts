@@ -25,10 +25,12 @@ import {
   scanCellDirNames,
   scanModuleNames,
 } from '@leclabs/agent-forge/module-scan';
-import { projectPluginSet } from '@leclabs/agent-forge/project';
+import {
+  projectPluginSet,
+  writeRenderTree,
+} from '@leclabs/agent-forge/project';
 import canonPlugin from '../index.js';
 import { hookSources } from './hooks.js';
-import { emitRuntimeShim } from './runtime-shim.js';
 
 // The harness projection port, selected strictly BY NAME — no concrete claude
 // adapter module is imported here (the projection logic lives in forge).
@@ -107,12 +109,12 @@ async function projectCells(out: string): Promise<{
   // The SAME call a consumer's `agent-forge project` makes — the corpus is just
   // one plugin in the set. Keeping a second dir-scanning projector here is what
   // let the consumer path rot unnoticed; there is now one path, and we ride it.
-  const { agents, skills, hooks } = await projectPluginSet({
+  const { files, agents, skills, hooks } = await projectPluginSet({
     plugins: [canonPlugin],
-    out,
     adapter,
     log: (line) => process.stdout.write(`${line}\n`),
   });
+  writeRenderTree(out, files);
   return { agents, skills, hooks };
 }
 
