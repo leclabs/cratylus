@@ -5,12 +5,20 @@
 > is LOCKED (plugin-cli). When this is `/praxis`'d, resolve **O1** (taxonomy placement) against the NET-CURRENT
 > model — heartbeat may be a `dimension`, a harness capability, or both; do NOT assume "organ"/"dimension" before
 > O1 settles (the title word is provisional). mav's intent + prior-art below are unchanged.
+>
+> **Discharged (mav, 2026-07-26).** O1 resolved against live code — see §Open questions. Two references in
+> this file had also gone stale: `packages/agent-anatomy` **does not exist** (dimensions live in
+> `packages/agent-forge/src/anatomy/index.ts`, their values in `packages/agent-canon/src/dimensions/`), and
+> the plan's title word `organ` is superseded by `dimension` per the note above — but the file is not
+> renamed, because the anchor is undiscovered (O4) and renaming it to `heartbeat-dimension` would coin by
+> fiat the very thing O4 must derive. The working handle stays provisional until `/signify` runs.
 
-**Status: PROPOSED — feature request, un-decomposed. `/praxis` this next session to cut MECE shards.**
+**Status: PROPOSED — architecture settled, blocked on naming. O1–O3 resolved 2026-07-26 against live
+code; the sole remaining gate is O4 (signifier), which is nico's. `/signify` → then `/praxis`.**
 Authored by mav (session 4048440e, 2026-07-08) from a verified external prototype + grounded prior-art
-sweep. This file is the INTENT + prior-art + proposed shape; it is deliberately NOT yet sharded — the
-shard cut depends on where the organ lands in the anatomy taxonomy (open question O1 below), which the
-praxis session resolves against live canon.
+sweep. This file is the INTENT + prior-art + resolved shape; it is deliberately NOT yet sharded, but the
+reason has changed: the taxonomy question that once gated the cut is answered, and what blocks it now is
+that the thing has no discovered name to create files under.
 
 ## Intent
 
@@ -92,28 +100,63 @@ composed of:
    threshold is crossed, deliver a "consolidate" beat that invokes the dream ritual IN-session (light fold),
    with the full fold still at handoff/clear. Regulated by the gate, merely SAMPLED on the pulse (per O3).
 
-## Open questions (resolve in praxis — these gate the shard cut)
+## Open questions
 
-- **O1 · taxonomy placement.** Is the heartbeat a first-class _organ_ in `packages/agent-anatomy` (selectable
-  in the organ-vector, à la create-agent), a _harness capability_ (like the hooks/settings surface), or both
-  (organ that projects to a harness realization)? Determines where source cells live + how it projects.
-- **O2 · realization split.** One capability with two adapters (Channels | SDK-streaming), or two capabilities?
-  How does it project through agent-forge adapters (cf. `packages/agent-forge/src/adapters/claude/`)?
-- **O3 · consolidation coupling.** Ratify: heartbeat SAMPLES a pressure/salience gate that triggers dream;
-  it does NOT clock dream at its own frequency. Define the gate (EPISODIC line-count? importance sum? both?).
+### RESOLVED 2026-07-26 (mav) — against live architecture, not the 2026-07-08 assumptions
+
+- **O1 · taxonomy placement — RESOLVED, and the question's trichotomy was the wrong axis.** "Organ vs
+  harness capability vs both" presupposes one slot. The architecture already has **three**, and `memory`
+  occupies all of them at once — the precedent that settles this:
+
+  | layer                  | what it holds                          | memory's instance                                                   |
+  | ---------------------- | -------------------------------------- | ------------------------------------------------------------------- |
+  | **dimension**          | a σ\* fragment declaring a disposition | `src/dimensions/memory/long-term-memory.ts`, selected into `mav.ts` |
+  | **skill** `runtime:{}` | the procedure the agent RUNS           | `src/skills/wake/skill.ts:33` → `runtime: { capability: 'memory' }` |
+  | **runtime capability** | the host-side impl behind a port       | `agent-runtime/src/ports/memory.ts`, dispatched by `dispatch.ts`    |
+
+  A skill declaring `runtime:{capability}` makes the projection emit a thin `scripts/<cap>.mjs` forwarding
+  to the host `agent-runtime <cap>` CLI; the impl is never bundled. So the heartbeat is a **runtime
+  capability** (sibling of the registered `event-tap`), invoked by a skill, and _optionally_ declared by a
+  dimension. Nothing new is needed in the taxonomy to hold it.
+
+- **O2 · realization split — RESOLVED by O1.** One capability, one port, two host-side adapters
+  (Channels | SDK-streaming) selected per deployment — precisely how `memory` runs one port over a
+  swappable strategy. Not two capabilities, and not an agent-forge adapter concern: the forge emits the
+  same thin shim regardless, and the vector choice lives host-side behind the port.
+
+- **O3 · consolidation coupling — RATIFIED as written.** The prior-art sweep is conclusive and converges
+  across four independent architectures: the pulse SAMPLES a pressure/salience gate; it never clocks the
+  gate. Remaining sub-question is a threshold value, not a design fork — it belongs in a shard, not here.
+
+### OPEN — the only remaining gate
+
+- **O4 · signifier — nico's remit, and it is now the sole blocker.** `pacemaker` (organ) / `heartbeat`
+  (signal) / `mailbox` (store) are _floated candidates_, i.e. contamination in exactly the sense
+  `plans/discipline-anchor` documents — a contrastive read of a supplied candidate is confirmation, not
+  discovery. Naming is a signify act under `cratylism`: it must be cold-derived, never adopted because it
+  sounds right. Until the anchors are discovered, the capability has no name to register under, and any
+  shard that creates files would be coining by fiat.
+- **O5 · safety.** Mailbox = prompt-injection surface; trusted-local-producer gating; idle-tick cost;
+  interaction with the stance-guardrail (a self-delivered beat must not read as an autonomy collapse).
+  Design constraint for the shards, not a blocker on cutting them.
 - **O4 · signifier.** organ = **pacemaker**, signal = **heartbeat**, inbound store = **mailbox** (settled
   vs "queue" — mailbox wins on actor-model industry-standard AND LLM-decode). Run /signify to lock anchors.
-- **O5 · safety.** Mailbox = prompt-injection surface; sender gating / trusted-producer model; idle-tick
-  cost; interaction with the stance-guardrail (a self-delivered beat must not read as an autonomy collapse).
 
 ## Shards
 
-`pending/`: (none yet — `/praxis` decomposes after O1–O5 are resolved)
+`pending/`: (none yet). O1–O3 no longer gate the cut; **O4 does**. The shard boundaries are already legible
+from the resolved architecture — port + adapter, skill + shim, mailbox drain, consolidation gate, safety —
+but every one of them names files and exports, and the anchors are undiscovered. Cutting shards now would
+bake `pacemaker`/`heartbeat` into paths by fiat, which is the failure `discipline-anchor` exists to prevent.
+Run `/signify` for O4 first, then `/praxis`.
 
 ## See also
 
-`packages/agent-anatomy/` (organ source cells + CONCEPT + tests — where an organ would live) ·
-`packages/agent-forge/src/adapters/claude/` (projection to the harness) · `packages/agent-memory/` +
-the `dream`/`wake`/`handoff` skills (consolidation coupling, O3) · create-agent skill (organ-vector, if O1=organ) ·
+`packages/agent-runtime/src/ports/` + `src/capabilities/event-tap` (**the pattern to copy** — a registered
+capability behind a port, dispatched by `src/dispatch.ts`) · `packages/agent-canon/src/skills/wake/skill.ts`
+(`runtime: { capability: 'memory' }` — how a skill claims a capability) ·
+`packages/agent-forge/src/project/runtime-shim.ts` (the build→runtime seam that emits the thin shim) ·
+`packages/agent-forge/src/anatomy/index.ts` (the `Dimension` union) + `packages/agent-canon/src/dimensions/`
+(dimension values) · `packages/agent-memory/` + the `dream`/`wake`/`handoff` skills (consolidation coupling, O3) ·
 prototype `/private/tmp/claude-heartbeat-channel/` (verified reference) · plans that touch consolidation:
 `dream-node-sink-retire` · stance-guardrail (O5 interaction) `plans/stance-guardrail-asktool`.
