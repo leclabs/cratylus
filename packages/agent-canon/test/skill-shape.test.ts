@@ -96,7 +96,7 @@ async function allSkills(): Promise<Array<{ rel: string; cell: Skill }>> {
 describe('SKILL-SHAPE gate — operative content', () => {
   it('every skill carries ≥1 operative element (OPERATIVE)', async () => {
     const skills = await allSkills();
-    expect(skills.length).toBe(15);
+    expect(skills.length).toBe(16);
     const failures = skills
       .filter(({ cell }) => !isOperative(cell.formalBlock))
       .map(({ cell }) => `OPERATIVE ${cell.name}: no operative content`);
