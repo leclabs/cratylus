@@ -11,15 +11,17 @@ EPISODIC            ≜ raw time-ordered event stream ∪ forward next-steps
 SEMANTIC            ≜ identity facts ∪ durable agent-intrinsic knowledge ⟨hot index⟩
 PROCEDURAL          ≜ generalized cross-project wisdom no projection already carries
 SOUL                ≜ the archetype ; commons-authored ; ∉ dream outputs
-lock                ≜ dream.lock ⟨O_EXCL ; stale ⇔ age > 2h⟩ guarding the {SEMANTIC · PROCEDURAL} partition ⟨shared by all same-host sessions of one agent ; ¬ project-scoped⟩
+lock                ≜ dream.lock ⟨O_EXCL ; stale ⇔ age > 2h⟩ guarding the {SEMANTIC · PROCEDURAL} partition ⟨shared by all same-host sessions of one agent ; ¬ project-scoped⟩ ; \`scripts/memory.mjs lock (acquire|release|status) --name <agent>\`
 node                : cwd × host → scope ⟨nearest boundary-marker ancestor ; markerless ↦ self ; cwd-less ↦ legacy⟩
 scope(i)            ≜ node(cwd(i)) COMPUTED at fold ⟨capture is scope-blind ; ¬judged-at-capture⟩
-read                : home × session → records ⟨own ∪ completed ; live-sibling ∉⟩
-fold                : home → { id ↦ node ∪ legacy }
-drain               : home → ∅ ↾ completed-sessions ⟨--completed-only retains a live sibling ; --for-session adds self at handoff⟩
+read                : home × session → records ⟨own ∪ completed ; live-sibling ∉⟩ ; \`scripts/memory.mjs read --name <agent> --for-session <self>\`
+fold                : home → { id ↦ node ∪ legacy } ; \`scripts/memory.mjs fold --name <agent>\`
+drain               : home → ∅ ↾ completed-sessions ⟨--completed-only retains a live sibling ; --for-session adds self at handoff⟩ ; \`scripts/memory.mjs drain --name <agent> --completed-only\`
 route               : record → { SEMANTIC · PROCEDURAL · CANON-PROMOTION · EPISODIC · drop }
+land                : route-manifest → { SEMANTIC · PROCEDURAL } ⟨the routing is MINE ; the write is the tool's⟩ ; \`scripts/memory.mjs apply --name <agent> --routes -\`
+gate                : home → findings ⟨dream's exit condition⟩ ; \`scripts/memory.mjs audit --name <agent>\`
 dfp(i)              ≜ densest-faithful-point(i)
-depalimpsest        ≜ reconcile the resident set to current ground-truth ⟨¬only-drop-stale⟩
+depalimpsest        ≜ reconcile the resident set to current ground-truth ⟨¬only-drop-stale⟩ ; supersede the whole file, ¬ append : \`scripts/memory.mjs replace --name <agent> --store (SEMANTIC|PROCEDURAL) --body -\`
 promotion-is-move   ≜ a promoted item ∉ its raw source
 canon-truth(i)      ⇔ i binds ≥1 agent-type ∨ the fleet ∨ is a mechanism/governance-fact ⟨¬ this-agent-only⟩
 CANON-PROMOTION(i)  ≜ author i into its strongest seam ⟨gate ≻ cell ≻ governing-doc⟩ ; ¬canon-remit ⇒ emit a canon-candidate task to the curator ; then projection-carries(i) ⇒ drop ⟨PROCEDURAL⟩
@@ -44,6 +46,8 @@ periodic : SEMANTIC ──depalimpsest──→ { SEMANTIC · PROCEDURAL }
     stale(i)                                       ⇒ ∅
 acceptance ≜ wake-read biases next-action ⟨reboot-seed ; round-trip ≽⟩
 ¬graspable-in-one-glance(i) ⇒ distill-further(i) ∨ drop(i)
-SOUL ∉ dream-outputs` as SkillExpression,
+SOUL ∉ dream-outputs
+verb-over-prose ≜ ∀ step declaring an invocation : invoke it ⟨the tool owns the write · I own only the routing⟩ ; hand-editing a store the tool can write is the defect` as SkillExpression,
+  runtime: { capability: 'memory' },
   composition: () => [exemplify, materialize],
 };
