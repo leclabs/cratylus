@@ -15,7 +15,9 @@ import { loadAgentsConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
   type ProjectablePlugin,
+  discoverFragments,
   projectPluginSet,
+  resolveFragmentBodies,
   writeRenderTree,
 } from '../../project/index.js';
 
@@ -40,7 +42,10 @@ export async function runProject(opts: ProjectCmdOpts = {}): Promise<number> {
   }
 
   const config = await loadAgentsConfig(configPath);
-  const plugins = config.extends as readonly ProjectablePlugin[];
+  // No cast: `AgentPlugin` now satisfies `ProjectablePlugin` structurally, because
+  // projection consumes the `fragments` dir too. The cast this line used to carry
+  // was the census's tell — it silently DISCARDED the one field the fold needs.
+  const plugins: readonly ProjectablePlugin[] = config.extends;
   if (plugins.length === 0) {
     process.stderr.write(
       `${pc.yellow('!')} ${CONFIG_FILE} extends no plugins — nothing to project\n`,
@@ -51,11 +56,28 @@ export async function runProject(opts: ProjectCmdOpts = {}): Promise<number> {
   const out = resolve(opts.out ?? join(cwd, '.render'));
   const adapter = adapterByName(opts.harness ?? 'claude');
 
+  // RESOLVE, then render, then write.
+  //
+  // `compose` folded the plugin set's fragments and `project` rendered agents
+  // straight off their import bindings — two pipelines over one plugin set that
+  // never met, so a consumer `patches` entry was read here and silently dropped.
+  // The fold now runs FIRST and its result rewrites each agent's dimension values,
+  // which is what makes `compose(select(a)) = ir(a)` (ENGINE:22) hold under a patch
+  // rather than only when `patches` happens to be empty.
+  //
+  // Discovery is separate from the fold because a patch can only target a node a
+  // discovery already minted (identity addressing, NORTH-STAR §3).
+  const resolvedBodies = resolveFragmentBodies(
+    await discoverFragments(plugins),
+    config.patches ?? [],
+  );
+
   // Render, THEN write — the projector hands back the artifact tree and this
   // command is the one writer. A projection that throws leaves no half-tree.
   const report = await projectPluginSet({
     plugins,
     adapter,
+    resolvedBodies,
     log: (line) => process.stdout.write(`${line}\n`),
   });
   writeRenderTree(out, report.files);
