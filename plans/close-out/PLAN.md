@@ -71,12 +71,12 @@ Three defects are **shipping today** and were owned by no shard:
 | **V7**  | `projection-io-extraction` — `projectPluginSet` returns an artifact tree; writes move to the caller                | architecture | —          | 0    | **DONE** |
 | **R1**  | `memory-prior-art` — write-time signal vs drain-time inference, in shipped systems; adopt-or-build verdict         | research     | —          | 0    | **DONE** |
 | **V10** | `event-tap-skill-cell` — the capability is built and has NO agent-facing surface; a false supersession hid it      | live gap     | —          | 0    | **DONE** |
-| **V5**  | `bin-name-single-home` — collapse 7 bin-name homes to 1 under the placeholder; the work S4 claimed was done        | hygiene      | V1         | 1    | active   |
-| **V8**  | `resolver-projection-pipe` — the resolver's fold output never reaches the projector; measure impact, fix or record | correctness  | V7         | 1    | active   |
-| **S3**  | `memory-execution-spec` — the architectural remedy: write-time signal, admission test, dedup, migration            | spec         | R1, V2, V3 | 1    | active   |
-| **M1**  | `store-ceiling-enforced` — the 16 kB bound existed and never fired; recalibrate and enforce at the landing site    | memory       | S3         | 1    | active   |
-| **M3**  | `cell-verb-roster-gate` — the verb roster has three homes and only two are gated                                   | memory       | S3         | 1    | active   |
-| **M2**  | `dream-cell-pressure-seam` — the cell cannot see the trigger the tool measures                                     | memory       | M1, M3     | 2    | pending  |
+| **V5**  | `bin-name-single-home` — collapse 7 bin-name homes to 1 under the placeholder; the work S4 claimed was done        | hygiene      | V1         | 1    | **DONE** |
+| **V8**  | `resolver-projection-pipe` — the resolver's fold output never reaches the projector; measure impact, fix or record | correctness  | V7         | 1    | **DONE** |
+| **S3**  | `memory-execution-spec` — the architectural remedy: write-time signal, admission test, dedup, migration            | spec         | R1, V2, V3 | 1    | **DONE** |
+| **M1**  | `store-ceiling-enforced` — the 16 kB bound existed and never fired; recalibrate and enforce at the landing site    | memory       | S3         | 1    | **DONE** |
+| **M3**  | `cell-verb-roster-gate` — the verb roster has three homes and only two are gated                                   | memory       | S3         | 1    | **DONE** |
+| **M2**  | `dream-cell-pressure-seam` — the cell cannot see the trigger the tool measures                                     | memory       | M1, M3     | 2    | active   |
 | **V9**  | `heartbeat-mechanism` — port, drain, two host adapters, sampling gate, under an explicitly provisional path        | capability   | —          | 2    | **DONE** |
 
 ```text
@@ -120,15 +120,24 @@ Two further findings, each caught only because the falsifier was run before the 
   POSIX `rename` over an existing path succeeds silently, so a shared claim destination lets both
   drainers believe they won.
 
-## Blocked — cratylism-gated, nico's remit, not executable here
+## Blocked — cratylism-gated. `⊥` is a legal terminal answer; none may be coined around
 
-`⊥` is a legal terminal answer for every one of these. None may be coined around.
+**Correction to this section's original framing (mav, 2026-07-26).** It first said these were
+"not executable here". That conflated two different acts. **Running the cold-decode oracle is
+MEASUREMENT; adopting its output is naming.** The first is executable by anyone and the plan itself
+says the brand re-run with full differentia is owed; only the second is gated. A derivation was
+therefore dispatched, candidate-free, with positive and negative controls and `⊥` pre-accepted as a
+complete result. Its record lands as `N1-derivation-record.md`. Nothing is adopted by that act —
+if it returns ⊥, ⊥ is what gets recorded.
 
 | item                     | gate                                                                                                                                                                                                                                                                               |
 | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | CLI brand anchor         | returned ⊥ once under an under-specified definiendum; re-run with the full differentia. Gates the rename                                                                                                                                                                           |
 | heartbeat anchors        | organ · signal · store. Must handle the collision with `ports/memory.ts:399`, where `heartbeat` is already a session-lease verb                                                                                                                                                    |
-| bin rename sweep         | deps the brand anchor. V5 does everything that does not need the name                                                                                                                                                                                                              |
+| bin rename sweep         | deps the brand anchor. V5 collapsed the 13 homes to 1, so the sweep is now genuinely one symbol — but see the two rows below, which the sweep does NOT cover                                                                                                                       |
+| `RUNTIME_CONFIG_NAME`    | `.agent-runtime.json` is brand-derived yet an independent literal. A rebrand silently ORPHANS every host's existing config file                                                                                                                                                    |
+| `TAP_ID`                 | `agent-runtime-event-tap` is brand-derived and **persisted in user settings**. A rebrand orphans installed taps rather than renaming them — this one needs a MIGRATION, not an interpolation                                                                                       |
+|                          |
 | publish flags            | `private:true` ×3, `changesets ignore: []`. Softly gated — publishing under a placeholder burns the PATH name                                                                                                                                                                      |
 | repo name · heartbeat O4 | wait indefinitely; an acceptable resting state per `discipline-anchor`                                                                                                                                                                                                             |
 | event-tap verb pair      | `install`/**`remove`** breaks the house `install`/`uninstall` pair used by `continuity-hook.sh` and `stance-guardrail.sh`; `read` vs `inspect` likewise. Shipped un-derived — the port method names were mirrored, not oracled. Narrow re-derivation owed; 4 call sites, cheap now |
