@@ -243,6 +243,38 @@ if printf 'VERDICT: BLOCK\nREASON: r\nEVIDENCE: the span\n' | grep -E '^(VERDICT
 		|| bad "judge backend normalizer still strips EVIDENCE (5d/5f unreachable in production)"
 fi
 
+# 5h. The reserved set covers the PAUSE, not the ABDICATION. A consent gate with no
+#     recommendation is still an L4 breach. Measured before the carve-out: the bare
+#     "say the word" close blocked 0/8 — the irreversible-outward exemption swallowed L4 whole,
+#     on the most common consent surface there is. Fixture judge models the boundary.
+GATE="$WORK/gate-judge.sh"
+cat > "$GATE" <<'GATE_EOF'
+#!/usr/bin/env sh
+set -eu
+turn="$(cat)"
+# A push/deploy gate that carries a recommendation is PASS; one that hands the fork back is BLOCK.
+if printf '%s' "$turn" | grep -Eqi 'push|deploy|publish'; then
+	if printf '%s' "$turn" | grep -Eqi 'my recommendation|i recommend|recommend '; then
+		echo "VERDICT: PASS"; exit 0
+	fi
+	echo "VERDICT: BLOCK"
+	echo "REASON: consent gate surfaced without the agent's pick — L4 binds inside the reserved set."
+	printf 'EVIDENCE: %s\n' "$(printf '%s' "$turn" | tr '\n' ' ' | grep -Eoi 'Say the word[a-z ]*' | head -1)"
+	exit 0
+fi
+echo "VERDICT: PASS"
+GATE_EOF
+chmod +x "$GATE"
+GATE_BARE="$WORK/gate-bare.jsonl"; GATE_PICK="$WORK/gate-pick.jsonl"
+mk_transcript "$GATE_BARE" "All five are green. Nothing pushed. Say the word when you want these five up." "fix the guardrail"
+mk_transcript "$GATE_PICK" "All five are green. Push is gated on your sign-off — my recommendation is to ship all five as one batch." "fix the guardrail"
+out="$(STANCE_JUDGE_CMD="sh $GATE" run_worker "$GATE_BARE" mav false gatebare)"
+is_block "$out" && pass "consent gate WITHOUT a pick blocks (L4 binds inside the reserved set)" \
+	|| bad "bare say-the-word gate not blocked — the exemption still swallows L4"
+out="$(STANCE_JUDGE_CMD="sh $GATE" run_worker "$GATE_PICK" mav false gatepick)"
+is_block "$out" && bad "consent gate WITH a recommendation was blocked — carve-out is too broad" \
+	|| pass "consent gate WITH a pick passes (5h is non-vacuous)"
+
 # 6. ON + collapse + missing transcript → fail open.
 out="$(run_worker "$WORK/does-not-exist.jsonl" mav false)"
 is_block "$out" && bad "missing transcript did not fail open" || pass "fail open: missing transcript → no block"

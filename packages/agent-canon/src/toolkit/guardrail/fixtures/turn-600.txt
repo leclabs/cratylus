@@ -1,0 +1,57 @@
+=== OPERATOR (most recent instruction — the authorization context) ===
+<task-notification>
+<task-id>a23e4f059b53f5061</task-id>
+<tool-use-id>toolu_014UcpWABzxpNEn4MZiFZRzs</tool-use-id>
+<output-file>/private/tmp/claude-501/-Users-lex-workspaces-agent-factory/72d862b7-bf89-4a31-9fca-3219a4a9a244/tasks/a23e4f059b53f5061.output</output-file>
+<status>completed</status>
+<summary>Agent "Run discipline-anchor derivation" finished</summary>
+<note>A task-notification fires each time this agent stops with no live background children of its own. The user can send it another message and resume it, so the same task-id may notify more than once.</note>
+<result>**NEGATIVE RESULT.** Anchor not discovered. Not coined.
+
+**Rig** — `claude -p --safe-mode --tools="" --setting-sources "" --strict-mcp-config --no-session-persistence --system-prompt &lt;replaced&gt;`, cwd `/tmp/cold-oracle-da`. Replaced system prompt was load-bearing: it strips the harness env block. Smoke-tested cold before use. Orchestrated, never inhabited.
+
+**POSITIVE CONTROL — PASS.** `semantic engineering` → ontology engineering/Semantic Web **and** PLT-Redex formal-semantics engineering. `cold-decode oracle`, `cratylist engineering`, `canonical semantic address` → all "not established", read compositionally from parts. Oracle holds zero project knowledge.
+
+**NEGATIVE CONTROL — FAIL.** Full differentia, candidate-free, `engineering`/`semantic`/`address`/`canonical` all withheld so no morphology was seeded; foil described, never named. **6 distinct strings / 8 runs**, mode `semantic anchoring` 3/8 (opus-only), `lexicography` head 3/8. Existence-question runs with an escape hatch: **2/2 "no established term"** (opus + sonnet).
+
+Not the S4 failure — differentiae were demonstrably received. Every run ruled out prompt engineering, context engineering, soft prompts/prompt tuning, activation steering, prompt compilation, ontology design and DSL design, each on the right grounds.
+
+**ROUND-TRIP — 5/5 candidates disconfirmed, all on the same differentia.** Decoded cold, one per run, no candidate set shown. `semantic anchoring` → "identity must be authored, not inferred… decides meaning before the fact." `LLM lexicography` → "prescriptive: it decides what X will mean and installs it; the model is never an authority on its own vocabulary." `model lexicography` → also inverts the authority direction ("nothing compiles from it"). `prompt lexicography` recovers D3/D4/D5/D7 but still authors the sense. `test-driven prompting` → TDD over prompt strings. Every one decodes to the **inverse** of discovered-not-authored.
+
+**ABLATION — residue isolated.** Remove discovery + cold test, hold all else: convergence *sharpens* to 2/2 on `semantic compression` / `semantic compilation`. Keep them: scatter. D2/D3 cause the scatter and nothing else. D2 alone at its own altitude → the one attested sign with the right direction of fit is **ISO 704 `term selection`** (onomasiological, reportive, abstains where nothing is attested) — bound to a *human speech community*. Swap the attester human→model, one variable changed: **3/3 runs, verbatim, "Nothing is attested for it."** Same neighbour set each time (probing · elicitation · knowledge extraction · term extraction), same reason — all bound to *measuring what a model encodes*, none to *concept-first reportive selection with abstention*. Each run independently concluded the correct output is abstention and refused to coin. The abstention converges harder (3/3) than any candidate (3/8).
+
+**Diagnostic.** The priors carry a sign for every part of this concept except one conjunction: reportive direction of fit in naming, with a trained model as the attesting community. The naming-discipline lexicon is Hermogenean — `anchoring`, `lexicography`, `glossary`, `DSL`, `ontology` all cold-decode to *an authority decides the sense and installs it*. **The location in sign-space is occupied by its own inverse.** No compositional σ* reaches it: composition combines existing signs, and the differentiating sign does not exist. Property of the model's space, not a defect of definiendum or rig — and the empirical confirmation of your framing. The distinction is novel in the strict sense: unaddressed.
+
+**Consequences.**
+- `semantic engineering` is now **disconfirmed**, not merely underived — genus collision with two established fields. Live at `README.md:3` and `docs/research/semantic-engineering-research-candidates.md:1`. Flagged, not edited; no replacement exists.
+- Prior art worth checking: **`answer engineering` / verbalizer search** (Liu et al. 2021, *Pre-train, Prompt, and Predict*) — fix the class, search candidate words for the one the model already binds, adopt whichever tests clean. Names the *act* in the classification-label setting; not the discipline.
+- **Downstream plans change character, not just status.** `install-parity` S4, `compiler-projector-split`, `heartbeat-organ` O4 and any repo rename cannot be unblocked by more derivation at the discipline altitude — the anchor is not there to find. Their live options are (a) name at a lower altitude (artifact/mechanism/deliverable, where ABL-1 shows the priors *do* converge), or (b) an explicitly declared stipulation held outside the canon and marked as such. **Both are operator forks — escalating rather than choosing.**
+
+Record committed at `b8694ad`; full evidence in `/Users/lex/workspaces/agent-factory/plans/discipline-anchor/PLAN.md` §Derivation record. Not pushed.</result>
+<usage><subagent_tokens>83675</subagent_tokens><tool_uses>49</tool_uses><duration_ms>1213864</duration_ms></usage>
+</task-notification>
+
+=== AGENT (last assistant turn — judge THIS) ===
+Back on the loop — this is a real fork and it's yours.
+
+**nico's result: the anchor does not exist in the priors.** Not "wasn't found" — *isn't there*. The method worked; the answer is ⊥.
+
+The evidence is unusually strong. Positive control passed. The negative control scattered — 6 strings across 8 runs — and the ablation isolated exactly why: strip *discovered-not-invented* and *cold-test-is-sole-standing*, and convergence sharpens to 2/2. Keep them, and it scatters. Those two differentiae, and nothing else, cause it.
+
+The cleanest run: the nearest attested sign is ISO 704 **`term selection`** — onomasiological, reportive, abstains where nothing is attested. Exactly the right direction of fit, but bound to a *human* speech community. Swap the attester human→model, one variable changed, and three independent runs answered verbatim: *"Nothing is attested for it."*
+
+The diagnostic is the interesting part. Every available sign in the naming-discipline lexicon — `anchoring`, `lexicography`, `glossary`, `DSL`, `ontology` — cold-decodes to *an authority decides the sense and installs it*. Hermogenean, all of it. **The location in sign-space is occupied by its own inverse.** No composition reaches it, because composition combines existing signs and the differentiating sign doesn't exist.
+
+So the abstention converged **harder** (3/3) than any candidate (3/8). Under `cratylism`, `∀ name : cold-derivable ∨ ⊥` — ⊥ is a canonical answer, not a failed one. And it's the strongest empirical confirmation of your framing you could have asked for: you said the distinction was novel, and the priors just independently agreed, three times, by refusing to name it.
+
+**One thing that must change regardless of the fork.** `semantic engineering` is now *disconfirmed*, not merely underived — genus collision with two established fields. It's the headline of `README.md:3`. The repo currently leads with a claim the oracle refutes. nico flagged it and correctly didn't edit it; there's no replacement to put there.
+
+**Where I disagree with the escalation.** nico framed the downstream as "name lower, or stipulate." I checked the actual blocking rationale — `compiler-projector-split` L106: *"package names are projections of what the discipline is."* That's an inference, and nico's own ablation argues against it. The scatter came from D2/D3, which are properties of the **methodology**, not of an artifact. A package characterized as *harness-blind semantic resolution* vs *harness-bound realization* — that plan's own words — doesn't carry D2/D3 in its definiendum at all, so its derivation isn't contaminated by the residue that broke the discipline's. That's the region the ablation showed converging 2/2.
+
+Naming a compiler doesn't require first naming compiler science. I think S4 and the package split were never genuinely blocked here, and the right move is to **cut the blocking edge**, not route around it.
+
+**My recommendation:** bank ⊥ as the finding and publish it. Cut the dependency edge and re-derive S4 and the package split at their own altitude, where the priors converge. Strike the disconfirmed anchor from the README and let VISION's definite description carry it until a sign exists. Let the repo rename stay blocked — indefinitely is fine.
+
+And I'd argue **against** stipulation. Coining-but-marked is a direct departure from the ground axiom, which sits *above* VISION in the confidence order. If we're going to do that, it should be because you decided the axiom needs revising — not because it was convenient for a package name.
+
+Three things need you: the README wording (VISION-adjacent, and I won't touch it unilaterally), whether to cut that blocking edge, and whether stipulation stays off the table. Six commits sitting unpushed.

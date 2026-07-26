@@ -1,0 +1,58 @@
+=== OPERATOR (most recent instruction — the authorization context) ===
+Base directory for this skill: /Users/lex/.claude/skills/carry-on
+
+# Carry on
+
+## Prime Principle
+
+cratylism ⟨names natural ¬conventional⟩ : model latent-space = real stable concepts · each concept's canonical sign INTRINSIC ∧ DISCOVERED ⟨cold-verified vs priors⟩ ¬coined ⟨¬author · ¬operator⟩ · ∴ signify = archaeology ¬fiat · ∀ name ⟨anchor · dimension · skill · agent · file · dir⟩ : cold-derivable ∨ ⊥ · GROUND ⊨ { cold-decode-oracle · llm-native · signify } derive
+
+apex confidence-order : cratylism ≻ VISION ≻ MODEL ⟨confidence — firmness-held · ¬ importance⟩ · conflict ⇒ resolve UP : revise MODEL · surface VISION-conflict ⟨¬ unilateral-edit⟩ · reconcile → cratylism · ∀ derived ⟨cell · skill · agent · plan · SOUL⟩ ⊨ consistent(triad)
+
+intrinsic ⟨¬ ambient⟩ : this axiom rides every projected SOUL + skill · survives deployment to any context ⟨foreign repo · blank cwd · foreign agent invoking a canon skill⟩ · ¬ contingent on workspace-root AGENTS.md
+
+```text
+carry-on ≜ re-dispatch-word ↦ elevate · persist
+re-dispatch-word ≜ weitermachen ∨ carry-on ∨ proceed
+loop-position ∈ { on-the-loop, out-of-the-loop }   ⟨live session state, ¬ a static value⟩
+resting   ≜ loop-position = on-the-loop   ⟨a session opens in orientation · intent is the operator's to set⟩
+P         ≜ the active praxis ⟨∨ the standing intent, absent one⟩
+active, done @ praxis
+fork⊥     ≜ fork(irreversible · value · competence) the principal cannot resolve
+elevate   ≜ loop-position := out-of-the-loop ∧ bind(P)
+persist   ⇔ loop-position = out-of-the-loop holds ∀ turn until a terminus ⟨¬ per-turn-decay⟩
+terminus  ≜ done(P) ∨ fork⊥
+revert    ≜ loop-position := on-the-loop
+
+check-in-close ∧ re-dispatch-word ⇒ elevate
+elevate ⇒ standing-intent unchanged ∧ ¬fresh-dispatch ∧ ¬permission-grant
+elevate ⇒ resume execution ⟨own judgment · reversible-in-domain decided · no fresh permission owed⟩
+bind(P) ∧ ¬terminus ⇒ persist
+turn-end ∧ ¬terminus ⇒ ¬revert
+terminus ⇒ revert ∴ loop-position = resting
+fork⊥ ⇒ re-enter on-the-loop ∧ surface the fork
+
+```
+
+Composed from /praxis.
+
+=== AGENT (last assistant turn — judge THIS) ===
+Five commits landed, tree clean on `main`, all unpushed. Here's where it stands.
+
+**The environment defect — root cause was not what I told you.** I'd asserted the mise warning spam came from `.npmrc` keys poisoning npm's stderr, which mise then parsed as a version. Coherent, and wrong. The actual cause: two literal *directories* in `~/.local/share/mise/installs/node/` whose **names were the polluted npm output**, newline included — a past install had captured warning text as the version string. 678K husks, `bin`+`lib` only, nothing symlinked to them. mise choked enumerating them. Deleted → zero warnings.
+
+I only caught it because after deleting `.npmrc` the warnings persisted *and the wording shifted* from "Unknown project config" to "Unknown **env** config." A mechanism that explains a symptom isn't thereby its cause. The delta in the error text was the tell.
+
+`.npmrc` still went, on its own merits: `pnpm config get auto-install-peers` returned `undefined` while the file sat there — pnpm 11 reads these from `pnpm-workspace.yaml` in camelCase now. The gate had been green without them applied, which proves they were no-ops, so I deleted rather than relocated. Moving a no-op to a nicer address is still a no-op.
+
+**A correction to my own earlier reasoning.** Node 26 **does not ship corepack** — node 24 does. Every corepack test I ran while working the pnpm question was silently node 24's, reached via your global `lts` pin. So the corepack bootstrap path is dead on node 26, which means `mise.toml`'s pnpm entry is *load-bearing*, not redundant. I reached the right call — `pnpm = "latest"` — for a weaker reason than I knew, and you should have that.
+
+**Two plans corrected.** `discipline-anchor` had been reading as blocked on a VISION conflict you resolved the same day it was filed (`cdd10fc`). Now READY. And `heartbeat-organ`'s O1 — organ vs harness capability vs both — turned out to be the wrong axis: it presupposes one slot, and the architecture has three. `memory` already occupies all of them (dimension fragment → skill declaring `runtime:{capability}` → host-side port impl). So the heartbeat is a runtime capability, sibling of `event-tap`. That collapses O2 as well, and retires the plan's reference to `packages/agent-anatomy`, which doesn't exist.
+
+**Why I stopped short of sharding it.** Every shard boundary is legible now, and every one names files and exports — while the anchors are undiscovered. Cutting them would bake `pacemaker`/`heartbeat` into paths by fiat, exactly what `discipline-anchor` exists to prevent.
+
+Which is the real finding: **every open thread in the repo funnels through `discipline-anchor`.** `install-parity` is done except S4, which blocks on it. `compiler-projector-split` blocks on it. The repo's own name waits on it. Heartbeat's O4 is the same act.
+
+So rather than park the queue, I've dispatched nico on it — it's a signify act, squarely their remit, and one I'd be violating `cratylism` to perform myself. Brief specifies the isolated cold oracle, both controls, and that a negative result is an acceptable outcome not to be resolved by coining. Still running; I'll report when it returns.
+
+Nothing pushed. Say the word when you want these five up.

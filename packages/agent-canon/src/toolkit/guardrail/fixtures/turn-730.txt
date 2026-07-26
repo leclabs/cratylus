@@ -1,0 +1,22 @@
+=== OPERATOR (most recent instruction — the authorization context) ===
+Stop hook feedback:
+STANCE GUARDRAIL — blocked: you collapsed out of the intent-driven-expert stance. The agent announced an intended next step ("I want to test...before bringing it to you") structured as a proposal subject to operator acknowledgment rather than a decided, owned action. The stance requires stating the next action as committed and proceeding autonomously; the hedged phrasing invites permission for work the agent has already determined is necessary. Re-assume the stance: you are the owning expert; the operator owns intent + sign-off on irreversible acts only. Decide the in-remit call yourself (note it for review) instead of seeking permission, own your expert judgment (naming/design/architecture/how) instead of deferring it, and extract+serve the operator's INTENT instead of echoing their literal words. Then continue. (Legitimate exceptions: surfacing a genuine irreversible-outward act for consent, or routing a true INTENT ambiguity to /elicit.)
+
+=== AGENT (last assistant turn — judge THIS) ===
+Done. Eight commits, tree clean, full gate green, nothing pushed.
+
+**The guardrail caught a real drift, not just phrasing.** All three things I "escalated" were mine:
+
+- **README** — I called it VISION-adjacent. It isn't. README quotes VISION but isn't one of the four locked docs, and the anchor in it wasn't *contested*, it was **refuted**. Removing a disconfirmed claim is fact-driven and reversible. It now carries VISION §Thesis verbatim, which names no discipline. The research file is titled by its contents. Neither got a replacement anchor — there is none to give, and inventing one is the act the plan exists to refuse.
+- **The blocking edge** — plan sequencing I own, on evidence I'd already gathered and argued. Cut in both plans.
+- **Stipulation** — not a question. `cratylism` is the apex axiom and admits ⊥ as an answer; coining-but-labelled is still coining. Barred by default. Revising that is something you'd *initiate*, not something I ask about. Recorded as settled.
+
+**The pattern worth naming:** nico escalated a fork, and I inherited its framing wholesale instead of re-classifying each item against my own authority. A delegate calling something an operator fork is an input, not a verdict. Encoded.
+
+**On the substance** — the edge cut is the load-bearing part. `compiler-projector-split` held that *"package names are projections of what the discipline is."* nico's own ablation contradicts it: the scatter came from exactly two differentiae — *discovered-not-invented* and *cold-test-is-sole-standing* — both properties of the methodology. Strip them, convergence sharpens to 2/2. A bin on PATH and a package pair split harness-blind from harness-bound carry neither. They were queued behind an anchor that doesn't exist.
+
+`install-parity` S4 was worse — its table said `BLOCKED` while the shard body one line below already said *"no longer blocking"*, and its own diagnostic (oracle returned the genus because the definiendum was under-specified) points at a fixable rig, not a gap. Both now OPEN, to derive at their own altitude.
+
+A ⊥ at high altitude doesn't propagate downward. It blocks names at its own altitude only: the repo's name, and heartbeat's O4. Those wait indefinitely, which is a fine place for them.
+
+**Still yours, genuinely:** the push. And whether to publish the ⊥ — the finding that the naming-discipline lexicon is Hermogenean throughout, so this concept's location in sign-space is occupied by its own inverse, is a result about the model's semantic space rather than about us. It's the empirical confirmation of your "novel distinction" framing, arrived at by the priors declining to name it three times running.

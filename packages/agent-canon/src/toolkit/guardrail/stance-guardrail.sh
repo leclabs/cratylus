@@ -112,18 +112,68 @@ transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/nu
 # judge cannot tell an operator-ORDERED irreversible act (fine) from a unilateral one without the
 # operator's instruction — so we also extract the most recent operator message and pass it
 # alongside as authorization context. A tool_result-only user line carries no text — skipped.
+# THE WHOLE TURN, not its last fragment — and with tool activity marked.
+#
+# This used to take `last` non-empty text block. In a tool-heavy turn that is one block out of
+# twenty, and it is usually a MID-TURN PREAMBLE, not the close. Measured on a live session: the
+# judge was seeing 47% of one turn, 1 text block of 20. Both live false blocks came from exactly
+# this — it judged "Adding the false-positive fixtures", a preamble whose very next assistant
+# message was a `tool_use` performing the work, and called it announce-without-act because the
+# tool call was invisible to it. The evidence was verbatim and the verdict was still wrong.
+#
+# So: take every assistant message since the last real user turn, and mark which ones carried
+# tool calls. The judge can then see that a forward commitment was followed by action, which is
+# the single fact it needs and never had. `[tools: …]` markers are not text the agent wrote, so
+# the EVIDENCE check below greps the text-only projection to avoid matching a marker.
 asst="$(jq -rs '
-	[ .[]
-	  | select(.type == "assistant")
-	  | (.message.content // [])
-	  | map(select(.type == "text") | .text)
-	  | join("\n")
-	]
-	| map(select(. != "")) | last // ""
+	[ .[] ] as $all
+	| ( [ range(0; ($all|length))
+	      | select( $all[.].type=="user"
+	                and ( ($all[.].message.content | type) == "string"
+	                      or ( $all[.].message.content | map(.type) | index("text") != null ) ) ) ]
+	    | last // -1 ) as $lastuser
+	| [ $all[($lastuser+1):][]
+	    | select(.type == "assistant")
+	    | (.message.content // []) as $c
+	    | ( $c | map(select(.type == "text") | .text) | join("\n") ) as $t
+	    | ( $c | map(select(.type == "tool_use") | .name) | join(", ") ) as $tools
+	    | if $t == "" and $tools == "" then empty
+	      elif $tools == "" then $t
+	      elif $t == "" then "[tools: \($tools)]"
+	      else "\($t)\n[tools: \($tools)]" end
+	  ]
+	| join("\n\n")
 ' "$transcript" 2>/dev/null || true)"
+
+# Text-only projection of the same turn — what the agent actually WROTE. The EVIDENCE check must
+# grep this, never the tool-annotated form, so a fabricated span cannot be satisfied by a marker.
+asst_text="$(jq -rs '
+	[ .[] ] as $all
+	| ( [ range(0; ($all|length))
+	      | select( $all[.].type=="user"
+	                and ( ($all[.].message.content | type) == "string"
+	                      or ( $all[.].message.content | map(.type) | index("text") != null ) ) ) ]
+	    | last // -1 ) as $lastuser
+	| [ $all[($lastuser+1):][] | select(.type == "assistant")
+	    | (.message.content // []) | map(select(.type == "text") | .text) | join("\n") ]
+	| map(select(. != "")) | join("\n\n")
+' "$transcript" 2>/dev/null || true)"
+[ -n "$asst_text" ] || asst_text="$asst"
 
 [ -n "$asst" ] || allow_stop  # no judgeable agent text (e.g. pure tool turn) → allow stop
 
+# THE OPERATOR SLOT — and it must actually hold the operator.
+#
+# A skill invocation (`/wake`, `/carry-on`, …) enters the transcript as a user-type message
+# carrying the SKILL BODY. Taking the last user message therefore handed the judge 2.8 kB of the
+# /wake skill definition as "the operator's most recent instruction" — measured on two of six live
+# fixtures. The judge then reasoned about authorization from a document the operator never wrote,
+# which is worse than having no context: it is confidently wrong context, and the rubric leans on
+# this slot to decide whether an irreversible act was authorized.
+#
+# Skill bodies are recognizable and skipped: the harness wraps them in <command-name>/<command-
+# message> tags, and they carry the skill's own formal preamble. Fall back to the most recent
+# message that survives the filter.
 operator="$(jq -rs '
 	[ .[]
 	  | select(.type == "user")
@@ -132,7 +182,17 @@ operator="$(jq -rs '
 	    elif type == "array" then ([ .[] | select(.type == "text") | .text ] | join("\n"))
 	    else "" end
 	]
-	| map(select(. != "")) | last // ""
+	| map(select(. != ""))
+	| map(select(
+	      (test("<command-name>") | not)
+	      and (test("<command-message>") | not)
+	      and (test("Base directory for this skill:") | not)
+	      and (test("## Prime Principle") | not)
+	      and (test("^\\s*<system-reminder>") | not)
+	      and (test("\\[SYSTEM NOTIFICATION - NOT USER INPUT\\]") | not)
+	      and (test("<task-notification>") | not)
+	  ))
+	| last // ""
 ' "$transcript" 2>/dev/null || true)"
 [ -n "$operator" ] || operator="(no operator instruction found in transcript)"
 
@@ -164,7 +224,7 @@ $asst"
 # or on an external event is legitimate, and the turn genuinely cannot proceed. Those are carved
 # out below. Everything else routes to the judge with the offending span quoted, so the block
 # names the evidence rather than restating the rule.
-final_span="$(printf '%s' "$asst" | tail -c 700)"
+final_span="$(printf '%s' "$asst_text" | tail -c 700)"
 l1_evidence=""
 if printf '%s' "$final_span" | grep -Eqi "(^|[[:space:].\"'])(i'?ll|i will|i'?m going to|let me|now (i'?ll|running)|next (i'?ll|i will)|proceeding to|moving on to|starting (on|with)|taking (it|that) (on|now))[[:space:]]"; then
 	# Carve-outs: the commitment is contingent on something outside this turn.
@@ -228,7 +288,7 @@ if [ -z "$evidence" ] && [ -z "$l1_evidence" ]; then
 	allow_stop
 fi
 if [ -n "$evidence" ] && [ "${#evidence}" -ge 12 ]; then
-	if ! printf '%s' "$asst" | tr '\n' ' ' | grep -qF "$evidence"; then
+	if ! printf '%s' "$asst_text" | tr '\n' ' ' | grep -qF "$evidence"; then
 		printf 'stance-guardrail: DISCARDING block — judge quoted a span absent from the turn (confabulated): %s\n' "$evidence" >&2
 		allow_stop
 	fi
@@ -237,7 +297,7 @@ fi
 # --- loop safety, applied at the point of blocking -------------------------------------------
 # Judging already happened; only the BLOCK is budgeted. Both exits below are LOUD — a guardrail
 # that gives up silently teaches the agent nothing and lies to the operator about conformance.
-turn_hash="$(printf '%s' "$asst" | cksum | cut -d' ' -f1)"
+turn_hash="$(printf '%s' "$asst_text" | cksum | cut -d' ' -f1)"
 last_hash="$(cat "$hash_file" 2>/dev/null || echo none)"
 if [ "$turn_hash" = "$last_hash" ]; then
 	printf 'stance-guardrail: no progress since the last block (turn unchanged) — allowing stop, UNRESOLVED: %s\n' "$reason" >&2

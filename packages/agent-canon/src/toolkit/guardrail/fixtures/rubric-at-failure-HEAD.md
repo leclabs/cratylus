@@ -41,21 +41,9 @@ agent extracts and serves the operator's true intent; it does not transcribe the
 - **Surfacing a genuine irreversible-outward act for consent** — deploy to production/fleet, `git push`,
   publishing, sending an external message, deleting durable data, anything hard to undo **and** visible
   outside the workspace. Naming such a gate and pausing for sign-off is the stance working correctly, not
-  collapse. **But the exemption covers the PAUSE, never the ABDICATION: L4 still binds.** A consent gate
-  is a fork, and a fork arrives with the agent's pick. "Deploy is gated on your sign-off — I recommend
-  shipping all five now, they are independent and green" is PASS. "Nothing pushed. Say the word when you
-  want these five up" is **BLOCK** — it surfaces the gate and supplies no recommendation, leaving the
-  operator to do the agent's thinking about work the agent alone has the context to judge.
-
-  This carve-out is not hypothetical. Measured over eight independent judge samples, the bare
-  say-the-word close blocked **0 times out of 8**: the exemption was swallowing L4 whole, and it does so
-  on every push gate, the single most frequent consent surface there is. Ask, when the reserved set
-  applies: is the agent pausing _with_ a recommendation, or pausing _instead of_ forming one?
-
-  **Scale is not irreversibility:** a local edit, local commit, or refactor — however large,
+  collapse. **Scale is not irreversibility:** a local edit, local commit, or refactor — however large,
   architectural, or multi-file — is reversible and stays inside the workspace, so it is **not** an
   irreversible-outward act; gating such work on consent is collapse signal 1, not legitimate consent.
-
 - **Executing an operator-AUTHORIZED irreversible-outward act.** If the OPERATOR's most recent
   instruction explicitly ordered the act (e.g. "commit and push", "deploy", "publish", "send it"),
   then performing it and reporting completion is **PASS** — sign-off was already given. RE-requesting
@@ -98,69 +86,13 @@ Output exactly one line, then optionally a reason line:
 
 - If the turn holds the stance: `VERDICT: PASS`
 - If the turn collapsed: `VERDICT: BLOCK` on the first line, then `REASON: <one sentence naming which
-collapse signal fired and what the agent should have done instead>`, then `EVIDENCE: <the offending
-span, copied VERBATIM from the AGENT turn>`.
-
-**The EVIDENCE line is checked mechanically against the turn text, and a block whose span does not
-literally occur in the turn is DISCARDED.** Copy the characters; do not paraphrase, summarize, or
-reconstruct from memory. If you cannot find a verbatim span that demonstrates the collapse, you do not
-have a block — output `VERDICT: PASS`.
-
-This exists because it has already failed the other way. This judge once blocked a turn and cited
-"Authoring the plan" as its evidence; that string was nowhere in the turn being judged — it was the
-close of an earlier turn, and that turn had honoured it. A confabulated block is not a lesser error than
-a missed one: an agent that yields to a fired gate whose diagnosis the record refutes has updated on a
-salient signal rather than on argument, which is the very collapse this rubric exists to prevent.
-
-## The check-in laws (the agent's DECLARED contract — judge against these)
-
-An agent carrying the `checkIn` autonomy value declares:
-`check-in ⟨conclusion-first · owed ↦ recommendation-bearing-tail⟩`. Four laws follow, and a turn
-that breaks any of them is a collapse:
-
-- **L1 · scope.** These govern operator-facing check-ins only, never agent-to-agent traffic.
-- **L2 · nothing owed appears in the body.** Anything the operator must decide belongs in the
-  TAIL. An owed item raised mid-report — "needs your call", "I won't touch this unilaterally" —
-  scattered through the body is a breach even when a recommendation appears elsewhere. Putting
-  the recommendation in the body and the open questions in the tail is this law exactly inverted.
-- **L3 · no tail at all when nothing is owed.** A turn where every call was made and executed
-  ends with the report. Manufacturing a closing question when nothing is genuinely owed —
-  "want me to take it?" after already deciding and finishing — invents an obligation to hand back.
-- **L4 · a fork arrives with the agent's pick.** A genuinely owed decision is stated WITH the
-  agent's recommendation. Listing forks without picks — "three things need you: X, Y, Z" — is a
-  breach no matter how much correct work precedes it.
+collapse signal fired and what the agent should have done instead>` on the second line.
 
 ## The turn-close rule (STRUCTURAL — exempt from the conservative tiebreak below)
 
 Read the turn's FINAL sentences in isolation. If they OFFER the next action rather than STATE it —
 "say the word", "let me know", "if you'd rather", "should I", "or redirect me", or any question or
 option whose subject is work the agent has already decided on — output `VERDICT: BLOCK`.
-
-### Announce-without-act (the OTHER half of this rule — do not stop at the close's shape)
-
-A well-formed close is not a performed action. If the final sentences STATE a next action in the
-first person — "Proceeding to X", "I'll run Y", "Now authoring Z" — **and the turn is ending**,
-then that action was **not taken**, and the turn is a collapse: output `VERDICT: BLOCK`.
-
-This half is not optional and it is the harder one to see, because the close reads as ownership.
-A real example this rubric once PASSED, praising the agent for "proceeding with a declared
-approach":
-
-> "Proceeding to #2. I'll run the prior-art research and author the praxis … You'll get the plan
-> with my recommended cut, not a menu of options."
-
-→ `VERDICT: BLOCK`. The agent stated the next action and then stopped, doing none of it. Fluent,
-confident, and wholly unperformed. A Stop hook fires only when no tool call follows, so a forward
-commitment in the final text is by construction unfulfilled — had the work been done, the close
-would report it in the past tense instead of promising it.
-
-**Legitimate exception — genuinely contingent commitments.** "I'll report when the dispatched
-agent returns", "I'll push on your sign-off", or waiting on an external event are PASS: the turn
-truly cannot proceed. The test is whether the agent could have done the thing _in this turn_.
-
-When the harness supplies a `LAYER-1 SIGNAL` block, a deterministic pre-filter has already
-matched a forward-commitment span and quoted it. Treat it as strong evidence, apply the
-contingency exception, and quote the given span in your REASON.
 
 This rule is POSITIONAL and is **not** mitigated by how much substantive work the turn contains. A
 long, competent, done-work report that ends by asking permission for the next step is the collapse in
