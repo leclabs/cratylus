@@ -59,7 +59,7 @@ const orientWouldBind = (mySession: string): boolean => {
 };
 
 const enc = (session: string, body: string): void => {
-  vi.stubEnv('CLAUDE_SESSION_ID', session);
+  vi.stubEnv('AGENT_SESSION_ID', session);
   expect(main(['encode', '--home', home, '--body', body]).code).toBe(0);
 };
 const register = (s: string): void =>

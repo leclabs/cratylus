@@ -251,7 +251,7 @@ runtime-install step, not by a tool self-check.)
 
 encode appends one open record {id, session, host, cwd, body, tags?} to the
 home log. {host, cwd} are DERIVED by the tool — never caller-supplied. The
-session is bound at encode (--session > CLAUDE_SESSION_ID > the sole live
+session is bound at encode (--session > $AGENT_SESSION_ID > the sole live
 registered session; error if none or ambiguous) so no record is sessionless.
 Scope is not stored: it is node(cwd), computed at fold time. A --scope value is
 accepted as an inert tags entry (compat), never routing. For a body that starts
@@ -587,15 +587,15 @@ function runSession(args: ParsedArgs): CliResult {
   const staleArgs = stale !== undefined ? [Date.now(), stale] : [];
 
   // The mutating verbs heartbeat/release act on the CURRENT session — its id is
-  // --session > CLAUDE_SESSION_ID env (error if neither), since you cannot touch
+  // --session > $AGENT_SESSION_ID env (error if neither), since you cannot touch
   // a session you did not first name. register is the one exception: it MINTS a
-  // uuid when neither is present, so a harness with no CLAUDE_SESSION_ID still
+  // uuid when neither is present, so a harness with no $AGENT_SESSION_ID still
   // binds a real session id (never sessionless).
   const currentId = (): string => {
     const id = str(args.flags.session) ?? defaultDerive.session();
     if (id === undefined)
       throw new Error(
-        'no session id: set CLAUDE_SESSION_ID or pass --session <id>',
+        'no session id: set $AGENT_SESSION_ID or pass --session <id>',
       );
     return id;
   };

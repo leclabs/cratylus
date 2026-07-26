@@ -14,7 +14,7 @@ beforeEach(() => {
   home = join(root, 'agent-home');
   mkdirSync(home, { recursive: true });
   vi.stubEnv('AGENT_FACTORY_CONFIG', '');
-  vi.stubEnv('CLAUDE_SESSION_ID', 'strategy-test-sess');
+  vi.stubEnv('AGENT_SESSION_ID', 'strategy-test-sess');
 });
 
 afterEach(() => {

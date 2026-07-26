@@ -174,9 +174,8 @@ describe('session — CLI wiring', () => {
     );
   });
 
-  it('derives the current session id from CLAUDE_SESSION_ID when --session is absent', () => {
-    vi.stubEnv('CLAUDE_CODE_SESSION_ID', ''); // hermetic: the real harness var would otherwise win
-    vi.stubEnv('CLAUDE_SESSION_ID', 'env-sess');
+  it('derives the current session id from the contract env when --session is absent', () => {
+    vi.stubEnv('AGENT_SESSION_ID', 'env-sess');
     expect(main(['session', 'register', '--home', home]).out).toContain(
       'registered env-sess',
     );
@@ -184,45 +183,63 @@ describe('session — CLI wiring', () => {
     expect(main(['session', 'status', '--home', home]).out.trim()).toBe('live');
   });
 
-  // REGRESSION. Claude Code exports CLAUDE_CODE_SESSION_ID; this package read
-  // only CLAUDE_SESSION_ID, which the harness never sets. The env branch was
-  // therefore dead in production for every real session: each invocation minted
-  // a fresh uuid, so `lock acquire` recorded an id whose process had exited by
-  // the next call and later verbs refused with "held by another session".
-  // These three fail against the pre-fix reader.
-  it('derives the current session id from CLAUDE_CODE_SESSION_ID — the name the harness actually exports', () => {
-    vi.stubEnv('CLAUDE_SESSION_ID', ''); // the legacy name is NOT set, as in production
-    vi.stubEnv('CLAUDE_CODE_SESSION_ID', 'harness-sess');
+  // REGRESSION + ANTI-COUPLING. This package is harness-agnostic: it reads ONE
+  // name it owns, $AGENT_SESSION_ID, beside $AGENT_HOME. Vendor variables are
+  // bridged by the projected shim (agent-forge runtime-shim.ts), never here.
+  // The original defect was reading a vendor name nothing set; the first fix
+  // swapped in the vendor name that IS set, which traded a broken coupling for
+  // a working one. These pin the decoupled contract.
+  it('derives the current session id from AGENT_SESSION_ID', () => {
+    vi.stubEnv('AGENT_SESSION_ID', 'contract-sess');
     expect(main(['session', 'register', '--home', home]).out).toContain(
-      'registered harness-sess',
+      'registered contract-sess',
     );
     expect(main(['session', 'status', '--home', home]).out.trim()).toBe('live');
   });
 
-  it('prefers CLAUDE_CODE_SESSION_ID over the legacy CLAUDE_SESSION_ID when both are set', () => {
-    vi.stubEnv('CLAUDE_SESSION_ID', 'legacy-sess');
-    vi.stubEnv('CLAUDE_CODE_SESSION_ID', 'harness-sess');
-    expect(main(['session', 'register', '--home', home]).out).toContain(
-      'registered harness-sess',
-    );
-  });
-
-  it('does NOT mint when the harness env is present — minting is genuine-absence only', () => {
-    vi.stubEnv('CLAUDE_SESSION_ID', '');
-    vi.stubEnv('CLAUDE_CODE_SESSION_ID', ''); // hermetic: the real harness var leaks in from the parent process
-    vi.stubEnv('CLAUDE_CODE_SESSION_ID', 'harness-sess');
+  it('does NOT read vendor harness variables — that coupling belongs in the shim', () => {
+    vi.stubEnv('AGENT_SESSION_ID', '');
+    vi.stubEnv('CLAUDE_CODE_SESSION_ID', 'vendor-sess');
+    vi.stubEnv('CLAUDE_SESSION_ID', 'vendor-legacy');
     const id = main(['session', 'register', '--home', home])
       .out.replace('registered ', '')
       .trim();
-    expect(id).toBe('harness-sess');
-    expect(id).not.toMatch(
+    // Neither vendor value may bind; absence mints instead.
+    expect(id).not.toBe('vendor-sess');
+    expect(id).not.toBe('vendor-legacy');
+    expect(id).toMatch(
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
     );
   });
 
-  it('register MINTS a uuid when neither --session nor any harness env is present', () => {
-    vi.stubEnv('CLAUDE_SESSION_ID', '');
-    vi.stubEnv('CLAUDE_CODE_SESSION_ID', '');
+  it('AGENT_SESSION_ID_FROM indirects to a named variable without the library knowing it', () => {
+    vi.stubEnv('AGENT_SESSION_ID', '');
+    vi.stubEnv('AGENT_SESSION_ID_FROM', 'SOME_FOREIGN_HARNESS_ID');
+    vi.stubEnv('SOME_FOREIGN_HARNESS_ID', 'foreign-sess');
+    expect(main(['session', 'register', '--home', home]).out).toContain(
+      'registered foreign-sess',
+    );
+  });
+
+  it('an explicit AGENT_SESSION_ID outranks the indirection', () => {
+    vi.stubEnv('AGENT_SESSION_ID', 'explicit-sess');
+    vi.stubEnv('AGENT_SESSION_ID_FROM', 'SOME_FOREIGN_HARNESS_ID');
+    vi.stubEnv('SOME_FOREIGN_HARNESS_ID', 'foreign-sess');
+    expect(main(['session', 'register', '--home', home]).out).toContain(
+      'registered explicit-sess',
+    );
+  });
+
+  it('does NOT mint when the contract env is present — minting is genuine-absence only', () => {
+    vi.stubEnv('AGENT_SESSION_ID', 'contract-sess');
+    const id = main(['session', 'register', '--home', home])
+      .out.replace('registered ', '')
+      .trim();
+    expect(id).toBe('contract-sess');
+  });
+
+  it('register MINTS a uuid when neither --session nor the contract env is present', () => {
+    vi.stubEnv('AGENT_SESSION_ID', '');
     const r = main(['session', 'register', '--home', home]);
     expect(r.code).toBe(0);
     // a real (uuid) id was bound — never sessionless.
@@ -233,8 +250,7 @@ describe('session — CLI wiring', () => {
   });
 
   it('heartbeat errors when no session id is available (only register mints)', () => {
-    vi.stubEnv('CLAUDE_SESSION_ID', '');
-    vi.stubEnv('CLAUDE_CODE_SESSION_ID', ''); // hermetic: the real harness var leaks in from the parent process
+    vi.stubEnv('AGENT_SESSION_ID', '');
     const r = main(['session', 'heartbeat', '--home', home]);
     expect(r.code).toBe(1);
     expect(r.err).toContain('no session id');

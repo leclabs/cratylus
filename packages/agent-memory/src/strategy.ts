@@ -155,7 +155,7 @@ export class AgentMemory implements MemoryStrategy {
 
   /**
    * Append one open record + return its minted ULID. The session is bound BEFORE
-   * capture ({@link resolveSession}: `entry.session` ▸ `CLAUDE_SESSION_ID` ▸ the
+   * capture ({@link resolveSession}: `entry.session` ▸ `$AGENT_SESSION_ID` ▸ the
    * sole live registered session; throws on none/ambiguous), so no record is
    * sessionless; `{host, cwd}` are DERIVED. Encode heartbeats its session.
    */
@@ -257,7 +257,7 @@ export class AgentMemory implements MemoryStrategy {
 
   /**
    * The session-liveness registry. Mutating actions (`register`/`heartbeat`/
-   * `release`) act on the CURRENT session — `opts.id` ▸ `CLAUDE_SESSION_ID`;
+   * `release`) act on the CURRENT session — `opts.id` ▸ `$AGENT_SESSION_ID`;
    * `register` MINTS a uuid when neither is present (never sessionless).
    * `status`/`list` are read verbs.
    */
@@ -283,12 +283,12 @@ export class AgentMemory implements MemoryStrategy {
       opts.stale !== undefined ? [Date.now(), opts.stale] : [];
 
     // The mutating verbs need a NAMED current session (you cannot touch one you
-    // did not first name): `id` override ▸ CLAUDE_SESSION_ID; throw if neither.
+    // did not first name): `id` override ▸ $AGENT_SESSION_ID; throw if neither.
     const currentId = (): string => {
       const id = opts.id ?? defaultDerive.session();
       if (id === undefined)
         throw new Error(
-          'no session id: set CLAUDE_SESSION_ID or pass an id override',
+          'no session id: set $AGENT_SESSION_ID or pass an id override',
         );
       return id;
     };

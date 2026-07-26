@@ -45,7 +45,7 @@ export function homeForName(name: string): string {
 
 /**
  * Resolve the session id an `encode` binds. Precedence: an explicit `--session`
- * flag > {@link harnessSessionId} > the SOLE live session registered under
+ * flag > {@link envSessionId} > the SOLE live session registered under
  * `<home>`. There is deliberately NO sessionless fallback — every event is bound
  * to a session at encode time.
  *
@@ -58,9 +58,9 @@ export function homeForName(name: string): string {
  * harness subprocess clears the current-session pointer, so the next `encode`
  * fails rather than re-binding." That diagnosis was wrong. Nothing cleared the
  * pointer; the env read simply never resolved, because this code read
- * `CLAUDE_SESSION_ID` while Claude Code exports `CLAUDE_CODE_SESSION_ID` (see
- * {@link harnessSessionId}). With the correct name read, minting is once again
- * the rare genuine-absence path it was meant to be, not the default.
+ * a vendor variable nothing set (see {@link envSessionId}). With a name the
+ * caller actually provides, minting is once again the rare genuine-absence path
+ * it was meant to be, rather than the default on every invocation.
  */
 export function resolveSession(
   home: string,
@@ -68,7 +68,7 @@ export function resolveSession(
 ): string {
   const flag = opts?.flag;
   if (flag !== undefined && flag.length > 0) return flag;
-  const env = harnessSessionId();
+  const env = envSessionId();
   if (env !== undefined) return env;
   const now = opts?.now ?? Date.now();
   const live =
@@ -96,35 +96,51 @@ export interface DeriveEnv {
   session(): string | undefined;
 }
 
+/** This package's session-id contract variable. Consistent with `$AGENT_HOME`
+ *  and `$AGENT_FACTORY_CONFIG` — the `AGENT_*` namespace this package owns. */
+export const SESSION_ID_ENV = 'AGENT_SESSION_ID';
+/** Indirection: names the variable to read `AGENT_SESSION_ID` from, for
+ *  environments whose launcher cannot be modified. */
+export const SESSION_ID_FROM_ENV = 'AGENT_SESSION_ID_FROM';
+
 /**
- * The harness's own session id, or `undefined` when the process was not started
- * by one.
+ * The ambient session id, or `undefined`.
  *
- * **Read `CLAUDE_CODE_SESSION_ID` first — that is the name Claude Code actually
- * exports.** `CLAUDE_SESSION_ID` is retained only as a fallback for foreign
- * harnesses and for the test suite, which stubs the older name throughout.
+ * **This package is harness-agnostic and reads exactly ONE name it owns:
+ * `AGENT_SESSION_ID`.** It knows nothing of Claude Code, Cursor, Aider or any
+ * other host, and no vendor variable may be added here. A library that reads
+ * `CLAUDE_*` is coupled to one vendor; the next host would add a second name,
+ * and the read becomes a registry of foreign harnesses maintained in the wrong
+ * package.
  *
- * This package read ONLY the legacy name until 2026-07, and Claude Code has
- * never set it. Consequences, all of which read as unrelated bugs:
+ * **Harness adaptation is the caller's job, at the boundary**, in one of:
+ *  1. the projected runtime shim, which is emitted per-harness and is the only
+ *     component entitled to name a vendor variable (agent-forge
+ *     `runtime-shim.ts`);
+ *  2. an explicit id — `--session` / `opts.id` — which always wins;
+ *  3. `AGENT_SESSION_ID_FROM=<VARNAME>`, an indirection (outranked by a direct
+ *     `AGENT_SESSION_ID`) for environments whose
+ *     launcher cannot be changed. The library learns no vendor names: it is
+ *     told *which variable to read*, not *whose*.
  *
- * - every CLI invocation resolved to a freshly minted uuid, so each one was a
- *   *different* "session";
- * - `lock acquire` therefore recorded an ephemeral id whose pid had already
- *   exited by the next invocation, and every subsequent write verb refused with
- *   "held by another session" — a phantom sibling that was really the caller;
- * - the mint-on-absence branch in {@link resolveSession} was added to paper over
- *   the same symptom under a wrong diagnosis (see its note);
- * - operators and agents worked around it by exporting `CLAUDE_SESSION_ID` by
- *   hand, which entrenched the defect instead of surfacing it.
- *
- * The harness also exports `CLAUDE_CODE_AGENT`, `CLAUDE_JOB_DIR` and
- * `CLAUDE_PID`; none is consulted here, but they are the same seam if identity
- * or liveness ever needs a second signal.
+ * Historical note, kept because the failure was expensive and silent: this read
+ * was `CLAUDE_SESSION_ID` for its whole life, a name Claude Code never sets. It
+ * never resolved once. Every invocation therefore minted a fresh uuid, so each
+ * was a *different* session; `lock acquire` recorded an id whose pid had exited
+ * by the next call, and later write verbs refused with "held by another session"
+ * — a phantom sibling that was really the caller. The `ABSENCE MINTS` branch was
+ * added to paper over that under a wrong diagnosis, and humans and agents
+ * worked around it by exporting the dead name by hand, which hid it further.
+ * The first fix merely swapped in the correct vendor name; that traded a broken
+ * coupling for a working one. This is the decoupled form.
  */
-export function harnessSessionId(): string | undefined {
-  for (const key of ['CLAUDE_CODE_SESSION_ID', 'CLAUDE_SESSION_ID'] as const) {
-    const v = process.env[key];
-    if (v !== undefined && v.length > 0) return v;
+export function envSessionId(): string | undefined {
+  const direct = process.env[SESSION_ID_ENV];
+  if (direct !== undefined && direct.length > 0) return direct;
+  const from = process.env[SESSION_ID_FROM_ENV];
+  if (from !== undefined && from.length > 0) {
+    const indirect = process.env[from];
+    if (indirect !== undefined && indirect.length > 0) return indirect;
   }
   return undefined;
 }
@@ -138,7 +154,7 @@ export function harnessSessionId(): string | undefined {
 export const defaultDerive: DeriveEnv = {
   cwd: () => process.cwd(),
   host: () => shortHost(hostname()),
-  session: () => harnessSessionId(),
+  session: () => envSessionId(),
 };
 
 /** Input to {@link EpisodicStore.encode} — the caller's share: body + optional tags. */

@@ -19,17 +19,50 @@
 import { chmodSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+/**
+ * Vendor session-id variables, most-specific first, mapped into the runtime's
+ * own `AGENT_SESSION_ID` contract.
+ *
+ * THIS IS THE HARNESS-ADAPTER SEAM, and the ONLY place in the projection
+ * entitled to name a vendor. The shim is emitted INTO a specific harness's skill
+ * tree, so it is harness-specific by construction; the runtime packages behind
+ * it are not, and must never learn these names. Supporting a new host means
+ * adding one entry here — not a second read inside `agent-memory`.
+ *
+ * Why it exists: `agent-memory` resolves a session from `$AGENT_SESSION_ID`
+ * (its own `AGENT_*` namespace, beside `$AGENT_HOME`). No harness sets that, so
+ * without this bridge every invocation looks sessionless, mints a fresh id, and
+ * the lock/liveness machinery sees a phantom sibling on the very next call.
+ */
+export const HARNESS_SESSION_ENV_VARS = [
+  'CLAUDE_CODE_SESSION_ID',
+  'CLAUDE_SESSION_ID',
+] as const;
+
 /** The thin-shim source for a capability — a self-contained node forwarder to the
  *  host `agent-runtime <capability>` CLI. Pure `f(capability)`; no impl, no deps. */
 export function runtimeShimContent(capability: string): string {
+  const vendors = HARNESS_SESSION_ENV_VARS.map((v) => `'${v}'`).join(', ');
   return `#!/usr/bin/env node
 // THIN SHIM — projected by agent-canon for a skill declaring runtime:{capability:'${capability}'}.
 // Forwards to the host-installed \`agent-runtime\` CLI (per-host install: agent-runtime/S7).
 // NOT a bundle of the capability impl — the impl lives host-side behind the runtime
 // port, addressed by the CLI, never imported here. Zero cross-package imports.
+//
+// It also BRIDGES this harness to the runtime's session contract: the runtime reads
+// \$AGENT_SESSION_ID and knows no vendor names, so the adapter belongs here, at the
+// boundary, not in the library. An explicit \$AGENT_SESSION_ID always wins.
 import { spawnSync } from 'node:child_process';
+const env = { ...process.env };
+if (!env.AGENT_SESSION_ID) {
+  for (const k of [${vendors}]) {
+    const v = process.env[k];
+    if (v) { env.AGENT_SESSION_ID = v; break; }
+  }
+}
 const r = spawnSync('agent-runtime', ['${capability}', ...process.argv.slice(2)], {
   stdio: 'inherit',
+  env,
 });
 process.exit(r.status ?? 1);
 `;

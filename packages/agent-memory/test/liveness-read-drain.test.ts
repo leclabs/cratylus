@@ -52,7 +52,7 @@ const enc = (s: string, body: string): void => {
     );
     return;
   }
-  vi.stubEnv('CLAUDE_SESSION_ID', s);
+  vi.stubEnv('AGENT_SESSION_ID', s);
   const r = main(['encode', '--home', home, '--body', body]);
   expect(r.code).toBe(0);
 };

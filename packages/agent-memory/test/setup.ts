@@ -2,9 +2,9 @@ import { beforeEach, vi } from 'vitest';
 
 /**
  * HERMETIC ENV. This suite runs inside a real agent harness, which exports
- * `CLAUDE_CODE_SESSION_ID` into every child process — including vitest. Since
- * `harnessSessionId()` reads that name FIRST, an un-cleared parent value would
- * silently outrank every `vi.stubEnv('CLAUDE_SESSION_ID', …)` in the suite and
+ * `AGENT_SESSION_ID` (and any harness value the shim may have bridged into it) into every child process — including vitest. Since
+ * `envSessionId()` reads that name, an un-cleared parent value would
+ * silently outrank every per-test stub and
  * bind tests to the developer's own live session.
  *
  * Clearing it here makes the default state "no harness session", so each test
@@ -16,5 +16,6 @@ import { beforeEach, vi } from 'vitest';
  * nothing failed when the read was wrong.
  */
 beforeEach(() => {
-  vi.stubEnv('CLAUDE_CODE_SESSION_ID', '');
+  vi.stubEnv('AGENT_SESSION_ID', '');
+  vi.stubEnv('AGENT_SESSION_ID_FROM', '');
 });
