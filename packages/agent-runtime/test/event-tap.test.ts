@@ -253,17 +253,49 @@ describe('unknown input fails LOUD (no silent no-op)', () => {
   });
 });
 
+/**
+ * Every `agent-forge` MODULE SPECIFIER a source text imports. Named rather than
+ * inlined so the same scan can be fed a synthetic BAD source below: a guard that
+ * only ever sees the clean corpus is green whether the DAG holds or the scan
+ * stopped matching. Inspects import specifiers only — prose mentions of forge in
+ * comments are fine, the guard is against a real module edge, not the word.
+ */
+function forgeImports(src: string): string[] {
+  const specifier = /(?:from|import|require\()\s*['"]([^'"]+)['"]/g;
+  return [...src.matchAll(specifier)]
+    .map((m) => m[1] as string)
+    .filter((s) => s.includes('agent-forge'));
+}
+
 describe('DAG guard (accept 5: runtime never → forge)', () => {
   it('no capability source file imports @leclabs/agent-forge', () => {
-    // Inspect IMPORT SPECIFIERS only (prose mentions of forge in comments are
-    // fine — the guard is against a real module edge, not the word).
-    const specifier = /(?:from|import|require\()\s*['"]([^'"]+)['"]/g;
+    const scanned: string[] = [];
     for (const file of readdirSync(CAP_DIR)) {
       if (!file.endsWith('.ts')) continue;
-      const src = readFileSync(join(CAP_DIR, file), 'utf8');
-      for (const m of src.matchAll(specifier)) {
-        expect(m[1]).not.toContain('agent-forge');
-      }
+      scanned.push(file);
+      const found = forgeImports(readFileSync(join(CAP_DIR, file), 'utf8'));
+      expect(found, `${file} imports ${found.join(', ')}`).toEqual([]);
     }
+    // A scan that reached nothing reports green forever.
+    expect(scanned.length).toBeGreaterThan(0);
+  });
+
+  it('is non-vacuous — the scan FLAGS a source that takes the forbidden edge', () => {
+    // The BAD input the live corpus does not contain: each import form the
+    // specifier regex must catch, and the prose that must NOT be mistaken for one.
+    expect(
+      forgeImports("import { anatomy } from '@leclabs/agent-forge/anatomy';\n"),
+    ).toEqual(['@leclabs/agent-forge/anatomy']);
+    expect(forgeImports("export * from '@leclabs/agent-forge';\n")).toEqual([
+      '@leclabs/agent-forge',
+    ]);
+    expect(
+      forgeImports("const f = require('@leclabs/agent-forge');\n"),
+    ).toEqual(['@leclabs/agent-forge']);
+    // EXONERATES: naming forge in prose is not a module edge.
+    expect(
+      forgeImports('// the projector lives in @leclabs/agent-forge\n'),
+    ).toEqual([]);
+    expect(forgeImports("import { x } from './claude.js';\n")).toEqual([]);
   });
 });

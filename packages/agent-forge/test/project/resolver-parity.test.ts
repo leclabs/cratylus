@@ -30,6 +30,7 @@ import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
 import {
+  AmbiguousFragmentBodyError,
   type ProjectablePlugin,
   discoverFragments,
   projectPluginSet,
@@ -209,5 +210,42 @@ describe('resolver ⇄ projector parity', () => {
     const discovered = await discoverFragments([canon]);
     expect(discovered[0]?.fragments.length).toBeGreaterThan(100);
     expect(resolveFragmentBodies(discovered, []).size).toBe(0);
+  });
+
+  // ── The corpus leg BITES — an empty substitution over a clean corpus and an
+  //    empty substitution from a fold that stopped folding are the same green ──
+  it('is non-vacuous — a fold that moves a body REFUSES to leave the substitution empty, and an ambiguous body is CONVICTED', async () => {
+    const plugin = fixturePlugin();
+    const discovered = await discoverFragments([plugin]);
+    const node = discovered[0]?.fragments.find(
+      (f) => f.dimension === 'objective',
+    )?.node;
+    if (!node) throw new Error('fixture: no objective fragment discovered');
+
+    // BAD input 1 — a moved body. The corpus leg above asserts `.size === 0`; a
+    // fold that had silently become a no-op would satisfy it forever. Feeding the
+    // same call a patch proves the emptiness is the corpus's, not the fold's.
+    const moved = resolveFragmentBodies(discovered, [
+      { target: node, op: 'replace', value: PATCHED },
+    ]);
+    expect(moved.size).toBe(1);
+    expect(moved.get(AUTHORED)).toBe(PATCHED);
+
+    // BAD input 2 — two nodes sharing ONE authored body that fold to DIFFERENT
+    // values: an agent selecting that body has no determinate value, and the
+    // canon leg is green only because the real corpus contains no such pair.
+    const twin = fixturePlugin();
+    const twinDiscovered = await discoverFragments([twin]);
+    const twinNode = twinDiscovered[0]?.fragments.find(
+      (f) => f.dimension === 'objective',
+    )?.node;
+    if (!twinNode) throw new Error('fixture: no twin objective fragment');
+    // Both plugins authored the identical body; patch only one of them.
+    expect(() =>
+      resolveFragmentBodies(
+        [...discovered, ...twinDiscovered],
+        [{ target: twinNode, op: 'replace', value: PATCHED }],
+      ),
+    ).toThrow(AmbiguousFragmentBodyError);
   });
 });

@@ -34,6 +34,29 @@ async function tree() {
   });
 }
 
+/**
+ * The write calls a source text performs — the scan the purity guard runs, named so
+ * a synthetic WRITING source can be fed to the very same code.
+ *
+ * Comments are stripped and matches are CALL-SHAPED (`name(`), because a plain
+ * substring scan was wrong in both directions: it convicted prose naming
+ * `writeFileSync` — it caught a real comment during the codex collapse, and the
+ * author reworded the comment rather than weaken the gate — and it would equally
+ * have missed nothing, since any mention at all tripped it. `from 'node:fs'` is
+ * checked too: the structural fact behind "opens no file descriptor" is that the
+ * module never imports fs, and that survives aliasing and `fs.writeFileSync`.
+ */
+function writeCalls(src: string): string[] {
+  const code = src
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/^\s*\/\/.*$/gm, '');
+  const found = ['writeFileSync', 'chmodSync', 'mkdirSync'].filter((call) =>
+    new RegExp(`\\b${call}\\s*\\(`).test(code),
+  );
+  if (/\bfrom\s+'node:fs'/.test(code)) found.push("import 'node:fs'");
+  return found;
+}
+
 describe('projectPluginSet — the artifact tree is the return value', () => {
   it('returns every projected file as bytes, writing nothing', async () => {
     const t = await tree();
@@ -125,22 +148,42 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
 
   it('the projector itself performs no writes', () => {
-    const code = codeOnly(projectorSrc());
-    expect(code).not.toMatch(/\bfrom\s+'node:fs'/);
-    expect(code).not.toMatch(/\bwriteFileSync\s*\(/);
-    expect(code).not.toMatch(/\bchmodSync\s*\(/);
-    expect(code).not.toMatch(/\bmkdirSync\s*\(/);
+    const src = readFileSync(
+      join(here, '..', '..', 'src', 'project', 'index.ts'),
+      'utf8',
+    );
+    expect(src.length).toBeGreaterThan(0); // a read that returned nothing is DARK
+    expect(writeCalls(src)).toEqual([]);
   });
 
-  it('is non-vacuous — the check REFUSES a projector that imports fs', () => {
-    // Comment mentions must NOT convict; a real import must.
-    const prose =
-      "// a note about writeFileSync\nimport { join } from 'node:path';";
-    expect(codeOnly(prose)).not.toMatch(/\bfrom\s+'node:fs'/);
-    expect(codeOnly(prose)).not.toMatch(/\bwriteFileSync\s*\(/);
-    const real =
-      "import { writeFileSync } from 'node:fs';\nwriteFileSync(p, c);";
-    expect(codeOnly(real)).toMatch(/\bfrom\s+'node:fs'/);
-    expect(codeOnly(real)).toMatch(/\bwriteFileSync\s*\(/);
+  it('is non-vacuous — the scan FLAGS a projector that writes, and spares one that only returns bytes', () => {
+    // The BAD input the live source does not contain: the two fs calls whose
+    // reappearance would close the seam V7 opened. Without this, the check above
+    // is green whether the projector is pure or the substrings were renamed.
+    expect(
+      writeCalls("writeFileSync(join(out, f.path), f.content, 'utf8');\n"),
+    ).toEqual(['writeFileSync']);
+    expect(writeCalls('if (f.executable) chmodSync(dest, 0o755);\n')).toEqual([
+      'chmodSync',
+    ]);
+    expect(
+      writeCalls('writeFileSync(a, b);\nchmodSync(c, 0o755);\n').sort(),
+    ).toEqual(['chmodSync', 'writeFileSync']);
+    // EXONERATES: returning the bytes, and merely READING, are both clean.
+    expect(
+      writeCalls('return { files, agents, skills, shims, hooks };\n'),
+    ).toEqual([]);
+    expect(writeCalls("const src = readFileSync(path, 'utf8');\n")).toEqual([]);
+  });
+
+  it('is non-vacuous — prose naming a write is NOT a write, an fs import IS', () => {
+    // The false positive that made the old substring scan unusable: a COMMENT.
+    expect(
+      writeCalls('// note: writeFileSync lives in write.ts\nreturn f;\n'),
+    ).toEqual([]);
+    // …and the aliasing case a substring scan of call names alone would miss.
+    expect(
+      writeCalls("import { writeFileSync as w } from 'node:fs';\n"),
+    ).toEqual(["import 'node:fs'"]);
   });
 });
