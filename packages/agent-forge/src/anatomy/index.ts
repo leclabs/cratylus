@@ -276,7 +276,17 @@ export type SkillExpression = string & { readonly __skillExpr?: true };
 export interface SkillDeploy {
   /** Deploy as a host `skills/<name>/` directory (the `memory`-style cell). */
   readonly deployAs?: 'skill-dir';
-  /** Committed companion assets shipped byte-for-byte with the skill. */
+  /**
+   * Committed companion assets, staged by `deploy --assets` ONLY.
+   *
+   * NOT projected: `projectPluginSet` never reads this field, so a render tree
+   * carries no assets and a consumer who never passes `--assets` ships none. The
+   * field previously advertised "shipped byte-for-byte with the skill", which
+   * overstated a guarantee nothing enforced — the bridge that would have honoured
+   * it (event-tap T2) was abandoned once the runtime thin shim covered every
+   * motivating case, and `runtime` below is what replaced it. Zero cells declare
+   * `assets` today. Kept because `deploy/bundle.ts` still honours it.
+   */
   readonly assets?: readonly string[];
   /**
    * The RUNTIME capability this skill is a face of. When set, the projection ALSO
