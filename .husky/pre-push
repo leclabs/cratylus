@@ -22,3 +22,11 @@ pnpm typecheck:test
 # had been red the whole time; nothing ran it. A gate nobody runs is not a gate.
 # turbo content-caches this to ~2s when nothing relevant changed.
 pnpm test
+
+# Lint gate · pre-commit runs `biome check --staged`, which only ever sees files
+# staged through that path — a merge resolution, an amend, or a scripted write can
+# reach a commit without it. Push is the boundary that actually matters, and biome
+# is ~50ms over 400 files, so there is no reason for the cheaper gate to be the only
+# one. Added after the gate above was verified to BITE: a probe file with a real
+# violation had to fail this hook, and did not, because the wiring silently missed.
+pnpm lint
