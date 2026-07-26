@@ -13,6 +13,13 @@ import { basename, dirname, join, resolve } from 'node:path';
  * pinned via an allow-file (shrink-only ratchet): a pin is the EXACT matched
  * marker text, so it survives line-number drift; a pin that no longer matches
  * anything is reported STALE so the file only ever shrinks.
+ *
+ * This module also owns the one QUANTITY over a store — {@link STORE_WATERMARK}
+ * and the two write predicates derived from it ({@link refusesAppend},
+ * {@link refusesReplace}). They live here, beside the pressure report, so the
+ * bound has exactly ONE home: what the audit reports and what the write paths
+ * refuse can never drift apart. Still pure — the predicates decide, the write
+ * sites in `dream.ts` / `cli.ts` act.
  */
 
 /** The marker classes the detector recognizes (SPEC §6). */
@@ -66,12 +73,93 @@ export interface AuditReport {
 }
 
 /**
- * Default byte watermark per whole-read prose store. Wake loads SEMANTIC and
+ * Default byte ceiling per whole-read prose store. Wake loads SEMANTIC and
  * PROCEDURAL in full on every session, so their size is a per-session context
  * cost, not a disk cost. Set below the point where that read starts to crowd
  * out the work it is supposed to serve.
+ *
+ * **CORPUS-DERIVED, not chosen** (close-out SPEC §Decision 3b(i), measured over
+ * the live homes). The bracket the number sits in:
+ *
+ * | store                       | bytes  |
+ * | --------------------------- | ------ |
+ * | baseline seeded agents (×8) | 470–496 |
+ * | the largest UNCOMPLAINED store | 4 379 |
+ * | the one store called BLOATED   | 15 969 |
+ *
+ * 8 000 is the only round value inside that bracket: it fires on exactly the
+ * complained-about store and on nothing else, with 1.8× headroom over the
+ * largest clean one. The rationale above is unchanged — only its calibration
+ * was ever wrong. The prior 16 000 sat **31 bytes above** the bloated store, so
+ * the bound existed and had never once fired.
+ *
+ * It is also no longer advisory. Both prose-store write paths refuse past it —
+ * see {@link refusesAppend} / {@link refusesReplace}.
  */
-export const STORE_WATERMARK = 16_000;
+export const STORE_WATERMARK = 8_000;
+
+/**
+ * Does the ceiling refuse an APPEND that would leave the store at `after`
+ * bytes? A bounded container cannot bloat: refusing the append is what converts
+ * unbounded growth into a forced eviction decision, without the guard taking
+ * any judgement about the content being written (that judgement is the dream
+ * agent's, and stays there).
+ *
+ * Accepts ⇔ `after ≤ ceiling` — landing exactly ON the ceiling is legal.
+ */
+export function refusesAppend(
+  after: number,
+  ceiling: number = STORE_WATERMARK,
+): boolean {
+  return after > ceiling;
+}
+
+/**
+ * Does the ceiling refuse a whole-file REPLACE of a `before`-byte store with an
+ * `after`-byte body?
+ *
+ * ```
+ * accepts ⇔ after ≤ ceiling  ∨  after < before
+ * ```
+ *
+ * **The second disjunct is load-bearing and the asymmetry with
+ * {@link refusesAppend} is deliberate.** Without it a store already over the
+ * ceiling could never be repaired — every replace would be refused for still
+ * being over, while every append was refused too, leaving the store bricked.
+ * With it, an over-ceiling store is *legal-but-frozen-to-shrink*: it converges
+ * across successive consolidations at the agent's own pace, which is also why
+ * lowering the ceiling owes no migration of existing stores.
+ *
+ * The shrink must be STRICT: an equal-size rewrite of an over-ceiling store
+ * makes no progress and is refused, so the escape can never be used to hold
+ * position above the line.
+ */
+export function refusesReplace(
+  before: number,
+  after: number,
+  ceiling: number = STORE_WATERMARK,
+): boolean {
+  return after > ceiling && after >= before;
+}
+
+/**
+ * The refusal text a rejected write must carry: **the store, the ceiling, and
+ * the overage in bytes**. A bare refusal invites a retry loop; a refusal that
+ * names the target turns the next act into a distillation with a known budget.
+ * It also names the escape, so the reader knows the store is not bricked.
+ */
+export function ceilingRefusal(
+  file: string,
+  after: number,
+  ceiling: number = STORE_WATERMARK,
+): string {
+  return [
+    `${basename(file)} would be ${after}B — ${after - ceiling}B over the ${ceiling}B store ceiling.`,
+    `Refused (${file}).`,
+    'Evict first: distil the store to fit and land it with `memory replace`;',
+    'a replace that STRICTLY shrinks the store is accepted even while it is still over.',
+  ].join(' ');
+}
 
 /**
  * Default backlog watermark: unfolded EPISODIC records past which a dream is
