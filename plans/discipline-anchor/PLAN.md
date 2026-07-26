@@ -2,9 +2,9 @@
 
 > Working handle; the plan's own name is **not** the anchor being sought. Reader = LLM.
 
-**Status: READY — unblocked 2026-07-25 (see §Surfaced, below). Not sharded: a signify act, not an
-execution plan. Remit: nico — naming is a signify act, and this anchor is the keystone the package split,
-the CLI brand, and any repo rename all wait on.**
+**Status: RUN 2026-07-26 — NEGATIVE RESULT. The anchor is not discovered and must not be coined. The
+positive control passed; the negative control failed, and its diagnostic is convergent and precise (see
+§Derivation record). Not sharded: a signify act, not an execution plan. Remit: nico.**
 
 ## Intent
 
@@ -94,3 +94,131 @@ discharged in the current text:
   existing at all, and the derivation leans on it.
 
 Nothing gates the derivation now. Verified against VISION.md @ `f1621b6`.
+
+---
+
+# Derivation record — 2026-07-26
+
+## Rig
+
+Cold oracle ≜ `claude -p --safe-mode --tools="" --setting-sources "" --strict-mcp-config --mcp-config
+'{"mcpServers":{}}' --no-session-persistence --system-prompt <replaced>`, cwd `/tmp/cold-oracle-da`.
+Replaced system prompt is load-bearing: it strips the harness env block (cwd · git status · memory paths).
+Isolation smoke-tested before use — oracle confirms no filesystem, no project, no cwd knowledge.
+Orchestrated from a warm session; the warm session is never the oracle. Models: opus · sonnet.
+
+## POSITIVE CONTROL — PASS
+
+| token                        | cold decode                                                                        |
+| ---------------------------- | ---------------------------------------------------------------------------------- |
+| `semantic engineering`       | ontology engineering / Semantic Web **and** PLT-Redex formal-semantics engineering |
+| `cold-decode oracle`         | "not established" → compositional reading from parts                               |
+| `cratylist engineering`      | "not established" → Plato/Genette + content-addressing analogy                     |
+| `canonical semantic address` | "not established" → compositional reading from parts                               |
+
+Oracle is cold: it holds no project knowledge and says so unprompted.
+
+**Side finding, standing:** `semantic engineering` is **disconfirmed by cold decode** — it collides with
+two established fields. It is a genus-collision, not a free sign. It is live in `README.md:3` and
+`docs/research/semantic-engineering-research-candidates.md:1`.
+
+## NEGATIVE CONTROL — FAIL
+
+Definiendum handed over at full differentia, candidate-free, foil described but never named, `engineering`
+/ `semantic` / `address` / `canonical` all withheld so no morphology was seeded. Differentiae supplied:
+D1 model-as-existing-meaning-structure · D2 discovered-not-invented, coinage barred · D3 naive-instance
+test is sole standing · D4 versioned record scoped by model range, composes without collision · D5 record
+is source, runtime is generated · D6 reproducible spec ≠ deterministic behavior · D7 defined against
+description-as-medium.
+
+Differentiae were **received** — every run correctly ruled out prompt engineering, context engineering,
+soft prompts / prompt tuning, activation steering / representation engineering, prompt compilation,
+ontology design, and DSL design, each on the right grounds. This was **not** the S4 genus failure.
+
+Denotation-forced runs, full definiendum — **6 distinct strings / 8 runs**:
+
+| run | model  | returned                            |
+| --- | ------ | ----------------------------------- |
+| 1   | opus   | LLM lexicography                    |
+| 2   | opus   | Semantic anchoring                  |
+| 3   | opus   | Latent-space (model) lexicography   |
+| 4   | opus   | Semantic anchoring                  |
+| 5   | sonnet | Test-driven prompting               |
+| 6   | sonnet | Prompt lexicography                 |
+| 7   | opus   | Model-native semantic specification |
+| 8   | opus   | Semantic anchoring                  |
+
+Mode `semantic anchoring` 3/8, opus-only. Genus `lexicography` 3/8 heads + invoked in 2 further
+rationales. **No convergence on one anchor. Acceptance not met.**
+
+Existence-question runs (escape hatch offered instead of forcing a term) — **2/2, opus and sonnet: "no
+established term."**
+
+## ROUND-TRIP — 5/5 candidates FAIL, all on the same differentia
+
+Each oracle-generated candidate decoded cold in isolation (one candidate per run, no candidate set shown)
+and scored against D1–D7:
+
+- `semantic anchoring` → domain-vocabulary term binding. **Inverts D2**: "identity must be authored, not
+  inferred", "decides meaning before the fact". D1 ✗, D7 ✗.
+- `LLM lexicography` → authoring prompt vocabulary. **Inverts D2**: "prescriptive: it decides what X will
+  mean and installs it"; "the model is never an authority on its own vocabulary."
+- `model lexicography` → domain-model dictionary. D1 ✗, and **inverts D5**: "downstream of the running
+  system… nothing compiles from it."
+- `prompt lexicography` → closest. Recovers D3 D4 D5 D7. **Still authored-sense on D2** — corpus is
+  observed production usage, not pretraining priors.
+- `test-driven prompting` → TDD over prompt strings. D1 ✗ D2 ✗; recovers D5 D6 only.
+
+## ABLATION — the residue, isolated
+
+**ABL-1** (D2-discovery and D3-cold-test removed, all else held): convergence **sharpens** — 2/2 on the
+`semantic + ⟨mechanism⟩` form, `semantic compression` and `semantic compilation`. The scatter is caused by
+D2/D3 and by nothing else.
+
+**ABL-2** (D2 alone, at its own altitude): nearest attested sign is **`term selection`** — the ISO 704
+onomasiological move, concept-first, reportive direction of fit, selection from what is attested,
+abstention where nothing is. The oracle judges it insufficient: it is bound to a **human speech community**
+as attester, not to a model. Second run: "There is no established term for it… coining a name here would be
+exactly the stipulative move the act forbids, so I'll leave it unnamed." Cross-model (sonnet) surfaced
+genuine prior art for the **act** in a restricted setting — **`answer engineering` / verbalizer search**
+(Liu et al. 2021, _Pre-train, Prompt, and Predict_): fix the class, search candidate words for the one the
+pretrained model already binds, adopt whichever tests clean. Scoped to classification labels; names the
+move, not the discipline. **Worth checking as prior art.**
+
+**Extension probe** — term selection applied reportively to itself, attester swapped human→model, one
+variable changed: **3/3 runs, verbatim, "Nothing is attested for it."** Each independently names the same
+neighbour set (probing · elicitation · knowledge extraction · term extraction · prompt engineering), each
+gives the same reason — all are bound to _measuring what a model encodes_, none to _concept-first reportive
+selection from a model's attested bindings with abstention_. Each independently concludes that the correct
+output of the act applied to itself is abstention. **The abstention converges harder (3/3) than any
+positive candidate did (3/8).**
+
+## Diagnostic
+
+The priors carry a sign for every part of this concept **except one conjunction**: reportive direction of
+fit in naming, with **a trained model as the attesting community**. The available naming-discipline lexicon
+is Hermogenean — `anchoring`, `lexicography` as practiced in software, `glossary`, `DSL`, `ontology` all
+cold-decode to _an authority decides the sense and installs it_. The reportive direction has exactly one
+attested sign, `term selection`, and that sign is bound to human speech communities.
+
+So the species address is not merely unfound: **the location in sign-space is occupied by its own inverse.**
+A compositional σ\* cannot rescue this — composition can only combine existing signs, and the
+differentiating sign does not exist. This is a property of the model's semantic space, not a defect of the
+definiendum or the rig, and it is the empirical confirmation of the operator's framing: the distinction is
+novel in the strict sense — **unaddressed**.
+
+## Consequences
+
+- **Do not coin.** Adopting the 3/8 mode would be fiat, and `semantic anchoring` is affirmatively
+  disconfirmed by round-trip — it decodes to the inverse of cratylism.
+- **`semantic engineering` is disconfirmed**, not merely underived. It remains live at `README.md:3` and in
+  `docs/research/`. No replacement is available; flagged, not edited.
+- **Downstream plans change character, not just status.** `install-parity` S4 (CLI brand),
+  `compiler-projector-split` (package names), `heartbeat-organ` O4, and any repo rename were waiting on
+  this anchor. Cold verification says the anchor is not there to be found at this altitude, so **more
+  derivation effort at the discipline altitude will not unblock them.** Their live options are (a) name at
+  a lower altitude — the artifact, the mechanism, the deliverable, where ABL-1 shows the priors _do_
+  converge — or (b) an explicitly declared stipulation held outside the canon and marked as such. Both are
+  operator forks.
+- **The negative result is the deliverable.** Reporting "not yet discovered" is a success of method under
+  `cratylism`; the record above is the evidence.
