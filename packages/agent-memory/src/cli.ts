@@ -733,12 +733,21 @@ function drainGuarded(args: ParsedArgs, home: string): CliResult {
     ...(path !== undefined ? { path } : {}),
     ...(retain !== undefined ? { retain } : {}),
   });
-  if (r.archived === null)
+  if (r.archived === null) {
+    // "nothing archived" has TWO causes and they are not the same state: an
+    // empty log, or a log whose every record was RETAINED by the liveness
+    // filter. Reporting the second as "empty" tells the caller its sibling's
+    // records are gone when they are exactly what was preserved.
+    const remaining = store.read(path).length;
     return {
       code: 0,
-      out: 'drain: nothing to archive (raw log empty)\n',
+      out:
+        remaining === 0
+          ? 'drain: nothing to archive (raw log empty)\n'
+          : `drain: nothing to archive (${remaining} record(s) retained)\n`,
       err: '',
     };
+  }
   return {
     code: 0,
     out: `drained ${r.records} record(s) -> ${r.archived}\n.bak/: ${r.kept.length} kept, ${r.pruned.length} pruned (keep=${keep})\n`,

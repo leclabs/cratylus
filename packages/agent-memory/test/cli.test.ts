@@ -719,3 +719,39 @@ describe('rollover — land, drain and re-seed with no gap between them', () => 
     expect(logRecords()).toHaveLength(1);
   });
 });
+
+describe('drain — "nothing archived" distinguishes empty from all-retained', () => {
+  it('says RETAINED, not empty, when a live sibling holds the log', () => {
+    main(['session', 'register', '--home', home, '--session', 'sibling']);
+    main([
+      'encode',
+      '--home',
+      home,
+      '--session',
+      'sibling',
+      '--body',
+      'theirs',
+    ]);
+
+    const r = main([
+      'drain',
+      '--home',
+      home,
+      '--session',
+      'mine',
+      '--for-session',
+      'mine',
+    ]);
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/1 record\(s\) retained/);
+    expect(r.out).not.toMatch(/empty/);
+    expect(logRecords()).toHaveLength(1); // theirs survived
+  });
+
+  it('still says EMPTY when the log really is', () => {
+    main(['encode', '--home', home, '--session', 'mine', '--body', 'x']);
+    main(['drain', '--home', home, '--session', 'mine']);
+    const r = main(['drain', '--home', home, '--session', 'mine']);
+    expect(r.out).toMatch(/empty/);
+  });
+});
