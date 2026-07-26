@@ -59,16 +59,44 @@ describe('encode — the tool derives, the caller never supplies', () => {
     expect(rec?.host).toBe(shortHost(hostname()));
   });
 
-  it('IGNORES a caller-supplied --cwd (cwd is derived, never an input)', () => {
+  it('REFUSES a caller-supplied --cwd, and derives cwd on the clean path', () => {
     const session = join(root, 'real-cwd');
     mkdirSync(session, { recursive: true });
     process.chdir(session);
 
-    const r = main(['encode', '--home', home, '--cwd', '/evil', '--body', 'x']);
+    const r = main(['encode', '--home', home, '--body', 'x']);
     expect(r.code).toBe(0);
     const [rec] = logRecords();
     expect(rec?.cwd).toBe(process.cwd());
     expect(rec?.cwd).not.toBe('/evil');
+
+    const spoof = main([
+      'encode',
+      '--home',
+      home,
+      '--cwd',
+      '/evil',
+      '--body',
+      'x',
+    ]);
+    expect(spoof.code).toBe(2);
+    expect(spoof.err).toContain('--cwd');
+    expect(logRecords()).toHaveLength(1);
+  });
+
+  it('a destructive verb REFUSES to run when probed for usage', () => {
+    main(['encode', '--home', home, '--body', 'keep me']);
+    expect(logRecords()).toHaveLength(1);
+
+    const probe = main(['drain', '--home', home, '--help']);
+    expect(probe.code).toBe(0);
+    expect(probe.out).toContain('memory drain');
+    expect(logRecords()).toHaveLength(1);
+
+    const typo = main(['drain', '--home', home, '--completed']);
+    expect(typo.code).toBe(2);
+    expect(typo.err).toContain('--completed');
+    expect(logRecords()).toHaveLength(1);
   });
 
   it('a --scope value is an INERT tags entry — any shape accepted, never validated, never routing', () => {

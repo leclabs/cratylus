@@ -96,6 +96,54 @@ function parseArgs(argv: readonly string[]): ParsedArgs {
   return { positionals, flags };
 }
 
+/**
+ * The flag surface each verb accepts. An unrecognized flag is REFUSED rather
+ * than absorbed: without this, `drain --help` parses `help` as an inert boolean
+ * and the verb runs its default — which for `drain` is "drain the whole log".
+ * Probing a destructive verb for its own usage must never execute it.
+ */
+const HOME_FLAGS = ['home', 'name'] as const;
+const VERB_FLAGS: Readonly<Record<string, readonly string[]>> = {
+  init: HOME_FLAGS,
+  encode: [
+    ...HOME_FLAGS,
+    'session',
+    'tags',
+    'scope',
+    'path',
+    'body',
+    'body-json',
+  ],
+  read: [
+    ...HOME_FLAGS,
+    'under',
+    'for-session',
+    'stale',
+    'scope',
+    'path',
+    'count',
+    'json',
+  ],
+  node: ['json', 'config'],
+  home: HOME_FLAGS,
+  fold: [...HOME_FLAGS, 'path', 'config'],
+  lock: [...HOME_FLAGS, 'stale'],
+  session: [...HOME_FLAGS, 'session', 'json', 'stale', 'under'],
+  drain: [...HOME_FLAGS, 'keep', 'path', 'completed-only', 'for-session'],
+  apply: [...HOME_FLAGS, 'path', 'routes'],
+  replace: [...HOME_FLAGS, 'store', 'body'],
+  audit: [...HOME_FLAGS, 'allow', 'config', 'keys'],
+  migrate: ['dry-run', 'overwrite'],
+};
+
+/** The USAGE lines naming this verb — what `memory <verb> --help` prints. */
+function usageFor(verb: string): string {
+  const lines = USAGE.split('\n').filter((l) =>
+    l.trimStart().startsWith(`memory ${verb} `),
+  );
+  return lines.length > 0 ? `${lines.join('\n')}\n` : USAGE;
+}
+
 const str = (v: string | boolean | undefined): string | undefined =>
   typeof v === 'string' ? v : undefined;
 
@@ -839,6 +887,22 @@ export function main(argv: readonly string[]): CliResult {
     return { code: 0, out: `${VERSION}\n`, err: '' };
   }
   const args = parseArgs(rest);
+  const allowed = VERB_FLAGS[cmd];
+  if (allowed !== undefined) {
+    if (args.flags.help === true || rest.includes('-h')) {
+      return { code: 0, out: usageFor(cmd), err: '' };
+    }
+    const unknown = Object.keys(args.flags).filter((f) => !allowed.includes(f));
+    if (unknown.length > 0) {
+      return {
+        code: 2,
+        out: '',
+        err: `${cmd}: unknown flag${unknown.length === 1 ? '' : 's'}: ${unknown
+          .map((f) => `--${f}`)
+          .join(', ')}\n\n${usageFor(cmd)}`,
+      };
+    }
+  }
   try {
     switch (cmd) {
       case 'init':
