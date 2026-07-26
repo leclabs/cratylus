@@ -22,6 +22,16 @@ import { existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
 import { hookTreeNames, placeHooksLocal } from './hooks.js';
 import { placeAgentsLocal, placeSkillsLocal } from './local.js';
+import {
+  applyPrune,
+  hasManifest,
+  nextKindRecord,
+  readManifest,
+  staleFiles,
+  unattributable,
+  unregisterHookCommandsAt,
+  writeManifest,
+} from './manifest.js';
 import { projectScope, userScope } from './scope.js';
 import type {
   DeployKind,
@@ -109,9 +119,40 @@ function placeOpts(opts: DeployOpts): PlaceOpts {
   };
 }
 
-/** Deploy in-place to the local `.claude/` root resolved from the scope. */
+/** Run the kind's placer against a resolved `.claude/` root. */
+function place(
+  claudeDir: string,
+  names: string[],
+  opts: DeployOpts,
+): PlaceResult {
+  if (opts.kind === 'hooks') {
+    return placeHooksLocal(claudeDir, opts.tree, names, placeOpts(opts));
+  }
+  if (opts.kind === 'skill') {
+    return placeSkillsLocal(claudeDir, opts.tree, names, placeOpts(opts));
+  }
+  return placeAgentsLocal(
+    claudeDir,
+    opts.tree.agentsDir,
+    names,
+    placeOpts(opts),
+  );
+}
+
+/**
+ * CONVERGE the deploy root to the render tree: place, then subtract whatever a
+ * PRIOR deploy of this tree left behind and this one did not re-write.
+ *
+ * The subtraction is bounded by the manifest and nothing else — see
+ * `manifest.ts` for why attribution must be by record rather than by naming
+ * convention. Three refusals live here:
+ *   - no prior manifest ⇒ nothing is attributable ⇒ prune nothing, just record;
+ *   - `--only` ⇒ a subset intent, so the prune stays inside the subset;
+ *   - `--dry-run` ⇒ print the exact deletion set, delete nothing.
+ */
 function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
   const log = opts.log ?? (() => {});
+  const dry = opts.dry ?? false;
   const scopeRes =
     opts.scope === 'project'
       ? projectScope(opts.project)
@@ -119,29 +160,96 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
   if (scopeRes.note) {
     (opts.warn ?? (() => {}))(scopeRes.note.message);
   }
-  log(`=== LOCAL deploy -> ${scopeRes.claudeDir} ===`);
-  if (opts.kind === 'hooks') {
-    return placeHooksLocal(
-      scopeRes.claudeDir,
-      opts.tree,
-      names,
-      placeOpts(opts),
+  const claudeDir = scopeRes.claudeDir;
+  log(`=== LOCAL deploy -> ${claudeDir} ===`);
+
+  const bootstrap = !hasManifest(claudeDir);
+  const unaccounted = dry
+    ? unattributable(
+        claudeDir,
+        opts.kind,
+        names,
+        Object.keys(readManifest(claudeDir).kinds[opts.kind] ?? {}),
+      )
+    : [];
+  const prior = readManifest(claudeDir);
+  const result = place(claudeDir, names, opts);
+
+  const narrowed = Boolean(opts.only && opts.only.length > 0);
+  const priorKind = prior.kinds[opts.kind] ?? {};
+  const { written, skipped, registered } = result.report;
+
+  if (bootstrap) {
+    log(
+      '  prune: no prior deploy manifest in this root — nothing here is ' +
+        'attributable to this tool, so nothing is removed; this deploy ' +
+        'establishes the record and the next one can converge.',
     );
+  } else {
+    const stale = staleFiles(priorKind, written, skipped, narrowed);
+    const removed = applyPrune(claudeDir, stale, dry);
+    if (removed.length > 0) {
+      log(
+        dry
+          ? `  prune (dry-run): ${removed.length} orphan(s) WOULD be removed:`
+          : `  prune: removed ${removed.length} orphan(s):`,
+      );
+      for (const rel of removed) {
+        log(`    - ${rel}`);
+      }
+    }
+    // A registration whose worker this prune just deleted would still fire.
+    if (opts.kind === 'hooks' && !narrowed) {
+      const staleCmds = prior.hookCommands.filter(
+        (c) => !registered.includes(c),
+      );
+      const n = unregisterHookCommandsAt(
+        resolvePath(claudeDir, 'settings.json'),
+        staleCmds,
+        dry,
+      );
+      if (n > 0) {
+        log(
+          dry
+            ? `  prune (dry-run): ${n} settings.json hook registration(s) WOULD be unregistered`
+            : `  prune: unregistered ${n} stale settings.json hook entr${n === 1 ? 'y' : 'ies'}`,
+        );
+      }
+    }
   }
-  if (opts.kind === 'skill') {
-    return placeSkillsLocal(
-      scopeRes.claudeDir,
-      opts.tree,
-      names,
-      placeOpts(opts),
+
+  // A dry run also SHOWS what the prune will never touch: names this tool cannot
+  // account for. They are left alone by design — an orphan from a pre-manifest
+  // deploy is indistinguishable from an operator's own artifact, so the operator
+  // decides, not us.
+  if (unaccounted.length > 0) {
+    log(
+      `  prune (dry-run): ${unaccounted.length} ${opts.kind} name(s) in the target are UNATTRIBUTABLE`,
     );
+    log(
+      '    (not in the render tree, not in the manifest — never pruned; retire any orphan by hand)',
+    );
+    for (const n of unaccounted) {
+      log(`    ? ${n}`);
+    }
   }
-  return placeAgentsLocal(
-    scopeRes.claudeDir,
-    opts.tree.agentsDir,
-    names,
-    placeOpts(opts),
-  );
+
+  if (!dry) {
+    writeManifest(claudeDir, {
+      ...prior,
+      kinds: {
+        ...prior.kinds,
+        [opts.kind]: nextKindRecord(priorKind, written, skipped, narrowed),
+      },
+      hookCommands:
+        opts.kind === 'hooks'
+          ? narrowed
+            ? [...new Set([...prior.hookCommands, ...registered])]
+            : registered
+          : prior.hookCommands,
+    });
+  }
+  return result;
 }
 
 export type DeploySingleOpts = DeployOpts;

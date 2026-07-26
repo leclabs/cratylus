@@ -126,6 +126,7 @@ export function placeHooksLocal(
     if (!existsSync(srcDir)) {
       warn(`  WARN  no hook dir for ${name} at ${srcDir}`);
       report.warnings.push(`no hook dir for ${name}`);
+      report.skipped.push(name);
       continue;
     }
     const destDir = resolvePath(destRoot, name);
@@ -139,10 +140,23 @@ export function placeHooksLocal(
       }
     }
     report.copied += 1;
+    // Testimony: the worker assets are prunable when the hook retires.
+    report.written[name] = files.map((f) => `hooks/${name}/${f}`);
     log(`  hook ${name} -> ${destDir}/ (+${files.length} worker asset(s))`);
   }
   // Merge the hooks block into the host settings.json.
   const incoming = readProjectedHooks(hooksDir);
+  // Testimony, registration half: the commands this render tree asks for. A
+  // command a PRIOR deploy registered that no longer appears here is a dangling
+  // registration — the orchestrator unregisters it (see `manifest.ts`).
+  report.registered = [
+    ...new Set(
+      Object.values(incoming)
+        .flat()
+        .flatMap((e) => (e.hooks ?? []).map((h) => h.command))
+        .filter((c): c is string => Boolean(c)),
+    ),
+  ];
   if (Object.keys(incoming).length > 0) {
     const settingsFile = resolvePath(claudeDir, 'settings.json');
     const existing: Record<string, unknown> = existsSync(settingsFile)
