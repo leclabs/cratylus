@@ -1,5 +1,17 @@
 # SPEC — the memory system's architectural remedy
 
+> **EXECUTED AND RETIRED (2026-07-26).** This is the spec as authored; the three shards it emitted
+> all landed and now sit in [`completed/`](./completed/), not `pending/`. Where the text below says a
+> thing "will" be done, read it as done — the diagnosis is preserved verbatim because the reasoning
+> is the point, but do not read it as a work list.
+>
+> **Shipped, against this spec:** `STORE_WATERMARK` **16 000 → 8 000** (M1, corpus-derived: the only
+> round value between the largest clean store at 4 379 B and the complained-about one at 15 969 B);
+> the asymmetric predicate with its strict-shrink escape, enforced at BOTH write paths — `appendToHome`,
+> `replaceGuarded`, and `AgentMemory.replace`, which was found bypassing the ceiling M1 installed;
+> the cell↔roster gate (M3); and the pressure seam (M2), whose replace law was swept against the real
+> `refusesReplace` over a `(before, after)` grid with **zero divergence**.
+
 > S3's deliverable. Authored 2026-07-26 against `R1-findings.md` + the post-V2/V3 code.
 > Reader = LLM. Every decision carries a reason and a citation (`R1 §Qn` or `path:line`).
 > **Mirror note:** the PLAN.md slice-table update is the parent's act, not this file's.
@@ -147,7 +159,7 @@ fully mechanical, and which the code already half-implements.
 
 Three parts. Each is small, each cites a live line.
 
-**(i) The bound already exists and is set above the observed bloat.** `STORE_WATERMARK = 16_000`
+**(i) The bound already exists and is set above the observed bloat.** `STORE_WATERMARK = 16_000` at the time of writing; recalibrated to `8_000` by M1
 (`audit.ts:74`); `nico/PROCEDURAL.md` is 15 969 bytes. The audit reports it **clean right now**. The
 one file the operator names as bloated sits at 99.8% of the watermark and raises no signal.
 
@@ -327,7 +339,7 @@ and adds no migration step to `strategy.ts:443 migrateIfOwed`.
 
 ---
 
-## Shards emitted → `plans/close-out/pending/`
+## Shards emitted → landed, now `plans/.retired/close-out/completed/`
 
 | id     | shard                      | concern   | deps   | wave |
 | ------ | -------------------------- | --------- | ------ | ---- |
@@ -358,7 +370,7 @@ out of this shard's remit to chase.
 
 1. ✅ All five decisions taken, plus migration, each with its reason.
 2. ✅ Every decision cites R1 or a `path:line`.
-3. ✅ Three shards under `pending/`, each with all six fields.
+3. ✅ Three shards emitted with all six fields — M1, M3, M2 — all since executed and completed.
 4. ✅ Each acceptance is falsifiable and stated to fail on the pre-state.
 5. ⤳ PLAN.md slice table + `R` — **the parent's act** (this shard was instructed not to edit the
    mirror). Rows and `R` supplied above verbatim for that update.
