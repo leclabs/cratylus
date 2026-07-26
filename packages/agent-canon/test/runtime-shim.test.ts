@@ -30,6 +30,7 @@ import {
   projectPluginSet,
   writeRenderTree,
 } from '@leclabs/agent-forge/project';
+import { RUNTIME_BIN } from '@leclabs/agent-runtime/bin-name';
 import { beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
 
@@ -84,11 +85,14 @@ beforeAll(async () => {
 }, 120_000);
 
 describe('runtime thin shim (S6 forge-build-integration)', () => {
-  it('invokes `agent-runtime <capability>` and forwards argv', () => {
+  it('invokes `<RUNTIME_BIN> <capability>` and forwards argv', () => {
     const shim = emitted(CAPABILITY);
-    // Falsifier: the emitted script drives the host `agent-runtime memory` CLI.
-    expect(shim).toContain('agent-runtime');
-    expect(shim).toMatch(/spawnSync\('agent-runtime', \['memory',/);
+    // Falsifier: the emitted script drives the host `<RUNTIME_BIN> memory` CLI.
+    // The name rides the constant (its one home) so a rebrand stays one symbol.
+    expect(shim).toContain(RUNTIME_BIN);
+    expect(shim).toMatch(
+      new RegExp(`spawnSync\\('${RUNTIME_BIN}', \\['memory',`),
+    );
     // Forwards the caller's argv (verb + args ride through untouched).
     expect(shim).toContain('...process.argv.slice(2)');
     // Node shebang — runs under bare `node` on any host.
@@ -98,7 +102,7 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
   it('is a THIN shim — NO bundled impl, NO @leclabs/* import', () => {
     const shim = emitted(CAPABILITY);
     // The reject condition: a fat / dep-free bundle. The shim's only dependency is
-    // the `agent-runtime` binary on PATH — never an imported @leclabs package.
+    // the runtime binary on PATH — never an imported @leclabs package.
     expect(shim).not.toContain('@leclabs/');
     // No compiled-in capability mechanism (the impl lives host-side behind the port).
     expect(shim).not.toMatch(/MemoryStrategy|EventTapHost|require\(/);

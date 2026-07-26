@@ -9,6 +9,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { RUNTIME_BIN } from '@leclabs/agent-runtime/bin-name';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
 import {
@@ -66,7 +67,7 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
       (f) => f.path === 'skills/greet/scripts/memory.mjs',
     );
     expect(shim?.executable).toBe(true);
-    expect(shim?.content).toContain("spawnSync('agent-runtime', ['memory'");
+    expect(shim?.content).toContain(`spawnSync('${RUNTIME_BIN}', ['memory'`);
   });
 
   it('carries the hooks settings fragment and the worker byte-anchor', async () => {

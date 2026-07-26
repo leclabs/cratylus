@@ -29,6 +29,7 @@ const testDir = dirname(fileURLToPath(import.meta.url));
 type Kind = 'GATE' | 'BEHAVIORAL';
 
 const REGISTRY: Readonly<Record<string, Kind>> = {
+  'bin-name-single-home.test.ts': 'GATE',
   'cratylism.test.ts': 'GATE',
   'event-tap-cell.test.ts': 'GATE',
   'formal-block-self-sufficiency.test.ts': 'GATE',

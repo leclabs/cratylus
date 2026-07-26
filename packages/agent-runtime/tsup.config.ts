@@ -13,6 +13,7 @@ export default defineConfig([
       loader: 'src/loader.ts',
       dispatch: 'src/dispatch.ts',
       main: 'src/main.ts',
+      'bin-name': 'src/bin-name.ts',
       'runtime-config': 'src/runtime-config.ts',
       events: 'src/events.ts',
       'ports/memory': 'src/ports/memory.ts',

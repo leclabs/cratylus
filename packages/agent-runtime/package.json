@@ -40,6 +40,10 @@
       "types": "./dist/main.d.ts",
       "import": "./dist/main.js"
     },
+    "./bin-name": {
+      "types": "./dist/bin-name.d.ts",
+      "import": "./dist/bin-name.js"
+    },
     "./runtime-config": {
       "types": "./dist/runtime-config.d.ts",
       "import": "./dist/runtime-config.js"

@@ -5,19 +5,26 @@
 //
 // When a skill cell declares `runtime: {capability}`, the projection emits, beside
 // its SKILL.md, a `scripts/<capability>.mjs` THIN SHIM. The shim is minimal: it
-// forwards its argv to the host-installed `agent-runtime <capability>` CLI and
+// forwards its argv to the host-installed `<RUNTIME_BIN> <capability>` CLI and
 // mirrors its exit code — NOTHING more. It is NOT a bundle of the capability impl:
-// the impl lives host-side behind the runtime port (agent-runtime → agent-memory /
+// the impl lives host-side behind the runtime port (@leclabs/agent-runtime → agent-memory /
 // event-tap host / …), installed per-host by agent-runtime/S7, addressed by the CLI
 // and NEVER imported here. This REVERSES the superseded dep-free-bundle composition
 // (skills-refactor T4): forge projects a thin shim against the runtime contract, it
 // does not compose a standalone `.mjs` at build time.
 //
 // The shim carries NO `@leclabs/*` import (grep-proven) — its only dependency is the
-// `agent-runtime` binary on PATH, guaranteed by the per-host install.
+// runtime binary on PATH, guaranteed by the per-host install.
+//
+// THE BIN NAME IS INTERPOLATED, NEVER SPELLED. This emitter is the OPERATIVE site:
+// the literal it writes is baked into every deployed `scripts/<cap>.mjs`, where no
+// compiler can see it — a rename that missed it produced a script that failed on a
+// host, not at build. It reads `RUNTIME_BIN` from the runtime contract leaf, which
+// is the name's one home.
 
 import { chmodSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { RUNTIME_BIN } from '@leclabs/agent-runtime/bin-name';
 
 /**
  * Vendor session-id variables, most-specific first, mapped into the runtime's
@@ -40,12 +47,12 @@ export const HARNESS_SESSION_ENV_VARS = [
 ] as const;
 
 /** The thin-shim source for a capability — a self-contained node forwarder to the
- *  host `agent-runtime <capability>` CLI. Pure `f(capability)`; no impl, no deps. */
+ *  host `<RUNTIME_BIN> <capability>` CLI. Pure `f(capability)`; no impl, no deps. */
 export function runtimeShimContent(capability: string): string {
   const vendors = HARNESS_SESSION_ENV_VARS.map((v) => `'${v}'`).join(', ');
   return `#!/usr/bin/env node
 // THIN SHIM — projected by agent-canon for a skill declaring runtime:{capability:'${capability}'}.
-// Forwards to the host-installed \`agent-runtime\` CLI (per-host install: agent-runtime/S7).
+// Forwards to the host-installed \`${RUNTIME_BIN}\` CLI (per-host install: agent-runtime/S7).
 // NOT a bundle of the capability impl — the impl lives host-side behind the runtime
 // port, addressed by the CLI, never imported here. Zero cross-package imports.
 //
@@ -60,7 +67,7 @@ if (!env.AGENT_SESSION_ID) {
     if (v) { env.AGENT_SESSION_ID = v; break; }
   }
 }
-const r = spawnSync('agent-runtime', ['${capability}', ...process.argv.slice(2)], {
+const r = spawnSync('${RUNTIME_BIN}', ['${capability}', ...process.argv.slice(2)], {
   stdio: 'inherit',
   env,
 });
