@@ -13,6 +13,7 @@ import { coldDecodeOracle as coldDecodeOracle_engineeringPrinciples } from '../d
 import { cratylism as cratylism_engineeringPrinciples } from '../dimensions/engineering-principles/cratylism.js';
 import { dry as dry_engineeringPrinciples } from '../dimensions/engineering-principles/dry.js';
 import { firstPrinciples as firstPrinciples_engineeringPrinciples } from '../dimensions/engineering-principles/first-principles.js';
+import { greenField as greenField_engineeringPrinciples } from '../dimensions/engineering-principles/green-field.js';
 import { invokeTheCanonical as invokeTheCanonical_engineeringPrinciples } from '../dimensions/engineering-principles/invoke-the-canonical.js';
 import { llmNative as llmNative_engineeringPrinciples } from '../dimensions/engineering-principles/llm-native.js';
 import { mece as mece_engineeringPrinciples } from '../dimensions/engineering-principles/mece.js';
@@ -56,6 +57,7 @@ export const nico: Agent = {
   engineeringPrinciples: [
     cratylism_engineeringPrinciples,
     firstPrinciples_engineeringPrinciples,
+    greenField_engineeringPrinciples,
     zeroTrust_engineeringPrinciples,
     dry_engineeringPrinciples,
     mece_engineeringPrinciples,
