@@ -82,6 +82,10 @@ export interface CliResult {
   code: number;
   out: string;
   err: string;
+  /** Ids `apply` RETAINED. Present so `rollover` can carry them across its own
+   *  drain — reporting a record retained and then deleting it in the same atomic
+   *  operation is the defect this field exists to make impossible. */
+  retained?: readonly string[];
 }
 
 interface ParsedArgs {
@@ -862,6 +866,10 @@ function applyGuarded(args: ParsedArgs, home: string): CliResult {
     code: 0,
     out: `applied ${byId.size} decision(s): ${result.consumed.length} consumed, ${result.retained.length} retained, ${result.landed.length} home(s) landed\n`,
     err: '',
+    // Surfaced so `rollover` can carry them across its own drain. Reporting a
+    // record RETAINED and then deleting it in the same atomic operation is the
+    // defect this field exists to make impossible.
+    retained: result.retained,
   };
 }
 
@@ -1047,6 +1055,22 @@ function parseResidue(
  * destructive half runs: refusing after the drain would lose the very forward
  * state this verb exists to preserve.
  */
+/** The bodies of records `apply` retained — read BEFORE a drain, which would
+ *  otherwise take them with it. */
+function readRetainedBodies(
+  home: string,
+  path: string | undefined,
+  ids: readonly string[],
+): string[] {
+  if (ids.length === 0) return [];
+  const keep = new Set(ids);
+  return new EpisodicStore({ home })
+    .read(path)
+    .filter((r) => keep.has(r.id))
+    .map((r) => r.body)
+    .filter((b): b is string => typeof b === 'string');
+}
+
 function runRollover(args: ParsedArgs): CliResult {
   const home = requireHome(args.flags);
   const session = resolveSession(home, { flag: str(args.flags.session) });
@@ -1057,10 +1081,38 @@ function runRollover(args: ParsedArgs): CliResult {
 
     const applied = applyGuarded(args, home);
     if (applied.code !== 0) return applied;
+
+    // RETAINED MEANS RETAINED. `apply` maps a record to EPISODIC to KEEP it — and
+    // an UNLISTED record retains by default, which `applyGuarded` calls "the
+    // load-bearing safety". But `drain` is session-scoped: it clears every record
+    // of a completed session regardless of how routing classified it. So the two
+    // halves of one atomic rollover contradicted each other, and the safe default
+    // was the thing most likely to be destroyed — silently, with the operation
+    // reporting "N retained" as it happened.
+    //
+    // Carried across the drain by value, before it runs, since afterwards they are
+    // gone. This is the same failure `--residue` exists to prevent, arriving by a
+    // different door.
+    const carried = readRetainedBodies(
+      home,
+      str(args.flags.path),
+      applied.retained ?? [],
+    );
+
     const drained = drainGuarded(args, home);
     if (drained.code !== 0) return drained;
 
     let reseeded = 0;
+    if (carried.length > 0) {
+      const store = new EpisodicStore({
+        home,
+        derive: { ...defaultDerive, session: () => session },
+      });
+      for (const body of carried) {
+        store.encode({ body }, str(args.flags.path));
+        reseeded++;
+      }
+    }
     if (residue.bodies.length > 0) {
       const store = new EpisodicStore({
         home,
@@ -1073,7 +1125,7 @@ function runRollover(args: ParsedArgs): CliResult {
     }
     return {
       code: 0,
-      out: `${applied.out}${drained.out}rollover: ${reseeded} residue record(s) re-encoded\n`,
+      out: `${applied.out}${drained.out}rollover: ${reseeded} record(s) carried forward (retained + residue)\n`,
       err: `${applied.err}${drained.err}`,
     };
   } finally {

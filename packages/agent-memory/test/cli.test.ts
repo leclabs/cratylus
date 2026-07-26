@@ -14,7 +14,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { main } from '../src/cli.js';
 import { shortHost } from '../src/node.js';
-import { parseLines } from '../src/store.js';
+import { EpisodicStore, parseLines } from '../src/store.js';
 
 let root: string;
 let home: string;
@@ -804,5 +804,64 @@ describe('drain — "nothing archived" distinguishes empty from all-retained', (
     main(['drain', '--home', home, '--session', 'mine']);
     const r = main(['drain', '--home', home, '--session', 'mine']);
     expect(r.out).toMatch(/empty/);
+  });
+});
+
+// ─── ROLLOVER: retained means retained ──────────────────────────────────────────
+//
+// Found by dogfooding a real dream, which is the only reason it was found at all.
+// `apply` maps a record to EPISODIC to KEEP it, and an UNLISTED record retains by
+// DEFAULT — `applyGuarded` calls that "the load-bearing safety". But `drain` is
+// session-scoped: it clears every record of a completed session regardless of how
+// routing classified it. So the two halves of one atomic rollover contradicted each
+// other, the SAFE DEFAULT was the thing most likely to be destroyed, and the
+// operation printed "N retained" while deleting them.
+//
+// Same failure `--residue` exists to prevent, arriving by a different door.
+
+describe('rollover — a RETAINED record survives the drain it is bundled with', () => {
+  it('CONVICTS: an explicitly retained record is still present afterwards', () => {
+    const home = mkdtempSync(join(tmpdir(), 'rollover-retain-'));
+    const store = new EpisodicStore({ home });
+    const keep = store.encode({
+      body: 'a forward next-step that must survive',
+    });
+    const eat = store.encode({ body: 'a fact bound for SEMANTIC' });
+
+    const routes = JSON.stringify([
+      { id: keep.id, targets: [{ store: 'EPISODIC' }] },
+      { id: eat.id, targets: [{ store: 'SEMANTIC', content: '- a fact\n' }] },
+    ]);
+    const r = main(['rollover', '--home', home, '--routes', routes]);
+    expect(r.code).toBe(0);
+
+    const after = new EpisodicStore({ home }).read(undefined);
+    const bodies = after.map((x) => String(x.body));
+    expect(bodies).toContain('a forward next-step that must survive');
+    expect(bodies).not.toContain('a fact bound for SEMANTIC');
+    rmSync(home, { recursive: true, force: true });
+  });
+
+  it('CONVICTS: an UNLISTED record — the safe default — also survives', () => {
+    const home = mkdtempSync(join(tmpdir(), 'rollover-unlisted-'));
+    const store = new EpisodicStore({ home });
+    store.encode({ body: 'never mentioned in the manifest' });
+    const named = store.encode({ body: 'explicitly consumed' });
+
+    const r = main([
+      'rollover',
+      '--home',
+      home,
+      '--routes',
+      JSON.stringify([
+        { id: named.id, targets: [{ store: 'SEMANTIC', content: '- x\n' }] },
+      ]),
+    ]);
+    expect(r.code).toBe(0);
+    const bodies = new EpisodicStore({ home })
+      .read(undefined)
+      .map((x) => String(x.body));
+    expect(bodies).toContain('never mentioned in the manifest');
+    rmSync(home, { recursive: true, force: true });
   });
 });
