@@ -67,6 +67,10 @@ cmd_status() {
 	b=$(bound_plan || true)
 	printf '%-28s %-11s %s\n' PLAN PHASE 'pending/ready/active/completed'
 	for p in "$PLANS"/*/; do
+		# An unmatched glob stays literal in sh, so an empty plan set would print a
+		# phantom `*` row. Skip it — reporting a plan that does not exist is worse
+		# than reporting none.
+		[ -d "$p" ] || continue
 		n=$(basename "$p")
 		mark=' '
 		[ "$n" = "$b" ] && mark='*'
@@ -76,8 +80,13 @@ cmd_status() {
 	printf '\n'
 	if [ -n "$b" ]; then
 		printf 'bound: %s\n' "$b"
-	else
+	elif [ -n "$(cmd_elect)" ] || [ -n "$(ls -d "$PLANS"/*/ 2>/dev/null)" ]; then
 		printf 'bound: NONE — the always-bind law is violated; run `praxis elect` then `praxis bind <plan>`.\n'
+	else
+		# `∃ P : inscope(P) ∧ ¬terminal(P) ⇒ ∃! P : bound(P)`. With no plan in scope
+		# the antecedent is FALSE, so the law is SATISFIED, not violated. Reporting a
+		# violation here would train the reader to ignore the real one.
+		printf 'bound: none — and none is owed: the plan set is empty, so always-bind is vacuously satisfied.\n'
 	fi
 }
 
