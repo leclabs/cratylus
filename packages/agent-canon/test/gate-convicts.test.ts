@@ -45,6 +45,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'structural-parsimony.test.ts': 'GATE',
   'symbol-probe-gate.test.ts': 'GATE',
   'symbols.test.ts': 'GATE',
+  'boundary-binding.test.ts': 'GATE',
 };
 
 /** The vocabulary a convicting fixture announces itself in, as the corpus already
