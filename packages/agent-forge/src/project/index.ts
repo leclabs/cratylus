@@ -379,6 +379,7 @@ export async function projectPluginSet(
   }
 
   let agents = 0;
+  const agentNames: string[] = [];
   for (const [name, { dir, preamble: pre }] of [...agentSrc].sort()) {
     const modPath = await resolveModulePath(dir, name);
     if (!modPath) throw new Error(`agent module not found: ${name}`);
@@ -389,6 +390,7 @@ export async function projectPluginSet(
     });
     files.push({ path: join('agents', filename), content });
     log(`EMIT agent ${name}`);
+    agentNames.push(name);
     agents++;
   }
 
@@ -483,6 +485,23 @@ export async function projectPluginSet(
       );
       hooks++;
     }
+  }
+
+  // The always-loaded INSTRUCTION SURFACE — codex's `AGENTS.md`, the shell a
+  // workspace reads before any agent is selected. OPTIONAL on the port
+  // (`HarnessAdapter.surface`) because it is a harness property, not a cell kind:
+  // codex has one, claude has none, and a harness without one must project the
+  // same tree it always did — hence the guard, and hence NO throw on absence.
+  //
+  // It is emitted LAST because it indexes the projected agent names, and it goes
+  // into `files` like every other artifact: the surface used to be the codex CLI's
+  // own direct disk write, which is precisely the fork that let that path drift.
+  // Rendering it here keeps this module's no-file-descriptor property intact.
+  const renderSurface = opts.adapter.surface;
+  if (renderSurface) {
+    const { filename, content } = renderSurface(agentNames);
+    files.push({ path: filename, content });
+    log(`EMIT surface ${filename}`);
   }
 
   return { files, agents, skills, shims, hooks };

@@ -81,6 +81,34 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     expect(worker?.executable).toBe(true);
   });
 
+  // The always-loaded instruction surface (codex `AGENTS.md`). It was the ONE
+  // artifact the projector could not render, which is why the codex CLI kept a
+  // whole forked pipeline just to reach its own disk write — and why that fork
+  // shipped sessionless shims. The surface is a tree entry now, like everything else.
+  //
+  // Codex declares no `hooks` op and the projector refuses a hook-carrying plugin
+  // set it cannot render, so this case takes the fixture WITHOUT its hooks dir.
+  const { hooks: _codexHasNoHooks, ...surfacePlugin } = plugin;
+
+  it('emits the harness surface into the tree, indexing the projected agents', async () => {
+    const t = await projectPluginSet({
+      plugins: [surfacePlugin],
+      adapter: adapterByName('codex'),
+    });
+    const surface = t.files.find((f) => f.path === 'AGENTS.md');
+    // Rendered by the adapter, addressed at the render-tree ROOT (not under agents/).
+    expect(surface?.content).toContain('`probe` — `agents/probe.toml`');
+    // An ordinary artifact: bytes in the tree, no exec bit, no side-channel write.
+    expect(surface?.executable).toBeUndefined();
+  });
+
+  it('emits NO surface for a harness that declares none — claude is unchanged', async () => {
+    // The guard on the guard: teaching the projector about `surface` must not add a
+    // byte to a harness without one. `HarnessAdapter.surface` is optional on purpose.
+    const t = await tree();
+    expect(t.files.some((f) => f.path === 'AGENTS.md')).toBe(false);
+  });
+
   it('the projector itself performs no writes', () => {
     const src = readFileSync(
       join(here, '..', '..', 'src', 'project', 'index.ts'),
