@@ -308,15 +308,16 @@ buys an elaborate temporary apparatus for the short window before we have the re
 built. Verdaccio is **retired as a target**, not deferred.
 
 **Cross-host orchestration is the operator's.** Running the pipeline on N hosts is a home-lab-specific
-tool, not a product feature. Its present ephemeral form (`plans/install-parity/fleet-deploy.sh`) is
-sufficient for the interim: per host, install the packages, then run the ordinary consumer sequence
-`init → project → deploy` locally.
+tool, not a product feature. It lives OUTSIDE this repo, on fire
+(`~/.local/bin/agent-toolchain-bootstrap`): per host, install the packages, then run the ordinary
+consumer sequence `init → project → deploy` locally. That script knows about this library; this
+library must never know about it.
 
 **Why this is structural and not merely a scheduling call.** Both retired concerns map to **no stage of
 the pipeline ontology** (`init · add · compose · project · deploy` — see §7a on why `compile` is not in
 that list). Installing the packages
 is a **precondition** to the pipeline — `init` cannot run before the CLI exists. Iterating hosts is an
-**outer loop** over the entire pipeline; `fleet-deploy.sh` _is_ that loop, and forge is its body. And
+**outer loop** over the entire pipeline; `agent-toolchain-bootstrap` _is_ that loop, and forge is its body. And
 remote _placement_ collapses into the same loop: `deploy`'s Target is a `.claude/` root resolved by
 `userScope`/`projectScope` — a directory — so reaching another machine's directory is transport the
 outer loop already performed by ssh-ing there. Crossing one boundary two ways is the palimpsest.

@@ -11,8 +11,8 @@ purged of project artifacts, memory homes preserved.
 concern at all**, and verdaccio is **RETIRED** (DESIGN §7 rewritten net-current). Distribution is
 npm's: dev versions published from GitHub PR builds, installed on the home lab only if needed;
 otherwise wait for the merge and install the stable release from the public registry the standard
-way. Cross-host orchestration is an operator-local home-lab tool, and its present ephemeral form
-(`fleet-deploy.sh`) is sufficient until then. No interim mechanism gets built — the interim was only
+way. Cross-host orchestration is an operator-local home-lab tool, now homed on fire as
+`~/.local/bin/agent-toolchain-bootstrap` (out of this repo entirely). No interim mechanism gets built — the interim was only
 ever a stand-in for a registry we are about to have.
 
 ## Progress
@@ -322,9 +322,10 @@ interactive-shell prefix probe. Superseded by per-host build + install; see DESI
 
 ## Distribution tail — CLOSED by the stage ontology (2026-07-24)
 
-The fleet consumer-path deploy was executed from an ephemeral `/tmp` script, rescued to
-`plans/install-parity/fleet-deploy.sh` so the workflow survives. The open item was to first-class it
-as an `agent-forge fleet-deploy` command. **That item is retired, not deferred** — and the operator's
+The fleet consumer-path deploy was executed from an ephemeral `/tmp` script and now lives on fire as
+`~/.local/bin/agent-toolchain-bootstrap`, outside this repo — the placement the ownership argument
+below demands. The open item was to first-class it as an `agent-forge fleet-deploy` command. **That
+item is retired, not deferred** — and the operator's
 descope is not the only reason. The package's own **stage ontology** rules it out by construction.
 
 The stages, in their own definiens (forge CLI ⊕ ENGINE):
