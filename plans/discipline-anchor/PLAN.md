@@ -2,7 +2,9 @@
 
 > Working handle; the plan's own name is **not** the anchor being sought. Reader = LLM.
 
-**Status: PROPOSED — this is the next task. Not sharded: a signify act, not an execution plan.**
+**Status: READY — unblocked 2026-07-25 (see §Surfaced, below). Not sharded: a signify act, not an
+execution plan. Remit: nico — naming is a signify act, and this anchor is the keystone the package split,
+the CLI brand, and any repo rename all wait on.**
 
 ## Intent
 
@@ -78,14 +80,17 @@ candidate.
 `compiler-projector-split` (package names), the unified CLI brand (`install-parity` S4 / `agent-runtime`
 S9), and any future rename of the repo itself.
 
-## Surfaced to the operator, unresolved — a VISION internal inconsistency
+## Surfaced to the operator — RESOLVED 2026-07-25, this plan is unblocked
 
-The 2026-07-25 edit replaced the "larger context windows … do not address the underlying cause" paragraph
-with _"we propose a new approach to **prompt engineering**."_ That **subordinates** the work to prompt
-engineering, while §Implication three sections later positions it as a **third** question alongside prompt
-and context engineering. The inconsistency sits precisely on the concept being named here, so it should be
-settled before the derivation runs. VISION is apex — surfaced, never unilaterally edited.
+A VISION internal inconsistency was surfaced here and the operator settled it the same day in `cdd10fc`
+(_"docs(vision): keep prompt engineering as foil, restore the remedy rebuttal"_). Both complaints are
+discharged in the current text:
 
-Also lost in that edit: the argument that the obvious remedies (bigger context windows, stronger models,
-memory, tooling) alleviate symptoms without addressing the cause. That paragraph was the case for why the
-discipline needs to exist at all, and the naming derivation leans on it.
+- The phrase subordinating the work to _"a new approach to **prompt engineering**"_ is **gone**. VISION
+  line 15 now reads _"This project takes the opposite route"_, and §Implication still frames the work as a
+  **third** question beside prompt and context engineering. Foil, not genus.
+- The remedy rebuttal is **restored** at line 13 — bigger context windows, stronger models, memory, and
+  tooling _"alleviate these symptoms without addressing the cause."_ That is the case for the discipline
+  existing at all, and the derivation leans on it.
+
+Nothing gates the derivation now. Verified against VISION.md @ `f1621b6`.
