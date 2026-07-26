@@ -79,7 +79,6 @@ beforeAll(async () => {
   // V7: the projector RETURNS the tree; the caller is the one writer.
   const report = await projectPluginSet({
     plugins: [canonPlugin],
-    out,
     adapter: adapterByName('claude'),
   });
   writeRenderTree(out, report.files);

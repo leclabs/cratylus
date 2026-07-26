@@ -73,7 +73,6 @@ beforeAll(async () => {
   const out = await mkdtemp(join(tmpdir(), 'bin-name-single-home-'));
   const report = await projectPluginSet({
     plugins: [canonPlugin],
-    out,
     adapter: adapterByName('claude'),
   });
   writeRenderTree(out, report.files);

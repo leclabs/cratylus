@@ -64,7 +64,6 @@ beforeAll(async () => {
   // V7 made the projector RETURN the artifact tree; the caller is the one writer.
   const claudeReport = await projectPluginSet({
     plugins: [canonPlugin],
-    out: claudeOut,
     adapter: adapterByName('claude'),
   });
   writeRenderTree(claudeOut, claudeReport.files);

@@ -50,6 +50,7 @@
     "gen": "tsx src/core/hook/generate.ts",
     "build": "tsup",
     "typecheck": "tsc --noEmit",
+    "typecheck:test": "tsc -p tsconfig.test.json",
     "test": "vitest run",
     "clean": "rm -rf dist src/core/hook/generated.ts",
     "dev": "tsup --watch",

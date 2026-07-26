@@ -52,10 +52,12 @@ describe('mergeHooksSettings', () => {
     expect(settings.permissions).toEqual({ allow: ['Bash(ls:*)'] });
     expect(settings.env).toEqual({ FOO: 'bar' });
     // pre-existing Stop hook preserved, ours appended
-    const hooks = settings.hooks as Record<
-      string,
-      Array<{ hooks: Array<{ command: string }> }>
-    >;
+    // Both keys are asserted below, so the cast names them rather than using an
+    // index signature (which `noUncheckedIndexedAccess` widens to `| undefined`).
+    const hooks = settings.hooks as {
+      Stop: Array<{ hooks: Array<{ command: string }> }>;
+      SubagentStop: Array<{ hooks: Array<{ command: string }> }>;
+    };
     expect(hooks.Stop).toHaveLength(2);
     expect(hooks.Stop[0]?.hooks[0]?.command).toBe('echo old');
     expect(hooks.Stop[1]?.hooks[0]?.command).toBe(STANCE_CMD);

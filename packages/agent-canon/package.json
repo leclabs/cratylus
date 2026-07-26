@@ -13,6 +13,7 @@
   "files": ["dist"],
   "scripts": {
     "typecheck": "tsc --noEmit",
+    "typecheck:test": "tsc -p tsconfig.test.json",
     "test": "vitest run",
     "project": "tsx src/toolkit/project-cli.ts",
     "project:codex": "tsx src/toolkit/project-cli-codex.ts",

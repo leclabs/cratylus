@@ -34,6 +34,14 @@
   "javascript": { "formatter": { "quoteStyle": "single" } },
   "overrides": [
     {
+      // tsc reads every `tsconfig*.json` as JSONC. Biome special-cases the bare
+      // `tsconfig.json` name only, so the sibling configs (`.build`, `.test`)
+      // need the parser told explicitly — otherwise a comment in one is a
+      // "End of file expected" parse error and biome refuses to format the file.
+      "include": ["**/tsconfig.*.json"],
+      "json": { "parser": { "allowComments": true } }
+    },
+    {
       "include": ["**/test/**", "**/*.test.ts"],
       "linter": { "rules": { "style": { "noNonNullAssertion": "off" } } }
     },

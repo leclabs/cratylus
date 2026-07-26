@@ -45,14 +45,12 @@ const dimensionsRoot = join(srcRoot, 'dimensions');
 
 /** The σ* anchor a fragment declares: the first bareword of its template-literal body. */
 function bodyAnchor(source: string): string | null {
-  const m = source.match(/export const \w+: \w+ = `([a-z0-9-]+)/);
-  return m ? m[1] : null;
+  return source.match(/export const \w+: \w+ = `([a-z0-9-]+)/)?.[1] ?? null;
 }
 
 /** The declared identity a composite/rule/hook cell carries: its first `name`/`id`. */
 function declaredId(source: string): string | null {
-  const m = source.match(/\b(?:name|id): '([a-z0-9-]+)'/);
-  return m ? m[1] : null;
+  return source.match(/\b(?:name|id): '([a-z0-9-]+)'/)?.[1] ?? null;
 }
 
 /** kebab file basename (drop `.ts`). */
