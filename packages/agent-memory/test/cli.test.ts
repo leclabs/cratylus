@@ -593,6 +593,7 @@ describe('init (fresh home provisioning)', () => {
 describe('encode session binding (never sessionless)', () => {
   it('MINTS a session when none is resolvable — a capture is never lost', () => {
     vi.stubEnv('CLAUDE_SESSION_ID', '');
+    vi.stubEnv('CLAUDE_CODE_SESSION_ID', ''); // hermetic: the real harness var leaks in from the parent process
     const r = main(['encode', '--home', home, '--body', 'x']);
     expect(r.code).toBe(0);
     const [rec] = logRecords();
@@ -608,6 +609,7 @@ describe('encode session binding (never sessionless)', () => {
 
   it('still REFUSES an ambiguous session (>1 live) rather than picking one', () => {
     vi.stubEnv('CLAUDE_SESSION_ID', '');
+    vi.stubEnv('CLAUDE_CODE_SESSION_ID', ''); // hermetic: the real harness var leaks in from the parent process
     main(['session', 'register', '--home', home, '--session', 'live-a']);
     main(['session', 'register', '--home', home, '--session', 'live-b']);
     const r = main(['encode', '--home', home, '--body', 'x']);
@@ -617,6 +619,7 @@ describe('encode session binding (never sessionless)', () => {
 
   it('falls back to the sole live registered session', () => {
     vi.stubEnv('CLAUDE_SESSION_ID', '');
+    vi.stubEnv('CLAUDE_CODE_SESSION_ID', ''); // hermetic: the real harness var leaks in from the parent process
     main(['session', 'register', '--home', home, '--session', 'only-live']);
     const r = main(['encode', '--home', home, '--body', 'bound']);
     expect(r.code).toBe(0);

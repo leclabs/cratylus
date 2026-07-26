@@ -44,20 +44,23 @@ export function homeForName(name: string): string {
 }
 
 /**
- * Resolve the session id an `encode` binds — the fix for the old "read ONLY
- * `CLAUDE_SESSION_ID`" seam (which silently dropped to a sessionless record when
- * the env was absent). Precedence: an explicit `--session` flag > the harness
- * `CLAUDE_SESSION_ID` env > the SOLE live session registered under `<home>`.
- * There is deliberately NO sessionless fallback — every event is bound to a
- * session at encode time.
+ * Resolve the session id an `encode` binds. Precedence: an explicit `--session`
+ * flag > {@link harnessSessionId} > the SOLE live session registered under
+ * `<home>`. There is deliberately NO sessionless fallback — every event is bound
+ * to a session at encode time.
  *
  * ABSENCE MINTS, AMBIGUITY THROWS. Zero live sessions yields a fresh id, which
  * the caller's register-if-absent heartbeat then registers — the same
- * mint-on-absence `session begin` performs. Throwing here instead LOST the
- * capture: a nested harness subprocess can clear the current-session pointer,
- * and the next `encode` then failed rather than re-binding. An ambiguous (>1)
- * live set still throws, because picking one would silently split a session's
- * records across two ids.
+ * mint-on-absence `session begin` performs. An ambiguous (>1) live set throws,
+ * because picking one would silently split a session's records across two ids.
+ *
+ * NOTE on the mint branch: it was introduced to stop a *symptom* — "a nested
+ * harness subprocess clears the current-session pointer, so the next `encode`
+ * fails rather than re-binding." That diagnosis was wrong. Nothing cleared the
+ * pointer; the env read simply never resolved, because this code read
+ * `CLAUDE_SESSION_ID` while Claude Code exports `CLAUDE_CODE_SESSION_ID` (see
+ * {@link harnessSessionId}). With the correct name read, minting is once again
+ * the rare genuine-absence path it was meant to be, not the default.
  */
 export function resolveSession(
   home: string,
@@ -65,8 +68,8 @@ export function resolveSession(
 ): string {
   const flag = opts?.flag;
   if (flag !== undefined && flag.length > 0) return flag;
-  const env = process.env.CLAUDE_SESSION_ID;
-  if (env !== undefined && env.length > 0) return env;
+  const env = harnessSessionId();
+  if (env !== undefined) return env;
   const now = opts?.now ?? Date.now();
   const live =
     opts?.stale !== undefined
@@ -94,19 +97,48 @@ export interface DeriveEnv {
 }
 
 /**
- * The real process environment. `session()` here is the RAW `CLAUDE_SESSION_ID`
- * seam ONLY — no longer the session authority: the CLI's `encode` resolves its
- * session via {@link resolveSession} (flag > env > sole-live) and injects it, so
- * capture is never sessionless. This default is the env-fallback that resolver
- * consumes, not the sole source.
+ * The harness's own session id, or `undefined` when the process was not started
+ * by one.
+ *
+ * **Read `CLAUDE_CODE_SESSION_ID` first — that is the name Claude Code actually
+ * exports.** `CLAUDE_SESSION_ID` is retained only as a fallback for foreign
+ * harnesses and for the test suite, which stubs the older name throughout.
+ *
+ * This package read ONLY the legacy name until 2026-07, and Claude Code has
+ * never set it. Consequences, all of which read as unrelated bugs:
+ *
+ * - every CLI invocation resolved to a freshly minted uuid, so each one was a
+ *   *different* "session";
+ * - `lock acquire` therefore recorded an ephemeral id whose pid had already
+ *   exited by the next invocation, and every subsequent write verb refused with
+ *   "held by another session" — a phantom sibling that was really the caller;
+ * - the mint-on-absence branch in {@link resolveSession} was added to paper over
+ *   the same symptom under a wrong diagnosis (see its note);
+ * - operators and agents worked around it by exporting `CLAUDE_SESSION_ID` by
+ *   hand, which entrenched the defect instead of surfacing it.
+ *
+ * The harness also exports `CLAUDE_CODE_AGENT`, `CLAUDE_JOB_DIR` and
+ * `CLAUDE_PID`; none is consulted here, but they are the same seam if identity
+ * or liveness ever needs a second signal.
+ */
+export function harnessSessionId(): string | undefined {
+  for (const key of ['CLAUDE_CODE_SESSION_ID', 'CLAUDE_SESSION_ID'] as const) {
+    const v = process.env[key];
+    if (v !== undefined && v.length > 0) return v;
+  }
+  return undefined;
+}
+
+/**
+ * The real process environment. `session()` is the RAW harness-env seam ONLY —
+ * not the session authority: the CLI's `encode` resolves via
+ * {@link resolveSession} (flag > env > sole-live) and injects it, so capture is
+ * never sessionless. This default is the env-fallback that resolver consumes.
  */
 export const defaultDerive: DeriveEnv = {
   cwd: () => process.cwd(),
   host: () => shortHost(hostname()),
-  session: () => {
-    const sid = process.env.CLAUDE_SESSION_ID;
-    return sid !== undefined && sid.length > 0 ? sid : undefined;
-  },
+  session: () => harnessSessionId(),
 };
 
 /** Input to {@link EpisodicStore.encode} — the caller's share: body + optional tags. */

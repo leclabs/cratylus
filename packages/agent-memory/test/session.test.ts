@@ -175,6 +175,7 @@ describe('session — CLI wiring', () => {
   });
 
   it('derives the current session id from CLAUDE_SESSION_ID when --session is absent', () => {
+    vi.stubEnv('CLAUDE_CODE_SESSION_ID', ''); // hermetic: the real harness var would otherwise win
     vi.stubEnv('CLAUDE_SESSION_ID', 'env-sess');
     expect(main(['session', 'register', '--home', home]).out).toContain(
       'registered env-sess',
@@ -183,8 +184,45 @@ describe('session — CLI wiring', () => {
     expect(main(['session', 'status', '--home', home]).out.trim()).toBe('live');
   });
 
-  it('register MINTS a uuid when neither --session nor CLAUDE_SESSION_ID is present', () => {
+  // REGRESSION. Claude Code exports CLAUDE_CODE_SESSION_ID; this package read
+  // only CLAUDE_SESSION_ID, which the harness never sets. The env branch was
+  // therefore dead in production for every real session: each invocation minted
+  // a fresh uuid, so `lock acquire` recorded an id whose process had exited by
+  // the next call and later verbs refused with "held by another session".
+  // These three fail against the pre-fix reader.
+  it('derives the current session id from CLAUDE_CODE_SESSION_ID — the name the harness actually exports', () => {
+    vi.stubEnv('CLAUDE_SESSION_ID', ''); // the legacy name is NOT set, as in production
+    vi.stubEnv('CLAUDE_CODE_SESSION_ID', 'harness-sess');
+    expect(main(['session', 'register', '--home', home]).out).toContain(
+      'registered harness-sess',
+    );
+    expect(main(['session', 'status', '--home', home]).out.trim()).toBe('live');
+  });
+
+  it('prefers CLAUDE_CODE_SESSION_ID over the legacy CLAUDE_SESSION_ID when both are set', () => {
+    vi.stubEnv('CLAUDE_SESSION_ID', 'legacy-sess');
+    vi.stubEnv('CLAUDE_CODE_SESSION_ID', 'harness-sess');
+    expect(main(['session', 'register', '--home', home]).out).toContain(
+      'registered harness-sess',
+    );
+  });
+
+  it('does NOT mint when the harness env is present — minting is genuine-absence only', () => {
     vi.stubEnv('CLAUDE_SESSION_ID', '');
+    vi.stubEnv('CLAUDE_CODE_SESSION_ID', ''); // hermetic: the real harness var leaks in from the parent process
+    vi.stubEnv('CLAUDE_CODE_SESSION_ID', 'harness-sess');
+    const id = main(['session', 'register', '--home', home])
+      .out.replace('registered ', '')
+      .trim();
+    expect(id).toBe('harness-sess');
+    expect(id).not.toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/,
+    );
+  });
+
+  it('register MINTS a uuid when neither --session nor any harness env is present', () => {
+    vi.stubEnv('CLAUDE_SESSION_ID', '');
+    vi.stubEnv('CLAUDE_CODE_SESSION_ID', '');
     const r = main(['session', 'register', '--home', home]);
     expect(r.code).toBe(0);
     // a real (uuid) id was bound — never sessionless.
@@ -196,6 +234,7 @@ describe('session — CLI wiring', () => {
 
   it('heartbeat errors when no session id is available (only register mints)', () => {
     vi.stubEnv('CLAUDE_SESSION_ID', '');
+    vi.stubEnv('CLAUDE_CODE_SESSION_ID', ''); // hermetic: the real harness var leaks in from the parent process
     const r = main(['session', 'heartbeat', '--home', home]);
     expect(r.code).toBe(1);
     expect(r.err).toContain('no session id');
