@@ -6,13 +6,16 @@ import {
   rmSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
+import { hostname } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { main } from '../src/cli.js';
 import { STALE_MS } from '../src/lock.js';
+import { shortHost } from '../src/node.js';
 import {
   SESSIONS_DIR,
   assertSafeSessionId,
+  defaultPidProbe,
   heartbeat,
   isLive,
   listSessions,
@@ -286,5 +289,43 @@ describe('origin — "was I woken?"', () => {
     registerSession(home, 'woke', { origin: 'wake' });
     const raw = readFileSync(join(home, 'sessions', 'woke.json'), 'utf8');
     expect(JSON.parse(raw).origin).toBe('wake');
+  });
+});
+
+describe('liveness is pid-verified same-host — freshness alone is a self-report', () => {
+  // A session that died WITHOUT releasing reads `live` for the whole 2h stale
+  // window on freshness alone. That is long enough to shape an entire strategy
+  // around a phantom sibling — worktrees, --no-verify, collision-avoidance — as
+  // has happened. These pin that the OS process table gets the last word.
+  const host = shortHost(hostname());
+  const fresh = { lastBeat: T0, registeredAt: T0, released: false };
+
+  it('CONVICTS a fresh same-host entry whose pid is gone', () => {
+    const entry = { id: 's', host, pid: 424242, ...fresh };
+    // control: freshness alone would call it live
+    expect(T0 - entry.lastBeat < STALE_MS).toBe(true);
+    // conviction: the process is gone, so it is not
+    expect(isLive(entry, T0, STALE_MS, () => false)).toBe(false);
+  });
+
+  it('keeps a fresh same-host entry whose pid IS running', () => {
+    const entry = { id: 's', host, pid: process.pid, ...fresh };
+    expect(isLive(entry, T0, STALE_MS, () => true)).toBe(true);
+  });
+
+  it('never probes a FOREIGN host — a remote pid names a table we cannot see', () => {
+    const entry = { id: 's', host: 'some-other-box', pid: 424242, ...fresh };
+    let probed = false;
+    const probe = () => {
+      probed = true;
+      return false;
+    };
+    expect(isLive(entry, T0, STALE_MS, probe)).toBe(true);
+    expect(probed, 'a foreign pid must not be probed locally').toBe(false);
+  });
+
+  it('the real probe answers correctly for this process and for a dead pid', () => {
+    expect(defaultPidProbe(process.pid)).toBe(true);
+    expect(defaultPidProbe(424242)).toBe(false);
   });
 });

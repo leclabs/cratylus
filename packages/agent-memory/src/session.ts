@@ -10,6 +10,7 @@ import {
 import { homedir, hostname } from 'node:os';
 import { join } from 'node:path';
 import { STALE_MS } from './lock.js';
+import { shortHost } from './node.js';
 
 /**
  * The session-liveness registry (plans/run-the-business · memiso-0) — the
@@ -162,15 +163,46 @@ function writeEntry(home: string, e: SessionEntry): void {
   renameSync(tmp, target);
 }
 
-/** The liveness predicate: `live ⇔ registered ∧ ¬released ∧ (now − lastBeat) < STALE`. */
+/**
+ * Is this pid running? `signal 0` performs the permission + existence check
+ * WITHOUT delivering a signal: ESRCH ⇒ gone, EPERM ⇒ alive but owned by another
+ * user (still alive). Injectable so the predicate stays testable.
+ */
+export type PidProbe = (pid: number) => boolean;
+
+export const defaultPidProbe: PidProbe = (pid) => {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (e) {
+    return (e as NodeJS.ErrnoException).code === 'EPERM';
+  }
+};
+
+/**
+ * The liveness predicate: `live ⇔ registered ∧ ¬released ∧ fresh ∧ pid-alive`.
+ *
+ * Freshness ALONE is a self-report, and a session that died without releasing
+ * reads `live` for the entire 2h stale window — long enough to shape a whole
+ * strategy around a phantom sibling. So a SAME-HOST entry is confirmed against
+ * the OS process table.
+ *
+ * Same-host only, and deliberately: a pid from another machine names a process
+ * in a table we cannot see, and probing it locally would convict a live remote
+ * session on a pid collision. Cross-host liveness stays freshness-based —
+ * narrower evidence, but never a false death.
+ */
 export function isLive(
   entry: SessionEntry | undefined,
   now: number,
   stale: number = STALE_MS,
+  probe: PidProbe = defaultPidProbe,
 ): boolean {
   if (entry === undefined) return false;
   if (entry.released === true) return false;
-  return now - entry.lastBeat < stale;
+  if (now - entry.lastBeat >= stale) return false;
+  const sameHost = entry.host === shortHost(hostname());
+  return sameHost ? probe(entry.pid) : true;
 }
 
 /**
