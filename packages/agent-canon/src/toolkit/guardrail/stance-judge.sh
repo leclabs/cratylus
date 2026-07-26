@@ -56,7 +56,14 @@ verdict="$(printf '%s' "$prompt" | "$judge_bin" -p --model "$judge_model" 2>/dev
 }
 
 # Normalize: keep only the verdict block. Defensive against a chatty model.
-echo "$verdict" | grep -E '^(VERDICT|REASON):' || {
+#
+# EVIDENCE IS PART OF THE CONTRACT. This filter used to admit only VERDICT and REASON, which
+# silently deleted the EVIDENCE line the rubric asks for — the caller then saw a block with no
+# quotable span, skipped its confabulation check, and passed a fabricated block straight through
+# to the agent. The judge was emitting correct verbatim evidence the whole time and this line ate
+# it one step before the only code that could have used it. Verified against the live judge: with
+# the filter bypassed it returns a properly-quoted EVIDENCE line.
+echo "$verdict" | grep -E '^(VERDICT|REASON|EVIDENCE):' || {
 	# Judge returned something unparseable → fail open (PASS).
 	echo "stance-judge: unparseable judge output; failing open" >&2
 	exit 6

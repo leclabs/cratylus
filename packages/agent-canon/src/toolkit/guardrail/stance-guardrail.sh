@@ -215,10 +215,18 @@ reason="$(printf '%s\n' "$verdict" | sed -n 's/^REASON:[[:space:]]*//p' | head -
 # So the quote is checked against the transcript MECHANICALLY. The judge must emit
 # `EVIDENCE: <verbatim span>`; if that span does not literally occur in the judged turn, the
 # block is discarded. A model cannot quote what is not there, which makes this cheap and total.
-# No EVIDENCE line at all → the verdict stands (older rubrics, and Layer-1 blocks carry their own
-# verified span) — this rejects fabrication, it does not mandate a format.
+# EVIDENCE IS MANDATORY FOR A BLOCK. A missing line does not get the benefit of the doubt: the
+# first cut of this check let an absent EVIDENCE line mean "verdict stands", and that exemption
+# was immediately exercised — a fabricated block reached the agent because the span it should
+# have been checked against had been stripped upstream by the judge's own output filter. An
+# unevidenced block is indistinguishable from a fabricated one, so it is discarded either way.
+# Layer-1 blocks are unaffected: they carry a span this hook extracted from the turn itself.
 evidence="$(printf '%s\n' "$verdict" | sed -n 's/^EVIDENCE:[[:space:]]*//p' | head -1 \
 	| sed 's/^["“]//;s/["”]$//;s/^[[:space:]]*//;s/[[:space:]]*$//')"
+if [ -z "$evidence" ] && [ -z "$l1_evidence" ]; then
+	printf 'stance-guardrail: DISCARDING block — no EVIDENCE line; an unevidenced block cannot be distinguished from a fabricated one. REASON was: %s\n' "$reason" >&2
+	allow_stop
+fi
 if [ -n "$evidence" ] && [ "${#evidence}" -ge 12 ]; then
 	if ! printf '%s' "$asst" | tr '\n' ' ' | grep -qF "$evidence"; then
 		printf 'stance-guardrail: DISCARDING block — judge quoted a span absent from the turn (confabulated): %s\n' "$evidence" >&2

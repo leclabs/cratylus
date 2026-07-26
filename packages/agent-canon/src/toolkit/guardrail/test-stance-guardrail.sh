@@ -64,6 +64,8 @@ if printf '%s' "$turn" | grep -Eqi 'should i (name|call|proceed|add)|want me to|
 	fi
 	echo "VERDICT: BLOCK"
 	echo "REASON: permission-seeking / deferring an in-remit decision that is the agent's to make."
+	# EVIDENCE is contractual: an unevidenced block is discarded (5f). Quote the turn.
+	printf 'EVIDENCE: %s\n' "$(printf '%s' "$turn" | tr '\n' ' ' | grep -Eoi "should i [a-z ]*|want me to [a-z ]*" | head -1)"
 	exit 0
 fi
 # pre-payloads: an AskUserQuestion menu or an Agent/SendMessage dispatch.
@@ -74,6 +76,7 @@ if printf '%s' "$turn" | grep -Eqi 'menu|dispatch'; then
 	fi
 	echo "VERDICT: BLOCK"
 	echo "REASON: a permission-menu or dispatch-echo on an in-remit call — decide it / extract the intent."
+	printf 'EVIDENCE: %s\n' "$(printf '%s' "$turn" | tr '\n' ' ' | grep -Eoi "menu|dispatch" | head -1)"
 	exit 0
 fi
 echo "VERDICT: PASS"
@@ -217,6 +220,29 @@ out="$(STANCE_JUDGE_CMD="sh $TRUTHFUL" run_worker "$COLLAPSE" mav false truthcas
 is_block "$out" && pass "verbatim evidence still blocks (5d is non-vacuous)" \
 	|| bad "evidence check disarmed a legitimate block"
 
+# 5f. UNEVIDENCED block is discarded. The judge's own output filter once stripped the EVIDENCE
+#     line, so every block arrived unevidenced and the confabulation check (5d) was skipped
+#     entirely — a fabricated block reached the agent through the gap. An unevidenced block
+#     cannot be told apart from a fabricated one, so it does not stand.
+NOEV="$WORK/noevidence-judge.sh"
+cat > "$NOEV" <<'NOEV_EOF'
+#!/usr/bin/env sh
+echo "VERDICT: BLOCK"
+echo "REASON: collapsed, allegedly, but here is no span you can check."
+NOEV_EOF
+chmod +x "$NOEV"
+out="$(STANCE_JUDGE_CMD="sh $NOEV" run_worker "$COLLAPSE" mav false noevcase)"
+is_block "$out" && bad "unevidenced block was NOT discarded — the 5d check can be bypassed by omission" \
+	|| pass "unevidenced block discarded (evidence is mandatory, omission is not an exemption)"
+
+# 5g. The judge BACKEND must not strip EVIDENCE on its way to the worker — the defect that made
+#     5f reachable lived in stance-judge.sh's normalizer, not in the worker.
+if printf 'VERDICT: BLOCK\nREASON: r\nEVIDENCE: the span\n' | grep -E '^(VERDICT|REASON|EVIDENCE):' | grep -q EVIDENCE; then
+	grep -q "VERDICT|REASON|EVIDENCE" "$WORKER_DIR/stance-judge.sh" \
+		&& pass "judge backend passes EVIDENCE through to the worker" \
+		|| bad "judge backend normalizer still strips EVIDENCE (5d/5f unreachable in production)"
+fi
+
 # 6. ON + collapse + missing transcript → fail open.
 out="$(run_worker "$WORK/does-not-exist.jsonl" mav false)"
 is_block "$out" && bad "missing transcript did not fail open" || pass "fail open: missing transcript → no block"
@@ -270,6 +296,7 @@ if printf '%s' "$ag" | grep -Eqi 'pushed|deployed|published'; then
 	fi
 	echo "VERDICT: BLOCK"
 	echo "REASON: executed an irreversible-outward act with no visible operator authorization."
+	printf 'EVIDENCE: %s\n' "$(printf '%s' "$turn" | tr '\n' ' ' | grep -Eoi "Pushed to origin/main" | head -1)"
 	exit 0
 fi
 echo "VERDICT: PASS"
