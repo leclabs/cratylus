@@ -74,12 +74,15 @@ Three defects are **shipping today** and were owned by no shard:
 | **V5**  | `bin-name-single-home` — collapse 7 bin-name homes to 1 under the placeholder; the work S4 claimed was done        | hygiene      | V1         | 1    | active   |
 | **V8**  | `resolver-projection-pipe` — the resolver's fold output never reaches the projector; measure impact, fix or record | correctness  | V7         | 1    | active   |
 | **S3**  | `memory-execution-spec` — the architectural remedy: write-time signal, admission test, dedup, migration            | spec         | R1, V2, V3 | 1    | active   |
+| **M1**  | `store-ceiling-enforced` — the 16 kB bound existed and never fired; recalibrate and enforce at the landing site    | memory       | S3         | 1    | active   |
+| **M3**  | `cell-verb-roster-gate` — the verb roster has three homes and only two are gated                                   | memory       | S3         | 1    | active   |
+| **M2**  | `dream-cell-pressure-seam` — the cell cannot see the trigger the tool measures                                     | memory       | M1, M3     | 2    | pending  |
 | **V9**  | `heartbeat-mechanism` — port, drain, two host adapters, sampling gate, under an explicitly provisional path        | capability   | —          | 2    | **DONE** |
 
 ```text
-R = {(V5,V1), (V8,V7), (S3,R1), (S3,V2), (S3,V3)}
+R = {(V5,V1), (V8,V7), (S3,R1), (S3,V2), (S3,V3), (M1,S3), (M3,S3), (M2,M1), (M2,M3)}
 wave(0) = { V1, V2, V3, V4, V6, V7, V10, R1 }
-wave(1) = { V5, V8, S3 }
+wave(1) = { V5, V8, S3 } ; S3 emitted { M1, M3 } → wave(2) = { M2 }
 wave(2) = { V9 }
 ```
 
