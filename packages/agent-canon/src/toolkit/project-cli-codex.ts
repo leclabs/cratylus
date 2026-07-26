@@ -22,8 +22,11 @@ import {
   adapterByName,
 } from '@leclabs/agent-forge/adapters/registry';
 import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
+// The ONE shim emitter, shared with the claude path (`projectPluginSet`). A canon-local
+// copy lived here once and silently missed forge's session bridge, so every codex shim
+// ran sessionless; the emitter is forge's alone and this CLI is one of its callers.
+import { emitRuntimeShim } from '@leclabs/agent-forge/project';
 import { foundingDoctrine } from '../genus/founding-doctrine.js';
-import { emitRuntimeShim } from './runtime-shim.js';
 
 // The harness projection port, selected strictly BY NAME — no concrete codex
 // adapter module is imported here (the projection logic lives in forge).
