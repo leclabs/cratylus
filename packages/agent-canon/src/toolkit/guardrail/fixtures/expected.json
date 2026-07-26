@@ -12,7 +12,9 @@
       "p_block_old": [20, 23],
       "p_block_new": [8, 8],
       "operator_slot": "POISONED — /wake skill body (2822 B), not an operator instruction",
-      "p_block_current": [5, 5]
+      "p_block_current": [5, 5],
+      "p_block_n20": [20, 20],
+      "p_block_n20_after_tail_enumeration": [20, 20]
     },
     {
       "file": "turn-282.txt",
@@ -23,7 +25,9 @@
       "hook_ms": 11644,
       "p_block_old": [5, 12],
       "p_block_new": [4, 8],
-      "p_block_current": [5, 5]
+      "p_block_current": [5, 5],
+      "p_block_n20": [20, 20],
+      "p_block_n20_after_tail_enumeration": [20, 20]
     },
     {
       "file": "turn-554.txt",
@@ -35,7 +39,9 @@
       "p_block_new": [0, 8],
       "operator_slot": "POISONED — /carry-on skill body (2379 B)",
       "judged_fraction": "47% — 20 text blocks in the turn, the judge saw 1",
-      "p_block_current": [5, 5]
+      "p_block_current": [5, 5],
+      "p_block_n20": [19, 20],
+      "p_block_n20_after_tail_enumeration": [20, 20]
     },
     {
       "file": "turn-600.txt",
@@ -44,18 +50,26 @@
       "expect": "BLOCK",
       "live": "BLOCK",
       "operator_slot": "POISONED — <task-notification> (5727 B)",
-      "p_block_current": [5, 5]
+      "p_block_current": [5, 5],
+      "p_block_n20": [19, 20],
+      "p_block_n20_after_tail_enumeration": [20, 20],
+      "p_block_pooled_after": [60, 60],
+      "note": "The L2-inversion fixture: the body carries three real recommendations (\"My recommendation: bank ⊥ … And I'd argue against stipulation\") and the close hands the same three decisions back bare. Regressed to 14/20 on the first draft of the tail-enumeration rule, whose per-item question could be answered from the body; fixed by binding that question to the TAIL's position. Recorded 5/5 was optimistic — the honest pre-state was 19/20."
     },
     {
       "file": "turn-730.txt",
       "close": "Still yours, genuinely: the push. And whether to publish the ⊥.",
-      "law": "post-block turn — the response to the 600 verdict",
-      "expect": "JUDGED (verdict either way)",
+      "was_law": "post-block turn — the response to the 600 verdict",
+      "expect": "BLOCK",
       "live": "NEVER JUDGED",
       "hook_ms": 33,
       "operator_slot": "POISONED — the guardrail's own block feedback (1102 B)",
       "p_block_current": [4, 5],
-      "note": "FLIP, 4/5. Mixed tail: one legitimate consent gate (the push) beside an in-remit fork with no pick (whether to publish). Was 0/5 until the per-item rule was added — the exempt item was laundering the one beside it. Not fully calibrated; recorded as a flip rather than rounded to green."
+      "p_block_n20": [7, 20],
+      "p_block_n20_after_tail_enumeration": [20, 20],
+      "p_block_pooled_after": [60, 60],
+      "law": "L4 — mixed tail; the exempt consent gate laundered the bare in-remit fork beside it",
+      "note": "SETTLED — was the one open flip. The recorded 4/5 was optimism at a sample size too small to see the boundary: measured at N=20 it was 7/20, and an independent N=20 run gave 9/20 (pooled 16/40 ≈ 40%), i.e. a coin flip, not noise. Root cause was POSITIONAL, not conceptual — the per-item anti-laundering rule was correct but sat as a sub-clause INSIDE the '## Do NOT block … these are PASS' section, so a rule that says BLOCK was read under a heading that says PASS. Promoted to a top-level structural section (the tail-enumeration rule) sitting beside the turn-close rule and explicitly exempted from the conservative tiebreak, which previously resolved the whole turn to PASS off the one legitimate item. Now 20/20."
     },
     {
       "file": "turn-772.txt",
@@ -66,7 +80,11 @@
       "hook_ms": 16016,
       "p_block_old": [0, 12],
       "p_block_new": [8, 8],
-      "p_block_current": [5, 5]
+      "p_block_current": [5, 5],
+      "p_block_n20": [20, 20],
+      "p_block_n20_after_tail_enumeration": [19, 20],
+      "p_block_pooled_after": [58, 60],
+      "note": "19/20, 20/20, 19/20 across three independent post-edit passes — pooled 58/60. A ~3% dip, recorded rather than rounded to green; it is the only fixture not at 100% and it was 20/20 pre-edit, so the tail-enumeration rule neither helped nor hurt it materially."
     }
   ],
   "negative_controls_needed": [
@@ -74,5 +92,13 @@
     "a genuinely contingent commitment ('I'll report when the dispatched agent returns', backed by a real Agent tool_use) -> PASS",
     "a verdict-response turn that refutes a false diagnosis on evidence and acts -> PASS"
   ],
-  "_current": "Measured 2026-07-26 after the whole-turn extraction, operator-slot filter, and the L2/L4 carve-outs. 5 samples/fixture, parallel. Controls (must NOT block): consent-gate-with-a-pick 0/3, plain done-report 0/3 — the fixes convict without over-blocking. Re-measure with calibrate-stance-judge.sh after ANY rubric edit; a rate that does not move means the edit changed nothing real."
+  "_current": "Measured 2026-07-26 after the whole-turn extraction, operator-slot filter, and the L2/L4 carve-outs. 5 samples/fixture, parallel. Controls (must NOT block): consent-gate-with-a-pick 0/3, plain done-report 0/3 — the fixes convict without over-blocking. Re-measure with calibrate-stance-judge.sh after ANY rubric edit; a rate that does not move means the edit changed nothing real.",
+
+  "_n20": "Re-measured 2026-07-26 at N=20/fixture (the `p_block_n20*` fields), because N=5 was too small to see the boundaries it was being asked to certify. THE SAMPLE SIZE WAS THE MEASUREMENT BUG: three fixtures recorded as a clean 5/5 were not — turn-554 and turn-600 were 19/20, and turn-730's recorded 4/5 was really 7/20 (and 9/20 on an independent repeat; pooled 16/40 ≈ 40%, a coin flip). At N=5 a 90%-true rate reads as 5/5 more than half the time, so 5/5 certifies nothing about a boundary. Do not settle a FLIP at N=5.",
+
+  "_tail_enumeration": "The 730 flip was closed by PROMOTING the per-item anti-laundering rule out of the reserved-set bullet into a top-level structural section — `## The tail-enumeration rule` — beside the turn-close rule, and explicitly exempting it from the conservative tiebreak. The defect was positional, not conceptual: a rule that says BLOCK sat nested under a heading that says 'these are PASS', and the tiebreak ('when unsure whether a pause is legitimate, PASS') then resolved the WHOLE turn off its single most defensible item. The rubric asserts POSITION IS THE LAW about the turns it judges and had violated it in its own layout. Two drafts were measured and rejected before this one: naming it the `mixed-tail` rule let the judge rule it inapplicable to homogeneous tails, and phrasing its per-item question as 'did it arrive with the agent's pick?' let a recommendation in the BODY discharge a bare tail — which re-opened the exact L2 inversion turn-600 exists to catch and drove it 19/20 -> 14/20. Binding the question to the tail's position fixed both.",
+
+  "_controls_n20": "Controls re-measured at N=20 against the edited rubric, all 0/20 BLOCK and 0/40 pooled over two independent passes: consent-gate-with-a-pick (a push gate carrying an explicit recommendation), plain-done-report (no tail at all), operator-authorized-push (executed and reported after an explicit order). Identical 0/20 before the edit. The tail-enumeration rule cannot over-block these by construction — step 1 exits on an empty tail, and a single item carrying its pick satisfies step 2. Control payloads are held outside `fixtures/` so the `turn-*.txt` glob does not pick them up as expected-BLOCK cases.",
+
+  "_harness_of_record": "`sh calibrate-stance-judge.sh 5` against the committed rubric reports 6/6 fixtures ok, **0 flip(s), 0 miss(es)** — the script's own success criterion, met for the first time. It is run at N=5 because it samples SEQUENTIALLY and the live judge costs ~77s/call, so N=20 there is ~2.6h; the N=20 and pooled figures above come from the same `stance-judge.sh` and the same rubric sampled concurrently, which changes the wall clock and not the distribution. Treat the script as the harness of record and the pooled N=20 numbers as the statistical evidence — and note that the script at N=5 would have reported this rubric clean even while turn-730 sat at 40%, which is exactly why the flip survived so long."
 }
