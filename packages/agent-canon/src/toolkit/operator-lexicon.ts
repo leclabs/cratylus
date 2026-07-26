@@ -48,6 +48,7 @@ export const OPERATORS = {
   },
   '≺': { sense: 'precedes', signature: 'T × T → Prop', coldVerified: true },
   '≥': { sense: 'at-least', signature: 'T × T → Prop', coldVerified: true },
+  '≤': { sense: 'at-most', signature: 'T × T → Prop', coldVerified: true },
   '≡': { sense: 'identical', signature: 'T × T → Prop', coldVerified: true },
   '≢': {
     sense: 'not-identical',

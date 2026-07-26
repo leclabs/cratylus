@@ -22,10 +22,12 @@ route               : record → { SEMANTIC · PROCEDURAL · CANON-PROMOTION · 
 land                : route-manifest → { SEMANTIC · PROCEDURAL } ⟨the routing is MINE ; the write is the tool's⟩ ; \`scripts/memory.mjs apply --name <agent> --routes -\`
 resident            : store → text ⟨read the whole prose home ; ¬ open its path⟩ ; \`scripts/memory.mjs get --name <agent> --store (SEMANTIC|PROCEDURAL)\`
 rollover            ≜ land ⊕ drain ⊕ re-encode(residue) ATOMIC under one lock ⟨residue between drain ∧ re-encode lives ONLY in my context ∴ a gap loses it⟩ ; \`scripts/memory.mjs rollover --name <agent> --routes - --residue '<json>'\`
-gate                : home → findings ⟨dream's exit condition⟩ ; \`scripts/memory.mjs audit --name <agent>\`
+gate                : home → findings × pressure ⟨dream's exit condition⟩ ; \`scripts/memory.mjs audit --name <agent>\`
+ceiling             ≜ per-store byte watermark ⟨SEMANTIC ∪ PROCEDURAL load WHOLE every wake ∴ bytes are a per-session context cost⟩
+pressure            ≜ { s ∈ { SEMANTIC · PROCEDURAL } | bytes(s) > ceiling } ⟨gate MEASURES it ; depalimpsest's only trigger⟩
 dfp(i)              ≜ densest-faithful-point(i)
 depalimpsest        ≜ reconcile the resident set to current ground-truth ⟨¬only-drop-stale⟩ ; supersede the whole file, ¬ append : \`scripts/memory.mjs replace --name <agent> --store (SEMANTIC|PROCEDURAL) --body -\`
-promotion-is-move   ≜ a promoted item ∉ its raw source
+promotion-is-move   ≜ a promoted item ∉ its raw source ⟨an obligation discharged AT the promotion, ¬ a later drain's finding⟩
 canon-truth(i)      ⇔ i binds ≥1 agent-type ∨ the fleet ∨ is a mechanism/governance-fact ⟨¬ this-agent-only⟩
 CANON-PROMOTION(i)  ≜ author i into its strongest seam ⟨gate ≻ cell ≻ governing-doc⟩ ; ¬canon-remit ⇒ emit a canon-candidate task to the curator ; then projection-carries(i) ⇒ drop ⟨PROCEDURAL⟩
 
@@ -44,7 +46,10 @@ drain ≜ .bak archive before clear ; forward-residue re-encoded after drain ; r
 land ⊕ drain ⊕ re-encode ⇒ rollover ⟨¬ three invocations : the gap is where residue dies⟩
 consumed ↦ ∅ ∴ ¬unbounded-growth(EPISODIC)
 EPISODIC ──dream──→ { SEMANTIC · PROCEDURAL · EPISODIC }
-periodic : SEMANTIC ──depalimpsest──→ { SEMANTIC · PROCEDURAL }
+land(i)         ⇔ bytes(store ∪ i) ≤ ceiling ⟨¬land(i) ⇒ ⊥ : the tool refuses, naming store · ceiling · overage⟩
+depalimpsest(b) ⇔ bytes(b) ≤ ceiling ∨ bytes(b) < bytes(store) ⟨STRICT shrink accepted EVEN over ceiling ∴ over-ceiling ⇒ frozen-to-shrink, ¬ bricked⟩
+¬land(i)        ⇒ depalimpsest ≺ re-land(i) ⟨the refusal IS the eviction summons ; distil to the named target ; ¬ retry-unchanged ; ¬ hand-edit the store⟩
+∀ s ∈ pressure : s ──depalimpsest──→ { SEMANTIC · PROCEDURAL } ⟨THAT an eviction is owed is measured ; WHAT to evict is MY judgement⟩
     generalized-wisdom(i) ∧ ¬projection-carries(i) ⇒ i ↦ CANON-PROMOTION ↾ canon-truth(i) ; else PROCEDURAL   ( projection-carries(i) ⇒ ∅ )
     superseded(i)                                  ⇒ ∅
     stale(i)                                       ⇒ ∅
