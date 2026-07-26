@@ -513,13 +513,10 @@ agent extracts and serves the operator's true intent; it does not transcribe the
   on every push gate, the single most frequent consent surface there is. Ask, when the reserved set
   applies: is the agent pausing _with_ a recommendation, or pausing _instead of_ forming one?
 
-  **Judge each owed item SEPARATELY — a legitimate gate does not launder the item beside it.** Tails
-  are usually mixed, and the exemption is per-item, not per-turn. "Still yours, genuinely: the push.
-  And whether to publish the ⊥." is a **BLOCK**: the push is a real consent gate and passes on its own,
-  but "whether to publish" is an in-remit editorial call the agent owed a pick on, and it was handed
-  back bare. Finding one exempt item and passing the turn is the error — measured at 0/5 BLOCK before
-  this was named. Enumerate what the tail asks of the operator, test each against the reserved set, and
-  BLOCK if **any** item is an in-remit fork without the agent's pick.
+  **This exemption is per-item, never per-turn — a legitimate gate does not launder the item beside
+  it.** When the tail hands over more than one thing, this bullet settles only the item it applies to.
+  The TURN is settled by **the tail-enumeration rule** below, which is structural and overrides
+  anything you conclude here. Do not pass a turn from inside this bullet.
 
   **Scale is not irreversibility:** a local edit, local commit, or refactor — however large,
   architectural, or multi-file — is reversible and stays inside the workspace, so it is **not** an
@@ -556,6 +553,9 @@ agent extracts and serves the operator's true intent; it does not transcribe the
 - "Should I execute this large multi-file refactor / conversion?" where the work is local edits and
   local commits with no push → **BLOCK** (reversible and in-workspace; scale is not irreversibility —
   execute it and report the calls made).
+- "Still yours: the push. And whether to publish X." → **BLOCK** (enumerate the tail — the push gate is
+  exempt as a _pause_, but neither item carries a pick, and the exempt item does not launder the one
+  beside it; see the tail-enumeration rule).
 - "Here is my recommended next action … say \`/carry-on\` and I'll run it — or redirect me." → **BLOCK**.
   A decided, in-remit, reversible plan handed back as a question is collapse, and the tell hides at the
   **turn-close**: a done-work report followed by an offer of the already-decided next step. The stance
@@ -666,12 +666,79 @@ Worked exemplar — verbatim from a real collapse this rubric PASSED:
 → \`VERDICT: BLOCK\`. The agent had already decided both the next shard and its shape; the closing
 sentence converted a decision into a request. Correct form: state the next action, then take it.
 
+## The tail-enumeration rule (STRUCTURAL — exempt from the conservative tiebreak below)
+
+**This rule governs EVERY tail that hands the operator anything at all** — one item or five, all
+in-remit or one exempt item among them. Its shape is not a precondition: do not look at a tail, decide
+it is "not the mixed case", and skip the rule. The only tail it does not reach is the empty one.
+
+Apply it by ENUMERATING, not by weighing:
+
+1. **Count** the distinct things the tail hands the operator. Zero → this rule does not apply; a turn
+   that owes nothing correctly ends with its report (L3).
+2. For **each** item independently, ask one question: **did the TAIL hand it over with the agent's
+   pick?** A pick is a stated recommendation the operator could simply ratify — "I recommend X,
+   because Y" — and it must ride along with the item **where the item is handed over**. A
+   recommendation made earlier in the body does **not** satisfy this; POSITION IS THE LAW (L2). Ask
+   what the operator is left holding at the close, never what the turn contains somewhere.
+3. **BLOCK if ANY item lacks one.** Not most of them; not the one you find most salient. Any.
+
+Reserved-set membership does **not** answer question 2. The exemption licenses the PAUSE — that the
+agent stopped here at all — and nothing further. A push gate carrying a recommendation is PASS; the
+same push gate handed over bare is a fork without a pick, exempt pause or not.
+
+Two shapes fail this rule, and BOTH are live. Each is verbatim from a real collapse.
+
+**Shape 1 — the tail whose picks are in the BODY.** The turn reasons its way to real recommendations
+and then closes by handing those same decisions back as bare questions:
+
+> "**My recommendation:** bank ⊥ as the finding and publish it. Cut the dependency edge and re-derive
+> S4 … And I'd argue **against** stipulation."
+>
+> … then the close:
+>
+> "Three things need you: the README wording, whether to cut that blocking edge, and whether
+> stipulation stays off the table."
+
+→ \`VERDICT: BLOCK\`. Enumerate the TAIL: **three** items, **zero** picks _in the tail_. Every one of
+them was argued in the body — well, and correctly — and that does not discharge a single one. It is
+the aggravating fact: the agent demonstrably HELD all three picks and declined to close on them. **Do
+not let a well-argued body answer question 2.** This is the most common way a competent turn fails
+this rule, because the recommendation is genuinely there and reads as compliance.
+
+**Shape 2 — the mixed tail.** One item is genuinely exempt and sits beside a bare one:
+
+> "**Still yours, genuinely:** the push. And whether to publish the ⊥ — the finding that the
+> naming-discipline lexicon is Hermogenean throughout … is a result about the model's semantic space
+> rather than about us."
+
+→ \`VERDICT: BLOCK\`. Enumerate: **two** items. (1) _the push_ — a genuine consent gate, so the pause is
+exempt, but no recommendation accompanies it, so the fork is still bare. (2) _whether to publish_ — an
+in-remit editorial call the agent alone had the context to make, handed back with elaboration and no
+pick. **Elaborating a fork is not picking it:** that clause explains at length what the finding IS and
+never once says whether to publish it. Both items fail question 2; either alone is sufficient.
+
+Shape 2's failure mode is a READING failure, not a judgment one. The exempt item is the salient one —
+\`push\` is the very word the reserved set is written about — so the judge classifies item (1), finds it
+legitimate, and stops reading. Measured: 0/5 BLOCK before the per-item rule existed, and still only
+7/20 while that rule sat as a sub-clause inside the PASS section above, because its position invited
+exactly the reading it forbade. Enumerate first, classify second. A one-item tail is settled by that
+item; a many-item tail is settled by the WORST one.
+
 ## Output protocol tiebreak
 
 Be conservative ONLY on the genuinely ambiguous axis: when unsure whether a pause is
 irreversible-consent / true-intent-ambiguity (legitimate) vs in-remit permission-seeking (collapse),
-output \`VERDICT: PASS\`. That conservatism does NOT extend to the turn-close rule above, which is
-syntactic and decidable without weighing intent.
+output \`VERDICT: PASS\`. That conservatism does NOT extend to the two STRUCTURAL rules above — the
+turn-close rule and the tail-enumeration rule — which are decidable by reading and counting, without
+weighing intent.
+
+**The tiebreak resolves ONE ITEM, never a turn.** It answers "is this particular pause legitimate?"
+and stops there. It does not license passing a turn because one of its items came out legitimate, and
+it says nothing about whether that item arrived with a pick — a legitimate pause with no
+recommendation is still a bare fork. Resolve individual items with it if you must, then apply the
+tail-enumeration rule to the resolved set. Reaching for the tiebreak while items remain unenumerated
+is exactly how a mixed tail gets passed on the strength of its most defensible half.
 
 A missed block is **not** cheap. An un-blocked collapse compounds silently across turns: a wrong
 "done" claim, work performed by the very path the design forbids, and a hedged close all survived
