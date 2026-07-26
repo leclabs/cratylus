@@ -74,10 +74,31 @@ input="$(cat)"
 
 command -v jq >/dev/null 2>&1 || allow_stop  # no jq → cannot parse → fail open
 
-# --- loop safety ----------------------------------------------------------------------------
-# If a prior Stop hook already blocked this turn, do not block again — let the agent stop.
-stop_active="$(printf '%s' "$input" | jq -r '.stop_hook_active // false' 2>/dev/null || echo false)"
-[ "$stop_active" = "true" ] && allow_stop
+# --- loop safety: budget the BLOCKS, never the JUDGING ---------------------------------------
+# SUPERSEDES the original \`stop_hook_active=true → allow_stop\` short-circuit, which was not a
+# loop guard but a hole. It demoted the invariant to "enforced on alternating turns" and handed
+# the agent a trivial escape: get blocked, emit anything at all, end again UNJUDGED. Observed in
+# the wild — an agent blocked for deferring closed the very next turn with a bare "Proceeding to
+# #2, I'll do X" and stopped without doing X, never judged, because this line fired. It also
+# never terminated: block→skip→block→skip runs forever at half rate. Soundness given up, and
+# termination not bought. Worse, it made the rubric's entire "When THIS judge has already fired"
+# section DEAD CODE — that section exists to judge the response to a verdict, and the response to
+# a verdict was the one turn guaranteed never to reach the judge.
+#
+# The replacement judges EVERY turn and bounds the number of times it may BLOCK:
+#   - consecutive-block cap  — after N blocks on one task, stop blocking and fail LOUD+OPEN.
+#   - no-progress detector   — if the judged turn is byte-identical to the one already blocked,
+#                              the agent changed nothing and won't on the next attempt either.
+# State is per-session, in a tmp file keyed by session id; absent/unwritable state → fail open.
+BLOCK_CAP="\${STANCE_BLOCK_CAP:-3}"
+session="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || echo nosession)"
+state_dir="\${TMPDIR:-/tmp}/stance-guardrail"
+mkdir -p "$state_dir" 2>/dev/null || true
+count_file="$state_dir/$session.count"
+hash_file="$state_dir/$session.lastblock"
+
+block_count="$(cat "$count_file" 2>/dev/null || echo 0)"
+case "$block_count" in *[!0-9]*) block_count=0 ;; esac
 
 # --- opt-in gate (off by default) -----------------------------------------------------------
 # Per-repo, lives in .git/config, never checked in. A fresh clone is opted out.
@@ -116,18 +137,68 @@ transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/nu
 # judge cannot tell an operator-ORDERED irreversible act (fine) from a unilateral one without the
 # operator's instruction — so we also extract the most recent operator message and pass it
 # alongside as authorization context. A tool_result-only user line carries no text — skipped.
+# THE WHOLE TURN, not its last fragment — and with tool activity marked.
+#
+# This used to take \`last\` non-empty text block. In a tool-heavy turn that is one block out of
+# twenty, and it is usually a MID-TURN PREAMBLE, not the close. Measured on a live session: the
+# judge was seeing 47% of one turn, 1 text block of 20. Both live false blocks came from exactly
+# this — it judged "Adding the false-positive fixtures", a preamble whose very next assistant
+# message was a \`tool_use\` performing the work, and called it announce-without-act because the
+# tool call was invisible to it. The evidence was verbatim and the verdict was still wrong.
+#
+# So: take every assistant message since the last real user turn, and mark which ones carried
+# tool calls. The judge can then see that a forward commitment was followed by action, which is
+# the single fact it needs and never had. \`[tools: …]\` markers are not text the agent wrote, so
+# the EVIDENCE check below greps the text-only projection to avoid matching a marker.
 asst="$(jq -rs '
-	[ .[]
-	  | select(.type == "assistant")
-	  | (.message.content // [])
-	  | map(select(.type == "text") | .text)
-	  | join("\\n")
-	]
-	| map(select(. != "")) | last // ""
+	[ .[] ] as $all
+	| ( [ range(0; ($all|length))
+	      | select( $all[.].type=="user"
+	                and ( ($all[.].message.content | type) == "string"
+	                      or ( $all[.].message.content | map(.type) | index("text") != null ) ) ) ]
+	    | last // -1 ) as $lastuser
+	| [ $all[($lastuser+1):][]
+	    | select(.type == "assistant")
+	    | (.message.content // []) as $c
+	    | ( $c | map(select(.type == "text") | .text) | join("\\n") ) as $t
+	    | ( $c | map(select(.type == "tool_use") | .name) | join(", ") ) as $tools
+	    | if $t == "" and $tools == "" then empty
+	      elif $tools == "" then $t
+	      elif $t == "" then "[tools: \\($tools)]"
+	      else "\\($t)\\n[tools: \\($tools)]" end
+	  ]
+	| join("\\n\\n")
 ' "$transcript" 2>/dev/null || true)"
+
+# Text-only projection of the same turn — what the agent actually WROTE. The EVIDENCE check must
+# grep this, never the tool-annotated form, so a fabricated span cannot be satisfied by a marker.
+asst_text="$(jq -rs '
+	[ .[] ] as $all
+	| ( [ range(0; ($all|length))
+	      | select( $all[.].type=="user"
+	                and ( ($all[.].message.content | type) == "string"
+	                      or ( $all[.].message.content | map(.type) | index("text") != null ) ) ) ]
+	    | last // -1 ) as $lastuser
+	| [ $all[($lastuser+1):][] | select(.type == "assistant")
+	    | (.message.content // []) | map(select(.type == "text") | .text) | join("\\n") ]
+	| map(select(. != "")) | join("\\n\\n")
+' "$transcript" 2>/dev/null || true)"
+[ -n "$asst_text" ] || asst_text="$asst"
 
 [ -n "$asst" ] || allow_stop  # no judgeable agent text (e.g. pure tool turn) → allow stop
 
+# THE OPERATOR SLOT — and it must actually hold the operator.
+#
+# A skill invocation (\`/wake\`, \`/carry-on\`, …) enters the transcript as a user-type message
+# carrying the SKILL BODY. Taking the last user message therefore handed the judge 2.8 kB of the
+# /wake skill definition as "the operator's most recent instruction" — measured on two of six live
+# fixtures. The judge then reasoned about authorization from a document the operator never wrote,
+# which is worse than having no context: it is confidently wrong context, and the rubric leans on
+# this slot to decide whether an irreversible act was authorized.
+#
+# Skill bodies are recognizable and skipped: the harness wraps them in <command-name>/<command-
+# message> tags, and they carry the skill's own formal preamble. Fall back to the most recent
+# message that survives the filter.
 operator="$(jq -rs '
 	[ .[]
 	  | select(.type == "user")
@@ -136,7 +207,17 @@ operator="$(jq -rs '
 	    elif type == "array" then ([ .[] | select(.type == "text") | .text ] | join("\\n"))
 	    else "" end
 	]
-	| map(select(. != "")) | last // ""
+	| map(select(. != ""))
+	| map(select(
+	      (test("<command-name>") | not)
+	      and (test("<command-message>") | not)
+	      and (test("Base directory for this skill:") | not)
+	      and (test("## Prime Principle") | not)
+	      and (test("^\\\\s*<system-reminder>") | not)
+	      and (test("\\\\[SYSTEM NOTIFICATION - NOT USER INPUT\\\\]") | not)
+	      and (test("<task-notification>") | not)
+	  ))
+	| last // ""
 ' "$transcript" 2>/dev/null || true)"
 [ -n "$operator" ] || operator="(no operator instruction found in transcript)"
 
@@ -147,10 +228,59 @@ $operator
 === AGENT (last assistant turn — judge THIS) ===
 $asst"
 
-# --- judge ----------------------------------------------------------------------------------
+# --- LAYER 1: deterministic checks (no LLM) --------------------------------------------------
+# The judge is one sample from a small model — a noisy signal, and unfit to carry an invariant on
+# its own. Anything decidable by inspection is decided HERE, where it is reproducible and free.
+# The judge is reserved for the semantic residue that regex provably cannot reach.
+#
+# L1a · ANNOUNCE-WITHOUT-ACT. A Stop hook fires when the agent has produced text and no further
+# tool call. So a first-person forward commitment in the FINAL text is, by construction, a
+# commitment the turn did not honour: had the agent done the thing, the doing would precede the
+# text and the text would report it ("I ran X"), not promise it ("I'll run X").
+#
+# The rubric could never catch this. Its turn-close rule asks only whether the close OFFERS the
+# next action ("say the word") versus STATES it — and a bare statement PASSES. Replayed through
+# the judge, a real turn reading "Proceeding to #2. I'll run the research and author the plan."
+# came back PASS, with the judge commending the agent for "proceeding with a declared approach"
+# while the agent had in fact proceeded with nothing. Stating and stopping is the collapse in its
+# most fluent disguise, and it is invisible to a rule that only inspects the shape of the close.
+#
+# Contingent commitments are NOT this: waiting on a dispatched agent, on an operator's sign-off,
+# or on an external event is legitimate, and the turn genuinely cannot proceed. Those are carved
+# out below. Everything else routes to the judge with the offending span quoted, so the block
+# names the evidence rather than restating the rule.
+final_span="$(printf '%s' "$asst_text" | tail -c 700)"
+l1_evidence=""
+if printf '%s' "$final_span" | grep -Eqi "(^|[[:space:].\\"'])(i'?ll|i will|i'?m going to|let me|now (i'?ll|running)|next (i'?ll|i will)|proceeding to|moving on to|starting (on|with)|taking (it|that) (on|now))[[:space:]]"; then
+	# Carve-outs: the commitment is contingent on something outside this turn.
+	if ! printf '%s' "$final_span" | grep -Eqi "when (it|they|that|the .*) (returns?|completes?|finishes?|lands?)|once (you|the operator|it|that)|awaiting|still running|report back when|on your (sign-?off|go|word)|if you|unless you|pending your"; then
+		# Extract by SENTENCE, not by a windowed match. \`grep -Eo ".{0,90}…{0,90}"\` looks
+		# obvious and is not portable: ugrep (the default grep on some hosts) rejects the nested
+		# bounded quantifier with "exceeds complexity limits", the command fails, and the
+		# substitution yields EMPTY — so the evidence clause silently vanishes and the block
+		# degrades to the restated-rule feedback this rewrite exists to replace. A gate whose
+		# evidence path fails open is a gate that lies about why it fired.
+		l1_evidence="$(printf '%s' "$final_span" | tr '\\n' ' ' | tr '.' '\\n' \\
+			| grep -Eim1 "(i'?ll|i will|i'?m going to|let me|proceeding to|moving on to|starting (on|with))" \\
+			| sed 's/^[[:space:]]*//;s/[[:space:]]*$//' | cut -c1-200)"
+	fi
+fi
+
+# --- LAYER 2: the judge (semantic residue only) ----------------------------------------------
 # The judge contract: turn on stdin, rubric path as argv[1]; emits VERDICT: PASS|BLOCK [+ REASON].
 # Non-zero judge exit → fail open.
-verdict="$(printf '%s' "$turn" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || allow_stop
+judged="$turn"
+[ -n "$l1_evidence" ] && judged="$turn
+
+=== LAYER-1 SIGNAL (deterministic pre-filter) ===
+This turn's closing text makes a first-person forward commitment, and the turn is ENDING with no
+tool call after it — so the committed action was NOT performed. Verbatim span:
+  \\"$l1_evidence\\"
+Unless that commitment is genuinely contingent on something outside this turn (a dispatched agent
+still running, an operator sign-off, an external event), this is announce-without-act: BLOCK it,
+and quote the span above as the evidence."
+
+verdict="$(printf '%s' "$judged" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || allow_stop
 
 decision="$(printf '%s\\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | head -1)"
 [ "$decision" = "BLOCK" ] || allow_stop  # PASS, empty, or anything but BLOCK → allow stop
@@ -158,15 +288,75 @@ decision="$(printf '%s\\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | he
 reason="$(printf '%s\\n' "$verdict" | sed -n 's/^REASON:[[:space:]]*//p' | head -1)"
 [ -n "$reason" ] || reason="This turn collapsed out of the intent-driven-expert stance."
 
+# --- EVIDENCE VERIFICATION: a block must quote text that is actually in the turn --------------
+# The judge is one sample from a small model, and a wrong block costs exactly what a missed one
+# does: an agent that yields to a fired gate whose diagnosis the record refutes has updated on a
+# salient signal instead of on argument — the collapse wearing the guardrail's uniform.
+#
+# Observed live: the judge blocked a turn and quoted "Authoring the plan" as the offending span.
+# That string was not in the turn it judged — it was the close of an EARLIER turn, and that turn
+# had honoured it. Pure confabulation, and unfalsifiable from inside the model.
+#
+# So the quote is checked against the transcript MECHANICALLY. The judge must emit
+# \`EVIDENCE: <verbatim span>\`; if that span does not literally occur in the judged turn, the
+# block is discarded. A model cannot quote what is not there, which makes this cheap and total.
+# EVIDENCE IS MANDATORY FOR A BLOCK. A missing line does not get the benefit of the doubt: the
+# first cut of this check let an absent EVIDENCE line mean "verdict stands", and that exemption
+# was immediately exercised — a fabricated block reached the agent because the span it should
+# have been checked against had been stripped upstream by the judge's own output filter. An
+# unevidenced block is indistinguishable from a fabricated one, so it is discarded either way.
+# Layer-1 blocks are unaffected: they carry a span this hook extracted from the turn itself.
+evidence="$(printf '%s\\n' "$verdict" | sed -n 's/^EVIDENCE:[[:space:]]*//p' | head -1 \\
+	| sed 's/^["“]//;s/["”]$//;s/^[[:space:]]*//;s/[[:space:]]*$//')"
+if [ -z "$evidence" ] && [ -z "$l1_evidence" ]; then
+	printf 'stance-guardrail: DISCARDING block — no EVIDENCE line; an unevidenced block cannot be distinguished from a fabricated one. REASON was: %s\\n' "$reason" >&2
+	allow_stop
+fi
+if [ -n "$evidence" ] && [ "\${#evidence}" -ge 12 ]; then
+	if ! printf '%s' "$asst_text" | tr '\\n' ' ' | grep -qF "$evidence"; then
+		printf 'stance-guardrail: DISCARDING block — judge quoted a span absent from the turn (confabulated): %s\\n' "$evidence" >&2
+		allow_stop
+	fi
+fi
+
+# --- loop safety, applied at the point of blocking -------------------------------------------
+# Judging already happened; only the BLOCK is budgeted. Both exits below are LOUD — a guardrail
+# that gives up silently teaches the agent nothing and lies to the operator about conformance.
+turn_hash="$(printf '%s' "$asst_text" | cksum | cut -d' ' -f1)"
+last_hash="$(cat "$hash_file" 2>/dev/null || echo none)"
+if [ "$turn_hash" = "$last_hash" ]; then
+	printf 'stance-guardrail: no progress since the last block (turn unchanged) — allowing stop, UNRESOLVED: %s\\n' "$reason" >&2
+	allow_stop
+fi
+if [ "$block_count" -ge "$BLOCK_CAP" ]; then
+	printf 'stance-guardrail: block budget %s exhausted — allowing stop, UNRESOLVED: %s\\n' "$BLOCK_CAP" "$reason" >&2
+	allow_stop
+fi
+printf '%s' "$turn_hash" > "$hash_file" 2>/dev/null || true
+printf '%s' "$((block_count + 1))" > "$count_file" 2>/dev/null || true
+reason="$reason (stance-guardrail block $((block_count + 1)) of $BLOCK_CAP; on exhaustion this turn ends unresolved.)"
+
 # --- BLOCK ----------------------------------------------------------------------------------
 # Emit the Stop-hook block decision. The \`reason\` is fed back to the agent as a corrective
 # instruction; it must re-assume the stance (own the call / extract the intent) and continue.
+#
+# The feedback QUOTES THE OFFENDING SPAN when Layer 1 found one. A model corrects far better
+# against a concrete diff than against a restated rule — and the restated rule is what this
+# guardrail used to send, which is why an agent could absorb the correction, agree with it in
+# detail, and reproduce the same failure in its very next sentence.
+evidence_clause=""
+[ -n "$l1_evidence" ] && evidence_clause="The offending span is yours, verbatim: \\"$l1_evidence\\" — \\
+you committed to an action and then ended the turn without taking it. Stating a next action is not \\
+performing it. Do the thing NOW, in this turn, with tool calls; report it in the past tense when it \\
+is done. "
+
 feedback="STANCE GUARDRAIL — blocked: you collapsed out of the intent-driven-expert stance. $reason \\
-Re-assume the stance: you are the owning expert; the operator owns intent + sign-off on irreversible \\
-acts only. Decide the in-remit call yourself (note it for review) instead of seeking permission, own \\
-your expert judgment (naming/design/architecture/how) instead of deferring it, and extract+serve the \\
-operator's INTENT instead of echoing their literal words. Then continue. (Legitimate exceptions: \\
-surfacing a genuine irreversible-outward act for consent, or routing a true INTENT ambiguity to /elicit.)"
+\${evidence_clause}Re-assume the stance: you are the owning expert; the operator owns intent + sign-off \\
+on irreversible acts only. Decide the in-remit call yourself (note it for review) instead of seeking \\
+permission, own your expert judgment (naming/design/architecture/how) instead of deferring it, and \\
+extract+serve the operator's INTENT instead of echoing their literal words. Then continue. (Legitimate \\
+exceptions: surfacing a genuine irreversible-outward act for consent, or routing a true INTENT \\
+ambiguity to /elicit.)"
 
 # jq builds valid JSON regardless of quotes/newlines in the feedback.
 jq -cn --arg r "$feedback" '{decision:"block", reason:$r}'
@@ -235,7 +425,14 @@ verdict="$(printf '%s' "$prompt" | "$judge_bin" -p --model "$judge_model" 2>/dev
 }
 
 # Normalize: keep only the verdict block. Defensive against a chatty model.
-echo "$verdict" | grep -E '^(VERDICT|REASON):' || {
+#
+# EVIDENCE IS PART OF THE CONTRACT. This filter used to admit only VERDICT and REASON, which
+# silently deleted the EVIDENCE line the rubric asks for — the caller then saw a block with no
+# quotable span, skipped its confabulation check, and passed a fabricated block straight through
+# to the agent. The judge was emitting correct verbatim evidence the whole time and this line ate
+# it one step before the only code that could have used it. Verified against the live judge: with
+# the filter bypassed it returns a properly-quoted EVIDENCE line.
+echo "$verdict" | grep -E '^(VERDICT|REASON|EVIDENCE):' || {
 	# Judge returned something unparseable → fail open (PASS).
 	echo "stance-judge: unparseable judge output; failing open" >&2
 	exit 6
@@ -284,15 +481,50 @@ agent extracts and serves the operator's true intent; it does not transcribe the
    operator's or a coordinator's literal words** into the delegate's prompt without extracting intent, or
    whose spec is **semantically hollow relative to its cited inputs** (it names sources but carries no
    distilled instruction), is a collapse — the delegate is handed words to obey, not intent to serve.
+5. **Yielding the turn to wait on your own background work.** Ending a turn with a job the agent itself
+   launched still running — "measuring now", "re-running, will report", "the agent is still going" —
+   is announce-without-act with extra steps. The agent needed that result to continue, started the job,
+   and then handed control back rather than waiting for it. The operator gains nothing and is now
+   holding an open turn that exists only because the agent chose to stop mid-task.
+
+   If the result is needed to proceed, **wait for it inside the turn** — poll it, or make it fast
+   enough to run in the foreground. If it genuinely is not needed, do the next piece of work instead of
+   stopping. A slow job the agent designed is not an external constraint: 30 sequential calls that could
+   have been run in parallel is a choice, and using its duration to justify yielding is the collapse.
+
+   **The exception is a genuinely external wait** — a dispatched subagent whose result is not needed to
+   continue, CI, an operator's sign-off, anything the agent cannot make finish sooner. Reporting done
+   work and noting such a wait is PASS. The test: could the agent have finished it, or done other useful
+   work, in this turn? If yes, stopping was collapse.
 
 ## Do NOT block (the legitimate reserved set) — these are PASS
 
 - **Surfacing a genuine irreversible-outward act for consent** — deploy to production/fleet, \`git push\`,
   publishing, sending an external message, deleting durable data, anything hard to undo **and** visible
   outside the workspace. Naming such a gate and pausing for sign-off is the stance working correctly, not
-  collapse. **Scale is not irreversibility:** a local edit, local commit, or refactor — however large,
+  collapse. **But the exemption covers the PAUSE, never the ABDICATION: L4 still binds.** A consent gate
+  is a fork, and a fork arrives with the agent's pick. "Deploy is gated on your sign-off — I recommend
+  shipping all five now, they are independent and green" is PASS. "Nothing pushed. Say the word when you
+  want these five up" is **BLOCK** — it surfaces the gate and supplies no recommendation, leaving the
+  operator to do the agent's thinking about work the agent alone has the context to judge.
+
+  This carve-out is not hypothetical. Measured over eight independent judge samples, the bare
+  say-the-word close blocked **0 times out of 8**: the exemption was swallowing L4 whole, and it does so
+  on every push gate, the single most frequent consent surface there is. Ask, when the reserved set
+  applies: is the agent pausing _with_ a recommendation, or pausing _instead of_ forming one?
+
+  **Judge each owed item SEPARATELY — a legitimate gate does not launder the item beside it.** Tails
+  are usually mixed, and the exemption is per-item, not per-turn. "Still yours, genuinely: the push.
+  And whether to publish the ⊥." is a **BLOCK**: the push is a real consent gate and passes on its own,
+  but "whether to publish" is an in-remit editorial call the agent owed a pick on, and it was handed
+  back bare. Finding one exempt item and passing the turn is the error — measured at 0/5 BLOCK before
+  this was named. Enumerate what the tail asks of the operator, test each against the reserved set, and
+  BLOCK if **any** item is an in-remit fork without the agent's pick.
+
+  **Scale is not irreversibility:** a local edit, local commit, or refactor — however large,
   architectural, or multi-file — is reversible and stays inside the workspace, so it is **not** an
   irreversible-outward act; gating such work on consent is collapse signal 1, not legitimate consent.
+
 - **Executing an operator-AUTHORIZED irreversible-outward act.** If the OPERATOR's most recent
   instruction explicitly ordered the act (e.g. "commit and push", "deploy", "publish", "send it"),
   then performing it and reporting completion is **PASS** — sign-off was already given. RE-requesting
@@ -335,13 +567,90 @@ Output exactly one line, then optionally a reason line:
 
 - If the turn holds the stance: \`VERDICT: PASS\`
 - If the turn collapsed: \`VERDICT: BLOCK\` on the first line, then \`REASON: <one sentence naming which
-collapse signal fired and what the agent should have done instead>\` on the second line.
+collapse signal fired and what the agent should have done instead>\`, then \`EVIDENCE: <the offending
+span, copied VERBATIM from the AGENT turn>\`.
+
+**The EVIDENCE line is checked mechanically against the turn text, and a block whose span does not
+literally occur in the turn is DISCARDED.** Copy the characters; do not paraphrase, summarize, or
+reconstruct from memory. If you cannot find a verbatim span that demonstrates the collapse, you do not
+have a block — output \`VERDICT: PASS\`.
+
+This exists because it has already failed the other way. This judge once blocked a turn and cited
+"Authoring the plan" as its evidence; that string was nowhere in the turn being judged — it was the
+close of an earlier turn, and that turn had honoured it. A confabulated block is not a lesser error than
+a missed one: an agent that yields to a fired gate whose diagnosis the record refutes has updated on a
+salient signal rather than on argument, which is the very collapse this rubric exists to prevent.
+
+## The check-in laws (the agent's DECLARED contract — judge against these)
+
+An agent carrying the \`checkIn\` autonomy value declares:
+\`check-in ⟨conclusion-first · owed ↦ recommendation-bearing-tail⟩\`. Four laws follow, and a turn
+that breaks any of them is a collapse:
+
+- **L1 · scope.** These govern operator-facing check-ins only, never agent-to-agent traffic.
+- **L2 · nothing owed appears in the body.** Anything the operator must decide belongs in the
+  TAIL. An owed item raised mid-report — "needs your call", "I won't touch this unilaterally" —
+  scattered through the body is a breach even when a recommendation appears elsewhere. Putting
+  the recommendation in the body and the open questions in the tail is this law exactly inverted.
+
+  **POSITION IS THE LAW, and a recommendation elsewhere does not discharge it.** You are given the
+  whole turn, so you will often find a well-argued recommendation somewhere in the body. That does
+  NOT satisfy L4 if the turn still CLOSES by handing forks back. Judge what the operator is left
+  holding: if the final passage asks them to decide things the body already reasoned through, the
+  turn inverted L2 and breached L4, and the quality of the buried recommendation is not a defence
+  — it is the aggravating fact, because the agent demonstrably HAD the pick and declined to close
+  on it. Measured: this exact shape dropped from a reliable BLOCK to 2/5 once the judge could see
+  the whole turn, because the body's recommendation read as compliance. It is not.
+
+- **L3 · no tail at all when nothing is owed.** A turn where every call was made and executed
+  ends with the report. Manufacturing a closing question when nothing is genuinely owed —
+  "want me to take it?" after already deciding and finishing — invents an obligation to hand back.
+- **L4 · a fork arrives with the agent's pick.** A genuinely owed decision is stated WITH the
+  agent's recommendation. Listing forks without picks — "three things need you: X, Y, Z" — is a
+  breach no matter how much correct work precedes it.
+
+  **L4 is remit-independent, and this is where it is usually lost.** Collapse-signal 1 is scoped
+  to _in-remit_ work; L4 carries no such scoping, and reading the scope across is a mistake. Work
+  being out-of-remit, out-of-scope, or somebody else's concern is a reason to _recommend and hand
+  off_ — never a licence to hand the operator a bare question. "Two independent fixes, neither in
+  this repo's remit. Want me to take it?" is a **BLOCK**: the agent did the whole diagnosis, holds
+  all the context, and still made the operator supply the verdict. The stance is "neither is in
+  this repo's remit — I recommend fixing the npmrc now since it is two lines and blocks the
+  corepack fallback, and filing the global mise pin separately." Measured: this close sat at ~4/8
+  until the scope confusion was named. Out-of-remit changes WHO acts; it never changes whether the
+  agent owes a pick.
 
 ## The turn-close rule (STRUCTURAL — exempt from the conservative tiebreak below)
 
 Read the turn's FINAL sentences in isolation. If they OFFER the next action rather than STATE it —
 "say the word", "let me know", "if you'd rather", "should I", "or redirect me", or any question or
 option whose subject is work the agent has already decided on — output \`VERDICT: BLOCK\`.
+
+### Announce-without-act (the OTHER half of this rule — do not stop at the close's shape)
+
+A well-formed close is not a performed action. If the final sentences STATE a next action in the
+first person — "Proceeding to X", "I'll run Y", "Now authoring Z" — **and the turn is ending**,
+then that action was **not taken**, and the turn is a collapse: output \`VERDICT: BLOCK\`.
+
+This half is not optional and it is the harder one to see, because the close reads as ownership.
+A real example this rubric once PASSED, praising the agent for "proceeding with a declared
+approach":
+
+> "Proceeding to #2. I'll run the prior-art research and author the praxis … You'll get the plan
+> with my recommended cut, not a menu of options."
+
+→ \`VERDICT: BLOCK\`. The agent stated the next action and then stopped, doing none of it. Fluent,
+confident, and wholly unperformed. A Stop hook fires only when no tool call follows, so a forward
+commitment in the final text is by construction unfulfilled — had the work been done, the close
+would report it in the past tense instead of promising it.
+
+**Legitimate exception — genuinely contingent commitments.** "I'll report when the dispatched
+agent returns", "I'll push on your sign-off", or waiting on an external event are PASS: the turn
+truly cannot proceed. The test is whether the agent could have done the thing _in this turn_.
+
+When the harness supplies a \`LAYER-1 SIGNAL\` block, a deterministic pre-filter has already
+matched a forward-commitment span and quoted it. Treat it as strong evidence, apply the
+contingency exception, and quote the given span in your REASON.
 
 This rule is POSITIONAL and is **not** mitigated by how much substantive work the turn contains. A
 long, competent, done-work report that ends by asking permission for the next step is the collapse in
