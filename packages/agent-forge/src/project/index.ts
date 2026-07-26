@@ -16,6 +16,15 @@
 // (./write.ts) puts it on disk. This module opens no file descriptor — that is a
 // LOAD-BEARING property, not tidiness: it is what makes "what does this plugin set
 // project?" an answerable question instead of a tmpdir excavation.
+//
+// AND RENDERING IS NOT SELECTING. `resolve()` folded the plugin set's fragments and
+// this projector rendered agents straight off their import bindings — two pipelines
+// over one plugin set that never met. Absent `patches` the fold is the IDENTITY, so
+// they agreed by construction and the missing pipe was invisible. `discoverFragments`
+// + `resolveFragmentBodies` are that pipe: they hand back the authored-body ⟼
+// resolved-body substitution an agent's dimension values undergo before `agentDef`,
+// which is what makes `compose(select(a)) = ir(a)` (ENGINE:22) hold under a patch and
+// not merely when nothing patches.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { join } from 'node:path';
@@ -26,6 +35,10 @@ import {
   type Skill,
   hookIrOf,
 } from '../anatomy/index.js';
+import {
+  type DiscoveredPlugin,
+  discoverPluginFragments,
+} from '../catalog/index.js';
 import type { ResolvedSkill } from '../core/anatomy-body.js';
 import type { HarnessAdapter } from '../core/harness-adapter.js';
 import {
@@ -33,6 +46,11 @@ import {
   scanCellDirNames,
   scanModuleNames,
 } from '../core/module-scan.js';
+import {
+  type LoadedPlugin,
+  type PatchEntry,
+  resolve as foldFragments,
+} from '../resolve/resolve.js';
 import { runtimeShimContent } from './runtime-shim.js';
 
 /** The plugin fields projection consumes — the dirs a plugin contributes cells from. */
@@ -40,6 +58,14 @@ export interface ProjectablePlugin {
   readonly name: string;
   readonly agents?: string;
   readonly skills?: string;
+  /**
+   * Fragment (dimension-value) dir — scanned `<dir>/<dimension>/*.ts`. Projection
+   * needs it because an agent module inlines its dimension values BY IMPORT
+   * BINDING (`objective: insight_objective`), i.e. the body as authored on disk.
+   * Folding the fragments is the only way the projected SOUL can carry the
+   * COMPOSED value rather than the authored one (see `composedBodies`).
+   */
+  readonly fragments?: string;
   /** Leading block stamped into this plugin's cells; travels with the plugin. */
   readonly preamble?: string;
   /** Dir of hook cell modules this plugin contributes. */
@@ -51,6 +77,15 @@ export interface ProjectOpts {
   readonly plugins: readonly ProjectablePlugin[];
   /** The harness adapter that renders each cell. */
   readonly adapter: HarnessAdapter;
+  /**
+   * The resolver's fold, as the substitution an agent's authored dimension values
+   * undergo: `resolveFragmentBodies(await discoverFragments(plugins), patches)`.
+   * Absent/empty ⇒ the fold is the identity and the projected bytes are unchanged.
+   *
+   * PASSED IN, not computed here, because a patch can only target a node some
+   * discovery already minted — see `discoverFragments`.
+   */
+  readonly resolvedBodies?: ReadonlyMap<string, string>;
   /**
    * A doctrine-agnostic leading block stamped into every projected cell. The corpus
    * passes its founding doctrine so the axiom rides the projected bytes rather than
@@ -138,6 +173,143 @@ async function hookOf(modPath: string): Promise<HookCell | null> {
 }
 
 /**
+ * Two fragment nodes share an authored body but fold to DIFFERENT values, so an
+ * agent that selected that body has no determinate resolved value. Loud, because
+ * silently picking one is exactly the merge ambiguity the resolver refuses.
+ */
+export class AmbiguousFragmentBodyError extends Error {
+  constructor(
+    readonly body: string,
+    readonly values: readonly string[],
+  ) {
+    super(
+      `ambiguous fragment body: '${body.slice(0, 60)}${body.length > 60 ? '…' : ''}' is contributed by more than one node and resolves to ${values.length} different values — an agent selecting it has no determinate value`,
+    );
+    this.name = 'AmbiguousFragmentBodyError';
+  }
+}
+
+/**
+ * DISCOVER the plugin set's fragment nodes — step ONE of routing projection through
+ * the resolver, and SEPARATE from the fold on purpose.
+ *
+ * A string fragment's node is MINTED at scan time (`catalog/discoverPluginFragments`),
+ * so its object identity — the only address `resolve()` accepts (NORTH-STAR §3) —
+ * exists only downstream of a discovery. Folding inside `projectPluginSet` would
+ * therefore make its own nodes unaddressable and every caller's patch a guaranteed
+ * `MissingExtendsTargetError`. Handing the discovery back is what makes a patch
+ * targetable at all.
+ */
+export async function discoverFragments(
+  plugins: readonly ProjectablePlugin[],
+): Promise<DiscoveredPlugin[]> {
+  const sources = plugins
+    .filter((p): p is ProjectablePlugin & { fragments: string } =>
+      Boolean(p.fragments),
+    )
+    .map((p) => ({ name: p.name, fragmentsDir: p.fragments }));
+  return sources.length === 0 ? [] : discoverPluginFragments(sources);
+}
+
+/**
+ * FOLD a discovery under the consumer `patches` → the substitution an agent's
+ * authored dimension values must undergo: authored body ⟼ resolved body. Step TWO.
+ *
+ * WHY THIS EXISTS. `select(a)` (ENGINE:22) is realized as an agent module's import
+ * list — `objective: insight_objective` binds the fragment's body AS IT SAT ON DISK.
+ * The catalog those values are supposed to be drawn from is the resolver's ordered
+ * fold. Without this map the two coincide only by accident: the moment a patch moves
+ * a fragment, the projected SOUL still carries the pre-fold string and
+ * `COMPOSED(a) : S_on ⊆ catalog(on)` fails while every suite stays green.
+ *
+ * ONLY MOVED FRAGMENTS ARE RECORDED. A plugin originates each of its fragments with a
+ * single `replace(body)`, so ABSENT PATCHES THE FOLD IS THE IDENTITY, the map is
+ * empty, and the render tree is byte-for-byte what it was.
+ */
+export function resolveFragmentBodies(
+  discovered: readonly DiscoveredPlugin[],
+  patches: readonly PatchEntry[] = [],
+): ReadonlyMap<string, string> {
+  if (discovered.length === 0) return new Map();
+  const extended: LoadedPlugin[] = discovered.map((d) => ({
+    name: d.name,
+    contributions: d.fragments.map((f) => ({
+      target: f.node,
+      op: 'replace' as const,
+      value: f.body,
+    })),
+  }));
+  const { fragments } = foldFragments({ extends: extended, patches });
+
+  // Collect every value each authored body resolves to, then admit only the moves.
+  const byBody = new Map<string, Set<string>>();
+  for (const d of discovered) {
+    for (const f of d.fragments) {
+      if (typeof f.body !== 'string') continue;
+      const folded = fragments.get(f.node)?.value;
+      if (typeof folded !== 'string') continue;
+      const seen = byBody.get(f.body);
+      if (seen) seen.add(folded);
+      else byBody.set(f.body, new Set([folded]));
+    }
+  }
+  const subst = new Map<string, string>();
+  for (const [body, values] of byBody) {
+    if (values.size > 1) {
+      throw new AmbiguousFragmentBodyError(body, [...values]);
+    }
+    const [only] = values;
+    if (only !== undefined && only !== body) subst.set(body, only);
+  }
+  return subst;
+}
+
+/**
+ * Rewrite an agent's DIMENSION fields through the resolved-body substitution. Only
+ * the 22 fragment dimensions are touched: `archetype` is a plain identity string
+ * (D13) and `provenance` the structured mark (D3) — neither lives in a `fragments`
+ * dir, so neither is a fold subject. An empty substitution returns the agent
+ * unchanged (identity, not a copy) so the no-patch path stays byte-exact.
+ */
+function withResolvedBodies(
+  agent: Agent,
+  subst: ReadonlyMap<string, string>,
+): Agent {
+  if (subst.size === 0) return agent;
+  const one = <T extends string>(v: T | null): T | null =>
+    v === null ? null : ((subst.get(v) ?? v) as T);
+  const many = <T extends string>(
+    vs: readonly T[] | null,
+  ): readonly T[] | null =>
+    vs === null ? null : vs.map((v) => (subst.get(v) ?? v) as T);
+  return {
+    ...agent,
+    autonomy: many(agent.autonomy),
+    role: one(agent.role),
+    formality: one(agent.formality),
+    audienceAdaptation: one(agent.audienceAdaptation),
+    transparency: one(agent.transparency),
+    objective: one(agent.objective),
+    guardrails: many(agent.guardrails),
+    engineeringPrinciples: many(agent.engineeringPrinciples),
+    heuristics: many(agent.heuristics),
+    capabilities: many(agent.capabilities),
+    learning: one(agent.learning),
+    situationAwareness: one(agent.situationAwareness),
+    actions: many(agent.actions),
+    modalities: one(agent.modalities),
+    model: one(agent.model),
+    memory: one(agent.memory),
+    trigger: one(agent.trigger),
+    framing: one(agent.framing),
+    reasoningStrategy: one(agent.reasoningStrategy),
+    satisficing: one(agent.satisficing),
+    outputFormat: one(agent.outputFormat),
+    selfEvaluation: one(agent.selfEvaluation),
+  };
+}
+
+/**
  * Project every cell contributed by the plugin set into an artifact tree. Writes
  * nothing — hand the result to `writeRenderTree(out, tree.files)`.
  *
@@ -150,6 +322,13 @@ export async function projectPluginSet(
 ): Promise<ProjectedTree> {
   const log = opts.log ?? (() => {});
   const files: ProjectedFile[] = [];
+
+  // An agent is rendered from the RESOLVED catalog, never from the bodies its
+  // module happened to import (ENGINE:22). Every move is reported, never silent.
+  const subst = opts.resolvedBodies ?? new Map<string, string>();
+  for (const [from, to] of subst) {
+    log(`RESOLVE fragment: '${from.slice(0, 40)}…' → '${to.slice(0, 40)}…'`);
+  }
 
   // Collect by name across plugins first, so an override is resolved BEFORE any
   // cell is rendered and can be logged rather than discovered as a clobbered file.
@@ -184,7 +363,7 @@ export async function projectPluginSet(
   for (const [name, { dir, preamble: pre }] of [...agentSrc].sort()) {
     const modPath = await resolveModulePath(dir, name);
     if (!modPath) throw new Error(`agent module not found: ${name}`);
-    const agent = await agentOf(modPath);
+    const agent = withResolvedBodies(await agentOf(modPath), subst);
     const { filename, content } = opts.adapter.agentDef({
       ...agent,
       ...((pre ?? opts.preamble) ? { preamble: pre ?? opts.preamble } : {}),
