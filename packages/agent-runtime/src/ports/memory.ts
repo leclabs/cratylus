@@ -318,6 +318,19 @@ export interface SessionBegin {
   readonly episodic: readonly EpisodicRecord[];
   /** Consolidation is owed before proceeding (a crashed/undreamt predecessor). */
   readonly consolidationOwed: boolean;
+  /**
+   * What this wake COST, per partition, in bytes. Wake loads the prose stores
+   * whole, so their size is a per-session context cost rather than a disk one —
+   * and it was previously invisible at the only moment it could be acted on.
+   * Reporting it keeps the strategy the sole decider of what a wake contains
+   * (a caller still never composes primitives to wake) while making the price
+   * of that decision legible to the agent paying it.
+   */
+  readonly bytes: {
+    readonly semantic: number;
+    readonly procedural: number;
+    readonly episodic: number;
+  };
 }
 
 export interface MemoryStrategy {

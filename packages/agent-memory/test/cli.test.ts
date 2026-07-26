@@ -624,3 +624,98 @@ describe('encode session binding (never sessionless)', () => {
     expect(rec?.session).toBe('only-live');
   });
 });
+
+describe('get — the prose-store reader, counterpart of replace', () => {
+  it('hands back the whole current text, unchanged', () => {
+    main(['replace', '--home', home, '--store', 'SEMANTIC', '--body', 'hi']);
+    const r = main(['get', '--home', home, '--store', 'SEMANTIC']);
+    expect(r.code).toBe(0);
+    expect(r.out).toBe('hi\n');
+  });
+
+  it('is empty, not an error, for a store not yet written', () => {
+    const r = main(['get', '--home', home, '--store', 'PROCEDURAL']);
+    expect(r.code).toBe(0);
+    expect(r.out).toBe('');
+  });
+
+  it('REFUSES EPISODIC — that is a record log, not a document', () => {
+    const r = main(['get', '--home', home, '--store', 'EPISODIC']);
+    expect(r.code).toBe(2);
+  });
+});
+
+describe('rollover — land, drain and re-seed with no gap between them', () => {
+  /** Encode one record and return its id. */
+  function encoded(body: string): string {
+    main(['encode', '--home', home, '--session', 'mine', '--body', body]);
+    const recs = logRecords();
+    return recs[recs.length - 1]?.id as string;
+  }
+
+  it('lands the routed content, empties the log, and re-seeds the residue', () => {
+    const id = encoded('a durable law');
+    const routes = JSON.stringify([
+      { id, targets: [{ store: 'PROCEDURAL', content: 'a durable law' }] },
+    ]);
+    const r = main([
+      'rollover',
+      '--home',
+      home,
+      '--session',
+      'mine',
+      '--routes',
+      routes,
+      '--residue',
+      JSON.stringify(['carry this forward']),
+    ]);
+    expect(r.code).toBe(0);
+
+    // landed
+    expect(
+      main(['get', '--home', home, '--store', 'PROCEDURAL']).out,
+    ).toContain('a durable law');
+    // drained AND re-seeded: only the residue remains, nothing was lost
+    const after = logRecords();
+    expect(after).toHaveLength(1);
+    expect(after[0]?.body).toBe('carry this forward');
+  });
+
+  it('re-seeds nothing when no residue is carried', () => {
+    const id = encoded('consumed');
+    const routes = JSON.stringify([
+      { id, targets: [{ store: 'PROCEDURAL', content: 'consumed' }] },
+    ]);
+    const r = main([
+      'rollover',
+      '--home',
+      home,
+      '--session',
+      'mine',
+      '--routes',
+      routes,
+    ]);
+    expect(r.code).toBe(0);
+    expect(logRecords()).toHaveLength(0);
+  });
+
+  it('REFUSES entirely while another session holds the lock', () => {
+    const id = encoded('untouched');
+    main(['lock', 'acquire', '--home', home, '--session', 'someone-else']);
+    const r = main([
+      'rollover',
+      '--home',
+      home,
+      '--session',
+      'mine',
+      '--routes',
+      JSON.stringify([
+        { id, targets: [{ store: 'PROCEDURAL', content: 'x' }] },
+      ]),
+    ]);
+    expect(r.code).toBe(1);
+    // nothing landed, nothing drained — the whole operation is refused, not half-run
+    expect(main(['get', '--home', home, '--store', 'PROCEDURAL']).out).toBe('');
+    expect(logRecords()).toHaveLength(1);
+  });
+});

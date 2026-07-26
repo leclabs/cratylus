@@ -314,15 +314,26 @@ export class AgentMemory implements MemoryStrategy {
         // each of which a dream actually discharges: raw records waiting to be
         // folded, a store over its byte watermark (the `depalimpsest` trigger),
         // and scope pollution (the original signal, retained).
+        const semantic = this.readStore('SEMANTIC');
+        const procedural = this.readStore('PROCEDURAL');
+        const episodic = this.read({
+          forSession: entry.id,
+          ...(opts.under ? { under: opts.under } : {}),
+        });
         return {
           session: entry.id,
-          semantic: this.readStore('SEMANTIC'),
-          procedural: this.readStore('PROCEDURAL'),
-          episodic: this.read({
-            forSession: entry.id,
-            ...(opts.under ? { under: opts.under } : {}),
-          }),
+          semantic,
+          procedural,
+          episodic,
           consolidationOwed: this.consolidationOwed(),
+          bytes: {
+            semantic: Buffer.byteLength(semantic, 'utf8'),
+            procedural: Buffer.byteLength(procedural, 'utf8'),
+            episodic: episodic.reduce(
+              (n, r) => n + Buffer.byteLength(JSON.stringify(r), 'utf8'),
+              0,
+            ),
+          },
         };
       }
       case 'register': {

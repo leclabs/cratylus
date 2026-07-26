@@ -19,6 +19,8 @@ fold                : home → { id ↦ node ∪ legacy } ; \`scripts/memory.mjs
 drain               : home → ∅ ↾ completed-sessions ⟨--completed-only retains a live sibling ; --for-session adds self at handoff⟩ ; \`scripts/memory.mjs drain --name <agent> --completed-only\`
 route               : record → { SEMANTIC · PROCEDURAL · CANON-PROMOTION · EPISODIC · drop }
 land                : route-manifest → { SEMANTIC · PROCEDURAL } ⟨the routing is MINE ; the write is the tool's⟩ ; \`scripts/memory.mjs apply --name <agent> --routes -\`
+resident            : store → text ⟨read the whole prose home ; ¬ open its path⟩ ; \`scripts/memory.mjs get --name <agent> --store (SEMANTIC|PROCEDURAL)\`
+rollover            ≜ land ⊕ drain ⊕ re-encode(residue) ATOMIC under one lock ⟨residue between drain ∧ re-encode lives ONLY in my context ∴ a gap loses it⟩ ; \`scripts/memory.mjs rollover --name <agent> --routes - --residue '<json>'\`
 gate                : home → findings ⟨dream's exit condition⟩ ; \`scripts/memory.mjs audit --name <agent>\`
 dfp(i)              ≜ densest-faithful-point(i)
 depalimpsest        ≜ reconcile the resident set to current ground-truth ⟨¬only-drop-stale⟩ ; supersede the whole file, ¬ append : \`scripts/memory.mjs replace --name <agent> --store (SEMANTIC|PROCEDURAL) --body -\`
@@ -38,6 +40,7 @@ projection-carries(i) ⇒ i ↦ drop
 next-step(i) ⇒ i ↦ EPISODIC ⟨own-node⟩
 else ⇒ i ↦ drop
 drain ≜ .bak archive before clear ; forward-residue re-encoded after drain ; release(lock) last
+land ⊕ drain ⊕ re-encode ⇒ rollover ⟨¬ three invocations : the gap is where residue dies⟩
 consumed ↦ ∅ ∴ ¬unbounded-growth(EPISODIC)
 EPISODIC ──dream──→ { SEMANTIC · PROCEDURAL · EPISODIC }
 periodic : SEMANTIC ──depalimpsest──→ { SEMANTIC · PROCEDURAL }

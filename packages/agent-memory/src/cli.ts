@@ -145,7 +145,18 @@ const VERB_FLAGS: Readonly<Record<string, readonly string[]>> = {
     'session',
   ],
   apply: [...HOME_FLAGS, 'path', 'routes', 'session'],
+  get: [...HOME_FLAGS, 'store'],
   replace: [...HOME_FLAGS, 'store', 'body', 'session'],
+  rollover: [
+    ...HOME_FLAGS,
+    'routes',
+    'residue',
+    'path',
+    'keep',
+    'completed-only',
+    'for-session',
+    'session',
+  ],
   audit: [...HOME_FLAGS, 'allow', 'config', 'keys', 'owed'],
   migrate: ['dry-run', 'overwrite'],
 };
@@ -222,7 +233,10 @@ usage:
   memory drain   (--home <dir> | --name <name>) [--keep N] [--path <p>] [--session <id>] \\
                  [--completed-only | --for-session <S>]
   memory apply   (--home <dir> | --name <name>) [--path <p>] [--session <id>] (--routes <json> | --routes -)
+  memory get     (--home <dir> | --name <name>) --store SEMANTIC|PROCEDURAL
   memory replace (--home <dir> | --name <name>) [--session <id>] --store SEMANTIC|PROCEDURAL (--body <text> | --body -)
+  memory rollover (--home <dir> | --name <name>) (--routes <json> | --routes -) [--residue <json>] \\
+                 [--session <id>] [--keep N] [--completed-only | --for-session <S>]
   memory audit   (--home <dir> | --name <name>) [--allow <file>] [--config <file>] [--keys <file>] [--owed]
   memory migrate <src.md> <dest.jsonl> [--dry-run] [--overwrite]
 
@@ -812,6 +826,29 @@ function applyGuarded(args: ParsedArgs, home: string): CliResult {
 }
 
 /**
+ * `get`: hand back the whole current text of a resident prose store. The
+ * counterpart of {@link runReplace} and the reason a skill no longer has to
+ * `Read` a raw path — reading one meant the caller knew the home layout, which
+ * is exactly what the port exists to hide. Distinct from `read`, which returns
+ * individual timestamped EPISODIC records rather than a document.
+ */
+function runGet(args: ParsedArgs): CliResult {
+  const home = requireHome(args.flags);
+  const storeName = str(args.flags.store);
+  if (storeName === undefined)
+    return { code: 2, out: '', err: 'get needs --store SEMANTIC|PROCEDURAL\n' };
+  const file = resolveTarget(home, { store: storeName as StoreName });
+  if (file === null)
+    return {
+      code: 2,
+      out: '',
+      err: `get: ${storeName} is not a whole-file prose store\n`,
+    };
+  if (!existsSync(file)) return { code: 0, out: '', err: '' };
+  return { code: 0, out: readFileSync(file, 'utf8'), err: '' };
+}
+
+/**
  * `replace`: whole-file supersede of a resident prose store. `--store
  * SEMANTIC|PROCEDURAL` overwrites `<home>/{SEMANTIC,PROCEDURAL}.md` with the
  * `--body` (or `--body -` from stdin). Reuses the {@link resolveTarget} store
@@ -870,6 +907,74 @@ function replaceGuarded(args: ParsedArgs, home: string): CliResult {
     out: `replaced ${basename(file)} (${body.length} bytes)\n`,
     err: '',
   };
+}
+
+/**
+ * `rollover`: land the routing decisions, archive + empty the raw pile, and put
+ * the carry-forward residue back — as ONE operation under ONE lock.
+ *
+ * Run as three separate invocations (`apply` ▸ `drain` ▸ `encode`), the residue
+ * exists between the second and the third NOWHERE but in the caller's working
+ * memory. A crash, a killed session, or an agent that simply forgets the last
+ * step loses it with no trace. Closing that gap is the whole point.
+ *
+ * `--routes` takes the same decision array as `apply`; `--residue` takes the
+ * records to re-encode after the drain.
+ */
+function runRollover(args: ParsedArgs): CliResult {
+  const home = requireHome(args.flags);
+  const session = resolveSession(home, { flag: str(args.flags.session) });
+  const release = guardPartitionWrite(home, session);
+  try {
+    const applied = applyGuarded(args, home);
+    if (applied.code !== 0) return applied;
+    const drained = drainGuarded(args, home);
+    if (drained.code !== 0) return drained;
+
+    let reseeded = 0;
+    const residueFlag = args.flags.residue;
+    const residueText =
+      residueFlag === '-' || residueFlag === true
+        ? readStdin()
+        : typeof residueFlag === 'string'
+          ? residueFlag
+          : '';
+    if (residueText.trim().length > 0) {
+      let bodies: unknown;
+      try {
+        bodies = JSON.parse(residueText);
+      } catch (e) {
+        return {
+          code: 2,
+          out: '',
+          err: `--residue is not valid JSON: ${
+            e instanceof Error ? e.message : String(e)
+          }\n`,
+        };
+      }
+      if (!Array.isArray(bodies))
+        return {
+          code: 2,
+          out: '',
+          err: '--residue must be a JSON array of record bodies\n',
+        };
+      const store = new EpisodicStore({
+        home,
+        derive: { ...defaultDerive, session: () => session },
+      });
+      for (const body of bodies) {
+        store.encode({ body: body as JsonValue }, str(args.flags.path));
+        reseeded++;
+      }
+    }
+    return {
+      code: 0,
+      out: `${applied.out}${drained.out}rollover: ${reseeded} residue record(s) re-encoded\n`,
+      err: `${applied.err}${drained.err}`,
+    };
+  } finally {
+    release();
+  }
 }
 
 /**
@@ -1005,8 +1110,12 @@ export function main(argv: readonly string[]): CliResult {
         return runDrain(args);
       case 'apply':
         return runApply(args);
+      case 'get':
+        return runGet(args);
       case 'replace':
         return runReplace(args);
+      case 'rollover':
+        return runRollover(args);
       case 'audit':
         return runAudit(args);
       default:
