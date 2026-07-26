@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import {
   appendFileSync,
   copyFileSync,
@@ -47,9 +48,16 @@ export function homeForName(name: string): string {
  * `CLAUDE_SESSION_ID`" seam (which silently dropped to a sessionless record when
  * the env was absent). Precedence: an explicit `--session` flag > the harness
  * `CLAUDE_SESSION_ID` env > the SOLE live session registered under `<home>`.
- * There is deliberately NO sessionless fallback: zero live sessions or an
- * ambiguous (>1) live set both THROW, so no captured record is ever unattributed
- * — every event is bound to a session at encode time.
+ * There is deliberately NO sessionless fallback — every event is bound to a
+ * session at encode time.
+ *
+ * ABSENCE MINTS, AMBIGUITY THROWS. Zero live sessions yields a fresh id, which
+ * the caller's register-if-absent heartbeat then registers — the same
+ * mint-on-absence `session begin` performs. Throwing here instead LOST the
+ * capture: a nested harness subprocess can clear the current-session pointer,
+ * and the next `encode` then failed rather than re-binding. An ambiguous (>1)
+ * live set still throws, because picking one would silently split a session's
+ * records across two ids.
  */
 export function resolveSession(
   home: string,
@@ -65,10 +73,7 @@ export function resolveSession(
       ? [...liveSessions(home, now, opts.stale)]
       : [...liveSessions(home, now)];
   if (live.length === 1) return live[0] as string;
-  if (live.length === 0)
-    throw new Error(
-      'no session bound: run `memory session register` (or set CLAUDE_SESSION_ID / pass --session <id>) before encode',
-    );
+  if (live.length === 0) return randomUUID();
   throw new Error(
     `ambiguous session: ${live.length} live sessions under ${home} — pass --session <id>`,
   );

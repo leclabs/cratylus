@@ -363,6 +363,37 @@ describe('lock (CLI)', () => {
     const r = main(['lock', '--home', home]);
     expect(r.code).toBe(2);
   });
+
+  // The dream cell declares `lock-precondition ≜ acquire(lock) before any write
+  // to {SEMANTIC · PROCEDURAL} ∨ any drain`. These pin that the CODE makes it true.
+  describe('partition guard — the shared-partition writes obey the lock', () => {
+    it('REFUSES a drain while another session holds the lock', () => {
+      main(['encode', '--home', home, '--session', 'mine', '--body', 'keep']);
+      main(['lock', 'acquire', '--home', home, '--session', 'someone-else']);
+
+      const r = main(['drain', '--home', home, '--session', 'mine']);
+      expect(r.code).toBe(1);
+      expect(r.err).toMatch(/held by another session/);
+      expect(logRecords()).toHaveLength(1);
+    });
+
+    it('proceeds under MY lock and leaves it held for the rest of the ritual', () => {
+      main(['encode', '--home', home, '--session', 'mine', '--body', 'gone']);
+      main(['lock', 'acquire', '--home', home, '--session', 'mine']);
+
+      const r = main(['drain', '--home', home, '--session', 'mine']);
+      expect(r.code).toBe(0);
+      expect(main(['lock', 'status', '--home', home]).out).toMatch(/held/);
+    });
+
+    it('auto-acquires and releases when no lock is held', () => {
+      main(['encode', '--home', home, '--session', 'mine', '--body', 'gone']);
+
+      const r = main(['drain', '--home', home, '--session', 'mine']);
+      expect(r.code).toBe(0);
+      expect(main(['lock', 'status', '--home', home]).out.trim()).toBe('free');
+    });
+  });
 });
 
 describe('migrate', () => {
@@ -560,11 +591,28 @@ describe('init (fresh home provisioning)', () => {
 });
 
 describe('encode session binding (never sessionless)', () => {
-  it('errors when no session is resolvable (no env, no live session)', () => {
+  it('MINTS a session when none is resolvable — a capture is never lost', () => {
     vi.stubEnv('CLAUDE_SESSION_ID', '');
     const r = main(['encode', '--home', home, '--body', 'x']);
+    expect(r.code).toBe(0);
+    const [rec] = logRecords();
+    expect(rec?.session).toMatch(/^[0-9a-f-]{36}$/);
+
+    // …and the minted id is registered, so the next encode binds to the SAME
+    // session rather than minting a second one.
+    const again = main(['encode', '--home', home, '--body', 'y']);
+    expect(again.code).toBe(0);
+    const recs = logRecords();
+    expect(recs[1]?.session).toBe(rec?.session);
+  });
+
+  it('still REFUSES an ambiguous session (>1 live) rather than picking one', () => {
+    vi.stubEnv('CLAUDE_SESSION_ID', '');
+    main(['session', 'register', '--home', home, '--session', 'live-a']);
+    main(['session', 'register', '--home', home, '--session', 'live-b']);
+    const r = main(['encode', '--home', home, '--body', 'x']);
     expect(r.code).toBe(1);
-    expect(r.err).toMatch(/no session bound/);
+    expect(r.err).toMatch(/ambiguous session/);
   });
 
   it('falls back to the sole live registered session', () => {

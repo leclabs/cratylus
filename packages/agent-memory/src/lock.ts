@@ -52,13 +52,18 @@ function readHolder(file: string): string | undefined {
   }
 }
 
-function tryCreate(file: string, now: number): boolean {
+function tryCreate(file: string, now: number, session?: string): boolean {
   try {
     const fd = openSync(file, 'wx'); // O_EXCL: fails if the lock exists
     try {
       writeSync(
         fd,
-        `${JSON.stringify({ pid: process.pid, host: hostname(), at: new Date(now).toISOString() })}\n`,
+        `${JSON.stringify({
+          pid: process.pid,
+          host: hostname(),
+          ...(session !== undefined ? { session } : {}),
+          at: new Date(now).toISOString(),
+        })}\n`,
         null,
         'utf8',
       );
@@ -80,10 +85,11 @@ function tryCreate(file: string, now: number): boolean {
 export function acquireLock(
   home: string,
   now: number = Date.now(),
+  session?: string,
 ): LockAcquireResult {
   mkdirSync(home, { recursive: true });
   const file = lockPath(home);
-  if (tryCreate(file, now)) return { acquired: true, stolen: false };
+  if (tryCreate(file, now, session)) return { acquired: true, stolen: false };
 
   let ageMs: number;
   try {
@@ -91,7 +97,7 @@ export function acquireLock(
     ageMs = Math.max(0, now - statSync(file).mtimeMs);
   } catch {
     // Raced away between create-fail and stat: retry once.
-    return tryCreate(file, now)
+    return tryCreate(file, now, session)
       ? { acquired: true, stolen: false }
       : { acquired: false, stolen: false };
   }
@@ -102,7 +108,7 @@ export function acquireLock(
     } catch {
       /* raced away — fall through to the retry */
     }
-    if (tryCreate(file, now)) {
+    if (tryCreate(file, now, session)) {
       return {
         acquired: true,
         stolen: true,
@@ -132,6 +138,63 @@ export function releaseLock(home: string): { released: boolean } {
   if (!existsSync(file)) return { released: false };
   unlinkSync(file);
   return { released: true };
+}
+
+/** The session id recorded in a held lock, when the holder wrote one. */
+export function holderSession(home: string): string | undefined {
+  const raw = readHolder(lockPath(home));
+  if (raw === undefined) return undefined;
+  try {
+    const parsed = JSON.parse(raw) as { session?: unknown };
+    return typeof parsed.session === 'string' ? parsed.session : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/**
+ * The guard that makes the dream cell's `lock-precondition` true of the code:
+ * `acquire(lock) before any write to {SEMANTIC · PROCEDURAL} ∨ any drain`.
+ *
+ * The lock is held by an agent SESSION, not a process — the agent acquires it in
+ * one CLI invocation and writes in later ones, so every holder pid is already
+ * dead and pid-liveness cannot decide ownership. Session identity can.
+ *
+ * Unheld ⇒ acquire for the duration and hand back the release. Held by MY
+ * session ⇒ proceed and release nothing, so an explicit `lock acquire` still
+ * spans the whole ritual. Held by ANOTHER session ⇒ refuse: that is the case
+ * that silently corrupted the shared partition.
+ *
+ * Returns the release to run when the write completes.
+ */
+export function guardPartitionWrite(
+  home: string,
+  session: string,
+  now: number = Date.now(),
+): () => void {
+  const status = lockStatus(home, now);
+  if (status.held) {
+    const holder = holderSession(home);
+    if (holder === session) return () => {};
+    if (status.ageMs !== undefined && status.ageMs <= STALE_MS) {
+      throw new Error(
+        `dream.lock is held by another session${
+          holder !== undefined ? ` (${holder})` : ''
+        } — refusing to write the shared partition. Wait, or steal a stale lock via \`memory lock acquire\`.`,
+      );
+    }
+  }
+  const got = acquireLock(home, now, session);
+  if (!got.acquired) {
+    throw new Error(
+      `dream.lock could not be acquired${
+        got.holder !== undefined ? ` (held by ${got.holder})` : ''
+      } — refusing to write the shared partition.`,
+    );
+  }
+  return () => {
+    releaseLock(home);
+  };
 }
 
 /** Inspect the dream lock without touching it. */

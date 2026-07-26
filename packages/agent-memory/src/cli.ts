@@ -4,7 +4,13 @@ import { basename, dirname, join, resolve } from 'node:path';
 import { auditHome, loadLines, repoKeysFromConfig } from './audit.js';
 import { applyRoutes, resolveTarget } from './dream.js';
 import { foldRecords, manifestToJsonl } from './fold.js';
-import { STALE_MS, acquireLock, lockStatus, releaseLock } from './lock.js';
+import {
+  STALE_MS,
+  acquireLock,
+  guardPartitionWrite,
+  lockStatus,
+  releaseLock,
+} from './lock.js';
 import { migrateFile } from './migrate.js';
 import {
   type NodeConfig,
@@ -127,11 +133,18 @@ const VERB_FLAGS: Readonly<Record<string, readonly string[]>> = {
   node: ['json', 'config'],
   home: HOME_FLAGS,
   fold: [...HOME_FLAGS, 'path', 'config'],
-  lock: [...HOME_FLAGS, 'stale'],
+  lock: [...HOME_FLAGS, 'stale', 'session'],
   session: [...HOME_FLAGS, 'session', 'json', 'stale', 'under'],
-  drain: [...HOME_FLAGS, 'keep', 'path', 'completed-only', 'for-session'],
-  apply: [...HOME_FLAGS, 'path', 'routes'],
-  replace: [...HOME_FLAGS, 'store', 'body'],
+  drain: [
+    ...HOME_FLAGS,
+    'keep',
+    'path',
+    'completed-only',
+    'for-session',
+    'session',
+  ],
+  apply: [...HOME_FLAGS, 'path', 'routes', 'session'],
+  replace: [...HOME_FLAGS, 'store', 'body', 'session'],
   audit: [...HOME_FLAGS, 'allow', 'config', 'keys'],
   migrate: ['dry-run', 'overwrite'],
 };
@@ -202,12 +215,13 @@ usage:
   memory node    <path> [--json] [--config <file>]
   memory home    (--home <dir> | --name <name>)   -- print the resolved agent home
   memory fold    (--home <dir> | --name <name>) [--path <p>] [--config <file>]
-  memory lock    (acquire | release | status) (--home <dir> | --name <name>)
+  memory lock    (acquire | release | status) (--home <dir> | --name <name>) [--session <id>]
   memory session (register | heartbeat | release | list) (--home <dir> | --name <name>) [--session <id>]
   memory session status [<id>] (--home <dir> | --name <name>) [--json] [--stale <ms>]
-  memory drain   (--home <dir> | --name <name>) [--keep N] [--path <p>] [--completed-only | --for-session <S>]
-  memory apply   (--home <dir> | --name <name>) [--path <p>] (--routes <json> | --routes -)
-  memory replace (--home <dir> | --name <name>) --store SEMANTIC|PROCEDURAL (--body <text> | --body -)
+  memory drain   (--home <dir> | --name <name>) [--keep N] [--path <p>] [--session <id>] \\
+                 [--completed-only | --for-session <S>]
+  memory apply   (--home <dir> | --name <name>) [--path <p>] [--session <id>] (--routes <json> | --routes -)
+  memory replace (--home <dir> | --name <name>) [--session <id>] --store SEMANTIC|PROCEDURAL (--body <text> | --body -)
   memory audit   (--home <dir> | --name <name>) [--allow <file>] [--config <file>] [--keys <file>]
   memory migrate <src.md> <dest.jsonl> [--dry-run] [--overwrite]
 
@@ -459,7 +473,13 @@ function runLock(args: ParsedArgs): CliResult {
   const fmtAge = (ms: number): string => `${(ms / 60000).toFixed(1)}m`;
   switch (action) {
     case 'acquire': {
-      const r = acquireLock(home);
+      // Stamp the acquiring SESSION into the lock: the agent acquires here and
+      // writes in later invocations, so ownership must survive this process.
+      const r = acquireLock(
+        home,
+        Date.now(),
+        resolveSession(home, { flag: str(args.flags.session) }),
+      );
       if (r.acquired) {
         return {
           code: 0,
@@ -643,12 +663,24 @@ function runMigrate(args: ParsedArgs): CliResult {
  * together. Absent both flags, the whole log drains (unchanged back-compat).
  */
 function runDrain(args: ParsedArgs): CliResult {
+  const home = requireHome(args.flags);
+  const release = guardPartitionWrite(
+    home,
+    resolveSession(home, { flag: str(args.flags.session) }),
+  );
+  try {
+    return drainGuarded(args, home);
+  } finally {
+    release();
+  }
+}
+
+function drainGuarded(args: ParsedArgs, home: string): CliResult {
   const keepStr = str(args.flags.keep);
   const keep = keepStr !== undefined ? Number.parseInt(keepStr, 10) : 5;
   if (!Number.isInteger(keep) || keep < 0)
     return { code: 2, out: '', err: '--keep must be a non-negative integer\n' };
   const path = str(args.flags.path);
-  const home = requireHome(args.flags);
   const store = new EpisodicStore({ home });
 
   const forSession = str(args.flags['for-session']);
@@ -702,6 +734,18 @@ interface RouteDecisionInput {
  */
 function runApply(args: ParsedArgs): CliResult {
   const home = requireHome(args.flags);
+  const release = guardPartitionWrite(
+    home,
+    resolveSession(home, { flag: str(args.flags.session) }),
+  );
+  try {
+    return applyGuarded(args, home);
+  } finally {
+    release();
+  }
+}
+
+function applyGuarded(args: ParsedArgs, home: string): CliResult {
   const routesFlag = args.flags.routes;
   let jsonText: string;
   if (routesFlag === '-' || routesFlag === true) {
@@ -765,6 +809,18 @@ function runApply(args: ParsedArgs): CliResult {
  */
 function runReplace(args: ParsedArgs): CliResult {
   const home = requireHome(args.flags);
+  const release = guardPartitionWrite(
+    home,
+    resolveSession(home, { flag: str(args.flags.session) }),
+  );
+  try {
+    return replaceGuarded(args, home);
+  } finally {
+    release();
+  }
+}
+
+function replaceGuarded(args: ParsedArgs, home: string): CliResult {
   const storeName = str(args.flags.store);
   if (storeName === undefined)
     return {
@@ -813,9 +869,7 @@ function runReplace(args: ParsedArgs): CliResult {
  * stderr but do not fail the audit (the ratchet shrinks at review time).
  */
 function runAudit(args: ParsedArgs): CliResult {
-  const home = str(args.flags.home);
-  if (home === undefined)
-    return { code: 2, out: '', err: '--home <agent-home-dir> is required\n' };
+  const home = requireHome(args.flags);
 
   const defaultAllow = join(home, 'audit-allow.txt');
   const allowFile =
