@@ -1,50 +1,52 @@
 // The CODEX consumer projection command — the second-harness counterpart of
-// `project-cli.ts`. Same agent-canon modules (the `Agent` vector + `ResolvedSkill`), but
-// run through agent-forge's CODEX adapter instead of claude: agents → `agents/<name>.toml`,
-// skills → `skills/<name>/SKILL.md`, plus the `AGENTS.md` instruction surface.
+// `project-cli.ts`, and now its MIRROR IMAGE: `projectPluginSet` + `writeRenderTree`,
+// with the harness adapter selected BY NAME as the only difference between them.
+// Agents → `agents/<name>.toml`, skills → `skills/<name>/SKILL.md`, plus the
+// `AGENTS.md` instruction surface — all of it rendered by forge.
 //
-// This IS the T2.4 proof: a agent-canon agent authored ONCE reaches a second agent-forge harness
-// for free — the only new code is which harness the walk selects by name. The
-// PROJECTION LOGIC lives in agent-forge behind the `HarnessAdapter` port
-// (`adapterByName('codex')`); this step only walks agent-canon's typed modules
-// and wires them to it.
+// This IS the T2.4 proof: a agent-canon agent authored ONCE reaches a second agent-forge
+// harness for free — the only new code is which harness the walk selects by name.
 //
-// Usage:  tsx src/toolkit/project-cli-codex.ts [--out <dir>] [--profile <reader/harness>]
-//   default out:     packages/agent-canon/.render-ts-codex   (gitignored; separate from .render-ts)
-//   default profile: strong-llm-lean/codex
+// It used to reimplement the pipeline instead: its own dir scanning, its own module
+// loading, its own `ResolvedSkill` assembly, its own shim emitter, three
+// `writeFileSync` sites. That second implementation drifted exactly once and shipped
+// SESSIONLESS runtime shims to every codex-projected skill for the life of the
+// divergence. There is one projector now, and this CLI is one of its callers.
+//
+// Usage:  tsx src/toolkit/project-cli-codex.ts [--out <dir>]
+//   default out:  packages/agent-canon/.render-ts-codex   (gitignored; separate from .render-ts)
 
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { glob } from 'node:fs/promises';
+import { rmSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
+import { adapterByName } from '@leclabs/agent-forge/adapters/registry';
 import {
-  type ResolvedSkill,
-  adapterByName,
-} from '@leclabs/agent-forge/adapters/registry';
-import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
-// The ONE shim emitter, shared with the claude path (`projectPluginSet`). A canon-local
-// copy lived here once and silently missed forge's session bridge, so every codex shim
-// ran sessionless; the emitter is forge's alone and this CLI is one of its callers.
-import { emitRuntimeShim } from '@leclabs/agent-forge/project';
-import { foundingDoctrine } from '../genus/founding-doctrine.js';
+  projectPluginSet,
+  writeRenderTree,
+} from '@leclabs/agent-forge/project';
+import canonPlugin from '../index.js';
 
 // The harness projection port, selected strictly BY NAME — no concrete codex
 // adapter module is imported here (the projection logic lives in forge).
 const adapter = adapterByName('codex');
 
+// Codex declares NO hook surface (`codexHarnessAdapter` has no `hooks` op), and the
+// projector refuses loudly rather than dropping a plugin's hook cells unremarked. So
+// the codex projection takes canon WITHOUT its hooks dir: canon's harness-substrate
+// cells are claude's settings.json machinery and have no codex counterpart. The
+// omission is STATED here, at the one site that knows it, instead of being softened
+// into a silent drop inside the projector for every consumer of every harness.
+const { hooks: _codexHasNoHooks, ...codexPlugin } = canonPlugin;
+
 const here = dirname(fileURLToPath(import.meta.url));
 const anatomyRoot = join(here, '..', '..');
-const agentsModDir = join(anatomyRoot, 'src', 'agents');
-const skillsModDir = join(anatomyRoot, 'src', 'skills');
 
 interface Args {
   out: string;
-  profile: string;
 }
 
 function parseArgs(argv: string[]): Args {
   let out = join(anatomyRoot, '.render-ts-codex');
-  let profile = 'strong-llm-lean/codex';
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '--out') {
@@ -53,133 +55,34 @@ function parseArgs(argv: string[]): Args {
         throw new Error('--out requires a value');
       }
       out = v;
-    } else if (a === '--profile') {
-      const v = argv[++i];
-      if (!v) {
-        throw new Error('--profile requires a value');
-      }
-      profile = v;
     } else {
       throw new Error(`unknown arg ${a}`);
     }
   }
-  return { out, profile };
+  return { out };
 }
 
-async function moduleNames(dir: string): Promise<string[]> {
-  const names: string[] = [];
-  for await (const p of glob('*.ts', { cwd: dir })) {
-    if (p !== 'base.ts') {
-      names.push(p.replace(/\.ts$/, ''));
-    }
-  }
-  return names.sort();
-}
-
-/** Skill cells are self-contained dirs: `<name>/skill.ts`; the name is the dir. */
-async function skillNames(dir: string): Promise<string[]> {
-  const names: string[] = [];
-  for await (const p of glob('*/skill.ts', { cwd: dir })) {
-    names.push(dirname(p));
-  }
-  return names.sort();
-}
-
-/** The `<name>: Agent` vector export of an agent module. */
-async function agentOf(modPath: string): Promise<Agent> {
-  const mod = (await import(pathToFileURL(modPath).href)) as Record<
-    string,
-    unknown
-  >;
-  const key = Object.keys(mod).find((k) => k !== 'default');
-  if (!key) {
-    throw new Error(`${modPath}: no Agent export`);
-  }
-  return mod[key] as Agent;
-}
-
-/** The `Skill` export of a skill module (the object carrying `formalBlock`; a
- *  module also exports its `<name>Notation` σ* string, which this skips). */
-async function skillOf(modPath: string): Promise<Skill> {
-  const mod = (await import(pathToFileURL(modPath).href)) as Record<
-    string,
-    unknown
-  >;
-  const skill = Object.values(mod).find(
-    (v): v is Skill =>
-      typeof v === 'object' && v !== null && 'formalBlock' in v,
-  );
-  if (!skill) {
-    throw new Error(`${modPath}: no Skill export`);
-  }
-  return skill;
-}
-
-async function projectAgents(args: Args): Promise<string[]> {
-  const dir = join(args.out, 'agents');
-  mkdirSync(dir, { recursive: true });
-  const names: string[] = [];
-  for (const name of await moduleNames(agentsModDir)) {
-    const agent = await agentOf(join(agentsModDir, `${name}.ts`));
-    // Stamp the founding doctrine intrinsically (ONE home, `../genus/founding-doctrine`).
-    const { filename, content } = adapter.agentDef({
-      ...agent,
-      preamble: foundingDoctrine,
-    });
-    writeFileSync(join(dir, filename), content);
-    process.stdout.write(`EMIT codex agent ${name}\n`);
-    names.push(name);
-  }
-  return names;
-}
-
-async function projectSkills(args: Args): Promise<number> {
-  const names = await skillNames(skillsModDir);
-  let n = 0;
-  for (const name of names) {
-    const cell = await skillOf(join(skillsModDir, name, 'skill.ts'));
-    const resolved: ResolvedSkill = {
-      name: cell.name,
-      trigger: `/${cell.name}`,
-      description: cell.description,
-      formalBlock: cell.formalBlock,
-      // Composed-from: the resolved sibling skills (lazy thunk), each as its
-      // `/trigger`. Every entry IS a known skill, so no slug lookup is needed.
-      composedFrom: cell.composition().map((c) => `/${c.name}`),
-      // The founding doctrine, intrinsic (ONE home, `../genus/founding-doctrine`).
-      preamble: foundingDoctrine,
-    };
-    const dir = join(args.out, 'skills', name);
-    mkdirSync(dir, { recursive: true });
-    const { filename, content } = adapter.skillDef(resolved);
-    writeFileSync(join(dir, filename), content);
-    // A runtime-capability skill ALSO gets a thin shim `scripts/<capability>.mjs`
-    // → `agent-runtime <capability>` (NOT a bundled impl); others: SKILL.md only.
-    if (cell.runtime) {
-      emitRuntimeShim(dir, cell.runtime.capability);
-      process.stdout.write(
-        `EMIT codex skill ${name} (+runtime shim scripts/${cell.runtime.capability}.mjs)\n`,
-      );
-    } else {
-      process.stdout.write(`EMIT codex skill ${name}\n`);
-    }
-    n++;
-  }
-  return n;
+async function projectCells(out: string): Promise<{
+  agents: number;
+  skills: number;
+}> {
+  // The SAME call `project-cli.ts` makes, over the same plugin, differing only in
+  // the adapter. See that file for why `resolvedBodies` is deliberately not passed.
+  const { files, agents, skills } = await projectPluginSet({
+    plugins: [codexPlugin],
+    adapter,
+    log: (line) => process.stdout.write(`${line}\n`),
+  });
+  writeRenderTree(out, files);
+  return { agents, skills };
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const args = parseArgs(process.argv.slice(2));
-  const agentNames = await projectAgents(args);
-  const s = await projectSkills(args);
-  // The codex AGENTS.md instruction surface (the always-loaded discovery shell).
-  const surface = adapter.surface;
-  if (!surface) {
-    throw new Error(`harness '${adapter.name}' has no instruction surface`);
-  }
-  const { filename, content } = surface(agentNames);
-  writeFileSync(join(args.out, filename), content);
+  // Clean the out dir first — a removed/renamed cell must not leave a stale render.
+  rmSync(args.out, { recursive: true, force: true });
+  const { agents, skills } = await projectCells(args.out);
   process.stdout.write(
-    `projected ${agentNames.length} agents + ${s} skills + AGENTS.md to ${args.out}\n`,
+    `projected ${agents} agents + ${skills} skills + AGENTS.md to ${args.out}\n`,
   );
 }
