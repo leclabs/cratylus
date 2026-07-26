@@ -46,6 +46,37 @@ const THE_22: readonly Dimension[] = [
   'self-evaluation',
 ];
 
+/** Descriptor metadata as it arrives from a dir listing / a descriptor entry —
+ *  the shapes the two checks below are fed, widened so a BAD one can be built. */
+interface Meta {
+  readonly axis: string;
+  readonly kind: string;
+  readonly arity: string;
+}
+
+/** The descriptor↔corpus comparison, as a function of the two sets, so a
+ *  synthetic DRIFTED corpus can be handed to the same code the live leg runs. */
+function corpusDrift(
+  dirs: readonly string[],
+  declared: readonly string[],
+): { missing: string[]; extra: string[] } {
+  const onDisk = new Set(dirs);
+  const inDescriptor = new Set(declared);
+  return {
+    missing: declared.filter((d) => !onDisk.has(d)).sort(),
+    extra: dirs.filter((d) => !inDescriptor.has(d)).sort(),
+  };
+}
+
+/** The legality predicate over one descriptor entry. */
+function illegalMeta(m: Meta): string[] {
+  const bad: string[] = [];
+  if (!['Persona', 'Constitution'].includes(m.axis)) bad.push(`axis=${m.axis}`);
+  if (!['enum', 'open', 'coined'].includes(m.kind)) bad.push(`kind=${m.kind}`);
+  if (!['scalar', 'set'].includes(m.arity)) bad.push(`arity=${m.arity}`);
+  return bad;
+}
+
 describe('ANATOMY descriptor', () => {
   it('has exactly the 22 dimensions as keys (no missing, no extra)', () => {
     expect([...DIMENSION_NAMES].sort()).toEqual([...THE_22].sort());
@@ -54,11 +85,9 @@ describe('ANATOMY descriptor', () => {
 
   it('every axis/kind/arity is a legal value', () => {
     for (const dimension of DIMENSION_NAMES) {
-      const m = ANATOMY[dimension];
-      expect(['Persona', 'Constitution']).toContain(m.axis);
-      expect(['enum', 'open', 'coined']).toContain(m.kind);
-      expect(['scalar', 'set']).toContain(m.arity);
+      expect(illegalMeta(ANATOMY[dimension]), dimension).toEqual([]);
     }
+    expect(DIMENSION_NAMES.length).toBeGreaterThan(0); // never a vacuous loop
   });
 
   it('the six set dimensions are exactly the set-arity entries', () => {
@@ -96,6 +125,41 @@ describe('ANATOMY descriptor', () => {
       .map((d) => d.name)
       .filter((name) => name !== 'archetype' && name !== 'provenance')
       .sort();
-    expect(dirs).toEqual([...DIMENSION_NAMES].sort());
+    expect(dirs.length).toBeGreaterThan(0); // a listing that read nothing is DARK
+    expect(corpusDrift(dirs, DIMENSION_NAMES)).toEqual({
+      missing: [],
+      extra: [],
+    });
+  });
+
+  // ── The gate BITES — otherwise it is green whether or not the two agree ──────
+  it('is non-vacuous — a drifted corpus and an illegal descriptor entry are both CONVICTED', () => {
+    // A corpus that lost a dimension dir and gained an unrecognized one: the two
+    // failure modes the live comparison exists to catch, neither of which the
+    // clean corpus can exhibit.
+    const drifted = [...DIMENSION_NAMES]
+      .filter((d) => d !== 'memory')
+      .concat('telepathy')
+      .sort();
+    expect(corpusDrift(drifted, DIMENSION_NAMES)).toEqual({
+      missing: ['memory'],
+      extra: ['telepathy'],
+    });
+    // EXONERATES: the clean corpus is genuinely clean, not merely unexamined.
+    expect(corpusDrift([...DIMENSION_NAMES], DIMENSION_NAMES)).toEqual({
+      missing: [],
+      extra: [],
+    });
+
+    // A descriptor entry outside the closed axis/kind/arity vocabularies.
+    expect(
+      illegalMeta({ axis: 'Persona', kind: 'freeform', arity: 'tuple' }),
+    ).toEqual(['kind=freeform', 'arity=tuple']);
+    expect(illegalMeta({ axis: 'Vibe', kind: 'enum', arity: 'set' })).toEqual([
+      'axis=Vibe',
+    ]);
+    expect(
+      illegalMeta({ axis: 'Constitution', kind: 'coined', arity: 'scalar' }),
+    ).toEqual([]);
   });
 });

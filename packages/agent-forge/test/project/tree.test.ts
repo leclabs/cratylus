@@ -34,6 +34,12 @@ async function tree() {
   });
 }
 
+/** The write calls a source text performs — the scan the purity guard runs,
+ *  named so a synthetic WRITING source can be fed to the very same code. */
+function writeCalls(src: string): string[] {
+  return ['writeFileSync', 'chmodSync'].filter((call) => src.includes(call));
+}
+
 describe('projectPluginSet — the artifact tree is the return value', () => {
   it('returns every projected file as bytes, writing nothing', async () => {
     const t = await tree();
@@ -86,7 +92,27 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
       join(here, '..', '..', 'src', 'project', 'index.ts'),
       'utf8',
     );
-    expect(src).not.toContain('writeFileSync');
-    expect(src).not.toContain('chmodSync');
+    expect(src.length).toBeGreaterThan(0); // a read that returned nothing is DARK
+    expect(writeCalls(src)).toEqual([]);
+  });
+
+  it('is non-vacuous — the scan FLAGS a projector that writes, and spares one that only returns bytes', () => {
+    // The BAD input the live source does not contain: the two fs calls whose
+    // reappearance would close the seam V7 opened. Without this, the check above
+    // is green whether the projector is pure or the substrings were renamed.
+    expect(
+      writeCalls("writeFileSync(join(out, f.path), f.content, 'utf8');\n"),
+    ).toEqual(['writeFileSync']);
+    expect(writeCalls('if (f.executable) chmodSync(dest, 0o755);\n')).toEqual([
+      'chmodSync',
+    ]);
+    expect(
+      writeCalls('writeFileSync(a, b);\nchmodSync(c, 0o755);\n').sort(),
+    ).toEqual(['chmodSync', 'writeFileSync']);
+    // EXONERATES: returning the bytes, and merely READING, are both clean.
+    expect(
+      writeCalls('return { files, agents, skills, shims, hooks };\n'),
+    ).toEqual([]);
+    expect(writeCalls("const src = readFileSync(path, 'utf8');\n")).toEqual([]);
   });
 });

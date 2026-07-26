@@ -10,7 +10,15 @@
  * - prints the tracked-failing enumeration so `pnpm test` output is countable.
  */
 
-import { existsSync, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -41,6 +49,13 @@ function normalizeMd(text: string): string {
 }
 
 describe('story coverage meta-gates', () => {
+  it('the scan reached the live story suites — an empty scan is DARK, not clean', () => {
+    // Every check below is a filter over `scan`; a scanner that found no file
+    // reports zero violations and zero unknown ids forever.
+    expect(scan.files.length).toBeGreaterThan(0);
+    expect(scan.refs.length).toBeGreaterThan(0);
+  });
+
   it('no bare/silenced test calls in story suites', () => {
     expect(scan.violations).toEqual([]);
   });
@@ -84,6 +99,61 @@ describe('story coverage meta-gates', () => {
         .map((r) => `${r.id} · ${mdSafe(r.name)}`),
     );
     expect([...enumerated].sort()).toEqual([...actual].sort());
+  });
+
+  // ── The meta-gates BITE — a scanner that stopped matching reports the same
+  //    empty violations list as a clean suite ───────────────────────────────────
+  it('is non-vacuous — a synthetic epic dir with a bare test, a silencer and an unknown id is CONVICTED', () => {
+    const root = mkdtempSync(join(tmpdir(), 'story-scan-convicts-'));
+    try {
+      const epic = join(root, 'E99');
+      mkdirSync(epic, { recursive: true });
+      writeFileSync(
+        join(epic, 'S1.bad.test.ts'),
+        [
+          // a legitimate story call, but bound to an id no registry knows
+          "story('E99.S1', 'an unregistered story', () => {});",
+          // a bare test call — the story binding bypassed entirely
+          "it('a bare test that traces to no story', () => {});",
+          // a silenced test — green by not running
+          "it.skip('a silenced test', () => {});",
+          "describe.only('a narrowed suite', () => {});",
+          '',
+        ].join('\n'),
+        'utf8',
+      );
+      const bad = scanStoryTests(root);
+
+      // The scanner SEES the file, and FLAGS each violation class by name.
+      expect(bad.files).toEqual([join('E99', 'S1.bad.test.ts')]);
+      const reported = bad.violations.join('\n');
+      expect(reported).toMatch(/bare test call/);
+      expect(reported).toMatch(/modified test call/);
+      expect(reported).toMatch(/silences tests/);
+
+      // …and the unknown-id leg convicts the story bound to no registry entry.
+      const unknown = bad.refs.filter((r) => !STORY_IDS.includes(r.id));
+      expect(unknown.map((r) => r.id)).toEqual(['E99.S1']);
+
+      // EXONERATES: a dir that is not an `E<n>` epic is not scanned at all, and
+      // a well-formed story file yields refs with no violations.
+      writeFileSync(
+        join(epic, 'S2.good.test.ts'),
+        "story('E99.S2', 'a well-formed story', () => {});\n",
+        'utf8',
+      );
+      mkdirSync(join(root, 'helpers'), { recursive: true });
+      writeFileSync(
+        join(root, 'helpers', 'x.test.ts'),
+        "it('outside an epic dir', () => {});\n",
+        'utf8',
+      );
+      const again = scanStoryTests(root);
+      expect(again.files).not.toContain(join('helpers', 'x.test.ts'));
+      expect(again.refs.map((r) => r.id).sort()).toEqual(['E99.S1', 'E99.S2']);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
   });
 
   it('prints the countable tracked-failing enumeration', () => {
