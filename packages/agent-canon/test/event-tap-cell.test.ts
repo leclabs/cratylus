@@ -23,7 +23,10 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@leclabs/agent-forge/adapters/registry';
-import { projectPluginSet } from '@leclabs/agent-forge/project';
+import {
+  projectPluginSet,
+  writeRenderTree,
+} from '@leclabs/agent-forge/project';
 import { beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
 import { eventTap } from '../src/skills/event-tap/skill.js';
@@ -72,11 +75,13 @@ let out = '';
 
 beforeAll(async () => {
   out = mkdtempSync(join(tmpdir(), 'event-tap-cell-'));
-  await projectPluginSet({
+  // V7: the projector RETURNS the tree; the caller is the one writer.
+  const report = await projectPluginSet({
     plugins: [canonPlugin],
     out,
     adapter: adapterByName('claude'),
   });
+  writeRenderTree(out, report.files);
 }, 120_000);
 
 describe('event-tap cell — the capability has an agent-facing surface', () => {
