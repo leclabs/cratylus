@@ -30,3 +30,35 @@ is never persisted, so nothing can distinguish a record seen once from one defer
 
 **Provenance.** Filed 2026-07-26 by S3 (`plans/close-out/SPEC.md`) while measuring Decision 4
 (duplicate detection). Out of that shard's remit to chase.
+
+## Probed 2026-07-26 (mav) — the mechanism WORKS; the hypothesis inverts
+
+Ran `applyRoutes` against a temp home with two records, one classified to `EPISODIC`
+(retained) and one to `SEMANTIC` (consumed):
+
+```
+REMAINING: 1
+  routes= ["EPISODIC"] | a forward next-step, retained
+```
+
+The consumed record is gone; the retained one carries its stamp. `stamp.set` fires at
+`dream.ts:246` for retained records, `compact` writes it at `dream.ts:141-143`, and
+`applyRoutes` passes the map at `dream.ts:258`. **End to end, wired and working.**
+
+So `0 of 46` is **not** a code defect, and the stub's two hypotheses ("`apply` is not
+the live path" / "the stamp is lost") are both refuted. Also refuted incidentally: the
+hand-named `mav/EPISODIC.jsonl.bak-dedup` is MINE — I wrote it by hand this session
+removing shell-mangled duplicates — so it is not evidence about `apply` at all.
+
+**What is actually true, and it is worth more than the bug would have been.** `routes`
+is only observable in the window between a dream that RETAINS a record and the next
+`encode`. A dream that consumes-or-drops everything leaves EPISODIC empty, and the
+forward-looking records that follow are encoded fresh and unstamped. That is the
+normal shape of every dream this corpus has run — which is why the field is empty
+across all three streams simultaneously.
+
+**Consequence for whoever picks this up:** `routes` cannot serve as evidence of routing
+history, because it does not survive the next drain cycle. If routing provenance is
+wanted — and S3's dedup discussion implies it might be — it needs a home that is not
+the record being drained. Re-scope this stub to that question; do not "fix" a mechanism
+that is behaving exactly as written.
