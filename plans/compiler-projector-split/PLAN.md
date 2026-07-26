@@ -31,32 +31,62 @@ Worth stating plainly, because the words collide. The IR just deleted ran **harn
 **canon → IR** compiler runs the opposite direction and is fully VISION-consistent: the canon stays the
 authored source and the IR is a derived intermediate.
 
-## The question the census must answer first
+## The IR here is IN-MEMORY — and the canon already declares it
 
-**Must the IR be materialized, or is the split conceptual?**
+Operator clarification (2026-07-25): the IR meant is **the in-memory composited agent instance**. It is
+**not** materialized. The projector consumes it to generate the target harness artifacts.
 
-The resolved plugin set already exists as an in-memory structure between `compose` and `project`. So:
-**what does an IR provide that the resolved set does not?** Candidate answers to test, not assume —
-independent testability against golden fixtures; N harnesses needing only a projector each; a stable
-serialization boundary for third-party projectors; inspectability of a build.
+This is not a new proposal — `MODEL.md:25` already declares it:
 
-Weigh against: **it existed and was removed.** `packages/agent-canon/toolkit/emit_ir.py` was exactly a
-canon→IR emitter, deleted in `d532a5f` ("delete Python toolkit — koine is the only projection+deploy
-machinery"). Establish whether that was **Python-toolkit retirement** (incidental) or **IR-rejection**
-(a decision being re-opened) — read the commit and its neighbours before building.
+```
+compose : (DimensionName ⇸ ℘(fragment)) → IR ;  ir : agent → IR
+```
 
-Also weigh: today there are **two** harness adapters (`claude`, `codex`). An IR's payoff scales with N.
+and `ENGINE.md:22` binds it: `compose(select(a)) = ir(a) ∧ ir(a) ⊑ content(a)`. So the compiler/projector
+seam the operator describes **is the seam MODEL already specifies**. The hypothesis is not "add an IR"; it
+is "give the declared IR a package boundary."
 
-**A package split is cheap and clarifying. A materialized IR is expensive and has already been tried
-once.** They are separable decisions and the census should report them separately.
+> **A prior draft of this plan asked "must the IR be materialized?" — that question was wrong**, and it
+> was wrong because **`IR` was overloaded in this corpus**: MODEL's composed structure vs the on-disk
+> `.agent-forge/` intake IR that `depalimpsest-ir-intake` deleted. Two concepts, one sign — a PARTITIONED
+> violation (`∀c: |home(c)| = 1`). The excision incidentally resolved it; only MODEL's sense survives, and
+> the `emit_ir.py` / `d532a5f` history is **irrelevant** here (that was the materialized intake sense).
+
+## The question the census must actually answer
+
+**MODEL declares ONE `IR`. The code has no such type.**
+
+`HarnessAdapter` (`core/harness-adapter.ts:42,44`) consumes them **separately**:
+
+```
+agentDef(agent: Agent): HarnessProjection
+skillDef(skill: ResolvedSkill): HarnessProjection
+hooks(...)                                     -- a third path again
+```
+
+So the composited instance is today **three parallel types**, not one `ir(a)`. The compiler/projector
+boundary is exactly the type that crosses it, so the boundary cannot be drawn until this is settled:
+
+1. Is there **one** composited instance (MODEL's `IR`) with agents/skills/hooks as members, or **three**
+   peer structures that merely happen to be produced together?
+2. If one: what is it, where is it built today, and is it ever whole in memory at any single point — or is
+   it only ever assembled per-kind inside `projectPluginSet`?
+3. If three: **MODEL is wrong and must be revised** (apex order — MODEL is the most revisable of the
+   triad), or the code is wrong and must converge on `ir(a)`. Decide which, with evidence.
+
+This is the crux and it is cheap to settle by reading `project/index.ts` + `resolve/` against `MODEL.md`.
+The package split is downstream of the answer: a boundary needs a type to be a boundary **of**.
+
+Note the payoff scale is unchanged by any of this: there are **two** harness adapters today
+(`claude`, `codex`).
 
 ## Census scope (delegable; do this before authoring shards)
 
-1. Where exactly is the harness-blind/harness-bound seam in the surviving code? Does `project/` already
-   contain both, and does it separate cleanly?
+1. Is MODEL's single `IR` real in the code, or are `Agent` / `ResolvedSkill` / hooks three peers? This
+   gates everything below — see "The question the census must actually answer".
 2. What would each package own — modules, exports, tests? Does the dependency edge stay acyclic?
    (`agent-runtime` could not declare a capability package for exactly this reason; the cycle bit once.)
-3. Read `d532a5f` and its neighbours: why did the canon→IR emitter go?
+3. Where is the composited instance whole in memory, if anywhere? `project/index.ts` + `resolve/`.
 4. What does `HarnessAdapter` (`core/harness-adapter.ts:38`) consume today, and would it consume an IR
    instead of an anatomy vector? That is the interface the split turns on.
 5. Cross-package blast radius: 197 of 205 imports are `@leclabs/agent-forge/anatomy`. A split changes
