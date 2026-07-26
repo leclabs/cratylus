@@ -3,6 +3,7 @@ import { codeExecution as codeExecution_actions } from '../dimensions/actions/co
 import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../dimensions/audience-adaptation/convergence.js';
+import { checkIn as checkIn_autonomy } from '../dimensions/autonomy/check-in.js';
 import { principalSelf } from '../dimensions/autonomy/decision-authority.js';
 import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../dimensions/autonomy/human-on-the-loop.js';
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
@@ -44,7 +45,12 @@ export const nico: Agent = {
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: decisionRationale_transparency,
-  autonomy: [principalSelf, humanOnTheLoop_autonomy, missionCommand],
+  autonomy: [
+    principalSelf,
+    humanOnTheLoop_autonomy,
+    missionCommand,
+    checkIn_autonomy,
+  ],
   provenance: { mark: { emoji: '📐', hue: 'cyan' } },
   objective: parsimony_objective,
   engineeringPrinciples: [

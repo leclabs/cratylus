@@ -5,6 +5,7 @@ import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../dimensions/audience-adaptation/convergence.js';
 import { principalSelf } from '../dimensions/autonomy/decision-authority.js';
 
+import { checkIn as checkIn_autonomy } from '../dimensions/autonomy/check-in.js';
 import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../dimensions/autonomy/human-on-the-loop.js';
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
 import { operationsDelivery as operationsDelivery_capabilities } from '../dimensions/capabilities/operations-delivery.js';
@@ -42,7 +43,12 @@ export const mav: Agent = {
   formality: formal_formality,
   audienceAdaptation: convergence_audienceAdaptation,
   transparency: reasoningTrace_transparency,
-  autonomy: [principalSelf, humanOnTheLoop_autonomy, missionCommand],
+  autonomy: [
+    principalSelf,
+    humanOnTheLoop_autonomy,
+    missionCommand,
+    checkIn_autonomy,
+  ],
   provenance: { mark: { emoji: '✈️', hue: 'green' } },
   objective: delivery_objective,
   engineeringPrinciples: [
