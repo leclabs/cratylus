@@ -12,6 +12,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
+import { RUNTIME_BIN } from '../../bin-name.js';
 import type { LifecycleEvent } from '../../events.js';
 import type {
   Record as CaptureRow,
@@ -31,7 +32,10 @@ import {
  * surgically remove exactly it — every foreign entry in the target file is left
  * untouched.
  */
-export const TAP_ID = 'agent-runtime-event-tap';
+// Derived, never a second literal — and this one is PERSISTED IN USER SETTINGS, so a
+// drift between it and the bin name does not merely rename a thing, it ORPHANS every
+// installed tap: `uninstall` would look for an id no longer written by `install`.
+export const TAP_ID = `${RUNTIME_BIN}-event-tap`;
 
 /**
  * Resolve the target `settings.json` path, override-first (mirrors the memory

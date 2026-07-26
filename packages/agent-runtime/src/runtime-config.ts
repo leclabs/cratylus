@@ -24,10 +24,14 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
+import { RUNTIME_BIN } from './bin-name.js';
 
 /** Where the host config lives, unless `$AGENT_RUNTIME_CONFIG` overrides it. */
 export const RUNTIME_CONFIG_ENV = 'AGENT_RUNTIME_CONFIG';
-export const RUNTIME_CONFIG_NAME = '.agent-runtime.json';
+// Derived, never a second literal. The host config dotfile is named AFTER the bin,
+// so an independent copy is a rename waiting to orphan every host's existing file —
+// the config would move while the file on disk did not. One home, in `bin-name.ts`.
+export const RUNTIME_CONFIG_NAME = `.${RUNTIME_BIN}.json`;
 
 /** The host's declared capability providers. */
 export interface RuntimeConfig {
