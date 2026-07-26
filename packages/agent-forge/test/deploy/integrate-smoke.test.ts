@@ -42,15 +42,15 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
+import { RUNTIME_BIN } from '@leclabs/agent-runtime/bin-name';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { placeSkillsLocal } from '../../src/deploy/index.js';
 import { tmp } from './helpers.js';
 
-/** The bin the installed runtime CLI puts on PATH. */
-const RUNTIME_BIN = 'agent-runtime';
-
-/** The workspace packages the temp prefix needs so `agent-runtime <cap> <verb>`
- *  resolves: the CLI carrying the bin, the contract leaf, the capability. */
+/** The workspace packages the temp prefix needs so `<RUNTIME_BIN> <cap> <verb>`
+ *  resolves: the CLI carrying the bin, the contract leaf, the capability. These are
+ *  PACKAGE names (an npm coordinate), not the bin name — they do not move on a
+ *  rebrand of the executable. */
 const RUNTIME_PACKAGES = ['agent-runtime', 'agent-memory', 'agent-cli'];
 
 /**
@@ -64,7 +64,7 @@ const RUNTIME_PACKAGES = ['agent-runtime', 'agent-memory', 'agent-cli'];
 function thinShim(capability: string): string {
   return `#!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-const r = spawnSync('agent-runtime', ['${capability}', ...process.argv.slice(2)], {
+const r = spawnSync('${RUNTIME_BIN}', ['${capability}', ...process.argv.slice(2)], {
   stdio: 'inherit',
 });
 process.exit(r.status ?? 1);
@@ -161,8 +161,10 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     chmodSync(shimSrc, 0o755);
 
     const emitted = readFileSync(shimSrc, 'utf-8');
-    // Falsifier: the shim drives the host `agent-runtime memory` CLI, forwarding argv.
-    expect(emitted).toMatch(/spawnSync\('agent-runtime', \['memory',/);
+    // Falsifier: the shim drives the host `<RUNTIME_BIN> memory` CLI, forwarding argv.
+    expect(emitted).toMatch(
+      new RegExp(`spawnSync\\('${RUNTIME_BIN}', \\['memory',`),
+    );
     expect(emitted).toContain('...process.argv.slice(2)');
     // THIN — no bundled impl, no cross-package import.
     expect(emitted).not.toContain('@leclabs/');
@@ -184,8 +186,10 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     chmodSync(shimSrc, 0o755);
 
     const emitted = readFileSync(shimSrc, 'utf-8');
-    // Falsifier: the shim drives the host `agent-runtime eventTap` CLI, forwarding argv.
-    expect(emitted).toMatch(/spawnSync\('agent-runtime', \['eventTap',/);
+    // Falsifier: the shim drives the host `<RUNTIME_BIN> eventTap` CLI, forwarding argv.
+    expect(emitted).toMatch(
+      new RegExp(`spawnSync\\('${RUNTIME_BIN}', \\['eventTap',`),
+    );
     expect(emitted).toContain('...process.argv.slice(2)');
     expect(emitted).not.toContain('@leclabs/');
     expect(statSync(shimSrc).mode & 0o111).not.toBe(0);

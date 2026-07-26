@@ -1,4 +1,5 @@
 import type { HookCell } from '@leclabs/agent-forge/anatomy';
+import { RUNTIME_BIN } from '@leclabs/agent-runtime/bin-name';
 
 // memory-consolidation-nudge — an ADVISORY Stop hook (the harness half of the
 // memory-consolidation protocol). On turn.end (Stop only — NOT SubagentStop), it
@@ -31,6 +32,12 @@ import type { HookCell } from '@leclabs/agent-forge/anatomy';
 //
 // The `workers[].content` is the VERBATIM byte-anchor the committed worker at
 // `targetPath` regenerates from (byte-locked by `test/hook-rule-boundary.test.ts`).
+// EDIT THE CELL AND REGENERATE (`pnpm canon:project:targets`) — never the committed
+// `.sh` alone; a hand-edit drifts the anchor and the byte-lock goes red.
+//
+// The runtime bin's name is INTERPOLATED from `RUNTIME_BIN`, its one home, because
+// the worker names it inside a shell string no compiler reads. `$MEMORY_BIN` stays
+// the override and the test seam; the interpolated name is only its DEFAULT.
 
 export const memoryConsolidationNudge: HookCell = {
   id: 'memory-consolidation-nudge',
@@ -86,7 +93,7 @@ set -eu
 trap 'exit 0' EXIT
 
 # The runtime bin. \$MEMORY_BIN is the override and the test seam.
-MEM="\${MEMORY_BIN:-agent-runtime}"
+MEM="\${MEMORY_BIN:-${RUNTIME_BIN}}"
 command -v "\$MEM" >/dev/null 2>&1 || exit 0
 
 input="\$(cat 2>/dev/null || true)"

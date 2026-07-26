@@ -13,13 +13,18 @@
 // package depends on the runtime for its contracts, so that edge would cycle. The
 // fix is a third package — this one — that depends on BOTH and wires them by
 // STATIC import. Resolution now succeeds because the dependency is DECLARED.
+//
+// THIS PACKAGE OWNS THE `bin` KEY, and that manifest entry is the one copy of the
+// bin name no TypeScript can compute (npm reads it with no compiler in the loop).
+// Everything else here imports `RUNTIME_BIN` from the runtime's `./bin-name`
+// module; the manifest's agreement with it is held by a test
+// (`agent-canon/test/bin-name-single-home.test.ts`), so a rename cannot half-land.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { runtimePlugin as memory } from '@leclabs/agent-memory';
+import { RUNTIME_BIN } from '@leclabs/agent-runtime/bin-name';
 import { discoverConfigured } from '@leclabs/agent-runtime/loader';
 import { runMain } from '@leclabs/agent-runtime/main';
-
-const BIN = 'agent-runtime';
 
 /**
  * The capability set this CLI SHIPS WITH — the zero-config default, each a
@@ -31,7 +36,7 @@ const BUNDLED = [memory];
 
 const fail = (err: unknown): void => {
   process.stderr.write(
-    `${BIN}: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}\n`,
+    `${RUNTIME_BIN}: ${err instanceof Error ? (err.stack ?? err.message) : String(err)}\n`,
   );
   process.exitCode = 1;
 };

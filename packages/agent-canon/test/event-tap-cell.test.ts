@@ -27,6 +27,7 @@ import {
   projectPluginSet,
   writeRenderTree,
 } from '@leclabs/agent-forge/project';
+import { RUNTIME_BIN } from '@leclabs/agent-runtime/bin-name';
 import { beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
 import { eventTap } from '../src/skills/event-tap/skill.js';
@@ -95,7 +96,9 @@ describe('event-tap cell — the capability has an agent-facing surface', () => 
     expect(existsSync(shim)).toBe(true);
     const src = readFileSync(shim, 'utf-8');
     // The shim spawns the CAPABILITY word — the word the runtime bin must route.
-    expect(src).toMatch(/spawnSync\('agent-runtime', \['eventTap',/);
+    expect(src).toMatch(
+      new RegExp(`spawnSync\\('${RUNTIME_BIN}', \\['eventTap',`),
+    );
     expect(src).toContain('...process.argv.slice(2)');
     // THIN — no bundled impl, no cross-package import.
     expect(src).not.toContain('@leclabs/');

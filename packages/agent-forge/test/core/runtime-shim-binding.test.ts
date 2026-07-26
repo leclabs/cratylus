@@ -11,6 +11,7 @@
 // at invocation. That keeps a deployed artifact free of any absolute or checkout
 // path — an invariant the deploy census established and this test defends.
 
+import { RUNTIME_BIN } from '@leclabs/agent-runtime/bin-name';
 import { describe, expect, it } from 'vitest';
 import { type ResolvedSkill, skillBody } from '../../src/core/anatomy-body.js';
 import { renderSkillCellBody } from '../../src/core/exemplify/skill-cell.js';
@@ -68,7 +69,7 @@ describe('runtime-shim binding', () => {
     const body = skillBody(resolved({ runtime: { capability: 'memory' } }));
     // The whole point of the seam: the bin name has ONE home (the shim emitter),
     // never the projected markdown. A rebrand must not have to touch cells.
-    expect(body).not.toContain('agent-runtime');
+    expect(body).not.toContain(RUNTIME_BIN);
     expect(body).not.toMatch(/(^|[\s`])\//m);
     expect(body).not.toContain('packages/');
   });

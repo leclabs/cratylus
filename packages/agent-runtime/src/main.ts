@@ -13,11 +13,14 @@
 // table). `runMain` bootstraps the host from host-installed capability packages,
 // dispatches, and maps the pure {@link DispatchResult} to stdio + exit code.
 //
-// BIN NAME `agent-runtime` is a PLACEHOLDER — the brand derivation has not
-// converged; it lives in exactly one place so the rebrand stays a one-line change.
+// The BIN NAME is a PLACEHOLDER pending the brand derivation, and it is IMPORTED,
+// not written here: its one home is `./bin-name.ts`. See that module for why the
+// single home is load-bearing (three of its four consumers speak it from inside a
+// compiler-invisible emitted string).
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { cac } from 'cac';
+import { RUNTIME_BIN } from './bin-name.js';
 import { dispatchTap } from './capabilities/event-tap/index.js';
 import { dispatch } from './dispatch.js';
 import { RuntimeHost, bootstrap } from './loader.js';
@@ -26,8 +29,6 @@ import type { RuntimePlugin } from './plugin.js';
 /** The runtime bin version. A constant (not read from package.json): the bundled
  *  bin ships without its manifest, so a runtime package.json read is unsafe. */
 export const VERSION = '0.0.0';
-
-const BIN = 'agent-runtime';
 
 /** Bin entrypoint: brand + help/version via cac, else bootstrap → dispatch → stdio. */
 /** Options for {@link runMain}. `plugins` are DECLARED capability plugins supplied
@@ -41,7 +42,7 @@ export async function runMain(
   argv: readonly string[],
   opts: RunMainOpts = {},
 ): Promise<void> {
-  const cli = cac(BIN);
+  const cli = cac(RUNTIME_BIN);
   cli.command(
     '[capability] [verb]',
     'Dispatch <verb> to the <capability> plugin registered on this host',
@@ -72,7 +73,7 @@ export async function runMain(
   // capability's canonical name in `CAPABILITIES` — the word the dispatch grammar
   // `<capability> <verb>` actually speaks, and therefore the word a PROJECTED THIN
   // SHIM spawns (the emitter is `f(capability)`, so an `eventTap` cell yields
-  // `spawnSync('agent-runtime', ['eventTap', …])`). Routing only the `tap`
+  // `spawnSync(RUNTIME_BIN, ['eventTap', …])`). Routing only the `tap`
   // shorthand made the tap reachable by an operator typing at a shell but DEAD to
   // every agent coming through its own skill's shim: `eventTap` fell through to the
   // discovered dispatch, where no plugin binds it, and died `unknown capability`.
@@ -83,7 +84,7 @@ export async function runMain(
       process.exitCode = 0;
     } catch (err) {
       process.stderr.write(
-        `${BIN}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `${RUNTIME_BIN}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
       process.exitCode = 1;
     }

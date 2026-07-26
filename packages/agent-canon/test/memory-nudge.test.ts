@@ -16,6 +16,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { RUNTIME_BIN } from '@leclabs/agent-runtime/bin-name';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -48,7 +49,7 @@ beforeEach(() => {
   mkdirSync(agentsRoot, { recursive: true });
   // `MEMORY_BIN` is invoked as a command; wrap the built dispatcher so it is one.
   // HOME is pinned so the registry lookup resolves inside the fixture.
-  binShim = join(root, 'agent-runtime');
+  binShim = join(root, RUNTIME_BIN);
   writeFileSync(
     binShim,
     `#!/usr/bin/env sh\nexec node ${JSON.stringify(runtimeBin)} "$@"\n`,
