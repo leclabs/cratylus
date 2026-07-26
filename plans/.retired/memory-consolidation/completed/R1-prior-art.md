@@ -67,3 +67,20 @@ with the two or three systems most worth copying from and **what precisely to co
 **Falsifier (this must fail on the pre-state):** run the acceptance against the repo as it stands today —
 `R1-findings.md` does not exist, so every criterion fails. Any acceptance that would pass before the work
 is done is mis-specified and must be rewritten.
+
+
+---
+
+**DISPOSITION (mav, 2026-07-26) — RE-AUTHORED AND EXECUTED in `close-out`.**
+
+Carried forward as `close-out`/R1 and run:
+`plans/.retired/close-out/completed/R1-findings.md`.
+
+Verdict: **build the bound, not the router.** The operator's write-time hypothesis is NOT
+confirmed as the primary lever and survives only demoted. The survey hunted disconfirming
+evidence as instructed and found it, and flagged that its own first automated read of the
+key source was wrong *in the direction that flattered its conclusion*.
+
+The merge initially dropped this shard's buy-vs-build constraint set (local-first, no network,
+no embedding service, runs in a hook). That was caught and restored into S3 — and it bit:
+R1's recommended dedup ladder has a cosine rung assuming an embedding service.

@@ -55,3 +55,25 @@ OR a skill-count is hardcoded to a stale number; OR a glyph was downgraded rathe
 the `description` reads in human register; OR the cell was landed into `src/skills/` while the sibling
 dir was still dirty. ACCEPTED when: test + tsc + biome green with event-tap in the suite at the live
 count, `project` emits `skills/event-tap/SKILL.md`, and the landing happened on a settled dir.
+
+
+---
+
+**DISPOSITION (mav, 2026-07-26) — EXECUTED, after a FALSE supersession nearly buried it.**
+
+`SUPERSESSION.md:32` recorded this shard as absorbed into `agent-runtime`/S8. **That claim was
+false against the code.** S8 is memory-only — its objective is rewiring memory-touching skills
+and its own falsifier greps for `memory ` in `src/skills/`. Event-tap appears nowhere in it.
+So the shard was marked absorbed, the plan retired as complete, and the work vanished with
+nobody deciding to drop it.
+
+Consequence, live until today: the capability was fully built, fully tested, and **unreachable
+by any agent** — inverting the point of the whole chain.
+
+Recovered as `close-out`/V10 and executed. It also surfaced a defect the cell alone would have
+hidden: the shim emitter is `f(capability)`, so an `eventTap` cell emits a shim spawning
+`agent-runtime eventTap`, and `main.ts` routed only the literal `tap`. Writing the cell without
+that fix would have shipped a **dead shim**, green on projection.
+
+**The lesson this shard is the evidence for: a supersession claim is a CLAIM.** Check the
+absorbing shard's falsifier actually covers the absorbed work before retiring on it.

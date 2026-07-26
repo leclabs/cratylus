@@ -44,3 +44,15 @@ OR composition leaks the adapter selection into the domain source; OR `project` 
 SKILL.md for cells; OR a companion-less skill gains a spurious `scripts/`. ACCEPTED when: a sample domain
 module (coding to `EventTapHost`) ⊕ `EventTapHostClaude` compose+bundle → a standalone `.mjs` (grep-proven
 no external imports) that, run, installs a tap; and `project` emits it under `skills/<sample>/scripts/`.
+
+
+---
+
+**DISPOSITION (mav, 2026-07-26) — ABSORBED BY REVERSAL. Design dead, goal met.**
+
+The dep-free-bundle design is correctly dead and the goal — a projected executable companion —
+shipped by the opposite mechanism. `runtime-shim.ts` names this shard directly: forge projects
+a **thin shim** against the runtime contract, "NOT a bundle of the capability impl".
+
+A ~15-line `spawnSync` shim strictly dominates bundling for the same acceptance ("runs under
+bare node, no node_modules"), so no tsup build was added and none is wanted. Nothing remains.

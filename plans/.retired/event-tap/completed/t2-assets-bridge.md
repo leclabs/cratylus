@@ -53,3 +53,17 @@ REJECTED if: after `pnpm --filter @leclabs/agent-canon project`, a declared comp
 (`project`, `test`, `tsc`, `biome`) regresses; OR it silently duplicates the retired `bundle:` path.
 ACCEPTED when a declared `assets` companion provably lands in the projected skill dir, byte-exact +
 executable, by a general mechanism, all gates still green.
+
+
+---
+
+**DISPOSITION (mav, 2026-07-26) — CORRECTLY ABANDONED; its residue is fixed.**
+
+Verified: zero live consumers, and the runtime thin-shim path covers every case that
+motivated the bridge. No skill declares `assets:` anywhere.
+
+The real defect it left behind was a **lying type** — `anatomy/index.ts` advertised
+"companion assets shipped byte-for-byte with the skill" while the projection never read the
+field. A type advertising a dead design's contract is worse than the missing feature, because
+a type is read as a specification. Corrected: the field now states it is `deploy --assets`
+only and explicitly NOT projected.

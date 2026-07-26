@@ -53,3 +53,17 @@ REJECTED if: the logger emits ANY stdout or a `"decision"` on any synthetic even
 double-adds; OR the test is not hermetic (touches host settings/git). ACCEPTED when the test suite
 shows: logger-on-synthetic-event → empty stdout + exit 0 (prove-CANNOT-block, non-vacuous); install
 idempotent; uninstall → zero residue + settings restored; inspect round-trips a captured field.
+
+
+---
+
+**DISPOSITION (mav, 2026-07-26) — ABSORBED, verified against code.**
+
+Landed as `agent-runtime`/S5: `packages/agent-runtime/src/capabilities/event-tap/` with
+`EventTapHostClaude`. The absorption is real including the hard part — the non-interference
+falsifier survives (`test/event-tap.test.ts`, "prove-CANNOT-block": empty stdout, exit 0 on a
+synthetic event), plus byte-for-byte teardown, idempotence, foreign-key preservation, and a
+DAG guard that the runtime never imports forge.
+
+Only deviation: TypeScript in a runtime plugin rather than a toolkit shell script. That is
+the intended reshape, not a loss.

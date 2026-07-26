@@ -43,3 +43,20 @@ candidate-free cold-derivation note (framings shown, no candidates supplied); OR
 set was fed to the oracle; OR `install`/`uninstall` lack the convention citation; OR the anchor
 check is missing or wrong. Return is ACCEPTED only when every verb's sign is traceable to derivation
 or cited convention, and `basename==name` is shown to hold.
+
+
+---
+
+**DISPOSITION (mav, 2026-07-26) — EXECUTED, by `close-out`/N1.**
+
+This shard was retired unexecuted and the verbs shipped un-derived (mirrored from the port
+method names). The derivation has now RUN, candidate-free, in a cold rig:
+`plans/.retired/close-out/completed/N1-derivation-record.md`.
+
+Result: **`install` · `uninstall` · `read` · `status`**. `remove` refuted **14/14**,
+`inspect` **0/14**, modal in both framings, every rival a prefix-negated pair.
+
+Stronger than the counts: six trials volunteered, unprompted, that `remove` does not read as
+an exact inverse and could imply *partial* deletion — while `ports/event-tap.ts` requires the
+tap detach "cleanly (zero residue)". **`remove` mis-signified the contract.** Adopted in
+`731e510`; `tap remove` now fails loud.

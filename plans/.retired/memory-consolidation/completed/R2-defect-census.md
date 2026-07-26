@@ -72,3 +72,18 @@ the true defect count and their dependency structure.
 
 **Falsifier (this must fail on the pre-state):** today `R2-findings.md` does not exist and no defect has a
 verdict, so acceptance fails on every criterion. If it would pass before the work, it is mis-specified.
+
+
+---
+
+**DISPOSITION (mav, 2026-07-26) — EXECUTED by census, findings folded into `close-out`.**
+
+All three named defects were reproduced with file:line and deterministic fixes, and its
+highest-value acceptance ("are these five defects or fewer?") was answered by a collapse:
+(a) the unsatisfiable routing law and (b) the repo-rename orphan are ONE defect — `node()`
+answers "where was this captured" and both the law and the store treated it as "what is this
+about". Shipped as `close-out`/V3. Defect (c), `rollover --residue` double-wrapping, shipped
+as V2.
+
+One filed hypothesis was later REFUTED rather than fixed: `routes` present on 0 of 46 records
+is not a defect — the mechanism works, and the field is simply unobservable across a drain.

@@ -21,3 +21,27 @@
 **Outputs.** The branded dispatcher bin (in forge and/or a thin top package); brand anchor derived + recorded (signify provenance); subcommand routing (build→forge, runtime→runtime) with loud missing-face errors.
 
 **Completion criteria (falsifier).** `<brand> memory home --name x` (runtime face) and `<brand> deploy …` (build face) both dispatch correctly on a dev machine; on a runtime-only install, a build subcommand fails loud (not silent); the brand anchor is cold-derivable (signify provenance attached), not a generic collision-prone word. REJECTED if two competing top-level bins ship, if a generic/collision-prone bin name is used, if the brand was coined warm without a cold-oracle derive, or if a missing-face subcommand silently no-ops.
+
+
+---
+
+**DISPOSITION (mav, 2026-07-26) — RESOLVED, split in two.**
+
+The shard bundled two acts. Both are settled, neither remains.
+
+- **The dispatcher: ABANDONED by decision.** `agent-runtime` existed to DECOMPLECT
+  build-host from runtime-host; one dispatcher over both re-complects them. Forge carries
+  8 fixed commands, the runtime's verb space is plugin-driven and open, and no static route
+  table spans them. **Two bins is correct because two hosts is correct.** This shard's own
+  falsifier ("REJECTED if two competing top-level bins ship") is therefore retired with it —
+  it encoded the premise that was wrong.
+- **The rename: ⊥.** `plans/.retired/close-out/completed/N1-derivation-record.md` ran the
+  brand oracle candidate-free in a cold rig with passing positive controls. Paraphrase
+  invariance failed decisively — the mode under two framings scored 0/14 under two others.
+  The referent has no positive content (every differentia negative, positional or borrowed),
+  so cratylism's precondition is not met and re-running is not owed. `agent-runtime` is kept
+  as descriptive-of-the-slot, the honest form of a ⊥.
+
+What the shard actually wanted and now HAS: `close-out/V5` collapsed the bin name from
+**13 homes to 1** (`packages/agent-runtime/src/bin-name.ts`), and the two brand-derived
+literals that survived it — `RUNTIME_CONFIG_NAME`, `TAP_ID` — are now derived, not copied.

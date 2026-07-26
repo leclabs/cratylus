@@ -43,3 +43,15 @@ composed `.mjs` fails to install/read/remove a tap after deploy; OR the reshaped
 baseline; OR fleet-deploy/push executed without sign-off; OR any "green" is a vacuous grep. ACCEPTED when:
 clean-worktree gates green, the project→deploy→run→install→read→remove smoke passes for a runtime-companion
 skill, reshaped skills deploy intact locally, and FLEET+push are demonstrably staged-and-held.
+
+
+---
+
+**DISPOSITION (mav, 2026-07-26) — ABSORBED, re-cut as `agent-runtime`/S10.**
+
+Proven end-to-end: project → deploy → per-host install → a **deployed thin shim** invoking
+`agent-runtime memory <verb>` → verify, non-vacuously (the shim round-trips a record on disk).
+
+The shard's proposed throwaway sample runtime-companion skill was unnecessary — `dream`,
+`handoff` and `wake` are the live proof, which is strictly better than a sample. The one
+residual (the tap leg not shim-borne) is closed; see this plan's sibling `event-tap`/t5.

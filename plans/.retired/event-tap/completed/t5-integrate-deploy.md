@@ -53,3 +53,17 @@ skill dir lacks `event-tap.sh`; OR fleet-deploy/push executed without the reserv
 "green" claim is an empty/vacuous grep. ACCEPTED when: a clean-worktree gate run is green, LOCAL
 deployment carries both files + a passing logger smoke, and FLEET+push are demonstrably STAGED-AND-HELD
 pending sign-off with an accurate dry-run reach.
+
+
+---
+
+**DISPOSITION (mav, 2026-07-26) — ABSORBED, and its one hole is now closed.**
+
+The e2e smoke landed as `agent-runtime`/S10
+(`packages/agent-forge/test/deploy/integrate-smoke.test.ts`), hermetic, with fleet and push
+reserved as this shard required.
+
+It carried one inherited hole: the tap leg invoked the runtime **binary directly** while the
+memory leg round-tripped through a projected thin shim — a direct consequence of T4's false
+supersession, since there was no event-tap skill to project a shim from. `close-out`/V10
+closed T4 and rewired this leg through the deployed shim. Verified end-to-end: 5/5.

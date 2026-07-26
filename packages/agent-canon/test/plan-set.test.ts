@@ -15,14 +15,17 @@
 
 import { execFileSync } from 'node:child_process';
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  readdirSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   type PlanSetContext,
@@ -229,5 +232,70 @@ describe('landing — derived on demand, stored nowhere', () => {
       hit = '';
     }
     expect(hit).toBe('');
+  });
+});
+
+// ─── RETIREMENT INTEGRITY — the defect that bit twice in one session ────────────
+//
+// `terminal(P) ⇒ retire(P)` is an obligation; `retire(P) ⇒ terminal(P)` is its
+// precondition. The second was unenforced, and the cost was not theoretical:
+//
+//   · FOUR retired plans were found carrying TEN unfinished shards. One of them,
+//     event-tap/t4, had been marked ABSORBED by a supersession claim that the
+//     absorbing shard's own falsifier disproves — so a fully built capability sat
+//     unreachable by any agent, with nobody having decided to drop it.
+//   · Then the SAME defect recurred in the very plan that fixed it: close-out was
+//     landed and retired while eleven shard files still sat in pending/ready.
+//
+// A verdict recorded in a report is not a reconciled tree. This is the gate that
+// makes the disk agree: a retired plan may hold `completed/` and nothing else.
+
+const repoRoot = join(
+  dirname(fileURLToPath(import.meta.url)),
+  '..',
+  '..',
+  '..',
+);
+
+describe('RETIREMENT INTEGRITY — a retired plan carries no unfinished shard', () => {
+  const OPEN = ['pending', 'ready', 'active'] as const;
+
+  /** The unfinished shards a retired-plan dir holds — the scan, named so a
+   *  synthetic BAD tree can be fed to the very same code. */
+  const unfinished = (root: string): string[] => {
+    if (!existsSync(root)) return [];
+    const out: string[] = [];
+    for (const plan of readdirSync(root, { withFileTypes: true })) {
+      if (!plan.isDirectory()) continue;
+      for (const state of OPEN) {
+        const dir = join(root, plan.name, state);
+        if (!existsSync(dir)) continue;
+        for (const f of readdirSync(dir))
+          if (f.endsWith('.md')) out.push(`${plan.name}/${state}/${f}`);
+      }
+    }
+    return out.sort();
+  };
+
+  it('the live .retired/ tree holds only completed shards', () => {
+    const root = join(repoRoot, 'plans', '.retired');
+    expect(
+      unfinished(root),
+      'retired plans still carrying unfinished shards — each is work nobody decided to drop:',
+    ).toEqual([]);
+  });
+
+  it('is non-vacuous — the scan FLAGS a retired plan with an open shard', () => {
+    const root = mkdtempSync(join(tmpdir(), 'retire-integrity-'));
+    // BAD: a retired plan with a shard still in `ready`.
+    mkdirSync(join(root, 'ghost', 'ready'), { recursive: true });
+    writeFileSync(join(root, 'ghost', 'ready', 't1-orphan.md'), '# orphan\n');
+    expect(unfinished(root)).toEqual(['ghost/ready/t1-orphan.md']);
+    // EXONERATES: completed-only is clean, and so is an empty open dir.
+    mkdirSync(join(root, 'clean', 'completed'), { recursive: true });
+    writeFileSync(join(root, 'clean', 'completed', 't1-done.md'), '# done\n');
+    mkdirSync(join(root, 'clean', 'pending'), { recursive: true });
+    expect(unfinished(join(root, 'clean'))).toEqual([]);
+    rmSync(root, { recursive: true, force: true });
   });
 });
