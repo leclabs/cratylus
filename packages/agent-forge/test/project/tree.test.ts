@@ -109,12 +109,38 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
     expect(t.files.some((f) => f.path === 'AGENTS.md')).toBe(false);
   });
 
+  // "Rendering is not writing" is a LOAD-BEARING property, not tidiness: it is what
+  // makes "what does this plugin set project?" answerable without a tmpdir. Asserting
+  // it by grepping raw source was too weak in both directions — it convicted any
+  // COMMENT naming `writeFileSync` (it caught a prose line during the codex collapse),
+  // and it would have missed `fs.writeFileSync` or an aliased import entirely.
+  //
+  // The structural fact is stronger and comment-immune: a module that opens no file
+  // descriptor does not IMPORT the fs module. Checked on import statements only.
+  const projectorSrc = () =>
+    readFileSync(join(here, '..', '..', 'src', 'project', 'index.ts'), 'utf8');
+
+  /** Source with line and block comments removed — prose must not be evidence. */
+  const codeOnly = (src: string) =>
+    src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+
   it('the projector itself performs no writes', () => {
-    const src = readFileSync(
-      join(here, '..', '..', 'src', 'project', 'index.ts'),
-      'utf8',
-    );
-    expect(src).not.toContain('writeFileSync');
-    expect(src).not.toContain('chmodSync');
+    const code = codeOnly(projectorSrc());
+    expect(code).not.toMatch(/\bfrom\s+'node:fs'/);
+    expect(code).not.toMatch(/\bwriteFileSync\s*\(/);
+    expect(code).not.toMatch(/\bchmodSync\s*\(/);
+    expect(code).not.toMatch(/\bmkdirSync\s*\(/);
+  });
+
+  it('is non-vacuous — the check REFUSES a projector that imports fs', () => {
+    // Comment mentions must NOT convict; a real import must.
+    const prose =
+      "// a note about writeFileSync\nimport { join } from 'node:path';";
+    expect(codeOnly(prose)).not.toMatch(/\bfrom\s+'node:fs'/);
+    expect(codeOnly(prose)).not.toMatch(/\bwriteFileSync\s*\(/);
+    const real =
+      "import { writeFileSync } from 'node:fs';\nwriteFileSync(p, c);";
+    expect(codeOnly(real)).toMatch(/\bfrom\s+'node:fs'/);
+    expect(codeOnly(real)).toMatch(/\bwriteFileSync\s*\(/);
   });
 });
