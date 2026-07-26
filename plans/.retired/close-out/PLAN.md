@@ -123,72 +123,29 @@ Two further findings, each caught only because the falsifier was run before the 
 ## Blocked — cratylism-gated. `⊥` is a legal terminal answer; none may be coined around
 
 **Correction to this section's original framing (mav, 2026-07-26).** It first said these were
-"not executable here". That conflated two different acts. **Running the cold-decode oracle is
-MEASUREMENT; adopting its output is naming.** The first is executable by anyone and the plan itself
-says the brand re-run with full differentia is owed; only the second is gated. A derivation was
-therefore dispatched, candidate-free, with positive and negative controls and `⊥` pre-accepted as a
-complete result. Its record lands as `N1-derivation-record.md`. Nothing is adopted by that act —
-if it returns ⊥, ⊥ is what gets recorded.
+"not executable here". That conflated two acts. **Running the cold-decode oracle is MEASUREMENT;
+adopting its output is naming.** Only the second is gated. The derivations were therefore RUN —
+record at [`completed/N1-derivation-record.md`](./completed/N1-derivation-record.md) — and this
+table is rewritten against their results rather than against the guesses that preceded them.
 
-| item                          | gate                                                                                                                                                                                                                                                                                                                                                                                                                             |
-| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| CLI brand anchor              | returned ⊥ once under an under-specified definiendum; re-run with the full differentia. Gates the rename                                                                                                                                                                                                                                                                                                                         |
-| heartbeat anchors             | organ · signal · store. Must handle the collision with `ports/memory.ts:399`, where `heartbeat` is already a session-lease verb                                                                                                                                                                                                                                                                                                  |
-| bin rename sweep              | deps the brand anchor. V5 collapsed the 13 homes to 1, so the sweep is now genuinely one symbol — but see the two rows below, which the sweep does NOT cover                                                                                                                                                                                                                                                                     |
-| `RUNTIME_CONFIG_NAME`         | `.agent-runtime.json` is brand-derived yet an independent literal. A rebrand silently ORPHANS every host's existing config file                                                                                                                                                                                                                                                                                                  |
-| `TAP_ID`                      | `agent-runtime-event-tap` is brand-derived and **persisted in user settings**. A rebrand orphans installed taps rather than renaming them — this one needs a MIGRATION, not an interpolation                                                                                                                                                                                                                                     |
-|                               |
-| publish flags                 | `private:true` ×3, `changesets ignore: []`. Softly gated — publishing under a placeholder burns the PATH name                                                                                                                                                                                                                                                                                                                    |
-| **`patches` authoring shape** | Measured 2026-07-26: **142 of 142** canon fragment modules are string-form, 0 node-form, so `patches` has no live surface at all. Three fixes, all canon-shaped: convert 142 modules; let patches target by string id (contradicts NORTH-STAR §3 head-on — SURFACE, never unilaterally edit); or retire the capability. `config.ts:28-29` already calls this a canon candidate (NORTH-STAR §11); what was missing was the number |
-| repo name · heartbeat O4      | wait indefinitely; an acceptable resting state per `discipline-anchor`                                                                                                                                                                                                                                                                                                                                                           |
-| event-tap verb pair           | `install`/**`remove`** breaks the house `install`/`uninstall` pair used by `continuity-hook.sh` and `stance-guardrail.sh`; `read` vs `inspect` likewise. Shipped un-derived — the port method names were mirrored, not oracled. Narrow re-derivation owed; 4 call sites, cheap now                                                                                                                                               |
+**Rows that CLOSED, kept visible so nobody re-opens them on the strength of a stale note:**
 
-### Canon-reconciliation flags — nico's, resolve in ONE loop
+| item                  | outcome                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| CLI brand anchor      | **⊥, and re-running is NOT owed.** The re-run happened in a cold rig with passing positive controls. Paraphrase-invariance failed decisively — the mode under two framings scored 0/14 under two others. Diagnostic: the referent has no positive content (every differentia negative, positional or borrowed), so it is a slot in a structure, not identity atoms, and cratylism's precondition is unmet. **`agent-runtime` is KEPT** as descriptive-of-the-slot, the honest form of a ⊥. It also voided the PRIOR run: `claude -p` loads `~/.claude/CLAUDE.md`, which names `agent-forge` twice, so the earlier `forge`×2 was prompt-borne priming, not a decode |
+| event-tap verb pair   | **DERIVED and ADOPTED.** `install · uninstall · read · status`; `remove` refuted 14/14, `inspect` 0/14. Six trials volunteered, unprompted, that `remove` implies _partial_ deletion while the port contract requires zero residue — so it mis-signified the contract. Shipped `731e510`                                                                                                                                                                                                                                                                                                                                                                           |
+| `RUNTIME_CONFIG_NAME` | **FIXED.** Derived from `RUNTIME_BIN`, not a second literal. Gated on source text, since a re-inlined literal passes a runtime equality check while being free to drift                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| `TAP_ID`              | **FIXED**, same mechanism. This was the dangerous one — persisted in user settings, so drift would ORPHAN installed taps rather than rename them                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| bin rename sweep      | **MOOT.** It depended on a brand anchor that returned ⊥ and a name that is kept. V5 collapsed 13 homes to 1 regardless, so if a rename is ever wanted it is now genuinely one symbol                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 
-Raised by `self-sufficiency-redo` and carried in mav's private episodic memory until now, which was
-the wrong home: a project-scoped fact belongs to the project, not to an agent's private store. Homed
-here so it survives the agent.
+**Rows that remain genuinely open — all nico's, none mine:**
 
-1. **concept-record has FOUR anchors** — `TRIPLE` · `Concept` · `concept-contract` · `k`. Pick one;
-   the others cite it.
-2. **`ρ` CONFLICT** — `signify` says by-design, not-inferred; `exemplify` derives `ρ` from readers.
-   Home it in `signify`.
-3. **`distill` COLLISION** — `conceptualize` uses it as a predicate; `dream` as a function to DFP.
-4. **`minimal` UNDECLARED** corpus-wide.
-5. **strategy-refusal DUP** — `exemplify` restates what `materialize` homes.
-6. **`loud-refusal` (TS) vs `hoare-elegance-no-permissive-defaults` (ir-bridge)** — same law, two signs.
-7. **`priors_R` (elicit) vs `latent-priors` (probe)** — synonyms.
-8. **congruence domain-extension** — `introspect` V-values vs C × C.
-9. **`fit`/`fittest`/`gap`** — `create-agent` locals, undeclared.
-10. **`create-agent` references `exemplify` in notation but `composition: []`** — compose-edge or at-cite?
-11. **`precise-circumscription` (probe) vs `circ` (signify)** — is `circ_R` shared?
-12. **ir-bridge fixture** `agent-canon.agent-forge.json` wants regeneration.
-
-One already retracted (`e00c837`, a false `principal-ic` staleness claim). **A thirteenth, found
-today:** the symbols gate validates fence glyphs against `operator-lexicon` but never checks that an
-`X @ home` boundary-binding resolves to a real declaration in that home — which is how
-`carry-on`'s `active @ praxis` stayed dangling. Filed as `pending/x-symbols-gate-…`.
-
-### Retired-plan audit (2026-07-26) — four plans were retired carrying ten unfinished shards
-
-`terminal(P) ⇒ retire(P)` was honoured; `retire(P) ⇔ terminal(P)` was not. Verdicts, grounded:
-
-- **ABSORBED, verified** — event-tap T3 (→ S5, falsifier and all), T5 (→ S10), skills-refactor T4
-  (absorbed _by reversal_: the dep-free bundle was replaced by the thin shim, which strictly
-  dominates it for the same acceptance) and T5 (→ S10).
-- **CORRECTLY ABANDONED** — event-tap T2 assets-bridge. Zero live consumers; the runtime-shim path
-  covers every motivating case. Residue is a **lying type**: `anatomy/index.ts:279-280` advertises
-  "companion assets shipped byte-for-byte" and the projection never reads `cell.assets`. Filed.
-- **WRONGLY ABANDONED** — event-tap **T4**, recorded as absorbed into S8 by
-  `SUPERSESSION.md:32`. S8 is memory-only; the claim is false against code and the work vanished
-  silently. Recovered as **V10**.
-- **DUPLICATE** — memory R1/R2/S3, re-authored here. R2 was executed by the census. The merge
-  dropped R1/S3's buy-vs-build constraint set, which R1's own verdict then walked into (a cosine
-  rung assuming an embedding service); restored into S3.
-
-**The lesson, for the praxis:** a supersession claim is a _claim_. `SUPERSESSION.md:32` asserted an
-absorption that the absorbing shard's own falsifier disproves, and nothing checked it. Retiring on an
-unverified supersession is how work disappears without anyone deciding to drop it.
+| item                          | gate                                                                                                                                                                                                                                                                                                        |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| heartbeat anchors             | organ · signal · store. Must resolve the collision with `ports/memory.ts:399`, where `heartbeat` already names a session-lease verb — two concepts, one sign, one runtime. The mechanism is BUILT and name-free under a provisional path (V9); only these three identifiers gate it                         |
+| **`patches` authoring shape** | Measured: **142 of 142** canon fragment modules are string-form, 0 node-form, so `patches` has no live surface at all. Three fixes, all canon-shaped: convert 142 modules; let patches target by string id (contradicts NORTH-STAR §3 head-on — SURFACE, never unilaterally edit); or retire the capability |
+| publish flags                 | `private:true` ×3, `changesets ignore: []`. Operator call. No longer gated on the brand, since the brand is settled at ⊥ and `agent-runtime` is kept                                                                                                                                                        |
+| repo name · heartbeat O4      | wait indefinitely; an acceptable resting state per `discipline-anchor`                                                                                                                                                                                                                                      |
 
 ## Superseded
 
