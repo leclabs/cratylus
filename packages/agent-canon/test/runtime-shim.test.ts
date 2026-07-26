@@ -28,6 +28,7 @@ import type { Skill } from '@leclabs/agent-forge/anatomy';
 import {
   emitRuntimeShim,
   projectPluginSet,
+  writeRenderTree,
 } from '@leclabs/agent-forge/project';
 import { beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
@@ -59,11 +60,13 @@ beforeAll(async () => {
   const codexOut = join(base, 'codex');
 
   // The CLAUDE path, exactly as `project-cli.ts` drives it.
-  await projectPluginSet({
+  // V7 made the projector RETURN the artifact tree; the caller is the one writer.
+  const claudeReport = await projectPluginSet({
     plugins: [canonPlugin],
     out: claudeOut,
     adapter: adapterByName('claude'),
   });
+  writeRenderTree(claudeOut, claudeReport.files);
 
   // The CODEX path, through its real CLI — the fork's live call site.
   execFileSync(
