@@ -132,6 +132,12 @@ export interface SessionEntry {
   lastBeat: number;
   /** Whether the session was cleanly released. */
   released: boolean;
+  /**
+   * `wake` iff the session ran the reconstitution ritual. Absent means it was
+   * registered as a side effect of a write — every encode registers, so without
+   * this an encode-only session is indistinguishable from a woken one.
+   */
+  origin?: 'wake';
 }
 
 /** A session's resolved liveness at a point in time. */
@@ -140,6 +146,8 @@ export interface SessionStatus {
   state: SessionState;
   lastBeat?: number;
   released?: boolean;
+  /** `wake` iff this session was reconstituted; absent ⇒ it was not. */
+  origin?: 'wake';
 }
 
 /** `lock acquire` outcome on `<home>/dream.lock` (O_EXCL; stale > 2h stolen). */

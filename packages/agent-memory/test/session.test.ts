@@ -1,4 +1,10 @@
-import { existsSync, mkdtempSync, readdirSync, rmSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  rmSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -253,5 +259,32 @@ describe('session — CLI wiring', () => {
     expect(enc.code).toBe(0);
     expect(existsSync(join(home, 'EPISODIC.jsonl'))).toBe(true);
     expect(existsSync(join(home, SESSIONS_DIR, 's1.json'))).toBe(true);
+  });
+});
+
+describe('origin — "was I woken?"', () => {
+  // Nothing else can answer it: registerSession is called identically by
+  // `session begin` and by EVERY encode, so an encode-only session reads `live`
+  // exactly like a reconstituted one.
+  it('is absent for a session registered by a write', () => {
+    registerSession(home, 'enc-only');
+    expect(sessionStatus(home, 'enc-only').origin).toBeUndefined();
+  });
+
+  it('is `wake` when the caller stamps it', () => {
+    registerSession(home, 'woke', { origin: 'wake' });
+    expect(sessionStatus(home, 'woke').origin).toBe('wake');
+  });
+
+  it('SURVIVES re-register — the clobber a later encode would otherwise cause', () => {
+    registerSession(home, 'woke', { origin: 'wake' });
+    registerSession(home, 'woke'); // an encode heartbeat: no origin passed
+    expect(sessionStatus(home, 'woke').origin).toBe('wake');
+  });
+
+  it('round-trips through the entry file, not just in memory', () => {
+    registerSession(home, 'woke', { origin: 'wake' });
+    const raw = readFileSync(join(home, 'sessions', 'woke.json'), 'utf8');
+    expect(JSON.parse(raw).origin).toBe('wake');
   });
 });

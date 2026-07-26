@@ -54,6 +54,17 @@ export interface SessionEntry {
   lastBeat: number;
   /** Present + true once `release` ran — a clean exit ⇒ immediately completed. */
   released?: boolean;
+  /**
+   * What brought this entry into being. `wake` means the session ran the full
+   * reconstitution ritual; absent means it was registered as a side effect of a
+   * write (every `encode` registers). Nothing else distinguishes the two — a
+   * session that only ever encoded reads `live` exactly like a woken one — so
+   * this is the only fact that can answer "was I woken?".
+   *
+   * PRESERVED across re-register, like `registeredAt`: without that the very
+   * next encode would clobber it, since re-register rewrites the entry whole.
+   */
+  origin?: 'wake';
 }
 
 /** A session's liveness as reported by {@link sessionStatus}/{@link listSessions}. */
@@ -64,6 +75,8 @@ export interface SessionStatus {
   lastBeat?: number;
   /** True iff the session was cleanly released. */
   released: boolean;
+  /** `wake` iff this session was reconstituted; absent ⇒ it was not. */
+  origin?: 'wake';
 }
 
 const sessionsDir = (home: string): string => join(home, SESSIONS_DIR);
@@ -97,6 +110,7 @@ function serializeEntry(e: SessionEntry): string {
     lastBeat: e.lastBeat,
   };
   if (e.released === true) ordered.released = true;
+  if (e.origin !== undefined) ordered.origin = e.origin;
   return `${JSON.stringify(ordered)}\n`;
 }
 
@@ -126,6 +140,7 @@ function readEntry(home: string, id: string): SessionEntry | undefined {
       registeredAt: p.registeredAt,
       lastBeat: p.lastBeat,
       ...(p.released === true ? { released: true } : {}),
+      ...(p.origin === 'wake' ? { origin: 'wake' as const } : {}),
     };
   } catch {
     return undefined;
@@ -166,10 +181,11 @@ export function isLive(
 export function registerSession(
   home: string,
   id: string,
-  opts?: { now?: number; host?: string; pid?: number },
+  opts?: { now?: number; host?: string; pid?: number; origin?: 'wake' },
 ): SessionEntry {
   const now = opts?.now ?? Date.now();
   const existing = readEntry(home, id);
+  const origin = opts?.origin ?? existing?.origin;
   const entry: SessionEntry = {
     id: assertSafeSessionId(id),
     host: opts?.host ?? hostname(),
@@ -177,6 +193,7 @@ export function registerSession(
     registeredAt: existing?.registeredAt ?? now,
     lastBeat: now,
     // released is intentionally dropped — re-register revives.
+    ...(origin !== undefined ? { origin } : {}),
   };
   writeEntry(home, entry);
   return entry;
@@ -233,6 +250,7 @@ export function sessionStatus(
     state: isLive(entry, now, stale) ? 'live' : 'completed',
     lastBeat: entry.lastBeat,
     released: entry.released === true,
+    ...(entry.origin !== undefined ? { origin: entry.origin } : {}),
   };
 }
 

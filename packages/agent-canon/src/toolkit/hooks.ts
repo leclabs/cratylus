@@ -19,6 +19,7 @@ import {
   hookIrOf,
 } from '@leclabs/agent-forge/anatomy';
 import { memoryConsolidationNudge } from '../hooks/memory-consolidation-nudge.js';
+import { resumeAvailabilityNotice } from '../hooks/resume-availability-notice.js';
 import { stanceGuardrailPre } from '../hooks/stance-guardrail-pre.js';
 import { stanceGuardrail } from '../hooks/stance-guardrail.js';
 
@@ -27,6 +28,7 @@ export const harnessHookCells: readonly HookCell[] = [
   stanceGuardrail,
   stanceGuardrailPre,
   memoryConsolidationNudge,
+  resumeAvailabilityNotice,
 ];
 
 export const hookSources: readonly HookSource[] = harnessHookCells.map(

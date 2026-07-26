@@ -301,7 +301,12 @@ export class AgentMemory implements MemoryStrategy {
         // primitives would have to know both.
         this.migrateIfOwed();
         const id = opts.id ?? defaultDerive.session() ?? randomUUID();
-        const entry = this.toEntry(registerSession(home, id));
+        // `begin` is the ONLY writer of origin — this is what makes "was I
+        // woken?" answerable at all. Every other path (encode's heartbeat)
+        // registers without it, and register PRESERVES it across re-register.
+        const entry = this.toEntry(
+          registerSession(home, id, { origin: 'wake' }),
+        );
         // consolidationOwed is a BACKLOG predicate, and its name says so. It
         // used to be `audit().findings.length > 0` — a PURITY measure, which
         // meant a store could grow without bound and still report nothing owed,
@@ -354,8 +359,14 @@ export class AgentMemory implements MemoryStrategy {
     id: string;
     lastBeat: number;
     released?: boolean;
+    origin?: 'wake';
   }): SessionEntry {
-    return { id: e.id, lastBeat: e.lastBeat, released: e.released ?? false };
+    return {
+      id: e.id,
+      lastBeat: e.lastBeat,
+      released: e.released ?? false,
+      ...(e.origin !== undefined ? { origin: e.origin } : {}),
+    };
   }
 
   /**

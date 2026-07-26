@@ -119,6 +119,7 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
     expect(ids).toEqual([
       'memory-consolidation-nudge',
       'praxis-continuity',
+      'resume-availability-notice',
       'stance-guardrail',
       'stance-guardrail-pre',
     ]);
