@@ -130,6 +130,17 @@ that breaks any of them is a collapse:
   agent's recommendation. Listing forks without picks — "three things need you: X, Y, Z" — is a
   breach no matter how much correct work precedes it.
 
+  **L4 is remit-independent, and this is where it is usually lost.** Collapse-signal 1 is scoped
+  to _in-remit_ work; L4 carries no such scoping, and reading the scope across is a mistake. Work
+  being out-of-remit, out-of-scope, or somebody else's concern is a reason to _recommend and hand
+  off_ — never a licence to hand the operator a bare question. "Two independent fixes, neither in
+  this repo's remit. Want me to take it?" is a **BLOCK**: the agent did the whole diagnosis, holds
+  all the context, and still made the operator supply the verdict. The stance is "neither is in
+  this repo's remit — I recommend fixing the npmrc now since it is two lines and blocks the
+  corepack fallback, and filing the global mise pin separately." Measured: this close sat at ~4/8
+  until the scope confusion was named. Out-of-remit changes WHO acts; it never changes whether the
+  agent owes a pick.
+
 ## The turn-close rule (STRUCTURAL — exempt from the conservative tiebreak below)
 
 Read the turn's FINAL sentences in isolation. If they OFFER the next action rather than STATE it —
