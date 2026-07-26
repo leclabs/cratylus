@@ -3,9 +3,12 @@
 > Working handle, **not** an anchor. Reader = LLM. Runtime folder-state is authority; this doc is a
 > derived mirror.
 
-**Status: ALL 17 SHARDS COMPLETE (2026-07-26). Still BOUND and NOT landed** — 9 filed stubs remain in `pending/`, so `done(P)` is false by its own definition. Those are defects discovered during execution and recorded rather than chased; they are this plan's frontier now. Originally: Authored 2026-07-26 (mav) by merging the seven open plans
-under a grounded three-way census.\*\* `merge : { P₁, P₂, … } ↦ ⋃ Pᵢ`. Each source plan is superseded
-by this one and retired; its content survives under `plans/.retired/` as the record.
+**Status: LANDED (`20ceace`) and RETIRED, 2026-07-26. 26 shards, all completed; `pending/` empty.**
+Authored 2026-07-26 (mav) by merging the seven then-open plans under a grounded three-way census —
+`merge : { P₁, P₂, … } ↦ ⋃ Pᵢ`. Each source plan was superseded by this one and retired; its content
+survives under `plans/.retired/` as the record. The nine stubs filed DURING execution were each
+carried to a terminal state — fixed, refuted, or decided-not-to-build with the reasoning recorded —
+rather than inherited by a successor plan.
 
 ## Why one plan
 
@@ -31,7 +34,9 @@ Three defects are **shipping today** and were owned by no shard:
 - **Codex projection emits sessionless shims.** `packages/agent-canon/src/toolkit/runtime-shim.ts`
   is a stale divergent fork of the forge original; the forge copy gained the
   `CLAUDE_CODE_SESSION_ID → AGENT_SESSION_ID` bridge (`f1621b6`), this one did not, and it is live
-  via `project-cli-codex.ts:26,156`. Re-opens the phantom-sibling bug.
+  via the codex CLI's own forked emitter. Re-opened the phantom-sibling bug. (Line cites are
+  omitted deliberately: that fork was later deleted wholesale, 185 lines → 88, so any number here
+  would now point at nothing.)
 - **`memory rollover --residue` silently destroys residue.** `cli.ts:978` casts `body as JsonValue`;
   `JsonValue` admits objects, so the natural `[{"body":"…"}]` type-checks and writes a record whose
   body is the wrapper. Exit 0. `rollover` exists precisely so forward state is not lost.
@@ -146,6 +151,42 @@ table is rewritten against their results rather than against the guesses that pr
 | **`patches` authoring shape** | Measured: **142 of 142** canon fragment modules are string-form, 0 node-form, so `patches` has no live surface at all. Three fixes, all canon-shaped: convert 142 modules; let patches target by string id (contradicts NORTH-STAR §3 head-on — SURFACE, never unilaterally edit); or retire the capability |
 | publish flags                 | `private:true` ×3, `changesets ignore: []`. Operator call. No longer gated on the brand, since the brand is settled at ⊥ and `agent-runtime` is kept                                                                                                                                                        |
 | repo name · heartbeat O4      | wait indefinitely; an acceptable resting state per `discipline-anchor`                                                                                                                                                                                                                                      |
+
+### Canon-reconciliation flags — nico's, resolve in ONE loop
+
+Raised by `self-sufficiency-redo` and carried in mav's private episodic memory until now, which was
+the wrong home: a project-scoped fact belongs to the project, not to an agent's private store. Homed
+here so it survives the agent.
+
+1. **concept-record has FOUR anchors** — `TRIPLE` · `Concept` · `concept-contract` · `k`. Pick one;
+   the others cite it.
+2. **`ρ` CONFLICT** — `signify` says by-design, not-inferred; `exemplify` derives `ρ` from readers.
+   Home it in `signify`.
+3. **`distill` COLLISION** — `conceptualize` uses it as a predicate; `dream` as a function to DFP.
+4. **`minimal` UNDECLARED** corpus-wide.
+5. **strategy-refusal DUP** — `exemplify` restates what `materialize` homes.
+6. **`loud-refusal` (TS) vs `hoare-elegance-no-permissive-defaults` (ir-bridge)** — same law, two signs.
+7. **`priors_R` (elicit) vs `latent-priors` (probe)** — synonyms.
+8. **congruence domain-extension** — `introspect` V-values vs C × C.
+9. **`fit`/`fittest`/`gap`** — `create-agent` locals, undeclared.
+10. **`create-agent` references `exemplify` in notation but `composition: []`** — compose-edge or at-cite?
+11. **`precise-circumscription` (probe) vs `circ` (signify)** — is `circ_R` shared?
+12. **ir-bridge fixture** `agent-canon.agent-forge.json` wants regeneration.
+
+One already retracted (`e00c837`, a false `principal-ic` staleness claim). **A thirteenth was found and is
+already CLOSED (mav, 2026-07-26):** the symbols gate validated fence glyphs against
+`operator-lexicon` but never checked that an `X @ home` boundary-binding resolves to a real
+declaration in that home — which is how `carry-on`'s `active @ praxis` stayed dangling. Built as
+`packages/agent-canon/test/boundary-binding.test.ts`, three legs. It also surfaced that `@` carries
+TWO senses — a BORROW (`bound, done @ praxis`) and a REMIT (`… domain-skills @ create-skill`) — and
+only the first is checkable; a definition operator on the left discriminates them.
+
+### Retired-plan audit (2026-07-26) — four plans were retired carrying ten unfinished shards
+
+`terminal(P) ⇒ retire(P)` was honoured; `retire(P) ⇔ terminal(P)` was not. Verdicts, grounded:
+
+- **ABSORBED, verified** — event-tap T3 (→ S5, falsifier and all), T5 (→ S10), skills-refactor T4
+  (absorbed _by reversal_: the dep-free bundle was replaced by the thin shim, which strictly
 
 ## Superseded
 
