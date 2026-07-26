@@ -5,11 +5,12 @@
 packages:
   - "packages/*"
 
-# Native deps permitted to run install scripts. pnpm 10 reads this here, not from
-# package.json's "pnpm" field (which it now ignores).
-onlyBuiltDependencies:
-  - "@biomejs/biome"
-  - esbuild
+# Native deps permitted to run install scripts. pnpm 11 reads this map here —
+# it ignores both package.json's "pnpm" field and pnpm 10's onlyBuiltDependencies
+# list, and hard-fails the install (ERR_PNPM_IGNORED_BUILDS) on an unlisted build.
+allowBuilds:
+  "@biomejs/biome": true
+  esbuild: true
 
 # Shared dependency versions for the Node packages.
 catalog:

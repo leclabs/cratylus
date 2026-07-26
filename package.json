@@ -4,7 +4,7 @@
   "private": true,
   "description": "agent-factory \u2014 the canonical culture (agent-canon) and projection machinery (agent-forge) from which agent societies are founded.",
   "type": "module",
-  "packageManager": "pnpm@10.0.0",
+  "packageManager": "pnpm@11.17.0",
   "engines": {
     "node": ">=22"
   },
