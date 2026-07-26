@@ -119,7 +119,7 @@ describe('projection stability (.ts is the sole source)', () => {
     // claims is that the formalBlock reaches the artifact VERBATIM — assert that.
     expect(wakeMd).toContain(wake.formalBlock);
     expect(wake.formalBlock.split('\n')[0]).toMatch(/^WAKE ≜ /);
-    expect(wakeMd).toContain('Composed from /dream.');
+    expect(wakeMd).toContain('Composed from /dream · /praxis.');
   });
 
   it('every agent resolves and projects a SOUL', async () => {

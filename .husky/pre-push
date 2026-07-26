@@ -7,3 +7,9 @@
 # boundary we must defend. `turbo run typecheck` is content-cached, so this is
 # ~instant when nothing relevant changed and only re-runs affected packages.
 pnpm typecheck
+
+# Test gate · added 2026-07-26 after the guardrail cell drifted from its workers
+# through THREE commits without anything noticing. `hook-rule-boundary.test.ts`
+# had been red the whole time; nothing ran it. A gate nobody runs is not a gate.
+# turbo content-caches this to ~2s when nothing relevant changed.
+pnpm test

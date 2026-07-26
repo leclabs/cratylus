@@ -22,7 +22,16 @@ self     ≜ session⟨CLAUDE_SESSION_ID⟩
 registered, released, stale : session → 𝔹
 live     : session → 𝔹
 owner   : P ⇀ session
-dir     : P → path
+bound    : P → 𝔹 ⟨plan-level commitment · persists across sessions · ¬ shard-state⟩
+gates    : P × P → 𝔹
+electable ≜ { P ∈ Plans | inscope(P) ∧ ¬ terminal(P) ∧ ¬ occupied(P) }
+act      ≜ a thing the executor does
+serves   : act × P → 𝔹
+cost     : act → effort
+defect   ≜ ⟨symptom, locus, provenance⟩
+owns     : defect ⇀ P
+impedes  : defect × P → 𝔹
+dir      : P → path
 state   : P → States
 truth   : P → States
 R ⊆ P × P
@@ -48,7 +57,8 @@ live(s)     ⇔ registered(s) ∧ ¬ released(s) ∧ ¬ stale(s)
 occupied(P) ⇔ owner(P) defined ∧ owner(P) ≠ self ∧ live(owner(P))
 archived(P) ⇔ dir(P) @ plans/.retired/
 superseded(P) ⇔ .superseded-by @ dir(P)
-frontier(P) ≜ { t | t ∈ P ∧ state(t) = ready }
+frontier(P) ≜ { t | t ∈ P ∧ state(t) ∈ { ready, active } } ⟨where the plan IS · ¬ only what is dispatchable⟩
+sharded(P)  ⇔ P ≠ ∅
 promote(u)  ≜ { t | (t, u) ∈ R ∧ state(t) = pending ∧ ¬blocked(t) }
 next        ≜ { pending ↦ ready, ready ↦ active, active ↦ completed, completed ↦ completed }
 W(n)        ≜ ⋃ { wave(i) | i <= n }
@@ -76,7 +86,11 @@ registered, released, stale @ memory-session-registry
 ⋃ slices(P) = P
 ∀ s₁, s₂ ∈ slices(P) : s₁ ≠ s₂ ⇒ s₁ ∩ s₂ = ∅
 slices(P) = argmin over admissible cuts of |R ∩ ⋃ { sᵢ × sⱼ | i ≠ j }|
-|frontier(P)| = 1 ⇒ slices mis-cut
+waves = (wave(0), …, wave(m))
+∀ n < m : |wave(n)| = 1 ⇒ slices mis-cut ⟨a singleton non-terminal wave is a chain, ¬ a cut⟩
+∀ t, u ∈ wave(n) : t ≠ u ⇒ outputs(t) ∩ outputs(u) = ∅ ⟨the concurrency precondition⟩
+∃ t, u ∈ wave(n) : t ≠ u ∧ outputs(t) ∩ outputs(u) ≠ ∅ ⇒ slices mis-cut
+⊨ disjoint-outputs ⇒ dispatch(wave(n)) needs-no-isolation ⟨a correctly cut wave never contends⟩
 (state, R, content) ≽ PLAN.md
 mirror(state, R, content) emits R ∧ waves
 depalimpsest(depalimpsest(c)) = depalimpsest(c)
@@ -97,14 +111,37 @@ supersede(P, Q) ⇒ superseded(P)
 ⊨ conform(PLAN.md)
 ∀ t, r : ¬conform(r) ⇒ ¬accept(t)(r)
 
+bound(P) @ dir(P)/.bound ⟨persistent · survives session-end · ¬ derived from shard-state⟩
+∃ P : inscope(P) ∧ ¬ terminal(P) ⇒ ∃! P : bound(P) ⟨always-bind ∧ WIP=1 · one law⟩
+bound(P) ⇒ ¬ occupied(P)
+bound(P) ∧ ¬ sharded(P) ⇒ start(P) ≺ dispatch(P) ⟨binding an unsharded plan obliges the cut⟩
+bound(P) ∧ sharded(P) ∧ ¬ done(P) ⇒ frontier(P) ≠ ∅
+sharded(P) ∧ ¬ done(P) ∧ frontier(P) = ∅ ⇒ R ill-formed ⟨cycle ∨ unsatisfiable dep⟩ · SURFACE
+gates(P, Q) ⇔ ∃ t ∈ Q : landing(P) ∈ deps(t)
+elect ≜ in-flight ≻ gating ≻ operator-intent ⟨lexicographic · finish before starting⟩
+terminal(P) ⇒ retire(P) ⟨obligation ¬ permission · an unretired terminal plan is WIP that is not work⟩
+impedes(d, t) ⇔ d standing ⇒ ∄ r : accept(t)(r)
+impedes(d, t) ⇒ fix(d) ∧ ¬ check-in-owed ⟨a regression in the path is repaired, ¬ surfaced⟩
+¬ impedes(d, t) ⇒ file(owns(d), d) ∧ ¬ fix(d) ⟨a defect beside the path is filed, ¬ chased⟩
+cost(file) < cost(fix) ⟨else the gradient points at chasing · the load-bearing law⟩
+dispatch(P) ∧ ¬ serves(a, P) ⇒ a ∈ { file, triage } ⟨scope-bound⟩
+advance ⊨ mirror ⟨state moves ∴ PLAN.md moves · drift is ¬ a later chore⟩
+
 start     : intent ↦ (P, slices(P), waves)
 upsert    : (P, intent) ↦ P' ≜ author census-grounded t(s) ∧ P' = P ∪ {t} ∧ re-slice ∧ re-mirror
 list      : ↦ ℘(P)
 resume    : P ↦ frontier(P)
-dispatch   ≜ ∀ t ∈ frontier(P) concurrently : state(t) := active ∧ owner(P) := self ∧ executor(t) runs content(t)
-dispatch(P) ⇒ ¬occupied(P)
+elect     : ↦ P ≜ the ≻-greatest of electable ; pre electable ≠ ∅
+bind      : P ↦ P ≜ write .bound @ dir(P) ; pre ∀ Q ≠ P : ¬ bound(Q) ; post ∃! bound
+release   : P ↦ P ≜ remove .bound @ dir(P) ; pre done(P) ∨ terminal(P) ∨ operator-redirect
+file      : (P, d) ↦ P' ≜ stub t @ dir(P)/pending : ⟨symptom(d), locus(d), provenance(d)⟩ ;
+            ¬ census ∧ ¬ re-slice ∧ ¬ re-mirror ; post P' = P ∪ { t }
+triage    : d ↦ impedes(d, t) ⇒ fix(d) ; ¬ impedes(d, t) ⇒ file(owns(d), d)
+dispatch   ≜ ∀ t ∈ frontier(P) : state(t) = ready ⇒ concurrently ⟨ state(t) := active ∧ owner(P) := self ∧ executor(t) runs content(t) ⟩
+dispatch(P) ⇒ ¬occupied(P) ∧ bound(P)
 judge(t, r) ≜ accept(t)(r) ⇒ advance(t) ; ¬accept(t)(r) ⇒ r rejected back to executor(t), state(t) stays active
-advance(t) ≜ state(t) := next(state(t)) ; state(t) = completed ⇒ ∀ d ∈ promote(t) : state(d) := ready
+advance(t) ≜ state(t) := next(state(t)) ; state(t) = completed ⇒ ∀ d ∈ promote(t) : state(d) := ready ;
+             PLAN.md := mirror(state, R, content)
 update(t)  ≜ content(t) := depalimpsest(content(t)) ; PLAN.md := mirror(state, R, content)
 merge     : { P₁, P₂, … } ↦ ⋃ Pᵢ
 sync       ≜ ∀ t ∈ P : state(t) ≠ truth(t) ⇒ state(t) := truth(t) ;
