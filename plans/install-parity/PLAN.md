@@ -273,7 +273,7 @@ make deploy work outside the workspace.
 
 **Defect.** `deploy` carries two concerns that map to **no stage** of the pipeline ontology: package
 **distribution** (a precondition to `init`) and **fleet iteration** (an outer loop over the whole
-pipeline). Neither has a live caller — `fleet-deploy.sh`, the endorsed path, ssh's to each host itself
+pipeline). Neither has a live caller — `agent-toolchain-bootstrap`, the endorsed path, ssh's to each host itself
 and invokes `agent-forge deploy … --no-runtime-install` **locally** there. See _Distribution tail_ above
 for the derivation.
 
@@ -350,7 +350,7 @@ Ask of each disputed concern **which stage it is**. Three answers, all "none":
   `runtime-install.ts` is therefore outside the ontology — it entered only because no registry was
   available to be the precondition instead. A registry now is; the module goes.
 - **Fleet iteration is an OUTER LOOP over the whole pipeline**, one iteration per host — exactly the
-  shape of `fleet-deploy.sh` (per host: install packages, then `init → project → deploy` locally).
+  shape of `agent-toolchain-bootstrap` (per host: install packages, then `init → project → deploy` locally).
   The script is the loop; forge is the loop **body**. A loop does not belong inside its own body.
 - **Remote placement collapses into that loop.** `deploy`'s Target is a `.claude/` root resolved by
   `userScope`/`projectScope` — a directory. Reaching another machine's directory is transport, and the
@@ -367,6 +367,8 @@ Ask of each disputed concern **which stage it is**. Three answers, all "none":
 rotting `.agent-factory.config` (gitignored, committed example drifted, cited schema doc absent) —
 already listed under _Carried forward_ as a known rot, now removed rather than repaired.
 
-`fleet-deploy.sh` stays with this plan as the operator-local ephemeral it is; it rides into
-`.retired/` with the plan and remains runnable and versioned there. It is not agent-factory's
-artifact, so it gets no home in the product tree.
+The script LEFT this repo entirely. Keeping it here — even parked in `.retired/` — still placed a
+leclabs-owned artifact inside the library, and the ownership argument above rules that out just as
+it rules out a home in the product tree. It now lives on fire at
+`~/.local/bin/agent-toolchain-bootstrap`, renamed because it touches exactly one host and
+orchestrates nothing; the global CLAUDE.md carries it and the one-way dependency rule.
