@@ -2,8 +2,14 @@
 // host and seed each agent's sidecar layers if-absent. The def is overwritten
 // freely (generated substance); the sidecars are protected
 // (`substance-over-accident`). Skills are generated substance with no
-// sidecars — overwrite freely. NEVER PRUNES: agent/skill deletion is a manual
-// per-host def rm + sidecar archive, never an automatic sweep.
+// sidecars — overwrite freely.
+//
+// The PLACER never deletes. It only TESTIFIES — `report.written` records the
+// claudeDir-relative path of every file it lays down, and the orchestrator
+// (`deploy.ts` → `manifest.ts`) uses that record, and only that record, to
+// converge the target. The memory sidecars are deliberately absent from the
+// testimony: they live outside the deploy root and are the self-authored
+// individual, so no deploy may ever sweep them.
 //
 // Faithful port of `place/local.py`.
 
@@ -48,6 +54,7 @@ export function placeAgentsLocal(
     if (!existsSync(src)) {
       warn(`  WARN  no def for ${name} at ${src}`);
       report.warnings.push(`no def for ${name}`);
+      report.skipped.push(name);
       continue;
     }
     if (!opts.dry) {
@@ -58,6 +65,9 @@ export function placeAgentsLocal(
       );
     }
     report.copied += 1;
+    // Testimony: the def is the ONLY thing this placer may later prune. The
+    // sidecars below are never recorded — never ours to remove.
+    report.written[name] = [`agents/${name}.md`];
     // Memory sidecars live in the harness-NEUTRAL home ~/.agents/<name> (mirrors
     // agent-memory `homeForName`), a sibling of `.claude` — NOT under
     // `.claude/agents` (Claude-specific; only <name>.md declaration lives there).
@@ -109,6 +119,7 @@ export function placeSkillsLocal(
         `  WARN  no SKILL.md for ${name} at ${resolvePath(srcDir, 'SKILL.md')}`,
       );
       report.warnings.push(`no SKILL.md for ${name}`);
+      report.skipped.push(name);
       continue;
     }
     // Stage committed `assets:` companions into the SOURCE skill dir first, so
@@ -138,6 +149,10 @@ export function placeSkillsLocal(
       }
     }
     report.copied += 1;
+    // Testimony: exactly the files copied for this skill, dest-relative. A file
+    // sitting in the target skill dir that we did NOT copy is not recorded and
+    // therefore survives every future prune.
+    report.written[name] = files.map((rel) => `skills/${name}/${rel}`);
     const extra = files.filter((f) => f !== 'SKILL.md');
     const tail = extra.length
       ? ` (+${extra.length} asset${extra.length === 1 ? '' : 's'})`

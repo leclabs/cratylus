@@ -5,7 +5,9 @@
 //   - the v1 stores {SELF.md, MEMORY.md} are NEVER created (no resurrection:
 //     a home carrying only v2 stores stays v1-free after deploy)
 //   - bare-home guard (self-correct + loud NOTE) / `.claude`-suffix used verbatim
-//   - never-prunes (a removed name leaves the live tree's other files standing)
+//   - the PLACER never prunes (a removed name leaves the live tree's other files
+//     standing). Convergence is the ORCHESTRATOR's job, bounded by the deploy
+//     manifest — see `prune.test.ts`.
 
 import {
   chmodSync,
