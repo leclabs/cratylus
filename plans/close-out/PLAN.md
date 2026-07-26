@@ -100,6 +100,32 @@ is either shipping-broken or load-bearing for the memory work the operator named
 | publish flags            | `private:true` ×3, `changesets ignore: []`. Softly gated — publishing under a placeholder burns the PATH name                   |
 | repo name · heartbeat O4 | wait indefinitely; an acceptable resting state per `discipline-anchor`                                                          |
 
+### Canon-reconciliation flags — nico's, resolve in ONE loop
+
+Raised by `self-sufficiency-redo` and carried in mav's private episodic memory until now, which was
+the wrong home: a project-scoped fact belongs to the project, not to an agent's private store. Homed
+here so it survives the agent.
+
+1. **concept-record has FOUR anchors** — `TRIPLE` · `Concept` · `concept-contract` · `k`. Pick one;
+   the others cite it.
+2. **`ρ` CONFLICT** — `signify` says by-design, not-inferred; `exemplify` derives `ρ` from readers.
+   Home it in `signify`.
+3. **`distill` COLLISION** — `conceptualize` uses it as a predicate; `dream` as a function to DFP.
+4. **`minimal` UNDECLARED** corpus-wide.
+5. **strategy-refusal DUP** — `exemplify` restates what `materialize` homes.
+6. **`loud-refusal` (TS) vs `hoare-elegance-no-permissive-defaults` (ir-bridge)** — same law, two signs.
+7. **`priors_R` (elicit) vs `latent-priors` (probe)** — synonyms.
+8. **congruence domain-extension** — `introspect` V-values vs C × C.
+9. **`fit`/`fittest`/`gap`** — `create-agent` locals, undeclared.
+10. **`create-agent` references `exemplify` in notation but `composition: []`** — compose-edge or at-cite?
+11. **`precise-circumscription` (probe) vs `circ` (signify)** — is `circ_R` shared?
+12. **ir-bridge fixture** `agent-canon.agent-forge.json` wants regeneration.
+
+One already retracted (`e00c837`, a false `principal-ic` staleness claim). **A thirteenth, found
+today:** the symbols gate validates fence glyphs against `operator-lexicon` but never checks that an
+`X @ home` boundary-binding resolves to a real declaration in that home — which is how
+`carry-on`'s `active @ praxis` stayed dangling. Filed as `pending/x-symbols-gate-…`.
+
 ## Superseded
 
 `agent-runtime` · `install-parity` · `compiler-projector-split` · `heartbeat-organ` ·
