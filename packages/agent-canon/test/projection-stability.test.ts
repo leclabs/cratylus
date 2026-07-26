@@ -83,7 +83,7 @@ describe('projection stability (.ts is the sole source)', () => {
 
   it('every skill projects non-empty', async () => {
     const modules = await collect('skills/*/skill.ts');
-    expect(modules.length).toBe(15);
+    expect(modules.length).toBe(16);
     for (const rel of modules) {
       const s = await firstExport<Skill>(join(srcRoot, rel));
       const rendered = renderSkill(s);

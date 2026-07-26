@@ -78,6 +78,7 @@ const targetClaude = join(root, 'target', '.claude');
 const prefix = join(root, 'prefix');
 const agentHome = join(root, 'agent-home');
 const SKILL = 'memory-face';
+const TAP_SKILL = 'event-tap-face';
 const NONCE = `smoke-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
 /** The deployed shim runs `agent-runtime` off PATH; isolate git config too. */
@@ -99,6 +100,16 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     SKILL,
     'scripts',
     'memory.mjs',
+  );
+  // The tap leg's counterpart. The capability word is `eventTap` (the runtime's
+  // own `CAPABILITIES` key, which agent-canon's `event-tap` cell declares), so the
+  // emitter names the shim `eventTap.mjs` and it spawns `agent-runtime eventTap`.
+  const deployedTapShim = join(
+    targetClaude,
+    'skills',
+    TAP_SKILL,
+    'scripts',
+    'eventTap.mjs',
   );
 
   // PRECONDITION (not a stage, not an assertion): put the runtime packages in a
@@ -159,18 +170,41 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     expect(statSync(shimSrc).mode & 0o111).not.toBe(0);
   });
 
-  it('L1 deploy: placeSkillsLocal copies the skill dir into the temp target, exec bit intact', () => {
+  it('L0b project: a runtime:{capability:eventTap} skill emits an executable thin shim → agent-runtime eventTap', () => {
+    const skillDir = join(projectSkills, TAP_SKILL);
+    const scriptsDir = join(skillDir, 'scripts');
+    mkdirSync(scriptsDir, { recursive: true });
+    writeFileSync(
+      join(skillDir, 'SKILL.md'),
+      '# event-tap\nA runtime-capability skill (eventTap), projected with a thin shim.\n',
+      'utf-8',
+    );
+    const shimSrc = join(scriptsDir, 'eventTap.mjs');
+    writeFileSync(shimSrc, thinShim('eventTap'));
+    chmodSync(shimSrc, 0o755);
+
+    const emitted = readFileSync(shimSrc, 'utf-8');
+    // Falsifier: the shim drives the host `agent-runtime eventTap` CLI, forwarding argv.
+    expect(emitted).toMatch(/spawnSync\('agent-runtime', \['eventTap',/);
+    expect(emitted).toContain('...process.argv.slice(2)');
+    expect(emitted).not.toContain('@leclabs/');
+    expect(statSync(shimSrc).mode & 0o111).not.toBe(0);
+  });
+
+  it('L1 deploy: placeSkillsLocal copies the skill dirs into the temp target, exec bit intact', () => {
     const res = placeSkillsLocal(
       targetClaude,
       { agentsDir: join(root, 'project', 'agents'), skillsDir: projectSkills },
-      [SKILL],
+      [SKILL, TAP_SKILL],
       { dry: false },
     );
     expect(res.rc).toBe(0);
-    expect(res.report.copied).toBe(1);
-    // The deployed shim landed AND kept its exec bit (survives the copy).
-    expect(existsSync(deployedShim)).toBe(true);
-    expect(statSync(deployedShim).mode & 0o111).not.toBe(0);
+    expect(res.report.copied).toBe(2);
+    // Both deployed shims landed AND kept their exec bit (survives the copy).
+    for (const shim of [deployedShim, deployedTapShim]) {
+      expect(existsSync(shim)).toBe(true);
+      expect(statSync(shim).mode & 0o111).not.toBe(0);
+    }
   });
 
   it('L3 memory leg: the DEPLOYED shim round-trips a record (encode→read), proven on disk', () => {
@@ -214,8 +248,7 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     expect(record?.body).toBe(NONCE);
   }, 60_000);
 
-  it('L4 event-tap leg: install→status(attached)→remove with ZERO RESIDUE', () => {
-    const bin = join(prefix, 'bin', RUNTIME_BIN);
+  it('L4 event-tap leg: the DEPLOYED shim drives install→status(attached)→remove with ZERO RESIDUE', () => {
     const settings = join(targetClaude, 'settings.json');
     const sink = join(root, 'capture.log');
     // Seed a settings file with a FOREIGN key + a foreign hook — the tap must
@@ -232,8 +265,12 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     )}\n`;
     writeFileSync(settings, baseline, 'utf-8');
 
+    // Through the DEPLOYED SHIM, exactly as an agent reaches the capability — not
+    // `execFileSync(bin, ['tap', …])`. Driving the bin directly proved the runtime
+    // worked while leaving the agent-facing path (skill → shim → CLI) untested; the
+    // shim spawns the capability word `eventTap`, which the bin must route.
     const runTap = (...args: string[]): string =>
-      execFileSync(bin, ['tap', ...args, '--settings', settings], {
+      execFileSync('node', [deployedTapShim, ...args, '--settings', settings], {
         env: hermeticEnv,
         encoding: 'utf-8',
       });

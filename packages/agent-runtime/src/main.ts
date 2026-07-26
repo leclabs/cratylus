@@ -64,10 +64,19 @@ export async function runMain(
   // The event-tap capability ships INSIDE the runtime (a subpath module, not a
   // discovered `@leclabs/*` plugin), and its verbs carry their own flag grammar
   // (`--events`, `--sink`, `--settings`) a generic method-reflecting dispatcher
-  // cannot know. So `tap <verb>` routes to its dedicated verb surface directly,
-  // ahead of the install-discovered dispatch — no host bootstrap needed. A throw
-  // (unknown verb / unknown event / missing flag) is a loud code-1 failure.
-  if (first === 'tap') {
+  // cannot know. So the tap routes to its dedicated verb surface directly, ahead of
+  // the install-discovered dispatch — no host bootstrap needed. A throw (unknown
+  // verb / unknown event / missing flag) is a loud code-1 failure.
+  //
+  // BOTH the capability word and its shorthand route here. `eventTap` is the
+  // capability's canonical name in `CAPABILITIES` — the word the dispatch grammar
+  // `<capability> <verb>` actually speaks, and therefore the word a PROJECTED THIN
+  // SHIM spawns (the emitter is `f(capability)`, so an `eventTap` cell yields
+  // `spawnSync('agent-runtime', ['eventTap', …])`). Routing only the `tap`
+  // shorthand made the tap reachable by an operator typing at a shell but DEAD to
+  // every agent coming through its own skill's shim: `eventTap` fell through to the
+  // discovered dispatch, where no plugin binds it, and died `unknown capability`.
+  if (first === 'tap' || first === 'eventTap') {
     try {
       const result = dispatchTap([...argv.slice(1)]);
       process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);

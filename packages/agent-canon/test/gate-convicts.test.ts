@@ -30,6 +30,7 @@ type Kind = 'GATE' | 'BEHAVIORAL';
 
 const REGISTRY: Readonly<Record<string, Kind>> = {
   'cratylism.test.ts': 'GATE',
+  'event-tap-cell.test.ts': 'GATE',
   'formal-block-self-sufficiency.test.ts': 'GATE',
   'gate-convicts.test.ts': 'GATE',
   'hook-rule-boundary.test.ts': 'GATE',
