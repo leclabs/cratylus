@@ -109,6 +109,13 @@ async function projectCells(out: string): Promise<{
   // The SAME call a consumer's `agent-forge project` makes — the corpus is just
   // one plugin in the set. Keeping a second dir-scanning projector here is what
   // let the consumer path rot unnoticed; there is now one path, and we ride it.
+  //
+  // NO `resolvedBodies`, deliberately. `agent-forge project` folds fragments here
+  // because a CONSUMER may author `patches`; canon is a PLUGIN, has no
+  // `agents.config.ts`, and authors none. Passing `resolveFragmentBodies(d, [])`
+  // would be the identity over an always-empty patch set — a call site and a code
+  // path buying a false impression of coverage and changing no emitted byte. Wire
+  // it when `patches` becomes authorable at all (see `config.ts:26-29`), not before.
   const { files, agents, skills, hooks } = await projectPluginSet({
     plugins: [canonPlugin],
     adapter,
