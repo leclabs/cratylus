@@ -1,4 +1,5 @@
 import type { HookCell } from '@leclabs/agent-forge/anatomy';
+import { checkIn } from '../dimensions/autonomy/check-in.js';
 
 // stance-guardrail — the harness-half of the principal-stance (P4). A source
 // `hook` cell (activation=event): its canonical DEFINIENS is the σ*-signified
@@ -703,7 +704,7 @@ salient signal rather than on argument, which is the very collapse this rubric e
 ## The check-in laws (the agent's DECLARED contract — judge against these)
 
 An agent carrying the \`checkIn\` autonomy value declares:
-\`check-in ⟨conclusion-first · owed ↦ recommendation-bearing-tail⟩\`. Four laws follow, and a turn
+\`${checkIn}\`. Four laws follow, and a turn
 that breaks any of them is a collapse:
 
 - **L1 · scope.** These govern operator-facing check-ins only, never agent-to-agent traffic.
