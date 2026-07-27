@@ -105,7 +105,9 @@ landing(P) = c ⇔ lands(c, P)
 ∀ c, c' : lands(c, P) ∧ lands(c', P) ⇒ c = c'
 ∀ P : stored(P) = ∅
 list = { P ∈ Plans | inscope(P) }
-retire(P) defined ⇔ terminal(P)
+yield(P)  ≜ what EXECUTING P established ∧ ¬ derivable from intent(P) @ ENGINE ⟨enters as Intent, ¬ as a Sign : execution establishes what needs naming, ¬ the name⟩
+drained(y) ⇔ ∀ i ∈ y : i authored into its strongest seam ⟨gate ≻ cell ≻ governing-doc @ dream⟩ ∨ i filed as a canon-candidate ⟨¬ agent-private memory : a private home is where the NEXT agent re-derives it⟩
+retire(P) defined ⇔ terminal(P) ∧ drained(yield(P))
 supersede(P, Q) ⇒ superseded(P)
 ∀ P : content(retire(P)) = content(P)
 ∀ P : retire(P) ∈ Plans
@@ -122,6 +124,8 @@ sharded(P) ∧ ¬ done(P) ∧ frontier(P) = ∅ ⇒ R ill-formed ⟨cycle ∨ un
 gates(P, Q) ⇔ ∃ t ∈ Q : landing(P) ∈ deps(t)
 elect ≜ in-flight ≻ gating ≻ operator-intent ⟨lexicographic · finish before starting⟩
 terminal(P) ⇒ retire(P) ⟨obligation ¬ permission · an unretired terminal plan is WIP that is not work⟩
+yield(P) ≠ ∅ ∧ ¬ drained(yield(P)) ⇒ ¬ retire(P) ⟨ENGINE intake, realized HERE : archive is where a law dies⟩
+    ⟨measured : 16 retired plans, 25 laws, 0 in the canon ∴ every anchor re-derived privately, per agent, forever⟩
 impedes(d, t) ⇔ d standing ⇒ ∄ r : accept(t)(r)
 impedes(d, t) ⇒ fix(d) ∧ ¬ check-in-owed ⟨a regression in the path is repaired, ¬ surfaced⟩
 ¬ impedes(d, t) ⇒ file(owns(d), d) ∧ ¬ fix(d) ⟨a defect beside the path is filed, ¬ chased⟩
