@@ -12,6 +12,8 @@ canon ≜ {c:cell ∣ accept(c)}
 valid(canon) ⇒ deterministic(deploy) ∧ ∀stage∈pipeline: preserves(stage, MODEL-invariants)
 
 discover   : Intent → Sign ; discover realized-by {signify, conceptualize, elicit, probe}
+Execution  ≜ a plan under praxis ; yield : Execution → ℘(Intent) ⟨what only the DOING establishes ; ¬ derivable from the Intent that launched it⟩
+intake     : yield(Execution) → discover ⟨the feedback edge⟩ ; ∄ intake ⇒ yield dies at plan-retirement ∧ re-derives privately, per agent, forever
 author     : Intent → cell
 normalize  : cell → cell ; normalize ⊨ PARSIMONIOUS
 verify     : fragment → Bool ; verify(f) ⇔ decode_cold(core f) = intent(f)
@@ -23,8 +25,8 @@ compose    : (DimensionName ⇸ ℘(fragment)) → IR ; compose(select(a)) = ir(
 realize    : ActivationMode × harness-adapter → harness-mechanism
 inject     : context × harness-mechanism → Target
 
-pipeline ≜ ⟨discover, author, normalize, validate, select, compose, deploy⟩
-stage-invariant : discover ⊨ SIGNIFIED ; author ⊨ CANONICAL ; validate ⊨ accept ; compose ⊨ COMPOSED ; deploy ⊨ REGENERABLE
+pipeline ≜ ⟨discover, author, normalize, validate, select, compose, deploy⟩ ⊕ intake ⟨pipeline is CYCLIC, ¬ linear : deploy ↦ Execution ↦ yield ↦ discover⟩
+stage-invariant : discover ⊨ SIGNIFIED ; author ⊨ CANONICAL ; validate ⊨ accept ; compose ⊨ COMPOSED ; deploy ⊨ REGENERABLE ; intake ⊨ SIGNIFIED ⟨a yield enters as Intent, ¬ as a Sign : execution NAMES nothing, it only establishes what needs naming⟩
 
 Reader ≜ {LLM, human} ; source : artifact → cell ; intent-of : cell → Intent ; author(I)=c ⇒ intent-of(c)=I
 HumanSign ; human-artifact ; human-priors ; artifact ≜ Target ⊎ human-artifact
