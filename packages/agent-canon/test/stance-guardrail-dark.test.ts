@@ -29,6 +29,7 @@ import { chmodSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { checkIn } from '../src/dimensions/autonomy/check-in.js';
 import { stanceGuardrail } from '../src/hooks/stance-guardrail.js';
 
 let root: string;
@@ -241,5 +242,28 @@ describe('STANCE GUARDRAIL — spending the bypass re-arms the gate', () => {
     // And it must say the gate is re-armed, not that enforcement is off.
     expect(src).toMatch(/RE-ARMED as of now/);
     expect(src).not.toMatch(/enforcement is now OFF for this session/);
+  });
+});
+
+// THE DECLARED CONTRACT MUST BE THE DECLARED CONTRACT — not a copy of it.
+//
+// The rubric's "check-in laws" section is headed "the agent's DECLARED contract — judge against
+// these" and then TRANSCRIBES the dimension value by hand. Nothing reads the cell. Change
+// `dimensions/autonomy/check-in.ts` and the rubric goes on judging against the stale string,
+// silently, while claiming to be the declaration.
+//
+// That is two homes for one concept (MODEL: `|home(c)| = 1`), and it is the shape that makes
+// autonomy un-configurable: the agent's declared authority and the gate that enforces it are
+// independent transcriptions of one intent, so editing the declaration changes nothing about
+// what is enforced. Until the adapter can compile a dimension into a predicate, the least this
+// corpus can do is FAIL when the two drift — a distinction living only in prose will be lost.
+describe('STANCE RUBRIC — the transcribed dimension value tracks its cell', () => {
+  it('quotes `check-in` exactly as the autonomy cell declares it', () => {
+    const rubric = stanceGuardrail.workers?.find(
+      (w) => w.filename === 'stance-judge-prompt.md',
+    )?.content;
+    expect(rubric, 'rubric worker not found on the cell').toBeTruthy();
+    // The single source: the dimension cell itself.
+    expect(rubric).toContain(checkIn);
   });
 });
