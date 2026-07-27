@@ -65,6 +65,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'agent-canon/reader-reach.test.ts': 'GATE',
   'agent-canon/runtime-shim.test.ts': 'BEHAVIORAL',
   'agent-canon/skill-shape.test.ts': 'GATE',
+  // twin of memory-nudge: drives the guardrail worker with a broken judge it supplies
+  // itself, and carries its own negative control (opted-out ⇒ silent).
+  'agent-canon/stance-guardrail-dark.test.ts': 'BEHAVIORAL',
   'agent-canon/structural-parsimony.test.ts': 'GATE',
   'agent-canon/symbol-probe-gate.test.ts': 'GATE',
   'agent-canon/symbols.test.ts': 'GATE',

@@ -46,8 +46,12 @@ export const stanceGuardrail: HookCell = {
 # SAFETY MODEL:
 #   - OFF BY DEFAULT. Does nothing unless the repo opts in (git config agentfactory.stanceGuard true).
 #   - AGENT-SCOPED. Only fires for agents on the allowlist (default: nico, mav — the principal-ic-intrinsic agents).
-#   - FAILS OPEN. Any error (no transcript, judge failure, jq missing) → exit 0 (allow stop).
-#     A guardrail that wedges work on its own flakiness is worse than a missed block.
+#   - FAILS OPEN, BUT NEVER SILENTLY-CLEAN. Any error → exit 0 (allow stop): a guardrail that
+#     wedges work on its own flakiness is worse than a missed block. But once the guard is
+#     ENABLED and in scope, a failure that prevents judging (no transcript, judge unreachable)
+#     announces itself via \`dark\` instead of passing as a clean turn — silence is reserved for
+#     "judged, no collapse". Pre-enablement paths (no jq, opted out, off-allowlist) stay silent:
+#     there, not-checking is the correct answer, not a failure to report.
 #   - LOOP-SAFE. Honors stop_hook_active and a hard re-entry cap so it can never wedge a turn.
 #
 # INPUT  : Claude Code Stop/SubagentStop hook JSON on stdin (transcript_path, stop_hook_active,
@@ -67,6 +71,20 @@ JUDGE_CMD="\${STANCE_JUDGE_CMD:-sh $SELF_DIR/stance-judge.sh}"
 trap 'exit 0' EXIT
 
 allow_stop() { exit 0; }  # emit nothing; the agent is permitted to stop.
+
+# A VERDICT and a FAILURE are different facts, and silence can only carry one of them.
+# \`allow_stop\` means "checked, no collapse". It must never also be the answer to "could
+# not check" — that is a bypass by omission: with the judge unreachable the guardrail
+# reports a clean turn forever and nothing ever says the guardrail went dark. Exactly the
+# defect fixed one file over in the memory nudge ("a broken runtime read as a clean bill
+# of health, silently and forever"); the inversion is the same — \`if signal absent then
+# pass\` becomes \`if signal absent then SAY SO\` — and, as there, it still never wedges the
+# turn. Reached only AFTER the opt-in and allowlist checks, so a repo that never enabled
+# the guard stays silent.
+dark() {
+	printf 'STANCE GUARDRAIL — DARK: %s. This turn was NOT judged; the absence of a block is an absence of a verdict, not a clean one.\\n' "\$1"
+	exit 0
+}
 
 # --- read hook input ------------------------------------------------------------------------
 input="$(cat)"
@@ -129,7 +147,7 @@ fi
 
 # --- extract the last assistant turn from the transcript ------------------------------------
 transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/null || true)"
-[ -n "$transcript" ] && [ -f "$transcript" ] || allow_stop
+[ -n "$transcript" ] && [ -f "$transcript" ] || dark "no readable transcript at '\$transcript'"
 
 # The transcript is JSONL: each line has top-level .type ("assistant"/"user"), .isSidechain
 # (true for subagent lines), and .message.content as an array of blocks (thinking/text/tool_use)
@@ -280,7 +298,7 @@ Unless that commitment is genuinely contingent on something outside this turn (a
 still running, an operator sign-off, an external event), this is announce-without-act: BLOCK it,
 and quote the span above as the evidence."
 
-verdict="$(printf '%s' "$judged" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || allow_stop
+verdict="$(printf '%s' "$judged" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || dark "the judge did not answer"
 
 decision="$(printf '%s\\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | head -1)"
 [ "$decision" = "BLOCK" ] || allow_stop  # PASS, empty, or anything but BLOCK → allow stop
