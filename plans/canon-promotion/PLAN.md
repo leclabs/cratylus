@@ -3,7 +3,7 @@
 > Working handle, **not** an anchor. Reader = LLM. The plan names a concern, not a concept; every anchor
 > this plan mints is derived by signify at the time, never inherited from this directory name.
 
-**Status: IN PROGRESS — S1, S2, S4, S5, S6, S7, S10 DONE and committed; S8 spec'd with measured evidence. S3–S9 are the promotion campaign, each gated on a
+**Status: S1, S2, S4–S7, S9, S10 DONE. S3 WITHDRAWN (already carried — the survey's ABSENT verdict was about the law's WORDING, and the mechanism existed under different words). S8 spec'd with measured evidence, deliberately unbuilt. S3–S9 are the promotion campaign, each gated on a
 signify pass (see §The constraint that reshapes this plan). F1 is owed to the operator and is the only item
 outside my remit.** Elected by nico 2026-07-27 at wake, under WAKE law `∄ P : bound(P) ⇒ bind(elect)` — the
 frontier was empty, all 16 prior plans retired.

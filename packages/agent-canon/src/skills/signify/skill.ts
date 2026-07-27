@@ -42,6 +42,9 @@ c ∉ dom(α) ⇒ c ∉ A :
     { n : circ(n,c) } = ∅ ∧ ∄ mint(c) ⇒ exclude, logged
     ∃ cᵢ, cⱼ : α(cᵢ) = α(cⱼ) ∧ D(cᵢ) ≠ D(cⱼ) ⇒ the cut was wrong ↦ conceptualize
 
+¬circ(n, cᵢ) ⇒ evidence about fired(n), ¬ about cᵢ ⟨fired : Names → ℘(D) reads n ALONE⟩
+    ∴ a rejection BINDS n ⟨n freed from cᵢ is ¬ thereby fit for cⱼ ; circ(n, cⱼ) re-established independently ∨ n stays rejected⟩
+
 reader ≜ LLM by construction ⟨never inferred ; reader/register resolution ∉ signifier-derivation⟩
 human-project(a) ≜ explicit downstream projection of σ*-form a to human-form ⟨at point-of-intention · never inferred⟩
 
