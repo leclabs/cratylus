@@ -3,8 +3,37 @@
 > Working handle, **not** an anchor. Reader = LLM. Any anchor this plan mints is derived by
 > signify at the time, never inherited from this directory name.
 
-**Status: REVISED after adversarial review returned DO NOT BUILD. Two FATALs and the headline
-claim were correct; the design is rebuilt on different terms, not patched.** Rev 2.
+**Status: ⊥ — NOT BUILT, and should not be. Two adversarial reviews both returned DO NOT BUILD.
+The second refuted the PREMISE rather than the design, so a rev 3 would be sunk-cost iteration.
+Retained as the record of a negative result, which is a result.**
+
+## Why this is ⊥, in one paragraph
+
+The reviewer's blocking challenge: _name one turn that is PASS at rest and BLOCK when elevated._
+It cannot be met, and the reason is structural. The rubric's check-in laws are keyed on whether
+something is **owed** (`L2` nothing owed in the body, `L3` no tail at all when nothing is owed),
+`mission-command` defines owed as `escalate ⇔ fork(irreversible · value · competence)`, and
+`carry-on` states `elevate ⇒ standing-intent unchanged ∧ ¬fresh-dispatch ∧ ¬permission-grant`.
+Elevation therefore does not change what counts as a fork. A genuine fork in the tail passes in
+BOTH states; a manufactured tail is convicted in BOTH. **loop-position moves no verdict**, so
+supplying it to the judge is a field that changes nothing — the same emptiness as rev 1's
+mechanical veto, relocated. My root-cause-2 (loop-position has no per-turn carrier) is a true
+observation about the CONFIGURATION and a false explanation of the COLLAPSES.
+
+## What the evidence actually points at instead
+
+All six recorded collapses are `L2`/`L3`/`L4` breaches — manufactured tails, forks handed back at
+the close. The live conflict is internal and needs no new state: the `check-in` value's SURFACE
+(`owed ↦ recommendation-bearing-tail`) reads as a standing instruction to end with a tail, while
+`L3` says a turn that owes nothing must end with the report and no tail at all. That is a
+signification defect in one dimension value, not a missing enforcement channel. It is the thing
+worth fixing, and it belongs to whoever next opens the Autonomy catalogue.
+
+---
+
+## Superseded — rev 2 below, kept for the record
+
+Rev 2.
 
 ## What the first draft got wrong
 
