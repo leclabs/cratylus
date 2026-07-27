@@ -84,7 +84,6 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   A: 'REFERENCE',
 
   // ── COLLISION — distinct concepts, one sign ──────────────────────────────────
-  K: 'COLLISION', // FOUR: kind-set · K_cfg∪misnomer · project-K warm knowledge · candidate set
   // `P` — the outlier is GONE (formalize's "source prose" became `prose`, cold-verified).
   // wake and praxis are byte-identical ("a plan : a set of task-files"); carry-on's "the bound
   // praxis" is that same concept narrowed to the bound one. One concept, three statements.
@@ -185,7 +184,7 @@ describe('ALTITUDE gate — one sign, one concept, across the whole corpus', () 
 
   // NO SILENT CAP: the outstanding collision count is asserted, not merely tolerated, so it
   // cannot drift upward inside the ledger while every other check stays green.
-  it('holds the collision debt at its recorded size (2) — never higher', async () => {
+  it('holds the collision debt at its recorded size (1) — never higher', async () => {
     const live = new Set(
       divergentSymbols(await liveObligations()).map((d) => d.symbol),
     );
@@ -195,6 +194,6 @@ describe('ALTITUDE gate — one sign, one concept, across the whole corpus', () 
     expect(
       collisions.length,
       `outstanding sign collisions: ${collisions.join(', ')}`,
-    ).toBeLessThanOrEqual(2);
+    ).toBeLessThanOrEqual(1);
   });
 });

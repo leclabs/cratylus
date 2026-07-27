@@ -12,8 +12,8 @@ fac : C → ℘(℘(C))
 ≺ ≜ shortlex order over factorizations
 anchor : C → sign ∪ {⊥}
 gloss : C → text
-kind : C → K
-K ≜ the closed kind set
+kind : C → Kinds
+Kinds ≜ the closed kind set
 
 concept-record   ≜ record(gloss, anchor, factorization)
 dfp(g) ≜ densest-faithful-point(g)
@@ -34,7 +34,7 @@ CSF(c) ≽ prose(c)
 Φ ≜ { (anchor(c), kind(c), CSF(c)) | c ∈ C }
 S ≜ { file, document, … }
 σ : Φ × S → artifacts
-ρ_s : K → form_s
+ρ_s : Kinds → form_s
 σ well-defined ⇔ ρ_s total over kinds(Φ)
 s unnamed ∨ s ∉ S ⇒ ⊥
 ∃ k ∈ kinds(Φ) : k ∉ dom(ρ_s) ⇒ ⊥
