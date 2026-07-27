@@ -6,7 +6,7 @@ export const createAgent: Skill = {
   formalBlock: `A               ≜ the agent under construction
 O               ≜ the dimension set @ SOUL \`##\` anatomy sections
 catalog         ≜ the canonical value store per dimension @ \`agent-forge catalog\` ⟨live · never embedded⟩
-kind            : O → { enum, open, coined }
+openness        : O → { enum, open, coined }
 enum            ≜ a closed, model-native value-set
 open, coined    ≜ an extensible value-set
 arity           : O → { scalar, set }
@@ -21,7 +21,7 @@ instance-bound  ≜ provenance⟨lineage-mark⟩ ∧ substrate⟨model/runtime�
 human-project   ≜ downstream human projection @ signify
 
 ∀ o ∈ O : value(o) ∈ catalog(o)
-kind(o) = enum ⇒ | value(o) | = 1
+openness(o) = enum ⇒ | value(o) | = 1
 arity(o) = set ⇒ value(o) ⊆ catalog(o)
 gap(o) ⇔ ∄ v ∈ catalog(o) : fit(v)
 gap(o) ⇒ catalog := exemplify(catalog) @ owner ⟨¬ inline · ¬ wizard⟩

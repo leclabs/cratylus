@@ -85,13 +85,15 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
 
   // ── COLLISION — distinct concepts, one sign ──────────────────────────────────
   K: 'COLLISION', // FOUR: kind-set · K_cfg∪misnomer · project-K warm knowledge · candidate set
-  P: 'COLLISION', // wake/praxis/carry-on: a plan — formalize: the SOURCE PROSE
+  // `P` — the outlier is GONE (formalize's "source prose" became `prose`, cold-verified).
+  // wake and praxis are byte-identical ("a plan : a set of task-files"); carry-on's "the bound
+  // praxis" is that same concept narrowed to the bound one. One concept, three statements.
+  P: 'REFERENCE',
   // `gate` PAID 2026-07-27: dream's declared `gate : home → findings × pressure` invoked
   // `memory.mjs audit` — the sign was already in the artifact. Renamed to `audit`, which also
   // disambiguated dream INTERNALLY (it used `gate` for both that function and the generic
   // corpus test-gate in `gate ≻ cell ≻ governing-doc`). Discovery, not coinage.
   intent: 'COLLISION', // praxis: the stated goal — introspect: what a fragment addresses
-  kind: 'COLLISION', // materialize: C → K — create-agent: O → {enum, open, coined}
   read: 'COLLISION', // event-tap: the tap verb — dream: the memory verb
   // `release` PAID 2026-07-27: handoff's is the CLI verb (`memory.mjs session release`) and
   // cannot yield. praxis's meant "remove .bound", the exact inverse of its own declared
@@ -178,7 +180,7 @@ describe('ALTITUDE gate — one sign, one concept, across the whole corpus', () 
 
   // NO SILENT CAP: the outstanding collision count is asserted, not merely tolerated, so it
   // cannot drift upward inside the ledger while every other check stays green.
-  it('holds the collision debt at its recorded size (5) — never higher', async () => {
+  it('holds the collision debt at its recorded size (3) — never higher', async () => {
     const live = new Set(
       divergentSymbols(await liveObligations()).map((d) => d.symbol),
     );
@@ -188,6 +190,6 @@ describe('ALTITUDE gate — one sign, one concept, across the whole corpus', () 
     expect(
       collisions.length,
       `outstanding sign collisions: ${collisions.join(', ')}`,
-    ).toBeLessThanOrEqual(5);
+    ).toBeLessThanOrEqual(3);
   });
 });
