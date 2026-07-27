@@ -69,6 +69,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // itself, and carries its own negative control (opted-out ⇒ silent).
   'agent-canon/stance-guardrail-dark.test.ts': 'BEHAVIORAL',
   'agent-canon/structural-parsimony.test.ts': 'GATE',
+  'agent-canon/symbol-altitude.test.ts': 'GATE',
   'agent-canon/symbol-probe-gate.test.ts': 'GATE',
   'agent-canon/symbols.test.ts': 'GATE',
 

@@ -256,3 +256,57 @@ export function manifestRow(ob: ProbeObligation, v: RoundTripVerdict): string {
 export function isLexiconOperator(symbol: string): boolean {
   return Object.hasOwn(OPERATORS, symbol);
 }
+
+// ── Cross-cell divergence — the injectivity leg the per-cell key cannot see ──────
+//
+// `signify` declares `α : C ↣ Names` INJECTIVE, and states the law: `α(cᵢ) = α(cⱼ) ⇒
+// D(cᵢ) = D(cⱼ)`. One name ⇔ one concept, CORPUS-WIDE. But `ledgerKey` is
+// `${cell}␟${symbol}` — per cell — so a sign assigned concept A in one cell and concept B
+// in another raises two independent obligations, each of which round-trips green ALONE
+// while the pair violates injectivity. The blind spot is the KEY, not the rubric: no
+// per-item check can establish an across-item invariant.
+//
+// This is the mechanizable half only. Whether a divergence is a genuine COLLISION or a
+// deliberate cross-cell REFERENCE (probe re-declaring `dec` with a short gloss and an
+// `@ signify` pointer — same concept, terser wording) is an agent judgment, exactly like
+// `needs-probe`. Detection here; classification recorded by an agent.
+
+/** One symbol declared in ≥2 cells with ≥2 distinct assigned concepts. */
+export interface SymbolDivergence {
+  readonly symbol: string;
+  /** the declaring cells, sorted. */
+  readonly cells: readonly string[];
+  /** the distinct assigned concepts, sorted — ≥2 by construction. */
+  readonly concepts: readonly string[];
+}
+
+/**
+ * Every symbol whose assignment DIVERGES across cells. Requires ≥2 distinct cells AND ≥2
+ * distinct glosses: one cell restating a symbol is not divergence, and two cells agreeing
+ * verbatim is not either.
+ */
+export function divergentSymbols(
+  obligations: readonly ProbeObligation[],
+): SymbolDivergence[] {
+  const byCell = new Map<string, Set<string>>();
+  const byConcept = new Map<string, Set<string>>();
+  for (const ob of obligations) {
+    if (!byCell.has(ob.symbol)) {
+      byCell.set(ob.symbol, new Set());
+      byConcept.set(ob.symbol, new Set());
+    }
+    byCell.get(ob.symbol)?.add(ob.cell);
+    byConcept.get(ob.symbol)?.add(ob.assignedConcept.trim());
+  }
+  const out: SymbolDivergence[] = [];
+  for (const [symbol, cells] of byCell) {
+    const concepts = byConcept.get(symbol);
+    if (cells.size < 2 || concepts === undefined || concepts.size < 2) continue;
+    out.push({
+      symbol,
+      cells: [...cells].sort(),
+      concepts: [...concepts].sort(),
+    });
+  }
+  return out.sort((a, b) => a.symbol.localeCompare(b.symbol));
+}
