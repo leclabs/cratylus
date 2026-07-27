@@ -127,3 +127,74 @@ describe('STANCE GUARDRAIL — a dark judge is not a clean verdict', () => {
     expect(src).toMatch(/NEVER SILENTLY-CLEAN/);
   });
 });
+
+// POSITION SOUNDNESS — the close is not the turn.
+//
+// Every rubric rule that can fire is a claim about how the turn ENDED. The payload used to be
+// the whole turn flattened to one blob, and the EVIDENCE check grepped that blob, so a span
+// from a mid-turn preamble authenticated exactly as well as a genuine dangling close. Measured
+// on this hook's own authoring session: three blocks fired, every cited span preceded the last
+// tool call, every turn ended with a ~3000-char report, and all three reasons were false about
+// what followed. An independent replay of the live judge reproduced the stated reason 0/15.
+//
+// These fixtures pin the projection that fixes it. They are the shapes that actually occurred.
+describe('STANCE GUARDRAIL — a mid-turn preamble is not the turn s close', () => {
+  // The projection is EXTRACTED FROM THE SHIPPED CELL, never transcribed. A copied jq would
+  // test a copy: the cell could regress and these fixtures would stay green against the
+  // transcription — a self-description drifting from the artifact it claims to describe.
+  const closeJq = (): string => {
+    const src = workerSource();
+    const m = src.match(/asst_close="\$\(jq -rs '([\s\S]*?)' "\$transcript"/);
+    if (!m?.[1]) throw new Error('asst_close jq not found in the cell');
+    return m[1].replace(/\\\\n/g, '\\n');
+  };
+
+  let seq = 0;
+  const closeOf = (jsonl: string): string => {
+    seq += 1;
+    const f = join(root, `close-${seq}.jsonl`);
+    writeFileSync(f, jsonl, 'utf8');
+    const res = spawnSync('jq', ['-rs', closeJq(), f], { encoding: 'utf8' });
+    expect(res.status, `jq failed: ${res.stderr}`).toBe(0);
+    return res.stdout.trim();
+  };
+
+  const line = (o: unknown) => `${JSON.stringify(o)}\n`;
+  const user = line({ type: 'user', message: { content: 'go' } });
+  const text = (t: string) =>
+    line({
+      type: 'assistant',
+      message: { content: [{ type: 'text', text: t }] },
+    });
+  const tool = line({
+    type: 'assistant',
+    message: { content: [{ type: 'tool_use', name: 'Bash', id: 't1' }] },
+  });
+
+  it('EXCLUDES a preamble followed by a tool call and a report — the live false-positive shape', () => {
+    const close = closeOf(
+      user +
+        text('Adjudicating. The survey overturned my diagnosis:') +
+        tool +
+        text('Four commits shipped. Tree clean.'),
+    );
+    expect(close).toBe('Four commits shipped. Tree clean.');
+    expect(close).not.toContain('Adjudicating');
+  });
+
+  it('KEEPS a dangling commitment after a tool call — the shape that MUST still convict', () => {
+    expect(closeOf(user + tool + text("I'll run the suite next."))).toBe(
+      "I'll run the suite next.",
+    );
+  });
+
+  it('KEEPS a dangling commitment when the turn used no tools at all', () => {
+    expect(closeOf(user + text("I'll run the suite next."))).toBe(
+      "I'll run the suite next.",
+    );
+  });
+
+  it('yields EMPTY when the turn ends ON a tool call — the deliberate fallback case', () => {
+    expect(closeOf(user + text('Working.') + tool)).toBe('');
+  });
+});

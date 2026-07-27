@@ -53,6 +53,10 @@ export const stanceGuardrail: HookCell = {
 #     "judged, no collapse". Pre-enablement paths (no jq, opted out, off-allowlist) stay silent:
 #     there, not-checking is the correct answer, not a failure to report.
 #   - LOOP-SAFE. Honors stop_hook_active and a hard re-entry cap so it can never wedge a turn.
+#   - POSITION-SOUND. Every rubric rule that can fire is a claim about the turn's CLOSE. So the
+#     L1 window and the EVIDENCE check both run against \`asst_close\` — the text AFTER the last
+#     tool call — never the whole-turn blob. A span from a mid-turn preamble is out of scope for
+#     a verdict about how the turn ended, however genuinely present those characters are.
 #
 # INPUT  : Claude Code Stop/SubagentStop hook JSON on stdin (transcript_path, stop_hook_active,
 #          agent_type [SubagentStop], session_id, cwd, …).
@@ -203,6 +207,40 @@ asst_text="$(jq -rs '
 ' "$transcript" 2>/dev/null || true)"
 [ -n "$asst_text" ] || asst_text="$asst"
 
+# THE CLOSE — assistant text appearing AFTER the last message that carried a tool_use.
+#
+# Every rubric rule that can actually fire is POSITIONAL ("read the turn's FINAL sentences in
+# isolation"; "and the turn is ending"; "POSITION IS THE LAW"). \`asst_text\` is the whole turn
+# flattened to one blob and encodes no position at all, so the judge was asked a positional
+# question about a payload from which position had been deleted, and the EVIDENCE check then
+# authenticated the span against that same blob — establishing only that the characters occur
+# SOMEWHERE. A mid-turn preamble followed by four tool calls and a 3000-char report satisfied
+# it exactly as well as a genuine dangling close.
+#
+# Measured, on the three blocks this hook fired in its own authoring session: every cited span
+# preceded the last tool call, and every turn ended with a 2983-3458 char report. All three
+# reasons were false about what followed the span. An independent audit reproduced the live
+# judge n=15 and the stated reason reproduced 0/15.
+#
+# Empty close (the turn ended ON a tool call) ⇒ fall back to the whole turn: that is the one
+# case where "no text after the tools" is the truth, not a projection artefact.
+asst_close="$(jq -rs '
+	[ .[] ] as $all
+	| ( [ range(0; ($all|length))
+	      | select( $all[.].type=="user"
+	                and ( ($all[.].message.content | type) == "string"
+	                      or ( $all[.].message.content | map(.type) | index("text") != null ) ) ) ]
+	    | last // -1 ) as $lastuser
+	| [ $all[($lastuser+1):][] | select(.type == "assistant") ] as $turn
+	| ( [ range(0; ($turn|length))
+	      | select( ($turn[.].message.content // []) | map(.type) | index("tool_use") != null ) ]
+	    | last // -1 ) as $lasttool
+	| [ $turn[($lasttool+1):][]
+	    | (.message.content // []) | map(select(.type == "text") | .text) | join("\\n") ]
+	| map(select(. != "")) | join("\\n\\n")
+' "$transcript" 2>/dev/null || true)"
+[ -n "$asst_close" ] || asst_close="$asst_text"
+
 [ -n "$asst" ] || allow_stop  # no judgeable agent text (e.g. pure tool turn) → allow stop
 
 # THE OPERATOR SLOT — and it must actually hold the operator.
@@ -267,7 +305,12 @@ $asst"
 # or on an external event is legitimate, and the turn genuinely cannot proceed. Those are carved
 # out below. Everything else routes to the judge with the offending span quoted, so the block
 # names the evidence rather than restating the rule.
-final_span="$(printf '%s' "$asst_text" | tail -c 700)"
+# Windowed off THE CLOSE, not the whole-turn blob. Taking the last 700 bytes of the
+# concatenation reaches BACKWARD ACROSS TOOL BOUNDARIES whenever the final text block is short —
+# reintroducing the very bug this section claims to have fixed ("it judged 'Adding the
+# false-positive fixtures', a preamble whose very next assistant message was a tool_use").
+# It has not fired yet only because the offending turns happened to close with ~3000 chars.
+final_span="$(printf '%s' "$asst_close" | tail -c 700)"
 l1_evidence=""
 if printf '%s' "$final_span" | grep -Eqi "(^|[[:space:].\\"'])(i'?ll|i will|i'?m going to|let me|now (i'?ll|running)|next (i'?ll|i will)|proceeding to|moving on to|starting (on|with)|taking (it|that) (on|now))[[:space:]]"; then
 	# Carve-outs: the commitment is contingent on something outside this turn.
@@ -331,8 +374,14 @@ if [ -z "$evidence" ] && [ -z "$l1_evidence" ]; then
 	allow_stop
 fi
 if [ -n "$evidence" ] && [ "\${#evidence}" -ge 12 ]; then
-	if ! printf '%s' "$asst_text" | tr '\\n' ' ' | grep -qF "$evidence"; then
-		printf 'stance-guardrail: DISCARDING block — judge quoted a span absent from the turn (confabulated): %s\\n' "$evidence" >&2
+	# Checked against THE CLOSE, not the whole turn. Existence-somewhere was never the
+	# proposition worth authenticating: every rule that can fire is a claim about the turn's
+	# FINAL text, so a span drawn from a mid-turn preamble is out of scope for the verdict
+	# built on it even though the characters are genuinely present. Measured on this hook's
+	# own three blocks — all three spans preceded the last tool call, all three reasons were
+	# false about what followed, and all three passed the old whole-turn check.
+	if ! printf '%s' "$asst_close" | tr '\\n' ' ' | grep -qF "$evidence"; then
+		printf 'stance-guardrail: DISCARDING block — judge quoted a span that is not in the turn'"'"'s CLOSE (mid-turn preamble, or confabulated): %s\\n' "$evidence" >&2
 		allow_stop
 	fi
 fi
@@ -367,6 +416,14 @@ evidence_clause=""
 you committed to an action and then ended the turn without taking it. Stating a next action is not \\
 performing it. Do the thing NOW, in this turn, with tool calls; report it in the past tense when it \\
 is done. "
+# Ship the VERIFIED span on a judge block too. Only \`\$evidence\` survived a mechanical check
+# against the close; \`\$reason\` is unverified model prose. Sending the reason alone leaves the
+# recipient able to argue only with the one string nothing authenticated — and an agent that
+# refutes a fabricated reason has dodged a verdict that may still be correct, which is exactly
+# what happened three times in this hook's authoring session.
+[ -z "$evidence_clause" ] && [ -n "$evidence" ] && evidence_clause="The span this was checked \\
+against, verbatim from your close: \\"$evidence\\" — the REASON above is the judge's unverified \\
+wording; THIS span is what mechanically matched. Argue with the span, not the wording. "
 
 feedback="STANCE GUARDRAIL — blocked: you collapsed out of the intent-driven-expert stance. $reason \\
 \${evidence_clause}Re-assume the stance: you are the owning expert; the operator owns intent + sign-off \\
