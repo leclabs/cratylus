@@ -73,18 +73,18 @@ short).
 MECE. S1–S2 are done. S3–S9 are one signify pass each and are mutually independent — they touch different
 seams, so `∀ t,u ∈ wave : outputs(t) ∩ outputs(u) = ∅` holds and they may be dispatched concurrently.
 
-| id  | shard                                                                                                         | seam (from survey)                                                   | wave | state               |
-| --- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---- | ------------------- |
-| S1  | probe set-borne contradiction                                                                                 | `src/skills/probe/skill.ts`                                          | 0    | **DONE** `232ce47`  |
-| S2  | guardrail dark-judge + class gate                                                                             | `src/hooks/stance-guardrail.ts` + new test                           | 0    | **DONE** `27d6df2`  |
-| S3  | V4 count-vs-line-diff                                                                                         | GATE `test/gate-convicts.test.ts`                                    | 1    | ready               |
-| S4  | V5 falsified-premise-as-entailment                                                                            | cell `dimensions/…/cold-decode-oracle.ts`                            | 1    | **DONE** `4ea384e`  |
-| S5  | C2 append-loud / edit-silent                                                                                  | cell `src/skills/dream/skill.ts`                                     | 1    | **DONE** `4ea384e`  |
-| S6  | C3 fan-in producer-confirmation                                                                               | cell `src/skills/praxis/skill.ts`                                    | 1    | **DONE** `4ea384e`  |
-| S7  | C6 persist-return-before-judging                                                                              | cell `src/skills/praxis/skill.ts`                                    | 1    | **DONE** `4ea384e`  |
-| S8  | S4 cross-altitude collision — **26 live violations MEASURED**, see `evidence/cross-cell-symbol-divergence.md` | GATE `test/symbol-probe-gate.ts` (per-cell keying is the blind spot) | 1    | **SPEC'D, unbuilt** |
-| S9  | S5 rejected-sign-not-reassignable                                                                             | GATE `test/cratylism.test.ts`                                        | 1    | ready               |
-| S10 | dream cell: carriage radius — define `projection-carries`                                                     | cell `src/skills/dream/skill.ts`                                     | 1    | **DONE** `7fa7c1c`  |
+| id  | shard                                                                                                         | seam (from survey)                                                   | wave | state                                                      |
+| --- | ------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- | ---- | ---------------------------------------------------------- |
+| S1  | probe set-borne contradiction                                                                                 | `src/skills/probe/skill.ts`                                          | 0    | **DONE** `232ce47`                                         |
+| S2  | guardrail dark-judge + class gate                                                                             | `src/hooks/stance-guardrail.ts` + new test                           | 0    | **DONE** `27d6df2`                                         |
+| S3  | V4 count-vs-line-diff                                                                                         | GATE `test/gate-convicts.test.ts`                                    | 1    | **WITHDRAWN** `381683b` — already carried by `shrink-only` |
+| S4  | V5 falsified-premise-as-entailment                                                                            | cell `dimensions/…/cold-decode-oracle.ts`                            | 1    | **DONE** `4ea384e`                                         |
+| S5  | C2 append-loud / edit-silent                                                                                  | cell `src/skills/dream/skill.ts`                                     | 1    | **DONE** `4ea384e`                                         |
+| S6  | C3 fan-in producer-confirmation                                                                               | cell `src/skills/praxis/skill.ts`                                    | 1    | **DONE** `4ea384e`                                         |
+| S7  | C6 persist-return-before-judging                                                                              | cell `src/skills/praxis/skill.ts`                                    | 1    | **DONE** `4ea384e`                                         |
+| S8  | S4 cross-altitude collision — **26 live violations MEASURED**, see `evidence/cross-cell-symbol-divergence.md` | GATE `test/symbol-probe-gate.ts` (per-cell keying is the blind spot) | 1    | **DONE** `9e712d2`                                         |
+| S9  | S5 rejected-sign-not-reassignable                                                                             | GATE `test/cratylism.test.ts`                                        | 1    | **DONE** `381683b`                                         |
+| S10 | dream cell: carriage radius — define `projection-carries`                                                     | cell `src/skills/dream/skill.ts`                                     | 1    | **DONE** `7fa7c1c`                                         |
 
 S6/S7 share `praxis/skill.ts` and S8/S9 share `cratylism.test.ts` — those pairs must serialize against each
 other (one writer per file), or merge into single shards.
