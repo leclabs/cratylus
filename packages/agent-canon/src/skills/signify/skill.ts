@@ -26,7 +26,7 @@ register(a) ≜ the register a's body is observably authored in ⟨σ* ∨ human
 verbatim(a) ≜ a ships whole, byte-exact : settled σ*, never re-derived at projection
 
 ∀ c ∈ dom(α) : α(c) ≜ σ*(c)
-A ≜ { α(c) | c ∈ dom(α) }
+Anchors ≜ { α(c) | c ∈ dom(α) } ⟨the assigned-anchor set⟩
 dom(dec) = { α(p) | prim(p) } ;  dec(α(p)) = fired(α(p))
 { n : circ(n,c) } = ∅ ⇒ σ*(c) = mint(c)
 
@@ -38,7 +38,7 @@ coalesce(cᵢ, cⱼ)  ⇔  α(cᵢ) = α(cⱼ) ∧ D(cᵢ) = D(cⱼ)
 cᵢ <_N cⱼ  ⇔  α(cᵢ) <_lex α(cⱼ)
 ≺ ≜ shortlex over (C, <_N)
 
-c ∉ dom(α) ⇒ c ∉ A :
+c ∉ dom(α) ⇒ c ∉ Anchors :
     { n : circ(n,c) } = ∅ ∧ ∄ mint(c) ⇒ exclude, logged
     ∃ cᵢ, cⱼ : α(cᵢ) = α(cⱼ) ∧ D(cᵢ) ≠ D(cⱼ) ⇒ the cut was wrong ↦ conceptualize
 

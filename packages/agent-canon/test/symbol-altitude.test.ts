@@ -60,9 +60,14 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   dream: 'REFERENCE', // handoff points at the dream operation with `@ dream`
   realize: 'REFERENCE', // exemplify carries `@ materialize`
   boundary: 'REFERENCE', // both: this cell's remit against its neighbour's
+  // `A` PAID 2026-07-27 — was a three-way COLLISION. signify used it ONCE for the
+  // assigned-anchor set while introspect and create-agent used it 5× each for the AGENT.
+  // signify renamed to `Anchors`, built from its own declared `anchor` — a disambiguation
+  // out of existing vocabulary, not a coinage. What remains is introspect↔create-agent,
+  // both meaning the agent in question: a REFERENCE, not a collision.
+  A: 'REFERENCE',
 
   // ── COLLISION — distinct concepts, one sign ──────────────────────────────────
-  A: 'COLLISION', // signify: the anchor set {α(c)} — introspect/create-agent: the AGENT
   D: 'COLLISION', // distinction-space in four cells — exemplify: "the source corpus"
   K: 'COLLISION', // FOUR: kind-set · K_cfg∪misnomer · project-K warm knowledge · candidate set
   P: 'COLLISION', // wake/praxis/carry-on: a plan — formalize: the SOURCE PROSE
@@ -156,7 +161,7 @@ describe('ALTITUDE gate — one sign, one concept, across the whole corpus', () 
 
   // NO SILENT CAP: the outstanding collision count is asserted, not merely tolerated, so it
   // cannot drift upward inside the ledger while every other check stays green.
-  it('holds the collision debt at its recorded size (12) — never higher', async () => {
+  it('holds the collision debt at its recorded size (11) — never higher', async () => {
     const live = new Set(
       divergentSymbols(await liveObligations()).map((d) => d.symbol),
     );
@@ -166,6 +171,6 @@ describe('ALTITUDE gate — one sign, one concept, across the whole corpus', () 
     expect(
       collisions.length,
       `outstanding sign collisions: ${collisions.join(', ')}`,
-    ).toBeLessThanOrEqual(12);
+    ).toBeLessThanOrEqual(11);
   });
 });
