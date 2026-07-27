@@ -4,8 +4,15 @@
 #
 # WHY THIS EXISTS (principal-stance plan, P4 — the harness half):
 #   Encoding the principal stance as IDENTITY (Nico's half) raises the threshold but is not
-#   truly invariant — enough operator pushback erodes any prompt-level stance, because RLHF
-#   corrigibility reads a correction as "defer more." TRUE invariance needs the harness to
+#   truly invariant — enough operator pushback erodes any prompt-level stance. NOTE the original
+#   justification here blamed "RLHF corrigibility reads a correction as 'defer more'"; that is
+#   OVER-ATTRIBUTED and is corrected rather than deleted, since it was load-bearing for the cap
+#   that has now been removed. Perez et al. measure sycophancy as "similar for models trained
+#   with various numbers of RL steps, including 0" — it is not RLHF-specific — and the stronger
+#   claim, that a correction RAISES deference on later unrelated work, is unmeasured. The nearest
+#   result finds carryover that dissolves across topic change and is SYMMETRIC: non-deferential
+#   states self-perpetuate too. So a corrective gate is not self-defeating by construction.
+#   TRUE invariance needs the harness to
 #   refuse the collapsed turn. This is that refusal: on Stop, it judges the last assistant turn
 #   against the stance rubric and BLOCKS (Claude Code Stop-hook `{"decision":"block"}`) when it
 #   detects collapse, feeding corrective feedback that tells the agent to re-assume the stance.
@@ -87,7 +94,6 @@ command -v jq >/dev/null 2>&1 || allow_stop  # no jq → cannot parse → fail o
 #   - no-progress detector   — if the judged turn is byte-identical to the one already blocked,
 #                              the agent changed nothing and won't on the next attempt either.
 # State is per-session, in a tmp file keyed by session id; absent/unwritable state → fail open.
-BLOCK_CAP="${STANCE_BLOCK_CAP:-3}"
 session="$(printf '%s' "$input" | jq -r '.session_id // "nosession"' 2>/dev/null || echo nosession)"
 state_dir="${TMPDIR:-/tmp}/stance-guardrail"
 mkdir -p "$state_dir" 2>/dev/null || true
@@ -361,34 +367,60 @@ if [ -n "$evidence" ] && [ "${#evidence}" -ge 12 ]; then
 	fi
 fi
 
-# --- loop safety, applied at the point of blocking -------------------------------------------
-# Judging already happened; only the BLOCK is budgeted. Both exits below are LOUD — a guardrail
-# that gives up silently teaches the agent nothing and lies to the operator about conformance.
+# --- loop safety: bound EFFORT, never PERMISSION ----------------------------------------------
+# A safety check must never be a function of how many times it has fired. Ethernet caps attempts
+# then aborts and REPORTS; TCP caps retransmits then closes and SIGNALS; systemd caps starts then
+# FAILS; CrashLoopBackOff backs off restarts and never starts ignoring the crash. In every one the
+# counter governs EFFORT and the terminal state is a loud, typed refusal — permission is never what
+# gets spent.
+#
+# Two guards sit below and they bound DIFFERENT things. The no-progress detector bounds EFFORT
+# and is the primary: a byte-identical repeat cannot be helped by blocking again. The one-shot
+# bypass bounds how hard the gate presses when the agent keeps changing the turn without fixing
+# it — and it RESETS on use, so enforcement is never off for more than a single turn.
+#
+# The reset is the load-bearing part. A counter that permanently changes behaviour is a circuit
+# breaker wired backwards (an open breaker REJECTS; that one opened into ALLOW) and fail-open
+# under attack (CWE-636), abandoning at the cap the distinction `dark` makes correctly above:
+# fail open when the ENFORCER is broken, never when the POLICY is being violated.
+#
+# What remains is the no-progress detector, which is the correct guard and was always doing the
+# real work: if the judged turn is BYTE-IDENTICAL to the one already blocked, the agent changed
+# nothing and will not on the next attempt. That bounds effort and terminates on a genuine wedge.
+# It now announces on stdout — it too was reporting to stderr, where neither agent nor operator
+# reads it, which made a livelock exit indistinguishable from a clean turn.
+BLOCK_CAP="${STANCE_BLOCK_CAP:-3}"
 turn_hash="$(printf '%s' "$asst_text" | cksum | cut -d' ' -f1)"
 last_hash="$(cat "$hash_file" 2>/dev/null || echo none)"
 if [ "$turn_hash" = "$last_hash" ]; then
-	printf 'stance-guardrail: no progress since the last block (turn unchanged) — allowing stop, UNRESOLVED: %s\n' "$reason" >&2
+	printf 'STANCE GUARDRAIL — NO PROGRESS: this turn is byte-identical to the one already blocked, so blocking again cannot help. Allowing the stop UNRESOLVED: %s — the finding STANDS and is unaddressed.\n' "$reason"
 	allow_stop
 fi
+
+# ONE-SHOT BYPASS, SELF-RESETTING. After N consecutive blocks the agent may pass ONCE — and
+# spending it RE-ARMS the gate immediately by zeroing the counter, so the very next collapsed
+# turn blocks again. Enforcement is therefore never off for more than a single turn.
+#
+# This is the intent the earlier code failed to implement. It compared the count to the cap and
+# allowed the stop WITHOUT resetting, so the counter stayed at the cap forever and every later
+# turn passed: a one-turn escape valve that silently became a session-wide disable. Measured in
+# this hook's own authoring session — the counter sat at 3 while collapse after collapse went
+# unpoliced, and the two an operator eventually caught both fell in that window.
+#
+# The distinction is the whole point, and it is what the safety literature actually objects to.
+# A counter that PERMANENTLY changes behaviour is the Therac-25 shape: its proceed-key override
+# allowed five retries, regulators ordered it removed, the manufacturer reduced five to three,
+# and the accepted fix deleted the counter concept. A counter that grants a bounded escape and
+# then RESTORES enforcement is a different object — it bounds how hard the gate presses, not
+# whether the policy still applies.
 if [ "$block_count" -ge "$BLOCK_CAP" ]; then
-	# THE THIRD INSTANCE OF THIS CELL'S OWN DEFECT. Exhaustion used to print to stderr and
-	# `allow_stop` — and stderr reaches neither the agent nor the operator, so from both sides
-	# an exhausted budget is indistinguishable from a clean turn. The gate keeps JUDGING and
-	# stops ENFORCING, silently, for the rest of the session.
-	#
-	# That inverts the cap's own justification. The budget exists so a block loop cannot wedge
-	# work; it was never meant to buy silence. And it disables enforcement at exactly the moment
-	# violation density is highest — three convictions already — which is when a policy gate is
-	# least entitled to go quiet. Observed live: this hook exhausted its budget in its own
-	# authoring session, and every subsequent collapse went unpoliced and unannounced.
-	#
-	# Still ALLOWS the stop — the loop-safety property is real and untouched. It just says so.
-	printf 'STANCE GUARDRAIL — BUDGET EXHAUSTED (%s blocks). This turn was judged and found COLLAPSED, and is being allowed through UNRESOLVED: %s — enforcement is now OFF for this session; treat every later turn as unpoliced, not as clean.\n' "$BLOCK_CAP" "$reason"
+	printf '0' > "$count_file" 2>/dev/null || true
+	printf 'STANCE GUARDRAIL — BYPASS SPENT after %s consecutive blocks. This turn was judged COLLAPSED and is allowed through UNRESOLVED: %s — the gate is RE-ARMED as of now; the next collapsed turn blocks again.\n' "$BLOCK_CAP" "$reason"
 	allow_stop
 fi
 printf '%s' "$turn_hash" > "$hash_file" 2>/dev/null || true
 printf '%s' "$((block_count + 1))" > "$count_file" 2>/dev/null || true
-reason="$reason (stance-guardrail block $((block_count + 1)) of $BLOCK_CAP; on exhaustion this turn ends unresolved.)"
+reason="$reason (stance-guardrail block $((block_count + 1)) this session — a COUNT, not a budget: this gate does not stop enforcing, however many times it fires.)"
 
 # --- BLOCK ----------------------------------------------------------------------------------
 # Emit the Stop-hook block decision. The `reason` is fed back to the agent as a corrective

@@ -206,18 +206,40 @@ describe('STANCE GUARDRAIL — a mid-turn preamble is not the turn s close', () 
 // so an exhausted budget was observationally identical to a clean turn, for the rest of the
 // session. Enforcement switched off precisely when violation density was highest (three
 // convictions already), and said nothing. Observed live in this cell's own authoring session.
-describe('STANCE GUARDRAIL — an exhausted block budget announces itself', () => {
-  it('says ENFORCEMENT IS OFF on stdout instead of going quiet, and still allows the stop', () => {
+describe('STANCE GUARDRAIL — a spent bypass announces itself', () => {
+  it('says BYPASS SPENT on stdout instead of going quiet, and still allows the stop', () => {
     const src = workerSource();
     // The notice must reach a reader: stdout, not stderr.
-    expect(src).toMatch(/BUDGET EXHAUSTED/);
+    expect(src).toMatch(/BYPASS SPENT/);
     expect(src).not.toMatch(/block budget %s exhausted[^\n]*>&2/);
-    // It must name the state so a later turn is not read as clean.
-    expect(src).toMatch(/unpoliced, not as clean/);
-    // And it must NOT convert exhaustion into a block — the loop-safety property is the
-    // reason the cap exists and this must not be readable as an argument against it.
-    const exhaust = src.slice(src.indexOf('BUDGET EXHAUSTED'));
-    expect(exhaust.slice(0, 400)).toMatch(/allow_stop/);
-    expect(exhaust.slice(0, 400)).not.toMatch(/"decision"\s*:\s*"block"/);
+    // It must NOT convert the bypass into a block — the escape valve is the reason it exists.
+    const spent = src.slice(src.indexOf('BYPASS SPENT'));
+    expect(spent.slice(0, 400)).toMatch(/allow_stop/);
+    expect(spent.slice(0, 400)).not.toMatch(/"decision"\s*:\s*"block"/);
+  });
+});
+
+// THE BYPASS MUST RE-ARM — a one-shot escape, never a session-wide disable.
+//
+// The original code compared the block count to the cap and allowed the stop WITHOUT zeroing the
+// counter, so the count stayed at the cap forever and every subsequent turn passed. A one-turn
+// escape valve silently became a session-wide off switch. Measured in this cell's own authoring
+// session: the counter sat at 3 while collapse after collapse went unpoliced, and the two an
+// operator eventually caught both fell inside that window.
+describe('STANCE GUARDRAIL — spending the bypass re-arms the gate', () => {
+  it('ZEROES the counter when the bypass is spent, so the next collapsed turn blocks again', () => {
+    const src = workerSource();
+    const i = src.indexOf('BYPASS SPENT');
+    expect(i, 'no bypass branch found').toBeGreaterThan(-1);
+    // The reset must be in the SAME branch, before the stop is allowed.
+    const branch = src.slice(src.lastIndexOf('if [', i), i + 400);
+    expect(
+      branch,
+      'bypass does not reset the counter — it is a session-wide disable',
+    ).toMatch(/printf '0' > "\$count_file"/);
+    expect(branch).toMatch(/allow_stop/);
+    // And it must say the gate is re-armed, not that enforcement is off.
+    expect(src).toMatch(/RE-ARMED as of now/);
+    expect(src).not.toMatch(/enforcement is now OFF for this session/);
   });
 });
