@@ -29,6 +29,9 @@ dfp(i)              ≜ densest-faithful-point(i)
 depalimpsest        ≜ reconcile the resident set to current ground-truth ⟨¬only-drop-stale⟩ ; supersede the whole file, ¬ append : \`scripts/memory.mjs replace --name <agent> --store (SEMANTIC|PROCEDURAL) --body -\`
 promotion-is-move   ≜ a promoted item ∉ its raw source ⟨an obligation discharged AT the promotion, ¬ a later drain's finding⟩
 canon-truth(i)      ⇔ i binds ≥1 agent-type ∨ the fleet ∨ is a mechanism/governance-fact ⟨¬ this-agent-only⟩
+reach(x)            ≜ the contexts x is present in ⟨SOUL · loaded-skill ↦ EVERY context ; corpus-local gate ∨ cell ↦ that corpus ALONE⟩
+projection-carries(i) ⇔ ∃ x : i ⊆ x ∧ reach(x) ⊇ reach(store(i)) ⟨carriage has a RADIUS : authorship ≠ carriage ; SOMEWHERE ≠ WHEREVER i binds⟩
+                      ⟨PROCEDURAL = cross-project ∴ a corpus-local gate NEVER discharges it ; SEMANTIC ∪ PROCEDURAL are read at EVERY wake, a repo is not⟩
 CANON-PROMOTION(i)  ≜ author i into its strongest seam ⟨gate ≻ cell ≻ governing-doc⟩ ; ¬canon-remit ⇒ emit a canon-candidate task to the curator ; then projection-carries(i) ⇒ drop ⟨PROCEDURAL⟩
 
 dream ≜ read ⟨EPISODIC⟩ ↦ exemplify ↦ materialize
