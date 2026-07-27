@@ -16,7 +16,7 @@ lock                ≜ dream.lock ⟨O_EXCL ; stale ⇔ age > 2h⟩ guarding th
                       ⟨∴ classify the OPERATION before choosing the instrument : append ⇒ partition by writer ; edit ⇒ lock⟩
 node                : cwd × host → provenance ⟨WHERE-captured ; nearest boundary-marker ancestor ; markerless ↦ self ; cwd-less ∨ vanished-cwd ↦ legacy⟩
 scope(i)            ≜ what i is ABOUT ⟨read from text(i) ; ¬ node(i) : provenance ≠ scope⟩
-project-referential ≜ scope(i) ↾ one particular project ⟨text(i) names a repo-key ∨ workspace-path ∨ plan-path ∨ branch-ref ∨ issue-ref ; gate detects exactly these⟩
+project-referential ≜ scope(i) ↾ one particular project ⟨text(i) names a repo-key ∨ workspace-path ∨ plan-path ∨ branch-ref ∨ issue-ref ; audit detects exactly these⟩
 read                : home × session → records ⟨own ∪ completed ; live-sibling ∉⟩ ; \`scripts/memory.mjs read --name <agent> --for-session <self>\`
 fold                : home → { id ↦ node ∪ legacy } ; \`scripts/memory.mjs fold --name <agent>\`
 drain               : home → ∅ ↾ completed-sessions ⟨--completed-only retains a live sibling ; --for-session adds self at handoff⟩ ; \`scripts/memory.mjs drain --name <agent> --completed-only\`
@@ -24,9 +24,9 @@ route               : record → { SEMANTIC · PROCEDURAL · CANON-PROMOTION · 
 land                : route-manifest → { SEMANTIC · PROCEDURAL } ⟨the routing is MINE ; the write is the tool's⟩ ; \`scripts/memory.mjs apply --name <agent> --routes -\`
 resident            : store → text ⟨read the whole prose home ; ¬ open its path⟩ ; \`scripts/memory.mjs get --name <agent> --store (SEMANTIC|PROCEDURAL)\`
 rollover            ≜ land ⊕ drain ⊕ re-encode(residue) ATOMIC under one lock ⟨residue between drain ∧ re-encode lives ONLY in my context ∴ a gap loses it⟩ ; \`scripts/memory.mjs rollover --name <agent> --routes - --residue '<json>'\`
-gate                : home → findings × pressure ⟨dream's exit condition⟩ ; \`scripts/memory.mjs audit --name <agent>\`
+audit               : home → findings × pressure ⟨dream's exit condition⟩ ⟨sign taken from the verb it invokes⟩ ; \`scripts/memory.mjs audit --name <agent>\`
 ceiling             ≜ per-store byte watermark ⟨SEMANTIC ∪ PROCEDURAL load WHOLE every wake ∴ bytes are a per-session context cost⟩
-pressure            ≜ { s ∈ { SEMANTIC · PROCEDURAL } | bytes(s) > ceiling } ⟨gate MEASURES it ; depalimpsest's only trigger⟩
+pressure            ≜ { s ∈ { SEMANTIC · PROCEDURAL } | bytes(s) > ceiling } ⟨audit MEASURES it ; depalimpsest's only trigger⟩
 dfp(i)              ≜ densest-faithful-point(i)
 depalimpsest        ≜ reconcile the resident set to current ground-truth ⟨¬only-drop-stale⟩ ; supersede the whole file, ¬ append : \`scripts/memory.mjs replace --name <agent> --store (SEMANTIC|PROCEDURAL) --body -\`
 promotion-is-move   ≜ a promoted item ∉ its raw source ⟨an obligation discharged AT the promotion, ¬ a later drain's finding⟩

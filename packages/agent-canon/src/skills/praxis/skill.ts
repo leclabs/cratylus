@@ -138,7 +138,7 @@ upsert    : (P, intent) ↦ P' ≜ author census-grounded t(s) ∧ P' = P ∪ {t
 list      : ↦ ℘(P)
 elect     : ↦ P ≜ the ≻-greatest of electable ; pre electable ≠ ∅
 bind      : P ↦ P ≜ write .bound @ dir(P) ; pre ∀ Q ≠ P : ¬ bound(Q) ; post ∃! bound
-release   : P ↦ P ≜ remove .bound @ dir(P) ; pre done(P) ∨ terminal(P) ∨ operator-redirect
+unbind    : P ↦ P ≜ remove .bound @ dir(P) ; pre done(P) ∨ terminal(P) ∨ operator-redirect
 file      : (P, d) ↦ P' ≜ stub t @ dir(P)/pending : ⟨symptom(d), locus(d), provenance(d)⟩ ;
             ¬ census ∧ ¬ re-slice ∧ ¬ re-mirror ; post P' = P ∪ { t }
 triage    : d ↦ impedes(d, t) ⇒ fix(d) ; ¬ impedes(d, t) ⇒ file(owns(d), d)

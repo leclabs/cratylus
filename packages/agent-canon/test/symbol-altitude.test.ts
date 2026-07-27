@@ -73,12 +73,17 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   P: 'COLLISION', // wake/praxis/carry-on: a plan — formalize: the SOURCE PROSE
   S: 'COLLISION', // materialize: artifact forms — formalize: symbols(B)
   c: 'COLLISION', // probe: a target concept — elicit: a closed distinction-set
-  gate: 'COLLISION', // dream: the audit verb — create-agent: the full test suite
+  // `gate` PAID 2026-07-27: dream's declared `gate : home → findings × pressure` invoked
+  // `memory.mjs audit` — the sign was already in the artifact. Renamed to `audit`, which also
+  // disambiguated dream INTERNALLY (it used `gate` for both that function and the generic
+  // corpus test-gate in `gate ≻ cell ≻ governing-doc`). Discovery, not coinage.
   intent: 'COLLISION', // praxis: the stated goal — introspect: what a fragment addresses
   kind: 'COLLISION', // materialize: C → K — create-agent: O → {enum, open, coined}
   memory: 'COLLISION', // wake: a capability — dream: the dimension-home ∪ its runtime
   read: 'COLLISION', // event-tap: the tap verb — dream: the memory verb
-  release: 'COLLISION', // praxis: unbind a plan — handoff: release the session
+  // `release` PAID 2026-07-27: handoff's is the CLI verb (`memory.mjs session release`) and
+  // cannot yield. praxis's meant "remove .bound", the exact inverse of its own declared
+  // `bind` — so `unbind` was taken from the sibling already in the cell, not minted.
   // `resume` PAID 2026-07-27: praxis declared `resume : P ↦ frontier(P)`, an alias used
   // nowhere and saying nothing `frontier(P)` did not already say. wake owns the sign (a
   // term of the WAKE sequence, with a law). Resolved by DELETING the alias, not renaming
@@ -161,7 +166,7 @@ describe('ALTITUDE gate — one sign, one concept, across the whole corpus', () 
 
   // NO SILENT CAP: the outstanding collision count is asserted, not merely tolerated, so it
   // cannot drift upward inside the ledger while every other check stays green.
-  it('holds the collision debt at its recorded size (11) — never higher', async () => {
+  it('holds the collision debt at its recorded size (9) — never higher', async () => {
     const live = new Set(
       divergentSymbols(await liveObligations()).map((d) => d.symbol),
     );
@@ -171,6 +176,6 @@ describe('ALTITUDE gate — one sign, one concept, across the whole corpus', () 
     expect(
       collisions.length,
       `outstanding sign collisions: ${collisions.join(', ')}`,
-    ).toBeLessThanOrEqual(11);
+    ).toBeLessThanOrEqual(9);
   });
 });
