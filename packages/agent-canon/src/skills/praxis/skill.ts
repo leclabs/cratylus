@@ -142,6 +142,8 @@ triage    : d ↦ impedes(d, t) ⇒ fix(d) ; ¬ impedes(d, t) ⇒ file(owns(d), 
 dispatch   ≜ ∀ t ∈ frontier(P) : state(t) = ready ⇒ concurrently ⟨ state(t) := active ∧ owner(P) := self ∧ executor(t) runs content(t) ⟩
 dispatch(P) ⇒ ¬occupied(P) ∧ bound(P)
 judge(t, r) ≜ accept(t)(r) ⇒ advance(t) ; ¬accept(t)(r) ⇒ r rejected back to executor(t), state(t) stays active
+              ⟨r lands VERBATIM ≺ any verdict on it : the loss mode is read-reason-discard, and it takes everything exactly when a run dies mid-judgement⟩
+              ⟨fan-in is as order-sensitive as fan-out : ∀ t dispatched in the wave, confirm executor(t) RETURNED ; outputs(t) exist ≠ executor(t) returned⟩
 advance(t) ≜ state(t) := next(state(t)) ; state(t) = completed ⇒ ∀ d ∈ promote(t) : state(d) := ready ;
              PLAN.md := mirror(state, R, content)
 update(t)  ≜ content(t) := depalimpsest(content(t)) ; PLAN.md := mirror(state, R, content)

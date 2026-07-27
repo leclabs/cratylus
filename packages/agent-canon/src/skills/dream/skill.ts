@@ -12,6 +12,8 @@ SEMANTIC            ≜ identity facts ∪ durable agent-intrinsic knowledge ⟨
 PROCEDURAL          ≜ generalized cross-project wisdom no projection already carries
 SOUL                ≜ the archetype ; commons-authored ; ∉ dream outputs
 lock                ≜ dream.lock ⟨O_EXCL ; stale ⇔ age > 2h⟩ guarding the {SEMANTIC · PROCEDURAL} partition ⟨shared by all same-host sessions of one agent ; ¬ project-scoped⟩ ; \`scripts/memory.mjs lock (acquire|release|status) --name <agent>\`
+                      ⟨WHY a lock HERE and not one-file-per-writer : a concurrent APPEND race is LOUD ⟨encode ↦ EPISODIC : interleaved, never lost⟩ ; a concurrent EDIT race is SILENT ⟨depalimpsest supersedes the WHOLE file ∴ the loser vanishes with no trace⟩⟩
+                      ⟨∴ classify the OPERATION before choosing the instrument : append ⇒ partition by writer ; edit ⇒ lock⟩
 node                : cwd × host → provenance ⟨WHERE-captured ; nearest boundary-marker ancestor ; markerless ↦ self ; cwd-less ∨ vanished-cwd ↦ legacy⟩
 scope(i)            ≜ what i is ABOUT ⟨read from text(i) ; ¬ node(i) : provenance ≠ scope⟩
 project-referential ≜ scope(i) ↾ one particular project ⟨text(i) names a repo-key ∨ workspace-path ∨ plan-path ∨ branch-ref ∨ issue-ref ; gate detects exactly these⟩
