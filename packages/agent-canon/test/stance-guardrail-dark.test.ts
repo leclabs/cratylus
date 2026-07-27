@@ -198,3 +198,26 @@ describe('STANCE GUARDRAIL — a mid-turn preamble is not the turn s close', () 
     expect(closeOf(user + text('Working.') + tool)).toBe('');
   });
 });
+
+// BUDGET EXHAUSTION IS NOT A CLEAN TURN — the same defect, third site.
+//
+// The cap exists so a block loop cannot wedge work, and that property is real. But exhaustion
+// used to print to stderr and allow the stop, and stderr reaches neither agent nor operator —
+// so an exhausted budget was observationally identical to a clean turn, for the rest of the
+// session. Enforcement switched off precisely when violation density was highest (three
+// convictions already), and said nothing. Observed live in this cell's own authoring session.
+describe('STANCE GUARDRAIL — an exhausted block budget announces itself', () => {
+  it('says ENFORCEMENT IS OFF on stdout instead of going quiet, and still allows the stop', () => {
+    const src = workerSource();
+    // The notice must reach a reader: stdout, not stderr.
+    expect(src).toMatch(/BUDGET EXHAUSTED/);
+    expect(src).not.toMatch(/block budget %s exhausted[^\n]*>&2/);
+    // It must name the state so a later turn is not read as clean.
+    expect(src).toMatch(/unpoliced, not as clean/);
+    // And it must NOT convert exhaustion into a block — the loop-safety property is the
+    // reason the cap exists and this must not be readable as an argument against it.
+    const exhaust = src.slice(src.indexOf('BUDGET EXHAUSTED'));
+    expect(exhaust.slice(0, 400)).toMatch(/allow_stop/);
+    expect(exhaust.slice(0, 400)).not.toMatch(/"decision"\s*:\s*"block"/);
+  });
+});

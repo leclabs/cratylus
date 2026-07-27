@@ -396,7 +396,19 @@ if [ "$turn_hash" = "$last_hash" ]; then
 	allow_stop
 fi
 if [ "$block_count" -ge "$BLOCK_CAP" ]; then
-	printf 'stance-guardrail: block budget %s exhausted — allowing stop, UNRESOLVED: %s\\n' "$BLOCK_CAP" "$reason" >&2
+	# THE THIRD INSTANCE OF THIS CELL'S OWN DEFECT. Exhaustion used to print to stderr and
+	# \`allow_stop\` — and stderr reaches neither the agent nor the operator, so from both sides
+	# an exhausted budget is indistinguishable from a clean turn. The gate keeps JUDGING and
+	# stops ENFORCING, silently, for the rest of the session.
+	#
+	# That inverts the cap's own justification. The budget exists so a block loop cannot wedge
+	# work; it was never meant to buy silence. And it disables enforcement at exactly the moment
+	# violation density is highest — three convictions already — which is when a policy gate is
+	# least entitled to go quiet. Observed live: this hook exhausted its budget in its own
+	# authoring session, and every subsequent collapse went unpoliced and unannounced.
+	#
+	# Still ALLOWS the stop — the loop-safety property is real and untouched. It just says so.
+	printf 'STANCE GUARDRAIL — BUDGET EXHAUSTED (%s blocks). This turn was judged and found COLLAPSED, and is being allowed through UNRESOLVED: %s — enforcement is now OFF for this session; treat every later turn as unpoliced, not as clean.\\n' "$BLOCK_CAP" "$reason"
 	allow_stop
 fi
 printf '%s' "$turn_hash" > "$hash_file" 2>/dev/null || true
