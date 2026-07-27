@@ -18,10 +18,12 @@ fired : Names → ℘(D)
 fired(w) ≜ priors(w)
 fired(a) = dec(a) , a ∈ dom(dec)
 concept(w) ≜ cl(fired(w))
-probe(w) ≜ ⟨ fired(w) · concept(w) ⟩
-experiment(c) ≜ { w ∈ W(c) | concept(w) = c }
+probe(w) ≜ ⟨ fired(w) · concept(w) ⟩ ⟨w ALONE : ∄ sibling · ∄ menu · open question⟩
+probe(w) ↾ W ≜ w read amid W ⟨the distractors' priors leak into the read ⇒ CONTRAST, ¬ priors(w)⟩
+experiment(c) ≜ { w ∈ W(c) | concept(w) ↾ W(c) = c } ⊨ DIAGNOSTIC ⟨narrows W(c) ; ¬ decides σ*⟩
 coverage : { w ∈ Names | fired(w) ≠ ∅ ∧ concept(w) = c } ⊆ W(c)
-crystallize : σ*(c) ∈ experiment(c)` as SkillExpression;
+crystallize : σ*(c) = w ⇔ w ∈ experiment(c) ∧ concept(w) = c
+              ⟨∈ experiment NECESSARY ¬ SUFFICIENT ; llm-native ¬leading-candidate-set binds the decision to probe(w)⟩` as SkillExpression;
 
 export const probe: Skill = {
   name: 'probe',
