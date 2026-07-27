@@ -136,7 +136,6 @@ advance ⊨ mirror ⟨state moves ∴ PLAN.md moves · drift is ¬ a later chore
 start     : intent ↦ (P, slices(P), waves)
 upsert    : (P, intent) ↦ P' ≜ author census-grounded t(s) ∧ P' = P ∪ {t} ∧ re-slice ∧ re-mirror
 list      : ↦ ℘(P)
-resume    : P ↦ frontier(P)
 elect     : ↦ P ≜ the ≻-greatest of electable ; pre electable ≠ ∅
 bind      : P ↦ P ≜ write .bound @ dir(P) ; pre ∀ Q ≠ P : ¬ bound(Q) ; post ∃! bound
 release   : P ↦ P ≜ remove .bound @ dir(P) ; pre done(P) ∨ terminal(P) ∨ operator-redirect
