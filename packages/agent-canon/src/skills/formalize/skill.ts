@@ -20,8 +20,8 @@ B ≜ formalize(P) such that :
     ∀ o ∈ O ∪ L  : law(η(o)) ∈ B
     ∀ line ∈ B : line = σ*(its concept)
 
-S ≜ symbols(B) ; Dfn ≜ { s | a line of B defines s }
-closed(B)   ⇔ S ⊆ T ∪ Dfn ∪ β ∪ ι
+Dfn ≜ { s | a line of B defines s }
+closed(B)   ⇔ symbols(B) ⊆ T ∪ Dfn ∪ β ∪ ι
 complete(B) ⇔ ∀ b ∈ behavior(P) : ∃ line ∈ B : line ⊨ b
 ordered(B)  ⇔ ∀ s ∈ Dfn : definition(s) precedes use(s)
 self-sufficient(B) ⇔ closed(B) ∧ complete(B) ∧ ordered(B)

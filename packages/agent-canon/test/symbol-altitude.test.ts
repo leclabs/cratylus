@@ -60,6 +60,22 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   dream: 'REFERENCE', // handoff points at the dream operation with `@ dream`
   realize: 'REFERENCE', // exemplify carries `@ materialize`
   boundary: 'REFERENCE', // both: this cell's remit against its neighbour's
+  // `c` RECLASSIFIED, not renamed: probe gives it in INTENSION ("a target concept"), elicit in
+  // EXTENSION ("a closed distinction-set"). conceptualize defines `C ≜ { X ⊆ D | cl(X) = X }`,
+  // so a closed distinction-set IS a concept. Same referent; the divergence was presentational,
+  // exactly like `cl` and `prim(c)`.
+  // `D` — the true outlier is GONE (exemplify's "the source corpus" became `sources`). The four
+  // that remain are one concept: signify's identity-criterion atoms, probe's distinction space,
+  // elicit's distinction set, conceptualize's constructive `{ d | … over resolve(sources) }`.
+  D: 'REFERENCE',
+  // `sources` — created by that rename, and REFERENCE by construction: exemplify carries
+  // `@ conceptualize`, which is where the sign was taken from.
+  sources: 'REFERENCE',
+  c: 'REFERENCE',
+  // `memory` RECLASSIFIED: wake declares the CAPABILITY contract (and its cell carries
+  // `runtime: { capability: 'memory' }`), dream declares the home ∪ runtime it resolves to.
+  // Two facets of one subsystem, not two concepts.
+  memory: 'REFERENCE',
   // `A` PAID 2026-07-27 — was a three-way COLLISION. signify used it ONCE for the
   // assigned-anchor set while introspect and create-agent used it 5× each for the AGENT.
   // signify renamed to `Anchors`, built from its own declared `anchor` — a disambiguation
@@ -68,18 +84,14 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   A: 'REFERENCE',
 
   // ── COLLISION — distinct concepts, one sign ──────────────────────────────────
-  D: 'COLLISION', // distinction-space in four cells — exemplify: "the source corpus"
   K: 'COLLISION', // FOUR: kind-set · K_cfg∪misnomer · project-K warm knowledge · candidate set
   P: 'COLLISION', // wake/praxis/carry-on: a plan — formalize: the SOURCE PROSE
-  S: 'COLLISION', // materialize: artifact forms — formalize: symbols(B)
-  c: 'COLLISION', // probe: a target concept — elicit: a closed distinction-set
   // `gate` PAID 2026-07-27: dream's declared `gate : home → findings × pressure` invoked
   // `memory.mjs audit` — the sign was already in the artifact. Renamed to `audit`, which also
   // disambiguated dream INTERNALLY (it used `gate` for both that function and the generic
   // corpus test-gate in `gate ≻ cell ≻ governing-doc`). Discovery, not coinage.
   intent: 'COLLISION', // praxis: the stated goal — introspect: what a fragment addresses
   kind: 'COLLISION', // materialize: C → K — create-agent: O → {enum, open, coined}
-  memory: 'COLLISION', // wake: a capability — dream: the dimension-home ∪ its runtime
   read: 'COLLISION', // event-tap: the tap verb — dream: the memory verb
   // `release` PAID 2026-07-27: handoff's is the CLI verb (`memory.mjs session release`) and
   // cannot yield. praxis's meant "remove .bound", the exact inverse of its own declared
@@ -166,7 +178,7 @@ describe('ALTITUDE gate — one sign, one concept, across the whole corpus', () 
 
   // NO SILENT CAP: the outstanding collision count is asserted, not merely tolerated, so it
   // cannot drift upward inside the ledger while every other check stays green.
-  it('holds the collision debt at its recorded size (9) — never higher', async () => {
+  it('holds the collision debt at its recorded size (5) — never higher', async () => {
     const live = new Set(
       divergentSymbols(await liveObligations()).map((d) => d.symbol),
     );
@@ -176,6 +188,6 @@ describe('ALTITUDE gate — one sign, one concept, across the whole corpus', () 
     expect(
       collisions.length,
       `outstanding sign collisions: ${collisions.join(', ')}`,
-    ).toBeLessThanOrEqual(9);
+    ).toBeLessThanOrEqual(5);
   });
 });

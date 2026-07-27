@@ -4,9 +4,9 @@ import { materialize } from '../materialize/skill.js';
 import { signify } from '../signify/skill.js';
 
 const FORMAL_BLOCK = `concept-record     ≜ ⟨ gloss , anchor? , factorization? ⟩
-D                  ≜ the source corpus
+sources            ≜ input material @ conceptualize ⟨the corpus D is drawn OVER, ¬ D itself⟩
 C                  ≜ concept lattice @ conceptualize
-produce            : D → concept-record @ conceptualize
+produce            : sources → concept-record @ conceptualize
 name               : concept-record → concept-record @ signify
 realize            : concept-record → concept-record @ materialize
 REC                : concept-record → concept-record @ materialize
@@ -28,10 +28,10 @@ produce ↦ gloss ; name ↦ anchor ; realize ↦ factorization
 ∀ k ∈ Cells : accept(k) defined
 disposition ∈ { reuse, mint }
 ∀ c ∈ C : c ∈ routes ⊻ c ∈ delta
-accept(F(D)) = F(D) ⇒ manifest @ .manifests/<source>.json
+accept(F(sources)) = F(sources) ⇒ manifest @ .manifests/<source>.json
 
-F(D)         ≜ realize( name( produce(D) ) )
-exemplify(D) ≜ accept( F(D) )
+F(sources)   ≜ realize( name( produce(sources) ) )
+exemplify(sources) ≜ accept( F(sources) )
 accept(k)    ≜ ⊥ , ¬realized(k)
 accept(k)    ≜ k , valid(k)
 accept(k)    ≜ ⊥ , ¬valid(k)` as SkillExpression;
