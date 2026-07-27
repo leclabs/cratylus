@@ -93,8 +93,13 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   // `memory.mjs audit` — the sign was already in the artifact. Renamed to `audit`, which also
   // disambiguated dream INTERNALLY (it used `gate` for both that function and the generic
   // corpus test-gate in `gate ≻ cell ≻ governing-doc`). Discovery, not coinage.
-  intent: 'COLLISION', // praxis: the stated goal — introspect: what a fragment addresses
-  read: 'COLLISION', // event-tap: the tap verb — dream: the memory verb
+  // `read` — PROBED AND REFUSED, 2026-07-27. Candidate `recall : home × session → records` was
+  // cold-read as "a function that takes a home and a session and produces records" — mechanically
+  // correct, but it fired nothing that distinguishes it from `read`, so it is not the FITTER
+  // sign, merely a different one. `cratylism` says ⊥ is a legitimate result: the concept is real
+  // and the language is short. Left as an honest homonym rather than renamed by fiat — a forced
+  // anchor here would poison the very gate this ledger serves.
+  read: 'COLLISION',
   // `release` PAID 2026-07-27: handoff's is the CLI verb (`memory.mjs session release`) and
   // cannot yield. praxis's meant "remove .bound", the exact inverse of its own declared
   // `bind` — so `unbind` was taken from the sibling already in the cell, not minted.
@@ -180,7 +185,7 @@ describe('ALTITUDE gate — one sign, one concept, across the whole corpus', () 
 
   // NO SILENT CAP: the outstanding collision count is asserted, not merely tolerated, so it
   // cannot drift upward inside the ledger while every other check stays green.
-  it('holds the collision debt at its recorded size (3) — never higher', async () => {
+  it('holds the collision debt at its recorded size (2) — never higher', async () => {
     const live = new Set(
       divergentSymbols(await liveObligations()).map((d) => d.symbol),
     );
@@ -190,6 +195,6 @@ describe('ALTITUDE gate — one sign, one concept, across the whole corpus', () 
     expect(
       collisions.length,
       `outstanding sign collisions: ${collisions.join(', ')}`,
-    ).toBeLessThanOrEqual(3);
+    ).toBeLessThanOrEqual(2);
   });
 });

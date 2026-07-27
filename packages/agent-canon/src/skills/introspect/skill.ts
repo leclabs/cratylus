@@ -8,7 +8,7 @@ O          ≜ A's live ## SOUL dimension-sections { archetype · role · formal
 V          ≜ the fragment value-space { one-value · value-set · unobservable }
 src_def    ≜ A's in-prompt ## SOUL sections ∪ agent/<A>.md ⟨one selected value per dimension⟩
 src_rt     ≜ runtime sources observed this session { live tool/action-set · live model · system-prompt-as-given · autonomy-mode + transient-elevation · deployed front-matter⟨color · mark⟩ · env · granted-permissions }
-intent     : O → concept @ A's archetype ∪ each dimension's role ⟨the concept the fragment must express⟩
+addresses  : O → concept @ A's archetype ∪ each dimension's role ⟨the concept the fragment must express⟩
 
 def        : O → V @ src_def
 rt         : O → V @ src_rt
@@ -29,7 +29,7 @@ K          ≜ K_cfg ∪ { misnomer }
 ∀ o ∈ O : rt(o) @ src_rt
 ¬ ( rt ≜ def )
 match(o)     ≜ def(o) ≅ rt(o)
-signifies(o) ≜ decode(o) ≅ intent(o)
+signifies(o) ≜ decode(o) ≅ addresses(o)
 sound(o)     ≜ match(o) ∧ signifies(o)
 div          ≜ { o ∈ O | ¬ sound(o) }
 ¬ match(o)                ⇒ why(o) ∈ K_cfg

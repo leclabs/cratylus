@@ -13,15 +13,15 @@ q ∈ c      ⇔ c draws the distinction q
 priors   ≜ structured understanding of a token before any definition
 μ          ≜ prior mass over candidates read off priors by conceptual fit ; μ : ℘(C) → [0,1] ; μ(C) = 1
 t          ≜ the operator's hidden target concept ; t ∈ C ; unobserved
-K          ≜ the live candidate set ; K ⊆ C
+candidates          ≜ the live candidate set ; candidates ⊆ C
 q          ≜ a query ; q ∈ D ; operator answers yes ∨ no
 θ          ≜ the burden threshold ; θ ∈ (0,1]
 
-Y(q)      ≜ { c ∈ K | q ∈ c }
-bal(q)    ≜ | μ(Y(q)) - μ(K \\ Y(q)) |
-ask(K)    ≜ argmin over q of bal(q)
-filter(K) ≜ Y(ask(K)) if yes ; K \\ Y(ask(K)) if no
-stop(K)   ⇔ | K | = 1 ∨ bal(ask(K)) > θ
-elicit    ≜ from K = C, iterate filter until stop ; return t = the one surviving candidate` as SkillExpression,
+Y(q)      ≜ { c ∈ candidates | q ∈ c }
+bal(q)    ≜ | μ(Y(q)) - μ(candidates \\ Y(q)) |
+ask(candidates)    ≜ argmin over q of bal(q)
+filter(candidates) ≜ Y(ask(candidates)) if yes ; candidates \\ Y(ask(candidates)) if no
+stop(candidates)   ⇔ | candidates | = 1 ∨ bal(ask(candidates)) > θ
+elicit    ≜ from candidates = C, iterate filter until stop ; return t = the one surviving candidate` as SkillExpression,
   composition: () => [probe, signify, conceptualize],
 };
