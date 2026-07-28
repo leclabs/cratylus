@@ -125,6 +125,7 @@ state_dir="\${TMPDIR:-/tmp}/stance-guardrail"
 mkdir -p "$state_dir" 2>/dev/null || true
 count_file="$state_dir/$session.count"
 hash_file="$state_dir/$session.lastblock"
+verdict_log="$state_dir/$session.verdicts"
 
 block_count="$(cat "$count_file" 2>/dev/null || echo 0)"
 case "$block_count" in *[!0-9]*) block_count=0 ;; esac
@@ -387,6 +388,12 @@ if [ -n "$evidence" ] && [ "\${#evidence}" -ge 12 ]; then
 	# built on it even though the characters are genuinely present. Measured on this hook's
 	# own three blocks — all three spans preceded the last tool call, all three reasons were
 	# false about what followed, and all three passed the old whole-turn check.
+# THE ONE MECHANICALLY-CHECKED ARTIFACT, RECORDED. \`$evidence\` is the only part of a block
+# that survives a check against the turn; \`$reason\` is unverified model prose. Both were
+# discarded, so a block could not be audited afterwards without re-running a judge measured at
+# 3/5 on identical payloads — i.e. the record of WHY a turn was blocked was reconstructible only
+# by a non-deterministic process. Appended, never rotated by this hook; the state dir is tmp.
+printf '%s\\t%s\\t%s\\n' "$decision" "$evidence" "$reason" >> "$verdict_log" 2>/dev/null || true
 	if ! printf '%s' "$asst_close" | tr '\\n' ' ' | grep -qF "$evidence"; then
 		printf 'stance-guardrail: DISCARDING block — judge quoted a span that is not in the turn'"'"'s CLOSE (mid-turn preamble, or confabulated): %s\\n' "$evidence" >&2
 		allow_stop

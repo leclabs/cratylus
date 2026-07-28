@@ -16,3 +16,13 @@ logged — itself a gap, since the one mechanically-checked artifact is discarde
 
 Not chased when found: it did not impede the position fix in `543fff0`, so per
 `¬ impedes(d, t) ⇒ file(owns(d), d) ∧ ¬ fix(d)` it is recorded rather than pursued.
+
+---
+
+**DISCHARGED** — the hook now appends `⟨decision · evidence · reason⟩` to
+`$TMPDIR/stance-guardrail/$session.verdicts` at the point the evidence survives its mechanical
+check. `$evidence` is the only part of a block that is verified; `$reason` is unverified model
+prose. Both were discarded, so the record of WHY a turn was blocked was reconstructible only by
+re-running a judge measured at 3/5 on identical payloads — a non-deterministic audit trail, which
+is no audit trail. Retirement was blocked by the retirement-integrity gate until this was closed,
+which is the gate working: the plan could not retire while carrying an unfinished shard.

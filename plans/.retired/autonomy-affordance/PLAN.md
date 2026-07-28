@@ -3,7 +3,7 @@
 > Working handle, **not** an anchor. Reader = LLM. Any anchor this plan mints is derived by
 > signify at the time, never inherited from this directory name.
 
-**Status: ⊥ — NOT BUILT, and should not be. Two adversarial reviews both returned DO NOT BUILD.
+**Status: RETIRED ⊥ — NOT BUILT, and should not be. Two adversarial reviews both returned DO NOT BUILD.
 The second refuted the PREMISE rather than the design, so a rev 3 would be sunk-cost iteration.
 Retained as the record of a negative result, which is a result.**
 
