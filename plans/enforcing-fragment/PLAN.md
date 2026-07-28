@@ -155,6 +155,11 @@ sort of thing. That is the whole migration in one sentence.
 
 ## Shards
 
+> **BOUND BUT UNSHARDED — the cut is owed before dispatch.** The table below is a DECOMPOSITION
+> SKETCH, not task files; `dir(P)` holds only this PLAN.md. Per praxis, `bound(P) ∧ ¬sharded(P) ⇒
+start(P) ≺ dispatch(P)`. A cold session must cut S0–S5 into task files carrying the §Shard spec
+> constraints before executing any of them — do not read a table row as a spec.
+
 | id  | shard                                                                                                | wave |
 | --- | ---------------------------------------------------------------------------------------------------- | ---- |
 | S0  | ARM THE CATCH-ALL — `arity(guardrails) ≠ null` so a guardrail-less agent fails `accept()` statically | 0    |
