@@ -57,3 +57,23 @@ describe('withBody — folding a value must never silently UNBIND it', () => {
     expect(bodyOf(bound)).toBe('stance ≜ hold the stance');
   });
 });
+
+describe('SOUL rendering — an enforcing value renders its DECLARATION', () => {
+  it('never leaks `[object Object]` into the projected body', async () => {
+    const { agentBody } = await import('../../src/core/anatomy-body.js');
+    // The regression this guards: `agentBody` pushed `v as string`, and the cast
+    // was the very thing hiding that a value may be an object. tsc could not see
+    // it; only a rendered body can.
+    const body = agentBody({
+      name: 'a',
+      archetype: 'x',
+      guardrails: [bound, bare],
+    } as never);
+    expect(body).not.toContain('[object Object]');
+    expect(body).toContain('stance ≜ hold the stance');
+    expect(body).toContain('honesty ≜ assert from evidence');
+    // The binding is NOT in the SOUL — it is where the rule binds, not what it says.
+    expect(body).not.toContain('tool.use.pre');
+    expect(body).not.toContain('harness');
+  });
+});

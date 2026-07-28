@@ -7,8 +7,8 @@
 // so BOTH adapters import these DOWNWARD from core — never sideways from each
 // other. (Kills the former `codex/anatomy.ts → claude/anatomy.ts` edge.)
 
-import type { Agent } from '../anatomy/index.js';
-import { DIMENSION_NAMES } from '../anatomy/index.js';
+import type { Agent, Dimension, Value } from '../anatomy/index.js';
+import { DIMENSION_NAMES, bodyOf } from '../anatomy/index.js';
 import { renderSkillCellBody } from './exemplify/skill-cell.js';
 
 // ── Dimension → markdown helpers ─────────────────────────────────────────────────
@@ -55,7 +55,12 @@ export function agentBody(a: Agent): string {
     }
     out.push(`## ${dimensionTitle(dimension)}`, '');
     for (const v of Array.isArray(value) ? value : [value]) {
-      out.push(v as string, '');
+      // `bodyOf`, not `v as string`. A value may carry its own enforcement, in
+      // which case it is an OBJECT and the old cast rendered `[object Object]`
+      // straight into the SOUL — a corruption tsc could not see, because the cast
+      // was the thing suppressing it. The SOUL carries the DECLARATION face only:
+      // substrate and events are where the rule binds, not what it says.
+      out.push(bodyOf(v as Value<Dimension>), '');
     }
   }
   return `${out.join('\n').replace(/\n+$/, '')}\n`;

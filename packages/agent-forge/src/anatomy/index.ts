@@ -123,6 +123,30 @@ type Fragment<O extends Dimension> = string & { readonly __dimension?: O };
  * lives on `HookCell` until it migrates; a default emitted here would be a
  * silent-allow wearing a type.
  */
+/**
+ * WHERE an enforcing value binds — the agents that compose it, and nothing else.
+ *
+ * The `PolicyBinding` face. The rule and its mechanism stay fused in one authored
+ * cell; SCOPE is the part that separates, and it is DERIVED from `ir(a)` rather
+ * than authored. That direction is the whole point: scope written into the
+ * enforcement code is invisible from the agent it governs and goes stale
+ * silently — the fragile-pointcut failure, whose defining property is that an
+ * out-of-date selector "will silently malfunction, as the non-advising of a join
+ * point does not manifest a syntax or type error."
+ *
+ * A `Binding` cannot be constructed without both halves, so a fragment can never
+ * be emitted with its scope missing — the failure mode that reads as "governs
+ * everything" or "governs nothing" depending on which way the mechanism fails.
+ */
+export interface Binding {
+  /** The anchor α of the enforcing value this binds. */
+  readonly anchor: string;
+  /** The enforcing value itself — declaration + substrate + events. */
+  readonly fragment: Enforcing<Dimension>;
+  /** Agents whose `ir(a)` composes it. DERIVED; sorted for byte-stable output. */
+  readonly agents: readonly string[];
+}
+
 export interface Enforcing<O extends Dimension> {
   /** The inline declaration — the σ* body ⟨α, residue⟩ this value would be if bare. */
   readonly body: Fragment<O>;
@@ -155,6 +179,21 @@ export const enforcing = <O extends Dimension>(
 /** The declaration face of a value, enforcing or not — what the SOUL renders. */
 export const bodyOf = <O extends Dimension>(v: Value<O>): Fragment<O> =>
   enforcing(v) ? v.body : v;
+
+/**
+ * The anchor α of a value — the stable name, the body minus its residue.
+ *
+ * A body is `⟨α, residue⟩`, rendered `α ≜ residue`, or bare `α` when the residue
+ * is ∅ (the ideal σ*). This is the one home for that split: keying anything on a
+ * body means keying on text that a fold may rewrite, whereas α is what the value
+ * IS. A bare anchor returns itself — absence of ` ≜ ` means residue ∅, never that
+ * the anchor is missing.
+ */
+export const anchorOf = <O extends Dimension>(v: Value<O>): string => {
+  const body = bodyOf(v);
+  const i = body.indexOf(' ≜ ');
+  return i < 0 ? body : body.slice(0, i);
+};
 
 /**
  * Replace a value's declaration face, PRESERVING any enforcement binding.

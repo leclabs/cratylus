@@ -117,6 +117,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'agent-forge/deploy/integrate-smoke.test.ts': 'BEHAVIORAL',
   'agent-forge/deploy/local.test.ts': 'BEHAVIORAL',
   'agent-forge/deploy/prune.test.ts': 'BEHAVIORAL',
+  'agent-forge/project/bindings.test.ts': 'BEHAVIORAL',
   // asserts the unpatched fold is the identity over the real canon fragment corpus.
   'agent-forge/project/resolver-parity.test.ts': 'GATE',
   // asserts the live `src/project/index.ts` source performs no writes.

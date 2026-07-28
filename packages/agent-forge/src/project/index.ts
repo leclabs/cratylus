@@ -31,11 +31,15 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   type Agent,
+  type Binding,
   type Dimension,
+  type Enforcing,
   type HookCell,
   type Skill,
   type Value,
+  anchorOf,
   bodyOf,
+  enforcing,
   hookIrOf,
   withBody,
 } from '../anatomy/index.js';
@@ -44,6 +48,7 @@ import {
   discoverPluginFragments,
 } from '../catalog/index.js';
 import type { ResolvedSkill } from '../core/anatomy-body.js';
+import { DIMENSION_FIELD } from '../core/exemplify/dimension-fields.js';
 import type { HarnessAdapter } from '../core/harness-adapter.js';
 import {
   resolveModulePath,
@@ -174,6 +179,60 @@ async function hookOf(modPath: string): Promise<HookCell | null> {
       typeof v === 'object' && v !== null && 'substrate' in v && 'workers' in v,
   );
   return cell ?? null;
+}
+
+/**
+ * Every enforcing value an agent composes, across every dimension.
+ *
+ * Reads `DIMENSION_FIELD` rather than listing the fields, so a new dimension is
+ * covered the day it is declared. A hand-kept list here would be a second scope
+ * to go stale — the very defect the binding exists to remove.
+ */
+function enforcingOf(agent: Agent): Enforcing<Dimension>[] {
+  const out: Enforcing<Dimension>[] = [];
+  for (const field of Object.values(DIMENSION_FIELD)) {
+    const v = (agent as unknown as Record<string, unknown>)[field];
+    if (v === null || v === undefined) continue;
+    for (const item of Array.isArray(v) ? v : [v]) {
+      const value = item as Value<Dimension>;
+      if (enforcing(value)) out.push(value);
+    }
+  }
+  return out;
+}
+
+/**
+ * The BINDINGS a projected agent set implies: for each enforcing value, exactly
+ * the agents that compose it.
+ *
+ * This is the whole mediation fix in one function. Scope is COMPUTED from
+ * composition, never authored beside the mechanism, so it cannot disagree with
+ * what the agents actually declare. Agents are sorted so the emitted artifact is
+ * byte-stable — an unsorted set would churn the deploy diff and hide real changes
+ * among reorderings.
+ */
+export function bindingsOf(
+  agents: readonly { readonly name: string; readonly agent: Agent }[],
+): Binding[] {
+  const byAnchor = new Map<
+    string,
+    { fragment: Enforcing<Dimension>; agents: Set<string> }
+  >();
+  for (const { name, agent } of agents) {
+    for (const fragment of enforcingOf(agent)) {
+      const anchor = anchorOf(fragment);
+      const seen = byAnchor.get(anchor);
+      if (seen) seen.agents.add(name);
+      else byAnchor.set(anchor, { fragment, agents: new Set([name]) });
+    }
+  }
+  return [...byAnchor]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([anchor, { fragment, agents: names }]) => ({
+      anchor,
+      fragment,
+      agents: [...names].sort(),
+    }));
 }
 
 /**
@@ -403,6 +462,9 @@ export async function projectPluginSet(
 
   let agents = 0;
   const agentNames: string[] = [];
+  // Composed vectors, kept so the BINDINGS can be derived from what the agents
+  // actually compose — after the fold, since a folded body is the real one.
+  const composed: { name: string; agent: Agent }[] = [];
   for (const [name, { dir, preamble: pre }] of [...agentSrc].sort()) {
     const modPath = await resolveModulePath(dir, name);
     if (!modPath) throw new Error(`agent module not found: ${name}`);
@@ -414,7 +476,35 @@ export async function projectPluginSet(
     files.push({ path: join('agents', filename), content });
     log(`EMIT agent ${name}`);
     agentNames.push(name);
+    composed.push({ name, agent });
     agents++;
+  }
+
+  // BINDINGS — scope, derived from composition. Emitted only when something is
+  // actually bound: an empty `bindings.json` would assert "nothing is governed",
+  // which is indistinguishable from "the derivation did not run" and is exactly
+  // the silent-allow this artifact exists to make impossible.
+  const bindings = bindingsOf(composed);
+  if (bindings.length > 0) {
+    files.push({
+      path: 'bindings.json',
+      content: `${JSON.stringify(
+        Object.fromEntries(
+          bindings.map((b) => [
+            b.anchor,
+            {
+              substrate: b.fragment.substrate,
+              events: b.fragment.events,
+              agents: b.agents,
+            },
+          ]),
+        ),
+        null,
+        2,
+      )}\n`,
+    });
+    for (const b of bindings)
+      log(`EMIT binding ${b.anchor} → ${b.agents.join(' ')}`);
   }
 
   let skills = 0;
