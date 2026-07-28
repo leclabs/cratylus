@@ -13,7 +13,7 @@
 
 import type { Agent } from '../anatomy/index.js';
 import type { ResolvedSkill } from './anatomy-body.js';
-import type { Hook } from './hook/index.js';
+import type { Hook, Substrate, SubstrateEvent } from './hook/index.js';
 
 /** A single projected artifact: the harness-owned filename + its bytes. */
 export interface HarnessProjection {
@@ -38,6 +38,22 @@ export interface HarnessHooksProjection {
 export interface HarnessAdapter {
   /** The canonical harness name this adapter projects for (`claude`, `codex`, …). */
   readonly name: string;
+  /**
+   * The substrate this adapter realizes constraints on.
+   *
+   * REQUIRED, not optional: the refusal law is substrate-relative, and an adapter
+   * that declined to say which substrate it serves would make every constraint
+   * look like someone else's concern — a silent-allow reachable by omission.
+   */
+  readonly substrate: Substrate;
+  /**
+   * Whether this adapter can realize `event`.
+   *
+   * The predicate behind `¬realizable(e, adapter)`. It answers only for events on
+   * THIS adapter's substrate; an event from another substrate is not this
+   * adapter's to judge, and the caller routes it before asking.
+   */
+  realizes(event: SubstrateEvent): boolean;
   /** Project an agent vector → its subagent def file. */
   agentDef(agent: Agent): HarnessProjection;
   /** Project a resolved skill → its `SKILL.md`. */

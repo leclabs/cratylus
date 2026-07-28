@@ -148,6 +148,12 @@ export function agentsMdSurface(agentNames: readonly string[]): string {
  */
 export const codexHarnessAdapter: HarnessAdapter = {
   name: 'codex',
+  substrate: 'harness',
+  // Codex projects NO hooks, so it realizes no event. Declared rather than left
+  // implicit: an adapter that silently accepted an enforcing constraint it cannot
+  // run would emit a tree that looks governed and is not — the exact silent-allow
+  // the refusal exists to convert into a build error.
+  realizes: () => false,
   agentDef: (a) => ({
     filename: `${a.name}.toml`,
     content: agentToCodexToml(a),

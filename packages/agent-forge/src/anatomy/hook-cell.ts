@@ -21,7 +21,12 @@
 // config-IR lift. The concrete cell instances (the harness-substrate cells, their
 // verbatim workers) live in the consuming corpus, not here.
 
-import type { CanonicalEvent, Hook } from '../core/hook/index.js';
+import type {
+  CanonicalEvent,
+  Hook,
+  Substrate,
+  SubstrateEvent,
+} from '../core/hook/index.js';
 
 /**
  * A hook's event in HARNESS-AGNOSTIC terms. `harness`-substrate hooks bind a
@@ -29,10 +34,10 @@ import type { CanonicalEvent, Hook } from '../core/hook/index.js';
  * canonical peer yet (`vcs.commit.post` — flagged for canon review), so the union
  * widens by exactly that descriptor.
  */
-export type HookEvent = CanonicalEvent | 'vcs.commit.post';
+export type HookEvent = SubstrateEvent;
 
 /** Which substrate a hook's event fires in — the `realize`-target family. */
-export type HookSubstrate = 'harness' | 'git';
+export type HookSubstrate = Substrate;
 
 /** One worker payload a hook ships — the verbatim byte-anchor of a deploy target. */
 export interface HookWorker {

@@ -35,6 +35,7 @@ import {
 // are both gone; naming the defining module stays the rule, so no future barrel
 // can quietly re-create the edge.
 import type { HarnessAdapter } from '../../core/harness-adapter.js';
+import { canonicalToClaude } from './events.js';
 import { serializeClaudeHooksReport } from './hooks.js';
 
 // Re-export the shared, harness-neutral body machinery so `adapters/claude`
@@ -107,6 +108,11 @@ export function skillToClaudeMd(s: ResolvedSkill): string {
  */
 export const claudeHarnessAdapter: HarnessAdapter = {
   name: 'claude',
+  substrate: 'harness',
+  // Realizable ⇔ the canonical event has a Claude native peer. `canonicalToClaude`
+  // IS the realization map, so asking it is asking the mechanism itself — there is
+  // no second list to drift. A git-substrate event never reaches here; it routes.
+  realizes: (event) => event in canonicalToClaude,
   agentDef: (a) => ({ filename: `${a.name}.md`, content: agentToClaudeMd(a) }),
   skillDef: (s) => ({ filename: 'SKILL.md', content: skillToClaudeMd(s) }),
   hooks: (hooks) => {

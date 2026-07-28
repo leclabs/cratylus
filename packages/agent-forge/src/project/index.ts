@@ -60,6 +60,7 @@ import {
   type PatchEntry,
   resolve as foldFragments,
 } from '../resolve/resolve.js';
+import { assertRealizable } from './refusal.js';
 import { runtimeShimContent } from './runtime-shim.js';
 
 /** The plugin fields projection consumes — the dirs a plugin contributes cells from. */
@@ -485,6 +486,19 @@ export async function projectPluginSet(
   // which is indistinguishable from "the derivation did not run" and is exactly
   // the silent-allow this artifact exists to make impossible.
   const bindings = bindingsOf(composed);
+  // THE VERIFIER ON THE SEAM, before a single byte is emitted. A binding whose
+  // event this adapter is obliged to realize and cannot is refused here — case 3
+  // (another substrate) routes untouched. Checking after emission would mean a
+  // tree on disk that looks enforced and is not.
+  for (const b of bindings)
+    assertRealizable(
+      {
+        anchor: b.anchor,
+        substrate: b.fragment.substrate,
+        events: b.fragment.events,
+      },
+      opts.adapter,
+    );
   if (bindings.length > 0) {
     files.push({
       path: 'bindings.json',
