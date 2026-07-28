@@ -855,12 +855,31 @@ function applyGuarded(args: ParsedArgs, home: string): CliResult {
       };
     byId.set(d.id, { targets: d.targets });
   }
+  const store = new EpisodicStore({ home });
+  // A route naming no live record is a SILENT NO-OP: the classifier simply never
+  // fires, the record it meant to consume is retained by the default below, and
+  // the summary still reports `byId.size` decisions — decisions SUBMITTED, not
+  // decisions MATCHED. So a routing built on ids captured earlier in the session
+  // reads as total success while landing nothing.
+  //
+  // Ids go stale by CONSTRUCTION, not by accident: `rollover` carries retained
+  // records across its drain BY VALUE and re-encodes them, minting fresh ULIDs.
+  // Every id observed before a rollover is dead after it. Refusing here — before
+  // `runRollover` reaches its destructive half — turns that from a silent partial
+  // consolidation into a summons to re-read the log.
+  const live = new Set(store.read(str(args.flags.path)).map((r) => r.id));
+  const stale = [...byId.keys()].filter((id) => !live.has(id));
+  if (stale.length > 0)
+    return {
+      code: 2,
+      out: '',
+      err: `apply: ${stale.length} of ${byId.size} route id(s) match no live record — re-read the log and route against FRESH ids (a rollover re-encodes retained records under new ids):\n${stale.map((id) => `  ${id}\n`).join('')}`,
+    };
   // An unlisted record is RETAINED (mapped to EPISODIC) — never consumed. This
   // is the load-bearing safety: applyRoutes reads ALL records, so silence = drop
   // unless we explicitly retain.
   const classifier: Classifier = (rec) =>
     byId.get(rec.id) ?? { targets: [{ store: 'EPISODIC' }] };
-  const store = new EpisodicStore({ home });
   const result = applyRoutes(store, str(args.flags.path), classifier);
   return {
     code: 0,

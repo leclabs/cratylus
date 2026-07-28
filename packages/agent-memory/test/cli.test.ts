@@ -485,6 +485,51 @@ describe('apply — land the agent’s dream route decisions', () => {
     expect(r.code).toBe(2);
     expect(r.err).toMatch(/array/);
   });
+
+  it('REFUSES a route whose id matches no live record, naming the stale id', () => {
+    const live = main(['encode', '--home', home, '--body', 'live']).out.trim();
+    const routes = JSON.stringify([
+      { id: live, targets: [] },
+      { id: '01STALEIDNOTINTHELOG000000', targets: [] },
+    ]);
+    const r = main(['apply', '--home', home, '--routes', routes]);
+    expect(r.code).toBe(2);
+    expect(r.err).toMatch(/01STALEIDNOTINTHELOG000000/);
+    // The refusal is TOTAL: the valid half of the routing did not land either,
+    // so the caller re-reads and re-routes rather than reasoning about a partial.
+    expect(logRecords().map((rec) => rec.id)).toEqual([live]);
+  });
+
+  it('a rollover mints new ids — routing on ids read BEFORE it is refused', () => {
+    const first = main([
+      'encode',
+      '--home',
+      home,
+      '--body',
+      'carry',
+    ]).out.trim();
+    // Retain it across a rollover; it comes back re-encoded under a FRESH id.
+    main([
+      'rollover',
+      '--home',
+      home,
+      '--routes',
+      JSON.stringify([{ id: first, targets: [{ store: 'EPISODIC' }] }]),
+    ]);
+    const after = logRecords().map((rec) => rec.id);
+    expect(after).toHaveLength(1);
+    expect(after[0]).not.toBe(first); // the id the caller is still holding is dead
+    const r = main([
+      'apply',
+      '--home',
+      home,
+      '--routes',
+      JSON.stringify([{ id: first, targets: [] }]),
+    ]);
+    expect(r.code).toBe(2);
+    expect(r.err).toMatch(/rollover/);
+    expect(logRecords()).toHaveLength(1); // the survivor was NOT silently retained-as-success
+  });
 });
 
 describe('replace — whole-file supersede of a prose store', () => {
