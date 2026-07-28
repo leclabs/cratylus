@@ -3,8 +3,9 @@
 > Working handle, **not** an anchor. Reader = LLM. Any anchor this plan mints is derived by
 > signify at the time, never inherited from this directory name.
 
-**Status: PROPOSED — and `1aa1779` is now UNDER QUESTION by a later probe. Do not execute until
-§The execution-locus problem is resolved.**
+**Status: READY except S4. Research landed and VINDICATES the attachment direction, with one
+correction that adds a shard. S0–S3 and S5 are executable cold; only S4 still waits on the
+execution-locus question.**
 
 ## The execution-locus problem — found after `1aa1779`, unresolved
 
@@ -46,6 +47,45 @@ constraint ONE cell carrying two loci, or TWO artifacts linked by reference? Tha
 ConstraintTemplate/Constraint split question, and a research pass on attachment-vs-selector and on
 whether bundling mechanism with declaration is a known mistake is in flight. Resolve on its
 return; do not build either way first.
+
+## Research verdict — attachment is right, and it has a documented failure mode we must arm
+
+**My selector worry is a named problem, not an invention.** It is the **fragile pointcut problem**
+(Kellens et al., ECOOP 2006): _"one cannot tell whether a change to the base code is safe simply by
+examining the base program in isolation."_ Sullivan et al. (FSE 2005) state the enforcement
+consequence: an out-of-date pointcut _"will silently malfunction, as the non-advising of a join
+point does not manifest a syntax or type error."_ That is exactly our `agent_type` grep — scope
+lives in the enforcement code, invisible from the agent it governs, failing silently.
+
+**The correction that matters: ATTACHMENT FAILS OPEN TOO.** I had treated attachment as dissolving
+the fail-open question. It does not.
+
+- Spring Security: _"unannotated methods are not secured. To protect against this, declare a
+  catch-all authorization rule."_
+- AppArmor: _"Tasks on the system that do not have a profile defined for them run in an
+  **unconfined state**."_
+
+Two unrelated systems, identical weakness, and **both prescribe a catch-all underneath. Neither
+recommends attachment alone.**
+
+**Our catch-all is better than theirs — but it is not currently armed.** `COMPOSED(a)` requires
+`∀on : |S_on| ∈ arity(on)`. If `arity(guardrails) ≠ null`, an agent composed without a guardrail
+fails `accept()` **at author time** — a static refusal, where Spring and AppArmor get only a
+runtime backstop. Measured: all 10 agents currently declare guardrails, but the type is
+`readonly Guardrails[] | null`, so nothing stops the eleventh. **Zero-migration hardening.**
+
+**Two costs, priced.** Obliviousness is a non-cost here — a guardrail that "applies REGARDLESS of
+the agent's reasoning" is the opposite of an oblivious base program, so Kiczales & Mezini's
+objection does not bite. Fan-out is real and measured: Sullivan's HyperCast refactor took aspects
+from 240 lines to 30 each, bought with ~180 edits across 18 governed classes.
+
+**KEEP `matcher`.** Attachment has an expressiveness ceiling — a static mark cannot express a
+runtime-conditional policy (Noguera et al., RAM-SE 2010). `matcher` is the residual selector for
+the dynamic part, and removing it would re-introduce fragility by forcing dynamic conditions back
+into pointcut-shaped code.
+
+**Still open:** the `command`/`workers` split — whether declaration and mechanism belong in one
+cell or two linked artifacts. The research narrowed but did not settle it.
 
 ## Settled without research — apply with the next MODEL revision
 
@@ -115,13 +155,14 @@ sort of thing. That is the whole migration in one sentence.
 
 ## Shards
 
-| id  | shard                                                                             | wave |
-| --- | --------------------------------------------------------------------------------- | ---- |
-| S1  | `events` becomes a field a dimension fragment may carry; `enforcing(f)` derivable | 0    |
-| S2  | claude adapter emits a per-agent mechanism for each enforcing fragment in `ir(a)` | 1    |
-| S3  | `deploy` refuses loudly on a non-realizable event, naming f · e · adapter         | 1    |
-| S4  | the five hook cells become enforcing guardrail fragments; `HookCell` retires      | 2    |
-| S5  | retire the runtime `agent_type` allowlist — scope now comes from composition      | 3    |
+| id  | shard                                                                                                | wave |
+| --- | ---------------------------------------------------------------------------------------------------- | ---- |
+| S0  | ARM THE CATCH-ALL — `arity(guardrails) ≠ null` so a guardrail-less agent fails `accept()` statically | 0    |
+| S1  | `events` becomes a field a dimension fragment may carry; `enforcing(f)` derivable                    | 0    |
+| S2  | claude adapter emits a per-agent mechanism for each enforcing fragment in `ir(a)`                    | 1    |
+| S3  | `deploy` refuses loudly on a non-realizable event, naming f · e · adapter                            | 1    |
+| S4  | the five hook cells become enforcing guardrail fragments; `HookCell` retires                         | 2    |
+| S5  | retire the runtime `agent_type` allowlist — scope now comes from composition                         | 3    |
 
 S5 is the acceptance test for the whole plan: if scoping is real, deleting the grep changes
 nothing observable.
