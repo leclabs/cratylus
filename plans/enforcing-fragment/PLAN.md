@@ -3,9 +3,18 @@
 > Working handle, **not** an anchor. Reader = LLM. Any anchor this plan mints is derived by
 > signify at the time, never inherited from this directory name.
 
-**Status: SHARDED, fully unblocked. S0–S1 ready (wave 0); S2–S3 pending (wave 1); S4 pending
-(wave 2, absorbing the old S5). The execution-locus question that blocked S4 is RESOLVED — its
-premise was refuted.**
+**Status: S0–S3 LANDED. S4 BLOCKED on an operator fork — its premise is falsified by measurement
+(only 2 of the 5 hook cells are agent-scoped, so `HookCell` cannot retire by migration alone). See
+`pending/s4-hookcell-retire.md` §The fork. The original execution-locus blocker is RESOLVED and its
+premise refuted; this is a NEW and different fork.**
+
+| shard | state     | what landed                                                         |
+| ----- | --------- | ------------------------------------------------------------------- |
+| S0    | completed | `c5e84fc` — `guardrails` loses `\| null`; tsc is the catch-all      |
+| S1    | completed | `fb49ee2` — `Value = Fragment \| Enforcing`; `enforcing(f)` derived |
+| S2    | completed | `fd3e3f3` — scope DERIVED from composition; `bindings.json`         |
+| S3    | completed | `3cab6a0` — substrate-relative refusal, three cases                 |
+| S4    | BLOCKED   | premise falsified — operator fork owed                              |
 
 ## Resolution — the fork dissolved, and the blocking premise was unsound
 

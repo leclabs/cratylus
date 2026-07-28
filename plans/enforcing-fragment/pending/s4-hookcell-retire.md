@@ -1,11 +1,62 @@
 # S4 · hookcell-retire
 
-**Objective.** Migrate the five hook cells to enforcing guardrail fragments, retire `HookCell`, and
-delete the runtime `agent_type` allowlist. Terminal wave; absorbs what the sketch called S5.
+> **BLOCKED — this shard's premise is FALSIFIED by measurement. Do not execute it as written; its
+> completion criteria are unsatisfiable. The fork below is owed to the operator.**
 
-**UNBLOCKED — and the premise that blocked it was refuted.** This shard waited on: _is an enforcing
-constraint ONE cell carrying two loci, or TWO artifacts linked by reference?_ Three independent
-cold probes converged on ONE cell. The blocking argument was:
+## The falsification
+
+The objective assumed **five** agent-scoped cells. Measured, only **two** are:
+
+| cell                         | substrate | agent-scoped?                                                                 |
+| ---------------------------- | --------- | ----------------------------------------------------------------------------- |
+| `stance-guardrail`           | harness   | **YES** — 6 `agent_type` refs, live allowlist                                 |
+| `stance-guardrail-pre`       | harness   | **YES** — 7 `agent_type` refs, live allowlist                                 |
+| `memory-consolidation-nudge` | harness   | **NO** — its 1 `agent_type` hit is a COMMENT stating a Stop hook carries none |
+| `resume-availability-notice` | harness   | **NO** — no scoping of any kind                                               |
+| `praxis-continuity`          | git       | **NO** — no scoping of any kind                                               |
+
+Three of five have no agent to compose them, so their scope cannot come from composition — there is
+nothing to derive it from. They are not agent-scoped policy; they are session/substrate mechanisms.
+
+∴ criterion 2 (`rg HookCell` returns zero) cannot be met by migrating cells into dimension values:
+three of them are not dimension values, and forcing them to be would bind a `session.start` notice
+per-agent — a semantic change disguised as a refactor, which is the exact `order`-loss failure this
+shard's own constraints forbid.
+
+## The fork — OPERATOR
+
+**What is a constraint that binds no particular agent?**
+
+- **(a) `HookCell` NARROWS and survives.** Enforcing fragment ≜ agent-scoped, scope from
+  composition. A mechanism that binds the session or the substrate rather than an agent stays a
+  hook cell. `HookCell` does not retire; it stops being a Kind-level category error and becomes the
+  home of exactly what it always described. **Recommended** — it follows the evidence, keeps
+  `Binding` meaning what it says (an agent set derived from `ir(a)`), and matches the resolution
+  already reached: the split that pays is rule↔binding, and a substrate mechanism simply has no
+  binding face.
+- **(b) Everything becomes a fragment**, and the global three bind to all agents. Rejected on the
+  evidence: it invents a scope the cells do not have and changes live firing semantics.
+
+This is a MODEL-level taxonomy question, so it is surfaced rather than decided — it changes what an
+enforcing fragment IS, and the plan's stated outcome ("`HookCell` retires") is what the measurement
+contradicts.
+
+## What is executable TODAY under (a), if chosen
+
+Migrate `stance-guardrail` + `stance-guardrail-pre` only, and delete the `agent_type` allowlist from
+both — S2's binding already derives exactly that scope. The other three stay as they are. Criterion
+1 (deleting the grep changes nothing observable) still applies and is still the acceptance test.
+
+---
+
+**Original objective (superseded by the fork above).** Migrate the five hook cells to enforcing
+guardrail fragments, retire `HookCell`, and delete the runtime `agent_type` allowlist. Terminal
+wave; absorbs what the sketch called S5.
+
+**The ORIGINAL blocker (execution locus) was refuted — that resolution still stands, and is not
+what blocks this shard now.** This shard waited on: _is an enforcing constraint ONE cell carrying
+two loci, or TWO artifacts linked by reference?_ Three independent cold probes converged on ONE
+cell. The blocking argument was:
 
 > the cold read of `guardrail` requires the SEPARATE locus, but `fragment` is inline BY DEFINITION,
 > so a fragment carrying `events` may be structurally incapable of being a guardrail — and
