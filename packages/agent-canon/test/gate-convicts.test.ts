@@ -6,6 +6,31 @@
 // here therefore owes at least one test that feeds it a synthetic BAD input and
 // asserts it rejects — the known-answer control that separates the two cases.
 //
+// WHEN A CONTROL IS NOT A CONTROL. A convicting fixture only separates clean-from-dark
+// if the fixture itself can fail. Five ways it silently cannot, each observed while
+// building the gates in this suite — not hypothetical:
+//
+//   1. THE INJECTION NEVER LANDED. A malformed edit (a bad regex, a quoting error)
+//      leaves the artifact untouched and the suite green. Assert the defect is PRESENT
+//      before reading the result; a green control is untested until you have proven the
+//      defect was actually there.
+//   2. THE CONTROL EXERCISES A DIFFERENT PATH. A control that succeeds by a mechanism
+//      the test does not use proves only that the mechanism works. It must travel the
+//      same path as the thing under test, or it is a demonstration, not a control.
+//   3. THE CASE IS ALREADY EXEMPTED. Injecting a violation that the allowlist under test
+//      already excuses cannot fire, however well-formed. Check the injected case is not
+//      covered by the very registry being exercised.
+//   4. THE HAYSTACK CONTAINS THE NEEDLE BY CONSTRUCTION. Where a payload embeds a copy
+//      of what is being searched for — a judge prompt carrying the whole turn, a log
+//      carrying the query — substring search is structurally incapable of answering.
+//      Only record IDENTITY decides.
+//   5. THE NEGATIVE WAS NEVER VERIFIED. A zero count from a hand-built pattern is a
+//      claim about the PATTERN until proven otherwise. Verify a negative read exactly as
+//      carefully as a positive one.
+//
+// The common shape: each produces a PASS that reads as evidence and carries none. A gate
+// calibrated by such a control is dark with a certificate.
+//
 // DECLARED, NOT DETECTED. The classification below is an explicit registry rather
 // than a heuristic over file contents, because a heuristic meta-gate is the very
 // failure it exists to catch: it would pass when its own detector silently stopped

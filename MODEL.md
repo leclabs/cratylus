@@ -15,8 +15,9 @@ concepts : cell → ℘(Corpus) ; fragments : cell → ℘(fragment) ; content :
 {σ*, α, decode, home, residue, fired, D, body, orphan, private, palimpsest} ⊂ Corpus
 
 ActivationMode ≜ {compose-only, identity, scope, trigger}
-activation : Kind → ActivationMode ⟨what CAUSES a cell to become active ; type-level⟩
-             fragment↦compose-only ; agent↦identity ; rule↦scope ; skill↦trigger
+activation : cell ⇀ ActivationMode ⟨what CAUSES a cell to become active ; INSTANCE-level⟩
+             ⟨Kind-typical DEFAULTS, ¬ definitions : fragment↦compose-only · agent↦identity · rule↦scope · skill↦trigger⟩
+             ⟨how a cell FIRES ⊥ what a cell IS — binding them made `hook` a Kind and hid enforcement from composition⟩
 
 Event ≜ the harness-agnostic lifecycle vocabulary ⟨schema-owned ; the PIVOT every adapter maps from⟩
 events : fragment ⇀ ℘(Event) ⟨PARTIAL ∴ most fragments never fire ; instance-level, ¬ Kind-level⟩
@@ -45,7 +46,9 @@ Universal(a) ≜ CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARS
   PARTITIONED : ∀c∈Corpus: |home(c)|=1 ∧ disjoint(homes) ∧ ⋃ home = Corpus
   PARSIMONIOUS: ∀c∈Corpus: body(c)=⟨α(c),residue(c)⟩ ∧ residue(c)=D(c)∖fired(α(c))
   ENFORCED    : enforcing(f) ∧ f ∈ ir(a) ⇒ scoped(mechanism(f,adapter), a) ⟨¬ ambient : COMPOSITION is the scope, ¬ a runtime self-filter⟩
-                enforcing(f) ∧ ∃e∈events(f): ¬realizable(e,adapter) ⇒ deploy REFUSES ⟨naming f · e · adapter⟩ ∧ ¬ silent-drop
+                substrate : fragment → Substrate ; enforcing(f) ∧ substrate(f) = substrate(adapter) ∧ ∃e∈events(f): ¬realizable(e,adapter)
+                  ⇒ deploy REFUSES ⟨naming f · e · adapter⟩ ∧ ¬ silent-drop
+                substrate(f) ≠ substrate(adapter) ⇒ ROUTE ⟨¬ this adapter's concern ; ¬ a refusal⟩
                 ⟨a declared bound that projects to nothing is INDISTINGUISHABLE from an undeclared one⟩
   REGENERABLE : ∀t∈Target: (∃c:cell, adapter: t=deploy(c,adapter)) ∧ deterministic(deploy) ∧ deploy-owned(t) ∧ ¬hand-edit(t)
                 SelfAuthored{SEM,PROC,EPIS} ∉ Target ∧ ¬deploy-writes(SelfAuthored)
