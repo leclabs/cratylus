@@ -3,11 +3,69 @@
 > Working handle, **not** an anchor. Reader = LLM. Any anchor this plan mints is derived by
 > signify at the time, never inherited from this directory name.
 
-**Status: READY except S4. Research landed and VINDICATES the attachment direction, with one
-correction that adds a shard. S0–S3 and S5 are executable cold; only S4 still waits on the
-execution-locus question.**
+**Status: SHARDED, fully unblocked. S0–S1 ready (wave 0); S2–S3 pending (wave 1); S4 pending
+(wave 2, absorbing the old S5). The execution-locus question that blocked S4 is RESOLVED — its
+premise was refuted.**
 
-## The execution-locus problem — found after `1aa1779`, unresolved
+## Resolution — the fork dissolved, and the blocking premise was unsound
+
+Three cold probes on independent framings (general design; policy-system migration history;
+inline-vs-external binding), each licensed to return "not a real fork". They converged.
+
+**1. The blocking argument was unsound.** It ran: `guardrail` requires the SEPARATE locus, but
+`fragment` is inline by definition, so a fragment carrying `events` may be structurally incapable of
+being a guardrail — and `1aa1779` may have retired the one Kind whose locus was right.
+
+**Execution locus is not what binds.** Out-of-loopness is a _correlate_ of enforceability, not its
+cause. Decisive counterexample: a subagent runs in a separate context and returns text the parent
+may ignore — outside the loop, purely advisory; while a hook vetoing a tool call binds absolutely.
+Both are "separate". The properties that do the work are that the mechanism is **not
+argumentatively addressable from inside the context** and that it sits **causally between decision
+and effect**. Inline-ness disqualifies a DECLARATION from binding, which was never its job.
+**`1aa1779` did not retire the wrong Kind.** The `execution locus` axis — named by an earlier probe
+as the one axis surviving once trigger is factored out — is itself mis-cut.
+
+**2. The real seam is BINDING, not declaration-vs-mechanism.** There are three seams, not two:
+the **rule** (predicate/logic), the **binding** (scope, params, strength), and the **mediation**
+(the chokepoint presenting subjects to the rule). Splitting rule↔binding is cheap and near-universal;
+nobody migrates away from it. Fusing rule↔mediation is what pays. Kubernetes'
+`ValidatingAdmissionPolicy` (GA 1.30) is the shape: the policy carries identity + logic together,
+the `PolicyBinding` carries only scope and params — **logic never leaves the named unit.**
+
+**3. ∴ ONE cell, two faces.** Two independently-authored artifacts guarantee silent divergence, and
+a declaration that overstates what is enforced is worse than none — it manufactures trust in an
+invariant that does not exist. `HookCell` was made a Kind for its realization payload, not because
+it is a different sort of thing. It was already a fragment carrying `events` plus its own
+realization. **S4 unblocks unchanged in direction.**
+
+**4. What this REPRIORITIZES.** The fatal failure mode of any split constraint is **incomplete
+mediation** — the governed object never reaches the mechanism — and it is fatal because it is
+SILENT (declaration correct, enforcement never runs, nothing on the declaration side reveals it).
+An entire literature exists on LSM missing-hook placement for this reason; Spring `@PreAuthorize`
+is inert under self-invocation; a NetworkPolicy is accepted by the apiserver and enforced by nobody
+without a CNI that implements it. **Our `agent_type` grep is that shape.** So S2 (composition
+binding) is the plan's centre of gravity, not S4; and the old S5 is not an epilogue acceptance test
+but the completion of the mediation fix — folded into S4.
+
+**Split failures are silent-allow; bundled failures are loud-deny. Prefer the loud one.**
+
+**5. The seam must be TYPED, and gated at build time.** Gatekeeper links a Constraint to its
+template by an untyped string `kind`; a typo yields a constraint matching nothing, failing open.
+The convergent modern rule is _split the authoring artifact, fuse the runtime artifact, put a
+compiler or verifier on the seam_ (seccomp → BPF verifier; ConstraintTemplate → generated CEL;
+a CHECK compiled into the insert path). **S3 is our verifier, and it is load-bearing, not polish.**
+
+**Carried forward unchanged:** KEEP `matcher` — attachment has an expressiveness ceiling, and
+`matcher` is the residual dynamic binding (the `PolicyBinding` face). Removing it re-introduces
+fragile-pointcut fragility.
+
+**Owed to the canon (do not lose):** `promulgation` (a rule that binds conduct must be published to
+the bound party — an unannounced veto cannot guide, only punish) and `congruence` (the announced
+rule must be the enforced rule) are the two candidate anchors for the declaration↔realization
+relation. Cold-probe confidence on the _concepts_ is high; on these being the terminal _signs_,
+moderate. They need a signify pass before use — do not adopt on momentum.
+
+## Appendix — the execution-locus problem as originally framed (superseded by §Resolution)
 
 Two cold probes, run to settle whether `rule` is a real Kind, generalized past it.
 
@@ -155,31 +213,30 @@ sort of thing. That is the whole migration in one sentence.
 
 ## Shards
 
-> **BOUND BUT UNSHARDED — the cut is owed before dispatch.** The table below is a DECOMPOSITION
-> SKETCH, not task files; `dir(P)` holds only this PLAN.md. Per praxis, `bound(P) ∧ ¬sharded(P) ⇒
-start(P) ≺ dispatch(P)`. A cold session must cut S0–S5 into task files carrying the §Shard spec
-> constraints before executing any of them — do not read a table row as a spec.
+**CUT — task files carry the specs; this table is a mirror, never a spec.**
 
-| id  | shard                                                                                                | wave |
-| --- | ---------------------------------------------------------------------------------------------------- | ---- |
-| S0  | ARM THE CATCH-ALL — `arity(guardrails) ≠ null` so a guardrail-less agent fails `accept()` statically | 0    |
-| S1  | `events` becomes a field a dimension fragment may carry; `enforcing(f)` derivable                    | 0    |
-| S2  | claude adapter emits a per-agent mechanism for each enforcing fragment in `ir(a)`                    | 1    |
-| S3  | `deploy` refuses loudly on a non-realizable event, naming f · e · adapter                            | 1    |
-| S4  | the five hook cells become enforcing guardrail fragments; `HookCell` retires                         | 2    |
-| S5  | retire the runtime `agent_type` allowlist — scope now comes from composition                         | 3    |
+| id  | shard                                                                                 | wave | state   |
+| --- | ------------------------------------------------------------------------------------- | ---- | ------- |
+| S0  | `guardrail-catch-all` — drop `\| null` from `Agent.guardrails`; tsc is the gate       | 0    | ready   |
+| S1  | `fragment-events` — a fragment may carry `events`+`substrate`; `enforcing(f)` derived | 0    | ready   |
+| S2  | `composition-binding` — per-agent mechanism from `ir(a)`; the mediation fix           | 1    | pending |
+| S3  | `deploy-refusal` — substrate-relative refusal naming f · e · adapter; the verifier    | 1    | pending |
+| S4  | `hookcell-retire` — five cells migrate, `HookCell` dies, `agent_type` grep dies       | 2    | pending |
 
-S5 is the acceptance test for the whole plan: if scoping is real, deleting the grep changes
-nothing observable.
+Waves: `{S0,S1}` → `{S2,S3}` → `{S4}`. S4 is terminal, so its singleton wave is legal; it absorbs
+the sketch's S5 because the grep lives _inside_ a cell S4 migrates — disjoint outputs are
+unachievable across that boundary.
 
-## Open — decide before S4
+**Two sketch claims corrected by measurement:**
 
-- **Does `rule` survive?** It activates by `scope`, and I have not probed whether that is a
-  distinct concept or the same conflation `hook` was. Do not migrate `rule` on momentum.
-- **Where does the realization payload live?** A fragment carrying `command`/`workers` may be
-  right, or the payload may belong to the adapter. Unprobed.
-- **`vcs.commit.post` has no `CanonicalEvent` peer** and currently warns-and-skips. Under S3 it
-  must refuse loudly instead — confirm that is wanted before changing a live behaviour.
+- S0 is **not** zero-migration. `packages/agent-forge/test/project/fixtures/agents/probe.ts:18` sets `guardrails: null` in a fixture whose stated design is "every dimension is null". One file, but the claim was false.
+- A guardrail-less agent does **not** fail `accept()` — `COMPOSED` self-describes as "light; tsc enforces dimension/arity". The gate is the TYPE, which is earlier and stronger. `ANATOMY.arity` is descriptive only, read by no validator; arming it would change nothing.
+
+## Open — not blocking, decide in place
+
+- **Does `rule` survive?** It activates by `scope`, unprobed against the conflation `hook` failed. Explicitly OUT of S4. Note that the rule/binding/mediation factorization now gives a sharper test than existed when this question was filed.
+- **`activation : Kind → ActivationMode` is KNOWN-WRONG** and untouched by `1aa1779`. The three-seam factorization is the replacement; this is a MODEL revision, owed.
+- **`vcs.commit.post` currently warns-and-skips** and will refuse under S3 — a live behaviour change on a real cell. Correct under the law, but confirm before landing.
 
 ## Separate, do NOT ride along
 
