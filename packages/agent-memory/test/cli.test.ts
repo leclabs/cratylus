@@ -548,6 +548,24 @@ describe('replace — whole-file supersede of a prose store', () => {
     expect(readFileSync(join(home, 'SEMANTIC.md'), 'utf8')).toBe('NEW BODY\n');
   });
 
+  it('reports the BYTES written, not UTF-16 units — the count `audit` will read', () => {
+    // The symbol-bearing register these stores hold: multi-byte throughout.
+    const glyphs = '≻ ⇒ ⊥ σ ∧ · ⟨⟩';
+    const r = main([
+      'replace',
+      '--home',
+      home,
+      '--store',
+      'SEMANTIC',
+      '--body',
+      glyphs,
+    ]);
+    expect(r.code).toBe(0);
+    const onDisk = readFileSync(join(home, 'SEMANTIC.md'));
+    expect(onDisk.length).toBeGreaterThan(`${glyphs}\n`.length); // chars < bytes
+    expect(r.out).toContain(`(${onDisk.length} bytes)`);
+  });
+
   it('rejects EPISODIC loudly (raw log, not a whole-file prose store)', () => {
     const r = main([
       'replace',

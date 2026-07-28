@@ -983,9 +983,17 @@ function replaceGuarded(args: ParsedArgs, home: string): CliResult {
     return { code: 1, out: '', err: `${ceilingRefusal(file, after)}\n` };
   mkdirSync(dirname(file), { recursive: true });
   writeFileSync(file, text, 'utf8');
+  // `after`, not `body.length`. The ceiling is a BYTE watermark and `audit`
+  // measures bytes, but `String.length` counts UTF-16 units — so on a store
+  // written in the symbol-bearing register these stores exist to hold (· ≻ ⇒ ⊥
+  // σ ∧), the two disagree by several percent, and the report said 8481 for a
+  // file `audit` then called 8622. A caller distilling to fit reads the smaller
+  // number, believes it is under the line, and only learns otherwise when a
+  // later append is refused. `body` was also the wrong operand: the trailing
+  // newline is added in `text`.
   return {
     code: 0,
-    out: `replaced ${basename(file)} (${body.length} bytes)\n`,
+    out: `replaced ${basename(file)} (${after} bytes)\n`,
     err: '',
   };
 }
