@@ -1,0 +1,59 @@
+import { describe, expect, it } from 'vitest';
+import {
+  type Guardrails,
+  bodyOf,
+  enforcing,
+  withBody,
+} from '../../src/anatomy/index.js';
+
+// `enforcing(f) ⇔ events(f) ≠ ∅` — MODEL's predicate, DERIVED and never stored.
+// These are the runtime half of S1; the type-level half is anatomy.test-d.ts
+// NEGATIVE 7 (a value with `events` and no `substrate` must not compile).
+
+const bare: Guardrails = 'honesty ≜ assert from evidence';
+const bound: Guardrails = {
+  body: 'stance ≜ hold the stance',
+  substrate: 'harness',
+  events: ['tool.use.pre'],
+};
+
+describe('enforcing — derived from the shape, never from a stored flag', () => {
+  it('is false for a bare declaration and true for a bound one', () => {
+    expect(enforcing(bare)).toBe(false);
+    expect(enforcing(bound)).toBe(true);
+  });
+
+  it('reads the SAME body off either shape — the declaration face is uniform', () => {
+    expect(bodyOf(bare)).toBe('honesty ≜ assert from evidence');
+    expect(bodyOf(bound)).toBe('stance ≜ hold the stance');
+  });
+
+  it('has no boolean field to disagree with — the data IS the predicate', () => {
+    // A stored `enforcing: false` alongside a non-empty `events` is the state
+    // this shape makes unrepresentable. Assert the field simply does not exist.
+    expect('enforcing' in (bound as object)).toBe(false);
+  });
+});
+
+describe('withBody — folding a value must never silently UNBIND it', () => {
+  it('substitutes the declaration and PRESERVES substrate + events', () => {
+    const folded = withBody(bound, 'stance ≜ composed body');
+    expect(bodyOf(folded)).toBe('stance ≜ composed body');
+    expect(enforcing(folded)).toBe(true);
+    // The binding is the half a string-only fold would have dropped.
+    if (!enforcing(folded)) throw new Error('unreachable');
+    expect(folded.substrate).toBe('harness');
+    expect(folded.events).toEqual(['tool.use.pre']);
+  });
+
+  it('leaves a bare value bare — it does not manufacture a binding', () => {
+    const folded = withBody(bare, 'honesty ≜ composed body');
+    expect(folded).toBe('honesty ≜ composed body');
+    expect(enforcing(folded)).toBe(false);
+  });
+
+  it('does not mutate the value it folds', () => {
+    withBody(bound, 'mutated?');
+    expect(bodyOf(bound)).toBe('stance ≜ hold the stance');
+  });
+});

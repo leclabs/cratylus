@@ -173,6 +173,40 @@ const eagerComposition: Skill = { ...leaf, composition: [leaf] };
 // @ts-expect-error — `guardrails` is required; an agent may not be composed unconfined.
 const agentUnconfined: Agent = { ...baseFixture, guardrails: undefined };
 
+// ── NEGATIVE 7: an ENFORCING value declaring `events` but no `substrate` ────────
+//
+// The pair is ONE FACT. The refusal law is substrate-relative — an event
+// belonging to another substrate is ROUTED, not refused — so it cannot be
+// evaluated from the events alone. A value that declared `events` without a
+// substrate would bind nowhere decidable: a silent-allow wearing a type.
+//
+// Verified to fire unassisted: with the directive removed, tsc reports TS2322
+// on `{ body, events }` not being assignable to `Guardrails`.
+
+// @ts-expect-error — `substrate` is required alongside `events`; the pair is one fact.
+const enforcingNoSubstrate: Guardrails = {
+  body: 'stance ≜ hold the stance',
+  events: ['tool.use.pre'],
+};
+
+// ── POSITIVE: the enforcing shape and the bare shape are BOTH values ────────────
+// `events` is PARTIAL: opting in is a shape, opting out is the untouched string.
+
+const enforcingValue: Guardrails = {
+  body: 'stance ≜ hold the stance',
+  substrate: 'harness',
+  events: ['tool.use.pre'],
+};
+const bareValue: Guardrails = 'honesty ≜ assert from evidence';
+
+// An agent composes either, in the same set — the union is the whole point.
+const agentMixedGuardrails: Agent = {
+  ...baseFixture,
+  guardrails: [enforcingValue, bareValue],
+};
+void agentMixedGuardrails;
+void enforcingNoSubstrate;
+
 // Silence "declared but never read" for the intentional fault bindings.
 void agentUnconfined;
 void wrongDimension;

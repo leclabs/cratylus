@@ -21,6 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { RuntimePlugin } from '@leclabs/agent-runtime';
+import type { HookEvent, HookSubstrate } from './hook-cell.js';
 
 // ── Type-level metadata axes ────────────────────────────────────────────────
 
@@ -97,35 +98,106 @@ export interface Mark {
 /** A branded fragment string, keyed to dimension `O`. */
 type Fragment<O extends Dimension> = string & { readonly __dimension?: O };
 
+/**
+ * A fragment that carries its OWN enforcement — MODEL's `events : fragment ⇀
+ * ℘(Event) ⟨PARTIAL⟩`, realized as the shape a value takes when it is in the
+ * function's domain.
+ *
+ * ONE artifact, TWO FACES. `body` is the declaration: inline, read by the same
+ * reasoning it governs, and the `accept()` target. `substrate` + `events` are
+ * where it binds. Two independently-authored artifacts would guarantee silent
+ * divergence, and a declaration that overstates what is enforced is worse than
+ * no declaration — it manufactures trust in an invariant that does not exist.
+ * So the two faces are one authored unit and cannot drift apart.
+ *
+ * The declaration is not decoration on the mechanism. An agent that cannot see
+ * the rule burns turns discovering it by rejection, and may satisfy the enforcer
+ * while violating its intent; publication is what makes a refusal legible rather
+ * than an opaque wall.
+ *
+ * `substrate` is REQUIRED alongside `events` because the pair is one fact: the
+ * refusal law is substrate-relative (an event belonging to another substrate is
+ * routed, not refused), and it cannot be evaluated from the events alone.
+ *
+ * NO realization payload here. What actually runs (`command`/`workers`) still
+ * lives on `HookCell` until it migrates; a default emitted here would be a
+ * silent-allow wearing a type.
+ */
+export interface Enforcing<O extends Dimension> {
+  /** The inline declaration — the σ* body ⟨α, residue⟩ this value would be if bare. */
+  readonly body: Fragment<O>;
+  /** Which substrate the events fire in — the `realize`-target family. */
+  readonly substrate: HookSubstrate;
+  /** The harness-agnostic events that bind it (≥1 — an empty set is not enforcing). */
+  readonly events: readonly [HookEvent, ...HookEvent[]];
+}
+
+/**
+ * A dimension VALUE: a bare declaration, or one that enforces itself.
+ *
+ * The union is what makes `events` PARTIAL. Every existing value stays a bare
+ * branded string and compiles untouched; only a value that opts in carries the
+ * enforcing shape.
+ */
+export type Value<O extends Dimension> = Fragment<O> | Enforcing<O>;
+
+/**
+ * `enforcing(f) ⇔ events(f) ≠ ∅` — DERIVED, never stored.
+ *
+ * There is deliberately no boolean `enforcing` field: a derived predicate cannot
+ * disagree with the data, and two fields can. Non-emptiness is carried by the
+ * tuple type, so presence of the shape IS the predicate.
+ */
+export const enforcing = <O extends Dimension>(
+  v: Value<O>,
+): v is Enforcing<O> => typeof v === 'object' && v !== null;
+
+/** The declaration face of a value, enforcing or not — what the SOUL renders. */
+export const bodyOf = <O extends Dimension>(v: Value<O>): Fragment<O> =>
+  enforcing(v) ? v.body : v;
+
+/**
+ * Replace a value's declaration face, PRESERVING any enforcement binding.
+ *
+ * The resolver's fold substitutes authored bodies for composed ones. A body is a
+ * declaration; `substrate`/`events` are not, and must survive the substitution
+ * untouched — folding a value must never silently unbind it. This is the whole
+ * reason the fold cannot simply treat a value as a string any more.
+ */
+export const withBody = <O extends Dimension>(
+  v: Value<O>,
+  body: Fragment<O>,
+): Value<O> => (enforcing(v) ? { ...v, body } : body);
+
 // Persona
-export type Autonomy = Fragment<'autonomy'>;
-export type Role = Fragment<'role'>;
-export type Formality = Fragment<'formality'>;
-export type AudienceAdaptation = Fragment<'audience-adaptation'>;
-export type Transparency = Fragment<'transparency'>;
+export type Autonomy = Value<'autonomy'>;
+export type Role = Value<'role'>;
+export type Formality = Value<'formality'>;
+export type AudienceAdaptation = Value<'audience-adaptation'>;
+export type Transparency = Value<'transparency'>;
 
 // Constitution — standing drives
-export type Objective = Fragment<'objective'>;
-export type Guardrails = Fragment<'guardrails'>;
-export type EngineeringPrinciples = Fragment<'engineering-principles'>;
-export type Heuristics = Fragment<'heuristics'>;
-export type Capabilities = Fragment<'capabilities'>;
-export type Learning = Fragment<'learning'>;
-export type SituationAwareness = Fragment<'situation-awareness'>;
+export type Objective = Value<'objective'>;
+export type Guardrails = Value<'guardrails'>;
+export type EngineeringPrinciples = Value<'engineering-principles'>;
+export type Heuristics = Value<'heuristics'>;
+export type Capabilities = Value<'capabilities'>;
+export type Learning = Value<'learning'>;
+export type SituationAwareness = Value<'situation-awareness'>;
 
 // Constitution — apparatus
-export type Actions = Fragment<'actions'>;
-export type Modalities = Fragment<'modalities'>;
-export type Model = Fragment<'model'>;
-export type Memory = Fragment<'memory'>;
+export type Actions = Value<'actions'>;
+export type Modalities = Value<'modalities'>;
+export type Model = Value<'model'>;
+export type Memory = Value<'memory'>;
 
 // Constitution — per-turn act
-export type Trigger = Fragment<'trigger'>;
-export type Framing = Fragment<'framing'>;
-export type ReasoningStrategy = Fragment<'reasoning-strategy'>;
-export type Satisficing = Fragment<'satisficing'>;
-export type OutputFormat = Fragment<'output-format'>;
-export type SelfEvaluation = Fragment<'self-evaluation'>;
+export type Trigger = Value<'trigger'>;
+export type Framing = Value<'framing'>;
+export type ReasoningStrategy = Value<'reasoning-strategy'>;
+export type Satisficing = Value<'satisficing'>;
+export type OutputFormat = Value<'output-format'>;
+export type SelfEvaluation = Value<'self-evaluation'>;
 
 /**
  * The SET dimensions — the only dimensions whose `Agent` field is an array.

@@ -42,7 +42,13 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
+import type {
+  Agent,
+  Dimension,
+  Skill,
+  Value,
+} from '@leclabs/agent-forge/anatomy';
+import { bodyOf } from '@leclabs/agent-forge/anatomy';
 // accept() falsifier — the full Universal gate (`src/toolkit/cold-oracle/accept.ts`),
 // the register gate above being one facet of ρ-conformance, not a Universal leg.
 import {
@@ -188,9 +194,15 @@ function splitBody(v: string): { slug: string; definiens: string } {
     : { slug: v.slice(0, i), definiens: v.slice(i + 3) };
 }
 
-/** Recover just the α(c) slug (the common case). */
-function slugOf(v: string): string {
-  return splitBody(v).slug;
+/**
+ * Recover just the α(c) slug (the common case).
+ *
+ * Takes a VALUE, not a string: a value may now carry its own enforcement, and
+ * this gate reads the DECLARATION face. `bodyOf` is the uniform way to reach it —
+ * reading density off anything but the declaration would score the binding.
+ */
+function slugOf(v: Value<Dimension>): string {
+  return splitBody(bodyOf(v)).slug;
 }
 
 /** The contradiction pairs `agent` carries (root-cause H3). */

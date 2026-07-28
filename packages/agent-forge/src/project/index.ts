@@ -31,9 +31,13 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   type Agent,
+  type Dimension,
   type HookCell,
   type Skill,
+  type Value,
+  bodyOf,
   hookIrOf,
+  withBody,
 } from '../anatomy/index.js';
 import {
   type DiscoveredPlugin,
@@ -276,19 +280,30 @@ function withResolvedBodies(
   subst: ReadonlyMap<string, string>,
 ): Agent {
   if (subst.size === 0) return agent;
-  const one = <T extends string>(v: T | null): T | null =>
-    v === null ? null : ((subst.get(v) ?? v) as T);
+  // Substitute a value's DECLARATION face and put the binding back. A value may
+  // now be an enforcing cell rather than a bare string, and `substrate`/`events`
+  // are not bodies — folding a value must never silently unbind it. Keying the
+  // map on `bodyOf(v)` is what keeps an enforcing value substitutable by the same
+  // authored body a bare one uses.
+  const sub = <T extends Value<Dimension>>(v: T): T => {
+    const body = bodyOf(v);
+    return withBody(v, subst.get(body) ?? body) as T;
+  };
+  const one = <T extends Value<Dimension>>(v: T | null): T | null =>
+    v === null ? null : sub(v);
   // Overloaded so nullability ROUND-TRIPS. `guardrails` is the one set dimension
   // with no `| null` (the catch-all — see `Agent` in anatomy), so a single
   // `readonly T[] | null` return would widen it back to nullable here and fail to
   // assign. Widening it with a cast would have "fixed" the error by re-admitting
   // the null this dimension exists to exclude.
-  function many<T extends string>(vs: readonly T[]): readonly T[];
-  function many<T extends string>(vs: readonly T[] | null): readonly T[] | null;
-  function many<T extends string>(
+  function many<T extends Value<Dimension>>(vs: readonly T[]): readonly T[];
+  function many<T extends Value<Dimension>>(
+    vs: readonly T[] | null,
+  ): readonly T[] | null;
+  function many<T extends Value<Dimension>>(
     vs: readonly T[] | null,
   ): readonly T[] | null {
-    return vs === null ? null : vs.map((v) => (subst.get(v) ?? v) as T);
+    return vs === null ? null : vs.map(sub);
   }
   return {
     ...agent,
