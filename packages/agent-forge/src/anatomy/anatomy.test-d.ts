@@ -161,7 +161,20 @@ void composed;
 // @ts-expect-error — composition is a thunk `() => Skill[]`, not an eager array.
 const eagerComposition: Skill = { ...leaf, composition: [leaf] };
 
+// ── NEGATIVE 6: the CATCH-ALL — an agent composed with NO guardrail ─────────────
+//
+// The one dimension with no `| null`. Attachment-based governance fails open
+// (Spring Security's unannotated methods; AppArmor's profileless tasks), and both
+// prescribe a catch-all underneath. This is ours, and it is stronger than either
+// because it is `tsc` rather than a runtime backstop: the unconfined agent cannot
+// be written down. `@ts-expect-error` keeps the gate LIVE — if omitting
+// `guardrails` ever stops being an error, this line fails instead of going quiet.
+
+// @ts-expect-error — `guardrails` is required; an agent may not be composed unconfined.
+const agentUnconfined: Agent = { ...baseFixture, guardrails: undefined };
+
 // Silence "declared but never read" for the intentional fault bindings.
+void agentUnconfined;
 void wrongDimension;
 void fenceClash;
 void scalarGivenArray;

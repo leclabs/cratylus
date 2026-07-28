@@ -240,7 +240,23 @@ export interface Agent {
 
   // Constitution — standing drives
   readonly objective: Objective | null;
-  readonly guardrails: readonly Guardrails[] | null; // SET
+  /**
+   * SET — and the ONE dimension with no `| null`. That asymmetry is deliberate,
+   * not an oversight: it is the CATCH-ALL.
+   *
+   * Attachment-based governance fails OPEN. Spring Security: "unannotated methods
+   * are not secured… declare a catch-all authorization rule." AppArmor: tasks with
+   * no profile "run in an unconfined state." Two unrelated systems, one weakness,
+   * and both prescribe a catch-all underneath — neither recommends attachment
+   * alone. Ours is stronger than either, because theirs is a runtime backstop and
+   * this one is `tsc`: an agent vector composed without a guardrail does not
+   * compile, so the eleventh agent cannot be born unconfined.
+   *
+   * Enforced HERE and nowhere else. Do not add an `accept()` leg to match — the
+   * type is strictly earlier, and two enforcement sites for one invariant is
+   * exactly the declaration/enforcement drift this is meant to prevent.
+   */
+  readonly guardrails: readonly Guardrails[];
   readonly engineeringPrinciples: readonly EngineeringPrinciples[] | null; // SET
   readonly heuristics: readonly Heuristics[] | null; // SET
   readonly capabilities: readonly Capabilities[] | null; // SET

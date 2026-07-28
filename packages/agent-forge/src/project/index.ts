@@ -278,10 +278,18 @@ function withResolvedBodies(
   if (subst.size === 0) return agent;
   const one = <T extends string>(v: T | null): T | null =>
     v === null ? null : ((subst.get(v) ?? v) as T);
-  const many = <T extends string>(
+  // Overloaded so nullability ROUND-TRIPS. `guardrails` is the one set dimension
+  // with no `| null` (the catch-all — see `Agent` in anatomy), so a single
+  // `readonly T[] | null` return would widen it back to nullable here and fail to
+  // assign. Widening it with a cast would have "fixed" the error by re-admitting
+  // the null this dimension exists to exclude.
+  function many<T extends string>(vs: readonly T[]): readonly T[];
+  function many<T extends string>(vs: readonly T[] | null): readonly T[] | null;
+  function many<T extends string>(
     vs: readonly T[] | null,
-  ): readonly T[] | null =>
-    vs === null ? null : vs.map((v) => (subst.get(v) ?? v) as T);
+  ): readonly T[] | null {
+    return vs === null ? null : vs.map((v) => (subst.get(v) ?? v) as T);
+  }
   return {
     ...agent,
     autonomy: many(agent.autonomy),
