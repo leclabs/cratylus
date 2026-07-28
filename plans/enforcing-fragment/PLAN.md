@@ -47,6 +47,40 @@ ConstraintTemplate/Constraint split question, and a research pass on attachment-
 whether bundling mechanism with declaration is a known mistake is in flight. Resolve on its
 return; do not build either way first.
 
+## Settled without research — apply with the next MODEL revision
+
+**1. The refusal law is too blunt, and would refuse a CORRECT configuration.** `1aa1779` says:
+
+    enforcing(f) ∧ ∃e ∈ events(f) : ¬realizable(e,adapter) ⇒ deploy REFUSES
+
+There are three cases, not two, and it conflates the last two:
+
+| case                                      | correct behaviour                                 |
+| ----------------------------------------- | ------------------------------------------------- |
+| the adapter realizes `e`                  | emit the mechanism                                |
+| the adapter SHOULD realize `e` and cannot | REFUSE, loudly, naming f · e · adapter            |
+| `e` belongs to a DIFFERENT substrate      | not this adapter's concern — ROUTE, do not refuse |
+
+`HookSubstrate = 'harness' \| 'git'` already exists (`anatomy/hook-cell.ts:35`), and
+`vcs.commit.post` is precisely case 3: it has no `CanonicalEvent` peer because it is not a harness
+event at all. Under the law as written, deploying to the claude adapter would refuse on a
+perfectly correct git-substrate constraint. The law needs to be substrate-relative:
+
+    enforcing(f) ∧ substrate(f) = substrate(adapter) ∧ ¬realizable(e,adapter) ⇒ REFUSE
+
+This is independent of the execution-locus question and holds under either resolution.
+
+**2. Which parts of `1aa1779` are actually under question** — the next session should not re-litigate
+the whole change:
+
+| clause                                                      | status                                                                            |
+| ----------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `ENFORCED` scoping — composition IS the scope, ¬ ambient    | **SETTLED** — true under every candidate structure                                |
+| refuse-loudly rather than silent-drop                       | **SETTLED** — needs the substrate qualifier above                                 |
+| `Kind ≜ {fragment, agent, rule, skill}` (hook retired)      | **UNDER QUESTION** — execution locus                                              |
+| `events : fragment ⇀ ℘(Event)` — on `fragment` specifically | **UNDER QUESTION** — a fragment is inline by definition                           |
+| `activation : Kind → ActivationMode` left standing          | **KNOWN-WRONG** — the probe calls this the category error; untouched by `1aa1779` |
+
 ## Intent
 
 MODEL now says a guardrail fragment carries its own `events` and `hook` is not a Kind. Source
