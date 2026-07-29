@@ -196,6 +196,8 @@ const enforcingValue: Guardrails = {
   body: 'stance ≜ hold the stance',
   substrate: 'harness',
   events: ['tool.use.pre'],
+  command: 'sh stance.sh',
+  workers: [],
 };
 const bareValue: Guardrails = 'honesty ≜ assert from evidence';
 

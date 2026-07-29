@@ -28,6 +28,7 @@ import {
   dimensionTitle,
   skillBody,
 } from '../../core/anatomy-body.js';
+import { enforcingValuesOf } from '../../core/exemplify/dimension-fields.js';
 // The projection PORT, imported from its DEFINING module. This was load-bearing
 // while a `core/index.js` barrel existed: it `export *`ed the IR lineage, so one
 // barrel-shaped type import dragged all 26 of those modules into every projection
@@ -35,6 +36,7 @@ import {
 // are both gone; naming the defining module stays the rule, so no future barrel
 // can quietly re-create the edge.
 import type { HarnessAdapter } from '../../core/harness-adapter.js';
+import type { CanonicalEvent } from '../../core/hook/index.js';
 import { canonicalToClaude } from './events.js';
 import { serializeClaudeHooksReport } from './hooks.js';
 
@@ -56,7 +58,73 @@ function agentFrontMatter(a: Agent): string[] {
   if (a.provenance?.mark) {
     fm.push(`color: ${markToColor(a.provenance.mark)}`);
   }
+  fm.push(...agentHooksFrontMatter(a));
   return fm;
+}
+
+/**
+ * The `hooks:` front-matter block — an enforcing fragment's mechanism, attached
+ * to THIS agent and no other.
+ *
+ * This is where composition becomes enforcement. Claude Code reads a `hooks` key
+ * in a subagent's front-matter and fires those hooks only while that subagent
+ * runs, which means the scope of a guardrail is the fact that the agent composes
+ * it — not a name the enforcement code carries about the agent. That is the whole
+ * point: the previous mechanism was a global hook plus a runtime `agent_type`
+ * allowlist, i.e. scope living in the enforcement code, invisible from the agent
+ * it governed and silently stale the moment either side moved.
+ *
+ * Only `harness`-substrate fragments appear here. A git-substrate constraint
+ * fires in git's own process and is NOT a harness hook; it is routed elsewhere
+ * and must never reach this block.
+ *
+ * `order` is honoured explicitly. A dir-scan or object-key order would impose
+ * something alphabetical, and these sequences are semantic — a blocking gate must
+ * evaluate before a non-blocking nudge.
+ */
+function agentHooksFrontMatter(a: Agent): string[] {
+  const enforcing = enforcingValuesOf(a)
+    .filter((f) => f.substrate === 'harness')
+    .sort(
+      (x, y) =>
+        (x.order ?? Number.MAX_SAFE_INTEGER) -
+        (y.order ?? Number.MAX_SAFE_INTEGER),
+    );
+  if (enforcing.length === 0) return [];
+
+  // native claude event → the entries firing on it, in `order`.
+  const byEvent = new Map<string, string[]>();
+  for (const f of enforcing) {
+    for (const event of f.events) {
+      const native = canonicalToClaude[event as CanonicalEvent];
+      // Unrealizable events are REFUSED upstream at build time, never dropped
+      // here — a silent skip at emission is the fail-open this design removes.
+      if (!native) continue;
+      const lines: string[] = [];
+      if (f.matcher) {
+        lines.push(`    - matcher: ${JSON.stringify(f.matcher)}`);
+        lines.push('      hooks:');
+      } else {
+        lines.push('    - hooks:');
+      }
+      lines.push('        - type: command');
+      lines.push(`          command: ${JSON.stringify(f.command)}`);
+      if (f.timeout !== undefined)
+        lines.push(`          timeout: ${f.timeout}`);
+      const acc = byEvent.get(native) ?? [];
+      acc.push(...lines);
+      byEvent.set(native, acc);
+    }
+  }
+  if (byEvent.size === 0) return [];
+  const out: string[] = ['hooks:'];
+  for (const [event, lines] of [...byEvent].sort(([x], [y]) =>
+    x < y ? -1 : x > y ? 1 : 0,
+  )) {
+    out.push(`  ${event}:`);
+    out.push(...lines);
+  }
+  return out;
 }
 
 /** Frame a body as a claude artifact: front-matter fence + body. */

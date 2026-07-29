@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { RuntimePlugin } from '@leclabs/agent-runtime';
-import type { HookEvent, HookSubstrate } from './hook-cell.js';
+import type { HookEvent, HookSubstrate, HookWorker } from './hook-cell.js';
 
 // ── Type-level metadata axes ────────────────────────────────────────────────
 
@@ -99,31 +99,6 @@ export interface Mark {
 type Fragment<O extends Dimension> = string & { readonly __dimension?: O };
 
 /**
- * A fragment that carries its OWN enforcement — MODEL's `events : fragment ⇀
- * ℘(Event) ⟨PARTIAL⟩`, realized as the shape a value takes when it is in the
- * function's domain.
- *
- * ONE artifact, TWO FACES. `body` is the declaration: inline, read by the same
- * reasoning it governs, and the `accept()` target. `substrate` + `events` are
- * where it binds. Two independently-authored artifacts would guarantee silent
- * divergence, and a declaration that overstates what is enforced is worse than
- * no declaration — it manufactures trust in an invariant that does not exist.
- * So the two faces are one authored unit and cannot drift apart.
- *
- * The declaration is not decoration on the mechanism. An agent that cannot see
- * the rule burns turns discovering it by rejection, and may satisfy the enforcer
- * while violating its intent; publication is what makes a refusal legible rather
- * than an opaque wall.
- *
- * `substrate` is REQUIRED alongside `events` because the pair is one fact: the
- * refusal law is substrate-relative (an event belonging to another substrate is
- * routed, not refused), and it cannot be evaluated from the events alone.
- *
- * NO realization payload here. What actually runs (`command`/`workers`) still
- * lives on `HookCell` until it migrates; a default emitted here would be a
- * silent-allow wearing a type.
- */
-/**
  * WHERE an enforcing value binds — the agents that compose it, and nothing else.
  *
  * The `PolicyBinding` face. The rule and its mechanism stay fused in one authored
@@ -147,6 +122,35 @@ export interface Binding {
   readonly agents: readonly string[];
 }
 
+/**
+ * A fragment that carries its OWN enforcement — MODEL's `events : fragment ⇀
+ * ℘(Event) ⟨PARTIAL⟩`, realized as the shape a value takes when it is in the
+ * function's domain.
+ *
+ * ONE artifact, TWO FACES. `body` is the declaration: inline, read by the same
+ * reasoning it governs, and the `accept()` target. `substrate` + `events` are
+ * where it binds. Two independently-authored artifacts would guarantee silent
+ * divergence, and a declaration that overstates what is enforced is worse than
+ * no declaration — it manufactures trust in an invariant that does not exist.
+ * So the two faces are one authored unit and cannot drift apart.
+ *
+ * The declaration is not decoration on the mechanism. An agent that cannot see
+ * the rule burns turns discovering it by rejection, and may satisfy the enforcer
+ * while violating its intent; publication is what makes a refusal legible rather
+ * than an opaque wall.
+ *
+ * `substrate` is REQUIRED alongside `events` because the pair is one fact: the
+ * refusal law is substrate-relative (an event belonging to another substrate is
+ * routed, not refused), and it cannot be evaluated from the events alone.
+ *
+ * The REALIZATION rides here too — `command` is what actually runs and `workers`
+ * are its verbatim bytes. That is what "one artifact" means: splitting the
+ * mechanism into a linked artifact would reintroduce exactly the divergence the
+ * single unit exists to prevent.
+ *
+ * What is NOT here is SCOPE. See `Binding` — scope is derived from composition,
+ * never authored beside the mechanism.
+ */
 export interface Enforcing<O extends Dimension> {
   /** The inline declaration — the σ* body ⟨α, residue⟩ this value would be if bare. */
   readonly body: Fragment<O>;
@@ -154,6 +158,25 @@ export interface Enforcing<O extends Dimension> {
   readonly substrate: HookSubstrate;
   /** The harness-agnostic events that bind it (≥1 — an empty set is not enforcing). */
   readonly events: readonly [HookEvent, ...HookEvent[]];
+  /** The fire command — references the deployed worker path. */
+  readonly command: string;
+  /**
+   * Optional tool matcher (client-native regex). The RESIDUAL dynamic binding:
+   * composition fixes WHICH AGENT, and a static mark cannot express a
+   * runtime-conditional policy, so this stays for the genuinely conditional part.
+   * Meaningful for tool-scoped events; unset for a Stop hook.
+   */
+  readonly matcher?: string;
+  /** Timeout in seconds; adapter default when omitted. */
+  readonly timeout?: number;
+  /**
+   * Run order within an event. A dir-scan would otherwise impose ALPHABETICAL
+   * order, silently reordering constraints whose sequence is semantic — a
+   * blocking gate must evaluate before a non-blocking nudge. Lower runs first.
+   */
+  readonly order?: number;
+  /** The verbatim worker payloads — the byte-anchors of the deployed mechanism. */
+  readonly workers: readonly HookWorker[];
 }
 
 /**

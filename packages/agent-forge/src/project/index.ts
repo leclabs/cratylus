@@ -48,7 +48,7 @@ import {
   discoverPluginFragments,
 } from '../catalog/index.js';
 import type { ResolvedSkill } from '../core/anatomy-body.js';
-import { DIMENSION_FIELD } from '../core/exemplify/dimension-fields.js';
+import { enforcingValuesOf } from '../core/exemplify/dimension-fields.js';
 import type { HarnessAdapter } from '../core/harness-adapter.js';
 import {
   resolveModulePath,
@@ -183,26 +183,6 @@ async function hookOf(modPath: string): Promise<HookCell | null> {
 }
 
 /**
- * Every enforcing value an agent composes, across every dimension.
- *
- * Reads `DIMENSION_FIELD` rather than listing the fields, so a new dimension is
- * covered the day it is declared. A hand-kept list here would be a second scope
- * to go stale — the very defect the binding exists to remove.
- */
-function enforcingOf(agent: Agent): Enforcing<Dimension>[] {
-  const out: Enforcing<Dimension>[] = [];
-  for (const field of Object.values(DIMENSION_FIELD)) {
-    const v = (agent as unknown as Record<string, unknown>)[field];
-    if (v === null || v === undefined) continue;
-    for (const item of Array.isArray(v) ? v : [v]) {
-      const value = item as Value<Dimension>;
-      if (enforcing(value)) out.push(value);
-    }
-  }
-  return out;
-}
-
-/**
  * The BINDINGS a projected agent set implies: for each enforcing value, exactly
  * the agents that compose it.
  *
@@ -220,7 +200,7 @@ export function bindingsOf(
     { fragment: Enforcing<Dimension>; agents: Set<string> }
   >();
   for (const { name, agent } of agents) {
-    for (const fragment of enforcingOf(agent)) {
+    for (const fragment of enforcingValuesOf(agent)) {
       const anchor = anchorOf(fragment);
       const seen = byAnchor.get(anchor);
       if (seen) seen.agents.add(name);
@@ -481,16 +461,18 @@ export async function projectPluginSet(
     agents++;
   }
 
-  // BINDINGS — scope, derived from composition. Emitted only when something is
-  // actually bound: an empty `bindings.json` would assert "nothing is governed",
-  // which is indistinguishable from "the derivation did not run" and is exactly
-  // the silent-allow this artifact exists to make impossible.
+  // ENFORCING FRAGMENTS. The MECHANISM is emitted by the adapter into each
+  // agent's OWN front-matter (`agentHooksFrontMatter`), because Claude Code fires
+  // a subagent's front-matter hooks only while that subagent runs. Attachment IS
+  // the scope, so there is no separate scope artifact that could drift from the
+  // agents it claims to govern.
+  //
+  // What projection still owes: the build-time refusal, and the WORKER BYTES the
+  // emitted commands invoke.
   const bindings = bindingsOf(composed);
-  // THE VERIFIER ON THE SEAM, before a single byte is emitted. A binding whose
-  // event this adapter is obliged to realize and cannot is refused here — case 3
-  // (another substrate) routes untouched. Checking after emission would mean a
-  // tree on disk that looks enforced and is not.
-  for (const b of bindings)
+  for (const b of bindings) {
+    // THE VERIFIER ON THE SEAM, before a byte is written. Case 3 (another
+    // substrate — a git hook is not a harness hook) routes untouched.
     assertRealizable(
       {
         anchor: b.anchor,
@@ -499,26 +481,14 @@ export async function projectPluginSet(
       },
       opts.adapter,
     );
-  if (bindings.length > 0) {
-    files.push({
-      path: 'bindings.json',
-      content: `${JSON.stringify(
-        Object.fromEntries(
-          bindings.map((b) => [
-            b.anchor,
-            {
-              substrate: b.fragment.substrate,
-              events: b.fragment.events,
-              agents: b.agents,
-            },
-          ]),
-        ),
-        null,
-        2,
-      )}\n`,
-    });
-    for (const b of bindings)
-      log(`EMIT binding ${b.anchor} → ${b.agents.join(' ')}`);
+    for (const worker of b.fragment.workers) {
+      files.push({
+        path: join('hooks', b.anchor, worker.filename),
+        content: worker.content,
+        executable: worker.executable,
+      });
+    }
+    log(`EMIT enforcing ${b.anchor} → ${b.agents.join(' ')}`);
   }
 
   let skills = 0;

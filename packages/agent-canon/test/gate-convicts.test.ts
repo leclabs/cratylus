@@ -99,6 +99,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'agent-canon/symbols.test.ts': 'GATE',
 
   // ── agent-forge ────────────────────────────────────────────────────────────
+  'agent-forge/adapters/agent-hooks.test.ts': 'BEHAVIORAL',
   'agent-forge/anatomy/enforcing.test.ts': 'BEHAVIORAL',
   'agent-forge/anatomy/project-human.test.ts': 'BEHAVIORAL',
   // reads agent-canon's live `src/dimensions` dir listing against the descriptor.
