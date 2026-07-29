@@ -1,0 +1,387 @@
+# Agent Profile Schema (APS)
+
+A generic, declarative specification for defining AI agents independent of any particular framework or runtime. It's expressed as a JSON Schema (Draft 2020-12) so it can validate concrete agent profiles written in JSON or YAML.
+
+## Design principles
+
+- **Declarative, not imperative** — describes *what* the agent is and is allowed to do, not the control-flow code that runs it.
+- **Portable** — no vendor-specific fields at the top level; provider/runtime specifics live in clearly namespaced `x-*` extension blocks.
+- **Composable** — agents can reference sub-agents and shared tool/policy libraries by id.
+- **Separable concerns** — identity, cognition (model+instructions), capability (tools), memory, guardrails, orchestration, and ops are distinct top-level blocks so each can be validated, versioned, and reused independently.
+
+---
+
+## 1. The Schema
+
+```json
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.org/agent-profile/v1.json",
+  "title": "AgentProfile",
+  "type": "object",
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "additionalProperties": false,
+  "properties": {
+    "apiVersion": {
+      "type": "string",
+      "const": "agent-profile/v1",
+      "description": "Schema version identifier, for forward compatibility."
+    },
+    "kind": {
+      "type": "string",
+      "enum": ["Agent", "AgentTemplate"],
+      "description": "'Agent' is a runnable instance; 'AgentTemplate' is abstract and must be extended via 'inherits'."
+    },
+
+    "metadata": {
+      "type": "object",
+      "required": ["id", "name", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-_.]*$" },
+        "name": { "type": "string" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "description": { "type": "string" },
+        "owner": { "type": "string" },
+        "tags": { "type": "array", "items": { "type": "string" } },
+        "inherits": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "IDs of AgentTemplates this profile extends, applied in order."
+        },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+
+    "spec": {
+      "type": "object",
+      "required": ["persona", "model"],
+      "additionalProperties": false,
+      "properties": {
+
+        "persona": {
+          "type": "object",
+          "required": ["instructions"],
+          "additionalProperties": false,
+          "properties": {
+            "role": { "type": "string", "description": "One-line role, e.g. 'customer support triage agent'." },
+            "instructions": { "type": "string", "description": "System prompt / core behavioral directive." },
+            "goals": { "type": "array", "items": { "type": "string" } },
+            "nonGoals": { "type": "array", "items": { "type": "string" } },
+            "tone": { "type": "string" },
+            "audience": { "type": "string" }
+          }
+        },
+
+        "model": {
+          "type": "object",
+          "required": ["provider", "name"],
+          "additionalProperties": false,
+          "properties": {
+            "provider": { "type": "string", "examples": ["anthropic", "openai", "local"] },
+            "name": { "type": "string", "examples": ["claude-sonnet-5"] },
+            "parameters": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "temperature": { "type": "number", "minimum": 0, "maximum": 2 },
+                "topP": { "type": "number", "minimum": 0, "maximum": 1 },
+                "maxOutputTokens": { "type": "integer", "minimum": 1 },
+                "stopSequences": { "type": "array", "items": { "type": "string" } }
+              }
+            },
+            "fallback": {
+              "type": "array",
+              "items": { "$ref": "#/properties/spec/properties/model" },
+              "description": "Ordered fallback models if the primary is unavailable or errors."
+            }
+          }
+        },
+
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "tools": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["id", "description", "inputSchema"],
+                "additionalProperties": false,
+                "properties": {
+                  "id": { "type": "string" },
+                  "description": { "type": "string" },
+                  "inputSchema": { "type": "object" },
+                  "outputSchema": { "type": "object" },
+                  "permission": {
+                    "type": "string",
+                    "enum": ["auto", "confirm", "deny"],
+                    "default": "confirm"
+                  },
+                  "sideEffects": {
+                    "type": "string",
+                    "enum": ["none", "reversible", "irreversible"],
+                    "default": "none"
+                  }
+                }
+              }
+            },
+            "modalities": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "input": { "type": "array", "items": { "enum": ["text", "image", "audio", "video", "file"] } },
+                "output": { "type": "array", "items": { "enum": ["text", "image", "audio", "structured"] } }
+              }
+            }
+          }
+        },
+
+        "memory": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "shortTerm": {
+              "type": "object",
+              "properties": {
+                "strategy": { "type": "string", "enum": ["full-history", "sliding-window", "summarizing"] },
+                "windowSize": { "type": "integer", "minimum": 1 }
+              }
+            },
+            "longTerm": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean", "default": false },
+                "store": { "type": "string", "examples": ["vector", "key-value", "graph"] },
+                "retention": { "type": "string", "examples": ["session", "30d", "indefinite"] }
+              }
+            },
+            "knowledgeSources": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["id", "type"],
+                "properties": {
+                  "id": { "type": "string" },
+                  "type": { "type": "string", "enum": ["document-store", "api", "database", "web"] },
+                  "refreshPolicy": { "type": "string", "examples": ["static", "on-demand", "scheduled"] }
+                }
+              }
+            }
+          }
+        },
+
+        "io": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Contract for what the agent accepts and returns, independent of transport.",
+          "properties": {
+            "inputSchema": { "type": "object" },
+            "outputSchema": { "type": "object" },
+            "responseFormat": { "type": "string", "enum": ["text", "json", "structured"], "default": "text" }
+          }
+        },
+
+        "guardrails": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "contentPolicies": { "type": "array", "items": { "type": "string" } },
+            "allowedActions": { "type": "array", "items": { "type": "string" } },
+            "deniedActions": { "type": "array", "items": { "type": "string" } },
+            "humanApproval": {
+              "type": "object",
+              "properties": {
+                "required": { "type": "boolean", "default": false },
+                "triggers": { "type": "array", "items": { "type": "string" } }
+              }
+            },
+            "rateLimits": {
+              "type": "object",
+              "properties": {
+                "maxRequestsPerMinute": { "type": "integer" },
+                "maxToolCallsPerTask": { "type": "integer" }
+              }
+            },
+            "escalation": {
+              "type": "object",
+              "properties": {
+                "onFailure": { "type": "string", "enum": ["retry", "fallback-model", "human-handoff", "abort"] },
+                "maxRetries": { "type": "integer", "minimum": 0 }
+              }
+            }
+          }
+        },
+
+        "orchestration": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": { "type": "string", "enum": ["single-agent", "supervisor", "pipeline", "swarm"], "default": "single-agent" },
+            "subAgents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["ref"],
+                "properties": {
+                  "ref": { "type": "string", "description": "AgentProfile id of the sub-agent." },
+                  "delegationCondition": { "type": "string" }
+                }
+              }
+            },
+            "handoffPolicy": { "type": "string", "examples": ["automatic", "confirm", "manual"] }
+          }
+        },
+
+        "lifecycle": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Named hook points; values are references to executable actions (e.g. tool ids or webhook URIs), not inline code.",
+          "properties": {
+            "onStart": { "type": "array", "items": { "type": "string" } },
+            "onMessage": { "type": "array", "items": { "type": "string" } },
+            "onToolCall": { "type": "array", "items": { "type": "string" } },
+            "onError": { "type": "array", "items": { "type": "string" } },
+            "onComplete": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+
+        "observability": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "logging": { "type": "string", "enum": ["none", "errors", "verbose"], "default": "errors" },
+            "tracing": { "type": "boolean", "default": false },
+            "metrics": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+
+        "deployment": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "runtime": { "type": "string", "examples": ["cloud", "edge", "on-prem"] },
+            "scaling": {
+              "type": "object",
+              "properties": {
+                "minInstances": { "type": "integer", "minimum": 0 },
+                "maxInstances": { "type": "integer", "minimum": 1 }
+              }
+            },
+            "secrets": { "type": "array", "items": { "type": "string" }, "description": "References to secret names, never inline values." }
+          }
+        }
+      }
+    },
+
+    "x-extensions": {
+      "type": "object",
+      "description": "Vendor- or runtime-specific fields, namespaced by provider (e.g. x-extensions.anthropic).",
+      "additionalProperties": true
+    }
+  }
+}
+```
+
+---
+
+## 2. Example instance
+
+```yaml
+apiVersion: agent-profile/v1
+kind: Agent
+metadata:
+  id: support-triage-agent
+  name: Support Triage Agent
+  version: 1.2.0
+  description: Classifies and routes inbound support tickets.
+  owner: support-eng@example.org
+  tags: [support, triage]
+
+spec:
+  persona:
+    role: Customer support triage agent
+    instructions: |
+      Classify each incoming ticket by urgency and category, then either
+      answer directly from the knowledge base or escalate to a human.
+    goals:
+      - Resolve common questions without human involvement
+      - Never leave a ticket unclassified
+    nonGoals:
+      - Do not issue refunds or account changes directly
+
+  model:
+    provider: anthropic
+    name: claude-sonnet-5
+    parameters:
+      temperature: 0.2
+      maxOutputTokens: 1024
+    fallback:
+      - provider: anthropic
+        name: claude-haiku-4-5-20251001
+
+  capabilities:
+    tools:
+      - id: search-kb
+        description: Search the support knowledge base
+        inputSchema: { type: object, properties: { query: { type: string } }, required: [query] }
+        permission: auto
+        sideEffects: none
+      - id: create-ticket-escalation
+        description: Escalate a ticket to a human agent
+        inputSchema: { type: object, properties: { ticketId: { type: string } }, required: [ticketId] }
+        permission: confirm
+        sideEffects: reversible
+    modalities:
+      input: [text]
+      output: [text, structured]
+
+  memory:
+    shortTerm:
+      strategy: sliding-window
+      windowSize: 20
+    longTerm:
+      enabled: false
+    knowledgeSources:
+      - id: kb-main
+        type: document-store
+        refreshPolicy: scheduled
+
+  io:
+    inputSchema: { type: object, properties: { ticketText: { type: string } }, required: [ticketText] }
+    outputSchema:
+      type: object
+      properties:
+        category: { type: string }
+        urgency: { type: string, enum: [low, medium, high] }
+        response: { type: string }
+    responseFormat: json
+
+  guardrails:
+    deniedActions: [issue-refund, delete-account]
+    humanApproval:
+      required: true
+      triggers: [urgency=high, category=billing]
+    escalation:
+      onFailure: human-handoff
+      maxRetries: 2
+
+  orchestration:
+    mode: single-agent
+
+  observability:
+    logging: verbose
+    tracing: true
+    metrics: [tool_call_count, escalation_rate]
+```
+
+---
+
+### Notes on extending this
+
+- **Templates**: an `AgentTemplate` (via `kind`) can hold shared `guardrails`/`observability` blocks; concrete agents pull them in via `metadata.inherits`.
+- **Multi-agent systems**: use `spec.orchestration.subAgents[].ref` pointing at other profile `id`s — the schema stays flat and file-based, so a fleet of agents is just a directory of profiles plus one supervisor profile.
+- **Runtime binding**: `capabilities.tools[].id` and `lifecycle.*` intentionally hold references (strings), not code — the executing runtime resolves them, keeping the profile portable across engines (LangGraph, a custom orchestrator, Claude Agent SDK, etc.).
+
+Want this narrowed to a specific runtime (e.g. mapped onto the Claude Agent SDK's actual config surface), or saved to a file in a project?
