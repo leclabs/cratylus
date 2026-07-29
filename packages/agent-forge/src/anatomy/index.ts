@@ -177,6 +177,8 @@ export interface Enforcing<O extends Dimension> {
   readonly order?: number;
   /** The verbatim worker payloads — the byte-anchors of the deployed mechanism. */
   readonly workers: readonly HookWorker[];
+  /** Anchors this value references — the CANONICAL orphan-ref witness. */
+  readonly refs?: readonly string[];
 }
 
 /**

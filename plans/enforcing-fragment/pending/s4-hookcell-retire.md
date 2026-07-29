@@ -41,6 +41,45 @@ This is a MODEL-level taxonomy question, so it is surfaced rather than decided �
 enforcing fragment IS, and the plan's stated outcome ("`HookCell` retires") is what the measurement
 contradicts.
 
+## FORK ANSWERED (operator, 2026-07-29): **(a)**
+
+User/operator-scoped mechanisms survive at that scope. `HookCell` narrows and stays as the home
+for session/substrate mechanisms; agent-scoped constraints become guardrail dimension values.
+
+`vcs.commit.post` is confirmed a GIT hook, not a harness hook — it must never reach front-matter.
+
+## The adapter half — DONE (`d30f078`)
+
+The type change alone projected nothing. The claude adapter now emits an enforcing guardrail as a
+`hooks:` block in the front-matter of each agent that composes it; Claude Code fires a subagent's
+front-matter hooks only while that subagent runs, so **attachment is the scope** and the runtime
+`agent_type` allowlist loses its reason to exist. `bindings.json` was deleted — it described
+enforcement instead of performing it.
+
+## The cell half — ATTEMPTED, REVERTED, and the cost is now MEASURED
+
+The migration itself is mechanical (change the cell's type to `Guardrails`, rename `residue`→`body`
+prefixed `stance-guardrail ≜ …` so `anchorOf` recovers the deployed path, drop `id`, compose into
+`nico` + `mav`, delete the scope gate from the worker). It typechecks. What it BREAKS is the
+consumer sweep, which is the real work and was not in this shard's estimate:
+
+| site                                             | breakage                                                                                                                              |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `agent-forge/src/catalog/index.ts:98`            | filters `typeof exported === 'string'` ⇒ SILENTLY DROPS an enforcing value from the catalog. The worst one: an omission, not a crash. |
+| `agent-canon/src/toolkit/project.ts:16`          | `fragmentToMarkdown(value: string)`                                                                                                   |
+| `agent-canon/test/reader-density.test.ts`        | `v.indexOf` on a value (several sites beyond `slugOf`)                                                                                |
+| `agent-canon/test/symbols.test.ts`               | `f.trim` on a value                                                                                                                   |
+| `agent-canon/test/projection-stability.test.ts`  | `text.split` on a value                                                                                                               |
+| `agent-canon/test/hook-rule-boundary.test.ts`    | asserts 4 harness hook cells; becomes 2 — a TAXONOMY update, not a string fix                                                         |
+| `agent-canon/test/stance-guardrail-dark.test.ts` | imports the deleted cell                                                                                                              |
+
+Every one is the same defect class as the `agentBody` `v as string` cast already fixed: a consumer
+assuming a dimension value is a string. The fix at each is `bodyOf`. Do the sweep FIRST, on the
+current corpus (it is a no-op while every value is bare), and the migration then lands green.
+
+**Do not migrate before the sweep.** Reverted once for exactly this reason rather than leave a red
+tree, and the stance guard is the hook policing the session doing the work.
+
 ## What is executable TODAY under (a), if chosen
 
 Migrate `stance-guardrail` + `stance-guardrail-pre` only, and delete the `agent_type` allowlist from
