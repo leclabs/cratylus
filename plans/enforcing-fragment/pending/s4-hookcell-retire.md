@@ -80,6 +80,51 @@ current corpus (it is a no-op while every value is bare), and the migration then
 **Do not migrate before the sweep.** Reverted once for exactly this reason rather than leave a red
 tree, and the stance guard is the hook policing the session doing the work.
 
+## SWEEP DONE (`e6e0819`) — migration now blocked on ONE new fork
+
+The consumer sweep landed and is proven a no-op: render tree byte-identical before and after.
+`firstExport` was copy-pasted byte-identical into SEVEN gates; it is now one home applying `bodyOf`,
+so no gate needs to know enforcement exists. `catalog/index.ts` no longer silently drops an
+enforcing value, and `isDimensionValue` is shape-checked so a hook cell or bare object is not
+mistaken for a value.
+
+With the sweep in place the migration was re-run. It now gets **much** further — only the two
+expected taxonomy updates (`hook-rule-boundary` 5→3 cells, `stance-guardrail-dark`'s import) plus
+**two real findings**:
+
+### FORK — OPERATOR: arming guardrails means the canon can no longer project to CODEX
+
+My own S3 refusal fires, correctly:
+
+    UnrealizableEventError: enforcing constraint 'stance-guardrail' declares event 'turn.end'
+    on substrate 'harness', which the 'codex' adapter cannot realize.
+
+Codex has NO hook surface (`HarnessAdapter.hooks?` is optional precisely because "codex projects
+none"), so it declares `realizes: () => false`. Codex IS a harness, so a harness-substrate guardrail
+is its obligation — case 2, refuse. Not case 3.
+
+**This is the design working, and the consequence is real:** an agent carrying an enforcing guardrail
+cannot be projected to codex, because on codex it would be UNGUARDED. Refusing loudly is exactly
+what arming the catch-all was for. But it drops a currently-supported harness, so it is the
+operator's call, not mine:
+
+- **(i) Accept.** Codex cannot receive guarded agents; `runtime-shim.test.ts` (which projects the
+  real canon down BOTH harness paths to compare shim bytes) must project a codex leg that carries no
+  enforcing guardrail. Honest, and keeps the guarantee absolute.
+- **(ii) Give codex an explicit unguarded acknowledgement** — some declared, visible waiver rather
+  than a silent drop. Weaker guarantee, keeps codex whole.
+
+I decline to pick: (i) removes a supported deployment target and (ii) weakens the invariant the
+whole plan exists to establish. Either is defensible; neither is mine to choose.
+
+### FINDING — the migrated body is not admissible σ\*
+
+The RESIDUE gate convicts `stance-guardrail-pre`'s body: `free-NL connective(s) [the·never] —
+offending clause: "the call never leaves"`. As a `HookCell.residue` it was never subject to the
+dimension-value residue gate; as a guardrail VALUE it is. **The gate is working** — the body is
+prose where σ\* is required, and it needs a signify pass before it can land as a dimension value.
+That is artifact work, not a gate defect, and it is independent of the codex fork.
+
 ## What is executable TODAY under (a), if chosen
 
 Migrate `stance-guardrail` + `stance-guardrail-pre` only, and delete the `agent_type` allowlist from
