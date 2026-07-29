@@ -27,17 +27,9 @@ import {
   roundTrip,
   symbolProbeGate,
 } from '../src/toolkit/symbol-probe-gate.js';
+import { firstExport } from './support/cell-module.js';
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');
-
-async function firstExport<T>(modPath: string): Promise<T> {
-  const mod = (await import(pathToFileURL(modPath).href)) as Record<
-    string,
-    unknown
-  >;
-  const key = Object.keys(mod).find((k) => k !== 'default');
-  return mod[key as string] as T;
-}
 
 async function loadSkills(): Promise<Skill[]> {
   const out: Skill[] = [];

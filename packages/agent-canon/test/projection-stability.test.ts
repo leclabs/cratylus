@@ -18,6 +18,7 @@ import { describe, expect, it } from 'vitest';
 import { dream } from '../src/skills/dream/skill.js';
 import { wake } from '../src/skills/wake/skill.js';
 import { fragmentToMarkdown } from '../src/toolkit/project.js';
+import { firstExport } from './support/cell-module.js';
 
 /** Project a skill through the forge claude adapter — `f(name, formalBlock,
  *  composition())`, the SOLE projection path (the stored-body round-trip retired). */
@@ -33,15 +34,6 @@ function renderSkill(s: Skill): string {
 
 const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const srcRoot = join(anatomyRoot, 'src');
-
-async function firstExport<T>(modPath: string): Promise<T> {
-  const mod = (await import(pathToFileURL(modPath).href)) as Record<
-    string,
-    unknown
-  >;
-  const key = Object.keys(mod).find((k) => k !== 'default');
-  return mod[key as string] as T;
-}
 
 async function collect(pattern: string): Promise<string[]> {
   const out: string[] = [];

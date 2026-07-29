@@ -29,6 +29,9 @@ import {
   DIMENSION_NAMES,
   type Dimension,
   type Genus,
+  type Value,
+  bodyOf,
+  isDimensionValue,
 } from '../anatomy/index.js';
 import {
   type Fragment,
@@ -95,9 +98,17 @@ async function valuesOf(
       unknown
     >;
     for (const exported of Object.values(mod)) {
-      if (typeof exported === 'string' && !seen.has(exported)) {
-        seen.add(exported);
-        out.push(exported);
+      // A value may carry its own enforcement, in which case it is an OBJECT and
+      // a `typeof === 'string'` filter DROPS IT — silently, with the catalog
+      // simply reporting one fewer value. That is the dangerous shape: an
+      // omission, not a crash, and a catalog that under-reports reads exactly
+      // like a corpus that is smaller. `bodyOf` reaches the declaration face of
+      // either shape, so enforcing and bare values enumerate alike.
+      if (!isDimensionValue(exported)) continue;
+      const body = bodyOf(exported as Value<Dimension>);
+      if (!seen.has(body)) {
+        seen.add(body);
+        out.push(body);
       }
     }
   }

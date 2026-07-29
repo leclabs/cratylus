@@ -18,6 +18,7 @@ import {
   formatWorklist,
   scanFormalBlock,
 } from '../src/toolkit/formal-block-self-sufficiency.js';
+import { firstExport } from './support/cell-module.js';
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');
 
@@ -27,15 +28,6 @@ const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');
  * is reported-only. A block that regrows a `--`/`—` marker fails the gate outright.
  */
 const ALLOW_LIST = new Set<string>([]);
-
-async function firstExport<T>(modPath: string): Promise<T> {
-  const mod = (await import(pathToFileURL(modPath).href)) as Record<
-    string,
-    unknown
-  >;
-  const key = Object.keys(mod).find((k) => k !== 'default');
-  return mod[key as string] as T;
-}
 
 async function scanCorpus(): Promise<{
   scans: BlockScan[];

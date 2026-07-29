@@ -3,6 +3,7 @@ import {
   type Guardrails,
   bodyOf,
   enforcing,
+  isDimensionValue,
   withBody,
 } from '../../src/anatomy/index.js';
 
@@ -77,5 +78,29 @@ describe('SOUL rendering — an enforcing value renders its DECLARATION', () => 
     // The binding is NOT in the SOUL — it is where the rule binds, not what it says.
     expect(body).not.toContain('tool.use.pre');
     expect(body).not.toContain('harness');
+  });
+});
+
+describe('isDimensionValue — the guard against a SILENT catalog drop', () => {
+  it('admits both shapes of value', () => {
+    expect(isDimensionValue(bare)).toBe(true);
+    expect(isDimensionValue(bound)).toBe(true);
+  });
+
+  it('rejects a non-value export, which is what the old string test was doing', () => {
+    // The catalog scans whole modules, so "not a string" was double-duty for
+    // "not a value". Replacing it with a truthy object check would admit these.
+    expect(isDimensionValue({ id: 'a-hook-cell', workers: [] })).toBe(false);
+    expect(isDimensionValue({})).toBe(false);
+    expect(isDimensionValue(null)).toBe(false);
+    expect(isDimensionValue(undefined)).toBe(false);
+    expect(isDimensionValue(42)).toBe(false);
+  });
+
+  it('is SHAPE-checked: body and events must both be present and well-typed', () => {
+    expect(isDimensionValue({ body: 'x', events: ['e'] })).toBe(true);
+    expect(isDimensionValue({ body: 'x' })).toBe(false); // no events
+    expect(isDimensionValue({ events: ['e'] })).toBe(false); // no body
+    expect(isDimensionValue({ body: 1, events: ['e'] })).toBe(false); // body not prose
   });
 });

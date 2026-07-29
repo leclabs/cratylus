@@ -8,11 +8,21 @@
 // body. Only the fragment wrap survives (its byte-anchor is the value string
 // itself).
 
+import type { Dimension, Value } from '@leclabs/agent-forge/anatomy';
+import { bodyOf } from '@leclabs/agent-forge/anatomy';
+
 /**
- * Render a dimension value to its canonical cell body: `\n\n<value>\n`. A dimension
- * value is a branded string whose content IS the body ⟨α, residue⟩, so this is the
- * identity wrap (no field reconstruction).
+ * Render a dimension value to its canonical cell body: `\n\n<body>\n`.
+ *
+ * Takes a VALUE, not a string. A value's content IS the body ⟨α, residue⟩ when it
+ * is bare, but a value may now carry its own enforcement, and then the body is one
+ * face of an object. `bodyOf` reaches it either way; interpolating the value
+ * directly would render `[object Object]` into the cell.
+ *
+ * Only the DECLARATION is projected here. Substrate, events and the mechanism are
+ * where the rule binds, not what it says — they are realized by the adapter into
+ * the governed agent's own front-matter, never into the cell body.
  */
-export function fragmentToMarkdown(value: string): string {
-  return `\n\n${value}\n`;
+export function fragmentToMarkdown(value: Value<Dimension>): string {
+  return `\n\n${bodyOf(value)}\n`;
 }

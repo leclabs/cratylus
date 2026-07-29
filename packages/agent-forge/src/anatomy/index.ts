@@ -199,7 +199,23 @@ export type Value<O extends Dimension> = Fragment<O> | Enforcing<O>;
  */
 export const enforcing = <O extends Dimension>(
   v: Value<O>,
-): v is Enforcing<O> => typeof v === 'object' && v !== null;
+): v is Enforcing<O> =>
+  typeof v === 'object' &&
+  v !== null &&
+  typeof (v as Enforcing<O>).body === 'string' &&
+  Array.isArray((v as Enforcing<O>).events);
+
+/**
+ * Is `u` a dimension value at all — bare or enforcing?
+ *
+ * The catalog scans whole modules and sees every export, so "not a string" was
+ * doing double duty as "not a value". Now that a value may be an object, that
+ * test would admit any exported object and drop every enforcing one. This is the
+ * predicate that actually means what the scan needs, and it is SHAPE-checked
+ * rather than truthy-checked: an object that merely exists is not a value.
+ */
+export const isDimensionValue = (u: unknown): u is Value<Dimension> =>
+  typeof u === 'string' || enforcing(u as Value<Dimension>);
 
 /** The declaration face of a value, enforcing or not — what the SOUL renders. */
 export const bodyOf = <O extends Dimension>(v: Value<O>): Fragment<O> =>

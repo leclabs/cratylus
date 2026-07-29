@@ -28,6 +28,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Skill } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
 import { declaredGlyphs } from '../src/toolkit/operator-lexicon.js';
+import { firstExport } from './support/cell-module.js';
 
 const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const srcRoot = join(anatomyRoot, 'src');
@@ -170,15 +171,6 @@ function offendingGlyphsInFormalBlock(
   declared: Set<string>,
 ): string[] {
   return offendingGlyphsInLines(label, formalBlock, declared, 1, '');
-}
-
-async function firstExport<T>(modPath: string): Promise<T> {
-  const mod = (await import(pathToFileURL(modPath).href)) as Record<
-    string,
-    unknown
-  >;
-  const key = Object.keys(mod).find((k) => k !== 'default');
-  return mod[key as string] as T;
 }
 
 async function collect(pattern: string): Promise<string[]> {

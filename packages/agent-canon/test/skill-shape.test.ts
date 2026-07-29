@@ -18,6 +18,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Skill } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
+import { firstExport } from './support/cell-module.js';
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');
 
@@ -74,15 +75,6 @@ function isOperative(body: string): boolean {
     return true; // a list step or substantive prose line
   }
   return false;
-}
-
-async function firstExport<T>(modPath: string): Promise<T> {
-  const mod = (await import(pathToFileURL(modPath).href)) as Record<
-    string,
-    unknown
-  >;
-  const key = Object.keys(mod).find((k) => k !== 'default');
-  return mod[key as string] as T;
 }
 
 async function allSkills(): Promise<Array<{ rel: string; cell: Skill }>> {

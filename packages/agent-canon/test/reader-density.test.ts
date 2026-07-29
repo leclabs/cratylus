@@ -81,6 +81,7 @@ import {
   humanRegisterSignals,
   registerOf,
 } from './reader-register.js';
+import { firstExport } from './support/cell-module.js';
 
 const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const srcRoot = join(anatomyRoot, 'src');
@@ -104,15 +105,6 @@ interface Surface {
   readonly label: string;
   readonly cls: ArtClass;
   readonly text: string;
-}
-
-async function firstExport<T>(modPath: string): Promise<T> {
-  const mod = (await import(pathToFileURL(modPath).href)) as Record<
-    string,
-    unknown
-  >;
-  const key = Object.keys(mod).find((k) => k !== 'default');
-  return mod[key as string] as T;
 }
 
 async function collect(pattern: string): Promise<string[]> {
