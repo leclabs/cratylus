@@ -1,5 +1,27 @@
 # The cold-decode oracle is not cold when it runs in a subagent
 
+> **CORRECTION, and it is the real lesson. None of this was a discovery.** The corpus already
+> encodes the method, completely, at
+> `packages/agent-canon/src/toolkit/cold-oracle/cold-oracle.sh` — including every contamination
+> route below and every fix I re-derived worse:
+>
+> - `CLAUDE_CONFIG_DIR` pointed at a credentials-only dir — the flag I never found, which drops the
+>   deployed registry WITHOUT breaking auth
+> - credentials pulled FRESH from the macOS Keychain, because "the on-disk snapshot is often
+>   expired… only the keychain is kept current" — precisely the `OAuth access token has been revoked`
+>   failure I hit
+> - a scratch dir outside the repo, with a guard that aborts if it is inside
+> - tool-less decode, with the note that `--disallowedTools` is VARIADIC and "would swallow a
+>   positional prompt, so the prompt goes via STDIN" — the exact bug I diagnosed as if it were new
+> - the observation already recorded: "observed: it cited an exact repo path from /tmp"
+> - and, in the header: **"A spawned SUBAGENT IS NOT COLD — it inherits the session's project
+>   context + the local agent-registry name-aliases. Only process-level isolation (this script)
+>   yields a true cold read. Never substitute a subagent for this harness."**
+>
+> I violated `invoke-the-canonical` and spent a large amount of context re-deriving a worse version
+> of a solved problem. **The defect was mine, not the instrument's.** What follows is retained as a
+> record of the failure and of the contamination routes, not as a finding.
+
 **Severity: instrument-level.** `cold-decode-oracle` is a GROUND axiom — `truth(f) ≜ decode_cold(f)`
 with **zero project-K**. Every probe dispatched via the Agent tool violates that precondition, and
 the violation is invisible in the return.
