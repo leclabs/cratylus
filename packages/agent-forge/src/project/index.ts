@@ -491,6 +491,17 @@ export async function projectPluginSet(
     log(`EMIT enforcing ${b.anchor} → ${b.agents.join(' ')}`);
   }
 
+  // A harness that cannot attach a hook to one agent gets its global surface here,
+  // filtered per agent by whatever selector it does offer. Claude omits this — it
+  // attached them to each agent's own front-matter already.
+  if (bindings.length > 0 && opts.adapter.enforcingSurface) {
+    const surface = opts.adapter.enforcingSurface(bindings);
+    if (surface) {
+      files.push({ path: surface.filename, content: surface.content });
+      log(`EMIT enforcing surface ${surface.filename}`);
+    }
+  }
+
   let skills = 0;
   let shims = 0;
   for (const [name, { dir, preamble: pre }] of [...skillSrc].sort()) {

@@ -30,6 +30,7 @@ import {
 // The projection PORT, imported from its DEFINING module — see the note in
 // `adapters/claude/anatomy.ts`.
 import type { HarnessAdapter } from '../../core/harness-adapter.js';
+import { CODEX_AGENT_SCOPED_EVENTS, canonicalToCodex } from './events.js';
 
 // Re-export the shared, harness-neutral resolved skill shape so a codex consumer
 // can import everything it needs from the codex adapter.
@@ -138,6 +139,83 @@ export function agentsMdSurface(agentNames: readonly string[]): string {
   return out.join('\n');
 }
 
+// ── Enforcing constraints → ~/.codex/hooks.json ──────────────────────────────
+
+/**
+ * Realize the canon's PER-AGENT constraints on codex's GLOBAL hook surface.
+ *
+ * This is the adapter earning its name. The canon says what it means — a
+ * constraint composed into the agents it governs — and each harness gets as close
+ * to that as it can. Claude attaches a hook to a subagent directly, so its adapter
+ * needs nothing here. Codex declares hooks globally in `hooks.json`, so the
+ * per-agent intent has to be re-expressed with the selector codex does offer.
+ *
+ * It offers exactly one: for `SubagentStart`/`SubagentStop`, `matcher` is a regex
+ * over `agent_type`. So a constraint bound to {nico, mav} becomes one global hook
+ * with `matcher: "^(mav|nico)$"` — the same scope, said in codex's language. The
+ * filter is GENERATED from composition, which is the whole point: the hand-written
+ * allowlist this replaces was the fragile pointcut, and a generated one cannot go
+ * stale against the agents it names.
+ *
+ * For every other event the documented hook input carries no agent identifier
+ * (`session_id`, `cwd`, `permission_mode`, `tool_name` — no agent). A constraint
+ * bound to two agents cannot be narrowed to them there, and emitting it anyway
+ * would silently govern EVERY agent. That is a widened blast radius wearing a
+ * projection, so it THROWS — the same refusal discipline as an unrealizable event,
+ * for the same reason: a constraint that cannot be scoped as written must fail
+ * loudly, not land over-applied.
+ */
+export function codexHooksJson(
+  bindings: readonly {
+    anchor: string;
+    fragment: unknown;
+    agents: readonly string[];
+  }[],
+): { filename: string; content: string } | null {
+  const harness = bindings.filter(
+    (b) => (b.fragment as { substrate?: string }).substrate === 'harness',
+  );
+  if (harness.length === 0) return null;
+  const block: Record<string, unknown[]> = {};
+  for (const b of harness) {
+    const f = b.fragment as {
+      events: readonly string[];
+      command: string;
+      timeout?: number;
+      matcher?: string;
+    };
+    for (const event of f.events) {
+      const native = canonicalToCodex[event as keyof typeof canonicalToCodex];
+      if (!native) continue; // refused upstream by `realizes`; never silently dropped here
+      if (!CODEX_AGENT_SCOPED_EVENTS.has(native)) {
+        throw new Error(
+          `codex: enforcing constraint '${b.anchor}' is scoped to ${b.agents.join(', ')}, but its event '${event}' maps to codex '${native}', whose hook input carries no agent identifier. Codex cannot narrow this hook to those agents, and emitting it globally would govern every agent instead. Refused rather than silently widened.`,
+        );
+      }
+      // The generated selector — composition, said in codex's language.
+      const matcher = `^(${[...b.agents].sort().join('|')})$`;
+      const entry: Record<string, unknown> = {
+        matcher,
+        hooks: [
+          {
+            type: 'command',
+            command: f.command,
+            ...(f.timeout !== undefined ? { timeout: f.timeout } : {}),
+          },
+        ],
+      };
+      const bucket = block[native] ?? [];
+      bucket.push(entry);
+      block[native] = bucket;
+    }
+  }
+  if (Object.keys(block).length === 0) return null;
+  return {
+    filename: 'hooks.json',
+    content: `${JSON.stringify({ hooks: block }, null, 2)}\n`,
+  };
+}
+
 // ── HarnessAdapter port ──────────────────────────────────────────────────────
 
 /**
@@ -149,11 +227,14 @@ export function agentsMdSurface(agentNames: readonly string[]): string {
 export const codexHarnessAdapter: HarnessAdapter = {
   name: 'codex',
   substrate: 'harness',
-  // Codex projects NO hooks, so it realizes no event. Declared rather than left
-  // implicit: an adapter that silently accepted an enforcing constraint it cannot
-  // run would emit a tree that looks governed and is not — the exact silent-allow
-  // the refusal exists to convert into a build error.
-  realizes: () => false,
+  // Realizable ⇔ the canonical event has a Codex peer. `canonicalToCodex` IS the
+  // realization map, so asking it is asking the mechanism itself.
+  //
+  // This previously read `() => false`, on the strength of a source comment saying
+  // codex projects no hooks. Codex has a full hook surface; the claim was inherited
+  // rather than checked, and it made every enforcing guardrail unrealizable here —
+  // which would have refused the entire corpus on a false premise.
+  realizes: (event) => event in canonicalToCodex,
   agentDef: (a) => ({
     filename: `${a.name}.toml`,
     content: agentToCodexToml(a),
@@ -163,4 +244,5 @@ export const codexHarnessAdapter: HarnessAdapter = {
     filename: 'AGENTS.md',
     content: agentsMdSurface(agentNames),
   }),
+  enforcingSurface: (bindings) => codexHooksJson(bindings),
 };

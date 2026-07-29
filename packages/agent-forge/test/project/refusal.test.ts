@@ -24,13 +24,17 @@ describe('case 1 — the adapter realizes the event: emit, do not refuse', () =>
 });
 
 describe('case 2 — obliged to realize and cannot: REFUSE, loudly', () => {
+  // `file.read.pre` is a canonical event with no peer on EITHER harness — a
+  // genuine unrealizable case. This fixture previously used codex + tool.use.pre,
+  // on the false premise that codex realized nothing; codex has a full hook
+  // surface and realizes tool.use.pre, so that fixture could no longer fire.
   it('throws, naming f · e · adapter so the reader need not search', () => {
     let err: unknown;
     try {
       assertRealizable(
         // Same substrate as the adapter, so it is genuinely this adapter's
-        // obligation — and codex realizes nothing.
-        { anchor: 'stance', substrate: 'harness', events: ['tool.use.pre'] },
+        // obligation — and no harness maps this event.
+        { anchor: 'stance', substrate: 'harness', events: ['file.read.pre'] },
         codexHarnessAdapter,
       );
     } catch (e) {
@@ -39,14 +43,14 @@ describe('case 2 — obliged to realize and cannot: REFUSE, loudly', () => {
     expect(err).toBeInstanceOf(UnrealizableEventError);
     const message = (err as Error).message;
     expect(message).toContain('stance'); // f
-    expect(message).toContain('tool.use.pre'); // e
+    expect(message).toContain('file.read.pre'); // e
     expect(message).toContain('codex'); // adapter
   });
 
   it('refuses rather than warning — a warning is a silent-allow with a receipt', () => {
     expect(() =>
       assertRealizable(
-        { anchor: 'x', substrate: 'harness', events: ['tool.use.pre'] },
+        { anchor: 'x', substrate: 'harness', events: ['file.read.pre'] },
         codexHarnessAdapter,
       ),
     ).toThrow(UnrealizableEventError);
@@ -101,6 +105,9 @@ describe('the live corpus is unaffected — no cell hits case 2 today', () => {
       'subagent.end',
     ] as const) {
       expect(claudeHarnessAdapter.realizes(event)).toBe(true);
+      // And on codex too — it has a hook surface, contrary to what this adapter
+      // used to claim about itself.
+      expect(codexHarnessAdapter.realizes(event)).toBe(true);
     }
   });
 });

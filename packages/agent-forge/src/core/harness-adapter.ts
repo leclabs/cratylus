@@ -11,7 +11,7 @@
 // present only on harnesses that have that surface (codex has an `AGENTS.md`
 // index; claude serializes hooks → a `settings.json` fragment).
 
-import type { Agent } from '../anatomy/index.js';
+import type { Agent, Binding } from '../anatomy/index.js';
 import type { ResolvedSkill } from './anatomy-body.js';
 import type { Hook, Substrate, SubstrateEvent } from './hook/index.js';
 
@@ -62,6 +62,22 @@ export interface HarnessAdapter {
    *  (codex `AGENTS.md`; claude has none). */
   surface?(agentNames: readonly string[]): HarnessProjection;
   /** Hooks → a settings fragment + per-hook losses, when the harness supports
-   *  hooks (claude → `settings.json` `hooks` block; codex projects none). */
+   *  hooks (claude → `settings.json` `hooks` block). */
   hooks?(hooks: readonly Hook[]): HarnessHooksProjection;
+  /**
+   * Realize the ENFORCING constraints on a harness that cannot attach a hook to
+   * one agent — a global surface, filtered per agent by whatever selector the
+   * harness does offer.
+   *
+   * THE ADAPTER'S JOB IS TO ADAPT. The canon authors the ideal shape: a constraint
+   * composed into the agents it governs. What varies is how much of that a given
+   * harness can express. Claude attaches hooks to a subagent directly, so it needs
+   * nothing here and omits this. Codex declares hooks globally, so its adapter must
+   * map per-agent down onto a global surface plus a matcher — the mapping lives in
+   * the adapter, never in the canon, and never in a hand-written filter inside the
+   * mechanism.
+   *
+   * Absent ⇒ this adapter attaches per-agent already.
+   */
+  enforcingSurface?(bindings: readonly Binding[]): HarnessProjection | null;
 }
