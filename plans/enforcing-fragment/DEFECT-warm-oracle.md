@@ -51,6 +51,24 @@ INVALIDATED as _cold_: every naming judgement, every "the concept is real / not 
 every apparent convergence with our own vocabulary. Those must be re-run cold before they ground an
 anchor.
 
+## Worse: the DEPLOYED CANON is readable from anywhere
+
+Moving the query to an empty `/tmp` dir removes the project files but NOT the corpus. `~/.claude/`
+holds the projected agents and skills, and `$HOME` is reachable from any cwd. All three re-runs went
+and read it, unprompted, and said so:
+
+> "Your fleet already answers this canonically — an agent _is_ a dimension-selection vector
+> (`create-agent`: `vector(A) ≜ ⊕{ o ↦ value(o) | o ∈ O }`)"
+>
+> "Your canon already answers this — **I read it off the deployed agents rather than inventing a
+> set.**"
+>
+> "I derived the dimension set from the deployed corpus … the union of `##` anatomy sections across
+> all 10 agents in `~/.claude/agents/`"
+
+They did not answer the question. They recited our answer. **Any tool-enabled probe on this machine
+is warm by construction**, wherever it runs, because `deploy` puts the canon in `$HOME`.
+
 ## The working clean room
 
 `cd /tmp/<empty> && claude -p "<bare question>"` drops the project `CLAUDE.md` and `AGENTS.md` — the
@@ -58,9 +76,23 @@ cratylism doctrine and the commit subjects. Residual leak: the user-global `CLAU
 fleet; irrelevant to agent ontology) and the skills roster (leaks the anchor NAMES `signify`,
 `probe`, `praxis`, …, so it is still unsafe for a question about those particular anchors).
 
+**The recipe that actually works — deny the filesystem, not just change directory:**
+
+```sh
+cd /tmp/<empty> && claude -p "<bare question>" \
+  --disallowedTools "Read Glob Grep Bash WebFetch WebSearch Task Edit Write NotebookEdit"
+```
+
+Verified: the probe reports using NO tools, and the dimension catalog becomes unreachable. Residual
+leak, measured by asking: the user-global `CLAUDE.md` (fleet/graphify — irrelevant to agent
+ontology) and the SKILLS ROSTER, which still primes `exemplify · conceptualize · signify ·
+materialize · probe · elicit · praxis`, `Operator`, the re-dispatch word, and the
+`EPISODIC/SEMANTIC/PROCEDURAL/SOUL` tiers. **∴ this channel is sound for questions about the
+DIMENSION set, and still unsound for questions about those particular anchors.**
+
 Tried and rejected: `HOME=/tmp/... claude` drops skills and user memory too, but breaks
 authentication (`OAuth access token has been revoked` when credentials are copied). Do not copy
-`.credentials.json` — it fails and risks the live token.
+`.credentials.json` — it fails and risks the live token. `--bare` also breaks auth.
 
 ## Owed
 
