@@ -92,7 +92,29 @@ With the sweep in place the migration was re-run. It now gets **much** further �
 expected taxonomy updates (`hook-rule-boundary` 5→3 cells, `stance-guardrail-dark`'s import) plus
 **two real findings**:
 
-### FORK — OPERATOR: arming guardrails means the canon can no longer project to CODEX
+### ~~FORK~~ DISSOLVED (`b497840`) — there was no fork, there was an unverified comment
+
+**Codex has a full hook surface** (`~/.codex/hooks.json`, or inline `[hooks]` tables in
+`config.toml`): SessionStart/End · Pre/PostToolUse · PermissionRequest · Pre/PostCompact ·
+UserPromptSubmit · SubagentStart/Stop · Stop. The adapter's `realizes: () => false` was taken from a
+source comment reading "codex projects none" — inherited, never checked — and on that false premise
+the refusal fired corpus-wide and I raised a fork that did not exist.
+
+**The adapter adapts.** The canon keeps the ideal per-agent shape; each harness gets as close as its
+surface allows. Claude attaches to a subagent directly. Codex declares globally, so
+`enforcingSurface` re-expresses the scope with codex's own selector: `SubagentStart`/`SubagentStop`
+take a `matcher` regex over `agent_type`, so {nico, mav} becomes `matcher: "^(mav|nico)$"` —
+GENERATED from composition, so it cannot go stale the way the hand-written allowlist did.
+
+**REMAINING LIMIT, honest and narrow.** Only those two events carry an agent identifier. Everything
+else — including `Stop` — has none, so an agent-scoped constraint there would silently govern EVERY
+agent; the adapter throws instead. `stance-guardrail` declares `turn.end` AND `subagent.end`, and
+`turn.end` maps to codex `Stop`. So on codex an agent-scoped constraint can bind the SUBAGENT
+lifecycle only. Decide before migrating: drop `turn.end` from the agent-scoped constraint (a
+top-level session has no agent identity on either harness, so arguably it never belonged), or accept
+that codex realizes only the subagent half.
+
+### ~~SUPERSEDED~~ the fork as originally raised
 
 My own S3 refusal fires, correctly:
 
