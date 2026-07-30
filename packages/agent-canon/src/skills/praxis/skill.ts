@@ -18,7 +18,7 @@ pre     : P → return
 spec(t) ≜ ⟨ intent(t), inputs(t), constraints(t), deps(t), outputs(t), accept(t) ⟩
 census  : intent → ⟨scope, static, deps⟩
 executor : P ⇀ agent
-self     ≜ session⟨CLAUDE_SESSION_ID⟩
+self     ≜ session⟨AGENT_SESSION_ID⟩
 registered, released, stale : session → 𝔹
 live     : session → 𝔹
 owner   : P ⇀ session

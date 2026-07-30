@@ -9,7 +9,7 @@ E            ⊆ lifecycle
 sink         ≜ append-only capture path ⟨one record per line⟩
 record       ≜ ⟨event ∈ lifecycle, payload⟩
 order(read)  ≜ position ⟨∄ fabricated timestamp⟩
-target       ≜ the harness settings file ⟨\`--settings <path>\` ; absent ↦ $CLAUDE_SETTINGS_PATH ∨ the cwd default⟩
+target       ≜ the harness's own hook-config artifact ⟨\`--settings <path>\` ; absent ↦ the harness default ; the ADAPTER names it, ¬ this cell⟩
 target₀      ≜ target before install
 foreign      ≜ every target key ∧ every hook entry this tap did not write
 attached     : target → 𝔹

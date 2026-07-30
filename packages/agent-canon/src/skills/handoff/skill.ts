@@ -3,7 +3,7 @@ import { dream } from '../dream/skill.js';
 import { praxis } from '../praxis/skill.js';
 
 const FORMAL_BLOCK = `handoff        ≜ praxis-sync → dream → release
-self           ≜ session⟨CLAUDE_SESSION_ID⟩
+self           ≜ session⟨AGENT_SESSION_ID⟩
 agent          ≜ this agent's name
 praxis-sync    ≜ sync @ praxis
 dream          ≜ drain⟨EPISODIC⟩ @ dream
