@@ -61,7 +61,7 @@ import {
   type PatchEntry,
   resolve as foldFragments,
 } from '../resolve/resolve.js';
-import { assertRealizable } from './refusal.js';
+import { realizationOf } from './realization.js';
 import { runtimeShimContent } from './runtime-shim.js';
 
 /** The plugin fields projection consumes — the dirs a plugin contributes cells from. */
@@ -114,6 +114,17 @@ export interface ProjectOpts {
    */
   readonly mechanisms?: ReadonlyMap<string, HarnessMechanism>;
   readonly log?: (line: string) => void;
+  /**
+   * Where a DEGRADATION is reported — a constraint this harness could not carry
+   * as a mechanism, now realized as a declaration alone.
+   *
+   * Separate from `log`, and deliberately NOT sharing its default. `log`
+   * defaults to a no-op because progress chatter is optional; a warning that
+   * inherited that default would be silent in every consumer that did not opt
+   * in, which is precisely the silent-allow this seam exists to prevent. The
+   * default here is therefore LOUD: silence must be chosen, never inherited.
+   */
+  readonly warn?: (line: string) => void;
 }
 
 interface Src {
@@ -414,6 +425,8 @@ export async function projectPluginSet(
   opts: ProjectOpts,
 ): Promise<ProjectedTree> {
   const log = opts.log ?? (() => {});
+  const warn =
+    opts.warn ?? ((line: string) => console.warn(`WARNING: ${line}`));
   const files: ProjectedFile[] = [];
 
   // An agent is rendered from the RESOLVED catalog, never from the bodies its
@@ -457,16 +470,54 @@ export async function projectPluginSet(
   // Composed vectors, kept so the BINDINGS can be derived from what the agents
   // actually compose — after the fold, since a folded body is the real one.
   const composed: { name: string; agent: Agent }[] = [];
+  // COMPOSE BEFORE RENDER. The mechanism a harness may emit depends on what the
+  // agents compose (scope is derived from composition), so every vector must exist
+  // before any is rendered. Rendering inside this loop would emit each agent's
+  // hooks before the seam had decided whether this harness can carry them.
+  const pending: { name: string; pre?: string }[] = [];
   for (const [name, { dir, preamble: pre }] of [...agentSrc].sort()) {
     const modPath = await resolveModulePath(dir, name);
     if (!modPath) throw new Error(`agent module not found: ${name}`);
     const agent = withResolvedBodies(await agentOf(modPath), subst);
+    composed.push({ name, agent });
+    pending.push({ name, ...(pre ? { pre } : {}) });
+  }
+
+  // THE SEAM. Decide the enforcement mode of every binding before a byte is
+  // written, and withhold the mechanism of any that degraded. The DECLARATION
+  // face needs no decision — `agentBody` publishes it for every composed value on
+  // every harness, which is why a shortfall here is a warning and not a refusal.
+  const bindings = bindingsOf(composed);
+  const degraded = new Set<string>();
+  for (const b of bindings) {
+    const { mode, losses } = realizationOf(
+      {
+        anchor: b.anchor,
+        substrate: b.fragment.substrate,
+        events: b.fragment.events,
+        agents: b.agents,
+      },
+      opts.adapter,
+    );
+    if (mode !== 'steer') continue;
+    degraded.add(b.fragment.realizedBy ?? b.anchor);
+    for (const loss of losses) warn(loss.warning);
+  }
+  // The mechanisms this harness will actually carry. A degraded anchor is absent,
+  // so every emission path that asks `mechanisms.get(anchor)` withholds it —
+  // adapters need no knowledge of the decision, only of their own capability.
+  const mechanisms = opts.mechanisms
+    ? new Map([...opts.mechanisms].filter(([anchor]) => !degraded.has(anchor)))
+    : opts.mechanisms;
+
+  for (const { name, pre } of pending) {
+    const agent = composed.find((c) => c.name === name)?.agent as Agent;
     const { filename, content } = opts.adapter.agentDef(
       {
         ...agent,
         ...((pre ?? opts.preamble) ? { preamble: pre ?? opts.preamble } : {}),
       },
-      opts.mechanisms,
+      mechanisms,
     );
     files.push({ path: join('agents', filename), content });
     log(`EMIT agent ${name}`);
@@ -481,22 +532,18 @@ export async function projectPluginSet(
   // the scope, so there is no separate scope artifact that could drift from the
   // agents it claims to govern.
   //
-  // What projection still owes: the build-time refusal, and the WORKER BYTES the
-  // emitted commands invoke.
-  const bindings = bindingsOf(composed);
+  // What projection still owes: the WORKER BYTES the emitted commands invoke.
+  // Mode was decided above; a degraded anchor emits no workers, because worker
+  // bytes with no mechanism to invoke them are dead files that read as coverage.
   for (const b of bindings) {
-    // THE VERIFIER ON THE SEAM, before a byte is written. Case 3 (another
-    // substrate — a git hook is not a harness hook) routes untouched.
-    assertRealizable(
-      {
-        anchor: b.anchor,
-        substrate: b.fragment.substrate,
-        events: b.fragment.events,
-        agents: b.agents,
-      },
-      opts.adapter,
-    );
-    const mech = opts.mechanisms?.get(b.fragment.realizedBy ?? b.anchor);
+    const realizedBy = b.fragment.realizedBy ?? b.anchor;
+    if (degraded.has(realizedBy)) {
+      log(
+        `STEER enforcing ${b.anchor} → ${b.agents.join(' ')} (declaration only)`,
+      );
+      continue;
+    }
+    const mech = mechanisms?.get(realizedBy);
     for (const worker of mech?.workers ?? []) {
       files.push({
         path: join('hooks', b.anchor, worker.filename),
@@ -509,9 +556,13 @@ export async function projectPluginSet(
 
   // A harness that cannot attach a hook to one agent gets its global surface here,
   // filtered per agent by whatever selector it does offer. Claude omits this — it
-  // attached them to each agent's own front-matter already.
-  if (bindings.length > 0 && opts.adapter.enforcingSurface) {
-    const surface = opts.adapter.enforcingSurface(bindings);
+  // attached them to each agent's own front-matter already. Degraded bindings are
+  // withheld: this surface is exactly where an unscopable hook would WIDEN.
+  const boundBindings = bindings.filter(
+    (b) => !degraded.has(b.fragment.realizedBy ?? b.anchor),
+  );
+  if (boundBindings.length > 0 && opts.adapter.enforcingSurface) {
+    const surface = opts.adapter.enforcingSurface(boundBindings);
     if (surface) {
       files.push({ path: surface.filename, content: surface.content });
       log(`EMIT enforcing surface ${surface.filename}`);

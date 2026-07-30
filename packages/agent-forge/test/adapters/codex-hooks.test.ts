@@ -46,8 +46,8 @@ describe('codex realizes events — the false claim, corrected', () => {
     }
   });
 
-  it('still refuses an event with no codex peer', () => {
-    // The refusal survives the correction — it is now TRUE where it fires.
+  it('still reports FALSE for an event with no codex peer', () => {
+    // The negative survives the correction — it is now TRUE where it fires.
     expect(codexHarnessAdapter.realizes('vcs.commit.post')).toBe(false);
   });
 });
@@ -86,14 +86,15 @@ describe('per-agent scope, said in codex’s language', () => {
     );
   });
 
-  // THE REFUSAL MOVED, THE COVERAGE DID NOT. These two cases used to assert a
-  // `throw` raised inside `codexHooksJson`. That throw was a SECOND refusal site
-  // — `refusal.ts` states it is the only one — and it existed because MODEL had
-  // no word for "fires it but cannot name the agent". With `scopable` split out,
-  // the adapter DECLARES the incapacity and the seam decides what follows.
+  // THE DECISION MOVED, THE COVERAGE DID NOT. These cases used to assert a
+  // `throw` raised inside `codexHooksJson`. That throw was a SECOND decision site
+  // — `realization.ts` states it is the only one — and it existed because MODEL
+  // had no word for "fires it but cannot name the agent". With `scopable` split
+  // out, the adapter DECLARES capability and the seam decides what follows; the
+  // shortfall is now a warning, not a build failure.
   //
-  // Refusal behaviour is now pinned in `test/project/refusal.test.ts` (case 2b).
-  // What remains the adapter's own is the declaration, asserted here.
+  // Mode and warning are pinned in `test/project/realization.test.ts`. What
+  // remains the adapter's own is the declaration, asserted here.
   it('DECLARES it cannot narrow the events whose input carries no agent id', () => {
     // PreToolUse and Stop fire fine on codex; neither names an agent. Emitting
     // for them anyway would govern EVERY agent — a widened blast radius wearing
@@ -110,13 +111,24 @@ describe('per-agent scope, said in codex’s language', () => {
     }
   });
 
-  it('no longer refuses on its own account — emission is all that is left', () => {
-    // The seam runs first and would have thrown. Reaching `codexHooksJson` with
-    // an unscopable event means the seam was bypassed, so this must NOT throw a
-    // second, divergent error. It emits nothing for an event it cannot express.
-    expect(() =>
+  it('never refuses and never widens — it SKIPS what it cannot express', () => {
+    // The seam decided mode already and withholds a degraded binding, so this
+    // path should not see one. If it does, the only safe act is to omit: throwing
+    // would be a second decision site, and emitting would govern every agent on
+    // the host with a hook only two agents composed.
+    let out: unknown;
+    expect(() => {
+      out = codexHooksJson([binding('stance', ['nico'], ['turn.end'])], MECH);
+    }).not.toThrow();
+    expect(JSON.stringify(out ?? null)).not.toContain('Stop');
+  });
+
+  it('still emits normally for an event it CAN narrow', () => {
+    const out = JSON.stringify(
       codexHooksJson([binding('stance', ['nico'], ['subagent.end'])], MECH),
-    ).not.toThrow();
+    );
+    expect(out).toContain('SubagentStop');
+    expect(out).toContain('^(nico)$');
   });
 
   it('emits nothing when no harness-substrate constraint is bound', () => {

@@ -50,14 +50,21 @@ Universal(a) ≜ CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARS
   PARSIMONIOUS: ∀c∈Corpus: body(c)=⟨α(c),residue(c)⟩ ∧ residue(c)=D(c)∖fired(α(c))
   ENFORCED    : enforcing(f) ∧ f ∈ ir(a) ⇒ scoped(mechanism(f,adapter), a) ⟨¬ ambient : COMPOSITION is the scope, ¬ a runtime self-filter⟩
                 substrate : fragment → Substrate ; own(f,adapter) ⇔ enforcing(f) ∧ substrate(f) = substrate(adapter)
-                own(f,adapter) ∧ ∃e∈events(f): ¬realizable(e,adapter)
-                  ⇒ deploy REFUSES ⟨naming f · e · adapter⟩ ∧ ¬ silent-drop
-                own(f,adapter) ∧ f ∈ ir(a) ∧ ∃e∈events(f): ¬scopable(e,adapter)
-                  ⇒ deploy REFUSES ⟨naming f · e · adapter · a⟩ ∧ ¬ widen-to-ambient
-                substrate(f) ≠ substrate(adapter) ⇒ ROUTE ⟨¬ this adapter's concern ; ¬ a refusal⟩
-                ⟨a declared bound that projects to nothing is INDISTINGUISHABLE from an undeclared one⟩
-                ⟨a declared bound that projects to EVERY agent is WORSE than nothing : it governs agents that never composed it⟩
-                ⟨BOTH refusals discharge at ONE seam — a second refusal site is a second place for the law to drift⟩
+                face_decl(f,a) ≜ body(f) ∈ content(a) ⟨UNCONDITIONAL ∀ adapter : the rule is ALWAYS published⟩
+                face_mech(f,adapter) ≜ mechanism(f,adapter) ⟨CONTINGENT on what the harness can express⟩
+                mode : fragment × harness-adapter → {bound, steer}
+                mode(f,adapter) = bound ⇔ own(f,adapter) ∧ ∀e∈events(f): realizable(e,adapter)
+                                                         ∧ (f ∈ ir(a) ⇒ scopable(e,adapter))
+                mode(f,adapter) = steer ⇔ otherwise ⟨face_decl SURVIVES ; face_mech withheld⟩
+                mode(f,adapter) = steer ⇒ deploy DEGRADES ∧ WARNS ⟨naming f · e · adapter · a · what was lost⟩
+                  ∧ ¬ REFUSE ⟨the canon authors the IDEAL ; adapting it to a target is the ADAPTER's concern⟩
+                  ∧ ¬ widen-to-ambient ∧ ¬ silent
+                substrate(f) ≠ substrate(adapter) ⇒ ROUTE ⟨¬ this adapter's concern ; ¬ a loss⟩
+                ⟨DEGRADE ⊥ WIDEN : degrading changes HOW STRONGLY the composed agents are bound ⟨bounds ↦ steers⟩ ;
+                 widening changes WHICH agents are bound — a DIFFERENT constraint wearing this one's name⟩
+                ⟨face_decl unconditional ∴ a bound NEVER projects to nothing ; the floor is a steer, never silence —
+                 THIS is why a warning suffices where the loss of the declaration would have demanded a refusal⟩
+                ⟨ONE seam decides mode ∧ emits the warning — a second site is a second place for the law to drift⟩
   REGENERABLE : ∀t∈Target: (∃c:cell, adapter: t=deploy(c,adapter)) ∧ deterministic(deploy) ∧ deploy-owned(t) ∧ ¬hand-edit(t)
                 SelfAuthored{SEM,PROC,EPIS} ∉ Target ∧ ¬deploy-writes(SelfAuthored)
   BEING/FACE  : a cell is a BEING ; deploy projects it to MANY per-harness Targets = its FACES

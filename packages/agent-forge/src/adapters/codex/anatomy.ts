@@ -190,11 +190,14 @@ export function codexHooksJson(
     if (!m) continue;
     for (const event of f.events) {
       const native = canonicalToCodex[event as keyof typeof canonicalToCodex];
-      // Both refusals are the seam's, discharged before a byte is written:
-      // `!native` ⇒ ¬realizable, and an unscopable native ⇒ ¬scopable. Re-throwing
-      // either here would be the SECOND refusal site `refusal.ts` exists to forbid.
-      // What is left is emission.
+      // The seam decided mode before this ran and withholds a degraded binding
+      // entirely, so neither guard below should ever fire on the projection path.
+      // They remain as EMISSION guards, not decisions: if this function is called
+      // directly, it must still never widen. Skipping is the only safe default —
+      // emitting an unscopable hook would govern every agent on the host, and
+      // throwing here would be a second decision site.
       if (!native) continue;
+      if (!CODEX_AGENT_SCOPED_EVENTS.has(native)) continue;
       // The generated selector — composition, said in codex's language.
       const matcher = `^(${[...b.agents].sort().join('|')})$`;
       const entry: Record<string, unknown> = {
