@@ -14,6 +14,12 @@ w      ≜ a signifier under probe ⟨w ∈ Names⟩
 c      ≜ a target concept ⟨c ∈ C⟩
 W(c)   ≜ experiment's finite candidate set for target c ⟨W(c) ⊆ Names⟩
 probe : Names → ℘(D) × C
+K @ cold-decode-oracle
+frame  ≜ the elicitation's obligation-shape ⟨produce-a-candidate ∨ licenced-to-refuse⟩
+parts(w) ≜ constituents(w) ∪ { w } ∪ permutations(w) ⟨word-order variants of a compound⟩
+Idiom  ⊆ Names ⟨an established reading that PREEMPTS the compositional one⟩
+head(w) · mod(w) ≜ w's head ∧ its modifier ⟨compound w⟩
+free(h)  ⇔ h alone is unbound in the corpus
 fired : Names → ℘(D)
 fired(w) ≜ priors(w)
 fired(a) = dec(a) , a ∈ dom(dec)
@@ -23,7 +29,28 @@ probe(w) ↾ W ≜ w read amid W ⟨the distractors' priors leak into the read �
 experiment(c) ≜ { w ∈ W(c) | concept(w) ↾ W(c) = c } ⊨ DIAGNOSTIC ⟨narrows W(c) ; ¬ decides σ*⟩
 coverage : { w ∈ Names | fired(w) ≠ ∅ ∧ concept(w) = c } ⊆ W(c)
 crystallize : σ*(c) = w ⇔ w ∈ experiment(c) ∧ concept(w) = c
-              ⟨∈ experiment NECESSARY ¬ SUFFICIENT ; llm-native ¬leading-candidate-set binds the decision to probe(w)⟩` as SkillExpression;
+              ⟨∈ experiment NECESSARY ¬ SUFFICIENT ; llm-native ¬leading-candidate-set binds the decision to probe(w)⟩
+
+probe(w | K) ≜ probe(w) taken at K ⟨probe is MEASURED, ¬ read-off : a FAMILY over K, ¬ one value⟩
+probe(w | ∅) ⊨ self-sufficiency ⟨cold : does w circumscribe carrying ZERO corpus?⟩
+probe(w | K_reader) ⊨ what w fires IN SITU ⟨the reading that binds at use⟩
+{ d ∈ fired(w) ↾ K_reader | d ∉ fired(w) ↾ ∅ } ⊨ THE measurement
+    ⟨both poles REQUIRED ; a cold read is a CONTROL, never a substitute for the in-situ one⟩
+K(spawned-subagent) ⊇ deployed-corpus ∴ ¬cold ⟨it holds project memory · commit subjects · skill bodies⟩
+    ∴ agreement( probe(w | K ⊇ corpus) , the corpus ) ⊨ ∅ ⟨it READ the answer⟩
+cold ⇔ process-isolation ⟨¬ a fresh subagent ; ¬ a stripped prompt⟩
+
+frame = produce-a-candidate ⇒ ∄ observable ∅ ⟨an obliged producer ALWAYS emits⟩
+    ∴ licence-the-negative : vary the FRAME across runs, ¬ the prompt ⟨fired(w) = ∅ ∧ ∄ σ*(c) are RESULTS⟩
+¬controlled(probe) ⇒ over-detection INVISIBLE ⟨a spurious constraint reads as caution⟩
+    ∀ k imposed by a failing read : a passing read under a varied frame RETRACTS k
+
+fired(w) ⊨ sweep(parts(w)) vs Idiom ⟨the WINNER swept, ¬ only the rejects⟩
+free(head(w)) ⇒ fired(w) ⊇ fired(mod(w)) ⟨an unbound head takes the modifier's priors through it⟩
+
+∀ w ∈ W(c) : probe(w) ↦ evidence about c ⟨harvest-the-rejects : concept(w) of a REJECTED w constrains D(c)⟩
+W(c) seeded from the ARTIFACT ⟨invoked verb · declared inverse · deferred-to cell⟩ ≺ minted candidates
+    ⟨a real concept's sign is FOUND ; mint is the LAST resort, ¬ the first⟩` as SkillExpression;
 
 export const probe: Skill = {
   name: 'probe',
