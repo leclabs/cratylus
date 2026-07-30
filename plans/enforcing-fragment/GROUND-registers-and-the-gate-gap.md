@@ -90,12 +90,27 @@ ENGINE realizes MODEL, so ENGINE owes the revision — `realize` must be keyed o
 
 ## The work, ordered
 
-1. **Revert the source-register violation.** `Enforcing` back to ⟨body, substrate, events⟩; the
-   adapter resolves mechanism by reference. Restores BEING/FACE.
-2. **Give `ENFORCED` its leg** in `accept.ts` + `UNIVERSAL_LEGS`, and fix that file's stale
-   six-leg header. This is the gate the plan was named for.
-3. **Revise ENGINE** so `realize` is keyed on the fragment, and `activation` is read at instance
-   level.
-4. Only then resume the cell migration.
+2. ✅ **`ENFORCED` has its leg** — `4a21cb2`. `accept.ts` now implements all seven; `enforced()`
+   convicts UNPROJECTED (declared, nothing emitted) and AMBIENT (emitted, not scoped). The per-leg
+   meta-gate fired immediately demanding a seed and now runs 7/7.
+3. ✅ **ENGINE caught up to MODEL** — `6877f69`. `realize` is keyed on the CELL and marked PARTIAL;
+   `deploy` reads `activation(c)`, not `activation(class c)`.
+
+4. ⬜ **Revert the source-register violation.** `Enforcing` back to ⟨body, substrate, events⟩ (+
+   `realizedBy?` as a mechanism ANCHOR); the adapter resolves the mechanism. Restores BEING/FACE.
+
+   **Design, resolved:** the mechanism table is INJECTED, exactly as `accept.ts` already injects
+   corpus DATA as a `Policy` — _"the DATA lives in the corpus (agent-canon), never here."_ The
+   corpus's project CLI supplies `anchor → mechanism`; `agent-forge` stays doctrine-free.
+
+   **Snag, measured — the reason this is not a mechanical edit.** Reverting produces 9 errors in 3
+   files, and the blocker is the PORT: `HarnessAdapter.agentDef(agent)` takes only the agent, so it
+   has nowhere to receive the table. The port must widen — `agentDef(agent, mechanisms)` — or the
+   front-matter hook emission must move out of `agentDef` and into the projection, beside the
+   worker emission and the refusal that already live there. **The second is likely right**: MODEL
+   puts `mechanism` at `deploy`, and `agentDef` is a pure cell→bytes rendering that should not
+   know about mechanisms at all.
+
+5. ⬜ Only then resume the cell migration.
 
 Nothing above needs a probe. It is all read off the ground.
