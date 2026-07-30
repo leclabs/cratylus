@@ -20,7 +20,7 @@ export interface ScopeNote {
 }
 
 export interface ScopeResult {
-  claudeDir: string;
+  harnessDir: string;
   // A loud NOTE the caller prints to stderr when the bare-home guard fired.
   note: ScopeNote | null;
 }
@@ -36,28 +36,40 @@ function expanduser(p: string): string {
   return p;
 }
 
-/** User scope claude dir: <home>/.claude. No `--home` → $HOME/.claude. A bare
- *  home self-corrects (`.claude` appended, with a loud NOTE); a path already
- *  ending in `.claude` is used verbatim. */
-export function userScope(home?: string | null): ScopeResult {
+/**
+ * User scope: `<home>/<harnessHome>`. No `--home` → `$HOME/<harnessHome>`. A bare
+ * home self-corrects (the dot-dir is appended, with a loud NOTE); a path already
+ * ending in it is used verbatim.
+ *
+ * `harnessHome` is the ADAPTER's (`HarnessAdapter.home`), never a literal. It
+ * defaults to `.claude` for callers that predate the parameter — a default, not an
+ * assumption: pass the adapter's and a second harness lands where it belongs.
+ */
+export function userScope(
+  home?: string | null,
+  harnessHome = '.claude',
+): ScopeResult {
   if (!home) {
-    return { claudeDir: resolvePath(homedir(), '.claude'), note: null };
+    return { harnessDir: resolvePath(homedir(), harnessHome), note: null };
   }
   const p = resolvePath(expanduser(home));
-  if (basename(p) === '.claude') {
-    return { claudeDir: p, note: null };
+  if (basename(p) === harnessHome) {
+    return { harnessDir: p, note: null };
   }
-  const claudeDir = resolvePath(p, '.claude');
+  const harnessDir = resolvePath(p, harnessHome);
   return {
-    claudeDir,
+    harnessDir,
     note: {
-      message: `  NOTE --home '${home}' is a home dir -> deploying to ${claudeDir}`,
+      message: `  NOTE --home '${home}' is a home dir -> deploying to ${harnessDir}`,
     },
   };
 }
 
-/** Project scope claude dir: <project>/.claude (project defaults to cwd). */
-export function projectScope(project?: string | null): ScopeResult {
+/** Project scope: `<project>/<harnessHome>` (project defaults to cwd). */
+export function projectScope(
+  project?: string | null,
+  harnessHome = '.claude',
+): ScopeResult {
   const root = project ? resolvePath(expanduser(project)) : process.cwd();
-  return { claudeDir: resolvePath(root, '.claude'), note: null };
+  return { harnessDir: resolvePath(root, harnessHome), note: null };
 }

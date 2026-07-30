@@ -5,7 +5,7 @@
 // sidecars — overwrite freely.
 //
 // The PLACER never deletes. It only TESTIFIES — `report.written` records the
-// claudeDir-relative path of every file it lays down, and the orchestrator
+// harnessDir-relative path of every file it lays down, and the orchestrator
 // (`deploy.ts` → `manifest.ts`) uses that record, and only that record, to
 // converge the target. The memory sidecars are deliberately absent from the
 // testimony: they live outside the deploy root and are the self-authored
@@ -32,25 +32,26 @@ import {
   emptyReport,
 } from './types.js';
 
-/** Write <claudeDir>/agents/<name>.md for each name (the harness-specific
+/** Write <harnessDir>/agents/<name><agentExt> for each name (the harness-specific
  *  declaration); seed the harness-NEUTRAL memory home
  *  <home>/.agents/<name>/{SEMANTIC,PROCEDURAL,EPISODIC} (a sibling of .claude,
  *  mirroring agent-memory `homeForName`) only if absent. */
 export function placeAgentsLocal(
-  claudeDir: string,
+  harnessDir: string,
   defsDir: string,
   names: string[],
   opts: PlaceOpts,
 ): PlaceResult {
   const log = opts.log ?? (() => {});
   const warn = opts.warn ?? (() => {});
+  const agentExt = opts.agentExt ?? '.md';
   const report = emptyReport();
-  const agents = resolvePath(claudeDir, 'agents');
+  const agents = resolvePath(harnessDir, 'agents');
   if (!opts.dry) {
     mkdirSync(agents, { recursive: true });
   }
   for (const name of names) {
-    const src = resolvePath(defsDir, `${name}.md`);
+    const src = resolvePath(defsDir, `${name}${agentExt}`);
     if (!existsSync(src)) {
       warn(`  WARN  no def for ${name} at ${src}`);
       report.warnings.push(`no def for ${name}`);
@@ -59,7 +60,7 @@ export function placeAgentsLocal(
     }
     if (!opts.dry) {
       writeFileSync(
-        resolvePath(agents, `${name}.md`),
+        resolvePath(agents, `${name}${agentExt}`),
         readFileSync(src, 'utf-8'),
         'utf-8',
       );
@@ -67,11 +68,14 @@ export function placeAgentsLocal(
     report.copied += 1;
     // Testimony: the def is the ONLY thing this placer may later prune. The
     // sidecars below are never recorded — never ours to remove.
-    report.written[name] = [`agents/${name}.md`];
+    // The extension must match what was WRITTEN, not what claude happens to use:
+    // the manifest is the prune record, and a record naming a path that does not
+    // exist can never converge — the real file becomes permanently unattributable.
+    report.written[name] = [`agents/${name}${agentExt}`];
     // Memory sidecars live in the harness-NEUTRAL home ~/.agents/<name> (mirrors
     // agent-memory `homeForName`), a sibling of `.claude` — NOT under
     // `.claude/agents` (Claude-specific; only <name>.md declaration lives there).
-    const selfdir = resolvePath(claudeDir, '..', '.agents', name);
+    const selfdir = resolvePath(harnessDir, '..', '.agents', name);
     if (!opts.dry) {
       mkdirSync(selfdir, { recursive: true });
     }
@@ -97,13 +101,13 @@ export function placeAgentsLocal(
   return { rc: 0, report };
 }
 
-/** Copy <skillsSrc>/<name>/ -> <claudeDir>/skills/<name>/ — SKILL.md plus any
+/** Copy <skillsSrc>/<name>/ -> <harnessDir>/skills/<name>/ — SKILL.md plus any
  *  staged companion assets beside it (byte-for-byte, binary-safe). Skills are
  *  generated substance with no sidecars — overwrite freely. Before copying, the
  *  deploy layer STAGES declared committed `assets:` companions into the source
  *  skill dir (a missing asset warns, never blocks). */
 export function placeSkillsLocal(
-  claudeDir: string,
+  harnessDir: string,
   tree: RenderTree,
   names: string[],
   opts: PlaceOpts,
@@ -111,7 +115,7 @@ export function placeSkillsLocal(
   const log = opts.log ?? (() => {});
   const warn = opts.warn ?? (() => {});
   const report = emptyReport();
-  const destRoot = resolvePath(claudeDir, 'skills');
+  const destRoot = resolvePath(harnessDir, 'skills');
   for (const name of names) {
     const srcDir = resolvePath(tree.skillsDir, name);
     if (!existsSync(resolvePath(srcDir, 'SKILL.md'))) {

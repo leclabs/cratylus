@@ -59,6 +59,33 @@ export interface HarnessAdapter {
    */
   readonly substrate: Substrate;
   /**
+   * The dot-directory this harness reads its deployed artifacts from — `.claude`,
+   * `.codex`. Relative to `$HOME` at user scope, to the project root at project
+   * scope.
+   *
+   * REQUIRED, and the reason the whole deploy half existed only for claude: every
+   * scope, manifest and prune path spelled `.claude` directly, with no adapter in
+   * scope to ask. `deploy --harness codex` could be typed and could not be
+   * honoured, so a correct codex render had nowhere to land.
+   */
+  readonly home: string;
+  /**
+   * The file EXTENSION this harness's agent definitions carry — `.md`, `.toml`.
+   *
+   * `agentDef` already returns a full filename, but DEPLOY reads a render tree
+   * off disk and has no vector to ask, so it needs the extension on its own. It
+   * assumed `.md`, which is why a codex deploy placed zero agents: it looked for
+   * `<name>.md` in a directory of `<name>.toml`, found nothing, and reported
+   * success.
+   */
+  readonly agentExt: string;
+  /**
+   * The filename of this harness's hook-config artifact — `settings.json`,
+   * `hooks.json`. Mirrors `HarnessHooksProjection.filename`; deploy needs it to
+   * find the fragment in the render tree and to merge into the host's copy.
+   */
+  readonly hooksFile: string;
+  /**
    * Whether this adapter can realize `event`.
    *
    * The predicate behind `¬realizable(e, adapter)`. It answers only for events on

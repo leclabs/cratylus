@@ -260,18 +260,18 @@ describe('placeSkillsLocal', () => {
 describe('scope resolution', () => {
   it('userScope: bare home self-corrects (.claude appended) with a loud NOTE', () => {
     const r = userScope('/Users/lex');
-    expect(r.claudeDir.endsWith('/.claude')).toBe(true);
+    expect(r.harnessDir.endsWith('/.claude')).toBe(true);
     expect(r.note?.message).toMatch(/is a home dir -> deploying to/);
   });
 
   it('userScope: a path already ending in .claude is used verbatim (no NOTE)', () => {
     const r = userScope('/Users/lex/.claude');
-    expect(r.claudeDir).toBe('/Users/lex/.claude');
+    expect(r.harnessDir).toBe('/Users/lex/.claude');
     expect(r.note).toBeNull();
   });
 
   it('projectScope: <project>/.claude', () => {
     const r = projectScope('/repo');
-    expect(r.claudeDir).toBe('/repo/.claude');
+    expect(r.harnessDir).toBe('/repo/.claude');
   });
 });

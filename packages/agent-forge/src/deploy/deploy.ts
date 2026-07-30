@@ -47,6 +47,20 @@ export interface DeployOpts {
   kind: DeployKind;
   scope: Scope;
   tree: RenderTree;
+  /**
+   * WHICH harness's home the tree lands in — `HarnessAdapter.home` (`.claude`,
+   * `.codex`). Omitted ⇒ `.claude`, the historical behaviour.
+   *
+   * Passed as the dot-dir rather than the whole adapter deliberately: deploy is a
+   * FILE PLACER and needs exactly one fact from the adapter. Handing it the
+   * adapter would invite it to start projecting, which is the other half of the
+   * seam and not its concern.
+   */
+  harnessHome?: string | null;
+  /** The harness's agent-definition extension (`HarnessAdapter.agentExt`). */
+  agentExt?: string | null;
+  /** The harness's hook-config filename (`HarnessAdapter.hooksFile`). */
+  hooksFile?: string | null;
   // CLI overrides (null ⇒ unset, defer to the built-in default).
   home?: string | null;
   project?: string | null;
@@ -58,9 +72,15 @@ export interface DeployOpts {
 }
 
 /** Names available to deploy for a kind, read from the render tree. Agents are
- *  the `<name>.md` files in agentsDir; skills are the `<name>/` dirs (with a
- *  SKILL.md) in skillsDir. */
-export function treeNames(kind: DeployKind, tree: RenderTree): string[] {
+ *  the `<name><agentExt>` files in agentsDir; skills are the `<name>/` dirs (with
+ *  a SKILL.md) in skillsDir. `agentExt` is the ADAPTER's — reading a codex tree
+ *  with claude's `.md` returns an empty list, which is indistinguishable from an
+ *  empty tree and deploys nothing while reporting success. */
+export function treeNames(
+  kind: DeployKind,
+  tree: RenderTree,
+  agentExt = '.md',
+): string[] {
   if (kind === 'hooks') {
     return tree.hooksDir ? hookTreeNames(tree.hooksDir) : [];
   }
@@ -83,9 +103,10 @@ export function treeNames(kind: DeployKind, tree: RenderTree): string[] {
   return readdirSync(tree.agentsDir)
     .filter(
       (f) =>
-        f.endsWith('.md') && statSync(resolvePath(tree.agentsDir, f)).isFile(),
+        f.endsWith(agentExt) &&
+        statSync(resolvePath(tree.agentsDir, f)).isFile(),
     )
-    .map((f) => f.slice(0, -'.md'.length))
+    .map((f) => f.slice(0, -agentExt.length))
     .sort();
 }
 
@@ -95,8 +116,9 @@ export function resolveNames(
   kind: DeployKind,
   tree: RenderTree,
   only: string[] | null | undefined,
+  agentExt = '.md',
 ): string[] {
-  let names = treeNames(kind, tree);
+  let names = treeNames(kind, tree, agentExt);
   if (only && only.length > 0) {
     const want = only.map((n) => n.trim()).filter(Boolean);
     const unknown = want.filter((n) => !names.includes(n));
@@ -114,6 +136,12 @@ export function resolveNames(
 function placeOpts(opts: DeployOpts): PlaceOpts {
   return {
     dry: opts.dry ?? false,
+    // The harness's artifact shapes, forwarded from the adapter. Omitting these
+    // is how a codex deploy silently placed nothing: the placers' `.md` /
+    // `settings.json` defaults are correct for claude and wrong everywhere else,
+    // and a wrong default here fails by finding no files, which reads as success.
+    ...(opts.agentExt ? { agentExt: opts.agentExt } : {}),
+    ...(opts.hooksFile ? { hooksFile: opts.hooksFile } : {}),
     log: opts.log,
     warn: opts.warn,
   };
@@ -121,18 +149,18 @@ function placeOpts(opts: DeployOpts): PlaceOpts {
 
 /** Run the kind's placer against a resolved `.claude/` root. */
 function place(
-  claudeDir: string,
+  harnessDir: string,
   names: string[],
   opts: DeployOpts,
 ): PlaceResult {
   if (opts.kind === 'hooks') {
-    return placeHooksLocal(claudeDir, opts.tree, names, placeOpts(opts));
+    return placeHooksLocal(harnessDir, opts.tree, names, placeOpts(opts));
   }
   if (opts.kind === 'skill') {
-    return placeSkillsLocal(claudeDir, opts.tree, names, placeOpts(opts));
+    return placeSkillsLocal(harnessDir, opts.tree, names, placeOpts(opts));
   }
   return placeAgentsLocal(
-    claudeDir,
+    harnessDir,
     opts.tree.agentsDir,
     names,
     placeOpts(opts),
@@ -155,25 +183,25 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
   const dry = opts.dry ?? false;
   const scopeRes =
     opts.scope === 'project'
-      ? projectScope(opts.project)
-      : userScope(opts.home);
+      ? projectScope(opts.project, opts.harnessHome ?? undefined)
+      : userScope(opts.home, opts.harnessHome ?? undefined);
   if (scopeRes.note) {
     (opts.warn ?? (() => {}))(scopeRes.note.message);
   }
-  const claudeDir = scopeRes.claudeDir;
-  log(`=== LOCAL deploy -> ${claudeDir} ===`);
+  const harnessDir = scopeRes.harnessDir;
+  log(`=== LOCAL deploy -> ${harnessDir} ===`);
 
-  const bootstrap = !hasManifest(claudeDir);
+  const bootstrap = !hasManifest(harnessDir);
   const unaccounted = dry
     ? unattributable(
-        claudeDir,
+        harnessDir,
         opts.kind,
         names,
-        Object.keys(readManifest(claudeDir).kinds[opts.kind] ?? {}),
+        Object.keys(readManifest(harnessDir).kinds[opts.kind] ?? {}),
       )
     : [];
-  const prior = readManifest(claudeDir);
-  const result = place(claudeDir, names, opts);
+  const prior = readManifest(harnessDir);
+  const result = place(harnessDir, names, opts);
 
   const narrowed = Boolean(opts.only && opts.only.length > 0);
   const priorKind = prior.kinds[opts.kind] ?? {};
@@ -187,7 +215,7 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
     );
   } else {
     const stale = staleFiles(priorKind, written, skipped, narrowed);
-    const removed = applyPrune(claudeDir, stale, dry);
+    const removed = applyPrune(harnessDir, stale, dry);
     if (removed.length > 0) {
       log(
         dry
@@ -204,7 +232,7 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
         (c) => !registered.includes(c),
       );
       const n = unregisterHookCommandsAt(
-        resolvePath(claudeDir, 'settings.json'),
+        resolvePath(harnessDir, 'settings.json'),
         staleCmds,
         dry,
       );
@@ -235,7 +263,7 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
   }
 
   if (!dry) {
-    writeManifest(claudeDir, {
+    writeManifest(harnessDir, {
       ...prior,
       kinds: {
         ...prior.kinds,
@@ -262,7 +290,12 @@ export interface DeploySingleResult {
 /** Deploy the render tree into the local `.claude/` root for one kind. */
 export function deploySingle(opts: DeploySingleOpts): DeploySingleResult {
   const log = opts.log ?? (() => {});
-  const names = resolveNames(opts.kind, opts.tree, opts.only);
+  const names = resolveNames(
+    opts.kind,
+    opts.tree,
+    opts.only,
+    opts.agentExt ?? undefined,
+  );
   log(
     `${opts.kind.endsWith('s') ? opts.kind : `${opts.kind}s`} (${names.length}): ${names.join(', ')}`,
   );

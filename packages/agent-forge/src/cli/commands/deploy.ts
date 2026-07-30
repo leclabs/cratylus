@@ -8,6 +8,7 @@
 // Neither is a stage, so neither is here.
 
 import pc from 'picocolors';
+import { adapterByName } from '../../adapters/registry/index.js';
 import {
   type DeployKind,
   type RenderTree,
@@ -36,7 +37,9 @@ export interface DeployCmdOpts {
   // What to ship. `all` expands to agent → skill → hooks (same target opts).
   kind: DeployKindArg;
   scope: Scope;
-  // Target — the local `.claude/` root the scope resolves to.
+  /** Harness name (`claude` | `codex`); decides WHICH home the tree lands in. */
+  harness?: string | null;
+  // Target — the local harness root the scope resolves to.
   home?: string | null;
   project?: string | null;
   only?: string | null;
@@ -83,6 +86,11 @@ export function parseCompanions(
 }
 
 export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
+  // WHICH harness's home the tree lands in. Resolved by NAME through the same
+  // registry `project` uses, so `deploy --harness codex` and `project --harness
+  // codex` cannot disagree about where codex lives. Unknown name fails loudly
+  // here rather than silently deploying into `.claude`.
+  const harnessAdapter = adapterByName(opts.harness ?? 'claude');
   const tree: RenderTree = {
     agentsDir: opts.agentsDir,
     skillsDir: opts.skillsDir,
@@ -105,6 +113,9 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
         kind,
         scope: opts.scope,
         tree,
+        harnessHome: harnessAdapter.home,
+        agentExt: harnessAdapter.agentExt,
+        hooksFile: harnessAdapter.hooksFile,
         home: opts.home ?? null,
         project: opts.project ?? null,
         only: splitList(opts.only),

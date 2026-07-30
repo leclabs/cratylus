@@ -89,7 +89,8 @@ function parityViolations(
 }
 
 describe('CONVICTING FIXTURES — the gate fed inputs it MUST reject', () => {
-  const ok = [
+  type Reading = Parameters<typeof parityViolations>[0][number];
+  const ok: Reading[] = [
     {
       harness: 'claude',
       cells: ['a', 'b'],
@@ -111,25 +112,28 @@ describe('CONVICTING FIXTURES — the gate fed inputs it MUST reject', () => {
   });
 
   it('CONVICTS the original defect: a harness silently missing every cell', () => {
-    const bad = [ok[0], { ...ok[1], cells: [], config: null }];
+    const bad = [
+      ok[0] as Reading,
+      { ...(ok[1] as Reading), cells: [], config: null },
+    ];
     expect(parityViolations(bad).join(' | ')).toMatch(/codex deploys \[\]/);
   });
 
   it('CONVICTS a harness missing ONE cell', () => {
-    const bad = [ok[0], { ...ok[1], cells: ['a'] }];
+    const bad = [ok[0] as Reading, { ...(ok[1] as Reading), cells: ['a'] }];
     expect(parityViolations(bad)).not.toEqual([]);
   });
 
   it('CONVICTS a config carrying another harness’s home', () => {
     const bad = [
-      ok[0],
-      { ...ok[1], config: 'sh "$HOME/.claude/hooks/a/a.sh"' },
+      ok[0] as Reading,
+      { ...(ok[1] as Reading), config: 'sh "$HOME/.claude/hooks/a/a.sh"' },
     ];
     expect(parityViolations(bad).join(' | ')).toMatch(/foreign home \.claude/);
   });
 
   it('CONVICTS cells present with no config emitted', () => {
-    const bad = [ok[0], { ...ok[1], config: null }];
+    const bad = [ok[0] as Reading, { ...(ok[1] as Reading), config: null }];
     expect(parityViolations(bad).join(' | ')).toMatch(/no hook config/);
   });
 });

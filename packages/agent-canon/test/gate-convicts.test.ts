@@ -116,6 +116,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'agent-forge/config/scaffold.test.ts': 'BEHAVIORAL',
   'agent-forge/core/runtime-shim-binding.test.ts': 'BEHAVIORAL',
   'agent-forge/deploy/cli.test.ts': 'BEHAVIORAL',
+  'agent-forge/deploy/harness-shape.test.ts': 'BEHAVIORAL',
   'agent-forge/deploy/hooks.test.ts': 'BEHAVIORAL',
   'agent-forge/deploy/integrate-smoke.test.ts': 'BEHAVIORAL',
   'agent-forge/deploy/local.test.ts': 'BEHAVIORAL',

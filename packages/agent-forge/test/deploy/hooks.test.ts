@@ -2,7 +2,7 @@
 //   - mergeHooksSettings is NON-DESTRUCTIVE (preserves permissions/env/other
 //     hooks/unrelated keys) and IDEMPOTENT (a second merge of the same command
 //     adds nothing).
-//   - placeHooksLocal ships the worker scripts to <claudeDir>/hooks/<id>/ and
+//   - placeHooksLocal ships the worker scripts to <harnessDir>/hooks/<id>/ and
 //     merges the projected hooks block into the host settings.json, creating it
 //     if absent and merging if present.
 //   - the `hooks` deploy kind lists its render-tree hook ids (treeNames).

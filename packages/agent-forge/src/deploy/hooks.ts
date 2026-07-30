@@ -1,5 +1,5 @@
 // Hooks placer — deploy a projected hooks render tree to a host `.claude/`:
-//   1. ship each hook's worker scripts to `<claudeDir>/hooks/<id>/` (generated
+//   1. ship each hook's worker scripts to `<harnessDir>/hooks/<id>/` (generated
 //      substance, overwritten freely — same contract as a skill dir);
 //   2. MERGE the projected `settings.json` `hooks` block into the host's
 //      existing settings.json, idempotently and NON-DESTRUCTIVELY (never clobber
@@ -78,9 +78,9 @@ export function mergeHooksSettings(
   return { settings, added };
 }
 
-/** Read the projected hooks fragment (`<hooksDir>/settings.json` → `.hooks`). */
-function readProjectedHooks(hooksDir: string): HooksBlock {
-  const f = resolvePath(hooksDir, 'settings.json');
+/** Read the projected hooks fragment (`<hooksDir>/<hooksFile>` → `.hooks`). */
+function readProjectedHooks(hooksDir: string, hooksFile: string): HooksBlock {
+  const f = resolvePath(hooksDir, hooksFile);
   if (!existsSync(f)) {
     return {};
   }
@@ -103,24 +103,25 @@ export function hookTreeNames(hooksDir: string): string[] {
 
 /**
  * Local hooks placer: copy each named hook's worker scripts into
- * `<claudeDir>/hooks/<id>/` and merge the projected hooks block into
- * `<claudeDir>/settings.json` (created if absent, merged if present).
+ * `<harnessDir>/hooks/<id>/` and merge the projected hooks block into
+ * `<harnessDir>/settings.json` (created if absent, merged if present).
  */
 export function placeHooksLocal(
-  claudeDir: string,
+  harnessDir: string,
   tree: RenderTree,
   names: string[],
   opts: PlaceOpts,
 ): PlaceResult {
   const log = opts.log ?? (() => {});
   const warn = opts.warn ?? (() => {});
+  const hooksFile = opts.hooksFile ?? 'settings.json';
   const report = emptyReport();
   const hooksDir = tree.hooksDir;
   if (!hooksDir) {
     warn('  WARN  no hooksDir in render tree; nothing to place');
     return { rc: 0, report };
   }
-  const destRoot = resolvePath(claudeDir, 'hooks');
+  const destRoot = resolvePath(harnessDir, 'hooks');
   for (const name of names) {
     const srcDir = resolvePath(hooksDir, 'hooks', name);
     if (!existsSync(srcDir)) {
@@ -145,7 +146,7 @@ export function placeHooksLocal(
     log(`  hook ${name} -> ${destDir}/ (+${files.length} worker asset(s))`);
   }
   // Merge the hooks block into the host settings.json.
-  const incoming = readProjectedHooks(hooksDir);
+  const incoming = readProjectedHooks(hooksDir, hooksFile);
   // Testimony, registration half: the commands this render tree asks for. A
   // command a PRIOR deploy registered that no longer appears here is a dangling
   // registration — the orchestrator unregisters it (see `manifest.ts`).
@@ -158,7 +159,7 @@ export function placeHooksLocal(
     ),
   ];
   if (Object.keys(incoming).length > 0) {
-    const settingsFile = resolvePath(claudeDir, 'settings.json');
+    const settingsFile = resolvePath(harnessDir, hooksFile);
     const existing: Record<string, unknown> = existsSync(settingsFile)
       ? (JSON.parse(readFileSync(settingsFile, 'utf-8')) as Record<
           string,
@@ -167,11 +168,11 @@ export function placeHooksLocal(
       : {};
     const { settings, added } = mergeHooksSettings(existing, incoming);
     if (!opts.dry) {
-      mkdirSync(claudeDir, { recursive: true });
+      mkdirSync(harnessDir, { recursive: true });
       writeFileSync(settingsFile, `${JSON.stringify(settings, null, 2)}\n`);
     }
     log(
-      `  settings.json: merged hooks for [${Object.keys(incoming).join(', ')}] ` +
+      `  ${hooksFile}: merged hooks for [${Object.keys(incoming).join(', ')}] ` +
         `(+${added} new entr${added === 1 ? 'y' : 'ies'}) -> ${settingsFile}`,
     );
   }

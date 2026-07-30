@@ -7,7 +7,7 @@
 // no claim on whatsoever.
 //
 // So the prune is bounded by a RECORD, not by a rule. Every deploy writes a
-// manifest of exactly the claudeDir-relative paths it laid down, keyed by kind
+// manifest of exactly the harnessDir-relative paths it laid down, keyed by kind
 // and name; the next deploy's prune candidates are that manifest's paths and
 // NOTHING else. Attribution by naming convention ("looks like one of ours") is
 // explicitly refused — a convention cannot distinguish `skills/graphify/`
@@ -42,7 +42,7 @@ import {
 export const MANIFEST_REL = '.agent-forge/deploy-manifest.json';
 export const MANIFEST_VERSION = 1;
 
-/** claudeDir-relative POSIX paths written for one kind, grouped by name. */
+/** harnessDir-relative POSIX paths written for one kind, grouped by name. */
 export type KindRecord = Record<string, string[]>;
 
 export interface DeployManifest {
@@ -60,8 +60,8 @@ export function emptyManifest(): DeployManifest {
 /** Read the record for a deploy root. A missing, unreadable, or malformed
  *  manifest reads as EMPTY — an unattributable target prunes nothing, which is
  *  the safe direction. */
-export function readManifest(claudeDir: string): DeployManifest {
-  const f = resolvePath(claudeDir, MANIFEST_REL);
+export function readManifest(harnessDir: string): DeployManifest {
+  const f = resolvePath(harnessDir, MANIFEST_REL);
   if (!existsSync(f)) {
     return emptyManifest();
   }
@@ -84,12 +84,12 @@ export function readManifest(claudeDir: string): DeployManifest {
 
 /** Does this root carry a prior record at all? (No record ⇒ nothing is
  *  attributable ⇒ this deploy only establishes one.) */
-export function hasManifest(claudeDir: string): boolean {
-  return existsSync(resolvePath(claudeDir, MANIFEST_REL));
+export function hasManifest(harnessDir: string): boolean {
+  return existsSync(resolvePath(harnessDir, MANIFEST_REL));
 }
 
-export function writeManifest(claudeDir: string, m: DeployManifest): void {
-  const f = resolvePath(claudeDir, MANIFEST_REL);
+export function writeManifest(harnessDir: string, m: DeployManifest): void {
+  const f = resolvePath(harnessDir, MANIFEST_REL);
   mkdirSync(dirname(f), { recursive: true });
   writeFileSync(f, `${JSON.stringify(m, null, 2)}\n`, 'utf-8');
 }
@@ -158,7 +158,7 @@ const KIND_ROOT: Record<string, { dir: string; suffix?: string }> = {
  * no caller may pass it to a delete.
  */
 export function unattributable(
-  claudeDir: string,
+  harnessDir: string,
   kind: string,
   treeNames: string[],
   manifestNames: string[],
@@ -167,7 +167,7 @@ export function unattributable(
   if (!spec) {
     return [];
   }
-  const dir = resolvePath(claudeDir, spec.dir);
+  const dir = resolvePath(harnessDir, spec.dir);
   if (!existsSync(dir)) {
     return [];
   }
@@ -179,10 +179,10 @@ export function unattributable(
     .sort();
 }
 
-/** Is `rel` strictly inside `claudeDir` once resolved? A tampered or
+/** Is `rel` strictly inside `harnessDir` once resolved? A tampered or
  *  hand-edited manifest must not be able to steer a delete out of the root. */
-function contained(claudeDir: string, rel: string): boolean {
-  const root = resolvePath(claudeDir);
+function contained(harnessDir: string, rel: string): boolean {
+  const root = resolvePath(harnessDir);
   const abs = resolvePath(root, rel);
   const r = relative(root, abs);
   return r !== '' && !r.startsWith('..') && !isAbsolute(r);
@@ -192,16 +192,16 @@ function contained(claudeDir: string, rel: string): boolean {
  *  never including, the deploy root). Returns what was actually removed; a
  *  dry run returns the same set having touched nothing. */
 export function applyPrune(
-  claudeDir: string,
+  harnessDir: string,
   stale: string[],
   dry: boolean,
 ): string[] {
   const removed: string[] = [];
   for (const rel of stale) {
-    if (!contained(claudeDir, rel)) {
+    if (!contained(harnessDir, rel)) {
       continue;
     }
-    const abs = resolvePath(claudeDir, rel);
+    const abs = resolvePath(harnessDir, rel);
     if (!existsSync(abs)) {
       // already gone (a hand-removed orphan) — still drop it from the record
       removed.push(rel);
@@ -209,7 +209,7 @@ export function applyPrune(
     }
     if (!dry) {
       unlinkSync(abs);
-      pruneEmptyDirs(claudeDir, dirname(abs));
+      pruneEmptyDirs(harnessDir, dirname(abs));
     }
     removed.push(rel);
   }
@@ -218,8 +218,8 @@ export function applyPrune(
 
 /** Walk up from `dir`, removing each directory that the prune left empty, and
  *  stopping at the deploy root (which is never removed). */
-function pruneEmptyDirs(claudeDir: string, dir: string): void {
-  const root = resolvePath(claudeDir);
+function pruneEmptyDirs(harnessDir: string, dir: string): void {
+  const root = resolvePath(harnessDir);
   let cur = resolvePath(dir);
   while (cur !== root && cur.startsWith(root + sep)) {
     if (!existsSync(cur) || readdirSync(cur).length > 0) {

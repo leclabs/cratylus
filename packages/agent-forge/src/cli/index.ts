@@ -118,7 +118,11 @@ cli
   )
   .option('--kind <kind>', 'agent | skill | hooks | all', { default: 'all' })
   .option('--scope <scope>', 'user | project', { default: 'user' })
-  .option('--home <dir>', 'user-scope .claude parent override (else ~/.claude)')
+  .option('--harness <name>', 'harness adapter (default: claude)')
+  .option(
+    '--home <dir>',
+    "user-scope parent override for the harness's home (else ~/<home>)",
+  )
   .option('--project <dir>', 'project root for --scope project (default: cwd)')
   .option('--only <names>', 'comma-separated names to deploy')
   .option('--dry-run', 'print actions, change nothing')
@@ -130,6 +134,7 @@ cli
       assets?: string;
       kind: DeployKindArg;
       scope: DeployScope;
+      harness?: string;
       home?: string;
       project?: string;
       only?: string;
@@ -179,6 +184,7 @@ cli
           companions,
           kind: opts.kind,
           scope: opts.scope,
+          harness: opts.harness ?? null,
           home: opts.home ?? null,
           project: opts.project ?? null,
           only: opts.only ?? null,

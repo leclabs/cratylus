@@ -193,6 +193,9 @@ export function skillToClaudeMd(s: ResolvedSkill): string {
 export const claudeHarnessAdapter: HarnessAdapter = {
   name: 'claude',
   substrate: 'harness',
+  home: '.claude',
+  agentExt: '.md',
+  hooksFile: 'settings.json',
   // Realizable ⇔ the canonical event has a Claude native peer. `canonicalToClaude`
   // IS the realization map, so asking it is asking the mechanism itself — there is
   // no second list to drift. A git-substrate event never reaches here; it routes.

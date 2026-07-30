@@ -30,7 +30,7 @@ export interface PlaceReport {
   present: string[];
   // Non-fatal warnings (missing def / SKILL.md / asset).
   warnings: string[];
-  // The placer's TESTIMONY for the prune manifest: claudeDir-relative POSIX
+  // The placer's TESTIMONY for the prune manifest: harnessDir-relative POSIX
   // paths written, grouped by name. This — and only this — is what a later
   // deploy may delete, so a placer must record every path it lays down and
   // nothing it merely touches. Populated in dry runs too, so a dry-run prune
@@ -66,6 +66,16 @@ export type DeployKind = 'agent' | 'skill' | 'hooks';
 
 export interface PlaceOpts {
   dry: boolean;
+  /**
+   * The harness's agent-definition extension (`HarnessAdapter.agentExt`).
+   * Defaults to `.md` for callers that predate it — a default, not an
+   * assumption. A placer that guessed here placed zero codex agents and
+   * reported success, because "no matching file" is indistinguishable from
+   * "nothing to do".
+   */
+  agentExt?: string;
+  /** The harness's hook-config filename (`HarnessAdapter.hooksFile`). */
+  hooksFile?: string;
   log?: (line: string) => void;
   warn?: (line: string) => void;
 }

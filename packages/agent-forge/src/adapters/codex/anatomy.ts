@@ -233,6 +233,9 @@ export function codexHooksJson(
 export const codexHarnessAdapter: HarnessAdapter = {
   name: 'codex',
   substrate: 'harness',
+  home: '.codex',
+  agentExt: '.toml',
+  hooksFile: 'hooks.json',
   // Realizable ⇔ the canonical event has a Codex peer. `canonicalToCodex` IS the
   // realization map, so asking it is asking the mechanism itself.
   //
