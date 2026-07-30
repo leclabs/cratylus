@@ -58,9 +58,24 @@ retires (operator-decided).
 
 **Two decisions inside it:**
 
-- **`turn.end` on an agent-scoped constraint.** A top-level session carries no agent identity on
-  EITHER harness, and codex can only scope `SubagentStart`/`SubagentStop`. Leaning: drop `turn.end`,
-  keep `subagent.end`. Not yet verified.
+- **`turn.end` on an agent-scoped constraint — RESOLVED: KEEP it. The premise was false.**
+  `[CITE]` The claim "a top-level session carries no agent identity on EITHER harness" is falsified
+  for claude: `Stop` carries `agent_type` for an `--agent`/`@mention` launch including top-level
+  (`hooks/stance-guardrail.ts:143-152`). More decisively, runtime identity is IRRELEVANT there —
+  claude attaches `Stop` into the agent's OWN front-matter, so **attachment IS the scope**
+  (`adapters/claude/anatomy.ts:112-139`, per-agent file at `project/index.ts:464-471`), and the
+  adapter declares no `enforcingSurface` precisely because it attaches per-agent
+  (`core/harness-adapter.ts:97-99`). Dropping `turn.end` would have surrendered a bound claude
+  already scopes correctly, to buy nothing.
+  **The codex throw is CORRECT and stays** (`adapters/codex/anatomy.ts:194-198`).
+- **`realizable` conflates two predicates — a MODEL gap this shard exposed.** `[GROUND]` MODEL
+  requires `scoped(mechanism(f,adapter), a)` but triggers refusal on `¬realizable(e,adapter)`, and
+  `realizes: (event) => event in canonicalToCodex` (`adapters/codex/anatomy.ts:241`) returns TRUE
+  for `turn.end` on codex. So the leg MODEL demands is enforced by an ad-hoc `throw` that MODEL
+  does not license: **fire-ability ≠ agent-scopability.** Codex can fire `Stop`; it cannot narrow
+  it. Per the apex order this resolves UP — revise MODEL to split the predicate (or make
+  `realizable` mean "realizable AS A SCOPED MECHANISM", which then makes codex's `realizes` the
+  defect). **Own plan — do NOT ride it along with S4.**
 - **The `guardrails` catalog is mis-signified** — `honesty`/`helpfulness` STEER, and MODEL's
   `⟨bounds, ¬ steers⟩` excludes steering; `scope-of-authority` duplicates `autonomy`;
   `accountability` reads as the disclosure anchor. **Separate plan — do NOT ride it along.**
