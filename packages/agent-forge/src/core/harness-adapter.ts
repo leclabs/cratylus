@@ -31,6 +31,13 @@ export interface HarnessProjection {
  *  is the harness-native `hooks` block (a JSON-serializable fragment the consumer
  *  merges into the host's settings). */
 export interface HarnessHooksProjection {
+  /**
+   * WHERE this harness keeps its scope-activated hook config — `settings.json`
+   * for claude, `hooks.json` for codex. The projector used to hardcode the claude
+   * name, which made a second harness's surface unnameable and is why codex's was
+   * assumed not to exist.
+   */
+  readonly filename: string;
   readonly settings: Record<string, unknown>;
   readonly warnings: readonly string[];
   readonly skipped: readonly {
@@ -75,6 +82,23 @@ export interface HarnessAdapter {
    * for an event it cannot realize.
    */
   scopes(event: SubstrateEvent): boolean;
+  /**
+   * How THIS harness invokes a cell's deployed worker — the command string its
+   * native hook config will carry.
+   *
+   * THE SEAM BETWEEN CANON AND FORGE, at its narrowest point. The canon owns what
+   * a worker DOES (`content`, harness-agnostic behaviour); the harness owns WHERE
+   * it lands and HOW it is invoked. `$HOME/.claude/hooks/<anchor>/<file>` is a
+   * claude FACE, and a canon cell that spelled it out would have chosen a harness
+   * — which is precisely what it did, and why the codex projection carried no
+   * governance at all: every cell's command named a claude path, so codex's whole
+   * hooks dir was dropped rather than translated.
+   *
+   * MODEL: `mechanism : fragment × harness-adapter ⇀ harness-mechanism ⟨what
+   * deploy EMITS⟩`. A function OF the adapter — so it is asked here, never read
+   * off the cell.
+   */
+  hookCommand(anchor: string, workerFilename: string): string;
   /**
    * Project an agent vector → its subagent def file.
    *

@@ -30,7 +30,6 @@ import {
   writeRenderTree,
 } from '@leclabs/agent-forge/project';
 import canonPlugin from '../index.js';
-import { hookSources } from './hooks.js';
 
 // The harness projection port, selected strictly BY NAME — no concrete claude
 // adapter module is imported here (the projection logic lives in forge).

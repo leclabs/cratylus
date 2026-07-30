@@ -1,15 +1,30 @@
-// `HookCell` — the generic `hook` source-cell shape (MODEL `Kind ∋ hook`,
-// `activation: hook↦event`). A hook is HARNESS-AGNOSTIC SOURCE: the harness is
-// orthogonal until `deploy(c,adapter) = inject(content(c), realize(event,adapter))`.
+// `HookCell` — a scope-activated source cell (MODEL `Kind ∋ rule`,
+// `activation: rule ↦ scope`). It binds the SESSION or the SUBSTRATE, not an agent:
+// nothing composes it, so its scope cannot be derived from composition the way an
+// `Enforcing` guardrail's is.
+//
+// THE HEADER HERE ONCE CITED "MODEL `Kind ∋ hook`, `activation: hook↦event`". MODEL
+// says `Kind ≜ {fragment, agent, rule, skill}` and `ActivationMode ≜ {compose-only,
+// identity, scope, trigger}` — the citation was false on both counts, and it was
+// load-bearing for this whole type. `hook` is what a HARNESS calls its mechanism;
+// it is not a Kind of thing the canon authors.
 //
 // The cell carries THREE separable things:
 //   1. `residue` — the σ*-signified canonical identity (`body = ⟨α, residue⟩`), the
-//      REFLEXIVE/`accept()` target. R=LLM; BLIND-decodes to the hook's intent.
-//   2. the harness-agnostic EVENT binding (`events` + `command` + `timeout`) — what
-//      fires it, in vendor-neutral terms.
-//   3. `workers[].content` — the VERBATIM worker payload (the byte-anchor). The
-//      committed worker file at each `worker.targetPath` is a DEPLOY-OWNED target
+//      REFLEXIVE/`accept()` target. R=LLM; BLIND-decodes to the cell's intent.
+//   2. the harness-agnostic EVENT binding (`events` + `timeout`) — WHEN it fires, in
+//      vendor-neutral terms.
+//   3. `workers[].content` — the VERBATIM worker payload (the byte-anchor): WHAT it
+//      does. The committed file at each `worker.targetPath` is a DEPLOY-OWNED target
 //      regenerated from this content and byte-locked by the consuming corpus.
+//
+// WHAT IT MUST NEVER CARRY IS THE INVOCATION. `command` lived here and every cell
+// spelled out `sh "$HOME/.claude/hooks/<id>/<file>"` — a claude path in the generic
+// design. The whole codex projection was consequently dropped rather than
+// translated, so codex agents ran with no governance at all. The cell now names its
+// `entry` worker and the ADAPTER derives the invocation
+// (`HarnessAdapter.hookCommand`), per MODEL's `mechanism : fragment ×
+// harness-adapter ⇀ harness-mechanism`.
 //
 // SUBSTRATE. `harness` hooks realize through a harness adapter (e.g. claude
 // `settings.json` `{hooks}` merge + `hooks/<id>/` workers) — these lift into the
@@ -74,8 +89,12 @@ export interface HookCell {
    * (`tool.use.pre`); a Stop/SubagentStop hook leaves it unset.
    */
   readonly matcher?: string;
-  /** The fire command (references the deployed worker path). */
-  readonly command: string;
+  /**
+   * WHICH worker is the entry point — a `workers[].filename`, never a path and
+   * never a command. The adapter turns ⟨id, entry⟩ into the invocation its harness
+   * needs; a cell that spelled that out would have chosen a face.
+   */
+  readonly entry: string;
   /** Timeout in seconds; adapter default when omitted. */
   readonly timeout?: number;
   /** The verbatim worker payloads (byte-anchors). */
@@ -100,17 +119,25 @@ export interface HookSource {
  * event (`vcs.commit.post`) has no canonical peer, so it is rejected here — a git
  * hook must not reach settings.json. Doctrine-free: references no specific cell.
  */
-export function hookIrOf(cell: HookCell): Hook {
+export function hookIrOf(
+  cell: HookCell,
+  hookCommand: (id: string, entry: string) => string,
+): Hook {
   if (cell.substrate !== 'harness') {
     throw new Error(
       `hookIrOf: '${cell.id}' is substrate=${cell.substrate}; only harness hooks serialize to settings.json`,
+    );
+  }
+  if (!cell.workers.some((w) => w.filename === cell.entry)) {
+    throw new Error(
+      `hookIrOf: '${cell.id}' names entry '${cell.entry}', which is not one of its workers (${cell.workers.map((w) => w.filename).join(', ') || 'none'}). An entry naming nothing deploys a hook that invokes a missing file.`,
     );
   }
   const events = cell.events as readonly CanonicalEvent[];
   return {
     id: cell.id,
     events: [...events] as [CanonicalEvent, ...CanonicalEvent[]],
-    command: cell.command,
+    command: hookCommand(cell.id, cell.entry),
     ...(cell.matcher !== undefined ? { matcher: cell.matcher } : {}),
     ...(cell.timeout !== undefined ? { timeout: cell.timeout } : {}),
   };

@@ -15,7 +15,7 @@ export const stanceGuardrail: HookCell = {
   substrate: 'harness',
   order: 0,
   events: ['turn.end', 'subagent.end'],
-  command: `sh "$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh"`,
+  entry: 'stance-guardrail.sh',
   timeout: 60,
   refs: [],
   workers: [

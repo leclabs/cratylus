@@ -9,7 +9,7 @@ export const ping: HookCell = {
   substrate: 'harness',
   order: 10,
   events: ['session.start'],
-  command: '"$CLAUDE_PROJECT_DIR"/.claude/hooks/ping/ping.sh',
+  entry: 'ping.sh',
   workers: [
     {
       filename: 'ping.sh',

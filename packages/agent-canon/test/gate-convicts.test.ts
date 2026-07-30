@@ -81,6 +81,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'agent-canon/event-tap-cell.test.ts': 'GATE',
   'agent-canon/formal-block-self-sufficiency.test.ts': 'GATE',
   'agent-canon/gate-convicts.test.ts': 'GATE',
+  'agent-canon/harness-parity.test.ts': 'GATE',
   'agent-canon/hook-rule-boundary.test.ts': 'GATE',
   'agent-canon/memory-nudge.test.ts': 'BEHAVIORAL',
   'agent-canon/null-dimension.test.ts': 'GATE',

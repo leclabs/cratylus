@@ -251,6 +251,46 @@ export const codexHarnessAdapter: HarnessAdapter = {
     const native = canonicalToCodex[event as keyof typeof canonicalToCodex];
     return native !== undefined && CODEX_AGENT_SCOPED_EVENTS.has(native);
   },
+  hookCommand: (anchor, workerFilename) =>
+    `sh "$HOME/.codex/hooks/${anchor}/${workerFilename}"`,
+  // SCOPE-ACTIVATED cells land on codex's GLOBAL hook surface, and that is not a
+  // compromise here — it is the right home. These cells bind the SESSION, so there
+  // is no agent to narrow to and nothing a matcher could add. The mismatch that
+  // made `enforcingSurface` necessary applies only to AGENT-composed constraints.
+  //
+  // This op was absent, and its absence was read as "codex has no hook surface" —
+  // so the codex build deleted canon's whole hooks dir and every codex agent ran
+  // with no stance guardrail, no memory nudge and no resume notice. Codex has had
+  // `~/.codex/hooks.json` all along.
+  hooks: (hooks) => {
+    const block: Record<string, unknown[]> = {};
+    const warnings: string[] = [];
+    const skipped: { path: string; reason: string }[] = [];
+    for (const hook of hooks) {
+      for (const event of hook.events) {
+        const native = canonicalToCodex[event as keyof typeof canonicalToCodex];
+        if (!native) {
+          warnings.push(
+            `hook '${hook.id ?? '?'}': canonical event '${event}' has no codex equivalent`,
+          );
+          skipped.push({
+            path: `hooks/${hook.id ?? '?'}`,
+            reason: `no codex mapping for ${event}`,
+          });
+          continue;
+        }
+        const cmd: Record<string, unknown> = {
+          type: 'command',
+          command: hook.command,
+        };
+        if (hook.timeout !== undefined) cmd.timeout = hook.timeout;
+        if (hook.id !== undefined) cmd.id = hook.id;
+        block[native] ??= [];
+        block[native].push({ hooks: [cmd] });
+      }
+    }
+    return { filename: 'hooks.json', settings: block, warnings, skipped };
+  },
   agentDef: (a) => ({
     filename: `${a.name}.toml`,
     content: agentToCodexToml(a),

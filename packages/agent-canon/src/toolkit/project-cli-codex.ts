@@ -30,13 +30,17 @@ import canonPlugin from '../index.js';
 // adapter module is imported here (the projection logic lives in forge).
 const adapter = adapterByName('codex');
 
-// Codex declares NO hook surface (`codexHarnessAdapter` has no `hooks` op), and the
-// projector refuses loudly rather than dropping a plugin's hook cells unremarked. So
-// the codex projection takes canon WITHOUT its hooks dir: canon's harness-substrate
-// cells are claude's settings.json machinery and have no codex counterpart. The
-// omission is STATED here, at the one site that knows it, instead of being softened
-// into a silent drop inside the projector for every consumer of every harness.
-const { hooks: _codexHasNoHooks, ...codexPlugin } = canonPlugin;
+// THE WHOLE PLUGIN, hooks included. This site used to delete canon's hooks dir from
+// the codex plugin set, on the claim "Codex declares NO hook surface". That claim
+// was false — codex has `~/.codex/hooks.json` — and the deletion meant every codex
+// agent ran with no stance guardrail, no memory nudge and no resume notice. Nothing
+// reported it, because the omission was authored as if it were a considered fact.
+//
+// A build step must not decide what the design IS. The canon says what governs an
+// agent; the adapter says how this harness expresses it; and where a harness truly
+// cannot, the projector DEGRADES and warns. Subsetting the input here is none of
+// those — it is the projection silently editing the canon.
+const codexPlugin = canonPlugin;
 
 const here = dirname(fileURLToPath(import.meta.url));
 const anatomyRoot = join(here, '..', '..');

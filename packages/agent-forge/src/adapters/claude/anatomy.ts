@@ -207,6 +207,12 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   // definition of `scopes`. An adapter added later that attaches globally must
   // answer this question on its own terms.
   scopes: (event) => event in canonicalToClaude,
+  // Claude reads its hooks out of `~/.claude/`, and `deploy --kind hooks` stages
+  // each cell's workers under `hooks/<anchor>/`. `$HOME` and not a resolved path:
+  // the emitted config is a deploy target read at RUN time on whatever host it
+  // lands on, so it must not bake in the projecting machine's home.
+  hookCommand: (anchor, workerFilename) =>
+    `sh "$HOME/.claude/hooks/${anchor}/${workerFilename}"`,
   agentDef: (a, mechanisms) => ({
     filename: `${a.name}.md`,
     content: agentToClaudeMd(a, mechanisms ?? new Map()),
@@ -214,6 +220,11 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   skillDef: (s) => ({ filename: 'SKILL.md', content: skillToClaudeMd(s) }),
   hooks: (hooks) => {
     const r = serializeClaudeHooksReport([...hooks]);
-    return { settings: r.hooks, warnings: r.warnings, skipped: r.skipped };
+    return {
+      filename: r.filename,
+      settings: r.hooks,
+      warnings: r.warnings,
+      skipped: r.skipped,
+    };
   },
 };

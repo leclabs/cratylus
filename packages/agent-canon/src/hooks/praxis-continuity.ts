@@ -16,8 +16,9 @@ export const praxisContinuity: HookCell = {
     'post-commit detector ⟨task-file crosses state-folder ⇒ plan-mirror stale⟩ · nudge re-mirror · ¬edit · opt-in ↾ clone · exit-0 ⟨reminder ¬fail-commit⟩',
   substrate: 'git',
   events: ['vcs.commit.post'],
-  command:
-    'sh packages/agent-canon/src/toolkit/continuity/praxis-advance-nudge.sh',
+  // git substrate: the entry is still named, never spelled as a path. Which
+  // directory git invokes it from is git's projection to make, not this cell's.
+  entry: 'praxis-advance-nudge.sh',
   refs: [],
   workers: [
     {

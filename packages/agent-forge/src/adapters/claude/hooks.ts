@@ -55,6 +55,7 @@ export type ClaudeHooksBlock = Record<
  *  emitter; `writeClaude` uses the array-threaded `serializeClaudeHooks`
  *  directly so its losses join the surrounding `WriteReport`. */
 export function serializeClaudeHooksReport(hooks: Hook[]): {
+  filename: string;
   hooks: ClaudeHooksBlock;
   warnings: string[];
   skipped: { path: string; reason: string }[];
@@ -62,7 +63,7 @@ export function serializeClaudeHooksReport(hooks: Hook[]): {
   const warnings: string[] = [];
   const skipped: { path: string; reason: string }[] = [];
   const block = serializeClaudeHooks(hooks, warnings, skipped);
-  return { hooks: block, warnings, skipped };
+  return { filename: 'settings.json', hooks: block, warnings, skipped };
 }
 
 /** The array-threaded form: emission order is CALLER order — the caller's

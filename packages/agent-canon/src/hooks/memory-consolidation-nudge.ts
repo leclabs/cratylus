@@ -45,7 +45,7 @@ export const memoryConsolidationNudge: HookCell = {
     'advisory ↾ turn-end · owed ⇒ emit hot-path-dream advisory ⟨¬block · exit-0 · ¬wedge-turn⟩ · owed ↦ runtime ⟨backlog ∨ store-pressure ∨ scope-drift ; ¬face-computed⟩ · home ↦ $env ∨ runtime(session) ⟨¬derivable ⇒ silent⟩ · fail-open ∀error',
   substrate: 'harness',
   events: ['turn.end'],
-  command: `sh "$HOME/.claude/hooks/memory-consolidation-nudge/memory-consolidation-nudge.sh"`,
+  entry: 'memory-consolidation-nudge.sh',
   timeout: 10,
   refs: [],
   workers: [

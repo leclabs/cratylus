@@ -627,38 +627,50 @@ export async function projectPluginSet(
   if (hookCells.length > 0) {
     const renderHooks = opts.adapter.hooks;
     if (!renderHooks) {
-      throw new Error(
-        `harness '${opts.adapter.name}' does not project hooks, but the plugin set contributes ${hookCells.length}`,
-      );
-    }
-    const sources = hookCells.map((cell) => ({
-      hook: hookIrOf(cell),
-      workers: cell.workers,
-    }));
-    const { settings, warnings, skipped } = renderHooks(
-      sources.map((s) => s.hook),
-    );
-    for (const w of warnings) log(`WARN hook: ${w}`);
-    for (const sk of skipped) log(`SKIP hook ${sk.path}: ${sk.reason}`);
-    files.push({
-      path: 'settings.json',
-      content: `${JSON.stringify({ hooks: settings }, null, 2)}\n`,
-    });
-    log(`EMIT settings.json (hooks: ${Object.keys(settings).join(', ')})`);
-    for (const src of sources) {
-      const destDir = join('hooks', src.hook.id ?? 'unnamed');
-      for (const worker of src.workers) {
-        // Bytes come from the CELL, never an on-disk copy — the cell is the home.
-        files.push({
-          path: join(destDir, worker.filename),
-          content: worker.content,
-          ...(worker.executable ? { executable: true } : {}),
-        });
+      // DEGRADE, as everywhere else on this seam. A harness with no scope-activated
+      // surface loses these cells' MECHANISM, not the build — and the operator is
+      // told, because an absent guardrail that announced nothing is the failure this
+      // whole design removes. Refusing here is what drove the codex CLI to delete
+      // canon's hooks dir from its plugin set, so codex agents ran ungoverned and
+      // silent.
+      for (const cell of hookCells) {
+        warn(
+          `scope-activated cell '${cell.id}' has no mechanism on '${opts.adapter.name}': this harness projects no session-scoped hook surface. The cell is not deployed here.`,
+        );
       }
-      log(
-        `EMIT hook ${src.hook.id} (+${src.workers.length} worker${src.workers.length === 1 ? '' : 's'})`,
-      );
-      hooks++;
+    } else {
+      const sources = hookCells.map((cell) => ({
+        hook: hookIrOf(cell, opts.adapter.hookCommand),
+        workers: cell.workers,
+      }));
+      const {
+        filename: hooksFile,
+        settings,
+        warnings,
+        skipped,
+      } = renderHooks(sources.map((s) => s.hook));
+      for (const w of warnings) log(`WARN hook: ${w}`);
+      for (const sk of skipped) log(`SKIP hook ${sk.path}: ${sk.reason}`);
+      files.push({
+        path: hooksFile,
+        content: `${JSON.stringify({ hooks: settings }, null, 2)}\n`,
+      });
+      log(`EMIT ${hooksFile} (hooks: ${Object.keys(settings).join(', ')})`);
+      for (const src of sources) {
+        const destDir = join('hooks', src.hook.id ?? 'unnamed');
+        for (const worker of src.workers) {
+          // Bytes come from the CELL, never an on-disk copy — the cell is the home.
+          files.push({
+            path: join(destDir, worker.filename),
+            content: worker.content,
+            ...(worker.executable ? { executable: true } : {}),
+          });
+        }
+        log(
+          `EMIT hook ${src.hook.id} (+${src.workers.length} worker${src.workers.length === 1 ? '' : 's'})`,
+        );
+        hooks++;
+      }
     }
   }
 

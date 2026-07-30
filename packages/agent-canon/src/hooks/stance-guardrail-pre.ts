@@ -19,7 +19,7 @@ export const stanceGuardrailPre: HookCell = {
   order: 1,
   events: ['tool.use.pre'],
   matcher: 'AskUserQuestion|Agent|SendMessage',
-  command: `sh "$HOME/.claude/hooks/stance-guardrail-pre/stance-guardrail-pre.sh"`,
+  entry: 'stance-guardrail-pre.sh',
   timeout: 60,
   refs: [],
   workers: [

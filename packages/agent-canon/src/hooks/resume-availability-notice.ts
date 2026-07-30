@@ -23,7 +23,7 @@ export const resumeAvailabilityNotice: HookCell = {
     'emit ↾ session.start · fixed-text · ¬verb ⟨any registry touch ⇒ every session reads woken ∴ origin destroyed⟩ · ¬read · ¬write · ¬home-derivation · reconstitution ↦ operator ⟨may have run it · may refuse it · may have forgotten⟩ · exit-0 ∀error',
   substrate: 'harness',
   events: ['session.start'],
-  command: `sh "$HOME/.claude/hooks/resume-availability-notice/resume-availability-notice.sh"`,
+  entry: 'resume-availability-notice.sh',
   timeout: 5,
   refs: [],
   workers: [
