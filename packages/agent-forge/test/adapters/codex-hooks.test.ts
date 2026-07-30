@@ -86,25 +86,37 @@ describe('per-agent scope, said in codex’s language', () => {
     );
   });
 
-  it('REFUSES an event codex cannot narrow to the composed agents', () => {
-    // PreToolUse input carries no agent identifier. Emitting the hook anyway
-    // would govern EVERY agent — a widened blast radius wearing a projection.
-    expect(() =>
-      codexHooksJson([binding('stance', ['nico'], ['tool.use.pre'])], MECH),
-    ).toThrow(/no agent identifier/);
+  // THE REFUSAL MOVED, THE COVERAGE DID NOT. These two cases used to assert a
+  // `throw` raised inside `codexHooksJson`. That throw was a SECOND refusal site
+  // — `refusal.ts` states it is the only one — and it existed because MODEL had
+  // no word for "fires it but cannot name the agent". With `scopable` split out,
+  // the adapter DECLARES the incapacity and the seam decides what follows.
+  //
+  // Refusal behaviour is now pinned in `test/project/refusal.test.ts` (case 2b).
+  // What remains the adapter's own is the declaration, asserted here.
+  it('DECLARES it cannot narrow the events whose input carries no agent id', () => {
+    // PreToolUse and Stop fire fine on codex; neither names an agent. Emitting
+    // for them anyway would govern EVERY agent — a widened blast radius wearing
+    // a projection.
+    for (const e of ['tool.use.pre', 'turn.end', 'session.start'] as const) {
+      expect(codexHarnessAdapter.realizes(e), `${e} realizable`).toBe(true);
+      expect(codexHarnessAdapter.scopes(e), `${e} scopable`).toBe(false);
+    }
   });
 
-  it('names the constraint, its agents, and the offending event when it refuses', () => {
-    let msg = '';
-    try {
-      codexHooksJson([binding('stance', ['nico', 'mav'], ['turn.end'])], MECH);
-    } catch (e) {
-      msg = (e as Error).message;
+  it('DECLARES it can narrow the subagent pair, which does carry one', () => {
+    for (const e of ['subagent.start', 'subagent.end'] as const) {
+      expect(codexHarnessAdapter.scopes(e)).toBe(true);
     }
-    expect(msg).toContain('stance');
-    expect(msg).toContain('nico');
-    expect(msg).toContain('turn.end');
-    expect(msg).toContain('Stop');
+  });
+
+  it('no longer refuses on its own account — emission is all that is left', () => {
+    // The seam runs first and would have thrown. Reaching `codexHooksJson` with
+    // an unscopable event means the seam was bypassed, so this must NOT throw a
+    // second, divergent error. It emits nothing for an event it cannot express.
+    expect(() =>
+      codexHooksJson([binding('stance', ['nico'], ['subagent.end'])], MECH),
+    ).not.toThrow();
   });
 
   it('emits nothing when no harness-substrate constraint is bound', () => {

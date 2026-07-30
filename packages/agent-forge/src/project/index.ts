@@ -492,6 +492,7 @@ export async function projectPluginSet(
         anchor: b.anchor,
         substrate: b.fragment.substrate,
         events: b.fragment.events,
+        agents: b.agents,
       },
       opts.adapter,
     );

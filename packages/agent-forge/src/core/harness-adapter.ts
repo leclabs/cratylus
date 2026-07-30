@@ -60,6 +60,22 @@ export interface HarnessAdapter {
    */
   realizes(event: SubstrateEvent): boolean;
   /**
+   * Whether this adapter can narrow `event` to a NAMED agent.
+   *
+   * The predicate behind `¬scopable(e, adapter)`, and a STRICTLY stronger demand
+   * than `realizes`: firing is not scoping. An adapter may fire an event globally
+   * and still be unable to say WHICH agent it fired for, because the harness gives
+   * the hook no agent identifier to match on. Codex's `Stop` is exactly that —
+   * realizable, unscopable.
+   *
+   * Only asked of a constraint some agent's `ir(a)` composes. A session-wide hook
+   * that no agent composes has nothing to narrow to, so the question does not arise.
+   *
+   * MODEL: `scopable(e,h) ⇒ realizable(e,h)`. An adapter must never return true here
+   * for an event it cannot realize.
+   */
+  scopes(event: SubstrateEvent): boolean;
+  /**
    * Project an agent vector → its subagent def file.
    *
    * `mechanisms` is the resolved `anchor → HarnessMechanism` map for THIS agent's

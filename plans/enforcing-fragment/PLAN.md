@@ -67,15 +67,27 @@ retires (operator-decided).
   adapter declares no `enforcingSurface` precisely because it attaches per-agent
   (`core/harness-adapter.ts:97-99`). Dropping `turn.end` would have surrendered a bound claude
   already scopes correctly, to buy nothing.
-  **The codex throw is CORRECT and stays** (`adapters/codex/anatomy.ts:194-198`).
-- **`realizable` conflates two predicates — a MODEL gap this shard exposed.** `[GROUND]` MODEL
-  requires `scoped(mechanism(f,adapter), a)` but triggers refusal on `¬realizable(e,adapter)`, and
-  `realizes: (event) => event in canonicalToCodex` (`adapters/codex/anatomy.ts:241`) returns TRUE
-  for `turn.end` on codex. So the leg MODEL demands is enforced by an ad-hoc `throw` that MODEL
-  does not license: **fire-ability ≠ agent-scopability.** Codex can fire `Stop`; it cannot narrow
-  it. Per the apex order this resolves UP — revise MODEL to split the predicate (or make
-  `realizable` mean "realizable AS A SCOPED MECHANISM", which then makes codex's `realizes` the
-  defect). **Own plan — do NOT ride it along with S4.**
+  The codex refusal is CORRECT and stays — but it moved to the seam; see below.
+- **`realizable` conflated two predicates — SPLIT, landed ahead of S4.** `[GROUND]`
+
+  Split into `realizable` (can the adapter fire `e` at all) ∧ `scopable` (can it narrow `e` to a
+  named agent), with `scopable ⇒ realizable` and a second refusal clause naming `f · e · adapter · a`.
+  Source came up to it: `HarnessAdapter.scopes`, a distinct `UnscopableEventError`, `Realizable.agents`
+  required so the demand is not reachable by omission.
+
+  **The gap had already cost the design its own invariant.** `refusal.ts` states it is the ONE
+  refusal site; because MODEL had no word for the second predicate, the codex adapter had grown a
+  private `throw` to ask it — the exact drift that header forbids, invisible because it was never a
+  missing string, only a missing distinction. That throw is deleted; the adapter now DECLARES the
+  incapacity and the seam decides. Coverage moved rather than vanished (`refusal.test.ts` case 2b).
+
+  **Live consequence, measured:** claude scopes all four canon events (attachment is the scope);
+  codex scopes only `subagent.start`/`subagent.end`. Render output is byte-identical — a latent
+  build-time refusal, not a behaviour change. But once S4 composes `stance-guardrail` with
+  `turn.end` into nico+mav, **deploying to codex will REFUSE.** That is the designed answer. The
+  remedy is to split the constraint per harness — never to weaken it everywhere so the weakest
+  harness can carry it, which is what "drop `turn.end`" would have done.
+
 - **The `guardrails` catalog is mis-signified** — `honesty`/`helpfulness` STEER, and MODEL's
   `⟨bounds, ¬ steers⟩` excludes steering; `scope-of-authority` duplicates `autonomy`;
   `accountability` reads as the disclosure anchor. **Separate plan — do NOT ride it along.**

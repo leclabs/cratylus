@@ -190,12 +190,11 @@ export function codexHooksJson(
     if (!m) continue;
     for (const event of f.events) {
       const native = canonicalToCodex[event as keyof typeof canonicalToCodex];
-      if (!native) continue; // refused upstream by `realizes`; never silently dropped here
-      if (!CODEX_AGENT_SCOPED_EVENTS.has(native)) {
-        throw new Error(
-          `codex: enforcing constraint '${b.anchor}' is scoped to ${b.agents.join(', ')}, but its event '${event}' maps to codex '${native}', whose hook input carries no agent identifier. Codex cannot narrow this hook to those agents, and emitting it globally would govern every agent instead. Refused rather than silently widened.`,
-        );
-      }
+      // Both refusals are the seam's, discharged before a byte is written:
+      // `!native` ⇒ ¬realizable, and an unscopable native ⇒ ¬scopable. Re-throwing
+      // either here would be the SECOND refusal site `refusal.ts` exists to forbid.
+      // What is left is emission.
+      if (!native) continue;
       // The generated selector — composition, said in codex's language.
       const matcher = `^(${[...b.agents].sort().join('|')})$`;
       const entry: Record<string, unknown> = {
@@ -239,6 +238,16 @@ export const codexHarnessAdapter: HarnessAdapter = {
   // rather than checked, and it made every enforcing guardrail unrealizable here —
   // which would have refused the entire corpus on a false premise.
   realizes: (event) => event in canonicalToCodex,
+  // Codex declares hooks in ONE global `hooks.json`, so narrowing is possible only
+  // where the hook input carries an agent identifier to match on — the two events
+  // in `CODEX_AGENT_SCOPED_EVENTS`. `Stop` fires fine and names nobody.
+  //
+  // This adapter DECLARES the incapacity; it does not decide what follows from it.
+  // The refusal is the seam's (`assertRealizable`), so the law has one home.
+  scopes: (event) => {
+    const native = canonicalToCodex[event as keyof typeof canonicalToCodex];
+    return native !== undefined && CODEX_AGENT_SCOPED_EVENTS.has(native);
+  },
   agentDef: (a) => ({
     filename: `${a.name}.toml`,
     content: agentToCodexToml(a),

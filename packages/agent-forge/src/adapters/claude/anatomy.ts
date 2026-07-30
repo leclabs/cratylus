@@ -197,6 +197,16 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   // IS the realization map, so asking it is asking the mechanism itself — there is
   // no second list to drift. A git-substrate event never reaches here; it routes.
   realizes: (event) => event in canonicalToClaude,
+  // Scopable ⇔ realizable, and for ONE reason: Claude attaches a hook inside the
+  // agent's own front-matter, so ATTACHMENT IS THE SCOPE. There is no selector to
+  // express and therefore no event Claude can fire but not narrow — the two
+  // predicates coincide here, which is precisely why the distinction stayed
+  // invisible until codex, whose only surface is global, forced it.
+  //
+  // Coincidence, NOT identity: this is an alias of `realizes` by argument, not a
+  // definition of `scopes`. An adapter added later that attaches globally must
+  // answer this question on its own terms.
+  scopes: (event) => event in canonicalToClaude,
   agentDef: (a, mechanisms) => ({
     filename: `${a.name}.md`,
     content: agentToClaudeMd(a, mechanisms ?? new Map()),

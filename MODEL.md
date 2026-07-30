@@ -22,7 +22,10 @@ activation : cell ⇀ ActivationMode ⟨what CAUSES a cell to become active ; IN
 Event ≜ the harness-agnostic lifecycle vocabulary ⟨schema-owned ; the PIVOT every adapter maps from⟩
 events : fragment ⇀ ℘(Event) ⟨PARTIAL ∴ most fragments never fire ; instance-level, ¬ Kind-level⟩
 enforcing(f) ⇔ events(f) ≠ ∅ ⟨f binds REGARDLESS of the agent's reasoning ∴ bounds, ¬ steers⟩
-realizable : Event × harness-adapter → 𝔹
+realizable : Event × harness-adapter → 𝔹 ⟨can the adapter fire e AT ALL⟩
+scopable   : Event × harness-adapter → 𝔹 ⟨can the adapter narrow e to a NAMED agent⟩
+             scopable(e,h) ⇒ realizable(e,h) ⟨what cannot fire cannot be narrowed⟩
+             ⟨fire-ability ⊥ scopability : an adapter may fire e globally and be unable to name an agent⟩
 mechanism : fragment × harness-adapter ⇀ harness-mechanism ⟨what deploy EMITS for an enforcing f⟩
 
 NatSet ≜ {null, one, many} ; null={0} ; one={1} ; many={n∈ℕ: n≥1}
@@ -46,10 +49,15 @@ Universal(a) ≜ CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARS
   PARTITIONED : ∀c∈Corpus: |home(c)|=1 ∧ disjoint(homes) ∧ ⋃ home = Corpus
   PARSIMONIOUS: ∀c∈Corpus: body(c)=⟨α(c),residue(c)⟩ ∧ residue(c)=D(c)∖fired(α(c))
   ENFORCED    : enforcing(f) ∧ f ∈ ir(a) ⇒ scoped(mechanism(f,adapter), a) ⟨¬ ambient : COMPOSITION is the scope, ¬ a runtime self-filter⟩
-                substrate : fragment → Substrate ; enforcing(f) ∧ substrate(f) = substrate(adapter) ∧ ∃e∈events(f): ¬realizable(e,adapter)
+                substrate : fragment → Substrate ; own(f,adapter) ⇔ enforcing(f) ∧ substrate(f) = substrate(adapter)
+                own(f,adapter) ∧ ∃e∈events(f): ¬realizable(e,adapter)
                   ⇒ deploy REFUSES ⟨naming f · e · adapter⟩ ∧ ¬ silent-drop
+                own(f,adapter) ∧ f ∈ ir(a) ∧ ∃e∈events(f): ¬scopable(e,adapter)
+                  ⇒ deploy REFUSES ⟨naming f · e · adapter · a⟩ ∧ ¬ widen-to-ambient
                 substrate(f) ≠ substrate(adapter) ⇒ ROUTE ⟨¬ this adapter's concern ; ¬ a refusal⟩
                 ⟨a declared bound that projects to nothing is INDISTINGUISHABLE from an undeclared one⟩
+                ⟨a declared bound that projects to EVERY agent is WORSE than nothing : it governs agents that never composed it⟩
+                ⟨BOTH refusals discharge at ONE seam — a second refusal site is a second place for the law to drift⟩
   REGENERABLE : ∀t∈Target: (∃c:cell, adapter: t=deploy(c,adapter)) ∧ deterministic(deploy) ∧ deploy-owned(t) ∧ ¬hand-edit(t)
                 SelfAuthored{SEM,PROC,EPIS} ∉ Target ∧ ¬deploy-writes(SelfAuthored)
   BEING/FACE  : a cell is a BEING ; deploy projects it to MANY per-harness Targets = its FACES
