@@ -125,6 +125,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'agent-forge/project/resolver-parity.test.ts': 'GATE',
   // asserts the live `src/project/index.ts` source performs no writes.
   'agent-forge/project/tree.test.ts': 'GATE',
+  'agent-forge/validate/enforced.test.ts': 'BEHAVIORAL',
   'agent-forge/resolve/provenance.test.ts': 'BEHAVIORAL',
   'agent-forge/resolve/resolve.test.ts': 'BEHAVIORAL',
   // the story meta-gates: scans the live E*/ suites for coverage + silencers.

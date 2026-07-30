@@ -2,18 +2,21 @@
 // (MODEL.md). Lifts the author-time gate from the register-only leg to the full
 //
 //   accept(a) ⇔ Universal(a) ∧ (class(a)=agent ⇒ COMPOSED(a))
-//   Universal = CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARSIMONIOUS ∧ REGENERABLE
+//   Universal = CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARSIMONIOUS
+//             ∧ ENFORCED ∧ REGENERABLE
 //
-// DIVISION OF LABOUR (the honest boundary): the six Universal legs split into a
+// DIVISION OF LABOUR (the honest boundary): the seven Universal legs split into a
 // STATIC floor decided here (pure, hermetic, deterministic — runs in every
 // `pnpm test`) and a LIVE authority decided by the priors-only blind cold-oracle
 // (`./oracle.ts`, fresh /tmp, no corpus/session/root reads). The two decode-shaped
 // legs — COLD-BLIND and SIGNIFIED (α=σ*) — are genuinely oracle judgments (does the
 // fragment / anchor decode to intent under LLM-priors ALONE?); the static witness is
 // their always-on FLOOR (external-cite, malformed-sign), the oracle their ceiling.
-// The four structural legs (CANONICAL·PARTITIONED·PARSIMONIOUS·REGENERABLE) are fully
-// static. The nonce positive-control (`oracle.ts`) empirically backs the SIGNIFIED
-// floor: a sign that fires NO circumscribing prior cannot be σ*.
+// The five structural legs (CANONICAL·PARTITIONED·PARSIMONIOUS·ENFORCED·REGENERABLE)
+// are fully static. ENFORCED and REGENERABLE are GLOBAL rather than per-cell — a cell
+// cannot witness its own projection — so both are folded in by the caller. The
+// nonce positive-control (`oracle.ts`) empirically backs the SIGNIFIED floor: a
+// sign that fires NO circumscribing prior cannot be σ*.
 //
 // This is the doctrine-agnostic ALGORITHM (agent-forge ENGINE): witnesses over
 // supplied data, zero IO, zero corpus doctrine. The corpus DATA it reads — which
@@ -24,13 +27,14 @@
 import type { Skill, SkillExpression } from '../anatomy/index.js';
 import type { Policy } from './policy.js';
 
-/** The six Universal legs of `accept()` (MODEL.md). */
+/** The seven Universal legs of `accept()` (MODEL.md). */
 export type Leg =
   | 'CANONICAL'
   | 'SIGNIFIED'
   | 'COLD-BLIND'
   | 'PARTITIONED'
   | 'PARSIMONIOUS'
+  | 'ENFORCED'
   | 'REGENERABLE';
 
 export const UNIVERSAL_LEGS: readonly Leg[] = [
@@ -39,6 +43,7 @@ export const UNIVERSAL_LEGS: readonly Leg[] = [
   'COLD-BLIND',
   'PARTITIONED',
   'PARSIMONIOUS',
+  'ENFORCED',
   'REGENERABLE',
 ] as const;
 
@@ -262,6 +267,76 @@ export function regenerable(targets: readonly Target[]): LegVerdict {
   });
   return {
     leg: 'REGENERABLE',
+    pass: bad.length === 0,
+    reason: bad.join(' · '),
+  };
+}
+
+// ── ENFORCED ─────────────────────────────────────────────────────────────────
+
+/** One (enforcing fragment → agent) obligation the source register DECLARES. */
+export interface EnforcedObligation {
+  /** α of the enforcing fragment — `enforcing(f) ⇔ events(f) ≠ ∅`. */
+  readonly fragment: string;
+  /** The agent whose `ir(a)` composes it. Composition IS the scope. */
+  readonly agent: string;
+}
+
+/** One mechanism the projection actually EMITTED, and for whom. */
+export interface EmittedMechanism {
+  readonly fragment: string;
+  readonly agent: string;
+  /**
+   * `scoped(mechanism(f,adapter), a)` — the mechanism reaches THIS agent and no
+   * other. False ⇒ ambient: emitted globally and narrowed (if at all) by a
+   * runtime self-filter, which MODEL rejects outright.
+   */
+  readonly scoped: boolean;
+}
+
+/**
+ * ENFORCED — `enforcing(f) ∧ f ∈ ir(a) ⇒ scoped(mechanism(f,adapter), a)`.
+ *
+ * The leg MODEL declares and `accept()` did not implement. Its absence is not a
+ * missing nicety: without it a cell passes the gate while declaring a bound that
+ * projects to nothing, and MODEL states the consequence itself —
+ *
+ *   *a declared bound that projects to nothing is INDISTINGUISHABLE from an
+ *   undeclared one*
+ *
+ * Two convicting shapes, and the second is the reason `¬ ambient` is written into
+ * MODEL:
+ *
+ *  1. **UNPROJECTED** — declared in the source register, no mechanism emitted for
+ *     that agent. The bound reads as real and enforces nothing.
+ *  2. **AMBIENT** — a mechanism was emitted, but not scoped to the agent that
+ *     composed it. It governs everyone or is narrowed at runtime by the
+ *     mechanism's own self-filter, which is the fragile-pointcut failure:
+ *     the scope lives in the enforcement code, invisible from the agent, and goes
+ *     stale silently.
+ *
+ * Global over the (obligation, emission) sets rather than per-cell, exactly like
+ * `regenerable` — a single cell cannot witness its own projection. Doctrine-free:
+ * both sets are supplied by the caller, which owns the adapter and the corpus.
+ */
+export function enforced(
+  declared: readonly EnforcedObligation[],
+  emitted: readonly EmittedMechanism[],
+): LegVerdict {
+  const key = (o: { fragment: string; agent: string }) =>
+    `${o.fragment}→${o.agent}`;
+  const byKey = new Map(emitted.map((e) => [key(e), e]));
+  const bad: string[] = [];
+  for (const o of declared) {
+    const hit = byKey.get(key(o));
+    if (hit === undefined) {
+      bad.push(`unprojected(${key(o)})`);
+    } else if (!hit.scoped) {
+      bad.push(`ambient(${key(o)})`);
+    }
+  }
+  return {
+    leg: 'ENFORCED',
     pass: bad.length === 0,
     reason: bad.join(' · '),
   };

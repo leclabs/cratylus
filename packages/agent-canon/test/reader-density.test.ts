@@ -53,6 +53,8 @@ import { bodyOf } from '@leclabs/agent-forge/anatomy';
 // the register gate above being one facet of ρ-conformance, not a Universal leg.
 import {
   type AcceptCell,
+  type EmittedMechanism,
+  type EnforcedObligation,
   type Homes,
   type Leg,
   type LegVerdict,
@@ -61,6 +63,7 @@ import {
   admissibleBody,
   admissibleFormalBlock,
   admissibleSingleLine,
+  enforced,
   failingLegs,
   regenerable,
   universalCell,
@@ -424,13 +427,29 @@ const GREEN_TARGETS: readonly Target[] = [
 ];
 
 /** The full six-leg verdict for a scenario (per-cell legs + the global Target leg). */
-function allSix(
+function allSeven(
   cell: AcceptCell,
   homes: Homes,
   targets: readonly Target[],
+  obligations: readonly EnforcedObligation[] = [],
+  emissions: readonly EmittedMechanism[] = [],
 ): LegVerdict[] {
-  return [...universalCell(cell, homes, canonPolicy), regenerable(targets)];
+  return [
+    ...universalCell(cell, homes, canonPolicy),
+    enforced(obligations, emissions),
+    regenerable(targets),
+  ];
 }
+
+/**
+ * The ENFORCED seed — a bound DECLARED in the source register that the projection
+ * never emitted. MODEL: "a declared bound that projects to nothing is
+ * INDISTINGUISHABLE from an undeclared one." Global like REGENERABLE, so it is
+ * seeded with a clean cell and a dirty obligation set rather than a dirty cell.
+ */
+const ENFORCED_SEED: readonly EnforcedObligation[] = [
+  { fragment: 'seeded-bound', agent: 'seeded-agent' },
+];
 
 // ── the live corpus (one home per fragment anchor is the PARTITIONED claim) ───
 
@@ -457,10 +476,12 @@ async function loadDimensionHomes(): Promise<Map<string, string[]>> {
 const ACCEPT_RATCHET: ReadonlyArray<CellSeed> = [];
 
 describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-oracle', () => {
-  it('convicts one seeded defect per Universal leg — 6/6, and MECE (only that leg)', () => {
+  it('convicts one seeded defect per Universal leg — 7/7, and MECE (only that leg)', () => {
     const convicted = new Set<Leg>();
     for (const seed of CELL_SEEDS) {
-      const failing = failingLegs(allSix(seed.cell, seed.homes, GREEN_TARGETS));
+      const failing = failingLegs(
+        allSeven(seed.cell, seed.homes, GREEN_TARGETS),
+      );
       expect(failing, `${seed.leg} seed must convict exactly its leg`).toEqual([
         seed.leg,
       ]);
@@ -474,13 +495,27 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
       refs: [],
     } as const;
     const regFailing = failingLegs(
-      allSix(green, new Map([['clean-anchor', ['seed']]]), REGENERABLE_SEED),
+      allSeven(green, new Map([['clean-anchor', ['seed']]]), REGENERABLE_SEED),
     );
     expect(regFailing, 'REGENERABLE seed must convict exactly its leg').toEqual(
       ['REGENERABLE'],
     );
     convicted.add('REGENERABLE');
-    // 6/6 — every Universal leg has a convicting seed (non-vacuous).
+    // ENFORCED is global too — a clean cell, a declared bound, nothing emitted.
+    const enfFailing = failingLegs(
+      allSeven(
+        green,
+        new Map([['clean-anchor', ['seed']]]),
+        GREEN_TARGETS,
+        ENFORCED_SEED,
+        [],
+      ),
+    );
+    expect(enfFailing, 'ENFORCED seed must convict exactly its leg').toEqual([
+      'ENFORCED',
+    ]);
+    convicted.add('ENFORCED');
+    // 7/7 — every Universal leg has a convicting seed (non-vacuous).
     expect([...convicted].sort()).toEqual([...UNIVERSAL_LEGS].sort());
   });
 
@@ -498,7 +533,7 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
       refs: [],
     };
     const homes = await loadDimensionHomes();
-    expect(failingLegs(allSix(cell, homes, GREEN_TARGETS))).toEqual([]);
+    expect(failingLegs(allSeven(cell, homes, GREEN_TARGETS))).toEqual([]);
   });
 
   it('PARTITIONED corpus-wide — every fragment anchor has exactly one home', async () => {
@@ -513,7 +548,7 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 
   it('the accept ratchet is explicit + shrink-only — every pin still convicts', () => {
     for (const pin of ACCEPT_RATCHET) {
-      const failing = failingLegs(allSix(pin.cell, pin.homes, GREEN_TARGETS));
+      const failing = failingLegs(allSeven(pin.cell, pin.homes, GREEN_TARGETS));
       expect(
         failing,
         `ratchet pin '${pin.cell.slug}' no longer fails ${pin.leg} — REMOVE it`,
