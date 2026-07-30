@@ -16,8 +16,6 @@ const bound: Guardrails = {
   body: 'stance ≜ hold the stance',
   substrate: 'harness',
   events: ['tool.use.pre'],
-  command: 'sh w.sh',
-  workers: [],
 };
 
 describe('enforcing — derived from the shape, never from a stored flag', () => {

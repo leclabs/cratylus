@@ -15,15 +15,11 @@ const stance: Guardrails = {
   body: 'stance ≜ hold the stance',
   substrate: 'harness',
   events: ['tool.use.pre'],
-  command: 'sh w.sh',
-  workers: [],
 };
 const nudge: Guardrails = {
   body: 'nudge ≜ nudge the agent',
   substrate: 'harness',
   events: ['session.start'],
-  command: 'sh w.sh',
-  workers: [],
 };
 const bare: Guardrails = 'honesty ≜ assert from evidence';
 

@@ -30,3 +30,33 @@ export type Substrate = 'harness' | 'git';
  * canonical peer yet, so the union widens by exactly that descriptor.
  */
 export type SubstrateEvent = CanonicalEvent | 'vcs.commit.post';
+
+/**
+ * The realization payload for ONE enforcing constraint on ONE harness — what
+ * `realize(c, adapter)` yields and `inject` writes.
+ *
+ * Lives HERE, in the project register, and NEVER on the source cell. MODEL:
+ * `mechanism : fragment × harness-adapter ⇀ harness-mechanism ⟨what deploy EMITS⟩`
+ * — a function OF the adapter. A cell carrying a command is a BEING holding one
+ * FACE's bytes, which is why it could no longer have many faces.
+ */
+export interface HarnessMechanism {
+  /** The fire command — references the deployed worker path. */
+  readonly command: string;
+  /** Timeout in seconds; adapter default when omitted. */
+  readonly timeout?: number;
+  /** Residual DYNAMIC selector (client-native regex) for tool-scoped events. */
+  readonly matcher?: string;
+  /** Run order within an event — SEMANTIC: a blocking gate precedes a nudge. */
+  readonly order?: number;
+  /** Verbatim worker payloads — the byte-anchors of the deployed mechanism. */
+  readonly workers: readonly HarnessWorker[];
+}
+
+/** One worker payload a mechanism ships. */
+export interface HarnessWorker {
+  readonly filename: string;
+  readonly targetPath: string;
+  readonly content: string;
+  readonly executable: boolean;
+}

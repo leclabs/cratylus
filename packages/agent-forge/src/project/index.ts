@@ -50,6 +50,7 @@ import {
 import type { ResolvedSkill } from '../core/anatomy-body.js';
 import { enforcingValuesOf } from '../core/exemplify/dimension-fields.js';
 import type { HarnessAdapter } from '../core/harness-adapter.js';
+import type { HarnessMechanism } from '../core/hook/index.js';
 import {
   resolveModulePath,
   scanCellDirNames,
@@ -102,6 +103,16 @@ export interface ProjectOpts {
    * ambient repo context; a consumer may pass nothing.
    */
   readonly preamble?: string;
+  /**
+   * `anchor → HarnessMechanism` — the realization payloads for this corpus's
+   * enforcing values, INJECTED.
+   *
+   * MODEL makes `mechanism` a function of (fragment, adapter) that deploy emits,
+   * so it cannot live on the source cell. It is supplied here by the corpus, the
+   * same way `accept.ts` takes its palimpsest table as an injected `Policy` — the
+   * DATA lives in agent-canon, the ALGORITHM stays doctrine-free.
+   */
+  readonly mechanisms?: ReadonlyMap<string, HarnessMechanism>;
   readonly log?: (line: string) => void;
 }
 
@@ -450,10 +461,13 @@ export async function projectPluginSet(
     const modPath = await resolveModulePath(dir, name);
     if (!modPath) throw new Error(`agent module not found: ${name}`);
     const agent = withResolvedBodies(await agentOf(modPath), subst);
-    const { filename, content } = opts.adapter.agentDef({
-      ...agent,
-      ...((pre ?? opts.preamble) ? { preamble: pre ?? opts.preamble } : {}),
-    });
+    const { filename, content } = opts.adapter.agentDef(
+      {
+        ...agent,
+        ...((pre ?? opts.preamble) ? { preamble: pre ?? opts.preamble } : {}),
+      },
+      opts.mechanisms,
+    );
     files.push({ path: join('agents', filename), content });
     log(`EMIT agent ${name}`);
     agentNames.push(name);
@@ -481,7 +495,8 @@ export async function projectPluginSet(
       },
       opts.adapter,
     );
-    for (const worker of b.fragment.workers) {
+    const mech = opts.mechanisms?.get(b.fragment.realizedBy ?? b.anchor);
+    for (const worker of mech?.workers ?? []) {
       files.push({
         path: join('hooks', b.anchor, worker.filename),
         content: worker.content,

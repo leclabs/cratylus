@@ -21,7 +21,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { RuntimePlugin } from '@leclabs/agent-runtime';
-import type { HookEvent, HookSubstrate, HookWorker } from './hook-cell.js';
+import type { HookEvent, HookSubstrate } from './hook-cell.js';
 
 // ── Type-level metadata axes ────────────────────────────────────────────────
 
@@ -143,13 +143,10 @@ export interface Binding {
  * refusal law is substrate-relative (an event belonging to another substrate is
  * routed, not refused), and it cannot be evaluated from the events alone.
  *
- * The REALIZATION rides here too — `command` is what actually runs and `workers`
- * are its verbatim bytes. That is what "one artifact" means: splitting the
- * mechanism into a linked artifact would reintroduce exactly the divergence the
- * single unit exists to prevent.
- *
- * What is NOT here is SCOPE. See `Binding` — scope is derived from composition,
- * never authored beside the mechanism.
+ * What is NOT here: the MECHANISM (project register — `realize(c,adapter)` emits
+ * it) and the SCOPE (derived from composition — see `Binding`). A source cell is
+ * harness-innocent by construction; that is what makes one BEING projectable to
+ * many FACES.
  */
 export interface Enforcing<O extends Dimension> {
   /** The inline declaration — the σ* body ⟨α, residue⟩ this value would be if bare. */
@@ -158,25 +155,18 @@ export interface Enforcing<O extends Dimension> {
   readonly substrate: HookSubstrate;
   /** The harness-agnostic events that bind it (≥1 — an empty set is not enforcing). */
   readonly events: readonly [HookEvent, ...HookEvent[]];
-  /** The fire command — references the deployed worker path. */
-  readonly command: string;
   /**
-   * Optional tool matcher (client-native regex). The RESIDUAL dynamic binding:
-   * composition fixes WHICH AGENT, and a static mark cannot express a
-   * runtime-conditional policy, so this stays for the genuinely conditional part.
-   * Meaningful for tool-scoped events; unset for a Stop hook.
+   * The mechanism this value is realized BY — an ANCHOR, never the mechanism.
+   *
+   * MODEL: `mechanism : fragment × harness-adapter ⇀ harness-mechanism ⟨what
+   * deploy EMITS⟩`. A command, a timeout, a matcher or worker bytes are all
+   * PROJECT-register content; MODEL puts exactly two things on a fragment,
+   * `events` and `substrate`. They were briefly carried here and that broke
+   * BEING/FACE — a being holding one face's shell script cannot have many faces.
+   *
+   * Absent ⇒ the anchor α of this value is its own mechanism key.
    */
-  readonly matcher?: string;
-  /** Timeout in seconds; adapter default when omitted. */
-  readonly timeout?: number;
-  /**
-   * Run order within an event. A dir-scan would otherwise impose ALPHABETICAL
-   * order, silently reordering constraints whose sequence is semantic — a
-   * blocking gate must evaluate before a non-blocking nudge. Lower runs first.
-   */
-  readonly order?: number;
-  /** The verbatim worker payloads — the byte-anchors of the deployed mechanism. */
-  readonly workers: readonly HookWorker[];
+  readonly realizedBy?: string;
   /** Anchors this value references — the CANONICAL orphan-ref witness. */
   readonly refs?: readonly string[];
 }

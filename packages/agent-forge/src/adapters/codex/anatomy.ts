@@ -30,6 +30,7 @@ import {
 // The projection PORT, imported from its DEFINING module — see the note in
 // `adapters/claude/anatomy.ts`.
 import type { HarnessAdapter } from '../../core/harness-adapter.js';
+import type { HarnessMechanism } from '../../core/hook/index.js';
 import { CODEX_AGENT_SCOPED_EVENTS, canonicalToCodex } from './events.js';
 
 // Re-export the shared, harness-neutral resolved skill shape so a codex consumer
@@ -171,6 +172,7 @@ export function codexHooksJson(
     fragment: unknown;
     agents: readonly string[];
   }[],
+  mechanisms: ReadonlyMap<string, HarnessMechanism> = new Map(),
 ): { filename: string; content: string } | null {
   const harness = bindings.filter(
     (b) => (b.fragment as { substrate?: string }).substrate === 'harness',
@@ -180,10 +182,12 @@ export function codexHooksJson(
   for (const b of harness) {
     const f = b.fragment as {
       events: readonly string[];
-      command: string;
-      timeout?: number;
-      matcher?: string;
+      realizedBy?: string;
     };
+    // The mechanism is INJECTED — MODEL makes it a function of (fragment,
+    // adapter) that deploy emits, never a field the source cell carries.
+    const m = mechanisms.get(f.realizedBy ?? b.anchor);
+    if (!m) continue;
     for (const event of f.events) {
       const native = canonicalToCodex[event as keyof typeof canonicalToCodex];
       if (!native) continue; // refused upstream by `realizes`; never silently dropped here
@@ -199,8 +203,8 @@ export function codexHooksJson(
         hooks: [
           {
             type: 'command',
-            command: f.command,
-            ...(f.timeout !== undefined ? { timeout: f.timeout } : {}),
+            command: m.command,
+            ...(m.timeout !== undefined ? { timeout: m.timeout } : {}),
           },
         ],
       };

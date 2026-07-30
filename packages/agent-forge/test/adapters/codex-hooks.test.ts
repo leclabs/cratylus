@@ -3,6 +3,11 @@ import {
   codexHarnessAdapter,
   codexHooksJson,
 } from '../../src/adapters/codex/anatomy.js';
+import type { HarnessMechanism } from '../../src/core/hook/index.js';
+
+const MECH = new Map<string, HarnessMechanism>([
+  ['stance', { command: 'sh stance.sh', workers: [] }],
+]);
 
 // THE ADAPTER'S JOB IS TO ADAPT. The canon authors one shape — a constraint
 // composed into the agents it governs — and each harness gets as close to it as
@@ -23,7 +28,6 @@ const binding = (
     body: `${anchor} ≜ x`,
     substrate: 'harness',
     events,
-    command: `sh ${anchor}.sh`,
     ...extra,
   },
 });
@@ -50,9 +54,10 @@ describe('codex realizes events — the false claim, corrected', () => {
 
 describe('per-agent scope, said in codex’s language', () => {
   it('generates a matcher over agent_type from the composed agents', () => {
-    const out = codexHooksJson([
-      binding('stance', ['nico', 'mav'], ['subagent.end']),
-    ]);
+    const out = codexHooksJson(
+      [binding('stance', ['nico', 'mav'], ['subagent.end'])],
+      MECH,
+    );
     expect(out).not.toBeNull();
     const parsed = JSON.parse(out?.content ?? '{}');
     const entry = parsed.hooks.SubagentStop[0];
@@ -65,10 +70,14 @@ describe('per-agent scope, said in codex’s language', () => {
   });
 
   it('the matcher FOLLOWS composition — it cannot go stale', () => {
-    const two = codexHooksJson([
-      binding('stance', ['nico', 'mav'], ['subagent.end']),
-    ]);
-    const one = codexHooksJson([binding('stance', ['nico'], ['subagent.end'])]);
+    const two = codexHooksJson(
+      [binding('stance', ['nico', 'mav'], ['subagent.end'])],
+      MECH,
+    );
+    const one = codexHooksJson(
+      [binding('stance', ['nico'], ['subagent.end'])],
+      MECH,
+    );
     expect(JSON.parse(two?.content ?? '{}').hooks.SubagentStop[0].matcher).toBe(
       '^(mav|nico)$',
     );
@@ -81,14 +90,14 @@ describe('per-agent scope, said in codex’s language', () => {
     // PreToolUse input carries no agent identifier. Emitting the hook anyway
     // would govern EVERY agent — a widened blast radius wearing a projection.
     expect(() =>
-      codexHooksJson([binding('stance', ['nico'], ['tool.use.pre'])]),
+      codexHooksJson([binding('stance', ['nico'], ['tool.use.pre'])], MECH),
     ).toThrow(/no agent identifier/);
   });
 
   it('names the constraint, its agents, and the offending event when it refuses', () => {
     let msg = '';
     try {
-      codexHooksJson([binding('stance', ['nico', 'mav'], ['turn.end'])]);
+      codexHooksJson([binding('stance', ['nico', 'mav'], ['turn.end'])], MECH);
     } catch (e) {
       msg = (e as Error).message;
     }
@@ -99,7 +108,7 @@ describe('per-agent scope, said in codex’s language', () => {
   });
 
   it('emits nothing when no harness-substrate constraint is bound', () => {
-    expect(codexHooksJson([])).toBeNull();
+    expect(codexHooksJson([], MECH)).toBeNull();
     expect(
       codexHooksJson([
         {
@@ -108,7 +117,6 @@ describe('per-agent scope, said in codex’s language', () => {
           fragment: {
             substrate: 'git',
             events: ['vcs.commit.post'],
-            command: 'x',
           },
         },
       ]),

@@ -13,7 +13,12 @@
 
 import type { Agent, Binding } from '../anatomy/index.js';
 import type { ResolvedSkill } from './anatomy-body.js';
-import type { Hook, Substrate, SubstrateEvent } from './hook/index.js';
+import type {
+  HarnessMechanism,
+  Hook,
+  Substrate,
+  SubstrateEvent,
+} from './hook/index.js';
 
 /** A single projected artifact: the harness-owned filename + its bytes. */
 export interface HarnessProjection {
@@ -54,8 +59,20 @@ export interface HarnessAdapter {
    * adapter's to judge, and the caller routes it before asking.
    */
   realizes(event: SubstrateEvent): boolean;
-  /** Project an agent vector → its subagent def file. */
-  agentDef(agent: Agent): HarnessProjection;
+  /**
+   * Project an agent vector → its subagent def file.
+   *
+   * `mechanisms` is the resolved `anchor → HarnessMechanism` map for THIS agent's
+   * enforcing values — INJECTED, because MODEL makes `mechanism` a function of
+   * (fragment, adapter) that deploy emits, not a field the source cell carries.
+   * A harness that attaches per-agent (claude: front-matter hooks) renders them
+   * here; one that declares globally (codex) ignores it and uses
+   * `enforcingSurface` instead.
+   */
+  agentDef(
+    agent: Agent,
+    mechanisms?: ReadonlyMap<string, HarnessMechanism>,
+  ): HarnessProjection;
   /** Project a resolved skill → its `SKILL.md`. */
   skillDef(skill: ResolvedSkill): HarnessProjection;
   /** The always-loaded instruction/index surface, when the harness has one

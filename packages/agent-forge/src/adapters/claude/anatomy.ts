@@ -18,7 +18,7 @@
 // exemplify's standalone-cell path.
 
 import type { Agent } from '../../anatomy/index.js';
-import { markToColor } from '../../anatomy/index.js';
+import { anchorOf, markToColor } from '../../anatomy/index.js';
 // The harness-neutral dimension→markdown-body machinery, imported DOWNWARD from core
 // (the shared helpers `agentBody`/`dimensionTitle`/`skillBody` + the `ResolvedSkill`
 // shape). Re-exported below so existing `adapters/claude` importers are unaffected.
@@ -36,7 +36,10 @@ import { enforcingValuesOf } from '../../core/exemplify/dimension-fields.js';
 // are both gone; naming the defining module stays the rule, so no future barrel
 // can quietly re-create the edge.
 import type { HarnessAdapter } from '../../core/harness-adapter.js';
-import type { CanonicalEvent } from '../../core/hook/index.js';
+import type {
+  CanonicalEvent,
+  HarnessMechanism,
+} from '../../core/hook/index.js';
 import { canonicalToClaude } from './events.js';
 import { serializeClaudeHooksReport } from './hooks.js';
 
@@ -53,12 +56,15 @@ export { type ResolvedSkill, agentBody, dimensionTitle, skillBody };
  * body, routed to `## Archetype` in the body) and NOT emoji-prefixed; the mark's
  * emoji drives `color` via `markToColor`, a separate axis.
  */
-function agentFrontMatter(a: Agent): string[] {
+function agentFrontMatter(
+  a: Agent,
+  mechanisms: ReadonlyMap<string, HarnessMechanism>,
+): string[] {
   const fm: string[] = [`name: ${a.name}`, `description: ${a.description}`];
   if (a.provenance?.mark) {
     fm.push(`color: ${markToColor(a.provenance.mark)}`);
   }
-  fm.push(...agentHooksFrontMatter(a));
+  fm.push(...agentHooksFrontMatter(a, mechanisms));
   return fm;
 }
 
@@ -82,35 +88,42 @@ function agentFrontMatter(a: Agent): string[] {
  * something alphabetical, and these sequences are semantic — a blocking gate must
  * evaluate before a non-blocking nudge.
  */
-function agentHooksFrontMatter(a: Agent): string[] {
-  const enforcing = enforcingValuesOf(a)
+function agentHooksFrontMatter(
+  a: Agent,
+  mechanisms: ReadonlyMap<string, HarnessMechanism>,
+): string[] {
+  const withMech = enforcingValuesOf(a)
     .filter((f) => f.substrate === 'harness')
-    .sort(
-      (x, y) =>
-        (x.order ?? Number.MAX_SAFE_INTEGER) -
-        (y.order ?? Number.MAX_SAFE_INTEGER),
+    .map((f) => ({ f, m: mechanisms.get(f.realizedBy ?? anchorOf(f)) }))
+    .filter(
+      (x): x is { f: typeof x.f; m: HarnessMechanism } => x.m !== undefined,
     );
+  const enforcing = withMech.sort(
+    (x, y) =>
+      (x.m.order ?? Number.MAX_SAFE_INTEGER) -
+      (y.m.order ?? Number.MAX_SAFE_INTEGER),
+  );
   if (enforcing.length === 0) return [];
 
   // native claude event → the entries firing on it, in `order`.
   const byEvent = new Map<string, string[]>();
-  for (const f of enforcing) {
+  for (const { f, m } of enforcing) {
     for (const event of f.events) {
       const native = canonicalToClaude[event as CanonicalEvent];
       // Unrealizable events are REFUSED upstream at build time, never dropped
       // here — a silent skip at emission is the fail-open this design removes.
       if (!native) continue;
       const lines: string[] = [];
-      if (f.matcher) {
-        lines.push(`    - matcher: ${JSON.stringify(f.matcher)}`);
+      if (m.matcher) {
+        lines.push(`    - matcher: ${JSON.stringify(m.matcher)}`);
         lines.push('      hooks:');
       } else {
         lines.push('    - hooks:');
       }
       lines.push('        - type: command');
-      lines.push(`          command: ${JSON.stringify(f.command)}`);
-      if (f.timeout !== undefined)
-        lines.push(`          timeout: ${f.timeout}`);
+      lines.push(`          command: ${JSON.stringify(m.command)}`);
+      if (m.timeout !== undefined)
+        lines.push(`          timeout: ${m.timeout}`);
       const acc = byEvent.get(native) ?? [];
       acc.push(...lines);
       byEvent.set(native, acc);
@@ -135,8 +148,11 @@ function frameClaudeMd(frontMatter: string[], body: string): string {
 }
 
 /** The full claude-code SOUL for an agent, projected from its `Agent` vector. */
-export function agentToClaudeMd(a: Agent): string {
-  return frameClaudeMd(agentFrontMatter(a), agentBody(a));
+export function agentToClaudeMd(
+  a: Agent,
+  mechanisms: ReadonlyMap<string, HarnessMechanism> = new Map(),
+): string {
+  return frameClaudeMd(agentFrontMatter(a, mechanisms), agentBody(a));
 }
 
 // ── Skill projection ────────────────────────────────────────────────────────
@@ -181,7 +197,10 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   // IS the realization map, so asking it is asking the mechanism itself — there is
   // no second list to drift. A git-substrate event never reaches here; it routes.
   realizes: (event) => event in canonicalToClaude,
-  agentDef: (a) => ({ filename: `${a.name}.md`, content: agentToClaudeMd(a) }),
+  agentDef: (a, mechanisms) => ({
+    filename: `${a.name}.md`,
+    content: agentToClaudeMd(a, mechanisms ?? new Map()),
+  }),
   skillDef: (s) => ({ filename: 'SKILL.md', content: skillToClaudeMd(s) }),
   hooks: (hooks) => {
     const r = serializeClaudeHooksReport([...hooks]);
