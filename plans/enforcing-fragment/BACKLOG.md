@@ -12,16 +12,18 @@ concept space; forge owns harness projection.** Violations run in both direction
 | `CLAUDE_SESSION_ID` / `$CLAUDE_SETTINGS_PATH` → the generic `AGENT_SESSION_ID` contract                          | `aef6971` |
 | GATE `harness-parity` — convicts a silently-absent cell set and a foreign harness path                           | `b162a80` |
 
-## Next, and it blocks the last one from being usable
+## Next
 
-**The deploy half is claude-only while the project half is adapter-parameterized.** `project.ts`
-does `adapterByName(opts.harness ?? 'claude')`; deploy has no adapter in scope at all —
-`deploy/scope.ts` returns a field literally named `claudeDir`, and `deploy/hooks.ts`,
-`deploy/manifest.ts`, `deploy/types.ts`, `deploy/init.ts`, `cli/index.ts` all assume `.claude`.
+The canon→codex path is now whole: authored once, projected to both harnesses, deployed to both.
+What remains is ownership, not reachability.
 
-`agent-forge deploy --harness codex` cannot be honoured. **The codex render is now correct and has
-no deploy path**, so the governance it gained is real in the tree and unreachable on disk. This is
-the shard that finishes the job.
+**Take B1–B6 next** — the dimension allowlist. It is the largest remaining inversion and the one
+that most directly contradicts the thesis: the ideal agent's dimension set is a TypeScript union
+inside the projection package, transcribed by hand four more times. A corpus cannot discover a new
+dimension without editing forge.
+
+Still claude-shaped in deploy, and worth folding in when B1–B6 is done: `deploy/seeds.ts` (memory
+store names + doctrine prose), `deploy/manifest.ts` `KIND_ROOT`, `deploy/init.ts`.
 
 ## Direction A — harness knowledge still inside `agent-canon/src`
 
