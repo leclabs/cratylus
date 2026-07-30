@@ -14,7 +14,7 @@ import type { HookCell } from '@leclabs/agent-forge/anatomy';
 export const stanceGuardrailPre: HookCell = {
   id: 'stance-guardrail-pre',
   residue:
-    'structural-refusal ↾ mid-turn tool-call · deny-before-fire ⟨the call never leaves⟩ ⟨intent-driven-expert-collapse⟩ ⟨permission-menu ⟨AskUserQuestion⟩ · dispatch-echo ⟨Agent · SendMessage : literal-transcription ∄ extracted-intent⟩⟩ · pass ⟨reserved · irreversible-outward-consent · substantive-dispatch · intent-ambiguity ↦ elicit⟩ · shared judge-backend ⟨sibling⟩ · loop-safe ⟨re-entry-cap : ¬deny identical twice⟩',
+    'structural-refusal ↾ mid-turn tool-call · deny-before-fire ⟨intent-driven-expert-collapse⟩ ⟨permission-menu ⟨AskUserQuestion⟩ · dispatch-echo ⟨Agent · SendMessage : literal-transcription ∄ extracted-intent⟩⟩ · pass ⟨reserved · irreversible-outward-consent · substantive-dispatch · intent-ambiguity ↦ elicit⟩ · shared judge-backend ⟨sibling⟩ · loop-safe ⟨re-entry-cap : ¬deny identical twice⟩',
   substrate: 'harness',
   order: 1,
   events: ['tool.use.pre'],
