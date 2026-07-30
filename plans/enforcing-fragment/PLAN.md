@@ -81,12 +81,32 @@ retires (operator-decided).
   missing string, only a missing distinction. That throw is deleted; the adapter now DECLARES the
   incapacity and the seam decides. Coverage moved rather than vanished (`refusal.test.ts` case 2b).
 
+  **Then the refusal itself was wrong** (operator correction). The canon authors the IDEAL; adapting
+  it to a target is the ADAPTER's concern. `[GROUND]` VISION: _"author semantics once, realize
+  behavior everywhere"_ and _"operators should require progressively less knowledge of harnesses"_ —
+  a build that fails because the operator chose codex demands exactly that knowledge. Per the apex
+  order VISION ≻ MODEL, MODEL revised.
+
+  The refusal's premise was false. _"A declared bound that projects to nothing is indistinguishable
+  from an undeclared one"_ — it never projects to nothing. `agentBody` emits `bodyOf(value)` for
+  every composed value on every harness (`core/anatomy-body.ts`), so the DECLARATION face is
+  unconditional and the floor is a **steer**, never silence.
+
+  MODEL now carries `mode : fragment × harness-adapter → {bound, steer}` — a shortfall WARNS,
+  withholds the mechanism, keeps the declaration, and the projection completes. `refusal.ts` →
+  `realization.ts`. **Degrade ⊥ widen:** degrading changes how strongly the composed agents are
+  bound; widening changes WHICH agents are bound. Codex's global `hooks.json` is where widening
+  would happen, so degraded bindings are withheld from it.
+
   **Live consequence, measured:** claude scopes all four canon events (attachment is the scope);
-  codex scopes only `subagent.start`/`subagent.end`. Render output is byte-identical — a latent
-  build-time refusal, not a behaviour change. But once S4 composes `stance-guardrail` with
-  `turn.end` into nico+mav, **deploying to codex will REFUSE.** That is the designed answer. The
-  remedy is to split the constraint per harness — never to weaken it everywhere so the weakest
-  harness can carry it, which is what "drop `turn.end`" would have done.
+  codex scopes only `subagent.start`/`subagent.end`. Render byte-identical on both. Once S4 composes
+  `stance-guardrail` with `turn.end` into nico+mav, **the codex projection degrades that constraint
+  to a declaration and warns** — it does not fail. No per-harness split is owed; that fork is closed.
+
+  **Verified by mutation, and the first attempt did NOT convict.** Output-level assertions stayed
+  green with the seam's withholding defeated, because codex's agent TOML has no hook field and
+  `codexHooksJson` skips unscopable events itself. Seam spies (`degradation.test.ts`) observe what
+  the seam HANDS the adapter and convict both mutations.
 
 - **The `guardrails` catalog is mis-signified** — `honesty`/`helpfulness` STEER, and MODEL's
   `⟨bounds, ¬ steers⟩` excludes steering; `scope-of-authority` duplicates `autonomy`;
