@@ -96,20 +96,19 @@ ENGINE realizes MODEL, so ENGINE owes the revision — `realize` must be keyed o
 3. ✅ **ENGINE caught up to MODEL** — `6877f69`. `realize` is keyed on the CELL and marked PARTIAL;
    `deploy` reads `activation(c)`, not `activation(class c)`.
 
-4. ⬜ **Revert the source-register violation.** `Enforcing` back to ⟨body, substrate, events⟩ (+
-   `realizedBy?` as a mechanism ANCHOR); the adapter resolves the mechanism. Restores BEING/FACE.
+4. ✅ **The mechanism left the source cell** — `89a5ff7`. `Enforcing` is the declaration alone
+   ⟨body, substrate, events⟩ plus a `realizedBy` ANCHOR; `HarnessMechanism` lives in `core/hook`.
+   The table is INJECTED by the corpus, exactly as `accept.ts` already takes its `Policy` — DATA in
+   agent-canon, ALGORITHM doctrine-free. BEING/FACE restored.
 
-   **Design, resolved:** the mechanism table is INJECTED, exactly as `accept.ts` already injects
-   corpus DATA as a `Policy` — _"the DATA lives in the corpus (agent-canon), never here."_ The
-   corpus's project CLI supplies `anchor → mechanism`; `agent-forge` stays doctrine-free.
+   **The port widened rather than the emission moving — my stated lean was WRONG.** Claude's
+   per-agent hook lives in the agent file's OWN front-matter, which is precisely what `agentDef`
+   emits, so relocating emission would have cost per-agent attachment on claude — the property this
+   plan exists to establish. `agentDef(agent, mechanisms)`. **Check where the harness actually PUTS
+   the thing before deciding which side of a seam owns it.**
 
-   **Snag, measured — the reason this is not a mechanical edit.** Reverting produces 9 errors in 3
-   files, and the blocker is the PORT: `HarnessAdapter.agentDef(agent)` takes only the agent, so it
-   has nowhere to receive the table. The port must widen — `agentDef(agent, mechanisms)` — or the
-   front-matter hook emission must move out of `agentDef` and into the projection, beside the
-   worker emission and the refusal that already live there. **The second is likely right**: MODEL
-   puts `mechanism` at `deploy`, and `agentDef` is a pure cell→bytes rendering that should not
-   know about mechanisms at all.
+   An unresolved mechanism emits NOTHING, which is correct: the value still declares its bound, and
+   that gap is exactly what the `ENFORCED` leg convicts as `unprojected`.
 
 5. ⬜ Only then resume the cell migration.
 
