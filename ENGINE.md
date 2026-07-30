@@ -22,7 +22,9 @@ canonizable(skill) ⇒ ∀ w ∈ declarations(skill) : signify-verify(w)        
 validate   : cell → cell ∪ {⊥} ; validate(c) = (c if accept(c) else ⊥) ; verify ⊑ validate ; signify-verify ⊑ validate
 select     : agent → (DimensionName ⇸ ℘(fragment))
 compose    : (DimensionName ⇸ ℘(fragment)) → IR ; compose(select(a)) = ir(a) ∧ ir(a) ⊑ content(a)
-realize    : ActivationMode × harness-adapter → harness-mechanism
+realize    : cell × harness-adapter ⇀ harness-mechanism ⟨realizes MODEL's `mechanism` ; keyed on the CELL, ¬ on ActivationMode alone⟩
+             ⟨reads activation(c) ∧ — for an enforcing f — events(f) ∧ substrate(f) : a mode cannot see which Event fires⟩
+             ⟨PARTIAL ∵ mechanism is PARTIAL : most cells realize to nothing ⟨compose-only⟩⟩
 inject     : context × harness-mechanism → Target
 
 pipeline ≜ ⟨discover, author, normalize, validate, select, compose, deploy⟩ ⊕ intake ⟨pipeline is CYCLIC, ¬ linear : deploy ↦ Execution ↦ yield ↦ discover⟩
@@ -30,7 +32,8 @@ stage-invariant : discover ⊨ SIGNIFIED ; author ⊨ CANONICAL ; validate ⊨ a
 
 Reader ≜ {LLM, human} ; source : artifact → cell ; intent-of : cell → Intent ; author(I)=c ⇒ intent-of(c)=I
 HumanSign ; human-artifact ; human-priors ; artifact ≜ Target ⊎ human-artifact
-deploy            : cell × harness-adapter → Target ; deploy(c,adapter) = inject(content(c), realize(activation(class c), adapter))
+deploy            : cell × harness-adapter → Target ; deploy(c,adapter) = inject(content(c), realize(c, adapter))
+                    ⟨activation is INSTANCE-level @ MODEL ∴ realize reads activation(c), ¬ activation(class c) : a Kind-typical DEFAULT is not the value⟩
 regenerate        ≜ deploy
 σ*_human          : concept → HumanSign
 decode_cold_human : human-artifact → Intent ; decode_cold_human(h) ≜ decode(h, human-priors, ∅)
