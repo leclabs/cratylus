@@ -109,6 +109,8 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'agent-forge/catalog/discover.test.ts': 'BEHAVIORAL',
   // enumerates the FIXTURE corpus, asserting a shape invariant over EVERY value.
   'agent-forge/catalog/enumerate.test.ts': 'GATE',
+  // drives `runCatalog` against a tmpdir corpus it writes itself (zero-config path).
+  'agent-forge/cli/catalog.test.ts': 'BEHAVIORAL',
   'agent-forge/cli/cli.test.ts': 'BEHAVIORAL',
   'agent-forge/cli/compose.test.ts': 'BEHAVIORAL',
   'agent-forge/cli/explain.test.ts': 'BEHAVIORAL',
