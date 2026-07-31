@@ -46,7 +46,8 @@ const MECHANISMS = new Map<string, HarnessMechanism>([
 const mk = (name: string, guardrails: readonly Guardrails[]): Agent =>
   ({ name, description: 'd', archetype: 'a', guardrails }) as unknown as Agent;
 
-const fm = (a: Agent) => agentToClaudeMd(a, MECHANISMS).split('---')[1] ?? '';
+const fm = (a: Agent) =>
+  agentToClaudeMd(a, { mechanisms: MECHANISMS }).split('---')[1] ?? '';
 
 describe('per-agent hooks — composition becomes attachment', () => {
   it('emits a hooks block for an agent composing an enforcing guardrail', () => {
@@ -94,12 +95,14 @@ describe('per-agent hooks — composition becomes attachment', () => {
       ['nudge', mech('sh nudge.sh', { order: 1 })],
     ]);
     // Composed nudge-first; `order` must still put the blocking gate first.
-    const out = agentToClaudeMd(mk('nico', [nudge, gate]), m);
+    const out = agentToClaudeMd(mk('nico', [nudge, gate]), { mechanisms: m });
     expect(out.indexOf('gate.sh')).toBeLessThan(out.indexOf('nudge.sh'));
   });
 
   it('the SOUL body carries the DECLARATION, never the mechanism', () => {
-    const md = agentToClaudeMd(mk('nico', [stance]), MECHANISMS);
+    const md = agentToClaudeMd(mk('nico', [stance]), {
+      mechanisms: MECHANISMS,
+    });
     const body = md.split('---').slice(2).join('---');
     expect(body).toContain('stance ≜ hold the stance');
     expect(body).not.toContain('stance.sh');
@@ -111,9 +114,9 @@ describe('an unresolved mechanism emits nothing — the source cell is innocent'
     // The value still DECLARES its bound; this adapter simply has no realization
     // for it. That gap is what the ENFORCED leg convicts as `unprojected`, which
     // is the right home for it — silently emitting a hookless agent is not.
-    const out = agentToClaudeMd(mk('nico', [stance]), new Map()).split(
-      '---',
-    )[1];
+    const out = agentToClaudeMd(mk('nico', [stance]), {
+      mechanisms: new Map(),
+    }).split('---')[1];
     expect(out).not.toContain('hooks:');
   });
 });

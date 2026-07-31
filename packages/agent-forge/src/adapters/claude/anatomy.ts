@@ -17,7 +17,7 @@
 // ONE generator `renderSkillCellBody` (`core/exemplify/skill-cell.ts`), shared with
 // exemplify's standalone-cell path.
 
-import type { Agent } from '../../anatomy/index.js';
+import type { Agent, Anatomy } from '../../anatomy/index.js';
 import { anchorOf, markToColor } from '../../anatomy/index.js';
 // The harness-neutral dimension→markdown-body machinery, imported DOWNWARD from core
 // (the shared helpers `agentBody`/`dimensionTitle`/`skillBody` + the `ResolvedSkill`
@@ -35,7 +35,10 @@ import { enforcingValuesOf } from '../../core/exemplify/dimension-fields.js';
 // consumer's closure — invisible to a substring grep. The barrel and the lineage
 // are both gone; naming the defining module stays the rule, so no future barrel
 // can quietly re-create the edge.
-import type { HarnessAdapter } from '../../core/harness-adapter.js';
+import type {
+  AgentDefContext,
+  HarnessAdapter,
+} from '../../core/harness-adapter.js';
 import type {
   CanonicalEvent,
   HarnessMechanism,
@@ -59,12 +62,13 @@ export { type ResolvedSkill, agentBody, dimensionTitle, skillBody };
 function agentFrontMatter(
   a: Agent,
   mechanisms: ReadonlyMap<string, HarnessMechanism>,
+  anatomy?: Anatomy,
 ): string[] {
   const fm: string[] = [`name: ${a.name}`, `description: ${a.description}`];
   if (a.provenance?.mark) {
     fm.push(`color: ${markToColor(a.provenance.mark)}`);
   }
-  fm.push(...agentHooksFrontMatter(a, mechanisms));
+  fm.push(...agentHooksFrontMatter(a, mechanisms, anatomy));
   return fm;
 }
 
@@ -91,8 +95,12 @@ function agentFrontMatter(
 function agentHooksFrontMatter(
   a: Agent,
   mechanisms: ReadonlyMap<string, HarnessMechanism>,
+  anatomy?: Anatomy,
 ): string[] {
-  const withMech = enforcingValuesOf(a)
+  // Which fields hold values at all is a fact of the CATALOG, so an agent's
+  // enforcing set is read against the set's catalog — a dimension the corpus
+  // declared and forge never heard of enforces nothing otherwise.
+  const withMech = enforcingValuesOf(a, anatomy)
     .filter((f) => f.substrate === 'harness')
     .map((f) => ({ f, m: mechanisms.get(f.realizedBy ?? anchorOf(f)) }))
     .filter(
@@ -147,12 +155,21 @@ function frameClaudeMd(frontMatter: string[], body: string): string {
   return lines.join('\n');
 }
 
-/** The full claude-code SOUL for an agent, projected from its `Agent` vector. */
+/**
+ * The full claude-code SOUL for an agent, projected from its `Agent` vector under
+ * the set's context. `ctx` is PARTIAL where the port's is total: this is also the
+ * hand-callable entry (a single agent, no plugin set), and an absent field is
+ * forwarded as absent so the reader downstream applies its own default — which is
+ * why no catalog is named here. The port stays total; only this face relaxes.
+ */
 export function agentToClaudeMd(
   a: Agent,
-  mechanisms: ReadonlyMap<string, HarnessMechanism> = new Map(),
+  ctx: Partial<AgentDefContext> = {},
 ): string {
-  return frameClaudeMd(agentFrontMatter(a, mechanisms), agentBody(a));
+  return frameClaudeMd(
+    agentFrontMatter(a, ctx.mechanisms ?? new Map(), ctx.anatomy),
+    agentBody(a, ctx.anatomy),
+  );
 }
 
 // ── Skill projection ────────────────────────────────────────────────────────
@@ -216,9 +233,9 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   // lands on, so it must not bake in the projecting machine's home.
   hookCommand: (anchor, workerFilename) =>
     `sh "$HOME/.claude/hooks/${anchor}/${workerFilename}"`,
-  agentDef: (a, mechanisms) => ({
+  agentDef: (a, ctx) => ({
     filename: `${a.name}.md`,
-    content: agentToClaudeMd(a, mechanisms ?? new Map()),
+    content: agentToClaudeMd(a, ctx),
   }),
   skillDef: (s) => ({ filename: 'SKILL.md', content: skillToClaudeMd(s) }),
   hooks: (hooks) => {

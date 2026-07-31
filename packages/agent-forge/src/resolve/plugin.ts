@@ -21,6 +21,8 @@
 // beside it in `resolve/` as its own concern.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import type { Anatomy } from '../anatomy/index.js';
+
 /**
  * An agent-plugin: a package's declaration of which directories supply its
  * fragments and presets. Every dir field is a path STRING the loader scans
@@ -52,6 +54,21 @@ export interface AgentPlugin {
   readonly preamble?: string;
   /** Dir of hook cell modules this plugin contributes (harness-substrate only). */
   readonly hooks?: string;
+  /**
+   * WHICH dimensions exist, and each one's metadata — the catalog INSTANCE, as
+   * against the meta-model (that a dimension has an axis/kind/arity) forge owns.
+   *
+   * It rides the plugin for the same reason `preamble` does: a consumer projecting
+   * an extended plugin has no access to the plugin's repo, so a catalog left behind
+   * there would make the design unprojectable by anyone but its author. A corpus
+   * that must edit the projector to declare a dimension does not own its own design.
+   *
+   * Plugins compose, so the set's catalog is the per-dimension merge in `extends`
+   * order (later wins, every override logged) — which is what lets a consumer ADD a
+   * dimension without forking the plugin it extends. Nobody declaring one ⇒ forge's
+   * resident catalog stands in.
+   */
+  readonly anatomy?: Anatomy;
 }
 
 /**

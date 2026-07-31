@@ -29,7 +29,10 @@ import {
 } from '../../core/anatomy-body.js';
 // The projection PORT, imported from its DEFINING module — see the note in
 // `adapters/claude/anatomy.ts`.
-import type { HarnessAdapter } from '../../core/harness-adapter.js';
+import type {
+  AgentDefContext,
+  HarnessAdapter,
+} from '../../core/harness-adapter.js';
 import type { HarnessMechanism } from '../../core/hook/index.js';
 import { CODEX_AGENT_SCOPED_EVENTS, canonicalToCodex } from './events.js';
 
@@ -56,9 +59,12 @@ export type { ResolvedSkill };
  */
 export function agentToCodexTomlObject(
   a: Agent,
+  ctx: Partial<AgentDefContext> = {},
   _profile = 'strong-llm-lean/codex',
 ): Record<string, unknown> {
-  const body = agentBody(a);
+  // The catalog travels because the SOUL body does: `developer_instructions` is
+  // the same `agentBody` the claude `.md` carries, so it owes the same sections.
+  const body = agentBody(a, ctx.anatomy);
   const developerInstructions = `${body.replace(/\n+$/, '')}\n`;
   const obj: Record<string, unknown> = {
     name: a.name,
@@ -79,9 +85,10 @@ export function agentToCodexTomlObject(
  */
 export function agentToCodexToml(
   a: Agent,
+  ctx: Partial<AgentDefContext> = {},
   profile = 'strong-llm-lean/codex',
 ): string {
-  const obj = agentToCodexTomlObject(a, profile);
+  const obj = agentToCodexTomlObject(a, ctx, profile);
   return TOML.stringify(obj as TOML.JsonMap);
 }
 
@@ -294,9 +301,9 @@ export const codexHarnessAdapter: HarnessAdapter = {
     }
     return { filename: 'hooks.json', settings: block, warnings, skipped };
   },
-  agentDef: (a) => ({
+  agentDef: (a, ctx) => ({
     filename: `${a.name}.toml`,
-    content: agentToCodexToml(a),
+    content: agentToCodexToml(a, ctx),
   }),
   skillDef: (s) => ({ filename: 'SKILL.md', content: skillToCodexMd(s) }),
   surface: (agentNames) => ({

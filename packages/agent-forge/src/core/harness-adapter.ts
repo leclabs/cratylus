@@ -11,7 +11,7 @@
 // present only on harnesses that have that surface (codex has an `AGENTS.md`
 // index; claude serializes hooks → a `settings.json` fragment).
 
-import type { Agent, Binding } from '../anatomy/index.js';
+import type { Agent, Anatomy, Binding } from '../anatomy/index.js';
 import type { ResolvedSkill } from './anatomy-body.js';
 import type {
   HarnessMechanism,
@@ -44,6 +44,29 @@ export interface HarnessHooksProjection {
     readonly path: string;
     readonly reason: string;
   }[];
+}
+
+/**
+ * What an agent projection needs BESIDES the vector — the two facts that are
+ * properties of the projected SET, not of the agent.
+ *
+ * `anatomy` is REQUIRED and deliberately not defaulted here. Every reader below
+ * this port already defaults to forge's resident catalog, so an adapter that
+ * simply omitted it would keep projecting plausible bytes off the wrong catalog
+ * — the dead-end this parameter exists to close. The set resolves it once
+ * (`projectPluginSet`) and hands it down.
+ */
+export interface AgentDefContext {
+  /** The plugin set's resolved dimension catalog — section order and field set. */
+  readonly anatomy: Anatomy;
+  /**
+   * The resolved `anchor → HarnessMechanism` map for this agent's enforcing
+   * values — INJECTED, because MODEL makes `mechanism` a function of (fragment,
+   * adapter) that deploy emits, not a field the source cell carries. A harness
+   * that attaches per-agent (claude: front-matter hooks) renders them; one that
+   * declares globally (codex) ignores it and uses `enforcingSurface` instead.
+   */
+  readonly mechanisms?: ReadonlyMap<string, HarnessMechanism>;
 }
 
 /** The projection port a harness adapter implements. */
@@ -126,20 +149,8 @@ export interface HarnessAdapter {
    * off the cell.
    */
   hookCommand(anchor: string, workerFilename: string): string;
-  /**
-   * Project an agent vector → its subagent def file.
-   *
-   * `mechanisms` is the resolved `anchor → HarnessMechanism` map for THIS agent's
-   * enforcing values — INJECTED, because MODEL makes `mechanism` a function of
-   * (fragment, adapter) that deploy emits, not a field the source cell carries.
-   * A harness that attaches per-agent (claude: front-matter hooks) renders them
-   * here; one that declares globally (codex) ignores it and uses
-   * `enforcingSurface` instead.
-   */
-  agentDef(
-    agent: Agent,
-    mechanisms?: ReadonlyMap<string, HarnessMechanism>,
-  ): HarnessProjection;
+  /** Project an agent vector → its subagent def file, under the set's context. */
+  agentDef(agent: Agent, ctx: AgentDefContext): HarnessProjection;
   /** Project a resolved skill → its `SKILL.md`. */
   skillDef(skill: ResolvedSkill): HarnessProjection;
   /** The always-loaded instruction/index surface, when the harness has one

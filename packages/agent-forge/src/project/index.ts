@@ -30,9 +30,12 @@
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
+  ANATOMY,
   type Agent,
+  type Anatomy,
   type Binding,
   type Dimension,
+  type DimensionMeta,
   type Enforcing,
   type HookCell,
   type Skill,
@@ -81,6 +84,8 @@ export interface ProjectablePlugin {
   readonly preamble?: string;
   /** Dir of hook cell modules this plugin contributes. */
   readonly hooks?: string;
+  /** WHICH dimensions this plugin declares — the catalog instance (`AgentPlugin.anatomy`). */
+  readonly anatomy?: Anatomy;
 }
 
 export interface ProjectOpts {
@@ -213,16 +218,21 @@ async function hookOf(modPath: string): Promise<HookCell | null> {
  * what the agents actually declare. Agents are sorted so the emitted artifact is
  * byte-stable — an unsorted set would churn the deploy diff and hide real changes
  * among reorderings.
+ *
+ * `anatomy` is the catalog the vector is READ against — omitted ⇒ the resident one.
+ * A dimension the set declares and forge does not know is invisible here otherwise,
+ * so its enforcing values would bind nothing while its SOUL section still printed.
  */
 export function bindingsOf(
   agents: readonly { readonly name: string; readonly agent: Agent }[],
+  anatomy?: Anatomy,
 ): Binding[] {
   const byAnchor = new Map<
     string,
     { fragment: Enforcing<Dimension>; agents: Set<string> }
   >();
   for (const { name, agent } of agents) {
-    for (const fragment of enforcingValuesOf(agent)) {
+    for (const fragment of enforcingValuesOf(agent, anatomy)) {
       const anchor = anchorOf(fragment);
       const seen = byAnchor.get(anchor);
       if (seen) seen.agents.add(name);
@@ -395,6 +405,37 @@ function withResolvedBodies(
 }
 
 /**
+ * The plugin set's DIMENSION CATALOG: the per-key merge of every declared one, in
+ * `extends` order, later plugin winning that key — and every override reported.
+ *
+ * PER-KEY, not last-catalog-wins, and that is the whole point rather than a
+ * tie-break detail: a consumer must be able to ADD a dimension to the design it
+ * extends without forking that design, which a whole-catalog contest makes
+ * impossible. A dimension keeps the POSITION of the plugin that first declared it,
+ * because `agentBody` reads section order off `Object.keys` — an override changes a
+ * dimension's metadata, never where its section lands.
+ *
+ * No plugin declaring one ⇒ forge's resident catalog. That fallback is a MIGRATION
+ * state, not a design: it dies with `ANATOMY` when the catalog moves to the corpus.
+ */
+function resolveAnatomy(
+  plugins: readonly ProjectablePlugin[],
+  log: (line: string) => void,
+): Anatomy {
+  const merged: Record<string, DimensionMeta> = {};
+  const declaredBy = new Map<string, string>();
+  for (const p of plugins) {
+    for (const [dimension, meta] of Object.entries(p.anatomy ?? {})) {
+      const prev = declaredBy.get(dimension);
+      if (prev) log(`  override dimension ${dimension}: ${prev} → ${p.name}`);
+      merged[dimension] = meta;
+      declaredBy.set(dimension, p.name);
+    }
+  }
+  return declaredBy.size === 0 ? ANATOMY : merged;
+}
+
+/**
  * Project every cell contributed by the plugin set into an artifact tree. Writes
  * nothing — hand the result to `writeRenderTree(out, tree.files)`.
  *
@@ -428,6 +469,11 @@ export async function projectPluginSet(
   const warn =
     opts.warn ?? ((line: string) => console.warn(`WARNING: ${line}`));
   const files: ProjectedFile[] = [];
+
+  // WHICH dimensions exist is settled before any vector is read: it decides the
+  // fields an agent carries, its section order, and what counts as an enforcing
+  // value — so every reader below is told, none left to guess at forge's own.
+  const anatomy = resolveAnatomy(opts.plugins, log);
 
   // An agent is rendered from the RESOLVED catalog, never from the bodies its
   // module happened to import (ENGINE:22). Every move is reported, never silent.
@@ -487,7 +533,7 @@ export async function projectPluginSet(
   // written, and withhold the mechanism of any that degraded. The DECLARATION
   // face needs no decision — `agentBody` publishes it for every composed value on
   // every harness, which is why a shortfall here is a warning and not a refusal.
-  const bindings = bindingsOf(composed);
+  const bindings = bindingsOf(composed, anatomy);
   const degraded = new Set<string>();
   for (const b of bindings) {
     const { mode, losses } = realizationOf(
@@ -517,7 +563,7 @@ export async function projectPluginSet(
         ...agent,
         ...((pre ?? opts.preamble) ? { preamble: pre ?? opts.preamble } : {}),
       },
-      mechanisms,
+      { anatomy, ...(mechanisms ? { mechanisms } : {}) },
     );
     files.push({ path: join('agents', filename), content });
     log(`EMIT agent ${name}`);

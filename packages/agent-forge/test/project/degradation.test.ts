@@ -148,10 +148,10 @@ describe('the SEAM withholds — observed at the seam, not downstream of it', ()
         ...base,
         agentDef: (
           a: Parameters<typeof base.agentDef>[0],
-          mechs?: ReadonlyMap<string, HarnessMechanism>,
+          ctx: Parameters<typeof base.agentDef>[1],
         ) => {
-          sawMechanisms.push([...(mechs?.keys() ?? [])]);
-          return base.agentDef(a, mechs);
+          sawMechanisms.push([...(ctx.mechanisms?.keys() ?? [])]);
+          return base.agentDef(a, ctx);
         },
         ...(base.enforcingSurface
           ? {
