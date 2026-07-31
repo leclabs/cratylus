@@ -56,8 +56,17 @@ So this fix is two edits, not one:
 
 ### Verify
 
-1. `grep -rn "agent-canon" packages/agent-forge/test` returns nothing. A literal gate has to be
-   literally clean.
+1. ~~`grep -rn "agent-canon" packages/agent-forge/test` returns nothing.~~ **This check was
+   MIS-SPECIFIED and D1's executor was right to refuse it.** It tests a PROXY — the literal string —
+   not the PROPERTY, which is whether forge's suite depends on canon's CONTENT such that canon cannot
+   change freely. A comment naming canon, and `scaffold.test.ts` asserting forge's own scaffold emits
+   `import canon from '@leclabs/agent-canon'`, both contain the literal and neither is the defect.
+   `packages/agent-forge/src` itself carries 10+ such literals, so the rule was stricter than the
+   source it polices.
+
+   The correct check is behavioural: **add a dimension to canon and the full forge suite stays
+   green.** State the property, not a string that correlates with it.
+
 2. **The leg still convicts.** Add a directory to the fixture corpus that the fixture catalog does not
    declare, and watch it fail; then remove one the catalog does declare, and watch it fail the other
    way. `corpusDrift` reports `missing` and `extra` — exercise BOTH, since a drift check that only
@@ -139,6 +148,24 @@ Two tests for the two uncovered branches, both driving the real CLI entry (`runC
 Testing `resolveCorpusAnatomy` directly instead of the CLI would pass while leaving the actual
 zero-config path uncovered — the defect is that a USER-REACHABLE path has no test, and a unit test of
 its helper does not discharge that. Drive the entry point.
+
+---
+
+---
+
+## D3 — the same defect, second site
+
+`test/catalog/enumerate.test.ts` reads canon's live dimension dirs and asserts _"enumerates exactly
+the 22 dimensions"_ against `FIXTURE_DIMENSION_NAMES`. Identical species to D1, found by D1's
+executor while refusing the mis-specified check above — the refusal is what surfaced it.
+
+Repoint at `test/fixture-dimensions/` (D1 built it for this). Same rule: repoint, do not delete.
+
+**This also exposed a gap in `DIMENSION-OWNERSHIP.md`'s completion criterion.** That criterion said a
+new dimension must PROJECT with zero forge edits, and the `tempo` probe proved exactly that — but it
+never required the SUITE to stay green, and `enumerate.test.ts` would have failed. The proof was
+weaker than reported. A completion criterion that checks the artifact and not the gates around it
+leaves the coupling it was written to disprove.
 
 ---
 
