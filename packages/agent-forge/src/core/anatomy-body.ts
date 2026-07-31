@@ -7,8 +7,8 @@
 // so BOTH adapters import these DOWNWARD from core — never sideways from each
 // other. (Kills the former `codex/anatomy.ts → claude/anatomy.ts` edge.)
 
-import type { Agent, Dimension, Value } from '../anatomy/index.js';
-import { DIMENSION_NAMES, bodyOf } from '../anatomy/index.js';
+import type { Agent, Anatomy, Dimension, Value } from '../anatomy/index.js';
+import { ANATOMY, bodyOf } from '../anatomy/index.js';
 import { renderSkillCellBody } from './exemplify/skill-cell.js';
 
 // ── Dimension → markdown helpers ─────────────────────────────────────────────────
@@ -35,8 +35,12 @@ export function dimensionField(dimension: string): keyof Agent {
  * value(s) — the value string IS the SOUL body ⟨α, residue⟩, emitted verbatim; a
  * set dimension lists its members blank-separated. `null` dimensions are omitted
  * (harness-inherit). Closed `rstrip() + "\n"`.
+ *
+ * The SECTION ORDER is the catalog's own declaration order — which is why the
+ * catalog is a parameter and not a module read: the sequence of an agent's
+ * sections is a fact about the corpus that declared the dimensions.
  */
-export function agentBody(a: Agent): string {
+export function agentBody(a: Agent, anatomy: Anatomy = ANATOMY): string {
   const emoji = a.provenance?.mark.emoji ?? '';
   const heading = emoji ? `${emoji} ${a.name}` : a.name;
   const out: string[] = [`# ${heading}`, ''];
@@ -48,7 +52,7 @@ export function agentBody(a: Agent): string {
   if (a.archetype) {
     out.push('## Archetype', '', a.archetype, '');
   }
-  for (const dimension of DIMENSION_NAMES) {
+  for (const dimension of Object.keys(anatomy)) {
     const value = a[dimensionField(dimension)];
     if (value === null || value === undefined) {
       continue;

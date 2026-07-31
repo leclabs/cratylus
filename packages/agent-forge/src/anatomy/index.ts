@@ -314,6 +314,18 @@ export interface DimensionMeta {
 }
 
 /**
+ * A dimension CATALOG: name → metadata. The META-MODEL forge owns — that a
+ * dimension HAS an axis/kind/arity — as against the INSTANCE (which dimensions
+ * exist), which belongs to the corpus that declares them.
+ *
+ * This is the parameter type of every function that reads a catalog. `ANATOMY`
+ * below is the resident instance and, for now, each of their default arguments;
+ * a projector that can only ever read the one it ships is not projecting a
+ * design, it contains one.
+ */
+export type Anatomy = Readonly<Record<string, DimensionMeta>>;
+
+/**
  * The one runtime home for dimension metadata — `agent-forge catalog` reads it, never a
  * second hand-kept copy. Keyed by dimension so a missing/extra dimension is a compile error.
  */

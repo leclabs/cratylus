@@ -23,11 +23,11 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import {
   ANATOMY,
-  DIMENSION_NAMES,
+  type Anatomy,
   type Dimension,
+  kebabToCamel,
 } from '../../anatomy/index.js';
 import { canonicalText } from './digest.js';
-import { DIMENSION_FIELD } from './dimension-fields.js';
 import { ExemplifyRefusal } from './types.js';
 
 /** The provenance trace a concrete dimension value must carry. */
@@ -110,16 +110,20 @@ function renderFragment(
  */
 export function renderAgentVector(
   spec: ElevationSpec,
-  opts: { sourceText?: string } = {},
+  opts: { sourceText?: string; anatomy?: Anatomy } = {},
 ): RenderedVector {
+  // The catalog is what COMPLETENESS is measured against — "all dimensions,
+  // always" is a claim about a specific catalog, so the caller may name it.
+  const anatomy = opts.anatomy ?? ANATOMY;
+  const dimensionNames = Object.keys(anatomy);
   const reasons: string[] = [];
   const dimensionKeys = Object.keys(spec.dimensions) as Dimension[];
-  for (const dimension of DIMENSION_NAMES) {
+  for (const dimension of dimensionNames) {
     if (!(dimension in spec.dimensions))
       reasons.push(`missing dimension '${dimension}'`);
   }
   for (const key of dimensionKeys) {
-    if (!DIMENSION_NAMES.includes(key))
+    if (!dimensionNames.includes(key))
       reasons.push(`unknown dimension '${key}'`);
   }
   const source =
@@ -128,9 +132,12 @@ export function renderAgentVector(
   const provenance: Record<string, DimensionEvidence> = {};
   const lines: string[] = [`  name: '${spec.name}',`];
 
-  for (const dimension of DIMENSION_NAMES) {
+  for (const [name, meta] of Object.entries(anatomy)) {
+    const dimension = name as Dimension;
     const plan = spec.dimensions[dimension];
-    const field = DIMENSION_FIELD[dimension];
+    // The kebab→camel rule direct, not a lookup: the field a dimension occupies is
+    // derivable from its NAME, so a catalog's own keys are all this needs.
+    const field = kebabToCamel(name);
     if (plan === undefined) continue;
     if (plan.kind === 'inherit') {
       lines.push(`  ${field}: null,`);
@@ -173,7 +180,7 @@ export function renderAgentVector(
       );
       continue;
     }
-    const arity = ANATOMY[dimension].arity;
+    const arity = meta.arity;
     if (arity === 'scalar' && plan.fragments.length !== 1) {
       reasons.push(
         `dimension '${dimension}' is scalar: exactly one fragment (got ${plan.fragments.length})`,
@@ -225,6 +232,8 @@ export interface ElevateOptions {
   /** Root the `agents/` dir is created under. */
   outDir: string;
   spec: ElevationSpec;
+  /** The catalog the spec is checked against; defaults to the resident one. */
+  anatomy?: Anatomy;
 }
 
 export interface ElevateResult {
@@ -245,7 +254,10 @@ export function elevateAgent(opts: ElevateOptions): ElevateResult {
     (opts.sourcePath !== undefined
       ? readFileSync(opts.sourcePath, 'utf8')
       : undefined);
-  const rendered = renderAgentVector(opts.spec, { sourceText });
+  const rendered = renderAgentVector(opts.spec, {
+    sourceText,
+    anatomy: opts.anatomy,
+  });
   // REC ≽ at the data level: the step-1 text must be recoverable from the
   // vector's own fragment definientia (serialization escaping is irrelevant
   // to recoverability — the vector, not the TS file, is the source form).

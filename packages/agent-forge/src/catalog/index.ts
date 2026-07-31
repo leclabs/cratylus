@@ -1,9 +1,10 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The fragment catalog enumerator.
 //
-// `enumerateCatalog(corpusDimensionsDir)` walks a corpus's `<dimension>/*.ts` value
-// modules, joins each dimension's discovered values with the dimension's runtime
-// metadata (`ANATOMY` in `../anatomy`), and emits the discovery contract:
+// `enumerateCatalog(corpusDimensionsDir, anatomy)` walks a corpus's `<dimension>/*.ts`
+// value modules, joins each dimension's discovered values with that dimension's runtime
+// metadata (read from the GIVEN catalog — `ANATOMY` by default), and emits the
+// discovery contract:
 //
 //   { dimension, axis, kind, arity, values: [{ slug, definiens }] }   ×24
 //
@@ -24,9 +25,9 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   ANATOMY,
+  type Anatomy,
   type Arity,
   type Classification,
-  DIMENSION_NAMES,
   type Dimension,
   type Genus,
   type Value,
@@ -75,7 +76,7 @@ export function shortlex(a: string, b: string): number {
  */
 async function valuesOf(
   corpusDimensionsDir: string,
-  dimension: Dimension,
+  dimension: string,
 ): Promise<string[]> {
   const dir = join(corpusDimensionsDir, dimension);
   const out: string[] = [];
@@ -117,25 +118,34 @@ async function valuesOf(
 }
 
 /**
- * Enumerate the full fragment catalog of a corpus. For each of the 24 dimensions
- * (in anatomy declaration order), joins `ANATOMY` metadata with the values
- * discovered under `<corpusDimensionsDir>/<dimension>/*.ts`.
+ * Enumerate the full fragment catalog of a corpus. For each of the catalog's
+ * dimensions (in its declaration order), joins that dimension's metadata with the
+ * values discovered under `<corpusDimensionsDir>/<dimension>/*.ts`.
+ *
+ * BOTH halves are now parameters — the corpus supplies the value modules AND the
+ * catalog they file under. The dir was already an argument and this module already
+ * called itself doctrine-agnostic; the metadata read is what finished that sentence.
  *
  * @param corpusDimensionsDir absolute path to a corpus's `dimensions/` dir (the parent
  *        of the per-dimension module dirs). For agent-canon: `packages/agent-canon/src/dimensions`.
+ * @param anatomy the dimension catalog to join against; defaults to the resident one.
  */
 export async function enumerateCatalog(
   corpusDimensionsDir: string,
+  anatomy: Anatomy = ANATOMY,
 ): Promise<CatalogEntry[]> {
   const entries: CatalogEntry[] = [];
-  for (const dimension of DIMENSION_NAMES) {
-    const meta = ANATOMY[dimension];
+  for (const [name, meta] of Object.entries(anatomy)) {
     entries.push({
-      dimension,
+      // A catalog's KEYS are its dimension names, which `Object.entries` can only
+      // type as `string`. The narrowing holds exactly while the resident catalog is
+      // the only one; it stops holding — and this field widens to `string` — when
+      // `Dimension` follows the catalog out of forge.
+      dimension: name as Dimension,
       axis: meta.axis,
       kind: meta.kind,
       arity: meta.arity,
-      values: await valuesOf(corpusDimensionsDir, dimension),
+      values: await valuesOf(corpusDimensionsDir, name),
     });
   }
   return entries;
@@ -255,7 +265,7 @@ async function scanDimensionModules(
  * reference graph (NORTH-STAR §3) by reusing P2's `validateReferenceGraph` — a
  * reference cycle throws `ReferenceCycleError`, a dangling edge `DanglingReferenceError`.
  *
- * For each plugin, walks `<fragmentsDir>/<dimension>/*.ts` per `DIMENSION_NAMES`:
+ * For each plugin, walks `<fragmentsDir>/<dimension>/*.ts` per the catalog's dimensions:
  * - a STRING export → a freshly minted, reference-free node with a namespaced id
  *   `"<plugin>:<dimension>/<exportName>"` and kind from the dimension's arity;
  * - a node-form `Fragment` export → used AS-IS (its object identity is the imported
@@ -264,16 +274,19 @@ async function scanDimensionModules(
  */
 export async function discoverPluginFragments(
   sources: readonly PluginFragmentSource[],
+  anatomy: Anatomy = ANATOMY,
 ): Promise<DiscoveredPlugin[]> {
   const plugins: DiscoveredPlugin[] = [];
   const allNodes = new Set<Fragment>();
 
   for (const src of sources) {
     const fragments: DiscoveredFragment[] = [];
-    for (const dimension of DIMENSION_NAMES) {
+    for (const [name, meta] of Object.entries(anatomy)) {
+      // See `enumerateCatalog` on the key cast — same catalog, same narrowing.
+      const dimension = name as Dimension;
       // Arity (`scalar`|`set`) is a subset of `FragmentKind` — the structural
       // value-type a minted string-fragment node carries. [SIGNIFY: arity→kind map.]
-      const kind: FragmentKind = ANATOMY[dimension].arity;
+      const kind: FragmentKind = meta.arity;
       const dir = join(src.fragmentsDir, dimension);
       for (const { exportName, value } of await scanDimensionModules(dir)) {
         if (isFragmentNode(value)) {

@@ -7,11 +7,11 @@
 // authored at the boundary. `projectHumanDimension` realizes it for the DIMENSION unit:
 // its concepts are the dimension itself (σ_human* = the optional `DimensionDoc.gloss`) and
 // its value cells (σ_human* = each value's `slug ≜ definiens`). The output is a
-// PURE DETERMINISTIC function of `(dimension, values, doc)` — sort is by slug, meta is
-// read from `ANATOMY`, no clock/host/IO — so a committed dimension README that diverges
+// PURE DETERMINISTIC function of `(dimension, values, doc, anatomy)` — sort is by slug,
+// meta is read from the given catalog, no clock/host/IO — so a committed README that diverges
 // from re-projection is a hand-edit (the falsifier), catchable by a byte diff.
 
-import { ANATOMY, type Dimension } from './index.js';
+import { ANATOMY, type Anatomy, type Dimension } from './index.js';
 
 /**
  * The optional dimension-level human gloss — `σ_human*` of the DIMENSION concept itself,
@@ -40,9 +40,9 @@ function byBody(a: string, b: string): number {
 
 /**
  * `project-human` for a dimension: compose its value cells into the canonical human
- * README. PURE and DETERMINISTIC in `(dimension, values, doc)` — the value list is
- * slug-sorted, the genus line is read from `ANATOMY`, and nothing else enters. The
- * closed shape:
+ * README. PURE and DETERMINISTIC in `(dimension, values, doc, anatomy)` — the value
+ * list is slug-sorted, the genus line is read from the catalog, and nothing else
+ * enters. The closed shape:
  *
  *   # <dimension>
  *
@@ -64,8 +64,18 @@ export function projectHumanDimension(
   dimension: Dimension,
   values: readonly string[],
   doc?: DimensionDoc,
+  anatomy: Anatomy = ANATOMY,
 ): string {
-  const meta = ANATOMY[dimension];
+  const meta = anatomy[dimension];
+  // A catalog lookup is TOTAL by construction — the dimension being projected is
+  // one of the catalog's own. Refuse rather than render `undefined` into a genus
+  // line: a README that reads as authored is the one failure a byte diff cannot
+  // distinguish from a hand-edit.
+  if (!meta) {
+    throw new Error(
+      `project-human: '${dimension}' is not a dimension of the given catalog`,
+    );
+  }
   const title = dimensionTitle(dimension);
   const sorted = [...values].sort(byBody);
 
