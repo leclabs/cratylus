@@ -89,8 +89,17 @@ finding none, it throws:
 
 > `no dimension catalog for corpus <c> — declare one on the corpus plugin's 'anatomy', or point --config at a config that extends it`
 
-**No test covers either branch, before or after the refactor.** The message is good; nothing proves it
-is ever reached, and nothing proves the success path resolves.
+**Measured coverage — the resolver has THREE branches, one covered:**
+
+| #   | branch                                              | covered?                                                                                       |
+| --- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| 1   | `--config` present → `mergeAnatomy(config.extends)` | **YES** — `test/cli/explain.test.ts` imports `runCatalog` and drives a 2-plugin config fixture |
+| 2   | no config → corpus entry module's `default.anatomy` | **NO**                                                                                         |
+| 3   | neither → throw                                     | **NO**                                                                                         |
+
+An earlier draft of this spec said no test covered either branch. That was wrong: the `--config` path
+is exercised. The uncovered branches are the two that a ZERO-CONFIG consumer hits, which is the
+sharper and more worrying version of the same defect.
 
 ### Why it matters
 
@@ -104,16 +113,18 @@ failure mode is a confusing crash at exactly the moment a new user has the least
 
 ### The fix
 
-Two tests, both driving the real CLI entry:
+Two tests for the two uncovered branches, both driving the real CLI entry (`runCatalog`, as
+`explain.test.ts` already does — there is no `catalog.test.ts` today):
 
-1. **Resolves** — a fixture corpus package whose plugin declares `anatomy`; assert the catalog view
-   renders its dimensions.
-2. **Refuses, and says how to fix it** — the same fixture with `anatomy` absent; assert it throws,
-   and assert the message names the corpus AND both remedies (declare `anatomy`, or pass `--config`).
-   Assert the CONTENT, not just that it threw: the remedy is the whole value of the message.
+1. **Branch 2 — resolves from the corpus entry module.** A fixture corpus package whose default
+   export declares `anatomy`, and NO config file; assert the catalog view renders its dimensions.
+   The absent config is the point: with one present, branch 1 answers and this branch never runs.
+2. **Branch 3 — refuses, and says how to fix it.** The same fixture with `anatomy` absent; assert it
+   throws, and assert the message names the corpus AND both remedies (declare `anatomy`, or pass
+   `--config`). Assert the CONTENT, not merely that it threw: the remedy is the whole value of the
+   message, and a message that rots into uselessness still throws.
 
-Follow `test/cli/catalog.test.ts` if it exists, or `test/cli/compose.test.ts` for the tmpdir-fixture
-pattern already in use.
+`test/cli/compose.test.ts` has the tmpdir-fixture pattern already in use.
 
 ### Verify
 
