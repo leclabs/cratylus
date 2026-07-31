@@ -162,7 +162,15 @@ async function corpusAnatomy(
     const loaded = (await import(pathToFileURL(mod).href)) as {
       default?: { name?: string; anatomy?: Anatomy };
     };
-    if (loaded.default)
+    // `?.anatomy`, not just `loaded.default`. A corpus package that exports a
+    // plugin but forgot the catalog is the MOST LIKELY zero-config mistake, and
+    // admitting it here handed the user `mergeAnatomy`'s refusal instead of this
+    // one. That message is correct for core — it names the plugins and the
+    // `anatomy` remedy — but it cannot mention `--config`, because a CLI flag has
+    // no business in a function four call sites share. So the likeliest mistake
+    // drew the least useful of the two refusals. Falling through keeps the
+    // CLI-shaped remedy at the CLI, where it is knowable.
+    if (loaded.default?.anatomy)
       return mergeAnatomy([{ name: corpus, ...loaded.default }]);
   }
   throw new Error(

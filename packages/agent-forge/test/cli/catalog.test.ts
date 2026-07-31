@@ -217,4 +217,28 @@ describe('catalog — the ZERO-CONFIG corpus path (no agents.config.ts)', () => 
     expect(err).toContain('anatomy');
     expect(err).toContain('--config');
   });
+
+  it('REFUSES with the CLI remedy when the plugin is there but the catalog is not', async () => {
+    // THE LIKELIEST ZERO-CONFIG MISTAKE, and it used to draw the LEAST useful
+    // refusal. A corpus package that exports a plugin and forgot `anatomy` once
+    // satisfied the `loaded.default` guard, so `mergeAnatomy` refused first — a
+    // correct message for core, naming the plugins and the `anatomy` remedy, but
+    // structurally unable to mention `--config`, since a CLI flag has no business
+    // in a function four call sites share.
+    writeFileSync(
+      join(cwd, 'corpus', 'index.ts'),
+      "export default { name: 'corpus' };\n",
+    );
+    assertNoDiscoverableConfig();
+
+    const { rc, err } = await capture(() =>
+      runCatalog({ corpus: dimensions, cwd }),
+    );
+    expect(rc).toBe(1);
+    expect(err).toContain(dimensions);
+    // BOTH remedies. Asserting `--config` is the whole point: without it this
+    // passes against the core refusal, which is the state being fixed.
+    expect(err).toContain('anatomy');
+    expect(err).toContain('--config');
+  });
 });
