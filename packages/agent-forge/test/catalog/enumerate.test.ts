@@ -1,8 +1,20 @@
-// `enumerateCatalog` — the fragment discovery library. Proves: (1) it
-// enumerates every one of the 22 dimensions from agent-canon's modules with the correct
-// axis/kind/arity; (2) the contract shape per dimension; (3) values sort shortlex;
-// (4) the DRIFT-PROOF property — a value module dropped under a dimension dir
-// appears in the output with no other change.
+// `enumerateCatalog` — the fragment discovery library. Proves, over the FIXTURE
+// corpus: (1) it enumerates exactly the GIVEN catalog's dimensions, in that
+// catalog's order, with the correct axis/kind/arity; (2) the contract shape per
+// dimension; (3) values sort shortlex; (4) a body arrives verbatim — residue
+// intact, and an enforcing value by its declaration face; (5) the DRIFT-PROOF
+// property — a value module dropped under a dimension dir appears in the output
+// with no other change.
+//
+// THE CORPUS UNDER SCAN IS FORGE'S OWN (`test/fixture-dimensions/`, filed against
+// `test/fixture-anatomy.ts`). It deliberately does NOT read a sibling package's
+// dirs, which this file used to do: forge ships no catalog and no dimension dirs,
+// so WHICH dimensions exist and WHICH values fill them are a corpus's facts, and a
+// sibling corpus discovering a dimension must never turn THIS suite red — that
+// inversion is what forge exists to refuse, and `fb944d2` removed it from the type
+// system only for the test layer to keep it alive. What is proven here is the law
+// ANY corpus's enumeration obeys, which a fixture corpus demonstrates and a single
+// real corpus's own suite cannot.
 
 import { mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { mkdtempSync } from 'node:fs';
@@ -21,19 +33,11 @@ import {
 } from '../fixture-anatomy.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-// agent-forge/test/catalog → up to packages → agent-canon/src/dimensions.
-const anatomyDimensions = join(
-  here,
-  '..',
-  '..',
-  '..',
-  'agent-canon',
-  'src',
-  'dimensions',
-);
+// agent-forge/test/catalog → up to test/ → the fixture corpus's dimension dirs.
+const fixtureDimensions = join(here, '..', 'fixture-dimensions');
 
 /**
- * The two shape invariants the live-corpus legs assert, as ONE predicate over
+ * The two shape invariants the corpus-scanning legs assert, as ONE predicate over
  * catalog entries. Named rather than inlined so a synthetic BAD entry can be fed
  * to the same code: `enumerateCatalog` sorts its own output, so a check that only
  * ever sees that output is green whether the corpus is well-formed or the check
@@ -68,13 +72,13 @@ function metaDrift(entries: readonly CatalogEntry[]): string[] {
     .map((e) => `${e.dimension}: ${e.axis}/${e.kind}/${e.arity}`);
 }
 
-describe('enumerateCatalog over agent-canon', () => {
+describe('enumerateCatalog over the fixture corpus', () => {
   let entries: CatalogEntry[];
   beforeAll(async () => {
-    entries = await enumerateCatalog(anatomyDimensions, FIXTURE_ANATOMY);
+    entries = await enumerateCatalog(fixtureDimensions, FIXTURE_ANATOMY);
   });
 
-  it('enumerates exactly the 22 dimensions, in anatomy order', () => {
+  it("enumerates exactly the catalog's dimensions, in the catalog's order", () => {
     expect(entries.map((e) => e.dimension)).toEqual([
       ...FIXTURE_DIMENSION_NAMES,
     ]);
@@ -86,22 +90,12 @@ describe('enumerateCatalog over agent-canon', () => {
     expect(entries.length).toBeGreaterThan(0); // never a vacuous loop
   });
 
-  it('the acceptance spot-checks hold', () => {
+  it('the given catalog metadata reaches the entry, across all three kinds', () => {
     const byDimension = new Map(entries.map((e) => [e.dimension, e]));
-
-    // autonomy is now a SET dimension (per-agent composed standing, D5).
-    const autonomy = byDimension.get('autonomy');
-    expect(autonomy).toMatchObject({ kind: 'enum', arity: 'set' });
-    // O-collapse reduced these to σ*: the loop-ladder anchors are bare (residue ∅),
-    // human-out-of-the-loop carries a `⟨…⟩` residue. No `≜ hitl`-style prose remains.
-    expect(autonomy?.values).toContain('human-in-the-loop');
-    expect(
-      autonomy?.values.some((v) => v.startsWith('human-on-the-loop')),
-    ).toBe(true);
-    expect(
-      autonomy?.values.some((v) => v.startsWith('human-out-of-the-loop')),
-    ).toBe(true);
-
+    expect(byDimension.get('autonomy')).toMatchObject({
+      kind: 'enum',
+      arity: 'set',
+    });
     expect(byDimension.get('guardrails')).toMatchObject({
       kind: 'coined',
       arity: 'set',
@@ -110,12 +104,49 @@ describe('enumerateCatalog over agent-canon', () => {
       kind: 'open',
       arity: 'set',
     });
+    expect(byDimension.get('role')).toMatchObject({
+      kind: 'open',
+      arity: 'scalar',
+    });
   });
 
   it('every value is a non-empty body string, shortlex-sorted (the contract shape)', () => {
     expect(shapeViolations(entries)).toEqual([]);
-    // Non-vacuity of the SCAN: the corpus genuinely carries values to check.
-    expect(entries.flatMap((e) => e.values).length).toBeGreaterThan(100);
+    // Non-vacuity of the SCAN: EVERY dimension genuinely carries values to check.
+    // A count threshold would stay green while one dir went dark; this names the
+    // dimensions that came back empty, so a scan that half-stopped is visible.
+    expect(
+      entries.filter((e) => e.values.length === 0).map((e) => e.dimension),
+    ).toEqual([]);
+    // …and the shortlex leg above has something to sort: `autonomy` holds two
+    // values whose FILENAME order is the reverse of their shortlex order, so a
+    // dropped sort changes the output rather than passing unobserved.
+    expect(entries.find((e) => e.dimension === 'autonomy')?.values).toEqual([
+      'mission-command',
+      'fixture-standing ⟨a residue-bearing fixture value⟩',
+    ]);
+  });
+
+  it('a body arrives VERBATIM — residue intact, never reduced to its anchor', () => {
+    const autonomy = entries.find((e) => e.dimension === 'autonomy');
+    // The whole σ* cell `⟨α, residue⟩`, not the anchor `fixture-standing`. Every
+    // other fixture value has residue ∅, where α === body and the reduction hides.
+    expect(autonomy?.values).toContain(
+      'fixture-standing ⟨a residue-bearing fixture value⟩',
+    );
+    expect(autonomy?.values).not.toContain('fixture-standing');
+  });
+
+  it('an ENFORCING value enumerates by its declaration face (the silent-drop hazard)', () => {
+    // The object-shaped member of `Value<O>`. A `typeof === 'string'` filter drops
+    // it silently and the catalog merely reports one fewer value — an omission
+    // that reads exactly like a smaller corpus. Its BODY must appear, and the
+    // object itself must not.
+    const guardrails = entries.find((e) => e.dimension === 'guardrails');
+    expect(guardrails?.values).toContain(
+      'fixture-enforcing ≜ a rule that carries its own enforcement',
+    );
+    expect(guardrails?.values.every((v) => typeof v === 'string')).toBe(true);
   });
 
   // ── The gate BITES — otherwise it is green whether the corpus is well-formed
@@ -142,6 +173,23 @@ describe('enumerateCatalog over agent-canon', () => {
       'objective: Constitution/open/set',
     ]);
     expect(metaDrift([{ ...clean, dimension: 'telepathy' }])).toHaveLength(1);
+  });
+
+  it("the ORDER is the GIVEN catalog's — not a resident list, not the dir listing", async () => {
+    // The order leg above compares against the same catalog the call was handed,
+    // so it cannot distinguish "follows the argument" from "follows a list baked
+    // into forge". A DIFFERENT catalog must produce a DIFFERENT order: these two
+    // keys are declared `autonomy`-then-`memory` in the fixture catalog and sort
+    // `autonomy`-then-`memory` alphabetically on disk, so only reading THIS
+    // object's key order yields the reversal.
+    const permuted = await enumerateCatalog(fixtureDimensions, {
+      memory: FIXTURE_ANATOMY.memory,
+      autonomy: FIXTURE_ANATOMY.autonomy,
+    });
+    expect(permuted.map((e) => e.dimension)).toEqual(['memory', 'autonomy']);
+    // …and it enumerated ONLY what it was given: forge holds no dimension list.
+    expect(permuted).toHaveLength(2);
+    expect(permuted[0]?.values.length).toBeGreaterThan(0); // not an empty scan
   });
 });
 

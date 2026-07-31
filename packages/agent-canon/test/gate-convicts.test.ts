@@ -104,10 +104,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'agent-forge/adapters/codex-hooks.test.ts': 'BEHAVIORAL',
   'agent-forge/anatomy/enforcing.test.ts': 'BEHAVIORAL',
   'agent-forge/anatomy/project-human.test.ts': 'BEHAVIORAL',
-  // reads agent-canon's live `src/dimensions` dir listing against the descriptor.
+  // reads the FIXTURE corpus's own dimension dir listing against its descriptor.
   'agent-forge/catalog/anatomy-descriptor.test.ts': 'GATE',
   'agent-forge/catalog/discover.test.ts': 'BEHAVIORAL',
-  // enumerates the live canon catalog, asserting a shape invariant over EVERY value.
+  // enumerates the FIXTURE corpus, asserting a shape invariant over EVERY value.
   'agent-forge/catalog/enumerate.test.ts': 'GATE',
   'agent-forge/cli/cli.test.ts': 'BEHAVIORAL',
   'agent-forge/cli/compose.test.ts': 'BEHAVIORAL',
