@@ -36,7 +36,8 @@ legislate its own design but not what a runtime does. Runtime is also the depend
 validates the closed set at run time. The corpus EXTENDS the base through the plugin by the same
 per-key merge the catalog uses, and an unrealizable extension degrades and warns.
 
-**[`DEFECTS.md`](./DEFECTS.md)** — D1: the inversion re-entered through the TEST layer;
+**[`DEFECTS.md`](./DEFECTS.md)** — **LANDED** (`b486803` · `d83488b5` · `082566f0` · `ef06a3e2`).
+Originally: D1 — the inversion re-entered through the TEST layer;
 `agent-forge/test/catalog/anatomy-descriptor.test.ts` reads canon's source tree and asserts canon's
 dimension dirs match forge's fixture catalog, so canon still cannot add a dimension without editing
 forge. D2: the zero-config `agent-forge catalog` path went from unreachable to first-contact in
@@ -46,10 +47,12 @@ forge. D2: the zero-config `agent-forge catalog` path went from unreachable to f
 ordering, the byte-identity oracle, and the trap that a defaulted parameter which is accepted and
 ignored passes every byte-identity check there is.
 
-Both defects the executing agents filed are now specced in `DEFECTS.md`, with one correction found
-while writing it: canon's `cratylism.test.ts` covers dir↔catalog drift in only ONE direction
-(`orphanDirs` — a dir with no catalog entry; verified it fires). The reverse, a catalog key with no
-dir, is unchecked, so repointing forge's leg without extending canon's would silently drop it.
+All defects are now fixed; `DEFECTS.md` carries the record and the three corrections the executing
+agents made to that spec by refusing its instructions rather than satisfying them.
+
+**Remaining, unstarted:** [`EVENT-VOCABULARY.md`](./EVENT-VOCABULARY.md) — base + extension for the
+lifecycle vocabulary, retiring the hardcoded `vcs.commit.post`. Then the long tail in the tables
+below (A2, A5–A12; B7, B11–B14, B16–B17).
 
 Still claude-shaped in deploy, and worth folding in when B1–B6 is done: `deploy/seeds.ts` (memory
 store names + doctrine prose), `deploy/manifest.ts` `KIND_ROOT`, `deploy/init.ts`.

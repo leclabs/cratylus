@@ -1,4 +1,28 @@
-# Two defects from the catalog-ownership shard — execution spec
+# Defects from the catalog-ownership shard — DONE
+
+> **LANDED** — D1 `b486803` · D3 `d83488b5` · D2 `082566f0` · guard fix `ef06a3e2`.
+> Forge 216 → 224 tests, canon 152 → 153, renders byte-identical throughout at
+> `9055e88b6c4679e44fb5ccb73371b9d539d1d6a8`.
+>
+> **The completion property, verified:** canon reworded one of its own values
+> (`human-in-the-loop` gained a residue) and forge's suite stayed green. Before D3 that same
+> canon-internal σ\* act turned forge red.
+>
+> Three corrections the executing agents made to THIS spec, each surfaced by refusing an
+> instruction rather than satisfying it:
+>
+> - **My check `grep agent-canon → nothing` was mis-specified.** It tested a proxy, not the property.
+>   `forge/src` carries 10+ such literals itself. Refusing it is what surfaced D3.
+> - **The stated trigger for D3 was wrong.** The old test did not break on a canon dimension
+>   ADDITION — `enumerateCatalog` iterates the GIVEN catalog, so an undeclared dir was never scanned.
+>   It broke on canon rewording its own value STRINGS: a sharper trigger, and the one that matters.
+> - **D2's branch 3 has a third arm** the spec did not name: a plugin present without `anatomy`
+>   satisfied the guard and drew `mergeAnatomy`'s refusal, which cannot mention `--config`. The
+>   likeliest zero-config mistake got the least useful message. Fixed in `ef06a3e2`.
+>
+> Retained below as the record.
+
+# Original spec
 
 > Working handle, **not** an anchor. Reader = LLM. Both were surfaced by the agents executing
 > `DIMENSION-OWNERSHIP.md`, filed rather than chased because neither impeded that shard.
