@@ -81,8 +81,27 @@ export interface Mark {
 // value's content is the body ⟨α, residue⟩ (rendered `α ≜ residue`, or just `α`
 // for a true σ* whose residue is ∅).
 
-/** A branded fragment string, keyed to dimension `O`. */
-type Fragment<O extends Dimension> = string & { readonly __dimension?: O };
+/**
+ * A branded fragment string, keyed to dimension `O`.
+ *
+ * `O extends string`, NOT `O extends Dimension` — and DO NOT re-tighten it. The
+ * brand discriminates by the type ARGUMENT, not by the constraint: a
+ * `Fragment<'guardrails'>` is refused where a `Role` is wanted because the
+ * `__dimension` properties are incompatible, which holds for any string literal.
+ * Measured, not assumed — both the cross-dimension refusal and the `required`
+ * catch-all survive the relaxation intact.
+ *
+ * The constraint's ONLY job was catching a misspelled dimension name
+ * (`Value<'guardrials'>`). That check MOVES to the corpus, which owns the catalog
+ * and derives its own `Dimension` from it — the projector cannot be the home of
+ * WHICH dimensions exist and still be projecting a design rather than containing
+ * one. Nothing here is lost in the meantime that the corpus does not restore.
+ *
+ * Forge's internals never needed it: `project/index.ts` writes `Value<Dimension>`
+ * to mean "a value of ANY dimension", and nothing in forge branches on a
+ * dimension's identity. The machinery is already structural; this states it.
+ */
+type Fragment<O extends string> = string & { readonly __dimension?: O };
 
 /**
  * WHERE an enforcing value binds — the agents that compose it, and nothing else.
@@ -134,7 +153,7 @@ export interface Binding {
  * harness-innocent by construction; that is what makes one BEING projectable to
  * many FACES.
  */
-export interface Enforcing<O extends Dimension> {
+export interface Enforcing<O extends string> {
   /** The inline declaration — the σ* body ⟨α, residue⟩ this value would be if bare. */
   readonly body: Fragment<O>;
   /** Which substrate the events fire in — the `realize`-target family. */
@@ -164,7 +183,7 @@ export interface Enforcing<O extends Dimension> {
  * branded string and compiles untouched; only a value that opts in carries the
  * enforcing shape.
  */
-export type Value<O extends Dimension> = Fragment<O> | Enforcing<O>;
+export type Value<O extends string> = Fragment<O> | Enforcing<O>;
 
 /**
  * `enforcing(f) ⇔ events(f) ≠ ∅` — DERIVED, never stored.
@@ -173,9 +192,7 @@ export type Value<O extends Dimension> = Fragment<O> | Enforcing<O>;
  * disagree with the data, and two fields can. Non-emptiness is carried by the
  * tuple type, so presence of the shape IS the predicate.
  */
-export const enforcing = <O extends Dimension>(
-  v: Value<O>,
-): v is Enforcing<O> =>
+export const enforcing = <O extends string>(v: Value<O>): v is Enforcing<O> =>
   typeof v === 'object' &&
   v !== null &&
   typeof (v as Enforcing<O>).body === 'string' &&
@@ -194,7 +211,7 @@ export const isDimensionValue = (u: unknown): u is Value<Dimension> =>
   typeof u === 'string' || enforcing(u as Value<Dimension>);
 
 /** The declaration face of a value, enforcing or not — what the SOUL renders. */
-export const bodyOf = <O extends Dimension>(v: Value<O>): Fragment<O> =>
+export const bodyOf = <O extends string>(v: Value<O>): Fragment<O> =>
   enforcing(v) ? v.body : v;
 
 /**
@@ -206,7 +223,7 @@ export const bodyOf = <O extends Dimension>(v: Value<O>): Fragment<O> =>
  * IS. A bare anchor returns itself — absence of ` ≜ ` means residue ∅, never that
  * the anchor is missing.
  */
-export const anchorOf = <O extends Dimension>(v: Value<O>): string => {
+export const anchorOf = <O extends string>(v: Value<O>): string => {
   const body = bodyOf(v);
   const i = body.indexOf(' ≜ ');
   return i < 0 ? body : body.slice(0, i);
@@ -220,7 +237,7 @@ export const anchorOf = <O extends Dimension>(v: Value<O>): string => {
  * untouched — folding a value must never silently unbind it. This is the whole
  * reason the fold cannot simply treat a value as a string any more.
  */
-export const withBody = <O extends Dimension>(
+export const withBody = <O extends string>(
   v: Value<O>,
   body: Fragment<O>,
 ): Value<O> => (enforcing(v) ? { ...v, body } : body);
