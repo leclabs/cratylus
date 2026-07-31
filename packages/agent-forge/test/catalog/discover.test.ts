@@ -18,6 +18,7 @@ import {
   DanglingReferenceError,
   ReferenceCycleError,
 } from '../../src/resolve/resolve.js';
+import { FIXTURE_ANATOMY } from '../fixture-anatomy.js';
 
 /** Write a branded-string fragment module `export const <name> = '<body>'`. */
 function writeStringFragment(
@@ -63,10 +64,13 @@ describe('discoverPluginFragments — namespaced multi-plugin discovery', () => 
     writeStringFragment(alphaDir, 'objective', 'insight', 'insight', 'insight');
     writeStringFragment(betaDir, 'role', 'builder', 'builder', 'the builder');
 
-    plugins = await discoverPluginFragments([
-      { name: 'alpha', fragmentsDir: alphaDir },
-      { name: 'beta', fragmentsDir: betaDir },
-    ]);
+    plugins = await discoverPluginFragments(
+      [
+        { name: 'alpha', fragmentsDir: alphaDir },
+        { name: 'beta', fragmentsDir: betaDir },
+      ],
+      FIXTURE_ANATOMY,
+    );
   });
 
   afterAll(() => rmSync(root, { recursive: true, force: true }));
@@ -146,10 +150,13 @@ describe('discoverPluginFragments — cross-plugin reference acyclicity (§3)', 
     );
 
     await expect(
-      discoverPluginFragments([
-        { name: 'A', fragmentsDir: aDir },
-        { name: 'B', fragmentsDir: bDir },
-      ]),
+      discoverPluginFragments(
+        [
+          { name: 'A', fragmentsDir: aDir },
+          { name: 'B', fragmentsDir: bDir },
+        ],
+        FIXTURE_ANATOMY,
+      ),
     ).rejects.toThrow(ReferenceCycleError);
   });
 
@@ -167,7 +174,10 @@ describe('discoverPluginFragments — cross-plugin reference acyclicity (§3)', 
       ].join('\n'),
     );
     await expect(
-      discoverPluginFragments([{ name: 'C', fragmentsDir: cDir }]),
+      discoverPluginFragments(
+        [{ name: 'C', fragmentsDir: cDir }],
+        FIXTURE_ANATOMY,
+      ),
     ).rejects.toThrow(DanglingReferenceError);
   });
 });

@@ -13,12 +13,8 @@
 // none of them needs to know that enforcement exists.
 
 import { pathToFileURL } from 'node:url';
-import {
-  type Dimension,
-  type Value,
-  bodyOf,
-  isDimensionValue,
-} from '@leclabs/agent-forge/anatomy';
+import { bodyOf, isDimensionValue } from '@leclabs/agent-forge/anatomy';
+import type { Dimension, Value } from '../../src/anatomy.js';
 
 /**
  * The first non-`default` export of a cell module.

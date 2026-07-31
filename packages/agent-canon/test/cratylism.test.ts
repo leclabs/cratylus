@@ -36,8 +36,8 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { DIMENSION_NAMES } from '@leclabs/agent-forge/anatomy';
 import { describe, expect, it } from 'vitest';
+import { DIMENSION_NAMES } from '../src/anatomy.js';
 
 const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const srcRoot = join(anatomyRoot, 'src');

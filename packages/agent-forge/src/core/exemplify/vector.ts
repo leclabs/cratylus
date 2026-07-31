@@ -21,12 +21,7 @@
 
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import {
-  ANATOMY,
-  type Anatomy,
-  type Dimension,
-  kebabToCamel,
-} from '../../anatomy/index.js';
+import { type Anatomy, kebabToCamel } from '../../anatomy/index.js';
 import { canonicalText } from './digest.js';
 import { ExemplifyRefusal } from './types.js';
 
@@ -77,7 +72,7 @@ export interface ElevationSpec {
   /** TS export identifier; default: the name camel-cased. */
   exportName?: string;
   /** All 24 dimensions — completeness is the type; runtime re-checked. */
-  dimensions: Record<Dimension, DimensionPlan>;
+  dimensions: Record<string, DimensionPlan>;
 }
 
 export interface RenderedVector {
@@ -96,10 +91,7 @@ function tsString(value: string): string {
   return JSON.stringify(value);
 }
 
-function renderFragment(
-  dimension: Dimension,
-  f: DimensionFragmentSpec,
-): string {
+function renderFragment(dimension: string, f: DimensionFragmentSpec): string {
   return `{ dimension: '${dimension}', slug: '${f.slug}', definiens: ${tsString(f.definiens)} }`;
 }
 
@@ -110,14 +102,14 @@ function renderFragment(
  */
 export function renderAgentVector(
   spec: ElevationSpec,
-  opts: { sourceText?: string; anatomy?: Anatomy } = {},
+  opts: { anatomy: Anatomy; sourceText?: string },
 ): RenderedVector {
   // The catalog is what COMPLETENESS is measured against — "all dimensions,
-  // always" is a claim about a specific catalog, so the caller may name it.
-  const anatomy = opts.anatomy ?? ANATOMY;
+  // always" is a claim about a SPECIFIC catalog, so the caller names it.
+  const anatomy = opts.anatomy;
   const dimensionNames = Object.keys(anatomy);
   const reasons: string[] = [];
-  const dimensionKeys = Object.keys(spec.dimensions) as Dimension[];
+  const dimensionKeys = Object.keys(spec.dimensions);
   for (const dimension of dimensionNames) {
     if (!(dimension in spec.dimensions))
       reasons.push(`missing dimension '${dimension}'`);
@@ -133,7 +125,7 @@ export function renderAgentVector(
   const lines: string[] = [`  name: '${spec.name}',`];
 
   for (const [name, meta] of Object.entries(anatomy)) {
-    const dimension = name as Dimension;
+    const dimension = name;
     const plan = spec.dimensions[dimension];
     // The kebab→camel rule direct, not a lookup: the field a dimension occupies is
     // derivable from its NAME, so a catalog's own keys are all this needs.
@@ -232,8 +224,8 @@ export interface ElevateOptions {
   /** Root the `agents/` dir is created under. */
   outDir: string;
   spec: ElevationSpec;
-  /** The catalog the spec is checked against; defaults to the resident one. */
-  anatomy?: Anatomy;
+  /** The catalog the spec is checked against. */
+  anatomy: Anatomy;
 }
 
 export interface ElevateResult {

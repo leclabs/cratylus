@@ -1,3 +1,3 @@
-import type { Model } from '@leclabs/agent-forge/anatomy';
+import type { Model } from '../../anatomy.js';
 
 export const claude: Model = `claude ⟨deploy-accident ⇒ substance-over-accident⟩`;

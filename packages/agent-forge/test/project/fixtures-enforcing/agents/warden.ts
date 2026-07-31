@@ -6,9 +6,9 @@
 // vector projects as a BOUND on claude and degrades to a STEER on codex, so one
 // fixture drives both sides of the decision without a mock.
 
-import type { Agent } from '../../../../src/anatomy/index.js';
+import type { FixtureAgent } from '../../../fixture-anatomy.js';
 
-export const warden: Agent = {
+export const warden: FixtureAgent = {
   name: 'warden',
   description: 'a fixture agent composing an enforcing guardrail',
   archetype: 'A fixture agent used to exercise the enforcement-mode seam.',

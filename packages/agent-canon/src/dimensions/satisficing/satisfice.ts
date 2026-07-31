@@ -1,3 +1,3 @@
-import type { Satisficing } from '@leclabs/agent-forge/anatomy';
+import type { Satisficing } from '../../anatomy.js';
 
 export const satisfice: Satisficing = `satisfice`;

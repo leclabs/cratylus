@@ -16,12 +16,15 @@ import {
   type ProjectablePlugin,
   projectPluginSet,
 } from '../../src/project/index.js';
+import { FIXTURE_ANATOMY } from '../fixture-anatomy.js';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 const fixtures = join(here, 'fixtures');
 
 const plugin: ProjectablePlugin = {
   name: 'fixture',
+  // The fixture corpus declares its own dimensions — nothing else can.
+  anatomy: FIXTURE_ANATOMY,
   agents: join(fixtures, 'agents'),
   skills: join(fixtures, 'skills'),
   hooks: join(fixtures, 'hooks'),

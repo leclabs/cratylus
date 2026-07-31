@@ -91,7 +91,7 @@ export const nico: Agent = { ...base, name: 'nico', role: curate_role };
 
 /** (b) the real \`nicoResolved: ResolvedAgent\` — a parallel rep of the Agent vector. */
 const AGENT_WITH_RESOLVED = `import type { ResolvedAgent } from '@leclabs/agent-forge/adapters/claude';
-import type { Agent } from '@leclabs/agent-forge/anatomy';
+import type { Agent } from '../src/anatomy.js';
 import { curate as curate_role } from '../dimensions/role/curate.js';
 export const nico: Agent = { name: 'nico', role: curate_role };
 export const nicoResolved: ResolvedAgent = {

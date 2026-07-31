@@ -7,8 +7,8 @@
 // so BOTH adapters import these DOWNWARD from core — never sideways from each
 // other. (Kills the former `codex/anatomy.ts → claude/anatomy.ts` edge.)
 
-import type { Agent, Anatomy, Dimension, Value } from '../anatomy/index.js';
-import { ANATOMY, bodyOf } from '../anatomy/index.js';
+import type { Agent, Anatomy, Value } from '../anatomy/index.js';
+import { bodyOf, dimensionValueOf } from '../anatomy/index.js';
 import { renderSkillCellBody } from './exemplify/skill-cell.js';
 
 // ── Dimension → markdown helpers ─────────────────────────────────────────────────
@@ -22,16 +22,14 @@ export function dimensionTitle(dimension: string): string {
 }
 
 /** dimension kebab name → its `Agent` camelCase field. */
-export function dimensionField(dimension: string): keyof Agent {
-  return dimension.replace(/-(\w)/g, (_, c: string) =>
-    c.toUpperCase(),
-  ) as keyof Agent;
+export function dimensionField(dimension: string): string {
+  return dimension.replace(/-(\w)/g, (_, c: string) => c.toUpperCase());
 }
 
 /**
  * The agent def BODY (no front-matter) — derived from the `Agent` VECTOR alone:
  * `# <emoji> <name>`, the `## Archetype` identity section, then each non-null dimension
- * (in ANATOMY declaration order) as a `## <Dimension-Title>` heading + its branded
+ * (in the catalog's declaration order) as a `## <Dimension-Title>` heading + its branded
  * value(s) — the value string IS the SOUL body ⟨α, residue⟩, emitted verbatim; a
  * set dimension lists its members blank-separated. `null` dimensions are omitted
  * (harness-inherit). Closed `rstrip() + "\n"`.
@@ -40,7 +38,7 @@ export function dimensionField(dimension: string): keyof Agent {
  * catalog is a parameter and not a module read: the sequence of an agent's
  * sections is a fact about the corpus that declared the dimensions.
  */
-export function agentBody(a: Agent, anatomy: Anatomy = ANATOMY): string {
+export function agentBody(a: Agent, anatomy: Anatomy): string {
   const emoji = a.provenance?.mark.emoji ?? '';
   const heading = emoji ? `${emoji} ${a.name}` : a.name;
   const out: string[] = [`# ${heading}`, ''];
@@ -53,7 +51,7 @@ export function agentBody(a: Agent, anatomy: Anatomy = ANATOMY): string {
     out.push('## Archetype', '', a.archetype, '');
   }
   for (const dimension of Object.keys(anatomy)) {
-    const value = a[dimensionField(dimension)];
+    const value = dimensionValueOf(a, dimensionField(dimension));
     if (value === null || value === undefined) {
       continue;
     }
@@ -64,7 +62,7 @@ export function agentBody(a: Agent, anatomy: Anatomy = ANATOMY): string {
       // straight into the SOUL — a corruption tsc could not see, because the cast
       // was the thing suppressing it. The SOUL carries the DECLARATION face only:
       // substrate and events are where the rule binds, not what it says.
-      out.push(bodyOf(v as Value<Dimension>), '');
+      out.push(bodyOf(v as Value<string>), '');
     }
   }
   return `${out.join('\n').replace(/\n+$/, '')}\n`;

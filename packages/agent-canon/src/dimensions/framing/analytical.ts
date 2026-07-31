@@ -1,3 +1,3 @@
-import type { Framing } from '@leclabs/agent-forge/anatomy';
+import type { Framing } from '../../anatomy.js';
 
 export const analytical: Framing = `analytical`;

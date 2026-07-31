@@ -1,4 +1,4 @@
-// The claude-code projection of the agent ANATOMY: assemble a full SOUL `.md`
+// The claude-code projection of the agent anatomy: assemble a full SOUL `.md`
 // (front-matter + `## Dimension` sections + the `## Memory Protocol` genus block) from
 // a typed agent's dimension vector; and project a skill cell to its SKILL.md. This is
 // agent-forge's claude adapter owning "project a typed Agent/Skill to claude-code
@@ -62,7 +62,7 @@ export { type ResolvedSkill, agentBody, dimensionTitle, skillBody };
 function agentFrontMatter(
   a: Agent,
   mechanisms: ReadonlyMap<string, HarnessMechanism>,
-  anatomy?: Anatomy,
+  anatomy: Anatomy,
 ): string[] {
   const fm: string[] = [`name: ${a.name}`, `description: ${a.description}`];
   if (a.provenance?.mark) {
@@ -95,11 +95,11 @@ function agentFrontMatter(
 function agentHooksFrontMatter(
   a: Agent,
   mechanisms: ReadonlyMap<string, HarnessMechanism>,
-  anatomy?: Anatomy,
+  anatomy: Anatomy,
 ): string[] {
   // Which fields hold values at all is a fact of the CATALOG, so an agent's
-  // enforcing set is read against the set's catalog — a dimension the corpus
-  // declared and forge never heard of enforces nothing otherwise.
+  // enforcing set is read against the set's catalog — there is no other catalog
+  // to read it against, and a dimension nobody declared enforces nothing.
   const withMech = enforcingValuesOf(a, anatomy)
     .filter((f) => f.substrate === 'harness')
     .map((f) => ({ f, m: mechanisms.get(f.realizedBy ?? anchorOf(f)) }))
@@ -157,15 +157,12 @@ function frameClaudeMd(frontMatter: string[], body: string): string {
 
 /**
  * The full claude-code SOUL for an agent, projected from its `Agent` vector under
- * the set's context. `ctx` is PARTIAL where the port's is total: this is also the
- * hand-callable entry (a single agent, no plugin set), and an absent field is
- * forwarded as absent so the reader downstream applies its own default — which is
- * why no catalog is named here. The port stays total; only this face relaxes.
+ * the set's context. Also the hand-callable entry (a single agent, no plugin set)
+ * — which is why `mechanisms` may be absent. `anatomy` may NOT: a SOUL projected
+ * without a catalog has no dimension sections at all, and that renders as a
+ * plausible, well-formed, empty agent rather than as an error.
  */
-export function agentToClaudeMd(
-  a: Agent,
-  ctx: Partial<AgentDefContext> = {},
-): string {
+export function agentToClaudeMd(a: Agent, ctx: AgentDefContext): string {
   return frameClaudeMd(
     agentFrontMatter(a, ctx.mechanisms ?? new Map(), ctx.anatomy),
     agentBody(a, ctx.anatomy),

@@ -1,11 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import {
-  type Guardrails,
   bodyOf,
   enforcing,
   isDimensionValue,
   withBody,
 } from '../../src/anatomy/index.js';
+import { FIXTURE_ANATOMY, type FixtureValue } from '../fixture-anatomy.js';
+
+type Guardrails = FixtureValue<'guardrails'>;
 
 // `enforcing(f) ⇔ events(f) ≠ ∅` — MODEL's predicate, DERIVED and never stored.
 // These are the runtime half of S1; the type-level half is anatomy.test-d.ts
@@ -65,11 +67,14 @@ describe('SOUL rendering — an enforcing value renders its DECLARATION', () => 
     // The regression this guards: `agentBody` pushed `v as string`, and the cast
     // was the very thing hiding that a value may be an object. tsc could not see
     // it; only a rendered body can.
-    const body = agentBody({
-      name: 'a',
-      archetype: 'x',
-      guardrails: [bound, bare],
-    } as never);
+    const body = agentBody(
+      {
+        name: 'a',
+        archetype: 'x',
+        guardrails: [bound, bare],
+      } as never,
+      FIXTURE_ANATOMY,
+    );
     expect(body).not.toContain('[object Object]');
     expect(body).toContain('stance ≜ hold the stance');
     expect(body).toContain('honesty ≜ assert from evidence');

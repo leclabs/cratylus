@@ -37,6 +37,7 @@ import {
   resolveFragmentBodies,
 } from '../../src/project/index.js';
 import type { PatchEntry } from '../../src/resolve/resolve.js';
+import { FIXTURE_ANATOMY } from '../fixture-anatomy.js';
 
 /** The fragment body as authored on disk — what the agent module imports. */
 const AUTHORED = 'insight ⟨probe · authored⟩';
@@ -112,7 +113,7 @@ function fixturePlugin(): FragmentPlugin {
     'utf8',
   );
 
-  return { name: 'probe', fragments, agents };
+  return { name: 'probe', anatomy: FIXTURE_ANATOMY, fragments, agents };
 }
 
 /** The projected SOUL of the fixture agent, under a given fold. */
@@ -190,8 +191,8 @@ describe('resolver ⇄ projector parity', () => {
   });
 
   it('a plugin shipping no fragments dir discovers nothing and renders as authored', async () => {
-    const { name, agents } = fixturePlugin();
-    const plugin: ProjectablePlugin = { name, agents };
+    const { name, anatomy, agents } = fixturePlugin();
+    const plugin: ProjectablePlugin = { name, anatomy, agents };
     expect(await discoverFragments([plugin])).toHaveLength(0);
     expect(await soulOf(plugin)).toContain(AUTHORED);
   });
@@ -203,6 +204,9 @@ describe('resolver ⇄ projector parity', () => {
   it('is the identity over the real canon fragment corpus — zero render-tree delta', async () => {
     const canon: ProjectablePlugin = {
       name: 'canon',
+      // canon's real catalog is canon's; this leg only needs A catalog naming
+      // the dirs its corpus carries, and the fixture corpus names the same 22.
+      anatomy: FIXTURE_ANATOMY,
       fragments: fileURLToPath(
         new URL('../../../agent-canon/src/dimensions', import.meta.url),
       ),

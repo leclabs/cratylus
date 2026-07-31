@@ -10,9 +10,9 @@
 // exemption — a cast or an `@ts-expect-error` here would re-open the hole under
 // a different name.
 
-import type { Agent } from '../../../../src/anatomy/index.js';
+import type { FixtureAgent } from '../../../fixture-anatomy.js';
 
-export const probe: Agent = {
+export const probe: FixtureAgent = {
   name: 'probe',
   description: 'a fixture agent',
   autonomy: null,

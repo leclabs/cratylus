@@ -10,12 +10,15 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { ANATOMY, DIMENSION_NAMES } from '../../src/anatomy/index.js';
 import {
   type CatalogEntry,
   enumerateCatalog,
   shortlex,
 } from '../../src/catalog/index.js';
+import {
+  FIXTURE_ANATOMY,
+  FIXTURE_DIMENSION_NAMES,
+} from '../fixture-anatomy.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 // agent-forge/test/catalog → up to packages → agent-canon/src/dimensions.
@@ -49,12 +52,12 @@ function shapeViolations(entries: readonly CatalogEntry[]): string[] {
   return bad;
 }
 
-/** Descriptor drift: a dimension the catalog names that ANATOMY does not describe
+/** Descriptor drift: a dimension the catalog names that the catalog does not describe
  *  the same way (axis/kind/arity), or a dimension list that is not the anatomy's. */
 function metaDrift(entries: readonly CatalogEntry[]): string[] {
   return entries
     .filter((e) => {
-      const meta = ANATOMY[e.dimension];
+      const meta = FIXTURE_ANATOMY[e.dimension as keyof typeof FIXTURE_ANATOMY];
       return (
         meta === undefined ||
         meta.axis !== e.axis ||
@@ -68,15 +71,17 @@ function metaDrift(entries: readonly CatalogEntry[]): string[] {
 describe('enumerateCatalog over agent-canon', () => {
   let entries: CatalogEntry[];
   beforeAll(async () => {
-    entries = await enumerateCatalog(anatomyDimensions);
+    entries = await enumerateCatalog(anatomyDimensions, FIXTURE_ANATOMY);
   });
 
   it('enumerates exactly the 22 dimensions, in anatomy order', () => {
-    expect(entries.map((e) => e.dimension)).toEqual([...DIMENSION_NAMES]);
+    expect(entries.map((e) => e.dimension)).toEqual([
+      ...FIXTURE_DIMENSION_NAMES,
+    ]);
     expect(entries).toHaveLength(22);
   });
 
-  it("each dimension's axis/kind/arity matches ANATOMY", () => {
+  it("each dimension's axis/kind/arity matches the catalog", () => {
     expect(metaDrift(entries)).toEqual([]);
     expect(entries.length).toBeGreaterThan(0); // never a vacuous loop
   });
@@ -118,7 +123,7 @@ describe('enumerateCatalog over agent-canon', () => {
   it('is non-vacuous — an unsorted, empty-bodied or metadata-drifted entry is CONVICTED', () => {
     const clean: CatalogEntry = {
       dimension: 'objective',
-      ...ANATOMY.objective,
+      ...FIXTURE_ANATOMY.objective,
       values: ['a', 'bb'],
     };
     expect(shapeViolations([clean])).toEqual([]);
@@ -132,15 +137,11 @@ describe('enumerateCatalog over agent-canon', () => {
     expect(shapeViolations([{ ...clean, values: [''] }])).toEqual([
       'objective: empty value body',
     ]);
-    // BAD input 3: catalog metadata that drifted from ANATOMY.
+    // BAD input 3: catalog metadata that drifted from the catalog.
     expect(metaDrift([{ ...clean, arity: 'set' }])).toEqual([
       'objective: Constitution/open/set',
     ]);
-    expect(
-      metaDrift([
-        { ...clean, dimension: 'telepathy' as CatalogEntry['dimension'] },
-      ]),
-    ).toHaveLength(1);
+    expect(metaDrift([{ ...clean, dimension: 'telepathy' }])).toHaveLength(1);
   });
 });
 
@@ -166,7 +167,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
     mkdirSync(addressDir, { recursive: true });
 
     // Before: empty dimension → zero values, dimension still listed with its metadata.
-    let entries = await enumerateCatalog(dir);
+    let entries = await enumerateCatalog(dir, FIXTURE_ANATOMY);
     const before = entries.find((e) => e.dimension === 'autonomy');
     expect(before).toMatchObject({
       dimension: 'autonomy',
@@ -188,7 +189,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
     );
 
     // After: it shows up — discovered, not listed.
-    entries = await enumerateCatalog(dir);
+    entries = await enumerateCatalog(dir, FIXTURE_ANATOMY);
     const after = entries.find((e) => e.dimension === 'autonomy');
     expect(after?.values).toEqual([
       'fixture-mode ≜ a discovered-only fixture value',

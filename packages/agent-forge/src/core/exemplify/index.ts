@@ -12,7 +12,7 @@ export {
   optimize,
   readManifest,
 } from './pipeline.js';
-export { DIMENSION_FIELD, dimensionFieldsOf } from './dimension-fields.js';
+export { dimensionFieldsOf } from './dimension-fields.js';
 export {
   classifyRegister,
   humanMarkerHits,

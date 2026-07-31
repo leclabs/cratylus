@@ -1,12 +1,14 @@
 import type {
   Anatomy,
-  Dimension,
-  DimensionFieldName,
   Agent as DimensionVector,
   Enforcing,
   Value,
 } from '../../anatomy/index.js';
-import { ANATOMY, enforcing, kebabToCamel } from '../../anatomy/index.js';
+import {
+  dimensionValueOf,
+  enforcing,
+  kebabToCamel,
+} from '../../anatomy/index.js';
 
 /**
  * Dimension name → the `Agent` field carrying it, DERIVED from a catalog by the
@@ -14,24 +16,16 @@ import { ANATOMY, enforcing, kebabToCamel } from '../../anatomy/index.js';
  *
  * This was 22 hand-written pairs, and its own doc-comment argued against a second
  * hand-kept list of dimensions while being exactly that. There is no list here
- * now: a dimension added to the catalog appears in this map the same moment.
+ * now, and no resident catalog to default to: a caller states WHICH catalog it
+ * reads, and a dimension added to that catalog appears in this map the same moment.
  */
 export function dimensionFieldsOf(
-  anatomy: Anatomy = ANATOMY,
+  anatomy: Anatomy,
 ): Readonly<Record<string, string>> {
   return Object.fromEntries(
     Object.keys(anatomy).map((d) => [d, kebabToCamel(d)]),
   );
 }
-
-/**
- * The field map of the RESIDENT catalog — the default argument, bound once so a
- * caller who has no catalog to name (and every type-level consumer, which needs
- * the literal-keyed shape) keeps reading one name.
- */
-export const DIMENSION_FIELD = dimensionFieldsOf() as {
-  readonly [D in Dimension]: DimensionFieldName<D>;
-};
 
 /**
  * Every enforcing value an agent composes, across every dimension.
@@ -47,14 +41,14 @@ export const DIMENSION_FIELD = dimensionFieldsOf() as {
  */
 export function enforcingValuesOf(
   agent: DimensionVector,
-  anatomy: Anatomy = ANATOMY,
-): Enforcing<Dimension>[] {
-  const out: Enforcing<Dimension>[] = [];
+  anatomy: Anatomy,
+): Enforcing<string>[] {
+  const out: Enforcing<string>[] = [];
   for (const field of Object.values(dimensionFieldsOf(anatomy))) {
-    const v = (agent as unknown as Record<string, unknown>)[field];
+    const v = dimensionValueOf(agent, field);
     if (v === null || v === undefined) continue;
     for (const item of Array.isArray(v) ? v : [v]) {
-      const value = item as Value<Dimension>;
+      const value = item as Value<string>;
       if (enforcing(value)) out.push(value);
     }
   }

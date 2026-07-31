@@ -30,20 +30,19 @@
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
-  ANATOMY,
   type Agent,
   type Anatomy,
   type Binding,
-  type Dimension,
-  type DimensionMeta,
   type Enforcing,
   type HookCell,
   type Skill,
   type Value,
   anchorOf,
   bodyOf,
+  dimensionValueOf,
   enforcing,
   hookIrOf,
+  mergeAnatomy,
   withBody,
 } from '../anatomy/index.js';
 import {
@@ -51,7 +50,10 @@ import {
   discoverPluginFragments,
 } from '../catalog/index.js';
 import type { ResolvedSkill } from '../core/anatomy-body.js';
-import { enforcingValuesOf } from '../core/exemplify/dimension-fields.js';
+import {
+  dimensionFieldsOf,
+  enforcingValuesOf,
+} from '../core/exemplify/dimension-fields.js';
 import type { HarnessAdapter } from '../core/harness-adapter.js';
 import type { HarnessMechanism } from '../core/hook/index.js';
 import {
@@ -219,17 +221,17 @@ async function hookOf(modPath: string): Promise<HookCell | null> {
  * byte-stable — an unsorted set would churn the deploy diff and hide real changes
  * among reorderings.
  *
- * `anatomy` is the catalog the vector is READ against — omitted ⇒ the resident one.
- * A dimension the set declares and forge does not know is invisible here otherwise,
- * so its enforcing values would bind nothing while its SOUL section still printed.
+ * `anatomy` is the catalog the vector is READ against — REQUIRED. A dimension the
+ * set declares and the reader does not know is invisible here, so its enforcing
+ * values would bind nothing while its SOUL section still printed.
  */
 export function bindingsOf(
   agents: readonly { readonly name: string; readonly agent: Agent }[],
-  anatomy?: Anatomy,
+  anatomy: Anatomy,
 ): Binding[] {
   const byAnchor = new Map<
     string,
-    { fragment: Enforcing<Dimension>; agents: Set<string> }
+    { fragment: Enforcing<string>; agents: Set<string> }
   >();
   for (const { name, agent } of agents) {
     for (const fragment of enforcingValuesOf(agent, anatomy)) {
@@ -284,7 +286,9 @@ export async function discoverFragments(
       Boolean(p.fragments),
     )
     .map((p) => ({ name: p.name, fragmentsDir: p.fragments }));
-  return sources.length === 0 ? [] : discoverPluginFragments(sources);
+  return sources.length === 0
+    ? []
+    : discoverPluginFragments(sources, mergeAnatomy(plugins));
 }
 
 /**
@@ -341,15 +345,23 @@ export function resolveFragmentBodies(
 }
 
 /**
- * Rewrite an agent's DIMENSION fields through the resolved-body substitution. Only
- * the 22 fragment dimensions are touched: `archetype` is a plain identity string
- * (D13) and `provenance` the structured mark (D3) — neither lives in a `fragments`
- * dir, so neither is a fold subject. An empty substitution returns the agent
- * unchanged (identity, not a copy) so the no-patch path stays byte-exact.
+ * Rewrite an agent's DIMENSION fields through the resolved-body substitution.
+ *
+ * ONLY the catalog's dimension fields are touched: `archetype` is a plain identity
+ * string (D13) and `provenance` the structured mark (D3) — neither lives in a
+ * `fragments` dir, so neither is a fold subject. An empty substitution returns the
+ * agent unchanged (identity, not a copy) so the no-patch path stays byte-exact.
+ *
+ * WHICH fields those are is read off the CATALOG, not listed here. The list used
+ * to be 22 hand-written lines, which made this function the last place in the
+ * projector that knew a dimension by name — and a corpus that declared a
+ * twenty-third would have had its values silently skipped by the fold while the
+ * SOUL still printed them.
  */
 function withResolvedBodies(
   agent: Agent,
   subst: ReadonlyMap<string, string>,
+  anatomy: Anatomy,
 ): Agent {
   if (subst.size === 0) return agent;
   // Substitute a value's DECLARATION face and put the binding back. A value may
@@ -357,82 +369,24 @@ function withResolvedBodies(
   // are not bodies — folding a value must never silently unbind it. Keying the
   // map on `bodyOf(v)` is what keeps an enforcing value substitutable by the same
   // authored body a bare one uses.
-  const sub = <T extends Value<Dimension>>(v: T): T => {
+  const sub = (v: Value<string>): Value<string> => {
     const body = bodyOf(v);
-    return withBody(v, subst.get(body) ?? body) as T;
+    return withBody(v, subst.get(body) ?? body);
   };
-  const one = <T extends Value<Dimension>>(v: T | null): T | null =>
-    v === null ? null : sub(v);
-  // Overloaded so nullability ROUND-TRIPS. `guardrails` is the one set dimension
-  // with no `| null` (the catch-all — see `Agent` in anatomy), so a single
-  // `readonly T[] | null` return would widen it back to nullable here and fail to
-  // assign. Widening it with a cast would have "fixed" the error by re-admitting
-  // the null this dimension exists to exclude.
-  function many<T extends Value<Dimension>>(vs: readonly T[]): readonly T[];
-  function many<T extends Value<Dimension>>(
-    vs: readonly T[] | null,
-  ): readonly T[] | null;
-  function many<T extends Value<Dimension>>(
-    vs: readonly T[] | null,
-  ): readonly T[] | null {
-    return vs === null ? null : vs.map(sub);
+  // Spread first, then overwrite in place: every dimension key already exists on
+  // the agent (completeness law), so the field ORDER of the copy is the field
+  // order of the original — the fold moves bodies, never bytes of structure.
+  const folded: Record<string, unknown> = { ...agent };
+  for (const field of Object.values(dimensionFieldsOf(anatomy))) {
+    const v = dimensionValueOf(agent, field);
+    // `null` is the omit-to-inherit sentinel and stays exactly that; a dimension
+    // the agent does not carry is left untouched rather than minted as `null`.
+    if (v === null || v === undefined) continue;
+    folded[field] = Array.isArray(v)
+      ? (v as readonly Value<string>[]).map(sub)
+      : sub(v as Value<string>);
   }
-  return {
-    ...agent,
-    autonomy: many(agent.autonomy),
-    role: one(agent.role),
-    formality: one(agent.formality),
-    audienceAdaptation: one(agent.audienceAdaptation),
-    transparency: one(agent.transparency),
-    objective: one(agent.objective),
-    guardrails: many(agent.guardrails),
-    engineeringPrinciples: many(agent.engineeringPrinciples),
-    heuristics: many(agent.heuristics),
-    capabilities: many(agent.capabilities),
-    learning: one(agent.learning),
-    situationAwareness: one(agent.situationAwareness),
-    actions: many(agent.actions),
-    modalities: one(agent.modalities),
-    model: one(agent.model),
-    memory: one(agent.memory),
-    trigger: one(agent.trigger),
-    framing: one(agent.framing),
-    reasoningStrategy: one(agent.reasoningStrategy),
-    satisficing: one(agent.satisficing),
-    outputFormat: one(agent.outputFormat),
-    selfEvaluation: one(agent.selfEvaluation),
-  };
-}
-
-/**
- * The plugin set's DIMENSION CATALOG: the per-key merge of every declared one, in
- * `extends` order, later plugin winning that key — and every override reported.
- *
- * PER-KEY, not last-catalog-wins, and that is the whole point rather than a
- * tie-break detail: a consumer must be able to ADD a dimension to the design it
- * extends without forking that design, which a whole-catalog contest makes
- * impossible. A dimension keeps the POSITION of the plugin that first declared it,
- * because `agentBody` reads section order off `Object.keys` — an override changes a
- * dimension's metadata, never where its section lands.
- *
- * No plugin declaring one ⇒ forge's resident catalog. That fallback is a MIGRATION
- * state, not a design: it dies with `ANATOMY` when the catalog moves to the corpus.
- */
-function resolveAnatomy(
-  plugins: readonly ProjectablePlugin[],
-  log: (line: string) => void,
-): Anatomy {
-  const merged: Record<string, DimensionMeta> = {};
-  const declaredBy = new Map<string, string>();
-  for (const p of plugins) {
-    for (const [dimension, meta] of Object.entries(p.anatomy ?? {})) {
-      const prev = declaredBy.get(dimension);
-      if (prev) log(`  override dimension ${dimension}: ${prev} → ${p.name}`);
-      merged[dimension] = meta;
-      declaredBy.set(dimension, p.name);
-    }
-  }
-  return declaredBy.size === 0 ? ANATOMY : merged;
+  return folded as unknown as Agent;
 }
 
 /**
@@ -473,7 +427,7 @@ export async function projectPluginSet(
   // WHICH dimensions exist is settled before any vector is read: it decides the
   // fields an agent carries, its section order, and what counts as an enforcing
   // value — so every reader below is told, none left to guess at forge's own.
-  const anatomy = resolveAnatomy(opts.plugins, log);
+  const anatomy = mergeAnatomy(opts.plugins, log);
 
   // An agent is rendered from the RESOLVED catalog, never from the bodies its
   // module happened to import (ENGINE:22). Every move is reported, never silent.
@@ -524,7 +478,7 @@ export async function projectPluginSet(
   for (const [name, { dir, preamble: pre }] of [...agentSrc].sort()) {
     const modPath = await resolveModulePath(dir, name);
     if (!modPath) throw new Error(`agent module not found: ${name}`);
-    const agent = withResolvedBodies(await agentOf(modPath), subst);
+    const agent = withResolvedBodies(await agentOf(modPath), subst, anatomy);
     composed.push({ name, agent });
     pending.push({ name, ...(pre ? { pre } : {}) });
   }

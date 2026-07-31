@@ -11,6 +11,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runCompose } from '../../src/cli/commands/compose.js';
+import { FIXTURE_ANATOMY } from '../fixture-anatomy.js';
 
 /** Recursive listing of a dir (relative paths), to assert nothing was written. */
 function listing(dir: string): string[] {
@@ -44,7 +45,7 @@ describe('compose --dry-run', () => {
       join(cwd, 'agents.config.ts'),
       [
         "import { fileURLToPath } from 'node:url';",
-        "const plugin = { name: 'syn', fragments: fileURLToPath(new URL('./frags', import.meta.url)) };",
+        `const plugin = { name: 'syn', anatomy: ${JSON.stringify(FIXTURE_ANATOMY)}, fragments: fileURLToPath(new URL('./frags', import.meta.url)) };`,
         'export default { extends: [plugin], patches: [] };',
         '',
       ].join('\n'),

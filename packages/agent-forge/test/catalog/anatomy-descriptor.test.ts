@@ -1,19 +1,24 @@
-// The runtime dimension-metadata descriptor (`ANATOMY`) is SINGLE-SOURCED against
-// the per-dimension branded-string TYPE aliases. This file is the RUNTIME guard:
-// the keyset is EXACTLY the 22 fragment-dimension literals — no missing dimension, no
-// extra key, no drift between the descriptor and the corpus's actual dimension
-// dirs (archetype/provenance keep their dirs for README-only docs, but carry no
-// `.ts` value cells and are NOT `Dimension` fragment members — D13/D3).
+// A dimension CATALOG is SINGLE-SOURCED against the per-dimension branded-string
+// TYPE aliases it derives. This file is the RUNTIME guard over the FIXTURE
+// corpus's catalog (`test/fixture-anatomy.ts`): the keyset is exactly its 22
+// fragment-dimension literals — no missing dimension, no extra key, no drift
+// between the descriptor and the value dirs it files against (archetype and
+// provenance keep their dirs for README-only docs, but carry no `.ts` value cells
+// and are NOT fragment members — D13/D3).
+//
+// The catalog under test is the fixture corpus's, not agent-canon's: forge ships
+// none, and canon's is gated by canon's own `cratylism.test.ts` against canon's
+// own dirs. What is proven here is the SHAPE law any catalog owes.
 
 import { readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
-  ANATOMY,
-  DIMENSION_NAMES,
-  type Dimension,
-} from '../../src/anatomy/index.js';
+  FIXTURE_ANATOMY,
+  FIXTURE_DIMENSION_NAMES,
+  type FixtureDimension,
+} from '../fixture-anatomy.js';
 
 // The 22 fragment-dimension literals, copied here as the INDEPENDENT oracle (this
 // list is authored from the `Dimension` union in the anatomy doc; if the union
@@ -21,7 +26,7 @@ import {
 // exactly the point — adding a dimension forces touching its metadata AND this
 // assertion together). `archetype` and `provenance` are excluded: neither is a
 // σ*-fragment dimension (archetype = plain string, provenance = structured `{mark}`).
-const THE_22: readonly Dimension[] = [
+const THE_22: readonly FixtureDimension[] = [
   'autonomy',
   'role',
   'formality',
@@ -77,22 +82,22 @@ function illegalMeta(m: Meta): string[] {
   return bad;
 }
 
-describe('ANATOMY descriptor', () => {
+describe('a dimension catalog', () => {
   it('has exactly the 22 dimensions as keys (no missing, no extra)', () => {
-    expect([...DIMENSION_NAMES].sort()).toEqual([...THE_22].sort());
-    expect(Object.keys(ANATOMY)).toHaveLength(22);
+    expect([...FIXTURE_DIMENSION_NAMES].sort()).toEqual([...THE_22].sort());
+    expect(Object.keys(FIXTURE_ANATOMY)).toHaveLength(22);
   });
 
   it('every axis/kind/arity is a legal value', () => {
-    for (const dimension of DIMENSION_NAMES) {
-      expect(illegalMeta(ANATOMY[dimension]), dimension).toEqual([]);
+    for (const dimension of FIXTURE_DIMENSION_NAMES) {
+      expect(illegalMeta(FIXTURE_ANATOMY[dimension]), dimension).toEqual([]);
     }
-    expect(DIMENSION_NAMES.length).toBeGreaterThan(0); // never a vacuous loop
+    expect(FIXTURE_DIMENSION_NAMES.length).toBeGreaterThan(0); // never a vacuous loop
   });
 
   it('the six set dimensions are exactly the set-arity entries', () => {
-    const setDimensions = DIMENSION_NAMES.filter(
-      (o) => ANATOMY[o].arity === 'set',
+    const setDimensions = FIXTURE_DIMENSION_NAMES.filter(
+      (o: FixtureDimension) => FIXTURE_ANATOMY[o].arity === 'set',
     );
     expect([...setDimensions].sort()).toEqual(
       [
@@ -126,7 +131,7 @@ describe('ANATOMY descriptor', () => {
       .filter((name) => name !== 'archetype' && name !== 'provenance')
       .sort();
     expect(dirs.length).toBeGreaterThan(0); // a listing that read nothing is DARK
-    expect(corpusDrift(dirs, DIMENSION_NAMES)).toEqual({
+    expect(corpusDrift(dirs, FIXTURE_DIMENSION_NAMES)).toEqual({
       missing: [],
       extra: [],
     });
@@ -139,16 +144,18 @@ describe('ANATOMY descriptor', () => {
     // clean corpus can exhibit.
     // `telepathy` is deliberately not a DimensionName — that is the whole point of
     // the fixture — so the array is widened to string rather than the literal union.
-    const drifted: string[] = ([...DIMENSION_NAMES] as string[])
+    const drifted: string[] = ([...FIXTURE_DIMENSION_NAMES] as string[])
       .filter((d) => d !== 'memory')
       .concat('telepathy')
       .sort();
-    expect(corpusDrift(drifted, DIMENSION_NAMES)).toEqual({
+    expect(corpusDrift(drifted, FIXTURE_DIMENSION_NAMES)).toEqual({
       missing: ['memory'],
       extra: ['telepathy'],
     });
     // EXONERATES: the clean corpus is genuinely clean, not merely unexamined.
-    expect(corpusDrift([...DIMENSION_NAMES], DIMENSION_NAMES)).toEqual({
+    expect(
+      corpusDrift([...FIXTURE_DIMENSION_NAMES], FIXTURE_DIMENSION_NAMES),
+    ).toEqual({
       missing: [],
       extra: [],
     });

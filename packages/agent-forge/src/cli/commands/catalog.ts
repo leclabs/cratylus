@@ -12,15 +12,17 @@
 //    value bodies joined with the dimension metadata (`enumerateCatalog`). Kept
 //    verbatim as the doctrine-agnostic option-space view.
 //
-// agent-forge owns the mechanism (it types the 24 dimensions via `ANATOMY`); the
-// corpus/plugins supply the data. Mode selection: `--corpus` forces the corpus
+// agent-forge owns the mechanism (it types whatever dimensions it is handed); the
+// corpus/plugins supply the data — BOTH halves of it, the value modules and the
+// catalog they file under. Mode selection: `--corpus` forces the corpus
 // view; else a present config drives the cross-plugin view; else the default
 // agent-canon corpus is the fallback (zero-arg keeps working in this monorepo).
 
 import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import pc from 'picocolors';
+import { type Anatomy, mergeAnatomy } from '../../anatomy/index.js';
 import { type CatalogEntry, enumerateCatalog } from '../../catalog/index.js';
 import { loadAgentsConfig, loadPlugins } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
@@ -137,9 +139,41 @@ async function runCrossPlugin(
   return 0;
 }
 
+/**
+ * The dimension CATALOG the corpus census joins against — the corpus's own, never
+ * the projector's, because the projector has none.
+ *
+ * A corpus's `dimensions/` dir is a plugin's `fragments` dir, so the catalog is on
+ * that plugin: read it off the extended plugins when a config names them, and
+ * otherwise off the corpus package's own entry module (the sibling of its
+ * `dimensions/` dir — the same self-location `defaultCorpus` already assumes).
+ */
+async function corpusAnatomy(
+  corpus: string,
+  configPath: string,
+): Promise<Anatomy> {
+  if (existsSync(configPath)) {
+    const config = await loadAgentsConfig(configPath);
+    return mergeAnatomy(config.extends ?? []);
+  }
+  for (const entry of ['index.ts', 'index.js']) {
+    const mod = join(corpus, '..', entry);
+    if (!existsSync(mod)) continue;
+    const loaded = (await import(pathToFileURL(mod).href)) as {
+      default?: { name?: string; anatomy?: Anatomy };
+    };
+    if (loaded.default)
+      return mergeAnatomy([{ name: corpus, ...loaded.default }]);
+  }
+  throw new Error(
+    `no dimension catalog for corpus ${corpus} — declare one on the corpus plugin's \`anatomy\`, or point --config at a config that extends it`,
+  );
+}
+
 /** The CORPUS view: enumerate one corpus's per-dimension value census. */
 async function runCorpus(
   corpus: string,
+  configPath: string,
   opts: CatalogCmdOpts,
 ): Promise<number> {
   if (!existsSync(corpus)) {
@@ -148,7 +182,10 @@ async function runCorpus(
     );
     return 1;
   }
-  const entries = await enumerateCatalog(corpus);
+  const entries = await enumerateCatalog(
+    corpus,
+    await corpusAnatomy(corpus, configPath),
+  );
   if (opts.json) {
     process.stdout.write(`${JSON.stringify(entries, null, 2)}\n`);
     return 0;
@@ -165,17 +202,22 @@ async function runCorpus(
 
 export async function runCatalog(opts: CatalogCmdOpts): Promise<number> {
   const cwd = opts.cwd ?? process.cwd();
+  const configPath = opts.config
+    ? resolve(opts.config)
+    : join(cwd, CONFIG_FILE);
 
   // `--corpus` forces the per-dimension corpus census (doctrine-agnostic view).
   if (opts.corpus) {
-    return runCorpus(resolve(opts.corpus), opts);
+    try {
+      return await runCorpus(resolve(opts.corpus), configPath, opts);
+    } catch (e) {
+      console.error(pc.red(`agent-forge catalog: ${(e as Error).message}`));
+      return 1;
+    }
   }
 
   // Else prefer the CROSS-PLUGIN view when a config is present (the first-class
   // discovery: extendable fragment ids across every extended plugin).
-  const configPath = opts.config
-    ? resolve(opts.config)
-    : join(cwd, CONFIG_FILE);
   if (existsSync(configPath)) {
     try {
       return await runCrossPlugin(configPath, opts);
@@ -193,5 +235,10 @@ export async function runCatalog(opts: CatalogCmdOpts): Promise<number> {
     );
     return 1;
   }
-  return runCorpus(fallback, opts);
+  try {
+    return await runCorpus(fallback, configPath, opts);
+  } catch (e) {
+    console.error(pc.red(`agent-forge catalog: ${(e as Error).message}`));
+    return 1;
+  }
 }

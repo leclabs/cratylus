@@ -10,6 +10,7 @@ import {
   type DimensionDoc,
   projectHumanDimension,
 } from '../../src/anatomy/index.js';
+import { FIXTURE_ANATOMY } from '../fixture-anatomy.js';
 
 // `heuristics` is a Constitution/coined/set dimension — a stable fixture for the shape.
 // Each value IS the SOUL body `<slug> ≜ <definiens>` — no `{dimension,slug,definiens}`
@@ -22,18 +23,34 @@ const values: readonly string[] = [
 
 describe('projectHumanDimension — pure deterministic human-view', () => {
   it('is idempotent (same bytes across repeated projection)', () => {
-    const a = projectHumanDimension('heuristics', values);
-    const b = projectHumanDimension('heuristics', values);
+    const a = projectHumanDimension(
+      'heuristics',
+      values,
+      undefined,
+      FIXTURE_ANATOMY,
+    );
+    const b = projectHumanDimension(
+      'heuristics',
+      values,
+      undefined,
+      FIXTURE_ANATOMY,
+    );
     expect(a).toBe(b);
   });
 
   it('is input-order-independent (slug-sorted)', () => {
-    const forward = projectHumanDimension('heuristics', values);
-    const shuffled = projectHumanDimension('heuristics', [
-      values[2] as string,
-      values[0] as string,
-      values[1] as string,
-    ]);
+    const forward = projectHumanDimension(
+      'heuristics',
+      values,
+      undefined,
+      FIXTURE_ANATOMY,
+    );
+    const shuffled = projectHumanDimension(
+      'heuristics',
+      [values[2] as string, values[0] as string, values[1] as string],
+      undefined,
+      FIXTURE_ANATOMY,
+    );
     expect(shuffled).toBe(forward);
     // The value order in the output is body-lexicographic, not source order.
     const md = forward;
@@ -45,7 +62,12 @@ describe('projectHumanDimension — pure deterministic human-view', () => {
   });
 
   it('emits the closed shape: H1, genus quote, Values, footer', () => {
-    const md = projectHumanDimension('heuristics', values);
+    const md = projectHumanDimension(
+      'heuristics',
+      values,
+      undefined,
+      FIXTURE_ANATOMY,
+    );
     expect(md.startsWith('# heuristics\n')).toBe(true);
     expect(md).toContain(
       '> **Dimension — Constitution · Heuristics** — a coined set dimension.',
@@ -63,7 +85,12 @@ describe('projectHumanDimension — pure deterministic human-view', () => {
       gloss:
         'the standing move-biases that incline an agent toward some choices.',
     };
-    const md = projectHumanDimension('heuristics', values, doc);
+    const md = projectHumanDimension(
+      'heuristics',
+      values,
+      doc,
+      FIXTURE_ANATOMY,
+    );
     expect(md).toContain(
       '> **Dimension — Constitution · Heuristics.** the standing move-biases that incline an agent toward some choices.',
     );

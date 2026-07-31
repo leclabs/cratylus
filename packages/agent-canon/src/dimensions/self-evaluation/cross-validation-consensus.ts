@@ -1,3 +1,3 @@
-import type { SelfEvaluation } from '@leclabs/agent-forge/anatomy';
+import type { SelfEvaluation } from '../../anatomy.js';
 
 export const crossValidationConsensus: SelfEvaluation = `cross-validation-consensus`;

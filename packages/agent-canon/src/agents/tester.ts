@@ -1,4 +1,4 @@
-import type { Agent } from '@leclabs/agent-forge/anatomy';
+import type { Agent } from '../anatomy.js';
 import { codeExecution as codeExecution_actions } from '../dimensions/actions/code-execution.js';
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../dimensions/audience-adaptation/convergence.js';

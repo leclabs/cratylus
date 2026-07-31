@@ -19,7 +19,7 @@ import {
   type ResolvedSkill,
   adapterByName,
 } from '@leclabs/agent-forge/adapters/registry';
-import type { Agent, Skill } from '@leclabs/agent-forge/anatomy';
+import type { Skill } from '@leclabs/agent-forge/anatomy';
 import {
   resolveModulePath,
   scanCellDirNames,
@@ -29,6 +29,7 @@ import {
   projectPluginSet,
   writeRenderTree,
 } from '@leclabs/agent-forge/project';
+import type { Agent } from '../anatomy.js';
 import canonPlugin from '../index.js';
 
 // The harness projection port, selected strictly BY NAME — no concrete claude

@@ -1,3 +1,3 @@
-import type { Formality } from '@leclabs/agent-forge/anatomy';
+import type { Formality } from '../../anatomy.js';
 
 export const formal: Formality = `formal ⟨terse · dense · symbol-bearing⟩`;

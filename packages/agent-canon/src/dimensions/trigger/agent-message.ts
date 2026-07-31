@@ -1,3 +1,3 @@
-import type { Trigger } from '@leclabs/agent-forge/anatomy';
+import type { Trigger } from '../../anatomy.js';
 
 export const agentMessage: Trigger = `agent-message`;

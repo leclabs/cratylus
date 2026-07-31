@@ -14,13 +14,18 @@
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect } from 'vitest';
-import { DIMENSION_NAMES, type Dimension } from '../../../src/anatomy/index.js';
+
 import {
   type DimensionPlan,
   type ElevationSpec,
   ExemplifyRefusal,
   elevateAgent,
 } from '../../../src/core/exemplify/index.js';
+import {
+  FIXTURE_ANATOMY,
+  FIXTURE_DIMENSION_NAMES,
+  type FixtureDimension,
+} from '../../fixture-anatomy.js';
 import { makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
@@ -32,13 +37,13 @@ reports findings as fenced review blocks.`;
 
 const SILENT_DIMENSIONS = ['autonomy', 'satisficing', 'memory'] as const;
 
-const inheritAll = (): Record<Dimension, DimensionPlan> =>
+const inheritAll = (): Record<FixtureDimension, DimensionPlan> =>
   Object.fromEntries(
-    DIMENSION_NAMES.map((o) => [
+    FIXTURE_DIMENSION_NAMES.map((o) => [
       o,
       { kind: 'inherit' } satisfies DimensionPlan,
     ]),
-  ) as Record<Dimension, DimensionPlan>;
+  ) as Record<FixtureDimension, DimensionPlan>;
 
 /** The stated dimensions, evidence-quoted; the silent three as elicitations.
  *  `archetype` is a plain identity field now (D13), not an `Dimension` fragment —
@@ -117,6 +122,7 @@ story(
       sourcePath: join(cwd, 'agent-description.md'),
       outDir: cwd,
       spec: SPEC,
+      anatomy: FIXTURE_ANATOMY,
     });
     const vectorFile = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorFile)).toBe(true);
@@ -175,6 +181,7 @@ story(
         sourcePath: join(cwd, 'agent-description.md'),
         outDir: cwd,
         spec: invented,
+        anatomy: FIXTURE_ANATOMY,
       }),
     ).toThrow(ExemplifyRefusal);
     expect(existsSync(join(cwd, 'agent-description.md'))).toBe(true);
@@ -184,6 +191,7 @@ story(
       sourcePath: join(cwd, 'agent-description.md'),
       outDir: cwd,
       spec: SPEC,
+      anatomy: FIXTURE_ANATOMY,
     });
     const vectorFile = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorFile)).toBe(true);

@@ -20,11 +20,13 @@ import {
   type ProjectablePlugin,
   projectPluginSet,
 } from '../../src/project/index.js';
+import { FIXTURE_ANATOMY } from '../fixture-anatomy.js';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 
 const plugin: ProjectablePlugin = {
   name: 'fixture-enforcing',
+  anatomy: FIXTURE_ANATOMY,
   agents: join(here, 'fixtures-enforcing', 'agents'),
 };
 

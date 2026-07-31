@@ -29,6 +29,7 @@
 import { existsSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { mergeAnatomy } from '../anatomy/index.js';
 import {
   type DiscoveredPlugin,
   type PluginFragmentSource,
@@ -108,7 +109,10 @@ export async function loadPlugins(
 
   // Single call → cross-plugin acyclicity is enforced across ALL sources at once
   // (P3 reuses P2's `validateReferenceGraph`). Output is 1:1 with `sources` order.
-  const discovered = await discoverPluginFragments(sources);
+  const discovered = await discoverPluginFragments(
+    sources,
+    mergeAnatomy(plugins),
+  );
   const byPlugin = new Map<AgentPlugin, DiscoveredPlugin>();
   withFragments.forEach((p, i) => {
     const d = discovered[i];

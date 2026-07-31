@@ -1,3 +1,3 @@
-import type { Modalities } from '@leclabs/agent-forge/anatomy';
+import type { Modalities } from '../../anatomy.js';
 
 export const audio: Modalities = `audio`;

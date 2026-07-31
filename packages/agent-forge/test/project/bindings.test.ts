@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { Agent, Guardrails } from '../../src/anatomy/index.js';
 import { bindingsOf } from '../../src/project/index.js';
+import {
+  FIXTURE_ANATOMY,
+  type FixtureAgent,
+  type FixtureValue,
+} from '../fixture-anatomy.js';
+
+type Agent = FixtureAgent;
+type Guardrails = FixtureValue<'guardrails'>;
 
 // S2 — SCOPE IS DERIVED FROM COMPOSITION.
 //
@@ -28,11 +35,14 @@ const mk = (name: string, guardrails: readonly Guardrails[]): Agent =>
 
 describe('bindingsOf — the binding is computed, never authored', () => {
   it('binds a fragment to EXACTLY the agents that compose it', () => {
-    const bindings = bindingsOf([
-      { name: 'nico', agent: mk('nico', [stance, bare]) },
-      { name: 'mav', agent: mk('mav', [stance]) },
-      { name: 'tester', agent: mk('tester', [bare]) },
-    ]);
+    const bindings = bindingsOf(
+      [
+        { name: 'nico', agent: mk('nico', [stance, bare]) },
+        { name: 'mav', agent: mk('mav', [stance]) },
+        { name: 'tester', agent: mk('tester', [bare]) },
+      ],
+      FIXTURE_ANATOMY,
+    );
     expect(bindings).toHaveLength(1);
     expect(bindings[0]?.anchor).toBe('stance');
     // POSITIVE: the two composers are bound...
@@ -45,32 +55,45 @@ describe('bindingsOf — the binding is computed, never authored', () => {
     // Not "an empty binding" — no binding at all. An empty scope asserting
     // "governs nobody" is indistinguishable from a derivation that never ran.
     expect(
-      bindingsOf([{ name: 'tester', agent: mk('tester', [bare]) }]),
+      bindingsOf(
+        [{ name: 'tester', agent: mk('tester', [bare]) }],
+        FIXTURE_ANATOMY,
+      ),
     ).toEqual([]);
   });
 
   it('a bare value never produces a binding — `events` is PARTIAL', () => {
-    const bindings = bindingsOf([
-      { name: 'nico', agent: mk('nico', [bare, stance]) },
-    ]);
+    const bindings = bindingsOf(
+      [{ name: 'nico', agent: mk('nico', [bare, stance]) }],
+      FIXTURE_ANATOMY,
+    );
     expect(bindings.map((b) => b.anchor)).toEqual(['stance']);
   });
 
   it('carries substrate and events through, so the refusal law can read them', () => {
-    const [b] = bindingsOf([{ name: 'nico', agent: mk('nico', [stance]) }]);
+    const [b] = bindingsOf(
+      [{ name: 'nico', agent: mk('nico', [stance]) }],
+      FIXTURE_ANATOMY,
+    );
     expect(b?.fragment.substrate).toBe('harness');
     expect(b?.fragment.events).toEqual(['tool.use.pre']);
   });
 
   it('is byte-stable: anchors and agents both sorted regardless of input order', () => {
-    const a = bindingsOf([
-      { name: 'nico', agent: mk('nico', [nudge, stance]) },
-      { name: 'mav', agent: mk('mav', [stance, nudge]) },
-    ]);
-    const b = bindingsOf([
-      { name: 'mav', agent: mk('mav', [nudge, stance]) },
-      { name: 'nico', agent: mk('nico', [stance, nudge]) },
-    ]);
+    const a = bindingsOf(
+      [
+        { name: 'nico', agent: mk('nico', [nudge, stance]) },
+        { name: 'mav', agent: mk('mav', [stance, nudge]) },
+      ],
+      FIXTURE_ANATOMY,
+    );
+    const b = bindingsOf(
+      [
+        { name: 'mav', agent: mk('mav', [nudge, stance]) },
+        { name: 'nico', agent: mk('nico', [stance, nudge]) },
+      ],
+      FIXTURE_ANATOMY,
+    );
     expect(a.map((x) => x.anchor)).toEqual(['nudge', 'stance']);
     expect(a).toEqual(b);
   });
@@ -78,14 +101,20 @@ describe('bindingsOf — the binding is computed, never authored', () => {
   it('scope FOLLOWS composition — removing the value unbinds the agent', () => {
     // The property the hand-written allowlist could not have: edit the agent,
     // and the scope moves with it. No second place to update.
-    const before = bindingsOf([
-      { name: 'nico', agent: mk('nico', [stance]) },
-      { name: 'mav', agent: mk('mav', [stance]) },
-    ]);
-    const after = bindingsOf([
-      { name: 'nico', agent: mk('nico', [stance]) },
-      { name: 'mav', agent: mk('mav', [bare]) },
-    ]);
+    const before = bindingsOf(
+      [
+        { name: 'nico', agent: mk('nico', [stance]) },
+        { name: 'mav', agent: mk('mav', [stance]) },
+      ],
+      FIXTURE_ANATOMY,
+    );
+    const after = bindingsOf(
+      [
+        { name: 'nico', agent: mk('nico', [stance]) },
+        { name: 'mav', agent: mk('mav', [bare]) },
+      ],
+      FIXTURE_ANATOMY,
+    );
     expect(before[0]?.agents).toEqual(['mav', 'nico']);
     expect(after[0]?.agents).toEqual(['nico']);
   });

@@ -10,6 +10,7 @@ import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { runCatalog } from '../../src/cli/commands/catalog.js';
 import { runExplain } from '../../src/cli/commands/explain.js';
+import { FIXTURE_ANATOMY } from '../fixture-anatomy.js';
 
 /** Write `export const <name> = <literal>;` under `<root>/<dimension>/<file>.ts`. */
 function writeModule(
@@ -84,7 +85,7 @@ describe('P5 inspection — explain + first-class catalog', () => {
       [
         "import { fileURLToPath } from 'node:url';",
         "import { harm } from './pluginA/guardrails/harm.ts';",
-        "const alpha = { name: 'alpha', fragments: fileURLToPath(new URL('./pluginA', import.meta.url)) };",
+        `const alpha = { name: 'alpha', anatomy: ${JSON.stringify(FIXTURE_ANATOMY)}, fragments: fileURLToPath(new URL('./pluginA', import.meta.url)) };`,
         "const beta = { name: 'beta', fragments: fileURLToPath(new URL('./pluginB', import.meta.url)) };",
         'export default {',
         '  extends: [alpha, beta],',

@@ -1,3 +1,3 @@
-import type { EngineeringPrinciples } from '@leclabs/agent-forge/anatomy';
+import type { EngineeringPrinciples } from '../../anatomy.js';
 
 export const mece: EngineeringPrinciples = `mece`;

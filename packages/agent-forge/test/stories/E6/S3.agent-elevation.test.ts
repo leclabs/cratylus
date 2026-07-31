@@ -29,24 +29,27 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { afterEach, beforeEach, expect } from 'vitest';
 import {
-  ANATOMY,
-  DIMENSION_NAMES,
-  type Dimension,
-} from '../../../src/anatomy/index.js';
-import {
-  DIMENSION_FIELD,
   type DimensionPlan,
   type ElevationSpec,
   ExemplifyRefusal,
   canonicalText,
+  dimensionFieldsOf,
   elevateAgent,
   renderAgentVector,
 } from '../../../src/core/exemplify/index.js';
+import {
+  FIXTURE_ANATOMY,
+  FIXTURE_DIMENSION_NAMES,
+  type FixtureDimension,
+} from '../../fixture-anatomy.js';
 import { makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
+/** dimension → its `Agent` field, derived from the fixture corpus's catalog. */
+const DIMENSION_FIELD = dimensionFieldsOf(FIXTURE_ANATOMY);
+
 /** The 22 fragment-dimension literals the vector must cover (anatomy order). */
-const THE_22_DIMENSIONS: readonly Dimension[] = [
+const THE_22_DIMENSIONS: readonly FixtureDimension[] = [
   'autonomy',
   'role',
   'formality',
@@ -77,19 +80,23 @@ story(
   () => {
     // The keyset is exactly the 22 fragment-dimension literals — the completeness
     // law the elevated vector compiles against.
-    expect(DIMENSION_NAMES).toHaveLength(22);
-    expect([...DIMENSION_NAMES].sort()).toEqual([...THE_22_DIMENSIONS].sort());
-    expect(Object.keys(ANATOMY).sort()).toEqual([...THE_22_DIMENSIONS].sort());
+    expect(FIXTURE_DIMENSION_NAMES).toHaveLength(22);
+    expect([...FIXTURE_DIMENSION_NAMES].sort()).toEqual(
+      [...THE_22_DIMENSIONS].sort(),
+    );
+    expect(Object.keys(FIXTURE_ANATOMY).sort()).toEqual(
+      [...THE_22_DIMENSIONS].sort(),
+    );
     // Axis split: 5 Persona / 17 Constitution (archetype + provenance no longer
     // Persona fragment dimensions — D13/D3).
-    const persona = DIMENSION_NAMES.filter(
-      (o) => ANATOMY[o].axis === 'Persona',
+    const persona = FIXTURE_DIMENSION_NAMES.filter(
+      (o: FixtureDimension) => FIXTURE_ANATOMY[o].axis === 'Persona',
     );
     expect(persona).toHaveLength(5);
     // Arity: exactly the six documented set dimensions take arrays (autonomy is
     // now a SET dimension — composed standing, D5).
-    const setDimensions = DIMENSION_NAMES.filter(
-      (o) => ANATOMY[o].arity === 'set',
+    const setDimensions = FIXTURE_DIMENSION_NAMES.filter(
+      (o: FixtureDimension) => FIXTURE_ANATOMY[o].arity === 'set',
     );
     expect([...setDimensions].sort()).toEqual([
       'actions',
@@ -108,13 +115,13 @@ const SOURCE_PERSONA =
   'DDL, prefers small reversible steps, and always explains its reasoning.';
 
 /** Every dimension deliberately harness-inherited unless the spec overrides. */
-const inheritAll = (): Record<Dimension, DimensionPlan> =>
+const inheritAll = (): Record<FixtureDimension, DimensionPlan> =>
   Object.fromEntries(
-    DIMENSION_NAMES.map((o) => [
+    FIXTURE_DIMENSION_NAMES.map((o: FixtureDimension) => [
       o,
       { kind: 'inherit' } satisfies DimensionPlan,
     ]),
-  ) as Record<Dimension, DimensionPlan>;
+  ) as Record<FixtureDimension, DimensionPlan>;
 
 /** The LLM exemplify+elicit pass's output: evidence-traced dimension selections.
  *  Quotes are verbatim spans of SOURCE_PERSONA (the frame verifies). */
@@ -190,6 +197,7 @@ story(
       sourcePath: join(cwd, 'source-agent.md'),
       outDir: cwd,
       spec: SPEC,
+      anatomy: FIXTURE_ANATOMY,
     });
     const vectorModule = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorModule)).toBe(true);
@@ -202,7 +210,7 @@ story(
     // All 22 dimension fields present — a value fragment or the explicit null.
     for (const dimension of THE_22_DIMENSIONS) {
       expect(src, `dimension field for '${dimension}' missing`).toMatch(
-        new RegExp(`\\b${DIMENSION_FIELD[dimension]}: `),
+        new RegExp(`\\b${DIMENSION_FIELD[dimension] as string}: `),
       );
     }
     // A provenance trace per non-null dimension — exactly the selected set.
@@ -233,7 +241,7 @@ story(
             },
           },
         },
-        { sourceText: SOURCE_PERSONA },
+        { anatomy: FIXTURE_ANATOMY, sourceText: SOURCE_PERSONA },
       ),
     ).toThrow(ExemplifyRefusal);
   },
@@ -249,6 +257,7 @@ story(
       sourcePath: join(cwd, 'source-agent.md'),
       outDir: cwd,
       spec: SPEC,
+      anatomy: FIXTURE_ANATOMY,
     });
     // Post-elevation repo state holds exactly ONE source form per agent:
     // the free-text source form is gone…
@@ -268,6 +277,7 @@ story(
         sourcePath: join(cwd, 'source-b.md'),
         outDir: cwd,
         spec: { name: 'reviewer2', dimensions: inheritAll() },
+        anatomy: FIXTURE_ANATOMY,
       }),
     ).toThrow(/REC/);
     expect(existsSync(join(cwd, 'source-b.md'))).toBe(true);

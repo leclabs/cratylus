@@ -1,3 +1,3 @@
-import type { AudienceAdaptation } from '@leclabs/agent-forge/anatomy';
+import type { AudienceAdaptation } from '../../anatomy.js';
 
 export const divergence: AudienceAdaptation = `divergence ↾ interlocutor's style`;

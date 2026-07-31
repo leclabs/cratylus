@@ -42,12 +42,7 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import type {
-  Agent,
-  Dimension,
-  Skill,
-  Value,
-} from '@leclabs/agent-forge/anatomy';
+import type { Skill } from '@leclabs/agent-forge/anatomy';
 import { bodyOf } from '@leclabs/agent-forge/anatomy';
 // accept() falsifier — the full Universal gate (`src/toolkit/cold-oracle/accept.ts`),
 // the register gate above being one facet of ρ-conformance, not a Universal leg.
@@ -69,6 +64,7 @@ import {
   universalCell,
 } from '@leclabs/agent-forge/validate';
 import { describe, expect, it } from 'vitest';
+import type { Agent, Dimension, Value } from '../src/anatomy.js';
 import { signify } from '../src/skills/signify/skill.js';
 import { nonceControl } from '../src/toolkit/cold-oracle/oracle.js';
 // The injected corpus POLICY DATA (palimpsest table + operator lexicon) the

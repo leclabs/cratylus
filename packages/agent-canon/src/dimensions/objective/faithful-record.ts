@@ -1,3 +1,3 @@
-import type { Objective } from '@leclabs/agent-forge/anatomy';
+import type { Objective } from '../../anatomy.js';
 
 export const faithfulRecord: Objective = `faithful-record`;

@@ -3,7 +3,7 @@
 //
 // `enumerateCatalog(corpusDimensionsDir, anatomy)` walks a corpus's `<dimension>/*.ts`
 // value modules, joins each dimension's discovered values with that dimension's runtime
-// metadata (read from the GIVEN catalog — `ANATOMY` by default), and emits the
+// metadata (read from the GIVEN catalog — forge ships none), and emits the
 // discovery contract:
 //
 //   { dimension, axis, kind, arity, values: [{ slug, definiens }] }   ×24
@@ -24,11 +24,9 @@ import { glob } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
-  ANATOMY,
   type Anatomy,
   type Arity,
   type Classification,
-  type Dimension,
   type Genus,
   type Value,
   bodyOf,
@@ -42,8 +40,9 @@ import {
 
 /** The discovery contract for one dimension: its metadata + discovered values. */
 export interface CatalogEntry {
-  /** The dimension name (e.g. `address`). */
-  readonly dimension: Dimension;
+  /** The dimension name (e.g. `address`) — the catalog's own key, so a plain
+   *  string: WHICH dimensions exist is the corpus's fact, not the projector's. */
+  readonly dimension: string;
   /** The MECE filing axis. */
   readonly axis: Genus;
   /** Open/closed classification — `enum | open | coined`. */
@@ -106,7 +105,7 @@ async function valuesOf(
       // like a corpus that is smaller. `bodyOf` reaches the declaration face of
       // either shape, so enforcing and bare values enumerate alike.
       if (!isDimensionValue(exported)) continue;
-      const body = bodyOf(exported as Value<Dimension>);
+      const body = bodyOf(exported as Value<string>);
       if (!seen.has(body)) {
         seen.add(body);
         out.push(body);
@@ -128,20 +127,17 @@ async function valuesOf(
  *
  * @param corpusDimensionsDir absolute path to a corpus's `dimensions/` dir (the parent
  *        of the per-dimension module dirs). For agent-canon: `packages/agent-canon/src/dimensions`.
- * @param anatomy the dimension catalog to join against; defaults to the resident one.
+ * @param anatomy the dimension catalog to join against — REQUIRED, because forge
+ *        has none to fall back to.
  */
 export async function enumerateCatalog(
   corpusDimensionsDir: string,
-  anatomy: Anatomy = ANATOMY,
+  anatomy: Anatomy,
 ): Promise<CatalogEntry[]> {
   const entries: CatalogEntry[] = [];
   for (const [name, meta] of Object.entries(anatomy)) {
     entries.push({
-      // A catalog's KEYS are its dimension names, which `Object.entries` can only
-      // type as `string`. The narrowing holds exactly while the resident catalog is
-      // the only one; it stops holding — and this field widens to `string` — when
-      // `Dimension` follows the catalog out of forge.
-      dimension: name as Dimension,
+      dimension: name,
       axis: meta.axis,
       kind: meta.kind,
       arity: meta.arity,
@@ -199,7 +195,7 @@ export interface PluginFragmentSource {
  */
 export interface DiscoveredFragment {
   readonly node: Fragment;
-  readonly dimension: Dimension;
+  readonly dimension: string;
   readonly body: unknown;
 }
 
@@ -274,7 +270,7 @@ async function scanDimensionModules(
  */
 export async function discoverPluginFragments(
   sources: readonly PluginFragmentSource[],
-  anatomy: Anatomy = ANATOMY,
+  anatomy: Anatomy,
 ): Promise<DiscoveredPlugin[]> {
   const plugins: DiscoveredPlugin[] = [];
   const allNodes = new Set<Fragment>();
@@ -282,8 +278,7 @@ export async function discoverPluginFragments(
   for (const src of sources) {
     const fragments: DiscoveredFragment[] = [];
     for (const [name, meta] of Object.entries(anatomy)) {
-      // See `enumerateCatalog` on the key cast — same catalog, same narrowing.
-      const dimension = name as Dimension;
+      const dimension = name;
       // Arity (`scalar`|`set`) is a subset of `FragmentKind` — the structural
       // value-type a minted string-fragment node carries. [SIGNIFY: arity→kind map.]
       const kind: FragmentKind = meta.arity;

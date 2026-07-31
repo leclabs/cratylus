@@ -1,3 +1,3 @@
-import type { Role } from '@leclabs/agent-forge/anatomy';
+import type { Role } from '../../anatomy.js';
 
 export const build: Role = `build ≜ ⟨conceive design produce deliver⟩`;

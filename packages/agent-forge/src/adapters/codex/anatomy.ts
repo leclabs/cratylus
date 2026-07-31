@@ -1,4 +1,4 @@
-// The CODEX projection of the agent ANATOMY — the second harness, proving the
+// The CODEX projection of the agent anatomy — the second harness, proving the
 // thesis: because projection IS the export adapter,
 // a agent-canon agent authored once reaches EVERY agent-forge harness for free. T2.1 did this
 // for claude; this mirrors it for codex.
@@ -59,7 +59,7 @@ export type { ResolvedSkill };
  */
 export function agentToCodexTomlObject(
   a: Agent,
-  ctx: Partial<AgentDefContext> = {},
+  ctx: AgentDefContext,
   _profile = 'strong-llm-lean/codex',
 ): Record<string, unknown> {
   // The catalog travels because the SOUL body does: `developer_instructions` is
@@ -85,7 +85,7 @@ export function agentToCodexTomlObject(
  */
 export function agentToCodexToml(
   a: Agent,
-  ctx: Partial<AgentDefContext> = {},
+  ctx: AgentDefContext,
   profile = 'strong-llm-lean/codex',
 ): string {
   const obj = agentToCodexTomlObject(a, ctx, profile);

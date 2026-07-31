@@ -1,3 +1,3 @@
-import type { Transparency } from '@leclabs/agent-forge/anatomy';
+import type { Transparency } from '../../anatomy.js';
 
 export const decisionRationale: Transparency = `decision-rationale`;

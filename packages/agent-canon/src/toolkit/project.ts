@@ -8,8 +8,8 @@
 // body. Only the fragment wrap survives (its byte-anchor is the value string
 // itself).
 
-import type { Dimension, Value } from '@leclabs/agent-forge/anatomy';
 import { bodyOf } from '@leclabs/agent-forge/anatomy';
+import type { Dimension, Value } from '../anatomy.js';
 
 /**
  * Render a dimension value to its canonical cell body: `\n\n<body>\n`.

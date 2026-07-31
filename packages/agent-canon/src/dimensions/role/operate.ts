@@ -1,3 +1,3 @@
-import type { Role } from '@leclabs/agent-forge/anatomy';
+import type { Role } from '../../anatomy.js';
 
 export const operate: Role = `operate ≜ live-system ⟨steady-state⟩`;

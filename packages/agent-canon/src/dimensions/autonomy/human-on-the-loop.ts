@@ -1,4 +1,4 @@
-import type { Autonomy } from '@leclabs/agent-forge/anatomy';
+import type { Autonomy } from '../../anatomy.js';
 
 // Loop-position is one of the three orthogonal autonomy axes (who-decides /
 // where-the-human-sits / when-to-escalate); this cell is the where-the-human-sits

@@ -11,16 +11,16 @@
 // meta is read from the given catalog, no clock/host/IO — so a committed README that diverges
 // from re-projection is a hand-edit (the falsifier), catchable by a byte diff.
 
-import { ANATOMY, type Anatomy, type Dimension } from './index.js';
+import type { Anatomy } from './index.js';
 
 /**
  * The optional dimension-level human gloss — `σ_human*` of the DIMENSION concept itself,
  * composed by `projectHumanDimension` above the value list. Source-owned; when a
- * projected dimension has no `DimensionDoc`, a default genus line from `ANATOMY` meta
- * stands in its place.
+ * projected dimension has no `DimensionDoc`, a default genus line from the given
+ * catalog's meta stands in its place.
  */
 export interface DimensionDoc {
-  readonly dimension: Dimension;
+  readonly dimension: string;
   /** One-paragraph human gloss of what this dimension is (markdown, no trailing nl). */
   readonly gloss: string;
 }
@@ -61,10 +61,10 @@ function byBody(a: string, b: string): number {
  * output byte-for-byte; any hand-edit diverges and the boundary gate fails.
  */
 export function projectHumanDimension(
-  dimension: Dimension,
+  dimension: string,
   values: readonly string[],
-  doc?: DimensionDoc,
-  anatomy: Anatomy = ANATOMY,
+  doc: DimensionDoc | undefined,
+  anatomy: Anatomy,
 ): string {
   const meta = anatomy[dimension];
   // A catalog lookup is TOTAL by construction — the dimension being projected is

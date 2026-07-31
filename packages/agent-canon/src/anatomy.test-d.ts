@@ -1,13 +1,19 @@
-// Type-level acceptance for the anatomy contract. This file is checked by
-// `tsc --noEmit` (the `typecheck` gate, `include: src/**/*`); it emits nothing
-// and is not a tsup build entry. Every `@ts-expect-error` below asserts that the
-// marked construction is a COMPILE ERROR — if the error ever disappears, `tsc`
-// fails on the now-unused directive, so these are live negative tests.
+// Type-level acceptance for THIS CORPUS'S anatomy — the types `src/anatomy.ts`
+// derives from `ANATOMY`. It lives here, not in the projector, because every
+// property below is a property of a catalog: which dimensions exist, which are
+// sets, which may be omitted. A projector that could assert them would be one
+// that contained the catalog.
 //
-// A dimension value is now a per-dimension NOMINAL-BRANDED STRING (`⟨α, residue⟩`); the
+// Checked by `tsc --noEmit` (the `typecheck` gate, `include: src/**/*`); it emits
+// nothing and is excluded from the build. Every `@ts-expect-error` below asserts
+// that the marked construction is a COMPILE ERROR — if the error ever disappears,
+// `tsc` fails on the now-unused directive, so these are live negative tests.
+//
+// A dimension value is a per-dimension NOMINAL-BRANDED STRING (`⟨α, residue⟩`); the
 // phantom `__dimension` brand keys each string to its dimension so a cross-dimension
 // assignment of a TYPED value is a compile error.
 
+import type { Skill } from '@leclabs/agent-forge/anatomy';
 import type {
   Actions,
   Agent,
@@ -16,8 +22,8 @@ import type {
   Guardrails,
   OutputFormat,
   Role,
-  Skill,
-} from './index.js';
+  Value,
+} from './anatomy.js';
 
 // ── Fixtures (well-typed branded dimension values) ──────────────────────────────
 
@@ -170,8 +176,65 @@ const eagerComposition: Skill = { ...leaf, composition: [leaf] };
 // be written down. `@ts-expect-error` keeps the gate LIVE — if omitting
 // `guardrails` ever stops being an error, this line fails instead of going quiet.
 
+// BOTH LEGS. `undefined` alone is the weaker half of the gate: the two ways an
+// agent actually arrives unconfined are the key being ABSENT (never written) and
+// the key being `null` (written as omit-to-inherit, which every other dimension
+// permits and this one must not). A catch-all that convicted only one of them
+// would be a catch-most.
+
 // @ts-expect-error — `guardrails` is required; an agent may not be composed unconfined.
 const agentUnconfined: Agent = { ...baseFixture, guardrails: undefined };
+
+// @ts-expect-error — the MISSING leg: no `guardrails` key at all.
+const agentGuardrailsMissing: Agent = {
+  name: 'unconfined-missing',
+  description: baseFixture.description,
+  archetype: baseFixture.archetype,
+  autonomy: baseFixture.autonomy,
+  role: baseFixture.role,
+  formality: baseFixture.formality,
+  audienceAdaptation: baseFixture.audienceAdaptation,
+  transparency: baseFixture.transparency,
+  provenance: baseFixture.provenance,
+  objective: baseFixture.objective,
+  engineeringPrinciples: baseFixture.engineeringPrinciples,
+  heuristics: baseFixture.heuristics,
+  capabilities: baseFixture.capabilities,
+  learning: baseFixture.learning,
+  situationAwareness: baseFixture.situationAwareness,
+  actions: baseFixture.actions,
+  modalities: baseFixture.modalities,
+  model: baseFixture.model,
+  memory: baseFixture.memory,
+  trigger: baseFixture.trigger,
+  framing: baseFixture.framing,
+  reasoningStrategy: baseFixture.reasoningStrategy,
+  satisficing: baseFixture.satisficing,
+  outputFormat: baseFixture.outputFormat,
+  selfEvaluation: baseFixture.selfEvaluation,
+};
+
+// @ts-expect-error — the NULL leg: `guardrails` may not be omitted-to-inherit.
+const agentGuardrailsNull: Agent = { ...baseFixture, guardrails: null };
+void agentGuardrailsMissing;
+void agentGuardrailsNull;
+
+// ── The catalog's OWN guarantee: a misspelled dimension does not exist ──────────
+//
+// This is the property forge gave up when `Fragment<O>` relaxed to
+// `O extends string`, and the reason it could be given up: it lands HERE, on the
+// side that owns the catalog. `Dimension` is a literal union derived from
+// `ANATOMY` — if the `as const satisfies` on that const is ever weakened to a
+// plain annotation, `Dimension` silently becomes `string`, this directive stops
+// firing, and tsc fails on it. That is the tripwire.
+
+// @ts-expect-error — `guardrials` is not a dimension of this corpus.
+type Misspelled = Value<'guardrials'>;
+type _Misspelled = Misspelled;
+
+// POSITIVE: the correctly-spelled one resolves.
+const spelled: Value<'guardrails'> = 'honesty ≜ assert from evidence';
+void spelled;
 
 // ── NEGATIVE 7: an ENFORCING value declaring `events` but no `substrate` ────────
 //

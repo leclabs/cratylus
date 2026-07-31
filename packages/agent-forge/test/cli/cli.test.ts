@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runInit } from '../../src/cli/commands/init.js';
 import { resolveAgentsConfig } from '../../src/config/index.js';
 import type { AgentPlugin } from '../../src/resolve/plugin.js';
+import { FIXTURE_ANATOMY } from '../fixture-anatomy.js';
 
 /** The real canon corpus dimensions dir — the default plugin's fragment source. */
 const CANON_DIMENSIONS = fileURLToPath(
@@ -38,6 +39,7 @@ describe('CLI commands (integration)', () => {
     // dir directly (forge cannot bare-import the peer package).
     const canon: AgentPlugin = {
       name: 'canon',
+      anatomy: FIXTURE_ANATOMY,
       fragments: CANON_DIMENSIONS,
     };
     const resolved = await resolveAgentsConfig({

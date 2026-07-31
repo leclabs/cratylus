@@ -1,4 +1,4 @@
-import type { Agent } from '@leclabs/agent-forge/anatomy';
+import type { Agent } from '../anatomy.js';
 import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { toolCall as toolCall_actions } from '../dimensions/actions/tool-call.js';
