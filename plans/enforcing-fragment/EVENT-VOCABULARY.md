@@ -2,22 +2,56 @@
 
 > Working handle, **not** an anchor. Reader = LLM. Every measurement below was taken, not estimated.
 
-## This OVERRIDES the audit's B9 — with a ground citation
+## Ownership — and a correction to an earlier over-read
 
-`BACKLOG.md` files B9 as _"`CanonicalEvent` … belongs to canon."_ **That is wrong**, and acting on it
-would have moved a schema-owned vocabulary into a corpus.
+An earlier revision of this spec claimed `MODEL.md:22` settled ownership against the corpus. **It does
+not, and that citation was over-read.** `Event ≜ the harness-agnostic lifecycle vocabulary
+⟨schema-owned ; the PIVOT every adapter maps from⟩` constrains the FORM — a schema owns the
+vocabulary rather than scattered literals — and says nothing about which package hosts that schema. A
+schema can live in a corpus. MODEL does not exclude the corpus reading.
 
-`MODEL.md:22` — `Event ≜ the harness-agnostic lifecycle vocabulary ⟨schema-owned ; the PIVOT every
-adapter maps from⟩`.
+The distinction that does decide it is **constitutive vs descriptive**.
 
-The ground already assigns it, and assigns it to a **schema**, not to a corpus. The contrast with the
-dimension catalog is exact and is why that refactor went the other way: MODEL declares
-`catalog : DimensionName → ℘(fragment)` as a FUNCTION and never fixes its domain, so WHICH dimensions
-exist is open and corpus-owned. `Event` is fixed vocabulary. A corpus does not get to invent
-`session.start` — sessions exist whether or not anyone authored a design.
+- A **dimension is CONSTITUTIVE**. When canon declares `satisficing`, satisficing becomes part of that
+  corpus's agent design; when it removes it, the concept genuinely leaves its agents. The corpus
+  legislates, and the declaration is the act.
+- A **lifecycle event is DESCRIPTIVE**. Declaring `turn.end` does not make turns end. Removing it does
+  not stop them. The corpus is choosing only whether it has a NAME for a moment that occurs either
+  way.
 
-Per the apex order, a derived audit finding loses to MODEL. The audit saw a real defect and misnamed
-its remedy.
+A corpus can legislate its own design. It cannot legislate what a runtime does. That is the whole
+asymmetry, and it is why the catalog moved and the base vocabulary does not.
+
+Two facts confirm it rather than motivate it:
+
+- **`agent-runtime` is the dependency ROOT** — `agent-canon → agent-forge → agent-runtime`, and
+  runtime declares zero workspace dependencies. Corpus ownership of the base vocabulary would require
+  a cycle.
+- **Runtime validates against the closed set AT RUN TIME**, in a deployed package with no build step:
+  `capabilities/event-tap/dispatch.ts:66` refuses `tap install --events` naming an unknown event. It
+  needs the set as runtime data, not as a projected artifact.
+
+## But the corpus DOES own an extension — and this is the part already broken
+
+The instinct that a corpus has a stake here is correct, and the evidence is already in the tree:
+`SubstrateEvent = CanonicalEvent | 'vcs.commit.post'` (`core/hook/index.ts:32`). That literal exists
+**because a canon cell needed it** — `agent-canon/src/hooks/praxis-continuity.ts:9` flags it verbatim:
+_"FLAGGED for canon review: `vcs.commit.post` wants adding to the canonical event taxonomy."_
+
+A corpus needed to name a lifecycle moment its design cares about, there was no seam for it, so the
+projector hardcoded one literal. That is the same defect the dimension catalog had, one layer over —
+and it means B10 is not a separate item, it is the missing half of this one.
+
+**So the vocabulary is BASE + EXTENSION:**
+
+- the **base** is runtime-owned, substrate-descriptive, and closed at the root of the dependency graph;
+- a **corpus extends it** through the plugin, by exactly the per-key merge the catalog already uses,
+  for moments its design wants governed;
+- an extension no adapter can realize **degrades and warns** — the path already built and proven for
+  constraints.
+
+That gives the corpus a real, principled stake without inverting a dependency, and it retires the
+hardcoded literal instead of blessing it.
 
 ## The actual defect, measured
 
@@ -73,25 +107,17 @@ forbids is what exists today: two hand-kept homes, neither generated from the ot
   generator, and the emitted `generated.ts` are one unit that moves together."_ If nothing is left to
   generate for events, say so and delete it rather than leave a generator over an empty domain.
 
-## The widening (B10) rides along, and is a REAL open question
+## The extension seam — where `vcs.commit.post` actually goes
 
-`core/hook/index.ts:32` — `SubstrateEvent = CanonicalEvent | 'vcs.commit.post'`. One literal, hardcoded
-in forge, widening a vocabulary forge will no longer own. Canon's own cell flags it:
-`agent-canon/src/hooks/praxis-continuity.ts:9` — _"FLAGGED for canon review: `vcs.commit.post` wants
-adding to the canonical event taxonomy."_
+`SubstrateEvent = CanonicalEvent | 'vcs.commit.post'` is retired, not blessed. The corpus declares
+that event on its plugin, beside its `anatomy`, and it carries its substrate with it — `Substrate =
+'harness' | 'git'` is already declared one line above, and the union is the only place that ignores
+the axis it sits next to.
 
-**Do not silently fold it in.** Two candidate resolutions, and this one is a genuine design question
-rather than a mechanical move:
-
-- `vcs.commit.post` IS a lifecycle event of a different SUBSTRATE (git), so the taxonomy grows a
-  substrate axis and the union stops being ad-hoc; or
-- the harness vocabulary and the git vocabulary are two vocabularies, and `SubstrateEvent` is
-  correctly their sum — in which case the git side deserves its own declared enumeration rather than
-  one inline literal.
-
-Cold-decode it before choosing. `Substrate = 'harness' | 'git'` already exists beside it, which is
-evidence for the first reading: the substrate axis is declared, and the event union is the only place
-that ignores it.
+Open question for the executor, to cold-decode rather than assume: whether an extension declares
+`{ name, substrate }` or whether the substrate is inferable from the name's domain (`vcs.*`). Prefer
+explicit unless the cold read says the domain prefix already carries it — a name that must be parsed
+to be understood is a name doing two jobs.
 
 ## Order of execution — each step lands green on its own
 
@@ -108,10 +134,17 @@ that ignores it.
 
 ## Completion criterion — empirical
 
-Add a lifecycle event to `LIFECYCLE_EVENTS` in `agent-runtime`, and it must appear in forge's
-`CanonicalEvent` with **zero edits to `agent-forge`** — usable in a `HookCell`'s `events`, and
-reported as unrealizable by an adapter that has no native peer for it (the degradation path, not a
-crash). Then remove it and confirm both renders return byte-identical.
+Two legs, because the vocabulary has two owners:
+
+1. **Base.** Add an event to `LIFECYCLE_EVENTS` in `agent-runtime`; it must appear in forge's
+   `CanonicalEvent` with **zero edits to `agent-forge`**.
+2. **Extension.** Declare an event on canon's PLUGIN; it must be usable in a cell's `events` with
+   **zero edits to `agent-forge` and zero to `agent-runtime`**, and an adapter with no native peer for
+   it must DEGRADE and warn rather than crash — the path already proven for constraints.
+
+Then remove both and confirm the renders return byte-identical. Leg 2 is the one that matters: it is
+what `vcs.commit.post` needed and could not have, and a base-only fix would leave that literal
+hardcoded with a nicer provenance.
 
 ## Hazards
 
@@ -123,3 +156,6 @@ crash). Then remove it and confirm both renders return byte-identical.
   regression — worse than the duplication, because a deployed package would start depending on a
   build tool.
 - **Both renders are the regression oracle**: `9055e88b6c4679e44fb5ccb73371b9d539d1d6a8`.
+- **Do not let the base absorb the extension.** Folding `vcs.commit.post` into `LIFECYCLE_EVENTS`
+  would make every check pass while re-committing the original error: a corpus's need answered by
+  editing the root package. The extension seam is the deliverable; the base move is the setup.

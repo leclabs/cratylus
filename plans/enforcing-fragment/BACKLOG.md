@@ -19,15 +19,22 @@ What remains is ownership, not reachability.
 
 **Next: three specs, all written and ready to execute.**
 
-**[`EVENT-VOCABULARY.md`](./EVENT-VOCABULARY.md)** — and it **OVERRIDES B9 as filed below**. B9 said
-`CanonicalEvent` belongs to canon; `MODEL.md:22` says `Event ≜ … ⟨schema-owned⟩`, and per the apex
-order a derived audit finding loses to MODEL. The audit saw a real defect and misnamed the remedy.
-The real defect, measured: **two independent declarations of one vocabulary** — forge's
-`CanonicalEvent` (28 members, schema-generated) and runtime's `LIFECYCLE_EVENTS` (28, hand-authored)
-— with identical members AND identical order, agreeing by coincidence with nothing enforcing it. The
-resolution is `agent-runtime` owning it and forge deriving, because forge already depends on runtime
-and not the reverse. `vcs.commit.post` (B10) rides along as a genuine open design question, not a
-mechanical move.
+**[`EVENT-VOCABULARY.md`](./EVENT-VOCABULARY.md)** — B9 as filed said `CanonicalEvent` belongs to
+canon. It is **half right**, and the spec says which half.
+
+Two defects, measured. First, **two independent declarations of one vocabulary** — forge's
+`CanonicalEvent` (28 members, schema-generated) and runtime's `LIFECYCLE_EVENTS` (28, hand-authored),
+identical members AND identical order, agreeing by coincidence with nothing enforcing it, consumers
+fully disjoint. Second, **no seam for a corpus to extend it**, which is why
+`SubstrateEvent = CanonicalEvent | 'vcs.commit.post'` is one literal hardcoded in the projector to
+serve a canon cell that flags the need in its own comment. B10 is not separate; it is the missing
+half of B9.
+
+Resolution: **BASE + EXTENSION.** The base is runtime-owned because a lifecycle event is
+DESCRIPTIVE, not constitutive — declaring `turn.end` does not make turns end, and a corpus can
+legislate its own design but not what a runtime does. Runtime is also the dependency root and
+validates the closed set at run time. The corpus EXTENDS the base through the plugin by the same
+per-key merge the catalog uses, and an unrealizable extension degrades and warns.
 
 **[`DEFECTS.md`](./DEFECTS.md)** — D1: the inversion re-entered through the TEST layer;
 `agent-forge/test/catalog/anatomy-descriptor.test.ts` reads canon's source tree and asserts canon's
