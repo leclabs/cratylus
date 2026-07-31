@@ -1,4 +1,20 @@
-# The dimension catalog belongs to the corpus — execution spec
+# The dimension catalog belongs to the corpus — DONE
+
+> **LANDED** `29f1185` · `045485d` · `b903c75` · `fb944d2`. The completion criterion below was met:
+> a `tempo` dimension was added to canon's `ANATOMY`, given one value module, composed into `nico`,
+> and projected — **0 files touched in `agent-forge`** — appearing as `## Tempo` with its body in
+> BOTH the claude SOUL and the codex TOML. Reverted; render hash returned to
+> `9055e88b6c4679e44fb5ccb73371b9d539d1d6a8`, byte-identical throughout all four steps.
+>
+> Two things the executing agents surfaced that this spec had missed, both now fixed:
+> `discoverPluginFragments` and `bindingsOf` were catalog readers absent from the per-file table —
+> either left behind would have been the half-parameterizing hazard, an out-of-catalog dimension
+> binding nothing while its SOUL section still printed. And `agentBody`'s default covered the
+> adapters by HIDING them, so `ctx.anatomy` would have dead-ended at the port.
+>
+> Retained below as the record of how it was done.
+
+# Original spec
 
 > Working handle, **not** an anchor. Reader = LLM. Every measurement below was taken, not estimated;
 > re-measure only what the tree has since changed.

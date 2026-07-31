@@ -17,12 +17,21 @@ concept space; forge owns harness projection.** Violations run in both direction
 The canon→codex path is now whole: authored once, projected to both harnesses, deployed to both.
 What remains is ownership, not reachability.
 
-**Take B1–B2 next** — catalog OWNERSHIP. B3–B6 landed: the dimension set is now stated once. But
-that single source still lives in `agent-forge`, so a corpus still cannot discover a dimension
-without editing the projector. Design, measurements and hazards are written out ready to execute in
-[`DIMENSION-OWNERSHIP.md`](./DIMENSION-OWNERSHIP.md) — it is a large, uniform refactor (~9 forge
-files of real design work, 178 canon import rewrites that are one sed) and it wants a session with
-the context to land it whole.
+**Take B9 next** — `CanonicalEvent`, the same defect in the lifecycle vocabulary. The harness-neutral
+event taxonomy IS the ideal design and belongs to canon, with forge keeping only the per-harness
+maps; its own header already argues _"This is canon, not a Claude detail."_ Same seam, same shape of
+fix, and [`DIMENSION-OWNERSHIP.md`](./DIMENSION-OWNERSHIP.md) is now the executed template — including
+the step ordering, the byte-identity oracle, and the trap that a defaulted parameter which is
+accepted and ignored passes every byte-identity check there is.
+
+**Two defects filed by the executing agents, neither chased:**
+
+- `agent-forge`'s `anatomy-descriptor` test compares canon's dimension dirs against forge's own
+  FIXTURE catalog, since forge cannot depend on canon. It still bites on drift, and canon's
+  `cratylism.test.ts` covers dir↔catalog drift against the real catalog — but the fixture now names
+  canon's 22 dimensions, which is a maintenance coupling worth removing.
+- `agent-forge catalog`'s zero-config corpus view loads the corpus package's entry module for its
+  catalog and refuses loudly when it finds none. That path has no test coverage, before or after.
 
 Still claude-shaped in deploy, and worth folding in when B1–B6 is done: `deploy/seeds.ts` (memory
 store names + doctrine prose), `deploy/manifest.ts` `KIND_ROOT`, `deploy/init.ts`.
