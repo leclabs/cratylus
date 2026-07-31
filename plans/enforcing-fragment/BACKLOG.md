@@ -17,10 +17,12 @@ concept space; forge owns harness projection.** Violations run in both direction
 The canon→codex path is now whole: authored once, projected to both harnesses, deployed to both.
 What remains is ownership, not reachability.
 
-**Take B1–B6 next** — the dimension allowlist. It is the largest remaining inversion and the one
-that most directly contradicts the thesis: the ideal agent's dimension set is a TypeScript union
-inside the projection package, transcribed by hand four more times. A corpus cannot discover a new
-dimension without editing forge.
+**Take B1–B2 next** — catalog OWNERSHIP. B3–B6 landed: the dimension set is now stated once. But
+that single source still lives in `agent-forge`, so a corpus still cannot discover a dimension
+without editing the projector. Design, measurements and hazards are written out ready to execute in
+[`DIMENSION-OWNERSHIP.md`](./DIMENSION-OWNERSHIP.md) — it is a large, uniform refactor (~9 forge
+files of real design work, 178 canon import rewrites that are one sed) and it wants a session with
+the context to land it whole.
 
 Still claude-shaped in deploy, and worth folding in when B1–B6 is done: `deploy/seeds.ts` (memory
 store names + doctrine prose), `deploy/manifest.ts` `KIND_ROOT`, `deploy/init.ts`.
