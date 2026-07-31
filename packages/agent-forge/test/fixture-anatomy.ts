@@ -5,12 +5,16 @@
 // corpus like any other, and this is that corpus's declaration — the same shape a
 // consumer writes, exercised by the same machinery.
 //
-// It names the same 22 dimensions agent-canon does, and that is a property of
-// these fixtures, not a second home for the design: the agent vectors and
-// expected SOULs under `test/` were authored against those names, so the fixture
-// corpus keeps them. Drift between this and agent-canon's `src/anatomy.ts` is not
-// a defect here — canon's catalog is gated by canon's own tests, against canon's
-// own dimension dirs.
+// It names 22 dimensions whose names the agent vectors and expected SOULs under
+// `test/` were authored against, so the fixture corpus keeps them. That another
+// corpus in this repo happens to declare the same 22 is a property of these
+// fixtures, not a second home for the design: no assertion here is a function of
+// any other corpus's catalog, and none may become one — a sibling corpus
+// discovering a dimension must never turn this suite red.
+//
+// Its VALUE DIRS live beside it at `test/fixture-dimensions/<dimension>/`, one dir
+// per key — the corpus half this descriptor files against, gated for drift both
+// ways by `test/catalog/anatomy-descriptor.test.ts`.
 //
 // `as const satisfies Record<string, DimensionMeta>` is load-bearing exactly as it
 // is in a real corpus: without it the keys widen to `string` and `FixtureAgent`

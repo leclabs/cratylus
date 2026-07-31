@@ -26,8 +26,9 @@
 //
 // COVERAGE (comprehensive — all names are the discovered anchor): every
 // dimension/dimension FRAGMENT (file basename == body σ*-anchor) · every composite/rule/hook
-// cell (file basename == declared `.name`/`.id`) · every dimension DIRECTORY (dir name ==
-// a declared ANATOMY key). The file/directory structure IS the discovered naming.
+// cell (file basename == declared `.name`/`.id`) · the dimension DIRS and the ANATOMY
+// keys, BOTH ways (no dir without a key, no key without a dir). The file/directory
+// structure IS the discovered naming.
 //
 // NON-VACUOUS: a synthetic fragment whose basename ≠ its body-anchor is convicted; the
 // live corpus (minus the ratchet) passes. Both asserted below.
@@ -64,6 +65,34 @@ function fileAnchor(path: string): string {
 // reliably across model populations; framing: file `systems` → `systems-thinking`, the
 // file renamed to the discovered anchor). A future divergence is never pinnable silently.
 const RATCHET: ReadonlyMap<string, string> = new Map();
+
+/** The dimension DIRS on disk — the corpus half of the descriptor↔corpus pair. */
+async function dimensionDirs(): Promise<string[]> {
+  const dirs: string[] = [];
+  for await (const e of glob('*', { cwd: dimensionsRoot, withFileTypes: true }))
+    if (e.isDirectory()) dirs.push(e.name);
+  return dirs.sort();
+}
+
+/**
+ * Descriptor↔corpus drift, BOTH directions, as a function of the two sets so a
+ * synthetic drifted pair can be fed to the same code the live leg runs.
+ *
+ * `orphanDirs` — a value dir the catalog never declared. `missingDirs` — a
+ * catalog key no dir can fill: the direction a typo'd `ANATOMY` entry hides in,
+ * offering a dimension the corpus can never supply. Checking one is half a check.
+ */
+function dirDrift(
+  dirs: readonly string[],
+  declared: readonly string[],
+): { orphanDirs: string[]; missingDirs: string[] } {
+  const onDisk = new Set<string>(dirs);
+  const inCatalog = new Set<string>(declared);
+  return {
+    orphanDirs: dirs.filter((d) => !inCatalog.has(d)).sort(),
+    missingDirs: declared.filter((k) => !onDisk.has(k)).sort(),
+  };
+}
 
 async function fragmentFiles(): Promise<string[]> {
   const out: string[] = [];
@@ -135,19 +164,56 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     expect(divergences, divergences.join('\n')).toEqual([]);
   });
 
-  it('every dimension DIRECTORY name is a declared ANATOMY key (dir == discovered axis)', async () => {
-    const dirs: string[] = [];
-    for await (const e of glob('*', {
-      cwd: dimensionsRoot,
-      withFileTypes: true,
-    })) {
-      if (e.isDirectory()) dirs.push(e.name);
-    }
+  it('the dimension DIRS and the ANATOMY keys agree BOTH ways (dir == discovered axis)', async () => {
+    const dirs = await dimensionDirs();
     expect(dirs.length).toBeGreaterThan(20); // non-vacuous: the dimension dirs are enumerated
-    const keys = new Set<string>(DIMENSION_NAMES);
-    const orphanDirs = dirs.filter((d) => !keys.has(d));
-    expect(orphanDirs, `dirs not in ANATOMY: ${orphanDirs.join(', ')}`).toEqual(
-      [],
-    );
+    expect(DIMENSION_NAMES.length).toBeGreaterThan(20); // …and so is the catalog
+    const drift = dirDrift(dirs, DIMENSION_NAMES);
+    expect(
+      drift,
+      `dirs with no ANATOMY key: ${drift.orphanDirs.join(', ')} · ANATOMY keys with no dir: ${drift.missingDirs.join(', ')}`,
+    ).toEqual({ orphanDirs: [], missingDirs: [] });
+  });
+
+  it('is non-vacuous — a dir with no key and a KEY WITH NO DIR are both convicted', async () => {
+    const dirs = await dimensionDirs();
+
+    // FORWARD — a dir the catalog never declared (a value dir under a coined name).
+    expect(dirDrift([...dirs, 'telepathy'], DIMENSION_NAMES)).toEqual({
+      orphanDirs: ['telepathy'],
+      missingDirs: [],
+    });
+
+    // REVERSE — a catalog key no value dir can ever fill: the typo'd ANATOMY entry,
+    // which offers a dimension the corpus cannot supply. The synthetic keyset is
+    // built FROM `DIMENSION_NAMES` rather than by editing the live `ANATOMY`,
+    // because a bare key added there makes every agent vector miss a field — that
+    // is a COMPILE error, and reading one as a gate firing proves nothing about
+    // this leg.
+    expect(dirDrift(dirs, [...DIMENSION_NAMES, 'memroy'])).toEqual({
+      orphanDirs: [],
+      missingDirs: ['memroy'],
+    });
+    // …and the direction a RENAMED dir breaks: the old key is unfillable, the new
+    // dir undeclared — one act, both readings. The victim is whichever dir the
+    // corpus lists first, so this fixture does not silently stop biting the day a
+    // particular dimension is renamed away.
+    const [victim] = dirs;
+    expect(
+      victim,
+      'no dimension dir to rename — the fixture is DARK',
+    ).toBeTypeOf('string');
+    expect(
+      dirDrift(
+        dirs.map((d) => (d === victim ? 'recall' : d)),
+        DIMENSION_NAMES,
+      ),
+    ).toEqual({ orphanDirs: ['recall'], missingDirs: [victim] });
+
+    // EXONERATES: the live corpus is genuinely clean, not merely unexamined.
+    expect(dirDrift(dirs, DIMENSION_NAMES)).toEqual({
+      orphanDirs: [],
+      missingDirs: [],
+    });
   });
 });

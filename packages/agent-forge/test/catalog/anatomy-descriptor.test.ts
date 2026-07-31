@@ -2,13 +2,16 @@
 // TYPE aliases it derives. This file is the RUNTIME guard over the FIXTURE
 // corpus's catalog (`test/fixture-anatomy.ts`): the keyset is exactly its 22
 // fragment-dimension literals — no missing dimension, no extra key, no drift
-// between the descriptor and the value dirs it files against (archetype and
-// provenance keep their dirs for README-only docs, but carry no `.ts` value cells
-// and are NOT fragment members — D13/D3).
+// between the descriptor and the value dirs it files against
+// (`test/fixture-dimensions/`).
 //
-// The catalog under test is the fixture corpus's, not agent-canon's: forge ships
-// none, and canon's is gated by canon's own `cratylism.test.ts` against canon's
-// own dirs. What is proven here is the SHAPE law any catalog owes.
+// BOTH halves under test belong to the FIXTURE corpus. Forge ships no catalog and
+// no dimension dirs — WHICH dimensions exist is a corpus's fact — so this suite is
+// a corpus like any other and gates its OWN descriptor against its OWN value dirs.
+// It deliberately does NOT read a sibling package's dirs: that would make a corpus
+// discovering a dimension a red suite HERE, which is the inversion forge exists to
+// refuse. What is proven is the SHAPE law ANY corpus's catalog owes — a law a
+// fixture corpus demonstrates and a single real corpus's own suite cannot.
 
 import { readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -111,24 +114,12 @@ describe('a dimension catalog', () => {
     );
   });
 
-  it('matches the actual dimension dirs in agent-canon (no descriptor↔corpus drift)', () => {
+  it("matches the fixture corpus's own dimension dirs (no descriptor↔corpus drift)", () => {
     const here = dirname(fileURLToPath(import.meta.url));
-    const anatomyDimensions = join(
-      here,
-      '..',
-      '..',
-      '..',
-      'agent-canon',
-      'src',
-      'dimensions',
-    );
-    // archetype/ and provenance/ dirs still exist (README-only docs) but hold no
-    // `.ts` value cells and are not `Dimension` fragment members — exclude them
-    // from the descriptor↔corpus comparison.
-    const dirs = readdirSync(anatomyDimensions, { withFileTypes: true })
+    const fixtureDimensions = join(here, '..', 'fixture-dimensions');
+    const dirs = readdirSync(fixtureDimensions, { withFileTypes: true })
       .filter((d) => d.isDirectory())
       .map((d) => d.name)
-      .filter((name) => name !== 'archetype' && name !== 'provenance')
       .sort();
     expect(dirs.length).toBeGreaterThan(0); // a listing that read nothing is DARK
     expect(corpusDrift(dirs, FIXTURE_DIMENSION_NAMES)).toEqual({
