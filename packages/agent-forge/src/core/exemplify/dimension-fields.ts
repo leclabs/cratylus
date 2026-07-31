@@ -1,41 +1,27 @@
 import type {
   Dimension,
+  DimensionFieldName,
   Agent as DimensionVector,
   Enforcing,
   Value,
 } from '../../anatomy/index.js';
-import { enforcing } from '../../anatomy/index.js';
+import {
+  DIMENSION_NAMES,
+  enforcing,
+  kebabToCamel,
+} from '../../anatomy/index.js';
 
-/** Dimension literal → the `Agent` (dimension-vector) field carrying it. The one
- *  runtime home for the kebab→camel key bridge between the anatomy's dimension
- *  names and the vector interface's fields. */
-export const DIMENSION_FIELD: Record<
-  Dimension,
-  Exclude<keyof DimensionVector, 'name'>
-> = {
-  autonomy: 'autonomy',
-  role: 'role',
-  formality: 'formality',
-  'audience-adaptation': 'audienceAdaptation',
-  transparency: 'transparency',
-  objective: 'objective',
-  guardrails: 'guardrails',
-  'engineering-principles': 'engineeringPrinciples',
-  heuristics: 'heuristics',
-  capabilities: 'capabilities',
-  learning: 'learning',
-  'situation-awareness': 'situationAwareness',
-  actions: 'actions',
-  modalities: 'modalities',
-  model: 'model',
-  memory: 'memory',
-  trigger: 'trigger',
-  framing: 'framing',
-  'reasoning-strategy': 'reasoningStrategy',
-  satisficing: 'satisficing',
-  'output-format': 'outputFormat',
-  'self-evaluation': 'selfEvaluation',
-};
+/**
+ * Dimension literal → the `Agent` field carrying it, DERIVED from `ANATOMY` by
+ * the same kebab→camel rule the type level uses.
+ *
+ * This was 22 hand-written pairs, and its own doc-comment argued against a second
+ * hand-kept list of dimensions while being exactly that. There is no list here
+ * now: a dimension added to `ANATOMY` appears in this map the same moment.
+ */
+export const DIMENSION_FIELD = Object.fromEntries(
+  DIMENSION_NAMES.map((d) => [d, kebabToCamel(d)]),
+) as { readonly [D in Dimension]: DimensionFieldName<D> };
 
 /**
  * Every enforcing value an agent composes, across every dimension.

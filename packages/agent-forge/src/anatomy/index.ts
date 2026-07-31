@@ -53,31 +53,17 @@ export type Arity = 'scalar' | 'set';
  * the agent (D13) and provenance is the structured `{mark}` on the agent (D3); both
  * carry data, not a σ* residue, so neither is a value-fragment dimension.
  */
-export type Dimension =
-  // Persona
-  | 'autonomy'
-  | 'role'
-  | 'formality'
-  | 'audience-adaptation'
-  | 'transparency'
-  // Constitution
-  | 'objective'
-  | 'guardrails'
-  | 'engineering-principles'
-  | 'heuristics'
-  | 'capabilities'
-  | 'learning'
-  | 'situation-awareness'
-  | 'actions'
-  | 'modalities'
-  | 'model'
-  | 'memory'
-  | 'trigger'
-  | 'framing'
-  | 'reasoning-strategy'
-  | 'satisficing'
-  | 'output-format'
-  | 'self-evaluation';
+/**
+ * Every fragment dimension — DERIVED from `ANATOMY`, never listed twice.
+ *
+ * This was a hand-written union, one of FIVE hand-kept copies of the same design
+ * fact (with `SetDimension`, the `Agent` fields, `DIMENSION_FIELD` and `ANATOMY`
+ * itself). Four of them could drift from the fifth silently, and the comment on
+ * `DIMENSION_FIELD` already argued against being a second copy while being one.
+ * `ANATOMY` is now the single home: add a dimension there and every derivation
+ * below follows, or fails to compile.
+ */
+export type Dimension = keyof typeof ANATOMY;
 
 // ── The provenance mark ─────────────────────────────────────────────────────
 
@@ -273,13 +259,16 @@ export type SelfEvaluation = Value<'self-evaluation'>;
  * The SET dimensions — the only dimensions whose `Agent` field is an array.
  * (autonomy · guardrails · capabilities · actions · heuristics · engineering-principles)
  */
-export type SetDimension =
-  | 'autonomy'
-  | 'guardrails'
-  | 'capabilities'
-  | 'actions'
-  | 'heuristics'
-  | 'engineering-principles';
+/** The dimensions holding MANY values — derived from `ANATOMY`'s `arity`, so a
+ *  dimension's arity is stated once and cannot disagree with itself. */
+export type SetDimension = {
+  [D in Dimension]: (typeof ANATOMY)[D]['arity'] extends 'set' ? D : never;
+}[Dimension];
+
+/** The dimensions an agent may NOT omit — derived from `ANATOMY`'s `required`. */
+export type RequiredDimension = {
+  [D in Dimension]: (typeof ANATOMY)[D] extends { required: true } ? D : never;
+}[Dimension];
 
 // ── The runtime dimension descriptor (axis / kind / arity) ──────────────────────
 // A consumer that needs a dimension's metadata at runtime (e.g. `agent-forge catalog`)
@@ -295,13 +284,23 @@ export interface DimensionMeta {
   readonly kind: Classification;
   /** Whether the dimension field holds one value or many (the `Arity`). */
   readonly arity: Arity;
+  /**
+   * May an agent OMIT this dimension? Absent ⇒ omittable (`| null`, inherit).
+   *
+   * Catalog DATA, not a type-level special case. Whether the ideal agent may
+   * exist without a given dimension is a canon question, and the one dimension
+   * that answers "no" — `guardrails` — used to answer it as a hand-written
+   * exception inside the `Agent` interface, i.e. a doctrine the canon stated and
+   * the projector enforced with no link between them.
+   */
+  readonly required?: boolean;
 }
 
 /**
  * The one runtime home for dimension metadata — `agent-forge catalog` reads it, never a
  * second hand-kept copy. Keyed by dimension so a missing/extra dimension is a compile error.
  */
-export const ANATOMY: { readonly [O in Dimension]: DimensionMeta } = {
+export const ANATOMY = {
   // Persona
   autonomy: { axis: 'Persona', kind: 'enum', arity: 'set' },
   role: { axis: 'Persona', kind: 'open', arity: 'scalar' },
@@ -310,7 +309,18 @@ export const ANATOMY: { readonly [O in Dimension]: DimensionMeta } = {
   transparency: { axis: 'Persona', kind: 'enum', arity: 'scalar' },
   // Constitution — standing drives
   objective: { axis: 'Constitution', kind: 'open', arity: 'scalar' },
-  guardrails: { axis: 'Constitution', kind: 'coined', arity: 'set' },
+  // `required` — this dimension may NOT be omitted. The catch-all against
+  // attachment failing open: an agent composed with no bound is not a lesser
+  // agent, it is an unconfined one. Stated HERE, as catalog data, because
+  // "may this be omitted?" is a fact about the dimension exactly as `arity` is.
+  // It was previously a hand-written exception in the `Agent` interface, which
+  // put a canon doctrine somewhere the canon could not reach.
+  guardrails: {
+    axis: 'Constitution',
+    kind: 'coined',
+    arity: 'set',
+    required: true,
+  },
   'engineering-principles': {
     axis: 'Constitution',
     kind: 'coined',
@@ -336,10 +346,25 @@ export const ANATOMY: { readonly [O in Dimension]: DimensionMeta } = {
   satisficing: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
   'output-format': { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
   'self-evaluation': { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-};
+} as const satisfies Record<string, DimensionMeta>;
 
 /** Every fragment-dimension name, in anatomy (Persona-then-Constitution) declaration order. */
 export const DIMENSION_NAMES = Object.keys(ANATOMY) as readonly Dimension[];
+
+/** kebab-case → camelCase, at the type level. The bridge between a dimension's
+ *  NAME (how the canon files it) and its FIELD (how a vector carries it). */
+export type KebabToCamel<S extends string> = S extends `${infer H}-${infer T}`
+  ? `${H}${Capitalize<KebabToCamel<T>>}`
+  : S;
+
+/** The vector field a dimension occupies — derived, never transcribed. */
+export type DimensionFieldName<D extends Dimension = Dimension> =
+  KebabToCamel<D>;
+
+/** kebab → camel at RUNTIME, the exact operation `KebabToCamel` performs at the
+ *  type level. One rule, both registers, so the map cannot disagree with itself. */
+export const kebabToCamel = <S extends string>(s: S): KebabToCamel<S> =>
+  s.replace(/-(\w)/g, (_, c: string) => c.toUpperCase()) as KebabToCamel<S>;
 
 // ── The Agent: a typed dimension-selection vector ───────────────────────────────
 
@@ -354,7 +379,35 @@ export const DIMENSION_NAMES = Object.keys(ANATOMY) as readonly Dimension[];
  * the whole section. `archetype` and `provenance` are NOT fragment dimensions: archetype is
  * a plain identity description, provenance the structured `{mark}` (or null).
  */
-export interface Agent {
+/**
+ * Every dimension field an agent carries, DERIVED from `ANATOMY` — the fourth and
+ * last of the five hand-kept copies of the dimension set.
+ *
+ * Arity and nullability come from the catalog, so the three facts about a
+ * dimension (is it multi-valued · may it be omitted · what is it called) are
+ * stated exactly once, where the dimension is declared.
+ *
+ * THE GUARDRAILS CATCH-ALL SURVIVES, and is now `required: true` in `ANATOMY`
+ * rather than a hand-written exception here. Attachment-based governance fails
+ * OPEN — Spring Security prescribes a catch-all authorization rule for
+ * unannotated methods; AppArmor runs unprofiled tasks "in an unconfined state".
+ * Two unrelated systems, one weakness, both prescribing a catch-all underneath.
+ * Ours remains stronger than either because it is `tsc` rather than a runtime
+ * backstop: an agent composed without a bound does not compile. What changed is
+ * only WHERE the doctrine lives — it is canon data the catalog carries, not a
+ * projector-side special case the canon could not reach.
+ */
+export type DimensionFields = {
+  readonly [D in Dimension as DimensionFieldName<D>]: D extends SetDimension
+    ? D extends RequiredDimension
+      ? readonly Value<D>[]
+      : readonly Value<D>[] | null
+    : D extends RequiredDimension
+      ? Value<D>
+      : Value<D> | null;
+};
+
+export interface Agent extends DimensionFields {
   /** The agent's name (its module / deploy identity). */
   readonly name: string;
   /** σ_human* — the human-read one-line selection bound → SOUL frontmatter
@@ -367,57 +420,11 @@ export interface Agent {
    *  intrinsic to the projected bytes rather than ambient repo context). Absent ⇒
    *  omitted. */
   readonly preamble?: string;
-
-  // Persona
-  readonly autonomy: readonly Autonomy[] | null; // SET (composed standing, D5)
   /** σ* — the model-read identity body → SOUL body. A plain string, not a branded
    *  fragment-dimension (D13), but σ* content nonetheless. */
   readonly archetype: string;
-  readonly role: Role | null;
-  readonly formality: Formality | null;
-  readonly audienceAdaptation: AudienceAdaptation | null;
-  readonly transparency: Transparency | null;
   /** The emoji·hue mark (drives color) — data, not a fragment (D3). */
   readonly provenance: { readonly mark: Mark } | null;
-
-  // Constitution — standing drives
-  readonly objective: Objective | null;
-  /**
-   * SET — and the ONE dimension with no `| null`. That asymmetry is deliberate,
-   * not an oversight: it is the CATCH-ALL.
-   *
-   * Attachment-based governance fails OPEN. Spring Security: "unannotated methods
-   * are not secured… declare a catch-all authorization rule." AppArmor: tasks with
-   * no profile "run in an unconfined state." Two unrelated systems, one weakness,
-   * and both prescribe a catch-all underneath — neither recommends attachment
-   * alone. Ours is stronger than either, because theirs is a runtime backstop and
-   * this one is `tsc`: an agent vector composed without a guardrail does not
-   * compile, so the eleventh agent cannot be born unconfined.
-   *
-   * Enforced HERE and nowhere else. Do not add an `accept()` leg to match — the
-   * type is strictly earlier, and two enforcement sites for one invariant is
-   * exactly the declaration/enforcement drift this is meant to prevent.
-   */
-  readonly guardrails: readonly Guardrails[];
-  readonly engineeringPrinciples: readonly EngineeringPrinciples[] | null; // SET
-  readonly heuristics: readonly Heuristics[] | null; // SET
-  readonly capabilities: readonly Capabilities[] | null; // SET
-  readonly learning: Learning | null;
-  readonly situationAwareness: SituationAwareness | null;
-
-  // Constitution — apparatus
-  readonly actions: readonly Actions[] | null; // SET
-  readonly modalities: Modalities | null;
-  readonly model: Model | null;
-  readonly memory: Memory | null;
-
-  // Constitution — per-turn act
-  readonly trigger: Trigger | null;
-  readonly framing: Framing | null;
-  readonly reasoningStrategy: ReasoningStrategy | null;
-  readonly satisficing: Satisficing | null;
-  readonly outputFormat: OutputFormat | null;
-  readonly selfEvaluation: SelfEvaluation | null;
 }
 
 // ── The Skill: a self-sufficient set-builder cell ───────────────────────────
