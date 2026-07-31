@@ -17,21 +17,32 @@ concept space; forge owns harness projection.** Violations run in both direction
 The canon→codex path is now whole: authored once, projected to both harnesses, deployed to both.
 What remains is ownership, not reachability.
 
-**Take B9 next** — `CanonicalEvent`, the same defect in the lifecycle vocabulary. The harness-neutral
-event taxonomy IS the ideal design and belongs to canon, with forge keeping only the per-harness
-maps; its own header already argues _"This is canon, not a Claude detail."_ Same seam, same shape of
-fix, and [`DIMENSION-OWNERSHIP.md`](./DIMENSION-OWNERSHIP.md) is now the executed template — including
-the step ordering, the byte-identity oracle, and the trap that a defaulted parameter which is
-accepted and ignored passes every byte-identity check there is.
+**Next: three specs, all written and ready to execute.**
 
-**Two defects filed by the executing agents, neither chased:**
+**[`EVENT-VOCABULARY.md`](./EVENT-VOCABULARY.md)** — and it **OVERRIDES B9 as filed below**. B9 said
+`CanonicalEvent` belongs to canon; `MODEL.md:22` says `Event ≜ … ⟨schema-owned⟩`, and per the apex
+order a derived audit finding loses to MODEL. The audit saw a real defect and misnamed the remedy.
+The real defect, measured: **two independent declarations of one vocabulary** — forge's
+`CanonicalEvent` (28 members, schema-generated) and runtime's `LIFECYCLE_EVENTS` (28, hand-authored)
+— with identical members AND identical order, agreeing by coincidence with nothing enforcing it. The
+resolution is `agent-runtime` owning it and forge deriving, because forge already depends on runtime
+and not the reverse. `vcs.commit.post` (B10) rides along as a genuine open design question, not a
+mechanical move.
 
-- `agent-forge`'s `anatomy-descriptor` test compares canon's dimension dirs against forge's own
-  FIXTURE catalog, since forge cannot depend on canon. It still bites on drift, and canon's
-  `cratylism.test.ts` covers dir↔catalog drift against the real catalog — but the fixture now names
-  canon's 22 dimensions, which is a maintenance coupling worth removing.
-- `agent-forge catalog`'s zero-config corpus view loads the corpus package's entry module for its
-  catalog and refuses loudly when it finds none. That path has no test coverage, before or after.
+**[`DEFECTS.md`](./DEFECTS.md)** — D1: the inversion re-entered through the TEST layer;
+`agent-forge/test/catalog/anatomy-descriptor.test.ts` reads canon's source tree and asserts canon's
+dimension dirs match forge's fixture catalog, so canon still cannot add a dimension without editing
+forge. D2: the zero-config `agent-forge catalog` path went from unreachable to first-contact in
+`fb944d2` without acquiring a test.
+
+[`DIMENSION-OWNERSHIP.md`](./DIMENSION-OWNERSHIP.md) is the executed template for all three — the step
+ordering, the byte-identity oracle, and the trap that a defaulted parameter which is accepted and
+ignored passes every byte-identity check there is.
+
+Both defects the executing agents filed are now specced in `DEFECTS.md`, with one correction found
+while writing it: canon's `cratylism.test.ts` covers dir↔catalog drift in only ONE direction
+(`orphanDirs` — a dir with no catalog entry; verified it fires). The reverse, a catalog key with no
+dir, is unchecked, so repointing forge's leg without extending canon's would silently drop it.
 
 Still claude-shaped in deploy, and worth folding in when B1–B6 is done: `deploy/seeds.ts` (memory
 store names + doctrine prose), `deploy/manifest.ts` `KIND_ROOT`, `deploy/init.ts`.
