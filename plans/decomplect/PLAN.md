@@ -58,7 +58,43 @@ trail is kept whole rather than rewritten to match the outcome.
 **One part deferred**, as a model change rather than a test change:
 [`pending/hook-message-has-no-declared-home.md`](./pending/hook-message-has-no-declared-home.md).
 
-With reach extended, most of C1–C5 should now convict themselves.
+**C0 does NOT unblock C1–C5, and the claim that it did was this plan's ordering error.** Measured:
+score **0 of 10**. The density predicate is `conform(cls, text)` — extending reach widens its domain,
+it cannot change what is quantified, and every C1–C5 locus scores clean at whole-file grain. See the
+sweep's `▶ THE SEQUENCING CLAIM IS FALSE`. Each item needs its own property and its own gate.
+
+## The order — re-derived from measurement, 2026-08-04
+
+A census measured, per naming/architecture property, whether a gate exists, how far it reaches, and
+what total reach would convict. **The result reorders this plan.**
+
+**The finding that outranks everything else: ARCHITECTURE's four load-bearing properties are enforced
+by nothing** — no dependency-cruiser, no import lint, no CI; the one edge gate covers 4 files of one
+direction. And **property 1, the highest-ranked, is not merely breached but PINNED**:
+`src/hooks/memory-consolidation-nudge.ts:2` is a canon cell importing `@leclabs/agent-runtime`, and
+`test/bin-name-single-home.test.ts:57,101` asserts that it stays. **Repairing the architecture turns
+the suite red.** Amending that counter-gate is a design decision and comes before the repair.
+
+| #      | work                                                                                                        | why here                                                                                                                                  |
+| ------ | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **1**  | ✅ **ground revised** — `agent-anatomy`→`agent-schema`, stale `28`→`34/22`, `MODEL:22` `⟨schema-owned⟩`     | hard blocker on §1; ground carrying a refuted sign is worse than source                                                                   |
+| **2**  | **§1 extract `agent-schema`** + `Anatomy`→`DimensionManifest`, `ANATOMY`→`MANIFEST`, `.anatomy`→`.manifest` | largest conviction volume by far — 25 of 34 canon→forge file edges, and `src/anatomy.ts` alone propagates to 142 dimensions and 10 agents |
+| **3**  | **§2 vocabulary** — canon owns the 28 names, schema owns the `Hook` shape; land `vcs.commit.post`           | needs #2's package to exist; §1 is what hands §2 its cut                                                                                  |
+| **3′** | **C1 residuals** — concept B (`anatomyRoot`, 10 files, `⊥`), concept C (`adapters/*/anatomy.ts`)            | independent of #2's type moves                                                                                                            |
+| **4**  | **C5** `SOUL`→`Target` in forge                                                                             | same depalimpsest pass as 3′, 12 files                                                                                                    |
+| **5**  | **C4** signify the anchor, derive `eventTap` mechanically, gate keyspace≡name≡dir≡verb≡skill                | needs its own ruling — **then fixes A12 for free**, which hard-codes `scripts/eventTap.mjs` in a canon cell                               |
+
+**Parallel from day one, blocked by nothing:** C2 _(gate ✅ landed — `command-veracity`; the property
+generalizes to ~45 more convictions across markdown links and source-comment path citations, not yet
+covered)_ · C3 _(pure deletion — but **file the `coined` re-signification separately**, it does not
+die with the generator)_ · `accept.ts:52`'s fifth `Kind` · both `pending/` files.
+
+**Deliberately last: §4 and A2/A5/A6** — not because they are small, but because **no property
+convicts them**, so each needs its property stated first. A2 is a vocabulary-design task the size of
+§2 and should be scheduled as one, not as a table row.
+
+**Re-verify before scheduling: A9 appears already discharged by `a2205eb`** — `skills/signify/skill.ts`
+now reads `Art ≜ every authored surface` and contains no harness path token.
 
 **C1 interacts with §1 below** — if its argmin rejects `anatomy`, `ARCHITECTURE.md` must be revised
 in the same act, because ground carrying a refuted sign is worse than source doing so.

@@ -122,8 +122,37 @@ work is entirely about reach.
 4. **Give the emitted message a declared home**, so the reach extension is enumeration rather than
    shell-parsing.
 
-**This still dominates every item below**: with reach extended, C1–C5 and most of the unassigned list
-convict themselves.
+### ▶ THE SEQUENCING CLAIM IS FALSE — measured 2026-08-04, score **0 of 10**
+
+This spec said, and `PLAN.md` echoed: _"with reach extended, C1–C5 and most of the unassigned list
+convict themselves."_ **It is false, and it was the load-bearing claim for the whole plan's order.**
+
+It conflates **which surfaces are scanned** with **which property is asserted**. The predicate is
+`conform(cls, text)` — its domain is a class and a string. It never receives a name, a path, an
+identifier, an import specifier, an export, or a filesystem fact. **Extending reach widens the
+quantifier's domain; it cannot change what is quantified.**
+
+Measured, not argued. The live detector was run over every C1–C5 locus at whole-file grain — strictly
+more generous than any real reach extension, which scores individual fields. **Every locus scores
+`LLM`, signals `[]`.** Then at the ceiling — all 565 tracked `packages/**/*.{ts,md}` plus root docs —
+**15 files convict, and the set is disjoint from every sweep item.** The top three are the gate's own
+source files.
+
+| item     | convictable by this gate at ANY reach? | why not                                                                                                    |
+| -------- | -------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| C1       | **no**                                 | `α(cᵢ)=α(cⱼ) ∧ D(cᵢ)≠D(cⱼ)` is 2-ary over signs; `conform` is 1-ary over text                              |
+| C2       | **no, twice**                          | the defect is `∄` a `package.json` key — and 3 of 4 sites are READMEs, which `RHO` exempts unconditionally |
+| C3       | **no**                                 | the defect is `\|callers\| = 0` — a count over the tree, not a property of text                            |
+| C4       | **no**                                 | same arity mismatch, and half the carriers are a directory basename and a keyspace tuple                   |
+| C5       | **no**                                 | `SOUL` is a metaphor, not a register; the signal set contains no metaphor detector                         |
+| all 5 UA | **no**                                 | every one is a sign relation or a ground-conformance relation                                              |
+
+C0 was still worth doing first, and its reach leg is still right — but **on its own merits**, not
+because it unblocks these. Each of C1–C5 needs its own property stated and its own gate.
+
+**The two structural gaps behind most of the bespoke residue:** there is **no ownership property**
+(does a home DECIDE or merely CARRY?) and **no ground-conformance property** (does source contradict
+`MODEL.md`/`ARCHITECTURE.md`?). `accept.ts:52`'s fifth `Kind` is the cheapest seed of the second.
 
 ---
 

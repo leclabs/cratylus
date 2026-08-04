@@ -95,13 +95,21 @@ Forge owns nothing semantic and nothing mechanical — **only the mapping**. Any
 about the design, rather than _carries_, is a defect. That single rule is the audit criterion for this
 package.
 
-### `agent-anatomy` — the meta-model _(intended; today inside forge)_
+### `agent-schema` — the shapes _(intended; today inside forge)_
 
 The shapes a corpus authors against: what a cell is, what a value is, what carries enforcement —
 [`MODEL.md`](./MODEL.md) realized in types. It belongs to **neither** canon nor forge: canon authors
 against it, forge validates and projects against it, and it holds no opinion about either.
 
 Extracting it is what lets meaning and projection stop depending on each other.
+
+The sign was discovered, not chosen, and it carries its own constraint: asked what `agent-schema`
+would be beside these siblings, a reader with no access to this document answers _"the other three
+would depend on it, not the reverse — schema packages sit at the bottom of the dependency graph"_,
+and places content in canon and execution in runtime unprompted. **That is properties 2 and 4 below,
+recovered from the name alone.** It replaces a working title of `agent-anatomy`, which could not be
+used: `anatomy` was a metaphor binding four distinct concepts, and `agent-anatomy` was already
+`agent-canon`'s own package name before `2f9bd6e5`.
 
 ### `agent-memory` — a runtime strategy
 
@@ -116,15 +124,15 @@ Forge's commands for someone who is not this repository.
 
 ```mermaid
 graph BT
-    anatomy["agent-anatomy<br/><i>the meta-model</i>"]
+    schema["agent-schema<br/><i>the shapes</i>"]
     canon["agent-canon<br/><b>meaning</b>"]
     runtime["agent-runtime<br/><b>mechanism</b>"]
     forge["agent-forge<br/><b>projection</b>"]
     memory["agent-memory<br/><i>a strategy</i>"]
     cli["agent-cli<br/><i>consumer entry</i>"]
 
-    canon --> anatomy
-    forge --> anatomy
+    canon --> schema
+    forge --> schema
     forge --> runtime
     memory --> runtime
     cli --> forge
@@ -135,7 +143,7 @@ graph BT
     classDef concern fill:#1f6feb22,stroke:#1f6feb,stroke-width:2px
     classDef support fill:#8b949e22,stroke:#8b949e
     class canon,runtime,forge concern
-    class anatomy,memory,cli support
+    class schema,memory,cli support
 ```
 
 The load-bearing properties, in order of how much they matter:
@@ -153,12 +161,24 @@ The load-bearing properties, in order of how much they matter:
 
 Stated honestly, because a north star that pretends to be a description is useless:
 
-| divergence                                                                        | evidence                                                       |
-| --------------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| **`agent-anatomy` does not exist**; the meta-model lives in `agent-forge/anatomy` | 28 imports from canon's cells                                  |
-| **canon's cells depend on the projector** — the inversion the above would fix     | same 28                                                        |
-| **a canon cell names the runtime's binary** — projection knowledge in a cell      | `RUNTIME_BIN` in `hooks/memory-consolidation-nudge.ts`         |
-| **the lifecycle vocabulary is declared twice** — forge and runtime, independently | 28 members each, identical set and order, nothing enforcing it |
+| divergence                                                                        | evidence                                                                                                                                                                              |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`agent-schema` does not exist**; the shapes live in `agent-forge/anatomy`       | 34 canon files import forge — **22 of them cells**                                                                                                                                    |
+| **canon's cells depend on the projector** — the inversion the above would fix     | those 22, plus `src/anatomy.ts`, which 142 dimensions ride on                                                                                                                         |
+| **a canon cell names the runtime's binary** — projection knowledge in a cell      | `RUNTIME_BIN` in `hooks/memory-consolidation-nudge.ts`                                                                                                                                |
+| **the lifecycle vocabulary is declared twice** — forge and runtime, independently | 28 members each, identical set and order, nothing enforcing it                                                                                                                        |
+| **property 1 is breached, and a GATE PINS THE BREACH**                            | `src/hooks/memory-consolidation-nudge.ts:2` — a canon **cell** — imports `RUNTIME_BIN` from `@leclabs/agent-runtime`, and `test/bin-name-single-home.test.ts:57,101` asserts it stays |
+| **three of the four properties below are enforced by nothing**                    | measured: no dependency-cruiser, no import lint, no CI; the only edge gate covers 4 files of one direction                                                                            |
+
+**Read the second and third rows together — they are the finding that matters most.** Property 1 is
+the highest-ranked property here, and the repository does not merely fail it: a test **requires** the
+failure, so repairing the architecture turns the suite red. That is not a defect to fix in passing.
+Amending the counter-gate is a design decision, and it comes first.
+
+The third row is why this whole class persisted. These four properties are the load-bearing claims of
+this document and **nothing has ever checked any of them**. A property stated only in prose is a
+property that drifts silently — which is the same lesson the corpus already learned about signs, one
+level up. **The gate is owed before the repairs are, or the repairs will not hold.**
 
 Canon's **build scripts** importing forge (`project`, `deploy`, `validate`, `module-scan`) is _not_ a
 divergence — those are canon's build steps using the projector as a tool, which is what a tool is for.

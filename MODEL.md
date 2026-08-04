@@ -19,7 +19,7 @@ activation : cell ⇀ ActivationMode ⟨what CAUSES a cell to become active ; IN
              ⟨Kind-typical DEFAULTS, ¬ definitions : fragment↦compose-only · agent↦identity · rule↦scope · skill↦trigger⟩
              ⟨how a cell FIRES ⊥ what a cell IS — binding them made `hook` a Kind and hid enforcement from composition⟩
 
-Event ≜ the harness-agnostic lifecycle vocabulary ⟨schema-owned ; the PIVOT every adapter maps from⟩
+Event ≜ the harness-agnostic lifecycle vocabulary ⟨corpus-owned ⟨a name for a moment ∴ signification⟩ ; shape ⊥ vocabulary : shape @ agent-schema · names @ corpus ; the PIVOT every adapter maps from⟩
 events : fragment ⇀ ℘(Event) ⟨PARTIAL ∴ most fragments never fire ; instance-level, ¬ Kind-level⟩
 enforcing(f) ⇔ events(f) ≠ ∅ ⟨f binds REGARDLESS of the agent's reasoning ∴ bounds, ¬ steers⟩
 realizable : Event × harness-adapter → 𝔹 ⟨can the adapter fire e AT ALL⟩
