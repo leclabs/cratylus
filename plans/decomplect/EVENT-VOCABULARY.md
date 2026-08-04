@@ -1,5 +1,22 @@
 # The lifecycle vocabulary has two homes — execution spec
 
+> **SUPERSEDED ON THE REMEDY, CORRECT ON THE DEFECT.** Read
+> [`ARCHITECTURE.md`](../../ARCHITECTURE.md) first, then `PLAN.md` §2.
+>
+> The measurements below stand: two independent declarations, 28 members each, identical set and
+> order, agreeing by coincidence with nothing enforcing it; consumers fully disjoint; nine members
+> realizable on no harness, in symmetric pairs.
+>
+> **The base+extension split does not.** It put the base in `agent-runtime` to solve a dependency
+> problem — runtime is the dependency root and cannot import canon. ARCHITECTURE dissolves that
+> problem: **runtime receives corpus-specific facts as configuration the projection emitted**, the
+> same way a memory strategy receives its backend selection. So the vocabulary is canon's outright.
+> A lifecycle event is a NAME for a moment, and naming is signification.
+>
+> The section below arguing runtime should own the base is retained as the record of a wrong turn —
+> its "runtime is the dependency root" reasoning is exactly the implementation-convenience argument
+> that ARCHITECTURE exists to overrule. Do not execute it.
+
 > Working handle, **not** an anchor. Reader = LLM. Every measurement below was taken, not estimated.
 
 ## Ownership — and a correction to an earlier over-read
