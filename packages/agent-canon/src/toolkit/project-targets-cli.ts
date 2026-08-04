@@ -15,7 +15,7 @@ if (check) {
     process.stderr.write(
       `DRIFT — ${drift.length} target(s) differ from their source cell:\n${drift
         .map((p) => `  ${p}`)
-        .join('\n')}\nRun \`pnpm anatomy:project:targets\` to regenerate.\n`,
+        .join('\n')}\nRun \`pnpm canon:project:targets\` to regenerate.\n`,
     );
     process.exit(1);
   }

@@ -77,6 +77,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // ── agent-canon ────────────────────────────────────────────────────────────
   'agent-canon/bin-name-single-home.test.ts': 'GATE',
   'agent-canon/boundary-binding.test.ts': 'GATE',
+  'agent-canon/command-veracity.test.ts': 'GATE',
   'agent-canon/cratylism.test.ts': 'GATE',
   'agent-canon/event-tap-cell.test.ts': 'GATE',
   'agent-canon/formal-block-self-sufficiency.test.ts': 'GATE',

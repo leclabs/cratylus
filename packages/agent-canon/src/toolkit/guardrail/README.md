@@ -45,9 +45,9 @@ The hook is **sourced, projected, and deployed by agent-forge** — no hand-roll
 - **Source** — the agent-forge `Hook` in `packages/agent-canon/src/toolkit/hooks.ts` (`turn.end` → Stop,
   `subagent.end` → SubagentStop; command = `$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh`;
   timeout 60).
-- **Project** — `pnpm anatomy:project` emits a `settings.json` `{hooks}` fragment + stages these workers
+- **Project** — `pnpm canon:project` emits a `settings.json` `{hooks}` fragment + stages these workers
   under `.render-ts/hooks/stance-guardrail/`.
-- **Deploy** — `pnpm anatomy:deploy:hooks` (`agent-forge deploy --kind hooks`) ships the workers to
+- **Deploy** — `pnpm canon:deploy:hooks` (`agent-forge deploy --kind hooks`) ships the workers to
   `~/.claude/hooks/stance-guardrail/` and **merges** the hooks block into the host `settings.json`
   (idempotent, non-destructive — never clobbers permissions/env/other hooks).
 
@@ -78,7 +78,7 @@ The hook is **sourced, projected, and deployed by agent-forge** — no hand-roll
 ## Usage
 
 ```sh
-pnpm anatomy:deploy:hooks               # project + ship the workers + merge into settings.json (agent-forge)
+pnpm canon:deploy:hooks               # project + ship the workers + merge into settings.json (agent-forge)
 pnpm stance-guard:on                 # opt THIS repo in (git config agentfactory.stanceGuard true)
 pnpm stance-guard:off                # opt out (worker goes dormant)
 pnpm stance-guard:status             # show the flag
