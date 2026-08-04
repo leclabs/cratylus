@@ -206,8 +206,47 @@ whether the constitutive facet or the metadata facet is the definiendum — `ARC
 constitutive ("a dimension is _constitutive_: declaring one makes it part of that corpus's agent
 design"), which favours leg 1's cut over leg 3's, and leg 1's argmin was the one never round-tripped.
 
-**Concept B is untouched** — the existence check has not been run. Full occupancy census was
-dispatched and is not yet folded in here.
+### ▶ CENSUS 2026-08-04 — `anatomy` binds FOUR concepts, and the proposed replacement is taken
+
+Full-repo occupancy, excluding generated trees: **732 lines / 313 files.** The spec's "two concepts"
+undercounts.
+
+| #   | concept                                                                               | scale          |
+| --- | ------------------------------------------------------------------------------------- | -------------- |
+| A   | the dimension meta-model / catalog instance                                           | 608 ln / 291 f |
+| B   | a **filesystem locus** — the agent-canon package root (`anatomyRoot`, scaffold)       | 57 ln / 19 f   |
+| C   | **harness PROJECTION** — `adapters/{claude,codex}/anatomy.ts`, `core/anatomy-body.ts` | 67 ln / 32 f   |
+| D   | **the agent's live in-session state** — `@ live-anatomy` (`skills/introspect`)        | 2 ln           |
+
+**C is new and was not in the spec.** Those files contain no meta-model at all: `claude/anatomy.ts`
+exports `agentToClaudeMd` · `skillToClaudeMd` · `claudeHarnessAdapter`; `codex/anatomy.ts` exports
+`agentToCodexToml` · `agentsMdSurface` · `codexHooksJson`. `core/anatomy-body.ts` is a markdown
+SOUL-body composer. In a **file name**, `anatomy` denotes projection — a third binding, inside the one
+package whose entire audit criterion is that it decides nothing.
+
+**The blocking finding: `agent-anatomy` already denotes two things.** It is ARCHITECTURE's _proposed_
+meta-model package **and** `agent-canon`'s own pre-`2f9bd6e5` package name (`guardrail/fixtures/turn-554.txt:50`,
+`plans/.retired/heartbeat-organ/PLAN.md:10`). **Extracting the meta-model as `agent-anatomy` would
+resurrect a retired package name for a different concept** — minting the defect into the one place
+that is most expensive to carry, which is exactly what the C1↔§1 interaction warns against. This holds
+_regardless_ of how the signification resolves.
+
+**`catalog` carries four senses**, one of them not ours: forge's value-enumerator module + CLI
+subcommand; the prevailing _prose_ word for A; `MODEL.md`'s formal `DimensionName → ℘(fragment)`; and
+**pnpm's reserved `catalog:` dependency protocol** (`pnpm-workspace.yaml` + 24 `package.json` lines).
+Confirms the earlier reading: MODEL's `catalog` is dimension→**values**. `Anatomy` is dimension→
+**metadata** — the same index set, a different codomain, and MODEL names only the first.
+
+**Scale is smaller than 608 suggests**: ~198 of A's lines are mechanical one-line imports
+(`dimensions/**` ×142, fixture dimensions ×24, `skills/*/skill.ts` ×16, `agents/*.ts` ×10, hooks ×5).
+The authored surface is a few dozen sites.
+
+**Two dangling signs found in passing** — file them, they are free: `pnpm anatomy:*` is cited at 4
+sites and **no `anatomy:` script exists in any `package.json`**; `test/adapters/codex/anatomy.test.ts`
+is cited twice and does not exist (the live file is `codex-hooks.test.ts`).
+
+**Concept B's existence check is still not run**, but the census sharpens it: B is 19 files, and every
+one of them wants a path, never a predicate. `⊥` is the likely result — test it before minting.
 
 ---
 
