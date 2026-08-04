@@ -41,7 +41,7 @@ import type {
   Hook,
   Substrate,
   SubstrateEvent,
-} from '../core/hook/index.js';
+} from './hook/index.js';
 
 /**
  * A hook's event in HARNESS-AGNOSTIC terms. `harness`-substrate hooks bind a

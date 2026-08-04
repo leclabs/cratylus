@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The fragment catalog enumerator.
 //
-// `enumerateCatalog(corpusDimensionsDir, anatomy)` walks a corpus's `<dimension>/*.ts`
+// `enumerateCatalog(corpusDimensionsDir, manifest)` walks a corpus's `<dimension>/*.ts`
 // value modules, joins each dimension's discovered values with that dimension's runtime
 // metadata (read from the GIVEN catalog — forge ships none), and emits the
 // discovery contract:
@@ -24,14 +24,14 @@ import { glob } from 'node:fs/promises';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
-  type Anatomy,
   type Arity,
   type Classification,
+  type DimensionManifest,
   type Genus,
   type Value,
   bodyOf,
   isDimensionValue,
-} from '../anatomy/index.js';
+} from '@leclabs/agent-schema';
 import {
   type Fragment,
   type FragmentKind,
@@ -127,15 +127,15 @@ async function valuesOf(
  *
  * @param corpusDimensionsDir absolute path to a corpus's `dimensions/` dir (the parent
  *        of the per-dimension module dirs). For agent-canon: `packages/agent-canon/src/dimensions`.
- * @param anatomy the dimension catalog to join against — REQUIRED, because forge
+ * @param manifest the dimension manifest to join against — REQUIRED, because forge
  *        has none to fall back to.
  */
 export async function enumerateCatalog(
   corpusDimensionsDir: string,
-  anatomy: Anatomy,
+  manifest: DimensionManifest,
 ): Promise<CatalogEntry[]> {
   const entries: CatalogEntry[] = [];
-  for (const [name, meta] of Object.entries(anatomy)) {
+  for (const [name, meta] of Object.entries(manifest)) {
     entries.push({
       dimension: name,
       axis: meta.axis,
@@ -188,7 +188,7 @@ export interface PluginFragmentSource {
 /**
  * One discovered fragment. `node` is the resolver `Fragment` (OBJECT IDENTITY = the
  * imported binding — what P4 targets in a `PatchEntry` and what the resolver keys the
- * resolved map by). `dimension` is the anatomy axis it files under. `body` is its
+ * resolved map by). `dimension` is the axis it files under. `body` is its
  * authored base value: the branded-string body for a string fragment; for a node-form
  * fragment (the §3 reference-bearing form) the node object itself — P4's loader decides
  * how a node-form fragment originates its base contribution.
@@ -270,14 +270,14 @@ async function scanDimensionModules(
  */
 export async function discoverPluginFragments(
   sources: readonly PluginFragmentSource[],
-  anatomy: Anatomy,
+  manifest: DimensionManifest,
 ): Promise<DiscoveredPlugin[]> {
   const plugins: DiscoveredPlugin[] = [];
   const allNodes = new Set<Fragment>();
 
   for (const src of sources) {
     const fragments: DiscoveredFragment[] = [];
-    for (const [name, meta] of Object.entries(anatomy)) {
+    for (const [name, meta] of Object.entries(manifest)) {
       const dimension = name;
       // Arity (`scalar`|`set`) is a subset of `FragmentKind` — the structural
       // value-type a minted string-fragment node carries. [SIGNIFY: arity→kind map.]

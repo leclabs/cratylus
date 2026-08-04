@@ -21,7 +21,7 @@
 
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { type Anatomy, kebabToCamel } from '../../anatomy/index.js';
+import { type DimensionManifest, kebabToCamel } from '@leclabs/agent-schema';
 import { canonicalText } from './digest.js';
 import { ExemplifyRefusal } from './types.js';
 
@@ -102,12 +102,12 @@ function renderFragment(dimension: string, f: DimensionFragmentSpec): string {
  */
 export function renderAgentVector(
   spec: ElevationSpec,
-  opts: { anatomy: Anatomy; sourceText?: string },
+  opts: { manifest: DimensionManifest; sourceText?: string },
 ): RenderedVector {
   // The catalog is what COMPLETENESS is measured against — "all dimensions,
   // always" is a claim about a SPECIFIC catalog, so the caller names it.
-  const anatomy = opts.anatomy;
-  const dimensionNames = Object.keys(anatomy);
+  const manifest = opts.manifest;
+  const dimensionNames = Object.keys(manifest);
   const reasons: string[] = [];
   const dimensionKeys = Object.keys(spec.dimensions);
   for (const dimension of dimensionNames) {
@@ -124,7 +124,7 @@ export function renderAgentVector(
   const provenance: Record<string, DimensionEvidence> = {};
   const lines: string[] = [`  name: '${spec.name}',`];
 
-  for (const [name, meta] of Object.entries(anatomy)) {
+  for (const [name, meta] of Object.entries(manifest)) {
     const dimension = name;
     const plan = spec.dimensions[dimension];
     // The kebab→camel rule direct, not a lookup: the field a dimension occupies is
@@ -202,7 +202,7 @@ export function renderAgentVector(
     ` *  (agent-forge optimize). Sidecars: ${spec.name}.provenance.json${
       Object.keys(elicit).length > 0 ? ` · ${spec.name}.elicit.json` : ''
     }. */`,
-    `import type { Agent } from '@leclabs/agent-forge/anatomy';`,
+    `import type { Agent } from '@leclabs/agent-schema';`,
     '',
     `export const ${exportName}: Agent = {`,
     ...lines,
@@ -225,7 +225,7 @@ export interface ElevateOptions {
   outDir: string;
   spec: ElevationSpec;
   /** The catalog the spec is checked against. */
-  anatomy: Anatomy;
+  manifest: DimensionManifest;
 }
 
 export interface ElevateResult {
@@ -248,7 +248,7 @@ export function elevateAgent(opts: ElevateOptions): ElevateResult {
       : undefined);
   const rendered = renderAgentVector(opts.spec, {
     sourceText,
-    anatomy: opts.anatomy,
+    manifest: opts.manifest,
   });
   // REC ≽ at the data level: the step-1 text must be recoverable from the
   // vector's own fragment definientia (serialization escaping is irrelevant

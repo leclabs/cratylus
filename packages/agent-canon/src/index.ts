@@ -21,7 +21,7 @@
 
 import { fileURLToPath } from 'node:url';
 import { defineAgentPlugin } from '@leclabs/agent-forge/resolve';
-import { ANATOMY } from './anatomy.js';
+import { MANIFEST } from './anatomy.js';
 import { foundingDoctrine } from './genus/founding-doctrine.js';
 
 /** Resolve a sibling dir of this module to an absolute path (self-location). */
@@ -30,10 +30,10 @@ const dir = (rel: string): string =>
 
 export default defineAgentPlugin({
   name: 'canon',
-  // WHICH dimensions exist — this corpus's own catalog, carried on the plugin so
+  // WHICH dimensions exist — this corpus's own manifest, carried on the plugin so
   // a consumer projecting canon gets canon's dimension set without the projector
   // containing it. The same carry as `preamble` below.
-  anatomy: ANATOMY,
+  manifest: MANIFEST,
   fragments: dir('./dimensions'),
   agents: dir('./agents'),
   skills: dir('./skills'),

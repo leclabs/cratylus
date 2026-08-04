@@ -1,4 +1,4 @@
-import type { HookCell } from '@leclabs/agent-forge/anatomy';
+import type { HookCell } from '@leclabs/agent-schema';
 
 // praxis-continuity — the repo-level post-commit reminder. A source `hook` cell
 // (activation=event) on the GIT substrate: git post-commit is NOT in agent-forge's

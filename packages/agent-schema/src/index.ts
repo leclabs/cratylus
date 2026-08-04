@@ -1,13 +1,13 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The agent anatomy META-MODEL as a TypeScript type system.
+// The dimension META-MODEL as a TypeScript type system.
 //
 // THIS MODULE IS THE CONTRACT, and ONLY the contract. It states that a
 // dimension HAS an axis, a kind, an arity and a `required`, and it derives an
-// entire dimension type-system from any catalog obeying that shape
+// entire dimension type-system from any manifest obeying that shape
 // (`DimensionOf` · `SetDimensionOf` · `RequiredDimensionOf` · `DimensionFieldsOf`
 // · `AgentOf`). It does NOT state WHICH dimensions exist. That is the corpus's,
-// and it rides the PLUGIN (`AgentPlugin.anatomy`) exactly as `preamble` does — a
-// projector holding the catalog is a projector containing a design rather than
+// and it rides the PLUGIN (`AgentPlugin.manifest`) exactly as `preamble` does — a
+// projector holding the manifest is a projector containing a design rather than
 // projecting one, and a corpus could not then discover a dimension without
 // editing the projector.
 //
@@ -19,7 +19,7 @@
 // (`dimensions/<dimension>/`) is its dimension home (PARTITIONED) and its export
 // name is its anchor α (SIGNIFIED).
 //
-// A corpus (agent-canon is the first) declares its catalog, derives its own
+// A corpus (agent-canon is the first) declares its manifest, derives its own
 // `Dimension`, `Agent` and per-dimension aliases from it, and authors its
 // dimension values / agents / skills against those. Composition is ESM `import`;
 // an agent is a flat, explicit dimension vector (`null` = omit-to-inherit). A
@@ -27,9 +27,9 @@
 // each string to its dimension so an `Actions` cannot be assigned where an
 // `Objective` is expected.
 //
-// Exported from `@leclabs/agent-forge/anatomy` — a sibling subpath to the config-IR
-// `Agent`/`Skill` in `@leclabs/agent-forge` (those are the translation shapes; THESE
-// are the dimension-selection shapes — distinct concepts, distinct homes).
+// Exported from `@leclabs/agent-schema` — NOT from the projector. These are the
+// dimension-selection shapes; the config-IR `Agent`/`Skill` translation shapes in
+// `@leclabs/agent-forge` are a distinct concept with a distinct home.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { RuntimePlugin } from '@leclabs/agent-runtime';
@@ -86,7 +86,7 @@ export interface Mark {
  * catch-all survive the relaxation intact.
  *
  * The constraint's ONLY job was catching a misspelled dimension name
- * (`Value<'guardrials'>`). That check LIVES IN THE CORPUS, which owns the catalog
+ * (`Value<'guardrials'>`). That check LIVES IN THE CORPUS, which owns the manifest
  * and derives its own `Dimension` from it (agent-canon's `Value<D extends
  * Dimension>`) — the projector cannot be the home of WHICH dimensions exist and
  * still be projecting a design rather than containing one. Nothing is lost.
@@ -238,8 +238,8 @@ export const withBody = <O extends string>(
 
 // ── The runtime dimension descriptor (axis / kind / arity) ──────────────────────
 // A consumer that needs a dimension's metadata at runtime (e.g. `agent-forge catalog`)
-// reads the catalog its corpus declares. Forge owns the SHAPE of an entry; WHICH
-// dimensions exist is the corpus's to state, and the corpus derives its own
+// reads the manifest its corpus declares. This package owns the SHAPE of an entry;
+// WHICH dimensions exist is the corpus's to state, and the corpus derives its own
 // `Dimension` union and per-dimension aliases from it with the helpers below.
 
 /** The runtime-readable metadata for one dimension (axis = genus). */
@@ -263,53 +263,57 @@ export interface DimensionMeta {
 }
 
 /**
- * A dimension CATALOG: name → metadata. The META-MODEL forge owns — that a
- * dimension HAS an axis/kind/arity — as against the INSTANCE (which dimensions
- * exist), which belongs to the corpus that declares them.
+ * A dimension MANIFEST: name → metadata. Membership is the definiendum — adding
+ * an entry is what makes that dimension exist for the corpus that declares it.
  *
- * This is the parameter type of every function that reads a catalog, and forge
- * ships NO instance of it: a projector that can only ever read the one it
- * contains is not projecting a design. The instance rides the PLUGIN
- * (`AgentPlugin.anatomy`), exactly as `preamble` does.
+ * Distinct from MODEL's `catalog : DimensionName → ℘(fragment)`, which is the
+ * same index set with a different codomain: a catalog maps a dimension to its
+ * VALUES, a manifest maps it to its METADATA (axis/kind/arity/required). That
+ * disambiguation used to live only in the prose.
  *
- * A corpus declares its catalog `as const satisfies Record<string, DimensionMeta>`
+ * This is the parameter type of every function that reads one, and no projector
+ * ships an instance: a projector that can only ever read the one it contains is
+ * not projecting a design. The instance rides the PLUGIN
+ * (`AgentPlugin.manifest`), exactly as `preamble` does.
+ *
+ * A corpus declares its manifest `as const satisfies Record<string, DimensionMeta>`
  * — the `satisfies` is LOAD-BEARING. A plain annotation widens the keys to
  * `string`, which silently collapses every derivation below to `string` and
  * takes the whole corpus's dimension typing with it.
  */
-export type Anatomy = Readonly<Record<string, DimensionMeta>>;
+export type DimensionManifest = Readonly<Record<string, DimensionMeta>>;
 
-/** A plugin as the catalog resolution sees one: a name, and the catalog it
+/** A plugin as the manifest resolution sees one: a name, and the manifest it
  *  declares (or does not). The structural slice of `AgentPlugin` this needs. */
-export interface AnatomyDeclaring {
+export interface ManifestDeclaring {
   readonly name: string;
-  readonly anatomy?: Anatomy;
+  readonly manifest?: DimensionManifest;
 }
 
 /**
- * The plugin set's DIMENSION CATALOG: the per-key merge of every declared one, in
+ * The plugin set's DIMENSION MANIFEST: the per-key merge of every declared one, in
  * `extends` order, later plugin winning that key — and every override reported.
  *
- * PER-KEY, not last-catalog-wins, and that is the whole point rather than a
+ * PER-KEY, not last-manifest-wins, and that is the whole point rather than a
  * tie-break detail: a consumer must be able to ADD a dimension to the design it
- * extends without forking that design, which a whole-catalog contest makes
+ * extends without forking that design, which a whole-manifest contest makes
  * impossible. A dimension keeps the POSITION of the plugin that first declared it,
  * because `agentBody` reads section order off `Object.keys` — an override changes a
  * dimension's metadata, never where its section lands.
  *
- * No plugin declaring one is a REFUSAL, not a fallback. Forge has no resident
- * catalog to stand in: a plugin set with no dimensions would project every agent
+ * No plugin declaring one is a REFUSAL, not a fallback. There is no resident
+ * manifest to stand in: a plugin set with no dimensions would project every agent
  * as an empty SOUL — a silent, plausible-looking nothing, which is the one failure
  * a byte diff of the output cannot tell from a corpus that shrank.
  */
-export function mergeAnatomy(
-  plugins: readonly AnatomyDeclaring[],
+export function mergeManifest(
+  plugins: readonly ManifestDeclaring[],
   log: (line: string) => void = () => {},
-): Anatomy {
+): DimensionManifest {
   const merged: Record<string, DimensionMeta> = {};
   const declaredBy = new Map<string, string>();
   for (const p of plugins) {
-    for (const [dimension, meta] of Object.entries(p.anatomy ?? {})) {
+    for (const [dimension, meta] of Object.entries(p.manifest ?? {})) {
       const prev = declaredBy.get(dimension);
       if (prev) log(`  override dimension ${dimension}: ${prev} → ${p.name}`);
       merged[dimension] = meta;
@@ -318,11 +322,11 @@ export function mergeAnatomy(
   }
   if (declaredBy.size === 0) {
     throw new Error(
-      `no plugin in the set declares a dimension catalog (${plugins
+      `no plugin in the set declares a dimension manifest (${plugins
         .map((p) => p.name)
         .join(
           ', ',
-        )}) — a corpus owns WHICH dimensions exist and must carry them on its plugin as \`anatomy\``,
+        )}) — a corpus owns WHICH dimensions exist and must carry them on its plugin as \`manifest\``,
     );
   }
   return merged;
@@ -337,44 +341,44 @@ export type KebabToCamel<S extends string> = S extends `${infer H}-${infer T}`
 /** The vector field a dimension occupies — derived, never transcribed. */
 export type DimensionFieldName<D extends string = string> = KebabToCamel<D>;
 
-// ── Generic derivation over a catalog ───────────────────────────────────────
-// A corpus states its catalog ONCE and reads its whole dimension type-system out
+// ── Generic derivation over a manifest ──────────────────────────────────────
+// A corpus states its manifest ONCE and reads its whole dimension type-system out
 // of it with these. Each is the generic form of a derivation that used to be
-// written against forge's own resident catalog; the catalog is now a parameter,
+// written against forge's own resident one; the manifest is now a parameter,
 // which is the entire difference between projecting a design and containing one.
 
-/** Every dimension name catalog `A` declares — a literal union when `A` is a
+/** Every dimension name manifest `A` declares — a literal union when `A` is a
  *  `satisfies`-checked const, and `string` when the `satisfies` was dropped. */
-export type DimensionOf<A extends Anatomy> = keyof A & string;
+export type DimensionOf<A extends DimensionManifest> = keyof A & string;
 
 /** The dimensions of `A` holding MANY values — read off `arity`, so a dimension's
  *  arity is stated once and cannot disagree with itself. */
-export type SetDimensionOf<A extends Anatomy> = {
+export type SetDimensionOf<A extends DimensionManifest> = {
   [D in DimensionOf<A>]: A[D]['arity'] extends 'set' ? D : never;
 }[DimensionOf<A>];
 
 /** The dimensions of `A` an agent may NOT omit — read off `required`. */
-export type RequiredDimensionOf<A extends Anatomy> = {
+export type RequiredDimensionOf<A extends DimensionManifest> = {
   [D in DimensionOf<A>]: A[D] extends { required: true } ? D : never;
 }[DimensionOf<A>];
 
 /**
- * Every dimension FIELD an agent carries under catalog `A`.
+ * Every dimension FIELD an agent carries under manifest `A`.
  *
- * Arity and nullability come from the catalog, so the three facts about a
+ * Arity and nullability come from the manifest, so the three facts about a
  * dimension (is it multi-valued · may it be omitted · what is it called) are
  * stated exactly once, where the dimension is declared.
  *
- * THE CATCH-ALL LIVES HERE, as `required: true` catalog data rather than a
+ * THE CATCH-ALL LIVES HERE, as `required: true` manifest data rather than a
  * hand-written exception. Attachment-based governance fails OPEN — Spring
  * Security prescribes a catch-all authorization rule for unannotated methods;
  * AppArmor runs unprofiled tasks "in an unconfined state". Two unrelated
  * systems, one weakness, both prescribing a catch-all underneath. Ours is
  * stronger than either because it is `tsc` rather than a runtime backstop: an
  * agent composed without a bound does not compile. WHICH dimension is required
- * is a canon question, and the canon answers it in its own catalog.
+ * is a canon question, and the canon answers it in its own manifest.
  */
-export type DimensionFieldsOf<A extends Anatomy> = {
+export type DimensionFieldsOf<A extends DimensionManifest> = {
   readonly [D in DimensionOf<A> as DimensionFieldName<D>]: D extends SetDimensionOf<A>
     ? D extends RequiredDimensionOf<A>
       ? readonly Value<D>[]
@@ -385,13 +389,13 @@ export type DimensionFieldsOf<A extends Anatomy> = {
 };
 
 /**
- * The STRICT agent vector over catalog `A` — the shape a corpus exports as its
+ * The STRICT agent vector over manifest `A` — the shape a corpus exports as its
  * own `Agent`, and the shape its agent modules are authored against.
  *
  * Every dimension key is REQUIRED (completeness law); omission is spelled
  * `null` (explicit omit-to-inherit), never a missing key.
  */
-export type AgentOf<A extends Anatomy> = Agent & DimensionFieldsOf<A>;
+export type AgentOf<A extends DimensionManifest> = Agent & DimensionFieldsOf<A>;
 
 /** kebab → camel at RUNTIME, the exact operation `KebabToCamel` performs at the
  *  type level. One rule, both registers, so the map cannot disagree with itself. */
@@ -408,7 +412,7 @@ export const kebabToCamel = <S extends string>(s: S): KebabToCamel<S> =>
  * explicit dimension vector (depth 1, composition over inheritance) whose fields
  * carry branded values, arity-checked, `null` for omit-to-inherit. Forge is
  * deliberately blind to that half: nothing here branches on a dimension's
- * identity, so it reads the dimension fields STRUCTURALLY off the catalog it is
+ * identity, so it reads the dimension fields STRUCTURALLY off the manifest it is
  * given (`dimensionValueOf`) and never names one. `archetype` and `provenance`
  * are NOT fragment dimensions — archetype is a plain identity description (D13),
  * provenance the structured `{mark}` (D3).
@@ -437,7 +441,7 @@ export interface Agent {
 }
 
 /**
- * Read one dimension FIELD off an agent, by the field name the catalog derives.
+ * Read one dimension FIELD off an agent, by the field name the manifest derives.
  *
  * The one place forge crosses from the identity face to the dimension face. It
  * returns `unknown` on purpose: forge knows a field holds a value, a list of
@@ -518,9 +522,6 @@ export interface Skill extends SkillDeploy {
 export function markToColor(mark: Mark): string {
   return mark.hue;
 }
-
-// ── project-human — the harness-agnostic human-view boundary projection ───────
-export { type DimensionDoc, projectHumanDimension } from './project-human.js';
 
 // ── Source-cell type kernel — the generic `hook`/`rule` cell shapes ───────────
 // The doctrine-free cell shapes (`hook`/`rule`) + the generic config-IR lift. The

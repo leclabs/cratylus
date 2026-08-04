@@ -24,7 +24,7 @@ const fixtures = join(here, 'fixtures');
 const plugin: ProjectablePlugin = {
   name: 'fixture',
   // The fixture corpus declares its own dimensions — nothing else can.
-  anatomy: FIXTURE_ANATOMY,
+  manifest: FIXTURE_ANATOMY,
   agents: join(fixtures, 'agents'),
   skills: join(fixtures, 'skills'),
   hooks: join(fixtures, 'hooks'),

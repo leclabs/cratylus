@@ -1,4 +1,4 @@
-import type { RuleCell } from '@leclabs/agent-forge/anatomy';
+import type { RuleCell } from '@leclabs/agent-schema';
 
 // repo-preamble — the FIRST `rule` corpus instance (MODEL `Kind ∋ rule`,
 // `activation: rule↦scope`). The workspace-root standing instruction (`AGENTS.md`):

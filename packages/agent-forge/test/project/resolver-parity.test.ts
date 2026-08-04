@@ -113,7 +113,7 @@ function fixturePlugin(): FragmentPlugin {
     'utf8',
   );
 
-  return { name: 'probe', anatomy: FIXTURE_ANATOMY, fragments, agents };
+  return { name: 'probe', manifest: FIXTURE_ANATOMY, fragments, agents };
 }
 
 /** The projected SOUL of the fixture agent, under a given fold. */
@@ -191,8 +191,8 @@ describe('resolver ⇄ projector parity', () => {
   });
 
   it('a plugin shipping no fragments dir discovers nothing and renders as authored', async () => {
-    const { name, anatomy, agents } = fixturePlugin();
-    const plugin: ProjectablePlugin = { name, anatomy, agents };
+    const { name, manifest, agents } = fixturePlugin();
+    const plugin: ProjectablePlugin = { name, manifest, agents };
     expect(await discoverFragments([plugin])).toHaveLength(0);
     expect(await soulOf(plugin)).toContain(AUTHORED);
   });
@@ -206,7 +206,7 @@ describe('resolver ⇄ projector parity', () => {
       name: 'canon',
       // canon's real catalog is canon's; this leg only needs A catalog naming
       // the dirs its corpus carries, and the fixture corpus names the same 22.
-      anatomy: FIXTURE_ANATOMY,
+      manifest: FIXTURE_ANATOMY,
       fragments: fileURLToPath(
         new URL('../../../agent-canon/src/dimensions', import.meta.url),
       ),

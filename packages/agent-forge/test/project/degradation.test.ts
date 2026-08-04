@@ -13,9 +13,9 @@
 
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import type { HarnessMechanism } from '@leclabs/agent-schema/hook';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
-import type { HarnessMechanism } from '../../src/core/hook/index.js';
 import {
   type ProjectablePlugin,
   projectPluginSet,
@@ -26,7 +26,7 @@ const here = fileURLToPath(new URL('.', import.meta.url));
 
 const plugin: ProjectablePlugin = {
   name: 'fixture-enforcing',
-  anatomy: FIXTURE_ANATOMY,
+  manifest: FIXTURE_ANATOMY,
   agents: join(here, 'fixtures-enforcing', 'agents'),
 };
 

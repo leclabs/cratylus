@@ -83,7 +83,7 @@ export const base = {
 `;
 
 /** a real agent that spreads the floor (\`...base\`) — supplies the graph edge. */
-const AGENT_SPREADING_BASE = `import type { Agent } from '@leclabs/agent-forge/anatomy';
+const AGENT_SPREADING_BASE = `import type { Agent } from '@leclabs/agent-schema';
 import { curate as curate_role } from '../dimensions/role/curate.js';
 import { base } from './base.js';
 export const nico: Agent = { ...base, name: 'nico', role: curate_role };
@@ -102,7 +102,7 @@ export const nicoResolved: ResolvedAgent = {
 `;
 
 /** (c) the real \`mavArchetypeGreen\` — a Provenance value carrying a \`mark\` token. */
-const MAV_ARCHETYPE_GREEN = `import type { Provenance } from '@leclabs/agent-forge/anatomy';
+const MAV_ARCHETYPE_GREEN = `import type { Provenance } from '@leclabs/agent-schema';
 
 export const mavArchetypeGreen: Provenance = {
   dimension: 'provenance',
@@ -113,7 +113,7 @@ export const mavArchetypeGreen: Provenance = {
 `;
 
 /** an agent selecting the mega-fragment — the sole reference (refCount = 1). */
-const AGENT_SELECTING_MEGA_FRAGMENT = `import type { Agent } from '@leclabs/agent-forge/anatomy';
+const AGENT_SELECTING_MEGA_FRAGMENT = `import type { Agent } from '@leclabs/agent-schema';
 import { mavArchetypeGreen as mavArchetypeGreen_provenance } from '../dimensions/provenance/mav-archetype-green.js';
 export const mav: Agent = { name: 'mav', provenance: mavArchetypeGreen_provenance };
 `;

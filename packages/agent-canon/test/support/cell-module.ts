@@ -13,7 +13,7 @@
 // none of them needs to know that enforcement exists.
 
 import { pathToFileURL } from 'node:url';
-import { bodyOf, isDimensionValue } from '@leclabs/agent-forge/anatomy';
+import { bodyOf, isDimensionValue } from '@leclabs/agent-schema';
 import type { Dimension, Value } from '../../src/anatomy.js';
 
 /**

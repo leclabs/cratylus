@@ -19,7 +19,6 @@ import {
   type ResolvedSkill,
   adapterByName,
 } from '@leclabs/agent-forge/adapters/registry';
-import type { Skill } from '@leclabs/agent-forge/anatomy';
 import {
   resolveModulePath,
   scanCellDirNames,
@@ -29,6 +28,7 @@ import {
   projectPluginSet,
   writeRenderTree,
 } from '@leclabs/agent-forge/project';
+import type { Skill } from '@leclabs/agent-schema';
 import type { Agent } from '../anatomy.js';
 import canonPlugin from '../index.js';
 

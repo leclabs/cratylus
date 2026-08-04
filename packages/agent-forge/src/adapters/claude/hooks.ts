@@ -10,7 +10,7 @@
 // and `core/hook` — the harness-agnostic vocabulary `Hook`/`CanonicalEvent` live
 // in (S2). It must never reach `core/ir`.
 
-import type { Hook } from '../../core/hook/index.js';
+import type { Hook } from '@leclabs/agent-schema/hook';
 import { canonicalToClaude } from './events.js';
 
 /**

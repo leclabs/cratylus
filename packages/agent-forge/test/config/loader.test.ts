@@ -53,7 +53,7 @@ describe('loadPlugins — THE LOAD STEP (AgentPlugin dirs → LoadedPlugin)', ()
       writeStringFragment(bDir, 'role', 'builder', 'builder', 'the builder');
 
       const plugins: AgentPlugin[] = [
-        { name: 'a', anatomy: FIXTURE_ANATOMY, fragments: aDir },
+        { name: 'a', manifest: FIXTURE_ANATOMY, fragments: aDir },
         { name: 'b', fragments: bDir },
       ];
       const loaded = await loadPlugins(plugins);
@@ -82,7 +82,7 @@ describe('loadPlugins — THE LOAD STEP (AgentPlugin dirs → LoadedPlugin)', ()
       writeStringFragment(aDir, 'objective', 'insight', 'insight', 'insight');
       const loaded = await loadPlugins([
         { name: 'nofrag' },
-        { name: 'a', anatomy: FIXTURE_ANATOMY, fragments: aDir },
+        { name: 'a', manifest: FIXTURE_ANATOMY, fragments: aDir },
       ]);
       expect(loaded.map((p) => p.name)).toEqual(['nofrag', 'a']);
       expect(loaded[0]?.contributions).toEqual([]);
@@ -111,7 +111,7 @@ describe('agents.config.ts — loads with NO build step + resolves', () => {
           "import { fileURLToPath } from 'node:url';",
           'export const plugin = {',
           "  name: 'syn',",
-          `  anatomy: ${JSON.stringify(FIXTURE_ANATOMY)},`,
+          `  manifest: ${JSON.stringify(FIXTURE_ANATOMY)},`,
           "  fragments: fileURLToPath(new URL('./frags', import.meta.url)),",
           '};',
           '',
@@ -147,7 +147,7 @@ describe('extends: [canon] — resolves to the canon default set', () => {
     // supplies the same dir directly (forge cannot bare-import the peer package).
     const canon: AgentPlugin = {
       name: 'canon',
-      anatomy: FIXTURE_ANATOMY,
+      manifest: FIXTURE_ANATOMY,
       fragments: CANON_DIMENSIONS,
     };
     const config: AgentsConfig = { extends: [canon], patches: [] };

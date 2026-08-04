@@ -29,7 +29,7 @@
 import { existsSync } from 'node:fs';
 import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { mergeAnatomy } from '../anatomy/index.js';
+import { mergeManifest } from '@leclabs/agent-schema';
 import {
   type DiscoveredPlugin,
   type PluginFragmentSource,
@@ -111,7 +111,7 @@ export async function loadPlugins(
   // (P3 reuses P2's `validateReferenceGraph`). Output is 1:1 with `sources` order.
   const discovered = await discoverPluginFragments(
     sources,
-    mergeAnatomy(plugins),
+    mergeManifest(plugins),
   );
   const byPlugin = new Map<AgentPlugin, DiscoveredPlugin>();
   withFragments.forEach((p, i) => {

@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
+import type { Skill, SkillExpression } from '@leclabs/agent-schema';
 
 export const introspect: Skill = {
   name: 'introspect',

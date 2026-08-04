@@ -122,7 +122,7 @@ story(
       sourcePath: join(cwd, 'agent-description.md'),
       outDir: cwd,
       spec: SPEC,
-      anatomy: FIXTURE_ANATOMY,
+      manifest: FIXTURE_ANATOMY,
     });
     const vectorFile = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorFile)).toBe(true);
@@ -181,7 +181,7 @@ story(
         sourcePath: join(cwd, 'agent-description.md'),
         outDir: cwd,
         spec: invented,
-        anatomy: FIXTURE_ANATOMY,
+        manifest: FIXTURE_ANATOMY,
       }),
     ).toThrow(ExemplifyRefusal);
     expect(existsSync(join(cwd, 'agent-description.md'))).toBe(true);
@@ -191,7 +191,7 @@ story(
       sourcePath: join(cwd, 'agent-description.md'),
       outDir: cwd,
       spec: SPEC,
-      anatomy: FIXTURE_ANATOMY,
+      manifest: FIXTURE_ANATOMY,
     });
     const vectorFile = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorFile)).toBe(true);

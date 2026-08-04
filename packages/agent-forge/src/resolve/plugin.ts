@@ -21,7 +21,7 @@
 // beside it in `resolve/` as its own concern.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { Anatomy } from '../anatomy/index.js';
+import type { DimensionManifest } from '@leclabs/agent-schema';
 
 /**
  * An agent-plugin: a package's declaration of which directories supply its
@@ -55,20 +55,24 @@ export interface AgentPlugin {
   /** Dir of hook cell modules this plugin contributes (harness-substrate only). */
   readonly hooks?: string;
   /**
-   * WHICH dimensions exist, and each one's metadata — the catalog INSTANCE, as
-   * against the meta-model (that a dimension has an axis/kind/arity) forge owns.
+   * WHICH dimensions exist, and each one's metadata — the manifest INSTANCE, as
+   * against the meta-model (that a dimension has an axis/kind/arity) that
+   * `@leclabs/agent-schema` owns.
    *
    * It rides the plugin for the same reason `preamble` does: a consumer projecting
-   * an extended plugin has no access to the plugin's repo, so a catalog left behind
+   * an extended plugin has no access to the plugin's repo, so a manifest left behind
    * there would make the design unprojectable by anyone but its author. A corpus
    * that must edit the projector to declare a dimension does not own its own design.
    *
-   * Plugins compose, so the set's catalog is the per-dimension merge in `extends`
+   * Plugins compose, so the set's manifest is the per-dimension merge in `extends`
    * order (later wins, every override logged) — which is what lets a consumer ADD a
-   * dimension without forking the plugin it extends. Nobody declaring one ⇒ forge's
-   * resident catalog stands in.
+   * dimension without forking the plugin it extends. Nobody declaring one is a
+   * REFUSAL, not a fallback: `mergeManifest` THROWS. There is no resident manifest
+   * to stand in, and a plugin set with no dimensions would project every agent as a
+   * plausible-looking empty SOUL — the one failure a byte diff cannot tell from a
+   * corpus that shrank.
    */
-  readonly anatomy?: Anatomy;
+  readonly manifest?: DimensionManifest;
 }
 
 /**

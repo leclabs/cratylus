@@ -65,37 +65,49 @@ const PERMITTED: ReadonlyArray<readonly [Pkg, Pkg]> = [
  * Today's breaches, pinned in the open and shrink-only. Each is a real divergence
  * `ARCHITECTURE.md` already names, not an exemption.
  *
- * 25 of these retire in one act — extracting `agent-schema` (PLAN §1). The 26th is
- * property 1's pinned breach and retires only after `bin-name-single-home` is amended.
+ * IT WAS 26. Twenty-four retired in one act — extracting `agent-schema` (PLAN §1)
+ * moved the shapes out of the projector, and every canon CELL that reached forge
+ * for a `Skill`/`HookCell`/`RuleCell`/`DimensionMeta` now reaches the schema
+ * instead. Two survive, and each survives for a stated reason:
+ *
+ *   1. property 1's PINNED breach — retires only after `bin-name-single-home` is
+ *      amended, which is a design decision and not a repair.
+ *   2. `canon/index.ts → forge` — the corpus's plugin declaration takes
+ *      `defineAgentPlugin` from `@leclabs/agent-forge/resolve`. The extraction did
+ *      NOT move it: whether `AgentPlugin` is a SHAPE (schema's) or a resolver
+ *      contract (forge's) is an open ownership question, and answering it by
+ *      moving the file would have been a design decision smuggled into a refactor.
+ *      It retires when that question is answered, not before.
  */
 const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
   'canon/hooks/memory-consolidation-nudge.ts → runtime',
-  'canon/anatomy.test-d.ts → forge',
-  'canon/anatomy.ts → forge',
-  'canon/hooks/memory-consolidation-nudge.ts → forge',
-  'canon/hooks/praxis-continuity.ts → forge',
-  'canon/hooks/resume-availability-notice.ts → forge',
-  'canon/hooks/stance-guardrail-pre.ts → forge',
-  'canon/hooks/stance-guardrail.ts → forge',
+  // NEW 2026-08-04, created by the extraction itself and ruled ON rather than
+  // permitted: `agent-schema` imports `type RuntimePlugin` to derive
+  // `RuntimeCapability`. ARCHITECTURE's north star draws NO schema→runtime edge, and
+  // the sign's own cold round-trip recovered "schema packages sit at the bottom of the
+  // dependency graph". A type-only import creates no cycle and does not breach property
+  // 4 — but a shape the corpus authors against belongs IN the shapes package, so the
+  // resolution is to move `RuntimePlugin`, not to license the edge. Pinned until then.
+  'schema/index.ts → runtime',
   'canon/index.ts → forge',
-  'canon/rules/repo-preamble.ts → forge',
-  'canon/skills/carry-on/skill.ts → forge',
-  'canon/skills/conceptualize/skill.ts → forge',
-  'canon/skills/create-agent/skill.ts → forge',
-  'canon/skills/create-skill/skill.ts → forge',
-  'canon/skills/dream/skill.ts → forge',
-  'canon/skills/elicit/skill.ts → forge',
-  'canon/skills/event-tap/skill.ts → forge',
-  'canon/skills/exemplify/skill.ts → forge',
-  'canon/skills/formalize/skill.ts → forge',
-  'canon/skills/handoff/skill.ts → forge',
-  'canon/skills/introspect/skill.ts → forge',
-  'canon/skills/materialize/skill.ts → forge',
-  'canon/skills/praxis/skill.ts → forge',
-  'canon/skills/probe/skill.ts → forge',
-  'canon/skills/signify/skill.ts → forge',
-  'canon/skills/wake/skill.ts → forge',
 ]);
+
+/**
+ * Every package scanned. `schema` was MISSING for exactly one day — the gate was
+ * written before `agent-schema` existed and the package set was a literal. The new
+ * package landed carrying a `schema → runtime` edge, and the gate stayed green because
+ * it never looked. That is the coverage-as-conformance defect this suite exists to
+ * catch, in the gate that catches it. The reach leg below now asserts the set is whole
+ * against the workspace itself, so the next package cannot arrive unscanned.
+ */
+const PACKAGES = [
+  'canon',
+  'forge',
+  'runtime',
+  'memory',
+  'cli',
+  'schema',
+] as const;
 
 interface Edge {
   readonly from: Pkg;
@@ -239,7 +251,7 @@ function srcFiles(pkg: string): string[] {
 
 function edges(): Edge[] {
   const out: Edge[] = [];
-  for (const pkg of ['canon', 'forge', 'runtime', 'memory', 'cli'] as const) {
+  for (const pkg of PACKAGES) {
     for (const path of srcFiles(pkg)) {
       const rel = path.replace(`packages/agent-${pkg}/src/`, '');
       const code = codeOnly(readFileSync(join(repoRoot, path), 'utf8'));
@@ -266,6 +278,36 @@ function permitted(e: Edge): boolean {
 describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () => {
   // REACH. A stripper that over-strips, or a glob that matches nothing, yields zero
   // edges — and zero edges passes every assertion below as if the tree were perfect.
+  // The package set is a LITERAL, so it can go stale the moment a package is added —
+  // and it did, for one day, when `agent-schema` landed unscanned. Asserted against the
+  // workspace itself so the next one cannot.
+  it('scans EVERY workspace package — no package arrives unscanned', () => {
+    const onDisk = execFileSync(
+      'git',
+      ['ls-files', 'packages/*/package.json'],
+      {
+        cwd: repoRoot,
+        encoding: 'utf8',
+      },
+    )
+      .split('\n')
+      .filter(Boolean)
+      .map(
+        (p) =>
+          (
+            p.match(/^packages\/agent-([^/]+)\/package\.json$/) as
+              | string[]
+              | null
+          )?.[1],
+      )
+      .filter((n): n is string => Boolean(n))
+      .sort();
+    expect(
+      [...PACKAGES].sort(),
+      'PACKAGES is stale against the workspace',
+    ).toEqual(onDisk);
+  });
+
   it('reads a real edge set, with named anchors', () => {
     const es = edges();
     expect(
@@ -276,7 +318,12 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     // Known-live edges, one permitted and one violating, so neither a collapsed nor a
     // saturated scan can pass.
     expect(ks).toContain('memory/plugin.ts → runtime');
-    expect(ks).toContain('canon/skills/wake/skill.ts → forge');
+    // Was `canon/skills/wake/skill.ts → forge`, which PLAN §1 retired. The
+    // violating anchor is now canon's root plugin declaration; the permitted one is
+    // a build script using the projector as a tool.
+    expect(ks).toContain('canon/toolkit/project-cli.ts → forge');
+    expect(ks).toContain('canon/index.ts → forge');
+    expect(ks).toContain('canon/skills/wake/skill.ts → schema');
     // Known NON-edges: import-shaped text in a template and in a comment.
     expect(ks).not.toContain('forge/config/scaffold.ts → canon');
     expect(ks).not.toContain('forge/deploy/seeds.ts → memory');
@@ -299,16 +346,25 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     const canonRoot = es.filter(
       (e) => e.from === 'canon' && e.to === 'forge' && e.role === 'root',
     );
-    // 22 cells is the number PLAN §1 must drive to ZERO. `ARCHITECTURE.md` carried
-    // "28" for months; it was never measured and it was wrong.
-    expect(canonCells.length, 'canon CELLS importing the projector').toBe(22);
-    // These 9 are LICENSED — a corpus built by forge, not defined by it. If this
-    // number moves, the cell/build-script line moved with it.
+    // WAS 22, IS 0 — the whole point of PLAN §1, and the proof it landed.
+    // (`ARCHITECTURE.md` carried "28" for months; it was never measured and it was
+    // wrong.) A cell reaching the projector again moves this off zero.
+    expect(canonCells.length, 'canon CELLS importing the projector').toBe(0);
+    // WAS 9, IS 6, and these are LICENSED — a corpus BUILT BY forge, not DEFINED
+    // by it, which `ARCHITECTURE.md` names explicitly as not a divergence. Three of
+    // the nine (`toolkit/{hooks,project,project-targets}.ts`) took only the cell
+    // SHAPES and now take them from the schema, so their forge edge is gone
+    // outright. The six that remain drive the projector, which is what a tool is
+    // for. This number does not go to zero, and driving it there would mean canon
+    // could no longer build itself.
     expect(canonBuild.length, 'canon BUILD SCRIPTS using forge as a tool').toBe(
-      9,
+      6,
     );
+    // WAS 3, IS 1 — `anatomy.ts` and `anatomy.test-d.ts` now take their shapes from
+    // the schema. The survivor is `index.ts`, which takes `defineAgentPlugin` from
+    // `@leclabs/agent-forge/resolve`; it is RATCHETED above, with the reason.
     expect(canonRoot.length, 'canon root modules importing the projector').toBe(
-      3,
+      1,
     );
     expect(
       es.filter((e) => e.from === 'canon' && e.to === 'runtime').length,

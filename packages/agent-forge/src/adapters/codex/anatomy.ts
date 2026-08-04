@@ -18,7 +18,8 @@
 // body → a `.toml` `developer_instructions`, and the codex SKILL.md / AGENTS.md surfaces.
 
 import TOML from '@iarna/toml';
-import type { Agent } from '../../anatomy/index.js';
+import type { Agent } from '@leclabs/agent-schema';
+import type { HarnessMechanism } from '@leclabs/agent-schema/hook';
 // The composed SOUL body is HARNESS-NEUTRAL, so the body machinery lives in core
 // (`agentBody`/`skillBody` + the `ResolvedSkill` shape) — imported DOWNWARD from
 // core, NOT sideways from the claude adapter.
@@ -33,7 +34,6 @@ import type {
   AgentDefContext,
   HarnessAdapter,
 } from '../../core/harness-adapter.js';
-import type { HarnessMechanism } from '../../core/hook/index.js';
 import { CODEX_AGENT_SCOPED_EVENTS, canonicalToCodex } from './events.js';
 
 // Re-export the shared, harness-neutral resolved skill shape so a codex consumer
@@ -64,7 +64,7 @@ export function agentToCodexTomlObject(
 ): Record<string, unknown> {
   // The catalog travels because the SOUL body does: `developer_instructions` is
   // the same `agentBody` the claude `.md` carries, so it owes the same sections.
-  const body = agentBody(a, ctx.anatomy);
+  const body = agentBody(a, ctx.manifest);
   const developerInstructions = `${body.replace(/\n+$/, '')}\n`;
   const obj: Record<string, unknown> = {
     name: a.name,

@@ -1,7 +1,7 @@
 /**
  * AUTO-GENERATED. Do not edit by hand.
- * Source: packages/agent-forge/src/core/hook/hook.schema.json
- * Regenerate: pnpm --filter @leclabs/agent-forge gen
+ * Source: packages/agent-schema/src/hook/hook.schema.json
+ * Regenerate: pnpm --filter @leclabs/agent-schema gen
  */
 /* eslint-disable */
 

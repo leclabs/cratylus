@@ -17,7 +17,7 @@
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import type { Skill } from '@leclabs/agent-forge/anatomy';
+import type { Skill } from '@leclabs/agent-schema';
 import { describe, expect, it } from 'vitest';
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');

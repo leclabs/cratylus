@@ -1,4 +1,4 @@
-// The ONE behavioral PORT for anatomy→harness projection. A `HarnessAdapter`
+// The ONE behavioral PORT for manifest→harness projection. A `HarnessAdapter`
 // captures the projection operations a consumer (agent-canon's project CLIs)
 // needs to render its typed `Agent`/`ResolvedSkill`/`Hook` vectors to a harness's
 // on-disk surface — WITHOUT naming a concrete adapter module. A consumer selects
@@ -11,14 +11,14 @@
 // present only on harnesses that have that surface (codex has an `AGENTS.md`
 // index; claude serializes hooks → a `settings.json` fragment).
 
-import type { Agent, Anatomy, Binding } from '../anatomy/index.js';
-import type { ResolvedSkill } from './anatomy-body.js';
+import type { Agent, Binding, DimensionManifest } from '@leclabs/agent-schema';
 import type {
   HarnessMechanism,
   Hook,
   Substrate,
   SubstrateEvent,
-} from './hook/index.js';
+} from '@leclabs/agent-schema/hook';
+import type { ResolvedSkill } from './anatomy-body.js';
 
 /** A single projected artifact: the harness-owned filename + its bytes. */
 export interface HarnessProjection {
@@ -50,15 +50,15 @@ export interface HarnessHooksProjection {
  * What an agent projection needs BESIDES the vector — the two facts that are
  * properties of the projected SET, not of the agent.
  *
- * `anatomy` is REQUIRED and deliberately not defaulted here. Every reader below
- * this port already defaults to forge's resident catalog, so an adapter that
- * simply omitted it would keep projecting plausible bytes off the wrong catalog
+ * `manifest` is REQUIRED and deliberately not defaulted here. Every reader below
+ * this port already defaults to forge's resident manifest, so an adapter that
+ * simply omitted it would keep projecting plausible bytes off the wrong manifest
  * — the dead-end this parameter exists to close. The set resolves it once
  * (`projectPluginSet`) and hands it down.
  */
 export interface AgentDefContext {
-  /** The plugin set's resolved dimension catalog — section order and field set. */
-  readonly anatomy: Anatomy;
+  /** The plugin set's resolved dimension manifest — section order and field set. */
+  readonly manifest: DimensionManifest;
   /**
    * The resolved `anchor → HarnessMechanism` map for this agent's enforcing
    * values — INJECTED, because MODEL makes `mechanism` a function of (fragment,

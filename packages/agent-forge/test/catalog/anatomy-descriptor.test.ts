@@ -25,7 +25,7 @@ import {
 
 // The 22 fragment-dimension literals, copied here as the INDEPENDENT oracle (this
 // list is authored from the `Dimension` union in the anatomy doc; if the union
-// grows/shrinks this test must be updated alongside `ANATOMY`, which is
+// grows/shrinks this test must be updated alongside `MANIFEST`, which is
 // exactly the point — adding a dimension forces touching its metadata AND this
 // assertion together). `archetype` and `provenance` are excluded: neither is a
 // σ*-fragment dimension (archetype = plain string, provenance = structured `{mark}`).

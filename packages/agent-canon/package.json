@@ -28,7 +28,8 @@
   "//": "Depends on the RUNTIME contract leaf as well as forge: the memory-nudge hook cell emits shell that invokes the runtime bin, so it must read that bin's name from its one home (`@leclabs/agent-runtime/bin-name`) rather than repeat the literal inside a compiler-invisible script string. The runtime is a zero-@leclabs-dep leaf, so the edge cannot cycle.",
   "dependencies": {
     "@leclabs/agent-forge": "workspace:*",
-    "@leclabs/agent-runtime": "workspace:*"
+    "@leclabs/agent-runtime": "workspace:*",
+    "@leclabs/agent-schema": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "catalog:",

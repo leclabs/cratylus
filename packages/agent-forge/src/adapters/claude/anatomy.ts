@@ -17,8 +17,12 @@
 // ONE generator `renderSkillCellBody` (`core/exemplify/skill-cell.ts`), shared with
 // exemplify's standalone-cell path.
 
-import type { Agent, Anatomy } from '../../anatomy/index.js';
-import { anchorOf, markToColor } from '../../anatomy/index.js';
+import type { Agent, DimensionManifest } from '@leclabs/agent-schema';
+import { anchorOf, markToColor } from '@leclabs/agent-schema';
+import type {
+  CanonicalEvent,
+  HarnessMechanism,
+} from '@leclabs/agent-schema/hook';
 // The harness-neutral dimension→markdown-body machinery, imported DOWNWARD from core
 // (the shared helpers `agentBody`/`dimensionTitle`/`skillBody` + the `ResolvedSkill`
 // shape). Re-exported below so existing `adapters/claude` importers are unaffected.
@@ -39,10 +43,6 @@ import type {
   AgentDefContext,
   HarnessAdapter,
 } from '../../core/harness-adapter.js';
-import type {
-  CanonicalEvent,
-  HarnessMechanism,
-} from '../../core/hook/index.js';
 import { canonicalToClaude } from './events.js';
 import { serializeClaudeHooksReport } from './hooks.js';
 
@@ -62,7 +62,7 @@ export { type ResolvedSkill, agentBody, dimensionTitle, skillBody };
 function agentFrontMatter(
   a: Agent,
   mechanisms: ReadonlyMap<string, HarnessMechanism>,
-  anatomy: Anatomy,
+  anatomy: DimensionManifest,
 ): string[] {
   const fm: string[] = [`name: ${a.name}`, `description: ${a.description}`];
   if (a.provenance?.mark) {
@@ -95,7 +95,7 @@ function agentFrontMatter(
 function agentHooksFrontMatter(
   a: Agent,
   mechanisms: ReadonlyMap<string, HarnessMechanism>,
-  anatomy: Anatomy,
+  anatomy: DimensionManifest,
 ): string[] {
   // Which fields hold values at all is a fact of the CATALOG, so an agent's
   // enforcing set is read against the set's catalog — there is no other catalog
@@ -158,14 +158,14 @@ function frameClaudeMd(frontMatter: string[], body: string): string {
 /**
  * The full claude-code SOUL for an agent, projected from its `Agent` vector under
  * the set's context. Also the hand-callable entry (a single agent, no plugin set)
- * — which is why `mechanisms` may be absent. `anatomy` may NOT: a SOUL projected
- * without a catalog has no dimension sections at all, and that renders as a
+ * — which is why `mechanisms` may be absent. `manifest` may NOT: a SOUL projected
+ * without one has no dimension sections at all, and that renders as a
  * plausible, well-formed, empty agent rather than as an error.
  */
 export function agentToClaudeMd(a: Agent, ctx: AgentDefContext): string {
   return frameClaudeMd(
-    agentFrontMatter(a, ctx.mechanisms ?? new Map(), ctx.anatomy),
-    agentBody(a, ctx.anatomy),
+    agentFrontMatter(a, ctx.mechanisms ?? new Map(), ctx.manifest),
+    agentBody(a, ctx.manifest),
   );
 }
 

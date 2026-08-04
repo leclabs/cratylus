@@ -24,7 +24,7 @@
 // in the corpus (agent-canon), never here. Corpus loading + oracle driving live in
 // the caller.
 
-import type { Skill, SkillExpression } from '../anatomy/index.js';
+import type { Skill, SkillExpression } from '@leclabs/agent-schema';
 import type { Policy } from './policy.js';
 
 /** The seven Universal legs of `accept()` (MODEL.md). */
@@ -380,7 +380,7 @@ export interface AgentComposite {
 /**
  * COMPOSED(a) — ∄ superfluous S_on (a value selected twice in one dimension is
  * redundant). Arity ∈ NatSet and value ∈ catalog are TYPE-enforced upstream
- * (`@leclabs/agent-forge/anatomy` — wrong dimension/arity = a compile error); this
+ * (`@leclabs/agent-schema` — wrong dimension/arity = a compile error); this
  * catches the one class types miss: a duplicated selection within a dimension set.
  */
 export function composed(agent: AgentComposite): {

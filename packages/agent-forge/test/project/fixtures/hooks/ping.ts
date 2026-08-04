@@ -1,7 +1,7 @@
 // A minimal harness-substrate hook cell + one worker byte-anchor, so the fixture
 // covers the settings.json + `hooks/<id>/<worker>` legs of the artifact tree.
 
-import type { HookCell } from '../../../../src/anatomy/index.js';
+import type { HookCell } from '@leclabs/agent-schema';
 
 export const ping: HookCell = {
   id: 'ping',

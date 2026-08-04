@@ -1,7 +1,7 @@
 {
   "name": "@leclabs/agent-forge",
   "version": "0.0.0",
-  "description": "agent-forge — the projection machinery: anatomy types, plugin resolution, and the canon → harness render/deploy CLI",
+  "description": "agent-forge — the projection machinery: plugin resolution and the canon → harness render/deploy CLI",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -11,10 +11,6 @@
     "./module-scan": {
       "types": "./dist/core/module-scan.d.ts",
       "import": "./dist/core/module-scan.js"
-    },
-    "./anatomy": {
-      "types": "./dist/anatomy/index.d.ts",
-      "import": "./dist/anatomy/index.js"
     },
     "./catalog": {
       "types": "./dist/catalog/index.d.ts",
@@ -47,17 +43,17 @@
   },
   "files": ["dist"],
   "scripts": {
-    "gen": "tsx src/core/hook/generate.ts",
     "build": "tsup",
     "typecheck": "tsc --noEmit",
     "typecheck:test": "tsc -p tsconfig.test.json",
     "test": "vitest run",
-    "clean": "rm -rf dist src/core/hook/generated.ts",
+    "clean": "rm -rf dist",
     "dev": "tsup --watch",
     "prepack": "pnpm run build"
   },
   "dependencies": {
     "@leclabs/agent-runtime": "workspace:*",
+    "@leclabs/agent-schema": "workspace:*",
     "@iarna/toml": "catalog:",
     "cac": "catalog:",
     "picocolors": "catalog:",
@@ -65,7 +61,6 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "json-schema-to-typescript": "^15.0.0",
     "tsup": "catalog:",
     "tsx": "^4.19.0",
     "typescript": "catalog:",

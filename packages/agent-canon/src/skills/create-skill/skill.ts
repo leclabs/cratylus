@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
+import type { Skill, SkillExpression } from '@leclabs/agent-schema';
 import { formalize } from '../formalize/skill.js';
 
 export const createSkill: Skill = {

@@ -48,7 +48,7 @@ import { probeMessage, probePipeline } from './pipeline-probe.js';
 /** dimension → its `Agent` field, derived from the fixture corpus's catalog. */
 const DIMENSION_FIELD = dimensionFieldsOf(FIXTURE_ANATOMY);
 
-/** The 22 fragment-dimension literals the vector must cover (anatomy order). */
+/** The 22 fragment-dimension literals the vector must cover (manifest order). */
 const THE_22_DIMENSIONS: readonly FixtureDimension[] = [
   'autonomy',
   'role',
@@ -197,15 +197,13 @@ story(
       sourcePath: join(cwd, 'source-agent.md'),
       outDir: cwd,
       spec: SPEC,
-      anatomy: FIXTURE_ANATOMY,
+      manifest: FIXTURE_ANATOMY,
     });
     const vectorModule = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorModule)).toBe(true);
     const src = readFileSync(vectorModule, 'utf8');
-    // Typed against the anatomy contract (compiles by construction).
-    expect(src).toContain(
-      "import type { Agent } from '@leclabs/agent-forge/anatomy'",
-    );
+    // Typed against the schema contract (compiles by construction).
+    expect(src).toContain("import type { Agent } from '@leclabs/agent-schema'");
     expect(src).toContain('export const reviewer: Agent = {');
     // All 22 dimension fields present — a value fragment or the explicit null.
     for (const dimension of THE_22_DIMENSIONS) {
@@ -241,7 +239,7 @@ story(
             },
           },
         },
-        { anatomy: FIXTURE_ANATOMY, sourceText: SOURCE_PERSONA },
+        { manifest: FIXTURE_ANATOMY, sourceText: SOURCE_PERSONA },
       ),
     ).toThrow(ExemplifyRefusal);
   },
@@ -257,7 +255,7 @@ story(
       sourcePath: join(cwd, 'source-agent.md'),
       outDir: cwd,
       spec: SPEC,
-      anatomy: FIXTURE_ANATOMY,
+      manifest: FIXTURE_ANATOMY,
     });
     // Post-elevation repo state holds exactly ONE source form per agent:
     // the free-text source form is gone…
@@ -277,7 +275,7 @@ story(
         sourcePath: join(cwd, 'source-b.md'),
         outDir: cwd,
         spec: { name: 'reviewer2', dimensions: inheritAll() },
-        anatomy: FIXTURE_ANATOMY,
+        manifest: FIXTURE_ANATOMY,
       }),
     ).toThrow(/REC/);
     expect(existsSync(join(cwd, 'source-b.md'))).toBe(true);

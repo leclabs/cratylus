@@ -8,7 +8,7 @@
 // body. Only the fragment wrap survives (its byte-anchor is the value string
 // itself).
 
-import { bodyOf } from '@leclabs/agent-forge/anatomy';
+import { bodyOf } from '@leclabs/agent-schema';
 import type { Dimension, Value } from '../anatomy.js';
 
 /**

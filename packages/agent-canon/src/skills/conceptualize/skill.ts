@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
+import type { Skill, SkillExpression } from '@leclabs/agent-schema';
 import { exemplify } from '../exemplify/skill.js';
 import { materialize } from '../materialize/skill.js';
 import { signify } from '../signify/skill.js';

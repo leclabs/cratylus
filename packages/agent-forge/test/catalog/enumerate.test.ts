@@ -57,7 +57,7 @@ function shapeViolations(entries: readonly CatalogEntry[]): string[] {
 }
 
 /** Descriptor drift: a dimension the catalog names that the catalog does not describe
- *  the same way (axis/kind/arity), or a dimension list that is not the anatomy's. */
+ *  the same way (axis/kind/arity), or a dimension list that is not the manifest's. */
 function metaDrift(entries: readonly CatalogEntry[]): string[] {
   return entries
     .filter((e) => {
@@ -229,7 +229,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
     writeFileSync(
       join(addressDir, 'fixture-mode.ts'),
       [
-        "import type { Autonomy } from '@leclabs/agent-forge/anatomy';",
+        "import type { Autonomy } from '@leclabs/agent-schema';",
         '',
         "export const fixtureMode: Autonomy = 'fixture-mode ≜ a discovered-only fixture value';",
         '',

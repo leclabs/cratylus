@@ -39,7 +39,7 @@ describe('CLI commands (integration)', () => {
     // dir directly (forge cannot bare-import the peer package).
     const canon: AgentPlugin = {
       name: 'canon',
-      anatomy: FIXTURE_ANATOMY,
+      manifest: FIXTURE_ANATOMY,
       fragments: CANON_DIMENSIONS,
     };
     const resolved = await resolveAgentsConfig({

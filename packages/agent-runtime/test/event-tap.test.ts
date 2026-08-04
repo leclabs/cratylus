@@ -284,8 +284,8 @@ describe('DAG guard (accept 5: runtime never → forge)', () => {
     // The BAD input the live corpus does not contain: each import form the
     // specifier regex must catch, and the prose that must NOT be mistaken for one.
     expect(
-      forgeImports("import { anatomy } from '@leclabs/agent-forge/anatomy';\n"),
-    ).toEqual(['@leclabs/agent-forge/anatomy']);
+      forgeImports("import { project } from '@leclabs/agent-forge/project';\n"),
+    ).toEqual(['@leclabs/agent-forge/project']);
     expect(forgeImports("export * from '@leclabs/agent-forge';\n")).toEqual([
       '@leclabs/agent-forge',
     ]);

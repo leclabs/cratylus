@@ -9,7 +9,7 @@ import { describe, expect, it } from 'vitest';
 import {
   type DimensionDoc,
   projectHumanDimension,
-} from '../../src/anatomy/index.js';
+} from '../../src/project/project-human.js';
 import { FIXTURE_ANATOMY } from '../fixture-anatomy.js';
 
 // `heuristics` is a Constitution/coined/set dimension — a stable fixture for the shape.

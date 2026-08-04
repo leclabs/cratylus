@@ -21,8 +21,8 @@
 import { existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { type DimensionManifest, mergeManifest } from '@leclabs/agent-schema';
 import pc from 'picocolors';
-import { type Anatomy, mergeAnatomy } from '../../anatomy/index.js';
 import { type CatalogEntry, enumerateCatalog } from '../../catalog/index.js';
 import { loadAgentsConfig, loadPlugins } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
@@ -148,33 +148,33 @@ async function runCrossPlugin(
  * otherwise off the corpus package's own entry module (the sibling of its
  * `dimensions/` dir — the same self-location `defaultCorpus` already assumes).
  */
-async function corpusAnatomy(
+async function corpusManifest(
   corpus: string,
   configPath: string,
-): Promise<Anatomy> {
+): Promise<DimensionManifest> {
   if (existsSync(configPath)) {
     const config = await loadAgentsConfig(configPath);
-    return mergeAnatomy(config.extends ?? []);
+    return mergeManifest(config.extends ?? []);
   }
   for (const entry of ['index.ts', 'index.js']) {
     const mod = join(corpus, '..', entry);
     if (!existsSync(mod)) continue;
     const loaded = (await import(pathToFileURL(mod).href)) as {
-      default?: { name?: string; anatomy?: Anatomy };
+      default?: { name?: string; manifest?: DimensionManifest };
     };
-    // `?.anatomy`, not just `loaded.default`. A corpus package that exports a
+    // `?.manifest`, not just `loaded.default`. A corpus package that exports a
     // plugin but forgot the catalog is the MOST LIKELY zero-config mistake, and
-    // admitting it here handed the user `mergeAnatomy`'s refusal instead of this
+    // admitting it here handed the user `mergeManifest`'s refusal instead of this
     // one. That message is correct for core — it names the plugins and the
-    // `anatomy` remedy — but it cannot mention `--config`, because a CLI flag has
+    // `manifest` remedy — but it cannot mention `--config`, because a CLI flag has
     // no business in a function four call sites share. So the likeliest mistake
     // drew the least useful of the two refusals. Falling through keeps the
     // CLI-shaped remedy at the CLI, where it is knowable.
-    if (loaded.default?.anatomy)
-      return mergeAnatomy([{ name: corpus, ...loaded.default }]);
+    if (loaded.default?.manifest)
+      return mergeManifest([{ name: corpus, ...loaded.default }]);
   }
   throw new Error(
-    `no dimension catalog for corpus ${corpus} — declare one on the corpus plugin's \`anatomy\`, or point --config at a config that extends it`,
+    `no dimension catalog for corpus ${corpus} — declare one on the corpus plugin's \`manifest\`, or point --config at a config that extends it`,
   );
 }
 
@@ -192,7 +192,7 @@ async function runCorpus(
   }
   const entries = await enumerateCatalog(
     corpus,
-    await corpusAnatomy(corpus, configPath),
+    await corpusManifest(corpus, configPath),
   );
   if (opts.json) {
     process.stdout.write(`${JSON.stringify(entries, null, 2)}\n`);

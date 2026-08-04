@@ -7,11 +7,11 @@
 // authored at the boundary. `projectHumanDimension` realizes it for the DIMENSION unit:
 // its concepts are the dimension itself (σ_human* = the optional `DimensionDoc.gloss`) and
 // its value cells (σ_human* = each value's `slug ≜ definiens`). The output is a
-// PURE DETERMINISTIC function of `(dimension, values, doc, anatomy)` — sort is by slug,
-// meta is read from the given catalog, no clock/host/IO — so a committed README that diverges
+// PURE DETERMINISTIC function of `(dimension, values, doc, manifest)` — sort is by slug,
+// meta is read from the given manifest, no clock/host/IO — so a committed README that diverges
 // from re-projection is a hand-edit (the falsifier), catchable by a byte diff.
 
-import type { Anatomy } from './index.js';
+import type { DimensionManifest } from '@leclabs/agent-schema';
 
 /**
  * The optional dimension-level human gloss — `σ_human*` of the DIMENSION concept itself,
@@ -40,7 +40,7 @@ function byBody(a: string, b: string): number {
 
 /**
  * `project-human` for a dimension: compose its value cells into the canonical human
- * README. PURE and DETERMINISTIC in `(dimension, values, doc, anatomy)` — the value
+ * README. PURE and DETERMINISTIC in `(dimension, values, doc, manifest)` — the value
  * list is slug-sorted, the genus line is read from the catalog, and nothing else
  * enters. The closed shape:
  *
@@ -64,9 +64,9 @@ export function projectHumanDimension(
   dimension: string,
   values: readonly string[],
   doc: DimensionDoc | undefined,
-  anatomy: Anatomy,
+  manifest: DimensionManifest,
 ): string {
-  const meta = anatomy[dimension];
+  const meta = manifest[dimension];
   // A catalog lookup is TOTAL by construction — the dimension being projected is
   // one of the catalog's own. Refuse rather than render `undefined` into a genus
   // line: a README that reads as authored is the one failure a byte diff cannot

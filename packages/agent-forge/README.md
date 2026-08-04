@@ -208,7 +208,8 @@ import { adapterByName } from '@leclabs/agent-forge/adapters/registry';
 
 `adapterByName` is the single selection point for a harness adapter — `'claude'` or `'codex'` — so a
 consumer depends on the adapter port and this selector rather than on a concrete harness module.
-Plugin authors also want `@leclabs/agent-forge/anatomy` for the cell types.
+Plugin authors also want `@leclabs/agent-schema` for the cell types — they are no longer forge's, and
+importing them from the projector was the inversion `agent-schema` exists to end.
 
 ## Exit codes
 

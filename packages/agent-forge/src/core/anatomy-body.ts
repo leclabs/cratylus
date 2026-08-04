@@ -7,8 +7,8 @@
 // so BOTH adapters import these DOWNWARD from core — never sideways from each
 // other. (Kills the former `codex/anatomy.ts → claude/anatomy.ts` edge.)
 
-import type { Agent, Anatomy, Value } from '../anatomy/index.js';
-import { bodyOf, dimensionValueOf } from '../anatomy/index.js';
+import type { Agent, DimensionManifest, Value } from '@leclabs/agent-schema';
+import { bodyOf, dimensionValueOf } from '@leclabs/agent-schema';
 import { renderSkillCellBody } from './exemplify/skill-cell.js';
 
 // ── Dimension → markdown helpers ─────────────────────────────────────────────────
@@ -38,7 +38,7 @@ export function dimensionField(dimension: string): string {
  * catalog is a parameter and not a module read: the sequence of an agent's
  * sections is a fact about the corpus that declared the dimensions.
  */
-export function agentBody(a: Agent, anatomy: Anatomy): string {
+export function agentBody(a: Agent, anatomy: DimensionManifest): string {
   const emoji = a.provenance?.mark.emoji ?? '';
   const heading = emoji ? `${emoji} ${a.name}` : a.name;
   const out: string[] = [`# ${heading}`, ''];

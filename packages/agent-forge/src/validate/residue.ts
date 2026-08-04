@@ -37,7 +37,7 @@
 // (`./policy.ts`) — the DATA lives in the corpus (agent-canon), never here. Corpus
 // loading lives in the caller.
 
-import type { SkillExpression } from '../anatomy/index.js';
+import type { SkillExpression } from '@leclabs/agent-schema';
 import type { Policy } from './policy.js';
 
 export type ResidueShape = 'single-line' | 'formal-block';

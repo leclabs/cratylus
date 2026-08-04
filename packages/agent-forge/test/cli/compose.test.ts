@@ -45,7 +45,7 @@ describe('compose --dry-run', () => {
       join(cwd, 'agents.config.ts'),
       [
         "import { fileURLToPath } from 'node:url';",
-        `const plugin = { name: 'syn', anatomy: ${JSON.stringify(FIXTURE_ANATOMY)}, fragments: fileURLToPath(new URL('./frags', import.meta.url)) };`,
+        `const plugin = { name: 'syn', manifest: ${JSON.stringify(FIXTURE_ANATOMY)}, fragments: fileURLToPath(new URL('./frags', import.meta.url)) };`,
         'export default { extends: [plugin], patches: [] };',
         '',
       ].join('\n'),

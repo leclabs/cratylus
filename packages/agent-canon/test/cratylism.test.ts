@@ -26,7 +26,7 @@
 //
 // COVERAGE (comprehensive — all names are the discovered anchor): every
 // dimension/dimension FRAGMENT (file basename == body σ*-anchor) · every composite/rule/hook
-// cell (file basename == declared `.name`/`.id`) · the dimension DIRS and the ANATOMY
+// cell (file basename == declared `.name`/`.id`) · the dimension DIRS and the MANIFEST
 // keys, BOTH ways (no dir without a key, no key without a dir). The file/directory
 // structure IS the discovered naming.
 //
@@ -91,7 +91,7 @@ async function dimensionDirs(): Promise<string[]> {
  * synthetic drifted pair can be fed to the same code the live leg runs.
  *
  * `orphanDirs` — a value dir the catalog never declared. `missingDirs` — a
- * catalog key no dir can fill: the direction a typo'd `ANATOMY` entry hides in,
+ * catalog key no dir can fill: the direction a typo'd `MANIFEST` entry hides in,
  * offering a dimension the corpus can never supply. Checking one is half a check.
  */
 function dirDrift(
@@ -338,14 +338,14 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     ).toEqual(['dimensions/engineering-principles/cratylism.ts']);
   });
 
-  it('the dimension DIRS and the ANATOMY keys agree BOTH ways (dir == discovered axis)', async () => {
+  it('the dimension DIRS and the MANIFEST keys agree BOTH ways (dir == discovered axis)', async () => {
     const dirs = await dimensionDirs();
     expect(dirs.length).toBeGreaterThan(20); // non-vacuous: the dimension dirs are enumerated
     expect(DIMENSION_NAMES.length).toBeGreaterThan(20); // …and so is the catalog
     const drift = dirDrift(dirs, DIMENSION_NAMES);
     expect(
       drift,
-      `dirs with no ANATOMY key: ${drift.orphanDirs.join(', ')} · ANATOMY keys with no dir: ${drift.missingDirs.join(', ')}`,
+      `dirs with no MANIFEST key: ${drift.orphanDirs.join(', ')} · MANIFEST keys with no dir: ${drift.missingDirs.join(', ')}`,
     ).toEqual({ orphanDirs: [], missingDirs: [] });
   });
 
@@ -358,9 +358,9 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
       missingDirs: [],
     });
 
-    // REVERSE — a catalog key no value dir can ever fill: the typo'd ANATOMY entry,
+    // REVERSE — a catalog key no value dir can ever fill: the typo'd MANIFEST entry,
     // which offers a dimension the corpus cannot supply. The synthetic keyset is
-    // built FROM `DIMENSION_NAMES` rather than by editing the live `ANATOMY`,
+    // built FROM `DIMENSION_NAMES` rather than by editing the live `MANIFEST`,
     // because a bare key added there makes every agent vector miss a field — that
     // is a COMPILE error, and reading one as a gate firing proves nothing about
     // this leg.

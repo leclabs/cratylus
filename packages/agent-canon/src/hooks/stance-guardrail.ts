@@ -1,4 +1,4 @@
-import type { HookCell } from '@leclabs/agent-forge/anatomy';
+import type { HookCell } from '@leclabs/agent-schema';
 import { checkIn } from '../dimensions/autonomy/check-in.js';
 
 // stance-guardrail — the harness-half of the principal-stance (P4). A source

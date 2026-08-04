@@ -3,15 +3,15 @@
 // load-bearing at fb944d2: a missing catalog used to fall back to a resident default,
 // and now REFUSES, so both of these branches went from unreachable to first-contact.
 //
-// `corpusAnatomy` has three branches; `cli/explain.test.ts` covers only the first
-// (config present → `mergeAnatomy(config.extends)`). These are the other two:
+// `corpusManifest` has three branches; `cli/explain.test.ts` covers only the first
+// (config present → `mergeManifest(config.extends)`). These are the other two:
 //
 //  · BRANCH 2 — no config ⇒ read the catalog off the corpus package's own entry
 //    module (`<corpus>/../index.ts`, the sibling of its `dimensions/` dir).
 //  · BRANCH 3 — no config AND no entry-module catalog ⇒ REFUSE, naming the corpus
 //    and BOTH remedies.
 //
-// Both drive the real CLI entry `runCatalog`, not `corpusAnatomy`: the defect is that
+// Both drive the real CLI entry `runCatalog`, not `corpusManifest`: the defect is that
 // a USER-REACHABLE path has no test, and a unit test of its helper does not discharge
 // that. The ABSENT config is the load-bearing half of the fixture — with one present,
 // branch 1 answers and neither of these ever runs — so each test asserts the absence
@@ -91,7 +91,7 @@ describe('catalog — the ZERO-CONFIG corpus path (no agents.config.ts)', () => 
   beforeEach(() => {
     cwd = mkdtempSync(join(tmpdir(), 'agent-forge-zeroconf-'));
     // The fixture corpus PACKAGE: `<cwd>/corpus/{index.ts,dimensions/}`. The entry
-    // module is the sibling of the dimensions dir — the self-location `corpusAnatomy`
+    // module is the sibling of the dimensions dir — the self-location `corpusManifest`
     // assumes when no config names the plugins.
     dimensions = join(cwd, 'corpus', 'dimensions');
     writeModule(
@@ -121,7 +121,7 @@ describe('catalog — the ZERO-CONFIG corpus path (no agents.config.ts)', () => 
     writeFileSync(
       join(cwd, 'corpus', 'index.ts'),
       [
-        `export default { name: 'zeroconf', anatomy: ${JSON.stringify(ZEROCONF_ANATOMY)} };`,
+        `export default { name: 'zeroconf', manifest: ${JSON.stringify(ZEROCONF_ANATOMY)} };`,
         '',
       ].join('\n'),
     );
@@ -150,7 +150,7 @@ describe('catalog — the ZERO-CONFIG corpus path (no agents.config.ts)', () => 
     writeFileSync(
       join(cwd, 'corpus', 'index.ts'),
       [
-        `export default { name: 'zeroconf', anatomy: ${JSON.stringify(ZEROCONF_ANATOMY)} };`,
+        `export default { name: 'zeroconf', manifest: ${JSON.stringify(ZEROCONF_ANATOMY)} };`,
         '',
       ].join('\n'),
     );
@@ -196,13 +196,13 @@ describe('catalog — the ZERO-CONFIG corpus path (no agents.config.ts)', () => 
     expect(err).toContain(dimensions);
     // …and BOTH remedies: declare the catalog on the corpus plugin, or pass --config.
     expect(err).toContain('declare');
-    expect(err).toContain('anatomy');
+    expect(err).toContain('manifest');
     expect(err).toContain('--config');
   });
 
   it('REFUSES the same way when the entry module exists but exports no plugin', async () => {
     // The other shape of "no catalog on the entry module": the module is there and
-    // resolvable, but carries no default export to read an `anatomy` off.
+    // resolvable, but carries no default export to read a `manifest` off.
     writeFileSync(
       join(cwd, 'corpus', 'index.ts'),
       "export const notAPlugin = 'nothing to read a catalog from';\n",
@@ -214,15 +214,15 @@ describe('catalog — the ZERO-CONFIG corpus path (no agents.config.ts)', () => 
     );
     expect(rc).toBe(1);
     expect(err).toContain(dimensions);
-    expect(err).toContain('anatomy');
+    expect(err).toContain('manifest');
     expect(err).toContain('--config');
   });
 
   it('REFUSES with the CLI remedy when the plugin is there but the catalog is not', async () => {
     // THE LIKELIEST ZERO-CONFIG MISTAKE, and it used to draw the LEAST useful
-    // refusal. A corpus package that exports a plugin and forgot `anatomy` once
-    // satisfied the `loaded.default` guard, so `mergeAnatomy` refused first — a
-    // correct message for core, naming the plugins and the `anatomy` remedy, but
+    // refusal. A corpus package that exports a plugin and forgot `manifest` once
+    // satisfied the `loaded.default` guard, so `mergeManifest` refused first — a
+    // correct message for core, naming the plugins and the `manifest` remedy, but
     // structurally unable to mention `--config`, since a CLI flag has no business
     // in a function four call sites share.
     writeFileSync(
@@ -238,7 +238,7 @@ describe('catalog — the ZERO-CONFIG corpus path (no agents.config.ts)', () => 
     expect(err).toContain(dimensions);
     // BOTH remedies. Asserting `--config` is the whole point: without it this
     // passes against the core refusal, which is the state being fixed.
-    expect(err).toContain('anatomy');
+    expect(err).toContain('manifest');
     expect(err).toContain('--config');
   });
 });

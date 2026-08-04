@@ -54,7 +54,7 @@ them to errors.
 
 Harness-inheritance is declared **at the agent source**: a dimension key set to `null` on the `Agent`
 vector projects no section and inherits whatever the target harness provides
-(`@leclabs/agent-forge/anatomy`, gated by `packages/agent-canon/test/null-dimension.test.ts`). The
+(`@leclabs/agent-schema`, gated by `packages/agent-canon/test/null-dimension.test.ts`). The
 projection is therefore identical machinery per harness — no per-harness subtraction fixture.
 
 ## Reproduce

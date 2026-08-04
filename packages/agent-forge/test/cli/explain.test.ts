@@ -85,7 +85,7 @@ describe('P5 inspection — explain + first-class catalog', () => {
       [
         "import { fileURLToPath } from 'node:url';",
         "import { harm } from './pluginA/guardrails/harm.ts';",
-        `const alpha = { name: 'alpha', anatomy: ${JSON.stringify(FIXTURE_ANATOMY)}, fragments: fileURLToPath(new URL('./pluginA', import.meta.url)) };`,
+        `const alpha = { name: 'alpha', manifest: ${JSON.stringify(FIXTURE_ANATOMY)}, fragments: fileURLToPath(new URL('./pluginA', import.meta.url)) };`,
         "const beta = { name: 'beta', fragments: fileURLToPath(new URL('./pluginB', import.meta.url)) };",
         'export default {',
         '  extends: [alpha, beta],',

@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
+import type { Skill, SkillExpression } from '@leclabs/agent-schema';
 import { introspect } from '../introspect/skill.js';
 
 const EVENT_TAP_BLOCK = `event-tap    ≜ install → observe → read → uninstall

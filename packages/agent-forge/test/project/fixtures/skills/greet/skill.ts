@@ -1,7 +1,7 @@
 // A minimal skill cell for the projection fixture plugin. It declares `runtime`
 // so the fixture also covers the THIN SHIM leg of the artifact tree.
 
-import type { Skill } from '../../../../../src/anatomy/index.js';
+import type { Skill } from '@leclabs/agent-schema';
 
 export const greet: Skill = {
   name: 'greet',

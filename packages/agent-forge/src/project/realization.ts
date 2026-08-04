@@ -43,8 +43,8 @@
 // missing string, only a missing distinction. Adapters DECLARE capability
 // (`realizes`, `scopes`); this module alone decides what a "cannot" means.
 
+import type { SubstrateEvent } from '@leclabs/agent-schema/hook';
 import type { HarnessAdapter } from '../core/harness-adapter.js';
-import type { SubstrateEvent } from '../core/hook/index.js';
 
 /** A constraint's realization demand: what it is, where it fires, on what, for whom. */
 export interface Realizable {

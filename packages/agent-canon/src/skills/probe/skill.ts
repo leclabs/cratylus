@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '@leclabs/agent-forge/anatomy';
+import type { Skill, SkillExpression } from '@leclabs/agent-schema';
 import { conceptualize } from '../conceptualize/skill.js';
 import { elicit } from '../elicit/skill.js';
 import { signify } from '../signify/skill.js';

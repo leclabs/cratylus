@@ -13,9 +13,9 @@ import {
   agentToClaudeMd,
   skillToClaudeMd,
 } from '@leclabs/agent-forge/adapters/claude';
-import type { Skill } from '@leclabs/agent-forge/anatomy';
+import type { Skill } from '@leclabs/agent-schema';
 import { describe, expect, it } from 'vitest';
-import { ANATOMY } from '../src/anatomy.js';
+import { MANIFEST } from '../src/anatomy.js';
 import type { Agent } from '../src/anatomy.js';
 import { dream } from '../src/skills/dream/skill.js';
 import { wake } from '../src/skills/wake/skill.js';
@@ -123,7 +123,7 @@ describe('projection stability (.ts is the sole source)', () => {
     expect(modules.length).toBe(10);
     for (const rel of modules) {
       const agent = await firstExport<Agent>(join(srcRoot, rel));
-      const soul = agentToClaudeMd(agent, { anatomy: ANATOMY });
+      const soul = agentToClaudeMd(agent, { manifest: MANIFEST });
       expect(soul.length, rel).toBeGreaterThan(0);
     }
   });

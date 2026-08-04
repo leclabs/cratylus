@@ -24,13 +24,13 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@leclabs/agent-forge/adapters/registry';
-import type { Skill } from '@leclabs/agent-forge/anatomy';
 import {
   emitRuntimeShim,
   projectPluginSet,
   writeRenderTree,
 } from '@leclabs/agent-forge/project';
 import { RUNTIME_BIN } from '@leclabs/agent-runtime/bin-name';
+import type { Skill } from '@leclabs/agent-schema';
 import { beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
 

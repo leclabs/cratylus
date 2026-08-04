@@ -31,8 +31,8 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   type Agent,
-  type Anatomy,
   type Binding,
+  type DimensionManifest,
   type Enforcing,
   type HookCell,
   type Skill,
@@ -42,9 +42,10 @@ import {
   dimensionValueOf,
   enforcing,
   hookIrOf,
-  mergeAnatomy,
+  mergeManifest,
   withBody,
-} from '../anatomy/index.js';
+} from '@leclabs/agent-schema';
+import type { HarnessMechanism } from '@leclabs/agent-schema/hook';
 import {
   type DiscoveredPlugin,
   discoverPluginFragments,
@@ -55,7 +56,6 @@ import {
   enforcingValuesOf,
 } from '../core/exemplify/dimension-fields.js';
 import type { HarnessAdapter } from '../core/harness-adapter.js';
-import type { HarnessMechanism } from '../core/hook/index.js';
 import {
   resolveModulePath,
   scanCellDirNames,
@@ -86,8 +86,8 @@ export interface ProjectablePlugin {
   readonly preamble?: string;
   /** Dir of hook cell modules this plugin contributes. */
   readonly hooks?: string;
-  /** WHICH dimensions this plugin declares — the catalog instance (`AgentPlugin.anatomy`). */
-  readonly anatomy?: Anatomy;
+  /** WHICH dimensions this plugin declares — the manifest instance (`AgentPlugin.manifest`). */
+  readonly manifest?: DimensionManifest;
 }
 
 export interface ProjectOpts {
@@ -221,20 +221,20 @@ async function hookOf(modPath: string): Promise<HookCell | null> {
  * byte-stable — an unsorted set would churn the deploy diff and hide real changes
  * among reorderings.
  *
- * `anatomy` is the catalog the vector is READ against — REQUIRED. A dimension the
+ * `manifest` is what the vector is READ against — REQUIRED. A dimension the
  * set declares and the reader does not know is invisible here, so its enforcing
  * values would bind nothing while its SOUL section still printed.
  */
 export function bindingsOf(
   agents: readonly { readonly name: string; readonly agent: Agent }[],
-  anatomy: Anatomy,
+  manifest: DimensionManifest,
 ): Binding[] {
   const byAnchor = new Map<
     string,
     { fragment: Enforcing<string>; agents: Set<string> }
   >();
   for (const { name, agent } of agents) {
-    for (const fragment of enforcingValuesOf(agent, anatomy)) {
+    for (const fragment of enforcingValuesOf(agent, manifest)) {
       const anchor = anchorOf(fragment);
       const seen = byAnchor.get(anchor);
       if (seen) seen.agents.add(name);
@@ -288,7 +288,7 @@ export async function discoverFragments(
     .map((p) => ({ name: p.name, fragmentsDir: p.fragments }));
   return sources.length === 0
     ? []
-    : discoverPluginFragments(sources, mergeAnatomy(plugins));
+    : discoverPluginFragments(sources, mergeManifest(plugins));
 }
 
 /**
@@ -361,7 +361,7 @@ export function resolveFragmentBodies(
 function withResolvedBodies(
   agent: Agent,
   subst: ReadonlyMap<string, string>,
-  anatomy: Anatomy,
+  manifest: DimensionManifest,
 ): Agent {
   if (subst.size === 0) return agent;
   // Substitute a value's DECLARATION face and put the binding back. A value may
@@ -377,7 +377,7 @@ function withResolvedBodies(
   // the agent (completeness law), so the field ORDER of the copy is the field
   // order of the original — the fold moves bodies, never bytes of structure.
   const folded: Record<string, unknown> = { ...agent };
-  for (const field of Object.values(dimensionFieldsOf(anatomy))) {
+  for (const field of Object.values(dimensionFieldsOf(manifest))) {
     const v = dimensionValueOf(agent, field);
     // `null` is the omit-to-inherit sentinel and stays exactly that; a dimension
     // the agent does not carry is left untouched rather than minted as `null`.
@@ -427,7 +427,7 @@ export async function projectPluginSet(
   // WHICH dimensions exist is settled before any vector is read: it decides the
   // fields an agent carries, its section order, and what counts as an enforcing
   // value — so every reader below is told, none left to guess at forge's own.
-  const anatomy = mergeAnatomy(opts.plugins, log);
+  const manifest = mergeManifest(opts.plugins, log);
 
   // An agent is rendered from the RESOLVED catalog, never from the bodies its
   // module happened to import (ENGINE:22). Every move is reported, never silent.
@@ -478,7 +478,7 @@ export async function projectPluginSet(
   for (const [name, { dir, preamble: pre }] of [...agentSrc].sort()) {
     const modPath = await resolveModulePath(dir, name);
     if (!modPath) throw new Error(`agent module not found: ${name}`);
-    const agent = withResolvedBodies(await agentOf(modPath), subst, anatomy);
+    const agent = withResolvedBodies(await agentOf(modPath), subst, manifest);
     composed.push({ name, agent });
     pending.push({ name, ...(pre ? { pre } : {}) });
   }
@@ -487,7 +487,7 @@ export async function projectPluginSet(
   // written, and withhold the mechanism of any that degraded. The DECLARATION
   // face needs no decision — `agentBody` publishes it for every composed value on
   // every harness, which is why a shortfall here is a warning and not a refusal.
-  const bindings = bindingsOf(composed, anatomy);
+  const bindings = bindingsOf(composed, manifest);
   const degraded = new Set<string>();
   for (const b of bindings) {
     const { mode, losses } = realizationOf(
@@ -517,7 +517,7 @@ export async function projectPluginSet(
         ...agent,
         ...((pre ?? opts.preamble) ? { preamble: pre ?? opts.preamble } : {}),
       },
-      { anatomy, ...(mechanisms ? { mechanisms } : {}) },
+      { manifest, ...(mechanisms ? { mechanisms } : {}) },
     );
     files.push({ path: join('agents', filename), content });
     log(`EMIT agent ${name}`);

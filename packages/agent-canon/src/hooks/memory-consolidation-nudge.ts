@@ -1,5 +1,5 @@
-import type { HookCell } from '@leclabs/agent-forge/anatomy';
 import { RUNTIME_BIN } from '@leclabs/agent-runtime/bin-name';
+import type { HookCell } from '@leclabs/agent-schema';
 
 // memory-consolidation-nudge — an ADVISORY Stop hook (the harness half of the
 // memory-consolidation protocol). On turn.end (Stop only — NOT SubagentStop), it

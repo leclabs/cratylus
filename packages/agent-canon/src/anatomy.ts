@@ -1,25 +1,25 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// THE DIMENSION CATALOG — agent-canon's own, and the one home for it.
+// THE DIMENSION MANIFEST — agent-canon's own, and the one home for it.
 //
-// Forge owns the META-MODEL: that a dimension HAS an `axis`, a `kind`, an
-// `arity`, a `required`, and all machinery that operates on any catalog obeying
-// that shape. THIS module owns the INSTANCE: WHICH dimensions exist, and each
-// one's metadata. The catalog rides the PLUGIN (`src/index.ts` declares
-// `anatomy: ANATOMY`), exactly as `preamble` does — "the axiom rides the PLUGIN,
-// so it survives projection by any consumer."
+// `@leclabs/agent-schema` owns the META-MODEL: that a dimension HAS an `axis`, a
+// `kind`, an `arity`, a `required`, and all machinery that operates on any
+// manifest obeying that shape. THIS module owns the INSTANCE: WHICH dimensions
+// exist, and each one's metadata. The manifest rides the PLUGIN (`src/index.ts`
+// declares `manifest: MANIFEST`), exactly as `preamble` does — "the axiom rides
+// the PLUGIN, so it survives projection by any consumer."
 //
-// The catalog used to live in `agent-forge`, which meant a corpus could not
+// The manifest used to live in `agent-forge`, which meant a corpus could not
 // discover a dimension without editing the projector — the thesis inverted at its
 // most load-bearing point. A projector that knows there are exactly 22 dimensions
 // named these 22 things is not projecting a design; it contains one.
 //
-// WHERE THE TYPO-CATCHING LIVES. Forge's `Fragment<O>` is constrained
+// WHERE THE TYPO-CATCHING LIVES. The schema's `Fragment<O>` is constrained
 // `O extends string`, not `O extends Dimension`, and MUST NOT be re-tightened:
 // the brand discriminates by the type ARGUMENT, so every value-level guarantee
 // (the cross-dimension refusal, the `required` catch-all) holds without the
 // constraint. The one property the relaxation costs is catching a MISSPELLED
 // dimension name, and it is restored HERE, by `Value<D extends Dimension>` below
-// — the corpus that owns the catalog is the only place that can know a name is
+// — the corpus that owns the manifest is the only place that can know a name is
 // not one of its own.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -29,7 +29,7 @@ import type {
   RequiredDimensionOf,
   SetDimensionOf,
   Value as ValueOfDimension,
-} from '@leclabs/agent-forge/anatomy';
+} from '@leclabs/agent-schema';
 
 /**
  * The one runtime home for this corpus's dimension metadata. Every derivation
@@ -41,7 +41,7 @@ import type {
  * and takes every alias, `Agent` field and arity check below down with it —
  * silently, while everything still compiles.
  */
-export const ANATOMY = {
+export const MANIFEST = {
   // Persona
   autonomy: { axis: 'Persona', kind: 'enum', arity: 'set' },
   role: { axis: 'Persona', kind: 'open', arity: 'scalar' },
@@ -90,15 +90,15 @@ export const ANATOMY = {
 } as const satisfies Record<string, DimensionMeta>;
 
 /**
- * Every fragment dimension of this corpus — DERIVED from `ANATOMY`, never listed
+ * Every fragment dimension of this corpus — DERIVED from `MANIFEST`, never listed
  * twice. `archetype` and `provenance` are NOT here: archetype is a plain-string
  * description on the agent (D13) and provenance the structured `{mark}` (D3);
  * both carry data, not a σ* residue, so neither is a value-fragment dimension.
  */
-export type Dimension = keyof typeof ANATOMY;
+export type Dimension = keyof typeof MANIFEST;
 
 /** Every fragment-dimension name, in anatomy (Persona-then-Constitution) declaration order. */
-export const DIMENSION_NAMES = Object.keys(ANATOMY) as readonly Dimension[];
+export const DIMENSION_NAMES = Object.keys(MANIFEST) as readonly Dimension[];
 
 /**
  * A dimension VALUE of THIS corpus: a bare branded declaration, or one that
@@ -111,14 +111,14 @@ export const DIMENSION_NAMES = Object.keys(ANATOMY) as readonly Dimension[];
  */
 export type Value<D extends Dimension> = ValueOfDimension<D>;
 
-/** The dimensions holding MANY values — derived from `ANATOMY`'s `arity`. */
-export type SetDimension = SetDimensionOf<typeof ANATOMY>;
+/** The dimensions holding MANY values — derived from `MANIFEST`'s `arity`. */
+export type SetDimension = SetDimensionOf<typeof MANIFEST>;
 
-/** The dimensions an agent may NOT omit — derived from `ANATOMY`'s `required`. */
-export type RequiredDimension = RequiredDimensionOf<typeof ANATOMY>;
+/** The dimensions an agent may NOT omit — derived from `MANIFEST`'s `required`. */
+export type RequiredDimension = RequiredDimensionOf<typeof MANIFEST>;
 
 /**
- * An agent of this corpus: a FLAT, explicit selection over `ANATOMY` (depth 1 —
+ * An agent of this corpus: a FLAT, explicit selection over `MANIFEST` (depth 1 —
  * composition over inheritance), plus the identity fields forge reads.
  *
  * Every dimension key is REQUIRED (completeness law). A scalar dimension holds
@@ -127,7 +127,7 @@ export type RequiredDimension = RequiredDimensionOf<typeof ANATOMY>;
  * array, or `null` to omit the whole section. `guardrails` has no `| null`: it is
  * `required: true` in the catalog, so the unconfined agent cannot be written down.
  */
-export type Agent = AgentOf<typeof ANATOMY>;
+export type Agent = AgentOf<typeof MANIFEST>;
 
 // ── Per-dimension value types (branded strings) ─────────────────────────────
 // A dimension value is a bare named σ* expression: `export const x: Objective = '…'`.

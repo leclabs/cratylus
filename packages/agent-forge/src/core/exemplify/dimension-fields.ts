@@ -1,14 +1,14 @@
 import type {
-  Anatomy,
+  DimensionManifest,
   Agent as DimensionVector,
   Enforcing,
   Value,
-} from '../../anatomy/index.js';
+} from '@leclabs/agent-schema';
 import {
   dimensionValueOf,
   enforcing,
   kebabToCamel,
-} from '../../anatomy/index.js';
+} from '@leclabs/agent-schema';
 
 /**
  * Dimension name → the `Agent` field carrying it, DERIVED from a catalog by the
@@ -20,10 +20,10 @@ import {
  * reads, and a dimension added to that catalog appears in this map the same moment.
  */
 export function dimensionFieldsOf(
-  anatomy: Anatomy,
+  manifest: DimensionManifest,
 ): Readonly<Record<string, string>> {
   return Object.fromEntries(
-    Object.keys(anatomy).map((d) => [d, kebabToCamel(d)]),
+    Object.keys(manifest).map((d) => [d, kebabToCamel(d)]),
   );
 }
 
@@ -41,10 +41,10 @@ export function dimensionFieldsOf(
  */
 export function enforcingValuesOf(
   agent: DimensionVector,
-  anatomy: Anatomy,
+  manifest: DimensionManifest,
 ): Enforcing<string>[] {
   const out: Enforcing<string>[] = [];
-  for (const field of Object.values(dimensionFieldsOf(anatomy))) {
+  for (const field of Object.values(dimensionFieldsOf(manifest))) {
     const v = dimensionValueOf(agent, field);
     if (v === null || v === undefined) continue;
     for (const item of Array.isArray(v) ? v : [v]) {

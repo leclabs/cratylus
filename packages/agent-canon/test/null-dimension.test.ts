@@ -15,7 +15,7 @@ import {
 } from '@leclabs/agent-forge/adapters/claude';
 import { describe, expect, it } from 'vitest';
 import type { Agent } from '../src/anatomy.js';
-import { ANATOMY, DIMENSION_NAMES } from '../src/anatomy.js';
+import { DIMENSION_NAMES, MANIFEST } from '../src/anatomy.js';
 
 import * as archDocWriter from '../src/agents/arch-doc-writer.js';
 import * as boz from '../src/agents/boz.js';
@@ -60,7 +60,7 @@ describe('NULL-DIMENSION gate — null ⇔ no SOUL section', () => {
     const carrier = AGENTS.find((a) => a.transparency !== null) as Agent;
     expect(carrier, 'an agent carrying transparency').toBeDefined();
 
-    const soul = agentToClaudeMd(carrier, { anatomy: ANATOMY });
+    const soul = agentToClaudeMd(carrier, { manifest: MANIFEST });
     const section = `## ${dimensionTitle('transparency')}`;
 
     // control: a CARRIED dimension does render its section, so the lookup works
@@ -79,7 +79,7 @@ describe('NULL-DIMENSION gate — null ⇔ no SOUL section', () => {
 
   for (const agent of AGENTS) {
     it(`${agent.name}: vector null-set matches the projected SOUL`, () => {
-      const soul = agentToClaudeMd(agent, { anatomy: ANATOMY });
+      const soul = agentToClaudeMd(agent, { manifest: MANIFEST });
       for (const dimension of DIMENSION_NAMES) {
         const title = dimensionTitle(dimension);
         const isNull = agent[fieldOf(dimension)] === null;

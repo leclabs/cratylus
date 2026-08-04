@@ -37,7 +37,7 @@
 // matching. Every test file must appear here, so a new one cannot slip in
 // unclassified, and a GATE without a fixture is visible DEBT rather than silence.
 //
-// ONE META-GATE, FOUR TEST DIRS. This file lived in agent-canon and enumerated
+// ONE META-GATE, FIVE TEST DIRS. This file lived in agent-canon and enumerated
 // agent-canon's test dir alone, so every gate in agent-memory, agent-runtime and
 // agent-forge was unpoliced — the three that already carried convicting fixtures
 // did so because their authors were told to, not because anything checked. The
@@ -63,6 +63,7 @@ const TEST_ROOTS: Readonly<Record<string, string>> = {
   'agent-forge': join(packages, 'agent-forge', 'test'),
   'agent-memory': join(packages, 'agent-memory', 'test'),
   'agent-runtime': join(packages, 'agent-runtime', 'test'),
+  'agent-schema': join(packages, 'agent-schema', 'test'),
 };
 
 /**
@@ -104,8 +105,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // ── agent-forge ────────────────────────────────────────────────────────────
   'agent-forge/adapters/agent-hooks.test.ts': 'BEHAVIORAL',
   'agent-forge/adapters/codex-hooks.test.ts': 'BEHAVIORAL',
-  'agent-forge/anatomy/enforcing.test.ts': 'BEHAVIORAL',
-  'agent-forge/anatomy/project-human.test.ts': 'BEHAVIORAL',
+  // the projection half of the old `anatomy/enforcing.test.ts` — drives `agentBody`
+  // with an enforcing value it supplies itself. Its shape half went to agent-schema.
+  'agent-forge/core/agent-body-enforcing.test.ts': 'BEHAVIORAL',
+  'agent-forge/project/project-human.test.ts': 'BEHAVIORAL',
   // reads the FIXTURE corpus's own dimension dir listing against its descriptor.
   'agent-forge/catalog/anatomy-descriptor.test.ts': 'GATE',
   'agent-forge/catalog/discover.test.ts': 'BEHAVIORAL',
@@ -172,6 +175,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // the "unregistered" leg scans loader/plugin/package/tsup for the placeholder.
   'agent-runtime/provisional-v9.test.ts': 'GATE',
   'agent-runtime/runtime-config.test.ts': 'BEHAVIORAL',
+
+  // ── agent-schema ───────────────────────────────────────────────────────────
+  // drives `enforcing`/`bodyOf`/`withBody`/`isDimensionValue` with values it
+  // supplies itself; its negative cases ARE its fixtures.
+  'agent-schema/enforcing.test.ts': 'BEHAVIORAL',
 };
 
 /** The vocabulary a convicting fixture announces itself in, as the corpus already

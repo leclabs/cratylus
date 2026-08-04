@@ -22,7 +22,7 @@ import { chmodSync, readFileSync, writeFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import type { HookCell, RuleCell } from '@leclabs/agent-forge/anatomy';
+import type { HookCell, RuleCell } from '@leclabs/agent-schema';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const anatomyRoot = join(here, '..', '..');

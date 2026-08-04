@@ -1,5 +1,5 @@
 // Type-level acceptance for THIS CORPUS'S anatomy — the types `src/anatomy.ts`
-// derives from `ANATOMY`. It lives here, not in the projector, because every
+// derives from `MANIFEST`. It lives here, not in the projector, because every
 // property below is a property of a catalog: which dimensions exist, which are
 // sets, which may be omitted. A projector that could assert them would be one
 // that contained the catalog.
@@ -13,7 +13,7 @@
 // phantom `__dimension` brand keys each string to its dimension so a cross-dimension
 // assignment of a TYPED value is a compile error.
 
-import type { Skill } from '@leclabs/agent-forge/anatomy';
+import type { Skill } from '@leclabs/agent-schema';
 import type {
   Actions,
   Agent,
@@ -224,7 +224,7 @@ void agentGuardrailsNull;
 // This is the property forge gave up when `Fragment<O>` relaxed to
 // `O extends string`, and the reason it could be given up: it lands HERE, on the
 // side that owns the catalog. `Dimension` is a literal union derived from
-// `ANATOMY` — if the `as const satisfies` on that const is ever weakened to a
+// `MANIFEST` — if the `as const satisfies` on that const is ever weakened to a
 // plain annotation, `Dimension` silently becomes `string`, this directive stops
 // firing, and tsc fails on it. That is the tripwire.
 

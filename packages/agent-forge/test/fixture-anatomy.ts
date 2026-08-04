@@ -20,7 +20,7 @@
 // is in a real corpus: without it the keys widen to `string` and `FixtureAgent`
 // stops checking anything.
 
-import type { AgentOf, DimensionMeta, Value } from '../src/anatomy/index.js';
+import type { AgentOf, DimensionMeta, Value } from '@leclabs/agent-schema';
 
 export const FIXTURE_ANATOMY = {
   // Persona

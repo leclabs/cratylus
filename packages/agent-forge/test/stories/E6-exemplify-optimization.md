@@ -5,7 +5,7 @@ R=LLM output for any harness that supports it; skills as self-sufficient set-bui
 agents as anatomy dimension-vectors; ambiguity about dimension values → `ELICIT:` marker, never an
 invented answer). ρ=LLM. Contracts: `~/.claude/skills/exemplify/SKILL.md` (accept gate: REC_R ≽,
 minimal, conform; R3 routing manifest), anatomy types
-`packages/agent-forge/src/anatomy/index.ts` (`Agent` = 24-dimension vector, `Skill` = formal cell).
+`packages/agent-schema/src/index.ts` (`Agent` = 24-dimension vector, `Skill` = formal cell).
 
 **depalimpsest-ir-intake S6 (2026-07).** The IR-intake lineage was excised. Two Operator rulings
 this epic carried were rulings ABOUT that lineage and lapse with it: "rules are a first-class
@@ -54,7 +54,7 @@ tooling cues; anatomy package importable.
 ✓:
 
 - Output is a TS module exporting `Agent` (anatomy shape) that **tsc-compiles** against
-  `@leclabs/agent-forge/anatomy`; all 24 dimension keys present; each value a `Fragment` of the
+  `@leclabs/agent-schema`; all 24 dimension keys present; each value a `Fragment` of the
   correct dimension literal or `null`.
 - Every non-null dimension value carries a provenance note tracing to input evidence (a quoted span
   or an explicit inference tag); a dimension value with no trace = FAIL.

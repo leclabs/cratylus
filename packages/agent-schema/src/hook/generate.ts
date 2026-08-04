@@ -4,7 +4,7 @@
 // moves together. Splitting them (emitting into a tree whose generator lives
 // elsewhere) is how a generated artifact outlives its source.
 //
-// Run:  pnpm --filter @leclabs/agent-forge gen
+// Run:  pnpm --filter @leclabs/agent-schema gen
 
 import { writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -16,8 +16,8 @@ const outFile = resolve(here, 'generated.ts');
 
 const banner = `/**
  * AUTO-GENERATED. Do not edit by hand.
- * Source: packages/agent-forge/src/core/hook/hook.schema.json
- * Regenerate: pnpm --filter @leclabs/agent-forge gen
+ * Source: packages/agent-schema/src/hook/hook.schema.json
+ * Regenerate: pnpm --filter @leclabs/agent-schema gen
  */
 /* eslint-disable */
 `;

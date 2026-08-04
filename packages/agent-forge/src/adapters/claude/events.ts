@@ -1,4 +1,4 @@
-import type { CanonicalEvent } from '../../core/hook/index.js';
+import type { CanonicalEvent } from '@leclabs/agent-schema/hook';
 
 /**
  * Canonical event → Claude Code event name. Lifted from DESIGN.md §7

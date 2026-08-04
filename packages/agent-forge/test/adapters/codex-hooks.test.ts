@@ -1,9 +1,9 @@
+import type { HarnessMechanism } from '@leclabs/agent-schema/hook';
 import { describe, expect, it } from 'vitest';
 import {
   codexHarnessAdapter,
   codexHooksJson,
 } from '../../src/adapters/codex/anatomy.js';
-import type { HarnessMechanism } from '../../src/core/hook/index.js';
 
 const MECH = new Map<string, HarnessMechanism>([
   ['stance', { command: 'sh stance.sh', workers: [] }],

@@ -25,7 +25,7 @@
 import { glob } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import type { Skill } from '@leclabs/agent-forge/anatomy';
+import type { Skill } from '@leclabs/agent-schema';
 import { describe, expect, it } from 'vitest';
 import { declaredGlyphs } from '../src/toolkit/operator-lexicon.js';
 import { firstExport } from './support/cell-module.js';
