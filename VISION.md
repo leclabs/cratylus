@@ -6,27 +6,34 @@ Discover, validate, and canonize the semantic addresses already recognized by fo
 
 ## Problem
 
-Prompt engineering treats behavior as an emergent property of authored natural language. Context engineering broadens the material surrounding a request, but usually preserves the same underlying assumption: meaning is supplied to the model through natural language subject to misinterpretation.
+Conventional prompt and context engineering treats behavior as an emergent property of authored natural language, meaning is supplied to the model through natural language subject to misinterpretation.
 
-As prompts and contexts evolve through iterative refinement, they accumulate ambiguity, redundancy, hidden assumptions, corrective patches, and contextual noise. The result is greater context consumption with weaker specification integrity: conceptual drift, inconsistent behavior, hidden collisions, and unpredictable execution.
+As prompts and contexts evolve through iterative refinement, they accumulate ambiguity, redundancy, hidden assumptions, corrective patches, and contextual noise. The result is greater context consumption with weaker specification integrity: conceptual drift, inconsistent behavior, hidden collisions, unpredictable execution, and cross-model fragility.
 
-Larger context windows, stronger reasoning models, memory, and auxiliary tooling alleviate these symptoms without addressing the cause: meaning is still conveyed by description, in a medium that admits misinterpretation.
+Larger context windows, stronger reasoning models, memory, and auxiliary tooling may alleviate some of these symptoms, but they do not address the root cause: meaning is still conveyed by description, in a medium that admits misinterpretation.
 
-This project takes the opposite route — discovering and canonizing the semantic addresses a foundation model already recognizes, so intent is **addressed** rather than **described**.
+This project takes the opposite route - discovering and canonizing the semantic addresses a foundation model already recognizes, so intent is **addressed** rather than **described**.
 
 ## Thesis
 
-> **A foundation model is not merely an engine to be instructed. It is a semantic space to be addressed.**
+> **The semantic address for a concept within a foundation model's semantic space is the optimal signifier that most precisely invokes that concept.**
 
-foundation models encode rich priors for concepts, abstractions, relationships, and formal systems. The central engineering task is therefore not to invent increasingly elaborate descriptions of intended behavior, but to discover the canonical signifiers that most precisely and reproducibly address those latent semantics.
+Foundation models possess a latent semantic space built by encoding rich priors over semantic content, relational structure, and compositional rules. There must exist a signifier for every encoded concept that most precisely invokes that concept - it's optimal-signifier, or **semantic address**.
 
-These signifiers are **canonical semantic addresses**: model-native expressions whose interpretation is discovered through cold verification rather than assigned by author preference.
+### Core Concept: The Theoretical Ideal Optimal-Signifier
 
-> **Context does not create canonical meaning. Runtime context is a projection of canonical semantics into a particular deployment environment.**
+```
+σ^*(c) = argmin_{σ} μ(I(σ) △ C(c))
+```
 
-This shifts the source of truth upstream. Runtime prompts, framework configurations, and harness-specific instructions become generated targets. The canon—the validated system of semantic addresses and their compositions—becomes the authored source.
+**Where:**
 
-The foundation model is not programmed in the conventional sense. It is surveyed.
+- **σ** is a candidate signifier
+- **σ^\*(c)** is the optimal signifier for concept c
+- **μ** is the semantic distance metric — semantic mass, not count
+- **I(σ)** is the inferred concept from σ, i.e. σ's actual meaning-in-effect
+- **C(c)** is the target concept c
+- **△** is the symmetric difference
 
 ## The Inversion
 
@@ -34,9 +41,9 @@ This vision rests on three related inversions.
 
 ### Ontological Inversion
 
-The conventional view treats the model primarily as an inference engine that receives instructions. This project also treats it as a pre-existing semantic landscape: a structured field of learned meaning that can be probed, mapped, and addressed.
+The conventional view treats the foundation model primarily as an inference engine that receives instructions. Our approach inverts this by assuming that foundation models have already encoded high fidelity representations of the concepts we want to express and optimal-signifiers which invoke them. By using the optimal-signifiers, we can invoke the intended concepts precisely, minimizing ambiguity and maximizing the reliability of the model's response.
 
-The model is therefore not an empty execution substrate awaiting a complete behavioral description. Its existing semantic structure is part of the engineering material.
+The model is therefore treated as the semantic source of truth for concepts and their optimal-signifiers; a shared semantic vocabulary.
 
 ### Epistemic Inversion
 
@@ -49,20 +56,20 @@ This project begins from the opposite direction. Relevant meaning may already be
 The conventional pipeline authors a prompt and observes behavior:
 
 ```text
-author → prompt → runtime → behavior
+intent → author → prompt → runtime → behavior
 ```
 
 This project establishes a canonical semantic layer before deployment:
 
 ```text
-discover → verify → canonize → compose → project → deploy
+intent → discover → verify → canonize → compose → project → deploy → prompt → runtime → behavior
 ```
 
 The runtime representation is compiled from the canon. It is not the primary artifact and does not define the underlying meaning.
 
 ## Canonical Semantic Addresses
 
-A canonical semantic address is the smallest sufficient signifier, or structured composition of signifiers, that reliably evokes an intended concept within the target model population.
+A canonical semantic address is the smallest optimal-signifier, or structured composition of optimal-signifiers, that reliably evokes an intended concept within the target foundation model's semantic space.
 
 An address is not canonical because it is elegant, memorable, or preferred by its author. It earns canonical status through evidence: it cold-decodes to the intended concept, preserves the required distinctions, composes without semantic collision, and remains stable across the models and runtimes for which it claims validity.
 

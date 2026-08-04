@@ -600,12 +600,36 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
     expect(admissibleSingleLine('scope ↾ ic', canonPolicy).admissible).toBe(
       true,
     );
-    // a glyph NOT in RESIDUE_OPERATORS (a compose `⊕`) is not an admitted operator ⇒
-    // it surfaces as a non-σ* atom — member-composition is the agent's set-arity
-    // vector, NOT a cell glyph (no compose op without its own cold-verification).
-    expect(admissibleSingleLine('scope ⊕ ic', canonPolicy).admissible).toBe(
+    // An UNDECLARED glyph surfaces as a non-σ* atom and is rejected. The bar is
+    // COLD-VERIFIABILITY, never lexicon membership: the lexicon is a corpus artifact
+    // (warm K), the model is the oracle. A glyph the model decodes reliably — `⊂`
+    // proper-subset, `⊕` direct-sum — belongs in the lexicon, and its absence there
+    // is a LEXICON defect to fix, never a reason to bend the cell away from the sign
+    // the model wants. `⍟` is the negative probe precisely because it carries no
+    // stable prior to verify against.
+    expect(admissibleSingleLine('scope ⍟ ic', canonPolicy).admissible).toBe(
       false,
     );
+    // …and the two just-canonized glyphs are admitted, as cold-verification requires.
+    expect(admissibleSingleLine('scope ⊂ ic', canonPolicy).admissible).toBe(
+      true,
+    );
+    expect(admissibleSingleLine('scope ⊕ ic', canonPolicy).admissible).toBe(
+      true,
+    );
+    // SUBSCRIPTED Greek — policy/family notation (`π_<axis>`, `ρ_<kind>`) is
+    // cold-verified and load-bearing (`autonomy/decision-authority`, `materialize`).
+    // The single-letter GREEK form once rejected it, convicting the cell instead of
+    // the rig; the whole point is that the model's sign wins over the checker.
+    for (const v of [
+      'π_decision-authority(self) = principal',
+      'ρ_document(k)',
+      'σ*',
+    ])
+      expect(
+        admissibleSingleLine(v, canonPolicy).admissible,
+        `subscripted-Greek rejected: ${v}`,
+      ).toBe(true);
   });
 
   // ── SINGLE-LINE (dimension value residue · skill `description`) ────────────────────
@@ -677,7 +701,12 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
     const failures: string[] = [];
     for (const rel of await collect('dimensions/**/*.ts')) {
       const value = await firstExport<string>(join(srcRoot, rel));
-      const r = admissibleSingleLine(splitBody(value).definiens, canonPolicy);
+      // The WHOLE value, never `splitBody(value).definiens`: that split gated only
+      // what followed the first ` ≜ `, so a value with NO ` ≜ ` yielded definiens ''
+      // and went entirely UNGATED — `cratylism` and `llm-native` (bare-anchor form)
+      // shipped free NL into every SOUL for exactly that reason. A formal block is
+      // formal end to end; load-bearing prose becomes notation, the rest is dropped.
+      const r = admissibleSingleLine(value, canonPolicy);
       if (!r.admissible) failures.push(`dimension ${rel}: ${r.reason}`);
     }
     for (const rel of await collect('skills/*/skill.ts')) {

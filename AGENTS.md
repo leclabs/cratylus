@@ -1,17 +1,13 @@
 # AGENTS
 
-## Conceptual Vision
+**CRITICAL INVARIENT:** You **MUST Read** these documents upon session-start:\*\*
 
-**CRITICAL: Read upon session-start:**
-
-- [`VISION.md`](./VISION.md) — **why**
+- [`CANON.md`](./CANON.md) — **overview and primer**
+- [`CRATYLISM`](./packages/agent-canon/src/dimensions/engineering-principles/cratylism.ts) — The First Principle (**LOCKED**)
+- [`VISION.md`](./VISION.md) — **why** — **why we are doing this**
 - [`MODEL.md`](./MODEL.md) — **what** — conceptual objectives and acceptance criteria
-- [`ENGINE.md`](./ENGINE.md) — **how**
-- [`CANON.md`](./CANON.md) —
-
-**These four are LOCKED, immutable grounding — the north-star that defined this architecture.** They are hand-authored source-of-truth, **never generated or projected from code**. Alignment is one-directional: the source is brought _up_ to them; they are never regenerated _from_ source. Deriving them from source is a category error and a destructive act. (Doc↔source reconciliation waits for a stable release aligned to this grounding, and even then flows source→doc.)
-
-**Prime principle + apex confidence order — apply at decision time.** The ground axiom is **`cratylism`**: names are natural, discovered by cold verification, never coined — so **all naming (anchors, dimensions, skills, agents, files, dirs) is discovered, never decided**, and `cold-decode-oracle`/`llm-native`/`signify` derive from it. Apex triad `cratylism ≻ VISION ≻ MODEL` — _confidence_ (how firmly held), **not** importance. On conflict resolve **up** the order — revise **MODEL**, _surface_ a **VISION** conflict (never unilaterally edit it), reconcile toward **cratylism**. Everything derived (cells · skills · agents · plans · SOUL) must be consistent with the triad. (Human record + rationale: `CANON.md` §Relationship.)
+- [`ENGINE.md`](./ENGINE.md) — **how** — how we are doing this
+- [`ARCHITECTURE`](./ARCHITECTURE.md) — the purpose and concerns of each package, the relationships between each of the packages, and the seams that separate concerns.
 
 ## Working conventions
 

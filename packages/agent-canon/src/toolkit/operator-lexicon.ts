@@ -111,8 +111,32 @@ export const OPERATORS = {
     signature: 'El × Set → Prop',
     coldVerified: true,
   },
+  // ASCII operators. Barred for years not by cold-verification but by an encoding
+  // filter in the residue grammar (`codePointAt > 0x7f`); `=` and `|` were in live
+  // use the whole time, hand-split in code. Cold-verifiability is the only bar.
+  '=': {
+    sense: 'equality-binding',
+    signature: 'A × A → Prop',
+    coldVerified: true,
+  },
+  '|': {
+    sense: 'given ⟨such-that⟩',
+    signature: 'A × Cond → A',
+    coldVerified: true,
+  },
+  '+': { sense: 'sum-conjunction', signature: 'A × A → A', coldVerified: true },
   '⊆': { sense: 'subset', signature: 'Set × Set → Prop', coldVerified: true },
+  '⊂': {
+    sense: 'proper-subset',
+    signature: 'Set × Set → Prop',
+    coldVerified: true,
+  },
   '⊇': { sense: 'superset', signature: 'Set × Set → Prop', coldVerified: true },
+  '⊕': {
+    sense: 'direct-sum ⟨composition of parts into a whole⟩',
+    signature: 'A × A → A',
+    coldVerified: true,
+  },
   '∪': { sense: 'union', signature: 'Set × Set → Set', coldVerified: true },
   '∩': {
     sense: 'intersection',

@@ -5,7 +5,7 @@ import { materialize } from '../materialize/skill.js';
 
 export const signify: Skill = {
   name: 'signify',
-  description: `use this skill to name a concept — assign each its canonical anchor so one name ⇔ one concept; the reader is the LLM by construction, human output a downstream projection; stage 2 of exemplify, independently invocable.`,
+  description: `use this skill to name a concept — assign each its canonical anchor so one name ⇔ one concept, discovered by cold decode against the model's priors, never coined; stage 2 of exemplify, independently invocable.`,
   formalBlock: `C           ≜ the concept lattice
 D           ≜ the identity-criterion atoms a concept circumscribes
 prim(c)     ≜ c has no factorization into other concepts
@@ -20,8 +20,8 @@ circ(n,c)   ⇔ fired(n) = D(c)
 σ*(c)       ≜ argmin_{n : circ(n,c)} ⟨|n|, n⟩
 mint        : C ⇀ Names
 mint(c)     ≜ ∘ M : M ⊆ { n : fired(n) ≠ ∅ } ∧ circ(∘ M, c)
-α           : C ↣ Names ⟨dom(α) spans EVERY altitude of the corpus : cell · dimension · skill · agent · file · dir⟩
-Art         ≜ every authored surface
+Art         ≜ every authored surface ⟨prose ≡ identifier ≡ path⟩
+α           : C ↣ Names ⟨dom(α) spans EVERY altitude of Art⟩
 register(a) ≜ the register a's body is observably authored in ⟨σ* ∨ human⟩
 verbatim(a) ≜ a ships whole, byte-exact : settled σ*, never re-derived at projection
 
@@ -49,17 +49,8 @@ c ∉ dom(α) ⇒ c ∉ Anchors :
 ¬circ(n, cᵢ) ⇒ evidence about fired(n), ¬ about cᵢ ⟨fired : Names → ℘(D) reads n ALONE⟩
     ∴ a rejection BINDS n ⟨n freed from cᵢ is ¬ thereby fit for cⱼ ; circ(n, cⱼ) re-established independently ∨ n stays rejected⟩
 
-reader ≜ LLM by construction ⟨never inferred ; reader/register resolution ∉ signifier-derivation⟩
-human-project(a) ≜ explicit downstream projection of σ*-form a to human-form ⟨at point-of-intention · never inferred⟩
-
-{ source cell · projected SOUL · SKILL.md · hook-prompt · AGENTS.md · CLAUDE.md · plan mirror ·
-  task file · agent memory (SELF · MEMORY · EPISODIC) · skill-generated agent-artifact ·
-  agent-to-agent message (delegation prompt · subagent return) } = the σ*-authored canon
-{ README · human doc · code comment · commit message · human chat ·
-  human-facing generated output (slack · email · report) } = human-project(source) ⟨only at explicit human intention⟩
-
 residue(c) ≜ { d ∈ D(c) | d ∉ fired(α(c)) }
-∀ c carried by a : c enters a's body as ⟨α(c), residue(c)⟩
+∀ a ∈ Art : ∀ c carried by a : c enters a's body as ⟨α(c), residue(c)⟩
 residue(c) = ∅ ⇒ c enters as α(c) alone
 minimal(a) ⇔ ∄ c carried by a : a re-states fired(α(c))
 

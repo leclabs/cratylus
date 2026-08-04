@@ -1,3 +1,11 @@
+// REGISTER — this template's output lands in a CONSUMER's repo (`<target>/AGENTS.md`),
+// where agent-factory's own tree is NOT in context. It may NAME the upstream catalog
+// (`agent-canon` is meaningful provenance) but must never reference a path or document
+// that exists only in agent-factory: `packages/…`, VISION.md, MODEL.md, ENGINE.md,
+// CANON.md all resolve to nothing there. Same seam as `genus/founding-doctrine.ts`
+// (the intrinsic ρ=LLM carry); distinct from `rules/repo-preamble.ts`, which IS
+// agent-factory-local and may reference them freely. Pinned by `cratylism.test.ts`.
+//
 // project-template.ts — agent-canon's project DOCTRINE, the corpus DATA injected
 // into the doctrine-agnostic `scaffoldProject` ENGINE (`@leclabs/agent-forge/deploy`).
 // The engine declares the `ProjectTemplate` SHAPE (project prose + plan-layout
@@ -14,9 +22,8 @@ function projectAgentsMd(subject: string): string {
   return `# agent conventions
 
 This is an **agent project** -- a working set of agents, not a pile of files. It was
-scaffolded by projecting the agent-canon catalog (\`packages/agent-canon\`) into this
-repository: the project structure is laid down, and the built-in agents are projected
-alongside it.
+scaffolded by projecting the agent-canon catalog into this repository: the project
+structure is laid down, and the built-in agents are projected alongside it.
 
 ## Subject
 

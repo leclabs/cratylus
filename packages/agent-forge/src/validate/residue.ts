@@ -79,26 +79,39 @@ function grammarOf(policy: Policy): Grammar {
   }
   const keys = Object.keys(policy.operators);
   // A residue is a σ* expression over the FULL declared operator vocabulary — not only
-  // the structural value-algebra ops. Every declared non-bracketing glyph (`· ¬ ∧ ∨ ⇒
-  // ⇔ → ↦ ⟼ ∃ ∄ ∈ ⊆ …`, incl. `↾`) is an admitted operator the grammar splits terms
-  // on; only the bracketing forms are handled structurally. An UNDECLARED glyph
-  // (`+ ⊕ /`) is NOT split → stays an atom → fails the ANCHOR check → rejected; genuine
-  // prose (connectives · clausal punctuation) still fails. Admits both batch styles
-  // (`⟨a · b⟩` and space-separated `⟨a b⟩`).
+  // the structural value-algebra ops. Every declared glyph is an admitted operator the
+  // grammar splits terms on, EXCEPT two semantically-defined classes below. An
+  // UNDECLARED glyph is NOT split → stays an atom → fails the ANCHOR check → rejected;
+  // genuine prose (connectives · clausal punctuation) still fails. Admits both batch
+  // styles (`⟨a · b⟩` and space-separated `⟨a b⟩`).
+  //
+  // The exclusions were previously a single `codePointAt > 0x7f` test — an ENCODING
+  // predicate standing in for two unrelated STRUCTURAL facts, which is a category
+  // error: it silently barred every ASCII glyph from ever being an operator no matter
+  // how well it cold-verifies. `@` was declared, cold-verified, and unusable; `=` and
+  // `|` had to be hand-patched back into the splitter in code because the lexicon
+  // could not hold them. Both classes are now named for what they are.
+
+  // (1) STRUCTURAL — the bracketing/reference forms, handled by `decompose`, never
+  // split as infix. Char-level, because `'${}'` is a 3-char key: `bracketing.has('$')`
+  // is false, so the old encoding test was the ONLY thing keeping `$ { }` out.
+  const structural = new Set<string>([...bracketing].flatMap((b) => [...b]));
+  // (2) ANCHOR-INTERNAL — punctuation that is part of a σ* token, not a separator.
+  // Splitting on these would shred every kebab and snake anchor (`human-on-the-loop`
+  // → 4 fragments, `ρ_s` → 2). Neither is a declared operator; this is a guard so
+  // declaring one later cannot silently dismantle the anchor vocabulary.
+  const anchorInternal = new Set<string>(['-', '_']);
   const residueGlyphs: readonly string[] = [
     ...new Set(
       keys
         .flatMap((g) => [...g])
-        .filter((ch) => (ch.codePointAt(0) ?? 0) > 0x7f && !bracketing.has(ch)),
+        .filter((ch) => !structural.has(ch) && !anchorInternal.has(ch)),
     ),
   ];
-  const formalGlyphs: ReadonlySet<string> = new Set<string>([
-    ...keys.flatMap((g) => [...g]),
-    '=',
-    '{',
-    '}',
-    '|',
-  ]);
+  // Every declared glyph, plus the structural chars a law line may carry.
+  const formalGlyphs: ReadonlySet<string> = new Set<string>(
+    keys.flatMap((g) => [...g]),
+  );
   return { bracketing, residueGlyphs, formalGlyphs };
 }
 
@@ -111,8 +124,13 @@ const ANCHOR = /^[A-Za-z][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*$/;
 /**
  * A definiendum-class variable — a single Greek letter (`ρ`, `σ`, `α`, …), optionally
  * star-marked (`σ*` — the project's central sign). The `ρ=LLM` binding's left side.
+ *
+ * Optionally SUBSCRIPTED with an anchor (`π_decision-authority`, `ρ_s`, `ρ_document`):
+ * standard policy/family notation, cold-verified and already load-bearing across the
+ * corpus. The single-letter form never admitted it, which convicted the cell rather
+ * than the rig — the sign the model wants is the truth; this pattern is warm K.
  */
-const GREEK = /^[Α-ω]\*?$/;
+const GREEK = /^[Α-ω]\*?(?:_[A-Za-z][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)*)?$/;
 
 /**
  * Free NL articles/connectives — function words that carry clausal meaning in a
@@ -232,8 +250,9 @@ function topTokens(top: string, residueGlyphs: readonly string[]): string[] {
   for (const op of residueGlyphs) {
     t = t.split(op).join(' ');
   }
-  t = t.split('=').join(' '); // a `ρ=LLM` binding → the variable · the value
-  t = t.split('|').join(' '); // the declared "given" / set-builder bar (`f | K`)
+  // `=` (binding) and `|` (given) were hand-patched in here because the encoding
+  // filter above barred every ASCII glyph from the declared set. Both are now
+  // declared operators and split like any other — no special case.
   return t.split(/\s+/).filter((x) => x.length > 0);
 }
 

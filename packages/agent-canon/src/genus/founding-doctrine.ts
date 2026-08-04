@@ -9,22 +9,34 @@
 // cwd, a foreign agent invoking a canon skill). THIS carry is intrinsic — it rides the
 // projected bytes, so the axiom survives deployment to any context.
 //
-// The seed is DISCOVERED, not coined: its `cratylism` clause is the verbatim σ*
-// residue already canonized in `dimensions/engineering-principles/cratylism.ts`
-// (nico's vector), its apex confidence-order the corpus's own `AGENTS.md` §Prime
-// principle. Re-signifying it here would itself violate cratylism (¬author · ¬operator);
-// this module only RELOCATES the discovered sign to an intrinsic home. R=LLM.
+// The seed is DISCOVERED, not coined: its `cratylism` clause IS the canonized σ*
+// residue in `dimensions/engineering-principles/cratylism.ts` (nico's vector) — carried
+// BY IMPORT, never transcribed, so the one-home claim above is mechanical rather than
+// a convention a later edit can silently break (it was, once: the dimension was cleaned
+// and this copy kept shipping the superseded axiom to every SOUL). Re-signifying it
+// here would violate cratylism (¬author · ¬operator); this module only RELOCATES the
+// discovered sign to an intrinsic home. R=LLM.
+//
+// SCOPE FLOOR — what rides here must be TRUE IN EVERY CONTEXT this projects into.
+// The apex confidence-order deliberately does NOT: it ranks the axiom against two
+// workspace-local, non-deployed docs, so outside this repo it is a dangling reference —
+// ambient content smuggled into the intrinsic carry, contradicting the
+// `intrinsic ⟨¬ ambient⟩` clause below. Its ONE home is the hand-authored
+// `CANON.md` §Relationship; `rules/repo-preamble.ts` → `AGENTS.md` POINTS there
+// (`doctrine-pointers`) rather than restating it. Nothing referencing a repo-local
+// artifact belongs in this string — and a comment that reproduces the clause is itself
+// a home, so this one names it without quoting it.
+
+import { cratylism } from '../dimensions/engineering-principles/cratylism.js';
 
 /**
  * The prime principle, as a leading `## Prime Principle` block emitted VERBATIM
  * above every projected SOUL's `## Archetype` and every SKILL.md's first section.
- * The apex seed: the `cratylism` ground axiom + the `cratylism ≻ VISION ≻ MODEL`
- * confidence-order + the resolve-UP rule.
+ * The apex seed: the `cratylism` ground axiom + the intrinsic-carry clause — and
+ * nothing whose truth is contingent on this workspace (see SCOPE FLOOR above).
  */
 export const foundingDoctrine = `## Prime Principle
 
-cratylism ⟨names natural ¬conventional⟩ : model latent-space = real stable concepts · each concept's canonical sign INTRINSIC ∧ DISCOVERED ⟨cold-verified vs priors⟩ ¬coined ⟨¬author · ¬operator⟩ · ∴ signify = archaeology ¬fiat · ∀ name ⟨anchor · dimension · skill · agent · file · dir⟩ : cold-derivable ∨ ⊥ · GROUND ⊨ { cold-decode-oracle · llm-native · signify } derive
-
-apex confidence-order : cratylism ≻ VISION ≻ MODEL ⟨confidence — firmness-held · ¬ importance⟩ · conflict ⇒ resolve UP : revise MODEL · surface VISION-conflict ⟨¬ unilateral-edit⟩ · reconcile → cratylism · ∀ derived ⟨cell · skill · agent · plan · SOUL⟩ ⊨ consistent(triad)
+${cratylism}
 
 intrinsic ⟨¬ ambient⟩ : this axiom rides every projected SOUL + skill · survives deployment to any context ⟨foreign repo · blank cwd · foreign agent invoking a canon skill⟩ · ¬ contingent on workspace-root AGENTS.md`;

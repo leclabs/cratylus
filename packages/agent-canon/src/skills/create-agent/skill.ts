@@ -18,7 +18,7 @@ fittest(o)      ≜ the best-fitting v ∈ catalog(o)
 value(o)        ≜ the selected member(s) of catalog(o) by fit
 vector(A)       ≜ ⊕{ o ↦ value(o) | o ∈ O }
 instance-bound  ≜ provenance⟨lineage-mark⟩ ∧ substrate⟨model/runtime⟩ ⟨auto-set · fresh mark · substrate ↦ claude · ∉ catalog⟩
-human-project   ≜ downstream human projection @ signify
+human-project   ≜ downstream human projection @ llm-native
 
 ∀ o ∈ O : value(o) ∈ catalog(o)
 openness(o) = enum ⇒ | value(o) | = 1
