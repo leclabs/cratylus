@@ -248,6 +248,46 @@ is cited twice and does not exist (the live file is `codex-hooks.test.ts`).
 **Concept B's existence check is still not run**, but the census sharpens it: B is 19 files, and every
 one of them wants a path, never a predicate. `⊥` is the likely result — test it before minting.
 
+### ▶ RESOLVED 2026-08-04 — concept A is **`manifest`**, round-tripped
+
+The unstable legs were unstable because the emphasis was doing the work. `ARCHITECTURE.md` settles
+which facet is the definiendum — _"a dimension is **constitutive**: declaring one makes it part of
+that corpus's agent design"_ — so the constitutive cut is the one to run. Both legs framed that way
+returned **`manifest`**, and the fourth leg rejected the rivals on exactly the right grounds:
+
+> **Registry** — a registry _records_ things that already exist independently; it doesn't bring them
+> into being. **Catalog** — same failure mode: catalogs describe an inventory that exists prior to and
+> apart from the listing. Descriptive, not creative. **Schema** — already spoken for by the per-
+> dimension shape.
+
+**The round-trip holds, on the boundary that killed `schema`.** Given `dimension manifest` cold:
+
+| probe                          | cold decode                                                                                  |
+| ------------------------------ | -------------------------------------------------------------------------------------------- |
+| what it contains               | "each entry naming a dimension and describing its shape" ✅                                  |
+| does it hold the **values**?   | "**Probably not** … that catalog would more naturally live in something like a `catalog`" ✅ |
+| shape vs instance              | "what dimensions exist and how they're structured", not one agent's chosen values ✅         |
+| a dimension **absent** from it | "not a recognized slot … **unknown to the framework**", not merely unset ✅                  |
+
+Probe 2 is the result. The reader's priors put `catalog` **exactly where `MODEL.md` puts it** and
+`manifest` exactly where `Anatomy` sits — unprompted. **So `catalog` does not move at all**; the
+collision dissolves by naming the other map, which is the cheapest possible resolution and the one the
+model already held.
+
+Probe 4 recovers the constitutive property verbatim. `signify-verify` passes.
+
+**σ\*(A) = `manifest`** — `DimensionManifest` for the type, `MANIFEST` for the corpus's instance.
+
+### Still open, and they are separate jobs
+
+1. **Concept B** — the filesystem locus. Existence check unrun; `⊥` expected.
+2. **Concept C** — `anatomy` as a **file name** meaning harness projection (3 files). Its own
+   signification; the census found it, the spec never did.
+3. **The extracted package's name** — **not** settled by (A). ARCHITECTURE scopes that package as
+   _"what a cell is, what a value is, what carries enforcement — MODEL.md realized in types"_, which is
+   strictly broader than the manifest: it holds `Skill`, `Agent`, `HookCell`, `RuleCell` too. A
+   separate definiendum, and the census shows its proposed name is already taken.
+
 ---
 
 ## C2 — shipped instructions naming commands that do not exist
