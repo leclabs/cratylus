@@ -20,7 +20,9 @@ export const RHO = {
   'skill-description': 'LLM', // progressive-disclosure surface, read by the harness LLM
   'skill-prose': 'LLM', // projected SKILL.md body (outside fences)
   'genus-protocol': 'LLM', // verbatim(a) ⇒ ρ(a) = LLM — ship-whole, never a density exemption
-  'agent-vector': 'LLM', // projected SOUL
+  'agent-vector': 'LLM', // projected SOUL — scored at SOURCE grain (description · archetype · preamble)
+  'cell-declaration': 'LLM', // a cell's σ*-signified identity: rule `definiens` · hook `residue`
+  'rule-target-body': 'LLM', // a rule's VERBATIM projected payload (`/AGENTS.md`) — NOT MODEL's body(c)
   // runtime frontiers (reader-reach.test.ts)
   'task-file': 'LLM', // praxis: blind-dispatchable execution spec = the dispatch prompt
   'plan-mirror': 'LLM', // praxis: PLAN.md, agent-read

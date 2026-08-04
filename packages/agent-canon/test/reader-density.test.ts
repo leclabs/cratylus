@@ -87,7 +87,21 @@ const srcRoot = join(anatomyRoot, 'src');
 
 // ── RATCHET — explicit, shrink-only ─────────────────────────────────────────────
 
-/** Known non-conforming R=LLM surfaces — EMPTY (the corpus conforms). */
+/**
+ * Known non-conforming ρ=LLM surfaces — EMPTY, and now that means something.
+ *
+ * It was empty before over three families that were dense by construction, which
+ * proved nothing: an unscanned surface cannot fail. The reach leg below asserts that
+ * every ρ=LLM class this gate owns is witnessed, so emptiness here is a conformance
+ * claim rather than a coverage claim.
+ *
+ * KNOWN GAP, stated because a silent omission would restore the original defect: the
+ * strings a hook SPEAKS to an agent — the ones that land in its context — have no
+ * declared field on the cell. They live as `printf` bodies inside shell workers and
+ * are reachable only by parsing shell, which is a proxy, not the property. All four
+ * were scored by hand at the 2026-08-04 sweep and conform. Enumerating them wants a
+ * declared home first (`plans/decomplect/CRATYLISM-SWEEP.md` C0 §4).
+ */
 const REGISTER_RATCHET: ReadonlySet<string> = new Set([]);
 
 /** root-cause H3: (engineering-principle, output-format) pairs that contradict. */
@@ -154,8 +168,89 @@ async function allSurfaces(): Promise<Surface[]> {
       });
     }
   }
+  // The founding doctrine rides into EVERY projected SOUL and skill — the same
+  // ship-whole verbatim carry as the genus protocol, so the same class.
+  {
+    const mod = (await import(
+      pathToFileURL(join(srcRoot, 'genus/founding-doctrine.ts')).href
+    )) as Record<string, unknown>;
+    for (const [k, v] of Object.entries(mod)) {
+      if (typeof v === 'string') {
+        surfaces.push({
+          label: `genus founding-doctrine ${k}`,
+          cls: 'genus-protocol',
+          text: v,
+        });
+      }
+    }
+  }
+  // Rule cells: the σ*-signified declaration AND the verbatim payload it projects.
+  // The payload is the one that matters — `repo-preamble` regenerates `/AGENTS.md`,
+  // which every session loads on entry. It went unscanned while being the most
+  // widely-read artifact the corpus emits.
+  for (const rel of await collect('rules/*.ts')) {
+    const c = await firstExport<{ definiens: string; body: string }>(
+      join(srcRoot, rel),
+    );
+    surfaces.push({
+      label: `rule ${rel} definiens`,
+      cls: 'cell-declaration',
+      text: c.definiens,
+    });
+    surfaces.push({
+      label: `rule ${rel} body`,
+      cls: 'rule-target-body',
+      text: c.body,
+    });
+  }
+  // Hook cells: the DECLARATION only. `workers[].content` is SOURCE CODE, not
+  // context — nothing loads a shell script into a reader. Scoring it would convict
+  // the authorial "we" of an ordinary code comment, and this gate's own source
+  // files would fail first. What a hook actually SPEAKS to an agent is its emitted
+  // feedback string, and that has no declared field to enumerate — see KNOWN GAP.
+  for (const rel of await collect('hooks/*.ts')) {
+    const c = await firstExport<{ residue?: string }>(join(srcRoot, rel));
+    if (typeof c.residue === 'string') {
+      surfaces.push({
+        label: `hook ${rel} residue`,
+        cls: 'cell-declaration',
+        text: c.residue,
+      });
+    }
+  }
+  // Agent cells at SOURCE grain. `agent-vector` was declared ρ=LLM in RHO and
+  // witnessed by NOTHING — a class asserting coverage it never had.
+  for (const { rel, agent } of await allAgents()) {
+    for (const field of ['description', 'archetype', 'preamble'] as const) {
+      const text = (agent as unknown as Record<string, unknown>)[field];
+      if (typeof text === 'string' && text.length > 0) {
+        surfaces.push({
+          label: `agent ${rel} ${field}`,
+          cls: 'agent-vector',
+          text,
+        });
+      }
+    }
+  }
   return surfaces;
 }
+
+/**
+ * The ρ=LLM classes THIS gate is responsible for witnessing.
+ *
+ * `RHO` is shared with `reader-reach.test.ts`, which owns the runtime frontiers.
+ * Splitting the responsibility explicitly is what lets each gate assert total
+ * coverage of its own half — the assertion that turns "the ratchet is empty" from
+ * a claim about coverage into a claim about conformance.
+ */
+const OWNED_CLASSES: readonly ArtClass[] = [
+  'dimension-definiens',
+  'skill-description',
+  'genus-protocol',
+  'agent-vector',
+  'cell-declaration',
+  'rule-target-body',
+];
 
 async function allAgents(): Promise<Array<{ rel: string; agent: Agent }>> {
   const out: Array<{ rel: string; agent: Agent }> = [];
@@ -221,6 +316,51 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
         `${rel} is a PASS exemplar`,
       ).toEqual([]);
     }
+  });
+
+  // REACH — the leg that makes the ratchet's emptiness mean something.
+  //
+  // The ratchet was empty over three self-selected families that were already dense
+  // by construction, annotated "the corpus conforms". That is a claim about COVERAGE
+  // stated as a claim about CONFORMANCE: an unscanned surface cannot fail, so absence
+  // of failures measured nothing. Enumerating more families fixes today's corpus and
+  // NOT the defect — the next class added would be silently unscanned again.
+  //
+  // So reach is asserted, not just extended: every ρ=LLM class this gate owns must be
+  // witnessed by a real surface. A class declared and never enumerated is the defect
+  // itself, and it now fails loudly. (`agent-vector` was exactly that.)
+  it('every owned ρ=LLM class is WITNESSED — coverage is asserted, not assumed', async () => {
+    const surfaces = await allSurfaces();
+    const seen = new Set(surfaces.map((s) => s.cls));
+    const unwitnessed = OWNED_CLASSES.filter((c) => !seen.has(c));
+    expect(
+      unwitnessed,
+      `ρ=LLM classes declared but enumerated by nothing: ${unwitnessed.join(' · ')}`,
+    ).toEqual([]);
+    // …and nothing is scanned under a class this gate does not claim, which would
+    // put a surface outside both gates' stated responsibility.
+    const unclaimed = [...seen].filter((c) => !OWNED_CLASSES.includes(c));
+    expect(
+      unclaimed,
+      `surfaces scanned under unowned classes: ${unclaimed.join(' · ')}`,
+    ).toEqual([]);
+  });
+
+  it('the enumerated families are all PRESENT (an empty glob passes every check)', async () => {
+    const surfaces = await allSurfaces();
+    const count = (cls: ArtClass) =>
+      surfaces.filter((s) => s.cls === cls).length;
+    // Named artifacts, not counts-as-exit-codes: a wrong glob yields the empty set,
+    // and the empty set travels through every downstream assertion as success.
+    const labels = surfaces.map((s) => s.label);
+    expect(labels).toContain('genus src/genus/persona.md ## Protocol');
+    expect(labels).toContain('genus founding-doctrine foundingDoctrine');
+    expect(labels).toContain('rule rules/repo-preamble.ts body');
+    expect(labels).toContain('hook hooks/stance-guardrail.ts residue');
+    expect(labels).toContain('agent agents/nico.ts archetype');
+    expect(count('dimension-definiens')).toBeGreaterThan(100);
+    expect(count('skill-description')).toBeGreaterThan(10);
+    expect(count('agent-vector')).toBeGreaterThan(10);
   });
 
   it('every ρ=LLM surface conforms, or is an explicit ratchet pin', async () => {

@@ -27,10 +27,10 @@ export const repoPreamble: RuleCell = {
 
 - [\`CANON.md\`](./CANON.md) — **overview and primer**
 - [\`CRATYLISM\`](./packages/agent-canon/src/dimensions/engineering-principles/cratylism.ts) — The First Principle (**LOCKED**)
-- [\`VISION.md\`](./VISION.md) — **why** — **why we are doing this**
-- [\`MODEL.md\`](./MODEL.md) — **what** — conceptual objectives and acceptance criteria
-- [\`ENGINE.md\`](./ENGINE.md) — **how** — how we are doing this
-- [\`ARCHITECTURE\`](./ARCHITECTURE.md) — the purpose and concerns of each package, the relationships between each of the packages, and the seams that separate concerns.
+- [\`VISION.md\`](./VISION.md) — **why** the canon exists
+- [\`MODEL.md\`](./MODEL.md) — **what** exists: conceptual objectives and acceptance criteria
+- [\`ENGINE.md\`](./ENGINE.md) — **how** primitives are discovered, validated, and projected
+- [\`ARCHITECTURE\`](./ARCHITECTURE.md) — purpose and relationship of the packages, and the seams that separate their concerns.
 
 ## Working conventions
 
