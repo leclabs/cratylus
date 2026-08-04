@@ -507,3 +507,55 @@ carries the repo's most explicit cratylist work: `bin-name.ts` collapses 13 home
 refuses to register a working capability because its anchor is underived, citing the law by name.
 
 **The predictor is absence of a forcing function, not distance.** Which is why C0 comes first.
+
+---
+
+## C6 — the BRAND. `⊥`, and the measurement that establishes it
+
+Raised by the operator 2026-08-04: is the project's name `lex`, expanded as _latent
+encoding excavation_? **Nine cold legs later the answer is no, and no available
+alternative earns a mint either.** Recorded in full so nobody re-runs them.
+
+**First, a correction that inverts the framing.** I asserted `cratylism` enumerates
+`⟨anchor · dimension · skill · agent · file · dir⟩` and concluded a brand was out of
+scope. **It does not.** The source reads `∀ authored-surface ⟨σ* ∨ ⊕σ* · prose ≡
+identifier ≡ path⟩` — generalized by `a2205eb`. I was quoting a **stale deployed
+projection of my own SOUL**, not the source (see
+[`pending/deployed-drifts-from-rendered-unwatched.md`](./pending/deployed-drifts-from-rendered-unwatched.md)).
+A brand is an authored surface. **It is bound**, and `names natural ¬conventional`
+forecloses the "arbitrary mark" escape — an arbitrary mark _is_ the conventional case.
+
+| candidate                            | forward           | reverse (blind) | occupancy                           | verdict                            |
+| ------------------------------------ | ----------------- | --------------- | ----------------------------------- | ---------------------------------- |
+| `lex`                                | never won a leg   | **2/10**        | `lex`/`flex`, LexisNexis            | _"reject outright"_                |
+| `Truename`                           | won ×2            | **8/10** ★      | **`truename.ai`, live AI devtools** | best measured — TAKEN              |
+| `Assay`                              | won (address)     | 6/10            | **`promptassay.ai`, adjacent**      | mechanism exact, domain misleads   |
+| `Lexicon`                            | —                 | 6/10            | clear                               | names the shelf, not the digging   |
+| `Calibrate`                          | won (act)         | 3/10            | —                                   | ML sense = confidence curves       |
+| `Sounding`                           | won (address)     | 3/10            | clear                               | died on the round-trip             |
+| `Sextant`                            | won (address)     | —               | `getsextant.ai`                     | taken                              |
+| `Resolver`                           | won (address)     | —               | **`forge/src/resolve/`**            | taken INTERNALLY                   |
+| `Incantation` · `Sigil` · `Talisman` | won (true-name)   | —               | clear                               | **mystical register disqualifies** |
+| `Wording Probe` (⊕σ\*)               | won (composition) | —               | clear                               | reads as a grammar checker         |
+
+**Three findings worth more than any candidate:**
+
+1. **The answer tracks whichever facet the frame foregrounds** — principle → `Truename`,
+   artifact → `lex`/`Lexicon`, act → `Calibrate`/`Assay`. Three cuts, three answers.
+   Forward convergence proved nothing; only the blind reverse separated them, and it
+   killed the forward winner **four** times.
+2. **The best-measured sign is taken, and the unoccupied remainder of its territory is
+   MYSTICAL** — which is disqualifying for a project whose entire claim is that
+   measurement replaced taste. The semantically-best territory is positionally wrong.
+3. **Occupancy killed five candidates** — one of them (`Resolver`) inside this very repo.
+   A cold reader cannot see occupied ground; checking it is the caller's job, and it must
+   run **before** the round-trip, not after.
+
+**Ruling: do not mint.** Nothing available exceeds 6/10, and `agent-anatomy` is this
+plan's own standing evidence for what a sign minted before its concept settled costs.
+`⊥ IS A RESULT`.
+
+**Nothing blocks on this.** The principle has a validated sign (`cratylism`), the object
+has one (`σ*`), the packages have theirs. The brand is the only unbound name in the
+project and the only one with no downstream dependents — which is exactly why it can
+afford to wait for a sign that earns better than six out of ten.
