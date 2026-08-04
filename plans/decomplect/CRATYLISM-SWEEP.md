@@ -30,22 +30,66 @@ by construction. `REGISTER_RATCHET` is `new Set([])`, annotated as the corpus co
 **That annotation is a claim about COVERAGE stated as a claim about CONFORMANCE.** An empty ratchet
 over three self-selected families proves nothing about the corpus.
 
-**Measured, and worse than the review that prompted this:** the detector is length-normalized
-(≥4 second-person hits per 100 words), so long prose is **structurally unconvictable**.
-`toolkit/guardrail/stance-judge-prompt.md` — the enforcement organ of the stance canon, read by an
-LLM judge every turn — is **3789 words, 34 second-person hits, 0.90 per 100**. Not marginal:
-**4.4× under threshold by dilution alone**, and it is not even in scope to be measured.
+### ▶ MEASURED 2026-08-04 — the reach finding stands, the exhibit does not
 
-**Fix:** extend `allSurfaces()` past those three families — hook prompts, hook-emitted feedback
-strings, rule bodies, root doctrine docs, READMEs, template emitters. Then **re-derive the ratchet
-from what actually convicts**, so it records real debt instead of asserting a conformance never
-tested. Expect it to be large; that is the finding, not a failure of the fix.
+The whole unscanned corpus was scored against the live detector. **The reach half of this spec is
+confirmed and larger than filed. The normalization half is refuted by its own exhibit, and the fix it
+prescribes would break the gate.** Recorded before acting on it, because the correction is the finding.
 
-**Also fix the normalization.** A per-100-words rate lets a long document dilute its way to a pass.
-Whether the right form is an absolute floor, a windowed maximum, or something else is a design call —
-but a metric a document can pass by _getting longer_ is not measuring what it claims.
+**Confirmed — the unscanned ρ=LLM set.** Every family below is declared `LLM` by `RHO` or is plainly
+model-read, and no gate scores any of it:
 
-**This dominates every item below**: with reach extended, C1–C5 and most of the unassigned list
+| unscanned surface                                               | measured                      |
+| --------------------------------------------------------------- | ----------------------------- |
+| `rules/*.ts` `body` — **the projected `/AGENTS.md`**            | **CONVICTS** — `FPP×2`        |
+| `hooks/*.ts` `residue` (5) + workers (7)                        | 1 convicts (`FPP×3`)          |
+| **hook-emitted agent-facing strings** (4) — these enter context | all pass, all invisible       |
+| `genus/founding-doctrine.ts` — rides into every SOUL            | passes                        |
+| `agents/*.ts` `description` · `archetype` (18)                  | pass; `RHO` declares them LLM |
+
+`agent-vector: LLM` sits in `RHO` and **no agent prose is scored anywhere** — a class declared and
+never witnessed. That is the coverage-as-conformance defect in its sharpest form.
+
+**Refuted — the exhibit.** `stance-judge-prompt.md` measures **3600 words, 34 hits, 0.94/100** (filed
+as 3789 / 0.90). Read in context, the 34 hits are two populations and **neither is human register**:
+
+- **agent-address** — _"You are a STANCE JUDGE"_, _"Your one job"_, _"in your REASON"_. The reader is
+  an LLM being instructed. This is the canonical imperative prompt voice, and the model already
+  concedes it (`carry-on description = 1 hit @3.1`, excused as "incidental agent-address").
+- **quoted specimen** — _"What would you like me to call it?"_, _"I'll leave the architecture to
+  you."_ These are exhibits **of the collapsed register the rubric detects**, quoted as evidence.
+
+A rubric that teaches a detector must quote what it detects. **Convicting this artifact would be a
+false positive**, so raising the threshold — the fix as filed — breaks the gate on the very document
+offered as proof that it is broken.
+
+**The real defect, which is deeper than dilution.** `SECOND-PERSON` is **one sign binding three
+concepts**: human-tutorial address · agent-address · quoted specimen. The rate threshold suppresses
+the latter two **by accident**, which is why the gate has looked calibrated. It is a proxy — right
+answers today, for a reason unrelated to the property — and the sweep's own law applies to the gate as
+much as to the corpus: _state the property, never a string that correlates with it._
+
+**Also new: hook-emitted agent-facing text has no home in the model.** The four strings that actually
+reach an agent's context live as `printf` bodies inside shell workers, reachable only by parsing
+shell. A cell declares its `residue` and its `workers[].content`; the **message it speaks to an agent**
+is an authored surface with no declared field. Missing distinction in the ground, second site in
+source — and it is why "extend the reach" is not purely a test-file edit.
+
+### The fix, re-ordered by what the measurement supports
+
+1. **Extend `allSurfaces()`** over the table above, giving each family its `RHO` class.
+2. **Make reach checkable**: assert every ρ=LLM class this gate owns is witnessed by ≥1 enumerated
+   surface. This is what converts the coverage claim into a conformance claim; without it the next
+   class added is silently unscanned again.
+3. **Re-signify the second-person signal** — one sign, three concepts. Supply no candidates; run the
+   oracle. The rate proxy retires with the re-signification, not before it.
+4. **Re-derive the ratchet** from what convicts. On today's tree that is `rule repo-preamble body`
+   (`FPP×2`: _"why **we** are doing this"_, _"how **we** are doing this"_ — human-gloss exposition in
+   the file every session loads). Small, not large; the filed prediction was wrong about that too.
+5. **Give the emitted message a declared home**, so the reach extension is enumeration rather than
+   shell-parsing.
+
+**This still dominates every item below**: with reach extended, C1–C5 and most of the unassigned list
 convict themselves.
 
 ---
