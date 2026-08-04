@@ -29,11 +29,31 @@ Detail and the corrections made during execution live in `completed/`.
 
 ## Open — ordered by how much of ARCHITECTURE they unblock
 
-### 1. Extract `agent-anatomy` — the meta-model leaves the projector
+### 0. The cratylism sweep — [`CRATYLISM-SWEEP.md`](./CRATYLISM-SWEEP.md)
+
+Six specs (C0–C5) plus three unassigned findings, every claim verified against the tree. Tests the
+generalized `cratylism` that landed in `a2205eb` and finds it not honored, with one dominating
+failure shape: **the correction was written into the prose and never into the sign.**
+
+**C0 comes first and dominates the rest.** The density gate reaches exactly three families that were
+already dense by construction, and its empty ratchet states a COVERAGE claim as a CONFORMANCE one.
+Its detector is length-normalized, so long prose is structurally unconvictable — the stance canon's
+own judge prompt scores **0.90 per 100 against a threshold of 4**, 4.4× under by dilution, and is not
+even in scope to be measured. Extend the reach and most of C1–C5 convict themselves.
+
+**C1 interacts with §1 below** — if its argmin rejects `anatomy`, `ARCHITECTURE.md` must be revised
+in the same act, because ground carrying a refuted sign is worse than source doing so.
+
+### 1. Extract the meta-model — it leaves the projector
 
 **The largest divergence, and the one the others are downstream of.** Canon's cells take **28 imports
 from `@leclabs/agent-forge/anatomy`** — the corpus depending on its own projector. ARCHITECTURE's
 property 2 fails on exactly those 28.
+
+**Do C1 first, or at least concurrently.** `ARCHITECTURE.md` calls the extracted package
+`agent-anatomy`, and C1's ruling is that `anatomy` is a metaphor binding two concepts and must be
+re-signified. Extracting under a sign already ruled against would mint the defect into a package
+name — the most expensive place to carry one.
 
 The meta-model is [`MODEL.md`](../../MODEL.md) realized in types and belongs to neither package.
 Extracting it lets meaning and projection stop referencing each other.
