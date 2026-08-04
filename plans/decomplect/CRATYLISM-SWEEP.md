@@ -329,7 +329,13 @@ concerns, which is why one home was hard to find while they were braided.
    `repoRoot` · `srcRoot` · `renderRoot`. The fix is compositional (`σ* ∨ ⊕σ*`), not a mint —
    `anatomyRoot` is the only one of the four that fails to name what it roots.
 2. **Concept C** — `anatomy` as a **file name** meaning harness projection (3 files). Own
-   signification; the census found it, the spec never did.
+   signification; the census found it, the spec never did. **One leg run, argmin REJECTED on
+   occupancy**: it returned `capabilities`, which is `agent-runtime`'s capability keyspace and the
+   entire subject of C4. The cold reader cannot know occupied ground — that is the caller's job, and
+   the re-run must state the occupied set as part of the frame. Note for it: the sibling `hooks.ts`
+   handles the one thing MODEL says is **not** a `Kind`, while this file handles two that are
+   (`agent`, `skill`), so MODEL's own `Kind` vocabulary is the place to look first — a `⊕σ*`
+   composition, not a mint.
 
 ---
 
