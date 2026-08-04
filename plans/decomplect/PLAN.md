@@ -9,7 +9,26 @@ Every item below is a **divergence from it**, and an item that is not one does n
 
 ## Status
 
-Suite green — forge 224 · canon 159 · memory 255 · runtime 52.
+Suite green — forge 224 · canon 23 files · memory 255 · runtime 52. Tree clean.
+
+**Next two acts, in order, both fully specified below:**
+
+1. **Build the architecture gate**, ratcheted red. The census established that ARCHITECTURE's four
+   load-bearing properties are enforced by **nothing**, which is why this whole class accreted. Land
+   the gate first with today's breaches pinned, then §1 empties the ratchet and the gate holds it
+   forever — the shape `command-veracity` and C0's reach leg both already proved out. **Its name is
+   owed**: one cold leg timed out, and the occupied set is large (`reader` · `reach` · `binding` ·
+   `altitude` · `parsimony` · `veracity` · `fidelity` · `catalog` · `manifest` · `schema` ·
+   `capability` · `target` · `cell` · `home` · `projection` · `register` · `ratchet` · `corpus` ·
+   `dimension` · `kind` · `axis` · `concern` · `meaning` · `mechanism`). Carry that set into the frame
+   — three argmins have already collided for want of it.
+2. **§1 extract `agent-schema`.** Unblocked: the ground now says `agent-schema`, and both signs are
+   round-tripped. Acceptance is cheap and exact — suite green uncached, render oracle still
+   `fe084dd1d531948979dc386713c3f688c96088ab`, and the canon→forge cell edge count at **0**.
+
+**Before touching property 1** (canon ⊥ runtime), amend the counter-gate: `bin-name-single-home`
+asserts the violating import STAYS. That is a design decision, not a repair, and it is not the
+extraction's job.
 
 **Regression oracle:** `find packages/agent-canon/.render-ts packages/agent-canon/.render-ts-codex
 -type f | sort | xargs shasum | shasum` → `fe084dd1d531948979dc386713c3f688c96088ab`. Verified
