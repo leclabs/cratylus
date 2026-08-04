@@ -1,5 +1,9 @@
 # The dimension catalog belongs to the corpus — DONE
 
+> **Oracle note:** the render hash cited below is the one verified when this shard landed. It moved
+> to `fe084dd1…` at `a2205eb`, which changed the founding doctrine riding into every SOUL. Do not
+> check this retired hash against today's tree.
+
 > **LANDED** `29f1185` · `045485d` · `b903c75` · `fb944d2`. The completion criterion below was met:
 > a `tempo` dimension was added to canon's `ANATOMY`, given one value module, composed into `nico`,
 > and projected — **0 files touched in `agent-forge`** — appearing as `## Tempo` with its body in

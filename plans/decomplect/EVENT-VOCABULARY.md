@@ -172,7 +172,7 @@ hardcoded with a nicer provenance.
 - **Do not import forge from runtime.** That edge does not exist and creating it would be the real
   regression — worse than the duplication, because a deployed package would start depending on a
   build tool.
-- **Both renders are the regression oracle**: `9055e88b6c4679e44fb5ccb73371b9d539d1d6a8`.
+- **Both renders are the regression oracle**: `fe084dd1d531948979dc386713c3f688c96088ab`.
 - **Do not let the base absorb the extension.** Folding `vcs.commit.post` into `LIFECYCLE_EVENTS`
   would make every check pass while re-committing the original error: a corpus's need answered by
   editing the root package. The extension seam is the deliverable; the base move is the setup.

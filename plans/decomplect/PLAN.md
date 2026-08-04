@@ -9,8 +9,13 @@ Every item below is a **divergence from it**, and an item that is not one does n
 
 ## Status
 
-Suite green — forge 224 · canon 159 · memory 255 · runtime 52. Both renders byte-identical at
-`9055e88b6c4679e44fb5ccb73371b9d539d1d6a8`, which is the regression oracle for every step.
+Suite green — forge 224 · canon 159 · memory 255 · runtime 52.
+
+**Regression oracle:** `find packages/agent-canon/.render-ts packages/agent-canon/.render-ts-codex
+-type f | sort | xargs shasum | shasum` → `fe084dd1d531948979dc386713c3f688c96088ab`. Verified
+deterministic across two reprojections. **It moved from `9055e88b…` when `a2205eb` changed the
+founding doctrine, which rides into every SOUL — so a hash change is only a defect when nothing
+intended to change the projected bytes.** Re-baseline deliberately, never silently.
 
 ## Landed
 

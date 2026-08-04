@@ -1,5 +1,9 @@
 # Defects from the catalog-ownership shard — DONE
 
+> **Oracle note:** the render hash cited below is the one verified when this shard landed. It moved
+> to `fe084dd1…` at `a2205eb`, which changed the founding doctrine riding into every SOUL. Do not
+> check this retired hash against today's tree.
+
 > **LANDED** — D1 `b486803` · D3 `d83488b5` · D2 `082566f0` · guard fix `ef06a3e2`.
 > Forge 216 → 224 tests, canon 152 → 153, renders byte-identical throughout at
 > `9055e88b6c4679e44fb5ccb73371b9d539d1d6a8`.
