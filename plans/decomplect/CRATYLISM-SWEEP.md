@@ -161,6 +161,54 @@ export `claudeHarnessAdapter`, `agentToClaudeMd`, `agentToCodexToml`, `agentsMdS
 If C1's argmin rejects `anatomy`, ARCHITECTURE must be revised in the same act — it is ground, and
 ground carrying a refuted sign is worse than source doing so.
 
+### ▶ IN PROGRESS 2026-08-04 — the seam is cut, the sign is not
+
+**Concept A is itself two concepts, and the source says so.** `anatomy/index.ts:265` explains
+`Anatomy` as _"A dimension CATALOG: name → metadata. The **META-MODEL** forge owns — that a dimension
+HAS an axis/kind/arity — as against the **INSTANCE** (which dimensions exist), which belongs to the
+corpus that declares them."_ So:
+
+| facet                                 | owner  | sign today                           |
+| ------------------------------------- | ------ | ------------------------------------ |
+| per-dimension facts (axis/kind/arity) | forge  | `DimensionMeta` — **already signed** |
+| the map a corpus declares             | corpus | `Anatomy` — **the one at issue**     |
+
+**The `catalog` contention is narrower than filed.** `catalog` is _correctly and consistently_ bound
+to `DimensionName → ℘(fragment)` across `MODEL.md`, `agent-forge/src/catalog/`, and `enumerateCatalog`
+— dimension name → its **values**. The defect is that this file's prose calls `Anatomy` a _"dimension
+catalog"_ too, for a map to **metadata**, not values. `DimensionMeta.kind`'s own comment then writes
+_"how the **value-catalog** is sourced"_ to disambiguate. **The disambiguation is in the prose and
+never in the sign** — this sweep's dominating shape, at its most structural node.
+
+So C1 is not a contest over `catalog`. It is a **missing sign**: `L1 passes ∧ no sign`.
+
+**Three forward legs, cold-isolated, candidate-free — UNSTABLE.**
+
+| leg | framing emphasis                                  | argmin     |
+| --- | ------------------------------------------------- | ---------- |
+| 1   | membership — "adding an entry makes it exist"     | `manifest` |
+| 2   | per-slot metadata shape                           | `schema`   |
+| 3   | both, contrasted explicitly against the value map | `schema`   |
+
+Three framings, two answers — the emphasis picks the answer, which means no framing has yet isolated
+the concept. Rejected across the legs: `registry` · `taxonomy` · `spec` · `descriptor` · `config`.
+
+**And the leading candidate FAILS the reverse round-trip — this is the load-bearing result.** Given
+`dimension schema` cold, with no other context, the reader expects it to carry _"the permitted set of
+values (as a constraint, e.g. `enum: [...]`)"_ — **which is MAP 1**, the exact boundary that must
+hold. `signify-verify(w) ⇔ concept_R(w) = α⁻¹(w)` fails. The forward argmin alone would have minted
+it; only the round-trip caught it. **Do not mint `schema`.**
+
+**State: the concept is real and load-bearing; every generic container word tried fails on some
+boundary the corpus needs.** That is the signature of a short language, not of a missing analysis.
+Next executor: do **not** re-run legs 1–3, and do not re-derive the seam above. The open question is
+whether the constitutive facet or the metadata facet is the definiendum — `ARCHITECTURE.md` says
+constitutive ("a dimension is _constitutive_: declaring one makes it part of that corpus's agent
+design"), which favours leg 1's cut over leg 3's, and leg 1's argmin was the one never round-tripped.
+
+**Concept B is untouched** — the existence check has not been run. Full occupancy census was
+dispatched and is not yet folded in here.
+
 ---
 
 ## C2 — shipped instructions naming commands that do not exist
