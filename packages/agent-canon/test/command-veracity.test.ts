@@ -21,9 +21,12 @@
 //   - `plans/.retired/**` and `plans/*/completed/**` — an archived record of what
 //     was true when it was written. It is not instructing anyone now, and holding
 //     history to today's script names would forbid recording history accurately.
-//   - `**/test/fixtures/**` — synthetic specimens. A fixture that names a command
-//     is MENTIONING one, not telling a reader to run it; the same use/mention line
-//     that keeps the stance rubric's quoted examples out of the density gate.
+//   - `**/test/**` — specimen carriers. A test that names a command is MENTIONING
+//     one, not telling a reader to run it; the same use/mention line that keeps the
+//     stance rubric's quoted collapse examples out of the density gate. THIS FILE is
+//     the proof: it must cite dead commands in order to test for them, and an
+//     unqualified scan convicts it for doing its job — the meta-gate's "haystack
+//     contains the needle" hazard, in its own source.
 //   - `node_modules`, `graphify-out`, `dist` — not authored here.
 //
 // RESOLUTION. A token resolves if it is a script key in the root `package.json` or
@@ -101,10 +104,10 @@ const PNPM_BUILTINS = new Set([
  * a reader to run something that does not exist. They retire when the sweep does.
  */
 const VERACITY_RATCHET: ReadonlySet<string> = new Set([
-  'plans/decomplect/CRATYLISM-SWEEP.md:244 → anatomy:',
-  'plans/decomplect/CRATYLISM-SWEEP.md:348 → anatomy:project:targets',
-  'plans/decomplect/CRATYLISM-SWEEP.md:349 → anatomy:project',
-  'plans/decomplect/CRATYLISM-SWEEP.md:350 → anatomy:deploy:hooks',
+  'plans/decomplect/CRATYLISM-SWEEP.md → anatomy:',
+  'plans/decomplect/CRATYLISM-SWEEP.md → anatomy:project:targets',
+  'plans/decomplect/CRATYLISM-SWEEP.md → anatomy:project',
+  'plans/decomplect/CRATYLISM-SWEEP.md → anatomy:deploy:hooks',
 ]);
 
 interface Citation {
@@ -114,7 +117,19 @@ interface Citation {
   readonly raw: string;
 }
 
-/** The label a ratchet pin uses, and the one a failure reports. */
+/**
+ * The ratchet key. Deliberately NOT line-numbered.
+ *
+ * The first version keyed on `file:line`, and editing prose ABOVE a pinned citation
+ * broke every pin below it — the gate convicted a document for being edited, which
+ * is a defect in the gate rather than the document. A pin identifies WHICH false
+ * citation is excused; the line it sits on is reporting detail, not identity.
+ */
+function key(c: Citation): string {
+  return `${c.file} → ${c.script}`;
+}
+
+/** What a failure reports — the key, plus the line so it can be found. */
 function label(c: Citation): string {
   return `${c.file}:${c.line} → ${c.script}`;
 }
@@ -129,7 +144,7 @@ function tracked(): string[] {
 function inScope(rel: string): boolean {
   if (rel.startsWith('plans/.retired/')) return false;
   if (/^plans\/[^/]+\/completed\//.test(rel)) return false;
-  if (rel.includes('/test/fixtures/')) return false;
+  if (rel.includes('/test/') || rel.endsWith('.test.ts')) return false;
   if (rel.startsWith('graphify-out/')) return false;
   return /\.(ts|tsx|mjs|js|md|sh|json|ya?ml)$/.test(rel);
 }
@@ -249,7 +264,7 @@ describe('COMMAND-VERACITY gate — a named command must exist', () => {
   it('every cited command resolves, or is an explicit ratchet pin', () => {
     const declared = declaredScripts();
     const failures = citations()
-      .filter((c) => !declared.has(c.script) && !VERACITY_RATCHET.has(label(c)))
+      .filter((c) => !declared.has(c.script) && !VERACITY_RATCHET.has(key(c)))
       .map(
         (c) =>
           `VERACITY ${label(c)} — no such script (cited as \`${c.raw.trim()}\`)`,
@@ -259,7 +274,7 @@ describe('COMMAND-VERACITY gate — a named command must exist', () => {
 
   it('the ratchet is shrink-only: every pin still FAILS', () => {
     const declared = declaredScripts();
-    const live = new Set(citations().map(label));
+    const live = new Set(citations().map(key));
     for (const pin of VERACITY_RATCHET) {
       expect(live.has(pin), `ratchet pin ${pin} names no live citation`).toBe(
         true,
