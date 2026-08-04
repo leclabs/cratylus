@@ -63,11 +63,35 @@ A rubric that teaches a detector must quote what it detects. **Convicting this a
 false positive**, so raising the threshold — the fix as filed — breaks the gate on the very document
 offered as proof that it is broken.
 
-**The real defect, which is deeper than dilution.** `SECOND-PERSON` is **one sign binding three
-concepts**: human-tutorial address · agent-address · quoted specimen. The rate threshold suppresses
-the latter two **by accident**, which is why the gate has looked calibrated. It is a proxy — right
-answers today, for a reason unrelated to the property — and the sweep's own law applies to the gate as
-much as to the corpus: _state the property, never a string that correlates with it._
+**The normalization complaint is refuted too — and so is my first replacement for it.** The first
+reading of the above was that `SECOND-PERSON` binds three concepts (human-tutorial address ·
+agent-address · quoted specimen) and that the rate merely suppresses two of them _by accident_ — a
+proxy giving right answers for an unrelated reason. **Ablation refutes that.** Both candidate fixes
+were run against constructed tutorial prose and the live corpus:
+
+| candidate fix                              | result                                                                             |
+| ------------------------------------------ | ---------------------------------------------------------------------------------- |
+| raise / de-normalize the threshold         | **false-positives** the judge prompt, the rubric fixture, `stance-guardrail.sh`    |
+| drop the signal — "`HEDGE` already covers" | **false-negatives 4 of 5** genuine tutorials; one has _zero_ hedges and is obvious |
+
+_"First you open the file. Then you edit the value. Then you save it."_ carries no hedge and no FPP.
+**Only second-person catches it.** The signal is necessary, and the rate is not a proxy — it is a
+sound discriminator, because tutorial register is _constituted by_ density of address:
+
+| population                                           | second-person rate |
+| ---------------------------------------------------- | ------------------ |
+| constructed human tutorial                           | **15.4 – 20.0**    |
+| the seeded long-form delegation (`reach`)            | 5.7                |
+| — threshold —                                        | **4**              |
+| agent-address + quoted specimen (3 corpus artifacts) | **0.27 – 1.05**    |
+
+Wide margin on both sides. **A document cannot dilute its way past 4/100 while _remaining_ tutorial
+in register**, because dilution is exactly what stops it being tutorial. C0's "a metric a document can
+pass by getting longer" is true of the formula and false of the property.
+
+**Residual bound, recorded not fixed:** a very long document with a small genuinely-tutorial section
+would dilute below 4. No such artifact exists in the corpus. Windowed-max would close it; the cost is
+not yet warranted. This is a known limit, not a defect.
 
 **Also new: hook-emitted agent-facing text has no home in the model.** The four strings that actually
 reach an agent's context live as `printf` bodies inside shell workers, reachable only by parsing
@@ -75,18 +99,19 @@ shell. A cell declares its `residue` and its `workers[].content`; the **message 
 is an authored surface with no declared field. Missing distinction in the ground, second site in
 source — and it is why "extend the reach" is not purely a test-file edit.
 
-### The fix, re-ordered by what the measurement supports
+### What survives — the fix, reduced to what the measurement supports
+
+**The detector is not touched.** Both halves of the normalization complaint died under checking; the
+work is entirely about reach.
 
 1. **Extend `allSurfaces()`** over the table above, giving each family its `RHO` class.
 2. **Make reach checkable**: assert every ρ=LLM class this gate owns is witnessed by ≥1 enumerated
    surface. This is what converts the coverage claim into a conformance claim; without it the next
-   class added is silently unscanned again.
-3. **Re-signify the second-person signal** — one sign, three concepts. Supply no candidates; run the
-   oracle. The rate proxy retires with the re-signification, not before it.
-4. **Re-derive the ratchet** from what convicts. On today's tree that is `rule repo-preamble body`
+   class added is silently unscanned again — the defect recurring rather than being fixed.
+3. **Re-derive the ratchet** from what convicts. On today's tree that is `rule repo-preamble body`
    (`FPP×2`: _"why **we** are doing this"_, _"how **we** are doing this"_ — human-gloss exposition in
    the file every session loads). Small, not large; the filed prediction was wrong about that too.
-5. **Give the emitted message a declared home**, so the reach extension is enumeration rather than
+4. **Give the emitted message a declared home**, so the reach extension is enumeration rather than
    shell-parsing.
 
 **This still dominates every item below**: with reach extended, C1–C5 and most of the unassigned list
