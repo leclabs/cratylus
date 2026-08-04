@@ -40,11 +40,25 @@ Six specs (C0–C5) plus three unassigned findings, every claim verified against
 generalized `cratylism` that landed in `a2205eb` and finds it not honored, with one dominating
 failure shape: **the correction was written into the prose and never into the sign.**
 
-**C0 comes first and dominates the rest.** The density gate reaches exactly three families that were
-already dense by construction, and its empty ratchet states a COVERAGE claim as a CONFORMANCE one.
-Its detector is length-normalized, so long prose is structurally unconvictable — the stance canon's
-own judge prompt scores **0.90 per 100 against a threshold of 4**, 4.4× under by dilution, and is not
-even in scope to be measured. Extend the reach and most of C1–C5 convict themselves.
+**C0 is ✅ LANDED (`979fa021`)** — it came first and dominated the rest. The gate's reach is now
+**asserted**, not merely extended: every ρ=LLM class it owns must be witnessed by a real surface, so
+the empty ratchet states conformance rather than coverage. Newly reached: rule bodies (`/AGENTS.md`,
+the corpus's most widely-read emission, previously unscanned), rule and hook declarations, the
+founding doctrine, and every agent vector — a class that was declared ρ=LLM and witnessed by nothing.
+One conviction, fixed not pinned. Controls verified by injection.
+
+**Its detector was NOT touched, and that is the finding.** Both halves of the filed normalization
+complaint died under checking: raising the threshold false-positives the judge prompt (whose
+second-person is agent-address and quoted specimens of the register it detects), and dropping the
+signal false-negatives four of five genuine tutorials. Real tutorial prose runs 15–20 per 100 against
+a threshold of 4; agent-address runs under 1.1. **The rate is a sound discriminator, not a proxy** —
+tutorial register is constituted by density of address. See the sweep's `▶ MEASURED` block; the audit
+trail is kept whole rather than rewritten to match the outcome.
+
+**One part deferred**, as a model change rather than a test change:
+[`pending/hook-message-has-no-declared-home.md`](./pending/hook-message-has-no-declared-home.md).
+
+With reach extended, most of C1–C5 should now convict themselves.
 
 **C1 interacts with §1 below** — if its argmin rejects `anatomy`, `ARCHITECTURE.md` must be revised
 in the same act, because ground carrying a refuted sign is worse than source doing so.

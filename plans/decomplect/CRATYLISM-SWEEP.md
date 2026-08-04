@@ -21,7 +21,15 @@ argmin — `llm-native`'s `¬leading-candidate-set` binds the fix as much as the
 
 ---
 
-## C0 — extend the density gate's reach _(do this FIRST; it dominates)_
+## C0 — extend the density gate's reach — ✅ **LANDED 2026-08-04** (`979fa021`)
+
+> **Reach: fixed and asserted. Detector: untouched — both halves of the normalization complaint died
+> under checking.** One conviction, fixed not pinned. Controls verified by injection. Suite green
+> uncached; render oracle unchanged. **§4 (a declared home for the message a hook speaks to an agent)
+> is the one part deferred** — it is a model change, not a test change, and is filed below.
+>
+> The audit trail is kept in full rather than rewritten to match the outcome: the spec was right about
+> reach, wrong about its own flagship exhibit, and my first replacement for that was wrong too.
 
 `agent-canon/test/reader-density.test.ts` `allSurfaces()` enumerates exactly **three** families:
 `dimensions/**/*.ts` · `skills/*/skill.ts` · `genus/persona.md` — the three that were already dense
@@ -266,6 +274,15 @@ silently to canon's `SOUL` without a decision.**
   argues `hook` is not a Kind the canon authors, and the type still carries it. Ground says four.
 - **`catalog/index.ts:167,284`** ship literal `[SIGNIFY: …]` markers over live exports — owed
   cold-decode passes, recorded honestly and never discharged.
+- **`RuleCell.definiens` and `HookCell.residue` are two signs for one concept** — each is documented
+  in its own source as "the σ\*-signified canonical identity" that `accept()` gates. Surfaced while
+  giving both a shared `RHO` class at C0; the class had to be named for what they _are_ because
+  neither field name generalizes. `residue` is the MODEL term (`body(c)=⟨α(c),residue(c)⟩`) and
+  `definiens` is the loose one, so this is not symmetric — one of them is simply wrong.
+- **`RuleCell.body` collides with MODEL's `body(c)`** — one sign, two concepts. The field is the
+  cell's _verbatim projected payload_; `body(c)` is `⟨α(c), residue(c)⟩`, the declaration. C0's new
+  `RHO` class had to route around this (`rule-target-body`), which is the tell: a name minted to
+  avoid a collision is a collision that was never resolved.
 
 ## Rejected — a claim that did not survive verification
 
