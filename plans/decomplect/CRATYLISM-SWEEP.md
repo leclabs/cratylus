@@ -278,15 +278,58 @@ Probe 4 recovers the constitutive property verbatim. `signify-verify` passes.
 
 **σ\*(A) = `manifest`** — `DimensionManifest` for the type, `MANIFEST` for the corpus's instance.
 
-### Still open, and they are separate jobs
+### ▶ RESOLVED 2026-08-04 — the extracted package is **`agent-schema`**
 
-1. **Concept B** — the filesystem locus. Existence check unrun; `⊥` expected.
-2. **Concept C** — `anatomy` as a **file name** meaning harness projection (3 files). Its own
+The definiendum is not concept A. ARCHITECTURE scopes this package as _"what a cell is, what a value
+is, what carries enforcement — MODEL.md realized in types"_ — strictly broader than the manifest; it
+also holds `Skill`, `Agent`, `HookCell`, `RuleCell`. Signified separately, framed only by what it
+holds, who writes against it, and what it must not do.
+
+**Forward: `SCHEMA`**, rejecting `types` ("reads as a grab-bag, not a deliberate shared vocabulary"),
+`form` (overloaded), `ontology` ("overclaims — implies a network of relationships").
+
+**The round-trip does something none of the others did: it recovers the ARCHITECTURE constraint from
+the name alone.** Given `agent-schema` beside `agent-canon`/`agent-forge`/`agent-runtime`, cold:
+
+| probe                     | cold decode                                                                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| contains?                 | "type/interface definitions … the contract other packages code against" ✅                                                           |
+| holds content?            | "**No.** Schema names the shape of data, not instances" — and puts content in `agent-canon` unprompted ✅                            |
+| executes? knows a target? | "**No.** No side effects and no opinion on how/where things run — that's `agent-runtime`'s job" ✅                                   |
+| dependency direction      | "**The other three would depend on `agent-schema`, not the reverse. Schema packages sit at the bottom of the dependency graph.**" ✅ |
+
+Probe 4 **is ARCHITECTURE's property 2 and 4, derived from the sign with no access to the document.**
+For a project whose thesis is that the model already holds the concepts, that is the result to want:
+the name does the architectural work.
+
+**Occupancy checked before minting** — 17 hits across all package sources, clustering on one real
+referent: `core/hook/hook.schema.json`, a JSON Schema generating `CanonicalEvent`. **Convergent, not
+colliding** — it is the industry sense, and a shape generated from a schema file belongs in the shape
+package.
+
+**σ\*(package) = `agent-schema`.** `anatomy` then dies completely: the directory becomes this package,
+`type Anatomy` → `DimensionManifest`, canon's `ANATOMY` → `MANIFEST`, `AgentPlugin.anatomy` →
+`.manifest`.
+
+**RIDER — one ground revision falls out, and it was already owed.** `MODEL.md:22` reads
+`Event ≜ the harness-agnostic lifecycle vocabulary ⟨schema-owned⟩`. That clause describes
+`hook.schema.json` generating forge's `CanonicalEvent` — **exactly the arrangement PLAN §2's operator
+ruling overturns** (the vocabulary is canon's). So `⟨schema-owned⟩` is already false and must be
+revised with §2, independently of this naming. It must not be left standing beside a package called
+`agent-schema`, where it would read as an ownership claim about that package.
+
+**And it hands §2 its cut**, which the plan did not have: the **shape** of a `Hook` is
+`agent-schema`'s; the **vocabulary** of 28 event names is canon's. Shape and vocabulary are different
+concerns, which is why one home was hard to find while they were braided.
+
+### Still open
+
+1. **Concept B** — the filesystem locus (`anatomyRoot`, 19 files). Existence check unrun; **`⊥`
+   expected**: every site builds a path, none asks a predicate, and the siblings already read
+   `repoRoot` · `srcRoot` · `renderRoot`. The fix is compositional (`σ* ∨ ⊕σ*`), not a mint —
+   `anatomyRoot` is the only one of the four that fails to name what it roots.
+2. **Concept C** — `anatomy` as a **file name** meaning harness projection (3 files). Own
    signification; the census found it, the spec never did.
-3. **The extracted package's name** — **not** settled by (A). ARCHITECTURE scopes that package as
-   _"what a cell is, what a value is, what carries enforcement — MODEL.md realized in types"_, which is
-   strictly broader than the manifest: it holds `Skill`, `Agent`, `HookCell`, `RuleCell` too. A
-   separate definiendum, and the census shows its proposed name is already taken.
 
 ---
 
