@@ -75,6 +75,7 @@ type Kind = 'GATE' | 'BEHAVIORAL';
 
 const REGISTRY: Readonly<Record<string, Kind>> = {
   // ── agent-canon ────────────────────────────────────────────────────────────
+  'agent-canon/architecture.test.ts': 'GATE',
   'agent-canon/bin-name-single-home.test.ts': 'GATE',
   'agent-canon/boundary-binding.test.ts': 'GATE',
   'agent-canon/command-veracity.test.ts': 'GATE',
