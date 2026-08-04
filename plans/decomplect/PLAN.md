@@ -21,10 +21,38 @@ it enforces) after five cold legs failed to find a quality-noun — the best ret
 `import-acyclicity`, which is **wrong**: canon importing runtime introduces no cycle and is still
 forbidden, so that sign names a weaker property than the law.
 
-**Act 2 — §1 extract `agent-schema` — IN FLIGHT.** Acceptance is exact and mechanical: suite green
-uncached · render oracle still `fe084dd1d531948979dc386713c3f688c96088ab` (the proof the refactor
-changed no projected byte) · the architecture gate's canon→forge counts at **0/0/0** with the
-property-1 pin alone surviving.
+**Act 2 ✅ LANDED (`48baaddd`) — `agent-schema` exists.** Canon **cells** importing the projector:
+**22 → 0**. Render oracle unmoved at `fe084dd1d531948979dc386713c3f688c96088ab` — the proof the change
+was structural and altered no meaning. Suite green uncached, 9 tasks. Architecture ratchet **26 → 3**.
+
+**Two of the four acceptance numbers I wrote were WRONG, and the delegates refused them rather than
+contorting the tree to fit.** Recorded because the correction is the lesson:
+
+| I wrote               | truth                                                                                                                                                                                                                               |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| build scripts → **0** | **6, and it must never be 0** — ARCHITECTURE licenses canon's build steps using the projector as a tool; 0 means canon cannot build itself                                                                                          |
+| root → **0**          | **1** — `src/index.ts` takes `defineAgentPlugin` from forge. Whether `AgentPlugin` is a schema SHAPE or a forge resolver CONTRACT is an open ownership question, and answering it inside a refactor would smuggle a design decision |
+
+**The real acceptance, now encoded in the gate:** cells **0** · build scripts **6** · root **1** ·
+property-1 breaches **1**. An acceptance criterion that contradicts the ground it claims to enforce is
+worse than none — it converts a correct refusal into an apparent failure.
+
+### Owed next, in order
+
+1. **Amend `bin-name-single-home`**, then repair property 1. It pins the canon→runtime import; the
+   repair is red until the counter-gate is a design decision made deliberately.
+2. **Rule on `schema → runtime`.** The extraction created it (`type RuntimePlugin` → `RuntimeCapability`).
+   It is **ratcheted, not licensed**: a shape the corpus authors against belongs in the shapes package,
+   so the resolution is to move `RuntimePlugin`. It breaches no property today and creates no cycle.
+3. **Rule on `AgentPlugin`** — shape or resolver contract. Answering it retires the last property-2 pin.
+4. **Concept A's surviving occupancy**, now the largest residue: `canon/src/anatomy.ts` still holds
+   `MANIFEST` behind the retired sign (154 importers), and `FIXTURE_ANATOMY` survives at ~110 sites so
+   call sites read `manifest: FIXTURE_ANATOMY`. Both were outside the enumerated rename set and were
+   correctly left rather than assumed.
+
+**Also fix the oracle command in Status above** — `canon:project` writes only `.render-ts`;
+`.render-ts-codex` needs `project:codex`. Run literally, the documented pipeline hashes a stale half
+and still prints the expected value.
 
 **Before touching property 1** (canon ⊥ runtime), amend the counter-gate: `bin-name-single-home`
 asserts the violating import STAYS. That is a design decision, not a repair, and it is not the
