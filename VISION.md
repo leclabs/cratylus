@@ -124,7 +124,9 @@ The distinction is foundational. Context ceases to be the author of meaning and 
 
 This architecture is compatible with a **Cratylist** account of naming, drawn from Plato's _Cratylus_: for the purposes of this project, the canonical sign of a concept is treated as intrinsic and discoverable rather than freely conventional.
 
-This is an engineering constraint, not a claim that all language has one objectively correct name. Within a declared model population, target concept, and validation method, naming is treated as a fact to investigate rather than a preference to settle. Canonical names—including anchors, dimensions, skills, agents, files, and directories—should therefore be discovered through the same cold-verification discipline.
+This is an engineering constraint, not a claim that all language has one objectively correct name. Within a declared model population, target concept, and validation method, naming is treated as a fact to investigate rather than a preference to settle.
+
+The constraint therefore reaches **every authored surface**, and it recognizes no privileged kind: prose, identifier, and path are one register, each carrying either an optimal signifier or a composition of them. An enumeration of the surfaces that qualify would be a bound on the discipline, and there is none — anything this project writes is subject to the same cold-verification.
 
 Principles such as `cold-decode-oracle`, `llm-native`, and σ\* follow from this commitment: semantic bindings are tested against model priors before they are admitted to the canon.
 

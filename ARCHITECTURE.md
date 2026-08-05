@@ -116,9 +116,36 @@ used: `anatomy` was a metaphor binding four distinct concepts, and `agent-anatom
 One implementation behind the memory port, not a peer of the three concerns. Named here only because
 its package sits alongside them.
 
-### `agent-cli` — the consumer entry
+### Two consumer entries, because there are two DAGs
 
-Forge's commands for someone who is not this repository.
+A consumer meets this system at two different times, and they are not the same entry:
+
+| entry           | when           | what it answers                                       | shipped by    |
+| --------------- | -------------- | ----------------------------------------------------- | ------------- |
+| `agent-forge`   | **build time** | author, resolve, project and deploy a corpus          | `agent-forge` |
+| `agent-runtime` | **run time**   | the capabilities an agent invokes while it is running | `agent-cli`   |
+
+This is not two ways of doing one thing. It is the **same decomplection the plugin contract already
+makes one level down**: a capability package exposes `buildPlugin` (its `AgentPlugin` face) and
+`runtimePlugin` (its `RuntimePlugin` face), never one dual-hook object, so the build DAG and the
+runtime DAG never reach across. The two bins are that seam surfacing as installable commands.
+
+**Everything a consumer can do at build time belongs to `agent-forge`'s command surface**, and
+anything in this repository that performs such a step by another route is a divergence — a private
+reimplementation of a shipped command, which is how a projector drifts from its own CLI without
+anything reporting it.
+
+#### `agent-cli` — the runtime's installable entry
+
+It exists for a reason the package name does not carry: **to break a dependency cycle.** Every
+capability package depends on the runtime for its contracts, so the runtime cannot declare the
+capabilities. `agent-cli` is the third package that depends on both and wires them by static import,
+which is what makes resolution succeed by declaration rather than by co-installation accident. It
+owns the `bin` key — the one copy of the bin name no TypeScript can compute.
+
+**The sign is wrong and is filed for re-signification.** `agent-cli` names "the CLI" while shipping
+exactly one of the two, and the one it ships is named `agent-runtime` — the package name and its own
+bin name disagree. Neither is `σ*`.
 
 ## The north star
 
@@ -135,8 +162,8 @@ graph BT
     forge --> schema
     forge --> runtime
     memory --> runtime
-    cli --> forge
     cli --> runtime
+    cli --> memory
 
     canon -. "as DATA, never a dependency" .-> forge
 
@@ -161,14 +188,17 @@ The load-bearing properties, in order of how much they matter:
 
 Stated honestly, because a north star that pretends to be a description is useless:
 
-| divergence                                                                            | evidence                                                                                                                                                                              |
-| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`agent-schema` imports `agent-runtime`** — an edge this graph does not draw         | `type RuntimePlugin` in `schema/index.ts`; the shape belongs in the shapes package, so this is ratcheted, never licensed                                                              |
-| **canon's own most structural module is still `src/anatomy.ts`** — holding `MANIFEST` | the file name is the retired sign; 154 importers reach it                                                                                                                             |
-| **a canon cell names the runtime's binary** — projection knowledge in a cell          | `RUNTIME_BIN` in `hooks/memory-consolidation-nudge.ts`                                                                                                                                |
-| **the lifecycle vocabulary is declared twice** — forge and runtime, independently     | 28 members each, identical set and order, nothing enforcing it                                                                                                                        |
-| **property 1 is breached, and a GATE PINS THE BREACH**                                | `src/hooks/memory-consolidation-nudge.ts:2` — a canon **cell** — imports `RUNTIME_BIN` from `@leclabs/agent-runtime`, and `test/bin-name-single-home.test.ts:57,101` asserts it stays |
-| **`FIXTURE_ANATOMY`** — the fixture corpus's instance of the same concept             | ~110 sites in `agent-forge/test`, now read as `manifest: FIXTURE_ANATOMY`                                                                                                             |
+| divergence                                                                            | evidence                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **`agent-schema` imports `agent-runtime`** — an edge this graph does not draw         | `schema/index.ts` takes `RuntimePlugin` only to derive `keyof Omit<…,'name'>` — it wants a **vocabulary**, not a shape. `shape ⊥ vocabulary`, as `MODEL.md:22` already rules for `Event`. Ratcheted, never licensed |
+| **build-time steps bypass the build-time CLI** — a private reimplementation           | `agent-canon/src/toolkit/project-cli.ts` and `project-cli-codex.ts` duplicate `agent-forge project --harness <name>`, differing by one string; the codex copy already drifted once and shipped sessionless shims    |
+| **this repository is not a consumer of its own CLI** — no `agents.config.ts` exists   | `agent-forge project` exits 1 without one, so the corpus that DEFINES the design cannot be built by the shipped command                                                                                             |
+| **three packages are `private: true`** — including the one owning the installable bin | `agent-cli`, `agent-memory`, `agent-runtime`; nothing is published and every version is `0.0.0`                                                                                                                     |
+| **canon's own most structural module is still `src/anatomy.ts`** — holding `MANIFEST` | the file name is the retired sign; 154 importers reach it                                                                                                                                                           |
+| **a canon cell names the runtime's binary** — projection knowledge in a cell          | `RUNTIME_BIN` in `hooks/memory-consolidation-nudge.ts`                                                                                                                                                              |
+| **the lifecycle vocabulary is declared twice** — forge and runtime, independently     | 28 members each, identical set and order, nothing enforcing it                                                                                                                                                      |
+| **property 1 is breached, and a GATE PINS THE BREACH**                                | `src/hooks/memory-consolidation-nudge.ts:2` — a canon **cell** — imports `RUNTIME_BIN` from `@leclabs/agent-runtime`, and `test/bin-name-single-home.test.ts:57,101` asserts it stays                               |
+| **`FIXTURE_ANATOMY`** — the fixture corpus's instance of the same concept             | ~110 sites in `agent-forge/test`, now read as `manifest: FIXTURE_ANATOMY`                                                                                                                                           |
 
 **The property-1 row is the one that matters most.** Property 1 is the highest-ranked property here,
 and the repository does not merely fail it: a test **requires** the failure, so repairing the
