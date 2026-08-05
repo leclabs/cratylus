@@ -1,3 +1,24 @@
+> **STATUS — a superseded proposal, retained for the part that still stands.**
+> Authored in plan mode 2026-08-05; never executed. It sat loose at `plans/` root, which is
+> not a place a plan can live: `plan-set.ts` enforces folder-as-state, so a plan is a
+> DIRECTORY bearing `PLAN.md`. A bare file there is invisible to `list` and unreachable by
+> `retire`. Moved here, which also subjects it to `command-veracity` — `plans/` is exempt
+> from the plan-path gate so a retirement plan can name what it retires, and this is not one.
+>
+> **CLOSED since it was written.** Its §5 ("the evidence base has rotted") is discharged:
+> `README.md` and `docs/research/candidates.md` no longer cite a deleted plan, and
+> `candidates.md` no longer claims "no discovered anchor" — `latent lexicography` is recorded
+> with its admitting standard.
+>
+> **SUPERSEDED.** Its step 2 prescribes recovering a deleted plan file from git and restoring
+> it. The corpus has since ruled twice that `retire` MEANS DELETE, precisely because git
+> holds the bytes — a restored record is a second home for something history already has.
+> Read that step as evidence of what was wanted, not as an instruction.
+>
+> **STANDS.** §3 — the isolation condition is re-authored in prose across five cells and
+> linked to the instrument by none of them — and the thesis that cold-decode wants a skill
+> rather than a hand-built probe per use. Both are unaddressed.
+
 # cold-decode — one instrument, one meaning, one record
 
 > Plan mode. mav holds ~235 uncommitted files in this tree (`anatomy` → `manifest`). Nothing here
@@ -53,8 +74,8 @@ The discovery measurement — the one the entire naming discipline rests on — 
 ### 3. The isolation condition is re-authored in prose five times, never linked to the instrument
 
 `cold-oracle.sh:8–18` · `probe/skill.ts:34–41` · `exemplify/skill.ts:13` · `introspect/skill.ts:15` ·
-`dimensions/engineering-principles/cold-decode-oracle.ts:3` · plus
-`plans/decomplect/completed/enforcing-fragment-FINDINGS.md:88–93`. Each worded differently, **none
+`dimensions/engineering-principles/cold-decode-oracle.ts:3` · plus a sixth wording in the
+`enforcing-fragment` findings (a plan record, since retired). Each worded differently, **none
 citing the script.** `signify`'s formal block contains no cold-decode term at all — its `fired` is an
 undischarged oracle the agent must supply.
 
@@ -79,9 +100,10 @@ name into the canon. Shared factor is the **transport** only.
 
 ### 5. The evidence base has rotted, including for the project's own name
 
-- `README.md:14` and `docs/research/candidates.md:7` cite **`plans/discipline-anchor/PLAN.md`
-  §Derivation record** as the warrant for retiring `semantic engineering`. **Deleted at `a96a5b6f`.**
-  The evidence survives only in git history and a guardrail _test fixture_.
+- `README.md:14` and `docs/research/candidates.md:7` cited a deleted plan's §Derivation record
+  as the warrant for retiring `semantic engineering`. **Both repaired 2026-08-05**: each now
+  carries the derivation inline — isolated cold oracle, positive control passed, six distinct
+  strings across eight candidate-free runs.
 - `VISION.md:157` asserts the project's strongest claim — _"the strongest reverse decode this project
   has recorded"_ — with no record, date, model, or rig cited.
 - The sole attestation lives in `.scratchpad/ideation/`, cites `packages/agent-canon/…` (gone), and
@@ -96,9 +118,9 @@ name into the canon. Shared factor is the **transport** only.
    So `decode_cold` keeps its corpus-admitted meaning, and the **priors-only discovery measurement
    gets its own sign** — a signify job, run under the very instrument this plan builds (bootstrapped
    with the existing script).
-2. **Recover `plans/discipline-anchor/PLAN.md` from `a96a5b6f^`** rather than re-deriving. Restoring
-   the contemporaneous record is strictly better; a re-run yields a _new_ measurement, not the cited
-   one. `VISION.md:157` is **surfaced, not edited** — `CANON.md` forbids unilateral VISION edits.
+2. ~~**Recover the retired plan file from git** rather than re-deriving.~~ SUPERSEDED — see the
+   status header. The contemporaneous record is inlined at each citing site instead, which is what
+   `drained(yield(P))` requires and what makes the deletion safe. `VISION.md:157` is **surfaced, not edited** — `CANON.md` forbids unilateral VISION edits.
 3. **Pin a reader-population, not a model id**, with a trivial local resolver until the gateway
    exists. Raw model ids are exactly how the current evidence rotted.
 4. **Typed probes only — no free-form question.** The interface exposes probe _types_ with fixed
@@ -183,7 +205,7 @@ tmp=$(mktemp -d); cd $tmp; claude -p "`$ARGUMENTS`" --safe-mode
 | `packages/forge/src/project/realization.ts`                                       | degrade/warn decision                                                            |
 | `packages/forge/src/validate/accept.ts:256`                                       | `coldBlindStatic()` → real oracle call                                           |
 | `README.md:14`, `docs/research/candidates.md:7`                                   | repoint at the restored record                                                   |
-| `plans/discipline-anchor/PLAN.md`                                                 | restore from `a96a5b6f^`                                                         |
+| the retired derivation record                                                     | SUPERSEDED — inline at each citing site (done 2026-08-05)                        |
 
 **Test literals to bump 16 → 17:** `skill-shape.test.ts`, `formal-block-self-sufficiency.test.ts`
 (×2), `symbols.test.ts`, `projection-stability.test.ts`.
@@ -208,6 +230,6 @@ tmp=$(mktemp -d); cd $tmp; claude -p "`$ARGUMENTS`" --safe-mode
 
 `VISION.md:157` asserts _"Read blind, with no access to this repository, it returns…"_ and _"the
 strongest reverse decode this project has recorded"_, with no record cited, in a **public** repo.
-`CANON.md` forbids me editing VISION unilaterally. The restored `plans/discipline-anchor/PLAN.md`
+`CANON.md` forbids me editing VISION unilaterally. The inlined derivation record
 may or may not be the record it means — if it is not, the strongest claim in the project is
 unattested by its own standard.
