@@ -1,9 +1,8 @@
 {
   "name": "@cratylus/memory",
   "version": "0.0.0",
-  "private": true,
-  "//": "FORK-3 (publish) unresolved: kept private:true. Drop the flag when the publish story lands \u2014 the bin-drop + strategy impl do not block on it.",
-  "description": "@cratylus/memory \u2014 the memory runtime-capability plugin: a MemoryStrategy over an EPISODIC store + the CoALA consolidation verbs. Reached via `agent-runtime memory <verb>` (no `memory` bin). Owns the store seed templates.",
+  "//": "FORK-3 (publish) unresolved: kept private:true. Drop the flag when the publish story lands — the bin-drop + strategy impl do not block on it.",
+  "description": "@cratylus/memory — the memory runtime-capability plugin: a MemoryStrategy over an EPISODIC store + the CoALA consolidation verbs. Reached via `agent-runtime memory <verb>` (no `memory` bin). Owns the store seed templates.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -36,5 +35,8 @@
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

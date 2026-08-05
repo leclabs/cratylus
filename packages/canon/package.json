@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/canon",
   "version": "0.0.0",
-  "description": "canon \u2014 the culture corpus as typed TS source (T1.1 spike scaffold). Markdown is a projection of these modules.",
+  "description": "canon — the culture corpus as typed TS source (T1.1 spike scaffold). Markdown is a projection of these modules.",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -35,5 +35,8 @@
     "tsx": "^4.19.0",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

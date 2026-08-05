@@ -1,9 +1,8 @@
 {
   "name": "@cratylus/invoke",
   "version": "0.0.0",
-  "private": true,
-  "//": "The INSTALLABLE UNIT \u2014 the one package a consumer installs globally. It DECLARES its capability packages as real dependencies, so `npm i -g` resolves them under an isolated store. agent-runtime stays the contract leaf and must NOT depend on a capability (that would cycle: every capability depends on the runtime).",
-  "description": "@cratylus/invoke \u2014 the single entry point: the runtime dispatcher plus its declared capability plugins. Bin name is a placeholder pending the brand derivation.",
+  "//": "The INSTALLABLE UNIT — the one package a consumer installs globally. It DECLARES its capability packages as real dependencies, so `npm i -g` resolves them under an isolated store. agent-runtime stays the contract leaf and must NOT depend on a capability (that would cycle: every capability depends on the runtime).",
+  "description": "@cratylus/invoke — the single entry point: the runtime dispatcher plus its declared capability plugins. Bin name is a placeholder pending the brand derivation.",
   "license": "MIT",
   "type": "module",
   "bin": {
@@ -25,5 +24,8 @@
     "@types/node": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

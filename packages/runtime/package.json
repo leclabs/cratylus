@@ -1,8 +1,7 @@
 {
   "name": "@cratylus/runtime",
   "version": "0.0.0",
-  "private": true,
-  "description": "@cratylus/runtime \u2014 the per-host RUNTIME contract leaf: capability port interfaces (MemoryStrategy, EventTapHost), the RuntimePlugin face, and the runtime-owned lifecycle-event taxonomy. Pure types + identity helper, zero @cratylus deps.",
+  "description": "@cratylus/runtime — the per-host RUNTIME contract leaf: capability port interfaces (MemoryStrategy, EventTapHost), the RuntimePlugin face, and the runtime-owned lifecycle-event taxonomy. Pure types + identity helper, zero @cratylus deps.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -67,5 +66,8 @@
     "tsup": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
