@@ -33,7 +33,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { SHARDS } from '../../../plans/decomplect/spec.mjs';
-import { block } from '../../../plans/decomplect/sync-shards.mjs';
+import { block, sequence } from '../../../plans/decomplect/sync-shards.mjs';
 
 const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
 const PLAN = join(REPO, 'plans', 'decomplect');
@@ -326,6 +326,31 @@ describe('praxis-execution-spec', () => {
       drifted,
       'Execution block disagrees with spec.mjs — re-run sync-shards.mjs',
     ).toEqual([]);
+  });
+
+  it('PLAN.md emits R and the waves — `mirror(state, R, content) emits R ∧ waves`', () => {
+    // The mirror law is the one that rots first, because a wave table is a DERIVED fact written
+    // as prose. It is generated — but this asserts the DATA, not the prose: prettier reflows a
+    // markdown table's padding, so a string compare would fail on formatting and pass on a
+    // wrong wave. Parse the emitted membership back out and compare it to the computed waves.
+    const plan = readFileSync(join(PLAN, 'PLAN.md'), 'utf8');
+    const emitted = [
+      ...plan.matchAll(/^\|\s*\*\*(\d+)\*\*\s*\|[^|]*\|[^|]*\|([^|]*)\|/gm),
+    ].map((m) => ({
+      n: Number(m[1]),
+      members: [...(m[2] ?? '').matchAll(/[`~]{1,2}([a-z0-9-]+)[`~]{1,2}/g)]
+        .map((x) => x[1] as string)
+        .sort(),
+    }));
+    expect(
+      emitted.length,
+      'PLAN.md emits no wave table — re-run sync-shards.mjs',
+    ).toBe(WAVES.length);
+    for (const row of emitted)
+      expect(
+        row.members,
+        `PLAN.md wave(${row.n}) disagrees with the computed wave`,
+      ).toEqual((WAVES[row.n] ?? []).slice().sort());
   });
 
   // ── the convicting fixture ───────────────────────────────────────────
