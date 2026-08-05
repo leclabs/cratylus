@@ -9,8 +9,44 @@ Every item below is a **divergence from it**, and an item that is not one does n
 
 ## Status
 
-Suite green uncached, 9 tasks — **canon 175** (23 files) · **forge 215** (35) · **memory 255** (16) ·
-**runtime 52** (5) · **schema 9** (1). Tree clean.
+Suite green, 16 tasks — **canon 175** (23 files, +1 skipped) · **forge 215** (35) · **memory 255**
+(16) · **runtime 52** (5) · **schema 9** (1). Render oracle
+`0ac8e09fbbd40077f246d4774da60789cc8b3dbd`. Tree clean.
+
+### Wake sync — 2026-08-05, after the workspace directory was renamed
+
+**The host broke, the repository did not, and nothing here could have told the difference.** The
+`RUNTIME_BIN` on `PATH` was a `pnpm link --global` symlink into `workspaces/<old-dir>/`; the rename
+stranded it, and every deployed shim died in the node module loader before a capability-level message
+could be produced. **Two staleness layers were stacked** — the stranded link, and deployed shims
+still spawning the pre-migration bin name. Filed as
+[`pending/the-host-install-is-a-symlink-nobody-authored.md`](./pending/the-host-install-is-a-symlink-nobody-authored.md);
+it is the second live witness for
+[`pending/deployed-drifts-from-rendered-unwatched.md`](./pending/deployed-drifts-from-rendered-unwatched.md),
+which is now **promoted to `ready/`** on the strength of it.
+
+**`ready/` was carrying two shards whose work had already landed** — the same
+`state ≠ truth` drift the 2026-08-05 praxis sync repaired once, recurring because completion is a
+`git mv` nothing performs automatically.
+
+- **[`t-build-steps-proxy-the-cli`](./completed/t-build-steps-proxy-the-cli.md) → completed.** All
+  five acceptance legs verified independently at wake: no `project-cli*.ts` survives,
+  `agents.config.ts` is at the root, neither root script names `tsx src/toolkit/project-cli` or
+  `dist/cli/index.js`, both `canon:project*` legs proxy `cratylus project --harness <name>`, suite
+  green.
+- **`t-config-filename-carries-the-retired-brand` STAYS in `ready/`, and it is BLOCKED.** Its
+  one-home constraint is met — `CONFIG_FILE`, `CONFIG_ENV` and the precedence chain now have a single
+  home at `memory/src/node.ts:306-311`. Its **derivation leg is unpaid**: the shard says in bold that
+  the name is not derived and forbids assuming one, and no round-trip against `.cratylus-run.json`
+  exists anywhere in the tree. Worse, the sweep that picked the name **rewrote the shard**, so it now
+  argues that the live brand is the retired one. It cannot be executed as written.
+
+**The brand sweep rewrote 108 files of historical record** — 95 under `plans/.retired/`, 13 under
+`decomplect/completed/` — including every artifact whose subject _is_ the retired name. This file's
+own discipline (_"a record edited to match today is no longer a record"_) was honored by the
+re-baseline four commits earlier and lost to the sweep that followed, because it lived in prose and
+the sweep's criterion lived in a script. The remedy is a **fork the operator owns** and is filed as
+[`pending/the-brand-sweep-rewrote-the-record-not-only-the-source.md`](./pending/the-brand-sweep-rewrote-the-record-not-only-the-source.md).
 
 **Forge reads 215 where this file long said 224, and the drop is a MOVE, not a loss**: `215 + 9 = 224`
 — the nine tests left forge with `schema` in `48baaddd`. Recorded because a falling test count

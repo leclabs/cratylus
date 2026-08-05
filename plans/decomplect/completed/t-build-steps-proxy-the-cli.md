@@ -80,3 +80,38 @@ If the oracle moves and the difference turns out to be **behaviour the private C
 command, which is a far more valuable finding than a green tree — and closing it by re-baselining the
 hash or by keeping the private CLI would bury it. A workaround here is a design decision and that is
 not yours on this task.
+
+---
+
+## Closed ✅ — landed `de8663f4`, re-censused at wake 2026-08-05
+
+Verified against the tree, not against the report:
+
+| leg                                                                         | result                                                                                                             |
+| --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| private projectors deleted                                                  | `find packages/canon/src/toolkit -name 'project-cli*'` → **∅**                                                     |
+| `agents.config.ts` at root                                                  | present (added by `de8663f4`)                                                                                      |
+| no root script reaches `dist/cli/index.js` or `tsx src/toolkit/project-cli` | confirmed — both `canon:project*` legs proxy `cratylus project --harness <name>`                                   |
+| `canon:project:codex` exists as a root script                               | confirmed                                                                                                          |
+| suite green                                                                 | **16 tasks** — canon 175 (23 files, +1 skipped) · forge 215 (35) · memory 255 (16) · runtime 52 (5) · schema 9 (1) |
+
+**Acceptance leg 1's hash is stale, and that is not a failure.** The shard pinned `fe084dd1…`; the
+oracle reads `0ac8e09f…` today. Two _deliberate_ re-baselines landed after this shard did — the scope
+rename (`49516a6f`) and the retired-brand sweep (`61b85db7`) — each argued in its own commit. The
+shard's proof held at the moment it ran.
+
+**The finding is the shape of the pin, not the number.** A shard that pins a bare oracle hash decays
+the instant a legitimate re-baseline lands, and its acceptance then reads as a failure to whoever
+re-checks it later — indistinguishable from a real regression. **Pin the commit whose oracle is
+meant, never the bare hash.**
+
+**The refusal clause fired and paid.** The executor found that `project` never cleans `--out` and
+filed it rather than burying an `rm -rf` in a root script →
+[`pending/project-never-cleans-its-out-dir.md`](../pending/project-never-cleans-its-out-dir.md).
+
+> **Provenance note.** The re-census table and the stale-pin finding above were authored by a
+> **concurrent session** working this same bound plan, which wrote them into `ready/` at 04:30:30 and
+> retracted them two minutes later. Every claim restated here was independently re-verified against
+> the tree before being written down; the `de8663f4` attribution was checked against the commit. The
+> concurrency itself is a WIP=1 breach at the session layer and is surfaced to the operator, not
+> resolved here.
