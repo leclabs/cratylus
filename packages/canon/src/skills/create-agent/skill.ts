@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '@cratylus/schema';
+import type { Skill, SkillExpression } from '../../anatomy.js';
 
 export const createAgent: Skill = {
   name: 'create-agent',

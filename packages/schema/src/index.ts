@@ -32,7 +32,6 @@
 // `@cratylus/forge` are a distinct concept with a distinct home.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { RuntimePlugin } from '@cratylus/runtime';
 import type { HookEvent, HookSubstrate } from './hook-cell.js';
 
 // ── Type-level metadata axes ────────────────────────────────────────────────
@@ -41,12 +40,30 @@ import type { HookEvent, HookSubstrate } from './hook-cell.js';
 export type Genus = 'Persona' | 'Constitution';
 
 /**
- * A runtime CAPABILITY name — DISCOVERED from S1's `RuntimePlugin` port keys
- * (`memory` · `eventTap`), never coined here (cratylism): the runtime contract is
- * the sole home of the capability set, and a `Skill.runtime` declaration selects
- * one of its ports. This is the ONLY reach across the BUILD→RUNTIME seam and it is
- * type-only — the build DAG stays forge→runtime, acyclic (runtime NEVER →forge). */
-export type RuntimeCapability = keyof Omit<RuntimePlugin, 'name'>;
+ * A runtime CAPABILITY name — the BOUND, not the members.
+ *
+ * This used to read `keyof Omit<RuntimePlugin, 'name'>`, deriving the closed set
+ * from the runtime's implementation interface. That was the only `schema →
+ * runtime` edge, and it was the wrong kind of borrowing: what this package needs
+ * is a **vocabulary** (which names exist), and what it reached for was a
+ * **shape** (how those things are implemented). `MODEL.md:22` already rules
+ * `shape ⊥ vocabulary` for `Event` — shape here, names in the corpus.
+ *
+ * So the members are the corpus's, exactly as WHICH dimensions exist is the
+ * corpus's. This package states that a capability HAS a name and stops; a corpus
+ * declares its own set `as const satisfies readonly CapabilityName[]` and narrows
+ * `Skill` against it, which is the `DimensionManifest`/`MANIFEST` pattern reused
+ * rather than a second one invented.
+ *
+ * NAMING NOTE. A blind decode returned `FacultyName`/`Faculty` and argued it
+ * well — the `*Name` suffix is what buys the shape/vocabulary distinction, and
+ * that insight is kept here. Its root word is not, because the prompt that
+ * produced it wrongly disqualified `capability`: only the plural keyspace
+ * `capabilities` is occupied, not the root. `capability` is this architecture's
+ * established sign for the concept (ten uses in `ARCHITECTURE.md`), so adopting
+ * `Faculty` would have minted a SECOND sign for one concept — the precise defect
+ * `α(cᵢ) = α(cⱼ) ⇒ D(cᵢ) = D(cⱼ)` forbids. */
+export type CapabilityName = string;
 
 /**
  * How a dimension's value-catalog is sourced:
@@ -462,7 +479,7 @@ export const dimensionValueOf = (a: Agent, field: string): unknown =>
 export type SkillExpression = string & { readonly __skillExpr?: true };
 
 /** How a skill cell deploys, beyond the default agent-resident projection. */
-export interface SkillDeploy {
+export interface SkillDeploy<C extends CapabilityName = CapabilityName> {
   /** Deploy as a host `skills/<name>/` directory (the `memory`-style cell). */
   readonly deployAs?: 'skill-dir';
   /**
@@ -484,7 +501,7 @@ export interface SkillDeploy {
    * lives host-side behind the runtime port, installed per-host by runtime/S7).
    * Absent ⇒ SKILL.md only (unchanged). This REVERSES the superseded dep-free-bundle
    * design (skills-refactor T4). */
-  readonly runtime?: { readonly capability: RuntimeCapability };
+  readonly runtime?: { readonly capability: C };
 }
 
 /**
@@ -496,7 +513,8 @@ export interface SkillDeploy {
  * as `f(name, formalBlock)`; storing it would be the parse-to-recover / DRY defect
  * this de-braid kills. `composition` is plain imported sibling `Skill`s.
  */
-export interface Skill extends SkillDeploy {
+export interface Skill<C extends CapabilityName = CapabilityName>
+  extends SkillDeploy<C> {
   /** The skill name — the anchor; carries the trigger-weight at disclosure. */
   readonly name: string;
   /** σ_human* — the human-read one-line selection bound the router surfaces (NOT σ*). */

@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '@cratylus/schema';
+import type { Skill, SkillExpression } from '../../anatomy.js';
 import { exemplify } from '../exemplify/skill.js';
 import { materialize } from '../materialize/skill.js';
 

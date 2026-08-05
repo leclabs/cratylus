@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '@cratylus/schema';
+import type { Skill, SkillExpression } from '../../anatomy.js';
 
 export const introspect: Skill = {
   name: 'introspect',

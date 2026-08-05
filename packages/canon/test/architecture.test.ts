@@ -87,14 +87,23 @@ const PERMITTED: ReadonlyArray<readonly [Pkg, Pkg]> = [
  */
 const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
   'canon/hooks/memory-consolidation-nudge.ts → runtime',
-  // NEW 2026-08-04, created by the extraction itself and ruled ON rather than
-  // permitted: `schema` imports `type RuntimePlugin` to derive
-  // `RuntimeCapability`. ARCHITECTURE's north star draws NO schema→runtime edge, and
-  // the sign's own cold round-trip recovered "schema packages sit at the bottom of the
-  // dependency graph". A type-only import creates no cycle and does not breach property
-  // 4 — but a shape the corpus authors against belongs IN the shapes package, so the
-  // resolution is to move `RuntimePlugin`, not to license the edge. Pinned until then.
-  'schema/index.ts → runtime',
+  // `schema/index.ts → runtime` WAS HERE and is RETIRED BY REPAIR, 2026-08-05.
+  //
+  // The pin's own note proposed moving `RuntimePlugin` into the shapes package. A
+  // census refuted that remedy: `RuntimePlugin` is typed over `MemoryStrategy` and
+  // `EventTapHost` — the runtime PORTS, which are the whole of what ARCHITECTURE
+  // assigns to `runtime` — so the move would have traded a ratcheted edge for a
+  // fused concern. The detection was right; the remedy was not.
+  //
+  // What schema actually wanted was never `RuntimePlugin`. It wanted the KEY SET
+  // `'memory' | 'eventTap'`, and it was obtaining a VOCABULARY by reaching into a
+  // SHAPE. `shape ⊥ vocabulary` (`MODEL.md:22`). Schema now states only that a
+  // capability has a name; `canon/anatomy.ts` declares the members and narrows its
+  // own `Skill` against them, which is the `DimensionManifest`/`MANIFEST` pattern
+  // reused rather than a second one invented. The edge is gone, the ports never
+  // moved, and the compile-time check on cells got STRONGER — it is now sourced
+  // from the corpus that ships the capabilities instead of from an interface's
+  // shape.
   'canon/index.ts → forge',
 ]);
 
@@ -330,7 +339,12 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     // `agents.config.ts`, so the anchor moved to a build script that survives.
     expect(ks).toContain('canon/toolkit/scaffold-cli.ts → forge');
     expect(ks).toContain('canon/index.ts → forge');
-    expect(ks).toContain('canon/skills/wake/skill.ts → schema');
+    // Was `canon/skills/wake/skill.ts → schema`. The capability-vocabulary repair
+    // moved every skill cell onto canon's OWN narrowed `Skill` (`anatomy.ts`), so no
+    // cell imports the shapes package directly any more and that witness went stale.
+    // The corpus→shapes edge itself is very much alive — it just has one anchor now,
+    // which is the manifest module, and that is the right place for it.
+    expect(ks).toContain('canon/anatomy.ts → schema');
     // Known NON-edges: import-shaped text in a template and in a comment.
     expect(ks).not.toContain('forge/config/scaffold.ts → canon');
     expect(ks).not.toContain('forge/deploy/seeds.ts → memory');

@@ -1547,8 +1547,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_agents_arch_doc_writer",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "arch-doc-writer.ts"
     },
     {
@@ -1558,8 +1558,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "packages_canon_src_agents_arch_doc_writer_archdocwriter",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "archdocwriter"
     },
     {
@@ -1569,8 +1569,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_agents_boz",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "boz.ts"
     },
     {
@@ -1580,8 +1580,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "packages_canon_src_agents_boz_boz",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "boz"
     },
     {
@@ -1973,7 +1973,7 @@
       "label": "Dimension",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L98",
+      "source_location": "L101",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_dimension",
       "community": 74,
@@ -1984,18 +1984,18 @@
       "label": "DIMENSION_NAMES",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L101",
+      "source_location": "L104",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_dimension_names",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "dimension_names"
     },
     {
       "label": "Value",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L112",
+      "source_location": "L115",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_value",
       "community": 74,
@@ -2006,7 +2006,7 @@
       "label": "SetDimension",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L115",
+      "source_location": "L118",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_setdimension",
       "community": 5,
@@ -2017,7 +2017,7 @@
       "label": "RequiredDimension",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L118",
+      "source_location": "L121",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_requireddimension",
       "community": 5,
@@ -2028,7 +2028,7 @@
       "label": "Agent",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L130",
+      "source_location": "L133",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_agent",
       "community": 11,
@@ -2039,7 +2039,7 @@
       "label": "Autonomy",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L140",
+      "source_location": "L143",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_autonomy",
       "community": 21,
@@ -2050,7 +2050,7 @@
       "label": "Role",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L141",
+      "source_location": "L144",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_role",
       "community": 5,
@@ -2061,40 +2061,40 @@
       "label": "Formality",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L142",
+      "source_location": "L145",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_formality",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 190,
+      "community_name": "canon/dimensions: video.ts",
       "norm_label": "formality"
     },
     {
       "label": "AudienceAdaptation",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L143",
+      "source_location": "L146",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_audienceadaptation",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "audienceadaptation"
     },
     {
       "label": "Transparency",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L144",
+      "source_location": "L147",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_transparency",
-      "community": 161,
-      "community_name": "canon/dimensions: retrieval.ts",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "transparency"
     },
     {
       "label": "Objective",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L147",
+      "source_location": "L150",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_objective",
       "community": 153,
@@ -2105,7 +2105,7 @@
       "label": "Guardrails",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L148",
+      "source_location": "L151",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_guardrails",
       "community": 11,
@@ -2116,7 +2116,7 @@
       "label": "EngineeringPrinciples",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L149",
+      "source_location": "L152",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_engineeringprinciples",
       "community": 21,
@@ -2127,18 +2127,18 @@
       "label": "Heuristics",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L150",
+      "source_location": "L153",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_heuristics",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "heuristics"
     },
     {
       "label": "Capabilities",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L151",
+      "source_location": "L154",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_capabilities",
       "community": 16,
@@ -2149,7 +2149,7 @@
       "label": "Learning",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L152",
+      "source_location": "L155",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_learning",
       "community": 5,
@@ -2160,29 +2160,29 @@
       "label": "SituationAwareness",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L153",
+      "source_location": "L156",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_situationawareness",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "situationawareness"
     },
     {
       "label": "Actions",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L156",
+      "source_location": "L159",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_actions",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 71,
+      "community_name": "forge/validate: structural-parsimony.ts",
       "norm_label": "actions"
     },
     {
       "label": "Modalities",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L157",
+      "source_location": "L160",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_modalities",
       "community": 5,
@@ -2193,7 +2193,7 @@
       "label": "Model",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L158",
+      "source_location": "L161",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_model",
       "community": 5,
@@ -2204,7 +2204,7 @@
       "label": "Memory",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L159",
+      "source_location": "L162",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_memory",
       "community": 5,
@@ -2215,7 +2215,7 @@
       "label": "Trigger",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L162",
+      "source_location": "L165",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_trigger",
       "community": 5,
@@ -2226,7 +2226,7 @@
       "label": "Framing",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L163",
+      "source_location": "L166",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_framing",
       "community": 5,
@@ -2237,29 +2237,29 @@
       "label": "ReasoningStrategy",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L164",
+      "source_location": "L167",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_reasoningstrategy",
-      "community": 200,
-      "community_name": "agent-schema/tsconfig.json",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "reasoningstrategy"
     },
     {
       "label": "Satisficing",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L165",
+      "source_location": "L168",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_satisficing",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 21,
+      "community_name": "Gemini Adapter",
       "norm_label": "satisficing"
     },
     {
       "label": "OutputFormat",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L166",
+      "source_location": "L169",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_outputformat",
       "community": 154,
@@ -2270,12 +2270,34 @@
       "label": "SelfEvaluation",
       "file_type": "code",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L167",
+      "source_location": "L170",
       "_origin": "ast",
       "id": "packages_canon_src_anatomy_selfevaluation",
       "community": 159,
       "community_name": "canon/dimensions: computer-use.ts",
       "norm_label": "selfevaluation"
+    },
+    {
+      "label": "RuntimeCapability",
+      "file_type": "code",
+      "source_file": "packages/canon/src/anatomy.ts",
+      "source_location": "L199",
+      "_origin": "ast",
+      "id": "packages_canon_src_anatomy_runtimecapability",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
+      "norm_label": "runtimecapability"
+    },
+    {
+      "label": "Skill",
+      "file_type": "code",
+      "source_file": "packages/canon/src/anatomy.ts",
+      "source_location": "L202",
+      "_origin": "ast",
+      "id": "packages_canon_src_anatomy_skill",
+      "community": 65,
+      "community_name": "forge/cli: import-audit.ts",
+      "norm_label": "skill"
     },
     {
       "label": "code-execution.ts",
@@ -2295,8 +2317,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_actions_communication",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 71,
+      "community_name": "forge/validate: structural-parsimony.ts",
       "norm_label": "communication.ts"
     },
     {
@@ -2306,8 +2328,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_actions_computer_use",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 71,
+      "community_name": "forge/validate: structural-parsimony.ts",
       "norm_label": "computer-use.ts"
     },
     {
@@ -2317,8 +2339,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_actions_delegation",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "delegation.ts"
     },
     {
@@ -2328,8 +2350,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_actions_file_ops",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "dimensions/actions/file-ops.ts"
     },
     {
@@ -2339,8 +2361,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_actions_physical_actuation",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 71,
+      "community_name": "forge/validate: structural-parsimony.ts",
       "norm_label": "physical-actuation.ts"
     },
     {
@@ -2350,8 +2372,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_actions_retrieval",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 71,
+      "community_name": "forge/validate: structural-parsimony.ts",
       "norm_label": "retrieval.ts"
     },
     {
@@ -2361,8 +2383,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_actions_tool_call",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 71,
+      "community_name": "forge/validate: structural-parsimony.ts",
       "norm_label": "tool-call.ts"
     },
     {
@@ -2383,8 +2405,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_audience_adaptation_divergence",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "divergence.ts"
     },
     {
@@ -2394,8 +2416,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_audience_adaptation_maintenance",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "maintenance.ts"
     },
     {
@@ -2526,8 +2548,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_capabilities_review_critique",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 16,
+      "community_name": "s6-ir-lineage-excise.md",
       "norm_label": "review-critique.ts"
     },
     {
@@ -2592,8 +2614,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_engineering_principles_cratylism",
-      "community": 167,
-      "community_name": "canon/dimensions: simplicity.ts",
+      "community": 21,
+      "community_name": "Gemini Adapter",
       "norm_label": "dimensions/engineering-principles/cratylism.ts"
     },
     {
@@ -2669,8 +2691,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_engineering_principles_separation_of_concerns",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 21,
+      "community_name": "Gemini Adapter",
       "norm_label": "separation-of-concerns.ts"
     },
     {
@@ -2713,8 +2735,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_formality_casual",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 190,
+      "community_name": "canon/dimensions: video.ts",
       "norm_label": "casual.ts"
     },
     {
@@ -2724,8 +2746,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_formality_expansive",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 190,
+      "community_name": "canon/dimensions: video.ts",
       "norm_label": "expansive.ts"
     },
     {
@@ -2746,8 +2768,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_formality_neutral",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 190,
+      "community_name": "canon/dimensions: video.ts",
       "norm_label": "dimensions/formality/neutral.ts"
     },
     {
@@ -2878,8 +2900,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_guardrails_accountability",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "accountability.ts"
     },
     {
@@ -2922,8 +2944,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_guardrails_human_oversight",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "human-oversight.ts"
     },
     {
@@ -2944,8 +2966,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_guardrails_privacy",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "privacy.ts"
     },
     {
@@ -2966,8 +2988,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_heuristics_anchoring",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "anchoring.ts"
     },
     {
@@ -2977,8 +2999,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_heuristics_availability",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "availability.ts"
     },
     {
@@ -2988,8 +3010,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_heuristics_recognition",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "recognition.ts"
     },
     {
@@ -2999,8 +3021,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_heuristics_take_the_best",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "dimensions/heuristics/take-the-best.ts"
     },
     {
@@ -3021,8 +3043,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_learning_correction_consolidation",
-      "community": 5,
-      "community_name": "Story: Capability Honesty",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "dimensions/learning/correction-consolidation.ts"
     },
     {
@@ -3230,8 +3252,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_objective_insight",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 153,
+      "community_name": "canon/toolkit: continuity-hook.sh",
       "norm_label": "insight.ts"
     },
     {
@@ -3351,8 +3373,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_output_format_structured_decision",
-      "community": 154,
-      "community_name": "projection-stability.test.ts",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "structured-decision.ts"
     },
     {
@@ -3373,8 +3395,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_reasoning_strategy_chain_of_thought",
-      "community": 200,
-      "community_name": "agent-schema/tsconfig.json",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "chain-of-thought.ts"
     },
     {
@@ -3395,8 +3417,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_reasoning_strategy_react",
-      "community": 200,
-      "community_name": "agent-schema/tsconfig.json",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "dimensions/reasoning-strategy/react.ts"
     },
     {
@@ -3406,8 +3428,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_reasoning_strategy_reflexion",
-      "community": 200,
-      "community_name": "agent-schema/tsconfig.json",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "reflexion.ts"
     },
     {
@@ -3417,8 +3439,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_reasoning_strategy_tree_of_thoughts",
-      "community": 200,
-      "community_name": "agent-schema/tsconfig.json",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "tree-of-thoughts.ts"
     },
     {
@@ -3472,8 +3494,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_role_diagnose",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "diagnose.ts"
     },
     {
@@ -3483,8 +3505,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_role_document",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "role/document.ts"
     },
     {
@@ -3549,8 +3571,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_role_review",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "review.ts"
     },
     {
@@ -3560,8 +3582,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_role_test",
-      "community": 11,
-      "community_name": "Claude Plugin Bundle",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "test.ts"
     },
     {
@@ -3582,8 +3604,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_satisficing_satisfice",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "dimensions/satisficing/satisfice.ts"
     },
     {
@@ -3648,8 +3670,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_self_evaluation_self_critique",
-      "community": 159,
-      "community_name": "canon/dimensions: computer-use.ts",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "self-critique.ts"
     },
     {
@@ -3670,8 +3692,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_situation_awareness_comprehension",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "comprehension.ts"
     },
     {
@@ -3681,8 +3703,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_situation_awareness_perception",
-      "community": 16,
-      "community_name": "s6-ir-lineage-excise.md",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "perception.ts"
     },
     {
@@ -3703,8 +3725,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_transparency_answer_only",
-      "community": 161,
-      "community_name": "canon/dimensions: retrieval.ts",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "answer-only.ts"
     },
     {
@@ -3714,8 +3736,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_transparency_decision_rationale",
-      "community": 161,
-      "community_name": "canon/dimensions: retrieval.ts",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "decision-rationale.ts"
     },
     {
@@ -3725,8 +3747,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_transparency_limitation_disclosure",
-      "community": 161,
-      "community_name": "canon/dimensions: retrieval.ts",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "limitation-disclosure.ts"
     },
     {
@@ -3736,8 +3758,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_transparency_post_hoc_rationale",
-      "community": 161,
-      "community_name": "canon/dimensions: retrieval.ts",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "post-hoc-rationale.ts"
     },
     {
@@ -3747,8 +3769,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_transparency_provenance_attribution",
-      "community": 161,
-      "community_name": "canon/dimensions: retrieval.ts",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "provenance-attribution.ts"
     },
     {
@@ -3758,8 +3780,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_transparency_reasoning_trace",
-      "community": 161,
-      "community_name": "canon/dimensions: retrieval.ts",
+      "community": 11,
+      "community_name": "Claude Plugin Bundle",
       "norm_label": "dimensions/transparency/reasoning-trace.ts"
     },
     {
@@ -3769,8 +3791,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_dimensions_transparency_uncertainty_disclosure",
-      "community": 161,
-      "community_name": "canon/dimensions: retrieval.ts",
+      "community": 5,
+      "community_name": "Story: Capability Honesty",
       "norm_label": "uncertainty-disclosure.ts"
     },
     {
@@ -3846,8 +3868,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_genus_founding_doctrine",
-      "community": 167,
-      "community_name": "canon/dimensions: simplicity.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "founding-doctrine.ts"
     },
     {
@@ -3967,8 +3989,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_index",
-      "community": 167,
-      "community_name": "canon/dimensions: simplicity.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "canon/src/index.ts"
     },
     {
@@ -3978,8 +4000,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "packages_canon_src_index_dir",
-      "community": 167,
-      "community_name": "canon/dimensions: simplicity.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "dir()"
     },
     {
@@ -4066,8 +4088,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_skills_create_agent_skill",
-      "community": 246,
-      "community_name": "create-agent/skill.ts",
+      "community": 65,
+      "community_name": "forge/cli: import-audit.ts",
       "norm_label": "create-agent/skill.ts"
     },
     {
@@ -4077,8 +4099,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "packages_canon_src_skills_create_agent_skill_createagent",
-      "community": 246,
-      "community_name": "create-agent/skill.ts",
+      "community": 65,
+      "community_name": "forge/cli: import-audit.ts",
       "norm_label": "createagent"
     },
     {
@@ -4154,8 +4176,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_skills_event_tap_skill",
-      "community": 110,
-      "community_name": "canon/skill: skill-shape.test.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "event-tap/skill.ts"
     },
     {
@@ -4165,8 +4187,8 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "packages_canon_src_skills_event_tap_skill_event_tap_block",
-      "community": 110,
-      "community_name": "canon/skill: skill-shape.test.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "event_tap_block"
     },
     {
@@ -4176,8 +4198,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "packages_canon_src_skills_event_tap_skill_eventtap",
-      "community": 110,
-      "community_name": "canon/skill: skill-shape.test.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "eventtap"
     },
     {
@@ -4275,8 +4297,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_skills_introspect_skill",
-      "community": 110,
-      "community_name": "canon/skill: skill-shape.test.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "introspect/skill.ts"
     },
     {
@@ -4286,8 +4308,8 @@
       "source_location": "L3",
       "_origin": "ast",
       "id": "packages_canon_src_skills_introspect_skill_introspect",
-      "community": 110,
-      "community_name": "canon/skill: skill-shape.test.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "introspect"
     },
     {
@@ -4485,8 +4507,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_toolkit_cold_oracle_oracle",
-      "community": 311,
-      "community_name": "cold-oracle/oracle.ts",
+      "community": 31,
+      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
       "norm_label": "cold-oracle/oracle.ts"
     },
     {
@@ -4496,8 +4518,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "packages_canon_src_toolkit_cold_oracle_oracle_coldoracleopts",
-      "community": 311,
-      "community_name": "cold-oracle/oracle.ts",
+      "community": 31,
+      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
       "norm_label": "coldoracleopts"
     },
     {
@@ -4507,8 +4529,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "packages_canon_src_toolkit_cold_oracle_oracle_script_path",
-      "community": 311,
-      "community_name": "cold-oracle/oracle.ts",
+      "community": 31,
+      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
       "norm_label": "script_path"
     },
     {
@@ -4518,8 +4540,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "packages_canon_src_toolkit_cold_oracle_oracle_decodecold",
-      "community": 311,
-      "community_name": "cold-oracle/oracle.ts",
+      "community": 31,
+      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
       "norm_label": "decodecold()"
     },
     {
@@ -4529,8 +4551,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "packages_canon_src_toolkit_cold_oracle_oracle_noncecontrol",
-      "community": 311,
-      "community_name": "cold-oracle/oracle.ts",
+      "community": 31,
+      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
       "norm_label": "noncecontrol()"
     },
     {
@@ -4573,8 +4595,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_toolkit_cold_oracle_sweep",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "sweep.mjs"
     },
     {
@@ -4584,8 +4606,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "packages_canon_src_toolkit_cold_oracle_sweep_refs",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "refs"
     },
     {
@@ -4595,8 +4617,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "packages_canon_src_toolkit_cold_oracle_sweep_field",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "field()"
     },
     {
@@ -6376,7 +6398,7 @@
       "label": "PACKAGES",
       "file_type": "code",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L109",
+      "source_location": "L118",
       "_origin": "ast",
       "id": "packages_canon_test_architecture_test_packages",
       "community": 80,
@@ -6387,7 +6409,7 @@
       "label": "Edge",
       "file_type": "code",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L118",
+      "source_location": "L127",
       "_origin": "ast",
       "id": "packages_canon_test_architecture_test_edge",
       "community": 80,
@@ -6398,7 +6420,7 @@
       "label": "key()",
       "file_type": "code",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L125",
+      "source_location": "L134",
       "_origin": "ast",
       "id": "packages_canon_test_architecture_test_key",
       "community": 80,
@@ -6409,7 +6431,7 @@
       "label": "codeOnly()",
       "file_type": "code",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L143",
+      "source_location": "L152",
       "_origin": "ast",
       "id": "packages_canon_test_architecture_test_codeonly",
       "community": 80,
@@ -6420,7 +6442,7 @@
       "label": "pkgOf()",
       "file_type": "code",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L235",
+      "source_location": "L244",
       "_origin": "ast",
       "id": "packages_canon_test_architecture_test_pkgof",
       "community": 80,
@@ -6431,7 +6453,7 @@
       "label": "roleOf()",
       "file_type": "code",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L242",
+      "source_location": "L251",
       "_origin": "ast",
       "id": "packages_canon_test_architecture_test_roleof",
       "community": 80,
@@ -6442,7 +6464,7 @@
       "label": "srcFiles()",
       "file_type": "code",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L249",
+      "source_location": "L258",
       "_origin": "ast",
       "id": "packages_canon_test_architecture_test_srcfiles",
       "community": 80,
@@ -6453,7 +6475,7 @@
       "label": "edges()",
       "file_type": "code",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L258",
+      "source_location": "L267",
       "_origin": "ast",
       "id": "packages_canon_test_architecture_test_edges",
       "community": 80,
@@ -6555,8 +6577,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_test_boundary_binding_test",
-      "community": 190,
-      "community_name": "canon/dimensions: video.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "boundary-binding.test.ts"
     },
     {
@@ -6566,8 +6588,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "packages_canon_test_boundary_binding_test_srcroot",
-      "community": 190,
-      "community_name": "canon/dimensions: video.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "srcroot"
     },
     {
@@ -6577,8 +6599,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "packages_canon_test_boundary_binding_test_loadskills",
-      "community": 190,
-      "community_name": "canon/dimensions: video.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "loadskills()"
     },
     {
@@ -6588,8 +6610,8 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "packages_canon_test_boundary_binding_test_borrowednames",
-      "community": 190,
-      "community_name": "canon/dimensions: video.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "borrowednames()"
     },
     {
@@ -6599,8 +6621,8 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "packages_canon_test_boundary_binding_test_declares",
-      "community": 190,
-      "community_name": "canon/dimensions: video.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "declares()"
     },
     {
@@ -6610,8 +6632,8 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "packages_canon_test_boundary_binding_test_unresolved",
-      "community": 190,
-      "community_name": "canon/dimensions: video.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "unresolved()"
     },
     {
@@ -6885,8 +6907,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_test_event_tap_cell_test",
-      "community": 110,
-      "community_name": "canon/skill: skill-shape.test.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "event-tap-cell.test.ts"
     },
     {
@@ -6896,8 +6918,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_canon_test_event_tap_cell_test_canonroot",
-      "community": 110,
-      "community_name": "canon/skill: skill-shape.test.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "canonroot"
     },
     {
@@ -6907,8 +6929,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "packages_canon_test_event_tap_cell_test_dispatch_src",
-      "community": 110,
-      "community_name": "canon/skill: skill-shape.test.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "dispatch_src"
     },
     {
@@ -6918,8 +6940,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "packages_canon_test_event_tap_cell_test_unionverbs",
-      "community": 110,
-      "community_name": "canon/skill: skill-shape.test.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "unionverbs()"
     },
     {
@@ -6929,8 +6951,8 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "packages_canon_test_event_tap_cell_test_runtimeverbs",
-      "community": 110,
-      "community_name": "canon/skill: skill-shape.test.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "runtimeverbs()"
     },
     {
@@ -6940,8 +6962,8 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "packages_canon_test_event_tap_cell_test_cellverbs",
-      "community": 110,
-      "community_name": "canon/skill: skill-shape.test.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "cellverbs()"
     },
     {
@@ -7501,8 +7523,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "packages_canon_test_projection_stability_test_renderskill",
-      "community": 216,
-      "community_name": "Skill",
+      "community": 74,
+      "community_name": "project-cli.ts",
       "norm_label": "renderskill()"
     },
     {
@@ -7611,8 +7633,8 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "packages_canon_test_reader_density_test_surface",
-      "community": 31,
-      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
+      "community": 110,
+      "community_name": "canon/skill: skill-shape.test.ts",
       "norm_label": "surface"
     },
     {
@@ -7787,8 +7809,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_test_reader_reach_test",
-      "community": 31,
-      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
+      "community": 110,
+      "community_name": "canon/skill: skill-shape.test.ts",
       "norm_label": "reader-reach.test.ts"
     },
     {
@@ -7798,8 +7820,8 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "packages_canon_test_reader_reach_test_fixturesroot",
-      "community": 31,
-      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
+      "community": 110,
+      "community_name": "canon/skill: skill-shape.test.ts",
       "norm_label": "fixturesroot"
     },
     {
@@ -7809,8 +7831,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "packages_canon_test_reader_reach_test_fixtures",
-      "community": 31,
-      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
+      "community": 110,
+      "community_name": "canon/skill: skill-shape.test.ts",
       "norm_label": "fixtures"
     },
     {
@@ -7820,8 +7842,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_test_reader_register",
-      "community": 31,
-      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
+      "community": 110,
+      "community_name": "canon/skill: skill-shape.test.ts",
       "norm_label": "reader-register.ts"
     },
     {
@@ -7831,8 +7853,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "packages_canon_test_reader_register_rho",
-      "community": 31,
-      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
+      "community": 110,
+      "community_name": "canon/skill: skill-shape.test.ts",
       "norm_label": "rho"
     },
     {
@@ -7842,8 +7864,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "packages_canon_test_reader_register_artclass",
-      "community": 31,
-      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
+      "community": 110,
+      "community_name": "canon/skill: skill-shape.test.ts",
       "norm_label": "artclass"
     },
     {
@@ -7853,8 +7875,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "packages_canon_test_reader_register_hedge_patterns",
-      "community": 31,
-      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
+      "community": 110,
+      "community_name": "canon/skill: skill-shape.test.ts",
       "norm_label": "hedge_patterns"
     },
     {
@@ -7864,8 +7886,8 @@
       "source_location": "L77",
       "_origin": "ast",
       "id": "packages_canon_test_reader_register_wordcount",
-      "community": 31,
-      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
+      "community": 110,
+      "community_name": "canon/skill: skill-shape.test.ts",
       "norm_label": "wordcount()"
     },
     {
@@ -7875,8 +7897,8 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "packages_canon_test_reader_register_humanregistersignals",
-      "community": 31,
-      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
+      "community": 110,
+      "community_name": "canon/skill: skill-shape.test.ts",
       "norm_label": "humanregistersignals()"
     },
     {
@@ -7886,8 +7908,8 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "packages_canon_test_reader_register_registerof",
-      "community": 31,
-      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
+      "community": 110,
+      "community_name": "canon/skill: skill-shape.test.ts",
       "norm_label": "registerof()"
     },
     {
@@ -7897,8 +7919,8 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "packages_canon_test_reader_register_conform",
-      "community": 31,
-      "community_name": "forge/stories: e3s2-fixpoint.test.ts",
+      "community": 110,
+      "community_name": "canon/skill: skill-shape.test.ts",
       "norm_label": "conform()"
     },
     {
@@ -7908,8 +7930,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_test_runtime_shim_test",
-      "community": 167,
-      "community_name": "canon/dimensions: simplicity.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "runtime-shim.test.ts"
     },
     {
@@ -7919,8 +7941,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "packages_canon_test_runtime_shim_test_canonroot",
-      "community": 167,
-      "community_name": "canon/dimensions: simplicity.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "canonroot"
     },
     {
@@ -7930,8 +7952,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "packages_canon_test_runtime_shim_test_shimof",
-      "community": 167,
-      "community_name": "canon/dimensions: simplicity.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "shimof()"
     },
     {
@@ -7941,8 +7963,8 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "packages_canon_test_runtime_shim_test_emitted",
-      "community": 167,
-      "community_name": "canon/dimensions: simplicity.ts",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "emitted()"
     },
     {
@@ -7952,8 +7974,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_test_skill_shape_test",
-      "community": 74,
-      "community_name": "project-cli.ts",
+      "community": 183,
+      "community_name": "canon/dimensions: episodic.ts",
       "norm_label": "skill-shape.test.ts"
     },
     {
@@ -7963,8 +7985,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "packages_canon_test_skill_shape_test_srcroot",
-      "community": 74,
-      "community_name": "project-cli.ts",
+      "community": 183,
+      "community_name": "canon/dimensions: episodic.ts",
       "norm_label": "srcroot"
     },
     {
@@ -7974,8 +7996,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "packages_canon_test_skill_shape_test_fencemask",
-      "community": 74,
-      "community_name": "project-cli.ts",
+      "community": 183,
+      "community_name": "canon/dimensions: episodic.ts",
       "norm_label": "fencemask()"
     },
     {
@@ -7985,8 +8007,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "packages_canon_test_skill_shape_test_hasfence",
-      "community": 74,
-      "community_name": "project-cli.ts",
+      "community": 183,
+      "community_name": "canon/dimensions: episodic.ts",
       "norm_label": "hasfence()"
     },
     {
@@ -7996,8 +8018,8 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "packages_canon_test_skill_shape_test_isoperative",
-      "community": 74,
-      "community_name": "project-cli.ts",
+      "community": 183,
+      "community_name": "canon/dimensions: episodic.ts",
       "norm_label": "isoperative()"
     },
     {
@@ -8007,8 +8029,8 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "packages_canon_test_skill_shape_test_allskills",
-      "community": 74,
-      "community_name": "project-cli.ts",
+      "community": 183,
+      "community_name": "canon/dimensions: episodic.ts",
       "norm_label": "allskills()"
     },
     {
@@ -8161,8 +8183,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "packages_canon_test_support_cell_module_firstexport",
-      "community": 74,
-      "community_name": "project-cli.ts",
+      "community": 24,
+      "community_name": "gate-convicts.test.ts",
       "norm_label": "firstexport()"
     },
     {
@@ -8744,8 +8766,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "packages_forge_package_exports_module_scan",
-      "community": 91,
-      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
+      "community": 200,
+      "community_name": "agent-schema/tsconfig.json",
       "norm_label": "./module-scan"
     },
     {
@@ -8755,8 +8777,8 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "packages_forge_package_module_scan_types",
-      "community": 91,
-      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
+      "community": 200,
+      "community_name": "agent-schema/tsconfig.json",
       "norm_label": "types"
     },
     {
@@ -8766,8 +8788,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "packages_forge_package_module_scan_import",
-      "community": 91,
-      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
+      "community": 200,
+      "community_name": "agent-schema/tsconfig.json",
       "norm_label": "import"
     },
     {
@@ -8975,8 +8997,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "packages_forge_package_exports_project",
-      "community": 223,
-      "community_name": "dependencies",
+      "community": 91,
+      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
       "norm_label": "./project"
     },
     {
@@ -8986,8 +9008,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "packages_forge_package_project_types",
-      "community": 223,
-      "community_name": "dependencies",
+      "community": 91,
+      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
       "norm_label": "types"
     },
     {
@@ -8997,8 +9019,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "packages_forge_package_project_import",
-      "community": 223,
-      "community_name": "dependencies",
+      "community": 91,
+      "community_name": "t2 \u2014 realize the plan-set-dynamics mechanism",
       "norm_label": "import"
     },
     {
@@ -9778,8 +9800,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_codex_anatomy",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "codex/anatomy.ts"
     },
     {
@@ -9789,8 +9811,8 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_codex_anatomy_agenttocodextomlobject",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "agenttocodextomlobject()"
     },
     {
@@ -9800,8 +9822,8 @@
       "source_location": "L86",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_codex_anatomy_agenttocodextoml",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "agenttocodextoml()"
     },
     {
@@ -9811,8 +9833,8 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_codex_anatomy_skilltocodexmd",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "skilltocodexmd()"
     },
     {
@@ -9822,8 +9844,8 @@
       "source_location": "L117",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_codex_anatomy_frontmatterlines",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "frontmatterlines()"
     },
     {
@@ -9833,8 +9855,8 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_codex_anatomy_agentsmdsurface",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "agentsmdsurface()"
     },
     {
@@ -9844,8 +9866,8 @@
       "source_location": "L176",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_codex_anatomy_codexhooksjson",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "codexhooksjson()"
     },
     {
@@ -9855,8 +9877,8 @@
       "source_location": "L240",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_codex_anatomy_codexharnessadapter",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "codexharnessadapter"
     },
     {
@@ -9866,8 +9888,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_codex_events",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "codex/events.ts"
     },
     {
@@ -9877,8 +9899,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_codex_events_canonicaltocodex",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "canonicaltocodex"
     },
     {
@@ -9888,8 +9910,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_codex_events_codex_agent_scoped_events",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "codex_agent_scoped_events"
     },
     {
@@ -9899,8 +9921,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_codex_index",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "codex/index.ts"
     },
     {
@@ -10482,8 +10504,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_optimize",
-      "community": 301,
-      "community_name": "commands/optimize.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "commands/optimize.ts"
     },
     {
@@ -10493,8 +10515,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_optimize_optimizecommandoptions",
-      "community": 301,
-      "community_name": "commands/optimize.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "optimizecommandoptions"
     },
     {
@@ -10504,8 +10526,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_optimize_planfile",
-      "community": 301,
-      "community_name": "commands/optimize.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "planfile"
     },
     {
@@ -10515,8 +10537,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_optimize_runoptimize",
-      "community": 301,
-      "community_name": "commands/optimize.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "runoptimize()"
     },
     {
@@ -10526,8 +10548,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_project",
-      "community": 212,
-      "community_name": "C1 \u2014 `anatomy` binds two concepts",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "commands/project.ts"
     },
     {
@@ -10537,8 +10559,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_project_projectcmdopts",
-      "community": 212,
-      "community_name": "C1 \u2014 `anatomy` binds two concepts",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "projectcmdopts"
     },
     {
@@ -10548,8 +10570,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_project_runproject",
-      "community": 212,
-      "community_name": "C1 \u2014 `anatomy` binds two concepts",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "runproject()"
     },
     {
@@ -10933,8 +10955,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_dimension_fields",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "dimension-fields.ts"
     },
     {
@@ -10944,8 +10966,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_dimension_fields_dimensionfieldsof",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "dimensionfieldsof()"
     },
     {
@@ -10955,8 +10977,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_dimension_fields_enforcingvaluesof",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "enforcingvaluesof()"
     },
     {
@@ -11043,8 +11065,8 @@
       "source_location": "L186",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_pipeline_optimize",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "optimize()"
     },
     {
@@ -11054,8 +11076,8 @@
       "source_location": "L205",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_pipeline_readmanifest",
-      "community": 301,
-      "community_name": "commands/optimize.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "readmanifest()"
     },
     {
@@ -11131,8 +11153,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_skill_cell",
-      "community": 224,
-      "community_name": "./loader",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "skill-cell.ts"
     },
     {
@@ -11142,8 +11164,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_skill_cell_skilldeclaration",
-      "community": 224,
-      "community_name": "./loader",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "skilldeclaration"
     },
     {
@@ -11153,8 +11175,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_skill_cell_skillcellspec",
-      "community": 224,
-      "community_name": "./loader",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "skillcellspec"
     },
     {
@@ -11164,8 +11186,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_skill_cell_renderbody",
-      "community": 224,
-      "community_name": "./loader",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "renderbody()"
     },
     {
@@ -11175,8 +11197,8 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_skill_cell_renderskillcellbody",
-      "community": 224,
-      "community_name": "./loader",
+      "community": 44,
+      "community_name": "forge/adapters: cline/read.ts",
       "norm_label": "renderskillcellbody()"
     },
     {
@@ -11186,8 +11208,8 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_skill_cell_renderskillcell",
-      "community": 224,
-      "community_name": "./loader",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "renderskillcell()"
     },
     {
@@ -11208,8 +11230,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_types_conceptrecord",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "conceptrecord"
     },
     {
@@ -11219,8 +11241,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_types_artifactspec",
-      "community": 301,
-      "community_name": "commands/optimize.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "artifactspec"
     },
     {
@@ -11296,8 +11318,8 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_types_exemplifyrefusal",
-      "community": 224,
-      "community_name": "./loader",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "exemplifyrefusal"
     },
     {
@@ -11307,8 +11329,8 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_types_exemplifyrefusal_constructor",
-      "community": 224,
-      "community_name": "./loader",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": ".constructor()"
     },
     {
@@ -12737,8 +12759,8 @@
       "source_location": "L258",
       "_origin": "ast",
       "id": "packages_forge_src_project_index_ambiguousfragmentbodyerror",
-      "community": 212,
-      "community_name": "C1 \u2014 `anatomy` binds two concepts",
+      "community": 26,
+      "community_name": "Story: Release Audit",
       "norm_label": "ambiguousfragmentbodyerror"
     },
     {
@@ -12748,8 +12770,8 @@
       "source_location": "L259",
       "_origin": "ast",
       "id": "packages_forge_src_project_index_ambiguousfragmentbodyerror_constructor",
-      "community": 212,
-      "community_name": "C1 \u2014 `anatomy` binds two concepts",
+      "community": 26,
+      "community_name": "Story: Release Audit",
       "norm_label": ".constructor()"
     },
     {
@@ -12759,8 +12781,8 @@
       "source_location": "L281",
       "_origin": "ast",
       "id": "packages_forge_src_project_index_discoverfragments",
-      "community": 212,
-      "community_name": "C1 \u2014 `anatomy` binds two concepts",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "discoverfragments()"
     },
     {
@@ -12770,8 +12792,8 @@
       "source_location": "L309",
       "_origin": "ast",
       "id": "packages_forge_src_project_index_resolvefragmentbodies",
-      "community": 212,
-      "community_name": "C1 \u2014 `anatomy` binds two concepts",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "resolvefragmentbodies()"
     },
     {
@@ -12781,8 +12803,8 @@
       "source_location": "L361",
       "_origin": "ast",
       "id": "packages_forge_src_project_index_withresolvedbodies",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "withresolvedbodies()"
     },
     {
@@ -12803,8 +12825,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_project_project_human",
-      "community": 298,
-      "community_name": "project-human.ts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "project-human.ts"
     },
     {
@@ -12814,8 +12836,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "packages_forge_src_project_project_human_dimensiondoc",
-      "community": 298,
-      "community_name": "project-human.ts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "dimensiondoc"
     },
     {
@@ -12825,8 +12847,8 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "packages_forge_src_project_project_human_dimensiontitle",
-      "community": 298,
-      "community_name": "project-human.ts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "dimensiontitle()"
     },
     {
@@ -12836,8 +12858,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "packages_forge_src_project_project_human_bybody",
-      "community": 298,
-      "community_name": "project-human.ts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "bybody()"
     },
     {
@@ -12847,8 +12869,8 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "packages_forge_src_project_project_human_projecthumandimension",
-      "community": 298,
-      "community_name": "project-human.ts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "projecthumandimension()"
     },
     {
@@ -13012,8 +13034,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "packages_forge_src_project_write_writerendertree",
-      "community": 212,
-      "community_name": "C1 \u2014 `anatomy` binds two concepts",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "writerendertree()"
     },
     {
@@ -14145,8 +14167,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 161,
+      "community_name": "canon/dimensions: retrieval.ts",
       "norm_label": "agent-hooks.test.ts"
     },
     {
@@ -14156,8 +14178,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_agent",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 161,
+      "community_name": "canon/dimensions: retrieval.ts",
       "norm_label": "agent"
     },
     {
@@ -14167,8 +14189,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_guardrails",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 161,
+      "community_name": "canon/dimensions: retrieval.ts",
       "norm_label": "guardrails"
     },
     {
@@ -14178,8 +14200,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_stance",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 161,
+      "community_name": "canon/dimensions: retrieval.ts",
       "norm_label": "stance"
     },
     {
@@ -14189,8 +14211,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_prestance",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 161,
+      "community_name": "canon/dimensions: retrieval.ts",
       "norm_label": "prestance"
     },
     {
@@ -14200,8 +14222,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_gitside",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 161,
+      "community_name": "canon/dimensions: retrieval.ts",
       "norm_label": "gitside"
     },
     {
@@ -14211,8 +14233,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_mech",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 161,
+      "community_name": "canon/dimensions: retrieval.ts",
       "norm_label": "mech()"
     },
     {
@@ -14222,8 +14244,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_mechanisms",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 161,
+      "community_name": "canon/dimensions: retrieval.ts",
       "norm_label": "mechanisms"
     },
     {
@@ -14233,8 +14255,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_mk",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 161,
+      "community_name": "canon/dimensions: retrieval.ts",
       "norm_label": "mk()"
     },
     {
@@ -14244,8 +14266,8 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_fm",
-      "community": 43,
-      "community_name": "forge/core: claude/anatomy.ts",
+      "community": 161,
+      "community_name": "canon/dimensions: retrieval.ts",
       "norm_label": "fm()"
     },
     {
@@ -14255,8 +14277,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_codex_hooks_test",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "codex-hooks.test.ts"
     },
     {
@@ -14266,8 +14288,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_codex_hooks_test_mech",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "mech"
     },
     {
@@ -14277,8 +14299,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_codex_hooks_test_binding",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 76,
+      "community_name": "Tick",
       "norm_label": "binding()"
     },
     {
@@ -14288,8 +14310,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_catalog_anatomy_descriptor_test",
-      "community": 312,
-      "community_name": "anatomy-descriptor.test.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "anatomy-descriptor.test.ts"
     },
     {
@@ -14299,8 +14321,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_forge_test_catalog_anatomy_descriptor_test_the_22",
-      "community": 312,
-      "community_name": "anatomy-descriptor.test.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "the_22"
     },
     {
@@ -14310,8 +14332,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "packages_forge_test_catalog_anatomy_descriptor_test_meta",
-      "community": 312,
-      "community_name": "anatomy-descriptor.test.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "meta"
     },
     {
@@ -14321,8 +14343,8 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "packages_forge_test_catalog_anatomy_descriptor_test_corpusdrift",
-      "community": 312,
-      "community_name": "anatomy-descriptor.test.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "corpusdrift()"
     },
     {
@@ -14332,8 +14354,8 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "packages_forge_test_catalog_anatomy_descriptor_test_illegalmeta",
-      "community": 312,
-      "community_name": "anatomy-descriptor.test.ts",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "illegalmeta()"
     },
     {
@@ -14618,8 +14640,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_core_runtime_shim_binding_test",
-      "community": 224,
-      "community_name": "./loader",
+      "community": 44,
+      "community_name": "forge/adapters: cline/read.ts",
       "norm_label": "runtime-shim-binding.test.ts"
     },
     {
@@ -14629,8 +14651,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "packages_forge_test_core_runtime_shim_binding_test_resolved",
-      "community": 224,
-      "community_name": "./loader",
+      "community": 44,
+      "community_name": "forge/adapters: cline/read.ts",
       "norm_label": "resolved()"
     },
     {
@@ -14948,8 +14970,8 @@
       "source_location": "L68",
       "_origin": "ast",
       "id": "packages_forge_test_fixture_anatomy_fixturedimension",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "fixturedimension"
     },
     {
@@ -14959,8 +14981,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "packages_forge_test_fixture_anatomy_fixture_dimension_names",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "fixture_dimension_names"
     },
     {
@@ -14981,8 +15003,8 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "packages_forge_test_fixture_anatomy_fixtureagent",
-      "community": 218,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "fixtureagent"
     },
     {
@@ -15267,8 +15289,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_project_bindings_test",
-      "community": 218,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "bindings.test.ts"
     },
     {
@@ -15278,8 +15300,8 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "packages_forge_test_project_bindings_test_agent",
-      "community": 218,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "agent"
     },
     {
@@ -15289,8 +15311,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "packages_forge_test_project_bindings_test_guardrails",
-      "community": 218,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "guardrails"
     },
     {
@@ -15300,8 +15322,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "packages_forge_test_project_bindings_test_stance",
-      "community": 218,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "stance"
     },
     {
@@ -15311,8 +15333,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "packages_forge_test_project_bindings_test_nudge",
-      "community": 218,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "nudge"
     },
     {
@@ -15322,8 +15344,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "packages_forge_test_project_bindings_test_mk",
-      "community": 218,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "mk()"
     },
     {
@@ -15399,8 +15421,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_project_fixtures_enforcing_agents_warden",
-      "community": 218,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "warden.ts"
     },
     {
@@ -15410,8 +15432,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "packages_forge_test_project_fixtures_enforcing_agents_warden_warden",
-      "community": 218,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "warden"
     },
     {
@@ -15421,8 +15443,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_project_fixtures_agents_probe",
-      "community": 218,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "probe.ts"
     },
     {
@@ -15432,8 +15454,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "packages_forge_test_project_fixtures_agents_probe_probe",
-      "community": 218,
-      "community_name": "scripts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "probe"
     },
     {
@@ -15487,8 +15509,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_project_project_human_test",
-      "community": 298,
-      "community_name": "project-human.ts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "project-human.test.ts"
     },
     {
@@ -15498,8 +15520,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "packages_forge_test_project_project_human_test_values",
-      "community": 298,
-      "community_name": "project-human.ts",
+      "community": 6,
+      "community_name": "Canon Skills (conceptualize/create)",
       "norm_label": "values"
     },
     {
@@ -15520,8 +15542,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_project_resolver_parity_test",
-      "community": 212,
-      "community_name": "C1 \u2014 `anatomy` binds two concepts",
+      "community": 26,
+      "community_name": "Story: Release Audit",
       "norm_label": "resolver-parity.test.ts"
     },
     {
@@ -15531,8 +15553,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "packages_forge_test_project_resolver_parity_test_roots",
-      "community": 212,
-      "community_name": "C1 \u2014 `anatomy` binds two concepts",
+      "community": 26,
+      "community_name": "Story: Release Audit",
       "norm_label": "roots"
     },
     {
@@ -15542,8 +15564,8 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "packages_forge_test_project_resolver_parity_test_fragmentplugin",
-      "community": 212,
-      "community_name": "C1 \u2014 `anatomy` binds two concepts",
+      "community": 26,
+      "community_name": "Story: Release Audit",
       "norm_label": "fragmentplugin"
     },
     {
@@ -15553,8 +15575,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "packages_forge_test_project_resolver_parity_test_fixtureplugin",
-      "community": 212,
-      "community_name": "C1 \u2014 `anatomy` binds two concepts",
+      "community": 26,
+      "community_name": "Story: Release Audit",
       "norm_label": "fixtureplugin()"
     },
     {
@@ -15564,8 +15586,8 @@
       "source_location": "L120",
       "_origin": "ast",
       "id": "packages_forge_test_project_resolver_parity_test_soulof",
-      "community": 212,
-      "community_name": "C1 \u2014 `anatomy` binds two concepts",
+      "community": 26,
+      "community_name": "Story: Release Audit",
       "norm_label": "soulof()"
     },
     {
@@ -15751,8 +15773,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s1_accept_gate_manifest_test",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "s1.accept-gate-manifest.test.ts"
     },
     {
@@ -15762,8 +15784,8 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s1_accept_gate_manifest_test_concepts",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "concepts"
     },
     {
@@ -15773,8 +15795,8 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s1_accept_gate_manifest_test_optimized_body",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "optimized_body"
     },
     {
@@ -15784,8 +15806,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s2_prose_to_skill_cell_test",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "s2.prose-to-skill-cell.test.ts"
     },
     {
@@ -15795,8 +15817,8 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s2_prose_to_skill_cell_test_answer_key_steps",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "answer_key_steps"
     },
     {
@@ -15806,8 +15828,8 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s2_prose_to_skill_cell_test_cell",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "cell"
     },
     {
@@ -15817,8 +15839,8 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s2_prose_to_skill_cell_test_concepts",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "concepts"
     },
     {
@@ -15828,8 +15850,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s3_agent_elevation_test",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "s3.agent-elevation.test.ts"
     },
     {
@@ -15839,8 +15861,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s3_agent_elevation_test_dimension_field",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "dimension_field"
     },
     {
@@ -15850,8 +15872,8 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s3_agent_elevation_test_the_22_dimensions",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "the_22_dimensions"
     },
     {
@@ -15861,8 +15883,8 @@
       "source_location": "L118",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s3_agent_elevation_test_inheritall",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "inheritall()"
     },
     {
@@ -15872,8 +15894,8 @@
       "source_location": "L128",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s3_agent_elevation_test_spec",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "spec"
     },
     {
@@ -15883,8 +15905,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s4_elicit_markers_test",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "s4.elicit-markers.test.ts"
     },
     {
@@ -15894,8 +15916,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s4_elicit_markers_test_silent_dimensions",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "silent_dimensions"
     },
     {
@@ -15905,8 +15927,8 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s4_elicit_markers_test_inheritall",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "inheritall()"
     },
     {
@@ -15916,8 +15938,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s4_elicit_markers_test_spec",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "spec"
     },
     {
@@ -15927,8 +15949,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s5_idempotence_test",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "s5.idempotence.test.ts"
     },
     {
@@ -15938,8 +15960,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s5_idempotence_test_concepts",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "concepts"
     },
     {
@@ -15949,8 +15971,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s5_idempotence_test_artifacts",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "artifacts"
     },
     {
@@ -15960,8 +15982,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_s7_opt_in_lossless_test",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "s7.opt-in-lossless.test.ts"
     },
     {
@@ -15971,8 +15993,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_pipeline_probe",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "pipeline-probe.ts"
     },
     {
@@ -15982,8 +16004,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_pipeline_probe_candidate_homes",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "candidate_homes"
     },
     {
@@ -15993,8 +16015,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_pipeline_probe_pipelineprobe",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "pipelineprobe"
     },
     {
@@ -16004,8 +16026,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_pipeline_probe_probepipeline",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "probepipeline()"
     },
     {
@@ -16015,8 +16037,8 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "packages_forge_test_stories_e6_pipeline_probe_probemessage",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "probemessage()"
     },
     {
@@ -16070,8 +16092,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_stories_helpers",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "stories/helpers.ts"
     },
     {
@@ -16081,8 +16103,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "packages_forge_test_stories_helpers_testbody",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "testbody"
     },
     {
@@ -16092,8 +16114,8 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "packages_forge_test_stories_helpers_assertknown",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "assertknown()"
     },
     {
@@ -16103,8 +16125,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "packages_forge_test_stories_helpers_storyfn",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "storyfn"
     },
     {
@@ -16114,8 +16136,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "packages_forge_test_stories_helpers_story",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "story()"
     },
     {
@@ -16125,8 +16147,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "packages_forge_test_stories_helpers_maketmpdir",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "maketmpdir()"
     },
     {
@@ -16136,8 +16158,8 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "packages_forge_test_stories_helpers_fakehome",
-      "community": 76,
-      "community_name": "Tick",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "fakehome()"
     },
     {
@@ -25068,8 +25090,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_schema_src_hook_cell",
-      "community": 94,
-      "community_name": "forge/core: type",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "hook-cell.ts"
     },
     {
@@ -25079,8 +25101,8 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "packages_schema_src_hook_cell_hookevent",
-      "community": 242,
-      "community_name": "./capabilities/event-tap",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "hookevent"
     },
     {
@@ -25090,8 +25112,8 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "packages_schema_src_hook_cell_hooksubstrate",
-      "community": 242,
-      "community_name": "./capabilities/event-tap",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "hooksubstrate"
     },
     {
@@ -25101,8 +25123,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "packages_schema_src_hook_cell_hookworker",
-      "community": 94,
-      "community_name": "forge/core: type",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "hookworker"
     },
     {
@@ -25112,8 +25134,8 @@
       "source_location": "L70",
       "_origin": "ast",
       "id": "packages_schema_src_hook_cell_hookcell",
-      "community": 94,
-      "community_name": "forge/core: type",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "hookcell"
     },
     {
@@ -25123,8 +25145,8 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "packages_schema_src_hook_cell_hooksource",
-      "community": 94,
-      "community_name": "forge/core: type",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "hooksource"
     },
     {
@@ -25134,8 +25156,8 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "packages_schema_src_hook_cell_hookirof",
-      "community": 94,
-      "community_name": "forge/core: type",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "hookirof()"
     },
     {
@@ -25178,8 +25200,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_schema_src_hook_generated",
-      "community": 94,
-      "community_name": "forge/core: type",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "generated.ts"
     },
     {
@@ -25189,8 +25211,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "packages_schema_src_hook_generated_canonicalevent",
-      "community": 94,
-      "community_name": "forge/core: type",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "canonicalevent"
     },
     {
@@ -25200,8 +25222,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "packages_schema_src_hook_generated_hook",
-      "community": 94,
-      "community_name": "forge/core: type",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "hook"
     },
     {
@@ -25431,8 +25453,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "packages_schema_src_hook_hook_schema_properties_matcher",
-      "community": 79,
-      "community_name": "forge/core: excludes",
+      "community": 203,
+      "community_name": "module-scan.ts",
       "norm_label": "matcher"
     },
     {
@@ -25442,8 +25464,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "packages_schema_src_hook_hook_schema_matcher_type",
-      "community": 79,
-      "community_name": "forge/core: excludes",
+      "community": 203,
+      "community_name": "module-scan.ts",
       "norm_label": "type"
     },
     {
@@ -25453,8 +25475,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "packages_schema_src_hook_hook_schema_matcher_description",
-      "community": 79,
-      "community_name": "forge/core: excludes",
+      "community": 203,
+      "community_name": "module-scan.ts",
       "norm_label": "description"
     },
     {
@@ -25530,8 +25552,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_schema_src_hook_hook_schema_properties_targets",
-      "community": 203,
-      "community_name": "module-scan.ts",
+      "community": 79,
+      "community_name": "forge/core: excludes",
       "norm_label": "targets"
     },
     {
@@ -25541,8 +25563,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_schema_src_hook_hook_schema_targets_type",
-      "community": 203,
-      "community_name": "module-scan.ts",
+      "community": 79,
+      "community_name": "forge/core: excludes",
       "norm_label": "type"
     },
     {
@@ -25552,8 +25574,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_schema_src_hook_hook_schema_targets_items",
-      "community": 203,
-      "community_name": "module-scan.ts",
+      "community": 79,
+      "community_name": "forge/core: excludes",
       "norm_label": "items"
     },
     {
@@ -25563,8 +25585,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_schema_src_hook_hook_schema_items_type",
-      "community": 203,
-      "community_name": "module-scan.ts",
+      "community": 79,
+      "community_name": "forge/core: excludes",
       "norm_label": "type"
     },
     {
@@ -25596,8 +25618,8 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "packages_schema_src_hook_hook_schema_excludes_items",
-      "community": 203,
-      "community_name": "module-scan.ts",
+      "community": 79,
+      "community_name": "forge/core: excludes",
       "norm_label": "items"
     },
     {
@@ -25959,8 +25981,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_schema_src_hook_index",
-      "community": 94,
-      "community_name": "forge/core: type",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "hook/index.ts"
     },
     {
@@ -25970,8 +25992,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "packages_schema_src_hook_index_substrate",
-      "community": 94,
-      "community_name": "forge/core: type",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "substrate"
     },
     {
@@ -25981,8 +26003,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_schema_src_hook_index_substrateevent",
-      "community": 94,
-      "community_name": "forge/core: type",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "substrateevent"
     },
     {
@@ -25992,8 +26014,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "packages_schema_src_hook_index_harnessmechanism",
-      "community": 94,
-      "community_name": "forge/core: type",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "harnessmechanism"
     },
     {
@@ -26003,8 +26025,8 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "packages_schema_src_hook_index_harnessworker",
-      "community": 94,
-      "community_name": "forge/core: type",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "harnessworker"
     },
     {
@@ -26022,7 +26044,7 @@
       "label": "Genus",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L41",
+      "source_location": "L40",
       "_origin": "ast",
       "id": "packages_schema_src_index_genus",
       "community": 40,
@@ -26030,21 +26052,21 @@
       "norm_label": "genus"
     },
     {
-      "label": "RuntimeCapability",
+      "label": "CapabilityName",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L49",
+      "source_location": "L66",
       "_origin": "ast",
-      "id": "packages_schema_src_index_runtimecapability",
+      "id": "packages_schema_src_index_capabilityname",
       "community": 40,
       "community_name": "forge/stories: coverage.test.ts",
-      "norm_label": "runtimecapability"
+      "norm_label": "capabilityname"
     },
     {
       "label": "Classification",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L57",
+      "source_location": "L74",
       "_origin": "ast",
       "id": "packages_schema_src_index_classification",
       "community": 40,
@@ -26055,7 +26077,7 @@
       "label": "Arity",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L60",
+      "source_location": "L77",
       "_origin": "ast",
       "id": "packages_schema_src_index_arity",
       "community": 40,
@@ -26066,7 +26088,7 @@
       "label": "Mark",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L65",
+      "source_location": "L82",
       "_origin": "ast",
       "id": "packages_schema_src_index_mark",
       "community": 40,
@@ -26077,7 +26099,7 @@
       "label": "Fragment",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L98",
+      "source_location": "L115",
       "_origin": "ast",
       "id": "packages_schema_src_index_fragment",
       "community": 40,
@@ -26088,84 +26110,84 @@
       "label": "Binding",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L115",
+      "source_location": "L132",
       "_origin": "ast",
       "id": "packages_schema_src_index_binding",
-      "community": 190,
-      "community_name": "canon/dimensions: video.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "binding"
     },
     {
       "label": "Enforcing",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L150",
+      "source_location": "L167",
       "_origin": "ast",
       "id": "packages_schema_src_index_enforcing",
-      "community": 242,
-      "community_name": "./capabilities/event-tap",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "enforcing"
     },
     {
       "label": "Value",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L180",
+      "source_location": "L197",
       "_origin": "ast",
       "id": "packages_schema_src_index_value",
-      "community": 183,
-      "community_name": "canon/dimensions: episodic.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "value"
     },
     {
       "label": "isDimensionValue()",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L204",
+      "source_location": "L221",
       "_origin": "ast",
       "id": "packages_schema_src_index_isdimensionvalue",
-      "community": 183,
-      "community_name": "canon/dimensions: episodic.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "isdimensionvalue()"
     },
     {
       "label": "bodyOf()",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L208",
+      "source_location": "L225",
       "_origin": "ast",
       "id": "packages_schema_src_index_bodyof",
-      "community": 183,
-      "community_name": "canon/dimensions: episodic.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "bodyof()"
     },
     {
       "label": "anchorOf()",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L220",
+      "source_location": "L237",
       "_origin": "ast",
       "id": "packages_schema_src_index_anchorof",
-      "community": 183,
-      "community_name": "canon/dimensions: episodic.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "anchorof()"
     },
     {
       "label": "withBody()",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L234",
+      "source_location": "L251",
       "_origin": "ast",
       "id": "packages_schema_src_index_withbody",
-      "community": 183,
-      "community_name": "canon/dimensions: episodic.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "withbody()"
     },
     {
       "label": "DimensionMeta",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L246",
+      "source_location": "L263",
       "_origin": "ast",
       "id": "packages_schema_src_index_dimensionmeta",
       "community": 40,
@@ -26176,7 +26198,7 @@
       "label": "DimensionManifest",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L284",
+      "source_location": "L301",
       "_origin": "ast",
       "id": "packages_schema_src_index_dimensionmanifest",
       "community": 40,
@@ -26187,7 +26209,7 @@
       "label": "ManifestDeclaring",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L288",
+      "source_location": "L305",
       "_origin": "ast",
       "id": "packages_schema_src_index_manifestdeclaring",
       "community": 40,
@@ -26198,7 +26220,7 @@
       "label": "mergeManifest()",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L309",
+      "source_location": "L326",
       "_origin": "ast",
       "id": "packages_schema_src_index_mergemanifest",
       "community": 40,
@@ -26209,7 +26231,7 @@
       "label": "KebabToCamel",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L337",
+      "source_location": "L354",
       "_origin": "ast",
       "id": "packages_schema_src_index_kebabtocamel",
       "community": 40,
@@ -26220,7 +26242,7 @@
       "label": "DimensionFieldName",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L342",
+      "source_location": "L359",
       "_origin": "ast",
       "id": "packages_schema_src_index_dimensionfieldname",
       "community": 40,
@@ -26231,7 +26253,7 @@
       "label": "DimensionOf",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L352",
+      "source_location": "L369",
       "_origin": "ast",
       "id": "packages_schema_src_index_dimensionof",
       "community": 40,
@@ -26242,7 +26264,7 @@
       "label": "SetDimensionOf",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L356",
+      "source_location": "L373",
       "_origin": "ast",
       "id": "packages_schema_src_index_setdimensionof",
       "community": 40,
@@ -26253,7 +26275,7 @@
       "label": "RequiredDimensionOf",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L361",
+      "source_location": "L378",
       "_origin": "ast",
       "id": "packages_schema_src_index_requireddimensionof",
       "community": 40,
@@ -26264,7 +26286,7 @@
       "label": "DimensionFieldsOf",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L381",
+      "source_location": "L398",
       "_origin": "ast",
       "id": "packages_schema_src_index_dimensionfieldsof",
       "community": 40,
@@ -26275,7 +26297,7 @@
       "label": "AgentOf",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L398",
+      "source_location": "L415",
       "_origin": "ast",
       "id": "packages_schema_src_index_agentof",
       "community": 40,
@@ -26286,7 +26308,7 @@
       "label": "Agent",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L423",
+      "source_location": "L440",
       "_origin": "ast",
       "id": "packages_schema_src_index_agent",
       "community": 40,
@@ -26297,7 +26319,7 @@
       "label": "dimensionValueOf()",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L451",
+      "source_location": "L468",
       "_origin": "ast",
       "id": "packages_schema_src_index_dimensionvalueof",
       "community": 40,
@@ -26308,7 +26330,7 @@
       "label": "SkillExpression",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L462",
+      "source_location": "L479",
       "_origin": "ast",
       "id": "packages_schema_src_index_skillexpression",
       "community": 40,
@@ -26319,29 +26341,29 @@
       "label": "SkillDeploy",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L465",
+      "source_location": "L482",
       "_origin": "ast",
       "id": "packages_schema_src_index_skilldeploy",
-      "community": 216,
-      "community_name": "Skill",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "skilldeploy"
     },
     {
       "label": "Skill",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L499",
+      "source_location": "L516",
       "_origin": "ast",
       "id": "packages_schema_src_index_skill",
-      "community": 216,
-      "community_name": "Skill",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "skill"
     },
     {
       "label": "markToColor()",
       "file_type": "code",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L522",
+      "source_location": "L540",
       "_origin": "ast",
       "id": "packages_schema_src_index_marktocolor",
       "community": 40,
@@ -26377,8 +26399,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_schema_test_enforcing_test",
-      "community": 183,
-      "community_name": "canon/dimensions: episodic.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "enforcing.test.ts"
     },
     {
@@ -26388,8 +26410,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "packages_schema_test_enforcing_test_guardrails",
-      "community": 183,
-      "community_name": "canon/dimensions: episodic.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "guardrails"
     },
     {
@@ -26399,8 +26421,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "packages_schema_test_enforcing_test_bound",
-      "community": 183,
-      "community_name": "canon/dimensions: episodic.ts",
+      "community": 40,
+      "community_name": "forge/stories: coverage.test.ts",
       "norm_label": "bound"
     },
     {
@@ -37137,6 +37159,149 @@
       "norm_label": "acceptance"
     },
     {
+      "label": "t-runtime-capability-vocabulary.md",
+      "file_type": "document",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plans_decomplect_completed_t_runtime_capability_vocabulary",
+      "community": 94,
+      "community_name": "forge/core: type",
+      "norm_label": "t-runtime-capability-vocabulary.md"
+    },
+    {
+      "label": "The `schema \u2192 runtime` edge \u2014 the vocabulary is canon's, and `RuntimePlugin` does not move",
+      "file_type": "document",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
+      "community": 94,
+      "community_name": "forge/core: type",
+      "norm_label": "the `schema \u2192 runtime` edge \u2014 the vocabulary is canon's, and `runtimeplugin` does not move"
+    },
+    {
+      "label": "Intent",
+      "file_type": "document",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L9",
+      "_origin": "ast",
+      "id": "plans_decomplect_completed_t_runtime_capability_vocabulary_intent",
+      "community": 94,
+      "community_name": "forge/core: type",
+      "norm_label": "intent"
+    },
+    {
+      "label": "What the census established",
+      "file_type": "document",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L14",
+      "_origin": "ast",
+      "id": "plans_decomplect_completed_t_runtime_capability_vocabulary_what_the_census_established",
+      "community": 94,
+      "community_name": "forge/core: type",
+      "norm_label": "what the census established"
+    },
+    {
+      "label": "Constraints",
+      "file_type": "document",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "plans_decomplect_completed_t_runtime_capability_vocabulary_constraints",
+      "community": 94,
+      "community_name": "forge/core: type",
+      "norm_label": "constraints"
+    },
+    {
+      "label": "Outputs",
+      "file_type": "document",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L60",
+      "_origin": "ast",
+      "id": "plans_decomplect_completed_t_runtime_capability_vocabulary_outputs",
+      "community": 94,
+      "community_name": "forge/core: type",
+      "norm_label": "outputs"
+    },
+    {
+      "label": "Acceptance",
+      "file_type": "document",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L68",
+      "_origin": "ast",
+      "id": "plans_decomplect_completed_t_runtime_capability_vocabulary_acceptance",
+      "community": 94,
+      "community_name": "forge/core: type",
+      "norm_label": "acceptance"
+    },
+    {
+      "label": "The refusal clause",
+      "file_type": "document",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L81",
+      "_origin": "ast",
+      "id": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_refusal_clause",
+      "community": 94,
+      "community_name": "forge/core: type",
+      "norm_label": "the refusal clause"
+    },
+    {
+      "label": "Resolution \u2014 landed 2026-08-05",
+      "file_type": "document",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L89",
+      "_origin": "ast",
+      "id": "plans_decomplect_completed_t_runtime_capability_vocabulary_resolution_landed_2026_08_05",
+      "community": 94,
+      "community_name": "forge/core: type",
+      "norm_label": "resolution \u2014 landed 2026-08-05"
+    },
+    {
+      "label": "What schema kept and what it gave up",
+      "file_type": "document",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L93",
+      "_origin": "ast",
+      "id": "plans_decomplect_completed_t_runtime_capability_vocabulary_what_schema_kept_and_what_it_gave_up",
+      "community": 94,
+      "community_name": "forge/core: type",
+      "norm_label": "what schema kept and what it gave up"
+    },
+    {
+      "label": "The fix was smaller than this shard assumed, and the reason matters",
+      "file_type": "document",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L112",
+      "_origin": "ast",
+      "id": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_fix_was_smaller_than_this_shard_assumed_and_the_reason_matters",
+      "community": 94,
+      "community_name": "forge/core: type",
+      "norm_label": "the fix was smaller than this shard assumed, and the reason matters"
+    },
+    {
+      "label": "The sign \u2014 and a defect in how I obtained it",
+      "file_type": "document",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L125",
+      "_origin": "ast",
+      "id": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_sign_and_a_defect_in_how_i_obtained_it",
+      "community": 94,
+      "community_name": "forge/core: type",
+      "norm_label": "the sign \u2014 and a defect in how i obtained it"
+    },
+    {
+      "label": "Acceptance",
+      "file_type": "document",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L147",
+      "_origin": "ast",
+      "id": "plans_decomplect_completed_t_runtime_capability_vocabulary_acceptance_147",
+      "community": 94,
+      "community_name": "forge/core: type",
+      "norm_label": "acceptance"
+    },
+    {
       "label": "typecheck-test-is-red-and-nothing-runs-it.md",
       "file_type": "document",
       "source_file": "plans/decomplect/completed/typecheck-test-is-red-and-nothing-runs-it.md",
@@ -37550,8 +37715,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "plans_decomplect_pending_hook_message_has_no_declared_home",
-      "community": 207,
-      "community_name": "The message a hook speaks to an agent has no declared home",
+      "community": 208,
+      "community_name": "`AgentPlugin` binds two concepts \u2014 the question is a cut, not an owner",
       "norm_label": "hook-message-has-no-declared-home.md"
     },
     {
@@ -37863,92 +38028,92 @@
       "norm_label": "the refusal clause"
     },
     {
-      "label": "t-runtime-capability-vocabulary.md",
+      "label": "t-config-filename-carries-the-retired-brand.md",
       "file_type": "document",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "plans_decomplect_ready_t_runtime_capability_vocabulary",
-      "community": 208,
-      "community_name": "`AgentPlugin` binds two concepts \u2014 the question is a cut, not an owner",
-      "norm_label": "t-runtime-capability-vocabulary.md"
+      "id": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand",
+      "community": 167,
+      "community_name": "canon/dimensions: simplicity.ts",
+      "norm_label": "t-config-filename-carries-the-retired-brand.md"
     },
     {
-      "label": "The `schema \u2192 runtime` edge \u2014 the vocabulary is canon's, and `RuntimePlugin` does not move",
+      "label": "`.agent-factory.config` \u2014 a user-facing filename still wearing the retired brand, in two homes",
       "file_type": "document",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
       "source_location": "L1",
       "_origin": "ast",
-      "id": "plans_decomplect_ready_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
-      "community": 209,
-      "community_name": "The `schema \u2192 runtime` edge \u2014 the vocabulary is canon's, and `RuntimePlugin` does not move",
-      "norm_label": "the `schema \u2192 runtime` edge \u2014 the vocabulary is canon's, and `runtimeplugin` does not move"
+      "id": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_agent_factory_config_a_user_facing_filename_still_wearing_the_retired_brand_in_two_homes",
+      "community": 167,
+      "community_name": "canon/dimensions: simplicity.ts",
+      "norm_label": "`.agent-factory.config` \u2014 a user-facing filename still wearing the retired brand, in two homes"
     },
     {
-      "label": "Intent",
+      "label": "Symptom",
       "file_type": "document",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
-      "source_location": "L9",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
+      "source_location": "L7",
       "_origin": "ast",
-      "id": "plans_decomplect_ready_t_runtime_capability_vocabulary_intent",
-      "community": 209,
-      "community_name": "The `schema \u2192 runtime` edge \u2014 the vocabulary is canon's, and `RuntimePlugin` does not move",
-      "norm_label": "intent"
+      "id": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_symptom",
+      "community": 167,
+      "community_name": "canon/dimensions: simplicity.ts",
+      "norm_label": "symptom"
     },
     {
-      "label": "What the census established",
+      "label": "Why it survived two renames",
       "file_type": "document",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
-      "source_location": "L14",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
+      "source_location": "L21",
       "_origin": "ast",
-      "id": "plans_decomplect_ready_t_runtime_capability_vocabulary_what_the_census_established",
-      "community": 209,
-      "community_name": "The `schema \u2192 runtime` edge \u2014 the vocabulary is canon's, and `RuntimePlugin` does not move",
-      "norm_label": "what the census established"
+      "id": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_why_it_survived_two_renames",
+      "community": 167,
+      "community_name": "canon/dimensions: simplicity.ts",
+      "norm_label": "why it survived two renames"
+    },
+    {
+      "label": "Why it is publish-blocking",
+      "file_type": "document",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_why_it_is_publish_blocking",
+      "community": 167,
+      "community_name": "canon/dimensions: simplicity.ts",
+      "norm_label": "why it is publish-blocking"
+    },
+    {
+      "label": "The name is NOT derived \u2014 do not assume one",
+      "file_type": "document",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_the_name_is_not_derived_do_not_assume_one",
+      "community": 167,
+      "community_name": "canon/dimensions: simplicity.ts",
+      "norm_label": "the name is not derived \u2014 do not assume one"
     },
     {
       "label": "Constraints",
       "file_type": "document",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
-      "source_location": "L45",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
+      "source_location": "L52",
       "_origin": "ast",
-      "id": "plans_decomplect_ready_t_runtime_capability_vocabulary_constraints",
-      "community": 209,
-      "community_name": "The `schema \u2192 runtime` edge \u2014 the vocabulary is canon's, and `RuntimePlugin` does not move",
+      "id": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_constraints",
+      "community": 167,
+      "community_name": "canon/dimensions: simplicity.ts",
       "norm_label": "constraints"
-    },
-    {
-      "label": "Outputs",
-      "file_type": "document",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
-      "source_location": "L60",
-      "_origin": "ast",
-      "id": "plans_decomplect_ready_t_runtime_capability_vocabulary_outputs",
-      "community": 209,
-      "community_name": "The `schema \u2192 runtime` edge \u2014 the vocabulary is canon's, and `RuntimePlugin` does not move",
-      "norm_label": "outputs"
     },
     {
       "label": "Acceptance",
       "file_type": "document",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
-      "source_location": "L68",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
+      "source_location": "L63",
       "_origin": "ast",
-      "id": "plans_decomplect_ready_t_runtime_capability_vocabulary_acceptance",
-      "community": 209,
-      "community_name": "The `schema \u2192 runtime` edge \u2014 the vocabulary is canon's, and `RuntimePlugin` does not move",
+      "id": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_acceptance",
+      "community": 167,
+      "community_name": "canon/dimensions: simplicity.ts",
       "norm_label": "acceptance"
-    },
-    {
-      "label": "The refusal clause",
-      "file_type": "document",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
-      "source_location": "L81",
-      "_origin": "ast",
-      "id": "plans_decomplect_ready_t_runtime_capability_vocabulary_the_refusal_clause",
-      "community": 209,
-      "community_name": "The `schema \u2192 runtime` edge \u2014 the vocabulary is canon's, and `RuntimePlugin` does not move",
-      "norm_label": "the refusal clause"
     },
     {
       "label": "landingOf",
@@ -43619,7 +43784,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L156",
+      "source_location": "L159",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43630,7 +43795,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L130",
+      "source_location": "L133",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43641,7 +43806,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L143",
+      "source_location": "L146",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43652,7 +43817,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L140",
+      "source_location": "L143",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43663,7 +43828,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L151",
+      "source_location": "L154",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43674,7 +43839,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L98",
+      "source_location": "L101",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43685,7 +43850,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L101",
+      "source_location": "L104",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43696,7 +43861,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L149",
+      "source_location": "L152",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43707,7 +43872,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L142",
+      "source_location": "L145",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43718,7 +43883,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L163",
+      "source_location": "L166",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43729,7 +43894,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L148",
+      "source_location": "L151",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43740,7 +43905,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L150",
+      "source_location": "L153",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43751,7 +43916,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L152",
+      "source_location": "L155",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43762,7 +43927,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L159",
+      "source_location": "L162",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43773,7 +43938,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L157",
+      "source_location": "L160",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43784,7 +43949,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L158",
+      "source_location": "L161",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43795,7 +43960,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L147",
+      "source_location": "L150",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43806,7 +43971,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L166",
+      "source_location": "L169",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43817,7 +43982,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L164",
+      "source_location": "L167",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43828,7 +43993,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L118",
+      "source_location": "L121",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43839,7 +44004,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L141",
+      "source_location": "L144",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43850,7 +44015,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L165",
+      "source_location": "L199",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_anatomy",
+      "target": "packages_canon_src_anatomy_runtimecapability",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/anatomy.ts",
+      "source_location": "L168",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43861,7 +44037,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L167",
+      "source_location": "L170",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43872,7 +44048,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L115",
+      "source_location": "L118",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43883,7 +44059,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L153",
+      "source_location": "L156",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43894,7 +44070,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L144",
+      "source_location": "L202",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_anatomy",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/anatomy.ts",
+      "source_location": "L147",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43905,7 +44092,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L162",
+      "source_location": "L165",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -43916,7 +44103,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/anatomy.ts",
-      "source_location": "L112",
+      "source_location": "L115",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_anatomy",
@@ -45643,6 +45830,198 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/carry-on/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_carry_on_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/conceptualize/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_conceptualize_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/create-agent/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_create_agent_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/create-skill/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_create_skill_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/dream/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_dream_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/elicit/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_elicit_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/event-tap/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_event_tap_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/exemplify/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_exemplify_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/formalize/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_formalize_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/handoff/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_handoff_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/introspect/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_introspect_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/materialize/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_materialize_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/praxis/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_praxis_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/probe/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_probe_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/signify/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_signify_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/wake/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_wake_skill",
+      "target": "packages_canon_src_anatomy",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports_from",
+      "context": "import",
+      "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/project.ts",
       "source_location": "L12",
       "weight": 1.0,
@@ -47545,6 +47924,198 @@
       "_origin": "ast",
       "source": "packages_canon_src_dimensions_self_evaluation_verifier_model",
       "target": "packages_canon_src_anatomy_selfevaluation",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/carry-on/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_carry_on_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/conceptualize/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_conceptualize_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/create-agent/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_create_agent_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/create-skill/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_create_skill_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/dream/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_dream_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/elicit/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_elicit_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/event-tap/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_event_tap_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/exemplify/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_exemplify_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/formalize/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_formalize_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/handoff/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_handoff_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/introspect/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_introspect_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/materialize/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_materialize_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/praxis/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_praxis_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/probe/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_probe_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/signify/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_signify_skill",
+      "target": "packages_canon_src_anatomy_skill",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "imports",
+      "context": "import",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/canon/src/skills/wake/skill.ts",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_canon_src_skills_wake_skill",
+      "target": "packages_canon_src_anatomy_skill",
       "confidence_score": 1.0
     },
     {
@@ -51850,7 +52421,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L143",
+      "source_location": "L152",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_architecture_test",
@@ -51861,7 +52432,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L118",
+      "source_location": "L127",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_architecture_test",
@@ -51872,7 +52443,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L258",
+      "source_location": "L267",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_architecture_test",
@@ -51883,7 +52454,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L125",
+      "source_location": "L134",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_architecture_test",
@@ -51894,7 +52465,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L109",
+      "source_location": "L118",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_architecture_test",
@@ -51905,7 +52476,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L277",
+      "source_location": "L286",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_architecture_test",
@@ -51927,7 +52498,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L235",
+      "source_location": "L244",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_architecture_test",
@@ -51960,7 +52531,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L242",
+      "source_location": "L251",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_architecture_test",
@@ -51971,7 +52542,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L249",
+      "source_location": "L258",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_architecture_test",
@@ -51983,7 +52554,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L263",
+      "source_location": "L272",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_architecture_test_edges",
@@ -51995,7 +52566,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L266",
+      "source_location": "L275",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_architecture_test_edges",
@@ -52007,7 +52578,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L269",
+      "source_location": "L278",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_architecture_test_edges",
@@ -52019,7 +52590,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/architecture.test.ts",
-      "source_location": "L261",
+      "source_location": "L270",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_architecture_test_edges",
@@ -53152,18 +53723,6 @@
       "source": "packages_canon_test_projection_stability_test",
       "target": "packages_canon_test_support_cell_module_firstexport",
       "confidence_score": 1.0
-    },
-    {
-      "relation": "references",
-      "context": "call",
-      "confidence": "EXTRACTED",
-      "confidence_score": 1.0,
-      "source_file": "packages/canon/test/projection-stability.test.ts",
-      "source_location": "L33",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "packages_canon_test_projection_stability_test_renderskill",
-      "target": "packages_schema_src_index_skill"
     },
     {
       "relation": "contains",
@@ -90395,7 +90954,7 @@
       "context": "export",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L529",
+      "source_location": "L547",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -90407,7 +90966,7 @@
       "context": "re-export",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L529",
+      "source_location": "L547",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -90419,7 +90978,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L156",
+      "source_location": "L173",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index_enforcing",
@@ -90431,7 +90990,7 @@
       "context": "re-export",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L529",
+      "source_location": "L547",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -90443,7 +91002,7 @@
       "context": "field",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L154",
+      "source_location": "L171",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index_enforcing",
@@ -90455,7 +91014,7 @@
       "context": "re-export",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L529",
+      "source_location": "L547",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -90467,7 +91026,7 @@
       "context": "re-export",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L529",
+      "source_location": "L547",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -90491,7 +91050,7 @@
       "context": "re-export",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L529",
+      "source_location": "L547",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -90503,7 +91062,7 @@
       "context": "re-export",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L529",
+      "source_location": "L547",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91416,7 +91975,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L423",
+      "source_location": "L440",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91427,7 +91986,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L398",
+      "source_location": "L415",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91438,7 +91997,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L220",
+      "source_location": "L237",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91449,7 +92008,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L60",
+      "source_location": "L77",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91460,7 +92019,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L115",
+      "source_location": "L132",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91471,7 +92030,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L208",
+      "source_location": "L225",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91482,7 +92041,18 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L57",
+      "source_location": "L66",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "packages_schema_src_index",
+      "target": "packages_schema_src_index_capabilityname",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "packages/schema/src/index.ts",
+      "source_location": "L74",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91493,7 +92063,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L342",
+      "source_location": "L359",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91504,7 +92074,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L381",
+      "source_location": "L398",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91515,7 +92085,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L284",
+      "source_location": "L301",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91526,7 +92096,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L246",
+      "source_location": "L263",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91537,7 +92107,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L352",
+      "source_location": "L369",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91548,7 +92118,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L451",
+      "source_location": "L468",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91559,7 +92129,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L189",
+      "source_location": "L206",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91570,7 +92140,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L98",
+      "source_location": "L115",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91581,7 +92151,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L41",
+      "source_location": "L40",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91592,7 +92162,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L204",
+      "source_location": "L221",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91603,7 +92173,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L402",
+      "source_location": "L419",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91614,7 +92184,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L288",
+      "source_location": "L305",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91625,7 +92195,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L65",
+      "source_location": "L82",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91636,7 +92206,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L522",
+      "source_location": "L540",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91647,7 +92217,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L309",
+      "source_location": "L326",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91658,7 +92228,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L361",
+      "source_location": "L378",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91669,18 +92239,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L49",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "packages_schema_src_index",
-      "target": "packages_schema_src_index_runtimecapability",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "packages/schema/src/index.ts",
-      "source_location": "L356",
+      "source_location": "L373",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91691,7 +92250,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L499",
+      "source_location": "L516",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91702,7 +92261,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L465",
+      "source_location": "L482",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91713,7 +92272,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L462",
+      "source_location": "L479",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91724,7 +92283,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L180",
+      "source_location": "L197",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91735,7 +92294,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L234",
+      "source_location": "L251",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91747,7 +92306,7 @@
       "context": "export",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L537",
+      "source_location": "L555",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91759,7 +92318,7 @@
       "context": "re-export",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L537",
+      "source_location": "L555",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index",
@@ -91819,7 +92378,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L221",
+      "source_location": "L238",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index_anchorof",
@@ -91855,7 +92414,7 @@
       "context": "type",
       "confidence": "EXTRACTED",
       "source_file": "packages/schema/src/index.ts",
-      "source_location": "L499",
+      "source_location": "L517",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_schema_src_index_skill",
@@ -100465,17 +101024,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/decomplect/PLAN.md",
-      "source_location": "L91",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_decomplect_plan",
-      "target": "plans_decomplect_ready_t_runtime_capability_vocabulary",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plans/decomplect/PLAN.md",
@@ -101545,6 +102093,138 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_decomplect_completed_t_runtime_capability_vocabulary",
+      "target": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L68",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
+      "target": "plans_decomplect_completed_t_runtime_capability_vocabulary_acceptance",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L45",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
+      "target": "plans_decomplect_completed_t_runtime_capability_vocabulary_constraints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L9",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
+      "target": "plans_decomplect_completed_t_runtime_capability_vocabulary_intent",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L60",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
+      "target": "plans_decomplect_completed_t_runtime_capability_vocabulary_outputs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L89",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
+      "target": "plans_decomplect_completed_t_runtime_capability_vocabulary_resolution_landed_2026_08_05",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L81",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
+      "target": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_refusal_clause",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L14",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
+      "target": "plans_decomplect_completed_t_runtime_capability_vocabulary_what_the_census_established",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L147",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_decomplect_completed_t_runtime_capability_vocabulary_resolution_landed_2026_08_05",
+      "target": "plans_decomplect_completed_t_runtime_capability_vocabulary_acceptance_147",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L112",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_decomplect_completed_t_runtime_capability_vocabulary_resolution_landed_2026_08_05",
+      "target": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_fix_was_smaller_than_this_shard_assumed_and_the_reason_matters",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L125",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_decomplect_completed_t_runtime_capability_vocabulary_resolution_landed_2026_08_05",
+      "target": "plans_decomplect_completed_t_runtime_capability_vocabulary_the_sign_and_a_defect_in_how_i_obtained_it",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "plans/decomplect/completed/t-runtime-capability-vocabulary.md",
+      "source_location": "L93",
+      "weight": 1.0,
+      "_origin": "ast",
+      "source": "plans_decomplect_completed_t_runtime_capability_vocabulary_resolution_landed_2026_08_05",
+      "target": "plans_decomplect_completed_t_runtime_capability_vocabulary_what_schema_kept_and_what_it_gave_up",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "plans/decomplect/completed/typecheck-test-is-red-and-nothing-runs-it.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -102027,17 +102707,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "references",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/decomplect/pending/t-agent-plugin-cut.md",
-      "source_location": "L3",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_decomplect_pending_t_agent_plugin_cut",
-      "target": "plans_decomplect_ready_t_runtime_capability_vocabulary",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "plans/decomplect/pending/t-agent-plugin-cut.md",
@@ -102183,78 +102852,78 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "plans_decomplect_ready_t_runtime_capability_vocabulary",
-      "target": "plans_decomplect_ready_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
+      "source": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand",
+      "target": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_agent_factory_config_a_user_facing_filename_still_wearing_the_retired_brand_in_two_homes",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
-      "source_location": "L68",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
+      "source_location": "L63",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "plans_decomplect_ready_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
-      "target": "plans_decomplect_ready_t_runtime_capability_vocabulary_acceptance",
+      "source": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_agent_factory_config_a_user_facing_filename_still_wearing_the_retired_brand_in_two_homes",
+      "target": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_acceptance",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
-      "source_location": "L45",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
+      "source_location": "L52",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "plans_decomplect_ready_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
-      "target": "plans_decomplect_ready_t_runtime_capability_vocabulary_constraints",
+      "source": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_agent_factory_config_a_user_facing_filename_still_wearing_the_retired_brand_in_two_homes",
+      "target": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_constraints",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
-      "source_location": "L9",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
+      "source_location": "L7",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "plans_decomplect_ready_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
-      "target": "plans_decomplect_ready_t_runtime_capability_vocabulary_intent",
+      "source": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_agent_factory_config_a_user_facing_filename_still_wearing_the_retired_brand_in_two_homes",
+      "target": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_symptom",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
-      "source_location": "L60",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
+      "source_location": "L39",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "plans_decomplect_ready_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
-      "target": "plans_decomplect_ready_t_runtime_capability_vocabulary_outputs",
+      "source": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_agent_factory_config_a_user_facing_filename_still_wearing_the_retired_brand_in_two_homes",
+      "target": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_the_name_is_not_derived_do_not_assume_one",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
-      "source_location": "L81",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
+      "source_location": "L32",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "plans_decomplect_ready_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
-      "target": "plans_decomplect_ready_t_runtime_capability_vocabulary_the_refusal_clause",
+      "source": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_agent_factory_config_a_user_facing_filename_still_wearing_the_retired_brand_in_two_homes",
+      "target": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_why_it_is_publish_blocking",
       "confidence_score": 1.0
     },
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "plans/decomplect/ready/t-runtime-capability-vocabulary.md",
-      "source_location": "L14",
+      "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
+      "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast",
-      "source": "plans_decomplect_ready_t_runtime_capability_vocabulary_the_schema_runtime_edge_the_vocabulary_is_canon_s_and_runtimeplugin_does_not_move",
-      "target": "plans_decomplect_ready_t_runtime_capability_vocabulary_what_the_census_established",
+      "source": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_agent_factory_config_a_user_facing_filename_still_wearing_the_retired_brand_in_two_homes",
+      "target": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_why_it_survived_two_renames",
       "confidence_score": 1.0
     },
     {
@@ -102715,5 +103384,5 @@
       "source_file": "packages/forge/test/stories/E6-exemplify-optimization.md"
     }
   ],
-  "built_at_commit": "c375ecd4299975f40dfe3597a46a548cad1974c2"
+  "built_at_commit": "aa7d4e3be8a897837c24f7992c28596af5bde28f"
 }

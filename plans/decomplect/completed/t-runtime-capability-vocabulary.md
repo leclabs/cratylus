@@ -83,3 +83,77 @@ collision.
 If any check above fails, or if the ruling turns out to need a `MODEL.md` or `ARCHITECTURE.md`
 change: **STOP and report.** A workaround here is a design decision, and that is not yours on this
 task. Refusing is the correct outcome and it is worth more than a green tree.
+
+---
+
+## Resolution — landed 2026-08-05
+
+The `schema → runtime` edge is gone. `RuntimePlugin` did not move, exactly as this shard required.
+
+### What schema kept and what it gave up
+
+```ts
+-export type RuntimeCapability = keyof Omit<RuntimePlugin, 'name'>;  // a SHAPE, borrowed for its keys
++export type CapabilityName = string;                                 // the BOUND, members elsewhere
+```
+
+`SkillDeploy` and `Skill` became generic over that bound with a `string` default, so every existing
+`Skill` reference still compiles. `canon/anatomy.ts` declares the members beside `MANIFEST`:
+
+```ts
+export const RUNTIME_CAPABILITIES = ['memory', 'eventTap'] as const satisfies readonly CapabilityName[];
+export type RuntimeCapability = (typeof RUNTIME_CAPABILITIES)[number];
+export type Skill = SkillOf<RuntimeCapability>;
+```
+
+and the sixteen skill cells now import `Skill` from `anatomy.js` rather than from the shapes package
+— the same move cells already make for `Dimension`. No second pattern was invented.
+
+### The fix was smaller than this shard assumed, and the reason matters
+
+`RuntimeCapability` had **no consumer outside schema**. `forge` already types the same field as plain
+`string` in both places it reads it, and `core/anatomy-body.ts` says why in a comment: _"Plain
+`string` (not `RuntimeCapability`) keeps core free of an anatomy import."_ So the closed union bought
+exactly one thing — a compile-time check on four canon cells — and this shard's insight is that the
+check belongs to the corpus that ships the capabilities, not to an implementation interface.
+
+**The check got stronger, not weaker.** Control, both directions: `capability: 'notACapability'` in
+`skills/dream/skill.ts` now fails with
+`TS2322: Type '"notACapability"' is not assignable to type '"memory" | "eventTap"'`, and reverting is
+clean.
+
+### The sign — and a defect in how I obtained it
+
+The blind decode returned **`FacultyName`** (member `Faculty`) with a good argument: the `*Name`
+suffix is what encodes shape-vs-vocabulary, because that distinction is one English marks with the
+word _name_ rather than with a separate noun. **That structural insight is kept.**
+
+Its root word is not, and the reason is a **defect in my prompt**: I listed `capabilities` as
+occupied and told the decoder not to propose it, which disqualified the entire `Capability*` family.
+Only the plural keyspace is occupied. The decode therefore ran on a wrongly-constrained candidate
+set, and its output cannot be trusted for this decision.
+
+Corrected against real occupancy: `capability` is this architecture's established sign for the
+concept — ten uses in `ARCHITECTURE.md`, plus `capability package`, `capability port`. Adopting
+`Faculty` would have minted a **second sign for one concept**, which is exactly
+`α(cᵢ) = α(cⱼ) ⇒ D(cᵢ) = D(cⱼ)`.
+
+**The finding: the name was never the defect — the derivation source was.** Canon's member type is
+called `RuntimeCapability`, which is what schema already called it. The qualifier is load-bearing in
+canon and not in schema, because canon also declares a **dimension** named `capabilities`
+(`Capabilities`), an agent-design axis and a genuinely different concept. Bare `Capability` beside it
+would be one root over two concepts.
+
+### Acceptance
+
+1. [x] No `@cratylus/runtime` import in `packages/schema/src/`.
+2. [x] `schema/index.ts → runtime` **removed** from the ratchet, not re-pinned; suite green, so it
+       retired by repair rather than exemption.
+3. [x] `pnpm test --force` green — 14 tasks (the pipeline now carries `typecheck:test`), 706 tests.
+4. [x] Render oracle **unmoved** at `0ac8e09fbbd40077f246d4774da60789cc8b3dbd` — no re-baseline
+       needed, which is the proof the change was structural and altered no meaning.
+5. [x] Round-trip run — with the prompt defect above recorded rather than hidden.
+
+One gate needed repointing: the non-vacuity witness asserted `canon/skills/wake/skill.ts → schema`,
+an edge this repair legitimately removed. It now witnesses `canon/anatomy.ts → schema` — the
+corpus→shapes edge is alive and has one anchor, the manifest module, which is where it belongs.

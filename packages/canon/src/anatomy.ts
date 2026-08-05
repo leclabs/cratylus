@@ -25,9 +25,12 @@
 
 import type {
   AgentOf,
+  CapabilityName,
   DimensionMeta,
   RequiredDimensionOf,
   SetDimensionOf,
+  SkillExpression,
+  Skill as SkillOf,
   Value as ValueOfDimension,
 } from '@cratylus/schema';
 
@@ -165,3 +168,36 @@ export type ReasoningStrategy = Value<'reasoning-strategy'>;
 export type Satisficing = Value<'satisficing'>;
 export type OutputFormat = Value<'output-format'>;
 export type SelfEvaluation = Value<'self-evaluation'>;
+
+// ── The runtime-capability vocabulary ───────────────────────────────────────
+//
+// WHICH runtime capabilities exist is this corpus's to say, exactly as WHICH
+// dimensions exist is. `@cratylus/schema` states only that a capability HAS a
+// name (`CapabilityName`); the members live here, and `Skill` below is narrowed
+// against them so a cell naming a capability this corpus does not ship is a
+// COMPILE error rather than a shim that forwards to a bin verb nobody serves.
+//
+// This retires the `schema → runtime` edge. `CapabilityName` used to read
+// `keyof Omit<RuntimePlugin, 'name'>` — schema reaching into the runtime's
+// IMPLEMENTATION INTERFACE to borrow a set of NAMES. `shape ⊥ vocabulary`
+// (`MODEL.md:22`): the ports stay in the runtime where ARCHITECTURE puts them,
+// and the names come from the corpus. Nothing moved except where the members
+// are declared.
+//
+// THE SIGN IS `RuntimeCapability`, WHICH IS WHAT SCHEMA ALREADY CALLED IT — and
+// that is the finding. The name was never the defect; the derivation source was.
+// The qualifier is load-bearing HERE and not in schema: this package also
+// declares a DIMENSION named `capabilities` (`Capabilities` above), an
+// agent-design axis, which is a different concept. Bare `Capability` beside it
+// would be one root over two concepts.
+export const RUNTIME_CAPABILITIES = [
+  'memory',
+  'eventTap',
+] as const satisfies readonly CapabilityName[];
+
+/** A runtime capability this corpus ships a face for. */
+export type RuntimeCapability = (typeof RUNTIME_CAPABILITIES)[number];
+
+/** This corpus's `Skill`: schema's shape, narrowed to the capabilities above. */
+export type Skill = SkillOf<RuntimeCapability>;
+export type { SkillExpression };
