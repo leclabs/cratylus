@@ -33,7 +33,7 @@ instance of the uncovered source-comment-path property the census recorded.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** host-and-config · **wave** 1
+- **slice** host-and-config · **wave** 0
 - **depends on** `t-config-dotfile-was-shipped-underived`
 - **writes** `packages/memory/src/audit.ts`
 - **compiles against** `packages/memory/src/node.ts`

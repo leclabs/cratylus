@@ -7,7 +7,7 @@
 //
 // It exists because a shard is opened ALONE by an executor who will not read the plan's data
 // file. `∀ t : content(t) ⊨ spec(t)` is a claim about the SHARD, not about the plan.
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SHARDS } from './spec.mjs';
@@ -38,9 +38,18 @@ export function block(id) {
 }
 
 export function waves() {
-  const done = new Set();
+  // Completed shards leave the schedule: they cannot contend, and keeping them would
+  // invent conflicts that cannot occur. Their deps count as satisfied.
+  const closed = existsSync(join(PLAN, 'completed'))
+    ? new Set(
+        readdirSync(join(PLAN, 'completed'))
+          .filter((f) => f.endsWith('.md'))
+          .map((f) => f.slice(0, -3)),
+      )
+    : new Set();
+  const done = new Set(closed);
   const out = [];
-  let left = Object.keys(SHARDS);
+  let left = Object.keys(SHARDS).filter((id) => !closed.has(id));
   while (left.length) {
     const w = left.filter((t) => SHARDS[t].deps.every((d) => done.has(d)));
     if (!w.length) return [...out, left];

@@ -76,7 +76,7 @@ unknown-capability, which is the kernel's own fail-loud contract. Settles
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** event-vocabulary · **wave** 1
+- **slice** event-vocabulary · **wave** 0
 - **depends on** `t-capture-row` · `t-manifest-file-basename`
 - **writes** `packages/runtime/src/loader.ts` · `packages/runtime/src/main.ts` · `packages/canon/src/skills/event-tap/**`
 - **compiles against** `packages/runtime/src/ports/provisional-v9.ts`

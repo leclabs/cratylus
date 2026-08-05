@@ -9,10 +9,10 @@
 // project-template.ts — canon's project DOCTRINE, the corpus DATA injected
 // into the doctrine-agnostic `scaffoldProject` ENGINE (`@cratylus/forge/deploy`).
 // The engine declares the `ProjectTemplate` SHAPE (project prose + plan-layout
-// states); THIS module supplies the manifest substance: the project prose +
+// states); THIS module supplies the canon substance: the project prose +
 // `planStates` sourced from the praxis plan-state CANON (`./plan-states.ts`
 // `PLAN_STATES`, the one home the praxis skill's formal block also derives from).
-// Injected by the manifest scaffold path (`./scaffold-cli.ts`), never baked into the
+// Injected by the canon scaffold path (`./scaffold-cli.ts`), never baked into the
 // engine.
 
 import type { ProjectTemplate } from '@cratylus/forge/deploy';
@@ -47,7 +47,7 @@ to this project's subject, not a path-scoped grant.
   canon catalog cell, not a hand-authored copy. Regenerate by re-projecting;
   do not hand-edit the generated defs (each carries a \`GENERATED from ...\` provenance
   header + content-hash that the projector guards against clobbering).
-- **Structure projected, not copied** -- the scaffold draws on the manifest catalog's
+- **Structure projected, not copied** -- the scaffold draws on the canon catalog's
   project structure. This project instantiates that structure.
 
 ## Work-tracking
@@ -76,11 +76,11 @@ task files move \`pending/ -> ready/ -> active/ -> completed/\` as deps clear.
 }
 
 /**
- * The manifest project template — canon's project doctrine, injected into
+ * The canon project template — canon's project doctrine, injected into
  * the engine's `scaffoldProject`. `planStates` is the praxis CANON, not a local
  * literal.
  */
-export const anatomyProjectTemplate: ProjectTemplate = {
+export const canonProjectTemplate: ProjectTemplate = {
   agentsMd: projectAgentsMd,
   planMd: projectPlanMd,
   planStates: PLAN_STATES,

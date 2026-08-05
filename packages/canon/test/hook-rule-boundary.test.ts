@@ -45,8 +45,8 @@ import {
   regenerateTargets,
 } from '../src/toolkit/project-targets.js';
 
-const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const repoRoot = join(anatomyRoot, '..', '..');
+const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const repoRoot = join(canonRoot, '..', '..');
 
 // ── COVERAGE — the honest converted-vs-out-of-scope table (no silent cap) ────────
 //

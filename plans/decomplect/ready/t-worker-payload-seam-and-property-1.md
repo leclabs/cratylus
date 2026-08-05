@@ -59,7 +59,7 @@ contract the homeless-message shard needs changed.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** cell-contract · **wave** 2
+- **slice** cell-contract · **wave** 0
 - **depends on** `t-anatomy-root-compose`
 - **writes** `packages/schema/src/hook-cell.ts` · `packages/canon/src/hooks/**` · `packages/canon/src/toolkit/guardrail/**`
 - **compiles against** `packages/runtime/src/bin-name.ts`

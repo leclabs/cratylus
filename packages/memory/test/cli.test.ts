@@ -26,7 +26,7 @@ beforeEach(() => {
   home = join(root, 'agent-home');
   mkdirSync(home, { recursive: true });
   // Hermetic: no developer-shell config, no cwd-present config pickup.
-  vi.stubEnv('CRATYLUS_CONFIG', '');
+  vi.stubEnv('AGENT_MEMORY_CONFIG', '');
   // encode binds a session (never sessionless); the harness env supplies it.
   vi.stubEnv('AGENT_SESSION_ID', 'cli-test-sess');
 });

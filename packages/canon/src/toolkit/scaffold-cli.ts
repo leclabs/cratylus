@@ -1,22 +1,22 @@
-// scaffold-cli.ts — the manifest-side SCAFFOLD PATH: scaffold a project in a target
-// dir by injecting canon's `anatomyProjectTemplate` (the corpus project
+// scaffold-cli.ts — the canon-side SCAFFOLD PATH: scaffold a project in a target
+// dir by injecting canon's `canonProjectTemplate` (the corpus project
 // doctrine) into the doctrine-agnostic `scaffoldProject` ENGINE
 // (`@cratylus/forge/deploy`). This is the composition root that binds the
-// manifest project DATA to the forge engine — the engine stays doctrine-agnostic;
-// THIS path is where the manifest project doctrine is injected.
+// canon project DATA to the forge engine — the engine stays doctrine-agnostic;
+// THIS path is where the canon project doctrine is injected.
 //
 // Usage:  tsx src/toolkit/scaffold-cli.ts --target <dir> [--agents-dir <dir>]
 //                                          [--skills-dir <dir>] [--subject <text>] [--force]
-//   default render tree:  <anatomyRoot>/.render-ts/{agents,skills}  (from `pnpm canon:project`)
+//   default render tree:  <canonRoot>/.render-ts/{agents,skills}  (from `pnpm canon:project`)
 
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { type RenderTree, scaffoldProject } from '@cratylus/forge/deploy';
-import { anatomyProjectTemplate } from './project-template.js';
+import { canonProjectTemplate } from './project-template.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const anatomyRoot = join(here, '..', '..');
-const renderRoot = join(anatomyRoot, '.render-ts');
+const canonRoot = join(here, '..', '..');
+const renderRoot = join(canonRoot, '.render-ts');
 
 interface Args {
   target: string;
@@ -54,8 +54,8 @@ function parseArgs(argv: string[]): Args {
   return { target, agentsDir, skillsDir, subject, force };
 }
 
-/** Scaffold an manifest project: inject the manifest project template into the engine. */
-export function scaffoldAnatomyProject(args: Args): number {
+/** Scaffold a canon project: inject the canon project template into the engine. */
+export function scaffoldCanonProject(args: Args): number {
   const tree: RenderTree = {
     agentsDir: args.agentsDir,
     skillsDir: args.skillsDir,
@@ -63,7 +63,7 @@ export function scaffoldAnatomyProject(args: Args): number {
   const r = scaffoldProject({
     target: args.target,
     tree,
-    template: anatomyProjectTemplate,
+    template: canonProjectTemplate,
     subject: args.subject,
     force: args.force,
     log: (line) => process.stdout.write(`${line}\n`),
@@ -73,5 +73,5 @@ export function scaffoldAnatomyProject(args: Args): number {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  process.exit(scaffoldAnatomyProject(parseArgs(process.argv.slice(2))));
+  process.exit(scaffoldCanonProject(parseArgs(process.argv.slice(2))));
 }

@@ -29,7 +29,7 @@ export interface CaptureSink {
  * in {@link EventTapHost.readCapture}'s result — the meaningful temporal signal
  * — so no fabricated timestamp is invented.
  */
-export interface Record {
+export interface CaptureRow {
   /** Which lifecycle event fired, in the neutral vocabulary. */
   event: LifecycleEvent;
   /** The verbatim occurrence payload the host surfaced. */
@@ -51,6 +51,6 @@ export interface TapStatus {
 export interface EventTapHost {
   installTap(events: LifecycleEvent[], sink: CaptureSink): void;
   removeTap(): void;
-  readCapture(): Record[];
+  readCapture(): CaptureRow[];
   status(): TapStatus;
 }

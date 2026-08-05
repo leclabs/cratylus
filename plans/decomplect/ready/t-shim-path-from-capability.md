@@ -35,7 +35,7 @@ scope** and wait on `t-tap-anchor`: the literal is `f(capability)`, so settling 
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** skill-cells · **wave** 1
+- **slice** skill-cells · **wave** 0
 - **depends on** `t-manifest-file-basename`
 - **writes** `packages/canon/src/skills/wake/**` · `packages/canon/src/skills/dream/**` · `packages/canon/src/skills/handoff/**`
 - **compiles against** `packages/forge/src/project/runtime-shim.ts`

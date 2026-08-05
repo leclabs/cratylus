@@ -16,12 +16,20 @@
 // no `import`, `compile`, or IR left, the directory has no producer and no
 // consumer. The `--scope` option went with it: it selected the IR root and
 // nothing else, so keeping it would be a parse-and-ignore flag.
+//
+// `--plugin` (2026-08-05, `t-canon-package-default`) is NOT that flag returning.
+// `--scope` named an IR root that no longer exists; this names the PLUGIN PACKAGE
+// the scaffold extends, which is read and load-bearing. The projector must not
+// decide which corpus a project extends — that is projection fusing with meaning
+// (ARCHITECTURE, property 3: the corpus reaches forge as DATA).
 
 import pc from 'picocolors';
 import { scaffoldAgentsConfig } from '../../config/index.js';
 
 export interface InitOpts {
   cwd?: string;
+  /** The plugin package the scaffold extends. Defaults to `DEFAULT_PLUGIN_PACKAGE`. */
+  plugin?: string;
 }
 
 export async function runInit(opts: InitOpts = {}): Promise<number> {
@@ -31,11 +39,11 @@ export async function runInit(opts: InitOpts = {}): Promise<number> {
   // zero-config default `extends: [canon]` (the default IS the canon plugin,
   // resolved through `resolve()` — defaults-are-a-package, NORTH-STAR §2).
   // Idempotent: an existing config is left untouched.
-  const scaffold = await scaffoldAgentsConfig(cwd);
+  const scaffold = await scaffoldAgentsConfig(cwd, { plugin: opts.plugin });
   console.log(
     scaffold.created ? pc.green('✓') : pc.gray('•'),
     scaffold.created
-      ? `scaffolded ${scaffold.path} (extends: [canon])`
+      ? `scaffolded ${scaffold.path} (extends: ${scaffold.plugin})`
       : `${scaffold.path} already exists — left untouched`,
   );
   return 0;

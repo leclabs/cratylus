@@ -30,8 +30,8 @@ import { describe, expect, it } from 'vitest';
 import { declaredGlyphs } from '../src/toolkit/operator-lexicon.js';
 import { firstExport } from './support/cell-module.js';
 
-const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const srcRoot = join(anatomyRoot, 'src');
+const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const srcRoot = join(canonRoot, 'src');
 
 /**
  * Every non-ASCII declared glyph — read from the `operator-lexicon` SOURCE MODULE (the

@@ -11,7 +11,7 @@
 
 import { LIFECYCLE_EVENTS, type LifecycleEvent } from '../../events.js';
 import type {
-  Record as CaptureRow,
+  CaptureRow,
   EventTapHost,
   TapStatus,
 } from '../../ports/event-tap.js';

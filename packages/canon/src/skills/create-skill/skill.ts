@@ -3,10 +3,10 @@ import { formalize } from '../formalize/skill.js';
 
 export const createSkill: Skill = {
   name: 'create-skill',
-  description: `author a well-formed skill cell — kind:skill front-matter (description + trigger), a verb H1, the first-prose-≜ composition formula with a Bindings line, and a self-sufficient set-builder formal block (declarations-above / laws-below) at R=LLM density; embodies the composer conventions, the symbol-table discipline, and the verify gates so the cell passes on the first resolve.`,
+  description: `author a well-formed skill cell — a description and trigger the projector emits as front-matter, a verb H1, the first-prose-≜ composition formula with a Bindings line, and a self-sufficient set-builder formal block (declarations-above / laws-below) at R=LLM density; embodies the composer conventions, the symbol-table discipline, and the verify gates so the cell passes on the first resolve.`,
   formalBlock:
-    `cell            ≜ a skill cell : \`skill/<verb>.md\`, authored to PASS verify on the first resolve
-fm              ≜ front-matter : \`kind: skill\` ∧ description ∧ \`trigger: /verb\` ∧ optional \`skill_description\`
+    `cell            ≜ a skill cell ⟨class ↦ skill⟩, authored to PASS verify on the first resolve ⟨path ∈ deploy⟩
+fm              ≜ front-matter, EMITTED by deploy ⟨keys harness-variant⟩ : the cell supplies name ∧ description ∧ trigger-verb, ¬ the key-set
 description     ≜ fm's reconstruction-grade one-liner ; { description , name } = ALL context @ selection ∴ carries trigger-weight ≜ { what-it-is , when-to-reach-for-it }
 H1              ≜ the skill name, a VERB, fires on its own @ selection ; body ≺ H1 dropped by composer
 formula         ≜ the first prose \`≜\` line, consumed as the composition formula

@@ -29,10 +29,11 @@ packages/canon/.render-ts/
 # second forge harness for free, on the SAME command with a different `--harness`.
 # Same neutral-staging rationale; kept separate so the claude byte-identity diff stays clean.
 packages/canon/.render-ts-codex/
-# Fleet deploy topology carries env-specific SSH usernames — local-only.
-# Committed template: .cratylus.config.example. Schema: docs/cratylus-config-schema.md
-.cratylus.config
-!.cratylus.config.example
+# Memory's per-repo config: scope markers + per-host $HOME. OPERATOR-AUTHORED and
+# host-specific, so local-only. Committed template: .cratylus.memory.json.example.
+# Why this name (and not the runtime dotfile's): packages/memory/src/node.ts.
+.cratylus.memory.json
+!.cratylus.memory.json.example
 __pycache__/
 *.pyc
 .scratchpad/

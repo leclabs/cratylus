@@ -279,8 +279,15 @@ export async function discoverPluginFragments(
     const fragments: DiscoveredFragment[] = [];
     for (const [name, meta] of Object.entries(manifest)) {
       const dimension = name;
-      // Arity (`scalar`|`set`) is a subset of `FragmentKind` — the structural
-      // value-type a minted string-fragment node carries. [SIGNIFY: arity→kind map.]
+      // NOT A MAP — a WIDTH COERCION. `Arity` (`scalar`|`set`) is a strict subset of
+      // `FragmentKind` (`+structured`), so there is no arity→kind function here and nothing
+      // to name; the owed-signification marker that stood here was recording a debt against a
+      // non-entity. The ANNOTATION is the check: if the two vocabularies ever diverge this
+      // line stops compiling, which is the guarantee the comment was standing in for.
+      //
+      // Deriving `Arity` FROM `FragmentKind` would be structurally stronger and is refused:
+      // `Arity` lives in the schema and `FragmentKind` in the projector, so the derivation
+      // would make the shapes depend on projection — ARCHITECTURE property 2.
       const kind: FragmentKind = meta.arity;
       const dir = join(src.fragmentsDir, dimension);
       for (const { exportName, value } of await scanDimensionModules(dir)) {

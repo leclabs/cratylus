@@ -64,10 +64,10 @@ export interface PlanSetContext {
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
-const anatomyRoot = join(here, '..', '..');
+const canonRoot = join(here, '..', '..');
 /** Default context: the repo this module ships in (`packages/canon/../..`). */
 export const defaultContext: PlanSetContext = {
-  repoRoot: join(anatomyRoot, '..', '..'),
+  repoRoot: join(canonRoot, '..', '..'),
 };
 
 const PLANS = 'plans';

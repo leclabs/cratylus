@@ -98,8 +98,13 @@ function onDisk(): Record<string, string[]> {
 }
 
 /** `wave(0) ≜ { t | ∄ u : (t,u) ∈ R }` ; `wave(n+1) ≜ { t ∉ W(n) | ∀ u ∈ deps(t) : u ∈ W(n) }`. */
-function waves(ids: readonly string[]): string[][] {
-  const done = new Set<string>();
+function waves(
+  ids: readonly string[],
+  settled: ReadonlySet<string> = new Set(),
+): string[][] {
+  // Seeded with the COMPLETED set: a dep that has already landed is satisfied, so a shard
+  // waiting only on completed work belongs in wave 0, not in the unschedulable remainder.
+  const done = new Set<string>(settled);
   const out: string[][] = [];
   let left = [...ids];
   while (left.length) {
@@ -118,7 +123,10 @@ const st = (name: string): string[] => DISK[name] ?? [];
 const OPEN_IDS = OPEN_STATES.flatMap((s) => st(s));
 /** A completed shard keeps its spec entry — it is history, and `deps` still reference it. */
 const DONE = new Set(st('completed'));
-const WAVES = waves(IDS);
+/** Waves are computed over OPEN shards only. A completed shard cannot contend for a file — it
+ *  has already written it — so leaving it in the schedule invents conflicts that cannot occur. */
+const OPEN_SPEC = IDS.filter((id) => !DONE.has(id));
+const WAVES = waves(OPEN_SPEC, DONE);
 
 describe('praxis-execution-spec', () => {
   it('the spec and the disk agree — no shard is unspecified and none is specified-but-absent', () => {
@@ -181,12 +189,12 @@ describe('praxis-execution-spec', () => {
     expect(
       WAVES.flat().length,
       'a cycle in R — every wave must consume its members',
-    ).toBe(IDS.length);
-    const seen = new Set<string>();
+    ).toBe(OPEN_SPEC.length);
+    const seen = new Set<string>(DONE);
     const early: string[] = [];
     for (const w of WAVES) {
       for (const t of w)
-        if (!sh(t).deps.every((d) => seen.has(d))) early.push(t);
+        if (!sh(t).deps.every((d) => seen.has(d) || DONE.has(d))) early.push(t);
       for (const t of w) seen.add(t);
     }
     expect(early, 'scheduled before its deps').toEqual([]);

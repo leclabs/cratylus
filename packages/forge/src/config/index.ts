@@ -11,12 +11,14 @@ export {
 } from './loader.js';
 export {
   type AddResult,
-  CANON_PACKAGE,
   CONFIG_FILE,
   ConfigEditError,
+  DEFAULT_PLUGIN_PACKAGE,
+  type ScaffoldOpts,
   type ScaffoldResult,
   SCAFFOLD_SOURCE,
   addPlugin,
   identForPackage,
   scaffoldAgentsConfig,
+  scaffoldSource,
 } from './scaffold.js';

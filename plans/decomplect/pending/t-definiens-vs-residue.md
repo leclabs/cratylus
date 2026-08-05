@@ -38,7 +38,7 @@ dimension value — at `reader-density.test.ts:247` (`'dimension-definiens'`), `
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** cell-contract · **wave** 3
+- **slice** cell-contract · **wave** 1
 - **depends on** `t-worker-payload-seam-and-property-1`
 - **writes** `packages/schema/src/rule-cell.ts` · `packages/canon/test/hook-rule-boundary.test.ts`
 - **compiles against** `packages/schema/src/hook-cell.ts`

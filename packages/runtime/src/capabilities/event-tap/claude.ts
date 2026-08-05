@@ -15,7 +15,7 @@ import { dirname, join } from 'node:path';
 import { RUNTIME_BIN } from '../../bin-name.js';
 import type { LifecycleEvent } from '../../events.js';
 import type {
-  Record as CaptureRow,
+  CaptureRow,
   CaptureSink,
   EventTapHost,
   TapStatus,

@@ -25,10 +25,10 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { HookCell, RuleCell } from '@cratylus/schema';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const anatomyRoot = join(here, '..', '..');
+const canonRoot = join(here, '..', '..');
 /** Repo root — hook targets are repo-relative (`.husky/*` sits above the pkg). */
-const repoRoot = join(anatomyRoot, '..', '..');
-const srcRoot = join(anatomyRoot, 'src');
+const repoRoot = join(canonRoot, '..', '..');
+const srcRoot = join(canonRoot, 'src');
 
 async function firstExport<T>(modPath: string): Promise<T> {
   const mod = (await import(pathToFileURL(modPath).href)) as Record<

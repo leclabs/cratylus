@@ -34,8 +34,8 @@ function renderSkill(s: Skill): string {
   });
 }
 
-const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const srcRoot = join(anatomyRoot, 'src');
+const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const srcRoot = join(canonRoot, 'src');
 
 async function collect(pattern: string): Promise<string[]> {
   const out: string[] = [];

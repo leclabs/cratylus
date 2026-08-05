@@ -97,7 +97,7 @@ export interface DeriveEnv {
 }
 
 /** This package's session-id contract variable. Consistent with `$AGENT_HOME`
- *  and `$CRATYLUS_CONFIG` — the `AGENT_*` namespace this package owns. */
+ *  and `$AGENT_MEMORY_CONFIG` — the `AGENT_*` namespace this package owns. */
 export const SESSION_ID_ENV = 'AGENT_SESSION_ID';
 /** Indirection: names the variable to read `AGENT_SESSION_ID` from, for
  *  environments whose launcher cannot be modified. */

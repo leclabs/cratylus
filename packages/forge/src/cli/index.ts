@@ -18,9 +18,13 @@ const VERSION = '0.0.0';
 const cli = cac('forge');
 
 cli
-  .command('init', 'Scaffold agents.config.ts from the default plugin')
-  .action(async () => {
-    process.exit(await runInit());
+  .command('init', 'Scaffold agents.config.ts from a plugin package')
+  .option(
+    '--plugin <pkg>',
+    'The plugin package to extend (default: the canon corpus)',
+  )
+  .action(async (opts: { plugin?: string }) => {
+    process.exit(await runInit({ plugin: opts.plugin }));
   });
 
 cli

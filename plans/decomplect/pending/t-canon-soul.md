@@ -74,7 +74,7 @@ deliberately NOT batched: forge comments (oracle unmoved) → substrate+authorin
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** skill-cells · **wave** 3
+- **slice** skill-cells · **wave** 1
 - **depends on** `t-shim-path-from-capability` · `t-substrate-concept` · `t-authoring-surface` · `t-coined-classification`
 - **writes** `packages/canon/src/genus/**` · `packages/canon/src/skills/dream/**` · `packages/canon/src/skills/introspect/**`
 - **compiles against** `packages/schema/src/index.ts`

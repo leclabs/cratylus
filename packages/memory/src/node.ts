@@ -28,12 +28,12 @@ import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
  * Default markers: `.git` (project; a `.git` FILE — worktree/submodule —
  * resolves through to the primary checkout's node) · a package manifest
  * (package) · `PLAN.md` (plan) · `$HOME` (user). The set extends via
- * `memory.scopeMarkers` (glob list) in `.cratylus.config`.
+ * `memory.scopeMarkers` (glob list) in `.cratylus.memory.json`.
  *
  * Foreign-host records (host ≠ current) cannot be resolved against this
  * filesystem — a path that happens to exist locally proves nothing about the
  * capturing host. The only checkable marker is that host's `$HOME` prefix,
- * sourced from `.cratylus.config` `host.<name>.homedir`; otherwise the
+ * sourced from `.cratylus.memory.json` `host.<name>.homedir`; otherwise the
  * cwd is its own boundary (the honest total answer).
  */
 
@@ -64,7 +64,7 @@ export interface NodeConfig {
   currentHost: string;
   /** Absolute `$HOME` on this machine — the `user` boundary. */
   currentHome: string;
-  /** Per-host absolute `$HOME` map from `.cratylus.config` `host.<name>.homedir`. */
+  /** Per-host absolute `$HOME` map from `.cratylus.memory.json` `host.<name>.homedir`. */
   hostHomes: Readonly<Record<string, string>>;
 }
 
@@ -246,7 +246,7 @@ export function resolveNode(
 }
 
 /**
- * Build a {@link NodeConfig} from a `.cratylus.config` (or none). Reads
+ * Build a {@link NodeConfig} from a `.cratylus.memory.json` (or none). Reads
  * `memory.scopeMarkers` (glob list, appended after the defaults) and
  * `host.<name>.homedir` (absolute per-host `$HOME`). Malformed JSON throws
  * loudly — once present the config is authoritative.
@@ -301,14 +301,59 @@ export function loadNodeConfig(configPath?: string): NodeConfig {
 // for a feature this repository does not have, describing one operator's private
 // host topology. Deployment across machines is the operator's concern, not this
 // project's; what remains is memory SCOPING, which is genuinely ours.
+//
+// ── WHY THIS NAME — the derivation, recorded (2026-08-05) ────────────────────
+//
+// A BRAND SWEEP IS NOT A DERIVATION. Write `<BIN>` for the bare bin mark
+// (`bin-name.ts`). The sign here USED to be `.<BIN>.config` / `$<BIN>_CONFIG`:
+// picked by default when the scope was renamed, with no argument written
+// anywhere — so the next sweep would have rewritten it the same way,
+// unexamined, forever. The argument lives HERE, beside the literal, because
+// that is the one site a sweep cannot overwrite without first reading it.
+//
+// (i) TWO CONCEPTS, NOT ONE. This is NOT the runtime host dotfile
+// (`runtime/src/runtime-config.ts`, `~/.cratylus-run.json`). A merge was
+// considered and rejected on three measured axes:
+//   · AUTHORITY — the runtime dotfile is PROJECTED by deploy; this one is
+//     OPERATOR-AUTHORED and ships a hand-copied `.example`. Merging would put
+//     operator ground in a projector-owned file, and deploy would clobber it.
+//   · LOCATION — `homedir()` there, bare-relative to the cwd here.
+//   · REFERENT — provider wiring there, boundary/scope semantics here.
+// The only thing the two shared was the word `config`, and `config` is vacuous
+// — which is exactly why the wrong guess was easy to make.
+//
+// (ii) IT IS MEMORY'S. Every live reference sits in this package plus memory's
+// own port; no non-memory consumer exists and none is possible — the `fleet`
+// section that WAS general was deleted precisely because nothing read it (see
+// above). The file's top key already says `memory`. Hence the `memory` facet,
+// on the `tsconfig.build.json` precedent already in this tree.
+//
+// (iii) `.json`, NOT `.config` — the extension lied about the format. The
+// content is `JSON.parse`d (`loadNodeConfig` below, `repoKeysFromConfig` in
+// `audit.ts`). `.config` predicted an ini/toml/rc dialect that never existed.
+//
+// (iv) THE OLD NAME SQUATTED A SLOT IT DOES NOT OWN. The rule already in force
+// in this tree is `` `.${BIN}.json` `` (`runtime/src/bin-name.ts` records a
+// deliberate two-bin derivation), so `.<BIN>.config` decodes as "the <BIN>
+// BIN's config" — it squats the bare-mark slot the build CLI's own config must
+// one day take. Blind reverse decode of the old name predicts general tool
+// settings; the content is scope markers and per-host `$HOME`s. MISS. The
+// faceted name decodes to its contents. HIT.
+//
+// (v) THE ENV VAR IS A SECOND, CLEANER KILL. Two registers, two rules, both
+// already in force here: files ↦ `.cratylus*` · env ↦ `AGENT_*`. `store.ts`
+// declares the `AGENT_*` namespace as this package's own, and the live surface
+// is `AGENT_RUNTIME_CONFIG` · `AGENT_SESSION_ID` · `AGENT_SESSION_ID_FROM`.
+// `$<BIN>_CONFIG` was the sole outlier — a file-register mark wearing an
+// env-register hat.
 
 /** The config file a repository may carry, resolved relative to the cwd. */
-export const CONFIG_FILE = '.cratylus.config';
+export const CONFIG_FILE = '.cratylus.memory.json';
 
 /** The env var naming an explicit config path. Same sign as {@link CONFIG_FILE}. */
-export const CONFIG_ENV = 'CRATYLUS_CONFIG';
+export const CONFIG_ENV = 'AGENT_MEMORY_CONFIG';
 
-/** `--config`/override ▸ `$CRATYLUS_CONFIG` ▸ a cwd-present `.cratylus.config` ▸ none. */
+/** `--config`/override ▸ `$AGENT_MEMORY_CONFIG` ▸ a cwd-present `.cratylus.memory.json` ▸ none. */
 export function resolveConfigPath(override?: string): string | undefined {
   return (
     override ??

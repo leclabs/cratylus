@@ -2,7 +2,7 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 
 export const createAgent: Skill = {
   name: 'create-agent',
-  description: `author a custom agent as a dimension-selection vector — pick each dimension's value from the canonical catalog (closed enums + generalized open sets), compose the agent/<name>.md vector, then resolve → verify → deploy; knows the dimension anatomy. Can interview a non-engineer in plain language (one question per dimension, recommending the fittest) when a human is driving.`,
+  description: `author a custom agent as a dimension-selection vector — pick each dimension's value from the canonical catalog (closed enums + generalized open sets), compose the agent cell, then resolve → verify → deploy; knows the dimension manifest. Can interview a non-engineer in plain language (one question per dimension, recommending the fittest) when a human is driving.`,
   formalBlock: `A               ≜ the agent under construction
 O               ≜ the dimension set @ SOUL \`##\` anatomy sections
 catalog         ≜ the canonical value store per dimension @ \`cratylus catalog\` ⟨live · never embedded⟩
@@ -17,7 +17,7 @@ fit(v)          ⇔ v suits A's purpose
 fittest(o)      ≜ the best-fitting v ∈ catalog(o)
 value(o)        ≜ the selected member(s) of catalog(o) by fit
 vector(A)       ≜ ⊕{ o ↦ value(o) | o ∈ O }
-instance-bound  ≜ provenance⟨lineage-mark⟩ ∧ substrate⟨model/runtime⟩ ⟨auto-set · fresh mark · substrate ↦ claude · ∉ catalog⟩
+instance-bound  ≜ provenance⟨mark : emoji·hue⟩ ⟨authored per-agent · ∉ catalog ∴ ∉ O · never shared across agents⟩
 human-project   ≜ downstream human projection @ llm-native
 
 ∀ o ∈ O : value(o) ∈ catalog(o)
@@ -33,6 +33,6 @@ human-driver ⇒ ∀ o : present ⟨catalog(o) · definiens(o, ·)⟩ ∧ recomm
 boundary ≜ dimensions-only · domain-skills @ create-skill
 
 create-agent ≜ fix(name, purpose) → ( ∀ o : select value(o) ) → assemble vector(A) → write(A) → resolve → verify(A) → iterate-until-green → deploy
-write(A)     ≜ ⟨ front-matter \`kind: agent\` · H1 ≜ name · body ≜ the \`dimension <value>\` lines ⟨multi: \`dimension { <a> · <b> }\`⟩ ⟩ @ agent/<name>.md` as SkillExpression,
+write(A)     ≜ the cell ⟨class ↦ agent⟩ : H1 ≜ name · body ≜ the \`dimension <value>\` lines ⟨multi: \`dimension { <a> · <b> }\`⟩ ⟨path ∧ front-matter ∈ deploy ; its Target is REGENERABLE ∴ ¬ hand-edit⟩` as SkillExpression,
   composition: () => [],
 };

@@ -58,7 +58,7 @@ structural proof this ruling is right, and the cheapest moment to make the paral
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** cell-contract · **wave** 4
+- **slice** cell-contract · **wave** 2
 - **depends on** `t-definiens-vs-residue`
 - **writes** `packages/canon/src/rules/**`
 - **compiles against** `packages/schema/src/rule-cell.ts`

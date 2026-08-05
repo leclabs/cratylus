@@ -40,8 +40,8 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { DIMENSION_NAMES } from '../src/manifest.js';
 
-const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const srcRoot = join(anatomyRoot, 'src');
+const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const srcRoot = join(canonRoot, 'src');
 const dimensionsRoot = join(srcRoot, 'dimensions');
 
 /** The σ* anchor a fragment declares: the first bareword of its template-literal body. */
@@ -268,12 +268,12 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   // canon)` into every scaffolded project until this leg existed. Naming the
   // upstream catalog is fine — it is provenance, not a path claim.
   it('the consumer scaffold template names no cratylus-local path', async () => {
-    const { anatomyProjectTemplate } = await import(
+    const { canonProjectTemplate } = await import(
       '../src/toolkit/project-template.js'
     );
     const emitted = [
-      anatomyProjectTemplate.agentsMd('<subject>'),
-      anatomyProjectTemplate.planMd('<subject>'),
+      canonProjectTemplate.agentsMd('<subject>'),
+      canonProjectTemplate.planMd('<subject>'),
     ].join('\n');
     const local = [
       'packages/',

@@ -34,7 +34,7 @@ folding it in.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** cell-contract · **wave** 4
+- **slice** cell-contract · **wave** 2
 - **depends on** `t-definiens-vs-residue` · `t-coined-classification`
 - **writes** `packages/forge/src/resolve/**`
 - **compiles against** `packages/schema/src/index.ts` · `packages/schema/src/rule-cell.ts`

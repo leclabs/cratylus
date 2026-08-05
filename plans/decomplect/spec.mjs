@@ -389,7 +389,7 @@ export const SHARDS = {
   't-config-dotfile-was-shipped-underived': {
     slice: 'host-and-config',
     deps: [],
-    outputs: ['packages/memory/src/node.ts', '.cratylus.config.example'],
+    outputs: ['packages/memory/src/node.ts', '.cratylus.memory.json.example'],
     refs: ['packages/runtime/src/runtime-config.ts'],
     static: [
       'packages/memory/src/node.ts',
@@ -472,5 +472,15 @@ export const SHARDS = {
     outputs: ['packages/memory/src/audit.ts'],
     refs: ['packages/memory/src/node.ts'],
     static: ['packages/memory/src/audit.ts', 'packages/memory/src/node.ts'],
+  },
+  't-engine-internal-names-await-decode': {
+    slice: 'deploy-surface',
+    // reads `Arity` from the schema module `t-coined-classification` rewrites
+    deps: ['t-coined-classification'],
+    outputs: ['packages/forge/src/catalog/**'],
+    refs: ['packages/schema/src/index.ts'],
+    static: ['packages/forge/src/catalog/index.ts'],
+    blockedBy:
+      'a four-sign family decode for the catalog engine internals, derived together',
   },
 };

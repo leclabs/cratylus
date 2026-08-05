@@ -226,7 +226,7 @@ describe('resolveNode — foreign host (the local fs is not evidence)', () => {
 describe('loadNodeConfig', () => {
   it('reads memory.scopeMarkers and host.*.homedir; defaults survive', () => {
     const dir = mkdtempSync(join(tmpdir(), 'nodecfg-'));
-    const file = join(dir, '.cratylus.config');
+    const file = join(dir, '.cratylus.memory.json');
     writeFileSync(
       file,
       JSON.stringify({

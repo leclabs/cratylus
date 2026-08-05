@@ -2,7 +2,11 @@
 // Scaffold + edit `agents.config.ts` — the write side of the two scaffold verbs.
 //
 // `scaffoldAgentsConfig` writes the ZERO-CONFIG default: `extends: [canon]`
-// (the canon default plugin) + empty `patches`. `addPlugin` WIRES a plugin into
+// (the default plugin package) + empty `patches` — and takes an OVERRIDE, so the
+// default is a default rather than a law. A projector that could only ever
+// scaffold against one corpus would be deciding what the design IS; the plugin
+// it extends is the caller's to name (ARCHITECTURE north-star §3: the corpus
+// reaches the projector as DATA). `addPlugin` WIRES a plugin into
 // `extends` by editing the config SOURCE (config is code — the edit adds a real
 // `import` + appends the binding to the `extends` array). Both operate on the
 // canonical scaffold shape; `addPlugin` refuses LOUDLY on an unrecognized shape
@@ -16,47 +20,87 @@ import { join } from 'node:path';
 /** The config-is-code home filename. */
 export const CONFIG_FILE = 'agents.config.ts';
 
-/** The canon default plugin package — the zero-config `extends` member. */
-export const CANON_PACKAGE = '@cratylus/canon';
-
-/** The zero-config scaffold: canon through the resolver with empty patches. */
-export const SCAFFOLD_SOURCE = `import { defineAgentsConfig } from '@cratylus/forge/config';
-import canon from '${CANON_PACKAGE}';
-
-// forge — config is code. This is the SINGLE config home.
-// \`extends\` are REAL imports: type-checked, IDE-complete, no build step.
-// Zero-config default = the canon plugin through the resolver, empty patches.
-// Wire more plugins with \`forge add <package>\`.
-export default defineAgentsConfig({
-  extends: [canon],
-  patches: [],
-});
-`;
-
-export interface ScaffoldResult {
-  readonly path: string;
-  /** false when a config already existed (left untouched — idempotent). */
-  readonly created: boolean;
-}
-
-/** Write `<cwd>/agents.config.ts` if absent (idempotent — never clobbers). */
-export async function scaffoldAgentsConfig(
-  cwd: string,
-): Promise<ScaffoldResult> {
-  const path = join(cwd, CONFIG_FILE);
-  if (existsSync(path)) {
-    return { path, created: false };
-  }
-  await writeFile(path, SCAFFOLD_SOURCE, 'utf8');
-  return { path, created: true };
-}
-
-/** A malformed / unrecognized `agents.config.ts` that `addPlugin` cannot edit safely. */
+/**
+ * A config the scaffold verbs cannot write or edit safely: an unusable plugin
+ * specifier, or a malformed / hand-restructured `agents.config.ts`. Declared
+ * ahead of the renderers because `SCAFFOLD_SOURCE` is evaluated at module init.
+ */
 export class ConfigEditError extends Error {
   constructor(message: string) {
     super(message);
     this.name = 'ConfigEditError';
   }
+}
+
+/**
+ * The plugin package a scaffold extends when the caller names none. A DEFAULT,
+ * not a law — `scaffoldAgentsConfig(cwd, { plugin })` overrides it.
+ */
+export const DEFAULT_PLUGIN_PACKAGE = '@cratylus/canon';
+
+/**
+ * Render the zero-config scaffold against `plugin`: one real import of that
+ * package, bound under the identifier `identForPackage` derives for it, and
+ * `extends: [<that binding>]` with empty patches.
+ */
+export function scaffoldSource(
+  plugin: string = DEFAULT_PLUGIN_PACKAGE,
+): string {
+  const pkg = plugin.trim();
+  if (!pkg) {
+    throw new ConfigEditError(
+      'scaffold: plugin package must be a non-empty specifier',
+    );
+  }
+  const ident = identForPackage(pkg);
+  return `import { defineAgentsConfig } from '@cratylus/forge/config';
+import ${ident} from '${pkg}';
+
+// forge — config is code. This is the SINGLE config home.
+// \`extends\` are REAL imports: type-checked, IDE-complete, no build step.
+// Zero-config default = the ${ident} plugin through the resolver, empty patches.
+// Wire more plugins with \`forge add <package>\`.
+export default defineAgentsConfig({
+  extends: [${ident}],
+  patches: [],
+});
+`;
+}
+
+/** The scaffold rendered against `DEFAULT_PLUGIN_PACKAGE` — the zero-config default. */
+export const SCAFFOLD_SOURCE = scaffoldSource();
+
+export interface ScaffoldOpts {
+  /**
+   * Plugin package the scaffolded config extends.
+   * Defaults to `DEFAULT_PLUGIN_PACKAGE`.
+   */
+  readonly plugin?: string;
+}
+
+export interface ScaffoldResult {
+  readonly path: string;
+  /** false when a config already existed (left untouched — idempotent). */
+  readonly created: boolean;
+  /** The plugin package the config extends (the default when none was named). */
+  readonly plugin: string;
+}
+
+/** Write `<cwd>/agents.config.ts` if absent (idempotent — never clobbers). */
+export async function scaffoldAgentsConfig(
+  cwd: string,
+  opts: ScaffoldOpts = {},
+): Promise<ScaffoldResult> {
+  const plugin = (opts.plugin ?? DEFAULT_PLUGIN_PACKAGE).trim();
+  // Render (and so VALIDATE) before touching disk, and before the idempotence
+  // check: an unusable specifier refuses loudly whether or not a config exists.
+  const source = scaffoldSource(plugin);
+  const path = join(cwd, CONFIG_FILE);
+  if (existsSync(path)) {
+    return { path, created: false, plugin };
+  }
+  await writeFile(path, source, 'utf8');
+  return { path, created: true, plugin };
 }
 
 /**

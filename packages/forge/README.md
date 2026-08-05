@@ -89,6 +89,20 @@ untouched.
 forge init
 ```
 
+`@cratylus/canon` is the **default**, not the only corpus this scaffolds against — a projector that
+could name only one corpus would be deciding what the design is. The plugin is a parameter of the
+scaffold:
+
+```ts
+import { scaffoldAgentsConfig, DEFAULT_PLUGIN_PACKAGE } from '@cratylus/forge/config';
+
+await scaffoldAgentsConfig(cwd); // extends: [canon]  — DEFAULT_PLUGIN_PACKAGE
+await scaffoldAgentsConfig(cwd, { plugin: '@acme/corpus' }); // extends: [corpus]
+```
+
+The binding name is derived from the package specifier, and `forge add` edits either config the
+same way — it reads the config's shape, not any particular corpus's name.
+
 ### `forge add <plugin>`
 
 Inserts a real `import` for the package and appends its binding to `extends`. Idempotent — re-adding a

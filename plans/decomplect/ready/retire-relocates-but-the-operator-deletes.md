@@ -94,7 +94,7 @@ is a projected cell); re-baseline deliberately, in its own commit.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** plan-machinery · **wave** 2
+- **slice** plan-machinery · **wave** 0
 - **depends on** `t-anatomy-root-compose`
 - **writes** `packages/canon/src/skills/praxis/**` · `packages/canon/src/toolkit/praxis/**` · `packages/canon/src/toolkit/plan-set-cli.ts`
 - **compiles against** `packages/canon/src/toolkit/plan-set.ts`

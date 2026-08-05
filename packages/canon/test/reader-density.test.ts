@@ -82,8 +82,8 @@ import {
 } from './reader-register.js';
 import { firstExport } from './support/cell-module.js';
 
-const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const srcRoot = join(anatomyRoot, 'src');
+const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
+const srcRoot = join(canonRoot, 'src');
 
 // ── RATCHET — explicit, shrink-only ─────────────────────────────────────────────
 
