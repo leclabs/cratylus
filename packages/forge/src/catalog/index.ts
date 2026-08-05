@@ -179,12 +179,50 @@ export async function enumerateCatalog(
  * P1's `AgentPlugin.fragments` is package-relative; mapping it to this absolute path
  * is module-resolution (which node_modules package root) — P4's loader concern. P3
  * consumes the already-resolved dir so it stays doctrine- and resolution-agnostic.
+ *
+ * A PAIR ARRAY ON THE WAY IN, A KEYED MAP ON THE WAY OUT — and the asymmetry is the
+ * point, not an oversight left over from the map. `readonly PluginFragmentRoot[]` is
+ * the only input shape that can DELIVER a duplicate namespace to the guard below.
+ * Typing the input as `ReadonlyMap<string, string>` or `Record<string, string>` would
+ * make the duplicate unrepresentable at the boundary — which sounds like the stronger
+ * guarantee and is the weaker one: the collision would then be resolved by
+ * last-write-wins inside the CALLER's `new Map(…)`, silently, at a site that reports
+ * nothing and is no longer this module's to police. A shape that cannot express the
+ * defect cannot reject it; it can only lose it.
  */
 export interface PluginFragmentRoot {
   /** The plugin namespace segment (`AgentPlugin.name`). Namespaces the reporting id. */
   readonly name: string;
   /** Absolute path to the plugin's `fragments` dir (parent of `<dimension>/*.ts`). */
   readonly fragmentsDir: string;
+}
+
+/**
+ * Two or more fragment roots declaring ONE namespace segment. Loud, before any scan.
+ *
+ * WHY THIS IS FATAL AND NOT A WARNING. The namespace is the whole of a fragment's
+ * address hygiene: it prefixes every minted node id (`<plugin>:<dim>/<export>`), it is
+ * the `name` a `ContributionSource{kind:'plugin'}` attributes a fold contribution to,
+ * and it is what makes two plugins' `parsimony` two nodes rather than a contest. Two
+ * plugins sharing it collapses all three at once — indistinguishable ids, provenance
+ * that names the wrong plugin, and the per-plugin σ* invariant (NORTH-STAR §3) holding
+ * only by accident. There is no degraded-but-useful reading of the result to warn about.
+ *
+ * NOT `NamespaceCollisionError`. "Collision" is already spoken for in this module, with
+ * the opposite verdict: two plugins sharing a fragment ANCHOR is explicitly a resolution
+ * event and explicitly not an error. Reusing the sign for the case that IS an error
+ * would put one sign on two glosses in one file.
+ */
+export class DuplicateNamespaceError extends Error {
+  constructor(
+    readonly namespace: string,
+    readonly fragmentsDirs: readonly string[],
+  ) {
+    super(
+      `duplicate plugin namespace '${namespace}': ${fragmentsDirs.length} fragment roots declare it (${fragmentsDirs.join(', ')}) — a namespace addresses exactly one plugin, so sharing one makes their fragments indistinguishable in every minted id, every provenance record and every patch target`,
+    );
+    this.name = 'DuplicateNamespaceError';
+  }
 }
 
 /**
@@ -197,6 +235,11 @@ export interface PluginFragmentRoot {
  *
  * `Entry`, not the stage that produced it: every value in a pipeline is some stage's
  * output, so naming one for its provenance distinguishes it from nothing.
+ *
+ * NO `namespace` FIELD, deliberately. It would be the same string repeated once per
+ * fragment, and it is already reachable twice over: the catalog map keys by it, and
+ * `node.id` is minted already namespaced. Late reference resolution addresses by object
+ * identity (§3) and never parses an id, so it has nothing to gain from a third copy.
  */
 export interface FragmentEntry {
   readonly node: Fragment;
@@ -205,16 +248,29 @@ export interface FragmentEntry {
 }
 
 /**
- * WHAT ONE PLUGIN YIELDED: its fragment entries, namespaced by its `name`. Two plugins
- * sharing an anchor do NOT collide — each `FragmentEntry.node` is a distinct object.
+ * WHAT EVERY PLUGIN YIELDED: each namespace ⟼ its fragment entries, in root order.
  *
- * The `Fragment` infix is load-bearing: `PluginCatalog` would read as a catalog OF
- * plugins, which this is not. It is one plugin's catalog of fragments.
+ * One plugin's catalog of fragments is now the map's VALUE — a bare
+ * `readonly FragmentEntry[]` — and its namespace is the KEY. The `{name, fragments}`
+ * pair that used to carry both was a single entry of this map written out by hand, and
+ * an array of those pairs is a map whose defining property is unenforced: it can hold a
+ * namespace twice. Post-guard it cannot, so the type says so. `ReadonlyMap` and not
+ * `Record` because a namespace is a plugin's own string, not a key this module coins,
+ * and `Record<string, …>` invites `catalogs[ns]` on a value that may be absent.
+ *
+ * ORDER SURVIVES THE CHANGE: a `Map` iterates in insertion order, so `extends` position
+ * — which the resolver's ordered fold depends on — is preserved exactly as the pair
+ * array preserved it. What does not survive is the caller's ability to read the i-th
+ * result and assume it belongs to the i-th root; that correspondence was asserted in a
+ * comment and is now asked for by name.
+ *
+ * The `Fragment` infix is load-bearing: `PluginCatalogs` would read as a catalog OF
+ * plugins, which this is not. It is each plugin's catalog of fragments.
  */
-export interface PluginFragmentCatalog {
-  readonly name: string;
-  readonly fragments: readonly FragmentEntry[];
-}
+export type PluginFragmentCatalogs = ReadonlyMap<
+  string,
+  readonly FragmentEntry[]
+>;
 
 /** The legal `resolve/ValueShape` values — gates whether an object export is a node. */
 const VALUE_SHAPES: ReadonlySet<string> = new Set<ValueShape>([
@@ -270,6 +326,11 @@ async function scanDimensionModules(
  * `validateReferenceGraph` — a reference cycle throws `ReferenceCycleError`, a dangling
  * edge `DanglingReferenceError`.
  *
+ * NAMESPACE UNIQUENESS IS CHECKED FIRST, before a single dir is read: a duplicate is a
+ * fact about the ROOTS, so nothing is learned by scanning, and failing after the IO
+ * would only make the report slower and the partial state harder to describe.
+ * `DuplicateNamespaceError` — never last-write-wins.
+ *
  * THE LONG SIGN IS DELIBERATE. This sits beside `enumerateCatalog`, and a sibling pair
  * is exactly where a misread costs most. `enumeratePluginCatalogs` would still admit
  * "catalogs *of* plugins", disambiguated only by the signature; carrying the noun's own
@@ -285,8 +346,18 @@ async function scanDimensionModules(
 export async function enumeratePluginFragmentCatalogs(
   roots: readonly PluginFragmentRoot[],
   manifest: DimensionManifest,
-): Promise<PluginFragmentCatalog[]> {
-  const plugins: PluginFragmentCatalog[] = [];
+): Promise<PluginFragmentCatalogs> {
+  const dirsByNamespace = new Map<string, string[]>();
+  for (const src of roots) {
+    const dirs = dirsByNamespace.get(src.name);
+    if (dirs) dirs.push(src.fragmentsDir);
+    else dirsByNamespace.set(src.name, [src.fragmentsDir]);
+  }
+  for (const [namespace, dirs] of dirsByNamespace) {
+    if (dirs.length > 1) throw new DuplicateNamespaceError(namespace, dirs);
+  }
+
+  const plugins = new Map<string, readonly FragmentEntry[]>();
   const allNodes = new Set<Fragment>();
 
   for (const src of roots) {
@@ -323,7 +394,7 @@ export async function enumeratePluginFragmentCatalogs(
         }
       }
     }
-    plugins.push({ name: src.name, fragments });
+    plugins.set(src.name, fragments);
   }
 
   // Acyclicity of the resolved reference graph (§3) — reuse the P2 law.

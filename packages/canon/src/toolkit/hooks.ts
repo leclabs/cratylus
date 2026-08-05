@@ -15,6 +15,7 @@
 // exist before any adapter was chosen — so every cell spelled out a claude path.
 // The lift is the projector's, per adapter, from `HarnessAdapter.hookCommand`.
 
+import { deployDriftNotice } from '../hooks/deploy-drift-notice.js';
 import { memoryConsolidationNudge } from '../hooks/memory-consolidation-nudge.js';
 import { resumeAvailabilityNotice } from '../hooks/resume-availability-notice.js';
 import { stanceGuardrailPre } from '../hooks/stance-guardrail-pre.js';
@@ -27,4 +28,5 @@ export const harnessHookCells: readonly HookCell[] = [
   stanceGuardrailPre,
   memoryConsolidationNudge,
   resumeAvailabilityNotice,
+  deployDriftNotice,
 ];

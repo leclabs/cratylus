@@ -49,7 +49,7 @@ operate under.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** deploy-surface · **wave** 1
+- **slice** deploy-surface · **wave** 0
 - **depends on** `deployed-drifts-from-rendered-unwatched` · `soul-survives-in-canon-test-prose` · `source-can-go-invisible-to-every-text-tool`
 - **writes** `packages/canon/src/hooks/**` · `packages/canon/test/**`
 - **compiles against** `packages/forge/src/deploy/local.ts`

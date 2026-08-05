@@ -56,7 +56,7 @@ type FragmentPlugin = ProjectablePlugin & { readonly fragments: string };
  * — the canon shape verbatim — which is exactly why the projector sees the authored
  * string and not a catalog key.
  */
-function fixturePlugin(): FragmentPlugin {
+function fixturePlugin(name = 'probe'): FragmentPlugin {
   const root = mkdtempSync(join(tmpdir(), 'v8-resolver-parity-'));
   roots.push(root);
   const fragments = join(root, 'frags');
@@ -113,7 +113,7 @@ function fixturePlugin(): FragmentPlugin {
     'utf8',
   );
 
-  return { name: 'probe', manifest: FIXTURE_MANIFEST, fragments, agents };
+  return { name, manifest: FIXTURE_MANIFEST, fragments, agents };
 }
 
 /** The projected SOUL of the fixture agent, under a given fold. */
@@ -135,8 +135,8 @@ describe('resolver ⇄ projector parity', () => {
   it('folds to the identity when nothing patches — why the two paths agreed', async () => {
     const plugin = fixturePlugin();
     const discovered = await discoverFragments([plugin]);
-    expect(discovered).toHaveLength(1);
-    expect(discovered[0]?.fragments).toHaveLength(1);
+    expect(discovered.size).toBe(1);
+    expect(discovered.get('probe')).toHaveLength(1);
 
     // A plugin originates each fragment with one `replace(body)`, so no body moves
     // and the substitution is EMPTY. This is the whole reason a broken pipe stayed
@@ -155,9 +155,9 @@ describe('resolver ⇄ projector parity', () => {
     // string fragment's node is minted at scan time, so a fold that re-scanned
     // would make its own nodes unaddressable and every patch a missing target.
     const discovered = await discoverFragments([plugin]);
-    const node = discovered[0]?.fragments.find(
-      (f) => f.dimension === 'objective',
-    )?.node;
+    const node = discovered
+      .get('probe')
+      ?.find((f) => f.dimension === 'objective')?.node;
     if (!node) throw new Error('fixture: no objective fragment discovered');
     const patches: PatchEntry[] = [
       { target: node, op: 'replace', value: PATCHED },
@@ -212,7 +212,7 @@ describe('resolver ⇄ projector parity', () => {
       ),
     };
     const discovered = await discoverFragments([canon]);
-    expect(discovered[0]?.fragments.length).toBeGreaterThan(100);
+    expect(discovered.get('canon')?.length).toBeGreaterThan(100);
     expect(resolveFragmentBodies(discovered, []).size).toBe(0);
   });
 
@@ -221,9 +221,9 @@ describe('resolver ⇄ projector parity', () => {
   it('is non-vacuous — a fold that moves a body REFUSES to leave the substitution empty, and an ambiguous body is CONVICTED', async () => {
     const plugin = fixturePlugin();
     const discovered = await discoverFragments([plugin]);
-    const node = discovered[0]?.fragments.find(
-      (f) => f.dimension === 'objective',
-    )?.node;
+    const node = discovered
+      .get('probe')
+      ?.find((f) => f.dimension === 'objective')?.node;
     if (!node) throw new Error('fixture: no objective fragment discovered');
 
     // BAD input 1 — a moved body. The corpus leg above asserts `.size === 0`; a
@@ -238,18 +238,17 @@ describe('resolver ⇄ projector parity', () => {
     // BAD input 2 — two nodes sharing ONE authored body that fold to DIFFERENT
     // values: an agent selecting that body has no determinate value, and the
     // canon leg is green only because the real corpus contains no such pair.
-    const twin = fixturePlugin();
+    const twin = fixturePlugin('twin');
     const twinDiscovered = await discoverFragments([twin]);
-    const twinNode = twinDiscovered[0]?.fragments.find(
-      (f) => f.dimension === 'objective',
-    )?.node;
+    const twinNode = twinDiscovered
+      .get('twin')
+      ?.find((f) => f.dimension === 'objective')?.node;
     if (!twinNode) throw new Error('fixture: no twin objective fragment');
     // Both plugins authored the identical body; patch only one of them.
     expect(() =>
-      resolveFragmentBodies(
-        [...discovered, ...twinDiscovered],
-        [{ target: twinNode, op: 'replace', value: PATCHED }],
-      ),
+      resolveFragmentBodies(new Map([...discovered, ...twinDiscovered]), [
+        { target: twinNode, op: 'replace', value: PATCHED },
+      ]),
     ).toThrow(AmbiguousFragmentBodyError);
   });
 });

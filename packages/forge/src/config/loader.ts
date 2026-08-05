@@ -31,7 +31,6 @@ import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { mergeManifest } from '@cratylus/schema';
 import {
-  type PluginFragmentCatalog,
   type PluginFragmentRoot,
   enumeratePluginFragmentCatalogs,
 } from '../catalog/index.js';
@@ -108,20 +107,21 @@ export async function loadPlugins(
   }));
 
   // Single call → cross-plugin acyclicity is enforced across ALL roots at once
-  // (P3 reuses P2's `validateReferenceGraph`). Output is 1:1 with `roots` order.
+  // (P3 reuses P2's `validateReferenceGraph`), and two plugins claiming one namespace
+  // throw `DuplicateNamespaceError` there rather than quietly merging here.
   const catalogs = await enumeratePluginFragmentCatalogs(
     roots,
     mergeManifest(plugins),
   );
-  const byPlugin = new Map<AgentPlugin, PluginFragmentCatalog>();
-  withFragments.forEach((p, i) => {
-    const c = catalogs[i];
-    if (c) byPlugin.set(p, c);
-  });
 
+  // Looked up BY NAMESPACE, and only for the plugins that contributed a root. The
+  // namespace is a safe key precisely because the enumerator just rejected duplicates
+  // among the roots; a plugin with NO `fragments` dir is still not looked up, so it
+  // cannot inherit a same-named sibling's fragments through this map.
   return plugins.map((p) => {
-    const c = byPlugin.get(p);
-    const contributions: PatchEntry[] = (c?.fragments ?? []).map((f) => ({
+    const fragments =
+      p.fragments === undefined ? [] : (catalogs.get(p.name) ?? []);
+    const contributions: PatchEntry[] = fragments.map((f) => ({
       target: f.node,
       op: 'replace',
       value: f.body,

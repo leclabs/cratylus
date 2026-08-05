@@ -39,6 +39,16 @@
 // Plus a CENSUS: no file but `bin-name.ts` may spell the name as a quoted string
 // literal — the shape of the defect this retires (a second `const BIN = '…'`).
 //
+// THIS REPOSITORY SHIPS TWO BINS, and only one of them has a compile-time home.
+// `RUNTIME_BIN` is a TypeScript constant every consumer interpolates; the forge CLI's
+// name exists in exactly one place a compiler reads — `packages/forge/package.json`'s
+// `bin` key — and `deploy-drift-notice`'s worker must SPELL it, because a shell script
+// cannot import a manifest key and no `ProjectionFact` carries it. That spelling is
+// the same language-boundary exposure the legs above exist for: a rename of the CLI
+// would leave a SessionStart hook invoking a program that is not there, failing on a
+// host rather than at build, and silently — the worker fails open by design. So the
+// spelling is held here by capture-and-compare against the manifest that owns it.
+//
 // This gate does NOT decide the name. The brand anchor is cratylism-gated and has
 // not converged; `RUNTIME_BIN` holds a placeholder. What is asserted is that
 // flipping that ONE symbol flips the name everywhere it is operative.
@@ -53,6 +63,7 @@ import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
 import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
 import { runMain } from '@cratylus/runtime/main';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { deployDriftNotice } from '../src/hooks/deploy-drift-notice.js';
 import { memoryConsolidationNudge } from '../src/hooks/memory-consolidation-nudge.js';
 import canonPlugin from '../src/index.js';
 import { cellTargets } from '../src/toolkit/project-targets.js';
@@ -89,6 +100,23 @@ const read = (rel: string): string =>
 
 /** The committed hook worker — regenerated from the cell, never hand-edited. */
 const workerPath = memoryConsolidationNudge.workers?.[0]?.targetPath ?? '';
+
+/** The forge CLI's ONE home: the `bin` key npm reads, with no compiler in the loop.
+ *  A shell worker cannot import it, so a worker that spells it is held against this. */
+const FORGE_BIN = Object.keys(
+  (
+    JSON.parse(read('packages/forge/package.json')) as {
+      bin: Record<string, string>;
+    }
+  ).bin,
+)[0] as string;
+
+/** The deploy tool a hook worker declares, if any (`DEPLOY_TOOL=<name>`). */
+const deployTool = (sh: string): string | undefined =>
+  sh.match(/^DEPLOY_TOOL=(\S+)$/m)?.[1];
+
+/** The committed worker that names it — the convicting fixtures' subject. */
+const driftWorkerPath = deployDriftNotice.workers?.[0]?.targetPath ?? '';
 
 // A REAL render tree, not a hand-rolled emitter call: the shim under test is the
 // one that actually lands. V7 made the projector RETURN the artifact tree, so the
@@ -247,6 +275,37 @@ describe('the bin name has exactly one home', () => {
     }
   });
 
+  it('EVERY hook artifact that names the DEPLOY TOOL agrees with forge’s `bin` key', async () => {
+    // The forge CLI's one home is a MANIFEST KEY, read here rather than transcribed —
+    // a transcription would be the second copy this whole file exists to forbid.
+    const committed = (await cellTargets())
+      .filter((t) => t.kind === 'hook')
+      .map((t) => [`target ${t.path}`, t.content] as const);
+    const population = [...projectedHooks, ...committed];
+    const naming = population.filter(
+      ([, text]) => deployTool(text) !== undefined,
+    );
+    // NON-VACUITY, per population: a sweep that happens to find the assignment
+    // nowhere is green and DARK — the exact failure the MEMORY_BIN leg above was
+    // rewritten to close, one bin over.
+    expect(
+      naming.map(([where]) => where).filter((w) => w.startsWith('hooks/'))
+        .length,
+      'no PROJECTED hook artifact names the deploy tool — the sweep is dark',
+    ).toBeGreaterThan(0);
+    expect(
+      naming.map(([where]) => where).filter((w) => w.startsWith('target '))
+        .length,
+      'no COMMITTED target names the deploy tool — the sweep is dark',
+    ).toBeGreaterThan(0);
+
+    for (const [where, text] of naming) {
+      expect(deployTool(text), `${where} names a stale deploy tool`).toBe(
+        FORGE_BIN,
+      );
+    }
+  });
+
   it('no projected or committed hook artifact carries an UNRESOLVED placeholder', async () => {
     // The template's own failure mode, at the only grain that matters. `resolveWorker`
     // throws on an unknown placeholder, so this can only go red if a resolution site
@@ -347,6 +406,25 @@ describe('the single-home gate is non-vacuous', () => {
     expect(drifted).not.toBe(good);
     expect(memFallback(good)).toBe(RUNTIME_BIN);
     expect(memFallback(drifted)).not.toBe(RUNTIME_BIN);
+  });
+
+  it('FAILS on a hook worker whose DEPLOY_TOOL drifted from forge’s `bin` key', () => {
+    // The SessionStart drift notice fails OPEN: a worker naming a program that no
+    // longer exists produces silence, and silence is indistinguishable from an
+    // in-sync host. A half-landed CLI rename would therefore delete this hook
+    // without deleting anything. Same capture-and-compare, over a corpus in which
+    // exactly one of the two sites moved.
+    const good = read(driftWorkerPath);
+    const drifted = good.replace(
+      `DEPLOY_TOOL=${FORGE_BIN}`,
+      `DEPLOY_TOOL=${FORGE_BIN}-stale`,
+    );
+    expect(drifted).not.toBe(good); // the mutation actually landed
+    expect(deployTool(good)).toBe(FORGE_BIN);
+    expect(deployTool(drifted)).not.toBe(FORGE_BIN);
+    // and the detector is not simply always-true: a worker naming no tool at all
+    // must read as absent, never as a drifted one.
+    expect(deployTool(read(workerPath))).toBeUndefined();
   });
 
   it('FAILS on a manifest whose `bin` key drifted from the constant', () => {

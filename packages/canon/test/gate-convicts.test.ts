@@ -77,6 +77,13 @@ type Kind = 'GATE' | 'BEHAVIORAL';
 const REGISTRY: Readonly<Record<string, Kind>> = {
   // ── canon ────────────────────────────────────────────────────────────
   'canon/architecture.test.ts': 'GATE',
+  // scans every tracked authored file's BYTES for a control byte outside tab/newline/CR
+  // and for undecodable UTF-8 — the two ways a file stops being text and every text tool
+  // goes silently dark on it. Its convicting fixtures drive the same two pure predicates
+  // over a planted NUL (built with `String.fromCharCode`, never typed — the harness
+  // `Bash` tool refuses a literal one), over every byte in 0x00–0x1F plus DEL, and over a
+  // lone UTF-8 continuation byte that carries no control byte at all.
+  'canon/authored-source-is-text.test.ts': 'GATE',
   'canon/bin-name-single-home.test.ts': 'GATE',
   'canon/boundary-binding.test.ts': 'GATE',
   // reads the LIVE runtime keyspace, port modules, plugin sites and skill cells;
@@ -95,6 +102,12 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/cell-gloss-census.test.ts': 'GATE',
   'canon/command-veracity.test.ts': 'GATE',
   'canon/cratylism.test.ts': 'GATE',
+  // BEHAVIORAL: it builds a corpus, a render tree and a deployed `.claude` itself and
+  // drives the committed SessionStart worker over both, so its negative cases ARE its
+  // fixtures. Every SILENT leg is paired with a one-byte mutation of the same host
+  // that must make the same worker speak — the control that separates a working
+  // in-sync check from one that compared nothing.
+  'canon/deploy-drift-notice.test.ts': 'BEHAVIORAL',
   'canon/event-tap-cell.test.ts': 'GATE',
   // censuses the LIVE `packages/*/src` corpus for a SECOND event-name list, then
   // crosses the two seams no compiler reaches: every adapter map key against canon's

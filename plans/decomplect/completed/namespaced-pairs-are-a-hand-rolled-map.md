@@ -49,7 +49,7 @@ decode and which from the collapse.
 
 - **slice** deploy-surface · **wave** 0
 - **depends on** `t-engine-internal-names-await-decode`
-- **writes** `packages/forge/src/catalog/**` · `packages/forge/src/config/loader.ts` · `packages/forge/test/catalog/**`
+- **writes** `packages/forge/src/catalog/**` · `packages/forge/src/config/loader.ts` · `packages/forge/test/catalog/**` · `packages/forge/src/project/index.ts` · `packages/forge/test/project/resolver-parity.test.ts`
 - **compiles against** `packages/schema/src/index.ts`
 - **evidence** `packages/forge/src/catalog/index.ts`
 - **dispatchable** no ruling owed

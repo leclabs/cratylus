@@ -193,6 +193,7 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
   it('every shell-hook family is a hook cell (behavior-in-cell)', async () => {
     const ids = (await allHookCells()).map((c) => c.id).sort();
     expect(ids).toEqual([
+      'deploy-drift-notice',
       'memory-consolidation-nudge',
       'praxis-continuity',
       'resume-availability-notice',

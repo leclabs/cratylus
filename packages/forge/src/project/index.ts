@@ -50,7 +50,7 @@ import {
 } from '@cratylus/schema';
 import type { HarnessMechanism } from '@cratylus/schema/hook';
 import {
-  type PluginFragmentCatalog,
+  type PluginFragmentCatalogs,
   enumeratePluginFragmentCatalogs,
 } from '../catalog/index.js';
 import type { ResolvedSkill } from '../core/body.js';
@@ -300,14 +300,14 @@ export class AmbiguousFragmentBodyError extends Error {
  */
 export async function discoverFragments(
   plugins: readonly ProjectablePlugin[],
-): Promise<PluginFragmentCatalog[]> {
+): Promise<PluginFragmentCatalogs> {
   const roots = plugins
     .filter((p): p is ProjectablePlugin & { fragments: string } =>
       Boolean(p.fragments),
     )
     .map((p) => ({ name: p.name, fragmentsDir: p.fragments }));
   return roots.length === 0
-    ? []
+    ? new Map()
     : enumeratePluginFragmentCatalogs(roots, mergeManifest(plugins));
 }
 
@@ -327,13 +327,13 @@ export async function discoverFragments(
  * empty, and the render tree is byte-for-byte what it was.
  */
 export function resolveFragmentBodies(
-  discovered: readonly PluginFragmentCatalog[],
+  discovered: PluginFragmentCatalogs,
   patches: readonly PatchEntry[] = [],
 ): ReadonlyMap<string, string> {
-  if (discovered.length === 0) return new Map();
-  const extended: LoadedPlugin[] = discovered.map((d) => ({
-    name: d.name,
-    contributions: d.fragments.map((f) => ({
+  if (discovered.size === 0) return new Map();
+  const extended: LoadedPlugin[] = [...discovered].map(([name, fragments]) => ({
+    name,
+    contributions: fragments.map((f) => ({
       target: f.node,
       op: 'replace' as const,
       value: f.body,
@@ -343,8 +343,8 @@ export function resolveFragmentBodies(
 
   // Collect every value each authored body resolves to, then admit only the moves.
   const byBody = new Map<string, Set<string>>();
-  for (const d of discovered) {
-    for (const f of d.fragments) {
+  for (const entries of discovered.values()) {
+    for (const f of entries) {
       if (typeof f.body !== 'string') continue;
       const folded = fragments.get(f.node)?.value;
       if (typeof folded !== 'string') continue;
