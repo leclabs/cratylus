@@ -15,3 +15,64 @@ latent vocabulary. Cratylus is its instrument. See [VISION §The discipline](./V
      record is plans/discipline-anchor/PLAN.md; the admitting evidence is VISION §The discipline. -->
 
 ![thesis.png](./thesis.png)
+
+## The problem
+
+Prompt engineering asks _how should I describe this?_ Context engineering asks _what should
+accompany the request?_ Both locate meaning in text the author writes, and both inherit the same
+failure: prose is re-interpreted on every read. Iterate on it and it accumulates hedges, patches and
+hidden assumptions — more context consumed, weaker specification.
+
+## The inversion
+
+A foundation model already holds dense, structured priors over the concepts you are trying to
+express. For any such concept there exists a signifier that fires it most sharply — the one
+minimizing the mismatch between what the token actually invokes and what you meant. That is a
+**semantic address**, and it is **discovered, not coined**.
+
+|                         | asks                           | meaning comes from   |
+| ----------------------- | ------------------------------ | -------------------- |
+| prompt engineering      | how do I **describe** it?      | the author           |
+| context engineering     | what should **accompany** it?  | the assembled window |
+| **latent lexicography** | what is it **already called**? | **the model**        |
+
+The consequence is a compiler, not a prompt library: **discover → verify → canonize → compose →
+project**. The canon is source; every agent, skill and config is a deterministic projection of it.
+Runtime prose stops being the definition and becomes the emitted representation.
+
+This guarantees a **reproducible semantic specification** — deliberately not deterministic model
+behavior, which would be a lie. Only one of those two uncertainties is reducible.
+
+## The packages
+
+| package                                   | concern                                                          |
+| ----------------------------------------- | ---------------------------------------------------------------- |
+| [`@cratylus/canon`](./packages/canon)     | **meaning** — the corpus of signified agents, skills and rules   |
+| [`@cratylus/runtime`](./packages/runtime) | **mechanism** — capability ports and the runtime plugin contract |
+| [`@cratylus/forge`](./packages/forge)     | **projection** — the deterministic map onto one harness          |
+| [`@cratylus/schema`](./packages/schema)   | the shapes a corpus authors against                              |
+| [`@cratylus/memory`](./packages/memory)   | a runtime capability: an episodic store + consolidation verbs    |
+| [`@cratylus/invoke`](./packages/invoke)   | the run-time entry — ships the `cratylus-run` command            |
+
+Two commands, because there are two DAGs: **`cratylus`** at build time, **`cratylus-run`** at run
+time. [`ARCHITECTURE.md`](./ARCHITECTURE.md) explains why merging them would undo the seam.
+
+## Status
+
+**Pre-release. Nothing is published yet** and every version is `0.0.0`. The architecture's
+load-bearing properties are enforced by a gate that reads the real import graph, and the projected
+corpus is pinned by a render oracle (`pnpm oracle`) rather than by prose. Where the source diverges
+from the intended architecture, [`ARCHITECTURE.md`](./ARCHITECTURE.md) says so in a ratchet table
+that fails the suite when a breach is repaired without retiring its pin.
+
+## Reading order
+
+1. [`VISION.md`](./VISION.md) — **why**: the thesis, the inversion, the discipline
+2. [`MODEL.md`](./MODEL.md) — **what** exists
+3. [`ENGINE.md`](./ENGINE.md) — **how** addresses are discovered, validated and projected
+4. [`ARCHITECTURE.md`](./ARCHITECTURE.md) — the packages and the seams between them
+5. [`CANON.md`](./CANON.md) — the corpus itself
+
+## License
+
+MIT — see [LICENSE](./LICENSE).
