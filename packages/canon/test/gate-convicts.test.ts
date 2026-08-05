@@ -31,6 +31,57 @@
 // The common shape: each produces a PASS that reads as evidence and carries none. A gate
 // calibrated by such a control is dark with a certificate.
 //
+// WHEN A VERDICT IS NOT ABOUT THE CORPUS. The five above are ways a FIXTURE fails to fail.
+// These five are about the ASSERTION: each yields a verdict that is real and reproducible
+// and is about something other than the corpus under test. Every one was paid for here, in
+// the plan-shape gates this suite retired along with the plan they read — which is the
+// reason they are written down at THIS seam. A law about how to build a gate cannot live in
+// a gate scoped to one subject, because deleting the subject deletes the law; it lives with
+// the meta-gate every gate author must already open to classify a new file.
+//
+//   A. THE VERDICT TRACKS THE GATE'S OWN SEARCH. A gate that compares the live artifact
+//      against the best value a HEURISTIC SEARCH reached is ranking the corpus against
+//      that search's luck. Measured: a slice-cut gate ran 40 seeded restarts of swap-based
+//      local search and required the live cut to be no worse than the best restart. Adding
+//      a plan node with `deps: []` — which cannot change the cross-edge count of ANY
+//      assignment — flipped it green→red while the measured quantity stood still at 23,
+//      because a 46th node gave the shuffler one more thing to permute. The repair it then
+//      demanded was to re-label work that had already landed. Assert what is DECIDABLE and
+//      exhaustive (here: no admissible swap improves the cut), never "beat what the search
+//      found". A gate whose verdict moves while its subject does not will red on inputs a
+//      previous run of the same gate passed.
+//   B. A GATE THAT READS HISTORY CANNOT CONVICT THE COMMIT BEING AUTHORED. A scan over
+//      `git log` cannot see a commit that does not exist yet, so a violation is convicted
+//      on the NEXT run and never on the one that would have blocked it. That is not a
+//      fixable oversight at that seam — it is what retrospective MEANS — but it has to be
+//      STATED, because a green retrospective gate reads as a pre-commit guarantee and is
+//      not one. Measured: `a619f8c9` landed with three under-declared shard-output arrays
+//      while the gate that checks them was green; the red appeared only afterwards.
+//   C. THE ASSERTION MUST CARRY EVERY GUARD THE LAW IT QUOTES CARRIES. A leg that PRINTS
+//      `bound ∧ sharded ∧ ¬done ⇒ frontier ≠ ∅` and ASSERTS `frontier ≠ ∅` unconditionally
+//      enforces a strictly stronger law than the one in the cell. That one turned red
+//      permanently when the last item completed, and the only way back to green was to add
+//      work — a gate that punishes a corpus for satisfying its own law teaches that the
+//      terminal state is a failure state. The guarded branch is worth writing rather than
+//      skipping, and worth reading twice: `done ⇒ frontier = ∅` is a TAUTOLOGY (`frontier`
+//      is a subset of the open states), so what has content is that a corpus reporting DONE
+//      LANDED its items rather than LOST them.
+//   D. A RATCHET KEY MUST NOT BE POSITIONAL. A shrink-only allowlist keyed on `file:line`
+//      breaks every pin below any edited line, so the gate convicts a document for being
+//      EDITED. A pin identifies WHICH excused thing is excused; the line it sits on is
+//      reporting detail, not identity. Key on the identity, report the position.
+//   E. A GATE OVER GENERATED PROSE MUST ASSERT THE DATA, NOT THE FORMATTING. A derived fact
+//      written as prose — a table, a list, a rendered summary — round-trips through a
+//      formatter. A string compare against it FAILS on reflowed padding and PASSES on wrong
+//      content: both directions wrong, and the false red trains the reader to re-baseline.
+//      Parse the emitted artifact back to the data it encodes and compare THAT.
+//
+// AND THE TERMINAL STATE OF A SHRINK-ONLY RATCHET IS DELETION, NOT ∅. A list that has
+// shrunk to zero entries is an exemption mechanism with no subject: its `every pin still
+// FAILS` leg iterates nothing and reads green for having looked at nothing — hazard 5 with
+// a registry instead of a count. Delete the list and its leg; the gate that hosted it gets
+// strictly stronger, and a future subject rebuilds the mechanism with something to protect.
+//
 // DECLARED, NOT DETECTED. The classification below is an explicit registry rather
 // than a heuristic over file contents, because a heuristic meta-gate is the very
 // failure it exists to catch: it would pass when its own detector silently stopped
@@ -134,19 +185,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/memory-nudge.test.ts': 'BEHAVIORAL',
   'canon/null-dimension.test.ts': 'GATE',
   'canon/plan-set.test.ts': 'GATE',
-  // enumerates the LIVE shard corpus of the bound plan against `plans/decomplect/spec.mjs`;
-  // its convicting fixture drives the same wave/expand/intersect over a synthetic plan.
-  'canon/praxis-execution-spec.test.ts': 'GATE',
   'canon/projection-stability.test.ts': 'GATE',
   'canon/reader-density.test.ts': 'GATE',
-  // enumerates the LIVE plans/ record dirs against a pinned roster; its convicting
-  // fixture drives the same pure checks over a synthetic corpus in a tmpdir.
-  'canon/record-retrofit-notice.test.ts': 'GATE',
   'canon/reader-reach.test.ts': 'GATE',
   'canon/runtime-shim.test.ts': 'BEHAVIORAL',
-  // compares each completion commit's diff against the outputs the shards it landed declare;
-  // its convicting fixture drives the same `expand` over a synthetic tracked set.
-  'canon/shard-scope.test.ts': 'GATE',
   'canon/skill-shape.test.ts': 'GATE',
   // twin of memory-nudge: drives the guardrail worker with a broken judge it supplies
   // itself, and carries its own negative control (opted-out ⇒ silent).

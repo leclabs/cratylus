@@ -29,9 +29,9 @@ export const PLAN_FRONTIER = [
  *
  * `.ruling-owed` is the third carrier this corpus has minted on that reading, and
  * it carries the concept the corpus ALREADY signifies as a ruling owed — "a
- * decision nobody has taken", which `spec.mjs` and `praxis-execution-spec.test.ts`
- * both distinguish from a dependency ("mechanical sequencing an executor can wait
- * out, a ruling is not"). At the SHARD tier that concept is `blockedBy`; at the
+ * decision nobody has taken", which the `praxis` cell distinguishes from a
+ * dependency ("a dep waits itself out, a ruling needs a human"). At the SHARD tier
+ * that concept is `ruling-owed(t)`, and it gates `ready`; at the
  * PLAN tier it had no carrier at all, so a fork the principal cannot resolve —
  * irreversible, or above its competence — was unreadable from disk however loudly
  * it had been surfaced. Its content is the fork as it was put to the operator.

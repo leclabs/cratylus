@@ -28,13 +28,15 @@ jobs:
     timeout-minutes: 15
 
     steps:
-      # `fetch-depth: 0` is load-bearing, not caution. The default is a SHALLOW clone,
-      # and `record-retrofit-notice` verifies a `git show <sweep>^:<path>` that a reader
-      # is told to run — an object only full history holds. Shallow, that leg reports
-      # NOT-CHECKABLE and CI would go green having looked at nothing.
+      # A SHALLOW clone is enough, and that is a fact about the suite rather than a
+      # preference. `fetch-depth: 0` was here for one leg that verified a
+      # `git show <sha>^:<path>` a reader is told to run — an object only full history
+      # holds — and that gate retired with the plan it read. Every surviving leg that
+      # touches git reads `git ls-files` against the working tree, or builds its own
+      # repository in a tmpdir; none reads this checkout's history. Re-add the depth
+      # WITH the leg that needs it, never ahead of one: a full clone bought as caution
+      # is a cost nothing is spending.
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       # The pnpm version is pinned by `packageManager` in package.json; letting
       # the action read it there keeps ONE home for it.

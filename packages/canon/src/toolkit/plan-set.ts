@@ -8,8 +8,7 @@
 // cell: `retire(P) defined ⇔ terminal(P) ∧ drained(yield(P))`, and `drained` means
 // every intent is ALREADY authored into its strongest seam. So the archive's
 // content preserved nothing the corpus did not hold, and git holds the bytes
-// regardless. See
-// `plans/decomplect/completed/retire-relocates-but-the-operator-deletes.md`.
+// regardless. (The shard that argued this retired with its plan; git holds it.)
 //
 // Two disciplines this module obeys:
 //   • folder-as-state — a plan's MEMBERSHIP is its on-disk residence: a directory

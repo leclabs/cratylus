@@ -32,6 +32,14 @@ defect   ≜ ⟨symptom, locus, provenance⟩
 owns     : defect ⇀ P
 impedes  : defect × P → 𝔹
 refs     : P → ℘(path) ⟨what a shard's outputs compile against⟩
+sign     ≜ a name the corpus bears
+rewrites : P → ℘(sign) ⟨the signs t re-signifies⟩
+occurs   : sign → ℘(path) ⟨every site SPELLING it · the site DEFINING it is ONE of them⟩
+footprint : P → ℘(path) ⟨the paths landing t changed⟩
+origin   : P ⇀ P ⟨the shard t was CUT OUT of · borne by no plan datum⟩
+cross(S) ≜ |R ∩ ⋃ { sᵢ × sⱼ | sᵢ, sⱼ ∈ S ∧ i ≠ j }|
+admissible(S) ⇔ ∀ s ∈ S : 3 ≤ |s| ≤ 1.5 · |P| / |S| ⟨a slice under 3 is a label ¬ a lane · a slice far above the mean cannot be fanned out against its siblings · both bounds are COMPUTED from |P| ∵ a fixed pair encodes |P| at the moment someone wrote it down⟩
+swap(S,t,u) ≜ S with t and u exchanging slices
 dir      : P → path
 state   : P → States
 truth   : P → States
@@ -56,6 +64,7 @@ terminal : P → 𝔹
 phase    : P → Phase
 
 blocked(t)  ⇔ ∃ u : (t, u) ∈ R ∧ state(u) ≠ completed
+ruling-owed(t) ⇔ a decision nobody has taken stands between t and its acceptance ⟨¬ a dep ∵ a dep is mechanical sequencing an executor can wait out⟩
 live(s)     ⇔ registered(s) ∧ ¬ released(s) ∧ ¬ stale(s)
 occupied(P) ⇔ owner(P) defined ∧ owner(P) ≠ self ∧ live(owner(P))
 retires(c, P) ⇔ c deletes dir(P) ⟨the twin of lands · retirement is VCS-carried, ¬ residence-carried⟩
@@ -63,7 +72,7 @@ retired(P)  ⇔ retirement(P) defined
 superseded(P) ⇔ .superseded-by @ dir(P)
 frontier(P) ≜ { t | t ∈ P ∧ state(t) ∈ { ready, active } } ⟨where the plan IS · ¬ only what is dispatchable⟩
 sharded(P)  ⇔ P ≠ ∅
-promote(u)  ≜ { t | (t, u) ∈ R ∧ state(t) = pending ∧ ¬blocked(t) }
+promote(u)  ≜ { t | (t, u) ∈ R ∧ state(t) = pending ∧ ¬blocked(t) ∧ ¬ruling-owed(t) }
 next        ≜ { pending ↦ ready, ready ↦ active, active ↦ completed, completed ↦ completed }
 W(n)        ≜ ⋃ { wave(i) | i <= n }
 wave(0)     ≜ { t | ∄ u : (t, u) ∈ R }
@@ -80,21 +89,29 @@ owner(P) @ dir(P)/.owner
 registered, released, stale @ memory-session-registry
 ∀ t : content(t) ⊨ spec(t)
 ∀ t : ∀ p ∈ static(t) : p exists at authoring
+∀ t : ∀ p ∈ outputs(t) : p exists ∨ the directory holding p exists ⟨a shard MAY create a file ∴ a non-resolving output is ¬ automatically a typo · the PARENT discriminates a creation target from a misspelling⟩
 ∀ t : ∃ r : ¬accept(t)(r)
 ∀ t : ¬accept(t)(pre(t))
 ∀ t : accept(t)(pre(t)) ⇒ ¬(content(t) ⊨ spec(t))
 ∀ t : content(t) grounded-by census(intent(t))
 ∀ t : ¬(content(t) grounded-by census(intent(t))) ⇒ ¬(content(t) ⊨ spec(t))
 ∀ t : census(intent(t)) delegable-to agent
+state(t) = ready ⇒ ¬ blocked(t) ∧ ¬ ruling-owed(t) ⟨ready PROMISES an executor can pick t up and FINISH · conflating a dep with a ruling stalls a fan-out with every agent blocked on the same unanswered question⟩
 ⋃ slices(P) = P
 ∀ s₁, s₂ ∈ slices(P) : s₁ ≠ s₂ ⇒ s₁ ∩ s₂ = ∅
-slices(P) = argmin over admissible cuts of |R ∩ ⋃ { sᵢ × sⱼ | i ≠ j }|
+admissible(slices(P)) ∧ ∄ t, u ∈ P : admissible(swap(slices(P),t,u)) ∧ cross(swap(slices(P),t,u)) < cross(slices(P))
+argmin over an UNNAMED admissible ⇒ unfalsifiable ∧ global argmin over every assignment ¬ decidable ∴ argmin ↾ LOCAL ⟨no admissible swap improves the cut · exhaustive ∧ deterministic⟩
 waves = (wave(0), …, wave(m))
 ∀ n < m : |wave(n)| = 1 ⇒ slices mis-cut ⟨a singleton non-terminal wave is a chain, ¬ a cut⟩
 ∀ t, u ∈ wave(n) : t ≠ u ⇒ outputs(t) ∩ outputs(u) = ∅ ⟨the concurrency precondition⟩
 ∃ t, u ∈ wave(n) : t ≠ u ∧ outputs(t) ∩ outputs(u) ≠ ∅ ⇒ slices mis-cut
 ∀ t, u ∈ wave(n) : t ≠ u ⇒ outputs(t) ∩ refs(u) = ∅ ⟨disjoint outputs is NECESSARY ¬ sufficient : a deletion in t dangles a reference in u⟩
 ⊨ disjoint-outputs ⇒ dispatch(wave(n)) needs-no-isolation ⟨a correctly cut wave never contends⟩
+∀ t : footprint(t) ⊆ outputs(t) ⟨outputs IS the contention set ∴ an under-declared array silently voids every disjointness proof above · a shorter array is still an array of resolving globs⟩
+∀ t : ⋃ { occurs(s) | s ∈ rewrites(t) } ⊆ outputs(t) ⟨a shard's footprint is its REFERENCE set, ¬ its definition site · a rename touches every speller · giving a name its first home makes every existing spelling interpolate it · resolve occurs BEFORE declaring outputs⟩
+⟨measured 6 under-declared arrays across one plan, ONE cause ⟨footprint read off where a sign is DEFINED while the work was bounded by where it is USED⟩ · declared 1 glob and wrote 15 paths · 1 and 12 · 8 and 20⟩
+origin(t) defined ⇒ outputs(t) re-derived from rewrites(t) ⟨SPLITTING A SHARD DOES NOT SPLIT ITS BLAST RADIUS · the child's array is its own, ¬ the topical part of outputs(origin(t)) · so a split understates BY CONSTRUCTION, ¬ by oversight⟩
+∄ origin borne by any plan datum ⇒ ¬ gateable ∴ this law rides the CELL ⟨the seam nearest the defect is the only one left when the datum a check would need was never captured⟩
 (state, R, content) ≽ PLAN.md
 mirror(state, R, content) emits R ∧ waves
 depalimpsest(depalimpsest(c)) = depalimpsest(c)
@@ -122,7 +139,9 @@ bound(P) @ dir(P)/.bound ⟨persistent · survives session-end · ¬ derived fro
 ∃ P ∈ Plans : ¬ terminal(P) ⇒ ∃! P : bound(P) ⟨always-bind ∧ WIP=1 · one law⟩
 bound(P) ⇒ ¬ occupied(P)
 bound(P) ∧ ¬ sharded(P) ⇒ start(P) ≺ dispatch(P) ⟨binding an unsharded plan obliges the cut⟩
-bound(P) ∧ sharded(P) ∧ ¬ done(P) ⇒ frontier(P) ≠ ∅
+bound(P) ∧ sharded(P) ∧ ¬ done(P) ⇒ frontier(P) ≠ ∅ ⟨the ¬ done antecedent is LOAD-BEARING · dropped, the law reds a plan for FINISHING ∧ the cheapest green is filing work nobody needs⟩
+done(P) ⇒ frontier(P) = ∅ ⟨TAUTOLOGY ∵ frontier(P) ⊆ the open states · carries no content and is the first thing anyone writes here⟩
+done(P) ⇒ ∀ t ∈ P : t @ dir(P)/completed ⟨done is witnessed by RESIDENCE · a task-file that VANISHED empties frontier(P) exactly as finishing does, ∧ only residence tells the two apart⟩
 sharded(P) ∧ ¬ done(P) ∧ frontier(P) = ∅ ⇒ R ill-formed ⟨cycle ∨ unsatisfiable dep⟩ · SURFACE
 gates(P, Q) ⇔ ∃ t ∈ Q : landing(P) ∈ deps(t)
 elect ≜ in-flight ≻ gating ≻ operator-intent ⟨lexicographic · finish before starting⟩

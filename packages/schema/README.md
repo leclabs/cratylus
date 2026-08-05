@@ -62,17 +62,15 @@ The `@cratylus/schema/hook` subpath carries the harness-agnostic lifecycle-event
 (`CanonicalEvent`, `Substrate`, `SubstrateEvent`), the `Hook` wire shape, and `HarnessMechanism` —
 the realization payload for one enforcing constraint on one harness. It imports nothing.
 
-## One honest edge
+## No edge out
 
-`src/index.ts` imports `@cratylus/runtime` — an edge the architecture's graph does not draw:
+This package imports nothing. It used to import `@cratylus/runtime` for one type —
+`CapabilityName` read `keyof Omit<RuntimePlugin, 'name'>`, reaching into the runtime's
+implementation interface to borrow a set of NAMES. That is the fusion `shape ⊥ vocabulary` rules
+against: the shape belongs here, the vocabulary belongs to the corpus that declares the members.
 
-```ts
-import type { RuntimePlugin } from '@cratylus/runtime';
-export type RuntimeCapability = keyof Omit<RuntimePlugin, 'name'>;
-```
-
-What it consumes is a **vocabulary** (`'memory' | 'eventTap'`), not a shape, and `shape ⊥ vocabulary`
-already rules against that fusion elsewhere in the model. The edge is type-only and used in exactly
-one place — `SkillDeploy.runtime`. It is **ratcheted, never licensed**: pinned by
-`canon/test/architecture.test.ts` so it cannot silently grow, with the resolution filed as
-`plans/decomplect/ready/t-runtime-capability-vocabulary.md`.
+The edge is gone and nothing moved to retire it. Schema now states only that a capability HAS a
+name; the closed set is declared where a corpus declares its own vocabulary
+(`RUNTIME_CAPABILITIES` in `packages/canon/src/manifest.ts`), and `SkillDeploy.runtime` is
+parameterized over it. The sign did not change — schema already called it `RuntimeCapability`, and
+that is the finding: the name was never the defect, the derivation source was.

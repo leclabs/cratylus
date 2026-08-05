@@ -31,6 +31,16 @@
 //     contains the needle" hazard, in its own source.
 //   - `node_modules`, `graphify-out`, `dist` — not authored here.
 //
+// THE RATCHET IS GONE, AT ZERO. It held four pins, all naming one defect record inside
+// `decomplect` that quoted the dead `anatomy:*` scripts in order to document them. Retiring
+// that plan deleted the citations, so the ratchet shrank to ∅ — and an exemption list with no
+// members is a mechanism with no subject: `every pin still FAILS` iterates nothing and reads
+// green for having looked at nothing, which is the shape this suite exists to reject. The
+// list and its shrink-only leg are therefore deleted rather than emptied, and the gate is
+// STRICTLY STRONGER for it — every cited command must now resolve, with no excuse available.
+// A future defect record that must quote a dead script rebuilds the mechanism then, when it
+// has a live subject to protect.
+//
 // RESOLUTION. A token resolves if it is a script key in the root `package.json` or
 // in any workspace package's. Workspace scripts count because `pnpm --filter <pkg>
 // <script>` and an in-package invocation are both legitimate. pnpm's own verbs are
@@ -94,24 +104,6 @@ const PNPM_BUILTINS = new Set([
   'dx',
 ]);
 
-/**
- * Known-false citations, pinned in the open — and the reach leg below is what makes
- * a short list mean the corpus conforms rather than that little was read.
- *
- * These four are a DEFECT RECORD quoting the defect it records. `CRATYLISM-SWEEP.md`
- * documents the renamed-script class and must be able to name the dead scripts to do
- * so — the same use/mention line that keeps the stance rubric's quoted collapse
- * examples out of the density gate. They are pinned rather than excluded by path,
- * because "the plans tree is out of scope" would also excuse a live plan that tells
- * a reader to run something that does not exist. They retire when the sweep does.
- */
-const VERACITY_RATCHET: ReadonlySet<string> = new Set([
-  'plans/decomplect/CRATYLISM-SWEEP.md → anatomy:',
-  'plans/decomplect/CRATYLISM-SWEEP.md → anatomy:project:targets',
-  'plans/decomplect/CRATYLISM-SWEEP.md → anatomy:project',
-  'plans/decomplect/CRATYLISM-SWEEP.md → anatomy:deploy:hooks',
-]);
-
 interface Citation {
   readonly file: string;
   readonly line: number;
@@ -119,19 +111,7 @@ interface Citation {
   readonly raw: string;
 }
 
-/**
- * The ratchet key. Deliberately NOT line-numbered.
- *
- * The first version keyed on `file:line`, and editing prose ABOVE a pinned citation
- * broke every pin below it — the gate convicted a document for being edited, which
- * is a defect in the gate rather than the document. A pin identifies WHICH false
- * citation is excused; the line it sits on is reporting detail, not identity.
- */
-function key(c: Citation): string {
-  return `${c.file} → ${c.script}`;
-}
-
-/** What a failure reports — the key, plus the line so it can be found. */
+/** What a failure reports — file and script, plus the line so it can be found. */
 function label(c: Citation): string {
   return `${c.file}:${c.line} → ${c.script}`;
 }
@@ -260,29 +240,15 @@ describe('COMMAND-VERACITY gate — a named command must exist', () => {
     expect(declared).toContain('canon:deploy:hooks');
   });
 
-  it('every cited command resolves, or is an explicit ratchet pin', () => {
+  it('every cited command resolves — no exemption', () => {
     const declared = declaredScripts();
     const failures = citations()
-      .filter((c) => !declared.has(c.script) && !VERACITY_RATCHET.has(key(c)))
+      .filter((c) => !declared.has(c.script))
       .map(
         (c) =>
           `VERACITY ${label(c)} — no such script (cited as \`${c.raw.trim()}\`)`,
       );
     expect(failures, failures.join('\n')).toEqual([]);
-  });
-
-  it('the ratchet is shrink-only: every pin still FAILS', () => {
-    const declared = declaredScripts();
-    const live = new Set(citations().map(key));
-    for (const pin of VERACITY_RATCHET) {
-      expect(live.has(pin), `ratchet pin ${pin} names no live citation`).toBe(
-        true,
-      );
-      const script = pin.split(' → ')[1] as string;
-      expect(declared.has(script), `${pin} now resolves — REMOVE its pin`).toBe(
-        false,
-      );
-    }
   });
 
   // The convicting fixture — the known-answer control that separates "corpus is
