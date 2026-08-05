@@ -56,3 +56,30 @@ re-derivation path for a retired scope.
 - A cold reader given only the apex triad cannot derive a bounded enumeration of what σ\* governs.
 - Ideally a gate: the apex triad's claims about **reach** agree. Nothing checks any cross-document
   consistency in the triad today — which is why this survived a `LOCKED` file being edited.
+
+---
+
+## ✅ RESOLVED 2026-08-05 — `3710c4bf`
+
+The operator took option (2), the ranked recommendation: **replace the enumeration with the
+generalized clause**, so the apex document states the reach in its own register and `cratylism`
+signifies it — one home, two registers.
+
+`VISION.md` now reads:
+
+> The constraint therefore reaches **every authored surface**, and it recognizes no privileged kind:
+> prose, identifier, and path are one register, each carrying either an optimal signifier or a
+> composition of them. An enumeration of the surfaces that qualify would be a bound on the
+> discipline, and there is none — anything this project writes is subject to the same
+> cold-verification.
+
+That last sentence is the load-bearing one. It does not merely drop the list; it **states why there
+is no list**, which is what stops the enumeration being reintroduced as a helpful clarification
+later. The failure mode this shard recorded was a reader deriving a bounded scope from the apex
+documents alone — that derivation is now blocked at the source rather than at the projection.
+
+**Still open, and larger than this shard:** nothing checks cross-document consistency in the apex
+triad. `CANON.md` asserts the three "must stay mutually consistent" and no gate reads that assertion.
+This instance was found by hand, at the cost of a whole session's wrong conclusion. The acceptance
+criterion this shard listed third — _a cold reader given only the apex triad cannot derive a bounded
+enumeration_ — is met for this instance and unenforced in general.
