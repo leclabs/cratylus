@@ -8,7 +8,7 @@ import { execFileSync } from 'node:child_process';
 //
 //   node plans/decomplect/advance.mjs            # report
 //   node plans/decomplect/advance.mjs --apply    # git mv into place
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readdirSync, renameSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { SHARDS } from './spec.mjs';
@@ -35,12 +35,17 @@ for (const [id, t] of Object.entries(SHARDS)) {
     !t.blockedBy && t.deps.every((d) => completed.has(d)) ? 'ready' : 'pending';
   if (at === want) continue;
   console.log(`${at} → ${want}  ${id}`);
-  if (apply)
-    execFileSync('git', [
-      'mv',
-      join(PLAN, at, `${id}.md`),
-      join(PLAN, want, `${id}.md`),
-    ]);
+  if (apply) {
+    const from = join(PLAN, at, `${id}.md`);
+    const to = join(PLAN, want, `${id}.md`);
+    // `git mv` refuses an UNTRACKED file, and a freshly filed shard is untracked until staged.
+    // A plain rename is the same act to the plan; git notices it at `add` time.
+    try {
+      execFileSync('git', ['mv', from, to], { stdio: 'pipe' });
+    } catch {
+      renameSync(from, to);
+    }
+  }
   moved++;
 }
 console.log(apply ? `applied ${moved}` : `${moved} would move (pass --apply)`);

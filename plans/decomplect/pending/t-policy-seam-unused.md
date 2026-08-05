@@ -41,9 +41,9 @@ Each has ~3 consumer sites. `NO_PRIOR` is the cleanest first cut — its own fil
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** host-and-config · **wave** 1
+- **slice** corpus-rename · **wave** 1
 - **depends on** `t-manifest-file-basename` · `t-soul-to-target-in-forge`
-- **writes** `packages/forge/src/validate/policy.ts` · `packages/forge/src/validate/oracle.ts` · `packages/forge/src/validate/structural-parsimony.ts`
+- **writes** `packages/forge/src/validate/policy.ts` · `packages/forge/src/validate/oracle.ts` · `packages/forge/src/validate/structural-parsimony.ts` · `packages/forge/src/core/exemplify/register.ts` · `packages/canon/src/toolkit/cold-oracle/**`
 - **compiles against** `packages/forge/src/core/exemplify/register.ts`
 - **evidence** `packages/forge/src/validate/policy.ts` · `packages/canon/src/toolkit/cold-oracle/policy.ts`
 - **dispatchable** no ruling owed

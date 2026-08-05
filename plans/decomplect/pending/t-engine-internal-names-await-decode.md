@@ -38,7 +38,7 @@ unrelated signs.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** deploy-surface · **wave** 1
+- **slice** deploy-surface · **wave** 2
 - **depends on** `t-coined-classification`
 - **writes** `packages/forge/src/catalog/**`
 - **compiles against** `packages/schema/src/index.ts`

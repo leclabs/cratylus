@@ -54,6 +54,13 @@ export const SHARDS = {
       'packages/canon/src/toolkit/plan-set.ts',
       'packages/canon/src/toolkit/project-targets.ts',
       'packages/canon/src/toolkit/project-template.ts',
+      'packages/canon/src/toolkit/scaffold-cli.ts',
+      'packages/canon/src/toolkit/plan-states.ts',
+      'packages/canon/test/cratylism.test.ts',
+      'packages/canon/test/projection-stability.test.ts',
+      'packages/canon/test/symbols.test.ts',
+      'packages/canon/test/reader-density.test.ts',
+      'packages/canon/test/hook-rule-boundary.test.ts',
     ],
     refs: ['packages/schema/src/index.ts'],
     static: [
@@ -100,6 +107,9 @@ export const SHARDS = {
       'packages/forge/src/adapters/**',
       'packages/forge/src/core/**',
       'packages/forge/src/deploy/**',
+      'packages/forge/src/project/index.ts',
+      'packages/schema/src/index.ts',
+      'packages/memory/src/seeds.ts',
     ],
     refs: ['packages/forge/src/validate/accept.ts'],
     static: [
@@ -172,8 +182,10 @@ export const SHARDS = {
     deps: ['t-manifest-file-basename'],
     outputs: [
       'packages/forge/src/config/**',
+      'packages/forge/src/cli/**',
       'packages/forge/README.md',
       'packages/forge/test/config/**',
+      'packages/forge/test/cli/**',
     ],
     refs: ['packages/forge/src/cli/commands/init.ts'],
     static: [
@@ -182,12 +194,16 @@ export const SHARDS = {
     ],
   },
   't-policy-seam-unused': {
-    slice: 'host-and-config',
+    // moved from `host-and-config` 2026-08-05: it depends on the corpus rename and the SOUL
+    // sweep, so grouping it there cost a cross-slice edge the argmin does not have to pay.
+    slice: 'corpus-rename',
     deps: ['t-manifest-file-basename', 't-soul-to-target-in-forge'],
     outputs: [
       'packages/forge/src/validate/policy.ts',
       'packages/forge/src/validate/oracle.ts',
       'packages/forge/src/validate/structural-parsimony.ts',
+      'packages/forge/src/core/exemplify/register.ts',
+      'packages/canon/src/toolkit/cold-oracle/**',
     ],
     refs: ['packages/forge/src/core/exemplify/register.ts'],
     static: [
@@ -250,6 +266,9 @@ export const SHARDS = {
       'packages/schema/src/hook-cell.ts',
       'packages/canon/src/hooks/**',
       'packages/canon/src/toolkit/guardrail/**',
+      'packages/canon/test/architecture.test.ts',
+      'packages/canon/test/bin-name-single-home.test.ts',
+      'packages/canon/test/reader-density.test.ts',
     ],
     refs: ['packages/runtime/src/bin-name.ts'],
     static: [
@@ -323,7 +342,8 @@ export const SHARDS = {
   },
   't-coined-classification': {
     slice: 'plan-machinery',
-    deps: ['t-anatomy-root-compose'],
+    // also writes `schema/src/index.ts`, which `t-soul-to-target-in-forge` sweeps for `SOUL`
+    deps: ['t-anatomy-root-compose', 't-soul-to-target-in-forge'],
     outputs: ['packages/schema/src/index.ts'],
     refs: ['packages/canon/src/dimensions/**'],
     static: ['packages/schema/src/index.ts', 'packages/canon/src/manifest.ts'],
@@ -482,5 +502,12 @@ export const SHARDS = {
     static: ['packages/forge/src/catalog/index.ts'],
     blockedBy:
       'a four-sign family decode for the catalog engine internals, derived together',
+  },
+  'spec-arrays-can-silently-truncate': {
+    slice: 'plan-machinery',
+    deps: [],
+    outputs: ['packages/canon/test/praxis-execution-spec.test.ts'],
+    refs: ['packages/canon/src/toolkit/plan-set.ts'],
+    static: ['packages/canon/test/praxis-execution-spec.test.ts'],
   },
 };

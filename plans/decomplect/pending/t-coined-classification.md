@@ -66,8 +66,8 @@ already uses `curated` in the identical factor sense.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** plan-machinery · **wave** 0
-- **depends on** `t-anatomy-root-compose`
+- **slice** plan-machinery · **wave** 1
+- **depends on** `t-anatomy-root-compose` · `t-soul-to-target-in-forge`
 - **writes** `packages/schema/src/index.ts`
 - **compiles against** `packages/canon/src/dimensions/**`
 - **evidence** `packages/schema/src/index.ts` · `packages/canon/src/manifest.ts`

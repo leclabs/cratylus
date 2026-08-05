@@ -42,7 +42,7 @@ site that reaches a reader.
 
 - **slice** projection-and-ground · **wave** 0
 - **depends on** —
-- **writes** `packages/forge/src/adapters/**` · `packages/forge/src/core/**` · `packages/forge/src/deploy/**`
+- **writes** `packages/forge/src/adapters/**` · `packages/forge/src/core/**` · `packages/forge/src/deploy/**` · `packages/forge/src/project/index.ts` · `packages/schema/src/index.ts` · `packages/memory/src/seeds.ts`
 - **compiles against** `packages/forge/src/validate/accept.ts`
 - **evidence** `packages/forge/src/deploy/seeds.ts` · `packages/forge/src/validate/accept.ts`
 - **dispatchable** no ruling owed
