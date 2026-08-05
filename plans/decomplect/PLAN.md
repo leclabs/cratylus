@@ -26,6 +26,27 @@ it enforces) after five cold legs failed to find a quality-noun — the best ret
 `import-acyclicity`, which is **wrong**: canon importing runtime introduces no cycle and is still
 forbidden, so that sign names a weaker property than the law.
 
+**The names landed (`49516a6f`) — the scope is `@cratylus/*`.** The discipline is **latent
+lexicography**; the instrument is **Cratylus**. This closes the `⊥` README has carried since
+2026-07-26, when `semantic engineering` was disconfirmed and the derivation returned no anchor.
+
+Six packages and their directories moved; the `agent-` prefix is gone from every package name because
+the scope now carries the domain. `agent-cli` → `@cratylus/invoke`, folding in
+`pending/agent-cli-is-not-what-it-is-named.md` rather than renaming twice — the whole forward slate
+died on blind decode and `invoke` won on a property no noun had: **a verb decodes as a leaf**.
+
+**No bin moved, deliberately.** `agent-forge` and `agent-runtime` are now the only artifacts wearing
+the retired prefix — filed as `ready/t-bin-name-migration.md` with the naming explicitly underived,
+because `PATH` is a global unscoped namespace and needs its own round-trip. A sweep did silently
+rename forge's `bin` key; the suite caught it and it was reverted.
+
+**Render oracle re-baselined `fe084dd1…` → `f60e936a172d6f37a5120cd9dd0e282c19727f58`**, both targets.
+The delta was **proven, not assumed**: HEAD was rebuilt in a detached worktree, reproduced `fe084dd1`
+exactly at 37/38 files, and diffed. Five files, three lines, all generated header prose naming the
+packages. No structural change, and all 18 `agent-runtime` occurrences in the renders unchanged — the
+bins held. Historical citations of `fe084dd1` were left alone, as were `plans/.retired/` and
+`completed/`: a record edited to match today is no longer a record.
+
 **Act 2 ✅ LANDED (`48baaddd`) — `agent-schema` exists.** Canon **cells** importing the projector:
 **22 → 0**. Render oracle unmoved at `fe084dd1d531948979dc386713c3f688c96088ab` — the proof the change
 was structural and altered no meaning. Suite green uncached, 9 tasks. Architecture ratchet **26 → 3**.
