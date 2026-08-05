@@ -42,13 +42,43 @@ is `f(capability)`.
 - The `provisional-v9` exemption is stated as a rule, not a special case.
 - Oracle re-baselined deliberately, diff quoted.
 
+## ▶ RULING 2026-08-05 — `event-tap` ≡ `eventTap`. They are ONE sign in two registers. `tap` is REJECTED.
+
+The corpus **already declares the kebab↔camel map** (`core/anatomy-body.ts:25`, `dimensionField`)
+and runs it live for `situation-awareness`↔`situationAwareness`. So there were never three signs —
+there are two, and only `tap` is a genuine second one.
+
+**`tap` fails circumscription**: fired(`tap`) ⊊ D(c) — it carries _passive siphon on a stream_ but
+not **which** stream. A blind cold reader, unprompted: _"`mytool tap install` reads as a Homebrew
+tap; the flag is doing the naming, which means the name isn't."_ σ\* is argmin over **circumscribing**
+names, so `tap` never enters the competition despite being shortest. The tree already agrees:
+`claude.ts:38` writes ``TAP_ID = `${RUNTIME_BIN}-event-tap` `` — the shipped **value** is the full
+sign; only the identifier was abbreviated.
+
+**The proposed gate loses TWO axes, not one — and the second is a correction beyond the census:**
+
+- **`dir ≡ keyspace` — DROP.** It is **1-for-2 in both directions**: `memory` is in `CAPABILITIES`
+  with no `capabilities/memory/` dir, and `provisional-v9/` is a dir outside the keyspace.
+- **`≡ canon skill name` — DROP** (1→N), **replaced by the subset direction**, which has 4 positive
+  controls: `∀ skill · skill.runtime.capability ∈ CAPABILITIES`.
+- **KEEP** `ports/<sign>.ts` basename ≡ keyspace member (2-for-2) and plugin `name:` ≡ sign (2-for-2).
+
+**The exemption is stated as a RULE, not a special case**: a `ports/*.ts` module is outside the
+keyspace **iff** its basename carries the `provisional-` prefix — which is not a name, and says so
+in its own file. **Gate the biconditional**, so it self-arms for future capabilities and cannot be
+satisfied by quietly adding a second hand-written exception.
+
+94 sites / 16 files. `main.ts:80` drops `first === 'tap' ||`; operators typing `tap` get a loud
+unknown-capability, which is the kernel's own fail-loud contract. Settles
+`t-shim-path-from-capability`'s 5 `eventTap.mjs` literals for free.
+
 ## Execution
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** runtime-capability · **wave** 1
+- **slice** event-vocabulary · **wave** 1
 - **depends on** `t-capture-row` · `t-manifest-file-basename`
 - **writes** `packages/runtime/src/loader.ts` · `packages/runtime/src/main.ts` · `packages/canon/src/skills/event-tap/**`
 - **compiles against** `packages/runtime/src/ports/provisional-v9.ts`
 - **evidence** `packages/runtime/src/loader.ts` · `packages/runtime/src/ports/provisional-v9.ts`
-- **RULING OWED — not dispatchable** the capability anchor — event-tap vs tap vs neither — plus the provisional-v9 keyspace exemption
+- **dispatchable** no ruling owed

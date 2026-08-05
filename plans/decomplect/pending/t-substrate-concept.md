@@ -43,13 +43,39 @@ so what is its home?_ Three incompatible repairs — delete the clause; read it 
 - If the answer is "add `substrate` to `Agent`": **STOP and report.** That is a schema change with
   10 agent vectors downstream, not a line edit.
 
+## ▶ RULING 2026-08-05 — NO such concept. The conjunct is DELETED, not relocated.
+
+`instance-bound` survives with exactly one member: `provenance`.
+
+The line is a **palimpsest of a retired design**, which is why it is false five ways, not three.
+Two the census missed:
+
+- **`auto-set · fresh mark` is also false.** No mark generator exists anywhere; all 10 marks are
+  hand-authored. `ElevationSpec` has no provenance field and `renderAgentVector` never emits
+  `provenance:`, so **an elevated agent silently loses its emoji**.
+- **`⟨lineage-mark⟩` is a fourth unattested sign** — `lineage` occurs nowhere else in source.
+
+The fossil: provenance _was_ a shared fragment dimension. `structural-parsimony.ts:164-168` records
+the collapse to inline `provenance:{mark}`, and `absorbedIdentity` is now a gate that **prevents its
+return**. `∉ catalog` is the one true clause in the line — and it is true of `provenance`, never of
+`model`, which is already fully governed by `∀ o ∈ O : value(o) ∈ catalog(o)` two lines below.
+
+**The change is one line**:
+
+```
+instance-bound  ≜ provenance⟨mark : emoji·hue⟩ ⟨authored per-agent · ∉ catalog ∴ ∉ O · never shared across agents⟩
+```
+
+Schema untouched — this shard's STOP-and-report branch does **not** fire. Oracle moves by 2 files,
+1 line each: the smallest possible re-baseline.
+
 ## Execution
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** signification · **wave** 1
+- **slice** skill-cells · **wave** 1
 - **depends on** `t-manifest-file-basename`
 - **writes** `packages/canon/src/skills/create-agent/**`
 - **compiles against** `packages/canon/src/dimensions/model/claude.ts`
 - **evidence** `packages/canon/src/skills/create-agent/skill.ts` · `packages/schema/src/index.ts`
-- **RULING OWED — not dispatchable** whether an instance-bound substrate concept exists distinct from the `model` dimension, and where it lives
+- **dispatchable** no ruling owed

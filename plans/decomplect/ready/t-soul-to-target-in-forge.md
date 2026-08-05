@@ -27,16 +27,22 @@ site that reaches a reader.
 
 ## Acceptance
 
-- `grep -rn SOUL packages/forge/src` → nothing.
+- `grep -rn SOUL packages/*/src --exclude-dir=fixtures` → nothing.
+
+  **WIDENED 2026-08-05 by the `t-canon-soul` ruling.** The original read `packages/forge/src` only,
+  and two populations sit outside it: `schema/src/index.ts` ×5 and `memory/src/seeds.ts` ×4 — one of
+  which **ships into every deployed `PROCEDURAL.md`**. The narrow grep would have gone green with
+  `SOUL` still live in two packages, which is the decay this census exists to stop.
+
 - Render oracle unmoved (forge comments are not projected); **deploy seed output diff shown**.
 
 ## Execution
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** forge-deploy · **wave** 0
+- **slice** projection-and-ground · **wave** 0
 - **depends on** —
-- **writes** `packages/forge/src/adapters/**` · `packages/forge/src/core/**` · `packages/forge/src/deploy/**` · `packages/forge/src/project/index.ts`
+- **writes** `packages/forge/src/adapters/**` · `packages/forge/src/core/**` · `packages/forge/src/deploy/**`
 - **compiles against** `packages/forge/src/validate/accept.ts`
 - **evidence** `packages/forge/src/deploy/seeds.ts` · `packages/forge/src/validate/accept.ts`
 - **dispatchable** no ruling owed

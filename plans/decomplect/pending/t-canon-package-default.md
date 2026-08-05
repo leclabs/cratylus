@@ -39,9 +39,9 @@ casualty.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** forge-seams · **wave** 1
+- **slice** corpus-rename · **wave** 1
 - **depends on** `t-manifest-file-basename`
-- **writes** `packages/forge/src/config/**` · `packages/forge/README.md` · `packages/forge/test/config/**` · `packages/forge/test/cli/**`
+- **writes** `packages/forge/src/config/**` · `packages/forge/README.md` · `packages/forge/test/config/**`
 - **compiles against** `packages/forge/src/cli/commands/init.ts`
 - **evidence** `packages/forge/src/config/scaffold.ts` · `packages/forge/src/cli/commands/init.ts`
 - **dispatchable** no ruling owed

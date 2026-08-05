@@ -55,9 +55,9 @@ superseded on the remedy** — do not restate its remedy.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** schema-contract · **wave** 3
+- **slice** event-vocabulary · **wave** 3
 - **depends on** `t-tap-anchor` · `t-projection-file-anchor`
 - **writes** `packages/schema/src/hook/**` · `packages/runtime/src/events.ts` · `packages/runtime/src/capabilities/event-tap/claude-serialize.ts`
 - **compiles against** `packages/forge/src/adapters/claude/events.ts`
 - **evidence** `packages/schema/src/hook/generated.ts` · `packages/runtime/src/events.ts` · `ARCHITECTURE.md`
-- **RULING OWED — not dispatchable** ARCHITECTURE has no edge between schema and runtime in either direction; unifying needs one
+- **dispatchable** no ruling owed

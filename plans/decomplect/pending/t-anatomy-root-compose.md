@@ -31,9 +31,9 @@ Plus 5 sites of `anatomyProjectTemplate` / `scaffoldAnatomyProject`
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** canon-corpus · **wave** 1
+- **slice** plan-machinery · **wave** 1
 - **depends on** `t-manifest-file-basename`
-- **writes** `packages/canon/src/toolkit/plan-set.ts` · `packages/canon/src/toolkit/project-targets.ts` · `packages/canon/src/toolkit/project-template.ts` · `packages/canon/src/toolkit/scaffold-cli.ts` · `packages/canon/test/cratylism.test.ts` · `packages/canon/test/projection-stability.test.ts` · `packages/canon/test/symbols.test.ts`
+- **writes** `packages/canon/src/toolkit/plan-set.ts` · `packages/canon/src/toolkit/project-targets.ts` · `packages/canon/src/toolkit/project-template.ts`
 - **compiles against** `packages/schema/src/index.ts`
 - **evidence** `packages/canon/src/toolkit/plan-set.ts` · `packages/canon/src/toolkit/scaffold-cli.ts`
 - **dispatchable** no ruling owed

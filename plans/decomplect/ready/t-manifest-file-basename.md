@@ -37,7 +37,7 @@ a corpus about naming cannot afford to carry one.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** canon-corpus · **wave** 0
+- **slice** corpus-rename · **wave** 0
 - **depends on** —
 - **writes** `packages/canon/src/**` · `packages/canon/test/**` · `packages/forge/test/fixture-anatomy.ts`
 - **compiles against** `packages/schema/src/index.ts`

@@ -38,7 +38,7 @@ It was **75 at `48baaddd`** — the very commit that wrote `~110` into `ARCHITEC
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** ground-and-record · **wave** 1
+- **slice** corpus-rename · **wave** 1
 - **depends on** `t-manifest-file-basename`
 - **writes** `ARCHITECTURE.md`
 - **compiles against** `packages/canon/test/architecture.test.ts`

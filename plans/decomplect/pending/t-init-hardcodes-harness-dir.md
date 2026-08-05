@@ -29,7 +29,7 @@ The doctrine half of the old B-row filing is gone: `init.ts:14-18` and `project-
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** forge-deploy · **wave** 1
+- **slice** deploy-surface · **wave** 1
 - **depends on** `t-soul-to-target-in-forge`
 - **writes** `packages/forge/src/deploy/init.ts`
 - **compiles against** `packages/forge/src/deploy/scope.ts`

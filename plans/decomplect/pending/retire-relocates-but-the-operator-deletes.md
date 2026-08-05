@@ -59,13 +59,44 @@ what left the working tree is the reading cost, not the record.
 - If reading 1: nothing changes, and that is recorded here so the next cleanup does not re-open it.
 - `phase(P)` remains a readout of ground truth on disk, or its new carrier is named explicitly.
 
+## ▶ RULING 2026-08-05 — `retire` means DELETE. No new verb. My own pick was wrong.
+
+This shard argued for two verbs. **A law already in the cell refutes it**, and I had not read it
+closely enough when I filed:
+
+> `praxis/skill.ts:110` — `retire(P) defined ⇔ terminal(P) ∧ drained(yield(P))`
+
+`drained` means _every_ intent authored into its strongest seam. **If retire may only fire once the
+plan's yield is already in the canon, `content(P')` is by construction pure redundancy** — the
+archive preserves nothing the corpus does not hold, and git holds the bytes regardless. A second
+verb would therefore exist only to serve **un-drained** records, which `retire` already forbids.
+Reading 3 is one verb plus an escape hatch from the strongest law in the cell.
+
+**`phase` stays a readout of ground truth.** `Plans ≜ { P | P a plan on disk }`, so a deleted plan
+simply leaves the set — `phase` was never total over non-members. The carrier for the _fact_ of
+retirement is the retiring commit, and **the corpus has already made exactly this move once**:
+`landing : P ⇀ commit` is recomputed from VCS on every call and stored nowhere. `retires(c, P)` is
+its twin.
+
+Reading 1 is refused as self-defeating: nothing implements deletion and two code paths `mkdir` the
+container, so the next `retire` refills the tree the operator just cleared and the instruction
+recurs forever.
+
+**Had a new verb been needed, its name would have had to be DERIVED** — never picked from this
+shard's own `discard`/`drop` slate, which is a candidate list, not a result.
+
+**Three gates change, and one of them must DIE rather than warn**: `plan-set.test.ts`'s live
+`.retired/` leg loses its subject permanently, and its "could not look" branch — correct as a
+temporary state — becomes dishonest as a permanent one. **The render oracle MOVES** (`praxis/skill.ts`
+is a projected cell); re-baseline deliberately, in its own commit.
+
 ## Execution
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** canon-corpus · **wave** 2
+- **slice** plan-machinery · **wave** 2
 - **depends on** `t-anatomy-root-compose`
 - **writes** `packages/canon/src/skills/praxis/**` · `packages/canon/src/toolkit/praxis/**` · `packages/canon/src/toolkit/plan-set-cli.ts`
 - **compiles against** `packages/canon/src/toolkit/plan-set.ts`
 - **evidence** `packages/canon/src/skills/praxis/skill.ts` · `packages/canon/src/toolkit/plan-set.ts`
-- **RULING OWED — not dispatchable** whether retire means relocate, means delete, or splits into two verbs
+- **dispatchable** no ruling owed

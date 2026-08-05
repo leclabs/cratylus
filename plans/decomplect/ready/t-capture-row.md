@@ -28,7 +28,7 @@
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** runtime-capability · **wave** 0
+- **slice** event-vocabulary · **wave** 0
 - **depends on** —
 - **writes** `packages/runtime/src/ports/event-tap.ts` · `packages/runtime/src/capabilities/event-tap/**`
 - **compiles against** `packages/runtime/src/loader.ts`

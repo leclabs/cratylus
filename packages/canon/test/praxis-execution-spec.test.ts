@@ -208,6 +208,78 @@ describe('praxis-execution-spec', () => {
     ).toEqual([]);
   });
 
+  it('slices are ARGMIN over the admissible cuts — the law is checked, not asserted', () => {
+    // `slices = argmin over admissible cuts of |R ∩ cross-slice pairs|` is UNFALSIFIABLE until
+    // `admissible` is named, and the corpus does not name it. Measured: the UNCONSTRAINED argmin
+    // is 10 cross edges and puts 20 of 33 shards in one slice — minimal, and useless, because a
+    // 20-shard slice cannot be fanned out and fan-out is the only reason slices exist.
+    // So ADMISSIBLE ≜ every slice holds MIN..MAX shards, and the claim becomes checkable.
+    const MIN = 3;
+    const MAX = 6;
+    const edges = IDS.flatMap((t) => sh(t).deps.map((u) => [t, u] as const));
+    const crossOf = (a: Record<string, string>): number =>
+      edges.filter(([t, u]) => a[t] !== a[u]).length;
+    const live: Record<string, string> = Object.fromEntries(
+      IDS.map((i) => [i, sh(i).slice]),
+    );
+    const names = [...new Set(Object.values(live))];
+
+    const sized = (a: Record<string, string>): boolean => {
+      const c = new Map<string, number>();
+      for (const i of IDS)
+        c.set(a[i] as string, (c.get(a[i] as string) ?? 0) + 1);
+      return names.every(
+        (n) => (c.get(n) ?? 0) >= MIN && (c.get(n) ?? 0) <= MAX,
+      );
+    };
+    expect(
+      sized(live),
+      `every slice must hold ${MIN}..${MAX} shards to be admissible`,
+    ).toBe(true);
+
+    // Deterministic local search over swaps — seeded, so a red run reproduces exactly.
+    let seed = 20260805;
+    const rnd = (): number => {
+      seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+      return seed / 0x7fffffff;
+    };
+    let best = crossOf(live);
+    for (let r = 0; r < 40; r++) {
+      const a: Record<string, string> = Object.fromEntries(
+        IDS.map((id, i) => [id, names[i % names.length] as string]),
+      );
+      for (let i = IDS.length - 1; i > 0; i--) {
+        const j = Math.floor(rnd() * (i + 1));
+        const x = a[IDS[i] as string] as string;
+        a[IDS[i] as string] = a[IDS[j] as string] as string;
+        a[IDS[j] as string] = x;
+      }
+      let improved = true;
+      while (improved) {
+        improved = false;
+        for (const t of IDS)
+          for (const u of IDS) {
+            if (a[t] === a[u]) continue;
+            const before = crossOf(a);
+            const x = a[t] as string;
+            a[t] = a[u] as string;
+            a[u] = x;
+            if (sized(a) && crossOf(a) < before) improved = true;
+            else {
+              const y = a[t] as string;
+              a[t] = a[u] as string;
+              a[u] = y;
+            }
+          }
+      }
+      if (sized(a)) best = Math.min(best, crossOf(a));
+    }
+    expect(
+      crossOf(live),
+      `a better admissible cut exists (${best} cross edges vs the live cut's ${crossOf(live)}) — re-slice`,
+    ).toBeLessThanOrEqual(best);
+  });
+
   it('THE CONCURRENCY PRECONDITION — no two shards in a wave write the same file', () => {
     const clashes: string[] = [];
     for (const w of WAVES) {
@@ -271,16 +343,24 @@ describe('praxis-execution-spec', () => {
     ).toEqual([]);
   });
 
-  it('`ready` means dispatchable — a shard owing a RULING may not sit there', () => {
-    const wrong = st('ready').filter((id) => S[id]?.blockedBy);
-    expect(wrong, 'in ready/ but blocked on a ruling nobody has taken').toEqual(
-      [],
-    );
-    const stuck = st('pending').filter((id) => S[id] && !sh(id).blockedBy);
+  it('`ready` means DISPATCHABLE NOW — deps completed AND no ruling owed', () => {
+    // praxis: `blocked(t) ⇔ ∃u : (t,u) ∈ R ∧ state(u) ≠ completed`, and `promote` moves a shard
+    // pending → ready only when it is unblocked. So `ready` is a promise an executor can pick it
+    // up and finish TODAY. Two distinct things can break that promise and they are not the same:
+    // an unmet DEPENDENCY (mechanical, waits itself out) and an owed RULING (a decision nobody
+    // has taken). Both keep a shard in `pending`; only the second needs a human.
+    const completed = new Set(st('completed'));
+    const dispatchable = (id: string): boolean =>
+      !sh(id).blockedBy && sh(id).deps.every((d) => completed.has(d));
+
+    const overclaimed = st('ready').filter((id) => S[id] && !dispatchable(id));
     expect(
-      stuck,
-      'in pending/ with no ruling owed — it is dispatchable and should be promoted',
+      overclaimed,
+      'in ready/ but not startable — a frontier that overstates itself is worse than a short one',
     ).toEqual([]);
+
+    const understated = st('pending').filter((id) => S[id] && dispatchable(id));
+    expect(understated, 'in pending/ but startable — promote it').toEqual([]);
   });
 
   it('the bound plan has a non-empty frontier', () => {

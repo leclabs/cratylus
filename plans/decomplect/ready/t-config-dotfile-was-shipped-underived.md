@@ -47,13 +47,51 @@ demands deleting the live scope. Do not execute it.
 - The name round-trips, or is ratified with the round-trip recorded. Either is fine; **silence is not.**
 - Whatever is decided, the decision is written where the next sweep cannot quietly overwrite it.
 
+## ▶ RULING 2026-08-05 — TWO concepts, it is MEMORY's, and the re-derivation REJECTS BOTH shipped signs
+
+**Not a merge. Not a ratification.** `.cratylus.config` → **`.cratylus.memory.json`**;
+`$CRATYLUS_CONFIG` → **`$AGENT_MEMORY_CONFIG`**.
+
+**(i) Two concepts, separated on three measured axes.** _Authority_ — the runtime dotfile is
+PROJECTED by deploy; this one is OPERATOR-AUTHORED and ships an `.example` to hand-copy, so merging
+would put operator ground in a projector-owned file and deploy would clobber it. _Location_ —
+`homedir()` vs bare-relative. _Referent_ — provider wiring vs boundary semantics. **The only thing
+they share is the word `config`, and `config` is vacuous — which is exactly why the guess was easy.**
+
+**(ii) It is memory's, and this shard's own premise is falsified.** All 21 live references sit in
+`packages/memory/` plus memory's own port. Zero non-memory consumers exist and none is possible —
+the `fleet` section that _was_ general was deleted precisely because nothing read it. The file's top
+key already says `memory`.
+
+**(iii) Occupancy kills `.cratylus.config` outright.** The rule already in force in this tree is
+`` `.${BIN}.json` ``, and `bin-name.ts` records a deliberate TWO-bin derivation. So
+`.cratylus.config` decodes as _"the `cratylus` bin's config"_ — **it squats the bare-mark slot the
+build CLI's own config must one day take.** Blind reverse decode: the name predicts general tool
+settings, the content is scope-markers and host homes. MISS. The sibling blind-decodes to its
+contents. HIT.
+
+**The env var is a separate and cleaner kill.** `store.ts:100` declares this package's namespace is
+`AGENT_*`, and the live surface is `AGENT_RUNTIME_CONFIG` · `AGENT_SESSION_ID` ·
+`AGENT_SESSION_ID_FROM`. `CRATYLUS_CONFIG` is the **sole outlier**, swept into the wrong register by
+`61b85db7` — and `store.ts:100` still asserts the claim that sweep broke. Two registers, two rules,
+both already in force: **files ↦ `.cratylus*` · env ↦ `AGENT_*`**.
+
+Also: `.config` lies about the format — the content is `JSON.parse`d. The facet form
+`.cratylus.memory.json` follows the `tsconfig.build.json` precedent already in the tree.
+
+**Write the derivation into `node.ts`'s one-home comment block** — that is the site the next brand
+sweep cannot overwrite without reading it, which is precisely the failure `61b85db7` executed.
+
+**Ignore this shard's original acceptance line** (`grep 'cratylus' → nothing`): it is self-refuting
+and would delete the live scope.
+
 ## Execution
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** ground-and-record · **wave** 0
+- **slice** host-and-config · **wave** 0
 - **depends on** —
 - **writes** `packages/memory/src/node.ts` · `.cratylus.config.example`
 - **compiles against** `packages/runtime/src/runtime-config.ts`
 - **evidence** `packages/memory/src/node.ts` · `packages/runtime/src/runtime-config.ts`
-- **RULING OWED — not dispatchable** whether the shipped name is ratified post-hoc or re-derived, and whether it is one concept with the runtime dotfile
+- **dispatchable** no ruling owed

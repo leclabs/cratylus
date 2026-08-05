@@ -35,13 +35,38 @@ different questions and the sweep did not record the second one.
   a duplicate `dimensionTitle` (`core/anatomy-body.ts:17` exported vs `project-human.ts:29` private)
   that dies with it.
 
+## ▶ RULING 2026-08-05 — DELETE the code, and revise ENGINE in the same commit
+
+Not to a silent excision — to `boundary-projection ≜ {deploy}` **plus a dated residual**.
+
+The extension is not merely unused, it is **empty and cannot be refilled**: the operator's ruling of
+zero generated documentation killed the only artifact class this corpus projects to a human reader,
+and the hand-authored ground is explicitly _"never generated from source"_, so it is not a
+`project-human(c)` output and `source(h)` is undefined for it. **A set member with a provably empty
+extension is a claim ENGINE cannot support.**
+
+**This is not the operator's call and it is not escalated.** Their standing ruling already
+determined the extension; revising ENGINE is the mechanical consequence, reversible, in-domain.
+What _would_ be theirs is reopening _should this system generate human documentation at all_ — and
+nobody is asking that.
+
+**Bare deletion is the wrong form.** This census's most portable lesson is that a negative result
+decays exactly like a positive one and leaves no artifact to convict. `boundary-projection ≜
+{deploy}` with nothing else re-mints `project-human` in six months. So ENGINE carries a one-line
+residual: `project-human` is **defined and UNINHABITED in this corpus** — operator ruling
+2026-08-05, zero generated documentation — and the refusal travels with its date and its reason.
+
+Also dies: the private duplicate `dimensionTitle` (`project-human.ts:29`), leaving
+`core/anatomy-body.ts:17` the single home. `gate-convicts.test.ts` turns red if its row is not
+removed with the file — that is the only gate, and **the oracle does not move** (zero callers).
+
 ## Execution
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** forge-seams · **wave** 1
+- **slice** projection-and-ground · **wave** 1
 - **depends on** `t-soul-to-target-in-forge`
 - **writes** `packages/forge/src/project/project-human.ts` · `ENGINE.md`
 - **compiles against** `packages/forge/src/core/anatomy-body.ts`
 - **evidence** `packages/forge/src/project/project-human.ts` · `ENGINE.md`
-- **RULING OWED — not dispatchable** ENGINE.md declares project-human a member of boundary-projection; deleting the sole implementation leaves ground declaring an unrealized operation
+- **dispatchable** no ruling owed

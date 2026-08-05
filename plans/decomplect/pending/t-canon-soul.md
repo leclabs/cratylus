@@ -39,13 +39,44 @@ exception, the reason must be written down where the next sweep will find it.
   because every agent's doctrine changes with it.
 - If it stays: a note in the cell saying why, so this is not re-opened a fourth time.
 
+## ▶ RULING 2026-08-05 — `SOUL` GOES. Not an exception — a defect, and the sharpest in the row.
+
+**`SOUL` names the wrong side of the corpus's own ontology.** `MODEL.md:70` — _"a cell is a BEING ;
+deploy projects it to MANY per-harness Targets = its FACES."_ `SOUL` denotes the FACE. Every prior
+`soul` fires — inner, singular, essential, persisting — is the **BEING**. The sign decodes to the
+opposite of its referent, against the ground the corpus wrote itself: `decode_warm ≢ decode_cold`
+⇒ PROJECT-DEFECT.
+
+`Target` is already canonized (`MODEL.md:33`) and occupancy is not merely clean but **confirming** —
+canon's own `targetPath` already means "the path a Target regenerates to", and `repo-preamble.ts`
+already writes _"byte-locked rule TARGET … `SelfAuthored ∉ Target`"_.
+
+**The rename makes a law mechanical that is currently a translation step.** `dream/skill.ts:63`
+`SOUL ∉ dream-outputs` **is** `MODEL.md:69` `SelfAuthored ∉ Target`. Under `Target` they are visibly
+one law; under `SOUL` they are two homes — a DRY breach the metaphor hides. And the metaphor is
+already producing a tautology: `introspect/skill.ts:9` unions a thing with itself, and only the
+metaphor makes the two operands look distinct.
+
+**Two corrections to this shard, both verified:**
+
+1. `genus/persona.md:9` does **not** move the oracle — the file is in neither render tree. Free edit.
+2. **Two `SOUL` populations belong to no shard at all**: `schema/src/index.ts` ×5 and
+   `memory/src/seeds.ts` ×4 — and `seeds.ts:51` **ships into every deployed `PROCEDURAL.md`**.
+   `t-soul-to-target-in-forge`'s acceptance greps `packages/forge/src` only, so it would have gone
+   green with `SOUL` still live in two packages. **That acceptance is widened in this ruling** —
+   it is exactly the decay class this census exists to stop.
+
+**Oracle: 52 of 75 rendered files**, every one through `founding-doctrine.ts:42`. Three re-baselines,
+deliberately NOT batched: forge comments (oracle unmoved) → substrate+authoring (4 files) → this one
+(52 files), kept alone so its diff stays reviewable as a pure rename.
+
 ## Execution
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** signification · **wave** 3
-- **depends on** `t-shim-path-from-capability` · `t-substrate-concept` · `t-authoring-surface` · `t-projection-file-anchor`
-- **writes** `packages/canon/src/genus/**`
-- **compiles against** `packages/forge/src/core/anatomy-body.ts`
+- **slice** skill-cells · **wave** 3
+- **depends on** `t-shim-path-from-capability` · `t-substrate-concept` · `t-authoring-surface` · `t-coined-classification`
+- **writes** `packages/canon/src/genus/**` · `packages/canon/src/skills/dream/**` · `packages/canon/src/skills/introspect/**`
+- **compiles against** `packages/schema/src/index.ts`
 - **evidence** `packages/canon/src/genus/founding-doctrine.ts`
-- **RULING OWED — not dispatchable** whether canon's own SOUL survives the metaphor ruling — it moves every projected agent
+- **dispatchable** no ruling owed

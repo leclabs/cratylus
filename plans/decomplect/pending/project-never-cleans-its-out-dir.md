@@ -56,13 +56,41 @@ will not remove and does not know about is neither. That argues for (3) and agai
 - Whatever the cut, a consumer passing an unexpected `--out` cannot lose files the projection never
   wrote. State explicitly what the command may delete.
 
+## ▶ RULING 2026-08-05 — the WRITER owns cleaning, by prune-to-manifest
+
+**Not a new design — it is `deploy`'s, one stage upstream.** `forge/src/deploy/manifest.ts` already
+implements exactly this for the harder root: record what you wrote → `staleFiles` → `applyPrune` →
+a `contained()` path-escape guard → an `unattributable()` list **no caller may delete**. Its header
+argues down attribution-by-naming-convention explicitly, and its bootstrap bound (no manifest ⇒
+establish only, prune nothing) is what makes a consumer's `--out .` safe. Re-deriving it in
+`project` would be a second home for a solved problem.
+
+- **The CLI is refused** on `REGENERABLE` (`MODEL.md:68`): a default-off `--clean` flag makes
+  non-convergence the default and the stale artifact the silent case.
+- **The writer, not the caller**: `write.ts` self-declares _"THE ONE WRITER"_. Convergence is union
+  **and** subtract at one seam — `deploy` puts its prune in `deployLocal`, not in `runDeploy`.
+- **The oracle is already carrying the workaround**: `render-oracle.sh:68` is `rm -rf` inside
+  `compute()`, so its reproducibility is a _caller's_ property — the "stated only in prose" defect
+  the oracle exists to catch, reappearing inside the oracle.
+
+**Order matters, and the oracle moves if you get it wrong.** `render-oracle.sh:72` hashes
+`find -type f`, which picks up dotfiles, so a manifest under `--out` would enter the hash.
+(a) narrow the find to exclude `.forge/` — a bookkeeping record is not projected bytes, so the
+baseline stays valid and this is **not** a re-baseline; (b) land the prune; (c) delete `rm -rf`
+from `compute()`.
+
+**One integration check owed**: the printed deploy hint passes `--hooks-dir <out>`, so the hooks
+placer will now see `<out>/.forge/` — verify it reads named subdirs only. And note `.render-ts*`
+are gitignored, so CI is always cold and **the prune path is never exercised by the oracle** — the
+control test is load-bearing, not ceremonial.
+
 ## Execution
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** forge-seams · **wave** 1
+- **slice** corpus-rename · **wave** 1
 - **depends on** `t-soul-to-target-in-forge` · `t-manifest-file-basename`
 - **writes** `packages/forge/src/project/write.ts` · `packages/canon/src/toolkit/render-oracle/**`
 - **compiles against** `packages/forge/src/cli/commands/project.ts`
 - **evidence** `packages/forge/src/project/write.ts` · `packages/canon/src/toolkit/render-oracle/render-oracle.sh`
-- **RULING OWED — not dispatchable** the three-way cut: who owns cleaning — the writer, the CLI, or the caller
+- **dispatchable** no ruling owed

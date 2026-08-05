@@ -52,13 +52,55 @@ shell the worker branches on — do not sweep them.
 - The worker's `*) allow ;;` self-narrowing stays as defence in depth, but is no longer the **only**
   thing making codex correct.
 
+## ▶ RULING 2026-08-05 — there must be NO tool-class vocabulary. Tools are not events; the act vocabulary already exists.
+
+**A tool-class enum is a category error.** `CanonicalEvent` works because harnesses share a
+_lifecycle_ — stable and closed. Tool sets are **open-world**: MCP servers add tools at runtime,
+users add custom ones, and claude's and codex's sets overlap only in shell/file primitives. A closed
+enum over a runtime-extensible set is permanently incomplete and every adapter map would be
+near-empty. **This shard asked for the wrong artifact, and so did the census.**
+
+**The vocabulary is DISCOVERED, and it is already written in the cell's own σ\*.**
+`stance-guardrail-pre.ts:17` residue reads `permission-menu ⟨AskUserQuestion⟩ · dispatch-echo
+⟨Agent · SendMessage⟩`. **The cell already factors three tool names into two acts, then flattens
+back to three names four lines later.** The residue is the argmin; `matcher` is its lossy projection.
+
+Extend `CanonicalEvent` by **two** members, in the grammar it already uses:
+
+- **`operator.consult.pre`** — about to put a question or menu to the operator. Candidate set
+  recorded: `principal.consult.pre` (runner-up) · `user.ask.pre` (rejected — `user` collides with
+  deploy's install-scope `user`, and it is the _vendor_ word while the pivot is vendor-neutral) ·
+  `elicit.pre` (rejected — occupied by the concept-recovery skill) · `decision.request.pre`
+  (rejected — collides with `permission.request` **inside the same enum**).
+- **`subagent.dispatch.pre`** — about to hand work to an agent; covers spawn _and_ message, and
+  pairs as the pre-phase of the existing `subagent.start`/`subagent.end`.
+
+Two members only. A third has no site.
+
+**`matcher` belongs to `HarnessMechanism` ALONE and is COMPUTED, never declared.** The cell declares
+the act; the adapter emits ⟨native event, native selector⟩. That makes cell-level harness-neutrality
+**structural rather than aspirational** — no cell can spell a claude tool name again.
+
+**Of the schema's three self-contradicting descriptions, `hook/index.ts:38-41` survives and the
+other two die.** `hook-cell.ts:86-91` goes with the field. `generated.ts:52-55` describes a union of
+two unlike things — path-glob narrowing (genuinely harness-agnostic) and tool-name narrowing
+(harness-native) — and since **zero path-glob matchers exist in the corpus**, parsimony deletes
+`matcher` from the schema entirely. A future path need arrives as its own field, never as an
+overloaded `matcher`.
+
+**Codex closes through the channel it already has**: where an adapter cannot narrow it routes
+through the existing `warnings`/`skipped` path. **Silence is the defect, not the gap.**
+
+**Do this together with `t-lifecycle-vocabulary`** — widening the adapter map codomain from `string`
+to `{event, matcher?}` is the same edit that shard needs.
+
 ## Execution
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** signification · **wave** 4
+- **slice** cell-contract · **wave** 4
 - **depends on** `t-worker-payload-seam-and-property-1` · `t-lifecycle-vocabulary`
 - **writes** `packages/schema/src/hook/index.ts`
 - **compiles against** `packages/canon/src/hooks/stance-guardrail-pre.ts`
 - **evidence** `packages/canon/src/hooks/stance-guardrail-pre.ts` · `packages/schema/src/hook-cell.ts`
-- **RULING OWED — not dispatchable** a canonical tool-class vocabulary does not exist, and which register owns `matcher` is unruled
+- **dispatchable** no ruling owed

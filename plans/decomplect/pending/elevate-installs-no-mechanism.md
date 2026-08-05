@@ -53,13 +53,51 @@ was blocked by it repeatedly. Two observations worth carrying into the fix:
 - The bound condition is evaluated from plan state, never from message text.
 - Release removes what elevate installed; no residue on terminus.
 
+## ▶ RULING 2026-08-05 — the predicate is four disjuncts read from disk; the mechanism is a RUNTIME CAPABILITY
+
+```
+terminus ⇔ ¬∃P: bound(P)                            -- .bound absent ⇒ nothing elevated
+         ∨ done(P)                                   -- open state dirs empty ∧ completed ≠ ∅
+         ∨ fork⊥(P)                                  -- a MARKER at dir(P) — see below
+         ∨ (sharded(P) ∧ ¬done(P) ∧ frontier(P) = ∅) -- R ill-formed · SURFACE
+```
+
+Three of four are readable today. **`fork⊥` has no carrier — that is the whole gap**, and this
+corpus has minted this exact thing twice: `praxis.sh` states the pattern in its own words —
+_"a relation with no on-disk carrier is not readable … `.landed` is that carrier, exactly parallel
+to `.superseded-by`."_ Mint the third; **its sign must be DERIVED, not assumed from the `fork⊥`
+notation.**
+
+**The fourth disjunct is not optional.** Without it a mis-cut plan wedges the session forever —
+the failure `stance-guardrail` had to retrofit a block-cap and a no-progress detector to escape.
+Build it in from the start.
+
+This design is immune to the shard's own strongest finding: every span-matching misfire is a
+property of judging _emitted text_, and nothing above reads a transcript.
+
+**Not a canon `HookCell`.** `stance-guardrail` is projected at BUILD time into `settings.json` and
+is permanently resident — a build-time projection cannot be installed by `elevate` and removed by
+`release`. The fitting precedent is **`eventTap`**: a runtime capability whose cell already
+declares `install`/`uninstall` and the law _`uninstall ∘ install ⊨ target ≡ target₀ ∧ foreign
+preserved ⟨zero residue⟩`_, implemented as an id-keyed surgical filter. That is this shard's
+"release removes it with no residue", already built and already gated.
+
+**Two corrections to this shard's own Execution block, both caught by the ruling:**
+
+1. It writes `packages/runtime/**` too — the mechanism is runtime's, not only the cell's.
+2. It must **not** compile against `canon/src/toolkit/plan-set.ts`. `architecture.test.ts`'s
+   property 4 (_runtime depends on nothing_) rejects any runtime→sibling edge; importing plan-set
+   would re-run the property-1 defect this plan is already carrying a shard for. The plan root and
+   the state-folder names reach the capability as **projected configuration**, sourced from canon's
+   one home `toolkit/plan-states.ts`.
+
 ## Execution
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** host-and-gates · **wave** 2
-- **depends on** `t-anatomy-root-compose`
-- **writes** `packages/canon/src/skills/carry-on/**`
-- **compiles against** `packages/canon/src/toolkit/plan-set.ts`
+- **slice** plan-machinery · **wave** 4
+- **depends on** `t-anatomy-root-compose` · `t-lifecycle-vocabulary`
+- **writes** `packages/canon/src/skills/carry-on/**` · `packages/runtime/src/capabilities/**`
+- **compiles against** `packages/canon/src/toolkit/plan-states.ts`
 - **evidence** `packages/canon/src/skills/carry-on/skill.ts` · `packages/canon/src/hooks/stance-guardrail-pre.ts`
-- **RULING OWED — not dispatchable** the terminus predicate a Stop hook can evaluate from plan state, and where the installed mechanism lives
+- **dispatchable** no ruling owed
