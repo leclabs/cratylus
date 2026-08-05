@@ -34,7 +34,7 @@ afterEach(() => {
   rmSync(home, { recursive: true, force: true });
 });
 
-describe('session-liveness registry (memiso-0) — pure fns', () => {
+describe('session-liveness registry — pure fns', () => {
   it('register → live: a fresh registration reads live', () => {
     registerSession(home, 'sess-A', { now: T0 });
     expect(sessionStatus(home, 'sess-A', T0)).toMatchObject({

@@ -12,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { main } from '../src/cli.js';
 import { parseLines } from '../src/store.js';
 
-// memiso-3 — the integration gate. Drives the REAL tool (main() over real fs +
+// THE INTEGRATION GATE. Drives the REAL tool (main() over real fs +
 // real registry + real plan dirs — no mocks, no stubs) through the reported
 // collision scenario end-to-end: two sessions A, B in one node, one plan P, then
 // a fresh session C. Asserts no-collision AND cross-/clear resume AND
@@ -23,7 +23,7 @@ let home: string;
 let planDir: string;
 
 beforeEach(() => {
-  root = mkdtempSync(join(tmpdir(), 'memiso3-'));
+  root = mkdtempSync(join(tmpdir(), 'session-isolation-'));
   home = join(root, 'agent-home');
   planDir = join(root, 'node', 'plans', 'P');
   mkdirSync(join(planDir, 'active'), { recursive: true });
@@ -72,7 +72,7 @@ const readBodiesFor = (s: string): string[] =>
     .filter((l) => l.length > 0)
     .map((l) => JSON.parse(l).body as string);
 
-describe('memiso-3 — concurrent sessions do not collide; resume + consolidation intact', () => {
+describe('concurrent sessions do not collide; resume + consolidation intact', () => {
   it('runs the whole reported-collision scenario end-to-end', () => {
     // ── Step 1: A registers (live), dispatches P, encodes a forward next-step ──
     register('A');

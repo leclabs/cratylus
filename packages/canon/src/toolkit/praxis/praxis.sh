@@ -21,7 +21,6 @@
 #   elect               print the plan the election order picks, bind nothing
 #   file <plan> <symptom>...   stub a pending shard; no census, no re-slice, no re-mirror
 #   frontier            the shards workable right now in the bound plan
-#   land <plan>         record landing(P) — the carrier that makes `terminal` readable
 #   retire <plan>       DELETE the plan dir; refuses unless terminal(P)
 #
 # POSIX sh, no deps beyond git/coreutils. Run from anywhere in the repo.
@@ -34,17 +33,63 @@ PLANS="$ROOT/plans"
 die() { printf 'praxis: %s\n' "$1" >&2; exit 2; }
 [ -d "$PLANS" ] || die "no plans/ under $ROOT"
 
+# done(P) at a commit — every task-file under `completed/`, and at least one.
+# The shell twin of `plan-set.ts:doneAt`. A bare file in the plan dir (`PLAN.md`,
+# `.bound`) has one path segment and is NOT a task-file, so it is skipped rather
+# than counted against done-ness.
+done_at() {
+	sha="$1"
+	plan="$2"
+	files=$(git -C "$ROOT" ls-tree -r --name-only "$sha" -- "plans/$plan" 2>/dev/null) || return 1
+	has_completed=0
+	for f in $files; do
+		rest=${f#"plans/$plan/"}
+		[ "$rest" = "$f" ] && continue # not under this plan
+		state=${rest%%/*}
+		[ "$state" = "$rest" ] && continue # bare file, no state segment
+		case "$state" in
+		completed) has_completed=1 ;;
+		pending | ready | active) return 1 ;; # a shard is still open ⇒ ¬done
+		*) ;;                                 # not a state folder; ignore
+		esac
+	done
+	[ "$has_completed" = "1" ]
+}
+
+# landing(P) — the FIRST trunk commit at which done(P) holds; prints the sha, or
+# returns non-zero if P has not landed. One `git log --first-parent` folded over,
+# exactly as `plan-set.ts:landing` does it. Nothing is written.
+landing_of() {
+	plan=$(basename "$1")
+	for sha in $(git -C "$ROOT" log --first-parent --reverse --format=%H -- "plans/$plan" 2>/dev/null); do
+		if done_at "$sha" "$plan"; then
+			printf '%s' "$sha"
+			return 0
+		fi
+	done
+	return 1
+}
+
 # phase(P) — the readout the skill defines, from disk, never stored.
 phase_of() {
 	p="$1"
 	[ -e "$p/.superseded-by" ] && { printf 'superseded'; return; }
-	# landed(P) ⇔ landing(P) defined. `landing` is a commit relation, and a
-	# relation with no on-disk carrier is not readable — which is why this
-	# readout could previously only ever say proposed or in-flight. `.landed`
-	# is that carrier, exactly parallel to `.superseded-by`, and it is what
-	# makes `terminal(P) ⇒ retire(P)` mechanically checkable instead of a rule
-	# someone has to remember.
-	[ -e "$p/.landed" ] && { printf 'landed'; return; }
+	# landed(P) ⇔ landing(P) defined — COMPUTED FROM GIT, stored nowhere.
+	#
+	# This read a `.landed` dotfile, written by a `land` verb, and argued for it
+	# on the premise that "landing is a commit relation, and a relation with no
+	# on-disk carrier is not readable". THAT PREMISE IS FALSE, and
+	# `toolkit/plan-set.ts` disproves it by working: `landing(P)` is the first
+	# trunk commit at which every task-file sits under `completed/`, folded out
+	# of one `git log --first-parent`. The cell says so outright —
+	# `∀ P : stored(P) = ∅ ⟨landing ∧ retirement alike : recomputed from VCS
+	# every call, written nowhere⟩` — so the dotfile was a SECOND HOME for a law
+	# that already had one, and the two disagreed: `retire` refused a plan the
+	# TS mechanism correctly reported as landed, because nobody had run `land`.
+	#
+	# A carrier that must be maintained by hand is not a readout of the world,
+	# it is a claim about it that rots the moment someone forgets the verb.
+	landing_of "$p" >/dev/null && { printf 'landed'; return; }
 	# dispatched(P) ⇔ ∃ t : state(t) ∈ {active, completed}. Test each folder alone:
 	# `ls -A a b` prints "a:" headers, so a two-arg test reads empty dirs as non-empty.
 	if [ -n "$(ls -A "$p/active" 2>/dev/null || true)" ] ||
@@ -110,18 +155,12 @@ cmd_bind() {
 	printf 'bound: %s\n' "$1"
 }
 
-# land — record landing(P). `terminal(P) ⇒ retire(P)` is an OBLIGATION in the
-# cell, so landing a plan tells you immediately that a retire is owed.
-cmd_land() {
-	[ -n "$1" ] || die 'land needs a plan name'
-	[ -d "$PLANS/$1" ] || die "no such plan: $1"
-	done_count=$(count "$PLANS/$1/pending")
-	done_count=$((done_count + $(count "$PLANS/$1/ready") + $(count "$PLANS/$1/active")))
-	[ "$done_count" = "0" ] || printf 'warning: %s has %s unfinished shard(s); landing anyway\n' "$1" "$done_count" >&2
-	git rev-parse HEAD > "$PLANS/$1/.landed" 2>/dev/null || printf 'unknown\n' > "$PLANS/$1/.landed"
-	printf 'landed: %s at %s\n' "$1" "$(cut -c1-8 < "$PLANS/$1/.landed")"
-	printf '  terminal(P) ⇒ retire(P) — run `praxis retire %s` to discharge it.\n' "$1"
-}
+# `land` IS GONE, and its absence is the point. It existed to WRITE `.landed`, and
+# a verb whose whole job is to record something derivable is an invitation to a
+# second, disagreeing home — which is exactly what it became. `landing(P)` is now
+# read from git wherever it is needed, so a plan is landed the moment its last
+# shard reaches `completed/` and is committed, whether or not anyone remembered to
+# say so. `terminal(P) ⇒ retire(P)` stays an obligation; `praxis status` reports it.
 
 # retire — pre terminal(P), and it DELETES. There is no `.retired/` container: the
 # cell only lets a plan retire once `drained(yield(P))` holds, i.e. once every intent
@@ -186,11 +225,10 @@ verb="${1:-status}"
 [ $# -gt 0 ] && shift
 case "$verb" in
 status) cmd_status ;;
-land) cmd_land "$@" ;;
 retire) cmd_retire "$@" ;;
 bind) cmd_bind "$@" ;;
 elect) cmd_elect ;;
 file) cmd_file "$@" ;;
 frontier) cmd_frontier ;;
-*) die "usage: praxis {status|bind <plan>|elect|file <plan> <symptom>|frontier|land <plan>|retire <plan>}" ;;
+*) die "usage: praxis {status|bind <plan>|elect|file <plan> <symptom>|frontier|retire <plan>}" ;;
 esac

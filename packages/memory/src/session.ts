@@ -24,7 +24,7 @@ import { shortHost } from './node.js';
  * node alone: a COMPLETED session's residue is inheritable (cross-`/clear`
  * resume), a LIVE OTHER session's residue must be invisible. This module answers
  * the one question that split turns on — *is session S live right now?* — for the
- * liveness-aware read/drain (memiso-1) and the liveness-gated orient (memiso-2)
+ * liveness-aware read/drain and the liveness-gated orient
  * to consume.
  *
  * Shape (mirrors {@link ./lock.ts} — O_-style atomicity, injectable `now`, a 2h
@@ -308,7 +308,7 @@ export function listSessions(
 }
 
 /**
- * The set of session ids currently LIVE — the orthogonal filter memiso-1's
+ * The set of session ids currently LIVE — the orthogonal liveness filter's
  * liveness-aware `read`/`drain` consume. A record whose `session` is in this set
  * AND ≠ the reader's own is a live sibling's residue (excluded); everything else
  * (own · completed · sessionless) is inheritable. Reuses {@link sessionStatus} —

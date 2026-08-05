@@ -283,7 +283,7 @@ export class EpisodicStore {
 
     // The drained/retained partition. Absent a predicate, the WHOLE log drains
     // (retain=∅) via the byte-exact copy path — back-compat is preserved. With a
-    // predicate (memiso-1 liveness-aware drain), only the drained subset is
+    // predicate (the liveness-aware drain), only the drained subset is
     // archived and the retained records are rewritten back into the live log.
     const retain = opts?.retain;
     const drained = retain === undefined ? all : all.filter((r) => !retain(r));

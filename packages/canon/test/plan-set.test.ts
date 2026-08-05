@@ -25,7 +25,8 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   type PlanSetContext,
@@ -253,6 +254,61 @@ describe('supersede — the stored terminal declaration (non-derivable)', () => 
 });
 
 describe('landing — derived on demand, stored nowhere', () => {
+  // TWO MECHANISMS, ONE LAW — and they disagreed. `praxis.sh` read a `.landed`
+  // dotfile that a `land` verb had to write by hand, so `praxis retire` REFUSED a
+  // plan this module correctly reported as landed, purely because nobody ran the
+  // verb. The shell now folds `git log --first-parent` exactly as `landing` does.
+  //
+  // A test that exercises only one of them proves nothing about the disagreement,
+  // which is why this leg runs BOTH over one tmpdir repo and compares. It also
+  // guards the direction that is easy to lose: the shell must say `landed` only
+  // once the plan is done, not merely once it has been touched.
+  it('the shell mechanism and this module agree on phase — both directions', () => {
+    const praxis = join(
+      dirname(fileURLToPath(import.meta.url)),
+      '..',
+      'src',
+      'toolkit',
+      'praxis',
+      'praxis.sh',
+    );
+    const shellPhase = (): string => {
+      const out = execFileSync('sh', [praxis, 'status'], {
+        cwd: repo,
+        encoding: 'utf8',
+      });
+      const row = out.split('\n').find((l) => l.includes('demo'));
+      return (row ?? '').split(/\s+/).filter(Boolean)[1] ?? '';
+    };
+
+    // ¬done — one shard still open. Neither mechanism may say landed.
+    placeTask('demo', 'active', 't1.md');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'dispatch');
+    expect(
+      landing(ctx, 'demo'),
+      'TS: not landed while a shard is open',
+    ).toBeUndefined();
+    expect(shellPhase(), 'shell: not landed while a shard is open').toBe(
+      'in-flight',
+    );
+    expect(phase(ctx, 'demo')).toBe('in-flight');
+
+    // done — every shard completed. Both must flip, with no verb run in between.
+    placeTask('demo', 'completed', 't1.md');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'complete');
+    expect(landing(ctx, 'demo'), 'TS: landed once done').toBeDefined();
+    expect(
+      shellPhase(),
+      'shell: landed once done — no `land` verb exists',
+    ).toBe('landed');
+    expect(phase(ctx, 'demo')).toBe('landed');
+
+    // And the carrier is gone for good: nothing under the plan stores the sha.
+    expect(existsSync(join(repo, 'plans', 'demo', '.landed'))).toBe(false);
+  });
+
   it('returns the first trunk commit where the plan is done, writing nothing', () => {
     placeTask('demo', 'active', 't1.md');
     g('add', '-A');

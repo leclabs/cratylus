@@ -287,7 +287,7 @@ bucket.
 
 read --under <node> lists same-host records whose node(cwd) sits under the
 given node; foreign-host and legacy records report as counts on stderr.
---for-session <S> adds the ORTHOGONAL liveness filter (memiso-1): records of a
+--for-session <S> adds the ORTHOGONAL liveness filter: records of a
 LIVE OTHER session are excluded; own + completed + sessionless records pass —
 the reader resumes its own + inheritable residue, never a live sibling's.
 drain --completed-only (or --for-session <S>, which also drains the caller's own
@@ -393,7 +393,7 @@ function runEncode(args: ParsedArgs): CliResult {
     str(args.flags.path),
   );
   // Encode is a heartbeat: register-if-absent + touch the bound session, so an
-  // actively-encoding session stays live in the registry (memiso-0 "register on
+  // actively-encoding session stays live in the registry ("register on
   // wake/first-encode") — a session idle past STALE, or one never encoding,
   // correctly falls to completed. The session is always defined here (resolve
   // threw otherwise), so every capture heartbeats its session.
@@ -453,7 +453,7 @@ function runRead(args: ParsedArgs): CliResult {
     }; legacy: ${legacy}\n`;
   }
 
-  // Liveness filter (memiso-1), ORTHOGONAL to `--under`: with `--for-session
+  // Liveness filter, ORTHOGONAL to `--under`: with `--for-session
   // <S>`, exclude records authored by a LIVE OTHER session — own, completed, and
   // sessionless records all pass (the reader inherits its own + completed
   // residue, never a live sibling's). Absent the flag, behavior is unchanged.
@@ -592,7 +592,7 @@ function staleFrom(flags: ParsedArgs['flags']): number | undefined {
   return n;
 }
 
-/** The live-session set for the liveness filters (memiso-1), honoring `--stale`. */
+/** The live-session set for the liveness filters, honoring `--stale`. */
 function liveSetFrom(home: string, flags: ParsedArgs['flags']): Set<string> {
   const stale = staleFrom(flags);
   return stale !== undefined
@@ -602,7 +602,7 @@ function liveSetFrom(home: string, flags: ParsedArgs['flags']): Set<string> {
 
 /**
  * `session register|heartbeat|release|status <id>|list`: the session-liveness
- * registry (memiso-0). The mutating verbs act on the CURRENT session — its id is
+ * registry. The mutating verbs act on the CURRENT session — its id is
  * DERIVED from the environment (the same seam `encode` uses), with `--session
  * <id>` as an explicit override; the caller never reasons it. `status`/`list`
  * are read verbs: `status <id>` prints a bare liveness word (`--json` for the
@@ -714,7 +714,7 @@ function runMigrate(args: ParsedArgs): CliResult {
  * the newest `--keep N` (default 5) archives, prune the rest — so `.bak/` is
  * bounded, never the unbounded sibling-file creep.
  *
- * Liveness-aware (memiso-1): with `--completed-only` (or `--for-session <S>`,
+ * Liveness-aware: with `--completed-only` (or `--for-session <S>`,
  * which additionally drains the caller's own live session S), a LIVE OTHER
  * session's records are RETAINED — never archived, never cleared — so a
  * concurrent sibling's residue survives the dreamer's drain. Cross-session

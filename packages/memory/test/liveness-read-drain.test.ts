@@ -14,7 +14,7 @@ import { shortHost } from '../src/node.js';
 import { parseLines } from '../src/store.js';
 import { ulid } from '../src/ulid.js';
 
-// memiso-1: `read` + `drain` become liveness-aware — a live OTHER session's
+// `read` + `drain` are LIVENESS-AWARE — a live OTHER session's
 // residue is invisible to a reader and untouched by a drain, while completed
 // (inheritable) and sessionless residue flow normally.
 
@@ -35,7 +35,7 @@ afterEach(() => {
  * Encode a record authored by session `s`. Empty `s` ⇒ sessionless RESIDUE:
  * `encode` now binds a session (never sessionless), so a sessionless record —
  * legacy/foreign raw residue — is seeded directly, exactly as it arrives via
- * import or another host. Its read/drain flow is what memiso-1 must preserve.
+ * import or another host. Its read/drain flow is what the liveness filter must preserve.
  */
 const enc = (s: string, body: string): void => {
   if (s === '') {
@@ -79,7 +79,7 @@ const bakBodies = (): string[] => {
   );
 };
 
-describe('read --for-session (memiso-1 liveness filter)', () => {
+describe('read --for-session — the liveness filter', () => {
   it('excludes a LIVE other session; keeps own + sessionless', () => {
     register('A');
     register('B');
@@ -121,7 +121,7 @@ describe('read --for-session (memiso-1 liveness filter)', () => {
   });
 });
 
-describe('drain --completed-only / --for-session (memiso-1)', () => {
+describe('drain --completed-only / --for-session — the liveness filter', () => {
   it('retains live-other records; drains sessionless (completed set)', () => {
     register('A');
     register('B'); // both live
@@ -177,7 +177,7 @@ describe('drain --completed-only / --for-session (memiso-1)', () => {
   });
 });
 
-describe('encode heartbeats the current session (memiso-0 lifecycle)', () => {
+describe('encode heartbeats the current session — the registry lifecycle', () => {
   it('a first encode registers the session live — no explicit register needed', () => {
     enc('X', 'x1'); // never called `session register`
     expect(main(['session', 'status', 'X', '--home', home]).out.trim()).toBe(
