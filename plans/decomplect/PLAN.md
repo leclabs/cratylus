@@ -9,7 +9,12 @@ Every item below is a **divergence from it**, and an item that is not one does n
 
 ## Status
 
-Suite green — forge 224 · canon 23 files · memory 255 · runtime 52. Tree clean.
+Suite green uncached, 9 tasks — **canon 175** (23 files) · **forge 215** (35) · **memory 255** (16) ·
+**runtime 52** (5) · **schema 9** (1). Tree clean.
+
+**Forge reads 215 where this file long said 224, and the drop is a MOVE, not a loss**: `215 + 9 = 224`
+— the nine tests left forge with `agent-schema` in `48baaddd`. Recorded because a falling test count
+is otherwise indistinguishable from tests going dark.
 
 **Act 1 ✅ LANDED (`3bd40eac`) — `test/architecture.test.ts`.** The four load-bearing properties are
 enforced for the first time. 26 breaches pinned, shrink-only; 25 retire when §1 lands. The exact-count
@@ -37,28 +42,71 @@ contorting the tree to fit.** Recorded because the correction is the lesson:
 property-1 breaches **1**. An acceptance criterion that contradicts the ground it claims to enforce is
 worse than none — it converts a correct refusal into an apparent failure.
 
+### Praxis sync — 2026-08-05
+
+`state` was **not** `truth`, in three ways, all now repaired:
+
+- **`frontier(P) = ∅` while `bound(P) ∧ sharded(P) ∧ ¬done(P)`** — the plan was bound with nothing
+  `ready` and nothing `active`, which that law forbids. The cause is structural and worth naming:
+  `file` writes a stub to `pending/` with **no census and no re-slice**, so a filed defect has no
+  edge in `R` and can never be reached by `promote`. Filed stubs are therefore invisible to the
+  frontier while still counting against `done(P)`. Only `upsert` gets them out. **The plan's whole
+  work list lived as prose in this mirror rather than as task-files** — and `(state, R, content) ≽
+PLAN.md`, so the mirror was carrying the state instead of reflecting it.
+- **This file said "both `pending/` files" when there were three** (now five, with two filed today).
+- **The Status counts were stale**, and the stalest one — forge 224 → 215 — reads as nine lost tests
+  unless the move to `agent-schema` is recorded beside it.
+
+Surfaced and NOT fixed, because it is the operator's:
+[`pending/vision-still-carries-the-enumeration-cratylism-dropped.md`](./pending/vision-still-carries-the-enumeration-cratylism-dropped.md).
+`VISION.md:127` still enumerates _"anchors, dimensions, skills, agents, files, and directories"_ —
+the reach `a2205eb` generalized out of `cratylism`. The apex triad must stay mutually consistent, and
+`CANON.md` says a VISION conflict is surfaced, never unilaterally edited.
+
 ### Owed next, in order
 
 1. **Amend `bin-name-single-home`**, then repair property 1. It pins the canon→runtime import; the
    repair is red until the counter-gate is a design decision made deliberately.
-2. **Rule on `schema → runtime`.** The extraction created it (`type RuntimePlugin` → `RuntimeCapability`).
-   It is **ratcheted, not licensed**: a shape the corpus authors against belongs in the shapes package,
-   so the resolution is to move `RuntimePlugin`. It breaches no property today and creates no cycle.
-3. **Rule on `AgentPlugin`** — shape or resolver contract. Answering it retires the last property-2 pin.
+2. ▶ **READY — [`ready/t-runtime-capability-vocabulary.md`](./ready/t-runtime-capability-vocabulary.md).**
+   The `schema → runtime` edge is **ratcheted, not licensed**, and that detection stands. **The remedy
+   recorded here was refuted by census on 2026-08-05 and is replaced.** It read _"a shape the corpus
+   authors against belongs in the shapes package, so the resolution is to move `RuntimePlugin`"_ — but
+   schema does not consume `RuntimePlugin`, it consumes `keyof Omit<RuntimePlugin, 'name'>`, a **key
+   set**. `RuntimePlugin` is typed over `MemoryStrategy` and `EventTapHost`, so moving it drags the
+   **ports** into the shapes package — and the ports are the whole of what ARCHITECTURE assigns to the
+   runtime. The defect is `shape ⊥ vocabulary`, exactly as `MODEL.md:22` already names it for `Event`,
+   and it dissolves by naming the vocabulary in canon. Detection kept, remedy rejected.
+3. **Rule on `AgentPlugin` — [`pending/t-agent-plugin-cut.md`](./pending/t-agent-plugin-cut.md), and
+   the binary in the question is the wrong question.** Its seven fields split cleanly: `fragments`
+   `agents` `skills` `hooks` are dirs the **resolver scans** (forge's mapping); `preamble` and
+   `manifest` are **doctrine and which-dimensions-exist** (canon's, and ARCHITECTURE calls a dimension
+   constitutive). One sign over two concepts — the same palimpsest species as `anatomy`, which is why
+   the ownership question has no answer as posed. Blocked on #2: both write `agent-schema/src/index.ts`
+   and both retire a pin from the same ratchet, so they cannot share a wave.
 4. **Concept A's surviving occupancy**, now the largest residue: `canon/src/anatomy.ts` still holds
    `MANIFEST` behind the retired sign (154 importers), and `FIXTURE_ANATOMY` survives at ~110 sites so
    call sites read `manifest: FIXTURE_ANATOMY`. Both were outside the enumerated rename set and were
    correctly left rather than assumed.
 
-**Also fix the oracle command in Status above** — `canon:project` writes only `.render-ts`;
-`.render-ts-codex` needs `project:codex`. Run literally, the documented pipeline hashes a stale half
-and still prints the expected value.
+**The oracle command in Status is ✅ FIXED** — it now reprojects both targets and names the
+`canon:project:codex` gap that made the old one half a proof.
 
 **Before touching property 1** (canon ⊥ runtime), amend the counter-gate: `bin-name-single-home`
 asserts the violating import STAYS. That is a design decision, not a repair, and it is not the
 extraction's job.
 
-**Regression oracle:** `find packages/agent-canon/.render-ts packages/agent-canon/.render-ts-codex
+**Regression oracle** — reproject BOTH targets first:
+
+```sh
+pnpm canon:project && pnpm --filter @leclabs/agent-canon project:codex
+```
+
+`canon:project` alone writes only `.render-ts`, so against a stale codex render the hash below reads
+the stale half and **still prints the expected value**. Note the asymmetry in the second half: the
+root exposes `canon:project` but **no `canon:project:codex`**, so the codex leg must be spelled out
+through the filter — and `canon:deploy` runs `canon:project` only, meaning **deploy never reprojects
+codex at all**. Then:
+`find packages/agent-canon/.render-ts packages/agent-canon/.render-ts-codex
 -type f | sort | xargs shasum | shasum` → `fe084dd1d531948979dc386713c3f688c96088ab`. Verified
 deterministic across two reprojections. **It moved from `9055e88b…` when `a2205eb` changed the
 founding doctrine, which rides into every SOUL — so a hash change is only a defect when nothing
@@ -134,7 +182,11 @@ the suite red.** Amending that counter-gate is a design decision and comes befor
 **Parallel from day one, blocked by nothing:** C2 _(gate ✅ landed — `command-veracity`; the property
 generalizes to ~45 more convictions across markdown links and source-comment path citations, not yet
 covered)_ · C3 _(pure deletion — but **file the `coined` re-signification separately**, it does not
-die with the generator)_ · `accept.ts:52`'s fifth `Kind` · both `pending/` files.
+die with the generator)_ · `accept.ts:52`'s fifth `Kind` · **all three** `pending/` filings —
+`hook-message-has-no-declared-home`, `elevate-installs-no-mechanism`, and
+[`deployed-drifts-from-rendered-unwatched`](./pending/deployed-drifts-from-rendered-unwatched.md),
+the last filed 2026-08-04 after a stale deployed SOUL ran superseded doctrine for a whole session
+with every gate green.
 
 **Deliberately last: §4 and A2/A5/A6** — not because they are small, but because **no property
 convicts them**, so each needs its property stated first. A2 is a vocabulary-design task the size of
