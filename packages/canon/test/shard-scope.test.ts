@@ -17,6 +17,24 @@
 // (a sweep rewrote specifiers belonging to another shard's files). It worked. It should not depend
 // on someone remembering to run it.
 //
+// WHAT THIS GATE CANNOT SEE, AND WHY IT IS WRITTEN DOWN HERE. Across `decomplect` this
+// convicted six under-declared arrays, and all six had ONE cause: the author read a shard's
+// footprint off where a sign is DEFINED when the work was bounded by where it is USED. A
+// rename touches its reference set. `t-kind-is-triple-booked` declared one glob and wrote
+// fifteen files; `t-tool-class-vocabulary` declared one and wrote twelve; the last shard
+// declared eight and wrote twenty, because giving a name its first home means every existing
+// spelling interpolates it. Resolve references BEFORE declaring outputs for any rename.
+//
+// The sharpest instance is invisible to this check and cannot be gated from the data that
+// exists. `namespaced-pairs-are-a-hand-rolled-map` was CUT OUT of another shard, and the
+// split copied the parent's topical globs while dropping its consumer entries — so the
+// child's array understated BY CONSTRUCTION, not by oversight. SPLITTING A SHARD DOES NOT
+// SPLIT ITS BLAST RADIUS: a child's outputs are not the subset of the parent's that look
+// topical, they are re-derived from the child's own call graph. `spec.mjs` records no
+// derived-from edge, so no predicate here can know a shard was split. It is stated in the
+// gate nearest the defect rather than left to be re-learned, which is the only seam
+// available when the data a check would need was never captured.
+//
 // SCOPE, stated so the silence is not read as coverage: this checks COMPLETION commits only.
 // A shard that never landed is unchecked here, and a commit that lands no shard is ignored.
 //
