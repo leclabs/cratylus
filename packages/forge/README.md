@@ -241,4 +241,4 @@ truth). That is a future plan with its own derivation to do, and is deliberately
 
 ## License
 
-MIT © leclabs
+MIT © Lance Caraccioli — see [LICENSE](../../LICENSE).
