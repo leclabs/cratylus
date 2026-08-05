@@ -7,6 +7,10 @@ dist/
 *.log
 .env
 .env.local
+# direnv's shell file. It carries live credentials BY DESIGN — that is what direnv is for — so it
+# is per-machine operator state, never repo state. Without this rule a `git add -A` sweeps it into
+# a commit, which is exactly how it once reached history and had to be scrubbed back out.
+.envrc
 .forge/local/
 .claude/worktrees/
 # Rendered projection (derived from packages/canon/ideas via resolve.py; regenerable).
