@@ -1,4 +1,4 @@
-// The ZERO-CONFIG corpus catalog path — `agent-forge catalog --corpus <dir>` with no
+// The ZERO-CONFIG corpus catalog path — `cratylus catalog --corpus <dir>` with no
 // `agents.config.ts` anywhere. This is what a NEW consumer hits first, and it became
 // load-bearing at fb944d2: a missing catalog used to fall back to a resident default,
 // and now REFUSES, so both of these branches went from unreachable to first-contact.

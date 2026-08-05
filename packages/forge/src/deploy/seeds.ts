@@ -79,7 +79,7 @@ export function episodicSeed(_name: string): string {
 // forge→memory). Until that export is resolvable in the tree these templates
 // remain the FALLBACK so the deploy seed site (local.ts) stays green;
 // removing them now would break the build against a not-yet-landed import. See S6
-// report + plans/agent-runtime coordination (S4 concurrent).
+// report + plans/runtime coordination (S4 concurrent).
 /** (filename, seed-fn) — SOUL (the def) is generated, not seeded here. */
 export const SEED_FILES: ReadonlyArray<[string, (name: string) => string]> = [
   ['SEMANTIC.md', semanticSeed],

@@ -54,9 +54,9 @@ npm i @cratylus/canon@file:../canon
 cd ~/myproject
 
 forge init            # scaffolds agents.config.ts (extends: [canon])
-agent-forge compose         # inspect the resolved fragment set
-agent-forge project         # render into ./.render
-agent-forge deploy \
+cratylus compose         # inspect the resolved fragment set
+cratylus project         # render into ./.render
+cratylus deploy \
   --agents-dir .render/agents \
   --skills-dir .render/skills \
   --hooks-dir  .render       # place into ~/.claude
@@ -99,35 +99,35 @@ printed as the next step.
 forge add @acme/agent-plugin
 ```
 
-### `agent-forge compose`
+### `cratylus compose`
 
 Loads the config, resolves the plugin set, and prints every resolved fragment with its value. Writes
 nothing.
 
 ```
-agent-forge compose
-agent-forge compose --dry-run                     # same, stated explicitly
-agent-forge compose --config ./other.config.ts
+cratylus compose
+cratylus compose --dry-run                     # same, stated explicitly
+cratylus compose --config ./other.config.ts
 ```
 
-### `agent-forge project`
+### `cratylus project`
 
 Materializes the resolved set into a render tree: `agents/`, `skills/`, `hooks/`, and a `settings.json`
 carrying the hook registrations. Skills that need a runtime companion get their shim emitted alongside
 them.
 
 ```
-agent-forge project [--config <path>] [--out <dir>] [--harness claude|codex]
+cratylus project [--config <path>] [--out <dir>] [--harness claude|codex]
 ```
 
 Defaults: config `<cwd>/agents.config.ts`, out `<cwd>/.render`, harness `claude`. On success it prints
 the counts it wrote and the exact `deploy` invocation that ships them.
 
 ```
-agent-forge project --out ./build --harness codex
+cratylus project --out ./build --harness codex
 ```
 
-### `agent-forge deploy`
+### `cratylus deploy`
 
 Places an already-projected render tree into the **local** `.claude/` root. Agent definitions and skill
 directories are copied; `settings.json` hook registrations are merged into any existing file rather
@@ -135,7 +135,7 @@ than replacing it. Each deployed agent also gets its memory layers seeded, and e
 untouched.
 
 ```
-agent-forge deploy --agents-dir <dir> --skills-dir <dir> --hooks-dir <dir>
+cratylus deploy --agents-dir <dir> --skills-dir <dir> --hooks-dir <dir>
 ```
 
 | Option               | Effect                                                   |
@@ -155,27 +155,27 @@ Which directories are required depends on `--kind`: `all` requires all three, `h
 `--hooks-dir`, and `agent` or `skill` require `--agents-dir` and `--skills-dir`. Passing less is a
 refusal, not a partial run.
 
-### `agent-forge explain [agent]`
+### `cratylus explain [agent]`
 
 Reports each resolved fragment's provenance — the contributing plugin or patch, the operation, and the
 final value. The optional argument is declared `[agent]`, and today it acts as a substring filter over
 fragment ids, so pass a fragment id fragment rather than an agent name.
 
 ```
-agent-forge explain                       # every fragment
-agent-forge explain fileOps               # just the ones whose id contains 'fileOps'
-agent-forge explain --json
+cratylus explain                       # every fragment
+cratylus explain fileOps               # just the ones whose id contains 'fileOps'
+cratylus explain --json
 ```
 
-### `agent-forge catalog [agent]`
+### `cratylus catalog [agent]`
 
 Lists the extendable fragment ids across every extended plugin — what `add` and `patches` have to aim
 at.
 
 ```
-agent-forge catalog
-agent-forge catalog --json
-agent-forge catalog --corpus <dir>        # per-dimension corpus census instead
+cratylus catalog
+cratylus catalog --json
+cratylus catalog --corpus <dir>        # per-dimension corpus census instead
 ```
 
 ## Where the boundaries are

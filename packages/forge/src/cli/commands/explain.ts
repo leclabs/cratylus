@@ -1,4 +1,4 @@
-// `agent-forge explain [agent] [--config <path>] [--json]` — the PROVENANCE skin
+// `cratylus explain [agent] [--config <path>] [--json]` — the PROVENANCE skin
 // of `resolve()` (precedent: `eslint --print-config`, `terraform plan`). For each
 // resolved fragment it reports, IN FOLD ORDER, which plugin/patch each contribution
 // came from, whether that contribution set the base (`replace`) or accumulated onto
@@ -123,7 +123,7 @@ export async function runExplain(opts: ExplainOpts): Promise<number> {
   if (!existsSync(configPath)) {
     console.error(
       pc.red(
-        `agent-forge explain: no ${CONFIG_FILE} at ${configPath} — run \`forge init\` first`,
+        `cratylus explain: no ${CONFIG_FILE} at ${configPath} — run \`forge init\` first`,
       ),
     );
     return 1;
@@ -133,7 +133,7 @@ export async function runExplain(opts: ExplainOpts): Promise<number> {
   try {
     composed = await composeFromFile(configPath);
   } catch (e) {
-    console.error(pc.red(`agent-forge explain: ${(e as Error).message}`));
+    console.error(pc.red(`cratylus explain: ${(e as Error).message}`));
     return 1;
   }
 
@@ -156,7 +156,7 @@ export async function runExplain(opts: ExplainOpts): Promise<number> {
   const names =
     composed.config.extends.map((p) => p.name).join(' › ') || '(none)';
   console.log(
-    pc.bold('agent-forge explain'),
+    pc.bold('cratylus explain'),
     pc.gray(
       `(extends: ${names} — ${rows.length} fragment${rows.length === 1 ? '' : 's'}` +
         `${filter ? ` matching '${opts.agent}'` : ''})`,

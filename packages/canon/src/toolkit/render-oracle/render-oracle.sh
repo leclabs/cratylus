@@ -26,7 +26,7 @@
 # to every codex-projected skill for the life of the divergence, precisely
 # because only one target was being watched.
 #
-# THE OUT DIRS ARE REMOVED FIRST. `agent-forge project` does not clean its
+# THE OUT DIRS ARE REMOVED FIRST. `cratylus project` does not clean its
 # `--out` (see plans/decomplect/pending/project-never-cleans-its-out-dir.md), so
 # a deleted cell's artifact outlives it and an incremental render is not a
 # render of the corpus — it is a render of the corpus plus its ghosts.

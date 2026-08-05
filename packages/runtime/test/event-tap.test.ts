@@ -39,7 +39,7 @@ interface Settings {
 }
 
 function fixture(): { settingsPath: string; sinkPath: string } {
-  const dir = mkdtempSync(join(tmpdir(), 'agent-runtime-event-tap-'));
+  const dir = mkdtempSync(join(tmpdir(), 'cratylus-run-event-tap-'));
   return {
     settingsPath: join(dir, '.claude', 'settings.json'),
     sinkPath: join(dir, 'capture.log'),
@@ -93,7 +93,7 @@ describe('tap install (accept 1: merge + preserve)', () => {
     expect(ours?.type).toBe('command');
     expect(ours?.command).toContain(sinkPath);
     expect(ours?.command).toContain('exit 0');
-    expect(ours?.id).toBe('agent-runtime-event-tap');
+    expect(ours?.id).toBe('cratylus-run-event-tap');
     // session.start → SessionStart added
     expect(after.hooks?.SessionStart).toHaveLength(1);
   });

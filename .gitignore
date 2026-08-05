@@ -18,7 +18,7 @@ dist/
 # target is user-scope ~/.claude per host (C4); a `<repo>/.claude/{agents,skills}` tree
 # may exist ONLY as an explicit `deploy.py --scope project` opt-in by a downstream adopter.
 packages/canon/.render/
-# The claude-harness projection (`pnpm canon:project` → `agent-forge project --harness claude`).
+# The claude-harness projection (`pnpm canon:project` → `cratylus project --harness claude`).
 # Same neutral-staging rationale as .render/ above; regenerable, never a deploy.
 packages/canon/.render-ts/
 # The codex-harness projection (`pnpm canon:project:codex`) — proof that canon reaches a

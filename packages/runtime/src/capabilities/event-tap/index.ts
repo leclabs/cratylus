@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The event-tap runtime CAPABILITY — a `RuntimePlugin` providing the passive
-// {@link EventTapHost} observer, reached via `agent-runtime tap <verb>`.
+// {@link EventTapHost} observer, reached via `cratylus-run tap <verb>`.
 //
 // Packaged as a capability MODULE of `@cratylus/runtime` (a subpath export,
 // not a standalone `@cratylus/*` package) — see the shard's package-vs-module

@@ -18,21 +18,31 @@
 // `canon/test/bin-name-single-home.test.ts` holds it, so a rename cannot
 // half-land.
 //
-// THE BRAND ANCHOR HAS NOW CONVERGED — `Cratylus`, landed 2026-08-05 with the
-// scope rename (`@leclabs/agent-*` → `@cratylus/*`). This value did NOT move with
-// it, deliberately. A package name is free while nothing is published; a bin name
-// is a MIGRATION, because deployed skill shims on hosts already invoke
-// `agent-runtime <capability>` and a flip strands them until redeploy. Renaming
-// packages and bins in one commit would also make a host-side failure
-// unattributable.
+// THE MIGRATION LANDED 2026-08-05: `cratylus-run` → `cratylus-run`, one commit
+// after the scope rename and deliberately not with it, so a host-side failure
+// stays attributable to the bin and not to 500 renamed files.
 //
-// So this literal is the last artifact still wearing the retired `agent-` prefix,
-// alongside forge's `agent-forge`. They move together, once, with a redeploy —
-// see `plans/decomplect/ready/t-bin-name-migration.md`. Flipping this one symbol
-// is still the whole rename; that is what this module bought.
+// WHY `cratylus-run` AND NOT `cratylus`. There are two bins, and the brevity
+// budget was spent on the wrong one in this shard's first guess (`cratylus` +
+// `cratylus-forge`). The build-time bin is TYPED BY HUMANS — seven subcommands,
+// muscle memory, docs — so it takes the bare mark, `cratylus`. This one is
+// invoked almost entirely by GENERATED ARTIFACTS: the projected
+// `scripts/<capability>.mjs` shims and the generated hook `.sh` workers. Saving
+// a token on a machine-written call site to spend one on the human-typed surface
+// is backwards. Explicitness is also a virtue in a name you read while debugging
+// a shim on a host at 2am.
+//
+// `invoke` — the package that ships this bin — could not BE the bin: pyinvoke
+// already installs `invoke` and `inv` on PATH. The package name is scoped and
+// safe; a bin name is global and unscoped, which is a strictly harder occupancy
+// problem and why the two were derived separately.
+//
+// FLIPPING THIS ONE SYMBOL IS STILL THE WHOLE RENAME — that is what this module
+// bought, and the migration proved it: `RUNTIME_CONFIG_NAME` and `TAP_ID` are
+// template-derived from this value and moved without being touched.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** The runtime executable's name on PATH. The single source of truth: every other
  *  site — cac branding, error prefixes, the projected thin shim, the memory-nudge
  *  hook worker — interpolates this rather than repeating the literal. */
-export const RUNTIME_BIN = 'agent-runtime';
+export const RUNTIME_BIN = 'cratylus-run';

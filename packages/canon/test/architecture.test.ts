@@ -4,7 +4,7 @@
 // is named for the principle it enforces, not for a property-noun. Five cold legs were
 // spent looking for a quality-noun and the best of them returned `import-acyclicity`,
 // which is simply WRONG — the law is stricter than acyclicity. `canon` importing
-// `agent-runtime` introduces no cycle and is still forbidden. A sign naming a weaker
+// `cratylus-run` introduces no cycle and is still forbidden. A sign naming a weaker
 // property than the law would mislead exactly the reader who trusted it.
 //
 // WHY THIS EXISTS. `ARCHITECTURE.md` states four properties "in order of how much they
@@ -326,7 +326,7 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     // violating anchor is now canon's root plugin declaration; the permitted one is
     // a build script using the projector as a tool. Was `toolkit/project-cli.ts`
     // until the build-steps-proxy-the-cli shard deleted it — projection is the
-    // shipped `agent-forge project --harness <name>` now, driven from the root
+    // shipped `cratylus project --harness <name>` now, driven from the root
     // `agents.config.ts`, so the anchor moved to a build script that survives.
     expect(ks).toContain('canon/toolkit/scaffold-cli.ts → forge');
     expect(ks).toContain('canon/index.ts → forge');
@@ -363,7 +363,7 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     // cell SHAPES and now take them from the schema, so their forge edge is gone
     // outright. Two more went with `toolkit/project-cli{,-codex}.ts`: they were one
     // program differing by an adapter string, and the shipped
-    // `agent-forge project --harness <name>` is that program. The four that remain
+    // `cratylus project --harness <name>` is that program. The four that remain
     // drive the projector as a tool. This number does not go to zero, and driving it
     // there would mean canon could no longer build itself.
     expect(canonBuild.length, 'canon BUILD SCRIPTS using forge as a tool').toBe(
@@ -381,7 +381,7 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     ).toBe(1);
   });
 
-  it('property 4 — agent-runtime depends on nothing', () => {
+  it('property 4 — runtime depends on nothing', () => {
     const bad = edges().filter((e) => e.from === 'runtime');
     expect(
       bad.map(key),

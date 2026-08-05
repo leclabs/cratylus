@@ -1,8 +1,8 @@
 // EVENT-TAP CELL gate — the agent-facing surface of the `eventTap` runtime capability.
 //
 // WHY THIS FILE EXISTS. The capability was built and tested end-to-end
-// (`agent-runtime/src/capabilities/event-tap/`) but had NO skill cell, so it was
-// reachable ONLY by an operator typing `agent-runtime tap …` at a shell — inverting the
+// (`runtime/src/capabilities/event-tap/`) but had NO skill cell, so it was
+// reachable ONLY by an operator typing `cratylus-run tap …` at a shell — inverting the
 // point of the effort chain (a passive tap an AGENT can turn on to observe itself). The
 // shard that would have added the cell was recorded ABSORBED into a memory-only shard
 // that never touched event-tap, so the work vanished silently and no gate noticed: every
@@ -15,7 +15,7 @@
 //     the source: the source declaring `runtime:` is not evidence the shim landed.
 //   • VERB PARITY — the verbs the cell names EQUAL the `TapVerb` union the runtime
 //     exports. Read from the runtime SOURCE as text: canon does not depend on
-//     agent-runtime (the DAG is canon → forge), so a textual read is what keeps the two
+//     runtime (the DAG is canon → forge), so a textual read is what keeps the two
 //     from drifting without inventing a package edge to carry a test.
 
 import { existsSync, mkdtempSync, readFileSync } from 'node:fs';

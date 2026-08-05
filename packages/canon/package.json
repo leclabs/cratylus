@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/canon",
   "version": "0.0.0",
-  "description": "canon — the culture corpus as typed TS source (T1.1 spike scaffold). Markdown is a projection of these modules.",
+  "description": "The canonical corpus of discovered semantic addresses — agents, skills, dimensions and rules as typed TS source. Markdown is a projection of these modules.",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -23,7 +23,7 @@
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "prepack": "pnpm run build"
   },
-  "//test": "`test` builds FIRST because `test/runtime-shim.test.ts` drives the shipped `agent-forge project` over the repository's own `agents.config.ts`, and that config extends `@cratylus/canon` — the PACKAGE, i.e. this package's `dist`. turbo's `test.dependsOn: [^build]` builds this package's DEPENDENCIES, never this package, so a cold clone would run the consumer path against a dist that does not exist.",
+  "//test": "`test` builds FIRST because `test/runtime-shim.test.ts` drives the shipped `cratylus project` over the repository's own `agents.config.ts`, and that config extends `@cratylus/canon` — the PACKAGE, i.e. this package's `dist`. turbo's `test.dependsOn: [^build]` builds this package's DEPENDENCIES, never this package, so a cold clone would run the consumer path against a dist that does not exist.",
   "//": "Depends on the RUNTIME contract leaf as well as forge: the memory-nudge hook cell emits shell that invokes the runtime bin, so it must read that bin's name from its one home (`@cratylus/runtime/bin-name`) rather than repeat the literal inside a compiler-invisible script string. The runtime is a zero-@cratylus-dep leaf, so the edge cannot cycle.",
   "dependencies": {
     "@cratylus/forge": "workspace:*",
@@ -38,5 +38,25 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "keywords": [
+    "latent-lexicography",
+    "cratylus",
+    "canon",
+    "agent",
+    "skill",
+    "prompt",
+    "llm",
+    "semantic-address"
+  ],
+  "author": "Lance Caraccioli <lance.caraccioli@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leclabs/agent-factory.git",
+    "directory": "packages/canon"
+  },
+  "bugs": {
+    "url": "https://github.com/leclabs/agent-factory/issues"
+  },
+  "homepage": "https://github.com/leclabs/agent-factory#readme"
 }

@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/runtime",
   "version": "0.0.0",
-  "description": "@cratylus/runtime — the per-host RUNTIME contract leaf: capability port interfaces (MemoryStrategy, EventTapHost), the RuntimePlugin face, and the runtime-owned lifecycle-event taxonomy. Pure types + identity helper, zero @cratylus deps.",
+  "description": "The per-host runtime contract leaf: capability port interfaces, the RuntimePlugin face, and the runtime-owned lifecycle-event taxonomy. Pure types plus one identity helper, zero dependencies.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -69,5 +69,24 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "keywords": [
+    "latent-lexicography",
+    "cratylus",
+    "runtime",
+    "agent",
+    "capability",
+    "plugin",
+    "ports"
+  ],
+  "author": "Lance Caraccioli <lance.caraccioli@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leclabs/agent-factory.git",
+    "directory": "packages/runtime"
+  },
+  "bugs": {
+    "url": "https://github.com/leclabs/agent-factory/issues"
+  },
+  "homepage": "https://github.com/leclabs/agent-factory#readme"
 }

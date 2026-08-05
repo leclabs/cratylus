@@ -41,7 +41,7 @@ export interface RuntimeConfig {
   readonly capabilities: readonly string[];
 }
 
-/** The config path: `$AGENT_RUNTIME_CONFIG` ▸ `~/.agent-runtime.json`. */
+/** The config path: `$AGENT_RUNTIME_CONFIG` ▸ `~/.cratylus-run.json`. */
 export function runtimeConfigPath(): string {
   const override = process.env[RUNTIME_CONFIG_ENV];
   return override && override !== ''

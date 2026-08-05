@@ -12,7 +12,7 @@
 // `RuntimePlugin` needs both a `name` (the dispatch word a user types) and a
 // port FIELD on the `RuntimePlugin` interface, and both are anchors that must be
 // derived rather than coined. So `loader.ts` and `plugin.ts` are untouched,
-// nothing outside `agent-runtime` imports this, and the whole capability stays
+// nothing outside `cratylus-run` imports this, and the whole capability stays
 // mechanism until the name exists. Completing the registration is the FIRST step
 // after the derivation lands, not before.
 //

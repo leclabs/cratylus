@@ -2,7 +2,7 @@
   "name": "@cratylus/memory",
   "version": "0.0.0",
   "//": "FORK-3 (publish) unresolved: kept private:true. Drop the flag when the publish story lands — the bin-drop + strategy impl do not block on it.",
-  "description": "@cratylus/memory — the memory runtime-capability plugin: a MemoryStrategy over an EPISODIC store + the CoALA consolidation verbs. Reached via `agent-runtime memory <verb>` (no `memory` bin). Owns the store seed templates.",
+  "description": "The memory runtime-capability plugin: a MemoryStrategy over an EPISODIC store plus the CoALA consolidation verbs.",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.js",
@@ -38,5 +38,24 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "keywords": [
+    "latent-lexicography",
+    "cratylus",
+    "memory",
+    "agent",
+    "coala",
+    "capability",
+    "plugin"
+  ],
+  "author": "Lance Caraccioli <lance.caraccioli@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leclabs/agent-factory.git",
+    "directory": "packages/memory"
+  },
+  "bugs": {
+    "url": "https://github.com/leclabs/agent-factory/issues"
+  },
+  "homepage": "https://github.com/leclabs/agent-factory#readme"
 }

@@ -1,4 +1,4 @@
-// P4 — `agent-forge compose --dry-run` prints the resolved set and WRITES NOTHING.
+// P4 — `cratylus compose --dry-run` prints the resolved set and WRITES NOTHING.
 
 import {
   mkdirSync,
@@ -70,7 +70,7 @@ describe('compose --dry-run', () => {
     }
     expect(rc).toBe(0);
     const out = logs.join('\n');
-    expect(out).toContain('agent-forge compose');
+    expect(out).toContain('cratylus compose');
     expect(out).toContain('syn:objective/insight');
     // Dry-run: the tree is byte-identical — nothing written.
     expect(listing(cwd)).toEqual(before);

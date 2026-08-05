@@ -1,4 +1,4 @@
-// `agent-forge deploy` — place an already-projected render tree (agents/ +
+// `cratylus deploy` — place an already-projected render tree (agents/ +
 // skills/) into the LOCAL `.claude/` root. The deploy half of the
 // projection↔deploy self-binding (the projection is `forge`
 // claude-adapter output; this lands it locally).
@@ -129,7 +129,7 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
     }
     return rc;
   } catch (e) {
-    console.error(pc.red(`agent-forge deploy: ${(e as Error).message}`));
+    console.error(pc.red(`cratylus deploy: ${(e as Error).message}`));
     return 1;
   }
 }

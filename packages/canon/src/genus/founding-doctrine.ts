@@ -1,6 +1,6 @@
 // founding-doctrine — the apex SEED every projection carries INTRINSICALLY. The ONE
 // HOME (DRY) of the prime principle, composed into every agent SOUL + every skill
-// SKILL.md by the projection consumer (`agent-forge project --harness <name>`),
+// SKILL.md by the projection consumer (`cratylus project --harness <name>`),
 // via the doctrine-AGNOSTIC `preamble` slot the forge body generators emit
 // (`agentBody` / `skillBody` — forge knows only "a leading verbatim block", never
 // its content). Distinct from `rules/repo-preamble.ts`, which byte-locks the repo-root

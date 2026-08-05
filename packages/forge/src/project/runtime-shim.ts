@@ -8,7 +8,7 @@
 // forwards its argv to the host-installed `<RUNTIME_BIN> <capability>` CLI and
 // mirrors its exit code — NOTHING more. It is NOT a bundle of the capability impl:
 // the impl lives host-side behind the runtime port (@cratylus/runtime → memory /
-// event-tap host / …), installed per-host by agent-runtime/S7, addressed by the CLI
+// event-tap host / …), installed per-host by runtime/S7, addressed by the CLI
 // and NEVER imported here. This REVERSES the superseded dep-free-bundle composition
 // (skills-refactor T4): forge projects a thin shim against the runtime contract, it
 // does not compose a standalone `.mjs` at build time.
@@ -52,7 +52,7 @@ export function runtimeShimContent(capability: string): string {
   const vendors = HARNESS_SESSION_ENV_VARS.map((v) => `'${v}'`).join(', ');
   return `#!/usr/bin/env node
 // THIN SHIM — projected by canon for a skill declaring runtime:{capability:'${capability}'}.
-// Forwards to the host-installed \`${RUNTIME_BIN}\` CLI (per-host install: agent-runtime/S7).
+// Forwards to the host-installed \`${RUNTIME_BIN}\` CLI (per-host install: runtime/S7).
 // NOT a bundle of the capability impl — the impl lives host-side behind the runtime
 // port, addressed by the CLI, never imported here. Zero cross-package imports.
 //

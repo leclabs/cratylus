@@ -47,7 +47,7 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
   timeout 60).
 - **Project** — `pnpm canon:project` emits a `settings.json` `{hooks}` fragment + stages these workers
   under `.render-ts/hooks/stance-guardrail/`.
-- **Deploy** — `pnpm canon:deploy:hooks` (`agent-forge deploy --kind hooks`) ships the workers to
+- **Deploy** — `pnpm canon:deploy:hooks` (`cratylus deploy --kind hooks`) ships the workers to
   `~/.claude/hooks/stance-guardrail/` and **merges** the hooks block into the host `settings.json`
   (idempotent, non-destructive — never clobbers permissions/env/other hooks).
 

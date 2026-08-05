@@ -3,7 +3,7 @@
 // The defect this pins: the projection emitted `scripts/<capability>.mjs` beside a
 // SKILL.md but NOTHING bound that path INTO the body. A cell declaring `runtime:`
 // carried a script it could not name, so every skill fell back to embedding the
-// `agent-runtime` bin name as prose in its formal block — which is why zero cells
+// `cratylus-run` bin name as prose in its formal block — which is why zero cells
 // ever declared `runtime:`, and why the bin name (an explicit PLACEHOLDER pending
 // the brand derivation) became a contract pasted across generated markdown.
 //

@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/schema",
   "version": "0.0.0",
-  "description": "schema — the shapes a corpus authors against: MODEL.md realized in types. Canon authors against it, forge projects against it, and it holds no opinion about either.",
+  "description": "The shapes a corpus authors against: the dimension meta-model as a TypeScript type system. Makes a semantic address compiler-checkable.",
   "license": "MIT",
   "type": "module",
   "exports": {
@@ -38,5 +38,24 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "keywords": [
+    "latent-lexicography",
+    "cratylus",
+    "schema",
+    "types",
+    "meta-model",
+    "agent",
+    "dimension"
+  ],
+  "author": "Lance Caraccioli <lance.caraccioli@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leclabs/agent-factory.git",
+    "directory": "packages/schema"
+  },
+  "bugs": {
+    "url": "https://github.com/leclabs/agent-factory/issues"
+  },
+  "homepage": "https://github.com/leclabs/agent-factory#readme"
 }

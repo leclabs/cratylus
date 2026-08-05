@@ -1,4 +1,4 @@
-// `agent-forge project [--out <dir>] [--config <path>] [--harness <name>]` — the
+// `cratylus project [--out <dir>] [--config <path>] [--harness <name>]` — the
 // step that was missing between `compose` and `deploy`.
 //
 // `compose` resolved the plugin set and wrote nothing; `deploy` required a render
@@ -92,7 +92,7 @@ export async function runProject(opts: ProjectCmdOpts = {}): Promise<number> {
       // printer knows a consumer is following it. `command-veracity` cannot see this
       // class: its extractor reads `pnpm|npm|yarn` invocations against package.json
       // script keys, and an `forge <verb> <flags>` line never enters that stream.
-      `${pc.gray(`ship it with: agent-forge deploy --agents-dir ${join(out, 'agents')} --skills-dir ${join(out, 'skills')} --hooks-dir ${out}`)}\n`,
+      `${pc.gray(`ship it with: cratylus deploy --agents-dir ${join(out, 'agents')} --skills-dir ${join(out, 'skills')} --hooks-dir ${out}`)}\n`,
   );
   return 0;
 }

@@ -16,7 +16,7 @@
 //   · not added as a field on `plugin.ts`'s `RuntimePlugin`
 //   · not added to `package.json#exports` or `tsup.config.ts` entries
 //   · no `packages/canon/src/skills/<name>/`
-// Nothing outside `agent-runtime` imports it, which is what keeps the eventual
+// Nothing outside `cratylus-run` imports it, which is what keeps the eventual
 // rename a `git mv` plus an identifier sweep.
 //
 // COLLISION NOTICE for the derivation: the word `heartbeat` is ALREADY BOUND in

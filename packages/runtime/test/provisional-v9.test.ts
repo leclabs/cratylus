@@ -38,7 +38,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..', 'src');
 
 function tmp(): string {
-  return mkdtempSync(join(tmpdir(), 'agent-runtime-provisional-v9-'));
+  return mkdtempSync(join(tmpdir(), 'cratylus-run-provisional-v9-'));
 }
 
 /** A clock the test drives by hand, so a period is exercised without sleeping. */

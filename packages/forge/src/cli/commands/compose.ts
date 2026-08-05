@@ -1,4 +1,4 @@
-// `agent-forge compose [--dry-run] [--config <path>]` — the config-is-code skin
+// `cratylus compose [--dry-run] [--config <path>]` — the config-is-code skin
 // of `resolve()`. Loads `agents.config.ts` (no build step), runs THE LOAD STEP +
 // `resolve()`, and prints the RESOLVED SET. `--dry-run` prints and writes nothing
 // (the pre-publish `file:`-link workflow — inspect a locally-linked plugin's
@@ -44,7 +44,7 @@ function printResolved(
     .map((r) => ({ id: r.fragment.id, value: r.value }))
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   console.log(
-    pc.bold('agent-forge compose'),
+    pc.bold('cratylus compose'),
     pc.gray(`(extends: ${names} — ${rows.length} resolved fragments)`),
   );
   console.log('');
@@ -61,7 +61,7 @@ export async function runCompose(opts: ComposeOpts): Promise<number> {
   if (!existsSync(configPath)) {
     console.error(
       pc.red(
-        `agent-forge compose: no ${CONFIG_FILE} at ${configPath} — run \`forge init\` first`,
+        `cratylus compose: no ${CONFIG_FILE} at ${configPath} — run \`forge init\` first`,
       ),
     );
     return 1;
@@ -71,7 +71,7 @@ export async function runCompose(opts: ComposeOpts): Promise<number> {
   try {
     composed = await composeFromFile(configPath);
   } catch (e) {
-    console.error(pc.red(`agent-forge compose: ${(e as Error).message}`));
+    console.error(pc.red(`cratylus compose: ${(e as Error).message}`));
     return 1;
   }
 

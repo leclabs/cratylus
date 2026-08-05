@@ -5,7 +5,7 @@ export const createAgent: Skill = {
   description: `author a custom agent as a dimension-selection vector — pick each dimension's value from the canonical catalog (closed enums + generalized open sets), compose the agent/<name>.md vector, then resolve → verify → deploy; knows the dimension anatomy. Can interview a non-engineer in plain language (one question per dimension, recommending the fittest) when a human is driving.`,
   formalBlock: `A               ≜ the agent under construction
 O               ≜ the dimension set @ SOUL \`##\` anatomy sections
-catalog         ≜ the canonical value store per dimension @ \`agent-forge catalog\` ⟨live · never embedded⟩
+catalog         ≜ the canonical value store per dimension @ \`cratylus catalog\` ⟨live · never embedded⟩
 openness        : O → { enum, open, coined }
 enum            ≜ a closed, model-native value-set
 open, coined    ≜ an extensible value-set

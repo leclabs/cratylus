@@ -2,8 +2,8 @@
 //
 // Two identifiers are named after the bin and were independent string literals:
 //
-//   RUNTIME_CONFIG_NAME  `.agent-runtime.json` — the host config dotfile
-//   TAP_ID               `agent-runtime-event-tap` — written INTO user settings
+//   RUNTIME_CONFIG_NAME  `.cratylus-run.json` — the host config dotfile
+//   TAP_ID               `cratylus-run-event-tap` — written INTO user settings
 //
 // V5 collapsed thirteen homes of the bin name to one and these two survived it,
 // because neither looks like a bin name to a grep for one. `TAP_ID` is the one that

@@ -128,22 +128,43 @@ its package sits alongside them.
 
 A consumer meets this system at two different times, and they are not the same entry:
 
-| when           | what it answers                                       | shipped by         | bin (unmoved)   |
-| -------------- | ----------------------------------------------------- | ------------------ | --------------- |
-| **build time** | author, resolve, project and deploy a corpus          | `@cratylus/forge`  | `agent-forge`   |
-| **run time**   | the capabilities an agent invokes while it is running | `@cratylus/invoke` | `agent-runtime` |
+| when           | what it answers                                       | shipped by         | bin            | typed by    |
+| -------------- | ----------------------------------------------------- | ------------------ | -------------- | ----------- |
+| **build time** | author, resolve, project and deploy a corpus          | `@cratylus/forge`  | `cratylus`     | **a human** |
+| **run time**   | the capabilities an agent invokes while it is running | `@cratylus/invoke` | `cratylus-run` | **a shim**  |
 
 This is not two ways of doing one thing. It is the **same decomplection the plugin contract already
 makes one level down**: a capability package exposes `buildPlugin` (its `AgentPlugin` face) and
 `runtimePlugin` (its `RuntimePlugin` face), never one dual-hook object, so the build DAG and the
 runtime DAG never reach across. The two bins are that seam surfacing as installable commands.
 
-**The `bin` column is deliberately stale.** Package names are free — nothing is published — but a bin
-name is a **migration**: deployed skill shims on hosts invoke `agent-runtime <capability>`, and
-`RUNTIME_BIN` is asserted against `invoke`'s manifest by `bin-name-single-home.test.ts`. The scope
-rename moved every package and no bin. Both bins are now the last artifacts still wearing the retired
-`agent-` prefix, and they move together, once, with a redeploy — filed as
-`plans/decomplect/ready/t-bin-name-migration.md`.
+**Two bins, and the last column is why.** Merging them into one command with two groups was live and
+was rejected: the run-time bin is invoked almost entirely by _generated artifacts_ — the projected
+`scripts/<capability>.mjs` shims and the generated hook workers — so merging would not take a human
+from two names to one. It would take them from `cratylus project` to `cratylus build project`,
+lengthening the surface that _is_ typed to shorten one that is machine-written and free. Worse, one
+bin means one package owns the `bin` key and must depend on **both** DAGs, so a host that only runs
+agents would drag the whole projection machinery — re-coupling at distribution exactly what `invoke`
+exists to keep apart.
+
+**The brevity budget went to the human surface.** That inverted this shard's first guess
+(`cratylus` + `cratylus-forge`), which put the fourteen-character compound on the typed surface and
+the bare mark on the machine-written one. `-forge` is also redundant once `forge` is the only
+build-time package.
+
+**`invoke` ships the bin but could not _be_ it.** `pyinvoke` already installs `invoke` and `inv` on
+`PATH`. A package name is scoped and cheap; a bin name is global and unscoped, which is a strictly
+harder occupancy problem — the two were derived separately for that reason. Bare `forge` was
+disqualified the same way, and harder: Foundry, jboss-forge, ArrayFire, an npm `forge` and a crates
+`forge` all claim it.
+
+**Flipping `RUNTIME_BIN` really was the whole rename.** `RUNTIME_CONFIG_NAME`
+(`.cratylus-run.json`) and `TAP_ID` (`cratylus-run-event-tap`) are template-derived from it and moved
+without being edited — which is what `bin-name.ts` was built to buy. One second home did surface: a
+`${MEMORY_BIN:-…}` shell fallback, invisible to `bin-name-single-home.test.ts` because that gate
+asserts on TypeScript source and this was a `.sh`. **The gate's coverage stops at the language
+boundary**, and the emitted-artifact sites are exactly where a missed rename fails on a host rather
+than at build.
 
 **Everything a consumer can do at build time belongs to `forge`'s command surface**, and
 anything in this repository that performs such a step by another route is a divergence — a private
@@ -151,7 +172,7 @@ reimplementation of a shipped command, which is how a projector drifts from its 
 anything reporting it.
 
 **This repository is itself such a consumer.** `agents.config.ts` at the root extends the canon
-plugin, and `canon:project` / `canon:project:codex` are proxies through `agent-forge project
+plugin, and `canon:project` / `canon:project:codex` are proxies through `cratylus project
 --harness <name>`; the `canon:deploy*` scripts reach the `forge` bin rather than a `dist/`
 path. The two private CLIs those scripts used to drive (`canon/src/toolkit/project-cli.ts` and
 `project-cli-codex.ts`) were the same program differing by one adapter string, and the corpus had

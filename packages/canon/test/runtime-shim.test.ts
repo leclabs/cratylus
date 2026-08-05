@@ -2,8 +2,8 @@
 //
 // When a skill cell declares `runtime: {capability}`, the projection emits, beside
 // SKILL.md, a `scripts/<capability>.mjs` THIN SHIM that forwards to the host
-// `agent-runtime <capability>` CLI. This gate pins the shim's SHAPE:
-//   - it INVOKES `agent-runtime <capability> …` (falsifier: `agent-runtime memory`);
+// `cratylus-run <capability>` CLI. This gate pins the shim's SHAPE:
+//   - it INVOKES `cratylus-run <capability> …` (falsifier: `cratylus-run memory`);
 //   - it is NOT a bundled impl — zero `@cratylus/*` imports, no capability logic;
 //   - it is emitted EXECUTABLE (0755) so deploy's mode-preserving copy keeps the bit;
 //   - a skill WITHOUT `runtime` gets no shim (SKILL.md only — asserted elsewhere).
@@ -69,11 +69,11 @@ beforeAll(async () => {
   writeRenderTree(claudeOut, claudeReport.files);
 
   // The CODEX path, through its real CLI — the fork's live call site. That call site
-  // is now the SHIPPED command: `agent-forge project --harness codex`, reading the
+  // is now the SHIPPED command: `cratylus project --harness codex`, reading the
   // repository's own `agents.config.ts`. Driving the private `project-cli-codex.ts`
   // here was what let the fork exist at all; there is no private codex CLI to drive.
   execFileSync(
-    join(canonRoot, 'node_modules', '.bin', 'agent-forge'),
+    join(canonRoot, 'node_modules', '.bin', 'cratylus'),
     [
       'project',
       '--harness',

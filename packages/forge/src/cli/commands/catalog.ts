@@ -1,4 +1,4 @@
-// `agent-forge catalog [agent] [--config <path>] [--corpus <dir>] [--json]` — the
+// `cratylus catalog [agent] [--config <path>] [--corpus <dir>] [--json]` — the
 // FIRST-CLASS discovery command (NORTH-STAR §5). Two views over the extendable
 // option-space, so a first-timer needs no source-archaeology:
 //
@@ -128,7 +128,7 @@ async function runCrossPlugin(
   }
   const names = plugins.map((p) => p.name).join(' › ') || '(none)';
   console.log(
-    pc.bold('agent-forge catalog'),
+    pc.bold('cratylus catalog'),
     pc.gray(
       `(extends: ${names} — ${total} extendable fragment${total === 1 ? '' : 's'}` +
         `${filter ? ` matching '${opts.agent}'` : ''})`,
@@ -186,7 +186,7 @@ async function runCorpus(
 ): Promise<number> {
   if (!existsSync(corpus)) {
     console.error(
-      `agent-forge catalog: corpus dimensions dir not found: ${corpus}`,
+      `cratylus catalog: corpus dimensions dir not found: ${corpus}`,
     );
     return 1;
   }
@@ -200,7 +200,7 @@ async function runCorpus(
   }
   const total = entries.reduce((n, e) => n + e.values.length, 0);
   console.log(
-    pc.bold('agent-forge catalog'),
+    pc.bold('cratylus catalog'),
     pc.gray(`(${entries.length} dimensions, ${total} values — ${corpus})`),
   );
   console.log('');
@@ -219,7 +219,7 @@ export async function runCatalog(opts: CatalogCmdOpts): Promise<number> {
     try {
       return await runCorpus(resolve(opts.corpus), configPath, opts);
     } catch (e) {
-      console.error(pc.red(`agent-forge catalog: ${(e as Error).message}`));
+      console.error(pc.red(`cratylus catalog: ${(e as Error).message}`));
       return 1;
     }
   }
@@ -230,7 +230,7 @@ export async function runCatalog(opts: CatalogCmdOpts): Promise<number> {
     try {
       return await runCrossPlugin(configPath, opts);
     } catch (e) {
-      console.error(pc.red(`agent-forge catalog: ${(e as Error).message}`));
+      console.error(pc.red(`cratylus catalog: ${(e as Error).message}`));
       return 1;
     }
   }
@@ -239,14 +239,14 @@ export async function runCatalog(opts: CatalogCmdOpts): Promise<number> {
   const fallback = defaultCorpus();
   if (!fallback) {
     console.error(
-      `agent-forge catalog: no ${CONFIG_FILE}, no --corpus, and no default canon/src/dimensions found`,
+      `cratylus catalog: no ${CONFIG_FILE}, no --corpus, and no default canon/src/dimensions found`,
     );
     return 1;
   }
   try {
     return await runCorpus(fallback, configPath, opts);
   } catch (e) {
-    console.error(pc.red(`agent-forge catalog: ${(e as Error).message}`));
+    console.error(pc.red(`cratylus catalog: ${(e as Error).message}`));
     return 1;
   }
 }

@@ -1,4 +1,4 @@
-// CLI-level wiring proof for `agent-forge deploy` (local single-host) + the
+// CLI-level wiring proof for `cratylus deploy` (local single-host) + the
 // greenfield `scaffoldProject` engine. The engine itself is covered exhaustively
 // elsewhere; these assert the command layer threads opts → engine and reports the rc.
 

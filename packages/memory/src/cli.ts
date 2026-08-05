@@ -265,7 +265,7 @@ usage:
 
 init provisions a fresh home — mkdir + seed the {SEMANTIC.md, PROCEDURAL.md,
 EPISODIC.jsonl} stores if-absent (never clobbered). (The old \`install\`
-self-check is RETIRED — the runtime is placed per host by agent-forge deploy's
+self-check is RETIRED — the runtime is placed per host by cratylus deploy's
 runtime-install step, not by a tool self-check.)
 
 encode appends one open record {id, session, host, cwd, body, tags?} to the
@@ -1217,7 +1217,7 @@ function runAudit(args: ParsedArgs): CliResult {
  * `init`: provision a fresh agent home. Creates the home dir and seeds the
  * self-authored stores {SEMANTIC.md, PROCEDURAL.md, EPISODIC.jsonl} IF-ABSENT —
  * never clobbering an existing store (`substance-over-accident`). This is the
- * seed authority (relocated out of the agent-forge deploy path): a home is provisioned
+ * seed authority (relocated out of the cratylus deploy path): a home is provisioned
  * at wake-register, not at def-deploy. The seed name is `--name` (or the home's
  * basename) — it stamps the store headings.
  */

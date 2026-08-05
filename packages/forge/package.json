@@ -1,11 +1,11 @@
 {
   "name": "@cratylus/forge",
   "version": "0.0.0",
-  "description": "forge — the projection machinery: plugin resolution and the canon → harness render/deploy CLI",
+  "description": "The deterministic projection from canonical meaning onto one harness’s surfaces — resolve, project, validate and deploy a corpus. Owns the mapping and nothing else.",
   "license": "MIT",
   "type": "module",
   "bin": {
-    "agent-forge": "./dist/cli/index.js"
+    "cratylus": "./dist/cli/index.js"
   },
   "exports": {
     "./module-scan": {
@@ -68,5 +68,25 @@
   },
   "publishConfig": {
     "access": "public"
-  }
+  },
+  "keywords": [
+    "latent-lexicography",
+    "cratylus",
+    "projection",
+    "codegen",
+    "agent",
+    "skill",
+    "harness",
+    "cli"
+  ],
+  "author": "Lance Caraccioli <lance.caraccioli@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/leclabs/agent-factory.git",
+    "directory": "packages/forge"
+  },
+  "bugs": {
+    "url": "https://github.com/leclabs/agent-factory/issues"
+  },
+  "homepage": "https://github.com/leclabs/agent-factory#readme"
 }

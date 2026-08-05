@@ -151,20 +151,20 @@ cli
         ].filter(Boolean);
         if (missing.length > 0) {
           console.error(
-            `agent-forge deploy: --kind all requires ${missing.join(', ')}`,
+            `cratylus deploy: --kind all requires ${missing.join(', ')}`,
           );
           process.exit(1);
         }
       } else if (opts.kind === 'hooks') {
         if (!opts.hooksDir) {
           console.error(
-            'agent-forge deploy: --hooks-dir is required for --kind hooks',
+            'cratylus deploy: --hooks-dir is required for --kind hooks',
           );
           process.exit(1);
         }
       } else if (!opts.agentsDir || !opts.skillsDir) {
         console.error(
-          'agent-forge deploy: --agents-dir and --skills-dir are required',
+          'cratylus deploy: --agents-dir and --skills-dir are required',
         );
         process.exit(1);
       }
@@ -172,7 +172,7 @@ cli
       try {
         companions = parseCompanions(opts.assets ?? null);
       } catch (e) {
-        console.error(`agent-forge deploy: ${(e as Error).message}`);
+        console.error(`cratylus deploy: ${(e as Error).message}`);
         process.exit(1);
       }
       process.exit(

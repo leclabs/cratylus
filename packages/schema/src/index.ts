@@ -237,7 +237,7 @@ export const withBody = <O extends string>(
 ): Value<O> => (enforcing(v) ? { ...v, body } : body);
 
 // ── The runtime dimension descriptor (axis / kind / arity) ──────────────────────
-// A consumer that needs a dimension's metadata at runtime (e.g. `agent-forge catalog`)
+// A consumer that needs a dimension's metadata at runtime (e.g. `cratylus catalog`)
 // reads the manifest its corpus declares. This package owns the SHAPE of an entry;
 // WHICH dimensions exist is the corpus's to state, and the corpus derives its own
 // `Dimension` union and per-dimension aliases from it with the helpers below.
@@ -480,8 +480,8 @@ export interface SkillDeploy {
   /**
    * The RUNTIME capability this skill is a face of. When set, the projection ALSO
    * emits a THIN SHIM `scripts/<capability>.mjs` that forwards to the host-installed
-   * `agent-runtime <capability>` CLI — NOT a bundle of the impl (the capability logic
-   * lives host-side behind the runtime port, installed per-host by agent-runtime/S7).
+   * `cratylus-run <capability>` CLI — NOT a bundle of the impl (the capability logic
+   * lives host-side behind the runtime port, installed per-host by runtime/S7).
    * Absent ⇒ SKILL.md only (unchanged). This REVERSES the superseded dep-free-bundle
    * design (skills-refactor T4). */
   readonly runtime?: { readonly capability: RuntimeCapability };

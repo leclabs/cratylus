@@ -4,7 +4,7 @@
 // (`src/toolkit/guardrail/memory-consolidation-nudge.sh`) end-to-end with crafted
 // stdin + a temp agent home.
 //
-// THE BIN IS REAL. `MEMORY_BIN` points at the built `agent-runtime` dispatcher,
+// THE BIN IS REAL. `MEMORY_BIN` points at the built `cratylus-run` dispatcher,
 // not a stub: the whole point of this hook's rewrite is that the FACE asks the
 // runtime instead of reading the store layout itself, and a stubbed dispatcher
 // would prove nothing about that boundary. Both questions the hook asks —

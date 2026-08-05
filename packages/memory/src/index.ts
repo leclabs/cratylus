@@ -4,7 +4,7 @@
 //   - `runtimePlugin`  — the RuntimePlugin the runtime loader (S3) registers.
 //   - `AgentMemory`    — the MemoryStrategy implementation (bind a home explicitly).
 //   - `seedTemplates`  — the memory store seed templates forge (S6) imports.
-//   - `main`/`runMain` — the argv dispatcher the `agent-runtime memory <verb>`
+//   - `main`/`runMain` — the argv dispatcher the `cratylus-run memory <verb>`
 //                        surface (S3) delegates to; the tool ships NO `memory` bin.
 // `seedTemplates` is also reachable at the `./seedTemplates` subpath.
 // ─────────────────────────────────────────────────────────────────────────────
