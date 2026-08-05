@@ -5734,7 +5734,7 @@
       "label": "done_at()",
       "file_type": "code",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L40",
+      "source_location": "L57",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -5749,7 +5749,7 @@
       "label": "landing_of()",
       "file_type": "code",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L62",
+      "source_location": "L79",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -5764,7 +5764,7 @@
       "label": "phase_of()",
       "file_type": "code",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L74",
+      "source_location": "L91",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -5779,7 +5779,7 @@
       "label": "count()",
       "file_type": "code",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L103",
+      "source_location": "L120",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -5794,7 +5794,7 @@
       "label": "bound_plan()",
       "file_type": "code",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L105",
+      "source_location": "L122",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -5809,7 +5809,7 @@
       "label": "cmd_status()",
       "file_type": "code",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L111",
+      "source_location": "L128",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -5824,7 +5824,7 @@
       "label": "cmd_elect()",
       "file_type": "code",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L141",
+      "source_location": "L158",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -5839,7 +5839,7 @@
       "label": "cmd_bind()",
       "file_type": "code",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L147",
+      "source_location": "L164",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -5854,7 +5854,7 @@
       "label": "cmd_retire()",
       "file_type": "code",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L171",
+      "source_location": "L188",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -5869,7 +5869,7 @@
       "label": "cmd_frontier()",
       "file_type": "code",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L185",
+      "source_location": "L202",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -5884,7 +5884,7 @@
       "label": "cmd_file()",
       "file_type": "code",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L198",
+      "source_location": "L215",
       "metadata": {
         "language": "bash",
         "kind": "bash_function"
@@ -23731,8 +23731,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_runtime_package_exports_dispatch",
-      "community": 79,
-      "community_name": "forge/core: excludes",
+      "community": 26,
+      "community_name": "Story: Release Audit",
       "norm_label": "./dispatch"
     },
     {
@@ -23742,8 +23742,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_runtime_package_dispatch_types",
-      "community": 79,
-      "community_name": "forge/core: excludes",
+      "community": 26,
+      "community_name": "Story: Release Audit",
       "norm_label": "types"
     },
     {
@@ -23753,8 +23753,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_runtime_package_dispatch_import",
-      "community": 79,
-      "community_name": "forge/core: excludes",
+      "community": 26,
+      "community_name": "Story: Release Audit",
       "norm_label": "import"
     },
     {
@@ -23764,8 +23764,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_runtime_package_exports_events",
-      "community": 26,
-      "community_name": "Story: Release Audit",
+      "community": 79,
+      "community_name": "forge/core: excludes",
       "norm_label": "./events"
     },
     {
@@ -23775,8 +23775,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_runtime_package_events_types",
-      "community": 26,
-      "community_name": "Story: Release Audit",
+      "community": 79,
+      "community_name": "forge/core: excludes",
       "norm_label": "types"
     },
     {
@@ -23786,8 +23786,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_runtime_package_events_import",
-      "community": 26,
-      "community_name": "Story: Release Audit",
+      "community": 79,
+      "community_name": "forge/core: excludes",
       "norm_label": "import"
     },
     {
@@ -24446,8 +24446,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_runtime_src_capabilities_carry_on_claude",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 51,
+      "community_name": "canon/dimensions: investigator.ts",
       "norm_label": "carry-on/claude.ts"
     },
     {
@@ -24457,8 +24457,8 @@
       "source_location": "L55",
       "_origin": "ast",
       "id": "packages_runtime_src_capabilities_carry_on_claude_claudesettings",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 51,
+      "community_name": "canon/dimensions: investigator.ts",
       "norm_label": "claudesettings"
     },
     {
@@ -25975,8 +25975,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_runtime_src_index",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 86,
+      "community_name": "EnvelopeStore",
       "norm_label": "runtime/src/index.ts"
     },
     {
@@ -26239,8 +26239,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_runtime_src_plugin",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 86,
+      "community_name": "EnvelopeStore",
       "norm_label": "runtime/src/plugin.ts"
     },
     {
@@ -26272,8 +26272,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_runtime_src_ports_carry_on",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 86,
+      "community_name": "EnvelopeStore",
       "norm_label": "carry-on.ts"
     },
     {
@@ -26283,8 +26283,8 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "packages_runtime_src_ports_carry_on_turngate",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 251,
+      "community_name": "carry-on.test.ts",
       "norm_label": "turngate"
     },
     {
@@ -26294,8 +26294,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "packages_runtime_src_ports_carry_on_carryonstatus",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 251,
+      "community_name": "carry-on.test.ts",
       "norm_label": "carryonstatus"
     },
     {
@@ -26305,8 +26305,8 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "packages_runtime_src_ports_carry_on_carryonhost",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 86,
+      "community_name": "EnvelopeStore",
       "norm_label": "carryonhost"
     },
     {
@@ -26316,8 +26316,8 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "packages_runtime_src_ports_carry_on_carryonhost_install",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 86,
+      "community_name": "EnvelopeStore",
       "norm_label": ".install()"
     },
     {
@@ -26327,8 +26327,8 @@
       "source_location": "L51",
       "_origin": "ast",
       "id": "packages_runtime_src_ports_carry_on_carryonhost_remove",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 86,
+      "community_name": "EnvelopeStore",
       "norm_label": ".remove()"
     },
     {
@@ -26338,8 +26338,8 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "packages_runtime_src_ports_carry_on_carryonhost_status",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 86,
+      "community_name": "EnvelopeStore",
       "norm_label": ".status()"
     },
     {
@@ -27350,8 +27350,8 @@
       "source_location": "L269",
       "_origin": "ast",
       "id": "packages_runtime_test_carry_on_test_deafhost",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 251,
+      "community_name": "carry-on.test.ts",
       "norm_label": "deafhost"
     },
     {
@@ -27361,8 +27361,8 @@
       "source_location": "L271",
       "_origin": "ast",
       "id": "packages_runtime_test_carry_on_test_deafhost_install",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 251,
+      "community_name": "carry-on.test.ts",
       "norm_label": ".install()"
     },
     {
@@ -27372,8 +27372,8 @@
       "source_location": "L274",
       "_origin": "ast",
       "id": "packages_runtime_test_carry_on_test_deafhost_remove",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 251,
+      "community_name": "carry-on.test.ts",
       "norm_label": ".remove()"
     },
     {
@@ -27383,8 +27383,8 @@
       "source_location": "L275",
       "_origin": "ast",
       "id": "packages_runtime_test_carry_on_test_deafhost_status",
-      "community": 253,
-      "community_name": "brand-derived-literals.test.ts",
+      "community": 251,
+      "community_name": "carry-on.test.ts",
       "norm_label": ".status()"
     },
     {
@@ -44841,7 +44841,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L105",
+      "source_location": "L122",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_toolkit_praxis_praxis",
@@ -44852,7 +44852,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L147",
+      "source_location": "L164",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_toolkit_praxis_praxis",
@@ -44863,7 +44863,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L141",
+      "source_location": "L158",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_toolkit_praxis_praxis",
@@ -44874,7 +44874,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L198",
+      "source_location": "L215",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_toolkit_praxis_praxis",
@@ -44885,7 +44885,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L185",
+      "source_location": "L202",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_toolkit_praxis_praxis",
@@ -44896,7 +44896,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L171",
+      "source_location": "L188",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_toolkit_praxis_praxis",
@@ -44907,7 +44907,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L111",
+      "source_location": "L128",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_toolkit_praxis_praxis",
@@ -44918,7 +44918,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L103",
+      "source_location": "L120",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_toolkit_praxis_praxis",
@@ -44940,7 +44940,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L40",
+      "source_location": "L57",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_toolkit_praxis_praxis",
@@ -44951,7 +44951,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L62",
+      "source_location": "L79",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_toolkit_praxis_praxis",
@@ -44962,7 +44962,7 @@
       "relation": "defines",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L74",
+      "source_location": "L91",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_src_toolkit_praxis_praxis",
@@ -44984,7 +44984,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L229",
+      "source_location": "L246",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -44996,7 +44996,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L230",
+      "source_location": "L247",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -45008,7 +45008,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L231",
+      "source_location": "L248",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -45020,7 +45020,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L232",
+      "source_location": "L249",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -45032,7 +45032,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L228",
+      "source_location": "L245",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -45044,7 +45044,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L227",
+      "source_location": "L244",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -45056,7 +45056,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L34",
+      "source_location": "L250",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -45068,7 +45068,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L148",
+      "source_location": "L165",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -45080,7 +45080,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L200",
+      "source_location": "L217",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -45092,7 +45092,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L187",
+      "source_location": "L204",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -45104,7 +45104,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L172",
+      "source_location": "L189",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -45116,7 +45116,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L65",
+      "source_location": "L82",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -45128,7 +45128,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/src/toolkit/praxis/praxis.sh",
-      "source_location": "L92",
+      "source_location": "L109",
       "weight": 1.0,
       "context": "call",
       "_origin": "ast",
@@ -95864,5 +95864,5 @@
       "source_file": "packages/forge/test/stories/E6-exemplify-optimization.md"
     }
   ],
-  "built_at_commit": "5d6b7c3bf8e90328f88f1209fe5f361373301e2d"
+  "built_at_commit": "a442faef971e66fefd75d474f5cb6413f9aa7b42"
 }

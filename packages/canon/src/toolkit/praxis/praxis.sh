@@ -31,7 +31,24 @@ ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 PLANS="$ROOT/plans"
 
 die() { printf 'praxis: %s\n' "$1" >&2; exit 2; }
-[ -d "$PLANS" ] || die "no plans/ under $ROOT"
+
+# AN ABSENT `plans/` IS THE EMPTY PLAN SET, NOT AN ERROR. This guard was
+# `[ -d "$PLANS" ] || die`, which was true right up until the last plan retired:
+# `retire` MEANS DELETE, git cannot track an empty directory, so `plans/` vanishes
+# from every fresh clone the moment the set empties — and the tool that reports the
+# plan set died on the state it exists to report. Measured on a cold clone:
+# `praxis: no plans/ under <root>`, exit 2.
+#
+# Same shape as the three gates this corpus repaired the same day: a mechanism whose
+# subject is the live tree breaks when the live tree empties. `cmd_status` already
+# says the right thing for zero plans ("none is owed … vacuously satisfied"); it
+# simply never got the chance.
+#
+# NOTHING REPLACES THE GUARD. Every read verb globs `"$PLANS"/*/` and skips what is
+# not a directory, so an absent parent yields the empty set on its own. Every write
+# verb already requires `[ -d "$PLANS/<plan>" ]`, which subsumes the parent check and
+# fails with the more useful message ("no such plan: x"). Creating the directory here
+# would be a mkdir no verb needs.
 
 # done(P) at a commit — every task-file under `completed/`, and at least one.
 # The shell twin of `plan-set.ts:doneAt`. A bare file in the plan dir (`PLAN.md`,

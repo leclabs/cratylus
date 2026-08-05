@@ -263,6 +263,51 @@ describe('landing — derived on demand, stored nowhere', () => {
   // which is why this leg runs BOTH over one tmpdir repo and compares. It also
   // guards the direction that is easy to lose: the shell must say `landed` only
   // once the plan is done, not merely once it has been touched.
+  // THE EMPTY PLAN SET IS A STATE, NOT A BREAKAGE — and `retire` MEANS DELETE, so
+  // the corpus reaches it every time the last plan lands. Git cannot track an empty
+  // directory, so `plans/` then vanishes from every fresh clone, and `praxis.sh`
+  // guarded on `[ -d plans ] || die`: the tool that REPORTS the plan set died on the
+  // state it exists to report (`praxis: no plans/ under <root>`, exit 2), on a cold
+  // clone only, which is CI and every new contributor.
+  //
+  // Found by hand while answering "have you retired all plans?". This is the leg so
+  // that it does not need finding by hand twice.
+  it('reports the empty plan set on a tree with no plans/ at all — no die', () => {
+    const praxis = join(
+      dirname(fileURLToPath(import.meta.url)),
+      '..',
+      'src',
+      'toolkit',
+      'praxis',
+      'praxis.sh',
+    );
+    // The defect is PRESENT before the verdict is read: no plans/ in this repo.
+    rmSync(join(repo, 'plans'), { recursive: true, force: true });
+    expect(existsSync(join(repo, 'plans'))).toBe(false);
+
+    const out = execFileSync('sh', [praxis, 'status'], {
+      cwd: repo,
+      encoding: 'utf8',
+    });
+    // It must SAY the set is empty, not merely fail to crash — and say it is owed
+    // nothing, since `∃P: ¬terminal(P) ⇒ ∃!bound` is vacuous on an empty set.
+    expect(out).toMatch(/vacuously satisfied/);
+    expect(list(ctx)).toEqual([]);
+
+    // …while a write verb still refuses with the USEFUL message, not a parent-dir one.
+    let err = '';
+    try {
+      execFileSync('sh', [praxis, 'bind', 'ghost'], {
+        cwd: repo,
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
+    } catch (e) {
+      err = `${(e as { stderr?: string }).stderr ?? ''}`;
+    }
+    expect(err).toMatch(/no such plan: ghost/);
+  });
+
   it('the shell mechanism and this module agree on phase — both directions', () => {
     const praxis = join(
       dirname(fileURLToPath(import.meta.url)),
