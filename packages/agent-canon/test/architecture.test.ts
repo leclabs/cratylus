@@ -56,7 +56,13 @@ const PERMITTED: ReadonlyArray<readonly [Pkg, Pkg]> = [
   ['forge', 'schema'],
   ['forge', 'runtime'],
   ['memory', 'runtime'],
-  ['cli', 'forge'],
+  // `['cli','forge']` was here and is DELETED. The north star stopped drawing that
+  // edge at `3710c4bf` and the source never had it — `agent-cli` declares no forge
+  // dependency; it wires runtime + memory and ships the RUN-TIME bin. A dead RATCHET
+  // pin fails loudly (there is a shrink-only staleness leg below). A dead PERMITTED
+  // entry is silent and WIDENS: it licensed an import nobody had, so `agent-cli`
+  // could acquire one at any time and this gate would stay green. Widening changes
+  // WHICH subjects are bound, which is a different constraint wearing this one's name.
   ['cli', 'runtime'],
   ['cli', 'memory'],
 ];
@@ -402,7 +408,9 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
 
   it('property 2 — nothing depends on projection, and no CELL reaches it', () => {
     const bad = edges()
-      .filter((e) => e.to === 'forge' && e.from !== 'cli')
+      // No `&& e.from !== 'cli'` exemption: it paired with the deleted
+      // `['cli','forge']` licence and exempted a package that has no such import.
+      .filter((e) => e.to === 'forge')
       .filter((e) => !permitted(e) && !ARCHITECTURE_RATCHET.has(key(e)))
       .map(
         (e) =>

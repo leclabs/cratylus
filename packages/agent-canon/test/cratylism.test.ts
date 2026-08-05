@@ -189,6 +189,17 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     const { cratylism } = await import(
       '../src/dimensions/engineering-principles/cratylism.js'
     );
+    // `EngineeringPrinciples` is `Value<O>` — the UNION `Fragment<O> | Enforcing<O>`
+    // — and `.length` exists on only one arm, so reading it off the union does not
+    // compile. Narrow with the corpus's own derived predicate rather than casting:
+    // the axiom is a BARE σ* fragment, and if it ever became enforcing this leg
+    // would be measuring the wrong thing and should fail loudly here.
+    const { enforcing } = await import('@leclabs/agent-schema');
+    if (enforcing(cratylism)) {
+      throw new Error(
+        'cratylism is declared ENFORCING — the prime principle is a bare σ* fragment, and this gate measures its body',
+      );
+    }
     expect(cratylism.length).toBeGreaterThan(80); // non-vacuous: a real axiom, not ''
     expect(
       foundingDoctrine,

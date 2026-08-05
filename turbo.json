@@ -11,8 +11,27 @@
     "typecheck:test": {
       "dependsOn": ["^build"]
     },
+    // test — NOT CACHED, deliberately.
+    //
+    // Six canon gates scan by `git ls-files` from the repo ROOT: architecture,
+    // command-veracity, hook-rule-boundary, plan-set, bin-name-single-home and
+    // gate-convicts reach plans/, AGENTS.md, the root ground docs, and other
+    // packages' manifests. Turbo's cache key is a package's own inputs plus its
+    // dependencies' outputs — provably NARROWER than that scan domain. A commit
+    // touching only the scanned corpus produces a HIT and REPLAYS the previous
+    // green log without running the gate, so cached-green becomes
+    // indistinguishable from actually-green. That is precisely the defect
+    // `gate-convicts.test.ts` exists to forbid one level down.
+    //
+    // Declaring the true `inputs` is the alternative and it is worse: the honest
+    // input set here is "everything git tracks", which is a cache that never hits
+    // wearing the costume of one that does.
+    //
+    // The suite is ~11s. Correctness is worth 11 seconds in a repository whose
+    // entire thesis is verification.
     "test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build"],
+      "cache": false
     },
     "dev": {
       "cache": false,

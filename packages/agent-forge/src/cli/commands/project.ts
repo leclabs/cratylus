@@ -86,7 +86,13 @@ export async function runProject(opts: ProjectCmdOpts = {}): Promise<number> {
     `\n${pc.green('✓')} projected ${report.agents} agent(s) + ${report.skills} skill(s)` +
       `${report.shims > 0 ? ` + ${report.shims} runtime shim(s)` : ''}` +
       `${report.hooks > 0 ? ` + ${report.hooks} hook(s)` : ''} → ${out}\n` +
-      `${pc.gray(`ship it with: agent-forge deploy --agents-dir ${join(out, 'agents')} --skills-dir ${join(out, 'skills')}`)}\n`,
+      // `--hooks-dir` is NOT optional here and it is the render ROOT, not `<out>/hooks`.
+      // `deploy --kind` defaults to `all`, and `all` requires all three dirs or exits 1
+      // — so the hint printed without it failed on EVERY run, in the one place the
+      // printer knows a consumer is following it. `command-veracity` cannot see this
+      // class: its extractor reads `pnpm|npm|yarn` invocations against package.json
+      // script keys, and an `agent-forge <verb> <flags>` line never enters that stream.
+      `${pc.gray(`ship it with: agent-forge deploy --agents-dir ${join(out, 'agents')} --skills-dir ${join(out, 'skills')} --hooks-dir ${out}`)}\n`,
   );
   return 0;
 }
