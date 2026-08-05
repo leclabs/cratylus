@@ -103,11 +103,11 @@ describe('discoverPluginFragments — namespaced multi-plugin discovery', () => 
     expect(aPars?.node).not.toBe(bPars?.node); // object identity = the address
   });
 
-  it('files each fragment under its dimension with kind from arity', () => {
+  it('files each fragment under its dimension with value shape from arity', () => {
     const beta = plugins.find((p) => p.name === 'beta');
     const builder = beta?.fragments.find((f) => f.node.id.endsWith('/builder'));
-    expect(builder?.dimension).toBe('role'); // role is scalar arity → scalar kind
-    expect(builder?.node.kind).toBe('scalar');
+    expect(builder?.dimension).toBe('role'); // role is scalar arity → scalar value shape
+    expect(builder?.node.valueShape).toBe('scalar');
     const insight = plugins
       .find((p) => p.name === 'alpha')
       ?.fragments.find((f) => f.node.id.endsWith('/insight'));
@@ -137,13 +137,13 @@ describe('discoverPluginFragments — cross-plugin reference acyclicity (§3)', 
     // after B is initialized — a real object-identity cycle, no TDZ.
     writeFileSync(
       bPath,
-      "export const b = { id: 'B:objective/b', kind: 'scalar', references: [] };\n",
+      "export const b = { id: 'B:objective/b', valueShape: 'scalar', references: [] };\n",
     );
     writeFileSync(
       aPath,
       [
         `import { b } from ${JSON.stringify(pathToFileURL(bPath).href)};`,
-        "export const a = { id: 'A:objective/a', kind: 'scalar', references: [b] };",
+        "export const a = { id: 'A:objective/a', valueShape: 'scalar', references: [b] };",
         'b.references.push(a); // close the cycle A → B → A',
         '',
       ].join('\n'),
@@ -168,8 +168,8 @@ describe('discoverPluginFragments — cross-plugin reference acyclicity (§3)', 
     writeFileSync(
       join(cObjDir, 'c.ts'),
       [
-        "const ghost = { id: 'ghost', kind: 'scalar' };",
-        "export const c = { id: 'C:objective/c', kind: 'scalar', references: [ghost] };",
+        "const ghost = { id: 'ghost', valueShape: 'scalar' };",
+        "export const c = { id: 'C:objective/c', valueShape: 'scalar', references: [ghost] };",
         '',
       ].join('\n'),
     );

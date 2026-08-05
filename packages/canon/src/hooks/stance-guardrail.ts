@@ -1,5 +1,5 @@
-import type { HookCell } from '@cratylus/schema';
 import { checkIn } from '../dimensions/autonomy/check-in.js';
+import type { HookCell } from '../manifest.js';
 
 // stance-guardrail — the harness-half of the principal-stance (P4). A source
 // `hook` cell (activation=event): its canonical DEFINIENS is the σ*-signified

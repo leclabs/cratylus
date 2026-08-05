@@ -8,18 +8,31 @@
 // Unknown verb / unknown lifecycle event fails LOUD (throws) — never a silent
 // no-op (matches the kernel's fail-loud contract).
 //
+// WHAT `--events` IS VALIDATED AGAINST. The corpus's vocabulary, read from the host
+// config the projection emitted (`RuntimeConfig.events`) — ARCHITECTURE property 4.
+// It used to be a `LIFECYCLE_EVENTS` tuple in `../../events.ts`: canon's 28 names,
+// hand-copied into a package that "knows no harness and no corpus", agreeing with
+// schema's generated copy by coincidence. An UNCONFIGURED host therefore cannot
+// validate, and this dispatcher REFUSES rather than accepting anything or falling
+// back to a bundled set — a bundled set is how the second copy got there.
+//
 // THE SIGN IS `event-tap` / `eventTap`, NEVER `tap`. One concept, two registers
 // (the kebab↔camel map the corpus declares at `forge/src/core/anatomy-body.ts`'s
 // `dimensionField`). `tap` fails circumscription — it carries *passive siphon on a
 // stream* but not WHICH stream — so no identifier here abbreviates to it.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { LIFECYCLE_EVENTS, type LifecycleEvent } from '../../events.js';
+import type { EventName } from '../../events.js';
 import type {
   CaptureRow,
   EventTapHost,
   EventTapStatus,
 } from '../../ports/event-tap.js';
+import {
+  type RuntimeConfig,
+  type RuntimeEvents,
+  loadRuntimeConfig,
+} from '../../runtime-config.js';
 import { EventTapHostClaude } from './claude.js';
 
 /** The verbs the event-tap capability exposes, each routing to one port method. */
@@ -27,7 +40,7 @@ export type EventTapVerb = 'install' | 'uninstall' | 'read' | 'status';
 
 /** A verb's outcome, discriminated by verb — the value the kernel serializes. */
 export type EventTapResult =
-  | { verb: 'install'; events: LifecycleEvent[]; sink: string }
+  | { verb: 'install'; events: EventName[]; sink: string }
   | { verb: 'uninstall' }
   | { verb: 'read'; records: CaptureRow[] }
   | { verb: 'status'; status: EventTapStatus };
@@ -38,8 +51,6 @@ const VERBS: ReadonlySet<string> = new Set([
   'read',
   'status',
 ]);
-
-const LIFECYCLE_SET: ReadonlySet<string> = new Set(LIFECYCLE_EVENTS);
 
 /** Extract `--flag value` pairs (and bare flags) from an argv tail. */
 function parseFlags(argv: string[]): Map<string, string> {
@@ -59,23 +70,49 @@ function parseFlags(argv: string[]): Map<string, string> {
   return flags;
 }
 
-/** Parse + validate the `--events e1,e2,…` list against the lifecycle taxonomy. */
-function parseEvents(raw: string | undefined): LifecycleEvent[] {
+/**
+ * The host's event vocabulary + harness map, or a LOUD refusal.
+ *
+ * Absence is not a degradation to route around: with no vocabulary this capability
+ * cannot tell an unknown word from an event this harness does not fire, and with no
+ * native map it would install a tap that observes nothing while reporting success.
+ * The error names the file and the command that writes it.
+ */
+function configuredEvents(config: RuntimeConfig | null): RuntimeEvents {
+  const events = config?.events;
+  if (events === undefined || events.vocabulary.length === 0) {
+    throw new Error(
+      'event-tap: this host has no lifecycle-event vocabulary — the corpus declares ' +
+        'it and `cratylus deploy` emits it into the host runtime config ' +
+        '($AGENT_RUNTIME_CONFIG, else ~/.cratylus-run.json). Run a deploy for this ' +
+        'harness; the runtime does not carry a vocabulary of its own.',
+    );
+  }
+  return events;
+}
+
+/** Parse + validate the `--events e1,e2,…` list against the configured vocabulary. */
+function parseEvents(
+  raw: string | undefined,
+  vocabulary: readonly EventName[],
+): EventName[] {
   if (raw === undefined || raw.trim() === '') {
     throw new Error(
       'event-tap install: --events is required (comma-separated)',
     );
   }
-  const events: LifecycleEvent[] = [];
+  const declared = new Set(vocabulary);
+  const events: EventName[] = [];
   for (const part of raw.split(',')) {
     const e = part.trim();
     if (e === '') continue;
-    if (!LIFECYCLE_SET.has(e)) {
+    if (!declared.has(e)) {
       throw new Error(
-        `event-tap install: unknown lifecycle event '${e}' (see LIFECYCLE_EVENTS)`,
+        `event-tap install: unknown lifecycle event '${e}' — this host's vocabulary is ` +
+          `[${[...declared].join(', ')}]`,
       );
     }
-    events.push(e as LifecycleEvent);
+    events.push(e);
   }
   if (events.length === 0) {
     throw new Error('event-tap install: --events resolved to an empty set');
@@ -83,15 +120,28 @@ function parseEvents(raw: string | undefined): LifecycleEvent[] {
   return events;
 }
 
+/** What a caller may inject in place of what this dispatcher would resolve itself. */
+export interface EventTapDispatchOpts {
+  /**
+   * The port realization. Defaults to the Claude one targeting `--settings` (or the
+   * env/cwd default); the kernel may inject the loaded plugin's `eventTap` instead.
+   */
+  readonly host?: EventTapHost;
+  /**
+   * The host config. Defaults to the one on disk; injectable so a caller with a
+   * config in hand does not re-read it, and so a test drives the same path a host
+   * does rather than a second one.
+   */
+  readonly config?: RuntimeConfig | null;
+}
+
 /**
- * Route `eventTap <verb> [args]` to the event-tap port. `host` defaults to the
- * Claude realization targeting `--settings` (or the env/cwd default); the kernel
- * may inject the loaded plugin's `eventTap` instead. Passive by construction: no
+ * Route `eventTap <verb> [args]` to the event-tap port. Passive by construction: no
  * verb blocks, denies, or mutates host control flow — `read`/`status` only observe.
  */
 export function dispatchEventTap(
   argv: string[],
-  host?: EventTapHost,
+  opts: EventTapDispatchOpts = {},
 ): EventTapResult {
   const [verb, ...rest] = argv;
   if (verb === undefined || !VERBS.has(verb)) {
@@ -100,12 +150,17 @@ export function dispatchEventTap(
     );
   }
   const flags = parseFlags(rest);
+  const configured = configuredEvents(opts.config ?? loadRuntimeConfig());
   const tap =
-    host ?? new EventTapHostClaude(flags.get('settings') || undefined);
+    opts.host ??
+    new EventTapHostClaude(
+      flags.get('settings') || undefined,
+      configured.native,
+    );
 
   switch (verb as EventTapVerb) {
     case 'install': {
-      const events = parseEvents(flags.get('events'));
+      const events = parseEvents(flags.get('events'), configured.vocabulary);
       const sink = flags.get('sink');
       if (sink === undefined || sink.trim() === '') {
         throw new Error('event-tap install: --sink <path> is required');

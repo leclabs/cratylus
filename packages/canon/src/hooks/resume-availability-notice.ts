@@ -1,4 +1,4 @@
-import type { HookCell } from '@cratylus/schema';
+import type { HookCell } from '../manifest.js';
 
 // resume-availability-notice — the SessionStart note. It tells the agent that
 // memory exists and that `/wake` reconstitutes it, and does nothing else.

@@ -28,7 +28,6 @@ beforeEach(() => {
   planDir = join(root, 'node', 'plans', 'P');
   mkdirSync(join(planDir, 'active'), { recursive: true });
   mkdirSync(home, { recursive: true });
-  vi.stubEnv('AGENT_MEMORY_CONFIG', '');
 });
 afterEach(() => {
   vi.unstubAllEnvs();

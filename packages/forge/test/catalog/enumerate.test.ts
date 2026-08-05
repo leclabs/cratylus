@@ -1,6 +1,6 @@
 // `enumerateCatalog` — the fragment discovery library. Proves, over the FIXTURE
 // corpus: (1) it enumerates exactly the GIVEN catalog's dimensions, in that
-// catalog's order, with the correct axis/kind/arity; (2) the contract shape per
+// catalog's order, with the correct axis/repertoire/arity; (2) the contract shape per
 // dimension; (3) values sort shortlex; (4) a body arrives verbatim — residue
 // intact, and an enforcing value by its declaration face; (5) the DRIFT-PROOF
 // property — a value module dropped under a dimension dir appears in the output
@@ -57,7 +57,7 @@ function shapeViolations(entries: readonly CatalogEntry[]): string[] {
 }
 
 /** Descriptor drift: a dimension the catalog names that the catalog does not describe
- *  the same way (axis/kind/arity), or a dimension list that is not the manifest's. */
+ *  the same way (axis/repertoire/arity), or a dimension list that is not the manifest's. */
 function metaDrift(entries: readonly CatalogEntry[]): string[] {
   return entries
     .filter((e) => {
@@ -66,11 +66,11 @@ function metaDrift(entries: readonly CatalogEntry[]): string[] {
       return (
         meta === undefined ||
         meta.axis !== e.axis ||
-        meta.kind !== e.kind ||
+        meta.repertoire !== e.repertoire ||
         meta.arity !== e.arity
       );
     })
-    .map((e) => `${e.dimension}: ${e.axis}/${e.kind}/${e.arity}`);
+    .map((e) => `${e.dimension}: ${e.axis}/${e.repertoire}/${e.arity}`);
 }
 
 describe('enumerateCatalog over the fixture corpus', () => {
@@ -86,27 +86,27 @@ describe('enumerateCatalog over the fixture corpus', () => {
     expect(entries).toHaveLength(22);
   });
 
-  it("each dimension's axis/kind/arity matches the catalog", () => {
+  it("each dimension's axis/repertoire/arity matches the catalog", () => {
     expect(metaDrift(entries)).toEqual([]);
     expect(entries.length).toBeGreaterThan(0); // never a vacuous loop
   });
 
-  it('the given catalog metadata reaches the entry, across all three kinds', () => {
+  it('the given catalog metadata reaches the entry, across all three repertoires', () => {
     const byDimension = new Map(entries.map((e) => [e.dimension, e]));
     expect(byDimension.get('autonomy')).toMatchObject({
-      kind: 'enum',
+      repertoire: 'latent',
       arity: 'set',
     });
     expect(byDimension.get('guardrails')).toMatchObject({
-      kind: 'curated',
+      repertoire: 'curated',
       arity: 'set',
     });
     expect(byDimension.get('capabilities')).toMatchObject({
-      kind: 'open',
+      repertoire: 'open',
       arity: 'set',
     });
     expect(byDimension.get('role')).toMatchObject({
-      kind: 'open',
+      repertoire: 'open',
       arity: 'scalar',
     });
   });
@@ -221,7 +221,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
     expect(before).toMatchObject({
       dimension: 'autonomy',
       axis: 'Persona',
-      kind: 'enum',
+      repertoire: 'latent',
       arity: 'set',
     });
     expect(before?.values).toEqual([]);

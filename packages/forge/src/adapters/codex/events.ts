@@ -1,4 +1,4 @@
-import type { CanonicalEvent } from '@cratylus/schema/hook';
+import type { EventName } from '@cratylus/schema/hook';
 
 /**
  * Canonical event → Codex hook event name.
@@ -13,7 +13,7 @@ import type { CanonicalEvent } from '@cratylus/schema/hook';
  * Events absent from this map have no Codex peer and are genuinely unrealizable
  * here; the build-time refusal names them rather than dropping them.
  */
-export const canonicalToCodex: Partial<Record<CanonicalEvent, string>> = {
+export const canonicalToCodex: Readonly<Record<EventName, string>> = {
   'session.start': 'SessionStart',
   'session.end': 'SessionEnd',
   'prompt.submit': 'UserPromptSubmit',

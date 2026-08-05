@@ -23,6 +23,33 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { dispatchEventTap } from '../src/capabilities/event-tap/index.js';
+import type { RuntimeConfig } from '../src/runtime-config.js';
+
+/**
+ * The host config a deployed host would carry — the vocabulary + native map the
+ * projection emits. Injected rather than written to a real `~/.cratylus-run.json`,
+ * and injected rather than defaulted inside the capability: a bundled default set
+ * is exactly what this suite's subject stopped carrying, so a test that supplied
+ * one would be exercising a path no host has.
+ *
+ * Only the events this suite drives are declared, which also makes the vocabulary
+ * check below non-trivial — `not.an.event` is rejected against THIS list.
+ */
+const CONFIG: RuntimeConfig = {
+  capabilities: [],
+  events: {
+    vocabulary: ['session.start', 'turn.end', 'tool.use.pre'],
+    native: {
+      'session.start': 'SessionStart',
+      'turn.end': 'Stop',
+      'tool.use.pre': 'PreToolUse',
+    },
+  },
+};
+
+/** Drive the verb surface with the host config a deployed host would have. */
+const tap = (argv: string[]): ReturnType<typeof dispatchEventTap> =>
+  dispatchEventTap(argv, { config: CONFIG });
 
 const here = dirname(fileURLToPath(import.meta.url));
 const CAP_DIR = join(here, '..', 'src', 'capabilities', 'event-tap');
@@ -68,7 +95,7 @@ describe('tap install (accept 1: merge + preserve)', () => {
       },
     });
 
-    const res = dispatchEventTap([
+    const res = tap([
       'install',
       '--events',
       'turn.end,session.start',
@@ -107,7 +134,7 @@ describe('tap uninstall (accept 2: zero residue)', () => {
       env: { FOO: 'bar' },
     });
 
-    dispatchEventTap([
+    tap([
       'install',
       '--events',
       'turn.end',
@@ -117,7 +144,7 @@ describe('tap uninstall (accept 2: zero residue)', () => {
       settingsPath,
     ]);
     expect(read(settingsPath).hooks?.Stop).toHaveLength(1);
-    dispatchEventTap(['uninstall', '--settings', settingsPath]);
+    tap(['uninstall', '--settings', settingsPath]);
 
     // exact prior state — the hooks key is GONE, not left as `{}`
     expect(readFileSync(settingsPath, 'utf8')).toBe(before);
@@ -131,7 +158,7 @@ describe('tap uninstall (accept 2: zero residue)', () => {
       },
     });
 
-    dispatchEventTap([
+    tap([
       'install',
       '--events',
       'turn.end',
@@ -141,7 +168,7 @@ describe('tap uninstall (accept 2: zero residue)', () => {
       settingsPath,
     ]);
     expect(read(settingsPath).hooks?.Stop).toHaveLength(2);
-    dispatchEventTap(['uninstall', '--settings', settingsPath]);
+    tap(['uninstall', '--settings', settingsPath]);
 
     const after = read(settingsPath);
     expect(after.hooks?.Stop).toHaveLength(1);
@@ -152,12 +179,12 @@ describe('tap uninstall (accept 2: zero residue)', () => {
 describe('tap status / read (accept 3: reflect state across processes)', () => {
   it('status reflects installed state, derived from the target file', () => {
     const { settingsPath, sinkPath } = fixture();
-    expect(dispatchEventTap(['status', '--settings', settingsPath])).toEqual({
+    expect(tap(['status', '--settings', settingsPath])).toEqual({
       verb: 'status',
       status: { attached: false, events: [] },
     });
 
-    dispatchEventTap([
+    tap([
       'install',
       '--events',
       'turn.end,session.start',
@@ -166,14 +193,14 @@ describe('tap status / read (accept 3: reflect state across processes)', () => {
       '--settings',
       settingsPath,
     ]);
-    const s = dispatchEventTap(['status', '--settings', settingsPath]);
+    const s = tap(['status', '--settings', settingsPath]);
     expect(s.verb).toBe('status');
     if (s.verb !== 'status') throw new Error('unreachable');
     expect(s.status.attached).toBe(true);
     expect([...s.status.events].sort()).toEqual(['session.start', 'turn.end']);
 
-    dispatchEventTap(['uninstall', '--settings', settingsPath]);
-    expect(dispatchEventTap(['status', '--settings', settingsPath])).toEqual({
+    tap(['uninstall', '--settings', settingsPath]);
+    expect(tap(['status', '--settings', settingsPath])).toEqual({
       verb: 'status',
       status: { attached: false, events: [] },
     });
@@ -181,7 +208,7 @@ describe('tap status / read (accept 3: reflect state across processes)', () => {
 
   it('read recovers the sink from settings (fresh dispatch, no in-mem state)', () => {
     const { settingsPath, sinkPath } = fixture();
-    dispatchEventTap([
+    tap([
       'install',
       '--events',
       'turn.end',
@@ -198,7 +225,7 @@ describe('tap status / read (accept 3: reflect state across processes)', () => {
     );
 
     // a SEPARATE dispatch (no prior install on this call path)
-    const r = dispatchEventTap(['read', '--settings', settingsPath]);
+    const r = tap(['read', '--settings', settingsPath]);
     expect(r.verb).toBe('read');
     if (r.verb !== 'read') throw new Error('unreachable');
     expect(r.records).toHaveLength(1);
@@ -213,7 +240,7 @@ describe('tap status / read (accept 3: reflect state across processes)', () => {
 describe('installed logger (accept 4: prove-CANNOT-block)', () => {
   it('emits EMPTY stdout + exit 0 on a synthetic event', () => {
     const { settingsPath, sinkPath } = fixture();
-    dispatchEventTap([
+    tap([
       'install',
       '--events',
       'turn.end',
@@ -235,7 +262,7 @@ describe('installed logger (accept 4: prove-CANNOT-block)', () => {
     });
     expect(stdout.toString()).toBe(''); // emits nothing → cannot block/deny
 
-    const r = dispatchEventTap(['read', '--settings', settingsPath]);
+    const r = tap(['read', '--settings', settingsPath]);
     if (r.verb !== 'read') throw new Error('unreachable');
     expect(r.records).toHaveLength(1);
     expect(r.records[0]?.event).toBe('turn.end');
@@ -244,11 +271,11 @@ describe('installed logger (accept 4: prove-CANNOT-block)', () => {
 
 describe('unknown input fails LOUD (no silent no-op)', () => {
   it('throws on an unknown verb', () => {
-    expect(() => dispatchEventTap(['frobnicate'])).toThrow(/unknown verb/);
+    expect(() => tap(['frobnicate'])).toThrow(/unknown verb/);
   });
   it('throws on an unknown lifecycle event', () => {
     expect(() =>
-      dispatchEventTap(['install', '--events', 'not.an.event', '--sink', '/x']),
+      tap(['install', '--events', 'not.an.event', '--sink', '/x']),
     ).toThrow(/unknown lifecycle event/);
   });
 });

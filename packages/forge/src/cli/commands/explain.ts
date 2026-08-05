@@ -83,7 +83,9 @@ function roles(provenance: readonly FragmentContribution[]): string[] {
 function renderReport(rows: readonly ResolvedFragment[]): string {
   const lines: string[] = [];
   for (const r of rows) {
-    lines.push(`${pc.bold(r.fragment.id)} ${pc.gray(`[${r.fragment.kind}]`)}`);
+    lines.push(
+      `${pc.bold(r.fragment.id)} ${pc.gray(`[${r.fragment.valueShape}]`)}`,
+    );
     lines.push(`  ${pc.green('=')} ${preview(r.value)}`);
     const role = roles(r.provenance);
     r.provenance.forEach((c, i) => {
@@ -103,7 +105,7 @@ function renderReport(rows: readonly ResolvedFragment[]): string {
 function toJson(rows: readonly ResolvedFragment[]): unknown {
   return rows.map((r) => ({
     id: r.fragment.id,
-    kind: r.fragment.kind,
+    valueShape: r.fragment.valueShape,
     value: r.value,
     provenance: r.provenance.map((c) => ({
       source: c.source,

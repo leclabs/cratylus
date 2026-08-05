@@ -1,62 +1,34 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The event-tap capability's CLAUDE HARNESS-MAPPING boundary.
+// The event-tap capability's CLAUDE SETTINGS-BLOCK boundary — the SHAPE of the
+// artifact, and no longer any of its vocabulary.
 //
-// This is the ONE place the runtime-owned {@link LifecycleEvent} taxonomy is
-// mapped onto the Claude-native settings.json vocabulary (native event names +
-// the `hooks` block shape). It is a RELOCATED, minimal slice of what forge's
-// `adapters/claude/{events,write}.ts` + `core/engine/managed.ts` own for the BUILD
-// path — carried here verbatim so the runtime capability owns its harness mapping
-// and NEVER imports `@cratylus/forge` (the runtime→forge DAG is never
-// inverted). Only what the passive tap needs is relocated: the event maps, the
-// key-scoped JSON merge, and the single-command hook-block shape — not forge's
-// full `Hook` serialization (matchers, `if`, prompt-type, timeouts).
+// WHAT THIS FILE USED TO BE. Its header said the Claude event map was "carried here
+// verbatim so the runtime capability owns its harness mapping and NEVER imports
+// `@cratylus/forge`". The DAG half of that reasoning is sound and still holds; the
+// conclusion drawn from it was not. Avoiding an import is not a licence to copy the
+// thing the import would have carried — `lifecycleToClaude` was forge's
+// `canonicalToClaude`, byte-identical in all 19 pairs, sitting inside the package
+// ARCHITECTURE describes as knowing "no harness and no corpus".
+//
+// WHAT IT IS NOW. The map arrives as CONFIGURATION THE PROJECTION EMITTED (property
+// 4): `deploy` writes the host config from the adapter's own `nativeEvents`, and the
+// tap reads it. There is one map, and this module reads it rather than knowing it.
+//
+// WHAT LEGITIMATELY STAYS. A STRATEGY may name its target — ports abstract, and
+// "every capability is pluggable, so a rich harness gets a proxying strategy and a
+// poor one gets ours, selected by configuration rather than by code". The claude
+// `settings.json` block SHAPE and the key-scoped merge are this strategy's
+// mechanism, which is what this package is for. Only the vocabulary was the
+// corpus's, and only the vocabulary left.
+//
+// THE SIGN IS `event-tap` / `eventTap`, NEVER `tap`. `buildTapBlock` shipped the
+// rejected root in an exported identifier; it is `buildEventTapBlock`.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { LifecycleEvent } from '../../events.js';
+import type { EventName } from '../../events.js';
 
 /**
- * Runtime lifecycle event → Claude Code native event name. The DESIGN.md §7
- * equivalence matrix, as owned by the Claude harness boundary. A lifecycle event
- * with NO Claude equivalent is absent from this map; the tap silently skips it on
- * install (a passive observer never fabricates a native binding).
- */
-export const lifecycleToClaude: Partial<Record<LifecycleEvent, string>> = {
-  'session.start': 'SessionStart',
-  'session.end': 'SessionEnd',
-  'prompt.submit': 'UserPromptSubmit',
-  'turn.end': 'Stop',
-  'turn.fail': 'StopFailure',
-  'agent.idle': 'TeammateIdle',
-  'tool.use.pre': 'PreToolUse',
-  'tool.use.post': 'PostToolUse',
-  'tool.use.fail': 'PostToolUseFailure',
-  'subagent.start': 'SubagentStart',
-  'subagent.end': 'SubagentStop',
-  notification: 'Notification',
-  'context.compact.pre': 'PreCompact',
-  'context.compact.post': 'PostCompact',
-  'file.change.external': 'FileChanged',
-  'config.changed': 'ConfigChange',
-  'instructions.loaded': 'InstructionsLoaded',
-  'permission.request': 'PermissionRequest',
-  'permission.deny': 'PermissionDenied',
-};
-
-/**
- * Reverse map: Claude native event name → runtime lifecycle event. Used by
- * `readCapture` (to lift a captured native record back to the neutral vocabulary)
- * and by `status` (to report which lifecycle events the tap is attached to).
- */
-export const claudeToLifecycle: Record<string, LifecycleEvent> =
-  Object.fromEntries(
-    Object.entries(lifecycleToClaude).map(([lifecycle, claude]) => [
-      claude,
-      lifecycle as LifecycleEvent,
-    ]),
-  );
-
-/**
- * The Claude `settings.json` `hooks` block shape: native-event → entries, each
+ * The claude `settings.json` `hooks` block shape: native-event → entries, each
  * entry an optional matcher + one-or-more hook commands. The tap only ever emits
  * a single `command` hook stamped with its own id, but foreign entries under the
  * same event use the full shape, so the type stays faithful to what may be read.
@@ -79,26 +51,44 @@ export type ClaudeHooksBlock = Record<
 >;
 
 /**
- * Build the tap's own `hooks` block: one `command` entry per MAPPED lifecycle
- * event, each stamped with `tapId` so surgical teardown can find exactly it.
- * Unmapped events are skipped (returned in `skipped`) — never fabricated.
+ * Invert a native map (canonical → native) into native → canonical.
+ *
+ * Derived per call from the CONFIGURED map rather than kept as a second constant: a
+ * reverse map with an independent home is the same duplication one direction over,
+ * and this one used to be `claudeToLifecycle`.
  */
-export function buildTapBlock(
-  events: LifecycleEvent[],
+export function reverseNativeEvents(
+  native: Readonly<Record<EventName, string>>,
+): Readonly<Record<string, EventName>> {
+  return Object.fromEntries(
+    Object.entries(native).map(([event, nativeName]) => [nativeName, event]),
+  );
+}
+
+/**
+ * Build the tap's own `hooks` block: one `command` entry per event with a native
+ * peer in `native`, each stamped with `tapId` so surgical teardown can find exactly
+ * it. An event with no peer is skipped (returned in `skipped`) and never
+ * fabricated — a passive observer that invented a binding would be reporting on
+ * something the harness does not fire.
+ */
+export function buildEventTapBlock(
+  events: readonly EventName[],
+  native: Readonly<Record<EventName, string>>,
   command: string,
   tapId: string,
-): { block: ClaudeHooksBlock; skipped: LifecycleEvent[] } {
+): { block: ClaudeHooksBlock; skipped: EventName[] } {
   const block: ClaudeHooksBlock = {};
-  const skipped: LifecycleEvent[] = [];
+  const skipped: EventName[] = [];
   for (const event of events) {
-    const native = lifecycleToClaude[event];
-    if (native === undefined) {
+    const nativeName = native[event];
+    if (nativeName === undefined) {
       skipped.push(event);
       continue;
     }
-    const entries = block[native] ?? [];
+    const entries = block[nativeName] ?? [];
     entries.push({ hooks: [{ type: 'command', command, id: tapId }] });
-    block[native] = entries;
+    block[nativeName] = entries;
   }
   return { block, skipped };
 }

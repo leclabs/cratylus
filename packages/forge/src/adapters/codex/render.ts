@@ -7,7 +7,7 @@
 //   - a SUBAGENT is `agents/<name>.toml` — `{ name, description,
 //     developer_instructions, model? }` (the documented fields [CX1] — no
 //     fabricated `system_prompt`/`tools`/`color`).
-//   - the always-loaded INSTRUCTION surface is `AGENTS.md` (project rules).
+//   - the scope-activated orientation artifact is `AGENTS.md` (project rules).
 //   - a SKILL is `skills/<name>/SKILL.md` (the AgentSkills spec, shared with claude).
 //
 // The composed Target BODY itself is HARNESS-NEUTRAL — it is the agent's dimension
@@ -15,7 +15,7 @@
 // `agentBody` / `skillBody` (over the `Agent` vector + the `ResolvedSkill` shape)
 // from the claude adapter (those are the anatomy-composition machinery, not
 // claude-specific framing) and only adds the codex-specific FRAMING: the agent
-// body → a `.toml` `developer_instructions`, and the codex SKILL.md / AGENTS.md surfaces.
+// body → a `.toml` `developer_instructions`, and the codex SKILL.md / AGENTS.md artifacts.
 
 import type { Agent } from '@cratylus/schema';
 import type { HarnessMechanism } from '@cratylus/schema/hook';
@@ -114,19 +114,23 @@ function frontMatterLines(fm: Record<string, unknown>): string[] {
   return Object.entries(fm).map(([k, v]) => `${k}: ${v}`);
 }
 
-// ── AGENTS.md instruction surface ────────────────────────────────────────────
+// ── AGENTS.md — codex's scope-activated orientation ──────────────────────────
 
 /**
- * The codex `AGENTS.md` instruction surface for a set of agents. Codex's
- * always-loaded project rules file is `AGENTS.md`; the per-agent archetype lives in
- * `agents/<name>.toml`. This emits a thin index pointing at the projected
- * subagents (the shared rules surface), so a codex workspace discovers them.
+ * Codex's `AGENTS.md` for a set of agents — the port's `scopeOrientation`, the one
+ * artifact codex loads because the reader is in this project rather than because
+ * anything was selected. The per-agent archetype lives in `agents/<name>.toml`;
+ * this emits a thin index pointing at the projected subagents, so a codex
+ * workspace discovers them.
+ *
+ * Named for the file it renders, exactly like its sibling `codexHooksJson` — the
+ * concrete renderers here are named by their artifact, the port op by its concept.
  *
  * Kept deliberately minimal — the load-bearing agent content is the `.toml`
  * `developer_instructions`; this is the discovery shell (a fuller rules
  * projection from the canon rule corpus is a later, separate concern).
  */
-export function agentsMdSurface(agentNames: readonly string[]): string {
+export function codexAgentsMd(agentNames: readonly string[]): string {
   const out: string[] = ['# Agents', ''];
   out.push(
     'Projected from the canon corpus via forge’s codex adapter. Each agent’s',
@@ -229,7 +233,7 @@ export function codexHooksJson(
 
 /**
  * The codex realization of the `HarnessAdapter` port: agent → `<name>.toml`,
- * skill → `SKILL.md`, plus the `AGENTS.md` instruction `surface`. No `hooks`
+ * skill → `SKILL.md`, plus the `AGENTS.md` `scopeOrientation`. No `hooks`
  * (the codex projection does not emit a settings fragment). Wraps the concrete
  * functions above — projection output is byte-identical to calling them directly.
  */
@@ -239,6 +243,9 @@ export const codexHarnessAdapter: HarnessAdapter = {
   home: '.codex',
   agentExt: '.toml',
   hooksFile: 'hooks.json',
+  // The map, declared on the port so deploy can EMIT it into the host config the
+  // runtime reads. Both predicates below already answer from it.
+  nativeEvents: canonicalToCodex,
   // Realizable ⇔ the canonical event has a Codex peer. `canonicalToCodex` IS the
   // realization map, so asking it is asking the mechanism itself.
   //
@@ -302,9 +309,9 @@ export const codexHarnessAdapter: HarnessAdapter = {
     content: agentToCodexToml(a, ctx),
   }),
   skillDef: (s) => ({ filename: 'SKILL.md', content: skillToCodexMd(s) }),
-  surface: (agentNames) => ({
+  scopeOrientation: (agentNames) => ({
     filename: 'AGENTS.md',
-    content: agentsMdSurface(agentNames),
+    content: codexAgentsMd(agentNames),
   }),
   enforcingSurface: (bindings) => codexHooksJson(bindings),
 };

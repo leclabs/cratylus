@@ -24,44 +24,64 @@ import type { AgentOf, DimensionMeta, Value } from '@cratylus/schema';
 
 export const FIXTURE_MANIFEST = {
   // Persona
-  autonomy: { axis: 'Persona', kind: 'enum', arity: 'set' },
-  role: { axis: 'Persona', kind: 'open', arity: 'scalar' },
-  formality: { axis: 'Persona', kind: 'enum', arity: 'scalar' },
-  'audience-adaptation': { axis: 'Persona', kind: 'enum', arity: 'scalar' },
-  transparency: { axis: 'Persona', kind: 'enum', arity: 'scalar' },
+  autonomy: { axis: 'Persona', repertoire: 'latent', arity: 'set' },
+  role: { axis: 'Persona', repertoire: 'open', arity: 'scalar' },
+  formality: { axis: 'Persona', repertoire: 'latent', arity: 'scalar' },
+  'audience-adaptation': {
+    axis: 'Persona',
+    repertoire: 'latent',
+    arity: 'scalar',
+  },
+  transparency: { axis: 'Persona', repertoire: 'latent', arity: 'scalar' },
   // Constitution — standing drives
-  objective: { axis: 'Constitution', kind: 'open', arity: 'scalar' },
+  objective: { axis: 'Constitution', repertoire: 'open', arity: 'scalar' },
   guardrails: {
     axis: 'Constitution',
-    kind: 'curated',
+    repertoire: 'curated',
     arity: 'set',
     required: true,
   },
   'engineering-principles': {
     axis: 'Constitution',
-    kind: 'curated',
+    repertoire: 'curated',
     arity: 'set',
   },
-  heuristics: { axis: 'Constitution', kind: 'curated', arity: 'set' },
-  capabilities: { axis: 'Constitution', kind: 'open', arity: 'set' },
-  learning: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
+  heuristics: { axis: 'Constitution', repertoire: 'curated', arity: 'set' },
+  capabilities: { axis: 'Constitution', repertoire: 'open', arity: 'set' },
+  learning: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
   'situation-awareness': {
     axis: 'Constitution',
-    kind: 'enum',
+    repertoire: 'latent',
     arity: 'scalar',
   },
   // Constitution — apparatus
-  actions: { axis: 'Constitution', kind: 'enum', arity: 'set' },
-  modalities: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-  model: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-  memory: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
+  actions: { axis: 'Constitution', repertoire: 'latent', arity: 'set' },
+  modalities: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
+  model: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
+  memory: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
   // Constitution — per-turn act
-  trigger: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-  framing: { axis: 'Constitution', kind: 'open', arity: 'scalar' },
-  'reasoning-strategy': { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-  satisficing: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-  'output-format': { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-  'self-evaluation': { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
+  trigger: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
+  framing: { axis: 'Constitution', repertoire: 'open', arity: 'scalar' },
+  'reasoning-strategy': {
+    axis: 'Constitution',
+    repertoire: 'latent',
+    arity: 'scalar',
+  },
+  satisficing: {
+    axis: 'Constitution',
+    repertoire: 'latent',
+    arity: 'scalar',
+  },
+  'output-format': {
+    axis: 'Constitution',
+    repertoire: 'latent',
+    arity: 'scalar',
+  },
+  'self-evaluation': {
+    axis: 'Constitution',
+    repertoire: 'latent',
+    arity: 'scalar',
+  },
 } as const satisfies Record<string, DimensionMeta>;
 
 /** The fixture corpus's dimension union, derived — never listed twice. */

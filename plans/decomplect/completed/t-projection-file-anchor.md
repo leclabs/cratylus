@@ -41,6 +41,23 @@ themselves deny**.
 - **`surface` ✗** — `core/harness-adapter.ts:158` already binds `surface?()` to the _narrow_ species
   (codex's always-loaded `AGENTS.md`) while the same file's prose uses `surface` as the genus.
   Naming a module `surface.ts` would **harden that mis-cut**.
+
+  > **▶ REPAIRED 2026-08-05** by `t-harness-adapter-surface-is-genus-and-species`, the shard this
+  > rejection spawned. The genus/species collision no longer exists: the genus is **`artifact`**
+  > (prose), the species is **`scopeOrientation`** (the port field, formerly `surface?()`).
+  >
+  > **THE REJECTION STANDS — and the ruling above needs no revisiting.** What changed is the
+  > GROUND, not the verdict. `surface` was rejected here because it was ambiguous; it is now
+  > rejected because it is **settled elsewhere**: freeing it from both the genus and the species
+  > left it to the sense the rest of the corpus already gives it — a module's exposed API extent
+  > (`resolve/`'s public surface, a port's INTERFACE surface, ~40 live sites), which
+  > `enforcingSurface` deliberately keeps. So `surface.ts` as a module anchor is _more_ wrong
+  > now, not less: it would name a projection module after the API-extent concept.
+  >
+  > Kept rather than deleted per **C6** — a rejection is evidence about `fired(n)`, and a reader
+  > who finds only the verdict cannot tell whether the ground moved under it. It did; the verdict
+  > survived it.
+
 - **`projection` ✗** — `canon/src/dimensions/situation-awareness/projection.ts` is a live shipped
   σ\* value (Endsley SA-3) in every agent's Target. Different D, same sign; cross-altitude is still
   a collision.
@@ -57,6 +74,8 @@ dead leg's candidate was `capabilities`. `render` is disjoint from runtime's key
 `Target`, so this shard no longer waits on anything.
 
 **New finding, filed separately**: `HarnessAdapter.surface?()` is genus-in-prose / species-in-field.
+— filed as `t-harness-adapter-surface-is-genus-and-species`, **closed 2026-08-05**: genus ↦
+`artifact`, species ↦ `scopeOrientation`. See the repair note on the `surface ✗` bullet above.
 
 ## Execution
 

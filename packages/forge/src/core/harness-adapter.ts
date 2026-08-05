@@ -1,22 +1,32 @@
 // The ONE behavioral PORT for manifest→harness projection. A `HarnessAdapter`
 // captures the projection operations a consumer (canon's project CLIs)
 // needs to render its typed `Agent`/`ResolvedSkill`/`Hook` vectors to a harness's
-// on-disk surface — WITHOUT naming a concrete adapter module. A consumer selects
+// on-disk ARTIFACTS — WITHOUT naming a concrete adapter module. A consumer selects
 // an implementation strictly BY NAME (`adapterByName('claude' | 'codex')`), so no
 // `adapters/<harness>` subpath import leaks into the consumer.
 //
 // Each projection op returns `{ filename, content }` — the harness owns its own
 // file naming (`<name>.md` vs `<name>.toml`; `SKILL.md`), the consumer owns only
-// the parent directory it writes under. Optional ops (`surface`, `hooks`) are
-// present only on harnesses that have that surface (codex has an `AGENTS.md`
+// the parent directory it writes under. Optional ops (`scopeOrientation`, `hooks`)
+// are present only on harnesses that have that artifact (codex has an `AGENTS.md`
 // index; claude serializes hooks → a `settings.json` fragment).
+//
+// VOCABULARY — the GENUS is `artifact`: one projected file, `⟨filename, content⟩`,
+// which is what every op below returns. This file used to spell the genus `surface`
+// in its prose while binding `surface?()` to ONE species (codex's `AGENTS.md`), so
+// the field and the prose disagreed about the extension of the same sign and a
+// reader who trusted either was wrong about the other. The species is now
+// `scopeOrientation`, and `surface` is left to the sense the rest of the corpus
+// already gives it — a module's exposed API extent (`resolve/`'s public surface, a
+// port's INTERFACE surface). `enforcingSurface` below keeps the word in exactly
+// that sense: the global config extent a harness offers, not a file.
 
 import type { Agent, Binding, DimensionManifest } from '@cratylus/schema';
 import type {
+  EventName,
   HarnessMechanism,
   Hook,
   Substrate,
-  SubstrateEvent,
 } from '@cratylus/schema/hook';
 import type { ResolvedSkill } from './body.js';
 
@@ -34,7 +44,7 @@ export interface HarnessHooksProjection {
   /**
    * WHERE this harness keeps its scope-activated hook config — `settings.json`
    * for claude, `hooks.json` for codex. The projector used to hardcode the claude
-   * name, which made a second harness's surface unnameable and is why codex's was
+   * name, which made a second harness's artifact unnameable and is why codex's was
    * assumed not to exist.
    */
   readonly filename: string;
@@ -109,13 +119,26 @@ export interface HarnessAdapter {
    */
   readonly hooksFile: string;
   /**
+   * This harness's EVENT MAP: canonical event name → this harness's native name.
+   *
+   * The map `realizes`/`scopes` already answer FROM, declared on the port so a
+   * consumer can READ it without knowing which harness it holds. Deploy is that
+   * consumer: it emits the host's runtime configuration, and the runtime's own
+   * capabilities need the native names to attach anything at all. They used to hold
+   * a byte-identical private copy, which is the clone this field retires.
+   *
+   * An event ABSENT from the map is unrealizable here — the fidelity ladder's
+   * `declare` rung, never a fabricated binding.
+   */
+  readonly nativeEvents: Readonly<Record<EventName, string>>;
+  /**
    * Whether this adapter can realize `event`.
    *
    * The predicate behind `¬realizable(e, adapter)`. It answers only for events on
    * THIS adapter's substrate; an event from another substrate is not this
    * adapter's to judge, and the caller routes it before asking.
    */
-  realizes(event: SubstrateEvent): boolean;
+  realizes(event: EventName): boolean;
   /**
    * Whether this adapter can narrow `event` to a NAMED agent.
    *
@@ -131,7 +154,7 @@ export interface HarnessAdapter {
    * MODEL: `scopable(e,h) ⇒ realizable(e,h)`. An adapter must never return true here
    * for an event it cannot realize.
    */
-  scopes(event: SubstrateEvent): boolean;
+  scopes(event: EventName): boolean;
   /**
    * How THIS harness invokes a cell's deployed worker — the command string its
    * native hook config will carry.
@@ -153,9 +176,22 @@ export interface HarnessAdapter {
   agentDef(agent: Agent, ctx: AgentDefContext): HarnessProjection;
   /** Project a resolved skill → its `SKILL.md`. */
   skillDef(skill: ResolvedSkill): HarnessProjection;
-  /** The always-loaded instruction/index surface, when the harness has one
-   *  (codex `AGENTS.md`; claude has none). */
-  surface?(agentNames: readonly string[]): HarnessProjection;
+  /**
+   * The one artifact this harness loads because the reader is IN THIS SCOPE rather
+   * than because anything was selected — codex's `AGENTS.md`; claude projects none.
+   * It orients whoever reads it: what this workspace is, and an index of the agents
+   * and skills available here.
+   *
+   * SCOPE-ACTIVATED, and that is the whole differentia. `agentDef` and `skillDef`
+   * are selection-activated — their bytes are read only once a reader picks that
+   * agent or invokes that skill. This one is read first and unconditionally, which
+   * is why it takes the WHOLE agent-name set and no single vector.
+   *
+   * It was called `surface`, a sign this file's own prose simultaneously used for
+   * the genus (any projected artifact). Same sign, two extensions, one file — see
+   * the VOCABULARY note at the top.
+   */
+  scopeOrientation?(agentNames: readonly string[]): HarnessProjection;
   /** Hooks → a settings fragment + per-hook losses, when the harness supports
    *  hooks (claude → `settings.json` `hooks` block). */
   hooks?(hooks: readonly Hook[]): HarnessHooksProjection;

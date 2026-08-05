@@ -128,8 +128,16 @@ cli
     "user-scope parent override for the harness's home (else ~/<home>)",
   )
   .option('--project <dir>', 'project root for --scope project (default: cwd)')
+  .option(
+    '--config <path>',
+    "config file the corpus's event vocabulary is read from (default: <cwd>/agents.config.ts)",
+  )
   .option('--only <names>', 'comma-separated names to deploy')
   .option('--dry-run', 'print actions, change nothing')
+  .option(
+    '--check',
+    'report where the DEPLOYED tree diverges from the rendered one (stale / absent / foreign); changes nothing',
+  )
   .action(
     async (opts: {
       agentsDir?: string;
@@ -141,8 +149,10 @@ cli
       harness?: string;
       home?: string;
       project?: string;
+      config?: string;
       only?: string;
       dryRun?: boolean;
+      check?: boolean;
     }) => {
       // `hooks` ships from a single hooks render root; agent/skill ship from the
       // agents/ + skills/ dirs; `all` ships every kind in one invocation and so
@@ -191,8 +201,10 @@ cli
           harness: opts.harness ?? null,
           home: opts.home ?? null,
           project: opts.project ?? null,
+          config: opts.config ?? null,
           only: opts.only ?? null,
           dryRun: opts.dryRun,
+          check: opts.check,
         }),
       );
     },

@@ -91,6 +91,13 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/command-veracity.test.ts': 'GATE',
   'canon/cratylism.test.ts': 'GATE',
   'canon/event-tap-cell.test.ts': 'GATE',
+  // censuses the LIVE `packages/*/src` corpus for a SECOND event-name list, then
+  // crosses the two seams no compiler reaches: every adapter map key against canon's
+  // tuple, and the host config `deploy` emits parsed back by the RUNTIME's own
+  // reader. Its convicting fixtures drive the same pure predicates over the exact
+  // 28-name tuple `runtime/src/events.ts` used to carry, over a map key that is not
+  // a declared event, and over an emitted config missing one member.
+  'canon/event-vocabulary.test.ts': 'GATE',
   'canon/formal-block-self-sufficiency.test.ts': 'GATE',
   'canon/gate-convicts.test.ts': 'GATE',
   // parses `Kind ≜ {…}` out of the LIVE `MODEL.md` and `AcceptCell.kind` out of the
@@ -145,6 +152,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/config/loader.test.ts': 'BEHAVIORAL',
   'forge/config/scaffold.test.ts': 'BEHAVIORAL',
   'forge/core/runtime-shim-binding.test.ts': 'BEHAVIORAL',
+  // builds a DRIFTED host and a SYNCED one itself and drives `auditLocal` over both; it
+  // also carries an encoded control — the pre-existing machinery fed the same drifted host
+  // and asserted SILENT, which is the defect held green in perpetuity.
+  'forge/deploy/check.test.ts': 'BEHAVIORAL',
   'forge/deploy/cli.test.ts': 'BEHAVIORAL',
   'forge/deploy/harness-shape.test.ts': 'BEHAVIORAL',
   'forge/deploy/hooks.test.ts': 'BEHAVIORAL',
@@ -186,6 +197,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // emitted bytes agree; its convicting fixtures drive the same comparison over
   // synthetic pairs, including the hard-wrap that made the first guard dead.
   'memory/seed-parity.test.ts': 'GATE',
+  // BEHAVIORAL, not GATE: it plants a `$HOME` config itself and drives `audit`/`node`/
+  // `resolveConfigPath` over it, so its negative cases ARE its fixtures. Its control is
+  // external and was run at authoring — removing the sentinel reddens all five legs — but
+  // a control that lives outside the file cannot be what classifies it.
+  'memory/hermetic-config.test.ts': 'BEHAVIORAL',
   'memory/cell-verb-roster.test.ts': 'GATE',
   'memory/cli.test.ts': 'BEHAVIORAL',
   'memory/dream.test.ts': 'BEHAVIORAL',

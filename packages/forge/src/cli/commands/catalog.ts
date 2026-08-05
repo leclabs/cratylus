@@ -70,7 +70,7 @@ function renderTable(entries: CatalogEntry[]): string {
   const lines: string[] = [];
   for (const e of entries) {
     const head = `${pc.bold(e.dimension)} ${pc.gray(
-      `[${e.axis} · ${e.kind} · ${e.arity}]`,
+      `[${e.axis} · ${e.repertoire} · ${e.arity}]`,
     )} ${pc.gray(`(${e.values.length})`)}`;
     lines.push(head);
     if (e.values.length === 0) {

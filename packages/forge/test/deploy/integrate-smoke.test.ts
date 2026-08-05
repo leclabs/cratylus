@@ -44,7 +44,8 @@ import {
 import { join } from 'node:path';
 import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { placeSkillsLocal } from '../../src/deploy/index.js';
+import { canonicalToClaude } from '../../src/adapters/claude/index.js';
+import { emitRuntimeConfig, placeSkillsLocal } from '../../src/deploy/index.js';
 import { tmp } from './helpers.js';
 
 /** The workspace packages the temp prefix needs so `<RUNTIME_BIN> <cap> <verb>`
@@ -81,11 +82,26 @@ const SKILL = 'memory-face';
 const TAP_SKILL = 'event-tap-face';
 const NONCE = `smoke-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
-/** The deployed shim runs `cratylus-run` off PATH; isolate git config too. */
+/**
+ * The host runtime config this fixture's shims read — the file `cratylus deploy`
+ * emits, here written by the same emitter into the hermetic root.
+ *
+ * WITHOUT IT THE L4 LEG CANNOT RUN, and that is the finding rather than a fixture
+ * detail: the event-tap capability no longer carries a lifecycle vocabulary of its
+ * own (it carried canon's 28 names, copied). Everything corpus-specific now reaches
+ * a host as configuration the projection emitted, so a host with no emitted config
+ * has no vocabulary — and this leg drives a REAL deployed shim on a REAL host, which
+ * is exactly the condition that must be represented.
+ */
+const runtimeConfig = join(root, 'runtime-config.json');
+
+/** The deployed shim runs `cratylus-run` off PATH; isolate git config too, and
+ *  point the runtime at the emitted host config rather than the operator's real one. */
 const hermeticEnv = {
   ...process.env,
   PATH: `${join(prefix, 'bin')}:${process.env.PATH ?? ''}`,
   GIT_CONFIG_GLOBAL: '/dev/null',
+  AGENT_RUNTIME_CONFIG: runtimeConfig,
 };
 
 afterAll(() => {
@@ -117,6 +133,15 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
   // real host this is `npm i -g @cratylus/invoke`; here the un-published
   // workspace packages are packed and co-installed to reach the same state.
   beforeAll(() => {
+    // The projection's own emission, into the hermetic root — the L4 leg's
+    // precondition and, itself, a proof that what deploy writes is what the runtime
+    // reads. Nothing is transcribed: the vocabulary is the claude adapter's map
+    // domain and the native names are its values.
+    emitRuntimeConfig({
+      path: runtimeConfig,
+      events: Object.keys(canonicalToClaude),
+      nativeEvents: canonicalToClaude,
+    });
     const stage = join(root, 'tarballs');
     mkdirSync(stage, { recursive: true });
     const repoRoot = join(import.meta.dirname, '..', '..', '..', '..');

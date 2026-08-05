@@ -1,9 +1,11 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The CLAUDE realization of the {@link EventTapHost} port.
 //
-// Relocated from forge's `runtime/event-tap/claude.ts` into the runtime
-// capability, re-based onto the runtime-owned port + the local Claude harness
-// mapping (this capability imports ZERO from `@cratylus/forge`). `install`
+// Relocated from forge's `runtime/event-tap/claude.ts` into the runtime capability,
+// re-based onto the runtime-owned port (this capability imports ZERO from
+// `@cratylus/forge`). Its Claude event map is INJECTED, not held: it arrives as
+// configuration the projection emitted, because a private copy of forge's map is
+// what "re-based onto the local Claude harness mapping" turned out to mean. `install`
 // merges a PASSIVE logger entry into the target `settings.json` (foreign top-level
 // keys AND foreign per-event entries preserved); `remove` surgically drops only
 // the tap's own entry; `readCapture`/`status` derive from the target file so they
@@ -13,7 +15,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { RUNTIME_BIN } from '../../bin-name.js';
-import type { LifecycleEvent } from '../../events.js';
+import type { EventName } from '../../events.js';
 import type {
   CaptureRow,
   CaptureSink,
@@ -22,9 +24,9 @@ import type {
 } from '../../ports/event-tap.js';
 import {
   type ClaudeHooksBlock,
-  buildTapBlock,
-  claudeToLifecycle,
+  buildEventTapBlock,
   mergeJsonKeys,
+  reverseNativeEvents,
 } from './claude-serialize.js';
 
 /**
@@ -82,25 +84,40 @@ function safeJson(line: string): unknown {
 
 export class EventTapHostClaude implements EventTapHost {
   readonly #settingsPathOverride: string | undefined;
+  readonly #native: Readonly<Record<EventName, string>>;
+  readonly #toEvent: Readonly<Record<string, EventName>>;
   #sinkPath: string | undefined;
 
-  /** @param settingsPath absolute path to the target `settings.json`; when
-   *  omitted the path is resolved lazily from `$CLAUDE_SETTINGS_PATH` or the
-   *  cwd's `.claude/settings.json` (so a plugin singleton is host-portable). */
-  constructor(settingsPath?: string) {
+  /**
+   * @param settingsPath absolute path to the target `settings.json`; when omitted
+   *  the path is resolved lazily from `$CLAUDE_SETTINGS_PATH` or the cwd's
+   *  `.claude/settings.json` (so a plugin singleton is host-portable).
+   * @param nativeEvents canonical event → claude native name, from the host config
+   *  the projection emitted (`RuntimeConfig.events.native`). REQUIRED, and injected
+   *  rather than known: this class held a private copy of forge's map, which is the
+   *  duplication the vocabulary repair closed. A strategy that defaulted it would
+   *  reopen the copy behind an optional parameter.
+   */
+  constructor(
+    settingsPath: string | undefined,
+    nativeEvents: Readonly<Record<EventName, string>>,
+  ) {
     this.#settingsPathOverride = settingsPath;
+    this.#native = nativeEvents;
+    this.#toEvent = reverseNativeEvents(nativeEvents);
   }
 
   get #settingsPath(): string {
     return resolveSettingsPath(this.#settingsPathOverride);
   }
 
-  install(events: LifecycleEvent[], sink: CaptureSink): void {
+  install(events: EventName[], sink: CaptureSink): void {
     this.#sinkPath = sink.path;
     if (events.length === 0) return; // nothing to observe
 
-    const { block: tapBlock } = buildTapBlock(
+    const { block: tapBlock } = buildEventTapBlock(
       events,
+      this.#native,
       loggerCommand(sink.path),
       EVENT_TAP_ID,
     );
@@ -175,8 +192,7 @@ export class EventTapHostClaude implements EventTapHost {
       const payload = safeJson(line);
       const native = (payload as { hook_event_name?: string } | undefined)
         ?.hook_event_name;
-      const event =
-        native !== undefined ? claudeToLifecycle[native] : undefined;
+      const event = native !== undefined ? this.#toEvent[native] : undefined;
       if (event === undefined) continue; // not a recognizable capture row
       rows.push({ event, payload });
     }
@@ -189,14 +205,14 @@ export class EventTapHostClaude implements EventTapHost {
     const text = readFileSync(settingsPath, 'utf8');
     if (text.trim() === '') return { attached: false, events: [] };
     const base = JSON.parse(text) as { hooks?: ClaudeHooksBlock };
-    const events = new Set<LifecycleEvent>();
+    const events = new Set<EventName>();
     for (const [native, entries] of Object.entries(base.hooks ?? {})) {
       const owns = entries.some((e) =>
         e.hooks.some((h) => h.id === EVENT_TAP_ID),
       );
       if (!owns) continue;
-      const lifecycle = claudeToLifecycle[native];
-      if (lifecycle !== undefined) events.add(lifecycle);
+      const event = this.#toEvent[native];
+      if (event !== undefined) events.add(event);
     }
     return { attached: events.size > 0, events: [...events] };
   }

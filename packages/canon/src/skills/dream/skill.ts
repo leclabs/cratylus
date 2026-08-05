@@ -4,13 +4,13 @@ import { materialize } from '../materialize/skill.js';
 
 export const dream: Skill = {
   name: 'dream',
-  description: `use this skill to consolidate an agent's memory — fold the raw EPISODIC stream (the tool computes each record's capture node from its cwd — provenance, not what the record is about), then route by type: agent-intrinsic identity/facts to SEMANTIC, generalized cross-project wisdom to PROCEDURAL (only what no projection already carries), a fleet/system/mechanism truth promoted into the projected+gated canon (or emitted as a canon-candidate task) rather than parked in private memory, forward next-steps to EPISODIC, the rest dropped; consumed raw is drained; SOUL is never written.`,
+  description: `use this skill to consolidate an agent's memory — fold the raw EPISODIC stream (the tool computes each record's capture node from its cwd — provenance, not what the record is about), then route by type: agent-intrinsic identity/facts to SEMANTIC, generalized cross-project wisdom to PROCEDURAL (only what no projection already carries), a fleet/system/mechanism truth promoted into the projected+gated canon (or emitted as a canon-candidate task) rather than parked in private memory, forward next-steps to EPISODIC, the rest dropped; consumed raw is drained; the Target is never written.`,
   formalBlock:
     `memory              ≜ agent dimension-home ⟨SEMANTIC · PROCEDURAL · EPISODIC⟩ ∪ the memory-tool runtime ⟨a RUNTIME CAPABILITY ; invoked \`memory <verb> <args>\` ; the Runtime-capability line under this block resolves the shim ∴ ¬ path-in-cell⟩
 EPISODIC            ≜ raw time-ordered event stream ∪ forward next-steps
 SEMANTIC            ≜ identity facts ∪ durable agent-intrinsic knowledge ⟨hot index⟩
 PROCEDURAL          ≜ generalized cross-project wisdom no projection already carries
-SOUL                ≜ the archetype ; commons-authored ; ∉ dream outputs
+Target              ≜ the deploy-projected declaration carrying the archetype ; commons-authored ; ∉ dream outputs
 lock                ≜ dream.lock ⟨O_EXCL ; stale ⇔ age > 2h⟩ guarding the {SEMANTIC · PROCEDURAL} partition ⟨shared by all same-host sessions of one agent ; ¬ project-scoped⟩ ; \`memory lock (acquire|release|status) --name <agent>\`
                       ⟨WHY a lock HERE and not one-file-per-writer : a concurrent APPEND race is LOUD ⟨encode ↦ EPISODIC : interleaved, never lost⟩ ; a concurrent EDIT race is SILENT ⟨depalimpsest supersedes the WHOLE file ∴ the loser vanishes with no trace⟩⟩
                       ⟨∴ classify the OPERATION before choosing the instrument : append ⇒ partition by writer ; edit ⇒ lock⟩
@@ -31,7 +31,7 @@ dfp(i)              ≜ densest-faithful-point(i)
 depalimpsest        ≜ reconcile the resident set to current ground-truth ⟨¬only-drop-stale⟩ ; supersede the whole file, ¬ append : \`memory replace --name <agent> --store (SEMANTIC|PROCEDURAL) --body -\`
 promotion-is-move   ≜ a promoted item ∉ its raw source ⟨an obligation discharged AT the promotion, ¬ a later drain's finding⟩
 canon-truth(i)      ⇔ i binds ≥1 agent-type ∨ the fleet ∨ is a mechanism/governance-fact ⟨¬ this-agent-only⟩
-reach(x)            ≜ the contexts x is present in ⟨SOUL · loaded-skill ↦ EVERY context ; corpus-local gate ∨ cell ↦ that corpus ALONE⟩
+reach(x)            ≜ the contexts x is present in ⟨own Target · loaded-skill ↦ EVERY context ; corpus-local gate ∨ cell ↦ that corpus ALONE⟩
 projection-carries(i) ⇔ ∃ x : i ⊆ x ∧ reach(x) ⊇ reach(store(i)) ⟨carriage has a RADIUS : authorship ≠ carriage ; SOMEWHERE ≠ WHEREVER i binds⟩
                       ⟨PROCEDURAL = cross-project ∴ a corpus-local gate NEVER discharges it ; SEMANTIC ∪ PROCEDURAL are read at EVERY wake, a repo is not⟩
 CANON-PROMOTION(i)  ≜ author i into its strongest seam ⟨gate ≻ cell ≻ governing-doc⟩ ; ¬canon-remit ⇒ emit a canon-candidate task to the curator ; then projection-carries(i) ⇒ drop ⟨PROCEDURAL⟩
@@ -60,7 +60,7 @@ depalimpsest(b) ⇔ bytes(b) ≤ ceiling ∨ bytes(b) < bytes(store) ⟨STRICT s
     stale(i)                                       ⇒ ∅
 acceptance ≜ wake-read biases next-action ⟨reboot-seed ; round-trip ≽⟩
 ¬graspable-in-one-glance(i) ⇒ distill-further(i) ∨ drop(i)
-SOUL ∉ dream-outputs
+Target ∉ dream-outputs
 verb-over-prose ≜ ∀ step declaring an invocation : invoke it ⟨the tool owns the write · I own only the routing⟩ ; hand-editing a store the tool can write is the defect` as SkillExpression,
   runtime: { capability: 'memory' },
   composition: () => [exemplify, materialize],

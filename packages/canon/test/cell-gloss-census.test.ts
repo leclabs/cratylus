@@ -27,6 +27,30 @@
 // names is the defect, not the signal. The gloss is the concept's own self-report, so
 // the head phrase (everything before the em-dash, parentheticals dropped) is the key:
 // the tail elaborates for a reader, the head names the thing.
+//
+// ── THE SECOND DEFECT, AND WHY IT IS THE SAME GATE (2026-08-05) ────────────────
+//
+// `kind` was found carrying THREE concepts across two packages — MODEL's `Kind`
+// (`RuleCell.kind`), how a dimension's value-catalog is sourced (`DimensionMeta`), and
+// a value's structural shape (forge's `FragmentKind`). Two of the three collided
+// INSIDE `schema/src`, and the census above could not see it: it read `*Cell`
+// interfaces only, and `DimensionMeta` is not a cell.
+//
+// THE INVERSE READING IS THE POINT. Above, one gloss wore two signs. Here, one sign
+// wore three glosses. They are the two failure directions of the same law — α is a
+// BIJECTION between concept and sign, so a violation in either direction is the same
+// defect, and one census convicts both provided it censuses the same ⟨sign, gloss⟩
+// pairs. So this file gains a second predicate over a WIDER surface (every declared
+// interface in `schema/src` AND `forge/src`), not a second file. `t-kind-is-triple-
+// booked` says it in as many words: BUILD IT ONCE, NOT TWICE.
+//
+// THE SIGN-KEYED LEG IS DELIBERATELY NARROW. Most short field names legitimately
+// recur (`id`, `name`, `path`, `content`), so a blanket "one sign, one gloss" would
+// convict the whole tree. What the corpus actually forbids is a sign whose glosses
+// name DIFFERENT AXES, and the tractable, non-arbitrary instance of that is the
+// closed roster of signs the census has already convicted once. `kind` is that
+// roster: it is the sign this repo has demonstrably over-loaded, and a regression
+// onto it is what must stay unavailable.
 
 import { readdirSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
@@ -34,13 +58,22 @@ import { dirname, extname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 
-const schemaSrc = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '..',
-  '..',
-  'schema',
-  'src',
-);
+const packages = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
+const schemaSrc = join(packages, 'schema', 'src');
+
+/** The surface the SIGN-keyed leg censuses: schema states the shapes, forge consumes
+ *  them, and the triple-booking of `kind` ran straight across that seam. */
+const overloadSurface = [schemaSrc, join(packages, 'forge', 'src')];
+
+/**
+ * The signs this repo has already over-loaded once, and may not regress onto.
+ *
+ * A closed roster, not a heuristic: `kind` carried MODEL's `Kind`, a value-catalog's
+ * sourcing, and a value's structural shape simultaneously. What remains legal is
+ * `kind` as a UNION VARIANT TAG — the one job the sign fires for cold — which is why
+ * the predicate keys on the GLOSS and not on the count of occurrences.
+ */
+const OVERLOADED = ['kind'];
 
 /** The gloss every cell shape must carry on exactly one field, under exactly one sign. */
 const IDENTITY = /σ\*-signified canonical identity/;
@@ -74,11 +107,17 @@ function glossKey(doc: string): string {
  * Every `⟨cell, sign, gloss⟩` an `*Cell` interface declares. Read from SOURCE TEXT, not
  * from types: a gloss is a comment, and no type-level reflection can see one. The doc
  * capture is TEMPERED (`(?!\*\/)`) so one field's comment can never swallow the next.
+ *
+ * THE GENERIC CLAUSE IS OPTIONAL AND THAT IS LOAD-BEARING. `HookCell` acquired a type
+ * parameter (`HookCell<E extends EventName = EventName>`) and this scan silently
+ * stopped seeing it — the census went half-DARK while still reporting green on its
+ * collision leg. The reach leg caught it, which is the whole reason a census asserts
+ * WHAT it reached and not merely that it found no defects.
  */
 function cellFields(src: string): CellField[] {
   const out: CellField[] = [];
   for (const block of src.matchAll(
-    /export interface (\w*Cell)\s*\{([\s\S]*?)\n\}/g,
+    /export interface (\w*Cell)(?:<[^>]*>)?\s*\{([\s\S]*?)\n\}/g,
   )) {
     const cell = block[1] as string;
     for (const f of (block[2] as string).matchAll(
@@ -115,7 +154,7 @@ function identitySigns(
   return byCell;
 }
 
-/** Every `.ts` under `schema/src`, recursively. */
+/** Every `.ts` under `dir`, recursively. */
 function schemaSources(dir: string): string[] {
   return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
     e.isDirectory()
@@ -126,11 +165,54 @@ function schemaSources(dir: string): string[] {
   );
 }
 
+/**
+ * Every `⟨owner, sign, gloss⟩` any EXPORTED interface declares — the wider surface the
+ * sign-keyed leg reads. `cellFields` above stays keyed to `*Cell` on purpose (its
+ * σ*-identity leg is a statement about cell shapes specifically); this one drops that
+ * filter, because the concept a sign carries is not a cell's privilege.
+ */
+function declaredFields(src: string): CellField[] {
+  const out: CellField[] = [];
+  for (const block of src.matchAll(
+    /export interface (\w+)(?:<[^>]*>)?\s*\{([\s\S]*?)\n\}/g,
+  )) {
+    const cell = block[1] as string;
+    for (const f of (block[2] as string).matchAll(
+      /\/\*\*((?:(?!\*\/)[\s\S])*)\*\/\s*readonly (\w+)\??\s*:/g,
+    ))
+      out.push({ cell, sign: f[2] as string, gloss: glossKey(f[1] as string) });
+  }
+  return out;
+}
+
+/** Every gloss an over-loaded sign is carrying, keyed by that sign. */
+function overloads(
+  fields: readonly CellField[],
+): Map<string, Map<string, string[]>> {
+  const bySign = new Map<string, Map<string, string[]>>();
+  for (const f of fields) {
+    if (!OVERLOADED.includes(f.sign)) continue;
+    const byGloss = bySign.get(f.sign) ?? new Map<string, string[]>();
+    byGloss.set(f.gloss, [...(byGloss.get(f.gloss) ?? []), f.cell]);
+    bySign.set(f.sign, byGloss);
+  }
+  return bySign;
+}
+
 /** The live census over `@cratylus/schema` — every cell shape the corpus authors against. */
 async function census(): Promise<CellField[]> {
   const out: CellField[] = [];
   for (const path of schemaSources(schemaSrc))
     out.push(...cellFields(await readFile(path, 'utf8')));
+  return out;
+}
+
+/** The live census over the WIDER surface — every exported interface, schema + forge. */
+async function wideCensus(): Promise<CellField[]> {
+  const out: CellField[] = [];
+  for (const root of overloadSurface)
+    for (const path of schemaSources(root))
+      out.push(...declaredFields(await readFile(path, 'utf8')));
   return out;
 }
 
@@ -163,6 +245,92 @@ describe('cell-gloss census — one concept, one sign, across every schema cell 
     // over. `definiens` ≜ D is the PRE-subtraction input and never a cell field.
     for (const [cell, borne] of signs)
       expect(borne, `${cell}'s σ*-identity field`).toEqual(['residue']);
+  });
+
+  // ── the sign-keyed leg — one SIGN over two GLOSSES, the inverse direction ────────
+
+  it('reaches schema AND forge — the seam the triple-booking ran across', async () => {
+    const fields = await wideCensus();
+    const owners = new Set(fields.map((f) => f.cell));
+    expect(fields.length, 'glossed interface fields').toBeGreaterThan(40);
+    expect(owners.has('RuleCell'), 'schema reached').toBe(true);
+    expect(owners.has('Fragment'), 'forge reached').toBe(true);
+    expect(owners.has('DimensionMeta'), 'the non-cell shape reached').toBe(
+      true,
+    );
+  });
+
+  it('no over-loaded sign carries two glosses across schema + forge', async () => {
+    const found = overloads(await wideCensus());
+    const guilty = [...found]
+      .filter(([, byGloss]) => byGloss.size > 1)
+      .map(
+        ([sign, byGloss]) =>
+          `\`${sign}\` → ${[...byGloss]
+            .map(([gloss, owners]) => `"${gloss}" (${owners.join(', ')})`)
+            .sort()
+            .join(' + ')}`,
+      )
+      .sort();
+    expect(
+      guilty,
+      `one sign, two concepts — the sign belongs to ONE of them:\n${guilty.join('\n')}`,
+    ).toEqual([]);
+  });
+
+  it('is non-vacuous — the sign leg FAILS the exact triple-booking it was built from', () => {
+    // `schema/src/index.ts`, `schema/src/rule-cell.ts` and `forge/src/resolve/resolve.ts`
+    // as they stood before the 2026-08-05 ruling: three concepts, one sign, two packages.
+    const before = [
+      'export interface DimensionMeta {',
+      '  /** How the value-catalog is sourced (the `Repertoire`). */',
+      '  readonly kind: Repertoire;',
+      '}',
+      'export interface RuleCell {',
+      '  /** MODEL `Kind` — what this cell IS. */',
+      '  readonly kind: rule;',
+      '}',
+      'export interface Fragment {',
+      '  /** Structural value-type — the op-legality axis (⊥ dimension). */',
+      '  readonly kind: FragmentKind;',
+      '}',
+    ].join('\n');
+
+    const guilty = [...overloads(declaredFields(before))].map(
+      ([sign, byGloss]) => [sign, byGloss.size] as const,
+    );
+    expect(guilty, 'three glosses on one sign').toEqual([['kind', 3]]);
+
+    // the control: the SAME source with the ruling applied goes clean, and it goes
+    // clean by RENAMING TWO — leaving `RuleCell` (MODEL's own) holding the sign.
+    const after = before
+      .replace('readonly kind: Repertoire', 'readonly repertoire: C')
+      .replace(
+        'readonly kind: FragmentKind',
+        'readonly valueShape: ValueShape',
+      );
+    const fixed = [...overloads(declaredFields(after))].map(
+      ([sign, byGloss]) => [sign, byGloss.size] as const,
+    );
+    expect(fixed, 'one sign, one gloss').toEqual([['kind', 1]]);
+  });
+
+  it('is non-vacuous — the sign leg PERMITS one sign over one gloss on many shapes', () => {
+    // `kind` as a UNION VARIANT TAG is the sign's own job and recurs legitimately.
+    // A predicate that merely counted occurrences would convict this; keying on the
+    // gloss is what separates re-use of a concept from re-use of a word.
+    const shared = [
+      'export interface RuleCell {',
+      '  /** MODEL `Kind` — what this cell IS. */',
+      '  readonly kind: rule;',
+      '}',
+      'export interface HookCell {',
+      '  /** MODEL `Kind` — what this cell IS (a hook is `Kind ∋ rule`). */',
+      '  readonly kind: rule;',
+      '}',
+    ].join('\n');
+    const found = overloads(declaredFields(shared));
+    expect(found.get('kind')?.size, 'one gloss, two shapes').toBe(1);
   });
 
   // ── the convicting fixtures — the same two predicates, fed the historical defect ──

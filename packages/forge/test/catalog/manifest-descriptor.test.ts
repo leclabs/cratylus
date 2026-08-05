@@ -58,7 +58,7 @@ const THE_22: readonly FixtureDimension[] = [
  *  the shapes the two checks below are fed, widened so a BAD one can be built. */
 interface Meta {
   readonly axis: string;
-  readonly kind: string;
+  readonly repertoire: string;
   readonly arity: string;
 }
 
@@ -80,7 +80,8 @@ function corpusDrift(
 function illegalMeta(m: Meta): string[] {
   const bad: string[] = [];
   if (!['Persona', 'Constitution'].includes(m.axis)) bad.push(`axis=${m.axis}`);
-  if (!['enum', 'open', 'curated'].includes(m.kind)) bad.push(`kind=${m.kind}`);
+  if (!['latent', 'open', 'curated'].includes(m.repertoire))
+    bad.push(`repertoire=${m.repertoire}`);
   if (!['scalar', 'set'].includes(m.arity)) bad.push(`arity=${m.arity}`);
   return bad;
 }
@@ -91,7 +92,7 @@ describe('a dimension catalog', () => {
     expect(Object.keys(FIXTURE_MANIFEST)).toHaveLength(22);
   });
 
-  it('every axis/kind/arity is a legal value', () => {
+  it('every axis/repertoire/arity is a legal value', () => {
     for (const dimension of FIXTURE_DIMENSION_NAMES) {
       expect(illegalMeta(FIXTURE_MANIFEST[dimension]), dimension).toEqual([]);
     }
@@ -151,15 +152,23 @@ describe('a dimension catalog', () => {
       extra: [],
     });
 
-    // A descriptor entry outside the closed axis/kind/arity vocabularies.
+    // A descriptor entry outside the closed axis/repertoire/arity vocabularies.
     expect(
-      illegalMeta({ axis: 'Persona', kind: 'freeform', arity: 'tuple' }),
-    ).toEqual(['kind=freeform', 'arity=tuple']);
-    expect(illegalMeta({ axis: 'Vibe', kind: 'enum', arity: 'set' })).toEqual([
-      'axis=Vibe',
-    ]);
+      illegalMeta({
+        axis: 'Persona',
+        repertoire: 'freeform',
+        arity: 'tuple',
+      }),
+    ).toEqual(['repertoire=freeform', 'arity=tuple']);
     expect(
-      illegalMeta({ axis: 'Constitution', kind: 'curated', arity: 'scalar' }),
+      illegalMeta({ axis: 'Vibe', repertoire: 'latent', arity: 'set' }),
+    ).toEqual(['axis=Vibe']);
+    expect(
+      illegalMeta({
+        axis: 'Constitution',
+        repertoire: 'curated',
+        arity: 'scalar',
+      }),
     ).toEqual([]);
   });
 });

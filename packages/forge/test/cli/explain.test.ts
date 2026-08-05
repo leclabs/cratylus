@@ -62,7 +62,7 @@ describe('P5 inspection — explain + first-class catalog', () => {
       join(cwd, 'pluginA'),
       'guardrails',
       'harm',
-      "export const harm = { id: 'alpha:guardrails/harm', kind: 'set' };\n",
+      "export const harm = { id: 'alpha:guardrails/harm', valueShape: 'set' };\n",
     );
     writeModule(
       join(cwd, 'pluginA'),

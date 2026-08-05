@@ -9,9 +9,6 @@ let home: string;
 
 beforeEach(() => {
   home = mkdtempSync(join(tmpdir(), 'memory-audit-'));
-  // Hermetic: never let a developer-shell config leak repo keys into the run.
-  // '' resolves to a nonexistent config path, so audit derives no keys from it.
-  vi.stubEnv('AGENT_MEMORY_CONFIG', '');
 });
 afterEach(() => {
   rmSync(home, { recursive: true, force: true });

@@ -705,21 +705,21 @@ export async function projectPluginSet(
     }
   }
 
-  // The always-loaded INSTRUCTION SURFACE — codex's `AGENTS.md`, the shell a
-  // workspace reads before any agent is selected. OPTIONAL on the port
-  // (`HarnessAdapter.surface`) because it is a harness property, not a cell kind:
-  // codex has one, claude has none, and a harness without one must project the
+  // The SCOPE-ACTIVATED ORIENTATION — codex's `AGENTS.md`, the artifact a workspace
+  // reads before any agent is selected. OPTIONAL on the port
+  // (`HarnessAdapter.scopeOrientation`) because it is a harness property, not a cell
+  // kind: codex has one, claude has none, and a harness without one must project the
   // same tree it always did — hence the guard, and hence NO throw on absence.
   //
   // It is emitted LAST because it indexes the projected agent names, and it goes
-  // into `files` like every other artifact: the surface used to be the codex CLI's
-  // own direct disk write, which is precisely the fork that let that path drift.
-  // Rendering it here keeps this module's no-file-descriptor property intact.
-  const renderSurface = opts.adapter.surface;
-  if (renderSurface) {
-    const { filename, content } = renderSurface(agentNames);
+  // into `files` like every other artifact: it used to be the codex CLI's own direct
+  // disk write, which is precisely the fork that let that path drift. Rendering it
+  // here keeps this module's no-file-descriptor property intact.
+  const renderOrientation = opts.adapter.scopeOrientation;
+  if (renderOrientation) {
+    const { filename, content } = renderOrientation(agentNames);
     files.push({ path: filename, content });
-    log(`EMIT surface ${filename}`);
+    log(`EMIT orientation ${filename}`);
   }
 
   return { files, agents, skills, shims, hooks };

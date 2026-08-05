@@ -10,6 +10,10 @@ export {
   agentToCodexToml,
   agentToCodexTomlObject,
   skillToCodexMd,
-  agentsMdSurface,
+  codexAgentsMd,
   codexHarnessAdapter,
 } from './render.js';
+
+// The canonical→native event map. Exported so a corpus gate can assert every key is a
+// declared member without reaching past the barrel into the module.
+export { canonicalToCodex } from './events.js';

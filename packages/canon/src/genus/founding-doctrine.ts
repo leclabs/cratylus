@@ -1,5 +1,5 @@
 // founding-doctrine — the apex SEED every projection carries INTRINSICALLY. The ONE
-// HOME (DRY) of the prime principle, composed into every agent SOUL + every skill
+// HOME (DRY) of the prime principle, composed into every agent Target + every skill
 // SKILL.md by the projection consumer (`cratylus project --harness <name>`),
 // via the doctrine-AGNOSTIC `preamble` slot the forge body generators emit
 // (`agentBody` / `skillBody` — forge knows only "a leading verbatim block", never
@@ -13,7 +13,7 @@
 // residue in `dimensions/engineering-principles/cratylism.ts` (nico's vector) — carried
 // BY IMPORT, never transcribed, so the one-home claim above is mechanical rather than
 // a convention a later edit can silently break (it was, once: the dimension was cleaned
-// and this copy kept shipping the superseded axiom to every SOUL). Re-signifying it
+// and this copy kept shipping the superseded axiom to every agent Target). Re-signifying it
 // here would violate cratylism (¬author · ¬operator); this module only RELOCATES the
 // discovered sign to an intrinsic home. R=LLM.
 //
@@ -31,7 +31,7 @@ import { cratylism } from '../dimensions/engineering-principles/cratylism.js';
 
 /**
  * The prime principle, as a leading `## Prime Principle` block emitted VERBATIM
- * above every projected SOUL's `## Archetype` and every SKILL.md's first section.
+ * above every agent Target's `## Archetype` and every SKILL.md's first section.
  * The apex seed: the `cratylism` ground axiom + the intrinsic-carry clause — and
  * nothing whose truth is contingent on this workspace (see SCOPE FLOOR above).
  */
@@ -39,4 +39,4 @@ export const foundingDoctrine = `## Prime Principle
 
 ${cratylism}
 
-intrinsic ⟨¬ ambient⟩ : this axiom rides every projected SOUL + skill · survives deployment to any context ⟨foreign repo · blank cwd · foreign agent invoking a canon skill⟩ · ¬ contingent on workspace-root AGENTS.md`;
+intrinsic ⟨¬ ambient⟩ : this axiom rides every agent + skill Target · survives deployment to any context ⟨foreign repo · blank cwd · foreign agent invoking a canon skill⟩ · ¬ contingent on workspace-root AGENTS.md`;

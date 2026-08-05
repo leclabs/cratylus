@@ -12,9 +12,9 @@ import {
   resolve,
 } from '../../src/resolve/resolve.js';
 
-const FScalar: Fragment = { id: 'title', kind: 'scalar' };
-const FSet: Fragment = { id: 'tags', kind: 'set' };
-const FStruct: Fragment = { id: 'meta', kind: 'structured' };
+const FScalar: Fragment = { id: 'title', valueShape: 'scalar' };
+const FSet: Fragment = { id: 'tags', valueShape: 'set' };
+const FStruct: Fragment = { id: 'meta', valueShape: 'structured' };
 
 const plugin = (name: string, contributions: PatchEntry[]): LoadedPlugin => ({
   name,

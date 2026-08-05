@@ -44,27 +44,20 @@
 // SUBSTRATE. `harness` hooks realize through a harness adapter (e.g. claude
 // `settings.json` `{hooks}` merge + `hooks/<id>/` workers) — these lift into the
 // `Hook` config-IR via `hookIrOf`. A `git`-substrate hook fires in git's process (a
-// different substrate): its event has no `CanonicalEvent` peer, so it is carried as
-// a plain descriptor and is NOT routed into `settings.json`.
+// different substrate), so it is NOT routed into `settings.json`.
+//
+// WHY `HookCell` IS GENERIC. Its `events` are `EventName`s, and this package states
+// only that an event HAS a name (`MODEL.md:22`: `shape ⊥ vocabulary`). The type
+// parameter is where the CORPUS puts its own vocabulary back in: canon declares
+// `CANONICAL_EVENTS` and aliases `HookCell = HookCellOf<CanonicalEvent>`, so a cell
+// naming an undeclared event is a compile error at the only site that can know.
+// The exact `Skill<C extends CapabilityName>` treatment, one axis over.
 //
 // This is the doctrine-free TYPE KERNEL: the shared cell shapes + the generic
 // config-IR lift. The concrete cell instances (the harness-substrate cells, their
 // verbatim workers) live in the consuming corpus, not here.
 
-import type {
-  CanonicalEvent,
-  Hook,
-  Substrate,
-  SubstrateEvent,
-} from './hook/index.js';
-
-/**
- * A hook's event in HARNESS-AGNOSTIC terms. `harness`-substrate hooks bind a
- * `CanonicalEvent` (the vendor-neutral event pivot); a git-substrate event has no
- * canonical peer yet (`vcs.commit.post` — flagged for canon review), so the union
- * widens by exactly that descriptor.
- */
-export type HookEvent = SubstrateEvent;
+import type { EventName, Hook, Substrate } from './hook/index.js';
 
 /** Which substrate a hook's event fires in — the `realize`-target family. */
 export type HookSubstrate = Substrate;
@@ -115,8 +108,14 @@ export interface HookWorker {
   readonly executable: boolean;
 }
 
-/** A `hook` source cell (source grain), carrying its verbatim worker payloads. */
-export interface HookCell {
+/**
+ * A `hook` source cell (source grain), carrying its verbatim worker payloads.
+ *
+ * `E` is the CORPUS'S event vocabulary. Left at its default this cell accepts any
+ * `EventName`, which is all this package can say; a corpus aliases it against its
+ * own declared tuple and gets the compile error back.
+ */
+export interface HookCell<E extends EventName = EventName> {
   /** Stable id → `hooks/<id>/`; the anchor α(c) (== the filename). */
   readonly id: string;
   /** σ*-signified canonical identity (`body = ⟨α, residue⟩`) — the `accept()` target. */
@@ -131,7 +130,7 @@ export interface HookCell {
    * unset sorts last, then by id.
    */
   readonly order?: number;
-  readonly events: readonly [HookEvent, ...HookEvent[]];
+  readonly events: readonly [E, ...E[]];
   /**
    * Optional per-hook tool matcher (client-native regex, e.g.
    * `AskUserQuestion|Agent|SendMessage`). Meaningful for tool-scoped events
@@ -230,10 +229,9 @@ export function resolveWorker(
 }
 
 /**
- * Lift a harness-substrate hook cell into the `Hook` config-IR. A harness hook's
- * events are all `CanonicalEvent` (the vendor-neutral pivot); a `git`-substrate
- * event (`vcs.commit.post`) has no canonical peer, so it is rejected here — a git
- * hook must not reach settings.json. Doctrine-free: references no specific cell.
+ * Lift a harness-substrate hook cell into the `Hook` config-IR. A `git`-substrate
+ * hook fires in git's process and is rejected here — it must not reach
+ * settings.json. Doctrine-free: references no specific cell, and no specific event.
  */
 export function hookIrOf(
   cell: HookCell,
@@ -249,10 +247,9 @@ export function hookIrOf(
       `hookIrOf: '${cell.id}' names entry '${cell.entry}', which is not one of its workers (${cell.workers.map((w) => w.filename).join(', ') || 'none'}). An entry naming nothing deploys a hook that invokes a missing file.`,
     );
   }
-  const events = cell.events as readonly CanonicalEvent[];
   return {
     id: cell.id,
-    events: [...events] as [CanonicalEvent, ...CanonicalEvent[]],
+    events: [...cell.events] as [EventName, ...EventName[]],
     command: hookCommand(cell.id, cell.entry),
     ...(cell.matcher !== undefined ? { matcher: cell.matcher } : {}),
     ...(cell.timeout !== undefined ? { timeout: cell.timeout } : {}),

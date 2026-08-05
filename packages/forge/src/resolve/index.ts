@@ -6,9 +6,8 @@ export {
   DanglingReferenceError,
   type Fragment,
   type FragmentContribution,
-  type FragmentKind,
   ForcePriorityTieError,
-  IllegalOpForKindError,
+  IllegalOpForValueShapeError,
   type LoadedPlugin,
   MissingExtendsTargetError,
   type PatchEntry,
@@ -18,4 +17,5 @@ export {
   type ResolveConfig,
   type ResolvedAgentSet,
   type ResolvedFragment,
+  type ValueShape,
 } from './resolve.js';

@@ -221,18 +221,18 @@ file another compiles against — so **a wave can be fanned out with no isolatio
 `~~struck~~` = a RULING is owed. It sits in its wave but is not dispatchable; the count beside it
 is what can actually be sent.
 
-| wave  | shards | dispatchable | members                                                                                                                                                                                                                                                                                                |
-| ----- | ------ | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **0** | 8      | 7            | `deployed-drifts-from-rendered-unwatched` · `memory-test-hermetic-sentinel-has-six-homes` · `t-canon-soul` · `t-classification-wears-three-signs` · ~~t-engine-internal-names-await-decode~~ · `t-harness-adapter-surface-is-genus-and-species` · `t-kind-is-triple-booked` · `t-lifecycle-vocabulary` |
-| **1** | 2      | 2            | `elevate-installs-no-mechanism` · `t-tool-class-vocabulary`                                                                                                                                                                                                                                            |
+| wave  | shards | dispatchable | members                                                                                                                                      |
+| ----- | ------ | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0** | 4      | 3            | `elevate-installs-no-mechanism` · `soul-survives-in-canon-test-prose` · ~~t-engine-internal-names-await-decode~~ · `t-tool-class-vocabulary` |
+| **1** | 1      | 1            | `drift-is-checkable-but-nothing-checks-it`                                                                                                   |
 
 **Slices** — a partition, 8 of them, cut to minimize cross-slice edges in `R`:
 
 - `corpus-rename` (6) — `t-manifest-file-basename` · `t-canon-package-default` · `t-policy-seam-unused` · `project-never-cleans-its-out-dir` · `t-ground-numbers-are-unmeasured` · `structural-parsimony-belongs-to-canon`
 - `plan-machinery` (5) — `t-anatomy-root-compose` · `retire-relocates-but-the-operator-deletes` · `elevate-installs-no-mechanism` · `spec-arrays-can-silently-truncate` · `retire-lost-its-open-shard-guard`
-- `skill-cells` (6) — `t-shim-path-from-capability` · `t-coined-classification` · `t-substrate-concept` · `t-authoring-surface` · `t-canon-soul` · `t-classification-wears-three-signs`
+- `skill-cells` (7) — `t-shim-path-from-capability` · `t-coined-classification` · `t-substrate-concept` · `t-authoring-surface` · `t-canon-soul` · `t-classification-wears-three-signs` · `soul-survives-in-canon-test-prose`
 - `projection-and-ground` (4) — `t-soul-to-target-in-forge` · `t-seed-prose-has-drifted` · `t-project-human-vs-engine` · `t-accept-fifth-kind`
-- `deploy-surface` (5) — `t-kind-root-ignores-agent-ext` · `t-init-hardcodes-harness-dir` · `deployed-drifts-from-rendered-unwatched` · `t-signify-marker` · `t-engine-internal-names-await-decode`
+- `deploy-surface` (6) — `t-kind-root-ignores-agent-ext` · `t-init-hardcodes-harness-dir` · `deployed-drifts-from-rendered-unwatched` · `t-signify-marker` · `t-engine-internal-names-await-decode` · `drift-is-checkable-but-nothing-checks-it`
 - `event-vocabulary` (5) — `t-capture-row` · `t-tap-anchor` · `t-lifecycle-vocabulary` · `t-projection-file-anchor` · `t-harness-adapter-surface-is-genus-and-species`
 - `cell-contract` (6) — `t-worker-payload-seam-and-property-1` · `t-definiens-vs-residue` · `t-rule-cell-body` · `t-tool-class-vocabulary` · `bin-name-gate-stops-at-the-language-boundary` · `t-kind-is-triple-booked`
 - `host-and-config` (5) — `t-config-dotfile-was-shipped-underived` · `the-host-install-is-a-symlink-nobody-authored` · `memory-nudge-is-flaky-under-the-full-verify` · `t-memory-config-scope-is-incoherent` · `memory-test-hermetic-sentinel-has-six-homes`

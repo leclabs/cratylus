@@ -22,7 +22,7 @@
 import { fileURLToPath } from 'node:url';
 import { defineAgentPlugin } from '@cratylus/schema';
 import { foundingDoctrine } from './genus/founding-doctrine.js';
-import { MANIFEST } from './manifest.js';
+import { CANONICAL_EVENTS, MANIFEST } from './manifest.js';
 
 /** Resolve a sibling dir of this module to an absolute path (self-location). */
 const dir = (rel: string): string =>
@@ -34,6 +34,11 @@ export default defineAgentPlugin({
   // a consumer projecting canon gets canon's dimension set without the projector
   // containing it. The same carry as `preamble` below.
   manifest: MANIFEST,
+  // WHICH lifecycle events exist — carried the same way, and for the same reason.
+  // The projector needs the members to emit a host's runtime configuration
+  // (ARCHITECTURE property 4); property 3 says it may only RECEIVE them. This
+  // field is that receipt: DATA on the plugin, never an import of this package.
+  events: CANONICAL_EVENTS,
   fragments: dir('./dimensions'),
   agents: dir('./agents'),
   skills: dir('./skills'),

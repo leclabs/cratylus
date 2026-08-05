@@ -2,14 +2,14 @@
 // The event-tap capability PORT — a harness-neutral observer contract.
 //
 // Lifted verbatim from the build host's runtime port (forge's
-// `runtime/event-tap/port.ts`), with the single change FORK-1 mandates: the event
-// vocabulary is the runtime-owned {@link LifecycleEvent} taxonomy, NOT a forge
-// import. This file is a pure INTERFACE surface — no implementation. Each runtime
+// `runtime/event-tap/port.ts`). An event is named by {@link EventName} — a NAME,
+// with no taxonomy behind it here: which names are valid is a corpus fact this host
+// reads from its config. This file is a pure INTERFACE surface — no implementation. Each runtime
 // target (a claude host, a codex host, …) supplies exactly one implementation as
 // a runtime plugin's `eventTap`; a runtime domain module codes against this port.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { LifecycleEvent } from '../events.js';
+import type { EventName } from '../events.js';
 
 /**
  * The destination a tap deposits into. PASSIVE by contract: a tap observes and
@@ -31,7 +31,7 @@ export interface CaptureSink {
  */
 export interface CaptureRow {
   /** Which lifecycle event fired, in the neutral vocabulary. */
-  event: LifecycleEvent;
+  event: EventName;
   /** The verbatim occurrence payload the host surfaced. */
   payload: unknown;
 }
@@ -39,7 +39,7 @@ export interface CaptureRow {
 /** Whether a tap is currently attached, and to which lifecycle events. */
 export interface EventTapStatus {
   attached: boolean;
-  events: LifecycleEvent[];
+  events: EventName[];
 }
 
 /**
@@ -53,7 +53,7 @@ export interface EventTapStatus {
  * `readCapture`/`status` were already bare and the other two were not.
  */
 export interface EventTapHost {
-  install(events: LifecycleEvent[], sink: CaptureSink): void;
+  install(events: EventName[], sink: CaptureSink): void;
   remove(): void;
   readCapture(): CaptureRow[];
   status(): EventTapStatus;

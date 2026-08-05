@@ -2,7 +2,7 @@
 // THE DIMENSION MANIFEST — canon's own, and the one home for it.
 //
 // `@cratylus/schema` owns the META-MODEL: that a dimension HAS an `axis`, a
-// `kind`, an `arity`, a `required`, and all machinery that operates on any
+// `repertoire`, an `arity`, a `required`, and all machinery that operates on any
 // manifest obeying that shape. THIS module owns the INSTANCE: WHICH dimensions
 // exist, and each one's metadata. The manifest rides the PLUGIN (`src/index.ts`
 // declares `manifest: MANIFEST`), exactly as `preamble` does — "the axiom rides
@@ -27,6 +27,8 @@ import type {
   AgentOf,
   CapabilityName,
   DimensionMeta,
+  EventName,
+  HookCell as HookCellOf,
   RequiredDimensionOf,
   SetDimensionOf,
   SkillExpression,
@@ -46,13 +48,17 @@ import type {
  */
 export const MANIFEST = {
   // Persona
-  autonomy: { axis: 'Persona', kind: 'enum', arity: 'set' },
-  role: { axis: 'Persona', kind: 'open', arity: 'scalar' },
-  formality: { axis: 'Persona', kind: 'enum', arity: 'scalar' },
-  'audience-adaptation': { axis: 'Persona', kind: 'enum', arity: 'scalar' },
-  transparency: { axis: 'Persona', kind: 'enum', arity: 'scalar' },
+  autonomy: { axis: 'Persona', repertoire: 'latent', arity: 'set' },
+  role: { axis: 'Persona', repertoire: 'open', arity: 'scalar' },
+  formality: { axis: 'Persona', repertoire: 'latent', arity: 'scalar' },
+  'audience-adaptation': {
+    axis: 'Persona',
+    repertoire: 'latent',
+    arity: 'scalar',
+  },
+  transparency: { axis: 'Persona', repertoire: 'latent', arity: 'scalar' },
   // Constitution — standing drives
-  objective: { axis: 'Constitution', kind: 'open', arity: 'scalar' },
+  objective: { axis: 'Constitution', repertoire: 'open', arity: 'scalar' },
   // `required` — this dimension may NOT be omitted. The catch-all against
   // attachment failing open: an agent composed with no bound is not a lesser
   // agent, it is an unconfined one. Stated HERE, as catalog data, because
@@ -61,35 +67,51 @@ export const MANIFEST = {
   // as a hand-written exception inside the projector's `Agent` interface.
   guardrails: {
     axis: 'Constitution',
-    kind: 'curated',
+    repertoire: 'curated',
     arity: 'set',
     required: true,
   },
   'engineering-principles': {
     axis: 'Constitution',
-    kind: 'curated',
+    repertoire: 'curated',
     arity: 'set',
   },
-  heuristics: { axis: 'Constitution', kind: 'curated', arity: 'set' },
-  capabilities: { axis: 'Constitution', kind: 'open', arity: 'set' },
-  learning: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
+  heuristics: { axis: 'Constitution', repertoire: 'curated', arity: 'set' },
+  capabilities: { axis: 'Constitution', repertoire: 'open', arity: 'set' },
+  learning: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
   'situation-awareness': {
     axis: 'Constitution',
-    kind: 'enum',
+    repertoire: 'latent',
     arity: 'scalar',
   },
   // Constitution — apparatus
-  actions: { axis: 'Constitution', kind: 'enum', arity: 'set' },
-  modalities: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-  model: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-  memory: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
+  actions: { axis: 'Constitution', repertoire: 'latent', arity: 'set' },
+  modalities: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
+  model: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
+  memory: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
   // Constitution — per-turn act
-  trigger: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-  framing: { axis: 'Constitution', kind: 'open', arity: 'scalar' },
-  'reasoning-strategy': { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-  satisficing: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-  'output-format': { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-  'self-evaluation': { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
+  trigger: { axis: 'Constitution', repertoire: 'latent', arity: 'scalar' },
+  framing: { axis: 'Constitution', repertoire: 'open', arity: 'scalar' },
+  'reasoning-strategy': {
+    axis: 'Constitution',
+    repertoire: 'latent',
+    arity: 'scalar',
+  },
+  satisficing: {
+    axis: 'Constitution',
+    repertoire: 'latent',
+    arity: 'scalar',
+  },
+  'output-format': {
+    axis: 'Constitution',
+    repertoire: 'latent',
+    arity: 'scalar',
+  },
+  'self-evaluation': {
+    axis: 'Constitution',
+    repertoire: 'latent',
+    arity: 'scalar',
+  },
 } as const satisfies Record<string, DimensionMeta>;
 
 /**
@@ -201,3 +223,84 @@ export type RuntimeCapability = (typeof RUNTIME_CAPABILITIES)[number];
 /** This corpus's `Skill`: schema's shape, narrowed to the capabilities above. */
 export type Skill = SkillOf<RuntimeCapability>;
 export type { SkillExpression };
+
+// ── The lifecycle-event vocabulary ──────────────────────────────────────────
+//
+// `MODEL.md:22`, verbatim:
+//
+//   Event ≜ the harness-agnostic lifecycle vocabulary ⟨corpus-owned ⟨a name for a
+//   moment ∴ signification⟩ ; shape ⊥ vocabulary : shape @ schema · names @ corpus ;
+//   the PIVOT every adapter maps from⟩
+//
+// A NAME FOR A MOMENT IS A SIGNIFICATION, and signification is what this corpus is.
+// That single clause decides the home: not schema (which held 28 of these, emitted
+// from a JSON file by a generator), not runtime (which held the same 28,
+// hand-authored, identical as sets AND in order), but here — beside
+// `RUNTIME_CAPABILITIES`, which is the same ruling one axis over, already landed.
+// The two declarations agreed by coincidence for as long as they coexisted, and
+// nothing enforced it because their consumer sets were disjoint.
+//
+// EVERY OTHER SITE DERIVES OR RECEIVES:
+//   · schema  states only that an event HAS a name (`EventName`) and narrows
+//     `HookCell` from this tuple by type argument — an undeclared event is a
+//     compile error at the cell;
+//   · forge   receives it as DATA on the plugin (`AgentPlugin.events`, ARCHITECTURE
+//     property 3) and keys its own harness maps over it;
+//   · runtime receives it as CONFIGURATION THE PROJECTION EMITTED (property 4,
+//     verbatim) — `deploy` writes the host config, `dispatch` validates against it.
+// Only the first is a compiler-enforced derivation; the other two cross package
+// boundaries the type system cannot, which is what `test/event-vocabulary.test.ts`
+// is for.
+//
+// `vcs.commit.post` IS AN ORDINARY MEMBER. It was `SubstrateEvent = CanonicalEvent |
+// 'vcs.commit.post'` — a union that existed only because the enum was closed and a
+// git-substrate moment had no literal to be. Nothing about it was ever exceptional:
+// it is a name for a moment, on the `git` substrate rather than the `harness` one,
+// and `substrate` is a declared axis (`Substrate = 'harness' | 'git'`) that already
+// routes it. With an open `EventName` the union has nothing to widen, so it
+// dissolved on its own.
+export const CANONICAL_EVENTS = [
+  // harness substrate — a session's shape
+  'session.start',
+  'session.resume',
+  'session.end',
+  'prompt.submit',
+  'turn.end',
+  'turn.fail',
+  'agent.idle',
+  // harness substrate — the model exchange
+  'model.request.pre',
+  'model.response.post',
+  // harness substrate — tool use
+  'tool.use.pre',
+  'tool.use.post',
+  'tool.use.fail',
+  // harness substrate — the file the agent works on
+  'file.edit.post',
+  'file.read.pre',
+  'file.change.external',
+  // harness substrate — execution the agent delegates
+  'shell.exec.pre',
+  'shell.exec.post',
+  'mcp.exec.pre',
+  'mcp.exec.post',
+  'subagent.start',
+  'subagent.end',
+  // harness substrate — what the operator is asked and told
+  'permission.request',
+  'permission.deny',
+  'notification',
+  // harness substrate — the context itself
+  'context.compact.pre',
+  'context.compact.post',
+  'config.changed',
+  'instructions.loaded',
+  // git substrate
+  'vcs.commit.post',
+] as const satisfies readonly EventName[];
+
+/** One moment this corpus has a name for — the pivot every adapter maps FROM. */
+export type CanonicalEvent = (typeof CANONICAL_EVENTS)[number];
+
+/** This corpus's `HookCell`: schema's shape, narrowed to the events above. */
+export type HookCell = HookCellOf<CanonicalEvent>;

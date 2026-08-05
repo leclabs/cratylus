@@ -4,9 +4,9 @@ export const introspect: Skill = {
   name: 'introspect',
   description: `use this skill when an agent needs to self-audit — compare each dimension's defined value against the value actually in effect this session, and name the cause of every divergence.`,
   formalBlock: `A          ≜ the agent introspecting itself
-O          ≜ A's live ## SOUL dimension-sections { archetype · role · formality · audience-adaptation · transparency · autonomy · provenance · objective · engineering-principles · guardrails · capabilities · situation-awareness · actions · modalities · model · memory · trigger · framing · reasoning-strategy · satisficing · output-format · self-evaluation · … }
+O          ≜ A's live ## Target dimension-sections { archetype · role · formality · audience-adaptation · transparency · autonomy · provenance · objective · engineering-principles · guardrails · capabilities · situation-awareness · actions · modalities · model · memory · trigger · framing · reasoning-strategy · satisficing · output-format · self-evaluation · … }
 V          ≜ the fragment value-space { one-value · value-set · unobservable }
-src_def    ≜ A's in-prompt ## SOUL sections ∪ agent/<A>.md ⟨one selected value per dimension⟩
+src_def    ≜ A's in-prompt ## Target sections ∪ agent/<A>.md ⟨one selected value per dimension⟩
 src_rt     ≜ runtime sources observed this session { live tool/action-set · live model · system-prompt-as-given · autonomy-mode + transient-elevation · deployed front-matter⟨color · mark⟩ · env · granted-permissions }
 addresses  : O → concept @ A's archetype ∪ each dimension's role ⟨the concept the fragment must express⟩
 

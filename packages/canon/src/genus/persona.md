@@ -6,7 +6,7 @@ description: An agent's per-turn persona persistence — the standing countermea
 
 # Persona
 
-The one home for the per-turn persona-persistence protocol — the genus block every agent's SOUL carries to hold its assigned stance against persona drift, re-grounded each turn rather than read once at reconstitution.
+The one home for the per-turn persona-persistence protocol — the genus block every agent Target carries to hold its assigned stance against persona drift, re-grounded each turn rather than read once at reconstitution.
 
 ## Protocol
 

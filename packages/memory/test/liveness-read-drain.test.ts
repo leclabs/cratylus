@@ -25,7 +25,6 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'liveness-'));
   home = join(root, 'agent-home');
   mkdirSync(home, { recursive: true });
-  vi.stubEnv('AGENT_MEMORY_CONFIG', '');
 });
 afterEach(() => {
   vi.unstubAllEnvs();

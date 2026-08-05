@@ -99,6 +99,31 @@ occurrence identify itself, which is the most this shard can honestly claim with
 becomes worth its cost. If it recurs WITHOUT it, the hypothesis in this shard is refuted and the
 investigation starts clean — which is worth more than a fix that might have been aimed at nothing.
 
+## ▶ THE HYPOTHESIS WAS CONFIRMED HOURS LATER, BY ACCIDENT
+
+While integrating a later batch, `cratylus-run --version` — the deployed host CLI, not a test —
+died with `ERR_MODULE_NOT_FOUND`. The cause was visible on disk: `packages/invoke/dist/` held
+`bin.js` and `bin.js.map` **and nothing else**. Its sibling chunks were gone.
+
+That is precisely the state this shard hypothesised and could not reproduce: `tsup` runs
+`clean: true`, so a concurrent build leaves a window where `bin.js` exists and what it imports does
+not. The shim's guard tests the shim; the target is the thing that vanishes.
+
+**Two things follow.**
+
+1. The mechanism is no longer marked INFERRED. A file that parses and cannot run, for exactly the
+   reason predicted, observed outside the test that was failing.
+2. **The blast radius is larger than a flaky test.** The same window takes down the real host CLI —
+   every deployed skill shim spawns that bin. This session already lost `/wake` to a stranded bin
+   once; this is a second, transient path to the same outcome, and it is invisible because it heals
+   itself on the next build.
+
+The precondition assertion added here works as designed — it would name this state rather than
+present it as an empty-output mismatch. **What it does not do is stop the host CLI breaking**, and
+that is now a separate, larger question than a test fixture: filed as the observation above rather
+than fixed here, because the repair belongs to whoever owns build/deploy sequencing, not to a
+`beforeEach`.
+
 ## Execution
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->

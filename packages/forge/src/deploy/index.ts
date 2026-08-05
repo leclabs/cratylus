@@ -51,13 +51,36 @@ export {
   type RenderTree,
 } from './types.js';
 
-export { placeAgentsLocal, placeSkillsLocal } from './local.js';
+export {
+  auditLocal,
+  placeAgentsLocal,
+  placeSkillsLocal,
+  renderedFiles,
+} from './local.js';
+export type { DriftReport, Divergence } from './local.js';
 
 export {
   hookTreeNames,
   mergeHooksSettings,
   placeHooksLocal,
 } from './hooks.js';
+
+// The host runtime config — the only deploy target that lands OUTSIDE the harness
+// home, because the runtime is harness-independent. ARCHITECTURE property 4's
+// producer: everything corpus-specific reaches the runtime as configuration the
+// projection emitted.
+export {
+  type EmitRuntimeConfigOpts,
+  type EmitRuntimeConfigResult,
+  type EmittedEvents,
+  type EmittedRuntimeConfig,
+  emitRuntimeConfig,
+  RUNTIME_CONFIG_ENV,
+  RUNTIME_CONFIG_NAME,
+  runtimeConfigDocument,
+  runtimeConfigTarget,
+  serializeRuntimeConfig,
+} from './runtime-config.js';
 
 export {
   applyPrune,

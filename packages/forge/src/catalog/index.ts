@@ -6,9 +6,9 @@
 // metadata (read from the GIVEN catalog — forge ships none), and emits the
 // discovery contract:
 //
-//   { dimension, axis, kind, arity, values: [{ slug, definiens }] }   ×24
+//   { dimension, axis, repertoire, arity, values: [{ slug, definiens }] }   ×24
 //
-// forge owns the MECHANISM (it types the 24 dimensions, it knows axis/kind/arity);
+// forge owns the MECHANISM (it types the 24 dimensions, it knows axis/repertoire/arity);
 // the corpus owns the DATA (the value modules). This stays doctrine-agnostic:
 // it consumes a directory of dimension-module dirs, not `packages/canon` — exactly
 // the T3.1 split (the deploy layer "consumes a render tree, not the corpus").
@@ -25,16 +25,16 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import {
   type Arity,
-  type Classification,
   type DimensionManifest,
   type Genus,
+  type Repertoire,
   type Value,
   bodyOf,
   isDimensionValue,
 } from '@cratylus/schema';
 import {
   type Fragment,
-  type FragmentKind,
+  type ValueShape,
   validateReferenceGraph,
 } from '../resolve/resolve.js';
 
@@ -46,7 +46,7 @@ export interface CatalogEntry {
   /** The MECE filing axis. */
   readonly axis: Genus;
   /** How the value-catalog is sourced — `enum | open | curated`. */
-  readonly kind: Classification;
+  readonly repertoire: Repertoire;
   /** Whether the dimension holds one value or many. */
   readonly arity: Arity;
   /**
@@ -139,7 +139,7 @@ export async function enumerateCatalog(
     entries.push({
       dimension: name,
       axis: meta.axis,
-      kind: meta.kind,
+      repertoire: meta.repertoire,
       arity: meta.arity,
       values: await valuesOf(corpusDimensionsDir, name),
     });
@@ -208,8 +208,8 @@ export interface DiscoveredPlugin {
   readonly fragments: readonly DiscoveredFragment[];
 }
 
-/** The legal `resolve/FragmentKind` values — gates whether an object export is a node. */
-const FRAGMENT_KINDS: ReadonlySet<string> = new Set<FragmentKind>([
+/** The legal `resolve/ValueShape` values — gates whether an object export is a node. */
+const VALUE_SHAPES: ReadonlySet<string> = new Set<ValueShape>([
   'scalar',
   'set',
   'structured',
@@ -218,8 +218,8 @@ const FRAGMENT_KINDS: ReadonlySet<string> = new Set<FragmentKind>([
 /** Is `v` a resolver `Fragment` NODE (the §3 reference-bearing export form)? */
 function isFragmentNode(v: unknown): v is Fragment {
   if (typeof v !== 'object' || v === null || Array.isArray(v)) return false;
-  const o = v as { id?: unknown; kind?: unknown };
-  return typeof o.id === 'string' && FRAGMENT_KINDS.has(o.kind as string);
+  const o = v as { id?: unknown; valueShape?: unknown };
+  return typeof o.id === 'string' && VALUE_SHAPES.has(o.valueShape as string);
 }
 
 /**
@@ -263,7 +263,7 @@ async function scanDimensionModules(
  *
  * For each plugin, walks `<fragmentsDir>/<dimension>/*.ts` per the catalog's dimensions:
  * - a STRING export → a freshly minted, reference-free node with a namespaced id
- *   `"<plugin>:<dimension>/<exportName>"` and kind from the dimension's arity;
+ *   `"<plugin>:<dimension>/<exportName>"` and value shape from the dimension's arity;
  * - a node-form `Fragment` export → used AS-IS (its object identity is the imported
  *   binding), so cross-fragment references thread by identity.
  * Other export shapes are ignored (as the legacy scan ignores non-strings).
@@ -280,15 +280,20 @@ export async function discoverPluginFragments(
     for (const [name, meta] of Object.entries(manifest)) {
       const dimension = name;
       // NOT A MAP — a WIDTH COERCION. `Arity` (`scalar`|`set`) is a strict subset of
-      // `FragmentKind` (`+structured`), so there is no arity→kind function here and nothing
+      // `ValueShape` (`+structured`), so there is no arity→shape function here and nothing
       // to name; the owed-signification marker that stood here was recording a debt against a
       // non-entity. The ANNOTATION is the check: if the two vocabularies ever diverge this
       // line stops compiling, which is the guarantee the comment was standing in for.
       //
-      // Deriving `Arity` FROM `FragmentKind` would be structurally stronger and is refused:
-      // `Arity` lives in the schema and `FragmentKind` in the projector, so the derivation
+      // Deriving `Arity` FROM `ValueShape` would be structurally stronger and is refused:
+      // `Arity` lives in the schema and `ValueShape` in the projector, so the derivation
       // would make the shapes depend on projection — ARCHITECTURE property 2.
-      const kind: FragmentKind = meta.arity;
+      //
+      // THE COERCION IS ALSO THE SIGN-LEVEL DEFECT, now visible. It compiles only
+      // because `ValueShape` REUSES `Arity`'s two signs, where they mean cardinality
+      // and only cardinality; here they mean degree of internal structure. Same signs,
+      // two axes, one repo — recorded on `ValueShape`, not repaired here.
+      const valueShape: ValueShape = meta.arity;
       const dir = join(src.fragmentsDir, dimension);
       for (const { exportName, value } of await scanDimensionModules(dir)) {
         if (isFragmentNode(value)) {
@@ -297,7 +302,7 @@ export async function discoverPluginFragments(
         } else if (typeof value === 'string') {
           const node: Fragment = {
             id: `${src.name}:${dimension}/${exportName}`,
-            kind,
+            valueShape,
           };
           fragments.push({ node, dimension, body: value });
           allNodes.add(node);

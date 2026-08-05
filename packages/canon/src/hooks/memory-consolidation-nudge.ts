@@ -1,4 +1,4 @@
-import type { HookCell } from '@cratylus/schema';
+import type { HookCell } from '../manifest.js';
 
 // memory-consolidation-nudge — an ADVISORY Stop hook (the harness half of the
 // memory-consolidation protocol). On turn.end (Stop only — NOT SubagentStop), it

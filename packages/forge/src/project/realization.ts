@@ -43,7 +43,7 @@
 // missing string, only a missing distinction. Adapters DECLARE capability
 // (`realizes`, `scopes`); this module alone decides what a "cannot" means.
 
-import type { SubstrateEvent } from '@cratylus/schema/hook';
+import type { EventName } from '@cratylus/schema/hook';
 import type { HarnessAdapter } from '../core/harness-adapter.js';
 
 /** A constraint's realization demand: what it is, where it fires, on what, for whom. */
@@ -51,7 +51,7 @@ export interface Realizable {
   /** The anchor α — what a warning names, so the reader need not search. */
   readonly anchor: string;
   readonly substrate: string;
-  readonly events: readonly SubstrateEvent[];
+  readonly events: readonly EventName[];
   /**
    * Agents whose `ir(a)` composes it — MODEL's `f ∈ ir(a)`.
    *
@@ -75,7 +75,7 @@ export type EnforcementMode = 'bound' | 'steer' | 'routed';
 /** One thing a harness could not carry, and why — the `skipped` half of a projection. */
 export interface Loss {
   readonly anchor: string;
-  readonly event: SubstrateEvent;
+  readonly event: EventName;
   readonly adapter: string;
   readonly agents: readonly string[];
   /** `unrealizable` — the harness has no peer for this event at all.

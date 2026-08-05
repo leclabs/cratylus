@@ -2,7 +2,7 @@
 // The dimension META-MODEL as a TypeScript type system.
 //
 // THIS MODULE IS THE CONTRACT, and ONLY the contract. It states that a
-// dimension HAS an axis, a kind, an arity and a `required`, and it derives an
+// dimension HAS an axis, a repertoire, an arity and a `required`, and it derives an
 // entire dimension type-system from any manifest obeying that shape
 // (`DimensionOf` · `SetDimensionOf` · `RequiredDimensionOf` · `DimensionFieldsOf`
 // · `AgentOf`). It does NOT state WHICH dimensions exist. That is the corpus's,
@@ -32,7 +32,8 @@
 // `@cratylus/forge` are a distinct concept with a distinct home.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { HookEvent, HookSubstrate } from './hook-cell.js';
+import type { HookSubstrate } from './hook-cell.js';
+import type { EventName } from './hook/index.js';
 
 // ── Type-level metadata axes ────────────────────────────────────────────────
 
@@ -68,7 +69,7 @@ export type CapabilityName = string;
 /**
  * How a dimension's value-catalog is sourced — the axis is WHO OWNS THE VALUE
  * SET, and the three members partition it:
- * - `enum`    — the MODEL's own native value set (blind introspection).
+ * - `latent`  — the MODEL's own value set, read out by blind introspection.
  * - `open`    — named PER-AGENT; where identity lives.
  * - `curated` — a closed catalog the CORPUS assembled.
  *
@@ -85,8 +86,55 @@ export type CapabilityName = string;
  * point here: under cratylism nothing was invented, only selected. `open` does
  * NOT subsume it — the three are MECE on ownership, so this is a rename, never a
  * merge.
+ *
+ * ── `enum` → `latent` (2026-08-05) — the SECOND member the axiom refuted ───────
+ *
+ * `curated` repaired the third member and left this one unexamined. The GLOSSES were
+ * always MECE on ownership — model · agent · corpus — which is why the merge was
+ * refused; the SIGNS were not. `open` and `curated` are plain words about how a set
+ * is held or tended. `enum` was programming-language type vocabulary naming a
+ * REPRESENTATION, and it misfired inside its own register: `enum` decodes as "a
+ * closed list written down in the source", while this member's whole gloss is that
+ * the corpus wrote NONE of them down — it read them out of the model. The sign
+ * asserted what the gloss denied, the same shape of defect as `coined`. Worse, under
+ * `enum`'s own prediction this member and `curated` become indistinguishable: both
+ * are closed finite lists, and the one fact that separates them — who authored the
+ * values — is exactly the fact `enum` cannot carry.
+ *
+ * HOW THE COLLAPSE WAS DETECTED. Six independent blind forward decodes of the axis
+ * "who owns the value-set" returned six DIFFERENT winners (`vocabulary` · `domain` ·
+ * `provenance` · `admission` · `valueSource` · `sourcing`). Argmin undefined — the
+ * signature of a signified that is not yet one concept. Two independent blind
+ * reverse decodes then named one cause, and supplied the falsifier: hold the field
+ * word fixed and swap this member for a party sign, and all nine field candidates go
+ * from strained to clean at once. Nine failing on one element is evidence, not
+ * coincidence — so the member, not the field, was the defect.
+ *
+ * WHY `latent`, AND WHY IT IS DISCOVERED RATHER THAN COINED. It is already this
+ * corpus's sign for exactly this concept. `VISION.md` names the whole discipline
+ * LATENT LEXICOGRAPHY and glosses the word: "the vocabulary exists, unsurfaced,
+ * awaiting description… Nor is it authored" — in a table whose owner column reads
+ * THE MODEL. `cratylism` itself carries `model-latent-space = real stable concepts`.
+ * So the member that means "the model's own set, discovered not authored" wears the
+ * sign the founding document already gave it, and the type now QUOTES its axiom
+ * where it used to contradict it.
+ *
+ * A blind reverse decode dissented, scoring `latent` 4/10 and preferring
+ * `model-native`/`model`, on the ground that nothing in the declaration points at a
+ * language model unless the reader already knows the codebase. That objection is
+ * answered by `MODEL.md:45`: `decode_cold(f) ≜ decode(f, LLM-priors ∪ Corpus, ∅)` —
+ * the CORPUS is admitted to a cold decode; only session-K is excluded. Grounding in
+ * `VISION.md` is cold grounding. Both of its winners are occupancy-blocked anyway:
+ * `model` is a live dimension name (`export type Model`), and `model-native` is a
+ * near-homonym of the live `llm-native` value three agents compose. ⊥ 2026-08-05:
+ * `native` (occupied — `llm-native`, and harness-native event vocabulary) ·
+ * `discovered` (occupied — cratylism's own `DISCOVERED`) · `intrinsic` (occupied —
+ * cratylism's `INTRINSIC`) · `innate` (free and clean, but no corpus grounding, and
+ * it fights the truth that a model's vocabulary IS learned) · `given` · `learned`
+ * (reads as mutating-from-telemetry, which inverts the closure) · `emergent` ·
+ * `endogenous` (imported jargon, breaks register with `open`/`curated`).
  */
-export type Classification = 'enum' | 'open' | 'curated';
+export type Repertoire = 'latent' | 'open' | 'curated';
 
 /** Whether a dimension field holds one value (`scalar`) or many (`set`). */
 export type Arity = 'scalar' | 'set';
@@ -185,7 +233,7 @@ export interface Enforcing<O extends string> {
   /** Which substrate the events fire in — the `realize`-target family. */
   readonly substrate: HookSubstrate;
   /** The harness-agnostic events that bind it (≥1 — an empty set is not enforcing). */
-  readonly events: readonly [HookEvent, ...HookEvent[]];
+  readonly events: readonly [EventName, ...EventName[]];
   /**
    * The mechanism this value is realized BY — an ANCHOR, never the mechanism.
    *
@@ -268,7 +316,7 @@ export const withBody = <O extends string>(
   body: Fragment<O>,
 ): Value<O> => (enforcing(v) ? { ...v, body } : body);
 
-// ── The runtime dimension descriptor (axis / kind / arity) ──────────────────────
+// ── The runtime dimension descriptor (axis / repertoire / arity) ──────────────────────
 // A consumer that needs a dimension's metadata at runtime (e.g. `cratylus catalog`)
 // reads the manifest its corpus declares. This package owns the SHAPE of an entry;
 // WHICH dimensions exist is the corpus's to state, and the corpus derives its own
@@ -278,8 +326,19 @@ export const withBody = <O extends string>(
 export interface DimensionMeta {
   /** The MECE filing axis (the `Genus` of the dimension's values). */
   readonly axis: Genus;
-  /** How the value-catalog is sourced (the `Classification`). */
-  readonly kind: Classification;
+  /**
+   * How the value-catalog is sourced (the `Repertoire`).
+   *
+   * This field read `kind` until 2026-08-05, which put a THIRD concept on a sign
+   * two others already carried, two of them in
+   * this package: `RuleCell.kind` (MODEL's `Kind ≜ {fragment, agent, rule, skill}`,
+   * one file over) and forge's `FragmentKind` (a value's structural shape). A blind
+   * reverse decode of all three read `kind` here as "the closure policy of the
+   * dimension's value space" and ranked this site's claim on the sign WEAKEST of
+   * the three — `kind` fires "variant tag answering what is this?", and this is a
+   * property ABOUT the dimension, not the dimension's identity. `RuleCell` keeps it.
+   */
+  readonly repertoire: Repertoire;
   /** Whether the dimension field holds one value or many (the `Arity`). */
   readonly arity: Arity;
   /**
@@ -300,7 +359,7 @@ export interface DimensionMeta {
  *
  * Distinct from MODEL's `catalog : DimensionName → ℘(fragment)`, which is the
  * same index set with a different codomain: a catalog maps a dimension to its
- * VALUES, a manifest maps it to its METADATA (axis/kind/arity/required). That
+ * VALUES, a manifest maps it to its METADATA (axis/repertoire/arity/required). That
  * disambiguation used to live only in the prose.
  *
  * This is the parameter type of every function that reads one, and no projector
@@ -561,7 +620,6 @@ export function markToColor(mark: Mark): string {
 // concrete cell instances live in the consuming corpus (canon).
 export {
   type HookCell,
-  type HookEvent,
   type HookMessage,
   type HookSource,
   type HookSubstrate,
@@ -572,6 +630,11 @@ export {
   resolveWorker,
 } from './hook-cell.js';
 export type { RuleCell } from './rule-cell.js';
+
+// The event SHAPE — the peer of `CapabilityName` above, re-exported beside the cell
+// shapes it types. The MEMBERS are the corpus's (`MODEL.md:22`), so there is
+// nothing else here to export.
+export type { EventName } from './hook/index.js';
 
 // ── The plugin authoring surface ────────────────────────────────────────────
 //
@@ -648,7 +711,7 @@ export interface AgentPlugin extends Layout {
   readonly preamble?: string;
   /**
    * WHICH dimensions exist, and each one's metadata — the manifest INSTANCE, as
-   * against the meta-model (that a dimension has an axis/kind/arity) above.
+   * against the meta-model (that a dimension has an axis/repertoire/arity) above.
    *
    * It rides the plugin for the same reason `preamble` does: a consumer projecting
    * an extended plugin has no access to the plugin's repo, so a manifest left behind
@@ -661,6 +724,17 @@ export interface AgentPlugin extends Layout {
    * REFUSAL, not a fallback: `mergeManifest` THROWS.
    */
   readonly manifest?: DimensionManifest;
+  /**
+   * WHICH lifecycle events exist — the corpus's harness-agnostic event vocabulary
+   * (`MODEL.md:22`: `names @ corpus`).
+   *
+   * It rides the plugin for the third time and the same reason `preamble` and
+   * `manifest` do, and here it also serves ARCHITECTURE property 3 exactly: the
+   * corpus reaches the projector as DATA, never as an import. The projector needs
+   * the members to EMIT the host's runtime configuration; it must not contain them,
+   * or a corpus could not name a moment without editing the projector.
+   */
+  readonly events?: readonly EventName[];
 }
 
 /**

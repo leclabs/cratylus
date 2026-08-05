@@ -2,12 +2,12 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 
 export const createAgent: Skill = {
   name: 'create-agent',
-  description: `author a custom agent as a dimension-selection vector — pick each dimension's value from the canonical catalog (closed enums + generalized open sets), compose the agent cell, then resolve → verify → deploy; knows the dimension manifest. Can interview a non-engineer in plain language (one question per dimension, recommending the fittest) when a human is driving.`,
+  description: `author a custom agent as a dimension-selection vector — pick each dimension's value from the canonical catalog (the model's own latent sets, the corpus's curated ones, and per-agent open ones), compose the agent cell, then resolve → verify → deploy; knows the dimension manifest. Can interview a non-engineer in plain language (one question per dimension, recommending the fittest) when a human is driving.`,
   formalBlock: `A               ≜ the agent under construction
-O               ≜ the dimension set @ SOUL \`##\` anatomy sections
+O               ≜ the dimension set @ Target \`##\` anatomy sections
 catalog         ≜ the canonical value store per dimension @ \`cratylus catalog\` ⟨live · never embedded⟩
-openness        : O → { enum, open, curated } ⟨who owns the value-set⟩
-enum            ≜ a closed value-set the MODEL owns
+repertoire      : O → { latent, open, curated } ⟨who owns the value-set⟩
+latent          ≜ a value-set the MODEL owns ⟨read out, ¬ authored⟩
 open            ≜ a value-set the AGENT owns ⟨named per-agent⟩
 curated         ≜ a closed catalog the CORPUS assembled
 arity           : O → { scalar, set }
@@ -22,7 +22,7 @@ instance-bound  ≜ provenance⟨mark : emoji·hue⟩ ⟨authored per-agent · �
 human-project   ≜ downstream human projection @ llm-native
 
 ∀ o ∈ O : value(o) ∈ catalog(o)
-openness(o) = enum ⇒ | value(o) | = 1
+arity(o) = scalar ⇒ | value(o) | = 1
 arity(o) = set ⇒ value(o) ⊆ catalog(o)
 gap(o) ⇔ ∄ v ∈ catalog(o) : fit(v)
 gap(o) ⇒ catalog := exemplify(catalog) @ owner ⟨¬ inline · ¬ wizard⟩

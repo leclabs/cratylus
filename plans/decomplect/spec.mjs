@@ -232,6 +232,10 @@ export const SHARDS = {
     outputs: [
       'packages/forge/src/project/write.ts',
       'packages/canon/src/toolkit/render-oracle/**',
+      'packages/forge/src/prune/**',
+      'packages/forge/src/deploy/manifest.ts',
+      'packages/forge/src/cli/commands/project.ts',
+      'packages/forge/test/project/**',
     ],
     refs: ['packages/forge/src/cli/commands/project.ts'],
     static: [
@@ -308,14 +312,29 @@ export const SHARDS = {
   't-lifecycle-vocabulary': {
     slice: 'event-vocabulary',
     deps: ['t-tap-anchor', 't-projection-file-anchor'],
+    // Measured against what the ruling assigns this shard, MINUS three files that
+    // intersect shards added to this wave after it was cut
+    // (`canon/src/hooks/praxis-continuity.ts`, `canon/test/gate-convicts.test.ts`,
+    // `forge/src/deploy/local.ts`). The intersection is REAL and is recorded rather
+    // than dissolved by under-declaring: this shard does write those files, and the
+    // wave that contains all three cannot be fanned out until the plan is re-cut.
     outputs: [
       'packages/schema/src/hook/**',
+      'packages/canon/src/manifest.ts',
+      'packages/canon/test/event-vocabulary.test.ts',
       'packages/runtime/src/events.ts',
-      'packages/runtime/src/capabilities/event-tap/claude-serialize.ts',
+      'packages/runtime/src/runtime-config.ts',
+      'packages/runtime/src/capabilities/event-tap/**',
+      'packages/forge/src/adapters/claude/events.ts',
+      'packages/forge/src/adapters/codex/events.ts',
+      'packages/forge/src/deploy/runtime-config.ts',
     ],
     refs: ['packages/forge/src/adapters/claude/events.ts'],
+    // `packages/schema/src/hook/generated.ts` WAS here — the emitted union that was
+    // one of the two homes. It is deleted by this shard, so the evidence moves to
+    // the one home that replaced both.
     static: [
-      'packages/schema/src/hook/generated.ts',
+      'packages/canon/src/manifest.ts',
       'packages/runtime/src/events.ts',
       'ARCHITECTURE.md',
     ],
@@ -342,7 +361,12 @@ export const SHARDS = {
   't-rule-cell-body': {
     slice: 'cell-contract',
     deps: ['t-definiens-vs-residue'],
-    outputs: ['packages/canon/src/rules/**'],
+    outputs: [
+      'packages/canon/src/rules/**',
+      'packages/schema/src/rule-cell.ts',
+      'packages/canon/test/reader-density.test.ts',
+      'packages/canon/test/reader-register.ts',
+    ],
     refs: ['packages/schema/src/rule-cell.ts'],
     static: ['packages/schema/src/rule-cell.ts', 'MODEL.md'],
   },
@@ -372,6 +396,10 @@ export const SHARDS = {
       'packages/forge/src/adapters/claude/**',
       'packages/forge/src/adapters/codex/**',
       'packages/forge/src/core/body.ts',
+      'packages/forge/src/project/index.ts',
+      'packages/forge/src/core/harness-adapter.ts',
+      'packages/forge/test/**',
+      'packages/forge/src/adapters/registry/index.ts',
     ],
     refs: ['packages/forge/src/project/index.ts'],
     static: [
@@ -385,7 +413,16 @@ export const SHARDS = {
     slice: 'skill-cells',
     // also writes `schema/src/index.ts`, which `t-soul-to-target-in-forge` sweeps for `SOUL`
     deps: ['t-anatomy-root-compose', 't-soul-to-target-in-forge'],
-    outputs: ['packages/schema/src/index.ts'],
+    outputs: [
+      'packages/schema/src/index.ts',
+      'packages/canon/src/manifest.ts',
+      'packages/canon/src/skills/create-agent/**',
+      'packages/forge/src/catalog/**',
+      'packages/forge/test/catalog/**',
+      'packages/forge/test/cli/**',
+      'packages/forge/test/fixture-manifest.ts',
+      'packages/schema/README.md',
+    ],
     refs: ['packages/canon/src/dimensions/**'],
     static: ['packages/schema/src/index.ts', 'packages/canon/src/manifest.ts'],
   },
@@ -600,11 +637,31 @@ export const SHARDS = {
       'packages/canon/src/toolkit/structural-parsimony.ts',
       'packages/canon/test/structural-parsimony.test.ts',
       'packages/canon/test/gate-convicts.test.ts',
+      'packages/forge/src/validate/index.ts',
     ],
     refs: ['packages/canon/src/manifest.ts'],
     static: [
       'packages/forge/src/validate/structural-parsimony.ts',
       'packages/canon/test/structural-parsimony.test.ts',
     ],
+  },
+  'soul-survives-in-canon-test-prose': {
+    slice: 'skill-cells',
+    deps: ['t-canon-soul'],
+    outputs: ['packages/canon/test/**'],
+    refs: ['packages/canon/src/genus/founding-doctrine.ts'],
+    static: ['packages/canon/test/null-dimension.test.ts', 'MODEL.md'],
+  },
+  'drift-is-checkable-but-nothing-checks-it': {
+    slice: 'deploy-surface',
+    // also writes `canon/test/**`, which `soul-survives-in-canon-test-prose` sweeps —
+    // sequenced rather than dissolved by under-declaring either one
+    deps: [
+      'deployed-drifts-from-rendered-unwatched',
+      'soul-survives-in-canon-test-prose',
+    ],
+    outputs: ['packages/canon/src/hooks/**', 'packages/canon/test/**'],
+    refs: ['packages/forge/src/deploy/local.ts'],
+    static: ['packages/forge/src/deploy/local.ts', 'ARCHITECTURE.md'],
   },
 };

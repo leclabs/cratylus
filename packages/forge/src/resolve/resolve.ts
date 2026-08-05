@@ -12,9 +12,9 @@
 // In one line: ordered fold — replace resets, append/merge accumulate, force
 // folds last.
 //
-// `kind ⊥ dimension`. A fragment's KIND is its structural value-type
+// `valueShape ⊥ dimension`. A fragment's VALUE SHAPE is its structural value-type
 // (`scalar`·`set`·`structured`) — orthogonal to its DIMENSION (the anatomy axis it
-// configures, which this doctrine-agnostic engine never sees). Kind alone gates
+// configures, which this doctrine-agnostic engine never sees). The shape alone gates
 // which ops are legal: scalar→{replace}, set→{replace,append}, structured→
 // {replace,merge}. An illegal op FAILS LOUDLY — silent merge ambiguity is the #1
 // distrust source.
@@ -31,16 +31,45 @@
 // resolve-time validation only.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Structural kinds + ops ───────────────────────────────────────────────────
+// ── Structural value shapes + ops ────────────────────────────────────────────
 
-/** A fragment's structural value-type — governs which ops are legal (⊥ dimension). */
-export type FragmentKind = 'scalar' | 'set' | 'structured';
+/**
+ * A fragment's structural value-type — governs which ops are legal (⊥ dimension).
+ *
+ * This type read `FragmentKind`, and its field `kind`, until 2026-08-05. `kind` was
+ * carrying THREE concepts across two packages — MODEL's `Kind ≜ {fragment, agent,
+ * rule, skill}` (`RuleCell.kind`), how a dimension's value-catalog is sourced
+ * (`DimensionMeta`, now `repertoire`), and this one. `kind` fires "variant tag
+ * answering WHAT IS THIS?", so a blind reverse decode gave `RuleCell` the strongest
+ * claim and this site predicted nothing: asked to guess the members off the sign
+ * alone, a cold reader reaches for domain categories long before structural ones.
+ * Off `valueShape` the members `'scalar' | 'set' | 'structured'` are near-guessable,
+ * and the op table weakly follows — you can append to a uniform collection, merge
+ * named parts, and only replace an atom.
+ *
+ * ALIGNMENT, NOT COLLISION, with `validate/residue.ts`'s `ResidueShape`. `MODEL.md:22`
+ * rules `shape ⊥ vocabulary`, which installs `shape` as a GENUS — structure-of, as
+ * against names-of — and a genus term is supposed to recur. `<Noun>Shape` is a family
+ * whose qualifier names the subject whose structure is meant; meeting one member lets
+ * a reader predict the construction of the next. What would be a collision is a bare
+ * `shape` field here, since `GatedField.shape` already squats that unqualified name —
+ * so the `value` qualifier on the field below is LOAD-BEARING, not verbose.
+ *
+ * KNOWN RESIDUAL, recorded because it is REAL and not an alibi: two of these three
+ * signs are `Arity`'s two signs, where they mean cardinality and only cardinality.
+ * The coherent single axis here is DEGREE OF INTERNAL STRUCTURE (none · uniform ·
+ * named parts) — which is the axis the op table actually reads — but a reader
+ * arriving from `Arity` has the cardinality frame loaded, and the two frames disagree
+ * about where `structured` belongs. The tell is that `a set of structured values` is
+ * unrepresentable here. The member signs, not this type's sign, are what that costs.
+ */
+export type ValueShape = 'scalar' | 'set' | 'structured';
 
 /** A patch strategy. `force` is a PRIORITY FIELD on an entry, not an op (see below). */
 export type PatchOp = 'replace' | 'append' | 'merge';
 
-/** kind → its legal ops. An op outside its target's set FAILS LOUDLY. */
-const LEGAL_OPS: { readonly [K in FragmentKind]: ReadonlySet<PatchOp> } = {
+/** value shape → its legal ops. An op outside its target's set FAILS LOUDLY. */
+const LEGAL_OPS: { readonly [K in ValueShape]: ReadonlySet<PatchOp> } = {
   scalar: new Set<PatchOp>(['replace']),
   set: new Set<PatchOp>(['replace', 'append']),
   structured: new Set<PatchOp>(['replace', 'merge']),
@@ -51,7 +80,7 @@ const LEGAL_OPS: { readonly [K in FragmentKind]: ReadonlySet<PatchOp> } = {
 /**
  * A fragment NODE — a referential identity, addressed by the imported binding
  * (object identity), never by `id` (which is for reporting only). It declares its
- * structural `kind`; its VALUE is not stored here — it is the fold of the
+ * structural `valueShape`; its VALUE is not stored here — it is the fold of the
  * contributions that target this node. `references` are the late-bound edges to
  * other nodes (NORTH-STAR §3): the resolved reference graph must be ACYCLIC.
  */
@@ -59,7 +88,7 @@ export interface Fragment {
   /** Human-readable label for reports / errors. NOT the address — identity is by object. */
   readonly id: string;
   /** Structural value-type — the op-legality axis (⊥ dimension). */
-  readonly kind: FragmentKind;
+  readonly valueShape: ValueShape;
   /** Late-bound edges to other nodes; the acyclicity graph (§3). Optional. */
   readonly references?: readonly Fragment[];
 }
@@ -115,6 +144,13 @@ export interface ResolveConfig {
  * (`kind: 'plugin'`, carrying the plugin `name`) or a consumer patch
  * (`kind: 'patch'`, carrying its `index` in the `patches` array). This is the
  * attribution `explain` reads off to say which plugin/patch a fragment came from.
+ *
+ * `kind` STAYS HERE, and that is the 2026-08-05 census's ruling rather than an
+ * oversight. This is a discriminated UNION and `kind` is its variant tag — the one
+ * job the sign fires for cold ("a literal answering WHAT IS THIS?"), the same job it
+ * does on `RuleCell.kind`. One gloss, one sign, applied to two unions is alignment;
+ * what the census convicts is one sign over two GLOSSES, which is why the structural
+ * value-shape and the value-catalog sourcing both had to vacate it.
  */
 export type ContributionSource =
   | { readonly kind: 'plugin'; readonly name: string }
@@ -173,18 +209,18 @@ export class MissingExtendsTargetError extends Error {
   }
 }
 
-/** An op is not in its target kind's legal set (e.g. `merge` on a `scalar`). */
-export class IllegalOpForKindError extends Error {
+/** An op is not in its target's value-shape legal set (e.g. `merge` on a `scalar`). */
+export class IllegalOpForValueShapeError extends Error {
   constructor(
     readonly target: Fragment,
     readonly op: PatchOp,
   ) {
     super(
-      `illegal op '${op}' for kind '${target.kind}' on fragment '${target.id}' — legal ops: ${[
-        ...LEGAL_OPS[target.kind],
+      `illegal op '${op}' for value shape '${target.valueShape}' on fragment '${target.id}' — legal ops: ${[
+        ...LEGAL_OPS[target.valueShape],
       ].join(', ')}`,
     );
-    this.name = 'IllegalOpForKindError';
+    this.name = 'IllegalOpForValueShapeError';
   }
 }
 
@@ -229,7 +265,7 @@ export class ReferenceCycleError extends Error {
 /**
  * Resolve a config into a `ResolvedAgentSet` by the FOLD LAW above. Validation is
  * LOUD and runs before the fold: a missing extends target, an illegal op for a
- * kind, a force-priority tie, a dangling reference, or a reference cycle each
+ * value shape, a force-priority tie, a dangling reference, or a reference cycle each
  * THROWS its named error rather than resolving silently wrong.
  */
 export function resolve(config: ResolveConfig): ResolvedAgentSet {
@@ -259,10 +295,10 @@ export function resolve(config: ResolveConfig): ResolvedAgentSet {
     if (!defined.has(p.target)) throw new MissingExtendsTargetError(p.target);
   }
 
-  // (2) illegal op for kind — over every contribution, plugin- or consumer-authored.
+  // (2) illegal op for value shape — over every contribution, plugin- or consumer-authored.
   for (const { entry } of ordered) {
-    if (!LEGAL_OPS[entry.target.kind].has(entry.op)) {
-      throw new IllegalOpForKindError(entry.target, entry.op);
+    if (!LEGAL_OPS[entry.target.valueShape].has(entry.op)) {
+      throw new IllegalOpForValueShapeError(entry.target, entry.op);
     }
   }
 

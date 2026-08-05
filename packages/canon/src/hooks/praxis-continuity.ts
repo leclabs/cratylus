@@ -1,14 +1,20 @@
-import type { HookCell } from '@cratylus/schema';
+import type { HookCell } from '../manifest.js';
 
-// praxis-continuity — the repo-level post-commit reminder. A source `hook` cell
-// (activation=event) on the GIT substrate: git post-commit is NOT in forge's
-// `CanonicalEvent` taxonomy, so the event is carried as the harness-agnostic
-// descriptor `vcs.commit.post` and the cell is NOT routed into `settings.json`
-// (the `.husky/post-commit` dispatcher runs the committed worker directly). Its
-// `workers[].content` are the byte-anchors the committed `src/toolkit/continuity/`
-// workers regenerate from (byte-locked). FLAGGED for canon review: `vcs.commit.post`
-// wants adding to the canonical event taxonomy, or the git-substrate hook a named
-// exception to `hook↦event`.
+// praxis-continuity — the repo-level post-commit reminder. A scope-activated source
+// cell on the GIT substrate: `vcs.commit.post` is an ordinary member of this
+// corpus's `CANONICAL_EVENTS` carrying `substrate: 'git'`, so it is routed rather
+// than refused — the `.husky/post-commit` dispatcher runs the committed worker
+// directly and nothing reaches `settings.json`. Its `workers[].content` are the
+// byte-anchors the committed `src/toolkit/continuity/` workers regenerate from
+// (byte-locked).
+//
+// THE REVIEW THIS CELL WAS FLAGGED FOR IS CLOSED. The note read "not in FORGE's
+// `CanonicalEvent` taxonomy" — stale by one package before it was stale by two, and
+// it asked for either an addition to the taxonomy or a named exception. Neither was
+// owed: the event was never exceptional, only unliterable, because the taxonomy was
+// a closed union in `schema` that a git moment had no member to be. The vocabulary
+// now lives where signification lives, `EventName` is open, and this cell names its
+// moment exactly as a harness cell names its own.
 
 export const praxisContinuity: HookCell = {
   id: 'praxis-continuity',

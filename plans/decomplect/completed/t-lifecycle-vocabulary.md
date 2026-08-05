@@ -67,7 +67,7 @@ camel. Do not re-derive it — `t-tap-anchor` ran the round-trip and recorded th
 
 - **slice** event-vocabulary · **wave** 0
 - **depends on** `t-tap-anchor` · `t-projection-file-anchor`
-- **writes** `packages/schema/src/hook/**` · `packages/runtime/src/events.ts` · `packages/runtime/src/capabilities/event-tap/claude-serialize.ts`
+- **writes** `packages/schema/src/hook/**` · `packages/canon/src/manifest.ts` · `packages/canon/test/event-vocabulary.test.ts` · `packages/runtime/src/events.ts` · `packages/runtime/src/runtime-config.ts` · `packages/runtime/src/capabilities/event-tap/**` · `packages/forge/src/adapters/claude/events.ts` · `packages/forge/src/adapters/codex/events.ts` · `packages/forge/src/deploy/runtime-config.ts`
 - **compiles against** `packages/forge/src/adapters/claude/events.ts`
-- **evidence** `packages/schema/src/hook/generated.ts` · `packages/runtime/src/events.ts` · `ARCHITECTURE.md`
+- **evidence** `packages/canon/src/manifest.ts` · `packages/runtime/src/events.ts` · `ARCHITECTURE.md`
 - **dispatchable** no ruling owed

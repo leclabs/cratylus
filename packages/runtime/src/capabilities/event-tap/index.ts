@@ -4,8 +4,10 @@
 //
 // Packaged as a capability MODULE of `@cratylus/runtime` (a subpath export,
 // not a standalone `@cratylus/*` package) — see the shard's package-vs-module
-// decision. It provides its own Claude harness mapping and depends on NOTHING
-// from `@cratylus/forge`: the runtime→forge DAG is never inverted.
+// decision. It depends on NOTHING from `@cratylus/forge`: the runtime→forge DAG is
+// never inverted. It no longer "provides its own Claude harness mapping" either —
+// that sentence described a byte-identical copy of forge's map. The map arrives as
+// configuration the projection emitted (ARCHITECTURE property 4).
 //
 // The kernel (S3) registers `runtimePlugin` and routes `eventTap <verb>` to
 // {@link dispatchEventTap} (the verb surface that parses the tap's own flags).
@@ -17,20 +19,21 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { type RuntimePlugin, defineRuntimePlugin } from '../../plugin.js';
+import { loadRuntimeConfig } from '../../runtime-config.js';
 import { EventTapHostClaude } from './claude.js';
 
 export { EventTapHostClaude, EVENT_TAP_ID } from './claude.js';
 export {
   dispatchEventTap,
+  type EventTapDispatchOpts,
   type EventTapResult,
   type EventTapVerb,
 } from './dispatch.js';
 export {
-  buildTapBlock,
+  buildEventTapBlock,
   type ClaudeHooksBlock,
-  claudeToLifecycle,
-  lifecycleToClaude,
   mergeJsonKeys,
+  reverseNativeEvents,
 } from './claude-serialize.js';
 
 /**
@@ -38,8 +41,17 @@ export {
  * bound with no settings override so it is host-portable (the path resolves from
  * `$CLAUDE_SETTINGS_PATH` or the cwd default at call time). The kernel binds this
  * `RuntimePlugin` and dispatches `eventTap <verb>` to {@link dispatchEventTap}.
+ *
+ * Its native event map comes from the host config the projection emitted, and is
+ * `{}` on a host that has never been deployed to — an empty map attaches nothing,
+ * which is the correct floor for a PASSIVE observer with no vocabulary to observe.
+ * The verb surface refuses out loud before reaching this instance, so an operator
+ * gets the diagnosis rather than the silence.
  */
 export const runtimePlugin: RuntimePlugin = defineRuntimePlugin({
   name: 'event-tap',
-  eventTap: new EventTapHostClaude(),
+  eventTap: new EventTapHostClaude(
+    undefined,
+    loadRuntimeConfig()?.events?.native ?? {},
+  ),
 });

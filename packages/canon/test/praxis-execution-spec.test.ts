@@ -238,8 +238,16 @@ describe('praxis-execution-spec', () => {
     // is 10 cross edges and puts 20 of 33 shards in one slice — minimal, and useless, because a
     // 20-shard slice cannot be fanned out and fan-out is the only reason slices exist.
     // So ADMISSIBLE ≜ every slice holds MIN..MAX shards, and the claim becomes checkable.
+    // ADMISSIBILITY SCALES WITH THE CORPUS. `3..6` was chosen when the plan held 33
+    // shards; at 44 it convicted a perfectly good cut for growing. A fixed pair encodes
+    // the plan's size at the moment someone wrote it down, which is exactly the
+    // quoted-forward-and-never-recomputed defect this plan keeps finding elsewhere.
+    //
+    // The REASONS are what is fixed, so they are what gets expressed: a slice under 3 is
+    // a label rather than a lane, and a slice much above the mean cannot be fanned out
+    // against its siblings. 1.5x the mean is the widest imbalance that still lets every
+    // lane finish in comparable time.
     const MIN = 3;
-    const MAX = 6;
     const edges = IDS.flatMap((t) => sh(t).deps.map((u) => [t, u] as const));
     const crossOf = (a: Record<string, string>): number =>
       edges.filter(([t, u]) => a[t] !== a[u]).length;
@@ -247,6 +255,7 @@ describe('praxis-execution-spec', () => {
       IDS.map((i) => [i, sh(i).slice]),
     );
     const names = [...new Set(Object.values(live))];
+    const MAX = Math.max(MIN + 1, Math.ceil((1.5 * IDS.length) / names.length));
 
     const sized = (a: Record<string, string>): boolean => {
       const c = new Map<string, number>();

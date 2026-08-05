@@ -3,7 +3,7 @@ import {
   DanglingReferenceError,
   ForcePriorityTieError,
   type Fragment,
-  IllegalOpForKindError,
+  IllegalOpForValueShapeError,
   type LoadedPlugin,
   MissingExtendsTargetError,
   type PatchEntry,
@@ -12,9 +12,9 @@ import {
 } from '../../src/resolve/resolve.js';
 
 // ── Fixture fragment nodes (identity = the imported binding) ─────────────────
-const FScalar: Fragment = { id: 'title', kind: 'scalar' };
-const FSet: Fragment = { id: 'tags', kind: 'set' };
-const FStruct: Fragment = { id: 'meta', kind: 'structured' };
+const FScalar: Fragment = { id: 'title', valueShape: 'scalar' };
+const FSet: Fragment = { id: 'tags', valueShape: 'set' };
+const FStruct: Fragment = { id: 'meta', valueShape: 'structured' };
 
 const plugin = (name: string, contributions: PatchEntry[]): LoadedPlugin => ({
   name,
@@ -75,7 +75,7 @@ describe('resolve — the ordered fold (NORTH-STAR §4)', () => {
     const base = plugin('base', [
       { target: FScalar, op: 'replace', value: 'x' },
     ]);
-    const orphan: Fragment = { id: 'orphan', kind: 'scalar' };
+    const orphan: Fragment = { id: 'orphan', valueShape: 'scalar' };
     expect(() =>
       resolve({
         extends: [base],
@@ -84,18 +84,22 @@ describe('resolve — the ordered fold (NORTH-STAR §4)', () => {
     ).toThrow(MissingExtendsTargetError);
   });
 
-  it('THROWS IllegalOpForKindError on merge over a scalar', () => {
+  it('THROWS IllegalOpForValueShapeError on merge over a scalar', () => {
     const base = plugin('base', [
       { target: FScalar, op: 'merge', value: { a: 1 } },
     ]);
-    expect(() => resolve({ extends: [base] })).toThrow(IllegalOpForKindError);
+    expect(() => resolve({ extends: [base] })).toThrow(
+      IllegalOpForValueShapeError,
+    );
   });
 
-  it('THROWS IllegalOpForKindError on append over a structured', () => {
+  it('THROWS IllegalOpForValueShapeError on append over a structured', () => {
     const base = plugin('base', [
       { target: FStruct, op: 'append', value: [1] },
     ]);
-    expect(() => resolve({ extends: [base] })).toThrow(IllegalOpForKindError);
+    expect(() => resolve({ extends: [base] })).toThrow(
+      IllegalOpForValueShapeError,
+    );
   });
 
   it('THROWS ForcePriorityTieError on two forced entries at one priority', () => {
@@ -108,8 +112,8 @@ describe('resolve — the ordered fold (NORTH-STAR §4)', () => {
 
   it('THROWS ReferenceCycleError on a reference cycle', () => {
     // A ⇄ B — build the cycle after construction (readonly refs, so cast once).
-    const a: Fragment = { id: 'A', kind: 'scalar', references: [] };
-    const b: Fragment = { id: 'B', kind: 'scalar', references: [] };
+    const a: Fragment = { id: 'A', valueShape: 'scalar', references: [] };
+    const b: Fragment = { id: 'B', valueShape: 'scalar', references: [] };
     (a.references as Fragment[]).push(b);
     (b.references as Fragment[]).push(a);
     const base = plugin('base', [
@@ -120,15 +124,19 @@ describe('resolve — the ordered fold (NORTH-STAR §4)', () => {
   });
 
   it('THROWS DanglingReferenceError on an edge to an undefined fragment', () => {
-    const ghost: Fragment = { id: 'ghost', kind: 'scalar' };
-    const a: Fragment = { id: 'A', kind: 'scalar', references: [ghost] };
+    const ghost: Fragment = { id: 'ghost', valueShape: 'scalar' };
+    const a: Fragment = { id: 'A', valueShape: 'scalar', references: [ghost] };
     const base = plugin('base', [{ target: a, op: 'replace', value: 1 }]);
     expect(() => resolve({ extends: [base] })).toThrow(DanglingReferenceError);
   });
 
   it('accepts an acyclic reference graph', () => {
-    const leaf: Fragment = { id: 'leaf', kind: 'scalar' };
-    const root: Fragment = { id: 'root', kind: 'scalar', references: [leaf] };
+    const leaf: Fragment = { id: 'leaf', valueShape: 'scalar' };
+    const root: Fragment = {
+      id: 'root',
+      valueShape: 'scalar',
+      references: [leaf],
+    };
     const base = plugin('base', [
       { target: root, op: 'replace', value: 1 },
       { target: leaf, op: 'replace', value: 2 },

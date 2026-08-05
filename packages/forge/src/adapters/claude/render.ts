@@ -19,7 +19,7 @@
 
 import type { Agent, DimensionManifest } from '@cratylus/schema';
 import { anchorOf, markToColor } from '@cratylus/schema';
-import type { CanonicalEvent, HarnessMechanism } from '@cratylus/schema/hook';
+import type { HarnessMechanism } from '@cratylus/schema/hook';
 // The harness-neutral dimension→markdown-body machinery, imported DOWNWARD from core
 // (the shared helpers `agentBody`/`dimensionTitle`/`skillBody` + the `ResolvedSkill`
 // shape). Re-exported below so existing `adapters/claude` importers are unaffected.
@@ -114,7 +114,7 @@ function agentHooksFrontMatter(
   const byEvent = new Map<string, string[]>();
   for (const { f, m } of enforcing) {
     for (const event of f.events) {
-      const native = canonicalToClaude[event as CanonicalEvent];
+      const native = canonicalToClaude[event];
       // Unrealizable events are REFUSED upstream at build time, never dropped
       // here — a silent skip at emission is the fail-open this design removes.
       if (!native) continue;
@@ -198,7 +198,7 @@ export function skillToClaudeMd(s: ResolvedSkill): string {
 /**
  * The claude realization of the `HarnessAdapter` port: agent → `<name>.md`,
  * skill → `SKILL.md`, hooks → the `settings.json` `hooks` block fragment. No
- * `surface` (claude has no `AGENTS.md` index). Wraps the concrete functions
+ * `scopeOrientation` (claude has no `AGENTS.md` index). Wraps the concrete functions
  * above — projection output is byte-identical to calling them directly.
  */
 export const claudeHarnessAdapter: HarnessAdapter = {
@@ -207,6 +207,9 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   home: '.claude',
   agentExt: '.md',
   hooksFile: 'settings.json',
+  // The map, declared on the port so deploy can EMIT it into the host config the
+  // runtime reads. Both predicates below already answer from it.
+  nativeEvents: canonicalToClaude,
   // Realizable ⇔ the canonical event has a Claude native peer. `canonicalToClaude`
   // IS the realization map, so asking it is asking the mechanism itself — there is
   // no second list to drift. A git-substrate event never reaches here; it routes.
