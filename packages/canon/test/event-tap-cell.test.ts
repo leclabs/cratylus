@@ -13,7 +13,7 @@
 //   • PROJECTION — projecting the canon emits the cell's SKILL.md AND its thin shim at
 //     `skills/event-tap/scripts/eventTap.mjs`. Asserted on the PROJECTED ARTIFACT, not
 //     the source: the source declaring `runtime:` is not evidence the shim landed.
-//   • VERB PARITY — the verbs the cell names EQUAL the `TapVerb` union the runtime
+//   • VERB PARITY — the verbs the cell names EQUAL the `EventTapVerb` union the runtime
 //     exports. Read from the runtime SOURCE as text: canon does not depend on
 //     runtime (the DAG is canon → forge), so a textual read is what keeps the two
 //     from drifting without inventing a package edge to carry a test.
@@ -42,12 +42,12 @@ const DISPATCH_SRC = join(
   'dispatch.ts',
 );
 
-/** The `TapVerb` union's members, parsed from the runtime source text. */
+/** The `EventTapVerb` union's members, parsed from the runtime source text. */
 function unionVerbs(src: string): string[] {
-  const m = src.match(/export type TapVerb =([^;]+);/);
+  const m = src.match(/export type EventTapVerb =([^;]+);/);
   if (m?.[1] === undefined) {
     throw new Error(
-      'event-tap: no `TapVerb` union found in the runtime source',
+      'event-tap: no `EventTapVerb` union found in the runtime source',
     );
   }
   return [...m[1].matchAll(/'([a-z]+)'/g)].map((g) => g[1] as string).sort();
@@ -111,7 +111,7 @@ describe('event-tap cell — the capability has an agent-facing surface', () => 
   });
 
   // ── VERB PARITY — the cell and the runtime cannot drift ──────────────────────────
-  it('the verbs the cell names EQUAL the runtime TapVerb union', () => {
+  it('the verbs the cell names EQUAL the runtime EventTapVerb union', () => {
     const verbs = runtimeVerbs();
     // Non-vacuous: the union really was parsed, and it is the known four.
     expect(verbs).toEqual(['install', 'read', 'status', 'uninstall']);
@@ -133,13 +133,13 @@ describe('event-tap cell — the capability has an agent-facing surface', () => 
     expect(cellVerbs(driftedCell)).not.toEqual(verbs);
     // Drift on the RUNTIME side: the union grows a verb the cell never names.
     const driftedUnion =
-      "export type TapVerb = 'install' | 'uninstall' | 'read' | 'status' | 'flush';";
+      "export type EventTapVerb = 'install' | 'uninstall' | 'read' | 'status' | 'flush';";
     expect(unionVerbs(driftedUnion)).not.toEqual(
       cellVerbs(eventTap.formalBlock),
     );
     // And a source that carries NO union FAILS loudly rather than passing empty.
     expect(() => unionVerbs('export type Something = never;')).toThrow(
-      /no `TapVerb` union/,
+      /no `EventTapVerb` union/,
     );
   });
 });

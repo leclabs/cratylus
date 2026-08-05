@@ -33,7 +33,7 @@ export function dimensionFieldsOf(
  *
  * The one home for "what does this agent enforce?": the projection asks it to
  * derive scope, and the claude adapter asks it to emit that agent's hooks. Two
- * callers, one answer, so the SOUL and the mechanism cannot disagree.
+ * callers, one answer, so the Target and the mechanism cannot disagree.
  */
 export function enforcingValuesOf(
   agent: DimensionVector,

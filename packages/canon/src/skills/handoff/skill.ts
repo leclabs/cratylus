@@ -5,9 +5,10 @@ import { praxis } from '../praxis/skill.js';
 const FORMAL_BLOCK = `handoff        ≜ praxis-sync → dream → release
 self           ≜ session⟨AGENT_SESSION_ID⟩
 agent          ≜ this agent's name
+memory         ≜ runtime capability ⟨invoked \`memory <verb> <args>\` ; the Runtime-capability line under this block resolves the shim ∴ ¬ path-in-cell⟩
 praxis-sync    ≜ sync @ praxis
 dream          ≜ drain⟨EPISODIC⟩ @ dream
-release        ≜ \`scripts/memory.mjs session release --name <agent>\` ∴ released(self)
+release        ≜ \`memory session release --name <agent>\` ∴ released(self)
 registered, released, stale : session → 𝔹
 live           : session → 𝔹
 

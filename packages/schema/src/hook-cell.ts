@@ -14,9 +14,24 @@
 //      REFLEXIVE/`accept()` target. R=LLM; BLIND-decodes to the cell's intent.
 //   2. the harness-agnostic EVENT binding (`events` + `timeout`) — WHEN it fires, in
 //      vendor-neutral terms.
-//   3. `workers[].content` — the VERBATIM worker payload (the byte-anchor): WHAT it
+//   3. `workers[].content` — the worker payload TEMPLATE (the byte-anchor): WHAT it
 //      does. The committed file at each `worker.targetPath` is a DEPLOY-OWNED target
-//      regenerated from this content and byte-locked by the consuming corpus.
+//      regenerated from `resolveWorker(worker, facts, speech).content` and
+//      byte-locked by the consuming corpus. The anchor is NOT weakened by the
+//      template: its subject is the RESOLVED bytes, which are still a pure function
+//      of the cell plus a closed, projector-owned fact set.
+//   4. `speech` — the strings the hook SPEAKS to an agent, hoisted out of the shell
+//      into a declared field so a reader-density gate can enumerate them. `>&2`
+//      operator diagnostics and jq plumbing are NOT speech.
+//
+// WHY THE TEMPLATE EXISTS (property 1, ARCHITECTURE.md). A worker sometimes needs a
+// value only PROJECTION knows — the runtime bin's name. A cell that imported it
+// named an implementation, which is exactly the edge `meaning and mechanism never
+// reference each other` forbids; the shell string hid the edge from the compiler but
+// not from the import graph. The cell now names WHICH FACT it needs
+// (`{{fact:runtime-bin}}`) and the projector substitutes. `ProjectionFact` is the
+// closed set of fact NAMES — this module never holds a fact's VALUE, because a value
+// here would restore the `schema → runtime` edge that was deliberately repaired.
 //
 // WHAT IT MUST NEVER CARRY IS THE INVOCATION. `command` lived here and every cell
 // spelled out `sh "$HOME/.claude/hooks/<id>/<file>"` — a claude path in the generic
@@ -54,13 +69,47 @@ export type HookEvent = SubstrateEvent;
 /** Which substrate a hook's event fires in — the `realize`-target family. */
 export type HookSubstrate = Substrate;
 
-/** One worker payload a hook ships — the verbatim byte-anchor of a deploy target. */
+/**
+ * A value only PROJECTION knows, named by a worker template as `{{fact:<name>}}`.
+ *
+ * A CLOSED SET OF NAMES, never of values. The projector owns every value (see
+ * `projectionFacts()` in the projector); this union states only WHICH facts a cell
+ * may ask for, so a typo is a compile error and an unknown name is a resolve-time
+ * throw. Adding a member here costs the projector one entry and nothing else.
+ */
+export type ProjectionFact = 'runtime-bin';
+
+/** The projector's fact table — every `ProjectionFact` bound to its value. */
+export type ProjectionFacts = Readonly<Record<ProjectionFact, string>>;
+
+/**
+ * One string a hook SPEAKS to an agent — bytes that land in a reader's context,
+ * addressed from the worker template as `{{speech:<id>}}`.
+ *
+ * It has a declared home because it is the only cell content scored at R=LLM that
+ * had none: it lived as `printf` bodies inside shell workers, reachable only by
+ * parsing shell, which is a proxy for the property rather than the property.
+ * OPERATOR diagnostics (`>&2`) are not speech; neither is shell plumbing.
+ */
+export interface HookMessage {
+  /** Stable id — the `{{speech:<id>}}` address. */
+  readonly id: string;
+  /** The bytes the agent reads. Scored at R=LLM like any other reader surface. */
+  readonly text: string;
+}
+
+/** One worker payload a hook ships — the template behind a deploy target's bytes. */
 export interface HookWorker {
   /** Basename under `hooks/<id>/` in the render/deploy tree. */
   readonly filename: string;
-  /** Repo-relative committed target regenerated from `content` (byte-locked). */
+  /** Repo-relative committed target regenerated from RESOLVED `content` (byte-locked). */
   readonly targetPath: string;
-  /** Verbatim worker bytes — the source of truth for `targetPath`. */
+  /**
+   * The worker TEMPLATE — verbatim bytes except for a closed placeholder set:
+   * `{{fact:<ProjectionFact>}}` and `{{speech:<id>}}`. Everything else, `{`
+   * and `}` included, is carried through untouched. `resolveWorker` turns this
+   * into the bytes that deploy; nothing consumes it raw.
+   */
   readonly content: string;
   /** Whether the regenerated target carries the executable bit. */
   readonly executable: boolean;
@@ -97,8 +146,13 @@ export interface HookCell {
   readonly entry: string;
   /** Timeout in seconds; adapter default when omitted. */
   readonly timeout?: number;
-  /** The verbatim worker payloads (byte-anchors). */
+  /** The worker payload templates (byte-anchors, once resolved). */
   readonly workers: readonly HookWorker[];
+  /**
+   * What this hook SPEAKS to an agent, addressed as `{{speech:<id>}}` from a
+   * worker template. Absent on a hook that says nothing to a reader.
+   */
+  readonly speech?: readonly HookMessage[];
   /** Anchors this cell references (for the CANONICAL orphan-ref witness). */
   readonly refs?: readonly string[];
 }
@@ -111,6 +165,68 @@ export interface HookCell {
 export interface HookSource {
   readonly hook: Hook;
   readonly workers: readonly HookWorker[];
+}
+
+/**
+ * Every `{{…}}` occurrence. The BODY may not itself contain a brace, so a shell
+ * `${VAR}` — one brace — never matches, and `${X:-{{fact:y}}}` matches exactly the
+ * inner placeholder and leaves the closing shell brace alone.
+ */
+const PLACEHOLDER = /\{\{([^{}]*)\}\}/g;
+
+/**
+ * Resolve one worker TEMPLATE into the bytes that deploy.
+ *
+ * PURE: a function of the worker, the projector's fact table, and the cell's
+ * speech — no clock, no host, no file. That is what keeps the byte-anchor an anchor
+ * when its subject moved from the cell's literal to the resolved bytes.
+ *
+ * IT THROWS ON AN UNKNOWN PLACEHOLDER, and that is the load-bearing half. A silent
+ * pass-through would ship a literal `{{fact:runtime-bin}}` into a deployed `.sh`,
+ * where it fails on a host at run time rather than here — the exact class of defect
+ * (`ARCHITECTURE.md`: "the emitted-artifact sites are exactly where a missed rename
+ * fails on a host rather than at build") this whole seam exists to close.
+ */
+export function resolveWorker(
+  worker: HookWorker,
+  facts: ProjectionFacts,
+  speech: readonly HookMessage[] = [],
+): HookWorker {
+  const said = new Map(speech.map((m) => [m.id, m.text]));
+  const said_ids = [...said.keys()].join(', ') || 'none';
+  const content = worker.content.replace(
+    PLACEHOLDER,
+    (whole: string, body: string): string => {
+      const at = body.indexOf(':');
+      const kind = at < 0 ? body : body.slice(0, at);
+      const id = at < 0 ? '' : body.slice(at + 1);
+      const where = `resolveWorker: '${worker.filename}' names ${whole}`;
+      if (kind === 'fact') {
+        const value = (facts as Readonly<Record<string, string | undefined>>)[
+          id
+        ];
+        if (value === undefined) {
+          throw new Error(
+            `${where}, which is not a projection fact (known: ${Object.keys(facts).join(', ') || 'none'}).`,
+          );
+        }
+        return value;
+      }
+      if (kind === 'speech') {
+        const text = said.get(id);
+        if (text === undefined) {
+          throw new Error(
+            `${where}, which is not one of the cell's speech ids (${said_ids}).`,
+          );
+        }
+        return text;
+      }
+      throw new Error(
+        `${where}; the grammar is {{fact:<name>}} | {{speech:<id>}} and nothing else.`,
+      );
+    },
+  );
+  return { ...worker, content };
 }
 
 /**

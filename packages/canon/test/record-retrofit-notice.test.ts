@@ -12,6 +12,10 @@
 // so what is gone from the working tree is the reading cost, not the record. What survives here
 // is `plans/decomplect/completed/`, which belongs to a LIVE plan and is still read.
 //
+// `.retired/` IS NOT COMING BACK: `retire` was subsequently ruled to MEAN deletion, so the
+// closed-record enumeration below is `plans/<plan>/completed` and nothing else. Scanning for a
+// container the mechanism can no longer create would be a permanent look at an empty shelf.
+//
 // Falsifiers:
 //
 //   (1) CONVICTING — every directory the sweep rewrote carries the notice.
@@ -57,17 +61,12 @@ const SWEEP = '61b85db7';
  */
 const REWRITTEN: readonly string[] = ['plans/decomplect/completed'];
 
-/** Every closed-record directory under `root`: `plans/.retired/<plan>` ∪ `plans/<plan>/completed`. */
+/** Every closed-record directory under `root`: `plans/<plan>/completed`. A retired plan is
+ *  DELETED, so a closed record only ever survives inside a plan that is still on disk. */
 function historicalDirs(root = REPO): string[] {
   const out: string[] = [];
-  const retired = join(root, 'plans/.retired');
-  if (existsSync(retired)) {
-    for (const e of readdirSync(retired, { withFileTypes: true })) {
-      if (e.isDirectory()) out.push(`plans/.retired/${e.name}`);
-    }
-  }
   for (const e of readdirSync(join(root, 'plans'), { withFileTypes: true })) {
-    if (!e.isDirectory() || e.name === '.retired') continue;
+    if (!e.isDirectory() || e.name.startsWith('.')) continue;
     if (existsSync(join(root, 'plans', e.name, 'completed'))) {
       out.push(`plans/${e.name}/completed`);
     }
@@ -213,8 +212,8 @@ describe('record-retrofit-notice', () => {
         mkdirSync(join(root, d), { recursive: true });
         return d;
       };
-      const swept = mk('plans/.retired/swept');
-      const untouched = mk('plans/.retired/untouched');
+      const swept = mk('plans/swept/completed');
+      const untouched = mk('plans/untouched/completed');
       mk('plans/live/completed');
       const shard = 'plans/live/completed/argument.md';
       writeFileSync(join(root, shard), '# the argument\n');

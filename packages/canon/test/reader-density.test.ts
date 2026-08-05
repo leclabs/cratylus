@@ -94,13 +94,6 @@ const srcRoot = join(canonRoot, 'src');
  * proved nothing: an unscanned surface cannot fail. The reach leg below asserts that
  * every ρ=LLM class this gate owns is witnessed, so emptiness here is a conformance
  * claim rather than a coverage claim.
- *
- * KNOWN GAP, stated because a silent omission would restore the original defect: the
- * strings a hook SPEAKS to an agent — the ones that land in its context — have no
- * declared field on the cell. They live as `printf` bodies inside shell workers and
- * are reachable only by parsing shell, which is a proxy, not the property. All four
- * were scored by hand at the 2026-08-04 sweep and conform. Enumerating them wants a
- * declared home first (`plans/decomplect/CRATYLISM-SWEEP.md` C0 §4).
  */
 const REGISTER_RATCHET: ReadonlySet<string> = new Set([]);
 
@@ -206,8 +199,14 @@ async function allSurfaces(): Promise<Surface[]> {
   // Hook cells: the DECLARATION only. `workers[].content` is SOURCE CODE, not
   // context — nothing loads a shell script into a reader. Scoring it would convict
   // the authorial "we" of an ordinary code comment, and this gate's own source
-  // files would fail first. What a hook actually SPEAKS to an agent is its emitted
-  // feedback string, and that has no declared field to enumerate — see KNOWN GAP.
+  // files would fail first.
+  //
+  // What a hook SPEAKS to an agent is `HookCell.speech` — a declared, enumerable
+  // field as of the worker-template seam, no longer `printf` bodies reachable only
+  // by parsing shell. It is not scored HERE because it is not `cell-declaration`:
+  // an agent-facing reminder is prose addressed to a reader, not a σ*-signified
+  // identity, and filing it under this class would assert a register nobody chose
+  // for it. Its own ρ entry is a `reader-register.ts` decision.
   for (const rel of await collect('hooks/*.ts')) {
     const c = await firstExport<{ residue?: string }>(join(srcRoot, rel));
     if (typeof c.residue === 'string') {

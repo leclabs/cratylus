@@ -19,7 +19,7 @@
 //
 // Clobber-guarded: refuses an existing `<target>/AGENTS.md` unless `force`
 // (idempotent re-scaffold). Does NOT seed SEMANTIC/PROCEDURAL/EPISODIC sidecars —
-// those are the running host's `deploy` concern; scaffold lays the SOUL, not the
+// those are the running host's `deploy` concern; scaffold lays the Target, not the
 // individual.
 
 import {

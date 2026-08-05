@@ -21,7 +21,7 @@
 
 import { cac } from 'cac';
 import { RUNTIME_BIN } from './bin-name.js';
-import { dispatchTap } from './capabilities/event-tap/index.js';
+import { dispatchEventTap } from './capabilities/event-tap/index.js';
 import { dispatch } from './dispatch.js';
 import { RuntimeHost, bootstrap } from './loader.js';
 import type { RuntimePlugin } from './plugin.js';
@@ -69,17 +69,24 @@ export async function runMain(
   // the install-discovered dispatch — no host bootstrap needed. A throw (unknown
   // verb / unknown event / missing flag) is a loud code-1 failure.
   //
-  // BOTH the capability word and its shorthand route here. `eventTap` is the
-  // capability's canonical name in `CAPABILITIES` — the word the dispatch grammar
-  // `<capability> <verb>` actually speaks, and therefore the word a PROJECTED THIN
-  // SHIM spawns (the emitter is `f(capability)`, so an `eventTap` cell yields
-  // `spawnSync(RUNTIME_BIN, ['eventTap', …])`). Routing only the `tap`
-  // shorthand made the tap reachable by an operator typing at a shell but DEAD to
-  // every agent coming through its own skill's shim: `eventTap` fell through to the
-  // discovered dispatch, where no plugin binds it, and died `unknown capability`.
-  if (first === 'tap' || first === 'eventTap') {
+  // ONE WORD ROUTES HERE, and it is the capability's own: `eventTap`, its member in
+  // `CAPABILITIES`. That is the word the dispatch grammar `<capability> <verb>`
+  // speaks, and therefore the word a PROJECTED THIN SHIM spawns (the emitter is
+  // `f(capability)`, so an `eventTap` cell yields
+  // `spawnSync(RUNTIME_BIN, ['eventTap', …])`). Routing only the `tap` shorthand once
+  // made the tap reachable by an operator typing at a shell but DEAD to every agent
+  // coming through its own skill's shim: `eventTap` fell through to the discovered
+  // dispatch, where no plugin binds it, and died `unknown capability`.
+  //
+  // The `tap` shorthand is now GONE rather than merely un-preferred. It was never a
+  // third name for this capability — it fails to circumscribe one (a passive siphon
+  // on WHICH stream?), and a second accepted word is a second thing an operator can
+  // learn, cite, and be wrong about. Typing `tap` now falls to the discovered
+  // dispatch and raises `UnknownCapabilityError`, naming the bound set — the
+  // kernel's own fail-loud contract, applied to its own vocabulary.
+  if (first === 'eventTap') {
     try {
-      const result = dispatchTap([...argv.slice(1)]);
+      const result = dispatchEventTap([...argv.slice(1)]);
       process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
       process.exitCode = 0;
     } catch (err) {

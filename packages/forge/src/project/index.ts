@@ -29,12 +29,14 @@
 
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
 import {
   type Agent,
   type Binding,
   type DimensionManifest,
   type Enforcing,
   type HookCell,
+  type ProjectionFacts,
   type Skill,
   type Value,
   anchorOf,
@@ -43,6 +45,7 @@ import {
   enforcing,
   hookIrOf,
   mergeManifest,
+  resolveWorker,
   withBody,
 } from '@cratylus/schema';
 import type { HarnessMechanism } from '@cratylus/schema/hook';
@@ -69,6 +72,23 @@ import {
 import { realizationOf } from './realization.js';
 import { runtimeShimContent } from './runtime-shim.js';
 
+/**
+ * THE PROJECTOR'S FACT TABLE — every value a worker template may ask for by name.
+ *
+ * This is the seam that let ARCHITECTURE's property 1 close. A canon cell needed the
+ * runtime bin's name and could only get it by importing `@cratylus/runtime` — meaning
+ * reaching into mechanism, the highest-ranked property in the north star, breached by
+ * exactly one edge. FORGE already depends on runtime (a permitted edge: projection
+ * knows both sides), so the value belongs here and the cell asks for it by NAME.
+ *
+ * The schema declares WHICH facts exist (`ProjectionFact`) and never a value; a value
+ * in the shapes package would restore the `schema → runtime` edge that was repaired
+ * on the same day. Names travel down, values live here.
+ */
+export function projectionFacts(): ProjectionFacts {
+  return { 'runtime-bin': RUNTIME_BIN };
+}
+
 /** The plugin fields projection consumes — the dirs a plugin contributes cells from. */
 export interface ProjectablePlugin {
   readonly name: string;
@@ -78,7 +98,7 @@ export interface ProjectablePlugin {
    * Fragment (dimension-value) dir — scanned `<dir>/<dimension>/*.ts`. Projection
    * needs it because an agent module inlines its dimension values BY IMPORT
    * BINDING (`objective: insight_objective`), i.e. the body as authored on disk.
-   * Folding the fragments is the only way the projected SOUL can carry the
+   * Folding the fragments is the only way the projected Target can carry the
    * COMPOSED value rather than the authored one (see `composedBodies`).
    */
   readonly fragments?: string;
@@ -223,7 +243,7 @@ async function hookOf(modPath: string): Promise<HookCell | null> {
  *
  * `manifest` is what the vector is READ against — REQUIRED. A dimension the
  * set declares and the reader does not know is invisible here, so its enforcing
- * values would bind nothing while its SOUL section still printed.
+ * values would bind nothing while its Target section still printed.
  */
 export function bindingsOf(
   agents: readonly { readonly name: string; readonly agent: Agent }[],
@@ -299,7 +319,7 @@ export async function discoverFragments(
  * list — `objective: insight_objective` binds the fragment's body AS IT SAT ON DISK.
  * The catalog those values are supposed to be drawn from is the resolver's ordered
  * fold. Without this map the two coincide only by accident: the moment a patch moves
- * a fragment, the projected SOUL still carries the pre-fold string and
+ * a fragment, the projected Target still carries the pre-fold string and
  * `COMPOSED(a) : S_on ⊆ catalog(on)` fails while every suite stays green.
  *
  * ONLY MOVED FRAGMENTS ARE RECORDED. A plugin originates each of its fragments with a
@@ -356,7 +376,7 @@ export function resolveFragmentBodies(
  * to be 22 hand-written lines, which made this function the last place in the
  * projector that knew a dimension by name — and a corpus that declared a
  * twenty-third would have had its values silently skipped by the fold while the
- * SOUL still printed them.
+ * Target still printed them.
  */
 function withResolvedBodies(
   agent: Agent,
@@ -545,10 +565,16 @@ export async function projectPluginSet(
     }
     const mech = mechanisms?.get(realizedBy);
     for (const worker of mech?.workers ?? []) {
+      // RESOLVED, exactly as at the hook-cell emission site below. An enforcing
+      // mechanism ships the same worker-template shape, so a fact added to one of
+      // its workers and resolved at only ONE of the two sites would leak a literal
+      // `{{fact:…}}` into a deployed artifact — the failure mode that fails on a
+      // host, not at build. Both sites, or neither.
+      const resolved = resolveWorker(worker, projectionFacts());
       files.push({
-        path: join('hooks', b.anchor, worker.filename),
-        content: worker.content,
-        executable: worker.executable,
+        path: join('hooks', b.anchor, resolved.filename),
+        content: resolved.content,
+        executable: resolved.executable,
       });
     }
     log(`EMIT enforcing ${b.anchor} → ${b.agents.join(' ')}`);
@@ -639,9 +665,14 @@ export async function projectPluginSet(
         );
       }
     } else {
+      // RESOLVE HERE, at the emission boundary. `cell.workers` are TEMPLATES; the
+      // deployed bytes are `resolveWorker(w, facts, cell.speech)`, and an unknown
+      // placeholder throws rather than shipping `{{…}}` to a host.
       const sources = hookCells.map((cell) => ({
         hook: hookIrOf(cell, opts.adapter.hookCommand),
-        workers: cell.workers,
+        workers: cell.workers.map((w) =>
+          resolveWorker(w, projectionFacts(), cell.speech),
+        ),
       }));
       const {
         filename: hooksFile,

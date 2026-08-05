@@ -3,7 +3,7 @@
 // went with the excised IR-intake lineage.
 
 // The anatomy→codex projection — the second harness, proving canon reaches
-// every forge harness for free. The composed SOUL body is harness-neutral,
+// every forge harness for free. The composed Target body is harness-neutral,
 // so the `ResolvedSkill` shape is shared with the claude adapter.
 export {
   type ResolvedSkill,

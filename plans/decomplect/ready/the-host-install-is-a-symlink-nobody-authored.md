@@ -102,7 +102,7 @@ The property is a **binding**, so a static check cannot carry it alone:
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** host-and-config · **wave** 1
+- **slice** host-and-config · **wave** 0
 - **depends on** `t-soul-to-target-in-forge`
 - **writes** `packages/invoke/**`
 - **compiles against** `packages/runtime/src/bin-name.ts`

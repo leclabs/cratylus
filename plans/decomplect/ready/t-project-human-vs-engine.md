@@ -64,7 +64,7 @@ removed with the file — that is the only gate, and **the oracle does not move*
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** projection-and-ground · **wave** 1
+- **slice** projection-and-ground · **wave** 0
 - **depends on** `t-soul-to-target-in-forge`
 - **writes** `packages/forge/src/project/project-human.ts` · `ENGINE.md`
 - **compiles against** `packages/forge/src/core/anatomy-body.ts`

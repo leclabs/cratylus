@@ -35,7 +35,7 @@ every time.** Prune is silently a no-op on codex.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** deploy-surface · **wave** 1
+- **slice** deploy-surface · **wave** 0
 - **depends on** `t-soul-to-target-in-forge`
 - **writes** `packages/forge/src/deploy/manifest.ts` · `packages/forge/src/deploy/deploy.ts` · `packages/forge/test/deploy/**`
 - **compiles against** `packages/forge/src/core/harness-adapter.ts`

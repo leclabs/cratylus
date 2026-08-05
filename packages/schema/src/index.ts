@@ -221,7 +221,7 @@ export const enforcing = <O extends string>(v: Value<O>): v is Enforcing<O> =>
 export const isDimensionValue = (u: unknown): u is Value<string> =>
   typeof u === 'string' || enforcing(u as Value<string>);
 
-/** The declaration face of a value, enforcing or not — what the SOUL renders. */
+/** The declaration face of a value, enforcing or not — what the Target renders. */
 export const bodyOf = <O extends string>(v: Value<O>): Fragment<O> =>
   enforcing(v) ? v.body : v;
 
@@ -320,7 +320,7 @@ export interface ManifestDeclaring {
  *
  * No plugin declaring one is a REFUSAL, not a fallback. There is no resident
  * manifest to stand in: a plugin set with no dimensions would project every agent
- * as an empty SOUL — a silent, plausible-looking nothing, which is the one failure
+ * as an empty Target — a silent, plausible-looking nothing, which is the one failure
  * a byte diff of the output cannot tell from a corpus that shrank.
  */
 export function mergeManifest(
@@ -440,17 +440,17 @@ export const kebabToCamel = <S extends string>(s: S): KebabToCamel<S> =>
 export interface Agent {
   /** The agent's name (its module / deploy identity). */
   readonly name: string;
-  /** σ_human* — the human-read one-line selection bound → SOUL frontmatter
+  /** σ_human* — the human-read one-line selection bound → Target frontmatter
    *  `description:` the subagent-router reads (NOT σ*). The one-level-up twin of
    *  the skill `description`. */
   readonly description: string;
   /** OPTIONAL doctrine-AGNOSTIC leading block, emitted VERBATIM above `## Archetype`
    *  by `agentBody`. The engine knows only "a leading block"; a consumer fills it
-   *  (canon injects its founding doctrine so the axiom rides every SOUL,
+   *  (canon injects its founding doctrine so the axiom rides every Target,
    *  intrinsic to the projected bytes rather than ambient repo context). Absent ⇒
    *  omitted. */
   readonly preamble?: string;
-  /** σ* — the model-read identity body → SOUL body. A plain string, not a branded
+  /** σ* — the model-read identity body → Target body. A plain string, not a branded
    *  fragment-dimension (D13), but σ* content nonetheless. */
   readonly archetype: string;
   /** The emoji·hue mark (drives color) — data, not a fragment (D3). */
@@ -547,10 +547,14 @@ export function markToColor(mark: Mark): string {
 export {
   type HookCell,
   type HookEvent,
+  type HookMessage,
   type HookSource,
   type HookSubstrate,
   type HookWorker,
+  type ProjectionFact,
+  type ProjectionFacts,
   hookIrOf,
+  resolveWorker,
 } from './hook-cell.js';
 export type { RuleCell } from './rule-cell.js';
 

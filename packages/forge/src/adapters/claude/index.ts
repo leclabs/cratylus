@@ -4,7 +4,7 @@
 // not two, and importing this barrel no longer drags a second pipeline in.
 
 export { canonicalToClaude, claudeToCanonical } from './events.js';
-// The anatomy→claude-code SOUL/SKILL projection.
+// The anatomy→claude-code Target/SKILL projection.
 export {
   type ResolvedSkill,
   agentToClaudeMd,

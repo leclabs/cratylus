@@ -317,7 +317,8 @@ export function loadNodeConfig(configPath?: string): NodeConfig {
 //   · AUTHORITY — the runtime dotfile is PROJECTED by deploy; this one is
 //     OPERATOR-AUTHORED and ships a hand-copied `.example`. Merging would put
 //     operator ground in a projector-owned file, and deploy would clobber it.
-//   · LOCATION — `homedir()` there, bare-relative to the cwd here.
+//   · LOCATION — `homedir()`-ONLY there; cwd-ward first here, `$HOME` only as
+//     the fallback (`resolveConfigPath` below — the nearer file overrides).
 //   · REFERENT — provider wiring there, boundary/scope semantics here.
 // The only thing the two shared was the word `config`, and `config` is vacuous
 // — which is exactly why the wrong guess was easy to make.
@@ -347,17 +348,67 @@ export function loadNodeConfig(configPath?: string): NodeConfig {
 // `$<BIN>_CONFIG` was the sole outlier — a file-register mark wearing an
 // env-register hat.
 
-/** The config file a repository may carry, resolved relative to the cwd. */
+/** The config file's basename. Schema by example: `.cratylus.memory.json.example` at the repo root. */
 export const CONFIG_FILE = '.cratylus.memory.json';
 
 /** The env var naming an explicit config path. Same sign as {@link CONFIG_FILE}. */
 export const CONFIG_ENV = 'AGENT_MEMORY_CONFIG';
 
-/** `--config`/override ▸ `$AGENT_MEMORY_CONFIG` ▸ a cwd-present `.cratylus.memory.json` ▸ none. */
+/** The nearest {@link CONFIG_FILE} at or above `from` (absolute), or none. */
+function nearestConfigAtOrAbove(from: string): string | undefined {
+  let dir = resolve(from);
+  for (;;) {
+    const candidate = join(dir, CONFIG_FILE);
+    if (existsSync(candidate)) return candidate;
+    const parent = dirname(dir);
+    if (parent === dir) return undefined; // filesystem root
+    dir = parent;
+  }
+}
+
+/**
+ * `--config`/override ▸ `$AGENT_MEMORY_CONFIG` ▸ the nearest
+ * `.cratylus.memory.json` at or above the cwd ▸ `$HOME/.cratylus.memory.json` ▸
+ * none. Always ABSOLUTE when it resolves from the filesystem.
+ *
+ * ── WHICH MODEL WON, AND WHY (2026-08-05) ───────────────────────────────────
+ *
+ * The defect: the last step used to be `existsSync(CONFIG_FILE)` against the
+ * BARE CWD — no walk, no `~`. Run the tool from anywhere but the one directory
+ * holding the file and the config silently vanished, reverting `resolveNode` to
+ * {@link DEFAULT_MARKERS} with nothing reported. Two models were available:
+ * widen RESOLUTION until it reaches everywhere the content governs, or narrow
+ * the CONTENT to what a bare-cwd lookup can honestly serve.
+ *
+ * **RESOLUTION WIDENED.** The content cannot be narrowed, because neither key
+ * is a statement about the cwd:
+ *   · `memory.scopeMarkers` extends the marker set for `resolveNode`, which
+ *     runs over EVERY stored record's cwd. Node identity must be
+ *     cwd-INVARIANT — the lattice joins (fold ↔ `read --under` ↔ node) are
+ *     equality on node strings, so a marker set that applies only while you
+ *     happen to stand in one directory would resolve the SAME record to two
+ *     different nodes depending on where the CLI was invoked. That is not a
+ *     narrower feature, it is a broken one.
+ *   · `host.<name>.homedir` is a claim about OTHER MACHINES — the only
+ *     checkable evidence for a foreign-host record. No cwd could make it local.
+ * Narrowing was therefore never a live option; the acceptance criterion's
+ * second branch is unreachable for this content, and saying so is the ruling.
+ *
+ * The walk is the same nearest-ancestor idiom `resolveNode` already uses, so a
+ * repo-carried config now works from any directory of that repo (the same
+ * defect, one scope smaller), and `$HOME` closes the case the walk cannot
+ * reach — a cwd outside `$HOME` entirely. Nearest wins: a checkout may override
+ * the fleet default, never the reverse.
+ *
+ * `??` on the env read is load-bearing: `''` means "no config" (the test
+ * suite's hermetic sentinel) and must NOT fall through to the walk.
+ */
 export function resolveConfigPath(override?: string): string | undefined {
-  return (
-    override ??
-    process.env[CONFIG_ENV] ??
-    (existsSync(CONFIG_FILE) ? CONFIG_FILE : undefined)
-  );
+  if (override !== undefined) return override;
+  const fromEnv = process.env[CONFIG_ENV];
+  if (fromEnv !== undefined) return fromEnv;
+  const nearest = nearestConfigAtOrAbove(process.cwd());
+  if (nearest !== undefined) return nearest;
+  const inHome = join(homedir(), CONFIG_FILE);
+  return existsSync(inHome) ? inHome : undefined;
 }

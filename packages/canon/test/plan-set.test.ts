@@ -3,9 +3,11 @@
 //
 //   (1) a plan transitions proposed → in-flight → landed → retired (the phase
 //       machine is a pure readout of on-disk placement + git).
-//   (2) `list` partitions in-scope vs retired (a retired plan leaves in-scope,
-//       appears under `--retired`).
-//   (3) `retire` PRESERVES the plan (archive, not delete) — content recoverable.
+//   (2) `retire` DELETES: the plan leaves `list`, no `.retired/` container appears,
+//       and the content is recoverable from git — never from the working tree.
+//   (3) the retirement FACT is carried by the RETIRING COMMIT, not by residence:
+//       `retirement(P)` is undefined while the deletion is only staged, and is the
+//       deleting sha once it lands. The twin of `landing`, stored nowhere.
 //   (4) `landing` is derived from VCS and STORED NOWHERE (no sidecar/field; the
 //       sha appears on no path under `plans/`; `landing` writes nothing).
 //   (5) `retire` refuses when ¬terminal (precondition terminal = landed ∨
@@ -18,14 +20,12 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
-  readFileSync,
   readdirSync,
   rmSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   type PlanSetContext,
@@ -33,6 +33,7 @@ import {
   list,
   phase,
   retire,
+  retirement,
   supersede,
   superseded,
   terminal,
@@ -94,9 +95,13 @@ describe('phase — the plan-level lifecycle machine (readout, not stored)', () 
     g('commit', '-q', '-m', 'complete t1');
     expect(phase(ctx, 'demo')).toBe('landed');
 
-    // retired: after retire (archived on disk).
+    // retired: the deletion must LAND. Staged is not retired — the fact's carrier
+    // is the retiring commit, so until there is one the readout still says landed.
     retire(ctx, 'demo');
+    expect(phase(ctx, 'demo')).toBe('landed');
+    g('commit', '-q', '-m', 'retire demo');
     expect(phase(ctx, 'demo')).toBe('retired');
+    expect(retirement(ctx, 'demo')).toBe(g('rev-parse', 'HEAD'));
   });
 
   it('done-on-disk but not committed to trunk stays in-flight (landing is a VCS event)', () => {
@@ -106,22 +111,23 @@ describe('phase — the plan-level lifecycle machine (readout, not stored)', () 
   });
 });
 
-describe('list — membership partition (in-scope vs retired)', () => {
-  it('a retired plan leaves in-scope and is enumerable under --retired', () => {
+describe('list — the plan set IS what is on disk', () => {
+  it('a retired plan leaves the set, and no archive container takes its place', () => {
     placeTask('demo', 'completed', 't1.md');
     g('add', '-A');
     g('commit', '-q', '-m', 'complete');
     expect(list(ctx)).toEqual(['demo']);
-    expect(list(ctx, { retired: true })).toEqual([]);
 
     retire(ctx, 'demo');
     expect(list(ctx)).toEqual([]);
-    expect(list(ctx, { retired: true })).toEqual(['demo']);
+    // The defect this ruling closes: the old `retire` `mkdir -p`ed `plans/.retired/`,
+    // so the tree the operator cleared refilled on the very next retire.
+    expect(existsSync(join(repo, 'plans', '.retired'))).toBe(false);
   });
 });
 
-describe('retire — preserve, don’t delete', () => {
-  it('preserves content + history (recoverable), staged not committed', () => {
+describe('retire — DELETE; git holds the bytes', () => {
+  it('deletes the plan dir, stages the deletion, and never commits', () => {
     placeTask('demo', 'completed', 't1.md');
     g('add', '-A');
     g('commit', '-q', '-m', 'complete');
@@ -129,16 +135,17 @@ describe('retire — preserve, don’t delete', () => {
 
     retire(ctx, 'demo');
 
-    // content recoverable at the new location.
-    expect(
-      readFileSync(join(repo, 'plans', '.retired', 'demo', 'PLAN.md'), 'utf8'),
-    ).toBe('# demo plan\n');
-    // history preserved: the move is a rename in the staged tree, not a delete+add.
+    // gone from the working tree — no relocation, no archive.
+    expect(existsSync(join(repo, 'plans', 'demo'))).toBe(false);
+    // the deletion is STAGED (a delete, not a rename: there is no destination).
     const staged = g('diff', '--cached', '--name-status', '-M');
-    expect(staged).toMatch(/^R/m);
+    expect(staged).toMatch(/^D\s+plans\/demo\/PLAN\.md$/m);
+    expect(staged).not.toMatch(/^R/m);
     // staged, NOT committed — HEAD unchanged, working tree dirty.
     expect(g('rev-parse', 'HEAD')).toBe(head);
     expect(g('status', '--porcelain')).not.toBe('');
+    // what `content(retire(P)) = content(P)` was really asserting: git still has it.
+    expect(g('show', `${head}:plans/demo/PLAN.md`)).toBe('# demo plan');
   });
 
   it('refuses when the plan is not terminal (precondition terminal(P))', () => {
@@ -146,6 +153,52 @@ describe('retire — preserve, don’t delete', () => {
     g('add', '-A');
     g('commit', '-q', '-m', 'dispatch');
     expect(() => retire(ctx, 'demo')).toThrow(/terminal/);
+  });
+});
+
+describe('retirement — the retiring commit is the carrier (twin of landing)', () => {
+  it('is undefined while staged, is the deleting sha once committed, stores nothing', () => {
+    placeTask('demo', 'completed', 't1.md');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'complete');
+    expect(retirement(ctx, 'demo')).toBeUndefined();
+
+    retire(ctx, 'demo');
+    // deleted on disk, but the FACT is a commit and there is not one yet.
+    expect(retirement(ctx, 'demo')).toBeUndefined();
+
+    g('commit', '-q', '-m', 'retire demo');
+    const deleting = g('rev-parse', 'HEAD');
+    expect(retirement(ctx, 'demo')).toBe(deleting);
+
+    // a later, unrelated commit does not move it, and reading it writes nothing.
+    g('commit', '-q', '--allow-empty', '-m', 'unrelated');
+    const before = g('status', '--porcelain');
+    expect(retirement(ctx, 'demo')).toBe(deleting);
+    expect(g('status', '--porcelain')).toBe(before);
+    let hit = '';
+    try {
+      hit = g('grep', '-l', deleting, '--', 'plans');
+    } catch {
+      hit = '';
+    }
+    expect(hit).toBe('');
+  });
+
+  it('a re-authored plan is a live plan again, not a retired one', () => {
+    placeTask('demo', 'completed', 't1.md');
+    g('add', '-A');
+    g('commit', '-q', '-m', 'complete');
+    retire(ctx, 'demo');
+    g('commit', '-q', '-m', 'retire demo');
+    expect(phase(ctx, 'demo')).toBe('retired');
+
+    placeTask('demo', 'pending', 't2.md');
+    writeFileSync(join(repo, 'plans', 'demo', 'PLAN.md'), '# demo again\n');
+    g('add', '-A');
+    g('commit', '-q', '-m', 're-author demo');
+    expect(retirement(ctx, 'demo')).toBeUndefined();
+    expect(list(ctx)).toEqual(['demo']);
   });
 });
 
@@ -157,7 +210,7 @@ describe('supersede — the stored terminal declaration (non-derivable)', () => 
     writeFileSync(join(dir, 'PLAN.md'), `# ${name}\n`);
   }
 
-  it('makes phase=superseded and lets a never-landed plan retire; marker travels to archive', () => {
+  it('makes phase=superseded and lets a never-landed plan retire; the marker dies with it', () => {
     placeTask('demo', 'active', 't1.md'); // in-flight, never landed
     authorSuccessor('successor');
     g('add', '-A');
@@ -170,17 +223,17 @@ describe('supersede — the stored terminal declaration (non-derivable)', () => 
     expect(superseded(ctx, 'demo')).toBe(true);
     expect(phase(ctx, 'demo')).toBe('superseded');
     expect(terminal(ctx, 'demo')).toBe(true);
+    g('commit', '-q', '-m', 'supersede demo');
 
-    // retire now succeeds though demo never landed; the marker survives the move.
+    // retire succeeds though demo never landed. The stored marker is deleted with
+    // the plan — it was the carrier for a plan that still existed; once P leaves
+    // `Plans` the retiring commit is what carries the fact.
     retire(ctx, 'demo');
+    g('commit', '-q', '-m', 'retire demo');
     expect(phase(ctx, 'demo')).toBe('retired');
-    expect(list(ctx, { retired: true })).toContain('demo');
-    expect(
-      readFileSync(
-        join(repo, 'plans', '.retired', 'demo', '.superseded-by'),
-        'utf8',
-      ).trim(),
-    ).toBe('successor');
+    expect(list(ctx)).toEqual(['successor']);
+    expect(existsSync(join(repo, 'plans', 'demo'))).toBe(false);
+    expect(superseded(ctx, 'demo')).toBe(false);
   });
 
   it('stages the marker (commit gated) and rejects unknown / self successor', () => {
@@ -247,15 +300,19 @@ describe('landing — derived on demand, stored nowhere', () => {
 //   · Then the SAME defect recurred in the very plan that fixed it: close-out was
 //     landed and retired while eleven shard files still sat in pending/ready.
 //
-// A verdict recorded in a report is not a reconciled tree. This is the gate that
-// makes the disk agree: a retired plan may hold `completed/` and nothing else.
-
-const repoRoot = join(
-  dirname(fileURLToPath(import.meta.url)),
-  '..',
-  '..',
-  '..',
-);
+// A verdict recorded in a report is not a reconciled tree: a retired plan may hold
+// `completed/` and nothing else.
+//
+// THE LIVE LEG IS GONE, PERMANENTLY, AND IT WAS RIGHT TO DELETE IT. `retire` now
+// DELETES, so there is no retired-plan tree to scan and never will be again. The
+// old leg warned "NO LIVE SUBJECT — plans/.retired/ does not exist", which was an
+// honest report of a TEMPORARY state (the tree had just been cleared) and is a lie
+// as a permanent one: it would warn forever about a subject that cannot exist, and
+// a warning nobody can ever act on is noise that trains readers to skip warnings.
+//
+// What survives is the DETECTOR and its convicting fixture. The property it encodes
+// is real, but its only remaining enforcement point is `retire` itself, which sees
+// the plan's pre-image; it has no owner here. Filed, not fixed.
 
 describe('RETIREMENT INTEGRITY — a retired plan carries no unfinished shard', () => {
   const OPEN = ['pending', 'ready', 'active'] as const;
@@ -276,26 +333,6 @@ describe('RETIREMENT INTEGRITY — a retired plan carries no unfinished shard', 
     }
     return out.sort();
   };
-
-  it('the live .retired/ tree holds only completed shards — or says it is not there', () => {
-    const root = join(repoRoot, 'plans', '.retired');
-    // `unfinished` returns [] for a missing root, which the FIXTURE needs and the live
-    // leg must not silently inherit: with no `.retired/` tree this leg would be green
-    // for having nothing to look at. "Found nothing" and "could not look" are different
-    // answers, so the absence is reported rather than passed over. The tree was deleted
-    // wholesale — see `plans/decomplect/completed/the-brand-sweep-rewrote-the-record-not-only-the-source.md`.
-    if (!existsSync(root)) {
-      console.warn(
-        'plan-set (retirement integrity): NO LIVE SUBJECT — plans/.retired/ does not exist. ' +
-          'The scan is exercised by its fixture only.',
-      );
-      return;
-    }
-    expect(
-      unfinished(root),
-      'retired plans still carrying unfinished shards — each is work nobody decided to drop:',
-    ).toEqual([]);
-  });
 
   it('is non-vacuous — the scan FLAGS a retired plan with an open shard', () => {
     const root = mkdtempSync(join(tmpdir(), 'retire-integrity-'));

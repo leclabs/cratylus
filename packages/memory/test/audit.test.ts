@@ -180,11 +180,11 @@ describe('audit (CLI) — the v2 scan set {SEMANTIC.md, PROCEDURAL.md}', () => {
     expect(r.out).not.toMatch(/PROCEDURAL\.md:3/);
   });
 
-  it('--config derives repo keys from a .cratylus.memory.json (containing repo basename)', () => {
+  it('--config derives repo keys from a .cratylus.memory.json in a MARKED repo (basename)', () => {
     const repoRoot = join(home, 'polis');
-    mkdirSync(repoRoot, { recursive: true });
+    mkdirSync(join(repoRoot, '.git'), { recursive: true });
     const config = join(repoRoot, '.cratylus.memory.json');
-    writeFileSync(config, '{"schema":1,"fleet":{"hosts":[]}}', 'utf8');
+    writeFileSync(config, '{"schema":1}', 'utf8');
     writeFileSync(
       join(home, 'SEMANTIC.md'),
       '# semantic\nThe polis rebuild is where I broke the spell.\n',
@@ -193,6 +193,21 @@ describe('audit (CLI) — the v2 scan set {SEMANTIC.md, PROCEDURAL.md}', () => {
     const r = main(['audit', '--home', home, '--config', config]);
     expect(r.code).toBe(1);
     expect(r.out).toMatch(/SEMANTIC\.md:2: \[repo-key\] polis/);
+  });
+
+  it('--config in an UNMARKED directory contributes no location key (presence is not the assertion)', () => {
+    const plain = join(home, 'polis');
+    mkdirSync(plain, { recursive: true });
+    const config = join(plain, '.cratylus.memory.json');
+    writeFileSync(config, '{"schema":1}', 'utf8');
+    writeFileSync(
+      join(home, 'SEMANTIC.md'),
+      '# semantic\nThe polis rebuild is where I broke the spell.\n',
+      'utf8',
+    );
+    const r = main(['audit', '--home', home, '--config', config]);
+    expect(r.code).toBe(0);
+    expect(r.out).toMatch(/audit: clean/);
   });
 
   it('requires --home', () => {
@@ -273,10 +288,10 @@ describe('scanLine (detector precision)', () => {
   });
 });
 
-describe('repoKeysFromConfig', () => {
-  it('yields the containing repo basename plus a forward-compatible projects field', () => {
+describe('repoKeysFromConfig — content-as-facts, presence-is-not-a-marker', () => {
+  it('yields the projects field plus the directory basename WHEN a boundary marker proves it a repo', () => {
     const repoRoot = join(home, 'my-repo');
-    mkdirSync(repoRoot, { recursive: true });
+    mkdirSync(join(repoRoot, '.git'), { recursive: true });
     const config = join(repoRoot, '.cratylus.memory.json');
     writeFileSync(
       config,
@@ -288,6 +303,28 @@ describe('repoKeysFromConfig', () => {
       'web-platform',
       'polis',
     ]);
+  });
+
+  it('the config asserts NOTHING by sitting somewhere: a markerless directory yields no location key', () => {
+    const plain = join(home, 'not-a-repo');
+    mkdirSync(plain, { recursive: true });
+    const config = join(plain, '.cratylus.memory.json');
+    writeFileSync(config, '{"schema":1,"projects":["polis"]}', 'utf8');
+    expect(repoKeysFromConfig(config)).toEqual(['polis']);
+  });
+
+  it('$HOME is never a repo — the fleet-global config lives there and must not key on the username', () => {
+    // The regression the resolution fix would otherwise have introduced: a
+    // `~`-hosted config keying on `basename(~)` makes the operator's own name a
+    // repo key, firing on every mention of it in every agent home.
+    const fakeHome = join(home, 'lex');
+    mkdirSync(fakeHome, { recursive: true });
+    // Even WITH a marker present — the user boundary outranks it (resolveNode).
+    writeFileSync(join(fakeHome, 'package.json'), '{}', 'utf8');
+    const config = join(fakeHome, '.cratylus.memory.json');
+    writeFileSync(config, '{"schema":1}', 'utf8');
+    vi.stubEnv('HOME', fakeHome);
+    expect(repoKeysFromConfig(config)).toEqual([]);
   });
 
   it('throws loudly on malformed JSON (config present ⇒ authoritative)', () => {

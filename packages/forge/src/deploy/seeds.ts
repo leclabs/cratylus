@@ -3,10 +3,10 @@
 //   SEMANTIC.md    — identity facts + durable agent-intrinsic knowledge; the
 //                    hot index (the vault carries the cold corpus).
 //   PROCEDURAL.md  — inductively generalized cross-project wisdom NOT already
-//                    carried by a projection (SOUL · skills · gates); the
+//                    carried by a projection (agent definition · skills · gates); the
 //                    projection-dedup bar governs every write.
 //   EPISODIC.jsonl — the raw append-only event log.
-// Seeded-if-absent, NEVER clobbered: the def (SOUL) is generated substance,
+// Seeded-if-absent, NEVER clobbered: the def (Target) is generated substance,
 // overwritten freely; these are the self-authored individual, protected from
 // every regen (`substance-over-accident`). Skills have no sidecars — seeding
 // is agent-only.
@@ -18,7 +18,7 @@
 // EPISODIC is a JSONL event log: `memory encode` mints a ULID and appends
 // one open record per salient event. A JSONL store carries no prose, so a
 // fresh agent seeds an EMPTY `.jsonl` file; the protocol that governs it lives
-// once in the SOUL's verbatim Protocol dimension, never duplicated into the data
+// once in the Target's verbatim Protocol dimension, never duplicated into the data
 // store.
 
 /** Local-date `YYYY-MM-DD` (local time, NOT UTC) — the seed stamp. */
@@ -54,7 +54,7 @@ export function proceduralSeed(name: string): string {
   return `# ${name} — procedural
 
 *My procedural store (\`memory\`) — inductively generalized, cross-project wisdom NOT already
-carried by a projection (SOUL · skills · gates); the projection-dedup bar governs every
+carried by a projection (agent definition · skills · gates); the projection-dedup bar governs every
 write: already-projected ⇒ not stored. Grown at dream (\`correction-consolidation\`); deploy
 never overwrites me. Read whole at wake.*
 
@@ -80,7 +80,7 @@ export function episodicSeed(_name: string): string {
 // remain the FALLBACK so the deploy seed site (local.ts) stays green;
 // removing them now would break the build against a not-yet-landed import. See S6
 // report + plans/runtime coordination (S4 concurrent).
-/** (filename, seed-fn) — SOUL (the def) is generated, not seeded here. */
+/** (filename, seed-fn) — Target (the def) is generated, not seeded here. */
 export const SEED_FILES: ReadonlyArray<[string, (name: string) => string]> = [
   ['SEMANTIC.md', semanticSeed],
   ['PROCEDURAL.md', proceduralSeed],

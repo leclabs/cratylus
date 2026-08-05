@@ -1,7 +1,7 @@
 // `project-targets` — regenerate the committed DEPLOY TARGETS of the `hook` source
-// cells (`src/hooks/*.ts`) from the cells themselves: the cell owns the bytes; the
-// committed target is a deploy-owned projection, byte-locked by
-// `test/hook-rule-boundary.test.ts`.
+// cells (`src/hooks/*.ts`) from the cells themselves: the cell owns the bytes — as a
+// TEMPLATE the projector resolves — and the committed target is a deploy-owned
+// projection of the RESOLVED bytes, byte-locked by `test/hook-rule-boundary.test.ts`.
 //
 //   hook worker → its `worker.targetPath` (a `.sh`/`.md` the harness or `.husky/*`
 //                 dispatcher runs; executable bit set per the cell)
@@ -22,7 +22,8 @@ import { chmodSync, readFileSync, writeFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import type { HookCell, RuleCell } from '@cratylus/schema';
+import { projectionFacts } from '@cratylus/forge/project';
+import { type HookCell, type RuleCell, resolveWorker } from '@cratylus/schema';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const canonRoot = join(here, '..', '..');
@@ -74,17 +75,31 @@ export interface CellTarget {
   readonly source: string;
 }
 
-/** Flatten every hook worker + rule body into its committed target. */
+/**
+ * Flatten every hook worker + rule body into its committed target.
+ *
+ * WORKERS ARE RESOLVED HERE, not carried raw. `workers[].content` is a template
+ * (`{{fact:…}}` / `{{speech:…}}`) and the committed `.sh` is the RESOLVED bytes — the
+ * same bytes `projectPluginSet` emits, from the same `resolveWorker` over the same
+ * `projectionFacts()`. Regenerating from the raw template would commit a literal
+ * `{{fact:runtime-bin}}` and the byte-lock would then hold the WRONG subject fixed.
+ *
+ * Reaching `@cratylus/forge` from here is the LICENSED edge: this is one of canon's
+ * build scripts driving the projector as a tool (`ARCHITECTURE.md` — "the divergence
+ * is a CELL importing it"). The cell that used to import the value now names it.
+ */
 export async function cellTargets(): Promise<CellTarget[]> {
   const targets: CellTarget[] = [];
+  const facts = projectionFacts();
   for (const cell of await allHookCells()) {
     for (const w of cell.workers) {
+      const resolved = resolveWorker(w, facts, cell.speech);
       targets.push({
-        path: w.targetPath,
-        content: w.content,
-        executable: w.executable,
+        path: resolved.targetPath,
+        content: resolved.content,
+        executable: resolved.executable,
         kind: 'hook',
-        source: `${cell.id}/${w.filename}`,
+        source: `${cell.id}/${resolved.filename}`,
       });
     }
   }

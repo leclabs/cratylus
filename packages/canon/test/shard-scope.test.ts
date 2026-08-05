@@ -1,0 +1,163 @@
+// shard-scope — a shard's DECLARED outputs must cover what landing it actually changed.
+//
+// `spec.mjs` says what each shard writes. Until now that was an authored CLAIM, and the plan gate
+// could only check that each glob RESOLVES — which catches a wrong entry and is blind to a missing
+// one, because a shorter array is still an array of resolving globs. A scripted edit truncated
+// five `outputs` arrays and every gate stayed green; `outputs` IS the contention set, so the wave
+// disjointness proofs ran for a while on data that understated what shards write.
+//
+// This closes it from the other side. For every commit that moved shards into `completed/`, the
+// files that commit touched must lie inside the UNION of those shards' declared outputs (plus
+// bookkeeping). It convicts in both directions that matter:
+//
+//   - an UNDER-DECLARED array — the shard wrote a file its spec does not claim
+//   - an OUT-OF-SCOPE edit — the executor strayed outside the shard's territory
+//
+// The manual version of this check caught a real border crossing during `t-manifest-file-basename`
+// (a sweep rewrote specifiers belonging to another shard's files). It worked. It should not depend
+// on someone remembering to run it.
+//
+// SCOPE, stated so the silence is not read as coverage: this checks COMPLETION commits only.
+// A shard that never landed is unchecked here, and a commit that lands no shard is ignored.
+
+import { execFileSync } from 'node:child_process';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { describe, expect, it } from 'vitest';
+import { SHARDS } from '../../../plans/decomplect/spec.mjs';
+
+const REPO = resolve(dirname(fileURLToPath(import.meta.url)), '../../..');
+const S = SHARDS as Record<string, { outputs: readonly string[] }>;
+
+/** Paths any completion commit may touch: the plan's own bookkeeping and generated records. */
+const BOOKKEEPING = [
+  'plans/',
+  'graphify-out/',
+  'packages/canon/.render-oracle',
+  '.gitignore',
+];
+
+/**
+ * INSTRUMENT MAINTENANCE, ratcheted. A completion commit should carry shard work and nothing
+ * else; these files are the plan's own tooling, which got maintained inside shard commits while
+ * the instrument was being built. SHRINK-ONLY — a new entry means a commit mixed concerns.
+ */
+const MIXED: ReadonlySet<string> = new Set([
+  'packages/canon/test/praxis-execution-spec.test.ts',
+  'packages/canon/test/gate-convicts.test.ts',
+  'packages/canon/test/architecture.test.ts',
+  '.cratylus.config',
+]);
+
+function git(...args: string[]): string {
+  return execFileSync('git', args, {
+    cwd: REPO,
+    encoding: 'utf8',
+    maxBuffer: 32 * 1024 * 1024,
+  }).trim();
+}
+
+/** Commits that ADDED a shard file under `completed/`, newest first, with the shards they landed. */
+function completionCommits(): { sha: string; shards: string[] }[] {
+  const byCommit = new Map<string, string[]>();
+  for (const id of Object.keys(S)) {
+    const sha = git(
+      'log',
+      '--diff-filter=A',
+      '--format=%H',
+      '-1',
+      '--',
+      `plans/decomplect/completed/${id}.md`,
+    );
+    if (!sha) continue;
+    byCommit.set(sha, [...(byCommit.get(sha) ?? []), id]);
+  }
+  return [...byCommit].map(([sha, shards]) => ({ sha, shards }));
+}
+
+function expand(
+  patterns: readonly string[],
+  tracked: readonly string[],
+): Set<string> {
+  const out = new Set<string>();
+  for (const p of patterns) {
+    if (p.endsWith('/**')) {
+      const pre = p.slice(0, -2);
+      for (const f of tracked) if (f.startsWith(pre)) out.add(f);
+    } else out.add(p);
+  }
+  return out;
+}
+
+describe('shard-scope', () => {
+  const commits = completionCommits();
+
+  it('there are completion commits to check — the gate can see', () => {
+    // Without this the whole suite below is vacuously green on an empty set, which is the
+    // dark-gate shape this corpus keeps paying for.
+    expect(
+      commits.length,
+      'no commit has ever landed a shard — the scan is DARK',
+    ).toBeGreaterThan(0);
+  });
+
+  it('every completion commit stays inside the outputs it declared', () => {
+    const tracked = git('ls-files').split('\n').filter(Boolean);
+    const strays: string[] = [];
+    for (const { sha, shards } of commits) {
+      const declared = expand(
+        shards.flatMap((id) => S[id]?.outputs ?? []),
+        tracked,
+      );
+      const touched = git('show', '--name-only', '--format=', sha)
+        .split('\n')
+        .filter(Boolean);
+      for (const f of touched) {
+        if (BOOKKEEPING.some((b) => f.startsWith(b))) continue;
+        if (MIXED.has(f)) continue;
+        // A glob that expands to nothing today (the path was renamed BY this very commit)
+        // still counts as declared if any declared prefix covers it.
+        const covered =
+          declared.has(f) ||
+          shards.some((id) =>
+            (S[id]?.outputs ?? []).some((p) =>
+              p.endsWith('/**') ? f.startsWith(p.slice(0, -2)) : p === f,
+            ),
+          );
+        if (!covered)
+          strays.push(`${sha.slice(0, 8)} [${shards.join(',')}] → ${f}`);
+      }
+    }
+    expect(
+      strays,
+      'a completion commit touched a file no shard it landed declares — either the outputs are under-declared or the edit strayed',
+    ).toEqual([]);
+  });
+
+  it('the mixed-concern ratchet is shrink-only — every entry still occurs', () => {
+    const everTouched = new Set<string>();
+    for (const { sha } of commits)
+      for (const f of git('show', '--name-only', '--format=', sha)
+        .split('\n')
+        .filter(Boolean))
+        everTouched.add(f);
+    const stale = [...MIXED].filter((f) => !everTouched.has(f));
+    expect(
+      stale,
+      'ratchet entries that no longer name a real mixing — remove them, do not leave the list padded',
+    ).toEqual([]);
+  });
+
+  // ── the convicting fixture ───────────────────────────────────────────
+  it('FAILS on an under-declared output and on an out-of-scope edit', () => {
+    const tracked = ['a/x.ts', 'a/y.ts', 'b/z.ts'];
+    const declared = expand(['a/**'], tracked);
+    // out-of-scope: the commit touched a file outside the declared prefix
+    expect([...declared].includes('b/z.ts')).toBe(false);
+    // under-declared: shrink the array and a previously-covered file falls out
+    const shrunk = expand(['a/x.ts'], tracked);
+    expect([...shrunk].includes('a/y.ts')).toBe(false);
+    // exonerating: the full declaration covers both
+    expect([...declared].sort()).toEqual(['a/x.ts', 'a/y.ts']);
+  });
+});

@@ -88,7 +88,7 @@ control test is load-bearing, not ceremonial.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** corpus-rename · **wave** 1
+- **slice** corpus-rename · **wave** 0
 - **depends on** `t-soul-to-target-in-forge` · `t-manifest-file-basename`
 - **writes** `packages/forge/src/project/write.ts` · `packages/canon/src/toolkit/render-oracle/**`
 - **compiles against** `packages/forge/src/cli/commands/project.ts`

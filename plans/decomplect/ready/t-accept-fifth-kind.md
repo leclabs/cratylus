@@ -34,7 +34,7 @@ divergence is unconvictable.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** projection-and-ground · **wave** 1
+- **slice** projection-and-ground · **wave** 0
 - **depends on** `t-soul-to-target-in-forge`
 - **writes** `packages/forge/src/validate/accept.ts` · `MODEL.md`
 - **compiles against** `packages/schema/src/hook-cell.ts`

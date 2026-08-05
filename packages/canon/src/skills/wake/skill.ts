@@ -5,18 +5,18 @@ import { praxis } from '../praxis/skill.js';
 const WAKE_BLOCK = `WAKE ≜ begin → catch-up → load → orient → resume
 
 agent       ≜ this agent's name
-memory      ≜ capability ⟨strategy-encapsulated : where it stores · in what format · how it scopes · what it migrates are ITS concern, ¬ this protocol's⟩
+memory      ≜ capability ⟨strategy-encapsulated : where it stores · in what format · how it scopes · what it migrates are ITS concern, ¬ this protocol's⟩ ⟨invoked \`memory <verb> <args>\` ; the Runtime-capability line under this block resolves the shim ∴ ¬ path-in-cell⟩
 ground      ≜ project/{ VISION · MODEL · ENGINE · CANON } · PLAN.md(bound)
 salient     ≜ { decision⟨+rationale⟩ · surprise · error|failure · fact-learned · thread⟨opened|closed⟩ }
 P           ≜ a plan : a set of task-files
 bound, occupied, elect, bind, frontier @ praxis ⟨plan-set dynamics has ONE home · ¬ redeclared here⟩
 
-begin    ≜ \`scripts/memory.mjs session begin --name <agent>\` ↦ ⟨session · SEMANTIC · PROCEDURAL · EPISODIC · consolidation-owed⟩
+begin    ≜ \`memory session begin --name <agent>\` ↦ ⟨session · SEMANTIC · PROCEDURAL · EPISODIC · consolidation-owed⟩
 catch-up ≜ consolidation-owed ⇒ dream ≺ proceed
 load     ≜ SEMANTIC ∪ PROCEDURAL whole ∧ EPISODIC as returned ⟨scoped by the strategy, ¬ by this protocol⟩
 orient   ≜ read ground ≺ ( bind(P) ∧ bind(work-thread) )
 resume   ≜ rebind(continuity-thread) ∴ act-as(same-individual)
-encode   ≜ standing-duty ↾ per-turn ; ∀ e ∈ salient : \`scripts/memory.mjs encode --name <agent> --body '<open record>'\`
+encode   ≜ standing-duty ↾ per-turn ; ∀ e ∈ salient : \`memory encode --name <agent> --body '<open record>'\`
 
 bound(P) ∧ ¬ occupied(P) ⇒ bind(P)
 bound(P) ∧ occupied(P)   ⇒ REPORT(P) ∧ fall-through(next-candidate)

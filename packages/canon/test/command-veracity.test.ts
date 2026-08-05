@@ -18,9 +18,11 @@
 // itself as a conformance claim (see `reader-density.test.ts`'s reach leg).
 // IN: every tracked file a reader could act on today.
 // OUT, each for a reason that is about the PROPERTY, not about convenience:
-//   - `plans/.retired/**` and `plans/*/completed/**` — an archived record of what
-//     was true when it was written. It is not instructing anyone now, and holding
-//     history to today's script names would forbid recording history accurately.
+//   - `plans/*/completed/**` — a closed record of what was true when it was written.
+//     It is not instructing anyone now, and holding history to today's script names
+//     would forbid recording history accurately. (`plans/.retired/**` was the other
+//     half of this exclusion and is gone: `retire` means DELETE, so no such path can
+//     ever be tracked again, and a skip for a path that cannot exist is dead code.)
 //   - `**/test/**` — specimen carriers. A test that names a command is MENTIONING
 //     one, not telling a reader to run it; the same use/mention line that keeps the
 //     stance rubric's quoted collapse examples out of the density gate. THIS FILE is
@@ -142,7 +144,6 @@ function tracked(): string[] {
 
 /** IN-scope ⇔ a reader could act on it today. Every exclusion is argued in the header. */
 function inScope(rel: string): boolean {
-  if (rel.startsWith('plans/.retired/')) return false;
   if (/^plans\/[^/]+\/completed\//.test(rel)) return false;
   if (rel.includes('/test/') || rel.endsWith('.test.ts')) return false;
   if (rel.startsWith('graphify-out/')) return false;

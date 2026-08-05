@@ -1,35 +1,44 @@
 // plan-set.ts — the CANON home of the PLAN-LEVEL lifecycle (sibling to
-// `plan-states.ts`, which owns the TASK-level state folders). Realizes
-// `plans/plan-set-dynamics/DESIGN.md` §1–3, §6: the plan-as-whole phase machine,
-// plan-set membership, the landing relation, and retirement.
+// `plan-states.ts`, which owns the TASK-level state folders): the plan-as-whole
+// phase machine, plan-set membership, the landing relation, and retirement.
 //
-// Two disciplines the design fixes and this module obeys:
-//   • folder-as-state — a plan's membership/retirement is READ OFF its on-disk
-//     residence (directly under `plans/` = in-scope; under `plans/.retired/` =
-//     retired). No stored membership flag.
-//   • derived-on-demand-never-stored — `landing(P)` is COMPUTED FROM GIT each call
-//     and written NOWHERE (`∀P: stored(P)=∅` — no sidecar, no PLAN.md field, no
-//     cache). `phase` likewise is a pure readout, never a stored field.
+// RETIRE MEANS DELETE. It used to mean `git mv` into a `plans/.retired/` archive,
+// and the cell asserted `content(retire(P)) = content(P)` — a postcondition
+// deletion cannot satisfy. The law that refutes the archive was already in the
+// cell: `retire(P) defined ⇔ terminal(P) ∧ drained(yield(P))`, and `drained` means
+// every intent is ALREADY authored into its strongest seam. So the archive's
+// content preserved nothing the corpus did not hold, and git holds the bytes
+// regardless. See
+// `plans/decomplect/completed/retire-relocates-but-the-operator-deletes.md`.
+//
+// Two disciplines this module obeys:
+//   • folder-as-state — a plan's MEMBERSHIP is its on-disk residence: a directory
+//     under `plans/` bearing a `PLAN.md`. There is no second residence and no
+//     stored membership flag; retirement is the member LEAVING.
+//   • derived-on-demand-never-stored — `landing(P)` and its twin `retirement(P)`
+//     are COMPUTED FROM GIT each call and written NOWHERE (`∀P: stored(P)=∅` — no
+//     sidecar, no PLAN.md field, no cache). `phase` likewise is a pure readout.
+//
+// THE CARRIER FOR "RETIRED" IS THE RETIRING COMMIT. A deleted plan resides
+// nowhere, so residence cannot answer; VCS can, and the corpus had already made
+// exactly this move once for `landing`. `retires(c, P) ⇔ c deletes dir(P)`, and
+// `retirement(P)` is the first such commit on trunk — the twin of `lands`/`landing`.
 //
 // The ONE admitted stored signal is SUPERSESSION (`.superseded-by`): "P's work
 // relocated to successor Q" cannot be derived from residence+git, so it is the sole
 // fact this module stores — a tracked dotfile. This does not violate the discipline
 // (never store what you CAN derive); it records what is inherently non-derivable.
 // It widens the retire trigger from `landed` to `terminal = landed ∨ superseded`,
-// so a superseded plan retires canonically instead of being hand-archived.
+// so a superseded plan retires canonically instead of being hand-deleted.
 //
 // ENGINE untouched, `PLAN_STATES` untouched: the plan tier adds no task-state
-// folder and no scaffold path — only the lazily-`mkdir`ed `plans/.retired/`
-// container, created by `retire`.
+// folder, no scaffold path, and — since the archive died — no container at all.
 
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PLAN_STATES } from './plan-states.js';
-
-/** On-disk container for retired plans; dot-prefixed ⇒ auto-excluded from `list`. */
-export const RETIRED_DIR = '.retired';
 
 /** In-plan marker naming the successor a plan's work relocated to; its presence
  *  makes the plan `superseded` (a terminal phase). Supersession is NOT derivable
@@ -117,22 +126,6 @@ export function done(ctx: PlanSetContext, plan: string): boolean {
   );
 }
 
-// ── derived from on-disk residence (folder-as-state) ──
-
-/** `dir(P)` resides under `plans/.retired/`. */
-export function archived(ctx: PlanSetContext, plan: string): boolean {
-  try {
-    return readdirSync(join(ctx.repoRoot, PLANS, RETIRED_DIR)).includes(plan);
-  } catch {
-    return false;
-  }
-}
-
-/** `¬archived(P)` — P is a member of the working set. */
-export function inscope(ctx: PlanSetContext, plan: string): boolean {
-  return !archived(ctx, plan);
-}
-
 // ── supersession — the one STORED signal (non-derivable), a tracked marker ──
 
 /** The successor named in P's `.superseded-by` marker, or `undefined` if P bears none. */
@@ -170,14 +163,14 @@ export function supersede(ctx: PlanSetContext, plan: string, by: string): void {
   if (successor === plan) {
     throw new Error('supersede: a plan cannot supersede itself');
   }
-  const known = new Set([...list(ctx), ...list(ctx, { retired: true })]);
+  // A retired plan is DELETED, so `Plans` (what is on disk) is the whole of what
+  // can be named here — there is no archive to also consult.
+  const known = new Set(list(ctx));
   if (!known.has(plan)) {
     throw new Error(`supersede: unknown plan '${plan}'`);
   }
   if (!known.has(successor)) {
-    throw new Error(
-      `supersede: unknown successor plan '${successor}' (in-scope or retired)`,
-    );
+    throw new Error(`supersede: unknown successor plan '${successor}'`);
   }
   const rel = `${PLANS}/${plan}/${SUPERSEDED_MARKER}`;
   writeFileSync(join(ctx.repoRoot, rel), `${successor}\n`);
@@ -224,16 +217,11 @@ function doneAt(ctx: PlanSetContext, sha: string, plan: string): boolean {
   return hasCompleted;
 }
 
-/**
- * `landing : P ⇀ commit` — the FIRST trunk commit at which every task-file of P
- * sits under `completed/` (P's result landed), as a sha; `undefined` if P has not
- * landed. Recomputed from git each call (`git log --first-parent` over
- * `plans/<plan>`); nothing is written (`stored(P) = ∅`).
- */
-export function landing(ctx: PlanSetContext, plan: string): string | undefined {
-  let shas: string[];
+/** Trunk commits that touched `plans/<plan>`, oldest first. The one git walk both
+ *  `landing` and its twin `retirement` fold over. */
+function touchingCommits(ctx: PlanSetContext, plan: string): string[] {
   try {
-    shas = git(ctx, [
+    return git(ctx, [
       'log',
       '--first-parent',
       '--reverse',
@@ -244,9 +232,18 @@ export function landing(ctx: PlanSetContext, plan: string): string | undefined {
       .split('\n')
       .filter(Boolean);
   } catch {
-    return undefined;
+    return [];
   }
-  for (const sha of shas) {
+}
+
+/**
+ * `landing : P ⇀ commit` — the FIRST trunk commit at which every task-file of P
+ * sits under `completed/` (P's result landed), as a sha; `undefined` if P has not
+ * landed. Recomputed from git each call (`git log --first-parent` over
+ * `plans/<plan>`); nothing is written (`stored(P) = ∅`).
+ */
+export function landing(ctx: PlanSetContext, plan: string): string | undefined {
+  for (const sha of touchingCommits(ctx, plan)) {
     if (doneAt(ctx, sha, plan)) {
       return sha;
     }
@@ -257,9 +254,68 @@ export function landing(ctx: PlanSetContext, plan: string): string | undefined {
 /** `landingOf : P ↦ landing(P)` — recompute from VCS each call; write nothing. */
 export const landingOf = landing;
 
-/** `landing(P) defined ∧ ¬archived(P)` — the plan's result landed on trunk. */
+// ── the retirement relation — the twin of landing, likewise VCS-only ──
+//
+// `retire` DELETES, so residence can no longer answer "was P retired?": a deleted
+// plan resides nowhere. The commit that deleted it can. `retires(c, P) ⇔ c deletes
+// dir(P)`; `retirement(P)` is the first such commit on trunk. Nothing is stored —
+// exactly the discipline `landing` already established.
+
+/** Does the tree at `sha` hold NO file under `plans/<plan>`? */
+function absentAt(ctx: PlanSetContext, sha: string, plan: string): boolean {
+  try {
+    const out = git(ctx, [
+      'ls-tree',
+      '-r',
+      '--name-only',
+      sha,
+      '--',
+      `${PLANS}/${plan}`,
+    ]);
+    return out.split('\n').filter(Boolean).length === 0;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * `retirement : P ⇀ commit` — the FIRST trunk commit at which `plans/<plan>` holds
+ * no file, having held one at an earlier commit: the RETIRING commit. `undefined`
+ * while P is still on disk (`P ∈ Plans` ⇒ not retired, whatever an older deletion
+ * says — a re-authored plan is a live plan again) and for a plan git never saw.
+ * Recomputed each call, written NOWHERE (`stored(P) = ∅`).
+ */
+export function retirement(
+  ctx: PlanSetContext,
+  plan: string,
+): string | undefined {
+  if (plansUnder(join(ctx.repoRoot, PLANS)).includes(plan)) {
+    return undefined;
+  }
+  let existed = false;
+  for (const sha of touchingCommits(ctx, plan)) {
+    if (!absentAt(ctx, sha, plan)) {
+      existed = true;
+    } else if (existed) {
+      return sha;
+    }
+  }
+  return undefined;
+}
+
+/** `retirementOf : P ↦ retirement(P)` — recompute from VCS each call; write nothing. */
+export const retirementOf = retirement;
+
+/** `retired(P) ⇔ retirement(P) defined` — P's directory was deleted by a trunk
+ *  commit and has not come back. The successor to the old residence test
+ *  `dir(P) @ plans/.retired/`, which no longer names anything. */
+export function retired(ctx: PlanSetContext, plan: string): boolean {
+  return retirement(ctx, plan) !== undefined;
+}
+
+/** `landing(P) defined ∧ ¬retired(P)` — the plan's result landed on trunk. */
 export function landed(ctx: PlanSetContext, plan: string): boolean {
-  return !archived(ctx, plan) && landing(ctx, plan) !== undefined;
+  return !retired(ctx, plan) && landing(ctx, plan) !== undefined;
 }
 
 /** `terminal(P) ⇔ landed(P) ∨ superseded(P)` — P has no remaining live work, so it
@@ -272,14 +328,17 @@ export function terminal(ctx: PlanSetContext, plan: string): boolean {
 // ── the plan-phase readout (total, priority-ordered, mutually exclusive) ──
 
 /**
- * `phase : P → Phase` — a pure derivation over {archived, superseded, landed,
- * dispatched}, never a stored field. Priority: archived ⇒ retired · superseded ⇒
+ * `phase : P → Phase` — a pure derivation over {retired, superseded, landed,
+ * dispatched}, never a stored field. Priority: retired ⇒ retired · superseded ⇒
  * superseded · landed ⇒ landed · dispatched ⇒ in-flight · else ⇒ proposed. An
- * explicit supersession declaration outranks the derived landed/in-flight readout
- * (DESIGN §3(1)).
+ * explicit supersession declaration outranks the derived landed/in-flight readout.
+ *
+ * `retired` reads the RETIRING COMMIT, not a residence — which is why the readout
+ * survives `retire` becoming a deletion, and why a plan whose deletion is merely
+ * STAGED still reads `landed`: the fact's carrier is a commit, and it is not one yet.
  */
 export function phase(ctx: PlanSetContext, plan: string): Phase {
-  if (archived(ctx, plan)) {
+  if (retired(ctx, plan)) {
     return 'retired';
   }
   if (superseded(ctx, plan)) {
@@ -318,27 +377,31 @@ function plansUnder(dir: string): string[] {
 }
 
 /**
- * `list = { P ∈ Plans | inscope(P) }` — plan dirs directly under `plans/` bearing
- * a `PLAN.md` (`.retired/` is dot-prefixed and holds no top-level `PLAN.md`, so it
- * is naturally skipped). `{ retired: true }` enumerates the archive instead.
+ * `list = Plans` — plan dirs directly under `plans/` bearing a `PLAN.md`. With the
+ * archive gone there is no second residence to filter against: what is on disk IS
+ * the plan set, and retirement is a member leaving it.
  */
-export function list(
-  ctx: PlanSetContext = defaultContext,
-  opts: { retired?: boolean } = {},
-): string[] {
-  const root = opts.retired
-    ? join(ctx.repoRoot, PLANS, RETIRED_DIR)
-    : join(ctx.repoRoot, PLANS);
-  return plansUnder(root);
+export function list(ctx: PlanSetContext = defaultContext): string[] {
+  return plansUnder(join(ctx.repoRoot, PLANS));
 }
 
-// ── retirement — preserve, don't delete ──
+// ── retirement — DELETE; git holds the bytes ──
 
 /**
- * `retire : P ↦ P'` — relocate `dir(P)` under `plans/.retired/` via `git mv`
- * (content + history preserved: a move, not a delete). Precondition `terminal(P)`
- * (`landed(P) ∨ superseded(P)`). Leaves the move STAGED — the commit is gated (no
- * `git commit`, no `git push`).
+ * `retire : P ↦ ⊥` — DELETE `dir(P)`. Precondition `terminal(P)` (`landed(P) ∨
+ * superseded(P)`); postcondition `P ∉ Plans`.
+ *
+ * The cell's full precondition is `terminal(P) ∧ drained(yield(P))`, and only the
+ * first conjunct is machine-checkable — `drained` is a claim about whether every
+ * intent the execution established was authored into its strongest seam, which no
+ * predicate over the tree can decide. It is stated here rather than silently
+ * dropped: the caller owes it.
+ *
+ * Nothing is archived, because there is nothing left to preserve: `drained` means
+ * the yield is already in the corpus, and git holds every byte of the record
+ * regardless. The deletion is STAGED (`git add -A -- plans/<plan>` after the rmdir,
+ * which also sweeps untracked residue like `.bound`); the commit is gated, and that
+ * commit is what makes `retirement(P)` — hence `phase(P) = retired` — readable.
  */
 export function retire(ctx: PlanSetContext, plan: string): void {
   if (!terminal(ctx, plan)) {
@@ -346,6 +409,12 @@ export function retire(ctx: PlanSetContext, plan: string): void {
       `retire: precondition terminal(${plan}) not met (a plan retires once its result LANDS or it is SUPERSEDED)`,
     );
   }
-  mkdirSync(join(ctx.repoRoot, PLANS, RETIRED_DIR), { recursive: true });
-  git(ctx, ['mv', `${PLANS}/${plan}`, `${PLANS}/${RETIRED_DIR}/${plan}`]);
+  const rel = `${PLANS}/${plan}`;
+  rmSync(join(ctx.repoRoot, rel), { recursive: true, force: true });
+  try {
+    git(ctx, ['add', '-A', '--', rel]);
+  } catch {
+    // `git add` refuses a pathspec matching nothing in the index or the tree — the
+    // case of a plan that was never committed. The disk is already correct.
+  }
 }

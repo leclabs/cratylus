@@ -1,5 +1,5 @@
 // Deploy orchestrator — resolve a SCOPE to the LOCAL `.claude/` root, then run
-// the placer that ships the generated defs (the SOUL) and seeds each agent's
+// the placer that ships the generated defs (the Target) and seeds each agent's
 // `{SEMANTIC,PROCEDURAL,EPISODIC}` sidecars ONLY IF ABSENT (`memory`).
 // Governed oppositely to the def (`substance-over-accident`): the def is
 // regenerated substance (overwritten freely); the sidecars are the

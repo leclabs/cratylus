@@ -26,7 +26,7 @@ capability:
 cratylus-run memory encode --name <agent> --body 'what happened'
 cratylus-run memory read   --name <agent>
 
-cratylus-run tap status         # the event-tap capability: install · uninstall · read · status
+cratylus-run eventTap status    # the event-tap capability: install · uninstall · read · status
 
 cratylus-run --help
 cratylus-run --version

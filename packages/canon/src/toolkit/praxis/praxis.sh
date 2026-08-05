@@ -22,7 +22,7 @@
 #   file <plan> <symptom>...   stub a pending shard; no census, no re-slice, no re-mirror
 #   frontier            the shards workable right now in the bound plan
 #   land <plan>         record landing(P) — the carrier that makes `terminal` readable
-#   retire <plan>       relocate under .retired/; refuses unless terminal(P)
+#   retire <plan>       DELETE the plan dir; refuses unless terminal(P)
 #
 # POSIX sh, no deps beyond git/coreutils. Run from anywhere in the repo.
 
@@ -83,7 +83,7 @@ cmd_status() {
 	elif [ -n "$(cmd_elect)" ] || [ -n "$(ls -d "$PLANS"/*/ 2>/dev/null)" ]; then
 		printf 'bound: NONE — the always-bind law is violated; run `praxis elect` then `praxis bind <plan>`.\n'
 	else
-		# `∃ P : inscope(P) ∧ ¬terminal(P) ⇒ ∃! P : bound(P)`. With no plan in scope
+		# `∃ P ∈ Plans : ¬terminal(P) ⇒ ∃! P : bound(P)`. With no plan in scope
 		# the antecedent is FALSE, so the law is SATISFIED, not violated. Reporting a
 		# violation here would train the reader to ignore the real one.
 		printf 'bound: none — and none is owed: the plan set is empty, so always-bind is vacuously satisfied.\n'
@@ -123,7 +123,12 @@ cmd_land() {
 	printf '  terminal(P) ⇒ retire(P) — run `praxis retire %s` to discharge it.\n' "$1"
 }
 
-# retire — pre terminal(P). The precondition is now checkable, which is the point.
+# retire — pre terminal(P), and it DELETES. There is no `.retired/` container: the
+# cell only lets a plan retire once `drained(yield(P))` holds, i.e. once every intent
+# the execution established is already authored into its strongest seam. An archive
+# of a drained plan preserves nothing the corpus does not already hold, and git holds
+# the bytes either way. The deletion is staged; committing it is what makes
+# `retirement(P)` — and so `phase(P) = retired` — readable.
 cmd_retire() {
 	[ -n "$1" ] || die 'retire needs a plan name'
 	p="$PLANS/$1"
@@ -133,10 +138,9 @@ cmd_retire() {
 	landed | superseded) ;;
 	*) die "retire(P) requires terminal(P); $1 is $ph" ;;
 	esac
-	mkdir -p "$PLANS/.retired"
-	rm -f "$p/.bound"
-	git mv "$p" "$PLANS/.retired/$1" 2>/dev/null || mv "$p" "$PLANS/.retired/$1"
-	printf 'retired: %s (was %s)\n' "$1" "$ph"
+	rm -rf "$p"
+	git add -A -- "$p" 2>/dev/null || true
+	printf 'retired: %s (was %s). Deleted; git holds every byte.\n' "$1" "$ph"
 }
 
 cmd_frontier() {

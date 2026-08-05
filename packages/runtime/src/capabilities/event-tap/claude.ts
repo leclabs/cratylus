@@ -3,9 +3,9 @@
 //
 // Relocated from forge's `runtime/event-tap/claude.ts` into the runtime
 // capability, re-based onto the runtime-owned port + the local Claude harness
-// mapping (this capability imports ZERO from `@cratylus/forge`). `installTap`
+// mapping (this capability imports ZERO from `@cratylus/forge`). `install`
 // merges a PASSIVE logger entry into the target `settings.json` (foreign top-level
-// keys AND foreign per-event entries preserved); `removeTap` surgically drops only
+// keys AND foreign per-event entries preserved); `remove` surgically drops only
 // the tap's own entry; `readCapture`/`status` derive from the target file so they
 // are correct across separate CLI invocations (no reliance on in-process state).
 // ─────────────────────────────────────────────────────────────────────────────
@@ -18,7 +18,7 @@ import type {
   CaptureRow,
   CaptureSink,
   EventTapHost,
-  TapStatus,
+  EventTapStatus,
 } from '../../ports/event-tap.js';
 import {
   type ClaudeHooksBlock,
@@ -35,7 +35,7 @@ import {
 // Derived, never a second literal — and this one is PERSISTED IN USER SETTINGS, so a
 // drift between it and the bin name does not merely rename a thing, it ORPHANS every
 // installed tap: `uninstall` would look for an id no longer written by `install`.
-export const TAP_ID = `${RUNTIME_BIN}-event-tap`;
+export const EVENT_TAP_ID = `${RUNTIME_BIN}-event-tap`;
 
 /**
  * Resolve the target `settings.json` path, override-first (mirrors the memory
@@ -64,7 +64,7 @@ function loggerCommand(capturePath: string): string {
 /**
  * Recover the capture path a tap logger command writes to (the inverse of
  * {@link loggerCommand}). Lets `readCapture` find the sink from the installed
- * `settings.json` alone, so a fresh `tap read` process needs no in-memory state.
+ * `settings.json` alone, so a fresh `eventTap read` process needs no in-memory state.
  */
 function capturePathFromCommand(command: string): string | undefined {
   const m = command.match(/>> '(.*)'; exit 0$/);
@@ -95,14 +95,14 @@ export class EventTapHostClaude implements EventTapHost {
     return resolveSettingsPath(this.#settingsPathOverride);
   }
 
-  installTap(events: LifecycleEvent[], sink: CaptureSink): void {
+  install(events: LifecycleEvent[], sink: CaptureSink): void {
     this.#sinkPath = sink.path;
     if (events.length === 0) return; // nothing to observe
 
     const { block: tapBlock } = buildTapBlock(
       events,
       loggerCommand(sink.path),
-      TAP_ID,
+      EVENT_TAP_ID,
     );
 
     const settingsPath = this.#settingsPath;
@@ -129,7 +129,7 @@ export class EventTapHostClaude implements EventTapHost {
     );
   }
 
-  removeTap(): void {
+  remove(): void {
     const settingsPath = this.#settingsPath;
     if (!existsSync(settingsPath)) return;
     const text = readFileSync(settingsPath, 'utf8');
@@ -143,7 +143,10 @@ export class EventTapHostClaude implements EventTapHost {
     const cleaned: ClaudeHooksBlock = {};
     for (const [event, entries] of Object.entries(hooks)) {
       const kept = entries
-        .map((e) => ({ ...e, hooks: e.hooks.filter((h) => h.id !== TAP_ID) }))
+        .map((e) => ({
+          ...e,
+          hooks: e.hooks.filter((h) => h.id !== EVENT_TAP_ID),
+        }))
         .filter((e) => e.hooks.length > 0);
       if (kept.length > 0) cleaned[event] = kept;
     }
@@ -180,7 +183,7 @@ export class EventTapHostClaude implements EventTapHost {
     return rows;
   }
 
-  status(): TapStatus {
+  status(): EventTapStatus {
     const settingsPath = this.#settingsPath;
     if (!existsSync(settingsPath)) return { attached: false, events: [] };
     const text = readFileSync(settingsPath, 'utf8');
@@ -188,7 +191,9 @@ export class EventTapHostClaude implements EventTapHost {
     const base = JSON.parse(text) as { hooks?: ClaudeHooksBlock };
     const events = new Set<LifecycleEvent>();
     for (const [native, entries] of Object.entries(base.hooks ?? {})) {
-      const owns = entries.some((e) => e.hooks.some((h) => h.id === TAP_ID));
+      const owns = entries.some((e) =>
+        e.hooks.some((h) => h.id === EVENT_TAP_ID),
+      );
       if (!owns) continue;
       const lifecycle = claudeToLifecycle[native];
       if (lifecycle !== undefined) events.add(lifecycle);
@@ -198,7 +203,7 @@ export class EventTapHostClaude implements EventTapHost {
 
   /**
    * Recover the sink path from the installed tap entry in `settings.json`, so a
-   * fresh process (`tap read`) reads captures with no prior in-memory sink.
+   * fresh process (`eventTap read`) reads captures with no prior in-memory sink.
    */
   #recoverSinkPath(): string | undefined {
     const settingsPath = this.#settingsPath;
@@ -209,7 +214,7 @@ export class EventTapHostClaude implements EventTapHost {
     for (const entries of Object.values(base.hooks ?? {})) {
       for (const entry of entries) {
         for (const h of entry.hooks) {
-          if (h.id === TAP_ID && h.command !== undefined) {
+          if (h.id === EVENT_TAP_ID && h.command !== undefined) {
             const path = capturePathFromCommand(h.command);
             if (path !== undefined) return path;
           }

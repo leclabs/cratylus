@@ -1,4 +1,4 @@
-// The claude-code projection of the agent anatomy: assemble a full SOUL `.md`
+// The claude-code projection of the agent anatomy: assemble a full Target `.md`
 // (front-matter + `## Dimension` sections + the `## Memory Protocol` genus block) from
 // a typed agent's dimension vector; and project a skill cell to its SKILL.md. This is
 // forge's claude adapter owning "project a typed Agent/Skill to claude-code
@@ -8,7 +8,7 @@
 // serialize path (`write.ts` / `serializeAgent`) over a config-IR. That lineage was
 // excised (depalimpsest-ir-intake S6); there is one projection here now.
 //
-// THIN GENERATOR: both surfaces are a pure map from a typed vector — the agent SOUL
+// THIN GENERATOR: both surfaces are a pure map from a typed vector — the agent Target
 // from an `Agent`, the SKILL.md from a `ResolvedSkill` (`f(name, formalBlock,
 // composition)`). No body parsing, no ref-link projection, no per-harness section
 // selection, no reader-density scaffold, no provenance banner — those were a
@@ -50,7 +50,7 @@ export { type ResolvedSkill, agentBody, dimensionTitle, skillBody };
 // ── Agent projection (from the Agent vector directly) ────────────────────────
 
 /**
- * The SOUL front-matter: `name`, `description`, `color`. `description` is the
+ * The Target front-matter: `name`, `description`, `color`. `description` is the
  * agent's σ_human* `description` field VERBATIM — the human-read selection line
  * the subagent-router surfaces. It is NOT `archetype` (σ*, the model-read identity
  * body, routed to `## Archetype` in the body) and NOT emoji-prefixed; the mark's
@@ -153,9 +153,9 @@ function frameClaudeMd(frontMatter: string[], body: string): string {
 }
 
 /**
- * The full claude-code SOUL for an agent, projected from its `Agent` vector under
+ * The full claude-code Target for an agent, projected from its `Agent` vector under
  * the set's context. Also the hand-callable entry (a single agent, no plugin set)
- * — which is why `mechanisms` may be absent. `manifest` may NOT: a SOUL projected
+ * — which is why `mechanisms` may be absent. `manifest` may NOT: a Target projected
  * without one has no dimension sections at all, and that renders as a
  * plausible, well-formed, empty agent rather than as an error.
  */

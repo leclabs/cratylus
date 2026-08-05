@@ -1,4 +1,3 @@
-import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
 import type { HookCell } from '@cratylus/schema';
 
 // memory-consolidation-nudge — an ADVISORY Stop hook (the harness half of the
@@ -30,14 +29,23 @@ import type { HookCell } from '@cratylus/schema';
 //   SILENTLY — a KNOWN LIMITATION (no reliable home ⇒ no honest count), never a
 //   fabricated count.
 //
-// The `workers[].content` is the VERBATIM byte-anchor the committed worker at
-// `targetPath` regenerates from (byte-locked by `test/hook-rule-boundary.test.ts`).
+// The `workers[].content` is the TEMPLATE the committed worker at `targetPath`
+// regenerates from — resolved bytes, byte-locked by `test/hook-rule-boundary.test.ts`.
 // EDIT THE CELL AND REGENERATE (`pnpm canon:project:targets`) — never the committed
 // `.sh` alone; a hand-edit drifts the anchor and the byte-lock goes red.
 //
-// The runtime bin's name is INTERPOLATED from `RUNTIME_BIN`, its one home, because
-// the worker names it inside a shell string no compiler reads. `$MEMORY_BIN` stays
-// the override and the test seam; the interpolated name is only its DEFAULT.
+// THIS CELL ONCE IMPORTED `RUNTIME_BIN` FROM `@cratylus/runtime`, and it was the last
+// breach of ARCHITECTURE's property 1 — meaning and mechanism never reference each
+// other. The rationale on record was that "the worker names it inside a shell string
+// no compiler reads", which is true and beside the point: the import is an edge
+// whether or not a compiler follows the value into the string. The worker now names
+// the FACT it needs (`{{fact:runtime-bin}}`) and the PROJECTOR substitutes; the cell
+// names a capability, never an implementation. `$MEMORY_BIN` stays the override and
+// the test seam; the resolved name is only its DEFAULT.
+//
+// WHAT IT SAYS TO AN AGENT lives in `speech`, not in the shell. Those two strings are
+// the only bytes here that land in a reader's context, so they are the only ones a
+// reader-density gate should score — and they had no declared home until this seam.
 
 export const memoryConsolidationNudge: HookCell = {
   id: 'memory-consolidation-nudge',
@@ -48,6 +56,18 @@ export const memoryConsolidationNudge: HookCell = {
   entry: 'memory-consolidation-nudge.sh',
   timeout: 10,
   refs: [],
+  speech: [
+    {
+      id: 'owed',
+      text: 'MEMORY — a consolidation is owed (unfolded records, an oversized store, or scope drift). Consider a hot-path /dream to fold, drain and depalimpsest while context is hot.',
+    },
+    {
+      id: 'blind',
+      // `%s` is the worker's printf arg for `$MEM` — the bin actually consulted. A
+      // BLIND nudge that named no binary would send the reader hunting for which one.
+      text: 'MEMORY — the runtime did not answer whether a consolidation is owed (`%s memory audit` failed). The nudge is BLIND until that is fixed; this is not a clear verdict.',
+    },
+  ],
   workers: [
     {
       filename: 'memory-consolidation-nudge.sh',
@@ -93,7 +113,7 @@ set -eu
 trap 'exit 0' EXIT
 
 # The runtime bin. \$MEMORY_BIN is the override and the test seam.
-MEM="\${MEMORY_BIN:-${RUNTIME_BIN}}"
+MEM="\${MEMORY_BIN:-{{fact:runtime-bin}}}"
 command -v "\$MEM" >/dev/null 2>&1 || exit 0
 
 input="\$(cat 2>/dev/null || true)"
@@ -120,10 +140,10 @@ fi
 # never blocking.
 if verdict="\$("\$MEM" memory audit --home "\$home" --owed 2>/dev/null)"; then
 	if [ "\$verdict" = "owed" ]; then
-		printf 'MEMORY — a consolidation is owed (unfolded records, an oversized store, or scope drift). Consider a hot-path /dream to fold, drain and depalimpsest while context is hot.\\n'
+		printf '{{speech:owed}}\\n'
 	fi
 else
-	printf 'MEMORY — the runtime did not answer whether a consolidation is owed (\`%s memory audit\` failed). The nudge is BLIND until that is fixed; this is not a clear verdict.\\n' "\$MEM"
+	printf '{{speech:blind}}\\n' "\$MEM"
 fi
 exit 0
 `,

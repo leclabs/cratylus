@@ -409,7 +409,12 @@ export const SHARDS = {
   't-config-dotfile-was-shipped-underived': {
     slice: 'host-and-config',
     deps: [],
-    outputs: ['packages/memory/src/node.ts', '.cratylus.memory.json.example'],
+    outputs: [
+      'packages/memory/src/**',
+      'packages/memory/test/**',
+      'packages/runtime/src/ports/memory.ts',
+      '.cratylus.memory.json.example',
+    ],
     refs: ['packages/runtime/src/runtime-config.ts'],
     static: [
       'packages/memory/src/node.ts',
@@ -506,8 +511,34 @@ export const SHARDS = {
   'spec-arrays-can-silently-truncate': {
     slice: 'plan-machinery',
     deps: [],
-    outputs: ['packages/canon/test/praxis-execution-spec.test.ts'],
+    outputs: [
+      'packages/canon/test/praxis-execution-spec.test.ts',
+      'packages/canon/test/shard-scope.test.ts',
+    ],
     refs: ['packages/canon/src/toolkit/plan-set.ts'],
     static: ['packages/canon/test/praxis-execution-spec.test.ts'],
+  },
+  'memory-test-hermetic-sentinel-has-six-homes': {
+    slice: 'host-and-config',
+    deps: ['t-memory-config-scope-is-incoherent'],
+    outputs: ['packages/memory/test/**'],
+    refs: ['packages/memory/src/node.ts'],
+    static: [
+      'packages/memory/src/node.ts',
+      'packages/memory/test/node.test.ts',
+    ],
+  },
+  'retire-lost-its-open-shard-guard': {
+    slice: 'plan-machinery',
+    deps: ['retire-relocates-but-the-operator-deletes'],
+    outputs: [
+      'packages/canon/src/toolkit/plan-set.ts',
+      'packages/canon/test/plan-set.test.ts',
+    ],
+    refs: ['packages/canon/src/skills/praxis/skill.ts'],
+    static: [
+      'packages/canon/src/toolkit/plan-set.ts',
+      'packages/canon/test/plan-set.test.ts',
+    ],
   },
 };

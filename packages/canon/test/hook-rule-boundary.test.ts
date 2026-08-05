@@ -179,6 +179,30 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
     expect(drift, `drifted targets: ${drift.join(', ')}`).toEqual([]);
   });
 
+  // ── the byte-lock's NEW blind spot, closed ──────────────────────────────────────
+  it('no committed target ships an unresolved `{{…}}` placeholder', async () => {
+    // The byte-lock above compares the committed file to `cellTargets()`, and
+    // `cellTargets()` now RESOLVES each worker template. That comparison is still
+    // exact — but it is exact against whatever the resolver produced, so a template
+    // and a target that carry the SAME literal `{{fact:…}}` agree perfectly and ship
+    // a placeholder to a host.
+    //
+    // `resolveWorker` throws on an UNKNOWN placeholder, which covers a typo. What it
+    // cannot cover is a fact added to a template while some emission path still
+    // copies `cell.workers` raw — then the placeholder is known, the resolver is
+    // never asked, and nothing upstream notices. This leg is that check, and it is
+    // cheap: the grammar is closed, so `{{` in a committed target is never anything
+    // but an escape.
+    for (const t of await cellTargets()) {
+      const abs = join(repoRoot, t.path);
+      const committed = readFileSync(abs, 'utf8');
+      expect(
+        committed.includes('{{'),
+        `${t.path} (${t.source}) ships an unresolved placeholder`,
+      ).toBe(false);
+    }
+  });
+
   // ── (b) accept()/REFLEXIVE — the static Universal floor over every hook cell ─────
   it('every hook + rule cell DEFINIENS passes the static Universal floor', async () => {
     const homes = await cellHomes();

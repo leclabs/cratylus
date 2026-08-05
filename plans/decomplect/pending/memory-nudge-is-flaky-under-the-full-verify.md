@@ -75,7 +75,7 @@ still unable to tell a present-but-broken bin from a working one.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** host-and-config · **wave** 2
+- **slice** host-and-config · **wave** 1
 - **depends on** `t-manifest-file-basename` · `the-host-install-is-a-symlink-nobody-authored`
 - **writes** `packages/canon/test/memory-nudge.test.ts`
 - **compiles against** `packages/invoke/src/bin.ts`

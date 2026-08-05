@@ -6,29 +6,29 @@ export const dream: Skill = {
   name: 'dream',
   description: `use this skill to consolidate an agent's memory — fold the raw EPISODIC stream (the tool computes each record's capture node from its cwd — provenance, not what the record is about), then route by type: agent-intrinsic identity/facts to SEMANTIC, generalized cross-project wisdom to PROCEDURAL (only what no projection already carries), a fleet/system/mechanism truth promoted into the projected+gated canon (or emitted as a canon-candidate task) rather than parked in private memory, forward next-steps to EPISODIC, the rest dropped; consumed raw is drained; SOUL is never written.`,
   formalBlock:
-    `memory              ≜ agent dimension-home ⟨SEMANTIC · PROCEDURAL · EPISODIC⟩ ∪ the memory-tool runtime
+    `memory              ≜ agent dimension-home ⟨SEMANTIC · PROCEDURAL · EPISODIC⟩ ∪ the memory-tool runtime ⟨a RUNTIME CAPABILITY ; invoked \`memory <verb> <args>\` ; the Runtime-capability line under this block resolves the shim ∴ ¬ path-in-cell⟩
 EPISODIC            ≜ raw time-ordered event stream ∪ forward next-steps
 SEMANTIC            ≜ identity facts ∪ durable agent-intrinsic knowledge ⟨hot index⟩
 PROCEDURAL          ≜ generalized cross-project wisdom no projection already carries
 SOUL                ≜ the archetype ; commons-authored ; ∉ dream outputs
-lock                ≜ dream.lock ⟨O_EXCL ; stale ⇔ age > 2h⟩ guarding the {SEMANTIC · PROCEDURAL} partition ⟨shared by all same-host sessions of one agent ; ¬ project-scoped⟩ ; \`scripts/memory.mjs lock (acquire|release|status) --name <agent>\`
+lock                ≜ dream.lock ⟨O_EXCL ; stale ⇔ age > 2h⟩ guarding the {SEMANTIC · PROCEDURAL} partition ⟨shared by all same-host sessions of one agent ; ¬ project-scoped⟩ ; \`memory lock (acquire|release|status) --name <agent>\`
                       ⟨WHY a lock HERE and not one-file-per-writer : a concurrent APPEND race is LOUD ⟨encode ↦ EPISODIC : interleaved, never lost⟩ ; a concurrent EDIT race is SILENT ⟨depalimpsest supersedes the WHOLE file ∴ the loser vanishes with no trace⟩⟩
                       ⟨∴ classify the OPERATION before choosing the instrument : append ⇒ partition by writer ; edit ⇒ lock⟩
 node                : cwd × host → provenance ⟨WHERE-captured ; nearest boundary-marker ancestor ; markerless ↦ self ; cwd-less ∨ vanished-cwd ↦ legacy⟩
 scope(i)            ≜ what i is ABOUT ⟨read from text(i) ; ¬ node(i) : provenance ≠ scope⟩
 project-referential ≜ scope(i) ↾ one particular project ⟨text(i) names a repo-key ∨ workspace-path ∨ plan-path ∨ branch-ref ∨ issue-ref ; audit detects exactly these⟩
-read                : home × session → records ⟨own ∪ completed ; live-sibling ∉⟩ ; \`scripts/memory.mjs read --name <agent> --for-session <self>\`
-fold                : home → { id ↦ node ∪ legacy } ; \`scripts/memory.mjs fold --name <agent>\`
-drain               : home → ∅ ↾ completed-sessions ⟨--completed-only retains a live sibling ; --for-session adds self at handoff⟩ ; \`scripts/memory.mjs drain --name <agent> --completed-only\`
+read                : home × session → records ⟨own ∪ completed ; live-sibling ∉⟩ ; \`memory read --name <agent> --for-session <self>\`
+fold                : home → { id ↦ node ∪ legacy } ; \`memory fold --name <agent>\`
+drain               : home → ∅ ↾ completed-sessions ⟨--completed-only retains a live sibling ; --for-session adds self at handoff⟩ ; \`memory drain --name <agent> --completed-only\`
 route               : record → { SEMANTIC · PROCEDURAL · CANON-PROMOTION · EPISODIC · drop }
-land                : route-manifest → { SEMANTIC · PROCEDURAL } ⟨the routing is MINE ; the write is the tool's⟩ ; \`scripts/memory.mjs apply --name <agent> --routes -\`
-resident            : store → text ⟨read the whole prose home ; ¬ open its path⟩ ; \`scripts/memory.mjs get --name <agent> --store (SEMANTIC|PROCEDURAL)\`
-rollover            ≜ land ⊕ drain ⊕ re-encode(residue) ATOMIC under one lock ⟨residue between drain ∧ re-encode lives ONLY in my context ∴ a gap loses it⟩ ; \`scripts/memory.mjs rollover --name <agent> --routes - --residue '<json>'\`
-audit               : home → findings × pressure ⟨dream's exit condition⟩ ⟨sign taken from the verb it invokes⟩ ; \`scripts/memory.mjs audit --name <agent>\`
+land                : route-manifest → { SEMANTIC · PROCEDURAL } ⟨the routing is MINE ; the write is the tool's⟩ ; \`memory apply --name <agent> --routes -\`
+resident            : store → text ⟨read the whole prose home ; ¬ open its path⟩ ; \`memory get --name <agent> --store (SEMANTIC|PROCEDURAL)\`
+rollover            ≜ land ⊕ drain ⊕ re-encode(residue) ATOMIC under one lock ⟨residue between drain ∧ re-encode lives ONLY in my context ∴ a gap loses it⟩ ; \`memory rollover --name <agent> --routes - --residue '<json>'\`
+audit               : home → findings × pressure ⟨dream's exit condition⟩ ⟨sign taken from the verb it invokes⟩ ; \`memory audit --name <agent>\`
 ceiling             ≜ per-store byte watermark ⟨SEMANTIC ∪ PROCEDURAL load WHOLE every wake ∴ bytes are a per-session context cost⟩
 pressure            ≜ { s ∈ { SEMANTIC · PROCEDURAL } | bytes(s) > ceiling } ⟨audit MEASURES it ; depalimpsest's only trigger⟩
 dfp(i)              ≜ densest-faithful-point(i)
-depalimpsest        ≜ reconcile the resident set to current ground-truth ⟨¬only-drop-stale⟩ ; supersede the whole file, ¬ append : \`scripts/memory.mjs replace --name <agent> --store (SEMANTIC|PROCEDURAL) --body -\`
+depalimpsest        ≜ reconcile the resident set to current ground-truth ⟨¬only-drop-stale⟩ ; supersede the whole file, ¬ append : \`memory replace --name <agent> --store (SEMANTIC|PROCEDURAL) --body -\`
 promotion-is-move   ≜ a promoted item ∉ its raw source ⟨an obligation discharged AT the promotion, ¬ a later drain's finding⟩
 canon-truth(i)      ⇔ i binds ≥1 agent-type ∨ the fleet ∨ is a mechanism/governance-fact ⟨¬ this-agent-only⟩
 reach(x)            ≜ the contexts x is present in ⟨SOUL · loaded-skill ↦ EVERY context ; corpus-local gate ∨ cell ↦ that corpus ALONE⟩

@@ -79,6 +79,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/architecture.test.ts': 'GATE',
   'canon/bin-name-single-home.test.ts': 'GATE',
   'canon/boundary-binding.test.ts': 'GATE',
+  // reads the LIVE runtime keyspace, port modules, plugin sites and skill cells;
+  // its convicting fixture drives the same three pure predicates over synthetic
+  // corpora — including the un-prefixed port module a second hand-written
+  // exception would be, which the biconditional has no allowlist to absorb.
+  'canon/capability-keyspace.test.ts': 'GATE',
   'canon/command-veracity.test.ts': 'GATE',
   'canon/cratylism.test.ts': 'GATE',
   'canon/event-tap-cell.test.ts': 'GATE',
@@ -99,6 +104,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/record-retrofit-notice.test.ts': 'GATE',
   'canon/reader-reach.test.ts': 'GATE',
   'canon/runtime-shim.test.ts': 'BEHAVIORAL',
+  // compares each completion commit's diff against the outputs the shards it landed declare;
+  // its convicting fixture drives the same `expand` over a synthetic tracked set.
+  'canon/shard-scope.test.ts': 'GATE',
   'canon/skill-shape.test.ts': 'GATE',
   // twin of memory-nudge: drives the guardrail worker with a broken judge it supplies
   // itself, and carries its own negative control (opted-out ⇒ silent).

@@ -2,7 +2,7 @@
 //   (1) `tap install --events … --sink …` merges a PASSIVE logger into a test
 //       settings.json, preserving foreign top-level keys AND foreign per-event
 //       entries;
-//   (2) `tap uninstall` surgically drops ONLY the TAP_ID entry (file restored byte
+//   (2) `tap uninstall` surgically drops ONLY the EVENT_TAP_ID entry (file restored byte
 //       -for-byte; zero residue — no bare `hooks: {}`);
 //   (3) `tap status`/`tap read` reflect the real installed state, derived from the
 //       target file (correct across separate processes);
@@ -22,7 +22,7 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { dispatchTap } from '../src/capabilities/event-tap/index.js';
+import { dispatchEventTap } from '../src/capabilities/event-tap/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const CAP_DIR = join(here, '..', 'src', 'capabilities', 'event-tap');
@@ -68,7 +68,7 @@ describe('tap install (accept 1: merge + preserve)', () => {
       },
     });
 
-    const res = dispatchTap([
+    const res = dispatchEventTap([
       'install',
       '--events',
       'turn.end,session.start',
@@ -107,7 +107,7 @@ describe('tap uninstall (accept 2: zero residue)', () => {
       env: { FOO: 'bar' },
     });
 
-    dispatchTap([
+    dispatchEventTap([
       'install',
       '--events',
       'turn.end',
@@ -117,7 +117,7 @@ describe('tap uninstall (accept 2: zero residue)', () => {
       settingsPath,
     ]);
     expect(read(settingsPath).hooks?.Stop).toHaveLength(1);
-    dispatchTap(['uninstall', '--settings', settingsPath]);
+    dispatchEventTap(['uninstall', '--settings', settingsPath]);
 
     // exact prior state — the hooks key is GONE, not left as `{}`
     expect(readFileSync(settingsPath, 'utf8')).toBe(before);
@@ -131,7 +131,7 @@ describe('tap uninstall (accept 2: zero residue)', () => {
       },
     });
 
-    dispatchTap([
+    dispatchEventTap([
       'install',
       '--events',
       'turn.end',
@@ -141,7 +141,7 @@ describe('tap uninstall (accept 2: zero residue)', () => {
       settingsPath,
     ]);
     expect(read(settingsPath).hooks?.Stop).toHaveLength(2);
-    dispatchTap(['uninstall', '--settings', settingsPath]);
+    dispatchEventTap(['uninstall', '--settings', settingsPath]);
 
     const after = read(settingsPath);
     expect(after.hooks?.Stop).toHaveLength(1);
@@ -152,12 +152,12 @@ describe('tap uninstall (accept 2: zero residue)', () => {
 describe('tap status / read (accept 3: reflect state across processes)', () => {
   it('status reflects installed state, derived from the target file', () => {
     const { settingsPath, sinkPath } = fixture();
-    expect(dispatchTap(['status', '--settings', settingsPath])).toEqual({
+    expect(dispatchEventTap(['status', '--settings', settingsPath])).toEqual({
       verb: 'status',
       status: { attached: false, events: [] },
     });
 
-    dispatchTap([
+    dispatchEventTap([
       'install',
       '--events',
       'turn.end,session.start',
@@ -166,14 +166,14 @@ describe('tap status / read (accept 3: reflect state across processes)', () => {
       '--settings',
       settingsPath,
     ]);
-    const s = dispatchTap(['status', '--settings', settingsPath]);
+    const s = dispatchEventTap(['status', '--settings', settingsPath]);
     expect(s.verb).toBe('status');
     if (s.verb !== 'status') throw new Error('unreachable');
     expect(s.status.attached).toBe(true);
     expect([...s.status.events].sort()).toEqual(['session.start', 'turn.end']);
 
-    dispatchTap(['uninstall', '--settings', settingsPath]);
-    expect(dispatchTap(['status', '--settings', settingsPath])).toEqual({
+    dispatchEventTap(['uninstall', '--settings', settingsPath]);
+    expect(dispatchEventTap(['status', '--settings', settingsPath])).toEqual({
       verb: 'status',
       status: { attached: false, events: [] },
     });
@@ -181,7 +181,7 @@ describe('tap status / read (accept 3: reflect state across processes)', () => {
 
   it('read recovers the sink from settings (fresh dispatch, no in-mem state)', () => {
     const { settingsPath, sinkPath } = fixture();
-    dispatchTap([
+    dispatchEventTap([
       'install',
       '--events',
       'turn.end',
@@ -197,8 +197,8 @@ describe('tap status / read (accept 3: reflect state across processes)', () => {
       'utf8',
     );
 
-    // a SEPARATE dispatch (no prior installTap on this call path)
-    const r = dispatchTap(['read', '--settings', settingsPath]);
+    // a SEPARATE dispatch (no prior install on this call path)
+    const r = dispatchEventTap(['read', '--settings', settingsPath]);
     expect(r.verb).toBe('read');
     if (r.verb !== 'read') throw new Error('unreachable');
     expect(r.records).toHaveLength(1);
@@ -213,7 +213,7 @@ describe('tap status / read (accept 3: reflect state across processes)', () => {
 describe('installed logger (accept 4: prove-CANNOT-block)', () => {
   it('emits EMPTY stdout + exit 0 on a synthetic event', () => {
     const { settingsPath, sinkPath } = fixture();
-    dispatchTap([
+    dispatchEventTap([
       'install',
       '--events',
       'turn.end',
@@ -235,7 +235,7 @@ describe('installed logger (accept 4: prove-CANNOT-block)', () => {
     });
     expect(stdout.toString()).toBe(''); // emits nothing → cannot block/deny
 
-    const r = dispatchTap(['read', '--settings', settingsPath]);
+    const r = dispatchEventTap(['read', '--settings', settingsPath]);
     if (r.verb !== 'read') throw new Error('unreachable');
     expect(r.records).toHaveLength(1);
     expect(r.records[0]?.event).toBe('turn.end');
@@ -244,11 +244,11 @@ describe('installed logger (accept 4: prove-CANNOT-block)', () => {
 
 describe('unknown input fails LOUD (no silent no-op)', () => {
   it('throws on an unknown verb', () => {
-    expect(() => dispatchTap(['frobnicate'])).toThrow(/unknown verb/);
+    expect(() => dispatchEventTap(['frobnicate'])).toThrow(/unknown verb/);
   });
   it('throws on an unknown lifecycle event', () => {
     expect(() =>
-      dispatchTap(['install', '--events', 'not.an.event', '--sink', '/x']),
+      dispatchEventTap(['install', '--events', 'not.an.event', '--sink', '/x']),
     ).toThrow(/unknown lifecycle event/);
   });
 });

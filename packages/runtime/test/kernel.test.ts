@@ -19,8 +19,8 @@ import type { MemoryStrategy } from '../src/ports/memory.js';
 function fakeEventTapPlugin() {
   const seen: { verb: string; args: VerbArgs }[] = [];
   const eventTap: EventTapHost = {
-    installTap() {},
-    removeTap() {},
+    install() {},
+    remove() {},
     readCapture() {
       return [];
     },

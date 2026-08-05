@@ -1,6 +1,6 @@
 // THE THIRD HOME. The memory verb set is enumerated in three places, not two:
 // `cli.ts`'s per-verb flag table, `MEMORY_VERBS` (`src/verb-port.ts`), and the
-// INVOCATION STRINGS inside the canon skill cells (`scripts/memory.mjs <verb> …` in
+// INVOCATION STRINGS inside the canon skill cells (`memory <verb> …` in
 // dream · wake · handoff). `verb-roster.test.ts` pins the first two against each
 // other and names the failure class in its own words — they diverge SILENTLY, which
 // is how `get` and `rollover` shipped dead. The third home had no gate at all: a
@@ -23,6 +23,17 @@
 // this problem, reading the runtime's `TapVerb` union as text across the same kind
 // of gap. Extracting the verb from the invocation string (rather than hand-listing
 // it here) is also what keeps the gate from becoming a FOURTH home for the set.
+//
+// THE ANCHOR IS THE CAPABILITY, NOT THE PATH. The cells used to write
+// `` `scripts/memory.mjs <verb> …` `` and this scanner keyed on that path. The path
+// is FORGE'S to compute — it derives from `runtime: {capability:'memory'}` and is
+// emitted once, under the cell's own formal block, by `renderSkillCellBody`
+// (`forge/src/core/exemplify/skill-cell.ts`). A cell spelling it restated a layout
+// it does not own, so the cells now write `` `memory <verb> …` `` — capability, verb,
+// args — and the anchor moved with them. NOTHING about the property changed: the
+// verb is still the token after the capability, still checked against
+// `MEMORY_VERBS`, still cell → code only. `no-path-restatement` below pins the
+// old form OUT so the anchor cannot silently regain two spellings.
 
 import { mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -37,12 +48,18 @@ const testDir = dirname(fileURLToPath(import.meta.url));
 const CELL_ROOT = join(testDir, '..', '..', 'canon', 'src', 'skills');
 
 /**
- * The invocation form the cells write: `` `scripts/memory.mjs <verb> …` ``. Only the
- * HEAD token is the verb — `session begin` / `session release` are
+ * The invocation form the cells write: `` `memory <verb> …` `` — the CAPABILITY, then
+ * the verb, then its args. The leading backtick is required: it is what separates an
+ * invocation from the word `memory` in prose, and it is why the declaration line
+ * `` `memory <verb> <args>` `` (whose next token is `<`, not a word) is not read as one.
+ * Only the HEAD token is the verb — `session begin` / `session release` are
  * `<verb> <subcommand>`, and the subcommand is the verb's own concern, not the
  * roster's.
  */
-const INVOCATION = /scripts\/memory\.mjs\s+([A-Za-z][\w-]*)/g;
+const INVOCATION = /`memory\s+([A-Za-z][\w-]*)/g;
+
+/** The layout the projector owns and no cell may restate. */
+const PROJECTOR_PATH = 'scripts/memory.mjs';
 
 /** Every verb a cell text invokes, in source order, duplicates kept. */
 function invokedVerbs(text: string): string[] {
@@ -72,18 +89,23 @@ function cellFiles(dir: string): string[] {
  * be evidence of a DARK gate rather than of a clean corpus.
  */
 function scanCorpus(root: string): Cell[] {
-  const cells: Cell[] = [];
-  for (const path of cellFiles(root)) {
-    const text = readFileSync(path, 'utf-8');
-    if (invokedVerbs(text).length > 0)
-      cells.push({ cell: relative(root, path), text });
-  }
+  const cells = allCells(root).filter((c) => invokedVerbs(c.text).length > 0);
   if (cells.length === 0) {
     throw new Error(
-      `cell-verb-roster: no \`scripts/memory.mjs <verb>\` invocation found anywhere under ${root} — the scanner is DARK, not the corpus clean`,
+      `cell-verb-roster: no \`memory <verb>\` invocation found anywhere under ${root} — the scanner is DARK, not the corpus clean`,
     );
   }
   return cells;
+}
+
+/** Every cell text under the root, invoking or not — the surface the
+ *  path-restatement gate reads (a cell that restates the path may well have
+ *  stopped invoking through the capability at all). */
+function allCells(root: string): Cell[] {
+  return cellFiles(root).map((path) => ({
+    cell: relative(root, path),
+    text: readFileSync(path, 'utf-8'),
+  }));
 }
 
 interface Violation {
@@ -112,7 +134,7 @@ function report(
   return [
     ...found.map(
       (v) =>
-        `${v.cell} invokes \`scripts/memory.mjs ${v.verb}\` — no such verb in MEMORY_VERBS`,
+        `${v.cell} invokes \`memory ${v.verb}\` — no such verb in MEMORY_VERBS`,
     ),
     `roster: ${[...roster].join(' · ')}`,
   ].join('\n');
@@ -142,13 +164,50 @@ describe('cell verb roster — no cell instructs an agent to invoke a verb the r
     expect(invoked.length).toBeGreaterThan(8);
   });
 
+  // The anchor is a backtick + capability rather than a unique path, so PARTIAL
+  // darkness is the new failure mode: a reformat that breaks the anchor on some
+  // sites leaves the scan green on the rest. Per-cell floors make that loud. These
+  // are COUNTS, not names — the verb set still has exactly one home in the cells.
+  it('no cell goes partially dark — each carries at least the invocations it had', () => {
+    const floor: Record<string, number> = {
+      [join('dream', 'skill.ts')]: 9,
+      [join('wake', 'skill.ts')]: 2,
+      [join('handoff', 'skill.ts')]: 1,
+    };
+    for (const [cell, min] of Object.entries(floor)) {
+      const found = corpus.find((c) => c.cell === cell);
+      expect(
+        found,
+        `${cell} carries no invocation the scanner can see`,
+      ).toBeDefined();
+      expect(
+        invokedVerbs((found as Cell).text).length,
+        cell,
+      ).toBeGreaterThanOrEqual(min);
+    }
+  });
+
+  // ── The projector's path is not the cell's to spell ─────────────────────────────
+  it('no-path-restatement — no cell writes `scripts/memory.mjs`', () => {
+    // `runtime: {capability:'memory'}` is the cell's whole claim; forge derives the
+    // path from it and emits it once under the block. A cell restating it fuses
+    // meaning with projection AND gives the scanner a second spelling to miss.
+    const restating = allCells(CELL_ROOT)
+      .filter((c) => c.text.includes(PROJECTOR_PATH))
+      .map((c) => c.cell);
+    expect(
+      restating,
+      `${restating.join(' · ')} restate(s) \`${PROJECTOR_PATH}\` — declare \`runtime: { capability: 'memory' }\` and invoke \`memory <verb> …\`; forge emits the path`,
+    ).toEqual([]);
+  });
+
   it('a sub-verb is checked on its head token — `session begin` / `session release` pass', () => {
-    expect(
-      invokedVerbs('`scripts/memory.mjs session begin --name <agent>`'),
-    ).toEqual(['session']);
-    expect(
-      invokedVerbs('`scripts/memory.mjs session release --name <agent>`'),
-    ).toEqual(['session']);
+    expect(invokedVerbs('`memory session begin --name <agent>`')).toEqual([
+      'session',
+    ]);
+    expect(invokedVerbs('`memory session release --name <agent>`')).toEqual([
+      'session',
+    ]);
     // `session` is in the roster; `session begin` is not, and must never be sought.
     expect(MEMORY_VERBS).toContain('session');
     expect(MEMORY_VERBS as readonly string[]).not.toContain('session begin');
@@ -169,7 +228,7 @@ describe('cell verb roster — no cell instructs an agent to invoke a verb the r
   it('is non-vacuous — a cell invoking `consolidate` is CONVICTED, naming cell · verb · roster', () => {
     const drifted: Cell = {
       cell: 'consolidate/skill.ts',
-      text: 'fold ≜ `scripts/memory.mjs consolidate --name <agent> --routes -`',
+      text: 'fold ≜ `memory consolidate --name <agent> --routes -`',
     };
     const found = violations([...corpus, drifted], MEMORY_VERBS);
     expect(found).toEqual([
@@ -177,7 +236,7 @@ describe('cell verb roster — no cell instructs an agent to invoke a verb the r
     ]);
     const msg = report(found, MEMORY_VERBS);
     expect(msg).toContain('consolidate/skill.ts');
-    expect(msg).toContain('scripts/memory.mjs consolidate');
+    expect(msg).toContain('`memory consolidate`');
     expect(msg).toContain('roster:');
     expect(msg).toContain('rollover');
   });

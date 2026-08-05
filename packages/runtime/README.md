@@ -78,6 +78,6 @@ from inside an emitted artifact — a projected skill shim, a generated hook scr
 can see it. A rename that missed one produced a script that failed on a host rather than at build.
 
 Flipping this one symbol really is the whole rename: `RUNTIME_CONFIG_NAME` (`.cratylus-run.json`) and
-the event-tap's `TAP_ID` are template-derived from it and move without being edited. The one
+the event-tap's `EVENT_TAP_ID` are template-derived from it and move without being edited. The one
 irreducible second copy is [`@cratylus/invoke`](../invoke/README.md)'s `bin` key, which npm reads with
 no compiler in the loop; their agreement is held by a test.

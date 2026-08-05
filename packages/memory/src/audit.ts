@@ -1,5 +1,10 @@
 import { existsSync, readFileSync } from 'node:fs';
+import { homedir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
+// One home for the marker set and for canonicalization: `node.ts` owns what
+// "boundary" means, and this module must not restate it. (`node` imports
+// nothing from here, so the edge is one-way.)
+import { DEFAULT_MARKERS, canonical } from './node.js';
 
 /**
  * The scope-pollution auditor: a deterministic detector over an agent home's
@@ -351,16 +356,54 @@ export function loadLines(file: string): string[] {
 }
 
 /**
- * Derive repo keys from a `.cratylus.memory.json`: the containing repo's
- * basename (§1: key = repo basename — the config marks its repo), plus a
- * forward-compatible `projects` field (string array or object keys) if the
- * schema ever carries one. Malformed JSON throws loudly — once present the
- * config is authoritative (docs/cratylus-config-schema.md).
+ * Is `dir` a repo root? A BOUNDARY MARKER says so — `.git`, a package manifest,
+ * `PLAN.md` ({@link DEFAULT_MARKERS}) — never the presence of some other file
+ * that merely happens to sit there. `$HOME` is excluded outright: it is the
+ * USER boundary, and `resolveNode` already ranks it above every marker (it
+ * returns at `currentHome` before `markerIn` is ever consulted), so a stray
+ * manifest in `~` does not make `~` a repo here either.
+ */
+function bearsRepoMarker(dir: string): boolean {
+  // Canonical on BOTH sides: one directory, one name (`node.ts` canonical()).
+  if (canonical(dir) === canonical(homedir())) return false;
+  // DEFAULT_MARKERS are literals, never globs — plain existence is exact.
+  return DEFAULT_MARKERS.some((m) => existsSync(join(dir, m)));
+}
+
+/**
+ * Derive repo keys from a `.cratylus.memory.json`: its `projects` field (string
+ * array or object keys), plus the basename of its directory **when that
+ * directory independently proves itself a repo** ({@link bearsRepoMarker}).
+ * Malformed JSON throws loudly — once present the config is authoritative. The
+ * schema is documented by example in `.cratylus.memory.json.example` at the
+ * repo root, and derived in `node.ts` beside the `CONFIG_FILE` literal.
+ *
+ * ── PRESENCE IS NO LONGER THE ASSERTION (2026-08-05) ─────────────────────────
+ *
+ * This read used to be `[basename(dirname(abs)), …]` unconditionally: the
+ * file's PRESENCE asserted *"this directory is a repo, and its key is the
+ * basename."* That was a THIRD meaning stacked on an artifact already carrying
+ * fleet-global facts (scope markers, per-host `$HOME`s) — the conflation that
+ * made *"whose config is it?"* undecidable.
+ *
+ * Separating them was not cosmetic; it is what makes the resolution fix safe.
+ * While resolution was bare-cwd, `dirname(config) === repo root` held BY
+ * ACCIDENT — the only reachable config was one you were standing on. Now that
+ * `resolveConfigPath` falls back to `$HOME`, that basename is the OPERATOR'S
+ * USERNAME, and every repo key becomes a case-insensitive word-boundary regex
+ * over both prose stores: a `~`-hosted config would have made the audit fire on
+ * every mention of the operator's own name, in every agent home, forever.
+ *
+ * So the two concerns now answer separately. CONTENT (`projects`) states what
+ * the operator declares. LOCATION contributes only through the boundary marker
+ * that already means "repo" everywhere else in this package. The config asserts
+ * nothing by sitting somewhere.
  */
 export function repoKeysFromConfig(configPath: string): string[] {
   const abs = resolve(configPath);
   const parsed = JSON.parse(readFileSync(abs, 'utf8')) as unknown;
-  const keys: string[] = [basename(dirname(abs))];
+  const dir = dirname(abs);
+  const keys: string[] = bearsRepoMarker(dir) ? [basename(dir)] : [];
   if (typeof parsed === 'object' && parsed !== null && 'projects' in parsed) {
     const projects = (parsed as Record<string, unknown>).projects;
     if (Array.isArray(projects)) {

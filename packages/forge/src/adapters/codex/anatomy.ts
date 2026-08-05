@@ -3,14 +3,14 @@
 // a canon agent authored once reaches EVERY forge harness for free. T2.1 did this
 // for claude; this mirrors it for codex.
 //
-// Codex's native agent surface differs from claude's `.md` SOUL:
+// Codex's native agent surface differs from claude's `.md` Target:
 //   - a SUBAGENT is `agents/<name>.toml` — `{ name, description,
 //     developer_instructions, model? }` (the documented fields [CX1] — no
 //     fabricated `system_prompt`/`tools`/`color`).
 //   - the always-loaded INSTRUCTION surface is `AGENTS.md` (project rules).
 //   - a SKILL is `skills/<name>/SKILL.md` (the AgentSkills spec, shared with claude).
 //
-// The composed SOUL BODY itself is HARNESS-NEUTRAL — it is the agent's dimension
+// The composed Target BODY itself is HARNESS-NEUTRAL — it is the agent's dimension
 // sections, identical content whichever harness carries it. So this module REUSES
 // `agentBody` / `skillBody` (over the `Agent` vector + the `ResolvedSkill` shape)
 // from the claude adapter (those are the anatomy-composition machinery, not
@@ -20,7 +20,7 @@
 import type { Agent } from '@cratylus/schema';
 import type { HarnessMechanism } from '@cratylus/schema/hook';
 import TOML from '@iarna/toml';
-// The composed SOUL body is HARNESS-NEUTRAL, so the body machinery lives in core
+// The composed Target body is HARNESS-NEUTRAL, so the body machinery lives in core
 // (`agentBody`/`skillBody` + the `ResolvedSkill` shape) — imported DOWNWARD from
 // core, NOT sideways from the claude adapter.
 import {
@@ -45,9 +45,9 @@ export type { ResolvedSkill };
 /**
  * The codex subagent TOML object for a resolved agent: `{ name, description,
  * developer_instructions, model? }` — the documented codex agent-TOML fields
- * [CX1]. `developer_instructions` is the composed SOUL body (the
+ * [CX1]. `developer_instructions` is the composed Target body (the
  * harness-neutral dimension sections + memory genus block) — the SAME `agentBody` the
- * claude SOUL carries, just delivered as a TOML field instead of a `.md` body.
+ * claude Target carries, just delivered as a TOML field instead of a `.md` body.
  * No `color` is emitted: Codex's agent TOML has no documented color field, so
  * carrying `mark.hue` here would be the same fabrication [CX1] fixes on the
  * codex TOML surface.
@@ -62,7 +62,7 @@ export function agentToCodexTomlObject(
   ctx: AgentDefContext,
   _profile = 'strong-llm-lean/codex',
 ): Record<string, unknown> {
-  // The catalog travels because the SOUL body does: `developer_instructions` is
+  // The catalog travels because the Target body does: `developer_instructions` is
   // the same `agentBody` the claude `.md` carries, so it owes the same sections.
   const body = agentBody(a, ctx.manifest);
   const developerInstructions = `${body.replace(/\n+$/, '')}\n`;

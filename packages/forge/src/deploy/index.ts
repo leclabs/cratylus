@@ -1,6 +1,6 @@
 // The deploy layer — forge's placement stage. Consumes an
 // already-projected render tree (agents/ + skills/) and applies the scope
-// accident to the LOCAL `.claude/` root: ships the generated defs (SOUL,
+// accident to the LOCAL `.claude/` root: ships the generated defs (Target,
 // overwritten freely), seeds the self-authored sidecars if-absent (never
 // clobbered), stages skill-dir committed `assets:` companions, and scaffolds a
 // greenfield project (`scaffoldProject`), and PRUNES what a prior deploy of the

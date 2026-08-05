@@ -51,11 +51,21 @@ superseded on the remedy** — do not restate its remedy.
 - Cold-verify the members: is each a real concept? Unmapped ≠ fabricated — that is a different
   question from whether a harness fires it.
 
+## ▶ CARRIED IN from `t-tap-anchor`, 2026-08-05
+
+`capabilities/event-tap/claude-serialize.ts` exports **`buildTapBlock`**, whose name carries the
+`tap` root that the tap-anchor ruling **REJECTED** — it fails circumscription, carrying _passive
+siphon on a stream_ without saying which stream. That file is this shard's, not that one's, so the
+identifier was left standing rather than swept across a boundary.
+
+Fold it into this shard's rename pass: the sign is `event-tap` in kebab register, `eventTap` in
+camel. Do not re-derive it — `t-tap-anchor` ran the round-trip and recorded the rejection.
+
 ## Execution
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** event-vocabulary · **wave** 3
+- **slice** event-vocabulary · **wave** 2
 - **depends on** `t-tap-anchor` · `t-projection-file-anchor`
 - **writes** `packages/schema/src/hook/**` · `packages/runtime/src/events.ts` · `packages/runtime/src/capabilities/event-tap/claude-serialize.ts`
 - **compiles against** `packages/forge/src/adapters/claude/events.ts`

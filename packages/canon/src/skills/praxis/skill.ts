@@ -24,7 +24,7 @@ live     : session → 𝔹
 owner   : P ⇀ session
 bound    : P → 𝔹 ⟨plan-level commitment · persists across sessions · ¬ shard-state⟩
 gates    : P × P → 𝔹
-electable ≜ { P ∈ Plans | inscope(P) ∧ ¬ terminal(P) ∧ ¬ occupied(P) }
+electable ≜ { P ∈ Plans | ¬ terminal(P) ∧ ¬ occupied(P) }
 act      ≜ a thing the executor does
 serves   : act × P → 𝔹
 cost     : act → effort
@@ -47,8 +47,10 @@ commit   ≜ a VCS commit
 commits  : P → ℘(commit)
 lands    : commit × P → 𝔹
 landing  : P ⇀ commit
+retires  : commit × P → 𝔹
+retirement : P ⇀ commit
 stored   : P → ℘(commit)
-archived : P → 𝔹
+retired  : P → 𝔹
 superseded : P → 𝔹
 terminal : P → 𝔹
 phase    : P → Phase
@@ -56,7 +58,8 @@ phase    : P → Phase
 blocked(t)  ⇔ ∃ u : (t, u) ∈ R ∧ state(u) ≠ completed
 live(s)     ⇔ registered(s) ∧ ¬ released(s) ∧ ¬ stale(s)
 occupied(P) ⇔ owner(P) defined ∧ owner(P) ≠ self ∧ live(owner(P))
-archived(P) ⇔ dir(P) @ plans/.retired/
+retires(c, P) ⇔ c deletes dir(P) ⟨the twin of lands · retirement is VCS-carried, ¬ residence-carried⟩
+retired(P)  ⇔ retirement(P) defined
 superseded(P) ⇔ .superseded-by @ dir(P)
 frontier(P) ≜ { t | t ∈ P ∧ state(t) ∈ { ready, active } } ⟨where the plan IS · ¬ only what is dispatchable⟩
 sharded(P)  ⇔ P ≠ ∅
@@ -68,9 +71,8 @@ wave(n+1)   ≜ { t | t ∉ W(n) ∧ ∀ u : (t, u) ∈ R ⇒ u ∈ W(n) }
 waves       ≜ (wave(0), wave(1), …)
 dispatched(P) ⇔ ∃ t ∈ P : state(t) ∈ { active, completed }
 done(P)       ⇔ ∀ t ∈ P : state(t) = completed
-landed(P)     ⇔ landing(P) defined ∧ ¬ archived(P)
+landed(P)     ⇔ landing(P) defined ∧ ¬ retired(P)
 terminal(P)   ⇔ landed(P) ∨ superseded(P)
-inscope(P)    ⇔ ¬ archived(P)
 nextPhase     ≜ { proposed ↦ in-flight, in-flight ↦ landed, landed ↦ retired, superseded ↦ retired, retired ↦ retired }
 
 ∀ t ∈ P : t @ dir(P)/state(t)
@@ -96,27 +98,28 @@ waves = (wave(0), …, wave(m))
 (state, R, content) ≽ PLAN.md
 mirror(state, R, content) emits R ∧ waves
 depalimpsest(depalimpsest(c)) = depalimpsest(c)
-archived(P)                              ⇒ phase(P) = retired
-superseded(P) ∧ ¬ archived(P)            ⇒ phase(P) = superseded
+retired(P)                               ⇒ phase(P) = retired
+superseded(P) ∧ ¬ retired(P)             ⇒ phase(P) = superseded
 landed(P) ∧ ¬ superseded(P)              ⇒ phase(P) = landed
-dispatched(P) ∧ ¬ landed(P) ∧ ¬ superseded(P) ∧ ¬ archived(P) ⇒ phase(P) = in-flight
-¬ dispatched(P) ∧ ¬ superseded(P) ∧ ¬ archived(P) ⇒ phase(P) = proposed
+dispatched(P) ∧ ¬ landed(P) ∧ ¬ superseded(P) ∧ ¬ retired(P) ⇒ phase(P) = in-flight
+¬ dispatched(P) ∧ ¬ superseded(P) ∧ ¬ retired(P) ⇒ phase(P) = proposed
 landing(P) = c ⇔ lands(c, P)
+retirement(P) = c ⇔ retires(c, P)
 ∀ c, c' : lands(c, P) ∧ lands(c', P) ⇒ c = c'
-∀ P : stored(P) = ∅
-list = { P ∈ Plans | inscope(P) }
+∀ c, c' : retires(c, P) ∧ retires(c', P) ⇒ c = c'
+retired(P) ⇒ P ∉ Plans ⟨retire removes the member · Plans is disk, ∴ phase reads the commit, ¬ a residence⟩
+∀ P : stored(P) = ∅ ⟨landing ∧ retirement alike : recomputed from VCS every call, written nowhere⟩
+list = Plans
 yield(P)  ≜ what EXECUTING P established ∧ ¬ derivable from intent(P) @ ENGINE ⟨enters as Intent, ¬ as a Sign : execution establishes what needs naming, ¬ the name⟩
 drained(y) ⇔ ∀ i ∈ y : i authored into its strongest seam ⟨gate ≻ cell ≻ governing-doc @ dream⟩ ∨ i filed as a canon-candidate ⟨¬ agent-private memory : a private home is where the NEXT agent re-derives it⟩
 retire(P) defined ⇔ terminal(P) ∧ drained(yield(P))
 supersede(P, Q) ⇒ superseded(P)
-∀ P : content(retire(P)) = content(P)
-∀ P : retire(P) ∈ Plans
 ∀ t : conform(content(t))
 ⊨ conform(PLAN.md)
 ∀ t, r : ¬conform(r) ⇒ ¬accept(t)(r)
 
 bound(P) @ dir(P)/.bound ⟨persistent · survives session-end · ¬ derived from shard-state⟩
-∃ P : inscope(P) ∧ ¬ terminal(P) ⇒ ∃! P : bound(P) ⟨always-bind ∧ WIP=1 · one law⟩
+∃ P ∈ Plans : ¬ terminal(P) ⇒ ∃! P : bound(P) ⟨always-bind ∧ WIP=1 · one law⟩
 bound(P) ⇒ ¬ occupied(P)
 bound(P) ∧ ¬ sharded(P) ⇒ start(P) ≺ dispatch(P) ⟨binding an unsharded plan obliges the cut⟩
 bound(P) ∧ sharded(P) ∧ ¬ done(P) ⇒ frontier(P) ≠ ∅
@@ -124,7 +127,7 @@ sharded(P) ∧ ¬ done(P) ∧ frontier(P) = ∅ ⇒ R ill-formed ⟨cycle ∨ un
 gates(P, Q) ⇔ ∃ t ∈ Q : landing(P) ∈ deps(t)
 elect ≜ in-flight ≻ gating ≻ operator-intent ⟨lexicographic · finish before starting⟩
 terminal(P) ⇒ retire(P) ⟨obligation ¬ permission · an unretired terminal plan is WIP that is not work⟩
-yield(P) ≠ ∅ ∧ ¬ drained(yield(P)) ⇒ ¬ retire(P) ⟨ENGINE intake, realized HERE : archive is where a law dies⟩
+yield(P) ≠ ∅ ∧ ¬ drained(yield(P)) ⇒ ¬ retire(P) ⟨ENGINE intake, realized HERE : deletion is where a law dies⟩
     ⟨measured : 16 retired plans, 25 laws, 0 in the canon ∴ every anchor re-derived privately, per agent, forever⟩
 impedes(d, t) ⇔ d standing ⇒ ∄ r : accept(t)(r)
 impedes(d, t) ⇒ fix(d) ∧ ¬ check-in-owed ⟨a regression in the path is repaired, ¬ surfaced⟩
@@ -156,8 +159,9 @@ sync       ≜ ∀ t ∈ P : state(t) ≠ truth(t) ⇒ state(t) := truth(t) ;
              PLAN.md ≠ mirror(state, R, content) ⇒ PLAN.md := mirror(state, R, content)
              post : state = truth ∧ PLAN.md = mirror(state, R, content)
 supersede : (P, Q) ↦ P ≜ write .superseded-by @ dir(P) := Q ⟨staged⟩ ; pre Q ∈ Plans ∧ Q ≠ P ; post superseded(P)
-retire    : P ↦ P' ≜ relocate dir(P) under plans/.retired/ ; pre terminal(P) ; post phase(P) = retired ∧ content(P') = content(P)
-landingOf : P ↦ landing(P)` as SkillExpression;
+retire    : P ↦ ⊥ ≜ delete dir(P) ; pre terminal(P) ∧ drained(yield(P)) ; post P ∉ Plans
+landingOf : P ↦ landing(P)
+retirementOf : P ↦ retirement(P)` as SkillExpression;
 
 export const praxis: Skill = {
   name: 'praxis',

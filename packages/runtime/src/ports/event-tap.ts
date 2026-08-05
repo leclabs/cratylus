@@ -37,7 +37,7 @@ export interface CaptureRow {
 }
 
 /** Whether a tap is currently attached, and to which lifecycle events. */
-export interface TapStatus {
+export interface EventTapStatus {
   attached: boolean;
   events: LifecycleEvent[];
 }
@@ -47,10 +47,14 @@ export interface TapStatus {
  * read back what it captured, and detach it cleanly (zero residue). The
  * dependency-inversion contract a runtime domain module codes against; each
  * target supplies exactly one implementation.
+ *
+ * The methods are BARE (`install`, not `installTap`): the receiver already
+ * carries the sign, so re-spelling it in the member is stutter — which is why
+ * `readCapture`/`status` were already bare and the other two were not.
  */
 export interface EventTapHost {
-  installTap(events: LifecycleEvent[], sink: CaptureSink): void;
-  removeTap(): void;
+  install(events: LifecycleEvent[], sink: CaptureSink): void;
+  remove(): void;
   readCapture(): CaptureRow[];
-  status(): TapStatus;
+  status(): EventTapStatus;
 }

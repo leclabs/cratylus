@@ -14,11 +14,19 @@
 // stated only in prose drifts silently. That is the same lesson this corpus already
 // learned about signs, one level up.
 //
-// AND PROPERTY 1 IS PINNED. `src/hooks/memory-consolidation-nudge.ts` — a canon CELL —
-// imports `@cratylus/runtime`, and `bin-name-single-home.test.ts` asserts that the
-// import STAYS. Repairing the architecture turns that test red. It is ratcheted here,
-// visibly, rather than quietly excluded: amending the counter-gate is a design decision
-// and it is owed BEFORE the repair, not during it.
+// AND THE RATCHET IS NOW EMPTY. `src/hooks/memory-consolidation-nudge.ts` — a canon
+// CELL — imported `@cratylus/runtime` for `RUNTIME_BIN`, and `bin-name-single-home.
+// test.ts` asserted that the import STAYS, so repairing the architecture turned that
+// test red and leaving it turned this one red. Both exits were closed on purpose,
+// which is what a pin is FOR: it converted "someone should fix this" into a design
+// decision that had to be made in the open.
+//
+// It was made. `workers[].content` became a TEMPLATE with a closed placeholder set
+// (`{{fact:<ProjectionFact>}}` / `{{speech:<id>}}`); the schema declares which facts
+// EXIST and never a value; the PROJECTOR owns the values and substitutes at both
+// emission sites. The cell names a capability. All four properties now hold with no
+// pinned exceptions — and the counter-gate got stronger in the same act, sweeping
+// every projected hook artifact instead of one enumerated path.
 //
 // SPECIFIERS ARE PARSED, NOT GREPPED. Comments and template literals in this repo are
 // full of import-shaped text that is not an import: `config/scaffold.ts` holds a
@@ -68,21 +76,34 @@ const PERMITTED: ReadonlyArray<readonly [Pkg, Pkg]> = [
 ];
 
 /**
- * Today's breaches, pinned in the open and shrink-only. Each is a real divergence
- * `ARCHITECTURE.md` already names, not an exemption.
+ * Today's breaches, pinned in the open and shrink-only — EMPTY.
  *
- * IT WAS 26, THEN 3, AND IS NOW 1. Twenty-four retired when `schema` was extracted
- * (PLAN §1). Two more retired on 2026-08-05, both BY REPAIR rather than by
- * exemption — see the notes in the set below.
+ * IT WAS 26, THEN 3, THEN 1, AND IS NOW 0. Twenty-four retired when `schema` was
+ * extracted (PLAN §1); the last three retired on 2026-08-05, EVERY ONE BY REPAIR
+ * rather than by exemption — see the notes below, each kept where the pin stood.
  *
- * THE ONE SURVIVOR is property 1's PINNED breach, and it is the only entry here
- * that cannot be repaired by refactoring: `bin-name-single-home.test.ts` REQUIRES
- * the import, so fixing the architecture turns that test red. Amending a
- * counter-gate is a design decision and it is owed BEFORE the repair, not during
- * it. That is why it is pinned in the open rather than quietly excluded.
+ * EMPTY MEANS SOMETHING HERE, because the shrink-only leg makes a stale pin fail
+ * loudly: this set cannot be quietly padded to re-admit a breach without the
+ * corresponding edge actually existing. The four properties of `ARCHITECTURE.md` now
+ * hold on the real import graph with no exceptions.
  */
 const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
-  'canon/hooks/memory-consolidation-nudge.ts → runtime',
+  // `canon/hooks/memory-consolidation-nudge.ts → runtime` WAS HERE — property 1's
+  // last breach — and is RETIRED BY REPAIR, 2026-08-05.
+  //
+  // The cell took `RUNTIME_BIN` because the value landed inside a shell string in
+  // `workers[].content`, where no compiler reads it. That made the import look
+  // harmless and it was not: an edge is an edge whether or not a compiler follows the
+  // value, and this one ran from MEANING to MECHANISM, the one direction the north
+  // star ranks first.
+  //
+  // The repair is a seam, not a move. `workers[].content` is a TEMPLATE with a closed
+  // placeholder set; the cell names `{{fact:runtime-bin}}` and the projector
+  // substitutes (`projectionFacts()` in `forge/project`, where the `forge → runtime`
+  // edge is permitted). The schema declares WHICH facts exist and never a value — a
+  // value there would have restored the `schema → runtime` edge repaired the same
+  // day. The byte-anchor was not weakened: its subject moved from the cell's literal
+  // to the RESOLVED bytes, which are still a pure function of the cell.
   // `schema/index.ts → runtime` WAS HERE and is RETIRED BY REPAIR, 2026-08-05.
   //
   // The pin's own note proposed moving `RuntimePlugin` into the shapes package. A
@@ -373,17 +394,24 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     // (`ARCHITECTURE.md` carried "28" for months; it was never measured and it was
     // wrong.) A cell reaching the projector again moves this off zero.
     expect(canonCells.length, 'canon CELLS importing the projector').toBe(0);
-    // WAS 9, THEN 6, IS 4 — and these are LICENSED: a corpus BUILT BY forge, not
-    // DEFINED by it, which `ARCHITECTURE.md` names explicitly as not a divergence.
+    // WAS 9, THEN 6, THEN 4, IS 5 — and these are LICENSED: a corpus BUILT BY forge,
+    // not DEFINED by it, which `ARCHITECTURE.md` names explicitly as not a divergence.
     // Three of the nine (`toolkit/{hooks,project,project-targets}.ts`) took only the
     // cell SHAPES and now take them from the schema, so their forge edge is gone
     // outright. Two more went with `toolkit/project-cli{,-codex}.ts`: they were one
     // program differing by an adapter string, and the shipped
-    // `cratylus project --harness <name>` is that program. The four that remain
-    // drive the projector as a tool. This number does not go to zero, and driving it
-    // there would mean canon could no longer build itself.
+    // `cratylus project --harness <name>` is that program.
+    //
+    // IT WENT UP BY ONE, and that is the property-1 repair's whole cost. Regenerating
+    // a committed hook target means RESOLVING its worker template, and the facts live
+    // in the projector — so `toolkit/project-targets.ts` took a forge import BACK.
+    // The trade is the one the architecture asks for: a BUILD SCRIPT reaching the
+    // projector (licensed, and the direction of every other entry here) in place of a
+    // CELL reaching the runtime (property 1, the highest-ranked property there is).
+    // This number does not go to zero, and driving it there would mean canon could no
+    // longer build itself.
     expect(canonBuild.length, 'canon BUILD SCRIPTS using forge as a tool').toBe(
-      4,
+      5,
     );
     // WAS 3, THEN 1, IS 0 — property 2 holds with no exceptions. `manifest.ts` and
     // `manifest.test-d.ts` took their shapes from the schema; `index.ts` was the last
@@ -393,10 +421,14 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     expect(canonRoot.length, 'canon root modules importing the projector').toBe(
       0,
     );
+    // WAS 1, IS 0 — the last property-1 breach, retired by the worker-template seam.
+    // ZERO IS THE FLOOR AND IT IS LOAD-BEARING: property 1 admits no licensed
+    // exception the way property 2 admits build scripts. Nothing in canon may name an
+    // implementation, so any move off zero is a defect and not a judgement call.
     expect(
       es.filter((e) => e.from === 'canon' && e.to === 'runtime').length,
       'property 1 breaches',
-    ).toBe(1);
+    ).toBe(0);
   });
 
   it('property 4 — runtime depends on nothing', () => {

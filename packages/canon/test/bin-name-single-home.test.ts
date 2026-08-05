@@ -17,8 +17,24 @@
 //   (2) the runtime's cac BRANDING (`main.ts`) — read out of `--help`.
 //   (3) the PROJECTED THIN SHIM's `spawnSync` target — the operative site, read out
 //       of a real `scripts/<cap>.mjs` in a real render tree.
-//   (4) the memory-nudge hook WORKER's `$MEMORY_BIN` default, in both the source
-//       CELL and the committed `.sh` it regenerates.
+//   (4) EVERY hook worker that names the bin — swept, not enumerated: every
+//       `hooks/**` file in a real render tree PLUS every committed `cellTargets()`
+//       byte. Both are RESOLVED bytes, which is the only form that ever reaches a
+//       host.
+//
+// LEG (4) WAS SITE-SPECIFIC AND IS NOW A SCAN, because the cell it named stopped
+// importing `RUNTIME_BIN` — that import was ARCHITECTURE's last property-1 breach,
+// and THIS FILE REQUIRED IT: `CONSUMERS` held the cell and asserted its source
+// contained the symbol, so the only mechanism admitted was the import. The cell now
+// carries `{{fact:runtime-bin}}` and the PROJECTOR substitutes.
+//
+// The replacement is strictly stronger, not a relaxation. The old leg captured ONE
+// worker at ONE hard-coded path; the sweep captures every projected hook artifact and
+// every committed target, so a SECOND worker acquiring the bin name is covered on the
+// day it lands rather than on the day someone remembers to enumerate it. What was
+// lost is `toContain('RUNTIME_BIN')` — a mention-level proxy that could never have
+// distinguished a live interpolation from a stale comment, and which the
+// capture-and-compare legs subsume in every case where it was true.
 //
 // Plus a CENSUS: no file but `bin-name.ts` may spell the name as a quoted string
 // literal — the shape of the defect this retires (a second `const BIN = '…'`).
@@ -39,6 +55,7 @@ import { runMain } from '@cratylus/runtime/main';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { memoryConsolidationNudge } from '../src/hooks/memory-consolidation-nudge.js';
 import canonPlugin from '../src/index.js';
+import { cellTargets } from '../src/toolkit/project-targets.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = join(canonRoot, '..', '..');
@@ -47,12 +64,18 @@ const repoRoot = join(canonRoot, '..', '..');
 const CELL = 'wake';
 const CAPABILITY = 'memory';
 
-/** Every source file that SPEAKS the bin name, and must therefore not SPELL it. */
+/**
+ * Every source file that SPEAKS the bin name, and must therefore not SPELL it.
+ *
+ * `canon/src/hooks/memory-consolidation-nudge.ts` WAS HERE and is gone by REPAIR. A
+ * canon cell may not reach the runtime at all now (property 1), so it neither spells
+ * the name nor imports it — it names the FACT. Its bytes are still held, harder than
+ * before, by the render-tree sweep below.
+ */
 const CONSUMERS = [
   'packages/runtime/src/main.ts',
   'packages/invoke/src/bin.ts',
   'packages/forge/src/project/runtime-shim.ts',
-  'packages/canon/src/hooks/memory-consolidation-nudge.ts',
 ] as const;
 
 const read = (rel: string): string =>
@@ -66,6 +89,9 @@ const workerPath = memoryConsolidationNudge.workers?.[0]?.targetPath ?? '';
 // caller is the one writer — project THEN write.
 let projectedShim = '';
 
+/** Every projected `hooks/**` artifact, as ⟨path, RESOLVED bytes⟩. */
+let projectedHooks: Array<readonly [string, string]> = [];
+
 beforeAll(async () => {
   const out = await mkdtemp(join(tmpdir(), 'bin-name-single-home-'));
   const report = await projectPluginSet({
@@ -77,6 +103,9 @@ beforeAll(async () => {
     join(out, 'skills', CELL, 'scripts', `${CAPABILITY}.mjs`),
     'utf-8',
   );
+  projectedHooks = report.files
+    .filter((f) => f.path.startsWith('hooks/'))
+    .map((f) => [f.path, f.content] as const);
 }, 120_000);
 
 describe('the bin name has exactly one home', () => {
@@ -89,13 +118,18 @@ describe('the bin name has exactly one home', () => {
     );
     expect(decl).toHaveLength(1);
 
+    // NO `toContain('RUNTIME_BIN')` HERE, deliberately. It asserted a MENTION, which
+    // a comment satisfies and a live interpolation is not required to; worse, it was
+    // the half of this gate that made importing the symbol the only admissible
+    // mechanism, which is how a test came to require an architecture breach. What
+    // each consumer actually owes is that the name it EMITS equals the constant, and
+    // that is asserted below by capture-and-compare, per consumer.
     for (const rel of CONSUMERS) {
       const src = read(rel);
       expect(
         { file: rel, spellsIt: src.includes(`'${RUNTIME_BIN}'`) },
         `${rel} must interpolate RUNTIME_BIN, not spell the bin name`,
       ).toEqual({ file: rel, spellsIt: false });
-      expect(src).toContain('RUNTIME_BIN');
     }
   });
 
@@ -139,22 +173,56 @@ describe('the bin name has exactly one home', () => {
     expect(projectedShim).toContain(`['${CAPABILITY}',`);
   });
 
-  it('the memory-nudge hook worker defaults $MEMORY_BIN to RUNTIME_BIN', () => {
-    // Cell AND committed worker. The `workers[].content` is the byte-anchor the
-    // `.sh` regenerates from, so both must be captured: editing the `.sh` alone is
-    // already caught by the byte-lock, but flipping the constant without
-    // regenerating would otherwise pass unseen.
-    const cellContent = memoryConsolidationNudge.workers?.[0]?.content ?? '';
-    const committed = read(workerPath);
-    for (const [what, text] of [
-      ['cell', cellContent],
-      ['worker', committed],
-    ] as const) {
+  it('EVERY hook artifact that names the bin defaults $MEMORY_BIN to RUNTIME_BIN', async () => {
+    // A SWEEP, not a named path. Two populations of RESOLVED bytes, and both are
+    // operative: what `projectPluginSet` emits into a deploy tree, and what
+    // `cellTargets()` commits to the repo. The cell's raw `workers[].content` is NOT
+    // scanned and must not be — it is a TEMPLATE now, carrying `{{fact:runtime-bin}}`
+    // rather than a name, and asserting over it would assert over the wrong subject.
+    const committed = (await cellTargets())
+      .filter((t) => t.kind === 'hook')
+      .map((t) => [`target ${t.path}`, t.content] as const);
+    const population = [...projectedHooks, ...committed];
+    expect(
+      population.length,
+      'nothing projected or committed to sweep',
+    ).toBeGreaterThan(0);
+
+    const naming = population.filter(([, text]) => text.includes('MEMORY_BIN'));
+    // NON-VACUITY. A sweep over a population that happens to name the bin nowhere is
+    // green and DARK — precisely the failure this file was written against. At least
+    // one artifact must be under test, in each population.
+    expect(
+      naming.map(([where]) => where).filter((w) => w.startsWith('hooks/'))
+        .length,
+      'no PROJECTED hook artifact names the bin — the sweep is dark',
+    ).toBeGreaterThan(0);
+    expect(
+      naming.map(([where]) => where).filter((w) => w.startsWith('target '))
+        .length,
+      'no COMMITTED target names the bin — the sweep is dark',
+    ).toBeGreaterThan(0);
+
+    for (const [where, text] of naming) {
       const fallback = text.match(/MEM="\$\{MEMORY_BIN:-([^}]+)\}"/)?.[1];
-      expect(fallback, `${what} names a stale bin`).toBe(RUNTIME_BIN);
+      expect(fallback, `${where} names a stale bin`).toBe(RUNTIME_BIN);
     }
-    // The env override is the behaviour, not an accident of the default.
-    expect(committed).toContain('MEMORY_BIN');
+  });
+
+  it('no projected or committed hook artifact carries an UNRESOLVED placeholder', async () => {
+    // The template's own failure mode, at the only grain that matters. `resolveWorker`
+    // throws on an unknown placeholder, so this can only go red if a resolution site
+    // were MISSED — a worker emitted straight from `cell.workers` — which is exactly
+    // how `{{fact:runtime-bin}}` would reach a host and fail there instead of here.
+    const committed = (await cellTargets()).map(
+      (t) => [`target ${t.path}`, t.content] as const,
+    );
+    for (const [where, text] of [...projectedHooks, ...committed]) {
+      expect(
+        text.includes('{{'),
+        `${where} ships an unresolved placeholder`,
+      ).toBe(false);
+    }
   });
 });
 

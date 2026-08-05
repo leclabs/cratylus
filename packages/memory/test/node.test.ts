@@ -7,16 +7,19 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // The legacy bucket is ONE bucket: `fold`'s cwd-less records and `node`'s
 // unmeasurable (vanished-cwd) ones land in the same place. Imported from `fold`
 // so the test proves the identity rather than restating the literal.
 import { LEGACY_NODE } from '../src/fold.js';
 import {
+  CONFIG_ENV,
+  CONFIG_FILE,
   DEFAULT_MARKERS,
   type NodeConfig,
   globMatch,
   loadNodeConfig,
+  resolveConfigPath,
   resolveNode,
   underOrEqual,
 } from '../src/node.js';
@@ -41,7 +44,16 @@ beforeEach(() => {
 });
 afterEach(() => {
   rmSync(root, { recursive: true, force: true });
+  vi.unstubAllEnvs();
+  vi.restoreAllMocks();
 });
+
+/** Point the resolver at a scratch `$HOME` and cwd, with no env override in play. */
+function standIn(home: string, cwd: string): void {
+  vi.stubEnv('HOME', home);
+  vi.stubEnv(CONFIG_ENV, undefined);
+  vi.spyOn(process, 'cwd').mockReturnValue(cwd);
+}
 
 describe('resolveNode — marker lattice (SPEC D3)', () => {
   it('reflexive: cwd = repo root resolves to that root (.git dir)', () => {
@@ -249,6 +261,72 @@ describe('loadNodeConfig', () => {
     const c = loadNodeConfig(undefined);
     expect(c.markers).toEqual([...DEFAULT_MARKERS]);
     expect(c.hostHomes).toEqual({});
+  });
+});
+
+describe('resolveConfigPath — resolution reaches what the content governs', () => {
+  it('CONVICTS THE SILENT VANISH: markers configured in $HOME, tool run from elsewhere', () => {
+    // The content is FLEET-GLOBAL: `memory.scopeMarkers` govern the walk from
+    // any cwd on any host. A bare-cwd `existsSync` cannot see this file from
+    // anywhere but `~`, and reports nothing when it misses — the marker set
+    // silently reverts to the defaults and the boundary moves under the user.
+    const fakeHome = join(root, 'home', 'tester');
+    const config = join(fakeHome, CONFIG_FILE);
+    writeFileSync(
+      config,
+      JSON.stringify({ schema: 1, memory: { scopeMarkers: ['*.workspace'] } }),
+      'utf8',
+    );
+    const elsewhere = join(root, 'elsewhere', 'proj');
+    mkdirSync(elsewhere, { recursive: true });
+    writeFileSync(join(elsewhere, 'thing.workspace'), '', 'utf8');
+    standIn(fakeHome, elsewhere);
+
+    expect(resolveConfigPath()).toBe(config);
+
+    // And the whole point of finding it: the configured marker reaches the walk.
+    const c = loadNodeConfig(resolveConfigPath());
+    expect(c.markers).toEqual([...DEFAULT_MARKERS, '*.workspace']);
+    expect(
+      resolveNode(elsewhere, 'testhost', cfg({ markers: c.markers })),
+    ).toEqual({ node: elsewhere, basis: '*.workspace' });
+  });
+
+  it('the nearest config at or above the cwd wins over the one in $HOME', () => {
+    const fakeHome = join(root, 'home', 'tester');
+    writeFileSync(join(fakeHome, CONFIG_FILE), '{"schema":1}', 'utf8');
+    const repo = join(root, 'repo');
+    const deep = join(repo, 'packages', 'memory', 'src');
+    mkdirSync(deep, { recursive: true });
+    const repoConfig = join(repo, CONFIG_FILE);
+    writeFileSync(repoConfig, '{"schema":1}', 'utf8');
+    standIn(fakeHome, deep);
+
+    // Also convicts the sibling case: a repo-carried config was invisible from
+    // every directory of that repo but its root.
+    expect(resolveConfigPath()).toBe(repoConfig);
+  });
+
+  it('the env var outranks both, and its empty-string form stays a hermetic sentinel', () => {
+    const fakeHome = join(root, 'home', 'tester');
+    writeFileSync(join(fakeHome, CONFIG_FILE), '{"schema":1}', 'utf8');
+    standIn(fakeHome, fakeHome);
+
+    vi.stubEnv(CONFIG_ENV, '/explicit/path.json');
+    expect(resolveConfigPath()).toBe('/explicit/path.json');
+    expect(resolveConfigPath('/override.json')).toBe('/override.json');
+
+    // Tests set `''` to mean "no config"; it must not fall through to `$HOME`.
+    vi.stubEnv(CONFIG_ENV, '');
+    expect(resolveConfigPath()).toBe('');
+  });
+
+  it('no config at the cwd, above it, or in $HOME → none', () => {
+    const fakeHome = join(root, 'home', 'tester');
+    const elsewhere = join(root, 'bare');
+    mkdirSync(elsewhere, { recursive: true });
+    standIn(fakeHome, elsewhere);
+    expect(resolveConfigPath()).toBeUndefined();
   });
 });
 

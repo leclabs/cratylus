@@ -1,13 +1,14 @@
 // plan-set-cli.ts — the runnable praxis affordance for the PLAN-LEVEL lifecycle
-// (`plan-set.ts`). Reads plan-phase / membership / landing off ground truth
-// (on-disk residence + git), never a stored field; `retire`/`supersede` stage
+// (`plan-set.ts`). Reads plan-phase / membership / landing / retirement off ground
+// truth (on-disk residence + git), never a stored field; `retire`/`supersede` stage
 // (the commit is gated).
 //
 //   tsx src/toolkit/plan-set-cli.ts phase <plan>        # the plan's lifecycle phase
 //   tsx src/toolkit/plan-set-cli.ts landing <plan>      # landing-commit sha (or none)
-//   tsx src/toolkit/plan-set-cli.ts list [--retired]    # in-scope plans (or archive)
+//   tsx src/toolkit/plan-set-cli.ts retirement <plan>   # retiring-commit sha (or none)
+//   tsx src/toolkit/plan-set-cli.ts list                # the plan set (= what is on disk)
 //   tsx src/toolkit/plan-set-cli.ts supersede <plan> <by> # declare P superseded-by Q (staged)
-//   tsx src/toolkit/plan-set-cli.ts retire <plan>       # git mv → plans/.retired/ (staged)
+//   tsx src/toolkit/plan-set-cli.ts retire <plan>       # DELETE plans/<plan> (staged)
 
 import {
   defaultContext,
@@ -15,6 +16,7 @@ import {
   list,
   phase,
   retire,
+  retirement,
   supersede,
 } from './plan-set.js';
 
@@ -40,9 +42,18 @@ function main(argv: string[]): number {
       process.stdout.write(`${sha ?? '(not landed)'}\n`);
       return sha ? 0 : 1;
     }
+    case 'retirement': {
+      const plan = rest[0];
+      if (!plan) {
+        process.stderr.write('usage: plan-set retirement <plan>\n');
+        return 2;
+      }
+      const sha = retirement(defaultContext, plan);
+      process.stdout.write(`${sha ?? '(not retired)'}\n`);
+      return sha ? 0 : 1;
+    }
     case 'list': {
-      const retired = rest.includes('--retired');
-      for (const p of list(defaultContext, { retired })) {
+      for (const p of list(defaultContext)) {
         process.stdout.write(`${p}\n`);
       }
       return 0;
@@ -77,13 +88,13 @@ function main(argv: string[]): number {
         return 1;
       }
       process.stdout.write(
-        `retired ${plan} → plans/.retired/${plan} (staged; commit gated)\n`,
+        `retired ${plan} — plans/${plan} DELETED (staged; commit gated). git holds every byte.\n`,
       );
       return 0;
     }
     default:
       process.stderr.write(
-        'usage: plan-set <phase|landing|list|supersede|retire> [args]\n',
+        'usage: plan-set <phase|landing|retirement|list|supersede|retire> [args]\n',
       );
       return 2;
   }
