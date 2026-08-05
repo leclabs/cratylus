@@ -40,7 +40,7 @@ import type {
   AgentDefContext,
   HarnessAdapter,
 } from '../../core/harness-adapter.js';
-import { canonicalToClaude } from './events.js';
+import { canonicalToClaude, claudeBindingOf } from './events.js';
 import { serializeClaudeHooksReport } from './hooks.js';
 
 // Re-export the shared, harness-neutral body machinery so `adapters/claude`
@@ -114,13 +114,18 @@ function agentHooksFrontMatter(
   const byEvent = new Map<string, string[]>();
   for (const { f, m } of enforcing) {
     for (const event of f.events) {
-      const native = canonicalToClaude[event];
+      const binding = claudeBindingOf(event);
       // Unrealizable events are REFUSED upstream at build time, never dropped
       // here — a silent skip at emission is the fail-open this design removes.
-      if (!native) continue;
+      if (!binding) continue;
+      const native = binding.event;
+      // The ACT's selector is COMPUTED (the adapter knows which tool performs it);
+      // a mechanism's own `matcher` — codex's generated `agent_type` regex, or a
+      // selector round-tripped off a host — answers only when the act does not.
+      const matcher = binding.matcher ?? m.matcher;
       const lines: string[] = [];
-      if (m.matcher) {
-        lines.push(`    - matcher: ${JSON.stringify(m.matcher)}`);
+      if (matcher) {
+        lines.push(`    - matcher: ${JSON.stringify(matcher)}`);
         lines.push('      hooks:');
       } else {
         lines.push('    - hooks:');
@@ -207,13 +212,16 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   home: '.claude',
   agentExt: '.md',
   hooksFile: 'settings.json',
-  // The map, declared on the port so deploy can EMIT it into the host config the
-  // runtime reads. Both predicates below already answer from it.
+  // The 1:1 map, declared on the port so deploy can EMIT it into the host config the
+  // runtime reads. It stays 1:1 deliberately: the runtime REVERSES it (native →
+  // canonical) to name what it observed, and the ACT bindings — many acts onto one
+  // native event — have no reverse. An act is narrowed at emission, not observed.
   nativeEvents: canonicalToClaude,
-  // Realizable ⇔ the canonical event has a Claude native peer. `canonicalToClaude`
-  // IS the realization map, so asking it is asking the mechanism itself — there is
-  // no second list to drift. A git-substrate event never reaches here; it routes.
-  realizes: (event) => event in canonicalToClaude,
+  // Realizable ⇔ `claudeBindingOf` answers — the 1:1 map OR an act binding, asked as
+  // one question so no site consults half the answer. Asking the realization map IS
+  // asking the mechanism itself; there is no second list to drift. A git-substrate
+  // event never reaches here; it routes.
+  realizes: (event) => claudeBindingOf(event) !== undefined,
   // Scopable ⇔ realizable, and for ONE reason: Claude attaches a hook inside the
   // agent's own front-matter, so ATTACHMENT IS THE SCOPE. There is no selector to
   // express and therefore no event Claude can fire but not narrow — the two
@@ -223,7 +231,7 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   // Coincidence, NOT identity: this is an alias of `realizes` by argument, not a
   // definition of `scopes`. An adapter added later that attaches globally must
   // answer this question on its own terms.
-  scopes: (event) => event in canonicalToClaude,
+  scopes: (event) => claudeBindingOf(event) !== undefined,
   // Claude reads its hooks out of `~/.claude/`, and `deploy --kind hooks` stages
   // each cell's workers under `hooks/<anchor>/`. `$HOME` and not a resolved path:
   // the emitted config is a deploy target read at RUN time on whatever host it

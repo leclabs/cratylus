@@ -19,7 +19,7 @@
 // corpus tuple — the check moved from the compiler to a gate because the vocabulary
 // moved to where it is signified.
 
-import type { EventName } from '@cratylus/schema/hook';
+import type { EventName, NativeBinding } from '@cratylus/schema/hook';
 
 /**
  * Canonical event → Claude Code event name. Lifted from DESIGN.md §7 equivalence
@@ -58,6 +58,10 @@ export const canonicalToClaude: Readonly<Record<EventName, string>> = {
 
 /**
  * Reverse map: Claude event name → canonical event. Used by `read()`.
+ *
+ * KEYED OVER THE 1:1 MAP ONLY, which is why the ACT bindings below are a separate
+ * table and not extra rows here: three canonical acts realize as `PreToolUse`, and a
+ * map that must reverse cannot hold them.
  */
 export const claudeToCanonical: Readonly<Record<string, EventName>> =
   Object.fromEntries(
@@ -66,3 +70,41 @@ export const claudeToCanonical: Readonly<Record<string, EventName>> =
       canonical,
     ]),
   );
+
+/**
+ * Canonical ACT → the claude ⟨native event, native selector⟩ pair.
+ *
+ * THE TOOL NAMES LIVE HERE, and this is the only file in the corpus entitled to
+ * spell them. An act like `operator.consult.pre` names WHAT the agent is about to do;
+ * WHICH tool does it is a vendor fact, so the answer belongs to the vendor's adapter.
+ * A canon cell used to carry `AskUserQuestion|Agent|SendMessage` directly, and the
+ * cost was exactly what you would predict: the other adapter could not read it, said
+ * nothing, and fired the hook on every tool call.
+ *
+ * IT IS NOT A TOOL VOCABULARY and could not be. Claude's tool set is open — MCP
+ * servers add to it at run time and users add their own — so nothing here enumerates
+ * tools. These are two REGEXES answering two acts, and they grow only when the corpus
+ * signifies another act.
+ */
+export const canonicalActToClaude: Readonly<Record<EventName, NativeBinding>> =
+  {
+    'operator.consult.pre': { event: 'PreToolUse', matcher: 'AskUserQuestion' },
+    'subagent.dispatch.pre': {
+      event: 'PreToolUse',
+      matcher: 'Agent|SendMessage',
+    },
+  };
+
+/**
+ * What `event` becomes on claude — the ACT binding when there is one, else the plain
+ * native name with no selector. `undefined` ⇔ unrealizable here.
+ *
+ * The single question every claude emission site asks, so no site can consult one
+ * table and miss the other.
+ */
+export function claudeBindingOf(event: EventName): NativeBinding | undefined {
+  const act = canonicalActToClaude[event];
+  if (act) return act;
+  const native = canonicalToClaude[event];
+  return native === undefined ? undefined : { event: native };
+}

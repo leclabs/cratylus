@@ -1,4 +1,4 @@
-// `discoverPluginFragments` — the multi-plugin fragment discovery (P3). Proves:
+// `enumeratePluginFragmentCatalogs` — the multi-plugin fragment discovery (P3). Proves:
 // (1) it enumerates fragments across ≥2 plugins as NODES with namespaced ids;
 // (2) two distinct plugins sharing an anchor do NOT collide (distinct node objects);
 // (3) node identity is the ADDRESS the resolver keys by (object-import addressing);
@@ -11,8 +11,8 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
-  type DiscoveredPlugin,
-  discoverPluginFragments,
+  type PluginFragmentCatalog,
+  enumeratePluginFragmentCatalogs,
 } from '../../src/catalog/index.js';
 import {
   DanglingReferenceError,
@@ -36,9 +36,9 @@ function writeStringFragment(
   );
 }
 
-describe('discoverPluginFragments — namespaced multi-plugin discovery', () => {
+describe('enumeratePluginFragmentCatalogs — namespaced multi-plugin discovery', () => {
   let root: string;
-  let plugins: DiscoveredPlugin[];
+  let plugins: PluginFragmentCatalog[];
 
   beforeAll(async () => {
     root = mkdtempSync(join(tmpdir(), 'forge-discover-'));
@@ -64,7 +64,7 @@ describe('discoverPluginFragments — namespaced multi-plugin discovery', () => 
     writeStringFragment(alphaDir, 'objective', 'insight', 'insight', 'insight');
     writeStringFragment(betaDir, 'role', 'builder', 'builder', 'the builder');
 
-    plugins = await discoverPluginFragments(
+    plugins = await enumeratePluginFragmentCatalogs(
       [
         { name: 'alpha', fragmentsDir: alphaDir },
         { name: 'beta', fragmentsDir: betaDir },
@@ -115,7 +115,7 @@ describe('discoverPluginFragments — namespaced multi-plugin discovery', () => 
   });
 });
 
-describe('discoverPluginFragments — cross-plugin reference acyclicity (§3)', () => {
+describe('enumeratePluginFragmentCatalogs — cross-plugin reference acyclicity (§3)', () => {
   let root: string;
 
   beforeAll(() => {
@@ -150,7 +150,7 @@ describe('discoverPluginFragments — cross-plugin reference acyclicity (§3)', 
     );
 
     await expect(
-      discoverPluginFragments(
+      enumeratePluginFragmentCatalogs(
         [
           { name: 'A', fragmentsDir: aDir },
           { name: 'B', fragmentsDir: bDir },
@@ -174,7 +174,7 @@ describe('discoverPluginFragments — cross-plugin reference acyclicity (§3)', 
       ].join('\n'),
     );
     await expect(
-      discoverPluginFragments(
+      enumeratePluginFragmentCatalogs(
         [{ name: 'C', fragmentsDir: cDir }],
         FIXTURE_MANIFEST,
       ),

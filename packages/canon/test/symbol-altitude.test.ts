@@ -55,7 +55,7 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   cl: 'REFERENCE', // gloss in probe, signature in conceptualize
   'σ*': 'REFERENCE',
   '≺': 'REFERENCE', // same order operator over different carriers
-  O: 'REFERENCE', // both: the SOUL dimension-section set
+  O: 'REFERENCE', // both: the Target dimension-section set
   green: 'REFERENCE', // both: a gate-pass reached by FIXING, never by loosening
   dream: 'REFERENCE', // handoff points at the dream operation with `@ dream`
   realize: 'REFERENCE', // exemplify carries `@ materialize`
@@ -72,6 +72,14 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   // `@ conceptualize`, which is where the sign was taken from.
   sources: 'REFERENCE',
   c: 'REFERENCE',
+  // `status` — one concept, two capabilities. Both cells declare the readout of
+  // whether THIS capability is attached to the harness's hook-config artifact,
+  // derived from that artifact rather than from memory; only the invocation and the
+  // second component of the pair differ (event-tap's events, carry-on's terminus).
+  // carry-on borrows `target`/`target₀`/`foreign`/`attached` from event-tap outright
+  // (`@ event-tap`); `status` is declared locally ONLY because its definiens is the
+  // cell's own script path, which a borrow would state wrongly.
+  status: 'REFERENCE',
   // `memory` RECLASSIFIED: wake declares the CAPABILITY contract (and its cell carries
   // `runtime: { capability: 'memory' }`), dream declares the home ∪ runtime it resolves to.
   // Two facets of one subsystem, not two concepts.

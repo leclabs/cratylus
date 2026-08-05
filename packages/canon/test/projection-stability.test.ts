@@ -116,15 +116,15 @@ describe('projection stability (.ts is the sole source)', () => {
     expect(wakeMd).toContain('Composed from /dream · /praxis.');
   });
 
-  it('every agent resolves and projects a SOUL', async () => {
+  it('every agent resolves and projects a Target', async () => {
     const modules = (await collect('agents/*.ts')).filter(
       (r) => !r.endsWith('base.ts'),
     );
     expect(modules.length).toBe(10);
     for (const rel of modules) {
       const agent = await firstExport<Agent>(join(srcRoot, rel));
-      const soul = agentToClaudeMd(agent, { manifest: MANIFEST });
-      expect(soul.length, rel).toBeGreaterThan(0);
+      const target = agentToClaudeMd(agent, { manifest: MANIFEST });
+      expect(target.length, rel).toBeGreaterThan(0);
     }
   });
 });

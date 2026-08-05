@@ -84,6 +84,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // corpora — including the un-prefixed port module a second hand-written
   // exception would be, which the biconditional has no allowlist to absorb.
   'canon/capability-keyspace.test.ts': 'GATE',
+  // crosses the LIVE cell against the runtime's `CarryOnVerb` union and canon's
+  // `PLAN_STATES`/`PLAN_MARKERS` home, and asserts the projected shim exists; its
+  // convicting fixtures drive the same three readers over a drifted verb set on
+  // either side, a forked layout line, and a cell that declares neither.
+  'canon/carry-on-cell.test.ts': 'GATE',
   // censuses the LIVE `*Cell` interfaces in `@cratylus/schema` for one-gloss-one-sign;
   // its convicting fixtures drive the same two pure predicates over the exact source
   // text of the `RuleCell.definiens` / `HookCell.residue` collision it was built from.
@@ -107,6 +112,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // and over the exact fifth Kind (`hook`) the gate was built from.
   'canon/ground-conformance.test.ts': 'GATE',
   'canon/harness-parity.test.ts': 'GATE',
+  // projects the LIVE `stance-guardrail-pre` cell through BOTH shipped adapters and
+  // asserts the cell declares an act while the adapter computes the selector; its
+  // convicting fixture drives the SAME projector over the pre-repair shape (a plain
+  // `tool.use.pre` binding) and shows codex emitting it in total silence.
+  'canon/hook-act-selector.test.ts': 'GATE',
   'canon/hook-rule-boundary.test.ts': 'GATE',
   'canon/memory-nudge.test.ts': 'BEHAVIORAL',
   'canon/null-dimension.test.ts': 'GATE',
@@ -144,6 +154,12 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/catalog/discover.test.ts': 'BEHAVIORAL',
   // enumerates the FIXTURE corpus, asserting a shape invariant over EVERY value.
   'forge/catalog/enumerate.test.ts': 'GATE',
+  // walks the LIVE tree outside `plans/` for owed-signification markers in ANY form.
+  // Built after a census anchored on one punctuation variant reported "exactly one" and
+  // missed a second marker four lines away — so its two convicting fixtures plant BOTH
+  // historical forms, and the em-dash one additionally asserts the census's own
+  // colon-anchored pattern reads that planted file as clean.
+  'forge/catalog/signify-marker-class.test.ts': 'GATE',
   // drives `runCatalog` against a tmpdir corpus it writes itself (zero-config path).
   'forge/cli/catalog.test.ts': 'BEHAVIORAL',
   'forge/cli/cli.test.ts': 'BEHAVIORAL',
@@ -222,6 +238,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
 
   // ── runtime ──────────────────────────────────────────────────────────
   'runtime/brand-derived-literals.test.ts': 'GATE',
+  // two GATE legs scan every carry-on capability source — one for a sibling-package
+  // import (the DAG guard), one for any read of turn text; its convicting fixtures
+  // drive both predicates over planted sources, and the elevate legs drive the real
+  // verb surface with a host whose `install` does nothing.
+  'runtime/carry-on.test.ts': 'GATE',
   // the DAG-guard leg scans every capability source file for a forge import.
   'runtime/event-tap.test.ts': 'GATE',
   'runtime/kernel.test.ts': 'BEHAVIORAL',

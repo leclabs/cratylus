@@ -4,7 +4,7 @@
 // concrete fragment OR `null`; `null` ⇒ the dimension is OMITTED from the
 // projection (inherited from the harness). This gate proves the whole chain per
 // agent module:
-//   vector dimension = null  ⇔  no `## Title` section in the projected SOUL
+//   vector dimension = null  ⇔  no `## Title` section in the projected Target
 // (the composed `Resolved` intermediate is gone — `agentToClaudeMd` projects
 // straight from the `Agent` vector), and, for concrete dimensions, the converse
 // (section present).
@@ -46,46 +46,46 @@ const AGENTS: readonly Agent[] = [
   tester.tester,
 ];
 
-describe('NULL-DIMENSION gate — null ⇔ no SOUL section', () => {
+describe('NULL-DIMENSION gate — null ⇔ no Target section', () => {
   it('exactly the 10 live agents are under test', () => {
     expect(AGENTS.length).toBe(10);
   });
 
-  it('is non-vacuous — the gate FAILS an agent whose null-set contradicts its SOUL', () => {
+  it('is non-vacuous — the gate FAILS an agent whose null-set contradicts its Target', () => {
     // Every assertion below is over CLEAN vectors, so all ten pass whether the
     // correspondence is really checked or the section lookup silently stopped
     // matching. Convict it: null a dimension the agent actually carries, and the
-    // projected SOUL must still show its section — the exact contradiction the
+    // projected Target must still show its section — the exact contradiction the
     // gate exists to catch.
     const carrier = AGENTS.find((a) => a.transparency !== null) as Agent;
     expect(carrier, 'an agent carrying transparency').toBeDefined();
 
-    const soul = agentToClaudeMd(carrier, { manifest: MANIFEST });
+    const target = agentToClaudeMd(carrier, { manifest: MANIFEST });
     const section = `## ${dimensionTitle('transparency')}`;
 
     // control: a CARRIED dimension does render its section, so the lookup works
-    expect(soul.includes(section), 'control: carried ⇒ section present').toBe(
+    expect(target.includes(section), 'control: carried ⇒ section present').toBe(
       true,
     );
 
-    // conviction: an agent CLAIMING null while the SOUL still renders the section
+    // conviction: an agent CLAIMING null while the Target still renders the section
     // is exactly the contradiction the per-agent assertions above test for —
-    // `soul.includes(section)` must be !isNull, and here both are true.
+    // `target.includes(section)` must be !isNull, and here both are true.
     const liar = { ...carrier, transparency: null } as Agent;
     const isNull = liar[fieldOf('transparency')] === null;
     expect(isNull).toBe(true);
-    expect(soul.includes(section) === !isNull).toBe(false);
+    expect(target.includes(section) === !isNull).toBe(false);
   });
 
   for (const agent of AGENTS) {
-    it(`${agent.name}: vector null-set matches the projected SOUL`, () => {
-      const soul = agentToClaudeMd(agent, { manifest: MANIFEST });
+    it(`${agent.name}: vector null-set matches the projected Target`, () => {
+      const target = agentToClaudeMd(agent, { manifest: MANIFEST });
       for (const dimension of DIMENSION_NAMES) {
         const title = dimensionTitle(dimension);
         const isNull = agent[fieldOf(dimension)] === null;
         expect(
-          soul.includes(`## ${title}`),
-          `${agent.name}.${dimension}: ${isNull ? 'null ⇒ no' : 'concrete ⇒ a'} \`## ${title}\` SOUL section`,
+          target.includes(`## ${title}`),
+          `${agent.name}.${dimension}: ${isNull ? 'null ⇒ no' : 'concrete ⇒ a'} \`## ${title}\` Target section`,
         ).toBe(!isNull);
       }
     });

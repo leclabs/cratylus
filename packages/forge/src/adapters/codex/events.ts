@@ -1,4 +1,4 @@
-import type { EventName } from '@cratylus/schema/hook';
+import type { EventName, NativeBinding } from '@cratylus/schema/hook';
 
 /**
  * Canonical event → Codex hook event name.
@@ -46,3 +46,52 @@ export const CODEX_AGENT_SCOPED_EVENTS: ReadonlySet<string> = new Set([
   'SubagentStart',
   'SubagentStop',
 ]);
+
+/**
+ * The sentence codex says when it can FIRE an act but not NARROW it.
+ *
+ * ONE STRING, so the report cannot drift from the reason. Codex spends its only
+ * `PreToolUse` selector on `agent_type` (above); there is no second selector for the
+ * call's SUBJECT, so an act naming a subject arrives here fireable and unnarrowable.
+ */
+const CODEX_NO_SUBJECT_SELECTOR =
+  "codex's `matcher` selects on `agent_type`, never on the call's subject, so this act's narrowing is not expressible here — the hook fires on EVERY occurrence of that native event and only the worker's own subject branch narrows it";
+
+/**
+ * Canonical ACT → the codex ⟨native event, native selector⟩ pair.
+ *
+ * EVERY BINDING HERE IS `unnarrowed`, AND THAT IS THE FINDING. Codex fires
+ * `PreToolUse` exactly as claude does, so both acts are realizable; what codex lacks
+ * is the selector. Before this table the loss had no shape: the projector read a
+ * `matcher` field it did not understand, emitted the hook without it, and said
+ * nothing — so `hooks.json` registered a guardrail that ran on every tool call while
+ * the render looked clean. The gap was never the defect. The SILENCE was.
+ *
+ * NOTE WHAT IS ABSENT: no tool name. Codex's tool set is its own and open-world, and
+ * nothing here needs to know it — declining to narrow is a statement about the
+ * SELECTOR, not about the tools.
+ */
+export const canonicalActToCodex: Readonly<Record<EventName, NativeBinding>> = {
+  'operator.consult.pre': {
+    event: 'PreToolUse',
+    unnarrowed: CODEX_NO_SUBJECT_SELECTOR,
+  },
+  'subagent.dispatch.pre': {
+    event: 'PreToolUse',
+    unnarrowed: CODEX_NO_SUBJECT_SELECTOR,
+  },
+};
+
+/**
+ * What `event` becomes on codex — the ACT binding when there is one, else the plain
+ * native name. `undefined` ⇔ unrealizable here.
+ *
+ * The single question every codex emission site asks, so no site can consult one
+ * table and miss the other.
+ */
+export function codexBindingOf(event: EventName): NativeBinding | undefined {
+  const act = canonicalActToCodex[event];
+  if (act) return act;
+  const native = canonicalToCodex[event];
+  return native === undefined ? undefined : { event: native };
+}

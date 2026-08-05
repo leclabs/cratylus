@@ -11,7 +11,7 @@
 // in (S2). It must never reach `core/ir`.
 
 import type { Hook } from '@cratylus/schema/hook';
-import { canonicalToClaude } from './events.js';
+import { claudeBindingOf } from './events.js';
 
 /**
  * Adapter-private Hook extension fields — never part of the canonical hook
@@ -25,6 +25,16 @@ export interface ClaudeHook extends Hook {
   env?: Record<string, string>;
   /** Native hook `type` when not `'command'` (e.g. `'prompt'`) [CC6]. */
   kind?: string;
+  /**
+   * A claude-native `matcher` read back off a host's own `settings.json`.
+   *
+   * ADAPTER-PRIVATE, AND THAT IS THE POINT. The canonical `Hook` carried this field
+   * until 2026-08-05 and a canon cell filled it with claude tool names; the shape now
+   * has no such field, so a selector can only ever be a harness fact — either
+   * COMPUTED from the act (`canonicalActToClaude`) or, here, round-tripped from bytes
+   * this harness itself wrote. The computed one wins when both are present.
+   */
+  matcher?: string;
 }
 
 /** The Claude `settings.json` `hooks` block shape: native-event → entries, each
@@ -78,8 +88,10 @@ export function serializeClaudeHooks(
   for (const hook of hooks) {
     const ch = hook as ClaudeHook;
     for (const event of hook.events) {
-      const claudeEvent = canonicalToClaude[event];
-      if (!claudeEvent) {
+      // The act's native pair, COMPUTED here — the cell named the act and nothing
+      // else, so this is the only place the tool names can enter.
+      const binding = claudeBindingOf(event);
+      if (!binding) {
         warnings.push(
           `hook '${hook.id ?? '?'}': canonical event '${event}' has no Claude equivalent`,
         );
@@ -89,6 +101,7 @@ export function serializeClaudeHooks(
         });
         continue;
       }
+      const claudeEvent = binding.event;
       // A hook lifted from a non-command native type (e.g. `prompt` [CC6])
       // carries its adapter-private `kind`; round-trip it to the SAME native
       // shape rather than misrepresenting it as `type: command`.
@@ -102,7 +115,14 @@ export function serializeClaudeHooks(
       const entry: ClaudeHooksBlock[string][number] = {
         hooks: [cmd],
       };
-      if (hook.matcher) entry.matcher = hook.matcher;
+      const matcher = binding.matcher ?? ch.matcher;
+      if (matcher) entry.matcher = matcher;
+      // A harness that can FIRE an act but not NARROW it says so — the channel
+      // exists on every adapter, so no adapter can lose a narrowing in silence.
+      if (binding.unnarrowed)
+        warnings.push(
+          `hook '${hook.id ?? '?'}': act '${event}' fires as claude '${claudeEvent}', but ${binding.unnarrowed}`,
+        );
       if (ch.if !== undefined) entry.if = ch.if;
       out[claudeEvent] ??= [];
       out[claudeEvent].push(entry);

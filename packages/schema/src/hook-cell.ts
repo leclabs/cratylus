@@ -33,6 +33,16 @@
 // closed set of fact NAMES — this module never holds a fact's VALUE, because a value
 // here would restore the `schema → runtime` edge that was deliberately repaired.
 //
+// NOR THE SELECTOR. `matcher` lived here too, documented with
+// `AskUserQuestion|Agent|SendMessage` as its example — a doc comment shipping the
+// defect it invited, on a shape whose whole claim is harness-neutrality. It is gone,
+// and NOTHING replaced it on the cell: a cell that wants to fire only when the agent
+// is about to consult the operator names that ACT (`operator.consult.pre`) among its
+// `events`, and the adapter computes the native ⟨event, selector⟩ pair
+// (`NativeBinding`). No tool VOCABULARY was minted to make that possible and none
+// could be: tool sets are open-world, so a closed enum over them is permanently
+// incomplete. The vocabulary was already the corpus's event vocabulary.
+//
 // WHAT IT MUST NEVER CARRY IS THE INVOCATION. `command` lived here and every cell
 // spelled out `sh "$HOME/.claude/hooks/<id>/<file>"` — a claude path in the generic
 // design. The whole codex projection was consequently dropped rather than
@@ -131,12 +141,6 @@ export interface HookCell<E extends EventName = EventName> {
    */
   readonly order?: number;
   readonly events: readonly [E, ...E[]];
-  /**
-   * Optional per-hook tool matcher (client-native regex, e.g.
-   * `AskUserQuestion|Agent|SendMessage`). Meaningful for tool-scoped events
-   * (`tool.use.pre`); a Stop/SubagentStop hook leaves it unset.
-   */
-  readonly matcher?: string;
   /**
    * WHICH worker is the entry point — a `workers[].filename`, never a path and
    * never a command. The adapter turns ⟨id, entry⟩ into the invocation its harness
@@ -251,7 +255,6 @@ export function hookIrOf(
     id: cell.id,
     events: [...cell.events] as [EventName, ...EventName[]],
     command: hookCommand(cell.id, cell.entry),
-    ...(cell.matcher !== undefined ? { matcher: cell.matcher } : {}),
     ...(cell.timeout !== undefined ? { timeout: cell.timeout } : {}),
   };
 }

@@ -65,10 +65,24 @@ async function loadLiveCorpus(): Promise<StructuralCorpus> {
   return { agents, fragments };
 }
 
-// ═══ POSITIVE CONTROL — the VERBATIM deleted cruft (held-out fixtures) ════════════
-// Each string is the actual source E1 removed (git 42e2e35~1), parsed by the SAME
-// parser the live loader uses — so a RED here is proof the gate would have bitten
-// the real accretion.
+// ═══ POSITIVE CONTROL — the deleted cruft, held out as fixtures ══════════════════
+// Each string is the source E1 removed (git 42e2e35), parsed by the SAME parser the
+// live loader uses — so a RED here is proof the gate would have bitten the real
+// accretion.
+//
+// NOT byte-verbatim, and it cannot be. These strings must stay PARSEABLE by today's
+// parser, so their SCAFFOLDING tracks the live schema: the originals said `organ:`
+// and imported from `@leclabs/agent-forge/anatomy`, both since renamed. What is held
+// verbatim is the PAYLOAD — the definiens prose, the shape of the accretion, the
+// names that carried it. That payload is a historical citation and is deliberately
+// NOT swept: `regenerable SOUL` below is the deleted text and must stay that way, or
+// this stops being evidence and becomes a restatement of the present.
+//
+// This header used to claim VERBATIM outright. It was false when written down to the
+// import line, and a corpus-wide rename had already drifted the scaffolding without
+// touching the claim — so the fixture quietly modernized itself while asserting it
+// had not. Say what is actually preserved; a positive control is only as good as the
+// accuracy of what it says it holds.
 
 /** (a) the real `src/agents/base.ts` — a genus floor spread into every agent. */
 const BASE_TS = `// delete this file and set the values in the agent definitions directly i.e. packages/canon/src/agents/*.ts.

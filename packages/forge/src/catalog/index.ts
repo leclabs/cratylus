@@ -160,25 +160,27 @@ export async function enumerateCatalog(
 // plugins may both name a concept `parsimony`; each yields a DISTINCT node, so that
 // is a resolution event, not a collision (per-plugin σ* invariant).
 //
-// FEEDS THE LOADER (P4): the per-plugin `DiscoveredFragment[]` is what P4's load step
+// FEEDS THE LOADER (P4): the per-plugin `FragmentEntry[]` is what P4's load step
 // turns into P2's `LoadedPlugin.contributions` (target = the node; value = the body);
 // the resolver then keys `ResolvedAgentSet.fragments` by that same node object.
-//
-// [SIGNIFY — engine-internal names pending a cold-decode pass: `PluginFragmentSource`,
-//  `DiscoveredFragment`, `DiscoveredPlugin`, `discoverPluginFragments`.]
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * A plugin's fragment root to scan: the P1 `AgentPlugin.name` (the namespace
- * segment) paired with the RESOLVED absolute path of its `AgentPlugin.fragments`
- * dir (the parent of the per-dimension module dirs — the per-plugin analogue of
- * `enumerateCatalog`'s `corpusDimensionsDir`).
+ * A plugin's fragment ROOT: where to scan, and under what namespace. The P1
+ * `AgentPlugin.name` (the namespace segment) paired with the RESOLVED absolute path
+ * of its `AgentPlugin.fragments` dir (the parent of the per-dimension module dirs —
+ * the per-plugin analogue of `enumerateCatalog`'s `corpusDimensionsDir`).
+ *
+ * An INPUT, built BEFORE the scan: nothing here is a finding, so nothing here may be
+ * named for the scan that consumes it. `Root` is the dir the walk starts from; it is
+ * not `Source`, because in a module whose subject is authored text "source" reads as
+ * source code — and a fragment's BODY is the actual source.
  *
  * P1's `AgentPlugin.fragments` is package-relative; mapping it to this absolute path
  * is module-resolution (which node_modules package root) — P4's loader concern. P3
  * consumes the already-resolved dir so it stays doctrine- and resolution-agnostic.
  */
-export interface PluginFragmentSource {
+export interface PluginFragmentRoot {
   /** The plugin namespace segment (`AgentPlugin.name`). Namespaces the reporting id. */
   readonly name: string;
   /** Absolute path to the plugin's `fragments` dir (parent of `<dimension>/*.ts`). */
@@ -186,26 +188,32 @@ export interface PluginFragmentSource {
 }
 
 /**
- * One discovered fragment. `node` is the resolver `Fragment` (OBJECT IDENTITY = the
- * imported binding — what P4 targets in a `PatchEntry` and what the resolver keys the
- * resolved map by). `dimension` is the axis it files under. `body` is its
- * authored base value: the branded-string body for a string fragment; for a node-form
- * fragment (the §3 reference-bearing form) the node object itself — P4's loader decides
- * how a node-form fragment originates its base contribution.
+ * ONE FRAGMENT as authored — identity, axis, body. `node` is the resolver `Fragment`
+ * (OBJECT IDENTITY = the imported binding — what P4 targets in a `PatchEntry` and what
+ * the resolver keys the resolved map by). `dimension` is the axis it files under.
+ * `body` is its authored base value: the branded-string body for a string fragment;
+ * for a node-form fragment (the §3 reference-bearing form) the node object itself —
+ * P4's loader decides how a node-form fragment originates its base contribution.
+ *
+ * `Entry`, not the stage that produced it: every value in a pipeline is some stage's
+ * output, so naming one for its provenance distinguishes it from nothing.
  */
-export interface DiscoveredFragment {
+export interface FragmentEntry {
   readonly node: Fragment;
   readonly dimension: string;
   readonly body: unknown;
 }
 
 /**
- * A plugin's fragment enumeration — namespaced by its `name`. Two plugins sharing an
- * anchor do NOT collide: each `DiscoveredFragment.node` is a distinct object.
+ * WHAT ONE PLUGIN YIELDED: its fragment entries, namespaced by its `name`. Two plugins
+ * sharing an anchor do NOT collide — each `FragmentEntry.node` is a distinct object.
+ *
+ * The `Fragment` infix is load-bearing: `PluginCatalog` would read as a catalog OF
+ * plugins, which this is not. It is one plugin's catalog of fragments.
  */
-export interface DiscoveredPlugin {
+export interface PluginFragmentCatalog {
   readonly name: string;
-  readonly fragments: readonly DiscoveredFragment[];
+  readonly fragments: readonly FragmentEntry[];
 }
 
 /** The legal `resolve/ValueShape` values — gates whether an object export is a node. */
@@ -256,27 +264,33 @@ async function scanDimensionModules(
 }
 
 /**
- * Discover the fragments of each plugin as NODES addressed by object identity,
- * namespaced by the plugin `name`, then enforce ACYCLICITY of the cross-plugin
- * reference graph (NORTH-STAR §3) by reusing P2's `validateReferenceGraph` — a
- * reference cycle throws `ReferenceCycleError`, a dangling edge `DanglingReferenceError`.
+ * MANY ROOTS → MANY CATALOGS. Enumerate the fragments of each plugin as NODES
+ * addressed by object identity, namespaced by the plugin `name`, then enforce
+ * ACYCLICITY of the cross-plugin reference graph (NORTH-STAR §3) by reusing P2's
+ * `validateReferenceGraph` — a reference cycle throws `ReferenceCycleError`, a dangling
+ * edge `DanglingReferenceError`.
  *
- * For each plugin, walks `<fragmentsDir>/<dimension>/*.ts` per the catalog's dimensions:
+ * THE LONG SIGN IS DELIBERATE. This sits beside `enumerateCatalog`, and a sibling pair
+ * is exactly where a misread costs most. `enumeratePluginCatalogs` would still admit
+ * "catalogs *of* plugins", disambiguated only by the signature; carrying the noun's own
+ * `Fragment` infix fixes it in the name rather than in the reader's second look.
+ *
+ * For each root, walks `<fragmentsDir>/<dimension>/*.ts` per the catalog's dimensions:
  * - a STRING export → a freshly minted, reference-free node with a namespaced id
  *   `"<plugin>:<dimension>/<exportName>"` and value shape from the dimension's arity;
  * - a node-form `Fragment` export → used AS-IS (its object identity is the imported
  *   binding), so cross-fragment references thread by identity.
  * Other export shapes are ignored (as the legacy scan ignores non-strings).
  */
-export async function discoverPluginFragments(
-  sources: readonly PluginFragmentSource[],
+export async function enumeratePluginFragmentCatalogs(
+  roots: readonly PluginFragmentRoot[],
   manifest: DimensionManifest,
-): Promise<DiscoveredPlugin[]> {
-  const plugins: DiscoveredPlugin[] = [];
+): Promise<PluginFragmentCatalog[]> {
+  const plugins: PluginFragmentCatalog[] = [];
   const allNodes = new Set<Fragment>();
 
-  for (const src of sources) {
-    const fragments: DiscoveredFragment[] = [];
+  for (const src of roots) {
+    const fragments: FragmentEntry[] = [];
     for (const [name, meta] of Object.entries(manifest)) {
       const dimension = name;
       // NOT A MAP — a WIDTH COERCION. `Arity` (`scalar`|`set`) is a strict subset of

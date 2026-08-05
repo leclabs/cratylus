@@ -14,6 +14,12 @@ export {
   codexHarnessAdapter,
 } from './render.js';
 
-// The canonical→native event map. Exported so a corpus gate can assert every key is a
-// declared member without reaching past the barrel into the module.
-export { canonicalToCodex } from './events.js';
+// The canonical→native event map, and the ACT bindings beside it (an act's native
+// pair, including the loss codex declares where it cannot narrow). Exported so a
+// corpus gate can assert every key is a declared member — and that the loss is
+// SPOKEN — without reaching past the barrel into the module.
+export {
+  canonicalToCodex,
+  canonicalActToCodex,
+  codexBindingOf,
+} from './events.js';

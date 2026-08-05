@@ -21,6 +21,7 @@
 
 import { cac } from 'cac';
 import { RUNTIME_BIN } from './bin-name.js';
+import { dispatchCarryOn } from './capabilities/carry-on/index.js';
 import { dispatchEventTap } from './capabilities/event-tap/index.js';
 import { dispatch } from './dispatch.js';
 import { RuntimeHost, bootstrap } from './loader.js';
@@ -87,6 +88,31 @@ export async function runMain(
   if (first === 'eventTap') {
     try {
       const result = dispatchEventTap([...argv.slice(1)]);
+      process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+      process.exitCode = 0;
+    } catch (err) {
+      process.stderr.write(
+        `${RUNTIME_BIN}: ${err instanceof Error ? err.message : String(err)}\n`,
+      );
+      process.exitCode = 1;
+    }
+    return;
+  }
+
+  // The carry-on capability ships INSIDE the runtime on the same terms as the tap
+  // (a subpath module, its own flag grammar: --plan-root/--states/--event/…), so it
+  // routes to its dedicated verb surface ahead of the install-discovered dispatch.
+  //
+  // EXIT CODES ARE THE HARNESS CONTRACT HERE, and they are not decoration. The
+  // `terminus` verb is what the INSTALLED GATE runs at turn end: it refuses a stop
+  // through its stdout payload (`decision: 'block'`) at exit 0, never through an
+  // exit code. A THROW is therefore always fail-OPEN — a gate that cannot answer
+  // (missing config, unreadable plan root) reports the failure and lets the turn
+  // end, because a mechanism that wedges a session on its own breakage is worse
+  // than one that misses a block and says so.
+  if (first === 'carryOn') {
+    try {
+      const result = dispatchCarryOn([...argv.slice(1)]);
       process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
       process.exitCode = 0;
     } catch (err) {

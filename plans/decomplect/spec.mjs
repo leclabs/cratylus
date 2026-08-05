@@ -21,9 +21,15 @@
 // cross-slice edge count`. That law is UNFALSIFIABLE until `admissible` is named, and nothing in
 // the corpus names it — measured here the hard way: the unconstrained argmin is 10 cross edges
 // and puts 20 of 33 shards in ONE slice. Minimal, and useless: a 20-shard slice cannot be fanned
-// out, which is the only reason slices exist. So ADMISSIBLE ≜ every slice holds 3..6 shards, and
-// under that constraint the argmin is 16. The cut below IS that argmin, found by local search,
-// and `praxis-execution-spec.test.ts` re-derives it rather than trusting this comment.
+// out, which is the only reason slices exist. So ADMISSIBLE ≜ every slice holds MIN..MAX shards,
+// with MAX scaled to the corpus so a good cut is not convicted merely for growing.
+//
+// What the gate checks is LOCAL OPTIMALITY: no admissible swap of two shards' slices lowers the
+// cross-edge count. It used to claim the global argmin, on the strength of the best value 40
+// restarts of a randomized search happened to reach — a threshold set by the search's luck, not
+// by the plan. It reded when a shard with `deps: []`, which cannot change any cut's edge count,
+// was added. The global optimum over 8^46 assignments is not computable here; claiming to have
+// found it was the overreach. `praxis-execution-spec.test.ts` decides the weaker claim exactly.
 //
 // `blockedBy` is a RULING owed, not a shard. A shard with a non-empty `blockedBy` may not be
 // dispatched however clear its wave is — which is why it is separate from `deps`: `deps` is
@@ -173,9 +179,13 @@ export const SHARDS = {
       't-init-hardcodes-harness-dir',
       'project-never-cleans-its-out-dir',
     ],
+    // MEASURED. A drift CHECKER is a new deploy-layer capability plus the tests that
+    // convict it; `deploy/local.ts` alone named the writer and not the checker's own home.
     outputs: [
       'packages/forge/src/cli/**',
       'packages/forge/src/deploy/local.ts',
+      'packages/forge/src/deploy/index.ts',
+      'packages/forge/test/deploy/**',
     ],
     refs: ['packages/forge/src/deploy/manifest.ts'],
     static: ['packages/forge/src/deploy/manifest.ts', 'MODEL.md'],
@@ -328,6 +338,21 @@ export const SHARDS = {
       'packages/forge/src/adapters/claude/events.ts',
       'packages/forge/src/adapters/codex/events.ts',
       'packages/forge/src/deploy/runtime-config.ts',
+      // Re-measured from the landing commit. The event vocabulary is CONSUMED by the
+      // renderers and by the hook cell, so retiring the generated union moved them too.
+      // `schema/package.json` loses the generator's dependency — the deletion is not
+      // finished while the dep that fed it is still declared.
+      'packages/forge/src/adapters/claude/render.ts',
+      'packages/forge/src/adapters/codex/render.ts',
+      'packages/forge/src/adapters/codex/index.ts',
+      'packages/schema/src/hook-cell.ts',
+      'packages/schema/package.json',
+      'packages/runtime/src/ports/event-tap.ts',
+      'packages/runtime/test/event-tap.test.ts',
+      'packages/canon/src/index.ts',
+      'packages/canon/src/toolkit/hooks.ts',
+      'packages/canon/src/hooks/**',
+      'packages/canon/test/cell-gloss-census.test.ts',
     ],
     refs: ['packages/forge/src/adapters/claude/events.ts'],
     // `packages/schema/src/hook/generated.ts` WAS here — the emitted union that was
@@ -452,8 +477,29 @@ export const SHARDS = {
   't-tool-class-vocabulary': {
     slice: 'cell-contract',
     deps: ['t-worker-payload-seam-and-property-1', 't-lifecycle-vocabulary'],
-    outputs: ['packages/schema/src/hook/index.ts'],
-    refs: ['packages/canon/src/hooks/stance-guardrail-pre.ts'],
+    // MEASURED after execution, not authored before it. The declaration was one file; landing it
+    // touched twelve. `stance-guardrail-pre.ts` was declared a `ref` and then WRITTEN — a ref is a
+    // read-only compile target, so that entry was wrong in kind, not merely in extent. Adding an
+    // act to the event vocabulary is not a schema-local edit: it reaches every adapter that must
+    // bind the act to a native event, and the one hook cell that names the acts.
+    outputs: [
+      'packages/schema/src/hook/index.ts',
+      'packages/schema/src/hook-cell.ts',
+      'packages/canon/src/manifest.ts',
+      'packages/canon/src/hooks/stance-guardrail-pre.ts',
+      'packages/canon/test/hook-act-selector.test.ts',
+      'packages/canon/test/event-vocabulary.test.ts',
+      'packages/forge/src/adapters/claude/**',
+      'packages/forge/src/adapters/codex/**',
+      // The worker script is BYTE-LOCKED to the cell that embeds it, so a comment that
+      // goes false in one goes false in both. `tsconfig.srccheck.json` was listed here
+      // from a mid-flight report and is NOT an output: it was a throwaway path-mapped
+      // config, created to typecheck against source and deleted after. A declaration for
+      // a file that does not exist is the same defect as a missing one, pointed the other
+      // way — it makes the contention set claim territory nothing occupies.
+      'packages/canon/src/toolkit/guardrail/stance-guardrail-pre.sh',
+    ],
+    refs: ['packages/canon/src/toolkit/guardrail/stance-guardrail-pre.sh'],
     static: [
       'packages/canon/src/hooks/stance-guardrail-pre.ts',
       'packages/schema/src/hook-cell.ts',
@@ -533,15 +579,51 @@ export const SHARDS = {
   },
   'elevate-installs-no-mechanism': {
     slice: 'plan-machinery',
-    deps: ['t-anatomy-root-compose', 't-lifecycle-vocabulary'],
+    // The last two deps are SEQUENCING, not derivation — this shard needs nothing either one
+    // produces. It contends with them on files: `canon/src/manifest.ts` with the tool-class
+    // shard (one adds acts to the event tuple, the other a runtime capability) and
+    // `canon/test/symbol-altitude.test.ts` with the soul sweep (one adds a row, the other
+    // rewrites prose throughout). I dispatched all three concurrently on declarations that
+    // named neither file, so two agents wrote one test file at the same time. It did not
+    // corrupt — the edits fell in different regions — but nothing about the cut made that
+    // true, and a wave is not safe because its collisions happened to miss.
+    deps: [
+      't-anatomy-root-compose',
+      't-lifecycle-vocabulary',
+      't-tool-class-vocabulary',
+      'soul-survives-in-canon-test-prose',
+    ],
     // The mechanism is RUNTIME's — a build-time hook projection cannot be installed by `elevate`
     // and removed by `release`. And it must NOT compile against `plan-set.ts`: property 4 forbids
     // a runtime→sibling edge, so plan state reaches it as projected configuration.
+    // MEASURED: 2 globs declared, 13 files written. A CAPABILITY cannot be confined to
+    // `capabilities/**` — `capability-keyspace.test.ts` enforces a biconditional, so a new
+    // capability necessarily reaches the port file, the keyspace, the plugin surface, the
+    // dispatch route, the barrel, and canon's `RUNTIME_CAPABILITIES`. The declaration named
+    // where the code LIVES; the contract names where it must be REGISTERED.
+    //
+    // `manifest.ts` and `plan-states.ts` are the honest part of this record. `manifest.ts` is
+    // ALSO written by `t-tool-class-vocabulary`, and I dispatched both concurrently — so that
+    // wave violated `∀ t,u ∈ wave(n) : outputs(t) ∩ outputs(u) = ∅`. It did not corrupt
+    // anything (the edits fell in different regions), but it was not disjoint, and it read as
+    // disjoint only because both declarations understated their reach. `outputs` IS the
+    // concurrency-precondition input: an under-declared array does not make a wave safe, it
+    // makes an unsafe wave look safe. `plan-states.ts` was declared a `ref` and then WRITTEN.
     outputs: [
       'packages/canon/src/skills/carry-on/**',
       'packages/runtime/src/capabilities/**',
+      'packages/runtime/src/ports/carry-on.ts',
+      'packages/runtime/src/loader.ts',
+      'packages/runtime/src/plugin.ts',
+      'packages/runtime/src/main.ts',
+      'packages/runtime/src/index.ts',
+      'packages/runtime/test/carry-on.test.ts',
+      'packages/canon/src/manifest.ts',
+      'packages/canon/src/toolkit/plan-states.ts',
+      'packages/canon/test/carry-on-cell.test.ts',
+      'packages/canon/test/symbol-altitude.test.ts',
     ],
-    refs: ['packages/canon/src/toolkit/plan-states.ts'],
+    refs: [],
     static: [
       'packages/canon/src/skills/carry-on/skill.ts',
       'packages/canon/src/hooks/stance-guardrail-pre.ts',
@@ -550,7 +632,23 @@ export const SHARDS = {
   't-kind-is-triple-booked': {
     slice: 'cell-contract',
     deps: ['t-definiens-vs-residue', 't-coined-classification'],
-    outputs: ['packages/forge/src/resolve/**'],
+    // MEASURED from the landing commit, not authored before it. `resolve/**` was the
+    // DEFINITION site; this shard renames a sign (`kind` → `repertoire` ∧ `valueShape`),
+    // and a rename's blast radius is every REFERENCE. Declaring only where a name is
+    // born, for a task whose whole content is changing that name everywhere, understates
+    // the footprint by an order of magnitude — 1 glob declared, 15 files written.
+    outputs: [
+      'packages/forge/src/resolve/**',
+      'packages/forge/src/catalog/index.ts',
+      'packages/forge/src/cli/commands/catalog.ts',
+      'packages/forge/src/cli/commands/explain.ts',
+      'packages/forge/test/catalog/**',
+      'packages/forge/test/cli/catalog.test.ts',
+      'packages/forge/test/cli/explain.test.ts',
+      'packages/forge/test/resolve/**',
+      'packages/forge/test/fixture-manifest.ts',
+      'packages/schema/src/index.ts',
+    ],
     refs: ['packages/schema/src/index.ts', 'packages/schema/src/rule-cell.ts'],
     static: [
       'packages/schema/src/index.ts',
@@ -571,7 +669,15 @@ export const SHARDS = {
   't-harness-adapter-surface-is-genus-and-species': {
     slice: 'event-vocabulary',
     deps: ['t-projection-file-anchor'],
-    outputs: ['packages/forge/src/core/harness-adapter.ts'],
+    // MEASURED. Splitting the adapter surface into genus and species moves what the
+    // PROJECT layer calls, so the callers move with it — the seam is not repositionable
+    // from one side alone.
+    outputs: [
+      'packages/forge/src/core/harness-adapter.ts',
+      'packages/forge/src/project/index.ts',
+      'packages/forge/src/project/realization.ts',
+      'packages/forge/test/project/tree.test.ts',
+    ],
     refs: ['packages/forge/src/adapters/**'],
     static: ['packages/forge/src/core/harness-adapter.ts'],
   },
@@ -590,11 +696,59 @@ export const SHARDS = {
     slice: 'deploy-surface',
     // reads `Arity` from the schema module `t-coined-classification` rewrites
     deps: ['t-coined-classification'],
-    outputs: ['packages/forge/src/catalog/**'],
+    // The rename reaches every importer, not just the declaring module: the loader consumes all
+    // three types and the discovery test names the verb. Declaring only `catalog/**` would have
+    // been convicted by `shard-scope` the moment it landed.
+    outputs: [
+      'packages/forge/src/catalog/**',
+      'packages/forge/src/config/loader.ts',
+      'packages/forge/test/catalog/discover.test.ts',
+      'packages/forge/test/catalog/signify-marker-class.test.ts',
+      // MEASURED at landing. `project/index.ts` IMPORTS two of the four renamed signs, so
+      // omitting it would not have left stale prose — it would have failed the typecheck.
+      // The declared reach was read off where the names are DEFINED; a rename is bounded
+      // by where they are USED, and only the call graph knows that.
+      'packages/forge/src/project/index.ts',
+      'packages/forge/src/cli/commands/catalog.ts',
+    ],
     refs: ['packages/schema/src/index.ts'],
     static: ['packages/forge/src/catalog/index.ts'],
-    blockedBy:
-      'a four-sign family decode for the catalog engine internals, derived together',
+    // RULING 2026-08-05 — decode discharged. Three independent blind derivations (no repository
+    // access, current names withheld) converged: `Discovered*` names the pipeline STAGE and not
+    // the thing, and every value in a pipeline came from some stage, so the participle never
+    // distinguishes; `Source` was rejected twice over as colliding with authored source text —
+    // the fragment BODY is the source here. Signs: `PluginFragmentRoot` (where to scan, an input)
+    // · `FragmentEntry` (identity + axis + body — the one type all three defended without
+    // qualification) · `PluginFragmentCatalog` (what one plugin yielded; the `Fragment` infix is
+    // what blocks the "catalog OF plugins" misread) · `enumeratePluginFragmentCatalogs` (the verb
+    // is attested by the single-corpus sibling `enumerateCatalog`; the long infix is paid on
+    // purpose — the cold audit found this the ONLY one of the four to fail a naive decode, and a
+    // sibling pair is where a misread costs most).
+  },
+  'namespaced-pairs-are-a-hand-rolled-map': {
+    slice: 'deploy-surface',
+    // sequenced AFTER the decode: collapsing the types on top of a rename would make both
+    // unreviewable — a reader could not tell which edit followed from which cut
+    deps: ['t-engine-internal-names-await-decode'],
+    outputs: [
+      'packages/forge/src/catalog/**',
+      'packages/forge/src/config/loader.ts',
+      'packages/forge/test/catalog/**',
+    ],
+    refs: ['packages/schema/src/index.ts'],
+    static: ['packages/forge/src/catalog/index.ts'],
+  },
+  'source-can-go-invisible-to-every-text-tool': {
+    slice: 'deploy-surface',
+    // No deps. The repair already landed with `t-tool-class-vocabulary`; what is owed is
+    // the gate, and it reads `git ls-files` — it depends on nothing in the corpus.
+    deps: [],
+    outputs: [
+      'packages/canon/test/authored-source-is-text.test.ts',
+      'packages/canon/test/gate-convicts.test.ts',
+    ],
+    refs: [],
+    static: ['packages/canon/test/gate-convicts.test.ts'],
   },
   'spec-arrays-can-silently-truncate': {
     slice: 'plan-machinery',
@@ -648,7 +802,19 @@ export const SHARDS = {
   'soul-survives-in-canon-test-prose': {
     slice: 'skill-cells',
     deps: ['t-canon-soul'],
-    outputs: ['packages/canon/test/**'],
+    // Enumerated, not `canon/test/**`. The glob was an OVER-claim: this shard rewrites prose in
+    // seven known files and creates nothing. Holding the whole dir made it contend with every
+    // other shard that adds a fixture there — a contention that does not exist. `outputs` IS the
+    // wave-disjointness input, so an over-claim mis-cuts the wave exactly as an under-claim does.
+    outputs: [
+      'packages/canon/test/cratylism.test.ts',
+      'packages/canon/test/null-dimension.test.ts',
+      'packages/canon/test/projection-stability.test.ts',
+      'packages/canon/test/reader-density.test.ts',
+      'packages/canon/test/reader-register.ts',
+      'packages/canon/test/structural-parsimony.test.ts',
+      'packages/canon/test/symbol-altitude.test.ts',
+    ],
     refs: ['packages/canon/src/genus/founding-doctrine.ts'],
     static: ['packages/canon/test/null-dimension.test.ts', 'MODEL.md'],
   },
@@ -656,9 +822,16 @@ export const SHARDS = {
     slice: 'deploy-surface',
     // also writes `canon/test/**`, which `soul-survives-in-canon-test-prose` sweeps —
     // sequenced rather than dissolved by under-declaring either one
+    // The third dep is a CHOKEPOINT, not a derivation. Every shard that adds a gate must
+    // register it in the one `gate-convicts.test.ts` REGISTRY, so any two gate-adding shards
+    // contend on that file by construction and can never share a wave. That is the meta-gate
+    // working as designed — a gate with no registry entry is a gate nobody can find — and the
+    // cost is that gate work serializes. Sequencing is the only honest answer; the alternative
+    // is under-declaring one of them, which buys a wave by lying about what it writes.
     deps: [
       'deployed-drifts-from-rendered-unwatched',
       'soul-survives-in-canon-test-prose',
+      'source-can-go-invisible-to-every-text-tool',
     ],
     outputs: ['packages/canon/src/hooks/**', 'packages/canon/test/**'],
     refs: ['packages/forge/src/deploy/local.ts'],

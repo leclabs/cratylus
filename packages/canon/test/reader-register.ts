@@ -22,7 +22,7 @@ export const RHO = {
   'skill-description': 'LLM', // progressive-disclosure surface, read by the harness LLM
   'skill-prose': 'LLM', // projected SKILL.md body (outside fences)
   'genus-protocol': 'LLM', // verbatim(a) ⇒ ρ(a) = LLM — ship-whole, never a density exemption
-  'agent-vector': 'LLM', // projected SOUL — scored at SOURCE grain (description · archetype · preamble)
+  'agent-vector': 'LLM', // projected Target — scored at SOURCE grain (description · archetype · preamble)
   'cell-declaration': 'LLM', // a cell's σ*-signified identity: `residue` on EVERY cell shape
   // A rule's VERBATIM projected payload (`/AGENTS.md`) — `RuleCell.content`. It is a
   // class of its own, not folded into `cell-declaration`: a residue is σ*-signified

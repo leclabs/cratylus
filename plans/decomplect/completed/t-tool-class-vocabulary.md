@@ -100,7 +100,7 @@ to `{event, matcher?}` is the same edit that shard needs.
 
 - **slice** cell-contract · **wave** 0
 - **depends on** `t-worker-payload-seam-and-property-1` · `t-lifecycle-vocabulary`
-- **writes** `packages/schema/src/hook/index.ts`
-- **compiles against** `packages/canon/src/hooks/stance-guardrail-pre.ts`
+- **writes** `packages/schema/src/hook/index.ts` · `packages/schema/src/hook-cell.ts` · `packages/canon/src/manifest.ts` · `packages/canon/src/hooks/stance-guardrail-pre.ts` · `packages/canon/test/hook-act-selector.test.ts` · `packages/canon/test/event-vocabulary.test.ts` · `packages/forge/src/adapters/claude/**` · `packages/forge/src/adapters/codex/**` · `packages/canon/src/toolkit/guardrail/stance-guardrail-pre.sh`
+- **compiles against** `packages/canon/src/toolkit/guardrail/stance-guardrail-pre.sh`
 - **evidence** `packages/canon/src/hooks/stance-guardrail-pre.ts` · `packages/schema/src/hook-cell.ts`
 - **dispatchable** no ruling owed

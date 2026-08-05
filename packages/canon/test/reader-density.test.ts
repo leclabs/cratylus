@@ -148,7 +148,7 @@ async function allSurfaces(): Promise<Surface[]> {
     const raw = readFileSync(join(srcRoot, 'genus', name), 'utf8');
     const body = raw.replace(/^---\n[\s\S]*?\n---\n/, '');
     // ρ binds at the finest separately-consumed grain: `## Protocol` projects
-    // into every SOUL; the sibling sections are corpus/skill-dir surfaces.
+    // into every Target; the sibling sections are corpus/skill-dir surfaces.
     // Each section is its own artifact — none silently skipped.
     for (const section of body.split(/^(?=## )/m)) {
       const head = section.startsWith('## ')
@@ -161,7 +161,7 @@ async function allSurfaces(): Promise<Surface[]> {
       });
     }
   }
-  // The founding doctrine rides into EVERY projected SOUL and skill — the same
+  // The founding doctrine rides into EVERY projected Target and skill — the same
   // ship-whole verbatim carry as the genus protocol, so the same class.
   {
     const mod = (await import(
@@ -560,7 +560,7 @@ const REGENERABLE_SEED: readonly Target[] = [
   },
 ];
 
-/** A conformant deploy Target set (a regenerated SOUL) — passes REGENERABLE. */
+/** A conformant, freshly regenerated deploy Target set — passes REGENERABLE. */
 const GREEN_TARGETS: readonly Target[] = [
   {
     path: 'agents/mav.md',
@@ -852,7 +852,7 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
       // The WHOLE value, never `splitBody(value).definiens`: that split gated only
       // what followed the first ` ≜ `, so a value with NO ` ≜ ` yielded definiens ''
       // and went entirely UNGATED — `cratylism` and `llm-native` (bare-anchor form)
-      // shipped free NL into every SOUL for exactly that reason. A formal block is
+      // shipped free NL into every Target for exactly that reason. A formal block is
       // formal end to end; load-bearing prose becomes notation, the rest is dropped.
       const r = admissibleSingleLine(value, canonPolicy);
       if (!r.admissible) failures.push(`dimension ${rel}: ${r.reason}`);

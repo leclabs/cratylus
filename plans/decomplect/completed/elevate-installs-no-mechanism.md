@@ -95,9 +95,9 @@ preserved ⟨zero residue⟩`_, implemented as an id-keyed surgical filter. That
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** plan-machinery · **wave** 0
-- **depends on** `t-anatomy-root-compose` · `t-lifecycle-vocabulary`
-- **writes** `packages/canon/src/skills/carry-on/**` · `packages/runtime/src/capabilities/**`
-- **compiles against** `packages/canon/src/toolkit/plan-states.ts`
+- **slice** plan-machinery · **wave** 1
+- **depends on** `t-anatomy-root-compose` · `t-lifecycle-vocabulary` · `t-tool-class-vocabulary` · `soul-survives-in-canon-test-prose`
+- **writes** `packages/canon/src/skills/carry-on/**` · `packages/runtime/src/capabilities/**` · `packages/runtime/src/ports/carry-on.ts` · `packages/runtime/src/loader.ts` · `packages/runtime/src/plugin.ts` · `packages/runtime/src/main.ts` · `packages/runtime/src/index.ts` · `packages/runtime/test/carry-on.test.ts` · `packages/canon/src/manifest.ts` · `packages/canon/src/toolkit/plan-states.ts` · `packages/canon/test/carry-on-cell.test.ts` · `packages/canon/test/symbol-altitude.test.ts`
+- **compiles against** —
 - **evidence** `packages/canon/src/skills/carry-on/skill.ts` · `packages/canon/src/hooks/stance-guardrail-pre.ts`
 - **dispatchable** no ruling owed

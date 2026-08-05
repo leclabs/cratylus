@@ -13,9 +13,9 @@
 // P1's `AgentPlugin` declares only WHICH DIRS a plugin ships; P2's `resolve()`
 // folds an already-loaded `LoadedPlugin` model. The gap between them — scan each
 // plugin's dirs into fragment nodes + originating contributions — is THIS module.
-// It reuses P3's `discoverPluginFragments` (multi-plugin, object-import addressed,
-// cross-plugin acyclicity enforced) for the scan, then lifts each
-// `DiscoveredFragment{node, body}` → a `PatchEntry{target: node, op:'replace'}` (a
+// It reuses P3's `enumeratePluginFragmentCatalogs` (multi-plugin, object-import
+// addressed, cross-plugin acyclicity enforced) for the scan, then lifts each
+// `FragmentEntry{node, body}` → a `PatchEntry{target: node, op:'replace'}` (a
 // plugin ORIGINATES its fragment's base via `replace`, per `resolve.ts`).
 //
 // MODULE RESOLUTION (the concern P3 handed to P4): an imported plugin OBJECT has
@@ -31,9 +31,9 @@ import { dirname, isAbsolute, join, resolve as resolvePath } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { mergeManifest } from '@cratylus/schema';
 import {
-  type DiscoveredPlugin,
-  type PluginFragmentSource,
-  discoverPluginFragments,
+  type PluginFragmentCatalog,
+  type PluginFragmentRoot,
+  enumeratePluginFragmentCatalogs,
 } from '../catalog/index.js';
 import type { AgentPlugin } from '../resolve/plugin.js';
 import {
@@ -81,8 +81,8 @@ export async function loadAgentsConfig(
 
 /**
  * THE LOAD STEP: map each extended `AgentPlugin` → a `LoadedPlugin`. Enumerates
- * every plugin's fragment dir via `discoverPluginFragments`, then lifts each
- * discovered fragment `{node, body}` → a `PatchEntry{target: node, op:'replace',
+ * every plugin's fragment dir via `enumeratePluginFragmentCatalogs`, then lifts each
+ * `FragmentEntry{node, body}` → a `PatchEntry{target: node, op:'replace',
  * value: body}` on that plugin's `contributions`. The output preserves `extends`
  * ORDER (a plugin with no `fragments` dir yields empty contributions but keeps its
  * position), so the resolver's ordered fold sees plugins in authored order.
@@ -102,26 +102,26 @@ export async function loadPlugins(
   const withFragments = plugins.filter(
     (p): p is AgentPlugin & { fragments: string } => p.fragments !== undefined,
   );
-  const sources: PluginFragmentSource[] = withFragments.map((p) => ({
+  const roots: PluginFragmentRoot[] = withFragments.map((p) => ({
     name: p.name,
     fragmentsDir: toAbs(p.fragments),
   }));
 
-  // Single call → cross-plugin acyclicity is enforced across ALL sources at once
-  // (P3 reuses P2's `validateReferenceGraph`). Output is 1:1 with `sources` order.
-  const discovered = await discoverPluginFragments(
-    sources,
+  // Single call → cross-plugin acyclicity is enforced across ALL roots at once
+  // (P3 reuses P2's `validateReferenceGraph`). Output is 1:1 with `roots` order.
+  const catalogs = await enumeratePluginFragmentCatalogs(
+    roots,
     mergeManifest(plugins),
   );
-  const byPlugin = new Map<AgentPlugin, DiscoveredPlugin>();
+  const byPlugin = new Map<AgentPlugin, PluginFragmentCatalog>();
   withFragments.forEach((p, i) => {
-    const d = discovered[i];
-    if (d) byPlugin.set(p, d);
+    const c = catalogs[i];
+    if (c) byPlugin.set(p, c);
   });
 
   return plugins.map((p) => {
-    const d = byPlugin.get(p);
-    const contributions: PatchEntry[] = (d?.fragments ?? []).map((f) => ({
+    const c = byPlugin.get(p);
+    const contributions: PatchEntry[] = (c?.fragments ?? []).map((f) => ({
       target: f.node,
       op: 'replace',
       value: f.body,

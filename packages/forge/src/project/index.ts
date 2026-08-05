@@ -50,8 +50,8 @@ import {
 } from '@cratylus/schema';
 import type { HarnessMechanism } from '@cratylus/schema/hook';
 import {
-  type DiscoveredPlugin,
-  discoverPluginFragments,
+  type PluginFragmentCatalog,
+  enumeratePluginFragmentCatalogs,
 } from '../catalog/index.js';
 import type { ResolvedSkill } from '../core/body.js';
 import {
@@ -291,7 +291,7 @@ export class AmbiguousFragmentBodyError extends Error {
  * DISCOVER the plugin set's fragment nodes — step ONE of routing projection through
  * the resolver, and SEPARATE from the fold on purpose.
  *
- * A string fragment's node is MINTED at scan time (`catalog/discoverPluginFragments`),
+ * A string fragment's node is MINTED at scan time (`catalog/enumeratePluginFragmentCatalogs`),
  * so its object identity — the only address `resolve()` accepts (NORTH-STAR §3) —
  * exists only downstream of a discovery. Folding inside `projectPluginSet` would
  * therefore make its own nodes unaddressable and every caller's patch a guaranteed
@@ -300,15 +300,15 @@ export class AmbiguousFragmentBodyError extends Error {
  */
 export async function discoverFragments(
   plugins: readonly ProjectablePlugin[],
-): Promise<DiscoveredPlugin[]> {
-  const sources = plugins
+): Promise<PluginFragmentCatalog[]> {
+  const roots = plugins
     .filter((p): p is ProjectablePlugin & { fragments: string } =>
       Boolean(p.fragments),
     )
     .map((p) => ({ name: p.name, fragmentsDir: p.fragments }));
-  return sources.length === 0
+  return roots.length === 0
     ? []
-    : discoverPluginFragments(sources, mergeManifest(plugins));
+    : enumeratePluginFragmentCatalogs(roots, mergeManifest(plugins));
 }
 
 /**
@@ -327,7 +327,7 @@ export async function discoverFragments(
  * empty, and the render tree is byte-for-byte what it was.
  */
 export function resolveFragmentBodies(
-  discovered: readonly DiscoveredPlugin[],
+  discovered: readonly PluginFragmentCatalog[],
   patches: readonly PatchEntry[] = [],
 ): ReadonlyMap<string, string> {
   if (discovered.length === 0) return new Map();
@@ -421,8 +421,8 @@ function withResolvedBodies(
  * here and it was false. Cells and fragments override ASYMMETRICALLY, deliberately:
  *
  *   cell     — collides BY NAME, later plugin wins (here)
- *   fragment — does NOT collide. `discoverPluginFragments` mints a distinct node
- *              per plugin (`catalog/index.ts:270-274`, id `<plugin>:<dim>/<export>`),
+ *   fragment — does NOT collide. `enumeratePluginFragmentCatalogs` mints a distinct node
+ *              per plugin (`catalog/index.ts`, id `<plugin>:<dim>/<export>`),
  *              so two plugins naming `parsimony` yield two nodes, not a contest.
  *
  * The asymmetry is right and worth keeping. A cell is a COMPOSITION — a local

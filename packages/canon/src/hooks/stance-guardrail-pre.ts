@@ -1,24 +1,34 @@
 import type { HookCell } from '../manifest.js';
 
-// stance-guardrail-pre — the PreToolUse twin of `stance-guardrail` (the Stop cell).
-// It STRUCTURALLY REFUSES, BEFORE the call fires, a mid-turn tool call that collapses
-// out of the intent-driven-expert stance:
-//   - AskUserQuestion : a permission / option-menu on an in-remit reversible call
-//   - Agent / SendMessage : a dispatch that transcribes literal words w/o extracted intent
-// These never fire `Stop`, so the Stop guard is blind to them (the closed blind spot).
+// stance-guardrail-pre — the BEFORE-THE-CALL twin of `stance-guardrail` (the turn-end
+// cell). It STRUCTURALLY REFUSES, BEFORE the call fires, a mid-turn tool call that
+// collapses out of the intent-driven-expert stance. Two acts, and the acts are what it
+// binds:
+//   - operator.consult.pre  : a permission / option-menu on an in-remit reversible call
+//   - subagent.dispatch.pre : a dispatch that transcribes literal words w/o extracted intent
+// Neither act fires turn-end, so the Stop guard is blind to them (the closed blind spot).
 // It SHARES the deployed judge backend + rubric of the sibling `stance-guardrail` hook
-// (one rubric, one judge — no duplication); only this worker + its matcher are new.
-// The claude adapter realizes `event`+`matcher` → a `settings.json` PreToolUse entry
-// + `hooks/<id>/` workers; `test/hook-rule-boundary.test.ts` byte-locks the worker.
+// (one rubric, one judge — no duplication); only this worker is new.
+//
+// IT BINDS TWO ACTS, NOT ONE EVENT PLUS A REGEX. This cell used to read
+// `events: ['tool.use.pre']` + `matcher: 'AskUserQuestion|Agent|SendMessage'` — three
+// claude tool names on a harness-agnostic shape, which the codex adapter dropped
+// without a word, so the hook there fired on EVERY tool call and only the worker's
+// own `*) allow ;;` branch kept it correct. The two acts below were already latent in
+// the residue (`permission-menu` · `dispatch-echo`); naming them moves the narrowing
+// to the adapter, which alone knows which of its tools performs the act. Each adapter
+// computes its own ⟨native event, native selector⟩ pair, and one that can fire an act
+// but not narrow it now SAYS SO through the projection's warnings.
+// `test/hook-rule-boundary.test.ts` byte-locks the worker;
+// `test/hook-act-selector.test.ts` holds the seam.
 
 export const stanceGuardrailPre: HookCell = {
   id: 'stance-guardrail-pre',
   residue:
-    'structural-refusal ↾ mid-turn tool-call · deny-before-fire ⟨intent-driven-expert-collapse⟩ ⟨permission-menu ⟨AskUserQuestion⟩ · dispatch-echo ⟨Agent · SendMessage : literal-transcription ∄ extracted-intent⟩⟩ · pass ⟨reserved · irreversible-outward-consent · substantive-dispatch · intent-ambiguity ↦ elicit⟩ · shared judge-backend ⟨sibling⟩ · loop-safe ⟨re-entry-cap : ¬deny identical twice⟩',
+    'structural-refusal ↾ mid-turn tool-call · deny-before-fire ⟨intent-driven-expert-collapse⟩ ⟨permission-menu · dispatch-echo ⟨literal-transcription ∄ extracted-intent⟩⟩ · pass ⟨reserved · irreversible-outward-consent · substantive-dispatch · intent-ambiguity ↦ elicit⟩ · shared judge-backend ⟨sibling⟩ · loop-safe ⟨re-entry-cap : ¬deny identical twice⟩',
   substrate: 'harness',
   order: 1,
-  events: ['tool.use.pre'],
-  matcher: 'AskUserQuestion|Agent|SendMessage',
+  events: ['operator.consult.pre', 'subagent.dispatch.pre'],
   entry: 'stance-guardrail-pre.sh',
   timeout: 60,
   refs: [],
@@ -118,7 +128,10 @@ case "$tool_name" in
 		body="$(printf '%s' "$input" | jq -r '.tool_input.prompt // .tool_input.message // .tool_input.description // ""' 2>/dev/null || true)"
 		payload="$tool_name dispatch (the delegate prompt/message): $body" ;;
 	*)
-		allow ;;  # the matcher should preclude this; be safe
+		allow ;;  # DEFENCE IN DEPTH, and on some harnesses the only narrowing there is:
+		          # claude's adapter computes a selector from the act and this never fires;
+		          # codex has no subject selector, so its projection WARNS and this branch
+		          # is what keeps the guard off every other tool call.
 esac
 
 [ -n "\${body:-}" ] || allow  # nothing judgeable -> allow

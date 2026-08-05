@@ -178,7 +178,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
 
   // The axiom ships by TWO routes with very different reach: the dimension catalog
   // (`cratylism.ts` → only agents whose vector selects it — today, `nico` alone) and
-  // the plugin `preamble` (`genus/founding-doctrine.ts` → EVERY SOUL + EVERY SKILL.md).
+  // the plugin `preamble` (`genus/founding-doctrine.ts` → EVERY Target + EVERY SKILL.md).
   // The preamble once carried a hand-transcribed copy, so cleaning the dimension left
   // 26 artifacts shipping the superseded axiom while the suite stayed green. The carry
   // is now BY IMPORT; these legs keep it that way.
@@ -212,7 +212,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   // dangling reference THERE, which is ambient content in the intrinsic carry — the very
   // distinction `founding-doctrine.ts` draws against `rules/repo-preamble.ts`. The apex
   // confidence-order (`cratylism ≻ VISION ≻ MODEL`) named two non-deployed docs and rode
-  // out to every SOUL for exactly that reason; its one home is the AMBIENT carry.
+  // out to every Target for exactly that reason; its one home is the AMBIENT carry.
   it('the intrinsic preamble names no workspace-local artifact', async () => {
     const { foundingDoctrine } = await import(
       '../src/genus/founding-doctrine.js'

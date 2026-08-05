@@ -215,6 +215,7 @@ export type SelfEvaluation = Value<'self-evaluation'>;
 export const RUNTIME_CAPABILITIES = [
   'memory',
   'eventTap',
+  'carryOn',
 ] as const satisfies readonly CapabilityName[];
 
 /** A runtime capability this corpus ships a face for. */
@@ -252,6 +253,36 @@ export type { SkillExpression };
 // boundaries the type system cannot, which is what `test/event-vocabulary.test.ts`
 // is for.
 //
+// TWO MEMBERS NAME AN ACT RATHER THAN A HARNESS CALLBACK, and they are the reason
+// there is no tool vocabulary. `stance-guardrail-pre` bound `tool.use.pre` and then
+// narrowed it with `matcher: 'AskUserQuestion|Agent|SendMessage'` — three claude tool
+// names, on a cell whose whole claim is harness-neutrality, silently dropped by the
+// codex adapter (so the hook fired on every tool call there). The obvious repair — a
+// canonical TOOL vocabulary beside this one — is a category error: harnesses share a
+// LIFECYCLE, which is closed, but their TOOL SETS are open-world (MCP servers add
+// tools at run time, users add their own), so a closed enum over them is permanently
+// incomplete and every adapter map would be near-empty.
+//
+// The vocabulary was already written in the cell's own σ*: its residue reads
+// `permission-menu ⟨AskUserQuestion⟩ · dispatch-echo ⟨Agent · SendMessage⟩` — three
+// tool names already factored into TWO ACTS, four lines above the field that
+// flattened them back. The residue was the argmin and the matcher its lossy
+// projection, so the two acts are signified here and the projection is computed:
+//
+//   · `operator.consult.pre`   — about to put a question or a menu to the operator.
+//     `principal.consult.pre` was the runner-up; `user.ask.pre` is rejected (`user`
+//     collides with deploy's install-scope `user`, and it is the VENDOR word while
+//     this pivot is vendor-neutral); `elicit.pre` is rejected (occupied by the
+//     concept-recovery skill); `decision.request.pre` is rejected (collides with
+//     `permission.request` INSIDE this tuple).
+//   · `subagent.dispatch.pre`  — about to hand work to an agent. Covers spawn AND
+//     message, and pairs as the pre-phase of `subagent.start`/`subagent.end`.
+//
+// TWO, and no third: a third act has no site in this corpus. An adapter maps each to
+// its native ⟨event, selector⟩ pair (`NativeBinding`); a harness that can fire the
+// act but not narrow it DECLARES that loss and the projection warns, which is what
+// closed the codex divergence. `matcher` no longer exists on any cell or IR shape.
+//
 // `vcs.commit.post` IS AN ORDINARY MEMBER. It was `SubstrateEvent = CanonicalEvent |
 // 'vcs.commit.post'` — a union that existed only because the enum was closed and a
 // git-substrate moment had no literal to be. Nothing about it was ever exceptional:
@@ -284,9 +315,11 @@ export const CANONICAL_EVENTS = [
   'shell.exec.post',
   'mcp.exec.pre',
   'mcp.exec.post',
+  'subagent.dispatch.pre',
   'subagent.start',
   'subagent.end',
   // harness substrate — what the operator is asked and told
+  'operator.consult.pre',
   'permission.request',
   'permission.deny',
   'notification',

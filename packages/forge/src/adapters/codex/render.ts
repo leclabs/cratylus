@@ -30,7 +30,11 @@ import type {
   AgentDefContext,
   HarnessAdapter,
 } from '../../core/harness-adapter.js';
-import { CODEX_AGENT_SCOPED_EVENTS, canonicalToCodex } from './events.js';
+import {
+  CODEX_AGENT_SCOPED_EVENTS,
+  canonicalToCodex,
+  codexBindingOf,
+} from './events.js';
 
 // Re-export the shared, harness-neutral resolved skill shape so a codex consumer
 // can import everything it needs from the codex adapter.
@@ -196,7 +200,7 @@ export function codexHooksJson(
     const m = mechanisms.get(f.realizedBy ?? b.anchor);
     if (!m) continue;
     for (const event of f.events) {
-      const native = canonicalToCodex[event as keyof typeof canonicalToCodex];
+      const native = codexBindingOf(event)?.event;
       // The seam decided mode before this ran and withholds a degraded binding
       // entirely, so neither guard below should ever fire on the projection path.
       // They remain as EMISSION guards, not decisions: if this function is called
@@ -253,7 +257,12 @@ export const codexHarnessAdapter: HarnessAdapter = {
   // codex projects no hooks. Codex has a full hook surface; the claim was inherited
   // rather than checked, and it made every enforcing guardrail unrealizable here —
   // which would have refused the entire corpus on a false premise.
-  realizes: (event) => event in canonicalToCodex,
+  //
+  // ASKED THROUGH `codexBindingOf`, so an ACT counts as realizable: codex fires
+  // `PreToolUse` like any harness — what it cannot do is NARROW the act, which is a
+  // separate question (`scopes`, and the `unnarrowed` report on emission). Answering
+  // this one `false` for an act would refuse a hook codex can genuinely run.
+  realizes: (event) => codexBindingOf(event) !== undefined,
   // Codex declares hooks in ONE global `hooks.json`, so narrowing is possible only
   // where the hook input carries an agent identifier to match on — the two events
   // in `CODEX_AGENT_SCOPED_EVENTS`. `Stop` fires fine and names nobody.
@@ -261,7 +270,7 @@ export const codexHarnessAdapter: HarnessAdapter = {
   // This adapter DECLARES the incapacity; it does not decide what follows from it.
   // The refusal is the seam's (`assertRealizable`), so the law has one home.
   scopes: (event) => {
-    const native = canonicalToCodex[event as keyof typeof canonicalToCodex];
+    const native = codexBindingOf(event)?.event;
     return native !== undefined && CODEX_AGENT_SCOPED_EVENTS.has(native);
   },
   hookCommand: (anchor, workerFilename) =>
@@ -279,10 +288,16 @@ export const codexHarnessAdapter: HarnessAdapter = {
     const block: Record<string, unknown[]> = {};
     const warnings: string[] = [];
     const skipped: { path: string; reason: string }[] = [];
+    // ⟨hook, native event, selector⟩ already registered. Two ACTS can land on ONE
+    // native event here (both `operator.consult.pre` and `subagent.dispatch.pre`
+    // are `PreToolUse`, neither narrowable), and registering the same command twice
+    // would run the worker twice per call — a doubling introduced by the repair, so
+    // it is closed in the repair.
+    const registered = new Set<string>();
     for (const hook of hooks) {
       for (const event of hook.events) {
-        const native = canonicalToCodex[event as keyof typeof canonicalToCodex];
-        if (!native) {
+        const binding = codexBindingOf(event);
+        if (!binding) {
           warnings.push(
             `hook '${hook.id ?? '?'}': canonical event '${event}' has no codex equivalent`,
           );
@@ -292,6 +307,30 @@ export const codexHarnessAdapter: HarnessAdapter = {
           });
           continue;
         }
+        const native = binding.event;
+        // THE REPORT, before the emission. An adapter that cannot narrow says which
+        // act it could not narrow and what that costs — through the SAME channel it
+        // already uses for an unmappable event. The hook still deploys (a codex
+        // agent with no guardrail was the older, worse failure); what stops is the
+        // silence, and with it the render that looked identical either way.
+        if (binding.unnarrowed)
+          warnings.push(
+            `hook '${hook.id ?? '?'}': act '${event}' fires here as codex '${native}', but ${binding.unnarrowed}`,
+          );
+        // JSON, not a separator character. This key was assembled with raw NUL bytes
+        // between the parts — collision-proof, and INVISIBLE: every text tool then
+        // classified this file as binary, so `grep` returned nothing for it while
+        // reporting success and `file` called it `data`. A hooks renderer that no
+        // search can see is a permanent blind spot, and a reader of the source sees a
+        // space-separated key that is not the one being built. `JSON.stringify` of the
+        // tuple is injective for the same reason NUL was chosen, and it is legible.
+        const key = JSON.stringify([
+          hook.id ?? '?',
+          native,
+          binding.matcher ?? '',
+        ]);
+        if (registered.has(key)) continue;
+        registered.add(key);
         const cmd: Record<string, unknown> = {
           type: 'command',
           command: hook.command,
@@ -299,7 +338,12 @@ export const codexHarnessAdapter: HarnessAdapter = {
         if (hook.timeout !== undefined) cmd.timeout = hook.timeout;
         if (hook.id !== undefined) cmd.id = hook.id;
         block[native] ??= [];
-        block[native].push({ hooks: [cmd] });
+        block[native].push({
+          ...(binding.matcher !== undefined
+            ? { matcher: binding.matcher }
+            : {}),
+          hooks: [cmd],
+        });
       }
     }
     return { filename: 'hooks.json', settings: block, warnings, skipped };

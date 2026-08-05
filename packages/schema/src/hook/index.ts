@@ -22,6 +22,26 @@
 // nothing to widen — `vcs.commit.post` is an ordinary corpus member carrying
 // `substrate: 'git'`, and the union, the generator and the JSON schema are gone.
 //
+// WHAT DISSOLVED WITH `matcher` (2026-08-05). `Hook` and `HookCell` each carried a
+// `matcher`, and this package described the one field THREE ways at once: the
+// `HarnessMechanism` law below (a mechanism lives HERE and NEVER on the source
+// cell), `HookCell.matcher` (documented with a claude tool-name regex as its own
+// example), and the emitted `Hook.matcher` (a harness-agnostic glob). The third
+// described a UNION of two unlike things — path-glob narrowing, genuinely
+// harness-agnostic, and tool-name narrowing, harness-native — and zero path-glob
+// matchers existed in the corpus, so parsimony deletes the field rather than
+// picking one of its senses. A future path need arrives as its own field, never as
+// an overloaded `matcher`.
+//
+// WHAT REPLACED IT is not a tool vocabulary. Tool sets are OPEN-WORLD (MCP servers
+// add tools at run time, users add their own, two harnesses overlap only in
+// shell/file primitives), so a closed enum over them is permanently incomplete. The
+// cell names the ACT instead — `operator.consult.pre`, `subagent.dispatch.pre` —
+// which is an ordinary member of the lifecycle vocabulary, and the adapter COMPUTES
+// the native pair ⟨event, selector⟩ from it ({@link NativeBinding}). Cell-level
+// harness-neutrality is structural after that: there is no field left for a vendor
+// tool name to sit in.
+//
 // A LEAF module by construction: it imports nothing.
 
 /**
@@ -67,17 +87,46 @@ export interface Hook {
   id?: string;
   /** Canonical events that trigger this hook (≥1). */
   events: [EventName, ...EventName[]];
-  /**
-   * Glob (or literal, per adapter capability) matched against the event subject —
-   * tool name for `tool.use.*`, file path for `file.*`, etc.
-   */
-  matcher?: string;
   /** Shell command to execute when the hook fires. */
   command: string;
   /** Timeout in seconds. Defaults to the client default when omitted. */
   timeout?: number;
   targets?: string[];
   excludes?: string[];
+}
+
+/**
+ * What ONE canonical event becomes on ONE harness: its native event name, plus the
+ * native SELECTOR that event needs there — the pair an adapter emits.
+ *
+ * THE SELECTOR IS COMPUTED, NEVER DECLARED. A canonical event like
+ * `operator.consult.pre` names an ACT (about to put a question or a menu to the
+ * operator); on claude that act is `PreToolUse` narrowed to the tool that performs
+ * it, and the tool's NAME is a vendor fact the adapter holds. A cell that spelled it
+ * would have chosen a face — which is exactly what one cell did, with
+ * `matcher: 'AskUserQuestion|Agent|SendMessage'` sitting on a harness-agnostic shape.
+ *
+ * MANY ACTS MAY SHARE ONE NATIVE EVENT, which is why this is a binding rather than
+ * an entry in the plain `canonical → native` map: that map must reverse (native →
+ * canonical, for a reader), and a map with three keys on `PreToolUse` cannot.
+ */
+export interface NativeBinding {
+  /** The harness's own event name — `PreToolUse`, `SubagentStop`, … */
+  readonly event: string;
+  /** The harness-native selector this act needs on that event, when expressible. */
+  readonly matcher?: string;
+  /**
+   * WHY this harness cannot express the act's selector, when it cannot — the
+   * adapter's own words, routed to the projection's `warnings`.
+   *
+   * IT IS A FIELD, not a convention, because SILENCE IS THE DEFECT. Codex reads
+   * `matcher` as a regex over `agent_type`, so it can FIRE `operator.consult.pre`
+   * and cannot NARROW it; it used to drop the narrowing without a word and the hook
+   * ran on every tool call there. Declaring the loss beside the binding makes the
+   * report structural: the serializer has the sentence in hand at the only moment
+   * it could stay quiet.
+   */
+  readonly unnarrowed?: string;
 }
 
 /**
@@ -94,7 +143,14 @@ export interface HarnessMechanism {
   readonly command: string;
   /** Timeout in seconds; adapter default when omitted. */
   readonly timeout?: number;
-  /** Residual DYNAMIC selector (client-native regex) for tool-scoped events. */
+  /**
+   * Residual DYNAMIC selector (client-native regex) for subject-scoped events.
+   *
+   * THE ONLY REGISTER THAT MAY HOLD ONE — see the law above, and the header. It is
+   * a function OF the adapter (codex generates `^(mav|nico)$` from composition;
+   * claude takes the {@link NativeBinding} of the act), so it is COMPUTED at
+   * realization and never read off a source cell.
+   */
   readonly matcher?: string;
   /** Run order within an event — SEMANTIC: a blocking gate precedes a nudge. */
   readonly order?: number;

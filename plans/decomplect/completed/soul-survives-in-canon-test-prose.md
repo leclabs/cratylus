@@ -52,7 +52,7 @@ Sorting one from the other is the whole task; a `sed` over the seven files is th
 
 - **slice** skill-cells · **wave** 0
 - **depends on** `t-canon-soul`
-- **writes** `packages/canon/test/**`
+- **writes** `packages/canon/test/cratylism.test.ts` · `packages/canon/test/null-dimension.test.ts` · `packages/canon/test/projection-stability.test.ts` · `packages/canon/test/reader-density.test.ts` · `packages/canon/test/reader-register.ts` · `packages/canon/test/structural-parsimony.test.ts` · `packages/canon/test/symbol-altitude.test.ts`
 - **compiles against** `packages/canon/src/genus/founding-doctrine.ts`
 - **evidence** `packages/canon/test/null-dimension.test.ts` · `MODEL.md`
 - **dispatchable** no ruling owed

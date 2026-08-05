@@ -6,7 +6,7 @@
 //    extendable fragment IDs across ALL extended plugins, grouped by plugin. This
 //    is the generalized multi-plugin catalog — the ids a consumer targets in a
 //    `patch`, read straight off the loaded plugins (`LoadedPlugin.contributions`,
-//    via P4's loader → P3's `discoverPluginFragments`). No source-archaeology.
+//    via P4's loader → P3's `enumeratePluginFragmentCatalogs`). No source-archaeology.
 //  · CORPUS (`--corpus <dir>`, or the zero-config default in this monorepo): the
 //    single-corpus per-dimension census — enumerate a corpus's `<dimension>/*.ts`
 //    value bodies joined with the dimension metadata (`enumerateCatalog`). Kept

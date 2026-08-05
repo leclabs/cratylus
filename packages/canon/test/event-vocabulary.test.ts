@@ -37,7 +37,9 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  canonicalActToClaude,
   canonicalToClaude,
+  claudeBindingOf,
   claudeToCanonical,
 } from '@cratylus/forge/adapters/claude';
 // The two sibling halves of the round trip, by PACKAGE SPECIFIER — the form every other
@@ -49,7 +51,10 @@ import {
 // TEST import was never an edge to begin with — while reaching across `rootDir` by path
 // breaks `typecheck:test` outright. The caution was aimed at a risk that does not exist,
 // and it cost the property it was protecting.
-import { canonicalToCodex } from '@cratylus/forge/adapters/codex';
+import {
+  canonicalActToCodex,
+  canonicalToCodex,
+} from '@cratylus/forge/adapters/codex';
 import {
   runtimeConfigDocument,
   serializeRuntimeConfig,
@@ -227,7 +232,7 @@ describe('(a) canon declares the vocabulary, and nothing else does', () => {
 
 /** The pure predicate: which of `map`'s keys are not in the vocabulary? */
 function foreignKeys(
-  map: Readonly<Record<string, string>>,
+  map: Readonly<Record<string, unknown>>,
   vocabulary: readonly string[],
 ): string[] {
   const declared = new Set(vocabulary);
@@ -235,9 +240,16 @@ function foreignKeys(
 }
 
 describe('(b) every adapter map keys over the declared vocabulary', () => {
-  const adapters: readonly [string, Readonly<Record<string, string>>][] = [
+  // BOTH TABLES PER ADAPTER. The 1:1 `canonical → native` map, and the ACT bindings
+  // beside it (`canonical act → ⟨native event, native selector⟩`). The acts are a
+  // second TABLE, never a second VOCABULARY — they key over the same tuple, and this
+  // leg is what says so. They are separate because many acts share one native event
+  // and the 1:1 map must reverse.
+  const adapters: readonly [string, Readonly<Record<string, unknown>>][] = [
     ['claude', canonicalToClaude],
+    ['claude acts', canonicalActToClaude],
     ['codex', canonicalToCodex],
+    ['codex acts', canonicalActToCodex],
   ];
 
   for (const [name, map] of adapters) {
@@ -249,15 +261,19 @@ describe('(b) every adapter map keys over the declared vocabulary', () => {
     });
   }
 
-  it('claude maps 19 of 28 harness events, leaving 9 with no native peer', () => {
+  it('claude reaches 21 of 30 harness events, leaving 9 with no native peer', () => {
     // MEASURED, not quoted forward. The filing said 18 pairs and 10 unmapped; the
     // pairs were 19, and the 10 was the union over BOTH shipped adapters — a
-    // different quantity wearing this one's name.
+    // different quantity wearing this one's name. The tuple then gained the two ACTS
+    // (`operator.consult.pre`, `subagent.dispatch.pre`), which claude reaches through
+    // the act table rather than the 1:1 map — so REACHED and MAPPED are now different
+    // counts, and both are asserted.
     const harness = CANONICAL_EVENTS.filter((e) => e !== 'vcs.commit.post');
-    expect(harness).toHaveLength(28);
+    expect(harness).toHaveLength(30);
     expect(Object.keys(canonicalToClaude)).toHaveLength(19);
+    expect(Object.keys(canonicalActToClaude)).toHaveLength(2);
     expect(
-      harness.filter((e) => canonicalToClaude[e] === undefined),
+      harness.filter((e) => claudeBindingOf(e) === undefined),
     ).toHaveLength(9);
   });
 
