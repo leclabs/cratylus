@@ -75,6 +75,7 @@ export const SHARDS = {
       'packages/canon/src/skills/wake/**',
       'packages/canon/src/skills/dream/**',
       'packages/canon/src/skills/handoff/**',
+      'packages/memory/test/cell-verb-roster.test.ts',
     ],
     refs: ['packages/forge/src/project/runtime-shim.ts'],
     static: [
@@ -89,6 +90,10 @@ export const SHARDS = {
       'packages/canon/src/skills/praxis/**',
       'packages/canon/src/toolkit/praxis/**',
       'packages/canon/src/toolkit/plan-set-cli.ts',
+      'packages/canon/test/plan-set.test.ts',
+      'packages/canon/test/record-retrofit-notice.test.ts',
+      'packages/canon/test/command-veracity.test.ts',
+      'packages/canon/src/toolkit/plan-set.ts',
     ],
     refs: ['packages/canon/src/toolkit/plan-set.ts'],
     static: [
@@ -160,7 +165,13 @@ export const SHARDS = {
   },
   'deployed-drifts-from-rendered-unwatched': {
     slice: 'deploy-surface',
-    deps: ['t-kind-root-ignores-agent-ext', 't-init-hardcodes-harness-dir'],
+    // also reads `cli/commands/project.ts`, which `project-never-cleans-its-out-dir`
+    // rewrites — the writer changes before the checker that reads it
+    deps: [
+      't-kind-root-ignores-agent-ext',
+      't-init-hardcodes-harness-dir',
+      'project-never-cleans-its-out-dir',
+    ],
     outputs: [
       'packages/forge/src/cli/**',
       'packages/forge/src/deploy/local.ts',
@@ -250,6 +261,12 @@ export const SHARDS = {
       'packages/runtime/src/loader.ts',
       'packages/runtime/src/main.ts',
       'packages/canon/src/skills/event-tap/**',
+      'packages/runtime/src/**',
+      'packages/runtime/test/**',
+      'packages/canon/test/capability-keyspace.test.ts',
+      'packages/canon/test/event-tap-cell.test.ts',
+      'packages/invoke/README.md',
+      'packages/runtime/README.md',
     ],
     refs: ['packages/runtime/src/ports/provisional-v9.ts'],
     static: [
@@ -269,6 +286,9 @@ export const SHARDS = {
       'packages/canon/test/architecture.test.ts',
       'packages/canon/test/bin-name-single-home.test.ts',
       'packages/canon/test/reader-density.test.ts',
+      'packages/canon/src/toolkit/project-targets.ts',
+      'packages/canon/test/hook-rule-boundary.test.ts',
+      'ARCHITECTURE.md',
     ],
     refs: ['packages/runtime/src/bin-name.ts'],
     static: [
@@ -297,7 +317,12 @@ export const SHARDS = {
     deps: ['t-worker-payload-seam-and-property-1'],
     outputs: [
       'packages/schema/src/rule-cell.ts',
+      'packages/canon/src/rules/**',
       'packages/canon/test/hook-rule-boundary.test.ts',
+      'packages/canon/test/reader-density.test.ts',
+      'packages/canon/test/reader-register.ts',
+      'packages/canon/test/cell-gloss-census.test.ts',
+      'packages/forge/src/validate/accept.ts',
     ],
     refs: ['packages/schema/src/hook-cell.ts'],
     static: [
@@ -315,7 +340,7 @@ export const SHARDS = {
   },
   't-accept-fifth-kind': {
     slice: 'projection-and-ground',
-    deps: ['t-soul-to-target-in-forge'],
+    deps: ['t-soul-to-target-in-forge', 't-definiens-vs-residue'],
     outputs: ['packages/forge/src/validate/accept.ts', 'MODEL.md'],
     refs: ['packages/schema/src/hook-cell.ts'],
     static: ['packages/forge/src/validate/accept.ts', 'MODEL.md'],
@@ -341,7 +366,9 @@ export const SHARDS = {
     ],
   },
   't-coined-classification': {
-    slice: 'plan-machinery',
+    // moved from `plan-machinery` 2026-08-05: its dependents are the skill-cell shards,
+    // so grouping it there costs a cross-slice edge the argmin does not pay.
+    slice: 'skill-cells',
     // also writes `schema/src/index.ts`, which `t-soul-to-target-in-forge` sweeps for `SOUL`
     deps: ['t-anatomy-root-compose', 't-soul-to-target-in-forge'],
     outputs: ['packages/schema/src/index.ts'],
@@ -494,7 +521,11 @@ export const SHARDS = {
   't-memory-config-scope-is-incoherent': {
     slice: 'host-and-config',
     deps: ['t-config-dotfile-was-shipped-underived'],
-    outputs: ['packages/memory/src/audit.ts'],
+    outputs: [
+      'packages/memory/src/audit.ts',
+      'packages/memory/src/node.ts',
+      'packages/memory/test/**',
+    ],
     refs: ['packages/memory/src/node.ts'],
     static: ['packages/memory/src/audit.ts', 'packages/memory/src/node.ts'],
   },
@@ -539,6 +570,21 @@ export const SHARDS = {
     static: [
       'packages/canon/src/toolkit/plan-set.ts',
       'packages/canon/test/plan-set.test.ts',
+    ],
+  },
+  'structural-parsimony-belongs-to-canon': {
+    slice: 'corpus-rename',
+    deps: ['t-policy-seam-unused'],
+    outputs: [
+      'packages/forge/src/validate/structural-parsimony.ts',
+      'packages/canon/src/toolkit/structural-parsimony.ts',
+      'packages/canon/test/structural-parsimony.test.ts',
+      'packages/canon/test/gate-convicts.test.ts',
+    ],
+    refs: ['packages/canon/src/manifest.ts'],
+    static: [
+      'packages/forge/src/validate/structural-parsimony.ts',
+      'packages/canon/test/structural-parsimony.test.ts',
     ],
   },
 };

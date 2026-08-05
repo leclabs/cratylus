@@ -5,8 +5,8 @@
 //
 //   1. PROJECT THE CULTURE — copy the (already-projected) full render tree
 //      (every agent + skill, with staged companions) into
-//      `<target>/.claude/{agents,skills}`. Defs/skills are regenerated substance,
-//      overwritten freely (`substance-over-accident`).
+//      `<target>/<harnessHome>/{agents,skills}`. Defs/skills are regenerated
+//      substance, overwritten freely (`substance-over-accident`).
 //   2. LAY THE PROJECT SCAFFOLD — the marker that makes the target a project:
 //      - `<target>/AGENTS.md` — the project conventions + the subject.
 //      - `<target>/plans/founding/` — a minimal sharded-plan-layout scaffold.
@@ -42,6 +42,14 @@ export interface ScaffoldProjectOpts {
   tree: RenderTree;
   /** The project doctrine to lay down — the prose + plan-layout states. */
   template: ProjectTemplate;
+  /**
+   * The dot-directory the target harness reads its artifacts from — the
+   * ADAPTER's (`HarnessAdapter.home`), never a literal. Defaults to `.claude`
+   * for callers that predate the parameter — a default, not an assumption: pass
+   * the adapter's and a second harness's project lands where it belongs. Mirrors
+   * `userScope`/`projectScope` in `./scope.js`, which already carry this fact.
+   */
+  harnessHome?: string;
   subject?: string;
   force?: boolean;
   log?: (line: string) => void;
@@ -71,10 +79,14 @@ function copyTree(src: string, dest: string): void {
 }
 
 /** Copy every agent def + skill dir from the render tree into
- *  <target>/.claude/{agents,skills}. Returns [agents, skills] counts. */
-function projectCulture(target: string, tree: RenderTree): [number, number] {
-  const agentsDir = resolvePath(target, '.claude', 'agents');
-  const skillsDir = resolvePath(target, '.claude', 'skills');
+ *  <target>/<harnessHome>/{agents,skills}. Returns [agents, skills] counts. */
+function projectCulture(
+  target: string,
+  tree: RenderTree,
+  harnessHome = '.claude',
+): [number, number] {
+  const agentsDir = resolvePath(target, harnessHome, 'agents');
+  const skillsDir = resolvePath(target, harnessHome, 'skills');
   mkdirSync(agentsDir, { recursive: true });
   mkdirSync(skillsDir, { recursive: true });
 
@@ -139,6 +151,7 @@ export function scaffoldProject(
   const warn = opts.warn ?? (() => {});
   const subject = opts.subject ?? DEFAULT_SUBJECT;
   const template = opts.template;
+  const harnessHome = opts.harnessHome ?? '.claude';
   const target = resolvePath(opts.target);
   const agentsMd = resolvePath(target, 'AGENTS.md');
   if (existsSync(agentsMd) && !opts.force) {
@@ -151,9 +164,9 @@ export function scaffoldProject(
   mkdirSync(target, { recursive: true });
   log(`=== scaffolding a project in ${target} ===`);
 
-  const [nAgents, nSkills] = projectCulture(target, opts.tree);
+  const [nAgents, nSkills] = projectCulture(target, opts.tree, harnessHome);
   log(
-    `  culture projected: ${nAgents} agents + ${nSkills} skills -> ${target}/.claude/`,
+    `  culture projected: ${nAgents} agents + ${nSkills} skills -> ${target}/${harnessHome}/`,
   );
 
   writeFileSync(agentsMd, template.agentsMd(subject), 'utf-8');

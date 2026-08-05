@@ -23,7 +23,11 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, resolve as resolvePath } from 'node:path';
-import { stageAssets, walkSkillFiles } from './bundle.js';
+import {
+  assertShimsResolvable,
+  stageAssets,
+  walkSkillFiles,
+} from './bundle.js';
 import { SEED_FILES } from './seeds.js';
 import {
   type PlaceOpts,
@@ -116,6 +120,11 @@ export function placeSkillsLocal(
   const warn = opts.warn ?? (() => {});
   const report = emptyReport();
   const destRoot = resolvePath(harnessDir, 'skills');
+  // A shim placed against a bin that does not execute is a broken artifact, and a
+  // deploy that ships one must not report success. Collected across skills so the
+  // refusal is reported once with every affected shim named, then carried out as
+  // rc 2 — see `assertShimsResolvable` for why this is a verdict and not a throw.
+  let refusal: string | null = null;
   for (const name of names) {
     const srcDir = resolvePath(tree.skillsDir, name);
     if (!existsSync(resolvePath(srcDir, 'SKILL.md'))) {
@@ -162,7 +171,19 @@ export function placeSkillsLocal(
       ? ` (+${extra.length} asset${extra.length === 1 ? '' : 's'})`
       : '';
     log(`  skill ${name} -> ${destDir}/SKILL.md${tail}`);
+    // AFTER placing: the shims are on the host now, so the binding they spawn is
+    // this deploy's problem. `--version`, never `which`.
+    if (refusal === null) {
+      refusal = assertShimsResolvable(srcDir, files, { dry: opts.dry });
+    }
   }
   log(`  skills copied: ${report.copied}`);
+  if (refusal !== null) {
+    warn(refusal);
+    report.warnings.push(
+      'runtime bin unresolvable on this host — deployed shims are inert',
+    );
+    return { rc: 2, report };
+  }
   return { rc: 0, report };
 }

@@ -409,6 +409,28 @@ export function retire(ctx: PlanSetContext, plan: string): void {
       `retire: precondition terminal(${plan}) not met (a plan retires once its result LANDS or it is SUPERSEDED)`,
     );
   }
+  // A LANDED plan carries no unfinished shard. This property used to be enforced
+  // POST-HOC, by a gate that scanned the archive. Deletion left it with nothing to
+  // scan — it did not become false, it became UNOBSERVABLE, which is how an invariant
+  // decays without anyone noticing. `retire` still sees the pre-image, so the guard
+  // belongs here, and here it is strictly stronger than the gate it replaces: the old
+  // one convicted an archive AFTER the mistake was preserved; this one prevents it.
+  //
+  // SCOPED TO LANDED, and the scope is the finding. A SUPERSEDED plan legitimately
+  // holds open shards — supersession means the work moved to the absorbing plan, so
+  // its shards are not abandoned, they are somewhere else. Applying the guard to both
+  // arms of `terminal` would forbid the one retirement path that exists precisely for
+  // work that did not finish where it started.
+  const open = superseded(ctx, plan)
+    ? []
+    : PLAN_STATES.filter((s) => s !== 'completed').flatMap((s) =>
+        tasksInState(ctx, plan, s).map((t) => `${s}/${t}`),
+      );
+  if (open.length > 0) {
+    throw new Error(
+      `retire: ${plan} still carries ${open.length} unfinished shard(s) — each is work stopped without being dropped: ${open.join(', ')}`,
+    );
+  }
   const rel = `${PLANS}/${plan}`;
   rmSync(join(ctx.repoRoot, rel), { recursive: true, force: true });
   try {

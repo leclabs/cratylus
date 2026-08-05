@@ -17,6 +17,7 @@ export {
   classifyRegister,
   humanMarkerHits,
   type Register,
+  type RegisterPolicy,
 } from './register.js';
 export {
   renderBody,

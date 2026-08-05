@@ -38,7 +38,8 @@ regenerate        ≜ deploy
 σ*_human          : concept → HumanSign
 decode_cold_human : human-artifact → Intent ; decode_cold_human(h) ≜ decode(h, human-priors, ∅)
 project-human     : cell → human-artifact ; project-human(c) = ⟨ σ*_human(k) : k ∈ concepts(c) ⟩
-boundary-projection ≜ {deploy, project-human}
+                    ⟨DEFINED ∧ UNINHABITED @ this corpus — operator ruling 2026-08-05 ⟨zero generated documentation⟩ ⇒ ext(project-human) = ∅ ; hand-authored ground is ¬ generated ∴ ∄ source(h) for it. ∉ boundary-projection ∵ a member with a provably empty extension is a claim ENGINE cannot support ; re-admission reverses the RULING, ¬ merely adds an impl⟩
+boundary-projection ≜ {deploy}
 deploy-valid ⇔ REGENERABLE ; human-valid(h) ⇔ decode_cold_human(h) = intent-of(source(h))
 
 ENGINE ⊥ MODEL : MODEL fixes invariants ; ENGINE realizes them ∧ owns boundary-projection ; engine-impl varies freely

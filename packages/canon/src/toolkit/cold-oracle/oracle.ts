@@ -1,10 +1,11 @@
 // oracle.ts — canon's policy binding for the LIVE blind cold-oracle. The
 // pure isolation-driving ALGORITHM lives in the engine
-// (`@cratylus/forge/validate` `oracle.ts`); THIS module injects the one
-// corpus-coupled datum it needs — WHICH isolation script — binding it to the
+// (`@cratylus/forge/validate` `oracle.ts`); THIS module injects the two
+// corpus-coupled data it needs — WHICH isolation script, bound to the
 // manifest-owned `./cold-oracle.sh` (the script carries this corpus's repo-path guard
-// + credentials/isolation protocol). Callers keep the same surface
-// (`nonceControl({ model })`); the script path is bound here, never passed by them.
+// + credentials/isolation protocol), and WHICH no-prior lexicon, taken from
+// `canonPolicy` so the corpus declares it in ONE place. Callers keep the same surface
+// (`nonceControl({ model })`); both are bound here, never passed by them.
 
 import { fileURLToPath } from 'node:url';
 import {
@@ -13,6 +14,7 @@ import {
   decodeCold as decodeColdEngine,
   nonceControl as nonceControlEngine,
 } from '@cratylus/forge/validate';
+import { canonPolicy } from './policy.js';
 
 export type { NonceControl };
 /** The caller-facing options — the injected `scriptPath` is bound here, not by them. */
@@ -28,5 +30,9 @@ export function decodeCold(text: string, opts: ColdOracleOpts = {}): string {
 
 /** The nonce positive control — proof the corpus/registry did not leak into the reader. */
 export function nonceControl(opts: ColdOracleOpts = {}): NonceControl {
-  return nonceControlEngine({ ...opts, scriptPath: SCRIPT_PATH });
+  return nonceControlEngine({
+    ...opts,
+    scriptPath: SCRIPT_PATH,
+    noPriorMarkers: canonPolicy.noPriorMarkers,
+  });
 }

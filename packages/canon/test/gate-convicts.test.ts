@@ -84,6 +84,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // corpora — including the un-prefixed port module a second hand-written
   // exception would be, which the biconditional has no allowlist to absorb.
   'canon/capability-keyspace.test.ts': 'GATE',
+  // censuses the LIVE `*Cell` interfaces in `@cratylus/schema` for one-gloss-one-sign;
+  // its convicting fixtures drive the same two pure predicates over the exact source
+  // text of the `RuleCell.definiens` / `HookCell.residue` collision it was built from.
+  'canon/cell-gloss-census.test.ts': 'GATE',
   'canon/command-veracity.test.ts': 'GATE',
   'canon/cratylism.test.ts': 'GATE',
   'canon/event-tap-cell.test.ts': 'GATE',
@@ -122,7 +126,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // the projection half of the old `anatomy/enforcing.test.ts` — drives `agentBody`
   // with an enforcing value it supplies itself. Its shape half went to schema.
   'forge/core/agent-body-enforcing.test.ts': 'BEHAVIORAL',
-  'forge/project/project-human.test.ts': 'BEHAVIORAL',
   // reads the FIXTURE corpus's own dimension dir listing against its descriptor.
   'forge/catalog/manifest-descriptor.test.ts': 'GATE',
   'forge/catalog/discover.test.ts': 'BEHAVIORAL',
@@ -139,6 +142,12 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/deploy/cli.test.ts': 'BEHAVIORAL',
   'forge/deploy/harness-shape.test.ts': 'BEHAVIORAL',
   'forge/deploy/hooks.test.ts': 'BEHAVIORAL',
+  // drives `scaffoldProject` with a harness home it supplies itself, and asserts the
+  // negative (`.claude` absent) so the old hardcode cannot pass it.
+  'forge/deploy/init-harness-home.test.ts': 'BEHAVIORAL',
+  // drives `probeRuntimeBin`/`assertShimsResolvable` against stranded and live host
+  // fixtures it builds itself, with the real shim bytes.
+  'forge/deploy/runtime-bin-resolvable.test.ts': 'BEHAVIORAL',
   'forge/deploy/integrate-smoke.test.ts': 'BEHAVIORAL',
   'forge/deploy/local.test.ts': 'BEHAVIORAL',
   'forge/deploy/prune.test.ts': 'BEHAVIORAL',
@@ -163,6 +172,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
 
   // ── memory ───────────────────────────────────────────────────────────
   'memory/audit.test.ts': 'BEHAVIORAL',
+  // enumerates the LIVE seed templates of two independent writers and asserts their
+  // emitted bytes agree; its convicting fixtures drive the same comparison over
+  // synthetic pairs, including the hard-wrap that made the first guard dead.
+  'memory/seed-parity.test.ts': 'GATE',
   'memory/cell-verb-roster.test.ts': 'GATE',
   'memory/cli.test.ts': 'BEHAVIORAL',
   'memory/dream.test.ts': 'BEHAVIORAL',

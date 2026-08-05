@@ -26,10 +26,20 @@ export {
 } from './scope.js';
 
 export {
+  type AssertShimsOpts,
+  assertShimsResolvable,
+  type ProbeRuntimeBinOpts,
+  probeRuntimeBin,
+  resetRuntimeBinProbe,
+  type RuntimeBinProbe,
+  runtimeBinRefusal,
+  salientStderr,
+  shimsSpawningRuntimeBin,
   type SkillCompanions,
   type StageAssetsOpts,
   stageAssets,
   walkSkillFiles,
+  whichOnPath,
 } from './bundle.js';
 
 export {

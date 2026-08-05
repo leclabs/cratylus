@@ -95,7 +95,7 @@ preserved ⟨zero residue⟩`_, implemented as an id-keyed surgical filter. That
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** plan-machinery · **wave** 3
+- **slice** plan-machinery · **wave** 2
 - **depends on** `t-anatomy-root-compose` · `t-lifecycle-vocabulary`
 - **writes** `packages/canon/src/skills/carry-on/**` · `packages/runtime/src/capabilities/**`
 - **compiles against** `packages/canon/src/toolkit/plan-states.ts`

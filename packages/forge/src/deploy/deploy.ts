@@ -192,12 +192,17 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
   log(`=== LOCAL deploy -> ${harnessDir} ===`);
 
   const bootstrap = !hasManifest(harnessDir);
+  // `agentExt` is the same fact `place` reads (`placeOpts`) — the harness's, from
+  // the adapter. Read once, threaded both ways: the report that names orphans and
+  // the placer that writes over them must agree on what an agent file LOOKS like,
+  // or the report is scanning a tree it cannot see.
   const unaccounted = dry
     ? unattributable(
         harnessDir,
         opts.kind,
         names,
         Object.keys(readManifest(harnessDir).kinds[opts.kind] ?? {}),
+        opts.agentExt ?? undefined,
       )
     : [];
   const prior = readManifest(harnessDir);

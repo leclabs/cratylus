@@ -66,7 +66,7 @@ binding, which inverted the conclusion.
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
 - **slice** deploy-surface · **wave** 1
-- **depends on** `t-kind-root-ignores-agent-ext` · `t-init-hardcodes-harness-dir`
+- **depends on** `t-kind-root-ignores-agent-ext` · `t-init-hardcodes-harness-dir` · `project-never-cleans-its-out-dir`
 - **writes** `packages/forge/src/cli/**` · `packages/forge/src/deploy/local.ts`
 - **compiles against** `packages/forge/src/deploy/manifest.ts`
 - **evidence** `packages/forge/src/deploy/manifest.ts` · `MODEL.md`

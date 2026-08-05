@@ -21,6 +21,7 @@ import {
   optimize,
 } from '../../../src/core/exemplify/index.js';
 import { makeTmpDir, story } from '../helpers.js';
+import { FIXTURE_REGISTER as REGISTER } from './fixture-register.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
 /** A real-world-shaped human-register CLAUDE.md: narrative, redundant. */
@@ -105,6 +106,7 @@ story(
     expect(() =>
       optimize({
         source,
+        register: REGISTER,
         concepts: CONCEPTS,
         artifacts: [{ path: 'CLAUDE.md', body: HUMAN_CLAUDE_MD }],
         outDir: join(cwd, 'optimized'),
@@ -113,6 +115,7 @@ story(
     // The R=LLM realization passes the gate: REC ≽ · minimal · conform.
     const { manifest } = optimize({
       source,
+      register: REGISTER,
       concepts: CONCEPTS,
       artifacts: [{ path: 'CLAUDE.md', body: OPTIMIZED_BODY }],
       outDir: join(cwd, 'optimized'),
@@ -121,8 +124,8 @@ story(
     expect(existsSync(optimizedDir)).toBe(true);
     const emitted = readFileSync(join(optimizedDir, 'CLAUDE.md'), 'utf8');
     expect(emitted).not.toBe(HUMAN_CLAUDE_MD);
-    expect(classifyRegister(HUMAN_CLAUDE_MD)).toBe('human');
-    expect(classifyRegister(emitted)).toBe('LLM');
+    expect(classifyRegister(HUMAN_CLAUDE_MD, REGISTER)).toBe('human');
+    expect(classifyRegister(emitted, REGISTER)).toBe('LLM');
     expect(manifest.routes).toHaveLength(CONCEPTS.length);
   },
 );
@@ -136,6 +139,7 @@ story(
     const source = join(cwd, 'CLAUDE.md');
     optimize({
       source,
+      register: REGISTER,
       concepts: CONCEPTS,
       artifacts: [{ path: 'CLAUDE.md', body: OPTIMIZED_BODY }],
       outDir: join(cwd, 'optimized'),
@@ -166,6 +170,7 @@ story(
     expect(() =>
       optimize({
         source,
+        register: REGISTER,
         concepts: withheld,
         artifacts: [{ path: 'CLAUDE.md', body: OPTIMIZED_BODY }],
         outDir: join(cwd, 'optimized-withheld'),

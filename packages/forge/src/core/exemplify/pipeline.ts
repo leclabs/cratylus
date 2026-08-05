@@ -13,6 +13,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, dirname, isAbsolute, join } from 'node:path';
+import type { RegisterPolicy } from '../../validate/policy.js';
 import { canonicalText, fragmentDigest } from './digest.js';
 import { classifyRegister, humanMarkerHits } from './register.js';
 import {
@@ -72,6 +73,7 @@ export function name(
 export function realize(
   concepts: readonly ConceptRecord[],
   artifacts: readonly ArtifactSpec[],
+  register: RegisterPolicy,
   reasons: string[],
 ): void {
   if (artifacts.length === 0) {
@@ -83,8 +85,11 @@ export function realize(
   );
   // conform: every emitted body holds its reader's register (ρ = LLM).
   for (const a of artifacts) {
-    if (classifyRegister(a.body) === 'human') {
-      const markers = [...new Set(humanMarkerHits(a.body))].slice(0, 6);
+    if (classifyRegister(a.body, register) === 'human') {
+      const markers = [...new Set(humanMarkerHits(a.body, register))].slice(
+        0,
+        6,
+      );
       reasons.push(
         `conform fails at '${a.path}': human-register emission (ρ = LLM); markers: ${markers.join(', ')}`,
       );
@@ -145,7 +150,7 @@ export function exemplify(input: ExemplifyInput): RoutingManifest {
   const reasons: string[] = [];
   produce(input.concepts, reasons);
   name(input.concepts, reasons);
-  realize(input.concepts, input.artifacts, reasons);
+  realize(input.concepts, input.artifacts, input.register, reasons);
   coverage(input.concepts, reasons);
   if (reasons.length > 0) throw new ExemplifyRefusal(reasons);
 

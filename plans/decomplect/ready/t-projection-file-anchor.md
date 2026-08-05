@@ -62,7 +62,7 @@ dead leg's candidate was `capabilities`. `render` is disjoint from runtime's key
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** event-vocabulary · **wave** 1
+- **slice** event-vocabulary · **wave** 0
 - **depends on** `t-soul-to-target-in-forge` · `t-project-human-vs-engine`
 - **writes** `packages/forge/src/adapters/claude/**` · `packages/forge/src/adapters/codex/**` · `packages/forge/src/core/anatomy-body.ts`
 - **compiles against** `packages/forge/src/project/index.ts`

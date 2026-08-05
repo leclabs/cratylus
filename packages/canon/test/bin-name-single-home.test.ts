@@ -43,10 +43,10 @@
 // not converged; `RUNTIME_BIN` holds a placeholder. What is asserted is that
 // flipping that ONE symbol flips the name everywhere it is operative.
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
@@ -76,6 +76,12 @@ const CONSUMERS = [
   'packages/runtime/src/main.ts',
   'packages/invoke/src/bin.ts',
   'packages/forge/src/project/runtime-shim.ts',
+  // A TYPESCRIPT FILE THAT EMITS SHELL — the language boundary one level up. The glob
+  // leg below scans `.sh`/`.mjs` SOURCES; this one is `.ts` that WRITES a `#!/bin/sh`
+  // shim onto the host, so a literal here would strand a host exactly as the emitted
+  // artifacts would, and neither leg could see it. Added 2026-08-05 when the shard that
+  // authored it flagged its own blind spot.
+  'packages/invoke/src/install.ts',
 ] as const;
 
 const read = (rel: string): string =>
@@ -107,6 +113,38 @@ beforeAll(async () => {
     .filter((f) => f.path.startsWith('hooks/'))
     .map((f) => [f.path, f.content] as const);
 }, 120_000);
+
+// Every hand-authored shell/`.mjs` source under each package's `src`. Emitted artifacts
+// are covered by the hook-artifact leg; these are the ones a human wrote and no compiler
+// reads. (Line comments, not a block: a glob like `packages/*` + `/src` would close a
+// block comment early at the `*` `/` pair — which is how this leg first failed to parse.)
+function shellSources(): string[] {
+  const out: string[] = [];
+  const walk = (dir: string): void => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (e.name.endsWith('.sh') || e.name.endsWith('.mjs'))
+        out.push(relative(repoRoot, full));
+    }
+  };
+  for (const pkg of readdirSync(join(repoRoot, 'packages'), {
+    withFileTypes: true,
+  })) {
+    const src = join(repoRoot, 'packages', pkg.name, 'src');
+    if (pkg.isDirectory() && existsSync(src)) walk(src);
+  }
+  return out.sort();
+}
+
+/** Bins this repository has actually shipped and retired. A rename that stops at the
+ *  language boundary leaves one of these behind in a file no compiler reads. */
+const RETIRED_BINS = ['agent-runtime', 'agent-cli'] as const;
+
+/** Whether a defaulted binary is OURS. Third-party programs a worker shells out to
+ *  (`claude`, `jq`, `git`) are out of scope: this gate is about one repository's own
+ *  bin surviving a rename, not about every command a script may invoke. */
+const OURS = new RegExp(`^(cratylus|${RETIRED_BINS.join('|')})`);
 
 describe('the bin name has exactly one home', () => {
   it('no consumer spells the name — only `bin-name.ts` declares it', () => {
@@ -242,6 +280,50 @@ const memFallback = (sh: string): string | undefined =>
   sh.match(/MEM="\$\{MEMORY_BIN:-([^}]+)\}"/)?.[1];
 const manifestBins = (json: string): string[] =>
   Object.keys((JSON.parse(json) as { bin: Record<string, string> }).bin);
+
+// ── the LANGUAGE BOUNDARY — the property that cost this session a dead `/wake` ──
+//
+// Every leg above reads TypeScript or an artifact reached by a name the corpus hands
+// it. But the bin's operative sites are shell and `.mjs`: text no compiler reads, and
+// exactly where a missed rename fails ON A HOST rather than at build. ARCHITECTURE
+// says so in as many words. On 2026-08-05 that is precisely what happened — a stale
+// bin stranded every deployed shim, and the repository was green throughout.
+//
+// The scan is a GLOB, deliberately. Only ONE of the thirteen hand-authored shell/`.mjs`
+// sources currently names the bin, so a roster would encode that accident and go quiet
+// the moment a fourteenth file is added. Enumerate the domain, then judge each member.
+it('EVERY hand-authored shell or .mjs source under packages/*/src derives the bin', () => {
+  const sources = shellSources();
+  expect(
+    sources.length,
+    'no shell/.mjs source found under packages/*/src — the scan is DARK, not the corpus clean',
+  ).toBeGreaterThan(5);
+
+  const drifted: string[] = [];
+  for (const rel of sources) {
+    const text = readFileSync(join(repoRoot, rel), 'utf8');
+    // A `${SOMETHING_BIN:-<token>}` default IS the bin, spelled. It must be the
+    // current one; any other token is a rename that stopped at the boundary.
+    for (const m of text.matchAll(/\$\{[A-Z_]*BIN:-([^}]+)\}/g)) {
+      const dflt = m[1] as string;
+      // SCOPED BY WHOSE BIN IT IS, not by the variable's shape. The first version of
+      // this leg matched any `*_BIN` and convicted `${STANCE_JUDGE_BIN:-claude}` — a
+      // THIRD-PARTY program, not ours. A detector that fires on the shape of a name
+      // rather than on its referent is the same error this corpus keeps finding in prose.
+      if (!OURS.test(dflt)) continue;
+      if (dflt !== RUNTIME_BIN)
+        drifted.push(`${rel}: defaults to \`${dflt}\`, not \`${RUNTIME_BIN}\``);
+    }
+    // A retired bin name anywhere in these files is the same defect without the shape.
+    for (const retired of RETIRED_BINS) {
+      if (text.includes(retired))
+        drifted.push(`${rel}: names the retired bin \`${retired}\``);
+    }
+  }
+  expect(drifted, 'the bin name drifted past the language boundary').toEqual(
+    [],
+  );
+});
 
 describe('the single-home gate is non-vacuous', () => {
   const STALE = `${RUNTIME_BIN}-stale`;

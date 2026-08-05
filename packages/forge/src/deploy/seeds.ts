@@ -35,8 +35,8 @@ export function semanticSeed(name: string): string {
   return `# ${name} — semantic
 
 *My semantic store (\`memory\`) — identity facts + durable agent-intrinsic knowledge; the hot
-index (the vault carries the cold corpus). Self-authored, grown at dream; deploy never
-overwrites me. Read whole at wake. Agent-intrinsic ONLY: a project- or plan-scoped fact lives
+index (the vault carries the cold corpus). Self-authored, grown at dream; seeded once, never
+overwritten. Read whole at wake. Agent-intrinsic ONLY: a project- or plan-scoped fact lives
 in that node's AGENTS.md, never here.*
 
 <!-- Seeded ${d}. Empty on purpose. Dream promotes durable facts here from EPISODIC. -->
@@ -55,8 +55,8 @@ export function proceduralSeed(name: string): string {
 
 *My procedural store (\`memory\`) — inductively generalized, cross-project wisdom NOT already
 carried by a projection (agent definition · skills · gates); the projection-dedup bar governs every
-write: already-projected ⇒ not stored. Grown at dream (\`correction-consolidation\`); deploy
-never overwrites me. Read whole at wake.*
+write: already-projected ⇒ not stored. Grown at dream (\`correction-consolidation\`); seeded once,
+never overwritten. Read whole at wake.*
 
 <!-- Seeded ${d}. Empty on purpose. Dream distils corrections into standing dispositions here. -->
 
@@ -70,16 +70,21 @@ export function episodicSeed(_name: string): string {
   return '';
 }
 
-// TODO(S4): resolves once memory reshaped — forge STOPS owning these seed
-// templates. When memory exports `seedTemplates`, delete `semanticSeed` /
-// `proceduralSeed` / `episodicSeed` / `SEED_FILES` above and re-export the memory
-// source instead:
-//     export { seedTemplates as SEED_FILES } from '@cratylus/memory';
-// (add `@cratylus/memory: workspace:*` to forge deps — DAG stays acyclic:
-// forge→memory). Until that export is resolvable in the tree these templates
-// remain the FALLBACK so the deploy seed site (local.ts) stays green;
-// removing them now would break the build against a not-yet-landed import. See S6
-// report + plans/runtime coordination (S4 concurrent).
+// The retired TODO here told its own successor to `export { seedTemplates as
+// SEED_FILES } from '@cratylus/memory'` once memory shipped that export. Memory
+// SHIPS IT (`memory/src/seeds.ts`, `./seedTemplates` subpath) — and the remedy is
+// still REFUSED: `ARCHITECTURE.md`'s north-star graph has NO `forge → memory`
+// edge, and forge declares only `@cratylus/runtime` + `@cratylus/schema`. Taking
+// the import would add an edge the north star does not contain, which is an
+// architecture amendment, not a refactor. The one shared ancestor both packages
+// already reach — runtime — is the per-host CONTRACT leaf ("pure types plus one
+// identity helper"), so parking store prose there relocates ownership away from
+// memory rather than resolving it.
+//
+// So this copy STAYS, under a contract instead of a promise: it is byte-identical
+// to `memory/src/seeds.ts`, and `memory/test/seed-parity.test.ts` FAILS the moment
+// it is not. Edit the prose here and that test goes red until memory matches.
+// Memory is the prose authority; this is the mirror.
 /** (filename, seed-fn) — Target (the def) is generated, not seeded here. */
 export const SEED_FILES: ReadonlyArray<[string, (name: string) => string]> = [
   ['SEMANTIC.md', semanticSeed],

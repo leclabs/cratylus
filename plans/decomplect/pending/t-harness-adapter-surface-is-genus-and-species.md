@@ -28,7 +28,7 @@ which means the defect is already **costing** derivations elsewhere, not merely 
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** event-vocabulary · **wave** 2
+- **slice** event-vocabulary · **wave** 1
 - **depends on** `t-projection-file-anchor`
 - **writes** `packages/forge/src/core/harness-adapter.ts`
 - **compiles against** `packages/forge/src/adapters/**`

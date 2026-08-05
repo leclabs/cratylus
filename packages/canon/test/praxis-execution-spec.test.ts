@@ -160,19 +160,33 @@ describe('praxis-execution-spec', () => {
   });
 
   it('every `static` path exists — a shard whose evidence moved is unreadable when opened', () => {
+    // OPEN shards only, and the leg's own name says why: evidence must be readable when
+    // a shard is OPENED for execution. A COMPLETED shard is never opened again — and one
+    // whose job was to DELETE something (dead code, a retired module) necessarily leaves
+    // its own evidence path absent. Holding it to this would convict it for succeeding.
     const missing: string[] = [];
-    for (const id of IDS)
+    for (const id of OPEN_SPEC)
       for (const p of sh(id).static)
         if (!existsSync(join(REPO, p))) missing.push(`${id} → ${p}`);
     expect(missing).toEqual([]);
   });
 
   it('every `outputs` and `refs` glob matches something tracked — an empty set is a typo', () => {
+    // OPEN shards only — same reason: a completed deletion shard's output glob is
+    // SUPPOSED to match nothing now.
     const dead: string[] = [];
-    for (const id of IDS) {
+    for (const id of OPEN_SPEC) {
+      // A shard may CREATE a file, so a non-matching output is not automatically a
+      // typo. The discriminator is the PARENT: `toolkit/new-thing.ts` is a creation
+      // target, `toolkitt/new-thing.ts` is a misspelling. Requiring the parent to
+      // exist separates them without forbidding new files.
       for (const p of sh(id).outputs)
-        if (!expand([p]).size && !existsSync(join(REPO, p)))
-          dead.push(`${id} outputs → ${p}`);
+        if (
+          !expand([p]).size &&
+          !existsSync(join(REPO, p)) &&
+          !existsSync(dirname(join(REPO, p)))
+        )
+          dead.push(`${id} outputs → ${p} (parent directory does not exist)`);
       for (const p of sh(id).refs)
         if (!expand([p]).size && !existsSync(join(REPO, p)))
           dead.push(`${id} refs → ${p}`);

@@ -310,41 +310,37 @@ describe('landing — derived on demand, stored nowhere', () => {
 // as a permanent one: it would warn forever about a subject that cannot exist, and
 // a warning nobody can ever act on is noise that trains readers to skip warnings.
 //
-// What survives is the DETECTOR and its convicting fixture. The property it encodes
-// is real, but its only remaining enforcement point is `retire` itself, which sees
-// the plan's pre-image; it has no owner here. Filed, not fixed.
+// THE PROPERTY NOW HAS AN OWNER, AND IT IS `retire` ITSELF. The detector used to run
+// POST-HOC over the archive. With deletion there is nothing to scan — the property did
+// not become false, it became UNOBSERVABLE, which is how an invariant rots without
+// anyone noticing. `retire` still sees the plan's pre-image, so the guard moved into
+// its PRECONDITION, where it is strictly stronger: the old scan convicted an archive
+// after the mistake had been preserved; the precondition prevents it.
 
 describe('RETIREMENT INTEGRITY — a retired plan carries no unfinished shard', () => {
-  const OPEN = ['pending', 'ready', 'active'] as const;
+  it('REFUSES a terminal plan that still holds an open shard, naming them', () => {
+    // Land it FIRST (all-completed at some commit is what `landing` reads), then
+    // re-open a shard — the exact shape of the historical defect: a verdict recorded
+    // in a report while the tree still carried unfinished work.
+    placeTask('demo', 'completed', 't1-done.md');
+    g('add', '-A');
+    g('commit', '-qm', 'feat: demo lands');
+    placeTask('demo', 'ready', 't2-orphan.md');
+    g('add', '-A');
+    g('commit', '-qm', 'chore: a shard re-opens after landing');
+    expect(terminal(ctx, 'demo')).toBe(true);
+    expect(() => retire(ctx, 'demo')).toThrow(/unfinished shard/);
+    // The refusal NAMES them — a count alone leaves the operator hunting.
+    expect(() => retire(ctx, 'demo')).toThrow(/ready\/t2-orphan\.md/);
+    // And it did NOT delete: a refused precondition must leave the tree untouched.
+    expect(existsSync(join(repo, 'plans', 'demo', 'PLAN.md'))).toBe(true);
+  });
 
-  /** The unfinished shards a retired-plan dir holds — the scan, named so a
-   *  synthetic BAD tree can be fed to the very same code. */
-  const unfinished = (root: string): string[] => {
-    if (!existsSync(root)) return [];
-    const out: string[] = [];
-    for (const plan of readdirSync(root, { withFileTypes: true })) {
-      if (!plan.isDirectory()) continue;
-      for (const state of OPEN) {
-        const dir = join(root, plan.name, state);
-        if (!existsSync(dir)) continue;
-        for (const f of readdirSync(dir))
-          if (f.endsWith('.md')) out.push(`${plan.name}/${state}/${f}`);
-      }
-    }
-    return out.sort();
-  };
-
-  it('is non-vacuous — the scan FLAGS a retired plan with an open shard', () => {
-    const root = mkdtempSync(join(tmpdir(), 'retire-integrity-'));
-    // BAD: a retired plan with a shard still in `ready`.
-    mkdirSync(join(root, 'ghost', 'ready'), { recursive: true });
-    writeFileSync(join(root, 'ghost', 'ready', 't1-orphan.md'), '# orphan\n');
-    expect(unfinished(root)).toEqual(['ghost/ready/t1-orphan.md']);
-    // EXONERATES: completed-only is clean, and so is an empty open dir.
-    mkdirSync(join(root, 'clean', 'completed'), { recursive: true });
-    writeFileSync(join(root, 'clean', 'completed', 't1-done.md'), '# done\n');
-    mkdirSync(join(root, 'clean', 'pending'), { recursive: true });
-    expect(unfinished(join(root, 'clean'))).toEqual([]);
-    rmSync(root, { recursive: true, force: true });
+  it('EXONERATES a plan whose shards are all completed', () => {
+    placeTask('demo', 'completed', 't1-done.md');
+    g('add', '-A');
+    g('commit', '-qm', 'feat: demo lands clean');
+    expect(() => retire(ctx, 'demo')).not.toThrow();
+    expect(existsSync(join(repo, 'plans', 'demo'))).toBe(false);
   });
 });

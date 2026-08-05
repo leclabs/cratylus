@@ -16,6 +16,8 @@
  * materialize}/SKILL.md`.
  */
 
+import type { RegisterPolicy } from '../../validate/policy.js';
+
 /** A concept-contract record ⟨gloss, anchor?, factorization?⟩ plus its R3
  *  routing decision. Stage provenance: `gloss` = conceptualize, `anchor` =
  *  signify, `factors` = materialize (composite ⇒ factor anchors, cite-by-ref;
@@ -76,6 +78,9 @@ export interface ExemplifyInput {
   source: string;
   /** The reader every register is judged at. Default (and only) `'LLM'`. */
   reader?: string;
+  /** The corpus's human-register doctrine `conform` is judged against. Required:
+   *  the frame refuses rather than guessing what "human" reads like. */
+  register: RegisterPolicy;
   /** The concept lattice C_R with stage fields + routing filled. */
   concepts: readonly ConceptRecord[];
   /** The realized artifact set. */

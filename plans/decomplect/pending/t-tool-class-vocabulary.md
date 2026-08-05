@@ -98,7 +98,7 @@ to `{event, matcher?}` is the same edit that shard needs.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** cell-contract · **wave** 3
+- **slice** cell-contract · **wave** 2
 - **depends on** `t-worker-payload-seam-and-property-1` · `t-lifecycle-vocabulary`
 - **writes** `packages/schema/src/hook/index.ts`
 - **compiles against** `packages/canon/src/hooks/stance-guardrail-pre.ts`

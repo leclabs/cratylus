@@ -18,6 +18,7 @@ import {
   optimize,
 } from '../../../src/core/exemplify/index.js';
 import { makeTmpDir, story } from '../helpers.js';
+import { FIXTURE_REGISTER } from './fixture-register.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
 /** The E6.S1 fixture (human-register source of run 1). */
@@ -79,6 +80,7 @@ story(
     writeFileSync(join(cwd, 'CLAUDE.md'), HUMAN_CLAUDE_MD, 'utf8');
     // Run 1 over the E6.S1 fixture.
     const run1 = optimize({
+      register: FIXTURE_REGISTER,
       source: join(cwd, 'CLAUDE.md'),
       concepts: CONCEPTS,
       artifacts: ARTIFACTS,
@@ -87,6 +89,7 @@ story(
     });
     // Run 2 over run 1's ACCEPTED output, prior = run 1's manifest.
     optimize({
+      register: FIXTURE_REGISTER,
       source: join(cwd, 'out-run1', 'CLAUDE.md'),
       concepts: CONCEPTS,
       artifacts: ARTIFACTS,

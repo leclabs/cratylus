@@ -13,7 +13,20 @@ const refs = process.argv.slice(2); // paths relative to canon/
 function field(src, name) {
   const i = src.indexOf(`${name}:`);
   if (i < 0) return null;
-  const start = src.indexOf('`', i);
+  // THE DELIMITER IS WHICHEVER COMES FIRST. This used to look for a backtick only, so a
+  // single-quoted value was skipped and the scan ran on to capture the NEXT backticked
+  // field entirely — a wrong answer that looked like a right one. Rule cells are the case:
+  // `residue: 'â€¦'`.
+  const quotes = ['`', "'", '"'];
+  let start = -1;
+  let quote = '';
+  for (const q of quotes) {
+    const at = src.indexOf(q, i);
+    if (at >= 0 && (start < 0 || at < start)) {
+      start = at;
+      quote = q;
+    }
+  }
   if (start < 0) return null;
   let end = start + 1;
   while (end < src.length) {
@@ -21,20 +34,26 @@ function field(src, name) {
       end += 2;
       continue;
     } // skip escaped char
-    if (src[end] === '`') break; // unescaped close
+    if (src[end] === quote) break; // unescaped close
     end++;
   }
   return src
     .slice(start + 1, end)
-    .replace(/\\`/g, '`')
+    .replace(new RegExp(`\\\\\\${quote}`, 'g'), quote)
     .replace(/\\\\/g, '\\');
 }
 
 for (const ref of refs) {
   const src = readFileSync(ref, 'utf8');
-  const text = field(src, 'definiens') ?? field(src, 'description');
+  // `RuleCell.definiens` became `residue` (2026-08-05, `t-definiens-vs-residue`), so a
+  // rule cell answers to the second name now. Both are read because a HookCell has always
+  // used `residue` and the sweep spans every cell kind.
+  const text =
+    field(src, 'definiens') ??
+    field(src, 'residue') ??
+    field(src, 'description');
   if (!text) {
-    console.log(`\n##### ${ref}\n(no definiens/description found)`);
+    console.log(`\n##### ${ref}\n(no definiens/residue/description found)`);
     continue;
   }
   let decode = '';

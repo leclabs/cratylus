@@ -24,6 +24,7 @@ import {
   optimize,
 } from '../../../src/core/exemplify/index.js';
 import { makeTmpDir, story } from '../helpers.js';
+import { FIXTURE_REGISTER } from './fixture-register.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
 const RAW_SOURCE_BODY = `# Raw conventions
@@ -73,6 +74,7 @@ story(
       '',
     ].join('\n');
     const { manifest } = optimize({
+      register: FIXTURE_REGISTER,
       source,
       concepts,
       artifacts: [{ path: 'CLAUDE.md', body: optimizedBody }],

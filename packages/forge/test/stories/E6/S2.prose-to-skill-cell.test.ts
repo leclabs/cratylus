@@ -20,6 +20,7 @@ import {
   renderSkillCell,
 } from '../../../src/core/exemplify/index.js';
 import { makeTmpDir, story } from '../helpers.js';
+import { FIXTURE_REGISTER } from './fixture-register.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
 /** The raw multi-step how-to (no structure) the pipeline must cell-ify. */
@@ -81,6 +82,7 @@ beforeEach(() => {
   cwd = makeTmpDir();
   writeFileSync(join(cwd, 'release-howto.md'), PROSE_PROCEDURE, 'utf8');
   optimize({
+    register: FIXTURE_REGISTER,
     source: join(cwd, 'release-howto.md'),
     concepts: CONCEPTS,
     artifacts: [{ path: SKILL_PATH, body: renderSkillCell(CELL) }],

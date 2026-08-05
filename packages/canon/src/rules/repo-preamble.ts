@@ -8,15 +8,17 @@ import type { RuleCell } from '@cratylus/schema';
 // no longer SelfAuthored memory (`SelfAuthored ∉ Target` no longer applies), so it is
 // a curated source-of-truth cell whose `body` projects + byte-locks to `/AGENTS.md`.
 //
-//   definiens — the σ*-signified canonical identity (`accept()`/REFLEXIVE target).
-//   body      — the VERBATIM directive payload, regenerated to `targetPath` by
-//               `project-targets` and byte-locked by `test/hook-rule-boundary.test.ts`.
+//   residue — the σ*-signified canonical identity (`body = ⟨α, residue⟩`), the
+//             `accept()`/REFLEXIVE target. It is `residue`, NOT `definiens`: it has
+//             already paid the `∖ fired(α)` subtraction (`schema/src/rule-cell.ts`).
+//   body    — the VERBATIM directive payload, regenerated to `targetPath` by
+//             `project-targets` and byte-locked by `test/hook-rule-boundary.test.ts`.
 
 export const repoPreamble: RuleCell = {
   kind: 'rule',
   id: 'repo-preamble',
   slug: 'repo-preamble',
-  definiens:
+  residue:
     'scope-rule ↾ workspace-root · loaded ∀ session on entry — the standing orientation: doctrine-pointers ⟨why · what · how · corpus-index ; LOCKED-immutable-grounding : source-aligns-up · ¬regenerated-from-source⟩ · working-convention ⟨conventional-commits ; header ≤100 ; commit-autonomous@natural-boundaries ; push-gated⟩ · tooling-prerequisite ⟨graph-indexer⟩ ; activation=scope ⟨¬dream-sink : curated source, projected + byte-locked⟩',
   scope: '',
   targetPath: 'AGENTS.md',

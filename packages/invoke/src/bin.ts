@@ -31,10 +31,12 @@
 // resident process.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { fileURLToPath } from 'node:url';
 import { runtimePlugin as memory } from '@cratylus/memory';
 import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
 import { discoverConfigured } from '@cratylus/runtime/loader';
 import { runMain } from '@cratylus/runtime/main';
+import { runInstall } from './install.js';
 
 /**
  * The capability set this CLI SHIPS WITH — the zero-config default, each a
@@ -51,13 +53,36 @@ const fail = (err: unknown): void => {
   process.exitCode = 1;
 };
 
-// Provider resolution must fail through the SAME reporting path as everything
-// else: a top-level await that throws surfaces as an unhandled rejection and a
-// node stack trace, which reads as a crash rather than "your config names a
-// provider that is not installed here".
-try {
-  const plugins = (await discoverConfigured()) ?? BUNDLED;
-  await runMain(process.argv.slice(2), { plugins });
-} catch (err) {
-  fail(err);
+const argv = process.argv.slice(2);
+
+// `install` IS THIS BIN'S OWN VERB, not a capability, and it is routed HERE rather
+// than in the runtime's dispatcher for two reasons that are the same reason.
+//
+// It authors the host-side half of the `bin` key — the pair ⟨bin name, executable
+// path⟩ — and this package is the one that owns that key. The runtime knows the
+// NAME (`bin-name.ts`, its one home) and must not learn how a host binds it; a
+// dispatcher verb would put the binding in the contract leaf, which is the package
+// ARCHITECTURE requires to depend on nothing.
+//
+// And it must run BEFORE provider discovery. Install is the recovery path: it has
+// to work on a host whose runtime config names a provider that is not installed,
+// or whose checkout just moved. A verb that needed a healthy host to repair a
+// broken one would be useless exactly when it is needed.
+if (argv[0] === 'install') {
+  process.exitCode = runInstall(argv.slice(1), {
+    entry: fileURLToPath(import.meta.url),
+    log: (line) => process.stdout.write(`${line}\n`),
+    warn: (line) => process.stderr.write(`${line}\n`),
+  });
+} else {
+  // Provider resolution must fail through the SAME reporting path as everything
+  // else: a top-level await that throws surfaces as an unhandled rejection and a
+  // node stack trace, which reads as a crash rather than "your config names a
+  // provider that is not installed here".
+  try {
+    const plugins = (await discoverConfigured()) ?? BUNDLED;
+    await runMain(argv, { plugins });
+  } catch (err) {
+    fail(err);
+  }
 }

@@ -65,6 +65,20 @@ export interface AcceptCell {
    * (`SkillExpression` — see `acceptCellOfSkill`), or an agent's `archetype`. Each is a
    * branded string, so `string` is the widest home; the skill bridge keeps the payload
    * the typed IR field, not a markdown scrape.
+   *
+   * `definiens`, NOT `residue`, AND THAT IS DELIBERATE (ruled 2026-08-05, when
+   * `RuleCell.definiens` was renamed to `RuleCell.residue`). `MODEL.md:50` —
+   * `residue(c) = D(c) ∖ fired(α(c))` — makes the two DIFFERENT OBJECTS across one
+   * subtraction. This field is the witness INPUT: the un-adjudicated `D` that
+   * `parsimonious()` below reads in order to decide, for itself, what `fired(α)`
+   * already covers. Naming it `residue` would assert the verdict in the parameter and
+   * leave that leg reading as a check that a residue is a residue.
+   *
+   * A CELL's authored payload is the other side: `HookCell.residue`,
+   * `RuleCell.residue` — post-subtraction by construction, because PARSIMONIOUS
+   * quantifies over them. Lifting one in here (`definiens: c.residue`, as
+   * `canon/test/hook-rule-boundary.test.ts` does) is not a rename bridge; it is the
+   * strictest reading available, since the leg must then find nothing left to subtract.
    */
   readonly definiens: string;
   /** The anchors this cell references (imports · `ref` · composition). */

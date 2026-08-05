@@ -26,10 +26,12 @@ import { tmp } from './helpers.js';
 
 const silent = { log: () => {}, warn: () => {} };
 
-/** Build a render tree holding exactly the named agents + skills. */
-function renderTree(
+/** Build a render tree holding exactly the named agents + skills, the agent defs
+ *  carrying the given harness extension (`HarnessAdapter.agentExt`). */
+function renderTreeExt(
   agents: string[],
-  skills: string[],
+  agentExt: string,
+  skills: string[] = [],
 ): { agentsDir: string; skillsDir: string } {
   const root = tmp('v4-render-');
   const agentsDir = join(root, 'agents');
@@ -37,13 +39,21 @@ function renderTree(
   mkdirSync(agentsDir, { recursive: true });
   mkdirSync(skillsDir, { recursive: true });
   for (const a of agents) {
-    writeFileSync(join(agentsDir, `${a}.md`), `# ${a} def\n`, 'utf-8');
+    writeFileSync(join(agentsDir, `${a}${agentExt}`), `# ${a} def\n`, 'utf-8');
   }
   for (const s of skills) {
     mkdirSync(join(skillsDir, s), { recursive: true });
     writeFileSync(join(skillsDir, s, 'SKILL.md'), `# ${s}\n`, 'utf-8');
   }
   return { agentsDir, skillsDir };
+}
+
+/** The claude-shaped tree the rest of this suite deploys. */
+function renderTree(
+  agents: string[],
+  skills: string[],
+): { agentsDir: string; skillsDir: string } {
+  return renderTreeExt(agents, '.md', skills);
 }
 
 /** A hooks render tree carrying exactly the named hook ids, each registered on
@@ -365,6 +375,72 @@ describe('deploy prune — convergence to the render tree', () => {
     expect(existsSync(join(claude, 'agents', 'nico.md'))).toBe(false);
     // … the self-authored individual is inviolable
     expect(readFileSync(sidecar, 'utf-8')).toBe('NICO LIVED HISTORY\n');
+  });
+
+  // The orphan report reads a directory off disk, so it needs to know what an
+  // agent def LOOKS like — and that is the HARNESS's fact (`HarnessAdapter.agentExt`:
+  // claude `.md`, codex `.toml`), not a constant. Hardcoding `.md` did not make the
+  // report wrong-ish on codex; it made it EMPTY, always, which is indistinguishable
+  // from a clean target. Both harnesses are fixtured deliberately: a checker with
+  // only the claude fixture convicts only what it already knew.
+  const codex = (names: string[]) => ({
+    ...renderTreeExt(names, '.toml'),
+    harnessHome: '.codex',
+    agentExt: '.toml',
+  });
+
+  it('CODEX: an unattributable `.toml` agent is REPORTED (and a stray `.md` is not)', () => {
+    const home = tmp('v4-host-');
+    const dir = join(home, '.codex');
+    // An orphan from a pre-manifest codex deploy — it must be SHOWN. Beside it, a
+    // file that is not a codex agent def at all: reading this tree with claude's
+    // `.md` both misses the orphan and invents `NOTES` in its place.
+    mkdirSync(join(dir, 'agents'), { recursive: true });
+    writeFileSync(join(dir, 'agents', 'legacy-orphan.toml'), '# orphan\n');
+    writeFileSync(join(dir, 'agents', 'NOTES.md'), 'FOREIGN\n');
+
+    const { harnessHome, agentExt, ...tree } = codex(['mav']);
+    const lines: string[] = [];
+    deploySingle({
+      kind: 'agent',
+      scope: 'user',
+      tree,
+      home: dir,
+      harnessHome,
+      agentExt,
+      dry: true,
+      log: (l) => lines.push(l),
+      warn: () => {},
+    });
+    const out = lines.join('\n');
+    expect(out).toMatch(/UNATTRIBUTABLE/);
+    expect(out).toMatch(/\? legacy-orphan$/m);
+    expect(out).not.toMatch(/\? NOTES$/m);
+    // reported, never taken
+    expect(existsSync(join(dir, 'agents', 'legacy-orphan.toml'))).toBe(true);
+  });
+
+  it('CLAUDE: an unattributable `.md` agent is still REPORTED (and a stray `.toml` is not)', () => {
+    const claude = join(tmp('v4-host-'), '.claude');
+    mkdirSync(join(claude, 'agents'), { recursive: true });
+    writeFileSync(join(claude, 'agents', 'legacy-orphan.md'), '# orphan\n');
+    writeFileSync(join(claude, 'agents', 'draft.toml'), 'FOREIGN\n');
+
+    const lines: string[] = [];
+    deploySingle({
+      kind: 'agent',
+      scope: 'user',
+      tree: renderTree(['mav'], []),
+      home: claude,
+      dry: true,
+      log: (l) => lines.push(l),
+      warn: () => {},
+    });
+    const out = lines.join('\n');
+    expect(out).toMatch(/UNATTRIBUTABLE/);
+    expect(out).toMatch(/\? legacy-orphan$/m);
+    expect(out).not.toMatch(/\? draft$/m);
+    expect(existsSync(join(claude, 'agents', 'legacy-orphan.md'))).toBe(true);
   });
 
   it('hooks: a retired hook loses its workers AND its settings registration; foreign entries spared', () => {

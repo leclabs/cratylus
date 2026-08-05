@@ -17,6 +17,7 @@ import {
   type ArtifactSpec,
   type ConceptRecord,
   ExemplifyRefusal,
+  type RegisterPolicy,
   optimize,
   readManifest,
 } from '../../core/exemplify/index.js';
@@ -29,10 +30,56 @@ export interface OptimizeCommandOptions {
   prior?: string;
 }
 
+/** The plan's serialized register doctrine — patterns as source strings, since
+ *  JSON has no regex literal. The CLI compiles; the frame never defaults. */
+interface RegisterPolicyFile {
+  humanMarkers?: string[];
+  markerFlags?: string;
+  humanHitFloor?: number;
+  humanDensityFloor?: number;
+}
+
 interface PlanFile {
   reader?: string;
+  register?: RegisterPolicyFile;
   concepts?: ConceptRecord[];
   artifacts?: ArtifactSpec[];
+}
+
+/** Compile the plan's register block, or name what is missing. `conform` is
+ *  judged against the CORPUS's doctrine; an absent block is refused, never
+ *  defaulted — a default here would be the projector deciding what "human"
+ *  reads like (`s = ∅ ⇒ ⊥`). */
+function compileRegisterPolicy(
+  file: RegisterPolicyFile | undefined,
+): RegisterPolicy | string {
+  if (!file) {
+    return [
+      '--plan carries no `register` block, and there is no default.',
+      "`conform` is judged against YOUR corpus's human-register doctrine:",
+      '  "register": { "humanMarkers": ["\\\\bplease\\\\b", …],',
+      '                "markerFlags": "gi", "humanHitFloor": 3,',
+      '                "humanDensityFloor": 0.02 }',
+    ].join('\n');
+  }
+  const { humanMarkers, humanHitFloor, humanDensityFloor } = file;
+  if (!humanMarkers?.length) return 'plan.register.humanMarkers is empty';
+  if (typeof humanHitFloor !== 'number')
+    return 'plan.register.humanHitFloor is missing';
+  if (typeof humanDensityFloor !== 'number')
+    return 'plan.register.humanDensityFloor is missing';
+  const flags = file.markerFlags ?? 'gi';
+  if (!flags.includes('g'))
+    return "plan.register.markerFlags must include 'g' (the classifier counts every hit)";
+  try {
+    return {
+      humanMarkers: humanMarkers.map((p) => new RegExp(p, flags)),
+      humanHitFloor,
+      humanDensityFloor,
+    };
+  } catch (e) {
+    return `plan.register.humanMarkers: ${(e as Error).message}`;
+  }
 }
 
 export async function runOptimize(
@@ -43,8 +90,9 @@ export async function runOptimize(
       [
         'forge optimize: --plan is required.',
         'The semantic stages (conceptualize → signify → materialize) are LLM',
-        'passes: author the plan — { concepts: [{ gloss, anchor, home | delta,',
-        'factors?, rank? }], artifacts: [{ path, body }] } — and pass it here.',
+        'passes: author the plan — { register, concepts: [{ gloss, anchor,',
+        'home | delta, factors?, rank? }], artifacts: [{ path, body }] } — and',
+        'pass it here.',
         'No permissive default (s = ∅ ⇒ ⊥).',
       ].join('\n'),
     );
@@ -64,10 +112,16 @@ export async function runOptimize(
     );
     return 1;
   }
+  const register = compileRegisterPolicy(plan.register);
+  if (typeof register === 'string') {
+    console.error(`forge optimize: ${register}`);
+    return 1;
+  }
   try {
     const { manifest, written } = optimize({
       source,
       reader: plan.reader,
+      register,
       concepts: plan.concepts ?? [],
       artifacts: plan.artifacts ?? [],
       outDir: resolve(opts.out ?? 'optimized'),

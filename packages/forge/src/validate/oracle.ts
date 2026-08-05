@@ -14,9 +14,12 @@
 // would come back glossed; it does not.
 //
 // This is the doctrine-agnostic ALGORITHM (forge ENGINE): the isolation-driving
-// protocol + the no-prior detection. The one corpus-coupled datum — WHICH isolation
-// script (it carries the corpus's repo-path guard) — is INJECTED as `scriptPath`; the
-// script itself is a corpus asset (canon), never bundled here.
+// protocol + the no-prior DETECTION. Both corpus-coupled data are INJECTED: WHICH
+// isolation script (it carries the corpus's repo-path guard) as `scriptPath`, and
+// WHICH decode lexicon witnesses a generic prior as `noPriorMarkers` (`./policy.ts`
+// `Policy.noPriorMarkers`). The script is a corpus asset (canon) and so is the
+// lexicon — a set of ENGLISH phrasings is this corpus's language, not the engine's;
+// neither is bundled here.
 //
 // These calls hit the network + a live model — SLOW and non-deterministic. They
 // are NOT part of the hermetic `pnpm test` floor; the caller gates them behind
@@ -48,17 +51,14 @@ export function decodeCold(text: string, opts: DecodeOpts): string {
   }).trim();
 }
 
-/** The generic-prior "no established meaning" signals a cold reader emits. */
-const NO_PRIOR = [
-  /is ?n'?t a (real|standard|recognized|established|actual) (term|word)/i,
-  /\bnonsense\b/i,
-  /\bplaceholder\b/i,
-  /\b(coined|made[-\s]?up|invented|fabricated|fictional)\b/i,
-  /\bdo(es)? not (appear|exist)\b/i,
-  /\bno (established|standard|recognized|dictionary|known) (meaning|definition|term)\b/i,
-  /\bdon'?t (recognize|have) (this|any)\b/i,
-  /\bnot a (word|term) I\b/i,
-];
+export interface NonceControlOpts extends DecodeOpts {
+  /**
+   * The generic-prior "no established meaning" signals a cold reader emits — the
+   * injected corpus lexicon (`Policy.noPriorMarkers`). Required: an engine default
+   * here would bake one natural language into a doctrine-agnostic module.
+   */
+  readonly noPriorMarkers: readonly RegExp[];
+}
 
 export interface NonceControl {
   readonly nonce: string;
@@ -73,10 +73,14 @@ export interface NonceControl {
  * proof that NO corpus/registry gloss leaked into the reader. A false here means
  * the cold-oracle is warm (the whole gate is void), so the caller asserts it.
  */
-export function nonceControl(opts: DecodeOpts): NonceControl {
+export function nonceControl(opts: NonceControlOpts): NonceControl {
   // hex-with-a-vowel-cluster: pronounceable enough to look like a term, yet has
   // zero dictionary/registry footprint — a clean unknown.
   const nonce = `zqfm${randomBytes(3).toString('hex')}brindlewax`;
   const decode = decodeCold(nonce, opts);
-  return { nonce, decode, isolated: NO_PRIOR.some((re) => re.test(decode)) };
+  return {
+    nonce,
+    decode,
+    isolated: opts.noPriorMarkers.some((re) => re.test(decode)),
+  };
 }

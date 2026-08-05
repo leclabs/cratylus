@@ -140,9 +140,13 @@ export function nextKindRecord(
 }
 
 /** The kind's top-level dir under the deploy root, and how a name reads out of
- *  an entry there. */
-const KIND_ROOT: Record<string, { dir: string; suffix?: string }> = {
-  agent: { dir: 'agents', suffix: '.md' },
+ *  an entry there. An agent entry is `<name><agentExt>`, and the extension is the
+ *  HARNESS's — it is not a constant of this table, so the table only records THAT
+ *  the entry is extended, never with what. Naming `.md` here is what made codex
+ *  prune blind: a `.toml` tree filtered by `.md` matches nothing, and nothing
+ *  reads as "no orphans". */
+const KIND_ROOT: Record<string, { dir: string; extended?: boolean }> = {
+  agent: { dir: 'agents', extended: true },
   skill: { dir: 'skills' },
   hooks: { dir: 'hooks' },
 };
@@ -162,6 +166,7 @@ export function unattributable(
   kind: string,
   treeNames: string[],
   manifestNames: string[],
+  agentExt = '.md',
 ): string[] {
   const spec = KIND_ROOT[kind];
   if (!spec) {
@@ -171,10 +176,11 @@ export function unattributable(
   if (!existsSync(dir)) {
     return [];
   }
+  const suffix = spec.extended ? agentExt : undefined;
   const known = new Set([...treeNames, ...manifestNames]);
   return readdirSync(dir)
-    .filter((e) => (spec.suffix ? e.endsWith(spec.suffix) : true))
-    .map((e) => (spec.suffix ? e.slice(0, -spec.suffix.length) : e))
+    .filter((e) => (suffix ? e.endsWith(suffix) : true))
+    .map((e) => (suffix ? e.slice(0, -suffix.length) : e))
     .filter((n) => !known.has(n))
     .sort();
 }

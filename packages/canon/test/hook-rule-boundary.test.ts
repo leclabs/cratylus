@@ -15,7 +15,7 @@
 //       deploy target. Enforced by the COVERAGE table (no silent cap): both hook
 //       families converted, the root AGENTS.md CONVERTED, every other tracked AGENTS.md
 //       classified OUT-OF-SCOPE (a retired-sink remnant no rule cell may target).
-//   (b) accept()/REFLEXIVE — each hook + rule cell's canonical DEFINIENS passes the
+//   (b) accept()/REFLEXIVE — each hook + rule cell's canonical RESIDUE passes the
 //       static Universal floor (`accept.ts`), and the cells' targets pass REGENERABLE.
 //   (c) NO-DIVERGENCE — the committed target == the source cell's bytes, byte-for-
 //       byte (`regenerateTargets --check` finds zero drift). A hand-edit fails here.
@@ -85,21 +85,68 @@ function repoAgentsMd(): string[] {
     .sort();
 }
 
-// ── the homes map + accept plumbing for the hook cells ──────────────────────────
+// ── the homes map + accept plumbing for the hook + rule cells ───────────────────
+//
+// ONE ROSTER, TWO KINDS. `hook` and `rule` cells used to be walked by two loops that
+// differed in one thing only: the hook read `c.residue` and the rule read
+// `c.definiens` — two signs for MODEL's one `residue(c)`, bridged nowhere but here.
+// `RuleCell.residue` closed that, and the two loops collapsed into this roster.
+//
+// What SURVIVES is `definiens: c.residue`, and it is not a bridge: it is the honest
+// lift `residue → D`. A cell's authored payload has already paid `∖ fired(α)`; the
+// witness input `AcceptCell.definiens` is `D(c)`, the un-adjudicated text
+// `parsimonious()` reads in order to re-decide the subtraction for itself. Feeding a
+// residue in as D is the STRICTEST reading available — the leg must find nothing
+// left to subtract.
+
+/** A hook/rule source cell at the grain both the homes map and the accept lift read. */
+interface SourceCell {
+  readonly kind: 'hook' | 'rule';
+  /** α(c) — the anchor the homes map is keyed by. */
+  readonly slug: string;
+  /** The home id (`<kind>/<cell id>`). */
+  readonly home: string;
+  /** MODEL's `residue(c)` — the σ*-signified identity, post-subtraction. */
+  readonly residue: string;
+  readonly refs: readonly string[];
+}
+
+/** Every hook + rule source cell, kind-tagged. The ONE walk over the corpus. */
+async function sourceCells(): Promise<SourceCell[]> {
+  return [
+    ...(await allHookCells()).map(
+      (c): SourceCell => ({
+        kind: 'hook',
+        slug: c.id,
+        home: `hook/${c.id}`,
+        residue: c.residue,
+        refs: c.refs ?? [],
+      }),
+    ),
+    ...(await allRuleCells()).map(
+      (c): SourceCell => ({
+        kind: 'rule',
+        slug: c.slug,
+        home: `rule/${c.id}`,
+        residue: c.residue,
+        refs: c.refs ?? [],
+      }),
+    ),
+  ];
+}
+
+/** The accept grain: `residue → D`, the strictest lift (see above), not a bridge. */
+function acceptCellOf(c: SourceCell): AcceptCell {
+  return { kind: c.kind, slug: c.slug, definiens: c.residue, refs: c.refs };
+}
 
 /** One home per hook + rule anchor (the PARTITIONED claim over the source cells). */
 async function cellHomes(): Promise<Homes> {
   const homes = new Map<string, string[]>();
-  const add = (slug: string, id: string) => {
-    const b = homes.get(slug) ?? [];
-    b.push(id);
-    homes.set(slug, b);
-  };
-  for (const c of await allHookCells()) {
-    add(c.id, `hook/${c.id}`);
-  }
-  for (const c of await allRuleCells()) {
-    add(c.slug, `rule/${c.id}`);
+  for (const c of await sourceCells()) {
+    const b = homes.get(c.slug) ?? [];
+    b.push(c.home);
+    homes.set(c.slug, b);
   }
   return homes;
 }
@@ -204,25 +251,9 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
   });
 
   // ── (b) accept()/REFLEXIVE — the static Universal floor over every hook cell ─────
-  it('every hook + rule cell DEFINIENS passes the static Universal floor', async () => {
+  it('every hook + rule cell RESIDUE passes the static Universal floor', async () => {
     const homes = await cellHomes();
-    const cells: AcceptCell[] = [];
-    for (const c of await allHookCells()) {
-      cells.push({
-        kind: 'hook',
-        slug: c.id,
-        definiens: c.residue,
-        refs: c.refs ?? [],
-      });
-    }
-    for (const c of await allRuleCells()) {
-      cells.push({
-        kind: 'rule',
-        slug: c.slug,
-        definiens: c.definiens,
-        refs: c.refs ?? [],
-      });
-    }
+    const cells: AcceptCell[] = (await sourceCells()).map(acceptCellOf);
     const failures: string[] = [];
     for (const cell of cells) {
       const failing = failingLegs(
@@ -245,15 +276,9 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
 
   it('the accept ratchet is explicit + shrink-only (empty ⇔ clean floor)', async () => {
     const homes = await cellHomes();
-    const bySlug = new Map<string, AcceptCell>();
-    for (const c of await allHookCells()) {
-      bySlug.set(c.id, {
-        kind: 'hook',
-        slug: c.id,
-        definiens: c.residue,
-        refs: c.refs ?? [],
-      });
-    }
+    const bySlug = new Map<string, AcceptCell>(
+      (await sourceCells()).map((c) => [c.slug, acceptCellOf(c)]),
+    );
     for (const pin of ACCEPT_RATCHET) {
       const cell = bySlug.get(pin.slug);
       expect(cell, `ratchet pin ${pin.slug} names a live cell`).toBeDefined();

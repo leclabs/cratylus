@@ -16,12 +16,14 @@
 export type Rho = 'LLM' | 'human';
 export const RHO = {
   // static corpus surfaces (reader-density.test.ts)
+  // `D(c)` — the RAW post-`≜` text of a dimension value, pre-`∖ fired(α)`. A DIFFERENT
+  // object from a cell's `residue` below; the shared root word is not a shared concept.
   'dimension-definiens': 'LLM', // source cell
   'skill-description': 'LLM', // progressive-disclosure surface, read by the harness LLM
   'skill-prose': 'LLM', // projected SKILL.md body (outside fences)
   'genus-protocol': 'LLM', // verbatim(a) ⇒ ρ(a) = LLM — ship-whole, never a density exemption
   'agent-vector': 'LLM', // projected SOUL — scored at SOURCE grain (description · archetype · preamble)
-  'cell-declaration': 'LLM', // a cell's σ*-signified identity: rule `definiens` · hook `residue`
+  'cell-declaration': 'LLM', // a cell's σ*-signified identity: `residue` on EVERY cell shape
   'rule-target-body': 'LLM', // a rule's VERBATIM projected payload (`/AGENTS.md`) — NOT MODEL's body(c)
   // runtime frontiers (reader-reach.test.ts)
   'task-file': 'LLM', // praxis: blind-dispatchable execution spec = the dispatch prompt

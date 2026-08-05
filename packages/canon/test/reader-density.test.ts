@@ -182,13 +182,16 @@ async function allSurfaces(): Promise<Surface[]> {
   // which every session loads on entry. It went unscanned while being the most
   // widely-read artifact the corpus emits.
   for (const rel of await collect('rules/*.ts')) {
-    const c = await firstExport<{ definiens: string; body: string }>(
+    // `residue`, not `definiens` — a cell's authored identity has already paid
+    // `∖ fired(α)`. The ρ-class `dimension-definiens` below is the OTHER object
+    // (raw `D`, pre-subtraction) and keeps its own sign; see `rule-cell.ts`.
+    const c = await firstExport<{ residue: string; body: string }>(
       join(srcRoot, rel),
     );
     surfaces.push({
-      label: `rule ${rel} definiens`,
+      label: `rule ${rel} residue`,
       cls: 'cell-declaration',
-      text: c.definiens,
+      text: c.residue,
     });
     surfaces.push({
       label: `rule ${rel} body`,

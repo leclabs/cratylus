@@ -7,43 +7,47 @@
  * politeness/narrative marker lexicon that R=LLM bodies carry at density 0 —
  * so the gate can refuse a human-register emission deterministically. It is
  * an under-approximation by design: passing it is necessary, not sufficient.
+ *
+ * DOCTRINE IS INJECTED. The marker lexicon and the two floors are the CORPUS's
+ * ({@link RegisterPolicy}, supplied through `Policy.register`), never the
+ * projector's: the lexicon is a set of phrasings in one natural language, and the
+ * floors are a calibration swept from one corpus's prose. This module owns only
+ * the predicate that reads them — there is no default here, because a default
+ * would be a doctrine-agnostic module deciding what "human" reads like.
  */
+
+import type { RegisterPolicy } from '../../validate/policy.js';
+
+export type { RegisterPolicy };
 
 export type Register = 'LLM' | 'human';
 
-/** Human-register markers: politeness, narrative filler, courtesy address. */
-const HUMAN_MARKERS: readonly RegExp[] = [
-  /\bplease\b/gi,
-  /\bthanks?\b/gi,
-  /\bthank you\b/gi,
-  /\bhi there\b/gi,
-  /\bwelcome\b/gi,
-  /\bfeel free\b/gi,
-  /\bdid we mention\b/gi,
-  /\bwe (?:would|really|care|repeat|prefer|like|appreciate)\b/gi,
-  /\bremember to\b/gi,
-  /\bso, /gi,
-  /\bagain: /gi,
-  /\ba lot\b/gi,
-  /!(?=\s|$)/g,
-];
-
 /** Every human-register marker hit in `text` (the refusal's evidence list). */
-export function humanMarkerHits(text: string): string[] {
+export function humanMarkerHits(
+  text: string,
+  policy: RegisterPolicy,
+): string[] {
   const hits: string[] = [];
-  for (const marker of HUMAN_MARKERS) {
+  for (const marker of policy.humanMarkers) {
     for (const m of text.matchAll(marker)) hits.push(m[0]);
   }
   return hits;
 }
 
 /**
- * Classify a body's register. Human ⇔ marker count ≥ 3, or ≥ 1 with marker
- * density ≥ 2 per 100 words (a short courteous paragraph is human even with
- * few absolute hits). Everything else is LLM.
+ * Classify a body's register against the corpus's own doctrine. Human ⇔ marker
+ * count ≥ `humanHitFloor`, or ≥ 1 with marker density ≥ `humanDensityFloor` (a
+ * short courteous paragraph is human even with few absolute hits). Everything
+ * else is LLM.
  */
-export function classifyRegister(text: string): Register {
-  const hits = humanMarkerHits(text).length;
+export function classifyRegister(
+  text: string,
+  policy: RegisterPolicy,
+): Register {
+  const hits = humanMarkerHits(text, policy).length;
   const words = text.split(/\s+/).filter(Boolean).length || 1;
-  return hits >= 3 || (hits >= 1 && hits / words >= 0.02) ? 'human' : 'LLM';
+  return hits >= policy.humanHitFloor ||
+    (hits >= 1 && hits / words >= policy.humanDensityFloor)
+    ? 'human'
+    : 'LLM';
 }
