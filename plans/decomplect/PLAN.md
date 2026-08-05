@@ -47,6 +47,29 @@ packages. No structural change, and all 18 `agent-runtime` occurrences in the re
 bins held. Historical citations of `fe084dd1` were left alone, as were `plans/.retired/` and
 `completed/`: a record edited to match today is no longer a record.
 
+**MVP publish-readiness ✅ (2026-08-05).** The architecture ratchet is **26 → 1**. Both remaining
+API-surface shards landed, each retiring its pin **by repair rather than exemption**, and the render
+oracle did not move for either — the same structural proof the `schema` extraction earned.
+
+- **`t-runtime-capability-vocabulary`** — the `schema → runtime` edge is gone and `RuntimePlugin`
+  never moved. Schema states only that a capability has a name; canon declares the members. The
+  shard's own proposed remedy stayed refuted.
+- **`t-agent-plugin-cut`** — `AgentPlugin`/`defineAgentPlugin` moved to the schema, retiring the last
+  **property-2** breach. There was no ownership question: the contract imported one type from the
+  schema and the factory is `(plugin) => plugin`. Half the cut is **⊥** — `preamble` and `manifest`
+  are NOT grouped, because the only thing they share is having to travel, and grouping by a lifecycle
+  property is how `anatomy` became a palimpsest.
+
+**The one surviving ratchet entry is property 1's pinned breach** — the only one that cannot be
+repaired by refactoring, because `bin-name-single-home.test.ts` REQUIRES the import. Amending a
+counter-gate is a design decision owed before the repair.
+
+**The gates themselves were the bigger finding.** `typecheck:test` was unwatched, the render oracle
+existed only as prose in shard acceptance lines, and there was no CI at all — every green claim was a
+claim about somebody's laptop. All three are now real, and the first genuine cold-clone run found
+**four** further defects the warm tree had been hiding, including that the installer never creates a
+workspace bin symlink when `dist/` is absent at install time.
+
 **Act 2 ✅ LANDED (`48baaddd`) — `agent-schema` exists.** Canon **cells** importing the projector:
 **22 → 0**. Render oracle unmoved at `fe084dd1d531948979dc386713c3f688c96088ab` — the proof the change
 was structural and altered no meaning. Suite green uncached, 9 tasks. Architecture ratchet **26 → 3**.
