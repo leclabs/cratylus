@@ -47,6 +47,21 @@ jobs:
       - name: lint
         run: pnpm lint
 
+      # ORACLE BEFORE TEST, and the order is load-bearing.
+      #
+      # This renders both harness targets from a clean out-dir and compares them
+      # against the one tracked baseline — catching a projection change the unit
+      # suite cannot see, because the unit suite never renders anything.
+      #
+      # It also PRODUCES `.render-ts` and `.render-ts-codex`, which
+      # `canon/test/harness-parity.test.ts` requires: that gate compares what each
+      # harness deploys and fails as vacuous when a render is absent. The renders
+      # are gitignored build output, so on a fresh checkout they do not exist and
+      # nothing in the turbo task graph makes them. Running tests first was green
+      # only on a machine that had projected at some point in the past.
+      - name: render oracle
+        run: pnpm oracle
+
       # `test` depends on `typecheck:test` in turbo.json, so this leg type-checks
       # the test tree as well. The tests ARE the enforcement layer for every
       # naming and shape guarantee here; an unchecked test tree is an unchecked
@@ -56,9 +71,3 @@ jobs:
 
       - name: typecheck
         run: pnpm typecheck
-
-      # Renders BOTH harness targets from a clean out-dir and compares against
-      # the one tracked baseline. Catches a projection change that the unit
-      # suite cannot see, because the unit suite never renders anything.
-      - name: render oracle
-        run: pnpm oracle

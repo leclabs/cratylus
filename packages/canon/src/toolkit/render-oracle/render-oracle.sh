@@ -42,10 +42,27 @@ expected_file="$canon/.render-oracle"
 claude_out="$canon/.render-ts"
 codex_out="$canon/.render-ts-codex"
 
+# The build-time CLI's entry, read out of forge's OWN manifest.
+#
+# NOT `node_modules/.bin/cratylus`. The installer creates a workspace bin symlink only if
+# the TARGET FILE EXISTS AT INSTALL TIME — verified by A/B on a clean tree: with
+# `dist/` present the link appears, with `dist/` absent it silently does not. A
+# real cold clone runs checkout -> install -> build, so at install time `dist/`
+# has never been built and the link is never created. This gate is the one thing
+# that MUST work on a cold clone, because that is exactly what CI is.
+#
+# Reading `bin` from the manifest keeps one home for the entry — the same key npm
+# reads — and makes the gate independent of install ORDER.
+cli() {
+  node -e 'const p=require("./packages/forge/package.json");process.stdout.write(Object.values(p.bin)[0])'
+}
+
 compute() {
   rm -rf "$claude_out" "$codex_out"
-  pnpm canon:project >/dev/null 2>&1
-  pnpm canon:project:codex >/dev/null 2>&1
+  pnpm build >/dev/null 2>&1
+  entry="packages/forge/$(cli)"
+  node "$entry" project --harness claude --out "$claude_out" >/dev/null 2>&1
+  node "$entry" project --harness codex  --out "$codex_out"  >/dev/null 2>&1
   find "$claude_out" "$codex_out" -type f | sort | xargs shasum | shasum | awk '{print $1}'
 }
 

@@ -38,7 +38,7 @@
     "praxis": "sh packages/canon/src/toolkit/praxis/praxis.sh",
     "oracle": "sh packages/canon/src/toolkit/render-oracle/render-oracle.sh check",
     "oracle:update": "sh packages/canon/src/toolkit/render-oracle/render-oracle.sh update",
-    "verify": "pnpm lint && pnpm test && pnpm oracle"
+    "verify": "pnpm lint && pnpm oracle && pnpm test"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

@@ -55,6 +55,32 @@ function emitted(capability: string): string {
 let claudeShim = '';
 let codexShim = '';
 
+/**
+ * The shipped build-time CLI's entry, resolved from forge's OWN manifest.
+ *
+ * NOT `node_modules/.bin/cratylus`, and the difference is a real defect this gate
+ * used to have. pnpm creates a workspace bin symlink only if the TARGET FILE
+ * EXISTS AT INSTALL TIME — proven by an A/B on a clean tree: with `dist/` present
+ * the link appears, with `dist/` absent it silently does not. A genuine cold clone
+ * runs checkout -> install -> build -> test, so at install time `dist/` has never
+ * been built and the link is never created. This suite passed only because nobody
+ * had ever run it on a tree that cold; the first CI run would have been red.
+ *
+ * Reading `bin` out of the manifest keeps ONE home for the entry path — the same
+ * key npm itself reads — and makes the gate independent of install ORDER while
+ * still driving the shipped command rather than a private code path.
+ */
+function buildCli(): string {
+  const pkgPath = join(canonRoot, '..', 'forge', 'package.json');
+  const bin = (
+    JSON.parse(readFileSync(pkgPath, 'utf8')) as {
+      bin: Record<string, string>;
+    }
+  ).bin;
+  const entry = Object.values(bin)[0] as string;
+  return join(canonRoot, '..', 'forge', entry);
+}
+
 beforeAll(async () => {
   const base = mkdtempSync(join(tmpdir(), 'runtime-shim-projection-'));
   const claudeOut = join(base, 'claude');
@@ -73,8 +99,9 @@ beforeAll(async () => {
   // repository's own `agents.config.ts`. Driving the private `project-cli-codex.ts`
   // here was what let the fork exist at all; there is no private codex CLI to drive.
   execFileSync(
-    join(canonRoot, 'node_modules', '.bin', 'cratylus'),
+    process.execPath,
     [
+      buildCli(),
       'project',
       '--harness',
       'codex',

@@ -8,8 +8,22 @@
     "typecheck": {
       "dependsOn": ["^build"]
     },
+    // `build` — the package's OWN — and not just `^build`.
+    //
+    // A test tree may reference its own package through its PUBLIC specifier
+    // rather than by relative path: `canon/test/runtime-shim.test.ts` drives the
+    // shipped `cratylus project` over the repo's `agents.config.ts`, and that
+    // config extends `@cratylus/canon` — the PACKAGE, i.e. this package's `dist`.
+    // `^build` builds a package's DEPENDENCIES and never the package itself, so on
+    // a cold tree `tsc` ran against a `dist` that did not exist yet.
+    //
+    // This surfaced the moment `typecheck:test` became a dependency of `test`:
+    // canon's `test` script had always carried a manual `pnpm run build &&` for
+    // exactly this reason, and the type-check inherited the requirement without
+    // the workaround. Declaring it here is the fix rather than copying the prefix,
+    // because the dependency is a fact about the task graph and belongs in it.
     "typecheck:test": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["^build", "build"]
     },
     // test — NOT CACHED, deliberately.
     //
@@ -43,6 +57,29 @@
     // that only the release runs is a gate that fails at the worst moment.
     "test": {
       "dependsOn": ["^build", "typecheck:test"],
+      "cache": false
+    },
+    // canon's suite drives BUILT ARTIFACTS of packages it does not depend on.
+    //
+    // `memory-nudge.test.ts` execs `invoke/dist/bin.js` — the real run-time
+    // dispatcher, deliberately, because the gate's whole point is that the bin is
+    // REAL rather than a mock. But canon depends on forge, runtime and schema, not
+    // on `invoke`, so `^build` never built it and the file did not exist on a cold
+    // tree. It passed locally only because a previous run had left the artifact
+    // behind; a genuine cold clone — checkout, install, build, test — failed.
+    //
+    // Declared as an explicit cross-package task edge rather than by adding a
+    // devDependency: the fact is "this suite needs that artifact built", which is a
+    // statement about the TASK GRAPH. Making it a package dependency would put a
+    // canon → invoke edge in the manifest to satisfy a test fixture, which is a
+    // worse lie than the one it fixes.
+    "@cratylus/canon#test": {
+      "dependsOn": [
+        "^build",
+        "build",
+        "typecheck:test",
+        "@cratylus/invoke#build"
+      ],
       "cache": false
     },
     "dev": {
