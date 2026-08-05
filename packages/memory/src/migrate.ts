@@ -8,8 +8,9 @@ import { monotonicFactory } from './ulid.js';
  * One-time migration: convert a live agent's markdown `EPISODIC.md` into the
  * portable JSONL `EPISODIC.jsonl` event log, losing nothing.
  *
- * This is the machinery half of the consent-gated `migrate-live-episodic` task
- * (plans/memory-model-redesign). It is **content-preserving by construction**:
+ * This is the machinery half only; running it against a live agent home is
+ * consent-gated and stays the operator's act, which is why nothing here writes
+ * without being called. It is **content-preserving by construction**:
  * every memory item in the markdown becomes exactly one OPEN record, and
  * {@link assertNoLoss} proves the item set survives the round trip before any
  * file is written.

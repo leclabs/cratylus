@@ -1,9 +1,14 @@
 # Release-audit checklist — per-adapter re-verification
 
-Dated: 2026-07-03. Re-run before any release that touches adapters: each row's contract sheet
-(`plans/interop-hardening/completed/harness-landscape-research.RETURN.md` §2) is re-checked against
-the harness's current docs; UNVERIFIED items below are the standing re-verification set — each
-listed exactly once, retired only by a primary source.
+Dated: 2026-07-03. Re-run before any release that touches adapters: each row below IS that
+adapter's contract sheet, and every claim in it is re-checked against the harness's own current
+first-party documentation. UNVERIFIED items are the standing re-verification set — each listed
+exactly once, retired only by a primary source.
+
+A bracketed mark (`[CX1]`, `[OC2]`, …) records that the claim beside it was confirmed first-hand
+during the 2026-07-02 harness-landscape audit. It is an audit mark, not a link: re-verification
+always re-fetches the harness's own docs, never an intermediate ledger, so nothing on this page
+depends on a document other than this one.
 
 | Adapter     | Re-verify                                                                                                                                                                                                                                                                                              |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

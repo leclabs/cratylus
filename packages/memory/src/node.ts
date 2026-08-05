@@ -9,7 +9,7 @@ import { homedir, hostname } from 'node:os';
 import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
 
 /**
- * The scope resolver (plans/scoped-memory-v2 SPEC D3): `node(cwd, host)` — the
+ * The scope resolver: `node(cwd, host)` — the
  * nearest ancestor of `cwd` (reflexive: `cwd` itself qualifies) holding a
  * boundary marker. **Total** over stored record fields: every `(cwd, host)`
  * resolves to some node; a nonexistent `cwd` folds to its nearest existing

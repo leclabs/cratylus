@@ -47,8 +47,11 @@ memory encode --name <name> --body '…'
 never absent). `body` is any JSON value: captured cheap and open, routed later by dream over the fold
 manifest. v1 records (`scope`/`path` fields) remain readable as inert data and fold to the `legacy` bucket.
 
-The full contract (node semantics, route targets, rituals) lives in `AGENTS.md` and
-`plans/scoped-memory-v2/SPEC.md`.
+Each half of the contract has exactly one home, and this README restates none of it: node semantics
+in `src/node.ts` (the resolver, and what a node MEANS — where a record was captured, never what it
+is about), the route target set in `src/route.ts` (`SEMANTIC · PROCEDURAL · EPISODIC`, with `drop`
+modelled as the empty target set rather than a fourth store), and the rituals in the `dream` and
+`wake` skill cells under `packages/canon/src/skills/`.
 
 ## Build
 

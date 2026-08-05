@@ -1,14 +1,17 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // ⚠ PROVISIONAL PATH — `ports/provisional-v9.ts` is a PLACEHOLDER, not a name.
 //
-// This file realizes the mechanism of the endogenous-pacemaker capability
-// (plans/close-out/pending/V9-heartbeat-mechanism.md) while its ANCHOR is still
-// undiscovered. Under `cratylism` a name is derived by cold verification, never
+// This file realizes the mechanism of the endogenous-pacemaker capability while
+// its ANCHOR is still undiscovered. The capability, stated here so this header
+// leans on no other document: an endogenous pulse on a cadence that SAMPLES a
+// pressure/salience gate to decide whether a cognitive cycle runs — it never
+// CLOCKS one. Under `cratylism` a name is derived by cold verification, never
 // coined — so the capability, the `RuntimePlugin` port field, and the skill
 // directory are DELIBERATELY unnamed here. `provisional-v9` encodes only the
 // shard that produced the file; it asserts nothing about the concept and is not
 // a candidate signifier. It is expected to be `git mv`'d once /signify derives
-// the anchor (plan `heartbeat-organ` O4, where `⊥` is a legal answer).
+// the anchor — where `⊥` is a legal answer, and a ⊥ leaves this path standing
+// rather than licensing a coinage.
 //
 // Deliberately NOT done here, and deliberately NOT to be done by a later editor
 // before the derivation lands:

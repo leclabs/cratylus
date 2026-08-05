@@ -1,8 +1,8 @@
 import { isValidUlid } from './ulid.js';
 
 /**
- * An EPISODIC record as written at capture time — minimal and **open**
- * (plans/scoped-memory-v2 SPEC D2). Encode derives `{session?, host, cwd}` from
+ * An EPISODIC record as written at capture time — minimal and **open**.
+ * Encode derives `{session?, host, cwd}` from
  * the process environment — the caller supplies only `body` (and optional
  * `tags`). No `kind`/taxonomy is forced here; the Dreamer routes later by
  * reasoning over `body`. Scope is NOT stored: it is `node(cwd, host)`, computed
@@ -10,7 +10,7 @@ import { isValidUlid } from './ulid.js';
  *
  * v1 legacy fields (`scope`, `path`, `routes`) remain parseable as **inert
  * data** — they never route. A record without `cwd` folds to the explicit
- * `legacy` bucket (SPEC D3).
+ * `legacy` bucket, which is what keeps the resolver total (src/node.ts).
  */
 export interface EpisodicRecord {
   /** ULID — lexicographically time-sortable; orders events in the log. */

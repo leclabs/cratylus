@@ -2,8 +2,10 @@ import { type NodeConfig, resolveNode } from './node.js';
 import type { EpisodicRecord } from './record.js';
 
 /**
- * Dream pass 1 (plans/scoped-memory-v2 SPEC D4): the deterministic fold from
- * the live log to the routing manifest, `record ↦ node(cwd)`. The fold is the
+ * Dream pass 1 — the deterministic half of the two-pass dream, and the whole of
+ * it that is a program: the fold from the live log to the routing manifest,
+ * `record ↦ node(cwd)`. Pass 2 is the semantic routing over this manifest
+ * (`route.ts`), which is the only part that needs an agent. The fold is the
  * ONLY scope authority — a record's `scope`/`tags` fields never participate.
  * Total: a record without `cwd` (v1 / migrated) lands in the explicit `legacy`
  * bucket; the fold never throws on any parseable record.

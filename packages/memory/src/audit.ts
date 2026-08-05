@@ -8,8 +8,9 @@ import { DEFAULT_MARKERS, canonical } from './node.js';
 
 /**
  * The scope-pollution auditor: a deterministic detector over an agent home's
- * v2 resident stores (`SEMANTIC.md`, `PROCEDURAL.md` — plans/scoped-memory-v2
- * SPEC D1/D5) for markers that belong at a project/plan node. The post-dream
+ * resident stores — `SEMANTIC.md` and `PROCEDURAL.md`, the two shared-home
+ * partitions of the route target set in `route.ts` — for markers that belong at
+ * a project or plan node rather than in an agent's home. The post-dream
  * invariant is that both files load whole AND audit clean; this module is the
  * falsifier and dream's exit gate.
  *

@@ -50,11 +50,30 @@ plan.** Draining into plan-local machinery only looks like draining.
    shrink-only — but it must be a deliberate shrink, not a silent one.
 5. **Then** delete `plans/decomplect/`, and only then.
 
+## Shards
+
+| shard                             | state       | deps | yield                                                |
+| --------------------------------- | ----------- | ---- | ---------------------------------------------------- |
+| `completed/plan-path-veracity.md` | `completed` | —    | PLAN-PATH VERACITY, riding `command-veracity`'s walk |
+
+`plan-path-veracity` was filed as a stub while this plan was executing, promoted with its spec, and
+landed: thirteen live plan-path citations across six retired plans repaired, and a second law added
+to `command-veracity.test.ts` so the class cannot recur silently. It also settles the closed-record
+question that `command-veracity` had only handled by path — a recorded turn is now recognised by the
+capture banner its producer writes, so a fixture directory is no longer a scope decision.
+
+Waves: one. `plan-path-veracity` depends on nothing in this plan and gates nothing in it; it is a
+defect this plan's own retirement mints, closed ahead of the retirement rather than after it.
+
 ## Acceptance
 
 - Every law listed in (1) has a home that survives `plans/` being empty, and a reader with
   zero project knowledge can find it from the concept, not from a path into an archive.
-- No live source cites a deleted path. Today three do: `plan-set.ts`,
-  `record-retrofit-notice.test.ts`, `command-veracity.test.ts`.
+- No live source cites a deleted path, and a gate says so rather than a sweep. **Met** by
+  `plan-path-veracity`: `command-veracity.test.ts` now carries a second law over the same walk, and
+  the thirteen standing citations are repaired. (The three named when this plan was written —
+  `plan-set.ts`, `record-retrofit-notice.test.ts`, `command-veracity.test.ts` — cited
+  `plans/.retired/`, a path that cannot exist; that is a MENTION of an absence, and the law rules it
+  out by construction rather than by exemption.)
 - `plans/decomplect/` is gone and the full suite is green with no gate made dark — proven by
   a leg that fails when a roster or scan reaches zero items, not merely by absence of red.

@@ -13,8 +13,9 @@ import { STALE_MS } from './lock.js';
 import { shortHost } from './node.js';
 
 /**
- * The session-liveness registry (plans/run-the-business · memiso-0) — the
- * foundational primitive of the memory-session-isolation sub-DAG.
+ * The session-liveness registry — the foundational primitive of memory session
+ * isolation. Everything else in that mechanism is a filter over the single
+ * question this module answers, so it is built first and depends on none of it.
  *
  * The defect it exists to fix: two concurrent sessions of one agent in one node
  * collide in memory — orient binds a plan a live sibling is executing, and

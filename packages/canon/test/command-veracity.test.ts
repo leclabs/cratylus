@@ -29,6 +29,10 @@
 //     the proof: it must cite dead commands in order to test for them, and an
 //     unqualified scan convicts it for doing its job — the meta-gate's "haystack
 //     contains the needle" hazard, in its own source.
+//   - a CLOSED RECORD — a verbatim transcription of a turn that happened. Same
+//     use/mention line, one step further: the turn really did say that, and holding
+//     a transcription to today's truth would forbid transcribing accurately. This
+//     one is recognised by CONTENT (see the discriminator below), not by path.
 //   - `node_modules`, `graphify-out`, `dist` — not authored here.
 //
 // THE RATCHET IS GONE, AT ZERO. It held four pins, all naming one defect record inside
@@ -45,9 +49,62 @@
 // in any workspace package's. Workspace scripts count because `pnpm --filter <pkg>
 // <script>` and an in-package invocation are both legitimate. pnpm's own verbs are
 // skipped by an explicit roster: a builtin is not a claim about this repository.
+//
+// ─────────────────────────────────────────────────────────────────────────────
+// PLAN-PATH VERACITY — the second law, over the SAME walk.
+//
+// A text that cites `plans/<plan>/…` as the warrant for a claim asserts that a
+// reader can go read it. `retire` MEANS DELETE, so every retirement mints a batch
+// of false assertions of exactly that kind, and they are worse than a dead script
+// name: a dead `pnpm foo` fails loudly the moment a reader tries it, whereas a dead
+// path is discovered only by someone who went looking for the evidence — the reader
+// who was doing the right thing. Thirteen were standing when this law was written,
+// naming six plans retired long ago.
+//
+// The repair is never to re-point the path. A retired plan's bytes are in git, which
+// is precisely WHY deletion is legal; but a live source that leans on git history has
+// simply moved its dangle one indirection out. Repair means the claim stands on its
+// own — the citation's cargo inlined, or the claim withdrawn.
+//
+// MENTION vs CITATION, and it is the whole design. `plans/` tokens appear in this
+// corpus for four reasons, and only one of them is a citation:
+//   - a SHAPE, not a path — `plans/<plan>/<state>/`, `plans/*/spec.mjs`,
+//     `plans/**/CLAUDE.md`, `plans/[^/]+` inside a sed program. The matcher takes
+//     only fully LITERAL segments, so a metavariable or a glob is not a path at all.
+//   - a path in ANOTHER tree — `<target>/plans/founding/` is what `deploy` writes
+//     into someone else's repo. A citation is repo-relative; a token preceded by a
+//     path character names a location this tree cannot resolve and must not judge.
+//   - a MENTION inside a CLOSED RECORD — see the discriminator below.
+//   - a CITATION: a literal, repo-relative plan path in a source a reader acts on.
+//
+// THE CLOSED-RECORD DISCRIMINATOR — derived from what a file IS, never from where
+// it sits. `stance-guardrail.sh` writes each turn payload it hands the judge under a
+// fixed capture banner, and the tracked fixtures are those payloads byte-identical.
+// A file that OPENS with that banner is a verbatim transcription of a turn that
+// really happened, at a time when its paths really did resolve. Rewriting one would
+// falsify the record — evidence restated as the present — and this corpus has already
+// paid for that mistake once. So the exemption keys on the banner, which the producer
+// controls, not on a fixture directory, which the next author controls: a third
+// fixture dir is spared automatically, a `.txt` that is prose is gated automatically,
+// and a rename from `.txt` to `.md` changes nothing. `TURN_CAPTURE_BANNER` is held to
+// the producer's own text by a leg below, so the discriminator cannot rot silently.
+//
+// `plans/**` IS OUT, and for the property, not for convenience. That subtree is the
+// record system whose own lifecycle DELETES plan directories; a retirement plan must
+// be able to name the directory it retires, and a gate that forbids naming a path in
+// order to delete it forbids the mechanism from documenting itself. Plan-to-plan
+// references live inside a system where expiry is designed. The class this law names
+// is a citation that ESCAPED that system into a source with no other warrant.
+//
+// REACH is measured on MENTIONS, not citations, and deliberately. The corpus's honest
+// steady state is zero live citations — every one of them is a defect — so a reach leg
+// counting citations would read green for having looked at nothing the day the corpus
+// went clean. `planPathMentions()` scans every tracked text file with no exclusion at
+// all; it is the proof that the matcher fires, and it stays large while the citation
+// set stays empty. That is what separates "found nothing" from "clean".
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -122,12 +179,89 @@ function tracked(): string[] {
     .filter(Boolean);
 }
 
+/** The tracked files that hold authored TEXT at all. */
+const TEXT = /\.(ts|tsx|mjs|js|md|sh|json|ya?ml|txt)$/;
+
+/**
+ * The banner `stance-guardrail.sh` puts at the head of every turn payload it hands
+ * the judge. Held to the producer's own source by a leg below.
+ */
+const TURN_CAPTURE_BANNER =
+  '=== OPERATOR (most recent instruction — the authorization context) ===';
+
+/**
+ * Is this file a CLOSED RECORD — a verbatim transcription of a turn that happened?
+ *
+ * Decided by what the file IS: it opens with the capture banner, which is what makes
+ * it byte-identical to what the judge was handed. A live document that merely QUOTES
+ * a transcript mid-body is not one, and is gated normally.
+ */
+function isTranscript(text: string): boolean {
+  return text.startsWith(TURN_CAPTURE_BANNER);
+}
+
 /** IN-scope ⇔ a reader could act on it today. Every exclusion is argued in the header. */
 function inScope(rel: string): boolean {
   if (/^plans\/[^/]+\/completed\//.test(rel)) return false;
   if (rel.includes('/test/') || rel.endsWith('.test.ts')) return false;
   if (rel.startsWith('graphify-out/')) return false;
-  return /\.(ts|tsx|mjs|js|md|sh|json|ya?ml)$/.test(rel);
+  return TEXT.test(rel);
+}
+
+/** One authored line, with the two facts a matcher needs about its voice. */
+interface Line {
+  readonly file: string;
+  readonly line: number;
+  readonly text: string;
+  readonly inFence: boolean;
+  readonly wholeFileIsCode: boolean;
+}
+
+/**
+ * THE ONE WALK. Every in-scope, non-transcript tracked file, line by line. Both laws
+ * below read this; neither walks the tree a second time, so a scope ruling argued
+ * once cannot come apart between them.
+ */
+function authoredLines(): Line[] {
+  const out: Line[] = [];
+  for (const rel of tracked().filter(inScope)) {
+    let text: string;
+    try {
+      text = readFileSync(join(repoRoot, rel), 'utf8');
+    } catch {
+      continue;
+    }
+    if (isTranscript(text)) continue;
+    const wholeFileIsCode = /\.sh$/.test(rel);
+    let inFence = false;
+    text.split('\n').forEach((lineText, i) => {
+      if (/^\s*```/.test(lineText)) {
+        inFence = !inFence;
+        return;
+      }
+      out.push({
+        file: rel,
+        line: i + 1,
+        text: lineText,
+        inFence,
+        wholeFileIsCode,
+      });
+    });
+  }
+  return out;
+}
+
+/** Every tracked text file that IS a closed record. Membership is read, never listed. */
+function transcripts(): string[] {
+  return tracked()
+    .filter((f) => TEXT.test(f))
+    .filter((f) => {
+      try {
+        return isTranscript(readFileSync(join(repoRoot, f), 'utf8'));
+      } catch {
+        return false;
+      }
+    });
 }
 
 /** Every script key declared anywhere in the workspace. */
@@ -177,35 +311,79 @@ function codeSpans(
  */
 function citations(): Citation[] {
   const out: Citation[] = [];
-  for (const rel of tracked().filter(inScope)) {
+  for (const ln of authoredLines()) {
+    for (const span of codeSpans(ln.text, ln.inFence, ln.wholeFileIsCode)) {
+      for (const m of span.matchAll(RUN)) {
+        const leading = m[1] ?? '';
+        const isNpm = /\bnpm\s/.test(m[0]) && !/\bpnpm\s/.test(m[0]);
+        const script = m[3] as string;
+        // npm has no script shorthand: without `run`, it is a builtin or prose.
+        if (isNpm && !m[2]) continue;
+        if (PNPM_BUILTINS.has(script) && !m[2]) continue;
+        if (!/[a-zA-Z]/.test(script)) continue;
+        if (leading.includes('dlx') || leading.includes('exec')) continue;
+        out.push({ file: ln.file, line: ln.line, script, raw: m[0] });
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * A repo-relative `plans/<…>` path, every segment LITERAL.
+ *
+ * Leading guard: the token must not be preceded by a path character, so
+ * `<target>/plans/founding/` — a path in a tree this repo writes but does not own —
+ * is not a citation about here. Segments are `[A-Za-z0-9_][A-Za-z0-9._-]*`, which is
+ * what excludes a shape (`plans/<plan>/`), a glob (a `plans` star segment), a shell
+ * expansion (`plans/${plan}`), a regex fragment (`plans/[^/]+`) and the
+ * dot-directory `plans/.retired/` — none of which is a path a reader can open, and
+ * the last of which is named in the corpus precisely to say it no longer exists.
+ */
+const PLAN_PATH =
+  /(?:^|[^A-Za-z0-9_./-])(plans\/[A-Za-z0-9_][A-Za-z0-9._-]*(?:\/[A-Za-z0-9_][A-Za-z0-9._-]*)*)/g;
+
+function planPathsIn(text: string): string[] {
+  return [...text.matchAll(PLAN_PATH)].map((m) => m[1] as string);
+}
+
+interface PathCitation {
+  readonly file: string;
+  readonly line: number;
+  readonly path: string;
+}
+
+/**
+ * Every `plans/<…>` path token in every tracked text file — history, test specimen,
+ * plan-to-plan reference and all. NOT the law's subject; the law's REACH. It is what
+ * proves the matcher fires on a corpus whose citation set is legitimately empty.
+ */
+function planPathMentions(): PathCitation[] {
+  const out: PathCitation[] = [];
+  for (const rel of tracked().filter(
+    (f) => TEXT.test(f) && !f.startsWith('graphify-out/'),
+  )) {
     let text: string;
     try {
       text = readFileSync(join(repoRoot, rel), 'utf8');
     } catch {
       continue;
     }
-    const wholeFileIsCode =
-      /\.(sh|mjs|ya?ml|json)$/.test(rel) === false ? false : /\.sh$/.test(rel);
-    let inFence = false;
     text.split('\n').forEach((lineText, i) => {
-      if (/^\s*```/.test(lineText)) {
-        inFence = !inFence;
-        return;
-      }
-      for (const span of codeSpans(lineText, inFence, wholeFileIsCode)) {
-        for (const m of span.matchAll(RUN)) {
-          const leading = m[1] ?? '';
-          const isNpm = /\bnpm\s/.test(m[0]) && !/\bpnpm\s/.test(m[0]);
-          const script = m[3] as string;
-          // npm has no script shorthand: without `run`, it is a builtin or prose.
-          if (isNpm && !m[2]) continue;
-          if (PNPM_BUILTINS.has(script) && !m[2]) continue;
-          if (!/[a-zA-Z]/.test(script)) continue;
-          if (leading.includes('dlx') || leading.includes('exec')) continue;
-          out.push({ file: rel, line: i + 1, script, raw: m[0] });
-        }
-      }
+      for (const p of planPathsIn(lineText))
+        out.push({ file: rel, line: i + 1, path: p });
     });
+  }
+  return out;
+}
+
+/** The mentions that are INSTRUCTIONS — a reader could follow them today. */
+function planPathCitations(): PathCitation[] {
+  const out: PathCitation[] = [];
+  for (const ln of authoredLines()) {
+    if (ln.file.startsWith('plans/')) continue;
+    for (const p of planPathsIn(ln.text))
+      out.push({ file: ln.file, line: ln.line, path: p });
   }
   return out;
 }
@@ -291,5 +469,128 @@ describe('COMMAND-VERACITY gate — a named command must exist', () => {
     // resolve, `install` is a builtin. A control that convicted everything would
     // prove nothing.
     expect(unresolved).toEqual([bogus]);
+  });
+});
+
+describe('PLAN-PATH VERACITY gate — a cited plan path must resolve', () => {
+  // REACH, measured on MENTIONS. The citation set below is legitimately empty when
+  // the corpus is healthy, so it can prove nothing about whether anything was read.
+  // This is the leg that reds if the matcher is narrowed.
+  it('reads a real, non-trivial set of plan-path mentions across more than one file type', () => {
+    const ms = planPathMentions();
+    expect(
+      ms.length,
+      'no plan paths found — the matcher is broken',
+    ).toBeGreaterThan(8);
+    const exts = new Set(ms.map((m) => m.file.match(/\.(\w+)$/)?.[1] ?? ''));
+    // Three voices, because each is a shape the matcher could be narrowed out of:
+    // prose in a plan (`md`), a docstring (`ts`), and a recorded turn (`txt`) — the
+    // last of which a `.md|.ts`-only scan would have reported clean.
+    expect([...exts]).toContain('md');
+    expect([...exts]).toContain('ts');
+    expect([...exts]).toContain('txt');
+    // Both SHAPES, because seven of the thirteen defects were a bare plan
+    // DIRECTORY (`plans/scoped-memory-v2`, no file), which a matcher requiring a
+    // file extension would report clean while missing over half the class.
+    expect(
+      ms.some((m) => m.path.endsWith('.md')),
+      'no path-to-a-file mentions — the matcher lost the file shape',
+    ).toBe(true);
+    expect(
+      ms.some((m) => !/\.\w+$/.test(m.path)),
+      'no bare-directory mentions — the matcher lost the directory shape',
+    ).toBe(true);
+  });
+
+  it('there is a plan directory to resolve against', () => {
+    // Distinguishes "every path resolved" from "nothing could ever resolve".
+    expect(existsSync(join(repoRoot, 'plans'))).toBe(true);
+  });
+
+  it('every cited plan path resolves — no exemption', () => {
+    const failures = planPathCitations()
+      .filter((c) => !existsSync(join(repoRoot, c.path)))
+      .map((c) => `PLAN-PATH ${c.file}:${c.line} → ${c.path} — no such path`);
+    expect(failures, failures.join('\n')).toEqual([]);
+  });
+
+  // The convicting fixture — the known-answer control, over the real matcher and the
+  // real filesystem.
+  it('FAILS a citation naming a plan path that does not exist', () => {
+    const dead = 'plans/no-such-plan/PLAN.md';
+    // Assert the defect is PRESENT before reading the result (meta-gate hazard 1).
+    expect(
+      existsSync(join(repoRoot, dead)),
+      'fixture is stale — that plan now exists',
+    ).toBe(false);
+    // The positive case is DERIVED, not pinned: a pinned plan name would go stale at
+    // that plan's retirement, which is the very event this law exists to survive.
+    const live = tracked().find((f) => /^plans\/[^/]+\/PLAN\.md$/.test(f));
+    expect(
+      live,
+      'no plan exists — the control has no positive case and proves nothing',
+    ).toBeDefined();
+
+    const probe = [
+      `the derivation record is ${dead}`,
+      `see \`${live}\` for the sequencing`,
+      'the layout is `plans/<plan>/<state>/` — a shape, not a path',
+      'deploy writes `<target>/plans/founding/` into the target tree',
+      '`plans/.retired/` no longer names anything',
+    ];
+    const unresolved = probe
+      .flatMap((t) => planPathsIn(t))
+      .filter((p) => !existsSync(join(repoRoot, p)));
+    // Convicts the dead one and ONLY it. The shape, the foreign-tree path and the
+    // dot-directory are not paths this tree can be held to; the live plan resolves.
+    expect(unresolved).toEqual([dead]);
+  });
+
+  // The closed-record discriminator, BOTH directions, on real fixture bytes.
+  it('exonerates a recorded turn and convicts the same citation in a live source', () => {
+    const rec = 'packages/canon/src/toolkit/guardrail/fixtures/turn-193.txt';
+    const text = readFileSync(join(repoRoot, rec), 'utf8');
+
+    // The record really does carry a dead citation — otherwise what follows is the
+    // exoneration of nothing.
+    const dead = planPathsIn(text).filter(
+      (p) => !existsSync(join(repoRoot, p)),
+    );
+    expect(dead, 'the fixture no longer cites a dead plan path').toContain(
+      'plans/discipline-anchor/PLAN.md',
+    );
+
+    // Direction 1 — in scope by path and extension, spared by what it IS.
+    expect(inScope(rec)).toBe(true);
+    expect(isTranscript(text)).toBe(true);
+    expect(planPathCitations().map((c) => c.file)).not.toContain(rec);
+
+    // Direction 2 — the same bytes with the capture banner gone are a live source,
+    // and the same matcher convicts them. Nothing but the banner changed.
+    const stripped = text.split('\n').slice(1).join('\n');
+    expect(isTranscript(stripped)).toBe(false);
+    expect(
+      planPathsIn(stripped).filter((p) => !existsSync(join(repoRoot, p))),
+    ).toContain('plans/discipline-anchor/PLAN.md');
+  });
+
+  // ANTI-ROT. The discriminator is a fact about the PRODUCER. If the producer stops
+  // writing this banner, the exemption silently stops recognising its own records —
+  // so the coupling is asserted rather than assumed.
+  it('the capture banner it discriminates on is the one the producer writes', () => {
+    const producer = readFileSync(
+      join(
+        repoRoot,
+        'packages/canon/src/toolkit/guardrail/stance-guardrail.sh',
+      ),
+      'utf8',
+    );
+    expect(
+      producer,
+      'stance-guardrail.sh no longer writes this banner — the discriminator is stale',
+    ).toContain(TURN_CAPTURE_BANNER);
+    // …and the record set is READ, never enumerated: a new fixture directory is
+    // recognised the day it lands, with no edit here.
+    expect(transcripts().length).toBeGreaterThan(0);
   });
 });

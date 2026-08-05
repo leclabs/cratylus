@@ -9,10 +9,15 @@ prescribes the `@AGENTS.md` import or a `CLAUDE.md → AGENTS.md` symlink as the
 adapter therefore emits `CLAUDE.md` as a pure AGENTS.md projection and never writes `AGENTS.md`
 for the claude target.
 
-**Evidence.** [S7] code.claude.com/docs/en/memory (CLAUDE.md the sole memory file; AGENTS.md via
-import/symlink) · [S62] the Claude Code changelog carries zero AGENTS.md entries through 2026-07 ·
-[S49] native AGENTS.md support is the most-upvoted open request — anthropics/claude-code issue
-#31005. Source ledger: `plans/interop-hardening/completed/standards-compat-research.RETURN.md`.
+**Evidence**, each fetched first-hand on 2026-07-02 and cited here by primary source rather than by
+a ledger key, so the record needs nothing but itself:
+
+- <https://code.claude.com/docs/en/memory> — `CLAUDE.md` is the sole memory file; AGENTS.md is
+  reached only via `@AGENTS.md` import or a symlink.
+- <https://github.com/anthropics/claude-code/blob/main/CHANGELOG.md> — zero AGENTS.md entries
+  through 2026-07.
+- <https://github.com/anthropics/claude-code/issues/31005> (also #34235) — native AGENTS.md support
+  is the most-upvoted open request.
 
 **The tripwire.** The day Claude Code ships native `AGENTS.md`, the E7.S10 premise-carrier test
 fails loudly; the response is a one-line adapter change with a known blast radius (emit `AGENTS.md`

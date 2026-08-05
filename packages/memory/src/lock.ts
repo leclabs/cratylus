@@ -12,7 +12,7 @@ import { hostname } from 'node:os';
 import { join } from 'node:path';
 
 /**
- * The dream lock (plans/scoped-memory-v2 SPEC D5): `${AGENT_HOME}/dream.lock`
+ * The dream lock: `${AGENT_HOME}/dream.lock`
  * serializes the shared home partition {SEMANTIC, PROCEDURAL, drain} across
  * same-host sessions of one agent. O_EXCL creation is the mutual exclusion;
  * a lock older than {@link STALE_MS} (2h) is stale — a crashed dream never

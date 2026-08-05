@@ -11,8 +11,13 @@ latent vocabulary. Cratylus is its instrument. See [VISION §The discipline](./V
      description stood in, because under `cratylism` a sign is discovered or absent, never coined.
      It was found on 2026-08-05: `latent lexicography` for the discipline, `Cratylus` for the
      instrument. Both were admitted by the standard the placeholder was protecting — argmin over
-     candidates, blind reverse decode, occupancy check — not by preference. The prior derivation
-     record is plans/discipline-anchor/PLAN.md; the admitting evidence is VISION §The discipline. -->
+     candidates, blind reverse decode, occupancy check — not by preference. The admitting
+     evidence is VISION §The discipline. The prior ⊥ was measured on an isolated cold oracle —
+     tool-less, project-blind, cwd outside the repo, harness env block stripped — whose positive
+     control passed (coined tokens decoded as unestablished) and whose candidate-free negative
+     control returned six distinct strings across eight runs, mode `semantic anchoring` at 3/8 and
+     one model only, with both existence-question runs answering "no established term". Every
+     candidate the oracle did produce then failed a reverse decode on discovery-not-authorship. -->
 
 ![thesis.png](./thesis.png)
 
