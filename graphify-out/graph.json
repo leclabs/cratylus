@@ -4661,8 +4661,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_canon_src_toolkit_cold_oracle_sweep",
-      "community": 42,
-      "community_name": "canon/toolkit: project-cli.ts",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "sweep.mjs"
     },
     {
@@ -4672,8 +4672,8 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "packages_canon_src_toolkit_cold_oracle_sweep_refs",
-      "community": 42,
-      "community_name": "canon/toolkit: project-cli.ts",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "refs"
     },
     {
@@ -4683,8 +4683,8 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "packages_canon_src_toolkit_cold_oracle_sweep_field",
-      "community": 42,
-      "community_name": "canon/toolkit: project-cli.ts",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "field()"
     },
     {
@@ -7664,7 +7664,7 @@
       "label": "repoRoot",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L112",
+      "source_location": "L120",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_reporoot",
       "community": 98,
@@ -7675,7 +7675,7 @@
       "label": "PNPM_BUILTINS",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L120",
+      "source_location": "L128",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_pnpm_builtins",
       "community": 98,
@@ -7686,7 +7686,7 @@
       "label": "Citation",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L164",
+      "source_location": "L172",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_citation",
       "community": 98,
@@ -7697,7 +7697,7 @@
       "label": "label()",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L172",
+      "source_location": "L180",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_label",
       "community": 98,
@@ -7708,7 +7708,7 @@
       "label": "tracked()",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L176",
+      "source_location": "L184",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_tracked",
       "community": 98,
@@ -7719,7 +7719,7 @@
       "label": "isTranscript()",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L199",
+      "source_location": "L207",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_istranscript",
       "community": 98,
@@ -7730,7 +7730,7 @@
       "label": "inScope()",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L204",
+      "source_location": "L212",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_inscope",
       "community": 98,
@@ -7741,7 +7741,7 @@
       "label": "Line",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L212",
+      "source_location": "L220",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_line",
       "community": 98,
@@ -7752,7 +7752,7 @@
       "label": "authoredLines()",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L225",
+      "source_location": "L233",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_authoredlines",
       "community": 98,
@@ -7763,7 +7763,7 @@
       "label": "transcripts()",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L255",
+      "source_location": "L263",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_transcripts",
       "community": 98,
@@ -7774,7 +7774,7 @@
       "label": "declaredScripts()",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L268",
+      "source_location": "L276",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_declaredscripts",
       "community": 98,
@@ -7785,7 +7785,7 @@
       "label": "codeSpans()",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L295",
+      "source_location": "L303",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_codespans",
       "community": 98,
@@ -7796,7 +7796,7 @@
       "label": "citations()",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L312",
+      "source_location": "L320",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_citations",
       "community": 98,
@@ -7807,7 +7807,7 @@
       "label": "planPathsIn()",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L346",
+      "source_location": "L354",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_planpathsin",
       "community": 98,
@@ -7818,7 +7818,7 @@
       "label": "PathCitation",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L350",
+      "source_location": "L358",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_pathcitation",
       "community": 98,
@@ -7829,7 +7829,7 @@
       "label": "planPathMentions()",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L361",
+      "source_location": "L369",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_planpathmentions",
       "community": 98,
@@ -7840,7 +7840,7 @@
       "label": "planPathCitations()",
       "file_type": "code",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L381",
+      "source_location": "L389",
       "_origin": "ast",
       "id": "packages_canon_test_command_veracity_test_planpathcitations",
       "community": 98,
@@ -11209,8 +11209,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_events",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "claude/events.ts"
     },
     {
@@ -11220,8 +11220,8 @@
       "source_location": "L37",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_events_canonicaltoclaude",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "canonicaltoclaude"
     },
     {
@@ -11231,8 +11231,8 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_events_claudetocanonical",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "claudetocanonical"
     },
     {
@@ -11242,8 +11242,8 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_events_canonicalacttoclaude",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "canonicalacttoclaude"
     },
     {
@@ -11253,8 +11253,8 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_events_claudebindingof",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "claudebindingof()"
     },
     {
@@ -11264,8 +11264,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_hooks",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "claude/hooks.ts"
     },
     {
@@ -11275,8 +11275,8 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_hooks_claudehook",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "claudehook"
     },
     {
@@ -11286,8 +11286,8 @@
       "source_location": "L43",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_hooks_claudehooksblock",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "claudehooksblock"
     },
     {
@@ -11297,8 +11297,8 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_hooks_serializeclaudehooksreport",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "serializeclaudehooksreport()"
     },
     {
@@ -11308,8 +11308,8 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_hooks_serializeclaudehooks",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "serializeclaudehooks()"
     },
     {
@@ -11319,8 +11319,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_index",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "claude/index.ts"
     },
     {
@@ -11330,8 +11330,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_render",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "claude/render.ts"
     },
     {
@@ -11341,8 +11341,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_render_agentfrontmatter",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "agentfrontmatter()"
     },
     {
@@ -11352,8 +11352,8 @@
       "source_location": "L92",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_render_agenthooksfrontmatter",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "agenthooksfrontmatter()"
     },
     {
@@ -11363,8 +11363,8 @@
       "source_location": "L154",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_render_frameclaudemd",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "frameclaudemd()"
     },
     {
@@ -11374,8 +11374,8 @@
       "source_location": "L167",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_render_agenttoclaudemd",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "agenttoclaudemd()"
     },
     {
@@ -11385,8 +11385,8 @@
       "source_location": "L185",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_render_skillfrontmatter",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "skillfrontmatter()"
     },
     {
@@ -11396,8 +11396,8 @@
       "source_location": "L197",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_render_skilltoclaudemd",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "skilltoclaudemd()"
     },
     {
@@ -11407,8 +11407,8 @@
       "source_location": "L209",
       "_origin": "ast",
       "id": "packages_forge_src_adapters_claude_render_claudeharnessadapter",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "claudeharnessadapter"
     },
     {
@@ -11616,8 +11616,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_bin_name",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "forge/src/bin-name.ts"
     },
     {
@@ -11627,8 +11627,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "packages_forge_src_bin_name_binmanifest",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "binmanifest"
     },
     {
@@ -11638,8 +11638,8 @@
       "source_location": "L61",
       "_origin": "ast",
       "id": "packages_forge_src_bin_name_binnameof",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "binnameof()"
     },
     {
@@ -11649,8 +11649,8 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "packages_forge_src_bin_name_forge_bin",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "forge_bin"
     },
     {
@@ -11704,8 +11704,8 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "packages_forge_src_catalog_index_enumeratecatalog",
-      "community": 72,
-      "community_name": "vitest.config.ts",
+      "community": 81,
+      "community_name": "forge/package: agent-forge/package.json",
       "norm_label": "enumeratecatalog()"
     },
     {
@@ -11715,8 +11715,8 @@
       "source_location": "L193",
       "_origin": "ast",
       "id": "packages_forge_src_catalog_index_pluginfragmentroot",
-      "community": 72,
-      "community_name": "vitest.config.ts",
+      "community": 84,
+      "community_name": "forge/anatomy: Dimension",
       "norm_label": "pluginfragmentroot"
     },
     {
@@ -11759,8 +11759,8 @@
       "source_location": "L270",
       "_origin": "ast",
       "id": "packages_forge_src_catalog_index_pluginfragmentcatalogs",
-      "community": 42,
-      "community_name": "canon/toolkit: project-cli.ts",
+      "community": 72,
+      "community_name": "vitest.config.ts",
       "norm_label": "pluginfragmentcatalogs"
     },
     {
@@ -11803,8 +11803,8 @@
       "source_location": "L346",
       "_origin": "ast",
       "id": "packages_forge_src_catalog_index_enumeratepluginfragmentcatalogs",
-      "community": 84,
-      "community_name": "forge/anatomy: Dimension",
+      "community": 72,
+      "community_name": "vitest.config.ts",
       "norm_label": "enumeratepluginfragmentcatalogs()"
     },
     {
@@ -11814,8 +11814,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_add",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 63,
+      "community_name": "forge/config: loader.ts",
       "norm_label": "add.ts"
     },
     {
@@ -11825,8 +11825,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_add_addopts",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 63,
+      "community_name": "forge/config: loader.ts",
       "norm_label": "addopts"
     },
     {
@@ -11836,8 +11836,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_add_runadd",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 63,
+      "community_name": "forge/config: loader.ts",
       "norm_label": "runadd()"
     },
     {
@@ -12133,8 +12133,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_explain",
-      "community": 57,
-      "community_name": "forge/adapters: devin/index.ts",
+      "community": 13,
+      "community_name": "Claude/Codex Harness Adapter",
       "norm_label": "explain.ts"
     },
     {
@@ -12144,8 +12144,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_explain_explainopts",
-      "community": 57,
-      "community_name": "forge/adapters: devin/index.ts",
+      "community": 13,
+      "community_name": "Claude/Codex Harness Adapter",
       "norm_label": "explainopts"
     },
     {
@@ -12155,8 +12155,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_explain_preview",
-      "community": 57,
-      "community_name": "forge/adapters: devin/index.ts",
+      "community": 13,
+      "community_name": "Claude/Codex Harness Adapter",
       "norm_label": "preview()"
     },
     {
@@ -12166,8 +12166,8 @@
       "source_location": "L58",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_explain_sourcecell",
-      "community": 57,
-      "community_name": "forge/adapters: devin/index.ts",
+      "community": 13,
+      "community_name": "Claude/Codex Harness Adapter",
       "norm_label": "sourcecell()"
     },
     {
@@ -12177,8 +12177,8 @@
       "source_location": "L71",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_explain_roles",
-      "community": 57,
-      "community_name": "forge/adapters: devin/index.ts",
+      "community": 13,
+      "community_name": "Claude/Codex Harness Adapter",
       "norm_label": "roles()"
     },
     {
@@ -12188,8 +12188,8 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_explain_renderreport",
-      "community": 57,
-      "community_name": "forge/adapters: devin/index.ts",
+      "community": 13,
+      "community_name": "Claude/Codex Harness Adapter",
       "norm_label": "renderreport()"
     },
     {
@@ -12199,8 +12199,8 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_explain_tojson",
-      "community": 57,
-      "community_name": "forge/adapters: devin/index.ts",
+      "community": 13,
+      "community_name": "Claude/Codex Harness Adapter",
       "norm_label": "tojson()"
     },
     {
@@ -12210,8 +12210,8 @@
       "source_location": "L121",
       "_origin": "ast",
       "id": "packages_forge_src_cli_commands_explain_runexplain",
-      "community": 57,
-      "community_name": "forge/adapters: devin/index.ts",
+      "community": 13,
+      "community_name": "Claude/Codex Harness Adapter",
       "norm_label": "runexplain()"
     },
     {
@@ -12353,8 +12353,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_cli_index",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 59,
+      "community_name": "forge/core: properties",
       "norm_label": "cli/index.ts"
     },
     {
@@ -12364,8 +12364,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "packages_forge_src_cli_index_cli",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 59,
+      "community_name": "forge/core: properties",
       "norm_label": "cli"
     },
     {
@@ -12375,8 +12375,8 @@
       "source_location": "L282",
       "_origin": "ast",
       "id": "packages_forge_src_cli_index_parsed",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 59,
+      "community_name": "forge/core: properties",
       "norm_label": "parsed"
     },
     {
@@ -12441,8 +12441,8 @@
       "source_location": "L47",
       "_origin": "ast",
       "id": "packages_forge_src_config_loader_configshapeerror",
-      "community": 63,
-      "community_name": "forge/config: loader.ts",
+      "community": 84,
+      "community_name": "forge/anatomy: Dimension",
       "norm_label": "configshapeerror"
     },
     {
@@ -12452,8 +12452,8 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "packages_forge_src_config_loader_configshapeerror_constructor",
-      "community": 63,
-      "community_name": "forge/config: loader.ts",
+      "community": 84,
+      "community_name": "forge/anatomy: Dimension",
       "norm_label": ".constructor()"
     },
     {
@@ -12463,8 +12463,8 @@
       "source_location": "L57",
       "_origin": "ast",
       "id": "packages_forge_src_config_loader_isagentsconfig",
-      "community": 81,
-      "community_name": "forge/package: agent-forge/package.json",
+      "community": 84,
+      "community_name": "forge/anatomy: Dimension",
       "norm_label": "isagentsconfig()"
     },
     {
@@ -12507,8 +12507,8 @@
       "source_location": "L151",
       "_origin": "ast",
       "id": "packages_forge_src_config_loader_composefromfile",
-      "community": 84,
-      "community_name": "forge/anatomy: Dimension",
+      "community": 67,
+      "community_name": "s7-readme-reground.md",
       "norm_label": "composefromfile()"
     },
     {
@@ -12650,8 +12650,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_core_body",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "body.ts"
     },
     {
@@ -12661,8 +12661,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "packages_forge_src_core_body_dimensiontitle",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "dimensiontitle()"
     },
     {
@@ -12672,8 +12672,8 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "packages_forge_src_core_body_dimensionfield",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "dimensionfield()"
     },
     {
@@ -12683,8 +12683,8 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "packages_forge_src_core_body_agentbody",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "agentbody()"
     },
     {
@@ -12705,8 +12705,8 @@
       "source_location": "L113",
       "_origin": "ast",
       "id": "packages_forge_src_core_body_deriveverb",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "deriveverb()"
     },
     {
@@ -12716,8 +12716,8 @@
       "source_location": "L125",
       "_origin": "ast",
       "id": "packages_forge_src_core_body_skillbody",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "skillbody()"
     },
     {
@@ -12760,8 +12760,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_dimension_fields",
-      "community": 42,
-      "community_name": "canon/toolkit: project-cli.ts",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "dimension-fields.ts"
     },
     {
@@ -12771,8 +12771,8 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_dimension_fields_dimensionfieldsof",
-      "community": 42,
-      "community_name": "canon/toolkit: project-cli.ts",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "dimensionfieldsof()"
     },
     {
@@ -12782,8 +12782,8 @@
       "source_location": "L38",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_dimension_fields_enforcingvaluesof",
-      "community": 42,
-      "community_name": "canon/toolkit: project-cli.ts",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "enforcingvaluesof()"
     },
     {
@@ -12947,8 +12947,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_skill_cell",
-      "community": 1,
-      "community_name": "Crush Adapter + Core Types",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "skill-cell.ts"
     },
     {
@@ -12958,8 +12958,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_skill_cell_skilldeclaration",
-      "community": 1,
-      "community_name": "Crush Adapter + Core Types",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "skilldeclaration"
     },
     {
@@ -12969,8 +12969,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_skill_cell_skillcellspec",
-      "community": 1,
-      "community_name": "Crush Adapter + Core Types",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "skillcellspec"
     },
     {
@@ -12980,8 +12980,8 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_skill_cell_renderbody",
-      "community": 1,
-      "community_name": "Crush Adapter + Core Types",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "renderbody()"
     },
     {
@@ -12991,8 +12991,8 @@
       "source_location": "L79",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_skill_cell_renderskillcellbody",
-      "community": 1,
-      "community_name": "Crush Adapter + Core Types",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "renderskillcellbody()"
     },
     {
@@ -13002,8 +13002,8 @@
       "source_location": "L109",
       "_origin": "ast",
       "id": "packages_forge_src_core_exemplify_skill_cell_renderskillcell",
-      "community": 1,
-      "community_name": "Crush Adapter + Core Types",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "renderskillcell()"
     },
     {
@@ -13354,8 +13354,8 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "packages_forge_src_core_harness_adapter_harnessadapter",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": "harnessadapter"
     },
     {
@@ -13365,8 +13365,8 @@
       "source_location": "L141",
       "_origin": "ast",
       "id": "packages_forge_src_core_harness_adapter_harnessadapter_realizes",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": ".realizes()"
     },
     {
@@ -13376,8 +13376,8 @@
       "source_location": "L157",
       "_origin": "ast",
       "id": "packages_forge_src_core_harness_adapter_harnessadapter_scopes",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": ".scopes()"
     },
     {
@@ -13387,8 +13387,8 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "packages_forge_src_core_harness_adapter_harnessadapter_hookcommand",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": ".hookcommand()"
     },
     {
@@ -13398,8 +13398,8 @@
       "source_location": "L176",
       "_origin": "ast",
       "id": "packages_forge_src_core_harness_adapter_harnessadapter_agentdef",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": ".agentdef()"
     },
     {
@@ -13409,8 +13409,8 @@
       "source_location": "L178",
       "_origin": "ast",
       "id": "packages_forge_src_core_harness_adapter_harnessadapter_skilldef",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": ".skilldef()"
     },
     {
@@ -13420,8 +13420,8 @@
       "source_location": "L194",
       "_origin": "ast",
       "id": "packages_forge_src_core_harness_adapter_harnessadapter_scopeorientation",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": ".scopeorientation()"
     },
     {
@@ -13431,8 +13431,8 @@
       "source_location": "L197",
       "_origin": "ast",
       "id": "packages_forge_src_core_harness_adapter_harnessadapter_hooks",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": ".hooks()"
     },
     {
@@ -13442,8 +13442,8 @@
       "source_location": "L213",
       "_origin": "ast",
       "id": "packages_forge_src_core_harness_adapter_harnessadapter_enforcingsurface",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": ".enforcingsurface()"
     },
     {
@@ -13530,8 +13530,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_bundle",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "bundle.ts"
     },
     {
@@ -13563,8 +13563,8 @@
       "source_location": "L82",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_bundle_stageassetsopts",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "stageassetsopts"
     },
     {
@@ -13585,8 +13585,8 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_bundle_runtimebinprobe",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "runtimebinprobe"
     },
     {
@@ -13596,8 +13596,8 @@
       "source_location": "L152",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_bundle_salientstderr",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "salientstderr()"
     },
     {
@@ -13607,8 +13607,8 @@
       "source_location": "L172",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_bundle_proberuntimebinopts",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "proberuntimebinopts"
     },
     {
@@ -13618,8 +13618,8 @@
       "source_location": "L181",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_bundle_probememo",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "probememo"
     },
     {
@@ -13629,8 +13629,8 @@
       "source_location": "L185",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_bundle_resetruntimebinprobe",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 48,
+      "community_name": "forge/validate: accept.ts",
       "norm_label": "resetruntimebinprobe()"
     },
     {
@@ -13640,8 +13640,8 @@
       "source_location": "L191",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_bundle_whichonpath",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "whichonpath()"
     },
     {
@@ -13651,8 +13651,8 @@
       "source_location": "L218",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_bundle_proberuntimebin",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "proberuntimebin()"
     },
     {
@@ -13662,8 +13662,8 @@
       "source_location": "L287",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_bundle_runtimebinrefusal",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "runtimebinrefusal()"
     },
     {
@@ -13673,8 +13673,8 @@
       "source_location": "L324",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_bundle_shimsspawningruntimebin",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "shimsspawningruntimebin()"
     },
     {
@@ -13684,8 +13684,8 @@
       "source_location": "L348",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_bundle_assertshimsopts",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "assertshimsopts"
     },
     {
@@ -13695,8 +13695,8 @@
       "source_location": "L364",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_bundle_assertshimsresolvable",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "assertshimsresolvable()"
     },
     {
@@ -13706,8 +13706,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_check_exit",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "check-exit.ts"
     },
     {
@@ -13717,8 +13717,8 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_check_exit_deploy_check_exit",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "deploy_check_exit"
     },
     {
@@ -13728,8 +13728,8 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_check_exit_deploycheckexit",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 70,
+      "community_name": "forge/core: enum",
       "norm_label": "deploycheckexit"
     },
     {
@@ -13761,8 +13761,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_deploy_deployopts",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 59,
+      "community_name": "forge/core: properties",
       "norm_label": "deployopts"
     },
     {
@@ -13783,8 +13783,8 @@
       "source_location": "L115",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_deploy_resolvenames",
-      "community": 59,
-      "community_name": "forge/core: properties",
+      "community": 77,
+      "community_name": "forge/core: hook.schema.json",
       "norm_label": "resolvenames()"
     },
     {
@@ -13849,8 +13849,8 @@
       "source_location": "L296",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_deploy_deploysingle",
-      "community": 59,
-      "community_name": "forge/core: properties",
+      "community": 77,
+      "community_name": "forge/core: hook.schema.json",
       "norm_label": "deploysingle()"
     },
     {
@@ -14091,8 +14091,8 @@
       "source_location": "L243",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_local_divergence",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 59,
+      "community_name": "forge/core: properties",
       "norm_label": "divergence"
     },
     {
@@ -14102,8 +14102,8 @@
       "source_location": "L266",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_local_driftreport",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 59,
+      "community_name": "forge/core: properties",
       "norm_label": "driftreport"
     },
     {
@@ -14201,8 +14201,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_manifest_deploymanifest",
-      "community": 70,
-      "community_name": "forge/core: enum",
+      "community": 77,
+      "community_name": "forge/core: hook.schema.json",
       "norm_label": "deploymanifest"
     },
     {
@@ -14718,8 +14718,8 @@
       "source_location": "L65",
       "_origin": "ast",
       "id": "packages_forge_src_deploy_types_deploykind",
-      "community": 44,
-      "community_name": "forge/adapters: cline/read.ts",
+      "community": 59,
+      "community_name": "forge/core: properties",
       "norm_label": "deploykind"
     },
     {
@@ -14773,8 +14773,8 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "packages_forge_src_project_index_projectopts",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": "projectopts"
     },
     {
@@ -14861,8 +14861,8 @@
       "source_location": "L273",
       "_origin": "ast",
       "id": "packages_forge_src_project_index_bindingsof",
-      "community": 42,
-      "community_name": "canon/toolkit: project-cli.ts",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "bindingsof()"
     },
     {
@@ -14916,8 +14916,8 @@
       "source_location": "L406",
       "_origin": "ast",
       "id": "packages_forge_src_project_index_withresolvedbodies",
-      "community": 42,
-      "community_name": "canon/toolkit: project-cli.ts",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "withresolvedbodies()"
     },
     {
@@ -14938,8 +14938,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_src_project_realization",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": "realization.ts"
     },
     {
@@ -14949,8 +14949,8 @@
       "source_location": "L50",
       "_origin": "ast",
       "id": "packages_forge_src_project_realization_realizable",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": "realizable"
     },
     {
@@ -14960,8 +14960,8 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "packages_forge_src_project_realization_enforcementmode",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": "enforcementmode"
     },
     {
@@ -14971,8 +14971,8 @@
       "source_location": "L76",
       "_origin": "ast",
       "id": "packages_forge_src_project_realization_loss",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": "loss"
     },
     {
@@ -14982,8 +14982,8 @@
       "source_location": "L89",
       "_origin": "ast",
       "id": "packages_forge_src_project_realization_realization",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": "realization"
     },
     {
@@ -14993,8 +14993,8 @@
       "source_location": "L94",
       "_origin": "ast",
       "id": "packages_forge_src_project_realization_unrealizablewarning",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": "unrealizablewarning()"
     },
     {
@@ -15004,8 +15004,8 @@
       "source_location": "L98",
       "_origin": "ast",
       "id": "packages_forge_src_project_realization_unscopablewarning",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": "unscopablewarning()"
     },
     {
@@ -15015,8 +15015,8 @@
       "source_location": "L108",
       "_origin": "ast",
       "id": "packages_forge_src_project_realization_routes",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": "routes()"
     },
     {
@@ -15026,8 +15026,8 @@
       "source_location": "L120",
       "_origin": "ast",
       "id": "packages_forge_src_project_realization_realizationof",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": "realizationof()"
     },
     {
@@ -15158,8 +15158,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "packages_forge_src_prune_index_kindrecord",
-      "community": 70,
-      "community_name": "forge/core: enum",
+      "community": 77,
+      "community_name": "forge/core: hook.schema.json",
       "norm_label": "kindrecord"
     },
     {
@@ -15268,8 +15268,8 @@
       "source_location": "L66",
       "_origin": "ast",
       "id": "packages_forge_src_resolve_resolve_valueshape",
-      "community": 13,
-      "community_name": "Claude/Codex Harness Adapter",
+      "community": 72,
+      "community_name": "vitest.config.ts",
       "norm_label": "valueshape"
     },
     {
@@ -15301,8 +15301,8 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "packages_forge_src_resolve_resolve_fragment",
-      "community": 13,
-      "community_name": "Claude/Codex Harness Adapter",
+      "community": 72,
+      "community_name": "vitest.config.ts",
       "norm_label": "fragment"
     },
     {
@@ -15323,8 +15323,8 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "packages_forge_src_resolve_resolve_loadedplugin",
-      "community": 13,
-      "community_name": "Claude/Codex Harness Adapter",
+      "community": 84,
+      "community_name": "forge/anatomy: Dimension",
       "norm_label": "loadedplugin"
     },
     {
@@ -15378,8 +15378,8 @@
       "source_location": "L196",
       "_origin": "ast",
       "id": "packages_forge_src_resolve_resolve_resolvedagentset",
-      "community": 13,
-      "community_name": "Claude/Codex Harness Adapter",
+      "community": 84,
+      "community_name": "forge/anatomy: Dimension",
       "norm_label": "resolvedagentset"
     },
     {
@@ -15543,8 +15543,8 @@
       "source_location": "L404",
       "_origin": "ast",
       "id": "packages_forge_src_resolve_resolve_validatereferencegraph",
-      "community": 84,
-      "community_name": "forge/anatomy: Dimension",
+      "community": 72,
+      "community_name": "vitest.config.ts",
       "norm_label": "validatereferencegraph()"
     },
     {
@@ -15928,8 +15928,8 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "packages_forge_src_validate_policy_policy",
-      "community": 27,
-      "community_name": "Continue Adapter",
+      "community": 1,
+      "community_name": "Crush Adapter + Core Types",
       "norm_label": "policy"
     },
     {
@@ -16192,8 +16192,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test",
-      "community": 6,
-      "community_name": "Canon Skills (conceptualize/create)",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "agent-hooks.test.ts"
     },
     {
@@ -16203,8 +16203,8 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_agent",
-      "community": 6,
-      "community_name": "Canon Skills (conceptualize/create)",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "agent"
     },
     {
@@ -16214,8 +16214,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_guardrails",
-      "community": 6,
-      "community_name": "Canon Skills (conceptualize/create)",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "guardrails"
     },
     {
@@ -16225,8 +16225,8 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_stance",
-      "community": 6,
-      "community_name": "Canon Skills (conceptualize/create)",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "stance"
     },
     {
@@ -16236,8 +16236,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_prestance",
-      "community": 6,
-      "community_name": "Canon Skills (conceptualize/create)",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "prestance"
     },
     {
@@ -16247,8 +16247,8 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_gitside",
-      "community": 6,
-      "community_name": "Canon Skills (conceptualize/create)",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "gitside"
     },
     {
@@ -16258,8 +16258,8 @@
       "source_location": "L39",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_mech",
-      "community": 6,
-      "community_name": "Canon Skills (conceptualize/create)",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "mech()"
     },
     {
@@ -16269,8 +16269,8 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_mechanisms",
-      "community": 6,
-      "community_name": "Canon Skills (conceptualize/create)",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "mechanisms"
     },
     {
@@ -16280,8 +16280,8 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_mk",
-      "community": 6,
-      "community_name": "Canon Skills (conceptualize/create)",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "mk()"
     },
     {
@@ -16291,8 +16291,8 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "packages_forge_test_adapters_agent_hooks_test_fm",
-      "community": 6,
-      "community_name": "Canon Skills (conceptualize/create)",
+      "community": 2,
+      "community_name": "Story: Harness Import",
       "norm_label": "fm()"
     },
     {
@@ -16335,8 +16335,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_catalog_discover_test",
-      "community": 13,
-      "community_name": "Claude/Codex Harness Adapter",
+      "community": 72,
+      "community_name": "vitest.config.ts",
       "norm_label": "discover.test.ts"
     },
     {
@@ -16346,8 +16346,8 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "packages_forge_test_catalog_discover_test_writestringfragment",
-      "community": 13,
-      "community_name": "Claude/Codex Harness Adapter",
+      "community": 72,
+      "community_name": "vitest.config.ts",
       "norm_label": "writestringfragment()"
     },
     {
@@ -16643,8 +16643,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_cli_explain_test",
-      "community": 57,
-      "community_name": "forge/adapters: devin/index.ts",
+      "community": 81,
+      "community_name": "forge/package: agent-forge/package.json",
       "norm_label": "explain.test.ts"
     },
     {
@@ -16654,8 +16654,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "packages_forge_test_cli_explain_test_writemodule",
-      "community": 57,
-      "community_name": "forge/adapters: devin/index.ts",
+      "community": 81,
+      "community_name": "forge/package: agent-forge/package.json",
       "norm_label": "writemodule()"
     },
     {
@@ -16665,8 +16665,8 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "packages_forge_test_cli_explain_test_capture",
-      "community": 57,
-      "community_name": "forge/adapters: devin/index.ts",
+      "community": 81,
+      "community_name": "forge/package: agent-forge/package.json",
       "norm_label": "capture()"
     },
     {
@@ -16720,8 +16720,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_core_agent_body_enforcing_test",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "agent-body-enforcing.test.ts"
     },
     {
@@ -16731,8 +16731,8 @@
       "source_location": "L11",
       "_origin": "ast",
       "id": "packages_forge_test_core_agent_body_enforcing_test_guardrails",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "guardrails"
     },
     {
@@ -16742,8 +16742,8 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "packages_forge_test_core_agent_body_enforcing_test_bound",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "bound"
     },
     {
@@ -16753,8 +16753,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_core_runtime_shim_binding_test",
-      "community": 1,
-      "community_name": "Crush Adapter + Core Types",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "runtime-shim-binding.test.ts"
     },
     {
@@ -16764,8 +16764,8 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "packages_forge_test_core_runtime_shim_binding_test_resolved",
-      "community": 1,
-      "community_name": "Crush Adapter + Core Types",
+      "community": 57,
+      "community_name": "forge/adapters: devin/index.ts",
       "norm_label": "resolved()"
     },
     {
@@ -16830,8 +16830,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_deploy_harness_shape_test",
-      "community": 59,
-      "community_name": "forge/core: properties",
+      "community": 77,
+      "community_name": "forge/core: hook.schema.json",
       "norm_label": "harness-shape.test.ts"
     },
     {
@@ -16841,8 +16841,8 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "packages_forge_test_deploy_harness_shape_test_roots",
-      "community": 59,
-      "community_name": "forge/core: properties",
+      "community": 77,
+      "community_name": "forge/core: hook.schema.json",
       "norm_label": "roots"
     },
     {
@@ -16852,8 +16852,8 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "packages_forge_test_deploy_harness_shape_test_tree",
-      "community": 59,
-      "community_name": "forge/core: properties",
+      "community": 77,
+      "community_name": "forge/core: hook.schema.json",
       "norm_label": "tree()"
     },
     {
@@ -16863,8 +16863,8 @@
       "source_location": "L56",
       "_origin": "ast",
       "id": "packages_forge_test_deploy_harness_shape_test_deployall",
-      "community": 59,
-      "community_name": "forge/core: properties",
+      "community": 77,
+      "community_name": "forge/core: hook.schema.json",
       "norm_label": "deployall()"
     },
     {
@@ -16918,8 +16918,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_deploy_hooks_test",
-      "community": 48,
-      "community_name": "forge/validate: accept.ts",
+      "community": 45,
+      "community_name": "forge/config: config/index.ts",
       "norm_label": "hooks.test.ts"
     },
     {
@@ -16929,8 +16929,8 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "packages_forge_test_deploy_hooks_test_silent",
-      "community": 48,
-      "community_name": "forge/validate: accept.ts",
+      "community": 45,
+      "community_name": "forge/config: config/index.ts",
       "norm_label": "silent"
     },
     {
@@ -17149,8 +17149,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_deploy_runtime_bin_resolvable_test",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 48,
+      "community_name": "forge/validate: accept.ts",
       "norm_label": "runtime-bin-resolvable.test.ts"
     },
     {
@@ -17160,8 +17160,8 @@
       "source_location": "L52",
       "_origin": "ast",
       "id": "packages_forge_test_deploy_runtime_bin_resolvable_test_strandedhost",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 48,
+      "community_name": "forge/validate: accept.ts",
       "norm_label": "strandedhost()"
     },
     {
@@ -17171,8 +17171,8 @@
       "source_location": "L64",
       "_origin": "ast",
       "id": "packages_forge_test_deploy_runtime_bin_resolvable_test_livehost",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 48,
+      "community_name": "forge/validate: accept.ts",
       "norm_label": "livehost()"
     },
     {
@@ -17182,8 +17182,8 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "packages_forge_test_deploy_runtime_bin_resolvable_test_emptyhost",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 48,
+      "community_name": "forge/validate: accept.ts",
       "norm_label": "emptyhost()"
     },
     {
@@ -17204,8 +17204,8 @@
       "source_location": "L258",
       "_origin": "ast",
       "id": "packages_forge_test_deploy_runtime_bin_resolvable_test_withhost",
-      "community": 2,
-      "community_name": "Story: Harness Import",
+      "community": 48,
+      "community_name": "forge/validate: accept.ts",
       "norm_label": "withhost()"
     },
     {
@@ -17787,8 +17787,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_project_projection_facts_test",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "projection-facts.test.ts"
     },
     {
@@ -17798,8 +17798,8 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "packages_forge_test_project_projection_facts_test_here",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "here"
     },
     {
@@ -17809,8 +17809,8 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "packages_forge_test_project_projection_facts_test_reporoot",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "reporoot"
     },
     {
@@ -17820,8 +17820,8 @@
       "source_location": "L48",
       "_origin": "ast",
       "id": "packages_forge_test_project_projection_facts_test_plugin",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "plugin"
     },
     {
@@ -17831,8 +17831,8 @@
       "source_location": "L59",
       "_origin": "ast",
       "id": "packages_forge_test_project_projection_facts_test_mechanisms",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "mechanisms"
     },
     {
@@ -17842,8 +17842,8 @@
       "source_location": "L174",
       "_origin": "ast",
       "id": "packages_forge_test_project_projection_facts_test_projectfixture",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "projectfixture()"
     },
     {
@@ -17853,8 +17853,8 @@
       "source_location": "L187",
       "_origin": "ast",
       "id": "packages_forge_test_project_projection_facts_test_declared",
-      "community": 67,
-      "community_name": "s7-readme-reground.md",
+      "community": 42,
+      "community_name": "canon/toolkit: project-cli.ts",
       "norm_label": "declared()"
     },
     {
@@ -17864,8 +17864,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_project_realization_test",
-      "community": 100,
-      "community_name": "canon/structural: structural-parsimony.tes",
+      "community": 4,
+      "community_name": "Story: Adapter Roster",
       "norm_label": "realization.test.ts"
     },
     {
@@ -18040,8 +18040,8 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_forge_test_resolve_provenance_test",
-      "community": 13,
-      "community_name": "Claude/Codex Harness Adapter",
+      "community": 84,
+      "community_name": "forge/anatomy: Dimension",
       "norm_label": "provenance.test.ts"
     },
     {
@@ -18051,8 +18051,8 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "packages_forge_test_resolve_provenance_test_fscalar",
-      "community": 13,
-      "community_name": "Claude/Codex Harness Adapter",
+      "community": 84,
+      "community_name": "forge/anatomy: Dimension",
       "norm_label": "fscalar"
     },
     {
@@ -18062,8 +18062,8 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "packages_forge_test_resolve_provenance_test_fset",
-      "community": 13,
-      "community_name": "Claude/Codex Harness Adapter",
+      "community": 84,
+      "community_name": "forge/anatomy: Dimension",
       "norm_label": "fset"
     },
     {
@@ -18073,8 +18073,8 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "packages_forge_test_resolve_provenance_test_fstruct",
-      "community": 13,
-      "community_name": "Claude/Codex Harness Adapter",
+      "community": 84,
+      "community_name": "forge/anatomy: Dimension",
       "norm_label": "fstruct"
     },
     {
@@ -18084,8 +18084,8 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "packages_forge_test_resolve_provenance_test_plugin",
-      "community": 13,
-      "community_name": "Claude/Codex Harness Adapter",
+      "community": 84,
+      "community_name": "forge/anatomy: Dimension",
       "norm_label": "plugin()"
     },
     {
@@ -25135,8 +25135,8 @@
       "source_location": "L124",
       "_origin": "ast",
       "id": "packages_runtime_src_capabilities_event_tap_dispatch_eventtapdispatchopts",
-      "community": 51,
-      "community_name": "canon/dimensions: investigator.ts",
+      "community": 90,
+      "community_name": "canon/symbols: symbols.test.ts",
       "norm_label": "eventtapdispatchopts"
     },
     {
@@ -31122,193 +31122,6 @@
       "community": 168,
       "community_name": "canon/dimensions: casual.ts",
       "norm_label": "surfaced for the operator \u2014 not mine to take"
-    },
-    {
-      "label": "PLAN.md",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/PLAN.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_plan",
-      "community": 74,
-      "community_name": "project-cli.ts",
-      "norm_label": "plan.md"
-    },
-    {
-      "label": "retire-decomplect",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/PLAN.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_plan_retire_decomplect",
-      "community": 74,
-      "community_name": "project-cli.ts",
-      "norm_label": "retire-decomplect"
-    },
-    {
-      "label": "Why this is a plan and not a step",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/PLAN.md",
-      "source_location": "L8",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_plan_why_this_is_a_plan_and_not_a_step",
-      "community": 74,
-      "community_name": "project-cli.ts",
-      "norm_label": "why this is a plan and not a step"
-    },
-    {
-      "label": "The contradiction that forced this cut",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/PLAN.md",
-      "source_location": "L19",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_plan_the_contradiction_that_forced_this_cut",
-      "community": 74,
-      "community_name": "project-cli.ts",
-      "norm_label": "the contradiction that forced this cut"
-    },
-    {
-      "label": "What is owed, in order",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/PLAN.md",
-      "source_location": "L31",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_plan_what_is_owed_in_order",
-      "community": 74,
-      "community_name": "project-cli.ts",
-      "norm_label": "what is owed, in order"
-    },
-    {
-      "label": "Shards",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/PLAN.md",
-      "source_location": "L53",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_plan_shards",
-      "community": 74,
-      "community_name": "project-cli.ts",
-      "norm_label": "shards"
-    },
-    {
-      "label": "Acceptance",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/PLAN.md",
-      "source_location": "L68",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_plan_acceptance",
-      "community": 74,
-      "community_name": "project-cli.ts",
-      "norm_label": "acceptance"
-    },
-    {
-      "label": "plan-path-veracity.md",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_completed_plan_path_veracity",
-      "community": 4,
-      "community_name": "Story: Adapter Roster",
-      "norm_label": "plan-path-veracity.md"
-    },
-    {
-      "label": "plan-path-veracity \u2014 a cited plan path must resolve",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L1",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_completed_plan_path_veracity_plan_path_veracity_a_cited_plan_path_must_resolve",
-      "community": 4,
-      "community_name": "Story: Adapter Roster",
-      "norm_label": "plan-path-veracity \u2014 a cited plan path must resolve"
-    },
-    {
-      "label": "Intent",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L13",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_completed_plan_path_veracity_intent",
-      "community": 4,
-      "community_name": "Story: Adapter Roster",
-      "norm_label": "intent"
-    },
-    {
-      "label": "Census",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L23",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_completed_plan_path_veracity_census",
-      "community": 4,
-      "community_name": "Story: Adapter Roster",
-      "norm_label": "census"
-    },
-    {
-      "label": "Constraints",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L47",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_completed_plan_path_veracity_constraints",
-      "community": 4,
-      "community_name": "Story: Adapter Roster",
-      "norm_label": "constraints"
-    },
-    {
-      "label": "Rulings taken",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L62",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_completed_plan_path_veracity_rulings_taken",
-      "community": 4,
-      "community_name": "Story: Adapter Roster",
-      "norm_label": "rulings taken"
-    },
-    {
-      "label": "Inputs",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L88",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_completed_plan_path_veracity_inputs",
-      "community": 4,
-      "community_name": "Story: Adapter Roster",
-      "norm_label": "inputs"
-    },
-    {
-      "label": "Outputs",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L95",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_completed_plan_path_veracity_outputs",
-      "community": 4,
-      "community_name": "Story: Adapter Roster",
-      "norm_label": "outputs"
-    },
-    {
-      "label": "Acceptance",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L105",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_completed_plan_path_veracity_acceptance",
-      "community": 4,
-      "community_name": "Story: Adapter Roster",
-      "norm_label": "acceptance"
-    },
-    {
-      "label": "RETURN",
-      "file_type": "document",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L124",
-      "_origin": "ast",
-      "id": "plans_retire_decomplect_completed_plan_path_veracity_return",
-      "community": 4,
-      "community_name": "Story: Adapter Roster",
-      "norm_label": "return"
     },
     {
       "label": "landingOf",
@@ -47943,7 +47756,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L225",
+      "source_location": "L233",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -47954,7 +47767,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L164",
+      "source_location": "L172",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -47965,7 +47778,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L312",
+      "source_location": "L320",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -47976,7 +47789,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L295",
+      "source_location": "L303",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -47987,7 +47800,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L268",
+      "source_location": "L276",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -47998,7 +47811,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L204",
+      "source_location": "L212",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -48009,7 +47822,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L199",
+      "source_location": "L207",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -48020,7 +47833,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L172",
+      "source_location": "L180",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -48031,7 +47844,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L212",
+      "source_location": "L220",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -48042,7 +47855,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L350",
+      "source_location": "L358",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -48053,7 +47866,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L381",
+      "source_location": "L389",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -48064,7 +47877,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L361",
+      "source_location": "L369",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -48075,7 +47888,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L346",
+      "source_location": "L354",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -48086,7 +47899,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L120",
+      "source_location": "L128",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -48097,7 +47910,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L112",
+      "source_location": "L120",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -48108,7 +47921,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L176",
+      "source_location": "L184",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -48119,7 +47932,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L255",
+      "source_location": "L263",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test",
@@ -48132,7 +47945,7 @@
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L322",
+      "source_location": "L330",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_citations",
@@ -48143,7 +47956,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L227",
+      "source_location": "L235",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_authoredlines",
@@ -48155,7 +47968,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L270",
+      "source_location": "L278",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_declaredscripts",
@@ -48167,7 +47980,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L363",
+      "source_location": "L371",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_planpathmentions",
@@ -48179,7 +47992,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L256",
+      "source_location": "L264",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_transcripts",
@@ -48191,7 +48004,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L234",
+      "source_location": "L242",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_authoredlines",
@@ -48203,7 +48016,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L260",
+      "source_location": "L268",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_transcripts",
@@ -48215,7 +48028,7 @@
       "context": "argument",
       "confidence": "INFERRED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L227",
+      "source_location": "L235",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_authoredlines",
@@ -48227,7 +48040,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L314",
+      "source_location": "L322",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_citations",
@@ -48239,7 +48052,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L383",
+      "source_location": "L391",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_planpathcitations",
@@ -48252,7 +48065,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L257",
+      "source_location": "L265",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_transcripts",
@@ -48264,7 +48077,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L271",
+      "source_location": "L279",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_declaredscripts",
@@ -48275,7 +48088,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L315",
+      "source_location": "L323",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_citations",
@@ -48287,7 +48100,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L385",
+      "source_location": "L393",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_planpathcitations",
@@ -48299,7 +48112,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L373",
+      "source_location": "L381",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_planpathmentions",
@@ -48312,7 +48125,7 @@
       "confidence": "INFERRED",
       "confidence_score": 0.8,
       "source_file": "packages/canon/test/command-veracity.test.ts",
-      "source_location": "L364",
+      "source_location": "L372",
       "weight": 1.0,
       "_origin": "ast",
       "source": "packages_canon_test_command_veracity_test_planpathmentions",
@@ -95568,171 +95381,6 @@
       "confidence_score": 1.0
     },
     {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/PLAN.md",
-      "source_location": "L1",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_plan",
-      "target": "plans_retire_decomplect_plan_retire_decomplect",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/PLAN.md",
-      "source_location": "L68",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_plan_retire_decomplect",
-      "target": "plans_retire_decomplect_plan_acceptance",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/PLAN.md",
-      "source_location": "L53",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_plan_retire_decomplect",
-      "target": "plans_retire_decomplect_plan_shards",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/PLAN.md",
-      "source_location": "L19",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_plan_retire_decomplect",
-      "target": "plans_retire_decomplect_plan_the_contradiction_that_forced_this_cut",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/PLAN.md",
-      "source_location": "L31",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_plan_retire_decomplect",
-      "target": "plans_retire_decomplect_plan_what_is_owed_in_order",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/PLAN.md",
-      "source_location": "L8",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_plan_retire_decomplect",
-      "target": "plans_retire_decomplect_plan_why_this_is_a_plan_and_not_a_step",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L1",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_completed_plan_path_veracity",
-      "target": "plans_retire_decomplect_completed_plan_path_veracity_plan_path_veracity_a_cited_plan_path_must_resolve",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L124",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_completed_plan_path_veracity",
-      "target": "plans_retire_decomplect_completed_plan_path_veracity_return",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L105",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_completed_plan_path_veracity_plan_path_veracity_a_cited_plan_path_must_resolve",
-      "target": "plans_retire_decomplect_completed_plan_path_veracity_acceptance",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L23",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_completed_plan_path_veracity_plan_path_veracity_a_cited_plan_path_must_resolve",
-      "target": "plans_retire_decomplect_completed_plan_path_veracity_census",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L47",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_completed_plan_path_veracity_plan_path_veracity_a_cited_plan_path_must_resolve",
-      "target": "plans_retire_decomplect_completed_plan_path_veracity_constraints",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L88",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_completed_plan_path_veracity_plan_path_veracity_a_cited_plan_path_must_resolve",
-      "target": "plans_retire_decomplect_completed_plan_path_veracity_inputs",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L13",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_completed_plan_path_veracity_plan_path_veracity_a_cited_plan_path_must_resolve",
-      "target": "plans_retire_decomplect_completed_plan_path_veracity_intent",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L95",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_completed_plan_path_veracity_plan_path_veracity_a_cited_plan_path_must_resolve",
-      "target": "plans_retire_decomplect_completed_plan_path_veracity_outputs",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "plans/retire-decomplect/completed/plan-path-veracity.md",
-      "source_location": "L62",
-      "weight": 1.0,
-      "_origin": "ast",
-      "source": "plans_retire_decomplect_completed_plan_path_veracity_plan_path_veracity_a_cited_plan_path_must_resolve",
-      "target": "plans_retire_decomplect_completed_plan_path_veracity_rulings_taken",
-      "confidence_score": 1.0
-    },
-    {
       "relation": "references",
       "confidence": "EXTRACTED",
       "confidence_score": 1.0,
@@ -96190,5 +95838,5 @@
       "source_file": "packages/forge/test/stories/E6-exemplify-optimization.md"
     }
   ],
-  "built_at_commit": "600791df930a7632bd6447decfe75a932239499d"
+  "built_at_commit": "45484c17da718eb39da0095eabc3dc52dfc214a9"
 }

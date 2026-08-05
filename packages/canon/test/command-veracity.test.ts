@@ -104,7 +104,15 @@
 // set stays empty. That is what separates "found nothing" from "clean".
 
 import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -507,6 +515,16 @@ describe('PLAN-PATH VERACITY gate — a cited plan path must resolve', () => {
     expect(existsSync(join(repoRoot, 'plans'))).toBe(true);
   });
 
+  // ZERO PLANS IS A LEGITIMATE STATE, and this gate must survive it — `retire` means
+  // DELETE, so the corpus reaches zero every time the last plan lands. The control below
+  // is written against that, and it is the second staleness trap in a row here: a PINNED
+  // plan name goes stale at that plan's retirement (the first trap, correctly avoided),
+  // and a name DERIVED from the live corpus dies when the corpus is empty (the second,
+  // hit the moment `retire-decomplect` retired). The positive case is therefore
+  // SYNTHETIC — built in a tmpdir, depending on neither. Same reasoning `plan-set.test.ts`
+  // already applies to git history: a check whose subject is the live tree goes dark when
+  // the live tree empties; one that builds its own subject cannot.
+
   it('every cited plan path resolves — no exemption', () => {
     const failures = planPathCitations()
       .filter((c) => !existsSync(join(repoRoot, c.path)))
@@ -523,13 +541,17 @@ describe('PLAN-PATH VERACITY gate — a cited plan path must resolve', () => {
       existsSync(join(repoRoot, dead)),
       'fixture is stale — that plan now exists',
     ).toBe(false);
-    // The positive case is DERIVED, not pinned: a pinned plan name would go stale at
-    // that plan's retirement, which is the very event this law exists to survive.
-    const live = tracked().find((f) => /^plans\/[^/]+\/PLAN\.md$/.test(f));
-    expect(
-      live,
-      'no plan exists — the control has no positive case and proves nothing',
-    ).toBeDefined();
+    // The positive case is SYNTHETIC — neither pinned nor read off the live corpus, both
+    // of which go stale at a retirement. Resolution is `existsSync` against a root, so the
+    // control supplies its own root and the matcher never knows the difference.
+    const sandbox = mkdtempSync(join(tmpdir(), 'plan-path-'));
+    const live = 'plans/probe-plan/PLAN.md';
+    mkdirSync(join(sandbox, 'plans', 'probe-plan'), { recursive: true });
+    writeFileSync(join(sandbox, live), '# probe\n');
+    // …and it must genuinely resolve THERE while genuinely not resolving here, or the
+    // control is testing the sandbox rather than the matcher.
+    expect(existsSync(join(sandbox, live))).toBe(true);
+    expect(existsSync(join(repoRoot, live))).toBe(false);
 
     const probe = [
       `the derivation record is ${dead}`,
@@ -538,11 +560,15 @@ describe('PLAN-PATH VERACITY gate — a cited plan path must resolve', () => {
       'deploy writes `<target>/plans/founding/` into the target tree',
       '`plans/.retired/` no longer names anything',
     ];
+    // Resolved against the SANDBOX: `probe-plan` exists there, `no-such-plan` does not,
+    // and neither exists in the repo — so the verdict comes from the matcher, not from
+    // whatever the corpus happens to hold today.
     const unresolved = probe
       .flatMap((t) => planPathsIn(t))
-      .filter((p) => !existsSync(join(repoRoot, p)));
+      .filter((p) => !existsSync(join(sandbox, p)));
+    rmSync(sandbox, { recursive: true, force: true });
     // Convicts the dead one and ONLY it. The shape, the foreign-tree path and the
-    // dot-directory are not paths this tree can be held to; the live plan resolves.
+    // dot-directory are not paths this tree can be held to; the probe plan resolves.
     expect(unresolved).toEqual([dead]);
   });
 
