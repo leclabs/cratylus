@@ -60,7 +60,7 @@ beforeAll(async () => {
   const claudeOut = join(base, 'claude');
   const codexOut = join(base, 'codex');
 
-  // The CLAUDE path, exactly as `project-cli.ts` drives it.
+  // The CLAUDE path, driven straight off the projector API.
   // V7 made the projector RETURN the artifact tree; the caller is the one writer.
   const claudeReport = await projectPluginSet({
     plugins: [canonPlugin],
@@ -68,11 +68,18 @@ beforeAll(async () => {
   });
   writeRenderTree(claudeOut, claudeReport.files);
 
-  // The CODEX path, through its real CLI — the fork's live call site.
+  // The CODEX path, through its real CLI — the fork's live call site. That call site
+  // is now the SHIPPED command: `agent-forge project --harness codex`, reading the
+  // repository's own `agents.config.ts`. Driving the private `project-cli-codex.ts`
+  // here was what let the fork exist at all; there is no private codex CLI to drive.
   execFileSync(
-    join(canonRoot, 'node_modules', '.bin', 'tsx'),
+    join(canonRoot, 'node_modules', '.bin', 'agent-forge'),
     [
-      join(canonRoot, 'src', 'toolkit', 'project-cli-codex.ts'),
+      'project',
+      '--harness',
+      'codex',
+      '--config',
+      join(canonRoot, '..', '..', 'agents.config.ts'),
       '--out',
       codexOut,
     ],

@@ -303,7 +303,11 @@ describe('COMMAND-VERACITY gate — a named command must exist', () => {
     const probe = [
       'run `pnpm anatomy:project:targets` to regenerate',
       'then `pnpm canon:project` — this one is real',
-      'pnpm --filter @leclabs/agent-canon project',
+      // A --filter citation, so the control covers that shape too. It named
+      // `project` until `t-build-steps-proxy-the-cli` deleted canon's private
+      // `project` / `project:codex` scripts along with the CLIs they drove;
+      // `project:targets` is the surviving filtered script.
+      'pnpm --filter @leclabs/agent-canon project:targets',
       'pnpm install',
     ];
     probe.forEach((lineText, i) => {
@@ -318,8 +322,9 @@ describe('COMMAND-VERACITY gate — a named command must exist', () => {
       }
     });
     const unresolved = [...seen.keys()].filter((s) => !declared.has(s));
-    // Convicts the bogus one, and ONLY it: `canon:project` and `project` resolve,
-    // `install` is a builtin. A control that convicted everything would prove nothing.
+    // Convicts the bogus one, and ONLY it: `canon:project` and `project:targets`
+    // resolve, `install` is a builtin. A control that convicted everything would
+    // prove nothing.
     expect(unresolved).toEqual([bogus]);
   });
 });

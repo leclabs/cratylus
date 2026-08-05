@@ -7,7 +7,7 @@
 //
 // Usage:  tsx src/toolkit/scaffold-cli.ts --target <dir> [--agents-dir <dir>]
 //                                          [--skills-dir <dir>] [--subject <text>] [--force]
-//   default render tree:  <anatomyRoot>/.render-ts/{agents,skills}  (from project-cli)
+//   default render tree:  <anatomyRoot>/.render-ts/{agents,skills}  (from `pnpm canon:project`)
 
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

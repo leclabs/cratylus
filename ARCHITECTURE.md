@@ -135,6 +135,16 @@ anything in this repository that performs such a step by another route is a dive
 reimplementation of a shipped command, which is how a projector drifts from its own CLI without
 anything reporting it.
 
+**This repository is itself such a consumer.** `agents.config.ts` at the root extends the canon
+plugin, and `canon:project` / `canon:project:codex` are proxies through `agent-forge project
+--harness <name>`; the `canon:deploy*` scripts reach the `agent-forge` bin rather than a `dist/`
+path. The two private CLIs those scripts used to drive (`agent-canon/src/toolkit/project-cli.ts` and
+`project-cli-codex.ts`) were the same program differing by one adapter string, and the corpus had
+already paid for the duplication: the codex copy drifted once and shipped SESSIONLESS runtime shims
+to every codex-projected skill for the life of the divergence. Both are deleted, and the render
+oracle (`.render-ts` + `.render-ts-codex`) is byte-identical through the shipped command — the proof
+that the private path carried no behaviour the CLI lacks.
+
 #### `agent-cli` — the runtime's installable entry
 
 It exists for a reason the package name does not carry: **to break a dependency cycle.** Every
@@ -191,8 +201,6 @@ Stated honestly, because a north star that pretends to be a description is usele
 | divergence                                                                            | evidence                                                                                                                                                                                                            |
 | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **`agent-schema` imports `agent-runtime`** — an edge this graph does not draw         | `schema/index.ts` takes `RuntimePlugin` only to derive `keyof Omit<…,'name'>` — it wants a **vocabulary**, not a shape. `shape ⊥ vocabulary`, as `MODEL.md:22` already rules for `Event`. Ratcheted, never licensed |
-| **build-time steps bypass the build-time CLI** — a private reimplementation           | `agent-canon/src/toolkit/project-cli.ts` and `project-cli-codex.ts` duplicate `agent-forge project --harness <name>`, differing by one string; the codex copy already drifted once and shipped sessionless shims    |
-| **this repository is not a consumer of its own CLI** — no `agents.config.ts` exists   | `agent-forge project` exits 1 without one, so the corpus that DEFINES the design cannot be built by the shipped command                                                                                             |
 | **three packages are `private: true`** — including the one owning the installable bin | `agent-cli`, `agent-memory`, `agent-runtime`; nothing is published and every version is `0.0.0`                                                                                                                     |
 | **canon's own most structural module is still `src/anatomy.ts`** — holding `MANIFEST` | the file name is the retired sign; 154 importers reach it                                                                                                                                                           |
 | **a canon cell names the runtime's binary** — projection knowledge in a cell          | `RUNTIME_BIN` in `hooks/memory-consolidation-nudge.ts`                                                                                                                                                              |

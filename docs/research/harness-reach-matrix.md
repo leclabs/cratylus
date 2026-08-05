@@ -59,8 +59,10 @@ projection is therefore identical machinery per harness — no per-harness subtr
 
 ## Reproduce
 
+One command, one `--harness` flag — the harness is the only thing that differs, and both legs are
+proxies through the shipped `agent-forge project` reading the repository's own `agents.config.ts`:
+
 ```sh
-cd packages/agent-canon
-pnpm project         # claude   → .render-ts/
-pnpm project:codex   # codex    → .render-ts-codex/ (agents/*.toml + skills + AGENTS.md)
+pnpm canon:project        # claude → packages/agent-canon/.render-ts/
+pnpm canon:project:codex  # codex  → packages/agent-canon/.render-ts-codex/ (agents/*.toml + skills + AGENTS.md)
 ```

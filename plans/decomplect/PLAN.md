@@ -98,14 +98,14 @@ extraction's job.
 **Regression oracle** — reproject BOTH targets first:
 
 ```sh
-pnpm canon:project && pnpm --filter @leclabs/agent-canon project:codex
+pnpm canon:project && pnpm canon:project:codex
 ```
 
 `canon:project` alone writes only `.render-ts`, so against a stale codex render the hash below reads
-the stale half and **still prints the expected value**. Note the asymmetry in the second half: the
-root exposes `canon:project` but **no `canon:project:codex`**, so the codex leg must be spelled out
-through the filter — and `canon:deploy` runs `canon:project` only, meaning **deploy never reprojects
-codex at all**. Then:
+the stale half and **still prints the expected value**. The root asymmetry that forced the codex leg
+through `--filter` is gone (`t-build-steps-proxy-the-cli`): both legs are now proxies through
+`agent-forge project --harness <name>`. What survives is that `canon:deploy` runs `canon:project`
+only, so **deploy never reprojects codex at all**. Then:
 `find packages/agent-canon/.render-ts packages/agent-canon/.render-ts-codex
 -type f | sort | xargs shasum | shasum` → `fe084dd1d531948979dc386713c3f688c96088ab`. Verified
 deterministic across two reprojections. **It moved from `9055e88b…` when `a2205eb` changed the

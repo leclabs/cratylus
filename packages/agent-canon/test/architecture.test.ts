@@ -320,8 +320,11 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     expect(ks).toContain('memory/plugin.ts → runtime');
     // Was `canon/skills/wake/skill.ts → forge`, which PLAN §1 retired. The
     // violating anchor is now canon's root plugin declaration; the permitted one is
-    // a build script using the projector as a tool.
-    expect(ks).toContain('canon/toolkit/project-cli.ts → forge');
+    // a build script using the projector as a tool. Was `toolkit/project-cli.ts`
+    // until the build-steps-proxy-the-cli shard deleted it — projection is the
+    // shipped `agent-forge project --harness <name>` now, driven from the root
+    // `agents.config.ts`, so the anchor moved to a build script that survives.
+    expect(ks).toContain('canon/toolkit/scaffold-cli.ts → forge');
     expect(ks).toContain('canon/index.ts → forge');
     expect(ks).toContain('canon/skills/wake/skill.ts → schema');
     // Known NON-edges: import-shaped text in a template and in a comment.
@@ -350,15 +353,17 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     // (`ARCHITECTURE.md` carried "28" for months; it was never measured and it was
     // wrong.) A cell reaching the projector again moves this off zero.
     expect(canonCells.length, 'canon CELLS importing the projector').toBe(0);
-    // WAS 9, IS 6, and these are LICENSED — a corpus BUILT BY forge, not DEFINED
-    // by it, which `ARCHITECTURE.md` names explicitly as not a divergence. Three of
-    // the nine (`toolkit/{hooks,project,project-targets}.ts`) took only the cell
-    // SHAPES and now take them from the schema, so their forge edge is gone
-    // outright. The six that remain drive the projector, which is what a tool is
-    // for. This number does not go to zero, and driving it there would mean canon
-    // could no longer build itself.
+    // WAS 9, THEN 6, IS 4 — and these are LICENSED: a corpus BUILT BY forge, not
+    // DEFINED by it, which `ARCHITECTURE.md` names explicitly as not a divergence.
+    // Three of the nine (`toolkit/{hooks,project,project-targets}.ts`) took only the
+    // cell SHAPES and now take them from the schema, so their forge edge is gone
+    // outright. Two more went with `toolkit/project-cli{,-codex}.ts`: they were one
+    // program differing by an adapter string, and the shipped
+    // `agent-forge project --harness <name>` is that program. The four that remain
+    // drive the projector as a tool. This number does not go to zero, and driving it
+    // there would mean canon could no longer build itself.
     expect(canonBuild.length, 'canon BUILD SCRIPTS using forge as a tool').toBe(
-      6,
+      4,
     );
     // WAS 3, IS 1 — `anatomy.ts` and `anatomy.test-d.ts` now take their shapes from
     // the schema. The survivor is `index.ts`, which takes `defineAgentPlugin` from

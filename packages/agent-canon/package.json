@@ -14,9 +14,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "typecheck:test": "tsc -p tsconfig.test.json",
-    "test": "vitest run",
-    "project": "tsx src/toolkit/project-cli.ts",
-    "project:codex": "tsx src/toolkit/project-cli-codex.ts",
+    "test": "pnpm run build && vitest run",
     "project:targets": "tsx src/toolkit/project-targets-cli.ts",
     "plan-set": "tsx src/toolkit/plan-set-cli.ts",
     "scaffold": "tsx src/toolkit/scaffold-cli.ts",
@@ -25,6 +23,7 @@
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
     "prepack": "pnpm run build"
   },
+  "//test": "`test` builds FIRST because `test/runtime-shim.test.ts` drives the shipped `agent-forge project` over the repository's own `agents.config.ts`, and that config extends `@leclabs/agent-canon` — the PACKAGE, i.e. this package's `dist`. turbo's `test.dependsOn: [^build]` builds this package's DEPENDENCIES, never this package, so a cold clone would run the consumer path against a dist that does not exist.",
   "//": "Depends on the RUNTIME contract leaf as well as forge: the memory-nudge hook cell emits shell that invokes the runtime bin, so it must read that bin's name from its one home (`@leclabs/agent-runtime/bin-name`) rather than repeat the literal inside a compiler-invisible script string. The runtime is a zero-@leclabs-dep leaf, so the edge cannot cycle.",
   "dependencies": {
     "@leclabs/agent-forge": "workspace:*",

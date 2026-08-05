@@ -16,7 +16,7 @@
 // transport backend lives here.
 //
 // The deploy layer consumes an ALREADY-PROJECTED render tree; the projection
-// itself is agent-forge's claude adapter, driven by agent-canon's project-cli.
+// itself is agent-forge's claude adapter, driven by `agent-forge project`.
 
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
