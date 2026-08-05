@@ -2,12 +2,12 @@
   "schema": 1,
   "reader": "strong-llm-lean",
   "fleet": {
-    "hosts": ["fire", "forge", "spark"],
+    "hosts": ["localhost", "build-01", "gpu-01"],
     "exclude": []
   },
   "host": {
-    "fire": { "local": true },
-    "forge": { "user": "YOUR_SSH_USER" },
-    "spark": { "user": "YOUR_SSH_USER", "hostname": "spark.lan", "home": "~/.claude" }
+    "localhost": { "local": true },
+    "build-01": { "user": "YOUR_SSH_USER" },
+    "gpu-01": { "user": "YOUR_SSH_USER", "hostname": "gpu-01.example.internal", "home": "~/.claude" }
   }
 }

@@ -204,10 +204,11 @@ describe('resolveNode — marker lattice (SPEC D3)', () => {
 
 describe('resolveNode — foreign host (the local fs is not evidence)', () => {
   it('a foreign cwd under the config-known homedir resolves to that $HOME', () => {
-    const c = cfg({ hostHomes: { upmav: '/Users/lcaraccioli' } });
-    expect(
-      resolveNode('/Users/lcaraccioli/workspaces/demo', 'upmav', c),
-    ).toEqual({ node: '/Users/lcaraccioli', basis: '$HOME' });
+    const c = cfg({ hostHomes: { remote01: '/home/agent' } });
+    expect(resolveNode('/home/agent/workspaces/demo', 'remote01', c)).toEqual({
+      node: '/home/agent',
+      basis: '$HOME',
+    });
   });
 
   it('a foreign cwd with no config home is its own boundary — never resolved against local markers', () => {
@@ -232,15 +233,15 @@ describe('loadNodeConfig', () => {
         schema: 1,
         memory: { scopeMarkers: ['*.workspace'] },
         host: {
-          upmav: { user: 'lcaraccioli', homedir: '/Users/lcaraccioli' },
-          fire: { local: true },
+          remote01: { user: 'agent', homedir: '/home/agent' },
+          local01: { local: true },
         },
       }),
       'utf8',
     );
     const c = loadNodeConfig(file);
     expect(c.markers).toEqual([...DEFAULT_MARKERS, '*.workspace']);
-    expect(c.hostHomes).toEqual({ upmav: '/Users/lcaraccioli' });
+    expect(c.hostHomes).toEqual({ remote01: '/home/agent' });
     rmSync(dir, { recursive: true, force: true });
   });
 
