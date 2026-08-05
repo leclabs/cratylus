@@ -13,6 +13,36 @@ Suite green, 16 tasks — **canon 175** (23 files, +1 skipped) · **forge 215** 
 (16) · **runtime 52** (5) · **schema 9** (1). Render oracle
 `0ac8e09fbbd40077f246d4774da60789cc8b3dbd`. Tree clean.
 
+### Retired-tree deletion — 2026-08-05, operator instruction
+
+**`plans/.retired/` is gone: 18 plans, 127 files, deleted wholesale** to cut the reading surface.
+Nothing was retirable at the time — `decomplect` is the only in-scope plan and it is in-flight — so
+this was the ALREADY-retired tree, not a retirement.
+
+It is coherent with the ruling three hours earlier and stronger: the argument that chose _marking_
+over _restoring_ was that the record was never destroyed, because git holds every byte. That applies
+harder to deletion. What left the working tree is the reading cost, not the record; `git log --
+plans/.retired/` still reaches all of it. 16 of the 17 `NAMES-RETROFITTED.md` notices went with it,
+and the retrofit problem for those 86 files dissolved rather than being solved.
+
+**Two gates had live subjects in that tree and neither may go silently vacuous:**
+
+- `record-retrofit-notice` — roster 17 → 1. Its exonerating leg lost its live subject
+  (`plans/decomplect/completed/` is now the only historical directory AND is the whole roster), so
+  the property moved into the convicting fixture, where a synthetic corpus can always supply an
+  untouched directory. A live leg there would assert over an empty set and read green for having
+  nothing to look at.
+- `plan-set` retirement-integrity — its scan returns `[]` for a missing root, which the FIXTURE needs
+  and the live leg must not inherit. The live leg now REPORTS the absence instead of passing over it.
+
+**▶ A canon contradiction this opens, surfaced and NOT resolved — it is not a cleanup's to make.**
+The praxis cell defines `retire : P ↦ P' ≜ relocate dir(P) under plans/.retired/ ; post content(P') =
+content(P)` (`canon/src/skills/praxis/skill.ts:159`), and `plan-set.ts` carries `RETIRED_DIR`. If
+retirement is to mean DELETION, that law is false as written and the mechanism is misnamed. If it
+still means relocation, then this deletion was a one-off cleanup and `.retired/` will simply be
+recreated by the next `retire`. **Both are defensible; the canon currently asserts the first is
+wrong.** Filed as [`pending/retire-relocates-but-the-operator-deletes.md`](./pending/retire-relocates-but-the-operator-deletes.md).
+
 ### Wake sync — 2026-08-05, after the workspace directory was renamed
 
 **The host broke, the repository did not, and nothing here could have told the difference.** The

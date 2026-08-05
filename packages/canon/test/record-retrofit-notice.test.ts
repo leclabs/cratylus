@@ -1,10 +1,16 @@
 // record-retrofit-notice — a rewritten RECORD must say so, in the directory that holds it.
 //
 // `61b85db7` (`refactor(names)!`) swept the retired brand out of the whole tree, content AND
-// paths, and 99 of the files it rewrote were CLOSED RECORDS: 86 under `plans/.retired/`, 13
-// under `plans/decomplect/completed/`. A record edited to match today is no longer a record —
-// what the sweep took was not the text (git holds every original byte) but the reader's
-// knowledge that a substitution happened. `NAMES-RETROFITTED.md` is that knowledge, put back.
+// paths, and 99 of the files it rewrote were CLOSED RECORDS. A record edited to match today is
+// no longer a record — what the sweep took was not the text (git holds every original byte) but
+// the reader's knowledge that a substitution happened. `NAMES-RETROFITTED.md` is that knowledge,
+// put back.
+//
+// THE ROSTER SHRANK 17 → 1, and by DELETION, not by repair. `plans/.retired/` — 18 plans, 127
+// files, 86 of them retro-fitted — was deleted wholesale to cut the reading surface. The same
+// argument that chose marking over restoring applies harder to deletion: git holds every byte,
+// so what is gone from the working tree is the reading cost, not the record. What survives here
+// is `plans/decomplect/completed/`, which belongs to a LIVE plan and is still read.
 //
 // Falsifiers:
 //
@@ -49,25 +55,7 @@ const SWEEP = '61b85db7';
  * `git show <SWEEP>` and CI checks out shallow — a git-derived roster would come back
  * EMPTY there and the gate would pass by looking at nothing.
  */
-const REWRITTEN: readonly string[] = [
-  'plans/.retired/autonomy-decomplect',
-  'plans/.retired/canon-promotion',
-  'plans/.retired/close-out',
-  'plans/.retired/compiler-projector-split',
-  'plans/.retired/depalimpsest-ir-intake',
-  'plans/.retired/discipline-anchor',
-  'plans/.retired/event-tap',
-  'plans/.retired/formal-block-self-sufficiency',
-  'plans/.retired/heartbeat-organ',
-  'plans/.retired/install-parity',
-  'plans/.retired/memory-consolidation',
-  'plans/.retired/plan-set-dynamics',
-  'plans/.retired/praxis-shard-shape',
-  'plans/.retired/runtime',
-  'plans/.retired/self-sufficiency-redo',
-  'plans/.retired/skills-refactor',
-  'plans/decomplect/completed',
-];
+const REWRITTEN: readonly string[] = ['plans/decomplect/completed'];
 
 /** Every closed-record directory under `root`: `plans/.retired/<plan>` ∪ `plans/<plan>/completed`. */
 function historicalDirs(root = REPO): string[] {
@@ -113,7 +101,7 @@ function danglingLinks(root: string, roster: readonly string[]): string[] {
 
 describe('record-retrofit-notice', () => {
   it('the roster is not empty and every entry is a real directory — the gate can see', () => {
-    expect(REWRITTEN.length).toBe(17);
+    expect(REWRITTEN.length).toBe(1);
     for (const d of REWRITTEN) {
       expect(
         existsSync(join(REPO, d)),
@@ -129,18 +117,19 @@ describe('record-retrofit-notice', () => {
     ).toEqual([]);
   });
 
-  it('(2) a historical directory the sweep did NOT touch carries NO notice', () => {
+  // Leg (2) — a directory the sweep never touched must carry NO notice — has NO LIVE
+  // SUBJECT since the deletion: `plans/decomplect/completed` is the only historical
+  // directory left and it IS the roster, so an on-corpus leg would assert over an empty
+  // set and read green for having nothing to look at. The property is real and is
+  // exercised in the convicting fixture below, over a synthetic corpus that can always
+  // supply an untouched directory. Asserting it here would be coverage dressed as
+  // conformance.
+  it('the exonerating property has no live subject — it is checked in the fixture', () => {
     const untouched = historicalDirs().filter((d) => !REWRITTEN.includes(d));
-    // The control must be able to fail: if the sweep happened to reach every historical
-    // directory there is nothing to exonerate, and this leg is DARK, not clean.
     expect(
-      untouched.length,
-      'no untouched historical directory exists — leg 2 is dark',
-    ).toBeGreaterThan(0);
-    const falsely = untouched.filter((d) => existsSync(join(REPO, d, NOTICE)));
-    expect(falsely, `${NOTICE} claims a rewrite that did not happen`).toEqual(
-      [],
-    );
+      untouched,
+      'a historical dir reappeared — give leg 2 its live subject back',
+    ).toEqual([]);
   });
 
   it('(3a) each notice names the sweep and links to the shard that argues it', () => {

@@ -33727,7 +33727,7 @@
       "norm_label": "live breakage this census surfaced (unrelated to parity, worth fixing now)"
     },
     {
-      "label": "7. Distribution is not agent-factory's concern",
+      "label": "7. Distribution is not cratylus's concern",
       "file_type": "document",
       "source_file": "plans/.retired/install-parity/DESIGN.md",
       "source_location": "L297",
@@ -33735,7 +33735,7 @@
       "id": "plans_retired_install_parity_design_7_distribution_is_not_agent_factory_s_concern",
       "community": 2,
       "community_name": "Story: Harness Import",
-      "norm_label": "7. distribution is not agent-factory's concern"
+      "norm_label": "7. distribution is not cratylus's concern"
     },
     {
       "label": "7a. `compile` is not a stage \u2014 it is a second, opposed pipeline",
@@ -38171,7 +38171,7 @@
       "norm_label": "t-config-filename-carries-the-retired-brand.md"
     },
     {
-      "label": "`.agent-factory.config` \u2014 a user-facing filename still wearing the retired brand, in two homes",
+      "label": "`.cratylus.config` \u2014 a user-facing filename still wearing the retired brand, in two homes",
       "file_type": "document",
       "source_file": "plans/decomplect/ready/t-config-filename-carries-the-retired-brand.md",
       "source_location": "L1",
@@ -38179,7 +38179,7 @@
       "id": "plans_decomplect_ready_t_config_filename_carries_the_retired_brand_agent_factory_config_a_user_facing_filename_still_wearing_the_retired_brand_in_two_homes",
       "community": 167,
       "community_name": "canon/dimensions: simplicity.ts",
-      "norm_label": "`.agent-factory.config` \u2014 a user-facing filename still wearing the retired brand, in two homes"
+      "norm_label": "`.cratylus.config` \u2014 a user-facing filename still wearing the retired brand, in two homes"
     },
     {
       "label": "Symptom",

@@ -277,8 +277,20 @@ describe('RETIREMENT INTEGRITY — a retired plan carries no unfinished shard', 
     return out.sort();
   };
 
-  it('the live .retired/ tree holds only completed shards', () => {
+  it('the live .retired/ tree holds only completed shards — or says it is not there', () => {
     const root = join(repoRoot, 'plans', '.retired');
+    // `unfinished` returns [] for a missing root, which the FIXTURE needs and the live
+    // leg must not silently inherit: with no `.retired/` tree this leg would be green
+    // for having nothing to look at. "Found nothing" and "could not look" are different
+    // answers, so the absence is reported rather than passed over. The tree was deleted
+    // wholesale — see `plans/decomplect/completed/the-brand-sweep-rewrote-the-record-not-only-the-source.md`.
+    if (!existsSync(root)) {
+      console.warn(
+        'plan-set (retirement integrity): NO LIVE SUBJECT — plans/.retired/ does not exist. ' +
+          'The scan is exercised by its fixture only.',
+      );
+      return;
+    }
     expect(
       unfinished(root),
       'retired plans still carrying unfinished shards — each is work nobody decided to drop:',
