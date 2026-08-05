@@ -1,3 +1,18 @@
+> **RE-SCOPED 2026-08-05 by census.** The filed INSTANCE is repaired and the filed PROPERTY is not.
+> `toolkit/guardrail/memory-consolidation-nudge.sh:40` now reads `MEM="${MEMORY_BIN:-cratylus-run}"`,
+> and `bin-name-single-home.test.ts:142-158` now reads the committed `.sh` — so the gate DOES cross
+> the language boundary. For exactly one file, reached by a `targetPath`, not by a scan.
+>
+> **There are 13 `.sh`/`.mjs` sources under `packages/*/src`. Twelve are watched by nothing** for
+> this property. No canon test enumerates them by glob: `command-veracity.test.ts` names two by
+> literal, and `harness-parity.test.ts`'s shell strings are synthetic fixtures.
+>
+> So the shard's acceptance — which quantifies over _"any hand-authored shell or `.mjs` source under
+> `packages/_/src`"* — is **unmet**, and the shard's own Constraints section already said the scan
+DOMAIN *"is the question, not the assertion"*. That question is now the whole shard. This is also
+the property whose absence cost this session a dead `/wake`: an emitted artifact naming a bin is
+> exactly where a rename fails on a host rather than at build.
+
 # `bin-name-single-home.test.ts` asserts on TypeScript, and the bin name escapes into `.sh`
 
 > Surfaced 2026-08-05 by the bin migration (`runtime` → `cratylus-run`). The gate did not fail.

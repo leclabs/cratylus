@@ -187,54 +187,27 @@ Surfaced and NOT fixed, because it is the operator's:
 the reach `a2205eb` generalized out of `cratylism`. The apex triad must stay mutually consistent, and
 `CANON.md` says a VISION conflict is surfaced, never unilaterally edited.
 
-### Owed next, in order
+### Owed next — the work list left this file
 
-1. **Amend `bin-name-single-home`**, then repair property 1. It pins the canon→runtime import; the
-   repair is red until the counter-gate is a design decision made deliberately.
-2. ▶ **READY — [`ready/t-runtime-capability-vocabulary.md`](./ready/t-runtime-capability-vocabulary.md).**
-   The `schema → runtime` edge is **ratcheted, not licensed**, and that detection stands. **The remedy
-   recorded here was refuted by census on 2026-08-05 and is replaced.** It read _"a shape the corpus
-   authors against belongs in the shapes package, so the resolution is to move `RuntimePlugin`"_ — but
-   schema does not consume `RuntimePlugin`, it consumes `keyof Omit<RuntimePlugin, 'name'>`, a **key
-   set**. `RuntimePlugin` is typed over `MemoryStrategy` and `EventTapHost`, so moving it drags the
-   **ports** into the shapes package — and the ports are the whole of what ARCHITECTURE assigns to the
-   runtime. The defect is `shape ⊥ vocabulary`, exactly as `MODEL.md:22` already names it for `Event`,
-   and it dissolves by naming the vocabulary in canon. Detection kept, remedy rejected.
-3. **Rule on `AgentPlugin` — [`pending/t-agent-plugin-cut.md`](./pending/t-agent-plugin-cut.md), and
-   the binary in the question is the wrong question.** Its seven fields split cleanly: `fragments`
-   `agents` `skills` `hooks` are dirs the **resolver scans** (forge's mapping); `preamble` and
-   `manifest` are **doctrine and which-dimensions-exist** (canon's, and ARCHITECTURE calls a dimension
-   constitutive). One sign over two concepts — the same palimpsest species as `anatomy`, which is why
-   the ownership question has no answer as posed. Blocked on #2: both write `schema/src/index.ts`
-   and both retire a pin from the same ratchet, so they cannot share a wave.
-4. **Concept A's surviving occupancy**, now the largest residue: `canon/src/anatomy.ts` still holds
-   `MANIFEST` behind the retired sign (154 importers), and `FIXTURE_ANATOMY` survives at ~110 sites so
-   call sites read `manifest: FIXTURE_ANATOMY`. Both were outside the enumerated rename set and were
-   correctly left rather than assumed.
+**`(state, R, content) ≽ PLAN.md` — and this mirror was violating it.** The plan's work list lived
+here as prose while `ready/` sat near-empty, which is the exact defect the 2026-08-05 praxis sync
+named and did not finish repairing. **It is now task-files.** Read
+[`praxis frontier`](./ready/), not this section.
 
-**The oracle command in Status is ✅ FIXED** — it now reprojects both targets and names the
-`canon:project:codex` gap that made the old one half a proof.
+**Before dispatching anything, read [`CENSUS-2026-08-05.md`](./CENSUS-2026-08-05.md).** Four
+independent readers re-measured every open item against the tree. **Seven items are dead** —
+discharged, refuted, or superseded — and several survivors are not the defect they were filed as.
+Executing the old list would have produced motion without value.
 
-**Before touching property 1** (canon ⊥ runtime), amend the counter-gate: `bin-name-single-home`
-asserts the violating import STAYS. That is a design decision, not a repair, and it is not the
-extraction's job.
+|                |                                                                                                          |
+| -------------- | -------------------------------------------------------------------------------------------------------- |
+| **`ready/`**   | **12 shards with a determinate target today.** No ruling owed; dispatchable now                          |
+| **`pending/`** | **21 shards blocked on a ruling that is not an executor's** — a mint, a ground revision, or a design cut |
 
-**Regression oracle** — reproject BOTH targets first:
-
-```sh
-pnpm canon:project && pnpm canon:project:codex
-```
-
-`canon:project` alone writes only `.render-ts`, so against a stale codex render the hash below reads
-the stale half and **still prints the expected value**. The root asymmetry that forced the codex leg
-through `--filter` is gone (`t-build-steps-proxy-the-cli`): both legs are now proxies through
-`cratylus project --harness <name>`. What survives is that `canon:deploy` runs `canon:project`
-only, so **deploy never reprojects codex at all**. Then:
-`find packages/canon/.render-ts packages/canon/.render-ts-codex
--type f | sort | xargs shasum | shasum` → `fe084dd1d531948979dc386713c3f688c96088ab`. Verified
-deterministic across two reprojections. **It moved from `9055e88b…` when `a2205eb` changed the
-founding doctrine, which rides into every SOUL — so a hash change is only a defect when nothing
-intended to change the projected bytes.** Re-baseline deliberately, never silently.
+**The single largest thing in `pending/` is `t-worker-payload-seam-and-property-1`** — it merges the
+homeless-hook-message shard into the property-1 ruling, because the census established they are one
+question wearing two filings. It is the last entry in the architecture ratchet and the only breach
+that cannot be repaired by refactoring.
 
 ## Landed
 
@@ -251,156 +224,32 @@ intended to change the projected bytes.** Re-baseline deliberately, never silent
 
 Detail and the corrections made during execution live in `completed/`.
 
-## Open — ordered by how much of ARCHITECTURE they unblock
+## Open — the sections that used to live here
 
-### 0. The cratylism sweep — [`CRATYLISM-SWEEP.md`](./CRATYLISM-SWEEP.md)
+**Deleted, not lost.** `## Open`, `## The order`, `### 1. Extract the meta-model`, `### 2. The
+lifecycle vocabulary`, `### 3. Direction A` and `### 4. Direction B` carried this plan's work list as
+prose for as long as the plan has existed. Every item in them has been re-measured and re-filed as a
+task-file under `ready/` or `pending/`, each carrying its own census evidence and, where one is owed,
+the ruling that blocks it.
 
-Six specs (C0–C5) plus three unassigned findings, every claim verified against the tree. Tests the
-generalized `cratylism` that landed in `a2205eb` and finds it not honored, with one dominating
-failure shape: **the correction was written into the prose and never into the sign.**
+They are recoverable at `git show a500cf1c:plans/decomplect/PLAN.md`. They are not reproduced here,
+because two homes for one work list is how the frontier went stale twice in one day.
 
-**C0 is ✅ LANDED (`979fa021`)** — it came first and dominated the rest. The gate's reach is now
-**asserted**, not merely extended: every ρ=LLM class it owns must be witnessed by a real surface, so
-the empty ratchet states conformance rather than coverage. Newly reached: rule bodies (`/AGENTS.md`,
-the corpus's most widely-read emission, previously unscanned), rule and hook declarations, the
-founding doctrine, and every agent vector — a class that was declared ρ=LLM and witnessed by nothing.
-One conviction, fixed not pinned. Controls verified by injection.
+**What the sections got wrong, in summary — the detail is in the census:**
 
-**Its detector was NOT touched, and that is the finding.** Both halves of the filed normalization
-complaint died under checking: raising the threshold false-positives the judge prompt (whose
-second-person is agent-address and quoted specimens of the register it detects), and dropping the
-signal false-negatives four of five genuine tutorials. Real tutorial prose runs 15–20 per 100 against
-a threshold of 4; agent-address runs under 1.1. **The rate is a sound discriminator, not a proxy** —
-tutorial register is constituted by density of address. See the sweep's `▶ MEASURED` block; the audit
-trail is kept whole rather than rewritten to match the outcome.
+- **Direction A lost three of eight rows outright** (`A7`, `A9`, `A10`) and a fourth split and lost a
+  member (`A6`/`materialize`). Of the four survivors, only `A12`'s `memory` half is mechanical.
+- **Direction B lost `B16`** and had `B11–B14`'s premise corrected: the `Policy` seam is **not
+  empty** — it has 3 members, a corpus-side supplier, and 17 live call sites.
+- **`### 2`'s duplication is schema-vs-runtime now**, not forge-vs-runtime, which changes the remedy:
+  ARCHITECTURE has no edge between those two in either direction.
+- **`### 1`'s numbers were wrong** — 177 importers, not 154; 75 `FIXTURE_ANATOMY` sites, not ~110,
+  which was never measured at all.
+- **`CRATYLISM-SWEEP.md`'s C6 is OVERTURNED** and the sweep does not say so. `49516a6f` minted the
+  brand it recorded as `⊥` — **and the ⊥ was ruled without testing the candidate that won.**
 
-**One part deferred**, as a model change rather than a test change:
-[`pending/hook-message-has-no-declared-home.md`](./pending/hook-message-has-no-declared-home.md).
-
-**C0 does NOT unblock C1–C5, and the claim that it did was this plan's ordering error.** Measured:
-score **0 of 10**. The density predicate is `conform(cls, text)` — extending reach widens its domain,
-it cannot change what is quantified, and every C1–C5 locus scores clean at whole-file grain. See the
-sweep's `▶ THE SEQUENCING CLAIM IS FALSE`. Each item needs its own property and its own gate.
-
-## The order — re-derived from measurement, 2026-08-04
-
-A census measured, per naming/architecture property, whether a gate exists, how far it reaches, and
-what total reach would convict. **The result reorders this plan.**
-
-**The finding that outranks everything else: ARCHITECTURE's four load-bearing properties are enforced
-by nothing** — no dependency-cruiser, no import lint, no CI; the one edge gate covers 4 files of one
-direction. And **property 1, the highest-ranked, is not merely breached but PINNED**:
-`src/hooks/memory-consolidation-nudge.ts:2` is a canon cell importing `@cratylus/runtime`, and
-`test/bin-name-single-home.test.ts:57,101` asserts that it stays. **Repairing the architecture turns
-the suite red.** Amending that counter-gate is a design decision and comes before the repair.
-
-| #      | work                                                                                                  | why here                                                                                                                                  |
-| ------ | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **1**  | ✅ **ground revised** — `anatomy`→`schema`, stale `28`→`34/22`, `MODEL:22` `⟨schema-owned⟩`           | hard blocker on §1; ground carrying a refuted sign is worse than source                                                                   |
-| **2**  | **§1 extract `schema`** + `Anatomy`→`DimensionManifest`, `ANATOMY`→`MANIFEST`, `.anatomy`→`.manifest` | largest conviction volume by far — 25 of 34 canon→forge file edges, and `src/anatomy.ts` alone propagates to 142 dimensions and 10 agents |
-| **3**  | **§2 vocabulary** — canon owns the 28 names, schema owns the `Hook` shape; land `vcs.commit.post`     | needs #2's package to exist; §1 is what hands §2 its cut                                                                                  |
-| **3′** | **C1 residuals** — concept B (`anatomyRoot`, 10 files, `⊥`), concept C (`adapters/*/anatomy.ts`)      | independent of #2's type moves                                                                                                            |
-| **4**  | **C5** `SOUL`→`Target` in forge                                                                       | same depalimpsest pass as 3′, 12 files                                                                                                    |
-| **5**  | **C4** signify the anchor, derive `eventTap` mechanically, gate keyspace≡name≡dir≡verb≡skill          | needs its own ruling — **then fixes A12 for free**, which hard-codes `scripts/eventTap.mjs` in a canon cell                               |
-
-**Parallel from day one, blocked by nothing:** C2 _(gate ✅ landed — `command-veracity`; the property
-generalizes to ~45 more convictions across markdown links and source-comment path citations, not yet
-covered)_ · C3 _(pure deletion — but **file the `coined` re-signification separately**, it does not
-die with the generator)_ · `accept.ts:52`'s fifth `Kind` · **all three** `pending/` filings —
-`hook-message-has-no-declared-home`, `elevate-installs-no-mechanism`, and
-[`deployed-drifts-from-rendered-unwatched`](./pending/deployed-drifts-from-rendered-unwatched.md),
-the last filed 2026-08-04 after a stale deployed SOUL ran superseded doctrine for a whole session
-with every gate green.
-
-**Deliberately last: §4 and A2/A5/A6** — not because they are small, but because **no property
-convicts them**, so each needs its property stated first. A2 is a vocabulary-design task the size of
-§2 and should be scheduled as one, not as a table row.
-
-**Re-verify before scheduling: A9 appears already discharged by `a2205eb`** — `skills/signify/skill.ts`
-now reads `Art ≜ every authored surface` and contains no harness path token.
-
-**C1 interacts with §1 below** — if its argmin rejects `anatomy`, `ARCHITECTURE.md` must be revised
-in the same act, because ground carrying a refuted sign is worse than source doing so.
-
-### 1. Extract the meta-model — it leaves the projector
-
-**The largest divergence, and the one the others are downstream of.** Canon's cells take **28 imports
-from `@cratylus/forge/anatomy`** — the corpus depending on its own projector. ARCHITECTURE's
-property 2 fails on exactly those 28.
-
-**Do C1 first, or at least concurrently.** `ARCHITECTURE.md` calls the extracted package
-`anatomy`, and C1's ruling is that `anatomy` is a metaphor binding two concepts and must be
-re-signified. Extracting under a sign already ruled against would mint the defect into a package
-name — the most expensive place to carry one.
-
-The meta-model is [`MODEL.md`](../../MODEL.md) realized in types and belongs to neither package.
-Extracting it lets meaning and projection stop referencing each other.
-
-Keep the distinction that makes this tractable: canon's **build scripts** importing
-`forge/{project,deploy,validate,module-scan}` is a corpus _built by_ forge and is fine. A **cell**
-importing forge is a corpus _defined by_ forge. Only the second is the defect.
-
-`completed/DIMENSION-OWNERSHIP.md` is the executed template — the same shape, one layer down, and its
-hazards apply verbatim.
-
-### 2. The lifecycle vocabulary — one home, and it is canon's
-
-Declared twice today: forge's `CanonicalEvent` (schema-generated) and runtime's `LIFECYCLE_EVENTS`
-(hand-authored). 28 members each, **identical set and identical order, agreeing by coincidence with
-nothing enforcing it**, consumers fully disjoint — which is why it never surfaced.
-
-`EVENT-VOCABULARY.md` carries the measurements and is **still correct on the defect, superseded on
-the remedy**. It proposed base-in-runtime plus a corpus extension, to solve a dependency problem —
-runtime is the dependency root and cannot import canon. **ARCHITECTURE dissolves that problem:
-runtime receives corpus-specific facts as configuration the projection emitted**, exactly as a memory
-strategy receives its backend selection. So the vocabulary is canon's outright: a lifecycle event is
-a _name for a moment_, and naming is signification.
-
-Two things to settle before moving anything:
-
-- **Cold-verify the members.** Nine of 28 are realizable on no harness, in symmetric pairs
-  (`model.request.pre`/`model.response.post`, `shell.exec.pre`/`shell.exec.post`,
-  `mcp.exec.pre`/`mcp.exec.post`, `file.edit.post`/`file.read.pre`). That is the signature of
-  enumeration, not discovery. **Unmapped ≠ fabricated** — canon may legitimately declare a moment it
-  wants governed and let harnesses degrade — so the test is whether each names a real concept, not
-  whether a harness fires it. Those are different questions.
-- **`vcs.commit.post`** sits outside the union, hardcoded in forge, because a canon cell needed it and
-  there was no seam. It is not a separate item; it is the same defect's other half.
-
-### 3. Direction A — harness knowledge still in canon cells
-
-**Verify placement before moving any of these.** At least one is filed on a string match rather than
-analysis: `A7 dimensions/model/claude.ts` — the `model` dimension exists to pin which model an agent
-runs on, and models _are_ vendor products. That is plausibly correct and not a defect at all.
-
-| #   | what                                                         | where                                         |
-| --- | ------------------------------------------------------------ | --------------------------------------------- |
-| A2  | claude TOOL NAMES in a matcher                               | `hooks/stance-guardrail-pre.ts:21`            |
-| A5  | `substrate ↦ claude` in the skill that AUTHORS cells         | `skills/create-agent/skill.ts:20`             |
-| A6  | front-matter/`<name>.md` asserted as the authoring law       | `create-agent`, `create-skill`, `materialize` |
-| A7  | `dimensions/model/claude.ts` — **probably not a defect**     | `dimensions/model/claude.ts`                  |
-| A9  | the σ\*-register law quantifies over one harness's file tree | `skills/signify/skill.ts`                     |
-| A10 | `timeout` on hook cells                                      | 4 cells                                       |
-| A12 | `scripts/<capability>.mjs` — the projector owns that shape   | `wake`, `dream`, `handoff`, `event-tap`       |
-| —   | `RUNTIME_BIN` in a cell — a cell naming the runtime's binary | `hooks/memory-consolidation-nudge.ts`         |
-
-**A2 needs design, not a rename.** "Fire when the agent is about to ask or delegate" is a generic
-intent expressed in claude's tool namespace. The generic form needs a canonical **tool-class
-vocabulary** — the same move the lifecycle vocabulary represents, for tools. Sized accordingly.
-
-### 4. Direction B — generic design still in forge
-
-Same rule: verify placement first.
-
-| #       | what                                                                   | where                                      |
-| ------- | ---------------------------------------------------------------------- | ------------------------------------------ |
-| B7      | memory-store seed PROSE (CoALA doctrine) authored in the deploy layer  | `deploy/seeds.ts` — its own TODO admits it |
-| B11-B14 | σ\* register doctrine, `NO_PRIOR`, `HUMAN_MARKERS`, parsimony classes  | beside an empty `Policy` injection seam    |
-| B16     | the SOUL body shape — harness-neutral by its own header                | `core/anatomy-body.ts`                     |
-| B17     | `CANON_PACKAGE` — the projector names one corpus as the default design | `config/scaffold.ts`                       |
-
-Also still claude-shaped in deploy: `deploy/seeds.ts`, `deploy/manifest.ts` `KIND_ROOT`,
-`deploy/init.ts`.
+`CRATYLISM-SWEEP.md` and `EVENT-VOCABULARY.md` are kept as the record of what was believed when they
+were written. Where they disagree with the census, **the census is what is true.**
 
 ## Method — what this shard has learned
 

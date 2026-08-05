@@ -31,8 +31,10 @@ Rename the workspace directory and that relative symlink points at nothing. The 
 it. Nothing asserts that the named bin is **resolvable on the host that runs the shim**. The gate
 covers the string; the failure is in the binding.
 
-There is also no install mechanism to blame. `plans/.retired/install-parity/` records that the
-installer was retired, and `packages/invoke/README.md` documents the consumer path as
+There is also no install mechanism to blame. The `install-parity` plan records that the installer
+was retired — that plan was **deleted with the rest of `plans/.retired/` on 2026-08-05**, so the
+citation is now `git show 61b85db7^:plans/.retired/install-parity/PLAN.md` rather than a live path.
+`packages/invoke/README.md` documents the consumer path as
 `npm install -g @cratylus/invoke` — correct, and not yet available, because nothing is published.
 So the development host runs on a link **no artifact in this repository authored**, which is why
 nothing in this repository could notice it break.
@@ -52,6 +54,26 @@ nothing in this repository could notice it break.
 What was **not** affected, and is worth recording as the thing that was designed right: memory data
 lives at `~/.agents/<name>`, keyed by agent name. It survived the rename untouched. The capability
 broke; the state did not.
+
+## The hand-made recovery is the defect, not the repair
+
+The host works today only because a **hand-authored 86-byte file** was written during recovery:
+
+```sh
+#!/bin/sh
+exec node "/Users/lex/workspaces/cratylus/packages/invoke/dist/bin.js" "$@"
+```
+
+`grep -rn 'local/share/pnpm/bin' packages/ *.md plans/` → **no hits**. No artifact in this repository
+authors it. And it carries an **absolute path into the checkout**, so the original failure mode —
+move the workspace, every deployed shim dies in the node loader — is **reproduced identically, not
+repaired**. It also points at a path `tsup` deletes and recreates under `clean: true`, which is the
+suspected mechanism in `pending/memory-nudge-is-flaky-under-the-full-verify.md`.
+
+Measured, so the gap is not restated as an impression: `cratylus` has **no `install` verb**
+(8 commands declared in `forge/src/cli/index.ts`; `grep -n "'install'"` → nothing), and **no
+deploy-time resolvability check** (`grep -rn 'command -v\|--version' packages/forge/src/deploy/*.ts`
+→ prose comments only).
 
 ## The shape of the fix (not a prescription)
 
