@@ -49,6 +49,7 @@ import {
   withBody,
 } from '@cratylus/schema';
 import type { HarnessMechanism } from '@cratylus/schema/hook';
+import { FORGE_BIN } from '../bin-name.js';
 import {
   type PluginFragmentCatalogs,
   enumeratePluginFragmentCatalogs,
@@ -64,6 +65,10 @@ import {
   scanCellDirNames,
   scanModuleNames,
 } from '../core/module-scan.js';
+// The DEFINING module, never the `deploy/` barrel: one constant is wanted here,
+// and a barrel import would drag deploy's whole lineage into every projection
+// consumer (the edge `adapters/registry` documents at length).
+import { DEPLOY_CHECK_EXIT } from '../deploy/check-exit.js';
 import {
   type LoadedPlugin,
   type PatchEntry,
@@ -84,9 +89,29 @@ import { runtimeShimContent } from './runtime-shim.js';
  * The schema declares WHICH facts exist (`ProjectionFact`) and never a value; a value
  * in the shapes package would restore the `schema → runtime` edge that was repaired
  * on the same day. Names travel down, values live here.
+ *
+ * IT TAKES THE ADAPTER, and that is what closes the second blindness. A hook worker
+ * runs in a session on SOME harness and is told nothing about which; one that has to
+ * LOOK at the deployed tree (rather than merely run in it) therefore matched the
+ * claude adapter's shape by hand and reported on a sibling deployment. The pair it
+ * needed — ⟨name, hooksFile⟩ — is declared on `HarnessAdapter` and reachable from
+ * nowhere else, so a shell-side copy of the adapter table was the only alternative:
+ * a second, uncompilable home for the harness registry. Projection is the one stage
+ * that knows which adapter it is rendering for, so it is the one place the answer
+ * can be bound — and binding it here makes the same cell resolve to per-harness
+ * bytes with no per-harness authoring.
  */
-export function projectionFacts(): ProjectionFacts {
-  return { 'runtime-bin': RUNTIME_BIN };
+export function projectionFacts(adapter: HarnessAdapter): ProjectionFacts {
+  return {
+    'runtime-bin': RUNTIME_BIN,
+    'deploy-bin': FORGE_BIN,
+    'harness-name': adapter.name,
+    'harness-hooks-file': adapter.hooksFile,
+    // A NUMBER CROSSING INTO SHELL. The worker discriminates drift from the
+    // comparator's own failure by exit status, and `1` is forge's choice — not
+    // POSIX's, the way `0` is. So the one code that is ours travels by name.
+    'deploy-check-drift-code': String(DEPLOY_CHECK_EXIT.drift),
+  };
 }
 
 /** The plugin fields projection consumes — the dirs a plugin contributes cells from. */
@@ -570,7 +595,7 @@ export async function projectPluginSet(
       // its workers and resolved at only ONE of the two sites would leak a literal
       // `{{fact:…}}` into a deployed artifact — the failure mode that fails on a
       // host, not at build. Both sites, or neither.
-      const resolved = resolveWorker(worker, projectionFacts());
+      const resolved = resolveWorker(worker, projectionFacts(opts.adapter));
       files.push({
         path: join('hooks', b.anchor, resolved.filename),
         content: resolved.content,
@@ -671,7 +696,7 @@ export async function projectPluginSet(
       const sources = hookCells.map((cell) => ({
         hook: hookIrOf(cell, opts.adapter.hookCommand),
         workers: cell.workers.map((w) =>
-          resolveWorker(w, projectionFacts(), cell.speech),
+          resolveWorker(w, projectionFacts(opts.adapter), cell.speech),
         ),
       }));
       const {

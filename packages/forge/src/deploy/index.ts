@@ -110,6 +110,11 @@ export {
 } from './deploy.js';
 
 export {
+  DEPLOY_CHECK_EXIT,
+  type DeployCheckExit,
+} from './check-exit.js';
+
+export {
   DEFAULT_PROJECT_TEMPLATE,
   type ProjectTemplate,
 } from './project-template.js';

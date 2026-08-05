@@ -11,9 +11,11 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import pc from 'picocolors';
 import { adapterByName } from '../../adapters/registry/index.js';
+import { FORGE_BIN } from '../../bin-name.js';
 import { loadAgentsConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
+  DEPLOY_CHECK_EXIT,
   type DeployKind,
   type RenderTree,
   type Scope,
@@ -158,7 +160,7 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
     await emitHostRuntimeConfig(opts, harnessAdapter.nativeEvents, log, warn);
     return rc;
   } catch (e) {
-    console.error(pc.red(`cratylus deploy: ${(e as Error).message}`));
+    console.error(pc.red(`${FORGE_BIN} deploy: ${(e as Error).message}`));
     return 1;
   }
 }
@@ -274,6 +276,10 @@ export function formatDrift(report: DriftReport): string[] {
  * failure is the same inference the prune refuses, and an operator's own
  * artifact sitting in their own `.claude` is not a defect. It is reported every
  * time regardless; the floor is never silence.
+ *
+ * IT NEVER RETURNS `noVerdict`. This function is only reachable once the audit
+ * ran, so its two outcomes are the two it can testify to. The third code is
+ * emitted where the testimony fails to exist — see `runDeployCheck`'s catch.
  */
 export function driftVerdict(reports: readonly DriftReport[]): {
   stale: number;
@@ -289,14 +295,13 @@ export function driftVerdict(reports: readonly DriftReport[]): {
     stale,
     absent,
     foreign: n('foreign'),
-    rc: stale + absent > 0 ? 1 : 0,
+    rc: stale + absent > 0 ? DEPLOY_CHECK_EXIT.drift : DEPLOY_CHECK_EXIT.inSync,
   };
 }
 
 /** Compare the deployed tree against the render tree; report, change nothing. */
 export function runDeployCheck(opts: DeployCmdOpts): number {
   const log = opts.log ?? ((line: string) => console.log(line));
-  const harnessAdapter = adapterByName(opts.harness ?? 'claude');
   const tree: RenderTree = {
     agentsDir: opts.agentsDir,
     skillsDir: opts.skillsDir,
@@ -306,6 +311,12 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
   const kinds: readonly DeployKind[] =
     opts.kind === 'all' ? ALL_KINDS : [opts.kind];
   try {
+    // INSIDE THE TRY, and it was not. An unknown `--harness` threw straight out of
+    // this function, past the catch that owns the exit contract — so the process
+    // died on an uncaught error and its status was whatever the runtime chose,
+    // which is `1`: the code that means DRIFT. The check's own failure was
+    // reported as a stale host by the one path that could not be caught.
+    const harnessAdapter = adapterByName(opts.harness ?? 'claude');
     // Same scope resolution the deploy path uses, so a check and the deploy it
     // audits can never be looking at two different roots.
     const scopeRes =
@@ -345,17 +356,28 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
           ? `DEPLOYED TREE IS IN SYNC with the render tree (${v.foreign} unrendered artifact(s) reported above, none of them a defect).`
           : 'DEPLOYED TREE IS IN SYNC with the render tree.',
       );
-      return 0;
+      return DEPLOY_CHECK_EXIT.inSync;
     }
     log(
       pc.red(
         `DRIFT: ${v.stale} stale, ${v.absent} absent (+${v.foreign} foreign) — this host is NOT running what the corpus renders.`,
       ),
     );
-    log('  Repair: re-run `cratylus project`, then `cratylus deploy`.');
+    // RELAYED VERBATIM INTO AN AGENT'S CONTEXT by the SessionStart drift
+    // advisory, so this line is a command someone runs on the strength of
+    // reading it. A stale program name here is a repair instruction that fails.
+    log(
+      `  Repair: re-run \`${FORGE_BIN} project\`, then \`${FORGE_BIN} deploy\`.`,
+    );
     return v.rc;
   } catch (e) {
-    console.error(pc.red(`cratylus deploy --check: ${(e as Error).message}`));
-    return 1;
+    // THE THIRD CODE, and the whole reason it exists. This branch is reached when
+    // the check could not run — an unknown harness, an unreadable scope, a tree
+    // that is not one. Returning `drift` here would report a crash as a stale
+    // host: a fabricated verdict, relayed by every caller that trusts the code.
+    console.error(
+      pc.red(`${FORGE_BIN} deploy --check: ${(e as Error).message}`),
+    );
+    return DEPLOY_CHECK_EXIT.noVerdict;
   }
 }

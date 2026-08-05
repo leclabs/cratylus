@@ -221,9 +221,8 @@ file another compiles against — so **a wave can be fanned out with no isolatio
 `~~struck~~` = a RULING is owed. It sits in its wave but is not dispatchable; the count beside it
 is what can actually be sent.
 
-| wave  | shards | dispatchable | members                                                  |
-| ----- | ------ | ------------ | -------------------------------------------------------- |
-| **0** | 1      | 1            | `the-drift-worker-infers-three-things-it-should-be-told` |
+| wave | shards | dispatchable | members |
+| ---- | ------ | ------------ | ------- |
 
 **Slices** — a partition, 8 of them, cut to minimize cross-slice edges in `R`:
 

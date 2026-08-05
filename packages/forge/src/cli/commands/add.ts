@@ -8,6 +8,7 @@
 // --dry-run` to inspect the locally-linked plugin's contribution before it ships.
 
 import pc from 'picocolors';
+import { FORGE_BIN } from '../../bin-name.js';
 import { addPlugin } from '../../config/index.js';
 
 export interface AddOpts {
@@ -40,7 +41,7 @@ export async function runAdd(opts: AddOpts): Promise<number> {
   // Install is the caller's next step (kept out-of-band; also the file:-link path).
   console.log(
     pc.gray(
-      `  next: install it — \`npm i ${opts.plugin}\` (or \`npm i ${opts.plugin}@file:../<local>\` to link a pre-publish plugin), then \`cratylus compose --dry-run\``,
+      `  next: install it — \`npm i ${opts.plugin}\` (or \`npm i ${opts.plugin}@file:../<local>\` to link a pre-publish plugin), then \`${FORGE_BIN} compose --dry-run\``,
     ),
   );
   return 0;

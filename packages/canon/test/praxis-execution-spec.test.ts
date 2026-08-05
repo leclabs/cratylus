@@ -413,16 +413,39 @@ describe('praxis-execution-spec', () => {
     expect(understated, 'in pending/ but startable — promote it').toEqual([]);
   });
 
-  it('the bound plan has a non-empty frontier', () => {
+  it('the bound plan shows where it is — a frontier iff there is work left', () => {
     expect(
       existsSync(join(PLAN, '.bound')),
       'decomplect is the bound plan',
     ).toBe(true);
     const frontier = [...st('ready'), ...st('active')];
-    expect(
-      frontier.length,
-      'bound ∧ sharded ∧ ¬done ⇒ frontier ≠ ∅',
-    ).toBeGreaterThan(0);
+    const done = OPEN_STATES.every((s) => st(s).length === 0);
+
+    // THE `¬done` GUARD WAS IN THE MESSAGE AND NOT IN THE CODE. This asserted
+    // `frontier ≠ ∅` unconditionally while printing the law as
+    // `bound ∧ sharded ∧ ¬done ⇒ frontier ≠ ∅` — so completing the LAST shard turned it
+    // red, permanently, and the only way back to green was to add work. A gate that
+    // punishes a plan for finishing is worse than absent: it teaches that the terminal
+    // state is a failure state, and the cheapest way to satisfy it is to file a shard
+    // nobody needs.
+    //
+    // AND THE `done` BRANCH ASSERTS RESIDENCE, NOT EMPTINESS. `done` is "every open state
+    // is empty" and `frontier ⊆ open states`, so `done ⇒ frontier = ∅` is a tautology — it
+    // cannot fail, and it was the first thing written here. What has content is that a plan
+    // reporting DONE landed its shards rather than LOST them: every id in the spec must
+    // reside in `completed/`. Files vanishing from the state dirs empties the frontier
+    // exactly as finishing the work does, and only this leg can tell the two apart.
+    if (done) {
+      const unlanded = IDS.filter((id) => !st('completed').includes(id));
+      expect(
+        unlanded,
+        'done(P) claimed, but these shards are in no state dir — the plan looks finished because files went missing, not because work landed',
+      ).toEqual([]);
+    } else
+      expect(
+        frontier.length,
+        'bound ∧ sharded ∧ ¬done ⇒ frontier ≠ ∅',
+      ).toBeGreaterThan(0);
   });
 
   it('every shard prose carries its intent, constraints and acceptance', () => {

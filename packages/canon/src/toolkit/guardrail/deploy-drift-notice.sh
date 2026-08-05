@@ -18,8 +18,16 @@
 #   - NOT A COUNT. It relays the tool's report, which carries the superseded lines
 #     still running and the rendered lines missing.
 #
-# COST (measured; see the cell header): ~45 ms on the clean path, of which ~10 ms is
-# the discovery below and the rest is the comparator reading both trees whole.
+# NOTHING BELOW IS INFERRED THAT PROJECTION COULD STATE. The four values this
+# worker cannot compute for itself are SUBSTITUTED into it when the cell is
+# rendered — the comparator's name, this harness's name and hooks file, and the
+# exit code the comparator returns for drift. A copy of any of them, spelled here,
+# would be a second home in a file no compiler reads.
+#
+# COST: the cell header carries the measurement and its A/B. Not repeated here — a
+# number in two places is a number that will disagree with itself. What is worth
+# saying at this grain: the discovery below is a small fraction of it, and the rest
+# is the comparator reading both trees whole, which is the point.
 #
 # INPUT  : SessionStart hook JSON on stdin (cwd, session_id, ...).
 # OUTPUT : drift -> advisory + the report; unanswerable -> one BLIND line; else none.
@@ -29,10 +37,23 @@ set -eu
 # A SessionStart hook must never break a session. Any unexpected error -> silence.
 trap 'exit 0' EXIT
 
-# The corpus's own deploy tool — the ONE spelling of that bin in this worker, held
-# against `packages/forge/package.json`'s `bin` key by canon's bin-name gate, so a
-# rename of the CLI cannot leave this worker naming a program that no longer exists.
+# ── WHAT PROJECTION TOLD US ────────────────────────────────────────────────────
+# The corpus's own deploy tool. ONE authored spelling exists in the whole
+# repository — `packages/forge/package.json`'s `bin` key, the one npm obeys — and
+# `forge/src/bin-name.ts` derives from it, so this line is that key, relayed.
 DEPLOY_TOOL=cratylus
+
+# WHICH HARNESS THIS PROJECTION IS FOR. A hook worker is handed no identity by the
+# session it runs in, so a worker that must LOOK at a deployed tree had to guess —
+# and guessed claude, which made a codex session report on a sibling deployment.
+# These two are the adapter's own `name` and `hooksFile`, substituted at
+# projection: the codex render of this cell carries codex's.
+HARNESS=claude
+HARNESS_HOOKS_FILE=settings.json
+
+# The status the comparator returns when it FOUND drift. `0` means success to
+# POSIX and needs no telling; this one is the tool's own choice, so it is told.
+DRIFT_RC=1
 
 # ── WHERE ARE WE? the corpus, by its own marker ────────────────────────────────
 # `agents.config.ts` is the file `deploy` itself reads to learn which corpus it is
@@ -62,29 +83,26 @@ done
 # every unrelated session, which is the one failure that makes an advisory worthless.
 [ -n "$root" ] || exit 0
 
-# ── WHICH TREE? the render tree, by its SHAPE ──────────────────────────────────
-# A render tree is recognized by BEING one: `agents/` + `skills/` + this harness's
-# own hooks file. `settings.json` is the claude adapter's hooks file, and it is what
-# distinguishes this harness's tree from a codex tree (`hooks.json`) sitting beside
-# it. The `--out` dir is an operator's choice, so it is discovered, never named.
-#
-# THE CLAUDE TREE IS WHAT THIS IDENTIFIES, and on another harness that makes the
-# report about a SIBLING deployment rather than this session's. It is never a false
-# report — the tool opens by naming the root it read — but see the cell header for why
-# the harness's own identity does not reach this worker.
+# ── WHICH TREE? this harness's render tree, by its SHAPE ───────────────────────
+# A render tree is recognized by BEING one: `agents/` + `skills/` + THIS harness's
+# own hooks file. That file is what distinguishes this harness's tree from another
+# harness's tree sitting beside it, and it is named by projection rather than by
+# this script — so a codex render of this worker skips the claude tree and a claude
+# render skips the codex one. The `--out` dir is an operator's choice, so the tree
+# is discovered, never named.
 tree="${CRATYLUS_RENDER_TREE:-}"
 if [ -z "$tree" ]; then
 	for c in "$root"/.render* "$root"/*/.render* "$root"/*/*/.render*; do
 		case "$c" in
 		*/node_modules/*) continue ;;
 		esac
-		[ -d "$c/agents" ] && [ -d "$c/skills" ] && [ -f "$c/settings.json" ] || continue
+		[ -d "$c/agents" ] && [ -d "$c/skills" ] && [ -f "$c/$HARNESS_HOOKS_FILE" ] || continue
 		tree="$c"
 		break
 	done
 fi
-# A corpus that has rendered nothing has nothing to be compared against — the same
-# not-in-scope silence, one step in.
+# A corpus that has rendered nothing for THIS harness has nothing to be compared
+# against — the same not-in-scope silence, one step in.
 [ -n "$tree" ] || exit 0
 
 # ── WHAT ASKS? the tool, never a reimplementation ──────────────────────────────
@@ -101,9 +119,13 @@ if [ -z "$cli" ]; then
 	exit 0
 fi
 
+# `--harness` is what makes the audited HOME this session's. Without it the tool
+# resolves its default root, so a codex tree would be compared against the claude
+# deployment — a report that is about neither.
 # The tool reports and repairs nothing, so it is safe to point at a host mid-work.
 set +e
 out="$("$cli" deploy --check \
+	--harness "$HARNESS" \
 	--agents-dir "$tree/agents" \
 	--skills-dir "$tree/skills" \
 	--hooks-dir "$tree" 2>&1)"
@@ -115,14 +137,14 @@ set -e
 # nowhere else — every other exit takes a branch below.
 [ "$rc" -ne 0 ] || exit 0
 
-# WHICH KIND OF NON-ZERO. `deploy --check` returns 1 both for drift and for its own
-# failure, so the exit status alone cannot separate "this host is stale" from "the
-# check never ran" — and reporting the second as the first would be a fabricated
-# verdict, while reporting it as silence would be the bypass-by-omission this whole
-# cell exists to end. The tool's closing VERDICT LINE separates them. Only the last
-# three lines are searched: the verdict is always among them, whereas an artifact's
-# own quoted content — this worker's, on the day IT is the stale file — never is.
-if printf '%s\n' "$out" | tail -n 3 | grep -q 'NOT running what the corpus renders'; then
+# WHICH KIND OF NON-ZERO — asked of the EXIT CODE, which is a contract, and not of
+# the report's wording, which is a format. Drift has a code of its own; everything
+# else that is not success is the check failing to produce a verdict, including the
+# codes this worker was never told about (a crash, a signal, a missing file). The
+# two demand opposite responses: relaying a broken tool as drift fabricates a
+# verdict, and relaying it as silence is the bypass-by-omission this cell exists to
+# end.
+if [ "$rc" -eq "$DRIFT_RC" ]; then
 	printf '%s\n' 'DEPLOY DRIFT — this host runs a SUPERSEDED projection of the canon. In the report below, a `-` line is doctrine THIS SESSION is operating under and the corpus no longer says; a `+` line is what the corpus says and this host never received. Read every `-` line as a false premise, not as background. `pnpm canon:deploy` converges the host.'
 	printf '%s\n' "$out"
 else

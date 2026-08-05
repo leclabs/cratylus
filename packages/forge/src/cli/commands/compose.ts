@@ -8,6 +8,7 @@
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import pc from 'picocolors';
+import { FORGE_BIN } from '../../bin-name.js';
 import { composeFromFile } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import type { ResolvedAgentSet } from '../../resolve/index.js';
@@ -44,7 +45,7 @@ function printResolved(
     .map((r) => ({ id: r.fragment.id, value: r.value }))
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   console.log(
-    pc.bold('cratylus compose'),
+    pc.bold(`${FORGE_BIN} compose`),
     pc.gray(`(extends: ${names} — ${rows.length} resolved fragments)`),
   );
   console.log('');
@@ -61,7 +62,7 @@ export async function runCompose(opts: ComposeOpts): Promise<number> {
   if (!existsSync(configPath)) {
     console.error(
       pc.red(
-        `cratylus compose: no ${CONFIG_FILE} at ${configPath} — run \`forge init\` first`,
+        `${FORGE_BIN} compose: no ${CONFIG_FILE} at ${configPath} — run \`${FORGE_BIN} init\` first`,
       ),
     );
     return 1;
@@ -71,7 +72,7 @@ export async function runCompose(opts: ComposeOpts): Promise<number> {
   try {
     composed = await composeFromFile(configPath);
   } catch (e) {
-    console.error(pc.red(`cratylus compose: ${(e as Error).message}`));
+    console.error(pc.red(`${FORGE_BIN} compose: ${(e as Error).message}`));
     return 1;
   }
 

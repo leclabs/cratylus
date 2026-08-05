@@ -29,7 +29,7 @@ import {
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { runDeploy } from '../../src/cli/commands/deploy.js';
-import { deploySingle } from '../../src/deploy/index.js';
+import { DEPLOY_CHECK_EXIT, deploySingle } from '../../src/deploy/index.js';
 import {
   auditLocal,
   placeAgentsLocal,
@@ -371,6 +371,86 @@ describe('cratylus deploy --check', () => {
     });
     expect(rc).toBe(0);
     expect(lines.join('\n')).toMatch(/lex-own/);
+  });
+
+  it('a check that COULD NOT RUN exits `noVerdict`, never `drift`', async () => {
+    // THE DISTINCTION THE EXIT CODE COULD NOT DRAW. `--check` returned 1 both when
+    // the host was stale and when the check itself failed, so its only caller that
+    // had to tell them apart — the SessionStart advisory — recovered the verdict by
+    // matching the report's closing LINE. That made a hook worker's correctness a
+    // function of the report's FORMAT: reword it and drift silently reclassifies as
+    // a broken tool. The code carries the distinction now.
+    const h = deployedHost();
+    // Make the check fail for a reason that is the CHECK's, not the host's: an
+    // unknown harness has no adapter, so scope resolution throws before any
+    // artifact is opened.
+    const lines: string[] = [];
+    const rc = await runDeploy({
+      agentsDir: h.agentsDir,
+      skillsDir: h.skillsDir,
+      hooksDir: h.hooksDir,
+      kind: 'all',
+      scope: 'user',
+      harness: 'not-a-harness',
+      home: h.home,
+      check: true,
+      log: (l) => lines.push(l),
+    });
+    expect(rc).toBe(DEPLOY_CHECK_EXIT.noVerdict);
+    // PROVEN TO HAVE REACHED THE BRANCH IT CLAIMS: it produced no verdict at all,
+    // in either direction. A leg that only read the code would pass on a run that
+    // happened to exit 2 while reporting a clean host.
+    const said = lines.join('\n');
+    expect(said).not.toMatch(/in sync/i);
+    expect(said).not.toMatch(/NOT running what the corpus renders/);
+  });
+
+  it('the drifted and the unusable exits are DIFFERENT codes', async () => {
+    // The whole claim, in one comparison, over two runs that are each proven to
+    // have taken the branch they are named for. Without this the two legs above
+    // could drift onto the same value and both stay green.
+    const drifted = deployedHost();
+    writeFileSync(
+      join(drifted.harnessDir, 'agents', 'nico.md'),
+      `---\nname: nico\n---\n# nico\n\n## Prime Principle\n\n${SUPERSEDED}\n`,
+      'utf-8',
+    );
+    const driftLines: string[] = [];
+    const driftRc = await runDeploy({
+      agentsDir: drifted.agentsDir,
+      skillsDir: drifted.skillsDir,
+      hooksDir: drifted.hooksDir,
+      kind: 'all',
+      scope: 'user',
+      home: drifted.home,
+      check: true,
+      log: (l) => driftLines.push(l),
+    });
+    // the drift branch, evidenced by the report before the code is read
+    expect(driftLines.join('\n')).toMatch(
+      /NOT running what the corpus renders/,
+    );
+
+    const broken = deployedHost();
+    const brokenLines: string[] = [];
+    const brokenRc = await runDeploy({
+      agentsDir: broken.agentsDir,
+      skillsDir: broken.skillsDir,
+      hooksDir: broken.hooksDir,
+      kind: 'all',
+      scope: 'user',
+      harness: 'not-a-harness',
+      home: broken.home,
+      check: true,
+      log: (l) => brokenLines.push(l),
+    });
+    expect(brokenLines.join('\n')).not.toMatch(/in sync|NOT running/i);
+
+    expect(driftRc).not.toBe(brokenRc);
+    expect({ driftRc, brokenRc }).toEqual({
+      driftRc: DEPLOY_CHECK_EXIT.drift,
+      brokenRc: DEPLOY_CHECK_EXIT.noVerdict,
+    });
   });
 
   it('--check changes nothing on the host (a report, not a repair)', async () => {

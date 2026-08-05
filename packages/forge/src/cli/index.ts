@@ -1,5 +1,9 @@
 import { cac } from 'cac';
-import type { Scope as DeployScope } from '../deploy/index.js';
+import { FORGE_BIN } from '../bin-name.js';
+import {
+  DEPLOY_CHECK_EXIT,
+  type Scope as DeployScope,
+} from '../deploy/index.js';
 import { runAdd } from './commands/add.js';
 import { runCatalog } from './commands/catalog.js';
 import { runCompose } from './commands/compose.js';
@@ -15,7 +19,12 @@ import { runProject } from './commands/project.js';
 
 const VERSION = '0.0.0';
 
-const cli = cac('forge');
+// BRANDED WITH THE NAME IT IS INSTALLED UNDER. This said `cac('forge')`, so every
+// line of `--help` offered `$ forge <command>` — a program no host has, because
+// the `bin` key installs `cratylus`. It was wrong the day it was written rather
+// than wrong after a rename, which is the argument for deriving the name instead
+// of choosing one: there was no second home to disagree with, only a memory.
+const cli = cac(FORGE_BIN);
 
 cli
   .command('init', 'Scaffold agents.config.ts from a plugin package')
@@ -154,6 +163,13 @@ cli
       dryRun?: boolean;
       check?: boolean;
     }) => {
+      // A USAGE ERROR IS THE CHECK'S OWN FAILURE, NEVER THE HOST'S. Under
+      // `--check` this process's exit code is a VERDICT that callers relay — the
+      // SessionStart advisory turns it into a line an agent reads. Exiting `1`
+      // from an argument check would tell that reader its deployment is stale on
+      // the strength of a mistyped flag. Every refusal below is `noVerdict` when
+      // a verdict was what was asked for.
+      const usage = opts.check ? DEPLOY_CHECK_EXIT.noVerdict : 1;
       // `hooks` ships from a single hooks render root; agent/skill ship from the
       // agents/ + skills/ dirs; `all` ships every kind in one invocation and so
       // needs ALL three dirs. Validate the kind-appropriate inputs.
@@ -165,29 +181,29 @@ cli
         ].filter(Boolean);
         if (missing.length > 0) {
           console.error(
-            `cratylus deploy: --kind all requires ${missing.join(', ')}`,
+            `${FORGE_BIN} deploy: --kind all requires ${missing.join(', ')}`,
           );
-          process.exit(1);
+          process.exit(usage);
         }
       } else if (opts.kind === 'hooks') {
         if (!opts.hooksDir) {
           console.error(
-            'cratylus deploy: --hooks-dir is required for --kind hooks',
+            `${FORGE_BIN} deploy: --hooks-dir is required for --kind hooks`,
           );
-          process.exit(1);
+          process.exit(usage);
         }
       } else if (!opts.agentsDir || !opts.skillsDir) {
         console.error(
-          'cratylus deploy: --agents-dir and --skills-dir are required',
+          `${FORGE_BIN} deploy: --agents-dir and --skills-dir are required`,
         );
-        process.exit(1);
+        process.exit(usage);
       }
       let companions: ReturnType<typeof parseCompanions>;
       try {
         companions = parseCompanions(opts.assets ?? null);
       } catch (e) {
-        console.error(`cratylus deploy: ${(e as Error).message}`);
-        process.exit(1);
+        console.error(`${FORGE_BIN} deploy: ${(e as Error).message}`);
+        process.exit(usage);
       }
       process.exit(
         await runDeploy({

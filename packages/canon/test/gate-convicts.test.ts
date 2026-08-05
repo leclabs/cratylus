@@ -208,6 +208,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // control would leave open.
   'forge/project/write-prune.test.ts': 'BEHAVIORAL',
   'forge/project/tree.test.ts': 'GATE',
+  // BEHAVIORAL: it projects a fixture plugin it owns under BOTH adapters and reads the
+  // emitted worker bytes back, so the divergence is the fixture rather than a claim
+  // about the live corpus. Its derivation half is convicted the same way — `binNameOf`
+  // is fed synthetic manifests, including the two it must refuse.
+  'forge/project/projection-facts.test.ts': 'BEHAVIORAL',
   'forge/validate/enforced.test.ts': 'BEHAVIORAL',
   'forge/resolve/provenance.test.ts': 'BEHAVIORAL',
   'forge/resolve/resolve.test.ts': 'BEHAVIORAL',

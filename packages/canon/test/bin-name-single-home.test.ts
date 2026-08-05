@@ -39,15 +39,27 @@
 // Plus a CENSUS: no file but `bin-name.ts` may spell the name as a quoted string
 // literal — the shape of the defect this retires (a second `const BIN = '…'`).
 //
-// THIS REPOSITORY SHIPS TWO BINS, and only one of them has a compile-time home.
-// `RUNTIME_BIN` is a TypeScript constant every consumer interpolates; the forge CLI's
-// name exists in exactly one place a compiler reads — `packages/forge/package.json`'s
-// `bin` key — and `deploy-drift-notice`'s worker must SPELL it, because a shell script
-// cannot import a manifest key and no `ProjectionFact` carries it. That spelling is
-// the same language-boundary exposure the legs above exist for: a rename of the CLI
-// would leave a SessionStart hook invoking a program that is not there, failing on a
-// host rather than at build, and silently — the worker fails open by design. So the
-// spelling is held here by capture-and-compare against the manifest that owns it.
+// THIS REPOSITORY SHIPS TWO BINS, AND THEY HAVE DIFFERENT SHAPES OF HOME.
+//
+// `RUNTIME_BIN` is a DECLARED constant plus a gate: `@cratylus/invoke`'s `bin` key is
+// a second authored spelling, npm reads it with no TypeScript in the loop, and their
+// agreement is the test obligation leg (1) discharges.
+//
+// The forge CLI's name is DERIVED. `packages/forge/src/bin-name.ts` reads the `bin`
+// key npm itself obeys, so there is exactly ONE authored spelling in that package and
+// nothing to hold in agreement — the asymmetry this corpus had not noticed, since
+// "npm reads the manifest, so it cannot be computed" is true of writing the manifest
+// and false of reading it.
+//
+// WHAT THAT CHANGES ABOUT THE DEPLOY_TOOL LEG BELOW, which is kept and not deleted:
+// its claim was "two authored homes agree", and its claim is now "the derivation
+// REACHED the artifact". That is the property still worth a gate, because the
+// artifact is shell — `deploy-drift-notice`'s worker names the projection fact
+// `deploy-bin` and the projector substitutes, and a resolution site that was missed
+// would ship a placeholder or a stale name to a host, silently, since the worker
+// fails open by design. It is still capture-and-compare against the manifest that
+// owns the name, deliberately NOT against `FORGE_BIN`: comparing the derivation to
+// itself would be green on any value at all.
 //
 // This gate does NOT decide the name. The brand anchor is cratylism-gated and has
 // not converged; `RUNTIME_BIN` holds a placeholder. What is asserted is that
@@ -382,6 +394,102 @@ it('EVERY hand-authored shell or .mjs source under packages/*/src derives the bi
   expect(drifted, 'the bin name drifted past the language boundary').toEqual(
     [],
   );
+});
+
+// ── THE FORGE BIN'S CENSUS — the shard's own premise, falsified and repaired ────
+//
+// The shard that authored this leg asserted `git grep cratylus -- packages/forge/src`
+// "returns NOTHING: the forge CLI's own executable name has no home in any TypeScript
+// module." The first half was false. The name had no AUTHORED HOME, which is what the
+// derivation now supplies — and it also had TWENTY-SIX occurrences across ten modules,
+// fifteen of them in live operator-facing strings: every `cratylus <verb>: <error>`
+// prefix, the `run \`forge init\` first` hints (naming a program that never existed),
+// the copy-pasteable `ship it with: …` line, and `cac('forge')`, which branded every
+// line of `--help` with a name no host installs.
+//
+// None of that fails a compiler and none of it fails at build; it fails when an
+// operator types what they were told to type. So the census is a gate at ZERO rather
+// than a ratchet: the derivation exists now, so a spelling is never the cheaper option.
+//
+// COMMENTS ARE OUT OF SCOPE and deliberately so — prose about `cratylus deploy` is
+// describing the command, not invoking it, and a gate that convicted prose would be
+// satisfied by deleting the prose. What is scanned is code position.
+
+/** Source with block comments and comment-only lines removed — code position. */
+function codePositionOf(ts: string): string {
+  return ts
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .split('\n')
+    .filter((l) => !/^\s*(\/\/|\*)/.test(l))
+    .join('\n');
+}
+
+/** Occurrences of the forge bin as a bare word: not the `@cratylus/` npm scope, not
+ *  `cratylus-run` (the runtime's bin, held by the legs above), not a URL segment. */
+function spellsForgeBin(ts: string): number {
+  const re = new RegExp(`(?<![@./\\w-])${FORGE_BIN}(?![-\\w/])`, 'g');
+  return (codePositionOf(ts).match(re) ?? []).length;
+}
+
+/** Every `.ts` under a package's `src`, repo-relative. */
+function tsSources(pkg: string): string[] {
+  const out: string[] = [];
+  const walk = (dir: string): void => {
+    for (const e of readdirSync(dir, { withFileTypes: true })) {
+      const full = join(dir, e.name);
+      if (e.isDirectory()) walk(full);
+      else if (e.name.endsWith('.ts')) out.push(relative(repoRoot, full));
+    }
+  };
+  walk(join(repoRoot, 'packages', pkg, 'src'));
+  return out.sort();
+}
+
+describe('the forge bin has exactly one authored home', () => {
+  it('no module under packages/forge/src spells it in code position', () => {
+    const sources = tsSources('forge');
+    expect(
+      sources.length,
+      'no TypeScript found under packages/forge/src — the scan is DARK',
+    ).toBeGreaterThan(20);
+    const spelling = sources
+      .map((rel) => [rel, spellsForgeBin(read(rel))] as const)
+      .filter(([, n]) => n > 0)
+      .map(([rel, n]) => `${rel}: ${n}`);
+    expect(
+      spelling,
+      'these spell the forge bin instead of interpolating FORGE_BIN',
+    ).toEqual([]);
+  });
+
+  it('the census DETECTOR is not simply always-empty', () => {
+    // The failure this whole file was written against, one bin over: a scan whose
+    // predicate quietly stopped matching is green over any corpus. Feed it the
+    // defect it exists to catch, and the two shapes it must NOT catch.
+    expect(spellsForgeBin(`const x = '${FORGE_BIN} deploy';`)).toBe(1);
+    expect(spellsForgeBin(`import x from '@${FORGE_BIN}/forge';`)).toBe(0);
+    expect(spellsForgeBin(`const x = '${RUNTIME_BIN}';`)).toBe(0);
+    // and prose is out of scope, in both comment shapes
+    expect(
+      spellsForgeBin(`// run \`${FORGE_BIN} deploy\` first\nconst x = 1;`),
+    ).toBe(0);
+    expect(spellsForgeBin(`/* ${FORGE_BIN} deploy */\nconst x = 1;`)).toBe(0);
+  });
+
+  it('the CLI brands its help with the name it is installed under', () => {
+    // `cac('forge')` printed `$ forge <command>` in every help block — the same
+    // class of defect as a stale bin in a shim, except it never needed a rename to
+    // become false. Captured off the source's cac call, compared to the manifest.
+    // Anchored at the DECLARATION, not the first `cac(` in the file: the header
+    // above it quotes the defect it retires, and an unanchored match read the
+    // comment — a gate reporting on prose about the code instead of the code.
+    const branded = read('packages/forge/src/cli/index.ts').match(
+      /^const cli = cac\(([^)]+)\)/m,
+    )?.[1];
+    expect(branded, 'the CLI must brand itself from the derived name').toBe(
+      'FORGE_BIN',
+    );
+  });
 });
 
 describe('the single-home gate is non-vacuous', () => {

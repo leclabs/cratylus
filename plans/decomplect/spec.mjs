@@ -773,13 +773,30 @@ export const SHARDS = {
     // contention set, so splitting by concern buys a chain and no parallelism. The concerns
     // stay distinct in the shard's prose; the cut is one because the artifact is one.
     deps: ['drift-is-checkable-but-nothing-checks-it'],
+    // MEASURED: 8 declared, 20 written. Two causes, and only one of them is an authoring
+    // slip. (1) The shard said the bin name had NO home; it had no home and FIFTEEN
+    // SPELLINGS, in live operator-facing strings across six CLI modules. Giving it a home
+    // means every spelling interpolates it, so the footprint is the spellings, not the
+    // declaration site — the same definition-site-versus-reference-set error this plan has
+    // now paid for six times, committed by me in the shard's own prose. (2) The shard named
+    // no home for the things it demanded EXIST: a module for the derived bin, one for the
+    // exit-code contract it said must be "named in one place", and a test for the
+    // projector-side property. A shard that requires a new single home must declare where
+    // that home goes, or its outputs describe only the half of the work that edits.
     outputs: [
       'packages/schema/src/hook-cell.ts',
       'packages/forge/src/project/index.ts',
-      'packages/forge/src/cli/commands/deploy.ts',
+      'packages/forge/src/cli/**',
+      'packages/forge/src/bin-name.ts',
+      'packages/forge/src/deploy/check-exit.ts',
+      'packages/forge/src/deploy/index.ts',
+      'packages/forge/package.json',
       'packages/forge/test/deploy/check.test.ts',
+      'packages/forge/test/project/projection-facts.test.ts',
+      'packages/forge/test/project/fixtures-facts/**',
       'packages/canon/src/hooks/deploy-drift-notice.ts',
       'packages/canon/src/toolkit/guardrail/deploy-drift-notice.sh',
+      'packages/canon/src/toolkit/project-targets.ts',
       'packages/canon/test/deploy-drift-notice.test.ts',
       'packages/canon/test/bin-name-single-home.test.ts',
     ],

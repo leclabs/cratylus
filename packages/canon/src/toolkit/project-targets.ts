@@ -25,6 +25,7 @@ import { chmodSync, readFileSync, writeFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectionFacts } from '@cratylus/forge/project';
 import { type HookCell, type RuleCell, resolveWorker } from '@cratylus/schema';
 
@@ -86,6 +87,24 @@ export interface CellTarget {
 }
 
 /**
+ * WHICH HARNESS THE COMMITTED TARGETS ARE RESOLVED FOR.
+ *
+ * A worker template is resolved against `projectionFacts(adapter)`, and two of
+ * those facts are adapter-relative — so ONE cell now has as many resolutions as
+ * there are harnesses, while `HookWorker.targetPath` names ONE repo file. The
+ * committed target is therefore a resolution, not THE resolution, and this
+ * constant is the place that says which.
+ *
+ * NOT AN ARBITRARY PICK, and not a face the cell chose: the committed `.sh` exists
+ * to be byte-locked and read in review, and every deployed copy is emitted by
+ * `projectPluginSet` under the adapter that session actually runs — a codex host
+ * receives codex bytes whatever this says. What a wrong value here would cost is a
+ * reviewer reading `settings.json` in a file whose subject is `hooks.json`, which
+ * is why the corpus's own harness is the honest one to commit.
+ */
+export const COMMITTED_TARGET_HARNESS = 'claude';
+
+/**
  * Flatten every hook worker + rule body into its committed target.
  *
  * WORKERS ARE RESOLVED HERE, not carried raw. `workers[].content` is a template
@@ -98,9 +117,11 @@ export interface CellTarget {
  * build scripts driving the projector as a tool (`ARCHITECTURE.md` — "the divergence
  * is a CELL importing it"). The cell that used to import the value now names it.
  */
-export async function cellTargets(): Promise<CellTarget[]> {
+export async function cellTargets(
+  harness: string = COMMITTED_TARGET_HARNESS,
+): Promise<CellTarget[]> {
   const targets: CellTarget[] = [];
-  const facts = projectionFacts();
+  const facts = projectionFacts(adapterByName(harness));
   for (const cell of await allHookCells()) {
     for (const w of cell.workers) {
       const resolved = resolveWorker(w, facts, cell.speech);

@@ -8,6 +8,7 @@
     "cratylus": "./dist/cli/index.js"
   },
   "exports": {
+    "./package.json": "./package.json",
     "./module-scan": {
       "types": "./dist/core/module-scan.d.ts",
       "import": "./dist/core/module-scan.js"
