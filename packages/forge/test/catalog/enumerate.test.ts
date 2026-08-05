@@ -7,7 +7,7 @@
 // with no other change.
 //
 // THE CORPUS UNDER SCAN IS FORGE'S OWN (`test/fixture-dimensions/`, filed against
-// `test/fixture-anatomy.ts`). It deliberately does NOT read a sibling package's
+// `test/fixture-manifest.ts`). It deliberately does NOT read a sibling package's
 // dirs, which this file used to do: forge ships no catalog and no dimension dirs,
 // so WHICH dimensions exist and WHICH values fill them are a corpus's facts, and a
 // sibling corpus discovering a dimension must never turn THIS suite red — that
@@ -28,9 +28,9 @@ import {
   shortlex,
 } from '../../src/catalog/index.js';
 import {
-  FIXTURE_ANATOMY,
   FIXTURE_DIMENSION_NAMES,
-} from '../fixture-anatomy.js';
+  FIXTURE_MANIFEST,
+} from '../fixture-manifest.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 // forge/test/catalog → up to test/ → the fixture corpus's dimension dirs.
@@ -61,7 +61,8 @@ function shapeViolations(entries: readonly CatalogEntry[]): string[] {
 function metaDrift(entries: readonly CatalogEntry[]): string[] {
   return entries
     .filter((e) => {
-      const meta = FIXTURE_ANATOMY[e.dimension as keyof typeof FIXTURE_ANATOMY];
+      const meta =
+        FIXTURE_MANIFEST[e.dimension as keyof typeof FIXTURE_MANIFEST];
       return (
         meta === undefined ||
         meta.axis !== e.axis ||
@@ -75,7 +76,7 @@ function metaDrift(entries: readonly CatalogEntry[]): string[] {
 describe('enumerateCatalog over the fixture corpus', () => {
   let entries: CatalogEntry[];
   beforeAll(async () => {
-    entries = await enumerateCatalog(fixtureDimensions, FIXTURE_ANATOMY);
+    entries = await enumerateCatalog(fixtureDimensions, FIXTURE_MANIFEST);
   });
 
   it("enumerates exactly the catalog's dimensions, in the catalog's order", () => {
@@ -154,7 +155,7 @@ describe('enumerateCatalog over the fixture corpus', () => {
   it('is non-vacuous — an unsorted, empty-bodied or metadata-drifted entry is CONVICTED', () => {
     const clean: CatalogEntry = {
       dimension: 'objective',
-      ...FIXTURE_ANATOMY.objective,
+      ...FIXTURE_MANIFEST.objective,
       values: ['a', 'bb'],
     };
     expect(shapeViolations([clean])).toEqual([]);
@@ -183,8 +184,8 @@ describe('enumerateCatalog over the fixture corpus', () => {
     // `autonomy`-then-`memory` alphabetically on disk, so only reading THIS
     // object's key order yields the reversal.
     const permuted = await enumerateCatalog(fixtureDimensions, {
-      memory: FIXTURE_ANATOMY.memory,
-      autonomy: FIXTURE_ANATOMY.autonomy,
+      memory: FIXTURE_MANIFEST.memory,
+      autonomy: FIXTURE_MANIFEST.autonomy,
     });
     expect(permuted.map((e) => e.dimension)).toEqual(['memory', 'autonomy']);
     // …and it enumerated ONLY what it was given: forge holds no dimension list.
@@ -215,7 +216,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
     mkdirSync(addressDir, { recursive: true });
 
     // Before: empty dimension → zero values, dimension still listed with its metadata.
-    let entries = await enumerateCatalog(dir, FIXTURE_ANATOMY);
+    let entries = await enumerateCatalog(dir, FIXTURE_MANIFEST);
     const before = entries.find((e) => e.dimension === 'autonomy');
     expect(before).toMatchObject({
       dimension: 'autonomy',
@@ -237,7 +238,7 @@ describe('drift-proof discovery (the load-bearing property)', () => {
     );
 
     // After: it shows up — discovered, not listed.
-    entries = await enumerateCatalog(dir, FIXTURE_ANATOMY);
+    entries = await enumerateCatalog(dir, FIXTURE_MANIFEST);
     const after = entries.find((e) => e.dimension === 'autonomy');
     expect(after?.values).toEqual([
       'fixture-mode ≜ a discovered-only fixture value',

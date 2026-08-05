@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '../../anatomy.js';
+import type { Skill, SkillExpression } from '../../manifest.js';
 import { formalize } from '../formalize/skill.js';
 
 export const createSkill: Skill = {

@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '../../anatomy.js';
+import type { Skill, SkillExpression } from '../../manifest.js';
 
 export const introspect: Skill = {
   name: 'introspect',

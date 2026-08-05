@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '../../anatomy.js';
+import type { Skill, SkillExpression } from '../../manifest.js';
 import { dream } from '../dream/skill.js';
 import { praxis } from '../praxis/skill.js';
 

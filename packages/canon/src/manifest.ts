@@ -100,7 +100,7 @@ export const MANIFEST = {
  */
 export type Dimension = keyof typeof MANIFEST;
 
-/** Every fragment-dimension name, in anatomy (Persona-then-Constitution) declaration order. */
+/** Every fragment-dimension name, in manifest (Persona-then-Constitution) declaration order. */
 export const DIMENSION_NAMES = Object.keys(MANIFEST) as readonly Dimension[];
 
 /**

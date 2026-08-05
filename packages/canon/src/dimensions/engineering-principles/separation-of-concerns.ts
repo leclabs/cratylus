@@ -1,3 +1,3 @@
-import type { EngineeringPrinciples } from '../../anatomy.js';
+import type { EngineeringPrinciples } from '../../manifest.js';
 
 export const separationOfConcerns: EngineeringPrinciples = `separation-of-concerns`;

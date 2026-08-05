@@ -10,7 +10,7 @@
 //     belongs. Every other fixture value is a bare anchor, so that reduction was
 //     invisible — `α === body` when the residue is ∅.
 
-import type { FixtureValue } from '../../fixture-anatomy.js';
+import type { FixtureValue } from '../../fixture-manifest.js';
 
 export const fixtureStanding: FixtureValue<'autonomy'> =
   'fixture-standing ⟨a residue-bearing fixture value⟩';

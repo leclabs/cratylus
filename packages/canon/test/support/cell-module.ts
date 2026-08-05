@@ -14,7 +14,7 @@
 
 import { pathToFileURL } from 'node:url';
 import { bodyOf, isDimensionValue } from '@cratylus/schema';
-import type { Dimension, Value } from '../../src/anatomy.js';
+import type { Dimension, Value } from '../../src/manifest.js';
 
 /**
  * The first non-`default` export of a cell module.

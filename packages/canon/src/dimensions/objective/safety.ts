@@ -1,3 +1,3 @@
-import type { Objective } from '../../anatomy.js';
+import type { Objective } from '../../manifest.js';
 
 export const safety: Objective = `safety ⟨no-op ↾ uncertainty⟩`;

@@ -38,15 +38,15 @@ import {
   renderAgentVector,
 } from '../../../src/core/exemplify/index.js';
 import {
-  FIXTURE_ANATOMY,
   FIXTURE_DIMENSION_NAMES,
+  FIXTURE_MANIFEST,
   type FixtureDimension,
-} from '../../fixture-anatomy.js';
+} from '../../fixture-manifest.js';
 import { makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
 /** dimension → its `Agent` field, derived from the fixture corpus's catalog. */
-const DIMENSION_FIELD = dimensionFieldsOf(FIXTURE_ANATOMY);
+const DIMENSION_FIELD = dimensionFieldsOf(FIXTURE_MANIFEST);
 
 /** The 22 fragment-dimension literals the vector must cover (manifest order). */
 const THE_22_DIMENSIONS: readonly FixtureDimension[] = [
@@ -84,19 +84,19 @@ story(
     expect([...FIXTURE_DIMENSION_NAMES].sort()).toEqual(
       [...THE_22_DIMENSIONS].sort(),
     );
-    expect(Object.keys(FIXTURE_ANATOMY).sort()).toEqual(
+    expect(Object.keys(FIXTURE_MANIFEST).sort()).toEqual(
       [...THE_22_DIMENSIONS].sort(),
     );
     // Axis split: 5 Persona / 17 Constitution (archetype + provenance no longer
     // Persona fragment dimensions — D13/D3).
     const persona = FIXTURE_DIMENSION_NAMES.filter(
-      (o: FixtureDimension) => FIXTURE_ANATOMY[o].axis === 'Persona',
+      (o: FixtureDimension) => FIXTURE_MANIFEST[o].axis === 'Persona',
     );
     expect(persona).toHaveLength(5);
     // Arity: exactly the six documented set dimensions take arrays (autonomy is
     // now a SET dimension — composed standing, D5).
     const setDimensions = FIXTURE_DIMENSION_NAMES.filter(
-      (o: FixtureDimension) => FIXTURE_ANATOMY[o].arity === 'set',
+      (o: FixtureDimension) => FIXTURE_MANIFEST[o].arity === 'set',
     );
     expect([...setDimensions].sort()).toEqual([
       'actions',
@@ -197,7 +197,7 @@ story(
       sourcePath: join(cwd, 'source-agent.md'),
       outDir: cwd,
       spec: SPEC,
-      manifest: FIXTURE_ANATOMY,
+      manifest: FIXTURE_MANIFEST,
     });
     const vectorModule = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorModule)).toBe(true);
@@ -239,7 +239,7 @@ story(
             },
           },
         },
-        { manifest: FIXTURE_ANATOMY, sourceText: SOURCE_PERSONA },
+        { manifest: FIXTURE_MANIFEST, sourceText: SOURCE_PERSONA },
       ),
     ).toThrow(ExemplifyRefusal);
   },
@@ -255,7 +255,7 @@ story(
       sourcePath: join(cwd, 'source-agent.md'),
       outDir: cwd,
       spec: SPEC,
-      manifest: FIXTURE_ANATOMY,
+      manifest: FIXTURE_MANIFEST,
     });
     // Post-elevation repo state holds exactly ONE source form per agent:
     // the free-text source form is gone…
@@ -275,7 +275,7 @@ story(
         sourcePath: join(cwd, 'source-b.md'),
         outDir: cwd,
         spec: { name: 'reviewer2', dimensions: inheritAll() },
-        manifest: FIXTURE_ANATOMY,
+        manifest: FIXTURE_MANIFEST,
       }),
     ).toThrow(/REC/);
     expect(existsSync(join(cwd, 'source-b.md'))).toBe(true);

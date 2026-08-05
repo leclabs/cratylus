@@ -15,8 +15,8 @@ import {
 } from '@cratylus/forge/adapters/claude';
 import type { Skill } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
-import { MANIFEST } from '../src/anatomy.js';
-import type { Agent } from '../src/anatomy.js';
+import { MANIFEST } from '../src/manifest.js';
+import type { Agent } from '../src/manifest.js';
 import { dream } from '../src/skills/dream/skill.js';
 import { wake } from '../src/skills/wake/skill.js';
 import { fragmentToMarkdown } from '../src/toolkit/project.js';

@@ -97,11 +97,9 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     const path = ['ready', 'pending', 'active']
       .map((s) => join(PLAN, s, `${id}.md`))
       .find(existsSync);
-    if (!path) {
-      console.error(`no file for ${id}`);
-      process.exitCode = 1;
-      continue;
-    }
+    // A completed shard has left the open states; it keeps its spec entry (deps still name it)
+    // but owns no live Execution block. Silence here, not an error.
+    if (!path) continue;
     const text = readFileSync(path, 'utf8');
     const i = text.indexOf(`\n${MARK}\n`);
     const body = i === -1 ? text.trimEnd() : text.slice(0, i).trimEnd();

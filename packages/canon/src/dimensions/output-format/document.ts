@@ -1,3 +1,3 @@
-import type { OutputFormat } from '../../anatomy.js';
+import type { OutputFormat } from '../../manifest.js';
 
 export const document: OutputFormat = `document`;

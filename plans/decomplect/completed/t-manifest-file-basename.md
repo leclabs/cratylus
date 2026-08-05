@@ -21,14 +21,25 @@ a corpus about naming cannot afford to carry one.
 
 - **Nothing to decide.** `manifest` was round-tripped and `ARCHITECTURE.md:118-119` already ratifies
   it — ground no longer carries the refuted sign.
-- `FIXTURE_ANATOMY` and the forge parameter names are the SAME concept and move in the same act.
-  Renaming the module and leaving the fixture is how a palimpsest re-forms.
+- `FIXTURE_ANATOMY` is the SAME concept and moves in the same act — renaming the module and
+  leaving the fixture is how a palimpsest re-forms. Its **43** importing files move with it.
+- The 6 forge PARAMETER sites moved to [`t-projection-file-anchor`](../pending/t-projection-file-anchor.md)
+  when that ruling landed: they live inside the files it renames, so doing them together is one edit
+  rather than two touching the same lines.
 - The forge files `adapters/*/anatomy.ts` and `core/anatomy-body.ts` are a **different concept**
   (harness projection) and are **out of scope** — they wait on `t-projection-file-anchor`.
 
 ## Acceptance
 
-- `git mv` + specifier rewrite; `grep -rl "anatomy" packages/canon/src` returns nothing.
+- `git mv` + specifier rewrite. `grep -ro 'anatomy' packages/canon/src` returns **only** the
+  `anatomyRoot` / `anatomyProjectTemplate` / `scaffoldAnatomyProject` family (14 occurrences,
+  4 files) — that is a **locus**, a different concept, and it belongs to
+  [`t-anatomy-root-compose`](./t-anatomy-root-compose.md).
+
+  **NARROWED 2026-08-05 during execution.** The original read _"returns nothing"_, which is
+  unsatisfiable without doing the next shard's work inside this one — an acceptance criterion that
+  quantifies over territory the shard does not own. Caught by measuring before editing.
+
 - **Render oracle UNMOVED.** No projected bytes are involved, so any movement is a real defect —
   find it, do not re-baseline.
 - Suite green uncached.
@@ -39,7 +50,7 @@ a corpus about naming cannot afford to carry one.
 
 - **slice** corpus-rename · **wave** 0
 - **depends on** —
-- **writes** `packages/canon/src/**` · `packages/canon/test/**` · `packages/forge/test/fixture-anatomy.ts`
+- **writes** `packages/canon/src/**` · `packages/canon/test/**` · `packages/forge/test/**`
 - **compiles against** `packages/schema/src/index.ts`
-- **evidence** `packages/canon/src/anatomy.ts` · `ARCHITECTURE.md`
+- **evidence** `packages/canon/src/manifest.ts` · `ARCHITECTURE.md`
 - **dispatchable** no ruling owed

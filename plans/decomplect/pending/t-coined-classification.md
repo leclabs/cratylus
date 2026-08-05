@@ -70,5 +70,5 @@ already uses `curated` in the identical factor sense.
 - **depends on** `t-anatomy-root-compose`
 - **writes** `packages/schema/src/index.ts`
 - **compiles against** `packages/canon/src/dimensions/**`
-- **evidence** `packages/schema/src/index.ts` · `packages/canon/src/anatomy.ts`
+- **evidence** `packages/schema/src/index.ts` · `packages/canon/src/manifest.ts`
 - **dispatchable** no ruling owed

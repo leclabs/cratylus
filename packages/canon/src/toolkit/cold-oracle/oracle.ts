@@ -2,7 +2,7 @@
 // pure isolation-driving ALGORITHM lives in the engine
 // (`@cratylus/forge/validate` `oracle.ts`); THIS module injects the one
 // corpus-coupled datum it needs — WHICH isolation script — binding it to the
-// anatomy-owned `./cold-oracle.sh` (the script carries this corpus's repo-path guard
+// manifest-owned `./cold-oracle.sh` (the script carries this corpus's repo-path guard
 // + credentials/isolation protocol). Callers keep the same surface
 // (`nonceControl({ model })`); the script path is bound here, never passed by them.
 
@@ -18,7 +18,7 @@ export type { NonceControl };
 /** The caller-facing options — the injected `scriptPath` is bound here, not by them. */
 export type ColdOracleOpts = Omit<DecodeOpts, 'scriptPath'>;
 
-/** The anatomy-owned isolation script (carries the repo-path guard — corpus policy). */
+/** The manifest-owned isolation script (carries the repo-path guard — corpus policy). */
 const SCRIPT_PATH = fileURLToPath(new URL('./cold-oracle.sh', import.meta.url));
 
 /** decode_cold(text) — the isolated, priors-only cold read, bound to the corpus script. */

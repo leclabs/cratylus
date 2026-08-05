@@ -6,7 +6,7 @@
 // vector projects as a BOUND on claude and degrades to a STEER on codex, so one
 // fixture drives both sides of the decision without a mock.
 
-import type { FixtureAgent } from '../../../fixture-anatomy.js';
+import type { FixtureAgent } from '../../../fixture-manifest.js';
 
 export const warden: FixtureAgent = {
   name: 'warden',

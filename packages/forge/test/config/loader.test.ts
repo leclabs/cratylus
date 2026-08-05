@@ -20,7 +20,7 @@ import {
 } from '../../src/config/index.js';
 import type { AgentPlugin } from '../../src/resolve/plugin.js';
 import { resolve } from '../../src/resolve/resolve.js';
-import { FIXTURE_ANATOMY } from '../fixture-anatomy.js';
+import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 /** The real canon corpus dimensions dir, located relative to this test file. */
 const CANON_DIMENSIONS = fileURLToPath(
@@ -53,7 +53,7 @@ describe('loadPlugins — THE LOAD STEP (AgentPlugin dirs → LoadedPlugin)', ()
       writeStringFragment(bDir, 'role', 'builder', 'builder', 'the builder');
 
       const plugins: AgentPlugin[] = [
-        { name: 'a', manifest: FIXTURE_ANATOMY, fragments: aDir },
+        { name: 'a', manifest: FIXTURE_MANIFEST, fragments: aDir },
         { name: 'b', fragments: bDir },
       ];
       const loaded = await loadPlugins(plugins);
@@ -82,7 +82,7 @@ describe('loadPlugins — THE LOAD STEP (AgentPlugin dirs → LoadedPlugin)', ()
       writeStringFragment(aDir, 'objective', 'insight', 'insight', 'insight');
       const loaded = await loadPlugins([
         { name: 'nofrag' },
-        { name: 'a', manifest: FIXTURE_ANATOMY, fragments: aDir },
+        { name: 'a', manifest: FIXTURE_MANIFEST, fragments: aDir },
       ]);
       expect(loaded.map((p) => p.name)).toEqual(['nofrag', 'a']);
       expect(loaded[0]?.contributions).toEqual([]);
@@ -111,7 +111,7 @@ describe('agents.config.ts — loads with NO build step + resolves', () => {
           "import { fileURLToPath } from 'node:url';",
           'export const plugin = {',
           "  name: 'syn',",
-          `  manifest: ${JSON.stringify(FIXTURE_ANATOMY)},`,
+          `  manifest: ${JSON.stringify(FIXTURE_MANIFEST)},`,
           "  fragments: fileURLToPath(new URL('./frags', import.meta.url)),",
           '};',
           '',
@@ -147,7 +147,7 @@ describe('extends: [canon] — resolves to the canon default set', () => {
     // supplies the same dir directly (forge cannot bare-import the peer package).
     const canon: AgentPlugin = {
       name: 'canon',
-      manifest: FIXTURE_ANATOMY,
+      manifest: FIXTURE_MANIFEST,
       fragments: CANON_DIMENSIONS,
     };
     const config: AgentsConfig = { extends: [canon], patches: [] };

@@ -1,4 +1,3 @@
-import type { Agent } from '../anatomy.js';
 import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../dimensions/audience-adaptation/convergence.js';
@@ -28,6 +27,7 @@ import { optimize as optimize_satisficing } from '../dimensions/satisficing/opti
 import { selfCritique as selfCritique_selfEvaluation } from '../dimensions/self-evaluation/self-critique.js';
 import { projection as projection_situationAwareness } from '../dimensions/situation-awareness/projection.js';
 import { reasoningTrace as reasoningTrace_transparency } from '../dimensions/transparency/reasoning-trace.js';
+import type { Agent } from '../manifest.js';
 export const principalIc: Agent = {
   name: 'principal-ic',
   description:

@@ -10,7 +10,7 @@ import {
   type DimensionDoc,
   projectHumanDimension,
 } from '../../src/project/project-human.js';
-import { FIXTURE_ANATOMY } from '../fixture-anatomy.js';
+import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 // `heuristics` is a Constitution/coined/set dimension — a stable fixture for the shape.
 // Each value IS the SOUL body `<slug> ≜ <definiens>` — no `{dimension,slug,definiens}`
@@ -27,13 +27,13 @@ describe('projectHumanDimension — pure deterministic human-view', () => {
       'heuristics',
       values,
       undefined,
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     const b = projectHumanDimension(
       'heuristics',
       values,
       undefined,
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     expect(a).toBe(b);
   });
@@ -43,13 +43,13 @@ describe('projectHumanDimension — pure deterministic human-view', () => {
       'heuristics',
       values,
       undefined,
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     const shuffled = projectHumanDimension(
       'heuristics',
       [values[2] as string, values[0] as string, values[1] as string],
       undefined,
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     expect(shuffled).toBe(forward);
     // The value order in the output is body-lexicographic, not source order.
@@ -66,7 +66,7 @@ describe('projectHumanDimension — pure deterministic human-view', () => {
       'heuristics',
       values,
       undefined,
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     expect(md.startsWith('# heuristics\n')).toBe(true);
     expect(md).toContain(
@@ -89,7 +89,7 @@ describe('projectHumanDimension — pure deterministic human-view', () => {
       'heuristics',
       values,
       doc,
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     expect(md).toContain(
       '> **Dimension — Constitution · Heuristics.** the standing move-biases that incline an agent toward some choices.',

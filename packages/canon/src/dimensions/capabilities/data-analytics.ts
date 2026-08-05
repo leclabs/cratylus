@@ -1,3 +1,3 @@
-import type { Capabilities } from '../../anatomy.js';
+import type { Capabilities } from '../../manifest.js';
 
 export const dataAnalytics: Capabilities = `data-analytics ≜ ⟨pipelines statistics-ml⟩`;

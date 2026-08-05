@@ -22,10 +22,10 @@ import {
   elevateAgent,
 } from '../../../src/core/exemplify/index.js';
 import {
-  FIXTURE_ANATOMY,
   FIXTURE_DIMENSION_NAMES,
+  FIXTURE_MANIFEST,
   type FixtureDimension,
-} from '../../fixture-anatomy.js';
+} from '../../fixture-manifest.js';
 import { makeTmpDir, story } from '../helpers.js';
 import { probeMessage, probePipeline } from './pipeline-probe.js';
 
@@ -122,7 +122,7 @@ story(
       sourcePath: join(cwd, 'agent-description.md'),
       outDir: cwd,
       spec: SPEC,
-      manifest: FIXTURE_ANATOMY,
+      manifest: FIXTURE_MANIFEST,
     });
     const vectorFile = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorFile)).toBe(true);
@@ -181,7 +181,7 @@ story(
         sourcePath: join(cwd, 'agent-description.md'),
         outDir: cwd,
         spec: invented,
-        manifest: FIXTURE_ANATOMY,
+        manifest: FIXTURE_MANIFEST,
       }),
     ).toThrow(ExemplifyRefusal);
     expect(existsSync(join(cwd, 'agent-description.md'))).toBe(true);
@@ -191,7 +191,7 @@ story(
       sourcePath: join(cwd, 'agent-description.md'),
       outDir: cwd,
       spec: SPEC,
-      manifest: FIXTURE_ANATOMY,
+      manifest: FIXTURE_MANIFEST,
     });
     const vectorFile = join(cwd, 'agents', 'reviewer.ts');
     expect(existsSync(vectorFile)).toBe(true);

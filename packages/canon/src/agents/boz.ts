@@ -1,4 +1,3 @@
-import type { Agent } from '../anatomy.js';
 import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { maintenance as maintenance_audienceAdaptation } from '../dimensions/audience-adaptation/maintenance.js';
@@ -21,6 +20,7 @@ import { satisfice as satisfice_satisficing } from '../dimensions/satisficing/sa
 import { selfCritique as selfCritique_selfEvaluation } from '../dimensions/self-evaluation/self-critique.js';
 import { perception as perception_situationAwareness } from '../dimensions/situation-awareness/perception.js';
 import { uncertaintyDisclosure as uncertaintyDisclosure_transparency } from '../dimensions/transparency/uncertainty-disclosure.js';
+import type { Agent } from '../manifest.js';
 export const boz: Agent = {
   name: 'boz',
   description:

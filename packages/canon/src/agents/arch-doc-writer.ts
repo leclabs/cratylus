@@ -1,4 +1,3 @@
-import type { Agent } from '../anatomy.js';
 import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { toolCall as toolCall_actions } from '../dimensions/actions/tool-call.js';
@@ -20,6 +19,7 @@ import { satisfice as satisfice_satisficing } from '../dimensions/satisficing/sa
 import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } from '../dimensions/self-evaluation/acceptance-criteria-check.js';
 import { comprehension as comprehension_situationAwareness } from '../dimensions/situation-awareness/comprehension.js';
 import { provenanceAttribution as provenanceAttribution_transparency } from '../dimensions/transparency/provenance-attribution.js';
+import type { Agent } from '../manifest.js';
 export const archDocWriter: Agent = {
   name: 'arch-doc-writer',
   description:

@@ -14,8 +14,8 @@ import {
   dimensionTitle,
 } from '@cratylus/forge/adapters/claude';
 import { describe, expect, it } from 'vitest';
-import type { Agent } from '../src/anatomy.js';
-import { DIMENSION_NAMES, MANIFEST } from '../src/anatomy.js';
+import type { Agent } from '../src/manifest.js';
+import { DIMENSION_NAMES, MANIFEST } from '../src/manifest.js';
 
 import * as archDocWriter from '../src/agents/arch-doc-writer.js';
 import * as boz from '../src/agents/boz.js';

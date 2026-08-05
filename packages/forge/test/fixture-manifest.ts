@@ -14,7 +14,7 @@
 //
 // Its VALUE DIRS live beside it at `test/fixture-dimensions/<dimension>/`, one dir
 // per key — the corpus half this descriptor files against, gated for drift both
-// ways by `test/catalog/anatomy-descriptor.test.ts`.
+// ways by `test/catalog/manifest-descriptor.test.ts`.
 //
 // `as const satisfies Record<string, DimensionMeta>` is load-bearing exactly as it
 // is in a real corpus: without it the keys widen to `string` and `FixtureAgent`
@@ -22,7 +22,7 @@
 
 import type { AgentOf, DimensionMeta, Value } from '@cratylus/schema';
 
-export const FIXTURE_ANATOMY = {
+export const FIXTURE_MANIFEST = {
   // Persona
   autonomy: { axis: 'Persona', kind: 'enum', arity: 'set' },
   role: { axis: 'Persona', kind: 'open', arity: 'scalar' },
@@ -65,11 +65,11 @@ export const FIXTURE_ANATOMY = {
 } as const satisfies Record<string, DimensionMeta>;
 
 /** The fixture corpus's dimension union, derived — never listed twice. */
-export type FixtureDimension = keyof typeof FIXTURE_ANATOMY;
+export type FixtureDimension = keyof typeof FIXTURE_MANIFEST;
 
 /** Its dimension names in declaration order (Persona, then Constitution). */
 export const FIXTURE_DIMENSION_NAMES = Object.keys(
-  FIXTURE_ANATOMY,
+  FIXTURE_MANIFEST,
 ) as readonly FixtureDimension[];
 
 /** A value of one of the fixture corpus's dimensions. */
@@ -78,4 +78,4 @@ export type FixtureValue<D extends FixtureDimension> = Value<D>;
 /** The strict agent vector over the fixture catalog — what the fixture agent
  *  modules are authored against, so a fixture is arity- and completeness-checked
  *  by the same derivation a real corpus's agents are. */
-export type FixtureAgent = AgentOf<typeof FIXTURE_ANATOMY>;
+export type FixtureAgent = AgentOf<typeof FIXTURE_MANIFEST>;

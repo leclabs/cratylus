@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '../../anatomy.js';
+import type { Skill, SkillExpression } from '../../manifest.js';
 // The plan-layout state canon (one home) — the `States` set below derives from it;
 // a project template sources its `planStates` from the same home (DRY). Lives in a
 // sibling module, not exported here: a skill module has exactly ONE export (its Skill).

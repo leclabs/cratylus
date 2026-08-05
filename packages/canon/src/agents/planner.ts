@@ -1,4 +1,3 @@
-import type { Agent } from '../anatomy.js';
 import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../dimensions/audience-adaptation/convergence.js';
@@ -18,6 +17,7 @@ import { satisfice as satisfice_satisficing } from '../dimensions/satisficing/sa
 import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } from '../dimensions/self-evaluation/acceptance-criteria-check.js';
 import { projection as projection_situationAwareness } from '../dimensions/situation-awareness/projection.js';
 import { decisionRationale as decisionRationale_transparency } from '../dimensions/transparency/decision-rationale.js';
+import type { Agent } from '../manifest.js';
 export const planner: Agent = {
   name: 'planner',
   description:

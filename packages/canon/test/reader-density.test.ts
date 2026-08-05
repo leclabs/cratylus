@@ -64,7 +64,7 @@ import {
 import type { Skill } from '@cratylus/schema';
 import { bodyOf } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
-import type { Agent, Dimension, Value } from '../src/anatomy.js';
+import type { Agent, Dimension, Value } from '../src/manifest.js';
 import { signify } from '../src/skills/signify/skill.js';
 import { nonceControl } from '../src/toolkit/cold-oracle/oracle.js';
 // The injected corpus POLICY DATA (palimpsest table + operator lexicon) the
@@ -109,7 +109,7 @@ const CONTRADICTION_PAIRS: ReadonlyArray<readonly [string, string]> = [
   ['llm-native', 'natural-language'],
 ];
 
-/** Agents with a known dimension contradiction, pinned until the anatomy fix-class task. */
+/** Agents with a known dimension contradiction, pinned until the manifest fix-class task. */
 const CONTRADICTION_RATCHET: ReadonlySet<string> = new Set([]);
 
 // ── surface enumeration (source grain — the projections follow the source) ──────

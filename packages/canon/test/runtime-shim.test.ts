@@ -156,7 +156,7 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
     expect(statSync(dest).mode & 0o111).not.toBe(0);
   });
 
-  it('capability name flows from the anatomy `Skill.runtime` field', () => {
+  it('capability name flows from the manifest `Skill.runtime` field', () => {
     // The declaration site: a cell selects a runtime capability (S1-aligned name).
     const cell = { runtime: { capability: CAPABILITY } } as Pick<
       Skill,

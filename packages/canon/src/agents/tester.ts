@@ -1,4 +1,3 @@
-import type { Agent } from '../anatomy.js';
 import { codeExecution as codeExecution_actions } from '../dimensions/actions/code-execution.js';
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../dimensions/audience-adaptation/convergence.js';
@@ -20,6 +19,7 @@ import { executableTestOracle as executableTestOracle_selfEvaluation } from '../
 import { comprehension as comprehension_situationAwareness } from '../dimensions/situation-awareness/comprehension.js';
 import { decisionRationale as decisionRationale_transparency } from '../dimensions/transparency/decision-rationale.js';
 import { toolResult as toolResult_trigger } from '../dimensions/trigger/tool-result.js';
+import type { Agent } from '../manifest.js';
 export const tester: Agent = {
   name: 'tester',
   description:

@@ -1,4 +1,4 @@
-// The PROJECTION half of what used to be `test/anatomy/enforcing.test.ts`. The
+// The PROJECTION half of what used to be `test/manifest/enforcing.test.ts`. The
 // predicate and the fold went to `@cratylus/schema` with the shapes they are
 // about; this half asserts a RENDERED BODY, which is the projector's concern and
 // stays here.
@@ -6,7 +6,7 @@
 import type { Value } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import { agentBody } from '../../src/core/anatomy-body.js';
-import { FIXTURE_ANATOMY } from '../fixture-anatomy.js';
+import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 type Guardrails = Value<'guardrails'>;
 
@@ -28,7 +28,7 @@ describe('SOUL rendering — an enforcing value renders its DECLARATION', () => 
         archetype: 'x',
         guardrails: [bound, bare],
       } as never,
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     expect(body).not.toContain('[object Object]');
     expect(body).toContain('stance ≜ hold the stance');

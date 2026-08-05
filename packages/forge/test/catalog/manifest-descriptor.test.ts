@@ -1,6 +1,6 @@
 // A dimension CATALOG is SINGLE-SOURCED against the per-dimension branded-string
 // TYPE aliases it derives. This file is the RUNTIME guard over the FIXTURE
-// corpus's catalog (`test/fixture-anatomy.ts`): the keyset is exactly its 22
+// corpus's catalog (`test/fixture-manifest.ts`): the keyset is exactly its 22
 // fragment-dimension literals — no missing dimension, no extra key, no drift
 // between the descriptor and the value dirs it files against
 // (`test/fixture-dimensions/`).
@@ -18,13 +18,13 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
-  FIXTURE_ANATOMY,
   FIXTURE_DIMENSION_NAMES,
+  FIXTURE_MANIFEST,
   type FixtureDimension,
-} from '../fixture-anatomy.js';
+} from '../fixture-manifest.js';
 
 // The 22 fragment-dimension literals, copied here as the INDEPENDENT oracle (this
-// list is authored from the `Dimension` union in the anatomy doc; if the union
+// list is authored from the `Dimension` union in the manifest doc; if the union
 // grows/shrinks this test must be updated alongside `MANIFEST`, which is
 // exactly the point — adding a dimension forces touching its metadata AND this
 // assertion together). `archetype` and `provenance` are excluded: neither is a
@@ -88,19 +88,19 @@ function illegalMeta(m: Meta): string[] {
 describe('a dimension catalog', () => {
   it('has exactly the 22 dimensions as keys (no missing, no extra)', () => {
     expect([...FIXTURE_DIMENSION_NAMES].sort()).toEqual([...THE_22].sort());
-    expect(Object.keys(FIXTURE_ANATOMY)).toHaveLength(22);
+    expect(Object.keys(FIXTURE_MANIFEST)).toHaveLength(22);
   });
 
   it('every axis/kind/arity is a legal value', () => {
     for (const dimension of FIXTURE_DIMENSION_NAMES) {
-      expect(illegalMeta(FIXTURE_ANATOMY[dimension]), dimension).toEqual([]);
+      expect(illegalMeta(FIXTURE_MANIFEST[dimension]), dimension).toEqual([]);
     }
     expect(FIXTURE_DIMENSION_NAMES.length).toBeGreaterThan(0); // never a vacuous loop
   });
 
   it('the six set dimensions are exactly the set-arity entries', () => {
     const setDimensions = FIXTURE_DIMENSION_NAMES.filter(
-      (o: FixtureDimension) => FIXTURE_ANATOMY[o].arity === 'set',
+      (o: FixtureDimension) => FIXTURE_MANIFEST[o].arity === 'set',
     );
     expect([...setDimensions].sort()).toEqual(
       [

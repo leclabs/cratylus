@@ -38,7 +38,7 @@ import { glob } from 'node:fs/promises';
 import { basename, dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { DIMENSION_NAMES } from '../src/anatomy.js';
+import { DIMENSION_NAMES } from '../src/manifest.js';
 
 const anatomyRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const srcRoot = join(anatomyRoot, 'src');

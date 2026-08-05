@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '../../anatomy.js';
+import type { Skill, SkillExpression } from '../../manifest.js';
 import { introspect } from '../introspect/skill.js';
 
 const EVENT_TAP_BLOCK = `event-tap    ≜ install → observe → read → uninstall

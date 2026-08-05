@@ -1,9 +1,9 @@
-// scaffold-cli.ts — the anatomy-side SCAFFOLD PATH: scaffold a project in a target
+// scaffold-cli.ts — the manifest-side SCAFFOLD PATH: scaffold a project in a target
 // dir by injecting canon's `anatomyProjectTemplate` (the corpus project
 // doctrine) into the doctrine-agnostic `scaffoldProject` ENGINE
 // (`@cratylus/forge/deploy`). This is the composition root that binds the
-// anatomy project DATA to the forge engine — the engine stays doctrine-agnostic;
-// THIS path is where the anatomy project doctrine is injected.
+// manifest project DATA to the forge engine — the engine stays doctrine-agnostic;
+// THIS path is where the manifest project doctrine is injected.
 //
 // Usage:  tsx src/toolkit/scaffold-cli.ts --target <dir> [--agents-dir <dir>]
 //                                          [--skills-dir <dir>] [--subject <text>] [--force]
@@ -54,7 +54,7 @@ function parseArgs(argv: string[]): Args {
   return { target, agentsDir, skillsDir, subject, force };
 }
 
-/** Scaffold an anatomy project: inject the anatomy project template into the engine. */
+/** Scaffold an manifest project: inject the manifest project template into the engine. */
 export function scaffoldAnatomyProject(args: Args): number {
   const tree: RenderTree = {
     agentsDir: args.agentsDir,

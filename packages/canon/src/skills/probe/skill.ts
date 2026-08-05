@@ -1,4 +1,4 @@
-import type { Skill, SkillExpression } from '../../anatomy.js';
+import type { Skill, SkillExpression } from '../../manifest.js';
 import { conceptualize } from '../conceptualize/skill.js';
 import { elicit } from '../elicit/skill.js';
 import { signify } from '../signify/skill.js';

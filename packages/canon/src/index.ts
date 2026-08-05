@@ -21,8 +21,8 @@
 
 import { fileURLToPath } from 'node:url';
 import { defineAgentPlugin } from '@cratylus/schema';
-import { MANIFEST } from './anatomy.js';
 import { foundingDoctrine } from './genus/founding-doctrine.js';
+import { MANIFEST } from './manifest.js';
 
 /** Resolve a sibling dir of this module to an absolute path (self-location). */
 const dir = (rel: string): string =>

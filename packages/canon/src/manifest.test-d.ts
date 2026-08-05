@@ -1,4 +1,4 @@
-// Type-level acceptance for THIS CORPUS'S anatomy — the types `src/anatomy.ts`
+// Type-level acceptance for THIS CORPUS'S manifest — the types `src/manifest.ts`
 // derives from `MANIFEST`. It lives here, not in the projector, because every
 // property below is a property of a catalog: which dimensions exist, which are
 // sets, which may be omitted. A projector that could assert them would be one
@@ -23,7 +23,7 @@ import type {
   OutputFormat,
   Role,
   Value,
-} from './anatomy.js';
+} from './manifest.js';
 
 // ── Fixtures (well-typed branded dimension values) ──────────────────────────────
 

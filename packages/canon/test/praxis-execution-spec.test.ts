@@ -116,6 +116,8 @@ const DISK = onDisk();
 /** Indexed access under `noUncheckedIndexedAccess`; an unknown state is empty, not undefined. */
 const st = (name: string): string[] => DISK[name] ?? [];
 const OPEN_IDS = OPEN_STATES.flatMap((s) => st(s));
+/** A completed shard keeps its spec entry — it is history, and `deps` still reference it. */
+const DONE = new Set(st('completed'));
 const WAVES = waves(IDS);
 
 describe('praxis-execution-spec', () => {
@@ -125,7 +127,7 @@ describe('praxis-execution-spec', () => {
       'on disk, absent from spec.mjs',
     ).toEqual([]);
     expect(
-      IDS.filter((id) => !OPEN_IDS.includes(id)),
+      IDS.filter((id) => !OPEN_IDS.includes(id) && !DONE.has(id)),
       'in spec.mjs, absent from disk',
     ).toEqual([]);
   });
@@ -466,9 +468,9 @@ describe('praxis-execution-spec', () => {
     expect(wavesOf(cyc)).toEqual([['p', 'q']]);
     // (3) contention is detected on real expanded paths, not on the glob strings.
     const a = expand(['packages/canon/src/**']);
-    const b = expand(['packages/canon/src/anatomy.ts']);
+    const b = expand(['packages/canon/src/manifest.ts']);
     expect(a.size).toBeGreaterThan(1);
-    expect(intersect(a, b)).toEqual(['packages/canon/src/anatomy.ts']);
+    expect(intersect(a, b)).toEqual(['packages/canon/src/manifest.ts']);
     // (4) and a genuinely disjoint pair does NOT trip it — the exonerating half.
     expect(
       intersect(

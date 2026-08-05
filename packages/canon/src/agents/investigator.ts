@@ -1,4 +1,3 @@
-import type { Agent } from '../anatomy.js';
 import { codeExecution as codeExecution_actions } from '../dimensions/actions/code-execution.js';
 import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
@@ -21,6 +20,7 @@ import { optimize as optimize_satisficing } from '../dimensions/satisficing/opti
 import { selfCritique as selfCritique_selfEvaluation } from '../dimensions/self-evaluation/self-critique.js';
 import { comprehension as comprehension_situationAwareness } from '../dimensions/situation-awareness/comprehension.js';
 import { reasoningTrace as reasoningTrace_transparency } from '../dimensions/transparency/reasoning-trace.js';
+import type { Agent } from '../manifest.js';
 export const investigator: Agent = {
   name: 'investigator',
   description:

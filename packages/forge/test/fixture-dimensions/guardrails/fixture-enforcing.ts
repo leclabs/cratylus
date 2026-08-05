@@ -9,7 +9,7 @@
 // dimension value, so nothing ever demonstrated it. A hazard the source names and
 // no fixture reproduces is an untested claim.
 
-import type { FixtureValue } from '../../fixture-anatomy.js';
+import type { FixtureValue } from '../../fixture-manifest.js';
 
 export const fixtureEnforcing: FixtureValue<'guardrails'> = {
   body: 'fixture-enforcing ≜ a rule that carries its own enforcement',

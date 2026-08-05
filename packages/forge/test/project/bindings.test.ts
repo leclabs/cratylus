@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { bindingsOf } from '../../src/project/index.js';
 import {
-  FIXTURE_ANATOMY,
+  FIXTURE_MANIFEST,
   type FixtureAgent,
   type FixtureValue,
-} from '../fixture-anatomy.js';
+} from '../fixture-manifest.js';
 
 type Agent = FixtureAgent;
 type Guardrails = FixtureValue<'guardrails'>;
@@ -41,7 +41,7 @@ describe('bindingsOf — the binding is computed, never authored', () => {
         { name: 'mav', agent: mk('mav', [stance]) },
         { name: 'tester', agent: mk('tester', [bare]) },
       ],
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     expect(bindings).toHaveLength(1);
     expect(bindings[0]?.anchor).toBe('stance');
@@ -57,7 +57,7 @@ describe('bindingsOf — the binding is computed, never authored', () => {
     expect(
       bindingsOf(
         [{ name: 'tester', agent: mk('tester', [bare]) }],
-        FIXTURE_ANATOMY,
+        FIXTURE_MANIFEST,
       ),
     ).toEqual([]);
   });
@@ -65,7 +65,7 @@ describe('bindingsOf — the binding is computed, never authored', () => {
   it('a bare value never produces a binding — `events` is PARTIAL', () => {
     const bindings = bindingsOf(
       [{ name: 'nico', agent: mk('nico', [bare, stance]) }],
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     expect(bindings.map((b) => b.anchor)).toEqual(['stance']);
   });
@@ -73,7 +73,7 @@ describe('bindingsOf — the binding is computed, never authored', () => {
   it('carries substrate and events through, so the refusal law can read them', () => {
     const [b] = bindingsOf(
       [{ name: 'nico', agent: mk('nico', [stance]) }],
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     expect(b?.fragment.substrate).toBe('harness');
     expect(b?.fragment.events).toEqual(['tool.use.pre']);
@@ -85,14 +85,14 @@ describe('bindingsOf — the binding is computed, never authored', () => {
         { name: 'nico', agent: mk('nico', [nudge, stance]) },
         { name: 'mav', agent: mk('mav', [stance, nudge]) },
       ],
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     const b = bindingsOf(
       [
         { name: 'mav', agent: mk('mav', [nudge, stance]) },
         { name: 'nico', agent: mk('nico', [stance, nudge]) },
       ],
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     expect(a.map((x) => x.anchor)).toEqual(['nudge', 'stance']);
     expect(a).toEqual(b);
@@ -106,14 +106,14 @@ describe('bindingsOf — the binding is computed, never authored', () => {
         { name: 'nico', agent: mk('nico', [stance]) },
         { name: 'mav', agent: mk('mav', [stance]) },
       ],
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     const after = bindingsOf(
       [
         { name: 'nico', agent: mk('nico', [stance]) },
         { name: 'mav', agent: mk('mav', [bare]) },
       ],
-      FIXTURE_ANATOMY,
+      FIXTURE_MANIFEST,
     );
     expect(before[0]?.agents).toEqual(['mav', 'nico']);
     expect(after[0]?.agents).toEqual(['nico']);

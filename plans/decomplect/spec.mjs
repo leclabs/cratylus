@@ -42,10 +42,10 @@ export const SHARDS = {
     outputs: [
       'packages/canon/src/**',
       'packages/canon/test/**',
-      'packages/forge/test/fixture-anatomy.ts',
+      'packages/forge/test/**',
     ],
     refs: ['packages/schema/src/index.ts'],
-    static: ['packages/canon/src/anatomy.ts', 'ARCHITECTURE.md'],
+    static: ['packages/canon/src/manifest.ts', 'ARCHITECTURE.md'],
   },
   't-anatomy-root-compose': {
     slice: 'plan-machinery',
@@ -326,7 +326,7 @@ export const SHARDS = {
     deps: ['t-anatomy-root-compose'],
     outputs: ['packages/schema/src/index.ts'],
     refs: ['packages/canon/src/dimensions/**'],
-    static: ['packages/schema/src/index.ts', 'packages/canon/src/anatomy.ts'],
+    static: ['packages/schema/src/index.ts', 'packages/canon/src/manifest.ts'],
   },
   't-substrate-concept': {
     slice: 'skill-cells',

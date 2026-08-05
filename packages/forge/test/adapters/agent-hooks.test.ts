@@ -2,10 +2,10 @@ import type { HarnessMechanism } from '@cratylus/schema/hook';
 import { describe, expect, it } from 'vitest';
 import { agentToClaudeMd } from '../../src/adapters/claude/anatomy.js';
 import {
-  FIXTURE_ANATOMY,
+  FIXTURE_MANIFEST,
   type FixtureAgent,
   type FixtureValue,
-} from '../fixture-anatomy.js';
+} from '../fixture-manifest.js';
 
 type Agent = FixtureAgent;
 type Guardrails = FixtureValue<'guardrails'>;
@@ -55,7 +55,7 @@ const mk = (name: string, guardrails: readonly Guardrails[]): Agent =>
 
 const fm = (a: Agent) =>
   agentToClaudeMd(a, {
-    manifest: FIXTURE_ANATOMY,
+    manifest: FIXTURE_MANIFEST,
     mechanisms: MECHANISMS,
   }).split('---')[1] ?? '';
 
@@ -106,7 +106,7 @@ describe('per-agent hooks — composition becomes attachment', () => {
     ]);
     // Composed nudge-first; `order` must still put the blocking gate first.
     const out = agentToClaudeMd(mk('nico', [nudge, gate]), {
-      manifest: FIXTURE_ANATOMY,
+      manifest: FIXTURE_MANIFEST,
       mechanisms: m,
     });
     expect(out.indexOf('gate.sh')).toBeLessThan(out.indexOf('nudge.sh'));
@@ -114,7 +114,7 @@ describe('per-agent hooks — composition becomes attachment', () => {
 
   it('the SOUL body carries the DECLARATION, never the mechanism', () => {
     const md = agentToClaudeMd(mk('nico', [stance]), {
-      manifest: FIXTURE_ANATOMY,
+      manifest: FIXTURE_MANIFEST,
       mechanisms: MECHANISMS,
     });
     const body = md.split('---').slice(2).join('---');
@@ -129,7 +129,7 @@ describe('an unresolved mechanism emits nothing — the source cell is innocent'
     // for it. That gap is what the ENFORCED leg convicts as `unprojected`, which
     // is the right home for it — silently emitting a hookless agent is not.
     const out = agentToClaudeMd(mk('nico', [stance]), {
-      manifest: FIXTURE_ANATOMY,
+      manifest: FIXTURE_MANIFEST,
       mechanisms: new Map(),
     }).split('---')[1];
     expect(out).not.toContain('hooks:');

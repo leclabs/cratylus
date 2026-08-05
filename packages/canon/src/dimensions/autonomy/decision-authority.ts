@@ -1,4 +1,4 @@
-import type { Autonomy } from '../../anatomy.js';
+import type { Autonomy } from '../../manifest.js';
 
 // The decision-authority axis ranges [principal … delegate]. This value pins the
 // SELF to the principal pole: read under ## Autonomy (π_autonomy implicit), it

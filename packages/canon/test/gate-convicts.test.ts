@@ -116,7 +116,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'forge/core/agent-body-enforcing.test.ts': 'BEHAVIORAL',
   'forge/project/project-human.test.ts': 'BEHAVIORAL',
   // reads the FIXTURE corpus's own dimension dir listing against its descriptor.
-  'forge/catalog/anatomy-descriptor.test.ts': 'GATE',
+  'forge/catalog/manifest-descriptor.test.ts': 'GATE',
   'forge/catalog/discover.test.ts': 'BEHAVIORAL',
   // enumerates the FIXTURE corpus, asserting a shape invariant over EVERY value.
   'forge/catalog/enumerate.test.ts': 'GATE',

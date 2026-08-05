@@ -1,3 +1,3 @@
-import type { Learning } from '../../anatomy.js';
+import type { Learning } from '../../manifest.js';
 
 export const staticFrozen: Learning = `static-frozen`;

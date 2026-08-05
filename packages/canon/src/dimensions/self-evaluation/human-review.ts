@@ -1,3 +1,3 @@
-import type { SelfEvaluation } from '../../anatomy.js';
+import type { SelfEvaluation } from '../../manifest.js';
 
 export const humanReview: SelfEvaluation = `human-review`;

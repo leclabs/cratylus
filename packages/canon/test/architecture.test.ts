@@ -94,7 +94,7 @@ const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
   // What schema actually wanted was never `RuntimePlugin`. It wanted the KEY SET
   // `'memory' | 'eventTap'`, and it was obtaining a VOCABULARY by reaching into a
   // SHAPE. `shape ⊥ vocabulary` (`MODEL.md:22`). Schema now states only that a
-  // capability has a name; `canon/anatomy.ts` declares the members and narrows its
+  // capability has a name; `canon/manifest.ts` declares the members and narrows its
   // own `Skill` against them, which is the `DimensionManifest`/`MANIFEST` pattern
   // reused rather than a second one invented. The edge is gone, the ports never
   // moved, and the compile-time check on cells got STRONGER — it is now sourced
@@ -342,11 +342,11 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     // moved to the schema. `scaffold-cli.ts → forge` above is a PERMITTED edge and
     // still witnesses a live canon→forge scan, so this leg is not vacuous.
     // Was `canon/skills/wake/skill.ts → schema`. The capability-vocabulary repair
-    // moved every skill cell onto canon's OWN narrowed `Skill` (`anatomy.ts`), so no
+    // moved every skill cell onto canon's OWN narrowed `Skill` (`manifest.ts`), so no
     // cell imports the shapes package directly any more and that witness went stale.
     // The corpus→shapes edge itself is very much alive — it just has one anchor now,
     // which is the manifest module, and that is the right place for it.
-    expect(ks).toContain('canon/anatomy.ts → schema');
+    expect(ks).toContain('canon/manifest.ts → schema');
     // Known NON-edges: import-shaped text in a template and in a comment.
     expect(ks).not.toContain('forge/config/scaffold.ts → canon');
     expect(ks).not.toContain('forge/deploy/seeds.ts → memory');
@@ -385,8 +385,8 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     expect(canonBuild.length, 'canon BUILD SCRIPTS using forge as a tool').toBe(
       4,
     );
-    // WAS 3, THEN 1, IS 0 — property 2 holds with no exceptions. `anatomy.ts` and
-    // `anatomy.test-d.ts` took their shapes from the schema; `index.ts` was the last
+    // WAS 3, THEN 1, IS 0 — property 2 holds with no exceptions. `manifest.ts` and
+    // `manifest.test-d.ts` took their shapes from the schema; `index.ts` was the last
     // survivor and now takes `defineAgentPlugin` from there too. THIS ONE IS ALLOWED
     // TO BE ZERO, unlike the build-script count below: a corpus is BUILT BY the
     // projector, never DEFINED by it, so nothing in canon's root ever needs it.

@@ -1,3 +1,3 @@
-import type { Actions } from '../../anatomy.js';
+import type { Actions } from '../../manifest.js';
 
 export const toolCall: Actions = `tool-call ⟨general not-specialized-effector⟩`;

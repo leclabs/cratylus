@@ -1,4 +1,3 @@
-import type { Agent } from '../anatomy.js';
 import { codeExecution as codeExecution_actions } from '../dimensions/actions/code-execution.js';
 import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
@@ -19,6 +18,7 @@ import { satisfice as satisfice_satisficing } from '../dimensions/satisficing/sa
 import { executableTestOracle as executableTestOracle_selfEvaluation } from '../dimensions/self-evaluation/executable-test-oracle.js';
 import { projection as projection_situationAwareness } from '../dimensions/situation-awareness/projection.js';
 import { reasoningTrace as reasoningTrace_transparency } from '../dimensions/transparency/reasoning-trace.js';
+import type { Agent } from '../manifest.js';
 export const developer: Agent = {
   name: 'developer',
   description:
