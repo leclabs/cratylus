@@ -51,11 +51,11 @@
   "author": "Lance Caraccioli <lance.caraccioli@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/leclabs/agent-factory.git",
+    "url": "git+https://github.com/leclabs/cratylus.git",
     "directory": "packages/schema"
   },
   "bugs": {
-    "url": "https://github.com/leclabs/agent-factory/issues"
+    "url": "https://github.com/leclabs/cratylus/issues"
   },
-  "homepage": "https://github.com/leclabs/agent-factory#readme"
+  "homepage": "https://github.com/leclabs/cratylus#readme"
 }

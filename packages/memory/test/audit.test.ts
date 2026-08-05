@@ -254,7 +254,7 @@ describe('scanLine (detector precision)', () => {
     expect(scanLine('candidates/prior-verdicts drive the elicitation')).toEqual(
       [],
     );
-    expect(scanLine('the leclabs/agent-factory society layer')).toEqual([]);
+    expect(scanLine('the leclabs/cratylus society layer')).toEqual([]);
     // Git context outside the +/-3 token window does not anchor.
     expect(
       scanLine('merge went fine and much later autonomy/human-on-the-loop'),
