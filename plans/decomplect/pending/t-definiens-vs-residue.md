@@ -33,3 +33,14 @@ dimension value — at `reader-density.test.ts:247` (`'dimension-definiens'`), `
 - The field has one name; the ρ-class keeps its own, and a note records that they were never the
   same concept.
 - The bridging adapter in `hook-rule-boundary.test.ts` is deleted, not updated.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** schema-contract · **wave** 3
+- **depends on** `t-worker-payload-seam-and-property-1`
+- **writes** `packages/schema/src/rule-cell.ts` · `packages/canon/test/hook-rule-boundary.test.ts`
+- **compiles against** `packages/schema/src/hook-cell.ts`
+- **evidence** `packages/schema/src/rule-cell.ts` · `packages/schema/src/hook-cell.ts` · `MODEL.md`
+- **RULING OWED — not dispatchable** disambiguating the field from the live ρ-class of the same name, which is a different referent

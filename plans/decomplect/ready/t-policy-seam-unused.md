@@ -36,3 +36,14 @@ Each has ~3 consumer sites. `NO_PRIOR` is the cleanest first cut — its own fil
 
 - Each moved constant is supplied by `canonPolicy` and forge holds no corpus-specific default for it.
 - Render oracle unmoved. Both gates (`accept`, `residue`) still convict their fixtures.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** forge-seams · **wave** 1
+- **depends on** `t-manifest-file-basename` · `t-soul-to-target-in-forge`
+- **writes** `packages/forge/src/validate/policy.ts` · `packages/forge/src/validate/oracle.ts` · `packages/forge/src/validate/structural-parsimony.ts` · `packages/canon/src/toolkit/cold-oracle/**`
+- **compiles against** `packages/forge/src/core/exemplify/register.ts`
+- **evidence** `packages/forge/src/validate/policy.ts` · `packages/canon/src/toolkit/cold-oracle/policy.ts`
+- **dispatchable** no ruling owed

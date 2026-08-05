@@ -39,3 +39,26 @@ Three descriptions of one field disagree. That is the real finding.
 
 27 hits / 8 files; **exactly one is structural** (`:21`). The rest is prose the LLM judge reads or
 shell the worker branches on — do not sweep them.
+
+## Acceptance
+
+- A canonical tool-class vocabulary exists with per-adapter maps, in the same shape `CanonicalEvent`
+  already has — or the ruling records why tools are not events and what replaces it.
+- **The codex divergence is closed and PROVEN closed**: a fixture asserts the narrowing survives
+  projection to codex. **The control fails today** — `.render-ts-codex/hooks.json` carries no
+  matcher at all, so the check convicts on the current tree.
+- The schema stops disagreeing with itself: one description of `matcher`, in one register, and the
+  doc comment no longer ships the defect as its example.
+- The worker's `*) allow ;;` self-narrowing stays as defence in depth, but is no longer the **only**
+  thing making codex correct.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** signification · **wave** 4
+- **depends on** `t-worker-payload-seam-and-property-1` · `t-lifecycle-vocabulary`
+- **writes** `packages/schema/src/hook/index.ts`
+- **compiles against** `packages/canon/src/hooks/stance-guardrail-pre.ts`
+- **evidence** `packages/canon/src/hooks/stance-guardrail-pre.ts` · `packages/schema/src/hook-cell.ts`
+- **RULING OWED — not dispatchable** a canonical tool-class vocabulary does not exist, and which register owns `matcher` is unruled

@@ -89,6 +89,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/memory-nudge.test.ts': 'BEHAVIORAL',
   'canon/null-dimension.test.ts': 'GATE',
   'canon/plan-set.test.ts': 'GATE',
+  // enumerates the LIVE shard corpus of the bound plan against `plans/decomplect/spec.mjs`;
+  // its convicting fixture drives the same wave/expand/intersect over a synthetic plan.
+  'canon/praxis-execution-spec.test.ts': 'GATE',
   'canon/projection-stability.test.ts': 'GATE',
   'canon/reader-density.test.ts': 'GATE',
   // enumerates the LIVE plans/ record dirs against a pinned roster; its convicting

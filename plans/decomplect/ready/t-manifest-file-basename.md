@@ -32,3 +32,14 @@ a corpus about naming cannot afford to carry one.
 - **Render oracle UNMOVED.** No projected bytes are involved, so any movement is a real defect —
   find it, do not re-baseline.
 - Suite green uncached.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** canon-corpus · **wave** 0
+- **depends on** —
+- **writes** `packages/canon/src/**` · `packages/canon/test/**` · `packages/forge/test/fixture-anatomy.ts`
+- **compiles against** `packages/schema/src/index.ts`
+- **evidence** `packages/canon/src/anatomy.ts` · `ARCHITECTURE.md`
+- **dispatchable** no ruling owed

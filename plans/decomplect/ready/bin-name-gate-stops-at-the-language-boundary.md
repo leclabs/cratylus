@@ -74,3 +74,14 @@ The migration only caught this one because a full-tree `grep` ran by hand. That 
   revert, see green.
 - The gate names what it permits (override seams) and what it forbids (second homes), so the next
   reader does not delete a legitimate `${VAR:-…}`.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** host-and-gates · **wave** 3
+- **depends on** `t-worker-payload-seam-and-property-1`
+- **writes** `packages/canon/test/bin-name-single-home.test.ts`
+- **compiles against** `packages/runtime/src/bin-name.ts`
+- **evidence** `packages/canon/test/bin-name-single-home.test.ts`
+- **dispatchable** no ruling owed

@@ -33,3 +33,14 @@ It was **75 at `48baaddd`** — the very commit that wrote `~110` into `ARCHITEC
 - Each number carries the command that produced it.
 - A follow-on question is filed, not answered here: **can a gate hold a prose number to a live
   count?** Four wrong figures in ground is a class, not four incidents.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** ground-and-record · **wave** 1
+- **depends on** `t-manifest-file-basename`
+- **writes** `ARCHITECTURE.md`
+- **compiles against** `packages/canon/test/architecture.test.ts`
+- **evidence** `ARCHITECTURE.md` · `packages/canon/test/architecture.test.ts`
+- **dispatchable** no ruling owed

@@ -29,3 +29,27 @@ so what is its home?_ Three incompatible repairs — delete the clause; read it 
 ## Blast radius
 
 1 line, 1 file, **0 gates**. That is why it survived: no property convicts it.
+
+## Acceptance
+
+- The ruling is recorded in ground or in the cell — **not in this file**, which is a work order and
+  will be retired.
+- Whichever repair lands, `packages/canon/src/skills/create-agent/skill.ts:20` states only things
+  true of the tree: no field the shape does not have, and no `∉ catalog` claim contradicted by
+  `anatomy.ts`.
+- **The control fails today**: a check asserting the line's claims against `schema/src/index.ts`'s
+  `Agent` and against the `model` catalog convicts the current text on all three counts. Write that
+  check first and watch it go red, or the repair is unverifiable.
+- If the answer is "add `substrate` to `Agent`": **STOP and report.** That is a schema change with
+  10 agent vectors downstream, not a line edit.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** signification · **wave** 1
+- **depends on** `t-manifest-file-basename`
+- **writes** `packages/canon/src/skills/create-agent/**`
+- **compiles against** `packages/canon/src/dimensions/model/claude.ts`
+- **evidence** `packages/canon/src/skills/create-agent/skill.ts` · `packages/schema/src/index.ts`
+- **RULING OWED — not dispatchable** whether an instance-bound substrate concept exists distinct from the `model` dimension, and where it lives

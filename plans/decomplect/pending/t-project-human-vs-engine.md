@@ -34,3 +34,14 @@ different questions and the sweep did not record the second one.
 - Blast radius if deleted: 3 files (`project-human.ts`, its test, `gate-convicts.test.ts:114`), plus
   a duplicate `dimensionTitle` (`core/anatomy-body.ts:17` exported vs `project-human.ts:29` private)
   that dies with it.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** forge-seams · **wave** 1
+- **depends on** `t-soul-to-target-in-forge`
+- **writes** `packages/forge/src/project/project-human.ts` · `ENGINE.md`
+- **compiles against** `packages/forge/src/core/anatomy-body.ts`
+- **evidence** `packages/forge/src/project/project-human.ts` · `ENGINE.md`
+- **RULING OWED — not dispatchable** ENGINE.md declares project-human a member of boundary-projection; deleting the sole implementation leaves ground declaring an unrealized operation

@@ -60,3 +60,14 @@ binding, which inverted the conclusion.
 - A control proves it: mutate one deployed file, see it convicted, restore, see it green.
 - The check is reachable without running the full suite, because the failure it catches
   is a property of the host and not of the repo.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** forge-deploy · **wave** 2
+- **depends on** `t-kind-root-ignores-agent-ext` · `t-init-hardcodes-harness-dir`
+- **writes** `packages/forge/src/cli/**` · `packages/forge/src/deploy/local.ts`
+- **compiles against** `packages/forge/src/deploy/manifest.ts`
+- **evidence** `packages/forge/src/deploy/manifest.ts` · `MODEL.md`
+- **dispatchable** no ruling owed

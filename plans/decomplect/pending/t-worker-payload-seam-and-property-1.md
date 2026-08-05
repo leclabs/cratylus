@@ -54,3 +54,14 @@ contract the homeless-message shard needs changed.
 - `architecture.test.ts` count and pin amended in the same act as the repair — mechanical, but only
   after the design lands.
 - The KNOWN GAP paragraph in `reader-density.test.ts` is deleted, not edited.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** schema-contract · **wave** 2
+- **depends on** `t-anatomy-root-compose`
+- **writes** `packages/schema/src/hook-cell.ts` · `packages/canon/src/hooks/**` · `packages/canon/src/toolkit/guardrail/**` · `packages/canon/test/architecture.test.ts` · `packages/canon/test/bin-name-single-home.test.ts` · `packages/canon/test/reader-density.test.ts`
+- **compiles against** `packages/runtime/src/bin-name.ts`
+- **evidence** `packages/canon/src/hooks/memory-consolidation-nudge.ts` · `packages/canon/test/bin-name-single-home.test.ts` · `ARCHITECTURE.md`
+- **RULING OWED — not dispatchable** the seam by which a cell obtains a projection-owned value without importing the mechanism package — reshapes HookCell

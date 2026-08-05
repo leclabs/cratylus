@@ -36,3 +36,25 @@ the cells currently describe none of them. **Not a rename** — the target is in
 `materialize` was filed in this row and is **REFUTED** — its `.md`+front-matter is one named
 strategy's consumption table with `s ∉ S ⇒ ⊥`, which is the seam the architecture asks for. Blast
 radius is **4 lines across 2 cells**, not 3.
+
+## Acceptance
+
+- The canonical authoring surface is **named in ground**, once, and both cells instruct against it.
+- No cell asserts a front-matter key the projector does not emit. **The control fails today**:
+  `kind:` appears in the cells and in no rendered artifact — a check comparing asserted keys against
+  `.render-ts` output convicts the current text immediately.
+- Singular/plural agrees with what deploy writes (`agents/`, `skills/`), or the cells stop naming
+  paths at all — which is the likelier right answer, since the path is the projector's.
+- `materialize` is **not touched**. It was refuted out of this row; editing it here would re-file a
+  defect that does not exist.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** signification · **wave** 1
+- **depends on** `t-manifest-file-basename`
+- **writes** `packages/canon/src/skills/create-skill/**` · `packages/canon/src/skills/materialize/**`
+- **compiles against** `packages/forge/src/core/exemplify/skill-cell.ts`
+- **evidence** `packages/canon/src/skills/create-skill/skill.ts` · `packages/forge/src/deploy/manifest.ts`
+- **RULING OWED — not dispatchable** what the canonical authoring surface IS — three live candidates and the cells describe none of them

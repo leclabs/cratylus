@@ -58,3 +58,14 @@ what left the working tree is the reading cost, not the record.
   check — not picked from this file's three candidates.
 - If reading 1: nothing changes, and that is recorded here so the next cleanup does not re-open it.
 - `phase(P)` remains a readout of ground truth on disk, or its new carrier is named explicitly.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** canon-corpus · **wave** 2
+- **depends on** `t-anatomy-root-compose`
+- **writes** `packages/canon/src/skills/praxis/**` · `packages/canon/src/toolkit/praxis/**` · `packages/canon/src/toolkit/plan-set-cli.ts`
+- **compiles against** `packages/canon/src/toolkit/plan-set.ts`
+- **evidence** `packages/canon/src/skills/praxis/skill.ts` · `packages/canon/src/toolkit/plan-set.ts`
+- **RULING OWED — not dispatchable** whether retire means relocate, means delete, or splits into two verbs

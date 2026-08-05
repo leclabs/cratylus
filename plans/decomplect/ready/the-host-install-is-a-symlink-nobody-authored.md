@@ -97,3 +97,14 @@ The property is a **binding**, so a static check cannot carry it alone:
   restores `/wake` with no hand-authored files anywhere.
 - The refusal is legible at the point of failure — a capability-level message, never a node module
   loader stack.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** host-and-gates · **wave** 1
+- **depends on** `t-soul-to-target-in-forge`
+- **writes** `packages/invoke/**`
+- **compiles against** `packages/runtime/src/bin-name.ts`
+- **evidence** `packages/invoke/README.md` · `packages/runtime/src/bin-name.ts`
+- **dispatchable** no ruling owed

@@ -29,3 +29,14 @@ divergence is unconvictable.
 
 - The property is stated before the member moves either way.
 - Whichever side changes, the other is checked by a gate — not by having been read once.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** schema-contract · **wave** 1
+- **depends on** `t-soul-to-target-in-forge`
+- **writes** `packages/forge/src/validate/accept.ts` · `MODEL.md`
+- **compiles against** `packages/schema/src/hook-cell.ts`
+- **evidence** `packages/forge/src/validate/accept.ts` · `MODEL.md`
+- **RULING OWED — not dispatchable** the ground-conformance property is unstated: what makes a ground/source enumeration divergence a defect rather than a refinement

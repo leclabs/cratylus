@@ -34,3 +34,14 @@ casualty.
 
 - A project can be scaffolded against a corpus that is not this one, proven by a test.
 - The two pinned assertions are amended deliberately, in the same commit, with the reason stated.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** forge-seams · **wave** 1
+- **depends on** `t-manifest-file-basename`
+- **writes** `packages/forge/src/config/**` · `packages/forge/README.md` · `packages/forge/test/config/**` · `packages/forge/test/cli/**`
+- **compiles against** `packages/forge/src/cli/commands/init.ts`
+- **evidence** `packages/forge/src/config/scaffold.ts` · `packages/forge/src/cli/commands/init.ts`
+- **dispatchable** no ruling owed

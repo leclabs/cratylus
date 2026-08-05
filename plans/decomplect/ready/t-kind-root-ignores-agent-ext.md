@@ -30,3 +30,14 @@ every time.** Prune is silently a no-op on codex.
 
 - A codex deploy with an orphan **reports it**; a fixture proves it went red before the fix.
 - The claude path is unchanged — both fixtures, or the checker only convicts what it already knew.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** forge-deploy · **wave** 1
+- **depends on** `t-soul-to-target-in-forge`
+- **writes** `packages/forge/src/deploy/manifest.ts` · `packages/forge/src/deploy/deploy.ts` · `packages/forge/test/deploy/**`
+- **compiles against** `packages/forge/src/core/harness-adapter.ts`
+- **evidence** `packages/forge/src/deploy/manifest.ts` · `packages/forge/src/core/harness-adapter.ts`
+- **dispatchable** no ruling owed

@@ -23,3 +23,14 @@ matters, and there is currently nothing that would notice a new one being added.
   unnecessary.
 - **A gate for the class is filed as a follow-on**, not built here: markers are cheap to add and
   invisible once the author moves on. That is the same shape as every other finding in this census.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** forge-seams · **wave** 0
+- **depends on** —
+- **writes** `packages/forge/src/catalog/**`
+- **compiles against** `packages/schema/src/index.ts`
+- **evidence** `packages/forge/src/catalog/index.ts`
+- **RULING OWED — not dispatchable** an owed cold-decode for the arity→kind map concept

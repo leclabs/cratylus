@@ -209,6 +209,37 @@ homeless-hook-message shard into the property-1 ruling, because the census estab
 question wearing two filings. It is the last entry in the architecture ratchet and the only breach
 that cannot be repaired by refactoring.
 
+## Sequence — R and the waves
+
+<!-- GENERATED from ./spec.mjs by ./sync-shards.mjs. Edit the spec, not this section. -->
+
+Computed, not asserted: `wave(0) ≜ { t | ∄ u : (t,u) ∈ R }`, and each later wave is what its
+predecessors unblock. `packages/canon/test/praxis-execution-spec.test.ts` proves every wave
+satisfies the concurrency precondition — no two members write the same file, and none writes a
+file another compiles against — so **a wave can be fanned out with no isolation**.
+
+`~~struck~~` = a RULING is owed. It sits in its wave but is not dispatchable; the count beside it
+is what can actually be sent.
+
+| wave  | shards | dispatchable | members                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----- | ------ | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **0** | 5      | 3            | `t-capture-row` · ~~t-config-dotfile-was-shipped-underived~~ · `t-manifest-file-basename` · ~~t-signify-marker~~ · `t-soul-to-target-in-forge`                                                                                                                                                                                                                                                                                                                              |
+| **1** | 15     | 9            | ~~project-never-cleans-its-out-dir~~ · ~~t-accept-fifth-kind~~ · `t-anatomy-root-compose` · ~~t-authoring-surface~~ · `t-canon-package-default` · `t-ground-numbers-are-unmeasured` · `t-init-hardcodes-harness-dir` · `t-kind-root-ignores-agent-ext` · `t-policy-seam-unused` · ~~t-project-human-vs-engine~~ · `t-seed-prose-has-drifted` · `t-shim-path-from-capability` · ~~t-substrate-concept~~ · ~~t-tap-anchor~~ · `the-host-install-is-a-symlink-nobody-authored` |
+| **2** | 7      | 2            | `deployed-drifts-from-rendered-unwatched` · ~~elevate-installs-no-mechanism~~ · `memory-nudge-is-flaky-under-the-full-verify` · ~~retire-relocates-but-the-operator-deletes~~ · ~~t-coined-classification~~ · ~~t-projection-file-anchor~~ · ~~t-worker-payload-seam-and-property-1~~                                                                                                                                                                                       |
+| **3** | 4      | 1            | `bin-name-gate-stops-at-the-language-boundary` · ~~t-canon-soul~~ · ~~t-definiens-vs-residue~~ · ~~t-lifecycle-vocabulary~~                                                                                                                                                                                                                                                                                                                                                 |
+| **4** | 2      | 0            | ~~t-rule-cell-body~~ · ~~t-tool-class-vocabulary~~                                                                                                                                                                                                                                                                                                                                                                                                                          |
+
+**Slices** — a partition, 8 of them, cut to minimize cross-slice edges in `R`:
+
+- `canon-corpus` (4) — `t-manifest-file-basename` · `t-anatomy-root-compose` · `t-shim-path-from-capability` · `retire-relocates-but-the-operator-deletes`
+- `forge-deploy` (5) — `t-soul-to-target-in-forge` · `t-kind-root-ignores-agent-ext` · `t-init-hardcodes-harness-dir` · `t-seed-prose-has-drifted` · `deployed-drifts-from-rendered-unwatched`
+- `forge-seams` (5) — `t-signify-marker` · `t-canon-package-default` · `t-policy-seam-unused` · `project-never-cleans-its-out-dir` · `t-project-human-vs-engine`
+- `runtime-capability` (2) — `t-capture-row` · `t-tap-anchor`
+- `schema-contract` (5) — `t-worker-payload-seam-and-property-1` · `t-lifecycle-vocabulary` · `t-definiens-vs-residue` · `t-rule-cell-body` · `t-accept-fifth-kind`
+- `signification` (6) — `t-projection-file-anchor` · `t-coined-classification` · `t-substrate-concept` · `t-authoring-surface` · `t-tool-class-vocabulary` · `t-canon-soul`
+- `ground-and-record` (2) — `t-ground-numbers-are-unmeasured` · `t-config-dotfile-was-shipped-underived`
+- `host-and-gates` (4) — `the-host-install-is-a-symlink-nobody-authored` · `bin-name-gate-stops-at-the-language-boundary` · `memory-nudge-is-flaky-under-the-full-verify` · `elevate-installs-no-mechanism`
+
 ## Landed
 
 | what                                                                                               | commit                                     |

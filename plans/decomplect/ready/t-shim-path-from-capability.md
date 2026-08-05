@@ -30,3 +30,14 @@ scope** and wait on `t-tap-anchor`: the literal is `f(capability)`, so settling 
 - No `scripts/memory.mjs` literal survives in `packages/canon/src`.
 - The rendered SKILL.md still tells a reader where the shim is — via the forge-derived line.
 - Oracle re-baselined **deliberately**, with the byte diff quoted.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** canon-corpus · **wave** 1
+- **depends on** `t-manifest-file-basename`
+- **writes** `packages/canon/src/skills/wake/**` · `packages/canon/src/skills/dream/**` · `packages/canon/src/skills/handoff/**`
+- **compiles against** `packages/forge/src/project/runtime-shim.ts`
+- **evidence** `packages/canon/src/skills/wake/skill.ts` · `packages/forge/src/project/runtime-shim.ts`
+- **dispatchable** no ruling owed

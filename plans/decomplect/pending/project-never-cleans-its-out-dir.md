@@ -55,3 +55,14 @@ will not remove and does not know about is neither. That argues for (3) and agai
 - The oracle is reproducible **without** a manual `rm -rf` first — the command's own contract.
 - Whatever the cut, a consumer passing an unexpected `--out` cannot lose files the projection never
   wrote. State explicitly what the command may delete.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** forge-seams · **wave** 1
+- **depends on** `t-soul-to-target-in-forge` · `t-manifest-file-basename`
+- **writes** `packages/forge/src/project/write.ts` · `packages/canon/src/toolkit/render-oracle/**`
+- **compiles against** `packages/forge/src/cli/commands/project.ts`
+- **evidence** `packages/forge/src/project/write.ts` · `packages/canon/src/toolkit/render-oracle/render-oracle.sh`
+- **RULING OWED — not dispatchable** the three-way cut: who owns cleaning — the writer, the CLI, or the caller

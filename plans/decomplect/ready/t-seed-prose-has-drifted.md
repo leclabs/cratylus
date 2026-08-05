@@ -36,3 +36,14 @@ It instructs adding `@cratylus/memory` to forge's deps. `forge/package.json` dec
 
 - One writer, or two writers proven byte-identical by a test that fails when they diverge.
 - No new package edge without an ARCHITECTURE amendment argued separately.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** forge-deploy · **wave** 1
+- **depends on** `t-soul-to-target-in-forge`
+- **writes** `packages/forge/src/deploy/seeds.ts` · `packages/memory/src/seeds.ts`
+- **compiles against** `packages/forge/src/deploy/local.ts` · `packages/memory/src/strategy.ts`
+- **evidence** `packages/forge/src/deploy/seeds.ts` · `packages/memory/src/seeds.ts` · `ARCHITECTURE.md`
+- **dispatchable** no ruling owed

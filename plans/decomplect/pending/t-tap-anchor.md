@@ -41,3 +41,14 @@ is `f(capability)`.
 - The anchor is ruled, and the gate's axes are only those with a positive control.
 - The `provisional-v9` exemption is stated as a rule, not a special case.
 - Oracle re-baselined deliberately, diff quoted.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** runtime-capability · **wave** 1
+- **depends on** `t-capture-row` · `t-manifest-file-basename`
+- **writes** `packages/runtime/src/loader.ts` · `packages/runtime/src/main.ts` · `packages/canon/src/skills/event-tap/**`
+- **compiles against** `packages/runtime/src/ports/provisional-v9.ts`
+- **evidence** `packages/runtime/src/loader.ts` · `packages/runtime/src/ports/provisional-v9.ts`
+- **RULING OWED — not dispatchable** the capability anchor — event-tap vs tap vs neither — plus the provisional-v9 keyspace exemption

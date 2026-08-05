@@ -52,3 +52,14 @@ was blocked by it repeatedly. Two observations worth carrying into the fix:
   un-installed path refuses rather than silently asserting.
 - The bound condition is evaluated from plan state, never from message text.
 - Release removes what elevate installed; no residue on terminus.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** host-and-gates · **wave** 2
+- **depends on** `t-anatomy-root-compose`
+- **writes** `packages/canon/src/skills/carry-on/**`
+- **compiles against** `packages/canon/src/toolkit/plan-set.ts`
+- **evidence** `packages/canon/src/skills/carry-on/skill.ts` · `packages/canon/src/hooks/stance-guardrail-pre.ts`
+- **RULING OWED — not dispatchable** the terminus predicate a Stop hook can evaluate from plan state, and where the installed mechanism lives

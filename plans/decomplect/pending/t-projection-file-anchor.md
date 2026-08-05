@@ -28,3 +28,14 @@ other or the second will collide with the first.
 - If the derivation returns `⊥`, **record the candidate set and the date**. This census had to
   correct a `⊥` that was honored for weeks after being overturned; a refusal without its candidate
   set is unfalsifiable.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** signification · **wave** 2
+- **depends on** `t-soul-to-target-in-forge` · `t-tap-anchor`
+- **writes** `packages/forge/src/adapters/claude/**` · `packages/forge/src/adapters/codex/**` · `packages/forge/src/core/anatomy-body.ts`
+- **compiles against** `packages/forge/src/project/index.ts`
+- **evidence** `packages/forge/src/adapters/claude/anatomy.ts` · `packages/forge/src/core/anatomy-body.ts`
+- **RULING OWED — not dispatchable** the anchor for the harness-projection-surface concept; its one derivation leg returned `capabilities`, rejected on occupancy

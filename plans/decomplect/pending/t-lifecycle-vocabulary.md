@@ -50,3 +50,14 @@ superseded on the remedy** — do not restate its remedy.
 - The 18-entry claude map has one home too, or a test that fails when the two diverge.
 - Cold-verify the members: is each a real concept? Unmapped ≠ fabricated — that is a different
   question from whether a harness fires it.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** schema-contract · **wave** 3
+- **depends on** `t-tap-anchor` · `t-projection-file-anchor`
+- **writes** `packages/schema/src/hook/**` · `packages/runtime/src/events.ts` · `packages/runtime/src/capabilities/event-tap/claude-serialize.ts`
+- **compiles against** `packages/forge/src/adapters/claude/events.ts`
+- **evidence** `packages/schema/src/hook/generated.ts` · `packages/runtime/src/events.ts` · `ARCHITECTURE.md`
+- **RULING OWED — not dispatchable** ARCHITECTURE has no edge between schema and runtime in either direction; unifying needs one

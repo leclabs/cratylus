@@ -24,3 +24,14 @@ The doctrine half of the old B-row filing is gone: `init.ts:14-18` and `project-
 
 - `init.ts` takes the harness home as a defaulted parameter, matching `scope.ts`'s existing shape.
 - A non-claude scaffold puts its dirs where that harness wants them, proven by a test.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** forge-deploy · **wave** 1
+- **depends on** `t-soul-to-target-in-forge`
+- **writes** `packages/forge/src/deploy/init.ts`
+- **compiles against** `packages/forge/src/deploy/scope.ts`
+- **evidence** `packages/forge/src/deploy/init.ts` · `packages/forge/src/deploy/scope.ts`
+- **dispatchable** no ruling owed

@@ -38,3 +38,14 @@ exception, the reason must be written down where the next sweep will find it.
 - If it changes: oracle re-baselined deliberately, with the founding-doctrine diff quoted in full,
   because every agent's doctrine changes with it.
 - If it stays: a note in the cell saying why, so this is not re-opened a fourth time.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** signification · **wave** 3
+- **depends on** `t-shim-path-from-capability` · `t-substrate-concept` · `t-authoring-surface` · `t-projection-file-anchor`
+- **writes** `packages/canon/src/genus/**`
+- **compiles against** `packages/forge/src/core/anatomy-body.ts`
+- **evidence** `packages/canon/src/genus/founding-doctrine.ts`
+- **RULING OWED — not dispatchable** whether canon's own SOUL survives the metaphor ruling — it moves every projected agent

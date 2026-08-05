@@ -46,3 +46,14 @@ demands deleting the live scope. Do not execute it.
 
 - The name round-trips, or is ratified with the round-trip recorded. Either is fine; **silence is not.**
 - Whatever is decided, the decision is written where the next sweep cannot quietly overwrite it.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** ground-and-record · **wave** 0
+- **depends on** —
+- **writes** `packages/memory/src/node.ts` · `.cratylus.config.example`
+- **compiles against** `packages/runtime/src/runtime-config.ts`
+- **evidence** `packages/memory/src/node.ts` · `packages/runtime/src/runtime-config.ts`
+- **RULING OWED — not dispatchable** whether the shipped name is ratified post-hoc or re-derived, and whether it is one concept with the runtime dotfile

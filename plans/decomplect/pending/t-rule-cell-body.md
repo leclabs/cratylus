@@ -28,3 +28,14 @@ Requires a **mint** for the payload concept — the thing a rule literally says.
 
 - The payload concept's anchor is DISCOVERED, not picked from a shortlist.
 - `MODEL.md`'s `body` is left alone; if the derivation collides with it again, that is the finding.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** schema-contract · **wave** 4
+- **depends on** `t-definiens-vs-residue`
+- **writes** `packages/canon/src/rules/**`
+- **compiles against** `packages/schema/src/rule-cell.ts`
+- **evidence** `packages/schema/src/rule-cell.ts` · `MODEL.md`
+- **RULING OWED — not dispatchable** a mint for the payload concept — the thing a rule literally says

@@ -70,3 +70,14 @@ still unable to tell a present-but-broken bin from a working one.
   indistinguishable from one that was never fixed.
 - If repair 2 is taken, the shipped worker gets a fixture proving it stays silent for a bin that
   exists but cannot execute — the exact state this host was in for the whole of `61b85db7`'s life.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** host-and-gates · **wave** 2
+- **depends on** `t-manifest-file-basename` · `the-host-install-is-a-symlink-nobody-authored`
+- **writes** `packages/canon/test/memory-nudge.test.ts`
+- **compiles against** `packages/invoke/src/bin.ts`
+- **evidence** `packages/canon/test/memory-nudge.test.ts`
+- **dispatchable** no ruling owed

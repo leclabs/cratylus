@@ -36,3 +36,14 @@ projector, and `create-agent`'s interview. Getting it wrong renames a concept th
 - The anchor is discovered, and the axiom's own dimension no longer refutes it.
 - If the derivation finds `coined` and `open` are one concept: **STOP and report.** That is a merge
   of two classification members, not a rename.
+
+## Execution
+
+<!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
+
+- **slice** signification · **wave** 2
+- **depends on** `t-anatomy-root-compose`
+- **writes** `packages/schema/src/index.ts`
+- **compiles against** `packages/canon/src/dimensions/**`
+- **evidence** `packages/schema/src/index.ts` · `packages/canon/src/anatomy.ts`
+- **RULING OWED — not dispatchable** a mint, and occupancy against `open`, which may subsume it
