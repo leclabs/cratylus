@@ -9,7 +9,7 @@
 render tree first. Demonstrated on the live tree, independently reproduced:
 
 ```sh
-touch packages/agent-canon/.render-ts/agents/ZOMBIE.md && pnpm canon:project
+touch packages/canon/.render-ts/agents/ZOMBIE.md && pnpm canon:project
 # → ZOMBIE.md SURVIVES the reprojection
 ```
 

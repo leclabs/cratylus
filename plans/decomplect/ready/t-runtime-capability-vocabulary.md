@@ -16,7 +16,7 @@ Dissolve `agent-schema → agent-runtime` by naming the thing schema actually ne
 `agent-schema/src/index.ts` takes exactly one type from the runtime:
 
 ```ts
-import type { RuntimePlugin } from '@leclabs/agent-runtime';
+import type { RuntimePlugin } from '@cratylus/runtime';
 export type RuntimeCapability = keyof Omit<RuntimePlugin, 'name'>;
 ```
 
@@ -54,26 +54,26 @@ collision.
   rejected on occupancy, not adopted.
 - The vocabulary today has **two** members. Two is enough to be a vocabulary and not enough to prove
   one — state whether a member is DISCOVERED or enumerated, on C4's precedent.
-- Suite green uncached; render oracle unmoved at `fe084dd1d531948979dc386713c3f688c96088ab` unless a
+- Suite green uncached; render oracle unmoved at `f60e936a172d6f37a5120cd9dd0e282c19727f58` unless a
   projected byte was deliberately changed, in which case re-baseline explicitly.
 
 ## Outputs
 
-- `packages/agent-schema/src/index.ts` — no `@leclabs/agent-runtime` import.
+- `packages/schema/src/index.ts` — no `@cratylus/runtime` import.
 - Wherever the capability vocabulary lands, with its signification recorded.
-- `packages/agent-canon/test/architecture.test.ts` — the `schema → runtime` ratchet pin **removed**,
+- `packages/canon/test/architecture.test.ts` — the `schema → runtime` ratchet pin **removed**,
   not re-pinned. A pin that stops failing FAILS the suite; that is the shrink working.
 - `plans/decomplect/CRATYLISM-SWEEP.md` — the signification legs, including rejects.
 
 ## Acceptance
 
-1. `grep -rn "agent-runtime" packages/agent-schema/src/` returns **no import**. (Pre-state: one, at
+1. `grep -rn "agent-runtime" packages/schema/src/` returns **no import**. (Pre-state: one, at
    `index.ts:35`. The control fails today.)
-2. `packages/agent-canon/test/architecture.test.ts` carries **no** `schema → runtime` ratchet entry,
+2. `packages/canon/test/architecture.test.ts` carries **no** `schema → runtime` ratchet entry,
    and the suite is green — proving the pin was retired by repair and not by exemption.
 3. `pnpm test --force` green, 9 tasks, no task cached.
-4. `find packages/agent-canon/.render-ts packages/agent-canon/.render-ts-codex -type f | sort | xargs shasum | shasum`
-   → `fe084dd1d531948979dc386713c3f688c96088ab`, or a deliberate re-baseline argued in the commit.
+4. `find packages/canon/.render-ts packages/canon/.render-ts-codex -type f | sort | xargs shasum | shasum`
+   → `f60e936a172d6f37a5120cd9dd0e282c19727f58`, or a deliberate re-baseline argued in the commit.
 5. The capability vocabulary's sign round-trips: a forward argmin, a **blind reverse decode**, and an
    **occupancy check against this repo** — all three, because the cold reader cannot see occupied
    ground and `capabilities` is known-occupied.

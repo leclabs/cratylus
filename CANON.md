@@ -2,13 +2,13 @@
 
 ## The First Principle:
 
-[`Cratylism`](./packages/agent-canon/src/dimensions/engineering-principles/cratylism.ts)
+[`Cratylism`](./packages/canon/src/dimensions/engineering-principles/cratylism.ts)
 
 ## High Altitude Mental Model:
 
 The apex triad that must stay mutually consistent:
 
-- [`CRATYLISM`](./packages/agent-canon/src/dimensions/engineering-principles/cratylism.ts) — The First Principle (**LOCKED**)
+- [`CRATYLISM`](./packages/canon/src/dimensions/engineering-principles/cratylism.ts) — The First Principle (**LOCKED**)
 - [`VISION`](./VISION.md) — **why** the canon exists
 - [`MODEL`](./MODEL.md) — **what** a canonical primitive is
 
@@ -24,8 +24,8 @@ All derived Art must be consistent with the triad.
 ## Signification-gate — the per-symbol probe round-trip
 
 A skill canonizes only when every symbol it **declares** round-trips. The gate
-(`packages/agent-canon/src/toolkit/symbol-probe-gate.ts`, exercised by
-`packages/agent-canon/test/symbol-probe-gate.test.ts`) realizes ENGINE's `signify-verify`: for each
+(`packages/canon/src/toolkit/symbol-probe-gate.ts`, exercised by
+`packages/canon/test/symbol-probe-gate.test.ts`) realizes ENGINE's `signify-verify`: for each
 declared symbol `w`, the concept the reader's priors circumscribe — `concept_R(w)` at reader=LLM (the
 `probe` skill) — must be the concept the block **assigns** `w` (its declaration gloss, its σ\* target). A
 mis-signified symbol — priors circumscribing a **different** concept than assigned — **fails**. The corpus's

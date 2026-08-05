@@ -11,7 +11,7 @@ Make this repository a consumer of its own shipped commands, and delete the priv
 ## What the census established
 
 `agent-forge project --harness <name> --out <dir>` **already exists**
-(`packages/agent-forge/src/cli/index.ts:48`, `commands/project.ts`). The option the operator asked
+(`packages/forge/src/cli/index.ts:48`, `commands/project.ts`). The option the operator asked
 for is already the interface.
 
 Canon nevertheless ships two private CLIs that bypass it:
@@ -32,7 +32,7 @@ duplication: the corpus that defines the design is not a consumer of the command
 the shipped consumer path has never been exercised by its own author.
 
 The same shape holds one step later — the root's `canon:deploy*` scripts invoke
-`node packages/agent-forge/dist/cli/index.js`, reaching **past** the `agent-forge` bin into a build
+`node packages/forge/dist/cli/index.js`, reaching **past** the `agent-forge` bin into a build
 artifact by path.
 
 ## Constraints
@@ -52,7 +52,7 @@ artifact by path.
 - `agents.config.ts` at the repository root.
 - Root `package.json`: `canon:project` and `canon:project:codex` as **proxies**; `canon:deploy*`
   reaching the `agent-forge` bin rather than a `dist/` path.
-- `packages/agent-canon/src/toolkit/project-cli.ts` and `project-cli-codex.ts` **deleted**.
+- `packages/canon/src/toolkit/project-cli.ts` and `project-cli-codex.ts` **deleted**.
 - Any citation of the deleted paths updated — `command-veracity` will convict the stragglers.
 
 ## Acceptance
@@ -60,13 +60,13 @@ artifact by path.
 **The render oracle is the whole proof.** After `pnpm canon:project && pnpm canon:project:codex`:
 
 ```
-find packages/agent-canon/.render-ts packages/agent-canon/.render-ts-codex -type f | sort | xargs shasum | shasum
+find packages/canon/.render-ts packages/canon/.render-ts-codex -type f | sort | xargs shasum | shasum
 ```
 
 1. → `fe084dd1d531948979dc386713c3f688c96088ab`, **unchanged**. Byte-identical output from the CLI
    path is the proof the private path carried no behaviour the shipped command lacks. A different
    hash is a REAL difference — find it, do not re-baseline to make this pass.
-2. `find packages/agent-canon/src/toolkit -name 'project-cli*.ts'` returns **nothing**.
+2. `find packages/canon/src/toolkit -name 'project-cli*.ts'` returns **nothing**.
    (Pre-state: two files. The control fails today.)
 3. Neither root script contains `tsx src/toolkit/project-cli` or `dist/cli/index.js`.
 4. `pnpm test --force` green, 9 tasks, none cached.

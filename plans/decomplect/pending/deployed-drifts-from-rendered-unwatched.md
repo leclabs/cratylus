@@ -6,7 +6,7 @@
 
 ## Symptom
 
-`packages/agent-canon/.render-ts/agents/nico.md` and `~/.claude/agents/nico.md` had
+`packages/canon/.render-ts/agents/nico.md` and `~/.claude/agents/nico.md` had
 **diverged**, and nothing anywhere reported it:
 
 | line                | rendered (source of truth)                                  | deployed (what actually ran)                                |

@@ -1,0 +1,128 @@
+/**
+ * The skill-cell renderer: a prose procedure's LLM-authored cell spec →
+ * a well-formed SKILL.md — `name`+`description` frontmatter, a verb H1, and
+ * a fenced set-builder formal block (declarations-above / laws-below).
+ *
+ * SEMANTIC SEAM: choosing the symbols, definientia, and laws (the formalize
+ * act) is an LLM pass; the frame renders deterministically and enforces the
+ * mechanical cell laws — kebab name, non-empty declarations, and
+ * self-sufficiency: every call-syntax symbol used in the block is declared
+ * in-block (the greppable symbol table). Violations refuse loudly.
+ */
+
+import { ExemplifyRefusal } from './types.js';
+
+export interface SkillDeclaration {
+  /** The declared symbol (line-leading token of a `≜` declaration). */
+  symbol: string;
+  /** The definiens — the text after `≜`. */
+  definiens: string;
+}
+
+export interface SkillCellSpec {
+  /** Kebab-case cell name (frontmatter `name:`). */
+  name: string;
+  /** One-line description (frontmatter `description:`). */
+  description: string;
+  /** The H1 verb the formal block enacts. */
+  verb: string;
+  /** Optional prose between the H1 and the formal block. */
+  intro?: string;
+  /** Declarations-above. */
+  declarations: readonly SkillDeclaration[];
+  /** Laws-below (each law one line of the block). */
+  laws: readonly string[];
+}
+
+const CALL_TOKEN = /\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\(/g;
+const DECLARED = /^(\S+)\s*(?:≜|:)/gmu;
+
+/** Render the formal block (declarations-above / laws-below), validating
+ *  self-sufficiency. */
+export function renderBody(spec: SkillCellSpec): string {
+  const reasons: string[] = [];
+  if (spec.declarations.length === 0) {
+    reasons.push('a cell needs at least one declaration');
+  }
+  const block = [
+    `-- DECLARATIONS ${'-'.repeat(42)}`,
+    ...spec.declarations.map((d) => `${d.symbol} ≜ ${d.definiens}`),
+    '',
+    `-- LAWS ${'-'.repeat(50)}`,
+    ...spec.laws,
+  ].join('\n');
+  const declared = new Set(
+    [...block.matchAll(DECLARED)].map((m) => m[1] as string),
+  );
+  const undeclared = [
+    ...new Set([...block.matchAll(CALL_TOKEN)].map((m) => m[1] as string)),
+  ].filter((s) => !declared.has(s));
+  if (undeclared.length > 0) {
+    reasons.push(
+      `self-sufficiency fails — undeclared symbol(s) used in the block: ${undeclared.join(', ')}`,
+    );
+  }
+  if (reasons.length > 0) throw new ExemplifyRefusal(reasons);
+  return block;
+}
+
+/**
+ * THE ONE skill-cell body generator — the single home both the claude/codex
+ * adapter skill projection (`@cratylus/forge/adapters/claude` `skillBody`)
+ * and exemplify's standalone cell (`renderSkillCell`) render through. A PURE MAP
+ * from parts to markdown: a verb H1, optional intro prose, the fenced `text`
+ * formal block, and an optional "Composed from …" provenance line. There is NO
+ * parsing, NO ``ref`` projection, NO `## Harness` selection, NO `≜`-line strip
+ * — the σ* `block` is emitted VERBATIM inside the fence (the thin-generator law:
+ * SKILL.md = f(name, formalBlock, composition), never a stored/re-parsed body).
+ */
+export function renderSkillCellBody(parts: {
+  readonly verb: string;
+  readonly block: string;
+  readonly intro?: string;
+  readonly composedFrom?: readonly string[];
+  /** OPTIONAL doctrine-agnostic leading block (verbatim), emitted directly under the
+   *  verb H1, above the formal block — a consumer's founding-doctrine carry. */
+  readonly preamble?: string;
+  /** OPTIONAL runtime-capability binding. Renders the one line that makes the
+   *  projected thin shim REACHABLE — the shim is emitted as `scripts/<capability>.mjs`
+   *  beside this SKILL.md, and without a binding the cell carries a script it cannot
+   *  name. The path is RELATIVE to the skill's base directory (which the harness
+   *  supplies at invocation), so no absolute or checkout path enters a deployed
+   *  artifact and the binding stays harness-agnostic. */
+  readonly runtime?: { readonly capability: string };
+}): string {
+  const preamble = parts.preamble ? `${parts.preamble}\n\n` : '';
+  const intro = parts.intro ? `${parts.intro}\n\n` : '';
+  const runtime = parts.runtime
+    ? `\nRuntime capability \`${parts.runtime.capability}\` → \`scripts/${parts.runtime.capability}.mjs\`, resolved against this skill's base directory.\n`
+    : '';
+  const composed = parts.composedFrom?.length
+    ? `\nComposed from ${parts.composedFrom.join(' · ')}.\n`
+    : '';
+  return `# ${parts.verb}\n\n${preamble}${intro}\`\`\`text\n${parts.block}\n\`\`\`\n${runtime}${composed}`;
+}
+
+/** The full standalone SKILL.md cell (frontmatter + body) — exemplify's spec
+ *  path: validate the cell laws, render the block from declarations/laws, frame
+ *  it through the one body generator. */
+export function renderSkillCell(spec: SkillCellSpec): string {
+  const reasons: string[] = [];
+  if (!/^[a-z0-9-]+$/.test(spec.name)) {
+    reasons.push(`cell name '${spec.name}' is not kebab-case`);
+  }
+  if (!spec.description || /\n/.test(spec.description)) {
+    reasons.push('description must be one non-empty line');
+  }
+  if (!/^\w/.test(spec.verb)) {
+    reasons.push(`verb H1 '${spec.verb}' must start with a word character`);
+  }
+  if (reasons.length > 0) throw new ExemplifyRefusal(reasons);
+  const frontmatter = `---\nname: ${spec.name}\ndescription: ${spec.description}\n---\n\n`;
+  const body = renderSkillCellBody({
+    verb: spec.verb,
+    block: renderBody(spec),
+    intro: spec.intro,
+  });
+  return `${frontmatter}${body}`;
+}

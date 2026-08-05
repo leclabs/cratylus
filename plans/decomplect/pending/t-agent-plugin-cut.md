@@ -1,7 +1,7 @@
 # `AgentPlugin` binds two concepts — the question is a cut, not an owner
 
 > **Depends on [`t-runtime-capability-vocabulary`](../ready/t-runtime-capability-vocabulary.md).**
-> Both shards write `packages/agent-schema/src/index.ts` and both retire an entry from the same
+> Both shards write `packages/schema/src/index.ts` and both retire an entry from the same
 > architecture ratchet, so they cannot share a wave. Disjoint outputs is the concurrency
 > precondition; these are not disjoint.
 
@@ -33,7 +33,7 @@ is allowed to own and nothing else.
 **So `AgentPlugin` is a palimpsest of the same species as `anatomy`**: one sign over two concepts,
 and the reason the ownership question has no answer is that it is posed about a sign, not a concept.
 The last property-2 breach — `agent-canon/src/index.ts:23` importing `defineAgentPlugin` from
-`@leclabs/agent-forge/resolve` — is that palimpsest's cost: canon's ROOT must reach the projector to
+`@cratylus/forge/resolve` — is that palimpsest's cost: canon's ROOT must reach the projector to
 declare things that are canon's own.
 
 ## Constraints
@@ -52,9 +52,9 @@ declare things that are canon's own.
 
 ## Outputs
 
-- `packages/agent-forge/src/resolve/plugin.ts`, `packages/agent-schema/src/index.ts`,
-  `packages/agent-canon/src/index.ts` — per the ruling.
-- `packages/agent-canon/test/architecture.test.ts` — the property-2 root pin retired, not re-pinned.
+- `packages/forge/src/resolve/plugin.ts`, `packages/schema/src/index.ts`,
+  `packages/canon/src/index.ts` — per the ruling.
+- `packages/canon/test/architecture.test.ts` — the property-2 root pin retired, not re-pinned.
 - `ARCHITECTURE.md` — the divergence row for the root import removed **in the same act** as the
   repair, never before it and never after.
 - `plans/decomplect/CRATYLISM-SWEEP.md` — both signification runs, rejects included.
@@ -67,7 +67,7 @@ declare things that are canon's own.
 2. No `schema → runtime` entry and no root entry on the ratchet, suite green — both retired by
    repair, not by exemption.
 3. `pnpm test --force` green, 9 tasks, none cached.
-4. Render oracle `fe084dd1d531948979dc386713c3f688c96088ab`, or a deliberate re-baseline argued in
+4. Render oracle `f60e936a172d6f37a5120cd9dd0e282c19727f58`, or a deliberate re-baseline argued in
    the commit message.
 5. Each minted sign carries a forward argmin, a **blind reverse decode**, and an **occupancy check
    against this repo**. Never mint on forward legs alone, however many agree.

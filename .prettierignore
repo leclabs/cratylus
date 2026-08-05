@@ -1,16 +1,16 @@
 node_modules/
 dist/
 .turbo/
-.agent-forge/local/
+.forge/local/
 .claude/worktrees/
-packages/agent-canon/.render/
+packages/canon/.render/
 pnpm-lock.yaml
 
 # Generated artifacts — must match their generator's output, never Prettier's:
-packages/agent-canon/GLOSSARY.md
+packages/canon/GLOSSARY.md
 **/*.generated.*
 **/generated.*
-**/test/ir-bridge/agent-canon.agent-forge.json
+**/test/ir-bridge/canon.forge.json
 
 # plans/ CLAUDE.md are symlinks to AGENTS.md (house convention); Prettier can't follow
 # symlinks and the real content is the AGENTS.md it already checks.
@@ -18,8 +18,8 @@ plans/**/CLAUDE.md
 
 # γ2-B: lexicon files are verbatim cell-block STORAGE (byte-identity contract),
 # not free-form markdown — exempt like the generated render/glossary above.
-packages/agent-canon/lexicon/
-packages/agent-canon/test/fixtures/
+packages/canon/lexicon/
+packages/canon/test/fixtures/
 
 # graphify tool-emitted outputs (graph.json, GRAPH_REPORT.md) — specimens, not source;
 # must match graphify's output, never Prettier's (biome already ignores **/graphify-out/**).

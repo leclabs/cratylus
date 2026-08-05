@@ -47,12 +47,12 @@ importers:
       '@commitlint/config-conventional':
         specifier: ^19.6.0
         version: 19.8.1
-      '@leclabs/agent-canon':
+      '@cratylus/canon':
         specifier: workspace:*
-        version: link:packages/agent-canon
-      '@leclabs/agent-forge':
+        version: link:packages/canon
+      '@cratylus/forge':
         specifier: workspace:*
-        version: link:packages/agent-forge
+        version: link:packages/forge
       husky:
         specifier: ^9.1.7
         version: 9.1.7
@@ -66,17 +66,17 @@ importers:
         specifier: ^5.7.2
         version: 5.9.3
 
-  packages/agent-canon:
+  packages/canon:
     dependencies:
-      '@leclabs/agent-forge':
+      '@cratylus/forge':
         specifier: workspace:*
-        version: link:../agent-forge
-      '@leclabs/agent-runtime':
+        version: link:../forge
+      '@cratylus/runtime':
         specifier: workspace:*
-        version: link:../agent-runtime
-      '@leclabs/agent-schema':
+        version: link:../runtime
+      '@cratylus/schema':
         specifier: workspace:*
-        version: link:../agent-schema
+        version: link:../schema
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -91,14 +91,14 @@ importers:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@22.19.21)
 
-  packages/agent-cli:
+  packages/invoke:
     dependencies:
-      '@leclabs/agent-memory':
+      '@cratylus/memory':
         specifier: workspace:*
-        version: link:../agent-memory
-      '@leclabs/agent-runtime':
+        version: link:../memory
+      '@cratylus/runtime':
         specifier: workspace:*
-        version: link:../agent-runtime
+        version: link:../runtime
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -110,17 +110,17 @@ importers:
         specifier: 'catalog:'
         version: 5.9.3
 
-  packages/agent-forge:
+  packages/forge:
     dependencies:
       '@iarna/toml':
         specifier: 'catalog:'
         version: 2.2.5
-      '@leclabs/agent-runtime':
+      '@cratylus/runtime':
         specifier: workspace:*
-        version: link:../agent-runtime
-      '@leclabs/agent-schema':
+        version: link:../runtime
+      '@cratylus/schema':
         specifier: workspace:*
-        version: link:../agent-schema
+        version: link:../schema
       cac:
         specifier: 'catalog:'
         version: 6.7.14
@@ -147,11 +147,11 @@ importers:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@22.19.21)
 
-  packages/agent-memory:
+  packages/memory:
     dependencies:
-      '@leclabs/agent-runtime':
+      '@cratylus/runtime':
         specifier: workspace:*
-        version: link:../agent-runtime
+        version: link:../runtime
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -166,7 +166,7 @@ importers:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@22.19.21)
 
-  packages/agent-runtime:
+  packages/runtime:
     dependencies:
       cac:
         specifier: 'catalog:'
@@ -185,11 +185,11 @@ importers:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@22.19.21)
 
-  packages/agent-schema:
+  packages/schema:
     dependencies:
-      '@leclabs/agent-runtime':
+      '@cratylus/runtime':
         specifier: workspace:*
-        version: link:../agent-runtime
+        version: link:../runtime
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

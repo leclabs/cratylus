@@ -1,5 +1,5 @@
-import canon from '@leclabs/agent-canon';
-import { defineAgentsConfig } from '@leclabs/agent-forge/config';
+import canon from '@cratylus/canon';
+import { defineAgentsConfig } from '@cratylus/forge/config';
 
 // agent-factory's OWN agents.config.ts — this repository is a consumer of the
 // commands it ships. `agent-forge project --harness <name>` is the build-time

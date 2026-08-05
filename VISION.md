@@ -4,6 +4,11 @@
 
 Discover, validate, and canonize the semantic addresses already recognized by foundation models, then compose those addresses into reproducible specifications for agents, skills, and other runtime artifacts.
 
+The practice has a name: **latent lexicography** — the descriptive lexicography of a foundation
+model's latent vocabulary. **Cratylus** is its instrument, and this repository is that instrument's
+source. The name of the practice and the name of the tool were both discovered by the discipline they
+name; neither was chosen. See [The discipline](#the-discipline).
+
 ## Problem
 
 Conventional prompt and context engineering treats behavior as an emergent property of authored natural language, meaning is supplied to the model through natural language subject to misinterpretation.
@@ -102,23 +107,35 @@ This separates two kinds of uncertainty that prompt-centric systems often confla
 
 > **The canon guarantees a reproducible semantic specification, not deterministic model behavior.**
 
+## The discipline
+
+The practice this document describes is **latent lexicography**.
+
+The head noun is chosen by its deliverable, not by its atmosphere. A cartographer produces an atlas — coverage, terrain, relation. That is not what this project emits. It emits one entry per concept: a headword, the sense it binds, the evidence that the binding holds, the population it holds for, and the edition in which it was recorded. The practice that produces entries of that shape has a name with three centuries of method behind it, and borrowing it imports the method rather than a metaphor.
+
+Lexicography also carries the exact polemic this project is making. A lexicographer does not legislate what a word means; they report what a speech community has already bound, and they cite the evidence. **Descriptive, not prescriptive** — with the corollary that an entry without attestation is not an entry. Substitute a model's priors for the speech community and the discipline transfers intact, including that ethic.
+
+`latent` carries the rest of the load: the vocabulary exists, unsurfaced, awaiting description. It is not lost, buried, or damaged — which is why _excavation_ and _archaeology_ were rejected, both smuggling in a decay that is not there. Nor is it authored, which is why the practice is not a branch of prompt engineering.
+
+|                         | the question asked             | where meaning comes from |
+| ----------------------- | ------------------------------ | ------------------------ |
+| prompt engineering      | how should I **describe** it?  | the author               |
+| context engineering     | what should **accompany** it?  | the assembled window     |
+| **latent lexicography** | what is it **already called**? | **the model**            |
+
+The discipline's extension is the discovery-and-record half: discover, verify, canonize. Composition and projection are ordinary compilation over a novel source language, and are deliberately not smuggled into the name. That is not a narrowing. It locates the novelty precisely — **in where the vocabulary comes from** — and leaves everything downstream boring, which is what a source of truth is for.
+
+### Cratylus
+
+The instrument is named **Cratylus**, after the dialogue in which the question this project answers is first put: whether names are correct by nature or by convention. The mark states the thesis in one word, and it was admitted the same way any other sign is — by cold decode, not by preference. Read blind, with no access to this repository, it returns _"deriving names automatically from structure and semantics rather than letting developers pick them freely"_ and _"correctness is discoverable rather than a matter of convention or consensus."_
+
+That is `σ*(c) INTRINSIC ∧ DISCOVERED ¬coined` recovered from the sign alone, by a reader who had never seen the axiom. It is the strongest reverse decode this project has recorded, and it is the whole warrant for the name.
+
 ## Implication
 
 The project is not primarily a prompt library. It is infrastructure for discovering and maintaining the canonical semantic layer from which runtime context can be generated.
 
-Prompt engineering asks:
-
-> How should we describe what we want?
-
-Context engineering asks:
-
-> What information should accompany the request?
-
-This project asks:
-
-> What canonical address does the model already recognize for the intended concept, and how can that address be composed without loss?
-
-The distinction is foundational. Context ceases to be the author of meaning and becomes its deployment representation.
+Context ceases to be the author of meaning and becomes its deployment representation.
 
 ## Philosophical Foundation
 

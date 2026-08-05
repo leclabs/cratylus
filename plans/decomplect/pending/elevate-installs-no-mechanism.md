@@ -15,7 +15,7 @@ elevation exists to stop depending on.
 
 ## Locus
 
-`packages/agent-canon/src/skills/carry-on/skill.ts` — the SOURCE cell. Never the
+`packages/canon/src/skills/carry-on/skill.ts` — the SOURCE cell. Never the
 `~/.claude` render, which is a projection.
 
 ## The shape of the fix (not a prescription — the cut is the executor's)

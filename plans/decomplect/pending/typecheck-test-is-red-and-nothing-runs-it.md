@@ -3,7 +3,7 @@
 ## Symptom
 
 ```
-packages/agent-canon/test/cratylism.test.ts(192,22):
+packages/canon/test/cratylism.test.ts(192,22):
   error TS2339: Property 'length' does not exist on type 'EngineeringPrinciples'.
 ```
 

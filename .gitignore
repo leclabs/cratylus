@@ -7,9 +7,9 @@ dist/
 *.log
 .env
 .env.local
-.agent-forge/local/
+.forge/local/
 .claude/worktrees/
-# Rendered projection (derived from packages/agent-canon/ideas via resolve.py; regenerable).
+# Rendered projection (derived from packages/canon/ideas via resolve.py; regenerable).
 # A projection is NOT a deployment (projection-is-not-the-source): the render goes to a
 # NEUTRAL staging dir that Claude Code does NOT auto-load -- deliberately NOT a
 # `<repo>/.claude/{agents,skills}` tree, since a project-scoped session would load that
@@ -17,14 +17,14 @@ dist/
 # at deploy time (deploy.py --scope ...), never a render side effect. The real deploy
 # target is user-scope ~/.claude per host (C4); a `<repo>/.claude/{agents,skills}` tree
 # may exist ONLY as an explicit `deploy.py --scope project` opt-in by a downstream adopter.
-packages/agent-canon/.render/
+packages/canon/.render/
 # The claude-harness projection (`pnpm canon:project` → `agent-forge project --harness claude`).
 # Same neutral-staging rationale as .render/ above; regenerable, never a deploy.
-packages/agent-canon/.render-ts/
-# The codex-harness projection (`pnpm canon:project:codex`) — proof that agent-canon reaches a
-# second agent-forge harness for free, on the SAME command with a different `--harness`.
+packages/canon/.render-ts/
+# The codex-harness projection (`pnpm canon:project:codex`) — proof that canon reaches a
+# second forge harness for free, on the SAME command with a different `--harness`.
 # Same neutral-staging rationale; kept separate so the claude byte-identity diff stays clean.
-packages/agent-canon/.render-ts-codex/
+packages/canon/.render-ts-codex/
 # Fleet deploy topology carries env-specific SSH usernames — local-only.
 # Committed template: .agent-factory.config.example. Schema: docs/agent-factory-config-schema.md
 .agent-factory.config

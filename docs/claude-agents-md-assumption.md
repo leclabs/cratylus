@@ -1,7 +1,7 @@
 # Tested assumption — Claude Code reads CLAUDE.md, not AGENTS.md
 
 The claude adapter's rules premise, pinned as a record with a tripwire (the CI carrier is
-`packages/agent-forge/test/stories/E7/s10-claude-agents-md-tripwire.test.ts`).
+`packages/forge/test/stories/E7/s10-claude-agents-md-tripwire.test.ts`).
 
 **The assumption.** Claude Code consumes `CLAUDE.md` (managed/user/project scopes, `@import`
 chains) and does **not** read `AGENTS.md` natively — Anthropic's own memory documentation

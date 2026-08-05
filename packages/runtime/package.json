@@ -1,0 +1,71 @@
+{
+  "name": "@cratylus/runtime",
+  "version": "0.0.0",
+  "private": true,
+  "description": "@cratylus/runtime \u2014 the per-host RUNTIME contract leaf: capability port interfaces (MemoryStrategy, EventTapHost), the RuntimePlugin face, and the runtime-owned lifecycle-event taxonomy. Pure types + identity helper, zero @cratylus deps.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./loader": {
+      "types": "./dist/loader.d.ts",
+      "import": "./dist/loader.js"
+    },
+    "./dispatch": {
+      "types": "./dist/dispatch.d.ts",
+      "import": "./dist/dispatch.js"
+    },
+    "./events": {
+      "types": "./dist/events.d.ts",
+      "import": "./dist/events.js"
+    },
+    "./ports/memory": {
+      "types": "./dist/ports/memory.d.ts",
+      "import": "./dist/ports/memory.js"
+    },
+    "./ports/event-tap": {
+      "types": "./dist/ports/event-tap.d.ts",
+      "import": "./dist/ports/event-tap.js"
+    },
+    "./capabilities/event-tap": {
+      "types": "./dist/capabilities/event-tap.d.ts",
+      "import": "./dist/capabilities/event-tap.js"
+    },
+    "./main": {
+      "types": "./dist/main.d.ts",
+      "import": "./dist/main.js"
+    },
+    "./bin-name": {
+      "types": "./dist/bin-name.d.ts",
+      "import": "./dist/bin-name.js"
+    },
+    "./runtime-config": {
+      "types": "./dist/runtime-config.d.ts",
+      "import": "./dist/runtime-config.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "typecheck:test": "tsc -p tsconfig.test.json",
+    "test": "vitest run",
+    "clean": "rm -rf dist",
+    "dev": "tsup --watch",
+    "prepack": "pnpm run build"
+  },
+  "dependencies": {
+    "cac": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsup": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

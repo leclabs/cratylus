@@ -106,7 +106,7 @@ the stale half and **still prints the expected value**. The root asymmetry that 
 through `--filter` is gone (`t-build-steps-proxy-the-cli`): both legs are now proxies through
 `agent-forge project --harness <name>`. What survives is that `canon:deploy` runs `canon:project`
 only, so **deploy never reprojects codex at all**. Then:
-`find packages/agent-canon/.render-ts packages/agent-canon/.render-ts-codex
+`find packages/canon/.render-ts packages/canon/.render-ts-codex
 -type f | sort | xargs shasum | shasum` → `fe084dd1d531948979dc386713c3f688c96088ab`. Verified
 deterministic across two reprojections. **It moved from `9055e88b…` when `a2205eb` changed the
 founding doctrine, which rides into every SOUL — so a hash change is only a defect when nothing
@@ -166,7 +166,7 @@ what total reach would convict. **The result reorders this plan.**
 **The finding that outranks everything else: ARCHITECTURE's four load-bearing properties are enforced
 by nothing** — no dependency-cruiser, no import lint, no CI; the one edge gate covers 4 files of one
 direction. And **property 1, the highest-ranked, is not merely breached but PINNED**:
-`src/hooks/memory-consolidation-nudge.ts:2` is a canon cell importing `@leclabs/agent-runtime`, and
+`src/hooks/memory-consolidation-nudge.ts:2` is a canon cell importing `@cratylus/runtime`, and
 `test/bin-name-single-home.test.ts:57,101` asserts that it stays. **Repairing the architecture turns
 the suite red.** Amending that counter-gate is a design decision and comes before the repair.
 
@@ -201,7 +201,7 @@ in the same act, because ground carrying a refuted sign is worse than source doi
 ### 1. Extract the meta-model — it leaves the projector
 
 **The largest divergence, and the one the others are downstream of.** Canon's cells take **28 imports
-from `@leclabs/agent-forge/anatomy`** — the corpus depending on its own projector. ARCHITECTURE's
+from `@cratylus/forge/anatomy`** — the corpus depending on its own projector. ARCHITECTURE's
 property 2 fails on exactly those 28.
 
 **Do C1 first, or at least concurrently.** `ARCHITECTURE.md` calls the extracted package
