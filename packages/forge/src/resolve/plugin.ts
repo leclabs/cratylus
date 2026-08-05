@@ -20,67 +20,23 @@
 // ordered-fold resolver (extends / patches / replace·append·merge·force) lands
 // beside it in `resolve/` as its own concern.
 // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
 
-import type { DimensionManifest } from '@cratylus/schema';
+// THE CONTRACT MOVED to `@cratylus/schema` on 2026-08-05 and is RE-EXPORTED here,
+// not redeclared — there is one definition and this is an alias.
+//
+// It had to move: `canon/src/index.ts` is the corpus ROOT, and it needed
+// `defineAgentPlugin` to declare things that are the corpus's own — so the last
+// breach of property 2 (NOTHING depends on projection) was the corpus reaching
+// into the projector for its own authoring surface. `AgentPlugin` never depended
+// on anything in forge: it imported one type from schema, and `defineAgentPlugin`
+// is `(plugin) => plugin`. It lived here by history, not by need.
+//
+// The alias stays so forge's own resolver keeps addressing the contract through
+// `resolve/`, which is where a reader of this package looks for it.
 
-/**
- * An agent-plugin: a package's declaration of which directories supply its
- * fragments and presets. Every dir field is a path STRING the loader scans
- * per-dimension exactly as the existing directory-scan does. Fields are optional
- * so a plugin may ship only fragments, only presets, or any mix.
- *
- * DIR RESOLUTION: an imported plugin OBJECT loses its package-root provenance, so
- * a plugin SELF-LOCATES its dirs to ABSOLUTE paths against its own
- * `import.meta.url` (see `canon`'s default export) — the config-is-code
- * loader (`config/loader.ts`) uses those verbatim, and resolves a RELATIVE dir
- * against the config file's dir only as a local/dev fallback.
- */
-export interface AgentPlugin {
-  /** The namespace segment — reporting + per-plugin σ* uniqueness. NOT an address. */
-  readonly name: string;
-  /** Fragment (dimension-value) dir, package-relative — scanned `<dir>/<dim>/*.ts`. */
-  readonly fragments?: string;
-  /** Preset AGENT dir, package-relative — scanned `<dir>/*.ts`. */
-  readonly agents?: string;
-  /** Preset SKILL dir, package-relative — scanned `<dir>/*.ts`. */
-  readonly skills?: string;
-  /**
-   * A doctrine-agnostic leading block stamped into every cell this plugin
-   * contributes. It must travel WITH the plugin: a consumer projecting an extended
-   * plugin has no access to the plugin's own repo context, so an axiom left behind
-   * in the corpus's build script would silently vanish from consumer-projected
-   * cells — exactly the ambient-dependence the doctrine forbids.
-   */
-  readonly preamble?: string;
-  /** Dir of hook cell modules this plugin contributes (harness-substrate only). */
-  readonly hooks?: string;
-  /**
-   * WHICH dimensions exist, and each one's metadata — the manifest INSTANCE, as
-   * against the meta-model (that a dimension has an axis/kind/arity) that
-   * `@cratylus/schema` owns.
-   *
-   * It rides the plugin for the same reason `preamble` does: a consumer projecting
-   * an extended plugin has no access to the plugin's repo, so a manifest left behind
-   * there would make the design unprojectable by anyone but its author. A corpus
-   * that must edit the projector to declare a dimension does not own its own design.
-   *
-   * Plugins compose, so the set's manifest is the per-dimension merge in `extends`
-   * order (later wins, every override logged) — which is what lets a consumer ADD a
-   * dimension without forking the plugin it extends. Nobody declaring one is a
-   * REFUSAL, not a fallback: `mergeManifest` THROWS. There is no resident manifest
-   * to stand in, and a plugin set with no dimensions would project every agent as a
-   * plausible-looking empty SOUL — the one failure a byte diff cannot tell from a
-   * corpus that shrank.
-   */
-  readonly manifest?: DimensionManifest;
-}
-
-/**
- * Declare an agent-plugin. Identity factory: returns its argument unchanged so a
- * consumer addresses the plugin (and P3 addresses its fragments) by the IMPORTED
- * BINDING, never a string id. Named `defineAgentPlugin` (not `definePlugin`) to
- * dodge the webpack `DefinePlugin` prior; lineage is Nuxt's `defineNuxtConfig`.
- */
-export function defineAgentPlugin(plugin: AgentPlugin): AgentPlugin {
-  return plugin;
-}
+export {
+  type AgentPlugin,
+  type Layout,
+  defineAgentPlugin,
+} from '@cratylus/schema';

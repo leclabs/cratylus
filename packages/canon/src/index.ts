@@ -20,7 +20,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { fileURLToPath } from 'node:url';
-import { defineAgentPlugin } from '@cratylus/forge/resolve';
+import { defineAgentPlugin } from '@cratylus/schema';
 import { MANIFEST } from './anatomy.js';
 import { foundingDoctrine } from './genus/founding-doctrine.js';
 

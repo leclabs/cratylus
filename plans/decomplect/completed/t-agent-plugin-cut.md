@@ -78,3 +78,61 @@ If the cut cannot be made without changing `ARCHITECTURE.md`'s properties themse
 acceptance number above contradicts the ground: **STOP and report.** A workaround here is a design
 decision and that is not yours on this task. The last three high-value findings on this plan came
 from delegates refusing an instruction rather than satisfying it.
+
+---
+
+## Resolution — landed 2026-08-05
+
+**Property 2 now holds with no exceptions.** `canon/src/index.ts → forge` is gone.
+
+### The cut, and a ⊥
+
+The census was right that `AgentPlugin` bound two groups. The ruling splits them unevenly, and the
+uneven part is the finding.
+
+**Concept A got a name: `Layout`** — the four package-relative dirs (`fragments`, `agents`, `skills`,
+`hooks`). Pure discovery mechanics: it answers _where do I look_, which is mapping, which is the
+projector's to own. `AgentPlugin extends Layout`, so the concept is named and independently
+referenceable while the authoring surface stays flat and no call site churns.
+
+**Concept B returned ⊥, and was NOT named.** A blind decode proposed `Constitution`/`Charter` and
+then argued against its own proposal, supplying the test that settles it: `preamble` and `manifest`
+are one concept only if the preamble is the informal face of the vocabulary the manifest formalizes.
+
+Inspection settles it — `foundingDoctrine` is the **cratylism naming axiom** and says nothing about
+which dimensions exist. So the only thing the two fields share is that both must **travel** with the
+plugin. That is a lifecycle property, not a concept, and grouping by it produces non-concepts
+(`payload`, `carried`, `bundle`). The group would also have been defined **negatively** — "the fields
+that aren't paths" — which is precisely how the retired `anatomy` sign became a palimpsest over four
+concepts. The same defect was available one generation later and was declined.
+
+`name` stays on the wrapper: uniqueness is a registry-level property no single plugin can enforce,
+and a corpus with the same doctrine under a different label is the same corpus. The label is not
+constitutive.
+
+### Why the move was free
+
+`AgentPlugin` imported exactly one thing — `DimensionManifest` from `@cratylus/schema` — and
+`defineAgentPlugin` is `(plugin) => plugin`. **Zero forge dependency.** It lived in the projector by
+history, not by need, and "the shapes a corpus authors against" is the schema's charter. There was no
+ownership question to settle; there was a file in the wrong package.
+
+`forge/src/resolve/plugin.ts` now re-exports from the schema rather than redeclaring — one
+definition, one alias — so forge's own resolver still addresses the contract through `resolve/`,
+where a reader of that package looks for it.
+
+### Acceptance
+
+1. [x] Exact-count leg reads canon→forge **root = 0** (was 1), **cells still 0**, **build scripts
+       still 4** — licensed, and must never be 0 or canon could not build itself.
+2. [x] Neither `schema → runtime` nor the root entry remains on the ratchet; suite green, so both
+       retired by repair rather than exemption. The ratchet is **26 → 1**.
+3. [x] `pnpm test --force` green — 14 tasks, 706 tests, none cached.
+4. [x] Render oracle **unmoved** at `0ac8e09fbbd40077f246d4774da60789cc8b3dbd`. No re-baseline: the
+       move changed no projected byte, which is the proof it was structural.
+5. [x] `Layout` carries a forward argmin, a blind reverse decode, and an occupancy check. Concept B
+       carries the same three legs and returned `⊥` — recorded as a result, not as a gap.
+
+The one surviving ratchet entry is property 1's pinned breach, which is the only one that cannot be
+repaired by refactoring: `bin-name-single-home.test.ts` REQUIRES the import, so amending that
+counter-gate is a design decision owed before the repair.

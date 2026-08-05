@@ -553,3 +553,103 @@ export {
   hookIrOf,
 } from './hook-cell.js';
 export type { RuleCell } from './rule-cell.js';
+
+// ── The plugin authoring surface ────────────────────────────────────────────
+//
+// MOVED HERE FROM `@cratylus/forge/resolve` on 2026-08-05, retiring the last
+// property-2 breach: `canon/src/index.ts` — the corpus ROOT — had to import
+// `defineAgentPlugin` from the PROJECTOR in order to declare things that are the
+// corpus's own. Nothing depends on projection; that is the rule, and this was the
+// last edge violating it.
+//
+// The move is not a judgement call. `AgentPlugin` imported exactly one thing,
+// `DimensionManifest` from this package, and `defineAgentPlugin` is
+// `(plugin) => plugin` — a pure identity factory with ZERO forge dependency. It
+// sat in the projector by history, not by need, and "the shapes a corpus authors
+// against" is this package's charter.
+
+/**
+ * WHERE a plugin's cells live on disk — the four package-relative dirs a
+ * projector scans to discover them.
+ *
+ * This is the half of a plugin declaration that is pure DISCOVERY MECHANICS: it
+ * answers "where do I look", which is mapping, and mapping is the projector's to
+ * own. It is named rather than left as four loose fields so the resolver can take
+ * a `Layout` without taking a whole plugin.
+ *
+ * DIR RESOLUTION: an imported plugin OBJECT loses its package-root provenance, so
+ * a plugin SELF-LOCATES its dirs to ABSOLUTE paths against its own
+ * `import.meta.url` (see canon's default export). The config-is-code loader uses
+ * those verbatim and resolves a RELATIVE dir against the config file's dir only
+ * as a local/dev fallback.
+ */
+export interface Layout {
+  /** Fragment (dimension-value) dir, package-relative — scanned `<dir>/<dim>/*.ts`. */
+  readonly fragments?: string;
+  /** Preset AGENT dir, package-relative — scanned `<dir>/*.ts`. */
+  readonly agents?: string;
+  /** Preset SKILL dir, package-relative — scanned `<dir>/*.ts`. */
+  readonly skills?: string;
+  /** Dir of hook cell modules this plugin contributes (harness-substrate only). */
+  readonly hooks?: string;
+}
+
+/**
+ * A package's plugin declaration: its {@link Layout}, plus what it contributes.
+ *
+ * `preamble` AND `manifest` ARE DELIBERATELY NOT GROUPED, and that is a finding
+ * rather than an omission. The census that motivated this cut proposed a second
+ * interface over the two of them; a blind decode returned **⊥** and gave the test
+ * that settles it: they are one concept only if the preamble is the informal face
+ * of the vocabulary the manifest formalizes. Inspection says it is not —
+ * `foundingDoctrine` is the cratylism naming axiom and says nothing about which
+ * dimensions exist.
+ *
+ * So the only thing the two share is that both must TRAVEL with the plugin. That
+ * is a lifecycle property, not a concept, and grouping by it yields non-concepts
+ * (`payload`, `carried`, `bundle`). The group would also have been defined
+ * negatively — "the fields that aren't paths" — which is exactly how the retired
+ * `anatomy` sign became a palimpsest over four concepts. One generation later,
+ * the same defect was available and was declined.
+ *
+ * `name` stays on the wrapper for the same reason: uniqueness is a registry-level
+ * property no single plugin can enforce, and a corpus with the same doctrine under
+ * a different label is the same corpus. The label is not constitutive.
+ */
+export interface AgentPlugin extends Layout {
+  /** The namespace segment — reporting + per-plugin σ* uniqueness. NOT an address. */
+  readonly name: string;
+  /**
+   * A doctrine-agnostic leading block stamped into every cell this plugin
+   * contributes. It must travel WITH the plugin: a consumer projecting an extended
+   * plugin has no access to the plugin's own repo context, so an axiom left behind
+   * in the corpus's build script would silently vanish from consumer-projected
+   * cells — exactly the ambient-dependence the doctrine forbids.
+   */
+  readonly preamble?: string;
+  /**
+   * WHICH dimensions exist, and each one's metadata — the manifest INSTANCE, as
+   * against the meta-model (that a dimension has an axis/kind/arity) above.
+   *
+   * It rides the plugin for the same reason `preamble` does: a consumer projecting
+   * an extended plugin has no access to the plugin's repo, so a manifest left behind
+   * there would make the design unprojectable by anyone but its author. A corpus
+   * that must edit the projector to declare a dimension does not own its own design.
+   *
+   * Plugins compose, so the set's manifest is the per-dimension merge in `extends`
+   * order (later wins, every override logged) — which is what lets a consumer ADD a
+   * dimension without forking the plugin it extends. Nobody declaring one is a
+   * REFUSAL, not a fallback: `mergeManifest` THROWS.
+   */
+  readonly manifest?: DimensionManifest;
+}
+
+/**
+ * Declare an agent-plugin. Identity factory: returns its argument unchanged so a
+ * consumer addresses the plugin by the IMPORTED BINDING, never a string id. Named
+ * `defineAgentPlugin` (not `definePlugin`) to dodge the webpack `DefinePlugin`
+ * prior; lineage is Nuxt's `defineNuxtConfig`.
+ */
+export function defineAgentPlugin(plugin: AgentPlugin): AgentPlugin {
+  return plugin;
+}

@@ -71,19 +71,15 @@ const PERMITTED: ReadonlyArray<readonly [Pkg, Pkg]> = [
  * Today's breaches, pinned in the open and shrink-only. Each is a real divergence
  * `ARCHITECTURE.md` already names, not an exemption.
  *
- * IT WAS 26. Twenty-four retired in one act — extracting `schema` (PLAN §1)
- * moved the shapes out of the projector, and every canon CELL that reached forge
- * for a `Skill`/`HookCell`/`RuleCell`/`DimensionMeta` now reaches the schema
- * instead. Two survive, and each survives for a stated reason:
+ * IT WAS 26, THEN 3, AND IS NOW 1. Twenty-four retired when `schema` was extracted
+ * (PLAN §1). Two more retired on 2026-08-05, both BY REPAIR rather than by
+ * exemption — see the notes in the set below.
  *
- *   1. property 1's PINNED breach — retires only after `bin-name-single-home` is
- *      amended, which is a design decision and not a repair.
- *   2. `canon/index.ts → forge` — the corpus's plugin declaration takes
- *      `defineAgentPlugin` from `@cratylus/forge/resolve`. The extraction did
- *      NOT move it: whether `AgentPlugin` is a SHAPE (schema's) or a resolver
- *      contract (forge's) is an open ownership question, and answering it by
- *      moving the file would have been a design decision smuggled into a refactor.
- *      It retires when that question is answered, not before.
+ * THE ONE SURVIVOR is property 1's PINNED breach, and it is the only entry here
+ * that cannot be repaired by refactoring: `bin-name-single-home.test.ts` REQUIRES
+ * the import, so fixing the architecture turns that test red. Amending a
+ * counter-gate is a design decision and it is owed BEFORE the repair, not during
+ * it. That is why it is pinned in the open rather than quietly excluded.
  */
 const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
   'canon/hooks/memory-consolidation-nudge.ts → runtime',
@@ -104,7 +100,11 @@ const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
   // moved, and the compile-time check on cells got STRONGER — it is now sourced
   // from the corpus that ships the capabilities instead of from an interface's
   // shape.
-  'canon/index.ts → forge',
+  // `canon/index.ts → forge` WAS HERE and is RETIRED BY REPAIR, 2026-08-05.
+  // `AgentPlugin`/`defineAgentPlugin` moved to `@cratylus/schema`, so the corpus
+  // root no longer reaches the projector for its own authoring surface. The move
+  // cost nothing: the contract imported one type from schema and the factory is
+  // `(plugin) => plugin`. Property 2 now holds with NO exceptions.
 ]);
 
 /**
@@ -338,7 +338,9 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     // shipped `cratylus project --harness <name>` now, driven from the root
     // `agents.config.ts`, so the anchor moved to a build script that survives.
     expect(ks).toContain('canon/toolkit/scaffold-cli.ts → forge');
-    expect(ks).toContain('canon/index.ts → forge');
+    // `canon/index.ts → forge` was the violating witness until the plugin contract
+    // moved to the schema. `scaffold-cli.ts → forge` above is a PERMITTED edge and
+    // still witnesses a live canon→forge scan, so this leg is not vacuous.
     // Was `canon/skills/wake/skill.ts → schema`. The capability-vocabulary repair
     // moved every skill cell onto canon's OWN narrowed `Skill` (`anatomy.ts`), so no
     // cell imports the shapes package directly any more and that witness went stale.
@@ -383,11 +385,13 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     expect(canonBuild.length, 'canon BUILD SCRIPTS using forge as a tool').toBe(
       4,
     );
-    // WAS 3, IS 1 — `anatomy.ts` and `anatomy.test-d.ts` now take their shapes from
-    // the schema. The survivor is `index.ts`, which takes `defineAgentPlugin` from
-    // `@cratylus/forge/resolve`; it is RATCHETED above, with the reason.
+    // WAS 3, THEN 1, IS 0 — property 2 holds with no exceptions. `anatomy.ts` and
+    // `anatomy.test-d.ts` took their shapes from the schema; `index.ts` was the last
+    // survivor and now takes `defineAgentPlugin` from there too. THIS ONE IS ALLOWED
+    // TO BE ZERO, unlike the build-script count below: a corpus is BUILT BY the
+    // projector, never DEFINED by it, so nothing in canon's root ever needs it.
     expect(canonRoot.length, 'canon root modules importing the projector').toBe(
-      1,
+      0,
     );
     expect(
       es.filter((e) => e.from === 'canon' && e.to === 'runtime').length,
