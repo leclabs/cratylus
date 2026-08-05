@@ -27,7 +27,7 @@ when to check.
   strings; no double-wrapped records currently resident.
 - Bloat is real by size: `nico/PROCEDURAL.md` **102 lines** of dense multi-clause prose vs
   `SEMANTIC.md` 13. `mav` 53/59. Baseline agents sit at 11/14 — seed only.
-- Restatement is real: `mav/SEMANTIC.md` "Facts I carry" restates `.agent-factory.config`,
+- Restatement is real: `mav/SEMANTIC.md` "Facts I carry" restates `.cratylus.config`,
   `.claude/settings.json worktree.bgIsolation`, and repo layout — content the projection already
   carries. **No admission test exists to reject it.**
 

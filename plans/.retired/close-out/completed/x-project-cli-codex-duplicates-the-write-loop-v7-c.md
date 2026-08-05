@@ -21,7 +21,7 @@ precisely why the codex path shipped **sessionless shims** until V1: a second im
 **The naive collapse does not work, and this is the constraint to design against.**
 `projectPluginSet` handles `preamble` per-plugin (`index.ts:345,356,369`) and `canonPlugin` already
 carries `preamble: foundingDoctrine` (`src/index.ts:36`), so that part is free. But **`grep -n
-surface packages/agent-forge/src/project/index.ts` returns NOTHING** — the projector has no notion of
+surface packages/forge/src/project/index.ts` returns NOTHING** — the projector has no notion of
 `adapter.surface`, and the codex path's final act is emitting `AGENTS.md` from it
 (`project-cli-codex.ts:174-181`). Collapsing onto `projectPluginSet` as it stands would silently
 drop `AGENTS.md`, which is codex's always-loaded discovery shell.
@@ -32,7 +32,7 @@ onto it. Not the reverse.
 
 **Falsifier available and cheap:** the codex projection is 31 files. Capture them before, refactor,
 diff after — byte-identical or the delta is explained file by file. V1's cross-path shim-identity
-test in `packages/agent-canon/test/runtime-shim.test.ts` already guards the shim half.
+test in `packages/canon/test/runtime-shim.test.ts` already guards the shim half.
 
 ## Closed 2026-07-26 (developer) — collapsed, and the fork had drifted a SECOND time
 
@@ -41,7 +41,7 @@ artifact tree, guarded on `adapter.surface` being defined (`project/index.ts`, a
 block). It is emitted LAST because it indexes the projected agent names, and it rides `files` like
 every other artifact — the projector still opens no file descriptor. Claude declares no `surface`,
 so the claude tree is byte-unchanged; that is pinned by a new negative gate in
-`agent-forge/test/project/tree.test.ts`, beside the positive codex case.
+`forge/test/project/tree.test.ts`, beside the positive codex case.
 
 **The collapse.** `project-cli-codex.ts` 185 → 88 lines. Gone: `moduleNames`/`skillNames`,
 `agentOf`/`skillOf`, the `ResolvedSkill` assembly, the shim call, all three `writeFileSync` sites,
@@ -58,8 +58,8 @@ drop inside the projector for every consumer.
 
 **Falsifier result: 31 files before, 31 after, same paths, FOUR deltas — all one kind, all the
 fork's second drift.** `skills/{dream,event-tap,handoff,wake}/SKILL.md` each GAIN the line
-`Runtime capability \`X\` → \`scripts/X.mjs\`, resolved against this skill's base directory.` The
-forked CLI's `ResolvedSkill` literal omitted `runtime: cell.runtime`, so codex emitted the shim FILE
+`Runtime capability \`X\` → \`scripts/X.mjs\`, resolved against this skill's base directory.`The
+forked CLI's`ResolvedSkill`literal omitted`runtime: cell.runtime`, so codex emitted the shim FILE
 but never told the agent it existed. The four files are now byte-identical to the claude projection
 except the frontmatter `trigger:` line, which is the documented codex/claude difference. V1 caught
 the sessionless shim; this is the same fork's other rot, and it could only ever have been found by

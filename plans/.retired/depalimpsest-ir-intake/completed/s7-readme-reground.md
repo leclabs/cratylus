@@ -9,7 +9,7 @@ the inversion VISION exists to undo.
 
 - `README.md:33-35` — the `init → import → compile` headline
 - `plans/install-parity/DESIGN.md` §7 and §7a — the two-pipeline census and the ownership boundary
-- `packages/agent-forge/src/cli/commands/project.ts:8` — the pipeline in its own words:
+- `packages/forge/src/cli/commands/project.ts:8` — the pipeline in its own words:
   "the consumer pipeline is finally closed: init → add → project → deploy"
 - `plans/install-parity/PLAN.md` — the stage table and why `compile` is absent from it
 

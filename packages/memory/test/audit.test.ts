@@ -11,7 +11,7 @@ beforeEach(() => {
   home = mkdtempSync(join(tmpdir(), 'memory-audit-'));
   // Hermetic: never let a developer-shell config leak repo keys into the run.
   // '' resolves to a nonexistent config path, so audit derives no keys from it.
-  vi.stubEnv('AGENT_FACTORY_CONFIG', '');
+  vi.stubEnv('CRATYLUS_CONFIG', '');
 });
 afterEach(() => {
   rmSync(home, { recursive: true, force: true });
@@ -180,10 +180,10 @@ describe('audit (CLI) — the v2 scan set {SEMANTIC.md, PROCEDURAL.md}', () => {
     expect(r.out).not.toMatch(/PROCEDURAL\.md:3/);
   });
 
-  it('--config derives repo keys from a .agent-factory.config (containing repo basename)', () => {
+  it('--config derives repo keys from a .cratylus.config (containing repo basename)', () => {
     const repoRoot = join(home, 'polis');
     mkdirSync(repoRoot, { recursive: true });
-    const config = join(repoRoot, '.agent-factory.config');
+    const config = join(repoRoot, '.cratylus.config');
     writeFileSync(config, '{"schema":1,"fleet":{"hosts":[]}}', 'utf8');
     writeFileSync(
       join(home, 'SEMANTIC.md'),
@@ -277,7 +277,7 @@ describe('repoKeysFromConfig', () => {
   it('yields the containing repo basename plus a forward-compatible projects field', () => {
     const repoRoot = join(home, 'my-repo');
     mkdirSync(repoRoot, { recursive: true });
-    const config = join(repoRoot, '.agent-factory.config');
+    const config = join(repoRoot, '.cratylus.config');
     writeFileSync(
       config,
       '{"schema":1,"projects":["web-platform","polis"]}',
@@ -291,7 +291,7 @@ describe('repoKeysFromConfig', () => {
   });
 
   it('throws loudly on malformed JSON (config present ⇒ authoritative)', () => {
-    const config = join(home, '.agent-factory.config');
+    const config = join(home, '.cratylus.config');
     writeFileSync(config, '{not json', 'utf8');
     expect(() => repoKeysFromConfig(config)).toThrow();
   });

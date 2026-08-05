@@ -1,6 +1,6 @@
 # `bin-name-single-home.test.ts` asserts on TypeScript, and the bin name escapes into `.sh`
 
-> Surfaced 2026-08-05 by the bin migration (`agent-runtime` → `cratylus-run`). The gate did not fail.
+> Surfaced 2026-08-05 by the bin migration (`runtime` → `cratylus-run`). The gate did not fail.
 > A `grep` found what it missed.
 
 ## Symptom
@@ -8,7 +8,7 @@
 `packages/canon/src/toolkit/guardrail/memory-consolidation-nudge.sh` carried:
 
 ```sh
-MEM="${MEMORY_BIN:-agent-runtime}"
+MEM="${MEMORY_BIN:-runtime}"
 ```
 
 A **second home** for the bin name, in a file the single-home gate does not read.

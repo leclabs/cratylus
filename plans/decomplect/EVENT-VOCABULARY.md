@@ -7,7 +7,7 @@
 > order, agreeing by coincidence with nothing enforcing it; consumers fully disjoint; nine members
 > realizable on no harness, in symmetric pairs.
 >
-> **The base+extension split does not.** It put the base in `agent-runtime` to solve a dependency
+> **The base+extension split does not.** It put the base in `runtime` to solve a dependency
 > problem — runtime is the dependency root and cannot import canon. ARCHITECTURE dissolves that
 > problem: **runtime receives corpus-specific facts as configuration the projection emitted**, the
 > same way a memory strategy receives its backend selection. So the vocabulary is canon's outright.
@@ -41,7 +41,7 @@ asymmetry, and it is why the catalog moved and the base vocabulary does not.
 
 Two facts confirm it rather than motivate it:
 
-- **`agent-runtime` is the dependency ROOT** — `agent-canon → agent-forge → agent-runtime`, and
+- **`runtime` is the dependency ROOT** — `canon → forge → runtime`, and
   runtime declares zero workspace dependencies. Corpus ownership of the base vocabulary would require
   a cycle.
 - **Runtime validates against the closed set AT RUN TIME**, in a deployed package with no build step:
@@ -52,7 +52,7 @@ Two facts confirm it rather than motivate it:
 
 The instinct that a corpus has a stake here is correct, and the evidence is already in the tree:
 `SubstrateEvent = CanonicalEvent | 'vcs.commit.post'` (`core/hook/index.ts:32`). That literal exists
-**because a canon cell needed it** — `agent-canon/src/hooks/praxis-continuity.ts:9` flags it verbatim:
+**because a canon cell needed it** — `canon/src/hooks/praxis-continuity.ts:9` flags it verbatim:
 _"FLAGGED for canon review: `vcs.commit.post` wants adding to the canonical event taxonomy."_
 
 A corpus needed to name a lifecycle moment its design cares about, there was no seam for it, so the
@@ -74,16 +74,16 @@ hardcoded literal instead of blessing it.
 
 **Two independent declarations of one schema-owned vocabulary, agreeing by coincidence.**
 
-|                                       | where                                                                      | members |
-| ------------------------------------- | -------------------------------------------------------------------------- | ------- |
-| `CanonicalEvent`                      | `agent-forge/src/core/hook/generated.ts`, compiled from `hook.schema.json` | 28      |
-| `LIFECYCLE_EVENTS` / `LifecycleEvent` | `agent-runtime/src/events.ts`, hand-authored                               | 28      |
+|                                       | where                                                                | members |
+| ------------------------------------- | -------------------------------------------------------------------- | ------- |
+| `CanonicalEvent`                      | `forge/src/core/hook/generated.ts`, compiled from `hook.schema.json` | 28      |
+| `LIFECYCLE_EVENTS` / `LifecycleEvent` | `runtime/src/events.ts`, hand-authored                               | 28      |
 
 Compared directly: **same 28 members, same order, zero divergence** — and _nothing enforces that_.
 Neither is generated from the other; neither is tested against the other. They agree because two
 authors happened to write the same list.
 
-`agent-runtime/src/events.ts` calls itself _"the one authority for the vocabulary"_ while
+`runtime/src/events.ts` calls itself _"the one authority for the vocabulary"_ while
 `hook.schema.json` is a second authority saying the same thing. Two artifacts each claiming to be the
 one home is worse than either claim being false: the claim is what stops a reader looking for the
 other.
@@ -93,12 +93,12 @@ Consumers, disjoint: **9 forge files** read `CanonicalEvent`; **5 runtime files*
 
 ## The seam — which home wins
 
-**`agent-runtime` owns the vocabulary; `agent-forge` derives from it.**
+**`runtime` owns the vocabulary; `forge` derives from it.**
 
 Three independent reasons, all checked:
 
-1. **The dependency already flows that way.** `agent-forge/package.json` declares
-   `"@leclabs/agent-runtime": "workspace:*"`; `agent-runtime` declares no dependency on forge.
+1. **The dependency already flows that way.** `forge/package.json` declares
+   `"@leclabs/runtime": "workspace:*"`; `runtime` declares no dependency on forge.
    Runtime→forge needs no new edge; forge→runtime would need an inverted one.
 2. **The vocabulary describes the RUNTIME.** `session.start` is a fact about what an agent runtime can
    notify about — it exists at run time, in a deployed agent, whether or not anything was ever
@@ -106,12 +106,12 @@ Three independent reasons, all checked:
 3. **Runtime already says so.** Its own header claims the authority. Make the claim true rather than
    move it somewhere neither package can reach.
 
-MODEL's `⟨schema-owned⟩` is satisfied either way — a schema can live in `agent-runtime`. What MODEL
+MODEL's `⟨schema-owned⟩` is satisfied either way — a schema can live in `runtime`. What MODEL
 forbids is what exists today: two hand-kept homes, neither generated from the other.
 
 ## The change
 
-`agent-runtime/src/events.ts` becomes the single source: `LIFECYCLE_EVENTS` stays the authored tuple,
+`runtime/src/events.ts` becomes the single source: `LIFECYCLE_EVENTS` stays the authored tuple,
 `LifecycleEvent` stays derived from it. Then:
 
 - **`hook.schema.json` stops enumerating events.** Its `event` property references the vocabulary
@@ -153,10 +153,10 @@ to be understood is a name doing two jobs.
 
 Two legs, because the vocabulary has two owners:
 
-1. **Base.** Add an event to `LIFECYCLE_EVENTS` in `agent-runtime`; it must appear in forge's
-   `CanonicalEvent` with **zero edits to `agent-forge`**.
+1. **Base.** Add an event to `LIFECYCLE_EVENTS` in `runtime`; it must appear in forge's
+   `CanonicalEvent` with **zero edits to `forge`**.
 2. **Extension.** Declare an event on canon's PLUGIN; it must be usable in a cell's `events` with
-   **zero edits to `agent-forge` and zero to `agent-runtime`**, and an adapter with no native peer for
+   **zero edits to `forge` and zero to `runtime`**, and an adapter with no native peer for
    it must DEGRADE and warn rather than crash — the path already proven for constraints.
 
 Then remove both and confirm the renders return byte-identical. Leg 2 is the one that matters: it is
@@ -167,7 +167,7 @@ hardcoded with a nicer provenance.
 
 - **The two lists agree TODAY.** Every check will pass before and after step 2, so byte-identity
   proves nothing here. Step 1's gate is the only thing that can fail, which is why it comes first.
-- **`agent-runtime` is DEPLOYED, forge is build-time.** Anything moved into runtime ships to every
+- **`runtime` is DEPLOYED, forge is build-time.** Anything moved into runtime ships to every
   host. Move the vocabulary, not forge's machinery.
 - **Do not import forge from runtime.** That edge does not exist and creating it would be the real
   regression — worse than the duplication, because a deployed package would start depending on a

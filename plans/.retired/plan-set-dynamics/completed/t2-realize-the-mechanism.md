@@ -11,7 +11,7 @@ layout + the praxis tooling.
 - `[dep-fed] t1` — the completed design spec (the authoritative model + mechanism approach). Read it; do not
   re-derive the model.
 - `plans/` — the on-disk plan layout (`PLAN.md` + state folders + `.owner`) to extend with plan-level state.
-- `packages/agent-canon/src/toolkit/` — praxis/plan tooling (`project-targets.ts` and any plan-lifecycle
+- `packages/canon/src/toolkit/` — praxis/plan tooling (`project-targets.ts` and any plan-lifecycle
   module); `layPlansScaffold()` / `planner.ts` (repo-wide) as the scaffolding touchpoints.
 - The memory session-registry (`~/.claude/skills/memory/episodic.mjs session`) — `owner`/`live`/`occupied`,
   which the plan-level model must not regress.
@@ -35,7 +35,7 @@ t1 (needs the settled design + mechanism approach).
 ## Outputs
 
 - The mechanism code + `plans/` layout changes + tests.
-- `pnpm --filter @leclabs/agent-canon typecheck && test` green; `graphify update .` run.
+- `pnpm --filter @leclabs/canon typecheck && test` green; `graphify update .` run.
 
 ## Acceptance (blind, falsifiable)
 

@@ -1,9 +1,9 @@
-# T1 — derive-verbs (SURVIVES → feeds `agent-runtime/S5` · was ready · wave 0 · deps ∅)
+# T1 — derive-verbs (SURVIVES → feeds `runtime/S5` · was ready · wave 0 · deps ∅)
 
-> **✅ SURVIVES.** event-tap reshapes into an `agent-runtime` runtime capability (see
-> `plans/event-tap/PLAN.md` STATUS + `plans/agent-runtime/SUPERSESSION.md`). This slice's deliverable —
+> **✅ SURVIVES.** event-tap reshapes into an `runtime` runtime capability (see
+> `plans/event-tap/PLAN.md` STATUS + `plans/runtime/SUPERSESSION.md`). This slice's deliverable —
 > the cold-derived, cratylism-gated sub-verb set + confirmed anchor — is a live INPUT to
-> `agent-runtime/S5` (event-tap-capability), where the verbs become `agent-runtime tap <verb>`. Execute
+> `runtime/S5` (event-tap-capability), where the verbs become `cratylus-run tap <verb>`. Execute
 > or reuse as the naming input to S5; nothing here is dead. Spec follows unchanged.
 
 ---
@@ -16,9 +16,9 @@ anchor. The tool exposes four sub-actions; name each at its true altitude, candi
 ## Static inputs (pinned)
 
 - `.scratchpad/tap-skill-draft.md` — the settled concept + provisional verb set `install|inspect|uninstall|status`.
-- `packages/agent-canon/test/cratylism.test.ts` (skills leg L117-133) — structural gate: `basename(file) == cell.name`, kebab `[a-z0-9-]+`.
-- `packages/agent-canon/src/toolkit/cold-oracle/` (`decodeCold`, `sweep.mjs`) — the isolated-oracle instrument for the SEMANTIC leg.
-- `packages/agent-canon/src/skills/handoff.ts` — a live skill exemplar (`name`, verb-H1 convention).
+- `packages/canon/test/cratylism.test.ts` (skills leg L117-133) — structural gate: `basename(file) == cell.name`, kebab `[a-z0-9-]+`.
+- `packages/canon/src/toolkit/cold-oracle/` (`decodeCold`, `sweep.mjs`) — the isolated-oracle instrument for the SEMANTIC leg.
+- `packages/canon/src/skills/handoff.ts` — a live skill exemplar (`name`, verb-H1 convention).
 
 ## Constraints
 
@@ -44,7 +44,6 @@ set was fed to the oracle; OR `install`/`uninstall` lack the convention citation
 check is missing or wrong. Return is ACCEPTED only when every verb's sign is traceable to derivation
 or cited convention, and `basename==name` is shown to hold.
 
-
 ---
 
 **DISPOSITION (mav, 2026-07-26) — EXECUTED, by `close-out`/N1.**
@@ -57,6 +56,6 @@ Result: **`install` · `uninstall` · `read` · `status`**. `remove` refuted **1
 `inspect` **0/14**, modal in both framings, every rival a prefix-negated pair.
 
 Stronger than the counts: six trials volunteered, unprompted, that `remove` does not read as
-an exact inverse and could imply *partial* deletion — while `ports/event-tap.ts` requires the
+an exact inverse and could imply _partial_ deletion — while `ports/event-tap.ts` requires the
 tap detach "cleanly (zero residue)". **`remove` mis-signified the contract.** Adopted in
 `731e510`; `tap remove` now fails loud.

@@ -5,7 +5,7 @@ proposed compiler/projector split the code actually justifies.
 
 ## The state, measured
 
-`packages/agent-forge/src/project/index.ts:119-261`. Per kind: scan → dynamic `import()` of the
+`packages/forge/src/project/index.ts:119-261`. Per kind: scan → dynamic `import()` of the
 authored module → `opts.adapter.agentDef(...)` (L161) → **`writeFileSync` (L165)**. Skills: L187 →
 **L188**. Hooks: `renderHooks(...)` L233 → **L239, L250**. The adapter call and the disk write are
 adjacent statements; no intermediate value survives the loop body.
@@ -20,8 +20,8 @@ sites that would churn. See PLAN §Decisions. Extract the I/O; do not move packa
 
 ## Inputs
 
-`packages/agent-forge/src/project/index.ts` · `packages/agent-forge/src/core/harness-adapter.ts` ·
-`packages/agent-forge/src/cli/commands/project.ts` · `packages/agent-canon/src/toolkit/project-cli.ts`
+`packages/forge/src/project/index.ts` · `packages/forge/src/core/harness-adapter.ts` ·
+`packages/forge/src/cli/commands/project.ts` · `packages/canon/src/toolkit/project-cli.ts`
 
 ## Constraints
 
@@ -33,14 +33,14 @@ sites that would churn. See PLAN §Decisions. Extract the I/O; do not move packa
   whole-plugin-set aggregate is a different thing and is undeclared by any grounding doc. Keep it a
   local structural type. Naming it canonically is a cratylism act and is out of scope.
 - V1 owns `project/runtime-shim.ts` and V5 owns the bin-name literals — do not touch either.
-- **You also own the dead import**: `packages/agent-canon/src/toolkit/project-cli.ts:31` imports
+- **You also own the dead import**: `packages/canon/src/toolkit/project-cli.ts:31` imports
   `emitRuntimeShim` and never calls it (the claude path emits shims inside `projectPluginSet`,
   `project/index.ts:190`). Remove it as part of adapting that caller to the new return type.
 
 ## Outputs
 
-`packages/agent-forge/src/project/index.ts` · `packages/agent-forge/src/cli/commands/project.ts` ·
-`packages/agent-canon/src/toolkit/project-cli.ts` · `packages/agent-forge/test/project/*`
+`packages/forge/src/project/index.ts` · `packages/forge/src/cli/commands/project.ts` ·
+`packages/canon/src/toolkit/project-cli.ts` · `packages/forge/test/project/*`
 
 ## Acceptance
 
@@ -48,6 +48,6 @@ sites that would churn. See PLAN §Decisions. Extract the I/O; do not move packa
    writes at all** — no tmpdir, no mock fs. **This is impossible on the pre-state**; that is the
    falsifier.
 2. Byte-identical output: project the canon before and after, diff the two render trees, expect empty.
-3. `writeFileSync` appears **zero** times in `packages/agent-forge/src/project/index.ts`.
-4. The dead `emitRuntimeShim` import is gone from `packages/agent-canon/src/toolkit/project-cli.ts`.
+3. `writeFileSync` appears **zero** times in `packages/forge/src/project/index.ts`.
+4. The dead `emitRuntimeShim` import is gone from `packages/canon/src/toolkit/project-cli.ts`.
 5. `pnpm test && pnpm typecheck` green.

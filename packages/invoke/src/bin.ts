@@ -20,7 +20,7 @@
 // module; the manifest's agreement with it is held by a test
 // (`canon/test/bin-name-single-home.test.ts`), so a rename cannot half-land.
 //
-// THE NAME. This package was `agent-cli` until 2026-08-05 — a sign that claimed
+// THE NAME. This package was `invoke` until 2026-08-05 — a sign that claimed
 // THE CLI while shipping one of two, and disagreed with its own bin. `invoke` was
 // not chosen: it survived a blind reverse decode that killed the entire forward
 // slate (`assembly`, `bin`, `entry`, `composition`, `cli` all ≤6/10 cold), and the

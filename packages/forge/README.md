@@ -1,6 +1,6 @@
 # @cratylus/forge
 
-The build core for [agent-factory](../../README.md).
+The build core for [cratylus](../../README.md).
 
 Agents, skills, and hooks are **authored** as typed TypeScript cells inside plugin packages. A project
 declares which plugins it extends; `forge` resolves that set into one merged canon and projects it

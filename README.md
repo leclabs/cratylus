@@ -28,7 +28,7 @@ hidden assumptions — more context consumed, weaker specification.
 A foundation model already holds dense, structured priors over the concepts you are trying to
 express. For any such concept there exists a signifier that fires it most sharply — the one
 minimizing the mismatch between what the token actually invokes and what you meant. That is a
-**semantic address**, and it is **discovered, not coined**.
+**optimal-signifier**, and it is **discovered, not coined**.
 
 |                         | asks                           | meaning comes from   |
 | ----------------------- | ------------------------------ | -------------------- |
@@ -69,7 +69,7 @@ that fails the suite when a breach is repaired without retiring its pin.
 
 1. [`VISION.md`](./VISION.md) — **why**: the thesis, the inversion, the discipline
 2. [`MODEL.md`](./MODEL.md) — **what** exists
-3. [`ENGINE.md`](./ENGINE.md) — **how** addresses are discovered, validated and projected
+3. [`ENGINE.md`](./ENGINE.md) — **how** anchors are discovered, validated and projected
 4. [`ARCHITECTURE.md`](./ARCHITECTURE.md) — the packages and the seams between them
 5. [`CANON.md`](./CANON.md) — the corpus itself
 

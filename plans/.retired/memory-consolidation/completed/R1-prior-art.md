@@ -6,15 +6,15 @@
 
 Answer the operator's question directly: _"Surely someone out there has implemented long-term memory that
 just works — is there a similar tool/library we can study?"_ Produce a grounded survey of how shipped
-systems factor agent long-term memory, aimed squarely at the decisions `agent-memory` has to make.
+systems factor agent long-term memory, aimed squarely at the decisions `memory` has to make.
 
 This is research, not design. R1 returns findings. S3 decides.
 
 ## Inputs
 
-- `packages/agent-memory/src/route.ts` — the store taxonomy in force (CoALA 4-part; Working unpersisted)
-- `packages/agent-memory/src/record.ts` — the record shape, and the `tags`-may-not-route contract
-- `packages/agent-canon/src/skills/dream/skill.ts` — the consolidation ritual as currently specified
+- `packages/memory/src/route.ts` — the store taxonomy in force (CoALA 4-part; Working unpersisted)
+- `packages/memory/src/record.ts` — the record shape, and the `tags`-may-not-route contract
+- `packages/canon/src/skills/dream/skill.ts` — the consolidation ritual as currently specified
 - `plans/heartbeat-organ/PLAN.md` §Prior art — an existing, cited sweep establishing that consolidation is
   gated by **pressure/salience thresholds or a phase transition**, never clocked by a pulse. That finding
   is settled; carry it, do not re-derive it.
@@ -53,7 +53,7 @@ This is research, not design. R1 returns findings. S3 decides.
 ## Outputs
 
 `plans/memory-consolidation/ready/R1-findings.md` — the survey. Comparison table across systems on the five
-questions, then a short section per question stating what it means for `agent-memory` specifically. Close
+questions, then a short section per question stating what it means for `memory` specifically. Close
 with the two or three systems most worth copying from and **what precisely to copy**.
 
 ## Acceptance
@@ -68,7 +68,6 @@ with the two or three systems most worth copying from and **what precisely to co
 `R1-findings.md` does not exist, so every criterion fails. Any acceptance that would pass before the work
 is done is mis-specified and must be rewritten.
 
-
 ---
 
 **DISPOSITION (mav, 2026-07-26) — RE-AUTHORED AND EXECUTED in `close-out`.**
@@ -79,7 +78,7 @@ Carried forward as `close-out`/R1 and run:
 Verdict: **build the bound, not the router.** The operator's write-time hypothesis is NOT
 confirmed as the primary lever and survives only demoted. The survey hunted disconfirming
 evidence as instructed and found it, and flagged that its own first automated read of the
-key source was wrong *in the direction that flattered its conclusion*.
+key source was wrong _in the direction that flattered its conclusion_.
 
 The merge initially dropped this shard's buy-vs-build constraint set (local-first, no network,
 no embedding service, runs in a hook). That was caught and restored into S3 — and it bit:

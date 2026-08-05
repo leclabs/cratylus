@@ -25,16 +25,16 @@ everything else is deterministic shell), so a flip here is **rubric ambiguity, n
 
 ## Inputs
 
-`packages/agent-canon/src/toolkit/guardrail/calibrate-stance-judge.sh` ·
+`packages/canon/src/toolkit/guardrail/calibrate-stance-judge.sh` ·
 `.../stance-judge-prompt.md:50-80` · `.../fixtures/expected.json` · `.../fixtures/turn-730.txt` ·
-`packages/agent-canon/src/hooks/stance-guardrail.ts`
+`packages/canon/src/hooks/stance-guardrail.ts`
 
 ## Constraints
 
-- **Edit the CELL, never the toolkit file.** `packages/agent-canon/src/hooks/stance-guardrail.ts`
+- **Edit the CELL, never the toolkit file.** `packages/canon/src/hooks/stance-guardrail.ts`
   carries the rubric verbatim in `workers[].content` and regenerates the `.sh`/`.md`. Editing the
   toolkit file alone drifts the cell — that exact mistake ran red through three commits and was
-  repaired in `c4b4298`. After any edit run `pnpm --filter @leclabs/agent-canon test`; the
+  repaired in `c4b4298`. After any edit run `pnpm --filter @leclabs/canon test`; the
   `hook-rule-boundary` gate is what catches it.
 - `calibrate-stance-judge.sh` needs `claude` on PATH (`:33` SKIPs otherwise) and is wall-clock
   expensive. If it cannot run, say so and stop — **do not infer the rate**.
@@ -45,8 +45,8 @@ everything else is deterministic shell), so a flip here is **rubric ambiguity, n
 
 ## Outputs
 
-`packages/agent-canon/src/hooks/stance-guardrail.ts` (rubric, if edited) ·
-`packages/agent-canon/src/toolkit/guardrail/stance-judge-prompt.md` (regenerated) ·
+`packages/canon/src/hooks/stance-guardrail.ts` (rubric, if edited) ·
+`packages/canon/src/toolkit/guardrail/stance-judge-prompt.md` (regenerated) ·
 `.../fixtures/expected.json`
 
 ## Acceptance
@@ -61,4 +61,4 @@ Either outcome is a pass; **an unreconciled flip left as-is is not**.
    fork — or record the boundary explicitly in the rubric text so a reader knows it is undecided by
    design. Then re-calibrate all six fixtures + both controls and report the full table.
 4. Controls remain 0/N. Six fixtures at or above their recorded rates.
-5. `pnpm --filter @leclabs/agent-canon test` green (the cell/worker byte-anchors match).
+5. `pnpm --filter @leclabs/canon test` green (the cell/worker byte-anchors match).

@@ -7,13 +7,13 @@ the IR lineage appears to threaten the live projection.
 
 **Inputs (pinned, exist at authoring).**
 
-- `packages/agent-forge/src/adapters/claude/index.ts:82-83` — the package's own comment naming the split:
+- `packages/forge/src/adapters/claude/index.ts:82-83` — the package's own comment naming the split:
   the anatomy export is "the inversion's projection path, **distinct from the IR serialize path above**"
-- `packages/agent-forge/src/adapters/codex/index.ts` — same dual shape
-- `packages/agent-forge/src/adapters/registry/index.ts:11-12,25-28` — imports from those barrels; the
+- `packages/forge/src/adapters/codex/index.ts` — same dual shape
+- `packages/forge/src/adapters/registry/index.ts:11-12,25-28` — imports from those barrels; the
   projection registry holds exactly two entries, `claude` and `codex`
-- `packages/agent-forge/src/core/harness-adapter.ts:38` — the `HarnessAdapter` interface
-- `packages/agent-forge/src/core/adapter/types.ts:92` — the IR `Adapter` interface (~16 clients)
+- `packages/forge/src/core/harness-adapter.ts:38` — the `HarnessAdapter` interface
+- `packages/forge/src/core/adapter/types.ts:92` — the IR `Adapter` interface (~16 clients)
 
 **Constraints.**
 

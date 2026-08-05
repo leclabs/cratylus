@@ -12,7 +12,7 @@
 
 ## Measured and ROUTED 2026-07-26 (mav) — canon candidate, nico's remit
 
-**Quantified.** Across `packages/agent-canon/src/dimensions/`: **142 fragment modules,
+**Quantified.** Across `packages/canon/src/dimensions/`: **142 fragment modules,
 142 string-form, 0 node-form.** So `patches` is not partially unreachable — it is
 unreachable for the _entire_ canon. V8's "totally" is exact.
 

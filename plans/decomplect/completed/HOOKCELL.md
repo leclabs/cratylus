@@ -8,10 +8,10 @@ model's own concept space and from the grounding docs; asking was the error.
 
 ## The finding
 
-`agent-canon` is meant to be the GENERIC design and `agent-forge` the harness projection. Today the
+`canon` is meant to be the GENERIC design and `forge` the harness projection. Today the
 canon's governance cells are **claude artifacts**, and the consequence is measurable:
 
-**`packages/agent-canon/.render-ts-codex/` contains `agents`, `AGENTS.md`, `skills` — and no hooks
+**`packages/canon/.render-ts-codex/` contains `agents`, `AGENTS.md`, `skills` — and no hooks
 at all.** Every codex agent runs with zero stance guardrail, zero memory nudge, zero resume notice,
 zero continuity. Not degraded — absent.
 

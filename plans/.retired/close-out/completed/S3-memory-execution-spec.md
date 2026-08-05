@@ -8,9 +8,9 @@ to produce.
 
 ## Inputs
 
-`plans/close-out/ready/R1-findings.md` · the returns of V2 and V3 · `packages/agent-memory/src`
-(4458 LOC, 18 modules) · `packages/agent-canon/src/skills/dream/skill.ts` ·
-`packages/agent-memory/src/{route,record,verb-port,audit}.ts`
+`plans/close-out/ready/R1-findings.md` · the returns of V2 and V3 · `packages/memory/src`
+(4458 LOC, 18 modules) · `packages/canon/src/skills/dream/skill.ts` ·
+`packages/memory/src/{route,record,verb-port,audit}.ts`
 
 ## Standing constraint from the operator
 
@@ -48,7 +48,7 @@ show the outer two rungs suffice. Do not carry the ladder in wholesale.
    it be mechanized — even partially — using `audit.ts:177 scanLine()`?
 4. **Duplicate detection.** What key, at what stage, and what happens on a hit — reject, merge, or
    flag.
-5. **The `agent-memory` ↔ `agent-canon` skill seam**, which the operator called clunky. Name the
+5. **The `memory` ↔ `canon` skill seam**, which the operator called clunky. Name the
    clunk concretely before proposing anything; V2 already exposed one instance (a verb whose
    contract was stated three different ways in three files).
 

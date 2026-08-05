@@ -7,11 +7,11 @@ two of the operator's named symptoms.
 ## The defect, measured — and it is ONE defect wearing two faces
 
 **Face A — the routing law is unsatisfiable in practice.**
-`packages/agent-canon/src/skills/dream/skill.ts:35` states
+`packages/canon/src/skills/dream/skill.ts:35` states
 `node(i) ∉ { HOME · legacy } ⇒ i ∉ SEMANTIC ∧ i ∉ PROCEDURAL`.
-`foldRecords` (`packages/agent-memory/src/fold.ts:32-37`) computes `resolveNode(r.cwd, …)` at
+`foldRecords` (`packages/memory/src/fold.ts:32-37`) computes `resolveNode(r.cwd, …)` at
 `fold.ts:35`; `LEGACY_NODE` (`fold.ts:33-34`) is reachable only when `r.cwd` is undefined. In
-`resolveNode` (`packages/agent-memory/src/node.ts:153`), `.git` is marker #1 (`node.ts:32-39`,
+`resolveNode` (`packages/memory/src/node.ts:153`), `.git` is marker #1 (`node.ts:32-39`,
 returned `node.ts:201`) and `$HOME` is returned only at `node.ts:185`. An agent always works inside a
 repo ⇒ the walk halts at the repo root ⇒ every record scopes to a project node ⇒ the law bars **all
 of them** from the two stores that exist to hold cross-project wisdom.
@@ -28,9 +28,9 @@ records the law admits to the durable stores.**
 
 ## Inputs
 
-`packages/agent-memory/src/node.ts:150-210` · `packages/agent-memory/src/fold.ts:25-45` ·
-`packages/agent-memory/src/audit.ts:170-230` (`scanLine`, `auditHome`) ·
-`packages/agent-canon/src/skills/dream/skill.ts`
+`packages/memory/src/node.ts:150-210` · `packages/memory/src/fold.ts:25-45` ·
+`packages/memory/src/audit.ts:170-230` (`scanLine`, `auditHome`) ·
+`packages/canon/src/skills/dream/skill.ts`
 
 ## Constraints
 
@@ -41,13 +41,13 @@ records the law admits to the durable stores.**
 - Prefer the existing deterministic instrument over new inference: `audit.ts:177 scanLine()` already
   detects repo-key / path / ref-shaped tokens and is exactly a content-scope test.
 - The dream cell is a formal block under the self-sufficiency, symbols and reader-density gates.
-  Re-run `pnpm --filter @leclabs/agent-canon test` after editing it.
+  Re-run `pnpm --filter @leclabs/canon test` after editing it.
 - A schema change to `record.ts` is **out of scope** — that is S3's call. Fix what is deterministic.
 
 ## Outputs
 
-`packages/agent-memory/src/node.ts` · `packages/agent-memory/test/node.test.ts` ·
-`packages/agent-canon/src/skills/dream/skill.ts` (routing law + the `--residue` shape line, which V2
+`packages/memory/src/node.ts` · `packages/memory/test/node.test.ts` ·
+`packages/canon/src/skills/dream/skill.ts` (routing law + the `--residue` shape line, which V2
 is forbidden to touch)
 
 ## Acceptance

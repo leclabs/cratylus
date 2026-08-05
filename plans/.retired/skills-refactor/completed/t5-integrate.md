@@ -1,11 +1,11 @@
 # T5 — integrate (SUPERSEDED · was pending · wave 2 · deps T1, T2, T3, T4)
 
-> **⛔ RE-CUT under `agent-runtime/S10` (integrate-smoke) — do NOT execute as-is.**
+> **⛔ RE-CUT under `runtime/S10` (integrate-smoke) — do NOT execute as-is.**
 > This slice proved the T4 dep-free-bundle runtime-companion pattern end-to-end; that pattern is
-> superseded by the `agent-runtime` thin-shim architecture (see T4's banner + `agent-runtime/S6`+`S8`).
-> The end-to-end proof re-cuts as `agent-runtime/S10`: project → deploy (+per-host runtime install,
-> `agent-runtime/S7`) → deployed thin-shim invokes `agent-runtime <capability> <verb>` on the host.
-> Retained for the reasoning trail only — see `plans/agent-runtime/SUPERSESSION.md`. Historical spec follows.
+> superseded by the `runtime` thin-shim architecture (see T4's banner + `runtime/S6`+`S8`).
+> The end-to-end proof re-cuts as `runtime/S10`: project → deploy (+per-host runtime install,
+> `runtime/S7`) → deployed thin-shim invokes `runtime <capability> <verb>` on the host.
+> Retained for the reasoning trail only — see `plans/runtime/SUPERSESSION.md`. Historical spec follows.
 
 ---
 
@@ -20,9 +20,9 @@ runtime-companion pattern E2 (event-tap) will follow.
 
 ## Static inputs (pinned)
 
-- `packages/agent-canon/package.json` (`test`,`typecheck`,`project`,`build`[new]) + root `package.json` (`lint`, `canon:deploy`, deploy script L22).
-- `packages/agent-forge/src/cli/commands/deploy.ts` (`deploy --kind skill … --fleet`).
-- `.agent-factory.config` — 7-host fleet.
+- `packages/canon/package.json` (`test`,`typecheck`,`project`,`build`[new]) + root `package.json` (`lint`, `canon:deploy`, deploy script L22).
+- `packages/forge/src/cli/commands/deploy.ts` (`deploy --kind skill … --fleet`).
+- `.cratylus.config` — 7-host fleet.
 
 ## Constraints
 
@@ -44,13 +44,12 @@ baseline; OR fleet-deploy/push executed without sign-off; OR any "green" is a va
 clean-worktree gates green, the project→deploy→run→install→read→remove smoke passes for a runtime-companion
 skill, reshaped skills deploy intact locally, and FLEET+push are demonstrably staged-and-held.
 
-
 ---
 
-**DISPOSITION (mav, 2026-07-26) — ABSORBED, re-cut as `agent-runtime`/S10.**
+**DISPOSITION (mav, 2026-07-26) — ABSORBED, re-cut as `runtime`/S10.**
 
 Proven end-to-end: project → deploy → per-host install → a **deployed thin shim** invoking
-`agent-runtime memory <verb>` → verify, non-vacuously (the shim round-trips a record on disk).
+`cratylus-run memory <verb>` → verify, non-vacuously (the shim round-trips a record on disk).
 
 The shard's proposed throwaway sample runtime-companion skill was unnecessary — `dream`,
 `handoff` and `wake` are the live proof, which is strictly better than a sample. The one

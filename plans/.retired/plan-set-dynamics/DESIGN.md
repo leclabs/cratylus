@@ -10,13 +10,13 @@ ruling. Authority for the notation is the block in §5; §1–4 justify it.
 hook}` (MODEL.md L10, cold-verified). A plan is none of these — it is the work-tracking unit the
   `praxis` skill already models (`P ≜ a plan : a set of task-files`). The tier **adds no Kind**; it
   enriches the `praxis` skill's formal block plus its toolkit. (Acceptance 6.)
-- **ENGINE is untouched.** The engine (`agent-forge/deploy`) declares the `ProjectTemplate` shape and
+- **ENGINE is untouched.** The engine (`forge/deploy`) declares the `ProjectTemplate` shape and
   materializes a plan's _internal_ task-state folders from `planStates` (= `PLAN_STATES`). The
   plan-level tier introduces (i) plan-phase as a **derivation** (no folders the engine lays down) and
   (ii) one new `plans/`-level container `plans/.retired/`, created **lazily** by the `retire` op
   (`mkdir -p`), never scaffolded. `PLAN_STATES` and the engine's scaffold path stay as-is.
-- **Home:** the notation lives in `packages/agent-canon/src/skills/praxis.ts` (`FORMAL_BLOCK`); the
-  mechanism lives in `packages/agent-canon/src/toolkit/` (a `plan-set.ts` sibling to `plan-states.ts`).
+- **Home:** the notation lives in `packages/canon/src/skills/praxis.ts` (`FORMAL_BLOCK`); the
+  mechanism lives in `packages/canon/src/toolkit/` (a `plan-set.ts` sibling to `plan-states.ts`).
   This is nico's canon remit (design/notation); t2 realizes the mechanism, t3 lands the notation.
 
 ## 1. Cold-verified anchors (deliverable a — discovered, not assumed)
@@ -172,7 +172,7 @@ law / derived-set / operation line carries no `--`/`—` marker, so `scanFormalB
 
 ## 6. Mechanism approach for t2 (deliverable c)
 
-- **Home:** `packages/agent-canon/src/toolkit/plan-set.ts` (sibling to `plan-states.ts`), surfaced
+- **Home:** `packages/canon/src/toolkit/plan-set.ts` (sibling to `plan-states.ts`), surfaced
   through the praxis skill's affordances / CLI. Add a constant `RETIRED_DIR = '.retired'`.
   `PLAN_STATES` unchanged; ENGINE unchanged.
 - **plan-phase (`phase`)** — a readout, no stored field: fold task-folder occupancy →

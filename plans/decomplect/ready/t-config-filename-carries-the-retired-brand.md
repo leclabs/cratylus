@@ -1,19 +1,19 @@
-# `.agent-factory.config` — a user-facing filename still wearing the retired brand, in two homes
+# `.cratylus.config` — a user-facing filename still wearing the retired brand, in two homes
 
 > Surfaced 2026-08-05 during the pre-publish privacy scan, after the scope rename and the bin
-> migration had both landed. Everything else stopped saying `agent-factory`. This did not, because it
+> migration had both landed. Everything else stopped saying `cratylus`. This did not, because it
 > is a **filename on a user's disk**, and nothing in the tree greps for it as a brand.
 
 ## Symptom
 
 Two independent literals, plus an environment variable and a tracked example:
 
-| site                             | literal                                                         |
-| -------------------------------- | --------------------------------------------------------------- |
-| `memory/src/cli.ts:221`          | `existsSync('.agent-factory.config') ? '.agent-factory.config'` |
-| `memory/src/strategy.ts:132-133` | the same expression, independently written                      |
-| both files                       | `$AGENT_FACTORY_CONFIG`                                         |
-| `.agent-factory.config.example`  | tracked, and named for the retired project                      |
+| site                             | literal                                               |
+| -------------------------------- | ----------------------------------------------------- |
+| `memory/src/cli.ts:221`          | `existsSync('.cratylus.config') ? '.cratylus.config'` |
+| `memory/src/strategy.ts:132-133` | the same expression, independently written            |
+| both files                       | `$CRATYLUS_CONFIG`                                    |
+| `.cratylus.config.example`       | tracked, and named for the retired project            |
 
 Roughly a dozen further doc-comment references across `memory/src/{audit,node,cli,strategy}.ts`,
 `runtime/src/ports/memory.ts` and `forge/src/config/config.ts`.
@@ -32,7 +32,7 @@ the region any existing gate watches.
 ## Why it is publish-blocking
 
 A config filename and an environment variable are **user-facing contract**. After first publish,
-someone has a `.agent-factory.config` on disk and renaming it is a breaking change with a migration
+someone has a `.cratylus.config` on disk and renaming it is a breaking change with a migration
 path. Before first publish it is free. That is the same window the packages were renamed in, and it
 closes at the same moment.
 
@@ -66,7 +66,7 @@ have to be answered first, and they are design questions, not renames:
   written once.
 - The sign round-trips: forward argmin, **blind reverse decode**, occupancy check — including against
   `.cratylus-run.json`, so the two dotfiles do not read as variants of one thing unless they are.
-- `grep -rn 'agent-factory' packages/*/src` returns nothing.
+- `grep -rn 'cratylus' packages/*/src` returns nothing.
 - Render oracle unmoved, or a deliberate re-baseline argued in the commit.
 - If the answer is that the two configs are one concept: **STOP and report.** That is a merge, not a
   rename, and it is a design decision.

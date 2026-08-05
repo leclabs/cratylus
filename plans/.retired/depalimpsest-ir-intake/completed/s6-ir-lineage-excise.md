@@ -6,21 +6,21 @@ whose generator no longer exists.
 
 **Inputs (pinned, exist at authoring).**
 
-- `packages/agent-forge/src/core/{ir,engine,serialize,adapter}/` + `src/core/schema/*.json` +
+- `packages/forge/src/core/{ir,engine,serialize,adapter}/` + `src/core/schema/*.json` +
   `src/core/scripts/generate-types.ts` — ~2,501 lines / 26 files, **minus** whatever S2 rehomed
-- `packages/agent-forge/src/cli/index.ts:123,142,189,199,239,246,253,268` — command wiring; `:2-17,47-68`
+- `packages/forge/src/cli/index.ts:123,142,189,199,239,246,253,268` — command wiring; `:2-17,47-68`
   — the 16-adapter table
 - CLI commands `compile, import, lint, diff, watch, migrate, doctor, events, import-audit` — 1,527 lines
-- `packages/agent-forge/src/adapters/` — 15 of 18 dirs go entirely (aider, amp, cline, continue, copilot,
+- `packages/forge/src/adapters/` — 15 of 18 dirs go entirely (aider, amp, cline, continue, copilot,
   crush, cursor, devin, gemini, kilo, opencode, pi, roo, standards, zed). Survivors: `claude/anatomy.ts`,
   `codex/anatomy.ts`, `registry/`, plus S3's extracted serializer. From `claude/` also drop `read.ts`,
   `bundle.ts`, `paths.ts`, `mechanisms.ts`, and `write.ts`
-- `packages/agent-forge/test/adapters/` (1,785) + `test/core/` (1,010) + stories E1, E2, E3, E4, E7, E9,
+- `packages/forge/test/adapters/` (1,785) + `test/core/` (1,010) + stories E1, E2, E3, E4, E7, E9,
   E10 (~7,410) — roughly 10,200 of 17,635 test lines
-- `packages/agent-forge/test/adapters/ir-bridge/agent-canon.agent-forge.json` — the 75KB fixture, and
-  `round-trip.test.ts:18-20` naming its generator `agent-canon/toolkit/emit_ir.py`, **deleted in
+- `packages/forge/test/adapters/ir-bridge/canon.forge.json` — the 75KB fixture, and
+  `round-trip.test.ts:18-20` naming its generator `canon/toolkit/emit_ir.py`, **deleted in
   `d532a5f`**
-- `packages/agent-forge/package.json` `exports` — `"."` and `"./core"` both resolve to the core barrel
+- `packages/forge/package.json` `exports` — `"."` and `"./core"` both resolve to the core barrel
 
 **Constraints.**
 
@@ -45,8 +45,8 @@ whose generator no longer exists.
   even a type-only import a full-lineage edge, and it is invisible to grep. Expect the same shape
   elsewhere; name the **defining module**, never the barrel.
 - **The dual barrel resolves itself here.** `adapters/claude/index.ts` still exports both kinds on disk
-  because `agent-canon`'s `null-dimension` and `projection-stability` tests import anatomy symbols from
-  `@leclabs/agent-forge/adapters/claude`. Deleting `read.ts`/`write.ts` leaves that barrel anatomy-only
+  because `canon`'s `null-dimension` and `projection-stability` tests import anatomy symbols from
+  `@leclabs/forge/adapters/claude`. Deleting `read.ts`/`write.ts` leaves that barrel anatomy-only
   for free — no contract change needed.
 - **`import.meta.resolve` is NOT an existence oracle.** It matched a bogus `./adapters/*` subpath without
   stat-ing the target. Use `await import()` for any resolution claim; only a real load proves a
@@ -64,8 +64,8 @@ whose generator no longer exists.
 `exports` map that describes the surviving surface; the orphaned fixture gone.
 
 **Completion criteria (falsifier).** `rg -n "readIR|writeIR|findIRRoot|defaultIRRoot"
-packages/agent-forge/src` returns nothing, control proven before the cut; no
-`.agent-forge`-IR-writing command remains in `--help`; every removed verb errors as unknown rather than
+packages/forge/src` returns nothing, control proven before the cut; no
+`.forge`-IR-writing command remains in `--help`; every removed verb errors as unknown rather than
 parsing; full `pnpm test` green from the repo root; and the real dogfood lands **10 agents / 15 skills /
 3 hooks** with `settings.json` byte-identical to pre-plan. REJECTED if a re-export stub survives; if a
 surviving-subject test was deleted to reach green; if the deleted-test count is reported without saying

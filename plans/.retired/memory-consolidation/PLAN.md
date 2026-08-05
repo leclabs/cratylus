@@ -5,13 +5,13 @@
 
 **Status: PROPOSED — sharded, wave-0 ready. R1/R2 are census/research and run concurrently; S3 (the
 execution spec) is the deliverable and is gated on both.** Authored by mav 2026-07-26 from operator intent
-plus a live census of `packages/agent-memory/src`.
+plus a live census of `packages/memory/src`.
 
 ## Intent
 
 The memory system is fragile and its output is poor. Operator statement of the problem, verbatim in
 substance: procedural bloat, duplicate memories, memories restating things already in source context,
-semantic routing errors during drain, and clunky `agent-memory` ↔ `agent-canon` skill integration. The
+semantic routing errors during drain, and clunky `memory` ↔ `canon` skill integration. The
 remedy sought is **reorganization and bug-fixing, not a redesign** — with mechanism maximized and inference
 reserved for where it is genuinely needed.
 
@@ -21,7 +21,7 @@ routing needs at drain time._
 
 ## Census — what is already established (do not re-derive; these are measured)
 
-`packages/agent-memory/src`, 4458 LOC across 18 modules. The relevant seam:
+`packages/memory/src`, 4458 LOC across 18 modules. The relevant seam:
 
 | fact                                                                                                  | source               |
 | ----------------------------------------------------------------------------------------------------- | -------------------- |
@@ -75,5 +75,5 @@ clunky, and repeating it here would reproduce the failure at one level up.
 
 ## Out of scope
 
-Cross-host / vault sync, the `agent-runtime` port boundary, and the harness session-id bridge. All are
+Cross-host / vault sync, the `runtime` port boundary, and the harness session-id bridge. All are
 adjacent and all are working; touching them widens this into the redesign the operator explicitly excluded.

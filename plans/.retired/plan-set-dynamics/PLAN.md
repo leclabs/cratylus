@@ -1,6 +1,6 @@
 # plan-set-dynamics
 
-**Status: COMPLETE — all shards landed; full agent-canon suite green (119 pass/1 skip); corpus self-sufficient (ALLOW_LIST → ∅).** Owner: session `555c4985` (mav).
+**Status: COMPLETE — all shards landed; full canon suite green (119 pass/1 skip); corpus self-sufficient (ALLOW_LIST → ∅).** Owner: session `555c4985` (mav).
 Design `DESIGN.md`; notation in praxis.ts (commit `62043c1`); mechanism `toolkit/plan-set.ts` (commit `a3ca226`). The plan-retirement residue is now formal — the last residual of the formal-block-self-sufficiency workstream is closed.
 This file mirrors runtime state (task-files in state folders); the folders are authority.
 

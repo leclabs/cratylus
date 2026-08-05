@@ -1,7 +1,7 @@
 # @cratylus/canon
 
-The **meaning** concern of [agent-factory](../../README.md) — the canonical corpus of discovered
-semantic addresses, authored as typed TypeScript.
+The **meaning** concern of [cratylus](../../README.md) — the canonical corpus of discovered
+optimal-signifiers, authored as typed TypeScript.
 
 The practice is [latent lexicography](../../VISION.md): describing the vocabulary a foundation model
 already holds, rather than authoring prose and hoping it lands. An agent or skill in this corpus is

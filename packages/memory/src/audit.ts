@@ -291,7 +291,7 @@ const AUDITED_FILES = ['SEMANTIC.md', 'PROCEDURAL.md'] as const;
 export interface AuditOptions {
   /** Reviewed exception pins — exact matched-marker texts to silence. */
   allowPins?: readonly string[];
-  /** Known repo keys (from `.agent-factory.config` and/or a keylist file). */
+  /** Known repo keys (from `.cratylus.config` and/or a keylist file). */
   repoKeys?: readonly string[];
   /** Byte watermark per store; defaults to {@link STORE_WATERMARK}. */
   watermark?: number;
@@ -351,11 +351,11 @@ export function loadLines(file: string): string[] {
 }
 
 /**
- * Derive repo keys from a `.agent-factory.config`: the containing repo's
+ * Derive repo keys from a `.cratylus.config`: the containing repo's
  * basename (§1: key = repo basename — the config marks its repo), plus a
  * forward-compatible `projects` field (string array or object keys) if the
  * schema ever carries one. Malformed JSON throws loudly — once present the
- * config is authoritative (docs/agent-factory-config-schema.md).
+ * config is authoritative (docs/cratylus-config-schema.md).
  */
 export function repoKeysFromConfig(configPath: string): string[] {
   const abs = resolve(configPath);

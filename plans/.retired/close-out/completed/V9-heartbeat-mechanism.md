@@ -8,14 +8,14 @@ two host adapters, and the sampling gate — under an **explicitly provisional**
 `heartbeat-organ` claims _"any shard that creates files would be coining by fiat."_ The census
 measured that claim and it is **too strong**. The name-gated surface is exactly three identifiers:
 
-| gated site                                                                         | why                            |
-| ---------------------------------------------------------------------------------- | ------------------------------ |
-| `packages/agent-runtime/src/loader.ts:33` — `CAPABILITIES = ['memory','eventTap']` | the dispatch word a user types |
-| `packages/agent-runtime/src/plugin.ts:30-36` — the `RuntimePlugin` port field      | the port anchor                |
-| `packages/agent-canon/src/skills/<name>/`                                          | the `/slash-command`           |
+| gated site                                                                   | why                            |
+| ---------------------------------------------------------------------------- | ------------------------------ |
+| `packages/runtime/src/loader.ts:33` — `CAPABILITIES = ['memory','eventTap']` | the dispatch word a user types |
+| `packages/runtime/src/plugin.ts:30-36` — the `RuntimePlugin` port field      | the port anchor                |
+| `packages/canon/src/skills/<name>/`                                          | the `/slash-command`           |
 
 Everything else — port shape, atomic drain, MCP push, async-generator tick, sampling threshold — is
-mechanism and carries no public anchor. Nothing outside `agent-runtime` imports it until the
+mechanism and carries no public anchor. Nothing outside `runtime` imports it until the
 capability is registered, so the eventual rename is a `git mv` plus an identifier sweep.
 
 Sequenced last because it is **net-new capability, not a defect**. Everything in waves 0 and 1 is
@@ -37,11 +37,11 @@ either shipping-broken or load-bearing for the memory work the operator named as
 
 - **Use a provisional module path and say so in the file header.** Do not name the capability, the
   port field, or a skill directory. Do not register it in `CAPABILITIES`.
-- **`heartbeat` is already taken in this codebase** — `packages/agent-runtime/src/ports/memory.ts:131,360,399`
+- **`heartbeat` is already taken in this codebase** — `packages/runtime/src/ports/memory.ts:131,360,399`
   uses it as a session-**lease** verb (`'register' | 'heartbeat' | 'release'`). That is sense #1
   (liveness) from the plan's own taxonomy. Adopting it for the pacemaker signal would put two
   concepts under one sign in one runtime. Flag it for the derivation; do not resolve it here.
-- `packages/agent-canon/src/dimensions/trigger/scheduled-trigger.ts:3` **already exists and is
+- `packages/canon/src/dimensions/trigger/scheduled-trigger.ts:3` **already exists and is
   selected by zero agents.** If it is the right dimension value, no coinage is owed — check before
   assuming a new one is needed.
 - The drain must be atomic under concurrent producers. The external prototype used rename→read→unlink
@@ -51,8 +51,8 @@ either shipping-broken or load-bearing for the memory work the operator named as
 
 ## Outputs
 
-`packages/agent-runtime/src/ports/<provisional>.ts` ·
-`packages/agent-runtime/src/capabilities/<provisional>/` · tests · **no** edit to `loader.ts` or
+`packages/runtime/src/ports/<provisional>.ts` ·
+`packages/runtime/src/capabilities/<provisional>/` · tests · **no** edit to `loader.ts` or
 `plugin.ts`
 
 ## Acceptance
@@ -64,8 +64,8 @@ either shipping-broken or load-bearing for the memory work the operator named as
 3. Two host adapters implement the port, each independently testable.
 4. The sampling gate is implemented as **sample, never clock** — a test asserts a pulse does not
    itself trigger consolidation when the pressure gate is below threshold.
-5. `grep -rn '<provisional>' packages/agent-forge packages/agent-canon` returns **nothing** — the
-   capability is unregistered and unreferenced outside `agent-runtime`, which is what keeps the
+5. `grep -rn '<provisional>' packages/forge packages/canon` returns **nothing** — the
+   capability is unregistered and unreferenced outside `runtime`, which is what keeps the
    rename cheap.
 6. Every file states in its header that its path is provisional and pending derivation.
 7. `pnpm test && pnpm typecheck` green.

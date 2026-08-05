@@ -1,6 +1,6 @@
 # @cratylus/runtime
 
-The **mechanism** concern of [agent-factory](../../README.md) — the per-host runtime contract leaf.
+The **mechanism** concern of [cratylus](../../README.md) — the per-host runtime contract leaf.
 
 A skill has two faces: what it _means_, which is canon's, and the programmatic thing it routes to,
 which is this package's. `runtime` is the generic platform beneath that second face, plus the

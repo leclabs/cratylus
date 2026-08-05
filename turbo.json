@@ -1,9 +1,27 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "tasks": {
+    // build — NOT CACHED, on the same reasoning `test` already carries.
+    //
+    // tsup emits CONTENT-HASHED chunks and relies on `clean: true` to remove the
+    // previous generation. A turbo cache HIT skips tsup entirely, so `clean`
+    // never runs and restored artifacts land on top of whatever generation was
+    // already on disk. The result is a dist that mixes two builds: a surviving
+    // `chunk-A.js` importing `./chunk-B.js` that the restore did not bring back.
+    //
+    // It failed as "Failed to load url ./chunk-XXXX.js" from vitest, on roughly
+    // one run in five, on identical input — the worst failure shape there is,
+    // because four green runs read as proof.
+    //
+    // Declaring narrower `outputs` does not fix it; the defect is that a hit
+    // SKIPS the cleaning step, not that the outputs are mis-declared. The build
+    // is ~4s. This repository already spent that argument on `test` and reached
+    // the same answer: correctness is worth the seconds in a project whose whole
+    // thesis is verification.
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**"]
+      "outputs": ["dist/**"],
+      "cache": false
     },
     "typecheck": {
       "dependsOn": ["^build"]

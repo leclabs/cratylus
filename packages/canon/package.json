@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/canon",
   "version": "0.0.0",
-  "description": "The canonical corpus of discovered semantic addresses — agents, skills, dimensions and rules as typed TS source. Markdown is a projection of these modules.",
+  "description": "The canonical corpus of discovered optimal-signifiers — agents, skills, dimensions and rules as typed TS source. Markdown is a projection of these modules.",
   "license": "MIT",
   "type": "module",
   "exports": {

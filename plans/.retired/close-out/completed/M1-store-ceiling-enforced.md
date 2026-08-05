@@ -15,14 +15,14 @@ about the incoming write.
 
 ## Inputs
 
-- `packages/agent-memory/src/audit.ts:69-74` — `STORE_WATERMARK`, its rationale, its calibration
-- `packages/agent-memory/src/audit.ts:225-233` — where `pressure` is computed
-- `packages/agent-memory/src/dream.ts:31-43` — `appendToHome`, the single landing site for all
+- `packages/memory/src/audit.ts:69-74` — `STORE_WATERMARK`, its rationale, its calibration
+- `packages/memory/src/audit.ts:225-233` — where `pressure` is computed
+- `packages/memory/src/dream.ts:31-43` — `appendToHome`, the single landing site for all
   prose-store growth, reached by `applyRoutes` (`dream.ts:204`) and thus by `apply` and `rollover`
-- `packages/agent-memory/src/cli.ts:875-930` — `runReplace` / `replaceGuarded`, the depalimpsest
+- `packages/memory/src/cli.ts:875-930` — `runReplace` / `replaceGuarded`, the depalimpsest
   write path
-- `packages/agent-memory/src/cli.ts:1082-1083` — the existing pressure readout
-- `packages/agent-memory/src/strategy.ts:430-435` — `consolidationOwed`, the existing consumer
+- `packages/memory/src/cli.ts:1082-1083` — the existing pressure readout
+- `packages/memory/src/strategy.ts:430-435` — `consolidationOwed`, the existing consumer
 - `plans/close-out/SPEC.md` §Decision 3 — the derivation of the number and the escape clause
 
 ## Constraints
@@ -54,14 +54,14 @@ about the incoming write.
   measured evidence (`scanLine` yields 0 markers across the 103 bloated lines).
 - Watermark stays injectable — `AuditOptions.watermark` (`audit.ts:208-209`) already exists; the
   enforcement sites must honour the same override so tests need no global mutation.
-- `pnpm --filter @leclabs/agent-memory test && pnpm typecheck` green.
+- `pnpm --filter @leclabs/memory test && pnpm typecheck` green.
 
 ## Outputs
 
-- `packages/agent-memory/src/audit.ts` — the constant + its rationale comment
-- `packages/agent-memory/src/dream.ts` — the append guard
-- `packages/agent-memory/src/cli.ts` — the replace guard + refusal text
-- `packages/agent-memory/test/` — the tests below
+- `packages/memory/src/audit.ts` — the constant + its rationale comment
+- `packages/memory/src/dream.ts` — the append guard
+- `packages/memory/src/cli.ts` — the replace guard + refusal text
+- `packages/memory/test/` — the tests below
 
 ## Acceptance
 
@@ -87,5 +87,5 @@ Each criterion states its pre-state behaviour. **(1) and (2) fail on the pre-sta
    `pressure`, so this must hold without editing that predicate. If it needs an edit, the guard was
    put in the wrong place.
 6. **No schema drift:** the diff touches no field of `EpisodicRecord` and adds no migration step.
-   Verifiable by `git diff -- packages/agent-memory/src/record.ts` being empty.
-7. `pnpm --filter @leclabs/agent-memory test && pnpm typecheck` green.
+   Verifiable by `git diff -- packages/memory/src/record.ts` being empty.
+7. `pnpm --filter @leclabs/memory test && pnpm typecheck` green.

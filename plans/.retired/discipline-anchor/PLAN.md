@@ -29,7 +29,7 @@ execution plan. Remit: nico.**
 
 **Name the type of work.** The project has a thesis, a canon, an engine, and seven skills — and no name
 for the discipline they constitute. Everything downstream is blocked on it or misnamed without it: the
-unified CLI brand (`install-parity` S4 / `agent-runtime` S9, both of which failed their negative control),
+unified CLI brand (`install-parity` S4 / `runtime` S9, both of which failed their negative control),
 the package split (`compiler-projector-split`), and arguably the repo's own name.
 
 Operator framing (2026-07-25): _"nail down the name of the type of work based on the core concept first —
@@ -96,7 +96,7 @@ candidate.
 
 ## Blocks
 
-`compiler-projector-split` (package names), the unified CLI brand (`install-parity` S4 / `agent-runtime`
+`compiler-projector-split` (package names), the unified CLI brand (`install-parity` S4 / `runtime`
 S9), and any future rename of the repo itself.
 
 ## Surfaced to the operator — RESOLVED 2026-07-25, this plan is unblocked

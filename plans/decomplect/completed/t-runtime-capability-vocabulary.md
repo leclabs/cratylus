@@ -8,12 +8,12 @@
 
 ## Intent
 
-Dissolve `agent-schema → agent-runtime` by naming the thing schema actually needs, which is a
+Dissolve `schema → runtime` by naming the thing schema actually needs, which is a
 **vocabulary**, not a shape — leaving `RuntimePlugin` and the ports where ARCHITECTURE puts them.
 
 ## What the census established
 
-`agent-schema/src/index.ts` takes exactly one type from the runtime:
+`schema/src/index.ts` takes exactly one type from the runtime:
 
 ```ts
 import type { RuntimePlugin } from '@cratylus/runtime';
@@ -28,14 +28,14 @@ derived structurally from the shape of an implementation interface.
 
 `RuntimePlugin` itself is typed over `MemoryStrategy` and `EventTapHost` — the runtime **ports**.
 Moving it into the shapes package drags the ports with it, and the ports are the whole of what
-ARCHITECTURE assigns to `agent-runtime`: _"Structured as **ports** (the abstraction) and
+ARCHITECTURE assigns to `runtime`: _"Structured as **ports** (the abstraction) and
 **strategies** (the interchangeable implementations)."_ Trading one ratcheted edge for a fused
 concern is not a repair.
 
 **The real defect is `shape ⊥ vocabulary`** — the identical defect `MODEL.md:22` already names for
 the lifecycle vocabulary:
 
-> `Event ≜ … ⟨corpus-owned ⟨a name for a moment ∴ signification⟩ ; shape ⊥ vocabulary : shape @ agent-schema · names @ corpus⟩`
+> `Event ≜ … ⟨corpus-owned ⟨a name for a moment ∴ signification⟩ ; shape ⊥ vocabulary : shape @ schema · names @ corpus⟩`
 
 A capability name is a name for a **faculty an agent may have**, and naming is signification. Under
 that parity the vocabulary is canon's, the shape stays where its ports are, and the edge dissolves by
@@ -44,7 +44,7 @@ collision.
 
 ## Constraints
 
-- `agent-canon` depends on `agent-schema`, never the reverse. **Schema cannot import canon's
+- `canon` depends on `schema`, never the reverse. **Schema cannot import canon's
   vocabulary.** Schema types the field against a bound; canon supplies the members. This is the
   pattern `DimensionName`/`catalog` already runs — reuse it, do not invent a second one.
 - **`ARCHITECTURE.md` and `MODEL.md` are ground.** If the ruling needs either to change, that is a
@@ -67,7 +67,7 @@ collision.
 
 ## Acceptance
 
-1. `grep -rn "agent-runtime" packages/schema/src/` returns **no import**. (Pre-state: one, at
+1. `grep -rn "runtime" packages/schema/src/` returns **no import**. (Pre-state: one, at
    `index.ts:35`. The control fails today.)
 2. `packages/canon/test/architecture.test.ts` carries **no** `schema → runtime` ratchet entry,
    and the suite is green — proving the pin was retired by repair and not by exemption.

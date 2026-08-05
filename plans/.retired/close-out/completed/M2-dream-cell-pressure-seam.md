@@ -17,15 +17,15 @@ agent meets a refusal it was told to expect rather than one it must discover.
 
 ## Inputs
 
-- `packages/agent-canon/src/skills/dream/skill.ts:25` — `gate : home → findings ⟨dream's exit
+- `packages/canon/src/skills/dream/skill.ts:25` — `gate : home → findings ⟨dream's exit
 condition⟩`, the wrong codomain
-- `packages/agent-canon/src/skills/dream/skill.ts:47` — `periodic : SEMANTIC ──depalimpsest──→ …`,
+- `packages/canon/src/skills/dream/skill.ts:47` — `periodic : SEMANTIC ──depalimpsest──→ …`,
   the unbound schedule
-- `packages/agent-canon/src/skills/dream/skill.ts:27` — `depalimpsest`, and its `replace` invocation
-- `packages/agent-memory/src/audit.ts:46-52` — `StorePressure`, and its doc: _"This is the quantity
+- `packages/canon/src/skills/dream/skill.ts:27` — `depalimpsest`, and its `replace` invocation
+- `packages/memory/src/audit.ts:46-52` — `StorePressure`, and its doc: _"This is the quantity
   the machinery was blind to… `depalimpsest` had no fireable trigger because nothing measured size"_
-- `packages/agent-memory/src/audit.ts:55-66` — `AuditReport`, the full codomain the cell must reflect
-- `packages/agent-memory/src/strategy.ts:419-435` — `consolidationOwed` and its three causes
+- `packages/memory/src/audit.ts:55-66` — `AuditReport`, the full codomain the cell must reflect
+- `packages/memory/src/strategy.ts:419-435` — `consolidationOwed` and its three causes
 - **M1's landed guard** — the exact refusal text and the two write-path predicates the cell must
   state
 - `plans/close-out/SPEC.md` §Decision 5 and §Decision 3b
@@ -55,11 +55,11 @@ condition⟩`, the wrong codomain
   Every symbol introduced (`pressure`, `ceiling`) must be declared above the laws, in the
   declarations region, per the composer conventions.
 - **M3's gate must be green before and after.** It exists precisely to judge this edit.
-- `pnpm --filter @leclabs/agent-canon test` after editing, per V3's constraint.
+- `pnpm --filter @leclabs/canon test` after editing, per V3's constraint.
 
 ## Outputs
 
-- `packages/agent-canon/src/skills/dream/skill.ts`
+- `packages/canon/src/skills/dream/skill.ts`
 - Whatever canon test/fixture updates the cell edit forces
 
 ## Acceptance
@@ -81,7 +81,7 @@ condition⟩`, the wrong codomain
 5. **Routing laws unchanged:** `git diff` shows `skill.ts:36-42` untouched apart from any
    `promotion-is-move` sharpening explicitly permitted above.
 6. **M3's gate passes on the edited cell**, and the canon suite is green:
-   `pnpm --filter @leclabs/agent-canon test`.
+   `pnpm --filter @leclabs/canon test`.
 7. **Worked example, in the shard's return:** a store at 7 900 B receiving a 300 B append — trace
    what the cell now tells the agent to do, and confirm it matches what M1's code actually does.
    A divergence here means the seam is still open, in the other direction.

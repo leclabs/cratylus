@@ -16,7 +16,7 @@ split is deliberate and load-bearing:
 - **A package name is free.** All seven packages are `0.0.0` and every one 404s on the registry, so
   renaming them costs nothing and is fully reversible.
 - **A bin name is a migration.** Deployed skill shims on hosts already invoke
-  `agent-runtime <capability>`. Flipping the literal strands every deployed shim until a redeploy
+  `runtime <capability>`. Flipping the literal strands every deployed shim until a redeploy
   reaches that host — and the fleet is seven hosts, not one.
 - **Attribution.** Renaming packages and bins in one commit makes a host-side failure
   unattributable: a shim that breaks after a 500-file rename could be the scope move or the bin move,
@@ -24,12 +24,12 @@ split is deliberate and load-bearing:
 
 ## What moves
 
-| site                            | now             | after                          |
-| ------------------------------- | --------------- | ------------------------------ |
-| `runtime/src/bin-name.ts`       | `agent-runtime` | ⊥ — **not yet derived**        |
-| `invoke/package.json` `bin` key | `agent-runtime` | same value, by test obligation |
-| `forge/package.json` `bin` key  | `agent-forge`   | ⊥ — **not yet derived**        |
-| root `package.json` `canon:*`   | `agent-forge …` | follows forge's bin            |
+| site                            | now       | after                          |
+| ------------------------------- | --------- | ------------------------------ |
+| `runtime/src/bin-name.ts`       | `runtime` | ⊥ — **not yet derived**        |
+| `invoke/package.json` `bin` key | `runtime` | same value, by test obligation |
+| `forge/package.json` `bin` key  | `forge`   | ⊥ — **not yet derived**        |
+| root `package.json` `canon:*`   | `forge …` | follows forge's bin            |
 
 ## The naming is NOT settled — do not assume it
 
@@ -62,18 +62,18 @@ Open questions the derivation must answer, not assume:
 - Both bin names derived by the full round-trip, or explicitly returned `⊥` with the placeholder
   restated and this shard left open. `⊥ IS A RESULT`.
 - `pnpm canon:project && pnpm canon:project:codex` re-baselined **in the same commit**, both targets,
-  render dirs removed first (`agent-forge project` does not clean — see
+  render dirs removed first (`cratylus project` does not clean — see
   `pending/project-never-cleans-its-out-dir.md`).
 - `pnpm canon:deploy` run, and the deployed shims on every host verified to invoke the new name.
   **The redeploy is part of this shard, not a follow-up.**
-- No site left interpolating the old literal: `grep -rn 'agent-runtime\|agent-forge'` returns only
+- No site left interpolating the old literal: `grep -rn 'runtime\|forge'` returns only
   history under `plans/`.
 
 ---
 
 ## Resolution — landed 2026-08-05
 
-**`agent-forge` → `cratylus` · `agent-runtime` → `cratylus-run`.** Two bins, not one.
+**`forge` → `cratylus` · `runtime` → `cratylus-run`.** Two bins, not one.
 
 ### The topology question, answered against this shard's own guess
 
@@ -115,7 +115,7 @@ tolerable, since `invoke` **is** the run-time entry, but it is an imprecision.
 template-derived from `RUNTIME_BIN` and moved **without being edited** — exactly what `bin-name.ts`
 was built to buy.
 
-**One second home did surface**, and it is a real gap: a `${MEMORY_BIN:-agent-runtime}` fallback in
+**One second home did surface**, and it is a real gap: a `${MEMORY_BIN:-runtime}` fallback in
 `toolkit/guardrail/memory-consolidation-nudge.sh`. `bin-name-single-home.test.ts` could not see it
 because that gate asserts on **TypeScript source** and this was a `.sh`. The gate's coverage stops at
 the language boundary — and emitted artifacts are exactly where a missed rename fails on a host
@@ -126,21 +126,21 @@ rather than at build. Filed as `pending/bin-name-gate-stops-at-the-language-boun
 `f60e936a…` → `0ac8e09fbbd40077f246d4774da60789cc8b3dbd`. This is the first re-baseline the
 `pnpm oracle` gate has ever produced rather than a human remembering to run `shasum` — it failed the
 build, printed both hashes, and pointed at `oracle:update`. The renders now contain **zero**
-occurrences of `agent-runtime` or `agent-forge`.
+occurrences of `runtime` or `forge`.
 
 ### NOT DONE — the operator's fleet steps, in this order
 
-The deployed shims on every host still invoke `agent-runtime` and will break the moment they are
+The deployed shims on every host still invoke `runtime` and will break the moment they are
 redeployed against a host that lacks the new bin. Sequence matters:
 
 1. **On any host with an event-tap installed, uninstall it with the OLD binary first**:
-   `agent-runtime tap uninstall`. `TAP_ID` is persisted into `settings.json`, so a flip without this
+   `cratylus-run tap uninstall`. `TAP_ID` is persisted into `settings.json`, so a flip without this
    orphans the entry — `uninstall` would search for an id `install` no longer writes. Verified zero
    exposure on `fire`; **`coal` was unreachable and is unchecked.**
    No legacy-id compatibility shim was added: permanent baggage for a never-published tool is a
    second home for a retired name, which is the defect this repository exists to remove.
 2. Install the new bins globally, then `pnpm canon:deploy` to rewrite the shims.
-3. `~/.agent-runtime.json`, if any host has one, becomes `~/.cratylus-run.json`. None on `fire`.
+3. `~/.runtime.json`, if any host has one, becomes `~/.cratylus-run.json`. None on `fire`.
 
 ## Acceptance
 

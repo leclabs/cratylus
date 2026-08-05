@@ -7,12 +7,12 @@ if it is. Do not assume either answer.
 
 ## The finding
 
-`runProject` (`packages/agent-forge/src/cli/commands/project.ts:42`) does
+`runProject` (`packages/forge/src/cli/commands/project.ts:42`) does
 `const plugins = config.extends as readonly ProjectablePlugin[]` — it **casts the raw `extends`
 list** and hands directories to `projectPluginSet`, which re-scans them from disk.
 
-Meanwhile `resolve()` → `ResolvedAgentSet` (`packages/agent-forge/src/resolve/resolve.ts`) is reached
-only through `composeFromFile` (`packages/agent-forge/src/config/loader.ts:147`), whose only
+Meanwhile `resolve()` → `ResolvedAgentSet` (`packages/forge/src/resolve/resolve.ts`) is reached
+only through `composeFromFile` (`packages/forge/src/config/loader.ts:147`), whose only
 consumers are `cli/commands/compose.ts` (which prints, and writes nothing under `--dry-run`) and
 `cli/commands/explain.ts`.
 
@@ -32,7 +32,7 @@ paths agree and the defect is duplication, not incorrectness.
 
 ## Inputs
 
-`packages/agent-forge/src/cli/commands/project.ts` · `.../resolve/resolve.ts` · `.../config/loader.ts` ·
+`packages/forge/src/cli/commands/project.ts` · `.../resolve/resolve.ts` · `.../config/loader.ts` ·
 `.../project/index.ts` (post-V7 — it now returns an artifact tree, which makes this comparison easy) ·
 `ENGINE.md:22` · `MODEL.md:23-27`
 
@@ -50,8 +50,8 @@ paths agree and the defect is duplication, not incorrectness.
 
 ## Outputs
 
-`packages/agent-forge/test/project/resolver-parity.test.ts` (always) ·
-`packages/agent-forge/src/cli/commands/project.ts` and `.../project/index.ts` (only if they diverge) ·
+`packages/forge/test/project/resolver-parity.test.ts` (always) ·
+`packages/forge/src/cli/commands/project.ts` and `.../project/index.ts` (only if they diverge) ·
 a finding recorded in the shard's return
 
 ## Acceptance

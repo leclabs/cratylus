@@ -7,10 +7,10 @@ so co-located companions ride along. Today the copy is flat (top-level files onl
 
 ## Static inputs (pinned, path:line from census a013fad)
 
-- `packages/agent-forge/src/deploy/local.ts:90-138` — `placeSkillsLocal`; flat copy at `:120-127` (`readdirSync` → `statSync(...).isFile()` filter → `copyFileSync` top-level only).
-- `packages/agent-forge/src/deploy/ssh.ts` — `placeSkillsSsh` (the remote analog; make it recurse too).
-- `packages/agent-forge/src/deploy/types.ts:10-22` — `RenderTree`/`skillsDir`/`companions` contract.
-- `packages/agent-forge/src/deploy/deploy.ts:71-82` — `treeNames('skill')` enumerates dirs containing `SKILL.md` (already dir-granular; unaffected).
+- `packages/forge/src/deploy/local.ts:90-138` — `placeSkillsLocal`; flat copy at `:120-127` (`readdirSync` → `statSync(...).isFile()` filter → `copyFileSync` top-level only).
+- `packages/forge/src/deploy/ssh.ts` — `placeSkillsSsh` (the remote analog; make it recurse too).
+- `packages/forge/src/deploy/types.ts:10-22` — `RenderTree`/`skillsDir`/`companions` contract.
+- `packages/forge/src/deploy/deploy.ts:71-82` — `treeNames('skill')` enumerates dirs containing `SKILL.md` (already dir-granular; unaffected).
 
 ## Constraints
 

@@ -10,23 +10,23 @@ designed. Designing against an unreproduced symptom is how the current implement
 
 ## The claimed defects
 
-| #   | claim                                                   | where it would live                            |
-| --- | ------------------------------------------------------- | ---------------------------------------------- |
-| D1  | `PROCEDURAL` bloat                                      | admission at apply; no compaction              |
-| D2  | Duplicate memories                                      | no dedup key; nothing to dedup _on_            |
-| D3  | Memories restating what is already in source context    | no admission test vs projected SOUL/skills     |
-| D4  | Semantic routing errors at drain                        | 100% deferred inference over free-form prose   |
-| D5  | Clunky `agent-memory` ↔ `agent-canon` skill integration | the shim/skill seam; `dream`/`wake` skill defs |
+| #   | claim                                                | where it would live                            |
+| --- | ---------------------------------------------------- | ---------------------------------------------- |
+| D1  | `PROCEDURAL` bloat                                   | admission at apply; no compaction              |
+| D2  | Duplicate memories                                   | no dedup key; nothing to dedup _on_            |
+| D3  | Memories restating what is already in source context | no admission test vs projected SOUL/skills     |
+| D4  | Semantic routing errors at drain                     | 100% deferred inference over free-form prose   |
+| D5  | Clunky `memory` ↔ `canon` skill integration          | the shim/skill seam; `dream`/`wake` skill defs |
 
 ## Inputs
 
-- `packages/agent-memory/src/` — all 18 modules; `route.ts`, `record.ts`, `fold.ts`, `audit.ts`, `store.ts`
+- `packages/memory/src/` — all 18 modules; `route.ts`, `record.ts`, `fold.ts`, `audit.ts`, `store.ts`
   are the load-bearing ones
-- `packages/agent-canon/src/skills/{dream,wake,handoff}/skill.ts` — the consumer side of the seam
+- `packages/canon/src/skills/{dream,wake,handoff}/skill.ts` — the consumer side of the seam
 - **Live store contents** — the real corpus, which is the only honest test data:
-  `agent-runtime memory home --name mav` (also `nico`) resolves the home; read `SEMANTIC.md`,
+  `cratylus-run memory home --name mav` (also `nico`) resolves the home; read `SEMANTIC.md`,
   `PROCEDURAL.md`, and the raw episodic log
-- `packages/agent-memory/src/audit.ts` — there is already an audit surface; find out what it measures and
+- `packages/memory/src/audit.ts` — there is already an audit surface; find out what it measures and
   whether it already convicts any of D1–D4. **Run it before writing new tooling.**
 
 ## Method
@@ -72,7 +72,6 @@ the true defect count and their dependency structure.
 
 **Falsifier (this must fail on the pre-state):** today `R2-findings.md` does not exist and no defect has a
 verdict, so acceptance fails on every criterion. If it would pass before the work, it is mis-specified.
-
 
 ---
 

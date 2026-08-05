@@ -12,7 +12,7 @@ contract**_ — and a census on 2026-08-05 says the binary is the wrong question
 
 ## What the census established
 
-`agent-forge/src/resolve/plugin.ts` declares `AgentPlugin` with seven fields, and they fall into two
+`forge/src/resolve/plugin.ts` declares `AgentPlugin` with seven fields, and they fall into two
 disjoint groups:
 
 | field                                 | what it is                                   | whose concern   |
@@ -32,7 +32,7 @@ is allowed to own and nothing else.
 
 **So `AgentPlugin` is a palimpsest of the same species as `anatomy`**: one sign over two concepts,
 and the reason the ownership question has no answer is that it is posed about a sign, not a concept.
-The last property-2 breach — `agent-canon/src/index.ts:23` importing `defineAgentPlugin` from
+The last property-2 breach — `canon/src/index.ts:23` importing `defineAgentPlugin` from
 `@cratylus/forge/resolve` — is that palimpsest's cost: canon's ROOT must reach the projector to
 declare things that are canon's own.
 

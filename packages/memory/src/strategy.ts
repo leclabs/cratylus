@@ -62,6 +62,7 @@ import {
   type NodeConfig,
   canonical,
   loadNodeConfig,
+  resolveConfigPath,
   resolveNode,
   underOrEqual,
 } from './node.js';
@@ -124,15 +125,9 @@ export class AgentMemory implements MemoryStrategy {
     );
   }
 
-  /** `--config` > `$AGENT_FACTORY_CONFIG` > a cwd-present `.agent-factory.config` > none. */
+  /** Delegates to the one home in `node.ts`; see `resolveConfigPath`. */
   private configPath(override?: string): string | undefined {
-    return (
-      override ??
-      process.env.AGENT_FACTORY_CONFIG ??
-      (existsSync('.agent-factory.config')
-        ? '.agent-factory.config'
-        : undefined)
-    );
+    return resolveConfigPath(override);
   }
 
   private nodeConfig(override?: string): NodeConfig {

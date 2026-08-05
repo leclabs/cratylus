@@ -13,7 +13,7 @@ beforeEach(() => {
   root = realpathSync(mkdtempSync(join(tmpdir(), 'memory-strategy-')));
   home = join(root, 'agent-home');
   mkdirSync(home, { recursive: true });
-  vi.stubEnv('AGENT_FACTORY_CONFIG', '');
+  vi.stubEnv('CRATYLUS_CONFIG', '');
   vi.stubEnv('AGENT_SESSION_ID', 'strategy-test-sess');
 });
 

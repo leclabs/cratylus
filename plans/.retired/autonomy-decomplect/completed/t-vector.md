@@ -10,11 +10,11 @@ not merely that it typechecks.
 
 ## Static inputs
 
-- `packages/agent-canon/src/agents/nico.ts`
-- `packages/agent-canon/src/agents/mav.ts`
-- `packages/agent-canon/src/dimensions/actions/code-execution.ts`
-- `packages/agent-canon/src/dimensions/self-evaluation/executable-test-oracle.ts`
-- `packages/agent-canon/src/dimensions/self-evaluation/acceptance-criteria-check.ts`
+- `packages/canon/src/agents/nico.ts`
+- `packages/canon/src/agents/mav.ts`
+- `packages/canon/src/dimensions/actions/code-execution.ts`
+- `packages/canon/src/dimensions/self-evaluation/executable-test-oracle.ts`
+- `packages/canon/src/dimensions/self-evaluation/acceptance-criteria-check.ts`
 - git range `3487361..HEAD` on the two agent files
 
 ## Constraints
@@ -23,7 +23,7 @@ not merely that it typechecks.
   at a **terminus** (the discriminating context) — not only analytically.
 - `code-execution` and `executable-test-oracle` were asserted correct without cold verification this
   session; verify or retract each. `nico` is an ontologist, not the builder — confirm exec-oracle/​
-  code-execution fit *that* archetype rather than importing mav's shape.
+  code-execution fit _that_ archetype rather than importing mav's shape.
 - Do not change the pole (`principalSelf`) — it is the settled foundation.
 
 ## Dependencies
@@ -56,13 +56,13 @@ question was the two values asserted-correct-without-cold-verification:
 own hands": the ontologist archetype spontaneously entails touching the
 measurement apparatus directly — probe the model with exact signs, read raw
 output, run tight differential loops, execute compositions, write/modify the
-projection system. Through-line: *every delegation inserts a foreign prior at the
-reading seam → the work stops being empirical and becomes hearsay.* Archetype-
+projection system. Through-line: _every delegation inserts a foreign prior at the
+reading seam → the work stops being empirical and becomes hearsay._ Archetype-
 entailed, not imported from mav.
 
 **`executable-test-oracle` (nico.selfEvaluation) — HOLDS.** Read C at the terminus
 "how do you check a proposed name is right": run tool-less, the archetype reports
-that introspective self-assessment *does not run* — "the check and the report of
+that introspective self-assessment _does not run_ — "the check and the report of
 the check are the same forward pass… indistinguishable from confident narration."
 This confirms executable-test-oracle is fit for nico **only realized as an external
 isolated process** (the cold-decode oracle: `claude -p` returning a verdict the

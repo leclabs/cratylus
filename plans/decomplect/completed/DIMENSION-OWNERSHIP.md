@@ -6,7 +6,7 @@
 
 > **LANDED** `29f1185` · `045485d` · `b903c75` · `fb944d2`. The completion criterion below was met:
 > a `tempo` dimension was added to canon's `ANATOMY`, given one value module, composed into `nico`,
-> and projected — **0 files touched in `agent-forge`** — appearing as `## Tempo` with its body in
+> and projected — **0 files touched in `forge`** — appearing as `## Tempo` with its body in
 > BOTH the claude SOUL and the codex TOML. Reverted; render hash returned to
 > `9055e88b6c4679e44fb5ccb73371b9d539d1d6a8`, byte-identical throughout all four steps.
 >
@@ -29,7 +29,7 @@
 `DIMENSION_FIELD` and the `Agent` fields all derive from it, and `guardrails`' non-nullability is
 `required: true` catalog data rather than a hand-written exception. Four hand-kept copies are gone.
 
-**What remains is ownership.** That source still lives in `agent-forge`, so a corpus cannot discover
+**What remains is ownership.** That source still lives in `forge`, so a corpus cannot discover
 a dimension without editing the projector — the thesis inverted at its most load-bearing point.
 
 ## The seam
@@ -85,11 +85,11 @@ branches on a dimension's identity. That is why this refactor is tractable.
 
 ## The blast radius, counted
 
-|                                                      | count | nature                                |
-| ---------------------------------------------------- | ----- | ------------------------------------- |
-| forge files naming `Dimension`                       | 10    | the design work, itemised below       |
-| canon files importing `@leclabs/agent-forge/anatomy` | 178   | mechanical import rewrite, one script |
-| new canon modules                                    | 1     | `src/anatomy.ts`                      |
+|                                                | count | nature                                |
+| ---------------------------------------------- | ----- | ------------------------------------- |
+| forge files naming `Dimension`                 | 10    | the design work, itemised below       |
+| canon files importing `@leclabs/forge/anatomy` | 178   | mechanical import rewrite, one script |
+| new canon modules                              | 1     | `src/anatomy.ts`                      |
 
 The 178 is the intimidating number and the easy half.
 
@@ -129,11 +129,11 @@ two catalogs would ship the inversion again one layer up.
    _can_ be told. Suite green, renders byte-identical.
 3. **Add `anatomy` to `AgentPlugin`** + the merge-and-log resolution. `projectPluginSet` resolves it
    and threads it. Canon does not supply one yet, so the default still wins. Renders byte-identical.
-4. **Move the catalog.** Create `packages/agent-canon/src/anatomy.ts`: the `ANATOMY` const plus its
+4. **Move the catalog.** Create `packages/canon/src/anatomy.ts`: the `ANATOMY` const plus its
    derived `Dimension`, `Agent`, `Value<D>` and the 22 aliases. Canon's plugin declares it. Delete
    `ANATOMY`/`DIMENSION_NAMES` from forge — **delete, never deprecate**; a surviving default is a
    second home and the drift starts the day it is left behind.
-5. **Rewrite the 178 imports.** `@leclabs/agent-forge/anatomy` → canon's `src/anatomy.js` for the
+5. **Rewrite the 178 imports.** `@leclabs/forge/anatomy` → canon's `src/anatomy.js` for the
    type-only dimension imports. Scripted, then `tsc`. Forge's own exports (`Enforcing`, `Skill`,
    `HookCell`, …) stay where they are — rewrite only what the new module owns.
 6. **Prove it empirically** (below).
@@ -145,7 +145,7 @@ output masking the half that does not.
 ## Completion criterion — empirical, not a green suite
 
 Add a throwaway dimension to canon's `ANATOMY`, give it one value module and compose it into one
-agent, then project **with zero edits to `agent-forge`**. The dimension must appear as a `##` section
+agent, then project **with zero edits to `forge`**. The dimension must appear as a `##` section
 in both the claude SOUL and the codex `developer_instructions`. Then remove it and confirm both
 renders return byte-identical.
 

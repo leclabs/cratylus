@@ -61,7 +61,7 @@ function fileAnchor(path: string): string {
 
 /**
  * The first string-valued export of a module — the DEPLOYED payload, as distinct
- * from the file's source text. Comments may name agent-factory-local paths freely
+ * from the file's source text. Comments may name cratylus-local paths freely
  * (they never ship); only the exported value crosses into a consumer.
  */
 async function firstExportString(abs: string): Promise<string | null> {
@@ -262,12 +262,12 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   });
 
   // SCOPE FLOOR, consumer register. The scaffold template's output is a CONSUMER's
-  // `<target>/AGENTS.md` — agent-factory's tree is not in context there, so a
+  // `<target>/AGENTS.md` — cratylus's tree is not in context there, so a
   // `packages/…` path or a VISION/MODEL/ENGINE/CANON reference resolves to nothing.
   // Same seam as the intrinsic carry, one register over; it shipped `(packages/
   // canon)` into every scaffolded project until this leg existed. Naming the
   // upstream catalog is fine — it is provenance, not a path claim.
-  it('the consumer scaffold template names no agent-factory-local path', async () => {
+  it('the consumer scaffold template names no cratylus-local path', async () => {
     const { anatomyProjectTemplate } = await import(
       '../src/toolkit/project-template.js'
     );
@@ -285,7 +285,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     const leaked = local.filter((d) => emitted.includes(d));
     expect(
       leaked,
-      `consumer scaffold references agent-factory-local artifact(s) — they do not exist in the target repo: ${leaked.join(', ')}`,
+      `consumer scaffold references cratylus-local artifact(s) — they do not exist in the target repo: ${leaked.join(', ')}`,
     ).toEqual([]);
     // non-vacuous: the predicate convicts the string that actually shipped
     expect(
@@ -296,12 +296,12 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   });
 
   // SCOPE FLOOR, projected-cell register. Dimension values and skill formalBlocks
-  // deploy into a CONSUMER's `.claude/`, where agent-factory's tree is absent. Clean
+  // deploy into a CONSUMER's `.claude/`, where cratylus's tree is absent. Clean
   // today — this leg keeps it that way, since nothing else in the suite would notice
   // a `packages/…` path or a VISION/MODEL reference entering a cell. Completes the
   // seam: intrinsic carry · consumer scaffold · projected cells all gated; only
-  // `rules/repo-preamble.ts` (agent-factory-local, ρ=human) may name them.
-  it('no projected cell names an agent-factory-local path', async () => {
+  // `rules/repo-preamble.ts` (cratylus-local, ρ=human) may name them.
+  it('no projected cell names an cratylus-local path', async () => {
     const local = [
       'packages/',
       'VISION.md',
@@ -329,7 +329,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     expect(checked).toBeGreaterThan(20); // non-vacuous: cells were actually read
     expect(
       leaked,
-      `projected cell(s) name an agent-factory-local artifact — absent in a consumer repo: ${leaked.join(', ')}`,
+      `projected cell(s) name an cratylus-local artifact — absent in a consumer repo: ${leaked.join(', ')}`,
     ).toEqual([]);
   });
 

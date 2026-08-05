@@ -1,18 +1,18 @@
-# T3 — mechanism (ABSORBED into `agent-runtime/S5` · was pending · wave 1 · deps T1)
+# T3 — mechanism (ABSORBED into `runtime/S5` · was pending · wave 1 · deps T1)
 
-> **⛔ ABSORBED-BY `agent-runtime/S5` (event-tap-capability) — do NOT execute as-is.**
-> The `event-tap.sh` mechanism + passive logger specified below are absorbed into the `agent-runtime`
+> **⛔ ABSORBED-BY `runtime/S5` (event-tap-capability) — do NOT execute as-is.**
+> The `event-tap.sh` mechanism + passive logger specified below are absorbed into the `runtime`
 > runtime-plugin architecture: event-tap becomes a **`RuntimePlugin` implementing the `EventTapHost`
 > port**, with the claude settings.json realization as a **capability impl**, invoked
-> `agent-runtime tap <verb>`. The non-interference contract + install/inspect/uninstall/status behavior
+> `cratylus-run tap <verb>`. The non-interference contract + install/inspect/uninstall/status behavior
 > below are the substance S5 realizes — carry them forward as the S5 capability spec, not as a standalone
-> canon `.sh`. See `plans/agent-runtime/SUPERSESSION.md`. Historical spec follows.
+> canon `.sh`. See `plans/runtime/SUPERSESSION.md`. Historical spec follows.
 
 ---
 
 ## Objective
 
-Build the companion tool `packages/agent-canon/src/toolkit/event-tap/event-tap.sh`
+Build the companion tool `packages/canon/src/toolkit/event-tap/event-tap.sh`
 (`install|inspect|uninstall|status`) and the **passive logger** it installs at runtime, plus a
 hermetic falsifier test proving the logger **cannot block**.
 
@@ -23,10 +23,10 @@ hermetic falsifier test proving the logger **cannot block**.
 ## Static inputs (pinned)
 
 - `.scratchpad/tap-skill-draft.md` (§2 mechanism contract) — the interface + flags.
-- `packages/agent-canon/src/toolkit/guardrail/stance-guardrail.sh` — the exemplar for the
+- `packages/canon/src/toolkit/guardrail/stance-guardrail.sh` — the exemplar for the
   `settings.json` `{hooks}` merge + the surgical group teardown (the exact pattern used for the T2b probe).
-- `packages/agent-canon/src/toolkit/continuity/continuity-hook.sh` — the `install|uninstall|status` shape.
-- `packages/agent-canon/test/memory-nudge.test.ts` — the vitest worker-test pattern (`execFileSync('sh', …)`, hermetic tmpdir, `it.runIf(hasJq)`); a passive worker asserts `expect(out).not.toContain('"decision"')` (L87).
+- `packages/canon/src/toolkit/continuity/continuity-hook.sh` — the `install|uninstall|status` shape.
+- `packages/canon/test/memory-nudge.test.ts` — the vitest worker-test pattern (`execFileSync('sh', …)`, hermetic tmpdir, `it.runIf(hasJq)`); a passive worker asserts `expect(out).not.toContain('"decision"')` (L87).
 
 ## Constraints
 
@@ -54,12 +54,11 @@ double-adds; OR the test is not hermetic (touches host settings/git). ACCEPTED w
 shows: logger-on-synthetic-event → empty stdout + exit 0 (prove-CANNOT-block, non-vacuous); install
 idempotent; uninstall → zero residue + settings restored; inspect round-trips a captured field.
 
-
 ---
 
 **DISPOSITION (mav, 2026-07-26) — ABSORBED, verified against code.**
 
-Landed as `agent-runtime`/S5: `packages/agent-runtime/src/capabilities/event-tap/` with
+Landed as `runtime`/S5: `packages/runtime/src/capabilities/event-tap/` with
 `EventTapHostClaude`. The absorption is real including the hard part — the non-interference
 falsifier survives (`test/event-tap.test.ts`, "prove-CANNOT-block": empty stdout, exit 0 on a
 synthetic event), plus byte-for-byte teardown, idempotence, foreign-key preservation, and a

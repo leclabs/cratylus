@@ -8,9 +8,9 @@ symbolic-σ\* regression suite: a mis-signified symbol fails the gate.
 
 ## Inputs (static)
 
-- `packages/agent-canon/src/skills/probe.ts` — `probe(w) ≜ ⟨fired_R(w) · concept_R(w)⟩`; the round-trip
+- `packages/canon/src/skills/probe.ts` — `probe(w) ≜ ⟨fired_R(w) · concept_R(w)⟩`; the round-trip
   primitive (`concept_R(w)` vs intended C). Now carries the U3 `coverage`/`crystallize` laws.
-- `packages/agent-canon/test/symbols.test.ts` — existing per-symbol scan; the natural host or sibling.
+- `packages/canon/test/symbols.test.ts` — existing per-symbol scan; the natural host or sibling.
 - `ENGINE.md`, `CANON.md` — the lifecycle docs where the success-gate is declared.
 - `.scratchpad/signify-review-jul-22/signify-symbolic-notation-verdict.md` §7.4 — the gate's rationale.
 
@@ -39,4 +39,4 @@ none (wave 0; independent of t1/t2).
    (Falsifier: a deliberately mis-signified symbol passes ⇒ gate is vacuous.)
 3. A correctly-signified reference symbol (e.g. `σ*`, `circ`) **passes**. (Falsifier: a known-good symbol
    fails ⇒ over-strict.)
-4. Existing `pnpm --filter @leclabs/agent-canon test` remains green.
+4. Existing `pnpm --filter @leclabs/canon test` remains green.

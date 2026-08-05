@@ -8,9 +8,9 @@ is the DIP contract the event-tap domain module (E2) codes against.
 
 ## Static inputs (pinned, path:line from census a013fad)
 
-- `packages/agent-forge/src/adapters/claude/write.ts:237-246` (`serializeClaudeHooksReport`), `:248-288` (`serializeClaudeHooks`, `canonicalToClaude` event mapping `turn.end→Stop`), `:126` (`mergeJsonKeys` — foreign-key-preserving settings merge).
-- `packages/agent-forge/src/adapters/registry/index.ts:25-31` (`REGISTRY={claude,codex}`, `adapterByName`).
-- `packages/agent-forge/src/core/adapter/types.ts:22-30,92-117` (`Adapter`/`AdapterCapabilities.hooks`).
+- `packages/forge/src/adapters/claude/write.ts:237-246` (`serializeClaudeHooksReport`), `:248-288` (`serializeClaudeHooks`, `canonicalToClaude` event mapping `turn.end→Stop`), `:126` (`mergeJsonKeys` — foreign-key-preserving settings merge).
+- `packages/forge/src/adapters/registry/index.ts:25-31` (`REGISTRY={claude,codex}`, `adapterByName`).
+- `packages/forge/src/core/adapter/types.ts:22-30,92-117` (`Adapter`/`AdapterCapabilities.hooks`).
 - Forge is **projection/deploy-time only today** — this port is net-new; do not entangle it with the projection `Adapter`.
 
 ## Constraints

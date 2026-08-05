@@ -9,13 +9,13 @@ acceptance-with-falsifier) rather than the terser `spec = ⟨static, scope, acce
 
 ## Static inputs
 
-- `packages/agent-canon/src/skills/praxis/skill.ts` — formalBlock L11 `spec : P → ⟨static, scope, accept⟩`,
+- `packages/canon/src/skills/praxis/skill.ts` — formalBlock L11 `spec : P → ⟨static, scope, accept⟩`,
   L14 `accept`, L15 `census : intent → ⟨scope, static, deps⟩`, L62 `∀ t : ∃ r : ¬accept(t)(r)`
   (the falsifier law); description L107 (the 6-field template, the shape to lift).
-- `packages/agent-canon/src/skills/create-skill/skill.ts` — the formal-block law: `block ≜ … no prose,
-  σ* density`; `self-sufficient(block) ⇔ every term defined in-cell`.
-- `packages/agent-canon/src/skills/formalize/skill.ts` — the prose→formal discipline this act follows.
-- `packages/agent-canon/test/projection-stability.test.ts` and any praxis-referencing test.
+- `packages/canon/src/skills/create-skill/skill.ts` — the formal-block law: `block ≜ … no prose,
+σ* density`; `self-sufficient(block) ⇔ every term defined in-cell`.
+- `packages/canon/src/skills/formalize/skill.ts` — the prose→formal discipline this act follows.
+- `packages/canon/test/projection-stability.test.ts` and any praxis-referencing test.
 
 ## Constraints
 
@@ -50,8 +50,8 @@ None. Independent of `autonomy-decomplect` (a different skill).
 
 - A cold reader given **only** the praxis formalBlock (not the description) reconstructs the 6-field
   shard-document shape, with acceptance identified as the falsifier-bearing `accept`.
-- `pnpm --filter @leclabs/agent-canon test` + `typecheck` green; the formal-block self-sufficiency and
+- `pnpm --filter @leclabs/canon test` + `typecheck` green; the formal-block self-sufficiency and
   SYMBOLS gates pass (no undeclared glyph, no prose in the block); `pnpm canon:project` clean.
 - **Falsifier:** the cold reader of the block alone yields only the 3-tuple or cannot name the six
-  fields; OR the block gains prose/comments; OR the block and description now specify *different* shard
+  fields; OR the block gains prose/comments; OR the block and description now specify _different_ shard
   shapes (divergence); OR a new glyph is undeclared. Any of these fails the shard.

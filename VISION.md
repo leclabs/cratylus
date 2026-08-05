@@ -2,7 +2,7 @@
 
 > **Author semantics once. Realize behavior everywhere.**
 
-Discover, validate, and canonize the semantic addresses already recognized by foundation models, then compose those addresses into reproducible specifications for agents, skills, and other runtime artifacts.
+Discover, validate, and canonize the optimal-signifiers already recognized by foundation models, then compose those anchors into reproducible specifications for agents, skills, and other runtime artifacts.
 
 The practice has a name: **latent lexicography** — the descriptive lexicography of a foundation
 model's latent vocabulary. **Cratylus** is its instrument, and this repository is that instrument's
@@ -17,13 +17,29 @@ As prompts and contexts evolve through iterative refinement, they accumulate amb
 
 Larger context windows, stronger reasoning models, memory, and auxiliary tooling may alleviate some of these symptoms, but they do not address the root cause: meaning is still conveyed by description, in a medium that admits misinterpretation.
 
-This project takes the opposite route - discovering and canonizing the semantic addresses a foundation model already recognizes, so intent is **addressed** rather than **described**.
+This project takes the opposite route - discovering and canonizing the optimal-signifiers a foundation model already recognizes, so intent is **addressed** rather than **described**.
 
 ## Thesis
 
-> **The semantic address for a concept within a foundation model's semantic space is the optimal signifier that most precisely invokes that concept.**
+> **For every concept a foundation model encodes, some signifier invokes it more precisely than any other. That signifier — its optimal-signifier, σ\* — is a fact about the model, so naming is discovery rather than invention.**
 
-Foundation models possess a latent semantic space built by encoding rich priors over semantic content, relational structure, and compositional rules. There must exist a signifier for every encoded concept that most precisely invokes that concept - it's optimal-signifier, or **semantic address**.
+Foundation models encode rich priors over semantic content, relational structure, and compositional rules. Precision is therefore not uniform across the signifiers that could name a concept: some carry accidental meaning the concept does not have, some fail to carry meaning it does. A minimum exists, and the discipline is finding it.
+
+<!-- ONE CONCEPT, ONE SIGN. This section carried `semantic address` and
+     `optimal-signifier` as two names for one thing — "it's optimal-signifier, or
+     semantic address" — and the thesis above then defined the first in terms of
+     the second, which read as a definition and was a tautology. Retired
+     2026-08-05 in favour of `optimal-signifier`, on three grounds: σ* already
+     spells it (σ = signifier, * = optimal), so there is no translation step;
+     `address` as a NOUN imports content-addressable-memory and network priors,
+     the same accidental mass that disqualified `semantic addressing` as a name
+     for the discipline; and the substitution made both sentences visibly
+     circular, which is the proof they were one concept.
+
+     `address` as a VERB stays. "Addressed rather than described" is the contrast
+     that carries the thesis, and a verb is not the noun. -->
+
+The word does real work in the other direction, though: to **address** a concept is to invoke it by the sign the model already binds, as against **describing** it and hoping the reconstruction lands. That contrast is the whole inversion, and it is why this project treats the model as a source of naming truth rather than as an audience for explanation.
 
 ### Core Concept: The Theoretical Ideal Optimal-Signifier
 
@@ -34,7 +50,7 @@ Foundation models possess a latent semantic space built by encoding rich priors 
 **Where:**
 
 - **σ** is a candidate signifier
-- **σ^\*(c)** is the optimal signifier for concept c
+- **σ^\*(c)** is the optimal-signifier for concept c
 - **μ** is the semantic distance metric — semantic mass, not count
 - **I(σ)** is the inferred concept from σ, i.e. σ's actual meaning-in-effect
 - **C(c)** is the target concept c
@@ -72,21 +88,32 @@ intent → discover → verify → canonize → compose → project → deploy �
 
 The runtime representation is compiled from the canon. It is not the primary artifact and does not define the underlying meaning.
 
-## Canonical Semantic Addresses
+## Anchors
 
-A canonical semantic address is the smallest optimal-signifier, or structured composition of optimal-signifiers, that reliably evokes an intended concept within the target foundation model's semantic space.
+σ\* is an ideal. What a canon actually holds is an **anchor**.
 
-An address is not canonical because it is elegant, memorable, or preferred by its author. It earns canonical status through evidence: it cold-decodes to the intended concept, preserves the required distinctions, composes without semantic collision, and remains stable across the models and runtimes for which it claims validity.
+The distinction is load-bearing and was previously lost. [`MODEL.md`](./MODEL.md) already carries it: a
+concept's body is `⟨α(c), residue(c)⟩` — the anchor α, plus whatever meaning the anchor does not
+already fire. **An anchor whose residue is ∅ _is_ σ\***. Every other anchor is an approximation with
+its shortfall stated, which is why the residual is recorded rather than explained away.
 
-Canonical does not necessarily mean universal. An address may be model-invariant across a broad population, or explicitly scoped to a model family, capability class, or runtime. Its scope is part of its specification and provenance.
+So an anchor is not canonical because it is elegant, memorable, or preferred by its author. It earns
+canonical status through evidence: it cold-decodes to the intended concept, preserves the required
+distinctions, composes without collision, and stays stable across the models and runtimes for which
+it claims validity.
 
-The objective is not simply brevity. It is semantic precision with minimal accidental meaning.
+Canonical does not mean universal. An anchor may hold across a broad model population or be scoped to
+a family, a capability class, or a runtime — and its scope is part of its specification, not a
+footnote to it.
+
+The objective is not brevity. It is precision with minimal accidental meaning, which is frequently
+_longer_ than the elegant alternative.
 
 ## Design Philosophy
 
 > **Context engineering should be centralized within the canon.**
 
-Semantic abstraction does not emerge automatically. Addresses and their boundaries must be discovered, tested, recorded, composed, versioned, and maintained.
+Semantic abstraction does not emerge automatically. Anchors and their boundaries must be discovered, tested, recorded, composed, versioned, and maintained.
 
 The canon concentrates that work so downstream consumers can increasingly declare intent instead of reimplementing its linguistic realization. As the canon matures, operators should require progressively less knowledge of prompting techniques, harnesses, frameworks, and runtime mechanics.
 
@@ -98,8 +125,8 @@ The project follows a disciplined lifecycle:
 
 1. **Discover** candidate signifiers already bound to the intended concept by model priors.
 2. **Verify** each candidate through cold decoding, contrastive tests, boundary tests, and cross-model evaluation.
-3. **Canonize** the validated address with its meaning, scope, provenance, constraints, and version.
-4. **Compose** addresses into higher-order semantic specifications without duplicating or obscuring their meanings.
+3. **Canonize** the validated anchor with its meaning, scope, provenance, constraints, and version.
+4. **Compose** anchors into higher-order semantic specifications without duplicating or obscuring their meanings.
 5. **Project** those specifications deterministically into runtime-specific artifacts.
 6. **Validate** that each projection preserves the canonical semantics under its declared target conditions.
 
@@ -143,7 +170,7 @@ This architecture is compatible with a **Cratylist** account of naming, drawn fr
 
 This is an engineering constraint, not a claim that all language has one objectively correct name. Within a declared model population, target concept, and validation method, naming is treated as a fact to investigate rather than a preference to settle.
 
-The constraint therefore reaches **every authored surface**, and it recognizes no privileged kind: prose, identifier, and path are one register, each carrying either an optimal signifier or a composition of them. An enumeration of the surfaces that qualify would be a bound on the discipline, and there is none — anything this project writes is subject to the same cold-verification.
+The constraint therefore reaches **every authored surface**, and it recognizes no privileged kind: prose, identifier, and path are one register, each carrying either an optimal-signifier or a composition of them. An enumeration of the surfaces that qualify would be a bound on the discipline, and there is none — anything this project writes is subject to the same cold-verification.
 
 Principles such as `cold-decode-oracle`, `llm-native`, and σ\* follow from this commitment: semantic bindings are tested against model priors before they are admitted to the canon.
 
@@ -155,10 +182,10 @@ This project does not seek to:
 - claim direct access to a model's internal representations;
 - replace foundation models with symbolic systems;
 - eliminate stochasticity from model execution;
-- assume that one address is universal across all models; or
+- assume that one anchor is universal across all models; or
 - create another general-purpose programming language.
 
-It seeks to discover, validate, canonize, and compose semantic addresses that foundation models already interpret consistently, then realize those semantics across deployment environments without making runtime prose the source of truth.
+It seeks to discover, validate, canonize, and compose optimal-signifiers that foundation models already interpret consistently, then realize those semantics across deployment environments without making runtime prose the source of truth.
 
 ## Relationship to the Model
 
@@ -166,6 +193,6 @@ This document explains **why** the project exists.
 
 [`MODEL.md`](./MODEL.md) defines **what** exists.
 
-[`ENGINE.md`](./ENGINE.md) defines **how** semantic addresses are discovered, validated, canonized, composed, projected, and deployed.
+[`ENGINE.md`](./ENGINE.md) defines **how** optimal-signifiers are discovered, validated, canonized, composed, projected, and deployed.
 
-[`CANON.md`](./CANON.md) is the canonical corpus itself: the validated library of semantic addresses and compositions.
+[`CANON.md`](./CANON.md) is the canonical corpus itself: the validated library of optimal-signifiers and compositions.

@@ -1,11 +1,11 @@
-# T5 — integrate-deploy (RE-CUT under `agent-runtime/S7`+`S10` · was pending · wave 2 · deps T2, T3, T4)
+# T5 — integrate-deploy (RE-CUT under `runtime/S7`+`S10` · was pending · wave 2 · deps T2, T3, T4)
 
-> **⛔ RE-CUT under `agent-runtime/S7` (deploy-runtime-install) + `agent-runtime/S10` (integrate-smoke) — do NOT execute as-is.**
-> Integration/deploy of event-tap now flows through the runtime host: `agent-runtime/S7` guarantees the
-> per-host `agent-runtime` + event-tap plugin install (dissolving the ship-the-`.sh` step), and
-> `agent-runtime/S10` runs the e2e smoke (project → deploy+install → deployed thin-shim invokes
-> `agent-runtime tap <verb>` on the host → verify). The clean-worktree gate + FLEET/push-reserved
-> discipline below carry forward to those slices. See `plans/agent-runtime/SUPERSESSION.md`. Historical
+> **⛔ RE-CUT under `runtime/S7` (deploy-runtime-install) + `runtime/S10` (integrate-smoke) — do NOT execute as-is.**
+> Integration/deploy of event-tap now flows through the runtime host: `runtime/S7` guarantees the
+> per-host `runtime` + event-tap plugin install (dissolving the ship-the-`.sh` step), and
+> `runtime/S10` runs the e2e smoke (project → deploy+install → deployed thin-shim invokes
+> `cratylus-run tap <verb>` on the host → verify). The clean-worktree gate + FLEET/push-reserved
+> discipline below carry forward to those slices. See `plans/runtime/SUPERSESSION.md`. Historical
 > spec follows.
 
 ---
@@ -23,10 +23,10 @@ deploy — LOCAL freely, FLEET + push **reserved** for Operator sign-off.
 
 ## Static inputs (pinned)
 
-- `packages/agent-canon/package.json` (`project`, `test`, `typecheck`) + root `package.json` (`canon:deploy`, `lint`, deploy script L22).
-- `packages/agent-forge/src/cli/commands/deploy.ts` — `deploy --kind skill … [--assets]`.
-- `.agent-factory.config` — the 7-host fleet topology (fire·forge·spark·ash·apps·upmav·upgoose).
-- `packages/agent-canon/test/memory-nudge.test.ts` — confirms the worker test rides `pnpm test`.
+- `packages/canon/package.json` (`project`, `test`, `typecheck`) + root `package.json` (`canon:deploy`, `lint`, deploy script L22).
+- `packages/forge/src/cli/commands/deploy.ts` — `deploy --kind skill … [--assets]`.
+- `.cratylus.config` — the 7-host fleet topology (fire·forge·spark·ash·apps·upmav·upgoose).
+- `packages/canon/test/memory-nudge.test.ts` — confirms the worker test rides `pnpm test`.
 
 ## Constraints
 
@@ -54,13 +54,12 @@ skill dir lacks `event-tap.sh`; OR fleet-deploy/push executed without the reserv
 deployment carries both files + a passing logger smoke, and FLEET+push are demonstrably STAGED-AND-HELD
 pending sign-off with an accurate dry-run reach.
 
-
 ---
 
 **DISPOSITION (mav, 2026-07-26) — ABSORBED, and its one hole is now closed.**
 
-The e2e smoke landed as `agent-runtime`/S10
-(`packages/agent-forge/test/deploy/integrate-smoke.test.ts`), hermetic, with fleet and push
+The e2e smoke landed as `runtime`/S10
+(`packages/forge/test/deploy/integrate-smoke.test.ts`), hermetic, with fleet and push
 reserved as this shard required.
 
 It carried one inherited hole: the tap leg invoked the runtime **binary directly** while the

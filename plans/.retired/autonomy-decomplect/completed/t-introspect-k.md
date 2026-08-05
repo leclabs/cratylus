@@ -6,11 +6,11 @@
 profile-projection · transient-elevation · composer-dropped · env-conditioned · unobservable). It cannot
 name the case that hid the pole inversion for a whole session: **the declared value is itself wrong** —
 rt conformed to def, and the def was the defect. Run during that failure, introspect would have flagged
-the *correct* behavior as the divergence. Add a member so introspect can name a def-level defect.
+the _correct_ behavior as the divergence. Add a member so introspect can name a def-level defect.
 
 ## Static inputs
 
-- `packages/agent-canon/src/skills/introspect/skill.ts` — `K ≜ { … }` (declarations block) and
+- `packages/canon/src/skills/introspect/skill.ts` — `K ≜ { … }` (declarations block) and
   `¬ edit(agent/<A>.md)` (the repair-forbidden law).
 - The session record where introspect misreported Autonomy (`div` with `why = transient-elevation`,
   when the truth was `def is wrong`).
@@ -23,7 +23,7 @@ the *correct* behavior as the divergence. Add a member so introspect can name a 
 - `introspect` still may not edit the SOUL (`¬ edit(agent/<A>.md)` stays) — but on a `def-defect` finding
   it must **route** to the repair path (signify → create-agent/deploy), not silently classify it as a
   configurational cause. Encode that routing.
-- Keep the block self-sufficient (no comments; the σ* carries it) per the canon's formal-block law.
+- Keep the block self-sufficient (no comments; the σ\* carries it) per the canon's formal-block law.
 
 ## Dependencies
 

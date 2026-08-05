@@ -8,11 +8,11 @@ cut 2026-07-26; see §Naming). Derive the package anchors at this altitude, wher
 
 ## Intent (operator hypothesis, 2026-07-25)
 
-> _"agent-forge seems to now represent a combination of a compiler and a projector — maybe two packages.
+> _"forge seems to now represent a combination of a compiler and a projector — maybe two packages.
 > The compiler's output is the IR which the projector receives and then projects via a selected harness
 > strategy (`HarnessAdapter`, e.g. claude code, codex) to the target harness artifacts."_
 
-The `depalimpsest-ir-intake` excision left `agent-forge` meaning **one** thing where it used to mean two —
+The `depalimpsest-ir-intake` excision left `forge` meaning **one** thing where it used to mean two —
 and in doing so exposed that the surviving thing is itself two concerns fused:
 
 | concern                 | character         | current home                                |
@@ -49,7 +49,7 @@ is "give the declared IR a package boundary."
 
 > **A prior draft of this plan asked "must the IR be materialized?" — that question was wrong**, and it
 > was wrong because **`IR` was overloaded in this corpus**: MODEL's composed structure vs the on-disk
-> `.agent-forge/` intake IR that `depalimpsest-ir-intake` deleted. Two concepts, one sign — a PARTITIONED
+> `.forge/` intake IR that `depalimpsest-ir-intake` deleted. Two concepts, one sign — a PARTITIONED
 > violation (`∀c: |home(c)| = 1`). The excision incidentally resolved it; only MODEL's sense survives, and
 > the `emit_ir.py` / `d532a5f` history is **irrelevant** here (that was the materialized intake sense).
 
@@ -86,11 +86,11 @@ Note the payoff scale is unchanged by any of this: there are **two** harness ada
 1. Is MODEL's single `IR` real in the code, or are `Agent` / `ResolvedSkill` / hooks three peers? This
    gates everything below — see "The question the census must actually answer".
 2. What would each package own — modules, exports, tests? Does the dependency edge stay acyclic?
-   (`agent-runtime` could not declare a capability package for exactly this reason; the cycle bit once.)
+   (`runtime` could not declare a capability package for exactly this reason; the cycle bit once.)
 3. Where is the composited instance whole in memory, if anywhere? `project/index.ts` + `resolve/`.
 4. What does `HarnessAdapter` (`core/harness-adapter.ts:38`) consume today, and would it consume an IR
    instead of an anatomy vector? That is the interface the split turns on.
-5. Cross-package blast radius: 197 of 205 imports are `@leclabs/agent-forge/anatomy`. A split changes
+5. Cross-package blast radius: 197 of 205 imports are `@leclabs/forge/anatomy`. A split changes
    package names in every one.
 
 ## Naming — deliberately deferred

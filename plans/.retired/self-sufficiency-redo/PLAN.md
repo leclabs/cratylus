@@ -15,7 +15,7 @@ load-bearing gate and it passed).** Merged/shipped per operator directive 2026-0
 - **Committed** `67d3546` (session `16302d75`): the remaining 11 drained skills (conceptualize + `D_R
 finite`→`⟨finite⟩` fix, create-agent, create-skill, dream, elicit, formalize, handoff, introspect,
   materialize, probe, signify) + the 2 gate rewrites (symbol-probe-gate, formal-block-self-sufficiency) +
-  test + probe-headerless. Path-scoped `--only` commit (shared checkout; Nico's staged agent-runtime build
+  test + probe-headerless. Path-scoped `--only` commit (shared checkout; Nico's staged runtime build
   left untouched).
 - **1 red (carried in the commit, documented)**: `reader-density` AC-RESIDUE — conceptualize block-L24 bare
   `MECE(C_R)` (predicate-application, no formal operator). A cold-verify-pass call:
@@ -66,7 +66,7 @@ For each comment in a block: **cold-decode the notation alone.**
 ## Baseline — start from the complete meaning, not the damaged current source
 
 For each block, the **reference of complete meaning** is the pre-drain original on `main`
-(`git show main:packages/agent-canon/src/skills/<name>.ts` — flat path; the corpus later moved to
+(`git show main:packages/canon/src/skills/<name>.ts` — flat path; the corpus later moved to
 `skills/<name>/skill.ts`). The redo reconstructs each block so that the union of {pre-drain meaning} ∪
 {legitimate post-drain notation additions: plan-set-dynamics on praxis, the `live` fix, etc.} is fully
 carried by notation with zero comments. This guarantees no meaning the last pass may have deleted stays lost.

@@ -1,4 +1,4 @@
-# `agent-cli` names the CLI and ships one of two — the sign is wrong
+# `invoke` names the CLI and ships one of two — the sign is wrong
 
 > Surfaced 2026-08-05 while correcting `ARCHITECTURE.md`, which described this package as _"Forge's
 > commands for someone who is not this repository"_. It has no forge dependency and never did.
@@ -7,13 +7,13 @@
 
 Three names disagree about one thing:
 
-| name                                  | what it is                                                       |
-| ------------------------------------- | ---------------------------------------------------------------- |
-| package `@cratylus/invoke`            | claims **the** CLI                                               |
-| its `bin` key `agent-runtime`         | claims to be the runtime                                         |
-| `@cratylus/forge`'s bin `agent-forge` | the **other** CLI, which the first name implicitly denies exists |
+| name                            | what it is                                                       |
+| ------------------------------- | ---------------------------------------------------------------- |
+| package `@cratylus/invoke`      | claims **the** CLI                                               |
+| its `bin` key `runtime`         | claims to be the runtime                                         |
+| `@cratylus/forge`'s bin `forge` | the **other** CLI, which the first name implicitly denies exists |
 
-A package named `agent-cli` that ships a bin named `agent-runtime` fails `α(cᵢ) = α(cⱼ) ⇒ D(cᵢ) = D(cⱼ)`
+A package named `invoke` that ships a bin named `runtime` fails `α(cᵢ) = α(cⱼ) ⇒ D(cᵢ) = D(cⱼ)`
 in both directions at once: one concept wearing two signs, and one sign (`cli`) reaching over a
 concept it does not cover.
 
@@ -27,7 +27,7 @@ copy of the bin name no TypeScript can compute.
 
 So the definiendum is something like _the package that composes the runtime with its bundled
 capability set and ships it as an installable command_. `cli` names the least specific thing about
-it, and the part it does name is the part it shares with `agent-forge`.
+it, and the part it does name is the part it shares with `forge`.
 
 ## Constraints
 
@@ -35,15 +35,15 @@ it, and the part it does name is the part it shares with `agent-forge`.
   installable entry" may be two things, and if they are, naming them as one is how the next
   palimpsest starts. `⊥ IS A RESULT`.
 - **The BIN name is load-bearing on hosts and the package name is not.** Deployed skill shims invoke
-  `agent-runtime <capability>`; `RUNTIME_BIN` is imported from `agent-runtime/bin-name` and asserted
-  against the manifest by `agent-canon/test/bin-name-single-home.test.ts`. Changing the bin name is a
+  `runtime <capability>`; `RUNTIME_BIN` is imported from `runtime/bin-name` and asserted
+  against the manifest by `canon/test/bin-name-single-home.test.ts`. Changing the bin name is a
   migration; changing the package name is a rename. **Do not conflate them** — they are separate
   decisions with different costs, and only the second is cheap today.
 - **Nothing is published.** All six packages are `0.0.0` and every one 404s on the registry, so this
   is fully reversible right now and will not be after the first publish. That is what makes this
   worth settling before MVP and not after.
 - Occupancy: `runtime`, `forge`, `canon`, `schema`, `memory` are all bound here. `cli` is bound by
-  this package and by `agent-forge`'s `src/cli/` directory — a collision that already exists.
+  this package and by `forge`'s `src/cli/` directory — a collision that already exists.
 
 ## Acceptance
 
@@ -58,7 +58,7 @@ it, and the part it does name is the part it shares with `agent-forge`.
 
 ## Resolution — landed 2026-08-05
 
-**`@leclabs/agent-cli` → `@cratylus/invoke`**, inside the scope rename that landed the `Cratylus`
+**`@leclabs/invoke` → `@cratylus/invoke`**, inside the scope rename that landed the `Cratylus`
 mark, exactly as this shard's second constraint required: answering it separately would have meant
 renaming twice.
 
@@ -99,7 +99,7 @@ different namespace, compound not bare token — but the proximity is real and i
 ### The bin did not move
 
 The shard's load-bearing distinction was honored: the package was **renamed**, the bin was **not
-migrated**. `agent-runtime` still ships from `@cratylus/invoke`, and `agent-forge` from
+migrated**. `runtime` still ships from `@cratylus/invoke`, and `forge` from
 `@cratylus/forge`. Both are now the last artifacts wearing the retired prefix — filed as
 `ready/t-bin-name-migration.md`, to move together, once, with a redeploy.
 

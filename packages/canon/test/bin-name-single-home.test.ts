@@ -81,7 +81,7 @@ beforeAll(async () => {
 
 describe('the bin name has exactly one home', () => {
   it('no consumer spells the name — only `bin-name.ts` declares it', () => {
-    // The defect shape this retires: a SECOND `const BIN = 'agent-runtime'`. The
+    // The defect shape this retires: a SECOND `const BIN = 'runtime'`. The
     // home declares it once; nobody else may write it as a string literal.
     const home = read('packages/runtime/src/bin-name.ts');
     const decl = home.match(

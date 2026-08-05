@@ -63,15 +63,15 @@ prefixed `stance-guardrail ≜ …` so `anchorOf` recovers the deployed path, dr
 `nico` + `mav`, delete the scope gate from the worker). It typechecks. What it BREAKS is the
 consumer sweep, which is the real work and was not in this shard's estimate:
 
-| site                                             | breakage                                                                                                                              |
-| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `agent-forge/src/catalog/index.ts:98`            | filters `typeof exported === 'string'` ⇒ SILENTLY DROPS an enforcing value from the catalog. The worst one: an omission, not a crash. |
-| `agent-canon/src/toolkit/project.ts:16`          | `fragmentToMarkdown(value: string)`                                                                                                   |
-| `agent-canon/test/reader-density.test.ts`        | `v.indexOf` on a value (several sites beyond `slugOf`)                                                                                |
-| `agent-canon/test/symbols.test.ts`               | `f.trim` on a value                                                                                                                   |
-| `agent-canon/test/projection-stability.test.ts`  | `text.split` on a value                                                                                                               |
-| `agent-canon/test/hook-rule-boundary.test.ts`    | asserts 4 harness hook cells; becomes 2 — a TAXONOMY update, not a string fix                                                         |
-| `agent-canon/test/stance-guardrail-dark.test.ts` | imports the deleted cell                                                                                                              |
+| site                                       | breakage                                                                                                                              |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `forge/src/catalog/index.ts:98`            | filters `typeof exported === 'string'` ⇒ SILENTLY DROPS an enforcing value from the catalog. The worst one: an omission, not a crash. |
+| `canon/src/toolkit/project.ts:16`          | `fragmentToMarkdown(value: string)`                                                                                                   |
+| `canon/test/reader-density.test.ts`        | `v.indexOf` on a value (several sites beyond `slugOf`)                                                                                |
+| `canon/test/symbols.test.ts`               | `f.trim` on a value                                                                                                                   |
+| `canon/test/projection-stability.test.ts`  | `text.split` on a value                                                                                                               |
+| `canon/test/hook-rule-boundary.test.ts`    | asserts 4 harness hook cells; becomes 2 — a TAXONOMY update, not a string fix                                                         |
+| `canon/test/stance-guardrail-dark.test.ts` | imports the deleted cell                                                                                                              |
 
 Every one is the same defect class as the `agentBody` `v as string` cast already fixed: a consumer
 assuming a dimension value is a string. The fix at each is `bodyOf`. Do the sweep FIRST, on the
@@ -184,10 +184,10 @@ carrying `events` plus its own realization.** That is the whole migration in one
 
 **Static inputs (pinned, verified present at authoring):**
 
-- The five cells — `packages/agent-canon/src/hooks/{stance-guardrail,stance-guardrail-pre,memory-consolidation-nudge,resume-availability-notice}.ts` (substrate `harness`) and `praxis-continuity.ts` (substrate `git`). Measured: 4 harness, 1 git.
-- `packages/agent-forge/src/anatomy/hook-cell.ts` — the type to retire. Its fields, and where each goes: `id`→anchor, `residue`→the fragment body (σ\* declaration), `events`+`substrate`→S1's fields, `command`/`timeout`/`workers`→the realization face, `matcher`→the retained dynamic binding, `order`→run order within an event (SEMANTIC: a blocking gate must evaluate before a non-blocking nudge — do not let a dir-scan impose alphabetical order), `refs`→orphan-ref witness.
-- `packages/agent-canon/src/hooks/stance-guardrail-pre.ts` — contains the `agent_type` grep. Also referenced by `packages/agent-canon/test/stance-guardrail-dark.test.ts`.
-- `packages/agent-canon/src/hooks/memory-consolidation-nudge.ts` — also matches `agent_type`; both sites die here.
+- The five cells — `packages/canon/src/hooks/{stance-guardrail,stance-guardrail-pre,memory-consolidation-nudge,resume-availability-notice}.ts` (substrate `harness`) and `praxis-continuity.ts` (substrate `git`). Measured: 4 harness, 1 git.
+- `packages/forge/src/anatomy/hook-cell.ts` — the type to retire. Its fields, and where each goes: `id`→anchor, `residue`→the fragment body (σ\* declaration), `events`+`substrate`→S1's fields, `command`/`timeout`/`workers`→the realization face, `matcher`→the retained dynamic binding, `order`→run order within an event (SEMANTIC: a blocking gate must evaluate before a non-blocking nudge — do not let a dir-scan impose alphabetical order), `refs`→orphan-ref witness.
+- `packages/canon/src/hooks/stance-guardrail-pre.ts` — contains the `agent_type` grep. Also referenced by `packages/canon/test/stance-guardrail-dark.test.ts`.
+- `packages/canon/src/hooks/memory-consolidation-nudge.ts` — also matches `agent_type`; both sites die here.
 
 **Constraints.**
 
@@ -201,7 +201,7 @@ carrying `events` plus its own realization.** That is the whole migration in one
 **Dependencies.** S2 (binding must mediate before the grep dies), S3 (refusal must exist before
 cells relying on substrate routing migrate).
 
-**Outputs.** the five migrated cells; `packages/agent-forge/src/anatomy/hook-cell.ts` deleted;
+**Outputs.** the five migrated cells; `packages/forge/src/anatomy/hook-cell.ts` deleted;
 the `agent_type` grep removed from both sites; tests updated.
 
 **Completion criteria (falsifier).**

@@ -53,13 +53,19 @@ codex_out="$canon/.render-ts-codex"
 #
 # Reading `bin` from the manifest keeps one home for the entry — the same key npm
 # reads — and makes the gate independent of install ORDER.
+# NOTE: this script does NOT build. `pnpm verify` builds once, up front, and the
+# turbo task graph builds for any other caller. Building here as well meant two
+# builds interleaved inside one `verify` — tsup emits content-hashed chunks and
+# runs with `clean: true`, so a rebuild landing while another task had already
+# resolved `main.js` left it pointing at a chunk that no longer existed. The
+# failure was intermittent, which is the worst kind: it passed, then failed, on
+# identical input.
 cli() {
   node -e 'const p=require("./packages/forge/package.json");process.stdout.write(Object.values(p.bin)[0])'
 }
 
 compute() {
   rm -rf "$claude_out" "$codex_out"
-  pnpm build >/dev/null 2>&1
   entry="packages/forge/$(cli)"
   node "$entry" project --harness claude --out "$claude_out" >/dev/null 2>&1
   node "$entry" project --harness codex  --out "$codex_out"  >/dev/null 2>&1

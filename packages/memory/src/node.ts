@@ -28,12 +28,12 @@ import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
  * Default markers: `.git` (project; a `.git` FILE — worktree/submodule —
  * resolves through to the primary checkout's node) · a package manifest
  * (package) · `PLAN.md` (plan) · `$HOME` (user). The set extends via
- * `memory.scopeMarkers` (glob list) in `.agent-factory.config`.
+ * `memory.scopeMarkers` (glob list) in `.cratylus.config`.
  *
  * Foreign-host records (host ≠ current) cannot be resolved against this
  * filesystem — a path that happens to exist locally proves nothing about the
  * capturing host. The only checkable marker is that host's `$HOME` prefix,
- * sourced from `.agent-factory.config` `host.<name>.homedir`; otherwise the
+ * sourced from `.cratylus.config` `host.<name>.homedir`; otherwise the
  * cwd is its own boundary (the honest total answer).
  */
 
@@ -64,7 +64,7 @@ export interface NodeConfig {
   currentHost: string;
   /** Absolute `$HOME` on this machine — the `user` boundary. */
   currentHome: string;
-  /** Per-host absolute `$HOME` map from `.agent-factory.config` `host.<name>.homedir`. */
+  /** Per-host absolute `$HOME` map from `.cratylus.config` `host.<name>.homedir`. */
   hostHomes: Readonly<Record<string, string>>;
 }
 
@@ -246,7 +246,7 @@ export function resolveNode(
 }
 
 /**
- * Build a {@link NodeConfig} from a `.agent-factory.config` (or none). Reads
+ * Build a {@link NodeConfig} from a `.cratylus.config` (or none). Reads
  * `memory.scopeMarkers` (glob list, appended after the defaults) and
  * `host.<name>.homedir` (absolute per-host `$HOME`). Malformed JSON throws
  * loudly — once present the config is authoritative.
@@ -284,4 +284,35 @@ export function loadNodeConfig(configPath?: string): NodeConfig {
     currentHome: canonical(homedir()),
     hostHomes,
   };
+}
+
+// ── The config's ONE home ───────────────────────────────────────────────────
+//
+// The filename and the env var are the SAME SIGN in two dialects, and the
+// precedence chain over them was written twice — in `cli.ts` and `strategy.ts` —
+// with the literal repeated in each. Two homes for one name is how
+// the retired name survived a scope rename AND a bin migration: nothing
+// could grep for it as a brand, because it was a bare string in an `existsSync`
+// call rather than an import specifier or a bin key.
+//
+// THE `fleet` SECTION IS GONE. The tracked example documented `fleet.hosts` and
+// per-host ssh users, and NOTHING EVER READ THEM — `loadNodeConfig` reads
+// `memory.scopeMarkers` and `host.<name>.homedir`, nothing else. It was a schema
+// for a feature this repository does not have, describing one operator's private
+// host topology. Deployment across machines is the operator's concern, not this
+// project's; what remains is memory SCOPING, which is genuinely ours.
+
+/** The config file a repository may carry, resolved relative to the cwd. */
+export const CONFIG_FILE = '.cratylus.config';
+
+/** The env var naming an explicit config path. Same sign as {@link CONFIG_FILE}. */
+export const CONFIG_ENV = 'CRATYLUS_CONFIG';
+
+/** `--config`/override ▸ `$CRATYLUS_CONFIG` ▸ a cwd-present `.cratylus.config` ▸ none. */
+export function resolveConfigPath(override?: string): string | undefined {
+  return (
+    override ??
+    process.env[CONFIG_ENV] ??
+    (existsSync(CONFIG_FILE) ? CONFIG_FILE : undefined)
+  );
 }

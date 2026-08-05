@@ -6,7 +6,7 @@ throws it away. Only the derived `feedback` string reaches the transcript. So a 
 audited after the fact: reconstructing why it fired requires re-running the judge, which is
 non-deterministic (measured 3/5 on the same payload).
 
-**locus** — `packages/agent-canon/src/hooks/stance-guardrail.ts`, the `$evidence` extraction and
+**locus** — `packages/canon/src/hooks/stance-guardrail.ts`, the `$evidence` extraction and
 the `jq -cn` block emission. The value exists, is checked, and is never persisted.
 
 **provenance** — independent audit of this hook's three live blocks, 2026-07-27. The auditor

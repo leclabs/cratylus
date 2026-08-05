@@ -5,18 +5,18 @@ retired artifact lives forever and at least one is actively harmful.
 
 ## The defect, measured
 
-`grep -rn prune packages/agent-forge/src/deploy/` → **zero hits**. Deploy writes what the render tree
+`grep -rn prune packages/forge/src/deploy/` → **zero hits**. Deploy writes what the render tree
 contains and never removes what it does not. Consequence, live right now:
 `~/.claude/skills/memory/SKILL.md` exists with **no source cell**, and instructs agents to invoke a
-binary that was deleted when `agent-memory` dropped its `memory` bin. An agent reading it follows an
+binary that was deleted when `memory` dropped its `memory` bin. An agent reading it follows an
 instruction that cannot succeed.
 
 `install-parity/DESIGN.md §4` names this; no shard ever owned it.
 
 ## Inputs
 
-`packages/agent-forge/src/deploy/{deploy,local,hooks,scope,types}.ts` ·
-`packages/agent-canon/.render-ts/` (the render tree) · the deployed root `~/.claude/`
+`packages/forge/src/deploy/{deploy,local,hooks,scope,types}.ts` ·
+`packages/canon/.render-ts/` (the render tree) · the deployed root `~/.claude/`
 
 ## Constraints
 
@@ -31,8 +31,8 @@ instruction that cannot succeed.
 
 ## Outputs
 
-`packages/agent-forge/src/deploy/*` · a manifest artifact under the deploy root ·
-`packages/agent-forge/test/deploy/*`
+`packages/forge/src/deploy/*` · a manifest artifact under the deploy root ·
+`packages/forge/test/deploy/*`
 
 ## Acceptance
 

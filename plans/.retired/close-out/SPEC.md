@@ -110,7 +110,7 @@ table for exactly that reason; both were tempting and both are wrong.
 
 **Refused mechanization #1 — `projection-carries(i)` by grep.** Tempting: the projections are on
 disk, so "does the projected corpus already say this?" looks like a substring search. It is not. A
-record restating `.agent-factory.config` in its own words shares no distinctive token with the
+record restating `.cratylus.config` in its own words shares no distinctive token with the
 config. A grep here is a **false-negative machine** that would license exactly the restatement R1
 §Live-corpus-facts measured in `mav/SEMANTIC.md`. This stays inference.
 
@@ -272,7 +272,7 @@ detector that would report zero.
 
 ---
 
-## Decision 5 — The `agent-memory` ↔ `agent-canon` seam
+## Decision 5 — The `memory` ↔ `canon` seam
 
 **Named concretely first, as required.** Two clunks, both verified; the second is causally tied to
 Decision 3.
@@ -352,7 +352,7 @@ R = {(M2,M1), (M2,M3)}
 wave(0) = { M1, M3 }   wave(1) = { M2 }
 ```
 
-M1 (`agent-memory`) and M3 (`agent-canon/toolkit`) have disjoint outputs — same wave, no isolation
+M1 (`memory`) and M3 (`canon/toolkit`) have disjoint outputs — same wave, no isolation
 needed. M2 edits the cell and must land _after_ M3's gate exists, so the gate judges the edit.
 
 **Decisions 1 and 4 emit no shard. Both are refusals with no code change** — that is their content,

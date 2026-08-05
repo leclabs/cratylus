@@ -15,7 +15,7 @@
 > Three corrections the executing agents made to THIS spec, each surfaced by refusing an
 > instruction rather than satisfying it:
 >
-> - **My check `grep agent-canon → nothing` was mis-specified.** It tested a proxy, not the property.
+> - **My check `grep canon → nothing` was mis-specified.** It tested a proxy, not the property.
 >   `forge/src` carries 10+ such literals itself. Refusing it is what surfaced D3.
 > - **The stated trigger for D3 was wrong.** The old test did not break on a canon dimension
 >   ADDITION — `enumerateCatalog` iterates the GIVEN catalog, so an undeclared dir was never scanned.
@@ -37,11 +37,11 @@
 
 ### What it is
 
-`agent-forge/test/catalog/anatomy-descriptor.test.ts:114` — the leg _"matches the actual dimension
-dirs in agent-canon (no descriptor↔corpus drift)"_ does:
+`forge/test/catalog/anatomy-descriptor.test.ts:114` — the leg _"matches the actual dimension
+dirs in canon (no descriptor↔corpus drift)"_ does:
 
 ```ts
-const anatomyDimensions = join(here, '..','..','..','agent-canon','src','dimensions');
+const anatomyDimensions = join(here, '..','..','..','canon','src','dimensions');
 const dirs = readdirSync(anatomyDimensions, …)
 expect(corpusDrift(dirs, FIXTURE_DIMENSION_NAMES)).toEqual({ missing: [], … })
 ```
@@ -52,14 +52,14 @@ pins that fixture at 22 entries).
 
 ### Why it matters
 
-The whole point of `fb944d2` is that canon can add a dimension without editing `agent-forge`. This
+The whole point of `fb944d2` is that canon can add a dimension without editing `forge`. This
 test breaks exactly that: add a dimension to canon and forge's fixture must be edited or forge's
 suite goes red. **The inversion we removed from the type system re-entered through the tests** — and
 it is worse there, because a test-layer coupling reads as diligence.
 
 It is also a package-boundary violation on its own terms. `catalog/index.ts` states the rule it
-breaks: _"it consumes a directory of dimension-module dirs, not `packages/agent-canon`."_ The test
-consumes `packages/agent-canon`.
+breaks: _"it consumes a directory of dimension-module dirs, not `packages/canon`."_ The test
+consumes `packages/canon`.
 
 ### The fix
 
@@ -68,7 +68,7 @@ subject is _descriptor↔corpus drift_ — that a catalog and the value dirs bes
 invariant is worth keeping and does not need canon to demonstrate it.
 
 **Canon's side covers HALF, measured — extend it as part of this fix.**
-`agent-canon/test/cratylism.test.ts:149` computes `orphanDirs = dirs.filter(d => !keys.has(d))` and
+`canon/test/cratylism.test.ts:149` computes `orphanDirs = dirs.filter(d => !keys.has(d))` and
 asserts it empty. Verified by adding `src/dimensions/bogus/x.ts`: it fires, naming `bogus`.
 
 But that is ONE direction — a directory with no catalog entry. The reverse, a catalog entry with no
@@ -84,12 +84,12 @@ So this fix is two edits, not one:
 
 ### Verify
 
-1. ~~`grep -rn "agent-canon" packages/agent-forge/test` returns nothing.~~ **This check was
+1. ~~`grep -rn "canon" packages/forge/test` returns nothing.~~ **This check was
    MIS-SPECIFIED and D1's executor was right to refuse it.** It tests a PROXY — the literal string —
    not the PROPERTY, which is whether forge's suite depends on canon's CONTENT such that canon cannot
    change freely. A comment naming canon, and `scaffold.test.ts` asserting forge's own scaffold emits
-   `import canon from '@leclabs/agent-canon'`, both contain the literal and neither is the defect.
-   `packages/agent-forge/src` itself carries 10+ such literals, so the rule was stricter than the
+   `import canon from '@leclabs/canon'`, both contain the literal and neither is the defect.
+   `packages/forge/src` itself carries 10+ such literals, so the rule was stricter than the
    source it polices.
 
    The correct check is behavioural: **add a dimension to canon and the full forge suite stays
@@ -120,7 +120,7 @@ for canon's catalog and not for any other corpus's. Forge's guarantee is that th
 
 ### What it is
 
-`agent-forge/src/cli/commands/catalog.ts:163-169`. With no `--config`, the corpus view resolves the
+`forge/src/cli/commands/catalog.ts:163-169`. With no `--config`, the corpus view resolves the
 dimension catalog by loading the corpus package's entry module and reading its plugin's `anatomy`;
 finding none, it throws:
 
@@ -140,7 +140,7 @@ sharper and more worrying version of the same defect.
 
 ### Why it matters
 
-This is the path a NEW consumer hits first — zero config, one corpus, `agent-forge catalog`. It is
+This is the path a NEW consumer hits first — zero config, one corpus, `cratylus catalog`. It is
 also newly load-bearing: before `fb944d2` a missing catalog fell back to a resident default, so this
 code could not fire. The fallback is now a throw, so the branch went from unreachable to
 first-contact, and it did so without acquiring a test.
@@ -167,7 +167,7 @@ Two tests for the two uncovered branches, both driving the real CLI entry (`runC
 
 1. Both tests pass, and **both convict**: break the resolution and watch test 1 fail; soften the throw
    to a warning and watch test 2 fail.
-2. Register both in `agent-canon/test/gate-convicts.test.ts` — the meta-gate demands every test file
+2. Register both in `canon/test/gate-convicts.test.ts` — the meta-gate demands every test file
    be classified, and an unregistered file fails the build.
 3. Full suite, renders unchanged.
 

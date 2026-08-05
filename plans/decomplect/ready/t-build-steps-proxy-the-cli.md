@@ -10,7 +10,7 @@ Make this repository a consumer of its own shipped commands, and delete the priv
 
 ## What the census established
 
-`agent-forge project --harness <name> --out <dir>` **already exists**
+`cratylus project --harness <name> --out <dir>` **already exists**
 (`packages/forge/src/cli/index.ts:48`, `commands/project.ts`). The option the operator asked
 for is already the interface.
 
@@ -26,19 +26,19 @@ file's own header records the cost: it once reimplemented the pipeline, _"drifte
 shipped SESSIONLESS runtime shims to every codex-projected skill for the life of the divergence."_
 That is the DRY defect with a receipt.
 
-`agent-forge project` cannot run here today because **there is no `agents.config.ts`** anywhere in
+`cratylus project` cannot run here today because **there is no `agents.config.ts`** anywhere in
 the repository, and the command exits 1 without one. That is the real finding underneath the
 duplication: the corpus that defines the design is not a consumer of the command that projects it, so
 the shipped consumer path has never been exercised by its own author.
 
 The same shape holds one step later — the root's `canon:deploy*` scripts invoke
-`node packages/forge/dist/cli/index.js`, reaching **past** the `agent-forge` bin into a build
+`node packages/forge/dist/cli/index.js`, reaching **past** the `forge` bin into a build
 artifact by path.
 
 ## Constraints
 
-- **`ARCHITECTURE.md` is ground and was corrected first**: build-time entry is `agent-forge`,
-  run-time entry is the `agent-runtime` bin that `agent-cli` ships. Do not merge them — they are the
+- **`ARCHITECTURE.md` is ground and was corrected first**: build-time entry is `forge`,
+  run-time entry is the `runtime` bin that `invoke` ships. Do not merge them — they are the
   build-DAG/runtime-DAG seam, the same decomplection `RuntimePlugin`/`AgentPlugin` already makes.
 - The `agents.config.ts` this adds is a **real config for this corpus**, not a fixture. It must
   express what `canon:project` expresses today: canon's plugin, projected whole, hooks included.
@@ -51,7 +51,7 @@ artifact by path.
 
 - `agents.config.ts` at the repository root.
 - Root `package.json`: `canon:project` and `canon:project:codex` as **proxies**; `canon:deploy*`
-  reaching the `agent-forge` bin rather than a `dist/` path.
+  reaching the `forge` bin rather than a `dist/` path.
 - `packages/canon/src/toolkit/project-cli.ts` and `project-cli-codex.ts` **deleted**.
 - Any citation of the deleted paths updated — `command-veracity` will convict the stragglers.
 
@@ -76,7 +76,7 @@ find packages/canon/.render-ts packages/canon/.render-ts-codex -type f | sort | 
 ## The refusal clause
 
 If the oracle moves and the difference turns out to be **behaviour the private CLI had and
-`agent-forge project` lacks**: **STOP and report it.** That is a missing capability in the shipped
+`cratylus project` lacks**: **STOP and report it.** That is a missing capability in the shipped
 command, which is a far more valuable finding than a green tree — and closing it by re-baselining the
 hash or by keeping the private CLI would bury it. A workaround here is a design decision and that is
 not yours on this task.

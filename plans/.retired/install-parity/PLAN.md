@@ -4,10 +4,10 @@ Design: [`DESIGN.md`](./DESIGN.md) (frozen). Reader = LLM. Shards are MECE; each
 executable and independently verifiable.
 
 **Status 2026-07-23.** Design settled + operator-corrected (projection runs at the consumer's build
-time; `agent-canon` is a build-time plugin shipping as code). Fleet clean-slate **DONE** — all 7 hosts
+time; `canon` is a build-time plugin shipping as code). Fleet clean-slate **DONE** — all 7 hosts
 purged of project artifacts, memory homes preserved.
 
-**Status 2026-07-24 — SCOPE CUT (operator).** Remote-fleet distribution is **not agent-factory's
+**Status 2026-07-24 — SCOPE CUT (operator).** Remote-fleet distribution is **not cratylus's
 concern at all**, and verdaccio is **RETIRED** (DESIGN §7 rewritten net-current). Distribution is
 npm's: dev versions published from GitHub PR builds, installed on the home lab only if needed;
 otherwise wait for the merge and install the stable release from the public registry the standard
@@ -23,7 +23,7 @@ ever a stand-in for a registry we are about to have.
 | S3 wake/handoff onto the shim       | **DONE**                          | `cae76b7` |
 | S2 declared-dependency capabilities | **DONE**                          | `cd10503` |
 | S4 CLI brand                        | **OPEN** — re-derive, not blocked | —         |
-| S5 `agent-canon` installable        | **DONE**                          | `b84c959` |
+| S5 `canon` installable              | **DONE**                          | `b84c959` |
 | S6 local dev-loop parity            | **DONE** — falsifier actually run | see below |
 | S7 compose → render tree            | **DONE**                          | `650480e` |
 | S8 deploy is local-only             | **DONE** — falsifier 119→0        | `a995224` |
@@ -35,8 +35,8 @@ into the isolated global store, making it a hermeticity test. **Measured, it doe
 For a package inside a pnpm workspace it symlinks straight back into the checkout:
 
 ```
-$PNPM_HOME/global/v11/…/node_modules/@leclabs/agent-cli
-  -> …/packages/agent-cli          (a link, not a copy)
+$PNPM_HOME/global/v11/…/node_modules/@leclabs/invoke
+  -> …/packages/invoke          (a link, not a copy)
 ```
 
 and its capabilities resolve through the workspace's own `node_modules`. So it is
@@ -51,7 +51,7 @@ That cuts both ways, and both are useful:
 - **Hermeticity must be proven by the packed tarball**, which is a separate act:
 
 ```
-pnpm -C packages/agent-cli pack
+pnpm -C packages/invoke pack
 npm install <tgz> …        # clean dir, no monorepo
 ```
 
@@ -70,14 +70,14 @@ precisely the act the design says a consumer cannot perform.
 Measured end-to-end from a clean consumer install (`/tmp/iso-canon`: all packages
 npm-installed, no monorepo):
 
-| step                         | result                                                                                 |
-| ---------------------------- | -------------------------------------------------------------------------------------- |
-| `agent-forge init`           | ✅ scaffolds `agents.config.ts` with `extends: [canon]`                                |
-| `agent-forge compose`        | ✅ resolves the installed canon plugin, enumerates every fragment — **writes nothing** |
-| `agent-forge compile claude` | ❌ **0 files written** — the composed set never reaches the IR                         |
-| `agent-forge deploy`         | ❌ requires a render tree nothing produces                                             |
+| step                   | result                                                                                 |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| `cratylus init`        | ✅ scaffolds `agents.config.ts` with `extends: [canon]`                                |
+| `cratylus compose`     | ✅ resolves the installed canon plugin, enumerates every fragment — **writes nothing** |
+| `forge compile claude` | ❌ **0 files written** — the composed set never reaches the IR                         |
+| `cratylus deploy`      | ❌ requires a render tree nothing produces                                             |
 
-**CLOSED by `650480e`.** `agent-forge project` materializes the resolved set, and
+**CLOSED by `650480e`.** `cratylus project` materializes the resolved set, and
 `canon:project` now makes the SAME call over the same plugin — one path, ridden by
 both. Keeping a second dir-scanning projector is precisely what let the consumer path
 rot unnoticed.
@@ -107,7 +107,7 @@ settings.json is byte-identical to deployed rather than incidentally reordered.
 **`fire` is now fully deployed from the consumer path** — 10 agents, 15 skills, 3 hooks,
 via `~/.agent-site` with npm-installed packages and no path into the checkout.
 
-Remaining: the build face still ships as the separate `agent-forge` bin (S4/S9).
+Remaining: the build face still ships as the separate `forge` bin (S4/S9).
 
 The only thing that produces a render tree is `pnpm canon:project`, a **monorepo script**
 that dir-scans `src/agents` / `src/skills` directly and **bypasses the plugin resolver**.
@@ -120,10 +120,10 @@ the retired path.
 
 ### Re-sequencing (S3 → S4 → S2, not S1 → S2 → S3 → S4)
 
-`agent-runtime` **cannot** declare a capability package: every capability depends on
+`runtime` **cannot** declare a capability package: every capability depends on
 the runtime for its contracts, so the edge cycles. A type-only import does not save it
 — turbo's `^build` follows devDependencies too. The declared-dependency fix therefore
-_requires_ the third package (`agent-cli`), which is what the vite model predicts:
+_requires_ the third package (`invoke`), which is what the vite model predicts:
 core, plugins, and an installable unit that composes them.
 
 ### S4 — negative result, recorded rather than forced
@@ -186,7 +186,7 @@ across skill prose yields a half-completed rename in markdown no compiler checks
 | S3  | rewrite `wake` + `handoff` formal blocks onto the shim | gives the bin name exactly one home                                       |
 | S4  | derive the CLI brand (signify)                         | safe only once S3 leaves one home; did **not** converge, no longer blocks |
 | S2  | declare capabilities as real dependencies              | the hermeticity defect; needs the third package                           |
-| S5  | `agent-canon` builds to `dist/` + is installable       | blocking for consumer-side projection                                     |
+| S5  | `canon` builds to `dist/` + is installable             | blocking for consumer-side projection                                     |
 | S6  | local dev-loop parity (`pnpm add -g .` + watch)        | the acceptance test for the whole design                                  |
 
 ---
@@ -213,7 +213,7 @@ gains one binding line naming the capability's shim path; the verbs reference th
 
 **Defect.** `loader.ts` `discover()` resolves capabilities by ambient dynamic `import()` with no
 declared dependency. It works only because the retired installer flat-co-installed siblings into one
-`node_modules`. A consumer running `npm i -g @leclabs/agent-runtime` gets **no memory capability**; an
+`node_modules`. A consumer running `npm i -g @leclabs/runtime` gets **no memory capability**; an
 isolated store (`pnpm add -g .`) breaks discovery outright.
 
 **Fix.** The installable unit declares its capability packages as real dependencies — the vite model.
@@ -229,7 +229,7 @@ _declared_, not because a sibling happens to be co-located.
 
 ## S3 — rewrite `wake` + `handoff` formal blocks onto the shim
 
-**Defect.** `wake/skill.ts` embeds **6** literal `agent-runtime memory …` invocations inside its formal
+**Defect.** `wake/skill.ts` embeds **6** literal `cratylus-run memory …` invocations inside its formal
 block; `handoff/skill.ts` embeds 1. These are shell realization details sitting in a σ\* block, and
 they land verbatim in deployed markdown. `dream/skill.ts` carries **zero** and expresses consolidation
 abstractly — it is the correct shape and the reference for this rewrite.
@@ -250,7 +250,7 @@ cold read must reconstruct meaning **equivalent-or-better** than the current blo
 
 ## S4 — derive the CLI brand (FORK-4)
 
-Blocked on S3. `packages/agent-runtime/src/bin.ts:11` declares the current name a **placeholder**.
+Blocked on S3. `packages/runtime/src/bin.ts:11` declares the current name a **placeholder**.
 Derivation is a `signify` act under cratylism — candidate-free cold oracle, negative control, no
 operator-floated or self-floated candidate adopted without independent re-derivation.
 
@@ -258,13 +258,13 @@ operator-floated or self-floated candidate adopted without independent re-deriva
 
 ---
 
-## S5 — `agent-canon` builds to `dist/` and is installable
+## S5 — `canon` builds to `dist/` and is installable
 
 **Defect.** Exports `./src/index.ts` with `files: ["src"]` and no build ⇒
 `ERR_UNSUPPORTED_NODE_MODULES_TYPE_STRIPPING` when installed; works today only via the pnpm workspace
 symlink's realpath escape. **Blocking**, because consumer-side projection must import this package.
 
-Also settle: `private: true` on `agent-runtime`/`agent-memory`, and the broken `changeset publish`
+Also settle: `private: true` on `runtime`/`memory`, and the broken `changeset publish`
 (with `ignore: []` it would publish canon as raw TS while its transitive dep is unpublishable).
 
 **Falsifier.** The package resolves only from inside the workspace.
@@ -289,7 +289,7 @@ make deploy work outside the workspace.
 **Defect.** `deploy` carries two concerns that map to **no stage** of the pipeline ontology: package
 **distribution** (a precondition to `init`) and **fleet iteration** (an outer loop over the whole
 pipeline). Neither has a live caller — `agent-toolchain-bootstrap`, the endorsed path, ssh's to each host itself
-and invokes `agent-forge deploy … --no-runtime-install` **locally** there. See _Distribution tail_ above
+and invokes `cratylus deploy … --no-runtime-install` **locally** there. See _Distribution tail_ above
 for the derivation.
 
 **Fix.** Remove every concern outside the ontology; keep `deploy` = place a render tree into the local
@@ -307,13 +307,13 @@ for the derivation.
 
 **Constraint — deletion, not deprecation.** No compatibility shim, no `@deprecated` alias, no flag that
 accepts-and-ignores. Grey-field: the incumbent has no standing, and a retained-but-dead surface is the
-palimpsest this shard exists to remove. `.agent-factory.config` goes with it (its rot is listed under
+palimpsest this shard exists to remove. `.cratylus.config` goes with it (its rot is listed under
 _Carried forward_; it is removed, not repaired).
 
-**Outputs.** `agent-forge deploy` with a local-only surface; `packages/agent-forge/src/deploy/` free of
+**Outputs.** `cratylus deploy` with a local-only surface; `packages/forge/src/deploy/` free of
 ssh and of any monorepo-packing; the full corpus suite green.
 
-**Completion criteria (falsifier).** REJECTED if `rg -n 'ssh|scp|pnpm pack|fleet' packages/agent-forge/src`
+**Completion criteria (falsifier).** REJECTED if `rg -n 'ssh|scp|pnpm pack|fleet' packages/forge/src`
 returns a live (non-comment) hit; if any deleted flag still parses instead of erroring as unknown; if a
 deprecation shim ships in place of a deletion; if `deploy` still resolves a host by name; or if the
 suite is made green by deleting an assertion rather than the surface it covered. The grep control must
@@ -332,14 +332,14 @@ interactive-shell prefix probe. Superseded by per-host build + install; see DESI
   cleared today's accumulation; the mechanism still needs a converge-to-render-tree leg.
 - Node version drift across the fleet: `spark` 26.2.0, `fire`/`upgoose` 24.18.0, rest 24.16.0. Matters
   now that each host builds what it installs.
-- `.agent-factory.config` is gitignored, its committed example has drifted, and its cited schema doc
+- `.cratylus.config` is gitignored, its committed example has drifted, and its cited schema doc
   does not exist.
 
 ## Distribution tail — CLOSED by the stage ontology (2026-07-24)
 
 The fleet consumer-path deploy was executed from an ephemeral `/tmp` script and now lives on fire as
 `~/.local/bin/agent-toolchain-bootstrap`, outside this repo — the placement the ownership argument
-below demands. The open item was to first-class it as an `agent-forge fleet-deploy` command. **That
+below demands. The open item was to first-class it as an `forge fleet-deploy` command. **That
 item is retired, not deferred** — and the operator's
 descope is not the only reason. The package's own **stage ontology** rules it out by construction.
 
@@ -347,14 +347,14 @@ The stages, in their own definiens (forge CLI ⊕ ENGINE):
 
 | stage     | definiens                                                                                                  |
 | --------- | ---------------------------------------------------------------------------------------------------------- |
-| `init`    | bootstrap `.agent-forge/` + scaffold `agents.config.ts`                                                    |
+| `init`    | bootstrap `.forge/` + scaffold `agents.config.ts`                                                          |
 | `add`     | wire a plugin package into `extends`                                                                       |
 | `compose` | load the config, resolve the plugin set (config-is-code)                                                   |
 | `project` | materialize the resolved set into a **render tree**                                                        |
 | `deploy`  | ship a projected render tree to a host `.claude/` root — ENGINE: `inject(content(c), realize(…, adapter))` |
 
 `compile` is deliberately **absent** from that list. It is the terminal step of a **second, disjoint
-pipeline** (`import <client> → compile`) whose source of truth is a `.agent-forge/` IR lifted from an
+pipeline** (`import <client> → compile`) whose source of truth is a `.forge/` IR lifted from an
 existing harness config — a rival source that shares no data with the plugin set, and that writes
 `.claude/` itself rather than feeding `deploy`. Censused with file:line evidence in DESIGN §7a. An
 earlier draft of this section listed `compile` as a stage; that was wrong.
@@ -372,14 +372,14 @@ Ask of each disputed concern **which stage it is**. Three answers, all "none":
   outer loop already crossed that boundary by ssh-ing there. Two ways to cross one boundary is the
   palimpsest, so the ssh placement backend goes with it.
 
-**Boundary, stated positively:** `agent-forge deploy` places a render tree into the **local**
+**Boundary, stated positively:** `cratylus deploy` places a render tree into the **local**
 `.claude/` root. Getting the packages onto a host is **npm's**; doing it on N hosts is the
-**operator's loop**. Neither is a stage, so neither is agent-factory's.
+**operator's loop**. Neither is a stage, so neither is cratylus's.
 
 **Consequent cut — S8 below:** delete `deploy/runtime-install.ts`,
 `deploy/ssh.ts`, `deployRemote`, `deployFleet`, the host/fleet topology in `deploy/config.ts`, and the
 `--host`/`--user`/`--fleet`/`--exclude`/`--no-runtime-install` CLI surface. This also dissolves the
-rotting `.agent-factory.config` (gitignored, committed example drifted, cited schema doc absent) —
+rotting `.cratylus.config` (gitignored, committed example drifted, cited schema doc absent) —
 already listed under _Carried forward_ as a known rot, now removed rather than repaired.
 
 The script LEFT this repo entirely. Keeping it here — even parked in `.retired/` — still placed a

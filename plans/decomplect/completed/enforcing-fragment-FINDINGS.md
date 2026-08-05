@@ -16,7 +16,7 @@ subagent probes, **which are not cold** and whose naming judgements do not stand
 
 | register | MODEL/ENGINE                                                                                            | artifact                                  |
 | -------- | ------------------------------------------------------------------------------------------------------- | ----------------------------------------- |
-| source   | `author : Intent → cell` · `catalog : DimensionName → ℘(fragment)`                                      | `agent-canon` cells                       |
+| source   | `author : Intent → cell` · `catalog : DimensionName → ℘(fragment)`                                      | `canon` cells                             |
 | build    | `select` → `compose(select(a)) = ir(a)`                                                                 | the composed IR                           |
 | project  | `deploy(c,adapter) = inject(content(c), realize(c, adapter))` · `Target ≜ harness-declaration-artifact` | `~/.claude/agents/*.md` · `settings.json` |
 | runtime  | the harness reads the Target                                                                            | Claude Code · codex                       |
@@ -58,7 +58,7 @@ Recorded because a whole session was spent re-deriving these:
   `tools[].permission : auto|confirm|deny` alongside `sideEffects : none|reversible|irreversible`.
 - **Declaration and configuration are two artifacts.** `[COLD]`, unprompted: _"policy artifact
   declares WHICH TIER IS REQUIRED; config/code artifact declares HOW THAT TIER IS ENFORCED."_ Our
-  `agent-canon` is the policy artifact; the projected `settings.json`/front-matter is the config one.
+  `canon` is the policy artifact; the projected `settings.json`/front-matter is the config one.
 - **A turn-end role-consistency check has NO industry name.** `[COLD]` The oracle refused to name
   one rather than fabricate. ⊥ is a result: concept real, language short ⇒ a signify pass is owed
   rather than a borrowed word.
@@ -84,7 +84,7 @@ deployed agents rather than inventing a set."_
 **Use the canonical harness, which already encodes all of this:**
 
 ```sh
-sh packages/agent-canon/src/toolkit/cold-oracle/cold-oracle.sh --text '<fragment>' [--raw]
+sh packages/canon/src/toolkit/cold-oracle/cold-oracle.sh --text '<fragment>' [--raw]
 ```
 
 For a bare QUESTION, mirror its isolation: scratch dir outside the repo, `CLAUDE_CONFIG_DIR` at a

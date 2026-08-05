@@ -6,14 +6,14 @@ reaching into `adapters/claude/write.ts`. This is the **one genuinely load-beari
 
 **Inputs (pinned, exist at authoring).**
 
-- `packages/agent-forge/src/adapters/claude/write.ts:237-246` — `serializeClaudeHooksReport` and its
+- `packages/forge/src/adapters/claude/write.ts:237-246` — `serializeClaudeHooksReport` and its
   private `serializeClaudeHooks`; signature takes `Hook[]`
-- `packages/agent-forge/src/adapters/claude/index.ts:96-99` — already exports the serializer standalone,
+- `packages/forge/src/adapters/claude/index.ts:96-99` — already exports the serializer standalone,
   with the stated intent that a plugin can "project a hooks-only settings fragment without driving the
   whole `writeClaude` tree" — **the seam is pre-cut**
-- `packages/agent-forge/src/adapters/claude/anatomy.ts:33,107-110` — the live consumer,
+- `packages/forge/src/adapters/claude/anatomy.ts:33,107-110` — the live consumer,
   `claudeHarnessAdapter.hooks`
-- `packages/agent-forge/src/project/index.ts:230,233` — the live call chain
+- `packages/forge/src/project/index.ts:230,233` — the live call chain
 
 **Constraints.**
 
@@ -31,7 +31,7 @@ imported by any live projection path; one serializer in the tree, not two.
 
 **Completion criteria (falsifier).** A real dogfood — `project` → `deploy` into a temp `HOME` — emits a
 `settings.json` **byte-identical** to the pre-shard artifact (diff it, do not eyeball it); `rg -n
-"write\.js|write\.ts" packages/agent-forge/src/{project,adapters/claude/anatomy.ts}` returns nothing,
+"write\.js|write\.ts" packages/forge/src/{project,adapters/claude/anatomy.ts}` returns nothing,
 control proven; full `pnpm test` green. REJECTED if the serializer is copied rather than moved; if
 `settings.json` differs in content **or hook order**; if the serializer still types its parameter from
 `core/ir/`; or if the byte-comparison is asserted without an actual diff of the two artifacts.

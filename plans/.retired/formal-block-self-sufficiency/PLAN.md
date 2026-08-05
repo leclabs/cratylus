@@ -1,6 +1,6 @@
 # formal-block-self-sufficiency
 
-**Status: COMPLETE — all shards landed, full agent-canon suite green (113 pass/1 skip).** Owner: session `555c4985` (mav).
+**Status: COMPLETE — all shards landed, full canon suite green (113 pass/1 skip).** Owner: session `555c4985` (mav).
 Residual (documented, not silent): praxis R1 `-- plan-retirement` = nico-ratified admissible boundary-prose, `ALLOW_LIST={praxis}`; 3 whitespace-gap glosses in `formalize.ts` deferred (mechanically ambiguous vs notation; gate tallies them). Follow-ups: nico 2nd-order items (canonizable/accept overlap; root `.md` outside SYMBOLS scan); whitespace-gap detector; praxis plan-lifecycle formalization when plan-set dynamics are designed.
 Derived from nico's D5 ruling + the signify×symbolic-notation review (`.scratchpad/signify-review-jul-22/`).
 This file is a mirror of runtime state (task-files in state folders); the folders are authority.
@@ -16,7 +16,7 @@ round-trip into the canon lifecycle so regressions can't re-enter.
 
 ## Ground truth (census, 2026-07-22)
 
-15 skill formal blocks under `packages/agent-canon/src/skills/`. `--` annotation surface (raw counts, NOT
+15 skill formal blocks under `packages/canon/src/skills/`. `--` annotation surface (raw counts, NOT
 all violations — primitive glosses + β∪ι citations are admissible): exemplify 28, praxis 23, conceptualize
 23, signify 16, materialize 11, elicit 8, dream 7, introspect 6, create-agent 6, probe 4, create-skill 4,
 handoff 3, formalize 3. **Already drained this workstream:** signify.ts σ\*-cluster (nico), probe.ts

@@ -27,7 +27,7 @@ Three caveats that bear on how hard to lean on what follows:
    already reaching is the kind that propagates silently.
 3. **Benchmark numbers in this field are actively contested.** Zep published a rebuttal showing mem0's
    paper misconfigured Zep, moving Zep's LOCOMO score from a reported 65.99% to 75.14%
-   ([Zep](https://blog.getzep.com/lies-damn-lies-statistics-is-mem0-really-sota-in-agent-memory/)). No
+   ([Zep](https://blog.getzep.com/lies-damn-lies-statistics-is-mem0-really-sota-in-memory/)). No
    cross-system score in this document should be read as settled.
 
 ---
@@ -38,12 +38,12 @@ Three caveats that bear on how hard to lean on what follows:
 
 ### Write-time (the writer emits placement)
 
-| System                    | What the writer does at write time                                                                                                                                                                                    | Source                                                                                                          |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| **Letta / MemGPT**        | The agent itself calls memory tools mid-reasoning and **chooses the target block**. "The agent decides where the lesson belongs and commits the update." Memory management is emergent LLM behaviour, not a pipeline. | [Letta docs](https://docs.letta.com/letta-agent/memory), [Letta blog](https://www.letta.com/blog/agent-memory/) |
-| **Anthropic memory tool** | Routing is **by path**, chosen by the model at write time. `create /memories/<the-model-picks-this>`. Free-form — no enum, no schema, no validation.                                                                  | [Memory tool spec](https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool)                   |
-| **A-MEM**                 | At note construction the writer emits a structured envelope: contextual description, **keywords, tags**, timestamp, embedding — then an LLM proposes links to prior notes.                                            | [A-MEM](https://arxiv.org/html/2502.12110v1)                                                                    |
-| **Generative Agents**     | Emits an **integer poignancy score 1–10** at the moment the memory object is created.                                                                                                                                 | [Park et al.](https://dl.acm.org/doi/fullHtml/10.1145/3586183.3606763)                                          |
+| System                    | What the writer does at write time                                                                                                                                                                                    | Source                                                                                                    |
+| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Letta / MemGPT**        | The agent itself calls memory tools mid-reasoning and **chooses the target block**. "The agent decides where the lesson belongs and commits the update." Memory management is emergent LLM behaviour, not a pipeline. | [Letta docs](https://docs.letta.com/letta-agent/memory), [Letta blog](https://www.letta.com/blog/memory/) |
+| **Anthropic memory tool** | Routing is **by path**, chosen by the model at write time. `create /memories/<the-model-picks-this>`. Free-form — no enum, no schema, no validation.                                                                  | [Memory tool spec](https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool)             |
+| **A-MEM**                 | At note construction the writer emits a structured envelope: contextual description, **keywords, tags**, timestamp, embedding — then an LLM proposes links to prior notes.                                            | [A-MEM](https://arxiv.org/html/2502.12110v1)                                                              |
+| **Generative Agents**     | Emits an **integer poignancy score 1–10** at the moment the memory object is created.                                                                                                                                 | [Park et al.](https://dl.acm.org/doi/fullHtml/10.1145/3586183.3606763)                                    |
 
 ### Drain-time (a background/consolidation pass classifies)
 
@@ -281,10 +281,10 @@ that capability lives at write time and nowhere else. It is not what the operato
 - [mem0 `configs/prompts.py`](https://raw.githubusercontent.com/mem0ai/mem0/main/mem0/configs/prompts.py)
 - [Graphiti `node_operations.py`](https://raw.githubusercontent.com/getzep/graphiti/main/graphiti_core/utils/maintenance/node_operations.py)
 - [Letta `constants.py`](https://raw.githubusercontent.com/letta-ai/letta/main/letta/constants.py)
-- [Letta — memory](https://docs.letta.com/letta-agent/memory) · [sleep-time agents](https://docs.letta.com/guides/agents/architectures/sleeptime/) · [agent memory blog](https://www.letta.com/blog/agent-memory/)
+- [Letta — memory](https://docs.letta.com/letta-agent/memory) · [sleep-time agents](https://docs.letta.com/guides/agents/architectures/sleeptime/) · [agent memory blog](https://www.letta.com/blog/memory/)
 - [Anthropic memory tool spec](https://platform.claude.com/docs/en/agents-and-tools/tool-use/memory-tool)
 - [LangMem conceptual guide](https://langchain-ai.github.io/langmem/concepts/conceptual_guide/)
-- [Zep — searching the graph (`min_fact_rating`)](https://help.getzep.com/v2/searching-the-graph) · [fact ratings announcement](https://blog.getzep.com/announcing-zep-fact-ratings/) · [Zep paper](https://arxiv.org/html/2501.13956v1) · [mem0 benchmark rebuttal](https://blog.getzep.com/lies-damn-lies-statistics-is-mem0-really-sota-in-agent-memory/)
+- [Zep — searching the graph (`min_fact_rating`)](https://help.getzep.com/v2/searching-the-graph) · [fact ratings announcement](https://blog.getzep.com/announcing-zep-fact-ratings/) · [Zep paper](https://arxiv.org/html/2501.13956v1) · [mem0 benchmark rebuttal](https://blog.getzep.com/lies-damn-lies-statistics-is-mem0-really-sota-in-memory/)
 - [Yang, _Control-Plane Placement Shapes Forgetting_](https://arxiv.org/abs/2606.15903) · [HTML body](https://arxiv.org/html/2606.15903v2)
 - [Park et al., _Generative Agents_](https://dl.acm.org/doi/fullHtml/10.1145/3586183.3606763)
 - [A-MEM](https://arxiv.org/html/2502.12110v1)

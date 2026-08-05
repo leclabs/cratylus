@@ -25,7 +25,7 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'liveness-'));
   home = join(root, 'agent-home');
   mkdirSync(home, { recursive: true });
-  vi.stubEnv('AGENT_FACTORY_CONFIG', '');
+  vi.stubEnv('CRATYLUS_CONFIG', '');
 });
 afterEach(() => {
   vi.unstubAllEnvs();

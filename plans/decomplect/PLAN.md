@@ -13,7 +13,7 @@ Suite green uncached, 9 tasks — **canon 175** (23 files) · **forge 215** (35)
 **runtime 52** (5) · **schema 9** (1). Tree clean.
 
 **Forge reads 215 where this file long said 224, and the drop is a MOVE, not a loss**: `215 + 9 = 224`
-— the nine tests left forge with `agent-schema` in `48baaddd`. Recorded because a falling test count
+— the nine tests left forge with `schema` in `48baaddd`. Recorded because a falling test count
 is otherwise indistinguishable from tests going dark.
 
 **Act 1 ✅ LANDED (`3bd40eac`) — `test/architecture.test.ts`.** The four load-bearing properties are
@@ -31,11 +31,11 @@ lexicography**; the instrument is **Cratylus**. This closes the `⊥` README has
 2026-07-26, when `semantic engineering` was disconfirmed and the derivation returned no anchor.
 
 Six packages and their directories moved; the `agent-` prefix is gone from every package name because
-the scope now carries the domain. `agent-cli` → `@cratylus/invoke`, folding in
-`pending/agent-cli-is-not-what-it-is-named.md` rather than renaming twice — the whole forward slate
+the scope now carries the domain. `invoke` → `@cratylus/invoke`, folding in
+`pending/invoke-is-not-what-it-is-named.md` rather than renaming twice — the whole forward slate
 died on blind decode and `invoke` won on a property no noun had: **a verb decodes as a leaf**.
 
-**No bin moved, deliberately.** `agent-forge` and `agent-runtime` are now the only artifacts wearing
+**No bin moved, deliberately.** `forge` and `runtime` are now the only artifacts wearing
 the retired prefix — filed as `ready/t-bin-name-migration.md` with the naming explicitly underived,
 because `PATH` is a global unscoped namespace and needs its own round-trip. A sweep did silently
 rename forge's `bin` key; the suite caught it and it was reverted.
@@ -43,7 +43,7 @@ rename forge's `bin` key; the suite caught it and it was reverted.
 **Render oracle re-baselined `fe084dd1…` → `f60e936a172d6f37a5120cd9dd0e282c19727f58`**, both targets.
 The delta was **proven, not assumed**: HEAD was rebuilt in a detached worktree, reproduced `fe084dd1`
 exactly at 37/38 files, and diffed. Five files, three lines, all generated header prose naming the
-packages. No structural change, and all 18 `agent-runtime` occurrences in the renders unchanged — the
+packages. No structural change, and all 18 `runtime` occurrences in the renders unchanged — the
 bins held. Historical citations of `fe084dd1` were left alone, as were `plans/.retired/` and
 `completed/`: a record edited to match today is no longer a record.
 
@@ -70,7 +70,7 @@ claim about somebody's laptop. All three are now real, and the first genuine col
 **four** further defects the warm tree had been hiding, including that the installer never creates a
 workspace bin symlink when `dist/` is absent at install time.
 
-**Act 2 ✅ LANDED (`48baaddd`) — `agent-schema` exists.** Canon **cells** importing the projector:
+**Act 2 ✅ LANDED (`48baaddd`) — `schema` exists.** Canon **cells** importing the projector:
 **22 → 0**. Render oracle unmoved at `fe084dd1d531948979dc386713c3f688c96088ab` — the proof the change
 was structural and altered no meaning. Suite green uncached, 9 tasks. Architecture ratchet **26 → 3**.
 
@@ -99,7 +99,7 @@ worse than none — it converts a correct refusal into an apparent failure.
 PLAN.md`, so the mirror was carrying the state instead of reflecting it.
 - **This file said "both `pending/` files" when there were three** (now five, with two filed today).
 - **The Status counts were stale**, and the stalest one — forge 224 → 215 — reads as nine lost tests
-  unless the move to `agent-schema` is recorded beside it.
+  unless the move to `schema` is recorded beside it.
 
 Surfaced and NOT fixed, because it is the operator's:
 [`pending/vision-still-carries-the-enumeration-cratylism-dropped.md`](./pending/vision-still-carries-the-enumeration-cratylism-dropped.md).
@@ -125,7 +125,7 @@ the reach `a2205eb` generalized out of `cratylism`. The apex triad must stay mut
    `agents` `skills` `hooks` are dirs the **resolver scans** (forge's mapping); `preamble` and
    `manifest` are **doctrine and which-dimensions-exist** (canon's, and ARCHITECTURE calls a dimension
    constitutive). One sign over two concepts — the same palimpsest species as `anatomy`, which is why
-   the ownership question has no answer as posed. Blocked on #2: both write `agent-schema/src/index.ts`
+   the ownership question has no answer as posed. Blocked on #2: both write `schema/src/index.ts`
    and both retire a pin from the same ratchet, so they cannot share a wave.
 4. **Concept A's surviving occupancy**, now the largest residue: `canon/src/anatomy.ts` still holds
    `MANIFEST` behind the retired sign (154 importers), and `FIXTURE_ANATOMY` survives at ~110 sites so
@@ -148,7 +148,7 @@ pnpm canon:project && pnpm canon:project:codex
 `canon:project` alone writes only `.render-ts`, so against a stale codex render the hash below reads
 the stale half and **still prints the expected value**. The root asymmetry that forced the codex leg
 through `--filter` is gone (`t-build-steps-proxy-the-cli`): both legs are now proxies through
-`agent-forge project --harness <name>`. What survives is that `canon:deploy` runs `canon:project`
+`cratylus project --harness <name>`. What survives is that `canon:deploy` runs `canon:project`
 only, so **deploy never reprojects codex at all**. Then:
 `find packages/canon/.render-ts packages/canon/.render-ts-codex
 -type f | sort | xargs shasum | shasum` → `fe084dd1d531948979dc386713c3f688c96088ab`. Verified
@@ -214,14 +214,14 @@ direction. And **property 1, the highest-ranked, is not merely breached but PINN
 `test/bin-name-single-home.test.ts:57,101` asserts that it stays. **Repairing the architecture turns
 the suite red.** Amending that counter-gate is a design decision and comes before the repair.
 
-| #      | work                                                                                                        | why here                                                                                                                                  |
-| ------ | ----------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| **1**  | ✅ **ground revised** — `agent-anatomy`→`agent-schema`, stale `28`→`34/22`, `MODEL:22` `⟨schema-owned⟩`     | hard blocker on §1; ground carrying a refuted sign is worse than source                                                                   |
-| **2**  | **§1 extract `agent-schema`** + `Anatomy`→`DimensionManifest`, `ANATOMY`→`MANIFEST`, `.anatomy`→`.manifest` | largest conviction volume by far — 25 of 34 canon→forge file edges, and `src/anatomy.ts` alone propagates to 142 dimensions and 10 agents |
-| **3**  | **§2 vocabulary** — canon owns the 28 names, schema owns the `Hook` shape; land `vcs.commit.post`           | needs #2's package to exist; §1 is what hands §2 its cut                                                                                  |
-| **3′** | **C1 residuals** — concept B (`anatomyRoot`, 10 files, `⊥`), concept C (`adapters/*/anatomy.ts`)            | independent of #2's type moves                                                                                                            |
-| **4**  | **C5** `SOUL`→`Target` in forge                                                                             | same depalimpsest pass as 3′, 12 files                                                                                                    |
-| **5**  | **C4** signify the anchor, derive `eventTap` mechanically, gate keyspace≡name≡dir≡verb≡skill                | needs its own ruling — **then fixes A12 for free**, which hard-codes `scripts/eventTap.mjs` in a canon cell                               |
+| #      | work                                                                                                  | why here                                                                                                                                  |
+| ------ | ----------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| **1**  | ✅ **ground revised** — `anatomy`→`schema`, stale `28`→`34/22`, `MODEL:22` `⟨schema-owned⟩`           | hard blocker on §1; ground carrying a refuted sign is worse than source                                                                   |
+| **2**  | **§1 extract `schema`** + `Anatomy`→`DimensionManifest`, `ANATOMY`→`MANIFEST`, `.anatomy`→`.manifest` | largest conviction volume by far — 25 of 34 canon→forge file edges, and `src/anatomy.ts` alone propagates to 142 dimensions and 10 agents |
+| **3**  | **§2 vocabulary** — canon owns the 28 names, schema owns the `Hook` shape; land `vcs.commit.post`     | needs #2's package to exist; §1 is what hands §2 its cut                                                                                  |
+| **3′** | **C1 residuals** — concept B (`anatomyRoot`, 10 files, `⊥`), concept C (`adapters/*/anatomy.ts`)      | independent of #2's type moves                                                                                                            |
+| **4**  | **C5** `SOUL`→`Target` in forge                                                                       | same depalimpsest pass as 3′, 12 files                                                                                                    |
+| **5**  | **C4** signify the anchor, derive `eventTap` mechanically, gate keyspace≡name≡dir≡verb≡skill          | needs its own ruling — **then fixes A12 for free**, which hard-codes `scripts/eventTap.mjs` in a canon cell                               |
 
 **Parallel from day one, blocked by nothing:** C2 _(gate ✅ landed — `command-veracity`; the property
 generalizes to ~45 more convictions across markdown links and source-comment path citations, not yet
@@ -249,7 +249,7 @@ from `@cratylus/forge/anatomy`** — the corpus depending on its own projector. 
 property 2 fails on exactly those 28.
 
 **Do C1 first, or at least concurrently.** `ARCHITECTURE.md` calls the extracted package
-`agent-anatomy`, and C1's ruling is that `anatomy` is a metaphor binding two concepts and must be
+`anatomy`, and C1's ruling is that `anatomy` is a metaphor binding two concepts and must be
 re-signified. Extracting under a sign already ruled against would mint the defect into a package
 name — the most expensive place to carry one.
 

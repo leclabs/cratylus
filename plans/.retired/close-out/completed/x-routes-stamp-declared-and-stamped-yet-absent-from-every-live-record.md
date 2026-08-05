@@ -25,7 +25,7 @@ Consequence if the first reading holds: the retain/consume distinction that `app
 is never persisted, so nothing can distinguish a record seen once from one deferred repeatedly, and
 `verb-over-prose` is being violated in the live corpus without any gate noticing.
 
-**Locus.** `packages/agent-memory/src/dream.ts:214-226` · `packages/agent-memory/src/record.ts:32-37`
+**Locus.** `packages/memory/src/dream.ts:214-226` · `packages/memory/src/record.ts:32-37`
 · the live homes under `~/.agents/`.
 
 **Provenance.** Filed 2026-07-26 by S3 (`plans/close-out/SPEC.md`) while measuring Decision 4

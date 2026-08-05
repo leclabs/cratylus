@@ -9,12 +9,12 @@ residual `-- plan-retirement …` prose becomes formal — driving praxis to ful
 ## Inputs
 
 - `[dep-fed] t1` — the exact praxis.ts notation delta + placement ruling. Apply it; do not re-design.
-- `packages/agent-canon/src/skills/praxis.ts` — the target; the residual `-- plan-retirement …` line (L54)
+- `packages/canon/src/skills/praxis.ts` — the target; the residual `-- plan-retirement …` line (L54)
   formalizes here.
 - `ENGINE.md` — reconcile if the tier surfaces an ENGINE-level realization (per t1's placement ruling).
-- `packages/agent-canon/test/formal-block-self-sufficiency.test.ts` — the gate + `ALLOW_LIST` (currently
+- `packages/canon/test/formal-block-self-sufficiency.test.ts` — the gate + `ALLOW_LIST` (currently
   `{praxis}` for the R1 residual); once the residue formalizes, praxis reaches 0 findings → remove it.
-- `packages/agent-canon/src/skills/formalize.ts` — the round-trip-equivalent-or-better accept-gate.
+- `packages/canon/src/skills/formalize.ts` — the round-trip-equivalent-or-better accept-gate.
 
 ## Constraints
 
@@ -44,5 +44,5 @@ t1 (needs the notation delta). Coordinates with t2 via the shared t1 design (no 
 2. The `plan-retirement` content is now formal notation, not a `--`/`—` gloss (grep confirms the prose gone).
 3. The notation passes self-sufficient-formalism (no prose gloss on a law/def) and round-trips the original
    meaning.
-4. typecheck + full agent-canon suite green.
+4. typecheck + full canon suite green.
    Falsifier: praxis still allow-listed; `plan-retirement` still prose; a prose gloss on a law/def; red suite.

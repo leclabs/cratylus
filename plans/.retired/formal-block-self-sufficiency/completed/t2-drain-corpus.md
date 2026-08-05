@@ -9,9 +9,9 @@ symbol/law then delete if load-bearing — until zero violations remain corpus-w
 ## Inputs
 
 - `[dep-fed] t1` — the completed gate + its drain worklist (the authoritative per-file violation list).
-- `packages/agent-canon/src/skills/*.ts` — the 15 formal blocks. Already drained (SKIP): signify.ts
+- `packages/canon/src/skills/*.ts` — the 15 formal blocks. Already drained (SKIP): signify.ts
   σ\*-cluster, probe.ts experiment/coverage. In-scope: signify.ts ρ-region (L47–66) + all other blocks.
-- `packages/agent-canon/src/skills/formalize.ts` — the round-trip-equivalent-or-better accept-gate every
+- `packages/canon/src/skills/formalize.ts` — the round-trip-equivalent-or-better accept-gate every
   drain move must satisfy.
 
 ## Constraints
@@ -32,12 +32,12 @@ t1 (needs the gate + worklist; drained files must PASS the gate).
 ## Outputs
 
 - All 15 `formalBlock`s pass the t1 gate; allow-list removed (∅).
-- `pnpm --filter @leclabs/agent-canon test` green; `graphify update .` run.
+- `pnpm --filter @leclabs/canon test` green; `graphify update .` run.
 
 ## Acceptance (blind, falsifiable)
 
 1. t1 gate reports **zero** law/def annotations across all skill formal blocks, no allow-list.
-2. `pnpm --filter @leclabs/agent-canon typecheck && test` green (incl. symbols.test.ts).
+2. `pnpm --filter @leclabs/canon typecheck && test` green (incl. symbols.test.ts).
 3. For each formalized comment, the added notation reconstructs the removed content (round-trip check in the
    task return). (Falsifier: a distinction present before the drain is absent after ⇒ meaning lost ⇒ reject.)
 4. No minted empty-prior signifier introduced. (Falsifier: a new glyph with no established prior ⇒ reject.)

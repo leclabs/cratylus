@@ -24,15 +24,15 @@ Cover all four sub-models:
 
 ## Inputs (static — exist at authoring)
 
-- `packages/agent-canon/src/skills/praxis.ts` — the skill to extend; note the task-level machine (the
+- `packages/canon/src/skills/praxis.ts` — the skill to extend; note the task-level machine (the
   design template) and the residual `-- plan-retirement …` line (L54) to formalize.
 - `MODEL.md` — cold-verify: `Kind ≜ {fragment,agent,rule,skill,hook}` (L10). Plans are NOT a Kind; the tier
   is a praxis-skill construct. Confirm where (if anywhere) it touches ENGINE.
-- `packages/agent-canon/src/skills/formalize.ts` — the self-sufficient-formalism accept-gate every notation
+- `packages/canon/src/skills/formalize.ts` — the self-sufficient-formalism accept-gate every notation
   addition must satisfy (no prose gloss on a law/def).
-- `packages/agent-canon/test/formal-block-self-sufficiency.test.ts` — the gate praxis must pass once the
+- `packages/canon/test/formal-block-self-sufficiency.test.ts` — the gate praxis must pass once the
   residue formalizes (t3 will drive `ALLOW_LIST → ∅`).
-- `packages/agent-canon/src/skills/dream.ts` — the retired `AGENTS.md@node` sink; confirm no residual plan
+- `packages/canon/src/skills/dream.ts` — the retired `AGENTS.md@node` sink; confirm no residual plan
   memory-role.
 - `plans/` (this dir + siblings) — the on-disk layout: `PLAN.md` + state folders + `.owner`.
 - `.scratchpad/signify-review-jul-22/` — residue background.

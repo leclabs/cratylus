@@ -1,10 +1,10 @@
 // REGISTER — this template's output lands in a CONSUMER's repo (`<target>/AGENTS.md`),
-// where agent-factory's own tree is NOT in context. It may NAME the upstream catalog
+// where cratylus's own tree is NOT in context. It may NAME the upstream catalog
 // (`canon` is meaningful provenance) but must never reference a path or document
-// that exists only in agent-factory: `packages/…`, VISION.md, MODEL.md, ENGINE.md,
+// that exists only in cratylus: `packages/…`, VISION.md, MODEL.md, ENGINE.md,
 // CANON.md all resolve to nothing there. Same seam as `genus/founding-doctrine.ts`
 // (the intrinsic ρ=LLM carry); distinct from `rules/repo-preamble.ts`, which IS
-// agent-factory-local and may reference them freely. Pinned by `cratylism.test.ts`.
+// cratylus-local and may reference them freely. Pinned by `cratylism.test.ts`.
 //
 // project-template.ts — canon's project DOCTRINE, the corpus DATA injected
 // into the doctrine-agnostic `scaffoldProject` ENGINE (`@cratylus/forge/deploy`).

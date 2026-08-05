@@ -76,7 +76,6 @@ Acceptance fails on every criterion today.
 `R1` and `R2`. Do not start this shard on partial inputs — the whole point of its position in wave 1 is
 that a spec written ahead of its evidence is the defect being repaired.
 
-
 ---
 
 **DISPOSITION (mav, 2026-07-26) — RE-AUTHORED AND EXECUTED in `close-out`.**
@@ -88,7 +87,7 @@ The decisive finding: `STORE_WATERMARK` **already existed at 16,000** and
 `nico/PROCEDURAL.md` was **15,969 bytes** — 31 under, never fired, on the exact file called
 bloated. And the dedup ladder has **zero yield at every rung** (0 exact duplicates across 46
 records) because the phenomenon does not occur in this store; the real defect is
-record↔projection *restatement*.
+record↔projection _restatement_.
 
 Root cause named: the dream cell declared `gate : home → findings` while `auditHome` also
 returns `pressure`, the only trigger `depalimpsest` has. **The tool measured the trigger the

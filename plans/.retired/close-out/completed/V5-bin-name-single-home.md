@@ -8,18 +8,18 @@ already done. It is not done.
 ## The state, measured
 
 S4 claims _"S1+S3 gave the bin name exactly one home, so the rebrand is a one-line change."_
-`packages/agent-runtime/src/main.ts:16-30` says the same of itself. The literal `agent-runtime`-as-a-
+`packages/runtime/src/main.ts:16-30` says the same of itself. The literal `runtime`-as-a-
 bin-name actually lives in **7 places across 4 packages**:
 
-| #   | site                                                                          | note                                                                                                  |
-| --- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| 1   | `packages/agent-runtime/src/main.ts:30`                                       | `const BIN = 'agent-runtime'` (cac brand + help)                                                      |
-| 2   | `packages/agent-cli/src/bin.ts:22`                                            | a **second** `const BIN` (error prefix)                                                               |
-| 3   | `packages/agent-cli/package.json`                                             | the `bin` key                                                                                         |
-| 4   | `packages/agent-forge/src/project/runtime-shim.ts:63`                         | `spawnSync('agent-runtime', …)` — **the operative one**, baked into every emitted `scripts/<cap>.mjs` |
-| 5   | `packages/agent-canon/src/toolkit/runtime-shim.ts:28`                         | duplicate — **V1 deletes this**                                                                       |
-| 6   | `packages/agent-canon/src/hooks/memory-consolidation-nudge.ts:89`             | `MEM="${MEMORY_BIN:-agent-runtime}"`                                                                  |
-| 7   | `packages/agent-canon/src/toolkit/guardrail/memory-consolidation-nudge.sh:40` | the generated worker of #6                                                                            |
+| #   | site                                                                    | note                                                                                            |
+| --- | ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| 1   | `packages/runtime/src/main.ts:30`                                       | `const BIN = 'runtime'` (cac brand + help)                                                      |
+| 2   | `packages/invoke/src/bin.ts:22`                                         | a **second** `const BIN` (error prefix)                                                         |
+| 3   | `packages/invoke/package.json`                                          | the `bin` key                                                                                   |
+| 4   | `packages/forge/src/project/runtime-shim.ts:63`                         | `spawnSync('runtime', …)` — **the operative one**, baked into every emitted `scripts/<cap>.mjs` |
+| 5   | `packages/canon/src/toolkit/runtime-shim.ts:28`                         | duplicate — **V1 deletes this**                                                                 |
+| 6   | `packages/canon/src/hooks/memory-consolidation-nudge.ts:89`             | `MEM="${MEMORY_BIN:-runtime}"`                                                                  |
+| 7   | `packages/canon/src/toolkit/guardrail/memory-consolidation-nudge.sh:40` | the generated worker of #6                                                                      |
 
 Sites 4, 6 and 7 are inside emitted `.mjs` / `.sh` strings — **compiler-unchecked**. A rename that
 misses one produces a deployed script that fails at runtime on a host, not at build.
@@ -32,15 +32,15 @@ misses one produces a deployed script that fails at runtime on a host, not at bu
 - #6/#7 are a cell and its generated worker: edit `memory-consolidation-nudge.ts` (the cell) and
   regenerate. Never the `.sh` alone — see `c4b4298`.
 - Keep `MEMORY_BIN` env-override behaviour intact.
-- Do not fold the two `BIN` constants (#1, #2) into a shared one by having `agent-cli` import from
-  `agent-runtime`'s internals if that crosses a package's public surface — route it through the
+- Do not fold the two `BIN` constants (#1, #2) into a shared one by having `invoke` import from
+  `runtime`'s internals if that crosses a package's public surface — route it through the
   declared export or a tiny shared constant module.
 
 ## Outputs
 
-`packages/agent-runtime/src/main.ts` · `packages/agent-cli/src/bin.ts` ·
-`packages/agent-cli/package.json` · `packages/agent-forge/src/project/runtime-shim.ts` ·
-`packages/agent-canon/src/hooks/memory-consolidation-nudge.ts` (+ regenerated worker) · a test
+`packages/runtime/src/main.ts` · `packages/invoke/src/bin.ts` ·
+`packages/invoke/package.json` · `packages/forge/src/project/runtime-shim.ts` ·
+`packages/canon/src/hooks/memory-consolidation-nudge.ts` (+ regenerated worker) · a test
 
 ## Acceptance
 

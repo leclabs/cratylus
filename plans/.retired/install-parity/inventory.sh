@@ -67,11 +67,11 @@ echo "--- runtime install (npm global prefix) ---"
 P=$(npm prefix -g 2>/dev/null)
 if [ -n "$P" ]; then
   echo "  prefix: $P"
-  for pkg in agent-runtime agent-memory; do
+  for pkg in runtime memory; do
     d="$P/lib/node_modules/@leclabs/$pkg"
     [ -e "$d" ] && { echo "  HIT  $d"; [ "$MODE" = purge ] && rm -rf "$d"; }
   done
-  for b in agent-runtime agent-forge memory; do
+  for b in runtime forge memory; do
     f="$P/bin/$b"
     [ -e "$f" ] && { echo "  HIT  $f"; [ "$MODE" = purge ] && rm -f "$f"; }
   done

@@ -44,6 +44,14 @@ jobs:
       - name: install
         run: pnpm install --frozen-lockfile
 
+      # Build ONCE, up front. The oracle used to build as well, so a `verify` ran
+      # two builds that could interleave: tsup emits content-hashed chunks under
+      # `clean: true`, and a rebuild landing after another task resolved
+      # `main.js` left it importing a chunk that no longer existed. Intermittent,
+      # which is the worst kind — it passed, then failed, on identical input.
+      - name: build
+        run: pnpm build
+
       - name: lint
         run: pnpm lint
 

@@ -19,10 +19,10 @@ Split failures are silent-allow. Bundled failures are loud-deny. **Prefer the lo
 
 **Static inputs (pinned, verified present at authoring):**
 
-- `packages/agent-forge/src/adapters/claude/hooks.ts` — hooks currently deploy to ONE global `settings.json` block keyed by event. That global block IS the ambient scoping this shard removes.
-- `packages/agent-canon/src/hooks/stance-guardrail-pre.ts` — the runtime `agent_type` grep. READ it to learn exactly what the mechanism needs in order to be scoped statically; do not delete it here (that is S4).
-- `packages/agent-forge/src/adapters/claude/anatomy.ts:54-57` — agent frontmatter currently emits `name`, `description`, `color`. If per-agent scoping needs a carrier in the projected bytes, this is the seam.
-- `packages/agent-forge/src/anatomy/hook-cell.ts:70` — `matcher`. **KEEP IT.** Attachment has a documented expressiveness ceiling: a static mark cannot express a runtime-conditional policy. `matcher` is the residual DYNAMIC binding — the parameters/scope face that stays separable. Removing it would force dynamic conditions back into pointcut-shaped code and re-introduce exactly the fragility this shard removes.
+- `packages/forge/src/adapters/claude/hooks.ts` — hooks currently deploy to ONE global `settings.json` block keyed by event. That global block IS the ambient scoping this shard removes.
+- `packages/canon/src/hooks/stance-guardrail-pre.ts` — the runtime `agent_type` grep. READ it to learn exactly what the mechanism needs in order to be scoped statically; do not delete it here (that is S4).
+- `packages/forge/src/adapters/claude/anatomy.ts:54-57` — agent frontmatter currently emits `name`, `description`, `color`. If per-agent scoping needs a carrier in the projected bytes, this is the seam.
+- `packages/forge/src/anatomy/hook-cell.ts:70` — `matcher`. **KEEP IT.** Attachment has a documented expressiveness ceiling: a static mark cannot express a runtime-conditional policy. `matcher` is the residual DYNAMIC binding — the parameters/scope face that stays separable. Removing it would force dynamic conditions back into pointcut-shaped code and re-introduce exactly the fragility this shard removes.
 
 **Constraints.**
 
@@ -34,7 +34,7 @@ Split failures are silent-allow. Bundled failures are loud-deny. **Prefer the lo
 
 **Dependencies.** S1 (needs `events` on a fragment to have anything to emit for).
 
-**Outputs.** `packages/agent-forge/src/adapters/claude/hooks.ts`; whatever typed carrier the
+**Outputs.** `packages/forge/src/adapters/claude/hooks.ts`; whatever typed carrier the
 composition→mechanism seam requires; adapter tests.
 
 **Completion criteria (falsifier).**

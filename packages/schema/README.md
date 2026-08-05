@@ -1,6 +1,6 @@
 # @cratylus/schema
 
-The shapes a corpus authors against, for [agent-factory](../../README.md) — the dimension
+The shapes a corpus authors against, for [cratylus](../../README.md) — the dimension
 meta-model as a TypeScript type system.
 
 It sits at the **bottom of the dependency graph**. `canon` authors against it, `forge` validates and

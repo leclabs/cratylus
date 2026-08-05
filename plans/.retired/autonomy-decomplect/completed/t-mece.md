@@ -4,13 +4,13 @@
 
 `autonomy` is one SET dimension holding three orthogonal axes (decision-authority · loop-position ·
 escalation) as members typed identically. Separate them so each axis is addressable on its own, without
-re-asserting what the pole already entails. The *how* — three distinct dimensions vs self-identifying
+re-asserting what the pole already entails. The _how_ — three distinct dimensions vs self-identifying
 members within `autonomy` — is decided here against the oracle and the MODEL, not pre-chosen.
 
 ## Static inputs
 
-- `packages/agent-canon/src/dimensions/autonomy/*.ts` — all five members.
-- `packages/agent-forge/src/anatomy/index.ts` — the `Autonomy` Fragment type + `arity: 'set'`; the
+- `packages/canon/src/dimensions/autonomy/*.ts` — all five members.
+- `packages/forge/src/anatomy/index.ts` — the `Autonomy` Fragment type + `arity: 'set'`; the
   `DimensionName` registry (whether a new dimension is a MODEL change).
 - `MODEL.md`, `ENGINE.md` — a dimension split touches the catalog structure; confirm consistency with
   the apex triad (a MODEL revision is allowed; a VISION conflict is surfaced, never unilaterally edited).
@@ -65,11 +65,13 @@ dimension fails identically); the actual guard is introspect's `misnomer` axis
 (T-introspect-K), so the structural minimalism loses no defect coverage.
 
 **The MECE structure (cold-verified):**
+
 ```
 π_decision-authority(self) = principal              — who-decides
 human-on-the-loop ⟨resting · phase-state⟩           — where-the-human-sits
 mission-command ⟨escalate ⇔ fork(irreversible · value · competence)⟩ — when-escalate
 ```
+
 Cold read (isolated, tools denied) attributes each line to exactly one aspect (who
 decides / how the human watches / when to escalate), reads line 2 as changeable (the
 `⟨resting · phase-state⟩` residue is the tell — defeats the static-co-equal

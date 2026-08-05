@@ -12,11 +12,11 @@ REQUIRED, and it is not what does the binding.
 
 **Static inputs (pinned, verified present at authoring):**
 
-- `packages/agent-forge/src/anatomy/hook-cell.ts:32` — `HookEvent = CanonicalEvent | 'vcs.commit.post'`. The event vocabulary to reuse VERBATIM. Do not mint a second event union; two vocabularies for one concept is the congruence-drift failure.
-- `packages/agent-forge/src/anatomy/hook-cell.ts:35` — `HookSubstrate = 'harness' | 'git'`. `substrate` travels WITH `events`; S3's refusal law is substrate-relative and cannot be evaluated without it.
-- `packages/agent-forge/src/anatomy/hook-cell.ts:54` — `residue`, the σ\*-signified identity that `accept()` already gates. The fragment's own body plays this role; do not add a second identity field.
-- `packages/agent-forge/src/anatomy/index.ts:109` — `export type Guardrails = Fragment<'guardrails'>` and the `Fragment` brand at `:15`. `events` attaches to the FRAGMENT shape.
-- `packages/agent-forge/src/core/hook/generated.ts` — `CanonicalEvent`, 28 harness-agnostic values, schema-owned leaf module.
+- `packages/forge/src/anatomy/hook-cell.ts:32` — `HookEvent = CanonicalEvent | 'vcs.commit.post'`. The event vocabulary to reuse VERBATIM. Do not mint a second event union; two vocabularies for one concept is the congruence-drift failure.
+- `packages/forge/src/anatomy/hook-cell.ts:35` — `HookSubstrate = 'harness' | 'git'`. `substrate` travels WITH `events`; S3's refusal law is substrate-relative and cannot be evaluated without it.
+- `packages/forge/src/anatomy/hook-cell.ts:54` — `residue`, the σ\*-signified identity that `accept()` already gates. The fragment's own body plays this role; do not add a second identity field.
+- `packages/forge/src/anatomy/index.ts:109` — `export type Guardrails = Fragment<'guardrails'>` and the `Fragment` brand at `:15`. `events` attaches to the FRAGMENT shape.
+- `packages/forge/src/core/hook/generated.ts` — `CanonicalEvent`, 28 harness-agnostic values, schema-owned leaf module.
 
 **Constraints.**
 
@@ -29,9 +29,9 @@ REQUIRED, and it is not what does the binding.
 **Dependencies.** none (wave 0 root; disjoint outputs from S0 — S0 edits the `Agent` interface's
 `guardrails` field, S1 edits the `Fragment` shape).
 
-**Outputs.** `packages/agent-forge/src/anatomy/index.ts` (fragment `events?` + `substrate`);
+**Outputs.** `packages/forge/src/anatomy/index.ts` (fragment `events?` + `substrate`);
 possibly a shared event-vocabulary module if the import would cycle; type-level tests in
-`packages/agent-forge/src/anatomy/anatomy.test-d.ts`.
+`packages/forge/src/anatomy/anatomy.test-d.ts`.
 
 **Completion criteria (falsifier).**
 

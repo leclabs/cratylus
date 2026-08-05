@@ -8,13 +8,13 @@ hide the seams. Reconcile all of them and prove nothing dangles.
 
 ## Static inputs (census-surfaced; re-run the sweep, do not trust this list as complete)
 
-- `packages/agent-canon/test/reader-density.test.ts` — references the pole value verbatim.
-- `packages/agent-forge/test/catalog/enumerate.test.ts` — enumerates autonomy values.
-- `packages/agent-forge/test/stories/E6/S4.elicit-markers.test.ts` — candidate slugs.
-- `packages/agent-canon/test/cratylism.test.ts` — the autonomy sign decode.
-- `packages/agent-forge/test/adapters/codex/anatomy.test.ts` — autonomy value in a fixture.
-- `packages/agent-forge/test/adapters/ir-bridge/agent-canon.agent-forge.json` — generated fixture.
-- `packages/agent-canon/test/fixtures/generated/agent-vector.md` — generated fixture.
+- `packages/canon/test/reader-density.test.ts` — references the pole value verbatim.
+- `packages/forge/test/catalog/enumerate.test.ts` — enumerates autonomy values.
+- `packages/forge/test/stories/E6/S4.elicit-markers.test.ts` — candidate slugs.
+- `packages/canon/test/cratylism.test.ts` — the autonomy sign decode.
+- `packages/forge/test/adapters/codex/anatomy.test.ts` — autonomy value in a fixture.
+- `packages/forge/test/adapters/ir-bridge/canon.forge.json` — generated fixture.
+- `packages/canon/test/fixtures/generated/agent-vector.md` — generated fixture.
 - any byte-lock / projection gate keyed on the autonomy dimension.
 
 ## Constraints
@@ -66,14 +66,14 @@ zero-comment self-sufficiency gate. Fixed toward the fitter sign in `7c34ec3`
 - `enumerate.test.ts` uses `.startsWith('human-on-the-loop')` — holds under the
   residue append. ✓
 
-**Green gate:** `pnpm typecheck` 8/8, `pnpm test` 7/7 (agent-forge 121 · agent-canon
-14 · agent-memory 13 · agent-runtime 3), `pnpm canon:project` clean.
+**Green gate:** `pnpm typecheck` 8/8, `pnpm test` 7/7 (forge 121 · canon
+14 · memory 13 · runtime 3), `pnpm canon:project` clean.
 
 **Generated fixtures:**
 
 - `test/fixtures/generated/agent-vector.md` — the agent is `scribe`, a FIXTURE-ONLY
   agent (no live `scribe.ts`); self-contained, unaffected by the live-cell change.
-- `test/adapters/ir-bridge/agent-canon.agent-forge.json` — a frozen IR snapshot for
+- `test/adapters/ir-bridge/canon.forge.json` — a frozen IR snapshot for
   adapter round-trip identity (regenerated manually via `emit_ir.py`), read statically.
   It carries ZERO `human-on-the-loop`, so my change does not touch it.
 

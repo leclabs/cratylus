@@ -1,6 +1,6 @@
 # @cratylus/invoke
 
-The **run-time entry** of [agent-factory](../../README.md) — the one package a consumer installs
+The **run-time entry** of [cratylus](../../README.md) — the one package a consumer installs
 globally to give an agent the capabilities it invokes while it is running.
 
 A consumer meets this system at two different times, and they are not the same entry. At build time,

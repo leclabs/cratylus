@@ -29,6 +29,7 @@ import {
   type NodeConfig,
   canonical,
   loadNodeConfig,
+  resolveConfigPath,
   resolveNode,
   underOrEqual,
 } from './node.js';
@@ -213,13 +214,9 @@ function requireHome(flags: ParsedArgs['flags']): string {
   );
 }
 
-/** `--config` > `$AGENT_FACTORY_CONFIG` > a cwd-present `.agent-factory.config` > none. */
+/** Delegates to the one home in `node.ts`; see `resolveConfigPath`. */
 function configPathFrom(flags: ParsedArgs['flags']): string | undefined {
-  return (
-    str(flags.config) ??
-    process.env.AGENT_FACTORY_CONFIG ??
-    (existsSync('.agent-factory.config') ? '.agent-factory.config' : undefined)
-  );
+  return resolveConfigPath(str(flags.config));
 }
 
 function nodeConfigFrom(flags: ParsedArgs['flags']): NodeConfig {
@@ -279,7 +276,7 @@ with "--", use --body=<text> or pipe via --body -.
 node resolves a path to its boundary node: the nearest ancestor (reflexive)
 holding a marker — .git (a .git FILE resolves through to the primary
 checkout), a package manifest, PLAN.md, or $HOME; extend via
-memory.scopeMarkers globs in .agent-factory.config. Markerless => the path is
+memory.scopeMarkers globs in .cratylus.config. Markerless => the path is
 its own boundary; nonexistent => nearest existing ancestor. Prints the BARE
 node path so it composes: read --under "$(memory node <cwd>)". --json
 prints the {node, basis} envelope instead.
@@ -1165,7 +1162,7 @@ function runRollover(args: ParsedArgs): CliResult {
  * (the v2 scan set — dream's exit gate, SPEC D5). Exit 1 + line-numbered
  * findings on any unpinned hit; 0 clean. Allow-file resolution:
  * `--allow > <home>/audit-allow.txt > none`. Repo keys come from an EXPLICIT
- * config/keylist (flag, env, or a cwd-present `.agent-factory.config`) — the
+ * config/keylist (flag, env, or a cwd-present `.cratylus.config`) — the
  * detector itself never sniffs context. Stale allow pins are reported on
  * stderr but do not fail the audit (the ratchet shrinks at review time).
  */

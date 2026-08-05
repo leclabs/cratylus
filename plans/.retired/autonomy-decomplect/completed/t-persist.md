@@ -9,11 +9,11 @@ that holds the out-of-loop elevation bound to the active praxis until completion
 
 ## Static inputs
 
-- `packages/agent-canon/src/skills/carry-on/skill.ts` — currently `check-in-close ↦ human-on-the-loop → human-out-of-the-loop`, no persistence.
-- `packages/agent-canon/src/dimensions/autonomy/human-on-the-loop.ts`
-- `packages/agent-canon/src/dimensions/autonomy/human-out-of-the-loop.ts` — `⟨intent-before · audit-after⟩`
-- `packages/agent-canon/src/skills/praxis/skill.ts` — for `active(P)`, `done(P)`, the praxis lifecycle the persistence binds to.
-- `packages/agent-canon/src/skills/wake/skill.ts` — wake binds the work-thread/active plan; the resting position is set here.
+- `packages/canon/src/skills/carry-on/skill.ts` — currently `check-in-close ↦ human-on-the-loop → human-out-of-the-loop`, no persistence.
+- `packages/canon/src/dimensions/autonomy/human-on-the-loop.ts`
+- `packages/canon/src/dimensions/autonomy/human-out-of-the-loop.ts` — `⟨intent-before · audit-after⟩`
+- `packages/canon/src/skills/praxis/skill.ts` — for `active(P)`, `done(P)`, the praxis lifecycle the persistence binds to.
+- `packages/canon/src/skills/wake/skill.ts` — wake binds the work-thread/active plan; the resting position is set here.
 
 ## Constraints
 

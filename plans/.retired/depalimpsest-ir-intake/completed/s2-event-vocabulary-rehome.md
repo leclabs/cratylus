@@ -7,13 +7,13 @@ lineage being excised, so the excision cannot proceed until it is rehomed.
 
 **Inputs (pinned, exist at authoring).**
 
-- `packages/agent-forge/src/core/ir/generated.ts:9` — `CanonicalEvent`, **generated, not hand-authored**
-- `packages/agent-forge/src/core/schema/hook.schema.json` — the generator's source of truth
-- `packages/agent-forge/src/core/scripts/generate-types.ts` — the generator (`pnpm gen`)
-- `packages/agent-forge/src/core/harness-adapter.ts:16,50` — `Hook` import; `hooks?(hooks: readonly Hook[])`
-- `packages/agent-forge/src/anatomy/hook-cell.ts:24,98` — `CanonicalEvent`/`Hook` import; `hookIrOf()`
-- `packages/agent-forge/src/project/index.ts:230` — the **live** call site of `hookIrOf`
-- `packages/agent-forge/src/adapters/*/events.ts` — the ten consumers mapping `CanonicalEvent`
+- `packages/forge/src/core/ir/generated.ts:9` — `CanonicalEvent`, **generated, not hand-authored**
+- `packages/forge/src/core/schema/hook.schema.json` — the generator's source of truth
+- `packages/forge/src/core/scripts/generate-types.ts` — the generator (`pnpm gen`)
+- `packages/forge/src/core/harness-adapter.ts:16,50` — `Hook` import; `hooks?(hooks: readonly Hook[])`
+- `packages/forge/src/anatomy/hook-cell.ts:24,98` — `CanonicalEvent`/`Hook` import; `hookIrOf()`
+- `packages/forge/src/project/index.ts:230` — the **live** call site of `hookIrOf`
+- `packages/forge/src/adapters/*/events.ts` — the ten consumers mapping `CanonicalEvent`
 
 **Constraints.**
 
@@ -33,7 +33,7 @@ lineage being excised, so the excision cannot proceed until it is rehomed.
 importing from it; `pnpm gen` regenerating in place.
 
 **Completion criteria (falsifier).** `pnpm gen` regenerates the vocabulary at its new path and the tree
-stays green; `rg -n "core/ir" packages/agent-forge/src/{anatomy,project}/` returns nothing, control
+stays green; `rg -n "core/ir" packages/forge/src/{anatomy,project}/` returns nothing, control
 proven; full `pnpm test` green; and a real local dogfood — `project` → `deploy` into a temp `HOME` —
 lands **3 hooks** with a `settings.json` byte-identical to the pre-shard output. REJECTED if the emitted
 type is copied without its schema+generator; if the type is hand-edited; if the vocabulary lands inside

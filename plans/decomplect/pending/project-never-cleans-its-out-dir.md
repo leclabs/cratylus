@@ -1,4 +1,4 @@
-# `agent-forge project` never cleans `--out` — a deleted cell's artifact outlives it
+# `cratylus project` never cleans `--out` — a deleted cell's artifact outlives it
 
 > Found by the executor of `t-build-steps-proxy-the-cli` **while refusing to paper over it**, and
 > that refusal is why it is a filed finding rather than an `rm -rf` buried in a root script.
@@ -15,7 +15,7 @@ touch packages/canon/.render-ts/agents/ZOMBIE.md && pnpm canon:project
 
 The deleted `project-cli.ts` **did** clean — `rmSync(out, { recursive: true, force: true })` before
 every run. So the capability existed in the private duplicate and does not exist in the shipped
-command. Deleting the duplicate is still correct; this is the one thing it knew that `agent-forge`
+command. Deleting the duplicate is still correct; this is the one thing it knew that `forge`
 does not.
 
 ## Why it did not move the oracle, and why that is the dangerous part

@@ -7,8 +7,8 @@
 > O1 settles (the title word is provisional). mav's intent + prior-art below are unchanged.
 >
 > **Discharged (mav, 2026-07-26).** O1 resolved against live code — see §Open questions. Two references in
-> this file had also gone stale: `packages/agent-anatomy` **does not exist** (dimensions live in
-> `packages/agent-forge/src/anatomy/index.ts`, their values in `packages/agent-canon/src/dimensions/`), and
+> this file had also gone stale: `packages/anatomy` **does not exist** (dimensions live in
+> `packages/forge/src/anatomy/index.ts`, their values in `packages/canon/src/dimensions/`), and
 > the plan's title word `organ` is superseded by `dimension` per the note above — but the file is not
 > renamed, because the anchor is undiscovered (O4) and renaming it to `heartbeat-dimension` would coin by
 > fiat the very thing O4 must derive. The working handle stays provisional until `/signify` runs.
@@ -112,16 +112,16 @@ composed of:
   | ---------------------- | -------------------------------------- | ------------------------------------------------------------------- |
   | **dimension**          | a σ\* fragment declaring a disposition | `src/dimensions/memory/long-term-memory.ts`, selected into `mav.ts` |
   | **skill** `runtime:{}` | the procedure the agent RUNS           | `src/skills/wake/skill.ts:33` → `runtime: { capability: 'memory' }` |
-  | **runtime capability** | the host-side impl behind a port       | `agent-runtime/src/ports/memory.ts`, dispatched by `dispatch.ts`    |
+  | **runtime capability** | the host-side impl behind a port       | `runtime/src/ports/memory.ts`, dispatched by `dispatch.ts`          |
 
   A skill declaring `runtime:{capability}` makes the projection emit a thin `scripts/<cap>.mjs` forwarding
-  to the host `agent-runtime <cap>` CLI; the impl is never bundled. So the heartbeat is a **runtime
+  to the host `runtime <cap>` CLI; the impl is never bundled. So the heartbeat is a **runtime
   capability** (sibling of the registered `event-tap`), invoked by a skill, and _optionally_ declared by a
   dimension. Nothing new is needed in the taxonomy to hold it.
 
 - **O2 · realization split — RESOLVED by O1.** One capability, one port, two host-side adapters
   (Channels | SDK-streaming) selected per deployment — precisely how `memory` runs one port over a
-  swappable strategy. Not two capabilities, and not an agent-forge adapter concern: the forge emits the
+  swappable strategy. Not two capabilities, and not an forge adapter concern: the forge emits the
   same thin shim regardless, and the vector choice lives host-side behind the port.
 
 - **O3 · consolidation coupling — RATIFIED as written.** The prior-art sweep is conclusive and converges
@@ -152,11 +152,11 @@ Run `/signify` for O4 first, then `/praxis`.
 
 ## See also
 
-`packages/agent-runtime/src/ports/` + `src/capabilities/event-tap` (**the pattern to copy** — a registered
-capability behind a port, dispatched by `src/dispatch.ts`) · `packages/agent-canon/src/skills/wake/skill.ts`
+`packages/runtime/src/ports/` + `src/capabilities/event-tap` (**the pattern to copy** — a registered
+capability behind a port, dispatched by `src/dispatch.ts`) · `packages/canon/src/skills/wake/skill.ts`
 (`runtime: { capability: 'memory' }` — how a skill claims a capability) ·
-`packages/agent-forge/src/project/runtime-shim.ts` (the build→runtime seam that emits the thin shim) ·
-`packages/agent-forge/src/anatomy/index.ts` (the `Dimension` union) + `packages/agent-canon/src/dimensions/`
-(dimension values) · `packages/agent-memory/` + the `dream`/`wake`/`handoff` skills (consolidation coupling, O3) ·
+`packages/forge/src/project/runtime-shim.ts` (the build→runtime seam that emits the thin shim) ·
+`packages/forge/src/anatomy/index.ts` (the `Dimension` union) + `packages/canon/src/dimensions/`
+(dimension values) · `packages/memory/` + the `dream`/`wake`/`handoff` skills (consolidation coupling, O3) ·
 prototype `/private/tmp/claude-heartbeat-channel/` (verified reference) · plans that touch consolidation:
 `dream-node-sink-retire` · stance-guardrail (O5 interaction) `plans/stance-guardrail-asktool`.

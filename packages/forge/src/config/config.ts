@@ -6,7 +6,7 @@
 // helper that gives the file type-checking + IDE completion with NO build step.
 //
 // ── NO DEPLOY TOPOLOGY — the fork dissolved, not resolved ─────────────────────
-// An earlier census framed a fork between the `.agent-factory.config` JSON (a
+// An earlier census framed a fork between the `.cratylus.config` JSON (a
 // per-host deploy TOPOLOGY) and this `agents.config.ts`, and resolved it by
 // subsumption: the topology became a `deploy` field here. The stage ontology
 // then removed the subject on both sides. `deploy` places a render tree into the

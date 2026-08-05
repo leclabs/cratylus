@@ -1,13 +1,13 @@
 # T2 — assets-bridge (SUPERSEDED · was ready · wave 0 · deps ∅)
 
-> **⛔ SUPERSEDED-BY `agent-runtime/S6`+`S8` — do NOT execute for event-tap.**
+> **⛔ SUPERSEDED-BY `runtime/S6`+`S8` — do NOT execute for event-tap.**
 > This slice existed to make a skill's `assets:` companion ship a `.sh` beside SKILL.md. Under the
-> `agent-runtime` thin-shim architecture the event-tap mechanism lives in a **runtime plugin** installed
-> per-host (`agent-runtime/S7`), and the projected skill is a thin shim → `agent-runtime tap <verb>`; no
+> `runtime` thin-shim architecture the event-tap mechanism lives in a **runtime plugin** installed
+> per-host (`runtime/S7`), and the projected skill is a thin shim → `cratylus-run tap <verb>`; no
 > per-skill `.sh` asset ships, so the `assets:` projection gap is off event-tap's path. (The general
 > `assets:`-staging idea is not destroyed — it is git-restorable and could be revived as its own concern
 > if a non-runtime skill ever needs it — but it is NOT part of this effort chain.) See
-> `plans/agent-runtime/SUPERSESSION.md`. Historical spec follows.
+> `plans/runtime/SUPERSESSION.md`. Historical spec follows.
 
 ---
 
@@ -18,11 +18,11 @@ the deployed skill dir through the intended mechanism. Today the field is inert 
 
 ## Static inputs (pinned)
 
-- `packages/agent-canon/src/toolkit/project-cli.ts` (`projectSkills`, L116-141) — writes ONLY SKILL.md; never reads `cell.assets`. **The gap.**
-- `packages/agent-forge/src/anatomy/index.ts` (L269-270) — `SkillDeploy.assets?: readonly string[]` ("committed companion assets shipped byte-for-byte" — the promise the pipeline breaks).
-- `packages/agent-forge/src/deploy/bundle.ts` (`stageAssets` L38-63; retired `bundle:` note L9-12) — the stager, fired only from deploy `--assets`.
-- `packages/agent-forge/src/cli/commands/deploy.ts` (`parseCompanions` L64-90) — the `--assets skill=spec` parse.
-- `packages/agent-canon/src/skills/` (any skill dir) + `packages/agent-canon/package.json` (`project` script).
+- `packages/canon/src/toolkit/project-cli.ts` (`projectSkills`, L116-141) — writes ONLY SKILL.md; never reads `cell.assets`. **The gap.**
+- `packages/forge/src/anatomy/index.ts` (L269-270) — `SkillDeploy.assets?: readonly string[]` ("committed companion assets shipped byte-for-byte" — the promise the pipeline breaks).
+- `packages/forge/src/deploy/bundle.ts` (`stageAssets` L38-63; retired `bundle:` note L9-12) — the stager, fired only from deploy `--assets`.
+- `packages/forge/src/cli/commands/deploy.ts` (`parseCompanions` L64-90) — the `--assets skill=spec` parse.
+- `packages/canon/src/skills/` (any skill dir) + `packages/canon/package.json` (`project` script).
 
 ## Constraints
 
@@ -48,12 +48,11 @@ the deployed skill dir through the intended mechanism. Today the field is inert 
 
 ## Accept (blind falsifier)
 
-REJECTED if: after `pnpm --filter @leclabs/agent-canon project`, a declared companion is ABSENT from
+REJECTED if: after `pnpm --filter @leclabs/canon project`, a declared companion is ABSENT from
 `.render-ts/skills/<name>/`; OR the fix hardcodes `event-tap` (not general); OR any existing gate
 (`project`, `test`, `tsc`, `biome`) regresses; OR it silently duplicates the retired `bundle:` path.
 ACCEPTED when a declared `assets` companion provably lands in the projected skill dir, byte-exact +
 executable, by a general mechanism, all gates still green.
-
 
 ---
 

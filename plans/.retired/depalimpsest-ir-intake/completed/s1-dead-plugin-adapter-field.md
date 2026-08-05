@@ -6,9 +6,9 @@ for nothing.
 
 **Inputs (pinned, exist at authoring).**
 
-- `packages/agent-forge/src/resolve/plugin.ts:24` — `import type { Adapter } from '../core/adapter/types.js'`
-- `packages/agent-forge/src/resolve/plugin.ts:59` — `readonly adapters?: readonly Adapter[]`
-- `packages/agent-canon/src/index.ts` — the one real `AgentPlugin` producer; does **not** set `adapters`
+- `packages/forge/src/resolve/plugin.ts:24` — `import type { Adapter } from '../core/adapter/types.js'`
+- `packages/forge/src/resolve/plugin.ts:59` — `readonly adapters?: readonly Adapter[]`
+- `packages/canon/src/index.ts` — the one real `AgentPlugin` producer; does **not** set `adapters`
 
 **Constraints.**
 
@@ -22,9 +22,9 @@ for nothing.
 **Outputs.** `AgentPlugin` without an `adapters` field; the `Adapter` type import gone from
 `resolve/plugin.ts`; `resolve/` with zero references into `core/adapter/`.
 
-**Completion criteria (falsifier).** `rg -n "from '\.\./core/adapter" packages/agent-forge/src/resolve/`
+**Completion criteria (falsifier).** `rg -n "from '\.\./core/adapter" packages/forge/src/resolve/`
 returns nothing, with a control proving the grep can match. Full `pnpm test` from the repo root is green.
 REJECTED if the field is kept as optional/deprecated; if the removal is justified by a bare `.adapters`
 grep without distinguishing `state.adapters`; if any consumer turns out to set the field and a shim is
-invented rather than the finding reported; or if the suite is run only for `agent-forge` rather than the
+invented rather than the finding reported; or if the suite is run only for `forge` rather than the
 whole corpus.

@@ -15,18 +15,18 @@ a fraction of the change.
 
 ## Inputs
 
-- `packages/agent-memory/src/verb-port.ts:31-54` — `MEMORY_VERBS`, and the comment that documents
+- `packages/memory/src/verb-port.ts:31-54` — `MEMORY_VERBS`, and the comment that documents
   this exact failure class: _"they diverge SILENTLY: a verb present in `cli.ts` but missing here
   typechecks, passes every unit test, and is simply unreachable through the runtime — which is how
   `get` and `rollover` shipped dead"_
-- `packages/agent-memory/test/verb-roster.test.ts` — the existing two-home gate, and the model for
+- `packages/memory/test/verb-roster.test.ts` — the existing two-home gate, and the model for
   this one
 - The ungated third home:
-  - `packages/agent-canon/src/skills/dream/skill.ts:14,18-25,27` — `lock`, `read`, `fold`, `drain`,
+  - `packages/canon/src/skills/dream/skill.ts:14,18-25,27` — `lock`, `read`, `fold`, `drain`,
     `apply`, `get`, `rollover`, `audit`, `replace`
-  - `packages/agent-canon/src/skills/wake/skill.ts:14,19` — `session begin`, `encode`
-  - `packages/agent-canon/src/skills/handoff/skill.ts:10` — `session release`
-- `packages/agent-canon/src/toolkit/` — where the sibling gates live
+  - `packages/canon/src/skills/wake/skill.ts:14,19` — `session begin`, `encode`
+  - `packages/canon/src/skills/handoff/skill.ts:10` — `session release`
+- `packages/canon/src/toolkit/` — where the sibling gates live
   (`formal-block-self-sufficiency.ts`, `symbol-probe-gate.ts`) and the shape to follow
 - V2 (`plans/close-out/completed/V2-residue-validation.md`) — the same divergence class one layer
   down: one verb's contract stated three different ways in three files
@@ -51,10 +51,10 @@ a fraction of the change.
   and it must pass against the cells **as they stand today** — if it does not, the gate is wrong,
   not the cells.
 - **Dependency direction — measured, so decide it here rather than in the edit.** Neither package
-  depends on the other today: `agent-memory` deps are `{@leclabs/agent-runtime}`, `agent-canon` deps
-  are `{@leclabs/agent-forge}`. So the gate **lives in `agent-memory/test/`**, where `MEMORY_VERBS`
-  is a local import, and reaches the cells by adding `@leclabs/agent-canon` as a **devDependency**
-  of `agent-memory` — a dev-only edge that leaves the shipped dependency graph unchanged and does
+  depends on the other today: `memory` deps are `{@leclabs/runtime}`, `canon` deps
+  are `{@leclabs/forge}`. So the gate **lives in `memory/test/`**, where `MEMORY_VERBS`
+  is a local import, and reaches the cells by adding `@leclabs/canon` as a **devDependency**
+  of `memory` — a dev-only edge that leaves the shipped dependency graph unchanged and does
   **not** make canon depend on memory. If that edge is unacceptable for a reason this shard did not
   foresee, the fallback is reading the cell source files by path from the same test; **a duplicated
   roster is not a fallback**.
@@ -62,8 +62,8 @@ a fraction of the change.
 
 ## Outputs
 
-- The gate + its negative controls — a test under `packages/agent-memory/test/`
-- `packages/agent-memory/package.json` — the `@leclabs/agent-canon` devDependency edge
+- The gate + its negative controls — a test under `packages/memory/test/`
+- `packages/memory/package.json` — the `@leclabs/canon` devDependency edge
 
 ## Acceptance
 

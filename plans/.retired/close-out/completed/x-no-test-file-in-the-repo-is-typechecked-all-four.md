@@ -34,11 +34,11 @@ returned a single TS18003. Parse JSON with a JSON parser.
 
 ## CLOSED 2026-07-26 (developer)
 
-**The gate.** A `tsconfig.test.json` per test-bearing package — `agent-canon`,
-`agent-forge`, `agent-memory`, `agent-runtime` — each extending that package's
+**The gate.** A `tsconfig.test.json` per test-bearing package — `canon`,
+`forge`, `memory`, `runtime` — each extending that package's
 `tsconfig.json`, forcing `noEmit` and `rootDir: "."`, and including
-`src/**/*` + `test/**/*` (agent-memory also `vitest.config.ts`, previously
-unchecked too). `agent-cli` ships no tests and gets none. Wired as
+`src/**/*` + `test/**/*` (memory also `vitest.config.ts`, previously
+unchecked too). `invoke` ships no tests and gets none. Wired as
 `typecheck:test` in each manifest, a `typecheck:test` turbo task, a root
 `pnpm typecheck:test`, and a third line in `.husky/pre-push` beside `typecheck`
 and `test`. `tsconfig.build.json` and every `dist` are untouched — no `src` file

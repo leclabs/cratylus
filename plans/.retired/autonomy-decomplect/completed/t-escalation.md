@@ -10,8 +10,8 @@ it stays, that it is not redundantly re-asserting what the pole carries.
 
 ## Static inputs
 
-- `packages/agent-canon/src/dimensions/autonomy/mission-command.ts`
-- `packages/agent-canon/src/dimensions/autonomy/decision-authority.ts` — the entailing pole.
+- `packages/canon/src/dimensions/autonomy/mission-command.ts`
+- `packages/canon/src/dimensions/autonomy/decision-authority.ts` — the entailing pole.
 - The T-vector / pole cold-decode transcripts (what the pole already carries).
 
 ## Constraints
@@ -56,7 +56,7 @@ non-leading escalation questions (`/tmp/nico-coldread`, tools denied):
   `value` into "ambiguous intent with different branches."
 - **Read B — pole + mission-command**: yields the exact triad — irreversible /
   value-laden / beyond-competence — plus the structural insight the pole lacks:
-  escalate ⇔ a fork that is *also* one of the three (conjunction), not on scope/
+  escalate ⇔ a fork that is _also_ one of the three (conjunction), not on scope/
   contradiction regardless of fork.
 
 **Delta = competence (added) + value sharpened + fork∧(any-one) conjunction.** The

@@ -35,10 +35,10 @@ rubric, not the artifact, was the defect.
 
 **Static inputs (pinned, verified present at authoring):**
 
-- `packages/agent-forge/src/anatomy/hook-cell.ts:32` — `HookEvent = CanonicalEvent | 'vcs.commit.post'`. `vcs.commit.post` is precisely case 3: it has no `CanonicalEvent` peer because it is not a harness event at all.
-- `packages/agent-forge/src/anatomy/hook-cell.ts:35` — `HookSubstrate = 'harness' | 'git'`, already exists.
-- `packages/agent-forge/src/anatomy/hook-cell.ts:92-101` — `hookIrOf` ALREADY throws on a substrate mismatch (`only harness hooks serialize to settings.json`). Read it: the substrate-relative refusal partly exists. Extend that discipline; do not build a parallel one beside it.
-- `packages/agent-canon/src/hooks/praxis-continuity.ts:17` — `substrate: 'git'`, the one git-substrate cell, and the live case-3 instance.
+- `packages/forge/src/anatomy/hook-cell.ts:32` — `HookEvent = CanonicalEvent | 'vcs.commit.post'`. `vcs.commit.post` is precisely case 3: it has no `CanonicalEvent` peer because it is not a harness event at all.
+- `packages/forge/src/anatomy/hook-cell.ts:35` — `HookSubstrate = 'harness' | 'git'`, already exists.
+- `packages/forge/src/anatomy/hook-cell.ts:92-101` — `hookIrOf` ALREADY throws on a substrate mismatch (`only harness hooks serialize to settings.json`). Read it: the substrate-relative refusal partly exists. Extend that discipline; do not build a parallel one beside it.
+- `packages/canon/src/hooks/praxis-continuity.ts:17` — `substrate: 'git'`, the one git-substrate cell, and the live case-3 instance.
 
 **Constraints.**
 

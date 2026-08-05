@@ -115,8 +115,8 @@ The sign was discovered, not chosen, and it carries its own constraint: asked wh
 would be beside these siblings, a reader with no access to this document answers _"the other three
 would depend on it, not the reverse — schema packages sit at the bottom of the dependency graph"_,
 and places content in canon and execution in runtime unprompted. **That is properties 2 and 4 below,
-recovered from the name alone.** It replaces a working title of `agent-anatomy`, which could not be
-used: `anatomy` was a metaphor binding four distinct concepts, and `agent-anatomy` was already
+recovered from the name alone.** It replaces a working title of `anatomy`, which could not be
+used: `anatomy` was a metaphor binding four distinct concepts, and `anatomy` was already
 `canon`'s own package name before `2f9bd6e5`.
 
 ### `memory` — a runtime strategy
@@ -189,7 +189,7 @@ on both and wires them by static import, which is what makes resolution succeed 
 than by co-installation accident. It owns the `bin` key — the one copy of the bin name no TypeScript
 can compute.
 
-**The sign was re-signified here, replacing `agent-cli`.** The retired name failed
+**The sign was re-signified here, replacing `invoke`.** The retired name failed
 `α(cᵢ) = α(cⱼ) ⇒ D(cᵢ) = D(cⱼ)` in both directions at once: it claimed **the** CLI while shipping one
 of two, and its own bin disagreed with it. The replacement was not chosen — it survived a blind
 reverse decode that killed the whole forward slate. `assembly`, `bin`, `entry`, `composition` and

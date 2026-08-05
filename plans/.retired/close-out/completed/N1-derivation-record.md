@@ -22,8 +22,8 @@ next — the question as posed is mis-formed, not merely under-answered.
 have that, and this is measurable.
 
 **Contamination found and eliminated.** A `claude -p` invocation launched from any cwd on this host
-loads `~/.claude/CLAUDE.md`, which names `agent-factory`, **`agent-forge`** (twice, as
-`agent-forge deploy`), `@leclabs/agent-cli`, `agent-toolchain-bootstrap`, `leclabs`. Verified by
+loads `~/.claude/CLAUDE.md`, which names `cratylus`, **`forge`** (twice, as
+`cratylus deploy`), `@leclabs/invoke`, `agent-toolchain-bootstrap`, `leclabs`. Verified by
 direct probe — the oracle enumerated all of them verbatim. Any trial run through the ordinary
 subagent path or an ordinary headless call is therefore **warm**, and warm on exactly the token that
 dominated the failed run. **`forge`×2 in the prior six trials is fully explained by prompt-borne
@@ -49,7 +49,7 @@ CLAUDE_CODE_OAUTH_TOKEN="$TOK" HOME=/tmp/cold-oracle/home \
 
 **Coldness verified, not assumed.** The same probe re-run under the rig returned only
 harness-intrinsic nouns (model ids, built-in skill/agent names, `gh`, `/tmp/cold-oracle/cwd`).
-**Zero occurrences of `agent-factory`, `agent-forge`, `leclabs`, `@leclabs/*`.**
+**Zero occurrences of `cratylus`, `forge`, `leclabs`, `@leclabs/*`.**
 
 **Candidate-free throughout.** No trial prompt contains a candidate, a shortlist, or a hint of one.
 Every prompt asks for recall from a differentia and forbids alternatives.
@@ -116,18 +116,18 @@ rig recovered `jq` and `start/stop/enable/disable` at 100 %.
 
 ### 2.1 The referent, read from source (not paraphrased from the dispatch prompt)
 
-- `packages/agent-cli/src/bin.ts` — the installable bin. Exists because capability resolution was
+- `packages/invoke/src/bin.ts` — the installable bin. Exists because capability resolution was
   ambient; it declares both the runtime and the capability packages and wires them by static import.
-  `BIN = 'agent-runtime'` (line 22).
-- `packages/agent-runtime/src/main.ts:16-17` — the bin name is **self-documented as a placeholder**;
+  `BIN = 'runtime'` (line 22).
+- `packages/runtime/src/main.ts:16-17` — the bin name is **self-documented as a placeholder**;
   `BIN` at line 30. `cac` owns branding + `--help`/`--version`; the `<capability> <verb>` stream is
   explicitly **not** a fixed cac command table.
-- `packages/agent-runtime/src/loader.ts:33` — `CAPABILITIES = ['memory','eventTap']`, an open
+- `packages/runtime/src/loader.ts:33` — `CAPABILITIES = ['memory','eventTap']`, an open
   install-discovered keyspace; `RuntimeHost.register` folds plugins into a capability→binding index
   and fails loud on re-claim.
-- `packages/agent-runtime/src/plugin.ts` — `RuntimePlugin` is standalone, deliberately decomplected
+- `packages/runtime/src/plugin.ts` — `RuntimePlugin` is standalone, deliberately decomplected
   from the build host's `AgentPlugin`; addressing is by imported binding, never a string id.
-- `packages/agent-forge/src/project/runtime-shim.ts` — the shim is `spawnSync('agent-runtime',
+- `packages/forge/src/project/runtime-shim.ts` — the shim is `spawnSync('runtime',
 [capability, ...argv])`, pure `f(capability)`, zero cross-package imports. **The bin name is a
   permanent per-machine address**: change it and every deployed shim breaks.
 
@@ -297,7 +297,7 @@ A fifth framing will return a fifth mode. The failure is not in the wording.
 The instrument's testimony is that **the dispatcher is not the thing to name.** Three consequences,
 all reversible, none coining:
 
-- **The placeholder is doing its job and should keep doing it.** `agent-runtime` is _descriptive of
+- **The placeholder is doing its job and should keep doing it.** `runtime` is _descriptive of
   the slot_ — which is exactly what a slot admits. It is the honest form of an ⊥, and the plan
   already routes the name-free work through V5 without it.
 - **The gate should probably move.** If the concept is a slot, the naming question that _is_ well
@@ -321,13 +321,13 @@ either way (§PLAN `publish flags`), because publishing under any name burns the
 
 ### 3.1 The referent, read from source
 
-- `packages/agent-runtime/src/capabilities/event-tap/dispatch.ts:21` —
+- `packages/runtime/src/capabilities/event-tap/dispatch.ts:21` —
   `TapVerb = 'install' | 'remove' | 'read' | 'status'`, `VERBS` set at :30, routed at :96-113.
-- `packages/agent-runtime/src/ports/event-tap.ts:51-56` — `EventTapHost` methods `installTap`,
+- `packages/runtime/src/ports/event-tap.ts:51-56` — `EventTapHost` methods `installTap`,
   `removeTap`, `readCapture`, `status`. The verbs mirror these 1:1. **Never derived.**
 - The port is passive by contract (:15-18, :80-84): observes, cannot block/deny/mutate.
 - `main.ts:79` routes both `tap` and `eventTap` here — the typed word is public surface.
-- House convention: `packages/agent-canon/src/toolkit/continuity/continuity-hook.sh:8-12,19,24,34`
+- House convention: `packages/canon/src/toolkit/continuity/continuity-hook.sh:8-12,19,24,34`
   — `{install|uninstall|status}`, with `install|on|true` / `uninstall|off|false`. The `install`/
   `uninstall` pair is already the house form.
 

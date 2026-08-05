@@ -31,7 +31,7 @@ argmin — `llm-native`'s `¬leading-candidate-set` binds the fix as much as the
 > The audit trail is kept in full rather than rewritten to match the outcome: the spec was right about
 > reach, wrong about its own flagship exhibit, and my first replacement for that was wrong too.
 
-`agent-canon/test/reader-density.test.ts` `allSurfaces()` enumerates exactly **three** families:
+`canon/test/reader-density.test.ts` `allSurfaces()` enumerates exactly **three** families:
 `dimensions/**/*.ts` · `skills/*/skill.ts` · `genus/persona.md` — the three that were already dense
 by construction. `REGISTER_RATCHET` is `new Set([])`, annotated as the corpus conforming.
 
@@ -160,15 +160,15 @@ because it unblocks these. Each of C1–C5 needs its own property stated and its
 
 **Verified.**
 
-- **Concept A — the dimension meta-model.** `agent-forge/src/anatomy/index.ts:280`
-  `type Anatomy = Readonly<Record<string, DimensionMeta>>`; `agent-canon/src/anatomy.ts` `ANATOMY`.
+- **Concept A — the dimension meta-model.** `forge/src/anatomy/index.ts:280`
+  `type Anatomy = Readonly<Record<string, DimensionMeta>>`; `canon/src/anatomy.ts` `ANATOMY`.
   Forge's own prose calls it _"the dimension CATALOG"_ / _"the catalog INSTANCE"_
   (`resolve/plugin.ts`) — the sign is in the comment, not on the type.
-- **Concept B — the agent-canon package root.** `anatomyRoot = join(here,'..','..')` in
+- **Concept B — the canon package root.** `anatomyRoot = join(here,'..','..')` in
   `toolkit/{plan-set,project-targets,project-cli,project-cli-codex,scaffold-cli}.ts`, plus
   `anatomyProjectTemplate` and `scaffoldAnatomyProject`.
 
-Fossil of `@leclabs/agent-anatomy`, renamed in `2f9bd6e5`; the `95b8f90f` depalimpsest missed these.
+Fossil of `@leclabs/anatomy`, renamed in `2f9bd6e5`; the `95b8f90f` depalimpsest missed these.
 **Breaks `α(cᵢ)=α(cⱼ) ⇒ D(cᵢ)=D(cⱼ)` at the corpus's most structural node.**
 
 Collateral: `adapters/claude/anatomy.ts` and `adapters/codex/anatomy.ts` contain no anatomy — they
@@ -180,13 +180,13 @@ export `claudeHarnessAdapter`, `agentToClaudeMd`, `agentToCodexToml`, `agentsMdS
 **Occupied ground the signification must route around:**
 
 - `MODEL.md` declares `catalog : DimensionName → ℘(fragment)`.
-- `agent-forge/src/catalog/` ALREADY denotes fragment-value enumeration (`enumerateCatalog`), and
+- `forge/src/catalog/` ALREADY denotes fragment-value enumeration (`enumerateCatalog`), and
   takes the meta-model as a parameter it currently must call `anatomy` to avoid the clash. **Two
   concepts contend for one sign — resolve that in the same act, not after.**
 - Concept B may not be a project concept at all. **Test whether it is merely a filesystem locus
   before minting anything for it** — `⊥ IS A RESULT`.
 
-**Note the interaction:** `ARCHITECTURE.md` names `agent-anatomy` as the intended meta-model package.
+**Note the interaction:** `ARCHITECTURE.md` names `anatomy` as the intended meta-model package.
 If C1's argmin rejects `anatomy`, ARCHITECTURE must be revised in the same act — it is ground, and
 ground carrying a refuted sign is worse than source doing so.
 
@@ -203,7 +203,7 @@ corpus that declares them."_ So:
 | the map a corpus declares             | corpus | `Anatomy` — **the one at issue**     |
 
 **The `catalog` contention is narrower than filed.** `catalog` is _correctly and consistently_ bound
-to `DimensionName → ℘(fragment)` across `MODEL.md`, `agent-forge/src/catalog/`, and `enumerateCatalog`
+to `DimensionName → ℘(fragment)` across `MODEL.md`, `forge/src/catalog/`, and `enumerateCatalog`
 — dimension name → its **values**. The defect is that this file's prose calls `Anatomy` a _"dimension
 catalog"_ too, for a map to **metadata**, not values. `DimensionMeta.kind`'s own comment then writes
 _"how the **value-catalog** is sourced"_ to disambiguate. **The disambiguation is in the prose and
@@ -243,7 +243,7 @@ undercounts.
 | #   | concept                                                                               | scale          |
 | --- | ------------------------------------------------------------------------------------- | -------------- |
 | A   | the dimension meta-model / catalog instance                                           | 608 ln / 291 f |
-| B   | a **filesystem locus** — the agent-canon package root (`anatomyRoot`, scaffold)       | 57 ln / 19 f   |
+| B   | a **filesystem locus** — the canon package root (`anatomyRoot`, scaffold)             | 57 ln / 19 f   |
 | C   | **harness PROJECTION** — `adapters/{claude,codex}/anatomy.ts`, `core/anatomy-body.ts` | 67 ln / 32 f   |
 | D   | **the agent's live in-session state** — `@ live-anatomy` (`skills/introspect`)        | 2 ln           |
 
@@ -253,9 +253,9 @@ exports `agentToClaudeMd` · `skillToClaudeMd` · `claudeHarnessAdapter`; `codex
 SOUL-body composer. In a **file name**, `anatomy` denotes projection — a third binding, inside the one
 package whose entire audit criterion is that it decides nothing.
 
-**The blocking finding: `agent-anatomy` already denotes two things.** It is ARCHITECTURE's _proposed_
-meta-model package **and** `agent-canon`'s own pre-`2f9bd6e5` package name (`guardrail/fixtures/turn-554.txt:50`,
-`plans/.retired/heartbeat-organ/PLAN.md:10`). **Extracting the meta-model as `agent-anatomy` would
+**The blocking finding: `anatomy` already denotes two things.** It is ARCHITECTURE's _proposed_
+meta-model package **and** `canon`'s own pre-`2f9bd6e5` package name (`guardrail/fixtures/turn-554.txt:50`,
+`plans/.retired/heartbeat-organ/PLAN.md:10`). **Extracting the meta-model as `anatomy` would
 resurrect a retired package name for a different concept** — minting the defect into the one place
 that is most expensive to carry, which is exactly what the C1↔§1 interaction warns against. This holds
 _regardless_ of how the signification resolves.
@@ -307,7 +307,7 @@ Probe 4 recovers the constitutive property verbatim. `signify-verify` passes.
 
 **σ\*(A) = `manifest`** — `DimensionManifest` for the type, `MANIFEST` for the corpus's instance.
 
-### ▶ RESOLVED 2026-08-04 — the extracted package is **`agent-schema`**
+### ▶ RESOLVED 2026-08-04 — the extracted package is **`schema`**
 
 The definiendum is not concept A. ARCHITECTURE scopes this package as _"what a cell is, what a value
 is, what carries enforcement — MODEL.md realized in types"_ — strictly broader than the manifest; it
@@ -318,14 +318,14 @@ holds, who writes against it, and what it must not do.
 `form` (overloaded), `ontology` ("overclaims — implies a network of relationships").
 
 **The round-trip does something none of the others did: it recovers the ARCHITECTURE constraint from
-the name alone.** Given `agent-schema` beside `agent-canon`/`agent-forge`/`agent-runtime`, cold:
+the name alone.** Given `schema` beside `canon`/`forge`/`runtime`, cold:
 
-| probe                     | cold decode                                                                                                                          |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| contains?                 | "type/interface definitions … the contract other packages code against" ✅                                                           |
-| holds content?            | "**No.** Schema names the shape of data, not instances" — and puts content in `agent-canon` unprompted ✅                            |
-| executes? knows a target? | "**No.** No side effects and no opinion on how/where things run — that's `agent-runtime`'s job" ✅                                   |
-| dependency direction      | "**The other three would depend on `agent-schema`, not the reverse. Schema packages sit at the bottom of the dependency graph.**" ✅ |
+| probe                     | cold decode                                                                                                                    |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| contains?                 | "type/interface definitions … the contract other packages code against" ✅                                                     |
+| holds content?            | "**No.** Schema names the shape of data, not instances" — and puts content in `canon` unprompted ✅                            |
+| executes? knows a target? | "**No.** No side effects and no opinion on how/where things run — that's `runtime`'s job" ✅                                   |
+| dependency direction      | "**The other three would depend on `schema`, not the reverse. Schema packages sit at the bottom of the dependency graph.**" ✅ |
 
 Probe 4 **is ARCHITECTURE's property 2 and 4, derived from the sign with no access to the document.**
 For a project whose thesis is that the model already holds the concepts, that is the result to want:
@@ -336,7 +336,7 @@ referent: `core/hook/hook.schema.json`, a JSON Schema generating `CanonicalEvent
 colliding** — it is the industry sense, and a shape generated from a schema file belongs in the shape
 package.
 
-**σ\*(package) = `agent-schema`.** `anatomy` then dies completely: the directory becomes this package,
+**σ\*(package) = `schema`.** `anatomy` then dies completely: the directory becomes this package,
 `type Anatomy` → `DimensionManifest`, canon's `ANATOMY` → `MANIFEST`, `AgentPlugin.anatomy` →
 `.manifest`.
 
@@ -345,10 +345,10 @@ package.
 `hook.schema.json` generating forge's `CanonicalEvent` — **exactly the arrangement PLAN §2's operator
 ruling overturns** (the vocabulary is canon's). So `⟨schema-owned⟩` is already false and must be
 revised with §2, independently of this naming. It must not be left standing beside a package called
-`agent-schema`, where it would read as an ownership claim about that package.
+`schema`, where it would read as an ownership claim about that package.
 
 **And it hands §2 its cut**, which the plan did not have: the **shape** of a `Hook` is
-`agent-schema`'s; the **vocabulary** of 28 event names is canon's. Shape and vocabulary are different
+`schema`'s; the **vocabulary** of 28 event names is canon's. Shape and vocabulary are different
 concerns, which is why one home was hard to find while they were braided.
 
 ### Still open
@@ -359,7 +359,7 @@ concerns, which is why one home was hard to find while they were braided.
    `anatomyRoot` is the only one of the four that fails to name what it roots.
 2. **Concept C** — `anatomy` as a **file name** meaning harness projection (3 files). Own
    signification; the census found it, the spec never did. **One leg run, argmin REJECTED on
-   occupancy**: it returned `capabilities`, which is `agent-runtime`'s capability keyspace and the
+   occupancy**: it returned `capabilities`, which is `runtime`'s capability keyspace and the
    entire subject of C4. The cold reader cannot know occupied ground — that is the caller's job, and
    the re-run must state the occupied set as part of the frame. Note for it: the sibling `hooks.ts`
    handles the one thing MODEL says is **not** a `Kind`, while this file handles two that are
@@ -393,7 +393,7 @@ just `.ts`: three of the four instances are markdown.
 
 ## C3 — a generator for an artifact class that no longer exists
 
-**Verified.** `agent-forge/src/anatomy/project-human.ts` projects a per-dimension README, rendering
+**Verified.** `forge/src/anatomy/project-human.ts` projects a per-dimension README, rendering
 `Classification = 'coined'` as _"a **coined** scalar dimension"_. Exported at `anatomy/index.ts:523`.
 
 **No `dimensions/*/README.md` exists anywhere in the tree (0 found), and `projectHumanDimension` has
@@ -448,7 +448,7 @@ name, for every capability. `memory` passes today, so the gate has a positive co
 
 ## C5 — `SOUL`, a canon metaphor inside the doctrine-agnostic engine
 
-**Verified.** `SOUL` appears in **12 files under `agent-forge/src`** — `core/anatomy-body.ts`,
+**Verified.** `SOUL` appears in **12 files under `forge/src`** — `core/anatomy-body.ts`,
 `anatomy/index.ts`, `deploy/{index,deploy,seeds,init}.ts`, `project/index.ts`, both adapters. It
 denotes the projected agent-definition artifact.
 
@@ -501,7 +501,7 @@ instruction** — the same law that applies to my own filed findings.
 
 ## Refuted — worth keeping
 
-Discipline does **not** decay with distance from `agent-canon`. `agent-runtime` — the farthest node —
+Discipline does **not** decay with distance from `canon`. `runtime` — the farthest node —
 carries the repo's most explicit cratylist work: `bin-name.ts` collapses 13 homes of one sign,
 `brand-derived-literals.test.ts` is a real source-text naming gate, and `ports/provisional-v9.ts`
 refuses to register a working capability because its anchor is underived, citing the law by name.
@@ -551,7 +551,7 @@ forecloses the "arbitrary mark" escape — an arbitrary mark _is_ the convention
    A cold reader cannot see occupied ground; checking it is the caller's job, and it must
    run **before** the round-trip, not after.
 
-**Ruling: do not mint.** Nothing available exceeds 6/10, and `agent-anatomy` is this
+**Ruling: do not mint.** Nothing available exceeds 6/10, and `anatomy` is this
 plan's own standing evidence for what a sign minted before its concept settled costs.
 `⊥ IS A RESULT`.
 

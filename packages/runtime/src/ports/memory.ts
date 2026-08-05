@@ -257,7 +257,7 @@ export interface AuditOptions {
   watermark?: number;
   /** Repo-specific keys the detector treats as expected (never sniffed). */
   repoKeys?: string[];
-  /** Node-marker config path (`.agent-factory.config`) override. */
+  /** Node-marker config path (`.cratylus.config`) override. */
   configPath?: string;
 }
 

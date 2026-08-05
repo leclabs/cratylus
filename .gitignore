@@ -26,9 +26,9 @@ packages/canon/.render-ts/
 # Same neutral-staging rationale; kept separate so the claude byte-identity diff stays clean.
 packages/canon/.render-ts-codex/
 # Fleet deploy topology carries env-specific SSH usernames — local-only.
-# Committed template: .agent-factory.config.example. Schema: docs/agent-factory-config-schema.md
-.agent-factory.config
-!.agent-factory.config.example
+# Committed template: .cratylus.config.example. Schema: docs/cratylus-config-schema.md
+.cratylus.config
+!.cratylus.config.example
 __pycache__/
 *.pyc
 .scratchpad/

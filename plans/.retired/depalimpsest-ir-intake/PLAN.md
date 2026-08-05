@@ -9,16 +9,16 @@
 
 ## Intent
 
-`agent-forge` carries **two disjoint pipelines behind one binary**. Excise the second.
+`forge` carries **two disjoint pipelines behind one binary**. Excise the second.
 
-|                 | **A — canon projection (live)**          | **B — IR intake (excise)**                                 |
-| --------------- | ---------------------------------------- | ---------------------------------------------------------- |
-| entry           | `init → add → compose`                   | `import <client>`                                          |
-| source of truth | `agents.config.ts` plugin set — TS cells | `.agent-forge/` IR, lifted from an existing harness config |
-| terminal        | `project → deploy`                       | `compile [...clients]`                                     |
-| writes          | `.render/` → `~/.claude/`                | `~/.claude/` **directly**                                  |
-| renderer        | `claudeHarnessAdapter.agentDef`          | `serializeAgent()`                                         |
-| registry        | `adapters/registry` — 2 harnesses        | `core/adapter` — ~16 clients                               |
+|                 | **A — canon projection (live)**          | **B — IR intake (excise)**                           |
+| --------------- | ---------------------------------------- | ---------------------------------------------------- |
+| entry           | `init → add → compose`                   | `import <client>`                                    |
+| source of truth | `agents.config.ts` plugin set — TS cells | `.forge/` IR, lifted from an existing harness config |
+| terminal        | `project → deploy`                       | `compile [...clients]`                               |
+| writes          | `.render/` → `~/.claude/`                | `~/.claude/` **directly**                            |
+| renderer        | `claudeHarnessAdapter.agentDef`          | `serializeAgent()`                                   |
+| registry        | `adapters/registry` — 2 harnesses        | `core/adapter` — ~16 clients                         |
 
 They share no data: `projectPluginSet` never calls `readIR`/`writeIR`, and the only IR writers are
 `import` and `migrate`.
@@ -30,7 +30,7 @@ They share no data: `projectPluginSet` never calls `readIR`/`writeIR`, and the o
    projections that never author meaning. B is residue of forge's pre-VISION identity as a config
    transpiler.
 2. **Its upstream was already deleted.** `test/adapters/ir-bridge/round-trip.test.ts:18-20` names its
-   75KB fixture as the output of `agent-canon/toolkit/emit_ir.py` — the corpus→IR emitter, removed in
+   75KB fixture as the output of `canon/toolkit/emit_ir.py` — the corpus→IR emitter, removed in
    `d532a5f` ("delete Python toolkit"). The one bridge from a semantic corpus into an IR is gone; only
    its frozen output survives, pinned in a green test. The IR has no producer but `import`.
 3. **Two writers, one destination.** `compile` and `deploy` both write `~/.claude/`, through two
@@ -71,7 +71,7 @@ green does not prove the combination.
 Two falsifiers **I wrote were vacuous**, both caught by the executors, not by me:
 
 - **S7's static input** pinned `README.md:33-35`. The root `README.md` is a five-line thesis stub; the
-  offending headline lives in `packages/agent-forge/README.md`. I verified the path **existed** and never
+  offending headline lives in `packages/forge/README.md`. I verified the path **existed** and never
   opened the lines. DESIGN §7a inherited the same error, copied from the census unverified.
   **Pin the claim, not just the path.**
 - **S2's stated falsifier** (`rg -n "core/ir" src/{anatomy,project}/`) returned clean **at HEAD too** —
@@ -95,7 +95,7 @@ is "X no longer depends on Y."
   inverse. Resolved by leaving `ir.schema.json` byte-identical and putting the path knowledge in the
   legacy generator's file-reader — which S6 deletes anyway.
 - **Biome, not prettier, owns JSON here** (`biome check --staged` in pre-commit). Pre-existing biome debt
-  in `agent-forge/package.json` surfaces on first touch.
+  in `forge/package.json` surfaces on first touch.
 
 ### Wave 1 — the braid is cut
 
@@ -123,11 +123,11 @@ authoring and confirm it fails.**
 
 ### Out of scope, found in passing — a third hook-block shape
 
-`packages/agent-runtime/src/capabilities/event-tap/claude-serialize.ts` declares its **own**
-`ClaudeHooksBlock` and serializer. It does not import agent-forge and serializes `LifecycleEvent` rather
+`packages/runtime/src/capabilities/event-tap/claude-serialize.ts` declares its **own**
+`ClaudeHooksBlock` and serializer. It does not import forge and serializes `LifecycleEvent` rather
 than `Hook`, so it is a separate lineage — **not** the fork this plan forbids, and correctly left alone.
 But it is a second hand-maintained copy of the Claude settings hook-block shape, and
-`plans/agent-runtime/PLAN.md:26` already records the coupling question as FORK-1. Wants its own census;
+`plans/runtime/PLAN.md:26` already records the coupling question as FORK-1. Wants its own census;
 not scoped here.
 
 ### Wave 3 — excised
@@ -141,7 +141,7 @@ entanglement mechanism; suite 7/7 at 0 cached; deployed tree byte-identical (`se
 `8e21ace4…07205`, matching the pinned prior-wave value, `diff -r` clean over all 63 files).
 
 **The defect that would have made this whole plan unobservable.** cac parses an unrecognized command into
-the absent global command and exits **0, silently** — `agent-forge compile` looked like a _success_ after
+the absent global command and exits **0, silently** — `forge compile` looked like a _success_ after
 its implementation was deleted. A removed verb was indistinguishable from a working one by exit code.
 Guard added (`cli/index.ts`, `parse({run:false})` + `matchedCommand`). Now removed verbs fail at the
 **parser** site with a named-alternatives message, while a surviving verb like `compose` fails at the
@@ -152,7 +152,7 @@ lesson at its sharpest: here the low-cardinality value was **0**, i.e. success.
 consumers, and 197 of 205 cross-package imports already use `/anatomy` with **zero** using the root. The
 package has no single root _concept_ — it is a set of named surfaces. Pointing `.` at a residue barrel
 would describe the package falsely, and a barrel that `export *`s a lineage is the exact invisible edge
-this plan spent three waves cutting. `import '@leclabs/agent-forge'` now fails honestly with
+this plan spent three waves cutting. `import '@leclabs/forge'` now fails honestly with
 `ERR_PACKAGE_PATH_NOT_EXPORTED` (verified).
 
 **The carried-in oracle trap reproduced exactly:** `import.meta.resolve` _resolved_ both bogus
@@ -161,7 +161,7 @@ one-off.
 
 Four things my shard input list got wrong or missed:
 
-- **`init` was a live verb with a dead half** — it bootstrapped `.agent-forge/` _and_ scaffolded
+- **`init` was a live verb with a dead half** — it bootstrapped `.forge/` _and_ scaffolded
   `agents.config.ts`, and held 2 of the 10 falsifier hits. Surgery, not deletion. Its `--scope` flag
   selected only the IR root, so keeping it would have been a parse-and-ignore flag; removed, and `init`
   is now idempotent with two new tests pinning that.
@@ -189,7 +189,7 @@ Both are `signify` acts under cratylism, so neither was delegated and neither is
 Roughly **4,000 source lines** and **10,200 of 17,635 test lines** leave in S6, plus 15 of 18 adapter
 directories and the orphaned fixture. Verified untouched (zero IR references): `src/deploy/`,
 `src/validate/`, `src/catalog/`, `src/config/`, `src/project/`, `src/resolve/` (after S1), `src/anatomy/`
-(after S2). Cross-package, 175 of 183 imports of agent-forge are `@leclabs/agent-forge/anatomy`; no
+(after S2). Cross-package, 175 of 183 imports of forge are `@leclabs/forge/anatomy`; no
 package imports the root.
 
 ## Standing gates (every shard)
