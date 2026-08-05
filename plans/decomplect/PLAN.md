@@ -41,12 +41,26 @@ which is now **promoted to `ready/`** on the strength of it.
   exists anywhere in the tree. Worse, the sweep that picked the name **rewrote the shard**, so it now
   argues that the live brand is the retired one. It cannot be executed as written.
 
-**The brand sweep rewrote 108 files of historical record** — 95 under `plans/.retired/`, 13 under
-`decomplect/completed/` — including every artifact whose subject _is_ the retired name. This file's
-own discipline (_"a record edited to match today is no longer a record"_) was honored by the
-re-baseline four commits earlier and lost to the sweep that followed, because it lived in prose and
-the sweep's criterion lived in a script. The remedy is a **fork the operator owns** and is filed as
-[`pending/the-brand-sweep-rewrote-the-record-not-only-the-source.md`](./pending/the-brand-sweep-rewrote-the-record-not-only-the-source.md).
+**The brand sweep rewrote 99 files of historical record** — 86 under `plans/.retired/`, 13 under
+`decomplect/completed/` — including every artifact whose subject _is_ the retired name, and it
+renamed a whole retired plan **directory** (`agent-runtime/` → `runtime/`), so the plan that argued
+about a name now sits at a path named for the answer. This file's own discipline (_"a record edited
+to match today is no longer a record"_) was honored by the re-baseline four commits earlier and lost
+to the sweep that followed, because it lived in prose and the sweep's criterion lived in a script.
+
+**Ruled and executed — branch 2, marked rather than restored**, argued in
+[`completed/the-brand-sweep-rewrote-the-record-not-only-the-source.md`](./completed/the-brand-sweep-rewrote-the-record-not-only-the-source.md).
+The record was never destroyed — `61b85db7^` holds every original byte — so what the sweep took was
+the reader's knowledge that a substitution happened, and a pointer restores exactly that at no cost
+to the property the operator accepted. 17 `NAMES-RETROFITTED.md` notices now sit in the affected
+directories, each naming the sweep and carrying a `git show` that resolves. The gate is
+`canon/test/record-retrofit-notice.test.ts`, convicting **and** exonerating, all four legs proven red
+by injection. **`fetch-depth: 0` in CI is load-bearing** — the default shallow clone made the
+history leg unable to look while still reading green.
+
+**I published "108 of 115" first and it was wrong** — it double-counted the nine pre-rename path
+entries of the directory move. Recorded because the shard is _about_ records that no longer say what
+happened, and correcting it silently would have been the same defect one level up.
 
 **Forge reads 215 where this file long said 224, and the drop is a MOVE, not a loss**: `215 + 9 = 224`
 — the nine tests left forge with `schema` in `48baaddd`. Recorded because a falling test count

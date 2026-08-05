@@ -91,6 +91,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/plan-set.test.ts': 'GATE',
   'canon/projection-stability.test.ts': 'GATE',
   'canon/reader-density.test.ts': 'GATE',
+  // enumerates the LIVE plans/ record dirs against a pinned roster; its convicting
+  // fixture drives the same pure checks over a synthetic corpus in a tmpdir.
+  'canon/record-retrofit-notice.test.ts': 'GATE',
   'canon/reader-reach.test.ts': 'GATE',
   'canon/runtime-shim.test.ts': 'BEHAVIORAL',
   'canon/skill-shape.test.ts': 'GATE',
