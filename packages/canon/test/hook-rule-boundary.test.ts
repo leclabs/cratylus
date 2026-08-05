@@ -1,5 +1,6 @@
-// hook/rule boundary gate — `hook` (activation=event) and `rule` (activation=scope)
-// are first-class SOURCE cells whose harness artifacts are PROJECTED TARGETS, not
+// hook/rule boundary gate — the `hook` and `rule` source-cell FAMILIES are both
+// `Kind ∋ rule` (`activation: rule ↦ scope`; MODEL declares no `hook` Kind and no
+// `event` ActivationMode), and their harness artifacts are PROJECTED TARGETS, not
 // hand-authored. `rule` now has ONE corpus instance: `src/rules/repo-preamble.ts`
 // projects the repo-root `AGENTS.md`. This became legal when the `AGENTS.md@node`
 // dream memory-sink route was RETIRED (`src/skills/dream.ts` routes no record to a
@@ -99,24 +100,44 @@ function repoAgentsMd(): string[] {
 // residue in as D is the STRICTEST reading available — the leg must find nothing
 // left to subtract.
 
+// KIND ⊥ FAMILY, and conflating them is what put a fifth member in `AcceptCell`.
+// `MODEL.md:10` — `Kind ≜ {fragment, agent, rule, skill}`. There is no `hook` Kind:
+// `hook` is what a HARNESS calls its mechanism (`schema/src/hook-cell.ts:6-10`), and
+// the cell it names is `Kind ∋ rule`, `activation: rule ↦ scope`. Both families
+// therefore enter `accept()` as `kind:'rule'` — see the ground-conformance property
+// on `AcceptCell` (`forge/src/validate/accept.ts`) and its gate
+// (`ground-conformance.test.ts`). MODEL was NOT amended to admit `hook`.
+//
+// `family` is what survives the collapse, and it is NOT a Kind: it is the source
+// MODULE the cell was walked from (`src/hooks/*.ts` vs `src/rules/*.ts`), and it
+// names the HOME (`hook/<id>` vs `rule/<id>`). PARTITIONED quantifies over homes —
+// `|home(c)|=1 ∧ disjoint(homes)` — so the two families must stay distinguishable
+// there or a hook and a rule sharing an anchor would read as ONE home and the
+// collision would go unconvicted. A home id names a module; a Kind names what a
+// thing IS. Ground enumerates the second only.
+
 /** A hook/rule source cell at the grain both the homes map and the accept lift read. */
 interface SourceCell {
-  readonly kind: 'hook' | 'rule';
+  /** MODEL's `class(c)`. BOTH families are `rule` — there is no `hook` Kind. */
+  readonly kind: 'rule';
+  /** The source-module family. A HOME namespace, ¬ a Kind (see above). */
+  readonly family: 'hook' | 'rule';
   /** α(c) — the anchor the homes map is keyed by. */
   readonly slug: string;
-  /** The home id (`<kind>/<cell id>`). */
+  /** The home id (`<family>/<cell id>`). */
   readonly home: string;
   /** MODEL's `residue(c)` — the σ*-signified identity, post-subtraction. */
   readonly residue: string;
   readonly refs: readonly string[];
 }
 
-/** Every hook + rule source cell, kind-tagged. The ONE walk over the corpus. */
+/** Every hook + rule source cell, family-tagged. The ONE walk over the corpus. */
 async function sourceCells(): Promise<SourceCell[]> {
   return [
     ...(await allHookCells()).map(
       (c): SourceCell => ({
-        kind: 'hook',
+        kind: 'rule',
+        family: 'hook',
         slug: c.id,
         home: `hook/${c.id}`,
         residue: c.residue,
@@ -126,6 +147,7 @@ async function sourceCells(): Promise<SourceCell[]> {
     ...(await allRuleCells()).map(
       (c): SourceCell => ({
         kind: 'rule',
+        family: 'rule',
         slug: c.slug,
         home: `rule/${c.id}`,
         residue: c.residue,
@@ -140,7 +162,14 @@ function acceptCellOf(c: SourceCell): AcceptCell {
   return { kind: c.kind, slug: c.slug, definiens: c.residue, refs: c.refs };
 }
 
-/** One home per hook + rule anchor (the PARTITIONED claim over the source cells). */
+/**
+ * One home per hook + rule anchor (the PARTITIONED claim over the source cells).
+ *
+ * The `hook/<id>` home ids KEEP their prefix and it is not the deleted fifth Kind:
+ * a home names the source MODULE that owns the anchor, and PARTITIONED
+ * (`|home(c)|=1 ∧ disjoint(homes)`) can only convict a cross-family anchor
+ * collision if the two families remain distinguishable in the key.
+ */
 async function cellHomes(): Promise<Homes> {
   const homes = new Map<string, string[]>();
   for (const c of await sourceCells()) {
@@ -253,9 +282,11 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
   // ── (b) accept()/REFLEXIVE — the static Universal floor over every hook cell ─────
   it('every hook + rule cell RESIDUE passes the static Universal floor', async () => {
     const homes = await cellHomes();
-    const cells: AcceptCell[] = (await sourceCells()).map(acceptCellOf);
     const failures: string[] = [];
-    for (const cell of cells) {
+    // walked as SOURCE cells, not accept cells: the accept `kind` is `rule` for
+    // both families now, so the HOME is what still names which cell failed.
+    for (const source of await sourceCells()) {
+      const cell: AcceptCell = acceptCellOf(source);
       const failing = failingLegs(
         universalCell(cell, homes, canonPolicy),
       ).filter(
@@ -263,7 +294,7 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
           !ACCEPT_RATCHET.some((p) => p.slug === cell.slug && p.leg === leg),
       );
       if (failing.length) {
-        failures.push(`${cell.kind}/${cell.slug}: ${failing.join(',')}`);
+        failures.push(`${source.home}: ${failing.join(',')}`);
       }
     }
     expect(failures, failures.join('\n')).toEqual([]);

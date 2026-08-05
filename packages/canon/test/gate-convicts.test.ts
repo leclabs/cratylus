@@ -93,6 +93,12 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/event-tap-cell.test.ts': 'GATE',
   'canon/formal-block-self-sufficiency.test.ts': 'GATE',
   'canon/gate-convicts.test.ts': 'GATE',
+  // parses `Kind ≜ {…}` out of the LIVE `MODEL.md` and `AcceptCell.kind` out of the
+  // LIVE `accept.ts`, asserting S ⊆ G (never =, so refinement stays legal). Neither
+  // side is transcribed — a copy of a ground enumeration is the same defect one
+  // level up. Its convicting fixtures drive the same pure property over S∪{widget}
+  // and over the exact fifth Kind (`hook`) the gate was built from.
+  'canon/ground-conformance.test.ts': 'GATE',
   'canon/harness-parity.test.ts': 'GATE',
   'canon/hook-rule-boundary.test.ts': 'GATE',
   'canon/memory-nudge.test.ts': 'BEHAVIORAL',
@@ -157,6 +163,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // asserts the unpatched fold is the identity over the real canon fragment corpus.
   'forge/project/resolver-parity.test.ts': 'GATE',
   // asserts the live `src/project/index.ts` source performs no writes.
+  // drives `writeRenderTree` against trees it builds itself, including a hand-edited
+  // record with an escaping path — the prune's negative half, which a positive-only
+  // control would leave open.
+  'forge/project/write-prune.test.ts': 'BEHAVIORAL',
   'forge/project/tree.test.ts': 'GATE',
   'forge/validate/enforced.test.ts': 'BEHAVIORAL',
   'forge/resolve/provenance.test.ts': 'BEHAVIORAL',

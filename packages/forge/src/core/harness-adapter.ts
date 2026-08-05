@@ -18,7 +18,7 @@ import type {
   Substrate,
   SubstrateEvent,
 } from '@cratylus/schema/hook';
-import type { ResolvedSkill } from './anatomy-body.js';
+import type { ResolvedSkill } from './body.js';
 
 /** A single projected artifact: the harness-owned filename + its bytes. */
 export interface HarnessProjection {

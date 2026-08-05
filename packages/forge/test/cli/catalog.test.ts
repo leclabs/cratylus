@@ -37,7 +37,7 @@ import { CONFIG_FILE } from '../../src/config/scaffold.js';
  */
 const ZEROCONF_ANATOMY = {
   veridicality: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
-  plumbline: { axis: 'Persona', kind: 'coined', arity: 'set' },
+  plumbline: { axis: 'Persona', kind: 'curated', arity: 'set' },
 };
 
 /** Write `export const <name> = <literal>;` under `<root>/<dimension>/<file>.ts`. */
@@ -142,7 +142,7 @@ describe('catalog — the ZERO-CONFIG corpus path (no agents.config.ts)', () => 
     expect(out).toContain('ground-truth');
     expect(out).toContain('true-vertical');
     expect(out).toContain('Constitution · enum · scalar');
-    expect(out).toContain('Persona · coined · set');
+    expect(out).toContain('Persona · curated · set');
     expect(out).toContain('2 dimensions, 2 values');
   });
 
@@ -171,7 +171,7 @@ describe('catalog — the ZERO-CONFIG corpus path (no agents.config.ts)', () => 
       {
         dimension: 'plumbline',
         axis: 'Persona',
-        kind: 'coined',
+        kind: 'curated',
         arity: 'set',
         values: ['true-vertical'],
       },

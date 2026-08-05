@@ -98,7 +98,7 @@ describe('enumerateCatalog over the fixture corpus', () => {
       arity: 'set',
     });
     expect(byDimension.get('guardrails')).toMatchObject({
-      kind: 'coined',
+      kind: 'curated',
       arity: 'set',
     });
     expect(byDimension.get('capabilities')).toMatchObject({

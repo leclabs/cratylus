@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   codexHarnessAdapter,
   codexHooksJson,
-} from '../../src/adapters/codex/anatomy.js';
+} from '../../src/adapters/codex/render.js';
 
 const MECH = new Map<string, HarnessMechanism>([
   ['stance', { command: 'sh stance.sh', workers: [] }],

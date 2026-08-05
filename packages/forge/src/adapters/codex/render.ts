@@ -23,13 +23,9 @@ import TOML from '@iarna/toml';
 // The composed Target body is HARNESS-NEUTRAL, so the body machinery lives in core
 // (`agentBody`/`skillBody` + the `ResolvedSkill` shape) — imported DOWNWARD from
 // core, NOT sideways from the claude adapter.
-import {
-  type ResolvedSkill,
-  agentBody,
-  skillBody,
-} from '../../core/anatomy-body.js';
+import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
 // The projection PORT, imported from its DEFINING module — see the note in
-// `adapters/claude/anatomy.ts`.
+// `adapters/claude/render.ts`.
 import type {
   AgentDefContext,
   HarnessAdapter,

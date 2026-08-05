@@ -30,7 +30,7 @@ on measurement.
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** skill-cells · **wave** 1
+- **slice** skill-cells · **wave** 0
 - **depends on** `t-coined-classification` · `t-authoring-surface`
 - **writes** `packages/canon/src/skills/create-agent/**`
 - **compiles against** `packages/schema/src/index.ts`

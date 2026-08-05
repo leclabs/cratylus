@@ -1,7 +1,8 @@
 // structural-parsimony.ts — the STRUCTURAL leg of PARSIMONIOUS the per-cell
-// lexical witness (`./accept.ts` `parsimonious`) cannot see. `accept.ts` reads
-// ONE cell's body against ONE anchor (residue ⊉ fired(α)); the accretion this
-// gate pays down lives ABOVE the cell — in the import-graph + the module set:
+// lexical witness (`@cratylus/forge/validate` `accept.ts` `parsimonious`) cannot
+// see. `accept.ts` reads ONE cell's body against ONE anchor (residue ⊉ fired(α));
+// the accretion this gate pays down lives ABOVE the cell — in the import-graph +
+// the module set:
 //
 //   parsimonious-over-structure(corpus) ⇔
 //     ¬∃ file/type/field existing SOLELY to restate what an archetype holds.
@@ -34,6 +35,18 @@
 // reads is formal σ* under ρ, never human prose — held here structurally: the
 // gate refuses re-accretion of files/types/fields that restate an archetype, the
 // structural face of the same parsimony `accept.ts` enforces per-cell.
+//
+// CANON'S, NOT THE PROJECTOR'S. This is a gate over THIS corpus's own tree, and the
+// coupling is in the WITNESSES, not in extractable constants: `genusFloor` quantifies
+// over `agents/`, `resolvedDup` names `ResolvedAgent`, `absorbedIdentity` reads canon's
+// `mark:{emoji,hue}` identity token. Injecting those through the engine's `Policy` seam
+// would relocate three regexes and leave three functions whose LOGIC still encodes
+// canon's tree — a seam that looks satisfied while the fusion hides behind it. So the
+// module lives with the corpus it quantifies over (ARCHITECTURE property 2: nothing —
+// least of all a gate over canon's own corpus — depends on the projector). Its siblings
+// are the other pure canon-corpus gates flat under `toolkit/` (`symbol-probe-gate.ts`,
+// `formal-block-self-sufficiency.ts`), NOT `toolkit/cold-oracle/`, which is the live
+// LLM-isolation concern and its injected policy DATA.
 //
 // PURE — witnesses over a supplied structural model, zero IO. Corpus loading (read
 // src/ · parse) lives in the caller (`test/structural-parsimony.test.ts`), which

@@ -18,8 +18,8 @@
 // module that DEFINES the symbol, so no future barrel can silently re-create the
 // edge.
 import type { HarnessAdapter } from '../../core/harness-adapter.js';
-import { claudeHarnessAdapter } from '../claude/anatomy.js';
-import { codexHarnessAdapter } from '../codex/anatomy.js';
+import { claudeHarnessAdapter } from '../claude/render.js';
+import { codexHarnessAdapter } from '../codex/render.js';
 
 export type {
   HarnessAdapter,
@@ -27,7 +27,7 @@ export type {
   HarnessHooksProjection,
 } from '../../core/harness-adapter.js';
 // The harness-neutral resolved-skill shape a consumer builds to feed `skillDef`.
-export type { ResolvedSkill } from '../../core/anatomy-body.js';
+export type { ResolvedSkill } from '../../core/body.js';
 
 /** The canonical harness names with a registered `HarnessAdapter`. */
 export type HarnessName = 'claude' | 'codex';

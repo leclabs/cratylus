@@ -53,7 +53,7 @@ import {
   type DiscoveredPlugin,
   discoverPluginFragments,
 } from '../catalog/index.js';
-import type { ResolvedSkill } from '../core/anatomy-body.js';
+import type { ResolvedSkill } from '../core/body.js';
 import {
   dimensionFieldsOf,
   enforcingValuesOf,

@@ -29,7 +29,7 @@ export const MANIFEST = {
   role: { axis: 'Persona', kind: 'open', arity: 'scalar' },
   guardrails: {
     axis: 'Constitution',
-    kind: 'coined',
+    kind: 'curated',
     arity: 'set',
     required: true,
   },

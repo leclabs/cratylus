@@ -66,12 +66,27 @@ export type Genus = 'Persona' | 'Constitution';
 export type CapabilityName = string;
 
 /**
- * How a dimension's value-catalog is sourced:
- * - `enum`   — a member of the model's own native value set (blind introspection).
- * - `open`   — named per-agent; where identity lives.
- * - `coined` — a closed, corpus-authored catalog of canonical directives.
+ * How a dimension's value-catalog is sourced — the axis is WHO OWNS THE VALUE
+ * SET, and the three members partition it:
+ * - `enum`    — the MODEL's own native value set (blind introspection).
+ * - `open`    — named PER-AGENT; where identity lives.
+ * - `curated` — a closed catalog the CORPUS assembled.
+ *
+ * The third member read `coined` until 2026-08-05, and that was a defect the
+ * corpus's own first principle names: `cratylism` states a canonical sign is
+ * `INTRINSIC ∧ DISCOVERED ¬coined`, and `cratylism` is itself a value of
+ * `engineering-principles` — a dimension this type classified `coined`. The type
+ * refuted the axiom it types, in the axiom's own vocabulary.
+ *
+ * `curated` is the repair and not a euphemism. A cold read ranked it first for
+ * carrying closure, ownership and maintenance at once, which is the exact
+ * contrast that matters against `enum` (`catalog` loses the agency — it never
+ * says WHOSE). Its one stated cost, that it understates invention, is the whole
+ * point here: under cratylism nothing was invented, only selected. `open` does
+ * NOT subsume it — the three are MECE on ownership, so this is a rename, never a
+ * merge.
  */
-export type Classification = 'enum' | 'open' | 'coined';
+export type Classification = 'enum' | 'open' | 'curated';
 
 /** Whether a dimension field holds one value (`scalar`) or many (`set`). */
 export type Arity = 'scalar' | 'set';

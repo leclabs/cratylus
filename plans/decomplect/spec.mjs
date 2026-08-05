@@ -152,6 +152,7 @@ export const SHARDS = {
     outputs: [
       'packages/forge/src/deploy/seeds.ts',
       'packages/memory/src/seeds.ts',
+      'packages/memory/test/seed-parity.test.ts',
     ],
     refs: [
       'packages/forge/src/deploy/local.ts',
@@ -215,6 +216,9 @@ export const SHARDS = {
       'packages/forge/src/validate/structural-parsimony.ts',
       'packages/forge/src/core/exemplify/register.ts',
       'packages/canon/src/toolkit/cold-oracle/**',
+      'packages/forge/src/core/exemplify/**',
+      'packages/forge/src/cli/commands/optimize.ts',
+      'packages/forge/test/stories/E6/**',
     ],
     refs: ['packages/forge/src/core/exemplify/register.ts'],
     static: [
@@ -238,8 +242,12 @@ export const SHARDS = {
   't-project-human-vs-engine': {
     slice: 'projection-and-ground',
     deps: ['t-soul-to-target-in-forge'],
-    outputs: ['packages/forge/src/project/project-human.ts', 'ENGINE.md'],
-    refs: ['packages/forge/src/core/anatomy-body.ts'],
+    outputs: [
+      'packages/forge/src/project/project-human.ts',
+      'ENGINE.md',
+      'packages/forge/test/project/project-human.test.ts',
+    ],
+    refs: ['packages/forge/src/core/body.ts'],
     static: ['packages/forge/src/project/project-human.ts', 'ENGINE.md'],
   },
 
@@ -341,7 +349,13 @@ export const SHARDS = {
   't-accept-fifth-kind': {
     slice: 'projection-and-ground',
     deps: ['t-soul-to-target-in-forge', 't-definiens-vs-residue'],
-    outputs: ['packages/forge/src/validate/accept.ts', 'MODEL.md'],
+    outputs: [
+      'packages/forge/src/validate/accept.ts',
+      'packages/canon/test/hook-rule-boundary.test.ts',
+      'packages/canon/src/toolkit/project-targets.ts',
+      'packages/canon/test/ground-conformance.test.ts',
+      'packages/canon/test/gate-convicts.test.ts',
+    ],
     refs: ['packages/schema/src/hook-cell.ts'],
     static: ['packages/forge/src/validate/accept.ts', 'MODEL.md'],
   },
@@ -357,12 +371,12 @@ export const SHARDS = {
     outputs: [
       'packages/forge/src/adapters/claude/**',
       'packages/forge/src/adapters/codex/**',
-      'packages/forge/src/core/anatomy-body.ts',
+      'packages/forge/src/core/body.ts',
     ],
     refs: ['packages/forge/src/project/index.ts'],
     static: [
-      'packages/forge/src/adapters/claude/anatomy.ts',
-      'packages/forge/src/core/anatomy-body.ts',
+      'packages/forge/src/adapters/claude/render.ts',
+      'packages/forge/src/core/body.ts',
     ],
   },
   't-coined-classification': {
@@ -453,7 +467,13 @@ export const SHARDS = {
   'the-host-install-is-a-symlink-nobody-authored': {
     slice: 'host-and-config',
     deps: ['t-soul-to-target-in-forge'],
-    outputs: ['packages/invoke/**'],
+    outputs: [
+      'packages/invoke/**',
+      'packages/forge/src/deploy/bundle.ts',
+      'packages/forge/src/deploy/local.ts',
+      'packages/forge/src/deploy/index.ts',
+      'packages/forge/test/deploy/**',
+    ],
     refs: ['packages/runtime/src/bin-name.ts'],
     static: ['packages/invoke/README.md', 'packages/runtime/src/bin-name.ts'],
   },

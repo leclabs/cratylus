@@ -12,4 +12,4 @@ export {
   skillToCodexMd,
   agentsMdSurface,
   codexHarnessAdapter,
-} from './anatomy.js';
+} from './render.js';

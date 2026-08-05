@@ -47,9 +47,48 @@ export const UNIVERSAL_LEGS: readonly Leg[] = [
   'REGENERABLE',
 ] as const;
 
-/** A cell reduced to what the static witnesses read (the source grain). */
+/**
+ * A cell reduced to what the static witnesses read (the source grain).
+ *
+ * GROUND-CONFORMANCE (the property, stated where it binds). `MODEL.md` is
+ * hand-authored GROUND: never generated from source, never revised to match it —
+ * `ARCHITECTURE.md`, "Where the two disagree, the source is wrong." For a ground
+ * enumeration `G` and a source enumeration `S` purporting to realize it:
+ *
+ *   S ⊂ G  — REFINEMENT. LEGAL. The source under-realizes; the residue is a known
+ *            gap, and a gap is nameable, schedulable, convictable.
+ *   S ⊃ G  — DEFECT, ALWAYS. A source member with no ground peer is a concept
+ *            admitted with NO HOME IN GROUND: unconvictable by construction,
+ *            because ground is the only thing that could have convicted it.
+ *   both   — TWO findings, never one. Netting them out hides the defect inside
+ *            the legal direction.
+ *
+ * The asymmetry is not stylistic. A source may under-realize ground and say so; it
+ * may never EXTEND ground. Extending ground from source is how a document stops
+ * being ground — the amendment is written by the thing the document was supposed
+ * to judge, and thereafter judges nothing.
+ *
+ * APPLIED HERE. This union was `… | 'rule' | 'hook'`; `MODEL.md:10` declares
+ * `Kind ≜ {fragment, agent, rule, skill}`. S ⊃ G ⇒ DEFECT, so `'hook'` is GONE and
+ * **MODEL IS NOT AMENDED**. The cheap direction was to add `hook` to MODEL — which
+ * would have deleted the corpus's own best-argued type comment
+ * (`schema/src/hook-cell.ts:6-10`: a hook *"is what a HARNESS calls its mechanism;
+ * it is not a Kind of thing the canon authors"*), contradicted the same file's
+ * classing of the cell as `Kind ∋ rule`, and overwritten `MODEL.md:20`, which
+ * convicts this exact error by name (*"binding them made `hook` a Kind and hid
+ * enforcement from composition"*). It would have converted a defect into ground.
+ *
+ * A hook cell therefore enters `accept()` as `kind:'rule'` — its MODEL Kind, with
+ * `activation: rule ↦ scope`. What distinguishes the two source FAMILIES is a HOME
+ * id (`hook/<id>` vs `rule/<id>`), which is a different thing from a Kind and
+ * stays: PARTITIONED quantifies over homes and needs them distinguishable.
+ *
+ * The gate: `canon/test/ground-conformance.test.ts`, which parses `Kind ≜ {…}` out
+ * of `MODEL.md` itself and asserts `⊆` — never `=`, so refinement stays legal.
+ */
 export interface AcceptCell {
-  readonly kind: 'fragment' | 'agent' | 'skill' | 'rule' | 'hook';
+  /** MODEL's `class(a)`. `Kind ≜ {fragment, agent, rule, skill}` — see above. */
+  readonly kind: 'fragment' | 'agent' | 'skill' | 'rule';
   /** α(c) — the assigned anchor (the SIGN). */
   readonly slug: string;
   /**

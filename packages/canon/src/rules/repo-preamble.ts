@@ -6,13 +6,15 @@ import type { RuleCell } from '@cratylus/schema';
 // `AGENTS.md@node` dream memory-sink (see `src/skills/dream.ts`) removed the sole
 // blocker to treating the repo-root `AGENTS.md` as a byte-locked rule TARGET — it is
 // no longer SelfAuthored memory (`SelfAuthored ∉ Target` no longer applies), so it is
-// a curated source-of-truth cell whose `body` projects + byte-locks to `/AGENTS.md`.
+// a curated source-of-truth cell whose `content` projects + byte-locks to `/AGENTS.md`.
 //
 //   residue — the σ*-signified canonical identity (`body = ⟨α, residue⟩`), the
 //             `accept()`/REFLEXIVE target. It is `residue`, NOT `definiens`: it has
 //             already paid the `∖ fired(α)` subtraction (`schema/src/rule-cell.ts`).
-//   body    — the VERBATIM directive payload, regenerated to `targetPath` by
+//   content — the VERBATIM directive payload, regenerated to `targetPath` by
 //             `project-targets` and byte-locked by `test/hook-rule-boundary.test.ts`.
+//             `content`, NOT `body`: `body(c) = ⟨α, residue⟩` is the whole cell, and
+//             this is the sibling of `HookWorker.content` (`schema/src/rule-cell.ts`).
 
 export const repoPreamble: RuleCell = {
   kind: 'rule',
@@ -23,7 +25,7 @@ export const repoPreamble: RuleCell = {
   scope: '',
   targetPath: 'AGENTS.md',
   refs: [],
-  body: `# AGENTS
+  content: `# AGENTS
 
 **CRITICAL INVARIENT:** You **MUST Read** these documents upon session-start:\\*\\*
 

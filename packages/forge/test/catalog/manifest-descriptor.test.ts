@@ -80,7 +80,7 @@ function corpusDrift(
 function illegalMeta(m: Meta): string[] {
   const bad: string[] = [];
   if (!['Persona', 'Constitution'].includes(m.axis)) bad.push(`axis=${m.axis}`);
-  if (!['enum', 'open', 'coined'].includes(m.kind)) bad.push(`kind=${m.kind}`);
+  if (!['enum', 'open', 'curated'].includes(m.kind)) bad.push(`kind=${m.kind}`);
   if (!['scalar', 'set'].includes(m.arity)) bad.push(`arity=${m.arity}`);
   return bad;
 }
@@ -159,7 +159,7 @@ describe('a dimension catalog', () => {
       'axis=Vibe',
     ]);
     expect(
-      illegalMeta({ axis: 'Constitution', kind: 'coined', arity: 'scalar' }),
+      illegalMeta({ axis: 'Constitution', kind: 'curated', arity: 'scalar' }),
     ).toEqual([]);
   });
 });

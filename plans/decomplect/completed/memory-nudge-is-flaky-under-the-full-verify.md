@@ -71,6 +71,34 @@ still unable to tell a present-but-broken bin from a working one.
 - If repair 2 is taken, the shipped worker gets a fixture proving it stays silent for a bin that
   exists but cannot execute — the exact state this host was in for the whole of `61b85db7`'s life.
 
+## ▶ OUTCOME 2026-08-05 — the cause is NOT proven, and the shard says so rather than claiming a fix
+
+This shard's own acceptance opens with _"the actual failing output is captured and quoted before
+any fix is chosen"_. **It could not be.** The flake did not recur in ~20 further runs, and a direct
+probe of the worker against a fresh fixture returns `rc 0`, empty stdout, empty stderr — correct.
+
+**Repair 1 was attempted and FAILED for an instructive reason.** Snapshotting the dispatcher into
+the fixture — the obvious way to break the coupling to a mutable build artifact — does not work:
+`invoke/dist/bin.js` is an ESM bundle that resolves its capability package through node's module
+lookup **from its real location**. A copy parses and cannot run. Copying the whole `dist` fails the
+same way for the same reason. So the fixture cannot own an immutable artifact without also owning a
+package context, which is a much larger change than a flake justifies.
+
+**Repair 2 is now unnecessary, and that is a real result.** The shard argued for making the worker's
+guard test EXECUTABILITY rather than presence. `the-host-install-is-a-symlink-nobody-authored` has
+since made deploy REFUSE to place shims whose bin does not run — so the property is enforced once,
+at deploy time, instead of on every Stop event. Adding a `--version` probe to the worker would buy
+the same guarantee at the cost of a subprocess per hook firing.
+
+**What landed instead**: the fixture now asserts its own precondition. If the dispatcher is absent,
+the suite says so BY NAME — _"a concurrent build is mid-clean, not a defect in the hook"_ — rather
+than failing as a confusing empty-output mismatch. That does not fix the flake. It makes the next
+occurrence identify itself, which is the most this shard can honestly claim without a reproduction.
+
+**Left open deliberately.** If it recurs with that message, the cause is confirmed and repair 1
+becomes worth its cost. If it recurs WITHOUT it, the hypothesis in this shard is refuted and the
+investigation starts clean — which is worth more than a fix that might have been aimed at nothing.
+
 ## Execution
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->

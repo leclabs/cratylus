@@ -14,6 +14,7 @@
 import { execFileSync, spawnSync } from 'node:child_process';
 import {
   chmodSync,
+  existsSync,
   mkdirSync,
   mkdtempSync,
   rmSync,
@@ -55,6 +56,23 @@ beforeEach(() => {
   mkdirSync(agentsRoot, { recursive: true });
   // `MEMORY_BIN` is invoked as a command; wrap the built dispatcher so it is one.
   // HOME is pinned so the registry lookup resolves inside the fixture.
+  // THE SHIM'S TARGET IS A LIVE BUILD ARTIFACT, and this suite failed once in twelve
+  // full `pnpm verify` runs and never under a bare test run. `tsup` deletes and recreates
+  // `invoke/dist` under `clean: true`, so there is a window where this path does not
+  // exist — and the worker's own guard tests the SHIM (always present, written right
+  // here) rather than its target, so the exec fails and a case asserting empty output
+  // gets a node error instead.
+  //
+  // THE CAUSE IS NOT PROVEN. It was not reproducible in isolation, and snapshotting the
+  // dist does not work — the bundle resolves its capability package through node's
+  // module lookup from its real location, so a copy parses and cannot run. Rather than
+  // guess a repair, this asserts the precondition: if the target is missing the suite
+  // says SO, by name, instead of failing as a confusing empty-output mismatch. The next
+  // occurrence will identify itself.
+  expect(
+    existsSync(runtimeBin),
+    `the dispatcher this fixture shims is absent (${runtimeBin}) — a concurrent build is mid-clean, not a defect in the hook`,
+  ).toBe(true);
   binShim = join(root, RUNTIME_BIN);
   writeFileSync(
     binShim,

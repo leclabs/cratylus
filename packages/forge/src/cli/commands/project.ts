@@ -80,7 +80,23 @@ export async function runProject(opts: ProjectCmdOpts = {}): Promise<number> {
     resolvedBodies,
     log: (line) => process.stdout.write(`${line}\n`),
   });
-  writeRenderTree(out, report.files);
+  // The writer CONVERGES `out` — it writes the tree and removes what a prior
+  // projection into this same dir left behind. It reports what it removed; the
+  // removal is not announced by the writer itself, because a library that prints
+  // is a library a consumer cannot embed quietly.
+  const { removed, bootstrap } = writeRenderTree(out, report.files);
+  for (const rel of removed) {
+    process.stdout.write(`  prune: removed stale ${rel}\n`);
+  }
+  if (bootstrap) {
+    process.stdout.write(
+      `${pc.gray(
+        '  prune: no prior render record in this dir — nothing here is ' +
+          'attributable to this command, so nothing was removed; this run ' +
+          'establishes the record and the next one converges.',
+      )}\n`,
+    );
+  }
 
   process.stdout.write(
     `\n${pc.green('✓')} projected ${report.agents} agent(s) + ${report.skills} skill(s)` +

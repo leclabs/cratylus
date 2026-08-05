@@ -13,9 +13,9 @@ export {
   skillBody,
   dimensionTitle,
   claudeHarnessAdapter,
-} from './anatomy.js';
+} from './render.js';
 // The hook → settings.json `hooks` block serializer, standalone by construction
-// (S3): it lives in `hooks.ts` beside the anatomy projection and imports only
+// (S3): it lives in `hooks.ts` beside the render projection and imports only
 // `core/hook` + the event map.
 export {
   type ClaudeHooksBlock,

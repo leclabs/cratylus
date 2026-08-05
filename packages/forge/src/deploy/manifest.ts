@@ -1,49 +1,46 @@
-// Deploy manifest + prune — the half of deploy that SUBTRACTS.
+// Deploy's manifest — the DEPLOY-SPECIFIC half of prune-to-manifest.
 //
-// Placement alone only ever unions, so a retired artifact outlives its source
-// cell forever: the target accumulates, it never converges. Convergence needs
-// deletion, and deletion in `~/.claude` is a data-loss hazard — that root also
-// holds user-authored skills, plugin installs, and harness files this tool has
-// no claim on whatsoever.
+// The mechanism itself (record → stale → contained → remove, and the bootstrap
+// bound that makes an unexpected root safe) lives in `../prune`, because
+// `project` converges its `--out` render tree by exactly the same means one
+// stage upstream. Read that module's header for WHY the prune is bounded by a
+// record rather than by a naming convention; this file holds only what is
+// deploy's own and would be meaningless to a projector:
 //
-// So the prune is bounded by a RECORD, not by a rule. Every deploy writes a
-// manifest of exactly the harnessDir-relative paths it laid down, keyed by kind
-// and name; the next deploy's prune candidates are that manifest's paths and
-// NOTHING else. Attribution by naming convention ("looks like one of ours") is
-// explicitly refused — a convention cannot distinguish `skills/graphify/`
-// installed by the operator from `skills/wake/` shipped by us.
+//   - the record's LOCATION and shape in a `.claude/` root, partitioned by KIND
+//     (a projector has no kinds — its render tree is one unit);
+//   - `KIND_ROOT` / `unattributable`, the report over a root SHARED with the
+//     operator, the harness, and plugin installs (an `--out` dir is not shared);
+//   - the settings.json hook REGISTRATIONS, which only a deploy ever writes.
 //
-// Three further bounds:
-//   - a name whose source was MISSING this run (a warned skip) is not a
-//     convergence statement, so its prior paths are carried, never swept;
-//   - a NARROWED deploy (`--only`) is a subset intent, so prune stays inside the
-//     named subset;
-//   - with NO prior manifest nothing is attributable, so the first deploy after
-//     this mechanism lands only ESTABLISHES the record — it prunes nothing.
+// Deploy's three further bounds on candidacy — a warned skip carries forward, a
+// `--only` run prunes inside its subset, and no prior manifest prunes nothing —
+// are enforced by `staleFiles`/`nextKindRecord` in `../prune` and consumed here.
 
 import {
   existsSync,
   mkdirSync,
   readFileSync,
   readdirSync,
-  rmdirSync,
-  unlinkSync,
   writeFileSync,
 } from 'node:fs';
-import {
-  dirname,
-  isAbsolute,
-  relative,
-  resolve as resolvePath,
-  sep,
-} from 'node:path';
+import { dirname, resolve as resolvePath } from 'node:path';
+import type { KindRecord } from '../prune/index.js';
+
+// Re-exported so deploy's callers keep reading the prune vocabulary off deploy's
+// own module — the lift moved the HOME of the mechanism, not deploy's surface.
+// Exactly what `deploy.ts` consumes and no more: `contained` is the escape guard
+// INSIDE `applyPrune` and stays addressable only where it lives.
+export {
+  type KindRecord,
+  applyPrune,
+  nextKindRecord,
+  staleFiles,
+} from '../prune/index.js';
 
 /** Where the record lives, relative to the deployed `.claude/` root. */
 export const MANIFEST_REL = '.forge/deploy-manifest.json';
 export const MANIFEST_VERSION = 1;
-
-/** harnessDir-relative POSIX paths written for one kind, grouped by name. */
-export type KindRecord = Record<string, string[]>;
 
 export interface DeployManifest {
   version: number;
@@ -94,51 +91,6 @@ export function writeManifest(harnessDir: string, m: DeployManifest): void {
   writeFileSync(f, `${JSON.stringify(m, null, 2)}\n`, 'utf-8');
 }
 
-/** The paths a prior deploy recorded that this deploy did NOT re-write — the
- *  orphans. `skipped` names (source missing this run) and, under `narrowed`,
- *  every name outside the deployed subset are excluded from candidacy. */
-export function staleFiles(
-  prior: KindRecord,
-  written: KindRecord,
-  skipped: string[],
-  narrowed: boolean,
-): string[] {
-  const keep = new Set(Object.values(written).flat());
-  const skip = new Set(skipped);
-  const candidateNames = narrowed
-    ? Object.keys(written)
-    : Object.keys(prior).filter((n) => !skip.has(n));
-  const stale = new Set<string>();
-  for (const name of candidateNames) {
-    for (const p of prior[name] ?? []) {
-      if (!keep.has(p)) {
-        stale.add(p);
-      }
-    }
-  }
-  return [...stale].sort();
-}
-
-/** The record to persist for this kind after the placer ran. Narrowed deploys
- *  and warned skips carry their prior entries forward untouched. */
-export function nextKindRecord(
-  prior: KindRecord,
-  written: KindRecord,
-  skipped: string[],
-  narrowed: boolean,
-): KindRecord {
-  if (narrowed) {
-    return { ...prior, ...written };
-  }
-  const next: KindRecord = { ...written };
-  for (const name of skipped) {
-    if (prior[name] && !next[name]) {
-      next[name] = prior[name];
-    }
-  }
-  return next;
-}
-
 /** The kind's top-level dir under the deploy root, and how a name reads out of
  *  an entry there. An agent entry is `<name><agentExt>`, and the extension is the
  *  HARNESS's — it is not a constant of this table, so the table only records THAT
@@ -183,57 +135,6 @@ export function unattributable(
     .map((e) => (suffix ? e.slice(0, -suffix.length) : e))
     .filter((n) => !known.has(n))
     .sort();
-}
-
-/** Is `rel` strictly inside `harnessDir` once resolved? A tampered or
- *  hand-edited manifest must not be able to steer a delete out of the root. */
-function contained(harnessDir: string, rel: string): boolean {
-  const root = resolvePath(harnessDir);
-  const abs = resolvePath(root, rel);
-  const r = relative(root, abs);
-  return r !== '' && !r.startsWith('..') && !isAbsolute(r);
-}
-
-/** Remove each stale path, then any directory the removal emptied (up to, but
- *  never including, the deploy root). Returns what was actually removed; a
- *  dry run returns the same set having touched nothing. */
-export function applyPrune(
-  harnessDir: string,
-  stale: string[],
-  dry: boolean,
-): string[] {
-  const removed: string[] = [];
-  for (const rel of stale) {
-    if (!contained(harnessDir, rel)) {
-      continue;
-    }
-    const abs = resolvePath(harnessDir, rel);
-    if (!existsSync(abs)) {
-      // already gone (a hand-removed orphan) — still drop it from the record
-      removed.push(rel);
-      continue;
-    }
-    if (!dry) {
-      unlinkSync(abs);
-      pruneEmptyDirs(harnessDir, dirname(abs));
-    }
-    removed.push(rel);
-  }
-  return removed;
-}
-
-/** Walk up from `dir`, removing each directory that the prune left empty, and
- *  stopping at the deploy root (which is never removed). */
-function pruneEmptyDirs(harnessDir: string, dir: string): void {
-  const root = resolvePath(harnessDir);
-  let cur = resolvePath(dir);
-  while (cur !== root && cur.startsWith(root + sep)) {
-    if (!existsSync(cur) || readdirSync(cur).length > 0) {
-      return;
-    }
-    rmdirSync(cur);
-    cur = dirname(cur);
-  }
 }
 
 /** One Claude `settings.json` command-hook entry (mirrors `hooks.ts`). */

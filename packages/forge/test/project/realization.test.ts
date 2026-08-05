@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { claudeHarnessAdapter } from '../../src/adapters/claude/anatomy.js';
-import { codexHarnessAdapter } from '../../src/adapters/codex/anatomy.js';
+import { claudeHarnessAdapter } from '../../src/adapters/claude/render.js';
+import { codexHarnessAdapter } from '../../src/adapters/codex/render.js';
 import { realizationOf, routes } from '../../src/project/realization.js';
 
 // FOUR OUTCOMES, NOT TWO. Each is exercised and OBSERVED below, and a decision

@@ -185,7 +185,7 @@ async function allSurfaces(): Promise<Surface[]> {
     // `residue`, not `definiens` — a cell's authored identity has already paid
     // `∖ fired(α)`. The ρ-class `dimension-definiens` below is the OTHER object
     // (raw `D`, pre-subtraction) and keeps its own sign; see `rule-cell.ts`.
-    const c = await firstExport<{ residue: string; body: string }>(
+    const c = await firstExport<{ residue: string; content: string }>(
       join(srcRoot, rel),
     );
     surfaces.push({
@@ -194,15 +194,21 @@ async function allSurfaces(): Promise<Surface[]> {
       text: c.residue,
     });
     surfaces.push({
-      label: `rule ${rel} body`,
-      cls: 'rule-target-body',
-      text: c.body,
+      label: `rule ${rel} content`,
+      cls: 'rule-target-content',
+      text: c.content,
     });
   }
   // Hook cells: the DECLARATION only. `workers[].content` is SOURCE CODE, not
   // context — nothing loads a shell script into a reader. Scoring it would convict
   // the authorial "we" of an ordinary code comment, and this gate's own source
   // files would fail first.
+  //
+  // `RuleCell.content` above is its structural twin and IS scored, so the split is
+  // now between two same-signed fields — which is correct and not a slip. The class
+  // is fixed by what READS the bytes, never by the field's sign: `/AGENTS.md` lands
+  // in an agent's context, a shell worker lands in a shell. The exclusion is by
+  // CONSTRUCTION, not by name — this loop never reaches `workers` at all.
   //
   // What a hook SPEAKS to an agent is `HookCell.speech` — a declared, enumerable
   // field as of the worker-template seam, no longer `printf` bodies reachable only
@@ -251,7 +257,7 @@ const OWNED_CLASSES: readonly ArtClass[] = [
   'genus-protocol',
   'agent-vector',
   'cell-declaration',
-  'rule-target-body',
+  'rule-target-content',
 ];
 
 async function allAgents(): Promise<Array<{ rel: string; agent: Agent }>> {
@@ -357,7 +363,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     const labels = surfaces.map((s) => s.label);
     expect(labels).toContain('genus src/genus/persona.md ## Protocol');
     expect(labels).toContain('genus founding-doctrine foundingDoctrine');
-    expect(labels).toContain('rule rules/repo-preamble.ts body');
+    expect(labels).toContain('rule rules/repo-preamble.ts content');
     expect(labels).toContain('hook hooks/stance-guardrail.ts residue');
     expect(labels).toContain('agent agents/nico.ts archetype');
     expect(count('dimension-definiens')).toBeGreaterThan(100);

@@ -65,7 +65,7 @@ camel. Do not re-derive it — `t-tap-anchor` ran the round-trip and recorded th
 
 <!-- GENERATED from ../spec.mjs by ../sync-shards.mjs. Edit the spec, not this block. -->
 
-- **slice** event-vocabulary · **wave** 1
+- **slice** event-vocabulary · **wave** 0
 - **depends on** `t-tap-anchor` · `t-projection-file-anchor`
 - **writes** `packages/schema/src/hook/**` · `packages/runtime/src/events.ts` · `packages/runtime/src/capabilities/event-tap/claude-serialize.ts`
 - **compiles against** `packages/forge/src/adapters/claude/events.ts`

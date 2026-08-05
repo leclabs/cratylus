@@ -5,7 +5,7 @@
 
 import type { Value } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
-import { agentBody } from '../../src/core/anatomy-body.js';
+import { agentBody } from '../../src/core/body.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 type Guardrails = Value<'guardrails'>;

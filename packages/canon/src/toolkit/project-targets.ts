@@ -6,10 +6,13 @@
 //   hook worker → its `worker.targetPath` (a `.sh`/`.md` the harness or `.husky/*`
 //                 dispatcher runs; executable bit set per the cell)
 //
-// `rule` is a live KIND (MODEL's 5 Kinds). Retiring the `AGENTS.md@node` dream
+// `rule` is a live KIND — one of MODEL's FOUR (`Kind ≜ {fragment, agent, rule,
+// skill}`; there is no `hook` Kind, and `hook` cells are `rule` cells whose home
+// module differs). Retiring the `AGENTS.md@node` dream
 // memory-sink route freed the repo-root `AGENTS.md` to become a byte-locked rule
 // TARGET (it is no longer SelfAuthored memory): `src/rules/*.ts` cells project their
-// `body` to `targetPath` here alongside the hook workers.
+// `content` to `targetPath` here alongside the hook workers — the same field name a
+// hook worker uses, because it is the same concept (`schema/src/rule-cell.ts`).
 //
 //   rule cell → its `targetPath` (a committed instruction file, e.g. `/AGENTS.md`)
 //
@@ -71,6 +74,13 @@ export interface CellTarget {
   readonly path: string;
   readonly content: string;
   readonly executable: boolean;
+  /**
+   * Which source FAMILY emitted this target — `src/hooks/*.ts` vs `src/rules/*.ts`.
+   * A projection fact about the emitting module, NOT MODEL's `class(c)`: both
+   * families are `Kind ∋ rule`, and `AcceptCell['kind']` carries no `'hook'`
+   * member (see the ground-conformance property on `AcceptCell`). Consumers
+   * partition targets by this; nothing may read it as a Kind.
+   */
   readonly kind: 'hook' | 'rule';
   readonly source: string;
 }
@@ -106,7 +116,7 @@ export async function cellTargets(): Promise<CellTarget[]> {
   for (const cell of await allRuleCells()) {
     targets.push({
       path: cell.targetPath,
-      content: cell.body,
+      content: cell.content,
       executable: false,
       kind: 'rule',
       source: cell.id,

@@ -1,7 +1,7 @@
 // The canonical `Hook` → Claude `settings.json` `hooks` block serializer. The ONE
-// function that emits those bytes, for BOTH callers: the anatomy projection port
+// function that emits those bytes, for BOTH callers: the render projection port
 // (`claudeHarnessAdapter.hooks`, the live `project → deploy` path) and the IR
-// resource writer (`write.ts` / `bundle.ts`). It lives HERE, beside `anatomy.ts`,
+// resource writer (`write.ts` / `bundle.ts`). It lives HERE, beside `render.ts`,
 // rather than inside `write.ts`, because hook projection is not an IR concern:
 // the live path lifts an anatomy `HookCell` into a `Hook` and needs this and
 // nothing else from the write tree (S3).

@@ -5,7 +5,7 @@
 // This is core, not an adapter: the composed Target body is identical whichever
 // harness carries it (a claude `.md` body, a codex `.toml` `developer_instructions`),
 // so BOTH adapters import these DOWNWARD from core — never sideways from each
-// other. (Kills the former `codex/anatomy.ts → claude/anatomy.ts` edge.)
+// other. (Kills the former `codex/render.ts → claude/render.ts` edge.)
 
 import type { Agent, DimensionManifest, Value } from '@cratylus/schema';
 import { bodyOf, dimensionValueOf } from '@cratylus/schema';
@@ -38,7 +38,7 @@ export function dimensionField(dimension: string): string {
  * catalog is a parameter and not a module read: the sequence of an agent's
  * sections is a fact about the corpus that declared the dimensions.
  */
-export function agentBody(a: Agent, anatomy: DimensionManifest): string {
+export function agentBody(a: Agent, manifest: DimensionManifest): string {
   const emoji = a.provenance?.mark.emoji ?? '';
   const heading = emoji ? `${emoji} ${a.name}` : a.name;
   const out: string[] = [`# ${heading}`, ''];
@@ -50,7 +50,7 @@ export function agentBody(a: Agent, anatomy: DimensionManifest): string {
   if (a.archetype) {
     out.push('## Archetype', '', a.archetype, '');
   }
-  for (const dimension of Object.keys(anatomy)) {
+  for (const dimension of Object.keys(manifest)) {
     const value = dimensionValueOf(a, dimensionField(dimension));
     if (value === null || value === undefined) {
       continue;
@@ -103,7 +103,8 @@ export interface ResolvedSkill {
    * set, the projection emits a thin shim beside the SKILL.md and the body BINDS it
    * — without this the shim is unreachable: the cell would carry a script it cannot
    * name, which is why every skill fell back to embedding the bin name in prose.
-   * Plain `string` (not `RuntimeCapability`) keeps core free of an anatomy import.
+   * Plain `string` (not `RuntimeCapability`) keeps core free of a canon `manifest`
+   * import.
    */
   readonly runtime?: { readonly capability: string };
 }

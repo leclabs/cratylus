@@ -24,7 +24,12 @@ export const RHO = {
   'genus-protocol': 'LLM', // verbatim(a) ⇒ ρ(a) = LLM — ship-whole, never a density exemption
   'agent-vector': 'LLM', // projected SOUL — scored at SOURCE grain (description · archetype · preamble)
   'cell-declaration': 'LLM', // a cell's σ*-signified identity: `residue` on EVERY cell shape
-  'rule-target-body': 'LLM', // a rule's VERBATIM projected payload (`/AGENTS.md`) — NOT MODEL's body(c)
+  // A rule's VERBATIM projected payload (`/AGENTS.md`) — `RuleCell.content`. It is a
+  // class of its own, not folded into `cell-declaration`: a residue is σ*-signified
+  // identity, this is the bytes a reader actually loads. And unlike its structural
+  // twin `HookWorker.content` — source code, exempt below — rule content IS R=LLM
+  // prose addressed to an agent, so it is the one `content` that must score.
+  'rule-target-content': 'LLM',
   // runtime frontiers (reader-reach.test.ts)
   'task-file': 'LLM', // praxis: blind-dispatchable execution spec = the dispatch prompt
   'plan-mirror': 'LLM', // praxis: PLAN.md, agent-read

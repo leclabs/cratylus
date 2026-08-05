@@ -28,7 +28,7 @@ import {
   agentBody,
   dimensionTitle,
   skillBody,
-} from '../../core/anatomy-body.js';
+} from '../../core/body.js';
 import { enforcingValuesOf } from '../../core/exemplify/dimension-fields.js';
 // The projection PORT, imported from its DEFINING module. This was load-bearing
 // while a `core/index.js` barrel existed: it `export *`ed the IR lineage, so one
@@ -59,13 +59,13 @@ export { type ResolvedSkill, agentBody, dimensionTitle, skillBody };
 function agentFrontMatter(
   a: Agent,
   mechanisms: ReadonlyMap<string, HarnessMechanism>,
-  anatomy: DimensionManifest,
+  manifest: DimensionManifest,
 ): string[] {
   const fm: string[] = [`name: ${a.name}`, `description: ${a.description}`];
   if (a.provenance?.mark) {
     fm.push(`color: ${markToColor(a.provenance.mark)}`);
   }
-  fm.push(...agentHooksFrontMatter(a, mechanisms, anatomy));
+  fm.push(...agentHooksFrontMatter(a, mechanisms, manifest));
   return fm;
 }
 
@@ -92,12 +92,12 @@ function agentFrontMatter(
 function agentHooksFrontMatter(
   a: Agent,
   mechanisms: ReadonlyMap<string, HarnessMechanism>,
-  anatomy: DimensionManifest,
+  manifest: DimensionManifest,
 ): string[] {
   // Which fields hold values at all is a fact of the CATALOG, so an agent's
   // enforcing set is read against the set's catalog — there is no other catalog
   // to read it against, and a dimension nobody declared enforces nothing.
-  const withMech = enforcingValuesOf(a, anatomy)
+  const withMech = enforcingValuesOf(a, manifest)
     .filter((f) => f.substrate === 'harness')
     .map((f) => ({ f, m: mechanisms.get(f.realizedBy ?? anchorOf(f)) }))
     .filter(
@@ -168,7 +168,7 @@ export function agentToClaudeMd(a: Agent, ctx: AgentDefContext): string {
 
 // ── Skill projection ────────────────────────────────────────────────────────
 // The `ResolvedSkill` shape and its `skillBody` generator live in
-// `core/anatomy-body` (harness-neutral, shared with codex) and are imported +
+// `core/body` (harness-neutral, shared with codex) and are imported +
 // re-exported at the top of this module. Only the claude FRAMING is local.
 
 /**

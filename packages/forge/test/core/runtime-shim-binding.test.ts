@@ -13,7 +13,7 @@
 
 import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
 import { describe, expect, it } from 'vitest';
-import { type ResolvedSkill, skillBody } from '../../src/core/anatomy-body.js';
+import { type ResolvedSkill, skillBody } from '../../src/core/body.js';
 import { renderSkillCellBody } from '../../src/core/exemplify/skill-cell.js';
 
 const BLOCK = 'a ≜ b\na ⇒ b';

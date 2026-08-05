@@ -6,9 +6,10 @@ export const createAgent: Skill = {
   formalBlock: `A               ≜ the agent under construction
 O               ≜ the dimension set @ SOUL \`##\` anatomy sections
 catalog         ≜ the canonical value store per dimension @ \`cratylus catalog\` ⟨live · never embedded⟩
-openness        : O → { enum, open, coined }
-enum            ≜ a closed, model-native value-set
-open, coined    ≜ an extensible value-set
+openness        : O → { enum, open, curated } ⟨who owns the value-set⟩
+enum            ≜ a closed value-set the MODEL owns
+open            ≜ a value-set the AGENT owns ⟨named per-agent⟩
+curated         ≜ a closed catalog the CORPUS assembled
 arity           : O → { scalar, set }
 scalar          ≜ one value
 set             ≜ a subset

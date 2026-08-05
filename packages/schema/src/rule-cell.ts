@@ -5,8 +5,8 @@
 // The cell carries TWO separable things:
 //   1. `residue` — the σ*-signified canonical identity (`body = ⟨α, residue⟩`), the
 //      REFLEXIVE/`accept()` target. R=LLM; BLIND-decodes to the rule's intent.
-//   2. `body` — the VERBATIM directive payload (the byte-anchor), regenerated to
-//      `targetPath` by the consuming corpus and byte-locked.
+//   2. `content` — the VERBATIM directive payload (the byte-anchor), regenerated
+//      to `targetPath` by the consuming corpus and byte-locked.
 //
 // ── `definiens` vs `residue`: TWO OBJECTS, NOT TWO NAMES ────────────────────────
 //
@@ -36,10 +36,32 @@
 //     the thing `parsimonious()` reads in order to decide. Renaming it would make
 //     that leg read as checking that a residue is a residue.
 //
+// ── `body` vs `content`: A COALESCE, NOT A MINT ────────────────────────────────
+//
+// The verbatim payload field was called `body`, and `body` is TAKEN: MODEL binds it
+// to the WHOLE cell — `Enforcing.body` with `bodyOf()`/`anchorOf()` (`src/index.ts`)
+// realize `body(c) = ⟨α(c), residue(c)⟩`. A rule's projected bytes are not that
+// pair; they are one part of it, so `body` here fired the wrong prior first.
+//
+// Nothing was minted to replace it. `HookWorker.content` one file over already
+// names this concept under the same gloss — verbatim bytes, the source of truth for
+// `targetPath` — and `HarnessProjection` returns `{filename, content}` for the same
+// sense. The sign was DISCOVERED by coalescing onto the established local idiom.
+//
+// THE STRUCTURAL PROOF. With `definiens`→`residue` landed, a rule and a hook carry
+// the SAME TRIPLE, differing only in how they pack it:
+//
+//   RuleCell    ⊇ ⟨residue, content, targetPath⟩   packed in one cell
+//   HookCell    ⊇ ⟨residue, …⟩                     identity on the cell,
+//   HookWorker  ⊇ ⟨content, targetPath⟩            payload per worker
+//
+// A rule is the degenerate hook: one worker, no template, no executable bit. Under
+// `body` that isomorphism was invisible; under `content` it reads off the fields.
+//
 // Doctrine-free TYPE KERNEL: the concrete rule instances live in the consuming
 // corpus, not here.
 
-/** A `rule` source cell (source grain), carrying its verbatim directive body. */
+/** A `rule` source cell (source grain), carrying its verbatim directive content. */
 export interface RuleCell {
   readonly kind: 'rule';
   /** Stable id (usually `= slug`). */
@@ -50,10 +72,10 @@ export interface RuleCell {
   readonly residue: string;
   /** The directory scope the rule activates at (repo-relative; `''` = repo root). */
   readonly scope: string;
-  /** Repo-relative committed instruction file regenerated from `body` (byte-locked). */
+  /** Repo-relative committed instruction file regenerated from `content` (byte-locked). */
   readonly targetPath: string;
-  /** Verbatim directive body — the source of truth for `targetPath`. */
-  readonly body: string;
+  /** Verbatim directive bytes — the source of truth for `targetPath`. */
+  readonly content: string;
   /** Anchors this cell references (for the CANONICAL orphan-ref witness). */
   readonly refs?: readonly string[];
 }

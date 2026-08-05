@@ -26,10 +26,21 @@
 # to every codex-projected skill for the life of the divergence, precisely
 # because only one target was being watched.
 #
-# THE OUT DIRS ARE REMOVED FIRST. `cratylus project` does not clean its
-# `--out` (see plans/decomplect/pending/project-never-cleans-its-out-dir.md), so
-# a deleted cell's artifact outlives it and an incremental render is not a
-# render of the corpus — it is a render of the corpus plus its ghosts.
+# THE OUT DIRS ARE NOT REMOVED FIRST, AND MUST NOT BE. `cratylus project` now
+# converges its own `--out`: it writes the tree and prunes what a prior run of
+# the same command left behind (`forge/src/project/write.ts`). So an incremental
+# render IS a render of the corpus, and this script needs no `rm -rf`.
+#
+# It used to have one, and that was the defect this file exists to catch wearing
+# the oracle's own clothes. The command's contract — "the render tree is a pure
+# function of the corpus" — was stated in prose and upheld by a CALLER, so the
+# only thing keeping the hash reproducible was that this script happened to
+# scrub first. Every other caller, including a developer running `canon:project`
+# by hand, got the ghosts. Deleting the workaround is what makes the property
+# the command's, and re-adding it here would hide the regression again: with the
+# dirs wiped, the prune path is never taken and its failure is invisible. The
+# prune has its own control (`forge/test/project/write-prune.test.ts`) precisely
+# because `.render-ts*` are gitignored and CI is therefore always cold.
 # ─────────────────────────────────────────────────────────────────────────────
 
 set -eu
@@ -65,11 +76,20 @@ cli() {
 }
 
 compute() {
-  rm -rf "$claude_out" "$codex_out"
   entry="packages/forge/$(cli)"
   node "$entry" project --harness claude --out "$claude_out" >/dev/null 2>&1
   node "$entry" project --harness codex  --out "$codex_out"  >/dev/null 2>&1
-  find "$claude_out" "$codex_out" -type f | sort | xargs shasum | shasum | awk '{print $1}'
+  # PROJECTED BYTES ONLY. `-type f` picks up dotfiles, and the render root also
+  # carries `.forge/` — the writer's prune RECORD, bookkeeping about the render
+  # rather than a rendered artifact. Hashing it would make the oracle's value a
+  # function of the record's own format, so a change to how convergence is
+  # RECORDED would read as a change to what the corpus PROJECTS.
+  #
+  # Excluding it is not a re-baseline: verified by A/B on a tree with no `.forge/`
+  # present, both forms yield the same hash, so the baseline this narrowing was
+  # landed against still stands.
+  find "$claude_out" "$codex_out" -name .forge -prune -o -type f -print |
+    sort | xargs shasum | shasum | awk '{print $1}'
 }
 
 read_expected() {
@@ -105,6 +125,12 @@ case "${1:-check}" in
       echo "If nothing was intended to change the projected bytes, this is a defect." >&2
       echo "If the change was intended, re-baseline deliberately:" >&2
       echo "  pnpm oracle:update    # then argue it in the commit message" >&2
+      echo "" >&2
+      echo "On a LOCAL tree only: an artifact left by a projection that predates the" >&2
+      echo "writer's prune record is unattributable and will never be pruned — the" >&2
+      echo "command removes only what it can account for having written. CI is always" >&2
+      echo "cold so it cannot hit this. Clear it once, by hand:" >&2
+      echo "  rm -rf $claude_out $codex_out" >&2
       exit 1
     fi
     ;;

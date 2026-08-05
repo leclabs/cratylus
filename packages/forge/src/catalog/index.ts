@@ -45,7 +45,7 @@ export interface CatalogEntry {
   readonly dimension: string;
   /** The MECE filing axis. */
   readonly axis: Genus;
-  /** Open/closed classification — `enum | open | coined`. */
+  /** How the value-catalog is sourced — `enum | open | curated`. */
   readonly kind: Classification;
   /** Whether the dimension holds one value or many. */
   readonly arity: Arity;

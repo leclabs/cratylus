@@ -61,16 +61,16 @@ export const MANIFEST = {
   // as a hand-written exception inside the projector's `Agent` interface.
   guardrails: {
     axis: 'Constitution',
-    kind: 'coined',
+    kind: 'curated',
     arity: 'set',
     required: true,
   },
   'engineering-principles': {
     axis: 'Constitution',
-    kind: 'coined',
+    kind: 'curated',
     arity: 'set',
   },
-  heuristics: { axis: 'Constitution', kind: 'coined', arity: 'set' },
+  heuristics: { axis: 'Constitution', kind: 'curated', arity: 'set' },
   capabilities: { axis: 'Constitution', kind: 'open', arity: 'set' },
   learning: { axis: 'Constitution', kind: 'enum', arity: 'scalar' },
   'situation-awareness': {

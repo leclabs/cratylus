@@ -1,6 +1,6 @@
 import type { HarnessMechanism } from '@cratylus/schema/hook';
 import { describe, expect, it } from 'vitest';
-import { agentToClaudeMd } from '../../src/adapters/claude/anatomy.js';
+import { agentToClaudeMd } from '../../src/adapters/claude/render.js';
 import {
   FIXTURE_MANIFEST,
   type FixtureAgent,
