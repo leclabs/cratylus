@@ -29,8 +29,20 @@
     //
     // The suite is ~11s. Correctness is worth 11 seconds in a repository whose
     // entire thesis is verification.
+    // `typecheck:test` is a DEPENDENCY of `test`, not a sibling task.
+    //
+    // It went red on a clean tree and stayed red, because `pnpm test` ran a
+    // 9-task pipeline that did not include it: the repository's green suite and
+    // its red type-check were two different commands, and only one was in
+    // anyone's habit. That is worse than an absent check — it is an UNWATCHED
+    // one, and the tests are the enforcement layer for every naming and shape
+    // guarantee this project makes. An unchecked test tree is an unchecked
+    // enforcement layer.
+    //
+    // Declaring it here rather than in a release script is deliberate: a gate
+    // that only the release runs is a gate that fails at the worst moment.
     "test": {
-      "dependsOn": ["^build"],
+      "dependsOn": ["^build", "typecheck:test"],
       "cache": false
     },
     "dev": {

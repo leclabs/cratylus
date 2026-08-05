@@ -1,0 +1,64 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# THE RELEASE GATE.
+#
+# This repository had no CI. Every green claim it made — the suite, the type
+# check, the render oracle — was a claim about somebody's laptop. That is the
+# same defect the corpus already names for prose: a property nothing checks is a
+# property that drifts silently.
+#
+# The four legs are ordered cheapest-first so a failure reports fast, but none is
+# optional and none is `continue-on-error`. A gate that can be skipped is a gate
+# that will be.
+# ─────────────────────────────────────────────────────────────────────────────
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # The pnpm version is pinned by `packageManager` in package.json; letting
+      # the action read it there keeps ONE home for it.
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # `--frozen-lockfile` is the point: it fails if the lockfile disagrees with
+      # the manifests, which is exactly the state a scope rename can leave behind.
+      - name: install
+        run: pnpm install --frozen-lockfile
+
+      - name: lint
+        run: pnpm lint
+
+      # `test` depends on `typecheck:test` in turbo.json, so this leg type-checks
+      # the test tree as well. The tests ARE the enforcement layer for every
+      # naming and shape guarantee here; an unchecked test tree is an unchecked
+      # enforcement layer.
+      - name: test
+        run: pnpm test
+
+      - name: typecheck
+        run: pnpm typecheck
+
+      # Renders BOTH harness targets from a clean out-dir and compares against
+      # the one tracked baseline. Catches a projection change that the unit
+      # suite cannot see, because the unit suite never renders anything.
+      - name: render oracle
+        run: pnpm oracle
