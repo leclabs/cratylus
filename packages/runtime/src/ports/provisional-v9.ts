@@ -22,6 +22,32 @@
 // Nothing outside `cratylus-run` imports it, which is what keeps the eventual
 // rename a `git mv` plus an identifier sweep.
 //
+// THE DERIVATION RAN AND RETURNED ⊥ (2026-08-06). Eight candidates, blind reverse decode
+// through `cold-oracle.sh` — process isolation, zero project context. None returned the
+// concept above:
+//   pacemaker      "sends controlled pulses to KEEP THE HEART BEATING" — it CLOCKS, the one
+//                  thing this concept forbids; separately occupied by the cluster manager
+//   circadian      commits to a ~24-hour period this has no claim to
+//   oscillator     regular alternation, no sampling and no decision
+//   homeostat      "senses… and ADJUSTS ITSELF to counteract" — names the ACTUATING loop,
+//                  and this capability never actuates
+//   sleep pressure names the GATE's accumulating variable, not the pulse
+//   poll           "repeatedly check at intervals RATHER THAN WAITING TO BE NOTIFIED" —
+//                  the cadence sense exactly, and nothing of the gate
+//   pressure-poll  "not an established term… made-up/placeholder" — a coinage, refused
+//   heartbeat      never tested: bound here already (see the collision notice below)
+//
+// AND THE TWO CLOSEST SPLIT THIS CONCEPT IN HALF. `poll` names the cadence cleanly and loses
+// the gate; `homeostat` names the gate cleanly and loses the cadence. A concept that no sign
+// names, whose two nearest signs each name exactly one half, is a candidate for being TWO
+// CONCEPTS WEARING ONE CAPABILITY — and the interfaces below already sit apart:
+// `PeriodConfig`/`Period` on one side, `PressureGate`/`GateConfig` on the other, joined only
+// where `Tick.consolidate` reports the gate's verdict at an emission.
+//
+// So the next question is not "search harder for a name" but "is this one capability?".
+// Re-cutting is a different act from naming and is not done here. Until it is answered, this
+// path stands — which is what a ⊥ means.
+//
 // COLLISION NOTICE for the derivation: the word `heartbeat` is ALREADY BOUND in
 // this runtime — `ports/memory.ts` uses it as a session-LEASE verb
 // (`'register' | 'heartbeat' | 'release'`), which is the liveness sense, not the
