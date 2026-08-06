@@ -49,6 +49,21 @@ jobs:
       - name: build
         run: pnpm build
 
+      # THE RUN-TIME BIN IS PART OF THE ENVIRONMENT, not of the build.
+      #
+      # `integrate-smoke` exercises project → deploy → invoke → verify, and deploy REFUSES
+      # (rc 2) when the shims it just placed cannot resolve `cratylus-run` — "these shims are
+      # deployed and INERT". That refusal is correct and is the point of the guard: presence
+      # on PATH is not resolvability, so deploy executes the bin rather than trusting `which`.
+      # A runner has no such bin until something installs one, exactly like a fresh host.
+      #
+      # Installed the way a real host installs it — through invoke's own `install` verb —
+      # rather than by hand-linking, so CI exercises the recovery path the README documents.
+      - name: install the run-time bin
+        run: |
+          node packages/invoke/dist/bin.js install --dir "$HOME/.local/bin"
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
       - name: lint
         run: pnpm lint
 
