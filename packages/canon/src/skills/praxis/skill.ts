@@ -142,7 +142,9 @@ bound(P) ∧ ¬ sharded(P) ⇒ start(P) ≺ dispatch(P) ⟨binding an unsharded 
 bound(P) ∧ sharded(P) ∧ ¬ done(P) ⇒ frontier(P) ≠ ∅ ⟨the ¬ done antecedent is LOAD-BEARING · dropped, the law reds a plan for FINISHING ∧ the cheapest green is filing work nobody needs⟩
 done(P) ⇒ frontier(P) = ∅ ⟨TAUTOLOGY ∵ frontier(P) ⊆ the open states · carries no content and is the first thing anyone writes here⟩
 done(P) ⇒ ∀ t ∈ P : t @ dir(P)/completed ⟨done is witnessed by RESIDENCE · a task-file that VANISHED empties frontier(P) exactly as finishing does, ∧ only residence tells the two apart⟩
-sharded(P) ∧ ¬ done(P) ∧ frontier(P) = ∅ ⇒ R ill-formed ⟨cycle ∨ unsatisfiable dep⟩ · SURFACE
+sharded(P) ∧ ¬ done(P) ∧ frontier(P) = ∅ ⇒ R ill-formed ⟨cycle ∨ unsatisfiable dep ∨ AN EDGELESS NODE⟩ · SURFACE
+    ⟨read the third disjunct FIRST : \`file\` writes its stub with ¬ census ∧ ¬ re-slice ∴ the filed t has NO edge in R, ∴ ∄ u : t ∈ promote(u), ∴ t is unreachable BY CONSTRUCTION ∧ it still counts against done(P)⟩
+    ⟨∴ any bound plan carrying a filed defect and no live shard reds this law, and the cause is the FILING, ¬ a cycle · only \`upsert\` gets it out · measured twice, in two plans, two weeks apart⟩
 gates(P, Q) ⇔ ∃ t ∈ Q : landing(P) ∈ deps(t)
 elect ≜ in-flight ≻ gating ≻ operator-intent ⟨lexicographic · finish before starting⟩
 terminal(P) ⇒ retire(P) ⟨obligation ¬ permission · an unretired terminal plan is WIP that is not work⟩

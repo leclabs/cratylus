@@ -146,16 +146,32 @@ export const KNOWN_CAPABILITY_PACKAGES = ['@cratylus/memory'] as const;
 
 /**
  * Load the capability providers this HOST declares, resolving each specifier
- * against the configured root. Returns `null` when no config is present — the
- * caller then falls back to its bundled default set, so zero-config still works.
+ * against the configured root. Returns `null` when no config DECLARES a provider —
+ * the caller then falls back to its bundled default set, so zero-config still works.
  *
  * This is what makes a strategy SWAPPABLE: without it the provider was fixed at
  * build time by a static import, and the MemoryStrategy port could never have a
  * second implementation in practice.
+ *
+ * AN EMPTY CAPABILITY LIST IS "NO OVERRIDE", NEVER "BIND NOTHING", and the distinction
+ * is the whole of this guard. `loadRuntimeConfig` deliberately keeps a vocabulary-only
+ * document alive (its `capabilities.length === 0` liveness test discarded exactly the
+ * deploy-emitted config whose entire payload was the corpus's event names). That fix is
+ * correct there and lands the caller here holding `capabilities: []` — and `?? BUNDLED`
+ * at the call site fires on nullish, NOT on empty. So the config written for the operator
+ * who declared no provider override bound ZERO capabilities, and every verb failed with
+ * `unknown capability 'memory'; bound on this host: (none)` — the memory runtime dark on
+ * a host whose config was exactly right. Measured live: it killed `/handoff` mid-dream,
+ * with the dream lock already held.
+ *
+ * The empty case belongs HERE rather than in `loadRuntimeConfig`, because the events half
+ * of that same document is still real and still needs loading; collapsing the document to
+ * `null` upstream to fix providers would take the vocabulary down with it.
  */
 export async function discoverConfigured(): Promise<RuntimePlugin[] | null> {
   const cfg = loadRuntimeConfig();
   if (cfg === null) return null;
+  if (cfg.capabilities.length === 0) return null;
   const require = createRequire(
     join(cfg.resolveFrom ?? process.cwd(), 'noop.js'),
   );

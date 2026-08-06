@@ -43,6 +43,31 @@ describe('configured capability providers', () => {
     expect(await discoverConfigured()).toBeNull();
   });
 
+  it('a VOCABULARY-ONLY config declares no override, so the bundled default still serves', async () => {
+    // The deploy-emitted shape: the operator declared event names and NO provider.
+    // `loadRuntimeConfig` keeps this document alive on purpose (a vocabulary-only
+    // config is real). The regression: `discoverConfigured` then returned `[]`, and
+    // the caller's `?? BUNDLED` fires on nullish and NOT on empty — so a host whose
+    // config was exactly right bound ZERO capabilities and every verb died with
+    // "unknown capability 'memory'; bound on this host: (none)".
+    const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
+    const cfg = join(root, 'runtime.json');
+    writeFileSync(
+      cfg,
+      JSON.stringify({ events: { vocabulary: ['session.start', 'turn.end'] } }),
+    );
+    process.env[ENV] = cfg;
+
+    // The document is live — the vocabulary half must survive.
+    const loaded = loadRuntimeConfig();
+    expect(loaded).not.toBeNull();
+    expect(loaded?.events?.vocabulary).toContain('turn.end');
+    expect(loaded?.capabilities).toEqual([]);
+
+    // …and the provider half falls back rather than binding nothing.
+    expect(await discoverConfigured()).toBeNull();
+  });
+
   it('resolves a THIRD-PARTY provider from the configured root', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
     stageProvider(root, 'alt-memory');
