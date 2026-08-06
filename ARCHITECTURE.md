@@ -167,14 +167,30 @@ where a missed rename fails on a host rather than at build.
 
 **That language boundary is gone; the remaining one is LOCATION.** `bin-name-single-home.test.ts`
 now walks `.sh` and `.mjs` directly (`shellSources()`, ~L161) and asserts _"EVERY hand-authored
-shell or .mjs source under `packages/*/src` derives the bin"_ (~L366), over a glob rather than a
-roster so a fourteenth file cannot join unnoticed, with a darkness guard that fails when the scan
-finds nothing — _"the scan is DARK, not the corpus clean"_. Emitted artifacts are held separately
-by the hook-artifact leg. What the gate still does not reach is hand-authored shell **outside**
-`packages/*/src` — one tracked file at 2026-08-06, `commitlint.config.mjs`, which names no bin.
-That is a path claim with a number, falsifiable in one command
-(`git ls-files | grep -E '\.(sh|mjs)$' | grep -vE '^packages/[^/]+/src/'`), not a property of the
-language.
+shell or .mjs source under `packages/*/{src,tooling,targets}` derives the bin"_ (~L374), over a glob
+rather than a roster so a fourteenth file cannot join unnoticed, with a darkness guard that fails
+when the scan finds nothing — _"the scan is DARK, not the corpus clean"_. Emitted artifacts are held
+separately by the hook-artifact leg.
+
+**This paragraph understated its own gate, and the number it published for the blind spot was wrong
+by 16×.** It said the scan reaches `packages/*/src` and that exactly one tracked file —
+`commitlint.config.mjs` — falls outside. The gate walks **three** roots, `['src', 'tooling',
+'targets']` (~L180 and ~L452), and has done since the roots were added; `src` alone leaves **16**
+files out (`git ls-files | grep -E '\.(sh|mjs)$' | grep -vE '^packages/[^/]+/src/'`, at
+`b35bc41b`) — and it was **4**, never 1, at `9dad9455`, the commit that wrote the claim. Both of the
+real bin homes in that difference sit in `targets/` and are gated by name: `DEPLOY_TOOL=cratylus`
+in `deploy-drift-notice.sh` and `MEM="${MEMORY_BIN:-cratylus-run}"` in `memory-consolidation-nudge.sh`
+— the same `${MEMORY_BIN:-…}` fallback recorded two paragraphs above — each held by its own leg
+(_"no COMMITTED target names the bin"_, _"…names the deploy tool"_, ~L289/~L319).
+
+**The true residual is five files, and none of them names a bin.** Falsifiable in one command:
+`git ls-files | grep -E '\.(sh|mjs)$' | grep -vE '^packages/[^/]+/(src|tooling|targets)/'` gives
+`commitlint.config.mjs`, `scripts/release.sh`, and the three
+`packages/canon/test/support/guardrail/*.sh`, at `b35bc41b`. The only two `cratylus` tokens among
+them are a dot-directory path (`.cratylus/claude`) and a package name (`@cratylus/canon`) — neither
+is a bin in code position. That is a path claim with a number, not a property of the language, and
+the way this one failed is the point: **a stale claim about a gate's REACH reads as diligence while
+hiding coverage the gate already has, and publishes a blind spot that is not where it says it is.**
 
 **Everything a consumer can do at build time belongs to `forge`'s command surface**, and
 anything in this repository that performs such a step by another route is a divergence — a private
