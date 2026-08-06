@@ -13,7 +13,9 @@ bound, occupied, electable, elect, bind, frontier @ praxis ⟨plan-set dynamics 
 mandate     ≜ the objective this session serves ⟨operator-owned · ¬ agent-elected⟩
 
 begin    ≜ \`memory session begin --name <agent>\` ↦ ⟨session · SEMANTIC · PROCEDURAL · EPISODIC · consolidation-owed⟩
-catch-up ≜ consolidation-owed ⇒ dream ≺ proceed
+catch-up ≜ consolidation-owed ⇒ REPORT(owed) ∧ proceed ⟨READ the state · ¬ discharge it⟩
+           ⟨¬ dream @ wake : the prior law made dream ≺ proceed ∴ a session paid for a BACKLOG before doing any work · encode ↾ per-turn ∧ threshold = 12 ⇒ that is most sessions⟩
+           ⟨SILENCE ≻ worse than the block it replaces : an invisible backlog is how 8 of 10 agent homes reached a first session with ∄ past⟩
 load     ≜ SEMANTIC ∪ PROCEDURAL whole ∧ EPISODIC as returned ⟨scoped by the strategy, ¬ by this protocol⟩
 orient   ≜ read ground ≺ ( bind(P) ∧ bind(work-thread) )
 resume   ≜ rebind(continuity-thread) ∴ act-as(same-individual)
