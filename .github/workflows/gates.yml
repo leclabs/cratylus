@@ -24,10 +24,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      # SHALLOW IS ENOUGH, and that is a fact about the suite rather than a preference:
-      # every leg that touches git reads `git ls-files` against the working tree, or builds
-      # its own repository in a tmpdir. Re-add depth WITH the leg that needs it.
+      # FULL HISTORY IS REQUIRED, and the claim it replaces was measured false on the first
+      # run. This said shallow was enough "because every leg that touches git reads
+      # `git ls-files` against the working tree, or builds its own repository in a tmpdir".
+      # That stopped being true when the DESIGNATOR-VERACITY oracle landed: it derives the
+      # set of retired shard designators from `git log` over `plans/`, so on a depth-1 clone
+      # its subject does not exist. The reach leg caught it — "the retired-id set collapsed"
+      # — which is that leg doing precisely the job it was written for, on a runner rather
+      # than on a laptop.
+      #
+      # This is the cost of a history-derived oracle, and it is paid here rather than worked
+      # around: softening the gate when history is shallow would make it dark exactly where
+      # nobody is watching.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: ./.github/actions/setup
 
