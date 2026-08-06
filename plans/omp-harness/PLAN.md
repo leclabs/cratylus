@@ -31,28 +31,39 @@ subagent sense, like Claude's — and there is no `--agent` flag. That gap is th
 
 ## Shards
 
-| state   | task                         | concern                                                                               |
-| ------- | ---------------------------- | ------------------------------------------------------------------------------------- |
-| ready   | `t-omp-persona-bootstrap`    | hand-adapt projected artifacts + an alias; prove the harness carries a persona at all |
-| pending | `t-cross-harness-continuity` | wake and handoff work across claude ↔ omp; `--from-claude` is the seam                |
-| pending | `t-omp-agent-extension`      | launch AS a declared agent — the `claude --agent` equivalent                          |
-| pending | `t-adopt-omp-memory`         | omp's memory backend replaces the bespoke strategy                                    |
-| pending | `t-adopt-collab`             | `/collab` replaces `provisional-mailbox`                                              |
-| pending | `t-omp-deploy-installs-ext`  | `cratylus deploy --harness omp` installs the extension                                |
+| state         | task                         | concern                                                                               |
+| ------------- | ---------------------------- | ------------------------------------------------------------------------------------- |
+| **completed** | `t-omp-persona-bootstrap`    | hand-adapt projected artifacts + an alias; prove the harness carries a persona at all |
+| **ready**     | `t-omp-agent-extension`      | launch AS a declared agent — the `claude --agent` equivalent                          |
+| pending       | `t-cross-harness-continuity` | wake and handoff work across claude ↔ omp; `--from-claude` is the seam                |
+| pending       | `t-adopt-omp-memory`         | omp's memory backend replaces the bespoke strategy                                    |
+| pending       | `t-adopt-collab`             | `/collab` replaces `provisional-mailbox`                                              |
+| pending       | `t-omp-deploy-installs-ext`  | `cratylus deploy --harness omp` installs the extension                                |
 
-## The ordering, and why it is not the obvious one
+## The ordering, and why the bootstrap changed it
 
-The bootstrap comes first and is deliberately **manual and throwaway**. It answers one
-question cheaply — _does an omp session carrying a cratylus persona behave like the agent?_ —
-before any adapter is written. Every shard after it is wasted if the answer is no.
+The bootstrap came first and was deliberately **manual and throwaway**. It answered one question
+cheaply — _does an omp session carrying a cratylus persona behave like the agent?_ — before any
+adapter was written. **The answer is yes**; [`DELTA.md`](./DELTA.md) carries the evidence and the
+adapter's specification.
 
-Continuity comes second, not last, because it is the **acceptance criterion for the whole
-integration**: an agent that cannot wake in omp as the individual it was in Claude Code is
-not the same being, and that is the one property this corpus exists to hold.
+**The bootstrap falsified this section's own ordering claim.** It said the three adoptions were
+_independent of each other_. They are not. `MODEL.md` makes a fragment `bound` only when its events
+are **scopable to a named agent**, and no omp surface names an agent — every persona vector it has
+is keyed to a launch, a directory, or a profile. So on omp today **every enforcing fragment
+degrades to `steer`**, not because the events cannot fire (nearly all of them can, and
+`tool_call` can even block) but because there is no identity to scope them to.
 
-The three adoptions (`agent extension`, `memory`, `collab`) are independent of each other and
-each deletes bespoke code. `t-omp-deploy-installs-ext` is last because it ships what the
-extension shard builds.
+`t-omp-agent-extension` is therefore not one adoption among three. It **gates every `bound`
+mechanism on this harness**, and it is promoted to `ready` ahead of continuity for that reason.
+
+Continuity still precedes the remaining adoptions, because it is the **acceptance criterion for
+the whole integration**: an agent that cannot wake in omp as the individual it was in Claude Code
+is not the same being, and that is the one property this corpus exists to hold. It also inherits a
+correction from the bootstrap — a corpus this well-signified **masks** the persona's contribution,
+so any test of "did the persona carry?" must run where the corpus is not on disk.
+
+`t-omp-deploy-installs-ext` is last because it ships what the extension shard builds.
 
 ## The standing risk
 
