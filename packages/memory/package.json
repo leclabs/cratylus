@@ -1,6 +1,6 @@
 {
   "name": "@cratylus/memory",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The memory runtime-capability plugin: a MemoryStrategy over an EPISODIC store plus the CoALA consolidation verbs.",
   "license": "MIT",
   "engines": {
@@ -19,7 +19,9 @@
       "import": "./dist/seeds.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
