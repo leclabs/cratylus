@@ -50,9 +50,10 @@
 //
 // PURE — witnesses over a supplied structural model, zero IO. Corpus loading (read
 // src/ · parse) lives in the caller (`test/structural-parsimony.test.ts`), which
-// drives BOTH the live tree (must be GREEN — E1 already deleted the motivating
-// cruft, so this is a REGRESSION-PREVENTION leg) and held-out synthetic fixtures
-// carrying the verbatim deleted cruft (must RED — proof the gate bites).
+// drives BOTH the live tree (must be GREEN — the cruft that motivated this gate was
+// deleted before it landed, so this is a REGRESSION-PREVENTION leg) and held-out
+// synthetic fixtures carrying the verbatim deleted cruft (must RED — proof the gate
+// bites).
 
 /** The three standing counter-example classes (the accretion this leg refuses). */
 export type StructuralClass =

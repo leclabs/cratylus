@@ -1,6 +1,6 @@
-// The codex harness surface. Since depalimpsest-ir-intake S6 this barrel is
-// PROJECTION-ONLY: the IR `Adapter` (detect/read/write) it used to also export
-// went with the excised IR-intake lineage.
+// The codex harness surface. This barrel is PROJECTION-ONLY: the IR `Adapter`
+// (detect/read/write) it used to also export was deleted along with the rest of
+// the IR-intake lineage.
 
 // The anatomy→codex projection — the second harness, proving canon reaches
 // every forge harness for free. The composed Target body is harness-neutral,

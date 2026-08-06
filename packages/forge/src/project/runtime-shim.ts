@@ -8,10 +8,10 @@
 // forwards its argv to the host-installed `<RUNTIME_BIN> <capability>` CLI and
 // mirrors its exit code — NOTHING more. It is NOT a bundle of the capability impl:
 // the impl lives host-side behind the runtime port (@cratylus/runtime → memory /
-// event-tap host / …), installed per-host by runtime/S7, addressed by the CLI
-// and NEVER imported here. This REVERSES the superseded dep-free-bundle composition
-// (skills-refactor T4): forge projects a thin shim against the runtime contract, it
-// does not compose a standalone `.mjs` at build time.
+// event-tap host / …), installed once per host, addressed by the CLI and NEVER
+// imported here. This REVERSES the superseded design in which forge composed a
+// standalone, dependency-free `.mjs` at build time: forge now projects a thin shim
+// against the runtime contract instead.
 //
 // The shim carries NO `@cratylus/*` import (grep-proven) — its only dependency is the
 // runtime binary on PATH, guaranteed by the per-host install.

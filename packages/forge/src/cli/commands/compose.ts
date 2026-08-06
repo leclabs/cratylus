@@ -3,7 +3,7 @@
 // `resolve()`, and prints the RESOLVED SET. `--dry-run` prints and writes nothing
 // (the pre-publish `file:`-link workflow — inspect a locally-linked plugin's
 // contribution before publishing). Materializing the resolved set into the render
-// tree (the compile-unification) is a forward seam; P4 ships the dry inspection.
+// tree (the compile-unification) is a forward seam; only the dry inspection ships.
 
 import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
@@ -79,7 +79,7 @@ export async function runCompose(opts: ComposeOpts): Promise<number> {
   printResolved(composed.config, composed.resolved);
 
   if (!opts.dryRun) {
-    // P4 ships the dry inspection only; projecting the resolved set into a render
+    // Only the dry inspection ships; projecting the resolved set into a render
     // tree is the compile-unification (forward seam). Say so — never write silently.
     console.log('');
     console.log(

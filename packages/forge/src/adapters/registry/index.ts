@@ -13,10 +13,10 @@
 // (`agentDef`/`skillDef`/`hooks`), so resolving the registry through it dragged
 // the entire IR lineage (26 modules under `core/{ir,engine,serialize,adapter}/`)
 // into every projection consumer — a transitive reach invisible to a substring
-// grep. That lineage was excised (depalimpsest-ir-intake S6) and the harness
-// barrels are projection-only now, but the rule stands on its own: import the
-// module that DEFINES the symbol, so no future barrel can silently re-create the
-// edge.
+// grep. That whole lineage — its core, its CLI verbs, and fifteen unused harness
+// adapters — has since been deleted, and the harness barrels are projection-only
+// now, but the rule stands on its own: import the module that DEFINES the symbol,
+// so no future barrel can silently re-create the edge.
 import type { HarnessAdapter } from '../../core/harness-adapter.js';
 import { claudeHarnessAdapter } from '../claude/render.js';
 import { codexHarnessAdapter } from '../codex/render.js';

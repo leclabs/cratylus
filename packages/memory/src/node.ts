@@ -46,7 +46,7 @@ import { dirname, isAbsolute, join, resolve, sep } from 'node:path';
  */
 const LEGACY_NODE = 'legacy';
 
-/** The default boundary-marker set (SPEC D3). Order = tie-break order within a dir. */
+/** The default boundary-marker set. Order = tie-break order within a dir. */
 export const DEFAULT_MARKERS: readonly string[] = [
   '.git',
   'package.json',
@@ -185,7 +185,7 @@ export function resolveNode(
     return { node: p, basis: 'foreign-cwd' };
   }
 
-  // A nonexistent cwd folds to its nearest existing ancestor (SPEC D3). The
+  // A nonexistent cwd folds to its nearest existing ancestor. The
   // fold is INFERENCE, and this loop is the only place that knows it happened —
   // so carry the fact out rather than discarding it.
   let start = p;

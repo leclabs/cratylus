@@ -1,9 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // ⚠ PROVISIONAL PATH — `capabilities/provisional-v9/` is a PLACEHOLDER, not a
 // name. See `ports/provisional-v9.ts` for the full notice: the anchor for this
-// capability is undiscovered and is /signify's to derive (plan `heartbeat-organ`
-// O4, where `⊥` is a legal answer). `provisional-v9` encodes only the shard that
-// produced these files and asserts nothing about the concept.
+// capability is undiscovered and is /signify's to derive; `⊥` (no sign exists) is a
+// legal answer there. `provisional-v9` is a placeholder path and asserts nothing
+// about the concept.
 //
 // THE CAPABILITY MODULE — mechanism only, DELIBERATELY UNREGISTERED.
 //

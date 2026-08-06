@@ -11,14 +11,16 @@
 // SINGLE HOME (DRY): the ONLY source for both gates —
 //   • the SYMBOLS gate (`test/symbols.test.ts`): every fence-interior glyph must be a
 //     non-ASCII key here (∪ the calibrated exempt classes).
-//   • the RESIDUE gate (E2a): its admissible σ* value-algebra operators = `↾ · ⟨⟩ · ${}`.
+//   • the RESIDUE gate (`forge/src/validate/residue.ts`): its admissible σ* value-algebra
+//     operators = `↾ · ⟨⟩ · ${}`.
 // Agent-audience: dense `sense` + `signature` only — NO human-comprehension prose. A human
 // dereferences a glyph by asking an agent to explain the artifact (the on-demand channel),
 // never a maintained doc.
 //
 // `coldVerified`: a cold reader recovers the operation from the glyph ALONE
 // (SIGNIFIED/COLD-BLIND). Universal math/logic notation is cold by ubiquity; `↾`/`⟨⟩` were
-// cold-surveyed (see E2a). `${}` is a CODE mechanism (resolved at eval, not decoded) ⇒ false.
+// cold-surveyed against reader priors and passed. `${}` is a CODE mechanism (resolved at
+// eval, not decoded) ⇒ false.
 
 export type Glyph = string;
 
@@ -213,7 +215,7 @@ export function declaredGlyphs(): Set<string> {
 }
 
 /**
- * The σ* value-algebra operators the RESIDUE gate (E2a) admits inside a residue expression:
+ * The σ* value-algebra operators the RESIDUE gate admits inside a residue expression:
  * restriction, the modifier bracket, and the ESM reference mechanism. Member-composition is
  * the agent's set-arity vector, NOT a glyph — no compose operator without its own survey.
  */

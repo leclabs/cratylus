@@ -9,8 +9,8 @@
 //
 // So it lives HERE, in the contract leaf every other package already depends on
 // (invoke → runtime; forge → runtime; canon → runtime), and every
-// site interpolates it. `install-parity` S4 recorded this as done when the literal
-// still stood in seven places; this module is what makes the claim true.
+// site interpolates it. An earlier pass recorded this consolidation as DONE while
+// the literal still stood in seven places; this module is what makes the claim true.
 //
 // THE ONE IRREDUCIBLE SECOND COPY is `@cratylus/invoke`'s `bin` key: npm reads
 // that manifest with no TypeScript in the loop, so it cannot be computed. Their

@@ -5,8 +5,9 @@
 // it (`append`/`merge`), and the final resolved value — so a first-timer decodes
 // "why this fragment won its value" with zero source-archaeology (NORTH-STAR §5).
 //
-// Provenance is read STRAIGHT off `resolve()`'s output: P2's `ResolvedFragment`
-// carries `provenance` (the source-attributed fold), so this command only RENDERS
+// Provenance is read STRAIGHT off `resolve()`'s output: the resolver's
+// `ResolvedFragment` carries `provenance` (the source-attributed fold), so this
+// command only RENDERS
 // it — no re-derivation, no second resolve pass.
 //
 // The `[agent]` positional is an optional FILTER over the resolved fragment ids

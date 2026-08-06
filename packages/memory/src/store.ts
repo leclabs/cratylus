@@ -83,7 +83,7 @@ export function resolveSession(
 }
 
 /**
- * The derivation seam (SPEC D2): encode derives `{session?, host, cwd}` from
+ * The derivation seam: encode derives `{session?, host, cwd}` from
  * the process environment — the CALLER supplies none of them. Injectable for
  * tests; the default reads the real process.
  */
@@ -160,7 +160,7 @@ export const defaultDerive: DeriveEnv = {
 /** Input to {@link EpisodicStore.encode} — the caller's share: body + optional tags. */
 export interface EncodeInput {
   body: JsonValue;
-  /** Free refinement labels (SPEC D2/D4: refine, never route). */
+  /** Free refinement labels: they refine a record, they never route it. */
   tags?: string[];
 }
 
@@ -197,8 +197,8 @@ function assertSafeRelative(path: string): string {
 }
 
 /**
- * The portable JSONL EPISODIC store — **single-store, append-only, derived**
- * (SPEC D2). Encode mints a ULID, derives `{session?, host, cwd}`, and appends
+ * The portable JSONL EPISODIC store — **single-store, append-only, derived**.
+ * Encode mints a ULID, derives `{session?, host, cwd}`, and appends
  * one OPEN record to the home-anchored raw log. Scope is never stored (it is
  * `node(cwd)`, computed at fold time); capture never writes into a repo.
  */

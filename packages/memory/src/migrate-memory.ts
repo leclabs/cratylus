@@ -18,8 +18,7 @@ import { monotonicFactory } from './ulid.js';
  * (a list of `- ` fact bullets under `## ` sections) into **sharded** files —
  * one memory per `MEMORY/<ulid>.md` — per `decisions/0003-shard-layout`.
  *
- * This is the Phase-4 machinery of `sharded-memory-store`. It is the semantic
- * sibling of {@link migrateFile} (md→JSONL for EPISODIC): same parser
+ * It is the semantic sibling of {@link migrateFile} (md→JSONL for EPISODIC): same parser
  * ({@link extractItems}), same **two-leg no-loss gate** ({@link assertNoLoss}'s
  * round-trip + {@link assertLinesFromSource} independent line-coverage), proven
  * BEFORE any file is written.

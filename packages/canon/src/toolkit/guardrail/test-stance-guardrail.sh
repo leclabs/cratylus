@@ -24,7 +24,8 @@ set -eu
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 # By default prove the SOURCE worker bites. Set STANCE_WORKER_DIR to a deployed
 # hook dir (a host's `.claude/hooks/stance-guardrail/`) to prove the
-# AGENT-FORGE-PROJECTED + AGENT-FORGE-DEPLOYED artifact bites — the T6.3 acceptance proof.
+# AGENT-FORGE-PROJECTED + AGENT-FORGE-DEPLOYED artifact bites — the proof that moving
+# installation into forge did not break the deployed worker.
 WORKER_DIR="${STANCE_WORKER_DIR:-$SELF_DIR}"
 WORKER="$WORKER_DIR/stance-guardrail.sh"
 RUBRIC="$WORKER_DIR/stance-judge-prompt.md"

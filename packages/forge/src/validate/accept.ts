@@ -135,7 +135,8 @@ export function conceptKey(
  * The typed bridge: a forge `Skill` IR cell → the `AcceptCell` grain the static legs
  * read. The skill's PARSIMONIOUS definiens IS its `formalBlock` (`SkillExpression`) —
  * the sole σ* payload — consumed as the typed IR field, NEVER a fence-scraped body.
- * The σ_human* `description` is not σ* and never becomes a definiens (E2a un-gating).
+ * The σ_human* `description` is not σ* and never becomes a definiens: it was taken
+ * out of the residue gate's scope deliberately, and is not an omission to restore.
  */
 export function acceptCellOfSkill(
   skill: Pick<Skill, 'name' | 'formalBlock'>,

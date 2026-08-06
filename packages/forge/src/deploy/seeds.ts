@@ -1,5 +1,5 @@
 // The self-authored instance layers an agent carries beside its def — the v2
-// (CoALA) stores (`memory`, scoped-memory-v2 D1):
+// (CoALA) stores the `memory` tool owns:
 //   SEMANTIC.md    — identity facts + durable agent-intrinsic knowledge; the
 //                    hot index (the vault carries the cold corpus).
 //   PROCEDURAL.md  — inductively generalized cross-project wisdom NOT already
@@ -11,9 +11,10 @@
 // every regen (`substance-over-accident`). Skills have no sidecars — seeding
 // is agent-only.
 //
-// The v1 stores {SELF.md, MEMORY.md} are RETIRED (scoped-memory-v2 D5 coverage
-// law): deploy never seeds them — a home carrying only v2 stores stays v1-free
-// across every deploy (no resurrection).
+// The v1 stores {SELF.md, MEMORY.md} are RETIRED: deploy never seeds them — a
+// home carrying only v2 stores stays v1-free across every deploy (no
+// resurrection). Deploy is one of those organs: EVERY organ that touches the
+// stores moves with them, and one that does not silently undoes the retirement.
 //
 // EPISODIC is a JSONL event log: `memory encode` mints a ULID and appends
 // one open record per salient event. A JSONL store carries no prose, so a

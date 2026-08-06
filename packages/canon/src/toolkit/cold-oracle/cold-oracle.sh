@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# cold-oracle.sh — the warm≡cold acceptance ORACLE (plan: warm-cold-acceptance, task T1).
+# cold-oracle.sh — the warm≡cold acceptance ORACLE.
 #
 # Computes R_cold(f): the decode of a fragment by a naive, ISOLATED LLM with ZERO
 # project context. This is the party-invariant source of truth for the acceptance
@@ -77,7 +77,8 @@ esac
 # fragments (a skill description starting "use this skill to…" reads as a request to
 # INVOKE a skill, so a naive reader hunts its skill list instead of decoding meaning —
 # a false divergence). "Restate what it means" measures the fragment's meaning
-# regardless of grammatical mood, without leading toward any answer. (T3 finding.)
+# regardless of grammatical mood, without leading toward any answer. That was measured,
+# not assumed: the imperative-mood confound showed up in a corpus-wide sweep.
 DECODE="$(printf 'The text below is a fragment from a knowledge corpus — a definition, rule, or role description. Restate what it means in plain language:\n\n%s\n' "$FRAGMENT" | \
   (cd "$SCRATCH" && CLAUDE_CONFIG_DIR="$CFG" claude -p --model "$MODEL" \
     --disallowedTools Read Grep Glob Bash WebFetch WebSearch Task Edit Write NotebookEdit \

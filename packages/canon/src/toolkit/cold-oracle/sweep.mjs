@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// T3 sweep helper: extract a fragment's meaning-bearing field, run the cold oracle,
+// Corpus-sweep helper: extract a fragment's meaning-bearing field, run the cold oracle,
 // print {ref, decode-head}. Pure orchestration around ./cold-oracle.sh (isolated).
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -45,7 +45,7 @@ function field(src, name) {
 
 for (const ref of refs) {
   const src = readFileSync(ref, 'utf8');
-  // `RuleCell.definiens` became `residue` (2026-08-05, `t-definiens-vs-residue`), so a
+  // `RuleCell.definiens` was renamed `residue` on 2026-08-05, so a
   // rule cell answers to the second name now. Both are read because a HookCell has always
   // used `residue` and the sweep spans every cell kind.
   const text =

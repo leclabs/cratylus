@@ -11,7 +11,7 @@
 //
 // The {@link RuntimeHost} folds discovered/registered {@link RuntimePlugin}s into a
 // capability→binding index the dispatcher resolves against. Registration is by the
-// IMPORTED BINDING (S1 law), addressed at dispatch time by capability name. A second
+// IMPORTED BINDING, addressed at dispatch time by capability name. A second
 // plugin claiming an already-bound capability, a duplicate plugin `name`, or a
 // plugin that provides no capability each fails LOUD — never a silent last-wins.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -36,7 +36,7 @@ export const CAPABILITIES = ['memory', 'eventTap', 'carryOn'] as const;
 /** A capability name — one of {@link CAPABILITIES}. The dispatch `<capability>`. */
 export type Capability = (typeof CAPABILITIES)[number];
 
-/** The typed port a capability resolves to: the S1 contract for that capability. */
+/** The typed port a capability resolves to: the contract for that capability. */
 export type CapabilityPort = MemoryStrategy | EventTapHost | CarryOnHost;
 
 /** A resolved capability: which plugin provides it, and the port to dispatch into. */
@@ -139,8 +139,8 @@ export class RuntimeHost {
 /**
  * The default `@cratylus/*` capability-package specifiers `discover` probes. These
  * are import STRINGS, not package dependencies — node resolution at runtime decides
- * presence, so the runtime never deps a capability package. S9/later shards extend
- * this as capability packages land.
+ * presence, so the runtime never deps a capability package. This list grows as
+ * further capability packages land.
  */
 export const KNOWN_CAPABILITY_PACKAGES = ['@cratylus/memory'] as const;
 

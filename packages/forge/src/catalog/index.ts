@@ -10,8 +10,8 @@
 //
 // forge owns the MECHANISM (it types the 24 dimensions, it knows axis/repertoire/arity);
 // the corpus owns the DATA (the value modules). This stays doctrine-agnostic:
-// it consumes a directory of dimension-module dirs, not `packages/canon` — exactly
-// the T3.1 split (the deploy layer "consumes a render tree, not the corpus").
+// it consumes a directory of dimension-module dirs, not `packages/canon` — the same
+// split the deploy layer makes when it "consumes a render tree, not the corpus".
 //
 // VALUES are DISCOVERED, not listed: drop a new module under `<dimension>/` and it
 // appears with zero other edits. RUNTIME TS IMPORT: each module is a typed
@@ -148,7 +148,7 @@ export async function enumerateCatalog(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Multi-plugin fragment discovery (P3) — generalize the single-corpus scan above
+// Multi-plugin fragment discovery — generalize the single-corpus scan above
 // to enumerate the fragment dirs of EACH extended plugin, addressed by object
 // identity (the imported binding), namespaced per plugin.
 //
@@ -160,15 +160,16 @@ export async function enumerateCatalog(
 // plugins may both name a concept `parsimony`; each yields a DISTINCT node, so that
 // is a resolution event, not a collision (per-plugin σ* invariant).
 //
-// FEEDS THE LOADER (P4): the per-plugin `FragmentEntry[]` is what P4's load step
-// turns into P2's `LoadedPlugin.contributions` (target = the node; value = the body);
-// the resolver then keys `ResolvedAgentSet.fragments` by that same node object.
+// FEEDS THE LOADER: the per-plugin `FragmentEntry[]` is what the `agents.config.ts`
+// loader (`config/loader.ts`) turns into the resolver's `LoadedPlugin.contributions`
+// (target = the node; value = the body); the resolver then keys
+// `ResolvedAgentSet.fragments` by that same node object.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
- * A plugin's fragment ROOT: where to scan, and under what namespace. The P1
- * `AgentPlugin.name` (the namespace segment) paired with the RESOLVED absolute path
- * of its `AgentPlugin.fragments` dir (the parent of the per-dimension module dirs —
+ * A plugin's fragment ROOT: where to scan, and under what namespace. The plugin
+ * contract's `AgentPlugin.name` (the namespace segment) paired with the RESOLVED
+ * absolute path of its `AgentPlugin.fragments` dir (the parent of the per-dimension module dirs —
  * the per-plugin analogue of `enumerateCatalog`'s `corpusDimensionsDir`).
  *
  * An INPUT, built BEFORE the scan: nothing here is a finding, so nothing here may be
@@ -176,9 +177,10 @@ export async function enumerateCatalog(
  * not `Source`, because in a module whose subject is authored text "source" reads as
  * source code — and a fragment's BODY is the actual source.
  *
- * P1's `AgentPlugin.fragments` is package-relative; mapping it to this absolute path
- * is module-resolution (which node_modules package root) — P4's loader concern. P3
- * consumes the already-resolved dir so it stays doctrine- and resolution-agnostic.
+ * `AgentPlugin.fragments` is package-relative; mapping it to this absolute path
+ * is module-resolution (which node_modules package root) — the config loader's concern
+ * (`config/loader.ts`). Discovery consumes the already-resolved dir, so it stays
+ * doctrine- and resolution-agnostic.
  *
  * A PAIR ARRAY ON THE WAY IN, A KEYED MAP ON THE WAY OUT — and the asymmetry is the
  * point, not an oversight left over from the map. `readonly PluginFragmentRoot[]` is
@@ -227,11 +229,12 @@ export class DuplicateNamespaceError extends Error {
 
 /**
  * ONE FRAGMENT as authored — identity, axis, body. `node` is the resolver `Fragment`
- * (OBJECT IDENTITY = the imported binding — what P4 targets in a `PatchEntry` and what
- * the resolver keys the resolved map by). `dimension` is the axis it files under.
+ * (OBJECT IDENTITY = the imported binding — what the config loader targets in a
+ * `PatchEntry`, and what the resolver keys the resolved map by). `dimension` is the
+ * axis it files under.
  * `body` is its authored base value: the branded-string body for a string fragment;
  * for a node-form fragment (the §3 reference-bearing form) the node object itself —
- * P4's loader decides how a node-form fragment originates its base contribution.
+ * the config loader decides how a node-form fragment originates its base contribution.
  *
  * `Entry`, not the stage that produced it: every value in a pipeline is some stage's
  * output, so naming one for its provenance distinguishes it from nothing.
@@ -322,9 +325,9 @@ async function scanDimensionModules(
 /**
  * MANY ROOTS → MANY CATALOGS. Enumerate the fragments of each plugin as NODES
  * addressed by object identity, namespaced by the plugin `name`, then enforce
- * ACYCLICITY of the cross-plugin reference graph (NORTH-STAR §3) by reusing P2's
- * `validateReferenceGraph` — a reference cycle throws `ReferenceCycleError`, a dangling
- * edge `DanglingReferenceError`.
+ * ACYCLICITY of the cross-plugin reference graph (NORTH-STAR §3) by reusing the
+ * resolver's `validateReferenceGraph` — a reference cycle throws
+ * `ReferenceCycleError`, a dangling edge `DanglingReferenceError`.
  *
  * NAMESPACE UNIQUENESS IS CHECKED FIRST, before a single dir is read: a duplicate is a
  * fact about the ROOTS, so nothing is learned by scanning, and failing after the IO
@@ -397,7 +400,7 @@ export async function enumeratePluginFragmentCatalogs(
     plugins.set(src.name, fragments);
   }
 
-  // Acyclicity of the resolved reference graph (§3) — reuse the P2 law.
+  // Acyclicity of the resolved reference graph (§3) — reuse the resolver's law.
   validateReferenceGraph(allNodes);
 
   return plugins;

@@ -25,8 +25,8 @@ import { main } from './cli.js';
 
 /**
  * The memory verbs the runtime dispatches — the `cli.ts` command set minus the
- * meta words (`--version`/`--help`) and the RETIRED `install` self-check (S7: the
- * per-host runtime install replaces it). One handler is minted per name below.
+ * meta words (`--version`/`--help`) and the RETIRED `install` self-check, which the
+ * per-host runtime install replaces. One handler is minted per name below.
  *
  * SECOND ENUMERATION, GATED. This list and `cli.ts`'s per-verb flag table are two
  * homes for one set, and they diverge SILENTLY: a verb present in `cli.ts` but

@@ -23,7 +23,7 @@ export interface EpisodicRecord {
   cwd?: string;
   /** The open event payload — any JSON value. */
   body: JsonValue;
-  /** Free refinement labels. Refine, never route (SPEC D2/D4). */
+  /** Free refinement labels. They refine a record, they never route it. */
   tags?: string[];
   /** v1 legacy routing tag — INERT data; the fold never consults it. */
   scope?: string;

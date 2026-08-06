@@ -505,8 +505,8 @@ export const kebabToCamel = <S extends string>(s: S): KebabToCamel<S> =>
  * deliberately blind to that half: nothing here branches on a dimension's
  * identity, so it reads the dimension fields STRUCTURALLY off the manifest it is
  * given (`dimensionValueOf`) and never names one. `archetype` and `provenance`
- * are NOT fragment dimensions — archetype is a plain identity description (D13),
- * provenance the structured `{mark}` (D3).
+ * are NOT fragment dimensions — archetype is a plain identity description,
+ * provenance the structured `{mark}`.
  *
  * No index signature: a strict `AgentOf<A>` must stay assignable here without
  * relying on implicit-index-signature inference.
@@ -525,9 +525,9 @@ export interface Agent {
    *  omitted. */
   readonly preamble?: string;
   /** σ* — the model-read identity body → Target body. A plain string, not a branded
-   *  fragment-dimension (D13), but σ* content nonetheless. */
+   *  fragment-dimension, but σ* content nonetheless. */
   readonly archetype: string;
-  /** The emoji·hue mark (drives color) — data, not a fragment (D3). */
+  /** The emoji·hue mark (drives color) — data, not a fragment. */
   readonly provenance: { readonly mark: Mark } | null;
 }
 
@@ -562,19 +562,20 @@ export interface SkillDeploy<C extends CapabilityName = CapabilityName> {
    * NOT projected: `projectPluginSet` never reads this field, so a render tree
    * carries no assets and a consumer who never passes `--assets` ships none. The
    * field previously advertised "shipped byte-for-byte with the skill", which
-   * overstated a guarantee nothing enforced — the bridge that would have honoured
-   * it (event-tap T2) was abandoned once the runtime thin shim covered every
-   * motivating case, and `runtime` below is what replaced it. Zero cells declare
-   * `assets` today. Kept because `deploy/bundle.ts` still honours it.
+   * overstated a guarantee nothing enforced. The asset-staging bridge that would
+   * have honoured it — built for the event-tap capability — was abandoned once the
+   * runtime thin shim covered every motivating case, and `runtime` below replaced
+   * it. Zero cells declare `assets` today. Kept because `deploy/bundle.ts` still
+   * honours it.
    */
   readonly assets?: readonly string[];
   /**
    * The RUNTIME capability this skill is a face of. When set, the projection ALSO
    * emits a THIN SHIM `scripts/<capability>.mjs` that forwards to the host-installed
    * `cratylus-run <capability>` CLI — NOT a bundle of the impl (the capability logic
-   * lives host-side behind the runtime port, installed per-host by runtime/S7).
-   * Absent ⇒ SKILL.md only (unchanged). This REVERSES the superseded dep-free-bundle
-   * design (skills-refactor T4). */
+   * lives host-side behind the runtime port, installed once per host).
+   * Absent ⇒ SKILL.md only (unchanged). This REVERSES the superseded design in which
+   * forge composed a standalone, dependency-free `.mjs` at build time. */
   readonly runtime?: { readonly capability: C };
 }
 

@@ -5,7 +5,7 @@ import type { HookCell } from '../manifest.js';
 // cheaply counts the agent's unconsolidated EPISODIC records and, over a
 // conservative watermark, prints a non-blocking advisory to run a hot-path dream.
 //
-// WHY THIS EXISTS (memory dimension, E6c — the harness half):
+// WHY THIS EXISTS (the harness half of the memory dimension):
 //   Per-turn ENCODE grows the raw EPISODIC log; only /dream folds + drains it. An
 //   agent that never dreams accretes an unbounded raw log and loses the
 //   consolidation window while context is still hot. This hook is the ambient
@@ -23,8 +23,8 @@ import type { HookCell } from '../manifest.js';
 //   (that is a SubagentStop field), so the agent's home is not handed in. The
 //   worker derives it best-effort, in order: (1) $CLAUDE_AGENT_HOME override;
 //   (2) match the hook JSON's session_id against the memory session registry
-//   `~/.agents/*/sessions/<id>.json` (the E6a/E6b liveness registry — the correct
-//   derivation whenever wake has registered the session); (3) the sole
+//   `~/.agents/*/sessions/<id>.json` (the liveness registry the `memory` tool keeps —
+//   the correct derivation whenever wake has registered the session); (3) the sole
 //   `~/.agents/*` home when exactly one exists. If none resolves, it exits 0
 //   SILENTLY — a KNOWN LIMITATION (no reliable home ⇒ no honest count), never a
 //   fabricated count.
@@ -79,7 +79,7 @@ export const memoryConsolidationNudge: HookCell = {
 # whether a consolidation is owed and, if so, prints a non-blocking reminder to
 # run a hot-path /dream. It NEVER blocks the turn.
 #
-# WHY (memory dimension, E6c — harness half): per-turn ENCODE grows the raw
+# WHY (the harness half of the memory dimension): per-turn ENCODE grows the raw
 # EPISODIC log and the prose stores only ever grow; only /dream folds, drains and
 # depalimpsests them. This is the ambient reminder to do it while context is hot.
 #

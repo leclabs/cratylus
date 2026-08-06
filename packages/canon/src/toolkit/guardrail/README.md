@@ -1,4 +1,4 @@
-# stance guardrail — the harness half of principal-stance (P4)
+# stance guardrail — the harness half of the principal stance
 
 A standing **Stop / SubagentStop hook** that **structurally refuses** a turn in which an agent collapses
 out of the **intent-driven-expert (fiduciary-agent) stance** — the harness enforcement that makes the
@@ -38,7 +38,7 @@ detects:
 The judge is instructed to be **conservative**: when genuinely unsure between legitimate-consent and
 in-remit permission-seeking, it PASSes. A false block wedges real work; a missed block is recoverable.
 
-## How it's installed (AGENT-FORGE-NATIVE — T6.3)
+## How it's installed (forge-native)
 
 The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq` toggle:
 
@@ -72,8 +72,9 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
 | `stance-judge-prompt.md`   | the **rubric** — the stance contract the judge applies.                                                                                                                                                                                      |
 | `test-stance-guardrail.sh` | **prove-it-bites** — hermetic (fixture repo + crafted transcripts + deterministic fixture judge), plus an optional live-`claude` smoke. Set `STANCE_WORKER_DIR=<host>/.claude/hooks/stance-guardrail` to prove the **deployed** artifact.    |
 
-> Retired in T6.3: `stance-guard-toggle.sh` (the `jq` + `settings.local.json` hand-edit). Registration is
-> now forge's; only the runtime opt-in flag remains, toggled by plain `git config`.
+> Retired when installation moved to forge: `stance-guard-toggle.sh` (the `jq` +
+> `settings.local.json` hand-edit). Registration is now forge's; only the runtime opt-in flag
+> remains, toggled by plain `git config`.
 
 ## Usage
 

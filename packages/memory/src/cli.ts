@@ -375,7 +375,7 @@ function runEncode(args: ParsedArgs): CliResult {
         .filter((t) => t.length > 0),
     );
   }
-  // Compat: a caller-supplied --scope is an INERT tags entry (SPEC D4) — the
+  // Compat: a caller-supplied --scope is an INERT tags entry — the
   // fold is the only scope authority. The v1 tag grammar is not validated.
   const scopeFlag = str(args.flags.scope);
   if (scopeFlag !== undefined) tags.push(scopeFlag);
@@ -404,7 +404,7 @@ function runEncode(args: ParsedArgs): CliResult {
 /**
  * `read`: list records (or `--count`) from the home-anchored raw log.
  * `--under <node>` filters to same-host records whose `node(cwd)` resolves
- * under the given node (SPEC D5); foreign-host and legacy (cwd-less) records
+ * under the given node; foreign-host and legacy (cwd-less) records
  * report as counts on stderr. `--scope` remains a plain inert-field filter
  * (compat) — it never routes.
  */
@@ -1159,7 +1159,7 @@ function runRollover(args: ParsedArgs): CliResult {
 
 /**
  * `audit`: the scope-pollution detector over `<home>/{SEMANTIC,PROCEDURAL}.md`
- * (the v2 scan set — dream's exit gate, SPEC D5). Exit 1 + line-numbered
+ * (the v2 scan set — dream's exit gate). Exit 1 + line-numbered
  * findings on any unpinned hit; 0 clean. Allow-file resolution:
  * `--allow > <home>/audit-allow.txt > none`. Repo keys come from an EXPLICIT
  * config/keylist (flag, env, or a cwd-present `.cratylus.memory.json`) — the

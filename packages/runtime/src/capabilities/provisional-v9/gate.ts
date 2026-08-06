@@ -2,7 +2,7 @@
 // ⚠ PROVISIONAL PATH — `capabilities/provisional-v9/` is a PLACEHOLDER, not a
 // name. See `ports/provisional-v9.ts` for the full notice.
 //
-// THE SAMPLING GATE — the whole of O3, in one function.
+// THE SAMPLING GATE — the whole of the pressure-not-cadence rule, in one function.
 //
 // The period SAMPLES this gate; it never CLOCKS it. The distinction is the
 // design: a cheap, frequent pulse looks at a regulator, and the regulator alone

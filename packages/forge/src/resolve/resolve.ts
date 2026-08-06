@@ -25,10 +25,10 @@
 // NODE and the resolver supplies its value.
 //
 // This engine is DOCTRINE-AGNOSTIC: it folds an already-loaded contribution model
-// and knows nothing of anatomy. P1's `AgentPlugin` declares WHICH DIRS a plugin
-// ships; the loader that scans those dirs into the `LoadedPlugin` fragment-nodes +
-// contributions this engine folds is P3/P4's concern. P2 owns the fold + the LOUD
-// resolve-time validation only.
+// and knows nothing of anatomy. `AgentPlugin` declares WHICH DIRS a plugin ships;
+// scanning those dirs into the `LoadedPlugin` fragment-nodes + contributions this
+// engine folds belongs to `catalog/` and `config/loader.ts`. This module owns the
+// fold + the LOUD resolve-time validation only.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Structural value shapes + ops ────────────────────────────────────────────
@@ -115,8 +115,9 @@ export interface PatchEntry {
 
 /**
  * A plugin in LOADED form — the fragment-bearing shape this engine folds. Distinct
- * from P1's `AgentPlugin` (which declares only WHICH DIRS to scan): the P3/P4 loader
- * scans an `AgentPlugin`'s dirs into these fragment-nodes + originating contributions.
+ * from `AgentPlugin` (which declares only WHICH DIRS to scan): the catalog scan +
+ * config loader turn an `AgentPlugin`'s dirs into these fragment-nodes + originating
+ * contributions.
  * `contributions` are this plugin's own `PatchEntry`s, in authored order.
  */
 export interface LoadedPlugin {
@@ -190,8 +191,8 @@ export interface ResolvedFragment {
 }
 
 /**
- * The resolved catalog — keyed by the `Fragment` OBJECT (identity addressing). At
- * P2 it carries the resolved fragments; presets (agents/skills) join in later shards.
+ * The resolved catalog — keyed by the `Fragment` OBJECT (identity addressing). It
+ * carries the resolved fragments; presets (agents/skills) are a forward seam.
  */
 export interface ResolvedAgentSet {
   readonly fragments: ReadonlyMap<Fragment, ResolvedFragment>;
@@ -397,8 +398,8 @@ function applyOp(acc: unknown, op: PatchOp, value: unknown): unknown {
  * point at a defined node (else DanglingReferenceError), and the graph must be
  * ACYCLIC (else ReferenceCycleError). DFS with a recursion stack finds a back-edge.
  *
- * EXPORTED for reuse by the multi-plugin fragment discovery (P3): the same acyclicity
- * law that guards resolve-time also guards discovery-time, so a cross-plugin reference
+ * EXPORTED for reuse by the multi-plugin fragment discovery in `catalog/`: the same
+ * acyclicity law guards resolve-time and discovery-time, so a cross-plugin reference
  * cycle is caught the moment fragments are enumerated (NORTH-STAR §3), not only at fold.
  */
 export function validateReferenceGraph(defined: ReadonlySet<Fragment>): void {

@@ -392,7 +392,8 @@ export interface GatedField {
  * The σ* fields residue/parsimony gate — the gate's field-partition contract, one
  * home. dimension value (single-line `α ≜ residue`) · skill `formalBlock` (the typed
  * `SkillExpression`, a formalize block) · agent `archetype` (single-line σ* identity).
- * `skill.description` is DELIBERATELY ABSENT (the E2a un-gating — grep the set).
+ * `skill.description` is DELIBERATELY ABSENT — un-gated on purpose, because it is
+ * human-audience prose rather than σ*. This list is the whole gated set; read it here.
  */
 export const RESIDUE_GATED_FIELDS: readonly GatedField[] = [
   { field: 'fragment', shape: 'single-line' },

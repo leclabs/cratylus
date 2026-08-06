@@ -24,9 +24,9 @@ import type { PatchEntry } from '../resolve/resolve.js';
  * The `agents.config.ts` default-export shape — the single config home.
  * `extends` are REAL imported `AgentPlugin` objects (addressing by imported
  * binding, never a string id; NORTH-STAR §3). `patches` target a fragment by its
- * imported binding (P4 ships the empty/zero-config path; targeting a string
- * fragment needs the reference-bearing authoring shape deferred as a canon
- * candidate, NORTH-STAR §11).
+ * imported binding. Only the empty/zero-config path ships today: targeting a string
+ * fragment needs the reference-bearing authoring shape, which is deferred as a canon
+ * candidate.
  */
 export interface AgentsConfig {
   /** Ordered plugins this project extends — imported objects, fold in position. */

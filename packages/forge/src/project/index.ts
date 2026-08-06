@@ -393,7 +393,7 @@ export function resolveFragmentBodies(
  * Rewrite an agent's DIMENSION fields through the resolved-body substitution.
  *
  * ONLY the catalog's dimension fields are touched: `archetype` is a plain identity
- * string (D13) and `provenance` the structured mark (D3) — neither lives in a
+ * string and `provenance` the structured mark — neither lives in a
  * `fragments` dir, so neither is a fold subject. An empty substitution returns the
  * agent unchanged (identity, not a copy) so the no-patch path stays byte-exact.
  *

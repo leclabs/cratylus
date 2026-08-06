@@ -1,14 +1,19 @@
 // The canonical `Hook` → Claude `settings.json` `hooks` block serializer. The ONE
-// function that emits those bytes, for BOTH callers: the render projection port
-// (`claudeHarnessAdapter.hooks`, the live `project → deploy` path) and the IR
-// resource writer (`write.ts` / `bundle.ts`). It lives HERE, beside `render.ts`,
-// rather than inside `write.ts`, because hook projection is not an IR concern:
-// the live path lifts an anatomy `HookCell` into a `Hook` and needs this and
-// nothing else from the write tree (S3).
+// function that emits those bytes for the render projection port
+// (`claudeHarnessAdapter.hooks`, the live `project → deploy` path).
+//
+// It lives HERE, beside `render.ts`, because hook projection is not an IR
+// concern. It used to live inside the claude IR adapter's `write.ts`, which the
+// live projection therefore had to reach into for this one function; extracting
+// it cut that reach, and `write.ts` was deleted with the rest of the IR lineage.
 //
 // A LEAF-ADJACENT module by construction: it imports only the sibling event map
-// and `core/hook` — the harness-agnostic vocabulary `Hook`/`CanonicalEvent` live
-// in (S2). It must never reach `core/ir`.
+// and `@cratylus/schema/hook`, which is where the harness-agnostic `Hook` /
+// `CanonicalEvent` vocabulary lives.
+//
+// EVERY CLAIM BELOW ABOUT CLAUDE'S NATIVE HOOK SHAPE — the `if` filter, per-command
+// `env`, and the non-`command` hook types — is read off Claude Code's hook
+// documentation: <https://code.claude.com/docs/en/hooks-guide.md>.
 
 import type { Hook } from '@cratylus/schema/hook';
 import { claudeBindingOf } from './events.js';
@@ -16,14 +21,14 @@ import { claudeBindingOf } from './events.js';
 /**
  * Adapter-private Hook extension fields — never part of the canonical hook
  * schema, carried only so a read→write round trip inside THIS adapter stays
- * lossless for Claude-specific hook shape ([CC6]: `if` filter, per-command
- * `env`, non-command `type`s like `prompt`). A cross-adapter consumer sees a
+ * lossless for Claude-specific hook shape (the `if` filter, per-command `env`,
+ * and non-command `type`s like `prompt`). A cross-adapter consumer sees a
  * plain `Hook` (structurally compatible; the extra keys are simply ignored).
  */
 export interface ClaudeHook extends Hook {
   if?: string;
   env?: Record<string, string>;
-  /** Native hook `type` when not `'command'` (e.g. `'prompt'`) [CC6]. */
+  /** Native hook `type` when not `'command'` (e.g. `'prompt'`). */
   kind?: string;
   /**
    * A claude-native `matcher` read back off a host's own `settings.json`.
@@ -39,20 +44,20 @@ export interface ClaudeHook extends Hook {
 
 /** The Claude `settings.json` `hooks` block shape: native-event → entries, each
  *  entry an optional matcher + `if` filter + one-or-more hook commands
- *  (`command`, or a lifted non-command type such as `prompt`) [CC6]. */
+ *  (`command`, or a lifted non-command type such as `prompt`). */
 export type ClaudeHooksBlock = Record<
   string,
   Array<{
     matcher?: string;
-    /** Permission-rule filter (v2.1.85+) [CC6]. */
+    /** Permission-rule filter (v2.1.85+). */
     if?: string;
     hooks: Array<{
       type: 'command' | string;
       command?: string;
-      /** Present when `type !== 'command'` (e.g. `type: 'prompt'`) [CC6]. */
+      /** Present when `type !== 'command'` (e.g. `type: 'prompt'`). */
       prompt?: string;
       timeout?: number;
-      /** forge hook id, embedded so reimport preserves it (E3.S2). */
+      /** forge hook id, embedded so a re-read of these bytes preserves it. */
       id?: string;
       env?: Record<string, string>;
     }>;
@@ -61,9 +66,9 @@ export type ClaudeHooksBlock = Record<
 
 /** Serialize forge `Hook`s into the Claude `settings.json` `hooks` block,
  *  collecting per-event losses. The standalone (no caller-allocated arrays)
- *  public entry, used by `claudeHarnessAdapter.hooks` and the plugin-bundle
- *  emitter; `writeClaude` uses the array-threaded `serializeClaudeHooks`
- *  directly so its losses join the surrounding `WriteReport`. */
+ *  public entry, and the one the live projection uses
+ *  (`claudeHarnessAdapter.hooks`). The array-threaded form below stays exported
+ *  for a caller that needs its losses to join a larger report. */
 export function serializeClaudeHooksReport(hooks: Hook[]): {
   filename: string;
   hooks: ClaudeHooksBlock;
@@ -102,7 +107,7 @@ export function serializeClaudeHooks(
         continue;
       }
       const claudeEvent = binding.event;
-      // A hook lifted from a non-command native type (e.g. `prompt` [CC6])
+      // A hook lifted from a non-command native type (e.g. `prompt`)
       // carries its adapter-private `kind`; round-trip it to the SAME native
       // shape rather than misrepresenting it as `type: command`.
       const isPrompt = ch.kind !== undefined && ch.kind !== 'command';

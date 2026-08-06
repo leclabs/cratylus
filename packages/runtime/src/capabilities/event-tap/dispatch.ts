@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The event-tap capability's VERB SURFACE — `eventTap <verb> [args]`.
 //
-// The runtime kernel (S3) routes `cratylus-run eventTap <verb>` here: the tap owns
+// The runtime kernel routes `cratylus-run eventTap <verb>` here: the tap owns
 // the arg-parse for its own flags (`--events`, `--sink`, `--settings`) that a
 // generic method-reflecting dispatcher cannot know. Verb → port method:
 //   install → install · uninstall → remove · read → readCapture · status → status

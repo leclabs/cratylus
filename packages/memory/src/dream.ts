@@ -62,7 +62,7 @@ function appendToHome(
 }
 
 /**
- * Resolve a route target's destination file (SPEC D4). v2 addressing only:
+ * Resolve a route target's destination file. v2 addressing only:
  *
  *  - `SEMANTIC` / `PROCEDURAL` → `<home>/{SEMANTIC,PROCEDURAL}.md`.
  *  - `EPISODIC` → null (the record stays in the raw log).

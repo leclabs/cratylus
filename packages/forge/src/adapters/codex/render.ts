@@ -1,14 +1,17 @@
 // The CODEX projection of the agent anatomy — the second harness, proving the
 // thesis: because projection IS the export adapter,
-// a canon agent authored once reaches EVERY forge harness for free. T2.1 did this
-// for claude; this mirrors it for codex.
+// a canon agent authored once reaches EVERY forge harness for free. The claude
+// adapter proved that first; this mirrors it for codex.
 //
 // Codex's native agent surface differs from claude's `.md` Target:
 //   - a SUBAGENT is `agents/<name>.toml` — `{ name, description,
-//     developer_instructions, model? }` (the documented fields [CX1] — no
-//     fabricated `system_prompt`/`tools`/`color`).
+//     developer_instructions, model? }` — exactly the fields Codex documents,
+//     with no fabricated `system_prompt`/`tools`/`color`.
 //   - the scope-activated orientation artifact is `AGENTS.md` (project rules).
 //   - a SKILL is `skills/<name>/SKILL.md` (the AgentSkills spec, shared with claude).
+//
+// EVERY CLAIM HERE ABOUT WHAT CODEX ACCEPTS is read off Codex's own subagent
+// documentation: <https://developers.openai.com/codex/subagents>.
 //
 // The composed Target BODY itself is HARNESS-NEUTRAL — it is the agent's dimension
 // sections, identical content whichever harness carries it. So this module REUSES
@@ -44,13 +47,13 @@ export type { ResolvedSkill };
 
 /**
  * The codex subagent TOML object for a resolved agent: `{ name, description,
- * developer_instructions, model? }` — the documented codex agent-TOML fields
- * [CX1]. `developer_instructions` is the composed Target body (the
+ * developer_instructions, model? }` — the whole of the documented codex
+ * agent-TOML surface. `developer_instructions` is the composed Target body (the
  * harness-neutral dimension sections + memory genus block) — the SAME `agentBody` the
  * claude Target carries, just delivered as a TOML field instead of a `.md` body.
  * No `color` is emitted: Codex's agent TOML has no documented color field, so
- * carrying `mark.hue` here would be the same fabrication [CX1] fixes on the
- * codex TOML surface.
+ * carrying `mark.hue` here would invent one — the same fabrication the field
+ * list above exists to keep out.
  *
  * No provenance comment is injected into `developer_instructions`: the
  * regenerate-don't-hand-edit banner + content-hash is build-provenance the running

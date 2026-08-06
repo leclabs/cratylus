@@ -1,7 +1,7 @@
 import { checkIn } from '../dimensions/autonomy/check-in.js';
 import type { HookCell } from '../manifest.js';
 
-// stance-guardrail — the harness-half of the principal-stance (P4). A source
+// stance-guardrail — the harness-half of the principal stance. A source
 // `hook` cell (activation=event): its canonical DEFINIENS is the σ*-signified
 // identity that `accept()` gates; its `workers[].content` are the VERBATIM
 // byte-anchors the committed workers under `src/toolkit/guardrail/` regenerate
@@ -27,7 +27,7 @@ export const stanceGuardrail: HookCell = {
 # stance-guardrail — a Stop / SubagentStop hook that STRUCTURALLY REFUSES a turn in which an
 # agent collapses out of the intent-driven-expert (fiduciary-agent) stance.
 #
-# WHY THIS EXISTS (principal-stance plan, P4 — the harness half):
+# WHY THIS EXISTS (the harness half of the principal stance):
 #   Encoding the principal stance as IDENTITY (Nico's half) raises the threshold but is not
 #   truly invariant — enough operator pushback erodes any prompt-level stance. NOTE the original
 #   justification here blamed "RLHF corrigibility reads a correction as 'defer more'"; that is

@@ -54,10 +54,9 @@ import type { HookCell } from '../manifest.js';
 // the number above is a held bound rather than a remembered one.
 //
 // THE CELL NAMES A CAPABILITY, NOT A PATH, and it now ASKS for everything it used to
-// infer. `t-shim-path-from-capability`'s law is that a cell must not restate a
-// location the projector already computes; the harder companion law is that a cell
-// must not GUESS what the projector could have told it. Three guesses lived here and
-// all three are gone:
+// infer. TWO LAWS BIND A CELL. The first: a cell must not restate a location the
+// projector already computes. The harder companion: a cell must not GUESS what the
+// projector could have told it. Three guesses lived here and all three are gone:
 //
 //   1. THE COMPARATOR'S NAME was a shell literal, because the forge CLI's name had no
 //      compile-time home the way `RUNTIME_BIN` does. It has one now — derived, not

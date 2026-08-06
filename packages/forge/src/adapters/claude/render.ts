@@ -5,8 +5,8 @@
 // markdown" — the inversion's projection-to-disk path.
 //
 // This used to be one of TWO projections in this adapter, the other being the IR
-// serialize path (`write.ts` / `serializeAgent`) over a config-IR. That lineage was
-// excised (depalimpsest-ir-intake S6); there is one projection here now.
+// serialize path (`write.ts` / `serializeAgent`) over a config-IR. That lineage has
+// been deleted; there is one projection here now.
 //
 // THIN GENERATOR: both surfaces are a pure map from a typed vector — the agent Target
 // from an `Agent`, the SKILL.md from a `ResolvedSkill` (`f(name, formalBlock,

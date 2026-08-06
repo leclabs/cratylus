@@ -1,26 +1,28 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The `agents.config.ts` loader + THE LOAD STEP (the ratified P2 seam).
+// The `agents.config.ts` loader + THE LOAD STEP — the seam between a declared
+// plugin and a resolvable one.
 //
 // `c12`/`bundle-require`-style: load a TS/ESM config with NO build step (node ≥24
 // strips types on import; the config's `extends` are REAL imports), then wire the
-// step P1/P2/P3 left open:
+// step that the plugin contract, the resolver, and fragment discovery each leave
+// open:
 //
 //   AgentPlugin (dirs only) ──loadPlugins──▶ LoadedPlugin (fragment contributions)
 //                                                     │
 //                                                     ▼  resolve()
 //                                              ResolvedAgentSet
 //
-// P1's `AgentPlugin` declares only WHICH DIRS a plugin ships; P2's `resolve()`
-// folds an already-loaded `LoadedPlugin` model. The gap between them — scan each
-// plugin's dirs into fragment nodes + originating contributions — is THIS module.
-// It reuses P3's `enumeratePluginFragmentCatalogs` (multi-plugin, object-import
+// `AgentPlugin` declares only WHICH DIRS a plugin ships; `resolve()` folds an
+// already-loaded `LoadedPlugin` model. The gap between them — scan each plugin's
+// dirs into fragment nodes + originating contributions — is THIS module.
+// It reuses `enumeratePluginFragmentCatalogs` (multi-plugin, object-import
 // addressed, cross-plugin acyclicity enforced) for the scan, then lifts each
 // `FragmentEntry{node, body}` → a `PatchEntry{target: node, op:'replace'}` (a
 // plugin ORIGINATES its fragment's base via `replace`, per `resolve.ts`).
 //
-// MODULE RESOLUTION (the concern P3 handed to P4): an imported plugin OBJECT has
-// lost its package-root provenance, so a `fragments` dir must resolve to an
-// ABSOLUTE path. A plugin SELF-LOCATES its dirs (canon resolves them against its
+// MODULE RESOLUTION (the concern fragment discovery hands to this module): an
+// imported plugin OBJECT has lost its package-root provenance, so a `fragments`
+// dir must resolve to an ABSOLUTE path. A plugin SELF-LOCATES its dirs (canon resolves them against its
 // own `import.meta.url`), which works wherever the package is installed. A
 // RELATIVE dir is resolved against `rootDir` (the config file's dir by default) as
 // a local/dev fallback — e.g. a `file:`-linked pre-publish plugin.
@@ -107,8 +109,9 @@ export async function loadPlugins(
   }));
 
   // Single call → cross-plugin acyclicity is enforced across ALL roots at once
-  // (P3 reuses P2's `validateReferenceGraph`), and two plugins claiming one namespace
-  // throw `DuplicateNamespaceError` there rather than quietly merging here.
+  // (discovery reuses the resolver's `validateReferenceGraph`), and two plugins
+  // claiming one namespace throw `DuplicateNamespaceError` there rather than
+  // quietly merging here.
   const catalogs = await enumeratePluginFragmentCatalogs(
     roots,
     mergeManifest(plugins),
@@ -132,8 +135,8 @@ export async function loadPlugins(
 
 /**
  * Resolve a loaded `AgentsConfig` → `ResolvedAgentSet`: run THE LOAD STEP over
- * `extends`, then call P2's `resolve()` with the consumer `patches`. This is the
- * one shared path both skins (CLI + programmatic) call — no divergent code path.
+ * `extends`, then call the resolver's `resolve()` with the consumer `patches`. This
+ * is the one shared path both skins (CLI + programmatic) call — no divergent path.
  */
 export async function resolveAgentsConfig(
   config: AgentsConfig,

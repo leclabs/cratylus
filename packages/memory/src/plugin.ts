@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // memory's RUNTIME face — the `runtimePlugin` named export the runtime
-// loader (S3) registers. It declares ONE capability: `memory`, provided as the
+// loader registers. It declares ONE capability: `memory`, provided as the
 // runtime VERB-PORT ({@link memoryVerbPort}) — the argv→verb marshalling the kernel
 // dispatches against (`<capability> <verb> [args]` → a verb bag consuming the
 // kernel's `VerbArgs`). The verb-port re-presents the tested `memory` CLI, so
@@ -9,7 +9,8 @@
 //
 // NB the port is NOT the raw typed {@link AgentMemory} (whose methods take
 // DOMAIN-typed args, not the kernel's `VerbArgs`) — binding that directly is the
-// gap the S3 kernel's FAKE-plugin tests hid and the S7 real-bin dogfood exposed.
+// gap the kernel's own tests could not see, because they exercised FAKE plugins;
+// a dogfood against the real installed binary is what exposed it.
 // AgentMemory stays the programmatic API (exported from the package index).
 // ─────────────────────────────────────────────────────────────────────────────
 

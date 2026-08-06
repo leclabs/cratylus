@@ -1,5 +1,5 @@
 // The self-authored instance layers a fresh agent home carries beside its def —
-// the v2 (CoALA) stores (scoped-memory-v2 D1):
+// the v2 (CoALA) stores:
 //   SEMANTIC.md    — identity facts + durable agent-intrinsic knowledge; the
 //                    hot index (the vault carries the cold corpus).
 //   PROCEDURAL.md  — inductively generalized cross-project wisdom NOT already

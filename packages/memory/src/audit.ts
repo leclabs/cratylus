@@ -291,7 +291,7 @@ export function scanLine(
   return out;
 }
 
-/** The resident store files the audit covers (SPEC D5: the v2 scan set). */
+/** The resident store files the audit covers — the v2 scan set. */
 const AUDITED_FILES = ['SEMANTIC.md', 'PROCEDURAL.md'] as const;
 
 export interface AuditOptions {

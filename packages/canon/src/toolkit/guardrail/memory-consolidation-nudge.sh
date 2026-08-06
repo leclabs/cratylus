@@ -3,7 +3,7 @@
 # whether a consolidation is owed and, if so, prints a non-blocking reminder to
 # run a hot-path /dream. It NEVER blocks the turn.
 #
-# WHY (memory dimension, E6c — harness half): per-turn ENCODE grows the raw
+# WHY (the harness half of the memory dimension): per-turn ENCODE grows the raw
 # EPISODIC log and the prose stores only ever grow; only /dream folds, drains and
 # depalimpsests them. This is the ambient reminder to do it while context is hot.
 #

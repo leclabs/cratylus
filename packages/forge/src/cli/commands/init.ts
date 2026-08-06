@@ -10,14 +10,14 @@
 // scaffolded FROM the default plugin (resolved through `resolve()`), not from a
 // baked-in founding template.
 //
-// depalimpsest-ir-intake S6: `init` used to ALSO bootstrap a `.forge/` IR
-// home (manifest.yaml + six resource dirs) and append `.forge/local/` to
-// .gitignore. That was the entry point of the excised IR-intake lineage — with
-// no `import`, `compile`, or IR left, the directory has no producer and no
+// `init` used to ALSO bootstrap a `.forge/` IR home (manifest.yaml + six
+// resource dirs) and append `.forge/local/` to .gitignore. That was the entry
+// point of the IR-intake lineage, which has since been deleted — with no
+// `import`, `compile`, or IR left, the directory has no producer and no
 // consumer. The `--scope` option went with it: it selected the IR root and
 // nothing else, so keeping it would be a parse-and-ignore flag.
 //
-// `--plugin` (2026-08-05, `t-canon-package-default`) is NOT that flag returning.
+// `--plugin` (added 2026-08-05) is NOT that flag returning.
 // `--scope` named an IR root that no longer exists; this names the PLUGIN PACKAGE
 // the scaffold extends, which is read and load-bearing. The projector must not
 // decide which corpus a project extends — that is projection fusing with meaning

@@ -9,7 +9,7 @@
 // that sentence described a byte-identical copy of forge's map. The map arrives as
 // configuration the projection emitted (ARCHITECTURE property 4).
 //
-// The kernel (S3) registers `runtimePlugin` and routes `eventTap <verb>` to
+// The kernel registers `runtimePlugin` and routes `eventTap <verb>` to
 // {@link dispatchEventTap} (the verb surface that parses the tap's own flags).
 //
 // ONE SIGN, TWO REGISTERS: `event-tap` (the plugin `name:`, the dir basename, the

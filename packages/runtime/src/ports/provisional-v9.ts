@@ -126,7 +126,7 @@ export interface HostStatus {
 }
 
 /**
- * The regulator the period SAMPLES. This is the whole of O3: consolidation is
+ * The regulator the period SAMPLES. The whole rule is this: consolidation is
  * governed by pressure/salience crossing a threshold — never by the period's
  * frequency. Four independent architectures converge here (LIDA's offline
  * consolidation, CLS/wake-sleep phase gating, Generative Agents' Σ-importance
@@ -155,9 +155,9 @@ export interface GateConfig {
  * Harness-neutral port: configure a period, emit ticks on it, atomically claim
  * whatever was deposited since the last emission, and report live status. The
  * dependency-inversion contract a runtime domain module codes against; each
- * target supplies exactly one realization (per O2 the two known vectors are an
- * MCP push channel for a live session, and an async-generator stream for a
- * headless driver — one port, N adapters, selected per deployment).
+ * target supplies exactly one realization. The two known vectors are an MCP push
+ * channel for a live session and an async-generator stream for a headless driver —
+ * one port, N adapters, selected per deployment.
  */
 export interface ProvisionalV9Host {
   /** Set the cadence. Must be called before {@link start}; may be re-called while stopped. */

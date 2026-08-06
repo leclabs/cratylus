@@ -117,7 +117,7 @@ export const MANIFEST = {
 /**
  * Every fragment dimension of this corpus — DERIVED from `MANIFEST`, never listed
  * twice. `archetype` and `provenance` are NOT here: archetype is a plain-string
- * description on the agent (D13) and provenance the structured `{mark}` (D3);
+ * description on the agent and provenance the structured `{mark}`;
  * both carry data, not a σ* residue, so neither is a value-fragment dimension.
  */
 export type Dimension = keyof typeof MANIFEST;

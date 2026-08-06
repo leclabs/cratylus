@@ -277,8 +277,10 @@ cli.version(VERSION);
 // An unknown verb must FAIL, loudly and by name. cac's default is to parse an
 // unrecognized command into the (absent) global command and exit 0 silently —
 // so `forge compile` would have looked like a success long after `compile`
-// was deleted. depalimpsest-ir-intake S6 removed nine verbs; this guard is what
-// makes their removal observable instead of silent.
+// was deleted. Excising the IR-intake lineage removed nine verbs at once
+// (`compile`, `import`, `lint`, `diff`, `watch`, `migrate`, `doctor`, `events`,
+// `import-audit`); this guard is what makes their removal observable instead of
+// silent.
 const parsed = cli.parse(process.argv, { run: false });
 if (!cli.matchedCommand && parsed.args.length > 0) {
   const known = cli.commands.map((c) => c.name).join(', ');
