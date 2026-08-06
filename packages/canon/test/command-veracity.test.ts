@@ -56,10 +56,13 @@
 //     record of the repair is a sweep with an exemption list. The shapes are stated
 //     instead; the sites carry the specifics.
 //
-//     `inScope` IS DELIBERATELY UNCHANGED. The repair above is a fact about those
-//     sites; whether this walk should reach them is a SCOPE decision, and it belongs
-//     to whoever has to live with the false positives a widened walk would produce on
-//     the mention class — this file's own dead commands first among them.
+//     `inScope` IS STILL UNCHANGED, AND THE SCOPE DECISION HAS NOW BEEN TAKEN — the
+//     third law below reaches test files, `inScope` does not, and both are right.
+//     What made that possible is that the walk stopped being the scope: `authoredLines`
+//     now reads the whole authored corpus once and each law filters it by a predicate
+//     argued against the class that law names. So the false positives a widened walk
+//     would produce on the mention class never arise — this file's own dead commands
+//     are still out of the command law's reach, exactly as before.
 //   - a CLOSED RECORD — a verbatim transcription of a turn that happened. Same
 //     use/mention line, one step further: the turn really did say that, and holding
 //     a transcription to today's truth would forbid transcribing accurately. This
@@ -147,6 +150,11 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import {
+  everDesignated,
+  liveDesignators,
+  retiredDesignators,
+} from '../src/toolkit/plan-set.js';
 
 const repoRoot = join(
   dirname(fileURLToPath(import.meta.url)),
@@ -239,12 +247,37 @@ function isTranscript(text: string): boolean {
   return text.startsWith(TURN_CAPTURE_BANNER);
 }
 
-/** IN-scope ⇔ a reader could act on it today. Every exclusion is argued in the header. */
+/**
+ * IN-scope ⇔ a reader could act on it today, FOR THE COMMAND AND PLAN-PATH LAWS.
+ * Every exclusion is argued in the header. The designator law takes a different
+ * scope — `designatorScope` below, and the divergence is argued where it is used.
+ */
 function inScope(rel: string): boolean {
   if (/^plans\/[^/]+\/completed\//.test(rel)) return false;
   if (rel.includes('/test/') || rel.endsWith('.test.ts')) return false;
   if (rel.startsWith('graphify-out/')) return false;
   return TEXT.test(rel);
+}
+
+/**
+ * IN-scope for the DESIGNATOR law: everything the walk reaches except the plan set
+ * itself.
+ *
+ * `**​/test/**` IS IN, and that is the whole difference. The header's ruling: a
+ * command name in a test body is a MENTION (the test's subject IS the token, and it
+ * must be able to name a dead one to prove the gate convicts), whereas a shard
+ * designator in a test's own header comment is a USE — nothing in that file tests
+ * the designator, the author is citing a warrant to a reader who now cannot follow
+ * it. The two classes come apart, so their scopes do too; a single ruling for both
+ * would have to sacrifice one of them.
+ *
+ * `plans/**` IS OUT, for the reason the plan-path law already gives: the plan set is
+ * the record system whose own lifecycle deletes shards, and a plan must be able to
+ * name the shard it retires, the dep it waits on, and the predecessor it refutes. A
+ * gate that forbids that forbids the mechanism from documenting itself.
+ */
+function designatorScope(rel: string): boolean {
+  return !rel.startsWith('plans/');
 }
 
 /** One authored line, with the two facts a matcher needs about its voice. */
@@ -257,13 +290,26 @@ interface Line {
 }
 
 /**
- * THE ONE WALK. Every in-scope, non-transcript tracked file, line by line. Both laws
- * below read this; neither walks the tree a second time, so a scope ruling argued
- * once cannot come apart between them.
+ * THE ONE WALK. Every tracked text file that is not a closed record, line by line.
+ * All three laws below read this and none walks the tree a second time — so the
+ * VOICE facts (`inFence`, `wholeFileIsCode`) and the closed-record discriminator are
+ * decided once for the whole corpus and cannot come apart between laws.
+ *
+ * SCOPE IS APPLIED BY THE LAW, NOT BY THE WALK, and that is a correction. This
+ * function used to filter by `inScope` and its docstring claimed the stronger
+ * property that one scope ruling served every law. That claim did not survive the
+ * third law: the header's own use/mention argument shows a test file is a MENTION
+ * carrier for command names and a USE carrier for shard designators, so one ruling
+ * cannot be right for both. Widening the walk and narrowing per law keeps the single
+ * traversal — which is what the property was protecting — while letting each
+ * exclusion be argued against the class it excludes. `inScope` is unchanged, and the
+ * command and plan-path laws still read exactly the lines they always did.
  */
 function authoredLines(): Line[] {
   const out: Line[] = [];
-  for (const rel of tracked().filter(inScope)) {
+  for (const rel of tracked().filter(
+    (f) => TEXT.test(f) && !f.startsWith('graphify-out/'),
+  )) {
     let text: string;
     try {
       text = readFileSync(join(repoRoot, rel), 'utf8');
@@ -351,6 +397,7 @@ function codeSpans(
 function citations(): Citation[] {
   const out: Citation[] = [];
   for (const ln of authoredLines()) {
+    if (!inScope(ln.file)) continue;
     for (const span of codeSpans(ln.text, ln.inFence, ln.wholeFileIsCode)) {
       for (const m of span.matchAll(RUN)) {
         const leading = m[1] ?? '';
@@ -420,11 +467,125 @@ function planPathMentions(): PathCitation[] {
 function planPathCitations(): PathCitation[] {
   const out: PathCitation[] = [];
   for (const ln of authoredLines()) {
-    if (ln.file.startsWith('plans/')) continue;
+    if (!inScope(ln.file) || ln.file.startsWith('plans/')) continue;
     for (const p of planPathsIn(ln.text))
       out.push({ file: ln.file, line: ln.line, path: p });
   }
   return out;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// DESIGNATOR VERACITY — the third law, over the SAME walk.
+//
+// A shard designator cited in a live source — `AMENDED (t-some-shard)`, "the shape
+// `s4-widget` ruled" — is a warrant no reader can follow, and it becomes one
+// SILENTLY: at the retirement of the plan that held the shard, in a commit that
+// touches neither the citing file nor anything near it. The plan-path law above
+// catches the citation written as a PATH; this one catches it written as a NAME,
+// which is how an author writing prose actually writes it.
+//
+// THE ORACLE IS A SET DIFFERENCE, HAND-MAINTAINED BY NOBODY. `retiredDesignators`
+// (`src/toolkit/plan-set.ts`) enumerates every shard basename git has seen under a
+// state folder and removes every one the worktree still holds. No manifest, no
+// checked-in id list, no marker: the same derived-on-demand-never-stored discipline
+// the plan tier's `retirement(P)` already ships, one tier down. The full argument —
+// including why the empty plan set is this oracle's EASY case rather than its blind
+// spot — lives at the definition; it is not restated here.
+//
+// SCOPE. `designatorScope` — everything the walk reaches except `plans/**`. Test
+// files are IN, and the header's use/mention ruling is why: a test never has a
+// designator as its SUBJECT, so a designator in a test is a citation like any other.
+//
+// REACH IS MEASURED AS A DENOMINATOR, and it has to be. The corpus's honest steady
+// state for this law is ZERO violations, so a leg counting violations would report
+// green for having enumerated nothing the day the last one was repaired — and this
+// law's enumeration is exactly what can silently go to nothing, since it depends on
+// a git walk, a regex built from `PLAN_STATES`, and a directory that legitimately
+// empties. The reach leg therefore prints and asserts the two factors of the search
+// space: HOW MANY IDS the oracle enumerated, and HOW MANY FILES the walk read.
+//
+// THE CEILING, stated where the law lands because it is the first thing an author
+// repairing a violation will run into. A repair that EXPLAINS ITSELF re-mints the
+// token it repaired: "this used to cite `t-some-shard`, which is dead" is a MENTION,
+// and this gate is shape-decidable, so it reads it as a USE and convicts the repair.
+// That is not a bug to be exempted away. The closed-record exemption keys on the
+// capture banner — it covers a transcribed turn and deliberately does NOT cover a
+// source comment — and widening it to cover explanatory prose would blind the gate
+// to the commonest real violation there is: an author citing a warrant in a header.
+// So the ceiling stands, and the cheap move is the one both repair shards
+// independently arrived at: CARRY THE FACT WITHOUT RESPELLING THE ID. Inline what
+// the cited ruling actually said, or withdraw the claim so the sentence stands on
+// its own. Neither needs the id, and neither needs an exemption.
+//
+// THE ONE EXEMPTION IS A CRATYLIC COLLISION, and it is measured, not anticipated.
+// praxis qualifies a shard id with the work it does, so a designator and a concept
+// share a STEM but not a SIGN: the shard that builds a law is named for the law PLUS
+// the work, and the law keeps the bare stem. (No example is spelled out here. This
+// paragraph named one on its first run and the gate below convicted it — the ceiling
+// above, demonstrating itself on the author who was writing it down.) Where an OLDER
+// plan named a shard with the bare concept, the id and the corpus's live sign for
+// that concept are the same string, and no shape can separate them. `EXONERATED`
+// below holds those, each one verified to be a genuinely retired
+// id (or it exonerates nothing) and the list as a whole verified to be LOAD-BEARING
+// (or it is ceremony, and the terminal state of an exemption with no subject is
+// deletion, not ∅).
+
+/**
+ * Designators whose string is ALSO the corpus's live sign for a concept, so an
+ * occurrence is a use of the CONCEPT and not a citation of the shard. Measured
+ * against the live corpus, not guessed: each names a law or an oracle this corpus
+ * still enforces (`cold-decode` the oracle, `root-cause` the diagnosis,
+ * `extend-reach` and `explicit-omit-to-inherit` the laws their gates carry in their
+ * own titles).
+ *
+ * This is an exemption keyed on IDENTITY, so it is corpus-wide: a genuine dangling
+ * citation of one of these four would pass unseen. Four names is the price of not
+ * convicting every gate in the suite for naming its own law.
+ */
+const EXONERATED: readonly string[] = [
+  'cold-decode',
+  'explicit-omit-to-inherit',
+  'extend-reach',
+  'root-cause',
+];
+
+/**
+ * The designator-shaped tokens on a line.
+ *
+ * LEADING GUARD, borrowed verbatim from `PLAN_PATH` and load-bearing for the same
+ * reason: a token preceded by a path character is a path SEGMENT, not a bare
+ * designator. `plans/fleet-cutover` is a plan path, which the law above already
+ * owns; `mav/B9-toolkit-hardening` is a branch name in a specimen. Both are what
+ * their prefix says they are, and neither is an author citing a shard. Without this
+ * guard the two laws would convict the same token twice and the specimen carriers
+ * that MUST name a plan path in order to test a scanner for plan paths would red.
+ */
+const DESIGNATOR_TOKEN =
+  /(?<![A-Za-z0-9_./-])[A-Za-z0-9][A-Za-z0-9_-]*(?![A-Za-z0-9_-])/g;
+
+interface DesignatorCitation {
+  readonly file: string;
+  readonly line: number;
+  readonly id: string;
+}
+
+/** Every occurrence of a RETIRED designator, exonerated collisions included — the
+ *  raw readout the law and its load-bearing check both fold over. */
+function designatorHits(dead: ReadonlySet<string>): DesignatorCitation[] {
+  const out: DesignatorCitation[] = [];
+  for (const ln of authoredLines()) {
+    if (!designatorScope(ln.file)) continue;
+    for (const m of ln.text.matchAll(DESIGNATOR_TOKEN)) {
+      if (dead.has(m[0])) out.push({ file: ln.file, line: ln.line, id: m[0] });
+    }
+  }
+  return out;
+}
+
+/** The hits that are the law's subject — collisions discharged. */
+function designatorCitations(dead: ReadonlySet<string>): DesignatorCitation[] {
+  const spared = new Set(EXONERATED);
+  return designatorHits(dead).filter((h) => !spared.has(h.id));
 }
 
 describe('COMMAND-VERACITY gate — a named command must exist', () => {
@@ -486,9 +647,9 @@ describe('COMMAND-VERACITY gate — a named command must exist', () => {
       'run `pnpm anatomy:project:targets` to regenerate',
       'then `pnpm canon:project` — this one is real',
       // A --filter citation, so the control covers that shape too. It named
-      // `project` until `t-build-steps-proxy-the-cli` deleted canon's private
-      // `project` / `project:codex` scripts along with the CLIs they drove;
-      // `project:targets` is the surviving filtered script.
+      // `project` until canon's private `project` / `project:codex` scripts were
+      // deleted along with the CLIs they drove; `project:targets` is the
+      // surviving filtered script.
       'pnpm --filter @cratylus/canon project:targets',
       'pnpm install',
     ];
@@ -668,5 +829,208 @@ describe('PLAN-PATH VERACITY gate — a cited plan path must resolve', () => {
     // …and the record set is READ, never enumerated: a new fixture directory is
     // recognised the day it lands, with no edit here.
     expect(transcripts().length).toBeGreaterThan(0);
+  });
+});
+
+describe('DESIGNATOR-VERACITY gate — a cited shard designator must be live', () => {
+  // REACH, AS A DENOMINATOR. Not a violation count: the honest steady state of this
+  // law is zero violations, so a count proves nothing about whether anything was
+  // enumerated. The search space is `ids × files`, and BOTH factors can silently go
+  // to nothing — the git walk through a path filter, the id regex through
+  // `PLAN_STATES`, the file set through a scope predicate. Each is asserted, and the
+  // numbers are printed so a shrinking denominator is visible before it is fatal.
+  it('enumerates a real retired-id set over a real file set — both denominators', () => {
+    const t0 = Date.now();
+    const dead = retiredDesignators();
+    const ms = Date.now() - t0;
+
+    const files = new Set<string>();
+    let lines = 0;
+    for (const ln of authoredLines()) {
+      if (!designatorScope(ln.file)) continue;
+      files.add(ln.file);
+      lines += 1;
+    }
+    console.log(
+      `DESIGNATOR reach — ids ${dead.length} (of ${everDesignated().size} ever, ${liveDesignators().size} live) · files ${files.size} · lines ${lines} · oracle ${ms}ms`,
+    );
+
+    // Denominator 1 — the oracle enumerated. The historical leg cannot empty while
+    // git holds a single retired shard, which is why this floor is safe to set high.
+    expect(
+      dead.length,
+      'the retired-id set collapsed — the git leg or the state regex stopped matching',
+    ).toBeGreaterThan(200);
+    // Accept 1: derived from git alone, on demand. A second's budget is two orders of
+    // magnitude above the measured cost; the floor is there to catch an algorithm
+    // change, not to time this machine.
+    expect(ms, 'the oracle got slow enough to be worth caching').toBeLessThan(
+      1000,
+    );
+
+    // Denominator 2 — the walk read. `plans/**` is the only exclusion, so this is
+    // essentially the whole authored corpus.
+    expect(
+      files.size,
+      'the walk collapsed — a scope predicate is excluding almost everything',
+    ).toBeGreaterThan(200);
+    expect(lines).toBeGreaterThan(10000);
+
+    // The SCOPE DECISION, made observable. Test files are in scope for this law and
+    // out of scope for the two above; a silent re-narrowing to `inScope` would take
+    // the whole USE class with it and leave every other leg green.
+    expect(
+      [...files].some((f) => f.endsWith('.test.ts')),
+      'test files left the designator walk — the USE class this law exists for is unpoliced',
+    ).toBe(true);
+    expect([...files].some((f) => f.startsWith('packages/forge/test/'))).toBe(
+      true,
+    );
+    // Three voices, each a shape a narrowed walk could drop.
+    const exts = new Set([...files].map((f) => f.match(/\.(\w+)$/)?.[1] ?? ''));
+    expect([...exts]).toContain('md');
+    expect([...exts]).toContain('ts');
+    expect([...exts]).toContain('sh');
+  });
+
+  // ACCEPT 2 — the empty plan set, asserted DIRECTLY rather than hoped for. The
+  // corpus reaches `plans/ = ∅` every time the last plan lands, and it has taken a
+  // gate down each time. Here it is the oracle's easy case: the live leg empties,
+  // nothing removes anything from the historical leg, and every id git ever saw reads
+  // dead. The subject is SYNTHETIC — a temp repo with its own history — so the leg
+  // holds at zero plans and at fifty alike, and does not depend on this corpus ever
+  // reaching either.
+  it('reports every historical id dead when the plan set is empty — no throw, no silence', () => {
+    const repo = mkdtempSync(join(tmpdir(), 'designator-empty-'));
+    const g = (...args: string[]): string =>
+      execFileSync('git', args, { cwd: repo, encoding: 'utf8' });
+    try {
+      g('init', '-q');
+      g('config', 'user.email', 'test@example.com');
+      g('config', 'user.name', 'test');
+      const ctx = { repoRoot: repo };
+
+      mkdirSync(join(repo, 'plans/demo/completed'), { recursive: true });
+      writeFileSync(join(repo, 'plans/demo/PLAN.md'), '# demo\n');
+      writeFileSync(join(repo, 'plans/demo/completed/t-alpha.md'), '# a\n');
+      writeFileSync(join(repo, 'plans/demo/completed/t-beta.md'), '# b\n');
+      g('add', '-A');
+      g('commit', '-q', '-m', 'author a plan');
+
+      // Live: both shards on disk, nothing dead.
+      expect([...liveDesignators(ctx)].sort()).toEqual(['t-alpha', 't-beta']);
+      expect(retiredDesignators(ctx)).toEqual([]);
+
+      // Retire the whole plan set, directory and all — the state that has bitten
+      // this corpus five times.
+      rmSync(join(repo, 'plans'), { recursive: true, force: true });
+      g('add', '-A');
+      g('commit', '-q', '-m', 'retire the plan set');
+      expect(existsSync(join(repo, 'plans'))).toBe(false);
+
+      // It RUNS: no throw from the absent directory…
+      expect(liveDesignators(ctx).size).toBe(0);
+      // …and it does not read green for having found nothing. Every historical id is
+      // dead, which is the CORRECT answer, and it is the loud one.
+      expect(retiredDesignators(ctx)).toEqual(['t-alpha', 't-beta']);
+      expect(everDesignated(ctx).size).toBe(2);
+    } finally {
+      rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
+  it('every cited designator is live — no exemption beyond the measured collisions', () => {
+    const dead = new Set(retiredDesignators());
+    const failures = designatorCitations(dead).map(
+      (c) =>
+        `DESIGNATOR ${c.file}:${c.line} → ${c.id} — that shard is retired; inline what it ruled or withdraw the claim (do NOT re-point, and do NOT respell the id to explain the repair)`,
+    );
+    expect(failures, failures.join('\n')).toEqual([]);
+  });
+
+  // The CONVICTING fixture — the known-answer control. It travels the same path as
+  // the live law: the real oracle's dead set, the real token matcher, over text this
+  // test supplies.
+  it('FAILS a live source citing a genuinely retired designator', () => {
+    const dead = new Set(retiredDesignators());
+    // Assert the defect is PRESENT before reading the result (meta-gate hazard 1).
+    // Read off the oracle rather than pinned, because a pinned id is a claim about
+    // history that the next `git filter-repo` falsifies — and asserting a NON-EMPTY
+    // oracle is the same assertion, one quantifier weaker.
+    const victim = [...dead].sort()[0];
+    expect(victim, 'the oracle enumerated nothing to convict with').toBeTypeOf(
+      'string',
+    );
+    const id = victim as string;
+    expect(liveDesignators().has(id)).toBe(false);
+
+    const probe = [
+      `// AMENDED (${id}): the assertion moved to the constant.`,
+      '// the layout is `plans/<plan>/<state>/` — a shape, not a designator',
+      `// a path segment is not a citation: plans/${id}/PLAN.md`,
+      '// and an unrelated live word: retirement',
+    ];
+    const hits = probe.flatMap((t) =>
+      [...t.matchAll(DESIGNATOR_TOKEN)]
+        .map((m) => m[0])
+        .filter((tok) => dead.has(tok)),
+    );
+    // Convicts the citation and ONLY it: the shape carries no designator, and the
+    // path form belongs to the plan-path law — the leading guard hands it over
+    // rather than convicting the same token twice.
+    expect(hits).toEqual([id]);
+  });
+
+  // The EXONERATING fixture — the other half, and the one that proves the gate does
+  // not bite wrongly. Without it, a matcher that convicted every hyphenated word in
+  // the corpus would still pass the convicting control above.
+  it('exonerates the measured cratylic collisions and the non-citation shapes', () => {
+    const dead = new Set(retiredDesignators());
+
+    // Each exonerated name really IS a retired designator — otherwise the list
+    // exonerates nothing and is silently widening the gate's blind spot.
+    for (const name of EXONERATED)
+      expect(
+        dead.has(name),
+        `${name} is no longer a retired designator — drop it from EXONERATED`,
+      ).toBe(true);
+
+    // The four collisions, in the voice the corpus actually writes them.
+    const spared = [
+      '// the cold-decode oracle IS this agent’s executable oracle',
+      '// READER-REACH gate — `extend-reach`: the reader binding ρ enforced',
+      '// Law (explicit-omit-to-inherit): a dimension key holds a fragment OR null',
+      '// Sage archetype of root-cause diagnosis — symptom to fault',
+      '// a branch specimen: mav/B9-toolkit-hardening',
+      '// a plan path, owned by the law above: plans/fleet-cutover',
+    ];
+    const survivors = spared.flatMap((t) =>
+      [...t.matchAll(DESIGNATOR_TOKEN)]
+        .map((m) => m[0])
+        .filter((tok) => dead.has(tok) && !EXONERATED.includes(tok)),
+    );
+    expect(survivors, `wrongly convicted: ${survivors.join(', ')}`).toEqual([]);
+    // …and the collisions were genuinely THERE to be spared — an exoneration that
+    // fired on nothing proves nothing (meta-gate hazard 1, negative direction).
+    const seen = spared.flatMap((t) =>
+      [...t.matchAll(DESIGNATOR_TOKEN)]
+        .map((m) => m[0])
+        .filter((tok) => EXONERATED.includes(tok)),
+    );
+    expect([...new Set(seen)].sort()).toEqual([...EXONERATED].sort());
+  });
+
+  // ANTI-CEREMONY. An exemption list with no live subject is a mechanism protecting
+  // nothing, and its terminal state is DELETION, not ∅ — the meta-gate's own ruling.
+  // This is the leg that says so out loud, in the aggregate rather than per name, so
+  // that editing any one collision site is not a gate failure.
+  it('the exoneration list is LOAD-BEARING — it is not carrying ceremony', () => {
+    const dead = new Set(retiredDesignators());
+    const all = designatorHits(dead).length;
+    const subject = designatorCitations(dead).length;
+    expect(
+      all - subject,
+      'EXONERATED spares nothing in the live corpus — delete the list and its legs; the gate gets strictly stronger',
+    ).toBeGreaterThan(0);
   });
 });

@@ -22,7 +22,7 @@ describe('scaffoldAgentsConfig — the init zero-config default', () => {
   afterEach(() => rmSync(cwd, { recursive: true, force: true }));
 
   it('writes agents.config.ts extending [canon] with empty patches', async () => {
-    // AMENDED (t-canon-package-default): this used to assert the literal
+    // AMENDED: this used to assert the literal
     // '@cratylus/canon' as the ONLY corpus the scaffold could name. It now pins
     // the DEFAULT — what you get when you name no plugin — while the companion
     // test below proves the default is overridable. The literal is still

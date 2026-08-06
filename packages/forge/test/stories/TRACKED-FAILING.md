@@ -13,7 +13,7 @@ from the `story.tracked` call sites).
 
 Call sites: 0 tracked-failing across 0 stories.
 
-**convergence-graduation (2026-07)**: the interop-hardening wave closed every cross-adapter
+**the convergence graduation (2026-07)**: the interop-hardening wave closed every cross-adapter
 equation it tracked; its last two rows were reclassified as by-design boundaries rather than gaps.
 
 **the IR-intake excision (2026-07)**: the IR-intake lineage was excised and nine of the ten

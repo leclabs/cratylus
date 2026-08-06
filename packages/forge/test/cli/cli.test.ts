@@ -30,7 +30,7 @@ describe('CLI commands (integration)', () => {
     // (1) init on an empty dir scaffolds the config-is-code home whose zero-config
     // default `extends: [canon]` — the default is A PACKAGE, not a baked template.
     //
-    // AMENDED (t-canon-package-default): the literal '@cratylus/canon' used to be
+    // AMENDED: the literal '@cratylus/canon' used to be
     // asserted here as the corpus `init` could only ever scaffold. It is read off
     // `DEFAULT_PLUGIN_PACKAGE` now, because the scaffold takes an override
     // (`scaffoldAgentsConfig(cwd, { plugin })`); the default value itself stays

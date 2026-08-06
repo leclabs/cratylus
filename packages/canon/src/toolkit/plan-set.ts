@@ -17,6 +17,9 @@
 //   • derived-on-demand-never-stored — `landing(P)` and its twin `retirement(P)`
 //     are COMPUTED FROM GIT each call and written NOWHERE (`∀P: stored(P)=∅` — no
 //     sidecar, no PLAN.md field, no cache). `phase` likewise is a pure readout.
+//     `retiredDesignators` extends the same discipline one tier DOWN, to the shards
+//     a retirement took with it: a set difference between what git has seen and what
+//     the disk holds, with no manifest and no hand-kept list anywhere in it.
 //
 // THE CARRIER FOR "RETIRED" IS THE RETIRING COMMIT. A deleted plan resides
 // nowhere, so residence cannot answer; VCS can, and the corpus had already made
@@ -350,6 +353,131 @@ export function phase(ctx: PlanSetContext, plan: string): Phase {
     return 'in-flight';
   }
   return 'proposed';
+}
+
+// ── the SHARD-tier retirement relation — a SET DIFFERENCE over two sources ──
+//
+// `retirement(P)` above answers "when did THIS plan die", one plan at a time, by
+// walking that plan's commits. The gate over dangling shard citations needs the
+// dual: the WHOLE SET of designators no reader can follow any more, at once. Asking
+// `retirement` about a designator is not merely slow, it is ill-typed — a shard is
+// not a plan, and the retiring commit of the plan that HELD it is not a fact the
+// citing source needs.
+//
+// The relation is a difference between two readouts, neither of them stored:
+//
+//   dead(D) ⇔ D ∈ ever(git)  ∧  D ∉ live(disk)
+//
+// "GIT HAS THE WRONG POLARITY" IS A REAL OBJECTION TO A DIFFERENT QUERY. History
+// alone can only answer "did D ever exist", which is monotone and therefore useless
+// as a liveness test. It is not being asked to. It supplies the HISTORICAL leg only;
+// the worktree supplies the LIVE one, and dead is what the second removes from the
+// first. That conjunction is why the empty plan set is the oracle's easy case rather
+// than its blind spot: at `plans/ = ∅` the live leg is empty and EVERY historical
+// designator reads dead, which is the correct answer. The historical leg is the one
+// that cannot empty, and it is the one carrying the enumeration.
+//
+// THE LIVE LEG IS DELIBERATELY LIBERAL, and the asymmetry is the whole safety
+// argument. `dead` is a difference, so a designator MISSED by the live leg becomes a
+// false conviction against an author who did nothing wrong, while one wrongly
+// admitted merely leaves a dangling citation uncaught for a commit or two. So the
+// live leg reads the DISK directly — every `*.md` under any `plans/*/<state>/`,
+// with no `PLAN.md` precondition and no consultation of the index. A shard authored
+// but not yet committed is live; a plan dir mid-scaffold does not take its shards
+// down with it.
+
+/** A shard's DESIGNATOR — the basename of its task-file, extension dropped: what an
+ *  author writes when citing the shard as a warrant. Derived from {@link PLAN_STATES}
+ *  so a new state folder is covered without an edit here. The `.*` before the state
+ *  segment admits the deeper layout the retired `plans/.retired/<plan>/<state>/`
+ *  archive used, which git still holds and which named the same designators. */
+const SHARD_PATH = new RegExp(
+  `^${PLANS}/.*/(?:${PLAN_STATES.join('|')})/([^/]+)\\.md$`,
+);
+
+/** `designator : path ⇀ D` — the shard id a repo-relative path names, if it names one. */
+export function designatorOf(path: string): string | undefined {
+  return SHARD_PATH.exec(path)?.[1];
+}
+
+/**
+ * `ever` — every designator git has seen under a state folder on trunk. Recomputed
+ * from `git log --first-parent` each call, written NOWHERE.
+ *
+ * `--no-renames` is load-bearing, not defensive. Under rename detection a `git mv`
+ * reports only the DESTINATION path, so a shard renamed rather than retired would
+ * take its old designator out of history — the one designator a live source is most
+ * likely to still be citing. Turning detection off reports a rename as a delete plus
+ * an add, and both endpoints enter the set.
+ */
+export function everDesignated(
+  ctx: PlanSetContext = defaultContext,
+): Set<string> {
+  const out = new Set<string>();
+  let log: string;
+  try {
+    log = git(ctx, [
+      'log',
+      '--first-parent',
+      '--no-renames',
+      '--format=',
+      '--name-only',
+      '--',
+      PLANS,
+    ]);
+  } catch {
+    return out;
+  }
+  for (const path of log.split('\n')) {
+    const d = designatorOf(path);
+    if (d !== undefined) {
+      out.add(d);
+    }
+  }
+  return out;
+}
+
+/**
+ * `live` — every designator the WORKING TREE holds. Read from disk, not the index:
+ * an uncommitted shard is a shard, and the cost of missing one is a false conviction
+ * (see the asymmetry argued above).
+ */
+export function liveDesignators(
+  ctx: PlanSetContext = defaultContext,
+): Set<string> {
+  const out = new Set<string>();
+  let plans: import('node:fs').Dirent[];
+  try {
+    plans = readdirSync(join(ctx.repoRoot, PLANS), { withFileTypes: true });
+  } catch {
+    return out; // `plans/ = ∅`, down to the directory itself — a legitimate state.
+  }
+  for (const plan of plans) {
+    if (!plan.isDirectory() || plan.name.startsWith('.')) {
+      continue;
+    }
+    for (const state of PLAN_STATES) {
+      for (const file of tasksInState(ctx, plan.name, state)) {
+        const d = designatorOf(`${PLANS}/${plan.name}/${state}/${file}`);
+        if (d !== undefined) {
+          out.add(d);
+        }
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * `retired = ever \ live` — the designators a citation can no longer reach, sorted.
+ * The shard-tier twin of {@link retired}, and the same discipline: derived on demand
+ * from git plus the disk, stored nowhere, maintained by nobody.
+ */
+export function retiredDesignators(
+  ctx: PlanSetContext = defaultContext,
+): string[] {
+  const live = liveDesignators(ctx);
+  return [...everDesignated(ctx)].filter((d) => !live.has(d)).sort();
 }
 
 // ── plan-set membership ──

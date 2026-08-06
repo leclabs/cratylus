@@ -56,8 +56,46 @@ reserved to the operator, filed with a recommendation.
 | completed | `t-test-dangling-references` | dead-designator citations `df3aad73` left behind, all under `test/`             |
 | completed | `t-invoke-coverage-claim`    | one present-tense sentence in `ARCHITECTURE.md` that the gate already refutes   |
 | completed | `t-drift-notice-timing`      | the drift comparator is correct, advisory-only, and fires only at session start |
-| ready     | `t-retirement-oracle`        | the designator gate `veracity` called unbuildable — it is buildable             |
-| pending   | `x-second-deploy-manifest`   | **ruling owed** — two records, one target tree, 40/40 shadowed                  |
+| completed | `t-retirement-oracle`        | the designator gate `veracity` called unbuildable — built, green                |
+| pending   | `x-second-deploy-manifest`   | **RULING OWED** — two records, one target tree, 40/40 shadowed                  |
+
+### Wave 1 landed — the gate `veracity` called unbuildable
+
+`DESIGNATOR reach — ids 425 (of 431 ever, 6 live) · files 533 · lines 63377 · oracle 17ms`,
+printed on every run. The oracle is a set difference over git and the worktree, stored
+nowhere, extending `plan-set.ts` rather than restating its `derived-on-demand-never-stored`
+header. **Every one of the four numbers this plan handed the shard had decayed** — 439→425,
+26 ms→17 ms, 9 hits→18 — and only the four cratylic collisions survived exactly. The re-census
+constraint has now caught its author three times in three shards.
+
+Two design points worth keeping: `--no-renames` is load-bearing, because rename detection
+reports only a `git mv`'s destination and would drop the old designator out of history — the
+id a live source is most likely still citing. And the live leg is deliberately liberal: `dead`
+is a difference, so a missed live shard is a FALSE CONVICTION while a wrongly-admitted one
+merely delays a catch.
+
+**The scope ruling `t-test-dangling-references` left open is taken: test files are IN**, and
+what made it landable was separating the walk from the scope. `authoredLines()` now reads the
+authored corpus once and each law filters by its own argued predicate; `inScope` is
+byte-for-byte unchanged and the two older laws see identical line sets. The docstring claiming
+one scope ruling served every law was corrected — that claim did not survive a third law.
+
+**The ceiling demonstrated itself on the author writing it down.** Drafting the paragraph about
+repairs re-minting the token they repair, the executor illustrated it with a real retired id
+and the gate convicted them on the first run. That is now the paragraph's own example, stated
+without spelling anything.
+
+## Terminus — a ruling is owed, and the plan cannot finish without it
+
+`frontier(P) = ∅` with `¬ done(P)`, and this is the honest case rather than a mis-cut:
+`x-second-deploy-manifest` is a FILED stub, written `¬census ∧ ¬re-slice`, so it carries no
+edge in `R`, no `promote` can reach it, and `done(P)` is unreachable while it stands. That is
+exactly praxis's frontier-law third disjunct (`f06c9283`) — added from `veracity`'s yield, and
+now describing its successor.
+
+The fork is carried in `.ruling-owed` with a recommendation: the live `.forge/` record is
+authoritative, delete `~/.claude/.agent-forge/`. It is reserved because deleting a deploy
+manifest is host-side and irreversible.
 
 ### Wave 0 landed — and the re-census constraint earned its place immediately
 
