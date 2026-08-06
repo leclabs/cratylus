@@ -1,6 +1,6 @@
 {
   "name": "@cratylus/invoke",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The run-time entry: composes the runtime with its declared capability plugins and ships them as an installable command.",
   "license": "MIT",
   "engines": {
