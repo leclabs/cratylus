@@ -1,6 +1,6 @@
 {
   "name": "@cratylus/runtime",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "The per-host runtime contract leaf: capability port interfaces, the RuntimePlugin face, and the runtime-owned lifecycle-event taxonomy. Pure types plus one identity helper, zero dependencies.",
   "license": "MIT",
   "engines": {
@@ -51,7 +51,9 @@
       "import": "./dist/runtime-config.js"
     }
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",
