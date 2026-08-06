@@ -42,9 +42,10 @@ import { projectionFacts } from '@cratylus/forge/project';
 import { resolveWorker } from '@cratylus/schema';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { deployDriftNotice } from '../src/hooks/deploy-drift-notice.js';
+import { requireRepoRoot } from '../tooling/repo-root.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(here, '..', '..', '..');
+const repoRoot = requireRepoRoot(here);
 const worker = join(
   here,
   '..',

@@ -44,9 +44,10 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { requireRepoRoot } from '../tooling/repo-root.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const repoRoot = join(canonRoot, '..', '..');
+const repoRoot = requireRepoRoot(canonRoot);
 
 const MODEL_MD = join(repoRoot, 'MODEL.md');
 const ACCEPT_TS = join(

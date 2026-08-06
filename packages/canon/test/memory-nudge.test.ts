@@ -25,6 +25,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { requireRepoRoot } from '../tooling/repo-root.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const worker = join(
@@ -34,7 +35,13 @@ const worker = join(
   'guardrail',
   'memory-consolidation-nudge.sh',
 );
-const runtimeBin = join(here, '..', '..', 'invoke', 'dist', 'bin.js');
+const runtimeBin = join(
+  requireRepoRoot(here),
+  'packages',
+  'invoke',
+  'dist',
+  'bin.js',
+);
 
 const hasJq = (() => {
   try {

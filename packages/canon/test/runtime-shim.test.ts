@@ -40,6 +40,7 @@ import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
 import type { Skill } from '@cratylus/schema';
 import { beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
+import { requireRepoRoot } from '../tooling/repo-root.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -113,7 +114,7 @@ beforeAll(async () => {
       '--harness',
       'codex',
       '--config',
-      join(canonRoot, '..', '..', 'agents.config.ts'),
+      join(requireRepoRoot(canonRoot), 'agents.config.ts'),
       '--out',
       codexOut,
     ],

@@ -46,19 +46,6 @@ const repoRoot = requireRepoRoot(dirname(fileURLToPath(import.meta.url)));
  * refuses everywhere else.
  */
 const RATCHET: ReadonlySet<string> = new Set([
-  'packages/canon/test/deploy-drift-notice.test.ts',
-  'packages/canon/test/gate-convicts.test.ts',
-  'packages/canon/test/ground-conformance.test.ts',
-  'packages/canon/test/hook-rule-boundary.test.ts',
-  'packages/canon/test/memory-nudge.test.ts',
-  'packages/canon/test/runtime-shim.test.ts',
-  'packages/canon/test/support/guardrail/calibrate-stance-judge.sh',
-  'packages/canon/test/support/guardrail/test-deploy-drift-notice.sh',
-  'packages/canon/test/support/guardrail/test-stance-guardrail.sh',
-  'packages/canon/tooling/plan-set.ts',
-  'packages/canon/tooling/project-targets.ts',
-  'packages/canon/tooling/render-oracle/render-oracle.sh',
-  'packages/canon/tooling/scaffold-cli.ts',
   'packages/forge/src/cli/commands/catalog.ts',
   'packages/forge/test/deploy/integrate-smoke.test.ts',
   'packages/forge/test/project/projection-facts.test.ts',
@@ -100,11 +87,28 @@ function tsHops(src: string): number[] {
   return out;
 }
 
-/** Shell lines carrying ≥2 consecutive `../`. */
+/**
+ * Shell lines carrying ≥2 consecutive `../` — EXCEPT a dot-source line.
+ *
+ * A SOURCE LINE IS A MODULE REFERENCE, NOT A COMPUTED PATH, and the difference is the
+ * whole law. `. "$SELF_DIR/../../../tooling/repo-root.sh"` fails LOUDLY and immediately if
+ * it is wrong: the shell cannot find the file and the script dies at line one. A computed
+ * path fails SILENTLY — it yields an empty glob, an unreadable file, a `[]` that some gate
+ * downstream reports as clean. This law is about the silence, not about the `../`.
+ *
+ * The same reasoning already exempts TypeScript `import` specifiers, which this predicate
+ * never saw because it only matches `join`/`resolve`. Shell has no module system to make
+ * that distinction for us, so it is made here, once, in the one shape that carries it.
+ *
+ * The exemption is deliberately NARROW: it is the dot-source form alone, not any line
+ * mentioning a helper. A path passed to `cd`, assigned to a variable, or handed to a
+ * command is still convicted however close it sits to a source line.
+ */
 function shellHops(src: string): string[] {
   return stripComments(src, true)
     .split('\n')
     .filter((l) => /(\.\.\/){2,}/.test(l))
+    .filter((l) => !/^\s*\.\s+["']?\$/.test(l))
     .map((l) => l.trim());
 }
 

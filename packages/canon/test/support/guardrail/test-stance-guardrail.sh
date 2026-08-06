@@ -22,6 +22,11 @@
 set -eu
 
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+# The repo root is ASKED FOR, never counted — see tooling/repo-root.sh. The one
+# relative hop below names this file's own package, which is what a source line
+# must do; everything downstream derives from the answer.
+. "$SELF_DIR/../../../tooling/repo-root.sh"
+CANON="$(require_repo_root "$SELF_DIR")/packages/canon"
 # By default prove the SOURCE worker bites. Set STANCE_WORKER_DIR to a deployed
 # hook dir (a host's `.claude/hooks/stance-guardrail/`) to prove the
 # AGENT-FORGE-PROJECTED + AGENT-FORGE-DEPLOYED artifact bites — the proof that moving
@@ -29,7 +34,7 @@ SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 # The workers are GENERATED and still committed under the corpus source tree; the
 # shard that relocates them changes this ONE line. Until then a test that lives in
 # the test tree must say where they are, because $SELF_DIR no longer reaches them.
-WORKERS_DIR="$SELF_DIR/../../../targets/guardrail"
+WORKERS_DIR="$CANON/targets/guardrail"
 WORKER_DIR="${STANCE_WORKER_DIR:-$WORKERS_DIR}"
 WORKER="$WORKER_DIR/stance-guardrail.sh"
 RUBRIC="$WORKER_DIR/stance-judge-prompt.md"

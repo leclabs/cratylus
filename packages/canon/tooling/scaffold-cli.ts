@@ -15,7 +15,7 @@ import { type RenderTree, scaffoldProject } from '@cratylus/forge/deploy';
 import { canonProjectTemplate } from './project-template.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const canonRoot = join(here, '..', '..');
+const canonRoot = join(here, '..');
 const renderRoot = join(canonRoot, '.cratylus/claude');
 
 interface Args {

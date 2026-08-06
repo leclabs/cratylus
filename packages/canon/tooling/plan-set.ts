@@ -41,6 +41,7 @@ import { readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PLAN_STATES } from '../src/plan-states.js';
+import { requireRepoRoot } from './repo-root.js';
 
 /** In-plan marker naming the successor a plan's work relocated to; its presence
  *  makes the plan `superseded` (a terminal phase). Supersession is NOT derivable
@@ -84,7 +85,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const canonRoot = join(here, '..');
 /** Default context: the repo this module ships in (`packages/canon/../..`). */
 export const defaultContext: PlanSetContext = {
-  repoRoot: join(canonRoot, '..', '..'),
+  repoRoot: requireRepoRoot(canonRoot),
 };
 
 const PLANS = 'plans';

@@ -103,9 +103,10 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { requireRepoRoot } from '../tooling/repo-root.js';
 
 const testDir = dirname(fileURLToPath(import.meta.url));
-const packages = join(testDir, '..', '..');
+const packages = join(requireRepoRoot(testDir), 'packages');
 
 /** Every policed test dir, keyed by the package that owns it. A registry key is
  *  `<package>/<path-under-test>` — forge nests its suites in subdirs. */

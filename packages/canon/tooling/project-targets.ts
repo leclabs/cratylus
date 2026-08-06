@@ -28,6 +28,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectionFacts } from '@cratylus/forge/project';
 import { type HookCell, type RuleCell, resolveWorker } from '@cratylus/schema';
+import { requireRepoRoot } from './repo-root.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 // ONE level up, not two. This was `join(here, '..', '..')`, counted for a home under
@@ -38,7 +39,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 // move; the other was `render-oracle.sh`'s five-deep `cd`.
 const canonRoot = join(here, '..');
 /** Repo root — hook targets are repo-relative (`.husky/*` sits above the pkg). */
-const repoRoot = join(canonRoot, '..', '..');
+const repoRoot = requireRepoRoot(canonRoot);
 const srcRoot = join(canonRoot, 'src');
 
 async function firstExport<T>(modPath: string): Promise<T> {

@@ -31,9 +31,14 @@
 set -eu
 
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-REPO_ROOT="$(CDPATH= cd -- "$SELF_DIR/../../../../.." && pwd)"
+# The repo root is ASKED FOR, never counted — see tooling/repo-root.sh. The one
+# relative hop below names this file's own package, which is what a source line
+# must do; everything downstream derives from the answer.
+. "$SELF_DIR/../../../tooling/repo-root.sh"
+CANON="$(require_repo_root "$SELF_DIR")/packages/canon"
+REPO_ROOT="$(require_repo_root "$SELF_DIR")"
 # See test-stance-guardrail.sh: the workers are generated and still under src/.
-WORKERS_DIR="$SELF_DIR/../../../targets/guardrail"
+WORKERS_DIR="$CANON/targets/guardrail"
 WORKER="${DRIFT_WORKER:-$WORKERS_DIR/deploy-drift-notice.sh}"
 [ -f "$WORKER" ] || { echo "FAIL: no worker at $WORKER"; exit 1; }
 

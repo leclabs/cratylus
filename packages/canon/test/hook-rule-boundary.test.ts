@@ -45,9 +45,10 @@ import {
   cellTargets,
   regenerateTargets,
 } from '../tooling/project-targets.js';
+import { requireRepoRoot } from '../tooling/repo-root.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
-const repoRoot = join(canonRoot, '..', '..');
+const repoRoot = requireRepoRoot(canonRoot);
 
 // ── COVERAGE — the honest converted-vs-out-of-scope table (no silent cap) ────────
 //
