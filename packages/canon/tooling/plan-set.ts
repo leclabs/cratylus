@@ -126,6 +126,13 @@ export function dispatched(ctx: PlanSetContext, plan: string): boolean {
 }
 
 /** `∀ t ∈ P : state(t) = completed` (with ≥1 task) — all tasks landed on-disk. */
+/** Any task-file in a non-completed state, on disk right now. */
+export function hasOpenTasks(ctx: PlanSetContext, plan: string): boolean {
+  return ['pending', 'ready', 'active'].some(
+    (st) => tasksInState(ctx, plan, st).length > 0,
+  );
+}
+
 export function done(ctx: PlanSetContext, plan: string): boolean {
   if (tasksInState(ctx, plan, 'completed').length === 0) {
     return false;
@@ -353,7 +360,19 @@ export function phase(ctx: PlanSetContext, plan: string): Phase {
   if (superseded(ctx, plan)) {
     return 'superseded';
   }
-  if (landing(ctx, plan) !== undefined) {
+  // landed ⇔ landing defined ∧ DONE NOW. `landing` is the first trunk commit at which
+  // done held, and it is monotone — but done is NOT absorbing. A plan that briefly emptied
+  // its open states and then gained a shard carries a landing commit AND open work, and
+  // reading landing alone called that `landed`. Since `terminal ⇒ retire` is an obligation,
+  // the readout then demanded retiring work in flight. Measured twice in one session.
+  //
+  // The guard is NO OPEN TASKS rather than `done`, and the difference is a law the fixture
+  // already encodes: `done` requires at least one COMPLETED task, so it is false for a plan
+  // whose deletion is merely STAGED — and a staged retirement must still read `landed`,
+  // because the carrier of retirement is the commit, not the absence. "No open work" is
+  // true for both the finished plan and the staged deletion, and false only for the case
+  // this repairs: a landing commit with task-files still open.
+  if (landing(ctx, plan) !== undefined && !hasOpenTasks(ctx, plan)) {
     return 'landed';
   }
   if (dispatched(ctx, plan)) {

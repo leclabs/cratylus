@@ -73,6 +73,19 @@ done_at() {
 	[ "$has_completed" = "1" ]
 }
 
+# Any task-file still OPEN on disk. NOT `done`: `done` requires at least one COMPLETED
+# task, so it is false for a plan whose deletion is merely STAGED — and a staged retirement
+# must still read `landed`, because the carrier of retirement is the commit. "Has open work"
+# is false for both the finished plan and the staged deletion, and true only for the case
+# this repairs.
+has_open() {
+	p="$1"
+	for s in pending ready active; do
+		[ -n "$(ls -A "$p/$s" 2>/dev/null || true)" ] && return 0
+	done
+	return 1
+}
+
 # landing(P) — the FIRST trunk commit at which done(P) holds; prints the sha, or
 # returns non-zero if P has not landed. One `git log --first-parent` folded over,
 # exactly as `plan-set.ts:landing` does it. Nothing is written.
@@ -106,7 +119,14 @@ phase_of() {
 	#
 	# A carrier that must be maintained by hand is not a readout of the world,
 	# it is a claim about it that rots the moment someone forgets the verb.
-	landing_of "$p" >/dev/null && { printf 'landed'; return; }
+	# landed ⇔ landing defined ∧ DONE NOW. `landing` is the FIRST trunk commit at which
+	# done held, and it is monotone — but done is NOT absorbing: a plan that briefly
+	# emptied its open states and then gained a shard has a landing commit and open work
+	# at the same time. Reading landing alone reported such a plan `landed`, and since
+	# `terminal ⇒ retire` is an OBLIGATION, the tool then demanded the retirement of work
+	# in flight. Measured twice in one session, both times on a plan whose PLAN.md
+	# declared shards that had not yet been written to a state folder.
+	if landing_of "$p" >/dev/null && ! has_open "$p"; then printf 'landed'; return; fi
 	# dispatched(P) ⇔ ∃ t : state(t) ∈ {active, completed}. Test each folder alone:
 	# `ls -A a b` prints "a:" headers, so a two-arg test reads empty dirs as non-empty.
 	if [ -n "$(ls -A "$p/active" 2>/dev/null || true)" ] ||

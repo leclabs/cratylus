@@ -49,7 +49,14 @@ const repoRoot = join(
   '..',
 );
 
-type Pkg = 'canon' | 'forge' | 'runtime' | 'memory' | 'invoke' | 'schema';
+type Pkg =
+  | 'canon'
+  | 'forge'
+  | 'runtime'
+  | 'memory'
+  | 'invoke'
+  | 'schema'
+  | 'tooling';
 
 /**
  * Canon's file ROLES. The distinction property 2 turns on: canon's BUILD SCRIPTS using
@@ -140,6 +147,11 @@ const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
  * against the workspace itself, so the next package cannot arrive unscanned.
  */
 const PACKAGES = [
+  // `tooling` is `@repo/tooling` — PRIVATE, unpublished, and dev-only. It is scanned
+  // anyway, and that is the point of the reach leg below: a package excluded because
+  // "it doesn't ship" is a package whose edges nothing checks, and dev tooling reaching
+  // into a product package is exactly the direction that would go unnoticed.
+  'tooling',
   'canon',
   'forge',
   'runtime',

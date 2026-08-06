@@ -80,7 +80,7 @@ wave(n+1)   ≜ { t | t ∉ W(n) ∧ ∀ u : (t, u) ∈ R ⇒ u ∈ W(n) }
 waves       ≜ (wave(0), wave(1), …)
 dispatched(P) ⇔ ∃ t ∈ P : state(t) ∈ { active, completed }
 done(P)       ⇔ ∀ t ∈ P : state(t) = completed
-landed(P)     ⇔ landing(P) defined ∧ ¬ retired(P)
+landed(P)     ⇔ landing(P) defined ∧ frontier(P) = ∅ ∧ pending(P) = ∅ ∧ ¬ retired(P) ⟨landing is HISTORICAL ∧ monotone ; done is NOT absorbing ∴ landing alone reports a REOPENED plan as terminal, and terminal ⇒ retire is an OBLIGATION ∴ the readout demands retiring open work⟩
 terminal(P)   ⇔ landed(P) ∨ superseded(P)
 nextPhase     ≜ { proposed ↦ in-flight, in-flight ↦ landed, landed ↦ retired, superseded ↦ retired, retired ↦ retired }
 
