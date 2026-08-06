@@ -8,7 +8,7 @@
 // into the engine.
 
 import type { Policy, RegisterPolicy } from '@cratylus/forge/validate';
-import { OPERATORS, RESIDUE_OPERATORS } from '../operator-lexicon.js';
+import { OPERATORS, RESIDUE_OPERATORS } from '../../operator-lexicon.js';
 
 const PALIMPSEST_TOKENS: ReadonlyArray<readonly [string, RegExp]> = [
   ['conatus', /\bconatus\b/i],

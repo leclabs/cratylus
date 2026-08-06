@@ -27,7 +27,7 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import type { Skill } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
-import { declaredGlyphs } from '../src/toolkit/operator-lexicon.js';
+import { declaredGlyphs } from '../src/operator-lexicon.js';
 import { firstExport } from './support/cell-module.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');

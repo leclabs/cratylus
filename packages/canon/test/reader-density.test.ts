@@ -73,12 +73,12 @@ import type { Skill } from '@cratylus/schema';
 import { bodyOf } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import type { Agent, Dimension, Value } from '../src/manifest.js';
+import { RESIDUE_OPERATORS } from '../src/operator-lexicon.js';
 import { signify } from '../src/skills/signify/skill.js';
 import { nonceControl } from '../src/toolkit/cold-oracle/oracle.js';
 // The injected corpus POLICY DATA (palimpsest table + operator lexicon) the
 // doctrine-agnostic validate ALGORITHM consumes — passed at every gate call site.
 import { canonPolicy } from '../src/toolkit/cold-oracle/policy.js';
-import { RESIDUE_OPERATORS } from '../src/toolkit/operator-lexicon.js';
 // ρ + register(a) + conform — ONE shared model (`reader-register.ts`), also
 // enforced over the runtime frontiers by `reader-reach.test.ts`; RHO mirrors
 // the READER BINDING subset lists (signify).

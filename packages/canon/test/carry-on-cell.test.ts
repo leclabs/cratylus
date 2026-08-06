@@ -32,12 +32,12 @@ import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
 import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
 import { beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
-import { carryOn } from '../src/skills/carry-on/skill.js';
 import {
   PLAN_FRONTIER,
   PLAN_MARKERS,
   PLAN_STATES,
-} from '../src/toolkit/plan-states.js';
+} from '../src/plan-states.js';
+import { carryOn } from '../src/skills/carry-on/skill.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 

@@ -35,9 +35,9 @@ import {
 import { hookIrOf } from '@cratylus/schema';
 import type { Hook } from '@cratylus/schema/hook';
 import { describe, expect, it } from 'vitest';
+import { harnessHookCells } from '../src/hook-cells.js';
 import { stanceGuardrailPre } from '../src/hooks/stance-guardrail-pre.js';
 import { CANONICAL_EVENTS } from '../src/manifest.js';
-import { harnessHookCells } from '../src/toolkit/hooks.js';
 
 /** The acts, DERIVED from the claude bindings — never re-enumerated here. */
 const ACTS = Object.keys(canonicalActToClaude).sort();

@@ -3,11 +3,7 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 // canon's, sourced from its one home — the runtime depends on nothing and holds no
 // plan layout, so the names travel as configuration on the invocation rather than
 // as a second copy inside `@cratylus/runtime` (ARCHITECTURE property 4).
-import {
-  PLAN_FRONTIER,
-  PLAN_MARKERS,
-  PLAN_STATES,
-} from '../../toolkit/plan-states.js';
+import { PLAN_FRONTIER, PLAN_MARKERS, PLAN_STATES } from '../../plan-states.js';
 import { praxis } from '../praxis/skill.js';
 
 /** The terminal state — the last of the lifecycle, never a second literal. */
