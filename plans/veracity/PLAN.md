@@ -7,6 +7,16 @@ sits in; `R` is below.
 
 ## Why this plan exists
 
+> **Provenance — read before binding.** This plan was **minted at wake on an empty plan
+> set**, because `wake` then carried an unguarded `∄ P : bound(P) ⇒ bind(elect)` and
+> `orient ⊨ ∃! bound`, making a plan the only way to discharge the cell. The operator gave
+> no objective — the session's sole input was a bare `/wake`. That defect is fixed at
+> `c4059fba`: `electable = ∅` is now a terminal wake-state, so no successor plan can be
+> minted this way. **The findings below are real and wave 0's work is landed and pushed.
+> What was never affirmed is the plan's warrant.** It remains `bound`, so the next wake
+> will bind it and dispatch wave 1. If that is not wanted, `unbind` under
+> `operator-redirect` and retire it — do not let inheritance stand in for a decision.
+
 Three findings at wake on 2026-08-06, all one class: **a claim riding a path nothing
 checks.**
 
@@ -36,9 +46,11 @@ as a live divergence, beneath a paragraph claiming every such row is mechanicall
 
 `wave(0) = { t-dead-designator-citations, t-ground-row-truth }` — disjoint outputs
 (`packages/*/src` + READMEs vs. `ARCHITECTURE.md`), neither referencing the other's. The
-concurrency precondition holds; the wave needs no isolation.
+concurrency precondition holds; the wave needs no isolation. **Landed** at `de8ba968`
+(ground-row truth) and `df3aad73` (119 designators), recorded at `895833ce`.
 
-`wave(1) = { t-designator-citation-prohibition }`
+`wave(1) = { t-designator-citation-prohibition }` — unblocked by wave 0's completion and
+promoted to `ready`. Not dispatched.
 
 ## R
 
@@ -48,11 +60,21 @@ concurrency precondition holds; the wave needs no isolation.
 
 ## Shards
 
-| state   | task                                | concern                                                              |
-| ------- | ----------------------------------- | -------------------------------------------------------------------- |
-| ready   | `t-dead-designator-citations`       | repair every live source citing a retired plan's shard designator    |
-| ready   | `t-ground-row-truth`                | `ARCHITECTURE.md`'s divergence table stops asserting what is not so  |
-| pending | `t-designator-citation-prohibition` | the law that keeps the repair repaired — prohibition, not resolution |
+| state     | task                                | concern                                                              |
+| --------- | ----------------------------------- | -------------------------------------------------------------------- |
+| completed | `t-dead-designator-citations`       | repair every live source citing a retired plan's shard designator    |
+| completed | `t-ground-row-truth`                | `ARCHITECTURE.md`'s divergence table stops asserting what is not so  |
+| ready     | `t-designator-citation-prohibition` | the law that keeps the repair repaired — prohibition, not resolution |
+
+### Filed beside the path (stubs — symptom only, no census, no acceptance)
+
+Both surfaced while executing wave 0 and were filed rather than chased, per
+`¬ impedes(d, t) ⇒ file(owns(d), d)`. Whoever promotes either to `ready` owes it a spec.
+
+| state   | task                                                 | symptom                                                                                                                 |
+| ------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| pending | `x-31-live-sources-cite-a-dead-document-plus-sectio` | 31 live sources cite a dead DOCUMENT + section (`NORTH-STAR §2`, `DESIGN.md §7`) — a shape neither existing law can see |
+| pending | `x-architecture-md-s-invoke-section-claims-the-gate` | `ARCHITECTURE.md`'s invoke section claims coverage stops at the language boundary; the gate now walks `.sh` and `.mjs`  |
 
 ## The finding that shapes the whole plan
 
