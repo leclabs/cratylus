@@ -1,8 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// ⚠ PROVISIONAL PATH — `capabilities/provisional-v9/` is a PLACEHOLDER, not a
-// name. See `ports/provisional-v9.ts` for the full notice: the anchor for this
+// ⚠ PROVISIONAL PATH — `capabilities/heartbeat/` is a PLACEHOLDER, not a
+// name. See `ports/heartbeat.ts` for the full notice: the anchor for this
 // capability is undiscovered and is /signify's to derive; `⊥` (no sign exists) is a
-// legal answer there. `provisional-v9` is a placeholder path and asserts nothing
+// legal answer there. `heartbeat` is a placeholder path and asserts nothing
 // about the concept.
 //
 // THE CAPABILITY MODULE — mechanism only, DELIBERATELY UNREGISTERED.
@@ -17,8 +17,8 @@
 // after the derivation lands, not before.
 //
 // Still owed after /signify, in one pass:
-//   1. `git mv` this directory and `../../ports/provisional-v9.ts`
-//   2. rename the `ProvisionalV9Host` port interface
+//   1. `git mv` this directory and `../../ports/heartbeat.ts`
+//   2. rename the `HeartbeatHost` port interface
 //   3. add the port field to `plugin.ts`'s `RuntimePlugin`
 //   4. add the capability to `loader.ts`'s `CAPABILITIES`
 //   5. add a `dispatch.ts` verb surface (see `event-tap/dispatch.ts`)
@@ -36,10 +36,10 @@ export type {
   HostStatus,
   PeriodConfig,
   PressureGate,
-  ProvisionalV9Host,
+  HeartbeatHost,
   Tick,
   TimerHandle,
-} from '../../ports/provisional-v9.js';
+} from '../../ports/heartbeat.js';
 export {
   type GateState,
   freshGateState,

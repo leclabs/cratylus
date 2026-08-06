@@ -1,5 +1,5 @@
-// ⚠ PROVISIONAL PATH — `provisional-v9` is a PLACEHOLDER, not a name. See
-// `src/ports/provisional-v9.ts` for the full notice: the capability's anchor is
+// ⚠ PROVISIONAL PATH — `heartbeat` is a PLACEHOLDER, not a name. See
+// `src/ports/heartbeat.ts` for the full notice: the capability's anchor is
 // undiscovered and is /signify's to derive, so nothing here coins one.
 //
 // The V9 falsifier gate:
@@ -32,13 +32,13 @@ import {
   freshGateState,
   sampleGate,
   systemClock,
-} from '../src/capabilities/provisional-v9/index.js';
+} from '../src/capabilities/heartbeat/index.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..', 'src');
 
 function tmp(): string {
-  return mkdtempSync(join(tmpdir(), 'cratylus-run-provisional-v9-'));
+  return mkdtempSync(join(tmpdir(), 'cratylus-run-heartbeat-'));
 }
 
 /** A clock the test drives by hand, so a period is exercised without sleeping. */
@@ -467,21 +467,28 @@ describe('accept 1 + 3: two host adapters realize one port', () => {
   });
 });
 
-// ── (4) · the capability is unregistered ─────────────────────────────────────
+// ── (4) · the capability is registered, and not yet published ───────────────
 
-describe('accept 5: the capability is unregistered and unreferenced', () => {
-  it('is absent from the loader and the RuntimePlugin port set', () => {
+describe('accept 5: registered in the keyspace, withheld from the build surface', () => {
+  // THIS SUITE USED TO ASSERT THE OPPOSITE, and the inversion is the point rather than a
+  // relaxation. While the port was `provisional-`-prefixed it had no anchor, so registering
+  // it would have published a name the corpus had not derived — and these legs held that
+  // line. The anchor landed (`heartbeat`, by cold decode), and the same legs now hold the
+  // line one step further on: registered, because `capability-keyspace.test.ts` requires a
+  // non-provisional port to be in the keyspace; still unpublished, because nothing consumes
+  // it yet.
+  it('is in the loader keyspace and on the RuntimePlugin port set', () => {
     for (const f of ['loader.ts', 'plugin.ts']) {
-      expect(readFileSync(join(SRC, f), 'utf8')).not.toContain(
-        'provisional-v9',
-      );
+      expect(readFileSync(join(SRC, f), 'utf8')).toContain('heartbeat');
     }
   });
 
-  it('is absent from the package build surface', () => {
+  it('is absent from the package build surface — nothing consumes it yet', () => {
+    // A shipped export with no caller is a promise with no consumer, and it is far harder to
+    // withdraw than to add: `exports` is a published contract the moment a version goes out.
     const pkg = readFileSync(join(SRC, '..', 'package.json'), 'utf8');
     const tsup = readFileSync(join(SRC, '..', 'tsup.config.ts'), 'utf8');
-    expect(pkg).not.toContain('provisional-v9');
-    expect(tsup).not.toContain('provisional-v9');
+    expect(pkg).not.toContain('heartbeat');
+    expect(tsup).not.toContain('heartbeat');
   });
 });

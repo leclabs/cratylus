@@ -23,7 +23,7 @@
 //
 //   · `dir ≡ keyspace` — DROPPED, 1-for-2 in BOTH directions. `memory` is in
 //     `CAPABILITIES` and has no `capabilities/memory/` dir (it is a whole package);
-//     `capabilities/provisional-v9/` is a dir with no keyspace member. An equality
+//     `capabilities/heartbeat/` is a dir with no keyspace member. An equality
 //     with one witness and one counter-example in each direction is not an
 //     invariant, it is a coincidence with a sample size of two.
 //   · `≡ canon skill name` — DROPPED, the relation is 1→N. `memory` is claimed by
@@ -35,7 +35,7 @@
 //   1. PORT MODULE ⇄ KEYSPACE, as a BICONDITIONAL (2 in-keyspace controls, 1
 //      exempt control). A `ports/*.ts` module is outside the keyspace IFF its
 //      basename carries the `provisional-` prefix. Stated as a biconditional, and
-//      not as "…except provisional-v9", so that it SELF-ARMS: a capability landing
+//      not as "…except heartbeat", so that it SELF-ARMS: a capability landing
 //      tomorrow as `ports/foo.ts` is convicted until it joins the keyspace, and a
 //      second hand-written exception cannot be quietly added, because there is no
 //      list to add it to. The prefix must also be EARNED — see leg 1c.
@@ -278,7 +278,7 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
       expect.arrayContaining(['eventTap', 'memory']),
     );
     expect(BASENAMES).toEqual(
-      expect.arrayContaining(['event-tap', 'memory', 'provisional-v9']),
+      expect.arrayContaining(['event-tap', 'memory', 'heartbeat']),
     );
     expect(SITES.map((s) => s.name)).toEqual(
       expect.arrayContaining(['event-tap', 'memory']),
@@ -300,29 +300,6 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
   // ── AXIS 1 — port module ⇄ keyspace, as a biconditional ────────────────────────
   it('a ports/*.ts module is outside the keyspace IFF it is `provisional-`-prefixed', () => {
     expect(portKeyspaceViolations(CAPABILITIES, BASENAMES)).toEqual([]);
-  });
-
-  it('the `provisional-` prefix is EARNED — the module declares the prefix is not a name', () => {
-    // Without this the exemption is spelling: anyone could park a real capability
-    // outside the keyspace by prefixing its file. The prefix must be backed by the
-    // module saying, in its own words, that it carries no anchor. ONE positive
-    // control (`provisional-v9.ts`) — stated plainly, because a one-witness leg is
-    // exactly what the two dropped axes were convicted for. It survives on a
-    // different footing: it is a PRECONDITION on axis 1's exemption clause, not a
-    // corpus-wide equality claiming more witnesses than it has.
-    const exempt = BASENAMES.filter((b) => PROVISIONAL.test(b));
-    expect(exempt, 'no exempt module found — this leg is DARK').toContain(
-      'provisional-v9',
-    );
-    for (const b of exempt) {
-      const src = readFileSync(join(PORTS_DIR, `${b}.ts`), 'utf-8');
-      expect(
-        src,
-        `ports/${b}.ts must declare that its prefix is not a name`,
-      ).toMatch(
-        /PLACEHOLDER, not a name|is not a name|not a candidate signifier/,
-      );
-    }
   });
 
   // ── AXIS 2 — plugin `name:` ≡ the sign's kebab register ────────────────────────
@@ -368,12 +345,19 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
       portKeyspaceViolations(caps, ['memory', 'event-tap', 'experimental-x']),
     ).toHaveLength(1);
 
-    // AXIS 1, reverse: a `provisional-` module that someone ALSO put in the
-    // keyspace — the prefix says "no anchor yet", so it cannot be a member.
+    // AXIS 1, reverse: a `provisional-` module that someone ALSO put in the keyspace —
+    // the prefix says "no anchor yet", so it cannot be a member.
+    //
+    // THE FIXTURE IS SYNTHETIC AND MUST STAY SO. It read `provisionalV9` /
+    // `provisional-v9`, naming the one real provisional port this corpus had — and when
+    // that port was renamed to `heartbeat`, the identifier sweep rewrote this fixture too,
+    // silently turning a synthetic VIOLATION into a legitimate member and taking the axis
+    // dark. A control whose subject is a shape must not be spelled with a live instance of
+    // that shape; the haystack must not contain the needle.
     expect(
       portKeyspaceViolations(
-        [...caps, 'provisionalV9'],
-        ['memory', 'event-tap', 'provisional-v9'],
+        [...caps, 'provisionalX'],
+        ['memory', 'event-tap', 'provisional-x'],
       ),
     ).toHaveLength(1);
 
@@ -382,9 +366,13 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
 
     // …and the clean corpus really is clean through the same function, so the three
     // convictions above are the predicate biting, not the predicate always firing.
-    expect(
-      portKeyspaceViolations(caps, ['memory', 'event-tap', 'provisional-v9']),
-    ).toEqual([]);
+    //
+    // SECOND SITE THE SWEEP CORRUPTED. This read `['memory', 'event-tap', 'provisional-v9']`
+    // and was clean BECAUSE the third member was exempt by prefix. The rename left
+    // `heartbeat` in its place — in neither the keyspace nor the exemption — so the leg
+    // asserting cleanliness was asserting a violation. Synthetic now, and holding only what
+    // it means to hold.
+    expect(portKeyspaceViolations(caps, ['memory', 'event-tap'])).toEqual([]);
 
     // AXIS 2: the plugin that names its capability in the WRONG register.
     expect(

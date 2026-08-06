@@ -1,62 +1,57 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// ⚠ PROVISIONAL PATH — `ports/provisional-v9.ts` is a PLACEHOLDER, not a name.
+// HEARTBEAT — the endogenous pulse.
 //
-// This file realizes the mechanism of the endogenous-pacemaker capability while
-// its ANCHOR is still undiscovered. The capability, stated here so this header
-// leans on no other document: an endogenous pulse on a cadence that SAMPLES a
-// pressure/salience gate to decide whether a cognitive cycle runs — it never
-// CLOCKS one. Under `cratylism` a name is derived by cold verification, never
-// coined — so the capability, the `RuntimePlugin` port field, and the skill
-// directory are DELIBERATELY unnamed here. `provisional-v9` encodes only the
-// shard that produced the file; it asserts nothing about the concept and is not
-// a candidate signifier. It is expected to be `git mv`'d once /signify derives
-// the anchor — where `⊥` is a legal answer, and a ⊥ leaves this path standing
-// rather than licensing a coinage.
+// THE ANCHOR, and how it was derived. Cold decode, zero project context:
 //
-// Deliberately NOT done here, and deliberately NOT to be done by a later editor
-// before the derivation lands:
-//   · not added to `loader.ts`'s `CAPABILITIES`
-//   · not added as a field on `plugin.ts`'s `RuntimePlugin`
-//   · not added to `package.json#exports` or `tsup.config.ts` entries
-//   · no `packages/canon/src/skills/<name>/`
-// Nothing outside `cratylus-run` imports it, which is what keeps the eventual
-// rename a `git mv` plus an identifier sweep.
+//   "a signal sent out at regular, repeating intervals to prove that something is
+//    still alive and working … regular pulses = alive; irregular or absent pulses =
+//    something's wrong."
 //
-// THE DERIVATION RAN AND RETURNED ⊥ (2026-08-06). Eight candidates, blind reverse decode
-// through `cold-oracle.sh` — process isolation, zero project context. None returned the
-// concept above:
-//   pacemaker      "sends controlled pulses to KEEP THE HEART BEATING" — it CLOCKS, the one
-//                  thing this concept forbids; separately occupied by the cluster manager
-//   circadian      commits to a ~24-hour period this has no claim to
-//   oscillator     regular alternation, no sampling and no decision
-//   homeostat      "senses… and ADJUSTS ITSELF to counteract" — names the ACTUATING loop,
-//                  and this capability never actuates
-//   sleep pressure names the GATE's accumulating variable, not the pulse
-//   poll           "repeatedly check at intervals RATHER THAN WAITING TO BE NOTIFIED" —
-//                  the cadence sense exactly, and nothing of the gate
-//   pressure-poll  "not an established term… made-up/placeholder" — a coinage, refused
-//   heartbeat      never tested: bound here already (see the collision notice below)
+// That is this capability's `Period`: self-emitted, periodic, intrinsic. Nothing external
+// triggers it, which is what `endogenous` was reaching for.
 //
-// AND THE TWO CLOSEST SPLIT THIS CONCEPT IN HALF. `poll` names the cadence cleanly and loses
-// the gate; `homeostat` names the gate cleanly and loses the cadence. A concept that no sign
-// names, whose two nearest signs each name exactly one half, is a candidate for being TWO
-// CONCEPTS WEARING ONE CAPABILITY — and the interfaces below already sit apart:
-// `PeriodConfig`/`Period` on one side, `PressureGate`/`GateConfig` on the other, joined only
-// where `Tick.consolidate` reports the gate's verdict at an emission.
+// THE RESIDUE, STATED RATHER THAN EXPLAINED AWAY. `heartbeat` carries the CADENCE and not
+// the gate. An anchor whose residue is ∅ IS σ*; this one is an approximation, and the
+// shortfall is exactly the half that `PressureGate` already names. `Tick.consolidate` is the
+// one seam where the two meet — the pulse SAMPLES the gate and reports its verdict; it never
+// clocks a cycle, and `consolidate` stays false on every tick while pressure sits below
+// threshold, however many elapse.
 //
-// So the next question is not "search harder for a name" but "is this one capability?".
-// Re-cutting is a different act from naming and is not done here. Until it is answered, this
-// path stands — which is what a ⊥ means.
+// THE FIRST DERIVATION RETURNED ⊥, AND BOTH OF ITS ERRORS ARE WORTH KEEPING.
 //
-// COLLISION NOTICE for the derivation: the word `heartbeat` is ALREADY BOUND in
-// this runtime — `ports/memory.ts` uses it as a session-LEASE verb
-// (`'register' | 'heartbeat' | 'release'`), which is the liveness sense, not the
-// scheduling/wake-pulse sense this capability carries. Two concepts under one
-// sign in one runtime is a defect; flagged, not resolved here.
+//   1. `heartbeat` was disqualified A PRIORI on the occupancy collision below and never
+//      reached the oracle. Occupancy is a question about THIS corpus and cannot answer what
+//      a sign MEANS. Skipping the test on those grounds is how a search returns ⊥ with the
+//      answer sitting untried in its own candidate list.
+//   2. The concept was stated as a BUNDLE — "a pulse on a cadence that samples a gate to
+//      decide whether a cycle runs" — and no sign names a bundle, because a bundle is not a
+//      concept. The search found precisely this and misread it: `poll` returned the cadence
+//      cleanly and lost the gate, `homeostat` returned the gate and lost the cadence. Two
+//      signs each naming one half cleanly is evidence about the CUT, not about the vocabulary.
 //
-// SHAPE: copied from `ports/event-tap.ts` — a pure INTERFACE surface, no
-// implementation. Each runtime target supplies one realization; a runtime domain
-// module codes against this port.
+// OCCUPANCY, restated rather than dismissed. `ports/memory.ts` binds `heartbeat` as a
+// session-lease verb (`register | heartbeat | release`). Under the cold decode these are not
+// two concepts: both are "a regular pulse from a live thing" — one proves a session is alive,
+// one is the agent's own cycle. That is polysemy at two scopes, which a sign is entitled to.
+// If they ever must be told apart, the distinguishing word belongs on the SCOPE
+// (`session-heartbeat`), never on the concept.
+//
+// SHAPE: copied from `ports/event-tap.ts` — a pure INTERFACE surface, no implementation.
+// Each runtime target supplies one realization; a runtime domain module codes against this
+// port.
+//
+// WIRED WITH THE RENAME, because the keyspace gate required it and was right to. The old
+// header withheld `CAPABILITIES`, the `RuntimePlugin` field and the exports until the anchor
+// landed — sound, and it kept the rename to a `git mv` plus a sweep. But
+// `capability-keyspace.test.ts` holds a biconditional: a `ports/<b>.ts` is in the keyspace
+// IFF `<b>` is NOT `provisional-`-prefixed. The prefix was standing in for "no capability
+// registration yet", so dropping it without registering left this port in neither state and
+// turned the gate's own exemption leg DARK — it asserts at least one exempt module exists,
+// precisely so the exemption cannot be a spelling nobody uses.
+//
+// Still withheld: `package.json#exports`, `tsup.config.ts` entries and
+// `packages/canon/src/skills/heartbeat/`. Those publish a surface, and nothing consumes this
+// capability yet — a shipped export with no consumer is a promise with no caller.
 // ─────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -81,7 +76,7 @@ export interface Clock {
 }
 
 /**
- * One deposited item awaiting claim by a {@link ProvisionalV9Host.drain}.
+ * One deposited item awaiting claim by a {@link HeartbeatHost.drain}.
  *
  * ⚠ SECURITY — `body` is UNTRUSTED CONTENT and reaches a model's context
  * verbatim: an inbound store read into a live session is a prompt-injection
@@ -185,7 +180,7 @@ export interface GateConfig {
  * channel for a live session and an async-generator stream for a headless driver —
  * one port, N adapters, selected per deployment.
  */
-export interface ProvisionalV9Host {
+export interface HeartbeatHost {
   /** Set the cadence. Must be called before {@link start}; may be re-called while stopped. */
   configure(config: PeriodConfig): void;
   /** Begin emitting on the configured period. Idempotent while already running. */

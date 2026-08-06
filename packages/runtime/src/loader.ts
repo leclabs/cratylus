@@ -22,6 +22,7 @@ import { pathToFileURL } from 'node:url';
 import type { RuntimePlugin } from './plugin.js';
 import type { CarryOnHost } from './ports/carry-on.js';
 import type { EventTapHost } from './ports/event-tap.js';
+import type { HeartbeatHost } from './ports/heartbeat.js';
 import type { MemoryStrategy } from './ports/memory.js';
 import { loadRuntimeConfig } from './runtime-config.js';
 
@@ -31,13 +32,22 @@ import { loadRuntimeConfig } from './runtime-config.js';
  * optional port fields one-for-one. Iterable so a plugin's provided set is a
  * `filter` over it (DRY: the port fields and this tuple never drift by hand).
  */
-export const CAPABILITIES = ['memory', 'eventTap', 'carryOn'] as const;
+export const CAPABILITIES = [
+  'memory',
+  'eventTap',
+  'carryOn',
+  'heartbeat',
+] as const;
 
 /** A capability name — one of {@link CAPABILITIES}. The dispatch `<capability>`. */
 export type Capability = (typeof CAPABILITIES)[number];
 
 /** The typed port a capability resolves to: the contract for that capability. */
-export type CapabilityPort = MemoryStrategy | EventTapHost | CarryOnHost;
+export type CapabilityPort =
+  | MemoryStrategy
+  | EventTapHost
+  | CarryOnHost
+  | HeartbeatHost;
 
 /** A resolved capability: which plugin provides it, and the port to dispatch into. */
 export interface CapabilityBinding {

@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// ⚠ PROVISIONAL PATH — `capabilities/provisional-v9/` is a PLACEHOLDER, not a
-// name. See `ports/provisional-v9.ts` for the full notice.
+// ⚠ PROVISIONAL PATH — `capabilities/heartbeat/` is a PLACEHOLDER, not a
+// name. See `ports/heartbeat.ts` for the full notice.
 //
 // HOST ADAPTER 1 of 2 — the PUSH vector, for a LIVE session.
 //
@@ -19,11 +19,11 @@
 
 import type {
   Envelope,
+  HeartbeatHost,
   HostStatus,
   PeriodConfig,
-  ProvisionalV9Host,
   Tick,
-} from '../../ports/provisional-v9.js';
+} from '../../ports/heartbeat.js';
 import { Period, type PeriodDeps } from './period.js';
 
 /** The JSON-RPC method a channel notification is delivered under. */
@@ -49,7 +49,7 @@ export interface ChannelFrame {
   };
 }
 
-/** Adapter-specific settings; cadence stays on {@link ProvisionalV9Host.configure}. */
+/** Adapter-specific settings; cadence stays on {@link HeartbeatHost.configure}. */
 export interface PushHostOptions extends PeriodDeps {
   /** The channel's `source` label. */
   source: string;
@@ -64,7 +64,7 @@ export interface PushHostOptions extends PeriodDeps {
  * best-effort: a sink that throws must not kill the period, because a dead
  * transport is a delivery failure, not a reason to stop keeping time.
  */
-export class PushHost implements ProvisionalV9Host {
+export class PushHost implements HeartbeatHost {
   readonly #period: Period;
   readonly #source: string;
   readonly #sink: FrameSink;

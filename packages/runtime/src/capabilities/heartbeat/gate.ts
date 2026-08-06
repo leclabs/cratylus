@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// ⚠ PROVISIONAL PATH — `capabilities/provisional-v9/` is a PLACEHOLDER, not a
-// name. See `ports/provisional-v9.ts` for the full notice.
+// ⚠ PROVISIONAL PATH — `capabilities/heartbeat/` is a PLACEHOLDER, not a
+// name. See `ports/heartbeat.ts` for the full notice.
 //
 // THE SAMPLING GATE — the whole of the pressure-not-cadence rule, in one function.
 //
@@ -17,11 +17,11 @@
 //
 // The emission ordinal is passed to {@link sampleGate} and DELIBERATELY IGNORED.
 // It is in the signature so that the law is executable rather than merely
-// documented: `test/provisional-v9.test.ts` sweeps 64 consecutive ordinals at a
+// documented: `test/heartbeat.test.ts` sweeps 64 consecutive ordinals at a
 // fixed reading and asserts the verdict never changes.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { GateConfig, PressureGate } from '../../ports/provisional-v9.js';
+import type { GateConfig, PressureGate } from '../../ports/heartbeat.js';
 
 /** The mutable bookkeeping a sampler carries between emissions. */
 export interface GateState {

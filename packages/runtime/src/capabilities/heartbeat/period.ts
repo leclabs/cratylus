@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// ⚠ PROVISIONAL PATH — `capabilities/provisional-v9/` is a PLACEHOLDER, not a
-// name. See `ports/provisional-v9.ts` for the full notice.
+// ⚠ PROVISIONAL PATH — `capabilities/heartbeat/` is a PLACEHOLDER, not a
+// name. See `ports/heartbeat.ts` for the full notice.
 //
 // THE PERIOD ENGINE — the endogenous timing shared by every realization.
 //
@@ -19,7 +19,7 @@ import type {
   PressureGate,
   Tick,
   TimerHandle,
-} from '../../ports/provisional-v9.js';
+} from '../../ports/heartbeat.js';
 import { type GateState, freshGateState, sampleGate } from './gate.js';
 import type { EnvelopeStore } from './store.js';
 

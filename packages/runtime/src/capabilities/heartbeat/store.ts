@@ -1,14 +1,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// ⚠ PROVISIONAL PATH — `capabilities/provisional-v9/` is a PLACEHOLDER, not a
-// name. See `ports/provisional-v9.ts` for the full notice: the anchor for this
-// capability is undiscovered and is /signify's to derive; `provisional-v9`
+// ⚠ PROVISIONAL PATH — `capabilities/heartbeat/` is a PLACEHOLDER, not a
+// name. See `ports/heartbeat.ts` for the full notice: the anchor for this
+// capability is undiscovered and is /signify's to derive; `heartbeat`
 // encodes only the shard that produced these files.
 //
 // THE INBOUND STORE — the afferent side, claimed on each emission.
 //
 // EXACTLY-ONCE UNDER CONCURRENCY, and the design is entirely about that word.
 // The obvious implementation — one append-log, claimed by read-then-delete — is
-// wrong twice over, and the falsifier in `test/provisional-v9.test.ts` measures
+// wrong twice over, and the falsifier in `test/heartbeat.test.ts` measures
 // both: a deposit landing between the read and the unlink is DESTROYED, and two
 // claims racing each other both read the file and each returns every envelope,
 // so the same inbound message is delivered twice. Measured on that naive
@@ -44,7 +44,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Envelope } from '../../ports/provisional-v9.js';
+import type { Envelope } from '../../ports/heartbeat.js';
 
 /** Where a store keeps its state on disk. */
 export interface StoreLayout {

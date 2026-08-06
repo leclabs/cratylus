@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// ⚠ PROVISIONAL PATH — `capabilities/provisional-v9/` is a PLACEHOLDER, not a
-// name. See `ports/provisional-v9.ts` for the full notice.
+// ⚠ PROVISIONAL PATH — `capabilities/heartbeat/` is a PLACEHOLDER, not a
+// name. See `ports/heartbeat.ts` for the full notice.
 //
 // HOST ADAPTER 2 of 2 — the STREAM vector, for a HEADLESS driver.
 //
@@ -16,11 +16,11 @@
 
 import type {
   Envelope,
+  HeartbeatHost,
   HostStatus,
   PeriodConfig,
-  ProvisionalV9Host,
   Tick,
-} from '../../ports/provisional-v9.js';
+} from '../../ports/heartbeat.js';
 import { Period, type PeriodDeps } from './period.js';
 
 /**
@@ -36,7 +36,7 @@ export interface StreamMessage {
   };
 }
 
-/** Adapter-specific settings; cadence stays on {@link ProvisionalV9Host.configure}. */
+/** Adapter-specific settings; cadence stays on {@link HeartbeatHost.configure}. */
 export interface StreamHostOptions extends PeriodDeps {
   /**
    * Renders a tick as the message fed into the session. Injected so the wording
@@ -66,7 +66,7 @@ export function defaultRender(tick: Tick): string {
  * driver passes as streaming input; {@link ticks} remains available for a
  * consumer that wants the structured emission instead of the rendered message.
  */
-export class StreamHost implements ProvisionalV9Host {
+export class StreamHost implements HeartbeatHost {
   readonly #period: Period;
   readonly #render: (tick: Tick) => string;
 
