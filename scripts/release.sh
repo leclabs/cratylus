@@ -22,6 +22,16 @@ out="$root/.pack"
 rm -rf "$out"
 mkdir -p "$out"
 
+# BUILD FIRST, IN TOPOLOGICAL ORDER. `pnpm pack` fires each package's `prepack`, which
+# rebuilds it — but per package, in whatever order the pack loop happens to reach them. A
+# package whose dts build resolves a SIBLING's types then fails, because the sibling has no
+# `dist/` yet: measured on the first release run as `error occurred in dts build` from
+# forge, in a job where nothing had built anything.
+#
+# `pnpm build` is turbo, which respects `dependsOn: ["^build"]`, so every `prepack` after
+# this is a rebuild against a warm tree rather than a first build in the wrong order.
+pnpm build
+
 # AUDIT FIRST, on bytes packed the same way. If pack-smoke refuses, nothing is uploaded.
 pnpm pack:smoke
 
