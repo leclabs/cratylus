@@ -19,6 +19,7 @@
 // compiler-invisible emitted string).
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { createRequire } from 'node:module';
 import { cac } from 'cac';
 import { RUNTIME_BIN } from './bin-name.js';
 import { dispatchCarryOn } from './capabilities/carry-on/index.js';
@@ -29,7 +30,23 @@ import type { RuntimePlugin } from './plugin.js';
 
 /** The runtime bin version. A constant (not read from package.json): the bundled
  *  bin ships without its manifest, so a runtime package.json read is unsafe. */
-export const VERSION = '0.0.0';
+/**
+ * This package's version, read from the manifest that DEFINES it.
+ *
+ * It was the literal `'0.0.0'`, and `0.1.0` shipped to npm with every CLI still reporting
+ * `0.0.0` — confirmed by installing the published tarball on another host. A version is a
+ * CLAIM ABOUT THE ARTIFACT, and it had no home: `changeset version` rewrites the manifest
+ * and cannot rewrite a string in TypeScript, so the two were guaranteed to diverge at the
+ * first release and to stay diverged forever.
+ *
+ * Read by package SELF-REFERENCE rather than a relative path, which is the form
+ * `bin-name.ts` already uses and for the same reason: tsup inlines this module into
+ * `dist/<entry>/index.js`, so `../package.json` would resolve from the wrong depth once
+ * bundled. Node resolves a self-reference through the package's own `exports`.
+ */
+export const VERSION: string = createRequire(import.meta.url)(
+  '@cratylus/runtime/package.json',
+).version;
 
 /** Bin entrypoint: brand + help/version via cac, else bootstrap → dispatch → stdio. */
 /** Options for {@link runMain}. `plugins` are DECLARED capability plugins supplied
