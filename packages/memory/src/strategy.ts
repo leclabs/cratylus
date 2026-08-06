@@ -183,9 +183,17 @@ export class AgentMemory implements MemoryStrategy {
   }
 
   /**
-   * List records under the query (or the whole log when empty). `under` keeps
-   * same-host records whose `node(cwd)` sits under the boundary (foreign-host +
-   * legacy records drop); `forSession` drops LIVE OTHER sessions' records.
+   * List records under the query (or the whole log when empty). `under` narrows to records
+   * whose `node(cwd)` sits under the boundary; `forSession` drops LIVE OTHER sessions'
+   * records.
+   *
+   * `under` NARROWS, IT DOES NOT DROP THE UNRESOLVABLE. It used to hard-drop two classes:
+   * a record with no `cwd` (every legacy record) and a record from another HOST. On a
+   * six-host fleet that second one erases exactly the cross-machine continuity the
+   * persistent-being invariant exists to protect — and it is a category error: a
+   * foreign-host record is UNRESOLVABLE against this filesystem, which is not the same
+   * thing as OUT OF SCOPE. A boundary this node cannot evaluate is a boundary that has not
+   * excluded anything, so the record is kept.
    */
   read(query: ReadQuery = {}): EpisodicRecord[] {
     const home = this.home();
@@ -203,8 +211,10 @@ export class AgentMemory implements MemoryStrategy {
       const under = canonical(resolve(query.under));
       const cfg = this.nodeConfig();
       records = records.filter((r) => {
-        if (r.cwd === undefined) return false;
-        if (r.host !== undefined && r.host !== cfg.currentHost) return false;
+        // Unresolvable against this host's filesystem ⇒ the boundary cannot judge it, so
+        // it is not excluded by it. Keeping is the conservative answer for a NARROWING.
+        if (r.cwd === undefined) return true;
+        if (r.host !== undefined && r.host !== cfg.currentHost) return true;
         const { node } = resolveNode(r.cwd, r.host, cfg);
         return underOrEqual(node, under);
       });

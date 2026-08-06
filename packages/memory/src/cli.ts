@@ -499,8 +499,10 @@ function runRead(args: ParsedArgs): CliResult {
 /**
  * `node <path>`: resolve a path to its boundary node. Default stdout is the
  * BARE node path (newline-terminated, nothing else) so the verb composes —
- * `read --under "$(memory node <cwd>)"` is the wake ritual's load line, and
- * a JSON envelope there silently matches zero records. `--json` opts into the
+ * `read --under "$(memory node <cwd>)"` composes, and a JSON envelope there silently
+ * matches zero records. It is NOT wake's load line and has not been: wake passes no
+ * `--under` at all, and the routing law reads a record's scope from its TEXT rather than
+ * from the node its capture happened at. The node is PROVENANCE. `--json` opts into the
  * `{node, basis}` envelope for inspection.
  */
 function runNode(args: ParsedArgs): CliResult {
