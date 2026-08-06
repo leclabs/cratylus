@@ -162,7 +162,7 @@ function str(flags: Flags, name: string): string | undefined {
 /** The one message every missing-configuration refusal carries. */
 function missing(flag: string): Error {
   const why =
-    "the plan vocabulary is CANON's (`packages/canon/src/toolkit/plan-states.ts`) and " +
+    "the plan vocabulary is CANON's (`packages/canon/src/plan-states.ts`) and " +
     'reaches this capability as the projected invocation the `carry-on` cell carries. ' +
     'The runtime depends on nothing and holds no plan layout of its own, so there is ' +
     'nothing here to fall back to.';

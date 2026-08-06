@@ -40,7 +40,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { PLAN_STATES } from '../plan-states.js';
+import { PLAN_STATES } from '../src/plan-states.js';
 
 /** In-plan marker naming the successor a plan's work relocated to; its presence
  *  makes the plan `superseded` (a terminal phase). Supersession is NOT derivable
@@ -75,7 +75,13 @@ export interface PlanSetContext {
 }
 
 const here = dirname(fileURLToPath(import.meta.url));
-const canonRoot = join(here, '..', '..');
+// ONE level, not two — this file sits at `tooling/`, not `src/toolkit/`. The stale hop
+// resolved `repoRoot` to a directory with no `plans/`, so every derived set came back
+// empty. THIRD instance of this class in one move (`render-oracle.sh`,
+// `project-targets.ts`, here): a path expressed as a COUNT of parent hops encodes the
+// file's own location in its body, so relocating the file silently changes what it
+// points at, and the failure reads as "nothing found" rather than "wrong place".
+const canonRoot = join(here, '..');
 /** Default context: the repo this module ships in (`packages/canon/../..`). */
 export const defaultContext: PlanSetContext = {
   repoRoot: join(canonRoot, '..', '..'),

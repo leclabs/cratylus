@@ -22,7 +22,7 @@
 // vacuously green-lighting the corpus: pending obligations are surfaced as an owed agent
 // check, never swallowed into a pass.
 
-import { OPERATORS } from '../operator-lexicon.js';
+import { OPERATORS } from '../src/operator-lexicon.js';
 
 /**
  * A round-trip obligation extracted from one declaration line: the block ASSIGNS

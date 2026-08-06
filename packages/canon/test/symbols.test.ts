@@ -1,5 +1,5 @@
 // SYMBOLS gate — the TS port of `toolkit/verify.py` `gate_symbols`. The register
-// rule (declared table = `src/toolkit/operator-lexicon.ts`): a fenced FORMAL
+// rule (declared table = `src/operator-lexicon.ts`): a fenced FORMAL
 // block carries ONLY declared symbols plus the cell's own definienda. This gate is the
 // positive form — every fence-interior glyph in each fragment / skill `.ts` definiens
 // must be in (the declared table col-1 ∪ the calibrated exemption classes); an

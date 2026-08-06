@@ -38,13 +38,13 @@ import {
   universalCell,
 } from '@cratylus/forge/validate';
 import { describe, expect, it } from 'vitest';
-import { canonPolicy } from '../src/toolkit/cold-oracle/policy.js';
+import { canonPolicy } from '../tooling/cold-oracle/policy.js';
 import {
   allHookCells,
   allRuleCells,
   cellTargets,
   regenerateTargets,
-} from '../src/toolkit/project-targets.js';
+} from '../tooling/project-targets.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = join(canonRoot, '..', '..');

@@ -275,12 +275,30 @@ function pkgOf(spec: string): Pkg | null {
 function roleOf(rel: string): Role {
   if (/^(dimensions|skills|agents|hooks|rules|genus)\//.test(rel))
     return 'cell';
-  if (rel.startsWith('toolkit/')) return 'build-script';
+  // BUILD SCRIPTS ARE NAMED BY THEIR DIRECTORY, and the directory now says so. This
+  // read `toolkit/`, a subtree of `src/` that the build EXCLUDED — so the license to
+  // import forge was carried by a path whose name claimed the opposite ("this becomes
+  // dist"). The scripts moved to `tooling/`, a sibling of `src/` rather than a child,
+  // and the license moved with them onto a name that means what it grants.
+  if (rel.startsWith('tooling/')) return 'build-script';
   return 'root';
 }
 
+/** Every tracked `.ts` a package AUTHORS — `src/` and, where it exists, `tooling/`.
+ *
+ *  `tooling/` IS IN SCOPE, and leaving it out would have been a silent coverage loss
+ *  rather than a scope decision. Canon's build scripts used to live under `src/toolkit/`
+ *  and were therefore scanned by a `packages/*&#47;src` sweep for free. Moving them out of
+ *  `src/` — which is the whole point, since the build excludes them and `src/` asserts
+ *  the opposite — would have removed every one of their forge imports from this gate's
+ *  view. The gate would have gone greener while the corpus did not change at all.
+ *
+ *  This is the same failure this suite already knows in its other direction: a check
+ *  whose subject is the live tree goes dark when the tree moves. Here the subject stayed
+ *  put and the SWEEP's idea of the tree was what went stale. */
 function srcFiles(pkg: string): string[] {
-  return execFileSync('git', ['ls-files', `packages/${pkg}/src`], {
+  const roots = [`packages/${pkg}/src`, `packages/${pkg}/tooling`];
+  return execFileSync('git', ['ls-files', ...roots], {
     cwd: repoRoot,
     encoding: 'utf8',
   })
@@ -292,7 +310,9 @@ function edges(): Edge[] {
   const out: Edge[] = [];
   for (const pkg of PACKAGES) {
     for (const path of srcFiles(pkg)) {
-      const rel = path.replace(`packages/${pkg}/src/`, '');
+      const rel = path
+        .replace(`packages/${pkg}/src/`, '')
+        .replace(`packages/${pkg}/`, '');
       const code = codeOnly(readFileSync(join(repoRoot, path), 'utf8'));
       const seen = new Set<Pkg>();
       for (const m of code.matchAll(SPEC)) {
@@ -361,7 +381,7 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     // until the build-steps-proxy-the-cli shard deleted it — projection is the
     // shipped `cratylus project --harness <name>` now, driven from the root
     // `agents.config.ts`, so the anchor moved to a build script that survives.
-    expect(ks).toContain('canon/toolkit/scaffold-cli.ts → forge');
+    expect(ks).toContain('canon/tooling/scaffold-cli.ts → forge');
     // `canon/index.ts → forge` was the violating witness until the plugin contract
     // moved to the schema. `scaffold-cli.ts → forge` above is a PERMITTED edge and
     // still witnesses a live canon→forge scan, so this leg is not vacuous.
@@ -517,7 +537,7 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     expect(
       permitted({
         from: 'canon',
-        file: 'toolkit/project.ts',
+        file: 'tooling/project.ts',
         role: 'build-script',
         to: 'forge',
       }),

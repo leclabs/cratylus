@@ -50,7 +50,7 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-// accept() falsifier — the full Universal gate (`src/toolkit/cold-oracle/accept.ts`),
+// accept() falsifier — the full Universal gate (`tooling/cold-oracle/accept.ts`),
 // the register gate above being one facet of ρ-conformance, not a Universal leg.
 import {
   type AcceptCell,
@@ -75,10 +75,10 @@ import { describe, expect, it } from 'vitest';
 import type { Agent, Dimension, Value } from '../src/manifest.js';
 import { RESIDUE_OPERATORS } from '../src/operator-lexicon.js';
 import { signify } from '../src/skills/signify/skill.js';
-import { nonceControl } from '../src/toolkit/cold-oracle/oracle.js';
+import { nonceControl } from '../tooling/cold-oracle/oracle.js';
 // The injected corpus POLICY DATA (palimpsest table + operator lexicon) the
 // doctrine-agnostic validate ALGORITHM consumes — passed at every gate call site.
-import { canonPolicy } from '../src/toolkit/cold-oracle/policy.js';
+import { canonPolicy } from '../tooling/cold-oracle/policy.js';
 // ρ + register(a) + conform — ONE shared model (`reader-register.ts`), also
 // enforced over the runtime frontiers by `reader-reach.test.ts`; RHO mirrors
 // the READER BINDING subset lists (signify).
@@ -489,7 +489,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
 //   accept(a) ⇔ Universal(a) ∧ (agent ⇒ COMPOSED(a))
 //   Universal = CANONICAL ∧ SIGNIFIED ∧ COLD-BLIND ∧ PARTITIONED ∧ PARSIMONIOUS ∧ REGENERABLE
 // decided by the BLIND priors-only cold-oracle — a LIVE authority (gated below,
-// `COLD_ORACLE_LIVE=1`) over an always-on STATIC floor (`src/toolkit/cold-oracle/
+// `COLD_ORACLE_LIVE=1`) over an always-on STATIC floor (`tooling/cold-oracle/
 // accept.ts`). NON-VACUOUS: one seeded defect per leg, each convicted — and MECE
 // (each seed trips ONLY its leg). Green over one live already-conformant cell.
 
@@ -740,7 +740,7 @@ describe('accept() falsifier — Universal ∧ (agent ⇒ COMPOSED), BLIND cold-
 // prose (the vision's failure criterion). GOVERNING INVARIANT: every deployed artifact
 // the model reads is formal σ* under ρ, never human prose — this gate IS that
 // invariant's enforcement over the whole deployed payload set. Predicate + witnesses:
-// `src/toolkit/cold-oracle/residue.ts`; admitted operators READ from
+// `tooling/cold-oracle/residue.ts`; admitted operators READ from
 // `operator-lexicon.ts` (`RESIDUE_OPERATORS` — DRY, one home).
 //
 // FIXTURE-BASED bite proof, GREEN NOW: the 139 live dimension values are E1's verbatim-

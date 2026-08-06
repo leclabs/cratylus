@@ -23,7 +23,7 @@
 // IT KNOWS NO PLAN VOCABULARY. The plan root, the state folder names, which state
 // is terminal, which states form the frontier, and the marker filenames all arrive
 // as {@link PlanLayout} — configuration the projection emitted, sourced from canon's
-// one home (`canon/src/toolkit/plan-states.ts`). `@cratylus/runtime` depends on
+// one home (`canon/src/plan-states.ts`). `@cratylus/runtime` depends on
 // nothing (ARCHITECTURE property 4), so a bundled default here would be the same
 // hand-copied second home the event-tap vocabulary repair closed.
 // ─────────────────────────────────────────────────────────────────────────────

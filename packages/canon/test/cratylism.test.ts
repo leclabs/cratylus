@@ -11,7 +11,7 @@
 //     cratylism violation.
 //   • SEMANTIC (non-hermetic, NOT asserted here): the anchor cold-DECODES to its
 //     concept — the archaeology. Its instrument is the cold-oracle
-//     (`src/toolkit/cold-oracle`, `decodeCold`), run at authoring + CI,
+//     (`tooling/cold-oracle`, `decodeCold`), run at authoring + CI,
 //     never coined by author or operator. It cannot run in a hermetic unit test (it
 //     calls the live model), so this gate asserts the structural leg and points to the
 //     oracle for the semantic one. The principle is additionally enforced EVERY TURN by
@@ -269,7 +269,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   // upstream catalog is fine — it is provenance, not a path claim.
   it('the consumer scaffold template names no cratylus-local path', async () => {
     const { canonProjectTemplate } = await import(
-      '../src/toolkit/project-template.js'
+      '../tooling/project-template.js'
     );
     const emitted = [
       canonProjectTemplate.agentsMd('<subject>'),

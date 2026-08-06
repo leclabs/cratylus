@@ -9,7 +9,7 @@
 // itself).
 
 import { bodyOf } from '@cratylus/schema';
-import type { Dimension, Value } from '../manifest.js';
+import type { Dimension, Value } from '../src/manifest.js';
 
 /**
  * Render a dimension value to its canonical cell body: `\n\n<body>\n`.

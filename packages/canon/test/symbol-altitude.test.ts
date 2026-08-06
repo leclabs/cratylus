@@ -32,7 +32,7 @@ import {
   type ProbeObligation,
   divergentSymbols,
   obligationsOf,
-} from '../src/toolkit/symbol-probe-gate.js';
+} from '../tooling/symbol-probe-gate.js';
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');
 

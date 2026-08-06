@@ -19,7 +19,7 @@ import { MANIFEST } from '../src/manifest.js';
 import type { Agent } from '../src/manifest.js';
 import { dream } from '../src/skills/dream/skill.js';
 import { wake } from '../src/skills/wake/skill.js';
-import { fragmentToMarkdown } from '../src/toolkit/project.js';
+import { fragmentToMarkdown } from '../tooling/project.js';
 import { firstExport } from './support/cell-module.js';
 
 /** Project a skill through the forge claude adapter — `f(name, formalBlock,

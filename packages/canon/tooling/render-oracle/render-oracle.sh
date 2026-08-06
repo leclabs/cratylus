@@ -45,7 +45,14 @@
 
 set -eu
 
-repo_root=$(cd "$(dirname "$0")/../../../../.." && pwd)
+# DEPTH-INDEPENDENT ON PURPOSE. This was `cd "$(dirname "$0")/../../../../.."` — five
+# levels, counted for a home under `src/toolkit/`. Moving the script one level shallower
+# broke it into "no baseline", which reads as a missing file rather than as a miscounted
+# path. A relative hop encodes the script's own location in its body, so relocating the
+# file silently changes what it points at; asking git removes the coupling entirely, and
+# the `cd` fallback keeps it working in a tarball with no `.git`.
+repo_root=$(git rev-parse --show-toplevel 2>/dev/null) ||
+	repo_root=$(cd "$(dirname "$0")/../../../.." && pwd)
 cd "$repo_root"
 
 canon="packages/canon"

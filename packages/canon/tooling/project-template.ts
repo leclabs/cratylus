@@ -16,7 +16,7 @@
 // engine.
 
 import type { ProjectTemplate } from '@cratylus/forge/deploy';
-import { PLAN_STATES } from '../plan-states.js';
+import { PLAN_STATES } from '../src/plan-states.js';
 
 function projectAgentsMd(subject: string): string {
   return `# agent conventions

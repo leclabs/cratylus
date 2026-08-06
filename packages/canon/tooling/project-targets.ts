@@ -30,7 +30,13 @@ import { projectionFacts } from '@cratylus/forge/project';
 import { type HookCell, type RuleCell, resolveWorker } from '@cratylus/schema';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const canonRoot = join(here, '..', '..');
+// ONE level up, not two. This was `join(here, '..', '..')`, counted for a home under
+// `src/toolkit/`; the file now sits at `tooling/`, one level shallower, and the stale
+// hop resolved to `packages/` — so the cell glob matched nothing and `cellTargets()`
+// returned an empty list. An empty list is not an error, so two gates that sweep it
+// went green-and-dark rather than red. Second instance of this exact class in one
+// move; the other was `render-oracle.sh`'s five-deep `cd`.
+const canonRoot = join(here, '..');
 /** Repo root — hook targets are repo-relative (`.husky/*` sits above the pkg). */
 const repoRoot = join(canonRoot, '..', '..');
 const srcRoot = join(canonRoot, 'src');

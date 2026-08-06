@@ -36,7 +36,7 @@ Auditing to build it surfaced that the problem is larger than a missing skill.
 ### 1. The instrument is realized, wired, and dead
 
 A canonical realization exists — `packages/forge/src/validate/oracle.ts` (`decodeCold` L42,
-`nonceControl` L76), bound in `packages/canon/src/toolkit/cold-oracle/oracle.ts`, with
+`nonceControl` L76), bound in `packages/canon/tooling/cold-oracle/oracle.ts`, with
 `policy.ts` — plus the well-reasoned `cold-oracle.sh` (repo-path guard, keychain-seeded
 credentials-only config dir, tool-less, stdin delivery, a debugged prompt).
 

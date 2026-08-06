@@ -8,7 +8,7 @@ export const formalize: Skill = {
   formalBlock: `prose ≜ the source text
 E ≜ entities(prose) ; O ≜ operations(prose) ; L ≜ laws(prose)
 
-T ≜ the declared notation table @ src/toolkit/operator-lexicon.ts
+T ≜ the declared notation table @ src/operator-lexicon.ts
 η : E ∪ O ⇀ symbols @ signify
 β ≜ { s | s imported, its anchor cited once in adjacent notation }
 ι ≜ { s | s resolved from invocation context }

@@ -78,7 +78,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { deployDriftNotice } from '../src/hooks/deploy-drift-notice.js';
 import { memoryConsolidationNudge } from '../src/hooks/memory-consolidation-nudge.js';
 import canonPlugin from '../src/index.js';
-import { cellTargets } from '../src/toolkit/project-targets.js';
+import { cellTargets } from '../tooling/project-targets.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = join(canonRoot, '..', '..');
@@ -171,8 +171,16 @@ function shellSources(): string[] {
   for (const pkg of readdirSync(join(repoRoot, 'packages'), {
     withFileTypes: true,
   })) {
-    const src = join(repoRoot, 'packages', pkg.name, 'src');
-    if (pkg.isDirectory() && existsSync(src)) walk(src);
+    // `src/` AND `tooling/`. Canon's build scripts left `src/` for `tooling/` — a
+    // sibling, not a child — because the build excludes them and `src/` asserts the
+    // opposite. A sweep that still said `src` alone would have dropped every shell and
+    // `.mjs` under `tooling/` out of this law's reach and reported the corpus cleaner
+    // for it. The subject did not move out of the corpus; only this sweep's idea of
+    // where the corpus lives would have gone stale.
+    for (const root of ['src', 'tooling']) {
+      const dir = join(repoRoot, 'packages', pkg.name, root);
+      if (pkg.isDirectory() && existsSync(dir)) walk(dir);
+    }
   }
   return out.sort();
 }
@@ -367,7 +375,7 @@ it('EVERY hand-authored shell or .mjs source under packages/*/src derives the bi
   const sources = shellSources();
   expect(
     sources.length,
-    'no shell/.mjs source found under packages/*/src — the scan is DARK, not the corpus clean',
+    'no shell/.mjs source found under packages/*/{src,tooling} — the scan is DARK, not the corpus clean',
   ).toBeGreaterThan(5);
 
   const drifted: string[] = [];
@@ -441,7 +449,10 @@ function tsSources(pkg: string): string[] {
       else if (e.name.endsWith('.ts')) out.push(relative(repoRoot, full));
     }
   };
-  walk(join(repoRoot, 'packages', pkg, 'src'));
+  for (const root of ['src', 'tooling']) {
+    const dir = join(repoRoot, 'packages', pkg, root);
+    if (existsSync(dir)) walk(dir);
+  }
   return out.sort();
 }
 

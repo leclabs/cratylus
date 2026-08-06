@@ -3,12 +3,12 @@
 // truth (on-disk residence + git), never a stored field; `retire`/`supersede` stage
 // (the commit is gated).
 //
-//   tsx src/toolkit/plan-set-cli.ts phase <plan>        # the plan's lifecycle phase
-//   tsx src/toolkit/plan-set-cli.ts landing <plan>      # landing-commit sha (or none)
-//   tsx src/toolkit/plan-set-cli.ts retirement <plan>   # retiring-commit sha (or none)
-//   tsx src/toolkit/plan-set-cli.ts list                # the plan set (= what is on disk)
-//   tsx src/toolkit/plan-set-cli.ts supersede <plan> <by> # declare P superseded-by Q (staged)
-//   tsx src/toolkit/plan-set-cli.ts retire <plan>       # DELETE plans/<plan> (staged)
+//   tsx tooling/plan-set-cli.ts phase <plan>        # the plan's lifecycle phase
+//   tsx tooling/plan-set-cli.ts landing <plan>      # landing-commit sha (or none)
+//   tsx tooling/plan-set-cli.ts retirement <plan>   # retiring-commit sha (or none)
+//   tsx tooling/plan-set-cli.ts list                # the plan set (= what is on disk)
+//   tsx tooling/plan-set-cli.ts supersede <plan> <by> # declare P superseded-by Q (staged)
+//   tsx tooling/plan-set-cli.ts retire <plan>       # DELETE plans/<plan> (staged)
 
 import {
   defaultContext,

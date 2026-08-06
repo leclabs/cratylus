@@ -5,7 +5,7 @@
 // canon project DATA to the forge engine — the engine stays doctrine-agnostic;
 // THIS path is where the canon project doctrine is injected.
 //
-// Usage:  tsx src/toolkit/scaffold-cli.ts --target <dir> [--agents-dir <dir>]
+// Usage:  tsx tooling/scaffold-cli.ts --target <dir> [--agents-dir <dir>]
 //                                          [--skills-dir <dir>] [--subject <text>] [--force]
 //   default render tree:  <canonRoot>/.cratylus/claude/{agents,skills}  (from `pnpm canon:project`)
 

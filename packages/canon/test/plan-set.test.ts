@@ -1,4 +1,4 @@
-// plan-set — the PLAN-LEVEL lifecycle mechanism (`src/toolkit/plan-set.ts`).
+// plan-set — the PLAN-LEVEL lifecycle mechanism (`tooling/plan-set.ts`).
 // Falsifiers, held against a hermetic temp git repo:
 //
 //   (1) a plan transitions proposed → in-flight → landed → retired (the phase
@@ -38,7 +38,7 @@ import {
   supersede,
   superseded,
   terminal,
-} from '../src/toolkit/plan-set.js';
+} from '../tooling/plan-set.js';
 
 let repo: string;
 let ctx: PlanSetContext;
@@ -276,8 +276,7 @@ describe('landing — derived on demand, stored nowhere', () => {
     const praxis = join(
       dirname(fileURLToPath(import.meta.url)),
       '..',
-      'src',
-      'toolkit',
+      'tooling',
       'praxis',
       'praxis.sh',
     );
@@ -312,8 +311,7 @@ describe('landing — derived on demand, stored nowhere', () => {
     const praxis = join(
       dirname(fileURLToPath(import.meta.url)),
       '..',
-      'src',
-      'toolkit',
+      'tooling',
       'praxis',
       'praxis.sh',
     );

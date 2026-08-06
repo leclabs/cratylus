@@ -3,7 +3,7 @@
 // re-accreting. `test/reader-density.test.ts` enforces PARSIMONIOUS per-cell
 // (residue ⊉ fired(α)); this enforces it OVER STRUCTURE — the import-graph + the
 // module set — where a file/type/field that restates an archetype hides ABOVE any
-// single cell. Predicate + witnesses: `src/toolkit/structural-parsimony.ts`.
+// single cell. Predicate + witnesses: `tooling/structural-parsimony.ts`.
 //
 // E1 already DELETED the motivating cruft, so the live tree has nothing to bite —
 // this is a REGRESSION-PREVENTION leg. Proof it is NON-VACUOUS is two-sided:
@@ -32,7 +32,7 @@ import {
   parseFragment,
   resolvedDup,
   structuralParsimony,
-} from '../src/toolkit/structural-parsimony.js';
+} from '../tooling/structural-parsimony.js';
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');
 

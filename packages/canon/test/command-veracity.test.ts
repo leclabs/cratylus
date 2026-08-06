@@ -154,7 +154,7 @@ import {
   everDesignated,
   liveDesignators,
   retiredDesignators,
-} from '../src/toolkit/plan-set.js';
+} from '../tooling/plan-set.js';
 
 const repoRoot = join(
   dirname(fileURLToPath(import.meta.url)),
@@ -485,7 +485,7 @@ function planPathCitations(): PathCitation[] {
 // which is how an author writing prose actually writes it.
 //
 // THE ORACLE IS A SET DIFFERENCE, HAND-MAINTAINED BY NOBODY. `retiredDesignators`
-// (`src/toolkit/plan-set.ts`) enumerates every shard basename git has seen under a
+// (`tooling/plan-set.ts`) enumerates every shard basename git has seen under a
 // state folder and removes every one the worktree still holds. No manifest, no
 // checked-in id list, no marker: the same derived-on-demand-never-stored discipline
 // the plan tier's `retirement(P)` already ships, one tier down. The full argument —
@@ -606,9 +606,7 @@ describe('COMMAND-VERACITY gate — a named command must exist', () => {
     // held a false citation before this gate existed.
     const files = new Set(cs.map((c) => c.file));
     expect(files).toContain('packages/canon/src/toolkit/guardrail/README.md');
-    expect(files).toContain(
-      'packages/canon/src/toolkit/project-targets-cli.ts',
-    );
+    expect(files).toContain('packages/canon/tooling/project-targets-cli.ts');
   });
 
   it('the declared-script set is real', () => {

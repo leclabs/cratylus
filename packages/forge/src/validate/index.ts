@@ -11,7 +11,7 @@
 // The STRUCTURAL leg of PARSIMONIOUS is NOT here, and that is the rule not the exception:
 // its witnesses quantify over canon's `agents/`, name `ResolvedAgent`, and read canon's
 // `mark:{emoji,hue}` token, so no injection could make it doctrine-agnostic. It lives
-// with the corpus it gates, at `@cratylus/canon` `src/toolkit/structural-parsimony.ts`.
+// with the corpus it gates, at `@cratylus/canon` `tooling/structural-parsimony.ts`.
 //
 // DISTINCT from `../core/exemplify` `accept` (the pipeline gate over an LLM-authored
 // manifest): these share the word "accept" but are different concerns — the pipeline

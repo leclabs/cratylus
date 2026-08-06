@@ -2,8 +2,8 @@
 // their source cells, or `--check` (diff-only, nonzero exit on drift). The runnable
 // half of the byte-lock (`test/hook-rule-boundary.test.ts` is the gate).
 //
-//   tsx src/toolkit/project-targets-cli.ts            # regenerate in place
-//   tsx src/toolkit/project-targets-cli.ts --check    # report drift, change nothing
+//   tsx tooling/project-targets-cli.ts            # regenerate in place
+//   tsx tooling/project-targets-cli.ts --check    # report drift, change nothing
 
 import { regenerateTargets } from './project-targets.js';
 

@@ -2,7 +2,7 @@
 // corpus is fully drained: NO formalBlock carries any `--`/`—` comment marker. So this gate no
 // longer classifies carriers (law vs declaration) or forks (redundant vs load-bearing) — a
 // comment is simply a finding. The lint proper lives in
-// `src/toolkit/formal-block-self-sufficiency.ts`; this file wires it over the live corpus and
+// `/forge/validate`; this file wires it over the live corpus and
 // asserts every one of the 15 skills scans to zero findings. Companion to the SYMBOLS gate
 // (`symbols.test.ts`): that binds decodability, this binds the no-explanatory-prose clause.
 

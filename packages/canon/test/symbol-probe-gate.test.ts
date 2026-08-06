@@ -11,7 +11,7 @@
 // DETERMINISTIC leg (obligation extraction + verdict routing) and the FAILURE SURFACE with
 // RECORDED probe readouts (the judgment leg, authored by an agent, supplied as data). The
 // live corpus's un-probed symbols route to `needs-probe` — an owed agent check, surfaced,
-// NOT a vacuous pass. See `src/toolkit/symbol-probe-gate.ts` header for the full contract.
+// NOT a vacuous pass. See `tooling/symbol-probe-gate.ts` header for the full contract.
 
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
@@ -26,7 +26,7 @@ import {
   obligationsOf,
   roundTrip,
   symbolProbeGate,
-} from '../src/toolkit/symbol-probe-gate.js';
+} from '../tooling/symbol-probe-gate.js';
 import { firstExport } from './support/cell-module.js';
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');
