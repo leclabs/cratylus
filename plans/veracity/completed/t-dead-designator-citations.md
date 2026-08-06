@@ -79,3 +79,36 @@ deliverable `t-sigil-citation-prohibition` consumes.
 4. `pnpm verify` and `pnpm typecheck:test` green; the render oracle unmoved.
 
 **Pre.** Fails today: the sweep returns ≥ 12 named-plan sites plus a bare-designator tail.
+
+## VERDICT — verified 2026-08-06
+
+**Defect REAL. Repair SOUND. Shard NOT fully discharged.**
+
+Every sampled designator resolved to a deleted `plans/.retired/` file. The `119` count
+reconciles exactly (129 tokens on 110 removed lines, minus 9 bracketed research keys, minus
+one `E3.S2` counted once) — it was measured, not quoted forward. Doctrine was followed: 88 of
+110 removed lines inline the referent (`"P4's load step"` -> ``"the `agents.config.ts` loader"``),
+22 strip decoration from self-standing claims. No site was left with the designator as its
+only warrant, and nothing working was destroyed.
+
+The shard's own caution was itself wrong: it warned that `SPEC D2/D4/D5` in `packages/memory`
+cite a live SPEC document. No tracked `SPEC.md` exists — the referent was
+`plans/.retired/close-out/SPEC.md`, deleted. Those citations were dead too.
+
+**What survived, and is repaired ahead of this note:**
+
+- `packages/forge/src/project/runtime-shim.ts:55` carried `runtime/S7` **inside the template
+  literal that IS the projected shim body**, so the dead designator was emitted into every
+  deployed shim artifact. The pre-image carried it on lines 11 and 55; only line 11 was
+  repaired.
+- `packages/forge/tsup.config.ts:8` carried `depalimpsest-ir-intake S6`. Already in the
+  existing gate's scope (`TEXT` extensions, not under `/test/`); missed because this shard's
+  stated output scope was `packages/*/src` + READMEs, and a root config is neither.
+
+**Deliverables not produced** — recorded because a downstream shard depends on one:
+
+- Accept 1, "a sigil sweep that **prints the denominator**" — no sweep artifact exists.
+  "Found nothing" and "could not look" remain indistinguishable.
+- Outputs, "**a written roster**: every token examined, its verdict, and the evidence" —
+  exists only as prose in `df3aad73`'s commit message.
+  `t-designator-citation-prohibition` names that roster as its calibrating **Input**.

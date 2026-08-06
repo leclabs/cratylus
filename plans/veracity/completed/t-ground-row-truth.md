@@ -85,3 +85,26 @@ only in prose is a property that drifts silently."_ It drifted.
 
 **Pre.** Fails today: the lifecycle-vocabulary row reads as live; the ratchet holds import
 edges only.
+
+## VERDICT — verified 2026-08-06
+
+**All three sub-claims VERIFIED. Repair correct and complete.**
+
+1. `2b4a87d0` deleted 28 event-name members from `packages/runtime/src/events.ts`, which now
+   reads `export type EventName = string` under a header recording the removal.
+   `packages/canon/test/event-vocabulary.test.ts` exists with exactly the three claimed legs:
+   sole-declaring-site census (L169), adapter-key conformance (L242), deploy -> runtime config
+   round trip (L307). The row did describe a repaired, gated condition.
+2. The row was wrong on its own terms. `runtime/src/events.ts:5-7` records the duplicate as
+   runtime <-> **schema**; `2b4a87d0`'s body agrees ("NEITHER home was right"). Never forge.
+3. `ARCHITECTURE_RATCHET` (`canon/test/architecture.test.ts:90`) is populated only via
+   `key(e: Edge)` over `{from, file, to}` and consumed solely as an import-edge exemption —
+   **and is currently empty**, every member commented "RETIRED BY REPAIR". A cross-package DRY
+   breach is not an `Edge`. "Every row here is therefore a live ratchet entry" was false of
+   _every_ row, not merely this one.
+
+`de8ba968` struck the row, named the three legs in a new "held by" column, carried the
+runtime<->schema correction explicitly rather than dropping it, and replaced the false
+paragraph with a per-kind account stating in words that two rows are held by nothing.
+`ARCHITECTURE.md` is unchanged from `de8ba968` to HEAD. Adversarial spot-check of the
+surviving unstruck row ("every version is `0.0.0`"): holds across all six `package.json`.

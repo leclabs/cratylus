@@ -52,7 +52,7 @@ export function runtimeShimContent(capability: string): string {
   const vendors = HARNESS_SESSION_ENV_VARS.map((v) => `'${v}'`).join(', ');
   return `#!/usr/bin/env node
 // THIN SHIM — projected by canon for a skill declaring runtime:{capability:'${capability}'}.
-// Forwards to the host-installed \`${RUNTIME_BIN}\` CLI (per-host install: runtime/S7).
+// Forwards to the host-installed \`${RUNTIME_BIN}\` CLI (installed per host, never bundled).
 // NOT a bundle of the capability impl — the impl lives host-side behind the runtime
 // port, addressed by the CLI, never imported here. Zero cross-package imports.
 //

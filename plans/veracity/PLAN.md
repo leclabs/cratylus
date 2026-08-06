@@ -49,8 +49,10 @@ as a live divergence, beneath a paragraph claiming every such row is mechanicall
 concurrency precondition holds; the wave needs no isolation. **Landed** at `de8ba968`
 (ground-row truth) and `df3aad73` (119 designators), recorded at `895833ce`.
 
-`wave(1) = { t-designator-citation-prohibition }` — unblocked by wave 0's completion and
-promoted to `ready`. Not dispatched.
+`wave(1) = { t-designator-citation-prohibition }` — was promoted to `ready` by wave 0's
+completion, then **moved back to `pending` on 2026-08-06: its central thesis is REFUTED and a
+ruling is owed.** `ready` promises an executor can pick a shard up and finish; this one would
+have built the wrong instrument. Never dispatched.
 
 ## R
 
@@ -60,11 +62,38 @@ promoted to `ready`. Not dispatched.
 
 ## Shards
 
-| state     | task                                | concern                                                              |
-| --------- | ----------------------------------- | -------------------------------------------------------------------- |
-| completed | `t-dead-designator-citations`       | repair every live source citing a retired plan's shard designator    |
-| completed | `t-ground-row-truth`                | `ARCHITECTURE.md`'s divergence table stops asserting what is not so  |
-| ready     | `t-designator-citation-prohibition` | the law that keeps the repair repaired — prohibition, not resolution |
+| state     | task                                | concern                                                                      |
+| --------- | ----------------------------------- | ---------------------------------------------------------------------------- |
+| completed | `t-dead-designator-citations`       | repair every live source citing a retired plan's shard designator            |
+| completed | `t-ground-row-truth`                | `ARCHITECTURE.md`'s divergence table stops asserting what is not so          |
+| pending   | `t-designator-citation-prohibition` | **THESIS REFUTED — ruling owed.** the gate it calls unbuildable is buildable |
+
+### Every shard re-tested as a hypothesis — 2026-08-06
+
+Each shard asserts a defect exists. That is falsifiable, and this plan had already shipped two
+filings that were false, so all seven were re-derived against the tree rather than trusted.
+Verdicts are recorded in each shard file.
+
+**5 of 7 name a real defect. Nearly every NUMBER attached to them is wrong.**
+
+| claimed                              | actual                                        |
+| ------------------------------------ | --------------------------------------------- |
+| 413 historical shard ids             | **439** (irreproducible under 12 definitions) |
+| 192/413 bare kebab slugs             | **204/439** — the 46.5% ratio is exact        |
+| 6 names collide shard-sign ⇄ concept | **0 of 6 is a shard id** (all stem prefixes)  |
+| 26 live violating sites              | **14** at HEAD                                |
+| prohibition reaches 53.5%            | **36.7%**; unreachable is 63.3%, not 46.5%    |
+| 31 sources cite a dead document      | **26**, and 24 are one document               |
+
+The defects were found by READING; the numbers were asserted alongside them without being
+computed. That is the same failure mode as the handoff record that opened this plan
+(_"verify GREEN, 718 tests"_ while the pipeline was red), and it is why the wave-1 shard
+reached "unbuildable" and stopped — it never tested the oracle the corpus already ships
+(`plan-set.ts:287`, `derived-on-demand-never-stored`).
+
+Two dead designators that survived wave 0 are repaired ahead of this note:
+`forge/src/project/runtime-shim.ts:55` (inside the projected shim body, so it shipped into
+every deployed artifact) and `forge/tsup.config.ts:8`.
 
 ### Filed beside the path (stubs — symptom only, no census, no acceptance)
 

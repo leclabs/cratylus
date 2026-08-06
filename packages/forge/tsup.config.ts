@@ -5,7 +5,7 @@ import { defineConfig } from 'tsup';
 // shared modules into chunks; the CLI build is a separate pass (no dts, shebang
 // banner) so `forge` runs as an executable.
 //
-// depalimpsest-ir-intake S6: there is no `core/index` entry any more. The core
+// There is no `core/index` entry any more. The core
 // barrel was deleted with the IR-intake lineage it `export *`ed — it had no
 // remaining source consumer, and a barrel over a lineage turns even a type-only
 // import into a full-lineage edge (invisible to grep). Every entry below names
