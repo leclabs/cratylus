@@ -93,8 +93,8 @@ export function resolveTarget(
 
 /**
  * Atomically rewrite an EPISODIC store, keeping only records whose id is NOT in
- * `consumedIds`. The load-bearing correctness property (ideas/dream.md §3;
- * ideas/memory.md DREAM): **never truncate-in-place** — write a sibling tmp
+ * `consumedIds`. The load-bearing correctness property:
+ * **never truncate-in-place** — write a sibling tmp
  * file, fsync it, then `rename` over the original. `rename(2)` is atomic on a
  * POSIX filesystem, so a crash at any point leaves either the full original or
  * the fully-rewritten file — never a partial log, never a lost unconsumed

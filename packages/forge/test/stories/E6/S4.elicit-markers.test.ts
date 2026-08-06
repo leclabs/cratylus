@@ -46,7 +46,7 @@ const inheritAll = (): Record<FixtureDimension, DimensionPlan> =>
   ) as Record<FixtureDimension, DimensionPlan>;
 
 /** The stated dimensions, evidence-quoted; the silent three as elicitations.
- *  `archetype` is a plain identity field now (D13), not an `Dimension` fragment —
+ *  `archetype` is a plain identity field now, not an `Dimension` fragment —
  *  the frame would refuse it as an unknown dimension key — so the raw NL
  *  (replacement no-loss, REC ≽) is instead carried verbatim on `objective`
  *  (an `open` scalar dimension). */

@@ -9,7 +9,7 @@
 // package." The package's own `defineAgentPlugin(...)` DEFAULT export is the
 // plugin; a consumer `extends` it by IMPORTING that object.
 //
-// ADDRESSING IS BY IMPORTED BINDING, NEVER A STRING ID (NORTH-STAR §3). A
+// ADDRESSING IS BY IMPORTED BINDING, NEVER A STRING ID. A
 // consumer wires a plugin in by passing the imported object (`extends: [canon]`),
 // and a fragment references another via its imported JS binding — there is NO
 // `<plugin>:<dim>/<anchor>` magic-string scheme (the pattern ESLint flat-config

@@ -156,7 +156,8 @@ export async function enumerateCatalog(
 // strings) per dimension — the human/CLI `catalog` view, kept verbatim. This layer
 // discovers the same dirs across MANY plugins and lifts each discovered value to a
 // **fragment NODE** (`resolve/Fragment`) whose OBJECT IDENTITY is the address
-// (NORTH-STAR §3: a reference names a node, resolved late — never a string id). Two
+// (a reference names a NODE, resolved LATE — never a string id, so a reference reads
+// the node's post-patch value rather than an import-time snapshot). Two
 // plugins may both name a concept `parsimony`; each yields a DISTINCT node, so that
 // is a resolution event, not a collision (per-plugin σ* invariant).
 //
@@ -207,8 +208,9 @@ export interface PluginFragmentRoot {
  * the `name` a `ContributionSource{kind:'plugin'}` attributes a fold contribution to,
  * and it is what makes two plugins' `parsimony` two nodes rather than a contest. Two
  * plugins sharing it collapses all three at once — indistinguishable ids, provenance
- * that names the wrong plugin, and the per-plugin σ* invariant (NORTH-STAR §3) holding
- * only by accident. There is no degraded-but-useful reading of the result to warn about.
+ * that names the wrong plugin, and the per-plugin σ* invariant — each plugin names each
+ * concept its LOCALLY fittest anchor, unique within its OWN catalog and nowhere wider —
+ * holding only by accident. There is no degraded-but-useful reading of the result to warn about.
  *
  * NOT `NamespaceCollisionError`. "Collision" is already spoken for in this module, with
  * the opposite verdict: two plugins sharing a fragment ANCHOR is explicitly a resolution
@@ -233,7 +235,7 @@ export class DuplicateNamespaceError extends Error {
  * `PatchEntry`, and what the resolver keys the resolved map by). `dimension` is the
  * axis it files under.
  * `body` is its authored base value: the branded-string body for a string fragment;
- * for a node-form fragment (the §3 reference-bearing form) the node object itself —
+ * for a node-form fragment (the reference-bearing form) the node object itself —
  * the config loader decides how a node-form fragment originates its base contribution.
  *
  * `Entry`, not the stage that produced it: every value in a pipeline is some stage's
@@ -242,7 +244,7 @@ export class DuplicateNamespaceError extends Error {
  * NO `namespace` FIELD, deliberately. It would be the same string repeated once per
  * fragment, and it is already reachable twice over: the catalog map keys by it, and
  * `node.id` is minted already namespaced. Late reference resolution addresses by object
- * identity (§3) and never parses an id, so it has nothing to gain from a third copy.
+ * identity and never parses an id, so it has nothing to gain from a third copy.
  */
 export interface FragmentEntry {
   readonly node: Fragment;
@@ -282,7 +284,7 @@ const VALUE_SHAPES: ReadonlySet<string> = new Set<ValueShape>([
   'structured',
 ]);
 
-/** Is `v` a resolver `Fragment` NODE (the §3 reference-bearing export form)? */
+/** Is `v` a resolver `Fragment` NODE (the reference-bearing export form)? */
 function isFragmentNode(v: unknown): v is Fragment {
   if (typeof v !== 'object' || v === null || Array.isArray(v)) return false;
   const o = v as { id?: unknown; valueShape?: unknown };
@@ -325,7 +327,7 @@ async function scanDimensionModules(
 /**
  * MANY ROOTS → MANY CATALOGS. Enumerate the fragments of each plugin as NODES
  * addressed by object identity, namespaced by the plugin `name`, then enforce
- * ACYCLICITY of the cross-plugin reference graph (NORTH-STAR §3) by reusing the
+ * ACYCLICITY of the cross-plugin reference graph by reusing the
  * resolver's `validateReferenceGraph` — a reference cycle throws
  * `ReferenceCycleError`, a dangling edge `DanglingReferenceError`.
  *
@@ -400,7 +402,7 @@ export async function enumeratePluginFragmentCatalogs(
     plugins.set(src.name, fragments);
   }
 
-  // Acyclicity of the resolved reference graph (§3) — reuse the resolver's law.
+  // Acyclicity of the resolved reference graph — reuse the resolver's law.
   validateReferenceGraph(allNodes);
 
   return plugins;

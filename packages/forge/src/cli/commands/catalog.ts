@@ -1,5 +1,5 @@
 // `cratylus catalog [agent] [--config <path>] [--corpus <dir>] [--json]` — the
-// FIRST-CLASS discovery command (NORTH-STAR §5). Two views over the extendable
+// FIRST-CLASS discovery command. Two views over the extendable
 // option-space, so a first-timer needs no source-archaeology:
 //
 //  · CROSS-PLUGIN (default when an `agents.config.ts` is present): list the

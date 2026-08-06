@@ -5,7 +5,7 @@
  * conceptualize extracted, checked mechanically (`checkCoverage`) — nothing is
  * semantically dropped between the source and the optimized artifacts.
  *
- * Scope note (depalimpsest-ir-intake S6): this story once opened on an
+ * Scope note — the IR-intake excision (2026-07): this story once opened on an
  * `import` → optimize → `compile` flow and closed on "the raw, un-optimized
  * compile remains available unchanged". Both of those legs asserted the IR
  * intake pipeline, which has been excised — `import`, `compile`, and the IR

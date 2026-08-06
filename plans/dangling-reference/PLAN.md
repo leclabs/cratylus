@@ -50,14 +50,56 @@ reserved to the operator, filed with a recommendation.
 
 ## Shards
 
-| state   | task                         | concern                                                                         |
-| ------- | ---------------------------- | ------------------------------------------------------------------------------- |
-| ready   | `t-src-dangling-references`  | 26 dead-document citations in `forge`/`memory` source, 24 of them one doc       |
-| ready   | `t-test-dangling-references` | 13 dead-designator citations `df3aad73` left behind, all under `test/`          |
-| ready   | `t-invoke-coverage-claim`    | one present-tense sentence in `ARCHITECTURE.md` that the gate already refutes   |
-| ready   | `t-drift-notice-timing`      | the drift comparator is correct, advisory-only, and fires only at session start |
-| pending | `t-retirement-oracle`        | the designator gate `veracity` called unbuildable — it is buildable             |
-| pending | `x-second-deploy-manifest`   | **ruling owed** — two records, one target tree, 40/40 shadowed                  |
+| state     | task                         | concern                                                                         |
+| --------- | ---------------------------- | ------------------------------------------------------------------------------- |
+| completed | `t-src-dangling-references`  | dead-document citations in `forge`/`memory` source                              |
+| completed | `t-test-dangling-references` | dead-designator citations `df3aad73` left behind, all under `test/`             |
+| completed | `t-invoke-coverage-claim`    | one present-tense sentence in `ARCHITECTURE.md` that the gate already refutes   |
+| completed | `t-drift-notice-timing`      | the drift comparator is correct, advisory-only, and fires only at session start |
+| ready     | `t-retirement-oracle`        | the designator gate `veracity` called unbuildable — it is buildable             |
+| pending   | `x-second-deploy-manifest`   | **ruling owed** — two records, one target tree, 40/40 shadowed                  |
+
+### Wave 0 landed — and the re-census constraint earned its place immediately
+
+**Both repair shards found MORE than their own spec claimed, because the spec made them
+re-derive rather than trust.** This is the praxis law added at `77ad0064` (_a measurement in a
+shard is census output, not a datum_) working on its first outing — and it was this plan's
+author who wrote both low numbers.
+
+| shard                        | spec said | actually found                      |
+| ---------------------------- | --------- | ----------------------------------- |
+| `t-src-dangling-references`  | 26 sites  | **36** across 14 files (78 walked)  |
+| `t-test-dangling-references` | ~13 sites | **45** across 26 files (150 walked) |
+
+The gaps were structural, not arithmetic. The src spec's regex was anchored on document names,
+so it missed 10 bare `§N` references — **seven of which its own repair would have stranded**,
+since removing a `NORTH-STAR` prefix leaves `(§3)` pointing at nothing. The test spec's regex
+missed the **bare-sigil** shape entirely (`(V5)`, `(P3)`, `(D13)`, `[S6]`), which is strictly
+worse than a dead plan name because it names no plan at all.
+
+**One citation was born dangling.** `DESIGN.md §7` arrived with the founding commit `e28f69b6`
+and never resolved in this repository — the only `DESIGN.md` that commit added stops at §5. It
+pointed at a pre-repo document from the first day. A retirement oracle cannot see that class:
+there is nothing to have retired.
+
+**One was a false claim, not merely an unfollowable one.** `memory/test/strategy.test.ts` said
+forge _imports_ `seedTemplates`; `forge/src/deploy/seeds.ts` explicitly REFUSES that import
+(it would add a `forge → memory` edge `ARCHITECTURE.md` does not carry) and keeps a
+byte-identical mirror instead. The dead designator was hiding a wrong statement.
+
+### The ruling on gap 1, taken: the pipeline stays advisory
+
+`t-drift-notice-timing` closed the timing gap (`prompt.submit`, verdict-CHANGE not
+verdict-non-empty, silence-when-clean unconditional) and surfaced the enforcement question
+rather than deciding it. **Decision: do not red `pnpm verify` on drift.** A fresh clone has no
+deployment, so every artifact reads ABSENT and CI — a fresh clone by construction — would be
+permanently red or permanently exempt, and an exemption CI always takes makes the green
+meaningless where greens are trusted. It would also make a claim about the TREE depend on the
+MACHINE, breaking _same bytes ⇒ same verdict_, which every other gate here holds.
+
+If teeth are ever wanted the seam is narrower and never touches a fresh clone:
+`deployed ≠ ∅ ∧ deployed ≢ rendered`, bound to `vcs.commit.post` or opt-in per host the way
+`stance-guard` already is. Recorded here so the option is not re-derived from scratch.
 
 ## What was withdrawn from `veracity`, and why
 

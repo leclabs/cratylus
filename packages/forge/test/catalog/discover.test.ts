@@ -1,8 +1,10 @@
-// `enumeratePluginFragmentCatalogs` — the multi-plugin fragment discovery (P3). Proves:
+// `enumeratePluginFragmentCatalogs` — the multi-plugin fragment discovery. Proves:
 // (1) it enumerates fragments across ≥2 plugins as NODES with namespaced ids;
 // (2) two distinct plugins sharing an anchor do NOT collide (distinct node objects);
 // (3) node identity is the ADDRESS the resolver keys by (object-import addressing);
-// (4) a cross-plugin reference cycle throws the named ReferenceCycleError (§3);
+// (4) a cross-plugin reference cycle throws the named ReferenceCycleError — the
+//     resolved reference graph is required to be ACYCLIC, and the failure is a
+//     named error rather than a stack overflow;
 // (5) a dangling cross-plugin reference throws DanglingReferenceError;
 // (6) two roots claiming ONE namespace are REJECTED, not silently last-write-wins.
 
@@ -179,7 +181,7 @@ describe('enumeratePluginFragmentCatalogs — namespace uniqueness', () => {
   });
 });
 
-describe('enumeratePluginFragmentCatalogs — cross-plugin reference acyclicity (§3)', () => {
+describe('enumeratePluginFragmentCatalogs — cross-plugin reference acyclicity', () => {
   let root: string;
 
   beforeAll(() => {

@@ -3,7 +3,7 @@
 // resolved fragment it reports, IN FOLD ORDER, which plugin/patch each contribution
 // came from, whether that contribution set the base (`replace`) or accumulated onto
 // it (`append`/`merge`), and the final resolved value — so a first-timer decodes
-// "why this fragment won its value" with zero source-archaeology (NORTH-STAR §5).
+// "why this fragment won its value" with zero source-archaeology.
 //
 // Provenance is read STRAIGHT off `resolve()`'s output: the resolver's
 // `ResolvedFragment` carries `provenance` (the source-attributed fold), so this

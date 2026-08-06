@@ -77,8 +77,8 @@ function symbolExempt(ch: string): boolean {
   // ⊕ (U+2295) — the model's canonical dimension-vector builder (`vector(A) ≜
   // ⊕{ o ↦ value(o) }`, create-agent). DELIBERATELY absent from the operator
   // table: the RESIDUE gate excludes member-composition from an fragment
-  // residue ("no compose-op without its own cold survey" — reader-density L569),
-  // so ⊕ is not a shared `OPERATORS` key. It is legitimate STRUCTURAL notation in
+  // residue — no compose-op enters the shared table without its own cold survey,
+  // and ⊕ never had one — so ⊕ is not a shared `OPERATORS` key. It is legitimate STRUCTURAL notation in
   // a multi-line formalize block, so the register-scoped SYMBOLS gate exempts it.
   if (o === 0x2295) {
     return true;

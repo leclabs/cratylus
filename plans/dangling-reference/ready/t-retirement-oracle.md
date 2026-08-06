@@ -63,6 +63,19 @@ a manifest.
   having looked at nothing once the repair shards land.
 - **Both fixtures.** Convicting proves it bites; **exonerating** proves it does not bite
   wrongly, and must include the four measured collisions.
+- **A REPAIR THAT EXPLAINS ITSELF RE-MINTS THE TOKEN IT REPAIRED.** Discovered independently
+  by both wave-0 shards while executing. Honest post-mortem prose — _"this cited `plan X S6`,
+  which is dead"_ — is a MENTION, and a shape-decidable gate cannot tell it from a USE. Both
+  executors hit it and both chose to carry the fact WITHOUT respelling the id, rather than
+  argue an exemption, because an exemption list is a hand-maintained carrier that rots.
+  **Design the gate so that choice stays cheap**: the closed-record exemption
+  (`fixtures/turn-*.txt`, captured banners) does NOT cover a source comment, and widening it
+  to cover explanatory prose would blind the gate to the commonest real violation — an author
+  citing a warrant in a header. State this ceiling where the law lands.
+- **The scope ruling already exists.** `t-test-dangling-references` wrote the use/mention
+  distinction into `command-veracity.test.ts`'s SCOPE header, beside the `**/test/**`
+  exclusion it qualifies, and deliberately left `inScope` unchanged. Read it before deciding
+  the scope; it is this shard's decision to make and the argument is already assembled.
 - **Re-derive every number in this file before relying on it.** 439, 9, 4 and 26 ms are
   measurements with a timestamp. The predecessor shard died of quoting a decayed count
   forward: its `413` was irreproducible under twelve definitions, and its `192/413` had an

@@ -22,8 +22,14 @@
 import type { EventName, NativeBinding } from '@cratylus/schema/hook';
 
 /**
- * Canonical event → Claude Code event name. Lifted from DESIGN.md §7 equivalence
- * matrix.
+ * Canonical event → Claude Code event name.
+ *
+ * THIS MAP IS THE EQUIVALENCE MATRIX, and it is not lifted from anywhere. It carried a
+ * citation to a design document and a section of it from the founding commit onward,
+ * and no document answering that name was ever committed to this repository — the
+ * citation was born unreachable, so there was never an upstream matrix to reconcile
+ * against. The pairs below are authoritative, and the census named at the end of this
+ * comment is what checks them.
  *
  * NINETEEN pairs, leaving 9 of the corpus's 28 harness-substrate events with no
  * Claude peer. Both figures are measured here rather than quoted forward: the filing

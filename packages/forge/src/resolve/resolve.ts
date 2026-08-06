@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The resolver — the semantic-merge core (NORTH-STAR §4).
+// The resolver — the semantic-merge core.
 //
 // FOLD LAW (the one genuinely-new part; cold-decodable): a node's resolved value
 // is an ORDERED FOLD of its contributions over an empty base, NOT a winner-pick.
@@ -19,7 +19,7 @@
 // {replace,merge}. An illegal op FAILS LOUDLY — silent merge ambiguity is the #1
 // distrust source.
 //
-// ADDRESSING IS BY OBJECT IDENTITY (NORTH-STAR §3), never a string id: a
+// ADDRESSING IS BY OBJECT IDENTITY, never a string id: a
 // `PatchEntry.target` and a `Fragment.references` edge are the imported binding
 // itself. The resolved set is keyed by the `Fragment` OBJECT, so a binding names a
 // NODE and the resolver supplies its value.
@@ -82,14 +82,14 @@ const LEGAL_OPS: { readonly [K in ValueShape]: ReadonlySet<PatchOp> } = {
  * (object identity), never by `id` (which is for reporting only). It declares its
  * structural `valueShape`; its VALUE is not stored here — it is the fold of the
  * contributions that target this node. `references` are the late-bound edges to
- * other nodes (NORTH-STAR §3): the resolved reference graph must be ACYCLIC.
+ * other nodes: the resolved reference graph must be ACYCLIC.
  */
 export interface Fragment {
   /** Human-readable label for reports / errors. NOT the address — identity is by object. */
   readonly id: string;
   /** Structural value-type — the op-legality axis (⊥ dimension). */
   readonly valueShape: ValueShape;
-  /** Late-bound edges to other nodes; the acyclicity graph (§3). Optional. */
+  /** Late-bound edges to other nodes; the acyclicity graph. Optional. */
   readonly references?: readonly Fragment[];
 }
 
@@ -121,7 +121,7 @@ export interface PatchEntry {
  * `contributions` are this plugin's own `PatchEntry`s, in authored order.
  */
 export interface LoadedPlugin {
-  /** The namespace segment — reporting + per-plugin σ* uniqueness (NORTH-STAR §3). */
+  /** The namespace segment — reporting + per-plugin σ* uniqueness. */
   readonly name: string;
   /** This plugin's fragment contributions, in authored order. */
   readonly contributions: readonly PatchEntry[];
@@ -130,7 +130,8 @@ export interface LoadedPlugin {
 /**
  * A resolve request: the ordered `extends` plugins whose contributions fold in
  * position, then the consumer `patches` (an ARRAY keyed by imported binding — never
- * a string-keyed map, NORTH-STAR §4) that fold last within the non-forced band.
+ * a string-keyed map, which would contradict the object-import addressing above) that
+ * fold last within the non-forced band.
  */
 export interface ResolveConfig {
   readonly extends: readonly LoadedPlugin[];
@@ -141,7 +142,7 @@ export interface ResolveConfig {
 
 /**
  * The SOURCE of one fold contribution — WHERE it came from, for provenance
- * reporting (`explain`, NORTH-STAR §5). A plugin's originating contribution
+ * reporting (`explain`). A plugin's originating contribution
  * (`kind: 'plugin'`, carrying the plugin `name`) or a consumer patch
  * (`kind: 'patch'`, carrying its `index` in the `patches` array). This is the
  * attribution `explain` reads off to say which plugin/patch a fragment came from.
@@ -164,7 +165,9 @@ export type ContributionSource =
  * mirror the `PatchEntry`; `reset` is true iff this op RESET the accumulator (a
  * `replace`, which discards the prior). The last `reset` in the list is the EFFECTIVE
  * BASE that the subsequent `append`/`merge` accumulated onto — so this list cold-decodes
- * "why this fragment won its final value" (NORTH-STAR §5 falsifier).
+ * "why this fragment won its final value" with no source-archaeology — which is the
+ * falsifier for calling provenance first-class: a reader who has to open the plugin
+ * sources to answer that question means this list failed.
  */
 export interface FragmentContribution {
   readonly source: ContributionSource;
@@ -184,7 +187,7 @@ export interface ResolvedFragment {
   readonly value: unknown;
   /**
    * The ordered fold that produced `value`, each contribution attributed to its
-   * plugin/patch source (NORTH-STAR §5 provenance). In fold order, so the last
+   * plugin/patch source. In fold order, so the last
    * `reset` is the base and the tail accumulates onto it.
    */
   readonly provenance: readonly FragmentContribution[];
@@ -251,7 +254,7 @@ export class DanglingReferenceError extends Error {
   }
 }
 
-/** The resolved reference graph has a cycle — no base case for late binding (§3). */
+/** The resolved reference graph has a cycle — no base case for late binding. */
 export class ReferenceCycleError extends Error {
   constructor(readonly cycle: readonly Fragment[]) {
     super(
@@ -274,7 +277,7 @@ export function resolve(config: ResolveConfig): ResolvedAgentSet {
 
   // Collection order = extends position (plugin order, then contribution order),
   // then patches position. This index IS the non-forced precedence. Each entry is
-  // TAGGED with its source so the fold can attribute provenance (NORTH-STAR §5).
+  // TAGGED with its source so the fold can attribute provenance.
   const pluginEntries: SourcedEntry[] = [];
   for (const plugin of config.extends) {
     const source: ContributionSource = { kind: 'plugin', name: plugin.name };
@@ -400,7 +403,7 @@ function applyOp(acc: unknown, op: PatchOp, value: unknown): unknown {
  *
  * EXPORTED for reuse by the multi-plugin fragment discovery in `catalog/`: the same
  * acyclicity law guards resolve-time and discovery-time, so a cross-plugin reference
- * cycle is caught the moment fragments are enumerated (NORTH-STAR §3), not only at fold.
+ * cycle is caught the moment fragments are enumerated, not only at fold.
  */
 export function validateReferenceGraph(defined: ReadonlySet<Fragment>): void {
   // Dangling: an edge to a fragment no extended plugin defines.

@@ -317,7 +317,7 @@ export class AmbiguousFragmentBodyError extends Error {
  * the resolver, and SEPARATE from the fold on purpose.
  *
  * A string fragment's node is MINTED at scan time (`catalog/enumeratePluginFragmentCatalogs`),
- * so its object identity — the only address `resolve()` accepts (NORTH-STAR §3) —
+ * so its object identity — the only address `resolve()` accepts —
  * exists only downstream of a discovery. Folding inside `projectPluginSet` would
  * therefore make its own nodes unaddressable and every caller's patch a guaranteed
  * `MissingExtendsTargetError`. Handing the discovery back is what makes a patch

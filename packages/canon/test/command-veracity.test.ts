@@ -29,6 +29,37 @@
 //     the proof: it must cite dead commands in order to test for them, and an
 //     unqualified scan convicts it for doing its job — the meta-gate's "haystack
 //     contains the needle" hazard, in its own source.
+//
+//     AND THAT ARGUMENT IS ABOUT COMMANDS, NOT ABOUT TEST FILES. It is stated here
+//     because the exclusion above was read, once, as a ruling about a LOCATION, and
+//     a location cannot decide use from mention. The two classes come apart:
+//
+//       a command name in a test body    → MENTION. The test's subject IS the
+//         token; it must be able to name a dead one to prove the gate convicts it.
+//         Holding it to today's script set forbids the gate from testing itself.
+//       a SHARD DESIGNATOR in a test's own header comment → USE. Nothing in that
+//         file tests the designator. The author is CITING A WARRANT — "this test is
+//         shaped this way because that shard ruled so" — to a reader who now cannot
+//         follow it. Same defect as a dead `plans/` path in a source file, in a
+//         surface the command law happens not to walk.
+//
+//     `packages/*/test/**` was repaired on that reading: 45 dead citations over 26
+//     files in canon, forge and memory, in three shapes — a retired shard named with
+//     its section sigil; a BARE sigil whose plan is gone, so not even the plan name
+//     survives to look up; and a deleted DOCUMENT plus a section of it. Each one
+//     either INLINES what the cited ruling actually said or WITHDRAWS the claim so
+//     the sentence stands on its own. None was re-pointed.
+//
+//     NO DEAD ID IS QUOTED IN THIS PARAGRAPH, deliberately. Naming them as examples
+//     would be a mention and defensible, but it would also re-mint the exact tokens
+//     a sweep looks for — and a sweep that has to be taught which occurrences are the
+//     record of the repair is a sweep with an exemption list. The shapes are stated
+//     instead; the sites carry the specifics.
+//
+//     `inScope` IS DELIBERATELY UNCHANGED. The repair above is a fact about those
+//     sites; whether this walk should reach them is a SCOPE decision, and it belongs
+//     to whoever has to live with the false positives a widened walk would produce on
+//     the mention class — this file's own dead commands first among them.
 //   - a CLOSED RECORD — a verbatim transcription of a turn that happened. Same
 //     use/mention line, one step further: the turn really did say that, and holding
 //     a transcription to today's truth would forbid transcribing accurately. This

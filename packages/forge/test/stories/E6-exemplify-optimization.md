@@ -7,7 +7,7 @@ invented answer). ρ=LLM. Contracts: `~/.claude/skills/exemplify/SKILL.md` (acce
 minimal, conform; R3 routing manifest), anatomy types
 `packages/schema/src/index.ts` (`Agent` = 24-dimension vector, `Skill` = formal cell).
 
-**depalimpsest-ir-intake S6 (2026-07).** The IR-intake lineage was excised. Two Operator rulings
+**THE IR-INTAKE EXCISION (2026-07).** The IR-intake lineage was excised. Two Operator rulings
 this epic carried were rulings ABOUT that lineage and lapse with it: "rules are a first-class
 resource through the pipeline, reaching ALL compile targets including rule-only harnesses"
 (S6, S8 — both RETIRED below), and the two-step agent law's step 1 ("raw import maps foreign
@@ -38,8 +38,8 @@ A: CURATOR · G: a raw how-to becomes a well-formed skill cell.
 P: fixture: prose description of a multi-step procedure (no structure).
 ✓:
 
-- Output is a `SKILL.md` with frontmatter `name`+`description` (spec-valid: `skills-ref validate`
-  passes [S6]), a verb H1, and a fenced set-builder formal block: declarations-above /
+- Output is a `SKILL.md` with frontmatter `name`+`description` (spec-valid: the reference
+  validator `skills-ref validate` from <https://github.com/agentskills/agentskills> passes), a verb H1, and a fenced set-builder formal block: declarations-above /
   laws-below, every symbol declared in-block (self-sufficiency check: no undeclared term used in
   a law — mechanically greppable symbol table).
 - Round-trip: the formal block alone (no source prose) suffices for a blind reader to re-derive
@@ -87,7 +87,7 @@ P: E6.S1's accepted output as input.
 
 ## E6.S6 · RETIRED — optimized artifacts project to EVERY target
 
-**RETIRED (depalimpsest-ir-intake S6).** This story asserted that the optimized cell/vector/rule
+**RETIRED with the IR-intake excision (2026-07).** This story asserted that the optimized cell/vector/rule
 set rides the `compile` path to every adapter target, rule-only harnesses included. `compile`, the
 IR, and the 16-adapter roster were excised; the story has no subject left and no test may reference
 its id. It also carried `projectVector` (anatomy vector → IR agent), a dead vestige swept in the
@@ -105,7 +105,7 @@ P: E6.S1 optimize over a raw human-register source.
   `checkCoverage`); a consciously delta'd concept appears on the ledger as delta, never silently
   dropped.
 
-**Narrowed (depalimpsest-ir-intake S6).** This story also asserted a documented
+**Narrowed by the IR-intake excision (2026-07).** This story also asserted a documented
 `import` → optimize → `compile` flow end-to-end in one session, and that the raw, un-optimized
 `compile` remained available unchanged (optimization never a forced pass). Both legs asserted the
 excised IR pipeline. The ledger leg above is the half whose subject survives and is kept with its
@@ -113,7 +113,7 @@ assertions intact.
 
 ## E6.S8 · RETIRED — rules through exemplify
 
-**RETIRED (depalimpsest-ir-intake S6).** This story asserted `optimizeRules` rewriting IR `Rule`
+**RETIRED with the IR-intake excision (2026-07).** This story asserted `optimizeRules` rewriting IR `Rule`
 bodies and compiling them into each dialect's rules surface. The IR `Rule`, its only producer
 (`import`), its only consumer (`compile`), and `optimizeRules` itself are all gone. No test may
 reference this id.

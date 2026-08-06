@@ -102,7 +102,10 @@ describe('the runtime plugin carries the MemoryStrategy', () => {
     }
   });
 
-  it('exposes the seedTemplates the forge (S6) imports', () => {
+  // Forge does NOT import these — an edge `ARCHITECTURE.md` does not contain — it
+  // MIRRORS them, held byte-identical by `memory/test/seed-parity.test.ts`. Memory
+  // is the prose authority, so this is the leg that pins the authoritative names.
+  it('exposes the seedTemplates the forge deploy seeds mirror', () => {
     expect(seedTemplates.map(([f]) => f)).toEqual([
       'SEMANTIC.md',
       'PROCEDURAL.md',

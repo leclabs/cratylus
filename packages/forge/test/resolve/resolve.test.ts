@@ -21,7 +21,7 @@ const plugin = (name: string, contributions: PatchEntry[]): LoadedPlugin => ({
   contributions,
 });
 
-describe('resolve — the ordered fold (NORTH-STAR §4)', () => {
+describe('resolve — the ordered fold', () => {
   it('folds a 2-plugin + patches fixture deterministically', () => {
     // base (plugin A) sets the fragments; extension (plugin B) accumulates; a
     // consumer patch replaces the scalar.

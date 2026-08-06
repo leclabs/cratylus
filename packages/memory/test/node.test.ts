@@ -137,7 +137,7 @@ describe('resolveNode — marker lattice (SPEC D3)', () => {
     ).toBe(repo);
   });
 
-  // ── Face B (V3): the fold is INFERENCE. It may stand on a marker; it may not
+  // ── Face B: the fold is INFERENCE. It may stand on a marker; it may not
   //    invent a `$HOME`/`markerless` boundary out of the walk running dry.
   it('a VANISHED cwd is never laundered into $HOME — it folds to the legacy bucket', () => {
     const home = cfg().currentHome;

@@ -31,8 +31,16 @@
 // conforms; a violation may only be pinned here deliberately, in the open.
 // No silent exemptions: a pinned surface that STOPS failing FAILS the suite
 // (remove the pin); a new violation is never pinnable silently (the sets are
-// literal here). Cross-dimension consistency (root-cause H3): `llm-native` ∧
-// `natural-language` in one agent vector = a register contradiction.
+// literal here).
+//
+// CROSS-DIMENSION CONSISTENCY, and why this gate carries it at all. The
+// 2026-07-01 register diagnosis found that no dimension operatively binds the
+// reader: `output-format` names the artifact TYPE, while `natural-language`
+// binds "for a human reader" — so a vector could carry `llm-native` ∧
+// `natural-language` at once, and `principal-ic` DID, an intra-vector
+// contradiction the type system accepts without complaint. The diagnosis's
+// conclusion was that the register gate must add a cross-dimension consistency
+// leg rather than scoring density alone. That leg is below.
 //
 // NON-VACUOUS: a seeded human-register definiens is convicted with named
 // signals; the same text under a ρ=human class is exempt BY THE MODEL; the 4
@@ -97,7 +105,10 @@ const srcRoot = join(canonRoot, 'src');
  */
 const REGISTER_RATCHET: ReadonlySet<string> = new Set([]);
 
-/** root-cause H3: (engineering-principle, output-format) pairs that contradict. */
+/**
+ * (engineering-principle, output-format) pairs that contradict — one dimension
+ * asserting reader=LLM while the other binds "for a human reader".
+ */
 const CONTRADICTION_PAIRS: ReadonlyArray<readonly [string, string]> = [
   ['llm-native', 'natural-language'],
 ];
@@ -299,7 +310,7 @@ function slugOf(v: Value<Dimension>): string {
   return splitBody(bodyOf(v)).slug;
 }
 
-/** The contradiction pairs `agent` carries (root-cause H3). */
+/** The contradiction pairs `agent` carries. */
 function dimensionContradictions(agent: Agent): string[] {
   const principles = (agent.engineeringPrinciples ?? []).map(slugOf);
   const output = agent.outputFormat ? slugOf(agent.outputFormat) : undefined;
@@ -404,7 +415,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     }
   });
 
-  it('no agent vector carries a register contradiction (root-cause H3), or is pinned', async () => {
+  it('no agent vector carries a register contradiction, or is pinned', async () => {
     const agents = await allAgents();
     expect(agents.length).toBe(10);
     const failures = agents
@@ -843,7 +854,9 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
   });
 
   // ── LIVE-corpus scan — the full AC-RESIDUE claim over the deployed payload set ──
-  // ENABLED (C1): wave-2 (O/S/H) reduced every dimension value + skill formalBlock to σ*.
+  // ENABLED once every dimension value and every skill `formalBlock` had been
+  // reduced to σ* — before that reduction this leg would have convicted the whole
+  // corpus, so it could not be turned on.
   // (`description` is σ_human*, not a σ* payload — gated by density, not residue.)
   it('every deployed σ* payload is admissible (dimension values · skill formalBlocks)', async () => {
     const failures: string[] = [];

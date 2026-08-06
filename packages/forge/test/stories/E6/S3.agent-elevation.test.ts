@@ -2,7 +2,7 @@
  * E6.S3 — agent elevation: a free-text source form → full 22-dimension vector,
  * which becomes the agent's one source of truth.
  *
- * depalimpsest-ir-intake S6: the "step-1" of the two-step agent law was `import`
+ * THE IR-INTAKE EXCISION (2026-07): the "step-1" of the two-step agent law was `import`
  * mapping foreign agent NL onto a dimension — that lineage is excised, so the
  * source form below is simply a free-text persona file. `elevateAgent`'s
  * behavior is unchanged and every assertion here is unchanged.
@@ -129,7 +129,7 @@ const SPEC: ElevationSpec = {
   name: 'reviewer',
   dimensions: {
     ...inheritAll(),
-    // No `archetype` key: archetype is a plain identity field now (D13), not an
+    // No `archetype` key: archetype is a plain identity field now, not an
     // `Dimension` fragment — the frame refuses an unrecognized dimension key. The
     // source raw NL is instead carried verbatim on `objective` (an `open`
     // scalar dimension), which satisfies replacement no-loss (REC ≽).

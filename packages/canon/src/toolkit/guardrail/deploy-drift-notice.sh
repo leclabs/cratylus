@@ -1,16 +1,26 @@
 #!/usr/bin/env sh
-# deploy-drift-notice — a SessionStart ADVISORY. It asks the corpus's own deploy
-# tool whether the tree this host RUNS is the tree the corpus RENDERS, and speaks
-# only when it is not.
+# deploy-drift-notice — an ADVISORY, at session start and again before every
+# prompt. It asks the corpus's own deploy tool whether the tree this host RUNS is
+# the tree the corpus RENDERS, and speaks only when the answer CHANGES to "no".
 #
 # WHY (the incident): a deployed agent definition and the render tree diverged, an
 # agent ran a superseded first principle for a whole session, and every gate in the
 # repository stayed green throughout. The comparison was already reachable —
 # `deploy --check` — and nothing ran it, so the drift stayed silent by default.
 #
+# WHY AGAIN (the second incident): bound to session start alone, it answered a
+# question that expires. A projection landing MID-session left the rest of that
+# session running the superseded copy with nothing further to say — which is the
+# ordinary shape of work here, not an edge case. `prompt.submit` re-asks it in the
+# same position that made the first answer worth having: before the agent acts.
+#
 # CONTRACT:
 #   - SILENT WHEN IN SYNC. An advisory that fires every session trains its reader
 #     to skip it, and is then worse than absent.
+#   - SPEAKS ON A CHANGE, NOT ON A STATE. Re-armed per prompt, a standing drift
+#     would otherwise repeat until it stopped being read — the same failure, back
+#     through the door the re-arm opened. The last verdict this session was told is
+#     recorded; an identical one is silent.
 #   - ADVISORY ONLY. Prints to stdout and exits 0. It never emits
 #     {"decision":"block"} — a stale deployment must not block a session.
 #   - NEVER SAMPLES. The comparison is the tool's own: whole tree, byte for byte.
@@ -29,12 +39,14 @@
 # saying at this grain: the discovery below is a small fraction of it, and the rest
 # is the comparator reading both trees whole, which is the point.
 #
-# INPUT  : SessionStart hook JSON on stdin (cwd, session_id, ...).
-# OUTPUT : drift -> advisory + the report; unanswerable -> one BLIND line; else none.
+# INPUT  : SessionStart / UserPromptSubmit hook JSON on stdin (cwd, session_id, ...).
+# OUTPUT : a CHANGED drift verdict -> advisory + the report; a changed unanswerable
+#          one -> a BLIND line; in sync, or unchanged since this session was told -> none.
 
 set -eu
 
-# A SessionStart hook must never break a session. Any unexpected error -> silence.
+# Neither a session start nor a prompt may be broken by an advisory. Any unexpected
+# error -> silence.
 trap 'exit 0' EXIT
 
 # ── WHAT PROJECTION TOLD US ────────────────────────────────────────────────────
@@ -55,18 +67,30 @@ HARNESS_HOOKS_FILE=settings.json
 # POSIX and needs no telling; this one is the tool's own choice, so it is told.
 DRIFT_RC=1
 
+# ── THE PAYLOAD, DRAINED ONCE ──────────────────────────────────────────────────
+# Two fields are needed and stdin can only be read once, so both come off ONE jq —
+# the same single fork the cwd lookup already cost, not a second one. `.cwd` says
+# which corpus; `.session_id` says who is being told, which is what lets a re-armed
+# advisory stay quiet about a verdict it has already delivered.
+input="$(cat 2>/dev/null || true)"
+cwd=""
+sid=""
+if command -v jq >/dev/null 2>&1 && [ -n "$input" ]; then
+	fields="$(printf '%s' "$input" | jq -r '.cwd // "", .session_id // ""' 2>/dev/null || true)"
+	{
+		read -r cwd || true
+		read -r sid || true
+	} <<EOF
+$fields
+EOF
+fi
+
 # ── WHERE ARE WE? the corpus, by its own marker ────────────────────────────────
 # `agents.config.ts` is the file `deploy` itself reads to learn which corpus it is
 # operating on. Walking up for it asks the same question the tool asks, instead of
 # inventing a second convention for "a checkout of the canon".
-start="${CRATYLUS_CORPUS:-}"
-if [ -z "$start" ]; then
-	input="$(cat 2>/dev/null || true)"
-	if command -v jq >/dev/null 2>&1 && [ -n "$input" ]; then
-		start="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
-	fi
-	[ -n "$start" ] || start="${CLAUDE_PROJECT_DIR:-$PWD}"
-fi
+start="${CRATYLUS_CORPUS:-$cwd}"
+[ -n "$start" ] || start="${CLAUDE_PROJECT_DIR:-$PWD}"
 
 root=""
 d="$start"
@@ -105,6 +129,44 @@ fi
 # against — the same not-in-scope silence, one step in.
 [ -n "$tree" ] || exit 0
 
+# ── WHAT WAS THIS SESSION ALREADY TOLD? ────────────────────────────────────────
+# The re-arm's whole cost is here. Asked before every prompt, an unchanged verdict
+# repeated until the reader stopped seeing it would be the in-sync failure re-entering
+# through the door opened to fix the stale one. So one small file per session holds the
+# last verdict delivered, and the trigger is the DIFFERENCE.
+#
+# The key is `⟨harness, session⟩` and the CONTENT carries `⟨corpus, tree⟩`: two
+# harnesses in one session audit two hosts and must not overwrite each other's answer,
+# and the same session moved to another checkout is asking a different question rather
+# than repeating one. A session id that is not a plain token is treated as absent —
+# nothing here builds a path out of an unexamined payload field.
+state=""
+case "$sid" in
+'' | *[!A-Za-z0-9._-]*) ;;
+*)
+	stash="${TMPDIR:-/tmp}/cratylus-deploy-drift"
+	if [ -d "$stash" ] || mkdir -p "$stash" 2>/dev/null; then
+		state="$stash/$HARNESS-$sid"
+	fi
+	;;
+esac
+
+# `changed <verdict>` — record it as the last thing this session was told, and
+# answer whether it DIFFERS from what was recorded before.
+#
+# NO STATE MEANS EVERY RUN SPEAKS, and the asymmetry is deliberate. Without a session
+# id there is nothing to suppress against, and a repeated advisory under real drift is
+# noise one `deploy` ends, while a suppressed one is SILENCE — which this cell spends
+# its whole contract making mean "in sync", and may therefore lend to nothing else.
+changed() {
+	now="$root|$tree|$1"
+	[ -n "$state" ] || return 0
+	last=""
+	[ ! -f "$state" ] || last="$(cat "$state" 2>/dev/null || true)"
+	printf '%s' "$now" >"$state" 2>/dev/null || true
+	[ "$last" != "$now" ]
+}
+
 # ── WHAT ASKS? the tool, never a reimplementation ──────────────────────────────
 cli="${CRATYLUS_DEPLOY_CHECK:-}"
 if [ -z "$cli" ]; then
@@ -115,7 +177,9 @@ if [ -z "$cli" ]; then
 	fi
 fi
 if [ -z "$cli" ]; then
-	printf 'DEPLOY DRIFT — this corpus is in scope and its deploy comparator (`%s`) is not installed here, so whether this host runs the current canon is UNKNOWN. Install the workspace dependencies to make the question answerable; until then this is not an in-sync report.\n' "$DEPLOY_TOOL"
+	if changed "no-comparator"; then
+		printf 'DEPLOY DRIFT — this corpus is in scope and its deploy comparator (`%s`) is not installed here, so whether this host runs the current canon is UNKNOWN. Install the workspace dependencies to make the question answerable; until then this is not an in-sync report.\n' "$DEPLOY_TOOL"
+	fi
 	exit 0
 fi
 
@@ -135,7 +199,16 @@ set -e
 # rc 0 IS the tool's verdict that no artifact is stale and none is absent (a foreign
 # artifact is reported by it, and is not a defect). The silence is earned here, and
 # nowhere else — every other exit takes a branch below.
-[ "$rc" -ne 0 ] || exit 0
+#
+# IT IS RECORDED ANYWAY, and that is what makes a RETURNING drift audible: drift, then
+# a deploy, then the identical drift again would match a record that still said "drift"
+# and be swallowed. Recording the clean verdict makes the second one a change. Its own
+# result is discarded — a host that has just gone from stale to in-sync gets no all-clear
+# either, because silence-when-clean is unconditional.
+if [ "$rc" -eq 0 ]; then
+	changed in-sync || true
+	exit 0
+fi
 
 # WHICH KIND OF NON-ZERO — asked of the EXIT CODE, which is a contract, and not of
 # the report's wording, which is a format. Drift has a code of its own; everything
@@ -144,10 +217,21 @@ set -e
 # two demand opposite responses: relaying a broken tool as drift fabricates a
 # verdict, and relaying it as silence is the bypass-by-omission this cell exists to
 # end.
+#
+# THE REPORT IS PART OF THE VERDICT, not decoration on it. Two drifts that differ in
+# WHICH doctrine is superseded are two things to be told, so the report's bytes are what
+# the session remembers — a key of "drift" alone would announce the first stale artifact
+# and swallow every one after it.
 if [ "$rc" -eq "$DRIFT_RC" ]; then
-	printf '%s\n' 'DEPLOY DRIFT — this host runs a SUPERSEDED projection of the canon. In the report below, a `-` line is doctrine THIS SESSION is operating under and the corpus no longer says; a `+` line is what the corpus says and this host never received. Read every `-` line as a false premise, not as background. `pnpm canon:deploy` converges the host.'
-	printf '%s\n' "$out"
+	if changed "drift
+$out"; then
+		printf '%s\n' 'DEPLOY DRIFT — this host runs a SUPERSEDED projection of the canon. In the report below, a `-` line is doctrine THIS SESSION is operating under and the corpus no longer says; a `+` line is what the corpus says and this host never received. Read every `-` line as a false premise, not as background. `pnpm canon:deploy` converges the host.'
+		printf '%s\n' "$out"
+	fi
 else
-	printf 'DEPLOY DRIFT — the comparator (`%s`) returned no verdict, so whether this host runs the current canon is UNKNOWN. This is not an in-sync report; nothing here establishes that the doctrine in force is the corpus.\n' "$cli"
+	if changed "no-verdict $rc
+$out"; then
+		printf 'DEPLOY DRIFT — the comparator (`%s`) returned no verdict, so whether this host runs the current canon is UNKNOWN. This is not an in-sync report; nothing here establishes that the doctrine in force is the corpus.\n' "$cli"
+	fi
 fi
 exit 0

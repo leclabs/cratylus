@@ -16,7 +16,7 @@ const ENTRY_RE =
 /**
  * Candidate module homes an exemplify/optimize entrypoint could occupy.
  *
- * depalimpsest-ir-intake S6: the probe used to also enumerate `src/core`'s
+ * The IR-intake excision (2026-07): the probe used to also enumerate `src/core`'s
  * barrel and `src/core/engine`. Both are gone — the engine belonged to the
  * excised IR-intake lineage, and the core barrel was deleted with it (it had
  * no remaining source consumer). The probe now names defining modules only,

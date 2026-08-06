@@ -1,4 +1,4 @@
-// The RUNTIME-SHIM BINDING seam (install-parity S1).
+// The RUNTIME-SHIM BINDING seam.
 //
 // The defect this pins: the projection emitted `scripts/<capability>.mjs` beside a
 // SKILL.md but NOTHING bound that path INTO the body. A cell declaring `runtime:`

@@ -1,4 +1,4 @@
-// RUNTIME-SHIM gate — the BUILD→RUNTIME seam of the projection (S6).
+// RUNTIME-SHIM gate — the BUILD→RUNTIME seam of the projection.
 //
 // When a skill cell declares `runtime: {capability}`, the projection emits, beside
 // SKILL.md, a `scripts/<capability>.mjs` THIN SHIM that forwards to the host
@@ -7,7 +7,14 @@
 //   - it is NOT a bundled impl — zero `@cratylus/*` imports, no capability logic;
 //   - it is emitted EXECUTABLE (0755) so deploy's mode-preserving copy keeps the bit;
 //   - a skill WITHOUT `runtime` gets no shim (SKILL.md only — asserted elsewhere).
-// This is the reverse of the superseded dep-free-bundle design (skills-refactor T4).
+// THIS IS THE REVERSE OF THE DESIGN IT REPLACED. The superseded plan was to give
+// canon a tsup build that COMPOSED a skill's TS domain module ⊕ the target
+// harness's adapter impl into ONE dependency-free standalone `.mjs`, emitted at
+// projection into `skills/<name>/scripts/` — self-contained so it would run under
+// bare `node` with no `node_modules`. A ~15-line `spawnSync` shim meets that same
+// acceptance and strictly dominates it: the capability logic stays in the runtime
+// host, one copy, versioned with the host rather than frozen into every projected
+// artifact. No tsup build was ever added to canon, and none is wanted.
 //
 // It ALSO pins the shim's SINGLE HOME. There is exactly one emitter,
 // `@cratylus/forge/project`; every harness projection rides it. A second copy

@@ -1,4 +1,4 @@
-// P5 — `resolve()` carries per-node PROVENANCE (the source-attributed fold that
+// `resolve()` carries per-node PROVENANCE (the source-attributed fold that
 // `explain` renders). Falsifier: against a 2-plugin + patch fixture, each resolved
 // fragment records, IN FOLD ORDER, which plugin/patch each contribution came from,
 // whether it reset the base (`replace`) or accumulated (`append`/`merge`), and its
@@ -21,7 +21,7 @@ const plugin = (name: string, contributions: PatchEntry[]): LoadedPlugin => ({
   contributions,
 });
 
-describe('resolve provenance (NORTH-STAR §5 — explain source)', () => {
+describe('resolve provenance — the attribution `explain` reads back', () => {
   it('attributes each contribution to its plugin/patch in fold order', () => {
     const base = plugin('base', [
       { target: FScalar, op: 'replace', value: 'from-base' },

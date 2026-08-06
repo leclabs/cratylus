@@ -150,8 +150,10 @@ describe('resolver ⇄ projector parity', () => {
   it('projects the RESOLVED body, not the authored one, when a patch moves it', async () => {
     const plugin = fixturePlugin();
 
-    // Address the node by OBJECT IDENTITY, off the same discovery the projector
-    // folds (NORTH-STAR §3). This is why discovery and fold are separate calls: a
+    // Address the node by OBJECT IDENTITY — the resolver's one addressing rule, a
+    // node reached through its imported binding and never through a string id —
+    // off the same discovery the projector folds. This is why discovery and fold
+    // are separate calls: a
     // string fragment's node is minted at scan time, so a fold that re-scanned
     // would make its own nodes unaddressable and every patch a missing target.
     const discovered = await discoverFragments([plugin]);

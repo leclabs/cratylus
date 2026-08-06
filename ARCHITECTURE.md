@@ -162,9 +162,19 @@ disqualified the same way, and harder: Foundry, jboss-forge, ArrayFire, an npm `
 (`.cratylus-run.json`) and `TAP_ID` (`cratylus-run-event-tap`) are template-derived from it and moved
 without being edited — which is what `bin-name.ts` was built to buy. One second home did surface: a
 `${MEMORY_BIN:-…}` shell fallback, invisible to `bin-name-single-home.test.ts` because that gate
-asserts on TypeScript source and this was a `.sh`. **The gate's coverage stops at the language
-boundary**, and the emitted-artifact sites are exactly where a missed rename fails on a host rather
-than at build.
+asserted on TypeScript source and this was a `.sh` — and the emitted-artifact sites are exactly
+where a missed rename fails on a host rather than at build.
+
+**That language boundary is gone; the remaining one is LOCATION.** `bin-name-single-home.test.ts`
+now walks `.sh` and `.mjs` directly (`shellSources()`, ~L161) and asserts _"EVERY hand-authored
+shell or .mjs source under `packages/*/src` derives the bin"_ (~L366), over a glob rather than a
+roster so a fourteenth file cannot join unnoticed, with a darkness guard that fails when the scan
+finds nothing — _"the scan is DARK, not the corpus clean"_. Emitted artifacts are held separately
+by the hook-artifact leg. What the gate still does not reach is hand-authored shell **outside**
+`packages/*/src` — one tracked file at 2026-08-06, `commitlint.config.mjs`, which names no bin.
+That is a path claim with a number, falsifiable in one command
+(`git ls-files | grep -E '\.(sh|mjs)$' | grep -vE '^packages/[^/]+/src/'`), not a property of the
+language.
 
 **Everything a consumer can do at build time belongs to `forge`'s command surface**, and
 anything in this repository that performs such a step by another route is a divergence — a private

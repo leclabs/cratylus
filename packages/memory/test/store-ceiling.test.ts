@@ -22,10 +22,10 @@ import { EpisodicStore } from '../src/store.js';
 import { AgentMemory } from '../src/strategy.js';
 
 /**
- * The store ceiling (close-out SPEC §Decision 3b): the byte watermark stops
- * being an advisory report and becomes a refusal at BOTH prose-store write
- * paths — with an asymmetric predicate, because a symmetric one bricks any
- * store already over the line.
+ * THE STORE CEILING. The call was that the byte watermark stops being an
+ * advisory report and becomes a REFUSAL at BOTH prose-store write paths — with
+ * an asymmetric predicate, because a symmetric one bricks any store already
+ * over the line.
  *
  *   append  (dream.appendToHome)  accepts ⇔ after ≤ ceiling
  *   replace (cli.replaceGuarded)  accepts ⇔ after ≤ ceiling ∨ after < before
@@ -35,7 +35,11 @@ import { AgentMemory } from '../src/strategy.js';
  * the calibration is what these tests pin.
  */
 
-/** The live corpus bracket the ceiling was derived from (SPEC §3b(i)). */
+/**
+ * The live corpus bracket the ceiling was derived from — the number was not
+ * chosen, it was read off the two ends of the observed spread and set between
+ * them, well clear of both.
+ */
 const LIVE_BLOAT = 15_969; // nico/PROCEDURAL.md — the complained-about store
 const LARGEST_CLEAN = 4_379; // mav/SEMANTIC.md — the largest uncomplained store
 const CEILING = 8_000;

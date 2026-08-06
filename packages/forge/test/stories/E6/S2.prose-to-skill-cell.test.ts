@@ -102,7 +102,8 @@ story(
     const skillFile = join(cwd, SKILL_PATH);
     expect(existsSync(skillFile)).toBe(true);
     const md = readFileSync(skillFile, 'utf8');
-    // Spec-valid frontmatter [S6].
+    // Frontmatter the agentskills reference validator (`skills-ref validate`,
+    // <https://github.com/agentskills/agentskills>) accepts.
     expect(md).toMatch(/^---\n(?:.*\n)*?name: [a-z0-9-]+\n/);
     expect(md).toMatch(/\ndescription: .+\n/);
     // A verb H1.

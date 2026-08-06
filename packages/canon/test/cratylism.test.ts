@@ -241,8 +241,8 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
   // The axiom's PROSE homes drift where its literal home cannot: a gloss re-explaining
   // cratylism passes the literal-home leg (different bytes) while saying something the
   // canonized value no longer says. It happened twice — `AGENTS.md` and `CANON.md`
-  // §Relationship both re-explained it, and had already diverged on the third derived
-  // principle (`signify` vs `σ*`). `AGENTS.md`'s own definiens is `doctrine-pointers`:
+  // both re-explained it in prose of their own, and had already diverged on the third
+  // derived principle (`signify` vs `σ*`). `AGENTS.md`'s own definiens is `doctrine-pointers`:
   // it points at CANON, so restating CANON there is the duplication. This leg pins the
   // confidence-order — the clause that recurred in both — out of `src` entirely; its
   // home is the hand-authored CANON.md, which is LOCKED and never generated from source.
@@ -255,7 +255,7 @@ describe('CRATYLISM gate — file names are the discovered σ* anchor', () => {
     }
     expect(
       homes,
-      `the confidence-order names workspace-local docs and is restated in src — point at CANON.md §Relationship instead: ${homes.join(', ')}`,
+      `the confidence-order names workspace-local docs and is restated in src — its one home is the hand-authored CANON.md: ${homes.join(', ')}`,
     ).toEqual([]);
     // non-vacuous: the predicate convicts the clause that shipped from two homes
     expect('cratylism ≻ VISION ≻ MODEL'.includes(order)).toBe(true);

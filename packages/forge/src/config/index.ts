@@ -1,4 +1,4 @@
-// The `config/` public surface — the config-is-code layer (NORTH-STAR §5).
+// The `config/` public surface — the config-is-code layer.
 // `defineAgentsConfig` is what an `agents.config.ts` imports; the loader + scaffold
 // are what the CLI (and any programmatic caller) drives.
 export { type AgentsConfig, defineAgentsConfig } from './config.js';

@@ -46,7 +46,8 @@ describe('CLI commands (integration)', () => {
     expect(configSrc).toMatch(/patches:\s*\[\]/);
 
     // (2) that default plugin resolves through the NORMAL resolve() with empty
-    // patches → the canon default fragment set (defaults-are-a-package, §2). The
+    // patches → the canon default fragment set: the defaults ARE a package, reached
+    // like any other plugin rather than baked into the CLI. The
     // canon plugin self-locates its dirs at runtime; the test supplies the same
     // dir directly (forge cannot bare-import the peer package).
     const canon: AgentPlugin = {

@@ -1,6 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The config-is-code layer — `agents.config.ts` is the SINGLE config home
-// (NORTH-STAR §5, "one core, two skins"). The `npx` CLI and this programmatic
+// (one core, two skins). The `npx` CLI and this programmatic
 // config are BOTH thin callers into the same `resolve()`; this module is the TS
 // shape the config file default-exports, plus the `defineAgentsConfig` identity
 // helper that gives the file type-checking + IDE completion with NO build step.
@@ -23,7 +23,7 @@ import type { PatchEntry } from '../resolve/resolve.js';
 /**
  * The `agents.config.ts` default-export shape — the single config home.
  * `extends` are REAL imported `AgentPlugin` objects (addressing by imported
- * binding, never a string id; NORTH-STAR §3). `patches` target a fragment by its
+ * binding, never a string id). `patches` target a fragment by its
  * imported binding. Only the empty/zero-config path ships today: targeting a string
  * fragment needs the reference-bearing authoring shape, which is deferred as a canon
  * candidate.
@@ -31,7 +31,7 @@ import type { PatchEntry } from '../resolve/resolve.js';
 export interface AgentsConfig {
   /** Ordered plugins this project extends — imported objects, fold in position. */
   readonly extends: readonly AgentPlugin[];
-  /** Consumer patches — an ARRAY targeting fragments by imported binding (§4). */
+  /** Consumer patches — an ARRAY targeting fragments by imported binding. */
   readonly patches?: readonly PatchEntry[];
 }
 

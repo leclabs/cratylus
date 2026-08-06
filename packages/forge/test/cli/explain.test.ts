@@ -78,7 +78,8 @@ describe('P5 inspection — explain + first-class catalog', () => {
       "export const builder = 'the builder';\n",
     );
     // The config extends BOTH plugins and patches alpha's `harm` (append) — the
-    // patch targets the IMPORTED node binding (object-import addressing, §3).
+    // patch targets the IMPORTED node binding — addressing is the object identity
+    // of the imported fragment, never a string id.
     configPath = join(cwd, 'agents.config.ts');
     writeFileSync(
       configPath,

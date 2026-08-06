@@ -28,7 +28,7 @@ import { DEFAULT_MARKERS, canonical } from './node.js';
  * sites in `dream.ts` / `cli.ts` act.
  */
 
-/** The marker classes the detector recognizes (SPEC §6). */
+/** The marker classes the detector recognizes. */
 export type MarkerClass =
   | 'workspace-path'
   | 'plan-path'

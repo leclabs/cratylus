@@ -16,7 +16,15 @@ import { monotonicFactory } from './ulid.js';
 /**
  * One-time migration: convert a live agent's monolithic markdown `MEMORY.md`
  * (a list of `- ` fact bullets under `## ` sections) into **sharded** files —
- * one memory per `MEMORY/<ulid>.md` — per `decisions/0003-shard-layout`.
+ * one memory per `MEMORY/<ulid>.md`.
+ *
+ * WHY ONE FACT PER FILE, and why this tool touches `MEMORY` and nothing else:
+ * GRANULARITY FOLLOWS THE ORGAN'S ACCESS PATTERN. `MEMORY` is recalled BY RELEVANCE
+ * — a set of discrete facts — so it shards, and the wholesale-rewrite cost the
+ * monolith imposed goes away with it. `SELF` is loaded WHOLE as the reboot seed, a
+ * narrative whose value IS its coherence, so it stays a monolith; sharding a
+ * throughline into atomic files destroys the thing. `EPISODIC` is an append-only
+ * stream, already record-sharded as JSONL. One rule, three outcomes.
  *
  * It is the semantic sibling of {@link migrateFile} (md→JSONL for EPISODIC): same parser
  * ({@link extractItems}), same **two-leg no-loss gate** ({@link assertNoLoss}'s
@@ -24,9 +32,11 @@ import { monotonicFactory } from './ulid.js';
  * BEFORE any file is written.
  *
  * **Faithful, not enriching.** Each shard's body is the original bullet text
- * VERBATIM (so the gate passes); the `0003` frontmatter enrichments
- * (`topic`/`kind`/`basis` for relevance) are the Dreamer's later `consolidate`
- * job, NOT mechanically derivable from a bullet. The migration writes only the
+ * VERBATIM (so the gate passes); the relevance frontmatter
+ * (`topic`/`kind`/`basis` — topic is carried by TAG, never by directory
+ * clustering, so a new fact is always a clean new shard and never has to choose
+ * or mutate a "topic file") is the Dreamer's later `consolidate` job, NOT
+ * mechanically derivable from a bullet. The migration writes only the
  * provenance frontmatter it can know for certain: the minted `id`, a
  * `migrated: MEMORY.md` marker, and the source `section`.
  *

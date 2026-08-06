@@ -16,7 +16,7 @@ Call sites: 0 tracked-failing across 0 stories.
 **convergence-graduation (2026-07)**: the interop-hardening wave closed every cross-adapter
 equation it tracked; its last two rows were reclassified as by-design boundaries rather than gaps.
 
-**depalimpsest-ir-intake S6 (2026-07)**: the IR-intake lineage was excised and nine of the ten
+**the IR-intake excision (2026-07)**: the IR-intake lineage was excised and nine of the ten
 epics went with their subject (E1–E5, E7–E10 — all `import` / `compile` / adapter-roster stories).
 Every row this file ever carried belonged to those epics, so the ledger is now empty by
 construction, not merely by graduation. E6 (exemplify-optimization) is the surviving epic and has

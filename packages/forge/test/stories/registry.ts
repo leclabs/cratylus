@@ -2,7 +2,7 @@
  * Canonical story registry for the story library.
  * Source of truth: test/stories/ (COVERAGE.md + E*.md).
  *
- * depalimpsest-ir-intake S6 (2026-07): the IR-intake lineage was excised, and
+ * The IR-intake excision (2026-07): the IR-intake lineage was excised, and
  * with it nine of the ten epics — E1–E5, E7–E10 were all harness-interop
  * stories over `import`/`compile`/the 16-adapter roster, whose entire subject
  * is gone. E6 (exemplify-optimization) is the one epic whose subject survives:

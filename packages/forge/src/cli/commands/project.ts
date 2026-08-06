@@ -67,7 +67,7 @@ export async function runProject(opts: ProjectCmdOpts = {}): Promise<number> {
   // rather than only when `patches` happens to be empty.
   //
   // Discovery is separate from the fold because a patch can only target a node a
-  // discovery already minted (identity addressing, NORTH-STAR §3).
+  // discovery already minted (identity addressing).
   const resolvedBodies = resolveFragmentBodies(
     await discoverFragments(plugins),
     config.patches ?? [],

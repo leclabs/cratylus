@@ -1,6 +1,6 @@
-// BIN-NAME SINGLE-HOME gate (V5).
+// BIN-NAME SINGLE-HOME gate.
 //
-// `install-parity` S4 RECORDED that the runtime bin name had "exactly one home, so
+// A RETIRED SHARD RECORDED that the runtime bin name had "exactly one home, so
 // the rebrand is a one-line change". It did not. The literal stood in SEVEN places
 // across FOUR packages, and THREE of those were inside emitted strings — a projected
 // `scripts/<cap>.mjs`, a generated hook `.sh` — where no compiler can see them. A
@@ -341,7 +341,7 @@ describe('the bin name has exactly one home', () => {
 // above is capture-and-compare; these feed the SAME comparison a corpus in which
 // exactly one site was edited and the other was not — the half-landed rename — and
 // assert it is rejected. Without them, "the bin name has one home" is a claim of the
-// kind `install-parity` S4 already made and got wrong.
+// same kind the retired shard above already made — asserted, unmeasured, and wrong.
 
 /** The three capture-and-compare predicates, isolated from their live inputs so a
  *  synthetic BAD corpus can be fed to the very same code the gate above runs. */

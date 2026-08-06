@@ -78,8 +78,11 @@ const PERMITTED: ReadonlyArray<readonly [Pkg, Pkg]> = [
 /**
  * Today's breaches, pinned in the open and shrink-only — EMPTY.
  *
- * IT WAS 26, THEN 3, THEN 1, AND IS NOW 0. Twenty-four retired when `schema` was
- * extracted (PLAN §1); the last three retired on 2026-08-05, EVERY ONE BY REPAIR
+ * IT WAS 26, THEN 3, THEN 1, AND IS NOW 0. The big batch retired when the cell SHAPES
+ * left `forge` for a package of their own (`schema`): every breach in it was a canon
+ * CELL importing the PROJECTOR for a type — 22 of them — and extracting the shapes
+ * took that count to 0 with the render oracle unmoved, which is the proof the change
+ * was structural. The last three retired on 2026-08-05, EVERY ONE BY REPAIR
  * rather than by exemption — see the notes below, each kept where the pin stood.
  *
  * EMPTY MEANS SOMETHING HERE, because the shrink-only leg makes a stale pin fail
@@ -352,7 +355,7 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     // Known-live edges, one permitted and one violating, so neither a collapsed nor a
     // saturated scan can pass.
     expect(ks).toContain('memory/plugin.ts → runtime');
-    // Was `canon/skills/wake/skill.ts → forge`, which PLAN §1 retired. The
+    // Was `canon/skills/wake/skill.ts → forge`, retired by the shapes extraction. The
     // violating anchor is now canon's root plugin declaration; the permitted one is
     // a build script using the projector as a tool. Was `toolkit/project-cli.ts`
     // until the build-steps-proxy-the-cli shard deleted it — projection is the
@@ -390,7 +393,7 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     const canonRoot = es.filter(
       (e) => e.from === 'canon' && e.to === 'forge' && e.role === 'root',
     );
-    // WAS 22, IS 0 — the whole point of PLAN §1, and the proof it landed.
+    // WAS 22, IS 0 — the whole point of the shapes extraction, and the proof it landed.
     // (`ARCHITECTURE.md` carried "28" for months; it was never measured and it was
     // wrong.) A cell reaching the projector again moves this off zero.
     expect(canonCells.length, 'canon CELLS importing the projector').toBe(0);

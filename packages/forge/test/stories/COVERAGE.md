@@ -2,7 +2,7 @@
 
 Library: 1 epic · 8 stories (6 testable), shard `E6-exemplify-optimization.md` in this dir. ρ=LLM.
 
-**depalimpsest-ir-intake S6 (2026-07).** This library was authored for the interop-hardening wave:
+**THE IR-INTAKE EXCISION (2026-07).** This library was authored for the interop-hardening wave:
 10 epics · 81 stories over floors **F1** (import any harness → IR) · **F2** (output IR to
 `.{namespace}/`) · **F3** (reimport) · **F4** (round-trip, losses loud) · **F5** (plugin-arch
 adapters) · **F6** (exemplify optimization to R=LLM artifacts), plus the research categories

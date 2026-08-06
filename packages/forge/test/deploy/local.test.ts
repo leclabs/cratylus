@@ -1,4 +1,7 @@
-// Local placer contract (scoped-memory-v2 D1/D5):
+// Local placer contract — the v2 memory home is `{EPISODIC.jsonl · SEMANTIC.md ·
+// PROCEDURAL.md}` beside the agent def, and every organ that touches the stores had
+// to retarget to those three names together or the rename silently undoes itself.
+// What deploy owes that contract:
 //   - defs overwritten freely (regenerated substance)
 //   - SEMANTIC/PROCEDURAL/EPISODIC seeded only-if-absent; existing sidecars untouched
 //   - EPISODIC seeds an EMPTY `.jsonl` (NOT `.md` — store migrated to JSONL)
