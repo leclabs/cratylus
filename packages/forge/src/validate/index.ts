@@ -17,6 +17,7 @@
 // manifest): these share the word "accept" but are different concerns — the pipeline
 // gate routes fragments, these witness a cell's Universal legs.
 
+export * from './formal-block-self-sufficiency.js';
 export * from './policy.js';
 export * from './accept.js';
 export * from './residue.js';

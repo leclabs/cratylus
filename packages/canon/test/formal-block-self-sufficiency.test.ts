@@ -9,15 +9,15 @@
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import type { Skill } from '@cratylus/schema';
-import { describe, expect, it } from 'vitest';
 import {
   type BlockScan,
   type Finding,
   countWhitespaceGapGlosses,
   formatWorklist,
   scanFormalBlock,
-} from '../src/toolkit/formal-block-self-sufficiency.js';
+} from '@cratylus/forge/validate';
+import type { Skill } from '@cratylus/schema';
+import { describe, expect, it } from 'vitest';
 import { firstExport } from './support/cell-module.js';
 
 const srcRoot = join(dirname(fileURLToPath(import.meta.url)), '..', 'src');
