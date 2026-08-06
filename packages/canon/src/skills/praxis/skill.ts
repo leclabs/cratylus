@@ -96,6 +96,12 @@ registered, released, stale @ memory-session-registry
 ∀ t : content(t) grounded-by census(intent(t))
 ∀ t : ¬(content(t) grounded-by census(intent(t))) ⇒ ¬(content(t) ⊨ spec(t))
 ∀ t : census(intent(t)) delegable-to agent
+∀ t : measurement ∈ content(t) ⇒ measurement = claim⟨timestamp⟩ ∴ re-derive ≺ cite-as-evidence
+    ⟨a count in a shard is CENSUS OUTPUT, ¬ a datum · the tree moves under it ∧ nothing reds⟩
+    ⟨measured : one plan carried 413 ids ⟨irreproducible under 12 definitions⟩ · 192/413 ⟨ratio EXACT ∧ both absolutes wrong⟩ · 26 sites ⟨14 at HEAD⟩ · 53.5% reach ⟨36.7%⟩⟩
+    ⟨an exact RATIO over wrong ABSOLUTES = computed once ∧ remembered ∴ the tell⟩
+    ⟨∴ a shard reaching a NEGATIVE conclusion ⟨"unbuildable" · "nothing gates X"⟩ on quoted counts is unfalsified, ¬ established⟩
+∀ t : reach-leg(t) ⊨ print(denominator) ⟨∄ denominator ⇒ found-nothing ≡ could-not-look⟩
 state(t) = ready ⇒ ¬ blocked(t) ∧ ¬ ruling-owed(t) ⟨ready PROMISES an executor can pick t up and FINISH · conflating a dep with a ruling stalls a fan-out with every agent blocked on the same unanswered question⟩
 ⋃ slices(P) = P
 ∀ s₁, s₂ ∈ slices(P) : s₁ ≠ s₂ ⇒ s₁ ∩ s₂ = ∅
