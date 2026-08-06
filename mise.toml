@@ -1,5 +1,18 @@
+# NODE IS NOT LISTED, AND THAT IS THE POINT.
+#
+# The node PIN has one home: `.nvmrc`. It is read natively by nvm, fnm, asdf,
+# `actions/setup-node` (`node-version-file:`), and — with the setting below — by mise. The
+# home should be the file the most tools already read, and a `node = "24"` here would be a
+# SECOND copy of a fact that already has one. It said `26` while `.nvmrc` said `24`, CI said
+# `22`, and `engines.node` said `>=22`: four statements, no two agreeing, because nothing
+# distinguished the PIN (what we run) from the FLOOR (what consumers may run).
+#
+# The floor lives in each package's `engines.node`. They are different facts and legitimately
+# hold different values; collapsing them is what produced the drift.
+[settings]
+idiomatic_version_file_enable_tools = ["node"]
+
 [tools]
-node = "26"
 pnpm = "latest"
 python = "3.14"
 uv = "latest"

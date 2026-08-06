@@ -44,7 +44,10 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # THE PIN HAS ONE HOME. A literal here was a third statement of node's version,
+          # disagreeing with `.nvmrc` (24) and `mise.toml` (26) and `engines.node` (>=22).
+          # `engines` is a different fact — the consumer FLOOR — and legitimately differs.
+          node-version-file: .nvmrc
           cache: pnpm
 
       # `--frozen-lockfile` is the point: it fails if the lockfile disagrees with
