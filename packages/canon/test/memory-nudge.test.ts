@@ -134,10 +134,25 @@ function run(env: Record<string, string> = {}, stdin = '{}'): string {
     encoding: 'utf8',
     env: { ...process.env, HOME: root, MEMORY_BIN: binShim, ...env },
   });
-  expect(
-    res.error,
-    `worker failed to spawn: ${res.error?.message}`,
-  ).toBeUndefined();
+  // EPIPE IS THE WORKER EXITING FIRST, NOT A FAILURE TO SPAWN.
+  //
+  // When the worker has nothing to do — the runtime bin is absent, the session is
+  // unregistered — it exits before draining stdin, and the parent's write lands on a closed
+  // pipe. `spawnSync` reports that as `error: EPIPE` even though the child ran, exited 0 and
+  // produced exactly the empty stdout the property under test asks for. It surfaced on a CI
+  // runner and not on a laptop, because the race needs the child to win.
+  //
+  // Every OTHER spawn error is still fatal: a genuinely missing `sh`, a permission denial,
+  // an unreadable worker. Narrowing to EPIPE keeps the leg honest rather than turning the
+  // assertion off.
+  if (
+    res.error !== undefined &&
+    (res.error as NodeJS.ErrnoException).code !== 'EPIPE'
+  )
+    expect(
+      res.error,
+      `worker failed to spawn: ${res.error?.message}`,
+    ).toBeUndefined();
   expect(
     res.status,
     `worker exited ${res.status}; stderr:\n${res.stderr}`,
