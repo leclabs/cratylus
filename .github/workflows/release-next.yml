@@ -79,6 +79,29 @@ jobs:
             exit 2
           fi
 
+      # A SNAPSHOT NEEDS SOMETHING TO SNAPSHOT.
+      #
+      # `changeset version --snapshot` derives its version from the PENDING changesets. With
+      # none, it changes nothing — and the run then tries to publish the current version
+      # again, which npm refuses: `You cannot publish over the previously published versions:
+      # 0.1.1`. Measured on the first dispatch. That error is correct and unhelpful: it
+      # describes the collision rather than the empty input that caused it.
+      #
+      # Refused here instead, loudly, for the same reason the guard above refuses before the
+      # first stable release: a channel that attempts something meaningless and reports a
+      # registry error teaches the reader to distrust the registry.
+      - name: refuse a snapshot with nothing to snapshot
+        run: |
+          set -eu
+          pending=$(find .changeset -name '*.md' ! -name 'README.md' | grep -c . || true)
+          if [ "$pending" -eq 0 ]; then
+            echo "REFUSING: no pending changesets, so there is nothing to snapshot." >&2
+            echo "A snapshot versions the CHANGES waiting to be released; with none, this" >&2
+            echo "would republish the current version and npm would reject it." >&2
+            exit 2
+          fi
+          echo "snapshotting $pending pending changeset(s)"
+
       - name: version as a snapshot
         run: pnpm exec changeset version --snapshot next
 
