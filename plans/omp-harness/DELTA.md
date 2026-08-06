@@ -35,10 +35,15 @@ formalize, handoff, introspect, materialize, praxis, probe, signify, wake
 (alongside the Claude plugin skills it also picked up). On the fidelity ladder this is **proxy**,
 and it cost nothing.
 
-**One caveat, measured:** invoking a skill as a bare slash command in print mode
-(`omp -p "/introspect"`) produced **empty output and exit 0** — silent, not an error. Skills
-resolve when named in prose. Anything scripted against omp must not assume the `/` form works
-headlessly.
+Both invocation forms work headlessly: `omp -p "/probe harness"` and naming the skill in prose
+each execute the cell correctly, in the cell's own formalism.
+
+**A retracted claim, kept because the retraction is the lesson.** This section first recorded that
+the bare slash form _"produced empty output and exit 0"_ and that skills _"resolve only when named
+in prose."_ That was false. The empty runs were `omp -p` blocking in `readPipedInput` (see the
+launch command below) — a **property of how the command was invoked, misattributed to the feature
+under test.** Both forms were re-run with stdin closed and both work. An anomaly observed while a
+confound is uncontrolled is not a finding.
 
 ## What does not carry
 
@@ -172,14 +177,27 @@ shard's stated method, and `t-cross-harness-continuity` should inherit it.
 
 ## Documented launch command (accept criterion 1)
 
-```sh
-# persona in the default profile — shared auth and models, persona per launch
-omp --append-system-prompt ~/workspaces/cratylus/.scratchpad/omp-bootstrap/mav.persona.md
+Run from a checkout of this corpus, after `pnpm canon:project`:
 
-# the persona artifact is the projected claude cell with its front-matter stripped
+```sh
+# DERIVE the persona at launch — the render tree is the only home
+persona=$(mktemp) && trap 'rm -f "$persona"' EXIT
 awk 'BEGIN{fm=0} /^---$/{fm++; next} fm>=2' \
-  packages/canon/.cratylus/claude/agents/mav.md > mav.persona.md
+  packages/canon/.cratylus/claude/agents/mav.md > "$persona"
+
+omp --append-system-prompt "$persona" < /dev/null
 ```
+
+**It derives rather than stores, and that is not fussiness.** A committed `mav.persona.md` would
+be a **second home for the agent cell**, diverging from the render tree at the next deploy — the
+same defect shape as a version literal in TypeScript, and the same shape as the stale deployment
+this shard uncovered below. The front-matter is stripped because it is Claude adapter syntax; the
+body is harness-agnostic.
+
+**`< /dev/null` is required, not decorative.** Without it `omp -p` blocks in phase
+`readPipedInput` waiting on a pipe that never closes, and the symptom is **empty stdout with exit
+0** — indistinguishable from a model that returned nothing. Two runs were lost to this before the
+`Still starting after Ns — phase: readPipedInput` line on stderr gave it away.
 
 `--profile mav` is deliberately **not** in the documented command. It buys an isolated home at the
 cost of a separate auth and a separate provider config, and it does not carry the persona anyway.
