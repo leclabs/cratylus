@@ -10,9 +10,7 @@
   "bin": {
     "cratylus-run": "./dist/bin.js"
   },
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "scripts": {
     "build": "tsup",
     "typecheck": "tsc --noEmit",

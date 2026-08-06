@@ -24,7 +24,7 @@
     "canon:deploy:hooks": "cratylus deploy --kind hooks --hooks-dir packages/canon/.cratylus/claude",
     "canon:deploy": "pnpm canon:project && cratylus deploy --agents-dir packages/canon/.cratylus/claude/agents --skills-dir packages/canon/.cratylus/claude/skills --hooks-dir packages/canon/.cratylus/claude",
     "changeset": "changeset",
-    "version-packages": "changeset version",
+    "version-packages": "changeset version && biome check --write . && prettier --write \"**/CHANGELOG.md\"",
     "release": "sh scripts/release.sh",
     "prepare": "husky",
     "continuity:install": "sh packages/canon/targets/continuity/continuity-hook.sh install",
