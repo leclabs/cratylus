@@ -1,5 +1,12 @@
 # @cratylus/schema
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies [a019716]
+  - @cratylus/runtime@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes
