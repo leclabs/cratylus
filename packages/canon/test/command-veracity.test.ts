@@ -510,9 +510,28 @@ describe('PLAN-PATH VERACITY gate — a cited plan path must resolve', () => {
     ).toBe(true);
   });
 
-  it('there is a plan directory to resolve against', () => {
-    // Distinguishes "every path resolved" from "nothing could ever resolve".
-    expect(existsSync(join(repoRoot, 'plans'))).toBe(true);
+  it('the resolver CAN resolve — "found nothing" is separated from "could not look"', () => {
+    // THIS LEG READ `existsSync(join(repoRoot, 'plans'))` AND ASSERTED IT TRUE. It
+    // reded the moment the last plan retired — the fourth instance in this corpus of
+    // a check whose subject is the live tree dying when the live tree empties, and
+    // the second in this very file, three lines above a header that had already
+    // written the lesson down for its sibling control.
+    //
+    // IT WAS ALSO GUARDING A HAZARD THAT DOES NOT EXIST IN THAT DIRECTION. Resolution
+    // is `existsSync` per citation, so an absent `plans/` makes every plan-path
+    // citation FAIL — the gate gets louder, never darker. The dark-scan hazard lives
+    // entirely in the citation SET going empty, and the reach leg above (mentions > 8,
+    // three extensions, both shapes) is what holds that.
+    //
+    // What survives is the real law, on a subject this test BUILDS: the resolver
+    // distinguishes a path that exists from one that does not. Synthetic, so it holds
+    // at zero plans and at fifty alike.
+    const sandbox = mkdtempSync(join(tmpdir(), 'plan-path-reach-'));
+    mkdirSync(join(sandbox, 'plans', 'probe-plan'), { recursive: true });
+    writeFileSync(join(sandbox, 'plans/probe-plan/PLAN.md'), '# probe\n');
+    expect(existsSync(join(sandbox, 'plans/probe-plan/PLAN.md'))).toBe(true);
+    expect(existsSync(join(sandbox, 'plans/no-such-plan/PLAN.md'))).toBe(false);
+    rmSync(sandbox, { recursive: true, force: true });
   });
 
   // ZERO PLANS IS A LEGITIMATE STATE, and this gate must survive it — `retire` means
