@@ -71,10 +71,19 @@ promoted to `ready`. Not dispatched.
 Both surfaced while executing wave 0 and were filed rather than chased, per
 `¬ impedes(d, t) ⇒ file(owns(d), d)`. Whoever promotes either to `ready` owes it a spec.
 
-| state   | task                                                 | symptom                                                                                                                 |
-| ------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| pending | `x-31-live-sources-cite-a-dead-document-plus-sectio` | 31 live sources cite a dead DOCUMENT + section (`NORTH-STAR §2`, `DESIGN.md §7`) — a shape neither existing law can see |
-| pending | `x-architecture-md-s-invoke-section-claims-the-gate` | `ARCHITECTURE.md`'s invoke section claims coverage stops at the language boundary; the gate now walks `.sh` and `.mjs`  |
+| state   | task                                                 | symptom                                                                                                                                              |
+| ------- | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| pending | `x-31-live-sources-cite-a-dead-document-plus-sectio` | 31 live sources cite a dead DOCUMENT + section (`NORTH-STAR §2`, `DESIGN.md §7`) — a shape neither existing law can see                              |
+| pending | `x-architecture-md-s-invoke-section-claims-the-gate` | `ARCHITECTURE.md`'s invoke section claims coverage stops at the language boundary; the gate now walks `.sh` and `.mjs`                               |
+| pending | `x-nothing-gates-deployed-artifact-freshness-no-che` | nothing compares the projection ON THE HOST against the corpus, so an agent can run a superseded projection of its own governing cell with no signal |
+| pending | `x-a-second-deploy-manifest-under-the-retired-brand` | a second deploy manifest under the retired brand claims the same target paths as `.forge/` — two records, one target tree                            |
+
+> **This plan GROWS as it executes.** `¬ impedes(d, t) ⇒ file(owns(d), d)` routes every defect
+> found beside the path into a new pending shard of the SAME plan: 3 shards at minting, 7 here.
+> And `file` writes with `¬ census ∧ ¬ re-slice`, so each stub has no edge in `R` and no
+> `promote` can reach it — `done(P)` is therefore unreachable while any filing stands (the
+> third disjunct of praxis's frontier law, added at `f06c9283`). A plan nobody affirmed is
+> now self-extending. Retire it or promote the filings deliberately; do not simply inherit it.
 
 ## The finding that shapes the whole plan
 
