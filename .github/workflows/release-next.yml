@@ -1,0 +1,89 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# THE `next` CHANNEL — snapshots.
+#
+# SNAPSHOT, NOT PRE-RELEASE MODE. `changeset pre enter next` writes `.changeset/pre.json`
+# INTO THE REPOSITORY, and while that file exists EVERY `changeset version` produces a
+# prerelease — the stable Release PR is unreachable until someone remembers `pre exit`. This
+# repository's `main` IS its release branch, so pre mode would lock the stable channel shut
+# for the duration. Pre mode belongs on a dedicated `release/x.y` branch running a long beta;
+# it is the wrong shape for a channel that shadows main. Snapshot is stateless: it versions,
+# packs and publishes in a throwaway checkout and commits nothing.
+#
+# `workflow_dispatch` ONLY, and that is a decision rather than an omission. A snapshot per
+# merge sounds like a canary and behaves like a firehose: five immutable npm versions per
+# commit, forever, none of which anyone can name ("which of the 400 has the fix?"). Dispatch
+# takes a ref, so every snapshot is a NAMED commit somebody wanted tested.
+#
+# IT REFUSES TO RUN BEFORE THE FIRST STABLE RELEASE, and this is the load-bearing guard.
+# npm assigns `dist-tags.latest` to the FIRST version a package ever receives, whatever
+# `--tag` says. A snapshot published into an empty package would pin `latest` to
+# `0.0.0-next-<timestamp>` until a human ran `npm dist-tag add` by hand — for five packages,
+# irrevocably in the meantime. This check is the cheapest possible defence against a mistake
+# nobody can undo.
+# ─────────────────────────────────────────────────────────────────────────────
+name: release-next
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Commit, branch or tag to snapshot'
+        required: false
+        default: main
+
+concurrency:
+  group: release-next
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    uses: ./.github/workflows/gates.yml
+
+  snapshot:
+    needs: gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read # NO write: a snapshot creates no tag, no release, no commit
+      id-token: write # provenance
+    env:
+      HUSKY: '0'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          # `changeset version --snapshot` reads the changesets and the commits that added them.
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+
+      - name: refuse before the first stable release
+        run: |
+          set -eu
+          missing=''
+          for p in forge invoke memory runtime schema; do
+            npm view "@cratylus/$p" version >/dev/null 2>&1 || missing="$missing @cratylus/$p"
+          done
+          if [ -n "$missing" ]; then
+            echo "REFUSING: these packages have no published version yet:$missing" >&2
+            echo "npm pins dist-tags.latest to the FIRST version a package receives, whatever" >&2
+            echo "--tag says. Publishing a snapshot now would pin latest to a canary." >&2
+            exit 2
+          fi
+
+      - name: version as a snapshot
+        run: pnpm exec changeset version --snapshot next
+
+      - name: publish to the next tag
+        run: DIST_TAG=next pnpm run release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'

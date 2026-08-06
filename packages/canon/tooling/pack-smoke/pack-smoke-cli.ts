@@ -76,6 +76,18 @@ export function packAll(): Packed[] {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
+  // `--list` prints the publishable set, one per line, and nothing else.
+  //
+  // IT EXISTS SO THE AUDIT AND THE UPLOAD CANNOT DISAGREE. They did: `release.sh` derived
+  // its own set from a pnpm filter and packed SIX tarballs — including `@cratylus/canon`,
+  // which is excluded by the changeset `ignore` list and must never publish — while this
+  // gate audited five. An audit that covers a different set than the upload is an audit of
+  // something else, and the disagreement was invisible until the counts were printed side
+  // by side. One derivation, one home, consumed by both.
+  if (process.argv.includes('--list')) {
+    for (const n of publishable()) console.log(n);
+    process.exit(0);
+  }
   const packed = packAll();
   // THE DENOMINATOR IS PRINTED. The honest steady state is zero findings, so a bare "OK"
   // is indistinguishable from having packed nothing at all.

@@ -60,3 +60,6 @@ SELF.md
 graphify-out/*
 !graphify-out/graph.json
 packages/graphify-out/
+
+# Release staging: tarballs packed for audit-then-upload. Regenerated every run.
+.pack/

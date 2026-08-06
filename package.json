@@ -25,7 +25,7 @@
     "canon:deploy": "pnpm canon:project && cratylus deploy --agents-dir packages/canon/.cratylus/claude/agents --skills-dir packages/canon/.cratylus/claude/skills --hooks-dir packages/canon/.cratylus/claude",
     "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "turbo run build && changeset publish",
+    "release": "sh scripts/release.sh",
     "prepare": "husky",
     "continuity:install": "sh packages/canon/targets/continuity/continuity-hook.sh install",
     "continuity:uninstall": "sh packages/canon/targets/continuity/continuity-hook.sh uninstall",

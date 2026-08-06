@@ -96,7 +96,18 @@ compute() {
   # present, both forms yield the same hash, so the baseline this narrowing was
   # landed against still stands.
   find "$claude_out" "$codex_out" -name .forge -prune -o -type f -print |
-    sort | xargs shasum | shasum | awk '{print $1}'
+  # LC_ALL=C IS THE DIFFERENCE BETWEEN AN ORACLE AND A LOCAL OPINION.
+  #
+  # `sort` collates by LOCALE. This ran under a developer's `en_US.UTF-8` on macOS and under
+  # `C` on the Linux runner, so the same corpus hashed two different ways and CI reported
+  # `RENDER ORACLE MOVED` on a tree nobody had touched. The message points at the corpus;
+  # the cause was the shell. An oracle whose entire claim is byte-identity was itself not
+  # reproducible across machines, and it would have been red for every contributor whose
+  # locale is not C — permanently, and with a message accusing the wrong thing.
+  #
+  # Pinned rather than documented: the ordering is an INPUT to the hash, so it belongs to
+  # the oracle rather than to whoever happens to run it.
+    LC_ALL=C sort | xargs shasum | shasum | awk '{print $1}'
 }
 
 # UNATTRIBUTABLE FILES — present in the render tree, absent from the manifest the writer

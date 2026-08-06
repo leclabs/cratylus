@@ -1,0 +1,104 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# THE RELEASE — `latest`.
+#
+# TWO JOBS, DELIBERATELY. `gates` re-runs the whole verification on its own cold clone with
+# `contents: read` and no credential. `release` is the ONLY job holding `id-token: write` and
+# the registry token, and it cannot start until `gates` is green. A single job with an early
+# gate step would hold the credential for the whole duration, including while running the
+# corpus's own test code.
+#
+# WHY NOT `changeset publish`. It delegates to `pnpm publish` (verified in
+# @changesets/cli@2.31.0 `getPublishTool`), so the `catalog:`/`workspace:` question really is
+# settled there. Two things it cannot do:
+#   - `pnpm publish` runs `prepack`, so every package REBUILDS at upload time and the bytes
+#     reaching the registry are bytes no gate ever read. That is the defect this corpus names
+#     for prose, applied to the one artifact that cannot be taken back.
+#   - pnpm has no `--provenance`, so sigstore attestation is unreachable through it.
+# So: pnpm PACKS (owning the protocol rewrite), pack-smoke AUDITS those exact tarballs, and
+# npm UPLOADS them.
+#
+# CANCEL-IN-PROGRESS IS FALSE, and that is not a default. A cancelled publish is a
+# half-published release: some of five on the registry, irrevocably, at versions whose
+# siblings do not exist.
+# ─────────────────────────────────────────────────────────────────────────────
+name: release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    uses: ./.github/workflows/gates.yml
+
+  release:
+    needs: gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # push the Release PR branch, the tags, the GitHub Releases
+      pull-requests: write # open and update the Release PR
+      id-token: write # npm provenance (OIDC). Public repo, so provenance is permitted.
+    env:
+      HUSKY: '0'
+    steps:
+      # fetch-depth: 0 IS REQUIRED HERE, unlike in verify. `changeset tag` reads all tags,
+      # the changelog generator resolves the commit that added each changeset, and the action
+      # diffs against the base. A shallow clone makes all three quietly wrong rather than loud.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup
+
+      # Writes ~/.npmrc pointing at the registry with NODE_AUTH_TOKEN interpolated.
+      #
+      # TOKEN, NOT TRUSTED PUBLISHING, AND ONLY FOR NOW. npm's trusted publishers are
+      # configured PER PACKAGE on npmjs.com, and a package that does not exist has no
+      # settings page — so the FIRST publish of each package needs a token no matter what.
+      # Provenance still works with a token as long as `id-token: write` is present. Once all
+      # five exist, configure trusted publishers and delete `NODE_AUTH_TOKEN` here.
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+
+      # npm >= 11.5.1 is what supports trusted publishing, and Node 24 ships npm 11.x.
+      # ASSERTED rather than assumed, because the failure mode is a silently unattested
+      # publish — which looks exactly like a successful one.
+      - name: assert npm can attest
+        run: |
+          npm --version
+          node -e 'const v=require("child_process").execSync("npm --version").toString().trim();
+            const [a,b,c]=v.split(".").map(Number);
+            const ok = a>11 || (a===11 && (b>5 || (b===5 && c>=1)));
+            if(!ok){console.error(`npm ${v} predates trusted publishing (need >=11.5.1)`);process.exit(1);}'
+
+      - id: changesets
+        uses: changesets/action@v1
+        with:
+          version: pnpm run version-packages
+          publish: pnpm run release
+          # DEFAULTS REJECTED. The action's default commit message is "Version Packages",
+          # which `@commitlint/config-conventional` refuses on both `type-enum` and
+          # `subject-empty`. `HUSKY: 0` already disarms the hook, but main's history is
+          # conventional by policy and a release commit is not exempt from it.
+          commit: 'chore(release): version packages'
+          title: 'chore(release): version packages'
+          createGithubReleases: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
+
+      - name: published
+        if: steps.changesets.outputs.published == 'true'
+        run: echo '${{ steps.changesets.outputs.publishedPackages }}' >> "$GITHUB_STEP_SUMMARY"
