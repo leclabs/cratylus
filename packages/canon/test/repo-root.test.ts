@@ -14,17 +14,23 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { afterAll, describe, expect, it } from 'vitest';
 import {
   ROOT_MARKER,
   gitRoot,
   markerRoot,
   repoRoot,
   requireRepoRoot,
-} from '../tooling/repo-root.js';
+} from '@repo/tooling/repo-root';
+import { afterAll, describe, expect, it } from 'vitest';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const shellHelper = join(here, '..', 'tooling', 'repo-root.sh');
+const shellHelper = join(
+  requireRepoRoot(here),
+  'packages',
+  'tooling',
+  'src',
+  'repo-root.sh',
+);
 
 const scratch: string[] = [];
 function tmp(): string {

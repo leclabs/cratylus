@@ -31,8 +31,8 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { requireRepoRoot } from '@repo/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
-import { requireRepoRoot } from '../tooling/repo-root.js';
 
 const repoRoot = requireRepoRoot(dirname(fileURLToPath(import.meta.url)));
 
@@ -45,12 +45,22 @@ const repoRoot = requireRepoRoot(dirname(fileURLToPath(import.meta.url)));
  * nothing and reads green for having looked at nothing, which is the exact shape this file
  * refuses everywhere else.
  */
-const RATCHET: ReadonlySet<string> = new Set([
+/**
+ * SHIPPED code that probes for a sibling package, guarded, and says so when it misses.
+ *
+ * `defaultCorpus()` resolves canon's `src/dimensions` relative to forge, and must work from
+ * both `<forge>/src/cli` and `<forge>/dist/cli` — equal depths, which is what the hop count
+ * is actually expressing. It cannot use this helper: `@repo/tooling` is a devDependency and
+ * would not exist in the published tarball.
+ *
+ * AND IT IS NOT THE DEFECT THIS LAW IS ABOUT. The law is about SILENCE — a computed path
+ * that misses and yields an empty result some gate downstream reports as clean. This site
+ * returns `undefined` on a miss and the caller then REQUIRES `--corpus`, so a wrong answer
+ * is loud at the only place it matters. Exempted by identity, with the reason, rather than
+ * pinned: a ratchet entry means "owed a repair", and nothing here is owed one.
+ */
+const GUARDED_SIBLING_PROBE: ReadonlySet<string> = new Set([
   'packages/forge/src/cli/commands/catalog.ts',
-  'packages/forge/test/deploy/integrate-smoke.test.ts',
-  'packages/forge/test/project/projection-facts.test.ts',
-  'packages/forge/test/project/tree.test.ts',
-  'packages/memory/test/cell-verb-roster.test.ts',
 ]);
 
 /** This file and the helper both PRINT the offending shapes as specimens. The
@@ -58,8 +68,8 @@ const RATCHET: ReadonlySet<string> = new Set([
  *  by identity, and by stripping comments first so only executable text is judged. */
 const SPECIMEN_CARRIERS: ReadonlySet<string> = new Set([
   'packages/canon/test/positional-path.test.ts',
-  'packages/canon/tooling/repo-root.ts',
-  'packages/canon/tooling/repo-root.sh',
+  'packages/tooling/src/repo-root.ts',
+  'packages/tooling/src/repo-root.sh',
 ]);
 
 // ── pure predicates ──────────────────────────────────────────────────────────
@@ -152,28 +162,20 @@ describe('POSITIONAL-PATH gate — no path is built from a hop count', () => {
     expect(
       [...files.keys()].filter((f) => f.endsWith('.sh')).length,
     ).toBeGreaterThan(3);
-    expect(files.has('packages/canon/tooling/repo-root.ts')).toBe(true);
+    expect(files.has('packages/tooling/src/repo-root.ts')).toBe(true);
   });
 
   it('no unpinned file builds a path from a hop count', () => {
     const failures = offenders(authored())
-      .filter((o) => !RATCHET.has(o.file) && !SPECIMEN_CARRIERS.has(o.file))
+      .filter(
+        (o) =>
+          !SPECIMEN_CARRIERS.has(o.file) && !GUARDED_SIBLING_PROBE.has(o.file),
+      )
       .map(
         (o) =>
           `POSITIONAL ${o.file} — ${o.hits} path(s) built from a hop count; use tooling/repo-root`,
       );
     expect(failures, failures.join('\n')).toEqual([]);
-  });
-
-  it('the ratchet is SHRINK-ONLY — every pin still names a live offender', () => {
-    // A pin that no longer convicts is a pin that has been repaired, and leaving it makes
-    // the list a place where the law quietly stops applying.
-    const live = new Set(offenders(authored()).map((o) => o.file));
-    const stale = [...RATCHET].filter((f) => !live.has(f));
-    expect(
-      stale,
-      `repaired — remove from RATCHET: ${stale.join(', ')}`,
-    ).toEqual([]);
   });
 
   it('CONVICTS the four shapes that actually broke', () => {

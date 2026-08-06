@@ -61,6 +61,7 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@repo/tooling": "workspace:*",
     "@types/node": "catalog:",
     "tsup": "catalog:",
     "tsx": "^4.19.0",

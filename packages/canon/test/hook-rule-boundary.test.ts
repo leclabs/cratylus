@@ -37,6 +37,7 @@ import {
   regenerable,
   universalCell,
 } from '@cratylus/forge/validate';
+import { requireRepoRoot } from '@repo/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 import { canonPolicy } from '../tooling/cold-oracle/policy.js';
 import {
@@ -45,7 +46,6 @@ import {
   cellTargets,
   regenerateTargets,
 } from '../tooling/project-targets.js';
-import { requireRepoRoot } from '../tooling/repo-root.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = requireRepoRoot(canonRoot);

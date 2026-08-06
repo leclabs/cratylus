@@ -51,7 +51,7 @@ set -eu
 # path. A relative hop encodes the script's own location in its body, so relocating the
 # file silently changes what it points at; asking git removes the coupling entirely, and
 # the `cd` fallback keeps it working in a tarball with no `.git`.
-. "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/../repo-root.sh"
+. "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)/../../../tooling/src/repo-root.sh"
 repo_root=$(require_repo_root "$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)")
 cd "$repo_root"
 

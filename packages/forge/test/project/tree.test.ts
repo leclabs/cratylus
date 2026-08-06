@@ -10,6 +10,7 @@ import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
+import { requireRepoRoot } from '@repo/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
 import {
@@ -144,7 +145,17 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
   // The structural fact is stronger and comment-immune: a module that opens no file
   // descriptor does not IMPORT the fs module. Checked on import statements only.
   const projectorSrc = () =>
-    readFileSync(join(here, '..', '..', 'src', 'project', 'index.ts'), 'utf8');
+    readFileSync(
+      join(
+        requireRepoRoot(here),
+        'packages',
+        'forge',
+        'src',
+        'project',
+        'index.ts',
+      ),
+      'utf8',
+    );
 
   /** Source with line and block comments removed — prose must not be evidence. */
   const codeOnly = (src: string) =>
@@ -152,7 +163,14 @@ describe('projectPluginSet — the artifact tree is the return value', () => {
 
   it('the projector itself performs no writes', () => {
     const src = readFileSync(
-      join(here, '..', '..', 'src', 'project', 'index.ts'),
+      join(
+        requireRepoRoot(here),
+        'packages',
+        'forge',
+        'src',
+        'project',
+        'index.ts',
+      ),
       'utf8',
     );
     expect(src.length).toBeGreaterThan(0); // a read that returned nothing is DARK

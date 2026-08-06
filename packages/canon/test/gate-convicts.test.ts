@@ -102,8 +102,8 @@ import { readdirSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { dirname, join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { requireRepoRoot } from '@repo/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
-import { requireRepoRoot } from '../tooling/repo-root.js';
 
 const testDir = dirname(fileURLToPath(import.meta.url));
 const packages = join(requireRepoRoot(testDir), 'packages');

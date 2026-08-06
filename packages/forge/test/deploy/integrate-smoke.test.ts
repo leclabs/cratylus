@@ -43,6 +43,7 @@ import {
 } from 'node:fs';
 import { join } from 'node:path';
 import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
+import { requireRepoRoot } from '@repo/tooling/repo-root';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { canonicalToClaude } from '../../src/adapters/claude/index.js';
 import { emitRuntimeConfig, placeSkillsLocal } from '../../src/deploy/index.js';
@@ -144,7 +145,7 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     });
     const stage = join(root, 'tarballs');
     mkdirSync(stage, { recursive: true });
-    const repoRoot = join(import.meta.dirname, '..', '..', '..', '..');
+    const repoRoot = requireRepoRoot(import.meta.dirname);
     const tarballs = RUNTIME_PACKAGES.map((pkg) => {
       const out = execFileSync(
         'pnpm',

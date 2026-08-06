@@ -27,7 +27,7 @@ SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 # The repo root is ASKED FOR, never counted — see tooling/repo-root.sh. The one
 # relative hop below names this file's own package, which is what a source line
 # must do; everything downstream derives from the answer.
-. "$SELF_DIR/../../../tooling/repo-root.sh"
+. "$SELF_DIR/../../../../tooling/src/repo-root.sh"
 CANON="$(require_repo_root "$SELF_DIR")/packages/canon"
 WORKERS_DIR="$CANON/targets/guardrail"
 RUBRIC="${STANCE_RUBRIC:-$WORKERS_DIR/stance-judge-prompt.md}"

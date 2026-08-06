@@ -40,9 +40,9 @@ import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectionFacts } from '@cratylus/forge/project';
 import { resolveWorker } from '@cratylus/schema';
+import { requireRepoRoot } from '@repo/tooling/repo-root';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { deployDriftNotice } from '../src/hooks/deploy-drift-notice.js';
-import { requireRepoRoot } from '../tooling/repo-root.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = requireRepoRoot(here);

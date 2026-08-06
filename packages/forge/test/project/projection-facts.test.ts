@@ -31,6 +31,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
 import type { HarnessMechanism } from '@cratylus/schema/hook';
+import { requireRepoRoot } from '@repo/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
 import { FORGE_BIN, binNameOf } from '../../src/bin-name.js';
@@ -43,7 +44,7 @@ import {
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
-const repoRoot = join(here, '..', '..', '..', '..');
+const repoRoot = requireRepoRoot(here);
 
 const plugin: ProjectablePlugin = {
   name: 'fixture-facts',

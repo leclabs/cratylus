@@ -31,6 +31,7 @@
     "@cratylus/schema": "workspace:*"
   },
   "devDependencies": {
+    "@repo/tooling": "workspace:*",
     "@types/node": "catalog:",
     "tsx": "^4.19.0",
     "typescript": "catalog:",

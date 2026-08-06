@@ -1,0 +1,18 @@
+{
+  "name": "@repo/tooling",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Dev helpers shared by this repository's own build steps and test suites. PRIVATE and unpublished by construction — the `@repo` scope is not `@cratylus`, so it cannot be published by accident.",
+  "license": "MIT",
+  "type": "module",
+  "exports": {
+    "./repo-root": "./src/repo-root.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
+  }
+}

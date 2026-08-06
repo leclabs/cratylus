@@ -78,6 +78,9 @@ importers:
         specifier: workspace:*
         version: link:../schema
     devDependencies:
+      '@repo/tooling':
+        specifier: workspace:*
+        version: link:../tooling
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.21
@@ -112,6 +115,9 @@ importers:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
+      '@repo/tooling':
+        specifier: workspace:*
+        version: link:../tooling
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.21
@@ -153,6 +159,9 @@ importers:
         specifier: workspace:*
         version: link:../runtime
     devDependencies:
+      '@repo/tooling':
+        specifier: workspace:*
+        version: link:../tooling
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.21
@@ -206,6 +215,15 @@ importers:
       vitest:
         specifier: 'catalog:'
         version: 2.1.9(@types/node@22.19.21)
+
+  packages/tooling:
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.19.21
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
 
 packages:
 

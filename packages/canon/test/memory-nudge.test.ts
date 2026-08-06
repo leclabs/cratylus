@@ -24,8 +24,8 @@ import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
+import { requireRepoRoot } from '@repo/tooling/repo-root';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { requireRepoRoot } from '../tooling/repo-root.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const worker = join(

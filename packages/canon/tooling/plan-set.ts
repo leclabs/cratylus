@@ -40,8 +40,8 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { requireRepoRoot } from '@repo/tooling/repo-root';
 import { PLAN_STATES } from '../src/plan-states.js';
-import { requireRepoRoot } from './repo-root.js';
 
 /** In-plan marker naming the successor a plan's work relocated to; its presence
  *  makes the plan `superseded` (a terminal phase). Supersession is NOT derivable

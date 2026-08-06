@@ -38,9 +38,9 @@ import {
 } from '@cratylus/forge/project';
 import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
 import type { Skill } from '@cratylus/schema';
+import { requireRepoRoot } from '@repo/tooling/repo-root';
 import { beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
-import { requireRepoRoot } from '../tooling/repo-root.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 

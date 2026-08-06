@@ -39,13 +39,20 @@ import { mkdtempSync, readFileSync, readdirSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { requireRepoRoot } from '@repo/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 import { MEMORY_VERBS } from '../src/verb-port.js';
 
 const testDir = dirname(fileURLToPath(import.meta.url));
 
 /** The canon skill cells — the third home, reached by path, not by dependency. */
-const CELL_ROOT = join(testDir, '..', '..', 'canon', 'src', 'skills');
+const CELL_ROOT = join(
+  requireRepoRoot(testDir),
+  'packages',
+  'canon',
+  'src',
+  'skills',
+);
 
 /**
  * The invocation form the cells write: `` `memory <verb> …` `` — the CAPABILITY, then
