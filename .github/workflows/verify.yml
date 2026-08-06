@@ -6,9 +6,9 @@
 # same defect the corpus already names for prose: a property nothing checks is a
 # property that drifts silently.
 #
-# The four legs are ordered cheapest-first so a failure reports fast, but none is
-# optional and none is `continue-on-error`. A gate that can be skipped is a gate
-# that will be.
+# The legs themselves live in `gates.yml` and are called from here and from `release.yml`.
+# They are ordered cheapest-first so a failure reports fast, but none is optional and none
+# is `continue-on-error`. A gate that can be skipped is a gate that will be.
 # ─────────────────────────────────────────────────────────────────────────────
 name: verify
 
@@ -23,70 +23,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # THE STEP SEQUENCE MOVED TO `gates.yml`, and this is not tidying. `release.yml` needs the
+  # identical sequence, and two copies of a gate sequence drift — the copy that drifts is
+  # always the one that runs less often, which is the release.
   verify:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-
-    steps:
-      # A SHALLOW clone is enough, and that is a fact about the suite rather than a
-      # preference. `fetch-depth: 0` was here for one leg that verified a
-      # `git show <sha>^:<path>` a reader is told to run — an object only full history
-      # holds — and that gate retired with the plan it read. Every surviving leg that
-      # touches git reads `git ls-files` against the working tree, or builds its own
-      # repository in a tmpdir; none reads this checkout's history. Re-add the depth
-      # WITH the leg that needs it, never ahead of one: a full clone bought as caution
-      # is a cost nothing is spending.
-      - uses: actions/checkout@v4
-
-      # The pnpm version is pinned by `packageManager` in package.json; letting
-      # the action read it there keeps ONE home for it.
-      - uses: pnpm/action-setup@v4
-
-      - uses: actions/setup-node@v4
-        with:
-          # THE PIN HAS ONE HOME. A literal here was a third statement of node's version,
-          # disagreeing with `.nvmrc` (24) and `mise.toml` (26) and `engines.node` (>=22).
-          # `engines` is a different fact — the consumer FLOOR — and legitimately differs.
-          node-version-file: .nvmrc
-          cache: pnpm
-
-      # `--frozen-lockfile` is the point: it fails if the lockfile disagrees with
-      # the manifests, which is exactly the state a scope rename can leave behind.
-      - name: install
-        run: pnpm install --frozen-lockfile
-
-      # Build ONCE, up front. The oracle used to build as well, so a `verify` ran
-      # two builds that could interleave: tsup emits content-hashed chunks under
-      # `clean: true`, and a rebuild landing after another task resolved
-      # `main.js` left it importing a chunk that no longer existed. Intermittent,
-      # which is the worst kind — it passed, then failed, on identical input.
-      - name: build
-        run: pnpm build
-
-      - name: lint
-        run: pnpm lint
-
-      # ORACLE BEFORE TEST, and the order is load-bearing.
-      #
-      # This renders both harness targets from a clean out-dir and compares them
-      # against the one tracked baseline — catching a projection change the unit
-      # suite cannot see, because the unit suite never renders anything.
-      #
-      # It also PRODUCES `.cratylus/claude` and `.cratylus/codex`, which
-      # `canon/test/harness-parity.test.ts` requires: that gate compares what each
-      # harness deploys and fails as vacuous when a render is absent. The renders
-      # are gitignored build output, so on a fresh checkout they do not exist and
-      # nothing in the turbo task graph makes them. Running tests first was green
-      # only on a machine that had projected at some point in the past.
-      - name: render oracle
-        run: pnpm oracle
-
-      # `test` depends on `typecheck:test` in turbo.json, so this leg type-checks
-      # the test tree as well. The tests ARE the enforcement layer for every
-      # naming and shape guarantee here; an unchecked test tree is an unchecked
-      # enforcement layer.
-      - name: test
-        run: pnpm test
-
-      - name: typecheck
-        run: pnpm typecheck
+    uses: ./.github/workflows/gates.yml

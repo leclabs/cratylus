@@ -1,0 +1,37 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# THE SETUP TRIPLE — pnpm, node, install. One home, every workflow.
+#
+# A COMPOSITE ACTION rather than a reusable workflow, deliberately: this is a step sequence
+# with no permissions, no concurrency and no job of its own, and it must run INSIDE whatever
+# job needs it. The GATE sequence is the opposite shape and is a reusable workflow for
+# exactly that reason — see `gates.yml`.
+# ─────────────────────────────────────────────────────────────────────────────
+name: setup
+description: Install pnpm, the pinned Node, and the frozen workspace.
+
+runs:
+  using: composite
+  steps:
+    # The pnpm version is pinned by `packageManager` in package.json; letting the action
+    # read it there keeps ONE home for it.
+    - uses: pnpm/action-setup@v4
+
+    - uses: actions/setup-node@v4
+      with:
+        # THE PIN HAS ONE HOME, and it is not this file. `.nvmrc` is read by nvm, fnm, asdf,
+        # this action, and mise — a literal here would be a second copy of a fact that
+        # already has a home, which is the drift this repo just removed.
+        node-version-file: .nvmrc
+        cache: pnpm
+
+    # `--frozen-lockfile` is the point: it fails if the lockfile disagrees with the
+    # manifests, which is exactly the state a dependency edit can leave behind.
+    #
+    # HUSKY=0 IS LOAD-BEARING, not hygiene. `prepare: husky` runs on every install including
+    # this one and sets `core.hooksPath` — after which any `git commit` in the job fires
+    # `commit-msg` → commitlint. `changesets/action` DOES commit, and its default message is
+    # not a conventional commit, so the Release PR fails to be created over its own title.
+    - shell: bash
+      env:
+        HUSKY: '0'
+      run: pnpm install --frozen-lockfile

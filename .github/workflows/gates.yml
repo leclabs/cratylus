@@ -1,0 +1,65 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# THE GATES — one sequence, called by verify and by release.
+#
+# A REUSABLE WORKFLOW rather than a composite action, so `release.yml` can `needs:` it as a
+# SEPARATE JOB. That separation is a security argument and not an aesthetic one: the gates
+# run with `contents: read` and no credential, and only the publish job that depends on them
+# is granted `id-token: write` and the registry token. A composite action would run every
+# one of these steps inside the privileged job.
+#
+# The price is a second cold clone and a second build, and that is the correct price: the
+# release must ITSELF be a cold clone, because a cold clone is the only configuration in
+# which the missing-bin-symlink trap and the oracle-before-test ordering are exercised.
+# ─────────────────────────────────────────────────────────────────────────────
+name: gates
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # SHALLOW IS ENOUGH, and that is a fact about the suite rather than a preference:
+      # every leg that touches git reads `git ls-files` against the working tree, or builds
+      # its own repository in a tmpdir. Re-add depth WITH the leg that needs it.
+      - uses: actions/checkout@v4
+
+      - uses: ./.github/actions/setup
+
+      # Build ONCE, up front. The oracle used to build as well, so a run could interleave
+      # two builds: tsup emits content-hashed chunks under `clean: true`, and a rebuild
+      # landing after another task resolved `main.js` left it importing a chunk that no
+      # longer existed.
+      - name: build
+        run: pnpm build
+
+      - name: lint
+        run: pnpm lint
+
+      # ORACLE BEFORE TEST, and the order is load-bearing. It PRODUCES `.cratylus/claude`
+      # and `.cratylus/codex`, which `harness-parity.test.ts` requires — and those are
+      # gitignored build output, so on a fresh checkout they do not exist and nothing in the
+      # turbo task graph makes them.
+      - name: render oracle
+        run: pnpm oracle
+
+      # `test` depends on `typecheck:test` in turbo.json, so this leg type-checks the test
+      # tree too. The tests ARE the enforcement layer for every naming and shape guarantee
+      # here; an unchecked test tree is an unchecked enforcement layer.
+      - name: test
+        run: pnpm test
+
+      - name: typecheck
+        run: pnpm typecheck
+
+      # PACK SMOKE — the only leg that reads what a CONSUMER receives, and it runs on every
+      # PR rather than only on release. A gate that only the release runs is a gate that
+      # fails at the worst possible moment, and this one guards the single artifact that
+      # cannot be taken back.
+      - name: pack smoke
+        run: pnpm pack:smoke
