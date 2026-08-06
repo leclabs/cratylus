@@ -56,15 +56,59 @@ count=$(find "$out" -name '*.tgz' | grep -c . || true)
 }
 echo "release: $count tarball(s)"
 
+# AN ALREADY-PUBLISHED VERSION IS SKIPPED, AND THAT IS WHAT MAKES THIS PATH IDEMPOTENT.
+#
+# `changesets/action` runs this command on EVERY push to main, not only when it versioned
+# something. With no pending changeset there is no bump, so the loop below re-packed the
+# versions already on the registry and asked npm to publish them again — `npm error You
+# cannot publish over the previously published versions: 0.1.1` — and the release job went
+# red on every push from the 0.1.1 publish onward. Three consecutive failures before this
+# was found, on commits that touched no package source at all.
+#
+# `changeset publish`, which the header above deliberately declines, has this skip built in;
+# hand-rolling the upload meant hand-rolling the idempotence too, and that half was missed.
+#
+# ASK THE TARBALL WHAT IT IS, never its filename: npm flattens a scoped name, so
+# `cratylus-forge-0.1.1.tgz` puts neither the scope boundary nor the version boundary
+# anywhere a parse can find them without guessing.
+#
+# THE FAILURE DIRECTION IS DELIBERATE. A `npm view` that fails for any reason — network,
+# auth, a registry hiccup — falls through to the publish, which then errors loudly. The
+# alternative default would skip an upload on a transient error and report a green release
+# that shipped nothing.
+published=0
+skipped=0
 for tgz in "$out"/*.tgz; do
+	meta=$(tar -xzOf "$tgz" package/package.json)
+	name=$(printf '%s' "$meta" | node -p 'JSON.parse(require("fs").readFileSync(0,"utf8")).name')
+	version=$(printf '%s' "$meta" | node -p 'JSON.parse(require("fs").readFileSync(0,"utf8")).version')
+
+	if npm view "$name@$version" version >/dev/null 2>&1; then
+		echo "release: $name@$version is already on the registry — skipping"
+		skipped=$((skipped + 1))
+		continue
+	fi
+
 	if [ "${DRY_RUN:-0}" = "1" ]; then
 		npm publish "$tgz" --access public --provenance --tag "${DIST_TAG:-latest}" --dry-run
 	else
 		npm publish "$tgz" --access public --provenance --tag "${DIST_TAG:-latest}"
 	fi
+	published=$((published + 1))
 done
+
+# PRINT THE DENOMINATOR. "Nothing to publish" and "published everything" are both silent
+# successes otherwise, and they are not the same outcome.
+echo "release: $published published, $skipped already on the registry (of $count packed)"
 
 # A SNAPSHOT IS NOT TAGGED. Its versions are throwaway and unordered; a git tag would claim
 # a release that no changelog records and no one can name. `changeset tag` is for `latest`.
-[ "${DRY_RUN:-0}" = "1" ] || [ "${DIST_TAG:-latest}" != "latest" ] || pnpm exec changeset tag
+#
+# NOTHING PUBLISHED MEANS NOTHING TO TAG. Tagging a run that uploaded nothing would move
+# tags on behalf of a release that did not happen. This is a GUARD, not an early exit —
+# the skip path is now the COMMON path (every push with no pending changeset takes it), so
+# returning before the cleanup below would leave `.pack` behind on most runs.
+if [ "$published" -gt 0 ]; then
+	[ "${DRY_RUN:-0}" = "1" ] || [ "${DIST_TAG:-latest}" != "latest" ] || pnpm exec changeset tag
+fi
 rm -rf "$out"
