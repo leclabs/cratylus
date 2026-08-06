@@ -315,7 +315,7 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'runtime/event-tap.test.ts': 'GATE',
   'runtime/kernel.test.ts': 'BEHAVIORAL',
   // the "unregistered" leg scans loader/plugin/package/tsup for the placeholder.
-  'runtime/heartbeat.test.ts': 'GATE',
+  'runtime/provisional-mailbox.test.ts': 'BEHAVIORAL',
   'runtime/runtime-config.test.ts': 'BEHAVIORAL',
 
   // ── schema ───────────────────────────────────────────────────────────

@@ -297,6 +297,26 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
     for (const c of CAPABILITIES) expect(camel(kebab(c))).toBe(c);
   });
 
+  it('the `provisional-` prefix is EARNED — the module declares the prefix is not a name', () => {
+    // Without this the exemption is spelling: anyone could park a real capability behind the
+    // prefix and skip the keyspace. The module must SAY the prefix is a placeholder.
+    //
+    // DELETED AND REBUILT IN ONE DAY, which is the mechanism working rather than churn. When
+    // `provisional-v9` became `heartbeat` the exemption had zero members, and an exemption
+    // with no subject iterates nothing and reads green for having looked at nothing — so it
+    // went. `provisional-mailbox` then arrived with a real anchor still undiscovered, which
+    // is exactly the state the prefix exists to mark, and the leg returned with a subject to
+    // protect.
+    const exempt = BASENAMES.filter((b) => PROVISIONAL.test(b));
+    expect(exempt, 'no exempt module found — this leg is DARK').not.toEqual([]);
+    for (const b of exempt) {
+      const text = readFileSync(join(PORTS_DIR, `${b}.ts`), 'utf8');
+      expect(text, `${b} claims the prefix without declaring it`).toMatch(
+        /PROVISIONAL PATH/,
+      );
+    }
+  });
+
   // ── AXIS 1 — port module ⇄ keyspace, as a biconditional ────────────────────────
   it('a ports/*.ts module is outside the keyspace IFF it is `provisional-`-prefixed', () => {
     expect(portKeyspaceViolations(CAPABILITIES, BASENAMES)).toEqual([]);

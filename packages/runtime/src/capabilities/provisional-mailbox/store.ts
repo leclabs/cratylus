@@ -44,7 +44,7 @@ import {
   writeFile,
 } from 'node:fs/promises';
 import { join } from 'node:path';
-import type { Envelope } from '../../ports/heartbeat.js';
+import type { Envelope } from '../../ports/provisional-mailbox.js';
 
 /** Where a store keeps its state on disk. */
 export interface StoreLayout {

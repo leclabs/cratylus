@@ -5,7 +5,7 @@
 // THE PERIOD ENGINE — the endogenous timing shared by every realization.
 //
 // Both host adapters (push · stream) differ ONLY in where a {@link Tick} goes
-// once produced; producing it — schedule, jitter, drain, sample, idle-stop — is
+// once produced; producing it — schedule, jitter, emit — is
 // identical, so it lives here once. An adapter composes this and adds its
 // transport. The {@link Clock} is injected, so a period is exercised
 // deterministically in a test with no fake timers and no real sleeping.
@@ -13,21 +13,14 @@
 
 import type {
   Clock,
-  GateConfig,
   HostStatus,
   PeriodConfig,
-  PressureGate,
   Tick,
   TimerHandle,
 } from '../../ports/heartbeat.js';
-import { type GateState, freshGateState, sampleGate } from './gate.js';
-import type { EnvelopeStore } from './store.js';
 
 /** Everything a period needs that it does not own. */
 export interface PeriodDeps {
-  store: EnvelopeStore;
-  gate: PressureGate;
-  gateConfig: GateConfig;
   clock: Clock;
   /** Randomness for jitter, in `[0, 1)`. Injected so jitter is testable. */
   random?: () => number;
@@ -118,20 +111,20 @@ class TickChannel {
 }
 
 /**
- * The endogenous period. Emits a {@link Tick} every `periodMs` (± jitter),
- * each carrying whatever the store's atomic claim yielded and the gate's
- * SAMPLED verdict. Stops on {@link stop} or after `idleTicks` consecutive
- * emissions that claimed nothing and gated `false`.
+ * The period. Emits a {@link Tick} every `periodMs` (± jitter) until {@link stop}.
+ *
+ * It carries no payload and reaches no verdict. It used to claim a mailbox and sample a
+ * pressure gate on every emission, and to stop itself after N emissions that did neither —
+ * all three were a subscriber's business, and a subscriber that wants them owns them where
+ * they are visible. An emitter that cannot decide cannot be the cause.
  */
 export class Period {
   readonly #deps: PeriodDeps;
   readonly #channel = new TickChannel();
   #config: PeriodConfig = { periodMs: 0 };
-  #gateState: GateState = freshGateState();
   #timer: TimerHandle | undefined;
   #running = false;
   #emitted = 0;
-  #idleRun = 0;
 
   constructor(deps: PeriodDeps) {
     this.#deps = deps;
@@ -157,7 +150,6 @@ export class Period {
       throw new Error('period: start() before configure()');
     }
     this.#running = true;
-    this.#gateState = freshGateState();
     this.#arm();
   }
 
@@ -175,17 +167,11 @@ export class Period {
     return this.#channel.iterator();
   }
 
-  async drain() {
-    return this.#deps.store.claim();
-  }
-
   async status(): Promise<HostStatus> {
     return {
       running: this.#running,
       periodMs: this.#config.periodMs,
       emitted: this.#emitted,
-      pending: await this.#deps.store.pending(),
-      idleRun: this.#idleRun,
     };
   }
 
@@ -205,34 +191,12 @@ export class Period {
     });
   }
 
-  /**
-   * One emission: claim, SAMPLE the gate, publish, then re-arm. The claim is
-   * awaited before the tick is published so a consumer never sees an emission
-   * whose envelopes are still in flight.
-   */
+  /** One emission: stamp it, publish it, re-arm. */
   async #fire(): Promise<void> {
     if (!this.#running) return;
-    const claimed = await this.#deps.store.claim();
-    if (!this.#running) return; // stopped while the claim was in flight
     const at = this.#deps.clock.now();
     this.#emitted += 1;
-    const consolidate = sampleGate(
-      this.#deps.gate,
-      this.#deps.gateConfig,
-      at,
-      this.#gateState,
-      this.#emitted,
-    );
-    const tick: Tick = { seq: this.#emitted, at, claimed, consolidate };
-    this.#idleRun =
-      claimed.length === 0 && !consolidate ? this.#idleRun + 1 : 0;
-    this.#channel.push(tick);
-
-    const limit = this.#config.idleTicks ?? 0;
-    if (limit > 0 && this.#idleRun >= limit) {
-      this.stop();
-      return;
-    }
+    this.#channel.push({ seq: this.#emitted, at });
     this.#arm();
   }
 }
