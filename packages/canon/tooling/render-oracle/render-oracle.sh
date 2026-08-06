@@ -99,6 +99,27 @@ compute() {
     sort | xargs shasum | shasum | awk '{print $1}'
 }
 
+# UNATTRIBUTABLE FILES — present in the render tree, absent from the manifest the writer
+# left behind. `cratylus project` records every file it wrote in `<out>/.forge/render-manifest.json`
+# and prunes what a PRIOR run of itself left; a file in neither set was written by something
+# else, or by a projection that predates the manifest, and the prune path cannot account for it.
+#
+# WHY THIS EXISTS AND `rm -rf` STILL DOES NOT. Removing the out dirs would make the hash
+# reproducible by never taking the prune path at all — the exact workaround this file's header
+# argues was the defect wearing the oracle's clothes. This asks a different question: not
+# "is the tree clean" but "can the writer ACCOUNT for what is in it". The prune stays
+# exercised, and an unaccountable tree becomes loud instead of silently hashable.
+unattributable() {
+	out="$1"
+	man="$out/.forge/render-manifest.json"
+	[ -f "$man" ] || { echo "$out (no render manifest)"; return; }
+	find "$out" -name .forge -prune -o -type f -print |
+		sed "s|^$out/||" | sort > "$TMP_ON_DISK"
+	tr ',' '\n' < "$man" | sed -n 's/.*"\([^"]*\)".*/\1/p' |
+		grep -v '^files$' | grep -v '^version$' | sort -u > "$TMP_IN_MAN"
+	comm -23 "$TMP_ON_DISK" "$TMP_IN_MAN"
+}
+
 read_expected() {
   [ -f "$expected_file" ] || { echo "no baseline at $expected_file" >&2; exit 2; }
   # Ignore comment lines so the file can explain itself.
@@ -110,7 +131,22 @@ case "${1:-check}" in
     compute
     ;;
   update)
+    # RE-BASELINE ONLY WHAT THE WRITER CAN ACCOUNT FOR. Measured: a projected cell was
+    # edited, `update` ran against a render tree carrying leftovers, and it wrote back the
+    # SAME sha it already held — a re-baseline that could not see the edit it was
+    # baselining. Only a manual `rm -rf` of the render dir surfaced the real hash. `check`
+    # already prints advice about this case; `update` asked nothing at all, which is the
+    # worse of the two because its output is a fact other people then trust.
+    TMP_ON_DISK=$(mktemp) TMP_IN_MAN=$(mktemp)
+    trap 'rm -f "$TMP_ON_DISK" "$TMP_IN_MAN"' EXIT
     actual=$(compute)
+    strays=$( { unattributable "$claude_out"; unattributable "$codex_out"; } | grep -c . || true)
+    if [ "$strays" -gt 0 ]; then
+      echo "REFUSING to re-baseline: $strays file(s) the projector cannot account for" >&2
+      { unattributable "$claude_out"; unattributable "$codex_out"; } | sed 's/^/  /' >&2
+      echo "  clear the render tree and retry: rm -rf $canon/.cratylus" >&2
+      exit 2
+    fi
     {
       echo "# The render oracle: shasum of every file under .cratylus/."
       echo "# Written ONLY by \`render-oracle.sh update\`. A diff here is a deliberate"
