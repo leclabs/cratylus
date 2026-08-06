@@ -1,4 +1,4 @@
 # The render oracle: shasum of every file in .render-ts + .render-ts-codex.
 # Written ONLY by `render-oracle.sh update`. A diff here is a deliberate
 # re-baseline and must be argued in the commit that carries it.
-1ff24bd9af68b69f0ff2d62138b8436648f43937
+47be2df4655e6ccebf095a4f3f2958041429af86

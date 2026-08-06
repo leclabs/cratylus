@@ -26,7 +26,7 @@ import { honesty as honesty_guardrails } from '../dimensions/guardrails/honesty.
 import { correctionConsolidation as correctionConsolidation_learning } from '../dimensions/learning/correction-consolidation.js';
 import { longTermMemory as longTermMemory_memory } from '../dimensions/memory/long-term-memory.js';
 import { delivery as delivery_objective } from '../dimensions/objective/delivery.js';
-import { code as code_outputFormat } from '../dimensions/output-format/code.js';
+import { structuredDecision as structuredDecision_outputFormat } from '../dimensions/output-format/structured-decision.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../dimensions/reasoning-strategy/plan-and-solve.js';
 import { build as build_role } from '../dimensions/role/build.js';
 import { optimize as optimize_satisficing } from '../dimensions/satisficing/optimize.js';
@@ -80,7 +80,7 @@ export const mav: Agent = {
   framing: goalDirected_framing,
   reasoningStrategy: planAndSolve_reasoningStrategy,
   satisficing: optimize_satisficing,
-  outputFormat: code_outputFormat,
+  outputFormat: structuredDecision_outputFormat,
   selfEvaluation: executableTestOracle_selfEvaluation,
   heuristics: null,
 };
