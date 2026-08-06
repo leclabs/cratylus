@@ -30,7 +30,7 @@ export const resumeAvailabilityNotice: HookCell = {
     {
       filename: 'resume-availability-notice.sh',
       targetPath:
-        'packages/canon/src/toolkit/guardrail/resume-availability-notice.sh',
+        'packages/canon/targets/guardrail/resume-availability-notice.sh',
       executable: true,
       content: `#!/usr/bin/env sh
 # resume-availability-notice — a SessionStart note. Emits ONE fixed line telling

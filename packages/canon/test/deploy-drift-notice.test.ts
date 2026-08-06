@@ -1,6 +1,6 @@
 // deploy-drift-notice behavioral gate — the SessionStart advisory speaks when the
 // deployed tree is not the rendered one, and is SILENT when it is. Drives the
-// committed worker (`src/toolkit/guardrail/deploy-drift-notice.sh`) end to end with
+// committed worker (`targets/guardrail/deploy-drift-notice.sh`) end to end with
 // crafted stdin, a corpus it builds itself, and a deployed `.claude` it controls
 // byte for byte.
 //
@@ -48,8 +48,7 @@ const repoRoot = join(here, '..', '..', '..');
 const worker = join(
   here,
   '..',
-  'src',
-  'toolkit',
+  'targets',
   'guardrail',
   'deploy-drift-notice.sh',
 );

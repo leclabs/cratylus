@@ -72,7 +72,7 @@ export const memoryConsolidationNudge: HookCell = {
     {
       filename: 'memory-consolidation-nudge.sh',
       targetPath:
-        'packages/canon/src/toolkit/guardrail/memory-consolidation-nudge.sh',
+        'packages/canon/targets/guardrail/memory-consolidation-nudge.sh',
       executable: true,
       content: `#!/usr/bin/env sh
 # memory-consolidation-nudge — an ADVISORY Stop hook. It asks the memory runtime

@@ -605,7 +605,7 @@ describe('COMMAND-VERACITY gate — a named command must exist', () => {
     // Both are surfaces whose whole job is telling a reader what to run, and both
     // held a false citation before this gate existed.
     const files = new Set(cs.map((c) => c.file));
-    expect(files).toContain('packages/canon/src/toolkit/guardrail/README.md');
+    expect(files).toContain('packages/canon/targets/guardrail/README.md');
     expect(files).toContain('packages/canon/tooling/project-targets-cli.ts');
   });
 
@@ -834,10 +834,7 @@ describe('PLAN-PATH VERACITY gate — a cited plan path must resolve', () => {
   // so the coupling is asserted rather than assumed.
   it('the capture banner it discriminates on is the one the producer writes', () => {
     const producer = readFileSync(
-      join(
-        repoRoot,
-        'packages/canon/src/toolkit/guardrail/stance-guardrail.sh',
-      ),
+      join(repoRoot, 'packages/canon/targets/guardrail/stance-guardrail.sh'),
       'utf8',
     );
     expect(

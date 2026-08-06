@@ -24,7 +24,7 @@
 set -eu
 
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-WORKERS_DIR="$SELF_DIR/../../../src/toolkit/guardrail"
+WORKERS_DIR="$SELF_DIR/../../../targets/guardrail"
 RUBRIC="${STANCE_RUBRIC:-$WORKERS_DIR/stance-judge-prompt.md}"
 JUDGE="${STANCE_JUDGE_CMD:-sh $WORKERS_DIR/stance-judge.sh}"
 FIXTURES="$SELF_DIR/../../fixtures/guardrail"

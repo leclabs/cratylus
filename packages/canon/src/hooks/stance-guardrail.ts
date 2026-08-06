@@ -4,7 +4,7 @@ import type { HookCell } from '../manifest.js';
 // stance-guardrail — the harness-half of the principal stance. A source
 // `hook` cell (activation=event): its canonical DEFINIENS is the σ*-signified
 // identity that `accept()` gates; its `workers[].content` are the VERBATIM
-// byte-anchors the committed workers under `src/toolkit/guardrail/` regenerate
+// byte-anchors the committed workers under `targets/guardrail/` regenerate
 // from (byte-locked by `test/hook-rule-boundary.test.ts`). The claude adapter
 // realizes `event` → a `settings.json` `{hooks}` merge + `hooks/<id>/` workers.
 
@@ -21,7 +21,7 @@ export const stanceGuardrail: HookCell = {
   workers: [
     {
       filename: 'stance-guardrail.sh',
-      targetPath: 'packages/canon/src/toolkit/guardrail/stance-guardrail.sh',
+      targetPath: 'packages/canon/targets/guardrail/stance-guardrail.sh',
       executable: true,
       content: `#!/usr/bin/env sh
 # stance-guardrail — a Stop / SubagentStop hook that STRUCTURALLY REFUSES a turn in which an
@@ -493,7 +493,7 @@ exit 0
     },
     {
       filename: 'stance-judge.sh',
-      targetPath: 'packages/canon/src/toolkit/guardrail/stance-judge.sh',
+      targetPath: 'packages/canon/targets/guardrail/stance-judge.sh',
       executable: true,
       content: `#!/usr/bin/env sh
 # stance-judge — the DEFAULT judge backend for the stance guardrail.
@@ -569,7 +569,7 @@ echo "$verdict" | grep -E '^(VERDICT|REASON|EVIDENCE):' || {
     },
     {
       filename: 'stance-judge-prompt.md',
-      targetPath: 'packages/canon/src/toolkit/guardrail/stance-judge-prompt.md',
+      targetPath: 'packages/canon/targets/guardrail/stance-judge-prompt.md',
       executable: false,
       content: `# Stance judge — the intent-driven-expert rubric
 

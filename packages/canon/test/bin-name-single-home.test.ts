@@ -177,7 +177,7 @@ function shellSources(): string[] {
     // `.mjs` under `tooling/` out of this law's reach and reported the corpus cleaner
     // for it. The subject did not move out of the corpus; only this sweep's idea of
     // where the corpus lives would have gone stale.
-    for (const root of ['src', 'tooling']) {
+    for (const root of ['src', 'tooling', 'targets']) {
       const dir = join(repoRoot, 'packages', pkg.name, root);
       if (pkg.isDirectory() && existsSync(dir)) walk(dir);
     }
@@ -375,7 +375,7 @@ it('EVERY hand-authored shell or .mjs source under packages/*/src derives the bi
   const sources = shellSources();
   expect(
     sources.length,
-    'no shell/.mjs source found under packages/*/{src,tooling} — the scan is DARK, not the corpus clean',
+    'no shell/.mjs source found under packages/*/{src,tooling,targets} — the scan is DARK, not the corpus clean',
   ).toBeGreaterThan(5);
 
   const drifted: string[] = [];
@@ -449,7 +449,7 @@ function tsSources(pkg: string): string[] {
       else if (e.name.endsWith('.ts')) out.push(relative(repoRoot, full));
     }
   };
-  for (const root of ['src', 'tooling']) {
+  for (const root of ['src', 'tooling', 'targets']) {
     const dir = join(repoRoot, 'packages', pkg, root);
     if (existsSync(dir)) walk(dir);
   }

@@ -1,7 +1,7 @@
 // memory-consolidation-nudge behavioral gate — the ADVISORY Stop hook fires when
 // the runtime says a consolidation is owed, is silent when it says clear, and
 // NEVER blocks. Drives the committed worker
-// (`src/toolkit/guardrail/memory-consolidation-nudge.sh`) end-to-end with crafted
+// (`targets/guardrail/memory-consolidation-nudge.sh`) end-to-end with crafted
 // stdin + a temp agent home.
 //
 // THE BIN IS REAL. `MEMORY_BIN` points at the built `cratylus-run` dispatcher,
@@ -30,8 +30,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const worker = join(
   here,
   '..',
-  'src',
-  'toolkit',
+  'targets',
   'guardrail',
   'memory-consolidation-nudge.sh',
 );

@@ -10,7 +10,7 @@
 
 [ "$(git config --bool agentfactory.continuity 2>/dev/null)" = "true" ] || exit 0
 
-nudge="packages/canon/src/toolkit/continuity/praxis-advance-nudge.sh"
+nudge="packages/canon/targets/continuity/praxis-advance-nudge.sh"
 [ -f "$nudge" ] && sh "$nudge" || true
 
 exit 0

@@ -172,7 +172,7 @@ export const deployDriftNotice: HookCell = {
   workers: [
     {
       filename: 'deploy-drift-notice.sh',
-      targetPath: 'packages/canon/src/toolkit/guardrail/deploy-drift-notice.sh',
+      targetPath: 'packages/canon/targets/guardrail/deploy-drift-notice.sh',
       executable: true,
       content: `#!/usr/bin/env sh
 # deploy-drift-notice — an ADVISORY, at session start and again before every

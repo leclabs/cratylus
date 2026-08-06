@@ -42,7 +42,7 @@ in-remit permission-seeking, it PASSes. A false block wedges real work; a missed
 
 The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq` toggle:
 
-- **Source** — the forge `Hook` in `packages/canon/src/toolkit/hooks.ts` (`turn.end` → Stop,
+- **Source** — the forge `Hook` in `packages/canon/src/hook-cells.ts` (`turn.end` → Stop,
   `subagent.end` → SubagentStop; command = `$HOME/.claude/hooks/stance-guardrail/stance-guardrail.sh`;
   timeout 60).
 - **Project** — `pnpm canon:project` emits a `settings.json` `{hooks}` fragment + stages these workers

@@ -5,7 +5,7 @@ import type { HookCell } from '../manifest.js';
 // corpus's `CANONICAL_EVENTS` carrying `substrate: 'git'`, so it is routed rather
 // than refused — the `.husky/post-commit` dispatcher runs the committed worker
 // directly and nothing reaches `settings.json`. Its `workers[].content` are the
-// byte-anchors the committed `src/toolkit/continuity/` workers regenerate from
+// byte-anchors the committed `targets/continuity/` workers regenerate from
 // (byte-locked).
 //
 // THE REVIEW THIS CELL WAS FLAGGED FOR IS CLOSED. The note read "not in FORGE's
@@ -29,7 +29,7 @@ export const praxisContinuity: HookCell = {
   workers: [
     {
       filename: 'continuity-hook.sh',
-      targetPath: 'packages/canon/src/toolkit/continuity/continuity-hook.sh',
+      targetPath: 'packages/canon/targets/continuity/continuity-hook.sh',
       executable: true,
       content: `#!/usr/bin/env sh
 # continuity-hook — opt this repo in/out of the post-commit continuity ritual.
@@ -72,8 +72,7 @@ esac
     },
     {
       filename: 'praxis-advance-nudge.sh',
-      targetPath:
-        'packages/canon/src/toolkit/continuity/praxis-advance-nudge.sh',
+      targetPath: 'packages/canon/targets/continuity/praxis-advance-nudge.sh',
       executable: true,
       content: `#!/usr/bin/env sh
 # praxis-advance-nudge — the repo-level continuity ritual, as a post-commit reminder.
