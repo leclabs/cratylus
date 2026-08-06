@@ -2,10 +2,10 @@
 //
 // The bug: `writeRenderTree` only ever wrote, so a deleted or renamed cell's
 // artifact outlived it, `deploy` shipped the ghost, and a retired agent kept
-// reaching the host. Reproduced originally as `touch .render-ts/agents/ZOMBIE.md
+// reaching the host. Reproduced originally as `touch .cratylus/claude/agents/ZOMBIE.md
 // && pnpm canon:project` → ZOMBIE.md survives.
 //
-// This control is LOAD-BEARING, not ceremonial. `.render-ts*` are gitignored, so
+// This control is LOAD-BEARING, not ceremonial. `.cratylus/claude*` are gitignored, so
 // CI always projects onto a cold tree and the render oracle NEVER exercises the
 // prune path — a regression here would be caught by nothing else in the suite.
 // Hence the shape of every case below: write a tree, write a DIFFERENT tree over

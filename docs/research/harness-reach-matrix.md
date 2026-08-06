@@ -63,6 +63,6 @@ One command, one `--harness` flag — the harness is the only thing that differs
 proxies through the shipped `cratylus project` reading the repository's own `agents.config.ts`:
 
 ```sh
-pnpm canon:project        # claude → packages/canon/.render-ts/
-pnpm canon:project:codex  # codex  → packages/canon/.render-ts-codex/ (agents/*.toml + skills + AGENTS.md)
+pnpm canon:project        # claude → packages/canon/.cratylus/claude/
+pnpm canon:project:codex  # codex  → packages/canon/.cratylus/codex/ (agents/*.toml + skills + AGENTS.md)
 ```

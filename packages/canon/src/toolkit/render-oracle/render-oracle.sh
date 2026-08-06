@@ -40,7 +40,7 @@
 # the command's, and re-adding it here would hide the regression again: with the
 # dirs wiped, the prune path is never taken and its failure is invisible. The
 # prune has its own control (`forge/test/project/write-prune.test.ts`) precisely
-# because `.render-ts*` are gitignored and CI is therefore always cold.
+# because `.cratylus/` is gitignored and CI is therefore always cold.
 # ─────────────────────────────────────────────────────────────────────────────
 
 set -eu
@@ -50,8 +50,8 @@ cd "$repo_root"
 
 canon="packages/canon"
 expected_file="$canon/.render-oracle"
-claude_out="$canon/.render-ts"
-codex_out="$canon/.render-ts-codex"
+claude_out="$canon/.cratylus/claude"
+codex_out="$canon/.cratylus/codex"
 
 # The build-time CLI's entry, read out of forge's OWN manifest.
 #
@@ -105,7 +105,7 @@ case "${1:-check}" in
   update)
     actual=$(compute)
     {
-      echo "# The render oracle: shasum of every file in .render-ts + .render-ts-codex."
+      echo "# The render oracle: shasum of every file under .cratylus/."
       echo "# Written ONLY by \`render-oracle.sh update\`. A diff here is a deliberate"
       echo "# re-baseline and must be argued in the commit that carries it."
       echo "$actual"

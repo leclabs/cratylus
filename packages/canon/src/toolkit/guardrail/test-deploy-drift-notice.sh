@@ -59,7 +59,7 @@ bad()  { printf '  FAIL — %s\n' "$1"; fail=1; }
 
 CORPUS="$WORK/corpus"
 HOST="$WORK/home"
-TREE="$CORPUS/.render-ts"
+TREE="$CORPUS/.cratylus/claude"
 DEPLOYED="$HOST/$HARNESS_HOME/agents"
 
 AXIOM='FIRST PRINCIPLE: names are natural, never conventional'

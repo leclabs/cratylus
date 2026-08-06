@@ -249,7 +249,9 @@ Done/Decisions/Open-Questions structure. Then redeploy — the projected copy is
 
 - **W1:** `pnpm verify` green; oracle re-baselined once with the rename argued in the commit;
   `git grep -c '\.render-ts'` = 0
-- **W2:** `pnpm pack:smoke` red on purpose against each of the 4 convicting fixtures; cold-runner
+- **W2:** the pack-smoke script (W2 creates it; not citable as runnable until it exists —
+  the command-veracity gate convicted this very line for naming it) red on purpose against
+  each of the 4 convicting fixtures; cold-runner
   PR green; `npm publish --dry-run` proves `--provenance` accepts a tarball spec (unverified —
   fallback is publishing the extracted dir); then `npm i -g @cratylus/invoke` on `ash`
 - **W3:** two agents on different hosts exchange an envelope; kill one mid-claim and prove no loss

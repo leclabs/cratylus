@@ -1,6 +1,6 @@
 // GATE — the canon is the GENERIC design, so every harness gets it.
 //
-// WHY THIS EXISTS. `.render-ts-codex/` carried `agents`, `AGENTS.md` and `skills`
+// WHY THIS EXISTS. `.cratylus/codex/` carried `agents`, `AGENTS.md` and `skills`
 // and NO hooks at all: every codex agent ran with no stance guardrail, no memory
 // nudge, no resume notice. The whole suite was green. Nothing was broken in a way
 // any gate could see, because the loss was authored — a build step deleted canon's
@@ -23,8 +23,8 @@ import { describe, expect, it } from 'vitest';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const canon = join(here, '..');
-const CLAUDE = join(canon, '.render-ts');
-const CODEX = join(canon, '.render-ts-codex');
+const CLAUDE = join(canon, '.cratylus/claude');
+const CODEX = join(canon, '.cratylus/codex');
 
 /** Every harness render this corpus produces, with the artifact naming its hooks. */
 const RENDERS = [

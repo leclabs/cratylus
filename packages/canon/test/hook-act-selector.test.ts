@@ -162,7 +162,7 @@ describe('CODEX — the loss is SPOKEN, and the hook still deploys', () => {
   );
 
   it('names BOTH acts it could not narrow, and the cell they came from', () => {
-    // THE PROPERTY THE OLD TREE FAILED. `.render-ts-codex/hooks.json` carried no
+    // THE PROPERTY THE OLD TREE FAILED. `.cratylus/codex/hooks.json` carried no
     // matcher and the projection carried no warning; there was nothing anywhere to
     // read the divergence off.
     expect(warnings).toHaveLength(2);

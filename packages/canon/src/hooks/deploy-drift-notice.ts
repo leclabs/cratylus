@@ -290,12 +290,32 @@ done
 # this script — so a codex render of this worker skips the claude tree and a claude
 # render skips the codex one. The \`--out\` dir is an operator's choice, so the tree
 # is discovered, never named.
+#
+# THE GLOB USED TO BE \`.render*\`, WHICH MADE THE PARAGRAPH ABOVE FALSE. The shape
+# test only ever ran on candidates a NAME had already selected, so "discovered, never
+# named" described the second half of a two-stage filter whose first stage was a
+# hard-coded prefix. Any operator honouring the documented freedom — \`--out
+# build/corpus\` — got silence, and silence here is indistinguishable from in-sync.
+# The rename of the corpus's own tree is what surfaced it; the defect predates it.
+#
+# So the candidate set is now DOTTED DIRECTORIES at the same depths, plus one level
+# beneath each, because a tree that splits per harness puts the shape one deeper
+# (\`.cratylus/claude\`, not \`.render-ts\`). Dotted, because that is the convention
+# for generated trees (\`.next\`, \`.turbo\`, \`.svelte-kit\`) and because walking every
+# directory in a checkout to find one that has \`agents/\` is a cost this hook cannot
+# pay on every prompt. The shape test is still what decides; the glob now only bounds
+# where to look, and it no longer bounds it to one spelling.
 tree="\${CRATYLUS_RENDER_TREE:-}"
 if [ -z "$tree" ]; then
-	for c in "$root"/.render* "$root"/*/.render* "$root"/*/*/.render*; do
+	for c in \\
+		"$root"/.*/ "$root"/*/.*/ "$root"/*/*/.*/ \\
+		"$root"/.*/*/ "$root"/*/.*/*/ "$root"/*/*/.*/*/; do
 		case "$c" in
 		*/node_modules/*) continue ;;
+		*/.git/*) continue ;;
+		*/./ | */../) continue ;;
 		esac
+		c="\${c%/}"
 		[ -d "$c/agents" ] && [ -d "$c/skills" ] && [ -f "$c/$HARNESS_HOOKS_FILE" ] || continue
 		tree="$c"
 		break

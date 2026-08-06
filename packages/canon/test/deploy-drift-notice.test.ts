@@ -102,7 +102,7 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'deploy-drift-'));
   corpus = join(root, 'corpus');
   home = join(root, 'home');
-  tree = join(corpus, '.render-ts');
+  tree = join(corpus, '.cratylus/claude');
   deployedAgents = join(home, '.claude', 'agents');
 
   // THE CORPUS MARKER — the file `deploy` itself reads to learn which corpus it is

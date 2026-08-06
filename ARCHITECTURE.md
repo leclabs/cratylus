@@ -188,7 +188,7 @@ path. The two private CLIs those scripts used to drive (`canon/src/toolkit/proje
 `project-cli-codex.ts`) were the same program differing by one adapter string, and the corpus had
 already paid for the duplication: the codex copy drifted once and shipped SESSIONLESS runtime shims
 to every codex-projected skill for the life of the divergence. Both are deleted, and the render
-oracle (`.render-ts` + `.render-ts-codex`) is byte-identical through the shipped command — the proof
+oracle (`.cratylus/claude` + `.cratylus/codex`) is byte-identical through the shipped command — the proof
 that the private path carried no behaviour the CLI lacks.
 
 #### `invoke` — the run-time entry

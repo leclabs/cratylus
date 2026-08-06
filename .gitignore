@@ -13,22 +13,33 @@ dist/
 .envrc
 .forge/local/
 .claude/worktrees/
-# Rendered projection (derived from packages/canon/ideas via resolve.py; regenerable).
-# A projection is NOT a deployment (projection-is-not-the-source): the render goes to a
-# NEUTRAL staging dir that Claude Code does NOT auto-load -- deliberately NOT a
-# `<repo>/.claude/{agents,skills}` tree, since a project-scoped session would load that
-# AS a de-facto deployment merely because it was rendered. Scope is an accident applied
-# at deploy time (deploy.py --scope ...), never a render side effect. The real deploy
-# target is user-scope ~/.claude per host (C4); a `<repo>/.claude/{agents,skills}` tree
-# may exist ONLY as an explicit `deploy.py --scope project` opt-in by a downstream adopter.
-packages/canon/.render/
-# The claude-harness projection (`pnpm canon:project` → `cratylus project --harness claude`).
-# Same neutral-staging rationale as .render/ above; regenerable, never a deploy.
-packages/canon/.render-ts/
-# The codex-harness projection (`pnpm canon:project:codex`) — proof that canon reaches a
-# second forge harness for free, on the SAME command with a different `--harness`.
-# Same neutral-staging rationale; kept separate so the claude byte-identity diff stays clean.
-packages/canon/.render-ts-codex/
+# The projected corpus, one subdirectory per harness (`cratylus project --harness <h>`).
+#
+# A PROJECTION IS NOT A DEPLOYMENT. The render goes to a NEUTRAL staging dir that Claude
+# Code does NOT auto-load — deliberately NOT a `<repo>/.claude/{agents,skills}` tree, since
+# a project-scoped session would load that AS a de-facto deployment merely because it was
+# rendered. Scope is an accident applied at DEPLOY time, never a render side effect. The
+# real target is user scope, `~/.claude` per host; a `<repo>/.claude/{agents,skills}` tree
+# may exist only as an explicit project-scope opt-in by a downstream adopter.
+#
+# NAMED FOR ITS PRODUCER, which is the convention every tool in this class already follows
+# — `.next/`, `.nuxt/`, `.svelte-kit/`, `.astro/`, `.turbo/`. It is NOT `dist/`: `dist` is
+# the publishable library (`files: ["dist"]`, `clean: rm -rf dist`, turbo
+# `build.outputs`), singular per package and shipped to npm. This is a generated corpus for
+# deployment, plural per harness, and shipped nowhere.
+#
+# The harnesses are SUBDIRECTORIES rather than sibling dirs distinguished by suffix. The
+# previous names were `.render-ts` and `.render-ts-codex`, where `-ts` meant "the
+# TypeScript render, as opposed to the Python one" — and the Python one (`resolve.py`,
+# `deploy.py`, `packages/canon/ideas`) has not existed for some time. The discriminator
+# named a completed migration, and the concatenated-suffix shape is what let the codex tree
+# drift undetected. `harness-parity.test.ts` compares the two; siblings under one parent is
+# the shape that comparison actually has.
+#
+# The oracle is deliberately NOT in here. `.cratylus/` is wholly derived and safe to
+# `rm -rf`; `packages/canon/.render-oracle` is a TRACKED attestation over these bytes, and
+# a tracked file inside a disposable directory is a file that gets destroyed by a clean.
+packages/canon/.cratylus/
 # Memory's per-repo config: scope markers + per-host $HOME. OPERATOR-AUTHORED and
 # host-specific, so local-only. Committed template: .cratylus.memory.json.example.
 # Why this name (and not the runtime dotfile's): packages/memory/src/node.ts.

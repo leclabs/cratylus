@@ -206,7 +206,7 @@ export function placeSkillsLocal(
 // The placers above only ever ANSWER the question "what should land where"
 // while landing it. Nothing ever asked the question on its own, against a host
 // that was written to some time ago — so `~/.claude/agents/nico.md` and
-// `.render-ts/agents/nico.md` diverged, an agent ran the superseded first
+// `.cratylus/claude/agents/nico.md` diverged, an agent ran the superseded first
 // principle for a whole session, and every gate stayed green the entire time.
 // The render oracle hashes the corpus's OUTPUT; it proves the projector is
 // deterministic and says nothing about whether anyone ran `deploy` afterwards.

@@ -69,7 +69,7 @@ jobs:
       # against the one tracked baseline — catching a projection change the unit
       # suite cannot see, because the unit suite never renders anything.
       #
-      # It also PRODUCES `.render-ts` and `.render-ts-codex`, which
+      # It also PRODUCES `.cratylus/claude` and `.cratylus/codex`, which
       # `canon/test/harness-parity.test.ts` requires: that gate compares what each
       # harness deploys and fails as vacuous when a render is absent. The renders
       # are gitignored build output, so on a fresh checkout they do not exist and

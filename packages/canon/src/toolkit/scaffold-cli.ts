@@ -7,7 +7,7 @@
 //
 // Usage:  tsx src/toolkit/scaffold-cli.ts --target <dir> [--agents-dir <dir>]
 //                                          [--skills-dir <dir>] [--subject <text>] [--force]
-//   default render tree:  <canonRoot>/.render-ts/{agents,skills}  (from `pnpm canon:project`)
+//   default render tree:  <canonRoot>/.cratylus/claude/{agents,skills}  (from `pnpm canon:project`)
 
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -16,7 +16,7 @@ import { canonProjectTemplate } from './project-template.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const canonRoot = join(here, '..', '..');
-const renderRoot = join(canonRoot, '.render-ts');
+const renderRoot = join(canonRoot, '.cratylus/claude');
 
 interface Args {
   target: string;

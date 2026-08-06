@@ -2,7 +2,7 @@
 //
 // Every gate in this suite before it was a claim about how a Target is PRODUCED:
 // `deploy-valid ⇔ REGENERABLE` says a Target is deploy-owned, deterministic, and
-// never hand-edited. The render oracle hashes `.render-ts` — the corpus's own
+// never hand-edited. The render oracle hashes `.cratylus/claude` — the corpus's own
 // output — and proves the projector is deterministic. NONE of that is a claim
 // about what is sitting on the host right now, so the two trees could diverge
 // silently and indefinitely with every gate green. They did: on 2026-08-04 an
