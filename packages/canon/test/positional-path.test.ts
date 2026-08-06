@@ -37,15 +37,6 @@ import { describe, expect, it } from 'vitest';
 const repoRoot = requireRepoRoot(dirname(fileURLToPath(import.meta.url)));
 
 /**
- * The pinned sites, and the ONLY reason this list exists: the law was written after the
- * corpus, and landing it red for correct work would make the gate the thing to route
- * around. It is SHRINK-ONLY and it has an END — `t-drain-the-ratchet` empties it, and when
- * the last pin comes off **this list and the leg below are deleted rather than left at
- * zero**. An exemption list with no members is a mechanism with no subject: it iterates
- * nothing and reads green for having looked at nothing, which is the exact shape this file
- * refuses everywhere else.
- */
-/**
  * SHIPPED code that probes for a sibling package, guarded, and says so when it misses.
  *
  * `defaultCorpus()` resolves canon's `src/dimensions` relative to forge, and must work from

@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "The per-host runtime contract leaf: capability port interfaces, the RuntimePlugin face, and the runtime-owned lifecycle-event taxonomy. Pure types plus one identity helper, zero dependencies.",
   "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

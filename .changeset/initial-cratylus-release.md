@@ -1,5 +1,4 @@
 ---
-'@cratylus/canon': minor
 '@cratylus/forge': minor
 '@cratylus/invoke': minor
 '@cratylus/memory': minor

@@ -1,9 +1,11 @@
 {
   "name": "@cratylus/invoke",
   "version": "0.0.0",
-  "//": "The INSTALLABLE UNIT — the one package a consumer installs globally. It DECLARES its capability packages as real dependencies, so `npm i -g` resolves them under an isolated store. runtime stays the contract leaf and must NOT depend on a capability (that would cycle: every capability depends on the runtime).",
   "description": "The run-time entry: composes the runtime with its declared capability plugins and ships them as an installable command.",
   "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "bin": {
     "cratylus-run": "./dist/bin.js"

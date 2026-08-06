@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "The deterministic projection from canonical meaning onto one harness’s surfaces — resolve, project, validate and deploy a corpus. Owns the mapping and nothing else.",
   "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "bin": {
     "cratylus": "./dist/cli/index.js"

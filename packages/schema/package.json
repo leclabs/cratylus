@@ -3,6 +3,9 @@
   "version": "0.0.0",
   "description": "The shapes a corpus authors against: the dimension meta-model as a TypeScript type system. Makes a optimal-signifier compiler-checkable.",
   "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
   "type": "module",
   "exports": {
     ".": {

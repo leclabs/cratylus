@@ -1,25 +1,39 @@
 # Changesets
 
-This directory captures unreleased changes via [changesets](https://github.com/changesets/changesets).
+This directory holds unreleased change descriptions. `pnpm changeset` writes one; `pnpm
+version-packages` consumes them all into version bumps and CHANGELOGs.
 
-## Adding a changeset
+## What is actually configured
 
-When you make a change worth releasing, run:
+- **6 workspace packages carry the `@cratylus` scope; 5 of them publish.**
+  `@cratylus/canon` is listed in `ignore` — it is this repository's own corpus rather than a
+  library, nothing depends on it, and it depends on `forge`, so publishing it would drag the
+  projector into every consumer's tree. `@repo/tooling` is `private: true` and a different
+  scope entirely, so changesets never sees it.
+- **`linked` and `fixed` are both empty.** Nothing forces the five to move in lockstep;
+  each bumps only when a changeset names it. Note that every inter-package dependency is
+  `workspace:*`, which publishes as an EXACT pin — so a package that does not bump keeps
+  pointing at the exact version of a sibling that did, and that is intended.
+- **`access: "public"`** — required for a scoped package, and set here as well as in each
+  manifest's `publishConfig`.
+- **`baseBranch: "main"`.**
 
-```bash
-pnpm changeset
-```
+## What is NOT configured, deliberately
 
-Follow the prompts: pick which packages changed, pick the bump (patch/minor/major), write a one-line summary. This creates a markdown file in `.changeset/` — commit it with your PR.
+There is **no pre-release mode** (`.changeset/pre.json` does not exist and should not be
+created on `main`). While that file exists, every `changeset version` produces a prerelease
+and the stable channel is unreachable until someone remembers `pre exit` — and `main` is this
+repository's release branch. The non-stable channel is served by **snapshots** instead, which
+are stateless: `changeset version --snapshot next`, published to the `next` dist-tag,
+committing nothing.
 
-The 3 packages are linked under `fixed` in `config.json`, so they all bump together. Pick any one of them and the version applies to all three.
+## How a release actually runs
 
-## Releasing
+`changeset publish` is **not** used. It delegates to `pnpm publish`, which runs `prepack` —
+so every package would rebuild at upload time and the bytes reaching the registry would be
+bytes no gate had read. pnpm also has no `--provenance`. The pipeline is:
 
-When PRs with changesets land on `main`, the release workflow opens a "Version Packages" PR that:
+    changeset version → build → pnpm -r pack → pack-smoke gate → npm publish <tarball> --provenance → changeset tag
 
-1. Consumes all pending `.changeset/*.md` files
-2. Bumps versions in each `package.json`
-3. Updates `CHANGELOG.md` per package
-
-Merging that PR triggers the publish workflow which runs `changeset publish` against npm.
+pnpm owns the `workspace:`/`catalog:` protocol rewrite (in `pack`), the gate audits the exact
+tarballs, and npm owns the upload and therefore the attestation.
