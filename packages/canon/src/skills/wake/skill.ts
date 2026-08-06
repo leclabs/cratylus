@@ -9,7 +9,8 @@ memory      ≜ capability ⟨strategy-encapsulated : where it stores · in what
 ground      ≜ project/{ VISION · MODEL · ENGINE · CANON } · PLAN.md(bound)
 salient     ≜ { decision⟨+rationale⟩ · surprise · error|failure · fact-learned · thread⟨opened|closed⟩ }
 P           ≜ a plan : a set of task-files
-bound, occupied, elect, bind, frontier @ praxis ⟨plan-set dynamics has ONE home · ¬ redeclared here⟩
+bound, occupied, electable, elect, bind, frontier @ praxis ⟨plan-set dynamics has ONE home · ¬ redeclared here · a borrowed operation carries its PRECONDITION or it is not the same operation⟩
+mandate     ≜ the objective this session serves ⟨operator-owned · ¬ agent-elected⟩
 
 begin    ≜ \`memory session begin --name <agent>\` ↦ ⟨session · SEMANTIC · PROCEDURAL · EPISODIC · consolidation-owed⟩
 catch-up ≜ consolidation-owed ⇒ dream ≺ proceed
@@ -20,8 +21,13 @@ encode   ≜ standing-duty ↾ per-turn ; ∀ e ∈ salient : \`memory encode --
 
 bound(P) ∧ ¬ occupied(P) ⇒ bind(P)
 bound(P) ∧ occupied(P)   ⇒ REPORT(P) ∧ fall-through(next-candidate)
-∄ P : bound(P)           ⇒ bind(elect) ⟨wake ALWAYS binds · an unbound wake makes drift the DEFAULT PATH, ¬ a lapse⟩
-orient ⊨ ∃! bound        ⟨the bound plan is the objective every later act is judged against⟩
+plan-state ≜ \`praxis status\` ⟨the instrument COMPUTES the law · scanning for .bound re-derives it, and re-derivation is where the guard is lost⟩
+electable ≠ ∅ ∧ ∄ P : bound(P) ⇒ bind(elect) ⟨always-bind @ praxis · the ∃P∈Plans:¬terminal(P) antecedent IS the guard ∴ it rides the call⟩
+electable = ∅            ⇒ REPORT(vacuous) ∧ HALT ∧ mandate-owed
+                           ⟨the empty plan set is a TERMINAL wake-state, ¬ a vacuum to fill · orientation is COMPLETE and unbound · \`praxis status\` already prints "none is owed" ∴ SAY IT and stop⟩
+                           ⟨minting to discharge a debt praxis never issued IS the drift · a law that reds an agent for FINISHING makes inventing work the cheapest green⟩
+mandate-owed ⇒ surface ⟨WHAT, ¬ HOW · ∄ mandate ⇒ electing one is the OPERATOR's act · intent-recovery @ elicit, ¬ in-remit sequencing⟩ ∧ carry(recommendation)
+orient ⊨ (∃! bound) ⊻ (electable = ∅ ∧ mandate-owed) ⟨the second disjunct is a LEGITIMATE terminus · without it the first is unsatisfiable from ∅ ∧ only invention discharges it⟩
 unfamiliar(cwd)           ⇒ fresh-orientation
 recording ≜ tool-call ∧ recording ≠ hand-appended-markdown
 ¬ encoded ⇒ ¬ consolidatable

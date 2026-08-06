@@ -24,6 +24,8 @@
 # WHAT IT DOES NOT BLOCK (the reserved set):
 #   - surfacing a genuine irreversible-outward act (deploy/push/publish) for consent
 #   - routing a genuine INTENT ambiguity to /elicit
+#   - surfacing an ABSENT mandate (no objective in the input AND an empty inherited work-set):
+#     electing the session's objective is supplying intent, not sequencing — the operator's to own
 #
 # SAFETY MODEL:
 #   - OFF BY DEFAULT. Does nothing unless the repo opts in (git config agentfactory.stanceGuard true).
