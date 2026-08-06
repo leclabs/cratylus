@@ -2,7 +2,7 @@
   "name": "cratylus",
   "version": "0.0.0",
   "private": true,
-  "description": "cratylus \u2014 latent lexicography: the canon of discovered optimal-signifiers (canon) and the projection machinery (forge) that compiles them into runtime artifacts.",
+  "description": "cratylus — latent lexicography: the canon of discovered optimal-signifiers (canon) and the projection machinery (forge) that compiles them into runtime artifacts.",
   "type": "module",
   "packageManager": "pnpm@11.17.0",
   "engines": {
@@ -38,7 +38,8 @@
     "praxis": "sh packages/canon/tooling/praxis/praxis.sh",
     "oracle": "sh packages/canon/tooling/render-oracle/render-oracle.sh check",
     "oracle:update": "sh packages/canon/tooling/render-oracle/render-oracle.sh update",
-    "verify": "pnpm build && pnpm lint && pnpm oracle && pnpm test"
+    "verify": "pnpm build && pnpm lint && pnpm oracle && pnpm test",
+    "pack:smoke": "pnpm --filter @cratylus/canon pack:smoke"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
