@@ -11,7 +11,7 @@
 //     cratylism violation.
 //   • SEMANTIC (non-hermetic, NOT asserted here): the anchor cold-DECODES to its
 //     concept — the archaeology. Its instrument is the cold-oracle
-//     (`src/toolkit/cold-oracle` `decodeCold` / `sweep.mjs`), run at authoring + CI,
+//     (`src/toolkit/cold-oracle`, `decodeCold`), run at authoring + CI,
 //     never coined by author or operator. It cannot run in a hermetic unit test (it
 //     calls the live model), so this gate asserts the structural leg and points to the
 //     oracle for the semantic one. The principle is additionally enforced EVERY TURN by

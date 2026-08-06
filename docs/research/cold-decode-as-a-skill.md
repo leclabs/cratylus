@@ -84,7 +84,7 @@ failure mode this project exists to eliminate, occurring in its own instrument.
 
 ### 4. Two incompatible rigs, and a second dead LLM-invocation convention
 
-`guardrail/fixtures/turn-600.txt:11` records a rig with **zero flag overlap** with the canonical
+`test/fixtures/guardrail/turn-600.txt:11` records a rig with **zero flag overlap** with the canonical
 script (`--safe-mode --tools="" --setting-sources "" --strict-mcp-config --no-session-persistence
 --system-prompt <replaced>`). It produced the discipline-anchor ⊥ ruling that rewrote `README.md`.
 The operator's sketch descends from _this_ lineage.

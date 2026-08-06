@@ -785,7 +785,7 @@ describe('PLAN-PATH VERACITY gate — a cited plan path must resolve', () => {
 
   // The closed-record discriminator, BOTH directions, on real fixture bytes.
   it('exonerates a recorded turn and convicts the same citation in a live source', () => {
-    const rec = 'packages/canon/src/toolkit/guardrail/fixtures/turn-193.txt';
+    const rec = 'packages/canon/test/fixtures/guardrail/turn-193.txt';
     const text = readFileSync(join(repoRoot, rec), 'utf8');
 
     // The record really does carry a dead citation — otherwise what follows is the
@@ -797,9 +797,29 @@ describe('PLAN-PATH VERACITY gate — a cited plan path must resolve', () => {
       'plans/discipline-anchor/PLAN.md',
     );
 
-    // Direction 1 — in scope by path and extension, spared by what it IS.
-    expect(inScope(rec)).toBe(true);
+    // Direction 1 — spared by what it IS, demonstrated on a subject this test BUILDS.
+    //
+    // THIS LEG USED TO READ `expect(inScope(rec)).toBe(true)`, and it held only while the
+    // fixture lived under `src/`. Fixtures are test material and now live under `test/`,
+    // which `inScope` excludes by path — so the exclusion would pre-empt the content
+    // discriminator and this leg would be demonstrating nothing at all. The exemption's
+    // whole claim is that a closed record is recognised by CONTENT, "derived from what a
+    // file IS, never from where it sits"; a demonstration that depends on where the file
+    // sits cannot show that.
+    //
+    // So the in-scope subject is synthetic: the fixture's real bytes at a path `inScope`
+    // accepts. Same reasoning the sibling control here already applies, and the same
+    // reasoning `praxis.sh` and the plan-path reach leg took when their live subjects
+    // vanished — build your own subject, and it holds however the tree is arranged.
+    const inScopePath = 'packages/canon/src/recorded-turn.txt';
+    expect(inScope(inScopePath), 'the synthetic path is not in scope').toBe(
+      true,
+    );
+    // In scope by PATH, and exempt by CONTENT. `authoredLines` drops a file when
+    // `isTranscript` holds, so those two facts together are the exemption: the path
+    // would have admitted these bytes, and what spares them is the banner alone.
     expect(isTranscript(text)).toBe(true);
+    // …and the live fixture is genuinely out of the citation set, by whichever route.
     expect(planPathCitations().map((c) => c.file)).not.toContain(rec);
 
     // Direction 2 — the same bytes with the capture banner gone are a live source,

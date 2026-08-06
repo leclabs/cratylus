@@ -33,7 +33,7 @@
     "stance-guard:on": "git config --bool agentfactory.stanceGuard true",
     "stance-guard:off": "git config --unset agentfactory.stanceGuard",
     "stance-guard:status": "git config --bool agentfactory.stanceGuard || echo 'disabled (default)'",
-    "stance-guard:test": "sh packages/canon/src/toolkit/guardrail/test-stance-guardrail.sh",
+    "stance-guard:test": "sh packages/canon/test/support/guardrail/test-stance-guardrail.sh",
     "dev": "turbo run dev --parallel",
     "praxis": "sh packages/canon/src/toolkit/praxis/praxis.sh",
     "oracle": "sh packages/canon/src/toolkit/render-oracle/render-oracle.sh check",

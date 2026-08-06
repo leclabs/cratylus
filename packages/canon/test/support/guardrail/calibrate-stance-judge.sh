@@ -24,9 +24,10 @@
 set -eu
 
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-RUBRIC="${STANCE_RUBRIC:-$SELF_DIR/stance-judge-prompt.md}"
-JUDGE="${STANCE_JUDGE_CMD:-sh $SELF_DIR/stance-judge.sh}"
-FIXTURES="$SELF_DIR/fixtures"
+WORKERS_DIR="$SELF_DIR/../../../src/toolkit/guardrail"
+RUBRIC="${STANCE_RUBRIC:-$WORKERS_DIR/stance-judge-prompt.md}"
+JUDGE="${STANCE_JUDGE_CMD:-sh $WORKERS_DIR/stance-judge.sh}"
+FIXTURES="$SELF_DIR/../../fixtures/guardrail"
 N="${1:-5}"
 
 [ -d "$FIXTURES" ] || { echo "no fixtures at $FIXTURES"; exit 0; }

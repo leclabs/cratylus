@@ -26,7 +26,11 @@ SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 # hook dir (a host's `.claude/hooks/stance-guardrail/`) to prove the
 # AGENT-FORGE-PROJECTED + AGENT-FORGE-DEPLOYED artifact bites — the proof that moving
 # installation into forge did not break the deployed worker.
-WORKER_DIR="${STANCE_WORKER_DIR:-$SELF_DIR}"
+# The workers are GENERATED and still committed under the corpus source tree; the
+# shard that relocates them changes this ONE line. Until then a test that lives in
+# the test tree must say where they are, because $SELF_DIR no longer reaches them.
+WORKERS_DIR="$SELF_DIR/../../../src/toolkit/guardrail"
+WORKER_DIR="${STANCE_WORKER_DIR:-$WORKERS_DIR}"
 WORKER="$WORKER_DIR/stance-guardrail.sh"
 RUBRIC="$WORKER_DIR/stance-judge-prompt.md"
 [ -f "$WORKER" ] || { echo "FAIL: no worker at $WORKER"; exit 1; }

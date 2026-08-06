@@ -32,7 +32,9 @@ set -eu
 
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 REPO_ROOT="$(CDPATH= cd -- "$SELF_DIR/../../../../.." && pwd)"
-WORKER="${DRIFT_WORKER:-$SELF_DIR/deploy-drift-notice.sh}"
+# See test-stance-guardrail.sh: the workers are generated and still under src/.
+WORKERS_DIR="$SELF_DIR/../../../src/toolkit/guardrail"
+WORKER="${DRIFT_WORKER:-$WORKERS_DIR/deploy-drift-notice.sh}"
 [ -f "$WORKER" ] || { echo "FAIL: no worker at $WORKER"; exit 1; }
 
 command -v jq >/dev/null 2>&1 || { echo "SKIP: jq not available"; exit 0; }
