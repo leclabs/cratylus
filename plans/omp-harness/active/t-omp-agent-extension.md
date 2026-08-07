@@ -78,25 +78,164 @@ The port already anticipates every part of this (`core/harness-adapter.ts`):
 round: the adapter DECLARES the incapacity, the seam decides what follows — codex's rule, and it
 has one home.
 
-## 3. The persona seam is `before_agent_start`, and it AUGMENTS
+## 3. The persona seam — and the sentence this section first got wrong
 
-Measured on `omp/17.2.9` by reading the implementation, not the doc comment:
+**RETRACTED, and the retraction is the finding.** This section first concluded that
+`before_agent_start` was _"strictly better than DELTA's `--append-system-prompt`."_ **That is
+false, and it is false in the direction that would have cost the most**: it would have put the
+persona inside an extension — code to write, load, and keep loaded — when omp already carries it
+with two files and no code. A true conclusion (the seam works) sat on a false premise (that it was
+the best seam), and only re-running the comparison caught it.
+
+What survives, measured by reading the implementation rather than its doc comment:
 
 - `BeforeAgentStartEventResult.systemPrompt?: string[]` — `extensions/types.ts:1033`.
-- The doc comment says _"Replace the system prompt for this turn"_, but
-  `extensions/runner.ts:1344–1394` chains handlers over a `currentSystemPrompt` that each handler
-  receives as `event.systemPrompt`. **Returning `[...event.systemPrompt, persona]` is an augment**,
-  and it composes with other extensions instead of clobbering them.
-- **It does not accumulate across turns.** `agent-session.ts:5218` rebuilds the base fresh every
-  turn via `#buildSystemPromptForAgentStart`, and `:5255–5263` calls `setSystemPrompt(...)` per
-  turn. So the append is idempotent by construction.
-- **One real cost.** Returning anything at all sets `baseXdevCatalogDelivered = false`
-  (`agent-session.ts:5256`), which forces an `xd://` mount-notice line. Appending keeps the base
-  catalog text, so the notice is redundant rather than a loss — but it is a visible artifact and
-  belongs in the adapter's warnings, not in a comment.
+- `extensions/runner.ts:1344–1394` feeds each handler the running `currentSystemPrompt` as
+  `event.systemPrompt`, so a handler **can** reconstruct an append with
+  `[...event.systemPrompt, persona]`. But `runner.ts:1379–1380` **overwrites the array outright** —
+  the append is the handler's own doing, not the API's. Calling it "an augment" flattered it.
+- **It cannot accumulate across turns**, for a better reason than first given: the extension's
+  result is written to the AGENT (`agent-session.ts:5258`, `this.agent.setSystemPrompt(...)`),
+  while the base lives in a separate `#baseSystemPrompt` field on the session's tool manager
+  (`session-tools.ts:1094–1106`) that the extension cannot reach. The base is rebuilt from tools
+  and model, never from the previous turn's modified prompt.
+- **The real cost.** Returning anything at all — append or replace — takes the
+  `baseXdevCatalogDelivered = false` branch (`agent-session.ts:5256–5258`), which forces an `xd://`
+  mount-notice line. omp's own comment at `session-tools.ts:791–799` says why: _"A
+  `before_agent_start` replacement drops it, so its additions must remain in the notice."_
+  Appending keeps the catalog bytes, so the notice is redundant — but the cost is unconditional.
 
-This is strictly better than DELTA's `--append-system-prompt`, which binds to one launch and
-cannot see what it is appending to.
+**Two traps in the shipped package, both of which would have shipped as silent misbehaviour:**
+
+- **`systemPromptAppend` does not exist.** `examples/extensions/pirate.ts:30` returns it and
+  `examples/extensions/README.md:58` documents it. `BeforeAgentStartEventResult` has only `message`
+  and `systemPrompt`, and `runner.ts:1373–1383` reads only those two. The shipped example **silently
+  no-ops.** Do not copy it.
+- **`resources_discover` is never emitted.** The type (`types.ts:611–615`), the subscription
+  (`types.ts:1127`) and the aggregator (`runner.ts:1179–1220`) all exist; there is **no call site**
+  in `src/` or in the compiled `dist/cli.js` beyond the definition itself. It would live beside
+  `runner.emit({type:"session_start"})` in `modes/runtime-init.ts:143` and is not there. Any plan to
+  inject skill paths through it is dead on arrival.
+
+## 4. `hooks()` returns JSON; omp's hook surface is CODE
+
+`HarnessHooksProjection.settings` is `Record<string, unknown>` — a JSON fragment the consumer
+merges into the host's config. That fits claude's `settings.json` and codex's `hooks.json`. **omp's
+own `HookAPI` is a TypeScript module loaded by `--hook`/`-e`**, so the omp adapter either emits
+code or finds omp's config-declared hook path. `hooks/loader.ts` calls a hook's `path` _"Original
+path from config"_, so a config surface exists — locate it before assuming code emission.
+
+Do **not** route through the claude-compat hook path. DELTA settled it: omp's compat loader keys
+on `pre|post × tool name` (`capability/hook.ts` — `type: "pre" | "post"`, `tool: string`), which
+cannot express a lifecycle event, and nothing reads `.claude/settings.json`'s `hooks` key at all.
+
+## 5. DECISION — the profile IS the name
+
+**`omp --profile mav` is this harness's `claude --agent mav`, and the persona needs no extension
+to carry it.** Recorded with its reason, as the shard's constraint demands.
+
+**Why the profile and not a flag.** An extension _can_ register a value-taking string flag
+(`registerFlag(name, {type:"string"})`, `extensions/types.ts:1214`, `loader.ts:199–207`), so
+`omp --agent mav` is buildable. It is still the wrong answer:
+
+- **The value is unreadable when it would be needed.** `main.ts:1550` loads extensions, `main.ts:1557`
+  applies flags. Inside the factory `getFlag` returns only the registered **default**
+  (`loader.ts:204–206`); the real value arrives no earlier than `session_start`. A name learned
+  after the session is built is not what the session IS.
+- **It invents a second identity axis** beside one omp already has, and the canon would then own a
+  name the harness does not know — the ambient shape `MODEL.md` forbids under `ENFORCED`.
+
+**Why the profile works, in four facts I read myself:**
+
+1. **It is the only name a launch carries.** There is no `--agent`, no `--persona` in the flag table
+   (`cli/flag-tables.ts:115–320`); `SessionStartEvent` is `{type:"session_start"}` and nothing else
+   (`shared-events.ts:28–30`); `ExtensionContext` exposes no agent name. The one near-miss,
+   `agentId` (`sdk.ts:520–521`), is SDK-only IRC routing, unreachable from any CLI or extension.
+2. **The name is exported into the environment.** `pi-utils/src/dirs.ts:466–468` sets
+   `process.env.OMP_PROFILE`, `PI_PROFILE` and `PI_CODING_AGENT_DIR` on profile activation. **Every
+   hook worker and child process inherits it.** That is the selector `scopes()` needs — the direct
+   analogue of codex's `matcher` over `agent_type`, and it costs nothing to read.
+3. **The profile root is a real home.** `~/.omp/profiles/<name>/agent/` with its own `extensions/`,
+   `settings.json`, plugins and sessions (`dirs.ts:105–125`; `discovery/builtin.ts:65–70` states it
+   outright: _"Native user config is profile-scoped"_). That is where `deploy --harness omp` lands
+   the face.
+4. **The persona is auto-discovered there, as a TRUE augment, with no flag.**
+   `main.ts:827–838` (`discoverAppendSystemPromptFile`) looks for `APPEND_SYSTEM.md` at project then
+   user level, and the user base is the profile-scoped agent dir (`config.ts:83–85`, via
+   `globalAgentDir()`). It is used only when no CLI value was passed (`main.ts:881`), and it is
+   applied by `applyResolvedSystemPromptInputs`, whose own comment is the guarantee: _"Apply
+   resolved CLI/discovered prompt files **without bypassing system prompt templates**"_
+   (`main.ts:840–841`). Nothing is dropped, and the `xd://` cost of §3 is not paid.
+
+**So DELTA's §2 needs amending, and this is the revisit it asked for.** It concluded _"the alias
+carries no persona … a profile is a home, not a being"_ and deferred to this shard. True of
+`--profile` **alone**; false of the profile **home**, which auto-discovers a persona file the
+bootstrap never looked for.
+
+**What this does to the shard.** The fidelity ladder, per capability:
+
+| capability          | rung        | mechanism                                                     |
+| ------------------- | ----------- | ------------------------------------------------------------- |
+| persona             | **proxy**   | `APPEND_SYSTEM.md` in the profile agent dir — zero code       |
+| identity            | **proxy**   | `--profile <name>` / `OMP_PROFILE` — zero code                |
+| skills              | **proxy**   | already free via the claude-compat loader (DELTA §"for free") |
+| enforcement scoping | **provide** | the extension — and this is now ALL it has to do              |
+
+**The extension shrinks to one job.** It no longer carries the persona, the model, or the skills.
+It exists to make enforcing fragments fire and narrow on `$OMP_PROFILE` — which is the only thing
+DELTA found genuinely missing. That is a much smaller artifact than this shard was scoped for, and
+it is the right one.
+
+## 6. The decision was tested, including the test DELTA said the bootstrap could not run
+
+`pnpm canon:project` → `./.cratylus/claude/agents/mav.md` (repo root; DELTA's
+`packages/canon/.cratylus/…` path is stale). Body front-matter stripped into
+`~/.omp/profiles/mav/agent/APPEND_SYSTEM.md`. No flag, no extension, no `-e`.
+
+**The discriminating run — the one DELTA's "measurement problem" section said had to happen
+somewhere this corpus is not on disk:**
+
+```sh
+cd "$(mktemp -d)"
+omp --profile mav --no-skills -p "State … what is your name, and what is your Prime Principle?" < /dev/null
+```
+
+> `Name: mav.`
+> `Prime Principle: cratylism — names are natural, not conventional. Canonical signs are intrinsic
+and discovered, not coined…`
+
+Blank cwd, `--no-skills`, nothing on the command line naming an agent. **The persona carried, and
+this time the corpus could not have been the one carrying it** — DELTA's masking confound is
+controlled, not merely acknowledged. The profile's auth also carried; DELTA's `401 User not found`
+did not recur.
+
+**Accept criterion 2**, run in the repo (`omp --profile mav -p "/introspect"`): the session
+enumerated **twenty dimensions** declared-vs-effective and classified two divergences by cause —
+`Archetype → misnomer` (cold decode found accidental genre mass on `Hero archetype`) and
+`Memory → unobservable` (correct: this session was never `wake`-loaded). It ran the skill in the
+skill's own formalism and declined to reconcile anything.
+
+**Accept criterion 3** holds: no agent cell was edited. Nothing in `packages/canon/src/agents/`
+was touched to make any of this work.
+
+**What is NOT yet done, stated plainly.** `APPEND_SYSTEM.md` was landed by hand, by `awk`-stripping
+the **claude** face — the exact bootstrap form §1 says expires here. So criterion 1 is satisfied at
+the LAUNCH end and still bootstrap at the DEPLOY end. **The shard closes when
+`forge/adapters/omp` emits that file and `cratylus deploy --harness omp` lands it**, not before.
+What the test settles is that the target is right and the mechanism works — the adapter now has a
+known-good artifact to reproduce.
+
+## Open
+
+- [x] Extension API surface map — done; §3 and §5 carry it.
+- [x] The identity decision (§5), with its reason.
+- [x] Empirical verification of §5, including the corpus-absent run (§6).
+- [ ] Where omp declares hook paths in config (§4) — the last unknown blocking the adapter's
+      `hooks()`/`enforcingSurface()`.
+- [ ] `forge/src/adapters/omp/` — `agentDef` → `APPEND_SYSTEM.md`, `events.ts` mapping the canonical
+      vocabulary onto omp's 24 `HookAPI` events, `scopes()` answering from `$OMP_PROFILE`.
+- [ ] Register `omp` in `adapters/registry/index.ts` and widen `HarnessName`.
+- [ ] The extension — now reduced to enforcement scoping alone.
 
 ## 4. `hooks()` returns JSON; omp's hook surface is CODE
 
