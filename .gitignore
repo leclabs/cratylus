@@ -63,3 +63,10 @@ packages/graphify-out/
 
 # Release staging: tarballs packed for audit-then-upload. Regenerated every run.
 .pack/
+
+# PACKED TARBALLS, wherever they land. `.pack/` is the release script's staging dir and
+# was already ignored — but `pnpm pack` without `--pack-destination` writes into the
+# PACKAGE dir, and one such tarball sat untracked-and-committable in `packages/cli/`
+# after a manual publish. A build artifact that only some invocations put in the
+# ignored place is a build artifact one `git add -A` from being committed.
+*.tgz

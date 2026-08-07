@@ -10,7 +10,14 @@
 # never leaves tags claiming it landed.
 #
 # DRY_RUN=1 packs and audits and asks npm to rehearse the upload. It is the only way to
-# learn whether `npm publish <tarball> --provenance` is accepted without publishing.
+# learn whether `npm publish <tarball>` is accepted without publishing.
+#
+# PROVENANCE IS ENVIRONMENT POLICY, NOT SCRIPT LOGIC. `--provenance` was passed here
+# unconditionally and made this script CI-only: npm refuses it with `EUSAGE — Automatic
+# provenance generation not supported for provider: null` anywhere there is no
+# recognized CI provider, so a local recovery publish could not run at all. The release
+# workflow sets `NPM_CONFIG_PROVENANCE: true`, which npm honours as config — so CI still
+# attests every upload, and the same script works on a laptop without it.
 set -eu
 
 self=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -102,9 +109,9 @@ for tgz in "$out"/*.tgz; do
 	# Continuing also buys the DIAGNOSIS: one run now says which packages the
 	# credential can write and which it cannot, instead of stopping at the first.
 	if [ "${DRY_RUN:-0}" = "1" ]; then
-		npm publish "$tgz" --access public --provenance --tag "${DIST_TAG:-latest}" --dry-run || failed="$failed $name"
+		npm publish "$tgz" --access public --tag "${DIST_TAG:-latest}" --dry-run || failed="$failed $name"
 	else
-		npm publish "$tgz" --access public --provenance --tag "${DIST_TAG:-latest}" || failed="$failed $name"
+		npm publish "$tgz" --access public --tag "${DIST_TAG:-latest}" || failed="$failed $name"
 	fi
 	case " $failed " in
 	*" $name "*) ;;
