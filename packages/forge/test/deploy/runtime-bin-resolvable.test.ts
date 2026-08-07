@@ -39,8 +39,9 @@ import { runtimeShimContent } from '../../src/project/runtime-shim.js';
 import { buildRenderTree, tmp } from './helpers.js';
 
 const BIN = 'cratylus';
-/** A command this build does not ship — the shape a rename leaves behind. */
-const STALE = 'cratylus-run';
+/** Any command this build does not ship. Arbitrary on purpose: the law is about
+ *  a shim naming something OTHER than ours, not about which name it used to be. */
+const FOREIGN = 'some-other-command';
 
 // The fixture PATH holds ONLY the fixture bin dir, so no `cratylus` the real
 // host happens to have can decide the outcome. The shims therefore spell node
@@ -161,26 +162,19 @@ describe('what counts as a placed CALL', () => {
     ]);
   });
 
-  it('CONVICTS a shim spawning a RETIRED command — the rename door', () => {
-    // MEASURED ON A REAL HOST, 2026-08-07: after the two commands merged, a skill
-    // shim deployed earlier still spawned `cratylus-run`. The binary was gone, the
-    // symlink was stranded, and `memory encode` died inside node's module loader.
-    //
-    // THIS GATE PASSED THROUGHOUT, and passed BECAUSE the shim was stale: the
-    // detector was handed the CURRENT bin and grepped for it, so a shim naming the
-    // retired one matched nothing, the list came back empty, and the assertion
-    // returned "no refusal" without ever probing. A check whose subject is "files
-    // matching the new name" goes dark at exactly the moment a rename makes it
-    // matter.
+  it('REFUSES a shim spawning a command this build does not ship', () => {
+    // The detector reports what a shim ACTUALLY spawns rather than searching for the
+    // current name, so a mismatch is a finding instead of an empty list. A gate that
+    // searched for the current name would go green on exactly this input.
     const { srcDir, files } = treeWithShim();
     writeFileSync(
       join(srcDir, 'scripts', 'memory.mjs'),
-      `import { spawnSync } from 'node:child_process';\nspawnSync('${STALE}', ['memory']);\n`,
+      `import { spawnSync } from 'node:child_process';\nspawnSync('${FOREIGN}', ['memory']);\n`,
       'utf-8',
     );
     const msg = assertShimsResolvable(srcDir, files, {});
-    expect(msg, 'a shim naming a retired command must REFUSE').not.toBeNull();
-    expect(msg).toContain(STALE);
+    expect(msg, 'a shim naming another command must REFUSE').not.toBeNull();
+    expect(msg).toContain(FOREIGN);
     expect(msg).toContain(BIN);
   });
 

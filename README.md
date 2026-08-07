@@ -57,13 +57,12 @@ behavior, which would be a lie. Only one of those two uncertainties is reducible
 | [`@cratylus/forge`](./packages/forge)     | **projection** — the deterministic map onto one harness          |
 | [`@cratylus/schema`](./packages/schema)   | the shapes a corpus authors against                              |
 | [`@cratylus/memory`](./packages/memory)   | a runtime capability: an episodic store + consolidation verbs    |
-| [`cratylus`](./packages/cli)              | **the CLI** — composes the three above and ships both commands   |
+| [`cratylus`](./packages/cli)              | **the CLI** — composes the three above; the one command          |
 
-**One package, two commands.** `cratylus` at build time and `cratylus-run` at run time serve two
-different DAGs and stay two commands for that reason — but they ship from a single install, so a
-consumer types `npm i -g cratylus` once. `cratylus` is also the composition root: `forge` projects
-and depends on no corpus, `canon` is a corpus and knows no projector, and this package is the only
-one permitted to hold both.
+**One package, one command.** `npm i -g cratylus` and everything is `cratylus <verb>` — build
+verbs route to the projector, capability verbs to the runtime. It is also the composition root:
+`forge` projects and depends on no corpus, `canon` is a corpus and knows no projector, and this is
+the only package permitted to hold both.
 
 ## Status
 

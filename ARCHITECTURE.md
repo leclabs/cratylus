@@ -124,114 +124,35 @@ used: `anatomy` was a metaphor binding four distinct concepts, and `anatomy` was
 One implementation behind the memory port, not a peer of the three concerns. Named here only because
 its package sits alongside them.
 
-### Two consumer entries, because there are two DAGs
+### `cli` — the one consumer entry
 
-A consumer meets this system at two different times, and they are not the same entry:
+A consumer installs one package and types one command.
 
-| when           | what it answers                                       | shipped by        | bin            | typed by    |
-| -------------- | ----------------------------------------------------- | ----------------- | -------------- | ----------- |
-| **build time** | author, resolve, project and deploy a corpus          | `@cratylus/forge` | `cratylus`     | **a human** |
-| **run time**   | the capabilities an agent invokes while it is running | `cratylus`        | `cratylus-run` | **a shim**  |
+```sh
+npm install -g cratylus
+```
 
-This is not two ways of doing one thing. It is the **same decomplection the plugin contract already
-makes one level down**: a capability package exposes `buildPlugin` (its `AgentPlugin` face) and
-`runtimePlugin` (its `RuntimePlugin` face), never one dual-hook object, so the build DAG and the
-runtime DAG never reach across. The two bins are that seam surfacing as installable commands.
+`cratylus` is the only package with an executable shape, and the only one permitted to know all
+three concerns at once. `forge` projects and depends on no corpus; `canon` is a corpus and knows no
+projector; something has to hold both for a consumer to type one command, and this is it. It owns
+the `bin` key — the one copy of the command's name no TypeScript can compute.
 
-**Two bins, and the last column is why.** Merging them into one command with two groups was live and
-was rejected: the run-time bin is invoked almost entirely by _generated artifacts_ — the projected
-`scripts/<capability>.mjs` shims and the generated hook workers — so merging would not take a human
-from two names to one. It would take them from `cratylus project` to `cratylus build project`,
-lengthening the surface that _is_ typed to shorten one that is machine-written and free. Worse, one
-bin means one package owns the `bin` key and must depend on **both** DAGs, so a host that only runs
-agents would drag the whole projection machinery — re-coupling at distribution exactly what `invoke`
-exists to keep apart.
+Everything it composes is an ordinary ESM library. `forge` exports `runCli` for the build surface,
+`runtime` exports `runCli` for capability dispatch, `canon` default-exports the corpus. The entry
+imports all three statically and routes: capability verbs to the runtime, everything else to the
+projector.
 
-**The brevity budget went to the human surface.** That inverted this shard's first guess
-(`cratylus` + `cratylus-forge`), which put the fourteen-character compound on the typed surface and
-the bare mark on the machine-written one. `-forge` is also redundant once `forge` is the only
-build-time package.
+**One command, not two.** `cratylus` and `cratylus-run` were separate bins because the two surfaces
+lived in two packages and each built its own `cac`. The two DAGs that split defended are a fact
+about **imports** — which the bundler and the package manager already handle — not a fact that has
+to surface as two names a consumer must learn. A capability verb is `cratylus memory encode`, and
+the generated shims that invoke it spell one name.
 
-**`invoke` ships the bin but could not _be_ it.** `pyinvoke` already installs `invoke` and `inv` on
-`PATH`. A package name is scoped and cheap; a bin name is global and unscoped, which is a strictly
-harder occupancy problem — the two were derived separately for that reason. Bare `forge` was
-disqualified the same way, and harder: Foundry, jboss-forge, ArrayFire, an npm `forge` and a crates
-`forge` all claim it.
-
-**Flipping `CLI_BIN` really was the whole rename.** `RUNTIME_CONFIG_NAME`
-(`.cratylus-run.json`) and `TAP_ID` (`cratylus-run-event-tap`) are template-derived from it and moved
-without being edited — which is what `bin-name.ts` was built to buy. One second home did surface: a
-`${MEMORY_BIN:-…}` shell fallback, invisible to `bin-name-single-home.test.ts` because that gate
-asserted on TypeScript source and this was a `.sh` — and the emitted-artifact sites are exactly
-where a missed rename fails on a host rather than at build.
-
-**That language boundary is gone; the remaining one is LOCATION.** `bin-name-single-home.test.ts`
-now walks `.sh` and `.mjs` directly (`shellSources()`, ~L161) and asserts _"EVERY hand-authored
-shell or .mjs source under `packages/*/{src,tooling,targets}` derives the bin"_ (~L374), over a glob
-rather than a roster so a fourteenth file cannot join unnoticed, with a darkness guard that fails
-when the scan finds nothing — _"the scan is DARK, not the corpus clean"_. Emitted artifacts are held
-separately by the hook-artifact leg.
-
-**This paragraph understated its own gate, and the number it published for the blind spot was wrong
-by 16×.** It said the scan reaches `packages/*/src` and that exactly one tracked file —
-`commitlint.config.mjs` — falls outside. The gate walks **three** roots, `['src', 'tooling',
-'targets']` (~L180 and ~L452), and has done since the roots were added; `src` alone leaves **16**
-files out (`git ls-files | grep -E '\.(sh|mjs)$' | grep -vE '^packages/[^/]+/src/'`, at
-`b35bc41b`) — and it was **4**, never 1, at `9dad9455`, the commit that wrote the claim. Both of the
-real bin homes in that difference sit in `targets/` and are gated by name: `DEPLOY_TOOL=cratylus`
-in `deploy-drift-notice.sh` and `MEM="${MEMORY_BIN:-cratylus-run}"` in `memory-consolidation-nudge.sh`
-— the same `${MEMORY_BIN:-…}` fallback recorded two paragraphs above — each held by its own leg
-(_"no COMMITTED target names the bin"_, _"…names the deploy tool"_, ~L289/~L319).
-
-**The true residual is five files, and none of them names a bin.** Falsifiable in one command:
-`git ls-files | grep -E '\.(sh|mjs)$' | grep -vE '^packages/[^/]+/(src|tooling|targets)/'` gives
-`commitlint.config.mjs`, `scripts/release.sh`, and the three
-`packages/canon/test/support/guardrail/*.sh`, at `b35bc41b`. The only two `cratylus` tokens among
-them are a dot-directory path (`.cratylus/claude`) and a package name (`@cratylus/canon`) — neither
-is a bin in code position. That is a path claim with a number, not a property of the language, and
-the way this one failed is the point: **a stale claim about a gate's REACH reads as diligence while
-hiding coverage the gate already has, and publishes a blind spot that is not where it says it is.**
-
-**Everything a consumer can do at build time belongs to `forge`'s command surface**, and
-anything in this repository that performs such a step by another route is a divergence — a private
-reimplementation of a shipped command, which is how a projector drifts from its own CLI without
-anything reporting it.
-
-**This repository is itself such a consumer.** `cratylus.config.ts` at the root extends the canon
-plugin, and `canon:project` / `canon:project:codex` are proxies through `cratylus project
---harness <name>`; the `canon:deploy*` scripts reach the `forge` bin rather than a `dist/`
-path. The two private CLIs those scripts used to drive (`canon/src/toolkit/project-cli.ts` and
-`project-cli-codex.ts`) were the same program differing by one adapter string, and the corpus had
-already paid for the duplication: the codex copy drifted once and shipped SESSIONLESS runtime shims
-to every codex-projected skill for the life of the divergence. Both are deleted, and the render
-oracle (`.cratylus/claude` + `.cratylus/codex`) is byte-identical through the shipped command — the proof
-that the private path carried no behaviour the CLI lacks.
-
-#### `invoke` — the run-time entry
-
-It exists **to break a dependency cycle.** Every capability package depends on the runtime for its
-contracts, so the runtime cannot declare the capabilities. `invoke` is the third package that depends
-on both and wires them by static import, which is what makes resolution succeed by declaration rather
-than by co-installation accident. It owns the `bin` key — the one copy of the bin name no TypeScript
-can compute.
-
-**The sign was re-signified here, replacing `invoke`.** The retired name failed
-`α(cᵢ) = α(cⱼ) ⇒ D(cᵢ) = D(cⱼ)` in both directions at once: it claimed **the** CLI while shipping one
-of two, and its own bin disagreed with it. The replacement was not chosen — it survived a blind
-reverse decode that killed the whole forward slate. `assembly`, `bin`, `entry`, `composition` and
-`cli` each scored ≤6/10 cold; the decoder's own proposals `host`, `agent` and `shell` then failed the
-occupancy check against this repository, where _host_ already names the harness executing the agent,
-_agent_ is a config vector and a type, and _shell_ is process execution.
-
-`invoke` won on a property none of the nouns had: **it is a verb, and verbs decode as leaves.**
-Nothing depends on an action, so a cold reader places it at the top of the DAG unprompted and never
-expects to import it for contracts — which is exactly where it sits. It also reads as a discrete call
-rather than a resident process, so it does not promise the daemon `host` implied.
-
-**Accepted residual:** the canon carries an engineering-principle dimension named
-`invoke-the-canonical`. That is a compound at a different level in a different namespace — no package
-or module claims the bare token — but the proximity is real and is recorded here rather than
-explained away.
+**What the merge costs, stated because it is a cost.** A host that only runs agents now installs the
+projector and the corpus along with the runtime. `await import()` cannot defer that: dynamic import
+defers **evaluation**, never **installation**. The bill is paid where it is visible — the e2e gate
+lists the full dependency closure it installs — and it buys a consumer one install instead of a
+seam they never asked about.
 
 ## The north star
 
