@@ -41,10 +41,7 @@
       "types": "./dist/project/index.d.ts",
       "import": "./dist/project/index.js"
     },
-    "./cli": {
-      "types": "./dist/cli/index.d.ts",
-      "import": "./dist/cli/index.js"
-    }
+    "./cli": "./dist/cli/index.js"
   },
   "files": ["dist"],
   "scripts": {
