@@ -64,7 +64,11 @@ time. [`ARCHITECTURE.md`](./ARCHITECTURE.md) explains why merging them would und
 
 ## Status
 
-**Pre-release. Nothing is published yet** and every version is `0.0.0`. The architecture's
+**Pre-release, and now partly published.** Five packages are on npm at `0.1.1` — `forge`,
+`invoke`, `memory`, `runtime`, `schema` (`npm view @cratylus/<pkg> version`, 2026-08-06).
+`@cratylus/canon` is **not** published: it is `ignore`d in `.changeset/config.json` and still reads
+`0.0.0`, which means the corpus a consumer would extend is not yet installable — the
+consumer-facing gap this status line exists to disclose. The architecture's
 load-bearing properties are enforced by a gate that reads the real import graph, and the projected
 corpus is pinned by a render oracle (`pnpm oracle`) rather than by prose. Where the source diverges
 from the intended architecture, [`ARCHITECTURE.md`](./ARCHITECTURE.md) says so in a ratchet table
