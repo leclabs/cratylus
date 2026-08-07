@@ -13,10 +13,10 @@
 // detected platform's config dir, with no project and no config file. Same shape here.
 //
 // WHAT MAKES IT SAFE TO DEFAULT A CORPUS HERE, when `project` must not. The corpus is
-// not INVENTED by the projector — it is named by whoever mounts this CLI, handed down
-// exactly as the bin name is. `forge` still knows no corpus: it reads a specifier it
-// was given and refuses when it was given none. The hub package supplies it because
-// the hub is the only package permitted to know both halves.
+// not INVENTED by the projector — it arrives as `--plugin`, an ordinary flag. `forge`
+// still knows no corpus: it installs what it was told to and refuses when it was told
+// nothing. The hub package supplies the default because it is the only package
+// permitted to know both halves.
 //
 // A CONFIG STILL WINS. If the cwd has one, `install` uses it — otherwise the operator
 // who wrote a config would be silently ignored by the friendliest command on the
@@ -38,13 +38,6 @@ import {
   writeRenderTree,
 } from '../../project/index.js';
 import { runDeploy } from './deploy.js';
-
-/** The env name through which a mounting package hands down its default corpus.
- *
- *  It is an env var for the same reason the bin name is: `forge` is a library with no
- *  opinion about which corpus exists, and the package that DOES have one cannot be
- *  imported from here without inverting the dependency the architecture rests on. */
-export const DEFAULT_CORPUS_ENV = 'CRATYLUS_DEFAULT_CORPUS';
 
 export interface InstallCmdOpts {
   /** Harness adapter name; detected from the host when omitted. */
@@ -101,7 +94,7 @@ export async function runInstall(
 
   // ── WHICH CORPUS ─────────────────────────────────────────────────────────────
   const configPath = join(cwd, CONFIG_FILE);
-  const specifier = opts.plugin ?? process.env[DEFAULT_CORPUS_ENV];
+  const specifier = opts.plugin;
   let plugins: readonly ProjectablePlugin[];
   let source: string;
 

@@ -455,7 +455,13 @@ function codePositionOf(ts: string): string {
 /** Occurrences of the forge bin as a bare word: not the `@cratylus/` npm scope, not
  *  `cratylus-run` (the runtime's bin, held by the legs above), not a URL segment. */
 function spellsForgeBin(ts: string): number {
-  const re = new RegExp(`(?<![@./\\w-])${FORGE_BIN}(?![-\\w/])`, 'g');
+  // A CONFIG FILENAME IS NOT THE BIN. `cratylus.config.ts` shares a word with the
+  // command and is a different concept — the name of a file a consumer writes, not
+  // the program they invoke. Deriving it from `FORGE_BIN` was over-engineering that
+  // this very census provoked: vite does not compute `vite.config.ts` from its bin
+  // key either. Excluded by shape (`.config` follows) rather than by a file
+  // exemption, so the rule stays about CONCEPTS and no roster can go stale.
+  const re = new RegExp(`(?<![@./\\w-])${FORGE_BIN}(?![-\\w/]|\\.config)`, 'g');
   return (codePositionOf(ts).match(re) ?? []).length;
 }
 
@@ -500,6 +506,8 @@ describe('the forge bin has exactly one authored home', () => {
     expect(spellsForgeBin(`const x = '${FORGE_BIN} deploy';`)).toBe(1);
     expect(spellsForgeBin(`import x from '@${FORGE_BIN}/forge';`)).toBe(0);
     expect(spellsForgeBin(`const x = '${RUNTIME_BIN}';`)).toBe(0);
+    // the filename shares a word with the command and is not it
+    expect(spellsForgeBin(`const f = '${FORGE_BIN}.config.ts';`)).toBe(0);
     // and prose is out of scope, in both comment shapes
     expect(
       spellsForgeBin(`// run \`${FORGE_BIN} deploy\` first\nconst x = 1;`),

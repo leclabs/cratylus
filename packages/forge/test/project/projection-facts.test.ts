@@ -97,31 +97,22 @@ describe('the build-time CLI name is derived, not declared twice', () => {
     expect(() => binNameOf(null, 'fixture')).toThrow(/fixture/);
   });
 
-  it('FORGE_BIN is the HUB’s `bin` key — forge declares none of its own', () => {
-    // THE HOME MOVED, AND THIS LEG MOVED WITH IT. `forge` used to own the
-    // `cratylus` bin and derive its name from its own manifest. It is a LIBRARY
-    // now: the command ships from the hub package, because two manifests
-    // declaring one bin name is an install conflict, not a second home.
+  it('FORGE_BIN is this package’s own `bin` key, read from disk', () => {
+    // THIS LEG WENT AWAY AND CAME BACK, and the round trip is the lesson. It briefly
+    // asserted that forge declares NO bin and takes its name from the hub, because I
+    // had convinced myself two manifests declaring one bin name was an install
+    // conflict. Measured, it is not: a dependency may declare the same bin, the
+    // top-level package's link wins, and npm creates exactly one. The invented
+    // constraint cost an env handoff and two vitest configs before it was checked.
     //
-    // So the assertion inverts on one side and holds on the other — forge must
-    // declare NO bin, and the value forge reports must be the one the hub
-    // declares. Both halves are read from disk independently of the module's
-    // cached derivation, so this compares the value to its source rather than to
+    // So a package reads its own name off its own manifest, which is what packages
+    // have always done. Read independently here — a second parse, not the module's
+    // cached one — so this compares the derivation to its source rather than to
     // itself.
-    const forge = JSON.parse(
+    const manifest = JSON.parse(
       readFileSync(join(repoRoot, 'packages', 'forge', 'package.json'), 'utf8'),
-    ) as { bin?: Record<string, string> };
-    expect(
-      forge.bin,
-      'forge is a library — it may not declare a bin',
-    ).toBeUndefined();
-
-    const hub = JSON.parse(
-      readFileSync(join(repoRoot, 'packages', 'cli', 'package.json'), 'utf8'),
-    ) as { name: string; bin: Record<string, string> };
-    // The build command IS the bare mark, as `vite` and `eslint` are theirs.
-    expect(FORGE_BIN).toBe(hub.name);
-    expect(Object.keys(hub.bin)).toContain(FORGE_BIN);
+    ) as { bin: Record<string, string> };
+    expect(Object.keys(manifest.bin)).toEqual([FORGE_BIN]);
   });
 
   it('is a DIFFERENT bin from the runtime’s — two programs, two names', () => {

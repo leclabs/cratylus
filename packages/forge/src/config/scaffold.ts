@@ -19,11 +19,7 @@ import { join } from 'node:path';
 import { FORGE_BIN } from '../bin-name.js';
 
 /** The config-is-code home filename. */
-// DERIVED, NEVER SPELLED. The config file is named after the tool, so its name has
-// the same single-home obligation the bin does — `bin-name-single-home` convicts a
-// literal here exactly as it would a literal bin. One authored spelling, in the
-// manifest npm reads; everything downstream interpolates.
-export const CONFIG_FILE = `${FORGE_BIN}.config.ts`;
+export const CONFIG_FILE = 'cratylus.config.ts';
 
 /**
  * A config the scaffold verbs cannot write or edit safely: an unusable plugin
