@@ -37,6 +37,7 @@ import {
   resolveFragmentBodies,
   writeRenderTree,
 } from '../../project/index.js';
+import type { AgentPlugin } from '../../resolve/index.js';
 import { runDeploy } from './deploy.js';
 
 export interface InstallCmdOpts {
@@ -47,7 +48,7 @@ export interface InstallCmdOpts {
    *  dynamic import; the DEFAULT never takes this path. */
   plugin?: string;
   /** The corpus this CLI was composed with, imported statically by its owner. */
-  corpus?: ProjectablePlugin;
+  corpus?: AgentPlugin;
   dryRun?: boolean;
   cwd?: string;
 }
@@ -99,7 +100,7 @@ export async function runInstall(
   // ── WHICH CORPUS ─────────────────────────────────────────────────────────────
   const configPath = join(cwd, CONFIG_FILE);
   const specifier = opts.plugin;
-  let plugins: readonly ProjectablePlugin[];
+  let plugins: readonly AgentPlugin[];
   let source: string;
 
   if (existsSync(configPath)) {
@@ -110,7 +111,7 @@ export async function runInstall(
     plugins = [opts.corpus];
     source = 'the corpus this command was built with';
   } else if (specifier !== undefined && specifier !== '') {
-    const mod = (await import(specifier)) as { default?: ProjectablePlugin };
+    const mod = (await import(specifier)) as { default?: AgentPlugin };
     if (mod.default === undefined) {
       process.stderr.write(
         `${pc.red('✗')} ${CLI_BIN} install: '${specifier}' has no default export — a corpus package default-exports its plugin.\n`,
@@ -163,6 +164,11 @@ export async function runInstall(
       project: null,
       config: existsSync(configPath) ? configPath : null,
       only: null,
+      // THE VOCABULARY TRAVELS WITH THE CORPUS. `install` has no config file by
+      // definition, so deploy must be handed the events rather than sent to read
+      // them back off disk — otherwise the zero-config path deploys agents and
+      // skills onto a host whose runtime cannot validate an event name.
+      events: [...new Set(plugins.flatMap((p) => p.events ?? []))],
       dryRun: opts.dryRun,
       check: false,
     });

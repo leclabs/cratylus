@@ -54,6 +54,10 @@ export interface DeployCmdOpts {
   home?: string | null;
   project?: string | null;
   only?: string | null;
+  /** The corpus's lifecycle-event vocabulary, when the caller already has it.
+   *  Supplied by `install`, which resolves its plugins in memory and has no config
+   *  file to be read back. */
+  events?: readonly string[];
   dryRun?: boolean;
   /** REPORT ONLY: compare the deployed tree against the render tree and print
    *  every divergence. Places nothing, prunes nothing, repairs nothing. */
@@ -185,6 +189,21 @@ async function emitHostRuntimeConfig(
   log: (line: string) => void,
   warn: (line: string) => void,
 ): Promise<void> {
+  // THE CALLER MAY ALREADY HOLD THE CORPUS, and when it does, re-reading a config
+  // file to recover what it has is how a zero-config path ends up half-configured.
+  // `install` resolves its plugins in memory and has no config file by definition —
+  // it passes the vocabulary straight through rather than sending deploy to look for
+  // a file that will not be there.
+  if (opts.events !== undefined) {
+    if (opts.events.length === 0) {
+      warn(
+        '  runtime config: the corpus declares no `events` — the host config was NOT emitted',
+      );
+      return;
+    }
+    emitAndReport(opts, opts.events, nativeEvents, log);
+    return;
+  }
   const configPath =
     opts.config ?? join(opts.project ?? process.cwd(), CONFIG_FILE);
   if (!existsSync(configPath)) {
@@ -201,8 +220,19 @@ async function emitHostRuntimeConfig(
     );
     return;
   }
+  emitAndReport(opts, events, nativeEvents, log);
+}
+
+/** Emit the host runtime config and report it. One home, so the config-file path and
+ *  the caller-supplied path cannot drift in what they write or what they say. */
+function emitAndReport(
+  opts: DeployCmdOpts,
+  events: readonly string[],
+  nativeEvents: Readonly<Record<string, string>>,
+  log: (line: string) => void,
+): void {
   const { path, wrote, doc } = emitRuntimeConfig({
-    events,
+    events: [...events],
     nativeEvents,
     dry: opts.dryRun ?? false,
   });
