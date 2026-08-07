@@ -56,6 +56,22 @@ export interface RunCliOptions {
    *  nothing. Taking the object rather than a string is what removes a run-time
    *  resolution — and therefore a run-time failure mode — from the default path. */
   readonly defaultCorpus?: ProjectablePlugin;
+  /**
+   * The version this command reports — supplied by whoever OWNS the bin.
+   *
+   * Defaults to forge's own, which is right only when forge's CLI is the command.
+   * It is not: `cratylus` owns the `bin` key, and the version a command reports is
+   * a claim about THAT artifact. The two packages held the same number until the
+   * first release that bumped them differently, at which point `cratylus@0.2.1`
+   * announced itself as `0.3.0` — forge's minor. Same shape as the `0.0.0` defect
+   * this module's `VERSION` block already describes, one level up: the derivation
+   * was correct for the package that owned the bin WHEN IT WAS WRITTEN, and the bin
+   * moved to `packages/cli` in the one-command merge without it.
+   *
+   * The owner passes its own, exactly as it owns the command's NAME for the same
+   * reason — neither is a fact this package can compute about a consumer of it.
+   */
+  readonly version?: string;
 }
 
 /** Run the build-time CLI.
@@ -370,7 +386,7 @@ export async function runCli(
     );
 
   cli.help();
-  cli.version(VERSION);
+  cli.version(cliOpts.version ?? VERSION);
 
   // An unknown verb must FAIL, loudly and by name. cac's default is to parse an
   // unrecognized command into the (absent) global command and exit 0 silently —

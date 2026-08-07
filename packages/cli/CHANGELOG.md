@@ -4,6 +4,17 @@
 
 ### Patch Changes
 
+- `--version` reports THIS package's version, not the projector's
+
+  `cratylus` owns the `bin` key but delegated `--version` to `@cratylus/forge/cli`,
+  which reports forge's own manifest. While both packages carried the same number
+  that was invisible; this is the first release to bump them apart, and it would
+  have shipped `cratylus@0.2.1` announcing itself as `0.3.0`. Caught by
+  `version-single-home`, which runs the built bin exactly as a consumer's shell
+  does. The owner of the bin now passes its version down, for the same reason it
+  owns the command's name: neither is a fact the projector can compute about a
+  consumer of it.
+
 - d31a769: `install` no longer leaves a host without an event vocabulary
 
   The zero-config `install` path placed agents, skills and hooks and then warned that
