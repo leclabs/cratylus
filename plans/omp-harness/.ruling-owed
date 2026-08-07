@@ -1,33 +1,45 @@
-FORK — which plan governs, put to the operator 2026-08-07.
+FORK — which plan governs. Put to the operator 2026-08-07, still owed.
 
-`omp-harness` is bound and has `t-omp-agent-extension` on its frontier. But this
-session's entire body of work has been a different thing: the CLI restructure —
-cratylus.config.ts, the `cratylus` hub package, forge demoted to a library, the
-zero-config `install` verb, the phantom-dependency and namespace repairs, and the
-release path made idempotent. None of it is in any plan. omp-harness has not been
-touched since its first shard landed.
+`omp-harness` is bound with `t-omp-agent-extension` on its frontier. It has not been
+touched since its first shard landed. Every turn of work since has been a different
+line entirely, and none of it is in any plan:
 
-So the bound marker no longer describes the work, and the gate that reads it holds
+  cratylus.config.ts · the `cratylus` hub package · forge demoted to a library ·
+  `cratylus-run` deleted and both surfaces merged under one command · the
+  zero-config `install` verb · phantom-dependency and namespace repairs · the
+  release path made idempotent, then made survivable when one package 403s ·
+  provenance made environment policy · and the first publish of six packages.
+
+So the bound marker does not describe the work, and the gate that reads it holds
 every turn open against a frontier nobody is working toward.
 
-THE FORK, and it is the operator's because it is a mandate question, not a
-sequencing one:
+STATE AS OF THIS HANDOFF — all six packages are live on npm with sigstore
+provenance: cratylus@0.2.0 · @cratylus/canon@0.1.0 (first ever) ·
+@cratylus/forge@0.2.0 · @cratylus/runtime@0.2.0 · @cratylus/memory@0.1.2 ·
+@cratylus/schema@0.1.2. Coal verified by the operator. Fire runs the REGISTRY copy,
+`deploy --check` reports in sync, memory answers through the deployed shim.
 
-  (a) The CLI line is the real work. Retire or release `omp-harness`, and let the
-      remaining CLI items — publishing, cross-host consumer verification, the
-      `uninstall` counterpart to `install`, the three closures in docs/cli/USAGE.md
-      §6 — be planned as what they are.
+THE FORK, and it is the operator's because it is a mandate question:
 
-  (b) omp-harness is still the mandate and the CLI work was a detour that has now
-      served its purpose. Resume `t-omp-agent-extension`.
+  (a) The CLI line is the real work. Retire or release `omp-harness` and plan what
+      remains as what it is — the `uninstall` counterpart to `install`, and the
+      three closures in docs/cli/USAGE.md §6 (the harness registry, the capability
+      keyspace, and a `buildPlugin` contract with zero instances).
+
+  (b) omp-harness is still the mandate and the CLI work was the detour that
+      unblocked it. Resume `t-omp-agent-extension`.
 
   (c) Both stand, sequenced — say which leads.
 
-THE PRINCIPAL'S READ, offered and not acted on: (a). Ten turns of operator
-direction have been CLI and publishing; omp-harness predates all of it. But
-electing a mandate is not mine, and minting a plan to discharge a debt praxis never
-issued is the drift my own wake cell names.
+THE PRINCIPAL'S READ, offered and not acted on: (a). But electing a mandate is not
+mine, and minting a plan to discharge a debt praxis never issued is the drift the
+wake cell names.
 
-BLOCKING EITHER WAY: eleven commits are unpushed, including the release-idempotency
-fix without which CI stays red, and the changesets that publish @cratylus/canon and
-`cratylus` for the first time. Nothing reaches a leclabs host until that push.
+OWED REGARDLESS OF THE RULING — one commit is unpushed (`d4a01b7c`) and it matters:
+the released `cratylus@0.2.0` carries a bug it fixes. `install` — the zero-config
+path — emits no runtime event vocabulary, so a host set up with it cannot validate
+an event name and carry-on and event-tap are inert there. Coal was installed with
+that build. Push, release, and redeploy coal.
+
+A peer session (nico) is mapping omp's extension API read-only under ~/.bun and has
+been told the omp shard is not mine. If the ruling is (b), that work is its input.
