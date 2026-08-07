@@ -34,7 +34,7 @@
     "@cratylus/runtime": "workspace:*"
   },
   "devDependencies": {
-    "@repo/tooling": "workspace:*",
+    "@cratylus/tooling": "workspace:*",
     "@types/node": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",

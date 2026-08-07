@@ -12,7 +12,7 @@ import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { requireRepoRoot } from '@repo/tooling/repo-root';
+import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { type Packed, findings, report } from './pack-smoke.js';
 
 const repoRoot = requireRepoRoot(process.cwd());

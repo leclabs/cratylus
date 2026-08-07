@@ -1,4 +1,4 @@
-# `@repo/tooling`
+# `@cratylus/tooling`
 
 Dev helpers shared by this repository's own build steps and test suites.
 

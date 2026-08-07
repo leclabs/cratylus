@@ -28,7 +28,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectionFacts } from '@cratylus/forge/project';
 import { type HookCell, type RuleCell, resolveWorker } from '@cratylus/schema';
-import { requireRepoRoot } from '@repo/tooling/repo-root';
+import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 
 const here = dirname(fileURLToPath(import.meta.url));
 // ONE level up, not two. This was `join(here, '..', '..')`, counted for a home under

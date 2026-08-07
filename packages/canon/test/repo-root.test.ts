@@ -20,7 +20,7 @@ import {
   markerRoot,
   repoRoot,
   requireRepoRoot,
-} from '@repo/tooling/repo-root';
+} from '@cratylus/tooling/repo-root';
 import { afterAll, describe, expect, it } from 'vitest';
 
 const here = dirname(fileURLToPath(import.meta.url));

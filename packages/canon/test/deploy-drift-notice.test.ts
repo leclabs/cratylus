@@ -40,7 +40,7 @@ import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectionFacts } from '@cratylus/forge/project';
 import { resolveWorker } from '@cratylus/schema';
-import { requireRepoRoot } from '@repo/tooling/repo-root';
+import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { deployDriftNotice } from '../src/hooks/deploy-drift-notice.js';
 

@@ -37,7 +37,7 @@ import {
   regenerable,
   universalCell,
 } from '@cratylus/forge/validate';
-import { requireRepoRoot } from '@repo/tooling/repo-root';
+import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 import { canonPolicy } from '../tooling/cold-oracle/policy.js';
 import {

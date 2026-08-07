@@ -79,7 +79,7 @@ importers:
       '@cratylus/runtime':
         specifier: workspace:*
         version: link:../runtime
-      '@repo/tooling':
+      '@cratylus/tooling':
         specifier: workspace:*
         version: link:../tooling
       '@types/node':
@@ -141,7 +141,7 @@ importers:
         specifier: 'catalog:'
         version: 3.25.76
     devDependencies:
-      '@repo/tooling':
+      '@cratylus/tooling':
         specifier: workspace:*
         version: link:../tooling
       '@types/node':
@@ -166,7 +166,7 @@ importers:
         specifier: workspace:*
         version: link:../runtime
     devDependencies:
-      '@repo/tooling':
+      '@cratylus/tooling':
         specifier: workspace:*
         version: link:../tooling
       '@types/node':

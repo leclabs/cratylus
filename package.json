@@ -1,5 +1,5 @@
 {
-  "name": "@repo/workspace",
+  "name": "@cratylus/workspace",
   "version": "0.0.0",
   "private": true,
   "description": "This repository's workspace root. PRIVATE and unpublished by construction \u2014 the `@repo` scope is not `@cratylus`, so it cannot be published by accident, and it no longer collides with the `cratylus` package that ships the command.",

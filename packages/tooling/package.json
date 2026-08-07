@@ -1,8 +1,8 @@
 {
-  "name": "@repo/tooling",
+  "name": "@cratylus/tooling",
   "version": "0.0.0",
   "private": true,
-  "description": "Dev helpers shared by this repository's own build steps and test suites. PRIVATE and unpublished by construction — the `@repo` scope is not `@cratylus`, so it cannot be published by accident.",
+  "description": "Dev helpers shared by this repository's own build steps and test suites. PRIVATE and unpublished \u2014 `private: true` is what prevents publication, and it is the only thing that needs to. An off-scope name was doing that job before and could not: publishing to a scope one does not own fails anyway, which makes it the worse accident rather than the safer one, and the publish set is derived from `private` plus the changesets ignore list, never from a scope.",
   "license": "MIT",
   "type": "module",
   "exports": {

@@ -19,7 +19,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { requireRepoRoot } from '@repo/tooling/repo-root';
+import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 
 const here = dirname(fileURLToPath(import.meta.url));

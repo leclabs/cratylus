@@ -31,7 +31,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { requireRepoRoot } from '@repo/tooling/repo-root';
+import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 
 const repoRoot = requireRepoRoot(dirname(fileURLToPath(import.meta.url)));
@@ -41,7 +41,7 @@ const repoRoot = requireRepoRoot(dirname(fileURLToPath(import.meta.url)));
  *
  * `defaultCorpus()` resolves canon's `src/dimensions` relative to forge, and must work from
  * both `<forge>/src/cli` and `<forge>/dist/cli` — equal depths, which is what the hop count
- * is actually expressing. It cannot use this helper: `@repo/tooling` is a devDependency and
+ * is actually expressing. It cannot use this helper: `@cratylus/tooling` is a devDependency and
  * would not exist in the published tarball.
  *
  * AND IT IS NOT THE DEFECT THIS LAW IS ABOUT. The law is about SILENCE — a computed path

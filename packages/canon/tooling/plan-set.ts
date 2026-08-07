@@ -40,7 +40,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { requireRepoRoot } from '@repo/tooling/repo-root';
+import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { PLAN_STATES } from '../src/plan-states.js';
 
 /** In-plan marker naming the successor a plan's work relocated to; its presence

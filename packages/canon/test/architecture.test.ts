@@ -154,7 +154,7 @@ const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
  * against the workspace itself, so the next package cannot arrive unscanned.
  */
 const PACKAGES = [
-  // `tooling` is `@repo/tooling` — PRIVATE, unpublished, and dev-only. It is scanned
+  // `tooling` is `@cratylus/tooling` — PRIVATE, unpublished, and dev-only. It is scanned
   // anyway, and that is the point of the reach leg below: a package excluded because
   // "it doesn't ship" is a package whose edges nothing checks, and dev tooling reaching
   // into a product package is exactly the direction that would go unnoticed.

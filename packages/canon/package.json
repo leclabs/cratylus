@@ -39,7 +39,7 @@
   "devDependencies": {
     "@cratylus/forge": "workspace:*",
     "@cratylus/runtime": "workspace:*",
-    "@repo/tooling": "workspace:*",
+    "@cratylus/tooling": "workspace:*",
     "@types/node": "catalog:",
     "tsx": "^4.19.0",
     "typescript": "catalog:",
