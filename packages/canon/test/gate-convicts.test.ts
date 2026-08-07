@@ -209,6 +209,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // ── forge ────────────────────────────────────────────────────────────
   'forge/adapters/agent-hooks.test.ts': 'BEHAVIORAL',
   'forge/adapters/codex-hooks.test.ts': 'BEHAVIORAL',
+  // Drives the omp adapter with bindings and agents it supplies itself; its
+  // negative cases are its own fixtures (an unrealizable event, an absent
+  // mechanism, a non-blocking event that must not claim to block).
+  'forge/adapters/omp.test.ts': 'BEHAVIORAL',
   // the projection half of the old `anatomy/enforcing.test.ts` — drives `agentBody`
   // with an enforcing value it supplies itself. Its shape half went to schema.
   'forge/core/agent-body-enforcing.test.ts': 'BEHAVIORAL',

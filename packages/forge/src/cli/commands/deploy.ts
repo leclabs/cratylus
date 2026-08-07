@@ -149,6 +149,7 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
         tree,
         harnessHome: harnessAdapter.home,
         agentExt: harnessAdapter.agentExt,
+        agentRel: (n: string) => harnessAdapter.agentRel(n),
         hooksFile: harnessAdapter.hooksFile,
         home: opts.home ?? null,
         project: opts.project ?? null,

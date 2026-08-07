@@ -612,10 +612,22 @@ export async function projectPluginSet(
     (b) => !degraded.has(b.fragment.realizedBy ?? b.anchor),
   );
   if (boundBindings.length > 0 && opts.adapter.enforcingSurface) {
-    const surface = opts.adapter.enforcingSurface(boundBindings);
-    if (surface) {
-      files.push({ path: surface.filename, content: surface.content });
-      log(`EMIT enforcing surface ${surface.filename}`);
+    // `mechanisms` THREADED. Passing only the bindings left every implementation
+    // with an empty map, so codex's returned `null` for every input and its
+    // per-agent enforcing constraints reached the host as nothing — green the whole
+    // time, because the unit tests call the function directly with a map the
+    // production path never supplied.
+    const surface = opts.adapter.enforcingSurface(boundBindings, mechanisms);
+    // One projection or MANY: a harness scoping by per-agent directory emits one
+    // artifact per composing agent (omp), and one scoping by selector emits a
+    // single global artifact (codex).
+    for (const s of surface
+      ? Array.isArray(surface)
+        ? surface
+        : [surface]
+      : []) {
+      files.push({ path: s.filename, content: s.content });
+      log(`EMIT enforcing surface ${s.filename}`);
     }
   }
 

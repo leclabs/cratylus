@@ -244,6 +244,12 @@ export function codexHooksJson(
  * (the codex projection does not emit a settings fragment). Wraps the concrete
  * functions above — projection output is byte-identical to calling them directly.
  */
+/** Where agent `<name>`'s definition lives, relative to `.codex` — the ONE home
+ *  of codex's agent layout, read by both `agentDef` and deploy. */
+export function codexAgentRel(name: string): string {
+  return `agents/${name}.toml`;
+}
+
 export const codexHarnessAdapter: HarnessAdapter = {
   name: 'codex',
   substrate: 'harness',
@@ -351,6 +357,7 @@ export const codexHarnessAdapter: HarnessAdapter = {
     }
     return { filename: 'hooks.json', settings: block, warnings, skipped };
   },
+  agentRel: codexAgentRel,
   agentDef: (a, ctx) => ({
     filename: `${a.name}.toml`,
     content: agentToCodexToml(a, ctx),
@@ -360,5 +367,8 @@ export const codexHarnessAdapter: HarnessAdapter = {
     filename: 'AGENTS.md',
     content: codexAgentsMd(agentNames),
   }),
-  enforcingSurface: (bindings) => codexHooksJson(bindings),
+  // `mechanisms` THREADED, not defaulted: wiring this arity-1 dropped the map and
+  // made this op return null for every input. See the port's note.
+  enforcingSurface: (bindings, mechanisms) =>
+    codexHooksJson(bindings, mechanisms),
 };

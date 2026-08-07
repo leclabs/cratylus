@@ -83,6 +83,7 @@ const DECLARING_SITES: readonly string[] = [
   'canon/src/manifest.ts',
   'forge/src/adapters/claude/events.ts',
   'forge/src/adapters/codex/events.ts',
+  'forge/src/adapters/omp/events.ts',
 ];
 
 /**

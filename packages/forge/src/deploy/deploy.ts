@@ -59,6 +59,8 @@ export interface DeployOpts {
   harnessHome?: string | null;
   /** The harness's agent-definition extension (`HarnessAdapter.agentExt`). */
   agentExt?: string | null;
+  /** The harness's DESTINATION layout for one agent (`HarnessAdapter.agentRel`). */
+  agentRel?: ((name: string) => string) | null;
   /** The harness's hook-config filename (`HarnessAdapter.hooksFile`). */
   hooksFile?: string | null;
   // CLI overrides (null ⇒ unset, defer to the built-in default).
@@ -141,6 +143,7 @@ function placeOpts(opts: DeployOpts): PlaceOpts {
     // `settings.json` defaults are correct for claude and wrong everywhere else,
     // and a wrong default here fails by finding no files, which reads as success.
     ...(opts.agentExt ? { agentExt: opts.agentExt } : {}),
+    ...(opts.agentRel ? { agentRel: opts.agentRel } : {}),
     ...(opts.hooksFile ? { hooksFile: opts.hooksFile } : {}),
     log: opts.log,
     warn: opts.warn,

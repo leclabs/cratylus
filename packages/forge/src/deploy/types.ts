@@ -74,6 +74,17 @@ export interface PlaceOpts {
    * "nothing to do".
    */
   agentExt?: string;
+  /**
+   * The harness's DESTINATION layout for one agent (`HarnessAdapter.agentRel`) —
+   * harnessDir-relative, POSIX.
+   *
+   * Defaults to `agents/<name><agentExt>`, which is the render tree's own staging
+   * layout and was until now assumed to be every harness's layout too. It is not:
+   * omp reads a persona from `profiles/<name>/agent/APPEND_SYSTEM.md`. A placer
+   * that cannot be told otherwise can only ever deploy harnesses shaped like the
+   * projector.
+   */
+  agentRel?: (name: string) => string;
   /** The harness's hook-config filename (`HarnessAdapter.hooksFile`). */
   hooksFile?: string;
   log?: (line: string) => void;

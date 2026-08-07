@@ -20,6 +20,7 @@
 import type { HarnessAdapter } from '../../core/harness-adapter.js';
 import { claudeHarnessAdapter } from '../claude/render.js';
 import { codexHarnessAdapter } from '../codex/render.js';
+import { ompHarnessAdapter } from '../omp/render.js';
 
 export type {
   HarnessAdapter,
@@ -30,11 +31,12 @@ export type {
 export type { ResolvedSkill } from '../../core/body.js';
 
 /** The canonical harness names with a registered `HarnessAdapter`. */
-export type HarnessName = 'claude' | 'codex';
+export type HarnessName = 'claude' | 'codex' | 'omp';
 
 const REGISTRY: Record<HarnessName, HarnessAdapter> = {
   claude: claudeHarnessAdapter,
   codex: codexHarnessAdapter,
+  omp: ompHarnessAdapter,
 };
 
 /** Every registered harness name — the registry's OWN key set, so a command that

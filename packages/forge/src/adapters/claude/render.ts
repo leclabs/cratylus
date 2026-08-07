@@ -206,6 +206,12 @@ export function skillToClaudeMd(s: ResolvedSkill): string {
  * `scopeOrientation` (claude has no `AGENTS.md` index). Wraps the concrete functions
  * above — projection output is byte-identical to calling them directly.
  */
+/** Where agent `<name>`'s definition lives, relative to `.claude` — the ONE home
+ *  of claude's agent layout, read by both `agentDef` and deploy. */
+export function claudeAgentRel(name: string): string {
+  return `agents/${name}.md`;
+}
+
 export const claudeHarnessAdapter: HarnessAdapter = {
   name: 'claude',
   substrate: 'harness',
@@ -238,6 +244,7 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   // lands on, so it must not bake in the projecting machine's home.
   hookCommand: (anchor, workerFilename) =>
     `sh "$HOME/.claude/hooks/${anchor}/${workerFilename}"`,
+  agentRel: claudeAgentRel,
   agentDef: (a, ctx) => ({
     filename: `${a.name}.md`,
     content: agentToClaudeMd(a, ctx),

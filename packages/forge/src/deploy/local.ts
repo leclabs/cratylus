@@ -48,7 +48,19 @@ import {
   emptyReport,
 } from './types.js';
 
-/** Write <harnessDir>/agents/<name><agentExt> for each name (the harness-specific
+/**
+ * The DEFAULT destination layout: the render tree's staging layout, used verbatim.
+ *
+ * Exported because the audit set and the action set must derive a path the SAME
+ * way. They used to spell `agents/${name}${agentExt}` at four sites; a harness whose
+ * layout differs would have been placed by one and audited by another, and a drift
+ * report over a path nothing writes reads as a clean host.
+ */
+export function defaultAgentRel(name: string, agentExt = '.md'): string {
+  return `agents/${name}${agentExt}`;
+}
+
+/** Write <harnessDir>/<agentRel(name)> for each name (the harness-specific
  *  declaration); seed the harness-NEUTRAL memory home
  *  <home>/.agents/<name>/{SEMANTIC,PROCEDURAL,EPISODIC} (a sibling of .claude,
  *  mirroring memory `homeForName`) only if absent. */
@@ -61,11 +73,12 @@ export function placeAgentsLocal(
   const log = opts.log ?? (() => {});
   const warn = opts.warn ?? (() => {});
   const agentExt = opts.agentExt ?? '.md';
+  // SOURCE is the render tree's staging layout; DESTINATION is the harness's own.
+  // They coincide for claude and codex and do not for omp, which is why the
+  // destination is asked for rather than assumed.
+  const agentRel =
+    opts.agentRel ?? ((n: string) => defaultAgentRel(n, agentExt));
   const report = emptyReport();
-  const agents = resolvePath(harnessDir, 'agents');
-  if (!opts.dry) {
-    mkdirSync(agents, { recursive: true });
-  }
   for (const name of names) {
     const src = resolvePath(defsDir, `${name}${agentExt}`);
     if (!existsSync(src)) {
@@ -74,12 +87,12 @@ export function placeAgentsLocal(
       report.skipped.push(name);
       continue;
     }
+    const dest = resolvePath(harnessDir, agentRel(name));
     if (!opts.dry) {
-      writeFileSync(
-        resolvePath(agents, `${name}${agentExt}`),
-        readFileSync(src, 'utf-8'),
-        'utf-8',
-      );
+      // The destination's PARENT, not a fixed `agents/` dir: omp's is
+      // `profiles/<name>/agent/`, which does not exist until this run makes it.
+      mkdirSync(dirname(dest), { recursive: true });
+      writeFileSync(dest, readFileSync(src, 'utf-8'), 'utf-8');
     }
     report.copied += 1;
     // Testimony: the def is the ONLY thing this placer may later prune. The
@@ -87,7 +100,7 @@ export function placeAgentsLocal(
     // The extension must match what was WRITTEN, not what claude happens to use:
     // the manifest is the prune record, and a record naming a path that does not
     // exist can never converge — the real file becomes permanently unattributable.
-    report.written[name] = [`agents/${name}${agentExt}`];
+    report.written[name] = [agentRel(name)];
     // Memory sidecars live in the harness-NEUTRAL home ~/.agents/<name> (mirrors
     // memory `homeForName`), a sibling of `.claude` — NOT under
     // `.claude/agents` (Claude-specific; only <name>.md declaration lives there).
@@ -278,6 +291,8 @@ export interface AuditOpts {
   /** Cap on differing lines carried per side (0 ⇒ unbounded). A def is a whole
    *  doctrine; a full diff of one is not a report an operator reads. */
   maxLines?: number;
+  /** The harness's DESTINATION layout (`HarnessAdapter.agentRel`). */
+  agentRel?: (name: string) => string;
 }
 
 /** The `.forge/` bookkeeping dir — deploy's manifest here, `project`'s render
@@ -304,13 +319,16 @@ export function renderedFiles(
   tree: RenderTree,
   names: readonly string[],
   agentExt = '.md',
+  agentRel: (name: string) => string = (n) => defaultAgentRel(n, agentExt),
 ): { rel: string; src: string }[] {
   const out: { rel: string; src: string }[] = [];
   for (const name of names) {
     if (kind === 'agent') {
+      // SOURCE from the staging layout, `rel` in the HARNESS's layout — the same
+      // asymmetry `placeAgentsLocal` writes with, so audit and action agree.
       const src = resolvePath(tree.agentsDir, `${name}${agentExt}`);
       if (existsSync(src)) {
-        out.push({ rel: `agents/${name}${agentExt}`, src });
+        out.push({ rel: agentRel(name), src });
       }
       continue;
     }
@@ -402,9 +420,11 @@ export function auditLocal(
   opts: AuditOpts = {},
 ): DriftReport {
   const agentExt = opts.agentExt ?? '.md';
+  const agentRel =
+    opts.agentRel ?? ((n: string) => defaultAgentRel(n, agentExt));
   const cap = opts.maxLines ?? 12;
   const clip = (ls: string[]): string[] => (cap > 0 ? ls.slice(0, cap) : ls);
-  const rendered = renderedFiles(kind, tree, names, agentExt);
+  const rendered = renderedFiles(kind, tree, names, agentExt, agentRel);
   const divergences: Divergence[] = [];
 
   // ── stale + absent: every rendered artifact, against its deployed copy.
@@ -455,9 +475,13 @@ export function auditLocal(
   // longer produces. `staleFiles` is the prune's own candidate set, borrowed.
   const renderedByName: Record<string, string[]> = {};
   for (const name of names) {
-    renderedByName[name] = renderedFiles(kind, tree, [name], agentExt).map(
-      (f) => f.rel,
-    );
+    renderedByName[name] = renderedFiles(
+      kind,
+      tree,
+      [name],
+      agentExt,
+      agentRel,
+    ).map((f) => f.rel);
   }
   for (const rel of staleFiles(prior, renderedByName, [], false)) {
     const dest = resolvePath(harnessDir, rel);
@@ -485,10 +509,7 @@ export function auditLocal(
     Object.keys(prior),
     agentExt,
   )) {
-    const rel =
-      kind === 'agent'
-        ? `agents/${name}${agentExt}`
-        : `${kindDir(kind)}/${name}/`;
+    const rel = kind === 'agent' ? agentRel(name) : `${kindDir(kind)}/${name}/`;
     divergences.push({
       kind: 'foreign',
       path: rel,

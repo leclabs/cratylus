@@ -113,6 +113,28 @@ export interface HarnessAdapter {
    */
   readonly agentExt: string;
   /**
+   * Where agent `<name>`'s definition lands ON THE HOST, relative to the harness
+   * home — this adapter's DESTINATION layout, and its sole authority.
+   *
+   * NOT the render tree's layout. Those are two different facts and conflating them
+   * is what made this method necessary. The render tree is forge's own STAGING
+   * layout — uniformly `agents/<name><agentExt>`, one file per agent, because that
+   * is convenient for a projector and a `--out` dir a human diffs. Where a HARNESS
+   * reads its agents from is the harness's business, and deploy's job is the map
+   * between them. It used to be the identity map, which silently assumed every
+   * harness stages the way forge does.
+   *
+   * Claude and codex do (`agents/<name>.md`, `agents/<name>.toml`), so the
+   * assumption held for two harnesses and was invisible. **omp does not**: its
+   * persona is `profiles/<name>/agent/APPEND_SYSTEM.md`, keyed by a per-agent
+   * DIRECTORY, because `--profile <name>` is the only name an omp launch carries
+   * and the profile dir is what the harness auto-discovers.
+   *
+   * REQUIRED for the same reason `agentExt` is: deploy reads a render tree off disk
+   * with no vector to ask, so it must compute the destination from the name alone.
+   */
+  agentRel(name: string): string;
+  /**
    * The filename of this harness's hook-config artifact — `settings.json`,
    * `hooks.json`. Mirrors `HarnessHooksProjection.filename`; deploy needs it to
    * find the fragment in the render tree and to merge into the host's copy.
@@ -209,6 +231,28 @@ export interface HarnessAdapter {
    * mechanism.
    *
    * Absent ⇒ this adapter attaches per-agent already.
+   *
+   * `mechanisms` is the same injected `anchor → HarnessMechanism` map `agentDef`
+   * takes, and it is what an implementation needs to know WHAT COMMAND to wire —
+   * MODEL makes `mechanism` a function of (fragment, adapter) that deploy emits,
+   * never a field the source cell carries.
+   *
+   * **IT WAS MISSING, AND ITS ABSENCE WAS SILENT.** Codex's implementation already
+   * took a `mechanisms` parameter and defaulted it to an empty map; the adapter
+   * wired `(bindings) => codexHooksJson(bindings)` and never passed one, so every
+   * binding hit `if (!m) continue` and the function returned `null` for every input
+   * — measured, not inferred. Codex's per-agent enforcing constraints reached the
+   * host as nothing at all, while the unit tests stayed green because they call the
+   * function DIRECTLY with a mechanism map the production path never supplies.
+   * Threading it through the port is what makes the two paths the same path.
+   *
+   * Returns one projection, MANY, or null. Plural because a harness may scope by
+   * per-agent DIRECTORY rather than by a selector: omp writes one module per
+   * composing agent into that agent's own profile, which needs no filter to be
+   * correctly scoped and cannot be expressed as a single artifact.
    */
-  enforcingSurface?(bindings: readonly Binding[]): HarnessProjection | null;
+  enforcingSurface?(
+    bindings: readonly Binding[],
+    mechanisms?: ReadonlyMap<string, HarnessMechanism>,
+  ): HarnessProjection | readonly HarnessProjection[] | null;
 }
