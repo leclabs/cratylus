@@ -78,6 +78,7 @@ echo "release: $count tarball(s)"
 # that shipped nothing.
 published=0
 skipped=0
+failed=''
 for tgz in "$out"/*.tgz; do
 	meta=$(tar -xzOf "$tgz" package/package.json)
 	name=$(printf '%s' "$meta" | node -p 'JSON.parse(require("fs").readFileSync(0,"utf8")).name')
@@ -89,12 +90,26 @@ for tgz in "$out"/*.tgz; do
 		continue
 	fi
 
+	# EVERY TARBALL IS ATTEMPTED; ONE FAILURE DOES NOT HOLD THE REST HOSTAGE.
+	#
+	# Under `set -e` the first failing `npm publish` aborted the whole script, and
+	# WHICH one that is comes down to glob order — alphabetical accident. Measured:
+	# `cratylus-0.2.0.tgz` sorts ahead of every scoped sibling because the unscoped
+	# name is a prefix of `cratylus-canon-…`, `cratylus-forge-…` and the rest. So a
+	# 403 on one package took five publishable ones down with it, and the run
+	# reported nothing about whether they would have succeeded.
+	#
+	# Continuing also buys the DIAGNOSIS: one run now says which packages the
+	# credential can write and which it cannot, instead of stopping at the first.
 	if [ "${DRY_RUN:-0}" = "1" ]; then
-		npm publish "$tgz" --access public --provenance --tag "${DIST_TAG:-latest}" --dry-run
+		npm publish "$tgz" --access public --provenance --tag "${DIST_TAG:-latest}" --dry-run || failed="$failed $name"
 	else
-		npm publish "$tgz" --access public --provenance --tag "${DIST_TAG:-latest}"
+		npm publish "$tgz" --access public --provenance --tag "${DIST_TAG:-latest}" || failed="$failed $name"
 	fi
-	published=$((published + 1))
+	case " $failed " in
+	*" $name "*) ;;
+	*) published=$((published + 1)) ;;
+	esac
 done
 
 # PRINT THE DENOMINATOR. "Nothing to publish" and "published everything" are both silent
@@ -104,10 +119,16 @@ echo "release: $published published, $skipped already on the registry (of $count
 # A SNAPSHOT IS NOT TAGGED. Its versions are throwaway and unordered; a git tag would claim
 # a release that no changelog records and no one can name. `changeset tag` is for `latest`.
 #
-# NOTHING PUBLISHED MEANS NOTHING TO TAG. Tagging a run that uploaded nothing would move
-# tags on behalf of a release that did not happen. This is a GUARD, not an early exit —
-# the skip path is now the COMMON path (every push with no pending changeset takes it), so
-# returning before the cleanup below would leave `.pack` behind on most runs.
+# A PARTIAL RELEASE IS NOT A RELEASE, and nothing published means nothing to tag. Tagging claims every package shipped, so the
+# tag is withheld unless every upload succeeded — and the run exits non-zero so the
+# failure cannot read as success. What DID publish stays published; that is a fact
+# about npm, not a choice, and the exit code is what keeps it from being silent.
+if [ -n "$failed" ]; then
+	echo "release: FAILED to publish:$failed" >&2
+	rm -rf "$out"
+	exit 1
+fi
+
 if [ "$published" -gt 0 ]; then
 	[ "${DRY_RUN:-0}" = "1" ] || [ "${DIST_TAG:-latest}" != "latest" ] || pnpm exec changeset tag
 fi
