@@ -1,0 +1,33 @@
+FORK — which plan governs, put to the operator 2026-08-07.
+
+`omp-harness` is bound and has `t-omp-agent-extension` on its frontier. But this
+session's entire body of work has been a different thing: the CLI restructure —
+cratylus.config.ts, the `cratylus` hub package, forge demoted to a library, the
+zero-config `install` verb, the phantom-dependency and namespace repairs, and the
+release path made idempotent. None of it is in any plan. omp-harness has not been
+touched since its first shard landed.
+
+So the bound marker no longer describes the work, and the gate that reads it holds
+every turn open against a frontier nobody is working toward.
+
+THE FORK, and it is the operator's because it is a mandate question, not a
+sequencing one:
+
+  (a) The CLI line is the real work. Retire or release `omp-harness`, and let the
+      remaining CLI items — publishing, cross-host consumer verification, the
+      `uninstall` counterpart to `install`, the three closures in docs/cli/USAGE.md
+      §6 — be planned as what they are.
+
+  (b) omp-harness is still the mandate and the CLI work was a detour that has now
+      served its purpose. Resume `t-omp-agent-extension`.
+
+  (c) Both stand, sequenced — say which leads.
+
+THE PRINCIPAL'S READ, offered and not acted on: (a). Ten turns of operator
+direction have been CLI and publishing; omp-harness predates all of it. But
+electing a mandate is not mine, and minting a plan to discharge a debt praxis never
+issued is the drift my own wake cell names.
+
+BLOCKING EITHER WAY: eleven commits are unpushed, including the release-idempotency
+fix without which CI stays red, and the changesets that publish @cratylus/canon and
+`cratylus` for the first time. Nothing reaches a leclabs host until that push.

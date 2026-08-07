@@ -38,3 +38,8 @@ overrides, and a missing tree refuses by naming `cratylus project` rather than b
 edge was repaired in the source on 2026-08-05 and the manifest entry was left behind, so installing
 the shapes package also downloaded the runtime. Schema is the package the whole graph sits on top
 of; its own README already said "this package imports nothing" while its manifest disagreed.
+
+**`cratylus install` is new** — the zero-config path for an operator with no project. It resolves a
+corpus (the config where one exists, otherwise the corpus the mounting package names), detects the
+harness, renders to a temp tree and places it at user scope. `graphify install [--platform P]` is
+the prior art. Two harnesses on a host refuses and names both rather than choosing one silently.
