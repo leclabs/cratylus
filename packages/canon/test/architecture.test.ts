@@ -392,7 +392,7 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
     // a build script using the projector as a tool. Was `toolkit/project-cli.ts`
     // until the build-steps-proxy-the-cli shard deleted it — projection is the
     // shipped `cratylus project --harness <name>` now, driven from the root
-    // `agents.config.ts`, so the anchor moved to a build script that survives.
+    // `cratylus.config.ts`, so the anchor moved to a build script that survives.
     expect(ks).toContain('canon/tooling/scaffold-cli.ts → forge');
     // `canon/index.ts → forge` was the violating witness until the plugin contract
     // moved to the schema. `scaffold-cli.ts → forge` above is a PERMITTED edge and

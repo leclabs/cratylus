@@ -2,7 +2,7 @@
 // FIRST-CLASS discovery command. Two views over the extendable
 // option-space, so a first-timer needs no source-archaeology:
 //
-//  · CROSS-PLUGIN (default when an `agents.config.ts` is present): list the
+//  · CROSS-PLUGIN (default when an `cratylus.config.ts` is present): list the
 //    extendable fragment IDs across ALL extended plugins, grouped by plugin. This
 //    is the generalized multi-plugin catalog — the ids a consumer targets in a
 //    `patch`, read straight off the loaded plugins (`LoadedPlugin.contributions`,
@@ -25,13 +25,13 @@ import { type DimensionManifest, mergeManifest } from '@cratylus/schema';
 import pc from 'picocolors';
 import { FORGE_BIN } from '../../bin-name.js';
 import { type CatalogEntry, enumerateCatalog } from '../../catalog/index.js';
-import { loadAgentsConfig, loadPlugins } from '../../config/index.js';
+import { loadConfig, loadPlugins } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 
 export interface CatalogCmdOpts {
   /** Optional filter: keep only fragment ids containing this token (cross-plugin view). */
   agent?: string;
-  /** Path to the config; defaults to `<cwd>/agents.config.ts` (cross-plugin view). */
+  /** Path to the config; defaults to `<cwd>/cratylus.config.ts` (cross-plugin view). */
   config?: string;
   /** Corpus `dimensions/` dir — forces the per-dimension corpus census view. */
   corpus?: string;
@@ -109,7 +109,7 @@ async function runCrossPlugin(
   configPath: string,
   opts: CatalogCmdOpts,
 ): Promise<number> {
-  const config = await loadAgentsConfig(configPath);
+  const config = await loadConfig(configPath);
   const loaded = await loadPlugins(config.extends, dirname(configPath));
   const filter = opts.agent?.toLowerCase();
   const plugins: PluginCatalog[] = loaded.map((p) => ({
@@ -154,7 +154,7 @@ async function corpusManifest(
   configPath: string,
 ): Promise<DimensionManifest> {
   if (existsSync(configPath)) {
-    const config = await loadAgentsConfig(configPath);
+    const config = await loadConfig(configPath);
     return mergeManifest(config.extends ?? []);
   }
   for (const entry of ['index.ts', 'index.js']) {

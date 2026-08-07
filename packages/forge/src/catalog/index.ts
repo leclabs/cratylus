@@ -161,7 +161,7 @@ export async function enumerateCatalog(
 // plugins may both name a concept `parsimony`; each yields a DISTINCT node, so that
 // is a resolution event, not a collision (per-plugin σ* invariant).
 //
-// FEEDS THE LOADER: the per-plugin `FragmentEntry[]` is what the `agents.config.ts`
+// FEEDS THE LOADER: the per-plugin `FragmentEntry[]` is what the `cratylus.config.ts`
 // loader (`config/loader.ts`) turns into the resolver's `LoadedPlugin.contributions`
 // (target = the node; value = the body); the resolver then keys
 // `ResolvedAgentSet.fragments` by that same node object.

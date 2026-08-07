@@ -30,7 +30,7 @@
     //
     // A test tree may reference its own package through its PUBLIC specifier
     // rather than by relative path: `canon/test/runtime-shim.test.ts` drives the
-    // shipped `cratylus project` over the repo's `agents.config.ts`, and that
+    // shipped `cratylus project` over the repo's `cratylus.config.ts`, and that
     // config extends `@cratylus/canon` — the PACKAGE, i.e. this package's `dist`.
     // `^build` builds a package's DEPENDENCIES and never the package itself, so on
     // a cold tree `tsc` ran against a `dist` that did not exist yet.

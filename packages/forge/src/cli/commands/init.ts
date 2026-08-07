@@ -1,6 +1,6 @@
 // `forge init` — scaffold a project from the default plugin.
 //
-// `init` scaffolds `agents.config.ts` — the config-is-code home whose
+// `init` scaffolds `cratylus.config.ts` — the config-is-code home whose
 // zero-config default `extends: [canon]` (empty `patches`). The default is A
 // PACKAGE (the canon plugin), never a special-cased template: composing
 // that config runs the canon default through the normal `resolve()` with empty
@@ -24,7 +24,7 @@
 // (ARCHITECTURE, property 3: the corpus reaches forge as DATA).
 
 import pc from 'picocolors';
-import { scaffoldAgentsConfig } from '../../config/index.js';
+import { scaffoldConfig } from '../../config/index.js';
 
 export interface InitOpts {
   cwd?: string;
@@ -35,11 +35,11 @@ export interface InitOpts {
 export async function runInit(opts: InitOpts = {}): Promise<number> {
   const cwd = opts.cwd ?? process.cwd();
 
-  // Scaffold the config-is-code home: `agents.config.ts` with the
+  // Scaffold the config-is-code home: `cratylus.config.ts` with the
   // zero-config default `extends: [canon]` (the default IS the canon plugin,
   // resolved through `resolve()` — defaults-are-a-package, never special-cased).
   // Idempotent: an existing config is left untouched.
-  const scaffold = await scaffoldAgentsConfig(cwd, { plugin: opts.plugin });
+  const scaffold = await scaffoldConfig(cwd, { plugin: opts.plugin });
   console.log(
     scaffold.created ? pc.green('✓') : pc.gray('•'),
     scaffold.created

@@ -197,7 +197,7 @@ anything in this repository that performs such a step by another route is a dive
 reimplementation of a shipped command, which is how a projector drifts from its own CLI without
 anything reporting it.
 
-**This repository is itself such a consumer.** `agents.config.ts` at the root extends the canon
+**This repository is itself such a consumer.** `cratylus.config.ts` at the root extends the canon
 plugin, and `canon:project` / `canon:project:codex` are proxies through `cratylus project
 --harness <name>`; the `canon:deploy*` scripts reach the `forge` bin rather than a `dist/`
 path. The two private CLIs those scripts used to drive (`canon/src/toolkit/project-cli.ts` and

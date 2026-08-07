@@ -2,7 +2,7 @@
 // → resolve()). Proves:
 //  (1) the load step lifts each discovered fragment → a `replace` contribution and
 //      resolve() yields the fragment values (ordered fold, plugin order preserved);
-//  (2) an `agents.config.ts` (TS/ESM) loads with NO build step and resolves through
+//  (2) an `cratylus.config.ts` (TS/ESM) loads with NO build step and resolves through
 //      the same path — with `extends` as a REAL cross-module import;
 //  (3) `extends: [canon]` (the real canon dimensions) resolves to the canon
 //      default fragment set.
@@ -13,10 +13,10 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
-  type AgentsConfig,
+  type CratylusConfig,
   composeFromFile,
   loadPlugins,
-  resolveAgentsConfig,
+  resolveConfig,
 } from '../../src/config/index.js';
 import type { AgentPlugin } from '../../src/resolve/plugin.js';
 import { resolve } from '../../src/resolve/resolve.js';
@@ -93,7 +93,7 @@ describe('loadPlugins — THE LOAD STEP (AgentPlugin dirs → LoadedPlugin)', ()
   });
 });
 
-describe('agents.config.ts — loads with NO build step + resolves', () => {
+describe('cratylus.config.ts — loads with NO build step + resolves', () => {
   it('loads a TS/ESM config (real cross-module import) and resolves it', async () => {
     const root = mkdtempSync(join(tmpdir(), 'forge-config-'));
     try {
@@ -119,7 +119,7 @@ describe('agents.config.ts — loads with NO build step + resolves', () => {
       );
       // The config is CODE: `extends` is a REAL import of the plugin object.
       writeFileSync(
-        join(root, 'agents.config.ts'),
+        join(root, 'cratylus.config.ts'),
         [
           "import { plugin } from './plugin.ts';",
           'export default { extends: [plugin], patches: [] };',
@@ -128,7 +128,7 @@ describe('agents.config.ts — loads with NO build step + resolves', () => {
       );
 
       const { config, resolved } = await composeFromFile(
-        join(root, 'agents.config.ts'),
+        join(root, 'cratylus.config.ts'),
       );
       expect(config.extends.map((p) => p.name)).toEqual(['syn']);
       const byId = new Map(
@@ -150,8 +150,8 @@ describe('extends: [canon] — resolves to the canon default set', () => {
       manifest: FIXTURE_MANIFEST,
       fragments: CANON_DIMENSIONS,
     };
-    const config: AgentsConfig = { extends: [canon], patches: [] };
-    const resolved = await resolveAgentsConfig(config);
+    const config: CratylusConfig = { extends: [canon], patches: [] };
+    const resolved = await resolveConfig(config);
 
     // The full canon fragment catalog resolved (141 modules in the corpus).
     expect(resolved.fragments.size).toBeGreaterThan(100);

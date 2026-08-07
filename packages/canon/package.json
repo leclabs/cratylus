@@ -15,19 +15,24 @@
   },
   "files": ["dist"],
   "scripts": {
-    "typecheck": "tsc --noEmit",
-    "typecheck:test": "tsc -p tsconfig.test.json",
-    "test": "pnpm run build && vitest run",
-    "project:targets": "tsx tooling/project-targets-cli.ts",
-    "plan-set": "tsx tooling/plan-set-cli.ts",
-    "scaffold": "tsx tooling/scaffold-cli.ts",
     "build": "tsc -p tsconfig.build.json",
     "clean": "rm -rf dist",
+    "continuity": "sh targets/continuity/continuity-hook.sh",
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
+    "oracle": "sh tooling/render-oracle/render-oracle.sh check",
+    "oracle:update": "sh tooling/render-oracle/render-oracle.sh update",
+    "pack:smoke": "tsx tooling/pack-smoke/pack-smoke-cli.ts",
+    "plan-set": "tsx tooling/plan-set-cli.ts",
+    "praxis": "sh tooling/praxis/praxis.sh",
     "prepack": "pnpm run build",
-    "pack:smoke": "tsx tooling/pack-smoke/pack-smoke-cli.ts"
+    "project:targets": "tsx tooling/project-targets-cli.ts",
+    "scaffold": "tsx tooling/scaffold-cli.ts",
+    "stance-guard:test": "sh test/support/guardrail/test-stance-guardrail.sh",
+    "test": "pnpm run build && vitest run",
+    "typecheck": "tsc --noEmit",
+    "typecheck:test": "tsc -p tsconfig.test.json"
   },
-  "//test": "`test` builds FIRST because `test/runtime-shim.test.ts` drives the shipped `cratylus project` over the repository's own `agents.config.ts`, and that config extends `@cratylus/canon` \u2014 the PACKAGE, i.e. this package's `dist`. turbo's `test.dependsOn: [^build]` builds this package's DEPENDENCIES, never this package, so a cold clone would run the consumer path against a dist that does not exist.",
+  "//test": "`test` builds FIRST because `test/runtime-shim.test.ts` drives the shipped `cratylus project` over the repository's own `cratylus.config.ts`, and that config extends `@cratylus/canon` \u2014 the PACKAGE, i.e. this package's `dist`. turbo's `test.dependsOn: [^build]` builds this package's DEPENDENCIES, never this package, so a cold clone would run the consumer path against a dist that does not exist.",
   "dependencies": {
     "@cratylus/schema": "workspace:*"
   },

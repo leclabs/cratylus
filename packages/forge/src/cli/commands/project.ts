@@ -12,7 +12,7 @@ import { join, resolve } from 'node:path';
 import pc from 'picocolors';
 import { adapterByName } from '../../adapters/registry/index.js';
 import { FORGE_BIN } from '../../bin-name.js';
-import { loadAgentsConfig } from '../../config/index.js';
+import { loadConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
   type ProjectablePlugin,
@@ -23,7 +23,7 @@ import {
 } from '../../project/index.js';
 
 export interface ProjectCmdOpts {
-  /** Path to `agents.config.ts`; defaults to `<cwd>/agents.config.ts`. */
+  /** Path to `cratylus.config.ts`; defaults to `<cwd>/cratylus.config.ts`. */
   config?: string;
   /** Render-tree root; defaults to `<cwd>/.render`. */
   out?: string;
@@ -42,7 +42,7 @@ export async function runProject(opts: ProjectCmdOpts = {}): Promise<number> {
     return 1;
   }
 
-  const config = await loadAgentsConfig(configPath);
+  const config = await loadConfig(configPath);
   // No cast: `AgentPlugin` now satisfies `ProjectablePlugin` structurally, because
   // projection consumes the `fragments` dir too. The cast this line used to carry
   // was the census's tell — it silently DISCARDED the one field the fold needs.

@@ -1,13 +1,13 @@
 // The `config/` public surface — the config-is-code layer.
-// `defineAgentsConfig` is what an `agents.config.ts` imports; the loader + scaffold
+// `defineConfig` is what an `cratylus.config.ts` imports; the loader + scaffold
 // are what the CLI (and any programmatic caller) drives.
-export { type AgentsConfig, defineAgentsConfig } from './config.js';
+export { type CratylusConfig, defineConfig } from './config.js';
 export {
   ConfigShapeError,
   composeFromFile,
-  loadAgentsConfig,
+  loadConfig,
   loadPlugins,
-  resolveAgentsConfig,
+  resolveConfig,
 } from './loader.js';
 export {
   type AddResult,
@@ -19,6 +19,6 @@ export {
   SCAFFOLD_SOURCE,
   addPlugin,
   identForPackage,
-  scaffoldAgentsConfig,
+  scaffoldConfig,
   scaffoldSource,
 } from './scaffold.js';

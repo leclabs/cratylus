@@ -15,13 +15,13 @@ pipeline reads a harness's existing configuration and treats it as truth.
 init → add → compose → project → deploy
 ```
 
-| Stage     | What it does                                                                 |
-| --------- | ---------------------------------------------------------------------------- |
-| `init`    | scaffolds `agents.config.ts` in the project root, extending the canon plugin |
-| `add`     | wires another plugin package into that config's `extends`                    |
-| `compose` | resolves the plugin set into one merged fragment set, and prints it          |
-| `project` | renders the resolved set into a render tree (`.render/`)                     |
-| `deploy`  | places the render tree into the local `.claude/` root                        |
+| Stage     | What it does                                                                   |
+| --------- | ------------------------------------------------------------------------------ |
+| `init`    | scaffolds `cratylus.config.ts` in the project root, extending the canon plugin |
+| `add`     | wires another plugin package into that config's `extends`                      |
+| `compose` | resolves the plugin set into one merged fragment set, and prints it            |
+| `project` | renders the resolved set into a render tree (`.render/`)                       |
+| `deploy`  | places the render tree into the local `.claude/` root                          |
 
 Projection goes from composed cells to harness artifacts **directly**. The claude and codex harness
 adapters render agent definitions, skill directories, and hook trees from the resolved cells; there is
@@ -53,7 +53,7 @@ npm i @cratylus/canon@file:../canon
 ```bash
 cd ~/myproject
 
-forge init            # scaffolds agents.config.ts (extends: [canon])
+forge init            # scaffolds cratylus.config.ts (extends: [canon])
 cratylus compose         # inspect the resolved fragment set
 cratylus project         # render into ./.render
 cratylus deploy \
@@ -68,10 +68,10 @@ entirely. Adding a second plugin is what `add` is for.
 The scaffolded config is real, type-checked TypeScript — `extends` entries are imports, not strings:
 
 ```ts
-import { defineAgentsConfig } from '@cratylus/forge/config';
+import { defineConfig } from '@cratylus/forge/config';
 import canon from '@cratylus/canon';
 
-export default defineAgentsConfig({
+export default defineConfig({
   extends: [canon],
   patches: [],
 });
@@ -81,7 +81,7 @@ export default defineAgentsConfig({
 
 ### `forge init`
 
-Scaffolds `agents.config.ts` with the zero-config default `extends: [canon]`. The default is a
+Scaffolds `cratylus.config.ts` with the zero-config default `extends: [canon]`. The default is a
 package resolved through the ordinary resolver, not a baked-in template. An existing config is left
 untouched.
 
@@ -94,10 +94,10 @@ could name only one corpus would be deciding what the design is. The plugin is a
 scaffold:
 
 ```ts
-import { scaffoldAgentsConfig, DEFAULT_PLUGIN_PACKAGE } from '@cratylus/forge/config';
+import { scaffoldConfig, DEFAULT_PLUGIN_PACKAGE } from '@cratylus/forge/config';
 
-await scaffoldAgentsConfig(cwd); // extends: [canon]  — DEFAULT_PLUGIN_PACKAGE
-await scaffoldAgentsConfig(cwd, { plugin: '@acme/corpus' }); // extends: [corpus]
+await scaffoldConfig(cwd); // extends: [canon]  — DEFAULT_PLUGIN_PACKAGE
+await scaffoldConfig(cwd, { plugin: '@acme/corpus' }); // extends: [corpus]
 ```
 
 The binding name is derived from the package specifier, and `forge add` edits either config the
@@ -134,7 +134,7 @@ them.
 cratylus project [--config <path>] [--out <dir>] [--harness claude|codex]
 ```
 
-Defaults: config `<cwd>/agents.config.ts`, out `<cwd>/.render`, harness `claude`. On success it prints
+Defaults: config `<cwd>/cratylus.config.ts`, out `<cwd>/.render`, harness `claude`. On success it prints
 the counts it wrote and the exact `deploy` invocation that ships them.
 
 ```
@@ -213,7 +213,7 @@ that loop, not the loop.
 The CLI is a thin shell over exported functions. The subpaths that back the pipeline:
 
 ```ts
-import { defineAgentsConfig, loadAgentsConfig, addPlugin } from '@cratylus/forge/config';
+import { defineConfig, loadConfig, addPlugin } from '@cratylus/forge/config';
 import { resolve, defineAgentPlugin } from '@cratylus/forge/resolve';
 import { projectPluginSet } from '@cratylus/forge/project';
 import { deploySingle, userScope, projectScope } from '@cratylus/forge/deploy';

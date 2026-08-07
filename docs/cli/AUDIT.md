@@ -16,7 +16,7 @@
 | 13  | **bug**    | `deploy/deploy.ts:240`          | `unregisterHookCommandsAt` hardcodes `settings.json`, ignoring `adapter.hooksFile`. Codex's is `hooks.json`, so **stale codex hook registrations are never unregistered**.                 |
 | 11  | **bug**    | `deploy/bundle.ts:104-115`      | `--assets` staging copies files into the render tree with **no `dry` guard**, so `--dry-run` — documented as "change nothing" — writes.                                                    |
 | 12  | **bug**    | `commands/deploy.ts:123`        | `adapterByName(...)` sits **above** the `try` at :139, so an unknown `--harness` is an uncaught throw on the non-check path. The check path was already fixed for exactly this (:313-319). |
-| 19  | **bug**    | `cli/commands/project.ts:45,58` | `loadAgentsConfig` and `adapterByName` are unwrapped — a malformed config or bad harness produces an unhandled rejection, not an exit code. Every sibling command catches.                 |
+| 19  | **bug**    | `cli/commands/project.ts:45,58` | `loadConfig` and `adapterByName` are unwrapped — a malformed config or bad harness produces an unhandled rejection, not an exit code. Every sibling command catches.                       |
 
 ## The ones that mislead
 
@@ -26,7 +26,7 @@
 | 4   | doc | `deploy` — "(agents/ + skills/)"                              | default `--kind all` also deploys **hooks**, and requires `--hooks-dir` or it exits immediately.                                                                                                                                    |
 | 5   | doc | `deploy` — "**Place** a projected render tree"                | it also **deletes** pruned artifacts and **unregisters** `settings.json` entries. Neither appears in any help string.                                                                                                               |
 | 6   | doc | _(nothing)_                                                   | every non-dry `deploy` writes **`$HOME/.cratylus-run.json`** — outside `.claude`, outside the scope root, outside every documented flag.                                                                                            |
-| 7   | doc | `--config` default `<cwd>/agents.config.ts`                   | actually `<--project or cwd>/agents.config.ts`.                                                                                                                                                                                     |
+| 7   | doc | `--config` default `<cwd>/cratylus.config.ts`                 | actually `<--project or cwd>/cratylus.config.ts`.                                                                                                                                                                                   |
 | 8   | doc | `--project` is "project root for `--scope project`"           | it also relocates config lookup **at user scope**.                                                                                                                                                                                  |
 | 1   | doc | `compose --dry-run` — "print the resolved set; write nothing" | `compose` never writes under any flag. The flag's only effect is **suppressing a note that says nothing was written**.                                                                                                              |
 | 2   | doc | _(the note itself)_                                           | the default path prints a note advertising a write that no version implements.                                                                                                                                                      |
@@ -61,7 +61,7 @@ git grep -n forge -- packages/forge/src/cli packages/forge/src/config \
 | `cli/commands/add.ts:25`                  | `forge add: <msg>`                                                                                         |
 | `cli/commands/project.ts:40`              | `run forge init first`                                                                                     |
 | `cli/commands/optimize.ts:91,103,111,117` | `forge optimize: …` ×4                                                                                     |
-| `config/scaffold.ts:140`                  | ``no agents.config.ts — run `forge init` first``                                                           |
+| `config/scaffold.ts:140`                  | ``no cratylus.config.ts — run `forge init` first``                                                         |
 
 **Written into the user's own config file — 2**, and these are the worse ones, because they persist
 in a file the user owns and will read long after the session that generated it:

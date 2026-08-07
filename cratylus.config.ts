@@ -1,7 +1,7 @@
 import canon from '@cratylus/canon';
-import { defineAgentsConfig } from '@cratylus/forge/config';
+import { defineConfig } from '@cratylus/forge/config';
 
-// cratylus's OWN agents.config.ts — this repository is a consumer of the
+// cratylus's OWN cratylus.config.ts — this repository is a consumer of the
 // commands it ships. `cratylus project --harness <name>` is the build-time
 // entry (ARCHITECTURE.md, "Two consumer entries, because there are two DAGs");
 // the private `toolkit/project-cli*.ts` reimplementations it replaces differed
@@ -15,7 +15,7 @@ import { defineAgentsConfig } from '@cratylus/forge/config';
 //
 // `patches: []` is the honest state: this corpus authors no consumer patch. It
 // is the plugin, not a consumer of one.
-export default defineAgentsConfig({
+export default defineConfig({
   extends: [canon],
   patches: [],
 });

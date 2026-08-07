@@ -1,5 +1,5 @@
 // The ZERO-CONFIG corpus catalog path — `cratylus catalog --corpus <dir>` with no
-// `agents.config.ts` anywhere. This is what a NEW consumer hits first, and it became
+// `cratylus.config.ts` anywhere. This is what a NEW consumer hits first, and it became
 // load-bearing at fb944d2: a missing catalog used to fall back to a resident default,
 // and now REFUSES, so both of these branches went from unreachable to first-contact.
 //
@@ -15,7 +15,7 @@
 // a USER-REACHABLE path has no test, and a unit test of its helper does not discharge
 // that. The ABSENT config is the load-bearing half of the fixture — with one present,
 // branch 1 answers and neither of these ever runs — so each test asserts the absence
-// at the exact path the CLI probes (`<cwd>/agents.config.ts`) rather than assuming it.
+// at the exact path the CLI probes (`<cwd>/cratylus.config.ts`) rather than assuming it.
 
 import {
   existsSync,
@@ -88,7 +88,7 @@ async function capture(fn: () => Promise<number>): Promise<{
   return { rc, out: [...logs, ...stdout].join('\n'), err: errs.join('\n') };
 }
 
-describe('catalog — the ZERO-CONFIG corpus path (no agents.config.ts)', () => {
+describe('catalog — the ZERO-CONFIG corpus path (no cratylus.config.ts)', () => {
   let cwd: string;
   let dimensions: string;
 

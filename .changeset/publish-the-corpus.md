@@ -6,7 +6,7 @@ The corpus is published, because a projector with no installable corpus is not i
 
 `@cratylus/canon` was `ignore`d in the changesets config and sat at `0.0.0` while its five siblings
 reached `0.1.1`. The consequence was not cosmetic: `@cratylus/forge` ships the `cratylus` bin but
-deliberately does not depend on a corpus — it receives one as data through `agents.config.ts` — so
+deliberately does not depend on a corpus — it receives one as data through `cratylus.config.ts` — so
 with canon unpublished there was **no way for anyone to install a working cratylus at all**.
 
 It also decides a design question in the open. A globally installed corpus does not resolve from a

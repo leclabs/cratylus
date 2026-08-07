@@ -42,7 +42,7 @@ describe('compose --dry-run', () => {
       "export const insight = 'insight';\n",
     );
     writeFileSync(
-      join(cwd, 'agents.config.ts'),
+      join(cwd, 'cratylus.config.ts'),
       [
         "import { fileURLToPath } from 'node:url';",
         `const plugin = { name: 'syn', manifest: ${JSON.stringify(FIXTURE_MANIFEST)}, fragments: fileURLToPath(new URL('./frags', import.meta.url)) };`,
@@ -62,7 +62,7 @@ describe('compose --dry-run', () => {
     let rc: number;
     try {
       rc = await runCompose({
-        config: join(cwd, 'agents.config.ts'),
+        config: join(cwd, 'cratylus.config.ts'),
         dryRun: true,
       });
     } finally {

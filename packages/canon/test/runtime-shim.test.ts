@@ -104,7 +104,7 @@ beforeAll(async () => {
 
   // The CODEX path, through its real CLI — the fork's live call site. That call site
   // is now the SHIPPED command: `cratylus project --harness codex`, reading the
-  // repository's own `agents.config.ts`. Driving the private `project-cli-codex.ts`
+  // repository's own `cratylus.config.ts`. Driving the private `project-cli-codex.ts`
   // here was what let the fork exist at all; there is no private codex CLI to drive.
   execFileSync(
     process.execPath,
@@ -114,7 +114,7 @@ beforeAll(async () => {
       '--harness',
       'codex',
       '--config',
-      join(requireRepoRoot(canonRoot), 'agents.config.ts'),
+      join(requireRepoRoot(canonRoot), 'cratylus.config.ts'),
       '--out',
       codexOut,
     ],

@@ -1,4 +1,4 @@
-// `forge add <package>` — wire a plugin into `agents.config.ts`'s `extends`.
+// `forge add <package>` — wire a plugin into `cratylus.config.ts`'s `extends`.
 //
 // Config is code, so `add` edits the config SOURCE: it inserts a real `import` for
 // the package and appends its binding to the `extends` array (idempotent). The

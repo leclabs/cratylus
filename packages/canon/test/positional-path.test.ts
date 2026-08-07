@@ -172,7 +172,7 @@ describe('POSITIONAL-PATH gate — no path is built from a hop count', () => {
   it('CONVICTS the four shapes that actually broke', () => {
     expect(tsHops(`const r = join(here, '..', '..');`)).toEqual([2]);
     expect(
-      tsHops(`const r = join(canonRoot, '..', '..', 'agents.config.ts');`),
+      tsHops(`const r = join(canonRoot, '..', '..', 'cratylus.config.ts');`),
     ).toEqual([2]);
     expect(tsHops(`const w = join(here, '..', '..', '..', 'x.sh');`)).toEqual([
       3,

@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// Scaffold + edit `agents.config.ts` — the write side of the two scaffold verbs.
+// Scaffold + edit `cratylus.config.ts` — the write side of the two scaffold verbs.
 //
-// `scaffoldAgentsConfig` writes the ZERO-CONFIG default: `extends: [canon]`
+// `scaffoldConfig` writes the ZERO-CONFIG default: `extends: [canon]`
 // (the default plugin package) + empty `patches` — and takes an OVERRIDE, so the
 // default is a default rather than a law. A projector that could only ever
 // scaffold against one corpus would be deciding what the design IS; the plugin
@@ -16,13 +16,18 @@
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import { FORGE_BIN } from '../bin-name.js';
 
 /** The config-is-code home filename. */
-export const CONFIG_FILE = 'agents.config.ts';
+// DERIVED, NEVER SPELLED. The config file is named after the tool, so its name has
+// the same single-home obligation the bin does — `bin-name-single-home` convicts a
+// literal here exactly as it would a literal bin. One authored spelling, in the
+// manifest npm reads; everything downstream interpolates.
+export const CONFIG_FILE = `${FORGE_BIN}.config.ts`;
 
 /**
  * A config the scaffold verbs cannot write or edit safely: an unusable plugin
- * specifier, or a malformed / hand-restructured `agents.config.ts`. Declared
+ * specifier, or a malformed / hand-restructured `cratylus.config.ts`. Declared
  * ahead of the renderers because `SCAFFOLD_SOURCE` is evaluated at module init.
  */
 export class ConfigEditError extends Error {
@@ -34,7 +39,7 @@ export class ConfigEditError extends Error {
 
 /**
  * The plugin package a scaffold extends when the caller names none. A DEFAULT,
- * not a law — `scaffoldAgentsConfig(cwd, { plugin })` overrides it.
+ * not a law — `scaffoldConfig(cwd, { plugin })` overrides it.
  */
 export const DEFAULT_PLUGIN_PACKAGE = '@cratylus/canon';
 
@@ -53,14 +58,14 @@ export function scaffoldSource(
     );
   }
   const ident = identForPackage(pkg);
-  return `import { defineAgentsConfig } from '@cratylus/forge/config';
+  return `import { defineConfig } from '@cratylus/forge/config';
 import ${ident} from '${pkg}';
 
 // forge — config is code. This is the SINGLE config home.
 // \`extends\` are REAL imports: type-checked, IDE-complete, no build step.
 // Zero-config default = the ${ident} plugin through the resolver, empty patches.
 // Wire more plugins with \`forge add <package>\`.
-export default defineAgentsConfig({
+export default defineConfig({
   extends: [${ident}],
   patches: [],
 });
@@ -86,8 +91,8 @@ export interface ScaffoldResult {
   readonly plugin: string;
 }
 
-/** Write `<cwd>/agents.config.ts` if absent (idempotent — never clobbers). */
-export async function scaffoldAgentsConfig(
+/** Write `<cwd>/cratylus.config.ts` if absent (idempotent — never clobbers). */
+export async function scaffoldConfig(
   cwd: string,
   opts: ScaffoldOpts = {},
 ): Promise<ScaffoldResult> {
@@ -128,7 +133,7 @@ export interface AddResult {
 }
 
 /**
- * Wire `pkg` into `<cwd>/agents.config.ts`'s `extends`: insert a default `import`
+ * Wire `pkg` into `<cwd>/cratylus.config.ts`'s `extends`: insert a default `import`
  * for it and append its binding to the `extends` array. Idempotent (a package
  * already imported + extended is a no-op). Refuses loudly if the config is absent
  * (run `init` first) or its `extends: [ … ]` array cannot be located.
@@ -137,7 +142,7 @@ export async function addPlugin(cwd: string, pkg: string): Promise<AddResult> {
   const path = join(cwd, CONFIG_FILE);
   if (!existsSync(path)) {
     throw new ConfigEditError(
-      `${path}: no agents.config.ts — run \`forge init\` first`,
+      `${path}: no ${CONFIG_FILE} — run \`${FORGE_BIN} init\` first`,
     );
   }
   let src = await readFile(path, 'utf8');
@@ -157,7 +162,7 @@ export async function addPlugin(cwd: string, pkg: string): Promise<AddResult> {
   const lastImport = [...src.matchAll(/^import\s.*?;$/gm)].pop();
   if (!lastImport || lastImport.index === undefined) {
     throw new ConfigEditError(
-      `${path}: no import lines found — is this a scaffolded agents.config.ts?`,
+      `${path}: no import lines found — is this a scaffolded ${CONFIG_FILE}?`,
     );
   }
   const insertAt = lastImport.index + lastImport[0].length;

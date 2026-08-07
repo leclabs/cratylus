@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { runInit } from '../../src/cli/commands/init.js';
 import {
   DEFAULT_PLUGIN_PACKAGE,
-  resolveAgentsConfig,
+  resolveConfig,
 } from '../../src/config/index.js';
 import type { AgentPlugin } from '../../src/resolve/plugin.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
@@ -33,12 +33,12 @@ describe('CLI commands (integration)', () => {
     // AMENDED: the literal '@cratylus/canon' used to be
     // asserted here as the corpus `init` could only ever scaffold. It is read off
     // `DEFAULT_PLUGIN_PACKAGE` now, because the scaffold takes an override
-    // (`scaffoldAgentsConfig(cwd, { plugin })`); the default value itself stays
+    // (`scaffoldConfig(cwd, { plugin })`); the default value itself stays
     // gated in test/config/scaffold.test.ts, where the override is also proven.
     // What this line pins is unchanged: what `init` with no arguments produces.
     const code = await runInit({ cwd });
     expect(code).toBe(0);
-    const configSrc = readFileSync(join(cwd, 'agents.config.ts'), 'utf8');
+    const configSrc = readFileSync(join(cwd, 'cratylus.config.ts'), 'utf8');
     expect(configSrc).toContain(
       `import canon from '${DEFAULT_PLUGIN_PACKAGE}'`,
     );
@@ -55,7 +55,7 @@ describe('CLI commands (integration)', () => {
       manifest: FIXTURE_MANIFEST,
       fragments: CANON_DIMENSIONS,
     };
-    const resolved = await resolveAgentsConfig({
+    const resolved = await resolveConfig({
       extends: [canon],
       patches: [],
     });
@@ -66,14 +66,14 @@ describe('CLI commands (integration)', () => {
     expect(byId.get('canon:objective/parsimony')).toBe('parsimony');
   });
 
-  it('init is idempotent: an existing agents.config.ts is left untouched', async () => {
+  it('init is idempotent: an existing cratylus.config.ts is left untouched', async () => {
     // The old `init` refused a second run because `.forge/` already
     // existed. With the IR home gone, `init` is exactly the config scaffold,
     // and the scaffold is idempotent rather than refusing.
     expect(await runInit({ cwd })).toBe(0);
-    const first = readFileSync(join(cwd, 'agents.config.ts'), 'utf8');
+    const first = readFileSync(join(cwd, 'cratylus.config.ts'), 'utf8');
     expect(await runInit({ cwd })).toBe(0);
-    expect(readFileSync(join(cwd, 'agents.config.ts'), 'utf8')).toBe(first);
+    expect(readFileSync(join(cwd, 'cratylus.config.ts'), 'utf8')).toBe(first);
   });
 
   it('init writes no .forge/ IR home', async () => {

@@ -76,7 +76,7 @@ SECOND_AXIOM='SECOND PRINCIPLE: a shard is a self-contained execution specificat
 mkdir -p "$TREE/agents" "$TREE/skills" "$DEPLOYED" "$CORPUS/node_modules/.bin" "$WORK/tmp"
 # the corpus marker — the file `deploy` itself reads, and therefore the one the
 # worker walks up for
-printf '// fixture corpus\n' > "$CORPUS/agents.config.ts"
+printf '// fixture corpus\n' > "$CORPUS/cratylus.config.ts"
 # the render tree, by SHAPE: agents/ + skills/ + THIS harness's hooks file
 printf '{}\n' > "$TREE/$HOOKS_FILE"
 printf 'name: nico\n%s\n' "$AXIOM" > "$TREE/agents/nico.md"

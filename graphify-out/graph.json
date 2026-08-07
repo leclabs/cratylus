@@ -232,15 +232,15 @@
       "norm_label": "graphify_rebuild_log"
     },
     {
-      "label": "agents.config.ts",
+      "label": "cratylus.config.ts",
       "file_type": "code",
-      "source_file": "agents.config.ts",
+      "source_file": "cratylus.config.ts",
       "source_location": "L1",
       "_origin": "ast",
       "id": "agents_config",
       "community": 236,
-      "community_name": "agents.config.ts",
-      "norm_label": "agents.config.ts"
+      "community_name": "cratylus.config.ts",
+      "norm_label": "cratylus.config.ts"
     },
     {
       "label": "commitlint.config.mjs",
@@ -12556,7 +12556,7 @@
       "norm_label": "config.ts"
     },
     {
-      "label": "AgentsConfig",
+      "label": "CratylusConfig",
       "file_type": "code",
       "source_file": "packages/forge/src/config/config.ts",
       "source_location": "L31",
@@ -12567,7 +12567,7 @@
       "norm_label": "agentsconfig"
     },
     {
-      "label": "defineAgentsConfig()",
+      "label": "defineConfig()",
       "file_type": "code",
       "source_file": "packages/forge/src/config/config.ts",
       "source_location": "L43",
@@ -12622,7 +12622,7 @@
       "norm_label": ".constructor()"
     },
     {
-      "label": "isAgentsConfig()",
+      "label": "isConfig()",
       "file_type": "code",
       "source_file": "packages/forge/src/config/loader.ts",
       "source_location": "L59",
@@ -12633,7 +12633,7 @@
       "norm_label": "isagentsconfig()"
     },
     {
-      "label": "loadAgentsConfig()",
+      "label": "loadConfig()",
       "file_type": "code",
       "source_file": "packages/forge/src/config/loader.ts",
       "source_location": "L72",
@@ -12655,7 +12655,7 @@
       "norm_label": "loadplugins()"
     },
     {
-      "label": "resolveAgentsConfig()",
+      "label": "resolveConfig()",
       "file_type": "code",
       "source_file": "packages/forge/src/config/loader.ts",
       "source_location": "L141",
@@ -12754,7 +12754,7 @@
       "norm_label": "scaffoldresult"
     },
     {
-      "label": "scaffoldAgentsConfig()",
+      "label": "scaffoldConfig()",
       "file_type": "code",
       "source_file": "packages/forge/src/config/scaffold.ts",
       "source_location": "L90",

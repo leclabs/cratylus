@@ -12,7 +12,7 @@ import { join } from 'node:path';
 import pc from 'picocolors';
 import { adapterByName } from '../../adapters/registry/index.js';
 import { FORGE_BIN } from '../../bin-name.js';
-import { loadAgentsConfig } from '../../config/index.js';
+import { loadConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
   DEPLOY_CHECK_EXIT,
@@ -61,7 +61,7 @@ export interface DeployCmdOpts {
   /** Sink for the report (tests, and any caller that is not a terminal). */
   log?: (line: string) => void;
   /**
-   * Path to `agents.config.ts` — read for ONE fact deploy cannot obtain from a
+   * Path to `cratylus.config.ts` — read for ONE fact deploy cannot obtain from a
    * render tree: the corpus's lifecycle-event vocabulary (`AgentPlugin.events`).
    *
    * The tree is a directory of already-rendered bytes; a vocabulary is not in it.
@@ -193,7 +193,7 @@ async function emitHostRuntimeConfig(
     );
     return;
   }
-  const config = await loadAgentsConfig(configPath);
+  const config = await loadConfig(configPath);
   const events = [...new Set(config.extends.flatMap((p) => p.events ?? []))];
   if (events.length === 0) {
     warn(

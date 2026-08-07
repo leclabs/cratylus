@@ -1,4 +1,4 @@
-// P4 — the two scaffold verbs' write side: `scaffoldAgentsConfig` (init) and
+// P4 — the two scaffold verbs' write side: `scaffoldConfig` (init) and
 // `addPlugin` (add). Proves init scaffolds `extends: [canon]`, and add appends a
 // real import + extends member (idempotent, loud on an unrecognized shape).
 
@@ -11,17 +11,17 @@ import {
   DEFAULT_PLUGIN_PACKAGE,
   addPlugin,
   identForPackage,
-  scaffoldAgentsConfig,
+  scaffoldConfig,
 } from '../../src/config/index.js';
 
-describe('scaffoldAgentsConfig — the init zero-config default', () => {
+describe('scaffoldConfig — the init zero-config default', () => {
   let cwd: string;
   beforeEach(() => {
     cwd = mkdtempSync(join(tmpdir(), 'forge-scaffold-'));
   });
   afterEach(() => rmSync(cwd, { recursive: true, force: true }));
 
-  it('writes agents.config.ts extending [canon] with empty patches', async () => {
+  it('writes cratylus.config.ts extending [canon] with empty patches', async () => {
     // AMENDED: this used to assert the literal
     // '@cratylus/canon' as the ONLY corpus the scaffold could name. It now pins
     // the DEFAULT — what you get when you name no plugin — while the companion
@@ -30,10 +30,10 @@ describe('scaffoldAgentsConfig — the init zero-config default', () => {
     // decision and stays gated. Reading it off the constant everywhere else is
     // what keeps the pin from re-freezing the hardcode.
     expect(DEFAULT_PLUGIN_PACKAGE).toBe('@cratylus/canon');
-    const res = await scaffoldAgentsConfig(cwd);
+    const res = await scaffoldConfig(cwd);
     expect(res.created).toBe(true);
     expect(res.plugin).toBe(DEFAULT_PLUGIN_PACKAGE);
-    const src = readFileSync(join(cwd, 'agents.config.ts'), 'utf8');
+    const src = readFileSync(join(cwd, 'cratylus.config.ts'), 'utf8');
     expect(src).toContain(`import canon from '${DEFAULT_PLUGIN_PACKAGE}'`);
     expect(src).toMatch(/extends:\s*\[canon\]/);
     expect(src).toMatch(/patches:\s*\[\]/);
@@ -44,9 +44,9 @@ describe('scaffoldAgentsConfig — the init zero-config default', () => {
     // by construction, so every scaffolded project extended THIS corpus with no
     // way out — the projector deciding what the design IS. The default stays;
     // the unoverridability is what was the defect.
-    const res = await scaffoldAgentsConfig(cwd, { plugin: '@acme/corpus' });
+    const res = await scaffoldConfig(cwd, { plugin: '@acme/corpus' });
     expect(res.created).toBe(true);
-    const src = readFileSync(join(cwd, 'agents.config.ts'), 'utf8');
+    const src = readFileSync(join(cwd, 'cratylus.config.ts'), 'utf8');
     expect(src).toContain("import corpus from '@acme/corpus'");
     expect(src).toMatch(/extends:\s*\[corpus\]/);
     expect(src).toMatch(/patches:\s*\[\]/);
@@ -55,18 +55,18 @@ describe('scaffoldAgentsConfig — the init zero-config default', () => {
   });
 
   it('refuses an unusable plugin specifier rather than writing a broken config', async () => {
-    await expect(
-      scaffoldAgentsConfig(cwd, { plugin: '   ' }),
-    ).rejects.toBeInstanceOf(ConfigEditError);
-    expect(existsSync(join(cwd, 'agents.config.ts'))).toBe(false);
+    await expect(scaffoldConfig(cwd, { plugin: '   ' })).rejects.toBeInstanceOf(
+      ConfigEditError,
+    );
+    expect(existsSync(join(cwd, 'cratylus.config.ts'))).toBe(false);
   });
 
   it('is idempotent — an existing config is left untouched', async () => {
-    await scaffoldAgentsConfig(cwd);
-    const first = readFileSync(join(cwd, 'agents.config.ts'), 'utf8');
-    const res = await scaffoldAgentsConfig(cwd);
+    await scaffoldConfig(cwd);
+    const first = readFileSync(join(cwd, 'cratylus.config.ts'), 'utf8');
+    const res = await scaffoldConfig(cwd);
     expect(res.created).toBe(false);
-    expect(readFileSync(join(cwd, 'agents.config.ts'), 'utf8')).toBe(first);
+    expect(readFileSync(join(cwd, 'cratylus.config.ts'), 'utf8')).toBe(first);
   });
 });
 
@@ -78,11 +78,11 @@ describe('addPlugin — wire a plugin into extends', () => {
   afterEach(() => rmSync(cwd, { recursive: true, force: true }));
 
   it('appends a real import + extends member', async () => {
-    await scaffoldAgentsConfig(cwd);
+    await scaffoldConfig(cwd);
     const res = await addPlugin(cwd, '@acme/agent-x');
     expect(res.changed).toBe(true);
     expect(res.ident).toBe('agentX');
-    const src = readFileSync(join(cwd, 'agents.config.ts'), 'utf8');
+    const src = readFileSync(join(cwd, 'cratylus.config.ts'), 'utf8');
     expect(src).toContain("import agentX from '@acme/agent-x'");
     expect(src).toMatch(/extends:\s*\[canon,\s*agentX\]/);
   });
@@ -91,27 +91,27 @@ describe('addPlugin — wire a plugin into extends', () => {
     // The edit path reads the config's SHAPE, not this corpus's name — so a
     // project scaffolded against another plugin is a first-class citizen of
     // `add`, not a degraded one.
-    await scaffoldAgentsConfig(cwd, { plugin: '@acme/corpus' });
+    await scaffoldConfig(cwd, { plugin: '@acme/corpus' });
     const res = await addPlugin(cwd, '@acme/agent-x');
     expect(res.changed).toBe(true);
-    const src = readFileSync(join(cwd, 'agents.config.ts'), 'utf8');
+    const src = readFileSync(join(cwd, 'cratylus.config.ts'), 'utf8');
     expect(src).toMatch(/extends:\s*\[corpus,\s*agentX\]/);
   });
 
   it('is idempotent — re-adding the same package does not rewrite', async () => {
-    await scaffoldAgentsConfig(cwd);
+    await scaffoldConfig(cwd);
     await addPlugin(cwd, '@acme/agent-x');
-    const once = readFileSync(join(cwd, 'agents.config.ts'), 'utf8');
+    const once = readFileSync(join(cwd, 'cratylus.config.ts'), 'utf8');
     const res = await addPlugin(cwd, '@acme/agent-x');
     expect(res.changed).toBe(false);
-    expect(readFileSync(join(cwd, 'agents.config.ts'), 'utf8')).toBe(once);
+    expect(readFileSync(join(cwd, 'cratylus.config.ts'), 'utf8')).toBe(once);
   });
 
-  it('refuses loudly when no agents.config.ts exists', async () => {
+  it('refuses loudly when no cratylus.config.ts exists', async () => {
     await expect(addPlugin(cwd, '@acme/agent-x')).rejects.toBeInstanceOf(
       ConfigEditError,
     );
-    expect(existsSync(join(cwd, 'agents.config.ts'))).toBe(false);
+    expect(existsSync(join(cwd, 'cratylus.config.ts'))).toBe(false);
   });
 
   it('derives safe identifiers from package specifiers', () => {

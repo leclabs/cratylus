@@ -262,7 +262,7 @@ EOF
 fi
 
 # ── WHERE ARE WE? the corpus, by its own marker ────────────────────────────────
-# \`agents.config.ts\` is the file \`deploy\` itself reads to learn which corpus it is
+# \`cratylus.config.ts\` is the file \`deploy\` itself reads to learn which corpus it is
 # operating on. Walking up for it asks the same question the tool asks, instead of
 # inventing a second convention for "a checkout of the canon".
 start="\${CRATYLUS_CORPUS:-$cwd}"
@@ -271,7 +271,7 @@ start="\${CRATYLUS_CORPUS:-$cwd}"
 root=""
 d="$start"
 while [ -n "$d" ] && [ "$d" != "/" ]; do
-	if [ -f "$d/agents.config.ts" ]; then
+	if [ -f "$d/cratylus.config.ts" ]; then
 		root="$d"
 		break
 	fi

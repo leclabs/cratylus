@@ -1,5 +1,5 @@
 // `cratylus compose [--dry-run] [--config <path>]` — the config-is-code skin
-// of `resolve()`. Loads `agents.config.ts` (no build step), runs THE LOAD STEP +
+// of `resolve()`. Loads `cratylus.config.ts` (no build step), runs THE LOAD STEP +
 // `resolve()`, and prints the RESOLVED SET. `--dry-run` prints and writes nothing
 // (the pre-publish `file:`-link workflow — inspect a locally-linked plugin's
 // contribution before publishing). Materializing the resolved set into the render
@@ -14,7 +14,7 @@ import { CONFIG_FILE } from '../../config/scaffold.js';
 import type { ResolvedAgentSet } from '../../resolve/index.js';
 
 export interface ComposeOpts {
-  /** Path to the config; defaults to `<cwd>/agents.config.ts`. */
+  /** Path to the config; defaults to `<cwd>/cratylus.config.ts`. */
   config?: string;
   /** Print the resolved set and write nothing. */
   dryRun?: boolean;

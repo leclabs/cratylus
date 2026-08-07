@@ -1,5 +1,5 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// The `agents.config.ts` loader + THE LOAD STEP — the seam between a declared
+// The `cratylus.config.ts` loader + THE LOAD STEP — the seam between a declared
 // plugin and a resolvable one.
 //
 // `c12`/`bundle-require`-style: load a TS/ESM config with NO build step (node ≥24
@@ -43,20 +43,21 @@ import {
   type ResolvedAgentSet,
   resolve,
 } from '../resolve/resolve.js';
-import type { AgentsConfig } from './config.js';
+import type { CratylusConfig } from './config.js';
+import { CONFIG_FILE } from './scaffold.js';
 
-/** A file that does not default-export a well-formed `AgentsConfig`. Loud, never silent. */
+/** A file that does not default-export a well-formed `CratylusConfig`. Loud, never silent. */
 export class ConfigShapeError extends Error {
   constructor(readonly configPath: string) {
     super(
-      `${configPath}: not a valid agents.config — expected a default export with an \`extends\` array (e.g. \`export default defineAgentsConfig({ extends: [canon], patches: [] })\`)`,
+      `${configPath}: not a valid ${CONFIG_FILE} — expected a default export with an \`extends\` array (e.g. \`export default defineConfig({ extends: [canon], patches: [] })\`)`,
     );
     this.name = 'ConfigShapeError';
   }
 }
 
-/** Structural guard: a default export carrying an `extends` array is an `AgentsConfig`. */
-function isAgentsConfig(v: unknown): v is AgentsConfig {
+/** Structural guard: a default export carrying an `extends` array is an `CratylusConfig`. */
+function isConfig(v: unknown): v is CratylusConfig {
   return (
     typeof v === 'object' &&
     v !== null &&
@@ -65,16 +66,14 @@ function isAgentsConfig(v: unknown): v is AgentsConfig {
 }
 
 /**
- * Load an `agents.config.ts` (TS/ESM, NO build step) → its default `AgentsConfig`.
+ * Load an `cratylus.config.ts` (TS/ESM, NO build step) → its default `CratylusConfig`.
  * The dynamic `import` resolves the config's REAL plugin imports; node strips the
- * TS types. A file that does not default-export an `AgentsConfig` throws loudly.
+ * TS types. A file that does not default-export an `CratylusConfig` throws loudly.
  */
-export async function loadAgentsConfig(
-  configPath: string,
-): Promise<AgentsConfig> {
+export async function loadConfig(configPath: string): Promise<CratylusConfig> {
   const abs = resolvePath(configPath);
   const mod = (await import(pathToFileURL(abs).href)) as { default?: unknown };
-  if (!isAgentsConfig(mod.default)) {
+  if (!isConfig(mod.default)) {
     throw new ConfigShapeError(abs);
   }
   return mod.default;
@@ -134,12 +133,12 @@ export async function loadPlugins(
 }
 
 /**
- * Resolve a loaded `AgentsConfig` → `ResolvedAgentSet`: run THE LOAD STEP over
+ * Resolve a loaded `CratylusConfig` → `ResolvedAgentSet`: run THE LOAD STEP over
  * `extends`, then call the resolver's `resolve()` with the consumer `patches`. This
  * is the one shared path both skins (CLI + programmatic) call — no divergent path.
  */
-export async function resolveAgentsConfig(
-  config: AgentsConfig,
+export async function resolveConfig(
+  config: CratylusConfig,
   rootDir?: string,
 ): Promise<ResolvedAgentSet> {
   const extended = await loadPlugins(config.extends, rootDir);
@@ -147,15 +146,15 @@ export async function resolveAgentsConfig(
 }
 
 /**
- * Top-level: load an `agents.config.ts` FILE and resolve it. Relative plugin dirs
+ * Top-level: load an `cratylus.config.ts` FILE and resolve it. Relative plugin dirs
  * resolve against the config file's own dir. Returns both the loaded config (for
  * reporting `extends`) and the resolved set.
  */
 export async function composeFromFile(
   configPath: string,
-): Promise<{ config: AgentsConfig; resolved: ResolvedAgentSet }> {
+): Promise<{ config: CratylusConfig; resolved: ResolvedAgentSet }> {
   const abs = resolvePath(configPath);
-  const config = await loadAgentsConfig(abs);
-  const resolved = await resolveAgentsConfig(config, dirname(abs));
+  const config = await loadConfig(abs);
+  const resolved = await resolveConfig(config, dirname(abs));
   return { config, resolved };
 }

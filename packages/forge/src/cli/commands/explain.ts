@@ -32,7 +32,7 @@ import type {
 export interface ExplainOpts {
   /** Optional filter: keep only fragments whose id contains this token (ci). */
   agent?: string;
-  /** Path to the config; defaults to `<cwd>/agents.config.ts`. */
+  /** Path to the config; defaults to `<cwd>/cratylus.config.ts`. */
   config?: string;
   /** Emit the machine contract as JSON instead of the human report. */
   json?: boolean;

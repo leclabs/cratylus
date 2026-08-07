@@ -18,14 +18,14 @@ npm install @cratylus/canon
 ```
 
 The package's whole public surface is its default export — canon as an agent-plugin. A consumer
-`extends` it from an `agents.config.ts` and projects it with
+`extends` it from an `cratylus.config.ts` and projects it with
 [`@cratylus/forge`](../forge/README.md):
 
 ```ts
-import { defineAgentsConfig } from '@cratylus/forge/config';
+import { defineConfig } from '@cratylus/forge/config';
 import canon from '@cratylus/canon';
 
-export default defineAgentsConfig({
+export default defineConfig({
   extends: [canon],
   patches: [],
 });

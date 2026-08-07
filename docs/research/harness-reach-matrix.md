@@ -60,7 +60,7 @@ projection is therefore identical machinery per harness — no per-harness subtr
 ## Reproduce
 
 One command, one `--harness` flag — the harness is the only thing that differs, and both legs are
-proxies through the shipped `cratylus project` reading the repository's own `agents.config.ts`:
+proxies through the shipped `cratylus project` reading the repository's own `cratylus.config.ts`:
 
 ```sh
 pnpm canon:project        # claude → packages/canon/.cratylus/claude/

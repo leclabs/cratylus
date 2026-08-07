@@ -74,7 +74,7 @@ npx cratylus deploy
 
 ```sh
 npm i -D cratylus @cratylus/canon
-npx cratylus init          # writes agents.config.ts naming the corpus
+npx cratylus init          # writes cratylus.config.ts naming the corpus
 npx cratylus deploy
 ```
 
@@ -82,9 +82,9 @@ npx cratylus deploy
 
 ```ts
 import canon from '@cratylus/canon';
-import { defineAgentsConfig } from '@cratylus/forge/config';
+import { defineConfig } from '@cratylus/forge/config';
 
-export default defineAgentsConfig({ extends: [canon], patches: [] });
+export default defineConfig({ extends: [canon], patches: [] });
 ```
 
 **With no config, cratylus refuses and names the fix.** It does not guess a corpus. A wrong
@@ -146,7 +146,7 @@ npm i @acme/corpus
 
 ```ts
 import acme from '@acme/corpus';
-export default defineAgentsConfig({ extends: [acme] });
+export default defineConfig({ extends: [acme] });
 ```
 
 **Install, then import.** No `add` command: neither ESLint, Vite nor Jest has one, and ours does
@@ -201,10 +201,10 @@ cratylus/1.0.0 — author agent semantics once, realize them on any harness
 Usage
   $ cratylus <command> [options]
 
-  Requires agents.config.ts naming a corpus. `cratylus init` writes one.
+  Requires cratylus.config.ts naming a corpus. `cratylus init` writes one.
 
 Commands
-  init                 Write an agents.config.ts naming a corpus
+  init                 Write an cratylus.config.ts naming a corpus
   catalog [filter]     What the extended corpora offer
   explain [filter]     Where each resolved value came from
   validate             Does the resolved corpus meet the acceptance criteria?
@@ -212,7 +212,7 @@ Commands
   deploy               Place a render tree into a harness  (--check audits it)
 
 Options
-  -c, --config <path>  Config file (default: nearest agents.config.ts)
+  -c, --config <path>  Config file (default: nearest cratylus.config.ts)
       --harness <name> Target harness — required; no default is guessed
       --scope <scope>  user | project   (selects which config, never merges)
       --dry-run        Print what would change; write nothing
@@ -282,7 +282,7 @@ Kept in full, because the errors are more instructive than the corrections.
 5. **`cratylus.config.ts`.** Taking the industry convention without testing it. The discriminator
    is tool-named for _tool behavior_, domain-named for _domain content_ — and `tsconfig.json`,
    in this repo's own root, is named for the domain rather than for `tsc`. Survival test: replace
-   the projector tomorrow and `agents.config.ts` is still true. (Recorded residual: the file governs
+   the projector tomorrow and `cratylus.config.ts` is still true. (Recorded residual: the file governs
    fragments, agents, rules and skills, so `corpus.config.ts` is arguably nearer still.)
 6. **Inventing package management.** A later draft proposed a `resolveFrom` build seam and an `init`
    that "establishes a resolution site," to make a globally-installed corpus resolve from a config

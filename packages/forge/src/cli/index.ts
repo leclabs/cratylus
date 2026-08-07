@@ -1,6 +1,9 @@
+import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { join } from 'node:path';
 import { cac } from 'cac';
 import { FORGE_BIN } from '../bin-name.js';
+import { CONFIG_FILE } from '../config/scaffold.js';
 import {
   DEPLOY_CHECK_EXIT,
   type Scope as DeployScope,
@@ -44,7 +47,7 @@ const VERSION: string = createRequire(import.meta.url)(
 const cli = cac(FORGE_BIN);
 
 cli
-  .command('init', 'Scaffold agents.config.ts from a plugin package')
+  .command('init', `Scaffold ${CONFIG_FILE} from a plugin package`)
   .option(
     '--plugin <pkg>',
     'The plugin package to extend (default: the canon corpus)',
@@ -54,10 +57,7 @@ cli
   });
 
 cli
-  .command(
-    'add <plugin>',
-    'Wire a plugin package into agents.config.ts extends',
-  )
+  .command('add <plugin>', `Wire a plugin package into ${CONFIG_FILE} extends`)
   .action(async (plugin: string) => {
     process.exit(await runAdd({ plugin }));
   });
@@ -65,9 +65,9 @@ cli
 cli
   .command(
     'compose',
-    'Load agents.config.ts, resolve the plugin set, and print it (config-is-code)',
+    `Load ${CONFIG_FILE}, resolve the plugin set, and print it (config-is-code)`,
   )
-  .option('--config <path>', 'config file (default: <cwd>/agents.config.ts)')
+  .option('--config <path>', `config file (default: <cwd>/${CONFIG_FILE})`)
   .option('--dry-run', 'print the resolved set; write nothing')
   .action(async (opts: { config?: string; dryRun?: boolean }) => {
     process.exit(
@@ -80,7 +80,7 @@ cli
     'project',
     'Materialize the resolved plugin set into a render tree (compose → render tree)',
   )
-  .option('--config <path>', 'config file (default: <cwd>/agents.config.ts)')
+  .option('--config <path>', `config file (default: <cwd>/${CONFIG_FILE})`)
   .option('--out <dir>', 'render-tree root (default: <cwd>/.render)')
   .option('--harness <name>', 'harness adapter (default: claude)')
   .action(async (opts: { config?: string; out?: string; harness?: string }) => {
@@ -131,17 +131,21 @@ cli
 cli
   .command(
     'deploy',
-    'Place a projected render tree (agents/ + skills/) into the local .claude/ root',
+    'Install a rendered corpus into a harness (agents, skills and hooks)',
   )
-  .option('--agents-dir <dir>', 'Render tree agents/ dir (the projected defs)')
+  .option(
+    '--from <dir>',
+    'render tree to deploy (default: .cratylus/<harness>, what `project` writes)',
+  )
+  .option(
+    '--agents-dir <dir>',
+    'override the agents/ dir inside the render tree',
+  )
   .option(
     '--skills-dir <dir>',
-    'Render tree skills/ dir (the projected skill dirs)',
+    'override the skills/ dir inside the render tree',
   )
-  .option(
-    '--hooks-dir <dir>',
-    'Render tree hooks root (settings.json + hooks/<id>/); required for --kind hooks',
-  )
+  .option('--hooks-dir <dir>', 'override the hooks root inside the render tree')
   .option(
     '--assets <decls>',
     'skill committed companions: <skill>=<spec>[,…] (warn if absent)',
@@ -156,7 +160,7 @@ cli
   .option('--project <dir>', 'project root for --scope project (default: cwd)')
   .option(
     '--config <path>',
-    "config file the corpus's event vocabulary is read from (default: <cwd>/agents.config.ts)",
+    `config file the corpus's event vocabulary is read from (default: <cwd>/${CONFIG_FILE})`,
   )
   .option('--only <names>', 'comma-separated names to deploy')
   .option('--dry-run', 'print actions, change nothing')
@@ -166,6 +170,7 @@ cli
   )
   .action(
     async (opts: {
+      from?: string;
       agentsDir?: string;
       skillsDir?: string;
       hooksDir?: string;
@@ -187,31 +192,35 @@ cli
       // the strength of a mistyped flag. Every refusal below is `noVerdict` when
       // a verdict was what was asked for.
       const usage = opts.check ? DEPLOY_CHECK_EXIT.noVerdict : 1;
-      // `hooks` ships from a single hooks render root; agent/skill ship from the
-      // agents/ + skills/ dirs; `all` ships every kind in one invocation and so
-      // needs ALL three dirs. Validate the kind-appropriate inputs.
-      if (opts.kind === 'all') {
-        const missing = [
-          !opts.agentsDir && '--agents-dir',
-          !opts.skillsDir && '--skills-dir',
-          !opts.hooksDir && '--hooks-dir',
-        ].filter(Boolean);
-        if (missing.length > 0) {
-          console.error(
-            `${FORGE_BIN} deploy: --kind all requires ${missing.join(', ')}`,
-          );
-          process.exit(usage);
-        }
-      } else if (opts.kind === 'hooks') {
-        if (!opts.hooksDir) {
-          console.error(
-            `${FORGE_BIN} deploy: --hooks-dir is required for --kind hooks`,
-          );
-          process.exit(usage);
-        }
-      } else if (!opts.agentsDir || !opts.skillsDir) {
+      // THE RENDER ROOT IS THE DEFAULT INPUT, so the ordinary invocation is
+      // `cratylus deploy` and nothing else. Three required path flags were a
+      // default this CLI owed its users and did not pay: every caller — including
+      // this repository's own package.json, four times over — had to spell the
+      // same three paths, which is a private reimplementation of the command's
+      // own defaults. `project` writes `.cratylus/<harness>`; `deploy` reads it.
+      // The flags remain, now as overrides rather than as the way in.
+      const harnessName = opts.harness ?? 'claude';
+      // THE RENDER DIR IS NAMED AFTER THE TOOL, so it is DERIVED from the bin rather
+      // than spelled — one authored home, which the bin-name census enforces and
+      // caught here the moment this line spelled `.cratylus` outright.
+      const from = opts.from ?? join(`.${FORGE_BIN}`, harnessName);
+      const agentsDir = opts.agentsDir ?? join(from, 'agents');
+      const skillsDir = opts.skillsDir ?? join(from, 'skills');
+      const hooksDir = opts.hooksDir ?? from;
+      // A MISSING RENDER TREE IS THE ONE REFUSAL LEFT, and it names its own cure.
+      // Absent dirs used to surface as "--agents-dir is required", which told the
+      // user to supply a flag when what they actually needed was to run `project`.
+      //
+      // IT GUARDS THE DEFAULTED PATH ONLY. A caller that named its dirs outright —
+      // the drift comparator does, against a temp fixture — has no stake in whether
+      // `.cratylus/<harness>` exists under ITS cwd, and refusing there broke ten
+      // tests: the guard reported a missing tree at a path that caller never asked
+      // about. A default may only be validated where it was actually used.
+      const defaulted =
+        !opts.from && !opts.agentsDir && !opts.skillsDir && !opts.hooksDir;
+      if (defaulted && !existsSync(from)) {
         console.error(
-          `${FORGE_BIN} deploy: --agents-dir and --skills-dir are required`,
+          `${FORGE_BIN} deploy: no render tree at ${from} — run \`${FORGE_BIN} project\` first, or pass --from <dir>`,
         );
         process.exit(usage);
       }
@@ -224,10 +233,9 @@ cli
       }
       process.exit(
         await runDeploy({
-          // For --kind hooks the dirs are unused; pass placeholders.
-          agentsDir: opts.agentsDir ?? '',
-          skillsDir: opts.skillsDir ?? '',
-          hooksDir: opts.hooksDir,
+          agentsDir,
+          skillsDir,
+          hooksDir,
           companions,
           kind: opts.kind,
           scope: opts.scope,
@@ -248,7 +256,7 @@ cli
     'explain [agent]',
     'Report each resolved fragment’s provenance: source plugin/patch + final value',
   )
-  .option('--config <path>', 'config file (default: <cwd>/agents.config.ts)')
+  .option('--config <path>', `config file (default: <cwd>/${CONFIG_FILE})`)
   .option('--json', 'emit the machine contract as JSON instead of the report')
   .action(
     async (
@@ -266,7 +274,7 @@ cli
     'catalog [agent]',
     'Discover extendable fragment IDs across all extended plugins (or a corpus census)',
   )
-  .option('--config <path>', 'config file (default: <cwd>/agents.config.ts)')
+  .option('--config <path>', `config file (default: <cwd>/${CONFIG_FILE})`)
   .option(
     '--corpus <dir>',
     "force the per-dimension corpus census (default: canon's src/dimensions)",

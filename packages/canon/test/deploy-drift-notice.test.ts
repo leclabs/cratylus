@@ -107,7 +107,7 @@ beforeEach(() => {
 
   // THE CORPUS MARKER — the file `deploy` itself reads to learn which corpus it is
   // operating on, and therefore the one the worker walks up for.
-  put(join(corpus, 'agents.config.ts'), '// fixture corpus\n');
+  put(join(corpus, 'cratylus.config.ts'), '// fixture corpus\n');
   // THE RENDER TREE, by shape: agents/ + skills/ + the claude adapter's hooks file.
   put(join(tree, 'settings.json'), '{}\n');
   put(join(tree, 'agents', 'nico.md'), `name: nico\n${RENDERED_AXIOM}\n`);
@@ -253,7 +253,7 @@ describe('deploy-drift-notice — speaks the superseded doctrine, silent in sync
   });
 
   it('is silent outside every corpus — an advisory that fires always is skipped', () => {
-    // No `agents.config.ts` above this cwd: there is no rendered doctrine here to
+    // No `cratylus.config.ts` above this cwd: there is no rendered doctrine here to
     // be compared against, so the hook has nothing it could be right or wrong
     // about. Speaking would fire it on every unrelated session, which is the one
     // failure that makes an advisory worthless.
@@ -427,7 +427,7 @@ describe('deploy-drift-notice — a codex session reports on the codex deploymen
     bi = mkdtempSync(join(tmpdir(), 'deploy-drift-bi-'));
     biCorpus = join(bi, 'corpus');
     biHome = join(bi, 'home');
-    put(join(biCorpus, 'agents.config.ts'), '// fixture corpus\n');
+    put(join(biCorpus, 'cratylus.config.ts'), '// fixture corpus\n');
     put(
       join(biCorpus, 'node_modules', '.bin', DEPLOY_TOOL),
       `#!/usr/bin/env sh\nexec ${JSON.stringify(process.execPath)} ${JSON.stringify(forgeCli)} "$@"\n`,
