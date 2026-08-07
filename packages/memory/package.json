@@ -1,6 +1,6 @@
 {
   "name": "@cratylus/memory",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "The memory runtime-capability plugin: a MemoryStrategy over an EPISODIC store plus the CoALA consolidation verbs.",
   "license": "MIT",
   "engines": {

@@ -1,5 +1,12 @@
 # @cratylus/memory
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [3e9c103]
+  - @cratylus/runtime@0.2.0
+
 ## 0.1.1
 
 ### Patch Changes

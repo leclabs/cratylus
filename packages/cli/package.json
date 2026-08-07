@@ -1,6 +1,6 @@
 {
   "name": "cratylus",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "The cratylus command line: project a corpus of agent semantics onto any harness, and the runtime the projected artifacts call back into.",
   "license": "MIT",
   "engines": {

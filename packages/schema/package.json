@@ -1,6 +1,6 @@
 {
   "name": "@cratylus/schema",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "The shapes a corpus authors against: the dimension meta-model as a TypeScript type system. Makes a optimal-signifier compiler-checkable.",
   "license": "MIT",
   "engines": {

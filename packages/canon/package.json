@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/canon",
-  "version": "0.0.0",
-  "description": "The canonical corpus of discovered optimal-signifiers \u2014 agents, skills, dimensions and rules as typed TS source. Markdown is a projection of these modules.",
+  "version": "0.1.0",
+  "description": "The canonical corpus of discovered optimal-signifiers — agents, skills, dimensions and rules as typed TS source. Markdown is a projection of these modules.",
   "license": "MIT",
   "engines": {
     "node": ">=22"
@@ -32,7 +32,7 @@
     "typecheck": "tsc --noEmit",
     "typecheck:test": "tsc -p tsconfig.test.json"
   },
-  "//test": "`test` builds FIRST because `test/runtime-shim.test.ts` drives the shipped `cratylus project` over the repository's own `cratylus.config.ts`, and that config extends `@cratylus/canon` \u2014 the PACKAGE, i.e. this package's `dist`. turbo's `test.dependsOn: [^build]` builds this package's DEPENDENCIES, never this package, so a cold clone would run the consumer path against a dist that does not exist.",
+  "//test": "`test` builds FIRST because `test/runtime-shim.test.ts` drives the shipped `cratylus project` over the repository's own `cratylus.config.ts`, and that config extends `@cratylus/canon` — the PACKAGE, i.e. this package's `dist`. turbo's `test.dependsOn: [^build]` builds this package's DEPENDENCIES, never this package, so a cold clone would run the consumer path against a dist that does not exist.",
   "dependencies": {
     "@cratylus/schema": "workspace:*"
   },
