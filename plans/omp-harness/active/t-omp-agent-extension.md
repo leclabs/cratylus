@@ -117,13 +117,33 @@ What survives, measured by reading the implementation rather than its doc commen
   `runner.emit({type:"session_start"})` in `modes/runtime-init.ts:143` and is not there. Any plan to
   inject skill paths through it is dead on arrival.
 
-## 4. `hooks()` returns JSON; omp's hook surface is CODE
+## 4. omp has NO hook config — so the omp adapter uses `enforcingSurface`, not `hooks`
 
-`HarnessHooksProjection.settings` is `Record<string, unknown>` — a JSON fragment the consumer
-merges into the host's config. That fits claude's `settings.json` and codex's `hooks.json`. **omp's
-own `HookAPI` is a TypeScript module loaded by `--hook`/`-e`**, so the omp adapter either emits
-code or finds omp's config-declared hook path. `hooks/loader.ts` calls a hook's `path` _"Original
-path from config"_, so a config surface exists — locate it before assuming code emission.
+**RESOLVED, and the answer is that the thing to find does not exist.** `extensions/loader.ts:580–615`
+(`discoverExtensionPaths`, ambient branch) scans exactly two things, and neither is a settings key
+listing hooks:
+
+1. `extensions/` subdirectories of the native config dirs, via `extensionModuleCapability` with
+   **`providers: ["native"]`** — the claude/codex/gemini providers are skipped outright
+   (`loader.ts:586–592`, whose comment names issue #4198 as the reason).
+2. loose `.ts`/`.js` hook factories, filtered by `isExtensionFile` and **bound through the
+   EXTENSION runner** (`loader.ts:597–605`).
+
+Both are **profile-scoped**, because the native config dir is `getAgentDir()` (§5.3). So an omp hook
+is a **TypeScript module dropped in `~/.omp/profiles/<name>/agent/extensions/`** — nothing declares
+it; the directory IS the declaration.
+
+**This decides which port op the omp adapter implements.** `hooks()` returns a
+`HarnessHooksProjection` whose `settings` is `Record<string, unknown>` — a JSON fragment, right for
+claude's `settings.json` and codex's `hooks.json`, wrong for omp. **`enforcingSurface()` returns a
+bare `HarnessProjection` — `{filename, content}`, arbitrary bytes — which is exactly a `.ts`
+module.** Its own doc block already describes omp's situation without naming it: _"a harness that
+cannot attach a hook to one agent — a global surface, filtered per agent by whatever selector the
+harness does offer."_ Codex's selector is a `matcher` regex; **omp's is `$OMP_PROFILE`.**
+
+So the omp adapter **omits `hooks()` and implements `enforcingSurface()`**. The port needed no
+change to accommodate a harness whose hook surface is code rather than config — which is some
+evidence the port's seam was cut in the right place.
 
 Do **not** route through the claude-compat hook path. DELTA settled it: omp's compat loader keys
 on `pre|post × tool name` (`capability/hook.ts` — `type: "pre" | "post"`, `tool: string`), which
@@ -230,44 +250,9 @@ known-good artifact to reproduce.
 - [x] Extension API surface map — done; §3 and §5 carry it.
 - [x] The identity decision (§5), with its reason.
 - [x] Empirical verification of §5, including the corpus-absent run (§6).
-- [ ] Where omp declares hook paths in config (§4) — the last unknown blocking the adapter's
-      `hooks()`/`enforcingSurface()`.
+- [x] Where omp declares hook paths in config (§4) — it does not; the `extensions/` directory is
+      the declaration, and the adapter implements `enforcingSurface`, not `hooks`.
 - [ ] `forge/src/adapters/omp/` — `agentDef` → `APPEND_SYSTEM.md`, `events.ts` mapping the canonical
       vocabulary onto omp's 24 `HookAPI` events, `scopes()` answering from `$OMP_PROFILE`.
 - [ ] Register `omp` in `adapters/registry/index.ts` and widen `HarnessName`.
 - [ ] The extension — now reduced to enforcement scoping alone.
-
-## 4. `hooks()` returns JSON; omp's hook surface is CODE
-
-`HarnessHooksProjection.settings` is `Record<string, unknown>` — a JSON fragment the consumer
-merges into the host's config. That fits claude's `settings.json` and codex's `hooks.json`. **omp's
-own `HookAPI` is a TypeScript module loaded by `--hook`/`-e`**, so the omp adapter either emits
-code or finds omp's config-declared hook path. `hooks/loader.ts` calls a hook's `path` _"Original
-path from config"_, so a config surface exists — locate it before assuming code emission.
-
-Do **not** route through the claude-compat hook path. DELTA settled it: omp's compat loader keys
-on `pre|post × tool name` (`capability/hook.ts` — `type: "pre" | "post"`, `tool: string`), which
-cannot express a lifecycle event, and nothing reads `.claude/settings.json`'s `hooks` key at all.
-
-## 5. Identity: omp has `--no-extensions`, therefore it has extension DISCOVERY
-
-`omp --help` carries `--no-extensions  Disable extension discovery (explicit -e paths still
-work)`. An always-on load path exists, which is what an identity binding needs — a persona that
-requires a flag on every launch is `--append-system-prompt` again with more steps.
-
-Two candidate identity carriers, to be decided on the surface map:
-
-- **`ExtensionFlag`** (`extensions/types.ts:1431`) — if an extension may register a value-taking
-  flag, `omp --agent mav` becomes literally the `claude --agent mav` equivalent.
-- **`OMP_PROFILE` / `--profile`** — already a NAME, and `omp --help` confirms the env var. DELTA
-  measured its cost: separate auth (`401 User not found` on first run) and a separate provider
-  config. It buys a home, not a persona — but a home with a name is exactly what `scopes()` needs.
-
-These are not exclusive. The profile is the being's **home**; the flag or env var is what tells
-the extension **which** being. Decide with the surface map in hand and record the reason here.
-
-## Open
-
-- [ ] Extension API surface map — flags, discovery, activation signature, what may be set when.
-- [ ] Where omp declares hook paths in config (§4).
-- [ ] The identity decision (§5), with its reason.
