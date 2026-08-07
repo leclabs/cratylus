@@ -1,12 +1,13 @@
 # Cratylus — the command surface
 
-> **Status: PROPOSAL.** This document describes the CLI as it _should_ be, and is the deliverable
-> for review. Every section marks what is **today** and what is **proposed**, because a usage guide
-> that quietly describes a thing that does not exist is the defect this project exists to prevent.
+> **Status: PROPOSAL, second draft.** The first draft was reviewed and returned
+> **reject-and-redesign**; this is the redesign. What changed and why is in §8, kept rather than
+> quietly overwritten — a proposal that hides its own rejected version teaches nothing.
 >
-> Grounding: a full audit of the current CLI and package seams was taken at `2b15faaa`. It found
-> **29 divergences** between what the help claims and what the code does. They are cited inline
-> where they motivate a change.
+> Grounding: an audit of the current CLI and package seams at `2b15faaa` found **29 divergences**
+> between what the help claims and what the code does — recorded in [`AUDIT.md`](./AUDIT.md) and
+> cited inline where they motivate a change. Prior-art claims are **measured**, not recalled; the
+> commands that produced them are given.
 
 ---
 
@@ -14,147 +15,130 @@
 
 **Author agent semantics once; realize them on any harness.**
 
-Cratylus is a plugin-based Node system with a thin CLI over it. You describe agents, skills and
-rules as **canon** — signified primitives — and cratylus projects them onto whatever harness you
-actually run (Claude Code, Codex, others). The corpus is data; the projector is deterministic; the
-harness is a target, not the source of truth.
+You describe agents, skills and rules as a **corpus** of signified primitives. Cratylus projects
+that corpus onto whatever harness you actually run — Claude Code, Codex, others — deterministically.
+The corpus is data; the projector is a pure function of it; the harness is a target, never the
+source of truth.
 
-Three libraries under one command:
+| package             | concern                                                                |
+| ------------------- | ---------------------------------------------------------------------- |
+| `@cratylus/forge`   | **projection** — resolve a plugin set, render it per harness, place it |
+| `@cratylus/runtime` | **mechanism** — the capabilities deployed artifacts call back into     |
+| `@cratylus/canon`   | **meaning** — an opinionated corpus, extended or replaced by yours     |
 
-| package             | concern                                                                 |
-| ------------------- | ----------------------------------------------------------------------- |
-| `@cratylus/forge`   | **projection** — resolve a plugin set, render it per harness, place it  |
-| `@cratylus/runtime` | **mechanism** — the capabilities deployed artifacts call back into      |
-| `@cratylus/canon`   | **meaning** — opinionated default primitives, extensible or replaceable |
+## 2. The model, and the one thing it is not
 
-The prior art is deliberate: **ESLint** (CLI delegates to a library; config imports plugins),
-**Vite** (thin CLI over a Node API, plugins via `vite.config.ts`), **Jest**, **Storybook**.
+**Cratylus ships no corpus of its own.** The projector holds no opinion about what an agent is;
+`@cratylus/canon` is a corpus you install and name, exactly as an ESLint user installs and names
+`@eslint/js`. This is the load-bearing constraint, and the first draft broke it — see §8.
 
----
-
-## 2. The mental model
-
-**Agents are beings, not project assets.** They exist out-of-band from any one repository — the
-same way a person does. An agent you work with in one project is the same individual in the next:
-same identity, same memory, same accumulated craft.
-
-That is why **global install is the recommended path**. A project-local install is for when a
-repository wants to pin its own corpus.
-
-| you want                                       | you install         |
-| ---------------------------------------------- | ------------------- |
-| agents that follow you across projects (usual) | `npm i -g cratylus` |
-| a corpus pinned to one repository              | `npm i -D cratylus` |
-| to try it once                                 | `npx cratylus`      |
-
----
+**Agents are beings, not project assets** — the same individual across projects and harnesses.
+Worth stating precisely, because the first draft over-claimed here too: what the model guarantees
+is that a being's **memory-home is single, harness-independent, and outside every projected
+Target** (`MODEL.md`, `SelfAuthored{SEM,PROC,EPIS} ∉ Target`). Continuity already holds today and
+needs no config to hold. What a user-level setup buys is **not retyping the corpus per project** —
+ergonomics, and real, but not ontology.
 
 ## 3. Install
 
+Cratylus follows the standard Node CLI shape: **the tool may be global; the content is always
+local.** That is not our invention — it is ESLint's documented rule, verbatim:
+
+> "It is also possible to install ESLint globally, rather than locally… However, this is not
+> recommended, and any plugins or shareable configs that you use **must still be installed locally**
+> even if you install ESLint globally."
+
+So the corpus is an ordinary dependency of the directory holding your config, resolved by ordinary
+Node rules. **There is no cratylus resolution mechanism, and there must not be one** — npm and pnpm
+already are the package manager.
+
 ```sh
-npm install -g cratylus
-cratylus --help
+npm i -D cratylus @cratylus/canon      # in your project
+npx cratylus init
+npx cratylus deploy
 ```
 
-> **Proposed, and it is the load-bearing change.** Today there is no `cratylus` package —
-> the bin ships inside `@cratylus/forge`, and a second bin `cratylus-run` ships inside
-> `@cratylus/invoke`. Worse, **`@cratylus/canon` is not published at all** (`.changeset/config.json`
-> `ignore`), so there is currently no way for anyone to install a working cratylus. The unscoped
-> name `cratylus` is **free on npm** (verified: registry 404).
+> **Proposed, and it is the change that unblocks everything.** Today the bin ships inside
+> `@cratylus/forge`, a second bin `cratylus-run` ships inside `@cratylus/invoke`, and
+> **`@cratylus/canon` is not published at all** (`.changeset/config.json` `ignore` — `npm view` →
+> 404). There is currently no way for anyone to install a working cratylus. The unscoped name
+> `cratylus` is free (registry 404, measured).
 >
-> `cratylus` becomes a lean composition-hub package depending on `forge` + `runtime`; `forge` keeps
-> the library and loses the bin; `@cratylus/invoke` retires.
-
----
+> `cratylus` becomes a lean package declaring **both bin keys** — `cratylus` and `cratylus-run` —
+> and depending on `forge` + `runtime`. One install, two commands, and the seam `ARCHITECTURE.md`
+> argues for stays intact (§8, item 3).
 
 ## 4. User stories
 
-### 4.1 "I just want the default agents on this machine"
-
-The whole job, with **no config file at all**:
+### 4.1 "Set up my agents in this project"
 
 ```sh
-npm install -g cratylus
-cratylus deploy
+npm i -D cratylus @cratylus/canon
+npx cratylus init          # writes agents.config.ts naming the corpus
+npx cratylus deploy
 ```
 
-`deploy` resolves the corpus, renders it for your harness, and places it. With no config,
-cratylus uses its **built-in default corpus** (`@cratylus/canon`) — the same way `eslint` runs with
-a default ruleset and `vite` builds with no `vite.config.ts`.
+`init` writes:
 
-> **Proposed.** Today: zero-config is impossible. `deploy` requires `--agents-dir`, `--skills-dir`
-> and `--hooks-dir` to be passed by hand, and the two-step `project` → `deploy` is exposed as the
-> user's problem. `project` hard-requires `agents.config.ts` in the **current directory** with no
-> walk-up (divergence #27).
+```ts
+import canon from '@cratylus/canon';
+import { defineAgentsConfig } from '@cratylus/forge/config';
 
-### 4.2 "Show me what would happen before it touches my machine"
+export default defineAgentsConfig({ extends: [canon], patches: [] });
+```
+
+**With no config, cratylus refuses and names the fix.** It does not guess a corpus. A wrong
+bundler default breaks your build loudly; a wrong _corpus_ produces an agent that behaves subtly
+not-as-meant and nothing reports it — so the corpus is always named by you.
+
+Measured, because the first draft asserted the opposite: `eslint@10.8.0` with no config **refuses**
+("couldn't find an eslint.config.(js|mjs|cjs)"); `vite@8.2.1 build` with no config **succeeds**.
+Cratylus is on ESLint's side of that split, and further along it.
+
+### 4.2 "My agents should follow me across projects"
+
+The user-level home is **a normal npm project** — nothing cratylus-specific:
+
+```sh
+mkdir -p ~/.config/cratylus && cd ~/.config/cratylus
+npm init -y && npm i cratylus @cratylus/canon
+npx cratylus init
+npx cratylus deploy --scope user
+```
+
+**Scope selects the config; it never cascades.** `--scope user` reads the user config and ignores
+any project config; `--scope project` reads the project's and ignores the user's. No merge, no
+precedence chain. A cascade would make a repository's projection depend on whose `$HOME` ran it,
+and the Target is required to be `REGENERABLE` — this repo byte-compares its own render oracle to
+prove it.
+
+### 4.3 "Show me what would happen first"
 
 ```sh
 cratylus deploy --dry-run
 ```
 
-Prints every file that would be written, **and every file that would be deleted**.
+Prints every file that would be written **and every file that would be deleted**.
 
-> Today `deploy` prunes files and unregisters hook entries from `settings.json` — and **no help
-> string mentions either** (divergence #5). It also writes `$HOME/.cratylus-run.json` on every run,
-> mentioned nowhere (#6). A `--dry-run` still copies `--assets` into the render tree (#11).
+> Today `deploy` prunes files and unregisters `settings.json` hook entries, and **no help string
+> mentions either** (#5); it writes `$HOME/.cratylus-run.json` unmentioned (#6); and `--dry-run`
+> still copies `--assets` into the render tree (#11). Those are defects independent of this
+> proposal.
 
-### 4.3 "Is my setup healthy?"
-
-```sh
-cratylus doctor
-```
-
-One command answering the questions a user actually has when something is wrong:
-
-```
-cratylus doctor
-
-  node            v24.4.0                                    ok
-  cratylus        1.0.0 (global, /opt/homebrew/bin)           ok
-  config          none — using built-in corpus                ok
-  corpus          @cratylus/canon 1.0.0 · 10 agents 16 skills ok
-  harness         claude (auto-detected: ~/.claude present)   ok
-  deployed        ~/.claude — in sync with the corpus         ok
-  capabilities    memory ok · eventTap ok · carryOn ok
-  runtime config  ~/.cratylus-run.json — 31 events            ok
-```
-
-…and, when it is not fine, the repair on the same line.
-
-> **Proposed; nothing like it exists.** `doctor` survives only as a tombstone in a comment listing
-> nine deleted verbs (#29). The nearest thing is `deploy --check`, which answers exactly one
-> question and needs three directory flags supplied by hand. This is the single highest-value
-> addition: the drift that stranded five hosts in this homelab was invisible precisely because
-> nothing answered _"is this host running what the corpus says?"_
-
-### 4.4 "I want to customize my agents"
+### 4.4 "Is what's deployed still what the corpus says?"
 
 ```sh
-cratylus init          # scaffold cratylus.config.ts
+cratylus deploy --check
 ```
 
-```ts
-// cratylus.config.ts
-import { defineConfig } from 'cratylus';
-import canon from '@cratylus/canon';
+Exits 0 in sync, 1 on drift, 2 when it could not reach a verdict.
 
-export default defineConfig({
-  extends: [canon],
-  patches: [],
-});
-```
+> This verb exists today and answers the question correctly; its problem is purely that it demands
+> `--agents-dir`, `--skills-dir` and `--hooks-dir` by hand. **Default all three from the render
+> root**, and it becomes a one-word command. That is the whole fix — the first draft proposed a new
+> `doctor` verb subsuming four existing surfaces to solve a flag-ergonomics problem (§8, item 4).
 
-Then `cratylus deploy` as before.
-
-> **Proposed rename:** `agents.config.ts` → **`cratylus.config.ts`**, matching every tool in the
-> prior art (`eslint.config.js`, `vite.config.ts`, `jest.config.js`). Discovery gains what those
-> tools have and this one lacks: **`.ts` / `.js` / `.mjs` / `.cjs`**, a **walk-up** to the project
-> root, `-c/--config` to override, and `--no-config-lookup` to disable. Today: one hardcoded
-> filename, cwd-only, no walk-up — run a command from a subdirectory and it behaves as if you had
-> no config (#27).
-
-### 4.5 "I want to use someone else's corpus"
+### 4.5 "Use someone else's corpus"
 
 ```sh
 npm i @acme/corpus
@@ -162,143 +146,146 @@ npm i @acme/corpus
 
 ```ts
 import acme from '@acme/corpus';
-export default defineConfig({ extends: [acme] });
+export default defineAgentsConfig({ extends: [acme] });
 ```
 
-That is the whole protocol — **install, then import**. Exactly ESLint and Vite.
+**Install, then import.** No `add` command: neither ESLint, Vite nor Jest has one, and ours does
+regex surgery on your hand-authored TypeScript, resolves nothing, and installs nothing (#26). A
+tool that can only edit source _it wrote itself_ is a closed loop, not a feature.
 
-> **`cratylus add <plugin>` is proposed for REMOVAL.** Neither ESLint nor Vite nor Jest has an
-> `add`. Today it does regex string-surgery on your config source, resolves nothing, installs
-> nothing, accepts any opaque string (`cratylus add @scope/pkg@1.2.3` writes an import specifier
-> that is valid for npm and invalid as an ES import), and its "already in extends" message is
-> emitted after checking only the _import line_ (#26). It reads like `npm add` and does not install.
-
-### 4.6 "Why is this agent the way it is?"
+### 4.6 "Is my corpus valid?"
 
 ```sh
-cratylus explain mav        # provenance: which plugin or patch set each value
-cratylus list               # what this corpus offers
-cratylus config             # the fully resolved config, after extends and patches
+cratylus validate
 ```
 
-> `cratylus config` replaces today's `compose`, whose `--dry-run` flag **has no effect on
-> behaviour** — the command never writes under any flag, and the flag's only observable
-> consequence is suppressing a note saying nothing was written (#1, #2). The analogue in the prior
-> art is ESLint's `--inspect-config`.
->
-> `explain [agent]` and `catalog [agent]` both name their positional `agent` and **neither filters
-> agents** — both substring-match fragment IDs, and `catalog` ignores the argument entirely in
-> `--corpus` mode (#14, #15).
+Answers whether the resolved corpus is **acceptable** — every declared symbol round-trips, every
+cell is canonical.
 
-### 4.7 "My deployed agents need to call back into the runtime"
+> **The genuinely missing verb, and neither the current CLI nor the first draft had it.** `ENGINE.md`
+> names `validate` a pipeline stage; the signification gate that implements it is reachable only
+> from canon's private tooling. A third party authoring a corpus has no shipped way to ask whether
+> their cells are canonical — for a project whose thesis is that anchors _earn_ canonical status
+> through evidence, that is the largest absence on the surface.
 
-Deployed skills invoke runtime capabilities through the same command:
+### 4.7 "Why is this the way it is?"
 
 ```sh
-cratylus memory encode --name mav --body '…'
-cratylus memory session begin --name mav
-cratylus event-tap install --events session.start,turn.end
+cratylus catalog [filter]    # what exists to extend — pre-composition
+cratylus explain [filter]    # how the resolved set came to be — post-composition, --json
 ```
 
-> **Proposed: one bin.** Today these live under a second binary, `cratylus-run`, shipped by
-> `@cratylus/invoke`. Vite is the precedent the user's intuition already reaches for — its runtime
-> (the dev server) is reached through the same `vite` command, not a `vite-run`.
+> `compose` is **deleted, not renamed**: its output is a strict subset of `explain`'s, and its
+> `--dry-run` never affected behaviour under any flag (#1, #2). An inert flag on a redundant verb is
+> the verb reporting that it has no concept of its own.
 >
-> **This contradicts an explicit, argued decision in `ARCHITECTURE.md`**, which says merging would
-> mean "one package owns the `bin` key and must depend on **both** DAGs, so a host that only runs
-> agents would drag the whole projection machinery." That objection is real and must be answered,
-> not waved past. **The answer is lazy loading**: the `cratylus` package declares both dependencies,
-> but each subcommand `await import()`s its implementation, so a `cratylus memory …` invocation
-> never loads the projector. Vite does exactly this. The cost the architecture feared is a
-> _static-import_ cost, and it is avoidable — but the claim must be **measured** (startup time for
-> a runtime verb, before and after) before the seam is changed.
->
-> **Migration is not free and no test can see most of it.** Renaming touches every deployed host's
-> `~/.local/bin/cratylus-run` shim, every `~/.cratylus-run.json`, and every carry-on gate command
-> already written into a harness settings file.
+> Both positionals are named `agent` today and **neither filters agents** — they substring-match
+> fragment IDs (#14, #15). Renamed to `[filter]`.
+
+### 4.8 "Runtime capabilities"
+
+```sh
+cratylus-run memory encode --name mav --body '…'
+```
+
+Deployed skills call this; you rarely type it. It stays a **separate command**, shipped by the same
+package — see §8, item 3.
 
 ---
 
 ## 5. Proposed root `--help`
 
-Today's root help has no header — it does not say what the program _is_ — and its first command
-is described as "Scaffold agents.config.ts from a plugin package", which does not parse for a
-newcomer.
-
 ```
 cratylus/1.0.0 — author agent semantics once, realize them on any harness
 
 Usage
-  $ cratylus [command] [options]
+  $ cratylus <command> [options]
 
-  With no config file, cratylus uses its built-in corpus. Run `cratylus doctor`
-  if anything looks wrong.
+  Requires agents.config.ts naming a corpus. `cratylus init` writes one.
 
-Getting started
-  init                 Create a cratylus.config.ts in this directory
-  deploy               Render the corpus and install it into your harness
-  doctor               Check this machine's setup and report what is wrong
-
-Inspecting
-  config               Print the resolved configuration (after extends and patches)
-  list [filter]        List what the corpus offers — agents, skills, rules
-  explain <name>       Show where each of a fragment's values came from
-
-Runtime
-  memory <verb>        Agent memory: encode, read, consolidate
-  event-tap <verb>     Observe harness lifecycle events
-  carry-on <verb>      Autonomy elevation and its terminus
+Commands
+  init                 Write an agents.config.ts naming a corpus
+  catalog [filter]     What the extended corpora offer
+  explain [filter]     Where each resolved value came from
+  validate             Does the resolved corpus meet the acceptance criteria?
+  project              Render the resolved corpus into a render tree
+  deploy               Place a render tree into a harness  (--check audits it)
 
 Options
-  -c, --config <path>  Use this config instead of searching for cratylus.config.*
-      --no-config-lookup   Do not search for a config file
-      --harness <name>     Target harness (default: auto-detect)
-      --dry-run            Print what would change; write nothing
-  -h, --help           Show help for any command:  cratylus deploy --help
+  -c, --config <path>  Config file (default: nearest agents.config.ts)
+      --harness <name> Target harness — required; no default is guessed
+      --scope <scope>  user | project   (selects which config, never merges)
+      --dry-run        Print what would change; write nothing
+  -h, --help           Help for any command:  cratylus deploy --help
   -v, --version        Print the version
+
+Runtime capabilities are reached through `cratylus-run` — see `cratylus-run --help`.
 ```
 
-Changes from today, each traceable to a finding:
+Six verbs, MECE across **configure / discover / inspect / gate / emit / place**.
 
-| change                                    | why                                                                                                 |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| a header line stating what the program is | there is none today                                                                                 |
-| commands grouped by intent                | flat list of 8 verbs with no ordering                                                               |
-| `.claude` removed from every description  | `deploy`'s summary hardcodes a harness on a command with `--harness` (#3)                           |
-| `--harness` defaults to **auto-detect**   | three code sites default to the literal `'claude'` (#3)                                             |
-| `optimize` removed from the root surface  | it is the last surviving verb of a deleted three-verb flow, and is corpus-authoring, not projection |
-| `add` removed                             | §4.5                                                                                                |
-| `doctor` added                            | §4.3                                                                                                |
-| `compose` → `config`                      | §4.6                                                                                                |
+| change                                    | why                                                                                  |
+| ----------------------------------------- | ------------------------------------------------------------------------------------ |
+| header line stating what the program is   | there is none today                                                                  |
+| `validate` added                          | §4.6 — the missing pipeline stage                                                    |
+| `add`, `compose` deleted                  | §4.5, §4.7                                                                           |
+| `optimize` removed from the bin           | corpus **authoring**, not projection; homed in canon's tooling                       |
+| `.claude` removed from every description  | `deploy`'s summary hardcodes a harness on a `--harness` command (#3)                 |
+| `--harness` required, never auto-detected | an auto-detected harness makes the Target depend on the host, breaking `REGENERABLE` |
+| `cratylus-run` named in the root help     | its discoverability was the real complaint behind merging the bins                   |
 
----
+## 6. What this does not fix, and must
 
-## 6. Open questions for review
+Three closures block the plugin thesis. None is a CLI question; all outrank one.
 
-These are genuinely undecided and are the most valuable things to push back on.
+1. **The harness registry is closed.** `HarnessName = 'claude' | 'codex'` — a third party cannot
+   ship an adapter without editing forge. That contradicts VISION's headline, _"realize behavior
+   everywhere."_ Adapters should ride the **config** (projection), not the corpus plugin (meaning).
+2. **The capability keyspace is closed.** `CAPABILITIES` is a fixed 4-tuple in the runtime. Of its
+   members one is a real plugin, two are hardcoded string intercepts, one has no implementation.
+   Canon already solved this one axis over with an open, corpus-owned vocabulary.
+3. **`buildPlugin` does not exist.** `ARCHITECTURE.md` and `runtime/src/plugin.ts` describe a
+   two-named-export plugin contract; `git grep` returns four hits, all prose. The real contract is
+   an unnamed `default` export — and the two-bin argument cites that contract as precedent.
 
-1. **Does `deploy` subsume `project`?** A user wants "make it real"; the render tree is an
-   implementation detail. But it is also a legitimate artifact (this repo commits one as a render
-   oracle). Proposal: `deploy` does both by default; `project --out <dir>` stays for the tree.
-2. **One bin or two?** §4.7. The lazy-loading answer needs a measurement, not an argument.
-3. **Should `init` exist at all?** Vite uses `npm create vite`; ESLint uses `npm init @eslint/config`.
-   With zero-config working, `init` is only for customization — which may not warrant a verb.
-4. **What is the corpus's package identity once published?** `@cratylus/canon` must be published for
-   any of this to work. Should the default corpus instead be a dependency _of_ `cratylus`, so
-   `npm i -g cratylus` brings it — making §4.1 literally true with one install?
-5. **`optimize` — where does it go?** It gates LLM-authored exemplify plans. That is corpus
-   authoring, not projection.
+`patches` is also declared and **unshipped**, which means _modify_ — the middle term of
+extend/modify/replace — does not work today.
 
-## 7. What this document does not cover
+## 7. Still open
 
-The plugin **contract** needs its own pass, and two findings from the audit make it urgent:
+1. Does `project` keep a separate verb, or is the render tree always implied by `deploy`? (Kept
+   separate here: it is forge's charter operation and this repo commits one as an oracle.)
+2. Should `init` be `npm create cratylus` instead, as Vite and ESLint both do?
+3. `optimize`'s destination — canon tooling is proposed; its sign is also wrong wherever it lands.
 
-- **The documented build-face export does not exist.** `ARCHITECTURE.md` and `runtime/src/plugin.ts`
-  both describe a two-named-export contract — `buildPlugin` and `runtimePlugin`. `buildPlugin`
-  appears **only in prose**; no package exports it and no consumer imports one. The real contract is
-  an unnamed `default` export.
-- **The capability keyspace is closed.** `CAPABILITIES = ['memory','eventTap','carryOn','heartbeat']`
-  is a fixed tuple in `runtime/src/loader.ts`. A third party **cannot add a capability** without
-  editing the runtime — which contradicts "plugin-based, extensible by third parties". Of the four,
-  one has a real plugin (`memory`), two are hardcoded string intercepts before any host exists
-  (`eventTap`, `carryOn`), and one has no implementation at all (`heartbeat`).
+## 8. What the first draft got wrong
+
+Kept in full, because the errors are more instructive than the corrections.
+
+1. **A built-in default corpus.** §4.1 proposed cratylus using canon when no config exists. That
+   fuses **meaning into projection** — the exact defect the package split exists to prevent — and
+   composed three implicit defaults (corpus + destination + harness) into one bare verb that writes
+   into your home directory. Not zero-config; zero-consent.
+2. **A false prior-art claim, load-bearing.** It asserted zero-config works "the same way `eslint`
+   runs with a default ruleset." **ESLint refuses without a config** — measured. The proposal cited
+   the one tool that had already faced this question and decided it the other way. `@eslint/js` is
+   not even a dependency of `eslint`.
+3. **Merging the two bins on a mismeasured argument.** ARCHITECTURE's objection is _install
+   closure_, not startup cost. `await import()` defers **evaluation**, never **installation** — the
+   hub must still declare both dependencies, so a run-only host still downloads the projector. The
+   before/after startup measurement the draft demanded **would have come back green**, which is
+   worse than red. The real problem was packaging, and publishing one package with two bin keys
+   solves it without touching the seam.
+4. **`doctor`.** A bag, not a concept — its own example spanned four concerns already owned by
+   other verbs, and the verb had been deliberately excised once before. The draft cited that
+   tombstone as evidence of a gap rather than as a prior negative ruling.
+5. **`cratylus.config.ts`.** Taking the industry convention without testing it. The discriminator
+   is tool-named for _tool behavior_, domain-named for _domain content_ — and `tsconfig.json`,
+   in this repo's own root, is named for the domain rather than for `tsc`. Survival test: replace
+   the projector tomorrow and `agents.config.ts` is still true. (Recorded residual: the file governs
+   fragments, agents, rules and skills, so `corpus.config.ts` is arguably nearer still.)
+6. **Inventing package management.** A later draft proposed a `resolveFrom` build seam and an `init`
+   that "establishes a resolution site," to make a globally-installed corpus resolve from a config
+   outside any `node_modules`. Measured: it does not resolve — `ERR_MODULE_NOT_FOUND`. But the fix
+   is not a mechanism; it is ESLint's rule (§3). The content is a local dependency, and the user
+   home is a plain npm project. npm is the package manager.
