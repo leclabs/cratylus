@@ -57,8 +57,8 @@ cd "$repo_root"
 
 canon="packages/canon"
 expected_file="$canon/.render-oracle"
-claude_out="$canon/.cratylus/claude"
-codex_out="$canon/.cratylus/codex"
+claude_out="$repo_root/.cratylus/claude"
+codex_out="$repo_root/.cratylus/codex"
 
 # The build-time CLI's entry, read out of forge's OWN manifest.
 #
@@ -95,7 +95,19 @@ compute() {
   # Excluding it is not a re-baseline: verified by A/B on a tree with no `.forge/`
   # present, both forms yield the same hash, so the baseline this narrowing was
   # landed against still stands.
-  find "$claude_out" "$codex_out" -name .forge -prune -o -type f -print |
+  # PATHS ARE HASHED RELATIVE TO THE TREE ROOT, and that is the second half of the same
+  # lesson the LC_ALL note below records. `xargs shasum` prints `<digest>  <path>`, so the
+  # PATH is an input to the final digest — which meant the oracle's value was a function of
+  # WHERE the render tree happened to live. Moving the tree out of `packages/canon/` and into
+  # the repo root changed the hash while `diff -r` proved the two trees byte-identical: the
+  # message said the corpus had moved and nothing in the corpus had.
+  #
+  # An oracle that varies with its environment accuses the corpus for what the shell did.
+  # Locale was one such variable; the tree's own location was another. `cd` to the parent and
+  # emit relative paths, so an intra-tree move is still caught — a file changing place inside
+  # the render IS a real change — while relocating the whole tree is not.
+  cd "$(dirname "$claude_out")" || return 1
+  find "$(basename "$claude_out")" "$(basename "$codex_out")" -name .forge -prune -o -type f -print |
   # LC_ALL=C IS THE DIFFERENCE BETWEEN AN ORACLE AND A LOCAL OPINION.
   #
   # `sort` collates by LOCALE. This ran under a developer's `en_US.UTF-8` on macOS and under
@@ -155,7 +167,7 @@ case "${1:-check}" in
     if [ "$strays" -gt 0 ]; then
       echo "REFUSING to re-baseline: $strays file(s) the projector cannot account for" >&2
       { unattributable "$claude_out"; unattributable "$codex_out"; } | sed 's/^/  /' >&2
-      echo "  clear the render tree and retry: rm -rf $canon/.cratylus" >&2
+      echo "  clear the render tree and retry: rm -rf $repo_root/.cratylus" >&2
       exit 2
     fi
     {

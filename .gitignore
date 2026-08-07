@@ -39,7 +39,7 @@ dist/
 # The oracle is deliberately NOT in here. `.cratylus/` is wholly derived and safe to
 # `rm -rf`; `packages/canon/.render-oracle` is a TRACKED attestation over these bytes, and
 # a tracked file inside a disposable directory is a file that gets destroyed by a clean.
-packages/canon/.cratylus/
+.cratylus/
 # Memory's per-repo config: scope markers + per-host $HOME. OPERATOR-AUTHORED and
 # host-specific, so local-only. Committed template: .cratylus.memory.json.example.
 # Why this name (and not the runtime dotfile's): packages/memory/src/node.ts.

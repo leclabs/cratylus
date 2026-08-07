@@ -19,12 +19,15 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { requireRepoRoot } from '@repo/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 
 const here = dirname(fileURLToPath(import.meta.url));
-const canon = join(here, '..');
-const CLAUDE = join(canon, '.cratylus/claude');
-const CODEX = join(canon, '.cratylus/codex');
+// The repo root is ASKED FOR, never counted in parent hops: a hop count encodes this
+// file's own location in its body, so moving the file silently repoints the tree.
+const repoRoot = requireRepoRoot(here);
+const CLAUDE = join(repoRoot, '.cratylus/claude');
+const CODEX = join(repoRoot, '.cratylus/codex');
 
 /** Every harness render this corpus produces, with the artifact naming its hooks. */
 const RENDERS = [
