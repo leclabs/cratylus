@@ -52,7 +52,7 @@ jobs:
     env:
       HUSKY: '0'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref }}
           # `changeset version --snapshot` reads the changesets and the commits that added them.
@@ -60,7 +60,7 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version-file: .nvmrc
           registry-url: https://registry.npmjs.org

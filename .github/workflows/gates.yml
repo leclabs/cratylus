@@ -36,7 +36,7 @@ jobs:
       # This is the cost of a history-derived oracle, and it is paid here rather than worked
       # around: softening the gate when history is shallow would make it dark exactly where
       # nobody is watching.
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 

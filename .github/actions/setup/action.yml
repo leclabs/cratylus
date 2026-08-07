@@ -12,11 +12,21 @@ description: Install pnpm, the pinned Node, and the frozen workspace.
 runs:
   using: composite
   steps:
+    # WHY THESE MAJORS, since they are not the newest. The runner has been forcing
+    # `actions/*@v4` onto Node 24 and annotating every run about it; v5 is the first major
+    # that TARGETS Node 24, so it clears the deprecation. `setup-node` v6 then narrows
+    # automatic package-manager caching to npm and v7 reworks the `NODE_AUTH_TOKEN` export —
+    # both touch the publish path, which is currently failing for an unrelated credential
+    # reason. Taking them now would put two variables in one release, so the smallest major
+    # that fixes the stated problem is the one taken. `cache: pnpm` below is EXPLICIT and
+    # unaffected by v6's change either way.
+    #
     # The pnpm version is pinned by `packageManager` in package.json; letting the action
-    # read it there keeps ONE home for it.
-    - uses: pnpm/action-setup@v4
+    # read it there keeps ONE home for it. v6 is taken in full because its headline change
+    # is pnpm 11 support and this workspace pins `pnpm@11.17.0`.
+    - uses: pnpm/action-setup@v6
 
-    - uses: actions/setup-node@v4
+    - uses: actions/setup-node@v5
       with:
         # THE PIN HAS ONE HOME, and it is not this file. `.nvmrc` is read by nvm, fnm, asdf,
         # this action, and mise — a literal here would be a second copy of a fact that
