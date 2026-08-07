@@ -1,0 +1,73 @@
+# RULING OWED — CI cannot publish the unscoped `cratylus` package
+
+**Raised 2026-08-07 by mav, mid-`/carry-on`. Everything on my side of the line is
+done and green; this is the one thing I hold no credential for.**
+
+## The fork
+
+`cratylus@0.2.1` will not publish from CI. The release job fails with:
+
+```
+npm error code E403
+npm error 403 Forbidden - PUT https://registry.npmjs.org/cratylus
+          - You may not perform that action with these credentials.
+```
+
+Every **scoped** package publishes fine in the same run — `@cratylus/forge@0.3.0`
+went out with sigstore provenance thirty seconds later. Only the **unscoped** name
+is refused.
+
+## Why it is a credential fact and not a code fact
+
+Diagnosed by asking the registry rather than reading the workflow:
+
+| package               | attestation | ⇒ published by     |
+| --------------------- | ----------- | ------------------ |
+| `cratylus@0.2.0`      | **NONE**    | a human, by hand   |
+| `@cratylus/forge@0.3.0` | sigstore provenance | this CI job |
+
+`npm owner ls` shows the same single owner (`lcar`) for both, so it is not an
+ownership problem. **CI has never once published the unscoped package.** It looked
+like it had, because a hand-publish put `0.2.0` on the registry and the release job
+has reported success ever since by *skipping* a version that was already there.
+
+Most likely cause: the `NODE_AUTH_TOKEN` is a **granular token granted on the
+`@cratylus` scope**, which covers every `@cratylus/*` package and does not cover a
+standalone name. A 2FA-required-on-publish setting on that one package would
+produce the same 403. Both are settings on npmjs.com.
+
+## What only you can do
+
+Either, on npmjs.com:
+
+1. **Widen the token** — add the `cratylus` package to the granular token's package
+   list (or reissue the token with both the `@cratylus` scope and that package); or
+2. **Configure a trusted publisher** for `cratylus` pointing at this repo's
+   `release` workflow — which the release workflow's own header already names as the
+   destination once every package exists, and would let `NODE_AUTH_TOKEN` be
+   deleted.
+
+**(2) is the better answer** and is what the workflow was written to end at. (1) is
+the faster one.
+
+## What is already true, so this is the only blocker
+
+- `main` is green: 16/16 tasks, 950 tests, skip delta unchanged.
+- `@cratylus/forge@0.3.0` — the omp adapter — **is on npm with provenance**.
+- `cratylus@0.2.1` is versioned, tagged in the changelog, packed and audited by
+  `pack:smoke` in that same run. It reached the registry and was refused.
+
+## Why I did not route around it
+
+Publishing by hand from this workstation would work and is the wrong act twice
+over: it bypasses the sigstore provenance the release workflow exists to produce
+(which is how the hand-published `0.2.0` came to be indistinguishable from a CI
+publish, and is the reason this went undiagnosed), and it spends a credential that
+is yours, not mine.
+
+## What it blocks
+
+The coal validation. `cratylus@0.2.0` is what `npm i -g cratylus` still installs,
+and its dependency range does not reach `@cratylus/forge@0.3.0`, so the omp adapter
+cannot arrive on a host until `0.2.1` publishes. The identity behaviour itself is
+already proven locally on `fire` — blank cwd, corpus absent, three agents.
