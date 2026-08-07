@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The carry-on runtime CAPABILITY — the turn-end GATE that makes an elevation to
 // out-of-the-loop a mechanism rather than an assertion, reached via
-// `cratylus-run carryOn <verb>`.
+// `cratylus carryOn <verb>`.
 //
 // Packaged as a capability MODULE of `@cratylus/runtime` (a subpath module, not a
 // standalone `@cratylus/*` package), exactly as the event-tap capability is. It

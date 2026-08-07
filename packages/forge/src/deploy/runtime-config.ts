@@ -4,7 +4,7 @@
 // ARCHITECTURE property 4, verbatim: "Runtime depends on nothing. It is the
 // deployed base, and everything corpus-specific reaches it as configuration the
 // projection emitted." The runtime already READ such a config
-// (`runtime/src/runtime-config.ts`, `~/.cratylus-run.json`) and nothing had ever
+// (`runtime/src/runtime-config.ts`, `~/.cratylus.json`) and nothing had ever
 // WRITTEN one — the channel existed with no producer, which is why the lifecycle
 // vocabulary reached the runtime the only other way a vocabulary can travel: by
 // being spelled a second time. `runtime/src/events.ts` held canon's 28 event names,
@@ -28,7 +28,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
-import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
+import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { EventName } from '@cratylus/schema/hook';
 
 /**
@@ -41,7 +41,7 @@ import type { EventName } from '@cratylus/schema/hook';
 export const RUNTIME_CONFIG_ENV = 'AGENT_RUNTIME_CONFIG';
 
 /** The dotfile name, derived from the bin exactly as the runtime derives it. */
-export const RUNTIME_CONFIG_NAME = `.${RUNTIME_BIN}.json`;
+export const RUNTIME_CONFIG_NAME = `.${CLI_BIN}.json`;
 
 /** Resolve the emission target the same way the runtime resolves its read. */
 export function runtimeConfigTarget(

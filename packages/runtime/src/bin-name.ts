@@ -18,11 +18,11 @@
 // `canon/test/bin-name-single-home.test.ts` holds it, so a rename cannot
 // half-land.
 //
-// THE MIGRATION LANDED 2026-08-05: `cratylus-run` → `cratylus-run`, one commit
+// THE MIGRATION LANDED 2026-08-05: `cratylus` → `cratylus`, one commit
 // after the scope rename and deliberately not with it, so a host-side failure
 // stays attributable to the bin and not to 500 renamed files.
 //
-// WHY `cratylus-run` AND NOT `cratylus`. There are two bins, and the brevity
+// WHY `cratylus` AND NOT `cratylus`. There are two bins, and the brevity
 // budget was spent on the wrong one in this shard's first guess (`cratylus` +
 // `cratylus-forge`). The build-time bin is TYPED BY HUMANS — seven subcommands,
 // muscle memory, docs — so it takes the bare mark, `cratylus`. This one is
@@ -42,7 +42,12 @@
 // template-derived from this value and moved without being touched.
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** The runtime executable's name on PATH. The single source of truth: every other
- *  site — cac branding, error prefixes, the projected thin shim, the memory-nudge
- *  hook worker — interpolates this rather than repeating the literal. */
-export const RUNTIME_BIN = 'cratylus-run';
+/** THE command's name on PATH — there is exactly one now. Every other site — cac
+ *  branding, error prefixes, the projected thin shim, the memory-nudge hook worker,
+ *  the carry-on gate written into a harness's settings — interpolates this rather
+ *  than repeating the literal.
+ *
+ *  IT LIVES HERE because the runtime is the contract leaf: it depends on nothing, so
+ *  every package that needs the name can import it without inverting an edge. It was
+ *  `cratylus` when there were two commands; merging them made that name a lie. */
+export const CLI_BIN = 'cratylus';

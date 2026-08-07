@@ -37,7 +37,7 @@ set -eu
 trap 'exit 0' EXIT
 
 # The runtime bin. $MEMORY_BIN is the override and the test seam.
-MEM="${MEMORY_BIN:-cratylus-run}"
+MEM="${MEMORY_BIN:-cratylus}"
 command -v "$MEM" >/dev/null 2>&1 || exit 0
 
 input="$(cat 2>/dev/null || true)"

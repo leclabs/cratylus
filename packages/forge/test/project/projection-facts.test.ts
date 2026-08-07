@@ -1,7 +1,7 @@
 // THE PROJECTION FACT TABLE — the seam a cell uses to ASK for what only projection
 // knows, held to three claims it did not have to make before:
 //
-//   (1) THE BIN NAME IS DERIVED. `FORGE_BIN` is not a constant that agrees with
+//   (1) THE BIN NAME IS DERIVED. `CLI_BIN` is not a constant that agrees with
 //       `package.json`'s `bin` key; it is READ from it. That is a stronger claim
 //       than the runtime bin's (which is a constant plus a gate holding it against
 //       its manifest), and it is worth a fixture because a derivation over the live
@@ -29,12 +29,11 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
+import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { HarnessMechanism } from '@cratylus/schema/hook';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 import { adapterByName } from '../../src/adapters/registry/index.js';
-import { FORGE_BIN, binNameOf } from '../../src/bin-name.js';
 import { DEPLOY_CHECK_EXIT } from '../../src/deploy/check-exit.js';
 import {
   type ProjectablePlugin,
@@ -77,49 +76,57 @@ const MECHANISMS = new Map<string, HarnessMechanism>([
 
 // ── (1) the bin name is DERIVED from the key npm reads ──────────────────────────
 
-describe('the build-time CLI name is derived, not declared twice', () => {
-  it('reads the single `bin` key out of a manifest it is handed', () => {
-    // THE DERIVATION, isolated. If this function ever came to remember a name
-    // instead of reading one, every leg over the live corpus would stay green and
-    // only this one would move.
-    expect(binNameOf({ bin: { 'some-other-name': './x.js' } }, 'fixture')).toBe(
-      'some-other-name',
+describe('the command name has exactly one home, and there is one command', () => {
+  // THIS BLOCK ASSERTED A WORLD THAT NO LONGER EXISTS, and the shape of what it
+  // asserted is the record worth keeping. It checked that forge DERIVED its name by
+  // reading its own `bin` key, and that the build bin was "a DIFFERENT bin from the
+  // runtime's — two programs, two names".
+  //
+  // There is one program now. `cratylus-run` existed only because the build-time and
+  // run-time surfaces lived in two packages and each built its own `cac`; merging
+  // them made the second name a lie, and a derivation from a manifest key made
+  // forge — now a library with no bin — read a key it does not have.
+  //
+  // So the name is a plain constant in `@cratylus/runtime`, the contract leaf that
+  // depends on nothing, and every package imports it without inverting an edge. No
+  // derivation, no handoff, no second spelling to keep in agreement.
+  it('CLI_BIN is declared once, in the package that depends on nothing', () => {
+    const declared = readFileSync(
+      join(repoRoot, 'packages', 'runtime', 'src', 'bin-name.ts'),
+      'utf8',
     );
+    expect(declared).toMatch(/export const CLI_BIN = '[a-z][a-z0-9-]*';/);
+    // and the value forge re-exports is that same one — a re-export, not a copy
+    const reexport = readFileSync(
+      join(repoRoot, 'packages', 'forge', 'src', 'bin-name.ts'),
+      'utf8',
+    );
+    expect(reexport).toContain(
+      "export { CLI_BIN } from '@cratylus/runtime/bin-name'",
+    );
+    expect(reexport).not.toMatch(/CLI_BIN\s*=/);
   });
 
-  it('REFUSES a manifest with no bin, and one with two', () => {
-    // "The CLI's name" is only a name while there is one of it. Answering with the
-    // first key of two would silently pick one, which is how a rename half-lands.
-    expect(() => binNameOf({}, 'fixture')).toThrow(/0 `bin` entries/);
-    expect(() => binNameOf({ bin: { a: './a', b: './b' } }, 'fixture')).toThrow(
-      /2 `bin` entries \(a, b\)/,
-    );
-    expect(() => binNameOf(null, 'fixture')).toThrow(/fixture/);
-  });
-
-  it('FORGE_BIN is this package’s own `bin` key, read from disk', () => {
-    // THIS LEG WENT AWAY AND CAME BACK, and the round trip is the lesson. It briefly
-    // asserted that forge declares NO bin and takes its name from the hub, because I
-    // had convinced myself two manifests declaring one bin name was an install
-    // conflict. Measured, it is not: a dependency may declare the same bin, the
-    // top-level package's link wins, and npm creates exactly one. The invented
-    // constraint cost an env handoff and two vitest configs before it was checked.
-    //
-    // So a package reads its own name off its own manifest, which is what packages
-    // have always done. Read independently here — a second parse, not the module's
-    // cached one — so this compares the derivation to its source rather than to
-    // itself.
+  it('the bin key the package manager reads matches the constant', () => {
+    // The one copy no compiler can reach. `packages/cli` owns the `bin`; if a rename
+    // flips the constant and not this key, the installed executable and everything
+    // that spawns it disagree, and nothing but this assertion notices.
     const manifest = JSON.parse(
-      readFileSync(join(repoRoot, 'packages', 'forge', 'package.json'), 'utf8'),
+      readFileSync(join(repoRoot, 'packages', 'cli', 'package.json'), 'utf8'),
     ) as { bin: Record<string, string> };
-    expect(Object.keys(manifest.bin)).toEqual([FORGE_BIN]);
+    expect(Object.keys(manifest.bin)).toEqual([CLI_BIN]);
   });
 
-  it('is a DIFFERENT bin from the runtime’s — two programs, two names', () => {
-    // Guards the cheapest way for this whole seam to become vacuous: if the two
-    // bins were ever the same string, every leg below would pass while the facts
-    // carried each other's value.
-    expect(FORGE_BIN).not.toBe(RUNTIME_BIN);
+  it('no other package declares a bin — one command, one home', () => {
+    for (const pkg of ['forge', 'runtime', 'memory', 'schema', 'canon']) {
+      const m = JSON.parse(
+        readFileSync(join(repoRoot, 'packages', pkg, 'package.json'), 'utf8'),
+      ) as { bin?: unknown };
+      expect(
+        m.bin,
+        `${pkg} is a library and may not declare a bin`,
+      ).toBeUndefined();
+    }
   });
 });
 

@@ -312,7 +312,7 @@ export function loadNodeConfig(configPath?: string): NodeConfig {
 // that is the one site a sweep cannot overwrite without first reading it.
 //
 // (i) TWO CONCEPTS, NOT ONE. This is NOT the runtime host dotfile
-// (`runtime/src/runtime-config.ts`, `~/.cratylus-run.json`). A merge was
+// (`runtime/src/runtime-config.ts`, `~/.cratylus.json`). A merge was
 // considered and rejected on three measured axes:
 //   · AUTHORITY — the runtime dotfile is PROJECTED by deploy; this one is
 //     OPERATOR-AUTHORED and ships a hand-copied `.example`. Merging would put

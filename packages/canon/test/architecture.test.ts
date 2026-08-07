@@ -4,7 +4,7 @@
 // is named for the principle it enforces, not for a property-noun. Five cold legs were
 // spent looking for a quality-noun and the best of them returned `import-acyclicity`,
 // which is simply WRONG — the law is stricter than acyclicity. `canon` importing
-// `cratylus-run` introduces no cycle and is still forbidden. A sign naming a weaker
+// `cratylus` introduces no cycle and is still forbidden. A sign naming a weaker
 // property than the law would mislead exactly the reader who trusted it.
 //
 // WHY THIS EXISTS. `ARCHITECTURE.md` states four properties "in order of how much they
@@ -15,7 +15,7 @@
 // learned about signs, one level up.
 //
 // AND THE RATCHET IS NOW EMPTY. `src/hooks/memory-consolidation-nudge.ts` — a canon
-// CELL — imported `@cratylus/runtime` for `RUNTIME_BIN`, and `bin-name-single-home.
+// CELL — imported `@cratylus/runtime` for `CLI_BIN`, and `bin-name-single-home.
 // test.ts` asserted that the import STAYS, so repairing the architecture turned that
 // test red and leaving it turned this one red. Both exits were closed on purpose,
 // which is what a pin is FOR: it converted "someone should fix this" into a design
@@ -87,6 +87,16 @@ const PERMITTED: ReadonlyArray<readonly [Pkg, Pkg]> = [
   // consumer entry point whose whole job is to compose it. Every other importer is
   // still refused, and a CELL reaching the projector is still the defect it was.
   ['cli', 'forge'],
+  // `cli → canon` — the composition root importing MEANING, and the edge that makes
+  // the command usable. `forge` projects and depends on no corpus; `canon` is a
+  // corpus and knows no projector; a consumer installs one package. This is the one
+  // place both may be known, and it is why this package exists.
+  //
+  // The corpus is IMPORTED, not resolved from a specifier. A dynamic `import()` of a
+  // string would keep this edge out of the graph while keeping the dependency in the
+  // manifest — the coupling unchanged and the gate blind to it. A static import is
+  // the honest form: visible here, checkable, and impossible to fail at run time.
+  ['cli', 'canon'],
 ];
 
 /**
@@ -108,7 +118,7 @@ const ARCHITECTURE_RATCHET: ReadonlySet<string> = new Set([
   // `canon/hooks/memory-consolidation-nudge.ts → runtime` WAS HERE — property 1's
   // last breach — and is RETIRED BY REPAIR, 2026-08-05.
   //
-  // The cell took `RUNTIME_BIN` because the value landed inside a shell string in
+  // The cell took `CLI_BIN` because the value landed inside a shell string in
   // `workers[].content`, where no compiler reads it. That made the import look
   // harmless and it was not: an edge is an edge whether or not a compiler follows the
   // value, and this one ran from MEANING to MECHANISM, the one direction the north
@@ -662,17 +672,11 @@ function phantomScan(
   let examined = 0;
   for (const spec of Object.keys(manifest.dependencies ?? {})) {
     if (pkgOf(spec) === null) continue; // external — not ours to police
-    // A RESOLVABILITY DEPENDENCY IS NOT A PHANTOM. The hub declares the default
-    // corpus so a CONSUMER'S CONFIG can resolve `@cratylus/canon` by ordinary Node
-    // rules — including a global install, where a config outside every
-    // `node_modules` cannot resolve it at all (`ERR_MODULE_NOT_FOUND`, measured).
-    // The hub never imports it: depending on a corpus is not assuming one, and the
-    // config still NAMES it, which is what keeps meaning out of projection.
-    //
-    // Narrow on purpose — one package, one spec. Widening this to "any dependency a
-    // package chooses not to import" would retire the leg while leaving it green,
-    // which is the failure this gate was written against.
-    if (owner === 'cli' && spec === '@cratylus/canon') continue;
+    // THE `cli → canon` EXCEPTION WAS HERE AND IS DELETED. It licensed the hub to
+    // declare the corpus without importing it, back when the corpus arrived as a
+    // specifier string resolved at run time. The hub imports it now, so the
+    // exception licenses nothing — and a dead exception is silent widening, exactly
+    // what the phantom leg exists to catch one level up.
     examined += 1;
     if (!shippedSource.includes(spec)) phantoms.push(spec);
   }

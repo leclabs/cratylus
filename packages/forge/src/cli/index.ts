@@ -3,12 +3,13 @@ import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { cac } from 'cac';
-import { FORGE_BIN } from '../bin-name.js';
+import { CLI_BIN } from '../bin-name.js';
 import { CONFIG_FILE } from '../config/scaffold.js';
 import {
   DEPLOY_CHECK_EXIT,
   type Scope as DeployScope,
 } from '../deploy/index.js';
+import type { ProjectablePlugin } from '../project/index.js';
 import { runAdd } from './commands/add.js';
 import { runCatalog } from './commands/catalog.js';
 import { runCompose } from './commands/compose.js';
@@ -47,11 +48,14 @@ const VERSION: string = createRequire(import.meta.url)(
 // than wrong after a rename, which is the argument for deriving the name instead
 // of choosing one: there was no second home to disagree with, only a memory.
 export interface RunCliOptions {
-  /** Corpus specifier `install` falls back to when the cwd has no config.
+  /** The corpus `install` falls back to when the cwd has no config — the PLUGIN
+   *  ITSELF, not a specifier to resolve.
    *
-   *  Passed by whoever composes this CLI. `forge` names no corpus of its own —
-   *  it installs what it is handed and refuses when handed nothing. */
-  readonly defaultCorpus?: string;
+   *  Passed by whoever composes this CLI, which imports it statically. `forge` names
+   *  no corpus of its own: it installs what it is handed and refuses when handed
+   *  nothing. Taking the object rather than a string is what removes a run-time
+   *  resolution — and therefore a run-time failure mode — from the default path. */
+  readonly defaultCorpus?: ProjectablePlugin;
 }
 
 /** Run the build-time CLI.
@@ -68,7 +72,7 @@ export async function runCli(
   argv: string[] = process.argv,
   cliOpts: RunCliOptions = {},
 ): Promise<void> {
-  const cli = cac(FORGE_BIN);
+  const cli = cac(CLI_BIN);
 
   cli
     .command('init', `Scaffold ${CONFIG_FILE} from a plugin package`)
@@ -182,7 +186,8 @@ export async function runCli(
         process.exit(
           await runInstall({
             harness: opts.harness,
-            plugin: opts.plugin ?? cliOpts.defaultCorpus,
+            plugin: opts.plugin,
+            corpus: cliOpts.defaultCorpus,
             dryRun: opts.dryRun,
             home: homedir(),
           }),
@@ -271,7 +276,7 @@ export async function runCli(
         // THE RENDER DIR IS NAMED AFTER THE TOOL, so it is DERIVED from the bin rather
         // than spelled — one authored home, which the bin-name census enforces and
         // caught here the moment this line spelled `.cratylus` outright.
-        const from = opts.from ?? join(`.${FORGE_BIN}`, harnessName);
+        const from = opts.from ?? join(`.${CLI_BIN}`, harnessName);
         const agentsDir = opts.agentsDir ?? join(from, 'agents');
         const skillsDir = opts.skillsDir ?? join(from, 'skills');
         const hooksDir = opts.hooksDir ?? from;
@@ -288,7 +293,7 @@ export async function runCli(
           !opts.from && !opts.agentsDir && !opts.skillsDir && !opts.hooksDir;
         if (defaulted && !existsSync(from)) {
           console.error(
-            `${FORGE_BIN} deploy: no render tree at ${from} — run \`${FORGE_BIN} project\` first, or pass --from <dir>`,
+            `${CLI_BIN} deploy: no render tree at ${from} — run \`${CLI_BIN} project\` first, or pass --from <dir>`,
           );
           process.exit(usage);
         }
@@ -296,7 +301,7 @@ export async function runCli(
         try {
           companions = parseCompanions(opts.assets ?? null);
         } catch (e) {
-          console.error(`${FORGE_BIN} deploy: ${(e as Error).message}`);
+          console.error(`${CLI_BIN} deploy: ${(e as Error).message}`);
           process.exit(usage);
         }
         process.exit(
@@ -378,7 +383,7 @@ export async function runCli(
   if (!cli.matchedCommand && parsed.args.length > 0) {
     const known = cli.commands.map((c) => c.name).join(', ');
     console.error(
-      `${FORGE_BIN}: unknown command '${parsed.args[0]}' (known: ${known})`,
+      `${CLI_BIN}: unknown command '${parsed.args[0]}' (known: ${known})`,
     );
     process.exit(1);
   }

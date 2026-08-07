@@ -75,7 +75,7 @@ The remaining **6** are source comments (`add.ts:1`, `init.ts:1,7`, `optimize.ts
 `project.ts:111`, `index.ts:296`) — wrong, but they reach no one outside the repository.
 
 The existing census (`bin-name-single-home.test.ts:437-440`) cannot catch these: it matches the
-bare token pattern against `FORGE_BIN`, and `FORGE_BIN` is `cratylus`, so a literal `forge` in a
+bare token pattern against `CLI_BIN`, and `CLI_BIN` is `cratylus`, so a literal `forge` in a
 `cac`-coloured string is invisible to it. **A gate that checks the name is right cannot see a
 different name that is wrong.**
 

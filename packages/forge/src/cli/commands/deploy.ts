@@ -11,7 +11,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import pc from 'picocolors';
 import { adapterByName } from '../../adapters/registry/index.js';
-import { FORGE_BIN } from '../../bin-name.js';
+import { CLI_BIN } from '../../bin-name.js';
 import { loadConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
@@ -160,7 +160,7 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
     await emitHostRuntimeConfig(opts, harnessAdapter.nativeEvents, log, warn);
     return rc;
   } catch (e) {
-    console.error(pc.red(`${FORGE_BIN} deploy: ${(e as Error).message}`));
+    console.error(pc.red(`${CLI_BIN} deploy: ${(e as Error).message}`));
     return 1;
   }
 }
@@ -366,18 +366,14 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
     // RELAYED VERBATIM INTO AN AGENT'S CONTEXT by the SessionStart drift
     // advisory, so this line is a command someone runs on the strength of
     // reading it. A stale program name here is a repair instruction that fails.
-    log(
-      `  Repair: re-run \`${FORGE_BIN} project\`, then \`${FORGE_BIN} deploy\`.`,
-    );
+    log(`  Repair: re-run \`${CLI_BIN} project\`, then \`${CLI_BIN} deploy\`.`);
     return v.rc;
   } catch (e) {
     // THE THIRD CODE, and the whole reason it exists. This branch is reached when
     // the check could not run — an unknown harness, an unreadable scope, a tree
     // that is not one. Returning `drift` here would report a crash as a stale
     // host: a fabricated verdict, relayed by every caller that trusts the code.
-    console.error(
-      pc.red(`${FORGE_BIN} deploy --check: ${(e as Error).message}`),
-    );
+    console.error(pc.red(`${CLI_BIN} deploy --check: ${(e as Error).message}`));
     return DEPLOY_CHECK_EXIT.noVerdict;
   }
 }

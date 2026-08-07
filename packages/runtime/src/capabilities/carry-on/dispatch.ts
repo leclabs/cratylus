@@ -30,7 +30,7 @@
 // second home the event-tap vocabulary repair was fought over.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { RUNTIME_BIN } from '../../bin-name.js';
+import { CLI_BIN } from '../../bin-name.js';
 import { parseArgs } from '../../dispatch.js';
 import type { CarryOnHost } from '../../ports/carry-on.js';
 import { type RuntimeConfig, loadRuntimeConfig } from '../../runtime-config.js';
@@ -96,7 +96,7 @@ function unquote(value: string): string {
  */
 export function gateCommand(layout: PlanLayout): string {
   return [
-    RUNTIME_BIN,
+    CLI_BIN,
     'carryOn',
     'terminus',
     '--plan-root',
@@ -220,7 +220,7 @@ function nativeTurnEnd(config: RuntimeConfig | null, event: string): string {
     throw new Error(
       'carry-on: this host has no lifecycle-event vocabulary — the corpus declares it and ' +
         '`cratylus deploy` emits it into the host runtime config ($AGENT_RUNTIME_CONFIG, ' +
-        'else ~/.cratylus-run.json). Run a deploy for this harness; the runtime does not ' +
+        'else ~/.cratylus.json). Run a deploy for this harness; the runtime does not ' +
         'carry a vocabulary of its own.',
     );
   }

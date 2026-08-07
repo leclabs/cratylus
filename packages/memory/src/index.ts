@@ -4,7 +4,7 @@
 //   - `runtimePlugin`  — the RuntimePlugin the runtime loader registers.
 //   - `AgentMemory`    — the MemoryStrategy implementation (bind a home explicitly).
 //   - `seedTemplates`  — the memory store seed templates forge imports.
-//   - `main`/`runMain` — the argv dispatcher the `cratylus-run memory <verb>`
+//   - `main`/`runCli` — the argv dispatcher the `cratylus memory <verb>`
 //                        surface delegates to; the tool ships NO `memory` bin.
 // `seedTemplates` is also reachable at the `./seedTemplates` subpath.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -12,4 +12,4 @@
 export { runtimePlugin } from './plugin.js';
 export { AgentMemory, type AgentMemoryOptions } from './strategy.js';
 export { seedTemplates } from './seeds.js';
-export { main, runMain, VERSION, type CliResult } from './cli.js';
+export { main, runCli, VERSION, type CliResult } from './cli.js';

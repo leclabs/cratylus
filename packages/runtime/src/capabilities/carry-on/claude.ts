@@ -28,7 +28,7 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { RUNTIME_BIN } from '../../bin-name.js';
+import { CLI_BIN } from '../../bin-name.js';
 import type {
   CarryOnHost,
   CarryOnStatus,
@@ -48,7 +48,7 @@ import {
  * it ORPHANS every installed gate: `revert` would look for an id `elevate` no
  * longer writes, and a session would stay gated with nothing able to lift it.
  */
-export const CARRY_ON_ID = `${RUNTIME_BIN}-carry-on`;
+export const CARRY_ON_ID = `${CLI_BIN}-carry-on`;
 
 /** A parsed claude settings document: the `hooks` block this capability edits,
  *  plus every foreign top-level key it must hand back untouched. */

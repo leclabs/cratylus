@@ -23,7 +23,7 @@ export const factProbe: HookCell = {
       executable: true,
       content: [
         '#!/bin/sh',
-        'RUNTIME_BIN={{fact:runtime-bin}}',
+        'CLI_BIN={{fact:runtime-bin}}',
         'DEPLOY_BIN={{fact:deploy-bin}}',
         'HARNESS={{fact:harness-name}}',
         'HARNESS_HOOKS_FILE={{fact:harness-hooks-file}}',

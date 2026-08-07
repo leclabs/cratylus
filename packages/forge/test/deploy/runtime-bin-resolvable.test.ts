@@ -12,10 +12,10 @@
 // TWO FIXTURES, and the pair is the point — a checker with only the convicting
 // half convicts the corpus of its own defects:
 //
-//   STRANDED  a host whose `cratylus-run` is present, executable, and found by a
+//   STRANDED  a host whose `cratylus` is present, executable, and found by a
 //             PATH lookup, but whose target no longer exists. This is the real
 //             host on 2026-08-05.
-//   LIVE      a host whose `cratylus-run` runs and answers `--version`.
+//   LIVE      a host whose `cratylus` runs and answers `--version`.
 //
 // AND THE CRUX, asserted directly: on the STRANDED host `whichOnPath` SUCCEEDS.
 // A presence check passes on a host where the capability is dead. That is why the
@@ -38,15 +38,17 @@ import {
 import { runtimeShimContent } from '../../src/project/runtime-shim.js';
 import { buildRenderTree, tmp } from './helpers.js';
 
-const BIN = 'cratylus-run';
+const BIN = 'cratylus';
+/** A command this build does not ship — the shape a rename leaves behind. */
+const STALE = 'cratylus-run';
 
-// The fixture PATH holds ONLY the fixture bin dir, so no `cratylus-run` the real
+// The fixture PATH holds ONLY the fixture bin dir, so no `cratylus` the real
 // host happens to have can decide the outcome. The shims therefore spell node
 // absolutely rather than finding it on that PATH — the fixtures model the
 // binding, not node's own discovery.
 const NODE = process.execPath;
 
-/** A host bin dir holding a `cratylus-run` that EXECS A PATH THAT IS NOT THERE —
+/** A host bin dir holding a `cratylus` that EXECS A PATH THAT IS NOT THERE —
  *  the stranded global link, reproduced. `which` finds it; running it dies in
  *  node's module loader, exactly as it did on the day. */
 function strandedHost(): { bin: string; env: NodeJS.ProcessEnv } {
@@ -60,7 +62,7 @@ function strandedHost(): { bin: string; env: NodeJS.ProcessEnv } {
   return { bin: shim, env: { ...process.env, PATH: bindir } };
 }
 
-/** A host bin dir whose `cratylus-run` actually runs and answers `--version`. */
+/** A host bin dir whose `cratylus` actually runs and answers `--version`. */
 function liveHost(): { bin: string; env: NodeJS.ProcessEnv } {
   const root = tmp('host-live-');
   const bindir = join(root, 'bin');
@@ -79,7 +81,7 @@ function liveHost(): { bin: string; env: NodeJS.ProcessEnv } {
   return { bin: shim, env: { ...process.env, PATH: bindir } };
 }
 
-/** A host with no `cratylus-run` at all. */
+/** A host with no `cratylus` at all. */
 function emptyHost(): { env: NodeJS.ProcessEnv } {
   const bindir = join(tmp('host-empty-'), 'bin');
   mkdirSync(bindir, { recursive: true });
@@ -151,14 +153,40 @@ describe('what counts as a placed CALL', () => {
       `# memory\n\nRuns via \`${BIN} memory read\`.\n`,
       'utf-8',
     );
-    expect(shimsSpawningRuntimeBin(srcDir, files, BIN)).toEqual([
-      'scripts/memory.mjs',
+    // THE DETECTOR IS NAME-AGNOSTIC and reports WHAT each shim spawns. It used to
+    // take the current bin and grep for it, which meant a shim spawning a RETIRED
+    // name matched nothing and the gate passed for having found nothing.
+    expect(shimsSpawningRuntimeBin(srcDir, files)).toEqual([
+      { rel: 'scripts/memory.mjs', spawns: BIN },
     ]);
+  });
+
+  it('CONVICTS a shim spawning a RETIRED command — the rename door', () => {
+    // MEASURED ON A REAL HOST, 2026-08-07: after the two commands merged, a skill
+    // shim deployed earlier still spawned `cratylus-run`. The binary was gone, the
+    // symlink was stranded, and `memory encode` died inside node's module loader.
+    //
+    // THIS GATE PASSED THROUGHOUT, and passed BECAUSE the shim was stale: the
+    // detector was handed the CURRENT bin and grepped for it, so a shim naming the
+    // retired one matched nothing, the list came back empty, and the assertion
+    // returned "no refusal" without ever probing. A check whose subject is "files
+    // matching the new name" goes dark at exactly the moment a rename makes it
+    // matter.
+    const { srcDir, files } = treeWithShim();
+    writeFileSync(
+      join(srcDir, 'scripts', 'memory.mjs'),
+      `import { spawnSync } from 'node:child_process';\nspawnSync('${STALE}', ['memory']);\n`,
+      'utf-8',
+    );
+    const msg = assertShimsResolvable(srcDir, files, {});
+    expect(msg, 'a shim naming a retired command must REFUSE').not.toBeNull();
+    expect(msg).toContain(STALE);
+    expect(msg).toContain(BIN);
   });
 
   it('a skill placing no scripts is never gated', () => {
     const { srcDir } = treeWithShim();
-    expect(shimsSpawningRuntimeBin(srcDir, ['SKILL.md'], BIN)).toEqual([]);
+    expect(shimsSpawningRuntimeBin(srcDir, ['SKILL.md'])).toEqual([]);
     expect(
       assertShimsResolvable(srcDir, ['SKILL.md'], {
         env: strandedHost().env,
@@ -213,7 +241,7 @@ describe('assertShimsResolvable', () => {
     // the lesson, at the point of failure
     expect(msg).toMatch(/Presence on PATH is not resolvability/);
     // THE REPAIR IS AN ORDINARY INSTALL, and that is the point of this assertion.
-    // It used to be `node <checkout>/packages/cli/dist/bin.js install` — a repair
+    // It used to be `node <checkout>/packages/cli/dist/cratylus.js install` — a repair
     // instruction naming a CHECKOUT PATH, which is unreadable to the consumer this
     // message exists for. The tool no longer authors its own PATH binding; the
     // package manager does, and it is the thing that solves this portably.

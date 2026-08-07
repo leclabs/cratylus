@@ -23,7 +23,7 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { type DimensionManifest, mergeManifest } from '@cratylus/schema';
 import pc from 'picocolors';
-import { FORGE_BIN } from '../../bin-name.js';
+import { CLI_BIN } from '../../bin-name.js';
 import { type CatalogEntry, enumerateCatalog } from '../../catalog/index.js';
 import { loadConfig, loadPlugins } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
@@ -129,7 +129,7 @@ async function runCrossPlugin(
   }
   const names = plugins.map((p) => p.name).join(' › ') || '(none)';
   console.log(
-    pc.bold(`${FORGE_BIN} catalog`),
+    pc.bold(`${CLI_BIN} catalog`),
     pc.gray(
       `(extends: ${names} — ${total} extendable fragment${total === 1 ? '' : 's'}` +
         `${filter ? ` matching '${opts.agent}'` : ''})`,
@@ -187,7 +187,7 @@ async function runCorpus(
 ): Promise<number> {
   if (!existsSync(corpus)) {
     console.error(
-      `${FORGE_BIN} catalog: corpus dimensions dir not found: ${corpus}`,
+      `${CLI_BIN} catalog: corpus dimensions dir not found: ${corpus}`,
     );
     return 1;
   }
@@ -201,7 +201,7 @@ async function runCorpus(
   }
   const total = entries.reduce((n, e) => n + e.values.length, 0);
   console.log(
-    pc.bold(`${FORGE_BIN} catalog`),
+    pc.bold(`${CLI_BIN} catalog`),
     pc.gray(`(${entries.length} dimensions, ${total} values — ${corpus})`),
   );
   console.log('');
@@ -220,7 +220,7 @@ export async function runCatalog(opts: CatalogCmdOpts): Promise<number> {
     try {
       return await runCorpus(resolve(opts.corpus), configPath, opts);
     } catch (e) {
-      console.error(pc.red(`${FORGE_BIN} catalog: ${(e as Error).message}`));
+      console.error(pc.red(`${CLI_BIN} catalog: ${(e as Error).message}`));
       return 1;
     }
   }
@@ -231,7 +231,7 @@ export async function runCatalog(opts: CatalogCmdOpts): Promise<number> {
     try {
       return await runCrossPlugin(configPath, opts);
     } catch (e) {
-      console.error(pc.red(`${FORGE_BIN} catalog: ${(e as Error).message}`));
+      console.error(pc.red(`${CLI_BIN} catalog: ${(e as Error).message}`));
       return 1;
     }
   }
@@ -240,14 +240,14 @@ export async function runCatalog(opts: CatalogCmdOpts): Promise<number> {
   const fallback = defaultCorpus();
   if (!fallback) {
     console.error(
-      `${FORGE_BIN} catalog: no ${CONFIG_FILE}, no --corpus, and no default canon/src/dimensions found`,
+      `${CLI_BIN} catalog: no ${CONFIG_FILE}, no --corpus, and no default canon/src/dimensions found`,
     );
     return 1;
   }
   try {
     return await runCorpus(fallback, configPath, opts);
   } catch (e) {
-    console.error(pc.red(`${FORGE_BIN} catalog: ${(e as Error).message}`));
+    console.error(pc.red(`${CLI_BIN} catalog: ${(e as Error).message}`));
     return 1;
   }
 }

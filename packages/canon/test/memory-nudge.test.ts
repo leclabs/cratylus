@@ -4,7 +4,7 @@
 // (`targets/guardrail/memory-consolidation-nudge.sh`) end-to-end with crafted
 // stdin + a temp agent home.
 //
-// THE BIN IS REAL. `MEMORY_BIN` points at the built `cratylus-run` dispatcher,
+// THE BIN IS REAL. `MEMORY_BIN` points at the built `cratylus` dispatcher,
 // not a stub: the whole point of this hook's rewrite is that the FACE asks the
 // runtime instead of reading the store layout itself, and a stubbed dispatcher
 // would prove nothing about that boundary. Both questions the hook asks —
@@ -23,7 +23,7 @@ import {
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
+import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -40,7 +40,7 @@ const runtimeBin = join(
   'packages',
   'cli',
   'dist',
-  'bin.js',
+  'cratylus.js',
 );
 
 const hasJq = (() => {
@@ -79,7 +79,7 @@ beforeEach(() => {
     existsSync(runtimeBin),
     `the dispatcher this fixture shims is absent (${runtimeBin}) — a concurrent build is mid-clean, not a defect in the hook`,
   ).toBe(true);
-  binShim = join(root, RUNTIME_BIN);
+  binShim = join(root, CLI_BIN);
   writeFileSync(
     binShim,
     `#!/usr/bin/env sh\nexec node ${JSON.stringify(runtimeBin)} "$@"\n`,

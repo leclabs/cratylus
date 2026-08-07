@@ -43,9 +43,9 @@ what keeps the build DAG and the runtime DAG from reaching across.
 | `./events`                 | `LIFECYCLE_EVENTS` (28, in canonical order) and the derived `LifecycleEvent` union |
 | `./loader`                 | `RuntimeHost`, `bootstrap`, `discoverConfigured`, `CAPABILITIES`                   |
 | `./dispatch`               | `dispatch`, `parseArgs`, `verbsOf`, `VerbArgs`, `DispatchResult`                   |
-| `./main`                   | `runMain` — the thin `cac` CLI over loader + dispatch                              |
+| `./main`                   | `runCli` — the thin `cac` CLI over loader + dispatch                               |
 | `./runtime-config`         | `loadRuntimeConfig`, `runtimeConfigPath`, `RuntimeConfig`                          |
-| `./bin-name`               | `RUNTIME_BIN` — the one home for the executable's name on PATH                     |
+| `./bin-name`               | `CLI_BIN` — the one home for the executable's name on PATH                         |
 | `./capabilities/event-tap` | the event-tap capability, which ships inside the runtime rather than as a plugin   |
 
 The `.` barrel is pure contracts plus one identity helper: no implementation.
@@ -62,22 +62,22 @@ available; a verb that throws is code `1`; success is `0`. Never a silent no-op.
 
 ## Which providers a host uses
 
-`runMain` accepts declared plugins directly. Absent that, `discoverConfigured` reads the host config
-— `$AGENT_RUNTIME_CONFIG`, else `~/.cratylus-run.json` — and resolves the named capability package
+`runCli` accepts declared plugins directly. Absent that, `discoverConfigured` reads the host config
+— `$AGENT_RUNTIME_CONFIG`, else `~/.cratylus.json` — and resolves the named capability package
 specifiers against `resolveFrom`'s `node_modules`. An absent or malformed config is not an error: the
 caller's bundled default set still loads, so configuring is opt-in.
 
-`runMain` exports but does not invoke. The invoking bin lives in
+`runCli` exports but does not invoke. The invoking bin lives in
 [`cratylus`](../invoke/README.md), which declares its capability packages as real
 dependencies and passes them in.
 
 ## The bin name
 
-`RUNTIME_BIN` (`cratylus-run`) lives here because four packages speak it and three of them speak it
+`CLI_BIN` (`cratylus`) lives here because four packages speak it and three of them speak it
 from inside an emitted artifact — a projected skill shim, a generated hook script — where no compiler
 can see it. A rename that missed one produced a script that failed on a host rather than at build.
 
-Flipping this one symbol really is the whole rename: `RUNTIME_CONFIG_NAME` (`.cratylus-run.json`) and
+Flipping this one symbol really is the whole rename: `RUNTIME_CONFIG_NAME` (`.cratylus.json`) and
 the event-tap's `EVENT_TAP_ID` are template-derived from it and move without being edited. The one
 irreducible second copy is [`cratylus`](../invoke/README.md)'s `bin` key, which npm reads with
 no compiler in the loop; their agreement is held by a test.

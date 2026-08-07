@@ -17,7 +17,7 @@ decode as leaves — nobody imports an action for its contracts.
 npm install -g cratylus
 ```
 
-### From a checkout — `cratylus-run install`
+### From a checkout — `cratylus install`
 
 A development host runs the bin out of a checkout rather than a registry, and until
 2026-08-05 it reached `PATH` through a `pnpm link --global`: a relative symlink into
@@ -32,7 +32,7 @@ The binding is now an artifact of this repository:
 node <checkout>/packages/cli/dist/bin.js install
 ```
 
-It writes an executable `cratylus-run` — a real file, `#!/bin/sh` + `exec node <entry>`,
+It writes an executable `cratylus` — a real file, `#!/bin/sh` + `exec node <entry>`,
 never a symlink — and then **proves it runs** with `--version` before reporting success.
 
 | flag             | effect                                                                            |
@@ -49,9 +49,9 @@ moves, nothing on this host knows where it went, so no recorded form of the path
 find it. What is guaranteed instead is that a stale binding **fails legibly** —
 
 ```
-cratylus-run: UNAVAILABLE — the run-time capability is not installed on this host.
+cratylus: UNAVAILABLE — the run-time capability is not installed on this host.
 
-  this command   /Users/lex/.local/share/pnpm/bin/cratylus-run
+  this command   /Users/lex/.local/share/pnpm/bin/cratylus
   its entry      /Users/lex/workspaces/OLD-NAME/packages/cli/dist/bin.js
   status         that file does not exist
   …
@@ -68,28 +68,28 @@ from the root it rewrites `package.json`, `pnpm-workspace.yaml` and the lockfile
 purges the root `node_modules`, and _then_ fails resolving `workspace:*` deps.
 
 **The other half of this repair lives in `forge`.** `cratylus deploy` places skill
-shims that `spawnSync('cratylus-run', …)`, and after placing them it executes
-`cratylus-run --version` and refuses — non-zero, in capability terms — if it does not
+shims that `spawnSync('cratylus', …)`, and after placing them it executes
+`cratylus --version` and refuses — non-zero, in capability terms — if it does not
 come back. The probe is `--version` and **not `which`**: `which` was satisfied by the
 stranded shim the entire time the capability was dead. The two halves share no import;
 `invoke` authors the binding, `forge` refuses to ship against a broken one.
 
 ## Use
 
-The command is `cratylus-run <capability> <verb> [args]`. The bundled default set is the memory
+The command is `cratylus <capability> <verb> [args]`. The bundled default set is the memory
 capability:
 
 ```bash
-cratylus-run memory encode --name <agent> --body 'what happened'
-cratylus-run memory read   --name <agent>
+cratylus memory encode --name <agent> --body 'what happened'
+cratylus memory read   --name <agent>
 
-cratylus-run eventTap status    # the event-tap capability: install · uninstall · read · status
+cratylus eventTap status    # the event-tap capability: install · uninstall · read · status
 
-cratylus-run --help
-cratylus-run --version
+cratylus --help
+cratylus --version
 ```
 
-**The bin is `cratylus-run`, not `invoke`.** Two things are going on there. `invoke` could not _be_
+**The bin is `cratylus`, not `invoke`.** Two things are going on there. `invoke` could not _be_
 the bin: `pyinvoke` already installs `invoke` and `inv` on `PATH`, and a package name is scoped and
 cheap while a bin name is global — the two were derived separately for that reason. And the bare mark
 `cratylus` went to the build-time bin, [`@cratylus/forge`](../forge/README.md)'s, because that is the
@@ -98,7 +98,7 @@ surface a **human** types. This one is invoked almost entirely by generated arti
 machine-written call site would be backwards.
 
 This package owns the `bin` key because npm reads that manifest with no compiler in the loop. Every
-other site interpolates `RUNTIME_BIN` from the runtime, and `bin-name-single-home.test.ts` holds the
+other site interpolates `CLI_BIN` from the runtime, and `bin-name-single-home.test.ts` holds the
 two in agreement so a rename cannot half-land.
 
 Exit codes come from the dispatcher: `0` on success, `1` for a verb that threw, `2` for an unknown
@@ -119,7 +119,7 @@ Resolution now succeeds because the dependency is **declared**.
 ## Choosing different providers
 
 The bundled set is a default, not a fixture. A host that declares providers in its runtime config —
-`$AGENT_RUNTIME_CONFIG`, else `~/.cratylus-run.json` — overrides it entirely:
+`$AGENT_RUNTIME_CONFIG`, else `~/.cratylus.json` — overrides it entirely:
 
 ```jsonc
 {

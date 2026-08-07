@@ -4,12 +4,12 @@
 // Proves the whole loop end-to-end on a clean, hermetic fixture — NON-VACUOUS at
 // every leg (a capability provably RAN, not merely that a process spawned):
 //
-//   project → deploy → a DEPLOYED thin-shim invokes `cratylus-run memory <verb>`
-//   AND `cratylus-run tap <verb>` on the target, and the capability's effect is
+//   project → deploy → a DEPLOYED thin-shim invokes `cratylus memory <verb>`
+//   AND `cratylus tap <verb>` on the target, and the capability's effect is
 //   READ BACK.
 //
 //   L0 project : a skill declaring runtime:{capability:'memory'} emits a THIN SHIM
-//                `scripts/memory.mjs` (a forwarder to the host `cratylus-run
+//                `scripts/memory.mjs` (a forwarder to the host `cratylus
 //                memory` CLI — the canonical shape canon's runtime-shim gate
 //                pins; here the shim is consumed + PROVEN to drive the real bin).
 //   L1 deploy  : `placeSkillsLocal` copies the skill dir mode-preserving into a
@@ -20,7 +20,7 @@
 //                nothing about it is an assertion on forge.
 //   L3 memory  : the DEPLOYED shim `… memory encode`→`read` round-trips a record —
 //                the store file on disk carries the body, the read returns the id.
-//   L4 tap     : `cratylus-run tap install`→`status`(attached)→`uninstall` merges a
+//   L4 tap     : `cratylus tap install`→`status`(attached)→`uninstall` merges a
 //                passive logger into a temp settings.json and removes it with ZERO
 //                RESIDUE (the target file restored, our tap id gone).
 //
@@ -43,14 +43,14 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
-import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
+import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { canonicalToClaude } from '../../src/adapters/claude/index.js';
 import { emitRuntimeConfig, placeSkillsLocal } from '../../src/deploy/index.js';
 import { tmp } from './helpers.js';
 
-/** The package that ships both commands, so `<RUNTIME_BIN> <cap> <verb>`
+/** The package that ships both commands, so `<CLI_BIN> <cap> <verb>`
  *  resolves: the CLI carrying the bin, the contract leaf, the capability. These are
  *  PACKAGE names (an npm coordinate), not the bin name — they do not move on a
  *  rebrand of the executable. */
@@ -59,7 +59,7 @@ const HUB = 'cratylus';
 
 /**
  * The canonical thin-shim CONTENT for a runtime capability — a self-contained node
- * forwarder to the host `cratylus-run <capability>` CLI, byte-identical to what
+ * forwarder to the host `cratylus <capability>` CLI, byte-identical to what
  * canon's `runtimeShimContent` emits (whose exact shape its own runtime-shim
  * gate pins). Reproduced here (forge must not import canon — the DAG is
  * canon → forge, never inverted); this smoke consumes the shim and PROVES it drives
@@ -68,7 +68,7 @@ const HUB = 'cratylus';
 function thinShim(capability: string): string {
   return `#!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
-const r = spawnSync('${RUNTIME_BIN}', ['${capability}', ...process.argv.slice(2)], {
+const r = spawnSync('${CLI_BIN}', ['${capability}', ...process.argv.slice(2)], {
   stdio: 'inherit',
 });
 process.exit(r.status ?? 1);
@@ -98,7 +98,7 @@ const NONCE = `smoke-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
  */
 const runtimeConfig = join(root, 'runtime-config.json');
 
-/** The deployed shim runs `cratylus-run` off PATH; isolate git config too, and
+/** The deployed shim runs `cratylus` off PATH; isolate git config too, and
  *  point the runtime at the emitted host config rather than the operator's real one. */
 const hermeticEnv = {
   ...process.env,
@@ -122,7 +122,7 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
   );
   // The tap leg's counterpart. The capability word is `eventTap` (the runtime's
   // own `CAPABILITIES` key, which canon's `event-tap` cell declares), so the
-  // emitter names the shim `eventTap.mjs` and it spawns `cratylus-run eventTap`.
+  // emitter names the shim `eventTap.mjs` and it spawns `cratylus eventTap`.
   const deployedTapShim = join(
     targetClaude,
     'skills',
@@ -132,7 +132,7 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
   );
 
   // PRECONDITION (not a stage, not an assertion): put the runtime packages in a
-  // temp npm prefix so the deployed shim has an `cratylus-run` to drive. On a
+  // temp npm prefix so the deployed shim has an `cratylus` to drive. On a
   // real host this is `npm i -g cratylus`; here the un-published
   // workspace packages are packed and co-installed to reach the same state.
   beforeAll(() => {
@@ -179,7 +179,7 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     }
 
     // Guard, so an unmet precondition fails legibly instead of as a shim error.
-    expect(existsSync(join(binDir, RUNTIME_BIN))).toBe(true);
+    expect(existsSync(join(binDir, CLI_BIN))).toBe(true);
 
     // PUT THE INSTALLED BIN ON THIS PROCESS'S PATH, because the code under test reads
     // `process.env.PATH` — `probeRuntimeBin` resolves the runtime bin the way a real
@@ -189,7 +189,7 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     process.env.PATH = `${binDir}:${process.env.PATH ?? ''}`;
   }, 180_000);
 
-  it('L0 project: a runtime:{capability:memory} skill emits an executable thin shim → cratylus-run memory', () => {
+  it('L0 project: a runtime:{capability:memory} skill emits an executable thin shim → cratylus memory', () => {
     const skillDir = join(projectSkills, SKILL);
     const scriptsDir = join(skillDir, 'scripts');
     mkdirSync(scriptsDir, { recursive: true });
@@ -203,9 +203,9 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     chmodSync(shimSrc, 0o755);
 
     const emitted = readFileSync(shimSrc, 'utf-8');
-    // Falsifier: the shim drives the host `<RUNTIME_BIN> memory` CLI, forwarding argv.
+    // Falsifier: the shim drives the host `<CLI_BIN> memory` CLI, forwarding argv.
     expect(emitted).toMatch(
-      new RegExp(`spawnSync\\('${RUNTIME_BIN}', \\['memory',`),
+      new RegExp(`spawnSync\\('${CLI_BIN}', \\['memory',`),
     );
     expect(emitted).toContain('...process.argv.slice(2)');
     // THIN — no bundled impl, no cross-package import.
@@ -214,7 +214,7 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     expect(statSync(shimSrc).mode & 0o111).not.toBe(0);
   });
 
-  it('L0b project: a runtime:{capability:eventTap} skill emits an executable thin shim → cratylus-run eventTap', () => {
+  it('L0b project: a runtime:{capability:eventTap} skill emits an executable thin shim → cratylus eventTap', () => {
     const skillDir = join(projectSkills, TAP_SKILL);
     const scriptsDir = join(skillDir, 'scripts');
     mkdirSync(scriptsDir, { recursive: true });
@@ -228,9 +228,9 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     chmodSync(shimSrc, 0o755);
 
     const emitted = readFileSync(shimSrc, 'utf-8');
-    // Falsifier: the shim drives the host `<RUNTIME_BIN> eventTap` CLI, forwarding argv.
+    // Falsifier: the shim drives the host `<CLI_BIN> eventTap` CLI, forwarding argv.
     expect(emitted).toMatch(
-      new RegExp(`spawnSync\\('${RUNTIME_BIN}', \\['eventTap',`),
+      new RegExp(`spawnSync\\('${CLI_BIN}', \\['eventTap',`),
     );
     expect(emitted).toContain('...process.argv.slice(2)');
     expect(emitted).not.toContain('@cratylus/');
@@ -254,7 +254,7 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
   });
 
   it('L3 memory leg: the DEPLOYED shim round-trips a record (encode→read), proven on disk', () => {
-    // encode via the deployed shim → the shim spawns `cratylus-run memory encode`.
+    // encode via the deployed shim → the shim spawns `cratylus memory encode`.
     const id = execFileSync(
       'node',
       [
@@ -341,7 +341,7 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     const merged = readFileSync(settings, 'utf-8');
     expect(merged).toContain('"FOO": "bar"');
     expect(merged).toContain('echo foreign');
-    expect(merged).toContain('cratylus-run-event-tap');
+    expect(merged).toContain('cratylus-event-tap');
 
     // uninstall — surgical: our entry gone, foreign spared, status detached.
     runTap('uninstall');
@@ -351,7 +351,7 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     expect(detached.status.attached).toBe(false);
     // ZERO RESIDUE: our tap id is gone; the foreign key + hook remain.
     const after = readFileSync(settings, 'utf-8');
-    expect(after).not.toContain('cratylus-run-event-tap');
+    expect(after).not.toContain('cratylus-event-tap');
     expect(after).toContain('echo foreign');
     expect(after).toContain('"FOO": "bar"');
   }, 60_000);

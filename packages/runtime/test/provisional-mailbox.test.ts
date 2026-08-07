@@ -38,7 +38,7 @@ const here = dirname(fileURLToPath(import.meta.url));
 const SRC = join(here, '..', 'src');
 
 function tmp(): string {
-  return mkdtempSync(join(tmpdir(), 'cratylus-run-heartbeat-'));
+  return mkdtempSync(join(tmpdir(), 'cratylus-heartbeat-'));
 }
 
 describe('accept 2: the drain is atomic under concurrent producers', () => {

@@ -29,7 +29,7 @@
 
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
+import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import {
   type Agent,
   type Binding,
@@ -49,7 +49,6 @@ import {
   withBody,
 } from '@cratylus/schema';
 import type { HarnessMechanism } from '@cratylus/schema/hook';
-import { FORGE_BIN } from '../bin-name.js';
 import {
   type PluginFragmentCatalogs,
   enumeratePluginFragmentCatalogs,
@@ -103,8 +102,8 @@ import { runtimeShimContent } from './runtime-shim.js';
  */
 export function projectionFacts(adapter: HarnessAdapter): ProjectionFacts {
   return {
-    'runtime-bin': RUNTIME_BIN,
-    'deploy-bin': FORGE_BIN,
+    'runtime-bin': CLI_BIN,
+    'deploy-bin': CLI_BIN,
     'harness-name': adapter.name,
     'harness-hooks-file': adapter.hooksFile,
     // A NUMBER CROSSING INTO SHELL. The worker discriminates drift from the

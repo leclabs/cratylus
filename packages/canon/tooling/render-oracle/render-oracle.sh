@@ -81,7 +81,7 @@ codex_out="$repo_root/.cratylus/codex"
 # THE COMMAND SHIPS FROM THE HUB. `forge` is a library and declares no bin, so this
 # read the manifest npm reads and got `undefined`. Select the BUILD command BY NAME —
 # the hub declares two, and `Object.values(...)[0]` would be a coin flip between
-# `cratylus` and `cratylus-run`.
+# `cratylus` and `cratylus`.
 cli() {
   node -e 'const p=require("./packages/cli/package.json");process.stdout.write(p.bin[p.name])'
 }

@@ -9,7 +9,7 @@
 // capability is that capability package's concern, not the kernel's" — so THIS file
 // is that concern for memory. It re-presents the standalone `memory` CLI (`cli.ts`
 // `main`) as the kernel's verb bag: each memory verb reconstructs the argv tail and
-// delegates to the tested `main`, so `cratylus-run memory <verb>` is byte-identical
+// delegates to the tested `main`, so `cratylus memory <verb>` is byte-identical
 // to the retired `memory <verb>` bin — the whole point of the runtime migration
 // (memory-on-PATH DISSOLVED into a normal capability the runtime dispatches).
 //

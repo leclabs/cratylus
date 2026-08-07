@@ -93,7 +93,7 @@ export const VERSION: string = createRequire(import.meta.url)(
  *
  * Dependency-free by design (matches the package ethos): a minimal argv
  * parser, no cac/commander. `main` returns a {@link CliResult} so it is
- * unit-testable; the bin shim ({@link runMain}) maps that to process IO.
+ * unit-testable; the bin shim ({@link runCli}) maps that to process IO.
  */
 
 export interface CliResult {
@@ -1330,7 +1330,7 @@ export function main(argv: readonly string[]): CliResult {
 }
 
 /** Bin entrypoint: run `main`, write to stdio, exit with its code. */
-export function runMain(argv: readonly string[]): void {
+export function runCli(argv: readonly string[]): void {
   const { code, out, err } = main(argv);
   if (out) process.stdout.write(out);
   if (err) process.stderr.write(err);

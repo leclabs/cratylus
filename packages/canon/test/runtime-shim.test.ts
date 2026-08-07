@@ -2,8 +2,8 @@
 //
 // When a skill cell declares `runtime: {capability}`, the projection emits, beside
 // SKILL.md, a `scripts/<capability>.mjs` THIN SHIM that forwards to the host
-// `cratylus-run <capability>` CLI. This gate pins the shim's SHAPE:
-//   - it INVOKES `cratylus-run <capability> …` (falsifier: `cratylus-run memory`);
+// `cratylus <capability>` CLI. This gate pins the shim's SHAPE:
+//   - it INVOKES `cratylus <capability> …` (falsifier: `cratylus memory`);
 //   - it is NOT a bundled impl — zero `@cratylus/*` imports, no capability logic;
 //   - it is emitted EXECUTABLE (0755) so deploy's mode-preserving copy keeps the bit;
 //   - a skill WITHOUT `runtime` gets no shim (SKILL.md only — asserted elsewhere).
@@ -36,7 +36,7 @@ import {
   projectPluginSet,
   writeRenderTree,
 } from '@cratylus/forge/project';
-import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
+import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Skill } from '@cratylus/schema';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -89,7 +89,7 @@ function buildCli(): string {
     bin: Record<string, string>;
   };
   // Select the BUILD command by name — the hub ships two, and taking index 0 would
-  // be a coin flip between `cratylus` and `cratylus-run`.
+  // be a coin flip between `cratylus` and `cratylus`.
   const entry = manifest.bin[manifest.name] as string;
   return join(canonRoot, '..', 'cli', entry);
 }
@@ -131,14 +131,12 @@ beforeAll(async () => {
 }, 120_000);
 
 describe('runtime thin shim (S6 forge-build-integration)', () => {
-  it('invokes `<RUNTIME_BIN> <capability>` and forwards argv', () => {
+  it('invokes `<CLI_BIN> <capability>` and forwards argv', () => {
     const shim = emitted(CAPABILITY);
-    // Falsifier: the emitted script drives the host `<RUNTIME_BIN> memory` CLI.
+    // Falsifier: the emitted script drives the host `<CLI_BIN> memory` CLI.
     // The name rides the constant (its one home) so a rebrand stays one symbol.
-    expect(shim).toContain(RUNTIME_BIN);
-    expect(shim).toMatch(
-      new RegExp(`spawnSync\\('${RUNTIME_BIN}', \\['memory',`),
-    );
+    expect(shim).toContain(CLI_BIN);
+    expect(shim).toMatch(new RegExp(`spawnSync\\('${CLI_BIN}', \\['memory',`));
     // Forwards the caller's argv (verb + args ride through untouched).
     expect(shim).toContain('...process.argv.slice(2)');
     // Node shebang — runs under bare `node` on any host.

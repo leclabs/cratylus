@@ -65,11 +65,18 @@ describe('a version has one home — the manifest', () => {
   it('the BUILT bin reports the manifest version — the claim, checked against the artifact', () => {
     // The end-to-end leg, and the only one that would have caught the shipped defect: it
     // runs the emitted bin exactly as a consumer's shell does.
-    const bin = join(repoRoot, 'packages', 'cli', 'dist', 'bin.js');
+    const bin = join(repoRoot, 'packages', 'cli', 'dist', 'cratylus.js');
     const reported = execFileSync('node', [bin, '--version'], {
       encoding: 'utf8',
     }).trim();
-    expect(reported).toBe(manifestVersion('runtime'));
+    // ONE COMMAND, SO THE OUTPUT IS cac's BRANDED LINE — `<name>/<version> <platform>
+    // <node>` — not the bare string the run-time bin used to print. The subject is
+    // unchanged: the version the ARTIFACT reports must be the version its MANIFEST
+    // declares. Parsed rather than compared whole, because the branding around it is
+    // not this gate's business and pinning it would make the leg fail on a node bump.
+    const version = reported.match(/\/(\d+\.\d+\.\d+)/)?.[1];
+    expect(version, `no version in ${reported}`).toBeDefined();
+    expect(version).toBe(manifestVersion('cli'));
   });
 
   it('is non-vacuous — CONVICTS a hardcoded version and SPARES a derived one', () => {

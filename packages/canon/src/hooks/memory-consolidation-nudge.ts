@@ -34,7 +34,7 @@ import type { HookCell } from '../manifest.js';
 // EDIT THE CELL AND REGENERATE (`pnpm canon:project:targets`) — never the committed
 // `.sh` alone; a hand-edit drifts the anchor and the byte-lock goes red.
 //
-// THIS CELL ONCE IMPORTED `RUNTIME_BIN` FROM `@cratylus/runtime`, and it was the last
+// THIS CELL ONCE IMPORTED `CLI_BIN` FROM `@cratylus/runtime`, and it was the last
 // breach of ARCHITECTURE's property 1 — meaning and mechanism never reference each
 // other. The rationale on record was that "the worker names it inside a shell string
 // no compiler reads", which is true and beside the point: the import is an edge

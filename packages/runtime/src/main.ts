@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The runtime MAIN — the thin cac CLI over the loader+dispatch node app.
 //
-// This module EXPORTS runMain; it does not invoke it. The invoking bin lives in
+// This module EXPORTS runCli; it does not invoke it. The invoking bin lives in
 // the installable CLI package, which DECLARES its capability packages as real
 // dependencies and passes them in — so capability resolution succeeds because the
 // dependency is declared, not because a flat co-install happened to co-locate a
@@ -10,7 +10,7 @@
 // Mirrors forge's `cac`-based thin-CLI: cac owns branding + `--help` /
 // `--version`; the dynamic `<capability> <verb> [args]` stream is routed by the
 // dispatcher (the verb space is plugin-driven, so it is NOT a fixed cac command
-// table). `runMain` bootstraps the host from host-installed capability packages,
+// table). `runCli` bootstraps the host from host-installed capability packages,
 // dispatches, and maps the pure {@link DispatchResult} to stdio + exit code.
 //
 // The BIN NAME is a PLACEHOLDER pending the brand derivation, and it is IMPORTED,
@@ -21,7 +21,7 @@
 
 import { createRequire } from 'node:module';
 import { cac } from 'cac';
-import { RUNTIME_BIN } from './bin-name.js';
+import { CLI_BIN } from './bin-name.js';
 import { dispatchCarryOn } from './capabilities/carry-on/index.js';
 import { dispatchEventTap } from './capabilities/event-tap/index.js';
 import { dispatch } from './dispatch.js';
@@ -49,18 +49,18 @@ export const VERSION: string = createRequire(import.meta.url)(
 ).version;
 
 /** Bin entrypoint: brand + help/version via cac, else bootstrap → dispatch → stdio. */
-/** Options for {@link runMain}. `plugins` are DECLARED capability plugins supplied
+/** Options for {@link runCli}. `plugins` are DECLARED capability plugins supplied
  *  by the installable CLI package; when present they are registered directly and
  *  ambient discovery is skipped, which is what makes an isolated install work. */
-export interface RunMainOpts {
+export interface RunCliOpts {
   readonly plugins?: readonly RuntimePlugin[];
 }
 
-export async function runMain(
+export async function runCli(
   argv: readonly string[],
-  opts: RunMainOpts = {},
+  opts: RunCliOpts = {},
 ): Promise<void> {
-  const cli = cac(RUNTIME_BIN);
+  const cli = cac(CLI_BIN);
   cli.command(
     '[capability] [verb]',
     'Dispatch <verb> to the <capability> plugin registered on this host',
@@ -91,7 +91,7 @@ export async function runMain(
   // `CAPABILITIES`. That is the word the dispatch grammar `<capability> <verb>`
   // speaks, and therefore the word a PROJECTED THIN SHIM spawns (the emitter is
   // `f(capability)`, so an `eventTap` cell yields
-  // `spawnSync(RUNTIME_BIN, ['eventTap', …])`). Routing only the `tap` shorthand once
+  // `spawnSync(CLI_BIN, ['eventTap', …])`). Routing only the `tap` shorthand once
   // made the tap reachable by an operator typing at a shell but DEAD to every agent
   // coming through its own skill's shim: `eventTap` fell through to the discovered
   // dispatch, where no plugin binds it, and died `unknown capability`.
@@ -109,7 +109,7 @@ export async function runMain(
       process.exitCode = 0;
     } catch (err) {
       process.stderr.write(
-        `${RUNTIME_BIN}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `${CLI_BIN}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
       process.exitCode = 1;
     }
@@ -134,7 +134,7 @@ export async function runMain(
       process.exitCode = 0;
     } catch (err) {
       process.stderr.write(
-        `${RUNTIME_BIN}: ${err instanceof Error ? err.message : String(err)}\n`,
+        `${CLI_BIN}: ${err instanceof Error ? err.message : String(err)}\n`,
       );
       process.exitCode = 1;
     }

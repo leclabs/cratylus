@@ -8,8 +8,7 @@
   },
   "type": "module",
   "bin": {
-    "cratylus": "./dist/cratylus.js",
-    "cratylus-run": "./dist/bin.js"
+    "cratylus": "./dist/cratylus.js"
   },
   "files": ["dist"],
   "scripts": {

@@ -27,7 +27,7 @@ import type { RuntimeConfig } from '../src/runtime-config.js';
 
 /**
  * The host config a deployed host would carry — the vocabulary + native map the
- * projection emits. Injected rather than written to a real `~/.cratylus-run.json`,
+ * projection emits. Injected rather than written to a real `~/.cratylus.json`,
  * and injected rather than defaulted inside the capability: a bundled default set
  * is exactly what this suite's subject stopped carrying, so a test that supplied
  * one would be exercising a path no host has.
@@ -66,7 +66,7 @@ interface Settings {
 }
 
 function fixture(): { settingsPath: string; sinkPath: string } {
-  const dir = mkdtempSync(join(tmpdir(), 'cratylus-run-event-tap-'));
+  const dir = mkdtempSync(join(tmpdir(), 'cratylus-event-tap-'));
   return {
     settingsPath: join(dir, '.claude', 'settings.json'),
     sinkPath: join(dir, 'capture.log'),
@@ -120,7 +120,7 @@ describe('tap install (accept 1: merge + preserve)', () => {
     expect(ours?.type).toBe('command');
     expect(ours?.command).toContain(sinkPath);
     expect(ours?.command).toContain('exit 0');
-    expect(ours?.id).toBe('cratylus-run-event-tap');
+    expect(ours?.id).toBe('cratylus-event-tap');
     // session.start → SessionStart added
     expect(after.hooks?.SessionStart).toHaveLength(1);
   });

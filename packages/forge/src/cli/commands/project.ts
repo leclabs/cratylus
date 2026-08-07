@@ -11,7 +11,7 @@ import { existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import pc from 'picocolors';
 import { adapterByName } from '../../adapters/registry/index.js';
-import { FORGE_BIN } from '../../bin-name.js';
+import { CLI_BIN } from '../../bin-name.js';
 import { loadConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
 import {
@@ -109,7 +109,7 @@ export async function runProject(opts: ProjectCmdOpts = {}): Promise<number> {
       // printer knows a consumer is following it. `command-veracity` cannot see this
       // class: its extractor reads `pnpm|npm|yarn` invocations against package.json
       // script keys, and an `forge <verb> <flags>` line never enters that stream.
-      `${pc.gray(`ship it with: ${FORGE_BIN} deploy`)}\n`,
+      `${pc.gray(`ship it with: ${CLI_BIN} deploy`)}\n`,
   );
   return 0;
 }

@@ -29,7 +29,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
-import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
+import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
 import {
@@ -114,9 +114,7 @@ describe('carry-on cell — the elevation installs the mechanism that holds it',
     const shim = join(out, 'skills', 'carry-on', 'scripts', 'carryOn.mjs');
     expect(existsSync(shim)).toBe(true);
     const src = readFileSync(shim, 'utf-8');
-    expect(src).toMatch(
-      new RegExp(`spawnSync\\('${RUNTIME_BIN}', \\['carryOn',`),
-    );
+    expect(src).toMatch(new RegExp(`spawnSync\\('${CLI_BIN}', \\['carryOn',`));
     expect(src).toContain('...process.argv.slice(2)');
     expect(src).not.toContain('@cratylus/');
   });

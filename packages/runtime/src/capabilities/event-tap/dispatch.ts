@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // The event-tap capability's VERB SURFACE — `eventTap <verb> [args]`.
 //
-// The runtime kernel routes `cratylus-run eventTap <verb>` here: the tap owns
+// The runtime kernel routes `cratylus eventTap <verb>` here: the tap owns
 // the arg-parse for its own flags (`--events`, `--sink`, `--settings`) that a
 // generic method-reflecting dispatcher cannot know. Verb → port method:
 //   install → install · uninstall → remove · read → readCapture · status → status
@@ -84,7 +84,7 @@ function configuredEvents(config: RuntimeConfig | null): RuntimeEvents {
     throw new Error(
       'event-tap: this host has no lifecycle-event vocabulary — the corpus declares ' +
         'it and `cratylus deploy` emits it into the host runtime config ' +
-        '($AGENT_RUNTIME_CONFIG, else ~/.cratylus-run.json). Run a deploy for this ' +
+        '($AGENT_RUNTIME_CONFIG, else ~/.cratylus.json). Run a deploy for this ' +
         'harness; the runtime does not carry a vocabulary of its own.',
     );
   }

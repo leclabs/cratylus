@@ -64,7 +64,7 @@ directory fields are resolved against `import.meta.url` at definition time and c
 `defineAgentPlugin`. Canon reaches the projector as **data** — the corpus is passed to it as a
 plugin — and no cell imports it.
 
-One cell does import the runtime: `hooks/memory-consolidation-nudge.ts` takes `RUNTIME_BIN` from
+One cell does import the runtime: `hooks/memory-consolidation-nudge.ts` takes `CLI_BIN` from
 `@cratylus/runtime/bin-name`, because it emits shell that invokes that binary and the alternative is
 repeating the literal inside a compiler-invisible string. This breaches the architecture's
 highest-ranked property — meaning and mechanism never referencing each other — and a test currently

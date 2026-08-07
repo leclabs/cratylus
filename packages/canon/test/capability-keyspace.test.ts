@@ -14,7 +14,7 @@
 // second sign, and it fails circumscription — it carries *passive siphon on a
 // stream* but not WHICH stream, so it never enters the competition despite being
 // shortest. The tree already agreed before anyone ruled: the shipped VALUE was
-// always `${RUNTIME_BIN}-event-tap`; only the identifier had been abbreviated.
+// always `${CLI_BIN}-event-tap`; only the identifier had been abbreviated.
 //
 // ── WHAT THIS GATE DOES *NOT* CHECK, AND WHY ────────────────────────────────────
 // Two equalities were proposed for this gate and both are FALSE OF THE LIVE CORPUS.

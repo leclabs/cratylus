@@ -96,7 +96,7 @@ export type HookSubstrate = Substrate;
  * is its own — it ran in a session, it was never told whose.
  */
 export type ProjectionFact =
-  /** The runtime executable's name on PATH (`RUNTIME_BIN`). */
+  /** The runtime executable's name on PATH (`CLI_BIN`). */
   | 'runtime-bin'
   /** The build-time CLI's name on PATH, derived from forge's `bin` key. */
   | 'deploy-bin'

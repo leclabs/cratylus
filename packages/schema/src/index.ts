@@ -572,7 +572,7 @@ export interface SkillDeploy<C extends CapabilityName = CapabilityName> {
   /**
    * The RUNTIME capability this skill is a face of. When set, the projection ALSO
    * emits a THIN SHIM `scripts/<capability>.mjs` that forwards to the host-installed
-   * `cratylus-run <capability>` CLI — NOT a bundle of the impl (the capability logic
+   * `cratylus <capability>` CLI — NOT a bundle of the impl (the capability logic
    * lives host-side behind the runtime port, installed once per host).
    * Absent ⇒ SKILL.md only (unchanged). This REVERSES the superseded design in which
    * forge composed a standalone, dependency-free `.mjs` at build time. */

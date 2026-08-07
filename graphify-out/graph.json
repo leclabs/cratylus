@@ -7122,7 +7122,7 @@
       "norm_label": "read()"
     },
     {
-      "label": "FORGE_BIN",
+      "label": "CLI_BIN",
       "file_type": "code",
       "source_file": "packages/canon/test/bin-name-single-home.test.ts",
       "source_location": "L118",
@@ -11808,7 +11808,7 @@
       "norm_label": "binnameof()"
     },
     {
-      "label": "FORGE_BIN",
+      "label": "CLI_BIN",
       "file_type": "code",
       "source_file": "packages/forge/src/bin-name.ts",
       "source_location": "L81",
@@ -21048,7 +21048,7 @@
       "norm_label": "main()"
     },
     {
-      "label": "runMain()",
+      "label": "runCli()",
       "file_type": "code",
       "source_file": "packages/memory/src/cli.ts",
       "source_location": "L1314",
@@ -26361,7 +26361,7 @@
       "norm_label": "main.ts"
     },
     {
-      "label": "RunMainOpts",
+      "label": "RunCliOpts",
       "file_type": "code",
       "source_file": "packages/runtime/src/main.ts",
       "source_location": "L38",
@@ -26372,7 +26372,7 @@
       "norm_label": "runmainopts"
     },
     {
-      "label": "runMain()",
+      "label": "runCli()",
       "file_type": "code",
       "source_file": "packages/runtime/src/main.ts",
       "source_location": "L42",

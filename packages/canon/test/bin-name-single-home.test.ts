@@ -7,7 +7,7 @@
 // rename that missed one shipped a deployed script that failed at RUNTIME ON A HOST,
 // not at build. This file is what makes the claim true instead of asserted.
 //
-// The one home is `@cratylus/runtime/bin-name` → `RUNTIME_BIN`. Every consumer
+// The one home is `@cratylus/runtime/bin-name` → `CLI_BIN`. Every consumer
 // interpolates it. This gate holds the four consumers to it, each by CAPTURE-AND-
 // COMPARE — read back the name the artifact actually carries and compare it to the
 // constant — so editing one without the other is red, in either direction:
@@ -23,7 +23,7 @@
 //       host.
 //
 // LEG (4) WAS SITE-SPECIFIC AND IS NOW A SCAN, because the cell it named stopped
-// importing `RUNTIME_BIN` — that import was ARCHITECTURE's last property-1 breach,
+// importing `CLI_BIN` — that import was ARCHITECTURE's last property-1 breach,
 // and THIS FILE REQUIRED IT: `CONSUMERS` held the cell and asserted its source
 // contained the symbol, so the only mechanism admitted was the import. The cell now
 // carries `{{fact:runtime-bin}}` and the PROJECTOR substitutes.
@@ -32,7 +32,7 @@
 // worker at ONE hard-coded path; the sweep captures every projected hook artifact and
 // every committed target, so a SECOND worker acquiring the bin name is covered on the
 // day it lands rather than on the day someone remembers to enumerate it. What was
-// lost is `toContain('RUNTIME_BIN')` — a mention-level proxy that could never have
+// lost is `toContain('CLI_BIN')` — a mention-level proxy that could never have
 // distinguished a live interpolation from a stale comment, and which the
 // capture-and-compare legs subsume in every case where it was true.
 //
@@ -41,7 +41,7 @@
 //
 // THIS REPOSITORY SHIPS TWO BINS, AND THEY HAVE DIFFERENT SHAPES OF HOME.
 //
-// `RUNTIME_BIN` is a DECLARED constant plus a gate: `cratylus`'s `bin` key is
+// `CLI_BIN` is a DECLARED constant plus a gate: `cratylus`'s `bin` key is
 // a second authored spelling, npm reads it with no TypeScript in the loop, and their
 // agreement is the test obligation leg (1) discharges.
 //
@@ -58,11 +58,11 @@
 // `deploy-bin` and the projector substitutes, and a resolution site that was missed
 // would ship a placeholder or a stale name to a host, silently, since the worker
 // fails open by design. It is still capture-and-compare against the manifest that
-// owns the name, deliberately NOT against `FORGE_BIN`: comparing the derivation to
+// owns the name, deliberately NOT against `CLI_BIN`: comparing the derivation to
 // itself would be green on any value at all.
 //
 // This gate does NOT decide the name. The brand anchor is cratylism-gated and has
-// not converged; `RUNTIME_BIN` holds a placeholder. What is asserted is that
+// not converged; `CLI_BIN` holds a placeholder. What is asserted is that
 // flipping that ONE symbol flips the name everywhere it is operative.
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
@@ -72,8 +72,8 @@ import { dirname, join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
-import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
-import { runMain } from '@cratylus/runtime/main';
+import { CLI_BIN } from '@cratylus/runtime/bin-name';
+import { runCli } from '@cratylus/runtime/main';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { deployDriftNotice } from '../src/hooks/deploy-drift-notice.js';
 import { memoryConsolidationNudge } from '../src/hooks/memory-consolidation-nudge.js';
@@ -97,7 +97,7 @@ const CAPABILITY = 'memory';
  */
 const CONSUMERS = [
   'packages/runtime/src/main.ts',
-  'packages/cli/src/bin.ts',
+  'packages/cli/src/cratylus.ts',
   'packages/forge/src/project/runtime-shim.ts',
   // `packages/cli/src/install.ts` WAS HERE and is DELETED with the module it named.
   // It was the one `.ts` that WROTE a `#!/bin/sh` shim onto a host, so it needed
@@ -118,20 +118,17 @@ const read = (rel: string): string =>
 /** The committed hook worker — regenerated from the cell, never hand-edited. */
 const workerPath = memoryConsolidationNudge.workers?.[0]?.targetPath ?? '';
 
-/** The build CLI's ONE home: the `bin` key npm reads, with no compiler in the loop.
- *  A shell worker cannot import it, so a worker that spells it is held against this.
+/** The command's ONE home read the way npm reads it — the `bin` key, no compiler in
+ *  the loop. A shell worker cannot import the constant, so a worker that SPELLS the
+ *  name is held against this.
  *
- *  THE HOME MOVED WITH THE BIN. It was `packages/forge/package.json` until the hub
- *  package took the command: `forge` is a library now and declares no bin, because
- *  two manifests declaring one name is an install conflict rather than a second
- *  home. The derivation is unchanged — read the manifest npm reads — and only the
- *  manifest it reads is different. */
+ *  THERE IS ONE COMMAND. This derived a build bin here and imported a separate
+ *  run-time bin below, because `cratylus` and `cratylus-run` were two programs.
+ *  Merging them made the second a duplicate of the first. */
 const HUB_MANIFEST = JSON.parse(read('packages/cli/package.json')) as {
   name: string;
   bin: Record<string, string>;
 };
-/** The build command is the bare mark, as `vite` and `eslint` are theirs. */
-const FORGE_BIN = HUB_MANIFEST.name;
 
 /** The deploy tool a hook worker declares, if any (`DEPLOY_TOOL=<name>`). */
 const deployTool = (sh: string): string | undefined =>
@@ -210,11 +207,11 @@ describe('the bin name has exactly one home', () => {
     // home declares it once; nobody else may write it as a string literal.
     const home = read('packages/runtime/src/bin-name.ts');
     const decl = home.match(
-      new RegExp(`export const RUNTIME_BIN = '${RUNTIME_BIN}';`, 'g'),
+      new RegExp(`export const CLI_BIN = '${CLI_BIN}';`, 'g'),
     );
     expect(decl).toHaveLength(1);
 
-    // NO `toContain('RUNTIME_BIN')` HERE, deliberately. It asserted a MENTION, which
+    // NO `toContain('CLI_BIN')` HERE, deliberately. It asserted a MENTION, which
     // a comment satisfies and a live interpolation is not required to; worse, it was
     // the half of this gate that made importing the symbol the only admissible
     // mechanism, which is how a test came to require an architecture breach. What
@@ -223,13 +220,13 @@ describe('the bin name has exactly one home', () => {
     for (const rel of CONSUMERS) {
       const src = read(rel);
       expect(
-        { file: rel, spellsIt: src.includes(`'${RUNTIME_BIN}'`) },
-        `${rel} must interpolate RUNTIME_BIN, not spell the bin name`,
+        { file: rel, spellsIt: src.includes(`'${CLI_BIN}'`) },
+        `${rel} must interpolate CLI_BIN, not spell the bin name`,
       ).toEqual({ file: rel, spellsIt: false });
     }
   });
 
-  it("invoke's `bin` manifest key agrees with RUNTIME_BIN", () => {
+  it("invoke's `bin` manifest key agrees with CLI_BIN", () => {
     // The one copy no compiler can reach. If a rename flips the constant and not
     // this key, the installed executable and everything that spawns it disagree —
     // and nothing but this assertion notices.
@@ -237,19 +234,21 @@ describe('the bin name has exactly one home', () => {
       bin: Record<string, string>;
     };
     // TWO BINS, ONE PACKAGE — and the set is asserted EXACTLY, not by membership.
-    // The hub ships both commands: `cratylus` at build time, `cratylus-run` at run
+    // The hub ships both commands: `cratylus` at build time, `cratylus` at run
     // time. They stay separate COMMANDS because they serve separate DAGs; shipping
     // them from one package is what makes that a seam rather than a second install.
     //
     // Exact equality is the point. `toContain` would let a third bin appear
     // unnoticed, and the whole subject here is that every executable name npm puts
     // on a PATH is accounted for.
-    expect(Object.keys(manifest.bin).sort()).toEqual(
-      [FORGE_BIN, RUNTIME_BIN].sort(),
-    );
+    // ONE BIN. This asserted a two-element set back when `cratylus` and
+    // `cratylus-run` were separate commands; merging them made the second entry a
+    // duplicate of the first, which is how a symbol sweep reports a concept that
+    // stopped existing.
+    expect(Object.keys(manifest.bin)).toEqual([CLI_BIN]);
   });
 
-  it("the runtime's cac branding is RUNTIME_BIN", async () => {
+  it("the runtime's cac branding is CLI_BIN", async () => {
     // cac prints help through `console.log`, not `process.stdout.write`.
     const chunks: string[] = [];
     const log = console.log;
@@ -257,29 +256,29 @@ describe('the bin name has exactly one home', () => {
       chunks.push(args.map(String).join(' '));
     };
     try {
-      await runMain(['--help']);
+      await runCli(['--help']);
     } finally {
       console.log = log;
     }
     const help = chunks.join('\n');
     // Capture the brand cac printed, then compare — not `toContain`, which would
     // still pass if the help named a stale bin alongside the right one.
-    expect(help.match(/^(\S+)\//)?.[1]).toBe(RUNTIME_BIN);
-    expect(help.match(/^ {2}\$ (\S+) /m)?.[1]).toBe(RUNTIME_BIN);
+    expect(help.match(/^(\S+)\//)?.[1]).toBe(CLI_BIN);
+    expect(help.match(/^ {2}\$ (\S+) /m)?.[1]).toBe(CLI_BIN);
   });
 
-  it('the PROJECTED thin shim spawns RUNTIME_BIN — the operative site', () => {
+  it('the PROJECTED thin shim spawns CLI_BIN — the operative site', () => {
     // THE FALSIFIER for the site that broke on a host. Capture whatever argv[0] the
     // emitted `scripts/<cap>.mjs` actually spawns and compare it to the constant, so
     // hardcoding a literal back into the emitter — or flipping the constant without
     // the emitter — is red here rather than at deploy time on someone's machine.
     expect(projectedShim, 'projection produced no shim').not.toBe('');
     const spawned = projectedShim.match(/spawnSync\('([^']+)',/)?.[1];
-    expect(spawned).toBe(RUNTIME_BIN);
+    expect(spawned).toBe(CLI_BIN);
     expect(projectedShim).toContain(`['${CAPABILITY}',`);
   });
 
-  it('EVERY hook artifact that names the bin defaults $MEMORY_BIN to RUNTIME_BIN', async () => {
+  it('EVERY hook artifact that names the bin defaults $MEMORY_BIN to CLI_BIN', async () => {
     // A SWEEP, not a named path. Two populations of RESOLVED bytes, and both are
     // operative: what `projectPluginSet` emits into a deploy tree, and what
     // `cellTargets()` commits to the repo. The cell's raw `workers[].content` is NOT
@@ -311,7 +310,7 @@ describe('the bin name has exactly one home', () => {
 
     for (const [where, text] of naming) {
       const fallback = text.match(/MEM="\$\{MEMORY_BIN:-([^}]+)\}"/)?.[1];
-      expect(fallback, `${where} names a stale bin`).toBe(RUNTIME_BIN);
+      expect(fallback, `${where} names a stale bin`).toBe(CLI_BIN);
     }
   });
 
@@ -341,7 +340,7 @@ describe('the bin name has exactly one home', () => {
 
     for (const [where, text] of naming) {
       expect(deployTool(text), `${where} names a stale deploy tool`).toBe(
-        FORGE_BIN,
+        CLI_BIN,
       );
     }
   });
@@ -410,8 +409,8 @@ it('EVERY hand-authored shell or .mjs source under packages/*/src derives the bi
       // THIRD-PARTY program, not ours. A detector that fires on the shape of a name
       // rather than on its referent is the same error this corpus keeps finding in prose.
       if (!OURS.test(dflt)) continue;
-      if (dflt !== RUNTIME_BIN)
-        drifted.push(`${rel}: defaults to \`${dflt}\`, not \`${RUNTIME_BIN}\``);
+      if (dflt !== CLI_BIN)
+        drifted.push(`${rel}: defaults to \`${dflt}\`, not \`${CLI_BIN}\``);
     }
     // A retired bin name anywhere in these files is the same defect without the shape.
     for (const retired of RETIRED_BINS) {
@@ -453,15 +452,15 @@ function codePositionOf(ts: string): string {
 }
 
 /** Occurrences of the forge bin as a bare word: not the `@cratylus/` npm scope, not
- *  `cratylus-run` (the runtime's bin, held by the legs above), not a URL segment. */
+ *  `cratylus` (the runtime's bin, held by the legs above), not a URL segment. */
 function spellsForgeBin(ts: string): number {
   // A CONFIG FILENAME IS NOT THE BIN. `cratylus.config.ts` shares a word with the
   // command and is a different concept — the name of a file a consumer writes, not
-  // the program they invoke. Deriving it from `FORGE_BIN` was over-engineering that
+  // the program they invoke. Deriving it from `CLI_BIN` was over-engineering that
   // this very census provoked: vite does not compute `vite.config.ts` from its bin
   // key either. Excluded by shape (`.config` follows) rather than by a file
   // exemption, so the rule stays about CONCEPTS and no roster can go stale.
-  const re = new RegExp(`(?<![@./\\w-])${FORGE_BIN}(?![-\\w/]|\\.config)`, 'g');
+  const re = new RegExp(`(?<![@./\\w-])${CLI_BIN}(?![-\\w/]|\\.config)`, 'g');
   return (codePositionOf(ts).match(re) ?? []).length;
 }
 
@@ -495,7 +494,7 @@ describe('the forge bin has exactly one authored home', () => {
       .map(([rel, n]) => `${rel}: ${n}`);
     expect(
       spelling,
-      'these spell the forge bin instead of interpolating FORGE_BIN',
+      'these spell the forge bin instead of interpolating CLI_BIN',
     ).toEqual([]);
   });
 
@@ -503,16 +502,20 @@ describe('the forge bin has exactly one authored home', () => {
     // The failure this whole file was written against, one bin over: a scan whose
     // predicate quietly stopped matching is green over any corpus. Feed it the
     // defect it exists to catch, and the two shapes it must NOT catch.
-    expect(spellsForgeBin(`const x = '${FORGE_BIN} deploy';`)).toBe(1);
-    expect(spellsForgeBin(`import x from '@${FORGE_BIN}/forge';`)).toBe(0);
-    expect(spellsForgeBin(`const x = '${RUNTIME_BIN}';`)).toBe(0);
+    expect(spellsForgeBin(`const x = '${CLI_BIN} deploy';`)).toBe(1);
+    expect(spellsForgeBin(`import x from '@${CLI_BIN}/forge';`)).toBe(0);
+    // A BARE SPELLING IS THE DEFECT NOW. This expected 0 because the string was the
+    // OTHER command's name — `cratylus-run` was not the build bin, so spelling it
+    // here was somebody else's business. There is one command; every spelling of it
+    // in code position is this gate's business.
+    expect(spellsForgeBin(`const x = '${CLI_BIN}';`)).toBe(1);
     // the filename shares a word with the command and is not it
-    expect(spellsForgeBin(`const f = '${FORGE_BIN}.config.ts';`)).toBe(0);
+    expect(spellsForgeBin(`const f = '${CLI_BIN}.config.ts';`)).toBe(0);
     // and prose is out of scope, in both comment shapes
     expect(
-      spellsForgeBin(`// run \`${FORGE_BIN} deploy\` first\nconst x = 1;`),
+      spellsForgeBin(`// run \`${CLI_BIN} deploy\` first\nconst x = 1;`),
     ).toBe(0);
-    expect(spellsForgeBin(`/* ${FORGE_BIN} deploy */\nconst x = 1;`)).toBe(0);
+    expect(spellsForgeBin(`/* ${CLI_BIN} deploy */\nconst x = 1;`)).toBe(0);
   });
 
   it('the CLI brands its help with the name it is installed under', () => {
@@ -530,33 +533,33 @@ describe('the forge bin has exactly one authored home', () => {
       /^\s*const cli = cac\(([^)]+)\)/m,
     )?.[1];
     expect(branded, 'the CLI must brand itself from the derived name').toBe(
-      'FORGE_BIN',
+      'CLI_BIN',
     );
   });
 });
 
 describe('the single-home gate is non-vacuous', () => {
-  const STALE = `${RUNTIME_BIN}-stale`;
+  const STALE = `${CLI_BIN}-stale`;
 
   it('FAILS on a thin shim whose spawn target drifted from the constant', () => {
     const drifted = projectedShim.replace(
-      `spawnSync('${RUNTIME_BIN}'`,
+      `spawnSync('${CLI_BIN}'`,
       `spawnSync('${STALE}'`,
     );
     expect(drifted).not.toBe(projectedShim); // the mutation actually landed
-    expect(spawnedBin(projectedShim)).toBe(RUNTIME_BIN);
-    expect(spawnedBin(drifted)).not.toBe(RUNTIME_BIN);
+    expect(spawnedBin(projectedShim)).toBe(CLI_BIN);
+    expect(spawnedBin(drifted)).not.toBe(CLI_BIN);
   });
 
   it('FAILS on a hook worker whose $MEMORY_BIN default drifted', () => {
     const good = read(workerPath);
     const drifted = good.replace(
-      `MEMORY_BIN:-${RUNTIME_BIN}}`,
+      `MEMORY_BIN:-${CLI_BIN}}`,
       `MEMORY_BIN:-${STALE}}`,
     );
     expect(drifted).not.toBe(good);
-    expect(memFallback(good)).toBe(RUNTIME_BIN);
-    expect(memFallback(drifted)).not.toBe(RUNTIME_BIN);
+    expect(memFallback(good)).toBe(CLI_BIN);
+    expect(memFallback(drifted)).not.toBe(CLI_BIN);
   });
 
   it('FAILS on a hook worker whose DEPLOY_TOOL drifted from forge’s `bin` key', () => {
@@ -567,12 +570,12 @@ describe('the single-home gate is non-vacuous', () => {
     // exactly one of the two sites moved.
     const good = read(driftWorkerPath);
     const drifted = good.replace(
-      `DEPLOY_TOOL=${FORGE_BIN}`,
-      `DEPLOY_TOOL=${FORGE_BIN}-stale`,
+      `DEPLOY_TOOL=${CLI_BIN}`,
+      `DEPLOY_TOOL=${CLI_BIN}-stale`,
     );
     expect(drifted).not.toBe(good); // the mutation actually landed
-    expect(deployTool(good)).toBe(FORGE_BIN);
-    expect(deployTool(drifted)).not.toBe(FORGE_BIN);
+    expect(deployTool(good)).toBe(CLI_BIN);
+    expect(deployTool(drifted)).not.toBe(CLI_BIN);
     // and the detector is not simply always-true: a worker naming no tool at all
     // must read as absent, never as a drifted one.
     expect(deployTool(read(workerPath))).toBeUndefined();
@@ -580,21 +583,20 @@ describe('the single-home gate is non-vacuous', () => {
 
   it('FAILS on a manifest whose `bin` key drifted from the constant', () => {
     const good = read('packages/cli/package.json');
-    const drifted = good.replace(`"${RUNTIME_BIN}":`, `"${STALE}":`);
+    const drifted = good.replace(`"${CLI_BIN}":`, `"${STALE}":`);
     expect(drifted).not.toBe(good);
-    const expected = [FORGE_BIN, RUNTIME_BIN].sort();
-    expect(manifestBins(good).sort()).toEqual(expected);
-    expect(manifestBins(drifted).sort()).not.toEqual(expected);
+    expect(manifestBins(good)).toEqual([CLI_BIN]);
+    expect(manifestBins(drifted)).not.toEqual([CLI_BIN]);
   });
 
   it('FLAGS a consumer that spells the bin name instead of importing it', () => {
     const clean = read('packages/forge/src/project/runtime-shim.ts');
     const regressed = clean.replace(
-      "spawnSync('${RUNTIME_BIN}'",
-      `spawnSync('${RUNTIME_BIN}'`,
+      "spawnSync('${CLI_BIN}'",
+      `spawnSync('${CLI_BIN}'`,
     );
     expect(regressed).not.toBe(clean);
-    expect(clean.includes(`'${RUNTIME_BIN}'`)).toBe(false);
-    expect(regressed.includes(`'${RUNTIME_BIN}'`)).toBe(true);
+    expect(clean.includes(`'${CLI_BIN}'`)).toBe(false);
+    expect(regressed.includes(`'${CLI_BIN}'`)).toBe(true);
   });
 });

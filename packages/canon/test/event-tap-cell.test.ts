@@ -2,7 +2,7 @@
 //
 // WHY THIS FILE EXISTS. The capability was built and tested end-to-end
 // (`runtime/src/capabilities/event-tap/`) but had NO skill cell, so it was
-// reachable ONLY by an operator typing `cratylus-run tap …` at a shell — inverting the
+// reachable ONLY by an operator typing `cratylus tap …` at a shell — inverting the
 // point of the effort chain (a passive tap an AGENT can turn on to observe itself). The
 // shard that would have added the cell was recorded ABSORBED into a memory-only shard
 // that never touched event-tap, so the work vanished silently and no gate noticed: every
@@ -24,7 +24,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { adapterByName } from '@cratylus/forge/adapters/registry';
 import { projectPluginSet, writeRenderTree } from '@cratylus/forge/project';
-import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
+import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { beforeAll, describe, expect, it } from 'vitest';
 import canonPlugin from '../src/index.js';
 import { eventTap } from '../src/skills/event-tap/skill.js';
@@ -92,9 +92,7 @@ describe('event-tap cell — the capability has an agent-facing surface', () => 
     expect(existsSync(shim)).toBe(true);
     const src = readFileSync(shim, 'utf-8');
     // The shim spawns the CAPABILITY word — the word the runtime bin must route.
-    expect(src).toMatch(
-      new RegExp(`spawnSync\\('${RUNTIME_BIN}', \\['eventTap',`),
-    );
+    expect(src).toMatch(new RegExp(`spawnSync\\('${CLI_BIN}', \\['eventTap',`));
     expect(src).toContain('...process.argv.slice(2)');
     // THIN — no bundled impl, no cross-package import.
     expect(src).not.toContain('@cratylus/');

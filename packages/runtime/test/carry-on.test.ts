@@ -37,7 +37,7 @@ import {
   type PlanLayout,
   terminusOf,
 } from '../src/capabilities/carry-on/terminus.js';
-import { runMain } from '../src/main.js';
+import { runCli } from '../src/main.js';
 import type {
   CarryOnHost,
   CarryOnStatus,
@@ -560,7 +560,7 @@ describe('elevate ∘ revert — zero residue, foreign preserved', () => {
 
 // ── the bin ROUTE — the capability is reachable by the word the shim spawns ──────
 //
-// The projected shim runs `<RUNTIME_BIN> carryOn <verb>`. If the bin does not route
+// The projected shim runs `<CLI_BIN> carryOn <verb>`. If the bin does not route
 // that word, every verb dies `unknown capability` for every agent coming through
 // the skill — the exact failure that once made the event tap operator-only.
 
@@ -575,7 +575,7 @@ describe('the runtime bin routes the capability word the shim spawns', () => {
       return true;
     }) as typeof process.stdout.write;
     try {
-      await runMain(['carryOn', 'status', '--settings', settings]);
+      await runCli(['carryOn', 'status', '--settings', settings]);
     } finally {
       process.stdout.write = out;
     }

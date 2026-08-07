@@ -24,14 +24,14 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { RUNTIME_BIN } from './bin-name.js';
+import { CLI_BIN } from './bin-name.js';
 
 /** Where the host config lives, unless `$AGENT_RUNTIME_CONFIG` overrides it. */
 export const RUNTIME_CONFIG_ENV = 'AGENT_RUNTIME_CONFIG';
 // Derived, never a second literal. The host config dotfile is named AFTER the bin,
 // so an independent copy is a rename waiting to orphan every host's existing file —
 // the config would move while the file on disk did not. One home, in `bin-name.ts`.
-export const RUNTIME_CONFIG_NAME = `.${RUNTIME_BIN}.json`;
+export const RUNTIME_CONFIG_NAME = `.${CLI_BIN}.json`;
 
 /**
  * The corpus's lifecycle-event vocabulary, as this host received it.
@@ -75,7 +75,7 @@ export interface RuntimeConfig {
   readonly events?: RuntimeEvents;
 }
 
-/** The config path: `$AGENT_RUNTIME_CONFIG` ▸ `~/.cratylus-run.json`. */
+/** The config path: `$AGENT_RUNTIME_CONFIG` ▸ `~/.cratylus.json`. */
 export function runtimeConfigPath(): string {
   const override = process.env[RUNTIME_CONFIG_ENV];
   return override && override !== ''

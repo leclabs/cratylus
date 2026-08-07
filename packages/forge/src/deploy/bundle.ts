@@ -16,7 +16,7 @@
 // ── AND the RESOLVABILITY GATE on what those companions SPAWN ────────────────
 // A skill dir does not only carry inert bytes. When a cell declares `runtime:`,
 // the projection emits `scripts/<capability>.mjs`, a thin shim whose entire body
-// is `spawnSync(RUNTIME_BIN, …)`. Placing that file is placing a CALL, and a call
+// is `spawnSync(CLI_BIN, …)`. Placing that file is placing a CALL, and a call
 // is only as good as its binding.
 //
 // On 2026-08-05 that binding was a `pnpm link --global` symlink into the checkout
@@ -46,8 +46,7 @@ import {
   statSync,
 } from 'node:fs';
 import { basename, delimiter, join, resolve as resolvePath } from 'node:path';
-import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
-import { FORGE_BIN } from '../bin-name.js';
+import { CLI_BIN } from '@cratylus/runtime/bin-name';
 
 /** Recursively collect every file under `dir`, as paths RELATIVE to `dir`
  *  (POSIX `/` separators), sorted deterministically. Used by the skill placers
@@ -219,7 +218,7 @@ export function whichOnPath(
 export function probeRuntimeBin(
   opts: ProbeRuntimeBinOpts = {},
 ): RuntimeBinProbe {
-  const bin = opts.bin ?? RUNTIME_BIN;
+  const bin = opts.bin ?? CLI_BIN;
   const env = opts.env ?? process.env;
   const key = `${bin}\u0000${env.PATH ?? ''}`;
   if (!opts.fresh) {
@@ -312,7 +311,7 @@ export function runtimeBinRefusal(
     '  These shims are deployed and INERT: each would die inside node, in a skill,',
     '  on this host — not here. Install the CLI, then deploy again:',
     '',
-    `    npm i -g ${FORGE_BIN}`,
+    `    npm i -g ${CLI_BIN}`,
     '',
     '  (the package manager owns PATH; this tool no longer authors its own binding)',
     '',
@@ -324,15 +323,35 @@ export function runtimeBinRefusal(
  *  spawn the run-time bin. Scoped to `scripts/` so a SKILL.md merely NAMING the
  *  bin in prose never triggers a refusal — the subject is placed calls, not
  *  placed mentions. */
+export interface ShimSpawn {
+  /** The shim, dest-relative. */
+  readonly rel: string;
+  /** The command it actually spawns — NOT assumed to be the current one. */
+  readonly spawns: string;
+}
+
+/** Every shim under `scripts/` that spawns SOME command, with the name it spawns.
+ *
+ *  IT NO LONGER SEARCHES FOR THE CURRENT NAME, and that is the whole repair. This
+ *  took `bin` and grepped for `spawnSync('<bin>'` — so a shim spawning a RETIRED name
+ *  matched nothing, the list came back empty, and `assertShimsResolvable` returned
+ *  "no refusal" without ever probing. The gate passed BECAUSE the shim was stale.
+ *
+ *  That is the failure this file's own header names as live on 2026-08-05 — a
+ *  stranded binding nothing authored — re-entering through the rename door. A check
+ *  whose subject is "files matching the new name" goes dark at exactly the moment a
+ *  rename makes it matter, and reports the tree clean while a consumer's deployed
+ *  skill dies inside node's module loader.
+ *
+ *  So the subject is now "files that spawn ANYTHING", and the comparison to the
+ *  current name happens afterwards, where a mismatch is a finding rather than a
+ *  silence. */
 export function shimsSpawningRuntimeBin(
   srcDir: string,
   relFiles: readonly string[],
-  bin: string = RUNTIME_BIN,
-): string[] {
-  const spawns = new RegExp(
-    `spawnSync\\(\\s*['"\`]${bin.replaceAll(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"\`]`,
-  );
-  const out: string[] = [];
+): ShimSpawn[] {
+  const spawns = /spawnSync\(\s*['"`]([^'"`]+)['"`]/;
+  const out: ShimSpawn[] = [];
   for (const rel of relFiles) {
     if (!rel.startsWith('scripts/')) continue;
     let text: string;
@@ -341,9 +360,8 @@ export function shimsSpawningRuntimeBin(
     } catch {
       continue;
     }
-    if (spawns.test(text)) {
-      out.push(rel);
-    }
+    const m = spawns.exec(text);
+    if (m?.[1] !== undefined) out.push({ rel, spawns: m[1] });
   }
   return out;
 }
@@ -370,9 +388,33 @@ export function assertShimsResolvable(
   opts: AssertShimsOpts = {},
 ): string | null {
   if (opts.dry) return null;
-  const bin = opts.bin ?? RUNTIME_BIN;
-  const shims = shimsSpawningRuntimeBin(srcDir, relFiles, bin);
-  if (shims.length === 0) return null;
+  const bin = opts.bin ?? CLI_BIN;
+  const found = shimsSpawningRuntimeBin(srcDir, relFiles);
+  if (found.length === 0) return null;
+
+  // A SHIM SPAWNING A NAME THIS BUILD DOES NOT SHIP IS ITSELF THE DEFECT, and it is
+  // caught here rather than at the probe: probing the CURRENT bin would say
+  // "resolvable" while the shim on disk calls something else entirely.
+  const stale = found.filter((f) => f.spawns !== bin);
+  if (stale.length > 0) {
+    return [
+      `  REFUSED  ${stale.length} shim(s) spawn a command this build does not ship:`,
+      ...stale.map(
+        (f) => `    ${f.rel} spawns \`${f.spawns}\`, not \`${bin}\``,
+      ),
+      '',
+      '  A deployed shim naming a retired command dies inside node, in a skill, on a',
+      '  host — and it does so LATER, when someone runs the skill, not here.',
+      '  Re-project so the shims name the command this build actually installs.',
+      '',
+    ].join('\n');
+  }
+
   const probe = probeRuntimeBin(opts);
-  return probe.resolvable ? null : runtimeBinRefusal(probe, shims);
+  return probe.resolvable
+    ? null
+    : runtimeBinRefusal(
+        probe,
+        found.map((f) => f.rel),
+      );
 }

@@ -4,7 +4,7 @@ import { defineConfig } from 'tsup';
 // for every entry and exposes one entry per `exports` subpath — the S1 contracts
 // (`.`, `./events`, `./ports/*`) plus the S3 kernel (`./loader`, `./dispatch`) — so a
 // consumer imports the contract, a port, or the runtime kernel with types intact.
-// The BIN pass is separate (no dts, shebang banner) so `cratylus-run` runs as an
+// The BIN pass is separate (no dts, shebang banner) so `cratylus` runs as an
 // executable; the bin name is a placeholder S9 rebrands.
 export default defineConfig([
   {

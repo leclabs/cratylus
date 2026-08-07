@@ -16,7 +16,7 @@
 import { existsSync } from 'node:fs';
 import { readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
-import { FORGE_BIN } from '../bin-name.js';
+import { CLI_BIN } from '../bin-name.js';
 
 /** The config-is-code home filename. */
 export const CONFIG_FILE = 'cratylus.config.ts';
@@ -138,7 +138,7 @@ export async function addPlugin(cwd: string, pkg: string): Promise<AddResult> {
   const path = join(cwd, CONFIG_FILE);
   if (!existsSync(path)) {
     throw new ConfigEditError(
-      `${path}: no ${CONFIG_FILE} — run \`${FORGE_BIN} init\` first`,
+      `${path}: no ${CONFIG_FILE} — run \`${CLI_BIN} init\` first`,
     );
   }
   let src = await readFile(path, 'utf8');

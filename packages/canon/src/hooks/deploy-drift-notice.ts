@@ -110,7 +110,7 @@ import type { HookCell } from '../manifest.js';
 // projector could have told it. Three guesses lived here and all three are gone:
 //
 //   1. THE COMPARATOR'S NAME was a shell literal, because the forge CLI's name had no
-//      compile-time home the way `RUNTIME_BIN` does. It has one now — derived, not
+//      compile-time home the way `CLI_BIN` does. It has one now — derived, not
 //      declared: `forge/src/bin-name.ts` reads the `bin` key npm itself obeys, so
 //      there is one authored spelling in the package and the cell names the fact
 //      (`deploy-bin`) rather than repeating it.
