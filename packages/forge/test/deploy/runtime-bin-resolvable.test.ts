@@ -212,8 +212,13 @@ describe('assertShimsResolvable', () => {
     expect(msg).toMatch(new RegExp(`${BIN} --version`));
     // the lesson, at the point of failure
     expect(msg).toMatch(/Presence on PATH is not resolvability/);
-    // the repair, as a command
-    expect(msg).toMatch(/packages\/cli\/dist\/bin\.js install/);
+    // THE REPAIR IS AN ORDINARY INSTALL, and that is the point of this assertion.
+    // It used to be `node <checkout>/packages/cli/dist/bin.js install` — a repair
+    // instruction naming a CHECKOUT PATH, which is unreadable to the consumer this
+    // message exists for. The tool no longer authors its own PATH binding; the
+    // package manager does, and it is the thing that solves this portably.
+    expect(msg).toMatch(/npm i -g cratylus/);
+    expect(msg).not.toMatch(/dist\/bin\.js install/);
     // the evidence quoted is the ERROR SENTENCE, which names the strand itself
     expect(msg).toMatch(/Cannot find module/);
     expect(msg).toMatch(/renamed-away/);

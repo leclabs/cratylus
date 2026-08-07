@@ -47,6 +47,7 @@ import {
 } from 'node:fs';
 import { basename, delimiter, join, resolve as resolvePath } from 'node:path';
 import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
+import { FORGE_BIN } from '../bin-name.js';
 
 /** Recursively collect every file under `dir`, as paths RELATIVE to `dir`
  *  (POSIX `/` separators), sorted deterministically. Used by the skill placers
@@ -309,9 +310,11 @@ export function runtimeBinRefusal(
   lines.push(
     '',
     '  These shims are deployed and INERT: each would die inside node, in a skill,',
-    '  on this host — not here. Author the host binding, then deploy again:',
+    '  on this host — not here. Install the CLI, then deploy again:',
     '',
-    '    node <checkout>/packages/cli/dist/bin.js install',
+    `    npm i -g ${FORGE_BIN}`,
+    '',
+    '  (the package manager owns PATH; this tool no longer authors its own binding)',
     '',
   );
   return lines.join('\n');

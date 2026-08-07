@@ -36,7 +36,6 @@ import { runtimePlugin as memory } from '@cratylus/memory';
 import { RUNTIME_BIN } from '@cratylus/runtime/bin-name';
 import { discoverConfigured } from '@cratylus/runtime/loader';
 import { runMain } from '@cratylus/runtime/main';
-import { runInstall } from './install.js';
 
 /**
  * The capability set this CLI SHIPS WITH — the zero-config default, each a
@@ -55,34 +54,26 @@ const fail = (err: unknown): void => {
 
 const argv = process.argv.slice(2);
 
-// `install` IS THIS BIN'S OWN VERB, not a capability, and it is routed HERE rather
-// than in the runtime's dispatcher for two reasons that are the same reason.
+// NO `install` VERB. This package used to author its own binding onto PATH —
+// writing a shim carrying an ABSOLUTE path into a checkout, into a directory it
+// GUESSED at (`$CRATYLUS_BIN_DIR` ▸ `$PNPM_HOME` ▸ `~/.local/bin`).
 //
-// It authors the host-side half of the `bin` key — the pair ⟨bin name, executable
-// path⟩ — and this package is the one that owns that key. The runtime knows the
-// NAME (`bin-name.ts`, its one home) and must not learn how a host binds it; a
-// dispatcher verb would put the binding in the contract leaf, which is the package
-// ARCHITECTURE requires to depend on nothing.
-//
-// And it must run BEFORE provider discovery. Install is the recovery path: it has
-// to work on a host whose runtime config names a provider that is not installed,
-// or whose checkout just moved. A verb that needed a healthy host to repair a
-// broken one would be useless exactly when it is needed.
-if (argv[0] === 'install') {
-  process.exitCode = runInstall(argv.slice(1), {
-    entry: fileURLToPath(import.meta.url),
-    log: (line) => process.stdout.write(`${line}\n`),
-    warn: (line) => process.stderr.write(`${line}\n`),
-  });
-} else {
-  // Provider resolution must fail through the SAME reporting path as everything
-  // else: a top-level await that throws surfaces as an unhandled rejection and a
-  // node stack trace, which reads as a crash rather than "your config names a
-  // provider that is not installed here".
-  try {
-    const plugins = (await discoverConfigured()) ?? BUNDLED;
-    await runMain(argv, { plugins });
-  } catch (err) {
-    fail(err);
-  }
+// That existed for one reason, stated in its own header: the bin reached PATH via
+// `pnpm link --global` into a checkout, and nothing in this repository authored
+// that link. It was scaffolding for a package that could not be installed — and it
+// expired the moment this one could. `npm i -g cratylus` hands the `bin` map to the
+// package manager, which owns exactly this problem and solves it portably; a
+// consumer on npm, yarn or bun was never served by a `$PNPM_HOME` guess, and the
+// guess was wrong even here (pnpm puts `$PNPM_HOME/bin` on PATH, not `$PNPM_HOME`),
+// so the shim it wrote was shadowed and its own self-probe verified a different
+// file than the one it had authored.
+// Provider resolution must fail through the SAME reporting path as everything
+// else: a top-level await that throws surfaces as an unhandled rejection and a
+// node stack trace, which reads as a crash rather than "your config names a
+// provider that is not installed here".
+try {
+  const plugins = (await discoverConfigured()) ?? BUNDLED;
+  await runMain(argv, { plugins });
+} catch (err) {
+  fail(err);
 }

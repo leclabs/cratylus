@@ -99,12 +99,17 @@ const CONSUMERS = [
   'packages/runtime/src/main.ts',
   'packages/cli/src/bin.ts',
   'packages/forge/src/project/runtime-shim.ts',
-  // A TYPESCRIPT FILE THAT EMITS SHELL — the language boundary one level up. The glob
-  // leg below scans `.sh`/`.mjs` SOURCES; this one is `.ts` that WRITES a `#!/bin/sh`
-  // shim onto the host, so a literal here would strand a host exactly as the emitted
-  // artifacts would, and neither leg could see it. Added 2026-08-05 when the shard that
-  // authored it flagged its own blind spot.
-  'packages/cli/src/install.ts',
+  // `packages/cli/src/install.ts` WAS HERE and is DELETED with the module it named.
+  // It was the one `.ts` that WROTE a `#!/bin/sh` shim onto a host, so it needed
+  // watching from here rather than from the `.sh`/`.mjs` glob leg below.
+  //
+  // The module is gone because its warrant expired: it authored this host's PATH
+  // binding only because the package could not be installed, guessing a bin dir
+  // (`$CRATYLUS_BIN_DIR` ▸ `$PNPM_HOME` ▸ `~/.local/bin`) and writing an ABSOLUTE
+  // path into a checkout. `npm i -g cratylus` hands that job to the package manager,
+  // which is whose job it always was. Nothing in this repository writes an executable
+  // onto a host any more, which is why this roster has one fewer entry rather than a
+  // replacement.
 ] as const;
 
 const read = (rel: string): string =>
