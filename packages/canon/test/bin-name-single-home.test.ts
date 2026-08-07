@@ -522,8 +522,12 @@ describe('the forge bin has exactly one authored home', () => {
     // Anchored at the DECLARATION, not the first `cac(` in the file: the header
     // above it quotes the defect it retires, and an unanchored match read the
     // comment — a gate reporting on prose about the code instead of the code.
+    // Leading whitespace is allowed because the CLI is a FUNCTION now — it used to
+    // build its `cac` instance at module scope and parse `process.argv` on import,
+    // which is why the anchor was column-zero. The subject is unchanged: the one
+    // `const cli = cac(...)` declaration, not the prose above it.
     const branded = read('packages/forge/src/cli/index.ts').match(
-      /^const cli = cac\(([^)]+)\)/m,
+      /^\s*const cli = cac\(([^)]+)\)/m,
     )?.[1];
     expect(branded, 'the CLI must brand itself from the derived name').toBe(
       'FORGE_BIN',

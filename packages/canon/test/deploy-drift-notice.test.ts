@@ -53,8 +53,13 @@ const worker = join(
   'guardrail',
   'deploy-drift-notice.sh',
 );
-/** The built CLI the fixture's `node_modules/.bin` entry execs. */
-const forgeCli = join(repoRoot, 'packages', 'forge', 'dist', 'cli', 'index.js');
+/** The built CLI the fixture's `node_modules/.bin` entry execs.
+ *
+ *  THE PACKAGE THAT OWNS THE BIN, not the library it calls. This pointed at
+ *  `forge/dist/cli/index.js`, which self-executed on import back when forge shipped
+ *  the command. It is a library export now — running that file does nothing — so
+ *  the fixture shims what a real host actually runs. */
+const forgeCli = join(repoRoot, 'packages', 'cli', 'dist', 'cratylus.js');
 
 /** The cell's one worker, RESOLVED for `harness` — the bytes that harness deploys. */
 function workerFor(harness: string): string {

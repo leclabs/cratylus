@@ -1,9 +1,13 @@
 import { readdirSync } from 'node:fs';
 import { defineConfig } from 'tsup';
 
-// One package, two build passes. The library build emits .d.ts and code-splits
-// shared modules into chunks; the CLI build is a separate pass (no dts, shebang
-// banner) so `forge` runs as an executable.
+// ONE BUILD PASS. There were two: a library pass, and a CLI pass that emitted no
+// types and prepended a `#!/usr/bin/env node` shebang so `forge` could be executed.
+//
+// It is not executed any more. `forge` is a library and its command surface is an
+// ordinary export — `runCli(argv, opts)` — which the package that owns the `bin`
+// imports and calls. A module that is imported needs types and must NOT carry a
+// shebang, so the CLI entry simply joins the library entry set.
 //
 // There is no `core/index` entry any more. The core
 // barrel was deleted with the IR-intake lineage it `export *`ed — it had no
@@ -32,19 +36,11 @@ for (const a of adapters) {
 
 export default defineConfig([
   {
-    entry: libEntry,
+    entry: { ...libEntry, 'cli/index': 'src/cli/index.ts' },
     format: ['esm'],
     dts: true,
     clean: true,
     splitting: true,
     sourcemap: true,
-  },
-  {
-    entry: { 'cli/index': 'src/cli/index.ts' },
-    format: ['esm'],
-    dts: false,
-    clean: false,
-    sourcemap: true,
-    banner: { js: '#!/usr/bin/env node' },
   },
 ]);
