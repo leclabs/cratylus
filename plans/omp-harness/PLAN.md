@@ -2,6 +2,18 @@
 
 > Cratylus targets Oh My Pi. Three of its built-ins replace things this corpus built by hand.
 
+## Where this stands
+
+The bootstrap shard landed, then work branched off this plan to fix a bug and publish the
+package set for the first time. That branch is finished: six packages are live on npm with
+sigstore provenance — `cratylus@0.2.0`, `@cratylus/canon@0.1.0`, `@cratylus/forge@0.2.0`,
+`@cratylus/runtime@0.2.0`, `@cratylus/memory@0.1.2`, `@cratylus/schema@0.1.2`.
+
+**One fix is owed and is not in the release.** `d4a01b7c` is committed and unpushed; the
+published `cratylus@0.2.0` carries the bug it repairs — the zero-config `install` path emits no
+runtime event vocabulary, so a host set up that way cannot validate an event name and `carry-on`
+and `event-tap` are inert on it. Coal was installed from that build. Push, release, redeploy coal.
+
 ## Why omp, and why now
 
 **It is not just a third harness.** Three of its native features are things `cratylus` either
