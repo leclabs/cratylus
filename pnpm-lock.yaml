@@ -68,16 +68,16 @@ importers:
 
   packages/canon:
     dependencies:
+      '@cratylus/schema':
+        specifier: workspace:*
+        version: link:../schema
+    devDependencies:
       '@cratylus/forge':
         specifier: workspace:*
         version: link:../forge
       '@cratylus/runtime':
         specifier: workspace:*
         version: link:../runtime
-      '@cratylus/schema':
-        specifier: workspace:*
-        version: link:../schema
-    devDependencies:
       '@repo/tooling':
         specifier: workspace:*
         version: link:../tooling
@@ -195,10 +195,6 @@ importers:
         version: 2.1.9(@types/node@22.19.21)
 
   packages/schema:
-    dependencies:
-      '@cratylus/runtime':
-        specifier: workspace:*
-        version: link:../runtime
     devDependencies:
       '@types/node':
         specifier: 'catalog:'

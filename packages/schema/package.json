@@ -27,9 +27,6 @@
     "dev": "tsup --watch",
     "prepack": "pnpm run build"
   },
-  "dependencies": {
-    "@cratylus/runtime": "workspace:*"
-  },
   "devDependencies": {
     "@types/node": "catalog:",
     "tsup": "catalog:",

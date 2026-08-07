@@ -555,4 +555,104 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
       }),
     ).toBe(true);
   });
+
+  // THE IMPORT GRAPH IS NOT THE DEPENDENCY GRAPH, and this suite could only see the
+  // first. Every leg above reads `import` statements, so a workspace package declared in
+  // a manifest and imported by nothing is INVISIBLE to all of them — the gate reports the
+  // architecture clean while npm ships the coupling anyway.
+  //
+  // It was not hypothetical. `@cratylus/canon` declared BOTH `@cratylus/forge` and
+  // `@cratylus/runtime` in `dependencies` with ZERO importers under `src/` — forge's 20
+  // importers are all `tooling/` and `test/`, and runtime's two `src` hits are both
+  // COMMENTS. Property 2 ("nothing depends on projection") held at the module level and
+  // was breached at the manifest level, so anyone running `npm i @cratylus/canon` also
+  // downloaded the projector — re-coupling at distribution exactly what ARCHITECTURE says
+  // the package split exists to prevent, and what the two-bin decision is argued from.
+  //
+  // `dependencies` is the set a CONSUMER downloads. A package used only to build or test
+  // this package is a `devDependency`; putting it in `dependencies` is a claim about the
+  // shipped artifact that its own source contradicts.
+  it('no PHANTOM runtime dependency — every declared workspace dep is imported by src/', () => {
+    const offenders: string[] = [];
+    let declared = 0;
+
+    for (const pkg of PACKAGES) {
+      const manifest = JSON.parse(
+        readFileSync(join(repoRoot, `packages/${pkg}/package.json`), 'utf8'),
+      ) as { dependencies?: Record<string, string> };
+
+      // `src/` ONLY — deliberately narrower than `srcFiles()`, which also sweeps
+      // `tooling/`. A build script's import justifies a devDependency, never a
+      // dependency, and conflating the two is the whole defect this leg holds.
+      const shipped = execFileSync('git', ['ls-files', `packages/${pkg}/src`], {
+        cwd: repoRoot,
+        encoding: 'utf8',
+      })
+        .split('\n')
+        .filter((f) => f.endsWith('.ts'))
+        .map((f) => codeOnly(readFileSync(join(repoRoot, f), 'utf8')))
+        .join('\n');
+
+      declared += phantomScan(manifest, shipped).examined;
+      offenders.push(
+        ...phantomScan(manifest, shipped).phantoms.map((s) => `${pkg} → ${s}`),
+      );
+    }
+
+    // NON-VACUITY. If no workspace dependency is declared anywhere, this leg is green for
+    // having looked at nothing — the steady state here is zero offenders, so the count of
+    // what was EXAMINED is the only thing that distinguishes clean from dark.
+    expect(
+      declared,
+      'workspace deps examined — the scan is DARK',
+    ).toBeGreaterThan(0);
+    expect(
+      offenders,
+      'declared as a dependency, imported by no src/ file',
+    ).toEqual([]);
+  });
+
+  // THE LIVE LEG ABOVE GOES DARK THE MOMENT THE CORPUS IS CLEAN — its subject is the real
+  // manifests, and a clean tree is indistinguishable from a broken detector. It DID convict
+  // on first run (`schema → @cratylus/runtime`, an edge ARCHITECTURE recorded as repaired
+  // in 2026-08-05 while the manifest entry survived), but that violation is now fixed and
+  // cannot be the standing proof.
+  //
+  // So the detector is driven over a SYNTHETIC subject it carries itself, through THE SAME
+  // function — a control that reaches its verdict by another path proves only that the
+  // other path works.
+  it('the phantom detector CONVICTS a phantom and EXONERATES a real import', () => {
+    const phantom = { dependencies: { '@cratylus/runtime': 'workspace:*' } };
+    const real = { dependencies: { '@cratylus/schema': 'workspace:*' } };
+
+    // convicting: declared, and the source never names it
+    expect(phantomScan(phantom, 'export const x = 1;').phantoms).toEqual([
+      '@cratylus/runtime',
+    ]);
+    // exonerating: declared AND imported — must NOT convict
+    expect(
+      phantomScan(real, "import type { Cell } from '@cratylus/schema';")
+        .phantoms,
+    ).toEqual([]);
+    // an external dep is npm's problem, not this gate's
+    expect(phantomScan({ dependencies: { zod: '^3' } }, '').examined).toBe(0);
+  });
 });
+
+/** THE PURE PREDICATE both legs above rest on: which declared workspace deps does this
+ *  package's shipped source never name? Pure so the synthetic fixture can drive the same
+ *  function the live sweep does. `examined` is the denominator — reported separately so
+ *  "found nothing" stays distinguishable from "could not look". */
+function phantomScan(
+  manifest: { dependencies?: Record<string, string> },
+  shippedSource: string,
+): { phantoms: string[]; examined: number } {
+  const phantoms: string[] = [];
+  let examined = 0;
+  for (const spec of Object.keys(manifest.dependencies ?? {})) {
+    if (pkgOf(spec) === null) continue; // external — not ours to police
+    examined += 1;
+    if (!shippedSource.includes(spec)) phantoms.push(spec);
+  }
+  return { phantoms, examined };
+}

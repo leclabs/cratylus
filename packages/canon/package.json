@@ -1,7 +1,7 @@
 {
   "name": "@cratylus/canon",
   "version": "0.0.0",
-  "description": "The canonical corpus of discovered optimal-signifiers — agents, skills, dimensions and rules as typed TS source. Markdown is a projection of these modules.",
+  "description": "The canonical corpus of discovered optimal-signifiers \u2014 agents, skills, dimensions and rules as typed TS source. Markdown is a projection of these modules.",
   "license": "MIT",
   "engines": {
     "node": ">=22"
@@ -27,13 +27,13 @@
     "prepack": "pnpm run build",
     "pack:smoke": "tsx tooling/pack-smoke/pack-smoke-cli.ts"
   },
-  "//test": "`test` builds FIRST because `test/runtime-shim.test.ts` drives the shipped `cratylus project` over the repository's own `agents.config.ts`, and that config extends `@cratylus/canon` — the PACKAGE, i.e. this package's `dist`. turbo's `test.dependsOn: [^build]` builds this package's DEPENDENCIES, never this package, so a cold clone would run the consumer path against a dist that does not exist.",
+  "//test": "`test` builds FIRST because `test/runtime-shim.test.ts` drives the shipped `cratylus project` over the repository's own `agents.config.ts`, and that config extends `@cratylus/canon` \u2014 the PACKAGE, i.e. this package's `dist`. turbo's `test.dependsOn: [^build]` builds this package's DEPENDENCIES, never this package, so a cold clone would run the consumer path against a dist that does not exist.",
   "dependencies": {
-    "@cratylus/forge": "workspace:*",
-    "@cratylus/runtime": "workspace:*",
     "@cratylus/schema": "workspace:*"
   },
   "devDependencies": {
+    "@cratylus/forge": "workspace:*",
+    "@cratylus/runtime": "workspace:*",
     "@repo/tooling": "workspace:*",
     "@types/node": "catalog:",
     "tsx": "^4.19.0",
