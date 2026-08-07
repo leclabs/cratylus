@@ -14,7 +14,7 @@
 //                pins; here the shim is consumed + PROVEN to drive the real bin).
 //   L1 deploy  : `placeSkillsLocal` copies the skill dir mode-preserving into a
 //                TEMP target `.claude/` — the shim's exec bit survives.
-//   (setup)    : the runtime packages are installed into a temp npm prefix. This
+//   (setup)    : `pnpm deploy` materializes the CLI package with its workspace
 //                is a PRECONDITION, not a stage — installing packages on a host is
 //                npm's job, never deploy's — so it is plain test setup here, and
 //                nothing about it is an assertion on forge.
@@ -24,9 +24,9 @@
 //                passive logger into a temp settings.json and removes it with ZERO
 //                RESIDUE (the target file restored, our tap id gone).
 //
-// HERMETIC: a scoped temp target/prefix/home, `GIT_CONFIG_GLOBAL=/dev/null`, and
+// HERMETIC: a scoped temp target/host-root/home, `GIT_CONFIG_GLOBAL=/dev/null`, and
 // `--home`/`--settings` passed explicitly — the operator's real `~/.agents`,
-// `~/.claude`, and npm prefix are NEVER touched. Deploy is local-only.
+// `~/.claude`, and every global prefix are NEVER touched — nothing here runs npm.
 //
 // This test does the REAL pack+install, so it is heavier than the unit suites;
 // each leg carries an explicit generous timeout.
@@ -39,6 +39,7 @@ import {
   mkdirSync,
   readFileSync,
   statSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
@@ -49,30 +50,12 @@ import { canonicalToClaude } from '../../src/adapters/claude/index.js';
 import { emitRuntimeConfig, placeSkillsLocal } from '../../src/deploy/index.js';
 import { tmp } from './helpers.js';
 
-/** The workspace packages the temp prefix needs so `<RUNTIME_BIN> <cap> <verb>`
+/** The package that ships both commands, so `<RUNTIME_BIN> <cap> <verb>`
  *  resolves: the CLI carrying the bin, the contract leaf, the capability. These are
  *  PACKAGE names (an npm coordinate), not the bin name — they do not move on a
  *  rebrand of the executable. */
-// THE CLOSURE, NOT THE RUN-TIME SUBSET — and the difference is the measured cost of
-// shipping both commands from one package. This list was `runtime, memory, cli`, which
-// was the whole install a host needed when the run-time bin stood alone. The hub now
-// declares `forge` and `canon` too, so a host that only RUNS agents downloads the
-// projector and the corpus with them.
-//
-// That is exactly the objection `ARCHITECTURE.md` raised against merging the bins —
-// "a host that only runs agents would drag the whole projection machinery" — and it is
-// no longer an argument, it is this line. `await import()` cannot defer it: dynamic
-// import defers EVALUATION, never INSTALLATION. Recorded here because this test is
-// where the cost is actually paid, and a reader deciding whether the trade was worth
-// it should meet the evidence rather than the prose.
-const RUNTIME_PACKAGES = [
-  'schema',
-  'runtime',
-  'memory',
-  'forge',
-  'canon',
-  'cli',
-];
+/** The package that ships both commands; `pnpm deploy` resolves its closure. */
+const HUB = 'cratylus';
 
 /**
  * The canonical thin-shim CONTENT for a runtime capability — a self-contained node
@@ -96,7 +79,7 @@ process.exit(r.status ?? 1);
 const root = tmp('s10-integrate-smoke-');
 const projectSkills = join(root, 'project', 'skills');
 const targetClaude = join(root, 'target', '.claude');
-const prefix = join(root, 'prefix');
+const hostRoot = join(root, 'installed');
 const agentHome = join(root, 'agent-home');
 const SKILL = 'memory-face';
 const TAP_SKILL = 'event-tap-face';
@@ -119,7 +102,7 @@ const runtimeConfig = join(root, 'runtime-config.json');
  *  point the runtime at the emitted host config rather than the operator's real one. */
 const hermeticEnv = {
   ...process.env,
-  PATH: `${join(prefix, 'bin')}:${process.env.PATH ?? ''}`,
+  PATH: `${join(hostRoot, 'bin')}:${process.env.PATH ?? ''}`,
   GIT_CONFIG_GLOBAL: '/dev/null',
   AGENT_RUNTIME_CONFIG: runtimeConfig,
 };
@@ -162,42 +145,48 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
       events: Object.keys(canonicalToClaude),
       nativeEvents: canonicalToClaude,
     });
-    const stage = join(root, 'tarballs');
-    mkdirSync(stage, { recursive: true });
+    // A CONSUMER INSTALL, BUILT BY THE WORKSPACE THAT ALREADY KNOWS HOW.
+    //
+    // This packed six tarballs and ran `npm install -g --prefix <tmp>`, which was the
+    // wrong tool twice over: it reached for npm to simulate an install pnpm can
+    // produce directly, and it drove a GLOBAL prefix to do it. `pnpm deploy` is the
+    // workspace-native answer — it materializes a package with its workspace
+    // dependencies resolved into a self-contained tree, which is precisely "what a
+    // consumer receives" without publishing anything or touching a global root.
+    //
+    // Injection is what makes it faithful (`injectWorkspacePackages: true`): without
+    // it, deploy leaves `workspace:*` specifiers unresolved and the tree cannot run
+    // anywhere. pnpm 10+ refuses the non-injected path for exactly that reason.
     const repoRoot = requireRepoRoot(import.meta.dirname);
-    const tarballs = RUNTIME_PACKAGES.map((pkg) => {
-      const out = execFileSync(
-        'pnpm',
-        [
-          '-C',
-          join(repoRoot, 'packages', pkg),
-          'pack',
-          '--pack-destination',
-          stage,
-        ],
-        { encoding: 'utf-8' },
-      );
-      return out.trim().split('\n').pop() as string;
-    });
-    try {
-      execFileSync('npm', ['install', '-g', '--prefix', prefix, ...tarballs], {
-        encoding: 'utf-8',
-        stdio: 'pipe',
-      });
-    } catch {
-      // npm's exit code can be tainted by a version-manager reshim; the real
-      // oracle is artifact resolvability, checked next.
-    }
-    // Guard, so an unmet precondition fails legibly instead of as a shim error.
-    expect(existsSync(join(prefix, 'bin', RUNTIME_BIN))).toBe(true);
+    execFileSync(
+      'pnpm',
+      ['--filter', HUB, 'deploy', '--prod', '--silent', hostRoot],
+      { cwd: repoRoot, encoding: 'utf-8', stdio: 'pipe' },
+    );
 
-    // PUT THE INSTALLED BIN ON THIS PROCESS'S PATH, because the code under test
-    // reads `process.env.PATH` — `probeRuntimeBin` resolves the runtime bin the way
-    // a real host does, and `placeSkillsLocal` refuses (rc 2, "deployed shims are
-    // inert") when it cannot. Exporting PATH only to the child processes this test
-    // spawns would leave the IN-PROCESS legs probing the developer's own PATH,
-    // which is a different host than the one this fixture built.
-    process.env.PATH = `${join(prefix, 'bin')}:${process.env.PATH ?? ''}`;
+    // LINK THE BINS THE WAY A PACKAGE MANAGER WOULD. `deploy` materializes the
+    // package, but a package's own `bin` entries are never linked into its own
+    // `node_modules/.bin` — that only happens for DEPENDENCIES. The probe under test
+    // resolves the runtime bin off `PATH`, so the names have to exist as executables.
+    const binDir = join(hostRoot, 'bin');
+    mkdirSync(binDir, { recursive: true });
+    const manifest = JSON.parse(
+      readFileSync(join(hostRoot, 'package.json'), 'utf-8'),
+    ) as { bin: Record<string, string> };
+    for (const [name, target] of Object.entries(manifest.bin)) {
+      const link = join(binDir, name);
+      symlinkSync(join(hostRoot, target), link);
+    }
+
+    // Guard, so an unmet precondition fails legibly instead of as a shim error.
+    expect(existsSync(join(binDir, RUNTIME_BIN))).toBe(true);
+
+    // PUT THE INSTALLED BIN ON THIS PROCESS'S PATH, because the code under test reads
+    // `process.env.PATH` — `probeRuntimeBin` resolves the runtime bin the way a real
+    // host does, and `placeSkillsLocal` refuses (rc 2, "deployed shims are inert")
+    // when it cannot. Exporting only to spawned children would leave the IN-PROCESS
+    // legs probing the developer's own PATH, which is a different host than this one.
+    process.env.PATH = `${binDir}:${process.env.PATH ?? ''}`;
   }, 180_000);
 
   it('L0 project: a runtime:{capability:memory} skill emits an executable thin shim → cratylus-run memory', () => {

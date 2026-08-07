@@ -28,3 +28,14 @@ catalog:
   picocolors: ^1.1.0
   "@iarna/toml": ^2.2.5
   chokidar: ^4.0.1
+
+# INJECTION IS WHAT MAKES `pnpm deploy` PRODUCE A CONSUMER ARTIFACT. Without it,
+# deploy leaves `workspace:*` specifiers unresolved and the result cannot be
+# installed anywhere — pnpm 10+ refuses the non-injected path for exactly that
+# reason. Injected workspace deps are materialized as copies rather than symlinks,
+# so a deployed tree is what a consumer would actually receive.
+#
+# This is what replaces packing tarballs and `npm install -g` in the e2e gate: the
+# workspace already knows how to build a consumer install, and reaching for npm to
+# simulate one was using the wrong tool and touching a global prefix to do it.
+injectWorkspacePackages: true
