@@ -1,4 +1,4 @@
-# @cratylus/invoke
+# cratylus
 
 The **run-time entry** of [cratylus](../../README.md) — the one package a consumer installs
 globally to give an agent the capabilities it invokes while it is running.
@@ -14,7 +14,7 @@ decode as leaves — nobody imports an action for its contracts.
 ## Install
 
 ```bash
-npm install -g @cratylus/invoke
+npm install -g cratylus
 ```
 
 ### From a checkout — `cratylus-run install`
@@ -29,7 +29,7 @@ nothing here had ever claimed the binding.
 The binding is now an artifact of this repository:
 
 ```bash
-node <checkout>/packages/invoke/dist/bin.js install
+node <checkout>/packages/cli/dist/bin.js install
 ```
 
 It writes an executable `cratylus-run` — a real file, `#!/bin/sh` + `exec node <entry>`,
@@ -52,10 +52,10 @@ find it. What is guaranteed instead is that a stale binding **fails legibly** �
 cratylus-run: UNAVAILABLE — the run-time capability is not installed on this host.
 
   this command   /Users/lex/.local/share/pnpm/bin/cratylus-run
-  its entry      /Users/lex/workspaces/OLD-NAME/packages/invoke/dist/bin.js
+  its entry      /Users/lex/workspaces/OLD-NAME/packages/cli/dist/bin.js
   status         that file does not exist
   …
-  node <checkout>/packages/invoke/dist/bin.js install
+  node <checkout>/packages/cli/dist/bin.js install
 ```
 
 — rather than dying in `cjs/loader` from a file no one remembers exists. Exit `127`.

@@ -1,5 +1,5 @@
 import canon from '@cratylus/canon';
-import { defineConfig } from '@cratylus/forge/config';
+import { defineConfig } from 'cratylus';
 
 // cratylus's OWN cratylus.config.ts — this repository is a consumer of the
 // commands it ships. `cratylus project --harness <name>` is the build-time

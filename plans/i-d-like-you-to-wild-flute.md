@@ -38,7 +38,7 @@ convicting the drift.
 | `@cratylus/runtime` capability | `praxis.sh`, `plan-set{,-cli}.ts`, `cold-oracle.sh`                                        |
 | `@cratylus/forge/validate`     | `structural-parsimony`, `symbol-probe-gate`, `formal-block-self-sufficiency`, `project.ts` |
 | repo-root `scripts/`           | `render-oracle.sh`, `project-targets{,-cli}.ts`, `sweep.mjs` (dead — 0 call sites)         |
-| `@cratylus/invoke`             | `scaffold-cli.ts` — a shipping product command shelved as a dev script                     |
+| `cratylus`                     | `scaffold-cli.ts` — a shipping product command shelved as a dev script                     |
 | test tree                      | 11 files + fixtures                                                                        |
 | render tree                    | the 9 generated `.sh`                                                                      |
 
@@ -253,6 +253,6 @@ Done/Decisions/Open-Questions structure. Then redeploy — the projected copy is
   the command-veracity gate convicted this very line for naming it) red on purpose against
   each of the 4 convicting fixtures; cold-runner
   PR green; `npm publish --dry-run` proves `--provenance` accepts a tarball spec (unverified —
-  fallback is publishing the extracted dir); then `npm i -g @cratylus/invoke` on `ash`
+  fallback is publishing the extracted dir); then `npm i -g cratylus` on `ash`
 - **W3:** two agents on different hosts exchange an envelope; kill one mid-claim and prove no loss
 - **W4:** scheduler consolidates an _idle_ home with no session open — the 8-of-10 case

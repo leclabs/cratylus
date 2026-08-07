@@ -53,7 +53,26 @@ import { tmp } from './helpers.js';
  *  resolves: the CLI carrying the bin, the contract leaf, the capability. These are
  *  PACKAGE names (an npm coordinate), not the bin name — they do not move on a
  *  rebrand of the executable. */
-const RUNTIME_PACKAGES = ['runtime', 'memory', 'invoke'];
+// THE CLOSURE, NOT THE RUN-TIME SUBSET — and the difference is the measured cost of
+// shipping both commands from one package. This list was `runtime, memory, cli`, which
+// was the whole install a host needed when the run-time bin stood alone. The hub now
+// declares `forge` and `canon` too, so a host that only RUNS agents downloads the
+// projector and the corpus with them.
+//
+// That is exactly the objection `ARCHITECTURE.md` raised against merging the bins —
+// "a host that only runs agents would drag the whole projection machinery" — and it is
+// no longer an argument, it is this line. `await import()` cannot defer it: dynamic
+// import defers EVALUATION, never INSTALLATION. Recorded here because this test is
+// where the cost is actually paid, and a reader deciding whether the trade was worth
+// it should meet the evidence rather than the prose.
+const RUNTIME_PACKAGES = [
+  'schema',
+  'runtime',
+  'memory',
+  'forge',
+  'canon',
+  'cli',
+];
 
 /**
  * The canonical thin-shim CONTENT for a runtime capability — a self-contained node
@@ -131,7 +150,7 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
 
   // PRECONDITION (not a stage, not an assertion): put the runtime packages in a
   // temp npm prefix so the deployed shim has an `cratylus-run` to drive. On a
-  // real host this is `npm i -g @cratylus/invoke`; here the un-published
+  // real host this is `npm i -g cratylus`; here the un-published
   // workspace packages are packed and co-installed to reach the same state.
   beforeAll(() => {
     // The projection's own emission, into the hermetic root — the L4 leg's
@@ -171,6 +190,14 @@ describe('S10 integrate-smoke — project→deploy→invoke→verify', () => {
     }
     // Guard, so an unmet precondition fails legibly instead of as a shim error.
     expect(existsSync(join(prefix, 'bin', RUNTIME_BIN))).toBe(true);
+
+    // PUT THE INSTALLED BIN ON THIS PROCESS'S PATH, because the code under test
+    // reads `process.env.PATH` — `probeRuntimeBin` resolves the runtime bin the way
+    // a real host does, and `placeSkillsLocal` refuses (rc 2, "deployed shims are
+    // inert") when it cannot. Exporting PATH only to the child processes this test
+    // spawns would leave the IN-PROCESS legs probing the developer's own PATH,
+    // which is a different host than the one this fixture built.
+    process.env.PATH = `${join(prefix, 'bin')}:${process.env.PATH ?? ''}`;
   }, 180_000);
 
   it('L0 project: a runtime:{capability:memory} skill emits an executable thin shim → cratylus-run memory', () => {

@@ -92,12 +92,7 @@
     // canon → invoke edge in the manifest to satisfy a test fixture, which is a
     // worse lie than the one it fixes.
     "@cratylus/canon#test": {
-      "dependsOn": [
-        "^build",
-        "build",
-        "typecheck:test",
-        "@cratylus/invoke#build"
-      ],
+      "dependsOn": ["^build", "build", "typecheck:test", "cratylus#build"],
       "cache": false
     },
     "dev": {

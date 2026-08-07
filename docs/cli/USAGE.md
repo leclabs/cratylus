@@ -59,7 +59,7 @@ npx cratylus deploy
 ```
 
 > **Proposed, and it is the change that unblocks everything.** Today the bin ships inside
-> `@cratylus/forge`, a second bin `cratylus-run` ships inside `@cratylus/invoke`, and
+> `@cratylus/forge`, a second bin `cratylus-run` ships inside `cratylus`, and
 > **`@cratylus/canon` is not published at all** (`.changeset/config.json` `ignore` — `npm view` →
 > 404). There is currently no way for anyone to install a working cratylus. The unscoped name
 > `cratylus` is free (registry 404, measured).

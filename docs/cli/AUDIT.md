@@ -1,6 +1,6 @@
 # CLI audit — what the help claims vs what the code does
 
-> Taken at `2b15faaa`, 2026-08-06, over `packages/forge/src/cli/**`, `packages/invoke/src/**`,
+> Taken at `2b15faaa`, 2026-08-06, over `packages/forge/src/cli/**`, `packages/cli/src/**`,
 > `packages/runtime/src/**`. **These are facts about the code as it stands**, independent of any
 > redesign — a proposal that is rejected does not make a wrong `--help` string right.
 >
@@ -129,6 +129,6 @@ which is the whole of the documented path (`invoke/README.md:124-129`).
 
 ## What has no tests
 
-`@cratylus/invoke` — the package that owns the `cratylus-run` bin — has **no test directory** and no
+`cratylus` — the package that owns the `cratylus-run` bin — has **no test directory** and no
 `test` script. Its 432-line `install.ts`, which writes executables onto a host's `PATH`, is
 exercised only indirectly.

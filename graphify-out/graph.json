@@ -19103,7 +19103,7 @@
     {
       "label": "invoke/package.json",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L1",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_json",
@@ -19114,7 +19114,7 @@
     {
       "label": "name",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L2",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_name",
@@ -19125,7 +19125,7 @@
     {
       "label": "version",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L3",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_version",
@@ -19136,7 +19136,7 @@
     {
       "label": "description",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L5",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_description",
@@ -19147,7 +19147,7 @@
     {
       "label": "license",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L6",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_license",
@@ -19158,7 +19158,7 @@
     {
       "label": "type",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L7",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_type",
@@ -19169,7 +19169,7 @@
     {
       "label": "bin",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L8",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_bin",
@@ -19180,7 +19180,7 @@
     {
       "label": "cratylus-run",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L9",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_bin_cratylus_run",
@@ -19191,7 +19191,7 @@
     {
       "label": "files",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L11",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_files",
@@ -19202,7 +19202,7 @@
     {
       "label": "dist",
       "file_type": "concept",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L11",
       "_origin": "ast",
       "id": "packages_invoke_package_json_ref_dist",
@@ -19213,7 +19213,7 @@
     {
       "label": "scripts",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L12",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_scripts",
@@ -19224,7 +19224,7 @@
     {
       "label": "build",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L13",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_scripts_build",
@@ -19235,7 +19235,7 @@
     {
       "label": "typecheck",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L14",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_scripts_typecheck",
@@ -19246,7 +19246,7 @@
     {
       "label": "clean",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L15",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_scripts_clean",
@@ -19257,7 +19257,7 @@
     {
       "label": "dev",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L16",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_scripts_dev",
@@ -19268,7 +19268,7 @@
     {
       "label": "prepack",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L17",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_scripts_prepack",
@@ -19279,7 +19279,7 @@
     {
       "label": "dependencies",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L19",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_dependencies",
@@ -19290,7 +19290,7 @@
     {
       "label": "@cratylus/memory",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L20",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_dependencies_cratylus_memory",
@@ -19301,7 +19301,7 @@
     {
       "label": "@cratylus/memory",
       "file_type": "concept",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L20",
       "_origin": "ast",
       "id": "cratylus_memory",
@@ -19312,7 +19312,7 @@
     {
       "label": "@cratylus/runtime",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L21",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_dependencies_cratylus_runtime",
@@ -19323,7 +19323,7 @@
     {
       "label": "@cratylus/runtime",
       "file_type": "concept",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L21",
       "_origin": "ast",
       "id": "packages_invoke_package_json_cratylus_runtime",
@@ -19334,7 +19334,7 @@
     {
       "label": "devDependencies",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L23",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_devdependencies",
@@ -19345,7 +19345,7 @@
     {
       "label": "@types/node",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L24",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_devdependencies_types_node",
@@ -19356,7 +19356,7 @@
     {
       "label": "@types/node",
       "file_type": "concept",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L24",
       "_origin": "ast",
       "id": "packages_invoke_package_json_types_node",
@@ -19367,7 +19367,7 @@
     {
       "label": "tsup",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L25",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_devdependencies_tsup",
@@ -19378,7 +19378,7 @@
     {
       "label": "tsup",
       "file_type": "concept",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L25",
       "_origin": "ast",
       "id": "packages_invoke_package_json_tsup",
@@ -19389,7 +19389,7 @@
     {
       "label": "typescript",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L26",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_devdependencies_typescript",
@@ -19400,7 +19400,7 @@
     {
       "label": "typescript",
       "file_type": "concept",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L26",
       "_origin": "ast",
       "id": "packages_invoke_package_json_typescript",
@@ -19411,7 +19411,7 @@
     {
       "label": "publishConfig",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L28",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_publishconfig",
@@ -19422,7 +19422,7 @@
     {
       "label": "access",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L29",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_publishconfig_access",
@@ -19433,7 +19433,7 @@
     {
       "label": "keywords",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_keywords",
@@ -19444,7 +19444,7 @@
     {
       "label": "latent-lexicography",
       "file_type": "concept",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "_origin": "ast",
       "id": "packages_invoke_package_json_ref_latent_lexicography",
@@ -19455,7 +19455,7 @@
     {
       "label": "cratylus",
       "file_type": "concept",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "_origin": "ast",
       "id": "packages_invoke_package_json_ref_cratylus",
@@ -19466,7 +19466,7 @@
     {
       "label": "runtime",
       "file_type": "concept",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "_origin": "ast",
       "id": "packages_invoke_package_json_ref_runtime",
@@ -19477,7 +19477,7 @@
     {
       "label": "cli",
       "file_type": "concept",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "_origin": "ast",
       "id": "packages_invoke_package_json_ref_cli",
@@ -19488,7 +19488,7 @@
     {
       "label": "agent",
       "file_type": "concept",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "_origin": "ast",
       "id": "packages_invoke_package_json_ref_agent",
@@ -19499,7 +19499,7 @@
     {
       "label": "capability",
       "file_type": "concept",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "_origin": "ast",
       "id": "packages_invoke_package_json_ref_capability",
@@ -19510,7 +19510,7 @@
     {
       "label": "author",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L39",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_author",
@@ -19521,7 +19521,7 @@
     {
       "label": "repository",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L40",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_repository",
@@ -19532,7 +19532,7 @@
     {
       "label": "type",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L41",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_repository_type",
@@ -19543,7 +19543,7 @@
     {
       "label": "url",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L42",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_repository_url",
@@ -19554,7 +19554,7 @@
     {
       "label": "directory",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L43",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_repository_directory",
@@ -19565,7 +19565,7 @@
     {
       "label": "bugs",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L45",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_bugs",
@@ -19576,7 +19576,7 @@
     {
       "label": "url",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L46",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_bugs_url",
@@ -19587,7 +19587,7 @@
     {
       "label": "homepage",
       "file_type": "code",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L48",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_package_homepage",
@@ -19598,7 +19598,7 @@
     {
       "label": "bin.ts",
       "file_type": "code",
-      "source_file": "packages/invoke/src/bin.ts",
+      "source_file": "packages/cli/src/bin.ts",
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_invoke_src_bin",
@@ -19609,7 +19609,7 @@
     {
       "label": "BUNDLED",
       "file_type": "code",
-      "source_file": "packages/invoke/src/bin.ts",
+      "source_file": "packages/cli/src/bin.ts",
       "source_location": "L47",
       "_origin": "ast",
       "id": "packages_invoke_src_bin_bundled",
@@ -19620,7 +19620,7 @@
     {
       "label": "fail()",
       "file_type": "code",
-      "source_file": "packages/invoke/src/bin.ts",
+      "source_file": "packages/cli/src/bin.ts",
       "source_location": "L49",
       "_origin": "ast",
       "id": "packages_invoke_src_bin_fail",
@@ -19631,7 +19631,7 @@
     {
       "label": "argv",
       "file_type": "code",
-      "source_file": "packages/invoke/src/bin.ts",
+      "source_file": "packages/cli/src/bin.ts",
       "source_location": "L56",
       "_origin": "ast",
       "id": "packages_invoke_src_bin_argv",
@@ -19642,7 +19642,7 @@
     {
       "label": "install.ts",
       "file_type": "code",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_invoke_src_install",
@@ -19653,7 +19653,7 @@
     {
       "label": "sq()",
       "file_type": "code",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L67",
       "_origin": "ast",
       "id": "packages_invoke_src_install_sq",
@@ -19664,7 +19664,7 @@
     {
       "label": "shimContent()",
       "file_type": "code",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L84",
       "_origin": "ast",
       "id": "packages_invoke_src_install_shimcontent",
@@ -19675,7 +19675,7 @@
     {
       "label": "InstallOpts",
       "file_type": "code",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L126",
       "_origin": "ast",
       "id": "packages_invoke_src_install_installopts",
@@ -19686,7 +19686,7 @@
     {
       "label": "InstallResult",
       "file_type": "code",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L144",
       "_origin": "ast",
       "id": "packages_invoke_src_install_installresult",
@@ -19697,7 +19697,7 @@
     {
       "label": "resolveBinDir()",
       "file_type": "code",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L165",
       "_origin": "ast",
       "id": "packages_invoke_src_install_resolvebindir",
@@ -19708,7 +19708,7 @@
     {
       "label": "onPath()",
       "file_type": "code",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L177",
       "_origin": "ast",
       "id": "packages_invoke_src_install_onpath",
@@ -19719,7 +19719,7 @@
     {
       "label": "installRuntimeBin()",
       "file_type": "code",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L194",
       "_origin": "ast",
       "id": "packages_invoke_src_install_installruntimebin",
@@ -19730,7 +19730,7 @@
     {
       "label": "safeRead()",
       "file_type": "code",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L298",
       "_origin": "ast",
       "id": "packages_invoke_src_install_saferead",
@@ -19741,7 +19741,7 @@
     {
       "label": "salientStderr()",
       "file_type": "code",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L321",
       "_origin": "ast",
       "id": "packages_invoke_src_install_salientstderr",
@@ -19752,7 +19752,7 @@
     {
       "label": "RunInstallCtx",
       "file_type": "code",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L354",
       "_origin": "ast",
       "id": "packages_invoke_src_install_runinstallctx",
@@ -19763,7 +19763,7 @@
     {
       "label": "runInstall()",
       "file_type": "code",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L364",
       "_origin": "ast",
       "id": "packages_invoke_src_install_runinstall",
@@ -19774,7 +19774,7 @@
     {
       "label": "invoke/tsconfig.json",
       "file_type": "code",
-      "source_file": "packages/invoke/tsconfig.json",
+      "source_file": "packages/cli/tsconfig.json",
       "source_location": "L1",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_tsconfig_json",
@@ -19785,7 +19785,7 @@
     {
       "label": "extends",
       "file_type": "code",
-      "source_file": "packages/invoke/tsconfig.json",
+      "source_file": "packages/cli/tsconfig.json",
       "source_location": "L2",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_tsconfig_extends",
@@ -19796,7 +19796,7 @@
     {
       "label": "../../tsconfig.base.json",
       "file_type": "concept",
-      "source_file": "packages/invoke/tsconfig.json",
+      "source_file": "packages/cli/tsconfig.json",
       "source_location": "L2",
       "_origin": "ast",
       "id": "packages_invoke_tsconfig_json_ref_tsconfig_base_json",
@@ -19807,7 +19807,7 @@
     {
       "label": "include",
       "file_type": "code",
-      "source_file": "packages/invoke/tsconfig.json",
+      "source_file": "packages/cli/tsconfig.json",
       "source_location": "L3",
       "_origin": "ast",
       "id": "users_lex_workspaces_agent_factory_packages_invoke_tsconfig_include",
@@ -19818,7 +19818,7 @@
     {
       "label": "src",
       "file_type": "concept",
-      "source_file": "packages/invoke/tsconfig.json",
+      "source_file": "packages/cli/tsconfig.json",
       "source_location": "L3",
       "_origin": "ast",
       "id": "packages_invoke_tsconfig_json_ref_src",
@@ -19829,7 +19829,7 @@
     {
       "label": "tsup.config.ts",
       "file_type": "concept",
-      "source_file": "packages/invoke/tsconfig.json",
+      "source_file": "packages/cli/tsconfig.json",
       "source_location": "L3",
       "_origin": "ast",
       "id": "ref_tsup_config_ts",
@@ -19840,7 +19840,7 @@
     {
       "label": "invoke/tsup.config.ts",
       "file_type": "code",
-      "source_file": "packages/invoke/tsup.config.ts",
+      "source_file": "packages/cli/tsup.config.ts",
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_invoke_tsup_config",
@@ -29815,7 +29815,7 @@
       "norm_label": "dependson"
     },
     {
-      "label": "@cratylus/invoke#build",
+      "label": "cratylus#build",
       "file_type": "concept",
       "source_file": "turbo.json",
       "source_location": "L95",
@@ -29823,7 +29823,7 @@
       "id": "ref_cratylus_invoke_build",
       "community": 99,
       "community_name": "canon/reader: reader-register.ts",
-      "norm_label": "@cratylus/invoke#build"
+      "norm_label": "cratylus#build"
     },
     {
       "label": "cache",
@@ -31071,7 +31071,7 @@
     {
       "label": "invoke/README.md",
       "file_type": "document",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_invoke_readme",
@@ -31080,20 +31080,20 @@
       "norm_label": "invoke/readme.md"
     },
     {
-      "label": "@cratylus/invoke",
+      "label": "cratylus",
       "file_type": "document",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L1",
       "_origin": "ast",
       "id": "packages_invoke_readme_cratylus_invoke",
       "community": 152,
       "community_name": "canon/skills: introspect.ts",
-      "norm_label": "@cratylus/invoke"
+      "norm_label": "cratylus"
     },
     {
       "label": "Install",
       "file_type": "document",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L14",
       "_origin": "ast",
       "id": "packages_invoke_readme_install",
@@ -31104,7 +31104,7 @@
     {
       "label": "From a checkout \u2014 `cratylus-run install`",
       "file_type": "document",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L20",
       "_origin": "ast",
       "id": "packages_invoke_readme_from_a_checkout_cratylus_run_install",
@@ -31115,7 +31115,7 @@
     {
       "label": "Use",
       "file_type": "document",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L77",
       "_origin": "ast",
       "id": "packages_invoke_readme_use",
@@ -31126,7 +31126,7 @@
     {
       "label": "Why this package exists",
       "file_type": "document",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L107",
       "_origin": "ast",
       "id": "packages_invoke_readme_why_this_package_exists",
@@ -31137,7 +31137,7 @@
     {
       "label": "Choosing different providers",
       "file_type": "document",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L119",
       "_origin": "ast",
       "id": "packages_invoke_readme_choosing_different_providers",
@@ -72757,7 +72757,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L39",
       "weight": 1.0,
       "_origin": "ast",
@@ -72768,7 +72768,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
@@ -72779,7 +72779,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L45",
       "weight": 1.0,
       "_origin": "ast",
@@ -72790,7 +72790,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L19",
       "weight": 1.0,
       "_origin": "ast",
@@ -72801,7 +72801,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L5",
       "weight": 1.0,
       "_origin": "ast",
@@ -72812,7 +72812,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L23",
       "weight": 1.0,
       "_origin": "ast",
@@ -72823,7 +72823,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L11",
       "weight": 1.0,
       "_origin": "ast",
@@ -72834,7 +72834,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L48",
       "weight": 1.0,
       "_origin": "ast",
@@ -72845,7 +72845,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "weight": 1.0,
       "_origin": "ast",
@@ -72856,7 +72856,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L6",
       "weight": 1.0,
       "_origin": "ast",
@@ -72867,7 +72867,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L2",
       "weight": 1.0,
       "_origin": "ast",
@@ -72878,7 +72878,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L28",
       "weight": 1.0,
       "_origin": "ast",
@@ -72889,7 +72889,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L40",
       "weight": 1.0,
       "_origin": "ast",
@@ -72900,7 +72900,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L12",
       "weight": 1.0,
       "_origin": "ast",
@@ -72911,7 +72911,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L7",
       "weight": 1.0,
       "_origin": "ast",
@@ -72922,7 +72922,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
@@ -72933,7 +72933,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L9",
       "weight": 1.0,
       "_origin": "ast",
@@ -72944,7 +72944,7 @@
     {
       "relation": "extends",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L11",
       "weight": 1.0,
       "context": "import",
@@ -72956,7 +72956,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L13",
       "weight": 1.0,
       "_origin": "ast",
@@ -72967,7 +72967,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L15",
       "weight": 1.0,
       "_origin": "ast",
@@ -72978,7 +72978,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L16",
       "weight": 1.0,
       "_origin": "ast",
@@ -72989,7 +72989,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L17",
       "weight": 1.0,
       "_origin": "ast",
@@ -73000,7 +73000,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast",
@@ -73011,7 +73011,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",
@@ -73022,7 +73022,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L21",
       "weight": 1.0,
       "_origin": "ast",
@@ -73033,7 +73033,7 @@
     {
       "relation": "imports",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L20",
       "weight": 1.0,
       "context": "import",
@@ -73045,7 +73045,7 @@
     {
       "relation": "imports",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L21",
       "weight": 1.0,
       "context": "import",
@@ -73057,7 +73057,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L25",
       "weight": 1.0,
       "_origin": "ast",
@@ -73068,7 +73068,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L24",
       "weight": 1.0,
       "_origin": "ast",
@@ -73079,7 +73079,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L26",
       "weight": 1.0,
       "_origin": "ast",
@@ -73090,7 +73090,7 @@
     {
       "relation": "imports",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L24",
       "weight": 1.0,
       "context": "import",
@@ -73102,7 +73102,7 @@
     {
       "relation": "imports",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L25",
       "weight": 1.0,
       "context": "import",
@@ -73114,7 +73114,7 @@
     {
       "relation": "imports",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L26",
       "weight": 1.0,
       "context": "import",
@@ -73126,7 +73126,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L29",
       "weight": 1.0,
       "_origin": "ast",
@@ -73137,7 +73137,7 @@
     {
       "relation": "extends",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "weight": 1.0,
       "context": "import",
@@ -73149,7 +73149,7 @@
     {
       "relation": "extends",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "weight": 1.0,
       "context": "import",
@@ -73161,7 +73161,7 @@
     {
       "relation": "extends",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "weight": 1.0,
       "context": "import",
@@ -73173,7 +73173,7 @@
     {
       "relation": "extends",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "weight": 1.0,
       "context": "import",
@@ -73185,7 +73185,7 @@
     {
       "relation": "extends",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "weight": 1.0,
       "context": "import",
@@ -73197,7 +73197,7 @@
     {
       "relation": "extends",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L31",
       "weight": 1.0,
       "context": "import",
@@ -73209,7 +73209,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L43",
       "weight": 1.0,
       "_origin": "ast",
@@ -73220,7 +73220,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L41",
       "weight": 1.0,
       "_origin": "ast",
@@ -73231,7 +73231,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L42",
       "weight": 1.0,
       "_origin": "ast",
@@ -73242,7 +73242,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/package.json",
+      "source_file": "packages/cli/package.json",
       "source_location": "L46",
       "weight": 1.0,
       "_origin": "ast",
@@ -73253,7 +73253,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/bin.ts",
+      "source_file": "packages/cli/src/bin.ts",
       "source_location": "L56",
       "weight": 1.0,
       "_origin": "ast",
@@ -73264,7 +73264,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/bin.ts",
+      "source_file": "packages/cli/src/bin.ts",
       "source_location": "L47",
       "weight": 1.0,
       "_origin": "ast",
@@ -73275,7 +73275,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/bin.ts",
+      "source_file": "packages/cli/src/bin.ts",
       "source_location": "L49",
       "weight": 1.0,
       "_origin": "ast",
@@ -73287,7 +73287,7 @@
       "relation": "imports_from",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/bin.ts",
+      "source_file": "packages/cli/src/bin.ts",
       "source_location": "L39",
       "weight": 1.0,
       "_origin": "ast",
@@ -73299,7 +73299,7 @@
       "relation": "imports",
       "context": "import",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/bin.ts",
+      "source_file": "packages/cli/src/bin.ts",
       "source_location": "L39",
       "weight": 1.0,
       "_origin": "ast",
@@ -73310,7 +73310,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L126",
       "weight": 1.0,
       "_origin": "ast",
@@ -73321,7 +73321,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L144",
       "weight": 1.0,
       "_origin": "ast",
@@ -73332,7 +73332,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L194",
       "weight": 1.0,
       "_origin": "ast",
@@ -73343,7 +73343,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L177",
       "weight": 1.0,
       "_origin": "ast",
@@ -73354,7 +73354,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L165",
       "weight": 1.0,
       "_origin": "ast",
@@ -73365,7 +73365,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L364",
       "weight": 1.0,
       "_origin": "ast",
@@ -73376,7 +73376,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L354",
       "weight": 1.0,
       "_origin": "ast",
@@ -73387,7 +73387,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L298",
       "weight": 1.0,
       "_origin": "ast",
@@ -73398,7 +73398,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L321",
       "weight": 1.0,
       "_origin": "ast",
@@ -73409,7 +73409,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L84",
       "weight": 1.0,
       "_origin": "ast",
@@ -73420,7 +73420,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L67",
       "weight": 1.0,
       "_origin": "ast",
@@ -73432,7 +73432,7 @@
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L96",
       "weight": 1.0,
       "_origin": "ast",
@@ -73444,7 +73444,7 @@
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L257",
       "weight": 1.0,
       "_origin": "ast",
@@ -73456,7 +73456,7 @@
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L418",
       "weight": 1.0,
       "_origin": "ast",
@@ -73468,7 +73468,7 @@
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L230",
       "weight": 1.0,
       "_origin": "ast",
@@ -73480,7 +73480,7 @@
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L260",
       "weight": 1.0,
       "_origin": "ast",
@@ -73492,7 +73492,7 @@
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L242",
       "weight": 1.0,
       "_origin": "ast",
@@ -73504,7 +73504,7 @@
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L276",
       "weight": 1.0,
       "_origin": "ast",
@@ -73516,7 +73516,7 @@
       "relation": "calls",
       "context": "call",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/src/install.ts",
+      "source_file": "packages/cli/src/install.ts",
       "source_location": "L422",
       "weight": 1.0,
       "_origin": "ast",
@@ -73527,7 +73527,7 @@
     {
       "relation": "extends",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/tsconfig.json",
+      "source_file": "packages/cli/tsconfig.json",
       "source_location": "L2",
       "weight": 1.0,
       "context": "import",
@@ -73539,7 +73539,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/tsconfig.json",
+      "source_file": "packages/cli/tsconfig.json",
       "source_location": "L2",
       "weight": 1.0,
       "_origin": "ast",
@@ -73550,7 +73550,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/tsconfig.json",
+      "source_file": "packages/cli/tsconfig.json",
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
@@ -73561,7 +73561,7 @@
     {
       "relation": "extends",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/tsconfig.json",
+      "source_file": "packages/cli/tsconfig.json",
       "source_location": "L3",
       "weight": 1.0,
       "context": "import",
@@ -73573,7 +73573,7 @@
     {
       "relation": "extends",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/tsconfig.json",
+      "source_file": "packages/cli/tsconfig.json",
       "source_location": "L3",
       "weight": 1.0,
       "context": "import",
@@ -95411,7 +95411,7 @@
     {
       "relation": "references",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L3",
       "weight": 1.0,
       "_origin": "ast",
@@ -96170,7 +96170,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L1",
       "weight": 1.0,
       "_origin": "ast",
@@ -96181,7 +96181,7 @@
     {
       "relation": "references",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L8",
       "weight": 1.0,
       "_origin": "ast",
@@ -96192,7 +96192,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L119",
       "weight": 1.0,
       "_origin": "ast",
@@ -96203,7 +96203,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L14",
       "weight": 1.0,
       "_origin": "ast",
@@ -96214,7 +96214,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L77",
       "weight": 1.0,
       "_origin": "ast",
@@ -96225,7 +96225,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L107",
       "weight": 1.0,
       "_origin": "ast",
@@ -96236,7 +96236,7 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "packages/invoke/README.md",
+      "source_file": "packages/cli/README.md",
       "source_location": "L20",
       "weight": 1.0,
       "_origin": "ast",

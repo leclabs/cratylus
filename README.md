@@ -57,18 +57,19 @@ behavior, which would be a lie. Only one of those two uncertainties is reducible
 | [`@cratylus/forge`](./packages/forge)     | **projection** — the deterministic map onto one harness          |
 | [`@cratylus/schema`](./packages/schema)   | the shapes a corpus authors against                              |
 | [`@cratylus/memory`](./packages/memory)   | a runtime capability: an episodic store + consolidation verbs    |
-| [`@cratylus/invoke`](./packages/invoke)   | the run-time entry — ships the `cratylus-run` command            |
+| [`cratylus`](./packages/cli)              | **the CLI** — composes the three above and ships both commands   |
 
-Two commands, because there are two DAGs: **`cratylus`** at build time, **`cratylus-run`** at run
-time. [`ARCHITECTURE.md`](./ARCHITECTURE.md) explains why merging them would undo the seam.
+**One package, two commands.** `cratylus` at build time and `cratylus-run` at run time serve two
+different DAGs and stay two commands for that reason — but they ship from a single install, so a
+consumer types `npm i -g cratylus` once. `cratylus` is also the composition root: `forge` projects
+and depends on no corpus, `canon` is a corpus and knows no projector, and this package is the only
+one permitted to hold both.
 
 ## Status
 
-**Pre-release, and now partly published.** Five packages are on npm at `0.1.1` — `forge`,
-`invoke`, `memory`, `runtime`, `schema` (`npm view @cratylus/<pkg> version`, 2026-08-06).
-`@cratylus/canon` is **not** published: it is `ignore`d in `.changeset/config.json` and still reads
-`0.0.0`, which means the corpus a consumer would extend is not yet installable — the
-consumer-facing gap this status line exists to disclose. The architecture's
+**Pre-release.** The scoped libraries are on npm at `0.1.1`; `@cratylus/canon` and the unscoped
+`cratylus` CLI are not published yet, which is the gap that currently makes the documented consumer
+path untypable. The architecture's
 load-bearing properties are enforced by a gate that reads the real import graph, and the projected
 corpus is pinned by a render oracle (`pnpm oracle`) rather than by prose. Where the source diverges
 from the intended architecture, [`ARCHITECTURE.md`](./ARCHITECTURE.md) says so in a ratchet table

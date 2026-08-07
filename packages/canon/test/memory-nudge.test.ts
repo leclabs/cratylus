@@ -38,7 +38,7 @@ const worker = join(
 const runtimeBin = join(
   requireRepoRoot(here),
   'packages',
-  'invoke',
+  'cli',
   'dist',
   'bin.js',
 );

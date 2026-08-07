@@ -1,9 +1,0 @@
-{
-  "schema": 1,
-  "memory": {
-    "scopeMarkers": ["*.workspace"]
-  },
-  "host": {
-    "some-host": { "homedir": "/home/you" }
-  }
-}

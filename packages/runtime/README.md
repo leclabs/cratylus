@@ -68,7 +68,7 @@ specifiers against `resolveFrom`'s `node_modules`. An absent or malformed config
 caller's bundled default set still loads, so configuring is opt-in.
 
 `runMain` exports but does not invoke. The invoking bin lives in
-[`@cratylus/invoke`](../invoke/README.md), which declares its capability packages as real
+[`cratylus`](../invoke/README.md), which declares its capability packages as real
 dependencies and passes them in.
 
 ## The bin name
@@ -79,5 +79,5 @@ can see it. A rename that missed one produced a script that failed on a host rat
 
 Flipping this one symbol really is the whole rename: `RUNTIME_CONFIG_NAME` (`.cratylus-run.json`) and
 the event-tap's `EVENT_TAP_ID` are template-derived from it and move without being edited. The one
-irreducible second copy is [`@cratylus/invoke`](../invoke/README.md)'s `bin` key, which npm reads with
+irreducible second copy is [`cratylus`](../invoke/README.md)'s `bin` key, which npm reads with
 no compiler in the loop; their agreement is held by a test.

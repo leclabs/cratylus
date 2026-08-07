@@ -1,13 +1,14 @@
 {
-  "name": "@cratylus/invoke",
+  "name": "cratylus",
   "version": "0.1.1",
-  "description": "The run-time entry: composes the runtime with its declared capability plugins and ships them as an installable command.",
+  "description": "The cratylus command line: project a corpus of agent semantics onto any harness, and the runtime the projected artifacts call back into.",
   "license": "MIT",
   "engines": {
     "node": ">=22"
   },
   "type": "module",
   "bin": {
+    "cratylus": "./dist/cratylus.js",
     "cratylus-run": "./dist/bin.js"
   },
   "files": ["dist"],
@@ -19,6 +20,8 @@
     "prepack": "pnpm run build"
   },
   "dependencies": {
+    "@cratylus/canon": "workspace:*",
+    "@cratylus/forge": "workspace:*",
     "@cratylus/memory": "workspace:*",
     "@cratylus/runtime": "workspace:*"
   },
@@ -42,10 +45,18 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/leclabs/cratylus.git",
-    "directory": "packages/invoke"
+    "directory": "packages/cli"
   },
   "bugs": {
     "url": "https://github.com/leclabs/cratylus/issues"
   },
-  "homepage": "https://github.com/leclabs/cratylus#readme"
+  "homepage": "https://github.com/leclabs/cratylus#readme",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts"
 }

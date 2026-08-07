@@ -78,12 +78,16 @@ codex_out="$repo_root/.cratylus/codex"
 # resolved `main.js` left it pointing at a chunk that no longer existed. The
 # failure was intermittent, which is the worst kind: it passed, then failed, on
 # identical input.
+# THE COMMAND SHIPS FROM THE HUB. `forge` is a library and declares no bin, so this
+# read the manifest npm reads and got `undefined`. Select the BUILD command BY NAME —
+# the hub declares two, and `Object.values(...)[0]` would be a coin flip between
+# `cratylus` and `cratylus-run`.
 cli() {
-  node -e 'const p=require("./packages/forge/package.json");process.stdout.write(Object.values(p.bin)[0])'
+  node -e 'const p=require("./packages/cli/package.json");process.stdout.write(p.bin[p.name])'
 }
 
 compute() {
-  entry="packages/forge/$(cli)"
+  entry="packages/cli/$(cli)"
   node "$entry" project --harness claude --out "$claude_out" >/dev/null 2>&1
   node "$entry" project --harness codex  --out "$codex_out"  >/dev/null 2>&1
   # PROJECTED BYTES ONLY. `-type f` picks up dotfiles, and the render root also

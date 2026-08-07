@@ -64,7 +64,7 @@ function strandedHost(): { bin: string; env: NodeJS.ProcessEnv } {
 function liveHost(): { bin: string; env: NodeJS.ProcessEnv } {
   const root = tmp('host-live-');
   const bindir = join(root, 'bin');
-  const entrydir = join(root, 'checkout', 'packages', 'invoke', 'dist');
+  const entrydir = join(root, 'checkout', 'packages', 'cli', 'dist');
   mkdirSync(bindir, { recursive: true });
   mkdirSync(entrydir, { recursive: true });
   const entry = join(entrydir, 'bin.js');
@@ -213,7 +213,7 @@ describe('assertShimsResolvable', () => {
     // the lesson, at the point of failure
     expect(msg).toMatch(/Presence on PATH is not resolvability/);
     // the repair, as a command
-    expect(msg).toMatch(/packages\/invoke\/dist\/bin\.js install/);
+    expect(msg).toMatch(/packages\/cli\/dist\/bin\.js install/);
     // the evidence quoted is the ERROR SENTENCE, which names the strand itself
     expect(msg).toMatch(/Cannot find module/);
     expect(msg).toMatch(/renamed-away/);

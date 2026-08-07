@@ -12,7 +12,7 @@
 // site interpolates it. An earlier pass recorded this consolidation as DONE while
 // the literal still stood in seven places; this module is what makes the claim true.
 //
-// THE ONE IRREDUCIBLE SECOND COPY is `@cratylus/invoke`'s `bin` key: npm reads
+// THE ONE IRREDUCIBLE SECOND COPY is `cratylus`'s `bin` key: npm reads
 // that manifest with no TypeScript in the loop, so it cannot be computed. Their
 // agreement is a TEST obligation, not a compiler one —
 // `canon/test/bin-name-single-home.test.ts` holds it, so a rename cannot

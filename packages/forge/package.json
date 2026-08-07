@@ -1,15 +1,12 @@
 {
   "name": "@cratylus/forge",
   "version": "0.1.1",
-  "description": "The deterministic projection from canonical meaning onto one harness’s surfaces — resolve, project, validate and deploy a corpus. Owns the mapping and nothing else.",
+  "description": "The deterministic projection from canonical meaning onto one harness\u2019s surfaces \u2014 resolve, project, validate and deploy a corpus. Owns the mapping and nothing else.",
   "license": "MIT",
   "engines": {
     "node": ">=22"
   },
   "type": "module",
-  "bin": {
-    "cratylus": "./dist/cli/index.js"
-  },
   "exports": {
     "./package.json": "./package.json",
     "./module-scan": {
@@ -43,6 +40,10 @@
     "./project": {
       "types": "./dist/project/index.d.ts",
       "import": "./dist/project/index.js"
+    },
+    "./cli": {
+      "types": "./dist/cli/index.d.ts",
+      "import": "./dist/cli/index.js"
     }
   },
   "files": ["dist"],

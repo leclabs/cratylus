@@ -128,10 +128,10 @@ its package sits alongside them.
 
 A consumer meets this system at two different times, and they are not the same entry:
 
-| when           | what it answers                                       | shipped by         | bin            | typed by    |
-| -------------- | ----------------------------------------------------- | ------------------ | -------------- | ----------- |
-| **build time** | author, resolve, project and deploy a corpus          | `@cratylus/forge`  | `cratylus`     | **a human** |
-| **run time**   | the capabilities an agent invokes while it is running | `@cratylus/invoke` | `cratylus-run` | **a shim**  |
+| when           | what it answers                                       | shipped by        | bin            | typed by    |
+| -------------- | ----------------------------------------------------- | ----------------- | -------------- | ----------- |
+| **build time** | author, resolve, project and deploy a corpus          | `@cratylus/forge` | `cratylus`     | **a human** |
+| **run time**   | the capabilities an agent invokes while it is running | `cratylus`        | `cratylus-run` | **a shim**  |
 
 This is not two ways of doing one thing. It is the **same decomplection the plugin contract already
 makes one level down**: a capability package exposes `buildPlugin` (its `AgentPlugin` face) and

@@ -376,7 +376,7 @@ function bearsRepoMarker(dir: string): boolean {
  * array or object keys), plus the basename of its directory **when that
  * directory independently proves itself a repo** ({@link bearsRepoMarker}).
  * Malformed JSON throws loudly — once present the config is authoritative. The
- * schema is documented by example in `.cratylus.memory.json.example` at the
+ * schema is declared by the reader below and nowhere else — the by-example file it
  * repo root, and derived in `node.ts` beside the `CONFIG_FILE` literal.
  *
  * ── PRESENCE IS NO LONGER THE ASSERTION (2026-08-05) ─────────────────────────

@@ -109,7 +109,7 @@ export async function runProject(opts: ProjectCmdOpts = {}): Promise<number> {
       // printer knows a consumer is following it. `command-veracity` cannot see this
       // class: its extractor reads `pnpm|npm|yarn` invocations against package.json
       // script keys, and an `forge <verb> <flags>` line never enters that stream.
-      `${pc.gray(`ship it with: ${FORGE_BIN} deploy --agents-dir ${join(out, 'agents')} --skills-dir ${join(out, 'skills')} --hooks-dir ${out}`)}\n`,
+      `${pc.gray(`ship it with: ${FORGE_BIN} deploy`)}\n`,
   );
   return 0;
 }

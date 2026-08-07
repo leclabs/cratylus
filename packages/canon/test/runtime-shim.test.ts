@@ -79,14 +79,19 @@ let codexShim = '';
  * still driving the shipped command rather than a private code path.
  */
 function buildCli(): string {
-  const pkgPath = join(canonRoot, '..', 'forge', 'package.json');
-  const bin = (
-    JSON.parse(readFileSync(pkgPath, 'utf8')) as {
-      bin: Record<string, string>;
-    }
-  ).bin;
-  const entry = Object.values(bin)[0] as string;
-  return join(canonRoot, '..', 'forge', entry);
+  // THE COMMAND SHIPS FROM THE HUB, not from `forge`. Forge is a library and
+  // declares no bin at all now, so reading its manifest for one yields `undefined`
+  // — which is how this gate found the move rather than silently driving a private
+  // code path. Same derivation, same single home, different manifest.
+  const pkgPath = join(canonRoot, '..', 'cli', 'package.json');
+  const manifest = JSON.parse(readFileSync(pkgPath, 'utf8')) as {
+    name: string;
+    bin: Record<string, string>;
+  };
+  // Select the BUILD command by name — the hub ships two, and taking index 0 would
+  // be a coin flip between `cratylus` and `cratylus-run`.
+  const entry = manifest.bin[manifest.name] as string;
+  return join(canonRoot, '..', 'cli', entry);
 }
 
 beforeAll(async () => {

@@ -65,7 +65,7 @@ describe('a version has one home — the manifest', () => {
   it('the BUILT bin reports the manifest version — the claim, checked against the artifact', () => {
     // The end-to-end leg, and the only one that would have caught the shipped defect: it
     // runs the emitted bin exactly as a consumer's shell does.
-    const bin = join(repoRoot, 'packages', 'invoke', 'dist', 'bin.js');
+    const bin = join(repoRoot, 'packages', 'cli', 'dist', 'bin.js');
     const reported = execFileSync('node', [bin, '--version'], {
       encoding: 'utf8',
     }).trim();

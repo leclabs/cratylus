@@ -348,7 +348,9 @@ export function loadNodeConfig(configPath?: string): NodeConfig {
 // `$<BIN>_CONFIG` was the sole outlier — a file-register mark wearing an
 // env-register hat.
 
-/** The config file's basename. Schema by example: `.cratylus.memory.json.example` at the repo root. */
+/** The config file's basename. Its shape is whatever the readers below accept — a
+ *  bespoke surface slated for replacement by a mature memory backend, so it gains no
+ *  schema of its own in the meantime. */
 export const CONFIG_FILE = '.cratylus.memory.json';
 
 /** The env var naming an explicit config path. Same sign as {@link CONFIG_FILE}. */

@@ -12,7 +12,7 @@
 // COMPARE — read back the name the artifact actually carries and compare it to the
 // constant — so editing one without the other is red, in either direction:
 //
-//   (1) `@cratylus/invoke`'s `bin` MANIFEST KEY — the one irreducible second copy
+//   (1) `cratylus`'s `bin` MANIFEST KEY — the one irreducible second copy
 //       (npm reads it with no TypeScript in the loop, so it cannot be computed).
 //   (2) the runtime's cac BRANDING (`main.ts`) — read out of `--help`.
 //   (3) the PROJECTED THIN SHIM's `spawnSync` target — the operative site, read out
@@ -41,7 +41,7 @@
 //
 // THIS REPOSITORY SHIPS TWO BINS, AND THEY HAVE DIFFERENT SHAPES OF HOME.
 //
-// `RUNTIME_BIN` is a DECLARED constant plus a gate: `@cratylus/invoke`'s `bin` key is
+// `RUNTIME_BIN` is a DECLARED constant plus a gate: `cratylus`'s `bin` key is
 // a second authored spelling, npm reads it with no TypeScript in the loop, and their
 // agreement is the test obligation leg (1) discharges.
 //
@@ -97,14 +97,14 @@ const CAPABILITY = 'memory';
  */
 const CONSUMERS = [
   'packages/runtime/src/main.ts',
-  'packages/invoke/src/bin.ts',
+  'packages/cli/src/bin.ts',
   'packages/forge/src/project/runtime-shim.ts',
   // A TYPESCRIPT FILE THAT EMITS SHELL — the language boundary one level up. The glob
   // leg below scans `.sh`/`.mjs` SOURCES; this one is `.ts` that WRITES a `#!/bin/sh`
   // shim onto the host, so a literal here would strand a host exactly as the emitted
   // artifacts would, and neither leg could see it. Added 2026-08-05 when the shard that
   // authored it flagged its own blind spot.
-  'packages/invoke/src/install.ts',
+  'packages/cli/src/install.ts',
 ] as const;
 
 const read = (rel: string): string =>
@@ -113,15 +113,20 @@ const read = (rel: string): string =>
 /** The committed hook worker — regenerated from the cell, never hand-edited. */
 const workerPath = memoryConsolidationNudge.workers?.[0]?.targetPath ?? '';
 
-/** The forge CLI's ONE home: the `bin` key npm reads, with no compiler in the loop.
- *  A shell worker cannot import it, so a worker that spells it is held against this. */
-const FORGE_BIN = Object.keys(
-  (
-    JSON.parse(read('packages/forge/package.json')) as {
-      bin: Record<string, string>;
-    }
-  ).bin,
-)[0] as string;
+/** The build CLI's ONE home: the `bin` key npm reads, with no compiler in the loop.
+ *  A shell worker cannot import it, so a worker that spells it is held against this.
+ *
+ *  THE HOME MOVED WITH THE BIN. It was `packages/forge/package.json` until the hub
+ *  package took the command: `forge` is a library now and declares no bin, because
+ *  two manifests declaring one name is an install conflict rather than a second
+ *  home. The derivation is unchanged — read the manifest npm reads — and only the
+ *  manifest it reads is different. */
+const HUB_MANIFEST = JSON.parse(read('packages/cli/package.json')) as {
+  name: string;
+  bin: Record<string, string>;
+};
+/** The build command is the bare mark, as `vite` and `eslint` are theirs. */
+const FORGE_BIN = HUB_MANIFEST.name;
 
 /** The deploy tool a hook worker declares, if any (`DEPLOY_TOOL=<name>`). */
 const deployTool = (sh: string): string | undefined =>
@@ -223,10 +228,20 @@ describe('the bin name has exactly one home', () => {
     // The one copy no compiler can reach. If a rename flips the constant and not
     // this key, the installed executable and everything that spawns it disagree —
     // and nothing but this assertion notices.
-    const manifest = JSON.parse(read('packages/invoke/package.json')) as {
+    const manifest = JSON.parse(read('packages/cli/package.json')) as {
       bin: Record<string, string>;
     };
-    expect(Object.keys(manifest.bin)).toEqual([RUNTIME_BIN]);
+    // TWO BINS, ONE PACKAGE — and the set is asserted EXACTLY, not by membership.
+    // The hub ships both commands: `cratylus` at build time, `cratylus-run` at run
+    // time. They stay separate COMMANDS because they serve separate DAGs; shipping
+    // them from one package is what makes that a seam rather than a second install.
+    //
+    // Exact equality is the point. `toContain` would let a third bin appear
+    // unnoticed, and the whole subject here is that every executable name npm puts
+    // on a PATH is accounted for.
+    expect(Object.keys(manifest.bin).sort()).toEqual(
+      [FORGE_BIN, RUNTIME_BIN].sort(),
+    );
   });
 
   it("the runtime's cac branding is RUNTIME_BIN", async () => {
@@ -547,11 +562,12 @@ describe('the single-home gate is non-vacuous', () => {
   });
 
   it('FAILS on a manifest whose `bin` key drifted from the constant', () => {
-    const good = read('packages/invoke/package.json');
+    const good = read('packages/cli/package.json');
     const drifted = good.replace(`"${RUNTIME_BIN}":`, `"${STALE}":`);
     expect(drifted).not.toBe(good);
-    expect(manifestBins(good)).toEqual([RUNTIME_BIN]);
-    expect(manifestBins(drifted)).not.toEqual([RUNTIME_BIN]);
+    const expected = [FORGE_BIN, RUNTIME_BIN].sort();
+    expect(manifestBins(good).sort()).toEqual(expected);
+    expect(manifestBins(drifted).sort()).not.toEqual(expected);
   });
 
   it('FLAGS a consumer that spells the bin name instead of importing it', () => {

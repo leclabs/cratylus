@@ -311,7 +311,7 @@ export function runtimeBinRefusal(
     '  These shims are deployed and INERT: each would die inside node, in a skill,',
     '  on this host — not here. Author the host binding, then deploy again:',
     '',
-    '    node <checkout>/packages/invoke/dist/bin.js install',
+    '    node <checkout>/packages/cli/dist/bin.js install',
     '',
   );
   return lines.join('\n');

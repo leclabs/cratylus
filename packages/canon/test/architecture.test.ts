@@ -54,7 +54,7 @@ type Pkg =
   | 'forge'
   | 'runtime'
   | 'memory'
-  | 'invoke'
+  | 'cli'
   | 'schema'
   | 'tooling';
 
@@ -71,15 +71,22 @@ const PERMITTED: ReadonlyArray<readonly [Pkg, Pkg]> = [
   ['forge', 'schema'],
   ['forge', 'runtime'],
   ['memory', 'runtime'],
-  // `['invoke','forge']` was here and is DELETED. The north star stopped drawing that
-  // edge at `3710c4bf` and the source never had it — `invoke` declares no forge
-  // dependency; it wires runtime + memory and ships the RUN-TIME bin. A dead RATCHET
-  // pin fails loudly (there is a shrink-only staleness leg below). A dead PERMITTED
-  // entry is silent and WIDENS: it licensed an import nobody had, so `invoke`
-  // could acquire one at any time and this gate would stay green. Widening changes
-  // WHICH subjects are bound, which is a different constraint wearing this one's name.
-  ['invoke', 'runtime'],
-  ['invoke', 'memory'],
+  ['cli', 'runtime'],
+  ['cli', 'memory'],
+  // `['cli','forge']` WAS DELETED AND IS BACK, on exactly the condition its deletion
+  // set. It was retired at `3710c4bf` because it licensed an import nobody had, and a
+  // dead PERMITTED entry is silent and WIDENS — unlike a dead ratchet pin, which the
+  // shrink-only leg below fails loudly.
+  //
+  // The witness now exists and is load-bearing. This package became the COMPOSITION
+  // ROOT: `forge` projects and depends on no corpus, `canon` is a corpus and knows no
+  // projector, and something must hold both for a consumer to type one command. It
+  // ships the `cratylus` bin for that reason.
+  //
+  // So property 2 is AMENDED, not breached — nothing depends on projection except the
+  // consumer entry point whose whole job is to compose it. Every other importer is
+  // still refused, and a CELL reaching the projector is still the defect it was.
+  ['cli', 'forge'],
 ];
 
 /**
@@ -156,7 +163,7 @@ const PACKAGES = [
   'forge',
   'runtime',
   'memory',
-  'invoke',
+  'cli',
   'schema',
 ] as const;
 
@@ -491,8 +498,9 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
 
   it('property 2 — nothing depends on projection, and no CELL reaches it', () => {
     const bad = edges()
-      // No `&& e.from !== 'invoke'` exemption: it paired with the deleted
-      // `['invoke','forge']` licence and exempted a package that has no such import.
+      // The hub's edge is licensed in PERMITTED with a LIVE witness, so it needs no
+      // exemption here — `permitted()` below already carries it, and routing it
+      // through one home keeps a second licence from drifting out of step.
       .filter((e) => e.to === 'forge')
       .filter((e) => !permitted(e) && !ARCHITECTURE_RATCHET.has(key(e)))
       .map(
@@ -593,9 +601,11 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
         .map((f) => codeOnly(readFileSync(join(repoRoot, f), 'utf8')))
         .join('\n');
 
-      declared += phantomScan(manifest, shipped).examined;
+      declared += phantomScan(manifest, shipped, pkg).examined;
       offenders.push(
-        ...phantomScan(manifest, shipped).phantoms.map((s) => `${pkg} → ${s}`),
+        ...phantomScan(manifest, shipped, pkg).phantoms.map(
+          (s) => `${pkg} → ${s}`,
+        ),
       );
     }
 
@@ -646,11 +656,23 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
 function phantomScan(
   manifest: { dependencies?: Record<string, string> },
   shippedSource: string,
+  owner?: string,
 ): { phantoms: string[]; examined: number } {
   const phantoms: string[] = [];
   let examined = 0;
   for (const spec of Object.keys(manifest.dependencies ?? {})) {
     if (pkgOf(spec) === null) continue; // external — not ours to police
+    // A RESOLVABILITY DEPENDENCY IS NOT A PHANTOM. The hub declares the default
+    // corpus so a CONSUMER'S CONFIG can resolve `@cratylus/canon` by ordinary Node
+    // rules — including a global install, where a config outside every
+    // `node_modules` cannot resolve it at all (`ERR_MODULE_NOT_FOUND`, measured).
+    // The hub never imports it: depending on a corpus is not assuming one, and the
+    // config still NAMES it, which is what keeps meaning out of projection.
+    //
+    // Narrow on purpose — one package, one spec. Widening this to "any dependency a
+    // package chooses not to import" would retire the leg while leaving it green,
+    // which is the failure this gate was written against.
+    if (owner === 'cli' && spec === '@cratylus/canon') continue;
     examined += 1;
     if (!shippedSource.includes(spec)) phantoms.push(spec);
   }

@@ -78,7 +78,16 @@ const SELF_MANIFEST = '@cratylus/forge/package.json';
  * that needs it names the projection fact `deploy-bin`, and the projector
  * substitutes this value.
  */
-export const FORGE_BIN: string = binNameOf(
-  createRequire(import.meta.url)(SELF_MANIFEST),
-  SELF_MANIFEST,
-);
+export const FORGE_BIN: string =
+  process.env.CRATYLUS_BUILD_BIN ??
+  binNameOf(createRequire(import.meta.url)(SELF_MANIFEST), SELF_MANIFEST);
+
+// THE BIN MOVED OUT OF THIS PACKAGE, and the derivation had to follow it. `forge` is
+// a LIBRARY now — the `cratylus` command ships from the hub package, because two
+// manifests declaring one bin name is an install conflict, not a second home.
+//
+// So forge can no longer read its own name off its own manifest: it has none. The
+// hub, which does, hands it down. That is a PARAMETER, not a second spelling — the
+// value still originates in exactly one `bin` key that npm reads, and this module
+// still refuses to invent one. The self-manifest branch survives for any consumer
+// mounting this CLI from a package that does declare a bin of its own.
