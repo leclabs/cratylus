@@ -27,7 +27,21 @@ import { createRequire } from 'node:module';
 
 const manifest = createRequire(import.meta.url)('../package.json') as {
   name: string;
+  dependencies?: Record<string, string>;
 };
 process.env.CRATYLUS_BUILD_BIN ??= manifest.name;
+
+// THE DEFAULT CORPUS IS NAMED HERE AND NOWHERE ELSE. `cratylus install` needs a
+// corpus to install and `forge` may not know one — so the hub, which declares
+// `@cratylus/canon` as a dependency precisely so it RESOLVES wherever this CLI is
+// installed, hands the specifier down. Read off the manifest rather than spelled,
+// so the dependency and the default cannot drift apart.
+const CORPUS = '@cratylus/canon';
+if (manifest.dependencies?.[CORPUS] === undefined) {
+  throw new Error(
+    `cratylus: ${CORPUS} is the default corpus but is not a dependency of this package — a default that does not resolve is worse than none.`,
+  );
+}
+process.env.CRATYLUS_DEFAULT_CORPUS ??= CORPUS;
 
 await import('@cratylus/forge/cli');

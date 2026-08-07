@@ -37,6 +37,10 @@ const REGISTRY: Record<HarnessName, HarnessAdapter> = {
   codex: codexHarnessAdapter,
 };
 
+/** Every registered harness name — the registry's OWN key set, so a command that
+ *  enumerates harnesses cannot fall behind the registry that defines them. */
+export const HARNESS_NAMES = Object.keys(REGISTRY) as readonly HarnessName[];
+
 /** Select a `HarnessAdapter` strictly by name; throws on an unknown harness. */
 export function adapterByName(name: string): HarnessAdapter {
   const adapter = REGISTRY[name as HarnessName];

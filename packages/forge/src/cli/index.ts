@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
 import { createRequire } from 'node:module';
+import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { cac } from 'cac';
 import { FORGE_BIN } from '../bin-name.js';
@@ -18,6 +19,7 @@ import {
 } from './commands/deploy.js';
 import { runExplain } from './commands/explain.js';
 import { runInit } from './commands/init.js';
+import { runInstall } from './commands/install.js';
 import { runOptimize } from './commands/optimize.js';
 import { runProject } from './commands/project.js';
 
@@ -123,6 +125,34 @@ cli
           out: opts.out,
           manifest: opts.manifest,
           prior: opts.prior,
+        }),
+      );
+    },
+  );
+
+cli
+  .command(
+    'install',
+    'Install the default corpus into a harness on this machine (no project needed)',
+  )
+  .option('--harness <name>', 'harness to install into (default: detected)')
+  .option(
+    '--plugin <pkg>',
+    'corpus package to install (default: the bundled one)',
+  )
+  .option('--dry-run', 'print what would change; write nothing')
+  .action(
+    async (opts: {
+      harness?: string;
+      plugin?: string;
+      dryRun?: boolean;
+    }) => {
+      process.exit(
+        await runInstall({
+          harness: opts.harness,
+          plugin: opts.plugin,
+          dryRun: opts.dryRun,
+          home: homedir(),
         }),
       );
     },
