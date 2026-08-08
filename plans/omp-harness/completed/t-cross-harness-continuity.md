@@ -114,3 +114,48 @@ every face.
    identity, no agent identity, and not on the continuity path.
 3. **No non-harness-independent place found** — so nothing was patched over, and there
    is no MODEL-level defect to report.
+
+## Addendum — what an omp session knows about ITSELF, and one thing it got wrong
+
+Asked after the fact whether an omp `mav` understands its own dimensions the way a
+Claude Code one does. Tested both ways.
+
+**Structurally: identical.** `diff` over the two projected faces' `## ` sections is
+empty — the same twenty. The only difference is the framing: claude's
+`name`/`description`/`color` front-matter against omp's identity line. The dimension
+body is `agentBody`, which is harness-neutral by construction, so this is a property of
+the design rather than a coincidence worth re-checking.
+
+**Behaviourally: yes, and it is a real self-audit.** `/introspect` on **coal**, with no
+corpus on disk, produced a dimension-by-dimension table in the skill's own formalism,
+used the `K_cfg` cause taxonomy, classified divergences and declined to reconcile them.
+The face alone supports the skill.
+
+**But that run carried two defects, and both are the corpus's, not the model's.**
+
+1. **It enumerated 18 of 20** — silently dropping `Prime Principle` (the FIRST section,
+   and `cratylism` itself) and `Learning` — then reported _"2 of 18 dimensions diverge"_.
+   A denominator it never counted, over a subject it never read. **The cell invited it**:
+   `O` was written as an illustrative membership list closing in an ellipsis, which reads
+   as the definition and licenses recall. Repaired — `O` is now
+   `enumerate(## sections @ A's live Target) ⟨READ · ¬ recalled⟩`, `|O|` is a declared
+   term carried into `report`, and `|{row}| ≠ |O| ⇒ ⊥`.
+
+2. **It reported `memory → harness-override`** — _"no persistent memory across
+   sessions… no action possible at agent level"_ — which is **false**, and falsified by
+   this very shard: the store was readable on that host and had been round-tripped
+   through it the same day. It inferred absence from not having invoked `/wake`.
+   Repaired — `rt(o) ⊨ EXERCISED ⟨¬ inferred-from-absence⟩` and
+   `¬ exercised(o) ⇒ why(o) = unobservable ∧ why(o) ≠ harness-override`.
+
+**The contrast is the evidence that this is a cell defect and not a harness one.** A
+Claude Code `/introspect` from the SAME face, earlier the same day, reported
+`memory → unobservable`, reasoning that it _"cannot assert cross-session memory is
+actually in effect without invoking the memory pathway."_ Same declaration, same
+dimension — one said "I cannot know without checking", the other said "the harness took
+it away". The cell now forbids the second.
+
+**And the operational consequence for omp.** An agent that does not `wake` on omp will
+conclude it has no memory, because nothing in the session contradicts that. `wake`
+matters MORE on this harness, not less — the record proving continuity works is itself
+in the store that `wake` opens.
