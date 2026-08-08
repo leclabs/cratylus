@@ -61,7 +61,7 @@ subagent sense, like Claude's — and there is no `--agent` flag. That gap is th
 | pending       | `t-omp-scope-activated-hooks` | the five session-scoped cells omp deploys nothing for — no stance gate, no memory nudge |
 | pending       | `t-adopt-omp-memory`          | omp's memory backend replaces the bespoke strategy                                      |
 | pending       | `t-adopt-collab`              | `/collab` replaces `provisional-mailbox`                                                |
-| pending       | `t-omp-deploy-installs-ext`   | `cratylus deploy --harness omp` installs the extension                                  |
+| **completed** | `t-omp-deploy-installs-ext`   | there is no extension — the projected FACE is the launcher, and deploy places it        |
 
 **A note on how the frontier goes empty.** Completing `t-omp-agent-extension` left `ready` and
 `active` both empty with five shards pending, and `praxis` reads that as an ill-formed cut — a
