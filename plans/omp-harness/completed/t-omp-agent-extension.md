@@ -256,3 +256,63 @@ known-good artifact to reproduce.
       vocabulary onto omp's 24 `HookAPI` events, `scopes()` answering from `$OMP_PROFILE`.
 - [ ] Register `omp` in `adapters/registry/index.ts` and widen `HarnessName`.
 - [ ] The extension — now reduced to enforcement scoping alone.
+
+## 7. Validated on a second host, from the published package — 2026-08-07
+
+`fire` proves the code; `coal` proves the ARTIFACT. Different machine, no corpus
+checked out, nothing built locally — the package as a consumer receives it.
+
+```sh
+npm i -g cratylus@latest        # 0.2.0 → 0.2.1
+bun add -g @oh-my-pi/pi-coding-agent
+cratylus install --harness omp  # zero-config path
+```
+
+**Three things this run settled that `fire` could not:**
+
+1. **The identity carries from the published artifact.** In a blank tmpdir, asked the
+   bare "what is your name?": `mav` → _"My name is mav."_, `nico` → _"nico."_,
+   `tester` → _"My name is **tester**."_ A fourth, `boz`, returned its name, its
+   archetype (**Boswell** — the chronicler), its remit, and an enumeration of its
+   deployed skills. **coal has no copy of this corpus**, so the masking confound
+   DELTA warned about is absent by construction rather than by arrangement.
+2. **`cratylus install` emits the event vocabulary.** The output ends
+   `runtime config: /Users/lex/.cratylus.json — 31 event(s), 9 with a native peer`,
+   with no warning about a missing `cratylus.config.ts`. That is `d4a01b7c` verified
+   from the published package on the host that carried the bug — the FORWARD note
+   this plan opened with, discharged.
+3. **It works on `omp/17.2.11`, not only the `17.2.9` it was read against.** coal
+   installed a patch newer than fire's. Nothing in the adapter's reading of
+   `APPEND_SYSTEM.md` discovery moved.
+
+`9 with a native peer` matches `canonicalToOmp` exactly — the map is nine entries,
+and the host config agrees with the adapter without either being told about the other.
+
+## Accept — MET
+
+1. **A documented command launches omp as a declared cratylus agent.** `omp --profile
+<name>`, with the face deployed by `cratylus deploy --harness omp` (or `install`).
+   Verified on two hosts, four agents.
+2. **`/introspect` reports the declared values and names each divergence's cause.**
+   Twenty dimensions, two divergences classified (`misnomer`, `unobservable`), in the
+   skill's own formalism.
+3. **The agent cell was not edited.** Nothing under `packages/canon/src/agents/` was
+   touched at any point.
+
+Shipped as `@cratylus/forge@0.3.0` and `cratylus@0.2.1`, both with sigstore provenance.
+
+## What this shard does NOT close
+
+**Five scope-activated cells still have no home on omp** — `stance-guardrail`,
+`stance-guardrail-pre`, `deploy-drift-notice`, `memory-consolidation-nudge`,
+`resume-availability-notice`. Projection says so out loud, once per cell:
+
+> `WARNING: scope-activated cell '<x>' has no mechanism on 'omp': this harness
+projects no session-scoped hook surface. The cell is not deployed here.`
+
+The AGENT-composed path is built and gated (`enforcingSurface` → one module per
+profile). The SESSION-scoped path is not, because those cells bind the session
+rather than an agent, and on omp that means the non-profile `~/.omp/agent/extensions/`
+— a different artifact with a different lifetime. Carried to
+`t-omp-scope-activated-hooks`, because it is a separable concern and this shard's
+accept criteria are met without it.

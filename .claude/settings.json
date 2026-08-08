@@ -23,6 +23,17 @@
           }
         ]
       }
+    ],
+    "agent_end": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cratylus carryOn terminus --plan-root 'plans/' --states 'pending,ready,active,completed' --completed 'completed' --frontier 'ready,active' --bound-marker '.bound' --ruling-owed-marker '.ruling-owed'",
+            "id": "cratylus-carry-on"
+          }
+        ]
+      }
     ]
   }
 }
