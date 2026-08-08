@@ -1,0 +1,71 @@
+# RULING OWED — `t-adopt-omp-memory` now contradicts what `t-cross-harness-continuity` proved
+
+**Raised 2026-08-07 by mav. Four shards are complete and pushed; three remain, and one
+of them argues with a result this plan has just established.**
+
+## The fork
+
+`t-adopt-omp-memory` says omp's `memory.backend` (`off|local|hindsight|mnemopi`) should
+**replace the bespoke memory strategy**. `PLAN.md` motivates it well: `hindsight` is the
+exact system W4 evaluated and rejected only because wiring it ourselves cost more than it
+returned, and `providers.memoryModel` ships the local consolidation-model binding W4 named
+as the thing to harvest. Adopting it **deletes code**.
+
+**Today `t-cross-harness-continuity` proved the thing that adoption would trade away.**
+Measured, both directions, on the real corpus memory:
+
+- a Claude Code session and an omp session read the **same home**, byte-identical
+  (`semantic 5581 · procedural 7981`);
+- a record written from omp reads back in Claude Code;
+- it holds **structurally**, because deploy seeds `<harnessDir>/../.agents/<name>` — which
+  is `~/.agents` from both `~/.claude` and `~/.omp`. The home is a **sibling of every
+  face**, never inside one.
+
+`MODEL.md` does not treat that as an implementation detail. It is the BEING/FACE clause:
+
+> the being's MEMORY-HOME is single-per-being ∧ harness-independent ∧ ∉ any face — the
+> continuity that makes the faces one being
+
+**`memory.backend` is a per-harness facility.** Memory kept in omp's backend is memory
+inside the omp FACE. A Claude Code session cannot read it, and the property just proved —
+the one this plan calls "the acceptance criterion for the whole integration" — stops
+holding the moment memory moves there.
+
+## Why I am not deciding it
+
+`PLAN.md`'s own standing-risk section anticipates the shape but not this collision:
+
+> each adoption shard owes an explicit answer to _what happens on a harness that lacks
+> this_, and the answer may not be "then it does not work".
+
+I can apply that rule. What I cannot decide alone is the **value** question underneath it:
+whether reach (a shipped consolidation model, a maintained backend, deleted code) is worth
+weakening the one property `VISION.md` says the corpus exists to hold. That is a
+constitutional trade, not an engineering one, and it is the operator's.
+
+## The options, as I read them
+
+1. **Retire `t-adopt-omp-memory`.** The bespoke strategy stays; omp gets it through the
+   harness-agnostic CLI, which is **already proven working under omp today**. Cost: W4's
+   consolidation-model work stays unharvested and stays ours to build.
+2. **Adopt at the `proxy` rung only, for the CONSOLIDATION MODEL and nothing else** —
+   take `providers.memoryModel` (which is a model binding, not a store) and leave the
+   STORE where it is. This is my read of the best answer: it harvests exactly the thing
+   W4 named while the home stays outside every face. It needs the shard re-cut, because
+   the shard as written says "replaces the bespoke memory strategy".
+3. **Adopt the backend as written**, and accept that memory becomes per-harness. This
+   contradicts MODEL's BEING/FACE clause, so it is a MODEL revision, not a plan
+   decision — and `CANON.md` says MODEL conflicts reconcile upward, never sideways.
+
+**My recommendation is (2).** It is the only one that takes the reach and keeps the
+property, and it is a smaller change than the shard currently describes.
+
+## What else is pending, unblocked either way
+
+- **`t-omp-scope-activated-hooks`** — five session-scoped cells (`stance-guardrail`,
+  `stance-guardrail-pre`, `deploy-drift-notice`, `memory-consolidation-nudge`,
+  `resume-availability-notice`) have no home on omp, so an omp session today runs with no
+  stance gate and no memory nudge. **Independent of this ruling and workable now.**
+- **`t-adopt-collab`** — `/collab` replacing `provisional-mailbox` carries a smaller
+  version of the same question (the relay is `wss://my.omp.sh`, which this corpus does not
+  run) but touches no MODEL clause. It can wait for, or follow, this ruling.
