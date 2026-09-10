@@ -123,3 +123,94 @@ describe('the two harnesses genuinely differ — else the cases above are one ca
     expect(c.hooksFile).not.toBe(x.hooksFile);
   });
 });
+
+// ── omp: the harness whose destinations are NOT the render tree's layout ─────
+//
+// The cases above pin one asymmetry (extension, home, hook filename) and share a
+// hidden assumption: that a skill lands at `skills/<name>` and a mechanism in a
+// file at the root. omp breaks both, and the breakage was live — `~/.omp/skills`
+// is a directory that harness never scans (its native provider reads
+// `<agent-dir>/skills`, profile-scoped), so a byte-perfect render deployed 16
+// unloadable skills and reported success.
+describe('deploy --harness omp places what omp actually reads', () => {
+  const omp = adapterByName('omp');
+
+  /** An omp-shaped render tree: one agent, one skill, and one staged mechanism
+   *  module per scope (session + the agent), exactly as `project` writes them. */
+  function ompTree() {
+    const root = mkdtempSync(join(tmpdir(), 'forge-omp-'));
+    roots.push(root);
+    const src = join(root, 'render');
+    mkdirSync(join(src, 'agents'), { recursive: true });
+    mkdirSync(join(src, 'skills', 'probe'), { recursive: true });
+    mkdirSync(join(src, 'hooks', 'ping'), { recursive: true });
+    mkdirSync(join(src, 'enforcing', '_session'), { recursive: true });
+    mkdirSync(join(src, 'enforcing', 'mav'), { recursive: true });
+    writeFileSync(
+      join(src, 'agents', `mav${omp.agentExt}`),
+      'You are `mav`.\n',
+    );
+    writeFileSync(join(src, 'skills', 'probe', 'SKILL.md'), '# probe\n');
+    writeFileSync(join(src, 'hooks', 'ping', 'ping.sh'), '#!/bin/sh\nexit 0\n');
+    for (const scope of ['_session', 'mav']) {
+      writeFileSync(
+        join(src, 'enforcing', scope, 'mod.ts'),
+        `// ${scope}\nexport default () => {};\n`,
+      );
+    }
+    const home = join(root, 'target');
+    for (const kind of ['agent', 'skill', 'hooks'] as const) {
+      deploySingle({
+        kind,
+        scope: 'user',
+        tree: {
+          agentsDir: join(src, 'agents'),
+          skillsDir: join(src, 'skills'),
+          hooksDir: src,
+        },
+        harnessHome: omp.home,
+        agentExt: omp.agentExt,
+        agentRel: (n: string) => omp.agentRel(n),
+        skillRel: (n: string, agents: readonly string[]) =>
+          omp.skillRel(n, agents),
+        enforcingRel: omp.enforcingRel ?? null,
+        hooksFile: omp.hooksFile,
+        home,
+        dry: false,
+      });
+    }
+    return join(home, omp.home);
+  }
+
+  it('copies the skill into the session root AND every projected profile', () => {
+    const dir = ompTree();
+    expect(existsSync(join(dir, 'agent', 'skills', 'probe', 'SKILL.md'))).toBe(
+      true,
+    );
+    expect(
+      existsSync(
+        join(dir, 'profiles', 'mav', 'agent', 'skills', 'probe', 'SKILL.md'),
+      ),
+      'a profile launch reads only its own agent dir, so a skill it cannot see is not deployed',
+    ).toBe(true);
+  });
+
+  it('does NOT copy the skill to `skills/`, the dir omp never scans', () => {
+    const dir = ompTree();
+    expect(
+      existsSync(join(dir, 'skills', 'probe')),
+      'this is the render tree’s staging layout, not a destination — deploying here is how 16 skills became inert',
+    ).toBe(false);
+  });
+
+  it('places each staged mechanism module in the scope that loads it', () => {
+    const dir = ompTree();
+    expect(existsSync(join(dir, 'agent', 'extensions', 'mod.ts'))).toBe(true);
+    expect(
+      existsSync(join(dir, 'profiles', 'mav', 'agent', 'extensions', 'mod.ts')),
+    ).toBe(true);
+    // And nothing is left at the staging path: a module under `enforcing/` on the
+    // host is one omp's extension loader never sees.
+    expect(existsSync(join(dir, 'enforcing'))).toBe(false);
+  });
+});

@@ -44,12 +44,13 @@
 // `bin-name-single-home` catches and rightly refused.
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import type { Agent, Binding } from '@cratylus/schema';
-import type { HarnessMechanism } from '@cratylus/schema/hook';
+import type { HarnessMechanism, Hook } from '@cratylus/schema/hook';
 import { type ResolvedSkill, agentBody, skillBody } from '../../core/body.js';
-import type {
-  AgentDefContext,
-  HarnessAdapter,
-  HarnessProjection,
+import {
+  type AgentDefContext,
+  type HarnessAdapter,
+  type HarnessProjection,
+  SESSION_SCOPE,
 } from '../../core/harness-adapter.js';
 import { OMP_BLOCKING_EVENTS, canonicalToOmp, ompBindingOf } from './events.js';
 
@@ -71,13 +72,60 @@ export function ompAgentRel(name: string): string {
   return `${ompProfileDir(name)}/APPEND_SYSTEM.md`;
 }
 
-/** Where agent `<name>`'s enforcement module lands, relative to the harness home. */
+/**
+ * The SESSION root — the native user config dir of a launch that named no
+ * profile, relative to the harness home.
+ *
+ * omp's native user config is profile-scoped: `getAgentDir()` is
+ * `~/.omp/profiles/<name>/agent` under `--profile <name>` and `~/.omp/agent`
+ * otherwise (`discovery/builtin.ts`, "Native user config is profile-scoped"). So
+ * this is a peer of `ompProfileDir`, not its parent: the scope a plain `omp`
+ * session reads, and the one every persona profile does NOT see.
+ */
+export const OMP_SESSION_DIR = 'agent';
+
+/**
+ * Where skill `<name>` lands, relative to the harness home — one path per scope
+ * that must be able to load it.
+ *
+ * **`skills/<name>` IS NOT ONE OF THEM, AND THAT WAS THE BUG.** The deploy layer
+ * used the render tree's own staging layout as every harness's destination, so an
+ * omp deploy wrote `~/.omp/skills/`, a directory omp never scans: the native
+ * provider scans `getAgentDir()/skills` (`discovery/builtin.ts`, the user-level
+ * `scanSkillsFromDir` call). Measured on `fire`, whose `~/.omp/skills` held a
+ * byte-perfect projection that no session could load; it looked like it worked
+ * only because that host's `~/.claude/skills` carried the same corpus and omp's
+ * claude provider reads that base under every profile.
+ *
+ * PROFILE SCOPE IS WHY THIS IS PLURAL. A skill in the session root is invisible
+ * to `--profile mav`, and one in mav's profile is invisible to every other launch,
+ * so a corpus whose skills are shared by all its agents lands once per scope.
+ * That is the cost of the harness's isolation model, paid honestly here rather
+ * than by hand on each host — which is what the operator had to do on `upmav`.
+ */
+export function ompSkillRel(
+  name: string,
+  agents: readonly string[],
+): readonly string[] {
+  return [
+    `${OMP_SESSION_DIR}/skills/${name}`,
+    ...agents.map((a) => `${ompProfileDir(a)}/skills/${name}`),
+  ];
+}
+
+/** Where a mechanism module lands for agent `<name>`, relative to the harness
+ *  home. */
 export function ompExtensionRel(name: string): string {
   return `${ompProfileDir(name)}/extensions/${OMP_GUARDRAIL_MODULE}`;
 }
 
 /** The emitted enforcement module's filename — derived, never spelled. */
 export const OMP_GUARDRAIL_MODULE = `${CLI_BIN}-guardrails.ts`;
+
+/** The emitted SCOPE-ACTIVATED module's filename. A second file rather than more
+ *  registrations in the first, because the two halves retire independently: the
+ *  guardrails follow the agents that compose them, these follow the cells. */
+export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
 
 // ── Agent projection → profiles/<name>/agent/APPEND_SYSTEM.md ────────────────
 
@@ -205,11 +253,73 @@ export function ompGuardrailExtensions(
     }
     if (lines.length === 0) continue;
     out.push({
-      filename: ompExtensionRel(agent),
-      content: ompExtensionModule(agent, lines),
+      filename: OMP_GUARDRAIL_MODULE,
+      scope: agent,
+      content: ompExtensionModule(`the agent \`${agent}\``, agent, lines),
     });
   }
   return out;
+}
+
+/**
+ * Realize the SCOPE-ACTIVATED cells — the ones no agent composes — as one module
+ * per scope that must carry them.
+ *
+ * WHY THIS OP EXISTS AT ALL. `project` asked only for `hooks()`, a settings
+ * fragment, and omp keeps no hook config: its loader scans each native config
+ * root's `extensions/` dir, so the artifact is a module and the directory is the
+ * registration. With nothing to answer, all five of canon's session-scoped cells
+ * were warned about and dropped, and this harness deployed no mechanism at all —
+ * no stance gate, no drift notice, no memory nudge, no resume notice.
+ *
+ * ONE MODULE PER SCOPE, and the scopes are the projected agents' profiles plus the
+ * SESSION root, because omp's native user config is profile-scoped: a module in
+ * the session root does not load under `--profile mav`, and mav's does not load
+ * anywhere else. Claude registers these once in a user-level `settings.json` that
+ * every session reads; the same reach on this harness is N+1 placements.
+ *
+ * NOT the ambient form `MODEL.md` forbids. That prohibition is on an agent-composed
+ * constraint filtering itself at runtime; these cells compose no agent — they bind
+ * the session — and nothing emitted here asks who is running.
+ */
+export function ompScopeActivatedExtensions(
+  hooks: readonly Hook[],
+  agentNames: readonly string[],
+): HarnessProjection[] {
+  const seen = new Set<string>();
+  const lines: string[] = [];
+  for (const hook of hooks) {
+    for (const event of hook.events) {
+      const binding = ompBindingOf(event);
+      // Unrealizable here ⇒ no registration. The cell's loss is reported by the
+      // projection seam; registering a handler for an event omp never fires would
+      // read as coverage and deliver none.
+      if (!binding) continue;
+      const reg: OmpRegistration = {
+        anchor: hook.id ?? event,
+        native: binding.event,
+        tool: binding.matcher,
+        command: hook.command,
+      };
+      const key = JSON.stringify([reg.native, reg.tool ?? '', reg.command]);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      lines.push(renderRegistration(reg));
+    }
+  }
+  if (lines.length === 0) return [];
+  const scopes = [SESSION_SCOPE, ...[...agentNames].sort()];
+  return scopes.map((scope) => ({
+    filename: OMP_SESSION_MODULE,
+    scope,
+    content: ompExtensionModule(
+      scope === SESSION_SCOPE
+        ? 'the SESSION — a launch that named no profile'
+        : `every session of the profile \`${scope}\``,
+      scope === SESSION_SCOPE ? undefined : scope,
+      lines,
+    ),
+  }));
 }
 
 /** One `pi.on(...)` block — narrowed by an `if` when the act names a tool. */
@@ -236,23 +346,41 @@ function renderRegistration(r: OmpRegistration): string {
 /**
  * The extension module's text.
  *
- * It names the agent it governs in a comment and nowhere in its LOGIC, because the
- * logic needs no such name: the file's own location under `profiles/<agent>/` is
- * what limits it. If this module ever grows a `process.env.OMP_PROFILE` check, that
- * is the tell that the placement was lost and the ambient form crept back.
+ * It names what it governs in a comment and nowhere in its LOGIC, because the
+ * logic needs no such name: the file's own location is what limits it. If this
+ * module ever grows a `process.env.OMP_PROFILE` check, that is the tell that the
+ * placement was lost and the ambient form crept back.
+ *
+ * `profile` is the profile whose dir this copy lands in, or `undefined` for the
+ * session root — it decides only what the placement note can truthfully say.
  */
-function ompExtensionModule(agent: string, registrations: string[]): string {
+function ompExtensionModule(
+  governs: string,
+  profile: string | undefined,
+  registrations: string[],
+): string {
+  const placement =
+    profile === undefined
+      ? [
+          '// SCOPED BY LOCATION. This module sits in the SESSION config root, which omp',
+          '// discovers when no profile is named (native config roots are profile-scoped,',
+          '// so a profile launch reads its own copy of this file and never this one).',
+        ]
+      : [
+          '// SCOPED BY LOCATION. This module sits in that profile’s own dir, which',
+          `// omp discovers only under \`--profile ${profile}\` (native config roots are`,
+          '// profile-scoped).',
+        ];
   return [
     // The regenerate instruction NAMES THE COMMAND, so it interpolates the bin
     // rather than spelling it: a banner telling a host to run a command that no
     // longer exists is worse than no banner, and only derivation survives a rename.
     `// GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
-    `// The enforcing constraints composed into the agent \`${agent}\`.`,
+    `// The constraints in force for ${governs}.`,
     '//',
-    '// SCOPED BY LOCATION. This module sits in that agent’s own profile dir, which',
-    `// omp discovers only under \`--profile ${agent}\` (native config roots are`,
-    '// profile-scoped). There is no identity check below and there must not be one:',
-    '// composition is realized by WHERE this file is, not by what it asks at runtime.',
+    ...placement,
+    '// There is no identity check below and there must not be one: composition is',
+    '// realized by WHERE this file is, not by what it asks at runtime.',
     '',
     "import type { HookAPI } from '@oh-my-pi/pi-coding-agent';",
     '',
@@ -270,10 +398,16 @@ function ompExtensionModule(agent: string, registrations: string[]): string {
  * The omp realization of the `HarnessAdapter` port.
  *
  * No `hooks()`: that op returns a JSON settings fragment for a harness that keeps
- * hook config in a file, and omp keeps none. Enforcement goes through
- * `enforcingSurface`, whose `{filename, content}` return is arbitrary bytes — which
- * is exactly a `.ts` module. The port needed no change to accept a harness whose
- * hook surface is a program rather than a config.
+ * hook config in a file, and omp keeps none. BOTH halves of the mechanism go
+ * through code instead — `enforcingSurface` for the agent-composed constraints and
+ * `scopeActivatedSurface` for the cells no agent composes — and each returns
+ * `{filename, scope, content}`, which is a `.ts` module and its destination scope.
+ *
+ * The second half was missing, and `project` reads the ABSENCE of `hooks()` as "no
+ * session-scoped surface", so every scope-activated cell degraded here while this
+ * header claimed the harness could scope anything it could fire. It can — the
+ * claim was true of `enforcingSurface` and there was nothing to answer for the
+ * rest.
  */
 export const ompHarnessAdapter: HarnessAdapter = {
   name: 'omp',
@@ -304,6 +438,24 @@ export const ompHarnessAdapter: HarnessAdapter = {
     content: agentToOmpAppendSystem(a, ctx),
   }),
   skillDef: (s) => ({ filename: 'SKILL.md', content: skillToOmpMd(s) }),
+  skillRel: ompSkillRel,
+  // NONE. omp exposes no session id to a child process: no `*_SESSION_ID` variable
+  // is set anywhere in `packages/coding-agent/src` (`oh-my-pi@5964a0f`), and the
+  // bash tool's env comes from settings alone. Its extensions DO receive
+  // `event.sessionId`, but a skill's shim is spawned by the agent, not by a hook.
+  // So there is nothing to bridge, and the projected shim says so instead of
+  // running sessionless — see `project/runtime-shim.ts`.
+  sessionEnvVars: [],
   enforcingSurface: (bindings, mechanisms) =>
     ompGuardrailExtensions(bindings, mechanisms),
+  scopeActivatedSurface: (hooks, agentNames) =>
+    ompScopeActivatedExtensions(hooks, agentNames),
+  // The SESSION scope reads as itself OR as omission, so a caller may pass a
+  // projection's `scope` field straight through. Requiring the translation put the
+  // same `=== SESSION_SCOPE` conditional at every call site, and a call site that
+  // forgot it asked for a profile named `_session`.
+  enforcingRel: (filename, agent) =>
+    agent === undefined || agent === SESSION_SCOPE
+      ? `${OMP_SESSION_DIR}/extensions/${filename}`
+      : `${ompProfileDir(agent)}/extensions/${filename}`,
 };

@@ -23,6 +23,12 @@ const libEntry: Record<string, string> = {
   // on its own. An `exports` map and this list are two enumerations of one fact
   // — add here and there together or the subpath resolves to nothing.
   'core/module-scan': 'src/core/module-scan.ts',
+  // The projection PORT itself, and the two scope tokens both stages read off it
+  // (`SESSION_SCOPE`, `ENFORCING_STAGE_DIR`). A consumer that reads a render tree
+  // — the harness-parity gate does — needs the staging vocabulary the tree was
+  // written with, and copying those strings into the reader is exactly the second
+  // home this subpath prevents.
+  'core/harness-adapter': 'src/core/harness-adapter.ts',
   'deploy/index': 'src/deploy/index.ts',
   'project/index': 'src/project/index.ts',
   'catalog/index': 'src/catalog/index.ts',

@@ -30,11 +30,50 @@ import type {
 } from '@cratylus/schema/hook';
 import type { ResolvedSkill } from './body.js';
 
+/**
+ * The scope token a scope-activated artifact carries when it belongs to no single
+ * agent — the SESSION itself.
+ *
+ * A harness whose enforcement is CODE has no global config file to register in, so
+ * it realizes a session-scoped cell by placing a module in every scope that must
+ * carry it: one per composing agent, plus the session root itself (a launch that
+ * named no agent). The agent scopes are keyed by agent name; this token names the
+ * remaining one. It is not an agent name and cannot collide with one — canon agent
+ * names are cold-derived words, never `_`-prefixed.
+ */
+export const SESSION_SCOPE = '_session';
+
+/**
+ * The render tree's staging dir for SCOPED mechanism artifacts —
+ * `enforcing/<scope>/<filename>`.
+ *
+ * Forge's own staging layout, not any harness's destination: `project` writes
+ * here, `deploy` reads here and asks the adapter where each scope's copy belongs
+ * (`HarnessAdapter.enforcingRel`). The same asymmetry as agents, and for the same
+ * reason — a render tree is a thing a human diffs, and a destination is a thing a
+ * harness reads. A scoped artifact staged at its DESTINATION path would have been
+ * unattributable at deploy: there is no vector on disk to ask what scope a nested
+ * path meant.
+ */
+export const ENFORCING_STAGE_DIR = 'enforcing';
+
 /** A single projected artifact: the harness-owned filename + its bytes. */
 export interface HarnessProjection {
   /** The harness-owned filename (with extension), e.g. `mav.md` / `mav.toml` / `SKILL.md`. */
   readonly filename: string;
   readonly content: string;
+  /**
+   * WHICH scope this artifact governs — an agent name, or {@link SESSION_SCOPE}.
+   *
+   * Absent ⇒ the artifact is global to the harness home, which is every harness
+   * whose enforcement is a config FILE (claude's `settings.json`, codex's
+   * `hooks.json`): one artifact, one place, no scope to name. Present ⇒ the
+   * artifact is one of MANY, and its scope decides where deploy lands it
+   * (`HarnessAdapter.enforcingRel`). omp is the harness that needs this: its
+   * scope is a DIRECTORY, so the same registrations are emitted once per scope
+   * and each copy is correct by placement rather than by a runtime filter.
+   */
+  readonly scope?: string;
 }
 
 /** A hooks → settings-fragment projection, plus the per-hook losses. `settings`
@@ -134,6 +173,44 @@ export interface HarnessAdapter {
    * with no vector to ask, so it must compute the destination from the name alone.
    */
   agentRel(name: string): string;
+  /**
+   * Where skill `<name>` lands ON THE HOST — every destination, harness-home
+   * relative, given the agent set this corpus projects.
+   *
+   * PLURAL, and that is the whole reason it exists. `agentRel` returns one path
+   * because an agent def has one home; a SKILL is shared by every agent, and how
+   * many places that means depends on how the harness scopes a reader. claude and
+   * codex read skills from one user-level dir, so they return one path and the
+   * `agents` argument goes unused. **omp's native config root is profile-scoped**
+   * (`discovery/builtin.ts` scans `getAgentDir()/skills`, and `getAgentDir()` is
+   * `~/.omp/profiles/<name>/agent` under `--profile <name>`), so a skill reachable
+   * from every projected persona AND from a plain launch is N+1 destinations.
+   *
+   * REQUIRED, like `agentRel`, and for the same measured reason: deploy assumed
+   * `skills/<name>` was every harness's layout. It is omp's layout for NO scope —
+   * `~/.omp/skills` is a directory omp never scans — so a correct omp render
+   * deployed 16 skills that could not be loaded, and reported success. It only
+   * looked like it worked on a host whose `~/.claude/skills` carried the same
+   * corpus, because omp's claude provider reads that base under every profile.
+   */
+  skillRel(name: string, agents: readonly string[]): readonly string[];
+  /**
+   * The vendor environment variables this harness sets a session id in, most
+   * specific first — what the projected runtime shim bridges into the runtime's
+   * own `$AGENT_SESSION_ID` contract.
+   *
+   * A FACT OF THE HARNESS, so it is declared by the adapter rather than baked into
+   * the shim emitter. The emitter used to carry claude's two names for every
+   * harness, which made the omp-projected shim assert a bridge that harness has
+   * no end for.
+   *
+   * EMPTY IS A REAL ANSWER, not a missing one: omp exposes no session id to a
+   * child process (measured across `packages/coding-agent/src` on
+   * `oh-my-pi@5964a0f`), so its shim has nothing to read and must say so instead
+   * of proceeding sessionless. See `project/runtime-shim.ts` for the refusal that
+   * an empty list emits.
+   */
+  readonly sessionEnvVars: readonly string[];
   /**
    * The filename of this harness's hook-config artifact — `settings.json`,
    * `hooks.json`. Mirrors `HarnessHooksProjection.filename`; deploy needs it to
@@ -255,4 +332,56 @@ export interface HarnessAdapter {
     bindings: readonly Binding[],
     mechanisms?: ReadonlyMap<string, HarnessMechanism>,
   ): HarnessProjection | readonly HarnessProjection[] | null;
+  /**
+   * Realize the SCOPE-ACTIVATED cells on a harness whose hook surface is a
+   * PROGRAM rather than a config file — the `hooks` op's sibling, for the harness
+   * that has no file to register in.
+   *
+   * `hooks` returns a settings fragment a host merges. omp keeps no hook config at
+   * all: its extension loader scans the `extensions/` dir of each native config
+   * root, so the DIRECTORY is the declaration and the artifact is a module. The
+   * port already accepted arbitrary bytes for the ENFORCING (agent-composed) half
+   * via `enforcingSurface`; this is the same accommodation for the half no agent
+   * composes.
+   *
+   * **IT WAS MISSING, AND ITS ABSENCE WAS A SILENT DEGRADE.** `project` branched on
+   * `hooks` alone, so on omp every scope-activated cell — the stance gate, the
+   * deploy-drift notice, the memory-consolidation nudge, the resume notice — was
+   * warned about and dropped, and the harness deployed no mechanism whatsoever
+   * while the adapter's own header claimed scope⇔realize was closed. Measured on
+   * `fire`: no `~/.omp/hooks` and no per-profile `agent/extensions` dir, against
+   * all five anchors wired in the same host's `~/.claude/settings.json`.
+   *
+   * `agentNames` is the projected agent set, because a session-scoped cell governs
+   * whoever is running: on a harness that scopes by directory, "every session"
+   * means one module per persona scope PLUS the session root ({@link
+   * SESSION_SCOPE}). That is not the ambient form MODEL forbids — nothing here
+   * filters itself at runtime, and no artifact governs an agent that did not
+   * compose it; these cells compose no agent by construction.
+   *
+   * Absent ⇒ this harness registers scope-activated cells in a config file, or
+   * cannot carry them at all (the degrade `project` reports).
+   */
+  scopeActivatedSurface?(
+    hooks: readonly Hook[],
+    agentNames: readonly string[],
+  ): readonly HarnessProjection[];
+  /**
+   * Where a scoped mechanism artifact lands ON THE HOST, harness-home relative —
+   * the destination map for whatever `scopeActivatedSurface` / `enforcingSurface`
+   * returned with a `scope`.
+   *
+   * The render tree stages those artifacts by scope (forge's own staging layout);
+   * this is the harness's answer for where each scope's copy belongs, and it is
+   * asked at DEPLOY, which reads the tree off disk and has no projection to
+   * consult. Same asymmetry as `agentRel`, same reason.
+   *
+   * `agent` absent — or the {@link SESSION_SCOPE} token itself — ⇒ the session
+   * copy: the scope a launch that named no agent reads from. Both spellings, so a
+   * caller may pass a projection's `scope` field through unmapped.
+   *
+   * Absent ⇒ this adapter emits no scoped mechanism artifact, and deploy places
+   * none.
+   */
+  enforcingRel?(filename: string, agent?: string): string;
 }

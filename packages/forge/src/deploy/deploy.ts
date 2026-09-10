@@ -61,6 +61,13 @@ export interface DeployOpts {
   agentExt?: string | null;
   /** The harness's DESTINATION layout for one agent (`HarnessAdapter.agentRel`). */
   agentRel?: ((name: string) => string) | null;
+  /** The harness's DESTINATION layout for one skill (`HarnessAdapter.skillRel`). */
+  skillRel?:
+    | ((name: string, agents: readonly string[]) => readonly string[])
+    | null;
+  /** The harness's DESTINATION layout for a scoped mechanism artifact
+   *  (`HarnessAdapter.enforcingRel`). */
+  enforcingRel?: ((filename: string, agent?: string) => string) | null;
   /** The harness's hook-config filename (`HarnessAdapter.hooksFile`). */
   hooksFile?: string | null;
   // CLI overrides (null ⇒ unset, defer to the built-in default).
@@ -144,7 +151,14 @@ function placeOpts(opts: DeployOpts): PlaceOpts {
     // and a wrong default here fails by finding no files, which reads as success.
     ...(opts.agentExt ? { agentExt: opts.agentExt } : {}),
     ...(opts.agentRel ? { agentRel: opts.agentRel } : {}),
+    ...(opts.skillRel ? { skillRel: opts.skillRel } : {}),
+    ...(opts.enforcingRel ? { enforcingRel: opts.enforcingRel } : {}),
     ...(opts.hooksFile ? { hooksFile: opts.hooksFile } : {}),
+    // The projected agent set, read off the SAME tree the placer copies from —
+    // the scopes a per-directory harness names its skill and mechanism
+    // destinations after. Read here rather than in the placer so the tree is
+    // enumerated once, by the layer that already owns `--only` resolution.
+    agents: treeNames('agent', opts.tree, opts.agentExt ?? '.md'),
     log: opts.log,
     warn: opts.warn,
   };

@@ -212,12 +212,35 @@ export function claudeAgentRel(name: string): string {
   return `agents/${name}.md`;
 }
 
+/** Where skill `<name>`'s dir lives, relative to `.claude`. ONE destination:
+ *  claude reads user skills from a single root, so the projected agent set makes
+ *  no difference to a skill's home here. */
+export function claudeSkillRel(name: string): string {
+  return `skills/${name}`;
+}
+
+/**
+ * Claude Code's session-id variables, most specific first — the names the projected
+ * runtime shim bridges into the runtime's `$AGENT_SESSION_ID` contract.
+ *
+ * A VENDOR FACT, so it lives in the vendor's adapter. It used to be
+ * `HARNESS_SESSION_ENV_VARS` inside the shim emitter, applied to every harness,
+ * which is how the omp projection came to assert a claude bridge.
+ */
+export const CLAUDE_SESSION_ENV_VARS = [
+  'CLAUDE_CODE_SESSION_ID',
+  'CLAUDE_SESSION_ID',
+] as const;
+
 export const claudeHarnessAdapter: HarnessAdapter = {
   name: 'claude',
   substrate: 'harness',
   home: '.claude',
   agentExt: '.md',
   hooksFile: 'settings.json',
+  skillRel: (name) => [claudeSkillRel(name)],
+  // Claude Code's own names, declared where the vendor fact belongs.
+  sessionEnvVars: CLAUDE_SESSION_ENV_VARS,
   // The 1:1 map, declared on the port so deploy can EMIT it into the host config the
   // runtime reads. It stays 1:1 deliberately: the runtime REVERSES it (native →
   // canonical) to name what it observed, and the ACT bindings — many acts onto one

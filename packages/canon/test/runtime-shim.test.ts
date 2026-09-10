@@ -54,10 +54,16 @@ const shimOf = (out: string): string =>
     'utf-8',
   );
 
-/** The emitted shim for `capability`, straight from the single emitter. */
-function emitted(capability: string): string {
+/** The emitted shim for `capability` on `harness`, straight from the single
+ *  emitter. The session-var list is the HARNESS's — the emitter takes no default,
+ *  so a caller cannot silently stamp one harness's vendor names into another's
+ *  projection. */
+function emitted(capability: string, harness = 'claude'): string {
   const dir = mkdtempSync(join(tmpdir(), 'runtime-shim-'));
-  return readFileSync(emitRuntimeShim(dir, capability), 'utf-8');
+  return readFileSync(
+    emitRuntimeShim(dir, capability, adapterByName(harness).sessionEnvVars),
+    'utf-8',
+  );
 }
 
 let claudeShim = '';
@@ -159,7 +165,11 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
 
   it('emits scripts/<capability>.mjs executable', () => {
     const dir = mkdtempSync(join(tmpdir(), 'runtime-shim-'));
-    const dest = emitRuntimeShim(dir, CAPABILITY);
+    const dest = emitRuntimeShim(
+      dir,
+      CAPABILITY,
+      adapterByName('claude').sessionEnvVars,
+    );
     expect(dest).toBe(join(dir, 'scripts', `${CAPABILITY}.mjs`));
     expect(existsSync(dest)).toBe(true);
     expect(readFileSync(dest, 'utf-8')).toBe(emitted(CAPABILITY));
@@ -196,7 +206,8 @@ describe('runtime shim has ONE home across harnesses', () => {
   });
 
   it('the projected shim IS the single emitter output, verbatim', () => {
-    // No harness-local post-processing: what the emitter returns is what lands.
-    expect(codexShim).toBe(emitted(CAPABILITY));
+    // No harness-local post-processing: what the emitter returns for THAT harness
+    // is what lands in that harness's tree.
+    expect(codexShim).toBe(emitted(CAPABILITY, 'codex'));
   });
 });

@@ -150,6 +150,11 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
         harnessHome: harnessAdapter.home,
         agentExt: harnessAdapter.agentExt,
         agentRel: (n: string) => harnessAdapter.agentRel(n),
+        skillRel: (n: string, agents: readonly string[]) =>
+          harnessAdapter.skillRel(n, agents),
+        // Optional on the port: present only on a harness whose mechanism is a
+        // scoped module rather than a config merge.
+        enforcingRel: harnessAdapter.enforcingRel ?? null,
         hooksFile: harnessAdapter.hooksFile,
         home: opts.home ?? null,
         project: opts.project ?? null,
@@ -367,8 +372,25 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
         splitList(opts.only),
         harnessAdapter.agentExt ?? undefined,
       );
+      // THE WHOLE LAYOUT, not just the extension. The check used to pass
+      // `agentExt` alone, so every non-claude harness was audited against claude's
+      // destinations: an omp check compared `agents/<name>.md` while the deploy it
+      // audits writes `profiles/<name>/agent/APPEND_SYSTEM.md`, and reported the
+      // whole corpus absent. Same facts as the deploy call above, same source.
       const report = auditLocal(harnessDir, kind, tree, names, {
         agentExt: harnessAdapter.agentExt ?? undefined,
+        agentRel: (n: string) => harnessAdapter.agentRel(n),
+        skillRel: (n: string, agents: readonly string[]) =>
+          harnessAdapter.skillRel(n, agents),
+        agents: resolveNames(
+          'agent',
+          tree,
+          null,
+          harnessAdapter.agentExt ?? undefined,
+        ),
+        ...(harnessAdapter.enforcingRel
+          ? { enforcingRel: harnessAdapter.enforcingRel }
+          : {}),
         maxLines: REPORT_LINES,
       });
       reports.push(report);

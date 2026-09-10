@@ -169,6 +169,28 @@ Which directories are required depends on `--kind`: `all` requires all three, `h
 `--hooks-dir`, and `agent` or `skill` require `--agents-dir` and `--skills-dir`. Passing less is a
 refusal, not a partial run.
 
+#### The destinations are the adapter's, not the render tree's
+
+A render tree is forge's own STAGING layout — `agents/<name><ext>`, `skills/<name>/`,
+`hooks/<id>/`, `enforcing/<scope>/` — and it is deliberately not any harness's layout. Deploy asks the
+adapter where each artifact belongs:
+
+| Artifact          | Port op                     | claude / codex                 | omp                                                     |
+| ----------------- | --------------------------- | ------------------------------ | ------------------------------------------------------- |
+| agent definition  | `agentRel(name)`            | `agents/<name><ext>`           | `profiles/<name>/agent/APPEND_SYSTEM.md`                |
+| skill directory   | `skillRel(name, agents)`    | `skills/<name>`                | `agent/skills/<name>` **and** one per projected profile |
+| hook registration | `hooksFile` (merged)        | `settings.json` / `hooks.json` | — (no hook config exists)                               |
+| scoped mechanism  | `enforcingRel(file, scope)` | —                              | `<scope>/extensions/<file>`                             |
+
+`skillRel` is PLURAL because a harness may scope a reader by directory: omp's native config root is
+per-profile, so a skill every projected persona can load is one copy per profile plus one in the
+session root. Assuming the staging layout was every harness's destination is what deployed 16 omp
+skills into `~/.omp/skills` — a directory that harness never scans — while reporting success.
+
+A harness whose hook surface is a PROGRAM rather than a config file (omp: its loader scans an
+`extensions/` dir) has no fragment to merge, so its adapter implements `scopeActivatedSurface` and the
+projection stages one module per scope for deploy to place.
+
 ### `cratylus explain [agent]`
 
 Reports each resolved fragment's provenance — the contributing plugin or patch, the operation, and the

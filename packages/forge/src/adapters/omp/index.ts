@@ -5,14 +5,19 @@
 // or a global selector. The composed Target body is harness-neutral, so the
 // `ResolvedSkill` shape is shared with the claude and codex adapters.
 export {
+  OMP_GUARDRAIL_MODULE,
+  OMP_SESSION_DIR,
+  OMP_SESSION_MODULE,
   type ResolvedSkill,
   agentToOmpAppendSystem,
-  skillToOmpMd,
-  ompGuardrailExtensions,
-  ompProfileDir,
   ompAgentRel,
   ompExtensionRel,
+  ompGuardrailExtensions,
   ompHarnessAdapter,
+  ompProfileDir,
+  ompScopeActivatedExtensions,
+  ompSkillRel,
+  skillToOmpMd,
 } from './render.js';
 
 // The canonical→native event map and the ACT bindings beside it. Exported so a

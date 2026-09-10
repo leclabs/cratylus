@@ -32,6 +32,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, resolve as resolvePath } from 'node:path';
+import { ENFORCING_STAGE_DIR } from '../core/harness-adapter.js';
 import { staleFiles } from '../prune/index.js';
 import {
   assertShimsResolvable,
@@ -130,11 +131,17 @@ export function placeAgentsLocal(
   return { rc: 0, report };
 }
 
-/** Copy <skillsSrc>/<name>/ -> <harnessDir>/skills/<name>/ — SKILL.md plus any
- *  staged companion assets beside it (byte-for-byte, binary-safe). Skills are
- *  generated substance with no sidecars — overwrite freely. Before copying, the
- *  deploy layer STAGES declared committed `assets:` companions into the source
- *  skill dir (a missing asset warns, never blocks). */
+/** Copy <skillsSrc>/<name>/ -> every destination the harness reads skill `<name>`
+ *  from (`PlaceOpts.skillRel`) — SKILL.md plus any staged companion assets beside
+ *  it (byte-for-byte, binary-safe). Skills are generated substance with no
+ *  sidecars — overwrite freely. Before copying, the deploy layer STAGES declared
+ *  committed `assets:` companions into the source skill dir (a missing asset warns,
+ *  never blocks).
+ *
+ *  MANY DESTINATIONS, because a harness may scope a reader by directory: omp's
+ *  native config root is per-profile, so a skill every projected persona can load
+ *  is one copy per profile plus one in the session root. claude and codex return a
+ *  single path and behave exactly as before. */
 export function placeSkillsLocal(
   harnessDir: string,
   tree: RenderTree,
@@ -144,7 +151,9 @@ export function placeSkillsLocal(
   const log = opts.log ?? (() => {});
   const warn = opts.warn ?? (() => {});
   const report = emptyReport();
-  const destRoot = resolvePath(harnessDir, 'skills');
+  const skillRel =
+    opts.skillRel ?? ((name: string): readonly string[] => [`skills/${name}`]);
+  const agents = opts.agents ?? [];
   // A shim placed against a bin that does not execute is a broken artifact, and a
   // deploy that ships one must not report success. Collected across skills so the
   // refusal is reported once with every affected shim named, then carried out as
@@ -170,32 +179,40 @@ export function placeSkillsLocal(
         warn,
       });
     }
-    const destDir = resolvePath(destRoot, name);
     // Recurse the WHOLE skill dir: co-located `scripts/`, `references/`,
     // `assets/` subtrees ride along, structure preserved.
     const files = walkSkillFiles(srcDir);
-    if (!opts.dry) {
-      mkdirSync(destDir, { recursive: true });
-      for (const rel of files) {
-        const srcFile = resolvePath(srcDir, rel);
-        const destFile = resolvePath(destDir, rel);
-        mkdirSync(dirname(destFile), { recursive: true });
-        copyFileSync(srcFile, destFile);
-        // Preserve mode so exec bits on `scripts/*` survive the copy
-        // (copyFileSync does not carry the source mode).
-        chmodSync(destFile, statSync(srcFile).mode);
+    const rels = skillRel(name, agents);
+    const written: string[] = [];
+    for (const rel of rels) {
+      const destDir = resolvePath(harnessDir, rel);
+      if (!opts.dry) {
+        mkdirSync(destDir, { recursive: true });
+        for (const file of files) {
+          const srcFile = resolvePath(srcDir, file);
+          const destFile = resolvePath(destDir, file);
+          mkdirSync(dirname(destFile), { recursive: true });
+          copyFileSync(srcFile, destFile);
+          // Preserve mode so exec bits on `scripts/*` survive the copy
+          // (copyFileSync does not carry the source mode).
+          chmodSync(destFile, statSync(srcFile).mode);
+        }
       }
+      written.push(...files.map((file) => `${rel}/${file}`));
     }
     report.copied += 1;
-    // Testimony: exactly the files copied for this skill, dest-relative. A file
-    // sitting in the target skill dir that we did NOT copy is not recorded and
-    // therefore survives every future prune.
-    report.written[name] = files.map((rel) => `skills/${name}/${rel}`);
+    // Testimony: exactly the files copied for this skill, dest-relative, across
+    // EVERY destination. A file sitting in a target skill dir that we did NOT copy
+    // is not recorded and therefore survives every future prune.
+    report.written[name] = written;
     const extra = files.filter((f) => f !== 'SKILL.md');
     const tail = extra.length
       ? ` (+${extra.length} asset${extra.length === 1 ? '' : 's'})`
       : '';
-    log(`  skill ${name} -> ${destDir}/SKILL.md${tail}`);
+    const scopes = rels.length > 1 ? ` × ${rels.length} scopes` : '';
+    log(
+      `  skill ${name} -> ${resolvePath(harnessDir, rels[0] ?? `skills/${name}`)}/SKILL.md${tail}${scopes}`,
+    );
     // AFTER placing: the shims are on the host now, so the binding they spawn is
     // this deploy's problem. `--version`, never `which`.
     if (refusal === null) {
@@ -285,14 +302,32 @@ export interface DriftReport {
   readonly divergences: readonly Divergence[];
 }
 
-export interface AuditOpts {
+/**
+ * The harness's DESTINATION layout, as much of it as a reader of the render tree
+ * needs — the adapter facts both the placers and the audit must agree on.
+ *
+ * One bag rather than five positionals: the audit and the placers diverging on
+ * layout is the exact failure this type exists to make impossible, and a
+ * positional list is where an added fact gets passed at one call site and
+ * forgotten at the other.
+ */
+export interface RenderedLayout {
   /** The harness's agent-definition extension (`HarnessAdapter.agentExt`). */
   agentExt?: string;
+  /** The harness's DESTINATION layout for one agent (`HarnessAdapter.agentRel`). */
+  agentRel?: (name: string) => string;
+  /** Every destination for one skill (`HarnessAdapter.skillRel`). */
+  skillRel?: (name: string, agents: readonly string[]) => readonly string[];
+  /** The projected agent set — the scopes a per-directory harness is keyed by. */
+  agents?: readonly string[];
+  /** Where a scoped mechanism artifact lands (`HarnessAdapter.enforcingRel`). */
+  enforcingRel?: (filename: string, agent?: string) => string;
+}
+
+export interface AuditOpts extends RenderedLayout {
   /** Cap on differing lines carried per side (0 ⇒ unbounded). A def is a whole
    *  doctrine; a full diff of one is not a report an operator reads. */
   maxLines?: number;
-  /** The harness's DESTINATION layout (`HarnessAdapter.agentRel`). */
-  agentRel?: (name: string) => string;
 }
 
 /** The `.forge/` bookkeeping dir — deploy's manifest here, `project`'s render
@@ -301,14 +336,20 @@ export interface AuditOpts {
 const BOOKKEEPING = '.forge';
 
 /**
- * WHERE a kind's rendered artifacts come from, and WHERE they land — the READ
- * path's copy of the layout the placers WRITE.
+ * WHERE a kind's rendered artifacts come from, WHERE they land, and WHICH record
+ * key owns them — the READ path's copy of the layout the placers WRITE.
  *
  * These two must agree, and `test/deploy/check.test.ts` pins the agreement
  * against the placers' own testimony (`report.written` from a dry run) rather
  * than by inspection: an audit enumerating a layout the placers do not use
  * would report every artifact absent and every deployed file foreign, which is
  * a very loud way to be silent about the thing it was built to catch.
+ *
+ * `owner` is that record key — the artifact NAME for agents, skills and hook
+ * workers, and `enforcing:<scope>` for a scoped mechanism module, which no single
+ * cell owns. It is returned rather than re-derived by the caller because the
+ * prune's candidate set is keyed by it, and a second derivation is a second
+ * chance to disagree.
  *
  * It is derived here rather than taken from a dry-run place because a dry-run
  * skill place still STAGES declared `assets:` companions into the source tree,
@@ -318,17 +359,23 @@ export function renderedFiles(
   kind: DeployKind,
   tree: RenderTree,
   names: readonly string[],
-  agentExt = '.md',
-  agentRel: (name: string) => string = (n) => defaultAgentRel(n, agentExt),
-): { rel: string; src: string }[] {
-  const out: { rel: string; src: string }[] = [];
+  layout: RenderedLayout = {},
+): { rel: string; src: string; owner: string }[] {
+  const agentExt = layout.agentExt ?? '.md';
+  const agentRel =
+    layout.agentRel ?? ((n: string) => defaultAgentRel(n, agentExt));
+  const skillRel =
+    layout.skillRel ??
+    ((name: string): readonly string[] => [`skills/${name}`]);
+  const agents = layout.agents ?? [];
+  const out: { rel: string; src: string; owner: string }[] = [];
   for (const name of names) {
     if (kind === 'agent') {
       // SOURCE from the staging layout, `rel` in the HARNESS's layout — the same
       // asymmetry `placeAgentsLocal` writes with, so audit and action agree.
       const src = resolvePath(tree.agentsDir, `${name}${agentExt}`);
       if (existsSync(src)) {
-        out.push({ rel: agentRel(name), src });
+        out.push({ rel: agentRel(name), src, owner: name });
       }
       continue;
     }
@@ -337,8 +384,16 @@ export function renderedFiles(
       if (!existsSync(resolvePath(dir, 'SKILL.md'))) {
         continue;
       }
-      for (const rel of walkSkillFiles(dir)) {
-        out.push({ rel: `skills/${name}/${rel}`, src: resolvePath(dir, rel) });
+      // EVERY destination, because the placer writes every destination. An audit
+      // that enumerated one of omp's N+1 scopes would call the other N absent.
+      for (const skillDir of skillRel(name, agents)) {
+        for (const rel of walkSkillFiles(dir)) {
+          out.push({
+            rel: `${skillDir}/${rel}`,
+            src: resolvePath(dir, rel),
+            owner: name,
+          });
+        }
       }
       continue;
     }
@@ -356,7 +411,29 @@ export function renderedFiles(
     for (const f of readdirSync(dir).sort()) {
       const src = resolvePath(dir, f);
       if (statSync(src).isFile()) {
-        out.push({ rel: `hooks/${name}/${f}`, src });
+        out.push({ rel: `hooks/${name}/${f}`, src, owner: name });
+      }
+    }
+  }
+  // hooks, second half: the SCOPED mechanism modules. Not keyed by a hook id —
+  // one module carries every cell's registrations — so they are enumerated from
+  // the staging dir rather than from `names`, exactly as the placer does.
+  const enforcingRel = layout.enforcingRel;
+  if (kind === 'hooks' && tree.hooksDir && enforcingRel) {
+    const stageRoot = resolvePath(tree.hooksDir, ENFORCING_STAGE_DIR);
+    if (existsSync(stageRoot)) {
+      for (const scope of readdirSync(stageRoot).sort()) {
+        const scopeDir = resolvePath(stageRoot, scope);
+        if (!statSync(scopeDir).isDirectory()) continue;
+        for (const file of readdirSync(scopeDir).sort()) {
+          const src = resolvePath(scopeDir, file);
+          if (!statSync(src).isFile()) continue;
+          out.push({
+            rel: enforcingRel(file, scope),
+            src,
+            owner: `${ENFORCING_STAGE_DIR}:${scope}`,
+          });
+        }
       }
     }
   }
@@ -424,7 +501,7 @@ export function auditLocal(
     opts.agentRel ?? ((n: string) => defaultAgentRel(n, agentExt));
   const cap = opts.maxLines ?? 12;
   const clip = (ls: string[]): string[] => (cap > 0 ? ls.slice(0, cap) : ls);
-  const rendered = renderedFiles(kind, tree, names, agentExt, agentRel);
+  const rendered = renderedFiles(kind, tree, names, opts);
   const divergences: Divergence[] = [];
 
   // ── stale + absent: every rendered artifact, against its deployed copy.
@@ -472,16 +549,16 @@ export function auditLocal(
   // ── foreign: deployed, not rendered. BOTH populations, neither claimed.
   const prior = readManifest(harnessDir).kinds[kind] ?? {};
   // Ours-and-retired: a path a prior deploy recorded that this render tree no
-  // longer produces. `staleFiles` is the prune's own candidate set, borrowed.
+  // longer produces. `staleFiles` is the prune's own candidate set, borrowed, and
+  // it is keyed by the RECORD key — which is the artifact name for most kinds and
+  // `enforcing:<scope>` for a scoped mechanism module. Grouped from the same
+  // enumeration the comparison above used, so a module that IS rendered can never
+  // be reported as retired.
   const renderedByName: Record<string, string[]> = {};
-  for (const name of names) {
-    renderedByName[name] = renderedFiles(
-      kind,
-      tree,
-      [name],
-      agentExt,
-      agentRel,
-    ).map((f) => f.rel);
+  for (const f of rendered) {
+    const group = renderedByName[f.owner] ?? [];
+    group.push(f.rel);
+    renderedByName[f.owner] = group;
   }
   for (const rel of staleFiles(prior, renderedByName, [], false)) {
     const dest = resolvePath(harnessDir, rel);

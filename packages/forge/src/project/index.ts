@@ -58,7 +58,11 @@ import {
   dimensionFieldsOf,
   enforcingValuesOf,
 } from '../core/exemplify/dimension-fields.js';
-import type { HarnessAdapter } from '../core/harness-adapter.js';
+import {
+  ENFORCING_STAGE_DIR,
+  type HarnessAdapter,
+  SESSION_SCOPE,
+} from '../core/harness-adapter.js';
 import {
   resolveModulePath,
   scanCellDirNames,
@@ -626,8 +630,15 @@ export async function projectPluginSet(
         ? surface
         : [surface]
       : []) {
-      files.push({ path: s.filename, content: s.content });
-      log(`EMIT enforcing surface ${s.filename}`);
+      // A SCOPED artifact is staged by scope and mapped at deploy; an unscoped one
+      // is the harness's single global artifact and stays at the tree root, where
+      // codex's `hooks.json` has always been.
+      const path =
+        s.scope === undefined
+          ? s.filename
+          : join(ENFORCING_STAGE_DIR, s.scope, s.filename);
+      files.push({ path, content: s.content });
+      log(`EMIT enforcing surface ${path}`);
     }
   }
 
@@ -652,7 +663,10 @@ export async function projectPluginSet(
     if (cell.runtime) {
       files.push({
         path: join(cellOut, 'scripts', `${cell.runtime.capability}.mjs`),
-        content: runtimeShimContent(cell.runtime.capability),
+        content: runtimeShimContent(
+          cell.runtime.capability,
+          opts.adapter.sessionEnvVars,
+        ),
         executable: true,
       });
       log(
@@ -688,7 +702,15 @@ export async function projectPluginSet(
   let hooks = 0;
   if (hookCells.length > 0) {
     const renderHooks = opts.adapter.hooks;
-    if (!renderHooks) {
+    // A HOOK SURFACE IS EITHER A CONFIG OR A PROGRAM, and this branch used to know
+    // only the first. `hooks` returns a settings fragment (claude, codex);
+    // `scopeActivatedSurface` returns modules placed per scope (omp, whose loader
+    // scans a dir and whose config root is profile-scoped). Reading the absence of
+    // the FORMER as "no surface at all" is what dropped all five of canon's
+    // session-scoped cells on omp while that adapter could realize and narrow every
+    // event they name.
+    const renderScopeActivated = opts.adapter.scopeActivatedSurface;
+    if (!renderHooks && !renderScopeActivated) {
       // DEGRADE, as everywhere else on this seam. A harness with no scope-activated
       // surface loses these cells' MECHANISM, not the build — and the operator is
       // told, because an absent guardrail that announced nothing is the failure this
@@ -710,33 +732,71 @@ export async function projectPluginSet(
           resolveWorker(w, projectionFacts(opts.adapter), cell.speech),
         ),
       }));
-      const {
-        filename: hooksFile,
-        settings,
-        warnings,
-        skipped,
-      } = renderHooks(sources.map((s) => s.hook));
-      for (const w of warnings) log(`WARN hook: ${w}`);
-      for (const sk of skipped) log(`SKIP hook ${sk.path}: ${sk.reason}`);
-      files.push({
-        path: hooksFile,
-        content: `${JSON.stringify({ hooks: settings }, null, 2)}\n`,
-      });
-      log(`EMIT ${hooksFile} (hooks: ${Object.keys(settings).join(', ')})`);
-      for (const src of sources) {
-        const destDir = join('hooks', src.hook.id ?? 'unnamed');
-        for (const worker of src.workers) {
-          // Bytes come from the CELL, never an on-disk copy — the cell is the home.
-          files.push({
-            path: join(destDir, worker.filename),
-            content: worker.content,
-            ...(worker.executable ? { executable: true } : {}),
-          });
-        }
-        log(
-          `EMIT hook ${src.hook.id} (+${src.workers.length} worker${src.workers.length === 1 ? '' : 's'})`,
+      let registered = true;
+      if (renderHooks) {
+        const {
+          filename: hooksFile,
+          settings,
+          warnings,
+          skipped,
+        } = renderHooks(sources.map((s) => s.hook));
+        for (const w of warnings) log(`WARN hook: ${w}`);
+        for (const sk of skipped) log(`SKIP hook ${sk.path}: ${sk.reason}`);
+        files.push({
+          path: hooksFile,
+          content: `${JSON.stringify({ hooks: settings }, null, 2)}\n`,
+        });
+        log(`EMIT ${hooksFile} (hooks: ${Object.keys(settings).join(', ')})`);
+      } else if (renderScopeActivated) {
+        // SCOPED BY PLACEMENT, so one artifact per scope: the projected agents'
+        // profiles plus the session root. `agentNames` is what makes "every session"
+        // expressible on a harness whose config root is per-profile.
+        const surface = renderScopeActivated(
+          sources.map((s) => s.hook),
+          agentNames,
         );
-        hooks++;
+        // EMPTY IS A DEGRADE, not a quiet success: an adapter that realized none of
+        // these cells' events registers nothing, and worker bytes beside no
+        // registration are dead files that read as coverage.
+        registered = surface.length > 0;
+        for (const s of surface) {
+          const path = join(
+            ENFORCING_STAGE_DIR,
+            s.scope ?? SESSION_SCOPE,
+            s.filename,
+          );
+          files.push({ path, content: s.content });
+          log(`EMIT scope-activated surface ${path}`);
+        }
+        if (!registered) {
+          for (const cell of hookCells) {
+            warn(
+              `scope-activated cell '${cell.id}' has no mechanism on '${opts.adapter.name}': none of its events are realizable here. The cell is not deployed here.`,
+            );
+          }
+        }
+      }
+      // THE WORKERS ARE THE SAME BYTES ON EVERY HARNESS — only the registration
+      // differs — so they are emitted once, past the branch that chose it. They
+      // used to sit inside the settings-fragment arm, which is why a harness with a
+      // code surface would have shipped registrations pointing at workers that were
+      // never staged.
+      if (registered) {
+        for (const src of sources) {
+          const destDir = join('hooks', src.hook.id ?? 'unnamed');
+          for (const worker of src.workers) {
+            // Bytes come from the CELL, never an on-disk copy — the cell is the home.
+            files.push({
+              path: join(destDir, worker.filename),
+              content: worker.content,
+              ...(worker.executable ? { executable: true } : {}),
+            });
+          }
+          log(
+            `EMIT hook ${src.hook.id} (+${src.workers.length} worker${src.workers.length === 1 ? '' : 's'})`,
+          );
+          hooks++;
+        }
       }
     }
   }

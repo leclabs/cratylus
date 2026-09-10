@@ -8,6 +8,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   OMP_BLOCKING_EVENTS,
+  OMP_GUARDRAIL_MODULE,
+  OMP_SESSION_DIR,
+  OMP_SESSION_MODULE,
   agentToOmpAppendSystem,
   canonicalActToOmp,
   canonicalToOmp,
@@ -16,7 +19,10 @@ import {
   ompExtensionRel,
   ompGuardrailExtensions,
   ompHarnessAdapter,
+  ompProfileDir,
+  ompScopeActivatedExtensions,
 } from '../../src/adapters/omp/index.js';
+import { runtimeShimContent } from '../../src/project/runtime-shim.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
 const AGENT = {
@@ -144,10 +150,16 @@ describe('omp enforcing surface', () => {
       [binding(['mav', 'nico'], ['turn.end'])] as never,
       MECH,
     );
-    expect(out.map((f) => f.filename).sort()).toEqual([
-      ompExtensionRel('mav'),
-      ompExtensionRel('nico'),
+    // A scoped artifact carries its SCOPE, and the destination is the adapter's to
+    // compute — the render tree stages by scope so deploy can ask. Asserting both
+    // halves keeps the pair that has to agree in one place.
+    expect(out.map((f) => [f.scope, f.filename]).sort()).toEqual([
+      ['mav', OMP_GUARDRAIL_MODULE],
+      ['nico', OMP_GUARDRAIL_MODULE],
     ]);
+    expect(
+      out.map((f) => ompHarnessAdapter.enforcingRel?.(f.filename, f.scope)),
+    ).toEqual([ompExtensionRel('mav'), ompExtensionRel('nico')]);
   });
 
   it('writes NO runtime identity check — the location is the scope', () => {
@@ -202,5 +214,66 @@ describe('omp enforcing surface', () => {
     expect(
       ompGuardrailExtensions([binding(['mav'], ['turn.end'])] as never),
     ).toEqual([]);
+  });
+});
+
+describe('omp scope-activated surface', () => {
+  // The cells no agent composes — canon's stance gate, drift notice, memory nudge.
+  // On claude they land in ONE user-level `settings.json` that every session reads;
+  // omp has no such file and a per-profile config root, so the same reach is one
+  // module per scope. Before this op existed the projector read the absence of
+  // `hooks()` as "no session-scoped surface" and dropped all five.
+  const hook = (events: string[]) =>
+    ({
+      id: 'stance-guardrail',
+      events,
+      command: 'sh "$HOME/.omp/hooks/stance-guardrail/w.sh"',
+    }) as never;
+  const HOOK = hook(['turn.end']);
+
+  it('carries the SESSION scope and one scope per projected agent', () => {
+    const out = ompScopeActivatedExtensions([HOOK], ['mav', 'nico']);
+    expect(out.map((f) => f.scope)).toEqual(['_session', 'mav', 'nico']);
+    // The session copy is what a plain `omp` launch loads; a profile launch reads
+    // its own and never that one.
+    expect(
+      out.map((f) => ompHarnessAdapter.enforcingRel?.(f.filename, f.scope)),
+    ).toEqual([
+      `${OMP_SESSION_DIR}/extensions/${OMP_SESSION_MODULE}`,
+      `${ompProfileDir('mav')}/extensions/${OMP_SESSION_MODULE}`,
+      `${ompProfileDir('nico')}/extensions/${OMP_SESSION_MODULE}`,
+    ]);
+  });
+
+  it('registers the cell’s native event and its worker command', () => {
+    const [mod] = ompScopeActivatedExtensions([HOOK], []);
+    expect(mod?.content).toContain('pi.on("agent_end"');
+    expect(mod?.content).toContain('hooks/stance-guardrail/w.sh');
+  });
+
+  it('emits nothing for an event omp cannot fire', () => {
+    // A registration for an unmapped event is a handler the harness never calls —
+    // coverage on paper. The projector reports the loss; this returns nothing.
+    expect(
+      ompScopeActivatedExtensions([hook(['git.commit.post'])], ['mav']),
+    ).toEqual([]);
+  });
+});
+
+describe('omp names no session, and the projected shim says so', () => {
+  it('declares an EMPTY session-var list', () => {
+    // Measured, not assumed: no `*_SESSION_ID` variable is set for a child process
+    // anywhere in omp's coding-agent source. The emitter used to stamp claude's two
+    // names into this harness's shims, asserting a bridge with no far end.
+    expect(ompHarnessAdapter.sessionEnvVars).toEqual([]);
+  });
+
+  it('REFUSES instead of running sessionless, and names the way out', () => {
+    const shim = runtimeShimContent('memory', ompHarnessAdapter.sessionEnvVars);
+    expect(shim).not.toMatch(/CLAUDE/);
+    expect(shim).toContain('process.exit(3)');
+    // The refusal has to be actionable: a sessionless invocation mints a fresh id
+    // per call, and the lock it takes is held against a pid that already exited.
+    expect(shim).toContain('AGENT_SESSION_ID_FROM');
   });
 });

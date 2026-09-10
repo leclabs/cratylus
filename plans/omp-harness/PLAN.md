@@ -24,6 +24,14 @@ job reported success for publishing nothing. And CI had never once published the
 skipping a version already there. Diagnosed by asking npm for attestations rather than reading
 the workflow, and fixed by configuring a trusted publisher.
 
+**The mechanism half is closed (2026-09-10, AAI-6).** `t-omp-scope-activated-hooks`
+shipped: `project` no longer reads the absence of `hooks()` as the absence of a hook
+surface, so all five session-scoped cells reach an omp host as one extension module per
+scope — the session root plus every projected profile. Two silences on the same seam went
+with it: skills were deployed to `~/.omp/skills`, which omp never scans, and the
+omp-projected runtime shim carried claude's session-variable names. See the shard's
+result for what is verified and what is only verified at the module boundary.
+
 ## Why omp, and why now
 
 **It is not just a third harness.** Three of its native features are things `cratylus` either
@@ -53,15 +61,15 @@ subagent sense, like Claude's — and there is no `--agent` flag. That gap is th
 
 ## Shards
 
-| state         | task                          | concern                                                                                 |
-| ------------- | ----------------------------- | --------------------------------------------------------------------------------------- |
-| **completed** | `t-omp-persona-bootstrap`     | hand-adapt projected artifacts + an alias; prove the harness carries a persona at all   |
-| **completed** | `t-omp-agent-extension`       | launch AS a declared agent — delivered as `forge`'s omp adapter, not an extension       |
-| **ready**     | `t-cross-harness-continuity`  | wake and handoff work across claude ↔ omp; `--from-claude` is the seam                  |
-| pending       | `t-omp-scope-activated-hooks` | the five session-scoped cells omp deploys nothing for — no stance gate, no memory nudge |
-| pending       | `t-adopt-omp-memory`          | omp's memory backend replaces the bespoke strategy                                      |
-| pending       | `t-adopt-collab`              | `/collab` replaces `provisional-mailbox`                                                |
-| **completed** | `t-omp-deploy-installs-ext`   | there is no extension — the projected FACE is the launcher, and deploy places it        |
+| state         | task                          | concern                                                                                                                                 |
+| ------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **completed** | `t-omp-persona-bootstrap`     | hand-adapt projected artifacts + an alias; prove the harness carries a persona at all                                                   |
+| **completed** | `t-omp-agent-extension`       | launch AS a declared agent — delivered as `forge`'s omp adapter, not an extension                                                       |
+| **ready**     | `t-cross-harness-continuity`  | wake and handoff work across claude ↔ omp; `--from-claude` is the seam                                                                  |
+| **completed** | `t-omp-scope-activated-hooks` | the five session-scoped cells omp deployed nothing for — closed by widening the port with `scopeActivatedSurface`, one module per scope |
+| pending       | `t-adopt-omp-memory`          | omp's memory backend replaces the bespoke strategy                                                                                      |
+| pending       | `t-adopt-collab`              | `/collab` replaces `provisional-mailbox`                                                                                                |
+| **completed** | `t-omp-deploy-installs-ext`   | there is no extension — the projected FACE is the launcher, and deploy places it                                                        |
 
 **A note on how the frontier goes empty.** Completing `t-omp-agent-extension` left `ready` and
 `active` both empty with five shards pending, and `praxis` reads that as an ill-formed cut — a
