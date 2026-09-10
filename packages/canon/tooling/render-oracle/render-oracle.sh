@@ -21,10 +21,18 @@
 #           that a reviewer must accept.
 #   print   recompute and echo, changing nothing.
 #
-# BOTH TARGETS OR IT IS HALF A PROOF. The claude and codex renders are hashed
-# together: the codex adapter drifted once and shipped SESSIONLESS runtime shims
-# to every codex-projected skill for the life of the divergence, precisely
-# because only one target was being watched.
+# EVERY TARGET OR IT IS PART OF A PROOF. All three renders — claude, codex, omp —
+# are hashed together: the codex adapter drifted once and shipped SESSIONLESS
+# runtime shims to every codex-projected skill for the life of the divergence,
+# precisely because only one target was being watched.
+#
+# THE SAME THING THEN HAPPENED TO OMP, one harness later and worse. It joined the
+# adapter roster, the deploy path and the parity gate, and NOT this list — so for
+# the whole of that interval its projection was unwatched, and what it shipped in
+# that interval was: no mechanism at all (every scope-activated cell warned about
+# and dropped) and a runtime shim asserting claude's session variables on a harness
+# that sets none. A target absent from the oracle is a target with no regression
+# hash, and "add a harness" therefore means add it HERE, in the same commit.
 #
 # THE OUT DIRS ARE NOT REMOVED FIRST, AND MUST NOT BE. `cratylus project` now
 # converges its own `--out`: it writes the tree and prunes what a prior run of
@@ -57,8 +65,22 @@ cd "$repo_root"
 
 canon="packages/canon"
 expected_file="$canon/.render-oracle"
-claude_out="$repo_root/.cratylus/claude"
-codex_out="$repo_root/.cratylus/codex"
+
+# EVERY HARNESS THIS CORPUS PROJECTS, named once. Two of them were spelled as
+# separate variables and threaded through `compute`, `update` and `check` by hand,
+# so adding the third meant editing four places — and omp was added to the adapter
+# roster, the deploy path and the parity gate WITHOUT being added here. It rendered
+# unwatched for the whole of that interval, which is precisely the interval in which
+# its projection shipped no mechanism at all and sessionless runtime shims.
+#
+# A list, so a fourth harness is one line.
+harnesses="claude codex omp"
+out_dirs=""
+for h in $harnesses; do
+  out_dirs="$out_dirs $repo_root/.cratylus/$h"
+done
+# Strip the leading space so word-splitting yields exactly the targets.
+out_dirs=${out_dirs# }
 
 # The build-time CLI's entry, read out of forge's OWN manifest.
 #
@@ -88,8 +110,9 @@ cli() {
 
 compute() {
   entry="packages/cli/$(cli)"
-  node "$entry" project --harness claude --out "$claude_out" >/dev/null 2>&1
-  node "$entry" project --harness codex  --out "$codex_out"  >/dev/null 2>&1
+  for h in $harnesses; do
+    node "$entry" project --harness "$h" --out "$repo_root/.cratylus/$h" >/dev/null 2>&1
+  done
   # PROJECTED BYTES ONLY. `-type f` picks up dotfiles, and the render root also
   # carries `.forge/` — the writer's prune RECORD, bookkeeping about the render
   # rather than a rendered artifact. Hashing it would make the oracle's value a
@@ -110,8 +133,9 @@ compute() {
   # Locale was one such variable; the tree's own location was another. `cd` to the parent and
   # emit relative paths, so an intra-tree move is still caught — a file changing place inside
   # the render IS a real change — while relocating the whole tree is not.
-  cd "$(dirname "$claude_out")" || return 1
-  find "$(basename "$claude_out")" "$(basename "$codex_out")" -name .forge -prune -o -type f -print |
+  cd "$repo_root/.cratylus" || return 1
+  # shellcheck disable=SC2086 — word-splitting IS the enumeration here.
+  find $harnesses -name .forge -prune -o -type f -print |
   # LC_ALL=C IS THE DIFFERENCE BETWEEN AN ORACLE AND A LOCAL OPINION.
   #
   # `sort` collates by LOCALE. This ran under a developer's `en_US.UTF-8` on macOS and under
@@ -167,10 +191,11 @@ case "${1:-check}" in
     TMP_ON_DISK=$(mktemp) TMP_IN_MAN=$(mktemp)
     trap 'rm -f "$TMP_ON_DISK" "$TMP_IN_MAN"' EXIT
     actual=$(compute)
-    strays=$( { unattributable "$claude_out"; unattributable "$codex_out"; } | grep -c . || true)
+    # shellcheck disable=SC2086 — the target list is the enumeration.
+    strays=$(for o in $out_dirs; do unattributable "$o"; done | grep -c . || true)
     if [ "$strays" -gt 0 ]; then
       echo "REFUSING to re-baseline: $strays file(s) the projector cannot account for" >&2
-      { unattributable "$claude_out"; unattributable "$codex_out"; } | sed 's/^/  /' >&2
+      for o in $out_dirs; do unattributable "$o"; done | sed 's/^/  /' >&2
       echo "  clear the render tree and retry: rm -rf $repo_root/.cratylus" >&2
       exit 2
     fi
@@ -200,7 +225,7 @@ case "${1:-check}" in
       echo "writer's prune record is unattributable and will never be pruned — the" >&2
       echo "command removes only what it can account for having written. CI is always" >&2
       echo "cold so it cannot hit this. Clear it once, by hand:" >&2
-      echo "  rm -rf $claude_out $codex_out" >&2
+      echo "  rm -rf $out_dirs" >&2
       exit 1
     fi
     ;;
