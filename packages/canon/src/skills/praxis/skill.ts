@@ -18,9 +18,7 @@ pre     : P → return
 spec(t) ≜ ⟨ intent(t), inputs(t), constraints(t), deps(t), outputs(t), accept(t) ⟩
 census  : intent → ⟨scope, static, deps⟩
 executor : P ⇀ agent
-self     ≜ session⟨AGENT_SESSION_ID⟩
-registered, released, stale : session → 𝔹
-live     : session → 𝔹
+self     ≜ session⟨the harness's own session identity⟩
 owner   : P ⇀ session
 bound    : P → 𝔹 ⟨plan-level commitment · persists across sessions · ¬ shard-state⟩
 gates    : P × P → 𝔹
@@ -65,8 +63,7 @@ phase    : P → Phase
 
 blocked(t)  ⇔ ∃ u : (t, u) ∈ R ∧ state(u) ≠ completed
 ruling-owed(t) ⇔ a decision nobody has taken stands between t and its acceptance ⟨¬ a dep ∵ a dep is mechanical sequencing an executor can wait out⟩
-live(s)     ⇔ registered(s) ∧ ¬ released(s) ∧ ¬ stale(s)
-occupied(P) ⇔ owner(P) defined ∧ owner(P) ≠ self ∧ live(owner(P))
+occupied(P) ⇔ owner(P) defined ∧ owner(P) ≠ self ⟨liveness is ¬ DECIDABLE here ∵ the owner is another session and no harness lets this one interrogate it · ∴ occupancy is read off the RECORD, ¬ off a registry⟩
 retires(c, P) ⇔ c deletes dir(P) ⟨the twin of lands · retirement is VCS-carried, ¬ residence-carried⟩
 retired(P)  ⇔ retirement(P) defined
 superseded(P) ⇔ .superseded-by @ dir(P)
@@ -86,7 +83,7 @@ nextPhase     ≜ { proposed ↦ in-flight, in-flight ↦ landed, landed ↦ ret
 
 ∀ t ∈ P : t @ dir(P)/state(t)
 owner(P) @ dir(P)/.owner
-registered, released, stale @ memory-session-registry
+owner(P) released @ unbind ∨ land ∨ retire ⟨an abandoned .owner reads as occupied until then · the cost is paid ONCE ∧ VISIBLY by an operator deleting a file they can see ≺ every session ∧ INVISIBLY by a registry swearing a dead pid was live⟩
 ∀ t : content(t) ⊨ spec(t)
 ∀ t : ∀ p ∈ static(t) : p exists at authoring
 ∀ t : ∀ p ∈ outputs(t) : p exists ∨ the directory holding p exists ⟨a shard MAY create a file ∴ a non-resolving output is ¬ automatically a typo · the PARENT discriminates a creation target from a misspelling⟩
@@ -134,7 +131,7 @@ retired(P) ⇒ P ∉ Plans ⟨retire removes the member · Plans is disk, ∴ ph
 ∀ P : stored(P) = ∅ ⟨landing ∧ retirement alike : recomputed from VCS every call, written nowhere⟩
 list = Plans
 yield(P)  ≜ what EXECUTING P established ∧ ¬ derivable from intent(P) @ ENGINE ⟨enters as Intent, ¬ as a Sign : execution establishes what needs naming, ¬ the name⟩
-drained(y) ⇔ ∀ i ∈ y : i authored into its strongest seam ⟨gate ≻ cell ≻ governing-doc @ dream⟩ ∨ i filed as a canon-candidate ⟨¬ agent-private memory : a private home is where the NEXT agent re-derives it⟩
+drained(y) ⇔ ∀ i ∈ y : i authored into its strongest seam ⟨gate ≻ cell ≻ governing-doc @ retire⟩ ∨ i filed as a canon-candidate ⟨¬ agent-private store : a private home is where the NEXT agent re-derives it⟩
 retire(P) defined ⇔ terminal(P) ∧ drained(yield(P))
 supersede(P, Q) ⇒ superseded(P)
 ∀ t : conform(content(t))
@@ -168,7 +165,7 @@ upsert    : (P, intent) ↦ P' ≜ author census-grounded t(s) ∧ P' = P ∪ {t
 list      : ↦ ℘(P)
 elect     : ↦ P ≜ the ≻-greatest of electable ; pre electable ≠ ∅
 bind      : P ↦ P ≜ write .bound @ dir(P) ; pre ∀ Q ≠ P : ¬ bound(Q) ; post ∃! bound
-unbind    : P ↦ P ≜ remove .bound @ dir(P) ; pre done(P) ∨ terminal(P) ∨ operator-redirect
+unbind    : P ↦ P ≜ remove .bound @ dir(P) ∧ remove .owner @ dir(P) ; pre done(P) ∨ terminal(P) ∨ operator-redirect
 file      : (P, d) ↦ P' ≜ stub t @ dir(P)/pending : ⟨symptom(d), locus(d), provenance(d)⟩ ;
             ¬ census ∧ ¬ re-slice ∧ ¬ re-mirror ; post P' = P ∪ { t }
 triage    : d ↦ impedes(d, t) ⇒ fix(d) ; ¬ impedes(d, t) ⇒ file(owns(d), d)

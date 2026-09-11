@@ -47,9 +47,6 @@ describe('runDeploy (local)', () => {
     expect(rc).toBe(0);
     // bare-home guard appended .claude
     expect(existsSync(join(home, '.claude', 'agents', 'mav.md'))).toBe(true);
-    expect(existsSync(join(home, '.agents', 'mav', 'EPISODIC.jsonl'))).toBe(
-      true,
-    );
   });
 
   it('--kind all deploys agent + skill + hooks in ONE invocation', async () => {
@@ -71,9 +68,6 @@ describe('runDeploy (local)', () => {
     const cd = join(home, '.claude');
     // agent kind landed
     expect(existsSync(join(cd, 'agents', 'mav.md'))).toBe(true);
-    expect(existsSync(join(home, '.agents', 'mav', 'EPISODIC.jsonl'))).toBe(
-      true,
-    );
     // skill kind landed
     expect(existsSync(join(cd, 'skills', 'wake', 'SKILL.md'))).toBe(true);
     // hooks kind landed (worker scripts + merged settings.json)

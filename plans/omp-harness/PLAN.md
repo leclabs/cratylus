@@ -4,13 +4,21 @@
 
 ## Where this stands
 
-**`omp --profile <name>` is this harness's `claude --agent <name>`, and it is shipped.**
-`t-omp-agent-extension` closed 2026-08-07 and delivered a real `forge` adapter rather than the
-extension its title anticipated — the persona is a projected face at
-`profiles/<name>/agent/APPEND_SYSTEM.md`, and the per-agent SCOPE is that directory, because
-omp's native config root is profile-scoped. Live as `@cratylus/forge@0.3.0` and
-`cratylus@0.2.1`, both with sigstore provenance, and validated on `coal` from the published
-package with no corpus on disk.
+**THE PROFILE CARRIER IS PALIMPSEST (ruling, 2026-09-10).** `t-omp-agent-extension` shipped the
+persona as a projected face at `profiles/<name>/agent/APPEND_SYSTEM.md`, and that reading is now
+withdrawn: an omp profile is an ENVIRONMENT — it silos auth, MCP, models, sessions and `agent.db`
+— so carrying identity in one forced a copy of the operator's whole environment per persona. The
+cost was measured, not predicted: the first run in the `mav` profile returned `401 User not found`
+(§ 2 of `DELTA.md`), and on `upmav` that profile's `mcp.json` was a byte-duplicate of the default
+profile's 17-server org config.
+
+**Identity is the LAUNCH SPEC; environment stays the profile; the two are orthogonal.** Each
+persona is projected into a harness-neutral `~/.agents/<name>/`: `APPEND_SYSTEM.md` (passed with
+`--append-system-prompt`), `omp.yml` (passed with `--config`, naming that persona's `extensions/`
+dir), and an executable `omp-launch` that combines them. Skills land ONCE at `~/.agents/skills/`,
+which omp reads natively through its vendor-neutral `.agent[s]` provider at priority 70 — so the
+11-way per-profile skill fan-out is gone with the profiles. `omp --profile work` remains available
+for anyone who wants an isolated environment; it is no longer how a persona is named.
 
 **The owed fix is discharged.** `d4a01b7c` — the zero-config `install` path emitting no runtime
 event vocabulary — shipped in `cratylus@0.2.1` and is verified on coal, the host that carried
@@ -23,6 +31,22 @@ job reported success for publishing nothing. And CI had never once published the
 `cratylus` name — a hand-publish put `0.2.0` on the registry and every run since "succeeded" by
 skipping a version already there. Diagnosed by asking npm for attestations rather than reading
 the workflow, and fixed by configuring a trusted publisher.
+
+**The mechanism half is closed (2026-09-10, AAI-6).** `t-omp-scope-activated-hooks` shipped:
+`project` no longer reads the absence of `hooks()` as the absence of a hook surface, so every
+session-scoped cell reaches an omp host as one extension module per scope — each persona's own
+`~/.agents/<name>/extensions/`, named by that persona's overlay, plus `~/.omp/agent/extensions/`
+for a bare `omp` that named no persona. Two silences on the same seam went with it: skills were
+deployed to `~/.omp/skills`, which omp never scans, and the omp-projected runtime shim carried
+claude's session-variable names.
+
+**Three cells left the corpus with it (2026-09-10).** `wake` and `dream` are gone because a
+harness-native memory backend beats a corpus-projected one and ours conflicted with the good ones
+(omp's hindsight); `handoff` is gone because modern harnesses carry continuity natively. Their two
+dedicated hook cells — the consolidation nudge and the resume notice — went with them, and
+`praxis` was decoupled from the memory session registry: occupancy is now read off the `.owner`
+record it already wrote, because liveness was never decidable from another session anyway. The
+`memory` runtime and its CLI survive as a dormant library for the successor design.
 
 ## Why omp, and why now
 
@@ -53,15 +77,15 @@ subagent sense, like Claude's — and there is no `--agent` flag. That gap is th
 
 ## Shards
 
-| state         | task                          | concern                                                                                 |
-| ------------- | ----------------------------- | --------------------------------------------------------------------------------------- |
-| **completed** | `t-omp-persona-bootstrap`     | hand-adapt projected artifacts + an alias; prove the harness carries a persona at all   |
-| **completed** | `t-omp-agent-extension`       | launch AS a declared agent — delivered as `forge`'s omp adapter, not an extension       |
-| **ready**     | `t-cross-harness-continuity`  | wake and handoff work across claude ↔ omp; `--from-claude` is the seam                  |
-| pending       | `t-omp-scope-activated-hooks` | the five session-scoped cells omp deploys nothing for — no stance gate, no memory nudge |
-| pending       | `t-adopt-omp-memory`          | omp's memory backend replaces the bespoke strategy                                      |
-| pending       | `t-adopt-collab`              | `/collab` replaces `provisional-mailbox`                                                |
-| **completed** | `t-omp-deploy-installs-ext`   | there is no extension — the projected FACE is the launcher, and deploy places it        |
+| state         | task                          | concern                                                                                                                                 |
+| ------------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| **completed** | `t-omp-persona-bootstrap`     | hand-adapt projected artifacts + an alias; prove the harness carries a persona at all                                                   |
+| **completed** | `t-omp-agent-extension`       | launch AS a declared agent — delivered as `forge`'s omp adapter, not an extension                                                       |
+| **completed** | `t-cross-harness-continuity`  | `wake`/`handoff` across claude ↔ omp — closed, and its subject retired with the cells                                                   |
+| **completed** | `t-omp-scope-activated-hooks` | the five session-scoped cells omp deployed nothing for — closed by widening the port with `scopeActivatedSurface`, one module per scope |
+| **completed** | `t-omp-launch-spec-carrier`   | the profile carrier was an environment fork — identity moved to a launch spec under a neutral `~/.agents/` root                         |
+| pending       | `t-adopt-collab`              | `/collab` replaces `provisional-mailbox`                                                                                                |
+| **completed** | `t-omp-deploy-installs-ext`   | there is no extension — the projected FACE is the launcher, and deploy places it                                                        |
 
 **A note on how the frontier goes empty.** Completing `t-omp-agent-extension` left `ready` and
 `active` both empty with five shards pending, and `praxis` reads that as an ill-formed cut — a

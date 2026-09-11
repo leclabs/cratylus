@@ -295,9 +295,11 @@ const SPEC =
   /(?:\bfrom\s*|(?:^|[^.\w])import\s*|\brequire\s*\(\s*)['"]([^'"]+)['"]/g;
 
 function pkgOf(spec: string): Pkg | null {
-  const m = spec.match(
-    /^@cratylus\/(canon|forge|runtime|memory|invoke|schema)/,
-  );
+  // `invoke` was in this alternation and is not a package: it was renamed `cratylus`
+  // in `bd88ef9b` and the name now exists only on the registry, deprecated. `Pkg`
+  // never carried it either, so the branch mapped a specifier onto a value the union
+  // refuses.
+  const m = spec.match(/^@cratylus\/(canon|forge|runtime|memory|schema)/);
   return m ? (m[1] as Pkg) : null;
 }
 

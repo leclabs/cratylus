@@ -22,11 +22,13 @@
 //       byte. Both are RESOLVED bytes, which is the only form that ever reaches a
 //       host.
 //
-// LEG (4) WAS SITE-SPECIFIC AND IS NOW A SCAN, because the cell it named stopped
-// importing `CLI_BIN` — that import was ARCHITECTURE's last property-1 breach,
-// and THIS FILE REQUIRED IT: `CONSUMERS` held the cell and asserted its source
-// contained the symbol, so the only mechanism admitted was the import. The cell now
-// carries `{{fact:runtime-bin}}` and the PROJECTOR substitutes.
+// LEG (4) WAS SITE-SPECIFIC AND BECAME A SCAN, because the cell it named
+// (`memory-consolidation-nudge`) stopped importing `CLI_BIN` — that import was
+// ARCHITECTURE's last property-1 breach, and THIS FILE REQUIRED IT: `CONSUMERS`
+// held the cell and asserted its source contained the symbol, so the only
+// mechanism admitted was the import. The scan outlived the cell: that cell (and
+// the memory skill triad it served) is since deleted, but the DEPLOY_TOOL half
+// of the sweep (`deploy-drift-notice`) still exercises the same mechanism.
 //
 // The replacement is strictly stronger, not a relaxation. The old leg captured ONE
 // worker at ONE hard-coded path; the sweep captures every projected hook artifact and
@@ -76,24 +78,27 @@ import { CLI_BIN } from '@cratylus/runtime/bin-name';
 import { runCli } from '@cratylus/runtime/main';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { deployDriftNotice } from '../src/hooks/deploy-drift-notice.js';
-import { memoryConsolidationNudge } from '../src/hooks/memory-consolidation-nudge.js';
+import { stanceGuardrail } from '../src/hooks/stance-guardrail.js';
 import canonPlugin from '../src/index.js';
 import { cellTargets } from '../tooling/project-targets.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = join(canonRoot, '..', '..');
 
-/** A corpus cell that declares `runtime: {capability:'memory'}` — the shim carrier. */
-const CELL = 'wake';
-const CAPABILITY = 'memory';
+/** A corpus cell that declares a `runtime` capability — the shim carrier.
+ *  `memory` had this role via the wake/dream/handoff triad and `carry-on` via
+ *  `carryOn`; both are gone (the cells deleted, the elevation decoupled from the
+ *  plan-bound runtime it used to drive), so `event-tap` is the last cell that
+ *  projects a shim and the only witness this gate can read. */
+const CELL = 'event-tap';
+const CAPABILITY = 'eventTap';
 
 /**
  * Every source file that SPEAKS the bin name, and must therefore not SPELL it.
  *
- * `canon/src/hooks/memory-consolidation-nudge.ts` WAS HERE and is gone by REPAIR. A
- * canon cell may not reach the runtime at all now (property 1), so it neither spells
- * the name nor imports it — it names the FACT. Its bytes are still held, harder than
- * before, by the render-tree sweep below.
+ * `canon/src/hooks/memory-consolidation-nudge.ts` — the one canon cell that ever
+ * imported `CLI_BIN` — is deleted along with the memory skill triad it served
+ * (property 1 forbids the edge; there is now nothing here to hold against it).
  */
 const CONSUMERS = [
   'packages/runtime/src/main.ts',
@@ -115,8 +120,9 @@ const CONSUMERS = [
 const read = (rel: string): string =>
   readFileSync(join(repoRoot, rel), 'utf-8');
 
-/** The committed hook worker — regenerated from the cell, never hand-edited. */
-const workerPath = memoryConsolidationNudge.workers?.[0]?.targetPath ?? '';
+/** A committed hook worker that names no deploy tool — the negative-control witness
+ *  for the DEPLOY_TOOL leg below (was `memory-consolidation-nudge`, since deleted). */
+const workerPath = stanceGuardrail.workers?.[0]?.targetPath ?? '';
 
 /** The command's ONE home read the way npm reads it — the `bin` key, no compiler in
  *  the loop. A shell worker cannot import the constant, so a worker that SPELLS the
@@ -226,7 +232,7 @@ describe('the bin name has exactly one home', () => {
     }
   });
 
-  it("invoke's `bin` manifest key agrees with CLI_BIN", () => {
+  it("the hub package's `bin` manifest key agrees with CLI_BIN", () => {
     // The one copy no compiler can reach. If a rename flips the constant and not
     // this key, the installed executable and everything that spawns it disagree —
     // and nothing but this assertion notices.
@@ -278,42 +284,6 @@ describe('the bin name has exactly one home', () => {
     expect(projectedShim).toContain(`['${CAPABILITY}',`);
   });
 
-  it('EVERY hook artifact that names the bin defaults $MEMORY_BIN to CLI_BIN', async () => {
-    // A SWEEP, not a named path. Two populations of RESOLVED bytes, and both are
-    // operative: what `projectPluginSet` emits into a deploy tree, and what
-    // `cellTargets()` commits to the repo. The cell's raw `workers[].content` is NOT
-    // scanned and must not be — it is a TEMPLATE now, carrying `{{fact:runtime-bin}}`
-    // rather than a name, and asserting over it would assert over the wrong subject.
-    const committed = (await cellTargets())
-      .filter((t) => t.kind === 'hook')
-      .map((t) => [`target ${t.path}`, t.content] as const);
-    const population = [...projectedHooks, ...committed];
-    expect(
-      population.length,
-      'nothing projected or committed to sweep',
-    ).toBeGreaterThan(0);
-
-    const naming = population.filter(([, text]) => text.includes('MEMORY_BIN'));
-    // NON-VACUITY. A sweep over a population that happens to name the bin nowhere is
-    // green and DARK — precisely the failure this file was written against. At least
-    // one artifact must be under test, in each population.
-    expect(
-      naming.map(([where]) => where).filter((w) => w.startsWith('hooks/'))
-        .length,
-      'no PROJECTED hook artifact names the bin — the sweep is dark',
-    ).toBeGreaterThan(0);
-    expect(
-      naming.map(([where]) => where).filter((w) => w.startsWith('target '))
-        .length,
-      'no COMMITTED target names the bin — the sweep is dark',
-    ).toBeGreaterThan(0);
-
-    for (const [where, text] of naming) {
-      const fallback = text.match(/MEM="\$\{MEMORY_BIN:-([^}]+)\}"/)?.[1];
-      expect(fallback, `${where} names a stale bin`).toBe(CLI_BIN);
-    }
-  });
-
   it('EVERY hook artifact that names the DEPLOY TOOL agrees with forge’s `bin` key', async () => {
     // The forge CLI's one home is a MANIFEST KEY, read here rather than transcribed —
     // a transcription would be the second copy this whole file exists to forbid.
@@ -325,8 +295,8 @@ describe('the bin name has exactly one home', () => {
       ([, text]) => deployTool(text) !== undefined,
     );
     // NON-VACUITY, per population: a sweep that happens to find the assignment
-    // nowhere is green and DARK — the exact failure the MEMORY_BIN leg above was
-    // rewritten to close, one bin over.
+    // nowhere is green and DARK — precisely the failure this file was written
+    // against.
     expect(
       naming.map(([where]) => where).filter((w) => w.startsWith('hooks/'))
         .length,
@@ -374,8 +344,6 @@ describe('the bin name has exactly one home', () => {
  *  synthetic BAD corpus can be fed to the very same code the gate above runs. */
 const spawnedBin = (shim: string): string | undefined =>
   shim.match(/spawnSync\('([^']+)',/)?.[1];
-const memFallback = (sh: string): string | undefined =>
-  sh.match(/MEM="\$\{MEMORY_BIN:-([^}]+)\}"/)?.[1];
 const manifestBins = (json: string): string[] =>
   Object.keys((JSON.parse(json) as { bin: Record<string, string> }).bin);
 
@@ -385,7 +353,8 @@ const manifestBins = (json: string): string[] =>
 // it. But the bin's operative sites are shell and `.mjs`: text no compiler reads, and
 // exactly where a missed rename fails ON A HOST rather than at build. ARCHITECTURE
 // says so in as many words. On 2026-08-05 that is precisely what happened — a stale
-// bin stranded every deployed shim, and the repository was green throughout.
+// bin stranded every deployed shim — `/wake`'s (since retired) among them — and
+// the repository was green throughout.
 //
 // The scan is a GLOB, deliberately. Only ONE of the thirteen hand-authored shell/`.mjs`
 // sources currently names the bin, so a roster would encode that accident and go quiet
@@ -549,17 +518,6 @@ describe('the single-home gate is non-vacuous', () => {
     expect(drifted).not.toBe(projectedShim); // the mutation actually landed
     expect(spawnedBin(projectedShim)).toBe(CLI_BIN);
     expect(spawnedBin(drifted)).not.toBe(CLI_BIN);
-  });
-
-  it('FAILS on a hook worker whose $MEMORY_BIN default drifted', () => {
-    const good = read(workerPath);
-    const drifted = good.replace(
-      `MEMORY_BIN:-${CLI_BIN}}`,
-      `MEMORY_BIN:-${STALE}}`,
-    );
-    expect(drifted).not.toBe(good);
-    expect(memFallback(good)).toBe(CLI_BIN);
-    expect(memFallback(drifted)).not.toBe(CLI_BIN);
   });
 
   it('FAILS on a hook worker whose DEPLOY_TOOL drifted from forge’s `bin` key', () => {

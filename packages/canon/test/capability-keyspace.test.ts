@@ -26,10 +26,11 @@
 //     `capabilities/heartbeat/` is a dir with no keyspace member. An equality
 //     with one witness and one counter-example in each direction is not an
 //     invariant, it is a coincidence with a sample size of two.
-//   · `≡ canon skill name` — DROPPED, the relation is 1→N. `memory` is claimed by
-//     THREE skills (`dream`, `handoff`, `wake`) and none of them is named `memory`.
-//     Replaced by the SUBSET direction below, which is the true statement and has
-//     four positive controls.
+//   · `≡ canon skill name` — DROPPED, the relation is 1→N in principle: `memory`
+//     was claimed by THREE skills (`dream`, `handoff`, `wake`, since retired) and
+//     none of them was named `memory`. Replaced by the SUBSET direction below,
+//     which is the true statement; `memory` itself now has zero cells, the same
+//     shape as `heartbeat`.
 //
 // ── THE AXES THIS GATE DOES CHECK, each with its positive-control count ──────────
 //   1. PORT MODULE ⇄ KEYSPACE, as a BICONDITIONAL (2 in-keyspace controls, 1
@@ -41,10 +42,10 @@
 //      list to add it to. The prefix must also be EARNED — see leg 1c.
 //   2. PLUGIN `name:` ≡ THE SIGN'S KEBAB REGISTER (2 controls). `memory`'s plugin
 //      is `name: 'memory'`; the event-tap capability's is `name: 'event-tap'`.
-//   3. SUBSET — ∀ skill · skill.runtime.capability ∈ CAPABILITIES (4 controls:
-//      dream/handoff/wake → `memory`, event-tap → `eventTap`). One-directional on
-//      purpose: a capability with no skill cell is legal, a skill cell forwarding
-//      to a capability no host binds is a shim that dies `unknown capability`.
+//   3. SUBSET — ∀ skill · skill.runtime.capability ∈ CAPABILITIES (2 controls:
+//      carry-on → `carryOn`, event-tap → `eventTap`). One-directional on
+//      purpose: a capability with no skill cell is legal — `memory` is now such a
+//      capability (dream/handoff/wake retired), and `heartbeat` always was one.
 //
 // HOW IT READS THE RUNTIME. By TEXT, over the source path — the precedent
 // `event-tap-cell.test.ts` and memory's `cell-verb-roster.test.ts` both set. canon
@@ -283,9 +284,9 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
     expect(SITES.map((s) => s.name)).toEqual(
       expect.arrayContaining(['event-tap', 'memory']),
     );
-    // dream · handoff · wake → memory, event-tap → eventTap: the four controls the
-    // subset axis rests on.
-    expect(SKILL_CAPS.length).toBeGreaterThanOrEqual(4);
+    // carry-on → carryOn, event-tap → eventTap: the two controls the subset axis
+    // rests on now that memory's cells (dream/handoff/wake) are retired.
+    expect(SKILL_CAPS.length).toBeGreaterThanOrEqual(2);
   });
 
   it('the two registers round-trip on the pairs the corpus actually runs', () => {
@@ -335,15 +336,14 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
   // ── AXIS 3 — the subset direction, which is the true one ───────────────────────
   it('every capability a skill cell declares is a member of the runtime keyspace', () => {
     expect(subsetViolations(CAPABILITIES, SKILL_CAPS)).toEqual([]);
-    // The 1→N that killed the `≡ canon skill name` axis, asserted rather than
-    // remembered: `memory` is claimed by three cells and named by none of them.
-    const memoryCells = SKILL_CAPS.filter((d) => d.capability === 'memory').map(
-      (d) => d.skill,
+    // AXIS 3 is one-directional on purpose: a capability with no skill cell is
+    // legal. `memory` is now such a capability (its three cells — dream, handoff,
+    // wake — are retired) and `heartbeat` always was one; neither breaks the
+    // subset check.
+    const capsWithNoCell = ['memory', 'heartbeat'].filter(
+      (c) => !SKILL_CAPS.some((d) => d.capability === c),
     );
-    expect(memoryCells).toEqual(
-      expect.arrayContaining(['dream', 'handoff', 'wake']),
-    );
-    expect(memoryCells).not.toContain('memory');
+    expect(capsWithNoCell).toEqual(['memory', 'heartbeat']);
   });
 
   it('the corpus vocabulary and the runtime keyspace name the same set', () => {

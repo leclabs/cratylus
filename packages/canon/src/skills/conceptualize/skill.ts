@@ -1,7 +1,20 @@
 import type { Skill, SkillExpression } from '../../manifest.js';
-import { exemplify } from '../exemplify/skill.js';
-import { materialize } from '../materialize/skill.js';
-import { signify } from '../signify/skill.js';
+
+// COMPOSES NOTHING, and that is the repair.
+//
+// This cell used to declare `composition: () => [exemplify, signify, materialize]` and import those
+// modules to do it. The thunk's only consumer is the trailing `Composed from …`
+// line of the projected SKILL.md (`forge/src/core/exemplify/skill-cell.ts`), so each
+// import bought one sentence of provenance and cost a module-level cycle: the four
+// signification cells each claimed to be composed from the other three, and no one of
+// them could be read, taken or deployed alone.
+//
+// The relation those edges named is CITATION, not dependency: `symbol-altitude`'s
+// LEDGER records these cells RESTATING each other's signs in different registers
+// (prose here, signature there), which is what a REFERENCE row means. A citation
+// belongs inside the block, at the sign that borrows it (`@ <cell>`), where it needs
+// no import and cannot cycle. Composition is the caller's: an agent pipes these cells
+// in whatever order the work wants.
 
 export const conceptualize: Skill = {
   name: 'conceptualize',
@@ -32,5 +45,5 @@ cl(cl(X))       = cl(X)
 MECE(C)           ⇔ ( ∀ c≠c' ∈ C : intent(c) ≠ intent(c') ) ∧ ( cl(D) = ⊔ C )
 ⊨ MECE(C)
 C = ∅             ⇒ ⊥` as SkillExpression,
-  composition: () => [exemplify, signify, materialize],
+  composition: () => [],
 };

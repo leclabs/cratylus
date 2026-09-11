@@ -2,12 +2,20 @@
   "name": "@cratylus/workspace",
   "version": "0.0.0",
   "private": true,
-  "description": "This repository's workspace root. PRIVATE and unpublished by construction \u2014 the `@repo` scope is not `@cratylus`, so it cannot be published by accident, and it no longer collides with the `cratylus` package that ships the command.",
-  "type": "module",
-  "packageManager": "pnpm@11.17.0",
-  "engines": {
-    "node": ">=22"
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^26.8.2",
+      "onFail": "error"
+    },
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^12.4.0",
+      "onFail": "error"
+    }
   },
+  "description": "This repository's workspace root. PRIVATE and unpublished by construction — the `@repo` scope is not `@cratylus`, so it cannot be published by accident, and it no longer collides with the `cratylus` package that ships the command.",
+  "type": "module",
   "scripts": {
     "build": "turbo run build",
     "test": "turbo run test",
@@ -18,6 +26,7 @@
     "typecheck:test": "turbo run typecheck:test",
     "canon:project": "pnpm build && pnpm exec cratylus project --harness claude --out .cratylus/claude",
     "canon:project:codex": "pnpm build && pnpm exec cratylus project --harness codex --out .cratylus/codex",
+    "canon:project:omp": "pnpm build && pnpm exec cratylus project --harness omp --out .cratylus/omp",
     "canon:project:targets": "pnpm --filter @cratylus/canon project:targets",
     "canon:deploy:agent": "pnpm exec cratylus deploy --kind agent",
     "canon:deploy:skill": "pnpm exec cratylus deploy --kind skill",
@@ -50,7 +59,7 @@
     "cratylus": "workspace:*",
     "husky": "^9.1.7",
     "prettier": "3",
-    "turbo": "^2.3.0",
+    "turbo": "^2.10.12",
     "typescript": "^5.7.2"
   }
 }

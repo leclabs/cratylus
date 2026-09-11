@@ -60,17 +60,33 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      - uses: actions/setup-node@v5
+      # v6 for the same reason as `.github/actions/setup`: the node version is read out of
+      # `devEngines.runtime`, which only v6.3.0+ can see. This step re-runs `setup-node`
+      # purely for `registry-url` (the `~/.npmrc` + `NODE_AUTH_TOKEN` wiring), so it must
+      # resolve the SAME version the setup action already installed — a literal here would be
+      # a second copy of the pin, and a stale one the first time they disagreed.
+      - uses: actions/setup-node@v6
         with:
-          node-version-file: .nvmrc
+          node-version-file: package.json
           registry-url: https://registry.npmjs.org
 
+      # THE GUARD'S SET IS THE PUBLISH SET, and it had drifted from it in both
+      # directions: it probed `@cratylus/invoke`, a name renamed to `cratylus` in
+      # `bd88ef9b` and now deprecated on the registry, and it omitted `cratylus`
+      # itself — the one package whose `latest` a canary would actually pin for every
+      # consumer typing `npm i cratylus`. So it was green for a retired name and blind
+      # to the live one.
+      #
+      # The set is spelled here rather than derived because `pack-smoke --list` needs an
+      # install and a build, and this gate runs BEFORE both on purpose: refusing early
+      # is the point. A drift between the two is caught by the release itself, which
+      # uploads what the audit listed.
       - name: refuse before the first stable release
         run: |
           set -eu
           missing=''
-          for p in forge invoke memory runtime schema; do
-            npm view "@cratylus/$p" version >/dev/null 2>&1 || missing="$missing @cratylus/$p"
+          for p in cratylus @cratylus/canon @cratylus/forge @cratylus/memory @cratylus/runtime @cratylus/schema; do
+            npm view "$p" version >/dev/null 2>&1 || missing="$missing $p"
           done
           if [ -n "$missing" ]; then
             echo "REFUSING: these packages have no published version yet:$missing" >&2
@@ -105,8 +121,19 @@ jobs:
       - name: version as a snapshot
         run: pnpm exec changeset version --snapshot next
 
+      # NO TOKEN HERE, DELIBERATELY — this is the experiment that proves OIDC.
+      #
+      # Provenance proves nothing about WHICH credential published: a token plus
+      # `NPM_CONFIG_PROVENANCE` attests exactly as well as trusted publishing does. The
+      # only decisive test is a publish with no token present at all, and this is the
+      # path where that is safe to attempt: snapshots go to the `next` dist-tag, create
+      # no tag, no release and no commit, and cannot move `latest`.
+      #
+      # `release.yml` keeps `NODE_AUTH_TOKEN` until this run succeeds. npm prefers OIDC
+      # and FALLS BACK to a token, so a stable release during the window cannot fail for
+      # auth either way — which is precisely why the fallback has to be removed HERE
+      # first, where its absence costs a throwaway version rather than a release.
       - name: publish to the next tag
         run: DIST_TAG=next pnpm run release
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: 'true'

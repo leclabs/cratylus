@@ -80,11 +80,38 @@ export interface PlaceOpts {
    *
    * Defaults to `agents/<name><agentExt>`, which is the render tree's own staging
    * layout and was until now assumed to be every harness's layout too. It is not:
-   * omp reads a persona from `profiles/<name>/agent/APPEND_SYSTEM.md`. A placer
-   * that cannot be told otherwise can only ever deploy harnesses shaped like the
-   * projector.
+   * omp reads a persona from `../.agents/<name>/APPEND_SYSTEM.md`, one directory
+   * OUT of its own harness home. A placer that cannot be told otherwise can only
+   * ever deploy harnesses shaped like the projector.
    */
   agentRel?: (name: string) => string;
+  /**
+   * The harness's DESTINATION layout for one skill (`HarnessAdapter.skillRel`) —
+   * every destination, harnessDir-relative, POSIX.
+   *
+   * Defaults to `[skills/<name>]`, the render tree's staging layout, which is
+   * claude's and codex's destination and is NOT omp's: omp scans
+   * `~/.agents/skills`, so `~/.omp/skills` was a directory the harness never
+   * read and a whole corpus of deployed skills was inert.
+   *
+   * PLURAL because a harness may scope a reader per directory — see the port's
+   * note. `agents` supplies the set those scopes are named after.
+   */
+  skillRel?: (name: string, agents: readonly string[]) => readonly string[];
+  /**
+   * The projected agent set, for the harnesses whose skill (or mechanism) scope is
+   * named after an agent. Read from the render tree by the orchestrator, not
+   * guessed here.
+   */
+  agents?: readonly string[];
+  /**
+   * The harness's DESTINATION layout for a SCOPED artifact
+   * (`HarnessAdapter.scopedRel`) — `agent` absent ⇒ the session-scope copy.
+   *
+   * Absent ⇒ this harness registers its mechanism in a config file (the
+   * `hooksFile` merge) and stages no scoped artifact, so the placer places none.
+   */
+  scopedRel?: (filename: string, agent?: string) => string;
   /** The harness's hook-config filename (`HarnessAdapter.hooksFile`). */
   hooksFile?: string;
   log?: (line: string) => void;

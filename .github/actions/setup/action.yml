@@ -12,26 +12,25 @@ description: Install pnpm, the pinned Node, and the frozen workspace.
 runs:
   using: composite
   steps:
-    # WHY THESE MAJORS, since they are not the newest. The runner has been forcing
-    # `actions/*@v4` onto Node 24 and annotating every run about it; v5 is the first major
-    # that TARGETS Node 24, so it clears the deprecation. `setup-node` v6 then narrows
-    # automatic package-manager caching to npm and v7 reworks the `NODE_AUTH_TOKEN` export —
-    # both touch the publish path, which is currently failing for an unrelated credential
-    # reason. Taking them now would put two variables in one release, so the smallest major
-    # that fixes the stated problem is the one taken. `cache: pnpm` below is EXPLICIT and
-    # unaffected by v6's change either way.
-    #
-    # The pnpm version is pinned by `packageManager` in package.json; letting the action
-    # read it there keeps ONE home for it. v6 is taken in full because its headline change
-    # is pnpm 11 support and this workspace pins `pnpm@11.17.0`.
+    # BOTH HALVES OF THE TOOLCHAIN COME OUT OF `devEngines`, so neither is spelled here.
+    # `pnpm/action-setup@v6` reads `devEngines.packageManager` when `version:` is omitted
+    # (its README documents `packageManager` OR `devEngines.packageManager`), and it supports
+    # pnpm v12, which this workspace now requires.
     - uses: pnpm/action-setup@v6
 
-    - uses: actions/setup-node@v5
+    # `setup-node` HAD to move to v6: reading a node version out of `devEngines.runtime`
+    # landed in v6.3.0, so v5 cannot see the field at all and would have resolved nothing
+    # once `.nvmrc` was deleted. v6's own behaviour change — narrowing AUTOMATIC
+    # package-manager caching to npm — cannot reach this step, because `cache: pnpm` below is
+    # explicit. v7 is still declined: it reworks the `NODE_AUTH_TOKEN` export, which is the
+    # publish path, and that is a separate variable to move on its own.
+    - uses: actions/setup-node@v6
       with:
-        # THE PIN HAS ONE HOME, and it is not this file. `.nvmrc` is read by nvm, fnm, asdf,
-        # this action, and mise — a literal here would be a second copy of a fact that
-        # already has a home, which is the drift this repo just removed.
-        node-version-file: .nvmrc
+        # THE PIN HAS ONE HOME AND THE CONSTRAINT HAS ANOTHER — see `mise.toml`'s header.
+        # This reads `devEngines.runtime`, so the version CI installs is the one the install
+        # would refuse to run without: `package.json` is checked BY the tool that enforces it,
+        # which is what the deleted `.nvmrc` could never be.
+        node-version-file: package.json
         cache: pnpm
 
     # `--frozen-lockfile` is the point: it fails if the lockfile disagrees with the

@@ -194,7 +194,7 @@ describe('SYMBOLS gate — fence-interior glyph coverage', () => {
 
   it('every skill formalBlock uses only declared / exempt glyphs', async () => {
     const modules = await collect('skills/*/skill.ts');
-    expect(modules.length).toBe(16);
+    expect(modules.length).toBe(13);
     const failures: string[] = [];
     for (const rel of modules) {
       const s = await firstExport<Skill>(join(srcRoot, rel));

@@ -91,7 +91,6 @@ const SKIP_DIRS: ReadonlySet<string> = new Set([
   'node_modules',
   'dist',
   'coverage',
-  'graphify-out',
   // ONE entry, because the projection now has ONE root. This was two —
   // `.render-ts` and `.render-ts-codex` — plus a third, `.render`, left over from a
   // Python pipeline that no longer exists. Every member of this set is matched as a

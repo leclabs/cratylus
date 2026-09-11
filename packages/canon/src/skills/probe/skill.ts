@@ -1,7 +1,20 @@
 import type { Skill, SkillExpression } from '../../manifest.js';
-import { conceptualize } from '../conceptualize/skill.js';
-import { elicit } from '../elicit/skill.js';
-import { signify } from '../signify/skill.js';
+
+// COMPOSES NOTHING, and that is the repair.
+//
+// This cell used to declare `composition: () => [signify, elicit, conceptualize]` and import those
+// modules to do it. The thunk's only consumer is the trailing `Composed from …`
+// line of the projected SKILL.md (`forge/src/core/exemplify/skill-cell.ts`), so each
+// import bought one sentence of provenance and cost a module-level cycle: the four
+// signification cells each claimed to be composed from the other three, and no one of
+// them could be read, taken or deployed alone.
+//
+// The relation those edges named is CITATION, not dependency: `symbol-altitude`'s
+// LEDGER records these cells RESTATING each other's signs in different registers
+// (prose here, signature there), which is what a REFERENCE row means. A citation
+// belongs inside the block, at the sign that borrows it (`@ <cell>`), where it needs
+// no import and cannot cycle. Composition is the caller's: an agent pipes these cells
+// in whatever order the work wants.
 
 const FORMAL_BLOCK = `D    ≜ distinction space ⟨structured knowledge to draw on⟩
 cl   ≜ closure ⟨smallest concept containing a set of priors⟩
@@ -56,5 +69,5 @@ export const probe: Skill = {
   name: 'probe',
   description: `use this skill to probe a signifier — read out the priors a word, phrase, or candidate name fires in the reader (\`fired\`, signify's decoder \`dec\` generalized off its assigned anchors) and the concept they circumscribe; the forward, no-commit inverse of signify, for discovering the concept latent in a name or experimenting with candidate anchors before committing — a keeper crystallizes through signify.`,
   formalBlock: FORMAL_BLOCK,
-  composition: () => [signify, elicit, conceptualize],
+  composition: () => [],
 };

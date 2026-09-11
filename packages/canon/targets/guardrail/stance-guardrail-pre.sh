@@ -55,7 +55,7 @@ enabled="$(git config --bool agentfactory.stanceGuard 2>/dev/null || echo false)
 [ "$enabled" = "true" ] || allow
 
 # --- agent-scope gate -----------------------------------------------------------------------
-# Only enforce for the configured agents (default: the principal-ic-intrinsic agents).
+# Only enforce for the configured agents (default: the principal-self agents).
 # agent_type is present only for a subagent / --agent tool call; absent for the top-level
 # session -> fail open (unless STANCE_GUARD_AGENTS=*), exactly like the Stop guard.
 agent_type="$(printf '%s' "$input" | jq -r '.agent_type // empty' 2>/dev/null || true)"

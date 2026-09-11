@@ -13,6 +13,10 @@
       "types": "./dist/core/module-scan.d.ts",
       "import": "./dist/core/module-scan.js"
     },
+    "./harness-adapter": {
+      "types": "./dist/core/harness-adapter.d.ts",
+      "import": "./dist/core/harness-adapter.js"
+    },
     "./catalog": {
       "types": "./dist/catalog/index.d.ts",
       "import": "./dist/catalog/index.js"

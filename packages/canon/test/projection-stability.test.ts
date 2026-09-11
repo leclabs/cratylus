@@ -6,6 +6,7 @@
 // and agent module still imports and PROJECTS (non-empty, no throw), at the
 // expected cardinalities. A broken module / projection fails the suite.
 
+import { readdirSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -17,8 +18,8 @@ import type { Skill } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import { MANIFEST } from '../src/manifest.js';
 import type { Agent } from '../src/manifest.js';
-import { dream } from '../src/skills/dream/skill.js';
-import { wake } from '../src/skills/wake/skill.js';
+import { carryOn } from '../src/skills/carry-on/skill.js';
+import { formalize } from '../src/skills/formalize/skill.js';
 import { fragmentToMarkdown } from '../tooling/project.js';
 import { firstExport } from './support/cell-module.js';
 
@@ -77,7 +78,7 @@ describe('projection stability (.ts is the sole source)', () => {
 
   it('every skill projects non-empty', async () => {
     const modules = await collect('skills/*/skill.ts');
-    expect(modules.length).toBe(16);
+    expect(modules.length).toBe(13);
     for (const rel of modules) {
       const s = await firstExport<Skill>(join(srcRoot, rel));
       const rendered = renderSkill(s);
@@ -96,35 +97,65 @@ describe('projection stability (.ts is the sole source)', () => {
   // lifted out of a stored body) no longer exists: the formalBlock IS the whole
   // payload. This guards that the formalBlock reaches the projection intact AND the
   // composition thunk resolves to the live siblings' `/trigger`s.
-  it('rendered dream + wake project their formalBlock + composed-from siblings', () => {
-    const dreamMd = renderSkill(dream);
+  it('rendered formalize + carry-on project their formalBlock, composed-from only when composed', () => {
+    const formalizeMd = renderSkill(formalize);
     // the σ* formalBlock law lines render VERBATIM inside the fence …
-    expect(dreamMd).toContain(
-      'dream ≜ read ⟨EPISODIC⟩ ↦ exemplify ↦ materialize',
+    expect(formalizeMd).toContain(
+      'self-sufficient(B) ⇔ closed(B) ∧ complete(B) ∧ ordered(B)',
     );
-    expect(dreamMd).toContain('lock-precondition ≜');
+    expect(formalizeMd).toContain('¬self-sufficient(B) ⇒ ⊥');
     // … and the composition thunk reaches the projected "Composed from" line.
-    expect(dreamMd).toContain('Composed from /exemplify · /materialize.');
+    expect(formalizeMd).toContain('Composed from /conceptualize · /signify.');
 
-    const wakeMd = renderSkill(wake);
+    const carryOnMd = renderSkill(carryOn);
     // Derived from the CELL, not a copied literal: a hardcoded first line pins the
     // block's current wording, so an intentional rewrite reads as a regression and
     // the test rots into a change-detector. What projection stability actually
     // claims is that the formalBlock reaches the artifact VERBATIM — assert that.
-    expect(wakeMd).toContain(wake.formalBlock);
-    expect(wake.formalBlock.split('\n')[0]).toMatch(/^WAKE ≜ /);
-    expect(wakeMd).toContain('Composed from /dream · /praxis.');
+    expect(carryOnMd).toContain(carryOn.formalBlock);
+    expect(carryOn.formalBlock.split('\n')[0]).toMatch(/^carry-on ≜ /);
+    // carry-on is the EMPTY-composition witness, and deliberately so: it used to
+    // compose `/praxis`, which bound an authority cell to one context and made
+    // "carry on with what we just discussed" unserveable. An empty thunk must
+    // project NO provenance line at all — a stray "Composed from ." would be the
+    // same coupling reappearing as a rendering artifact.
+    expect(carryOn.composition()).toEqual([]);
+    expect(carryOnMd).not.toContain('Composed from');
   });
 
   it('every agent resolves and projects a Target', async () => {
     const modules = (await collect('agents/*.ts')).filter(
       (r) => !r.endsWith('base.ts'),
     );
-    expect(modules.length).toBe(10);
+    expect(modules.length).toBe(2);
     for (const rel of modules) {
       const agent = await firstExport<Agent>(join(srcRoot, rel));
       const target = agentToClaudeMd(agent, { manifest: MANIFEST });
       expect(target.length, rel).toBeGreaterThan(0);
     }
+  });
+
+  // THE SHIPPED ROSTER IS THE SCANNED ROSTER, and `dist/` is what gets scanned.
+  // `index.ts` hands the loader DIRECTORIES (`skills: dir('./skills')`), resolved
+  // relative to the built module, so the corpus a host projects is whatever sits in
+  // `dist/skills` — not whatever `src/skills` holds. The build was `tsc` alone, and
+  // `tsc` never removes an output whose input is gone: deleting three cells and
+  // rebuilding still projected all sixteen, silently, because their `dist` dirs
+  // survived. Measured on this cutover — the projection reported "16 skill(s)" from
+  // a tree with 13.
+  //
+  // The fix is `clean` in canon's build script; this is the gate that notices if it
+  // ever comes back out, and it reads the two rosters rather than a count so the
+  // failure names the stale cell.
+  it('the built skill roster equals the source roster', async () => {
+    const src = (await collect('skills/*/skill.ts')).map(
+      (r) => r.split('/')[1],
+    );
+    const distSkills = join(canonRoot, 'dist', 'skills');
+    const built = readdirSync(distSkills, { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name)
+      .sort();
+    expect(built, 'stale cells in dist/ still project').toEqual(src);
   });
 });

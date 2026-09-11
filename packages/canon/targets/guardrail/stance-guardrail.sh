@@ -29,7 +29,7 @@
 #
 # SAFETY MODEL:
 #   - OFF BY DEFAULT. Does nothing unless the repo opts in (git config agentfactory.stanceGuard true).
-#   - AGENT-SCOPED. Only fires for agents on the allowlist (default: nico, mav — the principal-ic-intrinsic agents).
+#   - AGENT-SCOPED. Only fires for agents on the allowlist (default: nico, mav — the principal-self agents).
 #   - FAILS OPEN, BUT NEVER SILENTLY-CLEAN. Any error → exit 0 (allow stop): a guardrail that
 #     wedges work on its own flakiness is worse than a missed block. But once the guard is
 #     ENABLED and in scope, a failure that prevents judging (no transcript, judge unreachable)
@@ -115,7 +115,7 @@ enabled="$(git config --bool agentfactory.stanceGuard 2>/dev/null || echo false)
 [ "$enabled" = "true" ] || allow_stop
 
 # --- agent-scope gate -----------------------------------------------------------------------
-# Only enforce the stance for the configured agents (the principal-ic-intrinsic agents by default).
+# Only enforce the stance for the configured agents (the principal-self agents by default).
 # agent_type identifies the agent (verified by an introspective-hook capture): it is PRESENT for an
 # --agent / @mention launch — top-level INCLUDED (a session started as @nico reports agent_type=nico)
 # — and for every SubagentStop; it is ABSENT only for a DEFAULT top-level session (plain claude, no
@@ -229,12 +229,13 @@ asst_close="$(jq -rs '
 
 # THE OPERATOR SLOT — and it must actually hold the operator.
 #
-# A skill invocation (`/wake`, `/carry-on`, …) enters the transcript as a user-type message
-# carrying the SKILL BODY. Taking the last user message therefore handed the judge 2.8 kB of the
-# /wake skill definition as "the operator's most recent instruction" — measured on two of six live
-# fixtures. The judge then reasoned about authorization from a document the operator never wrote,
-# which is worse than having no context: it is confidently wrong context, and the rubric leans on
-# this slot to decide whether an irreversible act was authorized.
+# A skill invocation (`/carry-on`, `/introspect`, …) enters the transcript as a user-type
+# message carrying the SKILL BODY. Taking the last user message therefore handed the judge
+# 2.8 kB of the /wake skill definition (since retired) as "the operator's most recent
+# instruction" — measured on two of six live fixtures. The judge then reasoned about
+# authorization from a document the operator never wrote, which is worse than having no
+# context: it is confidently wrong context, and the rubric leans on this slot to decide
+# whether an irreversible act was authorized.
 #
 # Skill bodies are recognizable and skipped: the harness wraps them in <command-name>/<command-
 # message> tags, and they carry the skill's own formal preamble. Fall back to the most recent

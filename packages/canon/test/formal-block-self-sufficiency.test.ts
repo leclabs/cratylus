@@ -59,9 +59,9 @@ describe('SELF-SUFFICIENCY gate — zero-comment corpus (absolute)', () => {
     expect(ALLOW_LIST.size).toBe(0);
   });
 
-  it('every one of the 16 skill formalBlocks is zero-comment (no `--`/`—` marker)', async () => {
+  it('every one of the 13 skill formalBlocks is zero-comment (no `--`/`—` marker)', async () => {
     const { scans } = await scanCorpus();
-    expect(scans.length).toBe(16);
+    expect(scans.length).toBe(13);
 
     // Emit the authoritative worklist (marker · line · carrier · annotation).
     console.log(`\n${formatWorklist(scans)}\n`);
@@ -110,7 +110,7 @@ describe('SELF-SUFFICIENCY gate — zero-comment corpus (absolute)', () => {
   });
 
   it('does NOT flag a `--word` CLI flag (marker is space-delimited)', () => {
-    const block = 'run ≜ graphify install --home ~/.claude';
+    const block = 'run ≜ cratylus install --home ~/.claude';
     expect(scanFormalBlock('fixture', block)).toEqual([]);
   });
 

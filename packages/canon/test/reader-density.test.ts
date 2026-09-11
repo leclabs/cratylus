@@ -379,14 +379,19 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
     expect(labels).toContain('agent agents/nico.ts archetype');
     expect(count('dimension-definiens')).toBeGreaterThan(100);
     expect(count('skill-description')).toBeGreaterThan(10);
-    expect(count('agent-vector')).toBeGreaterThan(10);
+    // population: 2 live agents × {description, archetype} (`preamble` is unused
+    // by either) = 4 non-empty agent-vector surfaces. >2 fails if a field went
+    // missing from BOTH agents — a real regression — while not pinning the exact
+    // count to a catalog size that drifts with every roster edit.
+    expect(count('agent-vector')).toBeGreaterThan(2);
   });
 
   it('every ρ=LLM surface conforms, or is an explicit ratchet pin', async () => {
     const surfaces = await allSurfaces();
     // cardinality sanity — the gate SEES the persona genus protocol (memory's genus
-    // def was retired in E6c: its mechanism → the `memory` CLI --help, its
-    // reasoning-contract → the wake + dream skill formalBlocks).
+    // def was retired in E6c: its mechanism → the `memory` CLI --help; its
+    // reasoning-contract lived in the wake + dream skill formalBlocks, retired
+    // along with those cells — no replacement home has been declared).
     const genusLabels = surfaces
       .filter((s) => s.cls === 'genus-protocol')
       .map((s) => s.label);
@@ -417,7 +422,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
 
   it('no agent vector carries a register contradiction, or is pinned', async () => {
     const agents = await allAgents();
-    expect(agents.length).toBe(10);
+    expect(agents.length).toBe(2);
     const failures = agents
       .filter(
         ({ agent }) =>

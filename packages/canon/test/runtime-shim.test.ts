@@ -3,7 +3,7 @@
 // When a skill cell declares `runtime: {capability}`, the projection emits, beside
 // SKILL.md, a `scripts/<capability>.mjs` THIN SHIM that forwards to the host
 // `cratylus <capability>` CLI. This gate pins the shim's SHAPE:
-//   - it INVOKES `cratylus <capability> …` (falsifier: `cratylus memory`);
+//   - it INVOKES `cratylus <capability> …` (falsifier: `cratylus eventTap`);
 //   - it is NOT a bundled impl — zero `@cratylus/*` imports, no capability logic;
 //   - it is emitted EXECUTABLE (0755) so deploy's mode-preserving copy keeps the bit;
 //   - a skill WITHOUT `runtime` gets no shim (SKILL.md only — asserted elsewhere).
@@ -44,9 +44,11 @@ import canonPlugin from '../src/index.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** A corpus cell that declares `runtime: {capability:'memory'}` — the shim carrier. */
-const CELL = 'wake';
-const CAPABILITY = 'memory';
+/** A corpus cell that declares a `runtime` capability — the shim carrier.
+ *  `memory` had this role via the wake/dream/handoff triad and `carry-on` via
+ *  `carryOn`; both are gone, so `event-tap` is the corpus's last shim carrier. */
+const CELL = 'event-tap';
+const CAPABILITY = 'eventTap';
 
 const shimOf = (out: string): string =>
   readFileSync(
@@ -54,10 +56,16 @@ const shimOf = (out: string): string =>
     'utf-8',
   );
 
-/** The emitted shim for `capability`, straight from the single emitter. */
-function emitted(capability: string): string {
+/** The emitted shim for `capability` on `harness`, straight from the single
+ *  emitter. The session-var list is the HARNESS's — the emitter takes no default,
+ *  so a caller cannot silently stamp one harness's vendor names into another's
+ *  projection. */
+function emitted(capability: string, harness = 'claude'): string {
   const dir = mkdtempSync(join(tmpdir(), 'runtime-shim-'));
-  return readFileSync(emitRuntimeShim(dir, capability), 'utf-8');
+  return readFileSync(
+    emitRuntimeShim(dir, capability, adapterByName(harness).sessionEnvVars),
+    'utf-8',
+  );
 }
 
 let claudeShim = '';
@@ -133,10 +141,12 @@ beforeAll(async () => {
 describe('runtime thin shim (S6 forge-build-integration)', () => {
   it('invokes `<CLI_BIN> <capability>` and forwards argv', () => {
     const shim = emitted(CAPABILITY);
-    // Falsifier: the emitted script drives the host `<CLI_BIN> memory` CLI.
+    // Falsifier: the emitted script drives the host `<CLI_BIN> <capability>` CLI.
     // The name rides the constant (its one home) so a rebrand stays one symbol.
     expect(shim).toContain(CLI_BIN);
-    expect(shim).toMatch(new RegExp(`spawnSync\\('${CLI_BIN}', \\['memory',`));
+    expect(shim).toMatch(
+      new RegExp(`spawnSync\\('${CLI_BIN}', \\['${CAPABILITY}',`),
+    );
     // Forwards the caller's argv (verb + args ride through untouched).
     expect(shim).toContain('...process.argv.slice(2)');
     // Node shebang — runs under bare `node` on any host.
@@ -159,7 +169,11 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
 
   it('emits scripts/<capability>.mjs executable', () => {
     const dir = mkdtempSync(join(tmpdir(), 'runtime-shim-'));
-    const dest = emitRuntimeShim(dir, CAPABILITY);
+    const dest = emitRuntimeShim(
+      dir,
+      CAPABILITY,
+      adapterByName('claude').sessionEnvVars,
+    );
     expect(dest).toBe(join(dir, 'scripts', `${CAPABILITY}.mjs`));
     expect(existsSync(dest)).toBe(true);
     expect(readFileSync(dest, 'utf-8')).toBe(emitted(CAPABILITY));
@@ -174,7 +188,9 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
       'runtime'
     >;
     expect(cell.runtime?.capability).toBe(CAPABILITY);
-    expect(emitted(cell.runtime?.capability ?? '')).toContain("['memory',");
+    expect(emitted(cell.runtime?.capability ?? '')).toContain(
+      `['${CAPABILITY}',`,
+    );
   });
 });
 
@@ -196,7 +212,8 @@ describe('runtime shim has ONE home across harnesses', () => {
   });
 
   it('the projected shim IS the single emitter output, verbatim', () => {
-    // No harness-local post-processing: what the emitter returns is what lands.
-    expect(codexShim).toBe(emitted(CAPABILITY));
+    // No harness-local post-processing: what the emitter returns for THAT harness
+    // is what lands in that harness's tree.
+    expect(codexShim).toBe(emitted(CAPABILITY, 'codex'));
   });
 });

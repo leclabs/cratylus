@@ -20,6 +20,7 @@
 
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
+import { NEUTRAL_AGENT_ROOT } from '../core/harness-adapter.js';
 import { hookTreeNames, placeHooksLocal } from './hooks.js';
 import { placeAgentsLocal, placeSkillsLocal } from './local.js';
 import {
@@ -61,6 +62,13 @@ export interface DeployOpts {
   agentExt?: string | null;
   /** The harness's DESTINATION layout for one agent (`HarnessAdapter.agentRel`). */
   agentRel?: ((name: string) => string) | null;
+  /** The harness's DESTINATION layout for one skill (`HarnessAdapter.skillRel`). */
+  skillRel?:
+    | ((name: string, agents: readonly string[]) => readonly string[])
+    | null;
+  /** The harness's DESTINATION layout for a scoped artifact
+   *  (`HarnessAdapter.scopedRel`). */
+  scopedRel?: ((filename: string, agent?: string) => string) | null;
   /** The harness's hook-config filename (`HarnessAdapter.hooksFile`). */
   hooksFile?: string | null;
   // CLI overrides (null ⇒ unset, defer to the built-in default).
@@ -144,7 +152,14 @@ function placeOpts(opts: DeployOpts): PlaceOpts {
     // and a wrong default here fails by finding no files, which reads as success.
     ...(opts.agentExt ? { agentExt: opts.agentExt } : {}),
     ...(opts.agentRel ? { agentRel: opts.agentRel } : {}),
+    ...(opts.skillRel ? { skillRel: opts.skillRel } : {}),
+    ...(opts.scopedRel ? { scopedRel: opts.scopedRel } : {}),
     ...(opts.hooksFile ? { hooksFile: opts.hooksFile } : {}),
+    // The projected agent set, read off the SAME tree the placer copies from —
+    // the scopes a per-directory harness names its skill and mechanism
+    // destinations after. Read here rather than in the placer so the tree is
+    // enumerated once, by the layer that already owns `--only` resolution.
+    agents: treeNames('agent', opts.tree, opts.agentExt ?? '.md'),
     log: opts.log,
     warn: opts.warn,
   };
@@ -223,7 +238,15 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
     );
   } else {
     const stale = staleFiles(priorKind, written, skipped, narrowed);
-    const removed = applyPrune(harnessDir, stale, dry);
+    // THE NEUTRAL ROOT IS OURS TO PRUNE TOO. Records stay relative to the harness
+    // home, but a harness whose destinations are `../<neutral>/…` (omp) resolves
+    // every one of them outside it, and the containment guard skipped them all —
+    // silently, since nothing skipped is a candidate and a prune that removed
+    // nothing prints nothing. Measured: a 10-agent host redeployed from a 2-agent
+    // corpus kept all ten faces, all ten launch specs and the retired skills.
+    const removed = applyPrune(harnessDir, stale, dry, [
+      resolvePath(harnessDir, '..', NEUTRAL_AGENT_ROOT),
+    ]);
     if (removed.length > 0) {
       log(
         dry

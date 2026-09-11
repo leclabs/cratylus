@@ -19,6 +19,11 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { OMP_SESSION_MODULE } from '@cratylus/forge/adapters/omp';
+import {
+  ENFORCING_STAGE_DIR,
+  SESSION_SCOPE,
+} from '@cratylus/forge/harness-adapter';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
 import { describe, expect, it } from 'vitest';
 
@@ -28,8 +33,14 @@ const here = dirname(fileURLToPath(import.meta.url));
 const repoRoot = requireRepoRoot(here);
 const CLAUDE = join(repoRoot, '.cratylus/claude');
 const CODEX = join(repoRoot, '.cratylus/codex');
+const OMP = join(repoRoot, '.cratylus/omp');
 
-/** Every harness render this corpus produces, with the artifact naming its hooks. */
+/** Every harness render this corpus produces, with the artifact naming its hooks.
+ *
+ *  omp's is a MODULE, not a config file, and that difference is why it was absent
+ *  from this gate — and why its whole governance set was absent from the harness.
+ *  The path is derived (staging dir · session scope · module name), never spelled,
+ *  so a rename cannot leave the gate reading a file nobody writes. */
 const RENDERS = [
   {
     harness: 'claude',
@@ -38,6 +49,12 @@ const RENDERS = [
     home: '.claude',
   },
   { harness: 'codex', root: CODEX, hooksFile: 'hooks.json', home: '.codex' },
+  {
+    harness: 'omp',
+    root: OMP,
+    hooksFile: join(ENFORCING_STAGE_DIR, SESSION_SCOPE, OMP_SESSION_MODULE),
+    home: '.omp',
+  },
 ] as const;
 
 const present = RENDERS.filter((r) => existsSync(r.root));
@@ -142,13 +159,15 @@ describe('CONVICTING FIXTURES — the gate fed inputs it MUST reject', () => {
 });
 
 describe('GATE — no cell is silently absent from a harness', () => {
-  it('both renders exist — else this gate is vacuous', () => {
+  it('every render exists — else this gate is vacuous', () => {
     // The control. With one render missing, every comparison below passes by
-    // having nothing to compare, which is exactly how the original defect hid.
+    // having nothing to compare, which is exactly how the original defect hid —
+    // and how omp's total absence of governance survived the gate that was added
+    // to catch exactly that on codex.
     expect(
       present.map((r) => r.harness).sort(),
-      'run `pnpm canon:project` and `pnpm --filter @cratylus/canon project:codex` first',
-    ).toEqual(['claude', 'codex']);
+      'run `pnpm canon:project`, `pnpm canon:project:codex` and `pnpm canon:project:omp` first',
+    ).toEqual(['claude', 'codex', 'omp']);
   });
 
   it('every harness deploys the SAME set of governance cells', () => {

@@ -1,4 +1,4 @@
-# return: add-endpoint — executor: developer, branch healthz/add-endpoint
+# return: add-endpoint — executor: mav, branch healthz/add-endpoint
 
 ## files
 

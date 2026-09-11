@@ -25,6 +25,7 @@
 import { chmodSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { claudeHarnessAdapter } from '../../src/adapters/claude/index.js';
 import {
   assertShimsResolvable,
   placeSkillsLocal,
@@ -103,7 +104,10 @@ function treeWithShim(capability = 'memory'): {
   mkdirSync(join(srcDir, 'scripts'), { recursive: true });
   writeFileSync(
     join(srcDir, 'scripts', `${capability}.mjs`),
-    runtimeShimContent(capability),
+    // The shim is projected FOR a harness, so its session-var list comes from one.
+    // claude's is the bridging case; the gate under test is about the BIN, and it
+    // must hold on the shim shape a real projection emits.
+    runtimeShimContent(capability, claudeHarnessAdapter.sessionEnvVars),
     'utf-8',
   );
   return {

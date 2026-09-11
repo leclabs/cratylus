@@ -58,10 +58,10 @@ jobs:
       - name: lint
         run: pnpm lint
 
-      # ORACLE BEFORE TEST, and the order is load-bearing. It PRODUCES `.cratylus/claude`
-      # and `.cratylus/codex`, which `harness-parity.test.ts` requires — and those are
-      # gitignored build output, so on a fresh checkout they do not exist and nothing in the
-      # turbo task graph makes them.
+      # ORACLE BEFORE TEST, and the order is load-bearing. It PRODUCES
+      # `.cratylus/{claude,codex,omp}` — one per harness in its own target list — which
+      # `harness-parity.test.ts` requires, and those are gitignored build output, so on a
+      # fresh checkout they do not exist and nothing in the turbo task graph makes them.
       - name: render oracle
         run: pnpm oracle
 

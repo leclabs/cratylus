@@ -250,7 +250,7 @@ describe('structural-parsimony gate — ¬∃ artifact restating an archetype', 
   it('the live tree is GREEN on all three structural classes', async () => {
     const corpus = await loadLiveCorpus();
     // cardinality sanity — the loader SEES the whole corpus.
-    expect(corpus.agents.length).toBe(10);
+    expect(corpus.agents.length).toBe(2);
     expect(corpus.fragments.length).toBeGreaterThan(100);
     const verdicts = structuralParsimony(corpus);
     const failures = verdicts
@@ -259,12 +259,21 @@ describe('structural-parsimony gate — ¬∃ artifact restating an archetype', 
     expect(failures, failures.join('\n')).toEqual([]);
   });
 
-  it('a live legit single-ref open value (role/review → 1 agent) is not convicted', async () => {
+  // The roster shrink to {mav, nico} retired the REVIEW-role agent
+  // (principal-engineer-reviewer) this control used to key off, and `role/build`
+  // — the only role value left — is now shared by BOTH survivors, so `role` no
+  // longer has a single-ref member to test with. Re-grounded on `objective`
+  // (also `repertoire: 'open'` per the manifest): `objective/delivery` is mav's
+  // own open-dimension pick and nico carries `objective/parsimony` instead, so
+  // it is still genuinely referenced by exactly one agent in the live corpus.
+  it('a live legit single-ref open value (objective/delivery → 1 agent) is not convicted', async () => {
     const corpus = await loadLiveCorpus();
     const refs = corpus.agents.filter((a) =>
-      a.dimensionImports.includes('role/review'),
+      a.dimensionImports.includes('objective/delivery'),
     );
-    expect(refs.length).toBe(1); // referenced by exactly one agent (principal-engineer-reviewer)…
-    expect(absorbedIdentity(corpus).convicted).not.toContain('role/review'); // …yet GREEN
+    expect(refs.length).toBe(1); // referenced by exactly one agent (mav)…
+    expect(absorbedIdentity(corpus).convicted).not.toContain(
+      'objective/delivery',
+    ); // …yet GREEN
   });
 });
