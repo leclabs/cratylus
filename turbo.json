@@ -95,6 +95,21 @@
       "dependsOn": ["^build", "build", "typecheck:test", "cratylus#build"],
       "cache": false
     },
+    // forge's integrate-smoke drives the SAME built bin, and had the same gap.
+    //
+    // `integrate-smoke.test.ts` deploys a thin shim and then RUNS it, and the shim
+    // forwards to `cratylus <capability>` off PATH — the whole point of the gate is
+    // that the bin is the real one. forge does not depend on the `cratylus` package,
+    // so nothing ordered that build against this suite: run alone it passed (a prior
+    // build had left `dist` behind), and run as part of `turbo run build … test` it
+    // failed three legs with `Command failed: node …/scripts/memory.mjs encode` and
+    // `expected 2 to be +0` — the bin being relinked underneath a test that was
+    // already spawning it. Green when run alone, red in the pipeline, on identical
+    // input: the shape this file already refuses one entry up.
+    "@cratylus/forge#test": {
+      "dependsOn": ["^build", "typecheck:test", "cratylus#build"],
+      "cache": false
+    },
     "dev": {
       "cache": false,
       "persistent": true,

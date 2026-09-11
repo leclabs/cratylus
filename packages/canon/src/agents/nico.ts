@@ -16,6 +16,7 @@ import { greenField as greenField_engineeringPrinciples } from '../dimensions/en
 import { invokeTheCanonical as invokeTheCanonical_engineeringPrinciples } from '../dimensions/engineering-principles/invoke-the-canonical.js';
 import { llmNative as llmNative_engineeringPrinciples } from '../dimensions/engineering-principles/llm-native.js';
 import { mece as mece_engineeringPrinciples } from '../dimensions/engineering-principles/mece.js';
+import { simplicity as simplicity_engineeringPrinciples } from '../dimensions/engineering-principles/simplicity.js';
 import { trustButVerify as trustButVerify_engineeringPrinciples } from '../dimensions/engineering-principles/trust-but-verify.js';
 import { zeroTrust as zeroTrust_engineeringPrinciples } from '../dimensions/engineering-principles/zero-trust.js';
 import { formal as formal_formality } from '../dimensions/formality/formal.js';
@@ -57,6 +58,7 @@ export const nico: Agent = {
     cratylism_engineeringPrinciples,
     firstPrinciples_engineeringPrinciples,
     greenField_engineeringPrinciples,
+    simplicity_engineeringPrinciples,
     zeroTrust_engineeringPrinciples,
     dry_engineeringPrinciples,
     mece_engineeringPrinciples,

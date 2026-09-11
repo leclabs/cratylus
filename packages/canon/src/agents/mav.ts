@@ -10,14 +10,12 @@ import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../dimensions/autonom
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
 import { operationsDelivery as operationsDelivery_capabilities } from '../dimensions/capabilities/operations-delivery.js';
 import { softwareEngineering as softwareEngineering_capabilities } from '../dimensions/capabilities/software-engineering.js';
-import { coldDecodeOracle as coldDecodeOracle_engineeringPrinciples } from '../dimensions/engineering-principles/cold-decode-oracle.js';
+import { cratylism as cratylism_engineeringPrinciples } from '../dimensions/engineering-principles/cratylism.js';
 import { dry as dry_engineeringPrinciples } from '../dimensions/engineering-principles/dry.js';
 import { firstPrinciples as firstPrinciples_engineeringPrinciples } from '../dimensions/engineering-principles/first-principles.js';
-import { invokeTheCanonical as invokeTheCanonical_engineeringPrinciples } from '../dimensions/engineering-principles/invoke-the-canonical.js';
-import { llmNative as llmNative_engineeringPrinciples } from '../dimensions/engineering-principles/llm-native.js';
+import { greenField as greenField_engineeringPrinciples } from '../dimensions/engineering-principles/green-field.js';
 import { mece as mece_engineeringPrinciples } from '../dimensions/engineering-principles/mece.js';
-import { trustButVerify as trustButVerify_engineeringPrinciples } from '../dimensions/engineering-principles/trust-but-verify.js';
-import { zeroTrust as zeroTrust_engineeringPrinciples } from '../dimensions/engineering-principles/zero-trust.js';
+import { simplicity as simplicity_engineeringPrinciples } from '../dimensions/engineering-principles/simplicity.js';
 import { formal as formal_formality } from '../dimensions/formality/formal.js';
 import { goalDirected as goalDirected_framing } from '../dimensions/framing/goal-directed.js';
 import { harmAvoidance as harmAvoidance_guardrails } from '../dimensions/guardrails/harm-avoidance.js';
@@ -51,15 +49,16 @@ export const mav: Agent = {
   provenance: { mark: { emoji: '✈️', hue: 'green' } },
   objective: delivery_objective,
   engineeringPrinciples: [
+    cratylism_engineeringPrinciples,
     firstPrinciples_engineeringPrinciples,
-    zeroTrust_engineeringPrinciples,
+    greenField_engineeringPrinciples,
+    simplicity_engineeringPrinciples,
     dry_engineeringPrinciples,
     mece_engineeringPrinciples,
-    llmNative_engineeringPrinciples,
-    coldDecodeOracle_engineeringPrinciples,
-    trustButVerify_engineeringPrinciples,
-    invokeTheCanonical_engineeringPrinciples,
   ],
+  // `guardrails` is the one dimension with no `| null`: it is `required: true` in
+  // the catalog precisely so the unconfined agent cannot be written down
+  // (`manifest.ts`). The omit-to-inherit sentinel does not reach here.
   guardrails: [
     harmAvoidance_guardrails,
     honesty_guardrails,
@@ -74,10 +73,6 @@ export const mav: Agent = {
   actions: [fileOps_actions, codeExecution_actions, delegation_actions],
   modalities: null,
   model: null,
-  // null ⇒ OMITTED from the projection, so the harness's own memory is what the
-  // agent has. The corpus used to declare `long-term-memory` and fund it with
-  // `/wake` + `/dream`; those cells are retired, and a host with a real backend
-  // (omp's hindsight) does this better than a projected claim could.
   memory: null,
   trigger: null,
   framing: goalDirected_framing,

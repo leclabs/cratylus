@@ -28,7 +28,7 @@
     "project:targets": "tsx tooling/project-targets-cli.ts",
     "scaffold": "tsx tooling/scaffold-cli.ts",
     "stance-guard:test": "sh test/support/guardrail/test-stance-guardrail.sh",
-    "test": "pnpm run build && vitest run",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "typecheck:test": "tsc -p tsconfig.test.json"
   },
