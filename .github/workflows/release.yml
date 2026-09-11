@@ -66,12 +66,17 @@ jobs:
       # settings page — so the FIRST publish of each package needs a token no matter what.
       # Provenance still works with a token as long as `id-token: write` is present. Once all
       # five exist, configure trusted publishers and delete `NODE_AUTH_TOKEN` here.
-      - uses: actions/setup-node@v5
+      # v6 for the same reason as `.github/actions/setup`: the node version is read out of
+      # `devEngines.runtime`, which only v6.3.0+ can see. This step re-runs `setup-node`
+      # purely for `registry-url` (the `~/.npmrc` + `NODE_AUTH_TOKEN` wiring), so it must
+      # resolve the SAME version the setup action already installed — a literal here would be
+      # a second copy of the pin, and a stale one the first time they disagreed.
+      - uses: actions/setup-node@v6
         with:
-          node-version-file: .nvmrc
+          node-version-file: package.json
           registry-url: https://registry.npmjs.org
 
-      # npm >= 11.5.1 is what supports trusted publishing, and Node 24 ships npm 11.x.
+      # npm >= 11.5.1 is what supports trusted publishing, and Node 26 ships npm 11.x.
       # ASSERTED rather than assumed, because the failure mode is a silently unattested
       # publish — which looks exactly like a successful one.
       - name: assert npm can attest
