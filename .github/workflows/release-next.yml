@@ -121,8 +121,19 @@ jobs:
       - name: version as a snapshot
         run: pnpm exec changeset version --snapshot next
 
+      # NO TOKEN HERE, DELIBERATELY — this is the experiment that proves OIDC.
+      #
+      # Provenance proves nothing about WHICH credential published: a token plus
+      # `NPM_CONFIG_PROVENANCE` attests exactly as well as trusted publishing does. The
+      # only decisive test is a publish with no token present at all, and this is the
+      # path where that is safe to attempt: snapshots go to the `next` dist-tag, create
+      # no tag, no release and no commit, and cannot move `latest`.
+      #
+      # `release.yml` keeps `NODE_AUTH_TOKEN` until this run succeeds. npm prefers OIDC
+      # and FALLS BACK to a token, so a stable release during the window cannot fail for
+      # auth either way — which is precisely why the fallback has to be removed HERE
+      # first, where its absence costs a throwaway version rather than a release.
       - name: publish to the next tag
         run: DIST_TAG=next pnpm run release
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           NPM_CONFIG_PROVENANCE: 'true'
