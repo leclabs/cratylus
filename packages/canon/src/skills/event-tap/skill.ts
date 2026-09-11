@@ -1,5 +1,13 @@
 import type { Skill, SkillExpression } from '../../manifest.js';
-import { introspect } from '../introspect/skill.js';
+
+// COMPOSES NOTHING, and it never borrowed anything either. The retired
+// `composition: () => [introspect]` edge produced `Composed from /introspect.` on the
+// projected artifact while this block defined every sign it uses locally — `target`,
+// `target₀`, `foreign`, `attached`, `lifecycle`, `record` — and named none of
+// introspect's. A declared dependency with no borrow is a claim the artifact makes
+// and the cell cannot honour. The `runtime` capability below is the real coupling and
+// it stays: its four verbs take no corpus vocabulary, and `target` is the ADAPTER's to
+// name.
 
 const EVENT_TAP_BLOCK = `event-tap    ≜ install → observe → read → uninstall
 capability   ≜ eventTap ⟨runtime-bound ; every verb reached as \`scripts/eventTap.mjs <verb>\`⟩
@@ -35,5 +43,5 @@ export const eventTap: Skill = {
   description: `use this skill to attach a passive observer to an agent's own lifecycle — install a tap on a chosen set of harness-neutral events (session.start, turn.end, tool.use.pre, …), let the host append each occurrence to a capture sink, read the captured records back as evidence of what actually happened, and uninstall the tap with zero residue; the four verbs are install, uninstall, read, status, and the tap never blocks, denies, or alters what it observes.`,
   formalBlock: EVENT_TAP_BLOCK,
   runtime: { capability: 'eventTap' },
-  composition: () => [introspect],
+  composition: () => [],
 };
