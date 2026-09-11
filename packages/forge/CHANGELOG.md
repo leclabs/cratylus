@@ -1,5 +1,105 @@
 # @cratylus/forge
 
+## 0.4.0
+
+### Minor Changes
+
+- fee5ade: the omp persona is a launch spec under `~/.agents/`, not a profile
+
+  **The profile carrier is withdrawn.** Projecting a persona into `~/.omp/profiles/<n>/agent/`
+  carried identity in an ENVIRONMENT: an omp profile silos auth, MCP, model prefs, sessions and
+  config, inheriting nothing from the default profile but keybindings. Measured — ten
+  deploy-created profiles on one host held zero credential rows each and could not see that
+  host's own MCP servers, and on another the persona's `mcp.json` was a byte-duplicate of a
+  17-server org config, copied by hand because profile scope silos it.
+
+  Identity is now the LAUNCH SPEC and environment stays the profile:
+
+  | artifact         | destination                                     |
+  | ---------------- | ----------------------------------------------- |
+  | skills           | `~/.agents/skills/<skill>` (read natively)      |
+  | face             | `~/.agents/<agent>/APPEND_SYSTEM.md`            |
+  | overlay          | `~/.agents/<agent>/omp.yml`                     |
+  | mechanism module | `~/.agents/<agent>/extensions/<bin>-session.ts` |
+  | session module   | `~/.omp/agent/extensions/<bin>-session.ts`      |
+  | launcher         | `~/.agents/<agent>/omp-launch` (0755)           |
+
+  `~/.agents/` is not cratylus's invention: omp reads it through a vendor-neutral `.agent[s]`
+  provider, and Cursor reads `~/.agents/skills/` too. So skills land ONCE instead of being fanned
+  into every profile scope, and `omp --profile work` goes back to meaning what it says.
+
+  **Two runtime defects in the emitted mechanism, both caught by running the real binary.** The
+  module called `pi.exec(cmd, { shell: true })`, but `HookAPI.exec(command, args, options?)`
+  requires `args` and spreads it — so every registration in every module threw at load; it now
+  calls `pi.exec("sh", ["-c", cmd])`. And a missing worker exited 127, which the blocking branch
+  read as a refusal, so `ask` and `task` were blocked with `No such file` as the reason; 127 now
+  fails open, as the cells themselves specify.
+
+  Port changes, breaking for anyone implementing `HarnessAdapter` outside this package:
+  `enforcingRel` is now **`scopedRel`** (it places modules, overlays and launchers),
+  `HarnessProjection` gained `executable?`, and `skillRel` returns a single destination for omp.
+
+  **Deploy no longer seeds memory sidecars.** The canon's memory cells are gone, so
+  `SEMANTIC.md` / `PROCEDURAL.md` / `EPISODIC.jsonl` are no longer written into `~/.agents/<name>/`.
+  Files a previous deploy already seeded are LEFT IN PLACE — deploy never recorded them in its
+  prune manifest, deliberately, and an operator's stored memory is not ours to delete.
+
+- ca1b9aa: omp deploys its mechanism, and its skills land where omp reads them
+
+  Three defects on one seam, all measured on hosts running the canon under omp.
+
+  **No mechanism reached an omp host.** `project` branched on `HarnessAdapter.hooks` alone,
+  so a harness whose hook surface is a program rather than a config file looked like a
+  harness with no surface: all five scope-activated cells (stance gate, its pre-gate, the
+  deploy-drift notice, the memory-consolidation nudge, the resume notice) were warned about
+  and dropped. The port gains `scopeActivatedSurface(hooks, agentNames)` beside `hooks()` —
+  `hooks()` keeps meaning "a settings fragment a host merges" — and omp realizes it as one
+  extension module per scope: the session root plus every projected agent's profile, because
+  its native config root is profile-scoped. `enforcingRel(file, scope)` is the destination
+  map deploy asks, and scoped artifacts stage under `enforcing/<scope>/` in the render tree.
+
+  **Skills were deployed to a path omp never scans.** The placer used the render tree's own
+  staging layout (`skills/<name>`) as every harness's destination; omp's native provider
+  reads `<agent-dir>/skills`, profile-scoped. `HarnessAdapter.skillRel(name, agents)` is now
+  required and PLURAL, and the placer, the audit and `deploy --check` all ask it.
+
+  **The runtime shim asserted a claude bridge inside every harness's projection.**
+  `sessionEnvVars` is now an adapter fact; the emitter takes it and names no vendor. omp
+  declares `[]` — it sets no session variable for a child process — so its shim refuses with
+  exit 3 naming `$AGENT_SESSION_ID` / `$AGENT_SESSION_ID_FROM` instead of running
+  sessionless, which is what the phantom-sibling lock failures were made of.
+
+  `deploy --check` also passed only `agentExt`, so it audited claude's destinations on every
+  harness; it now passes the whole layout. The claude and codex projections are byte-identical
+  across this change.
+
+  BREAKING for anyone implementing `HarnessAdapter` outside this package: `skillRel` and
+  `sessionEnvVars` are required members, and `runtimeShimContent` / `emitRuntimeShim` take
+  the harness's session-variable list rather than defaulting to claude's.
+
+- 844811e: the canon ships two agents, and both inherit the harness's memory
+
+  The roster is `mav` and `nico`. `arch-doc-writer`, `boz`, `developer`, `investigator`,
+  `planner`, `principal-engineer-reviewer`, `principal-ic` and `tester` are deleted — not
+  deprecated, not moved behind a flag.
+
+  Both survivors declare `memory: null`, the explicit omit-to-inherit sentinel: the dimension is
+  OMITTED from the projected face, so the agent has whatever memory its harness provides. The
+  corpus used to declare `long-term-memory ⟨episodic · semantic · procedural⟩` and fund it with
+  the `wake` and `dream` cells; those cells are retired, and a host with a real backend does this
+  better than a projected claim. `dimensions/memory/*` stays on disk as an unreferenced axis
+  library — four of its five fragments already were.
+
+  Consumers of the published corpus lose eight agent definitions. The retired faces and their
+  launch specs ARE swept from a host on the next `cratylus deploy` — but only because this
+  release also fixes the prune: its containment guard took ONE root, and omp's destinations are
+  `../.agents/…`, a sibling of the harness home, so every record resolved outside that root and
+  was silently skipped. Measured on a sandbox host — ten projected personas, redeployed from a
+  two-agent corpus, kept all ten faces, all ten launch specs and every retired skill, and the
+  deploy reported success. `applyPrune` now takes the neutral root as a second entitled root, and
+  attribution is still by manifest record, so a file this tool never wrote is untouchable in
+  either root.
+
 ## 0.3.0
 
 ### Minor Changes
