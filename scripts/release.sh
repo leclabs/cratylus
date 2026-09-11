@@ -3,8 +3,14 @@
 #
 # NOT `changeset publish`. It delegates to `pnpm publish`, which runs `prepack` — so every
 # package rebuilds at upload time and the bytes reaching the registry are bytes no gate ever
-# read. There is also no `--provenance` in pnpm, putting sigstore attestation out of reach. Splitting
-# the three responsibilities is what lets the audit sit BETWEEN the pack and the upload.
+# read. Splitting the three responsibilities is what lets the audit sit BETWEEN the pack and
+# the upload.
+#
+# THE SECOND REASON EXPIRED, and is recorded rather than left standing: this header used to
+# add "there is also no `--provenance` in pnpm, putting sigstore attestation out of reach".
+# `--provenance` now exists on `pnpm publish` (its `--help` lists it on 12.4.0) — so that half
+# of the argument is void. The `prepack` half is not, and it is sufficient on its own: an audit
+# of bytes that are rebuilt after the audit is an audit of something else.
 #
 # `changeset tag` runs LAST, and only if every upload succeeded, so a half-published release
 # never leaves tags claiming it landed.
