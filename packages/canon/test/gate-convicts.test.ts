@@ -146,7 +146,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // `PLAN_STATES`/`PLAN_MARKERS` home, and asserts the projected shim exists; its
   // convicting fixtures drive the same three readers over a drifted verb set on
   // either side, a forked layout line, and a cell that declares neither.
-  'canon/carry-on-cell.test.ts': 'GATE',
   // censuses the LIVE `*Cell` interfaces in `@cratylus/schema` for one-gloss-one-sign;
   // its convicting fixtures drive the same two pure predicates over the exact source
   // text of the `RuleCell.definiens` / `HookCell.residue` collision it was built from.

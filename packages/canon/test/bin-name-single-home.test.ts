@@ -85,11 +85,13 @@ import { cellTargets } from '../tooling/project-targets.js';
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = join(canonRoot, '..', '..');
 
-/** A corpus cell that declares `runtime: {capability:'carryOn'}` — the shim carrier.
- *  `memory` had this role via the wake/dream/handoff triad; those cells are
- *  deleted, and `carry-on` is the surviving witness of the same mechanism. */
-const CELL = 'carry-on';
-const CAPABILITY = 'carryOn';
+/** A corpus cell that declares a `runtime` capability — the shim carrier.
+ *  `memory` had this role via the wake/dream/handoff triad and `carry-on` via
+ *  `carryOn`; both are gone (the cells deleted, the elevation decoupled from the
+ *  plan-bound runtime it used to drive), so `event-tap` is the last cell that
+ *  projects a shim and the only witness this gate can read. */
+const CELL = 'event-tap';
+const CAPABILITY = 'eventTap';
 
 /**
  * Every source file that SPEAKS the bin name, and must therefore not SPELL it.

@@ -1,6 +1,3 @@
-import { codeExecution as codeExecution_actions } from '../dimensions/actions/code-execution.js';
-import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
-import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { convergence as convergence_audienceAdaptation } from '../dimensions/audience-adaptation/convergence.js';
 import { principalSelf } from '../dimensions/autonomy/decision-authority.js';
 import type { Agent } from '../manifest.js';
@@ -18,8 +15,6 @@ import { mece as mece_engineeringPrinciples } from '../dimensions/engineering-pr
 import { simplicity as simplicity_engineeringPrinciples } from '../dimensions/engineering-principles/simplicity.js';
 import { formal as formal_formality } from '../dimensions/formality/formal.js';
 import { goalDirected as goalDirected_framing } from '../dimensions/framing/goal-directed.js';
-import { harmAvoidance as harmAvoidance_guardrails } from '../dimensions/guardrails/harm-avoidance.js';
-import { helpfulness as helpfulness_guardrails } from '../dimensions/guardrails/helpfulness.js';
 import { honesty as honesty_guardrails } from '../dimensions/guardrails/honesty.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../dimensions/learning/correction-consolidation.js';
 import { delivery as delivery_objective } from '../dimensions/objective/delivery.js';
@@ -59,18 +54,14 @@ export const mav: Agent = {
   // `guardrails` is the one dimension with no `| null`: it is `required: true` in
   // the catalog precisely so the unconfined agent cannot be written down
   // (`manifest.ts`). The omit-to-inherit sentinel does not reach here.
-  guardrails: [
-    harmAvoidance_guardrails,
-    honesty_guardrails,
-    helpfulness_guardrails,
-  ],
+  guardrails: [honesty_guardrails],
   capabilities: [
     softwareEngineering_capabilities,
     operationsDelivery_capabilities,
   ],
   learning: correctionConsolidation_learning,
   situationAwareness: projection_situationAwareness,
-  actions: [fileOps_actions, codeExecution_actions, delegation_actions],
+  actions: null,
   modalities: null,
   model: null,
   memory: null,

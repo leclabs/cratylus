@@ -71,14 +71,6 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   // `@ conceptualize`, which is where the sign was taken from.
   sources: 'REFERENCE',
   c: 'REFERENCE',
-  // `status` — one concept, two capabilities. Both cells declare the readout of
-  // whether THIS capability is attached to the harness's hook-config artifact,
-  // derived from that artifact rather than from memory; only the invocation and the
-  // second component of the pair differ (event-tap's events, carry-on's terminus).
-  // carry-on borrows `target`/`target₀`/`foreign`/`attached` from event-tap outright
-  // (`@ event-tap`); `status` is declared locally ONLY because its definiens is the
-  // cell's own script path, which a borrow would state wrongly.
-  status: 'REFERENCE',
   // `A` PAID 2026-07-27 — was a three-way COLLISION. signify used it ONCE for the
   // assigned-anchor set while introspect and create-agent used it 5× each for the AGENT.
   // signify renamed to `Anchors`, built from its own declared `anchor` — a disambiguation
@@ -87,10 +79,6 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   A: 'REFERENCE',
 
   // ── COLLISION — distinct concepts, one sign ──────────────────────────────────
-  // `P` — the outlier is GONE (formalize's "source prose" became `prose`, cold-verified).
-  // wake and praxis are byte-identical ("a plan : a set of task-files"); carry-on's "the bound
-  // praxis" is that same concept narrowed to the bound one. One concept, three statements.
-  P: 'REFERENCE',
   // `gate` PAID 2026-07-27: dream's declared `gate : home → findings × pressure` invoked
   // `memory.mjs audit` — the sign was already in the artifact. Renamed to `audit`, which also
   // disambiguated dream INTERNALLY (it used `gate` for both that function and the generic

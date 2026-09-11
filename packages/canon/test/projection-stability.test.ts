@@ -97,7 +97,7 @@ describe('projection stability (.ts is the sole source)', () => {
   // lifted out of a stored body) no longer exists: the formalBlock IS the whole
   // payload. This guards that the formalBlock reaches the projection intact AND the
   // composition thunk resolves to the live siblings' `/trigger`s.
-  it('rendered formalize + carry-on project their formalBlock + composed-from siblings', () => {
+  it('rendered formalize + carry-on project their formalBlock, composed-from only when composed', () => {
     const formalizeMd = renderSkill(formalize);
     // the σ* formalBlock law lines render VERBATIM inside the fence …
     expect(formalizeMd).toContain(
@@ -114,7 +114,13 @@ describe('projection stability (.ts is the sole source)', () => {
     // claims is that the formalBlock reaches the artifact VERBATIM — assert that.
     expect(carryOnMd).toContain(carryOn.formalBlock);
     expect(carryOn.formalBlock.split('\n')[0]).toMatch(/^carry-on ≜ /);
-    expect(carryOnMd).toContain('Composed from /praxis.');
+    // carry-on is the EMPTY-composition witness, and deliberately so: it used to
+    // compose `/praxis`, which bound an authority cell to one context and made
+    // "carry on with what we just discussed" unserveable. An empty thunk must
+    // project NO provenance line at all — a stray "Composed from ." would be the
+    // same coupling reappearing as a rendering artifact.
+    expect(carryOn.composition()).toEqual([]);
+    expect(carryOnMd).not.toContain('Composed from');
   });
 
   it('every agent resolves and projects a Target', async () => {
