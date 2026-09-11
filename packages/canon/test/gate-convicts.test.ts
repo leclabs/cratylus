@@ -93,10 +93,9 @@
 // forge was unpoliced — the three that already carried convicting fixtures
 // did so because their authors were told to, not because anything checked. The
 // sibling dirs are now read BY PATH, the precedent this corpus already set for a
-// cross-package test (`event-tap-cell.test.ts` and memory's
-// `cell-verb-roster.test.ts` both read sibling SOURCE by path rather than invent a
-// package edge to carry a test). Per-package copies of this mechanism were the
-// alternative, and duplicated gates drift.
+// cross-package test (`event-tap-cell.test.ts` reads the runtime's `TapVerb` union
+// as source text rather than invent a package edge to carry a test). Per-package
+// copies of this mechanism were the alternative, and duplicated gates drift.
 
 import { readdirSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
@@ -183,7 +182,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // `tool.use.pre` binding) and shows codex emitting it in total silence.
   'canon/hook-act-selector.test.ts': 'GATE',
   'canon/hook-rule-boundary.test.ts': 'GATE',
-  'canon/memory-nudge.test.ts': 'BEHAVIORAL',
   'canon/null-dimension.test.ts': 'GATE',
   'canon/plan-set.test.ts': 'GATE',
   'canon/projection-stability.test.ts': 'GATE',
@@ -198,8 +196,8 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/repo-root.test.ts': 'BEHAVIORAL',
   'canon/runtime-shim.test.ts': 'BEHAVIORAL',
   'canon/skill-shape.test.ts': 'GATE',
-  // twin of memory-nudge: drives the guardrail worker with a broken judge it supplies
-  // itself, and carries its own negative control (opted-out ⇒ silent).
+  // drives the guardrail worker with a broken judge it supplies itself, and
+  // carries its own negative control (opted-out ⇒ silent).
   'canon/stance-guardrail-dark.test.ts': 'BEHAVIORAL',
   'canon/structural-parsimony.test.ts': 'GATE',
   'canon/symbol-altitude.test.ts': 'GATE',
@@ -281,16 +279,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
 
   // ── memory ───────────────────────────────────────────────────────────
   'memory/audit.test.ts': 'BEHAVIORAL',
-  // enumerates the LIVE seed templates of two independent writers and asserts their
-  // emitted bytes agree; its convicting fixtures drive the same comparison over
-  // synthetic pairs, including the hard-wrap that made the first guard dead.
-  'memory/seed-parity.test.ts': 'GATE',
   // BEHAVIORAL, not GATE: it plants a `$HOME` config itself and drives `audit`/`node`/
   // `resolveConfigPath` over it, so its negative cases ARE its fixtures. Its control is
   // external and was run at authoring — removing the sentinel reddens all five legs — but
   // a control that lives outside the file cannot be what classifies it.
   'memory/hermetic-config.test.ts': 'BEHAVIORAL',
-  'memory/cell-verb-roster.test.ts': 'GATE',
   'memory/cli.test.ts': 'BEHAVIORAL',
   'memory/dream.test.ts': 'BEHAVIORAL',
   'memory/liveness-read-drain.test.ts': 'BEHAVIORAL',

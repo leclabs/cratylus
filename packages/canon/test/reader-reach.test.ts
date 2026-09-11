@@ -3,10 +3,12 @@
 // (`src/skills/signify.ts`):
 //
 //   1. CONSUMER-GENERATED artifacts — what the generating skills (praxis ·
-//      create-agent · dream · exemplify) emit on consumer hosts. Fixtures under
-//      `test/fixtures/generated/` were produced 2026-07-01 on fresh consumer
-//      projects by the skills AS CODIFIED (each cell now carries the ρ=LLM
-//      discipline in its own laws) and pinned here; each must conform.
+//      create-agent · exemplify) emit on consumer hosts, plus `memory.md`, pinned
+//      when `dream` (since retired) generated it — the memory runtime that
+//      produced it survives as a dormant library, so the register contract still
+//      binds. Fixtures under `test/fixtures/generated/` were produced 2026-07-01
+//      on fresh consumer projects by the skills AS CODIFIED (each cell now carries
+//      the ρ=LLM discipline in its own laws) and pinned here; each must conform.
 //   2. AGENT↔AGENT messages — delegation prompts + subagent returns, ρ=LLM by
 //      standing rule (codified: `dimensions/actions/delegation.ts` definiens; the
 //      dispatch/judge laws in `skills/praxis.ts`; `conform(k)` in exemplify's

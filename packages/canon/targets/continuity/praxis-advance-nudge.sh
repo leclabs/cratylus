@@ -10,9 +10,10 @@
 #   PLAN.md generation" task). Detect → remind, never edit. (doc-mirrors-runtime-truth:
 #   the folders are the truth; this only flags that the mirror lagged.)
 #
-# SCOPE: praxis-advance is the ONE repo-level continuity ritual. encode/dream are
-#   per-AGENT sidecar-memory operations (~/.claude/agents/<name>/*) — not repo state,
-#   a git hook can't meaningfully fire them — so they are out of this hook's scope.
+# SCOPE: praxis-advance is the ONE repo-level continuity ritual. Per-agent memory
+#   operations (the `memory` runtime capability's sidecar state under
+#   ~/.claude/agents/<name>/*) are not repo state — a git hook can't meaningfully
+#   fire them — so they are out of this hook's scope.
 #
 # OPT-IN: this runs only when `git config --bool agentfactory.continuity` is true. A fresh
 #   clone is opted out, so default commit behavior is unchanged. See continuity-hook.sh.

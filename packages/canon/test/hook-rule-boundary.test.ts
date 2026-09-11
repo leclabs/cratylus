@@ -3,7 +3,7 @@
 // `event` ActivationMode), and their harness artifacts are PROJECTED TARGETS, not
 // hand-authored. `rule` now has ONE corpus instance: `src/rules/repo-preamble.ts`
 // projects the repo-root `AGENTS.md`. This became legal when the `AGENTS.md@node`
-// dream memory-sink route was RETIRED (`src/skills/dream.ts` routes no record to a
+// dream memory-sink route was RETIRED (the since-deleted `dream` skill routed no
 // node/plan `AGENTS.md`): the repo-root `AGENTS.md` is no longer SelfAuthored memory,
 // so `SelfAuthored ∉ Target` no longer bars it (the earlier S4 conversion, reverted
 // while the sink still existed, now holds). A per-NODE/per-PLAN `AGENTS.md` is a
@@ -195,9 +195,7 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
     const ids = (await allHookCells()).map((c) => c.id).sort();
     expect(ids).toEqual([
       'deploy-drift-notice',
-      'memory-consolidation-nudge',
       'praxis-continuity',
-      'resume-availability-notice',
       'stance-guardrail',
       'stance-guardrail-pre',
     ]);

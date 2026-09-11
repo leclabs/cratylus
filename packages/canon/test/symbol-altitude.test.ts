@@ -57,7 +57,6 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   '≺': 'REFERENCE', // same order operator over different carriers
   O: 'REFERENCE', // both: the Target dimension-section set
   green: 'REFERENCE', // both: a gate-pass reached by FIXING, never by loosening
-  dream: 'REFERENCE', // handoff points at the dream operation with `@ dream`
   realize: 'REFERENCE', // exemplify carries `@ materialize`
   boundary: 'REFERENCE', // both: this cell's remit against its neighbour's
   // `c` RECLASSIFIED, not renamed: probe gives it in INTENSION ("a target concept"), elicit in
@@ -80,10 +79,6 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   // (`@ event-tap`); `status` is declared locally ONLY because its definiens is the
   // cell's own script path, which a borrow would state wrongly.
   status: 'REFERENCE',
-  // `memory` RECLASSIFIED: wake declares the CAPABILITY contract (and its cell carries
-  // `runtime: { capability: 'memory' }`), dream declares the home ∪ runtime it resolves to.
-  // Two facets of one subsystem, not two concepts.
-  memory: 'REFERENCE',
   // `A` PAID 2026-07-27 — was a three-way COLLISION. signify used it ONCE for the
   // assigned-anchor set while introspect and create-agent used it 5× each for the AGENT.
   // signify renamed to `Anchors`, built from its own declared `anchor` — a disambiguation
@@ -100,13 +95,6 @@ const LEDGER: Readonly<Record<string, Verdict>> = {
   // `memory.mjs audit` — the sign was already in the artifact. Renamed to `audit`, which also
   // disambiguated dream INTERNALLY (it used `gate` for both that function and the generic
   // corpus test-gate in `gate ≻ cell ≻ governing-doc`). Discovery, not coinage.
-  // `read` — PROBED AND REFUSED, 2026-07-27. Candidate `recall : home × session → records` was
-  // cold-read as "a function that takes a home and a session and produces records" — mechanically
-  // correct, but it fired nothing that distinguishes it from `read`, so it is not the FITTER
-  // sign, merely a different one. `cratylism` says ⊥ is a legitimate result: the concept is real
-  // and the language is short. Left as an honest homonym rather than renamed by fiat — a forced
-  // anchor here would poison the very gate this ledger serves.
-  read: 'COLLISION',
   // `release` PAID 2026-07-27: handoff's is the CLI verb (`memory.mjs session release`) and
   // cannot yield. praxis's meant "remove .bound", the exact inverse of its own declared
   // `bind` — so `unbind` was taken from the sibling already in the cell, not minted.

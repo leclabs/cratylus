@@ -33,7 +33,7 @@ export const RHO = {
   // runtime frontiers (reader-reach.test.ts)
   'task-file': 'LLM', // praxis: blind-dispatchable execution spec = the dispatch prompt
   'plan-mirror': 'LLM', // praxis: PLAN.md, agent-read
-  memory: 'LLM', // dream/handoff/wake: SELF · MEMORY · EPISODIC · routed AGENTS.md
+  memory: 'LLM', // dream/handoff/wake (since retired): SELF · MEMORY · EPISODIC · routed AGENTS.md
   'generated-agent-artifact': 'LLM', // create-agent vectors · exemplify cells/manifests on consumer hosts
   'delegation-prompt': 'LLM', // agent↔agent dispatch
   'subagent-return': 'LLM', // agent↔agent return

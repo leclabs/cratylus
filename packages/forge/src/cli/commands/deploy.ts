@@ -154,7 +154,7 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
           harnessAdapter.skillRel(n, agents),
         // Optional on the port: present only on a harness whose mechanism is a
         // scoped module rather than a config merge.
-        enforcingRel: harnessAdapter.enforcingRel ?? null,
+        scopedRel: harnessAdapter.scopedRel ?? null,
         hooksFile: harnessAdapter.hooksFile,
         home: opts.home ?? null,
         project: opts.project ?? null,
@@ -375,8 +375,8 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
       // THE WHOLE LAYOUT, not just the extension. The check used to pass
       // `agentExt` alone, so every non-claude harness was audited against claude's
       // destinations: an omp check compared `agents/<name>.md` while the deploy it
-      // audits writes `profiles/<name>/agent/APPEND_SYSTEM.md`, and reported the
-      // whole corpus absent. Same facts as the deploy call above, same source.
+      // audits writes `../.agents/<name>/APPEND_SYSTEM.md`, and reported the whole
+      // corpus absent. Same facts as the deploy call above, same source.
       const report = auditLocal(harnessDir, kind, tree, names, {
         agentExt: harnessAdapter.agentExt ?? undefined,
         agentRel: (n: string) => harnessAdapter.agentRel(n),
@@ -388,8 +388,8 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
           null,
           harnessAdapter.agentExt ?? undefined,
         ),
-        ...(harnessAdapter.enforcingRel
-          ? { enforcingRel: harnessAdapter.enforcingRel }
+        ...(harnessAdapter.scopedRel
+          ? { scopedRel: harnessAdapter.scopedRel }
           : {}),
         maxLines: REPORT_LINES,
       });

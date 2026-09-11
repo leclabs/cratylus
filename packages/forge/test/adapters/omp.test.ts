@@ -1,14 +1,18 @@
 // The omp adapter's gates.
 //
-// Each leg pins a fact that was MEASURED against `@oh-my-pi/pi-coding-agent@17.2.9`
-// and would otherwise be held by prose alone. Where a leg exists because something
-// went wrong, the wrong thing is named — a fixture pinned to a law outlives the
+// Each leg pins a fact that was MEASURED — against `@oh-my-pi/pi-coding-agent`'s
+// own source, or empirically against an installed `omp` binary — and would
+// otherwise be held by prose alone. Where a leg exists because something went
+// wrong, the wrong thing is named — a fixture pinned to a law outlives the
 // incident that produced it, and one pinned to the incident is a museum piece.
 
+import { posix } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
   OMP_BLOCKING_EVENTS,
   OMP_GUARDRAIL_MODULE,
+  OMP_LAUNCHER_FILE,
+  OMP_OVERLAY_FILE,
   OMP_SESSION_DIR,
   OMP_SESSION_MODULE,
   agentToOmpAppendSystem,
@@ -16,12 +20,13 @@ import {
   canonicalToOmp,
   ompAgentRel,
   ompBindingOf,
-  ompExtensionRel,
   ompGuardrailExtensions,
   ompHarnessAdapter,
-  ompProfileDir,
+  ompLaunchSurface,
   ompScopeActivatedExtensions,
+  ompSkillRel,
 } from '../../src/adapters/omp/index.js';
+import { SCOPE_DIR_TOKEN } from '../../src/core/harness-adapter.js';
 import { runtimeShimContent } from '../../src/project/runtime-shim.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
 
@@ -105,11 +110,11 @@ describe('omp event map', () => {
 });
 
 describe('omp scoping', () => {
-  it('scopes every event it realizes — the profile dir IS the scope', () => {
+  it("scopes every event it realizes — the persona's own dir IS the scope", () => {
     // This is the shard's whole finding. The bootstrap concluded every enforcing
     // fragment degrades to `steer` on omp because there was no identity to scope
-    // to. There is: the profile. A module in `profiles/<agent>/agent/extensions/`
-    // loads under that profile and no other.
+    // to. There is: the persona's own `.agents/<name>/extensions/` dir. A module
+    // written there loads under that persona's launch spec and no other.
     for (const canonical of Object.keys(canonicalToOmp)) {
       expect(ompHarnessAdapter.realizes(canonical)).toBe(true);
       expect(
@@ -124,13 +129,47 @@ describe('omp scoping', () => {
     expect(ompHarnessAdapter.scopes('vcs.commit.post')).toBe(false);
   });
 
-  it('lands the persona and the guardrails under the SAME profile dir', () => {
-    // If these ever disagree, the persona loads for one profile and its guardrails
-    // for another — enforcement silently governing the wrong agent, which is the
-    // widening MODEL forbids outright.
-    expect(ompAgentRel('mav')).toBe('profiles/mav/agent/APPEND_SYSTEM.md');
-    expect(ompExtensionRel('mav')).toMatch(
-      /^profiles\/mav\/agent\/extensions\//,
+  it('lands the persona and its guardrails under the SAME scope directory', () => {
+    // If these ever disagree, the persona loads for one directory and its
+    // guardrails for another — enforcement silently governing the wrong agent,
+    // which is the widening MODEL forbids outright. NOT a profile any more: both
+    // now live one level out of `.omp`, at the harness-neutral `.agents` root.
+    expect(ompAgentRel('mav')).toBe('../.agents/mav/APPEND_SYSTEM.md');
+    const guardrailRel = ompHarnessAdapter.scopedRel?.(
+      OMP_GUARDRAIL_MODULE,
+      'mav',
+    );
+    expect(guardrailRel).toBe(
+      `../.agents/mav/extensions/${OMP_GUARDRAIL_MODULE}`,
+    );
+    expect(posix.dirname(ompAgentRel('mav'))).toBe(
+      posix.dirname(posix.dirname(guardrailRel as string)),
+    );
+  });
+
+  it('does NOT scope through any `profiles/` dir — that carrier is retired', () => {
+    expect(ompAgentRel('mav')).not.toMatch(/profiles\//);
+    expect(
+      ompHarnessAdapter.scopedRel?.(OMP_GUARDRAIL_MODULE, 'mav'),
+    ).not.toMatch(/profiles\//);
+    expect(ompSkillRel('wake', ['mav'])[0]).not.toMatch(/profiles\//);
+  });
+});
+
+describe('omp skill destination', () => {
+  it('returns exactly ONE destination — the harness-neutral root, no fan-out', () => {
+    // The old fan-out (session root + one copy per profile) existed only because
+    // a persona WAS a profile, isolated from every other. Identity moved to a
+    // launch spec; every launch, personaed or bare, now reads the SAME
+    // `~/.agents/skills` natively, so one copy serves every reader.
+    expect(ompSkillRel('wake', ['mav', 'nico'])).toEqual([
+      '../.agents/skills/wake',
+    ]);
+  });
+
+  it('ignores the agent set — it is unused now, not merely unread', () => {
+    expect(ompSkillRel('wake', [])).toEqual(
+      ompSkillRel('wake', ['mav', 'nico']),
     );
   });
 });
@@ -145,7 +184,7 @@ describe('omp enforcing surface', () => {
     agents,
   });
 
-  it('emits ONE module per composing agent, each in that agent’s own profile', () => {
+  it('emits ONE module per composing agent, each in that agent’s own scope dir', () => {
     const out = ompGuardrailExtensions(
       [binding(['mav', 'nico'], ['turn.end'])] as never,
       MECH,
@@ -158,13 +197,16 @@ describe('omp enforcing surface', () => {
       ['nico', OMP_GUARDRAIL_MODULE],
     ]);
     expect(
-      out.map((f) => ompHarnessAdapter.enforcingRel?.(f.filename, f.scope)),
-    ).toEqual([ompExtensionRel('mav'), ompExtensionRel('nico')]);
+      out.map((f) => ompHarnessAdapter.scopedRel?.(f.filename, f.scope)),
+    ).toEqual([
+      `../.agents/mav/extensions/${OMP_GUARDRAIL_MODULE}`,
+      `../.agents/nico/extensions/${OMP_GUARDRAIL_MODULE}`,
+    ]);
   });
 
   it('writes NO runtime identity check — the location is the scope', () => {
-    // The easy read of this harness is one global module branching on
-    // `process.env.OMP_PROFILE`. That is precisely the "runtime self-filter"
+    // The easy read of this harness is one global module branching on an env var
+    // naming the running persona. That is precisely the "runtime self-filter"
     // `MODEL.md`'s ENFORCED clause forbids, and it is invisible once written —
     // the file still looks scoped. Placement needs no filter to be correct.
     const [mod] = ompGuardrailExtensions(
@@ -209,8 +251,8 @@ describe('omp enforcing surface', () => {
     // because the port dropped `mechanisms` on the floor: codex's adapter wired
     // `enforcingSurface` at arity 1, so every call took this branch and its
     // per-agent guardrails reached the host as nothing at all — green throughout,
-    // because the unit tests call the function directly with a map the production
-    // path never supplied.
+    // because the unit tests call the function DIRECTLY with a mechanism map the
+    // production path never supplies.
     expect(
       ompGuardrailExtensions([binding(['mav'], ['turn.end'])] as never),
     ).toEqual([]);
@@ -220,8 +262,8 @@ describe('omp enforcing surface', () => {
 describe('omp scope-activated surface', () => {
   // The cells no agent composes — canon's stance gate, drift notice, memory nudge.
   // On claude they land in ONE user-level `settings.json` that every session reads;
-  // omp has no such file and a per-profile config root, so the same reach is one
-  // module per scope. Before this op existed the projector read the absence of
+  // omp has no such file and each scope is its own directory, so the same reach is
+  // one module per scope. Before this op existed the projector read the absence of
   // `hooks()` as "no session-scoped surface" and dropped all five.
   const hook = (events: string[]) =>
     ({
@@ -234,14 +276,15 @@ describe('omp scope-activated surface', () => {
   it('carries the SESSION scope and one scope per projected agent', () => {
     const out = ompScopeActivatedExtensions([HOOK], ['mav', 'nico']);
     expect(out.map((f) => f.scope)).toEqual(['_session', 'mav', 'nico']);
-    // The session copy is what a plain `omp` launch loads; a profile launch reads
-    // its own and never that one.
+    // The session copy is what a bare `omp` launch loads natively; a persona
+    // launch reads its own copy — named by ITS OWN `--config` overlay — and
+    // never this one.
     expect(
-      out.map((f) => ompHarnessAdapter.enforcingRel?.(f.filename, f.scope)),
+      out.map((f) => ompHarnessAdapter.scopedRel?.(f.filename, f.scope)),
     ).toEqual([
       `${OMP_SESSION_DIR}/extensions/${OMP_SESSION_MODULE}`,
-      `${ompProfileDir('mav')}/extensions/${OMP_SESSION_MODULE}`,
-      `${ompProfileDir('nico')}/extensions/${OMP_SESSION_MODULE}`,
+      `../.agents/mav/extensions/${OMP_SESSION_MODULE}`,
+      `../.agents/nico/extensions/${OMP_SESSION_MODULE}`,
     ]);
   });
 
@@ -257,6 +300,65 @@ describe('omp scope-activated surface', () => {
     expect(
       ompScopeActivatedExtensions([hook(['git.commit.post'])], ['mav']),
     ).toEqual([]);
+  });
+});
+
+describe('omp launch spec', () => {
+  it('emits an overlay and an executable launcher, per projected agent, sorted', () => {
+    const out = ompLaunchSurface(['nico', 'mav']);
+    expect(out.map((f) => [f.scope, f.filename])).toEqual([
+      ['mav', OMP_OVERLAY_FILE],
+      ['mav', OMP_LAUNCHER_FILE],
+      ['nico', OMP_OVERLAY_FILE],
+      ['nico', OMP_LAUNCHER_FILE],
+    ]);
+  });
+
+  it('lands the launcher executable — an unexecutable one is dead on the host', () => {
+    const [, launcher] = ompLaunchSurface(['mav']);
+    expect(launcher?.executable).toBe(true);
+    expect(launcher?.content).toContain('#!/bin/sh');
+  });
+
+  it('never emits for the SESSION scope — a bare `omp` needs no launch spec', () => {
+    expect(ompLaunchSurface([]).map((f) => f.scope)).not.toContain('_session');
+  });
+
+  it('the launcher resolves its OWN directory rather than a baked-in path', () => {
+    const [, launcher] = ompLaunchSurface(['mav']);
+    expect(launcher?.content).toContain('dirname');
+    expect(launcher?.content).not.toMatch(/\/home\/|\/Users\//);
+  });
+
+  it('the overlay names the DIRECTORY, so it covers the guardrail module too', () => {
+    // A single named file here would silently stop loading whichever module was
+    // NOT named the day a second one is added — the exact enforcement loss the
+    // profile carrier never had (its directory scan swept both unconditionally).
+    const [overlay] = ompLaunchSurface(['mav']);
+    expect(overlay?.content).toContain(`${SCOPE_DIR_TOKEN}/extensions`);
+    expect(overlay?.content).not.toContain(OMP_SESSION_MODULE);
+    expect(overlay?.content).not.toContain(OMP_GUARDRAIL_MODULE);
+  });
+
+  it('names exactly the directory the deployed modules actually land in', () => {
+    // THE FAILURE MODE THIS GUARDS. A launcher (or its overlay) naming a
+    // directory nobody placed anything into is a persona that starts with none
+    // of its own governance loaded, silently. `scopedRel` is deploy's own
+    // destination map — the same one that places `OMP_SESSION_MODULE` — so this
+    // pins the overlay's implicit directory against the ONE place the module is
+    // ever actually written.
+    const [overlay] = ompLaunchSurface(['mav']);
+    const overlayRel = ompHarnessAdapter.scopedRel?.(
+      overlay?.filename as string,
+      'mav',
+    ) as string;
+    const moduleRel = ompHarnessAdapter.scopedRel?.(
+      OMP_SESSION_MODULE,
+      'mav',
+    ) as string;
+    expect(`${posix.dirname(overlayRel)}/extensions`).toBe(
+      posix.dirname(moduleRel),
+    );
   });
 });
 

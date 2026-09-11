@@ -1,15 +1,13 @@
 // Local filesystem placer — copy generated defs into a `.claude/` root on this
-// host and seed each agent's sidecar layers if-absent. The def is overwritten
-// freely (generated substance); the sidecars are protected
-// (`substance-over-accident`). Skills are generated substance with no
-// sidecars — overwrite freely.
+// host. The def is overwritten freely (generated substance) — an agent's
+// self-authored memory lives entirely outside the deploy root, so this placer
+// has nothing else to protect. Skills are generated substance too — overwrite
+// freely.
 //
 // The PLACER never deletes. It only TESTIFIES — `report.written` records the
 // harnessDir-relative path of every file it lays down, and the orchestrator
 // (`deploy.ts` → `manifest.ts`) uses that record, and only that record, to
-// converge the target. The memory sidecars are deliberately absent from the
-// testimony: they live outside the deploy root and are the self-authored
-// individual, so no deploy may ever sweep them.
+// converge the target.
 //
 // Faithful port of `place/local.py`.
 //
@@ -40,7 +38,6 @@ import {
   walkSkillFiles,
 } from './bundle.js';
 import { readManifest, unattributable } from './manifest.js';
-import { SEED_FILES } from './seeds.js';
 import {
   type DeployKind,
   type PlaceOpts,
@@ -61,10 +58,13 @@ export function defaultAgentRel(name: string, agentExt = '.md'): string {
   return `agents/${name}${agentExt}`;
 }
 
-/** Write <harnessDir>/<agentRel(name)> for each name (the harness-specific
- *  declaration); seed the harness-NEUTRAL memory home
- *  <home>/.agents/<name>/{SEMANTIC,PROCEDURAL,EPISODIC} (a sibling of .claude,
- *  mirroring memory `homeForName`) only if absent. */
+/** Write <harnessDir>/<agentRel(name)> for each name — the harness-specific
+ *  declaration, and the ONLY thing this function writes. Where that lands
+ *  varies by harness (`agents/<name>.md` under claude's own root; omp's is
+ *  `../.agents/<name>/APPEND_SYSTEM.md`, inside the harness-neutral home). A
+ *  harness whose destination sits inside that home gets exactly the
+ *  declaration there — never a sidecar, never a scan of what else lives
+ *  beside it. */
 export function placeAgentsLocal(
   harnessDir: string,
   defsDir: string,
@@ -91,43 +91,24 @@ export function placeAgentsLocal(
     const dest = resolvePath(harnessDir, agentRel(name));
     if (!opts.dry) {
       // The destination's PARENT, not a fixed `agents/` dir: omp's is
-      // `profiles/<name>/agent/`, which does not exist until this run makes it.
+      // `../.agents/<name>/`, which does not exist until this run makes it.
       mkdirSync(dirname(dest), { recursive: true });
       writeFileSync(dest, readFileSync(src, 'utf-8'), 'utf-8');
     }
     report.copied += 1;
-    // Testimony: the def is the ONLY thing this placer may later prune. The
-    // sidecars below are never recorded — never ours to remove.
+    // Testimony: the def is the ONLY thing this placer ever writes, so it is
+    // the only thing a later prune may remove. For a harness whose def
+    // destination happens to live under `<harnessDir>/../.agents/<name>/`
+    // (omp's launch spec now does), the def is still the ONLY file this
+    // placer puts there — the rest of that home (memory sidecars, whatever
+    // else the agent's own organs write) is the agent's, and a deploy never
+    // creates, reads, or deletes any of it.
     // The extension must match what was WRITTEN, not what claude happens to use:
     // the manifest is the prune record, and a record naming a path that does not
     // exist can never converge — the real file becomes permanently unattributable.
     report.written[name] = [agentRel(name)];
-    // Memory sidecars live in the harness-NEUTRAL home ~/.agents/<name> (mirrors
-    // memory `homeForName`), a sibling of `.claude` — NOT under
-    // `.claude/agents` (Claude-specific; only <name>.md declaration lives there).
-    const selfdir = resolvePath(harnessDir, '..', '.agents', name);
-    if (!opts.dry) {
-      mkdirSync(selfdir, { recursive: true });
-    }
-    for (const [fname, seedfn] of SEED_FILES) {
-      const f = resolvePath(selfdir, fname);
-      if (existsSync(f)) {
-        report.present.push(`${name}/${fname}`);
-      } else if (!opts.dry) {
-        writeFileSync(f, seedfn(name), 'utf-8');
-        report.seeded.push(`${name}/${fname}`);
-      } else {
-        report.seeded.push(`${name}/${fname}`);
-      }
-    }
   }
   log(`  defs copied: ${report.copied}`);
-  log(
-    `  layers seeded (${report.seeded.length}): ${report.seeded.join(', ') || '-'}`,
-  );
-  log(
-    `  layers present, untouched (${report.present.length}): ${report.present.join(', ') || '-'}`,
-  );
   return { rc: 0, report };
 }
 
@@ -320,8 +301,8 @@ export interface RenderedLayout {
   skillRel?: (name: string, agents: readonly string[]) => readonly string[];
   /** The projected agent set — the scopes a per-directory harness is keyed by. */
   agents?: readonly string[];
-  /** Where a scoped mechanism artifact lands (`HarnessAdapter.enforcingRel`). */
-  enforcingRel?: (filename: string, agent?: string) => string;
+  /** Where a scoped mechanism artifact lands (`HarnessAdapter.scopedRel`). */
+  scopedRel?: (filename: string, agent?: string) => string;
 }
 
 export interface AuditOpts extends RenderedLayout {
@@ -418,8 +399,8 @@ export function renderedFiles(
   // hooks, second half: the SCOPED mechanism modules. Not keyed by a hook id —
   // one module carries every cell's registrations — so they are enumerated from
   // the staging dir rather than from `names`, exactly as the placer does.
-  const enforcingRel = layout.enforcingRel;
-  if (kind === 'hooks' && tree.hooksDir && enforcingRel) {
+  const scopedRel = layout.scopedRel;
+  if (kind === 'hooks' && tree.hooksDir && scopedRel) {
     const stageRoot = resolvePath(tree.hooksDir, ENFORCING_STAGE_DIR);
     if (existsSync(stageRoot)) {
       for (const scope of readdirSync(stageRoot).sort()) {
@@ -429,7 +410,7 @@ export function renderedFiles(
           const src = resolvePath(scopeDir, file);
           if (!statSync(src).isFile()) continue;
           out.push({
-            rel: enforcingRel(file, scope),
+            rel: scopedRel(file, scope),
             src,
             owner: `${ENFORCING_STAGE_DIR}:${scope}`,
           });

@@ -12,16 +12,25 @@
 // default cannot satisfy both.
 
 import {
+  chmodSync,
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
+import {
+  OMP_LAUNCHER_FILE,
+  OMP_OVERLAY_FILE,
+  OMP_SESSION_MODULE,
+} from '../../src/adapters/omp/index.js';
 import { adapterByName } from '../../src/adapters/registry/index.js';
+import { SCOPE_DIR_TOKEN } from '../../src/core/harness-adapter.js';
 import { deploySingle } from '../../src/deploy/deploy.js';
 
 const roots: string[] = [];
@@ -130,13 +139,16 @@ describe('the two harnesses genuinely differ — else the cases above are one ca
 // hidden assumption: that a skill lands at `skills/<name>` and a mechanism in a
 // file at the root. omp breaks both, and the breakage was live — `~/.omp/skills`
 // is a directory that harness never scans (its native provider reads
-// `<agent-dir>/skills`, profile-scoped), so a byte-perfect render deployed 16
-// unloadable skills and reported success.
+// `~/.agents/skills`), so a byte-perfect render once deployed 16 unloadable
+// skills and reported success.
 describe('deploy --harness omp places what omp actually reads', () => {
   const omp = adapterByName('omp');
 
-  /** An omp-shaped render tree: one agent, one skill, and one staged mechanism
-   *  module per scope (session + the agent), exactly as `project` writes them. */
+  /** An omp-shaped render tree: one agent, one skill, and one staged launch-spec
+   *  set per scope (session + the agent), exactly as `project` writes them —
+   *  the session module named for real, so `scopedRel`'s filename-aware
+   *  placement (module → `extensions/`, overlay/launcher → the scope's own top
+   *  level) is exercised the same way it is in production. */
   function ompTree() {
     const root = mkdtempSync(join(tmpdir(), 'forge-omp-'));
     roots.push(root);
@@ -154,10 +166,19 @@ describe('deploy --harness omp places what omp actually reads', () => {
     writeFileSync(join(src, 'hooks', 'ping', 'ping.sh'), '#!/bin/sh\nexit 0\n');
     for (const scope of ['_session', 'mav']) {
       writeFileSync(
-        join(src, 'enforcing', scope, 'mod.ts'),
+        join(src, 'enforcing', scope, OMP_SESSION_MODULE),
         `// ${scope}\nexport default () => {};\n`,
       );
     }
+    // The launch spec — omp.yml + omp-launch — lands ONLY for the persona
+    // scope, exactly as `ompLaunchSurface` emits it (never for `_session`).
+    writeFileSync(
+      join(src, 'enforcing', 'mav', OMP_OVERLAY_FILE),
+      `extensions:\n  - ${SCOPE_DIR_TOKEN}/extensions\n`,
+    );
+    const launcherSrc = join(src, 'enforcing', 'mav', OMP_LAUNCHER_FILE);
+    writeFileSync(launcherSrc, '#!/bin/sh\nexec omp "$@"\n');
+    chmodSync(launcherSrc, 0o755);
     const home = join(root, 'target');
     for (const kind of ['agent', 'skill', 'hooks'] as const) {
       deploySingle({
@@ -173,44 +194,75 @@ describe('deploy --harness omp places what omp actually reads', () => {
         agentRel: (n: string) => omp.agentRel(n),
         skillRel: (n: string, agents: readonly string[]) =>
           omp.skillRel(n, agents),
-        enforcingRel: omp.enforcingRel ?? null,
+        scopedRel: omp.scopedRel ?? null,
         hooksFile: omp.hooksFile,
         home,
         dry: false,
       });
     }
-    return join(home, omp.home);
+    return { dir: join(home, omp.home), home };
   }
 
-  it('copies the skill into the session root AND every projected profile', () => {
-    const dir = ompTree();
-    expect(existsSync(join(dir, 'agent', 'skills', 'probe', 'SKILL.md'))).toBe(
-      true,
-    );
+  it('copies the skill to the harness-neutral root ONLY — no fan-out', () => {
+    const { home } = ompTree();
     expect(
-      existsSync(
-        join(dir, 'profiles', 'mav', 'agent', 'skills', 'probe', 'SKILL.md'),
-      ),
-      'a profile launch reads only its own agent dir, so a skill it cannot see is not deployed',
+      existsSync(join(home, '.agents', 'skills', 'probe', 'SKILL.md')),
+      'omp reads ~/.agents/skills NATIVELY on every launch, personaed or bare',
     ).toBe(true);
   });
 
-  it('does NOT copy the skill to `skills/`, the dir omp never scans', () => {
-    const dir = ompTree();
+  it('does NOT copy the skill to `.omp/skills/`, the dir omp never scans', () => {
+    const { dir } = ompTree();
     expect(
       existsSync(join(dir, 'skills', 'probe')),
       'this is the render tree’s staging layout, not a destination — deploying here is how 16 skills became inert',
     ).toBe(false);
   });
 
-  it('places each staged mechanism module in the scope that loads it', () => {
-    const dir = ompTree();
-    expect(existsSync(join(dir, 'agent', 'extensions', 'mod.ts'))).toBe(true);
+  it('does NOT write into `profiles/` — the persona carrier is retired', () => {
+    const { dir } = ompTree();
     expect(
-      existsSync(join(dir, 'profiles', 'mav', 'agent', 'extensions', 'mod.ts')),
+      existsSync(join(dir, 'profiles')),
+      'identity moved to the launch spec; forge must never create the profile dir it used to conflate identity with',
+    ).toBe(false);
+  });
+
+  it('places each staged mechanism module in the scope that loads it', () => {
+    const { dir, home } = ompTree();
+    expect(
+      existsSync(join(dir, 'agent', 'extensions', OMP_SESSION_MODULE)),
+    ).toBe(true);
+    expect(
+      existsSync(
+        join(home, '.agents', 'mav', 'extensions', OMP_SESSION_MODULE),
+      ),
     ).toBe(true);
     // And nothing is left at the staging path: a module under `enforcing/` on the
     // host is one omp's extension loader never sees.
     expect(existsSync(join(dir, 'enforcing'))).toBe(false);
+  });
+
+  it('lands the launcher executable, and the overlay resolves to where the module actually landed', () => {
+    const { home } = ompTree();
+    const scopeDir = join(home, '.agents', 'mav');
+    const launcherPath = join(scopeDir, OMP_LAUNCHER_FILE);
+    expect(existsSync(launcherPath)).toBe(true);
+    expect(
+      statSync(launcherPath).mode & 0o111,
+      'an unexecutable launcher is dead on the host — the operator cannot run it',
+    ).not.toBe(0);
+
+    const overlay = readFileSync(join(scopeDir, OMP_OVERLAY_FILE), 'utf-8');
+    // The token must be GONE — a placeholder no YAML parser can expand would
+    // reach the host exactly the way a literal `$HOME` does: read as a literal,
+    // useless path segment.
+    expect(overlay).not.toContain(SCOPE_DIR_TOKEN);
+    // And what replaced it must name the directory the module actually landed
+    // in — a launcher whose overlay names a directory nobody placed anything
+    // into is a persona that starts with none of its own governance loaded.
+    expect(overlay).toContain(join(scopeDir, 'extensions'));
+    expect(existsSync(join(scopeDir, 'extensions', OMP_SESSION_MODULE))).toBe(
+      true,
+    );
   });
 });

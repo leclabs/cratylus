@@ -1,37 +1,54 @@
 // The OMP (Oh My Pi) projection of the agent anatomy — the third harness, and the
 // first whose per-agent scope is a DIRECTORY rather than a file or a selector.
 //
-// omp's native surfaces differ from both siblings, and every difference below was
-// read off `@oh-my-pi/pi-coding-agent@17.2.9`'s own source, not inferred:
+// IDENTITY IS THE LAUNCH SPEC, NOT THE PROFILE. omp's own `--profile <name>`
+// silos AUTH, MCP, MODELS, SESSIONS and `agent.db` — an ENVIRONMENT, and a
+// property of the HOST an operator is running on, not of the agent this module
+// composes. An earlier design conflated the two: it projected each persona INTO
+// a profile (`profiles/<name>/agent/APPEND_SYSTEM.md`), so composing a persona
+// silently forked the operator's whole session state along with it. This
+// adapter now projects a LAUNCH SPEC instead — `--append-system-prompt` plus
+// `--config`, combined by a generated launcher — carried out of a
+// harness-neutral `~/.agents/` root. A profile and a persona are ORTHOGONAL
+// facts about one launch; an operator who wants both still can
+// (`--profile work ~/.agents/mav/omp-launch`), and forge asserts neither for
+// them.
 //
-//   - a PERSONA is `profiles/<name>/agent/APPEND_SYSTEM.md`. There is no `--agent`
-//     flag and no session-level identity field; `--profile <name>` is the only NAME
-//     an omp launch carries, and the profile's agent dir is auto-discovered
-//     (`main.ts:827-838, 881`) and applied "without bypassing system prompt
-//     templates" (`main.ts:840-841`) — a TRUE augment of the base prompt.
-//   - a SKILL is `skills/<name>/SKILL.md` (the AgentSkills spec, shared with claude
-//     and codex).
-//   - ENFORCEMENT is a TypeScript module in `profiles/<name>/agent/extensions/`.
-//     omp has no hook CONFIG at all: `discoverExtensionPaths`
-//     (`extensions/loader.ts:580-615`) scans the `extensions/` dir of each native
-//     config root and binds loose `.ts`/`.js` factories through the extension
-//     runner. Nothing declares a hook — the directory IS the declaration.
+// omp's native surfaces, read off `@oh-my-pi/pi-coding-agent`'s own source and,
+// where noted, re-measured against an installed `omp` binary while building
+// this launch spec:
 //
-// THE SCOPE IS THE DIRECTORY, and that is the whole reason this adapter exists.
-// Claude attaches a hook inside a subagent's own front-matter, so attachment is the
-// scope. Codex declares hooks globally and must re-express per-agent intent as a
-// generated `matcher` regex. omp does neither: because the native config root is
-// PROFILE-SCOPED (`discovery/builtin.ts:65-70` — "Native user config is
-// profile-scoped"), a module written into `profiles/mav/agent/extensions/` loads
-// under `--profile mav` and under nothing else.
+//   - a SKILL is `skills/<name>/SKILL.md` under `~/.agents` (the AgentSkills
+//     spec, shared with claude and codex) — omp's vendor-neutral `.agent[s]`
+//     provider reads that root NATIVELY, at priority 70, no flag and no
+//     profile (confirmed in the installed package's resource loader:
+//     `join(getHomeDir(), ".agents", "skills")` is scanned unconditionally,
+//     the same call for every launch).
+//   - ENFORCEMENT is a TypeScript module omp's extension loader binds either by
+//     SCANNING a directory (`discoverExtensionPaths`, a native config root) or
+//     by an explicit `--config … extensions:` entry naming a file OR a
+//     directory (`collectFilesFromPaths`/`collectAutoExtensionEntries` in the
+//     installed package sweep a directory entry exactly like a native root's
+//     auto-discovery — verified empirically: a directory named in `extensions:`
+//     loaded every loose `.ts` file inside it). No hook CONFIG exists at all:
+//     the directory, or the overlay entry naming it, IS the declaration.
 //
-// So composition is realized STRUCTURALLY here, with no selector and no runtime
-// self-filter — which matters, because `MODEL.md`'s `ENFORCED` forbids the ambient
-// form outright ("¬ ambient : COMPOSITION is the scope, ¬ a runtime self-filter").
-// Emitting one global module that branched on `process.env.OMP_PROFILE` would have
-// been the easy read of this harness and would have written exactly the runtime
-// self-filter MODEL names. Placing the file where only the composing agent can load
-// it needs no filter to be correct.
+// THE SCOPE IS STILL THE DIRECTORY — `~/.agents/<name>/extensions/` — and that
+// is still the whole reason this adapter exists. Claude attaches a hook inside a
+// subagent's own front-matter, so attachment is the scope. Codex declares hooks
+// globally and must re-express per-agent intent as a generated `matcher` regex.
+// omp needs neither: a module sitting where only the composing persona's OWN
+// `--config` overlay names it loads under that persona and no other.
+//
+// COMPOSITION STAYS STRUCTURAL. `MODEL.md`'s `ENFORCED` clause ("¬ ambient :
+// COMPOSITION is the scope, ¬ a runtime self-filter") held under the profile
+// carrier because a module in `profiles/mav/agent/extensions/` loaded only
+// under `--profile mav`; it holds under the launch spec for the identical
+// reason, one step removed — the overlay names EXACTLY the extensions that
+// persona's launch loads, so nothing in the module itself asks who is running.
+// Emitting one global module that branched on an env var would still have been
+// the ambient form this clause forbids; naming a scope's own directory in that
+// scope's own overlay is composition by placement, same as it always was.
 //
 // The composed Target BODY is HARNESS-NEUTRAL — the agent's dimension sections,
 // identical whichever harness carries them. So this module REUSES `agentBody` /
@@ -50,73 +67,55 @@ import {
   type AgentDefContext,
   type HarnessAdapter,
   type HarnessProjection,
+  SCOPE_DIR_TOKEN,
   SESSION_SCOPE,
 } from '../../core/harness-adapter.js';
 import { OMP_BLOCKING_EVENTS, canonicalToOmp, ompBindingOf } from './events.js';
 
 export type { ResolvedSkill };
 
-/**
- * The profile-relative home of one agent, and THE ONE PLACE the layout is spelled.
+/** Where agent `<name>`'s persona lands, relative to the harness home (`.omp`) —
+ *  one directory OUT, at the harness-neutral `.agents` root a launch spec is
+ *  carried from.
  *
- * Every other path in this module is built from it, so the render tree and the
- * deploy target cannot disagree about where an omp agent lives — the divergence
- * that would show up only on a host, and only after a deploy.
- */
-export function ompProfileDir(name: string): string {
-  return `profiles/${name}/agent`;
-}
-
-/** Where agent `<name>`'s persona lands, relative to the harness home (`.omp`). */
+ *  `APPEND_SYSTEM.md` is omp's OWN vocabulary for what `--append-system-prompt`
+ *  reads, not this repo's — kept as the filename (rather than, say, `mav.md`)
+ *  so an operator who still wants a `--profile` carrier can symlink
+ *  `profiles/<name>/agent/APPEND_SYSTEM.md` to this file by hand. Forge itself
+ *  never writes that symlink or that directory — see the module header. */
 export function ompAgentRel(name: string): string {
-  return `${ompProfileDir(name)}/APPEND_SYSTEM.md`;
+  return `../.agents/${name}/APPEND_SYSTEM.md`;
 }
 
 /**
- * The SESSION root — the native user config dir of a launch that named no
- * profile, relative to the harness home.
+ * The SESSION root — the native user config dir of a launch that carries no
+ * launch spec at all (a bare `omp`), relative to the harness home.
  *
- * omp's native user config is profile-scoped: `getAgentDir()` is
- * `~/.omp/profiles/<name>/agent` under `--profile <name>` and `~/.omp/agent`
- * otherwise (`discovery/builtin.ts`, "Native user config is profile-scoped"). So
- * this is a peer of `ompProfileDir`, not its parent: the scope a plain `omp`
- * session reads, and the one every persona profile does NOT see.
+ * omp's native user config is `~/.omp/agent` (`getAgentDir()`,
+ * `discovery/builtin.ts`) when no `--profile` names another. This is where
+ * the SESSION-scoped mechanism module lands — the copy every launch, personaed
+ * or bare, that never overrides `--profile` reads automatically, with no
+ * `--config` entry required, because it sits on omp's own scan path.
  */
 export const OMP_SESSION_DIR = 'agent';
 
 /**
- * Where skill `<name>` lands, relative to the harness home — one path per scope
- * that must be able to load it.
+ * Where skill `<name>` lands, relative to the harness home — ONE path, at the
+ * harness-neutral root omp reads NATIVELY on every launch.
  *
- * **`skills/<name>` IS NOT ONE OF THEM, AND THAT WAS THE BUG.** The deploy layer
- * used the render tree's own staging layout as every harness's destination, so an
- * omp deploy wrote `~/.omp/skills/`, a directory omp never scans: the native
- * provider scans `getAgentDir()/skills` (`discovery/builtin.ts`, the user-level
- * `scanSkillsFromDir` call). Measured on `fire`, whose `~/.omp/skills` held a
- * byte-perfect projection that no session could load; it looked like it worked
- * only because that host's `~/.claude/skills` carried the same corpus and omp's
- * claude provider reads that base under every profile.
- *
- * PROFILE SCOPE IS WHY THIS IS PLURAL. A skill in the session root is invisible
- * to `--profile mav`, and one in mav's profile is invisible to every other launch,
- * so a corpus whose skills are shared by all its agents lands once per scope.
- * That is the cost of the harness's isolation model, paid honestly here rather
- * than by hand on each host — which is what the operator had to do on `upmav`.
+ * `agents` goes UNUSED: the fan-out this signature still carries for claude and
+ * codex existed here only because a persona WAS a profile, and a profile's
+ * native config root is isolated from every other — so a skill reachable from
+ * every persona needed N+1 copies. It no longer is: omp reads `~/.agents/skills`
+ * NATIVELY, at provider priority 70, for every launch — personaed, bare, or
+ * profiled — so one copy now serves every reader and the fan-out bought
+ * nothing once the persona stopped being a profile.
  */
 export function ompSkillRel(
   name: string,
-  agents: readonly string[],
+  _agents: readonly string[],
 ): readonly string[] {
-  return [
-    `${OMP_SESSION_DIR}/skills/${name}`,
-    ...agents.map((a) => `${ompProfileDir(a)}/skills/${name}`),
-  ];
-}
-
-/** Where a mechanism module lands for agent `<name>`, relative to the harness
- *  home. */
-export function ompExtensionRel(name: string): string {
-  return `${ompProfileDir(name)}/extensions/${OMP_GUARDRAIL_MODULE}`;
+  return [`../.agents/skills/${name}`];
 }
 
 /** The emitted enforcement module's filename — derived, never spelled. */
@@ -127,7 +126,24 @@ export const OMP_GUARDRAIL_MODULE = `${CLI_BIN}-guardrails.ts`;
  *  guardrails follow the agents that compose them, these follow the cells. */
 export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
 
-// ── Agent projection → profiles/<name>/agent/APPEND_SYSTEM.md ────────────────
+/** The launch spec's `--config` overlay filename. */
+export const OMP_OVERLAY_FILE = 'omp.yml';
+
+/** The launch spec's launcher filename — no extension, because it is invoked
+ *  directly (`./omp-launch`), never sourced or required. */
+export const OMP_LAUNCHER_FILE = 'omp-launch';
+
+// The two filenames that must resolve inside a scope's `extensions/`
+// subdirectory rather than at the scope's own top level — the launch spec's
+// overlay and launcher are the operator's entry points and are never
+// themselves scanned as extensions, so they stay one level up from what they
+// name.
+const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
+  [OMP_GUARDRAIL_MODULE]: true,
+  [OMP_SESSION_MODULE]: true,
+};
+
+// ── Agent projection → ../.agents/<name>/APPEND_SYSTEM.md ────────────────────
 
 /**
  * The omp persona file: an identity assertion, then the composed Target body.
@@ -140,10 +156,10 @@ export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
  * **THE FIRST LINE IS THE HARNESS FRAMING, AND IT IS NOT DECORATION.** Every
  * adapter must carry the cell's `name` into whatever surface its harness reads an
  * identity from: claude has a front-matter `name:` field, codex has a TOML `name`.
- * omp has NO field at all — a profile is a directory, and the only channel into the
- * session is the prompt text itself. So the name is carried in prose, which is the
- * one surface available, and that is the same act the siblings perform, not a
- * different one.
+ * omp has NO field at all — a launch spec is combined flags, and the only channel
+ * into the session is the prompt text itself. So the name is carried in prose,
+ * which is the one surface available, and that is the same act the siblings
+ * perform, not a different one.
  *
  * It earns its place by measurement. `--append-system-prompt` is a TRUE augment:
  * omp's base prompt survives underneath, and that base asserts its OWN identity
@@ -181,7 +197,7 @@ export function skillToOmpMd(s: ResolvedSkill): string {
   return `---\n${fm.join('\n')}\n---\n\n${skillBody(s).replace(/\n+$/, '')}\n`;
 }
 
-// ── Enforcement → profiles/<name>/agent/extensions/<bin>-guardrails.ts ──────
+// ── Enforcement → <scope>/extensions/<bin>-guardrails.ts ─────────────────────
 
 /** One `pi.on(...)` registration, already narrowed to its act where it has one. */
 interface OmpRegistration {
@@ -193,7 +209,7 @@ interface OmpRegistration {
 
 /**
  * Realize the canon's per-agent constraints as one TypeScript extension module PER
- * AGENT, written where only that agent's profile can load it.
+ * AGENT, written where only that agent's own scope directory can load it.
  *
  * Returns one projection per composing agent — plural, unlike its siblings, because
  * omp's scope is a directory and a directory is per-agent by construction. A single
@@ -272,11 +288,13 @@ export function ompGuardrailExtensions(
  * were warned about and dropped, and this harness deployed no mechanism at all —
  * no stance gate, no drift notice, no memory nudge, no resume notice.
  *
- * ONE MODULE PER SCOPE, and the scopes are the projected agents' profiles plus the
- * SESSION root, because omp's native user config is profile-scoped: a module in
- * the session root does not load under `--profile mav`, and mav's does not load
- * anywhere else. Claude registers these once in a user-level `settings.json` that
- * every session reads; the same reach on this harness is N+1 placements.
+ * ONE MODULE PER SCOPE, and the scopes are the projected agents' own `.agents/
+ * <name>/` dirs plus the SESSION root, because a scope's module loads only where
+ * that scope's own launch reaches it: the session root is what a bare `omp`
+ * scans natively, and an agent's own copy is what that agent's launch spec
+ * names in its overlay. Claude registers these once in a user-level
+ * `settings.json` that every session reads; the same reach on this harness is
+ * N+1 placements.
  *
  * NOT the ambient form `MODEL.md` forbids. That prohibition is on an agent-composed
  * constraint filtering itself at runtime; these cells compose no agent — they bind
@@ -314,8 +332,8 @@ export function ompScopeActivatedExtensions(
     scope,
     content: ompExtensionModule(
       scope === SESSION_SCOPE
-        ? 'the SESSION — a launch that named no profile'
-        : `every session of the profile \`${scope}\``,
+        ? 'the SESSION — a launch that named no persona'
+        : `every session of the persona \`${scope}\``,
       scope === SESSION_SCOPE ? undefined : scope,
       lines,
     ),
@@ -330,9 +348,17 @@ function renderRegistration(r: OmpRegistration): string {
     : '';
   // A blocking event's worker exit code is the verdict; a non-blocking one's is
   // advisory. Only `tool_call` takes a result omp acts on, so only it reads one.
+  //
+  // 127 IS NOT A VERDICT. `sh -c` returns it when the worker is not there at all,
+  // and reading that as "the gate refused" turns every missing worker into a host
+  // that blocks `ask` and `task` with `No such file` as its reason — a governance
+  // mechanism bricking the session it was supposed to govern. The canon's own hook
+  // cells are written fail-open (`fail-open ∀error`), and a gate that cannot RUN
+  // has not refused anything.
   const act = blocking
     ? `
     const r = await exec(${JSON.stringify(r.command)});
+    if (r.exitCode === 127) return;
     if (r.exitCode !== 0) {
       return { block: true, reason: r.stderr.trim() || r.stdout.trim() };
     }`
@@ -348,28 +374,32 @@ function renderRegistration(r: OmpRegistration): string {
  *
  * It names what it governs in a comment and nowhere in its LOGIC, because the
  * logic needs no such name: the file's own location is what limits it. If this
- * module ever grows a `process.env.OMP_PROFILE` check, that is the tell that the
- * placement was lost and the ambient form crept back.
+ * module ever grows a check against an env var naming the running persona, that
+ * is the tell that the placement was lost and the ambient form crept back.
  *
- * `profile` is the profile whose dir this copy lands in, or `undefined` for the
+ * `agent` is the persona whose scope this copy lands in, or `undefined` for the
  * session root — it decides only what the placement note can truthfully say.
  */
 function ompExtensionModule(
   governs: string,
-  profile: string | undefined,
+  agent: string | undefined,
   registrations: string[],
 ): string {
   const placement =
-    profile === undefined
+    agent === undefined
       ? [
-          '// SCOPED BY LOCATION. This module sits in the SESSION config root, which omp',
-          '// discovers when no profile is named (native config roots are profile-scoped,',
-          '// so a profile launch reads its own copy of this file and never this one).',
+          '// SCOPED BY LOCATION. This module sits in the SESSION config root',
+          `// (\`${OMP_SESSION_DIR}/extensions/\`), which a bare \`omp\` — one launched`,
+          "// with no persona's launch spec — scans NATIVELY, with no `--config` entry",
+          '// required. A persona launch reads its own copy instead and never this one.',
         ]
       : [
-          '// SCOPED BY LOCATION. This module sits in that profile’s own dir, which',
-          `// omp discovers only under \`--profile ${profile}\` (native config roots are`,
-          '// profile-scoped).',
+          '// SCOPED BY LOCATION, NAMED BY THE LAUNCH SPEC. This module sits in this',
+          `// persona's own \`.agents/${agent}/extensions/\` dir, which omp never scans on`,
+          "// its own — that persona's `omp-launch` script is what passes `--config",
+          '// omp.yml`, and that overlay is what names this directory. A launch that',
+          "// never resolves this persona's overlay — including a bare `omp` — never",
+          '// loads this copy.',
         ];
   return [
     // The regenerate instruction NAMES THE COMMAND, so it interpolates the bin
@@ -385,11 +415,111 @@ function ompExtensionModule(
     "import type { HookAPI } from '@oh-my-pi/pi-coding-agent';",
     '',
     'export default function (pi: HookAPI) {',
-    '  const exec = (cmd: string) => pi.exec(cmd, { shell: true });',
+    // `HookAPI.exec(command, args, options?)` — `args` is REQUIRED and the impl
+    // does `ptree.exec([command, ...args])`. Passing an options object in its slot
+    // made omp spread a non-iterable and every registration in this module died at
+    // load with "Spread syntax requires ...iterable[Symbol.iterator] to be a
+    // function" — measured against the installed binary, invisible to a stubbed
+    // `pi`. There is no `shell` option either (`ExecOptions` is signal · timeout ·
+    // cwd), and the commands are shell text carrying `$HOME`, so the shell is
+    // named explicitly.
+    '  const exec = (cmd: string) => pi.exec("sh", ["-c", cmd]);',
     ...registrations,
     '}',
     '',
   ].join('\n');
+}
+
+// ── Launch spec → <scope>/omp.yml, <scope>/omp-launch ────────────────────────
+
+/**
+ * The `--config` overlay's text — identical for every persona; only the
+ * DESTINATION (and so the token substituted into it) differs by scope.
+ *
+ * `{{SCOPE_DIR_TOKEN}}` names this file's OWN eventual directory and is resolved
+ * at DEPLOY, never here: omp's `extensions:` entries are resolved with a plain
+ * path join against the LAUNCH process's cwd (`resolveExtensionLoadPath` in the
+ * installed package's resource loader), never against this file's own directory
+ * and never against a shell variable — a literal `$HOME` segment in a config
+ * value was measured loading as a directory literally NAMED `$HOME`, not
+ * expanded. A relative entry here would therefore point wherever the operator
+ * happened to `cd` before running the launcher, and `$HOME` (`export`ed by the
+ * launcher, the way `hookCommand` bakes it into a shell command) is exactly the
+ * option that fails, because this file is not read by a shell that could expand
+ * it. So the path is resolved once, at deploy, from the same `--home` the
+ * artifact itself lands under — see `SCOPE_DIR_TOKEN`'s own doc and
+ * `deploy/hooks.ts`, which performs the substitution.
+ *
+ * NAMES THE DIRECTORY, not one file inside it. This persona's own guardrail
+ * module and its session module both land in `extensions/`, and a directory
+ * entry in `extensions:` sweeps every loose `.ts`/`.js` file inside it — the
+ * same routine a native config root's own auto-discovery uses, confirmed
+ * against the installed package's `collectAutoExtensionEntries` and reproduced
+ * empirically (a directory entry loaded both files; a literal `$HOME` entry
+ * failed to resolve at all). Naming one file here by name would silently stop
+ * loading the other the day it is added, which is exactly the silent
+ * enforcement loss a `--profile`-scanned directory never had.
+ */
+export function ompOverlayYaml(): string {
+  return [
+    `# GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
+    '#',
+    "# This persona's --config overlay (see ompOverlayYaml in forge's omp adapter",
+    '# for why the path below is a directory, and why it is a deploy-time token',
+    '# rather than a literal path).',
+    'extensions:',
+    `  - ${SCOPE_DIR_TOKEN}/extensions`,
+    '',
+  ].join('\n');
+}
+
+/**
+ * The launcher's text — identical for every persona: it resolves ITS OWN
+ * directory rather than a baked-in absolute path, so the SAME script is correct
+ * whether deploy wrote it under a real `$HOME` or a sandboxed
+ * `--home` a test used. `omp.yml`'s abs path has no such option (see
+ * `ompOverlayYaml`), but a shell script has a shell, and `$(dirname "$0")` is a
+ * fact true at every site this file can land — unlike `--home`, which the
+ * script never sees and does not need to.
+ */
+export const OMP_LAUNCHER_SCRIPT = [
+  '#!/bin/sh',
+  `# GENERATED by @cratylus/forge — do not hand-edit; regenerate with \`${CLI_BIN} project\`.`,
+  '#',
+  '# Resolves its own directory rather than a baked-in path: this exact file is',
+  '# deployed once, but has to run from wherever it landed.',
+  'dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd) || exit 1',
+  'exec omp --append-system-prompt "$dir/APPEND_SYSTEM.md" --config "$dir/omp.yml" "$@"',
+  '',
+].join('\n');
+
+/**
+ * The launch spec, one set per projected agent — the overlay and the launcher
+ * that combine `--append-system-prompt` and `--config` into a single command,
+ * scoped like `ompGuardrailExtensions`'s output so both land beside the
+ * mechanism modules they wire.
+ *
+ * NEVER emitted for {@link SESSION_SCOPE}: the session root has no persona to
+ * launch AS, and a bare `omp` needs neither flag.
+ */
+export function ompLaunchSurface(
+  agentNames: readonly string[],
+): HarnessProjection[] {
+  const out: HarnessProjection[] = [];
+  for (const agent of [...agentNames].sort()) {
+    out.push({
+      filename: OMP_OVERLAY_FILE,
+      scope: agent,
+      content: ompOverlayYaml(),
+    });
+    out.push({
+      filename: OMP_LAUNCHER_FILE,
+      scope: agent,
+      content: OMP_LAUNCHER_SCRIPT,
+      executable: true,
+    });
+  }
+  return out;
 }
 
 // ── HarnessAdapter port ──────────────────────────────────────────────────────
@@ -423,11 +553,11 @@ export const ompHarnessAdapter: HarnessAdapter = {
   nativeEvents: canonicalToOmp,
   realizes: (event) => ompBindingOf(event) !== undefined,
   // SCOPABLE ⇔ REALIZABLE, and for a reason neither sibling has: the mechanism is a
-  // file in the agent's own profile dir, so an event omp can fire at all is an event
+  // file in the agent's own scope dir, so an event omp can fire at all is an event
   // this adapter can narrow to one agent. That is what closes the bootstrap's
   // central finding — that every enforcing fragment degraded to `steer` on omp
-  // because there was no identity to scope to. The identity is the profile, and the
-  // scope is its directory.
+  // because there was no identity to scope to. The identity is the launch spec's
+  // own directory, and the scope is that directory.
   scopes: (event) => ompBindingOf(event) !== undefined,
   // `$HOME` and not a resolved path: the emitted module is read at RUN time on
   // whatever host it lands on, so it must not bake in the projecting machine's home.
@@ -450,12 +580,23 @@ export const ompHarnessAdapter: HarnessAdapter = {
     ompGuardrailExtensions(bindings, mechanisms),
   scopeActivatedSurface: (hooks, agentNames) =>
     ompScopeActivatedExtensions(hooks, agentNames),
+  launchSurface: (agentNames) => ompLaunchSurface(agentNames),
   // The SESSION scope reads as itself OR as omission, so a caller may pass a
   // projection's `scope` field straight through. Requiring the translation put the
   // same `=== SESSION_SCOPE` conditional at every call site, and a call site that
-  // forgot it asked for a profile named `_session`.
-  enforcingRel: (filename, agent) =>
-    agent === undefined || agent === SESSION_SCOPE
-      ? `${OMP_SESSION_DIR}/extensions/${filename}`
-      : `${ompProfileDir(agent)}/extensions/${filename}`,
+  // forgot it asked for a persona named `_session`.
+  //
+  // The overlay and the launcher sit at the scope's OWN top level; the guardrail
+  // and session modules sit one level down, in `extensions/`, because that is the
+  // subdirectory omp's loader (native scan, or a directory named in `--config`)
+  // actually reads — see `OMP_EXTENSION_FILES`.
+  scopedRel: (filename, agent) => {
+    const dir =
+      agent === undefined || agent === SESSION_SCOPE
+        ? OMP_SESSION_DIR
+        : `../.agents/${agent}`;
+    return OMP_EXTENSION_FILES[filename]
+      ? `${dir}/extensions/${filename}`
+      : `${dir}/${filename}`;
+  },
 };

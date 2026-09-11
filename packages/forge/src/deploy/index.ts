@@ -1,22 +1,15 @@
 // The deploy layer — forge's placement stage. Consumes an
 // already-projected render tree (agents/ + skills/) and applies the scope
 // accident to the LOCAL `.claude/` root: ships the generated defs (Target,
-// overwritten freely), seeds the self-authored sidecars if-absent (never
-// clobbered), stages skill-dir committed `assets:` companions, and scaffolds a
-// greenfield project (`scaffoldProject`), and PRUNES what a prior deploy of the
-// same tree left orphaned (`manifest.ts` — attribution by record, never by
-// naming convention, because this root also holds artifacts that are not ours).
+// overwritten freely), stages skill-dir committed `assets:` companions, and
+// scaffolds a greenfield project (`scaffoldProject`), and PRUNES what a prior
+// deploy of the same tree left orphaned (`manifest.ts` — attribution by
+// record, never by naming convention, because this root also holds artifacts
+// that are not ours).
 //
 // The PROJECTION itself is forge's claude adapter; this layer consumes its
 // output and places it locally. Reaching another machine is transport, not a
 // stage — see `deploy.ts`'s stage-boundary note.
-
-export {
-  SEED_FILES,
-  episodicSeed,
-  proceduralSeed,
-  semanticSeed,
-} from './seeds.js';
 
 export {
   projectScope,

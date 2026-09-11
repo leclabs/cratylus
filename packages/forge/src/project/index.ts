@@ -201,7 +201,7 @@ export interface ProjectReport {
  * pair once the projection has decided which subtree the cell belongs under.
  */
 export interface ProjectedFile {
-  /** Path relative to the render-tree root, e.g. `skills/wake/SKILL.md`. */
+  /** Path relative to the render-tree root, e.g. `skills/praxis/SKILL.md`. */
   readonly path: string;
   readonly content: string;
   /** 0755 on write (shims, hook workers). Absent ⇒ ambient umask. */
@@ -637,8 +637,37 @@ export async function projectPluginSet(
         s.scope === undefined
           ? s.filename
           : join(ENFORCING_STAGE_DIR, s.scope, s.filename);
-      files.push({ path, content: s.content });
+      files.push({
+        path,
+        content: s.content,
+        ...(s.executable ? { executable: true } : {}),
+      });
       log(`EMIT enforcing surface ${path}`);
+    }
+  }
+
+  // THE LAUNCH SPEC. Some harnesses have no native identity field at all — omp
+  // has no `--agent` flag and no per-session name, so composing a persona means
+  // combining flags an operator would otherwise have to remember and type
+  // together every time. That combination is itself worth generating, not
+  // leaving to a README; staged the same way `enforcingSurface`'s output is
+  // (scope = the agent name), because it belongs beside the mechanism modules
+  // it wires, not in a directory of its own. Optional: claude and codex carry
+  // identity in their own agent def and compose nothing here.
+  const renderLaunchSurface = opts.adapter.launchSurface;
+  if (renderLaunchSurface) {
+    for (const s of renderLaunchSurface(agentNames)) {
+      const path = join(
+        ENFORCING_STAGE_DIR,
+        s.scope ?? SESSION_SCOPE,
+        s.filename,
+      );
+      files.push({
+        path,
+        content: s.content,
+        ...(s.executable ? { executable: true } : {}),
+      });
+      log(`EMIT launch spec ${path}`);
     }
   }
 
@@ -765,7 +794,11 @@ export async function projectPluginSet(
             s.scope ?? SESSION_SCOPE,
             s.filename,
           );
-          files.push({ path, content: s.content });
+          files.push({
+            path,
+            content: s.content,
+            ...(s.executable ? { executable: true } : {}),
+          });
           log(`EMIT scope-activated surface ${path}`);
         }
         if (!registered) {

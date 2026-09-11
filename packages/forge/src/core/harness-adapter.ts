@@ -49,13 +49,38 @@ export const SESSION_SCOPE = '_session';
  *
  * Forge's own staging layout, not any harness's destination: `project` writes
  * here, `deploy` reads here and asks the adapter where each scope's copy belongs
- * (`HarnessAdapter.enforcingRel`). The same asymmetry as agents, and for the same
+ * (`HarnessAdapter.scopedRel`). The same asymmetry as agents, and for the same
  * reason — a render tree is a thing a human diffs, and a destination is a thing a
  * harness reads. A scoped artifact staged at its DESTINATION path would have been
  * unattributable at deploy: there is no vector on disk to ask what scope a nested
  * path meant.
  */
 export const ENFORCING_STAGE_DIR = 'enforcing';
+
+/**
+ * The self-reference token a SCOPED artifact's content may embed to name its OWN
+ * eventual absolute destination directory — substituted at DEPLOY TIME, never at
+ * projection.
+ *
+ * WHY IT EXISTS: `hookCommand` gets to bake a literal `$HOME` because the
+ * artifact it authors is a SHELL command, expanded by the shell that runs it at
+ * RUN time on whatever host it lands on. A harness whose own config is a
+ * structured document it parses itself has no such expansion — measured on
+ * omp's `--config` overlay, whose `extensions:` entries are resolved with a
+ * plain path join against the launch process's cwd (`resolveExtensionLoadPath`,
+ * oh-my-pi's resource loader) and never against `$HOME`, a shell variable, or
+ * this file's own directory (confirmed: a literal `$HOME` segment in a config
+ * value loads as a directory NAMED `$HOME`, not the operator's home). A document
+ * that must reference where IT ITSELF will live has no run-time seam to defer
+ * to, so the only truthful moment left is DEPLOY, once `--home` has resolved a
+ * real destination for this very artifact.
+ *
+ * A placer staging a scoped artifact already computes that destination
+ * (`resolvePath(harnessDir, scopedRel(filename, scope))`) to know where to write
+ * it, so substituting this token costs nothing further and needs no
+ * harness-specific knowledge in the deploy layer — see `deploy/hooks.ts`.
+ */
+export const SCOPE_DIR_TOKEN = '{{scopeDir}}';
 
 /** A single projected artifact: the harness-owned filename + its bytes. */
 export interface HarnessProjection {
@@ -69,11 +94,18 @@ export interface HarnessProjection {
    * whose enforcement is a config FILE (claude's `settings.json`, codex's
    * `hooks.json`): one artifact, one place, no scope to name. Present ⇒ the
    * artifact is one of MANY, and its scope decides where deploy lands it
-   * (`HarnessAdapter.enforcingRel`). omp is the harness that needs this: its
+   * (`HarnessAdapter.scopedRel`). omp is the harness that needs this: its
    * scope is a DIRECTORY, so the same registrations are emitted once per scope
    * and each copy is correct by placement rather than by a runtime filter.
    */
   readonly scope?: string;
+  /**
+   * Land executable (0755) once placed — a launcher an operator invokes
+   * directly, the way a hook worker already does (`ProjectedFile.executable`).
+   * Absent ⇒ the ambient umask, correct for every module and config file this
+   * port projects.
+   */
+  readonly executable?: boolean;
 }
 
 /** A hooks → settings-fragment projection, plus the per-hook losses. `settings`
@@ -165,9 +197,10 @@ export interface HarnessAdapter {
    *
    * Claude and codex do (`agents/<name>.md`, `agents/<name>.toml`), so the
    * assumption held for two harnesses and was invisible. **omp does not**: its
-   * persona is `profiles/<name>/agent/APPEND_SYSTEM.md`, keyed by a per-agent
-   * DIRECTORY, because `--profile <name>` is the only name an omp launch carries
-   * and the profile dir is what the harness auto-discovers.
+   * persona lands at `<home>/../.agents/<name>/APPEND_SYSTEM.md` — one directory
+   * OUT of omp's own `.omp` home, at the harness-neutral root a LAUNCH SPEC
+   * carries identity from, because omp has no native identity field of its own
+   * (no `--agent` flag, no per-session name) to put it in.
    *
    * REQUIRED for the same reason `agentExt` is: deploy reads a render tree off disk
    * with no vector to ask, so it must compute the destination from the name alone.
@@ -177,21 +210,22 @@ export interface HarnessAdapter {
    * Where skill `<name>` lands ON THE HOST — every destination, harness-home
    * relative, given the agent set this corpus projects.
    *
-   * PLURAL, and that is the whole reason it exists. `agentRel` returns one path
-   * because an agent def has one home; a SKILL is shared by every agent, and how
-   * many places that means depends on how the harness scopes a reader. claude and
-   * codex read skills from one user-level dir, so they return one path and the
-   * `agents` argument goes unused. **omp's native config root is profile-scoped**
-   * (`discovery/builtin.ts` scans `getAgentDir()/skills`, and `getAgentDir()` is
-   * `~/.omp/profiles/<name>/agent` under `--profile <name>`), so a skill reachable
-   * from every projected persona AND from a plain launch is N+1 destinations.
+   * PLURAL because how many destinations a skill needs depends on how the
+   * harness scopes a reader, and that varies BY HARNESS, not by skill: claude
+   * and codex read skills from one user-level dir, so `agents` goes unused for
+   * either. **omp used to be the exception** — its native config root was
+   * profile-scoped, so a skill reachable from every projected persona needed
+   * N+1 copies (see `git blame` for the incident: `~/.omp/skills` is a
+   * directory omp never scans, so a byte-perfect render once deployed 16
+   * unloadable skills and reported success). It no longer is: identity moved to
+   * a LAUNCH SPEC out of a harness-neutral `~/.agents` root that every launch —
+   * personaed or bare — reads NATIVELY, so `agents` goes unused for omp too now.
+   * The parameter stays because a FUTURE harness may still scope a reader per
+   * agent, and the port cannot special-case one implementation's history.
    *
-   * REQUIRED, like `agentRel`, and for the same measured reason: deploy assumed
-   * `skills/<name>` was every harness's layout. It is omp's layout for NO scope —
-   * `~/.omp/skills` is a directory omp never scans — so a correct omp render
-   * deployed 16 skills that could not be loaded, and reported success. It only
-   * looked like it worked on a host whose `~/.claude/skills` carried the same
-   * corpus, because omp's claude provider reads that base under every profile.
+   * REQUIRED, like `agentRel`: deploy reads a render tree off disk with no
+   * vector to ask, so it must compute every destination from the name alone,
+   * and `skills/<name>` — forge's own staging layout — is not every harness's.
    */
   skillRel(name: string, agents: readonly string[]): readonly string[];
   /**
@@ -325,8 +359,8 @@ export interface HarnessAdapter {
    *
    * Returns one projection, MANY, or null. Plural because a harness may scope by
    * per-agent DIRECTORY rather than by a selector: omp writes one module per
-   * composing agent into that agent's own profile, which needs no filter to be
-   * correctly scoped and cannot be expressed as a single artifact.
+   * composing agent into that agent's own `extensions/` dir, which needs no
+   * filter to be correctly scoped and cannot be expressed as a single artifact.
    */
   enforcingSurface?(
     bindings: readonly Binding[],
@@ -367,9 +401,16 @@ export interface HarnessAdapter {
     agentNames: readonly string[],
   ): readonly HarnessProjection[];
   /**
-   * Where a scoped mechanism artifact lands ON THE HOST, harness-home relative —
-   * the destination map for whatever `scopeActivatedSurface` / `enforcingSurface`
-   * returned with a `scope`.
+   * Where a SCOPED artifact lands ON THE HOST, harness-home relative — the
+   * destination map for whatever `scopeActivatedSurface` / `enforcingSurface` /
+   * `launchSurface` returned with a `scope`.
+   *
+   * NOT ONLY MECHANISM, and that is why this is named `scopedRel` rather than
+   * `enforcingRel`, its name until a launch spec needed the same map: a harness
+   * whose scope is a directory may place MORE than a hook module there — omp's
+   * launcher and `--config` overlay land beside it, because an operator who has
+   * to combine three flags by hand to start one persona has a launch spec
+   * whether or not this port generates it for them.
    *
    * The render tree stages those artifacts by scope (forge's own staging layout);
    * this is the harness's answer for where each scope's copy belongs, and it is
@@ -380,8 +421,25 @@ export interface HarnessAdapter {
    * copy: the scope a launch that named no agent reads from. Both spellings, so a
    * caller may pass a projection's `scope` field through unmapped.
    *
-   * Absent ⇒ this adapter emits no scoped mechanism artifact, and deploy places
-   * none.
+   * Absent ⇒ this adapter emits no scoped artifact, and deploy places none.
    */
-  enforcingRel?(filename: string, agent?: string): string;
+  scopedRel?(filename: string, agent?: string): string;
+  /**
+   * Emit the LAUNCH SPEC — the artifacts an operator combines to start a
+   * session AS one composed persona, on a harness with no native identity
+   * field to put a persona in. One SET per projected agent, staged the same
+   * way `enforcingSurface`'s output is (`scope` = the agent name), because the
+   * spec belongs beside the mechanism modules it wires, not in a directory of
+   * its own.
+   *
+   * ORTHOGONAL TO A PROFILE. omp's `--profile` silos auth, MCP, models,
+   * sessions and `agent.db` — an ENVIRONMENT choice, a property of the host.
+   * The launch spec carries IDENTITY — a property of the agent this port
+   * composes — and the two facts do not need to agree: an operator may still
+   * pass `--profile work path/to/omp-launch` and get both.
+   *
+   * Absent ⇒ this harness carries identity in its own native field (claude's
+   * front-matter `name`, codex's TOML `name`) and composes no launch spec.
+   */
+  launchSurface?(agentNames: readonly string[]): readonly HarnessProjection[];
 }

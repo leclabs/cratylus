@@ -175,21 +175,35 @@ A render tree is forge's own STAGING layout — `agents/<name><ext>`, `skills/<n
 `hooks/<id>/`, `enforcing/<scope>/` — and it is deliberately not any harness's layout. Deploy asks the
 adapter where each artifact belongs:
 
-| Artifact          | Port op                     | claude / codex                 | omp                                                     |
-| ----------------- | --------------------------- | ------------------------------ | ------------------------------------------------------- |
-| agent definition  | `agentRel(name)`            | `agents/<name><ext>`           | `profiles/<name>/agent/APPEND_SYSTEM.md`                |
-| skill directory   | `skillRel(name, agents)`    | `skills/<name>`                | `agent/skills/<name>` **and** one per projected profile |
-| hook registration | `hooksFile` (merged)        | `settings.json` / `hooks.json` | — (no hook config exists)                               |
-| scoped mechanism  | `enforcingRel(file, scope)` | —                              | `<scope>/extensions/<file>`                             |
+| Artifact                         | Port op                  | claude / codex                 | omp                                                   |
+| -------------------------------- | ------------------------ | ------------------------------ | ----------------------------------------------------- |
+| agent definition (persona)       | `agentRel(name)`         | `agents/<name><ext>`           | `../.agents/<name>/APPEND_SYSTEM.md`                  |
+| skill directory                  | `skillRel(name, agents)` | `skills/<name>`                | `../.agents/skills/<name>` (one copy — read natively) |
+| hook registration                | `hooksFile` (merged)     | `settings.json` / `hooks.json` | — (no hook config exists)                             |
+| scoped mechanism module          | `scopedRel(file, scope)` | —                              | `<scope>/extensions/<file>`                           |
+| launch spec (overlay + launcher) | `scopedRel(file, scope)` | —                              | `<scope>/omp.yml`, `<scope>/omp-launch`               |
 
-`skillRel` is PLURAL because a harness may scope a reader by directory: omp's native config root is
-per-profile, so a skill every projected persona can load is one copy per profile plus one in the
-session root. Assuming the staging layout was every harness's destination is what deployed 16 omp
-skills into `~/.omp/skills` — a directory that harness never scans — while reporting success.
+`<scope>` is `agent/` for the SESSION copy (a launch that names no persona) or `../.agents/<agent>/`
+for a projected persona — the harness-neutral root a LAUNCH SPEC is carried from, one directory out of
+omp's own `.omp` home. Identity used to be carried by projecting each persona INTO an omp `--profile`
+(`profiles/<name>/agent/APPEND_SYSTEM.md`), which conflated an agent's IDENTITY with the operator's
+whole ENVIRONMENT (a profile also silos auth, MCP, models, sessions and `agent.db`). The two are now
+orthogonal: `<agent>/omp-launch` combines `--append-system-prompt` and `--config` for one persona, and
+an operator who also wants a `--profile` can still pass one.
 
-A harness whose hook surface is a PROGRAM rather than a config file (omp: its loader scans an
-`extensions/` dir) has no fragment to merge, so its adapter implements `scopeActivatedSurface` and the
-projection stages one module per scope for deploy to place.
+`skillRel` stays PLURAL on the port (a harness may still scope a reader by directory), but omp now
+returns exactly one destination: its vendor-neutral `.agent[s]` provider reads `~/.agents/skills`
+NATIVELY, for every launch, so the N+1 fan-out the old profile carrier required bought nothing once the
+persona stopped being a profile. Assuming the staging layout was every harness's destination is what
+once deployed 16 omp skills into `~/.omp/skills` — a directory that harness never scans — while
+reporting success.
+
+`scopedRel` (renamed from `enforcingRel`) places more than mechanism now: the SAME per-scope map also
+places the launch spec's overlay and launcher, because both belong beside the modules they wire, not in
+a directory of their own. A harness whose hook surface is a PROGRAM rather than a config file (omp: its
+loader scans an `extensions/` dir, or a directory named in a launch spec's `--config` overlay) has no
+fragment to merge, so its adapter implements `scopeActivatedSurface` and `launchSurface`, and the
+projection stages one artifact per scope for deploy to place.
 
 ### `cratylus explain [agent]`
 

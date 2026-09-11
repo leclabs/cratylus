@@ -65,9 +65,9 @@ export interface DeployOpts {
   skillRel?:
     | ((name: string, agents: readonly string[]) => readonly string[])
     | null;
-  /** The harness's DESTINATION layout for a scoped mechanism artifact
-   *  (`HarnessAdapter.enforcingRel`). */
-  enforcingRel?: ((filename: string, agent?: string) => string) | null;
+  /** The harness's DESTINATION layout for a scoped artifact
+   *  (`HarnessAdapter.scopedRel`). */
+  scopedRel?: ((filename: string, agent?: string) => string) | null;
   /** The harness's hook-config filename (`HarnessAdapter.hooksFile`). */
   hooksFile?: string | null;
   // CLI overrides (null ⇒ unset, defer to the built-in default).
@@ -152,7 +152,7 @@ function placeOpts(opts: DeployOpts): PlaceOpts {
     ...(opts.agentExt ? { agentExt: opts.agentExt } : {}),
     ...(opts.agentRel ? { agentRel: opts.agentRel } : {}),
     ...(opts.skillRel ? { skillRel: opts.skillRel } : {}),
-    ...(opts.enforcingRel ? { enforcingRel: opts.enforcingRel } : {}),
+    ...(opts.scopedRel ? { scopedRel: opts.scopedRel } : {}),
     ...(opts.hooksFile ? { hooksFile: opts.hooksFile } : {}),
     // The projected agent set, read off the SAME tree the placer copies from —
     // the scopes a per-directory harness names its skill and mechanism

@@ -385,8 +385,9 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
   it('every ρ=LLM surface conforms, or is an explicit ratchet pin', async () => {
     const surfaces = await allSurfaces();
     // cardinality sanity — the gate SEES the persona genus protocol (memory's genus
-    // def was retired in E6c: its mechanism → the `memory` CLI --help, its
-    // reasoning-contract → the wake + dream skill formalBlocks).
+    // def was retired in E6c: its mechanism → the `memory` CLI --help; its
+    // reasoning-contract lived in the wake + dream skill formalBlocks, retired
+    // along with those cells — no replacement home has been declared).
     const genusLabels = surfaces
       .filter((s) => s.cls === 'genus-protocol')
       .map((s) => s.label);

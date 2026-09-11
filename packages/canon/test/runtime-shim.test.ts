@@ -3,7 +3,7 @@
 // When a skill cell declares `runtime: {capability}`, the projection emits, beside
 // SKILL.md, a `scripts/<capability>.mjs` THIN SHIM that forwards to the host
 // `cratylus <capability>` CLI. This gate pins the shim's SHAPE:
-//   - it INVOKES `cratylus <capability> …` (falsifier: `cratylus memory`);
+//   - it INVOKES `cratylus <capability> …` (falsifier: `cratylus carryOn`);
 //   - it is NOT a bundled impl — zero `@cratylus/*` imports, no capability logic;
 //   - it is emitted EXECUTABLE (0755) so deploy's mode-preserving copy keeps the bit;
 //   - a skill WITHOUT `runtime` gets no shim (SKILL.md only — asserted elsewhere).
@@ -44,9 +44,10 @@ import canonPlugin from '../src/index.js';
 
 const canonRoot = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** A corpus cell that declares `runtime: {capability:'memory'}` — the shim carrier. */
-const CELL = 'wake';
-const CAPABILITY = 'memory';
+/** A corpus cell that declares `runtime: {capability:'carryOn'}` — the shim carrier.
+ *  `memory` had this role via the wake/dream/handoff triad, since deleted. */
+const CELL = 'carry-on';
+const CAPABILITY = 'carryOn';
 
 const shimOf = (out: string): string =>
   readFileSync(
@@ -139,10 +140,10 @@ beforeAll(async () => {
 describe('runtime thin shim (S6 forge-build-integration)', () => {
   it('invokes `<CLI_BIN> <capability>` and forwards argv', () => {
     const shim = emitted(CAPABILITY);
-    // Falsifier: the emitted script drives the host `<CLI_BIN> memory` CLI.
+    // Falsifier: the emitted script drives the host `<CLI_BIN> carryOn` CLI.
     // The name rides the constant (its one home) so a rebrand stays one symbol.
     expect(shim).toContain(CLI_BIN);
-    expect(shim).toMatch(new RegExp(`spawnSync\\('${CLI_BIN}', \\['memory',`));
+    expect(shim).toMatch(new RegExp(`spawnSync\\('${CLI_BIN}', \\['carryOn',`));
     // Forwards the caller's argv (verb + args ride through untouched).
     expect(shim).toContain('...process.argv.slice(2)');
     // Node shebang — runs under bare `node` on any host.
@@ -184,7 +185,7 @@ describe('runtime thin shim (S6 forge-build-integration)', () => {
       'runtime'
     >;
     expect(cell.runtime?.capability).toBe(CAPABILITY);
-    expect(emitted(cell.runtime?.capability ?? '')).toContain("['memory',");
+    expect(emitted(cell.runtime?.capability ?? '')).toContain("['carryOn',");
   });
 });
 

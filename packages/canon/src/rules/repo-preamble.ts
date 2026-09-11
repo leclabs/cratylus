@@ -3,10 +3,11 @@ import type { RuleCell } from '@cratylus/schema';
 // repo-preamble — the FIRST `rule` corpus instance (MODEL `Kind ∋ rule`,
 // `activation: rule↦scope`). The workspace-root standing instruction (`AGENTS.md`):
 // the always-loaded orientation every session binds on entry. Retiring the
-// `AGENTS.md@node` dream memory-sink (see `src/skills/dream.ts`) removed the sole
-// blocker to treating the repo-root `AGENTS.md` as a byte-locked rule TARGET — it is
-// no longer SelfAuthored memory (`SelfAuthored ∉ Target` no longer applies), so it is
-// a curated source-of-truth cell whose `content` projects + byte-locks to `/AGENTS.md`.
+// `AGENTS.md@node` memory-sink route (no cell routes a record to a node/plan
+// `AGENTS.md`) removed the sole blocker to treating the repo-root `AGENTS.md` as a
+// byte-locked rule TARGET — it is no longer SelfAuthored memory (`SelfAuthored ∉
+// Target` no longer applies), so it is a curated source-of-truth cell whose
+// `content` projects + byte-locks to `/AGENTS.md`.
 //
 //   residue — the σ*-signified canonical identity (`body = ⟨α, residue⟩`), the
 //             `accept()`/REFLEXIVE target. It is `residue`, NOT `definiens`: it has
@@ -21,7 +22,7 @@ export const repoPreamble: RuleCell = {
   id: 'repo-preamble',
   slug: 'repo-preamble',
   residue:
-    'scope-rule ↾ workspace-root · loaded ∀ session on entry — the standing orientation: doctrine-pointers ⟨why · what · how · corpus-index ; LOCKED-immutable-grounding : source-aligns-up · ¬regenerated-from-source⟩ · working-convention ⟨conventional-commits ; header ≤100 ; commit-autonomous@natural-boundaries ; push-gated⟩ · tooling-prerequisite ⟨graph-indexer⟩ ; activation=scope ⟨¬dream-sink : curated source, projected + byte-locked⟩',
+    'scope-rule ↾ workspace-root · loaded ∀ session on entry — the standing orientation: doctrine-pointers ⟨why · what · how · corpus-index ; LOCKED-immutable-grounding : source-aligns-up · ¬regenerated-from-source⟩ · working-convention ⟨conventional-commits ; header ≤100 ; commit-autonomous@natural-boundaries ; push-gated⟩ · tooling-prerequisite ⟨graph-indexer⟩ ; activation=scope ⟨curated source, projected + byte-locked⟩',
   scope: '',
   targetPath: 'AGENTS.md',
   refs: [],

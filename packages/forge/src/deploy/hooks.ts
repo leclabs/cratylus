@@ -14,6 +14,7 @@
 // at `<root>` (the dir holding both).
 
 import {
+  chmodSync,
   copyFileSync,
   existsSync,
   mkdirSync,
@@ -23,10 +24,14 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { dirname, resolve as resolvePath } from 'node:path';
-// The DEFINING module, never the `core/` surface at large: one token is wanted
-// here — the staging dir the projection writes — and it must be the same constant
-// both stages read.
-import { ENFORCING_STAGE_DIR } from '../core/harness-adapter.js';
+// The DEFINING module, never the `core/` surface at large: two tokens are
+// wanted here — the staging dir the projection writes, and the deploy-time
+// self-reference substitution — and both must be the same constant every
+// stage reads.
+import {
+  ENFORCING_STAGE_DIR,
+  SCOPE_DIR_TOKEN,
+} from '../core/harness-adapter.js';
 import {
   type PlaceOpts,
   type PlaceResult,
@@ -181,13 +186,13 @@ export function placeHooksLocal(
     );
   }
   // THE OTHER KIND OF REGISTRATION. A harness whose hook surface is a PROGRAM has
-  // no fragment to merge above: the render tree stages one module per scope under
-  // `enforcing/<scope>/`, and the adapter says where each scope's copy belongs.
-  // Nothing placed these before, so omp's mechanism modules were rendered and then
-  // left in the tree — the deploy half of the same silence that dropped the cells
-  // at projection.
-  const enforcingRel = opts.enforcingRel;
-  if (enforcingRel) {
+  // no fragment to merge above: the render tree stages one artifact per scope
+  // under `enforcing/<scope>/`, and the adapter says where each scope's copy
+  // belongs. Nothing placed these before, so omp's mechanism modules were
+  // rendered and then left in the tree — the deploy half of the same silence
+  // that dropped the cells at projection.
+  const scopedRel = opts.scopedRel;
+  if (scopedRel) {
     const stageRoot = resolvePath(hooksDir, ENFORCING_STAGE_DIR);
     const scopes = existsSync(stageRoot)
       ? readdirSync(stageRoot)
@@ -202,11 +207,23 @@ export function placeHooksLocal(
         if (!statSync(src).isFile()) continue;
         // The staged dir name IS the scope, session token included — the adapter
         // reads both spellings, so nothing is translated here.
-        const rel = enforcingRel(file, scope);
+        const rel = scopedRel(file, scope);
         const dest = resolvePath(harnessDir, rel);
         if (!opts.dry) {
           mkdirSync(dirname(dest), { recursive: true });
-          copyFileSync(src, dest);
+          // TEXT, not a raw copy: a staged artifact may carry `SCOPE_DIR_TOKEN`
+          // (omp's overlay does, to name its own extensions dir) — a fact only
+          // knowable HERE, once `dest` is resolved against the real `--home`.
+          // See the token's own doc for why projection cannot bake this in.
+          const raw = readFileSync(src, 'utf-8');
+          const content = raw.includes(SCOPE_DIR_TOKEN)
+            ? raw.split(SCOPE_DIR_TOKEN).join(dirname(dest))
+            : raw;
+          writeFileSync(dest, content);
+          // Preserve mode so a launcher's exec bit survives the copy — set at
+          // STAGING (`write.ts`, `executable: true`), lost by a read/write
+          // round-trip exactly like `copyFileSync` loses it, unless restored.
+          chmodSync(dest, statSync(src).mode);
         }
         written.push(rel);
       }

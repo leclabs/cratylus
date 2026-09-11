@@ -362,6 +362,7 @@ describe('deploy prune — convergence to the render tree', () => {
       ...silent,
     });
     const sidecar = join(dirname(claude), '.agents', 'nico', 'SEMANTIC.md');
+    mkdirSync(dirname(sidecar), { recursive: true });
     writeFileSync(sidecar, 'NICO LIVED HISTORY\n', 'utf-8');
 
     deploySingle({

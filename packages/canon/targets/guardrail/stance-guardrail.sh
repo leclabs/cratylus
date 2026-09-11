@@ -229,12 +229,13 @@ asst_close="$(jq -rs '
 
 # THE OPERATOR SLOT — and it must actually hold the operator.
 #
-# A skill invocation (`/wake`, `/carry-on`, …) enters the transcript as a user-type message
-# carrying the SKILL BODY. Taking the last user message therefore handed the judge 2.8 kB of the
-# /wake skill definition as "the operator's most recent instruction" — measured on two of six live
-# fixtures. The judge then reasoned about authorization from a document the operator never wrote,
-# which is worse than having no context: it is confidently wrong context, and the rubric leans on
-# this slot to decide whether an irreversible act was authorized.
+# A skill invocation (`/carry-on`, `/introspect`, …) enters the transcript as a user-type
+# message carrying the SKILL BODY. Taking the last user message therefore handed the judge
+# 2.8 kB of the /wake skill definition (since retired) as "the operator's most recent
+# instruction" — measured on two of six live fixtures. The judge then reasoned about
+# authorization from a document the operator never wrote, which is worse than having no
+# context: it is confidently wrong context, and the rubric leans on this slot to decide
+# whether an irreversible act was authorized.
 #
 # Skill bodies are recognizable and skipped: the harness wraps them in <command-name>/<command-
 # message> tags, and they carry the skill's own formal preamble. Fall back to the most recent

@@ -72,13 +72,17 @@ export function episodicSeed(_name: string): string {
 
 /**
  * The memory store seed templates — `(filename, seed-fn)` pairs `memory init`
- * writes IF-ABSENT when provisioning a home. Memory OWNS the store shape, so this
- * is the PROSE AUTHORITY: forge's `deploy/seeds.ts` carries a parallel copy it
- * must keep byte-identical to this one, and `test/seed-parity.test.ts` fails when
- * it drifts. Forge cannot import this export — the north-star graph
- * (`ARCHITECTURE.md`) has no `forge → memory` edge, so a single home for these
- * bytes is an architecture change, not a refactor. Target (the def) is generated
- * by deploy, not seeded here.
+ * writes IF-ABSENT when provisioning a home.
+ *
+ * ONE WRITER, again. Forge's deploy carried a byte-parallel copy so it could seed a
+ * home for every agent it projected, and `test/seed-parity.test.ts` existed to make
+ * the two copies' drift impossible to ship — it was written after one copy told the
+ * agent "deploy never overwrites me" while the other said "`memory init` never
+ * overwrites me", which made the sentence in any given home false half the time.
+ * The canon's memory cells are gone, deploy stopped seeding with them, and the copy
+ * and its parity gate went too. Reintroduce a second writer and the gate comes back
+ * with it: the north-star graph (`ARCHITECTURE.md`) has no `forge → memory` edge, so
+ * a shared home for these bytes is an architecture amendment, not a refactor.
  */
 export const seedTemplates: ReadonlyArray<[string, (name: string) => string]> =
   [

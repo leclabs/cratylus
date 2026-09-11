@@ -13,6 +13,5 @@
 idiomatic_version_file_enable_tools = ["node"]
 
 [tools]
-pnpm = "latest"
-python = "3.14"
+python = "3.13"
 uv = "latest"
