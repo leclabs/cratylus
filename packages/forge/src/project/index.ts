@@ -460,7 +460,7 @@ function withResolvedBodies(
  * naming the change. Per-plugin fragment identity makes that impossible by
  * construction rather than by discipline.
  *
- * Consequence a consumer must know: you can override canon's `investigator`; you
+ * Consequence a consumer must know: you can override canon's `nico`; you
  * cannot override canon's `objective/insight`. To change a fragment's body, patch
  * its node — see `discoverFragments` / `resolveFragmentBodies` below.
  */

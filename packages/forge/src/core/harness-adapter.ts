@@ -58,6 +58,24 @@ export const SESSION_SCOPE = '_session';
 export const ENFORCING_STAGE_DIR = 'enforcing';
 
 /**
+ * The harness-NEUTRAL agent root, relative to a scope's home — the one directory
+ * name shared across vendors.
+ *
+ * NOT this project's invention, which is exactly why it is worth targeting: omp
+ * reads `~/.agent[s]/{skills,rules,prompts,commands,AGENTS.md,SYSTEM.md}` through a
+ * vendor-neutral provider at discovery priority 70, and Cursor reads
+ * `~/.agents/skills/` and `.agents/skills/`. A corpus that lands here is loaded by
+ * two harnesses with no flag, no copy and no per-profile fan-out.
+ *
+ * It is a SIBLING of every harness home (`.omp`, `.claude`, …), so an adapter
+ * addresses it as `../<this>/…` from its own home and deploy must be told it is a
+ * legitimate prune root — see `prune/applyPrune`'s `alsoRoots`, added because
+ * every destination outside the harness home was silently skipped by the
+ * containment guard.
+ */
+export const NEUTRAL_AGENT_ROOT = '.agents';
+
+/**
  * The self-reference token a SCOPED artifact's content may embed to name its OWN
  * eventual absolute destination directory — substituted at DEPLOY TIME, never at
  * projection.

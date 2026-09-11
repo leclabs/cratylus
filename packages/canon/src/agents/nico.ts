@@ -25,7 +25,6 @@ import { helpfulness as helpfulness_guardrails } from '../dimensions/guardrails/
 import { honesty as honesty_guardrails } from '../dimensions/guardrails/honesty.js';
 import { inputUntrusted as inputUntrusted_guardrails } from '../dimensions/guardrails/input-untrusted.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../dimensions/learning/correction-consolidation.js';
-import { longTermMemory as longTermMemory_memory } from '../dimensions/memory/long-term-memory.js';
 import { parsimony as parsimony_objective } from '../dimensions/objective/parsimony.js';
 import { code as code_outputFormat } from '../dimensions/output-format/code.js';
 import { react as react_reasoningStrategy } from '../dimensions/reasoning-strategy/react.js';
@@ -81,7 +80,10 @@ export const nico: Agent = {
   actions: [fileOps_actions, codeExecution_actions, delegation_actions],
   modalities: null,
   model: null,
-  memory: longTermMemory_memory,
+  // null ⇒ OMITTED from the projection: the harness's memory is the agent's. See
+  // `mav.ts` for the same note — the cells that funded a corpus-side claim are
+  // retired, and a host backend beats a projected promise.
+  memory: null,
   trigger: null,
   framing: analytical_framing,
   reasoningStrategy: react_reasoningStrategy,

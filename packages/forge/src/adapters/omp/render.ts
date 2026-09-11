@@ -67,6 +67,7 @@ import {
   type AgentDefContext,
   type HarnessAdapter,
   type HarnessProjection,
+  NEUTRAL_AGENT_ROOT,
   SCOPE_DIR_TOKEN,
   SESSION_SCOPE,
 } from '../../core/harness-adapter.js';
@@ -84,7 +85,7 @@ export type { ResolvedSkill };
  *  `profiles/<name>/agent/APPEND_SYSTEM.md` to this file by hand. Forge itself
  *  never writes that symlink or that directory — see the module header. */
 export function ompAgentRel(name: string): string {
-  return `../.agents/${name}/APPEND_SYSTEM.md`;
+  return `../${NEUTRAL_AGENT_ROOT}/${name}/APPEND_SYSTEM.md`;
 }
 
 /**
@@ -115,7 +116,7 @@ export function ompSkillRel(
   name: string,
   _agents: readonly string[],
 ): readonly string[] {
-  return [`../.agents/skills/${name}`];
+  return [`../${NEUTRAL_AGENT_ROOT}/skills/${name}`];
 }
 
 /** The emitted enforcement module's filename — derived, never spelled. */
@@ -594,7 +595,7 @@ export const ompHarnessAdapter: HarnessAdapter = {
     const dir =
       agent === undefined || agent === SESSION_SCOPE
         ? OMP_SESSION_DIR
-        : `../.agents/${agent}`;
+        : `../${NEUTRAL_AGENT_ROOT}/${agent}`;
     return OMP_EXTENSION_FILES[filename]
       ? `${dir}/extensions/${filename}`
       : `${dir}/${filename}`;

@@ -21,6 +21,7 @@ import {
 } from 'node:fs';
 import { dirname, join, relative, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { adapterByName } from '../../src/adapters/registry/index.js';
 import { deploySingle } from '../../src/deploy/index.js';
 import { tmp } from './helpers.js';
 
@@ -495,5 +496,54 @@ describe('deploy prune — convergence to the render tree', () => {
     expect(after).toContain('stance-guardrail');
     expect(after).toContain('echo foreign');
     expect(after).toContain('"FOO": "bar"');
+  });
+
+  // THE ROOT IS PLURAL NOW, and it had to be. omp's destinations are
+  // `../.agents/<name>/…` — a SIBLING of the harness home — so the containment
+  // guard resolved every record outside the single root it was given and skipped
+  // the lot. Silently: a skipped path is not a candidate, and a prune that removes
+  // nothing prints nothing. Measured before the fix — a host carrying ten
+  // projected personas, redeployed from a two-agent corpus, kept all ten faces,
+  // all ten launch specs and every retired skill, and reported success.
+  //
+  // Widening a delete's reach is a data-loss hazard, so the exoneration leg is not
+  // optional: the guard moved from ONE root to a NAMED SET, and the record is still
+  // what bounds the deletion inside them.
+  it('NEUTRAL ROOT: a retired persona is swept out of `../.agents`, foreign files spared', () => {
+    const omp = adapterByName('omp');
+    const home = tmp('v4-host-');
+    const a = renderTreeExt(['mav', 'nico'], omp.agentExt);
+    const b = renderTreeExt(['mav'], omp.agentExt);
+    const deploy = (tree: { agentsDir: string; skillsDir: string }) =>
+      deploySingle({
+        kind: 'agent',
+        scope: 'user',
+        tree,
+        home,
+        harnessHome: omp.home,
+        agentExt: omp.agentExt,
+        agentRel: (n: string) => omp.agentRel(n),
+        ...silent,
+      });
+
+    deploy(a);
+    const face = join(home, '.agents', 'nico', 'APPEND_SYSTEM.md');
+    expect(existsSync(face), 'the face landed outside the harness home').toBe(
+      true,
+    );
+    // A file this tool never wrote, in the very dir the prune now reaches into.
+    const foreign = join(home, '.agents', 'nico', 'NOTES.md');
+    writeFileSync(foreign, 'NICO LIVED HISTORY\n', 'utf-8');
+
+    deploy(b);
+    expect(existsSync(face), 'the retired face is swept').toBe(false);
+    expect(
+      readFileSync(foreign, 'utf-8'),
+      'an artifact this tool never recorded is untouchable, in every root',
+    ).toBe('NICO LIVED HISTORY\n');
+    // …and the live persona is still there.
+    expect(existsSync(join(home, '.agents', 'mav', 'APPEND_SYSTEM.md'))).toBe(
+      true,
+    );
   });
 });

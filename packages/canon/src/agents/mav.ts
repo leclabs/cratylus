@@ -24,7 +24,6 @@ import { harmAvoidance as harmAvoidance_guardrails } from '../dimensions/guardra
 import { helpfulness as helpfulness_guardrails } from '../dimensions/guardrails/helpfulness.js';
 import { honesty as honesty_guardrails } from '../dimensions/guardrails/honesty.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../dimensions/learning/correction-consolidation.js';
-import { longTermMemory as longTermMemory_memory } from '../dimensions/memory/long-term-memory.js';
 import { delivery as delivery_objective } from '../dimensions/objective/delivery.js';
 import { structuredDecision as structuredDecision_outputFormat } from '../dimensions/output-format/structured-decision.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../dimensions/reasoning-strategy/plan-and-solve.js';
@@ -75,7 +74,11 @@ export const mav: Agent = {
   actions: [fileOps_actions, codeExecution_actions, delegation_actions],
   modalities: null,
   model: null,
-  memory: longTermMemory_memory,
+  // null ⇒ OMITTED from the projection, so the harness's own memory is what the
+  // agent has. The corpus used to declare `long-term-memory` and fund it with
+  // `/wake` + `/dream`; those cells are retired, and a host with a real backend
+  // (omp's hindsight) does this better than a projected claim could.
+  memory: null,
   trigger: null,
   framing: goalDirected_framing,
   reasoningStrategy: planAndSolve_reasoningStrategy,

@@ -20,6 +20,7 @@
 
 import { existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve as resolvePath } from 'node:path';
+import { NEUTRAL_AGENT_ROOT } from '../core/harness-adapter.js';
 import { hookTreeNames, placeHooksLocal } from './hooks.js';
 import { placeAgentsLocal, placeSkillsLocal } from './local.js';
 import {
@@ -237,7 +238,15 @@ function deployLocal(names: string[], opts: DeployOpts): PlaceResult {
     );
   } else {
     const stale = staleFiles(priorKind, written, skipped, narrowed);
-    const removed = applyPrune(harnessDir, stale, dry);
+    // THE NEUTRAL ROOT IS OURS TO PRUNE TOO. Records stay relative to the harness
+    // home, but a harness whose destinations are `../<neutral>/…` (omp) resolves
+    // every one of them outside it, and the containment guard skipped them all —
+    // silently, since nothing skipped is a candidate and a prune that removed
+    // nothing prints nothing. Measured: a 10-agent host redeployed from a 2-agent
+    // corpus kept all ten faces, all ten launch specs and the retired skills.
+    const removed = applyPrune(harnessDir, stale, dry, [
+      resolvePath(harnessDir, '..', NEUTRAL_AGENT_ROOT),
+    ]);
     if (removed.length > 0) {
       log(
         dry

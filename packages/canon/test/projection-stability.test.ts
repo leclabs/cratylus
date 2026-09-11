@@ -121,7 +121,7 @@ describe('projection stability (.ts is the sole source)', () => {
     const modules = (await collect('agents/*.ts')).filter(
       (r) => !r.endsWith('base.ts'),
     );
-    expect(modules.length).toBe(10);
+    expect(modules.length).toBe(2);
     for (const rel of modules) {
       const agent = await firstExport<Agent>(join(srcRoot, rel));
       const target = agentToClaudeMd(agent, { manifest: MANIFEST });

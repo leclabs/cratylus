@@ -102,28 +102,59 @@ export function nextKindRecord(
   return next;
 }
 
-/** Is `rel` strictly inside `root` once resolved? A tampered or hand-edited
- *  manifest must not be able to steer a delete out of the root it names. */
+/**
+ * Which of `roots` strictly contains `abs`, or `null` when none does — the
+ * containment guard, widened from one root to a NAMED SET.
+ *
+ * A tampered or hand-edited manifest must not be able to steer a delete out of
+ * the roots it was given; that is why this exists and why the set is passed in by
+ * the caller rather than derived from the record. One root was enough while every
+ * destination sat under the harness home. It is not anymore: omp's destinations
+ * are `../.agents/…`, a SIBLING of `.omp`, so every one of them resolved outside
+ * the single root and was silently skipped — retired agents, retired skills and
+ * stale launch specs accumulated forever, and the prune reported nothing removed
+ * because nothing was a candidate.
+ */
+export function containingRoot(
+  roots: readonly string[],
+  abs: string,
+): string | null {
+  for (const root of roots) {
+    const top = resolvePath(root);
+    if (abs !== top && abs.startsWith(top + sep)) {
+      return top;
+    }
+  }
+  return null;
+}
+
+/** Is `rel` strictly inside `root` once resolved? */
 export function contained(root: string, rel: string): boolean {
-  const abs = resolvePath(root, rel);
-  const r = relative(resolvePath(root), abs);
-  return r !== '' && !r.startsWith('..') && !isAbsolute(r);
+  return containingRoot([root], resolvePath(root, rel)) !== null;
 }
 
 /** Remove each stale path, then any directory the removal emptied (up to, but
- *  never including, `root`). Returns what was actually removed; a dry run
- *  returns the same set having touched nothing. */
+ *  never including, the root that contained it). Returns what was actually
+ *  removed; a dry run returns the same set having touched nothing.
+ *
+ *  `alsoRoots` are the other roots this deploy is entitled to delete inside —
+ *  for omp, the neutral `~/.agents` root its destinations live in. Records are
+ *  still RELATIVE to `root`, which is what keeps the manifest readable as one
+ *  tree's testimony. */
 export function applyPrune(
   root: string,
   stale: string[],
   dry: boolean,
+  alsoRoots: readonly string[] = [],
 ): string[] {
+  const roots = [root, ...alsoRoots];
   const removed: string[] = [];
   for (const rel of stale) {
-    if (!contained(root, rel)) {
+    const abs = resolvePath(root, rel);
+    const owner = containingRoot(roots, abs);
+    if (owner === null) {
       continue;
     }
-    const abs = resolvePath(root, rel);
     if (!existsSync(abs)) {
       // already gone (a hand-removed orphan) — still drop it from the record
       removed.push(rel);
@@ -131,7 +162,7 @@ export function applyPrune(
     }
     if (!dry) {
       unlinkSync(abs);
-      pruneEmptyDirs(root, dirname(abs));
+      pruneEmptyDirs(owner, dirname(abs));
     }
     removed.push(rel);
   }

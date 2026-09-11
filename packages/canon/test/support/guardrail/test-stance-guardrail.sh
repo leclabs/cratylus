@@ -163,13 +163,13 @@ fi
 out="$(run_worker "$LEGIT" mav false)"
 is_block "$out" && bad "legitimate deploy-gate turn was wrongly blocked" || pass "legitimate (deploy gate) passes"
 
-# 4. ON + collapse + out-of-scope agent (developer) → no block.
-out="$(run_worker "$COLLAPSE" developer false)"
+# 4. ON + collapse + out-of-scope agent (a name no allowlist carries) → no block.
+out="$(run_worker "$COLLAPSE" off-allowlist false)"
 is_block "$out" && bad "out-of-scope agent was blocked" || pass "agent-scope gate: out-of-scope not blocked"
 
-# 4b. allowlist "*" → even developer is in scope and collapse blocks.
+# 4b. allowlist "*" → even an off-allowlist agent is in scope and collapse blocks.
 git -C "$REPO" config agentfactory.stanceGuardAgents '*'
-out="$(run_worker "$COLLAPSE" developer false)"
+out="$(run_worker "$COLLAPSE" off-allowlist false)"
 is_block "$out" && pass 'allowlist "*" blocks any collapsing agent' || bad 'allowlist "*" failed to block'
 git -C "$REPO" config --unset agentfactory.stanceGuardAgents
 
@@ -408,7 +408,7 @@ if [ -f "$PRE_WORKER" ]; then
 	is_deny "$out2" && bad "re-entry cap absent: identical input denied twice" || pass "re-entry cap: identical input allowed on 2nd try"
 
 	# P6 — agent-scope: out-of-scope agent → no deny.
-	out="$(run_pre AskUserQuestion "$MENU_INREMIT" developer s6)"
+	out="$(run_pre AskUserQuestion "$MENU_INREMIT" off-allowlist s6)"
 	is_deny "$out" && bad "out-of-scope agent was denied" || pass "agent-scope gate: out-of-scope not denied"
 
 	# P7 — off by default: no deny even on a collapse menu.
