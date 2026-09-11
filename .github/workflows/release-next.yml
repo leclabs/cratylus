@@ -130,19 +130,21 @@ jobs:
       - name: version as a snapshot
         run: pnpm exec changeset version --snapshot next
 
-      # NO TOKEN HERE, DELIBERATELY — this is the experiment that proves OIDC.
+      # NO TOKEN HERE, AND THIS PATH IS NOT YET AUTHORIZED. Run 34569277070 proved the
+      # mechanism and named the gap: the runner served an ID token for
+      # `audience=npm:registry.npmjs.org` (200), pnpm signed a provenance statement, and npm
+      # answered the token exchange with 404 —
+      # `[WARN] Skipped OIDC: ERR_PNPM_AUTH_TOKEN_EXCHANGE … (status code 404)` — after which
+      # the credential-less publish got the registry's 404 in turn. Nothing was published.
       #
-      # Provenance proves nothing about WHICH credential published: a token plus a
-      # provenance switch attests exactly as well as trusted publishing does. The only
-      # decisive test is a publish with no credential present at all, and this is the path
-      # where that is safe to attempt: snapshots go to the `next` dist-tag, create no tag,
-      # no release and no commit, and cannot move `latest`.
+      # An npm trusted-publisher configuration matches on WORKFLOW FILENAME. The one that
+      # exists covers `release.yml`, which authenticated the stable release over OIDC minutes
+      # later with no warning at all. THIS file needs its own configuration (npm has allowed
+      # multiple per package since 2026-09-03) before a snapshot can publish.
       #
-      # `release.yml` keeps `NODE_AUTH_TOKEN` until this run succeeds. pnpm's own OIDC
-      # implementation OVERRIDES a static `_authToken` (pnpm#11495), so a stable release
-      # during the window cannot fail for auth either way — which is precisely why the
-      # fallback has to be removed HERE first, where its absence costs a throwaway version
-      # rather than a release.
+      # It stays tokenless until then, deliberately: a snapshot is a dispatched experiment,
+      # and a loud 404 that names the missing configuration is worth more than a quiet
+      # token-authenticated success that hides it.
       - name: publish to the next tag
         run: DIST_TAG=next pnpm run release
         env:
