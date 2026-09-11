@@ -67,7 +67,7 @@
 //     use/mention line, one step further: the turn really did say that, and holding
 //     a transcription to today's truth would forbid transcribing accurately. This
 //     one is recognised by CONTENT (see the discriminator below), not by path.
-//   - `node_modules`, `graphify-out`, `dist` — not authored here.
+//   - `node_modules`, `dist` — not authored here.
 //
 // THE RATCHET IS GONE, AT ZERO. It held four pins, all naming one defect record inside
 // `decomplect` that quoted the dead `anatomy:*` scripts in order to document them. Retiring
@@ -255,7 +255,6 @@ function isTranscript(text: string): boolean {
 function inScope(rel: string): boolean {
   if (/^plans\/[^/]+\/completed\//.test(rel)) return false;
   if (rel.includes('/test/') || rel.endsWith('.test.ts')) return false;
-  if (rel.startsWith('graphify-out/')) return false;
   return TEXT.test(rel);
 }
 
@@ -307,9 +306,7 @@ interface Line {
  */
 function authoredLines(): Line[] {
   const out: Line[] = [];
-  for (const rel of tracked().filter(
-    (f) => TEXT.test(f) && !f.startsWith('graphify-out/'),
-  )) {
+  for (const rel of tracked().filter((f) => TEXT.test(f))) {
     let text: string;
     try {
       text = readFileSync(join(repoRoot, rel), 'utf8');
@@ -446,9 +443,7 @@ interface PathCitation {
  */
 function planPathMentions(): PathCitation[] {
   const out: PathCitation[] = [];
-  for (const rel of tracked().filter(
-    (f) => TEXT.test(f) && !f.startsWith('graphify-out/'),
-  )) {
+  for (const rel of tracked().filter((f) => TEXT.test(f))) {
     let text: string;
     try {
       text = readFileSync(join(repoRoot, rel), 'utf8');

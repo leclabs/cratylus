@@ -34,7 +34,7 @@
 // file. Both legs read `Buffer` and neither ever converts.
 //
 // WHY `git ls-files` AND NOT A TREE WALK. AUTHORED is the scope, and tracked-ness is the
-// corpus's own definition of authored — it excludes `dist/`, `.render*/`, `graphify-out/`
+// corpus's own definition of authored — it excludes `dist/`, `.render*/`
 // and every other derived tree by construction rather than by a skip list that must be
 // maintained. A derived file carrying a control byte is a copy of an authored one or a
 // property of a generator, and neither is repaired here.

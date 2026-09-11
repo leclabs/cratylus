@@ -13,18 +13,3 @@
 
 - Conventional Commits, header ≤100 chars (commitlint, `commit-msg` hook).
 - **Commit autonomously at natural boundaries — no operator approval needed.** This overrides the generic harness default ("commit only when the user asks"); do not gate commits on approval. Only `git push` is gated: push only when the operator asks.
-
-# Prerequisite
-
-[Graphify](https://github.com/safishamsi/graphify)
-
-confirm installed dependencies - mise => python3 => uv => graphifyy
-
-```zsh
-mise install python uv
-uv --system-certs tool install graphifyy   # PyPI package is graphifyy; the CLI it installs is `graphify`
-# user scope, claude code  (see --help for more options)
-graphify install
-cd {repo}
-graphify hook install
-```

@@ -110,7 +110,7 @@ describe('SELF-SUFFICIENCY gate — zero-comment corpus (absolute)', () => {
   });
 
   it('does NOT flag a `--word` CLI flag (marker is space-delimited)', () => {
-    const block = 'run ≜ graphify install --home ~/.claude';
+    const block = 'run ≜ cratylus install --home ~/.claude';
     expect(scanFormalBlock('fixture', block)).toEqual([]);
   });
 

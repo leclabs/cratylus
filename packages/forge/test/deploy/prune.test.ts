@@ -139,12 +139,15 @@ describe('deploy prune — convergence to the render tree', () => {
     const a = renderTree(['mav'], ['wake', 'memory']);
     const b = renderTree(['mav'], ['wake']);
 
-    // Foreign artifacts, planted the way a real `~/.claude` accumulates them:
-    // a user-installed skill (`graphify install` does exactly this), a
+    // Foreign artifacts, planted the way a real `~/.claude` accumulates them: a
+    // skill some OTHER installer copied in (every such tool does exactly this), a
     // hand-authored agent def, a harness file, and a stray file INSIDE a dir we
     // do own — none of them ever passed through this deploy.
-    mkdirSync(join(claude, 'skills', 'graphify'), { recursive: true });
-    writeFileSync(join(claude, 'skills', 'graphify', 'SKILL.md'), 'FOREIGN\n');
+    mkdirSync(join(claude, 'skills', 'vendor-skill'), { recursive: true });
+    writeFileSync(
+      join(claude, 'skills', 'vendor-skill', 'SKILL.md'),
+      'FOREIGN\n',
+    );
     mkdirSync(join(claude, 'agents'), { recursive: true });
     writeFileSync(join(claude, 'agents', 'handwritten.md'), 'FOREIGN\n');
     writeFileSync(join(claude, 'CLAUDE.md'), 'FOREIGN\n');
@@ -184,7 +187,7 @@ describe('deploy prune — convergence to the render tree', () => {
     expect(existsSync(join(claude, 'skills', 'memory'))).toBe(false);
     // … and every foreign artifact stands
     expect(
-      readFileSync(join(claude, 'skills', 'graphify', 'SKILL.md'), 'utf-8'),
+      readFileSync(join(claude, 'skills', 'vendor-skill', 'SKILL.md'), 'utf-8'),
     ).toBe('FOREIGN\n');
     expect(
       readFileSync(join(claude, 'agents', 'handwritten.md'), 'utf-8'),
