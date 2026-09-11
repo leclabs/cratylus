@@ -84,9 +84,18 @@ jobs:
       - name: refuse before the first stable release
         run: |
           set -eu
+          # `pnpm view`, NOT `npm view`, and stderr is KEPT. This loop ran `npm view` and
+          # discarded stderr, so when npm began refusing to run here at all —
+          # `devEngines.packageManager` is `pnpm` with `onFail: "error"`, which npm enforces
+          # against itself — the refusal read as "no published version yet" and the guard
+          # reported ALL SIX packages unpublished while every one was on the registry. A
+          # probe that cannot tell "absent" from "I was refused" is not a probe.
           missing=''
           for p in cratylus @cratylus/canon @cratylus/forge @cratylus/memory @cratylus/runtime @cratylus/schema; do
-            npm view "$p" version >/dev/null 2>&1 || missing="$missing $p"
+            if ! err=$(pnpm view "$p" version 2>&1); then
+              echo "pnpm view $p failed: $err" >&2
+              missing="$missing $p"
+            fi
           done
           if [ -n "$missing" ]; then
             echo "REFUSING: these packages have no published version yet:$missing" >&2
@@ -123,17 +132,18 @@ jobs:
 
       # NO TOKEN HERE, DELIBERATELY — this is the experiment that proves OIDC.
       #
-      # Provenance proves nothing about WHICH credential published: a token plus
-      # `NPM_CONFIG_PROVENANCE` attests exactly as well as trusted publishing does. The
-      # only decisive test is a publish with no token present at all, and this is the
-      # path where that is safe to attempt: snapshots go to the `next` dist-tag, create
-      # no tag, no release and no commit, and cannot move `latest`.
+      # Provenance proves nothing about WHICH credential published: a token plus a
+      # provenance switch attests exactly as well as trusted publishing does. The only
+      # decisive test is a publish with no credential present at all, and this is the path
+      # where that is safe to attempt: snapshots go to the `next` dist-tag, create no tag,
+      # no release and no commit, and cannot move `latest`.
       #
-      # `release.yml` keeps `NODE_AUTH_TOKEN` until this run succeeds. npm prefers OIDC
-      # and FALLS BACK to a token, so a stable release during the window cannot fail for
-      # auth either way — which is precisely why the fallback has to be removed HERE
-      # first, where its absence costs a throwaway version rather than a release.
+      # `release.yml` keeps `NODE_AUTH_TOKEN` until this run succeeds. pnpm's own OIDC
+      # implementation OVERRIDES a static `_authToken` (pnpm#11495), so a stable release
+      # during the window cannot fail for auth either way — which is precisely why the
+      # fallback has to be removed HERE first, where its absence costs a throwaway version
+      # rather than a release.
       - name: publish to the next tag
         run: DIST_TAG=next pnpm run release
         env:
-          NPM_CONFIG_PROVENANCE: 'true'
+          PROVENANCE: '1'
