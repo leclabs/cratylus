@@ -76,16 +76,26 @@ jobs:
           node-version-file: package.json
           registry-url: https://registry.npmjs.org
 
-      # npm >= 11.5.1 is what supports trusted publishing, and Node 26 ships npm 11.x.
-      # ASSERTED rather than assumed, because the failure mode is a silently unattested
-      # publish — which looks exactly like a successful one.
-      - name: assert npm can attest
+      # THE UPLOADER IS pnpm NOW, so the assertion is about pnpm. It asserted npm >= 11.5.1
+      # while npm held the upload; npm cannot even run in this workspace anymore
+      # (`devEngines.packageManager` is `pnpm` with `onFail: "error"`, enforced by npm
+      # against itself), and `scripts/release.sh` uploads with `pnpm publish`.
+      #
+      # pnpm >= 11 is what carries OIDC trusted publishing natively (pnpm#9812; before that
+      # `pnpm publish` shelled out to npm and the OIDC path was unreachable — pnpm#11566).
+      # ASSERTED rather than assumed, because the failure mode is a silently unattested or
+      # token-authenticated publish, which looks exactly like a successful one.
+      - name: assert the uploader can attest
         run: |
-          npm --version
-          node -e 'const v=require("child_process").execSync("npm --version").toString().trim();
-            const [a,b,c]=v.split(".").map(Number);
-            const ok = a>11 || (a===11 && (b>5 || (b===5 && c>=1)));
-            if(!ok){console.error(`npm ${v} predates trusted publishing (need >=11.5.1)`);process.exit(1);}'
+          v=$(pnpm --version)
+          echo "pnpm $v"
+          case "${v%%.*}" in
+            ''|*[!0-9]*) echo "cannot read a major from pnpm $v" >&2; exit 1 ;;
+          esac
+          [ "${v%%.*}" -ge 11 ] || {
+            echo "pnpm $v predates OIDC trusted publishing (need >= 11)" >&2
+            exit 1
+          }
 
       - id: changesets
         uses: changesets/action@v1
@@ -102,7 +112,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: 'true'
+          PROVENANCE: '1'
 
       - name: published
         if: steps.changesets.outputs.published == 'true'

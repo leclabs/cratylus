@@ -200,6 +200,14 @@ const PNPM_BUILTINS = new Set([
   'store',
   'unlink',
   'update',
+  // REGISTRY VERBS, added when the publish path moved off npm: `pnpm view` reads a
+  // published version (the release script's idempotence check and the snapshot guard's
+  // probe), and `deprecate`/`undeprecate` are how a retired name is signalled — all four
+  // are pnpm builtins on 12.4.0, none is a script of this repository.
+  'view',
+  'info',
+  'deprecate',
+  'undeprecate',
   'why',
   'i',
   'up',

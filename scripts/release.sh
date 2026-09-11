@@ -1,29 +1,42 @@
 #!/usr/bin/env sh
-# The publish path: packing belongs to pnpm, the audit to the gate, the upload to npm.
+# The publish path: packing, auditing and uploading, all through pnpm.
 #
-# NOT `changeset publish`. It delegates to `pnpm publish`, which runs `prepack` — so every
-# package rebuilds at upload time and the bytes reaching the registry are bytes no gate ever
-# read. Splitting the three responsibilities is what lets the audit sit BETWEEN the pack and
-# the upload.
+# THE UPLOAD WAS npm AND IS NOT ANYMORE, because npm refuses to run here at all. The root
+# manifest declares `devEngines.packageManager = pnpm` with `onFail: "error"`, and npm
+# ENFORCES that against itself: every npm command whose cwd resolves to this workspace
+# exits `EBADDEVENGINES — Invalid name "pnpm" does not match "npm"`. `--engine-strict=false`
+# does not bypass it. Measured: the `release-next` guard's `npm view` loop reported all six
+# packages unpublished while every one was on the registry, because it discarded stderr and
+# a refusal read as an absence.
 #
-# THE SECOND REASON EXPIRED, and is recorded rather than left standing: this header used to
-# add "there is also no `--provenance` in pnpm, putting sigstore attestation out of reach".
-# `--provenance` now exists on `pnpm publish` (its `--help` lists it on 12.4.0) — so that half
-# of the argument is void. The `prepack` half is not, and it is sufficient on its own: an audit
-# of bytes that are rebuilt after the audit is an audit of something else.
+# `pnpm publish` takes what this script has: its argument is a `<tarball | folder>` (pnpm's
+# own docs), so the AUDITED bytes are the uploaded bytes — no repack, and `prepack` cannot
+# fire on a tarball that is already packed. It is native since v11 (it no longer shells out
+# to npm), it carries `--provenance`, and it implements OIDC trusted publishing directly
+# (`pnpm/crates/publish/src/oidc.rs`; issues #9812 and #11495, the latter making OIDC
+# override a static `_authToken` exactly as npm does).
+#
+# NOT `changeset publish`, still. It publishes package DIRECTORIES, which fires `prepack`
+# and rebuilds every package at upload time — the bytes reaching the registry would be bytes
+# no gate ever read. Splitting pack · audit · upload is what lets the audit sit BETWEEN them.
 #
 # `changeset tag` runs LAST, and only if every upload succeeded, so a half-published release
 # never leaves tags claiming it landed.
 #
-# DRY_RUN=1 packs and audits and asks npm to rehearse the upload. It is the only way to
-# learn whether `npm publish <tarball>` is accepted without publishing.
+# DRY_RUN=1 packs and audits and asks the registry to rehearse the upload. It is the only way
+# to learn whether `pnpm publish <tarball>` is accepted without publishing.
 #
-# PROVENANCE IS ENVIRONMENT POLICY, NOT SCRIPT LOGIC. `--provenance` was passed here
-# unconditionally and made this script CI-only: npm refuses it with `EUSAGE — Automatic
-# provenance generation not supported for provider: null` anywhere there is no
-# recognized CI provider, so a local recovery publish could not run at all. The release
-# workflow sets `NPM_CONFIG_PROVENANCE: true`, which npm honours as config — so CI still
-# attests every upload, and the same script works on a laptop without it.
+# PROVENANCE IS THE ENVIRONMENT'S CALL, and `PROVENANCE=1` is how the environment says it.
+# It was `NPM_CONFIG_PROVENANCE`, read by npm as config; pnpm's honouring of the equivalent
+# `PNPM_CONFIG_PROVENANCE` is NOT documented and a dry run cannot tell you (it neither warns
+# nor attests), and an unattested upload that reports success is exactly the silent
+# degradation this repo refuses. So the switch is translated to the documented CLI flag
+# here — one line — and a laptop recovery publish still runs without it.
+#
+# GIT CHECKS OFF, deliberately. The uploader refuses an unclean tree or a non-release
+# branch; npm never checked either, and the snapshot path REQUIRES a dirty tree, because
+# `changeset version --snapshot` rewrites manifests without committing. Cleanliness is
+# enforced where it belongs — the Release PR — and the bytes are gated by `pack:smoke`.
 set -eu
 
 self=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
@@ -34,6 +47,10 @@ cd "$root"
 out="$root/.pack"
 rm -rf "$out"
 mkdir -p "$out"
+
+# The environment's provenance call, translated to the documented flag — see the header.
+prov=''
+[ "${PROVENANCE:-0}" = "1" ] && prov='--provenance'
 
 # BUILD FIRST, IN TOPOLOGICAL ORDER. `pnpm pack` fires each package's `prepack`, which
 # rebuilds it — but per package, in whatever order the pack loop happens to reach them. A
@@ -90,7 +107,7 @@ echo "release: $count tarball(s)"
 # `cratylus-forge-0.1.1.tgz` puts neither the scope boundary nor the version boundary
 # anywhere a parse can find them without guessing.
 #
-# THE FAILURE DIRECTION IS DELIBERATE. A `npm view` that fails for any reason — network,
+# THE FAILURE DIRECTION IS DELIBERATE. A `pnpm view` that fails for any reason — network,
 # auth, a registry hiccup — falls through to the publish, which then errors loudly. The
 # alternative default would skip an upload on a transient error and report a green release
 # that shipped nothing.
@@ -102,7 +119,7 @@ for tgz in "$out"/*.tgz; do
 	name=$(printf '%s' "$meta" | node -p 'JSON.parse(require("fs").readFileSync(0,"utf8")).name')
 	version=$(printf '%s' "$meta" | node -p 'JSON.parse(require("fs").readFileSync(0,"utf8")).version')
 
-	if npm view "$name@$version" version >/dev/null 2>&1; then
+	if pnpm view "$name@$version" version >/dev/null 2>&1; then
 		echo "release: $name@$version is already on the registry — skipping"
 		skipped=$((skipped + 1))
 		continue
@@ -120,9 +137,9 @@ for tgz in "$out"/*.tgz; do
 	# Continuing also buys the DIAGNOSIS: one run now says which packages the
 	# credential can write and which it cannot, instead of stopping at the first.
 	if [ "${DRY_RUN:-0}" = "1" ]; then
-		npm publish "$tgz" --access public --tag "${DIST_TAG:-latest}" --dry-run || failed="$failed $name"
+		pnpm publish "$tgz" --access public --tag "${DIST_TAG:-latest}" --no-git-checks $prov --dry-run || failed="$failed $name"
 	else
-		npm publish "$tgz" --access public --tag "${DIST_TAG:-latest}" || failed="$failed $name"
+		pnpm publish "$tgz" --access public --tag "${DIST_TAG:-latest}" --no-git-checks $prov || failed="$failed $name"
 	fi
 	case " $failed " in
 	*" $name "*) ;;
