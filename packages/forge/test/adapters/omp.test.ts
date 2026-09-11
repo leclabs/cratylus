@@ -6,8 +6,17 @@
 // wrong, the wrong thing is named — a fixture pinned to a law outlives the
 // incident that produced it, and one pinned to the incident is a museum piece.
 
-import { posix } from 'node:path';
-import { describe, expect, it } from 'vitest';
+import { execFileSync } from 'node:child_process';
+import {
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  symlinkSync,
+  writeFileSync,
+} from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, posix } from 'node:path';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
   OMP_BLOCKING_EVENTS,
   OMP_GUARDRAIL_MODULE,
@@ -29,6 +38,14 @@ import {
 import { SCOPE_DIR_TOKEN } from '../../src/core/harness-adapter.js';
 import { runtimeShimContent } from '../../src/project/runtime-shim.js';
 import { FIXTURE_MANIFEST } from '../fixture-manifest.js';
+
+/** Temp dirs the one leg below that touches disk creates — it RUNS the launcher,
+ *  which is the only way its path resolution is observable. */
+const tmp: string[] = [];
+afterEach(() => {
+  for (const d of tmp) rmSync(d, { recursive: true, force: true });
+  tmp.length = 0;
+});
 
 const AGENT = {
   name: 'mav',
@@ -324,9 +341,40 @@ describe('omp launch spec', () => {
     expect(ompLaunchSurface([]).map((f) => f.scope)).not.toContain('_session');
   });
 
-  it('the launcher resolves its OWN directory rather than a baked-in path', () => {
+  it('resolves its own directory when run through a symlink, not the link’s', () => {
+    // HOW A LAUNCHER IS ACTUALLY RUN: linked into a `PATH` dir under the
+    // persona's name. That directory holds neither file the launcher names, and
+    // a script that read only `dirname "$0"` handed omp the LINK's directory -
+    // measured on an operator's host as `Config overlay not found:
+    // ~/.local/bin/omp.yml`, a persona unlaunchable by its own name.
+    //
+    // Asserted by RUNNING it against an `omp` that records its argv, because the
+    // resolution is only observable in what gets exec'd. A `toContain('dirname')`
+    // assertion passed throughout the defect.
     const [, launcher] = ompLaunchSurface(['mav']);
-    expect(launcher?.content).toContain('dirname');
+    const scopeDir = mkdtempSync(join(tmpdir(), 'omp-scope-'));
+    const binDir = mkdtempSync(join(tmpdir(), 'omp-bin-'));
+    tmp.push(scopeDir, binDir);
+    const argvLog = join(binDir, 'argv');
+    writeFileSync(join(scopeDir, OMP_LAUNCHER_FILE), launcher?.content ?? '', {
+      mode: 0o755,
+    });
+    writeFileSync(
+      join(binDir, 'omp'),
+      `#!/bin/sh\nprintf '%s\\n' "$@" > ${argvLog}\n`,
+      { mode: 0o755 },
+    );
+    symlinkSync(join(scopeDir, OMP_LAUNCHER_FILE), join(binDir, 'mav'));
+
+    execFileSync(join(binDir, 'mav'), [], {
+      env: { ...process.env, PATH: `${binDir}:${process.env.PATH ?? ''}` },
+    });
+
+    const argv = readFileSync(argvLog, 'utf-8').split('\n');
+    expect(argv).toContain(join(scopeDir, OMP_OVERLAY_FILE));
+    expect(argv).toContain(join(scopeDir, 'APPEND_SYSTEM.md'));
+    // And no absolute path was baked in at projection: the script is identical
+    // for every persona and every `--home`.
     expect(launcher?.content).not.toMatch(/\/home\/|\/Users\//);
   });
 
