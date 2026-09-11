@@ -33,7 +33,7 @@
 # degradation this repo refuses. So the switch is translated to the documented CLI flag
 # here — one line — and a laptop recovery publish still runs without it.
 #
-# GIT CHECKS OFF, deliberately. pnpm refuses to publish from an unclean tree or a non-release
+# GIT CHECKS OFF, deliberately. The uploader refuses an unclean tree or a non-release
 # branch; npm never checked either, and the snapshot path REQUIRES a dirty tree, because
 # `changeset version --snapshot` rewrites manifests without committing. Cleanliness is
 # enforced where it belongs — the Release PR — and the bytes are gated by `pack:smoke`.
@@ -48,7 +48,7 @@ out="$root/.pack"
 rm -rf "$out"
 mkdir -p "$out"
 
-# The environment's provenance call, translated to the flag pnpm documents — see the header.
+# The environment's provenance call, translated to the documented flag — see the header.
 prov=''
 [ "${PROVENANCE:-0}" = "1" ] && prov='--provenance'
 
