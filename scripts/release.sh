@@ -50,12 +50,17 @@ pnpm pack:smoke
 
 # THE UPLOAD SET IS THE AUDIT SET, asked for by name rather than re-derived.
 #
-# This was a workspace filter over `./packages/*`, and it packed SIX tarballs while `pack:smoke`
-# audited five — the extra was `@cratylus/canon`, which the changeset `ignore` list excludes
-# and which must never reach the registry. A filter expresses "which directories"; the
-# publish set is "not private AND not changeset-ignored", and those are different questions
-# that happened to agree until they did not. An audit covering a different set than the
-# upload is an audit of something else.
+# This was a workspace filter over `./packages/*`, which expresses "which directories";
+# the publish set is "not private AND not changeset-ignored", and those are different
+# questions that happened to agree until they did not. An audit covering a different set
+# than the upload is an audit of something else.
+#
+# `@cratylus/canon` IS IN THE SET, and this comment used to claim the opposite — that the
+# changeset `ignore` list excluded it and it "must never reach the registry". Both halves
+# were false: `ignore` is `[]`, `pack-smoke --list` names canon, and `cratylus` DECLARES
+# `@cratylus/canon` as a runtime dependency, so the command cannot resolve without it on
+# the registry. The stale claim cost a mistaken deprecation of a required package before it
+# was caught.
 pnpm --filter @cratylus/canon exec tsx tooling/pack-smoke/pack-smoke-cli.ts --list |
 	while IFS= read -r pkg; do
 		[ -n "$pkg" ] || continue

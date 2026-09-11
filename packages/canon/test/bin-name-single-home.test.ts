@@ -232,7 +232,7 @@ describe('the bin name has exactly one home', () => {
     }
   });
 
-  it("invoke's `bin` manifest key agrees with CLI_BIN", () => {
+  it("the hub package's `bin` manifest key agrees with CLI_BIN", () => {
     // The one copy no compiler can reach. If a rename flips the constant and not
     // this key, the installed executable and everything that spawns it disagree —
     // and nothing but this assertion notices.
