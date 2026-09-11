@@ -59,18 +59,23 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      # Writes ~/.npmrc pointing at the registry with NODE_AUTH_TOKEN interpolated.
+      # THE OWED ACTION IS DISCHARGED. This block used to read "TOKEN, NOT TRUSTED
+      # PUBLISHING, AND ONLY FOR NOW … once all five exist, configure trusted publishers and
+      # delete `NODE_AUTH_TOKEN` here." All of them exist, the publisher is configured, and
+      # the token is gone from this workflow.
       #
-      # TOKEN, NOT TRUSTED PUBLISHING, AND ONLY FOR NOW. npm's trusted publishers are
-      # configured PER PACKAGE on npmjs.com, and a package that does not exist has no
-      # settings page — so the FIRST publish of each package needs a token no matter what.
-      # Provenance still works with a token as long as `id-token: write` is present. Once all
-      # five exist, configure trusted publishers and delete `NODE_AUTH_TOKEN` here.
-      # v6 for the same reason as `.github/actions/setup`: the node version is read out of
-      # `devEngines.runtime`, which only v6.3.0+ can see. This step re-runs `setup-node`
-      # purely for `registry-url` (the `~/.npmrc` + `NODE_AUTH_TOKEN` wiring), so it must
-      # resolve the SAME version the setup action already installed — a literal here would be
-      # a second copy of the pin, and a stale one the first time they disagreed.
+      # MEASURED on run 34569644916, which published `cratylus@0.2.2`,
+      # `@cratylus/canon@0.1.1` and `@cratylus/forge@0.4.0`: changesets reported "No
+      # NPM_TOKEN found, but OIDC is available - using npm trusted publishing", the runner
+      # served an ID token for `audience=npm:registry.npmjs.org`, and pnpm emitted NO
+      # `Skipped OIDC` warning — the warning it DOES emit when the exchange fails, as the
+      # snapshot path proved minutes earlier. All three carry SLSA provenance.
+      #
+      # The step stays for `registry-url` alone: it writes the `~/.npmrc` that points pnpm at
+      # the registry. v6 for the same reason as `.github/actions/setup` — the node version is
+      # read out of `devEngines.runtime`, which only v6.3.0+ can see — and it must resolve the
+      # SAME version the setup action already installed, so a literal here would be a second
+      # copy of the pin and a stale one the first time they disagreed.
       - uses: actions/setup-node@v6
         with:
           node-version-file: package.json
@@ -111,7 +116,6 @@ jobs:
           createGithubReleases: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           PROVENANCE: '1'
 
       - name: published
