@@ -12,7 +12,7 @@ import type { Formality } from '../../manifest.js';
 // for shorter replies buys prose with behaviour.
 //
 // REGISTER ONLY. The closing tail a report owes its operator is `autonomy`'s —
-// `check-in` names it, because what a reply must CONTAIN at the end is report
+// `handoff` names it, because what a reply must CONTAIN at the end is report
 // structure, not a register. A value that governed both would be the one home
 // for two concepts, and would apply the tail to whichever formality happened to
 // be bound.

@@ -2,7 +2,7 @@ import { maintenance as maintenance_audienceAdaptation } from '../dimensions/aud
 import { principalSelf } from '../dimensions/autonomy/decision-authority.js';
 import type { Agent } from '../manifest.js';
 
-import { checkIn as checkIn_autonomy } from '../dimensions/autonomy/check-in.js';
+import { handoff as handoff_autonomy } from '../dimensions/autonomy/handoff.js';
 import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../dimensions/autonomy/human-on-the-loop.js';
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
 import { operationsDelivery as operationsDelivery_capabilities } from '../dimensions/capabilities/operations-delivery.js';
@@ -19,7 +19,6 @@ import { goalDirected as goalDirected_framing } from '../dimensions/framing/goal
 import { honesty as honesty_guardrails } from '../dimensions/guardrails/honesty.js';
 import { correctionConsolidation as correctionConsolidation_learning } from '../dimensions/learning/correction-consolidation.js';
 import { delivery as delivery_objective } from '../dimensions/objective/delivery.js';
-import { structuredDecision as structuredDecision_outputFormat } from '../dimensions/output-format/structured-decision.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../dimensions/reasoning-strategy/plan-and-solve.js';
 import { build as build_role } from '../dimensions/role/build.js';
 import { optimize as optimize_satisficing } from '../dimensions/satisficing/optimize.js';
@@ -40,7 +39,7 @@ export const mav: Agent = {
     principalSelf,
     humanOnTheLoop_autonomy,
     missionCommand,
-    checkIn_autonomy,
+    handoff_autonomy,
   ],
   provenance: { mark: { emoji: '✈️', hue: 'green' } },
   objective: delivery_objective,
@@ -71,7 +70,19 @@ export const mav: Agent = {
   framing: goalDirected_framing,
   reasoningStrategy: planAndSolve_reasoningStrategy,
   satisficing: optimize_satisficing,
-  outputFormat: structuredDecision_outputFormat,
+  // `output-format` names the KIND of artifact an agent emits — its repertoire is
+  // code · document · natural-language · structured-data · visualization · action.
+  // `structured-decision` was not a kind; it was a LAYOUT, and an undefined one.
+  // Cold decode of a prompt whose entire Output-Format section is that token: "a
+  // bare label, not a spec … it fixes no headings, no field names, no ordering, no
+  // format … the best I can infer is: don't answer in freeform prose; separate the
+  // decision from its supporting reasoning in some labeled way." That is `plain`
+  // negated, emitted by the one section with no definiens to hold it. 549d5d48
+  // adopted it to give the rationale "a slot with a size"; the cell has neither.
+  // The bound on rationale volume is `plain`'s own "no more length than the
+  // decision carries", and the reply's shape is `handoff`'s. Two homes already:
+  // this one restates them at best and contradicts them at worst, so it is null.
+  outputFormat: null,
   selfEvaluation: executableTestOracle_selfEvaluation,
   heuristics: null,
 };

@@ -2,8 +2,8 @@ import { codeExecution as codeExecution_actions } from '../dimensions/actions/co
 import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
 import { maintenance as maintenance_audienceAdaptation } from '../dimensions/audience-adaptation/maintenance.js';
-import { checkIn as checkIn_autonomy } from '../dimensions/autonomy/check-in.js';
 import { principalSelf } from '../dimensions/autonomy/decision-authority.js';
+import { handoff as handoff_autonomy } from '../dimensions/autonomy/handoff.js';
 import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../dimensions/autonomy/human-on-the-loop.js';
 import { missionCommand } from '../dimensions/autonomy/mission-command.js';
 import { researchInvestigation as researchInvestigation_capabilities } from '../dimensions/capabilities/research-investigation.js';
@@ -50,7 +50,7 @@ export const nico: Agent = {
     principalSelf,
     humanOnTheLoop_autonomy,
     missionCommand,
-    checkIn_autonomy,
+    handoff_autonomy,
   ],
   provenance: { mark: { emoji: '📐', hue: 'cyan' } },
   objective: parsimony_objective,

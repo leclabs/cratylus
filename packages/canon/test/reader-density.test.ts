@@ -136,9 +136,9 @@ async function collect(pattern: string): Promise<string[]> {
 /** The dimension VALUES whose referent is the operator-facing reply, so ρ resolves
  *  human — see `RHO`'s `emission-definiens` note for the ruling, its measurement,
  *  and why membership is per value rather than per dimension. A `formality/` prefix
- *  because every member of that dimension governs the reply; `autonomy/check-in` by
+ *  because every member of that dimension governs the reply; `autonomy/handoff` by
  *  name because its siblings govern what the agent DOES and stay σ*. */
-const EMISSION_VALUES: readonly string[] = ['formality/', 'autonomy/check-in'];
+const EMISSION_VALUES: readonly string[] = ['formality/', 'autonomy/handoff'];
 
 /** ρ's class for a dimension value — ONE home, read by the density scan and by the
  *  AC-RESIDUE scan, so the two gates cannot disagree about which values carry a σ*

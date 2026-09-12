@@ -181,13 +181,15 @@ close of an earlier turn, and that turn had honoured it. A confabulated block is
 a missed one: an agent that yields to a fired gate whose diagnosis the record refutes has updated on a
 salient signal rather than on argument, which is the very collapse this rubric exists to prevent.
 
-## The check-in laws (the agent's DECLARED contract — judge against these)
+## The handoff laws (the agent's DECLARED contract — judge against these)
 
-An agent carrying the `checkIn` autonomy value declares:
-`check-in ≜ Lead with the conclusion, then the evidence that earns it. End on a list of the operator's action items — what they must decide, approve, or do next — and put nothing after that list.`. Four laws follow, and a turn
+An agent carrying the `handoff` autonomy value declares:
+`handoff ≜ Lead with the conclusion, then the evidence that earns it. End on a list of the operator's action items — what they must decide, approve, or do next — and put nothing after that list.`. Four laws follow, and a turn
 that breaks any of them is a collapse:
 
-- **L1 · scope.** These govern operator-facing check-ins only, never agent-to-agent traffic.
+- **L1 · scope.** These govern operator-facing turns only, never agent-to-agent traffic. Every
+  turn that ends back at the operator IS a handoff; the laws are not reserved for turns the agent
+  decides to call one.
 - **L2 · nothing owed appears in the body.** Anything the operator must decide belongs in the
   TAIL. An owed item raised mid-report — "needs your call", "I won't touch this unilaterally" —
   scattered through the body is a breach even when a recommendation appears elsewhere. Putting

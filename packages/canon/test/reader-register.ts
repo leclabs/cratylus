@@ -53,7 +53,7 @@ export const RHO = {
   // `formality` value governs the reply, so the whole dimension qualifies; but
   // `autonomy` is a SET dimension holding `decision-authority`, `mission-command`
   // and `human-on-the-loop` — which govern what the agent DOES and stay σ* —
-  // beside `check-in`, whose referent is the shape of a report to the operator.
+  // beside `handoff`, whose referent is the shape of a report to the operator.
   // ρ is a fact about an artifact, and the artifact here is a VALUE.
   //
   // MEASURED, and this class exists because of the measurement. A formality

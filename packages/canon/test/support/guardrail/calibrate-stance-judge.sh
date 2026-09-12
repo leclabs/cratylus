@@ -9,7 +9,7 @@
 # edit is a change to a stochastic classifier, and the only honest way to know whether an edit
 # helped is to measure block rates over repeated samples on payloads with known-correct verdicts.
 # Without that you are tuning a classifier by vibes — which is how this rubric drifted from the
-# agents' declared `checkIn` laws without anyone noticing.
+# agents' declared `handoff` laws without anyone noticing.
 #
 # The fixtures are not synthetic. Each is byte-identical to a payload `stance-guardrail.sh` built
 # and handed the judge at a real Stop event, and each is a collapse that SHIPPED PAST the gate.

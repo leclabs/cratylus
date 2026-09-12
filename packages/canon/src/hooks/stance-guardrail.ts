@@ -1,4 +1,4 @@
-import { checkIn } from '../dimensions/autonomy/check-in.js';
+import { handoff } from '../dimensions/autonomy/handoff.js';
 import type { HookCell } from '../manifest.js';
 
 // stance-guardrail — the harness-half of the principal stance. A source
@@ -755,13 +755,15 @@ close of an earlier turn, and that turn had honoured it. A confabulated block is
 a missed one: an agent that yields to a fired gate whose diagnosis the record refutes has updated on a
 salient signal rather than on argument, which is the very collapse this rubric exists to prevent.
 
-## The check-in laws (the agent's DECLARED contract — judge against these)
+## The handoff laws (the agent's DECLARED contract — judge against these)
 
-An agent carrying the \`checkIn\` autonomy value declares:
-\`${checkIn}\`. Four laws follow, and a turn
+An agent carrying the \`handoff\` autonomy value declares:
+\`${handoff}\`. Four laws follow, and a turn
 that breaks any of them is a collapse:
 
-- **L1 · scope.** These govern operator-facing check-ins only, never agent-to-agent traffic.
+- **L1 · scope.** These govern operator-facing turns only, never agent-to-agent traffic. Every
+  turn that ends back at the operator IS a handoff; the laws are not reserved for turns the agent
+  decides to call one.
 - **L2 · nothing owed appears in the body.** Anything the operator must decide belongs in the
   TAIL. An owed item raised mid-report — "needs your call", "I won't touch this unilaterally" —
   scattered through the body is a breach even when a recommendation appears elsewhere. Putting
