@@ -121,3 +121,19 @@ export function ompBindingOf(event: EventName): NativeBinding | undefined {
  * blocking result, so this set has exactly one member and is not a stub.
  */
 export const OMP_BLOCKING_EVENTS: ReadonlySet<string> = new Set(['tool_call']);
+
+/**
+ * The omp events whose worker needs the hook PAYLOAD, not merely a fire.
+ *
+ * Claude's `Stop` hook is handed a JSON envelope on stdin naming the transcript;
+ * omp's `ExecOptions` is signal · timeout · cwd and its handler is given the event
+ * as an ARGUMENT, so a worker written against the Claude contract reads an empty
+ * stdin, exits at its first guard, and judges nothing — silently, every turn. The
+ * shim therefore materializes the envelope itself for these events.
+ *
+ * `agent_end` alone, because `AgentEndEvent` alone carries `messages` — the turn a
+ * worker can judge. A `tool_result` fire carries the tool's own payload and is a
+ * different contract; it stays a bare fire rather than being handed a turn that is
+ * not one.
+ */
+export const OMP_PAYLOAD_EVENTS: Record<string, true> = { agent_end: true };

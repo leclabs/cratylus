@@ -262,6 +262,34 @@ describe('omp enforcing surface', () => {
     expect(nonBlocking?.content).not.toContain('block: true');
   });
 
+  it('hands a turn event its PAYLOAD, because omp gives the worker no stdin', () => {
+    // THE DEFECT THIS PINS SHIPPED, AND IT WAS SILENT. The workers are written to
+    // the Claude hook contract — a JSON envelope on stdin naming a JSONL transcript
+    // — and the shim used to fire them with no stdin at all. `input="$(cat)"` read
+    // empty, the worker exited at its first guard, and `agent_end` reported nothing
+    // for every turn of every omp session. A gate that is deployed, opted in, and
+    // judging NOTHING looks exactly like a gate finding no fault.
+    const [turn] = ompGuardrailExtensions(
+      [binding(['mav'], ['turn.end'])] as never,
+      MECH,
+    );
+    expect(turn?.content).toContain('execWithTurn(');
+    expect(turn?.content).toContain('transcript_path');
+    // omp takes no result from `agent_end`, so a verdict reaches the session only
+    // by queueing a continuation — the analogue of refusing the stop.
+    expect(turn?.content).toContain('sendUserMessage');
+    // …and only when it CHANGES, or an unreachable judge re-opens the turn forever.
+    expect(turn?.content).toContain('verdict !== lastVerdict');
+
+    // An event that carries no turn stays a bare fire: handing one a transcript
+    // would assert it is a turn, which it is not.
+    const [bare] = ompGuardrailExtensions(
+      [binding(['mav'], ['session.start'])] as never,
+      MECH,
+    );
+    expect(bare?.content).not.toContain('execWithTurn(');
+  });
+
   it('emits nothing when the mechanism is absent — and that is the codex bug', () => {
     // EXONERATING FIXTURE. Without a mechanism there is no command to wire, so
     // emitting nothing is correct. What was NOT correct was reaching this state

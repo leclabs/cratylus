@@ -71,7 +71,12 @@ import {
   SCOPE_DIR_TOKEN,
   SESSION_SCOPE,
 } from '../../core/harness-adapter.js';
-import { OMP_BLOCKING_EVENTS, canonicalToOmp, ompBindingOf } from './events.js';
+import {
+  OMP_BLOCKING_EVENTS,
+  OMP_PAYLOAD_EVENTS,
+  canonicalToOmp,
+  ompBindingOf,
+} from './events.js';
 
 export type { ResolvedSkill };
 
@@ -356,19 +361,137 @@ function renderRegistration(r: OmpRegistration): string {
   // mechanism bricking the session it was supposed to govern. The canon's own hook
   // cells are written fail-open (`fail-open ∀error`), and a gate that cannot RUN
   // has not refused anything.
-  const act = blocking
+  const call = OMP_PAYLOAD_EVENTS[r.native]
+    ? `execWithTurn(${JSON.stringify(r.command)}, event)`
+    : `exec(${JSON.stringify(r.command)})`;
+  // A PAYLOAD EVENT'S OUTPUT IS A VERDICT AND MUST REACH THE SESSION. Claude's
+  // `Stop` hook speaks to the agent by writing stdout and refusing the stop; omp's
+  // `agent_end` takes no such result, so a worker that blocks a turn here would
+  // have its reason discarded — the gate firing into a void, which is exactly as
+  // dark as never running. `sendUserMessage` at `agent_end` queues a continuation
+  // (the loop drains its queues before this event, so a message left here is what
+  // re-opens the turn), which is the same shape as refusing the stop.
+  //
+  // DELIVERED ONCE PER DISTINCT VERDICT, because delivery re-opens the turn. A
+  // worker that reports the same thing every turn — `dark`, above all, which says
+  // the JUDGE is unreachable and will keep saying it — would otherwise re-open the
+  // turn forever on a fact that is informational. A block's reason carries a
+  // per-session count and the worker's own no-progress detector converts a genuine
+  // repeat into a different notice, so a real block is never suppressed by this.
+  const act = OMP_PAYLOAD_EVENTS[r.native]
     ? `
-    const r = await exec(${JSON.stringify(r.command)});
+    const r = await ${call};
+    const verdict = \`\${r.stdout}\\n\${r.stderr}\`.trim();
+    if (verdict && verdict !== lastVerdict) {
+      lastVerdict = verdict;
+      pi.sendUserMessage(verdict, { deliverAs: "followUp" });
+    }`
+    : blocking
+      ? `
+    const r = await ${call};
     if (r.exitCode === 127) return;
     if (r.exitCode !== 0) {
       return { block: true, reason: r.stderr.trim() || r.stdout.trim() };
     }`
-    : `
-    await exec(${JSON.stringify(r.command)});`;
+      : `
+    await ${call};`;
   return `  pi.on(${JSON.stringify(r.native)}, async (event) => {${guard}${act}
   });
   // ${r.anchor}`;
 }
+
+/**
+ * Module-level half of the payload bridge — the lines emitted above
+ * `export default`, verbatim, when a registration reads a turn.
+ *
+ * `OMP_PAYLOAD_EVENTS` says why this exists at all. What lives HERE is only the
+ * shape translation: omp's `AgentMessage` blocks (`text` · `toolCall` · dropped
+ * `thinking`) written out as the transcript lines the workers' `jq` already
+ * reads. Translating the SHAPE keeps the extraction semantics — whole turn since
+ * the last real user message, tool activity marked, text-only projection for the
+ * evidence check — in their one home inside the worker, rather than re-deriving
+ * them here in a second language.
+ */
+const TURN_BRIDGE: readonly string[] = [
+  '// THE IDENTITY IS READ FROM PLACEMENT, never asked at runtime: this module sits',
+  '// at `<scope>/extensions/`, so its grandparent directory names the scope. A',
+  '// persona copy reports that persona; the session root reports its own dir name,',
+  '// which is no persona and matches no allowlist — the bare-launch case falls out',
+  '// of the placement instead of out of a branch.',
+  'const scopeName = basename(dirname(dirname(new URL(import.meta.url).pathname)));',
+  '',
+  '// The verdict last delivered, so an unchanging one is not re-delivered — see the',
+  '// `agent_end` registration for why delivery is bounded.',
+  'let lastVerdict = "";',
+  '',
+  '// One value per module LOAD, and a module is loaded once per session — which is',
+  "// exactly the lifetime the workers' per-session state files want.",
+  'const sessionId = `omp-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;',
+  '',
+  'type TurnBlock = { type?: string; text?: string; name?: string };',
+  'type TurnMessage = { role?: string; content?: string | TurnBlock[] };',
+  '',
+  '/** omp messages as the JSONL transcript lines the workers parse. */',
+  'function transcriptOf(messages: readonly TurnMessage[]): string {',
+  '  const lines: string[] = [];',
+  '  for (const m of messages) {',
+  '    if (m.role === "user") {',
+  '      const content =',
+  '        typeof m.content === "string"',
+  '          ? m.content',
+  '          : (m.content ?? []).flatMap((c) =>',
+  '              c.type === "text" ? [{ type: "text", text: c.text }] : [],',
+  '            );',
+  '      lines.push(JSON.stringify({ type: "user", message: { content } }));',
+  '      continue;',
+  '    }',
+  '    // A tool result carries no text the agent wrote, and the worker skips such',
+  '    // lines anyway; emitting them would only pad the file.',
+  '    if (m.role !== "assistant" || typeof m.content === "string") continue;',
+  '    const content = (m.content ?? []).flatMap((c) =>',
+  '      c.type === "text"',
+  '        ? [{ type: "text", text: c.text }]',
+  '        : c.type === "toolCall"',
+  '          ? [{ type: "tool_use", name: c.name }]',
+  '          : [],',
+  '    );',
+  '    lines.push(JSON.stringify({ type: "assistant", message: { content } }));',
+  '  }',
+  '  return lines.join("\\n");',
+  '}',
+  '',
+];
+
+/**
+ * Function-level half of the payload bridge — emitted inside `export default`,
+ * where `pi` is in scope.
+ *
+ * The envelope goes to a FILE and arrives by redirect because `ExecOptions` has
+ * no stdin slot (signal · timeout · cwd) and the workers read stdin. A temp dir
+ * per fire, removed in `finally`, keeps a turn's transcript off any shared path.
+ */
+const TURN_EXEC: readonly string[] = [
+  '  const execWithTurn = async (cmd: string, event: { messages?: readonly TurnMessage[] }) => {',
+  '    const dir = mkdtempSync(join(tmpdir(), "cratylus-hook-"));',
+  '    try {',
+  '      const transcript = join(dir, "transcript.jsonl");',
+  '      writeFileSync(transcript, `${transcriptOf(event.messages ?? [])}\\n`);',
+  '      const envelope = join(dir, "envelope.json");',
+  '      writeFileSync(',
+  '        envelope,',
+  '        JSON.stringify({',
+  '          session_id: sessionId,',
+  '          cwd: pi.cwd,',
+  '          transcript_path: transcript,',
+  '          agent_type: scopeName,',
+  '        }),',
+  '      );',
+  '      return await pi.exec("sh", ["-c", `${cmd} < ${envelope}`]);',
+  '    } finally {',
+  '      rmSync(dir, { recursive: true, force: true });',
+  '    }',
+  '  };',
+];
 
 /**
  * The extension module's text.
@@ -402,6 +525,9 @@ function ompExtensionModule(
           "// never resolves this persona's overlay — including a bare `omp` — never",
           '// loads this copy.',
         ];
+  // The payload bridge is emitted only where a registration reads one, so a module
+  // of pure fire-and-forget hooks stays as small as it was.
+  const needsTurn = registrations.some((r) => r.includes('execWithTurn('));
   return [
     // The regenerate instruction NAMES THE COMMAND, so it interpolates the bin
     // rather than spelling it: a banner telling a host to run a command that no
@@ -413,8 +539,16 @@ function ompExtensionModule(
     '// There is no identity check below and there must not be one: composition is',
     '// realized by WHERE this file is, not by what it asks at runtime.',
     '',
+    ...(needsTurn
+      ? [
+          "import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';",
+          "import { tmpdir } from 'node:os';",
+          "import { basename, dirname, join } from 'node:path';",
+        ]
+      : []),
     "import type { HookAPI } from '@oh-my-pi/pi-coding-agent';",
     '',
+    ...(needsTurn ? TURN_BRIDGE : []),
     'export default function (pi: HookAPI) {',
     // `HookAPI.exec(command, args, options?)` — `args` is REQUIRED and the impl
     // does `ptree.exec([command, ...args])`. Passing an options object in its slot
@@ -425,6 +559,7 @@ function ompExtensionModule(
     // cwd), and the commands are shell text carrying `$HOME`, so the shell is
     // named explicitly.
     '  const exec = (cmd: string) => pi.exec("sh", ["-c", cmd]);',
+    ...(needsTurn ? TURN_EXEC : []),
     ...registrations,
     '}',
     '',
