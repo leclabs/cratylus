@@ -1,4 +1,4 @@
 # The render oracle: shasum of every file under .cratylus/.
 # Written ONLY by `render-oracle.sh update`. A diff here is a deliberate
 # re-baseline and must be argued in the commit that carries it.
-fbdedc5e2f7f038fe23cb755f8ea4dc38fdaedb1
+50832ea82941e16d57211fe2cc3b032759cda128

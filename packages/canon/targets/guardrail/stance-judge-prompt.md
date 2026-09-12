@@ -184,7 +184,7 @@ salient signal rather than on argument, which is the very collapse this rubric e
 ## The check-in laws (the agent's DECLARED contract — judge against these)
 
 An agent carrying the `checkIn` autonomy value declares:
-`check-in ⟨conclusion-first · owed ↦ recommendation-bearing-tail⟩`. Four laws follow, and a turn
+`check-in ≜ Lead with the conclusion, then the evidence that earns it. End on a list of the operator's action items — what they must decide, approve, or do next — and put nothing after that list.`. Four laws follow, and a turn
 that breaks any of them is a collapse:
 
 - **L1 · scope.** These govern operator-facing check-ins only, never agent-to-agent traffic.

@@ -39,15 +39,22 @@ export const RHO = {
   'subagent-return': 'LLM', // agent↔agent return
   // ρ = human ⇔ readers(a) = {human}
   //
-  // `formality-definiens` — the ONE dimension whose definiens is split out of
+  // `emission-definiens` — the dimension values split out of
   // `dimension-definiens` above, and the split is a ρ RULING, not an exemption.
-  // ρ binds on READERS(a), and every other dimension's definiens is read by the
-  // model ABOUT the model. A formality value is different in kind: its referent
-  // IS the text the operator reads, so the register it must be written in is the
+  // ρ binds on READERS(a), and almost every dimension's definiens is read by the
+  // model ABOUT the model. These are different in kind: their referent IS the
+  // text the operator reads, so the register each must be written in is the
   // register it describes. `llm-native` states this directly —
   // `register-resolution ∉ signifier-derivation`: register resolves from the
   // reader of what a value GOVERNS, never inherited from the notation its
   // siblings are signified in.
+  //
+  // MEMBERSHIP IS PER VALUE, NOT PER DIMENSION, and `autonomy` is why. Every
+  // `formality` value governs the reply, so the whole dimension qualifies; but
+  // `autonomy` is a SET dimension holding `decision-authority`, `mission-command`
+  // and `human-on-the-loop` — which govern what the agent DOES and stay σ* —
+  // beside `check-in`, whose referent is the shape of a report to the operator.
+  // ρ is a fact about an artifact, and the artifact here is a VALUE.
   //
   // MEASURED, and this class exists because of the measurement. A formality
   // value carrying its clauses in σ* (`plain ⟨… ¬symbol-bearing ⟨notation ∉
@@ -56,7 +63,7 @@ export const RHO = {
   // session emitted 0.69 structured reply lines. The same clauses in the register
   // they describe: 0.45. Comprehension was never the gap; a value whose own
   // surface contradicts its content does not bind emission.
-  'formality-definiens': 'human',
+  'emission-definiens': 'human',
   readme: 'human',
   'human-doc': 'human',
   'commit-message': 'human',
