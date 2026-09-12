@@ -1,7 +1,7 @@
 import { codeExecution as codeExecution_actions } from '../dimensions/actions/code-execution.js';
 import { delegation as delegation_actions } from '../dimensions/actions/delegation.js';
 import { fileOps as fileOps_actions } from '../dimensions/actions/file-ops.js';
-import { convergence as convergence_audienceAdaptation } from '../dimensions/audience-adaptation/convergence.js';
+import { maintenance as maintenance_audienceAdaptation } from '../dimensions/audience-adaptation/maintenance.js';
 import { checkIn as checkIn_autonomy } from '../dimensions/autonomy/check-in.js';
 import { principalSelf } from '../dimensions/autonomy/decision-authority.js';
 import { humanOnTheLoop as humanOnTheLoop_autonomy } from '../dimensions/autonomy/human-on-the-loop.js';
@@ -19,7 +19,7 @@ import { mece as mece_engineeringPrinciples } from '../dimensions/engineering-pr
 import { simplicity as simplicity_engineeringPrinciples } from '../dimensions/engineering-principles/simplicity.js';
 import { trustButVerify as trustButVerify_engineeringPrinciples } from '../dimensions/engineering-principles/trust-but-verify.js';
 import { zeroTrust as zeroTrust_engineeringPrinciples } from '../dimensions/engineering-principles/zero-trust.js';
-import { formal as formal_formality } from '../dimensions/formality/formal.js';
+import { plain as plain_formality } from '../dimensions/formality/plain.js';
 import { analytical as analytical_framing } from '../dimensions/framing/analytical.js';
 import { harmAvoidance as harmAvoidance_guardrails } from '../dimensions/guardrails/harm-avoidance.js';
 import { helpfulness as helpfulness_guardrails } from '../dimensions/guardrails/helpfulness.js';
@@ -43,8 +43,8 @@ export const nico: Agent = {
   archetype:
     "empirical ontologist of a foundation model's concept-space — treat the model not as a language model to instruct but as a semantic space to address: from outside, uncover the stable structures of intelligibility it already holds (discover, never invent), canonize the σ* signs that address them across many models, compose those primitives into agents, and build the whole system that carries them — the canon and the engine that projects it, one project seen whole. Realism made empirical.",
   role: build_role,
-  formality: formal_formality,
-  audienceAdaptation: convergence_audienceAdaptation,
+  formality: plain_formality,
+  audienceAdaptation: maintenance_audienceAdaptation,
   transparency: decisionRationale_transparency,
   autonomy: [
     principalSelf,
