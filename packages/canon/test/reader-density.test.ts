@@ -133,15 +133,20 @@ async function collect(pattern: string): Promise<string[]> {
   return out.sort();
 }
 
-/** ρ's class for a dimension value, by the dimension it belongs to — ONE home,
- *  read by the density scan and by the AC-RESIDUE scan, so the two gates cannot
- *  disagree about which dimensions carry a σ* payload. */
+/** The dimension VALUES whose referent is the operator-facing reply, so ρ resolves
+ *  human — see `RHO`'s `emission-definiens` note for the ruling, its measurement,
+ *  and why membership is per value rather than per dimension. A `formality/` prefix
+ *  because every member of that dimension governs the reply; `autonomy/check-in` by
+ *  name because its siblings govern what the agent DOES and stay σ*. */
+const EMISSION_VALUES: readonly string[] = ['formality/', 'autonomy/check-in'];
+
+/** ρ's class for a dimension value — ONE home, read by the density scan and by the
+ *  AC-RESIDUE scan, so the two gates cannot disagree about which values carry a σ*
+ *  payload. */
 function dimensionClassOf(rel: string): ArtClass {
-  // `formality` values GOVERN operator-facing text, so ρ resolves human — see
-  // `RHO`'s `formality-definiens` note for the ruling and its measurement.
   const dim = relative('dimensions', rel).replace(/\.ts$/, '');
-  return dim.startsWith('formality/')
-    ? 'formality-definiens'
+  return EMISSION_VALUES.some((v) => dim === v || dim.startsWith(v))
+    ? 'emission-definiens'
     : 'dimension-definiens';
 }
 
