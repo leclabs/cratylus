@@ -38,6 +38,25 @@ export const RHO = {
   'delegation-prompt': 'LLM', // agent↔agent dispatch
   'subagent-return': 'LLM', // agent↔agent return
   // ρ = human ⇔ readers(a) = {human}
+  //
+  // `formality-definiens` — the ONE dimension whose definiens is split out of
+  // `dimension-definiens` above, and the split is a ρ RULING, not an exemption.
+  // ρ binds on READERS(a), and every other dimension's definiens is read by the
+  // model ABOUT the model. A formality value is different in kind: its referent
+  // IS the text the operator reads, so the register it must be written in is the
+  // register it describes. `llm-native` states this directly —
+  // `register-resolution ∉ signifier-derivation`: register resolves from the
+  // reader of what a value GOVERNS, never inherited from the notation its
+  // siblings are signified in.
+  //
+  // MEASURED, and this class exists because of the measurement. A formality
+  // value carrying its clauses in σ* (`plain ⟨… ¬symbol-bearing ⟨notation ∉
+  // operator-reply⟩ · fragment ↾ list-item ⟨¬ standalone⟩⟩`) was quoted back
+  // byte-for-byte by the session it governed — comprehended — while that same
+  // session emitted 0.69 structured reply lines. The same clauses in the register
+  // they describe: 0.45. Comprehension was never the gap; a value whose own
+  // surface contradicts its content does not bind emission.
+  'formality-definiens': 'human',
   readme: 'human',
   'human-doc': 'human',
   'commit-message': 'human',

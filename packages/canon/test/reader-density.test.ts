@@ -84,6 +84,7 @@ import { canonPolicy } from '../tooling/cold-oracle/policy.js';
 // the READER BINDING subset lists (signify).
 import {
   type ArtClass,
+  RHO,
   conform,
   humanRegisterSignals,
   registerOf,
@@ -132,13 +133,25 @@ async function collect(pattern: string): Promise<string[]> {
   return out.sort();
 }
 
+/** ρ's class for a dimension value, by the dimension it belongs to — ONE home,
+ *  read by the density scan and by the AC-RESIDUE scan, so the two gates cannot
+ *  disagree about which dimensions carry a σ* payload. */
+function dimensionClassOf(rel: string): ArtClass {
+  // `formality` values GOVERN operator-facing text, so ρ resolves human — see
+  // `RHO`'s `formality-definiens` note for the ruling and its measurement.
+  const dim = relative('dimensions', rel).replace(/\.ts$/, '');
+  return dim.startsWith('formality/')
+    ? 'formality-definiens'
+    : 'dimension-definiens';
+}
+
 async function allSurfaces(): Promise<Surface[]> {
   const surfaces: Surface[] = [];
   for (const rel of await collect('dimensions/**/*.ts')) {
     const f = await firstExport<string>(join(srcRoot, rel));
     surfaces.push({
       label: `dimension ${relative('dimensions', rel).replace(/\.ts$/, '')}`,
-      cls: 'dimension-definiens',
+      cls: dimensionClassOf(rel),
       text: splitBody(f).definiens,
     });
   }
@@ -357,11 +370,51 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
       `ρ=LLM classes declared but enumerated by nothing: ${unwitnessed.join(' · ')}`,
     ).toEqual([]);
     // …and nothing is scanned under a class this gate does not claim, which would
-    // put a surface outside both gates' stated responsibility.
-    const unclaimed = [...seen].filter((c) => !OWNED_CLASSES.includes(c));
+    // put a surface outside both gates' stated responsibility. A ρ=human class is
+    // not unclaimed, it is out of scope BY THE MODEL: the detector "can witness
+    // register=human, never certify it" (`reader-register.ts`), so ρ=human is
+    // exempt by ρ rather than by path — the same exemption the header already
+    // grants `readme` and `human-doc`.
+    const unclaimed = [...seen].filter(
+      (c) => RHO[c] === 'LLM' && !OWNED_CLASSES.includes(c),
+    );
     expect(
       unclaimed,
-      `surfaces scanned under unowned classes: ${unclaimed.join(' · ')}`,
+      `surfaces scanned under unowned ρ=LLM classes: ${unclaimed.join(' · ')}`,
+    ).toEqual([]);
+  });
+
+  // ρ=human is EXEMPT from `conform`, which is exactly why this leg exists.
+  // Declaring `formality-definiens` human buys no enforcement on its own: a value
+  // that regressed to σ* would sail straight through the exemption.
+  //
+  // THE WITNESS IS AC-RESIDUE'S OWN PREDICATE, INVERTED. `registerOf` is the wrong
+  // instrument here — it detects the TUTORIAL-GLOSS register (hedges, second
+  // person, first-person walkthrough), which is a defect signal, not evidence that
+  // a value is prose; clean prose carries none of those markers and reads as
+  // register=LLM. `admissibleSingleLine` is the discriminator that actually
+  // divides notation from prose, and it is the same predicate every OTHER
+  // dimension is gated BY — so formality is gated by its complement, out of one
+  // home, and the two legs cannot drift apart.
+  //
+  // WITHOUT THIS LEG THE RULING IS DECORATION. Not hypothetical: the σ* form of
+  // `plain` was measured being comprehended and disobeyed — quoted back verbatim
+  // by a session emitting 0.69 structured reply lines, against 0.45 once the same
+  // clauses were written in the register they describe.
+  it('every `formality` value is prose, never σ* — the ρ ruling bites', async () => {
+    const rels = (await collect('dimensions/**/*.ts')).filter(
+      (rel) => RHO[dimensionClassOf(rel)] === 'human',
+    );
+    expect(rels.length).toBeGreaterThan(4);
+    const notProse: string[] = [];
+    for (const rel of rels) {
+      const value = await firstExport<string>(join(srcRoot, rel));
+      if (admissibleSingleLine(value, canonPolicy).admissible)
+        notProse.push(rel);
+    }
+    expect(
+      notProse,
+      `ρ=human dimension values that are still σ*: ${notProse.join(' · ')}`,
     ).toEqual([]);
   });
 
@@ -867,6 +920,15 @@ describe('RESIDUE gate (AC-RESIDUE) — deployed σ* payload is formal σ*, neve
     const failures: string[] = [];
     for (const rel of await collect('dimensions/**/*.ts')) {
       const value = await firstExport<string>(join(srcRoot, rel));
+      // ρ DECIDES MEMBERSHIP IN THE σ* PAYLOAD SET, and this gate's own governing
+      // invariant already says so: "every deployed artifact THE MODEL READS is
+      // formal σ*, never human prose — UNDER ρ". A `formality` value's referent is
+      // the operator's reading experience, so `RHO` resolves it human
+      // (`formality-definiens`) and it is not a σ* payload to begin with. Skipping
+      // it here is the invariant applied, not an exemption carved out of it — and
+      // the skip reads ρ from the one table both gates share, so the two can never
+      // disagree about what σ* covers.
+      if (RHO[dimensionClassOf(rel)] === 'human') continue;
       // The WHOLE value, never `splitBody(value).definiens`: that split gated only
       // what followed the first ` ≜ `, so a value with NO ` ≜ ` yielded definiens ''
       // and went entirely UNGATED — `cratylism` and `llm-native` (bare-anchor form)
