@@ -72,8 +72,8 @@ import {
   SESSION_SCOPE,
 } from '../../core/harness-adapter.js';
 import {
-  OMP_BLOCKING_EVENTS,
   OMP_ENVELOPE_KIND,
+  OMP_REFUSAL_SHAPE,
   OMP_WORKER_TOOL,
   canonicalToOmp,
   ompBindingOf,
@@ -356,7 +356,7 @@ export function ompScopeActivatedExtensions(
 
 /** One `pi.on(...)` block — narrowed by an `if` when the act names a tool. */
 function renderRegistration(r: OmpRegistration): string {
-  const blocking = OMP_BLOCKING_EVENTS.has(r.native);
+  const refusal = OMP_REFUSAL_SHAPE[r.native];
   const guard = r.tool
     ? `\n    if (event.toolName !== ${JSON.stringify(r.tool)}) return;`
     : '';
@@ -381,7 +381,7 @@ function renderRegistration(r: OmpRegistration): string {
   // "killed":false}`.
   const call =
     kind === 'turn'
-      ? `execWithTurn(${JSON.stringify(r.command)}, event.messages)`
+      ? `execWithTurn(${JSON.stringify(r.command)}, event.messages, { stop_hook_active: event.stop_hook_active === true })`
       : kind === 'dispatch'
         ? `execWithTurn(${JSON.stringify(r.command)}, dispatchTurn(event))`
         : kind === 'tool'
@@ -390,31 +390,41 @@ function renderRegistration(r: OmpRegistration): string {
               return `execWithEnvelope(${JSON.stringify(r.command)}, { tool_name: ${wt}, tool_input: workerInput(${wt}, event.input ?? {}) })`;
             })()
           : `exec(${JSON.stringify(r.command)})`;
-  // A BLOCKING EVENT REFUSES; EVERY OTHER ONE HAS TO SPEAK INSTEAD. Claude's `Stop`
-  // hook talks to the agent by refusing the stop and writing its reason; omp's
-  // `agent_end` takes no result at all, so a worker that blocks a turn here would
-  // have its reason discarded — the gate firing into a void, exactly as dark as
-  // never running. `sendUserMessage` at `agent_end` queues a continuation (the loop
-  // drains its queues before this event, so a message left here is what re-opens
-  // the turn), which is the same shape as refusing the stop.
+  // A BLOCKING EVENT REFUSES, IN THE SHAPE ITS OWN CALLER READS. `tool_call` is
+  // answered by the tool wrapper (`{block, reason}`); `session_stop` is answered
+  // by the stop pass (`{decision: "block", reason}`, its own type calling itself
+  // "Claude/Codex-compatible"). The shapes are not interchangeable and neither
+  // site complains about the other's — it returns and refuses nothing.
   //
-  // DELIVERED ONCE PER DISTINCT REASON, because delivery re-opens the turn. A
-  // worker reporting the same thing every turn would otherwise re-open it forever.
-  // A block's reason carries a per-session count and the worker's own no-progress
-  // detector turns a genuine repeat into different text, so a real block is never
-  // suppressed by this.
-  const act = blocking
-    ? `
+  // EVERYTHING ELSE HAS TO SPEAK INSTEAD. `tool_result` takes no verdict, so a
+  // subagent whose turn collapsed is reported by queueing a continuation, which is
+  // the nearest thing to refusing a stop that omp offers there. Delivered once per
+  // DISTINCT reason, because delivery re-opens the turn and a worker repeating
+  // itself would otherwise re-open it forever; a block's reason carries a
+  // per-session count and the worker's no-progress detector turns a genuine repeat
+  // into different text, so a real block is never suppressed.
+  //
+  // `turn.end` USED TO LIVE ON THIS BRANCH, and that was the whole degradation:
+  // `agent_end` is notification-only, so the corpus's one turn-end BOUND could
+  // only ever steer here. `session_stop` refuses for real, and carries the
+  // `stop_hook_active` re-entry flag the worker's own loop-safety needs.
+  const act =
+    refusal === 'stop'
+      ? `
+    const reason = verdictOf(await ${call});
+    if (reason) return { decision: "block", reason };`
+      : refusal
+        ? `
     const reason = verdictOf(await ${call});
     if (reason) return { block: true, reason };`
-    : kind
-      ? `
+        : kind
+          ? `
     const reason = verdictOf(await ${call});
     if (reason && reason !== lastVerdict) {
       lastVerdict = reason;
       pi.sendUserMessage(reason, { deliverAs: "followUp" });
     }`
-      : `
+          : `
     await ${call};`;
   return `  pi.on(${JSON.stringify(r.native)}, async (event) => {${guard}${act}
   });
@@ -616,11 +626,16 @@ const TURN_EXEC: readonly string[] = [
   '  const execWithTurn = async (',
   '    cmd: string,',
   '    messages: readonly TurnMessage[] | undefined,',
+  '    extra: Record<string, unknown> = {},',
   '  ) => {',
   '    const dir = mkdtempSync(join(tmpdir(), "cratylus-hook-"));',
   '    const transcript = join(dir, "transcript.jsonl");',
   '    writeFileSync(transcript, `${transcriptOf(messages ?? [])}\\n`);',
-  '    return await execWithEnvelope(cmd, { transcript_path: transcript }, dir);',
+  '    return await execWithEnvelope(',
+  '      cmd,',
+  '      { transcript_path: transcript, ...extra },',
+  '      dir,',
+  '    );',
   '  };',
 ];
 
@@ -681,10 +696,17 @@ function ompExtensionModule(
           "import { basename, dirname, join } from 'node:path';",
         ]
       : []),
-    "import type { HookAPI } from '@oh-my-pi/pi-coding-agent';",
+    // `ExtensionAPI`, NOT `HookAPI`. omp's own `docs/hooks.md` closes with the
+    // fact this module got wrong: "The package root does not re-export `HookAPI`;
+    // import legacy hook types from the hooks subpath." A default export is an
+    // `ExtensionFactory = (pi: ExtensionAPI) => void | Promise<void>`, and that is
+    // the type the root does export. Type-only, so the bad name was erased before
+    // it could throw — it broke nobody's session and would fail the first person
+    // who typechecked an emitted module.
+    "import type { ExtensionAPI } from '@oh-my-pi/pi-coding-agent';",
     '',
     ...(needsTurn ? TURN_BRIDGE : []),
-    'export default function (pi: HookAPI) {',
+    'export default function (pi: ExtensionAPI) {',
     // `HookAPI.exec(command, args, options?)` — `args` is REQUIRED and the impl
     // does `ptree.exec([command, ...args])`. Passing an options object in its slot
     // made omp spread a non-iterable and every registration in this module died at

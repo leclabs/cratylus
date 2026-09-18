@@ -31,5 +31,5 @@ export {
   canonicalToOmp,
   canonicalActToOmp,
   ompBindingOf,
-  OMP_BLOCKING_EVENTS,
+  OMP_REFUSAL_SHAPE,
 } from './events.js';

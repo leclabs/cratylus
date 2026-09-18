@@ -18,16 +18,30 @@ import type { EventName, NativeBinding } from '@cratylus/schema/hook';
  * THE THREE FALSE FRIENDS, each corrected here rather than in a comment nobody
  * reads at the call site:
  *
- * 1. **`turn.end` is `agent_end`, NOT `turn_end`.** omp's "turn" is a MODEL turn —
- *    `TurnStartEvent`/`TurnEndEvent` carry a `turnIndex` that increments WITHIN one
- *    user exchange, so a hook on `turn_end` fires several times per exchange. The
- *    analogue of Claude's `Stop` is `agent_end`, _"fired when an agent loop ends"_.
- *    Binding the memory-consolidation nudge to `turn_end` would have made it fire
- *    once per model turn — a nudge storm that reads as the cell misbehaving.
- *    `agent_end` additionally carries `willContinue` (`shared-events.ts:193-201`),
- *    a BETTER terminal predicate than the claude adapter has: it says outright when
- *    the session has already scheduled a continuation and this settle is not
- *    user-visible.
+ * 1. **`turn.end` is `session_stop` — not `turn_end`, and no longer `agent_end`.**
+ *    omp's "turn" is a MODEL turn: `TurnStartEvent`/`TurnEndEvent` carry a
+ *    `turnIndex` that increments WITHIN one user exchange, so a hook on `turn_end`
+ *    fires several times per exchange. That much was always right. What was wrong
+ *    was the replacement.
+ *
+ *    `agent_end` is documented _"notification-only"_ and takes no result, so a
+ *    turn-end cell could not REFUSE there — the best it could do was queue a
+ *    continuation with `sendUserMessage`, which is a steer wearing a bound's name.
+ *    `session_stop` is omp's actual analogue of Claude's `Stop`, and it is not an
+ *    analogy: its result type is `{decision?: "block"; reason?: string}`, whose own
+ *    doc-comment reads _"Claude/Codex-compatible block decision"_. The event
+ *    carries `messages`, `last_assistant_message`, `session_id` and —
+ *    decisively — **`stop_hook_active`**, the re-entry flag the workers read and
+ *    which `agent_end` has no field for, so the guard's own loop-safety was dead
+ *    on this harness.
+ *
+ *    Measured against the installed binary: a handler returning
+ *    `{decision: "block", reason}` re-opened the turn and fired again with
+ *    `stop_hook_active=true`, exactly as the claude Stop contract does.
+ *
+ *    It does NOT fire for subagents (`agent-session.ts`: `if (this.#agentKind ===
+ *    "sub" || …) return false`), which is why `subagent.end` stays on the `task`
+ *    tool's `tool_result` in the ACT table below rather than following this one.
  *
  * 2. **`prompt.submit` is `before_agent_start`, NOT `turn_start`.** `TurnStartEvent`
  *    is `{type, turnIndex, timestamp}` — it realizes the MOMENT and carries no
@@ -46,7 +60,7 @@ export const canonicalToOmp: Readonly<Record<EventName, string>> = {
   'session.resume': 'session_switch',
   'session.end': 'session_shutdown',
   'prompt.submit': 'before_agent_start',
-  'turn.end': 'agent_end',
+  'turn.end': 'session_stop',
   'tool.use.pre': 'tool_call',
   'tool.use.post': 'tool_result',
   'context.compact.pre': 'session_before_compact',
@@ -113,14 +127,26 @@ export function ompBindingOf(event: EventName): NativeBinding | undefined {
 }
 
 /**
- * The omp events a hook can BLOCK — where an enforcing fragment genuinely bounds
- * rather than merely observes.
+ * The omp events a hook can BLOCK, each mapped to HOW it spells a refusal.
  *
  * `tool_call` is documented _"Fired before a tool is executed. Hooks can block
- * execution."_ (`extensions/types.ts:304`). Nothing else in omp's hook API takes a
- * blocking result, so this set has exactly one member and is not a stub.
+ * execution."_ and `session_stop` is _"awaited before settle"_, taking an explicit
+ * `{decision: "block", reason}` that "remains blocking until the hook allows
+ * completion or the operator interrupts". Those are the two, and the second was
+ * missing: `turn.end` sat on the notification-only `agent_end`, so the corpus's
+ * one turn-end BOUND was realized as a steer on this harness.
+ *
+ * ONE TABLE, because membership and shape have the same keys. A separate
+ * `OMP_BLOCKING_EVENTS` set listing exactly these names was a second place for the
+ * pair to drift, and the shapes are not interchangeable: a tool wrapper reads
+ * `{block, reason}`, the stop pass reads `{decision: "block", reason}`, and
+ * emitting either at the other site is silently ignored — a gate that returns and
+ * refuses nothing.
  */
-export const OMP_BLOCKING_EVENTS: ReadonlySet<string> = new Set(['tool_call']);
+export const OMP_REFUSAL_SHAPE: Readonly<Record<string, 'tool' | 'stop'>> = {
+  tool_call: 'tool',
+  session_stop: 'stop',
+};
 
 /**
  * What the shim must MATERIALIZE for a worker registered on this native event.
@@ -142,7 +168,8 @@ export const OMP_BLOCKING_EVENTS: ReadonlySet<string> = new Set(['tool_call']);
  * coverage. A turn is not the only judgeable envelope — a tool call and a dispatch
  * result are envelopes too, and both are reconstructible from the event.
  *
- *   · `turn`     — the whole exchange, from `AgentEndEvent.messages`.
+ *   · `turn`     — the whole exchange, from `messages`, plus the `stop_hook_active`
+ *                  re-entry flag `session_stop` carries and `agent_end` never had.
  *   · `tool`     — the pending call: its wire-contract name plus `input`.
  *   · `dispatch` — a finished delegation, as the prompt that launched it plus the
  *                  text it returned (`ToolResultEvent.input` + `.content`).
@@ -152,7 +179,7 @@ export const OMP_BLOCKING_EVENTS: ReadonlySet<string> = new Set(['tool_call']);
 export const OMP_ENVELOPE_KIND: Readonly<
   Record<string, 'turn' | 'tool' | 'dispatch'>
 > = {
-  agent_end: 'turn',
+  session_stop: 'turn',
   tool_call: 'tool',
   tool_result: 'dispatch',
 };

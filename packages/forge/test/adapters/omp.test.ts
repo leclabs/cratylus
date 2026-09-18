@@ -18,10 +18,10 @@ import { tmpdir } from 'node:os';
 import { join, posix } from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
-  OMP_BLOCKING_EVENTS,
   OMP_GUARDRAIL_MODULE,
   OMP_LAUNCHER_FILE,
   OMP_OVERLAY_FILE,
+  OMP_REFUSAL_SHAPE,
   OMP_SESSION_DIR,
   OMP_SESSION_MODULE,
   agentToOmpAppendSystem,
@@ -88,13 +88,19 @@ describe('omp persona projection', () => {
 });
 
 describe('omp event map', () => {
-  it('binds turn.end to agent_end, NOT to turn_end', () => {
+  it('binds turn.end to session_stop — not turn_end, and not agent_end', () => {
     // omp's "turn" is a MODEL turn — `turnIndex` increments within one user
     // exchange — so `turn_end` fires several times per exchange. Binding the
     // memory nudge there would have produced a nudge storm that reads as the CELL
     // misbehaving rather than the mapping.
-    expect(canonicalToOmp['turn.end']).toBe('agent_end');
+    //
+    // `agent_end` was the first replacement and it is notification-only: it takes
+    // no result, so a turn-end BOUND degraded to a queued continuation there.
+    // `session_stop` is awaited before settle and takes the Claude-compatible
+    // `{decision: "block", reason}`, so the bound is a bound on this harness too.
+    expect(canonicalToOmp['turn.end']).toBe('session_stop');
     expect(Object.values(canonicalToOmp)).not.toContain('turn_end');
+    expect(Object.values(canonicalToOmp)).not.toContain('agent_end');
   });
 
   it('binds prompt.submit to an event that actually carries the prompt', () => {
@@ -247,7 +253,7 @@ describe('omp enforcing surface', () => {
   });
 
   it('registers a blocking handler ONLY where omp can actually block', () => {
-    expect(OMP_BLOCKING_EVENTS.has('tool_call')).toBe(true);
+    expect(OMP_REFUSAL_SHAPE.tool_call).toBe('tool');
     const [blocking] = ompGuardrailExtensions(
       [binding(['mav'], ['tool.use.pre'])] as never,
       MECH,
@@ -260,6 +266,25 @@ describe('omp enforcing surface', () => {
     // A `block` on an event omp does not read one from is a guardrail that reports
     // enforcement it never performs.
     expect(nonBlocking?.content).not.toContain('block: true');
+  });
+
+  it('refuses a turn on `session_stop`, in that event own result shape', () => {
+    // `turn.end` sat on `agent_end`, which omp documents as notification-only and
+    // which takes no result — so the corpus's one turn-end BOUND could only queue
+    // a `sendUserMessage` continuation. `session_stop` is the real analogue of
+    // claude's `Stop`: its result type's own doc-comment says "Claude/Codex-
+    // compatible block decision", and the two shapes are not interchangeable —
+    // `{block: true}` at the stop pass returns and refuses nothing.
+    const [stop] = ompGuardrailExtensions(
+      [binding(['mav'], ['turn.end'])] as never,
+      MECH,
+    );
+    expect(stop?.content).toContain('pi.on("session_stop"');
+    expect(stop?.content).toContain('return { decision: "block", reason }');
+    expect(stop?.content).not.toContain('pi.on("agent_end"');
+    // The re-entry flag the worker's own loop-safety reads, which `agent_end` had
+    // no field for — so the guard could have blocked its own unblocking forever.
+    expect(stop?.content).toContain('stop_hook_active: event.stop_hook_active');
   });
 
   it('hands a turn event its PAYLOAD, because omp gives the worker no stdin', () => {
@@ -275,11 +300,17 @@ describe('omp enforcing surface', () => {
     );
     expect(turn?.content).toContain('execWithTurn(');
     expect(turn?.content).toContain('transcript_path');
-    // omp takes no result from `agent_end`, so a verdict reaches the session only
-    // by queueing a continuation — the analogue of refusing the stop.
-    expect(turn?.content).toContain('sendUserMessage');
-    // …and only when it CHANGES, or an unreachable judge re-opens the turn forever.
-    expect(turn?.content).toContain('!== lastVerdict');
+    // A continuation is how a NON-blocking event speaks. `turn.end` no longer
+    // needs one — `session_stop` refuses outright — but `subagent.end` lands on
+    // `tool_result`, which takes no verdict, so there it stays the only channel,
+    // bounded to a CHANGED reason or an unreachable judge re-opens forever.
+    const [sub] = ompGuardrailExtensions(
+      [binding(['mav'], ['subagent.end'])] as never,
+      MECH,
+    );
+    expect(sub?.content).toContain('sendUserMessage');
+    expect(sub?.content).toContain('!== lastVerdict');
+    expect(turn?.content).not.toContain('sendUserMessage');
 
     // An event that carries no turn stays a bare fire: handing one a transcript
     // would assert it is a turn, which it is not.
@@ -388,7 +419,7 @@ describe('omp scope-activated surface', () => {
 
   it('registers the cell’s native event and its worker command', () => {
     const [mod] = ompScopeActivatedExtensions([HOOK], []);
-    expect(mod?.content).toContain('pi.on("agent_end"');
+    expect(mod?.content).toContain('pi.on("session_stop"');
     expect(mod?.content).toContain('hooks/stance-guardrail/w.sh');
   });
 
