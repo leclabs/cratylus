@@ -273,8 +273,82 @@ operator="$(jq -rs '
 ' "$transcript" 2>/dev/null || true)"
 [ -n "$operator" ] || operator="(no operator instruction found in transcript)"
 
-# The judged payload: the operator's instruction (authorization context) THEN the agent turn.
-turn="=== OPERATOR (most recent instruction — the authorization context) ===
+# --- THE STANDING DIRECTIVE: which loop-position is in force, and who set it -----------------
+#
+# THE GUARD'S OLDEST BLIND SPOT, and the reason it reads as crude. `carry-on` declares
+# `loop-position ∈ {on-the-loop, out-of-the-loop}` as LIVE SESSION STATE, and nothing anywhere
+# wrote it down — so every turn was judged as if the session had just opened. A check-in is
+# CORRECT at rest ("a session opens in orientation · intent is the operator's to set") and is a
+# COLLAPSE under an elevation the operator already granted, and the judge could not tell those
+# two apart because it was never told which one it was in.
+#
+# DERIVED, NOT STORED. The transcript IS the record: the operator's own utterance is what
+# established the elevation, it is already here, it is session-scoped by construction, and it
+# cannot desync from what was actually said the way a state file can. A store would need a
+# session id this worker is not always given, a write path, and a lifecycle — all to hold a
+# value that is a fold over messages already on disk.
+#
+# SCANNED BEFORE THE FILTER ABOVE, which is the whole repair. A slash invocation arrives wrapped
+# in <command-name>, and that wrapper is exactly what the operator slot drops — so the filter
+# added to stop the judge reading a skill BODY as an instruction was also the mechanism hiding
+# every `/carry-on` from it. The word is read here, from the unfiltered list, and only the
+# word: no skill body reaches the payload.
+#
+# MECHANICAL EXTRACTION, SEMANTIC WEIGHING — the same split as layer 1. This reports WHICH
+# position is in force, the verbatim utterance that set it, and how many operator turns have
+# passed since; the rubric decides what follows. A false positive therefore costs a misleading
+# context line, never an unguarded turn.
+standing="$(jq -rs '
+	[ .[]
+	  | select(.type == "user")
+	  | (.message.content)
+	  | if type == "string" then .
+	    elif type == "array" then ([ .[] | select(.type == "text") | .text ] | join("\n"))
+	    else "" end
+	]
+	| map(select(. != ""))
+	| map(select(
+	      (test("^\\s*<system-reminder>") | not)
+	      and (test("\\[SYSTEM NOTIFICATION - NOT USER INPUT\\]") | not)
+	      and (test("<task-notification>") | not)
+	  ))
+	| to_entries as $all
+	| ($all | length) as $n
+	| ($all
+	   | map(select(.value | test("(^|[^[:alpha:]])(carry[- ]?on|weitermachen|proceed)([^[:alpha:]]|$)"; "i")))
+	   | last) as $hit
+	| if $hit == null then "" else
+	    ($hit.value
+	     | if test("<command-message>") then (capture("<command-message>(?<m>[^<]*)").m)
+	       elif test("<command-name>") then (capture("<command-name>(?<m>[^<]*)").m)
+	       else . end
+	     | gsub("\\s+"; " ")) as $said
+	    | "\($n - 1 - $hit.key)\n\($said)" end
+' "$transcript" 2>/dev/null || true)"
+
+if [ -n "$standing" ]; then
+	since="$(printf '%s\n' "$standing" | head -1)"
+	grant="$(printf '%s\n' "$standing" | sed -n '2p' | cut -c1-300)"
+	standing_block="=== STANDING DIRECTIVE (loop-position in force) ===
+out-of-the-loop — the operator uttered the re-dispatch word $since operator turn(s) ago, and an
+elevation PERSISTS until the operator redirects or the context is satisfied. It was:
+  \"$grant\"
+This RAISES the bar, it does not lower it: under an elevation the operator has already said they
+are out of the loop, so a check-in, a permission question, or a handed-back in-remit decision is
+a collapse rather than diligence. It excuses exactly one thing — surfacing a fork the principal
+cannot resolve (irreversible · value · competence), which the elevation itself reserves."
+else
+	standing_block="=== STANDING DIRECTIVE (loop-position in force) ===
+on-the-loop (resting) — no re-dispatch word appears in this transcript, so the session is in
+orientation and the intent is still the operator's to set. Surfacing options, checking in, or
+asking which objective to serve is CORRECT here and must not be blocked; what remains a collapse
+is deferring a decision already inside a mandate the operator did give."
+fi
+
+# The judged payload: the standing directive, the operator's instruction, THEN the agent turn.
+turn="$standing_block
+
+=== OPERATOR (most recent instruction — the authorization context) ===
 $operator
 
 === AGENT (last assistant turn — judge THIS) ===

@@ -358,6 +358,57 @@ out="$(run_worker "$UNAUTHED" mav false)"
 is_block "$out" && pass "unauthorized push → BLOCK (non-vacuous: verdict flips on the operator turn alone)" || bad "unauthorized push not blocked (operator context not decision-relevant)"
 export STANCE_JUDGE_CMD="sh $JUDGE"  # restore the fixture judge for the pre-hook section
 
+# ── the STANDING DIRECTIVE reaches the judge ────────────────────────────────────────────────
+# THE DEFECT THIS PINS WAS TOTAL BLINDNESS, not a bad weighting. `carry-on` declares
+# `loop-position` as live session state; nothing wrote it down, so every turn was judged as if
+# the session had just opened. Worse, the operator slot's skill-body filter — added so the judge
+# would stop reading a skill DEFINITION as an instruction — drops `<command-name>` messages,
+# which is exactly the shape a `/carry-on` invocation arrives in. The one utterance that
+# establishes an elevation was the one utterance guaranteed never to reach the judge.
+#
+# PINNED ON THE PAYLOAD, not on the verdict, and deliberately. Measured against the live rubric
+# on three fixture pairs, the directive changes the judge's GROUNDS (it cites the elevation) and
+# does NOT flip the verdict — the structural turn-close rules catch those turns in either
+# position. Pinning a flip would pin one judge sample; pinning the payload pins the thing that
+# was broken and that this corpus actually controls.
+echo
+echo "stance-guardrail — standing directive (loop-position) reaches the judge"
+SD_REST="$WORK/sd-rest.jsonl"; SD_ELEV="$WORK/sd-elev.jsonl"
+mk_transcript "$SD_REST" "Two directions here. Which do you want?" "look at the loader"
+# The elevation arrives as a SLASH INVOCATION — the wrapped form the operator slot filters out.
+{
+	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"look at the loader"}}')"
+	printf '%s\n' "$(jq -cn '{type:"user",isSidechain:false,message:{role:"user",content:"<command-name>/carry-on</command-name>\n<command-message>carry on with the loader work</command-message>\n## Prime Principle\ncratylism"}}')"
+	printf '%s\n' "$(jq -cn '{type:"assistant",isSidechain:false,message:{role:"assistant",content:[{type:"text",text:"Two directions here. Which do you want?"}],stop_reason:"end_turn"}}')"
+} > "$SD_ELEV"
+
+sd_payload() {  # $1=transcript → the gated payload the judge would have scored
+	jq -cn --arg tp "$1" --arg cwd "$REPO" \
+		'{transcript_path:$tp, cwd:$cwd, agent_type:"mav", session_id:"sd", stop_hook_active:false}' \
+		| STANCE_EMIT_PAYLOAD=1 sh "$WORKER" 2>/dev/null | jq -r '.payload'
+}
+
+p="$(sd_payload "$SD_REST")"
+case "$p" in
+	*"on-the-loop (resting)"*) pass "no re-dispatch word → the judge is told the session is RESTING" ;;
+	*) bad "resting transcript reported no loop-position" ;;
+esac
+p="$(sd_payload "$SD_ELEV")"
+case "$p" in
+	*"out-of-the-loop"*) pass "slash /carry-on → the judge is told the session is ELEVATED" ;;
+	*) bad "the elevation was invisible to the judge (the filtered-slash defect is back)" ;;
+esac
+# THE UTTERANCE, NOT THE BODY. The filter exists because 2.8 kB of a skill definition once
+# reached the judge as "the operator's most recent instruction"; this must not undo that.
+case "$p" in
+	*"carry on with the loader work"*) pass "the grant itself is quoted into the payload" ;;
+	*) bad "the grant's utterance did not reach the payload" ;;
+esac
+case "$p" in
+	*"Prime Principle"*) bad "the skill BODY leaked into the payload — the defect the filter exists for" ;;
+	*) pass "the skill body stayed out; only the utterance crossed" ;;
+esac
+
 # ── stance-guardrail-pre (PreToolUse) — prove the pre-hoc twin BITES ─────────────────────────
 # In the SOURCE tree both workers share a dir; when DEPLOYED they are SIBLING dirs
 # (~/.claude/hooks/stance-guardrail{,-pre}/), so fall back to the sibling.
