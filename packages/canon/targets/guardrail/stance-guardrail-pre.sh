@@ -30,11 +30,23 @@
 
 set -eu
 
-# The sibling Stop hook's deployed dir owns the SHARED judge + rubric (deployed together).
-JUDGE_DIR="${STANCE_GUARD_DIR:-$HOME/.claude/hooks/stance-guardrail}"
+# The sibling Stop hook's deployed dir owns the SHARED judge + rubric (deployed
+# together, as siblings under the SAME hooks root).
+#
+# RESOLVED FROM THIS SCRIPT'S OWN LOCATION, never from a harness's home. These four
+# lines named `$HOME/.claude/...` outright, so the copy deployed under
+# `~/.omp/hooks/` reached across into the CLAUDE tree for its judge — and on a host
+# with no claude deployment it found nothing, failed open, and logged its misses to
+# a directory that does not exist. Every hooks root holds both hook dirs as
+# siblings, so `../stance-guardrail` is true at every site this file can land; the
+# sibling Stop worker already derives its own dir this way and this is the same
+# derivation, one level up. The env overrides are unchanged and still win.
+SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+HOOKS_ROOT="$(dirname -- "$SELF_DIR")"
+JUDGE_DIR="${STANCE_GUARD_DIR:-$HOOKS_ROOT/stance-guardrail}"
 RUBRIC="${STANCE_RUBRIC:-$JUDGE_DIR/stance-judge-prompt.md}"
 JUDGE_CMD="${STANCE_JUDGE_CMD:-sh $JUDGE_DIR/stance-judge.sh}"
-LOG="${STANCE_GUARD_LOG:-$HOME/.claude/hooks/stance-guardrail-pre/misses.log}"
+LOG="${STANCE_GUARD_LOG:-$SELF_DIR/misses.log}"
 
 # A PreToolUse hook must never break a session. Trap any unexpected error -> allow.
 trap 'exit 0' EXIT
