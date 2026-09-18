@@ -58,6 +58,18 @@ export const SESSION_SCOPE = '_session';
 export const ENFORCING_STAGE_DIR = 'enforcing';
 
 /**
+ * Staging dir for HARNESS-INVARIANT hook assets — the ones `HookWorker.shared`
+ * marks, which deploy places under the vendor-neutral {@link NEUTRAL_AGENT_ROOT}
+ * instead of inside a harness tree.
+ *
+ * A SEPARATE DIR RATHER THAN A FLAG ON DISK, for the reason `ENFORCING_STAGE_DIR`
+ * gives one paragraph up: the tree is what deploy reads, and a property that
+ * exists only in the cell is a property deploy cannot see. Staging by
+ * DESTINATION KIND is how the render tree carries the answer.
+ */
+export const SHARED_STAGE_DIR = 'shared';
+
+/**
  * The harness-NEUTRAL agent root, relative to a scope's home — the one directory
  * name shared across vendors.
  *

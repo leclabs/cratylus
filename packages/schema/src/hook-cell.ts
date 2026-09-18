@@ -152,6 +152,34 @@ export interface HookWorker {
   readonly content: string;
   /** Whether the regenerated target carries the executable bit. */
   readonly executable: boolean;
+  /**
+   * HARNESS-INVARIANT DATA: the same bytes on every projection, so it deploys
+   * ONCE to the vendor-neutral `.agents` root rather than into each harness's
+   * own tree.
+   *
+   * THE CRITERION IS `byte-identical ∧ ¬executable`, and the second conjunct is
+   * not a technicality. Byte-identity alone would also sweep in the worker
+   * scripts, which are POSITIONALLY COUPLED to the harness in two ways their
+   * bytes cannot show: each harness's registration addresses its own copy by
+   * path, and each worker resolves its judge backend as a SIBLING — and that
+   * judge is genuinely harness-specific, because it names the harness's own CLI
+   * through `{{fact:harness-judge-bin}}`. A single shared worker could not know
+   * whose judge to run without the registration passing it in, which relocates
+   * harness-specificity into a shared file's arguments and buys only the
+   * deduplication of two scripts that belong beside the registration invoking
+   * them. An entry point a harness invokes is executable; a rubric is not.
+   *
+   * WHY IT IS A DECLARED PROPERTY rather than a deploy heuristic. The stance
+   * rubric is one 27 kB file every harness scores against, and copying it into
+   * `<harness>/hooks/<id>/` per harness did not merely duplicate it: it left the
+   * text with no address any OTHER realization could name. An advisor roster
+   * entry wanting the same rubric would have had to `@`-import it out of a
+   * sibling harness's tree — precisely the cross-harness reach
+   * `harness-independence` forbids. A shared asset has one address, and the
+   * neutral root is the one place every harness may read without reaching into
+   * another.
+   */
+  readonly shared?: boolean;
 }
 
 /**

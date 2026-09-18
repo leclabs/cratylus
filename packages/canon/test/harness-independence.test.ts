@@ -38,7 +38,11 @@ import { readFileSync } from 'node:fs';
 import { glob } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { adapterByName } from '@cratylus/forge/adapters/registry';
+import { projectionFacts } from '@cratylus/forge/project';
+import { resolveWorker } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
+import { harnessHookCells } from '../src/hook-cells.js';
 
 const targetsRoot = join(
   dirname(fileURLToPath(import.meta.url)),
@@ -135,6 +139,59 @@ describe('harness independence', () => {
       }
     }
     expect(found).toEqual([]);
+  });
+
+  it('shares exactly the data assets whose projections are byte-identical', () => {
+    // THE CRITERION IS MECHANICAL: shared ⇔ byte-identical ∧ not an executable.
+    //
+    // Byte-identity alone is NOT sufficient, and this gate proved it by catching
+    // two assets the first cut of the rule would have moved. The worker scripts
+    // are byte-identical too — and they are POSITIONALLY COUPLED to the harness
+    // in two ways bytes cannot show: each harness's registration addresses its
+    // own copy by path, and each worker resolves `stance-judge.sh` as a SIBLING.
+    // That judge is genuinely harness-specific (it names the harness's own CLI
+    // through `{{fact:harness-judge-bin}}`), so a single shared worker could not
+    // know whose judge to run without the registration passing it in — which
+    // relocates harness-specificity into a shared file's arguments and buys only
+    // the deduplication of two small scripts that belong beside the registration
+    // that invokes them.
+    //
+    // A DATA ASSET has neither coupling: nothing addresses it but the worker that
+    // reads it, and it resolves by derivation from the neutral root. `executable`
+    // is the honest discriminator, not a proxy for one — an entry point a harness
+    // invokes is executable, and a rubric is not.
+    //
+    // BOTH DIRECTIONS, because either alone is satisfiable by doing nothing:
+    // identical ⇒ shared catches a new invariant rubric left duplicated, and
+    // shared ⇒ identical catches one marked shared that in fact differs per
+    // harness, which would publish one harness's bytes to a root all of them read.
+    const adapters = HARNESS_CLIS.map((h) => adapterByName(h));
+    expect(adapters.length).toBeGreaterThanOrEqual(3);
+
+    const misfiled: string[] = [];
+    let dataAssets = 0;
+    let harnessSpecific = 0;
+    for (const cell of harnessHookCells) {
+      for (const worker of cell.workers) {
+        const renders = adapters.map(
+          (a) => resolveWorker(worker, projectionFacts(a), cell.speech).content,
+        );
+        const invariant = renders.every((r) => r === renders[0]);
+        if (!invariant) harnessSpecific += 1;
+        if (!worker.executable) dataAssets += 1;
+        const wantShared = invariant && !worker.executable;
+        if (wantShared !== (worker.shared === true)) {
+          misfiled.push(
+            `${cell.id}/${worker.filename}: invariant=${invariant} executable=${worker.executable} shared=${worker.shared === true}`,
+          );
+        }
+      }
+    }
+    expect(misfiled).toEqual([]);
+    // NON-VACUOUS IN BOTH ARMS: the corpus must actually contain a shared data
+    // asset and a harness-specific one, or the rule is green over nothing.
+    expect(dataAssets).toBeGreaterThanOrEqual(1);
+    expect(harnessSpecific).toBeGreaterThanOrEqual(1);
   });
 
   it('keeps the scan non-vacuous — it reads real committed workers', async () => {

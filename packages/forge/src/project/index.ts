@@ -62,6 +62,7 @@ import {
   ENFORCING_STAGE_DIR,
   type HarnessAdapter,
   SESSION_SCOPE,
+  SHARED_STAGE_DIR,
 } from '../core/harness-adapter.js';
 import {
   resolveModulePath,
@@ -820,11 +821,19 @@ export async function projectPluginSet(
       // never staged.
       if (registered) {
         for (const src of sources) {
-          const destDir = join('hooks', src.hook.id ?? 'unnamed');
+          const id = src.hook.id ?? 'unnamed';
           for (const worker of src.workers) {
-            // Bytes come from the CELL, never an on-disk copy — the cell is the home.
+            // A SHARED ASSET LEAVES THE HARNESS TREE. Its bytes are the same on
+            // every projection, so it is staged under the neutral root's own
+            // staging dir and deploy places it beside the agents and skills that
+            // already live there — one address every harness can read, and none
+            // of them another harness's.
             files.push({
-              path: join(destDir, worker.filename),
+              path: join(
+                worker.shared ? SHARED_STAGE_DIR : 'hooks',
+                id,
+                worker.filename,
+              ),
               content: worker.content,
               ...(worker.executable ? { executable: true } : {}),
             });

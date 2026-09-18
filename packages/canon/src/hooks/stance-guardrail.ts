@@ -77,8 +77,19 @@ export const stanceGuardrail: HookCell = {
 set -eu
 
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-RUBRIC="\${STANCE_RUBRIC:-$SELF_DIR/stance-judge-prompt.md}"
 JUDGE_CMD="\${STANCE_JUDGE_CMD:-sh $SELF_DIR/stance-judge.sh}"
+
+# THE RUBRIC LIVES AT THE VENDOR-NEUTRAL ROOT, and is reached by DERIVATION so it
+# follows whatever home this copy was deployed under (a real \$HOME, or a test's
+# \`--home\`). This worker sits at \`<harness-home>/hooks/<id>/\`, and \`.agents\` is
+# the SIBLING of every harness home — the same relation deploy already uses to
+# place agents and skills — so three \`dirname\`s and a name is the whole address.
+#
+# Derived rather than baked: a literal \`\$HOME/.agents\` would expand correctly on
+# a host and point outside a sandboxed deploy, which is the class of bug that put
+# \`\$HOME/.claude\` in the sibling worker and made it read another harness's tree.
+NEUTRAL_ROOT="$(dirname -- "$(dirname -- "$(dirname -- "$SELF_DIR")")")/.agents"
+RUBRIC="\${STANCE_RUBRIC:-$NEUTRAL_ROOT/stance-guardrail/stance-judge-prompt.md}"
 
 # A Stop hook must never break a session. Trap any unexpected error → allow the stop.
 trap 'exit 0' EXIT
@@ -608,6 +619,13 @@ echo "$verdict" | grep -E '^(VERDICT|REASON|EVIDENCE):' || {
       filename: 'stance-judge-prompt.md',
       targetPath: 'packages/canon/targets/guardrail/stance-judge-prompt.md',
       executable: false,
+      // THE RUBRIC IS THE ONE ARTIFACT HERE THAT IS NOT ABOUT A HARNESS. It is
+      // the stance contract itself — the same 27 kB scored against on every
+      // projection, byte-for-byte — so it deploys once to the neutral `.agents`
+      // root rather than being copied into each harness's hooks dir. Duplicating
+      // it did more than waste bytes: it left the text with no address another
+      // realization could name without reaching into a sibling harness's tree.
+      shared: true,
       content: `# Stance judge — the intent-driven-expert rubric
 
 You are a STANCE JUDGE. You are given EITHER the **last assistant turn** of an agent, OR a **mid-turn

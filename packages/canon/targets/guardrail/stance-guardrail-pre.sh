@@ -44,7 +44,11 @@ set -eu
 SELF_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 HOOKS_ROOT="$(dirname -- "$SELF_DIR")"
 JUDGE_DIR="${STANCE_GUARD_DIR:-$HOOKS_ROOT/stance-guardrail}"
-RUBRIC="${STANCE_RUBRIC:-$JUDGE_DIR/stance-judge-prompt.md}"
+# The RUBRIC is not in either hook dir: it is harness-invariant and deploys once
+# to the neutral `.agents` root, the sibling of every harness home. Same
+# derivation as the sibling Stop worker, one level further out.
+NEUTRAL_ROOT="$(dirname -- "$(dirname -- "$HOOKS_ROOT")")/.agents"
+RUBRIC="${STANCE_RUBRIC:-$NEUTRAL_ROOT/stance-guardrail/stance-judge-prompt.md}"
 JUDGE_CMD="${STANCE_JUDGE_CMD:-sh $JUDGE_DIR/stance-judge.sh}"
 LOG="${STANCE_GUARD_LOG:-$SELF_DIR/misses.log}"
 
