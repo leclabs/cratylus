@@ -379,17 +379,18 @@ function renderRegistration(r: OmpRegistration): string {
   // catastrophe was the catastrophe. Measured against the installed binary:
   // `pi.exec("sh", ["-c", "exit 3"])` → `{"stdout":"","stderr":"","code":3,
   // "killed":false}`.
+  const cmd = JSON.stringify(r.command);
   const call =
     kind === 'turn'
-      ? `execWithTurn(${JSON.stringify(r.command)}, event.messages, { stop_hook_active: event.stop_hook_active === true })`
+      ? `judged(${cmd}, ctx, { stop_hook_active: event.stop_hook_active === true }, event.messages ?? [])`
       : kind === 'dispatch'
-        ? `execWithTurn(${JSON.stringify(r.command)}, dispatchTurn(event))`
+        ? `judged(${cmd}, ctx, {}, dispatchTurn(event))`
         : kind === 'tool'
           ? (() => {
               const wt = JSON.stringify(r.workerTool ?? r.tool ?? '');
-              return `execWithEnvelope(${JSON.stringify(r.command)}, { tool_name: ${wt}, tool_input: workerInput(${wt}, event.input ?? {}) })`;
+              return `judged(${cmd}, ctx, { tool_name: ${wt}, tool_input: workerInput(${wt}, event.input ?? {}) })`;
             })()
-          : `exec(${JSON.stringify(r.command)})`;
+          : `exec(${cmd})`;
   // A BLOCKING EVENT REFUSES, IN THE SHAPE ITS OWN CALLER READS. `tool_call` is
   // answered by the tool wrapper (`{block, reason}`); `session_stop` is answered
   // by the stop pass (`{decision: "block", reason}`, its own type calling itself
@@ -411,22 +412,26 @@ function renderRegistration(r: OmpRegistration): string {
   const act =
     refusal === 'stop'
       ? `
-    const reason = verdictOf(await ${call});
+    const reason = await ${call};
     if (reason) return { decision: "block", reason };`
       : refusal
         ? `
-    const reason = verdictOf(await ${call});
+    const reason = await ${call};
     if (reason) return { block: true, reason };`
         : kind
           ? `
-    const reason = verdictOf(await ${call});
+    const reason = await ${call};
     if (reason && reason !== lastVerdict) {
       lastVerdict = reason;
       pi.sendUserMessage(reason, { deliverAs: "followUp" });
     }`
           : `
     await ${call};`;
-  return `  pi.on(${JSON.stringify(r.native)}, async (event) => {${guard}${act}
+  // The handler takes `ctx` only where it judges: that is where the model and the
+  // registry come from, and an unused parameter in a generated file reads as a
+  // leftover rather than a contract.
+  const args = kind ? '(event, ctx: JudgeContext)' : '(event)';
+  return `  pi.on(${JSON.stringify(r.native)}, async ${args} => {${guard}${act}
   });
   // ${r.anchor}`;
 }
@@ -462,6 +467,21 @@ const TURN_BRIDGE: readonly string[] = [
   '',
   'type TurnBlock = { type?: string; text?: string; name?: string };',
   'type TurnMessage = { role?: string; content?: string | TurnBlock[] };',
+  '',
+  '// WHAT THE JUDGE NEEDS OFF THE HANDLER CONTEXT, declared rather than imported.',
+  '// `model` and `modelRegistry` are non-enumerable getters on the context omp',
+  '// hands every handler — present on every event, invisible to `Object.keys`, and',
+  '// not surfaced on the exported `ExtensionContext` type. Naming the two members',
+  '// this module actually reads keeps the dependency honest and narrow.',
+  'type JudgeContext = {',
+  '  model?: Model<Api>;',
+  '  modelRegistry?: {',
+  '    find(provider: string, modelId: string): Model<Api> | undefined;',
+  '    getApiKeyAndHeaders(',
+  '      model: Model<Api>,',
+  '    ): Promise<{ ok: boolean; apiKey?: string }>;',
+  '  };',
+  '};',
   '',
   '/** omp messages as the JSONL transcript lines the workers parse. */',
   'function transcriptOf(messages: readonly TurnMessage[]): string {',
@@ -588,54 +608,153 @@ const TURN_BRIDGE: readonly string[] = [
 ];
 
 /**
- * Function-level half of the payload bridge — emitted inside `export default`,
- * where `pi` is in scope.
+ * Function-level half of the bridge — emitted inside `export default`, where `pi`
+ * is in scope.
  *
  * The envelope goes to a FILE and arrives by redirect because `ExecOptions` has
  * no stdin slot (signal · timeout · cwd) and the workers read stdin. A temp dir
  * per fire, removed in `finally`, keeps a turn's transcript off any shared path.
  *
- * TWO ENTRIES OVER ONE WRITER: `execWithEnvelope` is the whole mechanism, and
- * `execWithTurn` is it with a transcript file written first. Every worker needs
- * the same four identity fields, so a second copy of them is a second place for
- * the contract to drift.
+ * THE JUDGE RUNS IN THIS PROCESS, and that is the point of `judged()`. The
+ * workers' default judge backend spawns `claude -p`: a cross-harness dependency
+ * on a foreign vendor's CLI, separately installed and separately authenticated,
+ * which on this host had a lapsed OAuth session and therefore failed every
+ * verdict open, in silence, on every harness at once. omp holds a model already.
+ *
+ * So the worker is run TWICE around a model call this module makes itself: once
+ * with `STANCE_EMIT_PAYLOAD` to collect the gated, layer-1-annotated payload and
+ * the rubric that scores it, then again with `STANCE_VERDICT_FILE` naming the
+ * answer. The PROCEDURE — opt-in, agent scope, extraction, the deterministic
+ * pre-filter, evidence verification, the block counters — stays in its one home
+ * inside the worker, and everything either pass touches before the judge seam is
+ * read-only, so the counters see exactly one pass.
  */
 const TURN_EXEC: readonly string[] = [
-  '  const execWithEnvelope = async (',
+  '  /** Fire the worker once, with `extra` merged into the envelope on stdin. */',
+  '  const fire = async (',
   '    cmd: string,',
+  '    dir: string,',
   '    extra: Record<string, unknown>,',
-  '    dir?: string,',
+  '    env: Record<string, string> = {},',
   '  ) => {',
-  '    const own = dir ?? mkdtempSync(join(tmpdir(), "cratylus-hook-"));',
+  '    const envelope = join(dir, "envelope.json");',
+  '    writeFileSync(',
+  '      envelope,',
+  '      JSON.stringify({',
+  '        session_id: sessionId,',
+  '        cwd: pi.cwd,',
+  '        agent_type: scopeName,',
+  '        ...extra,',
+  '      }),',
+  '    );',
+  '    // `ExecOptions` carries no env slot either, so it is spelled into the',
+  "    // command. Every value here is one of this module's own literals or a temp",
+  '    // path it just made — never model output — so the quoting is total.',
+  '    const prefix = Object.entries(env)',
+  "      .map(([k, v]) => `${k}='${v}' `)",
+  '      .join("");',
+  '    return await pi.exec("sh", ["-c", `${prefix}${cmd} < ${envelope}`]);',
+  '  };',
+  '',
+  "  /** One judgment, on this session's own provider. `undefined` ⇒ no verdict. */",
+  '  const askJudge = async (',
+  '    ctx: JudgeContext,',
+  '    rubric: string,',
+  '    payload: string,',
+  '  ): Promise<string | undefined> => {',
   '    try {',
-  '      const envelope = join(own, "envelope.json");',
-  '      writeFileSync(',
-  '        envelope,',
-  '        JSON.stringify({',
-  '          session_id: sessionId,',
-  '          cwd: pi.cwd,',
-  '          agent_type: scopeName,',
-  '          ...extra,',
-  '        }),',
+  '      // The `advisor` role first: judging on the primary model is an expensive',
+  '      // way to ask a small classification question, and omp already has a role',
+  '      // whose entire purpose is reviewing this session.',
+  '      const roles =',
+  '        (pi.pi?.Settings?.instance?.get?.("modelRoles") as',
+  '          | Record<string, string>',
+  '          | undefined) ?? {};',
+  '      const spec = roles.advisor ?? roles.smol ?? roles.tiny ?? "";',
+  '      const bare = spec.replace(/:[a-z]+$/, "");',
+  '      const cut = bare.indexOf("/");',
+  '      const model =',
+  '        (cut > 0',
+  '          ? ctx.modelRegistry?.find(bare.slice(0, cut), bare.slice(cut + 1))',
+  '          : undefined) ?? ctx.model;',
+  '      if (!model) return undefined;',
+  '      const auth = await ctx.modelRegistry?.getApiKeyAndHeaders(model);',
+  '      const answer = await completeSimple(',
+  '        model,',
+  '        {',
+  '          systemPrompt: [rubric],',
+  '          messages: [',
+  '            {',
+  '              role: "user",',
+  '              content: `=== BEGIN TRANSCRIPT EXCERPT (operator instruction + agent turn) ===\\n${payload}\\n=== END TRANSCRIPT EXCERPT ===\\n\\nApply the rubric. Output ONLY the verdict block.`,',
+  '              timestamp: Date.now(),',
+  '            },',
+  '          ],',
+  '        },',
+  '        {',
+  '          maxTokens: 4096,',
+  '          temperature: 0,',
+  '          disableReasoning: true,',
+  '          sessionId,',
+  '          ...(auth?.ok ? { apiKey: auth.apiKey } : {}),',
+  '        },',
   '      );',
-  '      return await pi.exec("sh", ["-c", `${cmd} < ${envelope}`]);',
-  '    } finally {',
-  '      rmSync(own, { recursive: true, force: true });',
+  '      const text = (answer.content ?? [])',
+  '        .filter((c) => c.type === "text" && typeof c.text === "string")',
+  '        .map((c) => c.text as string)',
+  '        .join("")',
+  '        .trim();',
+  '      return text || undefined;',
+  '    } catch {',
+  '      // A judge that could not run has refused nothing.',
+  '      return undefined;',
   '    }',
   '  };',
-  '  const execWithTurn = async (',
+  '',
+  '  /** Worker → in-process judge → worker. `undefined` ⇒ no refusal. */',
+  '  const judged = async (',
   '    cmd: string,',
-  '    messages: readonly TurnMessage[] | undefined,',
-  '    extra: Record<string, unknown> = {},',
-  '  ) => {',
+  '    ctx: JudgeContext,',
+  '    extra: Record<string, unknown>,',
+  '    messages?: readonly TurnMessage[],',
+  '  ): Promise<string | undefined> => {',
   '    const dir = mkdtempSync(join(tmpdir(), "cratylus-hook-"));',
-  '    const transcript = join(dir, "transcript.jsonl");',
-  '    writeFileSync(transcript, `${transcriptOf(messages ?? [])}\\n`);',
-  '    return await execWithEnvelope(',
-  '      cmd,',
-  '      { transcript_path: transcript, ...extra },',
-  '      dir,',
-  '    );',
+  '    try {',
+  '      let full = extra;',
+  '      if (messages) {',
+  '        const transcript = join(dir, "transcript.jsonl");',
+  '        writeFileSync(transcript, `${transcriptOf(messages)}\\n`);',
+  '        full = { transcript_path: transcript, ...extra };',
+  '      }',
+  '      const asked = await fire(cmd, dir, full, { STANCE_EMIT_PAYLOAD: "1" });',
+  '      if (asked.code !== 0) return undefined;',
+  '      const head = asked.stdout.trim();',
+  '      if (!head.startsWith("{")) return undefined;',
+  '      let ask: { rubric?: string; payload?: string };',
+  '      try {',
+  '        ask = JSON.parse(head);',
+  '      } catch {',
+  '        return undefined;',
+  '      }',
+  '      // Nothing emitted ⇒ the worker gated this fire out (opted out, off the',
+  '      // allowlist, no judgeable text). Nothing to judge and nothing to report.',
+  '      if (!ask.rubric || !ask.payload) return undefined;',
+  '      let rubric: string;',
+  '      try {',
+  '        rubric = readFileSync(ask.rubric, "utf8");',
+  '      } catch {',
+  '        return undefined;',
+  '      }',
+  '      const verdict = await askJudge(ctx, rubric, ask.payload);',
+  '      if (!verdict) return undefined;',
+  '      const file = join(dir, "verdict.txt");',
+  '      writeFileSync(file, verdict);',
+  '      return verdictOf(',
+  '        await fire(cmd, dir, full, { STANCE_VERDICT_FILE: file }),',
+  '      );',
+  '    } finally {',
+  '      rmSync(dir, { recursive: true, force: true });',
+  '    }',
   '  };',
 ];
 
@@ -675,9 +794,7 @@ function ompExtensionModule(
   // of pure fire-and-forget hooks stays as small as it was. BOTH entries count:
   // `execWithTurn` delegates to `execWithEnvelope`, so a module that only ever
   // calls the latter still needs every line of the bridge.
-  const needsTurn = registrations.some(
-    (r) => r.includes('execWithTurn(') || r.includes('execWithEnvelope('),
-  );
+  const needsTurn = registrations.some((r) => r.includes('judged('));
   return [
     // The regenerate instruction NAMES THE COMMAND, so it interpolates the bin
     // rather than spelling it: a banner telling a host to run a command that no
@@ -691,9 +808,19 @@ function ompExtensionModule(
     '',
     ...(needsTurn
       ? [
-          "import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';",
+          "import { readFileSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';",
           "import { tmpdir } from 'node:os';",
           "import { basename, dirname, join } from 'node:path';",
+          // STATIC, and it resolves: omp's extension loader aliases
+          // `@oh-my-pi/pi-ai` to its own bundled build, so this is the harness
+          // handing the module its own model client rather than a dependency the
+          // host has to install. `completeSimple` is the whole of what the judge
+          // needs; the richer `judgment` module (`TextJudge`, `chatTextBackend`)
+          // exists in omp's source but is NOT in the bundled compat entrypoint the
+          // shipped binary carries — importing it silently kills the module load,
+          // measured against v18.1.19.
+          "import { completeSimple } from '@oh-my-pi/pi-ai';",
+          "import type { Api, Model } from '@oh-my-pi/pi-ai';",
         ]
       : []),
     // `ExtensionAPI`, NOT `HookAPI`. omp's own `docs/hooks.md` closes with the
@@ -863,6 +990,10 @@ export const ompHarnessAdapter: HarnessAdapter = {
   // `settings.json` and codex's `hooks.json` are, because `hooks()` is absent and
   // deploy therefore has no fragment to merge.
   hooksFile: `extensions/${OMP_GUARDRAIL_MODULE}`,
+  // EMPTY ON PURPOSE: omp judges IN-PROCESS. Its emitted extension module holds
+  // the session's own model and runs the worker around a judgment it makes
+  // itself, so there is no CLI to name and no second process to spawn.
+  judgeBin: '',
   agentRel: ompAgentRel,
   nativeEvents: canonicalToOmp,
   realizes: (event) => ompBindingOf(event) !== undefined,

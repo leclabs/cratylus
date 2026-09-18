@@ -351,7 +351,30 @@ Unless that commitment is genuinely contingent on something outside this turn (a
 still running, an operator sign-off, an external event), this is announce-without-act: BLOCK it,
 and quote the span above as the evidence."
 
-verdict="$(printf '%s' "$judged" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || dark "the judge did not answer"
+# THE JUDGE MAY LIVE OUTSIDE THIS PROCESS, and on a harness that already holds a
+# model it MUST. Spawning another vendor's CLI to answer a question the host can
+# answer in-process is a cross-harness dependency wearing a plugin's clothes: it
+# needs that vendor installed, separately authenticated, and warm — and when its
+# OAuth lapses, every verdict on every harness fails open in silence.
+#
+# So the seam is explicit and the PROCEDURE stays here, in one home. A host that
+# can judge runs this worker twice: once with \`STANCE_EMIT_PAYLOAD\` to receive the
+# gated, layer-1-annotated payload and the rubric that scores it, then again with
+# \`STANCE_VERDICT_FILE\` naming its answer. Everything either pass touches before
+# this line is read-only, so the first pass mutates no counter and no hash — the
+# gate, the extraction and the pre-filter simply run twice and agree.
+#
+# A host with no model of its own changes nothing and keeps the subprocess judge.
+if [ -n "\${STANCE_EMIT_PAYLOAD:-}" ]; then
+	jq -cn --arg r "$RUBRIC" --arg p "$judged" '{rubric:$r, payload:$p}'
+	exit 0
+fi
+if [ -n "\${STANCE_VERDICT_FILE:-}" ]; then
+	verdict="$(cat "\${STANCE_VERDICT_FILE}" 2>/dev/null)" || dark "the judge did not answer"
+	[ -n "$verdict" ] || dark "the judge did not answer"
+else
+	verdict="$(printf '%s' "$judged" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || dark "the judge did not answer"
+fi
 
 decision="$(printf '%s\\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | head -1)"
 [ "$decision" = "BLOCK" ] || allow_stop  # PASS, empty, or anything but BLOCK → allow stop
@@ -526,8 +549,21 @@ rubric="\${1:?usage: stance-judge.sh <rubric-path>  (turn text on stdin)}"
 turn="$(cat)"
 [ -n "$turn" ] || { echo "VERDICT: PASS"; exit 0; }  # nothing to judge → PASS
 
-# Resolve the judge model CLI. Default: claude headless. Overridable for offline/CI.
-judge_bin="\${STANCE_JUDGE_BIN:-claude}"
+# Resolve the judge model CLI — THIS HARNESS'S OWN, carried as a projection fact.
+#
+# It read \`\${STANCE_JUDGE_BIN:-claude}\`, and that one literal made every harness
+# depend on one vendor: codex's stance guard and omp's both needed \`claude\`
+# installed and separately authenticated, and when that OAuth lapsed every verdict
+# on every harness failed open in silence. A harness answers with its own model.
+#
+# EMPTY IS A REAL VALUE: a harness that judges IN-PROCESS (omp) names no CLI here
+# and never reaches this backend at all — its shim supplies the verdict directly.
+# If something does reach it anyway, the only honest answer is to fail open.
+judge_bin="\${STANCE_JUDGE_BIN:-{{fact:harness-judge-bin}}}"
+[ -n "$judge_bin" ] || {
+	echo "stance-judge: this harness names no judge CLI (it judges in-process); failing open" >&2
+	exit 6
+}
 command -v "$judge_bin" >/dev/null 2>&1 || {
 	echo "stance-judge: judge binary '$judge_bin' not on PATH; failing open" >&2
 	exit 4

@@ -114,6 +114,10 @@ export function projectionFacts(adapter: HarnessAdapter): ProjectionFacts {
     // comparator's own failure by exit status, and `1` is forge's choice — not
     // POSIX's, the way `0` is. So the one code that is ours travels by name.
     'deploy-check-drift-code': String(DEPLOY_CHECK_EXIT.drift),
+    // EMPTY IS A VALUE HERE, and the worker reads it as one: a harness that
+    // judges in-process names no CLI, and the backend must fail open rather than
+    // fall back to somebody else's.
+    'harness-judge-bin': adapter.judgeBin,
   };
 }
 

@@ -270,6 +270,18 @@ export interface HarnessAdapter {
    */
   readonly hooksFile: string;
   /**
+   * The CLI this harness answers a model question with — or the EMPTY string
+   * where it judges in-process and needs no subprocess.
+   *
+   * Declared on the port because it is the fact that made every harness's guard
+   * depend on one vendor: the judge backend hardcoded `claude`, so codex's stance
+   * guard and omp's both required a third CLI installed and separately
+   * authenticated, and a lapsed session in that CLI failed every verdict open,
+   * silently, everywhere at once. A harness answers with its OWN model or it says
+   * it cannot, and neither answer belongs in a cell.
+   */
+  readonly judgeBin: string;
+  /**
    * This harness's EVENT MAP: canonical event name → this harness's native name.
    *
    * The map `realizes`/`scopes` already answer FROM, declared on the port so a

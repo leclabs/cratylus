@@ -145,10 +145,20 @@ describe('projectionFacts is adapter-relative', () => {
       'deploy-bin',
       'deploy-check-drift-code',
       'harness-hooks-file',
+      'harness-judge-bin',
       'harness-name',
       'runtime-bin',
     ]);
-    expect(Object.values(claude).every((v) => v.length > 0)).toBe(true);
+    // EVERY FACT BUT ONE IS NON-EMPTY, and the exception is load-bearing rather
+    // than missing: `harness-judge-bin` is EMPTY for a harness that judges
+    // in-process, which is how omp says "no subprocess, and no other vendor's
+    // CLI either". A blanket non-empty assertion would forbid that answer.
+    expect(
+      Object.entries(claude)
+        .filter(([k]) => k !== 'harness-judge-bin')
+        .every(([, v]) => v.length > 0),
+    ).toBe(true);
+    expect(claude['harness-judge-bin']).toBe('claude');
   });
 
   it('the two harnesses differ in EXACTLY the harness-relative facts', () => {
@@ -161,7 +171,11 @@ describe('projectionFacts is adapter-relative', () => {
           claude[k as keyof typeof claude] !== codex[k as keyof typeof codex],
       )
       .sort();
-    expect(differing).toEqual(['harness-hooks-file', 'harness-name']);
+    expect(differing).toEqual([
+      'harness-hooks-file',
+      'harness-judge-bin',
+      'harness-name',
+    ]);
   });
 
   it('carries each adapter’s own name and hooks file', () => {

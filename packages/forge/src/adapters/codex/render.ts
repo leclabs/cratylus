@@ -278,6 +278,8 @@ export const codexHarnessAdapter: HarnessAdapter = {
   home: '.codex',
   agentExt: '.toml',
   hooksFile: 'hooks.json',
+  // Its own CLI, never another vendor's — the default this replaces was `claude`.
+  judgeBin: 'codex',
   skillRel: (name) => [codexSkillRel(name)],
   sessionEnvVars: CODEX_SESSION_ENV_VARS,
   // The map, declared on the port so deploy can EMIT it into the host config the

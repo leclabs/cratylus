@@ -326,7 +326,30 @@ Unless that commitment is genuinely contingent on something outside this turn (a
 still running, an operator sign-off, an external event), this is announce-without-act: BLOCK it,
 and quote the span above as the evidence."
 
-verdict="$(printf '%s' "$judged" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || dark "the judge did not answer"
+# THE JUDGE MAY LIVE OUTSIDE THIS PROCESS, and on a harness that already holds a
+# model it MUST. Spawning another vendor's CLI to answer a question the host can
+# answer in-process is a cross-harness dependency wearing a plugin's clothes: it
+# needs that vendor installed, separately authenticated, and warm — and when its
+# OAuth lapses, every verdict on every harness fails open in silence.
+#
+# So the seam is explicit and the PROCEDURE stays here, in one home. A host that
+# can judge runs this worker twice: once with `STANCE_EMIT_PAYLOAD` to receive the
+# gated, layer-1-annotated payload and the rubric that scores it, then again with
+# `STANCE_VERDICT_FILE` naming its answer. Everything either pass touches before
+# this line is read-only, so the first pass mutates no counter and no hash — the
+# gate, the extraction and the pre-filter simply run twice and agree.
+#
+# A host with no model of its own changes nothing and keeps the subprocess judge.
+if [ -n "${STANCE_EMIT_PAYLOAD:-}" ]; then
+	jq -cn --arg r "$RUBRIC" --arg p "$judged" '{rubric:$r, payload:$p}'
+	exit 0
+fi
+if [ -n "${STANCE_VERDICT_FILE:-}" ]; then
+	verdict="$(cat "${STANCE_VERDICT_FILE}" 2>/dev/null)" || dark "the judge did not answer"
+	[ -n "$verdict" ] || dark "the judge did not answer"
+else
+	verdict="$(printf '%s' "$judged" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || dark "the judge did not answer"
+fi
 
 decision="$(printf '%s\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | head -1)"
 [ "$decision" = "BLOCK" ] || allow_stop  # PASS, empty, or anything but BLOCK → allow stop

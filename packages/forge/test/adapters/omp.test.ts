@@ -298,7 +298,7 @@ describe('omp enforcing surface', () => {
       [binding(['mav'], ['turn.end'])] as never,
       MECH,
     );
-    expect(turn?.content).toContain('execWithTurn(');
+    expect(turn?.content).toContain('judged(');
     expect(turn?.content).toContain('transcript_path');
     // A continuation is how a NON-blocking event speaks. `turn.end` no longer
     // needs one — `session_stop` refuses outright — but `subagent.end` lands on
@@ -318,7 +318,7 @@ describe('omp enforcing surface', () => {
       [binding(['mav'], ['session.start'])] as never,
       MECH,
     );
-    expect(bare?.content).not.toContain('execWithTurn(');
+    expect(bare?.content).not.toContain('judged(');
   });
 
   it('reads the verdict off STDOUT and a nonzero `code`, never `exitCode`', () => {

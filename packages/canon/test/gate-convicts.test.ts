@@ -167,6 +167,13 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // a declared event, and over an emitted config missing one member.
   'canon/event-vocabulary.test.ts': 'GATE',
   'canon/formal-block-self-sufficiency.test.ts': 'GATE',
+  // holds the operator's harness-independence law: no deployed worker names
+  // another harness's home in executable shell, and no cell template names a
+  // vendor CLI where a projection fact belongs. Both legs were CONVICTED before
+  // being admitted — a `$HOME/.claude/...` line injected into a committed worker
+  // and a `:-claude}` default restored to the cell each produced exactly one
+  // finding, and removing them returned the gate to green.
+  'canon/harness-independence.test.ts': 'GATE',
   'canon/gate-convicts.test.ts': 'GATE',
   // parses `Kind ≜ {…}` out of the LIVE `MODEL.md` and `AcceptCell.kind` out of the
   // LIVE `accept.ts`, asserting S ⊆ G (never =, so refinement stays legal). Neither

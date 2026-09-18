@@ -238,6 +238,8 @@ export const claudeHarnessAdapter: HarnessAdapter = {
   home: '.claude',
   agentExt: '.md',
   hooksFile: 'settings.json',
+  // This harness's own headless CLI answers its own model questions.
+  judgeBin: 'claude',
   skillRel: (name) => [claudeSkillRel(name)],
   // Claude Code's own names, declared where the vendor fact belongs.
   sessionEnvVars: CLAUDE_SESSION_ENV_VARS,

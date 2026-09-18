@@ -105,8 +105,19 @@ export type ProjectionFact =
   /** This harness's hook-config artifact (`settings.json` / `hooks.json`). */
   | 'harness-hooks-file'
   /** The exit status `deploy --check` returns when it FOUND drift. */
-  | 'deploy-check-drift-code';
-
+  | 'deploy-check-drift-code'
+  /**
+   * The CLI this harness answers a model question with, or EMPTY where the
+   * harness judges in-process and needs no subprocess at all.
+   *
+   * A fact rather than a literal for the reason every fact here is one, and this
+   * is the sharpest instance of it: the judge backend defaulted to `claude` on
+   * EVERY harness, so codex's stance guard and omp's both depended on a third
+   * vendor's CLI being installed and separately authenticated. When that OAuth
+   * lapsed, every verdict on every harness failed open in silence. A harness's
+   * own name for its own model is a projection fact, never a cell's constant.
+   */
+  | 'harness-judge-bin';
 /** The projector's fact table — every `ProjectionFact` bound to its value. */
 export type ProjectionFacts = Readonly<Record<ProjectionFact, string>>;
 

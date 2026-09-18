@@ -28,8 +28,21 @@ rubric="${1:?usage: stance-judge.sh <rubric-path>  (turn text on stdin)}"
 turn="$(cat)"
 [ -n "$turn" ] || { echo "VERDICT: PASS"; exit 0; }  # nothing to judge → PASS
 
-# Resolve the judge model CLI. Default: claude headless. Overridable for offline/CI.
+# Resolve the judge model CLI — THIS HARNESS'S OWN, carried as a projection fact.
+#
+# It read `${STANCE_JUDGE_BIN:-claude}`, and that one literal made every harness
+# depend on one vendor: codex's stance guard and omp's both needed `claude`
+# installed and separately authenticated, and when that OAuth lapsed every verdict
+# on every harness failed open in silence. A harness answers with its own model.
+#
+# EMPTY IS A REAL VALUE: a harness that judges IN-PROCESS (omp) names no CLI here
+# and never reaches this backend at all — its shim supplies the verdict directly.
+# If something does reach it anyway, the only honest answer is to fail open.
 judge_bin="${STANCE_JUDGE_BIN:-claude}"
+[ -n "$judge_bin" ] || {
+	echo "stance-judge: this harness names no judge CLI (it judges in-process); failing open" >&2
+	exit 6
+}
 command -v "$judge_bin" >/dev/null 2>&1 || {
 	echo "stance-judge: judge binary '$judge_bin' not on PATH; failing open" >&2
 	exit 4

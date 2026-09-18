@@ -155,10 +155,25 @@ seen="\${TMPDIR:-/tmp}/.stance-pre-$session_id-$sig"
 [ -f "$seen" ] && allow  # already denied this exact input once -> let it through
 
 # --- judge (SHARED backend + rubric) --------------------------------------------------------
-verdict="$(printf '%s' "$payload" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || {
-	note "$(date -u +%Y-%m-%dT%H:%M:%SZ) judge-fail tool=$tool_name agent=\${agent_type:-?}"
-	allow
-}
+# The same out-of-process seam the Stop worker carries, and for the same reason: a
+# host that already holds a model must not be made to spawn another vendor's CLI.
+# The deny-once marker is written AFTER this point, so the emit pass mutates nothing.
+if [ -n "\${STANCE_EMIT_PAYLOAD:-}" ]; then
+	jq -cn --arg r "$RUBRIC" --arg p "$payload" '{rubric:$r, payload:$p}'
+	exit 0
+fi
+if [ -n "\${STANCE_VERDICT_FILE:-}" ]; then
+	verdict="$(cat "\${STANCE_VERDICT_FILE}" 2>/dev/null || true)"
+	[ -n "$verdict" ] || {
+		note "$(date -u +%Y-%m-%dT%H:%M:%SZ) judge-empty tool=$tool_name agent=\${agent_type:-?}"
+		allow
+	}
+else
+	verdict="$(printf '%s' "$payload" | $JUDGE_CMD "$RUBRIC" 2>/dev/null)" || {
+		note "$(date -u +%Y-%m-%dT%H:%M:%SZ) judge-fail tool=$tool_name agent=\${agent_type:-?}"
+		allow
+	}
+fi
 
 decision="$(printf '%s\\n' "$verdict" | sed -n 's/^VERDICT:[[:space:]]*//p' | head -1)"
 [ "$decision" = "BLOCK" ] || allow  # PASS, empty, or anything but BLOCK -> allow
