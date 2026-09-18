@@ -73,7 +73,8 @@ import {
 } from '../../core/harness-adapter.js';
 import {
   OMP_BLOCKING_EVENTS,
-  OMP_PAYLOAD_EVENTS,
+  OMP_ENVELOPE_KIND,
+  OMP_WORKER_TOOL,
   canonicalToOmp,
   ompBindingOf,
 } from './events.js';
@@ -210,6 +211,11 @@ interface OmpRegistration {
   readonly anchor: string;
   readonly native: string;
   readonly tool: string | undefined;
+  /** The tool name this act wears in the WORKER's wire contract, when it is an
+   *  act at all — `OMP_WORKER_TOOL`. omp's own spelling (`tool`) narrows the
+   *  handler; this one is what the synthesized envelope must carry, and the two
+   *  differ because only one of them is a fact about omp. */
+  readonly workerTool: string | undefined;
   readonly command: string;
 }
 
@@ -252,6 +258,7 @@ export function ompGuardrailExtensions(
           anchor: b.anchor,
           native: binding.event,
           tool: binding.matcher,
+          workerTool: OMP_WORKER_TOOL[event],
           command: m.command,
         });
         byAgent.set(agent, list);
@@ -323,6 +330,7 @@ export function ompScopeActivatedExtensions(
         anchor: hook.id ?? event,
         native: binding.event,
         tool: binding.matcher,
+        workerTool: OMP_WORKER_TOOL[event],
         command: hook.command,
       };
       const key = JSON.stringify([reg.native, reg.tool ?? '', reg.command]);
@@ -352,46 +360,59 @@ function renderRegistration(r: OmpRegistration): string {
   const guard = r.tool
     ? `\n    if (event.toolName !== ${JSON.stringify(r.tool)}) return;`
     : '';
-  // A blocking event's worker exit code is the verdict; a non-blocking one's is
-  // advisory. Only `tool_call` takes a result omp acts on, so only it reads one.
+  const kind = OMP_ENVELOPE_KIND[r.native];
+  // THE VERDICT IS ON STDOUT, NEVER IN THE EXIT CODE, and reading it from the
+  // wrong place is how this gate came to refuse work it had never judged. The
+  // workers speak the Claude hook contract: a JSON verdict on stdout and `exit 0`
+  // UNCONDITIONALLY — `allow`, `deny` and every fail-open path alike. So a
+  // nonzero code means the worker MALFUNCTIONED or was not there, which is not a
+  // refusal (`fail-open ∀error`), and a zero code means nothing on its own.
   //
-  // 127 IS NOT A VERDICT. `sh -c` returns it when the worker is not there at all,
-  // and reading that as "the gate refused" turns every missing worker into a host
-  // that blocks `ask` and `task` with `No such file` as its reason — a governance
-  // mechanism bricking the session it was supposed to govern. The canon's own hook
-  // cells are written fail-open (`fail-open ∀error`), and a gate that cannot RUN
-  // has not refused anything.
-  const call = OMP_PAYLOAD_EVENTS[r.native]
-    ? `execWithTurn(${JSON.stringify(r.command)}, event)`
-    : `exec(${JSON.stringify(r.command)})`;
-  // A PAYLOAD EVENT'S OUTPUT IS A VERDICT AND MUST REACH THE SESSION. Claude's
-  // `Stop` hook speaks to the agent by writing stdout and refusing the stop; omp's
-  // `agent_end` takes no such result, so a worker that blocks a turn here would
-  // have its reason discarded — the gate firing into a void, which is exactly as
-  // dark as never running. `sendUserMessage` at `agent_end` queues a continuation
-  // (the loop drains its queues before this event, so a message left here is what
-  // re-opens the turn), which is the same shape as refusing the stop.
+  // WHAT THIS REPLACES, because the failure is instructive. The old form read
+  // `r.exitCode`, and `ExecResult` is `{stdout, stderr, code, killed}` — there is
+  // no `exitCode` on it. `undefined === 127` is false and `undefined !== 0` is
+  // TRUE, so the two guards inverted into `{block: true, reason: ""}` on EVERY
+  // fire: every `ask` and every `task` call refused, with an empty reason, for
+  // reasons the worker never supplied. The `127` line was written to prevent
+  // exactly that — "a governance mechanism bricking the session it was supposed to
+  // govern" — and it was reading the same absent field, so the guard against the
+  // catastrophe was the catastrophe. Measured against the installed binary:
+  // `pi.exec("sh", ["-c", "exit 3"])` → `{"stdout":"","stderr":"","code":3,
+  // "killed":false}`.
+  const call =
+    kind === 'turn'
+      ? `execWithTurn(${JSON.stringify(r.command)}, event.messages)`
+      : kind === 'dispatch'
+        ? `execWithTurn(${JSON.stringify(r.command)}, dispatchTurn(event))`
+        : kind === 'tool'
+          ? (() => {
+              const wt = JSON.stringify(r.workerTool ?? r.tool ?? '');
+              return `execWithEnvelope(${JSON.stringify(r.command)}, { tool_name: ${wt}, tool_input: workerInput(${wt}, event.input ?? {}) })`;
+            })()
+          : `exec(${JSON.stringify(r.command)})`;
+  // A BLOCKING EVENT REFUSES; EVERY OTHER ONE HAS TO SPEAK INSTEAD. Claude's `Stop`
+  // hook talks to the agent by refusing the stop and writing its reason; omp's
+  // `agent_end` takes no result at all, so a worker that blocks a turn here would
+  // have its reason discarded — the gate firing into a void, exactly as dark as
+  // never running. `sendUserMessage` at `agent_end` queues a continuation (the loop
+  // drains its queues before this event, so a message left here is what re-opens
+  // the turn), which is the same shape as refusing the stop.
   //
-  // DELIVERED ONCE PER DISTINCT VERDICT, because delivery re-opens the turn. A
-  // worker that reports the same thing every turn — `dark`, above all, which says
-  // the JUDGE is unreachable and will keep saying it — would otherwise re-open the
-  // turn forever on a fact that is informational. A block's reason carries a
-  // per-session count and the worker's own no-progress detector converts a genuine
-  // repeat into a different notice, so a real block is never suppressed by this.
-  const act = OMP_PAYLOAD_EVENTS[r.native]
+  // DELIVERED ONCE PER DISTINCT REASON, because delivery re-opens the turn. A
+  // worker reporting the same thing every turn would otherwise re-open it forever.
+  // A block's reason carries a per-session count and the worker's own no-progress
+  // detector turns a genuine repeat into different text, so a real block is never
+  // suppressed by this.
+  const act = blocking
     ? `
-    const r = await ${call};
-    const verdict = \`\${r.stdout}\\n\${r.stderr}\`.trim();
-    if (verdict && verdict !== lastVerdict) {
-      lastVerdict = verdict;
-      pi.sendUserMessage(verdict, { deliverAs: "followUp" });
-    }`
-    : blocking
+    const reason = verdictOf(await ${call});
+    if (reason) return { block: true, reason };`
+    : kind
       ? `
-    const r = await ${call};
-    if (r.exitCode === 127) return;
-    if (r.exitCode !== 0) {
-      return { block: true, reason: r.stderr.trim() || r.stdout.trim() };
+    const reason = verdictOf(await ${call});
+    if (reason && reason !== lastVerdict) {
+      lastVerdict = reason;
+      pi.sendUserMessage(reason, { deliverAs: "followUp" });
     }`
       : `
     await ${call};`;
@@ -402,15 +423,16 @@ function renderRegistration(r: OmpRegistration): string {
 
 /**
  * Module-level half of the payload bridge — the lines emitted above
- * `export default`, verbatim, when a registration reads a turn.
+ * `export default`, verbatim, when a registration reads an envelope.
  *
- * `OMP_PAYLOAD_EVENTS` says why this exists at all. What lives HERE is only the
- * shape translation: omp's `AgentMessage` blocks (`text` · `toolCall` · dropped
- * `thinking`) written out as the transcript lines the workers' `jq` already
- * reads. Translating the SHAPE keeps the extraction semantics — whole turn since
- * the last real user message, tool activity marked, text-only projection for the
- * evidence check — in their one home inside the worker, rather than re-deriving
- * them here in a second language.
+ * `OMP_ENVELOPE_KIND` says why this exists at all. What lives HERE is only the
+ * two shape translations, in and out: omp's `AgentMessage` blocks (`text` ·
+ * `toolCall` · dropped `thinking`) written out as the transcript lines the
+ * workers' `jq` already reads, and the workers' stdout verdict read back as a
+ * reason string. Translating the SHAPE keeps the extraction semantics — whole
+ * turn since the last real user message, tool activity marked, text-only
+ * projection for the evidence check — in their one home inside the worker,
+ * rather than re-deriving them here in a second language.
  */
 const TURN_BRIDGE: readonly string[] = [
   '// THE IDENTITY IS READ FROM PLACEMENT, never asked at runtime: this module sits',
@@ -420,7 +442,7 @@ const TURN_BRIDGE: readonly string[] = [
   '// of the placement instead of out of a branch.',
   'const scopeName = basename(dirname(dirname(new URL(import.meta.url).pathname)));',
   '',
-  '// The verdict last delivered, so an unchanging one is not re-delivered — see the',
+  '// The reason last delivered, so an unchanging one is not re-delivered — see the',
   '// `agent_end` registration for why delivery is bounded.',
   'let lastVerdict = "";',
   '',
@@ -460,6 +482,99 @@ const TURN_BRIDGE: readonly string[] = [
   '  return lines.join("\\n");',
   '}',
   '',
+  "// omp's TOOL ARGUMENTS, as the shapes the workers' `jq` reads. The other half of",
+  '// `OMP_WORKER_TOOL`: naming the tool correctly gets the worker into the right',
+  "// branch, and that branch then reads named FIELDS out of `tool_input`. omp's",
+  '// `ask` already carries `questions[].question` and `questions[].options[].label`,',
+  '// so it passes through untouched; its `task` carries `{context, tasks[]}` and the',
+  '// worker reads `.prompt`, so a dispatch would arrive with nothing judgeable and',
+  '// be allowed on the worker\'s own "nothing judgeable" guard — a pass that looks',
+  '// exactly like a considered verdict.',
+  'function workerInput(',
+  '  tool: string,',
+  '  input: Record<string, unknown>,',
+  '): Record<string, unknown> {',
+  '  if (tool !== "Agent") return input;',
+  '  const tasks = Array.isArray(input.tasks) ? input.tasks : [];',
+  '  const prompt = [',
+  '    typeof input.context === "string" ? input.context : "",',
+  '    ...tasks.map((t) => {',
+  '      const one = (t ?? {}) as { task?: unknown };',
+  '      return typeof one.task === "string" ? one.task : "";',
+  '    }),',
+  '  ]',
+  '    .filter((s) => s.trim() !== "")',
+  '    .join("\\n\\n");',
+  '  return prompt ? { ...input, prompt } : input;',
+  '}',
+  '',
+  '// A FINISHED DELEGATION IS A JUDGEABLE TURN, and this is the translation that',
+  "// makes it one. `subagent.end` lands on the `task` tool's `tool_result`, whose",
+  '// event carries no message list — which was read as "not a turn" and left the',
+  '// worker firing on empty stdin. It is a turn: the prompt that launched the',
+  "// delegate is the instruction, and the text it returned is the delegate's last",
+  '// assistant turn, which is exactly the pair the rubric judges.',
+  'function dispatchTurn(event: {',
+  '  input?: Record<string, unknown>;',
+  '  content?: readonly { type?: string; text?: string }[];',
+  '}): TurnMessage[] {',
+  '  const i = event.input ?? {};',
+  '  const ask = [i.prompt, i.task, i.message, i.description].find(',
+  '    (v): v is string => typeof v === "string" && v.trim() !== "",',
+  '  );',
+  '  const said = (event.content ?? [])',
+  '    .filter((c) => c.type === "text" && typeof c.text === "string")',
+  '    .map((c) => c.text as string)',
+  '    .join("\\n")',
+  '    .trim();',
+  '  const out: TurnMessage[] = [];',
+  '  if (ask) out.push({ role: "user", content: [{ type: "text", text: ask }] });',
+  '  if (said)',
+  '    out.push({ role: "assistant", content: [{ type: "text", text: said }] });',
+  '  return out;',
+  '}',
+  '',
+  "// THE WORKER'S VERDICT, read from where the worker actually writes it. The",
+  '// workers speak the Claude hook contract: the verdict is JSON on STDOUT and the',
+  '// exit status is 0 on every path — allow, deny, and each fail-open alike. So a',
+  '// nonzero `code` is a malfunction rather than a refusal, and anything that does',
+  '// not parse into one of the two verdict shapes is silence.',
+  '//',
+  "// FAILS OPEN AT EVERY STEP, which is the property the canon's hook cells are",
+  '// written to (`fail-open ∀error`): a gate that could not run has refused',
+  '// nothing, and one that answered unintelligibly has not refused either.',
+  'function verdictOf(r: {',
+  '  stdout?: string;',
+  '  code?: number;',
+  '  killed?: boolean;',
+  '}): string | undefined {',
+  '  if (r.killed || r.code !== 0) return undefined;',
+  '  const text = (r.stdout ?? "").trim();',
+  '  if (!text.startsWith("{")) return undefined;',
+  '  let v: unknown;',
+  '  try {',
+  '    v = JSON.parse(text);',
+  '  } catch {',
+  '    return undefined;',
+  '  }',
+  '  const o = v as {',
+  '    decision?: string;',
+  '    reason?: string;',
+  '    hookSpecificOutput?: {',
+  '      permissionDecision?: string;',
+  '      permissionDecisionReason?: string;',
+  '    };',
+  '  };',
+  '  // PreToolUse shape (the pre-guard) …',
+  '  const pre = o.hookSpecificOutput;',
+  '  if (pre?.permissionDecision === "deny") {',
+  '    return (pre.permissionDecisionReason ?? "").trim() || undefined;',
+  '  }',
+  '  // … and the Stop shape (the turn-end guard).',
+  '  if (o.decision === "block") return (o.reason ?? "").trim() || undefined;',
+  '  return undefined;',
+  '}',
+  '',
 ];
 
 /**
@@ -469,27 +584,43 @@ const TURN_BRIDGE: readonly string[] = [
  * The envelope goes to a FILE and arrives by redirect because `ExecOptions` has
  * no stdin slot (signal · timeout · cwd) and the workers read stdin. A temp dir
  * per fire, removed in `finally`, keeps a turn's transcript off any shared path.
+ *
+ * TWO ENTRIES OVER ONE WRITER: `execWithEnvelope` is the whole mechanism, and
+ * `execWithTurn` is it with a transcript file written first. Every worker needs
+ * the same four identity fields, so a second copy of them is a second place for
+ * the contract to drift.
  */
 const TURN_EXEC: readonly string[] = [
-  '  const execWithTurn = async (cmd: string, event: { messages?: readonly TurnMessage[] }) => {',
-  '    const dir = mkdtempSync(join(tmpdir(), "cratylus-hook-"));',
+  '  const execWithEnvelope = async (',
+  '    cmd: string,',
+  '    extra: Record<string, unknown>,',
+  '    dir?: string,',
+  '  ) => {',
+  '    const own = dir ?? mkdtempSync(join(tmpdir(), "cratylus-hook-"));',
   '    try {',
-  '      const transcript = join(dir, "transcript.jsonl");',
-  '      writeFileSync(transcript, `${transcriptOf(event.messages ?? [])}\\n`);',
-  '      const envelope = join(dir, "envelope.json");',
+  '      const envelope = join(own, "envelope.json");',
   '      writeFileSync(',
   '        envelope,',
   '        JSON.stringify({',
   '          session_id: sessionId,',
   '          cwd: pi.cwd,',
-  '          transcript_path: transcript,',
   '          agent_type: scopeName,',
+  '          ...extra,',
   '        }),',
   '      );',
   '      return await pi.exec("sh", ["-c", `${cmd} < ${envelope}`]);',
   '    } finally {',
-  '      rmSync(dir, { recursive: true, force: true });',
+  '      rmSync(own, { recursive: true, force: true });',
   '    }',
+  '  };',
+  '  const execWithTurn = async (',
+  '    cmd: string,',
+  '    messages: readonly TurnMessage[] | undefined,',
+  '  ) => {',
+  '    const dir = mkdtempSync(join(tmpdir(), "cratylus-hook-"));',
+  '    const transcript = join(dir, "transcript.jsonl");',
+  '    writeFileSync(transcript, `${transcriptOf(messages ?? [])}\\n`);',
+  '    return await execWithEnvelope(cmd, { transcript_path: transcript }, dir);',
   '  };',
 ];
 
@@ -526,8 +657,12 @@ function ompExtensionModule(
           '// loads this copy.',
         ];
   // The payload bridge is emitted only where a registration reads one, so a module
-  // of pure fire-and-forget hooks stays as small as it was.
-  const needsTurn = registrations.some((r) => r.includes('execWithTurn('));
+  // of pure fire-and-forget hooks stays as small as it was. BOTH entries count:
+  // `execWithTurn` delegates to `execWithEnvelope`, so a module that only ever
+  // calls the latter still needs every line of the bridge.
+  const needsTurn = registrations.some(
+    (r) => r.includes('execWithTurn(') || r.includes('execWithEnvelope('),
+  );
   return [
     // The regenerate instruction NAMES THE COMMAND, so it interpolates the bin
     // rather than spelling it: a banner telling a host to run a command that no

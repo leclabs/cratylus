@@ -123,17 +123,57 @@ export function ompBindingOf(event: EventName): NativeBinding | undefined {
 export const OMP_BLOCKING_EVENTS: ReadonlySet<string> = new Set(['tool_call']);
 
 /**
- * The omp events whose worker needs the hook PAYLOAD, not merely a fire.
+ * What the shim must MATERIALIZE for a worker registered on this native event.
  *
- * Claude's `Stop` hook is handed a JSON envelope on stdin naming the transcript;
- * omp's `ExecOptions` is signal · timeout · cwd and its handler is given the event
- * as an ARGUMENT, so a worker written against the Claude contract reads an empty
- * stdin, exits at its first guard, and judges nothing — silently, every turn. The
- * shim therefore materializes the envelope itself for these events.
+ * Claude's hook workers are handed a JSON envelope on stdin; omp's `ExecOptions` is
+ * signal · timeout · cwd and its handler is given the event as an ARGUMENT, so a
+ * worker written against the Claude contract reads an empty stdin, exits at its
+ * first guard, and judges nothing — silently, every fire. The shim therefore
+ * synthesizes the envelope itself, and this table says which envelope.
  *
- * `agent_end` alone, because `AgentEndEvent` alone carries `messages` — the turn a
- * worker can judge. A `tool_result` fire carries the tool's own payload and is a
- * different contract; it stays a bare fire rather than being handed a turn that is
- * not one.
+ * EVERY EVENT A WORKER READS IS LISTED, and that is the correction. This table
+ * held `agent_end` alone, on the argument that `AgentEndEvent` alone carries
+ * `messages` and that a `tool_result` "stays a bare fire rather than being handed
+ * a turn that is not one". The first half is true and the conclusion does not
+ * follow: a bare fire hands the worker an EMPTY stdin, which is the exact failure
+ * the paragraph above names. Measured against the installed binary, a registration
+ * with no envelope runs the worker with `read_bytes=0`, so the stance guard's
+ * `ask`/`task`/subagent legs judged nothing on every fire while reading as
+ * coverage. A turn is not the only judgeable envelope — a tool call and a dispatch
+ * result are envelopes too, and both are reconstructible from the event.
+ *
+ *   · `turn`     — the whole exchange, from `AgentEndEvent.messages`.
+ *   · `tool`     — the pending call: its wire-contract name plus `input`.
+ *   · `dispatch` — a finished delegation, as the prompt that launched it plus the
+ *                  text it returned (`ToolResultEvent.input` + `.content`).
+ *
+ * An event absent here needs nothing on stdin — a notice that only has to FIRE.
  */
-export const OMP_PAYLOAD_EVENTS: Record<string, true> = { agent_end: true };
+export const OMP_ENVELOPE_KIND: Readonly<
+  Record<string, 'turn' | 'tool' | 'dispatch'>
+> = {
+  agent_end: 'turn',
+  tool_call: 'tool',
+  tool_result: 'dispatch',
+};
+
+/**
+ * The tool name the WORKER's wire contract expects for each act.
+ *
+ * NOT a leak of another harness's vocabulary, and the distinction is the whole
+ * reason this table is here. The workers are written to the Claude hook contract —
+ * an envelope on stdin, a verdict on stdout — and that contract is their WIRE
+ * FORMAT, not their harness. On claude the field arrives already spelled this way
+ * because claude writes the envelope; here the shim writes it, so the shim owes it
+ * the spelling the contract names. A `tool_name` of `ask` reaches the worker's
+ * `case` and falls through to its `*)` allow branch, which is how a deployed,
+ * opted-in, correctly-scoped pre-guard permitted every call it was installed to
+ * judge.
+ *
+ * `Agent` carries `subagent.dispatch.pre` because the worker matches
+ * `Agent|SendMessage` — one act, either spelling, and the first is enough.
+ */
+export const OMP_WORKER_TOOL: Readonly<Record<EventName, string>> = {
+  'operator.consult.pre': 'AskUserQuestion',
+  'subagent.dispatch.pre': 'Agent',
+};

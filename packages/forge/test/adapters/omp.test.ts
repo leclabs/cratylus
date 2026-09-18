@@ -279,7 +279,7 @@ describe('omp enforcing surface', () => {
     // by queueing a continuation — the analogue of refusing the stop.
     expect(turn?.content).toContain('sendUserMessage');
     // …and only when it CHANGES, or an unreachable judge re-opens the turn forever.
-    expect(turn?.content).toContain('verdict !== lastVerdict');
+    expect(turn?.content).toContain('!== lastVerdict');
 
     // An event that carries no turn stays a bare fire: handing one a transcript
     // would assert it is a turn, which it is not.
@@ -288,6 +288,59 @@ describe('omp enforcing surface', () => {
       MECH,
     );
     expect(bare?.content).not.toContain('execWithTurn(');
+  });
+
+  it('reads the verdict off STDOUT and a nonzero `code`, never `exitCode`', () => {
+    // THE WORST DEFECT THIS ADAPTER HAS SHIPPED, and it is one misspelled field.
+    // `ExecResult` is `{stdout, stderr, code, killed}` — measured against the
+    // installed binary, `pi.exec("sh", ["-c", "exit 3"])` answers
+    // `{"stdout":"","stderr":"","code":3,"killed":false}`. The emitted module read
+    // `r.exitCode`, so `undefined === 127` was false and `undefined !== 0` was
+    // TRUE: every `ask` and every `task` call came back `{block: true, reason: ""}`
+    // whatever the worker decided. The gate did not fail open — it refused
+    // everything, with no reason, having judged nothing. A persona whose `ask` and
+    // `task` are both bricked is unusable, which is how the deployed modules came
+    // to be deleted from `.agents/<name>/extensions/` by hand.
+    const emitted = ompGuardrailExtensions(
+      [binding(['mav'], ['tool.use.pre', 'turn.end'])] as never,
+      MECH,
+    )
+      .map((p) => p.content)
+      .join('\n');
+    expect(emitted).not.toContain('exitCode');
+    // The workers exit 0 on EVERY path — allow, deny, and each fail-open alike —
+    // and write their verdict as JSON on stdout. So a nonzero code is a
+    // malfunction, and the two verdict shapes are what a refusal looks like.
+    expect(emitted).toContain('r.code !== 0');
+    expect(emitted).toContain('permissionDecision === "deny"');
+    expect(emitted).toContain('o.decision === "block"');
+  });
+
+  it('hands a tool_call its envelope, under the name the WORKER matches on', () => {
+    // Naming it `ask` reaches the worker's `case` and falls through to its `*)`
+    // allow branch, so the pre-guard permitted every call it was installed to
+    // judge. The worker's wire contract is the Claude hook contract; on omp the
+    // shim writes the envelope, so the shim owes it that spelling.
+    const [pre] = ompGuardrailExtensions(
+      [binding(['mav'], ['operator.consult.pre'])] as never,
+      MECH,
+    );
+    expect(pre?.content).toContain('if (event.toolName !== "ask") return;');
+    expect(pre?.content).toContain('tool_name: "AskUserQuestion"');
+    expect(pre?.content).toContain('tool_input: workerInput(');
+  });
+
+  it('judges a finished dispatch, which IS a turn', () => {
+    // `subagent.end` lands on the `task` tool's `tool_result`, which carries no
+    // message list — read as "not a turn" and left firing on empty stdin, so the
+    // subagent leg judged nothing. The prompt that launched the delegate plus the
+    // text it returned is exactly the pair the rubric judges.
+    const [res] = ompGuardrailExtensions(
+      [binding(['mav'], ['subagent.end'])] as never,
+      MECH,
+    );
+    expect(res?.content).toContain('dispatchTurn(event)');
+    expect(res?.content).toContain('transcript_path');
   });
 
   it('emits nothing when the mechanism is absent — and that is the codex bug', () => {
