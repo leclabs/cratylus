@@ -374,6 +374,31 @@ describe('omp enforcing surface', () => {
     expect(res?.content).toContain('transcript_path');
   });
 
+  it('bounds the judge with its own deadline, once per session', () => {
+    // AN UNREACHABLE JUDGE DOES NOT FAIL — IT HANGS, and omp kills an extension
+    // handler at 30 s. Without a deadline of its own the guard costs every turn
+    // the full budget and then surfaces as `Extension error: handler timed out`,
+    // which reads as the guard being broken rather than the judge being away.
+    // Measured on an operator host whose configured `advisor` role pointed at a
+    // local server that had stopped answering: a ONE-WORD prompt did not return
+    // in 20 s, and every turn end paid 30 s.
+    //
+    // ONCE PER SESSION, because an endpoint that is away stays away. Re-proving
+    // it on each turn end buys nothing and taxes the whole session.
+    const [turn] = ompGuardrailExtensions(
+      [binding(['mav'], ['turn.end'])] as never,
+      MECH,
+    );
+    expect(turn?.content).toContain('Promise.race');
+    expect(turn?.content).toContain('JUDGE_TIMEOUT_MS');
+    expect(turn?.content).toContain('let judgeAway = false;');
+    expect(turn?.content).toContain('if (judgeAway) return undefined;');
+    // Inside omp's 30 s handler kill, or the deadline never fires.
+    const ms = /const JUDGE_TIMEOUT_MS = ([\d_]+);/.exec(turn?.content ?? '');
+    expect(ms).not.toBeNull();
+    expect(Number(ms?.[1]?.replaceAll('_', ''))).toBeLessThan(30_000);
+  });
+
   it('emits nothing when the mechanism is absent — and that is the codex bug', () => {
     // EXONERATING FIXTURE. Without a mechanism there is no command to wire, so
     // emitting nothing is correct. What was NOT correct was reaching this state
