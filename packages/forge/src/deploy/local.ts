@@ -29,8 +29,13 @@ import {
   statSync,
   writeFileSync,
 } from 'node:fs';
-import { dirname, resolve as resolvePath } from 'node:path';
-import { ENFORCING_STAGE_DIR } from '../core/harness-adapter.js';
+import { dirname, posix, resolve as resolvePath } from 'node:path';
+import {
+  ENFORCING_STAGE_DIR,
+  NEUTRAL_AGENT_ROOT,
+  SCOPE_DIR_TOKEN,
+  SHARED_STAGE_DIR,
+} from '../core/harness-adapter.js';
 import { staleFiles } from '../prune/index.js';
 import {
   assertShimsResolvable,
@@ -418,6 +423,33 @@ export function renderedFiles(
       }
     }
   }
+  // hooks, third half: the SHARED assets. `placeHooksLocal` writes these to the
+  // vendor-neutral root and records them under `shared:<id>`, so an audit that
+  // does not enumerate them calls a live artifact ours-and-retired — and the
+  // prune borrows this very set as its candidates. Measured on an operator host:
+  // the stance rubric, the one file every stance verdict is scored against, was
+  // reported as a path "a deploy would prune". An audit that condemns the
+  // artifact it was built to protect is worse than no audit.
+  if (kind === 'hooks' && tree.hooksDir) {
+    const sharedRoot = resolvePath(tree.hooksDir, SHARED_STAGE_DIR);
+    if (existsSync(sharedRoot)) {
+      for (const id of readdirSync(sharedRoot).sort()) {
+        const srcDir = resolvePath(sharedRoot, id);
+        if (!statSync(srcDir).isDirectory()) continue;
+        for (const file of readdirSync(srcDir).sort()) {
+          const src = resolvePath(srcDir, file);
+          if (!statSync(src).isFile()) continue;
+          out.push({
+            // The placer's own mapping, spelled once here so audit and action
+            // cannot disagree about where a shared asset lands.
+            rel: posix.join('..', NEUTRAL_AGENT_ROOT, id, file),
+            src,
+            owner: `${SHARED_STAGE_DIR}:${id}`,
+          });
+        }
+      }
+    }
+  }
   return out.filter((f) => !f.rel.split('/').includes(BOOKKEEPING));
 }
 
@@ -488,7 +520,22 @@ export function auditLocal(
   // ── stale + absent: every rendered artifact, against its deployed copy.
   for (const { rel, src } of rendered) {
     const dest = resolvePath(harnessDir, rel);
-    const want = readFileSync(src);
+    // THE PLACER SUBSTITUTES, SO THE AUDIT MUST TOO. `placeHooksLocal` resolves
+    // `SCOPE_DIR_TOKEN` against the real destination directory at write time, so
+    // an artifact carrying it can NEVER equal its rendered bytes. Comparing raw
+    // made six persona overlays permanently, falsely stale — and a drift report
+    // that is always red is one nobody reads, which is the whole value of it.
+    const rawWant = readFileSync(src);
+    const want =
+      !isBinary(rawWant) && rawWant.includes(SCOPE_DIR_TOKEN)
+        ? Buffer.from(
+            rawWant
+              .toString('utf-8')
+              .split(SCOPE_DIR_TOKEN)
+              .join(dirname(dest)),
+            'utf-8',
+          )
+        : rawWant;
     if (!existsSync(dest)) {
       divergences.push({
         kind: 'absent',

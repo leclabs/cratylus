@@ -29,6 +29,7 @@ import {
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { runDeploy } from '../../src/cli/commands/deploy.js';
+import { placeHooksLocal } from '../../src/deploy/hooks.js';
 import { DEPLOY_CHECK_EXIT, deploySingle } from '../../src/deploy/index.js';
 import {
   auditLocal,
@@ -304,6 +305,72 @@ describe('renderedFiles agrees with the placers own testimony', () => {
         .map((f) => f.rel)
         .sort(),
     ).toEqual(Object.values(s.report.written).flat().sort());
+  });
+
+  it('enumerates SHARED assets, which a prune would otherwise eat', () => {
+    // THE DEFECT THIS PINS WAS FOUND POINTING AT A LIVE HOST. `placeHooksLocal`
+    // writes a worker's `shared` assets to the vendor-neutral root and records
+    // them under `shared:<id>`; `renderedFiles` enumerated workers and scoped
+    // modules and not those. The audit therefore called the stance RUBRIC — the
+    // one file every verdict is scored against — "deployed, not rendered (OURS,
+    // retired: a deploy would prune it)", and the prune borrows that same set as
+    // its candidates. An audit that condemns the artifact it exists to protect.
+    const root = tmp('check-shared-');
+    const { agentsDir, skillsDir } = buildRenderTree(root);
+    const { hooksDir } = buildHooksTree(root);
+    const sharedDir = join(hooksDir, 'shared', 'stance-guardrail');
+    mkdirSync(sharedDir, { recursive: true });
+    writeFileSync(join(sharedDir, 'stance-judge-prompt.md'), '# rubric\n');
+    const tree = { agentsDir, skillsDir, hooksDir };
+    const harnessDir = join(tmp('check-shared-home-'), '.omp');
+    mkdirSync(harnessDir, { recursive: true });
+    const h = placeHooksLocal(harnessDir, tree, ['stance-guardrail'], {
+      dry: true,
+      ...silent,
+    });
+    const rels = renderedFiles('hooks', tree, ['stance-guardrail']).map(
+      (f) => f.rel,
+    );
+    expect(rels).toContain(
+      '../.agents/stance-guardrail/stance-judge-prompt.md',
+    );
+    expect(rels.sort()).toEqual(Object.values(h.report.written).flat().sort());
+  });
+
+  it('compares a `{{scopeDir}}` artifact AFTER the substitution the placer makes', () => {
+    // A permanently-red report is one nobody reads. omp's persona overlay names
+    // its own extensions dir with `{{scopeDir}}`, which `placeHooksLocal`
+    // resolves against the real destination at write — so the rendered bytes can
+    // never equal the deployed bytes, and six overlays sat STALE on every check
+    // forever. Measured on a live host: 6 stale, 0 of them real.
+    const root = tmp('check-token-');
+    const { agentsDir, skillsDir } = buildRenderTree(root);
+    const { hooksDir } = buildHooksTree(root);
+    const scopeDir = join(hooksDir, 'enforcing', 'mav');
+    mkdirSync(scopeDir, { recursive: true });
+    writeFileSync(
+      join(scopeDir, 'omp.yml'),
+      'extensions:\n  - {{scopeDir}}/x\n',
+    );
+    const tree = { agentsDir, skillsDir, hooksDir };
+    const harnessDir = join(tmp('check-token-home-'), '.omp');
+    mkdirSync(harnessDir, { recursive: true });
+    const layout = {
+      scopedRel: (file: string, scope: string) =>
+        `agent/personas/${scope}/${file}`,
+    };
+    placeHooksLocal(harnessDir, tree, ['stance-guardrail'], {
+      ...silent,
+      ...layout,
+    });
+    const rep = auditLocal(
+      harnessDir,
+      'hooks',
+      tree,
+      ['stance-guardrail'],
+      layout,
+    );
+    expect(rep.divergences).toEqual([]);
   });
 });
 
