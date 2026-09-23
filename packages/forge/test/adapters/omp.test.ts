@@ -407,17 +407,20 @@ describe('omp enforcing surface', () => {
     );
     expect(turn?.content).toContain('judged(');
     expect(turn?.content).toContain('transcript_path');
-    // A continuation is how a NON-blocking event speaks. `turn.end` no longer
-    // needs one — `session_stop` refuses outright — but `subagent.end` lands on
-    // `tool_result`, which takes no verdict, so there it stays the only channel,
-    // bounded to a CHANGED reason or an unreachable judge re-opens forever.
+    // A continuation is how a NON-blocking event speaks its VERDICT. `turn.end`
+    // no longer needs one — `session_stop` refuses outright — but `subagent.end`
+    // lands on `tool_result`, which takes no verdict, so there it stays the only
+    // channel, bounded to a CHANGED reason or an unreachable judge re-opens
+    // forever. The assertion names the verdict channel specifically: the shared
+    // bridge also announces DARKNESS that way, and an announcement that the gate
+    // did not run is not a refusal travelling by the wrong road.
     const [sub] = ompGuardrailExtensions(
       [binding(['mav'], ['subagent.end'])] as never,
       MECH,
     );
-    expect(sub?.content).toContain('sendUserMessage');
+    expect(sub?.content).toContain('sendUserMessage(reason');
     expect(sub?.content).toContain('!== lastVerdict');
-    expect(turn?.content).not.toContain('sendUserMessage');
+    expect(turn?.content).not.toContain('sendUserMessage(reason');
 
     // An event that carries no turn stays a bare fire: handing one a transcript
     // would assert it is a turn, which it is not.
@@ -426,6 +429,28 @@ describe('omp enforcing surface', () => {
       MECH,
     );
     expect(bare?.content).not.toContain('judged(');
+  });
+
+  it('announces a judge that did not answer, instead of returning silently', () => {
+    // THE DEFECT THIS PINS RAN FOR FIVE HOURS AND NOBODY SAW IT. The bridge used
+    // to `return undefined` the moment the judge produced nothing, so the worker
+    // was never fired a second time and its own `dark` line — "this turn was NOT
+    // judged; the absence of a block is an absence of a verdict, not a clean one"
+    // — was unreachable in this harness. A latched-away endpoint then read as an
+    // unbroken run of clean turns. Failing OPEN is the correct enforcement
+    // posture; failing open SILENTLY is the bypass.
+    const [turn] = ompGuardrailExtensions(
+      [binding(['mav'], ['turn.end'])] as never,
+      MECH,
+    );
+    // The empty file is what reaches the worker's own announcement: it re-fires
+    // rather than short-circuiting on a missing verdict.
+    expect(turn?.content).toContain('writeFileSync(file, verdict ?? "")');
+    expect(turn?.content).not.toContain('if (!verdict) return undefined');
+    // Announced ONCE — `judgeAway` latches, so an unbounded notice would repeat
+    // one unchanging line at every later turn end.
+    expect(turn?.content).toContain('lastDark');
+    expect(turn?.content).toContain('sendUserMessage(out');
   });
 
   it('reads the verdict off STDOUT and a nonzero `code`, never `exitCode`', () => {
