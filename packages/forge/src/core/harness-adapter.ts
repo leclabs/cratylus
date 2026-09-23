@@ -227,10 +227,10 @@ export interface HarnessAdapter {
    *
    * Claude and codex do (`agents/<name>.md`, `agents/<name>.toml`), so the
    * assumption held for two harnesses and was invisible. **omp does not**: its
-   * persona lands at `<home>/../.agents/<name>/APPEND_SYSTEM.md` — one directory
-   * OUT of omp's own `.omp` home, at the harness-neutral root a LAUNCH SPEC
-   * carries identity from, because omp has no native identity field of its own
-   * (no `--agent` flag, no per-session name) to put it in.
+   * definition lands at `<home>/agent/agents/<name>.md` — inside omp's own
+   * config root, two levels down, because that is the USER-level task-agent
+   * root omp discovers from and forge's flat `agents/<name>.md` staging is not
+   * it.
    *
    * REQUIRED for the same reason `agentExt` is: deploy reads a render tree off disk
    * with no vector to ask, so it must compute the destination from the name alone.
@@ -450,9 +450,10 @@ export interface HarnessAdapter {
    * NOT ONLY MECHANISM, and that is why this is named `scopedRel` rather than
    * `enforcingRel`, its name until a launch spec needed the same map: a harness
    * whose scope is a directory may place MORE than a hook module there — omp's
-   * launcher and `--config` overlay land beside it, because an operator who has
-   * to combine three flags by hand to start one persona has a launch spec
-   * whether or not this port generates it for them.
+   * `--config` overlay lands beside the modules it names, and its launcher in
+   * the SESSION scope, because an operator who has to combine flags by hand to
+   * start one persona has a launch spec whether or not this port generates it
+   * for them.
    *
    * The render tree stages those artifacts by scope (forge's own staging layout);
    * this is the harness's answer for where each scope's copy belongs, and it is
@@ -469,16 +470,24 @@ export interface HarnessAdapter {
   /**
    * Emit the LAUNCH SPEC — the artifacts an operator combines to start a
    * session AS one composed persona, on a harness with no native identity
-   * field to put a persona in. One SET per projected agent, staged the same
-   * way `enforcingSurface`'s output is (`scope` = the agent name), because the
-   * spec belongs beside the mechanism modules it wires, not in a directory of
-   * its own.
+   * field to put a persona in. Staged the same way `enforcingSurface`'s output
+   * is (`scope` = the agent name, or {@link SESSION_SCOPE}), because the spec
+   * belongs beside the mechanism modules it wires, not in a directory of its
+   * own.
+   *
+   * PER-AGENT AND SESSION-WIDE BOTH, and the split is the implementation's to
+   * make. An artifact that NAMES one persona is scoped to it (omp's `--config`
+   * overlay, which names that persona's own extensions dir); one that resolves
+   * a persona at run time is session-scoped and emitted ONCE (omp's launcher,
+   * which reads the agent out of `$1` or out of argv[0]). Returning one set per
+   * agent unconditionally is how ten agents came to ship ten byte-identical
+   * launchers.
    *
    * ORTHOGONAL TO A PROFILE. omp's `--profile` silos auth, MCP, models,
    * sessions and `agent.db` — an ENVIRONMENT choice, a property of the host.
    * The launch spec carries IDENTITY — a property of the agent this port
    * composes — and the two facts do not need to agree: an operator may still
-   * pass `--profile work path/to/omp-launch` and get both.
+   * pass `--profile work` on the launcher's own command line and get both.
    *
    * Absent ⇒ this harness carries identity in its own native field (claude's
    * front-matter `name`, codex's TOML `name`) and composes no launch spec.

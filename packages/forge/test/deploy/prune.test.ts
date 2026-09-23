@@ -501,27 +501,76 @@ describe('deploy prune — convergence to the render tree', () => {
     expect(after).toContain('"FOO": "bar"');
   });
 
-  // THE ROOT IS PLURAL NOW, and it had to be. omp's destinations are
-  // `../.agents/<name>/…` — a SIBLING of the harness home — so the containment
-  // guard resolved every record outside the single root it was given and skipped
-  // the lot. Silently: a skipped path is not a candidate, and a prune that removes
-  // nothing prints nothing. Measured before the fix — a host carrying ten
-  // projected personas, redeployed from a two-agent corpus, kept all ten faces,
-  // all ten launch specs and every retired skill, and reported success.
+  // THE ROOT IS PLURAL NOW, and it had to be. omp reads SKILLS from
+  // `../.agents/skills/<name>` — a SIBLING of the harness home — so the
+  // containment guard resolved every one of those records outside the single
+  // root it was given and skipped the lot. Silently: a skipped path is not a
+  // candidate, and a prune that removes nothing prints nothing. Measured before
+  // the fix — a host carrying ten projected personas, redeployed from a
+  // two-agent corpus, kept all ten faces, all ten launch specs and every
+  // retired skill, and reported success.
   //
   // Widening a delete's reach is a data-loss hazard, so the exoneration leg is not
   // optional: the guard moved from ONE root to a NAMED SET, and the record is still
   // what bounds the deletion inside them.
-  it('NEUTRAL ROOT: a retired persona is swept out of `../.agents`, foreign files spared', () => {
+  //
+  // CARRIED BY A SKILL, because that is what still lands out there. omp's
+  // persona moved INTO the harness home (`agent/agents/<name>.md`, the root omp
+  // discovers agents from), so an agent deploy no longer crosses the boundary
+  // this leg exists to prove reachable — and a leg that cannot reach it proves
+  // nothing about the guard.
+  it('NEUTRAL ROOT: a retired skill is swept out of `../.agents`, foreign files spared', () => {
     const omp = adapterByName('omp');
     const home = tmp('v4-host-');
-    const a = renderTreeExt(['mav', 'nico'], omp.agentExt);
-    const b = renderTreeExt(['mav'], omp.agentExt);
+    const a = renderTreeExt([], omp.agentExt, ['probe', 'wake']);
+    const b = renderTreeExt([], omp.agentExt, ['probe']);
     const deploy = (tree: { agentsDir: string; skillsDir: string }) =>
+      deploySingle({
+        kind: 'skill',
+        scope: 'user',
+        tree,
+        home,
+        harnessHome: omp.home,
+        agentExt: omp.agentExt,
+        skillRel: (n: string, agents: readonly string[]) =>
+          omp.skillRel(n, agents),
+        ...silent,
+      });
+
+    deploy(a);
+    const retired = join(home, '.agents', 'skills', 'wake', 'SKILL.md');
+    expect(
+      existsSync(retired),
+      'the skill landed outside the harness home',
+    ).toBe(true);
+    // A file this tool never wrote, in the very dir the prune now reaches into.
+    const foreign = join(home, '.agents', 'skills', 'wake', 'NOTES.md');
+    writeFileSync(foreign, 'WAKE LIVED HISTORY\n', 'utf-8');
+
+    deploy(b);
+    expect(existsSync(retired), 'the retired skill is swept').toBe(false);
+    expect(
+      readFileSync(foreign, 'utf-8'),
+      'an artifact this tool never recorded is untouchable, in every root',
+    ).toBe('WAKE LIVED HISTORY\n');
+    // …and the live skill is still there.
+    expect(
+      existsSync(join(home, '.agents', 'skills', 'probe', 'SKILL.md')),
+    ).toBe(true);
+  });
+
+  // The other half of the same guard: omp's persona destination is now INSIDE
+  // the harness home, so the PRIMARY root has to converge it. A retired agent
+  // that survived here would be discoverable by name forever — omp scans that
+  // directory on every dispatch, so a stale definition is a live agent.
+  it('HARNESS HOME: a retired omp persona loses its definition and its scope', () => {
+    const omp = adapterByName('omp');
+    const home = tmp('v4-host-omp-');
+    const deploy = (agents: string[]) =>
       deploySingle({
         kind: 'agent',
         scope: 'user',
-        tree,
+        tree: renderTreeExt(agents, omp.agentExt),
         home,
         harnessHome: omp.home,
         agentExt: omp.agentExt,
@@ -529,24 +578,14 @@ describe('deploy prune — convergence to the render tree', () => {
         ...silent,
       });
 
-    deploy(a);
-    const face = join(home, '.agents', 'nico', 'APPEND_SYSTEM.md');
-    expect(existsSync(face), 'the face landed outside the harness home').toBe(
+    deploy(['mav', 'nico']);
+    const def = join(home, omp.home, omp.agentRel('nico'));
+    expect(existsSync(def), 'the def landed where omp discovers agents').toBe(
       true,
     );
-    // A file this tool never wrote, in the very dir the prune now reaches into.
-    const foreign = join(home, '.agents', 'nico', 'NOTES.md');
-    writeFileSync(foreign, 'NICO LIVED HISTORY\n', 'utf-8');
 
-    deploy(b);
-    expect(existsSync(face), 'the retired face is swept').toBe(false);
-    expect(
-      readFileSync(foreign, 'utf-8'),
-      'an artifact this tool never recorded is untouchable, in every root',
-    ).toBe('NICO LIVED HISTORY\n');
-    // …and the live persona is still there.
-    expect(existsSync(join(home, '.agents', 'mav', 'APPEND_SYSTEM.md'))).toBe(
-      true,
-    );
+    deploy(['mav']);
+    expect(existsSync(def), 'the retired def is swept').toBe(false);
+    expect(existsSync(join(home, omp.home, omp.agentRel('mav')))).toBe(true);
   });
 });

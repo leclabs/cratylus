@@ -175,21 +175,32 @@ A render tree is forge's own STAGING layout — `agents/<name><ext>`, `skills/<n
 `hooks/<id>/`, `enforcing/<scope>/` — and it is deliberately not any harness's layout. Deploy asks the
 adapter where each artifact belongs:
 
-| Artifact                         | Port op                  | claude / codex                 | omp                                                   |
-| -------------------------------- | ------------------------ | ------------------------------ | ----------------------------------------------------- |
-| agent definition (persona)       | `agentRel(name)`         | `agents/<name><ext>`           | `../.agents/<name>/APPEND_SYSTEM.md`                  |
-| skill directory                  | `skillRel(name, agents)` | `skills/<name>`                | `../.agents/skills/<name>` (one copy — read natively) |
-| hook registration                | `hooksFile` (merged)     | `settings.json` / `hooks.json` | — (no hook config exists)                             |
-| scoped mechanism module          | `scopedRel(file, scope)` | —                              | `<scope>/extensions/<file>`                           |
-| launch spec (overlay + launcher) | `scopedRel(file, scope)` | —                              | `<scope>/omp.yml`, `<scope>/omp-launch`               |
+| Artifact                   | Port op                  | claude / codex                 | omp                                                   |
+| -------------------------- | ------------------------ | ------------------------------ | ----------------------------------------------------- |
+| agent definition (persona) | `agentRel(name)`         | `agents/<name><ext>`           | `agent/agents/<name>.md`                              |
+| skill directory            | `skillRel(name, agents)` | `skills/<name>`                | `../.agents/skills/<name>` (one copy — read natively) |
+| hook registration          | `hooksFile` (merged)     | `settings.json` / `hooks.json` | — (no hook config exists)                             |
+| scoped mechanism module    | `scopedRel(file, scope)` | —                              | `<scope>/extensions/<file>`                           |
+| `--config` overlay         | `scopedRel(file, scope)` | —                              | `<scope>/omp.yml` (per persona)                       |
+| launcher                   | `scopedRel(file, scope)` | —                              | `agent/omp-agent` (0755, ONE for every persona)       |
 
-`<scope>` is `agent/` for the SESSION copy (a launch that names no persona) or `../.agents/<agent>/`
-for a projected persona — the harness-neutral root a LAUNCH SPEC is carried from, one directory out of
-omp's own `.omp` home. Identity used to be carried by projecting each persona INTO an omp `--profile`
+`<scope>` is `agent/` for the SESSION copy (a launch that names no persona) or
+`agent/personas/<agent>/` for a projected persona — a directory omp scans for nothing, so what lands
+there is reachable only from that persona's own `--config` overlay and never from a bare `omp`.
+
+**The definition is the single source of truth.** `~/.omp/agent/agents/<name>.md` is omp's USER-level
+task-agent root: YAML front-matter carrying the `name` and `description` omp requires, and a body that
+IS the system prompt. Dispatched as a subagent, omp reads it natively. Launched as a MAIN session —
+for which omp has no `--agent` flag at all — `omp-agent <name>` (or a symlink named after the agent,
+busybox-style) reads the same bytes, prepends the identity assertion omp's own base prompt would
+otherwise win, appends any `autoloadSkills` as required reading, and hands the result to
+`--append-system-prompt`. One definition, two readers, nothing to drift — and ONE launcher on the
+host rather than one per agent.
+
+Identity used to be carried by projecting each persona INTO an omp `--profile`
 (`profiles/<name>/agent/APPEND_SYSTEM.md`), which conflated an agent's IDENTITY with the operator's
-whole ENVIRONMENT (a profile also silos auth, MCP, models, sessions and `agent.db`). The two are now
-orthogonal: `<agent>/omp-launch` combines `--append-system-prompt` and `--config` for one persona, and
-an operator who also wants a `--profile` can still pass one.
+whole ENVIRONMENT (a profile also silos auth, MCP, models, sessions and `agent.db`). The two are
+orthogonal: an operator who also wants a `--profile` passes one on the launcher's own command line.
 
 `skillRel` stays PLURAL on the port (a harness may still scope a reader by directory), but omp now
 returns exactly one destination: its vendor-neutral `.agent[s]` provider reads `~/.agents/skills`

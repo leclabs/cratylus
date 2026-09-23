@@ -61,10 +61,10 @@ export function defaultAgentRel(name: string, agentExt = '.md'): string {
 /** Write <harnessDir>/<agentRel(name)> for each name — the harness-specific
  *  declaration, and the ONLY thing this function writes. Where that lands
  *  varies by harness (`agents/<name>.md` under claude's own root; omp's is
- *  `../.agents/<name>/APPEND_SYSTEM.md`, inside the harness-neutral home). A
- *  harness whose destination sits inside that home gets exactly the
- *  declaration there — never a sidecar, never a scan of what else lives
- *  beside it. */
+ *  `agent/agents/<name>.md`, the user-level task-agent root it discovers
+ *  from). A harness whose destination sits under a dir it also scans for
+ *  other things gets exactly the declaration there — never a sidecar, never a
+ *  scan of what else lives beside it. */
 export function placeAgentsLocal(
   harnessDir: string,
   defsDir: string,
@@ -91,18 +91,18 @@ export function placeAgentsLocal(
     const dest = resolvePath(harnessDir, agentRel(name));
     if (!opts.dry) {
       // The destination's PARENT, not a fixed `agents/` dir: omp's is
-      // `../.agents/<name>/`, which does not exist until this run makes it.
+      // `agent/agents/`, two levels in, which does not exist until this run
+      // makes it.
       mkdirSync(dirname(dest), { recursive: true });
       writeFileSync(dest, readFileSync(src, 'utf-8'), 'utf-8');
     }
     report.copied += 1;
     // Testimony: the def is the ONLY thing this placer ever writes, so it is
-    // the only thing a later prune may remove. For a harness whose def
-    // destination happens to live under `<harnessDir>/../.agents/<name>/`
-    // (omp's launch spec now does), the def is still the ONLY file this
-    // placer puts there — the rest of that home (memory sidecars, whatever
-    // else the agent's own organs write) is the agent's, and a deploy never
-    // creates, reads, or deletes any of it.
+    // the only thing a later prune may remove. For a harness whose def lands in
+    // a directory the harness ALSO reads other things from (omp discovers every
+    // `*.md` in `agent/agents/`), the def is still the only file this placer
+    // puts there — an operator's own hand-written agent beside it is theirs,
+    // and a deploy never creates, reads, or deletes any of it.
     // The extension must match what was WRITTEN, not what claude happens to use:
     // the manifest is the prune record, and a record naming a path that does not
     // exist can never converge — the real file becomes permanently unattributable.

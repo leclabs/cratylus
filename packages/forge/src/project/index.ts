@@ -651,14 +651,16 @@ export async function projectPluginSet(
     }
   }
 
-  // THE LAUNCH SPEC. Some harnesses have no native identity field at all — omp
-  // has no `--agent` flag and no per-session name, so composing a persona means
-  // combining flags an operator would otherwise have to remember and type
-  // together every time. That combination is itself worth generating, not
-  // leaving to a README; staged the same way `enforcingSurface`'s output is
-  // (scope = the agent name), because it belongs beside the mechanism modules
-  // it wires, not in a directory of its own. Optional: claude and codex carry
-  // identity in their own agent def and compose nothing here.
+  // THE LAUNCH SPEC. Some harnesses have no native identity field for a MAIN
+  // session at all — omp has no `--agent` flag and no per-session name, so
+  // composing a persona means combining flags an operator would otherwise have
+  // to remember and type together every time. That combination is itself worth
+  // generating, not leaving to a README; staged the same way
+  // `enforcingSurface`'s output is, by whatever scope the adapter named. Both
+  // scopes appear here: an artifact that NAMES one persona is that persona's
+  // (omp's overlay), and one that resolves a persona at RUN time belongs to the
+  // session and is emitted once (omp's launcher). Optional: claude and codex
+  // carry identity in their own agent def and compose nothing here.
   const renderLaunchSurface = opts.adapter.launchSurface;
   if (renderLaunchSurface) {
     for (const s of renderLaunchSurface(agentNames)) {

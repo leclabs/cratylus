@@ -144,11 +144,12 @@ describe('the two harnesses genuinely differ — else the cases above are one ca
 describe('deploy --harness omp places what omp actually reads', () => {
   const omp = adapterByName('omp');
 
-  /** An omp-shaped render tree: one agent, one skill, and one staged launch-spec
-   *  set per scope (session + the agent), exactly as `project` writes them —
-   *  the session module named for real, so `scopedRel`'s filename-aware
-   *  placement (module → `extensions/`, overlay/launcher → the scope's own top
-   *  level) is exercised the same way it is in production. */
+  /** An omp-shaped render tree: one agent, one skill, and the staged scoped
+   *  artifacts `project` writes — the session module for BOTH scopes, the ONE
+   *  generic launcher under `_session`, and the persona's own overlay under its
+   *  own scope. Staged by hand rather than off the projector, because what is
+   *  under test here is the DEPLOY half: given this tree, does the placer put
+   *  each file where omp reads it? */
   function ompTree() {
     const root = mkdtempSync(join(tmpdir(), 'forge-omp-'));
     roots.push(root);
@@ -160,7 +161,7 @@ describe('deploy --harness omp places what omp actually reads', () => {
     mkdirSync(join(src, 'enforcing', 'mav'), { recursive: true });
     writeFileSync(
       join(src, 'agents', `mav${omp.agentExt}`),
-      'You are `mav`.\n',
+      '---\nname: mav\ndescription: "the builder"\n---\n\n# mav\n',
     );
     writeFileSync(join(src, 'skills', 'probe', 'SKILL.md'), '# probe\n');
     writeFileSync(join(src, 'hooks', 'ping', 'ping.sh'), '#!/bin/sh\nexit 0\n');
@@ -170,13 +171,14 @@ describe('deploy --harness omp places what omp actually reads', () => {
         `// ${scope}\nexport default () => {};\n`,
       );
     }
-    // The launch spec — omp.yml + omp-launch — lands ONLY for the persona
-    // scope, exactly as `ompLaunchSurface` emits it (never for `_session`).
+    // The overlay is PER-PERSONA — it names that persona's own extensions dir.
     writeFileSync(
       join(src, 'enforcing', 'mav', OMP_OVERLAY_FILE),
       `extensions:\n  - ${SCOPE_DIR_TOKEN}/extensions\n`,
     );
-    const launcherSrc = join(src, 'enforcing', 'mav', OMP_LAUNCHER_FILE);
+    // The launcher is SESSION-scoped and emitted ONCE: it names no agent, it
+    // reads one at run time out of the definitions deployed beside it.
+    const launcherSrc = join(src, 'enforcing', '_session', OMP_LAUNCHER_FILE);
     writeFileSync(launcherSrc, '#!/bin/sh\nexec omp "$@"\n');
     chmodSync(launcherSrc, 0o755);
     const home = join(root, 'target');
@@ -227,14 +229,23 @@ describe('deploy --harness omp places what omp actually reads', () => {
     ).toBe(false);
   });
 
+  it('places the agent definition where omp DISCOVERS agents', () => {
+    // `~/.omp/agent/agents/<name>.md` is the user-level task-agent root, so a
+    // definition landing here is dispatchable as a subagent AND readable by the
+    // launcher for a main session. Its predecessor was a launch argument in a
+    // harness-neutral dir omp's discovery never looked at.
+    const { dir } = ompTree();
+    expect(existsSync(join(dir, 'agent', 'agents', 'mav.md'))).toBe(true);
+  });
+
   it('places each staged mechanism module in the scope that loads it', () => {
-    const { dir, home } = ompTree();
+    const { dir } = ompTree();
     expect(
       existsSync(join(dir, 'agent', 'extensions', OMP_SESSION_MODULE)),
     ).toBe(true);
     expect(
       existsSync(
-        join(home, '.agents', 'mav', 'extensions', OMP_SESSION_MODULE),
+        join(dir, 'agent', 'personas', 'mav', 'extensions', OMP_SESSION_MODULE),
       ),
     ).toBe(true);
     // And nothing is left at the staging path: a module under `enforcing/` on the
@@ -242,24 +253,34 @@ describe('deploy --harness omp places what omp actually reads', () => {
     expect(existsSync(join(dir, 'enforcing'))).toBe(false);
   });
 
-  it('lands the launcher executable, and the overlay resolves to where the module actually landed', () => {
-    const { home } = ompTree();
-    const scopeDir = join(home, '.agents', 'mav');
-    const launcherPath = join(scopeDir, OMP_LAUNCHER_FILE);
+  it('lands ONE executable launcher, in the session root beside the agents', () => {
+    const { dir } = ompTree();
+    const launcherPath = join(dir, 'agent', OMP_LAUNCHER_FILE);
     expect(existsSync(launcherPath)).toBe(true);
     expect(
       statSync(launcherPath).mode & 0o111,
       'an unexecutable launcher is dead on the host — the operator cannot run it',
     ).not.toBe(0);
+    // Beside the agents dir it reads, not one directory per persona: the whole
+    // point is that ten agents ship one script.
+    expect(existsSync(join(dir, 'agent', 'agents'))).toBe(true);
+    expect(
+      existsSync(join(dir, 'agent', 'personas', 'mav', OMP_LAUNCHER_FILE)),
+      'a per-persona launcher is the duplication this shape retired',
+    ).toBe(false);
+  });
 
+  it('resolves the overlay token to where the module actually landed', () => {
+    const { dir } = ompTree();
+    const scopeDir = join(dir, 'agent', 'personas', 'mav');
     const overlay = readFileSync(join(scopeDir, OMP_OVERLAY_FILE), 'utf-8');
     // The token must be GONE — a placeholder no YAML parser can expand would
     // reach the host exactly the way a literal `$HOME` does: read as a literal,
     // useless path segment.
     expect(overlay).not.toContain(SCOPE_DIR_TOKEN);
     // And what replaced it must name the directory the module actually landed
-    // in — a launcher whose overlay names a directory nobody placed anything
-    // into is a persona that starts with none of its own governance loaded.
+    // in — an overlay naming a directory nobody placed anything into is a
+    // persona that starts with none of its own governance loaded.
     expect(overlay).toContain(join(scopeDir, 'extensions'));
     expect(existsSync(join(scopeDir, 'extensions', OMP_SESSION_MODULE))).toBe(
       true,

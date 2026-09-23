@@ -374,9 +374,10 @@ export function runDeployCheck(opts: DeployCmdOpts): number {
       );
       // THE WHOLE LAYOUT, not just the extension. The check used to pass
       // `agentExt` alone, so every non-claude harness was audited against claude's
-      // destinations: an omp check compared `agents/<name>.md` while the deploy it
-      // audits writes `../.agents/<name>/APPEND_SYSTEM.md`, and reported the whole
-      // corpus absent. Same facts as the deploy call above, same source.
+      // destinations: an omp check compared `agents/<name>.md` at the harness
+      // root while the deploy it audits writes `agent/agents/<name>.md`, and
+      // reported the whole corpus absent. Same facts as the deploy call above,
+      // same source.
       const report = auditLocal(harnessDir, kind, tree, names, {
         agentExt: harnessAdapter.agentExt ?? undefined,
         agentRel: (n: string) => harnessAdapter.agentRel(n),

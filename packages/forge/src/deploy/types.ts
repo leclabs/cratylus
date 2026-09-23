@@ -80,9 +80,10 @@ export interface PlaceOpts {
    *
    * Defaults to `agents/<name><agentExt>`, which is the render tree's own staging
    * layout and was until now assumed to be every harness's layout too. It is not:
-   * omp reads a persona from `../.agents/<name>/APPEND_SYSTEM.md`, one directory
-   * OUT of its own harness home. A placer that cannot be told otherwise can only
-   * ever deploy harnesses shaped like the projector.
+   * omp reads a definition from `agent/agents/<name>.md`, two levels inside its
+   * own harness home, because that is the root its task-agent discovery scans.
+   * A placer that cannot be told otherwise can only ever deploy harnesses
+   * shaped like the projector.
    */
   agentRel?: (name: string) => string;
   /**
