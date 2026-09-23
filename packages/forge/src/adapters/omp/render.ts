@@ -202,7 +202,19 @@ export const OMP_LAUNCHER_FILE = 'omp-agent';
  *  from that persona's own launch and never from a bare `omp`. It sits UNDER
  *  the session root rather than beside it so the launcher — which resolves its
  *  own directory and knows nothing else — reaches it by hopping down, with no
- *  knowledge of where the harness home is or how deep. */
+ *  knowledge of where the harness home is or how deep.
+ *
+ *  RELOCATING THIS BREAKS EVERY LIVE SESSION, and the failure is delayed. A
+ *  running session holds its `--config <persona>/omp.yml` in a launch spec it
+ *  re-resolves on EVERY subagent spawn, so a deploy that moves the scope out
+ *  from under it leaves the parent apparently healthy and every spawn dying on
+ *  `Config overlay not found`. That is the silent removal of delegation from an
+ *  agent whose whole design delegates. Measured twice: once for `kino` on
+ *  2026-09-22 against a path the deploy had never written, and again the next
+ *  day for `mav` when this constant moved the scope here from `.agents/<name>/`.
+ *  So a future move of this constant is a BREAKING change for sessions already
+ *  running, and it wants the old path left resolvable until they drain — the
+ *  deploy cannot know they exist. */
 export const OMP_PERSONA_DIR = 'personas';
 
 // The two filenames that must resolve inside a scope's `extensions/`
