@@ -135,6 +135,35 @@ describe('projection stability (.ts is the sole source)', () => {
     }
   });
 
+  // A DECLARATION THAT RESOLVES NOWHERE IS WORSE THAN NO DECLARATION. An agent's
+  // `skills` are NAMES, projected verbatim into omp's `autoloadSkills` and read
+  // back by the generic launcher as `skill://<name>` required reading. A skill
+  // renamed or retired out from under one leaves an agent that still LOOKS
+  // equipped: omp resolves the name against its skill roster, finds nothing, and
+  // autoloads nothing — silently, with the definition still naming it. The names
+  // are string literals precisely because the field is an ADDRESS into a host's
+  // skill tree rather than an import, so this is the leg that keeps them true.
+  it('every skill an agent declares resolves to a live cell', async () => {
+    const roster = new Set(
+      (await collect('skills/*/skill.ts')).map((r) => r.split('/')[1]),
+    );
+    expect(roster.size).toBeGreaterThan(0);
+    const modules = (await collect('agents/*.ts')).filter(
+      (r) => !r.endsWith('base.ts'),
+    );
+    let declared = 0;
+    for (const rel of modules) {
+      const agent = await firstExport<Agent>(join(srcRoot, rel));
+      for (const name of agent.skills ?? []) {
+        declared++;
+        expect(roster.has(name), `${rel} declares skill '${name}'`).toBe(true);
+      }
+    }
+    // Non-vacuous: the loop above passes trivially on a corpus where no agent
+    // declares anything, which is exactly the state this field was added to end.
+    expect(declared).toBeGreaterThan(0);
+  });
+
   // THE SHIPPED ROSTER IS THE SCANNED ROSTER, and `dist/` is what gets scanned.
   // `index.ts` hands the loader DIRECTORIES (`skills: dir('./skills')`), resolved
   // relative to the built module, so the corpus a host projects is whatever sits in

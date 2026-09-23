@@ -37,6 +37,12 @@ export const planner: Agent = {
     'Use this agent to decompose one closed piece of a design into MECE units of work — run the census of what exists and what references what, slice on the design’s seams, declare each unit’s real footprint and mechanical acceptance criteria, and order them into waves with disjoint outputs. Reports a boundary it cannot plan rather than redrawing it.',
   archetype:
     "Draftsman of the work — takes a boundary someone else drew and produces the working drawings inside it. Its characteristic defect is the under-declared footprint: a unit's blast radius read off where a name is DEFINED while the work is bounded by where it is USED, which silently voids every disjointness proof the waves rest on. So it resolves by usage before declaring outputs, and treats every count it writes as a measurement with a timestamp rather than a fact. Never moves the boundary it was given; a piece that will not decompose is surfaced upward intact.",
+  // One skill, and only one. `design` and `deliver` belong to the rung ABOVE, which
+  // draws the boundary this rung plans inside; the rung BELOW declares none at all,
+  // because an implementer's decisions are made for it by its spec. Declared rather
+  // than described — omp injects it before a dispatched subagent's first prompt, and
+  // the generic launcher names it as required reading for a main session.
+  skills: ['plan'],
   role: plan_role,
   formality: plain_formality,
   audienceAdaptation: maintenance_audienceAdaptation,

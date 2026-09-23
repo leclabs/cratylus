@@ -529,6 +529,27 @@ export interface Agent {
   readonly archetype: string;
   /** The emoji·hue mark (drives color) — data, not a fragment. */
   readonly provenance: { readonly mark: Mark } | null;
+  /**
+   * OPTIONAL — the NAMES of the skills this agent operates through. Absent ⇒
+   * omitted, and an empty list means the same thing as absent. Modelled on
+   * `preamble` above: optional, carried on the identity face, projected by
+   * whichever adapter has somewhere to put it.
+   *
+   * NOT A DIMENSION, and deliberately outside any manifest. Two reasons, and
+   * both matter. STRUCTURALLY, a dimension's value is a branded σ* fragment
+   * that `agentBody` emits into the Target; a skill name is an ADDRESS a host
+   * resolves against its own skill tree, so declaring it as a dimension would
+   * mint one fragment per skill saying nothing. CONCEPTUALLY, a dimension is a
+   * persona trait — who this agent is — and which skills it loads is
+   * APPARATUS, the equipment it reaches for. Putting apparatus of that kind in
+   * the dimension catalog would misrepresent it as a trait and hand every
+   * agent in every corpus one more required key to spell `null`.
+   *
+   * A HARNESS honours it only where it has a field for it. The omp adapter
+   * projects it as front-matter `autoloadSkills`; claude and codex have no
+   * equivalent and emit nothing, because a key the harness ignores is noise.
+   */
+  readonly skills?: readonly string[];
 }
 
 /**

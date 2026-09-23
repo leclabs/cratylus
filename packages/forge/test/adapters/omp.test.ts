@@ -103,15 +103,50 @@ function frontMatter(md: string): Record<string, string> {
 }
 
 describe('omp agent definition', () => {
-  it('carries the two fields omp REQUIRES, and no more', () => {
+  it('carries the two fields omp REQUIRES, and nothing a HOST routes with', () => {
     // `parseAgentFields` treats a missing `name` or `description` as a parse
-    // failure and SKIPS the file — a persona that silently does not exist.
-    // Everything else omp accepts here routes a HOST's dispatch rather than
-    // describing the composed agent, so forge asserts none of it.
+    // failure and SKIPS the file — a persona that silently does not exist. The
+    // REST of what omp accepts here (`model`, `tools`, `spawns`,
+    // `thinking-level`, …) routes a HOST's dispatch rather than describing the
+    // composed agent, so forge asserts none of it. `autoloadSkills` is the one
+    // exception and the leg below owns it: this agent declares no skills, so
+    // the key is not here either.
     expect(frontMatter(agentToOmpMd(AGENT, CTX))).toEqual({
       name: 'mav',
       description: 'the builder: ships things',
     });
+  });
+
+  it('emits `autoloadSkills` for a cell that declares skills, and only then', () => {
+    // The one front-matter key that describes the COMPOSED AGENT rather than a
+    // host's routing, and the only one forge asserts. omp honours it for a
+    // DISPATCHED subagent; `OMP_LAUNCHER_SCRIPT` reads the same key back out
+    // for a MAIN session, which has no native path for it — so the declaration
+    // reaching these bytes is what makes one definition mean one thing.
+    //
+    // Read off the RENDERED STRING rather than through `frontMatter`: the claim
+    // is about the bytes omp's own YAML reader will see, including the quoting
+    // and the position of the key inside the fence.
+    const declared = agentToOmpMd(
+      { ...(AGENT as object), skills: ['design', 'deliver'] } as never,
+      CTX,
+    );
+    expect(declared).toContain(
+      '\nautoloadSkills: ["design", "deliver"]\n---\n',
+    );
+
+    // The negative half, and it has teeth: a third key emitted unconditionally
+    // would put `autoloadSkills: []` into every definition that declares none —
+    // a list omp parses to empty and a launcher renders as nothing, which is
+    // noise that reads like a declaration. An EMPTY list is treated as absent
+    // for the same reason.
+    for (const bare of [AGENT, { ...(AGENT as object), skills: [] } as never]) {
+      const fence = /^---\n([\s\S]*?)\n---\n/.exec(
+        agentToOmpMd(bare, CTX),
+      )?.[1] as string;
+      expect(fence.split('\n')).toHaveLength(2);
+      expect(fence).not.toContain('autoloadSkills');
+    }
   });
 
   it('survives a description carrying the characters YAML reserves', () => {
@@ -712,8 +747,13 @@ describe('omp launch spec', () => {
   it('turns `autoloadSkills` into reading a MAIN session can act on', () => {
     // omp honours the field ONLY for a spawned subagent, so one definition
     // would otherwise mean two different things depending on how it was
-    // reached. Forge emits no such field; an operator adding one to their own
-    // definition is exactly who this serves.
+    // reached.
+    //
+    // BOTH SPELLINGS, because both arrive here. An operator hand-editing a
+    // definition writes YAML's BLOCK sequence; `agentToOmpMd` emits the FLOW
+    // sequence from the cell's own `skills`. A launcher that read only one of
+    // them would drop the declaration silently, which is indistinguishable
+    // from the agent never having made it.
     const { bin, argv, launcher } = deployedHome({
       scribe: [
         '---',
@@ -727,14 +767,36 @@ describe('omp launch spec', () => {
         'BODY',
         '',
       ].join('\n'),
+      mav: agentToOmpMd(
+        { ...(AGENT as object), skills: ['design', 'deliver'] } as never,
+        CTX,
+      ),
     });
+
     launch(bin, launcher, ['scribe']);
-    const args = recordedArgv(argv);
-    const prompt = args[args.indexOf('--append-system-prompt') + 1] as string;
-    expect(prompt).toContain('- `skill://probe`');
-    expect(prompt).toContain('- `skill://signify`');
+    const block = recordedArgv(argv);
+    const blockPrompt = block[
+      block.indexOf('--append-system-prompt') + 1
+    ] as string;
+    expect(blockPrompt).toContain('- `skill://probe`');
+    expect(blockPrompt).toContain('- `skill://signify`');
     // The body survives the extraction rather than being replaced by it.
-    expect(prompt).toContain('BODY');
+    expect(blockPrompt).toContain('BODY');
+
+    // THE PROJECTOR'S OWN BYTES, end to end: the producing half now exists, so
+    // what forge wrote out of a cell's `skills` is what the launcher must read
+    // back in. Fed a hand-written sample only, this leg would still pass on the
+    // day the two halves stopped agreeing on the spelling.
+    launch(bin, launcher, ['mav']);
+    const flow = recordedArgv(argv);
+    const flowPrompt = flow[
+      flow.indexOf('--append-system-prompt') + 1
+    ] as string;
+    expect(flowPrompt).toContain('- `skill://design`');
+    expect(flowPrompt).toContain('- `skill://deliver`');
+    expect(flowPrompt).toContain('Hero archetype of end-to-end delivery');
+    // …and the key itself never reaches the model as literal text.
+    expect(flowPrompt).not.toContain('autoloadSkills');
   });
 
   it('the overlay names the DIRECTORY, so it covers the guardrail module too', () => {

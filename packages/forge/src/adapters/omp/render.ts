@@ -217,17 +217,26 @@ const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
 // ── Agent projection → agent/agents/<name>.md ────────────────────────────────
 
 /**
- * The omp agent definition: the front-matter pair omp REQUIRES, then the
- * composed Target body, which IS the system prompt.
+ * The omp agent definition: the front-matter omp reads, then the composed Target
+ * body, which IS the system prompt.
  *
- * **FRONT-MATTER, and exactly two fields.** `parseAgentFields` treats a missing
- * `name` or `description` as a parse failure and SKIPS the file — a persona that
- * silently does not exist. Everything else omp accepts here (`model`, `tools`,
- * `spawns`, `thinking-level`, `autoloadSkills`, …) is a property of a HOST's
- * routing rather than of the composed agent, so forge asserts none of them: an
- * operator who adds one is editing their own dispatch policy, and the launcher
- * reads `autoloadSkills` back OUT of this file rather than making them declare
- * it twice.
+ * **FRONT-MATTER: the two fields omp REQUIRES, plus the one the CELL declares.**
+ * `parseAgentFields` treats a missing `name` or `description` as a parse failure
+ * and SKIPS the file — a persona that silently does not exist. The rest of what
+ * omp accepts here (`model`, `tools`, `spawns`, `thinking-level`, …) is a
+ * property of a HOST's routing rather than of the composed agent, so forge
+ * asserts none of it: an operator who adds one is editing their own dispatch
+ * policy.
+ *
+ * **`autoloadSkills` IS THE EXCEPTION, because it is not routing.** Which skills
+ * an agent operates through is a fact about the COMPOSED AGENT, and the cell
+ * declares it (`Agent.skills`). Emitted only when that declaration is non-empty,
+ * so an agent that declares none still projects exactly the two required keys.
+ * omp honours the field for a DISPATCHED subagent — the skills are injected
+ * before the child's first prompt — and {@link OMP_LAUNCHER_SCRIPT} reads the
+ * same key back OUT of this file for a MAIN session, which has no native path
+ * for it. One declaration, both ways of reaching the agent, nothing declared
+ * twice.
  *
  * **THE DESCRIPTION IS QUOTED, AND THAT IS NOT COSMETIC.** A plain YAML scalar
  * may not contain `: ` — `nico`'s description does ("its conceptual architecture
@@ -236,7 +245,9 @@ const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
  * logging a warning on every discovery pass, so the defect is invisible right up
  * until a description grows a `#` or a newline and the fallback loses it too.
  * Double-quoted with `"` and `\` escaped, every description this corpus can
- * produce is a legal one-line YAML scalar.
+ * produce is a legal one-line YAML scalar. Each skill name is quoted by the same
+ * rule, which makes the emitted flow sequence identical in shape to the one omp's
+ * own agent-definition template writes.
  *
  * **NO IDENTITY LINE.** The persona body used to open with "You are `<name>`…",
  * because this file WAS the appended prompt and omp's base prompt asserts its
@@ -247,6 +258,11 @@ const OMP_EXTENSION_FILES: Readonly<Record<string, true>> = {
  */
 export function agentToOmpMd(a: Agent, ctx: AgentDefContext): string {
   const fm = [`name: ${a.name}`, `description: ${yamlString(a.description)}`];
+  // omp-SPECIFIC, and emitted by this adapter alone: neither claude nor codex
+  // has a field that loads a skill from an agent definition.
+  if (a.skills?.length) {
+    fm.push(`autoloadSkills: [${a.skills.map(yamlString).join(', ')}]`);
+  }
   return `---\n${fm.join('\n')}\n---\n\n${agentBody(a, ctx.manifest).replace(/\n+$/, '')}\n`;
 }
 
@@ -1054,6 +1070,12 @@ export function ompOverlayYaml(): string {
  * is the nearest main-session equivalent that exists: the skills are already on
  * disk at `~/.agents/skills/` and already read natively, so the only thing
  * missing was the instruction to read them.
+ *
+ * BOTH SPELLINGS REACH THIS AWK, and they must. {@link agentToOmpMd} writes the
+ * FLOW sequence from a cell's own `Agent.skills`; an operator hand-editing a
+ * definition writes YAML's BLOCK sequence. Reading only one of them would drop
+ * the declaration in silence, which is the same session as one that never made
+ * it.
  */
 export const OMP_LAUNCHER_SCRIPT = [
   '#!/bin/sh',
