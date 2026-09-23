@@ -106,6 +106,15 @@ allow_stop() { exit 0; }  # emit nothing; the agent is permitted to stop.
 # turn. Reached only AFTER the opt-in and allowlist checks, so a repo that never enabled
 # the guard stays silent.
 dark() {
+	# THE HEARTBEAT, and the reason the log is worth keeping. A VERDICT row and a
+	# DARK row are both evidence the guard RAN; only an EMPTY log means it never
+	# did. Recording judged turns alone made "not judged" and "no session" read
+	# identically — measured on a live host: an endpoint behind the advisor role
+	# accepted connections and never answered, and five hours of one session were
+	# unjudged while leaving no trace whatsoever to notice it by.
+	if [ -n "\${verdict_log:-}" ]; then
+		printf 'DARK\\t\\t%s\\n' "\$1" >> "\$verdict_log" 2>/dev/null || true
+	fi
 	printf 'STANCE GUARDRAIL — DARK: %s. This turn was NOT judged; the absence of a block is an absence of a verdict, not a clean one.\\n' "\$1"
 	exit 0
 }
