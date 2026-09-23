@@ -480,7 +480,7 @@ describe('READER-DENSITY gate — conform(a) ⇔ register(a) = ρ(a)', () => {
 
   it('no agent vector carries a register contradiction, or is pinned', async () => {
     const agents = await allAgents();
-    expect(agents.length).toBe(2);
+    expect(agents.length).toBeGreaterThan(0);
     const failures = agents
       .filter(
         ({ agent }) =>

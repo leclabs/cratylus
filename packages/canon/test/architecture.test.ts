@@ -37,7 +37,7 @@
 // governs `command-veracity` and the density gate.
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
@@ -329,12 +329,19 @@ function roleOf(rel: string): Role {
  *  put and the SWEEP's idea of the tree was what went stale. */
 function srcFiles(pkg: string): string[] {
   const roots = [`packages/${pkg}/src`, `packages/${pkg}/tooling`];
-  return execFileSync('git', ['ls-files', ...roots], {
-    cwd: repoRoot,
-    encoding: 'utf8',
-  })
-    .split('\n')
-    .filter((f) => f.endsWith('.ts'));
+  return (
+    execFileSync('git', ['ls-files', ...roots], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+    })
+      .split('\n')
+      .filter((f) => f.endsWith('.ts'))
+      // `git ls-files` still lists a path deleted-but-not-yet-staged, and reading it
+      // threw ENOENT and took all eight legs of this gate down at once. A file that
+      // is gone imports nothing, so it contributes no edge and is dropped here rather
+      // than crashing the scan mid-walk.
+      .filter((f) => existsSync(join(repoRoot, f)))
+  );
 }
 
 function edges(): Edge[] {
@@ -610,6 +617,9 @@ describe('ARCHITECTURE gate — the four load-bearing properties, enforced', () 
       })
         .split('\n')
         .filter((f) => f.endsWith('.ts'))
+        // Same reason as `srcFiles()`: a tracked-but-deleted path reads as ENOENT
+        // and fails this leg for a file that, being gone, imports nothing.
+        .filter((f) => existsSync(join(repoRoot, f)))
         .map((f) => codeOnly(readFileSync(join(repoRoot, f), 'utf8')))
         .join('\n');
 

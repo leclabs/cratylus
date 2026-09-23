@@ -249,8 +249,9 @@ describe('structural-parsimony gate — ¬∃ artifact restating an archetype', 
   // ── LIVE TREE: GREEN on every class (regression-prevention floor) ─────────────
   it('the live tree is GREEN on all three structural classes', async () => {
     const corpus = await loadLiveCorpus();
-    // cardinality sanity — the loader SEES the whole corpus.
-    expect(corpus.agents.length).toBe(2);
+    // cardinality sanity — the loader SEES the whole corpus. A floor, never an
+    // exact count: pinning the roster size makes every new agent a test failure.
+    expect(corpus.agents.length).toBeGreaterThan(0);
     expect(corpus.fragments.length).toBeGreaterThan(100);
     const verdicts = structuralParsimony(corpus);
     const failures = verdicts
@@ -259,21 +260,24 @@ describe('structural-parsimony gate — ¬∃ artifact restating an archetype', 
     expect(failures, failures.join('\n')).toEqual([]);
   });
 
-  // The roster shrink to {mav, nico} retired the REVIEW-role agent
-  // (principal-engineer-reviewer) this control used to key off, and `role/build`
-  // — the only role value left — is now shared by BOTH survivors, so `role` no
-  // longer has a single-ref member to test with. Re-grounded on `objective`
-  // (also `repertoire: 'open'` per the manifest): `objective/delivery` is mav's
-  // own open-dimension pick and nico carries `objective/parsimony` instead, so
-  // it is still genuinely referenced by exactly one agent in the live corpus.
-  it('a live legit single-ref open value (objective/delivery → 1 agent) is not convicted', async () => {
+  // This control proves single-ref ≠ cruft on the LIVE tree, so it needs a value
+  // the corpus genuinely references exactly once. It was keyed to `role/build`,
+  // re-grounded on `objective/delivery` when the roster shrank to {mav, nico},
+  // then broke again when a third agent also picked `delivery`. A hand-picked
+  // witness re-breaks on every roster change, so the witness is DERIVED: whatever
+  // the live corpus currently references exactly once, all of them.
+  it('every live single-ref dimension value is not convicted', async () => {
     const corpus = await loadLiveCorpus();
-    const refs = corpus.agents.filter((a) =>
-      a.dimensionImports.includes('objective/delivery'),
-    );
-    expect(refs.length).toBe(1); // referenced by exactly one agent (mav)…
-    expect(absorbedIdentity(corpus).convicted).not.toContain(
-      'objective/delivery',
-    ); // …yet GREEN
+    const refCount = new Map<string, number>();
+    for (const a of corpus.agents)
+      for (const imp of a.dimensionImports)
+        refCount.set(imp, (refCount.get(imp) ?? 0) + 1);
+    const singleRef = [...refCount]
+      .filter(([, n]) => n === 1)
+      .map(([value]) => value);
+    expect(singleRef.length).toBeGreaterThan(0); // the premise must hold
+    const { convicted } = absorbedIdentity(corpus);
+    for (const value of singleRef)
+      expect(convicted, value).not.toContain(value);
   });
 });

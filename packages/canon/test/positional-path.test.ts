@@ -28,7 +28,7 @@
 // `tooling/repo-root.ts` is built on.
 
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { requireRepoRoot } from '@cratylus/tooling/repo-root';
@@ -136,8 +136,16 @@ function authored(): Map<string, string> {
   })
     .split('\n')
     .filter((f) => /\.(ts|mjs|sh)$/.test(f));
-  for (const rel of tracked)
-    files.set(rel, readFileSync(join(repoRoot, rel), 'utf8'));
+  for (const rel of tracked) {
+    // A path `git ls-files` still tracks may be GONE from disk — an uncommitted
+    // deletion is the ordinary case mid-change, and reading it threw ENOENT and
+    // took the whole gate down with it. A deleted file is not authored content, so
+    // it is skipped rather than fatal; `existsSync` keeps the denominator honest
+    // (sites EXAMINED) instead of silently counting a file nobody can read.
+    const abs = join(repoRoot, rel);
+    if (!existsSync(abs)) continue;
+    files.set(rel, readFileSync(abs, 'utf8'));
+  }
   return files;
 }
 

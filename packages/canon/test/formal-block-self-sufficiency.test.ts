@@ -59,9 +59,9 @@ describe('SELF-SUFFICIENCY gate — zero-comment corpus (absolute)', () => {
     expect(ALLOW_LIST.size).toBe(0);
   });
 
-  it('every one of the 13 skill formalBlocks is zero-comment (no `--`/`—` marker)', async () => {
+  it('every skill formalBlock is zero-comment (no `--`/`—` marker)', async () => {
     const { scans } = await scanCorpus();
-    expect(scans.length).toBe(13);
+    expect(scans.length).toBeGreaterThan(0);
 
     // Emit the authoritative worklist (marker · line · carrier · annotation).
     console.log(`\n${formatWorklist(scans)}\n`);

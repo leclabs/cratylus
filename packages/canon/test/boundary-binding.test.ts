@@ -104,22 +104,26 @@ describe('BOUNDARY-BINDING gate — `X @ home` resolves in that home', () => {
 
   it('CONVICTS: a binding whose home lacks the symbol is reported', async () => {
     const real = await loadSkills();
-    const praxis = real.get('praxis');
-    expect(praxis, 'praxis must exist for this fixture').toBeDefined();
+    // Re-grounded from `praxis` onto its successor `plan` when the design/plan/
+    // deliver trio superseded it. The fixture needs a LIVE home that declares one
+    // of two borrowed symbols and not the other; naming a home that no longer
+    // exists made this an ENOENT rather than a verdict.
+    const home = real.get('plan');
+    expect(home, 'plan must exist for this fixture').toBeDefined();
 
     const injected = new Map(real);
     injected.set('__fixture__', {
       name: '__fixture__',
       description: 'synthetic',
-      // `active` is exactly the symbol carry-on borrowed and praxis never declared.
-      formalBlock: 'P ≜ a plan\nactive, done @ praxis\n',
+      // `R` is declared by `plan` (`R ⊆ P × P`); `quiesced` is declared nowhere.
+      formalBlock: 'X ≜ a thing\nquiesced, R @ plan\n',
       composition: () => [],
     } as unknown as Skill);
 
     const found = unresolved(injected);
-    expect(found.join(' | ')).toContain('`active @ praxis`');
-    // and it does NOT over-report: `done` IS declared by praxis.
-    expect(found.join(' | ')).not.toContain('`done @ praxis`');
+    expect(found.join(' | ')).toContain('`quiesced @ plan`');
+    // and it does NOT over-report: `R` IS declared by plan.
+    expect(found.join(' | ')).not.toContain('`R @ plan`');
   });
 
   it('EXONERATES: a conceptual (non-skill) home is skipped, not failed', async () => {
