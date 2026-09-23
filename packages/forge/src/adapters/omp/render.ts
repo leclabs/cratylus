@@ -1023,6 +1023,18 @@ export function ompOverlayYaml(): string {
     'extensions:',
     `  - ${SCOPE_DIR_TOKEN}/extensions`,
     '',
+    "# THE CELL IS THE ONLY VOICE. omp's default prompt renders a personality block",
+    '# chosen by this setting, and a persona already states its register completely —',
+    '# `formality` carries the prose contract, `audience-adaptation` sets density,',
+    '# `transparency` and `handoff` fix what a reply discloses and how it ends. A preset',
+    '# beside those is a second, uncoordinated statement of the same thing.',
+    '#',
+    '# `none` and not a preset, because omp runs every SUBAGENT with `none` regardless.',
+    '# Left at a preset, one definition means two different voices depending on whether',
+    '# it was launched or dispatched — the exact defect the single definition and the',
+    "# launcher's `autoloadSkills` rendering close on the other two axes.",
+    'personality: none',
+    '',
   ].join('\n');
 }
 
