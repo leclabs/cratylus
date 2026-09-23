@@ -1,5 +1,114 @@
 # @cratylus/schema
 
+## 0.2.0
+
+### Minor Changes
+
+- b0bc847: An agent declares the skills it operates through
+
+  `autoloadSkills` was a reader with nothing to read. OMP honours the field natively for a spawned
+  subagent, and the generic `omp-agent` launcher already rendered it as required reading for a main
+  session — the consuming half existed on **both** paths. The producing half did not, because the
+  corpus had nowhere to declare it. The branch was live code with zero live inputs: every deployed
+  definition carried exactly `name` and `description`.
+
+  `Agent.skills` is an optional list of skill NAMES, modelled on the existing optional `preamble`.
+
+  It is deliberately **not a dimension**, for two independent reasons. Structurally, a dimension's
+  value is a branded σ\* fragment `agentBody` emits into the Target, while a skill name is an
+  address a host resolves — declaring it as a dimension would mint one empty fragment per skill.
+  Conceptually, a dimension is a persona trait, and which skills an agent loads is apparatus; the
+  catalog would misrepresent it and hand every agent one more required `null` to spell.
+
+  The omp adapter emits it as a third front-matter key, each name through the same `yamlString` the
+  description uses. Absent or empty emits nothing, leaving the two-key document unchanged. The
+  claude and codex adapters are untouched: neither harness has a field that loads a skill from an
+  agent definition, and emitting a key a harness ignores is noise.
+
+  This closes the gap that made every skill binding advisory. A main-session persona now carries
+  its required skills in the system prompt on every turn rather than waiting for a description to
+  match, and a spawned subagent gets them injected before its first prompt.
+
+### Patch Changes
+
+- e2b2263: A harness-invariant hook asset deploys once, to the vendor-neutral `.agents` root
+
+  The stance rubric is one 27 kB file every projection scores against, byte-for-byte identical
+  across claude, codex and omp — and it was being copied into `<harness>/hooks/stance-guardrail/`
+  three times. The duplication was the smaller half of the cost. The larger half is that the text
+  had **no address any other realization could name**: an advisor roster entry wanting the same
+  rubric would have had to `@`-import it out of a sibling harness's tree, which is exactly the
+  cross-harness reach `harness-independence` forbids. A shared asset has one address, and the
+  neutral root is the one place every harness may read without reaching into another.
+
+  `HookWorker.shared` declares it, `SHARED_STAGE_DIR` stages it, and deploy places it at
+  `../.agents/<id>/` — the same relative-escape shape the scoped mechanism modules already use,
+  so the manifest keeps it attributable and prune retires it with its hook. The workers resolve
+  it by DERIVATION (`.agents` is the sibling of every harness home, three `dirname`s up), never
+  by a baked `$HOME`, so a sandboxed `--home` deploy resolves correctly — the same discipline
+  that repaired the `$HOME/.claude` leak, applied before it could become one.
+
+  **The criterion is `byte-identical ∧ ¬executable`, and the gate is what corrected it.** The
+  first cut said byte-identical alone, and it immediately caught two assets that must NOT move:
+  the worker scripts are byte-identical too, and are positionally coupled to the harness in two
+  ways their bytes cannot show — each harness's registration addresses its own copy by path, and
+  each worker resolves `stance-judge.sh` as a sibling. That judge is genuinely harness-specific
+  (it names the harness's own CLI through `{{fact:harness-judge-bin}}`), so a single shared
+  worker could not know whose judge to run without the registration passing it in. That trade
+  relocates harness-specificity into a shared file's arguments and buys only the deduplication of
+  two scripts that belong beside the registration invoking them. An entry point a harness invokes
+  is executable; a rubric is not.
+
+  The gate holds both directions and is non-vacuous in both arms: the corpus must contain a shared
+  data asset and a harness-specific one, or the rule is green over nothing.
+
+  Verified on a sandboxed two-harness deploy — one rubric on disk, claude and omp both resolving
+  `<home>/.agents/stance-guardrail/stance-judge-prompt.md`, including from the pre-guard — and
+  live on omp, where the guard blocked twice reading the shared rubric with a tripwire `claude`
+  first on `PATH` never invoked.
+
+- 415a112: omp judges in-process; no harness depends on another harness's CLI
+
+  `claude -p` was never an acceptable judge for omp, and it was not acceptable for codex
+  either. The backend hardcoded `judge_bin="${STANCE_JUDGE_BIN:-claude}"`, so every harness's
+  stance guard required a third vendor's CLI installed, on PATH, and separately
+  authenticated. When that OAuth lapsed on the author's host, every verdict on every harness
+  failed open in silence — deployed, opted in, correctly scoped, judging nothing.
+
+  **The judge seam is now explicit, and the procedure still has one home.** A host that holds a
+  model runs the worker twice around a judgment it makes itself: once with `STANCE_EMIT_PAYLOAD`
+  to collect the gated, layer-1-annotated payload and the rubric that scores it, then again with
+  `STANCE_VERDICT_FILE` naming its answer. Everything either pass touches before the seam is
+  read-only, so the counters, the hash and the verdict log see exactly one pass. The gating,
+  extraction, deterministic pre-filter, evidence verification and block accounting stay in the
+  worker; only the model call moves.
+
+  **omp's shim takes that seam.** The emitted extension module resolves `modelRoles.advisor`
+  (then `smol`, then `tiny`, then the live session model) through `ctx.modelRegistry`, gets auth
+  from omp's own registry, and calls `completeSimple` — static-imported from `@oh-my-pi/pi-ai`,
+  which omp's loader aliases to its own bundled build. Measured against `omp` v18.1.19: the real
+  26.8 kB rubric judged in 1991 ms on a local model, and a live `mav` session blocked, re-opened
+  the turn, and settled with a tripwire `claude` first on `PATH` never once invoked.
+
+  The richer `judgment` module (`TextJudge`, `chatTextBackend`, `NoulQuestion`) exists in omp's
+  source but is **not** in the bundled compat entrypoint the shipped binary carries; importing it
+  silently kills the module load. `completeSimple` is what the binary exposes and what a judge
+  needs.
+
+  **The judge binary is now a projection fact, not a literal.** `harness-judge-bin` joins the
+  closed `ProjectionFact` set; each adapter answers with its own name — claude `claude`, codex
+  `codex`, omp the **empty string**, because it judges in-process and names no subprocess at all.
+  An empty value is a real answer and the backend reads it as one, failing open rather than
+  falling back to somebody else's CLI.
+
+  **A gate holds the law.** `canon/harness-independence.test.ts` fails if any committed worker
+  names another harness's home in executable shell, or if a cell template names a vendor CLI
+  where a projection fact belongs. Both legs were convicted before admission: a
+  `$HOME/.claude/...` line injected into a committed worker and a `:-claude}` default restored to
+  the cell each produced exactly one finding, and removing them returned the gate to green.
+  Comments are exempt — a rule that forbids naming `claude` in a sentence would delete the record
+  of the repair along with the bug.
+
 ## 0.1.2
 
 ### Patch Changes

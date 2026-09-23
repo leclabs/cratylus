@@ -1,5 +1,25 @@
 # @cratylus/invoke
 
+## 0.2.5
+
+### Patch Changes
+
+- Updated dependencies [317ba47]
+- Updated dependencies [b0bc847]
+- Updated dependencies [b0bc847]
+- Updated dependencies [f1c41e1]
+- Updated dependencies [848288e]
+- Updated dependencies [4e6e7aa]
+- Updated dependencies [e2b2263]
+- Updated dependencies [a1944fc]
+- Updated dependencies [94b3a7b]
+- Updated dependencies [0cca8bc]
+- Updated dependencies [fc9b334]
+- Updated dependencies [415a112]
+- Updated dependencies [693a056]
+  - @cratylus/forge@0.5.0
+  - @cratylus/canon@0.2.0
+
 ## 0.2.4
 
 ### Patch Changes
