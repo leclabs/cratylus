@@ -11,9 +11,9 @@
 #   ambiguity, a substantive intent-extracted dispatch.
 #
 # SAFETY MODEL (mirrors stance-guardrail):
-#   - OFF BY DEFAULT (git config agentfactory.stanceGuard true).
-#   - AGENT-SCOPED (agent_type in the allowlist; default: nico mav). agent_type is
-#     present only for subagents / --agent mode; a top-level session call fails open.
+#   - SCOPE-ENROLLED, exactly as its twin: a scope carrying a stance manifest is judged and
+#     every other scope is silent. No repo opt-in, no allowlist — the projection that places a
+#     persona also enrolls it, and declining the guard means declining the persona.
 #   - FAILS OPEN. Any error (no jq, judge failure, bad input) -> exit 0 (allow the call).
 #   - LOOP-SAFE. A re-entry cap: never deny an identical tool_input twice (there is no
 #     stop_hook_active analog for PreToolUse), so it can never wedge a call.
@@ -63,12 +63,11 @@ input="$(cat)"
 [ -n "$input" ] || allow
 command -v jq >/dev/null 2>&1 || allow  # no jq -> cannot parse -> fail open
 
-# --- opt-in gate (off by default) -----------------------------------------------------------
-# Per-repo, lives in .git/config, never checked in. Resolve relative to the hook's cwd.
+# The per-repo opt-in is GONE, for the reason its twin states: it asked whether a guard may run in
+# a DIRECTORY, and a stance belongs to the agent, not the checkout. `cwd` survives it — the worker
+# still runs where the session runs.
 cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
 [ -n "$cwd" ] && cd "$cwd" 2>/dev/null || true
-enabled="$(git config --bool agentfactory.stanceGuard 2>/dev/null || echo false)"
-[ "$enabled" = "true" ] || allow
 
 # --- scope gate: the persona's OWN stance manifest -------------------------------------------
 # The twin of the turn-end guard's gate, and inverted for the same reason: an allowlist here was

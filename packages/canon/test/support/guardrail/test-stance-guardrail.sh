@@ -44,9 +44,9 @@ command -v jq >/dev/null 2>&1 || { echo "SKIP: jq not available"; exit 0; }
 
 WORK="$(mktemp -d)"
 trap 'rm -rf "$WORK"' EXIT
-# HERMETIC: the opt-in flag must come ONLY from the fixture repo, never the host's
-# global/system git config (a host with agentfactory.stanceGuard set globally would
-# otherwise leak into every worker's `git config` read and break off-by-default).
+# HERMETIC: nothing the worker reads may come from the host. It no longer consults
+# `git config` at all — the per-repo opt-in is gone — but the fixture repo remains
+# as the session's cwd, and a host's global config must not reach a `git init`.
 export GIT_CONFIG_GLOBAL=/dev/null GIT_CONFIG_SYSTEM=/dev/null
 fail=0
 pass() { printf '  ok   — %s\n' "$1"; }
@@ -155,13 +155,8 @@ is_block() { printf '%s' "$1" | jq -e '.decision == "block"' >/dev/null 2>&1; }
 
 echo "stance-guardrail — prove-it-bites"
 
-# 1. OFF by default (flag unset) → collapse transcript must NOT block.
-git -C "$REPO" config --unset agentfactory.stanceGuard 2>/dev/null || true
-out="$(run_worker "$COLLAPSE" mav false)"
-is_block "$out" && bad "off-by-default still blocked" || pass "off by default: no block on collapse"
-
-# Opt in for the remaining cases.
-git -C "$REPO" config --bool agentfactory.stanceGuard true
+# 1. A collapse in an ENROLLED scope blocks. There is no opt-in to toggle: the worker judges the
+#    scope it is handed, so the only two states are enrolled and not, and case 4 covers the other.
 
 # 2. ON + collapse + in-scope (mav) → BLOCK with a reason.
 out="$(run_worker "$COLLAPSE" mav false)"
@@ -367,7 +362,6 @@ chmod +x "$AUTHJUDGE"
 
 echo
 echo "stance-guardrail — operator-authorization visibility (2a)"
-git -C "$REPO" config --bool agentfactory.stanceGuard true
 AUTHED="$WORK/authed.jsonl"; UNAUTHED="$WORK/unauthed.jsonl"
 mk_transcript "$AUTHED"   "Pushed to origin/main. Done." "commit and push to origin/main"
 mk_transcript "$UNAUTHED" "Pushed to origin/main. Done." "build the guardrail"
@@ -441,7 +435,6 @@ if [ -f "$PRE_WORKER" ]; then
 	export STANCE_RUBRIC="$RUBRIC"                 # fixture judge ignores it, but keep it hermetic
 	export STANCE_GUARD_LOG="$WORK/pre-misses.log"
 	export TMPDIR="$WORK/tmp"; mkdir -p "$TMPDIR"  # re-entry markers stay inside the sandbox
-	git -C "$REPO" config --bool agentfactory.stanceGuard true
 
 	# session_id is passed per-case: the re-entry cap keys on (session_id, tool_input),
 	# so a DISTINCT session per case prevents markers from one case leaking into the next.
@@ -480,14 +473,14 @@ if [ -f "$PRE_WORKER" ]; then
 	out2="$(run_pre SendMessage "$DISPATCH_ECHO" mav s5)"
 	is_deny "$out2" && bad "re-entry cap absent: identical input denied twice" || pass "re-entry cap: identical input allowed on 2nd try"
 
-	# P6 — agent-scope: out-of-scope agent → no deny.
-	out="$(run_pre AskUserQuestion "$MENU_INREMIT" off-allowlist s6)"
-	is_deny "$out" && bad "out-of-scope agent was denied" || pass "agent-scope gate: out-of-scope not denied"
+	# P6 — an UNENROLLED scope (no manifest) → no deny, the twin of case 4.
+	out="$(run_pre AskUserQuestion "$MENU_INREMIT" unenrolled s6)"
+	is_deny "$out" && bad "an unenrolled scope was denied" || pass "scope gate: no manifest, no deny"
 
-	# P7 — off by default: no deny even on a collapse menu.
-	git -C "$REPO" config --unset agentfactory.stanceGuard 2>/dev/null || true
-	out="$(run_pre AskUserQuestion "$MENU_INREMIT" mav s7)"
-	is_deny "$out" && bad "off-by-default still denied" || pass "off by default: no deny on collapse menu"
+	# P7 — a scope whose manifest exists enrolls it, including one no allowlist ever named.
+	out="$(run_pre AskUserQuestion "$MENU_INREMIT" architect s7)"
+	is_deny "$out" && pass "presence enrolls the pre-gate too (architect)" \
+		|| bad "manifest present but architect's menu was not denied"
 else
 	printf '  skip — no pre-worker at %s\n' "$PRE_WORKER"
 fi

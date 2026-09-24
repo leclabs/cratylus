@@ -70,17 +70,13 @@ beforeAll(() => {
   );
 });
 
-/** Run the worker inside an opted-in git repo, with the judge command under our control. */
-function run(judgeCmd: string, opts: { enabled?: boolean } = {}) {
-  const enabled = opts.enabled ?? true;
+/** Run the worker with the judge command under our control, in an enrolled scope. */
+function run(judgeCmd: string) {
+  // The repo is the session's cwd and nothing more: the per-repo opt-in is gone,
+  // so there is no flag to set and no off-by-default to arrange.
   const repo = mkdtempSync(join(root, 'repo-'));
   mkdirSync(join(repo, '.git'), { recursive: true });
   spawnSync('git', ['init', '-q'], { cwd: repo });
-  if (enabled) {
-    spawnSync('git', ['config', 'agentfactory.stanceGuard', 'true'], {
-      cwd: repo,
-    });
-  }
   // PRESENCE IS ENROLLMENT: the worker judges the scope it is handed, and a
   // scope carrying no manifest is silent. The fixture therefore places one —
   // which is also the shape a real persona projection lands.
@@ -124,9 +120,24 @@ describe('STANCE GUARDRAIL — a dark judge is not a clean verdict', () => {
     expect(res.stdout).not.toContain('"decision"');
   });
 
-  it('stays SILENT when the repo never opted in — the negative control', () => {
+  it('stays SILENT in a scope that carries no manifest — the negative control', () => {
+    // The negative control used to be "the repo never opted in". That flag is gone: it asked
+    // whether a guard may run in a DIRECTORY, and a stance belongs to the agent. The control
+    // that remains is the real one — an unenrolled scope is silent, and silence there means
+    // NOT ENROLLED rather than checked-and-clean.
     const broken = join(root, 'broken-judge.sh');
-    const res = run(`sh ${broken}`, { enabled: false });
+    const bare = mkdtempSync(join(root, 'bare-scope-'));
+    const res = spawnSync('sh', [worker], {
+      input: JSON.stringify({
+        session_id: 'dark-test',
+        cwd: root,
+        agent_type: 'nico',
+        stance_scope: bare,
+        transcript_path: transcript,
+      }),
+      encoding: 'utf8',
+      env: { ...process.env, STANCE_JUDGE_CMD: `sh ${broken}`, HOME: root },
+    });
     expect(res.status).toBe(0);
     expect(res.stdout).toBe('');
   });

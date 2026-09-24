@@ -53,8 +53,13 @@ export const stanceGuardrail: HookCell = {
 #     electing the session's objective is supplying intent, not sequencing — the operator's to own
 #
 # SAFETY MODEL:
-#   - OFF BY DEFAULT. Does nothing unless the repo opts in (git config agentfactory.stanceGuard true).
-#   - AGENT-SCOPED. Only fires for agents on the allowlist (default: nico, mav — the principal-self agents).
+#   - SCOPE-ENROLLED. Fires for a scope carrying a stance manifest, and for no other. Enrollment
+#     is PRESENCE: the projection places a manifest in each persona's own scope, so composing the
+#     cell enrolls the persona and nothing central lists anybody. A bare launch carries the
+#     dispatcher and no manifest, and is therefore silent by placement.
+#   - NO REPO OPT-IN. There was one, per-repo in .git/config, and it asked the wrong question:
+#     whether a guard may run in a DIRECTORY. The off switch is launching \`omp\` rather than a
+#     persona — declining to BE the agent, instead of being it unjudged.
 #   - FAILS OPEN, BUT NEVER SILENTLY-CLEAN. Any error → exit 0 (allow stop): a guardrail that
 #     wedges work on its own flakiness is worse than a missed block. But once the guard is
 #     ENABLED and in scope, a failure that prevents judging (no transcript, judge unreachable)
@@ -154,13 +159,14 @@ verdict_log="$state_dir/$session.verdicts"
 block_count="$(cat "$count_file" 2>/dev/null || echo 0)"
 case "$block_count" in *[!0-9]*) block_count=0 ;; esac
 
-# --- opt-in gate (off by default) -----------------------------------------------------------
-# Per-repo, lives in .git/config, never checked in. A fresh clone is opted out.
-# Resolve relative to the hook's cwd (the project), which is where the flag lives.
+# The per-repo opt-in is GONE, and its absence is the point. It answered "may a guard run in this
+# DIRECTORY", which is a category error: a stance is a property of the agent, not of the checkout
+# it happens to be standing in. Worse, it made the stance OPTIONAL AT RUNTIME for an agent already
+# launched as itself — the ambient form, when the whole reason this harness half exists is that
+# identity alone erodes. The off switch is launching \`omp\` instead of \`mav\`: declining to be the
+# persona, rather than being it unjudged.
 cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
 [ -n "$cwd" ] && cd "$cwd" 2>/dev/null || true
-enabled="$(git config --bool agentfactory.stanceGuard 2>/dev/null || echo false)"
-[ "$enabled" = "true" ] || allow_stop
 
 # --- scope gate: the persona's OWN stance manifest -------------------------------------------
 # COMPOSITION IS THE SCOPE, NOT A RUNTIME SELF-FILTER — MODEL.md's ENFORCED clause, and this

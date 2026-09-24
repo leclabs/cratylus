@@ -52,41 +52,48 @@ The hook is **sourced, projected, and deployed by forge** — no hand-rolled `jq
   `~/.claude/hooks/stance-guardrail/` and **merges** the hooks block into the host `settings.json`
   (idempotent, non-destructive — never clobbers permissions/env/other hooks).
 
-## Safety model (off-by-default-safe, like the continuity hook)
+## Safety model (enrolled by placement, silent otherwise)
 
-- **OFF BY DEFAULT — a RUNTIME gate.** Registration in `settings.json` is **inert**: the worker re-checks
-  the per-repo opt-in `git config --bool agentfactory.stanceGuard true` (lives in `.git/config`, never checked in;
-  a fresh clone is opted out) at fire time and exits 0 unless the repo opted in. Deploying the hook to a
-  host changes **no host's behavior** until that host's repo opts in.
-- **AGENT-SCOPED.** Fires only for agents on the allowlist (`git config agentfactory.stanceGuardAgents`, default
-  `nico mav` — the principal-self agents). Set `*` for all.
-- **FAILS OPEN.** Any error (no transcript, judge failure, no `jq`, no `claude`) → allow the stop. A
-  guardrail that wedges work on its own flakiness is worse than a missed block.
-- **LOOP-SAFE.** Honors `stop_hook_active` so a block can never re-wedge a turn.
+- **SCOPE-ENROLLED — enrollment is PRESENCE.** The projection lands
+  `<scope>/stance/manifest.json` in each persona's own scope, and the worker judges a scope
+  carrying one and no other. Composing the cell enrolls the persona; nothing central lists
+  anybody. A bare launch carries the dispatcher and no manifest, so it is silent by placement
+  rather than by a branch.
+- **NO REPO OPT-IN, NO ALLOWLIST.** Both are gone. The opt-in asked whether a guard may run in a
+  DIRECTORY, which is a category error — a stance belongs to the agent, not the checkout — and it
+  made the stance optional at runtime for an agent already launched as itself, which is the
+  ambient form this harness half exists to prevent. The allowlist was a runtime self-filter over
+  an enrollment the corpus already derives, and it had drifted: every projected persona carried
+  the guard while the shell default named `nico mav`, leaving `architect` and `kino` holding
+  principal authority and never once judged. **The off switch is launching `omp` instead of a
+  persona** — declining to be the agent, rather than being it unjudged.
+- **FAILS OPEN, NEVER SILENTLY-CLEAN.** Any error (no transcript, judge failure, no `jq`) → allow
+  the stop, because a guardrail that wedges work on its own flakiness is worse than a missed
+  block. But an enrolled scope whose judge could not answer announces itself via `dark` and
+  records a DARK row in the verdict log: silence is reserved for NOT ENROLLED.
+- **LOOP-SAFE.** A block budget bounds re-entry; judging itself is never skipped.
 
 ## Components
 
 | file                       | role                                                                                                                                                                                                                                         |
 | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `stance-guardrail.sh`      | the Stop/SubagentStop **worker**: gates (opt-in · agent-scope · loop · fail-open), extracts the last assistant turn from the transcript, calls the judge, emits `{"decision":"block","reason":…}` on collapse.                               |
+| `stance-guardrail.sh`      | the Stop/SubagentStop **worker**: gates (scope-enrollment · loop · fail-open), extracts the last assistant turn from the transcript, calls the judge, emits `{"decision":"block","reason":…}` on collapse.                                   |
 | `stance-judge.sh`          | the default **judge backend** (contract: turn on stdin, rubric path argv[1] → `VERDICT: PASS\|BLOCK [+REASON]`). Calls headless `claude -p --model haiku`. Swappable via `$STANCE_JUDGE_CMD` — the only LLM-coupled, non-deterministic part. |
 | `stance-judge-prompt.md`   | the **rubric** — the stance contract the judge applies.                                                                                                                                                                                      |
 | `test-stance-guardrail.sh` | **prove-it-bites** — hermetic (fixture repo + crafted transcripts + deterministic fixture judge), plus an optional live-`claude` smoke. Set `STANCE_WORKER_DIR=<host>/.claude/hooks/stance-guardrail` to prove the **deployed** artifact.    |
 
-> Retired when installation moved to forge: `stance-guard-toggle.sh` (the `jq` +
-> `settings.local.json` hand-edit). Registration is now forge's; only the runtime opt-in flag
-> remains, toggled by plain `git config`.
+> Retired: `stance-guard-toggle.sh` (the `jq` + `settings.local.json` hand-edit), when
+> installation moved to forge; then the runtime opt-in flag and the agent allowlist, when
+> enrollment moved into each persona's own scope. Nothing is toggled by hand any more —
+> projecting a persona enrolls it.
 
 ## Usage
 
 ```sh
-pnpm canon:deploy:hooks               # project + ship the workers + merge into settings.json (forge)
-pnpm stance-guard:on                 # opt THIS repo in (git config agentfactory.stanceGuard true)
-pnpm stance-guard:off                # opt out (worker goes dormant)
-pnpm stance-guard:status             # show the flag
-pnpm stance-guard:test               # prove it bites (set STANCE_WORKER_DIR for the deployed artifact)
-git config agentfactory.stanceGuardAgents '*'   # widen the agent allowlist (default: nico mav)
+pnpm canon:deploy:hooks               # project + ship the workers (forge)
+pnpm stance-guard:test                # prove it bites (set STANCE_WORKER_DIR for the deployed artifact)
+cratylus deploy --harness omp --check # who is enrolled: one stance/manifest.json per persona scope
 ```
 
 Tuning env vars (all optional): `STANCE_JUDGE_CMD` (swap the whole backend), `STANCE_JUDGE_BIN`,
-`STANCE_JUDGE_MODEL` (default `haiku`), `STANCE_RUBRIC`, `STANCE_GUARD_AGENTS`, `STANCE_WORKER_DIR`.
+`STANCE_JUDGE_MODEL`, `STANCE_RUBRIC`, `STANCE_WORKER_DIR`.
