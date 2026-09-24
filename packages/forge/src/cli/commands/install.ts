@@ -9,9 +9,6 @@
 // learn a two-stage pipeline to obtain the DEFAULT answer is the friction this verb
 // removes.
 //
-// The prior art is exact: `graphify install [--platform P]` copies its skill into the
-// detected platform's config dir, with no project and no config file. Same shape here.
-//
 // WHAT MAKES IT SAFE TO DEFAULT A CORPUS HERE, when `project` must not. The corpus is
 // not INVENTED by the projector — it arrives as `--plugin`, an ordinary flag. `forge`
 // still knows no corpus: it installs what it was told to and refuses when it was told

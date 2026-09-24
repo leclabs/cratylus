@@ -8,16 +8,11 @@
       // canon now has TS source under src/ (lint it) + test/ alongside the Python
       // toolkit and the markdown corpus. Narrowed from a blanket packages/canon/**
       // ignore when the corpus inverted to TS modules (T1.1/T1.3); the non-TS
-      // trees (Python toolkit, markdown cells, graphify cache, pipeline manifests)
-      // stay ignored.
+      // trees (Python toolkit, markdown cells, pipeline manifests) stay ignored.
       "packages/canon/toolkit/**",
       "packages/canon/references/**",
       "packages/canon/docs/**",
       "packages/canon/ideas/**",
-      // graphify's tool-emitted cache/graph output (specimens, not source) —
-      // `**/`-anchored because turbo runs biome from the package cwd, where the
-      // repo-root-anchored `packages/canon/ideas/**` glob does not match.
-      "**/graphify-out/**",
       "packages/canon/.manifests/**",
       "packages/canon/**/*.md",
       "**/*.generated.ts",
