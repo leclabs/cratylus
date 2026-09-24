@@ -411,9 +411,20 @@ export function renderedFiles(
       for (const scope of readdirSync(stageRoot).sort()) {
         const scopeDir = resolvePath(stageRoot, scope);
         if (!statSync(scopeDir).isDirectory()) continue;
-        for (const file of readdirSync(scopeDir).sort()) {
+        // The placer walks this scope as a TREE; the audit must walk it the same
+        // way or a nested artifact — a persona's `stance/` manifest — is placed
+        // and then reported foreign by the very check that protects it.
+        const walk = (dir: string, prefix: string): string[] =>
+          readdirSync(dir)
+            .sort()
+            .flatMap((entry) => {
+              const here = resolvePath(dir, entry);
+              const relHere = prefix ? posix.join(prefix, entry) : entry;
+              if (statSync(here).isDirectory()) return walk(here, relHere);
+              return statSync(here).isFile() ? [relHere] : [];
+            });
+        for (const file of walk(scopeDir, '')) {
           const src = resolvePath(scopeDir, file);
-          if (!statSync(src).isFile()) continue;
           out.push({
             rel: scopedRel(file, scope),
             src,

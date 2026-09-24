@@ -64,6 +64,9 @@ JUDGE_CMD="${STANCE_JUDGE_CMD:-sh $SELF_DIR/stance-judge.sh}"
 # a host and point outside a sandboxed deploy, which is the class of bug that put
 # `$HOME/.claude` in the sibling worker and made it read another harness's tree.
 NEUTRAL_ROOT="$(dirname -- "$(dirname -- "$(dirname -- "$SELF_DIR")")")/.agents"
+# The DEFAULT rubric. A persona's own manifest may name another — that is the
+# strategy seam: one opinionated implementation, each persona free to bind a
+# different contract without the dispatcher learning anything about either.
 RUBRIC="${STANCE_RUBRIC:-$NEUTRAL_ROOT/stance-guardrail/stance-judge-prompt.md}"
 
 # A Stop hook must never break a session. Trap any unexpected error → allow the stop.
@@ -134,24 +137,46 @@ cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
 enabled="$(git config --bool agentfactory.stanceGuard 2>/dev/null || echo false)"
 [ "$enabled" = "true" ] || allow_stop
 
-# --- agent-scope gate -----------------------------------------------------------------------
-# Only enforce the stance for the configured agents (the principal-self agents by default).
-# agent_type identifies the agent (verified by an introspective-hook capture): it is PRESENT for an
-# --agent / @mention launch — top-level INCLUDED (a session started as @nico reports agent_type=nico)
-# — and for every SubagentStop; it is ABSENT only for a DEFAULT top-level session (plain claude, no
-# --agent). When absent we do NOT enforce: a session that never declared itself a principal should not
-# get the principal rubric. STANCE_GUARD_AGENTS=* overrides to enforce on everyone (a blunt instrument).
-agent_type="$(printf '%s' "$input" | jq -r '.agent_type // empty' 2>/dev/null || true)"
-allowlist="${STANCE_GUARD_AGENTS:-$(git config agentfactory.stanceGuardAgents 2>/dev/null || echo 'nico mav')}"
+# --- scope gate: the persona's OWN stance manifest -------------------------------------------
+# COMPOSITION IS THE SCOPE, NOT A RUNTIME SELF-FILTER — MODEL.md's ENFORCED clause, and this
+# gate used to violate it outright. It read an allowlist, `nico mav` by default and overridable
+# by `STANCE_GUARD_AGENTS`, which is precisely the runtime self-filter that clause forbids: a
+# module asking WHO IS RUNNING rather than being placed where only the right launch reaches it.
+#
+# It had already drifted, in the direction such a list always drifts. Every agent in the corpus
+# composes `handoff`, so `Binding.agents` DERIVES all six as bound, and six persona scopes are
+# deployed to prove it — while the list enforced two. `architect` and `kino` held principal
+# authority and were never once judged, and nothing surfaced the gap because the two facts were
+# written in different languages in different files.
+#
+# Enrollment is now PRESENCE. Each bound persona's projection lands a manifest in that persona's
+# own scope, and the dispatcher — which lives in that same scope and therefore already knows it
+# — passes it in the envelope. A manifest means enrolled, and carries THIS agent's contract: its
+# rubric, its moments, its handoff laws. No manifest means not enrolled, which is silence rather
+# than an error, so a plain session that never declared itself anything stays untouched exactly
+# as it was. Adding a persona enrolls it; adding a gated dimension edits one persona's manifest;
+# neither is a line in this file.
+stance_scope="$(printf '%s' "$input" | jq -r '.stance_scope // empty' 2>/dev/null || true)"
+[ -n "$stance_scope" ] || allow_stop
+manifest="$stance_scope/stance/manifest.json"
+[ -f "$manifest" ] || allow_stop
 
-if [ "$allowlist" != "*" ]; then
-	[ -n "$agent_type" ] || allow_stop  # cannot identify the agent → fail open
-	in_scope=false
-	for a in $allowlist; do
-		[ "$a" = "$agent_type" ] && in_scope=true && break
-	done
-	[ "$in_scope" = true ] || allow_stop
-fi
+# The persona's own contract, each field falling back to the shipped default. A manifest that
+# names nothing still enrolls: presence is the assertion, the fields are the refinement.
+agent_type="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
+manifest_rubric="$(jq -r '.rubric // empty' "$manifest" 2>/dev/null || true)"
+# An OVERRIDE that does not resolve is a defect and goes DARK — a persona that asked to be judged
+# against its own contract and is silently judged against someone else's has been mis-scored, not
+# spared. The DEFAULT is not checked here: a judge backend need not read the file at all (the
+# fixture judge does not), and refusing to run because a path the manifest never named is absent
+# would fail closed on a case the manifest made no claim about.
+case "$manifest_rubric" in
+	'') ;;
+	/*) RUBRIC="$manifest_rubric" ;;
+	*) RUBRIC="$stance_scope/stance/$manifest_rubric" ;;
+esac
+[ -z "$manifest_rubric" ] || [ -f "$RUBRIC" ] || \
+	dark "the rubric named by $manifest is not readable at '$RUBRIC'"
 
 # --- extract the last assistant turn from the transcript ------------------------------------
 transcript="$(printf '%s' "$input" | jq -r '.transcript_path // empty' 2>/dev/null || true)"

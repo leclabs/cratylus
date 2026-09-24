@@ -14,6 +14,7 @@ export {
   OMP_PERSONA_DIR,
   OMP_SESSION_DIR,
   OMP_SESSION_MODULE,
+  OMP_STANCE_MANIFEST,
   type ResolvedSkill,
   agentToOmpMd,
   ompAgentRel,

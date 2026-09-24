@@ -237,9 +237,22 @@ export function placeHooksLocal(
     for (const scope of scopes) {
       const scopeDir = resolvePath(stageRoot, scope);
       const written: string[] = [];
-      for (const file of readdirSync(scopeDir).sort()) {
+      // A scope's artifacts are a TREE, not a flat list. This skipped any
+      // directory outright, which silently dropped a persona's `stance/`
+      // manifest — the file that says which cells gate that persona. The
+      // scope-relative path is what `scopedRel` wants, so the walk carries it
+      // down and a nested artifact lands exactly where it was staged.
+      const walk = (dir: string, prefix: string): string[] =>
+        readdirSync(dir)
+          .sort()
+          .flatMap((entry) => {
+            const here = resolvePath(dir, entry);
+            const relHere = prefix ? posix.join(prefix, entry) : entry;
+            if (statSync(here).isDirectory()) return walk(here, relHere);
+            return statSync(here).isFile() ? [relHere] : [];
+          });
+      for (const file of walk(scopeDir, '')) {
         const src = resolvePath(scopeDir, file);
-        if (!statSync(src).isFile()) continue;
         // The staged dir name IS the scope, session token included — the adapter
         // reads both spellings, so nothing is translated here.
         const rel = scopedRel(file, scope);

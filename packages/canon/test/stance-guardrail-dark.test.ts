@@ -81,11 +81,25 @@ function run(judgeCmd: string, opts: { enabled?: boolean } = {}) {
       cwd: repo,
     });
   }
+  // PRESENCE IS ENROLLMENT: the worker judges the scope it is handed, and a
+  // scope carrying no manifest is silent. The fixture therefore places one —
+  // which is also the shape a real persona projection lands.
+  const scope = mkdtempSync(join(root, 'scope-'));
+  mkdirSync(join(scope, 'stance'), { recursive: true });
+  writeFileSync(
+    join(scope, 'stance', 'manifest.json'),
+    JSON.stringify({
+      agent: 'nico',
+      gates: { 'stance-guardrail': { moments: ['turn.end'] } },
+    }),
+    'utf8',
+  );
   return spawnSync('sh', [worker], {
     input: JSON.stringify({
       session_id: 'dark-test',
       cwd: repo,
       agent_type: 'nico',
+      stance_scope: scope,
       transcript_path: transcript,
     }),
     encoding: 'utf8',

@@ -109,20 +109,16 @@ cwd="$(printf '%s' "$input" | jq -r '.cwd // empty' 2>/dev/null || true)"
 enabled="$(git config --bool agentfactory.stanceGuard 2>/dev/null || echo false)"
 [ "$enabled" = "true" ] || allow
 
-# --- agent-scope gate -----------------------------------------------------------------------
-# Only enforce for the configured agents (default: the principal-self agents).
-# agent_type is present only for a subagent / --agent tool call; absent for the top-level
-# session -> fail open (unless STANCE_GUARD_AGENTS=*), exactly like the Stop guard.
-agent_type="$(printf '%s' "$input" | jq -r '.agent_type // empty' 2>/dev/null || true)"
-allowlist="\${STANCE_GUARD_AGENTS:-$(git config agentfactory.stanceGuardAgents 2>/dev/null || echo 'nico mav')}"
-if [ "$allowlist" != "*" ]; then
-	[ -n "$agent_type" ] || allow  # cannot identify the agent -> fail open
-	in_scope=false
-	for a in $allowlist; do
-		[ "$a" = "$agent_type" ] && in_scope=true && break
-	done
-	[ "$in_scope" = true ] || allow
-fi
+# --- scope gate: the persona's OWN stance manifest -------------------------------------------
+# The twin of the turn-end guard's gate, and inverted for the same reason: an allowlist here was
+# a runtime self-filter over an enrollment the corpus already derives, and it had drifted the way
+# such a list always drifts. Presence of a manifest in this persona's own scope IS enrollment.
+# Absent → silence, never an error, so an unenrolled launch is untouched.
+stance_scope="$(printf '%s' "$input" | jq -r '.stance_scope // empty' 2>/dev/null || true)"
+[ -n "$stance_scope" ] || allow
+manifest="$stance_scope/stance/manifest.json"
+[ -f "$manifest" ] || allow
+agent_type="$(jq -r '.agent // empty' "$manifest" 2>/dev/null || true)"
 
 # --- extract the judged payload, branched by tool -------------------------------------------
 tool_name="$(printf '%s' "$input" | jq -r '.tool_name // empty' 2>/dev/null || true)"

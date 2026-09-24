@@ -58,6 +58,21 @@ mkdir -p "$REPO"
 git -C "$REPO" init -q
 git -C "$REPO" config user.email t@t; git -C "$REPO" config user.name t
 
+# --- persona scopes: PRESENCE IS ENROLLMENT -------------------------------------------------
+# The worker no longer consults an allowlist. It reads the manifest in the scope it was handed,
+# so a scope carrying one is enrolled and a scope carrying none is silent. Two fixtures state
+# exactly that, and `architect` is deliberately among the enrolled: no allowlist ever named it,
+# which is the drift this inversion removes.
+SCOPES="$WORK/scopes"
+for who in mav architect; do
+	mkdir -p "$SCOPES/$who/stance"
+	printf '{"agent":"%s","gates":{"stance-guardrail":{"moments":["turn.end","subagent.end"]}}}\n' \
+		"$who" > "$SCOPES/$who/stance/manifest.json"
+done
+# Projected, dispatched to, and NOT enrolled — the scope exists and the manifest does not.
+mkdir -p "$SCOPES/unenrolled"
+scope_of() { printf '%s/%s' "$SCOPES" "$1"; }
+
 # --- a deterministic fixture judge ----------------------------------------------------------
 # Mirrors the rubric's decision on our two fixtures WITHOUT an LLM: it BLOCKs a turn that
 # contains an in-remit permission-seeking phrase and PASSes one that only surfaces a deploy gate.
@@ -131,8 +146,9 @@ run_worker() {  # $1=transcript-path  $2=agent_type  $3=stop_hook_active  [$4=se
 	fi
 	jq -cn \
 		--arg tp "$1" --arg at "$2" --arg sa "$3" --arg cwd "$REPO" --arg sid "$sid" \
+		--arg sc "$(scope_of "$2")" \
 		'{transcript_path:$tp, agent_type:$at, stop_hook_active:($sa=="true"), cwd:$cwd,
-		  hook_event_name:"SubagentStop", session_id:$sid}' \
+		  stance_scope:$sc, hook_event_name:"SubagentStop", session_id:$sid}' \
 	| sh "$WORKER" 2>/dev/null || true
 }
 is_block() { printf '%s' "$1" | jq -e '.decision == "block"' >/dev/null 2>&1; }
@@ -163,15 +179,19 @@ fi
 out="$(run_worker "$LEGIT" mav false)"
 is_block "$out" && bad "legitimate deploy-gate turn was wrongly blocked" || pass "legitimate (deploy gate) passes"
 
-# 4. ON + collapse + out-of-scope agent (a name no allowlist carries) → no block.
-out="$(run_worker "$COLLAPSE" off-allowlist false)"
-is_block "$out" && bad "out-of-scope agent was blocked" || pass "agent-scope gate: out-of-scope not blocked"
+# 4. ON + collapse + a scope carrying NO manifest → no block. Unenrolled is silent, never an
+#    error: a launch that was never projected as a persona is untouched.
+out="$(run_worker "$COLLAPSE" unenrolled false)"
+is_block "$out" && bad "an unenrolled scope was blocked" || pass "scope gate: no manifest, no judgment"
 
-# 4b. allowlist "*" → even an off-allowlist agent is in scope and collapse blocks.
-git -C "$REPO" config agentfactory.stanceGuardAgents '*'
-out="$(run_worker "$COLLAPSE" off-allowlist false)"
-is_block "$out" && pass 'allowlist "*" blocks any collapsing agent' || bad 'allowlist "*" failed to block'
-git -C "$REPO" config --unset agentfactory.stanceGuardAgents
+# 4b. ON + collapse + a scope whose manifest exists but whose agent NO ALLOWLIST EVER NAMED.
+#     This is the whole point of the inversion and it is measured, not hypothetical: the shell
+#     default was `nico mav`, every projected persona carried the guard, and `architect` held
+#     principal authority while never once being judged. Presence enrolls it; nothing central
+#     was edited to make that true.
+out="$(run_worker "$COLLAPSE" architect false)"
+is_block "$out" && pass "presence enrolls an agent no allowlist named (architect)" \
+	|| bad "manifest present but architect was not judged"
 
 # 5. ON + collapse + stop_hook_active=true → STILL BLOCKS. Judging is never skipped.
 #    THIS ASSERTION IS INVERTED FROM ITS ORIGINAL. It used to read "stop_hook_active suppresses
@@ -383,8 +403,9 @@ mk_transcript "$SD_REST" "Two directions here. Which do you want?" "look at the 
 } > "$SD_ELEV"
 
 sd_payload() {  # $1=transcript → the gated payload the judge would have scored
-	jq -cn --arg tp "$1" --arg cwd "$REPO" \
-		'{transcript_path:$tp, cwd:$cwd, agent_type:"mav", session_id:"sd", stop_hook_active:false}' \
+	jq -cn --arg tp "$1" --arg cwd "$REPO" --arg sc "$(scope_of mav)" \
+		'{transcript_path:$tp, cwd:$cwd, agent_type:"mav", stance_scope:$sc,
+		  session_id:"sd", stop_hook_active:false}' \
 		| STANCE_EMIT_PAYLOAD=1 sh "$WORKER" 2>/dev/null | jq -r '.payload'
 }
 
@@ -426,7 +447,8 @@ if [ -f "$PRE_WORKER" ]; then
 	# so a DISTINCT session per case prevents markers from one case leaking into the next.
 	run_pre() {  # $1=tool_name  $2=tool_input(json)  $3=agent_type  $4=session_id
 		jq -cn --arg tn "$1" --argjson ti "$2" --arg at "$3" --arg sid "$4" --arg cwd "$REPO" \
-			'{tool_name:$tn, tool_input:$ti, agent_type:$at, cwd:$cwd,
+			--arg sc "$(scope_of "$3")" \
+			'{tool_name:$tn, tool_input:$ti, agent_type:$at, cwd:$cwd, stance_scope:$sc,
 			  hook_event_name:"PreToolUse", session_id:$sid}' \
 		| sh "$PRE_WORKER" 2>/dev/null || true
 	}

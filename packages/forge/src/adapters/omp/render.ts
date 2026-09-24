@@ -185,6 +185,17 @@ export const OMP_SESSION_MODULE = `${CLI_BIN}-session.ts`;
  *  persona's own extensions. */
 export const OMP_OVERLAY_FILE = 'omp.yml';
 
+/** A persona's own stance manifest — scope-relative, so a worker addresses it as
+ *  `<scope>/stance/manifest.json` and no caller ever spells a gate.
+ *
+ *  ONE FILE, EVERY GATE, keyed by the cell that owns it and carrying that cell's
+ *  moments. A second gated dimension is a second ENTRY rather than a second
+ *  file, a second field, or a line in any dispatcher — which is the whole reason
+ *  it replaces an allowlist. That list named agents in a shell default, and had
+ *  already drifted from the corpus it was copying: every persona projected here
+ *  carries the guard, and the list enforced two of them. */
+export const OMP_STANCE_MANIFEST = 'stance/manifest.json';
+
 /** The generic launcher's filename — no extension, because it is invoked
  *  directly (`omp-agent mav`), never sourced or required.
  *
@@ -416,6 +427,14 @@ export function ompScopeActivatedExtensions(
 ): HarnessProjection[] {
   const seen = new Set<string>();
   const lines: string[] = [];
+  // scope → the gates that scope carries, keyed by the cell that owns each. The
+  // registration lines below are IDENTICAL for every scope; this is what differs,
+  // and it is what makes enrollment a property of the scope rather than of a list
+  // somebody maintains elsewhere.
+  const gates: Record<
+    string,
+    { moments: string[]; command: string; timeout?: number }
+  > = {};
   for (const hook of hooks) {
     for (const event of hook.events) {
       const binding = ompBindingOf(event);
@@ -423,13 +442,25 @@ export function ompScopeActivatedExtensions(
       // projection seam; registering a handler for an event omp never fires would
       // read as coverage and deliver none.
       if (!binding) continue;
+      const id = hook.id ?? event;
       const reg: OmpRegistration = {
-        anchor: hook.id ?? event,
+        anchor: id,
         native: binding.event,
         tool: binding.matcher,
         workerTool: OMP_WORKER_TOOL[event],
         command: hook.command,
       };
+      // The gate is recorded per CELL, before the registration dedupe below: two
+      // acts can collapse onto one native handler, and a gate that vanished with
+      // the duplicate registration would under-report the moments its own cell
+      // actually fires at.
+      const gate = gates[id] ?? {
+        moments: [],
+        command: hook.command,
+        timeout: hook.timeout,
+      };
+      if (!gate.moments.includes(event)) gate.moments.push(event);
+      gates[id] = gate;
       const key = JSON.stringify([reg.native, reg.tool ?? '', reg.command]);
       if (seen.has(key)) continue;
       seen.add(key);
@@ -438,17 +469,49 @@ export function ompScopeActivatedExtensions(
   }
   if (lines.length === 0) return [];
   const scopes = [SESSION_SCOPE, ...[...agentNames].sort()];
-  return scopes.map((scope) => ({
-    filename: OMP_SESSION_MODULE,
-    scope,
-    content: ompExtensionModule(
-      scope === SESSION_SCOPE
-        ? 'the SESSION — a launch that named no persona'
-        : `every session of the persona \`${scope}\``,
-      scope === SESSION_SCOPE ? undefined : scope,
-      lines,
-    ),
-  }));
+  const manifestOf = (scope: string): string =>
+    `${JSON.stringify(
+      {
+        agent: scope,
+        gates: Object.fromEntries(
+          Object.entries(gates)
+            .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+            .map(([id, g]) => [
+              id,
+              { moments: [...g.moments].sort(), timeout: g.timeout },
+            ]),
+        ),
+      },
+      null,
+      2,
+    )}\n`;
+  return scopes.flatMap((scope) => [
+    {
+      filename: OMP_SESSION_MODULE,
+      scope,
+      content: ompExtensionModule(
+        scope === SESSION_SCOPE
+          ? 'the SESSION — a launch that named no persona'
+          : `every session of the persona \`${scope}\``,
+        scope === SESSION_SCOPE ? undefined : scope,
+        lines,
+      ),
+    },
+    // ONLY A PERSONA IS ENROLLED. The session scope gets the module — a bare
+    // launch still carries the dispatcher — but no manifest, so the worker it
+    // fires finds nothing and stays silent. That is the bare-launch case falling
+    // out of PLACEMENT, exactly as the identity already does, instead of out of
+    // an `agent_type`-is-empty branch that had to be remembered in two workers.
+    ...(scope === SESSION_SCOPE
+      ? []
+      : [
+          {
+            filename: OMP_STANCE_MANIFEST,
+            scope,
+            content: manifestOf(scope),
+          },
+        ]),
+  ]);
 }
 
 /** One `pi.on(...)` block — narrowed by an `if` when the act names a tool. */
@@ -552,7 +615,15 @@ const TURN_BRIDGE: readonly string[] = [
   '// persona copy reports that persona; the session root reports its own dir name,',
   '// which is no persona and matches no allowlist — the bare-launch case falls out',
   '// of the placement instead of out of a branch.',
-  'const scopeName = basename(dirname(dirname(new URL(import.meta.url).pathname)));',
+  '//',
+  '// The DIRECTORY is what a worker needs, not the name. Enrollment is the',
+  "// presence of that scope's own stance manifest, so this bridge hands over",
+  '// WHERE to look and learns nothing about what is found: which cells gate this',
+  '// persona, at which moments, against which contract are all answered inside',
+  '// the scope, by the projection that wrote it. The session root has a module',
+  '// and no manifest, so a bare launch resolves to silence by placement.',
+  'const scopeDir = dirname(dirname(new URL(import.meta.url).pathname));',
+  'const scopeName = basename(scopeDir);',
   '',
   '// The reason last delivered, so an unchanging one is not re-delivered — see the',
   '// `agent_end` registration for why delivery is bounded.',
@@ -758,6 +829,7 @@ const TURN_EXEC: readonly string[] = [
   '        session_id: sessionId,',
   '        cwd: pi.cwd,',
   '        agent_type: scopeName,',
+  '        stance_scope: scopeDir,',
   '        ...extra,',
   '      }),',
   '    );',

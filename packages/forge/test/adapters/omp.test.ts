@@ -27,6 +27,7 @@ import {
   OMP_REFUSAL_SHAPE,
   OMP_SESSION_DIR,
   OMP_SESSION_MODULE,
+  OMP_STANCE_MANIFEST,
   agentToOmpMd,
   canonicalActToOmp,
   canonicalToOmp,
@@ -561,17 +562,44 @@ describe('omp scope-activated surface', () => {
 
   it('carries the SESSION scope and one scope per projected agent', () => {
     const out = ompScopeActivatedExtensions([HOOK], ['mav', 'nico']);
-    expect(out.map((f) => f.scope)).toEqual(['_session', 'mav', 'nico']);
+    const mods = out.filter((f) => f.filename === OMP_SESSION_MODULE);
+    expect(mods.map((f) => f.scope)).toEqual(['_session', 'mav', 'nico']);
     // The session copy is what a bare `omp` launch loads natively; a persona
     // launch reads its own copy — named by ITS OWN `--config` overlay — and
     // never this one.
     expect(
-      out.map((f) => ompHarnessAdapter.scopedRel?.(f.filename, f.scope)),
+      mods.map((f) => ompHarnessAdapter.scopedRel?.(f.filename, f.scope)),
     ).toEqual([
       `${OMP_SESSION_DIR}/extensions/${OMP_SESSION_MODULE}`,
       `${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}/mav/extensions/${OMP_SESSION_MODULE}`,
       `${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}/nico/extensions/${OMP_SESSION_MODULE}`,
     ]);
+  });
+
+  it('enrolls a persona by PLACING its manifest, and the session by omitting one', () => {
+    // PRESENCE IS ENROLLMENT. The worker asks whether this scope carries a
+    // manifest, never whether a list names the agent, so composing a cell
+    // enrolls every persona carrying it and nothing central is edited. The
+    // allowlist this replaces was a runtime self-filter over an enrollment the
+    // corpus already derived, and it had drifted exactly as such a list does:
+    // every projected persona carried the guard while the shell default named
+    // `nico mav`, leaving `architect` and `kino` holding principal authority and
+    // never once judged.
+    const out = ompScopeActivatedExtensions([HOOK], ['mav', 'nico']);
+    const manifests = out.filter((f) => f.filename === OMP_STANCE_MANIFEST);
+    // A bare launch still loads the dispatcher and still finds nothing to judge:
+    // the silence falls out of PLACEMENT, not out of an `agent_type` branch that
+    // had to be remembered identically in two separate workers.
+    expect(manifests.map((f) => f.scope)).toEqual(['mav', 'nico']);
+    expect(ompHarnessAdapter.scopedRel?.(OMP_STANCE_MANIFEST, 'mav')).toBe(
+      `${OMP_SESSION_DIR}/${OMP_PERSONA_DIR}/mav/${OMP_STANCE_MANIFEST}`,
+    );
+    // Keyed by the CELL that owns the gate and carrying that cell's own moments,
+    // so a second gated dimension is a second ENTRY rather than a new field, a
+    // new file, or a line in any caller.
+    const parsed = JSON.parse(manifests[0]?.content ?? '{}');
+    expect(parsed.agent).toBe('mav');
+    expect(parsed.gates['stance-guardrail'].moments).toEqual(['turn.end']);
   });
 
   it('registers the cell’s native event and its worker command', () => {
