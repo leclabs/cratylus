@@ -448,7 +448,7 @@ describe('omp enforcing surface', () => {
     // rather than short-circuiting on a missing verdict.
     expect(turn?.content).toContain('writeFileSync(file, verdict ?? "")');
     expect(turn?.content).not.toContain('if (!verdict) return undefined');
-    // Announced ONCE — `judgeAway` latches, so an unbounded notice would repeat
+    // Announced ONCE — the miss latch holds, so an unbounded notice would repeat
     // one unchanging line at every later turn end.
     expect(turn?.content).toContain('lastDark');
     expect(turn?.content).toContain('sendUserMessage(out');
@@ -507,7 +507,7 @@ describe('omp enforcing surface', () => {
     expect(res?.content).toContain('transcript_path');
   });
 
-  it('bounds the judge with its own deadline, once per session', () => {
+  it('bounds the judge with its own deadline, latched by a run of misses', () => {
     // AN UNREACHABLE JUDGE DOES NOT FAIL — IT HANGS, and omp kills an extension
     // handler at 30 s. Without a deadline of its own the guard costs every turn
     // the full budget and then surfaces as `Extension error: handler timed out`,
@@ -516,20 +516,31 @@ describe('omp enforcing surface', () => {
     // local server that had stopped answering: a ONE-WORD prompt did not return
     // in 20 s, and every turn end paid 30 s.
     //
-    // ONCE PER SESSION, because an endpoint that is away stays away. Re-proving
-    // it on each turn end buys nothing and taxes the whole session.
+    // LATCHED BY A RUN, NOT BY ONE MISS. It was a boolean set by the first
+    // timeout, on the reasoning that an endpoint which was away stays away —
+    // true of the dead LAN box it was written for, false of a healthy provider
+    // having one slow call. Measured on a live session: the advisor answered a
+    // real turn, then missed once, and every later turn went unjudged for an
+    // outage that had already passed. The latch still earns its place; it just
+    // has to be earned more than once, and any answer clears the run.
     const [turn] = ompGuardrailExtensions(
       [binding(['mav'], ['turn.end'])] as never,
       MECH,
     );
     expect(turn?.content).toContain('Promise.race');
     expect(turn?.content).toContain('JUDGE_TIMEOUT_MS');
-    expect(turn?.content).toContain('let judgeAway = false;');
-    expect(turn?.content).toContain('if (judgeAway) return undefined;');
-    // Inside omp's 30 s handler kill, or the deadline never fires.
+    expect(turn?.content).toContain('if (judgeMisses >= JUDGE_MISS_LIMIT)');
+    expect(turn?.content).toContain('judgeMisses += 1;');
+    expect(turn?.content).toContain('if (text) judgeMisses = 0;');
+    expect(turn?.content).not.toContain('judgeAway = true');
+    // Inside omp's 30 s handler kill, or the deadline never fires — and with real
+    // margin above a measured judge call: 9.3 s for a 9 KB payload against the
+    // 29 KB rubric, which the previous 12 s budget brushed on a short turn.
     const ms = /const JUDGE_TIMEOUT_MS = ([\d_]+);/.exec(turn?.content ?? '');
     expect(ms).not.toBeNull();
-    expect(Number(ms?.[1]?.replaceAll('_', ''))).toBeLessThan(30_000);
+    const budget = Number(ms?.[1]?.replaceAll('_', ''));
+    expect(budget).toBeLessThan(30_000);
+    expect(budget).toBeGreaterThan(15_000);
   });
 
   it('emits nothing when the mechanism is absent — and that is the codex bug', () => {
