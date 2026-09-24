@@ -39,9 +39,8 @@
     "stance-guard:test": "pnpm --filter @cratylus/canon run stance-guard:test",
     "dev": "turbo run dev --parallel",
     "plan": "pnpm --filter @cratylus/canon run plan",
-    "oracle": "pnpm --filter @cratylus/canon run oracle",
-    "oracle:update": "pnpm --filter @cratylus/canon run oracle:update",
-    "verify": "pnpm build && pnpm lint && pnpm oracle && pnpm test",
+    "project": "pnpm canon:project && pnpm canon:project:codex && pnpm canon:project:omp",
+    "verify": "pnpm build && pnpm lint && pnpm project && pnpm test",
     "pack:smoke": "pnpm --filter @cratylus/canon pack:smoke"
   },
   "devDependencies": {

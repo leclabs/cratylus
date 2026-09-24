@@ -18,8 +18,6 @@
     "build": "pnpm run clean && tsc -p tsconfig.build.json",
     "clean": "rm -rf dist",
     "dev": "tsc -p tsconfig.build.json --watch --preserveWatchOutput",
-    "oracle": "sh tooling/render-oracle/render-oracle.sh check",
-    "oracle:update": "sh tooling/render-oracle/render-oracle.sh update",
     "pack:smoke": "tsx tooling/pack-smoke/pack-smoke-cli.ts",
     "plan-set": "tsx tooling/plan-set-cli.ts",
     "plan": "sh tooling/plan-set/plan-set.sh",

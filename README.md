@@ -69,7 +69,7 @@ the only package permitted to hold both.
 `cratylus` CLI are not published yet, which is the gap that currently makes the documented consumer
 path untypable. The architecture's
 load-bearing properties are enforced by a gate that reads the real import graph, and the projected
-corpus is pinned by a render oracle (`pnpm oracle`) rather than by prose. Where the source diverges
+corpus is pinned by harness-parity and projection-stability gates rather than by prose. Where the source diverges
 from the intended architecture, [`ARCHITECTURE.md`](./ARCHITECTURE.md) says so in a ratchet table
 that fails the suite when a breach is repaired without retiring its pin.
 

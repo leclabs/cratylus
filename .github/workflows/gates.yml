@@ -9,7 +9,7 @@
 #
 # The price is a second cold clone and a second build, and that is the correct price: the
 # release must ITSELF be a cold clone, because a cold clone is the only configuration in
-# which the missing-bin-symlink trap and the oracle-before-test ordering are exercised.
+# which the missing-bin-symlink trap and the project-before-test ordering are exercised.
 # ─────────────────────────────────────────────────────────────────────────────
 name: gates
 
@@ -42,7 +42,7 @@ jobs:
 
       - uses: ./.github/actions/setup
 
-      # Build ONCE, up front. The oracle used to build as well, so a run could interleave
+      # Build ONCE, up front. The projection step used to build as well, so a run could interleave
       # two builds: tsup emits content-hashed chunks under `clean: true`, and a rebuild
       # landing after another task resolved `main.js` left it importing a chunk that no
       # longer existed.
@@ -58,12 +58,16 @@ jobs:
       - name: lint
         run: pnpm lint
 
-      # ORACLE BEFORE TEST, and the order is load-bearing. It PRODUCES
-      # `.cratylus/{claude,codex,omp}` — one per harness in its own target list — which
-      # `harness-parity.test.ts` requires, and those are gitignored build output, so on a
-      # fresh checkout they do not exist and nothing in the turbo task graph makes them.
-      - name: render oracle
-        run: pnpm oracle
+      # PROJECT BEFORE TEST, and the order is load-bearing. `harness-parity.test.ts`
+      # reads `.cratylus/{claude,codex,omp}` — one per harness — and those are
+      # gitignored build output, so on a fresh checkout they do not exist and nothing
+      # in the turbo task graph makes them.
+      #
+      # This step used to compute a whole-tree render hash, projecting all three as a
+      # SIDE EFFECT. The hash is retired; the projection it was secretly providing is
+      # not, so the step is now named for what it does.
+      - name: project every harness
+        run: pnpm canon:project && pnpm canon:project:codex && pnpm canon:project:omp
 
       # `test` depends on `typecheck:test` in turbo.json, so this leg type-checks the test
       # tree too. The tests ARE the enforcement layer for every naming and shape guarantee

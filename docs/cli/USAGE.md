@@ -109,7 +109,7 @@ npx cratylus deploy --scope user
 **Scope selects the config; it never cascades.** `--scope user` reads the user config and ignores
 any project config; `--scope project` reads the project's and ignores the user's. No merge, no
 precedence chain. A cascade would make a repository's projection depend on whose `$HOME` ran it,
-and the Target is required to be `REGENERABLE` — this repo byte-compares its own render oracle to
+and the Target is required to be `REGENERABLE` — this repo byte-compares its own projected tree to
 prove it.
 
 ### 4.3 "Show me what would happen first"

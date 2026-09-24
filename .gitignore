@@ -36,9 +36,11 @@ dist/
 # drift undetected. `harness-parity.test.ts` compares the two; siblings under one parent is
 # the shape that comparison actually has.
 #
-# The oracle is deliberately NOT in here. `.cratylus/` is wholly derived and safe to
-# `rm -rf`; `packages/canon/.render-oracle` is a TRACKED attestation over these bytes, and
-# a tracked file inside a disposable directory is a file that gets destroyed by a clean.
+# `.cratylus/` is wholly derived and safe to `rm -rf`, which is why CI projects it
+# fresh before the gates that read it. It once had a companion attestation file kept
+# deliberately OUTSIDE this ignore — the render oracle — retired when
+# `harness-parity.test.ts` grew fixtures convicting the two regressions that
+# whole-tree hash existed to remember.
 .cratylus/
 # Memory's per-repo config: scope markers + per-host $HOME. OPERATOR-AUTHORED and
 # host-specific, so local-only. Committed template: .cratylus.memory.json.example.

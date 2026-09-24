@@ -2,7 +2,7 @@
 # THE RELEASE GATE.
 #
 # This repository had no CI. Every green claim it made — the suite, the type
-# check, the render oracle — was a claim about somebody's laptop. That is the
+# check — was a claim about somebody's laptop. That is the
 # same defect the corpus already names for prose: a property nothing checks is a
 # property that drifts silently.
 #
