@@ -544,7 +544,24 @@ if [ -n "$evidence" ] && [ "\${#evidence}" -ge 12 ]; then
 # 3/5 on identical payloads — i.e. the record of WHY a turn was blocked was reconstructible only
 # by a non-deterministic process. Appended, never rotated by this hook; the state dir is tmp.
 printf '%s\\t%s\\t%s\\n' "$decision" "$evidence" "$reason" >> "$verdict_log" 2>/dev/null || true
-	if ! printf '%s' "$asst_close" | tr '\\n' ' ' | grep -qF "$evidence"; then
+	# NORMALIZED ON BOTH SIDES, and with \`--\`, because this check had two ways to
+	# throw away a correct block — and both of them fired on the SAME shape, which is
+	# the one shape this guard most exists to catch.
+	#
+	# 1. \`grep -qF "$evidence"\` with no \`--\`: an evidence span opening with a markdown
+	#    bullet is read as an OPTION. \`grep: invalid option -- ' '\`, non-zero, block
+	#    discarded. A tail-enumeration collapse IS a bullet list, so its evidence always
+	#    begins \`- \`, and the rule could never convict the shape it was written for.
+	# 2. A judge quoting several bullets joins them with spaces and drops the markers,
+	#    so a verbatim-substring test fails on punctuation while every word is present.
+	#
+	# The proposition worth authenticating is that the judge quoted THIS TURN'S WORDS,
+	# not that it reproduced its list syntax. So both sides are flattened the same way:
+	# newlines to spaces, runs of whitespace to one, list markers dropped. Symmetric, so
+	# nothing is accepted on one side that would be rejected on the other.
+	ev_norm="$(printf '%s' "$evidence" | tr '\\n' ' ' | sed -e 's/[[:space:]][[:space:]]*/ /g' -e 's/^[-*][[:space:]]//' -e 's/ [-*] / /g')"
+	close_norm="$(printf '%s' "$asst_close" | tr '\\n' ' ' | sed -e 's/[[:space:]][[:space:]]*/ /g' -e 's/^[-*][[:space:]]//' -e 's/ [-*] / /g')"
+	if ! printf '%s' "$close_norm" | grep -qF -- "$ev_norm"; then
 		printf 'stance-guardrail: DISCARDING block — judge quoted a span that is not in the turn'"'"'s CLOSE (mid-turn preamble, or confabulated): %s\\n' "$evidence" >&2
 		allow_stop
 	fi

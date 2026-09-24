@@ -245,6 +245,42 @@ out="$(STANCE_JUDGE_CMD="sh $TRUTHFUL" run_worker "$COLLAPSE" mav false truthcas
 is_block "$out" && pass "verbatim evidence still blocks (5d is non-vacuous)" \
 	|| bad "evidence check disarmed a legitimate block"
 
+# 5e-i. EVIDENCE OPENING WITH A MARKDOWN BULLET still blocks. FOUND BY A LIVE TRIGGER, not by
+#       reasoning: `grep -qF "$evidence"` carried no `--`, so a span beginning `- ` was read as
+#       an OPTION. grep printed `invalid option`, exited non-zero, and the block was discarded.
+#       The shape this destroyed is the one the guard most exists to catch — a tail-enumeration
+#       collapse IS a bullet list, so its evidence ALWAYS opens with a dash. The rule could not
+#       convict the shape it was written for, and failed open in silence every time.
+BULLET="$WORK/bullet-judge.sh"
+cat > "$BULLET" <<'BULLET_EOF'
+#!/usr/bin/env sh
+echo "VERDICT: BLOCK"
+echo "REASON: permission-seeking on an in-remit call."
+echo "EVIDENCE: - Should I name it stance-guard or stance-sentinel?"
+BULLET_EOF
+chmod +x "$BULLET"
+out="$(STANCE_JUDGE_CMD="sh $BULLET" run_worker "$COLLAPSE" mav false bulletcase)"
+is_block "$out" && pass "evidence opening with a bullet still blocks (no option-parsing hole)" \
+	|| bad "bullet-led evidence discarded — the dash was parsed as a grep option"
+
+# 5e-ii. EVIDENCE JOINING SEVERAL BULLETS still blocks. A judge asked for the offending span of a
+#        list quotes the items RUN TOGETHER, dropping the markers — every word verbatim, the
+#        punctuation not. A raw substring test fails there, and it failed on the first live
+#        trigger ever run against this guard. The proposition worth authenticating is that the
+#        judge quoted THIS TURN'S WORDS, so both sides are flattened the same way and the check
+#        is about words rather than list syntax.
+JOINED="$WORK/joined-judge.sh"
+cat > "$JOINED" <<'JOINED_EOF'
+#!/usr/bin/env sh
+echo "VERDICT: BLOCK"
+echo "REASON: permission-seeking on an in-remit call."
+echo "EVIDENCE: Should I name it stance-guard or stance-sentinel? And do you want me to add tests, or leave that to you?"
+JOINED_EOF
+chmod +x "$JOINED"
+out="$(STANCE_JUDGE_CMD="sh $JOINED" run_worker "$COLLAPSE" mav false joinedcase)"
+is_block "$out" && pass "evidence joining several bullets still blocks (words, not list syntax)" \
+	|| bad "joined-bullet evidence discarded — the check tested punctuation, not words"
+
 # 5f. UNEVIDENCED block is discarded. The judge's own output filter once stripped the EVIDENCE
 #     line, so every block arrived unevidenced and the confabulation check (5d) was skipped
 #     entirely — a fabricated block reached the agent through the gap. An unevidenced block
