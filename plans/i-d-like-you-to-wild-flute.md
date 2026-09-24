@@ -35,7 +35,7 @@ convicting the drift.
 | →                              | items                                                                                      |
 | ------------------------------ | ------------------------------------------------------------------------------------------ |
 | canon `src/` (up one level)    | `plan-states`, `operator-lexicon`, `project-template`, `cold-oracle/policy`, `hooks.ts`    |
-| `@cratylus/runtime` capability | `praxis.sh`, `plan-set{,-cli}.ts`, `cold-oracle.sh`                                        |
+| `@cratylus/runtime` capability | `plan-set.sh`, `plan-set{,-cli}.ts`, `cold-oracle.sh`                                      |
 | `@cratylus/forge/validate`     | `structural-parsimony`, `symbol-probe-gate`, `formal-block-self-sufficiency`, `project.ts` |
 | repo-root `scripts/`           | `render-oracle.sh`, `project-targets{,-cli}.ts`, `sweep.mjs` (dead — 0 call sites)         |
 | `cratylus`                     | `scaffold-cli.ts` — a shipping product command shelved as a dev script                     |

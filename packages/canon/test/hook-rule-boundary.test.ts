@@ -195,7 +195,6 @@ describe('S4 hook/rule boundary — first-class source cells, projected targets'
     const ids = (await allHookCells()).map((c) => c.id).sort();
     expect(ids).toEqual([
       'deploy-drift-notice',
-      'praxis-continuity',
       'stance-guardrail',
       'stance-guardrail-pre',
     ]);

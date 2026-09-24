@@ -32,6 +32,7 @@ import { runDeploy } from '../../src/cli/commands/deploy.js';
 import { placeHooksLocal } from '../../src/deploy/hooks.js';
 import { DEPLOY_CHECK_EXIT, deploySingle } from '../../src/deploy/index.js';
 import {
+  type AuditOpts,
   auditLocal,
   placeAgentsLocal,
   placeSkillsLocal,
@@ -355,11 +356,12 @@ describe('renderedFiles agrees with the placers own testimony', () => {
     const tree = { agentsDir, skillsDir, hooksDir };
     const harnessDir = join(tmp('check-token-home-'), '.omp');
     mkdirSync(harnessDir, { recursive: true });
-    const layout = {
-      scopedRel: (file: string, scope: string) =>
-        `agent/personas/${scope}/${file}`,
+    const layout: AuditOpts = {
+      scopedRel: (filename: string, agent?: string) =>
+        `agent/personas/${agent ?? '_session'}/${filename}`,
     };
     placeHooksLocal(harnessDir, tree, ['stance-guardrail'], {
+      dry: false,
       ...silent,
       ...layout,
     });

@@ -1,15 +1,20 @@
 #!/usr/bin/env sh
-# praxis — the plan-set mechanism, at the cost the laws require.
+# plan-set — the plan-set mechanism, at the cost the laws require.
 #
-# WHY THIS EXISTS. The `praxis` skill declares `cost(file) < cost(fix)` and calls it
-# "the load-bearing law". It is load-bearing because the failure it prevents is a
+# It was named `praxis`, after a cell superseded by the design/plan/deliver trio.
+# The cell is gone; the mechanism is not, and a tool carrying a dead cell's name is
+# a palimpsest — a reader looks for the thing it is named after and finds nothing.
+# The name now says what it operates on: the plan set.
+#
+# WHY THIS EXISTS. `deliver` declares `cost(file) < cost(fix)` and calls it the
+# load-bearing law. It is load-bearing because the failure it prevents is a
 # GRADIENT, not a lapse: filing a discovered defect used to mean authoring a
 # census-grounded shard, wiring the wave table, formatting and committing — ten
 # minutes — while fixing the defect in front of you took two. Under that ratio every
 # rule saying "file it, don't chase it" loses to arithmetic, every time. This script
 # makes filing a single sub-second command so the law can actually bind.
 #
-# It also realizes `bound` — the plan-level commitment the skill introduces. Before
+# It also realizes `bound` — the plan-level commitment `deliver` carries. Before
 # it, the only bindable predicate was shard-level `active`, which is TRANSIENT (set by
 # dispatch, cleared on completion). Wake bound on that transient, so between
 # dispatches nothing was bindable and an unanchored wake was the system's normal
@@ -30,14 +35,14 @@ set -e
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 PLANS="$ROOT/plans"
 
-die() { printf 'praxis: %s\n' "$1" >&2; exit 2; }
+die() { printf 'plan-set: %s\n' "$1" >&2; exit 2; }
 
 # AN ABSENT `plans/` IS THE EMPTY PLAN SET, NOT AN ERROR. This guard was
 # `[ -d "$PLANS" ] || die`, which was true right up until the last plan retired:
 # `retire` MEANS DELETE, git cannot track an empty directory, so `plans/` vanishes
 # from every fresh clone the moment the set empties — and the tool that reports the
 # plan set died on the state it exists to report. Measured on a cold clone:
-# `praxis: no plans/ under <root>`, exit 2.
+# `plan-set: no plans/ under <root>`, exit 2.
 #
 # Same shape as the three gates this corpus repaired the same day: a mechanism whose
 # subject is the live tree breaks when the live tree empties. `cmd_status` already
@@ -163,7 +168,7 @@ cmd_status() {
 	if [ -n "$b" ]; then
 		printf 'bound: %s\n' "$b"
 	elif [ -n "$(cmd_elect)" ] || [ -n "$(ls -d "$PLANS"/*/ 2>/dev/null)" ]; then
-		printf 'bound: NONE — the always-bind law is violated; run `praxis elect` then `praxis bind <plan>`.\n'
+		printf 'bound: NONE — the always-bind law is violated; run `plan-set elect` then `plan-set bind <plan>`.\n'
 	else
 		# `∃ P ∈ Plans : ¬terminal(P) ⇒ ∃! P : bound(P)`. With no plan in scope
 		# the antecedent is FALSE, so the law is SATISFIED, not violated. Reporting a
@@ -197,7 +202,7 @@ cmd_bind() {
 # second, disagreeing home — which is exactly what it became. `landing(P)` is now
 # read from git wherever it is needed, so a plan is landed the moment its last
 # shard reaches `completed/` and is committed, whether or not anyone remembered to
-# say so. `terminal(P) ⇒ retire(P)` stays an obligation; `praxis status` reports it.
+# say so. `terminal(P) ⇒ retire(P)` stays an obligation; `plan-set status` reports it.
 
 # retire — pre terminal(P), and it DELETES. There is no `.retired/` container: the
 # cell only lets a plan retire once `drained(yield(P))` holds, i.e. once every intent
@@ -248,7 +253,7 @@ cmd_file() {
 		printf '# %s\n\n' "$sym"
 		printf '> FILED, not specified. A stub: symptom + locus + provenance, no census, no\n'
 		printf '> acceptance. It exists so the defect was not chased when it was found. Whoever\n'
-		printf '> promotes it to `ready` owes it a real spec (`/praxis upsert`).\n\n'
+		printf '> promotes it to `ready` owes it a real spec (`/plan upsert`).\n\n'
 		printf '**Symptom.** %s\n\n' "$sym"
 		printf '**Locus.** _(unfilled — the filer may not have known)_\n\n'
 		printf '**Provenance.** Filed %s from `%s`' "$(date -u +%Y-%m-%d)" "$(git rev-parse --short HEAD 2>/dev/null || echo '?')"
@@ -267,5 +272,5 @@ bind) cmd_bind "$@" ;;
 elect) cmd_elect ;;
 file) cmd_file "$@" ;;
 frontier) cmd_frontier ;;
-*) die "usage: praxis {status|bind <plan>|elect|file <plan> <symptom>|frontier|retire <plan>}" ;;
+*) die "usage: plan-set {status|bind <plan>|elect|file <plan> <symptom>|frontier|retire <plan>}" ;;
 esac

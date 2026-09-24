@@ -6,6 +6,6 @@ import type { Autonomy } from '../../manifest.js';
 // phase-STATE, not a static value: the `⟨resting · phase-state⟩` residue declares
 // this as the RESTING / initial position (a session opens in orientation, intent
 // the operator's to set) while marking that the live position shifts —
-// `carry-on` elevates it to out-of-the-loop, held until the bound praxis
+// `carry-on` elevates it to out-of-the-loop, held until the bound plan
 // completes or an unresolvable fork re-enters on-the-loop. See skills/carry-on.
 export const humanOnTheLoop: Autonomy = `human-on-the-loop ⟨resting · phase-state⟩`;

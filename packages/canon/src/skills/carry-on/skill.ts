@@ -10,8 +10,8 @@ import type { Skill, SkillExpression } from '../../manifest.js';
 // plan. "Carry on with what we just discussed" is the same utterance doing the same
 // work over a discussion, and a cell bound to `praxis` cannot serve it.
 //
-// The COMPOSITION is the operator's, at the utterance: "carry on with the praxis
-// execution" is carry-on ∘ praxis, and the pairing lives in what was said, not in
+// The COMPOSITION is the operator's, at the utterance: "carry on with the plan
+// execution" is carry-on ∘ plan, and the pairing lives in what was said, not in
 // this module's import list. A cell that names one context forecloses the rest.
 //
 // THE MECHANISM WENT WITH THE COUPLING, and that is a real loss recorded rather than

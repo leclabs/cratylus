@@ -35,7 +35,7 @@ import type { HookCell } from '../manifest.js';
 // copy with nothing further to say. That is not hypothetical and it is not rare —
 // it is the ORDINARY shape of work here, where a session edits a cell, projects it,
 // and keeps going under the version it just replaced. The 16-hour-old projection of
-// an agent's own governing cell was this; so was a `praxis` edit that landed under a
+// an agent's own governing cell was this; so was a `plan` edit that landed under a
 // running session hours later.
 //
 // `prompt.submit` IS THE RE-ARM, and it is the same question at a finer grain rather

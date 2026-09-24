@@ -6,8 +6,11 @@
 // (claude adapter: `turn.end` → Stop, `subagent.end` → SubagentStop) and carries
 // their VERBATIM worker payloads so the projector stages them under `hooks/<id>/`
 // (no file copy — the bytes come from the cell). Only `harness`-substrate cells
-// register in settings.json; a `git`-substrate cell (praxis-continuity) fires in
-// git's process and is byte-locked but not serialized here.
+// register in settings.json, and every surviving cell is one: the corpus's single
+// `git`-substrate cell, `praxis-continuity`, retired with the praxis plan mirror it
+// nudged about. The routing for a non-harness substrate is not hypothetical — it is
+// exercised the moment such a cell exists again — but nothing carries it today, and
+// a header claiming a live example is a claim a reader cannot check.
 //
 // The cell shapes are the schema's type kernel (`@cratylus/schema`); this
 // module is the composition root that NAMES the concrete cells and nothing more.

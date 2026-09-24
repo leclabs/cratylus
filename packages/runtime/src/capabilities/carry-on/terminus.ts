@@ -95,7 +95,7 @@ function shardsIn(layout: PlanLayout, plan: string, state: string): string[] {
 }
 
 /**
- * `bound(P)` — the plan bearing the bound marker. The praxis law is `∃! P :
+ * `bound(P)` — the plan bearing the bound marker. The `deliver` law is `∃! P :
  * bound(P)` (WIP=1), and this returns the FIRST in sorted order: a second marker is
  * a violation of that law, not a case for this readout to arbitrate.
  */

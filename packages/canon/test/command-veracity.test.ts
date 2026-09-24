@@ -810,7 +810,7 @@ describe('PLAN-PATH VERACITY gate — a cited plan path must resolve', () => {
     //
     // So the in-scope subject is synthetic: the fixture's real bytes at a path `inScope`
     // accepts. Same reasoning the sibling control here already applies, and the same
-    // reasoning `praxis.sh` and the plan-path reach leg took when their live subjects
+    // reasoning `plan-set.sh` and the plan-path reach leg took when their live subjects
     // vanished — build your own subject, and it holds however the tree is arranged.
     const inScopePath = 'packages/canon/src/recorded-turn.txt';
     expect(inScope(inScopePath), 'the synthetic path is not in scope').toBe(

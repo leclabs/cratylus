@@ -254,8 +254,8 @@ describe('supersede — the stored terminal declaration (non-derivable)', () => 
 });
 
 describe('landing — derived on demand, stored nowhere', () => {
-  // TWO MECHANISMS, ONE LAW — and they disagreed. `praxis.sh` read a `.landed`
-  // dotfile that a `land` verb had to write by hand, so `praxis retire` REFUSED a
+  // TWO MECHANISMS, ONE LAW — and they disagreed. `plan-set.sh` read a `.landed`
+  // dotfile that a `land` verb had to write by hand, so `plan-set retire` REFUSED a
   // plan this module correctly reported as landed, purely because nobody ran the
   // verb. The shell now folds `git log --first-parent` exactly as `landing` does.
   //
@@ -265,26 +265,26 @@ describe('landing — derived on demand, stored nowhere', () => {
   // once the plan is done, not merely once it has been touched.
   // THE EMPTY PLAN SET IS A STATE, NOT A BREAKAGE — and `retire` MEANS DELETE, so
   // the corpus reaches it every time the last plan lands. Git cannot track an empty
-  // directory, so `plans/` then vanishes from every fresh clone, and `praxis.sh`
+  // directory, so `plans/` then vanishes from every fresh clone, and `plan-set.sh`
   // guarded on `[ -d plans ] || die`: the tool that REPORTS the plan set died on the
-  // state it exists to report (`praxis: no plans/ under <root>`, exit 2), on a cold
+  // state it exists to report (`plan-set: no plans/ under <root>`, exit 2), on a cold
   // clone only, which is CI and every new contributor.
   //
   // Found by hand while answering "have you retired all plans?". This is the leg so
   // that it does not need finding by hand twice.
   it('reports the empty plan set on a tree with no plans/ at all — no die', () => {
-    const praxis = join(
+    const planSet = join(
       dirname(fileURLToPath(import.meta.url)),
       '..',
       'tooling',
-      'praxis',
-      'praxis.sh',
+      'plan-set',
+      'plan-set.sh',
     );
     // The defect is PRESENT before the verdict is read: no plans/ in this repo.
     rmSync(join(repo, 'plans'), { recursive: true, force: true });
     expect(existsSync(join(repo, 'plans'))).toBe(false);
 
-    const out = execFileSync('sh', [praxis, 'status'], {
+    const out = execFileSync('sh', [planSet, 'status'], {
       cwd: repo,
       encoding: 'utf8',
     });
@@ -296,7 +296,7 @@ describe('landing — derived on demand, stored nowhere', () => {
     // …while a write verb still refuses with the USEFUL message, not a parent-dir one.
     let err = '';
     try {
-      execFileSync('sh', [praxis, 'bind', 'ghost'], {
+      execFileSync('sh', [planSet, 'bind', 'ghost'], {
         cwd: repo,
         encoding: 'utf8',
         stdio: 'pipe',
@@ -308,15 +308,15 @@ describe('landing — derived on demand, stored nowhere', () => {
   });
 
   it('the shell mechanism and this module agree on phase — both directions', () => {
-    const praxis = join(
+    const planSet = join(
       dirname(fileURLToPath(import.meta.url)),
       '..',
       'tooling',
-      'praxis',
-      'praxis.sh',
+      'plan-set',
+      'plan-set.sh',
     );
     const shellPhase = (): string => {
-      const out = execFileSync('sh', [praxis, 'status'], {
+      const out = execFileSync('sh', [planSet, 'status'], {
         cwd: repo,
         encoding: 'utf8',
       });

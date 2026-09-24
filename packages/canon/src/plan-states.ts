@@ -14,7 +14,7 @@
 export const PLAN_STATES = ['pending', 'ready', 'active', 'completed'] as const;
 
 /** `frontier(P)` — the states a shard sits in when the plan is workable AT it
- *  (praxis: `{ t | state(t) ∈ { ready, active } }`, where the plan IS, not merely
+ *  (`{ t | state(t) ∈ { ready, active } }`, where the plan IS, not merely
  *  what is dispatchable). A subset of {@link PLAN_STATES} and not derivable from
  *  their ORDER: `pending` is open too, and is not frontier. */
 export const PLAN_FRONTIER = [
@@ -25,7 +25,7 @@ export const PLAN_FRONTIER = [
 /**
  * The plan-tier dotfile MARKERS whose only home is here.
  *
- * A relation with no on-disk carrier is not readable — the reading `praxis.sh`
+ * A relation with no on-disk carrier is not readable — the reading `plan-set.sh`
  * states in its own words when it explains why `.landed` exists ("exactly parallel
  * to `.superseded-by`"). These are the two markers a reader of the plan set needs
  * that have no other TypeScript home: `.superseded-by` already has one
@@ -33,7 +33,7 @@ export const PLAN_FRONTIER = [
  *
  * `.ruling-owed` is the third carrier this corpus has minted on that reading, and
  * it carries the concept the corpus ALREADY signifies as a ruling owed — "a
- * decision nobody has taken", which the `praxis` cell distinguishes from a
+ * decision nobody has taken", which the retired praxis cell distinguished from a
  * dependency ("a dep waits itself out, a ruling needs a human"). At the SHARD tier
  * that concept is `ruling-owed(t)`, and it gates `ready`; at the
  * PLAN tier it had no carrier at all, so a fork the principal cannot resolve —

@@ -198,7 +198,12 @@ describe('harness independence', () => {
     // A gate over an empty file set is green for the wrong reason, and this one
     // globs a directory whose layout has already moved once.
     const targets = await shellTargets();
-    expect(targets.length).toBeGreaterThanOrEqual(5);
+    // The floor guards against a glob that matches NOTHING; it is not a census.
+    // It read 5 when `targets/continuity/` still held the praxis-continuity pair;
+    // retiring that cell left 4, and pinning the exact count would turn a
+    // non-vacuity guard into a change-detector that fires on every legitimate
+    // retirement. The real non-vacuity is carried by the two assertions below.
+    expect(targets.length).toBeGreaterThanOrEqual(3);
     expect(targets.some((t) => t.path.includes('stance-guardrail'))).toBe(true);
     expect(code(targets.flatMap((t) => t.lines)).length).toBeGreaterThan(200);
   });
