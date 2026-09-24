@@ -1,5 +1,14 @@
 # @cratylus/invoke
 
+## 0.2.6
+
+### Patch Changes
+
+- Updated dependencies [a6dc4ec]
+- Updated dependencies [a6dc4ec]
+  - @cratylus/forge@0.6.0
+  - @cratylus/canon@0.3.0
+
 ## 0.2.5
 
 ### Patch Changes
