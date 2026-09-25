@@ -1,178 +1,46 @@
 // The `plan` capability, driven at its verb surface over temporary git
-// repositories this file builds itself: a plan proposed by its first unit, bound,
-// revised and closed; the plan and unit laws refusing a write on one branch;
-// incoherence a merge leaves, repaired one write at a time; pins, drift and
-// suspicion; readiness and the lifecycle's one step. The lifecycle arrives through
+// repositories this file builds itself: a plan proposed by its first unit,
+// bound, revised, shown by name and closed for good; the plan and unit laws —
+// and those spanning them — refusing a write on one branch, and writing
+// nothing when they do; incoherence a merge leaves, repaired one write at a
+// time; pins kept until a revise re-pins, drift and suspicion; readiness, the
+// frontier and the lifecycle's one step. The lifecycle arrives through
 // `$AGENT_RUNTIME_CONFIG`, in states invented here.
 
-import { execFileSync } from 'node:child_process';
-import {
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { dispatchDesign } from '../src/capabilities/design/dispatch.js';
 import { dispatchPlan } from '../src/capabilities/plan/dispatch.js';
-import { RUNTIME_CONFIG_ENV } from '../src/runtime-config.js';
+import {
+  BY,
+  IDENTITY,
+  configured,
+  entitiesNamed,
+  everyRecord,
+  merge,
+  records,
+  refusal,
+  repository,
+  spoken,
+  under,
+} from './verb-surface.js';
 
-const BY = [
-  '--author',
-  'test',
-  '--reason',
-  'a fixture',
-  '--cause',
-  'plan.test',
-];
-const IDENTITY = /[0-9A-HJKMNP-TV-Z]{26}/g;
-
-const configDir = mkdtempSync(join(tmpdir(), 'plan-config-'));
-const CONFIG = join(configDir, 'runtime.json');
-let prior: string | undefined;
-
-beforeAll(() => {
-  prior = process.env[RUNTIME_CONFIG_ENV];
-  writeFileSync(
-    CONFIG,
-    JSON.stringify({
-      configuration: {
-        plan: {
-          plan: {
-            states: ['p-draft', 'p-held', 'p-over'],
-            exclusive: 'p-held',
-            final: 'p-over',
-          },
-          unit: {
-            states: ['u-new', 'u-mid', 'u-done', 'u-past'],
-            satisfies: 'u-done',
-          },
-        },
-      },
-    }),
-  );
-  process.env[RUNTIME_CONFIG_ENV] = CONFIG;
-});
-
-afterAll(() => {
-  if (prior === undefined) delete process.env[RUNTIME_CONFIG_ENV];
-  else process.env[RUNTIME_CONFIG_ENV] = prior;
-  rmSync(configDir, { recursive: true, force: true });
-});
-
-function git(cwd: string, ...args: string[]): string {
-  return execFileSync(
-    'git',
-    [
-      '-c',
-      'user.name=test',
-      '-c',
-      'user.email=test@example.com',
-      '-c',
-      'commit.gpgsign=false',
-      ...args,
-    ],
-    { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
-  );
-}
-
-function repository(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'plan-'));
-  git(dir, 'init', '-q', '-b', 'main');
-  git(dir, 'commit', '-q', '--allow-empty', '-m', 'root');
-  return dir;
-}
-
-function records(repo: string, domain: string): string[] {
-  try {
-    return readdirSync(join(repo, 'records', domain));
-  } catch {
-    return [];
-  }
-}
-
-/** Commit what `main` holds, run `left` and `right` each on its own branch
- *  forked from it, merge `right` into `left`, and return the payloads each
- *  branch newly wrote into `domain`. */
-function merge(
-  repo: string,
-  domain: string,
-  left: () => void,
-  right: () => void,
-): { left: string[]; right: string[] } {
-  git(repo, 'add', '-A');
-  git(repo, 'commit', '-q', '--allow-empty', '-m', 'base');
-  const on = (name: string, write: () => void): string[] => {
-    git(repo, 'checkout', '-q', '-b', name, 'main');
-    const before = new Set(records(repo, domain));
-    write();
-    git(repo, 'add', '-A');
-    git(repo, 'commit', '-q', '--allow-empty', '-m', name);
-    return records(repo, domain)
-      .filter((f) => !before.has(f))
-      .map((f) =>
-        JSON.stringify(
-          JSON.parse(readFileSync(join(repo, 'records', domain, f), 'utf8'))
-            .payload,
-        ),
-      );
-  };
-  const written = { left: on('left', left), right: on('right', right) };
-  git(repo, 'checkout', '-q', 'left');
-  git(repo, 'merge', '-q', '--no-edit', 'right');
-  return written;
-}
-
-/** The entities of `domain` whose first version's payload `name` picks as
- *  `value`, in record-id order. */
-function entitiesNamed(
-  repo: string,
-  domain: string,
-  name: (payload: { name?: string; spec?: { name: string } }) => string,
-  value: string,
-): string[] {
-  return records(repo, domain)
-    .sort()
-    .map((f) =>
-      JSON.parse(readFileSync(join(repo, 'records', domain, f), 'utf8')),
-    )
-    .filter(
-      (r) => r.envelope.operation === 'create' && name(r.payload) === value,
-    )
-    .map((r) => r.envelope.entity);
-}
+configured();
 
 const plan = (repo: string, ...argv: string[]): string =>
   dispatchPlan(argv, { from: repo });
 const design = (repo: string, ...argv: string[]): string =>
   dispatchDesign(argv, { from: repo });
 
-function refused(repo: string, ...argv: string[]): string {
-  try {
-    plan(repo, ...argv);
-  } catch (error) {
-    return (error as Error).message;
-  }
-  throw new Error(`plan ${argv.join(' ')} did not refuse`);
-}
+const refused = (repo: string, ...argv: string[]): string =>
+  refusal(repo, () => plan(repo, ...argv));
 
-/** `plan show`, held to the view's contract: no records root path, and an
- *  identity only beside one of `shared`, the names held more than once. */
-function show(repo: string, shared: readonly string[] = [], ...argv: string[]) {
-  const out = plan(repo, 'show', ...argv);
-  expect(out).not.toContain(join(repo, 'records'));
-  for (const match of out.matchAll(IDENTITY)) {
-    const before = out.slice(0, match.index);
-    expect(
-      shared.some((a) => before.endsWith(`${a} (identity `)),
-      `identity ${match[0]} printed beside no shared name:\n${out}`,
-    ).toBe(true);
-  }
-  return out;
-}
+/** `plan show`, held to what a reader may be shown; `shared` are the names
+ *  held more than once. */
+const show = (
+  repo: string,
+  shared: readonly string[] = [],
+  ...argv: string[]
+) => spoken(repo, plan(repo, 'show', ...argv), shared);
 
 /** Concepts `c1`, `c2`, and `leaf` standing on `base`. */
 function concepts(repo: string): void {
@@ -191,7 +59,14 @@ function concepts(repo: string): void {
   );
 }
 
-/** Add `unit` to `into`, realizing `concept`, proposing `into` when it is new. */
+/** Every concept `concepts` defines, as `--plan-realizes` flags. */
+const EVERY = ['c1', 'c2', 'base', 'leaf'].flatMap((c) => [
+  '--plan-realizes',
+  c,
+]);
+
+/** Add `unit` to `into`, realizing `concept`; a new plan is proposed
+ *  realizing every concept. */
 function add(
   repo: string,
   unit: string,
@@ -199,10 +74,9 @@ function add(
   concept = 'c1',
   ...more: string[]
 ): string {
-  const proposing = entitiesNamed(repo, 'plan', (p) => p.name ?? '', into)
-    .length
+  const proposing = entitiesNamed(repo, 'plan', (p) => p.name, into).length
     ? []
-    : ['--plan-realizes', concept];
+    : EVERY;
   return plan(
     repo,
     'add',
@@ -217,8 +91,13 @@ function add(
   );
 }
 
-describe('plan — proposed by its first unit, bound, revised and closed', () => {
-  it('the first add proposes a plan with its concepts; binding another returns it; close keeps it readable', () => {
+/** The marks on unit `unit`'s line in plan `of`'s whole view. */
+const marks = (repo: string, of: string, unit: string) =>
+  (show(repo, [], of).match(new RegExp(` {4}${unit} — (.*?) · realizes`)) ??
+    [])[1];
+
+describe('plan — proposed by its first unit, bound, shown, revised and closed', () => {
+  it('the first add proposes a plan with its concepts; binding another returns it; any plan is shown by name, whole', () => {
     const repo = repository();
     concepts(repo);
     const first = plan(
@@ -237,7 +116,7 @@ describe('plan — proposed by its first unit, bound, revised and closed', () =>
     );
     expect(first.split('\n')[0]).toMatch(/^plan alpha \(p-draft\) at /);
     expect(show(repo, [], 'alpha')).toContain(
-      'plan: alpha (p-draft)\n  realizes:\n    - c1\n    - c2',
+      'plan alpha (p-draft) · realizes c1, c2 — units in wave order:\n  wave 0:\n    u1 — u-new, frontier · realizes c1',
     );
     expect(plan(repo, 'bind', 'alpha', ...BY).split('\n')[0]).toMatch(
       /^plan alpha \(p-held\) at /,
@@ -246,11 +125,38 @@ describe('plan — proposed by its first unit, bound, revised and closed', () =>
     expect(plan(repo, 'bind', 'beta', ...BY).split('\n')[0]).toMatch(
       /^plan beta \(p-held\) at /,
     );
-    expect(show(repo, [], '--plan', 'alpha').split('\n')[0]).toMatch(
+    expect(show(repo).split('\n')[0]).toMatch(/^plan beta \(p-held\) at /);
+    expect(show(repo, [], 'alpha').split('\n')[0]).toMatch(
       /^plan alpha \(p-draft\) at /,
     );
-    plan(repo, 'close', 'alpha', ...BY);
-    expect(show(repo, [], 'alpha')).toContain('plan: alpha (p-over)');
+    expect(show(repo, [], 'u1')).toContain('unit: u1 — u-new, frontier');
+  });
+
+  it('close is final: the plan stays readable, its units show no frontier and are never written again', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'a', 'done');
+    add(repo, 'b', 'done', 'c1', '--deps', 'a');
+    plan(repo, 'advance', 'a', '--to', 'u-mid', ...BY);
+    const closed = plan(repo, 'close', 'done', ...BY);
+    expect(closed).toContain('plan done (p-over) · realizes');
+    expect(closed).toMatch(/0 frontier/);
+    expect(marks(repo, 'done', 'a')).toBe('u-mid');
+    for (const write of [
+      ['advance', 'a', '--to', 'u-done'],
+      ['revise', 'a', '--intent', 'more'],
+      ['retract', 'b'],
+      ['add', 'c', '--plan', 'done', '--realizes', 'c1'],
+    ])
+      expect(refused(repo, ...write, ...BY)).toMatch(
+        /plan "done" is p-over, which is final, and its units are never written again/,
+      );
+    expect(refused(repo, 'revise', 'done', '--name', 'renamed', ...BY)).toMatch(
+      /p-over, which is final/,
+    );
+    expect(refused(repo, 'bind', 'done', ...BY)).toMatch(
+      /p-held is a move backwards/,
+    );
   });
 
   it('REFUSES a second live plan or a second live unit of one plan under a name; one unit name in two plans stands', () => {
@@ -278,10 +184,10 @@ describe('plan — proposed by its first unit, bound, revised and closed', () =>
     expect(
       refused(repo, 'add', 'u1', '--plan', 'alpha', '--realizes', 'c1', ...BY),
     ).toMatch(/would share the name u1 in one plan/);
-    expect(show(repo, [], '--plan', 'beta')).toContain('u1 — u-new');
+    expect(show(repo, [], 'beta')).toContain('u1 — u-new');
   });
 
-  it('revise renames a plan and changes its concepts, its state unchanged; REFUSES a state, a taken name, and a closed plan', () => {
+  it('revise renames a plan and changes its concepts, its state unchanged; REFUSES a state and a taken name, a closed one included', () => {
     const repo = repository();
     concepts(repo);
     add(repo, 'u1', 'gamma');
@@ -297,9 +203,7 @@ describe('plan — proposed by its first unit, bound, revised and closed', () =>
       'c1',
       ...BY,
     );
-    expect(revised).toContain(
-      'plan: delta (p-draft)\n  realizes:\n    - c1\n    - c2',
-    );
+    expect(revised).toContain('plan delta (p-draft) · realizes c1, c2 — units');
     expect(
       refused(repo, 'revise', 'delta', '--state', 'p-held', ...BY),
     ).toMatch(/revise never sets a state — `plan bind` and `plan close`/);
@@ -308,12 +212,6 @@ describe('plan — proposed by its first unit, bound, revised and closed', () =>
     expect(
       refused(repo, 'revise', 'delta', '--name', 'closed-one', ...BY),
     ).toMatch(/another live plan is named closed-one/);
-    expect(
-      refused(repo, 'revise', 'closed-one', '--name', 'renamed', ...BY),
-    ).toMatch(/p-over, which is final/);
-    expect(refused(repo, 'bind', 'closed-one', ...BY)).toMatch(
-      /p-held is a move backwards/,
-    );
     expect(
       refused(
         repo,
@@ -328,18 +226,6 @@ describe('plan — proposed by its first unit, bound, revised and closed', () =>
         ...BY,
       ),
     ).toMatch(/only its first add proposes it/);
-    expect(
-      refused(
-        repo,
-        'add',
-        'x2',
-        '--plan',
-        'closed-one',
-        '--realizes',
-        'c1',
-        ...BY,
-      ),
-    ).toMatch(/p-over, which is final/);
   });
 
   it('retract withdraws a unit nothing depends on, and REFUSES one another unit depends on', () => {
@@ -354,7 +240,126 @@ describe('plan — proposed by its first unit, bound, revised and closed', () =>
       'unit: b — u-new, withdrawn',
     );
     plan(repo, 'retract', 'a', ...BY);
-    expect(show(repo, [], '--plan', 'pl')).toMatch(/0 units/);
+    expect(show(repo, [], 'pl')).toMatch(/0 units/);
+  });
+});
+
+describe('plan — the laws spanning plan and unit', () => {
+  it('a unit realizes one of its plan’s concepts: add, a unit revise and a plan revise that break it REFUSE', () => {
+    const repo = repository();
+    concepts(repo);
+    plan(
+      repo,
+      'add',
+      'a',
+      '--plan',
+      'narrow',
+      '--realizes',
+      'c1',
+      '--plan-realizes',
+      'c1',
+      ...BY,
+    );
+    expect(
+      refused(repo, 'add', 'b', '--plan', 'narrow', '--realizes', 'c2', ...BY),
+    ).toMatch(
+      /the new unit would realize "c2", which its plan "narrow" does not realize/,
+    );
+    expect(
+      refused(
+        repo,
+        'add',
+        'x',
+        '--plan',
+        'fresh',
+        '--realizes',
+        'c2',
+        '--plan-realizes',
+        'c1',
+        ...BY,
+      ),
+    ).toMatch(/which its plan "fresh" would not realize/);
+    expect(records(repo, 'plan')).toHaveLength(1);
+    expect(
+      refused(repo, 'revise', 'a', '--realizes', 'c2', '--repin', ...BY),
+    ).toMatch(/"a" would realize "c2", which its plan "narrow" does not/);
+    expect(
+      refused(repo, 'revise', 'narrow', '--realizes', 'c2', ...BY),
+    ).toMatch(/"a" would realize "c1", which its plan "narrow" would not/);
+  });
+
+  it('a merge that breaks it lists it; unrelated and repairing writes pass', () => {
+    const repo = repository();
+    concepts(repo);
+    plan(
+      repo,
+      'add',
+      'a',
+      '--plan',
+      'pl',
+      '--realizes',
+      'c1',
+      '--plan-realizes',
+      'c1',
+      '--plan-realizes',
+      'c2',
+      ...BY,
+    );
+    merge(
+      repo,
+      'unit',
+      () => plan(repo, 'revise', 'pl', '--realizes', 'c1', ...BY),
+      () => plan(repo, 'add', 'b', '--plan', 'pl', '--realizes', 'c2', ...BY),
+    );
+    expect(show(repo, [], 'pl')).toContain(
+      'incoherent: b realizes c2, which its plan pl does not',
+    );
+    plan(repo, 'revise', 'a', '--intent', 'unrelated', ...BY);
+    plan(repo, 'retract', 'b', ...BY);
+    expect(show(repo, [], 'pl')).toMatch(/0 incoherent/);
+  });
+
+  it('REFUSES adding a unit to a diverged plan, pointing to reconcile, and writes nothing', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'a', 'pl');
+    merge(
+      repo,
+      'plan',
+      () => plan(repo, 'revise', 'pl', '--name', 'pl-left', ...BY),
+      () => plan(repo, 'revise', 'pl', '--name', 'pl-right', ...BY),
+    );
+    const whole = show(repo, [], 'pl-left');
+    expect(whole).toContain(' — diverged — units in wave order:');
+    expect(
+      refused(repo, 'add', 'b', '--plan', 'pl-left', '--realizes', 'c1', ...BY),
+    ).toMatch(
+      /plan "pl-left" has diverged; `plan reconcile pl-left` settles it/,
+    );
+    plan(repo, 'reconcile', 'pl-left', '--name', 'pl', ...BY);
+    add(repo, 'b', 'pl');
+  });
+
+  it('a write refused in its second part leaves its first part unwritten', () => {
+    const repo = repository();
+    concepts(repo);
+    const before = everyRecord(repo);
+    refused(
+      repo,
+      'add',
+      'x',
+      '--plan',
+      'proposed',
+      '--realizes',
+      'c2',
+      '--plan-realizes',
+      'c1',
+      ...BY,
+    );
+    expect(everyRecord(repo)).toEqual(before);
+    expect(show(repo, [], 'proposed')).toContain(
+      'nothing live, withdrawn or diverged is named proposed',
+    );
   });
 });
 
@@ -372,16 +377,14 @@ describe('plan — incoherence, repaired one write at a time', () => {
       },
       () => plan(repo, 'revise', 'C', '--deps', 'A', ...BY),
     );
-    expect(show(repo, [], '--plan', 'r')).toContain(
-      'incoherent: cycle among A, B, C',
-    );
+    expect(show(repo, [], 'r')).toContain('incoherent: cycle among A, B, C');
     plan(repo, 'revise', 'D', '--intent', 'unrelated', ...BY);
     plan(repo, 'revise', 'D', '--deps', 'E', ...BY);
     expect(refused(repo, 'revise', 'E', '--deps', 'D', ...BY)).toMatch(
       /D, E would form a dependency cycle/,
     );
     plan(repo, 'revise', 'A', '--deps', '', ...BY);
-    expect(show(repo, [], '--plan', 'r')).toMatch(/0 incoherent/);
+    expect(show(repo, [], 'r')).toMatch(/0 incoherent/);
   });
 
   it('two branches binding different plans: listed with each plan counted apart, and binding the one to keep resolves it', () => {
@@ -409,31 +412,58 @@ describe('plan — incoherence, repaired one write at a time', () => {
       'incoherent: 2 plans in p-held, which admits one: one, two',
     );
     plan(repo, 'bind', 'one', ...BY);
-    const settled = show(repo);
-    expect(settled.split('\n')[0]).toMatch(
+    expect(show(repo).split('\n')[0]).toMatch(
       /^plan one \(p-held\) at .*0 incoherent/,
     );
   });
 
-  it('a dependency on a unit another branch withdrew is listed by its relation', () => {
+  it('a dependency on a unit another branch withdrew is listed by its relation, and keeps the unit off the frontier, however far along', () => {
     const repo = repository();
     concepts(repo);
     add(repo, 'A', 'pl');
     add(repo, 'B', 'pl');
+    plan(repo, 'advance', 'B', '--to', 'u-mid', ...BY);
+    plan(repo, 'advance', 'B', '--to', 'u-done', ...BY);
     merge(
       repo,
       'unit',
       () => plan(repo, 'retract', 'B', ...BY),
-      () => plan(repo, 'revise', 'A', '--deps', 'B', ...BY),
+      () => {
+        plan(repo, 'revise', 'A', '--deps', 'B', ...BY);
+        plan(repo, 'advance', 'A', '--to', 'u-mid', ...BY);
+      },
     );
-    expect(show(repo, [], '--plan', 'pl')).toContain(
+    expect(show(repo, [], 'pl')).toContain(
       'incoherent: A references withdrawn B by its dependency',
     );
+    expect(marks(repo, 'pl', 'A')).toBe('u-mid');
     plan(repo, 'revise', 'A', '--deps', '', ...BY);
-    expect(show(repo, [], '--plan', 'pl')).toMatch(/0 incoherent/);
+    expect(show(repo, [], 'pl')).toMatch(/0 incoherent/);
+    expect(marks(repo, 'pl', 'A')).toBe('u-mid, frontier');
   });
 
-  it('two units given one name in one plan: each identity beside the name, and retracting one by identity resolves it', () => {
+  it('a diverged unit keeps its place in its wave, marked, and its dependents keep theirs', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'a', 'pl');
+    add(repo, 'b', 'pl', 'c1', '--deps', 'a');
+    merge(
+      repo,
+      'unit',
+      () => plan(repo, 'revise', 'a', '--intent', 'left', ...BY),
+      () => plan(repo, 'revise', 'a', '--intent', 'right', ...BY),
+    );
+    expect(show(repo, [], 'pl')).toContain(
+      [
+        '  wave 0:',
+        '    a — diverged, 2 versions',
+        '  wave 1:',
+        '    b — u-new · realizes c1 · deps a',
+      ].join('\n'),
+    );
+  });
+
+  it('two units given one name in one plan: each identity beside the name, and the printed form addresses one', () => {
     const repo = repository();
     concepts(repo);
     add(repo, 'first', 'pl');
@@ -446,36 +476,38 @@ describe('plan — incoherence, repaired one write at a time', () => {
     const [left, right] = entitiesNamed(
       repo,
       'unit',
-      (p) => p.spec?.name ?? '',
+      (p) => p.spec?.name,
       'dup',
     );
-    const out = show(repo, ['dup'], '--plan', 'pl');
-    expect(out).toContain(
+    expect(show(repo, ['dup'], 'pl')).toContain(
       `incoherent: dup is held by 2 items: dup (identity ${left}) live, dup (identity ${right}) live`,
     );
-    expect(refused(repo, 'retract', 'dup', ...BY)).toMatch(
-      /held by 2 items .*identity/,
-    );
-    plan(repo, 'retract', `dup (identity ${left})`, ...BY);
-    const settled = show(repo, [], '--plan', 'pl');
+    const held = refusal(repo, () => plan(repo, 'retract', 'dup', ...BY), [
+      'dup',
+    ]);
+    expect(held).toMatch(/the unit name "dup" is held by 2 units/);
+    const [printedForm] = held.match(/dup \(identity [0-9A-Z]{26}\)/) ?? [];
+    expect(printedForm).toBe(`dup (identity ${left})`);
+    plan(repo, 'retract', printedForm as string, ...BY);
+    const settled = show(repo, [], 'pl');
     expect(settled).toMatch(/0 incoherent/);
     expect(settled).not.toMatch(IDENTITY);
-    const [first] = entitiesNamed(
-      repo,
-      'unit',
-      (p) => p.spec?.name ?? '',
-      'first',
-    );
+    const [first] = entitiesNamed(repo, 'unit', (p) => p.spec?.name, 'first');
     expect(
-      refused(
+      refusal(
         repo,
-        'advance',
-        `first (identity ${first})`,
-        '--to',
-        'u-mid',
-        ...BY,
+        () =>
+          plan(
+            repo,
+            'advance',
+            `first (identity ${first})`,
+            '--to',
+            'u-mid',
+            ...BY,
+          ),
+        ['first'],
       ),
-    ).toMatch(/alone names it; drop the identity/);
+    ).toMatch(/alone addresses it; drop the identity/);
   });
 });
 
@@ -495,15 +527,14 @@ describe('plan — pins, drift and suspicion', () => {
         '--realizes',
         'gone',
         '--plan-realizes',
-        'c1',
+        'gone',
         ...BY,
       ),
     ).toMatch(/pin: take on gone refused — it is withdrawn/);
     add(repo, 'a', 'pl', 'leaf');
     add(repo, 'b', 'pl', 'c1', '--deps', 'a');
     plan(repo, 'bind', 'pl', ...BY);
-    const out = show(repo);
-    expect(out).toContain(
+    expect(show(repo)).toContain(
       [
         '  wave 0:',
         '    a — u-new, frontier · realizes leaf',
@@ -529,29 +560,55 @@ describe('plan — pins, drift and suspicion', () => {
     const repo = repository();
     concepts(repo);
     add(repo, 'u', 'pl', 'leaf');
-    const marks = () =>
-      (show(repo, [], '--plan', 'pl').match(/ {4}u — (.*) · realizes/) ??
-        [])[1];
-    expect(marks()).toBe('u-new, frontier');
+    const repin = () => plan(repo, 'revise', 'u', '--repin', ...BY);
+    expect(marks(repo, 'pl', 'u')).toBe('u-new, frontier');
     design(repo, 'amend', 'base', '--gloss', 'beneath, amended', ...BY);
-    expect(marks()).toBe('u-new, frontier, suspect');
-    plan(repo, 'revise', 'u', ...BY);
-    expect(marks()).toBe('u-new, frontier');
+    expect(marks(repo, 'pl', 'u')).toBe('u-new, frontier, suspect');
+    repin();
+    expect(marks(repo, 'pl', 'u')).toBe('u-new, frontier');
     design(repo, 'amend', 'leaf', '--gloss', 'above, amended', ...BY);
-    expect(marks()).toBe('u-new, frontier, drifted');
-    plan(repo, 'revise', 'u', ...BY);
+    expect(marks(repo, 'pl', 'u')).toBe('u-new, frontier, drifted');
+    repin();
     merge(
       repo,
       'design',
       () => design(repo, 'amend', 'leaf', '--gloss', 'left', ...BY),
       () => design(repo, 'amend', 'leaf', '--gloss', 'right', ...BY),
     );
-    expect(marks()).toBe('u-new, frontier, drifted');
+    expect(marks(repo, 'pl', 'u')).toBe('u-new, frontier, drifted');
     design(repo, 'reconcile', 'leaf', '--gloss', 'settled', ...BY);
-    plan(repo, 'revise', 'u', ...BY);
+    repin();
     design(repo, 'retract', 'leaf', ...BY);
-    expect(marks()).toBe('u-new, frontier, drifted');
-    expect(show(repo, [], '--plan', 'pl')).toMatch(/0 incoherent/);
+    expect(marks(repo, 'pl', 'u')).toBe('u-new, frontier, drifted');
+    expect(show(repo, [], 'pl')).toMatch(/0 incoherent/);
+  });
+
+  it('a revise keeps the pin, so editing a spec never clears a drift; only --repin with a reason retakes it', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'u', 'pl', 'c1');
+    design(repo, 'amend', 'c1', '--gloss', 'one, amended', ...BY);
+    plan(repo, 'revise', 'u', '--intent', 'edited', ...BY);
+    expect(marks(repo, 'pl', 'u')).toBe('u-new, frontier, drifted');
+    expect(refused(repo, 'revise', 'u', '--realizes', 'c2', ...BY)).toMatch(
+      /give --repin, with a --reason/,
+    );
+    expect(
+      refused(
+        repo,
+        'revise',
+        'u',
+        '--repin',
+        '--author',
+        't',
+        '--reason',
+        '',
+        '--cause',
+        'c',
+      ),
+    ).toMatch(/a re-pin says why; give a --reason/);
+    plan(repo, 'revise', 'u', '--repin', ...BY);
+    expect(marks(repo, 'pl', 'u')).toBe('u-new, frontier');
   });
 });
 
@@ -590,9 +647,7 @@ describe('plan — dependencies and the lifecycle', () => {
     );
     plan(repo, 'advance', 'a', '--to', 'u-done', ...BY);
     plan(repo, 'advance', 'a', '--to', 'u-past', ...BY);
-    expect(show(repo, [], '--plan', 'pl')).toContain(
-      '    b — u-new, frontier · realizes c1 · deps a',
-    );
+    expect(marks(repo, 'pl', 'b')).toBe('u-new, frontier');
     merge(
       repo,
       'unit',
@@ -642,9 +697,6 @@ describe('plan — dependencies and the lifecycle', () => {
     );
     expect(realizes.left).toHaveLength(1);
     expect(realizes.left).toEqual(realizes.right);
-    git(repo, 'checkout', '-q', 'main');
-    git(repo, 'merge', '-q', '--no-edit', 'left');
-    git(repo, 'branch', '-q', '-D', 'left', 'right');
     const deps = merge(
       repo,
       'unit',
@@ -653,51 +705,41 @@ describe('plan — dependencies and the lifecycle', () => {
     );
     expect(deps.left).toHaveLength(1);
     expect(deps.left).toEqual(deps.right);
-    const out = show(repo, [], '--plan', 'pl');
+    const out = show(repo, [], 'pl');
     expect(out).toMatch(/0 diverged/);
     expect(out).not.toContain('diverged:');
     plan(repo, 'revise', 'pl', '--name', 'pl2', ...BY);
     plan(repo, 'revise', 'c', '--intent', 'onward', ...BY);
   });
 
-  it('REFUSES every verb when the plan lifecycle is absent or malformed, naming the deploy', () => {
+  it('REFUSES every verb when the plan lifecycle is absent or malformed, naming the deploy, and writes nothing', () => {
     const repo = repository();
     concepts(repo);
-    const refusedUnder = (config: unknown, ...argv: string[]): string => {
-      const path = join(configDir, `${Math.random()}.json`);
-      if (config !== undefined) writeFileSync(path, JSON.stringify(config));
-      process.env[RUNTIME_CONFIG_ENV] = path;
-      try {
-        return refused(repo, ...argv);
-      } finally {
-        process.env[RUNTIME_CONFIG_ENV] = CONFIG;
-      }
-    };
-    expect(refusedUnder(undefined, 'show')).toMatch(
+    const add = [
+      'add',
+      'a',
+      '--plan',
+      'pl',
+      '--realizes',
+      'c1',
+      '--plan-realizes',
+      'c1',
+      ...BY,
+    ];
+    expect(under(undefined, () => refused(repo, 'show'))).toMatch(
       /plan lifecycle is absent .*`cratylus deploy`/,
     );
     expect(
-      refusedUnder(
-        { configuration: { other: {} } },
-        'add',
-        'a',
-        '--plan',
-        'pl',
-        '--realizes',
-        'c1',
-        '--plan-realizes',
-        'c1',
-        ...BY,
-      ),
+      under({ configuration: { other: {} } }, () => refused(repo, ...add)),
     ).toMatch(/plan lifecycle is absent/);
     expect(
-      refusedUnder(
+      under(
         {
           configuration: {
             plan: { plan: { states: ['s'], exclusive: 'x', final: 's' } },
           },
         },
-        'show',
+        () => refused(repo, 'show'),
       ),
     ).toMatch(/plan lifecycle is malformed: .*`cratylus deploy`/);
     expect(records(repo, 'plan')).toEqual([]);

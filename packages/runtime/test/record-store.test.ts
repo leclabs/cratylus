@@ -1,8 +1,9 @@
 // The record store, driven over temporary git repositories it builds itself: writes
 // that must refuse, the fold's heads (settled, withdrawn, reinstated, diverged,
 // reconciled), incoherence over a supplied reference relation, real branch merges,
-// and a read that must leave the records root untouched. Then the two pure rules
-// every domain writes through: the repair rule and canonical set order.
+// and a read that must leave the records root untouched; writes held back until
+// flushed. Then the two pure rules every domain writes through: the repair rule
+// and canonical set order.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -19,7 +20,11 @@ import { canonicalOrder } from '../src/record-store/canonical-order.js';
 import { divergence, fold, incoherence } from '../src/record-store/fold.js';
 import type { Record } from '../src/record-store/record.js';
 import { introduced } from '../src/record-store/repair.js';
-import { RECORDS_ROOT, RecordStore } from '../src/record-store/store.js';
+import {
+  RECORDS_ROOT,
+  RecordStore,
+  StagedStore,
+} from '../src/record-store/store.js';
 
 const DOMAIN = 'concept';
 const BY = { author: 'test', reason: 'a fixture', cause: 'record-store.test' };
@@ -513,6 +518,42 @@ describe('record store', () => {
 
     expect(snapshot(store.root)).toEqual(before);
     expect(existsSync(join(store.root, 'never-written'))).toBe(false);
+  });
+});
+
+describe('a staged store', () => {
+  it('checks and reads its held writes, puts nothing on disk until flushed, then all of them', () => {
+    const repo = repository();
+    const staged = new StagedStore(repo);
+    const first = staged.create(DOMAIN, { v: 1 }, BY);
+    const next = staged.supersede(
+      DOMAIN,
+      first.envelope.entity,
+      [first.envelope.id],
+      { v: 2 },
+      BY,
+    );
+    expect(staged.holding).toBe(true);
+    expect(
+      fold(staged.read(DOMAIN)).get(first.envelope.entity)?.payload,
+    ).toEqual({ v: 2 });
+    expect(() =>
+      staged.supersede(
+        DOMAIN,
+        first.envelope.entity,
+        [first.envelope.id],
+        { v: 3 },
+        BY,
+      ),
+    ).toThrow(/is not a head/);
+    const disk = new RecordStore(repo);
+    expect(disk.read(DOMAIN)).toEqual([]);
+    staged.flush();
+    expect(staged.holding).toBe(false);
+    expect(disk.read(DOMAIN).map((r) => r.envelope.id)).toEqual([
+      first.envelope.id,
+      next.envelope.id,
+    ]);
   });
 });
 

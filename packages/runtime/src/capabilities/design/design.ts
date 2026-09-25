@@ -12,8 +12,9 @@
 // An anchor is HELD by the live concept carrying it, by a withdrawn concept that
 // keeps it, and by a diverged concept for every anchor its heads carry. Where a
 // merge leaves an anchor held by more than one concept, each holder's IDENTITY is
-// shown and accepted beside the anchor (`Identified`), and only there: that is the
-// one place an identity surfaces. It travels as its own field, never inside a
+// shown and accepted beside the anchor, and only there: that is the one place an
+// identity surfaces. It travels as its own field of a `Name` (the record store's
+// `names.ts`, which also decides which holder a name addresses), never inside a
 // string, so no anchor a write records can ever be read as an identity.
 //
 // A concept is live when its heads carry one version, withdrawn when they carry
@@ -41,6 +42,12 @@
 
 import { canonicalOrder } from '../../record-store/canonical-order.js';
 import { type Fold, fold, incoherence } from '../../record-store/fold.js';
+import {
+  type Name,
+  addressed,
+  bare,
+  printed,
+} from '../../record-store/names.js';
 import type {
   Envelope,
   Operation,
@@ -52,17 +59,6 @@ import type { RecordStore } from '../../record-store/store.js';
 
 /** The record store domain holding the design records. */
 export const DOMAIN = 'design';
-
-/** A concept named by its identity beside its anchor, accepted only where the
- *  anchor is held by more than one concept. */
-export interface Identified {
-  readonly anchor: string;
-  readonly identity: string;
-}
-
-/** How the boundary names a concept: its anchor, or its anchor with its identity
- *  where that anchor is held by more than one concept. */
-export type Name = string | Identified;
 
 /** A concept as the boundary names it: its factors by name. */
 export interface Concept {
@@ -156,11 +152,9 @@ type Violation =
       readonly entities: readonly string[];
     };
 
-/** A name as a message quotes it. */
+/** A name as a message quotes it: its printed form, in quotes. */
 function quote(name: Name): string {
-  return typeof name === 'string'
-    ? JSON.stringify(name)
-    : `${JSON.stringify(name.anchor)} (identity ${name.identity})`;
+  return JSON.stringify(printed(name));
 }
 
 /** The entities reachable from `start` over `edges`, `start` first. */
@@ -247,7 +241,7 @@ class Snapshot {
   name(entity: string): Name {
     const anchors = this.anchors(entity);
     const alone = anchors.find((a) => !this.#shared(a));
-    return alone ?? { anchor: anchors[0] ?? '', identity: entity };
+    return alone ?? { name: anchors[0] ?? '', identity: entity };
   }
 
   /** A concept as a refusal lists it: its name, gloss and state. */
@@ -261,35 +255,21 @@ class Snapshot {
     return `${quote(this.name(entity))} — ${glosses.join(' or ')}${state}`;
   }
 
-  /** The entity `name` denotes, if any. An anchor held by several concepts
-   *  refuses, listing each holder with its identity; an identity is accepted
-   *  only beside such an anchor, and only for one of its holders. */
+  /** The entity `name` denotes, if any, as `names.ts` decides it; a refusal
+   *  listing an anchor's holders names each with its gloss and state. */
   denotes(name: Name): string | undefined {
-    const anchor = typeof name === 'string' ? name : name.anchor;
-    const holders = this.holders.get(anchor) ?? [];
-    if (typeof name !== 'string') {
-      if (holders.length === 1 && holders[0] === name.identity)
-        throw new Error(
-          `design: ${quote(name)} refused — the anchor ${JSON.stringify(anchor)} alone names it; drop the identity`,
-        );
-      return holders.length > 1 && holders.includes(name.identity)
-        ? name.identity
-        : undefined;
-    }
-    if (holders.length > 1)
-      throw new Error(
-        `design: ${quote(name)} is held by ${holders.length} concepts — ${holders
-          .map((e) => this.sign(e))
-          .join('; ')}; name one of them by its identity`,
-      );
-    return holders[0];
+    return addressed('concept', name, this.holders.get(bare(name)) ?? [], (e) =>
+      this.sign(e),
+    );
   }
 
   /** The entity `name` denotes; refuses a name no concept holds. */
   resolve(name: Name): string {
     const entity = this.denotes(name);
     if (entity === undefined)
-      throw new Error(`design: no concept is named ${quote(name)}`);
+      throw new Error(
+        `design: no concept is named ${quote(name)}; \`design define\` defines one`,
+      );
     return entity;
   }
 
@@ -554,6 +534,11 @@ export class Design {
   /** The entity `name` denotes, `undefined` when no concept holds it. */
   denotes(name: Name): string | undefined {
     return this.#read().denotes(name);
+  }
+
+  /** The entity `name` denotes; refuses a name no concept holds. */
+  resolve(name: Name): string {
+    return this.#read().resolve(name);
   }
 
   /** How the boundary names the concept entity `entity`, which another domain

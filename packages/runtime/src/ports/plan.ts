@@ -23,7 +23,9 @@ import type { Invocation } from './design.js';
  * concepts it realizes. A unit's are `name`, `realizes` (the one concept it
  * realizes, which its pin is taken on), `intent`, `static`, `deps` (units of its
  * plan), `outputs` and `accept`. `state` moves only by `bind`, `close` and
- * `advance`, and is given only to `reconcile`.
+ * `advance`, and is given only to `reconcile`. `repin` retakes a unit's pin
+ * on `revise` or `reconcile`, and the write's reason says why; a unit's pin is
+ * otherwise kept, so editing its spec never clears a drift.
  */
 export interface Fields {
   readonly name?: string;
@@ -34,12 +36,14 @@ export interface Fields {
   readonly deps?: readonly string[];
   readonly outputs?: readonly string[];
   readonly accept?: readonly string[];
+  readonly repin?: boolean;
 }
 
 /**
- * The plan's verbs. `show` renders the bound plan, or the plan `plan`, or, given
- * a name, the unit or plan it names in full. Every write returns the view of
- * what it wrote.
+ * The plan's verbs. `show` renders the bound plan; given a name, the plan it
+ * names, whole, with its units, or else the unit it names in full, looked up in
+ * `plan` when given. Every write returns the view of what it wrote, and a
+ * refused write writes nothing.
  */
 export interface PlanHost {
   show(name?: string, plan?: string): string;
@@ -61,7 +65,7 @@ export interface PlanHost {
   ): string;
   retract(unit: string, plan: string | undefined, by: Invocation): string;
   /** Revise the unit or plan `name` names; `plan` says it is a unit of that
-   *  plan. Revising a unit re-pins it. */
+   *  plan. A unit's pin is retaken only with `repin`. */
   revise(
     name: string,
     plan: string | undefined,

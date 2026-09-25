@@ -11,8 +11,9 @@
 //
 // The design knows nothing of plans. `trace` reads the design alone; `show`
 // joins the plans standing on each concept only as the view's cross-reference,
-// composed from the plan fold (`../plan/dispatch.ts`'s `Reading`), and reads the
-// plan lifecycle only when a unit stands on some concept.
+// composed from the plan fold, and on a host without the plan lifecycle shows
+// the design and says the cross-reference waits for a deploy. A write writes
+// all or nothing (`../plan/reading.ts`'s `act`).
 //
 // Arguments, names and identities are read as the plan surface reads them:
 // `--factors` is repeated once per factor, and a field left out carries over.
@@ -22,98 +23,88 @@ import type {
   ConceptChange,
   ConceptInput,
   DesignHost,
-  Invocation,
 } from '../../ports/design.js';
+import { type Name, parsed } from '../../record-store/names.js';
 import { designView, traceView } from '../../view/design.js';
 import {
-  type Reading,
-  agreed,
-  fromAnchor,
   invocation,
   many,
   one,
-  over,
   parseArgv,
-  parseName,
   subject,
-  toAnchor,
   verbOf,
-} from '../plan/dispatch.js';
-import type { Name as Anchor, Concept } from './design.js';
+} from '../plan/argv.js';
+import { type Reading, act, agreed, look } from '../plan/reading.js';
+import type { Concept } from './design.js';
 
 /** The display text of each write in a concept's history. */
 const WRITTEN = { create: 'define', amend: 'amend', retract: 'retract' };
 
 /** The design capability over the records of the repository holding `from`. */
 export function designHost(from: string = process.cwd()): DesignHost {
-  /** The design's view after a write, drilled into `anchor`. */
-  const after = (anchor: string): string =>
-    over(from, (read) => designView(read.designState(true), parseName(anchor)));
+  /** A design write, all or nothing, and the design's view drilled into the
+   *  anchor it returns. */
+  const write = (verb: (read: Reading) => string): string =>
+    act(from, verb, (read, anchor) =>
+      designView(read.designState(true), anchor),
+    );
 
   /** `change` over `current`, as the design's boundary takes a concept. */
-  const concept = (
-    change: ConceptChange,
-    current: Concept,
-  ): { anchor: string; gloss: string; factors: Anchor[] } => ({
+  const concept = (change: ConceptChange, current: Concept): Concept => ({
     anchor: change.anchor ?? current.anchor,
     gloss: change.gloss ?? current.gloss,
-    factors: change.factors?.map(toAnchor) ?? [...current.factors],
+    factors: change.factors?.map(parsed) ?? [...current.factors],
   });
 
-  /** The version a write to `anchor` carries over from: its one version, a
-   *  withdrawn concept's last, or a diverged one's first. */
-  const current = (read: Reading, anchor: string): Concept => {
-    const standing = read.design.concept(toAnchor(anchor));
+  /** The version a write to `anchor` carries over from: its one version, or a
+   *  withdrawn concept's last. */
+  const current = (read: Reading, anchor: Name): Concept => {
+    const standing = read.design.concept(anchor);
     const last = read.design
-      .history(toAnchor(anchor))
+      .history(anchor)
       .flatMap((e) => (e.concept ? [e.concept] : []))
       .at(-1);
-    return (standing.concept ??
-      standing.heads.find((h) => h !== null) ??
-      last) as Concept;
+    return (standing.concept ?? last) as Concept;
   };
 
   return {
     show: (anchor) =>
-      over(from, (read) =>
+      look(from, (read) =>
         designView(
           read.designState(true),
-          anchor === undefined ? undefined : parseName(anchor),
+          anchor === undefined ? undefined : parsed(anchor),
         ),
       ),
 
-    define: (input: ConceptInput, by: Invocation) => {
-      over(from, (read) => {
+    define: (input: ConceptInput, by) =>
+      write((read) => {
         read.design.define(
-          { ...input, factors: input.factors.map(toAnchor) },
+          { ...input, factors: input.factors.map(parsed) },
           by,
         );
-        return '';
-      });
-      return after(input.anchor);
-    },
+        return input.anchor;
+      }),
 
-    amend: (anchor, change, by) => {
-      const next = over(from, (read) => {
-        const next = concept(change, current(read, anchor));
-        read.design.amend(toAnchor(anchor), next, by);
+    amend: (anchor, change, by) =>
+      write((read) => {
+        const name = parsed(anchor);
+        const next = concept(change, current(read, name));
+        read.design.amend(name, next, by);
         return next.anchor;
-      });
-      return after(next);
-    },
+      }),
 
-    retract: (anchor, by) => {
-      over(from, (read) => {
-        read.design.retract(toAnchor(anchor), by);
-        return '';
-      });
-      return after(anchor);
-    },
+    retract: (anchor, by) =>
+      write((read) => {
+        const name = parsed(anchor);
+        read.design.retract(name, by);
+        return typeof name === 'string' ? name : name.name;
+      }),
 
-    reconcile: (anchor, change, by) => {
-      const next = over(from, (read) => {
+    reconcile: (anchor, change, by) =>
+      write((read) => {
+        const name = parsed(anchor);
         const versions = read.design
-          .concept(toAnchor(anchor))
+          .concept(name)
           .heads.flatMap((h) => (h ? [h] : []));
         const settled = {
           anchor:
@@ -131,27 +122,25 @@ export function designHost(from: string = process.cwd()): DesignHost {
               'gloss',
             ),
           factors:
-            change.factors?.map(toAnchor) ??
+            change.factors?.map(parsed) ??
             agreed(
               'design',
               versions.map((v) => v.factors),
               'factors',
             ),
         };
-        read.design.reconcile(toAnchor(anchor), settled, by);
+        read.design.reconcile(name, settled, by);
         return settled.anchor;
-      });
-      return after(next);
-    },
+      }),
 
     trace: (anchor) =>
-      over(from, (read) => {
-        const name = toAnchor(anchor);
+      look(from, (read) => {
+        const name = parsed(anchor);
         const entity = read.resolveConcept(anchor);
         const shown = (c: Concept) => ({
           anchor: read.anchor(c.anchor, entity),
           gloss: c.gloss,
-          factors: c.factors.map(fromAnchor),
+          factors: c.factors,
         });
         return traceView(read.designState(false), {
           anchor: read.concept(entity),
@@ -162,14 +151,8 @@ export function designHost(from: string = process.cwd()): DesignHost {
             time: e.time,
             reason: e.reason,
           })),
-          closure: read.design
-            .closure(name)
-            .slice(1)
-            .map((n) => read.concept(read.design.denotes(n) as string)),
-          blast: read.design
-            .blast(name)
-            .slice(1)
-            .map((n) => read.concept(read.design.denotes(n) as string)),
+          closure: read.design.closure(name).slice(1),
+          blast: read.design.blast(name).slice(1),
         });
       }),
   };

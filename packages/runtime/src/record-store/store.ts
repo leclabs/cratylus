@@ -104,13 +104,12 @@ export class RecordStore {
    * version, which would withdraw nothing.
    */
   write<P>(domain: string, record: Record<P>): void {
-    const dir = this.#dir(domain);
     const { id, entity, operation, supersedes } = record.envelope;
     const refuse = (why: string): never => {
       throw new Error(`record store: ${operation} ${id} refused — ${why}`);
     };
     const rewrite = 'that record exists, and a record is never rewritten';
-    const records = readDomain<P>(dir);
+    const records = this.read<P>(domain);
     const known = new Map(records.map((r) => [r.envelope.id, r] as const));
     if (known.has(id)) refuse(rewrite);
     if (operation === 'create' && supersedes.length > 0)
@@ -148,16 +147,27 @@ export class RecordStore {
       )
     )
       refuse(`it names no version of entity ${entity}, so withdraws nothing`);
+    this.persist(domain, record, () => refuse(rewrite));
+  }
+
+  /** Put one checked record on disk, calling `exists` when its file is there
+   *  already. */
+  protected persist<P>(
+    domain: string,
+    record: Record<P>,
+    exists: () => never,
+  ): void {
+    const dir = this.#dir(domain);
     mkdirSync(dir, { recursive: true });
     try {
       writeFileSync(
-        join(dir, `${id}.json`),
+        join(dir, `${record.envelope.id}.json`),
         `${JSON.stringify(record, null, 2)}\n`,
         { flag: 'wx' },
       );
     } catch (error) {
       // A concurrent writer can land the same id between the read and here.
-      if ((error as NodeJS.ErrnoException).code === 'EEXIST') refuse(rewrite);
+      if ((error as NodeJS.ErrnoException).code === 'EEXIST') exists();
       throw error;
     }
   }
@@ -249,5 +259,45 @@ export class RecordStore {
       payload,
       by,
     );
+  }
+}
+
+/**
+ * A store whose writes are held back: each is checked as `RecordStore.write`
+ * checks it, against the records on disk and the writes held before it, and
+ * every read sees them, but nothing reaches disk until `flush`. A caller that
+ * must refuse a whole act when any part of it fails — a later write, or the
+ * view of what it wrote — stages the act, and flushes only once all of it
+ * stands, so a refused act has written nothing.
+ */
+export class StagedStore extends RecordStore {
+  readonly #held: { readonly domain: string; readonly record: Record }[] = [];
+
+  /** Whether any write is held. */
+  get holding(): boolean {
+    return this.#held.length > 0;
+  }
+
+  override read<P>(domain: string): Record<P>[] {
+    const held = this.#held
+      .filter((h) => h.domain === domain)
+      .map((h) => h.record as Record<P>);
+    return [...super.read<P>(domain), ...held].sort((a, b) =>
+      a.envelope.id < b.envelope.id ? -1 : 1,
+    );
+  }
+
+  protected override persist<P>(domain: string, record: Record<P>): void {
+    this.#held.push({ domain, record: record as Record });
+  }
+
+  /** Put every held write on disk, in the order it was written. */
+  flush(): void {
+    for (const { domain, record } of this.#held.splice(0))
+      super.persist(domain, record, () => {
+        throw new Error(
+          `record store: ${record.envelope.id} refused — that record exists, and a record is never rewritten`,
+        );
+      });
   }
 }

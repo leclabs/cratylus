@@ -1,127 +1,27 @@
 // The `note` capability, driven at its verb surface over temporary git
 // repositories this file builds itself: owed rulings taking units and plans off
 // the frontier and releasing them, a diverged note blocking what either version
-// blocks, the notebook grouped by kind and topic and addressed by title, and a
-// title held twice after a merge. The plan lifecycle arrives through
+// blocks and keeping its place in the notebook, the notebook grouped by kind
+// and topic and addressed by title, and a title held twice after a merge. The plan lifecycle arrives through
 // `$AGENT_RUNTIME_CONFIG`, in states invented here.
 
-import { execFileSync } from 'node:child_process';
-import {
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { dispatchDesign } from '../src/capabilities/design/dispatch.js';
 import { dispatchNote } from '../src/capabilities/note/dispatch.js';
 import { dispatchPlan } from '../src/capabilities/plan/dispatch.js';
-import { RUNTIME_CONFIG_ENV } from '../src/runtime-config.js';
+import {
+  BY,
+  IDENTITY,
+  configured,
+  merge,
+  records,
+  refusal,
+  repository,
+  spoken,
+  stored,
+} from './verb-surface.js';
 
-const BY = [
-  '--author',
-  'test',
-  '--reason',
-  'a fixture',
-  '--cause',
-  'note.test',
-];
-const IDENTITY = /[0-9A-HJKMNP-TV-Z]{26}/g;
-
-const configDir = mkdtempSync(join(tmpdir(), 'note-config-'));
-const CONFIG = join(configDir, 'runtime.json');
-let prior: string | undefined;
-
-beforeAll(() => {
-  prior = process.env[RUNTIME_CONFIG_ENV];
-  writeFileSync(
-    CONFIG,
-    JSON.stringify({
-      configuration: {
-        plan: {
-          plan: {
-            states: ['p-draft', 'p-held', 'p-over'],
-            exclusive: 'p-held',
-            final: 'p-over',
-          },
-          unit: { states: ['u-new', 'u-mid', 'u-done'], satisfies: 'u-done' },
-        },
-      },
-    }),
-  );
-  process.env[RUNTIME_CONFIG_ENV] = CONFIG;
-});
-
-afterAll(() => {
-  if (prior === undefined) delete process.env[RUNTIME_CONFIG_ENV];
-  else process.env[RUNTIME_CONFIG_ENV] = prior;
-  rmSync(configDir, { recursive: true, force: true });
-});
-
-function git(cwd: string, ...args: string[]): string {
-  return execFileSync(
-    'git',
-    [
-      '-c',
-      'user.name=test',
-      '-c',
-      'user.email=test@example.com',
-      '-c',
-      'commit.gpgsign=false',
-      ...args,
-    ],
-    { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
-  );
-}
-
-function repository(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'note-'));
-  git(dir, 'init', '-q', '-b', 'main');
-  git(dir, 'commit', '-q', '--allow-empty', '-m', 'root');
-  return dir;
-}
-
-function records(repo: string): string[] {
-  try {
-    return readdirSync(join(repo, 'records', 'notebook'));
-  } catch {
-    return [];
-  }
-}
-
-/** Commit what `main` holds, run `left` and `right` each on its own branch
- *  forked from it, merge `right` into `left`, and return the note payloads each
- *  branch newly wrote. */
-function merge(
-  repo: string,
-  left: () => void,
-  right: () => void,
-): { left: string[]; right: string[] } {
-  git(repo, 'add', '-A');
-  git(repo, 'commit', '-q', '--allow-empty', '-m', 'base');
-  const on = (name: string, write: () => void): string[] => {
-    git(repo, 'checkout', '-q', '-b', name, 'main');
-    const before = new Set(records(repo));
-    write();
-    git(repo, 'add', '-A');
-    git(repo, 'commit', '-q', '--allow-empty', '-m', name);
-    return records(repo)
-      .filter((f) => !before.has(f))
-      .map((f) =>
-        JSON.stringify(
-          JSON.parse(readFileSync(join(repo, 'records', 'notebook', f), 'utf8'))
-            .payload,
-        ),
-      );
-  };
-  const written = { left: on('left', left), right: on('right', right) };
-  git(repo, 'checkout', '-q', 'left');
-  git(repo, 'merge', '-q', '--no-edit', 'right');
-  return written;
-}
+configured();
 
 const note = (repo: string, ...argv: string[]): string =>
   dispatchNote(argv, { from: repo });
@@ -133,28 +33,16 @@ function refused(
   repo: string,
   ...argv: string[]
 ): string {
-  try {
-    run(repo, ...argv);
-  } catch (error) {
-    return (error as Error).message;
-  }
-  throw new Error(`${argv.join(' ')} did not refuse`);
+  return refusal(repo, () => run(repo, ...argv));
 }
 
-/** `note show`, held to the view's contract: no records root path, and an
- *  identity only beside one of `shared`, the titles held more than once. */
-function show(repo: string, shared: readonly string[] = [], ...argv: string[]) {
-  const out = note(repo, 'show', ...argv);
-  expect(out).not.toContain(join(repo, 'records'));
-  for (const match of out.matchAll(IDENTITY)) {
-    const before = out.slice(0, match.index);
-    expect(
-      shared.some((a) => before.endsWith(`${a} (identity `)),
-      `identity ${match[0]} printed beside no shared title:\n${out}`,
-    ).toBe(true);
-  }
-  return out;
-}
+/** `note show`, held to what a reader may be shown; `shared` are the titles
+ *  held more than once. */
+const show = (
+  repo: string,
+  shared: readonly string[] = [],
+  ...argv: string[]
+) => spoken(repo, note(repo, 'show', ...argv), shared);
 
 /** A plan `pl` of units `a` and `b`, and a plan `other` of unit `o`. */
 function plans(repo: string): void {
@@ -170,9 +58,7 @@ function plans(repo: string): void {
 
 /** The frontier of plan `of`, by unit name. */
 function frontier(repo: string, of: string): string[] {
-  return [
-    ...plan(repo, 'show', '--plan', of).matchAll(/ {4}(\S+) — [^·]*frontier/g),
-  ]
+  return [...plan(repo, 'show', of).matchAll(/ {4}(\S+) — [^·]*frontier/g)]
     .map((m) => m[1] as string)
     .sort();
 }
@@ -226,10 +112,13 @@ describe('note — owed rulings', () => {
     capture(repo, 'split', '--blocks', 'a');
     merge(
       repo,
+      'notebook',
       () => note(repo, 'revise', 'split', '--blocks', 'b', ...BY),
       () => note(repo, 'revise', 'split', '--body', 'still a', ...BY),
     );
-    expect(show(repo)).toContain('  diverged: split');
+    const out = show(repo);
+    expect(out).toContain('  diverged: split');
+    expect(out).toContain('    scope:\n      split — diverged, 2 versions');
     expect(frontier(repo, 'pl')).toEqual([]);
     expect(
       refused(note, repo, 'revise', 'split', '--body', 'x', ...BY),
@@ -307,39 +196,43 @@ describe('note — the notebook by title', () => {
     const repo = repository();
     merge(
       repo,
+      'notebook',
       () => capture(repo, 'same'),
       () => capture(repo, 'same', '--body', 'the other'),
     );
-    const [left, right] = records(repo)
-      .sort()
-      .map(
-        (f) =>
-          JSON.parse(readFileSync(join(repo, 'records', 'notebook', f), 'utf8'))
-            .envelope.entity as string,
-      );
+    const [left, right] = records(repo, 'notebook').map(
+      (f) => stored(repo, 'notebook', f).envelope.entity,
+    );
     const out = show(repo, ['same']);
     expect(out).toContain(
       `incoherent: same is held by 2 items: same (identity ${left}) live, same (identity ${right}) live`,
     );
     expect(out).toContain(`      same (identity ${left}) — about same`);
-    expect(refused(note, repo, 'retract', 'same', ...BY)).toMatch(
-      /held by 2 items .*identity/,
-    );
-    note(repo, 'retract', `same (identity ${left})`, ...BY);
+    const held = refusal(repo, () => note(repo, 'retract', 'same', ...BY), [
+      'same',
+    ]);
+    expect(held).toMatch(/the note name "same" is held by 2 notes/);
+    const [printedForm] = held.match(/same \(identity [0-9A-Z]{26}\)/) ?? [];
+    expect(printedForm).toBe(`same (identity ${left})`);
+    note(repo, 'retract', printedForm as string, ...BY);
     const settled = show(repo);
     expect(settled).toMatch(/0 incoherent/);
     expect(settled).not.toMatch(IDENTITY);
     expect(
-      refused(
-        note,
+      refusal(
         repo,
-        'revise',
-        `same (identity ${right})`,
-        '--body',
-        'x',
-        ...BY,
+        () =>
+          note(
+            repo,
+            'revise',
+            `same (identity ${right})`,
+            '--body',
+            'x',
+            ...BY,
+          ),
+        ['same'],
       ),
-    ).toMatch(/alone names it; drop the identity/);
+    ).toMatch(/alone addresses it; drop the identity/);
   });
 
   it('what a note blocks, written in two orders, converges byte for byte', () => {
@@ -348,6 +241,7 @@ describe('note — the notebook by title', () => {
     capture(repo, 'both');
     const written = merge(
       repo,
+      'notebook',
       () =>
         note(repo, 'revise', 'both', '--blocks', 'a', '--blocks', 'b', ...BY),
       () =>

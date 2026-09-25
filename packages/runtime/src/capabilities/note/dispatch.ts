@@ -14,31 +14,30 @@
 // capture has no admission bar beyond the note's shape and its title law.
 //
 // Arguments, names and identities are read as the plan surface reads them
-// (`../plan/dispatch.ts`); `--blocks` is repeated once per member.
+// (`../plan/argv.ts`, `../plan/reading.ts`); `--blocks` is repeated once per
+// member. A write writes all or nothing.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import type { Invocation } from '../../ports/design.js';
 import type { NoteChange, NoteHost, NoteInput } from '../../ports/note.js';
+import { bare, parsed } from '../../record-store/names.js';
 import { notebookView } from '../../view/notebook.js';
 import {
-  type Reading,
-  agreed,
   invocation,
   many,
   one,
-  over,
   parseArgv,
-  parseName,
   subject,
   verbOf,
-} from '../plan/dispatch.js';
+} from '../plan/argv.js';
+import { type Reading, act, agreed, look } from '../plan/reading.js';
 import { type Note, capture, reconcile, retract, revise } from './notebook.js';
 
 /** The note capability over the records of the repository holding `from`. */
 export function noteHost(from: string = process.cwd()): NoteHost {
-  /** The notebook's view after a write, drilled into `title`. */
-  const after = (title: string): string =>
-    over(from, (read) => notebookView(read.noteState(), parseName(title)));
+  /** A note write, all or nothing, and the notebook's view drilled into the
+   *  title it returns. */
+  const write = (verb: (read: Reading) => string): string =>
+    act(from, verb, (read, title) => notebookView(read.noteState(), title));
 
   /** The note `title` names; refuses a title no note holds. */
   const resolve = (read: Reading, title: string): string => {
@@ -73,15 +72,15 @@ export function noteHost(from: string = process.cwd()): NoteHost {
 
   return {
     show: (title) =>
-      over(from, (read) =>
+      look(from, (read) =>
         notebookView(
           read.noteState(),
-          title === undefined ? undefined : parseName(title),
+          title === undefined ? undefined : parsed(title),
         ),
       ),
 
-    capture: (input: NoteInput, plan, by: Invocation) => {
-      over(from, (read) => {
+    capture: (input: NoteInput, plan, by) =>
+      write((read) => {
         capture(
           read.store,
           {
@@ -90,32 +89,26 @@ export function noteHost(from: string = process.cwd()): NoteHost {
           },
           by,
         );
-        return '';
-      });
-      return after(input.title);
-    },
+        return input.title;
+      }),
 
-    revise: (title, change, plan, by) => {
-      const next = over(from, (read) => {
+    revise: (title, change, plan, by) =>
+      write((read) => {
         const entity = resolve(read, title);
         const [current] = versions(read, entity);
         const written = note(read, change, current as Note, plan);
         revise(read.store, entity, written, by);
         return written.title;
-      });
-      return after(next);
-    },
+      }),
 
-    retract: (title, by) => {
-      over(from, (read) => {
+    retract: (title, by) =>
+      write((read) => {
         retract(read.store, resolve(read, title), by);
-        return '';
-      });
-      return after(title);
-    },
+        return bare(parsed(title));
+      }),
 
-    reconcile: (title, change, plan, by) => {
-      const next = over(from, (read) => {
+    reconcile: (title, change, plan, by) =>
+      write((read) => {
         const entity = resolve(read, title);
         const heads = versions(read, entity);
         const pick = <K extends keyof Note>(key: K): Note[K] =>
@@ -138,9 +131,7 @@ export function noteHost(from: string = process.cwd()): NoteHost {
         );
         reconcile(read.store, entity, written, by);
         return written.title;
-      });
-      return after(next);
-    },
+      }),
   };
 }
 

@@ -63,11 +63,16 @@ and users meet them only through three capabilities that ship inside the runtime
 | `plan`     | `PlanHost`   | `show`, `add`, `advance`, `retract`, `revise`, `bind`, `close`, `reconcile` |
 | `note`     | `NoteHost`   | `show`, `capture`, `revise`, `retract`, `reconcile`                         |
 
-Every input names an entity by name, and every output is the domain's view. Where a merge left one
-name held by more than one entity, the view prints each holder's identity beside it as
-`name (identity <id>)`, and that form addresses one holder. A write refused by its domain's laws
-exits `1` naming the verb that would succeed. The plan lifecycle arrives as `configuration.plan` in
-the host runtime config, which deploy emits; without it `plan` refuses and names the deploy.
+Every input names an entity by name, and every output is the domain's view, in the domain's own
+words. Where a merge left one name held by more than one entity, the view prints each holder's
+identity beside it as `name (identity <id>)`, and that printed form is exactly the input that
+addresses one holder. A write is all or nothing: it is checked and its view rendered before anything
+reaches the repository, so a refusal writes nothing and exits `1` naming the verb that would succeed.
+A view's header says when it includes writes not yet committed. `plan show <plan>` shows any plan
+whole; a unit's pin is kept by every revise until one says `--repin` with a reason. The plan lifecycle
+arrives as `configuration.plan` in the host runtime config, which deploy emits; without it `plan`
+refuses and names the deploy, and `design show` shows the lattice and says the plans standing on it
+wait for that deploy.
 
 ## Dispatch
 

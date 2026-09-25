@@ -5,10 +5,13 @@
 // the incoherence that must be resolved first. Each unit line names the concept
 // the unit serves.
 //
-// The plan shown is the one holding the state that admits one plan. When a
-// merge leaves more than one there, the view shows each of them, each with its
-// own units and its own counts in the header, and the incoherence naming them
-// stands in the resolve-first layer.
+// The plan shown is the one holding the state that admits one plan, or each
+// plan a reader named, whole, with its units. When a merge leaves more than one
+// plan in that state, the view shows each of them, each with its own units and
+// its own counts in the header, and the incoherence naming them stands in the
+// resolve-first layer. A diverged unit keeps its place in its wave, and a
+// diverged plan shown keeps its line, each marked, so what names them stays
+// listed.
 //
 // Lifecycle states are the `plan` skill's and arrive as display text. Wave,
 // frontier, drift and suspicion arrive computed (`unit`, `pin`); this module
@@ -17,10 +20,11 @@
 // unplaced.
 // ─────────────────────────────────────────────────────────────────────────────
 
+import { type Name, printed } from '../record-store/names.js';
 import {
+  type Computed,
   type Diverged,
   type Incoherence,
-  type Name,
   count,
   denotes,
   denotesAny,
@@ -30,7 +34,6 @@ import {
   header,
   incoherenceLine,
   list,
-  named,
   resolveFirst,
 } from './layers.js';
 import { type Note, noteLine } from './notebook.js';
@@ -68,18 +71,25 @@ export interface LiveUnit extends Unit {
   readonly suspect: boolean;
 }
 
-/** The plan view's input, computed at `commit`. */
-export interface PlanState {
-  readonly commit: string;
+/** A diverged unit, with the wave it holds its place in: placed by the deps of
+ *  every version of it. */
+export interface DivergedUnit extends Diverged<Unit> {
+  readonly wave: number | undefined;
+}
+
+/** The plan view's input. */
+export interface PlanState extends Computed {
   /** The plans shown: the one holding the state that admits one plan, each of
-   *  them when a merge leaves more than one, none when no plan holds it. */
+   *  them when a merge leaves more than one, none when no plan holds it; or
+   *  the plans a reader named. */
   readonly plans: readonly Plan[];
   /** The live units of the plans shown, in the order given within each wave. */
   readonly units: readonly LiveUnit[];
   /** The owed rulings, each naming what it blocks. */
   readonly owed: readonly Note[];
   readonly divergedPlans: readonly Diverged<Plan>[];
-  readonly divergedUnits: readonly Diverged<Unit>[];
+  /** Every diverged unit; those of a shown plan hold their place in it. */
+  readonly divergedUnits: readonly DivergedUnit[];
   /** Withdrawn plans and units, each its last version, so a withdrawn holder
    *  of a shared name drills to what the view is given of it. */
   readonly withdrawnPlans: readonly Plan[];
@@ -89,7 +99,7 @@ export interface PlanState {
 
 /** A plan with its lifecycle state, e.g. `record-store (s1)`. */
 export function planName(plan: Plan): string {
-  return `${named(plan.name)} (${plan.state})`;
+  return `${printed(plan.name)} (${plan.state})`;
 }
 
 /** A unit's state and the marks computed on it, e.g. `u1, frontier, drifted`. */
@@ -104,7 +114,7 @@ export function standing(unit: LiveUnit): string {
 
 function planLine(plan: Plan): string {
   const realizes = plan.realizes.length
-    ? ` · realizes ${plan.realizes.map(named).join(', ')}`
+    ? ` · realizes ${plan.realizes.map(printed).join(', ')}`
     : '';
   return `plan ${planName(plan)}${realizes}`;
 }
@@ -113,25 +123,25 @@ function planLine(plan: Plan): string {
 function planInFull(plan: Plan, mark = ''): string[] {
   return [
     `plan: ${planName(plan)}${mark}`,
-    ...list('realizes', plan.realizes.map(named)),
+    ...list('realizes', plan.realizes.map(printed)),
   ];
 }
 
 function unitLine(unit: Unit, marks: string): string {
   const deps = unit.deps.length
-    ? ` · deps ${unit.deps.map(named).join(', ')}`
+    ? ` · deps ${unit.deps.map(printed).join(', ')}`
     : '';
-  return `${named(unit.name)} — ${marks} · realizes ${named(unit.realizes)}${deps}`;
+  return `${printed(unit.name)} — ${marks} · realizes ${printed(unit.realizes)}${deps}`;
 }
 
 /** One unit in full; `placement` states the wave of a live unit. */
 function unitInFull(unit: Unit, marks: string, placement?: string): string[] {
   return [
-    `unit: ${named(unit.name)} — ${marks}`,
+    `unit: ${printed(unit.name)} — ${marks}`,
     `  plan: ${planName(unit.plan)}`,
-    `  realizes: ${named(unit.realizes)}`,
+    `  realizes: ${printed(unit.realizes)}`,
     ...(placement === undefined ? [] : [`  wave: ${placement}`]),
-    ...list('deps', unit.deps.map(named)),
+    ...list('deps', unit.deps.map(printed)),
     ...field('intent', unit.intent),
     ...list('static', unit.static),
     ...list('outputs', unit.outputs),
@@ -153,25 +163,28 @@ export function planView(state: PlanState, name?: Name): string {
 
   // Every plan with a line: those shown, then any other a given unit names,
   // so no live unit goes without one.
-  const plans = new Map(state.plans.map((p) => [named(p.name), p]));
+  const plans = new Map(state.plans.map((p) => [printed(p.name), p]));
   for (const unit of units)
-    if (!plans.has(named(unit.plan.name)))
-      plans.set(named(unit.plan.name), unit.plan);
+    if (!plans.has(printed(unit.plan.name)))
+      plans.set(printed(unit.plan.name), unit.plan);
 
   // Why a unit has no wave: each dep that is not a placed live unit of its plan,
   // each dep matched by its whole name, identity included.
   const why = (unit: LiveUnit): string => {
-    const own = (u: Unit) => named(u.plan.name) === named(unit.plan.name);
+    const own = (u: Unit) => printed(u.plan.name) === printed(unit.plan.name);
     const held = unit.deps.flatMap((dep) => {
-      const live = units.find((u) => own(u) && named(u.name) === named(dep));
+      const live = units.find(
+        (u) => own(u) && printed(u.name) === printed(dep),
+      );
       if (live)
-        return live.wave === undefined ? [`${named(dep)} unplaced`] : [];
+        return live.wave === undefined ? [`${printed(dep)} unplaced`] : [];
       return state.divergedUnits.some(
         (d) =>
-          d.names.some((n) => named(n) === named(dep)) && d.versions.some(own),
+          d.names.some((n) => printed(n) === printed(dep)) &&
+          d.versions.some(own),
       )
-        ? [`${named(dep)} diverged`]
-        : [`${named(dep)} not live`];
+        ? [`${printed(dep)} diverged`]
+        : [`${printed(dep)} not live`];
     });
     return `unplaced: ${held.length ? held.join(', ') : 'no wave given'}`;
   };
@@ -192,13 +205,13 @@ export function planView(state: PlanState, name?: Name): string {
       state.plans.length === 0
         ? 'no plan'
         : `${state.plans.length === 1 ? 'plan' : 'plans'} ${state.plans.map(planName).join(', ')}`,
-      state.commit,
+      state,
       [
         ...(state.plans.length > 1
           ? state.plans.map(
               (p) =>
-                `${named(p.name)}: ${counted(
-                  units.filter((u) => named(u.plan.name) === named(p.name)),
+                `${printed(p.name)}: ${counted(
+                  units.filter((u) => printed(u.plan.name) === printed(p.name)),
                 ).join(', ')}`,
             )
           : counted(units)),
@@ -217,11 +230,11 @@ export function planView(state: PlanState, name?: Name): string {
       ...state.incoherent.map(incoherenceLine),
       ...drifted.map(
         (u) =>
-          `drifted: ${named(u.name)} — ${named(u.realizes)} changed since pinned`,
+          `drifted: ${printed(u.name)} — ${printed(u.realizes)} changed since pinned`,
       ),
       ...suspect.map(
         (u) =>
-          `suspect: ${named(u.name)} — ${named(u.realizes)} or a factor beneath it diverged or changed since pinned`,
+          `suspect: ${printed(u.name)} — ${printed(u.realizes)} or a factor beneath it diverged or changed since pinned`,
       ),
       ...state.owed.map((note) => `owed ruling: ${noteLine(note)}`),
     ]),
@@ -252,23 +265,39 @@ export function planView(state: PlanState, name?: Name): string {
       ]),
     ].join('\n');
 
+  // A diverged unit's line, in its place: marked, with its names.
+  const divergedLine = (d: DivergedUnit): string =>
+    `${d.names.map(printed).join(' or ')} — diverged, ${count(d.versions.length, 'version', 'versions')}${d.retracted.length ? ' and a retraction' : ''}`;
+  const isDiverged = (plan: Plan): boolean =>
+    state.divergedPlans.some((d) => denotesAny(plan.name, d.names));
   for (const plan of plans.values()) {
-    lines.push(`${planLine(plan)} — units in wave order:`);
-    const own = units.filter((u) => named(u.plan.name) === named(plan.name));
+    const mark = isDiverged(plan) ? ' — diverged' : '';
+    lines.push(`${planLine(plan)}${mark} — units in wave order:`);
+    const ownPlan = (u: Unit) => printed(u.plan.name) === printed(plan.name);
+    const own = units.filter(ownPlan);
+    const split = state.divergedUnits.filter((d) => d.versions.some(ownPlan));
     const waves = [
-      ...new Set(own.flatMap((u) => (u.wave === undefined ? [] : [u.wave]))),
+      ...new Set(
+        [...own, ...split].flatMap((u) =>
+          u.wave === undefined ? [] : [u.wave],
+        ),
+      ),
     ].sort((a, b) => a - b);
     for (const wave of waves) {
       lines.push(`  wave ${wave}:`);
       for (const unit of own)
         if (unit.wave === wave)
           lines.push(`    ${unitLine(unit, standing(unit))}`);
+      for (const d of split)
+        if (d.wave === wave) lines.push(`    ${divergedLine(d)}`);
     }
     const held = own.filter((u) => u.wave === undefined);
-    if (held.length) {
+    const heldSplit = split.filter((d) => d.wave === undefined);
+    if (held.length || heldSplit.length) {
       lines.push('  no wave:');
       for (const unit of held)
         lines.push(`    ${unitLine(unit, standing(unit))} · ${why(unit)}`);
+      for (const d of heldSplit) lines.push(`    ${divergedLine(d)}`);
     }
   }
   return lines.join('\n');

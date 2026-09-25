@@ -394,7 +394,7 @@ export function reconcile(
     refuse(`${plan.state} is no state of the plan lifecycle`);
   if (plan.state !== final && heads.some((h) => h.state === final))
     refuse(
-      `a head of plan ${plan.name} is ${final}, which is final, so it reconciles to ${final} only`,
+      `a version of plan ${plan.name} is ${final}, which is final, so it reconciles to ${final} only`,
     );
   if (
     plan.state === exclusive &&

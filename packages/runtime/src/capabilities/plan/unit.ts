@@ -87,6 +87,10 @@ export type By = Pick<Envelope, 'author' | 'reason' | 'cause'>;
  *  one head is a retraction. */
 export type PlanWithdrawn = (plan: string) => boolean;
 
+/** Whether a plan is in its final state, as the plan domain reports it: its
+ *  units are never written again, and none of them is on the frontier. */
+export type PlanClosed = (plan: string) => boolean;
+
 /** A unit law broken across units by a merge: a dep on a withdrawn unit, a
  *  unit of a withdrawn plan (`reference` is the plan), a dep cycle, or one
  *  name on more than one live unit of a plan. */
@@ -262,10 +266,7 @@ function settled(
 ): { readonly heads: readonly RecordId[]; readonly unit: Unit } {
   const f = folds.get(entity);
   if (!f) return refuse('no such unit');
-  if (f.diverged)
-    return refuse(
-      `it has diverged into ${f.heads.length} heads; reconcile it first`,
-    );
+  if (f.diverged) return refuse('it has diverged; `plan reconcile` settles it');
   if (f.payload === undefined) return refuse('it is withdrawn');
   return { heads: f.heads.map((h) => h.envelope.id), unit: f.payload };
 }
@@ -387,7 +388,8 @@ export function reconcile(
   if (!checked(lifecycle).states.includes(change.state))
     refuse(`its state ${JSON.stringify(change.state)} is not in the lifecycle`);
   const plan = f.heads.find((h) => h.payload !== null)?.payload?.plan;
-  if (plan === undefined) return refuse('no head of it is a version');
+  if (plan === undefined)
+    return refuse('no version of it is left to reconcile');
   const next: Unit = {
     plan,
     spec: { ...change.spec, deps: canonicalOrder(change.spec.deps) },
@@ -407,23 +409,27 @@ export function reconcile(
 }
 
 /**
- * The ready units, in entity order: live units not yet started whose every
- * dep is a live unit that has reached the state satisfying a dependency or
- * moved past it, and which no owed ruling names, neither the unit nor its
- * plan. `owed` is the set of entities the owed rulings name.
+ * The units readiness admits, in entity order: live units not yet in the state
+ * satisfying a dependency, whose plan is not closed, which no owed ruling names
+ * (neither the unit nor its plan; `owed` is the set of entities the owed
+ * rulings name), and whose every dep is a live unit that has reached the state
+ * satisfying a dependency or moved past it. A dep withdrawn, diverged or not
+ * yet done keeps a unit out, whatever its state.
  */
-export function ready(
+function admitted(
   folds: Units,
   lifecycle: UnitLifecycle,
   owed: ReadonlySet<string>,
-): string[] {
+  closed: PlanClosed,
+): [string, Unit][] {
   const { states, satisfies } = checked(lifecycle);
   const done = states.indexOf(satisfies);
   const all = live(folds);
   return [...all]
     .filter(
       ([entity, unit]) =>
-        unit.state === states[0] &&
+        states.indexOf(unit.state) < done &&
+        !closed(unit.plan) &&
         !owed.has(entity) &&
         !owed.has(unit.plan) &&
         unit.spec.deps.every((dep) => {
@@ -431,36 +437,56 @@ export function ready(
           return d !== undefined && states.indexOf(d.state) >= done;
         }),
     )
-    .map(([entity]) => entity)
-    .sort();
+    .sort(([a], [b]) => (a < b ? -1 : 1));
 }
 
-/** Where the plan is: the ready units and the in-flight ones (started, not
- *  yet in the state that satisfies a dependency), in entity order. */
+/** The ready units, in entity order: those readiness admits that are not yet
+ *  started. */
+export function ready(
+  folds: Units,
+  lifecycle: UnitLifecycle,
+  owed: ReadonlySet<string>,
+  closed: PlanClosed,
+): string[] {
+  const [first] = lifecycle.states;
+  return admitted(folds, lifecycle, owed, closed)
+    .filter(([, unit]) => unit.state === first)
+    .map(([entity]) => entity);
+}
+
+/** Where the plan is, in entity order: every unit readiness admits — ready,
+ *  or started and not yet done. */
 export function frontier(
   folds: Units,
   lifecycle: UnitLifecycle,
   owed: ReadonlySet<string>,
+  closed: PlanClosed,
 ): string[] {
-  const { states, satisfies } = checked(lifecycle);
-  const done = states.indexOf(satisfies);
-  const inFlight = [...live(folds)]
-    .filter(([, unit]) => {
-      const at = states.indexOf(unit.state);
-      return at > 0 && at < done;
-    })
-    .map(([entity]) => entity);
-  return [...ready(folds, lifecycle, owed), ...inFlight].sort();
+  return admitted(folds, lifecycle, owed, closed).map(([entity]) => entity);
 }
 
 /**
- * The waves of the live units, each in entity order: `wave(0)` holds the units
- * with no deps, `wave(n+1)` the units outside the earlier waves whose every
- * dep is inside them. A unit whose deps never all land in a wave — a dep that
- * is not a live unit, or a cycle — is in none.
+ * The waves of the live and diverged units, each in entity order: `wave(0)`
+ * holds the units with no deps, `wave(n+1)` the units outside the earlier waves
+ * whose every dep is inside them. A diverged unit is placed by the deps of every
+ * version of it, so it keeps its place and its dependents keep theirs. A unit
+ * whose deps never all land in a wave — a dep that is withdrawn or unknown, or a
+ * cycle — is in none.
  */
 export function waves(folds: Units): string[][] {
   const pending = live(folds);
+  for (const f of folds.values()) {
+    const versions = f.heads.flatMap((h) => (h.payload ? [h.payload] : []));
+    const [first] = versions;
+    if (f.diverged && first)
+      pending.set(f.entity, {
+        ...first,
+        spec: {
+          ...first.spec,
+          deps: [...new Set(versions.flatMap((v) => v.spec.deps))],
+        },
+      });
+  }
   const placed = new Set<string>();
   const out: string[][] = [];
   for (;;) {

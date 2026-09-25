@@ -1,170 +1,48 @@
 // The `design` capability, driven at its verb surface over temporary git
 // repositories this file builds itself: the lattice shown root to primitive, the
-// design's laws refusing a write on one branch, a concept's trace, divergence and
-// convergence across a real merge, incoherence and its repair by ordinary writes,
-// and identities shown and accepted only beside an anchor held more than once.
-// The plan lifecycle arrives through `$AGENT_RUNTIME_CONFIG`, in states invented
-// here.
+// design's laws refusing a write on one branch — and writing nothing — a
+// concept's trace, divergence and convergence across a real merge, a diverged
+// concept keeping its place in the lattice, incoherence and its repair by
+// ordinary writes, identities shown and accepted only beside an anchor held more
+// than once, and the design shown on a host without the plan lifecycle.
 
-import { execFileSync } from 'node:child_process';
-import {
-  mkdtempSync,
-  readFileSync,
-  readdirSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { dispatchDesign } from '../src/capabilities/design/dispatch.js';
 import { dispatchPlan } from '../src/capabilities/plan/dispatch.js';
-import { RUNTIME_CONFIG_ENV } from '../src/runtime-config.js';
+import {
+  BY,
+  IDENTITY,
+  commit,
+  configured,
+  entitiesNamed,
+  everyRecord,
+  git,
+  merge,
+  refusal,
+  repository,
+  spoken,
+  under,
+} from './verb-surface.js';
 
-const BY = [
-  '--author',
-  'test',
-  '--reason',
-  'a fixture',
-  '--cause',
-  'design.test',
-];
-const IDENTITY = /[0-9A-HJKMNP-TV-Z]{26}/g;
-
-const configDir = mkdtempSync(join(tmpdir(), 'design-config-'));
-const CONFIG = join(configDir, 'runtime.json');
-let prior: string | undefined;
-
-beforeAll(() => {
-  prior = process.env[RUNTIME_CONFIG_ENV];
-  writeFileSync(
-    CONFIG,
-    JSON.stringify({
-      configuration: {
-        plan: {
-          plan: {
-            states: ['p-draft', 'p-held', 'p-over'],
-            exclusive: 'p-held',
-            final: 'p-over',
-          },
-          unit: { states: ['u-new', 'u-mid', 'u-done'], satisfies: 'u-done' },
-        },
-      },
-    }),
-  );
-  process.env[RUNTIME_CONFIG_ENV] = CONFIG;
-});
-
-afterAll(() => {
-  if (prior === undefined) delete process.env[RUNTIME_CONFIG_ENV];
-  else process.env[RUNTIME_CONFIG_ENV] = prior;
-  rmSync(configDir, { recursive: true, force: true });
-});
-
-function git(cwd: string, ...args: string[]): string {
-  return execFileSync(
-    'git',
-    [
-      '-c',
-      'user.name=test',
-      '-c',
-      'user.email=test@example.com',
-      '-c',
-      'commit.gpgsign=false',
-      ...args,
-    ],
-    { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
-  );
-}
-
-function repository(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'design-'));
-  git(dir, 'init', '-q', '-b', 'main');
-  git(dir, 'commit', '-q', '--allow-empty', '-m', 'root');
-  return dir;
-}
-
-/** Commit what `main` holds, run `left` and `right` each on its own branch
- *  forked from it, merge `right` into `left`, and return each branch's newly
- *  written design payloads. */
-function merge(
-  repo: string,
-  left: () => void,
-  right: () => void,
-): { left: string[]; right: string[] } {
-  git(repo, 'add', '-A');
-  git(repo, 'commit', '-q', '--allow-empty', '-m', 'base');
-  const on = (name: string, write: () => void): string[] => {
-    git(repo, 'checkout', '-q', '-b', name, 'main');
-    const before = new Set(files(repo));
-    write();
-    git(repo, 'add', '-A');
-    git(repo, 'commit', '-q', '--allow-empty', '-m', name);
-    return files(repo)
-      .filter((f) => !before.has(f))
-      .map((f) =>
-        JSON.stringify(
-          JSON.parse(readFileSync(join(repo, 'records', 'design', f), 'utf8'))
-            .payload,
-        ),
-      );
-  };
-  const written = { left: on('left', left), right: on('right', right) };
-  git(repo, 'checkout', '-q', 'left');
-  git(repo, 'merge', '-q', '--no-edit', 'right');
-  return written;
-}
-
-function files(repo: string): string[] {
-  try {
-    return readdirSync(join(repo, 'records', 'design'));
-  } catch {
-    return [];
-  }
-}
-
-/** Every design record's entity, by the anchor its first version carried. */
-function entities(repo: string): Map<string, string[]> {
-  const out = new Map<string, string[]>();
-  for (const f of files(repo).sort()) {
-    const r = JSON.parse(
-      readFileSync(join(repo, 'records', 'design', f), 'utf8'),
-    );
-    if (r.envelope.operation !== 'create') continue;
-    out.set(r.payload.anchor, [
-      ...(out.get(r.payload.anchor) ?? []),
-      r.envelope.entity,
-    ]);
-  }
-  return out;
-}
+configured();
 
 const design = (repo: string, ...argv: string[]): string =>
   dispatchDesign(argv, { from: repo });
 
-function refused(repo: string, ...argv: string[]): string {
-  try {
-    design(repo, ...argv);
-  } catch (error) {
-    return (error as Error).message;
-  }
-  throw new Error(`design ${argv.join(' ')} did not refuse`);
-}
+const refused = (repo: string, ...argv: string[]): string =>
+  refusal(repo, () => design(repo, ...argv));
 
-/** `design show`, held to the view's contract: no records root path, and an
- *  identity only beside one of `shared`, the anchors held more than once. */
-function show(repo: string, shared: readonly string[] = [], ...argv: string[]) {
-  const out = design(repo, 'show', ...argv);
-  expect(out).not.toContain(join(repo, 'records'));
-  for (const match of out.matchAll(IDENTITY)) {
-    const before = out.slice(0, match.index);
-    expect(
-      shared.some((a) => before.endsWith(`${a} (identity `)),
-      `identity ${match[0]} printed beside no shared anchor:\n${out}`,
-    ).toBe(true);
-  }
-  return out;
-}
+/** `design show`, held to what a reader may be shown; `shared` are the anchors
+ *  held more than once. */
+const show = (
+  repo: string,
+  shared: readonly string[] = [],
+  ...argv: string[]
+) => spoken(repo, design(repo, 'show', ...argv), shared);
+
+/** The entities first defined under `anchor`, in the order written. */
+const holders = (repo: string, anchor: string): string[] =>
+  entitiesNamed(repo, 'design', (p) => p.anchor, anchor);
 
 function lattice(repo: string): void {
   design(repo, 'define', 'prim', '--gloss', 'a primitive', ...BY);
@@ -193,18 +71,25 @@ function lattice(repo: string): void {
 }
 
 describe('design — the lattice at the verb surface', () => {
-  it('define, show root to primitive, amend, show one concept in full', () => {
+  it('define, show root to primitive, amend, show one concept in full; the header says when writes are uncommitted', () => {
     const repo = repository();
-    const head = git(repo, 'rev-parse', '--short', 'HEAD').trim();
+    const head = () => git(repo, 'rev-parse', '--short', 'HEAD').trim();
     expect(show(repo).split('\n')[0]).toBe(
-      `design at ${head}: 0 concepts · 0 unplaced · 0 diverged · 0 incoherent`,
+      `design at ${head()}: 0 concepts · 0 unplaced · 0 diverged · 0 incoherent`,
     );
     lattice(repo);
     const whole = show(repo).split('\n');
+    expect(whole[0]).toBe(
+      `design at ${head()}, with writes not yet committed: 3 concepts · 0 unplaced · 0 diverged · 0 incoherent`,
+    );
     const at = (anchor: string) =>
       whole.findIndex((l) => l.startsWith(`  ${anchor} — `));
     expect(at('top')).toBeLessThan(at('mid'));
     expect(at('mid')).toBeLessThan(at('prim'));
+    commit(repo);
+    expect(show(repo).split('\n')[0]).toBe(
+      `design at ${head()}: 3 concepts · 0 unplaced · 0 diverged · 0 incoherent`,
+    );
     design(repo, 'amend', 'mid', '--gloss', 'the middle, amended', ...BY);
     expect(show(repo, [], 'mid')).toContain(
       [
@@ -216,7 +101,7 @@ describe('design — the lattice at the verb surface', () => {
     );
   });
 
-  it('REFUSES each write that would break a design law on one branch', () => {
+  it('REFUSES each write that would break a design law on one branch, and writes nothing', () => {
     const repo = repository();
     lattice(repo);
     design(repo, 'define', 'gone', '--gloss', 'to withdraw', ...BY);
@@ -300,7 +185,7 @@ describe('design — the lattice at the verb surface', () => {
       ],
       { from: repo },
     );
-    const trace = design(repo, 'trace', 'mid');
+    const trace = spoken(repo, design(repo, 'trace', 'mid'));
     expect(trace).toMatch(
       /- define by test at \S+ — a fixture — mid — the middle/,
     );
@@ -316,11 +201,12 @@ describe('design — the lattice at the verb surface', () => {
 });
 
 describe('design — divergence and convergence across a merge', () => {
-  it('two amendments diverge: listed before the body, amend refuses naming reconcile, reconcile settles', () => {
+  it('two amendments diverge: listed before the body and kept in place, amend refuses naming reconcile, reconcile settles', () => {
     const repo = repository();
     lattice(repo);
     merge(
       repo,
+      'design',
       () => design(repo, 'amend', 'mid', '--gloss', 'left', ...BY),
       () => design(repo, 'amend', 'mid', '--gloss', 'right', ...BY),
     );
@@ -329,6 +215,13 @@ describe('design — divergence and convergence across a merge', () => {
     expect(diverged).toBeGreaterThan(0);
     expect(out[0]).toMatch(/1 diverged/);
     expect(diverged).toBeLessThan(out.indexOf('lattice, root to primitive:'));
+    const place = (line: string) => out.findIndex((l) => l.startsWith(line));
+    expect(place('  top — ')).toBeLessThan(
+      place('  mid — diverged, 2 versions'),
+    );
+    expect(place('  mid — diverged, 2 versions')).toBeLessThan(
+      place('  prim — '),
+    );
     expect(refused(repo, 'amend', 'mid', '--gloss', 'third', ...BY)).toMatch(
       /reconcile/,
     );
@@ -344,7 +237,7 @@ describe('design — divergence and convergence across a merge', () => {
     const repo = repository();
     lattice(repo);
     const same = () => design(repo, 'amend', 'mid', '--gloss', 'same', ...BY);
-    merge(repo, same, same);
+    merge(repo, 'design', same, same);
     const out = show(repo);
     expect(out).toMatch(/0 diverged/);
     expect(out).not.toContain('diverged:');
@@ -357,6 +250,7 @@ describe('design — divergence and convergence across a merge', () => {
     design(repo, 'define', 'side', '--gloss', 'beside', ...BY);
     const written = merge(
       repo,
+      'design',
       () =>
         design(
           repo,
@@ -391,6 +285,7 @@ describe('design — divergence and convergence across a merge', () => {
     design(repo, 'define', 'leaf', '--gloss', 'first', ...BY);
     merge(
       repo,
+      'design',
       () => design(repo, 'amend', 'leaf', '--gloss', 'second', ...BY),
       () => design(repo, 'retract', 'leaf', ...BY),
     );
@@ -398,6 +293,9 @@ describe('design — divergence and convergence across a merge', () => {
     expect(out).toContain('  version:\n    concept: leaf\n      gloss: second');
     expect(out).toContain(
       '  retraction, which withdrew:\n    concept: leaf\n      gloss: first',
+    );
+    expect(show(repo)).toContain(
+      '  leaf — diverged, 1 version and a retraction',
     );
   });
 
@@ -413,6 +311,7 @@ describe('design — divergence and convergence across a merge', () => {
     plan('u2');
     merge(
       repo,
+      'design',
       () => design(repo, 'amend', 'alpha', '--anchor', 'alpha2', ...BY),
       () => design(repo, 'amend', 'alpha', '--gloss', 'other', ...BY),
     );
@@ -426,24 +325,29 @@ describe('design — divergence and convergence across a merge', () => {
 });
 
 describe('design — incoherence, repaired one write at a time', () => {
-  it('two definitions of one anchor: listed, each identity beside the anchor, retracting one by identity resolves it', () => {
+  it('two definitions of one anchor: listed, each identity beside the anchor, and the printed form addresses one', () => {
     const repo = repository();
     merge(
       repo,
+      'design',
       () => design(repo, 'define', 'twin', '--gloss', 'left', ...BY),
       () => design(repo, 'define', 'twin', '--gloss', 'right', ...BY),
     );
-    const [left, right] = entities(repo).get('twin') as string[];
+    const [left, right] = holders(repo, 'twin');
     const out = show(repo, ['twin']);
     expect(out).toContain(
       `incoherent: twin is held by 2 items: twin (identity ${left}) live, twin (identity ${right}) live`,
     );
     expect(out).toContain(`twin (identity ${left}) — left`);
     expect(out).toContain(`twin (identity ${right}) — right`);
-    expect(refused(repo, 'retract', 'twin', ...BY)).toMatch(
-      /held by 2 concepts .*identity/,
-    );
-    design(repo, 'retract', `twin (identity ${left})`, ...BY);
+    const held = refusal(repo, () => design(repo, 'retract', 'twin', ...BY), [
+      'twin',
+    ]);
+    expect(held).toMatch(/the concept name "twin" is held by 2 concepts/);
+    // The form the refusal prints is the form accepted, exactly.
+    const [printedForm] = held.match(/twin \(identity [0-9A-Z]{26}\)/) ?? [];
+    expect(printedForm).toBe(`twin (identity ${left})`);
+    design(repo, 'retract', printedForm as string, ...BY);
     expect(show(repo, ['twin'])).toMatch(/1 incoherent/);
     // The withdrawn concept keeps its anchor, so the name is still held twice
     // until the live one is renamed — the next ordinary write.
@@ -464,15 +368,15 @@ describe('design — incoherence, repaired one write at a time', () => {
     const repo = repository();
     merge(
       repo,
+      'design',
       () => {
         design(repo, 'define', 'kept', '--gloss', 'withdrawn here', ...BY);
         design(repo, 'retract', 'kept', ...BY);
       },
       () => design(repo, 'define', 'kept', '--gloss', 'live there', ...BY),
     );
-    const [withdrawn, live] = entities(repo).get('kept') as string[];
-    const out = show(repo, ['kept']);
-    expect(out).toContain(
+    const [withdrawn, live] = holders(repo, 'kept');
+    expect(show(repo, ['kept'])).toContain(
       `incoherent: kept is held by 2 items: kept (identity ${withdrawn}) withdrawn, kept (identity ${live}) live`,
     );
     expect(show(repo, ['kept'], `kept (identity ${withdrawn})`)).toContain(
@@ -486,6 +390,7 @@ describe('design — incoherence, repaired one write at a time', () => {
     design(repo, 'define', 'user', '--gloss', 'uses nothing yet', ...BY);
     merge(
       repo,
+      'design',
       () => design(repo, 'retract', 'base', ...BY),
       () => design(repo, 'amend', 'user', '--factors', 'base', ...BY),
     );
@@ -499,19 +404,30 @@ describe('design — incoherence, repaired one write at a time', () => {
   it('REFUSES an identity given beside an anchor held once', () => {
     const repo = repository();
     design(repo, 'define', 'solo', '--gloss', 'alone', ...BY);
-    const [solo] = entities(repo).get('solo') as string[];
+    const [solo] = holders(repo, 'solo');
     expect(
-      refused(repo, 'amend', `solo (identity ${solo})`, '--gloss', 'x', ...BY),
-    ).toMatch(/alone names it; drop the identity/);
+      refusal(
+        repo,
+        () =>
+          design(
+            repo,
+            'amend',
+            `solo (identity ${solo})`,
+            '--gloss',
+            'x',
+            ...BY,
+          ),
+        ['solo'],
+      ),
+    ).toMatch(/alone addresses it; drop the identity/);
     expect(show(repo)).not.toMatch(IDENTITY);
   });
 });
 
-describe('design — the lifecycle it joins plans by', () => {
-  it('REFUSES to show a lattice a unit stands on when the plan lifecycle is absent, naming the deploy', () => {
+describe('design — on a host without the plan lifecycle', () => {
+  it('shows and writes the design, saying the plans standing on it wait for a deploy', () => {
     const repo = repository();
     design(repo, 'define', 'alpha', '--gloss', 'first', ...BY);
-    expect(show(repo)).toMatch(/1 concept/);
     dispatchPlan(
       [
         'add',
@@ -526,14 +442,21 @@ describe('design — the lifecycle it joins plans by', () => {
       ],
       { from: repo },
     );
-    process.env[RUNTIME_CONFIG_ENV] = join(configDir, 'absent.json');
-    try {
-      expect(refused(repo, 'show')).toMatch(
-        /plan lifecycle is absent .*cratylus deploy/,
+    under(undefined, () => {
+      const before = everyRecord(repo).length;
+      const amended = spoken(
+        repo,
+        design(repo, 'amend', 'alpha', '--gloss', 'second', ...BY),
       );
+      expect(everyRecord(repo)).toHaveLength(before + 1);
+      expect(amended).toContain(
+        'plans standing on each concept: unavailable until `cratylus deploy`',
+      );
+      const out = show(repo);
+      expect(out).toContain('  alpha — second');
+      expect(out).not.toContain('realized in');
       expect(design(repo, 'trace', 'alpha')).toContain('trace: alpha');
-    } finally {
-      process.env[RUNTIME_CONFIG_ENV] = CONFIG;
-    }
+    });
+    expect(show(repo)).toContain('realized in pl (p-draft): u1');
   });
 });

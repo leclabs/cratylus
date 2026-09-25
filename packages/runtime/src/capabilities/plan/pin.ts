@@ -48,7 +48,7 @@ export interface Pin {
  *  heads carry one version's payload. */
 function unsettled(design: Design, entity: string): string | undefined {
   const folded = design.get(entity);
-  if (!folded) return 'has no records';
+  if (!folded) return 'is unknown';
   if (folded.diverged) return 'has diverged';
   if (folded.withdrawn) return 'is withdrawn';
   return undefined;

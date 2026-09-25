@@ -2,16 +2,19 @@
 // THE VIEW — a domain's current state rendered at query time for its reader, an
 // agent, in three layers:
 //
-//   1. a header naming the commit the state was computed at, with counts;
+//   1. a header naming the commit the state was computed at, with counts, and
+//      saying when writes not yet committed are included;
 //   2. everything that must be resolved before the rest is trusted;
-//   3. the whole domain in its own structure, one line for every live item,
-//      including one the structure cannot yet place, with the reason why.
+//   3. the whole domain in its own structure, one line for every live or
+//      diverged item — a diverged one in its place, marked — including one the
+//      structure cannot yet place, with the reason why.
 //
 // Naming one item drills into it in full, and into every version of a diverged
 // item: the header and the resolve-first layer stay, and the item replaces the
 // body.
 //
-// Every item and every reference to one arrives as a `Name`: its name, or, where
+// Every item and every reference to one arrives as a `Name` (the record store's
+// `names.ts`, whose printed form is the form an input addresses it by): its name, or, where
 // a merge left that name held by more than one entity, its name with its
 // identity beside it. A name is held by every live entity carrying it, by a
 // withdrawn entity keeping it, and by a diverged entity for every name its
@@ -33,26 +36,14 @@
 // its own module (`design.ts`, `plan.ts`, `notebook.ts`).
 // ─────────────────────────────────────────────────────────────────────────────
 
-/** How the view names an item: its name, or its name with its identity where a
- *  merge left the name held by more than one entity and it cannot address one
- *  alone. */
-export type Name =
-  | string
-  | { readonly name: string; readonly identity: string };
-
-/** A `Name` as it prints: `gamma`, or `gamma (identity <identity>)`. */
-export function named(name: Name): string {
-  return typeof name === 'string'
-    ? name
-    : `${name.name} (identity ${name.identity})`;
-}
+import { type Name, printed } from '../record-store/names.js';
 
 /** Whether `query` names the item named `name`: exactly, or, when `query` is a
  *  bare name, every item carrying it, identified or not. */
 export function denotes(query: Name, name: Name): boolean {
   return typeof query === 'string'
     ? (typeof name === 'string' ? name : name.name) === query
-    : named(query) === named(name);
+    : printed(query) === printed(name);
 }
 
 /** An entity with more than one head: the version each version head holds,
@@ -78,6 +69,13 @@ export interface Holder {
  *  than one entity (each holder printed with its identity beside the name and
  *  how it holds it), or more than one plan holding the state that admits one. */
 export type Incoherence =
+  | {
+      readonly kind: 'unrealized';
+      /** The unit realizing a concept its plan does not. */
+      readonly name: Name;
+      readonly concept: Name;
+      readonly plan: Name;
+    }
   | {
       readonly kind: 'retracted';
       readonly name: Name;
@@ -108,13 +106,22 @@ export function count(n: number, one: string, many: string): string {
   return `${n} ${n === 1 ? one : many}`;
 }
 
-/** Layer 1: the subject, the commit and the counts, on the first line. */
+/** Where a view's state was computed: the commit, and whether writes not yet
+ *  committed are included in it. */
+export interface Computed {
+  readonly commit: string;
+  readonly uncommitted: boolean;
+}
+
+/** Layer 1: the subject, where it was computed and the counts, on the first
+ *  line. */
 export function header(
   subject: string,
-  commit: string,
+  at: Computed,
   counts: readonly string[],
 ): string {
-  return `${subject} at ${commit}: ${counts.join(' · ')}`;
+  const also = at.uncommitted ? ', with writes not yet committed' : '';
+  return `${subject} at ${at.commit}${also}: ${counts.join(' · ')}`;
 }
 
 /** Layer 2: every item to resolve first, or a line saying there is none. */
@@ -138,7 +145,7 @@ export function divergedLines<T>(
       : [`  ${label}:`, ...lines.map((line) => `    ${line}`)];
   };
   return [
-    `diverged: ${diverged.names.map(named).join(' or ')}`,
+    `diverged: ${diverged.names.map(printed).join(' or ')}`,
     ...diverged.versions.flatMap((version) => head('version', version)),
     ...diverged.retracted.flatMap((version) =>
       head('retraction, which withdrew', version),
@@ -149,15 +156,17 @@ export function divergedLines<T>(
 export function incoherenceLine(incoherence: Incoherence): string {
   switch (incoherence.kind) {
     case 'retracted':
-      return `incoherent: ${named(incoherence.name)} references withdrawn ${named(incoherence.reference)} by its ${incoherence.relation}`;
+      return `incoherent: ${printed(incoherence.name)} references withdrawn ${printed(incoherence.reference)} by its ${incoherence.relation}`;
+    case 'unrealized':
+      return `incoherent: ${printed(incoherence.name)} realizes ${printed(incoherence.concept)}, which its plan ${printed(incoherence.plan)} does not`;
     case 'cycle':
-      return `incoherent: cycle among ${incoherence.names.map(named).join(', ')}`;
+      return `incoherent: cycle among ${incoherence.names.map(printed).join(', ')}`;
     case 'name': {
       const { name, holders } = incoherence;
-      return `incoherent: ${name} is held by ${holders.length} items: ${holders.map(({ identity, as }) => `${named({ name, identity })} ${as}`).join(', ')}`;
+      return `incoherent: ${name} is held by ${holders.length} items: ${holders.map(({ identity, as }) => `${printed({ name, identity })} ${as}`).join(', ')}`;
     }
     case 'exclusive':
-      return `incoherent: ${incoherence.names.length} plans in ${incoherence.state}, which admits one: ${incoherence.names.map(named).join(', ')}`;
+      return `incoherent: ${incoherence.names.length} plans in ${incoherence.state}, which admits one: ${incoherence.names.map(printed).join(', ')}`;
   }
 }
 
@@ -169,7 +178,7 @@ export function denotesAny(query: Name, names: readonly Name[]): boolean {
 /** The drilled items, or a line saying `query` names nothing the view holds. */
 export function drilled(query: Name, items: readonly string[][]): string[] {
   return items.length === 0
-    ? [`nothing live, withdrawn or diverged is named ${named(query)}`]
+    ? [`nothing live, withdrawn or diverged is named ${printed(query)}`]
     : items.flat();
 }
 

@@ -12,4 +12,5 @@
 // invocation from the repository it runs in.
 // ─────────────────────────────────────────────────────────────────────────────
 
-export { dispatchPlan, lifecycles, planHost } from './dispatch.js';
+export { dispatchPlan, planHost } from './dispatch.js';
+export { lifecycles } from './reading.js';
