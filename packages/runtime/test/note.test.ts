@@ -138,6 +138,47 @@ describe('note — owed rulings', () => {
   });
 });
 
+describe('note — what a note blocks, named so it addresses one', () => {
+  it('prints a unit with its plan, and that printed form is the input that blocks it', () => {
+    const repo = repository();
+    plans(repo);
+    plan(repo, 'add', 'a', '--plan', 'other', '--realizes', 'c', ...BY);
+    expect(
+      refused(
+        note,
+        repo,
+        'capture',
+        'hold',
+        '--kind',
+        'k',
+        '--topic',
+        't',
+        '--body',
+        'b',
+        '--blocks',
+        'a',
+        ...BY,
+      ),
+    ).toMatch(/name it with its plan, as "a of plan pl" or "a of plan other"/);
+    capture(repo, 'hold', '--blocks', 'a of plan other');
+    expect(show(repo)).toContain('hold — about hold · blocks a of plan other');
+    expect(frontier(repo, 'other')).toEqual(['o']);
+    expect(frontier(repo, 'pl')).toEqual(['a', 'b']);
+    note(
+      repo,
+      'revise',
+      'hold',
+      '--blocks',
+      'a of plan pl',
+      '--blocks',
+      'other',
+      ...BY,
+    );
+    expect(show(repo)).toContain('blocks a of plan pl; other');
+    expect(frontier(repo, 'pl')).toEqual(['b']);
+  });
+});
+
 describe('note — the notebook by title', () => {
   it('show groups by kind then topic, addresses a note by title, and REFUSES a second live note under a title', () => {
     const repo = repository();

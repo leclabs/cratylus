@@ -3,8 +3,8 @@
 //
 // PURE INTERFACE — no implementation. `capabilities/note/` realizes it over the
 // notebook records. A note's title is its name and addresses it; what a note
-// blocks is named by plan or unit name, a unit looked up in `plan` wherever its
-// name alone could name units of several plans. Every output is the notebook's
+// blocks is named by plan or unit name, a unit as the view prints it,
+// `u of plan p`, or bare where its name is its own. Every output is the notebook's
 // view, rendered text. Where a merge left one title held by more than one note,
 // the view prints each holder's identity beside it as `title (identity <id>)`,
 // and that printed form is the one input addressing one holder.
@@ -32,20 +32,10 @@ export type NoteChange = Partial<NoteInput>;
  *  one note in full. Every write returns the view of what it wrote. */
 export interface NoteHost {
   show(title?: string): string;
-  capture(note: NoteInput, plan: string | undefined, by: Invocation): string;
-  revise(
-    title: string,
-    change: NoteChange,
-    plan: string | undefined,
-    by: Invocation,
-  ): string;
+  capture(note: NoteInput, by: Invocation): string;
+  revise(title: string, change: NoteChange, by: Invocation): string;
   retract(title: string, by: Invocation): string;
   /** One version over every version of a diverged note. A field its versions
    *  agree on carries over; one they disagree on must be given. */
-  reconcile(
-    title: string,
-    change: NoteChange,
-    plan: string | undefined,
-    by: Invocation,
-  ): string;
+  reconcile(title: string, change: NoteChange, by: Invocation): string;
 }

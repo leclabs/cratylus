@@ -6,6 +6,9 @@
 // ordinary writes, identities shown and accepted only beside an anchor held more
 // than once, and the design shown on a host without the plan lifecycle.
 
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { dispatchDesign } from '../src/capabilities/design/dispatch.js';
 import { dispatchPlan } from '../src/capabilities/plan/dispatch.js';
@@ -18,6 +21,7 @@ import {
   everyRecord,
   git,
   merge,
+  records,
   refusal,
   repository,
   spoken,
@@ -80,7 +84,7 @@ describe('design — the lattice at the verb surface', () => {
     lattice(repo);
     const whole = show(repo).split('\n');
     expect(whole[0]).toBe(
-      `design at ${head()}, with writes not yet committed: 3 concepts · 0 unplaced · 0 diverged · 0 incoherent`,
+      `design at ${head()}: 3 concepts · 0 unplaced · 0 diverged · 0 incoherent (this state includes writes made since ${head()} and not yet committed)`,
     );
     const at = (anchor: string) =>
       whole.findIndex((l) => l.startsWith(`  ${anchor} — `));
@@ -290,9 +294,11 @@ describe('design — divergence and convergence across a merge', () => {
       () => design(repo, 'retract', 'leaf', ...BY),
     );
     const out = show(repo, [], 'leaf');
-    expect(out).toContain('  version:\n    concept: leaf\n      gloss: second');
-    expect(out).toContain(
-      '  retraction, which withdrew:\n    concept: leaf\n      gloss: first',
+    expect(out).toMatch(
+      /\n {2}version written by test at \S+:\n {4}concept: leaf\n {6}gloss: second/,
+    );
+    expect(out).toMatch(
+      /\n {2}retraction written by test at \S+, which withdrew:\n {4}concept: leaf\n {6}gloss: first/,
     );
     expect(show(repo)).toContain(
       '  leaf — diverged, 1 version and a retraction',
@@ -424,6 +430,29 @@ describe('design — incoherence, repaired one write at a time', () => {
   });
 });
 
+describe('design — when the store itself fails', () => {
+  it('says plainly that the directory is outside a repository, and names a damaged entry to repair', () => {
+    const outside = mkdtempSync(join(tmpdir(), 'no-repository-'));
+    expect(() => design(outside, 'show')).toThrow(
+      /^design: this directory is not inside a git repository; run it from inside the repository/,
+    );
+    const repo = repository();
+    design(repo, 'define', 'alpha', '--gloss', 'first', ...BY);
+    const [file] = records(repo, 'design');
+    const path = join(repo, 'records', 'design', file as string);
+    writeFileSync(path, '{ torn');
+    let said = '';
+    try {
+      design(repo, 'show');
+    } catch (error) {
+      said = (error as Error).message;
+    }
+    expect(said).toBe(
+      `design: a stored design entry is damaged: ${path} — restore it from version control (\`git checkout -- ${path}\`); a stored entry is never edited`,
+    );
+  });
+});
+
 describe('design — on a host without the plan lifecycle', () => {
   it('shows and writes the design, saying the plans standing on it wait for a deploy', () => {
     const repo = repository();
@@ -455,6 +484,9 @@ describe('design — on a host without the plan lifecycle', () => {
       const out = show(repo);
       expect(out).toContain('  alpha — second');
       expect(out).not.toContain('realized in');
+      expect(show(repo, [], 'alpha')).toContain(
+        '  realized in: unavailable until `cratylus deploy`',
+      );
       expect(design(repo, 'trace', 'alpha')).toContain('trace: alpha');
     });
     expect(show(repo)).toContain('realized in pl (p-draft): u1');

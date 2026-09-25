@@ -38,4 +38,16 @@ the whole view, marked; names which head of a diverged item is a retraction and 
 names a withdrawn reference's kind (`factor` or `dependency`); counts each shown plan apart in the
 header; lists a plan standing on a diverged concept once; and renders a concept's trace.
 
+Every name a view prints addresses one entity: where no plan is in view a unit is printed with its
+plan, `u of plan p`, and that form is accepted wherever a unit is named, so a note blocks a unit by
+it (the note capability's `--plan` flag is gone). What must be resolved first names each item's
+cause and what moved (`drifted: v — same diverged since pinned`, `suspect: u — beneath leaf, base
+amended since pinned`), lists a plan view's own items only, and never asks of a closed plan's frozen
+units. A unit realizing a concept its plan does not is an incoherence a merge can leave and the
+repair rule repairs. A diverged plan reads as diverged wherever it is named, a diverged unit is
+joined in the design's cross-reference, and each diverged version shows who wrote it and when, drawn
+in full where summaries would print alike. When the store itself fails the capability says so
+plainly — the directory is outside a repository, or a stored entry is damaged, naming its path to
+restore.
+
 `@cratylus/canon`'s `RUNTIME_CAPABILITIES` gains `design`, `plan` and `note`.

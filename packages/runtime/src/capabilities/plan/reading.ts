@@ -39,10 +39,19 @@ import {
 } from '../../record-store/names.js';
 import type { Record } from '../../record-store/record.js';
 import { introduced } from '../../record-store/repair.js';
-import { RecordStore, StagedStore } from '../../record-store/store.js';
+import {
+  RecordStore,
+  StagedStore,
+  StoreFault,
+} from '../../record-store/store.js';
 import { loadRuntimeConfig } from '../../runtime-config.js';
 import type { DesignState, ShownConcept } from '../../view/design.js';
-import type { Diverged, Holder, Incoherence } from '../../view/layers.js';
+import type {
+  Diverged,
+  Holder,
+  Incoherence,
+  Written,
+} from '../../view/layers.js';
 import type { NotebookState, Note as ShownNote } from '../../view/notebook.js';
 import type {
   DivergedUnit,
@@ -64,7 +73,7 @@ import {
   notebook,
   owedRulings,
 } from '../note/notebook.js';
-import { type Pin, drifted, suspect, take } from './pin.js';
+import { type Pin, drift, suspicion, take } from './pin.js';
 import * as planDomain from './plan.js';
 import * as unitDomain from './unit.js';
 
@@ -193,6 +202,9 @@ interface Unrealized {
   readonly entities: readonly [unit: string, plan: string];
   readonly concept: string;
 }
+
+/** What qualifies a unit by its plan where no plan is in view: `u of plan p`. */
+const OF_PLAN = ' of plan ';
 
 /** Stands for a unit not yet minted while its write is judged. */
 export const UNWRITTEN = '(new)';
@@ -374,9 +386,14 @@ export class Reading {
     return this.#label(this.#noteHolders.get(title), title, entity);
   }
 
-  /** What a note blocks, a plan or a unit, as the view names it. */
+  /** What a note blocks, a plan or a unit, as the view names it: a unit
+   *  qualified by its plan, `u of plan p`, the form `resolveBlocked` takes. */
   blocked(ref: string): Name {
-    return this.plans.has(ref) ? this.planName(ref) : this.unitName(ref);
+    if (this.plans.has(ref)) return this.planName(ref);
+    const plan = this.unitVersion(ref)?.plan;
+    return plan === undefined
+      ? this.unitName(ref)
+      : `${printed(this.unitName(ref))}${OF_PLAN}${printed(this.planName(plan))}`;
   }
 
   /** `message` with every identity it quotes bare spoken by its entity's name,
@@ -435,6 +452,12 @@ export class Reading {
    *  `undefined` when no unit holds it. A name held by units of several plans
    *  refuses, asking for the plan. */
   findUnit(input: string, plan?: string): string | undefined {
+    const at = input.indexOf(OF_PLAN);
+    if (plan === undefined && at !== -1) {
+      const of = input.slice(at + OF_PLAN.length);
+      if (this.findPlan(of) !== undefined)
+        return this.findUnit(input.slice(0, at), of);
+    }
     const name = parsed(input);
     const scope = plan === undefined ? undefined : this.resolvePlan(plan);
     const holders = this.#unitsHolding(name, scope);
@@ -443,7 +466,7 @@ export class Reading {
     ];
     if (of.length > 1)
       throw new Error(
-        `unit ${JSON.stringify(input)} is in plans ${of.map((p) => printed(this.planName(p))).join(', ')}; give --plan to say which`,
+        `unit ${JSON.stringify(input)} is in plans ${of.map((p) => printed(this.planName(p))).join(', ')}; name it with its plan, as ${of.map((p) => JSON.stringify(`${input}${OF_PLAN}${printed(this.planName(p))}`)).join(' or ')}`,
       );
     return addressed('unit', name, holders);
   }
@@ -478,21 +501,17 @@ export class Reading {
     return addressed('note', name, this.#noteHolders.get(bare(name)) ?? []);
   }
 
-  /** What a note blocks: the plan or unit `input` names, units looked up in
-   *  `plan` when given. */
-  resolveBlocked(input: string, plan?: string): string {
+  /** What a note blocks: the plan `input` names, or the unit — written
+   *  `u of plan p` as `blocked` prints it, or bare where its name is its own. */
+  resolveBlocked(input: string): string {
     const name = parsed(input);
     const plans = this.#planHolders.get(bare(name)) ?? [];
-    const scope = plan === undefined ? undefined : this.resolvePlan(plan);
-    const units = this.#unitsHolding(name, scope);
-    if (plans.length > 0 && units.length > 0)
+    if (plans.length > 0 && this.#unitsHolding(name).length > 0)
       throw new Error(
-        `${JSON.stringify(input)} names a plan and a unit; give --plan to block the unit of that plan, or rename one`,
+        `${JSON.stringify(input)} names a plan and a unit; write the unit as ${JSON.stringify(`${input}${OF_PLAN}<plan>`)}`,
       );
     const entity =
-      plans.length > 0
-        ? addressed('plan', name, plans)
-        : this.findUnit(input, plan);
+      plans.length > 0 ? addressed('plan', name, plans) : this.findUnit(input);
     if (entity === undefined)
       throw new Error(
         `no plan or unit is named ${JSON.stringify(input)}; a note blocks a plan or a unit`,
@@ -623,19 +642,30 @@ export class Reading {
     };
   }
 
+  /** One version of plan `entity` as the view shows it. */
   shownPlan(plan: planDomain.Plan, entity: string): ShownPlan {
     return {
       name: this.#label(this.#planHolders.get(plan.name), plan.name, entity),
       realizes: plan.realizes.map((c) => this.concept(c)),
       state: plan.state,
+      diverged: false,
     };
   }
 
-  /** The plan `entity` as the view shows it: its version, or a diverged one's
-   *  first. */
+  /** The plan `entity` as the view names it wherever it is referenced: its one
+   *  version, or, diverged, marked so and carrying no version's state or
+   *  concepts. */
   planOf(entity: string): ShownPlan {
     const f = this.plans.get(entity) as Fold<planDomain.Plan>;
-    return this.shownPlan(versions(f)[0] as planDomain.Plan, entity);
+    const shown = this.shownPlan(versions(f)[0] as planDomain.Plan, entity);
+    return f.diverged
+      ? {
+          name: this.planName(entity),
+          realizes: [],
+          state: '',
+          diverged: true,
+        }
+      : shown;
   }
 
   shownUnit(unit: unitDomain.Unit, entity: string): ShownUnit {
@@ -669,6 +699,21 @@ export class Reading {
     );
   }
 
+  /** How a pin moved, in words: what drifted it, and what beneath it moved. */
+  #moved(pin: Pin): { drift: string | undefined; suspicion: string[] } {
+    const how = drift(pin, this.concepts);
+    return {
+      drift:
+        how === undefined
+          ? undefined
+          : `${printed(this.concept(pin.concept))} ${how}`,
+      suspicion: suspicion(pin, this.concepts, this.closure).map(
+        ({ entity, how }) =>
+          `${printed(this.concept(entity))} ${how === 'joined' ? 'joined its closure' : how}`,
+      ),
+    };
+  }
+
   /** Every live unit with what `unit` and `pin` compute on it, in wave order.
    *  Refuses, naming the deploy, when the host has no lifecycle. */
   get live(): readonly LiveUnit[] {
@@ -690,8 +735,8 @@ export class Reading {
           ...this.shownUnit(unit, f.entity),
           wave: wave.get(f.entity),
           frontier: frontier.has(f.entity),
-          drifted: drifted(unit.pin, this.concepts),
-          suspect: suspect(unit.pin, this.concepts, this.closure),
+          ...this.#moved(unit.pin),
+          frozen: this.planClosed(unit.plan),
         };
       })
       .sort(
@@ -713,14 +758,34 @@ export class Reading {
     return [...folds.values()]
       .filter((f) => f.diverged)
       .map((f) => {
-        const retracted = withdrew(f, records);
+        const written = (version: P, head: Record<P>): Written<T> => ({
+          value: shown(version, f.entity),
+          by: head.envelope.author,
+          at: head.envelope.time,
+        });
+        const seen = new Set<string>();
+        const heads: Written<T>[] = [];
+        const retracted: Written<T>[] = [];
+        const named: P[] = [];
+        for (const head of f.heads) {
+          if (head.payload === null) {
+            for (const version of withdrew({ ...f, heads: [head] }, records)) {
+              named.push(version);
+              retracted.push(written(version, head));
+            }
+            continue;
+          }
+          const key = JSON.stringify(head.payload);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          named.push(head.payload);
+          heads.push(written(head.payload, head));
+        }
         return {
           entity: f.entity,
-          names: distinct(
-            [...versions(f), ...retracted].map((v) => name(v, f.entity)),
-          ),
-          versions: versions(f).map((v) => shown(v, f.entity)),
-          retracted: retracted.map((v) => shown(v, f.entity)),
+          names: distinct(named.map((v) => name(v, f.entity))),
+          versions: heads,
+          retracted,
         };
       });
   }
@@ -738,6 +803,8 @@ export class Reading {
         f.payload ? [this.shownConcept(f.payload, f.entity)] : [],
       ),
       units: plans && why === undefined ? this.live : [],
+      divergedUnits:
+        plans && why === undefined ? this.#divergedUnits(() => true) : [],
       ...(why === undefined
         ? {}
         : {
@@ -781,36 +848,65 @@ export class Reading {
     };
   }
 
-  /** The plan view's input, showing the plans `shown`. */
+  /** The diverged units of the plans `own` admits, each with the wave it
+   *  holds its place in and whether its plan is closed. */
+  #divergedUnits(own: (plan: string | undefined) => boolean): DivergedUnit[] {
+    const planOfUnit = (unit: string) => this.unitVersion(unit)?.plan;
+    return this.#diverged(
+      new Map([...this.units].filter(([entity]) => own(planOfUnit(entity)))),
+      this.#unitRecords,
+      (u, e) => this.#unitLabel(u.plan, u.spec.name, e),
+      (u, e) => this.shownUnit(u, e),
+    ).map(
+      (d): DivergedUnit => ({
+        ...d,
+        wave: this.#waves.get(d.entity),
+        frozen: this.planClosed(planOfUnit(d.entity) as string),
+      }),
+    );
+  }
+
+  /**
+   * The plan view's input, showing the plans `shown`. What must be resolved
+   * first is its own plans' — every one's when no plan is shown — and only
+   * what can still be resolved: a closed plan's frozen units are shown in
+   * place and never asked of.
+   */
   planState(shown: readonly string[]): PlanState {
     const { exclusive } = this.lifecycle.plan;
     const bound = planDomain.holders(this.plans, this.lifecycle.plan);
-    const wave = this.#waves;
+    const own = (plan: string | undefined): boolean =>
+      plan !== undefined && (shown.length === 0 || shown.includes(plan));
+    const planOfUnit = (unit: string) => this.unitVersion(unit)?.plan;
+    /** Some unit among `units` is of a plan shown, and not all are frozen. */
+    const askable = (units: readonly string[]): boolean =>
+      units.some((u) => own(planOfUnit(u))) &&
+      !units.every((u) => {
+        const plan = planOfUnit(u);
+        return plan !== undefined && this.planClosed(plan);
+      });
+    const blocksOwn = (note: Note): boolean =>
+      note.blocks.some((b) => own(this.plans.has(b) ? b : planOfUnit(b)));
     const shownNames = new Set(shown.map((p) => printed(this.planOf(p).name)));
     return {
       ...this.computed,
       plans: shown.map((p) => this.planOf(p)),
       units: this.live.filter((u) => shownNames.has(printed(u.plan.name))),
       owed: [
-        ...this.book.live.filter((n) => n.blocks.length > 0),
+        ...this.book.live.filter((n) => n.blocks.length > 0 && blocksOwn(n)),
         ...this.book.diverged.flatMap((d) =>
           d.versions
-            .filter((v) => v.blocks.length > 0)
+            .filter((v) => v.blocks.length > 0 && blocksOwn(v))
             .map((v) => ({ ...v, entity: d.entity })),
         ),
       ].map((n) => this.shownNote(n, n.entity)),
       divergedPlans: this.#diverged(
-        this.plans,
+        new Map([...this.plans].filter(([entity]) => own(entity))),
         new Map(),
         (p, e) => this.#label(this.#planHolders.get(p.name), p.name, e),
         (p, e) => this.shownPlan(p, e),
       ),
-      divergedUnits: this.#diverged(
-        this.units,
-        this.#unitRecords,
-        (u, e) => this.#unitLabel(u.plan, u.spec.name, e),
-        (u, e) => this.shownUnit(u, e),
-      ).map((d): DivergedUnit => ({ ...d, wave: wave.get(d.entity) })),
+      divergedUnits: this.#divergedUnits(own),
       withdrawnPlans: [],
       withdrawnUnits: [...this.units.values()]
         .filter((f) => f.withdrawn)
@@ -821,17 +917,20 @@ export class Reading {
           ),
         ),
       incoherent: [
-        ...planDomain.namesakes(this.plans).map(
-          ({ name, entities }): Incoherence => ({
-            kind: 'name',
-            name,
-            holders: entities.map((identity) => ({
-              identity,
-              as: holding(this.plans.get(identity)),
-            })),
-          }),
-        ),
-        ...(bound.length > 1
+        ...planDomain
+          .namesakes(this.plans)
+          .filter(({ entities }) => entities.some(own))
+          .map(
+            ({ name, entities }): Incoherence => ({
+              kind: 'name',
+              name,
+              holders: entities.map((identity) => ({
+                identity,
+                as: holding(this.plans.get(identity)),
+              })),
+            }),
+          ),
+        ...(bound.length > 1 && bound.some(own)
           ? [
               {
                 kind: 'exclusive' as const,
@@ -840,16 +939,21 @@ export class Reading {
               },
             ]
           : []),
-        ...this.unrealized().map(
-          ({ entities: [unit, plan], concept }): Incoherence => ({
-            kind: 'unrealized',
-            name: this.unitName(unit),
-            concept: this.concept(concept),
-            plan: this.planName(plan),
-          }),
-        ),
+        ...this.unrealized()
+          .filter(({ entities: [unit] }) => askable([unit]))
+          .map(
+            ({ entities: [unit, plan], concept }): Incoherence => ({
+              kind: 'unrealized',
+              name: this.unitName(unit),
+              concept: this.concept(concept),
+              plan: this.planName(plan),
+            }),
+          ),
         ...unitDomain
           .incoherence(this.units, this.planWithdrawn)
+          .filter((i) =>
+            askable(i.kind === 'retracted' ? [i.entity] : i.entities),
+          )
           .map((i): Incoherence => {
             switch (i.kind) {
               case 'retracted':
@@ -920,36 +1024,86 @@ function message(error: unknown): string {
   return error instanceof Error ? error.message : String(error);
 }
 
-/** Render a view over the records of the repository holding `from`, speaking
- *  any refusal by name. Writes nothing. */
-export function look(from: string, render: (read: Reading) => string): string {
-  const read = new Reading(from);
+/** What each domain directory keeps, in its domain's words. */
+const KEPT: { readonly [domain: string]: string } = {
+  design: 'design',
+  plan: 'plan',
+  unit: 'unit',
+  notebook: 'note',
+};
+
+/**
+ * A refusal as `capability` speaks it. A fault of the store itself is said
+ * plainly, naming what a person must repair — the one message that may carry a
+ * path; any other refusal has each identity it quotes bare spoken by its
+ * entity's name, when `read` can name it.
+ */
+function plainly(
+  capability: string,
+  error: unknown,
+  read: () => Reading,
+): Error {
+  if (error instanceof StoreFault) {
+    const what = KEPT[error.domain ?? ''] ?? 'stored';
+    switch (error.kind) {
+      case 'outside':
+        return new Error(
+          `${capability}: this directory is not inside a git repository; run it from inside the repository that keeps the design, plans and notes`,
+        );
+      case 'damaged':
+        return new Error(
+          `${capability}: a stored ${what} entry is damaged: ${error.path} — restore it from version control (\`git checkout -- ${error.path}\`); a stored entry is never edited`,
+        );
+      case 'moved':
+        return new Error(
+          `${capability}: the ${what}s changed while this write was being made, so nothing was written; show them again and repeat the write`,
+        );
+    }
+  }
   try {
+    return new Error(read().speak(message(error)));
+  } catch {
+    return new Error(message(error));
+  }
+}
+
+/** Render a view over the records of the repository holding `from`, speaking
+ *  any refusal as `capability`. Writes nothing. */
+export function look(
+  capability: string,
+  from: string,
+  render: (read: Reading) => string,
+): string {
+  let read: Reading | undefined;
+  try {
+    read = new Reading(from);
     return render(read);
   } catch (error) {
-    throw new Error(read.speak(message(error)));
+    throw plainly(capability, error, () => read ?? new Reading(from));
   }
 }
 
 /**
- * One write verb over the records of the repository holding `from`, all or
- * nothing: `write` makes its writes, staged, over a reading of what stands, and
- * returns what the view drills into; `render` draws the view over a reading of
- * what the writes leave. Only when both have succeeded do the writes reach
- * disk, so a refusal anywhere leaves nothing written.
+ * One write verb of `capability` over the records of the repository holding
+ * `from`, all or nothing: `write` makes its writes, staged, over a reading of
+ * what stands, and returns what the view drills into; `render` draws the view
+ * over a reading of what the writes leave. Only when both have succeeded do
+ * the writes reach disk, so a refusal anywhere leaves nothing written.
  */
 export function act<T>(
+  capability: string,
   from: string,
   write: (read: Reading) => T,
   render: (read: Reading, done: T) => string,
 ): string {
-  const store = new StagedStore(from);
+  let store: StagedStore | undefined;
   try {
+    store = new StagedStore(from);
     const done = write(new Reading(from, store));
     const view = render(new Reading(from, store), done);
     store.flush();
     return view;
   } catch (error) {
-    throw new Error(new Reading(from, store).speak(message(error)));
+    throw plainly(capability, error, () => new Reading(from, store));
   }
 }

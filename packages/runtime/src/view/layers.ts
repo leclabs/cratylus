@@ -46,15 +46,24 @@ export function denotes(query: Name, name: Name): boolean {
     : printed(query) === printed(name);
 }
 
+/** One competing version of a diverged item, and who wrote it when — so no
+ *  two versions ever print alike. */
+export interface Written<T> {
+  readonly value: T;
+  readonly by: string;
+  readonly at: string;
+}
+
 /** An entity with more than one head: the version each version head holds,
  *  and, for each head that is a retraction, the version it withdrew. */
 export interface Diverged<T> {
   /** Every name its heads carry, supplied by the caller, and a name it keeps
    *  when no version is left to carry one. */
   readonly names: readonly Name[];
-  readonly versions: readonly T[];
-  /** The version each retraction head withdrew; empty when no head is one. */
-  readonly retracted: readonly T[];
+  readonly versions: readonly Written<T>[];
+  /** The version each retraction withdrew, the retraction's writer beside it;
+   *  empty when no head is one. */
+  readonly retracted: readonly Written<T>[];
 }
 
 /** One holder of a name held by more than one entity: its identity, and whether
@@ -120,8 +129,10 @@ export function header(
   at: Computed,
   counts: readonly string[],
 ): string {
-  const also = at.uncommitted ? ', with writes not yet committed' : '';
-  return `${subject} at ${at.commit}${also}: ${counts.join(' · ')}`;
+  const also = at.uncommitted
+    ? ` (this state includes writes made since ${at.commit} and not yet committed)`
+    : '';
+  return `${subject} at ${at.commit}: ${counts.join(' · ')}${also}`;
 }
 
 /** Layer 2: every item to resolve first, or a line saying there is none. */
@@ -133,22 +144,31 @@ export function resolveFirst(items: readonly string[]): string[] {
 
 /** A diverged entity: its names, then each version it holds as `render` draws
  *  it — on the version's own line when that is one line, else beneath it — and
- *  each head that is a retraction, by the version it withdrew. */
+ *  each head that is a retraction, by the version it withdrew; each with who
+ *  wrote it when. Where `render` draws two versions alike, `full` draws every
+ *  one, so what differs shows. */
 export function divergedLines<T>(
   diverged: Diverged<T>,
   render: (version: T) => readonly string[],
+  full: (version: T) => readonly string[] = render,
 ): string[] {
-  const head = (label: string, version: T): string[] => {
-    const lines = render(version);
+  const drawn = [...diverged.versions, ...diverged.retracted].map(({ value }) =>
+    render(value).join('\n'),
+  );
+  const draw = new Set(drawn).size < drawn.length ? full : render;
+  const shown = (label: string, value: T): string[] => {
+    const lines = draw(value);
     return lines.length === 1
       ? [`  ${label}: ${lines[0]}`]
       : [`  ${label}:`, ...lines.map((line) => `    ${line}`)];
   };
   return [
     `diverged: ${diverged.names.map(printed).join(' or ')}`,
-    ...diverged.versions.flatMap((version) => head('version', version)),
-    ...diverged.retracted.flatMap((version) =>
-      head('retraction, which withdrew', version),
+    ...diverged.versions.flatMap(({ value, by, at }) =>
+      shown(`version written by ${by} at ${at}`, value),
+    ),
+    ...diverged.retracted.flatMap(({ value, by, at }) =>
+      shown(`retraction written by ${by} at ${at}, which withdrew`, value),
     ),
   ];
 }

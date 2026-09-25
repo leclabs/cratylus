@@ -330,7 +330,8 @@ describe('plan — the laws spanning plan and unit', () => {
       () => plan(repo, 'revise', 'pl', '--name', 'pl-right', ...BY),
     );
     const whole = show(repo, [], 'pl-left');
-    expect(whole).toContain(' — diverged — units in wave order:');
+    expect(whole).toContain('plan pl-left (diverged) — units in wave order:');
+    expect(whole).not.toMatch(/pl-left \(p-draft\)(?! ·)/);
     expect(
       refused(repo, 'add', 'b', '--plan', 'pl-left', '--realizes', 'c1', ...BY),
     ).toMatch(
@@ -508,6 +509,103 @@ describe('plan — incoherence, repaired one write at a time', () => {
         ['first'],
       ),
     ).toMatch(/alone addresses it; drop the identity/);
+  });
+});
+
+describe('plan — what must be resolved first', () => {
+  it('names what moved, lists only its own plan’s items, and never asks of a closed plan’s units', () => {
+    const repo = repository();
+    concepts(repo);
+    design(repo, 'define', 'same', '--gloss', 'shared', ...BY);
+    add(repo, 'u', 'p', 'leaf');
+    plan(
+      repo,
+      'revise',
+      'p',
+      '--realizes',
+      'leaf',
+      '--realizes',
+      'same',
+      ...BY,
+    );
+    plan(repo, 'add', 'v', '--plan', 'p', '--realizes', 'same', ...BY);
+    plan(
+      repo,
+      'add',
+      'w',
+      '--plan',
+      'q',
+      '--realizes',
+      'same',
+      '--plan-realizes',
+      'same',
+      ...BY,
+    );
+    plan(
+      repo,
+      'add',
+      'z',
+      '--plan',
+      'done',
+      '--realizes',
+      'same',
+      '--plan-realizes',
+      'same',
+      ...BY,
+    );
+    plan(repo, 'close', 'done', ...BY);
+    dispatchPlan(['bind', 'q', ...BY], { from: repo });
+    design(repo, 'amend', 'base', '--gloss', 'moved', ...BY);
+    merge(
+      repo,
+      'design',
+      () => design(repo, 'amend', 'same', '--gloss', 'left', ...BY),
+      () => design(repo, 'amend', 'same', '--gloss', 'right', ...BY),
+    );
+    const p = show(repo, [], 'p');
+    expect(p).toContain('  drifted: v — same diverged since pinned');
+    expect(p).toContain(
+      '  suspect: u — beneath leaf, base amended since pinned',
+    );
+    expect(p).not.toContain('w —');
+    expect(p).not.toContain('drifted: w');
+    expect(show(repo, [], 'q')).toContain(
+      '  drifted: w — same diverged since pinned',
+    );
+    expect(show(repo, [], 'q')).not.toContain('drifted: v');
+    const done = show(repo, [], 'done');
+    expect(done).toContain('resolve first: none');
+    expect(done).toContain('    z — u-new, drifted · realizes same');
+  });
+
+  it('a diverged plan reads as diverged wherever it is named, and versions drawn alike show what differs', () => {
+    const repo = repository();
+    concepts(repo);
+    add(repo, 'a', 'p');
+    merge(
+      repo,
+      'plan',
+      () => {
+        plan(repo, 'revise', 'p', '--realizes', 'c1', ...BY);
+        plan(repo, 'revise', 'a', '--intent', 'left', ...BY);
+      },
+      () => {
+        plan(repo, 'bind', 'p', ...BY);
+        plan(repo, 'revise', 'a', '--intent', 'right', ...BY);
+      },
+    );
+    const out = show(repo, [], 'p');
+    expect(out.split('\n')[0]).toMatch(/^plan p \(diverged\) at /);
+    expect(out).toContain('plan p (diverged) — units in wave order:');
+    expect(out).toContain('    a — diverged, 2 versions');
+    expect(out).toMatch(
+      /version written by test at \S+:\n {6}unit: a — u-new\n {8}plan: p \(diverged\)/,
+    );
+    expect(out).toContain('      intent: left');
+    expect(out).toContain('      intent: right');
+    expect(design(repo, 'show', 'c1')).toContain(
+      '    - p (diverged): a (diverged)',
+    );
   });
 });
 

@@ -31,8 +31,28 @@ import type { Envelope, Operation, Record, RecordId } from './record.js';
  *  every record, one subdirectory per domain. Declared once, here. */
 export const RECORDS_ROOT = 'records';
 
-/** The records in one domain directory `dir`, in record-id order. */
-function readDomain<P>(dir: string): Record<P>[] {
+/**
+ * A failure of the store itself rather than of a domain's law: the directory is
+ * not inside a repository (`outside`); a stored record cannot be read as the
+ * record its file name says it is (`damaged`, with its `path`); or the records
+ * a write was checked against moved before it landed (`moved`). The store
+ * words the message for a reader of the store; a caller meeting agents speaks
+ * it in its domain's words from `kind`, `domain` and `path`.
+ */
+export class StoreFault extends Error {
+  constructor(
+    message: string,
+    readonly kind: 'outside' | 'damaged' | 'moved',
+    readonly domain?: string,
+    readonly path?: string,
+  ) {
+    super(message);
+    this.name = 'StoreFault';
+  }
+}
+
+/** The records in one domain directory `dir` of `domain`, in record-id order. */
+function readDomain<P>(dir: string, domain: string): Record<P>[] {
   let names: string[];
   try {
     names = readdirSync(dir);
@@ -44,14 +64,24 @@ function readDomain<P>(dir: string): Record<P>[] {
     .filter((name) => name.endsWith('.json'))
     .sort()
     .map((name) => {
-      const record = JSON.parse(
-        readFileSync(join(dir, name), 'utf8'),
-      ) as Record<P>;
-      if (`${record.envelope?.id}.json` !== name)
-        throw new Error(
-          `record store: ${join(dir, name)} carries record id ${record.envelope?.id}`,
+      const path = join(dir, name);
+      const damaged = (why: string): never => {
+        throw new StoreFault(
+          `record store: ${path} ${why}`,
+          'damaged',
+          domain,
+          path,
         );
-      return record;
+      };
+      let record: Record<P> | undefined;
+      try {
+        record = JSON.parse(readFileSync(path, 'utf8')) as Record<P>;
+      } catch {
+        return damaged('is not a readable record');
+      }
+      if (`${record?.envelope?.id}.json` !== name)
+        damaged(`carries record id ${record?.envelope?.id}`);
+      return record as Record<P>;
     });
 }
 
@@ -76,7 +106,10 @@ export class RecordStore {
         stdio: ['ignore', 'pipe', 'ignore'],
       }).trim();
     } catch {
-      throw new Error(`record store: ${from} is not inside a git repository`);
+      throw new StoreFault(
+        `record store: ${from} is not inside a git repository`,
+        'outside',
+      );
     }
     this.root = join(top, RECORDS_ROOT);
   }
@@ -91,7 +124,7 @@ export class RecordStore {
 
   /** Every record of `domain`, in record-id order. A domain never written is empty. */
   read<P>(domain: string): Record<P>[] {
-    return readDomain<P>(this.#dir(domain));
+    return readDomain<P>(this.#dir(domain), domain);
   }
 
   /**
@@ -106,7 +139,11 @@ export class RecordStore {
   write<P>(domain: string, record: Record<P>): void {
     const { id, entity, operation, supersedes } = record.envelope;
     const refuse = (why: string): never => {
-      throw new Error(`record store: ${operation} ${id} refused — ${why}`);
+      throw new StoreFault(
+        `record store: ${operation} ${id} refused — ${why}`,
+        'moved',
+        domain,
+      );
     };
     const rewrite = 'that record exists, and a record is never rewritten';
     const records = this.read<P>(domain);
@@ -249,8 +286,10 @@ export class RecordStore {
   ): Record<P> {
     const folded = fold(this.read(domain)).get(entity);
     if (!folded?.diverged)
-      throw new Error(
+      throw new StoreFault(
         `record store: reconcile refused — entity ${entity} has not diverged in ${domain}, and only divergence is reconciled`,
+        'moved',
+        domain,
       );
     return this.supersede(
       domain,
@@ -295,8 +334,10 @@ export class StagedStore extends RecordStore {
   flush(): void {
     for (const { domain, record } of this.#held.splice(0))
       super.persist(domain, record, () => {
-        throw new Error(
+        throw new StoreFault(
           `record store: ${record.envelope.id} refused — that record exists, and a record is never rewritten`,
+          'moved',
+          domain,
         );
       });
   }

@@ -35,7 +35,13 @@ import {
   list,
   resolveFirst,
 } from './layers.js';
-import { type LiveUnit, planName, standing } from './plan.js';
+import {
+  type DivergedUnit,
+  type LiveUnit,
+  type Unit,
+  planName,
+  standing,
+} from './plan.js';
 
 /** A concept's whole state as its reader is shown it: every name in it a
  *  `Name`, identity beside it where the name is held by more than one. */
@@ -52,6 +58,9 @@ export interface DesignState extends Computed {
   /** The units of every plan, whatever its state, that the concepts are
    *  joined to. */
   readonly units: readonly LiveUnit[];
+  /** The diverged units joined the same way, each under every concept a version
+   *  of it realizes, marked. */
+  readonly divergedUnits: readonly DivergedUnit[];
   /** Why the plans standing on each concept are not shown, when they are not;
    *  `units` is then empty. */
   readonly plansUnshown?: string;
@@ -168,7 +177,9 @@ function nodesOf(state: DesignState): Node[] {
     ...state.diverged.map((d) => {
       const factors = [
         ...new Map(
-          d.versions.flatMap((v) => v.factors).map((f) => [printed(f), f]),
+          d.versions
+            .flatMap((v) => v.value.factors)
+            .map((f) => [printed(f), f]),
         ).values(),
       ];
       return {
@@ -233,7 +244,7 @@ export function designView(state: DesignState, anchor?: Name): string {
     string,
     Map<string, { plan: string; units: string[] }>
   >();
-  for (const unit of state.units) {
+  const join = (unit: Unit, shown: string): void => {
     const concept = printed(unit.realizes);
     const plans =
       realizing.get(concept) ??
@@ -245,8 +256,13 @@ export function designView(state: DesignState, anchor?: Name): string {
       units: [],
     };
     plans.set(key, standingOn);
-    standingOn.units.push(`${printed(unit.name)} (${standing(unit)})`);
-  }
+    if (!standingOn.units.includes(shown)) standingOn.units.push(shown);
+  };
+  for (const unit of state.units)
+    join(unit, `${printed(unit.name)} (${standing(unit)})`);
+  for (const d of state.divergedUnits)
+    for (const { value } of d.versions)
+      join(value, `${d.names.map(printed).join(' or ')} (diverged)`);
   // Every plan standing on a concept by any of `names`, each plan once.
   const realizedIn = (names: readonly Name[]): string[] => {
     const plans = new Map<string, { plan: string; units: string[] }>();
@@ -260,6 +276,12 @@ export function designView(state: DesignState, anchor?: Name): string {
       ({ plan, units }) => `${plan}: ${units.join(', ')}`,
     );
   };
+
+  // A drilled concept's plans, or why they are not shown.
+  const realizedList = (names: readonly Name[]): string[] =>
+    state.plansUnshown === undefined
+      ? list('realized in', realizedIn(names))
+      : [`  realized in: ${state.plansUnshown}`];
 
   const nodes = nodesOf(state);
   const { ordered, placed, unplaced, why } = order(nodes);
@@ -278,19 +300,19 @@ export function designView(state: DesignState, anchor?: Name): string {
           .map((c) => [
             ...conceptInFull(c),
             ...unplacedWhy(c),
-            ...list('realized in', realizedIn([c.anchor])),
+            ...realizedList([c.anchor]),
           ]),
         ...state.withdrawn
           .filter((c) => denotes(anchor, c.anchor))
           .map((c) => [
             ...conceptInFull(c, ' — withdrawn'),
-            ...list('realized in', realizedIn([c.anchor])),
+            ...realizedList([c.anchor]),
           ]),
         ...state.diverged
           .filter((d) => denotesAny(anchor, d.names))
           .map((d) => [
             ...divergedLines(d, (c) => conceptInFull(c)),
-            ...list('realized in', realizedIn(d.names)),
+            ...realizedList(d.names),
           ]),
       ]),
     ].join('\n');

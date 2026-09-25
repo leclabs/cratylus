@@ -66,6 +66,7 @@ export function planHost(from: string = process.cwd()): PlanHost {
   /** A plan verb's write, all or nothing, and the view of what it leaves. */
   const write = (verb: (read: Reading) => Shown): string =>
     act(
+      'plan',
       from,
       (read) => {
         read.lifecycle;
@@ -166,7 +167,7 @@ export function planHost(from: string = process.cwd()): PlanHost {
 
   return {
     show: (name, plan) =>
-      look(from, (read) => {
+      look('plan', from, (read) => {
         const bound = planDomain.holders(read.plans, read.lifecycle.plan);
         const query = name === undefined ? undefined : parsed(name);
         if (plan !== undefined)

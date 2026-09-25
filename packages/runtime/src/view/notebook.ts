@@ -55,7 +55,7 @@ export interface NotebookState extends Computed {
 /** What a note says, on one line, led by its title. */
 function said(note: Note): string {
   const blocks = note.blocks.length
-    ? ` · blocks ${note.blocks.map(printed).join(', ')}`
+    ? ` · blocks ${note.blocks.map(printed).join('; ')}`
     : '';
   return `${inline(printed(note.title))} — ${inline(note.body)}${blocks}`;
 }
@@ -125,7 +125,7 @@ export function notebookView(state: NotebookState, title?: Name): string {
   for (const note of state.notes) place(note.kind, note.topic, said(note));
   for (const d of state.diverged) {
     const line = `${d.names.map(printed).join(' or ')} — diverged, ${count(d.versions.length, 'version', 'versions')}${d.retracted.length ? ' and a retraction' : ''}`;
-    for (const v of d.versions) place(v.kind, v.topic, line);
+    for (const { value } of d.versions) place(value.kind, value.topic, line);
   }
   lines.push('notes by kind, then topic:');
   for (const [kind, topics] of byKind) {

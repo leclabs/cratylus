@@ -9,9 +9,10 @@
 // records at the moment of the read and never stored:
 //
 // - DRIFTED — the pinned version is no longer the concept's only settled head:
-//   the concept was amended, withdrawn or has diverged;
+//   the concept was amended, withdrawn or has diverged (`drift` says which);
 // - otherwise SUSPECT — another concept in the closure has diverged, been
-//   withdrawn or gained a newer version since the pin was taken.
+//   withdrawn or gained a newer version since the pin was taken (`suspicion`
+//   names each, and how it moved).
 //
 // Heads and divergence come from the record store's generic fold over the design
 // domain; the caller hands that fold in. The closure is design's to compute, so
@@ -80,19 +81,46 @@ export function take(design: Design, concept: string, closure: Closure): Pin {
   return { concept, version: version as RecordId, closure: others };
 }
 
-/** The pinned version is no longer the concept's only settled head. */
-export function drifted(pin: Pin, design: Design): boolean {
-  return !holds(design, pin.concept, pin.version);
+/** How a pinned concept moved since the pin was taken: it diverged, was
+ *  withdrawn, gained a newer version, or — for a concept beneath it — joined
+ *  its closure. */
+export type Movement = 'diverged' | 'withdrawn' | 'amended' | 'joined';
+
+/** How `entity` moved away from `version`, `undefined` when `version` is
+ *  still its one settled head. */
+function movement(
+  design: Design,
+  entity: string,
+  version: RecordId | undefined,
+): Movement | undefined {
+  const folded = design.get(entity);
+  if (version === undefined) return 'joined';
+  if (holds(design, entity, version)) return undefined;
+  if (folded?.diverged) return 'diverged';
+  if (!folded || folded.withdrawn) return 'withdrawn';
+  return 'amended';
 }
 
-/** Not drifted, and another concept in the closure has diverged, been
- *  withdrawn or gained a newer version since the pin was taken. */
-export function suspect(pin: Pin, design: Design, closure: Closure): boolean {
-  if (drifted(pin, design)) return false;
-  for (const entity of closure(pin.concept)) {
+/** DRIFTED: how the pinned concept moved since the pin was taken — its pinned
+ *  version is no longer its only settled head — or `undefined` when it has not. */
+export function drift(pin: Pin, design: Design): Movement | undefined {
+  return movement(design, pin.concept, pin.version);
+}
+
+/** SUSPECT: every other concept in the closure that moved since the pin was
+ *  taken, with how — empty when none did, and when the pin has drifted, since
+ *  a drifted unit is never also suspect. */
+export function suspicion(
+  pin: Pin,
+  design: Design,
+  closure: Closure,
+): { readonly entity: string; readonly how: Movement }[] {
+  if (drift(pin, design) !== undefined) return [];
+  const found: { entity: string; how: Movement }[] = [];
+  for (const entity of new Set(closure(pin.concept))) {
     if (entity === pin.concept) continue;
-    const then = pin.closure[entity];
-    if (!then || !holds(design, entity, then)) return true;
+    const how = movement(design, entity, pin.closure[entity]);
+    if (how !== undefined) found.push({ entity, how });
   }
-  return false;
+  return found;
 }

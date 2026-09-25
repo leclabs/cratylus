@@ -9,8 +9,8 @@
 //   reconcile  a diverged note: one version over every version
 //
 // A note's title is its name and addresses it. What a note blocks is named by
-// plan or unit name and resolved here, a unit looked up in `--plan` wherever its
-// name alone could name units of several plans. Anyone may write a note, and
+// plan or unit name and resolved here: a unit as the view prints it,
+// `u of plan p`, or bare where its name is its own. Anyone may write a note, and
 // capture has no admission bar beyond the note's shape and its title law.
 //
 // Arguments, names and identities are read as the plan surface reads them
@@ -37,7 +37,9 @@ export function noteHost(from: string = process.cwd()): NoteHost {
   /** A note write, all or nothing, and the notebook's view drilled into the
    *  title it returns. */
   const write = (verb: (read: Reading) => string): string =>
-    act(from, verb, (read, title) => notebookView(read.noteState(), title));
+    act('note', from, verb, (read, title) =>
+      notebookView(read.noteState(), title),
+    );
 
   /** The note `title` names; refuses a title no note holds. */
   const resolve = (read: Reading, title: string): string => {
@@ -50,18 +52,12 @@ export function noteHost(from: string = process.cwd()): NoteHost {
   };
 
   /** `change` over `current`, what it blocks resolved. */
-  const note = (
-    read: Reading,
-    change: NoteChange,
-    current: Note,
-    plan: string | undefined,
-  ): Note => ({
+  const note = (read: Reading, change: NoteChange, current: Note): Note => ({
     title: change.title ?? current.title,
     kind: change.kind ?? current.kind,
     topic: change.topic ?? current.topic,
     body: change.body ?? current.body,
-    blocks:
-      change.blocks?.map((b) => read.resolveBlocked(b, plan)) ?? current.blocks,
+    blocks: change.blocks?.map((b) => read.resolveBlocked(b)) ?? current.blocks,
   });
 
   /** Every version of the note `entity`: its one, or each of a diverged one. */
@@ -72,31 +68,31 @@ export function noteHost(from: string = process.cwd()): NoteHost {
 
   return {
     show: (title) =>
-      look(from, (read) =>
+      look('note', from, (read) =>
         notebookView(
           read.noteState(),
           title === undefined ? undefined : parsed(title),
         ),
       ),
 
-    capture: (input: NoteInput, plan, by) =>
+    capture: (input: NoteInput, by) =>
       write((read) => {
         capture(
           read.store,
           {
             ...input,
-            blocks: input.blocks.map((b) => read.resolveBlocked(b, plan)),
+            blocks: input.blocks.map((b) => read.resolveBlocked(b)),
           },
           by,
         );
         return input.title;
       }),
 
-    revise: (title, change, plan, by) =>
+    revise: (title, change, by) =>
       write((read) => {
         const entity = resolve(read, title);
         const [current] = versions(read, entity);
-        const written = note(read, change, current as Note, plan);
+        const written = note(read, change, current as Note);
         revise(read.store, entity, written, by);
         return written.title;
       }),
@@ -107,7 +103,7 @@ export function noteHost(from: string = process.cwd()): NoteHost {
         return bare(parsed(title));
       }),
 
-    reconcile: (title, change, plan, by) =>
+    reconcile: (title, change, by) =>
       write((read) => {
         const entity = resolve(read, title);
         const heads = versions(read, entity);
@@ -117,18 +113,13 @@ export function noteHost(from: string = process.cwd()): NoteHost {
             heads.map((n) => n[key]),
             key,
           );
-        const written = note(
-          read,
-          change,
-          {
-            title: change.title ?? pick('title'),
-            kind: change.kind ?? pick('kind'),
-            topic: change.topic ?? pick('topic'),
-            body: change.body ?? pick('body'),
-            blocks: change.blocks === undefined ? pick('blocks') : [],
-          },
-          plan,
-        );
+        const written = note(read, change, {
+          title: change.title ?? pick('title'),
+          kind: change.kind ?? pick('kind'),
+          topic: change.topic ?? pick('topic'),
+          body: change.body ?? pick('body'),
+          blocks: change.blocks === undefined ? pick('blocks') : [],
+        });
         reconcile(read.store, entity, written, by);
         return written.title;
       }),
@@ -147,7 +138,6 @@ export function dispatchNote(
   const verb = verbOf(argv, 'note', VERBS);
   const args = parseArgv(argv.slice(1));
   const host = noteHost(opts.from);
-  const plan = one(args, 'plan');
   const title = () => subject(args, 'note', verb, 'note');
   const change = (): NoteChange => {
     const found: { -readonly [K in keyof NoteChange]: NoteChange[K] } = {};
@@ -178,25 +168,14 @@ export function dispatchNote(
           body: one(args, 'body') as string,
           blocks: many(args, 'blocks') ?? [],
         },
-        plan,
         invocation(args, 'note', verb),
       );
     }
     case 'revise':
-      return host.revise(
-        title(),
-        change(),
-        plan,
-        invocation(args, 'note', verb),
-      );
+      return host.revise(title(), change(), invocation(args, 'note', verb));
     case 'retract':
       return host.retract(title(), invocation(args, 'note', verb));
     case 'reconcile':
-      return host.reconcile(
-        title(),
-        change(),
-        plan,
-        invocation(args, 'note', verb),
-      );
+      return host.reconcile(title(), change(), invocation(args, 'note', verb));
   }
 }

@@ -45,7 +45,7 @@ export function designHost(from: string = process.cwd()): DesignHost {
   /** A design write, all or nothing, and the design's view drilled into the
    *  anchor it returns. */
   const write = (verb: (read: Reading) => string): string =>
-    act(from, verb, (read, anchor) =>
+    act('design', from, verb, (read, anchor) =>
       designView(read.designState(true), anchor),
     );
 
@@ -69,7 +69,7 @@ export function designHost(from: string = process.cwd()): DesignHost {
 
   return {
     show: (anchor) =>
-      look(from, (read) =>
+      look('design', from, (read) =>
         designView(
           read.designState(true),
           anchor === undefined ? undefined : parsed(anchor),
@@ -134,7 +134,7 @@ export function designHost(from: string = process.cwd()): DesignHost {
       }),
 
     trace: (anchor) =>
-      look(from, (read) => {
+      look('design', from, (read) => {
         const name = parsed(anchor);
         const entity = read.resolveConcept(anchor);
         const shown = (c: Concept) => ({
