@@ -20,10 +20,10 @@ It holds the notebook's own rules and no one else's:
   may block is dropped: `0c9da09c` no longer makes it.
 - A diverged note blocks whatever any of its competing versions blocks, until someone reconciles
   it. The cell says "versions", never "heads" (criterion 4).
-- A note has no name. It is addressed by its topic and its kind label, narrowed by a fragment of its
-  body when several live notes share both (`PLAN.md` N9). The cell never tells the reader to use an
-  identity: the interface surfaces one only where a merge has left one name on two entities, and
-  notes carry no name.
+- A note's title is its name, and there is one live note per title. A note is addressed by its
+  title; there is no body-fragment matching (N9 is superseded at `9e3e1a6f`). The cell never tells the
+  reader to use an identity. The interface surfaces one only where a merge has left one title on two
+  live notes.
 - A changed note is revised, never edited in place.
 
 It restates no other skill's rules, borrows nothing from `design`, `plan` or `deliver` (`PLAN.md`
@@ -37,7 +37,7 @@ at the first census; if it still is, author from the design alone and say so in 
 
 ## Static
 
-- `git show b3b5a64c:docs/design/record-store.md` § The three domains (`notebook`, `unit`), § How
+- `git show 9e3e1a6f:docs/design/record-store.md` § The three domains (`notebook`, `unit`), § How
   they are met (`domain interface`, `skill routing`).
 - `packages/canon/src/skills/event-tap/skill.ts` — a capability-bound cell's shape.
 - The landed `note` capability's verbs (`packages/runtime/src/capabilities/note/dispatch.ts`).
@@ -66,7 +66,9 @@ at the first census; if it still is, author from the design alone and say so in 
    `git grep -nE "idea|question|decision" -- packages/canon/src/skills/note/skill.ts` hits all
    three. No line makes blocking depend on a kind:
    `git grep -nE "question.*(block|owed)|(block|owed).*question" -- packages/canon/src/skills/note/skill.ts`
-   prints nothing.
+   prints nothing. The title law is present:
+   `git grep -n "title" -- packages/canon/src/skills/note/skill.ts` hits the line saying a note's
+   title is its name, one live note per title.
 4. `git grep -niE "record|envelope|\bheads?\b|ulid|\.json" -- packages/canon/src/skills/note` prints
    nothing.
 5. `git grep -nE " @ (design|plan|deliver)\b" -- packages/canon/src/skills/note` prints nothing.

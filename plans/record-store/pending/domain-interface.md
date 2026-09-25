@@ -1,6 +1,6 @@
 # domain-interface
 
-**Wave 2.** Realizes `domain interface`. Factors at `b3b5a64c`: `view`, `notebook`, `design`,
+**Wave 2.** Realizes `domain interface`. Factors at `9e3e1a6f`: `view`, `notebook`, `design`,
 `plan`, `unit`.
 
 ## Intent
@@ -14,28 +14,31 @@ way agents and users meet notes, design and plans.
   knows nothing of plans, so `trace` reads the design alone. The plans standing on a concept, each
   with its state, reach the design view only as the view's cross-reference, which this unit
   composes from the plan fold.
-- `plan` shows the whole bound plan or one unit. It adds, revises and advances units, binds and
-  closes a plan, and reconciles either.
+- `plan` shows the whole bound plan or one unit. It adds units, revises a unit or a plan, advances
+  units, binds and closes a plan, and reconciles either.
   - No verb authors a plan (`PLAN.md` N6). The first `add` that names a plan which does not exist
     proposes it, together with the concepts it realizes.
   - There is one live plan per name, and one live unit per name within its plan.
   - `add` resolves `realizes` by name and takes the pin automatically. The pin refuses unless the
-    concept and its whole closure are settled and live. `revise` re-pins.
+    concept and its whole closure are settled and live. Revising a unit re-pins.
+  - Revising a plan changes its name or the concepts it realizes, never its state. State moves only
+    through `bind` and `close`.
   - `advance` moves a unit forward exactly one step; skipping or going back refuses.
   - Binding a plan returns whichever plan was bound to proposed. When a merge has left two plans
     bound, binding the one to keep resolves it.
   - A retraction or divergence in the design never breaks a plan's laws; it drifts the units pinned
     to that concept.
 - `note` shows the whole notebook or one note. It captures, revises, retracts and reconciles notes.
-  A note has no name. It is addressed by its topic and its kind label, narrowed by a fragment of its
-  body when several live notes share both (`PLAN.md` N9). A reference that still matches several
-  notes refuses and lists them. What a note blocks is named by plan or unit name and resolved here.
+  A note's title is its name, and there is one live note per title, so a note is addressed by its
+  title like any other named entity. There is no body-fragment matching; N9 is superseded. What a
+  note blocks is named by plan or unit name and resolved here.
 
 **Identity only where a name fails.** When a merge leaves one name on two live entities, the
 interface shows each entity's identity beside the name and accepts that identity as input. This is
-the one place an identity surfaces, and nothing else is invented to stand for it. Converged heads,
-which carry the same payload, read as one head and are neither divergence nor a reason to show
-anything.
+the one place an identity surfaces, and nothing else is invented to stand for it. The same holds
+for a note title after a merge. Converged heads, which carry the same payload, read as one head and
+are neither divergence nor a reason to show anything. The interface reads divergence from the
+store's `Fold.diverged` and never counts heads itself.
 
 **Every write keeps its domain's laws on the current branch.** A write that would break one is
 refused, so incoherence, like divergence, arises only from merges. An ordinary write on a diverged
@@ -85,7 +88,7 @@ invented, so no test spells the `plan` skill's vocabulary.
 
 ## Static
 
-- `git show b3b5a64c:docs/design/record-store.md` § The record model (`incoherence`,
+- `git show 9e3e1a6f:docs/design/record-store.md` § The record model (`incoherence`,
   `reconciliation`), § The three domains, § How they are met, § Intent ("Agents and users meet only
   the three domains, never the records"), § Boundaries.
 - `packages/runtime/src/{main,loader,plugin,index}.ts`, `packages/runtime/src/ports/event-tap.ts`
@@ -143,6 +146,8 @@ invented, so no test spells the `plan` skill's vocabulary.
      second plan: the first returns to proposed. `close` keeps a plan readable.
    - A second live plan with an existing name, and a second live unit with an existing name in the
      same plan, each refuse. The same unit name in another plan is accepted.
+   - `plan revise` renames a plan and changes its concepts, and the state it prints is unchanged. A
+     revision that sets the state refuses, as does renaming onto another live plan's name.
    - Two branches binding different plans, merged: the incoherence is listed, and binding the one to
      keep resolves it.
    - `plan add` pins, and refuses when the concept's closure is diverged or withdrawn. `plan show`
@@ -162,8 +167,10 @@ invented, so no test spells the `plan` skill's vocabulary.
      frontier.
    - A diverged note blocks what either head blocks: `note revise` refuses naming `reconcile`, and
      `note reconcile` settles it.
-   - `note show` groups by kind label, then topic. Two notes sharing a topic and kind are told apart
-     by a body fragment. A reference that stays ambiguous refuses and lists the candidates.
+   - `note show` groups by kind label, then topic, and a note is shown and addressed by its title.
+     Capturing, or revising to, the title of another live note refuses. Two branches each capturing
+     one title, merged, list an incoherence; `note show` prints each identity beside the shared
+     title, and `note retract` given one identity resolves it.
 
    **everywhere**
    - Every capability that needs lifecycle configuration refuses when it is absent.

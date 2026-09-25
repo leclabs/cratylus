@@ -4,13 +4,13 @@
 > read time, met only through the three domains.
 
 **Piece.** The whole lattice of `docs/design/record-store.md` — one piece (the design's § Cut).
-**Pin.** `b3b5a64c` (the commit carrying the revision; re-pinned from `0c9da09c`, and before that
-from `4610c33f`, `c501e002` and `9cc32431`). **Digest.** blob
-`f371f7c0dca5e495d0929234bab9b6bba745e582` = `git rev-parse b3b5a64c:docs/design/record-store.md` =
-`git hash-object docs/design/record-store.md` at re-planning, so `pin = digest`. Every pending unit
-reads the design as `git show b3b5a64c:docs/design/record-store.md`, never the working file, because
-`design-migration` deletes it. The active W1 specs still cite `0c9da09c` in their Static; the
-design-holder is redispatching them with `b3b5a64c`.
+**Pin.** `9e3e1a6f` (the commit carrying the revision; re-pinned from `b3b5a64c`, and before that
+from `0c9da09c`, `4610c33f`, `c501e002` and `9cc32431`). **Digest.** blob
+`e2e4c4483612d3a06669b3619da802958977bb8e` = `git rev-parse 9e3e1a6f:docs/design/record-store.md`
+= `git hash-object docs/design/record-store.md` at re-planning, so `pin = digest`. Every pending unit
+reads the design as `git show 9e3e1a6f:docs/design/record-store.md`, never the working file, because
+`design-migration` deletes it. Active specs are carried to the new pin by the design-holder's
+redispatch.
 
 **Bootstrap.** This plan is written in the layout it deletes. It is one of "the existing plans under
 `plans/`" the design removes rather than migrates, so `plan-cutover` deletes it with the rest; the
@@ -18,13 +18,13 @@ last unit is accepted on its commit, since no plan record for this plan will exi
 
 ## Where this stands
 
-Re-pinned 2026-09-25 at `b3b5a64c` (see § Decided in C at `b3b5a64c`). No wave, dep or unit moved.
+Re-pinned 2026-09-25 at `9e3e1a6f` (see § Decided in C at `9e3e1a6f`). No wave, dep or unit moved.
 
-- **Pending specs.** The delta rewrote the relevant parts of `domain-interface`, `note-skill` and
-  `trio-skill-routing`. `design-migration` and `plan-cutover` were only re-pinned.
-- **Active specs.** They were left to the design-holder's redispatch: `record-store` is reopened
-  (moved back to active), and the W1 units are active.
-- **State.** The plan is bound (`.bound`), `scaffold-cutover` is completed, and no ruling is owed.
+- **Pending specs.** The delta touched `domain-interface`, `note-skill` and `trio-skill-routing`.
+  `design-migration` and `plan-cutover` were only re-pinned.
+- **State.** The plan is bound (`.bound`). Completed: `scaffold-cutover`, `immutability-gate`,
+  `lifecycle-configuration`. Active: `record-store`, `design-domain`, `notebook` (reopened for titles
+  and converged heads), `plan-domain`, `unit`, `pin`, `view`. No ruling is owed.
 
 ## Units
 
@@ -32,14 +32,14 @@ Re-pinned 2026-09-25 at `b3b5a64c` (see § Decided in C at `b3b5a64c`). No wave,
 | ---- | --------- | ------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | 0    | active    | `record-store`            | `record store`      | `runtime/src/record-store/**`; memory's `ulid.ts` moved to `runtime/src/ulid.ts` (subpath `./ulid`) and every importer; tests; registry; biome ignore                         | —                                                                                            |
 | 0    | completed | `scaffold-cutover`        | `plan`              | forge `deploy/{project-template,init}.ts` + 2 tests; canon `tooling/{project-template,scaffold-cli}.ts` + 1 test                                                              | —                                                                                            |
-| 1    | active    | `lifecycle-configuration` | `plan`              | schema `Skill.runtime` shape; forge `deploy/runtime-config.ts`, `cli/commands/{deploy,install}.ts`, `project/{index,resolve-skills}.ts`; runtime `runtime-config.ts`; 2 tests | `scaffold-cutover` (contention)                                                              |
+| 1    | completed | `lifecycle-configuration` | `plan`              | schema `Skill.runtime` shape; forge `deploy/runtime-config.ts`, `cli/commands/{deploy,install}.ts`, `project/{index,resolve-skills}.ts`; runtime `runtime-config.ts`; 2 tests | `scaffold-cutover` (contention)                                                              |
 | 1    | active    | `design-domain`           | `design`            | `runtime/src/capabilities/design/design.ts`                                                                                                                                   | `record-store`                                                                               |
 | 1    | active    | `notebook`                | `notebook`          | `runtime/src/capabilities/note/notebook.ts`                                                                                                                                   | `record-store`                                                                               |
 | 1    | active    | `plan-domain`             | `plan`              | `runtime/src/capabilities/plan/plan.ts`                                                                                                                                       | `record-store`                                                                               |
 | 1    | active    | `unit`                    | `unit`              | `runtime/src/capabilities/plan/unit.ts`                                                                                                                                       | `record-store`                                                                               |
 | 1    | active    | `pin`                     | `pin`               | `runtime/src/capabilities/plan/pin.ts`                                                                                                                                        | `record-store`                                                                               |
 | 1    | active    | `view`                    | `view`              | `runtime/src/view/**`                                                                                                                                                         | `record-store`                                                                               |
-| 1    | active    | `immutability-gate`       | `immutability gate` | `record-store/immutability-gate.ts` + test; runtime `package.json`; lockfile; husky `pre-commit`; `gates.yml`; registry                                                       | `record-store`                                                                               |
+| 1    | completed | `immutability-gate`       | `immutability gate` | `record-store/immutability-gate.ts` + test; runtime `package.json`; lockfile; husky `pre-commit`; `gates.yml`; registry                                                       | `record-store`                                                                               |
 | 2    | pending   | `domain-interface`        | `domain interface`  | ports + `capabilities/{design,plan,note}` verb surfaces; loader/plugin/main/index; canon `manifest.ts`; 3 tests; registry                                                     | `design-domain`, `notebook`, `plan-domain`, `unit`, `pin`, `view`, `lifecycle-configuration` |
 | 3    | pending   | `note-skill`              | `skill routing`     | `canon/src/skills/note/skill.ts` (new); one test header                                                                                                                       | `domain-interface`                                                                           |
 | 3    | pending   | `trio-skill-routing`      | `skill routing`     | `canon/src/skills/{design,plan,deliver}/skill.ts` (the `plan` skill becomes the lifecycle states' home); 6 canon tests                                                        | `domain-interface`                                                                           |
@@ -80,7 +80,7 @@ check over the four slices finds no swap that lowers it.
 
 ## Lattice coverage
 
-22 anchors at `b3b5a64c` (`git show b3b5a64c:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`).
+22 anchors at `9e3e1a6f` (`git show 9e3e1a6f:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`).
 Ten are some unit's `realizes`. Twelve are **covered, not cited** — built inside `record-store`,
 whose acceptance requires the artifact to spell each — and are surfaced here as the design's law
 requires for a concept no unit cites.
@@ -222,7 +222,22 @@ to the one shared registry (`gate-convicts.test.ts`), serializing them further.
   shows each entity's identity beside the name and accepts it as input. `domain-interface` Accept 1
   now allows the identity pattern there and only there.
 
-## Boundary findings (N1–N6 at `c501e002`, N7 at `4610c33f`, N8 at `0c9da09c`, N9–N10 at `b3b5a64c`; none blocks)
+## Decided in C at `9e3e1a6f`
+
+- **Plans are revisable.** A plan's name and the concepts it realizes can be revised; its state
+  cannot, and moves only through bind and close (`domain-interface`, `trio-skill-routing`).
+- **Note titles.** A note's title is its name, with one live note per title. Notes are addressed by
+  title, and after a merge, by identity beside a shared title. **N9 is superseded**: there is no
+  body-fragment matching (`domain-interface`, `note-skill`).
+- **N10 is confirmed.** The unbuilt-concept law moves from `design` to `deliver`
+  (`trio-skill-routing`, unchanged).
+- **Converged heads** are read through the store's `Fold.diverged`; the interface never counts heads
+  (`domain-interface`).
+- **The immutability gate's gloss** now states per-commit judgement against each parent, and judges
+  a rewriting push by what it leaves. `immutability-gate` is completed; no pending spec restates the
+  gloss.
+
+## Boundary findings (N1–N6 at `c501e002`, N7 at `4610c33f`, N8 at `0c9da09c`, N9–N10 at `b3b5a64c`; N9 superseded and N10 confirmed at `9e3e1a6f`; none blocks)
 
 N1, N2 and N4 are now decided in C at `0c9da09c`. Their planned defaults below are superseded where
 that section says so, and are kept for the record.
@@ -261,12 +276,12 @@ that section says so, and are kept for the record.
   (`domain-interface`, and the W1 domain modules through their redispatch): a write is refused iff
   it introduces a violation the fold did not already hold. Writes to unrelated entities proceed, and
   an ordinary write that removes a standing violation is the reconciliation.
-- **N9 — addressing one note (new at `b3b5a64c`; supersedes N3's default).** Notes carry no name,
+- **N9 — addressing one note (new at `b3b5a64c`; superseded at `9e3e1a6f` by note titles).** Notes carry no name,
   and identity surfaces only where a merge left one name on two entities. Nothing, then, addresses
   one of several live notes that share a topic and a kind label. Planned (`domain-interface`,
   `note-skill`): narrow the reference by a fragment of the note's body; a reference that stays
   ambiguous refuses and lists the candidates. No identity and no invented sign is used.
-- **N10 — the design skill's plan-facing law (new at `b3b5a64c`).** "The design knows nothing of
+- **N10 — the design skill's plan-facing law (new at `b3b5a64c`; confirmed at `9e3e1a6f`).** "The design knows nothing of
   plans", yet the `design` skill borrows `realizes @ plan` and states the unbuilt-concept law
   (`∄ unit realizes c ⇒ SURFACE`). Planned (`trio-skill-routing`): the law moves to `deliver`, which
   reads both domains and already borrows `realizes`. Its meaning is kept; only its home moves.

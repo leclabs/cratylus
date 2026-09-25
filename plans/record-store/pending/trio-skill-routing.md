@@ -45,6 +45,8 @@ which `boundary-binding.test.ts` resolves; split, they would dangle each other's
   The block carries the plan and unit laws at `0c9da09c`:
   - binding a plan returns whichever plan was bound to proposed, so at most one is bound;
   - there is one live plan per name, and one live unit per name within its plan;
+  - a plan is revisable (its name and the concepts it realizes, never its state); its state moves
+    only through bind and close, and `revise` routes to a unit or a plan;
   - a unit realizes exactly the concept its pin names, and its lifecycle moves forward one step at
     a time;
   - a unit's dependencies are acyclic and name live units of the same plan;
@@ -77,7 +79,7 @@ beside this unit leaves it true.
 
 ## Static
 
-- `git show b3b5a64c:docs/design/record-store.md` § The three domains, § How they are met,
+- `git show 9e3e1a6f:docs/design/record-store.md` § The three domains, § How they are met,
   § Boundaries.
 - `packages/canon/src/skills/{design,plan,deliver}/skill.ts`, `packages/canon/src/skills/event-tap/skill.ts`.
 - `packages/canon/test/boundary-binding.test.ts`, `reader-reach.test.ts` (pins on `deliver`'s
