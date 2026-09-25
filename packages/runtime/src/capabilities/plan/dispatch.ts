@@ -169,12 +169,21 @@ export function planHost(from: string = process.cwd()): PlanHost {
     show: (name, plan) =>
       look('plan', from, (read) => {
         const bound = planDomain.holders(read.plans, read.lifecycle.plan);
-        const query = name === undefined ? undefined : parsed(name);
-        if (plan !== undefined)
-          return planView(read.planState([read.resolvePlan(plan)]), query);
+        const asPlan = name === undefined ? undefined : read.findPlan(name);
+        if (plan === undefined && asPlan !== undefined)
+          return planView(read.planState([asPlan]));
+        // `u of plan p`, the form a unit is printed in where no plan is in
+        // view, is the unit `u` looked up in `p`.
+        const qualified =
+          plan === undefined && name !== undefined
+            ? read.qualified(name)
+            : undefined;
+        const unit = qualified?.unit ?? name;
+        const scope = qualified?.plan ?? plan;
+        const query = unit === undefined ? undefined : parsed(unit);
+        if (scope !== undefined)
+          return planView(read.planState([read.resolvePlan(scope)]), query);
         if (query === undefined) return planView(read.planState(bound));
-        const asPlan = read.findPlan(name as string);
-        if (asPlan !== undefined) return planView(read.planState([asPlan]));
         const of = [...read.units.keys()].flatMap((e) => {
           const u = read.unitVersion(e);
           return u && u.spec.name === bare(query) ? [u.plan] : [];

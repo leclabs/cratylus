@@ -206,6 +206,9 @@ interface Unrealized {
 /** What qualifies a unit by its plan where no plan is in view: `u of plan p`. */
 const OF_PLAN = ' of plan ';
 
+/** What marks a withdrawn unit named where no plan is in view. */
+const WITHDRAWN = ' (withdrawn)';
+
 /** Stands for a unit not yet minted while its write is judged. */
 export const UNWRITTEN = '(new)';
 
@@ -387,13 +390,42 @@ export class Reading {
   }
 
   /** What a note blocks, a plan or a unit, as the view names it: a unit
-   *  qualified by its plan, `u of plan p`, the form `resolveBlocked` takes. */
+   *  qualified by its plan, `u of plan p`, the form `resolveBlocked` and
+   *  `plan show` take; a withdrawn one marked `(withdrawn)`, in the form that
+   *  drills to its last version. */
   blocked(ref: string): Name {
     if (this.plans.has(ref)) return this.planName(ref);
     const plan = this.unitVersion(ref)?.plan;
-    return plan === undefined
-      ? this.unitName(ref)
-      : `${printed(this.unitName(ref))}${OF_PLAN}${printed(this.planName(plan))}`;
+    if (plan === undefined) return this.unitName(ref);
+    const qualified = `${OF_PLAN}${printed(this.planName(plan))}`;
+    return this.units.get(ref)?.withdrawn
+      ? `${printed(this.withdrawnUnitName(ref))}${qualified}${WITHDRAWN}`
+      : `${printed(this.unitName(ref))}${qualified}`;
+  }
+
+  /** A withdrawn unit as the view names it: its name, with its identity
+   *  beside it where a unit of its plan carries that name now, so the name
+   *  drills to it alone. */
+  withdrawnUnitName(entity: string): Name {
+    const u = this.unitVersion(entity) as unitDomain.Unit;
+    const holders = this.#unitHolders.get(unitKey(u.plan, u.spec.name)) ?? [];
+    return holders.some((h) => h !== entity)
+      ? { name: u.spec.name, identity: entity }
+      : u.spec.name;
+  }
+
+  /** `input` read as a unit qualified by its plan, `u of plan p` — a trailing
+   *  `(withdrawn)` mark aside — when its plan part names a plan. */
+  qualified(input: string): { unit: string; plan: string } | undefined {
+    const text = input.endsWith(WITHDRAWN)
+      ? input.slice(0, -WITHDRAWN.length)
+      : input;
+    const at = text.indexOf(OF_PLAN);
+    if (at === -1) return undefined;
+    const plan = text.slice(at + OF_PLAN.length);
+    return this.findPlan(plan) === undefined
+      ? undefined
+      : { unit: text.slice(0, at), plan };
   }
 
   /** `message` with every identity it quotes bare spoken by its entity's name,
@@ -452,12 +484,8 @@ export class Reading {
    *  `undefined` when no unit holds it. A name held by units of several plans
    *  refuses, asking for the plan. */
   findUnit(input: string, plan?: string): string | undefined {
-    const at = input.indexOf(OF_PLAN);
-    if (plan === undefined && at !== -1) {
-      const of = input.slice(at + OF_PLAN.length);
-      if (this.findPlan(of) !== undefined)
-        return this.findUnit(input.slice(0, at), of);
-    }
+    const qualified = plan === undefined ? this.qualified(input) : undefined;
+    if (qualified) return this.findUnit(qualified.unit, qualified.plan);
     const name = parsed(input);
     const scope = plan === undefined ? undefined : this.resolvePlan(plan);
     const holders = this.#unitsHolding(name, scope);
@@ -910,12 +938,13 @@ export class Reading {
       withdrawnPlans: [],
       withdrawnUnits: [...this.units.values()]
         .filter((f) => f.withdrawn)
-        .map((f) =>
-          this.shownUnit(
+        .map((f) => ({
+          ...this.shownUnit(
             this.unitVersion(f.entity) as unitDomain.Unit,
             f.entity,
           ),
-        ),
+          name: this.withdrawnUnitName(f.entity),
+        })),
       incoherent: [
         ...planDomain
           .namesakes(this.plans)

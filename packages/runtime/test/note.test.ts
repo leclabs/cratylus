@@ -179,6 +179,32 @@ describe('note — what a note blocks, named so it addresses one', () => {
   });
 });
 
+describe('note — a blocked unit that is withdrawn', () => {
+  it('prints it marked withdrawn, in the form `plan show` drills to its last version by, alone even beside a live namesake', () => {
+    const repo = repository();
+    plans(repo);
+    capture(repo, 'hold', '--blocks', 'a of plan pl');
+    expect(plan(repo, 'show', 'a of plan pl')).toContain('unit: a — u-new\n');
+    plan(repo, 'retract', 'a', ...BY);
+    expect(show(repo)).toContain('blocks a of plan pl (withdrawn)');
+    expect(plan(repo, 'show', 'a of plan pl (withdrawn)')).toContain(
+      'unit: a — u-new, withdrawn',
+    );
+    plan(repo, 'add', 'a', '--plan', 'pl', '--realizes', 'c', ...BY);
+    const [withdrawn] = records(repo, 'unit')
+      .map((f) => stored(repo, 'unit', f).envelope)
+      .filter((e) => e.operation === 'retract')
+      .map((e) => e.entity);
+    const printedForm = `a (identity ${withdrawn}) of plan pl (withdrawn)`;
+    expect(show(repo, ['a'])).toContain(`blocks ${printedForm}`);
+    const drilled = spoken(repo, plan(repo, 'show', printedForm), ['a']);
+    expect(drilled).toContain(
+      `unit: a (identity ${withdrawn}) — u-new, withdrawn`,
+    );
+    expect(drilled).not.toContain('unit: a — u-new, frontier');
+  });
+});
+
 describe('note — the notebook by title', () => {
   it('show groups by kind then topic, addresses a note by title, and REFUSES a second live note under a title', () => {
     const repo = repository();
