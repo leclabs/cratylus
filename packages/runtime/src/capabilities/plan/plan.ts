@@ -4,21 +4,27 @@
 // A plan's payload is its name, the concepts it realizes (concept entities, which
 // the interface names by anchor at its boundary) and its lifecycle state.
 //
-// Propose writes a plan's first version; bind and close are supersessions moving
-// it forward along its lifecycle. Nothing retracts a plan: a closed plan stays in
-// the fold, readable forever — closing replaces retiring by deletion.
+// Propose writes a plan's first version; revise, bind and close are supersessions
+// naming every head. Revise may change its name or the concepts it realizes, never
+// its state; bind and close move it forward along its lifecycle. Nothing retracts
+// a plan: a closed plan stays in the fold, readable forever — closing replaces
+// retiring by deletion.
 //
 // At most one plan is bound: binding a plan returns whichever plan was bound to
 // the lifecycle's first state. A merge of two branches that each bound a
 // different plan still leaves two — an incoherence, reported by `holders` and
 // never resolved by picking one — and binding the one to keep resolves it.
 //
-// One live plan per name: propose and reconcile refuse a name another live plan
-// carries. A merge of two branches that each wrote a plan under one name still
-// leaves two — an incoherence, reported by `namesakes`.
+// One live plan per name: propose, revise and reconcile refuse a name another
+// live plan carries, unless the plan already carries it — a write is refused only
+// when it introduces a violation the fold did not already hold. A merge of two
+// branches that each wrote a plan under one name still leaves two — an
+// incoherence, reported by `namesakes`, and revising one plan's name resolves it.
 //
-// A diverged plan (more than one head) takes no ordinary write: bind and close
-// refuse it and point to `reconcile`, one version superseding every head.
+// A diverged plan (heads carrying more than one payload) takes no ordinary write:
+// revise, bind and close refuse it and point to `reconcile`, one version
+// superseding every head. Heads carrying one payload have converged: the plan is
+// settled, and its next write names every one of them.
 //
 // The lifecycle's states are meaning, and their one home is the `plan` skill.
 // This module spells none of them: it receives the vocabulary as a parameter
@@ -122,14 +128,19 @@ export function namesakes(
 }
 
 /** Why a version of `entity` (none yet, for a proposal) may not carry `name`,
- *  or `undefined` when it may: one live plan per name. */
+ *  or `undefined` when it may: one live plan per name, refused only when the
+ *  version introduces the violation — a plan already carrying `name` keeps it. */
 function nameRefusal(
   folds: ReadonlyMap<string, Fold<Plan>>,
   name: string,
   entity?: string,
 ): string | undefined {
+  const carries = (f: Fold<Plan>): boolean =>
+    f.heads.some((h) => h.payload?.name === name);
+  const own = entity === undefined ? undefined : folds.get(entity);
+  if (own && carries(own)) return undefined;
   const taken = [...folds.values()].some(
-    (f) => f.entity !== entity && f.heads.some((h) => h.payload?.name === name),
+    (f) => f.entity !== entity && carries(f),
   );
   return taken ? `another live plan is named ${name}` : undefined;
 }
@@ -142,8 +153,8 @@ function unsettled(
 ): string | undefined {
   const f = folds.get(entity);
   if (!f) return `${entity} is no plan`;
-  if (f.heads.length > 1)
-    return `plan ${named(folds, entity)} has diverged (${f.heads.length} heads); reconcile it first`;
+  if (f.diverged)
+    return `plan ${named(folds, entity)} has diverged; reconcile it first`;
   if (!f.payload) return `plan ${entity} is withdrawn`;
   return undefined;
 }
@@ -172,26 +183,26 @@ export function bindRefusal(
     return `plan ${name} is already ${exclusive}`;
   if (owed.has(entity)) return `an owed ruling names plan ${name}`;
   for (const other of others)
-    if ((folds.get(other) as Fold<Plan>).heads.length > 1)
+    if ((folds.get(other) as Fold<Plan>).diverged)
       return `binding ${name} returns plan ${named(folds, other)} to ${lifecycle.states[0]}, and it has diverged; reconcile it first`;
   return undefined;
 }
 
-/** Write a supersession of the one head of `entity`, moving it to `to`. */
-function move(
+/** Write a version of settled `entity` over every head (converged heads carry
+ *  one payload, and a write names them all): its payload with `changes`. */
+function supersede(
   store: RecordStore,
   folds: ReadonlyMap<string, Fold<Plan>>,
   entity: string,
-  to: string,
+  changes: Partial<Plan>,
   by: By,
 ): Record<Plan> {
   const f = folds.get(entity) as Fold<Plan>;
-  const [head] = f.heads as [Record<Plan>];
   return store.supersede<Plan>(
     DOMAIN,
     entity,
-    [head.envelope.id],
-    { ...(f.payload as Plan), state: to },
+    f.heads.map((h) => h.envelope.id),
+    { ...(f.payload as Plan), ...changes },
     by,
   );
 }
@@ -219,6 +230,31 @@ export function propose(
 }
 
 /**
+ * Revise the plan `entity`: a version over its heads carrying `plan`'s name
+ * and concepts, its state unchanged — only bind and close move that. Refuses a
+ * plan not settled and live, and a name another live plan carries that the plan
+ * does not already carry.
+ */
+export function revise(
+  store: RecordStore,
+  entity: string,
+  plan: Omit<Plan, 'state'>,
+  by: By,
+): Record<Plan> {
+  const folds = plans(store);
+  const refusal =
+    unsettled(folds, entity) ?? nameRefusal(folds, plan.name, entity);
+  if (refusal) throw new Error(`plan: revise refused — ${refusal}`);
+  return supersede(
+    store,
+    folds,
+    entity,
+    { name: plan.name, realizes: [...plan.realizes] },
+    by,
+  );
+}
+
+/**
  * Bind the plan `entity`, refusing with `bindRefusal`'s reason: return every
  * other plan holding the exclusive state to the first state, then move `entity`
  * to it unless it already holds it. The records written, in order.
@@ -236,10 +272,12 @@ export function bind(
   const written = holders(folds, lifecycle)
     .filter((other) => other !== entity)
     .map((other) =>
-      move(store, folds, other, lifecycle.states[0] as string, by),
+      supersede(store, folds, other, { state: lifecycle.states[0] }, by),
     );
   if (folds.get(entity)?.payload?.state !== lifecycle.exclusive)
-    written.push(move(store, folds, entity, lifecycle.exclusive, by));
+    written.push(
+      supersede(store, folds, entity, { state: lifecycle.exclusive }, by),
+    );
   return written;
 }
 
@@ -259,15 +297,15 @@ export function close(
     throw new Error(
       `plan: close refused — plan ${name} is ${state}, and ${lifecycle.final} is no move forward from it`,
     );
-  return move(store, folds, entity, lifecycle.final, by);
+  return supersede(store, folds, entity, { state: lifecycle.final }, by);
 }
 
 /**
  * Reconcile the diverged plan `entity`: one whole-state version `plan`
  * superseding every head; a plan that has not diverged refuses, and so does a
- * name another live plan carries. A `plan` in the exclusive state keeps the
- * binding law: it refuses while another plan holds that state (bind resolves
- * that) or an owed ruling names the plan.
+ * name another live plan carries that no head of this one does. A `plan` in
+ * the exclusive state keeps the binding law: it refuses while another plan
+ * holds that state (bind resolves that) or an owed ruling names the plan.
  */
 export function reconcile(
   store: RecordStore,
@@ -281,7 +319,7 @@ export function reconcile(
   const refuse = (why: string): never => {
     throw new Error(`plan: reconcile refused — ${why}`);
   };
-  if ((folds.get(entity)?.heads.length ?? 0) < 2)
+  if (!folds.get(entity)?.diverged)
     refuse(
       `plan ${named(folds, entity)} has not diverged, and only divergence is reconciled`,
     );
