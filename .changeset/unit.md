@@ -13,9 +13,11 @@ unit. An ordinary write on a diverged unit refuses and points to reconcile; a un
 converged on one payload reads settled, and a write names every head.
 
 The unit laws: one live unit per name within its plan, dependencies acyclic and naming live units
-of the same plan, and a plan that is not withdrawn. A write is refused when it would introduce a
-violation the fold did not already hold, so incoherence, like divergence, arises only from merges,
-and the owner keeps working while one stands. Incoherence is reported: a dep on a withdrawn unit, a
+of the same plan, and a plan that is not withdrawn. A write is refused only when it would introduce
+a violation, one whose units no standing violation of the same law already binds together, so
+incoherence, like divergence, arises only from merges, the owner keeps working while one stands,
+and a write that shrinks it (fewer namesakes, a shorter cycle) is allowed, so every incoherence is
+repaired one write at a time. Incoherence is reported: a dep on a withdrawn unit, a
 unit of a withdrawn plan, a dep cycle, one name on two live units of a plan. A withdrawn concept is
 not incoherence; it drifts the pins naming it.
 

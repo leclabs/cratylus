@@ -12,10 +12,11 @@
 //
 // The unit laws: one live unit per name within its plan; dependencies acyclic,
 // naming live units of the same plan; a plan that is not withdrawn. A write is
-// refused iff it would introduce a violation the fold did not already hold, so
-// incoherence, like divergence, arises only from merges, the owner keeps
-// working while one stands, and an ordinary write removing it is its
-// reconciliation. `incoherence` reports what a merge left.
+// refused iff it would introduce a violation — one whose entities no standing
+// violation of the same law already binds together — so incoherence, like
+// divergence, arises only from merges, the owner keeps working while one
+// stands, and ordinary writes shrinking it, one at a time, reconcile it.
+// `incoherence` reports what a merge left.
 //
 // Readiness is computed, never stored: `ready`, `frontier` and `waves` are pure
 // functions over the fold, and no record carries what they compute.
@@ -193,10 +194,20 @@ function describe(v: Violation): string {
   }
 }
 
+/** The entities a violation binds together. */
+function bound(v: Violation): readonly string[] {
+  return v.kind === 'cycle' || v.kind === 'name'
+    ? v.entities
+    : [v.entity, v.reference];
+}
+
 /**
- * Refuse a record of `entity` (`UNWRITTEN` for a unit not yet minted) that
- * would introduce a violation of a unit law the fold of `records` did not
- * already hold. A violation standing before the write stays allowed.
+ * The repair rule: refuse a record of `entity` (`UNWRITTEN` for a unit not
+ * yet minted) that would introduce a violation of a unit law — one whose
+ * entities no standing violation of the same law already binds together. A
+ * write that leaves a violation standing or shrinks it (fewer namesakes, a
+ * shorter cycle, an edge removed) is allowed, so every incoherence can be
+ * repaired one write at a time.
  */
 function keepLaws(
   records: readonly Record<Unit>[],
@@ -207,9 +218,10 @@ function keepLaws(
   planWithdrawn: PlanWithdrawn,
   refuse: (why: string) => never,
 ): void {
-  const held = new Set(
-    violations(fold(records), planWithdrawn).map((v) => JSON.stringify(v)),
-  );
+  const standing = violations(fold(records), planWithdrawn).map((v) => ({
+    kind: v.kind,
+    entities: new Set(bound(v)),
+  }));
   const pending: Record<Unit> = {
     envelope: {
       id: UNWRITTEN,
@@ -226,7 +238,12 @@ function keepLaws(
   const introduced = violations(
     fold([...records, pending]),
     planWithdrawn,
-  ).find((v) => !held.has(JSON.stringify(v)));
+  ).find(
+    (v) =>
+      !standing.some(
+        (s) => s.kind === v.kind && bound(v).every((x) => s.entities.has(x)),
+      ),
+  );
   if (introduced)
     refuse(describe(introduced).replaceAll(UNWRITTEN, 'the new unit'));
 }
