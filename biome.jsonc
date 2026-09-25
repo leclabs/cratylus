@@ -18,7 +18,11 @@
       "**/*.generated.ts",
       "**/generated.ts",
       // emit_ir.py output (a generated IR artifact, not hand-authored source)
-      "**/ir-bridge/canon.forge.json"
+      "**/ir-bridge/canon.forge.json",
+      // the record store's records root (`RECORDS_ROOT`, runtime
+      // `record-store/store.ts`): machine-written, immutable bytes a formatter must
+      // never own
+      "records/**"
     ]
   },
   "formatter": { "enabled": true, "indentStyle": "space", "indentWidth": 2 },

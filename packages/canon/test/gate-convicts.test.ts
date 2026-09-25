@@ -308,7 +308,6 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'memory/store-ceiling.test.ts': 'GATE',
   'memory/store.test.ts': 'BEHAVIORAL',
   'memory/strategy.test.ts': 'BEHAVIORAL',
-  'memory/ulid.test.ts': 'BEHAVIORAL',
   'memory/verb-roster.test.ts': 'GATE',
 
   // ── runtime ──────────────────────────────────────────────────────────
@@ -323,7 +322,11 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'runtime/kernel.test.ts': 'BEHAVIORAL',
   // the "unregistered" leg scans loader/plugin/package/tsup for the placeholder.
   'runtime/provisional-mailbox.test.ts': 'BEHAVIORAL',
+  // writes, folds and merges records in temp repositories it builds itself; its
+  // refusals (an existing record id, another entity's version) ARE its fixtures.
+  'runtime/record-store.test.ts': 'BEHAVIORAL',
   'runtime/runtime-config.test.ts': 'BEHAVIORAL',
+  'runtime/ulid.test.ts': 'BEHAVIORAL',
 
   // ── schema ───────────────────────────────────────────────────────────
   // drives `enforcing`/`bodyOf`/`withBody`/`isDimensionValue` with values it
