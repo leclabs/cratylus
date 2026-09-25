@@ -49,7 +49,7 @@ removed, not migrated." Every caller is migrated; nothing is captured as notes.
 
 ## Static
 
-- `git show 9e3e1a6f:docs/design/record-store.md` § Boundaries.
+- `git show 96aa7ca3:docs/design/record-store.md` § Boundaries.
 - `PLAN.md` § Census — the measured reference sets and their commands; re-run them at dispatch.
 - `.github/workflows/gates.yml`, `turbo.json`, `.husky/pre-commit`, `.prettierignore`.
 - `packages/canon/test/{command-veracity,gate-convicts,reader-reach}.test.ts`,

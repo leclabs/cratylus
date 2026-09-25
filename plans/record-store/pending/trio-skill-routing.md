@@ -34,8 +34,8 @@ which `boundary-binding.test.ts` resolves; split, they would dangle each other's
   leaves `design`; `cut`, `closure`, `blast`, `anchor`, `gloss`, `factors` and `denotes` stay. Every
   borrower of a removed sign is migrated (at `4610c33f` none outside the cell:
   `git grep -nE "supersededBy|Phase" -- packages/canon/src ':!packages/canon/src/skills/design'`).
-- **`plan`** — `runtime: { capability: 'plan', … }`; intents reach show, add, revise, advance, bind,
-  close and reconcile through `scripts/plan.mjs <verb>`. It holds reconciliation of plans and units
+- **`plan`** — `runtime: { capability: 'plan', … }`; intents reach show, add, advance, retract, revise,
+  bind, close and reconcile through `scripts/plan.mjs <verb>`. It holds reconciliation of plans and units
   as the architect's alone. **It is the one home of the plan and unit lifecycle states**
   (§ Boundaries). The states are declared once in this module and carried on the `Skill`'s runtime
   face as the capability's configuration, in the shape `lifecycle-configuration` added. They are
@@ -45,8 +45,11 @@ which `boundary-binding.test.ts` resolves; split, they would dangle each other's
   The block carries the plan and unit laws at `0c9da09c`:
   - binding a plan returns whichever plan was bound to proposed, so at most one is bound;
   - there is one live plan per name, and one live unit per name within its plan;
-  - a plan is revisable (its name and the concepts it realizes, never its state); its state moves
-    only through bind and close, and `revise` routes to a unit or a plan;
+  - a plan realizes a set of concepts; closed is final, and a closed plan keeps its name and is
+    never revised;
+  - a plan that is not closed is revisable (its name and its set of concepts, never its state); its
+    state moves only through bind and close, and `revise` routes to a unit or a plan;
+  - a unit can be retracted (`plan retract`), unless another live unit depends on it;
   - a unit realizes exactly the concept its pin names, and its lifecycle moves forward one step at
     a time;
   - a unit's dependencies are acyclic and name live units of the same plan;
@@ -79,7 +82,7 @@ beside this unit leaves it true.
 
 ## Static
 
-- `git show 9e3e1a6f:docs/design/record-store.md` § The three domains, § How they are met,
+- `git show 96aa7ca3:docs/design/record-store.md` § The three domains, § How they are met,
   § Boundaries.
 - `packages/canon/src/skills/{design,plan,deliver}/skill.ts`, `packages/canon/src/skills/event-tap/skill.ts`.
 - `packages/canon/test/boundary-binding.test.ts`, `reader-reach.test.ts` (pins on `deliver`'s
