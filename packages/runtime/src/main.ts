@@ -59,10 +59,22 @@ export interface RunCliOpts {
   readonly plugins?: readonly RuntimePlugin[];
 }
 
+/**
+ * A reader that closes stdout early — `cratylus design show | head -1` — has
+ * taken all it wants, which is not a failure: the process ends quietly with the
+ * exit code it already holds. Any other stdout error stays loud.
+ */
+function endOnClosedStdout(error: NodeJS.ErrnoException): void {
+  if (error.code !== 'EPIPE') throw error;
+  process.exit();
+}
+
 export async function runCli(
   argv: readonly string[],
   opts: RunCliOpts = {},
 ): Promise<void> {
+  if (!process.stdout.listeners('error').includes(endOnClosedStdout))
+    process.stdout.on('error', endOnClosedStdout);
   const cli = cac(CLI_BIN);
   cli.command(
     '[capability] [verb]',
