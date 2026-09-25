@@ -44,21 +44,43 @@ descend into the substrate on every wave, and by wave three the design-holder is
 a lattice it no longer has the context to hold. The operator's instinct is correct: the acceptance
 step needs a delegate. What is _not_ correct is delegating the acceptance.
 
-## 3. The cut that resolves D2
+## 3. The cut that resolves D2 — the adjoint of `plan`
 
-`validate(unit) ⇔ spells ∧ covers ∧ sole` (`skills/deliver/skill.ts:59-61`) is two operations wearing
-one name:
+`plan` translates **downward**: it takes a cut piece of `C` and emits execution specs, so each unit
+carries `realizes : unit ⇀ anchor` — the concept it exists to make real. The witness performs the
+**reverse translation**: it reads what landed and lifts it back into `C`, answering one question per
+concept — was this concept achieved by the artifact that claims it. `plan` is `C → specs`; the witness
+is `artifacts → C`. That adjointness is the whole design, and it is what keeps the boundary clean: the
+substrate enters the loop at `plan` and leaves it at the witness, and the principal touches neither end.
 
-- **evidence** — reading the landed artifact and answering the three questions against citations.
+So `validate(unit) ⇔ spells ∧ covers ∧ sole` (`skills/deliver/skill.ts:59-61`) is two operations
+wearing one name:
+
+- **lift** — reading the landed artifact and re-deriving which concepts it actually realizes.
   Mechanical, substrate-bound, high-token, and **delegable**.
-- **judgment** — deciding whether the answers mean the design was met, whether an extra behaviour is
-  a smuggled concept or a `yield` that must `amend(C)`, and whether the unit advances. Design-bound
-  and **not delegable**, exactly as `validate ⊨ self` says.
+- **judgment** — deciding what an unachieved concept means: rejection back to the executor, an
+  `amend(C)` because execution established a `yield`, or a design that was wrong. Design-bound and
+  **not delegable**, exactly as `validate ⊨ self` says.
 
-So a third witness joins `verify ⊥ validate`. It returns **evidence, never a verdict**. The law
-`validate ⊨ artifact ⟨NEVER r⟩` survives only if the witness's return _is_ artifact — verbatim excerpts
-with `path:line`, not prose about them. A witness that summarizes has reintroduced `r` under a new
-name and defeats the whole cell.
+**What crosses the boundary upward is concept-typed, never prose about mechanism.** The witness does
+not report that a function is misnamed, that a test is thin, or that a module should be split. It
+reports: this concept is unachieved, and which part of its own factorization is uncovered. The
+principal receives a set of concepts and redispatches the executor with the conceptual flaw — a loop
+`deliver` already declares (`skill.ts:68-71`: a rejected return goes back to `executor(unit)` and the
+unit stays active). What is new is the _content_ of the rejection: concepts, not review comments.
+
+This supersedes an earlier framing in which the witness returned `path:line` citations. Citations are
+substrate, and handing the principal substrate is the defect D2 names, merely in smaller pieces. The
+witness may cite a **locus** so a redispatch has an address, but a locus is _routed_, never _read_: the
+principal forwards it to the executor without interpreting it.
+
+**Why this does not violate `validate ⊨ artifact ⟨NEVER r⟩`.** That law forbids accepting on a claim
+by the party that built the thing — one description, a closed loop, `skill.ts:6-12`. Here there are
+still two descriptions and two witnesses. The executor holds the spec and asserts `verify`. The witness
+holds `C` and the artifact, does not hold the spec, and has no stake in the unit passing; the artifact
+read that the law demands happens _at the witness_, which is the only place in the loop where reading
+substrate is not a descent. The claim reaching the principal is expressed in `C`'s own vocabulary,
+which is the one language the principal can check without descending.
 
 ## 4. Decided calls — implement these, do not relitigate
 
@@ -76,7 +98,9 @@ name and defeats the whole cell.
    `gates` in the stance manifest is keyed by owning cell precisely so a second guarded dimension is a
    second entry. Appending to the 27 kB stance rubric would force every autonomy judgment to carry role
    text it must ignore.
-5. **The acceptance witness is an agent cell composing `review`, and it emits citations only.**
+5. **The witness is an agent cell composing `review`, and its return is concept-typed.** It performs
+   the reverse translation of `plan`, reports unachieved concepts in `C`'s vocabulary, and never
+   returns mechanical prose or a verdict.
 
 ## 5. Units
 
@@ -91,7 +115,7 @@ that must appear):
 ```
 architect ≜ conceptual-rung ⟨holds C · ¬ substrate⟩
   reserves ⟨author(C) · cut(C) · judge ⟨validate-as-decision⟩ · amend(C)⟩
-  delegates ⟨decompose ↦ planner@plan · build ↦ implementer · acceptance-evidence ↦ witness@review⟩
+  delegates ⟨decompose ↦ planner@plan · build ↦ implementer · lift ↦ witness@review⟩
   descent ≜ performing a delegated act itself ⟨defect · ¬ diligence⟩
 ```
 
@@ -101,16 +125,20 @@ descent clause; `pnpm typecheck` and the corpus `accept()` gate pass; the projec
 
 ### U2 · `role/review` gains its definiens
 
-`review` is composed by nothing today, so it is free to carry the witness's contract:
+`review` is composed by nothing today, so it is free to carry the witness's contract. It is the
+**adjoint of `plan`** and must be signified as such:
 
 ```
-review ≜ artifact-witness ⟨reads what LANDED⟩
-  emits ⟨citation ⟨path:line · VERBATIM⟩⟩ · ¬ verdict ⟨accept ∉ remit⟩
-  answers ⟨spells · covers · sole⟩ @ deliver
-  summary ⇒ defect ⟨a claim substituted for evidence⟩
+review ≜ lift ⟨artifact → C · the REVERSE of plan : C → spec⟩
+  reads ⟨what LANDED⟩ ∧ holds ⟨C · realizes(unit)⟩ ∧ ∌ spec
+  answers ⟨spells · covers · sole⟩ @ deliver ↦ achieved : c → 𝔹
+  emits ⟨c ∈ C · ¬achieved · uncovered-factor ⟨∈ factors(c)⟩ · locus ⟨address · ¬ excerpt⟩⟩
+  ¬ emits ⟨verdict ⟨accept ∉ remit⟩ · mechanism-prose ⟨naming · structure · test-quality⟩⟩
+  mechanism-prose ⇒ defect ⟨the principal's elevation is the thing being protected⟩
 ```
 
-**Acceptance.** As U1, plus: no existing agent's projection changes (nothing composes `review` yet).
+**Acceptance.** As U1, plus: the value names both the lift and the two prohibitions; no existing
+agent's projection changes (nothing composes `review` yet).
 
 ### U3 · Capability correction
 
@@ -120,28 +148,35 @@ the import and the now-false comment fragment "the decomposition that hands work
 **Acceptance.** Neither projected Target lists planning-decomposition; `pnpm typecheck` clean; no
 unused import.
 
-### U4 · `deliver` names the witness
+### U4 · `deliver` names the witness and the lift
 
 Amend the `deliver` formal block (`skills/deliver/skill.ts:23-95`). `validate ⊨ self` and
 `validate ⊨ artifact ⟨NEVER r⟩` **stay verbatim** — they are the laws this unit protects. Add the
-witness and its constraint, e.g.:
+witness, the lift, and the typed return:
 
 ```
-witness : unit ⇀ agent ⟨role = review⟩
-evidence : unit × witness → ℘(citation) ⟨path:line · VERBATIM excerpt⟩
-evidence ⊨ artifact ⟨a citation IS artifact ∴ ¬ r · a witness that SUMMARIZES has returned r
-    under a new name ⇒ REFUSE⟩
-validate(unit) reads evidence(unit, witness) ∨ artifact(unit) directly
-    ⟨the READ is delegable · the VERDICT is ¬ delegable ∵ it is keyed to C, which the witness ∌⟩
+witness : unit ⇀ agent ⟨role = review · ∌ spec(unit)⟩
+lift : artifact → ℘(C) ⟨what the artifact ACTUALLY realizes · the reverse of plan⟩
+achieved(c, unit) ⇔ c ∈ lift(artifact(unit)) ∧ spells ∧ covers ∧ sole
+unachieved(unit) ≜ { ⟨c, uncovered-factor(c), locus⟩ | c ∈ realizes(unit) ∧ ¬achieved(c, unit) }
+unachieved ⊨ C-typed ⟨the return crosses the boundary in C's vocabulary · mechanism-prose ⇒ REFUSE
+    ∵ it descends the principal it was dispatched to protect⟩
+lift ⊨ artifact ⟨the witness reads FILES · the ONE site in the loop where substrate-reading ¬ descent⟩
+witness ⊥ executor ⟨two witnesses, two descriptions : executor holds spec ∧ ∌ C · witness holds C ∧ ∌ spec⟩
+validate(unit) ≜ unachieved(unit) = ∅ ⟨the principal JUDGES the lift, ¬ re-reads the artifact⟩
+    ⟨the READ is delegable · the VERDICT is ¬ delegable ∵ keyed to C, which the witness reports IN ∧
+     the principal alone may amend⟩
+¬validate(unit) ⇒ redispatch(executor(unit), unachieved(unit)) ⟨the flaw handed down is CONCEPTUAL ·
+    locus is ROUTED, ¬ read⟩
 ```
 
-and extend the closing line `deliver ≜ bind → dispatch(wave) → verify → validate → judge → …` so the
-witness step appears in the sequence.
+and extend the closing line `deliver ≜ bind → dispatch(wave) → verify → validate → judge → …` so lift
+and the witness appear in the sequence.
 
 **Acceptance.** The block still parses as `SkillExpression`; `validate ⊨ self` and `NEVER r` are
-byte-identical to their current text; the projected `deliver` SKILL.md contains the witness terms; the
-header comment block (`skill.ts:6-21`) is extended to explain the read/verdict split rather than left
-stating the old two-witness story.
+byte-identical to their current text; the projected `deliver` SKILL.md contains the lift terms and the
+redispatch law; the header comment block (`skill.ts:6-21`) is extended to explain the read/verdict
+split and why a third witness does not reopen the trust defect it closes.
 
 ### U5 · The witness agent cell
 
@@ -152,13 +187,14 @@ collide. Vector constraints that are decided:
 - `role: review` (U2).
 - `capabilities`: substrate reading is its whole job, so `software-engineering` is **present** here —
   this is the agent that descends, so the principal does not.
-- `objective` / `self-evaluation`: its output is citations; anything that rewards it for a conclusion
-  is wrong.
+- `objective` / `self-evaluation`: its output is a concept-typed report; anything rewarding it for a
+  verdict, a recommendation, or a code-review narrative is wrong.
 - `autonomy`: **not** `principal-self`. It is dispatched, it answers, it returns.
 - `guardrails`: `honesty` (required dimension).
-- `skills`: `[]` — it reads files; it holds no lattice and runs no loop.
-- `description`: must state that it returns evidence and never an accept/reject verdict, so a
-  dispatching agent cannot mistake it for a judge.
+- `skills`: `['design']` — it must read the lattice to lift into it, and it runs no loop of its own.
+  It does **not** carry `deliver`: judging is not its remit.
+- `description`: must state that it returns unachieved **concepts**, never a verdict and never prose
+  about mechanism, so a dispatching agent cannot mistake it for a code reviewer.
 
 **Acceptance.** `pnpm project` emits the agent for every harness; the projected description contains
 the no-verdict clause; the agent appears in no gate's enrollment it should not.
@@ -191,8 +227,9 @@ deployed artifact.
 ## 6. Do not
 
 - Do **not** mint a `delegation` or `elevation` dimension. The concept's home is `role`.
-- Do **not** let the witness emit accept/reject. It kills `validate ⊨ self` and the cell loses the
-  second description that makes verification an operation at all (`skill.ts:9-12`).
+- Do **not** let the witness emit accept/reject, or prose about naming, structure or test quality.
+  Either one re-descends the principal and defeats the cell's purpose (`skill.ts:9-12`).
+- Do **not** let the witness hold the executor's spec. Two descriptions is the whole mechanism.
 - Do **not** bind the elevation gate to `turn.end`. It cannot see the act.
 - Do **not** append to `stance-judge-prompt.md`.
 - Do **not** try to enforce elevation by deleting capabilities alone. U3 is necessary and is not
