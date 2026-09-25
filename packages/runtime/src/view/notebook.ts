@@ -1,80 +1,80 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// THE NOTEBOOK VIEW — the notes grouped by kind, then by topic, behind the owed
-// rulings that must be resolved first.
+// THE NOTEBOOK VIEW — the notes grouped by kind, then by topic, one line per
+// note led by its title, behind the owed rulings that must be resolved first.
 //
-// Kinds are the `note` skill's; they arrive as display text, are never
-// interpreted, and group in the order they first appear, as do topics within a
-// kind. Which notes are owed rulings arrives computed: this module does not
-// recognise them.
+// A note's title is its name. Kinds are the `note` skill's; they arrive as
+// display text, are never interpreted, and group in the order they first
+// appear, as do topics within a kind. Which notes are owed rulings arrives
+// computed: this module does not recognise them.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
   type Diverged,
   type Incoherence,
+  type Name,
   count,
+  denotes,
   divergedLines,
+  drilled,
   field,
   header,
   incoherenceLine,
   inline,
   list,
+  named,
   resolveFirst,
 } from './layers.js';
 
-/** A note's state as its reader sees it. */
+/** A note's whole state as its reader sees it. */
 export interface Note {
+  readonly title: Name;
   readonly kind: string;
   readonly topic: string;
   readonly body: string;
-  /** The names of the plans and units the note blocks. */
-  readonly blocks: readonly string[];
+  /** The plans and units the note blocks. */
+  readonly blocks: readonly Name[];
 }
 
-/** A live note, with the entity identity that joins and selects it; never
- *  printed. */
-export interface LiveNote extends Note {
-  readonly entity: string;
-}
-
-/** The notebook computed at `commit`. */
+/** The notebook view's input, computed at `commit`. */
 export interface NotebookState {
   readonly commit: string;
   /** Every live note, in the order given. */
-  readonly notes: readonly LiveNote[];
+  readonly notes: readonly Note[];
   /** The live notes that block what they name. */
-  readonly owed: readonly LiveNote[];
+  readonly owed: readonly Note[];
   readonly diverged: readonly Diverged<Note>[];
   readonly incoherent: readonly Incoherence[];
 }
 
-/** What a note says, on one line: its body and what it blocks. */
+/** What a note says, on one line, led by its title. */
 function said(note: Note): string {
   const blocks = note.blocks.length
-    ? ` · blocks ${note.blocks.join(', ')}`
+    ? ` · blocks ${note.blocks.map(named).join(', ')}`
     : '';
-  return `${inline(note.body)}${blocks}`;
+  return `${inline(named(note.title))} — ${inline(note.body)}${blocks}`;
 }
 
-/** One note on one line, in any layer. */
+/** One note on one line, wherever it stands outside its kind and topic. */
 export function noteLine(note: Note): string {
-  return `${note.kind} · ${note.topic} — ${said(note)}`;
+  return `${said(note)} · ${note.kind} · ${note.topic}`;
 }
 
-/** One note in full. */
 function noteInFull(note: Note): string[] {
   return [
-    `note: ${note.kind} · ${note.topic}`,
+    `note: ${named(note.title)}`,
+    `  kind: ${note.kind}`,
+    `  topic: ${note.topic}`,
     ...field('body', note.body),
-    ...list('blocks', note.blocks),
+    ...list('blocks', note.blocks.map(named)),
   ];
 }
 
 /**
- * The notebook's view: the whole notebook, or, given `entity`, that live note in
- * full, or every version of that diverged note in full, beneath the header and
- * the resolve-first layer.
+ * The notebook's view: the whole notebook, or, given the `title` of a note,
+ * every live note it names in full and every version of every diverged note it
+ * names in full, beneath the header and the resolve-first layer.
  */
-export function notebookView(state: NotebookState, entity?: string): string {
+export function notebookView(state: NotebookState, title?: Name): string {
   const lines = [
     header('notebook', state.commit, [
       count(state.notes.length, 'note', 'notes'),
@@ -89,22 +89,20 @@ export function notebookView(state: NotebookState, entity?: string): string {
     ]),
   ];
 
-  if (entity !== undefined) {
-    const note = state.notes.find((n) => n.entity === entity);
-    const diverged = state.diverged.find((d) => d.entity === entity);
+  if (title !== undefined)
     return [
       ...lines,
-      ...(note
-        ? noteInFull(note)
-        : diverged
-          ? divergedLines(diverged, noteInFull)
-          : ['no live or diverged note is that entity']),
+      ...drilled(title, [
+        ...state.notes.filter((n) => denotes(title, n.title)).map(noteInFull),
+        ...state.diverged
+          .filter((d) => denotes(title, d.name))
+          .map((d) => divergedLines(d, noteInFull)),
+      ]),
     ].join('\n');
-  }
 
-  const byKind = new Map<string, Map<string, LiveNote[]>>();
+  const byKind = new Map<string, Map<string, Note[]>>();
   for (const note of state.notes) {
-    const topics = byKind.get(note.kind) ?? new Map<string, LiveNote[]>();
+    const topics = byKind.get(note.kind) ?? new Map<string, Note[]>();
     byKind.set(note.kind, topics);
     topics.set(note.topic, [...(topics.get(note.topic) ?? []), note]);
   }

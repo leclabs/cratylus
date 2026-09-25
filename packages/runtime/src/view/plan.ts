@@ -19,51 +19,46 @@
 import {
   type Diverged,
   type Incoherence,
+  type Name,
   count,
+  denotes,
   divergedLines,
+  drilled,
   field,
   header,
   incoherenceLine,
   list,
+  named,
   resolveFirst,
 } from './layers.js';
-import { type LiveNote, noteLine } from './notebook.js';
+import { type Note, noteLine } from './notebook.js';
 
 /** A plan's whole state as its reader sees it. */
 export interface Plan {
-  readonly name: string;
-  /** The anchors of the concepts it realizes. */
-  readonly realizes: readonly string[];
+  readonly name: Name;
+  /** The concepts it realizes. */
+  readonly realizes: readonly Name[];
   readonly state: string;
-}
-
-/** A live plan, with the entity identity that joins its units to it and
- *  selects it for a drill; printed only beside a name a merge left on another
- *  live plan or unit. */
-export interface LivePlan extends Plan {
-  readonly entity: string;
 }
 
 /** A unit's full spec and lifecycle state as its reader sees it. */
 export interface Unit {
-  readonly name: string;
+  readonly name: Name;
   /** The plan the unit belongs to. */
-  readonly plan: LivePlan;
-  /** The concept the unit realizes: its entity joins it to the design view,
-   *  its anchor names it. */
-  readonly realizes: { readonly entity: string; readonly anchor: string };
+  readonly plan: Plan;
+  /** The concept the unit realizes. */
+  readonly realizes: Name;
   readonly state: string;
-  /** The names of the units of its plan it depends on. */
-  readonly deps: readonly string[];
+  /** The units of its plan it depends on. */
+  readonly deps: readonly Name[];
   readonly intent: string;
   readonly static: readonly string[];
   readonly outputs: readonly string[];
   readonly accept: readonly string[];
 }
 
-/** A live unit, with its entity identity and what `unit` and `pin` computed. */
+/** A live unit, with what `unit` and `pin` computed on it. */
 export interface LiveUnit extends Unit {
-  readonly entity: string;
   /** Its wave; `undefined` when a dep keeps it from any wave. */
   readonly wave: number | undefined;
   readonly frontier: boolean;
@@ -76,11 +71,11 @@ export interface PlanState {
   readonly commit: string;
   /** The plans shown: the one holding the state that admits one plan, each of
    *  them when a merge leaves more than one, none when no plan holds it. */
-  readonly plans: readonly LivePlan[];
+  readonly plans: readonly Plan[];
   /** The live units of the plans shown, in the order given within each wave. */
   readonly units: readonly LiveUnit[];
   /** The owed rulings, each naming what it blocks. */
-  readonly owed: readonly LiveNote[];
+  readonly owed: readonly Note[];
   readonly divergedPlans: readonly Diverged<Plan>[];
   readonly divergedUnits: readonly Diverged<Unit>[];
   readonly incoherent: readonly Incoherence[];
@@ -88,7 +83,7 @@ export interface PlanState {
 
 /** A plan with its lifecycle state, e.g. `record-store (s1)`. */
 export function planName(plan: Plan): string {
-  return `${plan.name} (${plan.state})`;
+  return `${named(plan.name)} (${plan.state})`;
 }
 
 /** A unit's state and the marks computed on it, e.g. `u1, frontier, drifted`. */
@@ -103,28 +98,33 @@ export function standing(unit: LiveUnit): string {
 
 function planLine(plan: Plan): string {
   const realizes = plan.realizes.length
-    ? ` · realizes ${plan.realizes.join(', ')}`
+    ? ` · realizes ${plan.realizes.map(named).join(', ')}`
     : '';
   return `plan ${planName(plan)}${realizes}`;
 }
 
 function planInFull(plan: Plan): string[] {
-  return [`plan: ${planName(plan)}`, ...list('realizes', plan.realizes)];
+  return [
+    `plan: ${planName(plan)}`,
+    ...list('realizes', plan.realizes.map(named)),
+  ];
 }
 
 function unitLine(unit: Unit, marks: string): string {
-  const deps = unit.deps.length ? ` · deps ${unit.deps.join(', ')}` : '';
-  return `${unit.name} — ${marks} · realizes ${unit.realizes.anchor}${deps}`;
+  const deps = unit.deps.length
+    ? ` · deps ${unit.deps.map(named).join(', ')}`
+    : '';
+  return `${named(unit.name)} — ${marks} · realizes ${named(unit.realizes)}${deps}`;
 }
 
 /** One unit in full; `placement` states the wave of a live unit. */
 function unitInFull(unit: Unit, marks: string, placement?: string): string[] {
   return [
-    `unit: ${unit.name} — ${marks}`,
+    `unit: ${named(unit.name)} — ${marks}`,
     `  plan: ${planName(unit.plan)}`,
-    `  realizes: ${unit.realizes.anchor}`,
+    `  realizes: ${named(unit.realizes)}`,
     ...(placement === undefined ? [] : [`  wave: ${placement}`]),
-    ...list('deps', unit.deps),
+    ...list('deps', unit.deps.map(named)),
     ...field('intent', unit.intent),
     ...list('static', unit.static),
     ...list('outputs', unit.outputs),
@@ -133,11 +133,11 @@ function unitInFull(unit: Unit, marks: string, placement?: string): string[] {
 }
 
 /**
- * The plan's view: the whole of each plan shown, or, given `entity`, that live
- * unit or plan in full, or every version of that diverged unit or plan in full,
- * beneath the header and the resolve-first layer.
+ * The plan's view: the whole of each plan shown, or, given a `name`, every live
+ * unit and plan it names in full and every version of every diverged unit and
+ * plan it names in full, beneath the header and the resolve-first layer.
  */
-export function planView(state: PlanState, entity?: string): string {
+export function planView(state: PlanState, name?: Name): string {
   const { units } = state;
   const drifted = units.filter((u) => u.drifted);
   const suspect = units.filter((u) => u.suspect);
@@ -145,24 +145,29 @@ export function planView(state: PlanState, entity?: string): string {
 
   // Every plan with a line: those shown, then any other a given unit names,
   // so no live unit goes without one.
-  const plans = new Map(state.plans.map((p) => [p.entity, p]));
+  const plans = new Map(state.plans.map((p) => [named(p.name), p]));
   for (const unit of units)
-    if (!plans.has(unit.plan.entity)) plans.set(unit.plan.entity, unit.plan);
+    if (!plans.has(named(unit.plan.name)))
+      plans.set(named(unit.plan.name), unit.plan);
 
-  // Why a unit has no wave: each dep that is not a placed live unit of its plan.
+  // Why a unit has no wave: each dep that is not a placed live unit of its plan,
+  // each dep matched by its whole name, identity included.
   const why = (unit: LiveUnit): string => {
-    const own = (u: Unit) => u.plan.entity === unit.plan.entity;
+    const own = (u: Unit) => named(u.plan.name) === named(unit.plan.name);
     const held = unit.deps.flatMap((dep) => {
-      const live = units.find((u) => own(u) && u.name === dep);
-      if (live) return live.wave === undefined ? [`${dep} unplaced`] : [];
+      const live = units.find((u) => own(u) && named(u.name) === named(dep));
+      if (live)
+        return live.wave === undefined ? [`${named(dep)} unplaced`] : [];
       return state.divergedUnits.some(
-        (d) => d.name === dep && d.versions.some(own),
+        (d) => named(d.name) === named(dep) && d.versions.some(own),
       )
-        ? [`${dep} diverged`]
-        : [`${dep} not live`];
+        ? [`${named(dep)} diverged`]
+        : [`${named(dep)} not live`];
     });
     return `unplaced: ${held.length ? held.join(', ') : 'no wave given'}`;
   };
+  const placement = (unit: LiveUnit): string =>
+    unit.wave === undefined ? `none — ${why(unit)}` : `${unit.wave}`;
 
   const lines = [
     header(
@@ -190,40 +195,39 @@ export function planView(state: PlanState, entity?: string): string {
       ),
       ...state.incoherent.map(incoherenceLine),
       ...drifted.map(
-        (u) => `drifted: ${u.name} — ${u.realizes.anchor} changed since pinned`,
+        (u) =>
+          `drifted: ${named(u.name)} — ${named(u.realizes)} changed since pinned`,
       ),
       ...suspect.map(
         (u) =>
-          `suspect: ${u.name} — ${u.realizes.anchor} or a factor beneath it diverged or changed since pinned`,
+          `suspect: ${named(u.name)} — ${named(u.realizes)} or a factor beneath it diverged or changed since pinned`,
       ),
       ...state.owed.map((note) => `owed ruling: ${noteLine(note)}`),
     ]),
   ];
 
-  if (entity !== undefined) {
-    const unit = units.find((u) => u.entity === entity);
-    const plan = plans.get(entity);
-    const divergedUnit = state.divergedUnits.find((d) => d.entity === entity);
-    const divergedPlan = state.divergedPlans.find((d) => d.entity === entity);
-    const drilled = unit
-      ? unitInFull(
-          unit,
-          standing(unit),
-          unit.wave === undefined ? `none — ${why(unit)}` : `${unit.wave}`,
-        )
-      : plan
-        ? planInFull(plan)
-        : divergedUnit
-          ? divergedLines(divergedUnit, (u) => unitInFull(u, u.state))
-          : divergedPlan
-            ? divergedLines(divergedPlan, planInFull)
-            : ['no live or diverged unit or plan is that entity'];
-    return [...lines, ...drilled].join('\n');
-  }
+  if (name !== undefined)
+    return [
+      ...lines,
+      ...drilled(name, [
+        ...units
+          .filter((u) => denotes(name, u.name))
+          .map((u) => unitInFull(u, standing(u), placement(u))),
+        ...[...plans.values()]
+          .filter((p) => denotes(name, p.name))
+          .map(planInFull),
+        ...state.divergedUnits
+          .filter((d) => denotes(name, d.name))
+          .map((d) => divergedLines(d, (u) => unitInFull(u, u.state))),
+        ...state.divergedPlans
+          .filter((d) => denotes(name, d.name))
+          .map((d) => divergedLines(d, planInFull)),
+      ]),
+    ].join('\n');
 
   for (const plan of plans.values()) {
     lines.push(`${planLine(plan)} — units in wave order:`);
-    const own = units.filter((u) => u.plan.entity === plan.entity);
+    const own = units.filter((u) => named(u.plan.name) === named(plan.name));
     const waves = [
       ...new Set(own.flatMap((u) => (u.wave === undefined ? [] : [u.wave]))),
     ].sort((a, b) => a - b);
