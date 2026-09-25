@@ -122,7 +122,8 @@ describe('scaffoldProject (greenfield scaffold)', () => {
     // project marker + subject woven in
     const agentsMd = readFileSync(join(target, 'AGENTS.md'), 'utf-8');
     expect(agentsMd).toMatch(/a test project/);
-    // plan readiness is computed, never stored — the scaffold lays no plans tree
+    // a plan's lifecycle is recorded in the `plan` domain, not laid out as folders
+    // — the scaffold lays no plans tree
     expect(existsSync(join(target, 'plans'))).toBe(false);
   });
 

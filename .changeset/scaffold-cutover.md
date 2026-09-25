@@ -5,9 +5,9 @@
 
 The project scaffold no longer lays down a `plans/` tree
 
-A plan's readiness is computed from its dependencies and never stored, so no folder
-whose placement is state may be materialized. `scaffoldProject` now writes only the
-projected culture and `AGENTS.md`; it no longer creates
+A plan is an entity whose lifecycle (proposed, bound, closed) is recorded in and read
+from the `plan` domain, so there is no folder layout to scaffold. `scaffoldProject`
+now writes only the projected culture and `AGENTS.md`; it no longer creates
 `<target>/plans/founding/{PLAN.md, pending, ready, active, completed}`.
 
 Breaking for `@cratylus/forge`: `ProjectTemplate` loses `planMd` and `planStates`
@@ -17,4 +17,5 @@ that supplied its own template drops those two fields.
 In `@cratylus/canon`, the project template no longer imports the plan-state set, and
 the Work-tracking section of the scaffolded `AGENTS.md` says work is planned with the
 `plan` skill instead of describing a stored layout. The default template in
-`@cratylus/forge` says the same.
+`@cratylus/forge` names no skill: its Work-tracking section is gone, since the engine
+carries no corpus doctrine.

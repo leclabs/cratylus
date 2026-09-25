@@ -36,10 +36,6 @@ ${subject}
   source cell, not a hand-authored copy. Regenerate by re-projecting; do not
   hand-edit the generated defs (each carries a \`GENERATED from ...\` provenance
   header + content-hash that the projector guards against clobbering).
-
-## Work-tracking
-
-Work is planned with the \`plan\` skill.
 `;
 }
 
