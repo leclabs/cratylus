@@ -1,20 +1,20 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// THE PLAN — an entity naming the design it realizes, and its lifecycle.
+// THE PLAN — an entity naming the concepts it realizes, and its lifecycle.
 //
-// A plan's payload is its name, the design it realizes and its lifecycle state.
-// The design is one per repository and a cut piece is no entity, so "the design
-// it realizes" is the concepts of the piece: concept entities, which the
-// interface names by anchor at its boundary.
+// A plan's payload is its name, the concepts it realizes (concept entities, which
+// the interface names by anchor at its boundary) and its lifecycle state.
 //
 // Propose writes a plan's first version; bind and close are supersessions moving
-// it along its lifecycle, and no move goes backwards. Nothing retracts a plan: a
-// closed plan stays in the fold, readable forever — closing replaces retiring by
-// deletion.
+// it forward along its lifecycle. Nothing retracts a plan: a closed plan stays in
+// the fold, readable forever — closing replaces retiring by deletion.
 //
-// At most one plan is bound at a time. On one branch `bind` holds that law; a
-// merge of two branches that each bound a different plan leaves two holders.
-// That is state, like divergence: it is reported (`holders`), never resolved by
-// picking one, and while it stands no plan may be bound.
+// At most one plan is bound: binding a plan returns whichever plan was bound to
+// the lifecycle's first state. A merge of two branches that each bound a
+// different plan still leaves two — an incoherence, reported by `holders` and
+// never resolved by picking one — and binding the one to keep resolves it.
+//
+// A diverged plan (more than one head) takes no ordinary write: bind and close
+// refuse it and point to `reconcile`, one version superseding every head.
 //
 // The lifecycle's states are meaning, and their one home is the `plan` skill.
 // This module spells none of them: it receives the vocabulary as a parameter
@@ -31,7 +31,8 @@ const DOMAIN = 'plan';
 
 /** The plan lifecycle, received from the runtime config — never spelled here. */
 export interface PlanLifecycle {
-  /** Every state, in lifecycle order; a plan is proposed into the first. */
+  /** Every state, in lifecycle order; a plan is proposed into the first, and
+   *  binding another plan returns a bound one to it. */
   readonly states: readonly string[];
   /** The state at most one plan holds at a time. */
   readonly exclusive: string;
@@ -42,7 +43,7 @@ export interface PlanLifecycle {
 /** A plan's whole state as of one record. */
 export interface Plan {
   readonly name: string;
-  /** The concepts of the piece the plan realizes, as concept entities. */
+  /** The concepts the plan realizes, as concept entities. */
   readonly realizes: readonly string[];
   /** One of the lifecycle's `states`. */
   readonly state: string;
@@ -50,9 +51,9 @@ export interface Plan {
 
 type By = Pick<Envelope, 'author' | 'reason' | 'cause'>;
 
-/** The position of `state` in `lifecycle`, refusing a lifecycle this module's
- *  laws cannot hold under: the exclusive state must follow the first, and the
- *  final state follow the exclusive one. */
+/** The position of `state` in `lifecycle` (-1 when it is none of its states),
+ *  refusing a lifecycle this module's laws cannot hold under: the exclusive
+ *  state must follow the first, and the final state follow the exclusive one. */
 function position(lifecycle: PlanLifecycle, state: string): number {
   const { states, exclusive, final } = lifecycle;
   const at = states.indexOf(exclusive);
@@ -69,9 +70,9 @@ export function plans(store: RecordStore): ReadonlyMap<string, Fold<Plan>> {
 }
 
 /**
- * The plans holding the exclusive state — any version head of theirs stands in
- * it — in entity order. More than one is the state a merge of two binds leaves:
- * reported here, never resolved by picking one.
+ * The plans holding the exclusive state — any head of theirs stands in it — in
+ * entity order. More than one is incoherence, the state a merge of two binds
+ * leaves: reported here, never resolved by picking one.
  */
 export function holders(
   folds: ReadonlyMap<string, Fold<Plan>>,
@@ -85,31 +86,34 @@ export function holders(
     .sort();
 }
 
-/** Why `entity` may not move to `to`, or `undefined` when it may: it must be a
- *  settled, live plan, and the move must go forward. */
-function moveRefusal(
+/** The plan's name, read off its first head carrying one (a diverged plan's
+ *  heads may disagree), else its entity. */
+function named(folds: ReadonlyMap<string, Fold<Plan>>, entity: string): string {
+  return (
+    folds.get(entity)?.heads.find((h) => h.payload)?.payload?.name ?? entity
+  );
+}
+
+/** Why `entity` may take no ordinary write, or `undefined` when it may: it must
+ *  be a settled, live plan. */
+function unsettled(
   folds: ReadonlyMap<string, Fold<Plan>>,
-  lifecycle: PlanLifecycle,
   entity: string,
-  to: string,
 ): string | undefined {
   const f = folds.get(entity);
   if (!f) return `${entity} is no plan`;
   if (f.heads.length > 1)
-    return `plan ${entity} has diverged (${f.heads.length} heads); reconcile it first`;
+    return `plan ${named(folds, entity)} has diverged (${f.heads.length} heads); reconcile it first`;
   if (!f.payload) return `plan ${entity} is withdrawn`;
-  const { name, state } = f.payload;
-  if (position(lifecycle, to) <= position(lifecycle, state))
-    return `plan ${name} is ${state}, and ${to} is no move forward from it`;
   return undefined;
 }
 
 /**
  * Whether the plan `entity` may be bound: the one decision, and the reason it
- * refuses (`undefined` when it may). It refuses while more than one plan holds
- * the exclusive state, a plan that is not settled and live, a move that is not
- * forward, while another plan holds the state, and a plan an owed ruling names.
- * `owed` is the set of plans the owed rulings name.
+ * refuses (`undefined` when it may). It refuses a plan that is not settled and
+ * live, a plan past the exclusive state, a plan already its one holder, a plan
+ * an owed ruling names (`owed`, the plans the owed rulings name), and a bind
+ * that would return a diverged plan to the first state.
  */
 export function bindRefusal(
   folds: ReadonlyMap<string, Fold<Plan>>,
@@ -117,16 +121,19 @@ export function bindRefusal(
   entity: string,
   owed: ReadonlySet<string>,
 ): string | undefined {
-  const held = holders(folds, lifecycle);
-  const named = (e: string): string => folds.get(e)?.payload?.name ?? e;
-  if (held.length > 1)
-    return `more than one plan is ${lifecycle.exclusive} (${held.map(named).sort().join(', ')}); no plan is ${lifecycle.exclusive} until that is resolved`;
-  const refusal = moveRefusal(folds, lifecycle, entity, lifecycle.exclusive);
+  const refusal = unsettled(folds, entity);
   if (refusal) return refusal;
-  const [holder] = held;
-  if (holder !== undefined)
-    return `plan ${named(holder)} is ${lifecycle.exclusive}, and at most one plan is`;
-  if (owed.has(entity)) return `an owed ruling names plan ${named(entity)}`;
+  const { name, state } = (folds.get(entity) as Fold<Plan>).payload as Plan;
+  const { exclusive } = lifecycle;
+  if (position(lifecycle, state) > position(lifecycle, exclusive))
+    return `plan ${name} is ${state}, and ${exclusive} is a move backwards from it`;
+  const others = holders(folds, lifecycle).filter((e) => e !== entity);
+  if (state === exclusive && others.length === 0)
+    return `plan ${name} is already ${exclusive}`;
+  if (owed.has(entity)) return `an owed ruling names plan ${name}`;
+  for (const other of others)
+    if ((folds.get(other) as Fold<Plan>).heads.length > 1)
+      return `binding ${name} returns plan ${named(folds, other)} to ${lifecycle.states[0]}, and it has diverged; reconcile it first`;
   return undefined;
 }
 
@@ -156,36 +163,45 @@ export function propose(
   plan: Omit<Plan, 'state'>,
   by: By,
 ): Record<Plan> {
-  const [first] = lifecycle.states;
   position(lifecycle, lifecycle.exclusive); // refuses a lifecycle bind and close cannot hold under
   return store.create<Plan>(
     DOMAIN,
     {
       name: plan.name,
       realizes: [...plan.realizes],
-      state: first as string,
+      state: lifecycle.states[0] as string,
     },
     by,
   );
 }
 
-/** Bind the plan `entity`: move it to the exclusive state, refusing with
- *  `bindRefusal`'s reason. */
+/**
+ * Bind the plan `entity`, refusing with `bindRefusal`'s reason: return every
+ * other plan holding the exclusive state to the first state, then move `entity`
+ * to it unless it already holds it. The records written, in order.
+ */
 export function bind(
   store: RecordStore,
   lifecycle: PlanLifecycle,
   entity: string,
   owed: ReadonlySet<string>,
   by: By,
-): Record<Plan> {
+): Record<Plan>[] {
   const folds = plans(store);
   const refusal = bindRefusal(folds, lifecycle, entity, owed);
   if (refusal) throw new Error(`plan: bind refused — ${refusal}`);
-  return move(store, folds, entity, lifecycle.exclusive, by);
+  const written = holders(folds, lifecycle)
+    .filter((other) => other !== entity)
+    .map((other) =>
+      move(store, folds, other, lifecycle.states[0] as string, by),
+    );
+  if (folds.get(entity)?.payload?.state !== lifecycle.exclusive)
+    written.push(move(store, folds, entity, lifecycle.exclusive, by));
+  return written;
 }
 
 /** Close the plan `entity`: move it to the final state, where it stays
- *  readable. Refuses a plan not settled and live, and a move backwards. */
+ *  readable. Refuses a plan not settled and live, and one already there. */
 export function close(
   store: RecordStore,
   lifecycle: PlanLifecycle,
@@ -193,7 +209,52 @@ export function close(
   by: By,
 ): Record<Plan> {
   const folds = plans(store);
-  const refusal = moveRefusal(folds, lifecycle, entity, lifecycle.final);
+  const refusal = unsettled(folds, entity);
   if (refusal) throw new Error(`plan: close refused — ${refusal}`);
+  const { name, state } = (folds.get(entity) as Fold<Plan>).payload as Plan;
+  if (position(lifecycle, lifecycle.final) <= position(lifecycle, state))
+    throw new Error(
+      `plan: close refused — plan ${name} is ${state}, and ${lifecycle.final} is no move forward from it`,
+    );
   return move(store, folds, entity, lifecycle.final, by);
+}
+
+/**
+ * Reconcile the diverged plan `entity`: one whole-state version `plan`
+ * superseding every head; a plan that has not diverged refuses. A
+ * `plan` in the exclusive state keeps the binding law: it refuses while another
+ * plan holds that state (bind resolves that) or an owed ruling names the plan.
+ */
+export function reconcile(
+  store: RecordStore,
+  lifecycle: PlanLifecycle,
+  entity: string,
+  plan: Plan,
+  owed: ReadonlySet<string>,
+  by: By,
+): Record<Plan> {
+  const folds = plans(store);
+  const refuse = (why: string): never => {
+    throw new Error(`plan: reconcile refused — ${why}`);
+  };
+  if ((folds.get(entity)?.heads.length ?? 0) < 2)
+    refuse(
+      `plan ${named(folds, entity)} has not diverged, and only divergence is reconciled`,
+    );
+  if (position(lifecycle, plan.state) < 0)
+    refuse(`${plan.state} is no state of the plan lifecycle`);
+  if (plan.state === lifecycle.exclusive) {
+    const [other] = holders(folds, lifecycle).filter((e) => e !== entity);
+    if (other !== undefined)
+      refuse(
+        `plan ${named(folds, other)} is ${lifecycle.exclusive}; reconcile ${plan.name} to another state, then bind it`,
+      );
+    if (owed.has(entity)) refuse(`an owed ruling names plan ${plan.name}`);
+  }
+  return store.reconcile<Plan>(
+    DOMAIN,
+    entity,
+    { name: plan.name, realizes: [...plan.realizes], state: plan.state },
+    by,
+  );
 }
