@@ -1,20 +1,21 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // THE PIN — a unit's reference to the concept version it realizes.
 //
-// Taken automatically when the unit is authored: the concept's one head at that
-// moment, which must be a version. Two readings run over it, each computed from
-// the design records at the moment of the read and never stored:
+// Taken when the unit is authored, and only when the concept and its whole
+// closure are settled and live: the pin holds the concept's one head, a version,
+// and the one head of every other concept in the closure at that moment. Two
+// disjoint readings run over it, computed from the design records at the moment
+// of the read and never stored:
 //
 // - DRIFTED — the pinned version is no longer a head: a later version or a
 //   retraction of the concept now names it;
-// - SUSPECT — a concept the pinned one stands on (itself or any factor,
-//   transitively) has diverged, or has a version newer than the one current
-//   when the pin was taken.
+// - otherwise SUSPECT — another concept in the closure has diverged, been
+//   withdrawn or gained a newer version since the pin was taken.
 //
 // Heads and divergence come from the record store's generic fold over the design
-// domain; the caller hands that fold in. Which concepts a concept stands on is
-// design's to say, so the caller supplies it too, through the `factors` port
-// below; `domain-interface` wires the design domain's reading into it.
+// domain; the caller hands that fold in. The closure is design's to compute, so
+// the caller supplies it through the `Closure` port below; `domain-interface`
+// wires the design domain's closure into it.
 //
 // A unit stores its pin as an opaque value: plain JSON, read only here.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -25,9 +26,9 @@ import type { RecordId } from '../../record-store/record.js';
 /** The design domain folded by the record store, keyed by concept entity. */
 type Design = ReadonlyMap<string, Fold<unknown>>;
 
-/** The port: every concept entity `concept` stands on — its factors,
- *  transitively. Naming `concept` itself as well is harmless. */
-type Factors = (concept: string) => Iterable<string>;
+/** The port: the closure of `concept` — the concept entity itself and every
+ *  concept entity its factors reach, transitively. */
+type Closure = (concept: string) => Iterable<string>;
 
 /** A unit's reference to the concept version it realizes. */
 export interface Pin {
@@ -35,32 +36,36 @@ export interface Pin {
   readonly concept: string;
   /** Its one head when the pin was taken: a version. */
   readonly version: RecordId;
-  /** Each concept entity it stood on when the pin was taken, with that
-   *  entity's one head then; a factor diverged at that moment has none. */
-  readonly factors: { readonly [entity: string]: RecordId };
+  /** Every other concept entity in its closure when the pin was taken, with
+   *  that entity's one head then: a version. */
+  readonly closure: { readonly [entity: string]: RecordId };
 }
 
-/** Take a pin on `concept`. Refuses a concept with no records, a diverged one
- *  and a withdrawn one: none has a single version to pin. */
-export function take(design: Design, concept: string, factors: Factors): Pin {
-  const refused = (why: string): Error =>
-    new Error(`pin: take on ${concept} refused — ${why}`);
-  const heads = design.get(concept)?.heads ?? [];
-  const head = heads[0];
-  if (!head) throw refused('no concept has that identity');
-  if (heads.length > 1)
-    throw refused(
-      `it has diverged into ${heads.length} heads, and no single version exists to pin`,
-    );
-  if (head.envelope.operation === 'retract')
-    throw refused('it is withdrawn, and a retraction is no version to pin');
-  const stood: { [entity: string]: RecordId } = {};
-  for (const entity of factors(concept)) {
-    const then = design.get(entity)?.heads;
-    if (entity !== concept && then?.length === 1 && then[0])
-      stood[entity] = then[0].envelope.id;
+/** Why `entity` is not settled and live in `design`, or `undefined` when its
+ *  one head is a version. */
+function unsettled(design: Design, entity: string): string | undefined {
+  const heads = design.get(entity)?.heads ?? [];
+  if (heads.length === 0) return 'has no records';
+  if (heads.length > 1) return `has diverged into ${heads.length} heads`;
+  if (heads[0]?.envelope.operation === 'retract') return 'is withdrawn';
+  return undefined;
+}
+
+/** Take a pin on `concept`. Refuses when the concept, or any other concept in
+ *  its closure, is unknown, diverged or withdrawn: there is no single version
+ *  of it to pin. */
+export function take(design: Design, concept: string, closure: Closure): Pin {
+  const held: { [entity: string]: RecordId } = {};
+  for (const entity of new Set([concept, ...closure(concept)])) {
+    const why = unsettled(design, entity);
+    if (why)
+      throw new Error(
+        `pin: take on ${concept} refused — ${entity === concept ? 'it' : `${entity} in its closure`} ${why}, so no single version exists to pin`,
+      );
+    held[entity] = design.get(entity)?.heads[0]?.envelope.id as RecordId;
   }
-  return { concept, version: head.envelope.id, factors: stood };
+  const { [concept]: version, ...others } = held;
+  return { concept, version: version as RecordId, closure: others };
 }
 
 /** The pinned version is no longer a head of its concept. */
@@ -70,19 +75,14 @@ export function drifted(pin: Pin, design: Design): boolean {
     ?.heads.some((head) => head.envelope.id === pin.version);
 }
 
-/** A concept the pinned one stands on, itself included, has diverged or has a
- *  version newer than the one current when the pin was taken. */
-export function suspect(pin: Pin, design: Design, factors: Factors): boolean {
-  for (const entity of new Set([pin.concept, ...factors(pin.concept)])) {
-    const heads = design.get(entity)?.heads ?? [];
-    if (heads.length > 1) return true;
-    const head = heads[0];
-    const then = entity === pin.concept ? pin.version : pin.factors[entity];
-    if (
-      head &&
-      head.envelope.operation !== 'retract' &&
-      head.envelope.id !== then
-    )
+/** Not drifted, and another concept in the closure has diverged, been
+ *  withdrawn or gained a newer version since the pin was taken. */
+export function suspect(pin: Pin, design: Design, closure: Closure): boolean {
+  if (drifted(pin, design)) return false;
+  for (const entity of closure(pin.concept)) {
+    if (entity === pin.concept) continue;
+    if (unsettled(design, entity)) return true;
+    if (design.get(entity)?.heads[0]?.envelope.id !== pin.closure[entity])
       return true;
   }
   return false;
