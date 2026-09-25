@@ -25,9 +25,9 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
   identity that is neither its name nor its place in history; a name, where the entity has one, is
   a label on it and can change.
 - **payload** — the whole state of the entity as of this record; never a delta. A concept's
-  payload is its anchor, gloss and factors; a plan's is its name, the design it realizes and its
-  lifecycle state; a unit's is its plan, full spec and lifecycle state; a note's is its kind, topic,
-  body and whatever it blocks.
+  payload is its anchor, gloss and factors; a plan's is its name, the concepts it realizes and its
+  lifecycle state; a unit's is its plan, full spec and lifecycle state; a note's is its title, kind,
+  topic, body and whatever it blocks.
 - **fold** — the pure function computing an entity's current state from its records at the moment
   of the read; nothing it computes is ever persisted. (Not "projection": in this corpus that sign
   already means canon → harness Targets.)
@@ -75,8 +75,9 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
 ### The three domains
 
 - **notebook** — the set of notes: ideas, questions and decisions not yet canonical, the intake
-  that design canonizes. Anyone may capture, revise or retract a note, and a note's kind is a
-  label the runtime never interprets. A live note that blocks a plan or unit is an **owed
+  that design canonizes. Anyone may capture, revise or retract a note. A note's title is its name,
+  one live note per title, and its kind is a label the runtime never interprets. A live note that
+  blocks a plan or unit is an **owed
   ruling**; it blocks what it names until it no longer does, by being retracted or revised to
   block nothing, and a diverged note blocks whatever any of its heads blocks until it is
   reconciled. Factors: record store.
