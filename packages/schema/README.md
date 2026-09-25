@@ -56,11 +56,21 @@ keyed to its dimension.
 | `DimensionOf` · `SetDimensionOf` · `RequiredDimensionOf` · `AgentOf`    | generic derivations over any manifest                              |
 | `Value` · `Enforcing` · `Binding` · `enforcing` · `bodyOf` · `anchorOf` | a dimension value, bare or self-enforcing, and its α/residue split |
 | `Agent` · `Skill` · `SkillDeploy` · `SkillExpression` · `Mark`          | the cell shapes a corpus authors                                   |
+| `JsonValue`                                                             | the data a skill's runtime face may carry as `configuration`       |
 | `HookCell` · `RuleCell` · `hookIrOf`                                    | the doctrine-free source-cell kernel                               |
 
 The `@cratylus/schema/hook` subpath carries the harness-agnostic lifecycle-event vocabulary
 (`CanonicalEvent`, `Substrate`, `SubstrateEvent`), the `Hook` wire shape, and `HarnessMechanism` —
 the realization payload for one enforcing constraint on one harness. It imports nothing.
+
+## A skill's runtime face
+
+`SkillDeploy.runtime` names the runtime capability a skill is a face of and, optionally, the
+`configuration` that capability receives: a `JsonValue`, with no opinion here about any
+capability's keys. `deploy` gathers it from every skill of the resolved plugin set and emits it into
+the host runtime config keyed by capability, beside the event vocabulary; the runtime's
+`loadRuntimeConfig` lifts it. Meaning a capability needs therefore lives in the corpus and reaches
+the runtime as configuration, never as a second copy spelled inside the runtime.
 
 ## No edge out
 

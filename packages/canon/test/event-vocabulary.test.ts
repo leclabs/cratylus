@@ -59,7 +59,11 @@ import {
   runtimeConfigDocument,
   serializeRuntimeConfig,
 } from '@cratylus/forge/deploy';
-import { loadRuntimeConfig } from '@cratylus/runtime/runtime-config';
+import {
+  type RuntimeConfig,
+  loadRuntimeConfig,
+} from '@cratylus/runtime/runtime-config';
+import type { Skill } from '@cratylus/schema';
 import { describe, expect, it } from 'vitest';
 import { CANONICAL_EVENTS } from '../src/manifest.js';
 
@@ -370,5 +374,74 @@ describe("(c) the config deploy emits, parsed back by the runtime's own reader",
     );
     // … and the assertion the passing legs make is the one that rejects it.
     expect(parsed?.events?.vocabulary).not.toEqual([...CANONICAL_EVENTS]);
+  });
+
+  // THE SAME CHANNEL CARRIES CAPABILITY CONFIGURATION. A skill's runtime face may
+  // declare what its capability receives; deploy emits it keyed by capability,
+  // beside the vocabulary, and the runtime lifts it with the same reader. The
+  // synthetic block uses the plan capability's role keys over neutral states, so
+  // nothing here spells a real lifecycle.
+  const configuration = {
+    plan: { states: ['p0', 'p1', 'p2'], exclusive: 'p1', final: 'p2' },
+    unit: { states: ['u0', 'u1', 'u2'], satisfies: 'u2' },
+  } as const;
+  const synthetic: Pick<Skill, 'name' | 'runtime'> = {
+    name: 'synthetic',
+    runtime: { capability: 'synthetic', configuration },
+  };
+
+  /** Emit a synthetic skill's configuration as deploy does, read it back. */
+  function configurationRoundTrip(
+    skills: readonly Pick<Skill, 'name' | 'runtime'>[],
+  ): RuntimeConfig {
+    const doc = runtimeConfigDocument({
+      events: CANONICAL_EVENTS,
+      nativeEvents: canonicalToClaude,
+      skills,
+    });
+    const path = join(
+      mkdtempSync(join(tmpdir(), 'cratylus-configuration-')),
+      'config.json',
+    );
+    writeFileSync(path, serializeRuntimeConfig(doc), 'utf8');
+    const parsed = loadRuntimeConfig(path);
+    expect(
+      parsed,
+      'the runtime read back nothing from a config deploy just wrote',
+    ).not.toBeNull();
+    return parsed as NonNullable<typeof parsed>;
+  }
+
+  it("a skill's runtime configuration arrives keyed by its capability, member for member", () => {
+    expect(configurationRoundTrip([synthetic]).configuration).toEqual({
+      synthetic: configuration,
+    });
+  });
+
+  it('is non-vacuous — the configuration round trip FAILS when a member is dropped', () => {
+    const plan = { states: configuration.plan.states, exclusive: 'p1' };
+    const short: Pick<Skill, 'name' | 'runtime'> = {
+      name: 'synthetic',
+      runtime: {
+        capability: 'synthetic',
+        configuration: { ...configuration, plan },
+      },
+    };
+    const arrived = configurationRoundTrip([short]).configuration;
+    // The defect is PRESENT (the injection landed) …
+    expect(arrived?.synthetic).toEqual({ ...configuration, plan });
+    // … and the assertion the passing leg makes is the one that rejects it.
+    expect(arrived).not.toEqual({ synthetic: configuration });
+  });
+
+  it('REFUSES two skills configuring one capability — the projection does not choose', () => {
+    const rival = { ...synthetic, name: 'rival' };
+    expect(() =>
+      runtimeConfigDocument({
+        events: CANONICAL_EVENTS,
+        nativeEvents: canonicalToClaude,
+        skills: [synthetic, rival],
+      }),
+    ).toThrow(/'synthetic' and 'rival' both configure capability 'synthetic'/);
   });
 });

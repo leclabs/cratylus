@@ -11,12 +11,14 @@
 // hand-authored, identical to schema's generated 28 as a set AND in order.
 //
 // So this module is the producer, and it is a NEW CAPABILITY rather than a move.
-// What it emits is a function of two inputs and nothing else:
+// What it emits is a function of three inputs and nothing else:
 //   · the CORPUS's vocabulary — `AgentPlugin.events`, DATA on the plugin, which is
 //     how canon reaches the projector at all (property 3);
-//   · the ADAPTER's native map — `HarnessAdapter.nativeEvents`, the projection's own.
-// Both are already resolved by the time deploy runs. Nothing here decides anything
-// about either; a projector that decided would be containing a design.
+//   · the ADAPTER's native map — `HarnessAdapter.nativeEvents`, the projection's own;
+//   · the CORPUS's capability configuration — what each skill's runtime face
+//     declares under `runtime.configuration`, keyed here by its capability.
+// All are already resolved by the time deploy runs. Nothing here decides anything
+// about any of them; a projector that decided would be containing a design.
 //
 // WHY IT LANDS OUTSIDE THE HARNESS HOME. Every other deploy target is a file inside
 // `.claude/` or `.codex/`. This one is not a harness artifact at all: it configures
@@ -29,6 +31,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { CLI_BIN } from '@cratylus/runtime/bin-name';
+import type { JsonValue, Skill } from '@cratylus/schema';
 import type { EventName } from '@cratylus/schema/hook';
 
 /**
@@ -73,6 +76,12 @@ export interface EmittedRuntimeConfig {
   readonly resolveFrom?: string;
   readonly capabilities: readonly string[];
   readonly events: EmittedEvents;
+  /**
+   * Each capability's configuration, as the corpus's skills declare it on their
+   * runtime face. Regenerated every deploy, like `events`, and harness-independent.
+   * Absent when no skill declares any: an empty block and no block are one fact.
+   */
+  readonly configuration?: Readonly<Record<string, JsonValue>>;
 }
 
 /** The corpus + adapter facts the emission is a pure function of. */
@@ -81,6 +90,8 @@ export interface EmitRuntimeConfigOpts {
   readonly events: readonly EventName[];
   /** The harness's native map — `HarnessAdapter.nativeEvents`. */
   readonly nativeEvents: Readonly<Record<EventName, string>>;
+  /** The resolved plugin set's skills; their runtime faces carry the configuration. */
+  readonly skills?: readonly Pick<Skill, 'name' | 'runtime'>[];
   /** Capability provider specifiers the host should register. */
   readonly capabilities?: readonly string[];
   /** Dir whose `node_modules` those specifiers resolve against. */
@@ -112,13 +123,41 @@ export function runtimeConfigDocument(
   for (const [event, nativeName] of Object.entries(opts.nativeEvents)) {
     if (declared.has(event)) native[event] = nativeName;
   }
+  const configuration = configurationOf(opts.skills ?? []);
   return {
     ...(opts.resolveFrom !== undefined
       ? { resolveFrom: opts.resolveFrom }
       : {}),
     capabilities: [...(opts.capabilities ?? [])],
     events: { vocabulary: [...opts.events], native },
+    ...(Object.keys(configuration).length > 0 ? { configuration } : {}),
   };
+}
+
+/**
+ * Gather each capability's configuration off the skills' runtime faces.
+ *
+ * Two skills configuring ONE capability is refused rather than merged or
+ * last-wins: either choice would be the projector deciding which half of the
+ * corpus's meaning the runtime receives.
+ */
+function configurationOf(
+  skills: readonly Pick<Skill, 'name' | 'runtime'>[],
+): Record<string, JsonValue> {
+  const configuration: Record<string, JsonValue> = {};
+  const owner = new Map<string, string>();
+  for (const { name, runtime } of skills) {
+    if (runtime?.configuration === undefined) continue;
+    const prior = owner.get(runtime.capability);
+    if (prior !== undefined) {
+      throw new Error(
+        `runtimeConfigDocument: skills '${prior}' and '${name}' both configure capability '${runtime.capability}' — one capability receives one configuration, and choosing between them is not the projection's to do`,
+      );
+    }
+    owner.set(runtime.capability, name);
+    configuration[runtime.capability] = runtime.configuration;
+  }
+  return configuration;
 }
 
 /** Serialize the document exactly as it lands on disk (2-space, trailing newline). */

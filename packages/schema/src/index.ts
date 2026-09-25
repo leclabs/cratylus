@@ -573,6 +573,19 @@ export const dimensionValueOf = (a: Agent, field: string): unknown =>
  */
 export type SkillExpression = string & { readonly __skillExpr?: true };
 
+/**
+ * Any JSON-serializable value, read-only all the way down so an `as const` literal
+ * assigns. The shape of data that crosses a process boundary as bytes — here, the
+ * configuration a skill hands its runtime capability through the host config.
+ */
+export type JsonValue =
+  | string
+  | number
+  | boolean
+  | null
+  | readonly JsonValue[]
+  | { readonly [key: string]: JsonValue };
+
 /** How a skill cell deploys, beyond the default agent-resident projection. */
 export interface SkillDeploy<C extends CapabilityName = CapabilityName> {
   /** Deploy as a host `skills/<name>/` directory (the `memory`-style cell). */
@@ -596,8 +609,17 @@ export interface SkillDeploy<C extends CapabilityName = CapabilityName> {
    * `cratylus <capability>` CLI — NOT a bundle of the impl (the capability logic
    * lives host-side behind the runtime port, installed once per host).
    * Absent ⇒ SKILL.md only (unchanged). This REVERSES the superseded design in which
-   * forge composed a standalone, dependency-free `.mjs` at build time. */
-  readonly runtime?: { readonly capability: C };
+   * forge composed a standalone, dependency-free `.mjs` at build time.
+   *
+   * `configuration` is what the capability receives from the corpus: data, never
+   * code, and no opinion here about any capability's keys. `deploy` emits it into
+   * the host runtime config keyed by `capability`, beside the event vocabulary, so
+   * meaning the runtime needs reaches it as configuration rather than as a second
+   * copy spelled inside the runtime. */
+  readonly runtime?: {
+    readonly capability: C;
+    readonly configuration?: JsonValue;
+  };
 }
 
 /**

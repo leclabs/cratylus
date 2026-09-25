@@ -73,6 +73,15 @@ export interface RuntimeConfig {
    * copy got there in the first place.
    */
   readonly events?: RuntimeEvents;
+  /**
+   * Each capability's configuration, keyed by capability, as the corpus's skills
+   * declared it and deploy emitted it. Corpus meaning a capability acts on (states,
+   * roles, names) arrives here and is spelled nowhere in this package. Opaque to
+   * this reader: the capability that consumes its entry validates it. The same rule
+   * as `events` holds — a capability whose entry is absent must REFUSE and say so,
+   * never fall back to a set of its own.
+   */
+  readonly configuration?: Readonly<Record<string, unknown>>;
 }
 
 /** The config path: `$AGENT_RUNTIME_CONFIG` ▸ `~/.cratylus.json`. */
@@ -88,10 +97,11 @@ export function runtimeConfigPath(): string {
  * a bare install with no config falls back to the CLI's bundled default set, so
  * configuring is opt-in and the zero-config path keeps working.
  *
- * A config carrying ONLY a vocabulary is a real config. The `capabilities.length`
- * test used to be the whole liveness check, and it silently discarded a document
- * whose entire payload was the corpus's event names — the deploy-emitted case,
- * where the operator declared no provider override at all.
+ * A config carrying ONLY a vocabulary, or ONLY capability configuration, is a real
+ * config. The `capabilities.length` test used to be the whole liveness check, and
+ * it silently discarded a document whose entire payload was the corpus's event
+ * names — the deploy-emitted case, where the operator declared no provider
+ * override at all.
  */
 export function loadRuntimeConfig(
   path = runtimeConfigPath(),
@@ -105,10 +115,17 @@ export function loadRuntimeConfig(
       ? raw.capabilities.filter((s): s is string => typeof s === 'string')
       : [];
     const events = parseEvents(raw.events);
-    if (capabilities.length === 0 && events === undefined) return null;
+    const configuration = parseConfiguration(raw.configuration);
+    if (
+      capabilities.length === 0 &&
+      events === undefined &&
+      configuration === undefined
+    )
+      return null;
     return {
       capabilities,
       ...(events !== undefined ? { events } : {}),
+      ...(configuration !== undefined ? { configuration } : {}),
       ...(typeof raw.resolveFrom === 'string'
         ? { resolveFrom: raw.resolveFrom }
         : {}),
@@ -146,4 +163,20 @@ function parseEvents(raw: unknown): RuntimeEvents | undefined {
     }
   }
   return { vocabulary: words, native: map };
+}
+
+/**
+ * Lift the `configuration` block, or `undefined` when it is absent, malformed or
+ * empty — the same reading `events` gets, for the same reason: a block that is not
+ * a capability-keyed object says nothing, and "never told" and "told nothing"
+ * must produce the same refusal in the capability that needed it.
+ */
+function parseConfiguration(
+  raw: unknown,
+): Readonly<Record<string, unknown>> | undefined {
+  if (raw === null || typeof raw !== 'object' || Array.isArray(raw))
+    return undefined;
+  return Object.keys(raw).length === 0
+    ? undefined
+    : (raw as Readonly<Record<string, unknown>>);
 }

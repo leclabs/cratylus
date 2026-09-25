@@ -68,6 +68,45 @@ describe('configured capability providers', () => {
     expect(await discoverConfigured()).toBeNull();
   });
 
+  it('a CONFIGURATION-ONLY config is a real config, each capability’s entry intact', () => {
+    // Corpus meaning a capability acts on arrives as its configuration entry; a
+    // document carrying only that is exactly as live as a vocabulary-only one.
+    const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
+    const cfg = join(root, 'runtime.json');
+    const entry = { lifecycle: { states: ['a', 'b'], final: 'b' } };
+    writeFileSync(cfg, JSON.stringify({ configuration: { someCap: entry } }));
+    process.env[ENV] = cfg;
+
+    const loaded = loadRuntimeConfig();
+    expect(loaded).not.toBeNull();
+    expect(loaded?.configuration?.someCap).toEqual(entry);
+    expect(loaded?.events).toBeUndefined();
+    expect(loaded?.capabilities).toEqual([]);
+  });
+
+  it('a malformed configuration block is ignored without wedging the load', () => {
+    const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
+    const cfg = join(root, 'runtime.json');
+    process.env[ENV] = cfg;
+    for (const malformed of [['someCap'], 'someCap', 7, null, {}]) {
+      // Beside a live events block: the rest of the document still loads.
+      writeFileSync(
+        cfg,
+        JSON.stringify({
+          events: { vocabulary: ['turn.end'] },
+          configuration: malformed,
+        }),
+      );
+      const loaded = loadRuntimeConfig();
+      expect(loaded?.events?.vocabulary).toEqual(['turn.end']);
+      expect(loaded?.configuration).toBeUndefined();
+
+      // Alone: it says nothing, so the document is absent — not a throw.
+      writeFileSync(cfg, JSON.stringify({ configuration: malformed }));
+      expect(loadRuntimeConfig()).toBeNull();
+    }
+  });
+
   it('resolves a THIRD-PARTY provider from the configured root', async () => {
     const root = mkdtempSync(join(tmpdir(), 'rt-cfg-'));
     stageProvider(root, 'alt-memory');

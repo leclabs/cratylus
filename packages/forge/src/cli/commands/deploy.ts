@@ -9,11 +9,14 @@
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import type { AgentPlugin, Skill } from '@cratylus/schema';
 import pc from 'picocolors';
 import { adapterByName } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
 import { loadConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
+import { resolveModulePath, scanCellDirNames } from '../../core/module-scan.js';
 import {
   DEPLOY_CHECK_EXIT,
   type DeployKind,
@@ -178,11 +181,12 @@ export async function runDeploy(opts: DeployCmdOpts): Promise<number> {
 /**
  * Emit the host runtime config — ARCHITECTURE property 4's producer.
  *
- * The corpus's vocabulary reaches the projector as DATA on the plugin (property 3)
- * and the harness's native map comes off the adapter, so this step decides nothing
- * and carries two facts it was handed. It runs once per deploy invocation, not once
- * per kind: the config is a property of the corpus and the harness, not of whether
- * agents or skills were the thing being placed.
+ * The corpus's vocabulary and its skills' capability configuration reach the
+ * projector as DATA on the plugin set (property 3) and the harness's native map
+ * comes off the adapter, so this step decides nothing and carries facts it was
+ * handed. It runs once per deploy invocation, not once per kind: the config is a
+ * property of the corpus and the harness, not of whether agents or skills were the
+ * thing being placed.
  *
  * A MISSING CONFIG FILE IS A WARNING, NOT A FAILURE. `deploy` is reachable with a
  * bare render tree and no corpus in sight (that is what `--agents-dir` is for), and
@@ -199,7 +203,8 @@ async function emitHostRuntimeConfig(
   // file to recover what it has is how a zero-config path ends up half-configured.
   // `install` resolves its plugins in memory and has no config file by definition —
   // it passes the vocabulary straight through rather than sending deploy to look for
-  // a file that will not be there.
+  // a file that will not be there. It passes no skills, so no capability
+  // configuration travels this path.
   if (opts.events !== undefined) {
     if (opts.events.length === 0) {
       warn(
@@ -207,7 +212,7 @@ async function emitHostRuntimeConfig(
       );
       return;
     }
-    emitAndReport(opts, opts.events, nativeEvents, log);
+    emitAndReport(opts, opts.events, [], nativeEvents, log);
     return;
   }
   const configPath =
@@ -226,7 +231,45 @@ async function emitHostRuntimeConfig(
     );
     return;
   }
-  emitAndReport(opts, events, nativeEvents, log);
+  emitAndReport(
+    opts,
+    events,
+    await skillsOf(config.extends),
+    nativeEvents,
+    log,
+  );
+}
+
+/**
+ * The skills of a resolved plugin set, by name, a later plugin's cell overriding
+ * an earlier one's — the same resolution `projectPluginSet` renders from, so the
+ * configuration emitted is the one carried by the skills actually deployed.
+ */
+async function skillsOf(plugins: readonly AgentPlugin[]): Promise<Skill[]> {
+  const dirOf = new Map<string, string>();
+  for (const p of plugins) {
+    if (!p.skills) continue;
+    for (const name of await scanCellDirNames(p.skills, 'skill')) {
+      dirOf.set(name, p.skills);
+    }
+  }
+  const skills: Skill[] = [];
+  for (const [name, dir] of [...dirOf].sort()) {
+    const modPath = await resolveModulePath(join(dir, name), 'skill');
+    if (!modPath) throw new Error(`skill module not found: ${name}/skill`);
+    // Runtime-selected: the cell module is whatever the plugin set's skill dir holds.
+    const mod = (await import(pathToFileURL(modPath).href)) as Record<
+      string,
+      unknown
+    >;
+    const skill = Object.values(mod).find(
+      (v): v is Skill =>
+        typeof v === 'object' && v !== null && 'formalBlock' in v,
+    );
+    if (!skill) throw new Error(`${modPath}: no Skill export`);
+    skills.push(skill);
+  }
+  return skills;
 }
 
 /** Emit the host runtime config and report it. One home, so the config-file path and
@@ -234,18 +277,21 @@ async function emitHostRuntimeConfig(
 function emitAndReport(
   opts: DeployCmdOpts,
   events: readonly string[],
+  skills: readonly Skill[],
   nativeEvents: Readonly<Record<string, string>>,
   log: (line: string) => void,
 ): void {
   const { path, wrote, doc } = emitRuntimeConfig({
     events: [...events],
     nativeEvents,
+    skills,
     dry: opts.dryRun ?? false,
   });
   log(
     `  runtime config${wrote ? '' : ' (dry-run)'}: ${path} — ` +
       `${doc.events.vocabulary.length} event(s), ` +
-      `${Object.keys(doc.events.native).length} with a native peer`,
+      `${Object.keys(doc.events.native).length} with a native peer, ` +
+      `${Object.keys(doc.configuration ?? {}).length} configured capability(ies)`,
   );
 }
 
