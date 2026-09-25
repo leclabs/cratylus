@@ -194,7 +194,14 @@ describe('note — a blocked unit that is withdrawn', () => {
     expect(drilled).not.toMatch(IDENTITY);
     // A second withdrawn `a` shares the marked name: now, and only now, each
     // carries its identity.
-    plan(repo, 'retract', 'a', ...BY);
+    // The retract's own view drills by the name as it stands after the write.
+    const after = spoken(repo, plan(repo, 'retract', 'a', ...BY), ['a']);
+    expect(
+      after.match(
+        /^unit: a \(identity [0-9A-Z]{26}\) \(withdrawn\) — u-new$/gm,
+      ),
+    ).toHaveLength(1);
+    expect(after).not.toContain('nothing live, withdrawn or diverged');
     const retracted = records(repo, 'unit')
       .map((f) => stored(repo, 'unit', f).envelope)
       .filter((e) => e.operation === 'retract')
@@ -207,6 +214,22 @@ describe('note — a blocked unit that is withdrawn', () => {
     expect(
       plan(repo, 'show', `a (identity ${first}) (withdrawn)`, '--plan', 'pl'),
     ).toContain(`unit: a (identity ${first}) (withdrawn) — u-new`);
+    // The marked name alone now addresses two: it refuses through the one
+    // name home, listing each in the form that addresses it.
+    const [, second] = retracted;
+    const held = refusal(
+      repo,
+      () => plan(repo, 'show', 'a of plan pl (withdrawn)'),
+      ['a'],
+    );
+    expect(held).toBe(
+      `the withdrawn unit name "a" is held by 2 withdrawn units — "a (identity ${first}) of plan pl (withdrawn)"; "a (identity ${second}) of plan pl (withdrawn)"; name one of them with its identity`,
+    );
+    expect(
+      refusal(repo, () => plan(repo, 'show', 'a (withdrawn)', '--plan', 'pl'), [
+        'a',
+      ]),
+    ).toBe(held);
     expect(one.match(/unit: a /g)).toHaveLength(1);
   });
 });

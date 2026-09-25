@@ -45,7 +45,6 @@ import * as planDomain from './plan.js';
 import {
   type Reading,
   UNWRITTEN,
-  WITHDRAWN,
   act,
   agreed,
   look,
@@ -59,7 +58,8 @@ const UNIT_ONLY = ['intent', 'static', 'deps', 'outputs', 'accept'] as const;
 /** What a write leaves the view to show: the plans, and the name drilled. */
 interface Shown {
   readonly plans: readonly string[];
-  readonly name?: Name;
+  /** The name drilled, or how to name it over the reading the write leaves. */
+  readonly name?: Name | ((after: Reading) => Name);
 }
 
 /** The plan capability over the records of the repository holding `from`. */
@@ -80,7 +80,7 @@ export function planHost(from: string = process.cwd()): PlanHost {
               ? shown.plans
               : planDomain.holders(read.plans, read.lifecycle.plan),
           ),
-          shown.name,
+          typeof shown.name === 'function' ? shown.name(read) : shown.name,
         ),
     );
 
@@ -173,6 +173,15 @@ export function planHost(from: string = process.cwd()): PlanHost {
         const asPlan = name === undefined ? undefined : read.findPlan(name);
         if (plan === undefined && asPlan !== undefined)
           return planView(read.planState([asPlan]));
+        // A marked name addresses a withdrawn unit through the one name home,
+        // and drills by the name it prints under.
+        const withdrawn =
+          name === undefined ? undefined : read.findWithdrawnUnit(name, plan);
+        if (withdrawn !== undefined)
+          return planView(
+            read.planState([read.unitVersion(withdrawn)?.plan as string]),
+            read.withdrawnUnitName(withdrawn),
+          );
         // `u of plan p`, the form a unit is printed in where no plan is in
         // view, is the unit `u` looked up in `p`.
         const qualified =
@@ -181,14 +190,7 @@ export function planHost(from: string = process.cwd()): PlanHost {
             : undefined;
         const unit = qualified?.unit ?? name;
         const scope = qualified?.plan ?? plan;
-        // A withdrawn unit's name carries its mark, last, so the marked form
-        // drills to the withdrawn unit alone.
-        const query =
-          unit === undefined
-            ? undefined
-            : qualified?.withdrawn
-              ? `${unit}${WITHDRAWN}`
-              : parsed(unit);
+        const query = unit === undefined ? undefined : parsed(unit);
         if (scope !== undefined)
           return planView(read.planState([read.resolvePlan(scope)]), query);
         if (query === undefined) return planView(read.planState(bound));
@@ -275,10 +277,12 @@ export function planHost(from: string = process.cwd()): PlanHost {
         const entity = read.resolveUnit(unit, plan);
         const of = read.unitVersion(entity)?.plan as string;
         read.unitWritable(of, 'retract');
-        const name = `${bare(read.unitName(entity))}${WITHDRAWN}`;
         read.keepRealizes('retract', [entity, null]);
         unitDomain.retract(read.store, entity, read.planWithdrawn, by);
-        return { plans: [of], name };
+        return {
+          plans: [of],
+          name: (after: Reading) => after.withdrawnUnitName(entity),
+        };
       }),
 
     revise: (name, plan, fields, by) =>

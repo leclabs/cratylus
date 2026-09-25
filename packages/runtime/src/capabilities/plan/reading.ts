@@ -404,11 +404,15 @@ export class Reading {
   }
 
   /** The withdrawn units of plan `plan` whose last version carried `name`. */
-  #withdrawnHolding(name: string, plan: string): string[] {
+  #withdrawnHolding(name: string, plan?: string): string[] {
     return [...this.units.values()]
       .filter((f) => {
         const u = f.withdrawn ? this.unitVersion(f.entity) : undefined;
-        return u?.plan === plan && u.spec.name === name;
+        return (
+          u !== undefined &&
+          (plan === undefined || u.plan === plan) &&
+          u.spec.name === name
+        );
       })
       .map((f) => f.entity);
   }
@@ -445,17 +449,39 @@ export class Reading {
       : { unit: text.slice(0, at), plan, withdrawn };
   }
 
-  /** The withdrawn unit `input` names, written `u of plan p (withdrawn)` as
-   *  `blocked` prints it; `undefined` when none does. */
-  findWithdrawnUnit(input: string): string | undefined {
-    const qualified = this.qualified(input);
-    if (!qualified?.withdrawn) return undefined;
-    const name = parsed(qualified.unit);
-    return addressed(
+  /**
+   * The withdrawn unit a marked name addresses — `u (withdrawn)`, looked up in
+   * the plan `plan` names when given, or `u of plan p (withdrawn)` — through
+   * `addressed`, like every other name: a marked name several withdrawn units
+   * carry refuses, listing each in the form that addresses it alone.
+   * `undefined` when `input` carries no mark; refuses a marked name no
+   * withdrawn unit carries.
+   */
+  findWithdrawnUnit(input: string, plan?: string): string | undefined {
+    const qualified = plan === undefined ? this.qualified(input) : undefined;
+    const marked = qualified
+      ? qualified.withdrawn && `${qualified.unit}${WITHDRAWN}`
+      : input.endsWith(WITHDRAWN) && input;
+    if (!marked) return undefined;
+    const scope = qualified?.plan ?? plan;
+    const name = parsed(marked.slice(0, -WITHDRAWN.length));
+    const entity = addressed(
       'withdrawn unit',
       name,
-      this.#withdrawnHolding(bare(name), this.resolvePlan(qualified.plan)),
+      this.#withdrawnHolding(
+        bare(name),
+        scope === undefined ? undefined : this.resolvePlan(scope),
+      ),
+      (e) =>
+        JSON.stringify(
+          `${printed({ name: bare(name), identity: e })}${OF_PLAN}${printed(this.planName(this.unitVersion(e)?.plan as string))}${WITHDRAWN}`,
+        ),
     );
+    if (entity === undefined)
+      throw new Error(
+        `no withdrawn unit is named ${JSON.stringify(input)}${plan === undefined ? '' : ` in plan ${JSON.stringify(plan)}`}`,
+      );
+    return entity;
   }
 
   /** `message` with every identity it quotes bare spoken by its entity's name,
