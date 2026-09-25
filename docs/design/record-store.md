@@ -52,9 +52,10 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
 - **head** — a record of an entity, either a version or a retraction, that no later record names.
   An entity with exactly one head is settled: live when that head is a version, withdrawn when it is
   a retraction. Factors: supersession, retraction.
-- **divergence** — an entity with more than one head, produced when concurrent sessions on
-  different branches wrote to the same head differently (two versions, or a version and a
-  retraction) and the branches merged. It is state, not error: it is reported, never silently
+- **divergence** — an entity with more than one head whose payloads differ, produced when
+  concurrent sessions on different branches wrote to the same head differently (two versions, or a
+  version and a retraction) and the branches merged. Heads that carry the same payload have
+  converged and read as one. Divergence is state, not error: it is reported, never silently
   resolved. Factors: head.
 - **incoherence** — a domain law broken across entities by a merge, although each branch kept it:
   a reference to a withdrawn entity, a cycle, one name on two live entities, or more than one
@@ -80,32 +81,33 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
   reconciled. Factors: record store.
 - **design** — the concept lattice C: every live concept with its anchor, gloss and factors. Its
   laws: one live concept per anchor, and a withdrawn concept keeps its anchor until reinstated;
-  factors are acyclic and name live concepts, so a concept that others factor on cannot be
-  retracted; every gloss and every reason is non-empty. Only the architect writes it; a planner,
-  implementer or assayer that meets divergence or incoherence reports it and never resolves it.
-  Factors: record store, reconciliation.
+  factors form a set, are acyclic and name live concepts, so a concept that others factor on cannot
+  be retracted; every gloss and every reason is non-empty. The design knows nothing of plans. Only
+  the architect writes it; a planner, implementer or assayer that meets divergence or incoherence
+  reports it and never resolves it. Factors: record store, reconciliation.
 - **plan** — an entity naming the concepts it realizes and its lifecycle: proposed, bound, then
-  closed. Binding a plan returns whichever plan was bound to proposed, so at most one plan is bound,
-  and when a merge leaves two, binding the one to keep resolves it. An owed ruling that names a plan
-  blocks binding it and every unit in it. A closed plan stays readable forever; closing replaces
-  retiring by deletion. Factors: record store, notebook.
+  closed. One live plan per name. Binding a plan returns whichever plan was bound to proposed, so at
+  most one plan is bound, and when a merge leaves two, binding the one to keep resolves it. An owed
+  ruling that names a plan blocks binding it and every unit in it. A closed plan stays readable
+  forever; closing replaces retiring by deletion. Factors: record store, notebook.
 - **unit** — one unit of work in a plan, realizing exactly one concept, the one its pin names, and
-  carrying its full spec and lifecycle state. Its dependencies are acyclic and name live units of
-  the same plan. Readiness is computed, never stored: a unit is ready when every dependency has
-  reached completion or moved past it and no owed ruling names the unit or its plan. Factors: plan,
-  pin, notebook.
+  carrying its full spec and lifecycle state, which moves forward one step at a time. One live unit
+  per name within its plan. Its dependencies are acyclic and name live units of the same plan.
+  Readiness is computed, never stored: a unit is ready when every dependency has reached completion
+  or moved past it and no owed ruling names the unit or its plan. Factors: plan, pin, notebook.
 - **pin** — a unit's reference to the concept version it realizes, taken when the unit is authored,
   and only when that concept and its whole closure are settled and live. A unit is **drifted** when
-  its pinned version is no longer a head, and otherwise **suspect** when any other concept in the
-  closure has diverged, been withdrawn or gained a newer version since the pin was taken. Factors:
-  head, divergence, design.
+  its pinned version is no longer the concept's only head (the concept was amended, withdrawn or has
+  diverged), and otherwise **suspect** when any other concept in the closure has diverged, been
+  withdrawn or gained a newer version since the pin was taken. A retraction in the design never
+  breaks a plan's laws; it drifts the units pinned to it. Factors: head, divergence, design.
 
 ### How they are met
 
 - **view** — a domain's current state computed at query time and rendered for its reader in three
   layers: a header naming the commit it was computed at, with counts; everything that must be
   resolved before the rest is trusted (divergence, incoherence, drift, suspect units, owed
-  rulings, open questions); then the whole domain in its own structure, one line for every live
+  rulings); then the whole domain in its own structure, one line for every live
   item, including one the structure cannot yet place. The lattice runs root to primitive, ordered by
   the view from the factors it is given; the plan runs in wave order with the frontier marked in
   place; the notebook groups by kind and topic. Design and plan views cross-reference: each concept
@@ -121,10 +123,12 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
   - `note` shows the whole notebook or one note, and captures, revises, retracts and reconciles
     notes.
     Agents never see record ids, envelopes, heads or files. A payload names entities by name and
-    the interface resolves them. Every write keeps its domain's laws on the current branch: a
-    write that would break one is refused, so incoherence, like divergence, arises only from
-    merges. An ordinary write on a diverged item refuses and points to `reconcile`. Factors: view,
-    notebook, design, plan, unit.
+    the interface resolves them. Where a name cannot address one entity, because a merge left it on
+    two live entities, the interface shows and accepts each entity's identity beside the name; that
+    is the one place an identity surfaces, and nothing else is invented to stand for it. Every write
+    keeps its domain's laws on the current branch: a write that would break one is refused, so
+    incoherence, like divergence, arises only from merges. An ordinary write on a diverged item
+    refuses and points to `reconcile`. Factors: view, notebook, design, plan, unit.
 - **skill routing** — each skill routes its reader's intents to its own domain interface in its
   own vocabulary, and holds its domain's authority rules: reconciliation of design and plans is the
   architect's alone, and of notes anyone's. `plan` pins and advances. `deliver` reads both and
