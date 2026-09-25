@@ -11,7 +11,7 @@ in the world, naming someone an architect tells you how they reason, what they a
 what they may decide, what they must delegate, and what they are never asked to do. That is the
 standard sociological account — a role is the set of expectations attached to a position (Linton), a
 person holds a **role-set** rather than one role (Merton), and incompatible demands between two held
-roles are **role conflict**, a named phenomenon with named resolutions rather than an undefined
+roles are **role conflict**, a named phenomenon rather than an undefined
 state. This document adopts that account unreservedly, because it is what the word already means and
 because a corpus whose roles mean what roles mean needs no second vocabulary.
 
@@ -21,12 +21,23 @@ generative-video production domain. `mav` and `nico` collide on `build` today fo
 reverse: `build` is a _label_, not a bundle, so it cannot separate two agents whose real expectations
 differ completely.
 
+**One agent holds exactly ONE role.** A person's role-set is real and situational — the same
+practitioner is an architect on one project and an implementer on another, and switches hats within a
+day. In this system that situational switch is modelled by **dispatch**, not by a multi-role agent:
+the situation selects which agent runs, and each agent is legible as one position. That is not only
+simpler, it is what makes collaboration decidable. A role is the **contract a peer relies on** — when
+the architect dispatches to the planner it reasons about the planner's role to know what comes back
+— and a union of several roles is a contract no dispatcher can reason about. Singular arity also
+deletes role conflict outright: two roles can never demand different values of one aspect inside one
+agent, because there is only ever one role.
+
 **The relation is COMPOSITION, not inheritance.** `kino` does not derive from `architect`; both hold
-the architect role. An is-a lineage admits one parent and makes identity a chain, while a person or
-agent holds several roles at once — architect, bibliographer, priest, parent — and acquires a new one
-without being re-parented. The aspects union; where two roles demand different values of the same
-aspect, that is role conflict and must be declared, never silently merged. Today a role in this
-corpus is a bare scalar token, which is defect D3.
+the architect role, and what differs is `kino`'s **residue** — the personification beyond the
+position, including its film-domain capabilities. Domain expertise is not a second role: a structural
+engineer and a production designer both hold the architect position and differ in what they know. An
+is-a lineage would make identity a chain and force the film domain to become a subclass; holding a
+role and adding residue does not. Today a role in this corpus is a bare scalar token, which is defect
+D3.
 
 ## 1. What is true today (census, 2026-09-25)
 
@@ -143,7 +154,7 @@ which is the one language the principal can check without descending.
 2. **`planning-decomposition` comes off the architect role,** which is one edit reaching every agent
    that holds it. It is the declaration that contradicts the rung. The role keeps `system-design`,
    `research-investigation`, `review-critique`; `kino` keeps its two film capabilities in its
-   generative-video role.
+   residue.
 3. **The elevation gate binds `subagent.dispatch.pre` and a tool-use-pre moment — never `turn.end`.**
    Descending the rung is a mid-turn act: dispatching an implementer where a planner belongs, or editing
    a file at all. Stop fires after the text and is structurally blind to it. This is the same blind spot
@@ -155,11 +166,13 @@ which is the one language the principal can check without descending.
 5. **The witness is an agent holding a witness role whose elevation is `⟨artifact, C⟩`,** and its
    return is concept-typed. It performs the reverse translation of `plan`, reports unachieved
    concepts in `C`'s vocabulary, and never returns mechanical prose or a verdict.
-6. **An agent holds a ROLE-SET, and its vector is the union of its roles plus its own residue.** No
-   new primitive is minted for this and no `composite`/`extends`/`base` anchor is coined: the word
-   for a bundle of expected aspects is **role**, and the corpus already has it — anemically. The
-   reusable unit was never missing, only never written down. `architect` the agent becomes what
-   `kino` is: a thin cell holding roles.
+6. **An agent holds exactly ONE role plus a residue, and `select(a) = role(a) ⊕ residue(a)`.** No new
+   primitive is minted and no `composite`/`extends`/`base` anchor is coined: the word for a bundle of
+   expected aspects is **role**, and the corpus already has it — anemically. The reusable unit was
+   never missing, only never written down. Role aspects are marked **constitutive** or **default**:
+   residue may override a default and may never override a constitutive one, so the position keeps
+   the guarantees a peer dispatches against. `architect` the agent becomes the near-bare holder of
+   the architect role; `kino` is the same role with a film residue.
 
 ## 5. Units
 
@@ -170,59 +183,59 @@ Order matters only where stated. Each unit's acceptance criteria are mechanical.
 Every other unit below is stated against a role and shrinks to one edit once this exists.
 
 Promote `role` out of `MANIFEST` — it is not a dimension, it is a structure over dimensions. A role
-is a named partial vector: the aspects expected of anyone holding it. An agent declares its
-**role-set** and the residue it states for itself; `select` folds them **before** `compose`/`deploy`,
-so the emitted Target is as flat as it is today and `kino.ts:41-44`'s real requirement is met at the
-seam that actually holds it.
+is a named partial vector: the aspects expected of anyone holding the position, each marked
+**constitutive** (what makes the holder that thing) or **default** (typical, and the holder may
+differ). An agent declares one role and its own residue; `select` folds the two **before**
+`compose`/`deploy`, so the emitted Target is as flat as it is today and `kino.ts:41-44`'s real
+requirement is met at the seam that actually holds it.
 
-`⊕` is governed by the `arity` the manifest already carries — no second table, no per-dimension
-special cases:
+The fold has exactly two operands and a defined precedence, so it needs no ordering rule and no
+conflict resolution — set-arity aspects union, scalar aspects take the residue's value when it states
+one:
 
 ```
-role ≜ (DimensionName ⇸ ℘(fragment)) ⟨NAMED · partial · the EXPECTATIONS of anyone holding it⟩
+role ≜ (DimensionName ⇸ ℘(fragment)) × (DimensionName → {constitutive, default})
+       ⟨NAMED · partial · the EXPECTATIONS of anyone holding the position⟩
        ⟨∉ MANIFEST : a role is made OF dimension values ∴ ¬ one of them⟩
-role-set : agent → ℘(role) ⟨Merton · architect ∧ bibliographer ∧ priest ∧ parent⟩
-residue : agent → (DimensionName ⇸ ℘(fragment)) ⟨the holder beyond their roles⟩
-select(a) = (⊕ role-set(a)) ⊕ residue(a)
-⊕ ⊨ arity @ manifest ⟨arity(d) = set ⇒ ∪ · arity(d) = scalar ⇒ see role-conflict⟩
-⊕ associative ∧ ⊕ order-free ⟨∄ precedence by position · last-wins would make the vector
-    ORDER-SENSITIVE and silently settle a conflict the corpus should be told about⟩
-role-conflict ⇔ ∃ scalar d : |⊕(d)| > 1 ∧ d ∉ residue(a)
-role-conflict ⇒ REFUSE @ accept ⟨naming d, the roles, and the demanded values⟩
-    ⟨remedy : residue(a)(d) states the value EXPLICITLY ⟨⊕σ* where genuinely combined⟩
-     ∨ arity(d) is wrong ∧ the CATALOG is amended ⟨deliberate, ¬ an implicit merge⟩⟩
+role : agent → role ⟨SINGULAR · the contract a PEER dispatches against⟩
+residue : agent → (DimensionName ⇸ ℘(fragment)) ⟨the holder beyond the position⟩
+select(a) = role(a) ⊕ residue(a)
+⊕ ⊨ arity @ manifest ⟨set ⇒ role ∪ residue · scalar ⇒ residue if stated, else role⟩
+constitutive(role(a), d) ∧ d ∈ residue(a) ⇒ REFUSE @ accept
+    ⟨naming d, the role, and both values · a holder that may override what CONSTITUTES the position
+     does not hold it, and every peer reasoning from the role has been misled⟩
 ∀ required d : d ∈ select(a) ⟨a role-supplied value satisfies required⟩
-provenance.mark ⊭ ⊕ ⟨instance-bound @ create-agent · the PERSON, ¬ the role⟩
+provenance.mark ⊭ ⊕ ⟨instance-bound @ create-agent · the HOLDER, ¬ the position⟩
 ```
 
-**Role conflict is the load-bearing rule, and it is why "multiple roles" is answerable here rather
-than undefined.** Hold architect and parent at once and the aspects union cleanly until two roles
-demand different values of one scalar aspect — `formality`, say. In the world that is resolved by
-situational salience, and situation is exactly what a static agent vector does not have. So the
-corpus refuses at `accept()`, naming both roles and both values, and the agent's holder settles it in
-its residue. Silence would be the one unacceptable answer: an agent whose formality was decided by
-import order is an agent nobody authored.
+**Constitutive-versus-default is the load-bearing distinction, and it is what makes singular arity
+safe rather than merely simple.** If residue could override anything, the role would guarantee
+nothing: `kino` could quietly restate its elevation and stop being an architect while still declaring
+the role, and the gate in U6 — which scores the role's elevation — would be scoring a claim the agent
+had already escaped. So `elevation` is constitutive on every role that has one. `framing` and
+`transparency` are defaults, which is exactly why `kino` may differ on both without ceasing to be an
+architect.
 
 Non-dimension fields — `description`, `archetype`, `skills` — fold the same way, with `skills`
-set-like and the prose fields holder-stated (a role may supply a default; two roles supplying
-different ones is a conflict). `provenance.mark` never folds: it belongs to the holder, not the role,
-and shared marks make two agents indistinguishable in a transcript.
+set-like and the prose fields residue-stated over a role-supplied default. `provenance.mark` never
+folds: it belongs to the holder, not the position, and shared marks make two agents indistinguishable
+in a transcript.
 
-Then write the **architect role** out in full from what `architect.ts` states today — its elevation,
-`objective`, `autonomy` set, engineering principles, `capabilities`, `self-evaluation`,
-`situation-awareness`, `learning`, `skills` — and rewrite **both** `agents/architect.ts` and
-`agents/kino.ts` as holders of it. `architect` adds `framing: systems-thinking`,
-`transparency: decision-rationale` and its own prose as residue; `kino` holds the same architect role
-plus a generative-video role carrying `film-production`, `generative-video`, `framing: user-centered`
-and `transparency: provenance-attribution`, with its own prose and mark as residue. Neither file
-restates a shared expectation. Replace the `kino.ts:41-44` comment, which argued for the copy, with
-one naming the role-set.
+Then write the **architect role** out in full from what `architect.ts` states today — its elevation
+(constitutive), `objective`, `autonomy` set, engineering principles, `capabilities`,
+`self-evaluation`, `situation-awareness`, `learning`, `skills` — and rewrite **both**
+`agents/architect.ts` and `agents/kino.ts` as holders of it. `architect` becomes near-bare: the role,
+`framing: systems-thinking`, `transparency: decision-rationale` and its own prose. `kino` holds the
+same role with a residue of `film-production`, `generative-video`, `framing: user-centered`,
+`transparency: provenance-attribution`, its own prose and its mark. Neither file restates a shared
+expectation. Replace the `kino.ts:41-44` comment, which argued for the copy, with one naming the role
+and what the residue adds.
 
 **Acceptance.** Neither `architect.ts` nor `kino.ts` states any dimension the other also states;
 `pnpm project` emits both Targets **byte-identical** to today's except for what U1/U3 deliberately
-change — run as a before/after diff, not asserted; a role conflict fails `accept()` with a message
-naming the dimension, the roles and the conflicting values; reordering an agent's role-set changes no
-emitted byte; an agent omitting `provenance.mark` fails rather than receiving one.
+change — run as a before/after diff, not asserted; a residue overriding a constitutive aspect fails
+`accept()` with a message naming the dimension, the role and both values; an agent omitting
+`provenance.mark` fails rather than receiving one; no agent declares more than one role.
 
 ### U1 · The architect role's elevation aspect
 
@@ -274,7 +287,7 @@ projection changes (nothing carries this elevation until U5).
 
 Remove `planningDecomposition_capabilities` from the architect role, with its import.
 After U0 that is the whole unit: every agent holding it carries the corrected set, and `kino`'s
-generative-video role names only the two film capabilities. Delete the now-false comment fragment "the
+residue names only the two film capabilities. Delete the now-false comment fragment "the
 decomposition that hands work out" wherever U0 left it.
 
 **Acceptance.** Neither projected Target lists planning-decomposition, and only ONE source file was
@@ -372,13 +385,15 @@ deployed artifact.
 - Do **not** try to enforce elevation by deleting capabilities alone. U3 is necessary and is not
   sufficient: an absence cannot be cited by a gate, which is defect D1.
 - Do **not** remove `deliver` from `kino`. Judgment stays with the design-holder; only the read moves.
-- Do **not** resolve a role-set at deploy time or leave one unresolved in the Target. A harness reads
+- Do **not** resolve a role at deploy time or leave one unresolved in the Target. A harness reads
   a flat declaration; the fold belongs at `select`, before `compose`.
 - Do **not** implement this as inheritance — no `extends`, no parent pointer, no single-base chain,
-  and no abstract cell nobody dispatches. An agent holds N roles; `architect` is a
-  thin composition exactly as `kino` is.
-- Do **not** resolve a role conflict by declaration order or by last-wins. It fails at `accept()`,
-  and the fix is an explicit value in the holder's residue, or an arity the catalog amends deliberately.
+  and no abstract cell nobody dispatches. An agent holds one role and a residue; `architect` is a
+  thin holder exactly as `kino` is.
+- Do **not** give an agent a second role to carry domain expertise. Domain lives in the residue; a
+  situational second position is a second AGENT, selected by dispatch.
+- Do **not** let a residue override a constitutive aspect. It fails at `accept()`, and the fix is
+  either a different role or a role whose author marked that aspect a default.
 - Do **not** let `provenance.mark` compose. It is instance-bound, and two agents sharing a mark are
   indistinguishable in the one place an operator reads them.
 - Do **not** treat `kino` as a second rung with its own elevation laws. It is the same elevation
