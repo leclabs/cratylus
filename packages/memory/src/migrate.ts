@@ -1,8 +1,8 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { monotonicFactory } from '@cratylus/runtime/ulid';
 import type { EpisodicRecord, JsonValue } from './record.js';
 import { serializeRecord } from './record.js';
 import { DEFAULT_EPISODIC_PATH } from './store.js';
-import { monotonicFactory } from './ulid.js';
 
 /**
  * One-time migration: convert a live agent's markdown `EPISODIC.md` into the

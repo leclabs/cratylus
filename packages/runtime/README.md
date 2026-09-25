@@ -46,6 +46,7 @@ what keeps the build DAG and the runtime DAG from reaching across.
 | `./main`                   | `runCli` — the thin `cac` CLI over loader + dispatch                               |
 | `./runtime-config`         | `loadRuntimeConfig`, `runtimeConfigPath`, `RuntimeConfig`                          |
 | `./bin-name`               | `CLI_BIN` — the one home for the executable's name on PATH                         |
+| `./ulid`                   | `ulid`, `monotonicFactory`, `decodeTime`, `isValidUlid` — the one ULID             |
 | `./capabilities/event-tap` | the event-tap capability, which ships inside the runtime rather than as a plugin   |
 
 The `.` barrel is pure contracts plus one identity helper: no implementation.

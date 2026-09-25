@@ -1,4 +1,4 @@
-import { isValidUlid } from './ulid.js';
+import { isValidUlid } from '@cratylus/runtime/ulid';
 
 /**
  * An EPISODIC record as written at capture time — minimal and **open**.

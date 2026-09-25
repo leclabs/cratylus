@@ -50,6 +50,10 @@
     "./runtime-config": {
       "types": "./dist/runtime-config.d.ts",
       "import": "./dist/runtime-config.js"
+    },
+    "./ulid": {
+      "types": "./dist/ulid.d.ts",
+      "import": "./dist/ulid.js"
     }
   },
   "files": ["dist"],

@@ -6,12 +6,12 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { join } from 'node:path';
+import { monotonicFactory } from '@cratylus/runtime/ulid';
 import {
   type EpisodicItem,
   assertLinesFromSource,
   extractItems,
 } from './migrate.js';
-import { monotonicFactory } from './ulid.js';
 
 /**
  * One-time migration: convert a live agent's monolithic markdown `MEMORY.md`

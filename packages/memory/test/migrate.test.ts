@@ -1,6 +1,7 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { monotonicFactory } from '@cratylus/runtime/ulid';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   assertLinesFromSource,
@@ -12,7 +13,6 @@ import {
   recordsToJsonl,
 } from '../src/migrate.js';
 import { parseLines } from '../src/store.js';
-import { monotonicFactory } from '../src/ulid.js';
 
 /** A deterministic, strictly-increasing ULID source for reproducible records. */
 function fixedMint(): () => string {

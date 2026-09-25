@@ -7,6 +7,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { monotonicFactory } from '@cratylus/runtime/ulid';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   assertNoLoss,
@@ -17,7 +18,6 @@ import {
   shardsToItems,
 } from '../src/migrate-memory.js';
 import { extractItems } from '../src/migrate.js';
-import { monotonicFactory } from '../src/ulid.js';
 
 /** A deterministic, strictly-increasing ULID source for reproducible shard ids. */
 function fixedMint(): () => string {

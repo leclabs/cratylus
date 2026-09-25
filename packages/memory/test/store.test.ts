@@ -7,6 +7,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { monotonicFactory } from '@cratylus/runtime/ulid';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { parseRecord, serializeRecord } from '../src/record.js';
 import {
@@ -15,7 +16,6 @@ import {
   EpisodicStore,
   parseLines,
 } from '../src/store.js';
-import { monotonicFactory } from '../src/ulid.js';
 
 let root: string;
 let home: string;

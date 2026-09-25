@@ -8,11 +8,11 @@ import {
 } from 'node:fs';
 import { hostname, tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { ulid } from '@cratylus/runtime/ulid';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { main } from '../src/cli.js';
 import { shortHost } from '../src/node.js';
 import { parseLines } from '../src/store.js';
-import { ulid } from '../src/ulid.js';
 
 // `read` + `drain` are LIVENESS-AWARE — a live OTHER session's
 // residue is invisible to a reader and untouched by a drain, while completed

@@ -20,6 +20,7 @@ import {
   resolve,
   sep,
 } from 'node:path';
+import { ulid as defaultUlid } from '@cratylus/runtime/ulid';
 import { shortHost } from './node.js';
 import {
   type EpisodicRecord,
@@ -28,7 +29,6 @@ import {
   serializeRecord,
 } from './record.js';
 import { liveSessions } from './session.js';
-import { ulid as defaultUlid } from './ulid.js';
 
 /** Default raw-log filename within the agent home. */
 export const DEFAULT_EPISODIC_PATH = 'EPISODIC.jsonl';
