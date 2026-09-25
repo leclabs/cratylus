@@ -45,6 +45,7 @@ import * as planDomain from './plan.js';
 import {
   type Reading,
   UNWRITTEN,
+  WITHDRAWN,
   act,
   agreed,
   look,
@@ -180,7 +181,14 @@ export function planHost(from: string = process.cwd()): PlanHost {
             : undefined;
         const unit = qualified?.unit ?? name;
         const scope = qualified?.plan ?? plan;
-        const query = unit === undefined ? undefined : parsed(unit);
+        // A withdrawn unit's name carries its mark, last, so the marked form
+        // drills to the withdrawn unit alone.
+        const query =
+          unit === undefined
+            ? undefined
+            : qualified?.withdrawn
+              ? `${unit}${WITHDRAWN}`
+              : parsed(unit);
         if (scope !== undefined)
           return planView(read.planState([read.resolvePlan(scope)]), query);
         if (query === undefined) return planView(read.planState(bound));
@@ -267,7 +275,7 @@ export function planHost(from: string = process.cwd()): PlanHost {
         const entity = read.resolveUnit(unit, plan);
         const of = read.unitVersion(entity)?.plan as string;
         read.unitWritable(of, 'retract');
-        const name = bare(read.unitName(entity));
+        const name = `${bare(read.unitName(entity))}${WITHDRAWN}`;
         read.keepRealizes('retract', [entity, null]);
         unitDomain.retract(read.store, entity, read.planWithdrawn, by);
         return { plans: [of], name };

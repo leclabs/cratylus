@@ -237,7 +237,7 @@ describe('plan — proposed by its first unit, bound, shown, revised and closed'
       /b would reference withdrawn a/,
     );
     expect(plan(repo, 'retract', 'b', ...BY)).toContain(
-      'unit: b — u-new, withdrawn',
+      'unit: b (withdrawn) — u-new',
     );
     plan(repo, 'retract', 'a', ...BY);
     expect(show(repo, [], 'pl')).toMatch(/0 units/);

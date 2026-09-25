@@ -180,28 +180,34 @@ describe('note — what a note blocks, named so it addresses one', () => {
 });
 
 describe('note — a blocked unit that is withdrawn', () => {
-  it('prints it marked withdrawn, in the form `plan show` drills to its last version by, alone even beside a live namesake', () => {
+  it('prints it marked withdrawn, the mark part of its name, so it addresses it alone beside a live namesake; an identity only where two withdrawn units share it', () => {
     const repo = repository();
     plans(repo);
     capture(repo, 'hold', '--blocks', 'a of plan pl');
     expect(plan(repo, 'show', 'a of plan pl')).toContain('unit: a — u-new\n');
     plan(repo, 'retract', 'a', ...BY);
-    expect(show(repo)).toContain('blocks a of plan pl (withdrawn)');
-    expect(plan(repo, 'show', 'a of plan pl (withdrawn)')).toContain(
-      'unit: a — u-new, withdrawn',
-    );
     plan(repo, 'add', 'a', '--plan', 'pl', '--realizes', 'c', ...BY);
-    const [withdrawn] = records(repo, 'unit')
+    expect(show(repo)).toContain('blocks a of plan pl (withdrawn)');
+    const drilled = plan(repo, 'show', 'a of plan pl (withdrawn)');
+    expect(drilled).toContain('unit: a (withdrawn) — u-new');
+    expect(drilled).not.toContain('unit: a — ');
+    expect(drilled).not.toMatch(IDENTITY);
+    // A second withdrawn `a` shares the marked name: now, and only now, each
+    // carries its identity.
+    plan(repo, 'retract', 'a', ...BY);
+    const retracted = records(repo, 'unit')
       .map((f) => stored(repo, 'unit', f).envelope)
       .filter((e) => e.operation === 'retract')
       .map((e) => e.entity);
-    const printedForm = `a (identity ${withdrawn}) of plan pl (withdrawn)`;
+    const [first] = retracted;
+    const printedForm = `a (identity ${first}) of plan pl (withdrawn)`;
     expect(show(repo, ['a'])).toContain(`blocks ${printedForm}`);
-    const drilled = spoken(repo, plan(repo, 'show', printedForm), ['a']);
-    expect(drilled).toContain(
-      `unit: a (identity ${withdrawn}) — u-new, withdrawn`,
-    );
-    expect(drilled).not.toContain('unit: a — u-new, frontier');
+    const one = spoken(repo, plan(repo, 'show', printedForm), ['a']);
+    expect(one).toContain(`unit: a (identity ${first}) (withdrawn) — u-new`);
+    expect(
+      plan(repo, 'show', `a (identity ${first}) (withdrawn)`, '--plan', 'pl'),
+    ).toContain(`unit: a (identity ${first}) (withdrawn) — u-new`);
+    expect(one.match(/unit: a /g)).toHaveLength(1);
   });
 });
 

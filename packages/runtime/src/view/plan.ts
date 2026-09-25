@@ -107,7 +107,8 @@ export interface PlanState extends Computed {
   /** The diverged units of the plans shown, each holding its place. */
   readonly divergedUnits: readonly DivergedUnit[];
   /** Withdrawn plans and units, each its last version, so a withdrawn holder
-   *  of a shared name drills to what the view is given of it. */
+   *  of a shared name drills to what the view is given of it. A withdrawn
+   *  unit's name carries its mark, `u (withdrawn)`. */
   readonly withdrawnPlans: readonly Plan[];
   readonly withdrawnUnits: readonly Unit[];
   readonly incoherent: readonly Incoherence[];
@@ -277,7 +278,7 @@ export function planView(state: PlanState, name?: Name): string {
           .map((p) => planInFull(p)),
         ...state.withdrawnUnits
           .filter((u) => denotes(name, u.name))
-          .map((u) => unitInFull(u, `${u.state}, withdrawn`)),
+          .map((u) => unitInFull(u, u.state)),
         ...state.withdrawnPlans
           .filter((p) => denotes(name, p.name))
           .map((p) => planInFull(p, ' — withdrawn')),
