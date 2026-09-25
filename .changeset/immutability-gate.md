@@ -15,7 +15,8 @@ through neither the `.` barrel nor a subpath, and runs from source through the p
 staged changes. The gates workflow runs it over the pushed range (a pull request's commits, or a
 push's `before` to `after`), judging every commit against each of its parents, so a later commit
 cannot mask an earlier edit: a record added then edited, or edited then restored, is refused. A
-push is also read at its endpoints: a record present at `before` and absent at `after` is refused,
-so a force-push cannot drop a record that no commit of the new range deletes.
+push is also read at its endpoints: a record present at `before` that `after` does not hold
+unchanged (bytes, mode, presence) is refused, so a force-push or an amend cannot drop or rewrite a
+record that no commit of the new range modifies or deletes.
 
 `@cratylus/canon`: the test registry classifies the new immutability-gate test under `runtime`.

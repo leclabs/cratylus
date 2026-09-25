@@ -223,4 +223,67 @@ describe('immutability gate', () => {
     expect(immutabilityGate(changes(`${before}..${after}`, repo))).toEqual([]);
     expect(immutabilityGate(pushed(before, after, repo))).toEqual([dropped]);
   });
+
+  /**
+   * A record `before` adds on top of a fork, then `rewrite` run from `before`, which
+   * rewrites history into `after`; returns what the push's two readings refuse.
+   */
+  function forcePush(
+    rewrite: (repo: string, record: string, fork: string) => void,
+  ): {
+    record: string;
+    commits: string[];
+    push: string[];
+  } {
+    const { repo } = repositoryWithRecord();
+    const fork = git(repo, 'rev-parse', 'HEAD');
+    const record = put(
+      repo,
+      `${RECORDS_ROOT}/concept/${ulid()}.json`,
+      '{"v":1}',
+    );
+    git(repo, 'add', '-A');
+    git(repo, 'commit', '-q', '-m', 'add');
+    const before = git(repo, 'rev-parse', 'HEAD');
+    rewrite(repo, record, fork);
+    const after = git(repo, 'rev-parse', 'HEAD');
+    return {
+      record,
+      commits: immutabilityGate(changes(`${before}..${after}`, repo)),
+      push: immutabilityGate(pushed(before, after, repo)),
+    };
+  }
+
+  it('a push whose amend rewrote a record REFUSES, naming its path', () => {
+    const { record, commits, push } = forcePush((repo, path) => {
+      put(repo, path, '{"v":2}');
+      git(repo, 'commit', '-q', '-a', '--amend', '--no-edit');
+    });
+    // the amended commit adds the record against its parent, so its commits pass
+    expect(commits).toEqual([]);
+    expect(push).toEqual([record]);
+  });
+
+  it('a push whose amend changed a record mode REFUSES, naming its path', () => {
+    const { record, commits, push } = forcePush((repo, path) => {
+      git(repo, 'update-index', '--chmod=+x', path);
+      git(repo, 'commit', '-q', '--amend', '--no-edit');
+    });
+    expect(commits).toEqual([]);
+    expect(push).toEqual([record]);
+  });
+
+  it('a push that dropped a record then re-added it with other bytes REFUSES, naming its path', () => {
+    const { record, commits, push } = forcePush((repo, path, fork) => {
+      git(repo, 'reset', '-q', '--hard', fork);
+      put(repo, `${RECORDS_ROOT}/concept/${ulid()}.json`, '{"v":1}');
+      git(repo, 'add', '-A');
+      git(repo, 'commit', '-q', '-m', 'another');
+      put(repo, path, '{"v":2}');
+      git(repo, 'add', '-A');
+      git(repo, 'commit', '-q', '-m', 're-add');
+    });
+    expect(commits).toEqual([]);
+    expect(push).toEqual([record]);
+  });
 });

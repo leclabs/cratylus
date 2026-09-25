@@ -20,9 +20,11 @@
 // additions, so it passes; a root commit is judged against the empty tree.
 //
 // A push is read twice, and both readings hold: its commits, as above, and its
-// endpoints — a record present at `before` and absent at `after` is refused as a
-// deletion. A push that rewrites history (a force-push) drops records without any
-// commit of the new range deleting them, and only the endpoints see that. A pull
+// endpoints — `before` against `after` under the same rule, so a record present
+// at `before` is refused unless `after` holds it unchanged: its bytes modified,
+// its mode changed, or it deleted. A push that rewrites history (a force-push, an
+// amend) can drop or rewrite a record without any commit of the new range
+// modifying or deleting it, and only the endpoints see that. A pull
 // request's commits are read alone: its base moves on, so its endpoints differ by
 // whatever the base gained.
 //
@@ -106,8 +108,8 @@ export function changes(range?: string, cwd: string = process.cwd()): Change[] {
 
 /**
  * The changes of a push from `before` to `after` in the repository at `cwd`: every
- * commit of `before..after` against each of its parents, and the deletion of every
- * path present at `before` and absent at `after`.
+ * commit of `before..after` against each of its parents, and `after` against
+ * `before`.
  */
 export function pushed(
   before: string,
@@ -116,9 +118,7 @@ export function pushed(
 ): Change[] {
   return [
     ...changes(`${before}..${after}`, cwd),
-    ...listed(
-      git(cwd, ['diff', '--diff-filter=D', ...LISTING, before, after, '--']),
-    ),
+    ...listed(git(cwd, ['diff', ...LISTING, before, after, '--'])),
   ];
 }
 

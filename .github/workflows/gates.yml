@@ -48,8 +48,9 @@ jobs:
       # source, so it needs no build and runs before one. A pull request is read as its
       # commits (base..head: those head holds and base does not, so records main gained
       # since the fork are never read). A push is read as its commits `before..after` AND
-      # its endpoints: a record present at `before` and absent at `after` is refused, which
-      # is the only reading that sees a force-push drop a record. A force-push leaves
+      # its endpoints: a record present at `before` that `after` does not hold unchanged
+      # (bytes, mode, presence) is refused, which is the only reading that sees a force-push
+      # or an amend drop or rewrite a record. A force-push leaves
       # `before` on no branch, so a full-history clone can still lack it; it is fetched by
       # sha. A push with no `before` (the zero sha, a new branch) and any other event read
       # the whole history of head.
