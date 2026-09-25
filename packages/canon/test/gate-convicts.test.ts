@@ -319,6 +319,9 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'runtime/carry-on.test.ts': 'GATE',
   // the DAG-guard leg scans every capability source file for a forge import.
   'runtime/event-tap.test.ts': 'GATE',
+  // stages and commits changes in temp repositories it builds itself; its refusals (a
+  // modified, deleted, renamed, retyped record) ARE its fixtures.
+  'runtime/immutability-gate.test.ts': 'BEHAVIORAL',
   'runtime/kernel.test.ts': 'BEHAVIORAL',
   // the "unregistered" leg scans loader/plugin/package/tsup for the placeholder.
   'runtime/provisional-mailbox.test.ts': 'BEHAVIORAL',

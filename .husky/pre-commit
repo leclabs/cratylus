@@ -13,3 +13,8 @@ STAGED_MD=$(git diff --cached --name-only --diff-filter=ACM -- '*.md' | while IF
 if [ -n "$STAGED_MD" ]; then
   echo "$STAGED_MD" | xargs pnpm exec prettier --check
 fi
+
+# The immutability gate: a staged change that modifies, moves or deletes an existing
+# record under the records root is refused, naming its paths; additions pass. It
+# runs from source (`tsx`), because pre-commit runs before any build.
+pnpm --silent --filter @cratylus/runtime immutability-gate

@@ -62,6 +62,7 @@
     "typecheck": "tsc --noEmit",
     "typecheck:test": "tsc -p tsconfig.test.json",
     "test": "vitest run",
+    "immutability-gate": "tsx src/record-store/immutability-gate.ts",
     "clean": "rm -rf dist",
     "dev": "tsup --watch",
     "prepack": "pnpm run build"
@@ -72,6 +73,7 @@
   "devDependencies": {
     "@types/node": "catalog:",
     "tsup": "catalog:",
+    "tsx": "^4.19.0",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
