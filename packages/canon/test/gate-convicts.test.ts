@@ -317,12 +317,22 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   // drive both predicates over planted sources, and the elevate legs drive the real
   // verb surface with a host whose `install` does nothing.
   'runtime/carry-on.test.ts': 'GATE',
+  // drives the `design` verb surface over temporary git repositories it builds and
+  // merges itself; its refusals ARE its fixtures.
+  'runtime/design.test.ts': 'BEHAVIORAL',
   // the DAG-guard leg scans every capability source file for a forge import.
   'runtime/event-tap.test.ts': 'GATE',
   // stages and commits changes in temp repositories it builds itself; its refusals (a
   // modified, deleted, renamed, retyped record) ARE its fixtures.
   'runtime/immutability-gate.test.ts': 'BEHAVIORAL',
   'runtime/kernel.test.ts': 'BEHAVIORAL',
+  // drives the `note` verb surface over temporary git repositories it builds and
+  // merges itself; its refusals ARE its fixtures.
+  'runtime/note.test.ts': 'BEHAVIORAL',
+  // drives the `plan` verb surface over temporary git repositories it builds and
+  // merges itself, under a lifecycle configuration it writes; its refusals ARE its
+  // fixtures.
+  'runtime/plan.test.ts': 'BEHAVIORAL',
   // the "unregistered" leg scans loader/plugin/package/tsup for the placeholder.
   'runtime/provisional-mailbox.test.ts': 'BEHAVIORAL',
   // writes, folds and merges records in temp repositories it builds itself; its

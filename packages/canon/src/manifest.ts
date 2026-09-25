@@ -217,6 +217,9 @@ export const RUNTIME_CAPABILITIES = [
   'eventTap',
   'carryOn',
   'heartbeat',
+  'design',
+  'plan',
+  'note',
 ] as const satisfies readonly CapabilityName[];
 
 /** A runtime capability this corpus ships a face for. */

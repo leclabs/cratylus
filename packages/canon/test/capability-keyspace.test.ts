@@ -276,10 +276,17 @@ describe('CAPABILITY KEYSPACE — one sign per capability, two registers, nothin
   // injecting `ports/experimental-x.ts` fails BOTH legs independently).
   it('the corpus reads are non-vacuous — a dark read FAILS rather than passing empty', () => {
     expect(CAPABILITIES).toEqual(
-      expect.arrayContaining(['eventTap', 'memory']),
+      expect.arrayContaining(['eventTap', 'memory', 'design', 'plan', 'note']),
     );
     expect(BASENAMES).toEqual(
-      expect.arrayContaining(['event-tap', 'memory', 'heartbeat']),
+      expect.arrayContaining([
+        'event-tap',
+        'memory',
+        'heartbeat',
+        'design',
+        'plan',
+        'note',
+      ]),
     );
     expect(SITES.map((s) => s.name)).toEqual(
       expect.arrayContaining(['event-tap', 'memory']),
