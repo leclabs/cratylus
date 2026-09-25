@@ -38,18 +38,24 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
 
 - **envelope** — what a record says about itself: its record id, its entity, the operation, the
   record ids it supersedes, author, time, reason, and what caused it. Factors: record id, entity.
-- **record** — one immutable version of one entity: an envelope and a whole-state payload, never
-  edited, moved or deleted once written. Factors: envelope, payload.
-- **supersession** — a record replacing one or more earlier versions of the same entity by naming
-  them; it is how an entity evolves and, naming several, how divergence is reconciled.
-  Factors: record, record id, entity, payload, envelope.
-- **retraction** — a record withdrawing an entity with no successor, naming the versions it
-  withdraws. Factors: record, entity, envelope.
-- **head** — a version of an entity that no record supersedes or retracts; an entity with exactly
-  one head is settled. Factors: supersession, retraction.
+- **record** — one immutable entry in one entity's history, either a version or a retraction: an
+  envelope and a whole-state payload, never edited, moved or deleted once written. Factors:
+  envelope, payload.
+- **supersession** — a new version of an entity that names one or more of its current heads and
+  replaces them; naming a record that is not a head is refused, so a single branch's history stays
+  linear and divergence arises only from merges. It is how an entity evolves, how a withdrawn
+  entity is reinstated, and, naming several heads, how divergence is reconciled. Factors: record,
+  record id, entity, payload, envelope.
+- **retraction** — a record withdrawing an entity with no successor version, naming the heads it
+  withdraws; the retraction itself becomes the entity's head, so the withdrawal is part of the
+  history that later records must name. Factors: record, entity, envelope.
+- **head** — a record of an entity, either a version or a retraction, that no later record names.
+  An entity with exactly one head is settled: live when that head is a version, withdrawn when it is
+  a retraction. Factors: supersession, retraction.
 - **divergence** — an entity with more than one head, produced when concurrent sessions on
-  different branches superseded the same version differently and the branches merged. It is state,
-  not error: it is reported, never silently resolved. Factors: head.
+  different branches wrote to the same head differently (two versions, or a version and a
+  retraction) and the branches merged. It is state, not error: it is reported, never silently
+  resolved. Factors: head.
 - **incoherence** — a contradiction between entities produced by a merge: a reference to a
   retracted entity, or a factor cycle. Reported like divergence. Factors: head, entity.
 - **reconciliation** — the act resolving divergence: one new whole-state version superseding every
@@ -123,6 +129,9 @@ closed proper subset exists. Pin: the commit that carries this revision.
   runtime restates none of them.
 - One ULID implementation: the record id reuses the one memory already has, moved down into
   `runtime` so both import it.
+- One sense of supersession: the `design` skill's lattice law, which reads a superseded concept as
+  replaced by another concept, is restated in this design's sense, as a new version of the same
+  concept. A concept that genuinely becomes another is a retraction plus a definition.
 - The record store is mechanism (`runtime`); the skills and their laws are meaning (`canon`); the
   mapping of each capability onto harness scripts is projection (`forge`). No concept here crosses
   those seams.
