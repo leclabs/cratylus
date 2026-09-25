@@ -96,15 +96,18 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
   then closed, which is final. One live plan per name, and a closed plan keeps its name. Binding a
   plan returns whichever plan was bound to proposed, so at most one plan is bound, and when a merge
   leaves two, binding the one to keep resolves it. An owed ruling that names a plan blocks binding
-  it and every unit in it. A closed plan is never revised and stays readable forever; closing
-  replaces retiring by deletion. Factors: record store, notebook.
-- **unit** — one unit of work in a plan, realizing exactly one concept, the one its pin names, and
-  carrying its full spec and lifecycle state, which moves forward one step at a time. One live unit
-  per name within its plan. Its dependencies are acyclic and name live units of the same plan.
+  it and every unit in it. A closed plan and its units are never written again, and stay readable
+  forever; closing replaces retiring by deletion. Factors: record store, notebook.
+- **unit** — one unit of work in a plan, realizing exactly one concept, the one its pin names,
+  which is among the concepts its plan realizes, and carrying its full spec and lifecycle state,
+  which moves forward one step at a time. One live unit per name within its plan. Its
+  dependencies are acyclic and name live units of the same plan.
   Readiness is computed, never stored: a unit is ready when every dependency has reached completion
   or moved past it and no owed ruling names the unit or its plan. Factors: plan, pin, notebook.
-- **pin** — a unit's reference to the concept version it realizes, taken when the unit is authored,
-  and only when that concept and its whole closure are settled and live. A unit is **drifted** when
+- **pin** — a unit's reference to the concept version it realizes, taken when the unit is authored
+  and retaken only by a revise that says so with a reason, never as a side effect of editing the
+  spec; it is taken only when that concept and its whole closure are settled and live. A unit is
+  **drifted** when
   its pinned version is no longer the concept's only head (the concept was amended, withdrawn or has
   diverged), and otherwise **suspect** when any other concept in the closure has diverged, been
   withdrawn or gained a newer version since the pin was taken. A retraction in the design never
@@ -113,10 +116,11 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
 ### How they are met
 
 - **view** — a domain's current state computed at query time and rendered for its reader in three
-  layers: a header naming the commit it was computed at, with counts; everything that must be
-  resolved before the rest is trusted (divergence, incoherence, drift, suspect units, owed
-  rulings); then the whole domain in its own structure, one line for every live
-  item, including one the structure cannot yet place. The lattice runs root to primitive, ordered by
+  layers: a header naming the commit it was computed at, with counts, and saying when uncommitted
+  records are included; everything that must be resolved before the rest is trusted (divergence,
+  incoherence, drift, suspect units, owed rulings); then the whole domain in its own structure, one
+  line for every live or diverged item, a diverged one in its place and marked, including one the
+  structure cannot yet place. The lattice runs root to primitive, ordered by
   the view from the factors it is given; the plan runs in wave order with the frontier marked in
   place; the notebook groups by kind and topic. Design and plan views cross-reference: each concept
   shows each plan standing on it with that plan's state, each unit shows the concept it serves.
@@ -126,11 +130,12 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
   its own verbs, shipped with its skill:
   - `design` shows the whole design or one concept, and defines, amends, retracts, reconciles
     and traces a concept (how it came to be, what it stands on and what stands on it);
-  - `plan` shows the whole bound plan or one unit, adds, advances and retracts units, revises a
-    unit or a plan, binds and closes a plan, and reconciles either;
+  - `plan` shows the whole bound plan, any plan named, or one unit, adds, advances and retracts
+    units, revises a unit or a plan, binds and closes a plan, and reconciles either;
   - `note` shows the whole notebook or one note, and captures, revises, retracts and reconciles
     notes.
-    Agents never see record ids, envelopes, heads or files. A payload names entities by name and
+    Agents never see record ids, envelopes, heads, records or files; the interface speaks only the
+    domain's words. A payload names entities by name and
     the interface resolves them. Where a name cannot address one entity, because a merge left it
     held by more than one, the interface shows and accepts each holder's identity beside the name,
     and only there; that is the one place an identity surfaces, and nothing else is invented to
