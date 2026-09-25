@@ -45,12 +45,14 @@ None.
    prints nothing (at `c501e002` it hits `forge/src/deploy/{init,project-template}.ts`,
    `forge/test/deploy/{cli,init-harness-home}.test.ts`, `canon/tooling/project-template.ts`,
    `canon/test/cratylism.test.ts`).
-2. `git grep -n "plan-states" -- packages/canon/tooling` prints nothing.
-3. `pnpm --filter @cratylus/forge test -- deploy/cli deploy/init-harness-home` passes, and both
+2. `pnpm --filter @cratylus/forge test -- deploy/cli deploy/init-harness-home` passes, and both
    files assert that the scaffolded target has no `plans` directory.
-4. `pnpm --filter @cratylus/canon test -- cratylism` passes.
-5. Sole: no path in `packages/*/src` or `packages/canon/tooling` materializes a plan state folder
+3. `pnpm --filter @cratylus/canon test -- cratylism` passes.
+4. Sole: no path in `packages/*/src` or `packages/canon/tooling` materializes a plan state folder
    — criterion 1 is its check, since the loop over `planStates` was the only such site.
-6. `pnpm --filter @cratylus/forge typecheck` and `pnpm --filter @cratylus/canon typecheck` pass.
-7. `.changeset/scaffold-cutover.md` names `@cratylus/forge` (the `ProjectTemplate` shape changes)
+5. `pnpm --filter @cratylus/forge typecheck` and `pnpm --filter @cratylus/canon typecheck` pass.
+6. `.changeset/scaffold-cutover.md` names `@cratylus/forge` (the `ProjectTemplate` shape changes)
    and `@cratylus/canon`.
+
+The absence of `plan-states` from `packages/canon/tooling` is not this unit's to prove: it holds only
+once `plan-set.ts`, which imports it, is deleted, so it is `plan-cutover`'s criterion 2.
