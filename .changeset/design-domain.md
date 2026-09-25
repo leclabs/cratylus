@@ -16,12 +16,13 @@ withdrawn concept), retracts it, and reconciles a diverged concept over every he
 retracting a diverged concept refuses and names reconciliation. Heads that carry the same payload
 have converged and read as one.
 
-A write refuses an empty anchor, gloss or reason, a factor named twice, and a factor it newly adds on a diverged concept (reconcile that concept first). It also refuses to
-introduce a violation of the design's relational laws: an anchor held by two concepts, a factor
-cycle, or a factor on a withdrawn concept, which covers retracting a concept others factor on. A
-violation counts as introduced when its concepts were not already bound together in a standing
-violation of the same law. A write that shrinks a violation or leaves it standing is allowed, so a
-merge's incoherence can be repaired one write at a time. The domain's reads compute, at the moment
-of the read, every live concept, divergence, and incoherence. They also answer the `design` skill's
-`closure` and `blast`, and give a concept's history with reasons. The module is internal: the
-`design` capability composes it.
+A write refuses an empty anchor, gloss or reason, a factor named twice, and a factor it newly adds
+on a diverged concept (reconcile that concept first). It also refuses to introduce a violation of
+the design's relational laws: an anchor held by two concepts, a factor cycle, or a factor on a
+withdrawn concept, which covers retracting a concept others factor on. A violation counts as
+introduced when its concepts were not already bound together in a standing violation of the same
+law. A write that shrinks a violation or leaves it standing is allowed, so a merge's incoherence
+can be repaired one write at a time. The domain's reads compute, at the moment of the read, every
+live concept, divergence, and incoherence. They also answer the `design` skill's `closure` and
+`blast`, and give a concept's history with reasons. The module is internal: the `design`
+capability composes it.
