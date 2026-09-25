@@ -45,7 +45,7 @@ import type { RecordStore } from '../../record-store/store.js';
 import type { Pin } from './pin.js';
 
 /** The domain directory holding unit records. */
-const DOMAIN = 'unit';
+export const DOMAIN = 'unit';
 
 /** Stands in for the record id, and for a unit not yet minted its entity,
  *  while a write is judged against the laws before it is written. */

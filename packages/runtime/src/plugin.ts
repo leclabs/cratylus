@@ -18,9 +18,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { CarryOnHost } from './ports/carry-on.js';
+import type { DesignHost } from './ports/design.js';
 import type { EventTapHost } from './ports/event-tap.js';
 import type { HeartbeatHost } from './ports/heartbeat.js';
 import type { MemoryStrategy } from './ports/memory.js';
+import type { NoteHost } from './ports/note.js';
+import type { PlanHost } from './ports/plan.js';
 
 /**
  * A runtime-plugin: a capability package's declaration of which runtime capability
@@ -42,6 +45,15 @@ export interface RuntimePlugin {
   /** The heartbeat capability this package provides, as a {@link HeartbeatHost} — the
    *  endogenous pulse whose emissions SAMPLE a pressure gate rather than clock a cycle. */
   readonly heartbeat?: HeartbeatHost;
+  /** The design capability this package provides, as a {@link DesignHost} — the
+   *  concept lattice, met in the design's own verbs. */
+  readonly design?: DesignHost;
+  /** The plan capability this package provides, as a {@link PlanHost} — plans and
+   *  their units, met in the plan's own verbs. */
+  readonly plan?: PlanHost;
+  /** The note capability this package provides, as a {@link NoteHost} — the
+   *  notebook, met in its own verbs. */
+  readonly note?: NoteHost;
 }
 
 /**

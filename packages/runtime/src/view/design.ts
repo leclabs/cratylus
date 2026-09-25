@@ -10,6 +10,9 @@
 // lattice, naming the concepts above it. How the plans stand on a concept is
 // every given unit realizing that concept, grouped by plan. Factors and units
 // join concepts by their whole name, identity included where one is given.
+//
+// A concept's trace reads the design alone: its versions with their reasons,
+// its closure (what it stands on) and its blast (what stands on it), and no plan.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
@@ -31,8 +34,9 @@ import {
 } from './layers.js';
 import { type LiveUnit, planName, standing } from './plan.js';
 
-/** A concept's whole state as its reader sees it. */
-export interface Concept {
+/** A concept's whole state as its reader is shown it: every name in it a
+ *  `Name`, identity beside it where the name is held by more than one. */
+export interface ShownConcept {
   readonly anchor: Name;
   readonly gloss: string;
   readonly factors: readonly Name[];
@@ -42,18 +46,39 @@ export interface Concept {
 export interface DesignState {
   readonly commit: string;
   /** Every live concept, in any order. */
-  readonly concepts: readonly Concept[];
+  readonly concepts: readonly ShownConcept[];
   /** The units of every plan, whatever its state, that the concepts are
    *  joined to. */
   readonly units: readonly LiveUnit[];
-  readonly diverged: readonly Diverged<Concept>[];
+  readonly diverged: readonly Diverged<ShownConcept>[];
   /** Withdrawn concepts, each its last version, so a withdrawn holder of a
    *  shared anchor drills to what the view is given of it. */
-  readonly withdrawn: readonly Concept[];
+  readonly withdrawn: readonly ShownConcept[];
   readonly incoherent: readonly Incoherence[];
 }
 
-function conceptLine(concept: Concept): string {
+/** One entry of a concept's history, oldest first. */
+export interface TraceEntry {
+  /** The write, as display text: the verb that wrote it. */
+  readonly verb: string;
+  /** The version it wrote; `null` for a retraction. */
+  readonly concept: ShownConcept | null;
+  readonly author: string;
+  readonly time: string;
+  readonly reason: string;
+}
+
+/** How a concept came to be, what it stands on and what stands on it. */
+export interface Trace {
+  readonly anchor: Name;
+  readonly history: readonly TraceEntry[];
+  /** Its closure, itself excluded: every concept its factors reach. */
+  readonly closure: readonly Name[];
+  /** Its blast, itself excluded: every concept whose closure holds it. */
+  readonly blast: readonly Name[];
+}
+
+function conceptLine(concept: ShownConcept): string {
   const factors = concept.factors.length
     ? ` · factors ${concept.factors.map(named).join(', ')}`
     : '';
@@ -61,12 +86,85 @@ function conceptLine(concept: Concept): string {
 }
 
 /** One concept in full; `mark` follows its anchor (` — withdrawn`). */
-function conceptInFull(concept: Concept, mark = ''): string[] {
+function conceptInFull(concept: ShownConcept, mark = ''): string[] {
   return [
     `concept: ${named(concept.anchor)}${mark}`,
     ...field('gloss', concept.gloss),
     ...list('factors', concept.factors.map(named)),
   ];
+}
+
+/** The lattice root to primitive: a concept is placed once every live concept
+ *  factoring on it is placed; the roots are those nothing live factors on. What
+ *  a factor cycle keeps from that order is `unplaced`, and `above` names, by
+ *  printed name, the concepts factoring on each. */
+function order(concepts: readonly ShownConcept[]) {
+  const above = new Map<string, string[]>(
+    concepts.map((c) => [named(c.anchor), []]),
+  );
+  for (const c of concepts)
+    for (const factor of c.factors)
+      above.get(named(factor))?.push(named(c.anchor));
+  const waiting = new Map(
+    [...above].map(([name, over]) => [name, over.length]),
+  );
+  const ordered: ShownConcept[] = [];
+  let level = concepts.filter((c) => waiting.get(named(c.anchor)) === 0);
+  while (level.length) {
+    ordered.push(...level);
+    const next = new Set<string>();
+    for (const c of level)
+      for (const factor of c.factors) {
+        const n = waiting.get(named(factor));
+        if (n === undefined) continue;
+        waiting.set(named(factor), n - 1);
+        if (n === 1) next.add(named(factor));
+      }
+    level = concepts.filter((c) => next.has(named(c.anchor)));
+  }
+  const placed = new Set(ordered);
+  return {
+    above,
+    ordered,
+    placed,
+    unplaced: concepts.filter((c) => !placed.has(c)),
+  };
+}
+
+/** Layers 1 and 2 of the design view. */
+function designHead(state: DesignState, unplaced: number): string[] {
+  return [
+    header('design', state.commit, [
+      count(state.concepts.length, 'concept', 'concepts'),
+      `${unplaced} unplaced`,
+      `${state.diverged.length} diverged`,
+      `${state.incoherent.length} incoherent`,
+    ]),
+    ...resolveFirst([
+      ...state.diverged.flatMap((d) =>
+        divergedLines(d, (v) => [conceptLine(v)]),
+      ),
+      ...state.incoherent.map(incoherenceLine),
+    ]),
+  ];
+}
+
+/** A concept's trace, beneath the design's header and resolve-first layer. It
+ *  names no plan: `state.units` is not read. */
+export function traceView(state: DesignState, trace: Trace): string {
+  return [
+    ...designHead(state, order(state.concepts).unplaced.length),
+    `trace: ${named(trace.anchor)}`,
+    ...list(
+      'history, oldest first',
+      trace.history.map(
+        (e) =>
+          `${e.verb} by ${e.author} at ${e.time} — ${e.reason} — ${e.concept === null ? 'withdrawn' : conceptLine(e.concept)}`,
+      ),
+    ),
+    ...list('closure, what it stands on', trace.closure.map(named)),
+    ...list('blast, what stands on it', trace.blast.map(named)),
+  ].join('\n');
 }
 
 /**
@@ -98,55 +196,24 @@ export function designView(state: DesignState, anchor?: Name): string {
     plans.set(key, standingOn);
     standingOn.units.push(`${named(unit.name)} (${standing(unit)})`);
   }
-  const realizedIn = (concept: Name): string[] =>
-    [...(realizing.get(named(concept))?.values() ?? [])].map(
+  // Every plan standing on a concept by any of `names`, each plan once.
+  const realizedIn = (names: readonly Name[]): string[] => {
+    const plans = new Map<string, { plan: string; units: string[] }>();
+    for (const name of names)
+      for (const [key, { plan, units }] of realizing.get(named(name)) ?? [])
+        plans.set(key, {
+          plan,
+          units: [...(plans.get(key)?.units ?? []), ...units],
+        });
+    return [...plans.values()].map(
       ({ plan, units }) => `${plan}: ${units.join(', ')}`,
     );
+  };
 
-  // Root to primitive: a concept is placed once every live concept factoring
-  // on it is placed; the roots are those nothing live factors on.
-  const above = new Map<string, string[]>(
-    concepts.map((c) => [named(c.anchor), []]),
-  );
-  for (const c of concepts)
-    for (const factor of c.factors)
-      above.get(named(factor))?.push(named(c.anchor));
-  const waiting = new Map(
-    [...above].map(([name, over]) => [name, over.length]),
-  );
-  const ordered: Concept[] = [];
-  let level = concepts.filter((c) => waiting.get(named(c.anchor)) === 0);
-  while (level.length) {
-    ordered.push(...level);
-    const next = new Set<string>();
-    for (const c of level)
-      for (const factor of c.factors) {
-        const n = waiting.get(named(factor));
-        if (n === undefined) continue;
-        waiting.set(named(factor), n - 1);
-        if (n === 1) next.add(named(factor));
-      }
-    level = concepts.filter((c) => next.has(named(c.anchor)));
-  }
-  const placed = new Set(ordered);
-  const unplaced = concepts.filter((c) => !placed.has(c));
-  const why = (c: Concept): string =>
+  const { above, ordered, placed, unplaced } = order(concepts);
+  const why = (c: ShownConcept): string =>
     `unplaced: in or beneath a factor cycle, factored on by ${(above.get(named(c.anchor)) ?? []).join(', ')}`;
-
-  const lines = [
-    header('design', state.commit, [
-      count(concepts.length, 'concept', 'concepts'),
-      `${unplaced.length} unplaced`,
-      `${state.diverged.length} diverged`,
-      `${state.incoherent.length} incoherent`,
-    ]),
-    ...resolveFirst([
-      ...state.diverged.flatMap((d) =>
-        divergedLines(d, (v) => [conceptLine(v)]),
-      ),
-      ...state.incoherent.map(incoherenceLine),
-    ]),
-  ];
+  const lines = designHead(state, unplaced.length);
 
   if (anchor !== undefined)
     return [
@@ -157,25 +224,25 @@ export function designView(state: DesignState, anchor?: Name): string {
           .map((c) => [
             ...conceptInFull(c),
             ...(placed.has(c) ? [] : [`  ${why(c)}`]),
-            ...list('realized in', realizedIn(c.anchor)),
+            ...list('realized in', realizedIn([c.anchor])),
           ]),
         ...state.withdrawn
           .filter((c) => denotes(anchor, c.anchor))
           .map((c) => [
             ...conceptInFull(c, ' — withdrawn'),
-            ...list('realized in', realizedIn(c.anchor)),
+            ...list('realized in', realizedIn([c.anchor])),
           ]),
         ...state.diverged
           .filter((d) => denotesAny(anchor, d.names))
           .map((d) => [
             ...divergedLines(d, (c) => conceptInFull(c)),
-            ...list('realized in', d.names.flatMap(realizedIn)),
+            ...list('realized in', realizedIn(d.names)),
           ]),
       ]),
     ].join('\n');
 
-  const line = (c: Concept): string => {
-    const plans = realizedIn(c.anchor);
+  const line = (c: ShownConcept): string => {
+    const plans = realizedIn([c.anchor]);
     return `${conceptLine(c)}${plans.length ? ` · realized in ${plans.join('; ')}` : ''}`;
   };
   lines.push('lattice, root to primitive:');

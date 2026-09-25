@@ -1,0 +1,81 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// The plan capability PORT — plans and their units, met in the plan's own verbs.
+//
+// PURE INTERFACE — no implementation. `capabilities/plan/` realizes it over the
+// plan and unit records. Every input names a plan, a unit or a concept by its
+// name, and every output is the plan's view, rendered text. A unit's name is its
+// own within its plan, so `plan` names the plan a unit is looked up in wherever
+// its name alone could name units of several plans. Where a merge left one name
+// held by more than one entity, the view prints each holder's identity beside it
+// as `name (identity <id>)`, and that printed form is the one input addressing
+// one holder.
+//
+// The lifecycle's states are the `plan` skill's. They reach the realization as
+// configuration the projection emitted, and a caller speaks them only as the
+// target of `advance` and the state a reconciliation settles on.
+// ─────────────────────────────────────────────────────────────────────────────
+
+import type { Invocation } from './design.js';
+
+/**
+ * The fields a plan or unit write gives, each replacing the item's own and each
+ * left out carrying over. A plan's are `name` and `realizes`, the set of
+ * concepts it realizes. A unit's are `name`, `realizes` (the one concept it
+ * realizes, which its pin is taken on), `intent`, `static`, `deps` (units of its
+ * plan), `outputs` and `accept`. `state` moves only by `bind`, `close` and
+ * `advance`, and is given only to `reconcile`.
+ */
+export interface Fields {
+  readonly name?: string;
+  readonly realizes?: readonly string[];
+  readonly state?: string;
+  readonly intent?: string;
+  readonly static?: readonly string[];
+  readonly deps?: readonly string[];
+  readonly outputs?: readonly string[];
+  readonly accept?: readonly string[];
+}
+
+/**
+ * The plan's verbs. `show` renders the bound plan, or the plan `plan`, or, given
+ * a name, the unit or plan it names in full. Every write returns the view of
+ * what it wrote.
+ */
+export interface PlanHost {
+  show(name?: string, plan?: string): string;
+  /** Add the unit `unit` to `plan`. The first add naming a plan that does not
+   *  exist proposes it, realizing `proposal`, the set of concepts. */
+  add(
+    unit: string,
+    plan: string,
+    fields: Fields,
+    proposal: readonly string[] | undefined,
+    by: Invocation,
+  ): string;
+  /** Move a unit one step forward, to `to`. */
+  advance(
+    unit: string,
+    plan: string | undefined,
+    to: string,
+    by: Invocation,
+  ): string;
+  retract(unit: string, plan: string | undefined, by: Invocation): string;
+  /** Revise the unit or plan `name` names; `plan` says it is a unit of that
+   *  plan. Revising a unit re-pins it. */
+  revise(
+    name: string,
+    plan: string | undefined,
+    fields: Fields,
+    by: Invocation,
+  ): string;
+  bind(plan: string, by: Invocation): string;
+  close(plan: string, by: Invocation): string;
+  /** One version over every version of a diverged unit or plan. A field its
+   *  versions agree on carries over; one they disagree on must be given. */
+  reconcile(
+    name: string,
+    plan: string | undefined,
+    fields: Fields,
+    by: Invocation,
+  ): string;
+}

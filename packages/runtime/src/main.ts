@@ -23,7 +23,10 @@ import { createRequire } from 'node:module';
 import { cac } from 'cac';
 import { CLI_BIN } from './bin-name.js';
 import { dispatchCarryOn } from './capabilities/carry-on/index.js';
+import { dispatchDesign } from './capabilities/design/index.js';
 import { dispatchEventTap } from './capabilities/event-tap/index.js';
+import { dispatchNote } from './capabilities/note/index.js';
+import { dispatchPlan } from './capabilities/plan/index.js';
 import { dispatch } from './dispatch.js';
 import { RuntimeHost, bootstrap } from './loader.js';
 import type { RuntimePlugin } from './plugin.js';
@@ -131,6 +134,31 @@ export async function runCli(
     try {
       const result = dispatchCarryOn([...argv.slice(1)]);
       process.stdout.write(`${JSON.stringify(result, null, 2)}\n`);
+      process.exitCode = 0;
+    } catch (err) {
+      process.stderr.write(
+        `${CLI_BIN}: ${err instanceof Error ? err.message : String(err)}\n`,
+      );
+      process.exitCode = 1;
+    }
+    return;
+  }
+
+  // The three domain capabilities ship INSIDE the runtime on the same terms: each
+  // owns its verbs' flag grammar, so each routes to its own verb surface ahead of
+  // the discovered dispatch. A verb renders its domain's view, printed as text; a
+  // refusal is a code-1 failure whose message names the verb that would succeed.
+  const domain =
+    first === 'design'
+      ? dispatchDesign
+      : first === 'plan'
+        ? dispatchPlan
+        : first === 'note'
+          ? dispatchNote
+          : undefined;
+  if (domain !== undefined) {
+    try {
+      process.stdout.write(`${domain(argv.slice(1))}\n`);
       process.exitCode = 0;
     } catch (err) {
       process.stderr.write(

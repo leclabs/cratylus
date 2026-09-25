@@ -80,7 +80,7 @@ export interface Listed extends Concept {
 }
 
 /** A concept's payload as recorded: its factors by entity. */
-interface Payload {
+export interface Payload {
   readonly anchor: string;
   readonly gloss: string;
   readonly factors: readonly string[];
@@ -554,6 +554,13 @@ export class Design {
   /** The entity `name` denotes, `undefined` when no concept holds it. */
   denotes(name: Name): string | undefined {
     return this.#read().denotes(name);
+  }
+
+  /** How the boundary names the concept entity `entity`, which another domain
+   *  references: the first anchor it alone holds, or its first anchor with its
+   *  identity. */
+  name(entity: string): Name {
+    return this.#read().name(entity);
   }
 
   /** closure(c) ≜ { c } ∪ ⋃ { closure(f) | f ∈ factors(c) }, by name, `c` first.

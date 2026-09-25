@@ -21,9 +21,12 @@ import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type { RuntimePlugin } from './plugin.js';
 import type { CarryOnHost } from './ports/carry-on.js';
+import type { DesignHost } from './ports/design.js';
 import type { EventTapHost } from './ports/event-tap.js';
 import type { HeartbeatHost } from './ports/heartbeat.js';
 import type { MemoryStrategy } from './ports/memory.js';
+import type { NoteHost } from './ports/note.js';
+import type { PlanHost } from './ports/plan.js';
 import { loadRuntimeConfig } from './runtime-config.js';
 
 /**
@@ -37,6 +40,9 @@ export const CAPABILITIES = [
   'eventTap',
   'carryOn',
   'heartbeat',
+  'design',
+  'plan',
+  'note',
 ] as const;
 
 /** A capability name — one of {@link CAPABILITIES}. The dispatch `<capability>`. */
@@ -47,7 +53,10 @@ export type CapabilityPort =
   | MemoryStrategy
   | EventTapHost
   | CarryOnHost
-  | HeartbeatHost;
+  | HeartbeatHost
+  | DesignHost
+  | PlanHost
+  | NoteHost;
 
 /** A resolved capability: which plugin provides it, and the port to dispatch into. */
 export interface CapabilityBinding {

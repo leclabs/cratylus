@@ -7,7 +7,8 @@
 //
 // The plan shown is the one holding the state that admits one plan. When a
 // merge leaves more than one there, the view shows each of them, each with its
-// own units, and the incoherence naming them stands in the resolve-first layer.
+// own units and its own counts in the header, and the incoherence naming them
+// stands in the resolve-first layer.
 //
 // Lifecycle states are the `plan` skill's and arrive as display text. Wave,
 // frontier, drift and suspicion arrive computed (`unit`, `pin`); this module
@@ -177,6 +178,15 @@ export function planView(state: PlanState, name?: Name): string {
   const placement = (unit: LiveUnit): string =>
     unit.wave === undefined ? `none — ${why(unit)}` : `${unit.wave}`;
 
+  // The unit counts, for `own` units. With several plans shown, each plan's
+  // counts are its own, never summed across plans.
+  const counted = (own: readonly LiveUnit[]): string[] => [
+    count(own.length, 'unit', 'units'),
+    `${own.filter((u) => u.frontier).length} frontier`,
+    `${own.filter((u) => u.wave === undefined).length} unplaced`,
+    `${own.filter((u) => u.drifted).length} drifted`,
+    `${own.filter((u) => u.suspect).length} suspect`,
+  ];
   const lines = [
     header(
       state.plans.length === 0
@@ -184,11 +194,14 @@ export function planView(state: PlanState, name?: Name): string {
         : `${state.plans.length === 1 ? 'plan' : 'plans'} ${state.plans.map(planName).join(', ')}`,
       state.commit,
       [
-        count(units.length, 'unit', 'units'),
-        `${units.filter((u) => u.frontier).length} frontier`,
-        `${unplaced.length} unplaced`,
-        `${drifted.length} drifted`,
-        `${suspect.length} suspect`,
+        ...(state.plans.length > 1
+          ? state.plans.map(
+              (p) =>
+                `${named(p.name)}: ${counted(
+                  units.filter((u) => named(u.plan.name) === named(p.name)),
+                ).join(', ')}`,
+            )
+          : counted(units)),
         count(state.owed.length, 'owed ruling', 'owed rulings'),
         `${state.divergedPlans.length + state.divergedUnits.length} diverged`,
         `${state.incoherent.length} incoherent`,

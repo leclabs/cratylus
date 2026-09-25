@@ -1,0 +1,211 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// The note capability's VERB SURFACE — `note <verb> [args]`.
+//
+//   show       the notebook by kind, then topic, or one note in full
+//   capture    a note: `<title> --kind <k> --topic <t> --body <b>
+//              [--blocks <plan or unit>]…`
+//   revise     a new version of a note (`--title` retitles it)
+//   retract    a note
+//   reconcile  a diverged note: one version over every version
+//
+// A note's title is its name and addresses it. What a note blocks is named by
+// plan or unit name and resolved here, a unit looked up in `--plan` wherever its
+// name alone could name units of several plans. Anyone may write a note, and
+// capture has no admission bar beyond the note's shape and its title law.
+//
+// Arguments, names and identities are read as the plan surface reads them
+// (`../plan/dispatch.ts`); `--blocks` is repeated once per member.
+// ─────────────────────────────────────────────────────────────────────────────
+
+import type { Invocation } from '../../ports/design.js';
+import type { NoteChange, NoteHost, NoteInput } from '../../ports/note.js';
+import { notebookView } from '../../view/notebook.js';
+import {
+  type Reading,
+  agreed,
+  invocation,
+  many,
+  one,
+  over,
+  parseArgv,
+  parseName,
+  subject,
+  verbOf,
+} from '../plan/dispatch.js';
+import { type Note, capture, reconcile, retract, revise } from './notebook.js';
+
+/** The note capability over the records of the repository holding `from`. */
+export function noteHost(from: string = process.cwd()): NoteHost {
+  /** The notebook's view after a write, drilled into `title`. */
+  const after = (title: string): string =>
+    over(from, (read) => notebookView(read.noteState(), parseName(title)));
+
+  /** The note `title` names; refuses a title no note holds. */
+  const resolve = (read: Reading, title: string): string => {
+    const entity = read.findNote(title);
+    if (entity === undefined)
+      throw new Error(
+        `no note is titled ${JSON.stringify(title)}; \`note capture\` captures one`,
+      );
+    return entity;
+  };
+
+  /** `change` over `current`, what it blocks resolved. */
+  const note = (
+    read: Reading,
+    change: NoteChange,
+    current: Note,
+    plan: string | undefined,
+  ): Note => ({
+    title: change.title ?? current.title,
+    kind: change.kind ?? current.kind,
+    topic: change.topic ?? current.topic,
+    body: change.body ?? current.body,
+    blocks:
+      change.blocks?.map((b) => read.resolveBlocked(b, plan)) ?? current.blocks,
+  });
+
+  /** Every version of the note `entity`: its one, or each of a diverged one. */
+  const versions = (read: Reading, entity: string): readonly Note[] =>
+    read.book.live.find((n) => n.entity === entity) !== undefined
+      ? read.book.live.filter((n) => n.entity === entity)
+      : (read.book.diverged.find((d) => d.entity === entity)?.versions ?? []);
+
+  return {
+    show: (title) =>
+      over(from, (read) =>
+        notebookView(
+          read.noteState(),
+          title === undefined ? undefined : parseName(title),
+        ),
+      ),
+
+    capture: (input: NoteInput, plan, by: Invocation) => {
+      over(from, (read) => {
+        capture(
+          read.store,
+          {
+            ...input,
+            blocks: input.blocks.map((b) => read.resolveBlocked(b, plan)),
+          },
+          by,
+        );
+        return '';
+      });
+      return after(input.title);
+    },
+
+    revise: (title, change, plan, by) => {
+      const next = over(from, (read) => {
+        const entity = resolve(read, title);
+        const [current] = versions(read, entity);
+        const written = note(read, change, current as Note, plan);
+        revise(read.store, entity, written, by);
+        return written.title;
+      });
+      return after(next);
+    },
+
+    retract: (title, by) => {
+      over(from, (read) => {
+        retract(read.store, resolve(read, title), by);
+        return '';
+      });
+      return after(title);
+    },
+
+    reconcile: (title, change, plan, by) => {
+      const next = over(from, (read) => {
+        const entity = resolve(read, title);
+        const heads = versions(read, entity);
+        const pick = <K extends keyof Note>(key: K): Note[K] =>
+          agreed(
+            'note',
+            heads.map((n) => n[key]),
+            key,
+          );
+        const written = note(
+          read,
+          change,
+          {
+            title: change.title ?? pick('title'),
+            kind: change.kind ?? pick('kind'),
+            topic: change.topic ?? pick('topic'),
+            body: change.body ?? pick('body'),
+            blocks: change.blocks === undefined ? pick('blocks') : [],
+          },
+          plan,
+        );
+        reconcile(read.store, entity, written, by);
+        return written.title;
+      });
+      return after(next);
+    },
+  };
+}
+
+/** The notebook's verbs, in the order its header lists them. */
+const VERBS = ['show', 'capture', 'revise', 'retract', 'reconcile'] as const;
+
+/** Route `note <verb> [args]` to the note capability over the repository
+ *  holding `from`; returns the view the verb renders. */
+export function dispatchNote(
+  argv: readonly string[],
+  opts: { readonly from?: string } = {},
+): string {
+  const verb = verbOf(argv, 'note', VERBS);
+  const args = parseArgv(argv.slice(1));
+  const host = noteHost(opts.from);
+  const plan = one(args, 'plan');
+  const title = () => subject(args, 'note', verb, 'note');
+  const change = (): NoteChange => {
+    const found: { -readonly [K in keyof NoteChange]: NoteChange[K] } = {};
+    for (const key of ['title', 'kind', 'topic', 'body'] as const) {
+      const value = one(args, key);
+      if (value !== undefined) found[key] = value;
+    }
+    const blocks = many(args, 'blocks');
+    if (blocks !== undefined) found.blocks = blocks;
+    return found;
+  };
+  switch (verb) {
+    case 'show':
+      return host.show(args.positionals[0]);
+    case 'capture': {
+      const missing = ['kind', 'topic', 'body'].filter(
+        (f) => one(args, f) === undefined,
+      );
+      if (missing.length > 0)
+        throw new Error(
+          `note capture: give ${missing.map((f) => `--${f}`).join(', ')}; a note has a title, kind, topic and body`,
+        );
+      return host.capture(
+        {
+          title: title(),
+          kind: one(args, 'kind') as string,
+          topic: one(args, 'topic') as string,
+          body: one(args, 'body') as string,
+          blocks: many(args, 'blocks') ?? [],
+        },
+        plan,
+        invocation(args, 'note', verb),
+      );
+    }
+    case 'revise':
+      return host.revise(
+        title(),
+        change(),
+        plan,
+        invocation(args, 'note', verb),
+      );
+    case 'retract':
+      return host.retract(title(), invocation(args, 'note', verb));
+    case 'reconcile':
+      return host.reconcile(
+        title(),
+        change(),
+        plan,
+        invocation(args, 'note', verb),
+      );
+  }
+}

@@ -55,14 +55,15 @@ export function denotes(query: Name, name: Name): boolean {
     : named(query) === named(name);
 }
 
-/** An entity with more than one head: the version each head holds, and whether
- *  a retraction stands among them. */
+/** An entity with more than one head: the version each version head holds,
+ *  and, for each head that is a retraction, the version it withdrew. */
 export interface Diverged<T> {
   /** Every name its heads carry, supplied by the caller, and a name it keeps
    *  when no version is left to carry one. */
   readonly names: readonly Name[];
   readonly versions: readonly T[];
-  readonly retracted: boolean;
+  /** The version each retraction head withdrew; empty when no head is one. */
+  readonly retracted: readonly T[];
 }
 
 /** One holder of a name held by more than one entity: its identity, and whether
@@ -73,14 +74,16 @@ export interface Holder {
 }
 
 /** A domain law broken across entities by a merge: a live entity referencing a
- *  withdrawn one, a cycle, one name held by more than one entity (each holder
- *  printed with its identity beside the name and how it holds it), or more than
- *  one plan holding the state that admits one. */
+ *  withdrawn one by a factor or a dependency, a cycle, one name held by more
+ *  than one entity (each holder printed with its identity beside the name and
+ *  how it holds it), or more than one plan holding the state that admits one. */
 export type Incoherence =
   | {
       readonly kind: 'retracted';
       readonly name: Name;
       readonly reference: Name;
+      /** The kind of reference that names the withdrawn entity. */
+      readonly relation: 'factor' | 'dependency';
     }
   | { readonly kind: 'cycle'; readonly names: readonly Name[] }
   | {
@@ -122,27 +125,31 @@ export function resolveFirst(items: readonly string[]): string[] {
 }
 
 /** A diverged entity: its names, then each version it holds as `render` draws
- *  it — on the version's own line when that is one line, else beneath it. */
+ *  it — on the version's own line when that is one line, else beneath it — and
+ *  each head that is a retraction, by the version it withdrew. */
 export function divergedLines<T>(
   diverged: Diverged<T>,
   render: (version: T) => readonly string[],
 ): string[] {
+  const head = (label: string, version: T): string[] => {
+    const lines = render(version);
+    return lines.length === 1
+      ? [`  ${label}: ${lines[0]}`]
+      : [`  ${label}:`, ...lines.map((line) => `    ${line}`)];
+  };
   return [
     `diverged: ${diverged.names.map(named).join(' or ')}`,
-    ...diverged.versions.flatMap((version) => {
-      const lines = render(version);
-      return lines.length === 1
-        ? [`  version: ${lines[0]}`]
-        : ['  version:', ...lines.map((line) => `    ${line}`)];
-    }),
-    ...(diverged.retracted ? ['  retracted'] : []),
+    ...diverged.versions.flatMap((version) => head('version', version)),
+    ...diverged.retracted.flatMap((version) =>
+      head('retraction, which withdrew', version),
+    ),
   ];
 }
 
 export function incoherenceLine(incoherence: Incoherence): string {
   switch (incoherence.kind) {
     case 'retracted':
-      return `incoherent: ${named(incoherence.name)} references withdrawn ${named(incoherence.reference)}`;
+      return `incoherent: ${named(incoherence.name)} references withdrawn ${named(incoherence.reference)} by its ${incoherence.relation}`;
     case 'cycle':
       return `incoherent: cycle among ${incoherence.names.map(named).join(', ')}`;
     case 'name': {
