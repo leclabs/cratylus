@@ -1,5 +1,31 @@
 # @cratylus/canon
 
+## 0.5.0
+
+### Minor Changes
+
+- 43952d1: Every writing position now carries what a commit is: durability, never acceptance
+
+  `file-ops ⟨filesystem · vcs⟩` states the commit duty in its `vcs` factor. A commit
+  is durability and never acceptance; on an isolated branch or worktree every
+  coherent step is committed with the red named in the message; a writer commits
+  only its own paths by pathspec, formatter first on those paths; and no dispatch
+  withholds a writer's commit. The `architect`, `planner` and `implementer` roles
+  hold it, so every projected agent except `assayer` carries it.
+
+  Measured before the change: a dispatcher with no commit rule in reach withheld
+  every lane's commit until the unit was green in 18 of 18 dispatches, whether the
+  design/deliver skills were present, amended or absent. Measured after: 6 of 6
+  dispatches let every lane commit at coherent steps, and 6 of 6 still did when a
+  repository rule gated commits on a green suite.
+
+### Patch Changes
+
+- 844ef6b: `deliver` no longer restates the amendment/acceptance separation law. It was
+  stated in both `design` ("two acts") and `deliver` ("two commits"), one law with
+  two homes and two wordings. `design` is its home; `deliver` reaches it through
+  `amend(C) @ design` and drops its now-unused `commit` and `accepts` imports.
+
 ## 0.4.0
 
 ### Minor Changes

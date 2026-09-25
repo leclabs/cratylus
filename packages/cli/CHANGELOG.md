@@ -1,5 +1,13 @@
 # @cratylus/invoke
 
+## 0.2.8
+
+### Patch Changes
+
+- Updated dependencies [43952d1]
+- Updated dependencies [844ef6b]
+  - @cratylus/canon@0.5.0
+
 ## 0.2.7
 
 ### Patch Changes
