@@ -75,8 +75,6 @@ cost   : act → effort
 bound  : P → 𝔹 ⟨plan-level commitment · persists across sessions⟩
 electable ≜ { P | ¬terminal(P) ∧ ¬occupied(P) }
 terminal : P → 𝔹
-commit @ design
-accepts @ design
 
 ∀ unit, r : ¬conform(r) ⇒ ¬accept(unit)(r)
 achieved(unit) ⇔ realizes(unit) ∈ assay(artifact(unit))
@@ -118,9 +116,6 @@ cost(validate) < cost(rebuild) ⟨else the gradient points at skipping · the ch
 dispatch(P) ≜ ∀ unit ∈ frontier(P) ⟨state(unit) = ready⟩ concurrently ⟨state(unit) := active ∧
     executor(unit) runs spec(unit)⟩ ; pre bound(P) ∧ ⊨ disjoint-outputs
 yield ≠ ∅ ⇒ amend(C) @ design ⟨LIVE, ¬ at retirement⟩
-∀ k : amends(k, c) ⇒ ¬accepts(k) ⟨the amendment and the acceptance motivating it are
-    two commits · fused, the agent adjusts the concept its artifact failed ∧ declares
-    success ⟨evidence MANUFACTURED⟩⟩
 impedes(d, unit) ⇔ d standing ⇒ ∄ r : accept(unit)(r)
 impedes(d, unit) ⇒ fix(d) ⟨a regression in the path is repaired, ¬ surfaced⟩
 ¬impedes(d, unit) ⇒ file(d) ∧ ¬fix(d) ⟨a defect BESIDE the path is filed, ¬ chased⟩

@@ -111,10 +111,10 @@ It ratifies it, because a cutover is green only at its end.
   behavior (arm F), and it would remove the carrier that the separation law depends on: the
   design skill's `commit ≜ … ⟨the append-only carrier · attribution ∧ order⟩` is what makes a
   retroactive amendment detectable, because the amendment postdates the artifact it excuses. A
-  real but unrelated defect sits beside it, and it is filed here, not fixed. The separation law
-  `∀ k : amends(k, c) ⇒ ¬accepts(k)` is stated twice, once in `design` ("two acts") and once in
-  `deliver/skill.ts:121` ("two commits"). That is one law with two homes and two wordings.
-  `deliver` should cite it `@ design` and not restate it.
+  real but unrelated defect sat beside it: the separation law `∀ k : amends(k, c) ⇒ ¬accepts(k)`
+  was stated twice, once in `design` ("two acts") and once in `deliver` ("two commits"), one law
+  with two homes and two wordings. **Repaired 2026-09-25:** `deliver` no longer restates it or
+  imports `commit`/`accepts`; it reaches the law through `amend(C) @ design`.
 - **R2 stands, with its content taken from `9a80d1f`.** Every agent that dispatches writers and
   every agent that writes must carry the commit duty as durability: a commit is durability and
   never acceptance; on an isolated branch or worktree a boundary is any coherent step, and the
