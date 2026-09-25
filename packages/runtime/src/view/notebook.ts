@@ -14,6 +14,7 @@ import {
   type Name,
   count,
   denotes,
+  denotesAny,
   divergedLines,
   drilled,
   field,
@@ -43,6 +44,9 @@ export interface NotebookState {
   /** The live notes that block what they name. */
   readonly owed: readonly Note[];
   readonly diverged: readonly Diverged<Note>[];
+  /** Withdrawn notes, each its last version, so a withdrawn holder of a
+   *  shared title drills to what the view is given of it. */
+  readonly withdrawn: readonly Note[];
   readonly incoherent: readonly Incoherence[];
 }
 
@@ -59,9 +63,10 @@ export function noteLine(note: Note): string {
   return `${said(note)} · ${note.kind} · ${note.topic}`;
 }
 
-function noteInFull(note: Note): string[] {
+/** One note in full; `mark` follows its title (` — withdrawn`). */
+function noteInFull(note: Note, mark = ''): string[] {
   return [
-    `note: ${named(note.title)}`,
+    `note: ${named(note.title)}${mark}`,
     `  kind: ${note.kind}`,
     `  topic: ${note.topic}`,
     ...field('body', note.body),
@@ -71,8 +76,9 @@ function noteInFull(note: Note): string[] {
 
 /**
  * The notebook's view: the whole notebook, or, given the `title` of a note,
- * every live note it names in full and every version of every diverged note it
- * names in full, beneath the header and the resolve-first layer.
+ * every live or withdrawn note it names in full and every version of every
+ * diverged note it names by any of its titles in full, beneath the header and
+ * the resolve-first layer.
  */
 export function notebookView(state: NotebookState, title?: Name): string {
   const lines = [
@@ -93,10 +99,15 @@ export function notebookView(state: NotebookState, title?: Name): string {
     return [
       ...lines,
       ...drilled(title, [
-        ...state.notes.filter((n) => denotes(title, n.title)).map(noteInFull),
+        ...state.notes
+          .filter((n) => denotes(title, n.title))
+          .map((n) => noteInFull(n)),
+        ...state.withdrawn
+          .filter((n) => denotes(title, n.title))
+          .map((n) => noteInFull(n, ' — withdrawn')),
         ...state.diverged
-          .filter((d) => denotes(title, d.name))
-          .map((d) => divergedLines(d, noteInFull)),
+          .filter((d) => denotesAny(title, d.names))
+          .map((d) => divergedLines(d, (n) => noteInFull(n))),
       ]),
     ].join('\n');
 

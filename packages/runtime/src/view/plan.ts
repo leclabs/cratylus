@@ -22,6 +22,7 @@ import {
   type Name,
   count,
   denotes,
+  denotesAny,
   divergedLines,
   drilled,
   field,
@@ -78,6 +79,10 @@ export interface PlanState {
   readonly owed: readonly Note[];
   readonly divergedPlans: readonly Diverged<Plan>[];
   readonly divergedUnits: readonly Diverged<Unit>[];
+  /** Withdrawn plans and units, each its last version, so a withdrawn holder
+   *  of a shared name drills to what the view is given of it. */
+  readonly withdrawnPlans: readonly Plan[];
+  readonly withdrawnUnits: readonly Unit[];
   readonly incoherent: readonly Incoherence[];
 }
 
@@ -103,9 +108,10 @@ function planLine(plan: Plan): string {
   return `plan ${planName(plan)}${realizes}`;
 }
 
-function planInFull(plan: Plan): string[] {
+/** One plan in full; `mark` follows its name (` — withdrawn`). */
+function planInFull(plan: Plan, mark = ''): string[] {
   return [
-    `plan: ${planName(plan)}`,
+    `plan: ${planName(plan)}${mark}`,
     ...list('realizes', plan.realizes.map(named)),
   ];
 }
@@ -134,8 +140,9 @@ function unitInFull(unit: Unit, marks: string, placement?: string): string[] {
 
 /**
  * The plan's view: the whole of each plan shown, or, given a `name`, every live
- * unit and plan it names in full and every version of every diverged unit and
- * plan it names in full, beneath the header and the resolve-first layer.
+ * or withdrawn unit and plan it names in full and every version of every
+ * diverged unit and plan it names by any of its names in full, beneath the
+ * header and the resolve-first layer.
  */
 export function planView(state: PlanState, name?: Name): string {
   const { units } = state;
@@ -159,7 +166,8 @@ export function planView(state: PlanState, name?: Name): string {
       if (live)
         return live.wave === undefined ? [`${named(dep)} unplaced`] : [];
       return state.divergedUnits.some(
-        (d) => named(d.name) === named(dep) && d.versions.some(own),
+        (d) =>
+          d.names.some((n) => named(n) === named(dep)) && d.versions.some(own),
       )
         ? [`${named(dep)} diverged`]
         : [`${named(dep)} not live`];
@@ -215,13 +223,19 @@ export function planView(state: PlanState, name?: Name): string {
           .map((u) => unitInFull(u, standing(u), placement(u))),
         ...[...plans.values()]
           .filter((p) => denotes(name, p.name))
-          .map(planInFull),
+          .map((p) => planInFull(p)),
+        ...state.withdrawnUnits
+          .filter((u) => denotes(name, u.name))
+          .map((u) => unitInFull(u, `${u.state}, withdrawn`)),
+        ...state.withdrawnPlans
+          .filter((p) => denotes(name, p.name))
+          .map((p) => planInFull(p, ' — withdrawn')),
         ...state.divergedUnits
-          .filter((d) => denotes(name, d.name))
+          .filter((d) => denotesAny(name, d.names))
           .map((d) => divergedLines(d, (u) => unitInFull(u, u.state))),
         ...state.divergedPlans
-          .filter((d) => denotes(name, d.name))
-          .map((d) => divergedLines(d, planInFull)),
+          .filter((d) => denotesAny(name, d.names))
+          .map((d) => divergedLines(d, (p) => planInFull(p))),
       ]),
     ].join('\n');
 

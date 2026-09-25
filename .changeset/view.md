@@ -21,9 +21,13 @@ with the frontier marked on their lines, each naming its concept; a unit given n
 the waves with the deps that hold it. Notes group by kind, then topic, one line per note led by its
 title, which is its name; the view never interprets a kind.
 
-Every item and every reference arrives by name. Where a merge left a name on two or more live
-entities, the name arrives with the entity's identity, and the view prints that identity beside the
-name everywhere the name prints and never otherwise. Naming an item drills into it in full, or into
-every version of it when it is diverged; a bare shared name drills into each item carrying it. The
+Every item and every reference arrives by name. A name is held by every live entity carrying it,
+by a withdrawn entity keeping it, and by a diverged entity for every name its heads carry. Where a
+merge left a name held by more than one entity, the name arrives with the entity's identity, and the
+view prints that identity beside the name everywhere the name prints and never otherwise; the
+incoherence line lists each holder with how it holds the name (live, withdrawn or diverged). Naming
+an item drills into it in full, or into every version of it when it is diverged, matching a diverged
+item by any of its names; a bare shared name drills into each item carrying it, and a withdrawn
+holder drills to its last version, marked withdrawn, so no printed identity is a dead end. The
 view receives states, kinds, waves, frontier, drift and suspicion already computed, and spells no
 lifecycle state or note kind. It is internal: exported through neither the `.` barrel nor a subpath.

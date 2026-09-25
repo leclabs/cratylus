@@ -12,10 +12,14 @@
 // body.
 //
 // Every item and every reference to one arrives as a `Name`: its name, or, where
-// a merge left that name on two or more live entities, its name with its
-// identity beside it. The caller decides which; the view prints each `Name` as
-// given, everywhere it prints, and joins and selects items by it. An identity is
-// never printed otherwise, and no output carries a record id, an envelope, a
+// a merge left that name held by more than one entity, its name with its
+// identity beside it. A name is held by every live entity carrying it, by a
+// withdrawn entity keeping it, and by a diverged entity for every name its
+// heads carry. The caller decides which names carry an identity; the view
+// prints each `Name` as given, everywhere it prints, and joins and selects items
+// by it, a diverged item by any of its names. Every identity printed drills to
+// an item: a withdrawn holder to its last version, marked withdrawn. An identity
+// is never printed otherwise, and no output carries a record id, an envelope, a
 // head as such or a file path.
 //
 // The view computes nothing a domain owns. It declares the shapes it renders and
@@ -30,7 +34,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 
 /** How the view names an item: its name, or its name with its identity where a
- *  merge left the name on two or more live entities and it cannot address one
+ *  merge left the name held by more than one entity and it cannot address one
  *  alone. */
 export type Name =
   | string
@@ -54,17 +58,24 @@ export function denotes(query: Name, name: Name): boolean {
 /** An entity with more than one head: the version each head holds, and whether
  *  a retraction stands among them. */
 export interface Diverged<T> {
-  /** The entity's name, supplied by the caller even when no version is left to
-   *  carry it. */
-  readonly name: Name;
+  /** Every name its heads carry, supplied by the caller, and a name it keeps
+   *  when no version is left to carry one. */
+  readonly names: readonly Name[];
   readonly versions: readonly T[];
   readonly retracted: boolean;
 }
 
+/** One holder of a name held by more than one entity: its identity, and whether
+ *  it holds the name as a live, a withdrawn or a diverged entity. */
+export interface Holder {
+  readonly identity: string;
+  readonly as: 'live' | 'withdrawn' | 'diverged';
+}
+
 /** A domain law broken across entities by a merge: a live entity referencing a
- *  withdrawn one, a cycle, one name on two or more live entities (each printed
- *  with its identity beside the name), or more than one plan holding the state
- *  that admits one. */
+ *  withdrawn one, a cycle, one name held by more than one entity (each holder
+ *  printed with its identity beside the name and how it holds it), or more than
+ *  one plan holding the state that admits one. */
 export type Incoherence =
   | {
       readonly kind: 'retracted';
@@ -75,8 +86,7 @@ export type Incoherence =
   | {
       readonly kind: 'name';
       readonly name: string;
-      /** The identities of the live entities carrying the name. */
-      readonly identities: readonly string[];
+      readonly holders: readonly Holder[];
     }
   | {
       readonly kind: 'exclusive';
@@ -111,14 +121,14 @@ export function resolveFirst(items: readonly string[]): string[] {
     : ['resolve first:', ...items.map((item) => `  ${item}`)];
 }
 
-/** A diverged entity: its name, then each version it holds as `render` draws
+/** A diverged entity: its names, then each version it holds as `render` draws
  *  it — on the version's own line when that is one line, else beneath it. */
 export function divergedLines<T>(
   diverged: Diverged<T>,
   render: (version: T) => readonly string[],
 ): string[] {
   return [
-    `diverged: ${named(diverged.name)}`,
+    `diverged: ${diverged.names.map(named).join(' or ')}`,
     ...diverged.versions.flatMap((version) => {
       const lines = render(version);
       return lines.length === 1
@@ -136,18 +146,23 @@ export function incoherenceLine(incoherence: Incoherence): string {
     case 'cycle':
       return `incoherent: cycle among ${incoherence.names.map(named).join(', ')}`;
     case 'name': {
-      const { name, identities } = incoherence;
-      return `incoherent: ${identities.length} live items named ${name}: ${identities.map((identity) => named({ name, identity })).join(', ')}`;
+      const { name, holders } = incoherence;
+      return `incoherent: ${name} is held by ${holders.length} items: ${holders.map(({ identity, as }) => `${named({ name, identity })} ${as}`).join(', ')}`;
     }
     case 'exclusive':
       return `incoherent: ${incoherence.names.length} plans in ${incoherence.state}, which admits one: ${incoherence.names.map(named).join(', ')}`;
   }
 }
 
-/** The drilled items, or a line saying `query` names nothing live or diverged. */
+/** Whether `query` names a diverged item by any of its names. */
+export function denotesAny(query: Name, names: readonly Name[]): boolean {
+  return names.some((name) => denotes(query, name));
+}
+
+/** The drilled items, or a line saying `query` names nothing the view holds. */
 export function drilled(query: Name, items: readonly string[][]): string[] {
   return items.length === 0
-    ? [`nothing live or diverged is named ${named(query)}`]
+    ? [`nothing live, withdrawn or diverged is named ${named(query)}`]
     : items.flat();
 }
 

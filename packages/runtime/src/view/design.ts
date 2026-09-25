@@ -18,6 +18,7 @@ import {
   type Name,
   count,
   denotes,
+  denotesAny,
   divergedLines,
   drilled,
   field,
@@ -46,6 +47,9 @@ export interface DesignState {
    *  joined to. */
   readonly units: readonly LiveUnit[];
   readonly diverged: readonly Diverged<Concept>[];
+  /** Withdrawn concepts, each its last version, so a withdrawn holder of a
+   *  shared anchor drills to what the view is given of it. */
+  readonly withdrawn: readonly Concept[];
   readonly incoherent: readonly Incoherence[];
 }
 
@@ -56,18 +60,20 @@ function conceptLine(concept: Concept): string {
   return `${named(concept.anchor)} — ${inline(concept.gloss)}${factors}`;
 }
 
-function conceptInFull(concept: Concept): string[] {
+/** One concept in full; `mark` follows its anchor (` — withdrawn`). */
+function conceptInFull(concept: Concept, mark = ''): string[] {
   return [
-    `concept: ${named(concept.anchor)}`,
+    `concept: ${named(concept.anchor)}${mark}`,
     ...field('gloss', concept.gloss),
     ...list('factors', concept.factors.map(named)),
   ];
 }
 
 /**
- * The design's view: the whole lattice, or, given an `anchor`, every live
- * concept it names in full and every version of every diverged concept it names
- * in full, beneath the header and the resolve-first layer.
+ * The design's view: the whole lattice, or, given an `anchor`, every live or
+ * withdrawn concept it names in full and every version of every diverged
+ * concept it names by any of its anchors in full, beneath the header and the
+ * resolve-first layer.
  */
 export function designView(state: DesignState, anchor?: Name): string {
   const { concepts } = state;
@@ -153,11 +159,17 @@ export function designView(state: DesignState, anchor?: Name): string {
             ...(placed.has(c) ? [] : [`  ${why(c)}`]),
             ...list('realized in', realizedIn(c.anchor)),
           ]),
+        ...state.withdrawn
+          .filter((c) => denotes(anchor, c.anchor))
+          .map((c) => [
+            ...conceptInFull(c, ' — withdrawn'),
+            ...list('realized in', realizedIn(c.anchor)),
+          ]),
         ...state.diverged
-          .filter((d) => denotes(anchor, d.name))
+          .filter((d) => denotesAny(anchor, d.names))
           .map((d) => [
-            ...divergedLines(d, conceptInFull),
-            ...list('realized in', realizedIn(d.name)),
+            ...divergedLines(d, (c) => conceptInFull(c)),
+            ...list('realized in', d.names.flatMap(realizedIn)),
           ]),
       ]),
     ].join('\n');
