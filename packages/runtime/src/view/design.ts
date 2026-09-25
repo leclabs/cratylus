@@ -1,11 +1,14 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // THE DESIGN VIEW — the concept lattice root to primitive, one line per live
-// concept, each showing how the plans stand on it, behind the divergence and
-// the incoherence that must be resolved first.
+// concept, each showing every plan standing on it with that plan's state,
+// behind the divergence and the incoherence that must be resolved first.
 //
-// Concepts arrive in root-to-primitive order, computed by `design-domain`; this
-// module keeps the order it is given. How the plans stand on a concept is every
-// given unit whose realized entity is that concept's.
+// The view orders the lattice itself, from the factors it is given: the roots
+// are the concepts no live concept factors on, and a concept prints once every
+// live concept factoring on it has printed. A concept a factor cycle keeps from
+// that order — in the cycle or beneath it — still gets its line, after the
+// lattice, naming the concepts above it. How the plans stand on a concept is
+// every given unit whose realized entity is that concept's, grouped by plan.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import {
@@ -20,7 +23,7 @@ import {
   list,
   resolveFirst,
 } from './layers.js';
-import { type LiveUnit, standing } from './plan.js';
+import { type LiveUnit, planName, standing } from './plan.js';
 
 /** A concept as its reader sees it. */
 export interface Concept {
@@ -31,7 +34,7 @@ export interface Concept {
 }
 
 /** A live concept, with the entity identity that joins it to the units
- *  realizing it and is never printed. */
+ *  realizing it and selects it for a drill; never printed. */
 export interface LiveConcept extends Concept {
   readonly entity: string;
 }
@@ -39,7 +42,7 @@ export interface LiveConcept extends Concept {
 /** The design computed at `commit`. */
 export interface DesignState {
   readonly commit: string;
-  /** Every live concept, root to primitive. */
+  /** Every live concept, in any order. */
   readonly concepts: readonly LiveConcept[];
   /** The units of every plan, whatever its state, that the concepts are
    *  joined to. */
@@ -55,47 +58,107 @@ function conceptLine(concept: Concept): string {
   return `${concept.anchor} — ${inline(concept.gloss)}${factors}`;
 }
 
+function conceptInFull(concept: Concept): string[] {
+  return [
+    `concept: ${concept.anchor}`,
+    ...field('gloss', concept.gloss),
+    ...list('factors', concept.factors),
+  ];
+}
+
 /**
- * The design's view: the whole lattice, or, given `focus` (the entity of a live
- * concept), that one concept in full beneath the header and the resolve-first
- * layer.
+ * The design's view: the whole lattice, or, given `entity`, that live concept in
+ * full, or every version of that diverged concept in full, beneath the header
+ * and the resolve-first layer.
  */
-export function designView(state: DesignState, focus?: string): string {
-  const realizing = new Map<string, string[]>();
-  for (const unit of state.units)
-    realizing.set(unit.realizes.entity, [
-      ...(realizing.get(unit.realizes.entity) ?? []),
-      `${unit.plan}/${unit.name} (${standing(unit)})`,
+export function designView(state: DesignState, entity?: string): string {
+  const { concepts } = state;
+
+  // How each plan stands on each concept: `plan (state): unit (marks), …`.
+  const realizing = new Map<string, Map<string, string[]>>();
+  for (const unit of state.units) {
+    const plans =
+      realizing.get(unit.realizes.entity) ?? new Map<string, string[]>();
+    realizing.set(unit.realizes.entity, plans);
+    const plan = planName(unit.plan);
+    plans.set(plan, [
+      ...(plans.get(plan) ?? []),
+      `${unit.name} (${standing(unit)})`,
     ]);
+  }
+  const realizedIn = (concept: string): string[] =>
+    [...(realizing.get(concept) ?? [])].map(
+      ([plan, units]) => `${plan}: ${units.join(', ')}`,
+    );
+
+  // Root to primitive: a concept is placed once every live concept factoring
+  // on it is placed; the roots are those nothing live factors on.
+  const above = new Map<string, string[]>(concepts.map((c) => [c.anchor, []]));
+  for (const c of concepts)
+    for (const factor of c.factors) above.get(factor)?.push(c.anchor);
+  const waiting = new Map(
+    [...above].map(([anchor, over]) => [anchor, over.length]),
+  );
+  const ordered: LiveConcept[] = [];
+  let level = concepts.filter((c) => waiting.get(c.anchor) === 0);
+  while (level.length) {
+    ordered.push(...level);
+    const next = new Set<string>();
+    for (const c of level)
+      for (const factor of c.factors) {
+        const n = waiting.get(factor);
+        if (n === undefined) continue;
+        waiting.set(factor, n - 1);
+        if (n === 1) next.add(factor);
+      }
+    level = concepts.filter((c) => next.has(c.anchor));
+  }
+  const placed = new Set(ordered);
+  const unplaced = concepts.filter((c) => !placed.has(c));
+  const why = (c: LiveConcept): string =>
+    `unplaced: in or beneath a factor cycle, factored on by ${(above.get(c.anchor) ?? []).join(', ')}`;
+
   const lines = [
     header('design', state.commit, [
-      count(state.concepts.length, 'concept', 'concepts'),
+      count(concepts.length, 'concept', 'concepts'),
+      `${unplaced.length} unplaced`,
       `${state.diverged.length} diverged`,
       `${state.incoherent.length} incoherent`,
     ]),
     ...resolveFirst([
-      ...state.diverged.flatMap((d) => divergedLines(d, conceptLine)),
+      ...state.diverged.flatMap((d) =>
+        divergedLines(d, (v) => [conceptLine(v)]),
+      ),
       ...state.incoherent.map(incoherenceLine),
     ]),
   ];
 
-  if (focus !== undefined) {
-    const concept = state.concepts.find((c) => c.entity === focus);
-    if (!concept) return [...lines, 'no live concept by that name'].join('\n');
+  if (entity !== undefined) {
+    const concept = concepts.find((c) => c.entity === entity);
+    const diverged = state.diverged.find((d) => d.entity === entity);
+    const drilled = concept
+      ? [
+          ...conceptInFull(concept),
+          ...(placed.has(concept) ? [] : [`  ${why(concept)}`]),
+        ]
+      : diverged && divergedLines(diverged, conceptInFull);
     return [
       ...lines,
-      `concept: ${concept.anchor}`,
-      ...field('gloss', concept.gloss),
-      ...list('factors', concept.factors),
-      ...list('realized by', realizing.get(concept.entity) ?? []),
+      ...(drilled
+        ? [...drilled, ...list('realized in', realizedIn(entity))]
+        : ['no live or diverged concept is that entity']),
     ].join('\n');
   }
 
+  const line = (c: LiveConcept): string => {
+    const plans = realizedIn(c.entity);
+    return `${conceptLine(c)}${plans.length ? ` · realized in ${plans.join('; ')}` : ''}`;
+  };
   lines.push('lattice, root to primitive:');
-  for (const concept of state.concepts) {
-    const units = realizing.get(concept.entity);
-    const realized = units ? ` · realized by ${units.join('; ')}` : '';
-    lines.push(`  ${conceptLine(concept)}${realized}`);
+  for (const c of ordered) lines.push(`  ${line(c)}`);
+  if (unplaced.length) {
+    lines.push('  no place:');
+    for (const c of unplaced) lines.push(`    ${line(c)} · ${why(c)}`);
   }
   return lines.join('\n');
 }

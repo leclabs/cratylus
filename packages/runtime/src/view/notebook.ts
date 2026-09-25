@@ -62,12 +62,21 @@ export function noteLine(note: Note): string {
   return `${note.kind} · ${note.topic} — ${said(note)}`;
 }
 
+/** One note in full. */
+function noteInFull(note: Note): string[] {
+  return [
+    `note: ${note.kind} · ${note.topic}`,
+    ...field('body', note.body),
+    ...list('blocks', note.blocks),
+  ];
+}
+
 /**
- * The notebook's view: the whole notebook, or, given `focus` (the entity of a
- * live note), that one note in full beneath the header and the resolve-first
- * layer.
+ * The notebook's view: the whole notebook, or, given `entity`, that live note in
+ * full, or every version of that diverged note in full, beneath the header and
+ * the resolve-first layer.
  */
-export function notebookView(state: NotebookState, focus?: string): string {
+export function notebookView(state: NotebookState, entity?: string): string {
   const owed = new Set(state.owed.map((note) => note.entity));
   const open = state.open.filter((note) => !owed.has(note.entity));
   const lines = [
@@ -79,21 +88,23 @@ export function notebookView(state: NotebookState, focus?: string): string {
       `${state.incoherent.length} incoherent`,
     ]),
     ...resolveFirst([
-      ...state.diverged.flatMap((d) => divergedLines(d, noteLine)),
+      ...state.diverged.flatMap((d) => divergedLines(d, (v) => [noteLine(v)])),
       ...state.incoherent.map(incoherenceLine),
       ...state.owed.map((note) => `owed ruling: ${noteLine(note)}`),
       ...open.map((note) => `open question: ${noteLine(note)}`),
     ]),
   ];
 
-  if (focus !== undefined) {
-    const note = state.notes.find((n) => n.entity === focus);
-    if (!note) return [...lines, 'no live note by that name'].join('\n');
+  if (entity !== undefined) {
+    const note = state.notes.find((n) => n.entity === entity);
+    const diverged = state.diverged.find((d) => d.entity === entity);
     return [
       ...lines,
-      `note: ${note.kind} · ${note.topic}`,
-      ...field('body', note.body),
-      ...list('blocks', note.blocks),
+      ...(note
+        ? noteInFull(note)
+        : diverged
+          ? divergedLines(diverged, noteInFull)
+          : ['no live or diverged note is that entity']),
     ].join('\n');
   }
 
