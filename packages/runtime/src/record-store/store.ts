@@ -98,8 +98,10 @@ export class RecordStore {
    * Write one record into `domain`. Refuses a record id whose file exists; a
    * `create` that names anything, or whose entity already has records; an
    * `amend` or `retract` naming nothing; a named id that is unknown, belongs to
-   * another entity, or is not a current head of this one; and a `retract` naming
-   * no version, which would withdraw nothing.
+   * another entity, or is not a current head of this one; a write to a settled
+   * entity that leaves one of its converged heads unnamed, which would turn
+   * convergence into divergence on one branch; and a `retract` naming no
+   * version, which would withdraw nothing.
    */
   write<P>(domain: string, record: Record<P>): void {
     const dir = this.#dir(domain);
@@ -117,7 +119,8 @@ export class RecordStore {
       refuse('it names no head');
     if ((operation === 'retract') !== (record.payload === null))
       refuse('a retraction, and only a retraction, carries no payload');
-    const heads = fold(records).get(entity)?.heads;
+    const folded = fold(records).get(entity);
+    const heads = folded?.heads;
     if (operation === 'create' && heads)
       refuse(`entity ${entity} already has records in ${domain}`);
     for (const named of supersedes) {
@@ -130,6 +133,14 @@ export class RecordStore {
       else if (!heads?.includes(target))
         refuse(`${named} is not a head of entity ${entity}`);
     }
+    if (
+      folded &&
+      !folded.diverged &&
+      folded.heads.some((h) => !supersedes.includes(h.envelope.id))
+    )
+      refuse(
+        `entity ${entity}'s heads have converged, and a write names every one of them`,
+      );
     if (
       operation === 'retract' &&
       supersedes.every(
@@ -218,22 +229,23 @@ export class RecordStore {
 
   /** A reconciliation: one new whole-state version superseding every head of a
    *  diverged `entity`, a retraction among them included. Its operation is
-   *  `amend`. Refuses an entity that has not diverged. */
+   *  `amend`. Refuses an entity that has not diverged, converged heads
+   *  included: those are settled, and an ordinary supersession names them. */
   reconcile<P>(
     domain: string,
     entity: string,
     payload: P,
     by: Pick<Envelope, 'author' | 'reason' | 'cause'>,
   ): Record<P> {
-    const heads = fold(this.read(domain)).get(entity)?.heads ?? [];
-    if (heads.length < 2)
+    const folded = fold(this.read(domain)).get(entity);
+    if (!folded?.diverged)
       throw new Error(
-        `record store: reconcile refused — entity ${entity} has ${heads.length} head(s) in ${domain}, and only divergence is reconciled`,
+        `record store: reconcile refused — entity ${entity} has not diverged in ${domain}, and only divergence is reconciled`,
       );
     return this.supersede(
       domain,
       entity,
-      heads.map((h) => h.envelope.id),
+      folded.heads.map((h) => h.envelope.id),
       payload,
       by,
     );

@@ -6,12 +6,16 @@
 // from the records alone, so there is no derived state that could go stale.
 //
 // A head is a record of an entity, version or retraction, that no later record
-// names. One head is settled: live when it is a version, withdrawn when it is a
-// retraction. More than one head is DIVERGENCE — the state two branches leave
-// when each wrote to the same head differently (two versions, or a version and a
-// retraction) and the branches merged. Divergence is state, not error: it is
-// reported, and the fold never resolves it by picking a head. Resolving it is a
-// reconciliation, which the store writes.
+// names. Heads that carry the same payload have CONVERGED and read as one: two
+// branches that wrote the same whole state. An entity whose heads all read as one
+// is settled: live when they are versions, withdrawn when they are retractions (a
+// retraction's null payload never equals a version's). Heads whose payloads differ
+// are DIVERGENCE — the state two branches leave when each wrote to the same head
+// differently (two versions, or a version and a retraction) and the branches
+// merged. Divergence is state, not error: it is reported, and the fold never
+// resolves it by picking a head. Resolving it is a reconciliation, which the store
+// writes. Converged or not, every head stays in `heads`, because the next write
+// names every one of them.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Record, RecordId } from './record.js';
@@ -20,13 +24,27 @@ import type { Record, RecordId } from './record.js';
 export interface Fold<P> {
   readonly entity: string;
   /** Records, versions or retractions, that no record names, in record-id
-   *  order. */
+   *  order — every one of them, converged heads included. */
   readonly heads: readonly Record<P>[];
-  /** Settled on a retraction: the entity's one head withdraws it. */
+  /** The heads carry more than one payload. */
+  readonly diverged: boolean;
+  /** Settled on retractions: every head withdraws the entity. */
   readonly withdrawn: boolean;
-  /** The one head's payload when the entity is settled and live; `undefined`
-   *  when it is withdrawn or diverged (the fold picks neither head). */
+  /** The heads' one payload when the entity is settled and live; `undefined`
+   *  when it is withdrawn or diverged (the fold picks no head). */
   readonly payload: P | undefined;
+}
+
+/** A payload's bytes with object keys sorted, so two heads carrying the same
+ *  whole state compare equal whatever order their writers emitted keys in. */
+function canonical(value: unknown): string {
+  return JSON.stringify(value, (_, v: unknown) =>
+    v && typeof v === 'object' && !Array.isArray(v)
+      ? Object.fromEntries(
+          Object.entries(v).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)),
+        )
+      : v,
+  );
 }
 
 /** Fold records into every entity they belong to, keyed by entity. */
@@ -45,21 +63,23 @@ export function fold<P>(
     const heads = own
       .filter((r) => !named.has(r.envelope.id))
       .sort((a, b) => (a.envelope.id < b.envelope.id ? -1 : 1));
-    const only = heads.length === 1 ? heads[0] : undefined;
-    const withdrawn = only?.envelope.operation === 'retract';
+    const diverged = new Set(heads.map((h) => canonical(h.payload))).size > 1;
+    const withdrawn =
+      !diverged && heads.every((h) => h.envelope.operation === 'retract');
     folds.set(entity, {
       entity,
       heads,
+      diverged,
       withdrawn,
-      payload: only && !withdrawn ? (only.payload as P) : undefined,
+      payload: diverged || withdrawn ? undefined : (heads[0]?.payload as P),
     });
   }
   return folds;
 }
 
-/** Every entity with more than one head. */
+/** Every entity whose heads carry more than one payload. */
 export function divergence<P>(folds: ReadonlyMap<string, Fold<P>>): Fold<P>[] {
-  return [...folds.values()].filter((f) => f.heads.length > 1);
+  return [...folds.values()].filter((f) => f.diverged);
 }
 
 /** A contradiction between entities, reported like divergence and never

@@ -287,7 +287,83 @@ describe('record store', () => {
     const folds = fold(store.read(DOMAIN));
     expect(ids(folds.get(entity)?.heads ?? [])).toEqual(ids(written));
     expect(folds.get(entity)?.payload).toBeUndefined();
+    expect(folds.get(entity)?.diverged).toBe(true);
     expect(divergence(folds).map((f) => f.entity)).toEqual([entity]);
+  });
+
+  it('identical concurrent versions merge to settled, and the next write names every converged head', () => {
+    const repo = repository();
+    const store = new RecordStore(repo);
+    const base = store.create(DOMAIN, { name: 'a', state: 'x' }, BY);
+    const { entity } = base.envelope;
+    const written: Record<unknown>[] = [];
+    mergeBranches(
+      repo,
+      () => {
+        written.push(
+          store.supersede(
+            DOMAIN,
+            entity,
+            [base.envelope.id],
+            { name: 'a', state: 'y' },
+            BY,
+          ),
+        );
+      },
+      () => {
+        written.push(
+          store.supersede(
+            DOMAIN,
+            entity,
+            [base.envelope.id],
+            { state: 'y', name: 'a' },
+            BY,
+          ),
+        );
+      },
+    );
+    const folds = fold(store.read(DOMAIN));
+    const folded = folds.get(entity);
+    expect(ids(folded?.heads ?? [])).toEqual(ids(written));
+    expect(folded?.diverged).toBe(false);
+    expect(folded?.withdrawn).toBe(false);
+    expect(folded?.payload).toEqual({ name: 'a', state: 'y' });
+    expect(divergence(folds)).toEqual([]);
+
+    expect(() => store.reconcile(DOMAIN, entity, { name: 'z' }, BY)).toThrow(
+      /only divergence/,
+    );
+    const [first, second] = ids(written);
+    expect(() =>
+      store.supersede(DOMAIN, entity, [first as string], { name: 'z' }, BY),
+    ).toThrow(/converged/);
+    const next = store.supersede(
+      DOMAIN,
+      entity,
+      [first as string, second as string],
+      { name: 'z' },
+      BY,
+    );
+    expect(fold(store.read(DOMAIN)).get(entity)?.heads).toEqual([next]);
+  });
+
+  it('two concurrent retractions converge to withdrawn', () => {
+    const repo = repository();
+    const store = new RecordStore(repo);
+    const base = store.create(DOMAIN, { name: 'a' }, BY);
+    const { entity } = base.envelope;
+    mergeBranches(
+      repo,
+      () => store.retract(DOMAIN, entity, BY),
+      () => store.retract(DOMAIN, entity, BY),
+    );
+    const folds = fold(store.read(DOMAIN));
+    expect(folds.get(entity)?.heads).toHaveLength(2);
+    expect(folds.get(entity)?.withdrawn).toBe(true);
+    expect(divergence(folds)).toEqual([]);
+    expect(() => store.retract(DOMAIN, entity, BY)).toThrow(
+      /withdraws nothing/,
+    );
   });
 
   it('a concurrent retraction and supersession merge into divergence with two heads', () => {

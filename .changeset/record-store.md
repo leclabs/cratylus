@@ -11,11 +11,13 @@ one file per record, each an envelope (record id, entity, operation, the record 
 author, time, reason, cause) and a whole-state payload. A write whose file exists refuses, and a
 supersession or retraction refuses to name anything but a current head of its own entity, so one
 branch's history stays linear. The fold computes each entity's heads at the moment of the read and
-persists nothing. A head is a version or a retraction that no later record names. One head is
-settled: live on a version, withdrawn on a retraction, and a supersession naming that retraction
-reinstates the entity. More than one head is divergence, which only a merge produces (two versions,
-or a version and a retraction). It is reported, never resolved by picking one, and a reconciliation
-writes one version superseding every head. Incoherence (a reference to a withdrawn entity, or a
+persists nothing. A head is a version or a retraction that no later record names. Heads carrying
+the same payload have converged and read as one, and a later write names every one of them. An
+entity whose heads read as one is settled: live on versions, withdrawn on retractions, and a
+supersession naming the retraction reinstates the entity. Heads whose payloads differ are
+divergence, which only a merge produces (two versions, or a version and a retraction). It is
+reported, never resolved by picking one, and a reconciliation writes one version superseding every
+head. Incoherence (a reference to a withdrawn entity, or a
 cycle) is reported over a reference relation the caller supplies. A branch merge is the union of
 files and never conflicts. The store is internal: it is exported through neither the `.` barrel
 nor a subpath.
