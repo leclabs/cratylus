@@ -27,7 +27,7 @@ import { projection as projection_situationAwareness } from '../dimensions/situa
 import { decisionRationale as decisionRationale_transparency } from '../dimensions/transparency/decision-rationale.js';
 import type { RoleCell } from './hold.js';
 
-// THE TOP RUNG. `architect`, `plan` and `implement` are one ladder differing FIRST in
+// THE TOP RUNG. `architect`, `planner` and `implementer` are one ladder differing FIRST in
 // decision authority — principal here, withheld below — and SECOND in the arrow each
 // one is. Every rung carries `mission-command`, whose escalation clause is the shared
 // law: surface the fork, do not resolve it. That single rule is what keeps delegation

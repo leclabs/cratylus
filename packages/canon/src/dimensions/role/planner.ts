@@ -9,8 +9,8 @@ import type { Role } from '../../manifest.js';
 // a planner permitted to redraw the boundary it was handed is the route by which the
 // design leaks back out into the work.
 
-export const plan: Role = `plan ≜ reads⟨C · artifact⟩ → writes⟨spec⟩
+export const planner: Role = `planner ≜ reads⟨C · artifact⟩ → writes⟨spec⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
 reserves ⟨census ⟨extant · references · resolved-by-use ¬ by-declaration⟩ · decompose ⟨cut-piece → MECE-units⟩ · realizes ⟨unit ⇀ anchor⟩ · sequence ⟨waves ⊨ disjoint-outputs⟩⟩
 writes ≠ C ⇒ cut-piece GIVEN ⟨boundary ¬ decomposable ⇒ SURFACED ¬ redrawn⟩
-writes ≠ artifact ⇒ ∄ build @ plan ⟨unit ≜ spec · executor builds⟩`;
+writes ≠ artifact ⇒ ∄ build @ planner ⟨unit ≜ spec · executor builds⟩`;

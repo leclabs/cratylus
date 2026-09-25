@@ -12,7 +12,7 @@
 //     on exactly its class (MECE).
 //   NEGATIVE control — the live tree GREENs on all three classes, AND a legit
 //     reusable dimension value (≥2 agents) + a legit single-ref mark-less open value
-//     (role/build, referenced once) stay GREEN (the false-positive guards).
+//     (role/contractor, referenced once) stay GREEN (the false-positive guards).
 //
 // GOVERNING INVARIANT held structurally: the corpus admits no artifact existing
 // SOLELY to restate what an archetype already holds — σ*-parsimony above the cell.
@@ -98,20 +98,20 @@ export const base = {
 
 /** a real agent that spreads the floor (\`...base\`) — supplies the graph edge. */
 const AGENT_SPREADING_BASE = `import type { Agent } from '@cratylus/schema';
-import { build as build_role } from '../dimensions/role/build.js';
+import { contractor as contractor_role } from '../dimensions/role/contractor.js';
 import { base } from './base.js';
-export const nico: Agent = { ...base, name: 'nico', role: build_role };
+export const nico: Agent = { ...base, name: 'nico', role: contractor_role };
 `;
 
 /** (b) the real \`nicoResolved: ResolvedAgent\` — a parallel rep of the Agent vector. */
 const AGENT_WITH_RESOLVED = `import type { ResolvedAgent } from '@cratylus/forge/adapters/claude';
 import type { Agent } from '../src/manifest.js';
-import { build as build_role } from '../dimensions/role/build.js';
-export const nico: Agent = { name: 'nico', role: build_role };
+import { contractor as contractor_role } from '../dimensions/role/contractor.js';
+export const nico: Agent = { name: 'nico', role: contractor_role };
 export const nicoResolved: ResolvedAgent = {
   name: 'nico',
   description: nico.archetype,
-  dimensions: [['Role', [build_role]]],
+  dimensions: [['Role', [contractor_role]]],
 };
 `;
 
@@ -177,19 +177,19 @@ const SHARED_MARK_VALUE: StructuralCorpus = {
 };
 
 /** a mark-LESS value referenced by exactly ONE agent — a legit open-dimension value
- * (role/build). Single-ref ALONE must not convict (¬mark ⇒ green). */
+ * (role/contractor). Single-ref ALONE must not convict (¬mark ⇒ green). */
 const SINGLE_REF_DIMENSION_VALUE: StructuralCorpus = {
   agents: [
     parseAgentModule(
       'mav',
-      "import { build as build_role } from '../dimensions/role/build.js';\nexport const mav = 1;",
+      "import { contractor as contractor_role } from '../dimensions/role/contractor.js';\nexport const mav = 1;",
     ),
   ],
   fragments: [
     parseFragment(
       'role',
-      'build',
-      'export const build: Role = `build ≜ own the artifact.`;',
+      'contractor',
+      'export const contractor: Role = `contractor ≜ own the artifact.`;',
     ),
   ],
 };
@@ -261,7 +261,7 @@ describe('structural-parsimony gate — ¬∃ artifact restating an archetype', 
   });
 
   // This control proves single-ref ≠ cruft on the LIVE tree, so it needs a value
-  // the corpus genuinely references exactly once. It was keyed to `role/build`,
+  // the corpus genuinely references exactly once. It was keyed to `role/contractor`,
   // re-grounded on `objective/delivery` when the roster shrank to {mav, nico},
   // then broke again when a third agent also picked `delivery`. A hand-picked
   // witness re-breaks on every roster change, so the witness is DERIVED: whatever

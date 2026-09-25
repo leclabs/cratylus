@@ -1,15 +1,16 @@
 import type { Agent } from '../manifest.js';
-import { buildRole } from '../roles/build.js';
+import { contractorRole } from '../roles/contractor.js';
 import { holds } from '../roles/hold.js';
 
-// THE PRINCIPAL IC. `mav` declared `build` before this and so did `nico`, on a token
-// that stated nothing, so the collision was invisible: two agents naming the same
-// position while one of them never wrote a line of substrate. The contract separates
-// them by boundary rather than by temperament — this agent's floor is the artifact and
-// its ceiling is the durative design, which it escalates to rather than amends.
+// THE CONTRACTOR — the party that takes the job whole. `mav` declared the verb `build`
+// before this and so did `nico`, on a token that stated nothing, so the collision was
+// invisible: two agents naming the same position while one of them never wrote a line
+// of substrate. The contract separates them by boundary rather than by temperament —
+// this agent's floor is the artifact and its ceiling is the durative design, which it
+// escalates to rather than amends.
 //
 // It declares nothing but its identity, and that is the honest reading: `mav` IS the
-// build role. Everything a principal IC is, the position states.
+// contractor role. Everything the position states, this agent is.
 //
 // `output-format` stays unstated. It was `structured-decision` once, which was not a
 // KIND of artifact but a LAYOUT, and an undefined one: a cold decode of a prompt whose
@@ -18,7 +19,7 @@ import { holds } from '../roles/hold.js';
 // `plain`'s own "no more length than the decision carries", and the reply's shape is
 // `handoff`'s. Two homes already; a third restates them at best.
 
-export const mav: Agent = holds(buildRole, {
+export const mav: Agent = holds(contractorRole, {
   name: 'mav',
   description:
     'Use this agent to carry engineering end-to-end to shipped-and-working across packages, tooling, and delivery — the builder who lands work rather than advising, and reads intent past the literal ask.',

@@ -15,7 +15,7 @@ import { honesty as honesty_guardrails } from '../dimensions/guardrails/honesty.
 import { correctionConsolidation as correctionConsolidation_learning } from '../dimensions/learning/correction-consolidation.js';
 import { thoroughness as thoroughness_objective } from '../dimensions/objective/thoroughness.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../dimensions/reasoning-strategy/plan-and-solve.js';
-import { plan as plan_role } from '../dimensions/role/plan.js';
+import { planner as planner_role } from '../dimensions/role/planner.js';
 import { optimize as optimize_satisficing } from '../dimensions/satisficing/optimize.js';
 import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } from '../dimensions/self-evaluation/acceptance-criteria-check.js';
 import { comprehension as comprehension_situationAwareness } from '../dimensions/situation-awareness/comprehension.js';
@@ -29,8 +29,8 @@ import type { RoleCell } from './hold.js';
 // `system-design` is absent alongside `software-engineering` — this position neither
 // designs nor builds. What it owns is the census and the cut-into-units.
 
-export const planRole: RoleCell = {
-  sign: plan_role,
+export const plannerRole: RoleCell = {
+  sign: planner_role,
   // One skill, and only one. `design` and `deliver` belong to the rung ABOVE, which
   // draws the boundary this rung plans inside; the rung BELOW declares none at all,
   // because an implementer's decisions are made for it by its spec.

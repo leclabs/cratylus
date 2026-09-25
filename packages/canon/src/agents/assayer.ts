@@ -1,5 +1,5 @@
 import type { Agent } from '../manifest.js';
-import { assayRole } from '../roles/assay.js';
+import { assayerRole } from '../roles/assayer.js';
 import { holds } from '../roles/hold.js';
 
 // THE AGENT THAT DESCENDS SO THE PRINCIPAL DOES NOT. `deliver` is right that an
@@ -14,7 +14,7 @@ import { holds } from '../roles/hold.js';
 // recommendation; this returns a list of concepts that did not land. The two
 // prohibitions live in the role contract, where a rubric can quote them.
 
-export const assayer: Agent = holds(assayRole, {
+export const assayer: Agent = holds(assayerRole, {
   name: 'assayer',
   description:
     'Use this agent to determine what a landed artifact ACTUALLY realizes — read the delivered files against the design and return, concept by concept, which ones were made real and which were not, each unachieved concept naming the factor left uncovered and an address to find it at. Returns CONCEPTS, never a verdict: it does not accept, reject, recommend, or comment on naming, structure or test quality, because the decision is keyed to a design only the design-holder amends.',

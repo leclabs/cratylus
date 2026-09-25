@@ -18,17 +18,17 @@ import { honesty as honesty_guardrails } from '../dimensions/guardrails/honesty.
 import { correctionConsolidation as correctionConsolidation_learning } from '../dimensions/learning/correction-consolidation.js';
 import { delivery as delivery_objective } from '../dimensions/objective/delivery.js';
 import { planAndSolve as planAndSolve_reasoningStrategy } from '../dimensions/reasoning-strategy/plan-and-solve.js';
-import { build as build_role } from '../dimensions/role/build.js';
+import { contractor as contractor_role } from '../dimensions/role/contractor.js';
 import { optimize as optimize_satisficing } from '../dimensions/satisficing/optimize.js';
 import { executableTestOracle as executableTestOracle_selfEvaluation } from '../dimensions/self-evaluation/executable-test-oracle.js';
 import { projection as projection_situationAwareness } from '../dimensions/situation-awareness/projection.js';
 import { decisionRationale as decisionRationale_transparency } from '../dimensions/transparency/decision-rationale.js';
 import type { RoleCell } from './hold.js';
 
-// THE PRINCIPAL IC — the rung that stands ON the substrate, and the only position in
-// the corpus bounded from above rather than from below. It carries `principal-self`
-// like the architect and `software-engineering` like the implementer, which is exactly
-// what the two-role collapse used to hide: this is neither of them.
+// THE PARTY THAT TAKES THE JOB WHOLE — the rung that stands ON the substrate, and the
+// only position in the corpus bounded from above rather than from below. It carries
+// `principal-self` like the architect and `software-engineering` like the implementer,
+// which is exactly what the two-role collapse used to hide: this is neither of them.
 //
 // `executable-test-oracle` is right here and wrong one rung up. This position's claim
 // is that the thing WORKS, and a run is what settles that; the architect's claim is
@@ -46,8 +46,8 @@ import type { RoleCell } from './hold.js';
 // contract's defining clause. Handing the position an apparatus whose closing law it may
 // not perform would make `ascent` standing equipment rather than a named defect.
 
-export const buildRole: RoleCell = {
-  sign: build_role,
+export const contractorRole: RoleCell = {
+  sign: contractor_role,
   skills: ['plan'],
   vector: {
     formality: plain_formality,

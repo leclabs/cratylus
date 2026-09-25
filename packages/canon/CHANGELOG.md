@@ -55,12 +55,12 @@
   domain's one peculiarity is what makes `output-format: code` sit beside that
   contract without contradicting it — here a canon cell IS a concept written
   down, so authoring `dimensions/<d>/<v>.ts` is writing C while the engine that
-  projects it is handed out. `mav` holds `build`, the only contract in the corpus
+  projects it is handed out. `mav` holds `contractor`, the only contract in the corpus
   bounded from ABOVE rather than below: it writes spec and artifact, escalates
   anything whose codomain is C, and its characteristic defect is named `ascent`
   as the architect's is `descent`. An agent that quietly amends the design to fit
   what it built has manufactured its own evidence. `mav` declares nothing but its
-  identity now, which is the honest reading — `mav` IS the build role.
+  identity now, which is the honest reading — `mav` IS the contractor role.
 
   **`assay` is the arrow no role expressed**, and it closes a real contradiction
   rather than adding a position. `deliver` is right that
@@ -117,7 +117,7 @@
   discarded, because a fabricated refusal is not a lesser error than a missed
   one.
 
-  **`build` carries `plan` and refuses `deliver`**, and the split follows from
+  **`contractor` carries `plan` and refuses `deliver`**, and the split follows from
   the contract rather than from taste. The position reserves
   `decompose ⟨own-work⟩` and `dispatch(executor)`, and `plan` is the corpus's one
   statement of how a decomposition is done correctly, so a principal dispatching
@@ -125,6 +125,38 @@
   it. `deliver` is refused for the same reason `plan` is granted: its spine is
   `validate` against C closing on `amend(C) ⇔ yield`, and `amend(C) ∉ remit` is
   this contract's defining clause.
+
+  **Every role is the NOUN for the one who holds it**, and this correction is the
+  first pass of this same work catching its own relapse. D3 diagnosed the old
+  catalog as mixed registers — a job (`architect`), an act sequence (`build`), a
+  target (`operate`) — and the repair fixed the anemia while inheriting the
+  register verbatim from the token set it replaced, leaving one noun beside four
+  verbs. Carrying an accreted corpus forward as a constraint is the grey-field
+  relapse, and it survived the whole build. A role is a POSITION and a position
+  is a WHO, so the catalog is `architect`, `planner`, `implementer`,
+  `contractor`, `assayer`. Acts keep their verbs: `deliver` declares
+  `assay : artifact → ℘(C)` beside `assayer : unit ⇀ agent`, because the two are
+  different kinds of thing and each wears the register its kind takes.
+
+  **`build` became `contractor`**, and it was the worst of the verbs because it
+  also failed to say what it named. The contract is
+  `reads⟨intent · C · spec · artifact⟩ → writes⟨spec · artifact⟩`: handed an
+  objective, works out how to reach it, self-performs the bulk, dispatches
+  executors for the rest, integrates, ships, answers for the whole — and may
+  decide the design in the small while the durative design escalates. Against
+  `implementer`, which reads a spec and never the design, the difference is the
+  arrow rather than seniority. Cold decode over the contract returns `contractor`
+  from every framing: the party engaged on an objective who subcontracts parts
+  and is liable for the finished thing, and who may frame a wall but must return
+  to the architect to move a load-bearing one — the escalation clause arriving
+  free with the word. `builder` collides head-on with the implementer's own
+  `writes⟨artifact⟩`; `developer` decodes as the one who types the code;
+  `engineer` decodes as a generic competence label naming no slice of the
+  pipeline. The residual is recorded rather than talked away: in software
+  `contract` also means an interface spec, and this corpus calls a role the
+  contract a peer dispatches against, so a minority reading is live — measured
+  cold at roughly 85/15 in favour of the trades sense, which arrives first
+  because `architect` has already set the building frame.
 
   **The cost, stated plainly: projected order changed.** The set fold emits role
   members before the holder's own, so `kino`'s capabilities now read

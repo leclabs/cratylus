@@ -1,7 +1,7 @@
 # Role
 
 **Disposition of the handoff spec.** This file was the spec the role work was judged against. Every
-unit landed; four of its instructions were rectified rather than implemented, and one — the gate —
+unit landed; five of its instructions were rectified rather than implemented, and one — the gate —
 landed in a stronger form than it specified. Each rectification is recorded below with the reason,
 because a spec that is silently reinterpreted teaches nothing the next time.
 
@@ -52,7 +52,50 @@ scalar the holder overrides, a set the holder extends — and a role-supplied se
 every holder because union already guarantees it. A mechanism with no live subject is structure
 carrying no load.
 
-### The witness became `assay` / `assayer`
+### Every role is the NOUN for the one who holds it
+
+This rectification came last and it corrects the first pass of this same work. D3 diagnosed the old
+catalog as being in mixed registers — "a job (`architect`), an act sequence (`build`), a target
+(`operate`)" — and the first pass fixed the anemia while inheriting the register verbatim from the
+token set it replaced: `architect` was a noun beside `plan`, `implement`, `build` and `assay`, four
+verbs. That is the accreted corpus carried forward as a constraint, which is the grey-field relapse
+`green-field` names, and it was caught by the operator rather than by the work.
+
+A role is a POSITION, and a position is a WHO. The catalog is therefore `architect`, `planner`,
+`implementer`, `contractor`, `assayer`, and the unspecialized holder of each carries the position's
+own name — which `architect` already did, and which is what made it the odd one out.
+
+The ACTS keep their verbs, and the distinction is the point rather than an inconsistency: `assay` is
+what the assayer does and it is declared as an act in `skills/deliver/skill.ts`, while `assayer` is
+the position declared in `dimensions/role/`. `deliver` reads `assayer : unit ⇀ agent ⟨role = assayer⟩`
+beside `assay : artifact → ℘(C)`, and the two are different kinds of thing wearing the register each
+kind takes.
+
+### `build` became `contractor`, and what the two positions actually are
+
+`build` was the worst of the verbs, because it also failed to say what it named. Its contract is
+`reads⟨intent · C · spec · artifact⟩ → writes⟨spec · artifact⟩`: a party handed an objective, which
+works out how to reach it, self-performs the bulk, dispatches executors for the rest, integrates,
+ships, and answers for the delivered whole — and which may decide the design in the small but may
+NOT amend the durative design, which escalates. Against `implementer`
+(`reads⟨spec · artifact⟩ → writes⟨artifact⟩`, never sees the design, never redesigns, surfaces a bad
+spec rather than repairing it) the difference is not seniority but the arrow: one reads intent and
+the design and writes specs, the other reads a spec and writes only the artifact.
+
+Cold decode over that contract returns `contractor` from every framing tried — the party engaged on
+an objective who subcontracts parts and is liable for the finished thing, and who may frame a wall
+but must go back to the architect to move a load-bearing one, which is the escalation clause
+arriving free with the word. `builder` was rejected for colliding head-on with the implementer,
+whose contract already says `writes⟨artifact⟩`; `developer` decodes as the one who types the code,
+the same collision; `engineer` decodes as a generic competence label naming no slice of the pipeline.
+
+The residual is real and is recorded rather than talked away: in software `contract` independently
+means an interface specification, and this corpus additionally calls a role "the contract a peer
+dispatches against", so a minority reading of "the one who holds the contracts" is live. Measured
+cold at roughly 85/15 in favour of the trades sense, which arrives first because the catalog's own
+`architect` has already set the building frame.
+
+### The witness became the act `assay` and the position `assayer`
 
 The name was cold-decoded over the contract, as U2 and U5 instructed. `witness` was rejected:
 `packages/forge/src/validate/accept.ts` already uses "witness" throughout for a check that returns a
@@ -93,10 +136,10 @@ a theorem: `∀ act ⟨dom(act) ∉ reads ∨ cod(act) ≠ writes⟩ ⇒ DELEGAT
 consequence rather than the declaration. `descent` is named as the defect. `architect`, `kino` and
 `nico` all carry it verbatim by holding the role, and no `delegation` axis was minted.
 
-### U2 · The witness role's elevation aspect — LANDED, as `assay`
+### U2 · The witness role’s elevation aspect — LANDED, as `assayer`
 
-`assay ≜ reads⟨C · artifact⟩ → writes⟨C⟩`, declared the adjoint of `plan`, with both prohibitions
-(`¬emits ⟨verdict · mechanism-prose⟩`), the two-descriptions clause (`spec ∉ assay`), and the one
+`assayer ≜ reads⟨C · artifact⟩ → writes⟨C⟩`, declared the adjoint of `planner`, with both prohibitions
+(`¬emits ⟨verdict · mechanism-prose⟩`), the two-descriptions clause (`spec ∉ assayer`), and the one
 exemption that makes the cell work: `reads⟨artifact⟩ ≠ descent`.
 
 ### U3 · Capability correction — LANDED, and it removed two
@@ -119,7 +162,7 @@ and the header comment explains the read/verdict split.
 
 ### U5 · The witness agent cell — LANDED as `assayer`
 
-`agents/assayer.ts` holds the `assay` role. `software-engineering` is present in that role and
+`agents/assayer.ts` holds the `assayer` role. `software-engineering` is present in that role and
 absent one rung up, which is the same decision twice. Its autonomy is `mission-command` and
 `handoff` and not `principal-self`; its skills are `['design']` and not `deliver`; its guardrail is
 `honesty`; its output format is `structured-data` and its objective `thoroughness`, both chosen

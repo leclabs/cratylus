@@ -13,7 +13,7 @@ import { honesty as honesty_guardrails } from '../dimensions/guardrails/honesty.
 import { correctionConsolidation as correctionConsolidation_learning } from '../dimensions/learning/correction-consolidation.js';
 import { correctness as correctness_objective } from '../dimensions/objective/correctness.js';
 import { react as react_reasoningStrategy } from '../dimensions/reasoning-strategy/react.js';
-import { implement as implement_role } from '../dimensions/role/implement.js';
+import { implementer as implementer_role } from '../dimensions/role/implementer.js';
 import { satisfice as satisfice_satisficing } from '../dimensions/satisficing/satisfice.js';
 import { executableTestOracle as executableTestOracle_selfEvaluation } from '../dimensions/self-evaluation/executable-test-oracle.js';
 import { perception as perception_situationAwareness } from '../dimensions/situation-awareness/perception.js';
@@ -25,8 +25,8 @@ import type { RoleCell } from './hold.js';
 // this position's decisions were made for it. It needs a unit of work, tools, and the
 // discipline to stay inside the boundary.
 
-export const implementRole: RoleCell = {
-  sign: implement_role,
+export const implementerRole: RoleCell = {
+  sign: implementer_role,
   vector: {
     formality: plain_formality,
     audienceAdaptation: maintenance_audienceAdaptation,

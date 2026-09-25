@@ -66,7 +66,7 @@ sole   : path × anchor → 𝔹 ⟨∄ other artifact realizing the same concep
 verify : P × return → 𝔹 ⟨the EXECUTOR's · built-it-right, against spec⟩
 validate : P → 𝔹 ⟨the PRINCIPAL's · built-the-right-thing, against C⟩
 assay  : artifact → ℘(C) ⟨which concepts the artifact ACTUALLY realizes · the REVERSE of plan⟩
-assayer : unit ⇀ agent ⟨role = assay · holds C ∧ ¬ holds spec(unit)⟩
+assayer : unit ⇀ agent ⟨role = assayer · holds C ∧ ¬ holds spec(unit)⟩
 achieved : unit → 𝔹 ⟨the three questions, answered against the assay⟩
 unachieved : unit → ℘(⟨c, uncovered-factor, locus⟩) ⟨what crosses UPWARD⟩
 defect ≜ ⟨symptom, locus, provenance⟩

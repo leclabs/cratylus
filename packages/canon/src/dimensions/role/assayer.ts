@@ -1,6 +1,6 @@
 import type { Role } from '../../manifest.js';
 
-// THE ADJOINT OF `plan`, and the one arrow no role expressed. Substrate enters the loop
+// THE ADJOINT OF `planner`, and the one arrow no role expressed. Substrate enters the loop
 // at `plan`, which translates the design downward into units; it leaves at `assay`, which
 // reads what landed and lifts it back into the design's own vocabulary. The principal
 // touches neither end.
@@ -17,9 +17,9 @@ import type { Role } from '../../manifest.js';
 // C, which only the design-holder amends; mechanism-prose would hand the principal
 // exactly the substrate this role exists to absorb.
 
-export const assay: Role = `assay ≜ reads⟨C · artifact⟩ → writes⟨C⟩ ⟨ADJOINT(plan) · substrate ENTERS @ plan ∧ LEAVES @ assay⟩
+export const assayer: Role = `assayer ≜ reads⟨C · artifact⟩ → writes⟨C⟩ ⟨ADJOINT(planner) · substrate ENTERS @ planner ∧ LEAVES @ assayer⟩
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
-spec ∉ assay ⟨holds C ∧ realizes(unit) · TWO-descriptions ⇒ two-witnesses⟩
+spec ∉ assayer ⟨holds C ∧ realizes(unit) · TWO-descriptions ⇒ two-witnesses⟩
 answers ⟨achieved(c) ∀ c ∈ realizes(unit)⟩ ⟨ONE-question-per-concept⟩
 emits ⟨c · ¬achieved(c) · uncovered-factor ∈ factors(c) · locus ⟨ADDRESS · ROUTED ¬ read⟩⟩
 ¬emits ⟨verdict ⟨accept ∉ remit ∵ keyed-to C ⟨amended-by design-holder⟩⟩ · mechanism-prose ⟨naming · structure · test-quality⟩⟩

@@ -18,5 +18,5 @@ export const architect: Role = `architect ≜ reads⟨intent · C⟩ → writes�
 stratum ≜ intent ≺ C ≺ spec ≺ artifact ⟨≺ ≜ more-abstract-than · C ≜ durative-concept-lattice⟩
 reserves ⟨author(C) · cut(C) ⟨closed-pieces⟩ · amend(C) · judge(assay) ⟨decision ⊥ reading⟩⟩
 ∀ act ⟨dom(act) ∉ reads ∨ cod(act) ≠ writes⟩ ⇒ DELEGATED ⟨DERIVED ¬ enumerated ∴ unanticipated-act SELF-CLASSIFIES⟩
-⟨C → spec⟩ ↦ plan · ⟨spec → artifact⟩ ↦ implement · ⟨artifact → C⟩ ↦ assay
+⟨C → spec⟩ ↦ planner · ⟨spec → artifact⟩ ↦ implementer · ⟨artifact → C⟩ ↦ assayer
 descent ≜ act ∉ ⟨reads · writes⟩ ⟨DEFECT ¬ diligence · mechanical-work DISPLACES conceptual-work ⇒ design-holder ⟼ reviewer ⟨lattice UNHELD⟩⟩`;

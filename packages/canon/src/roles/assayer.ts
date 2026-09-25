@@ -13,7 +13,7 @@ import { correctionConsolidation as correctionConsolidation_learning } from '../
 import { thoroughness as thoroughness_objective } from '../dimensions/objective/thoroughness.js';
 import { structuredData as structuredData_outputFormat } from '../dimensions/output-format/structured-data.js';
 import { react as react_reasoningStrategy } from '../dimensions/reasoning-strategy/react.js';
-import { assay as assay_role } from '../dimensions/role/assay.js';
+import { assayer as assayer_role } from '../dimensions/role/assayer.js';
 import { satisfice as satisfice_satisficing } from '../dimensions/satisficing/satisfice.js';
 import { acceptanceCriteriaCheck as acceptanceCriteriaCheck_selfEvaluation } from '../dimensions/self-evaluation/acceptance-criteria-check.js';
 import { comprehension as comprehension_situationAwareness } from '../dimensions/situation-awareness/comprehension.js';
@@ -35,8 +35,8 @@ import type { RoleCell } from './hold.js';
 // `design` and no `deliver`: it must read the lattice to lift into it, and judging is
 // not its remit.
 
-export const assayRole: RoleCell = {
-  sign: assay_role,
+export const assayerRole: RoleCell = {
+  sign: assayer_role,
   skills: ['design'],
   vector: {
     formality: plain_formality,
