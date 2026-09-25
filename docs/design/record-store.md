@@ -120,8 +120,8 @@ Each concept is `anchor — gloss`, then its factors. Primitives have no factors
   its own verbs, shipped with its skill:
   - `design` shows the whole design or one concept, and defines, amends, retracts, reconciles
     and traces a concept (how it came to be, what it stands on and what stands on it);
-  - `plan` shows the whole bound plan or one unit, adds units, revises a unit or a plan, advances
-    units, binds and closes a plan, and reconciles either;
+  - `plan` shows the whole bound plan or one unit, adds, advances and retracts units, revises a
+    unit or a plan, binds and closes a plan, and reconciles either;
   - `note` shows the whole notebook or one note, and captures, revises, retracts and reconciles
     notes.
     Agents never see record ids, envelopes, heads or files. A payload names entities by name and
