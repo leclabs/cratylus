@@ -1,9 +1,9 @@
 # Role
 
-**Disposition of the handoff spec.** This file was the spec the role work was judged against. The
-work landed; three of its instructions were rectified rather than implemented, and one unit was not
-built. Each rectification is recorded below with the reason it was rectified, because a spec that is
-silently reinterpreted teaches nothing the next time.
+**Disposition of the handoff spec.** This file was the spec the role work was judged against. Every
+unit landed; four of its instructions were rectified rather than implemented, and one — the gate —
+landed in a stronger form than it specified. Each rectification is recorded below with the reason,
+because a spec that is silently reinterpreted teaches nothing the next time.
 
 The authoritative statement of the mechanism that landed is the header comment of
 `packages/canon/src/roles/hold.ts`. This document does not restate it.
@@ -126,20 +126,34 @@ absent one rung up, which is the same decision twice. Its autonomy is `mission-c
 against the one failure mode of turning into a code reviewer. The description states the no-verdict
 clause out loud. No gate enrollment was touched.
 
-### U6 · The elevation gate — NOT BUILT
+### U6 · The elevation gate — LANDED as `purview-guardrail`
 
-This is the outstanding unit, and it was left out deliberately rather than missed. It is enforcement
-where every other unit is declaration, and D1's stated defect — an omission is not scoreable — is
-closed by the declaration itself: the contract is now a quotable artifact in every holder's Target,
-which the absence of `software-engineering` never was. Building the gate as well would have added
-mechanism before anything had read the declaration.
+A pre-fire hook cell beside `stance-guardrail-pre`, following it as the structural model, with its
+own rubric at the vendor-neutral `.agents/` root rather than an append to the stance prompt, its own
+entry under `gates` in every persona's `stance/manifest.json`, and fail-open, evidence-checked and
+re-entry-capped inherited from the sibling. It binds `subagent.dispatch.pre` and `tool.use.pre`,
+because descending is a mid-turn act and the turn-end guard is structurally blind to it.
 
-What it would now have to quote is the `## Role` section of a holder's projected Target, verbatim,
-exactly as the stance rubric quotes `handoff ≜ …` (`targets/guardrail/stance-judge-prompt.md:215`).
-The rest of U6's design stands as written: a pre-fire hook beside `stance-guardrail-pre`, its own
-rubric file at the vendor-neutral `.agents/` root rather than an append to the stance prompt, its
-own entry under `gates`, and fail-open, evidence-checked and re-entry-capped inherited from the
-sibling.
+One thing is stronger than U6 specified. The unit said the rubric should quote the elevation value
+verbatim; a rubric containing role text would have to be edited whenever a role is, and a corpus
+minting a sixth role would get it unjudged — which is the allowlist failure the stance guard already
+paid for once. So the rubric carries **no** role text and names **no** agent. The worker reads the
+`## Role` section out of the holder's own deployed Target at run time and hands it to the judge as
+the law to score against, deriving the Target's path from the persona scope it was already given.
+The gate therefore scores what the corpus declares, whatever that is, and the rubric is the same
+bytes for any corpus that declares an arrow at all.
+
+It blocks a dispatch whose codomain is `spec` from a holder whose arrow excludes it, a write whose
+codomain is `artifact` from a holder whose arrow excludes it, and a dispatch transcribing the
+operator's literal words. It passes every read — a read is outside the codomain test by
+construction, and a mid-turn refusal on one would wedge legitimate orientation — along with any
+dispatch the contract's own routing names and any act its `reserves` clause names.
+
+`test/purview-guardrail.test.ts` drives the deployed worker with verdicts it supplies itself: that
+the architect's own contract reaches the payload whole and stops at the next dimension, that a
+dispatch is classified by codomain and a read is not judged at all, that a BLOCK citing a span the
+payload does not contain is discarded, that a missing judge fails open, that an unenrolled scope is
+silent, and that an identical input is never denied twice.
 
 ## What became of the prohibitions
 
@@ -148,4 +162,10 @@ fold at deploy time, no folded `provenance.mark`, no `delegation` axis, no verdi
 mechanism-prose from the assayer, and no executor's spec in its hands are all held structurally by
 `holds` and by the role values. "Do not let an agent override a constitutive aspect" is void: there
 are no constitutive aspects, only a contract with no field to state it in. And the instruction not
-to enforce the elevation by deleting capabilities alone still stands as the open half of U6.
+to enforce the arrow by deleting capabilities alone is honoured on both halves — the capabilities
+went, and `purview-guardrail` is the mechanism that cites what remains.
+
+## What is left
+
+Nothing from this spec. Every unit is landed, and the file is kept as the record of the four
+rectifications rather than as a work item.

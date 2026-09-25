@@ -34,12 +34,21 @@ import type { RoleCell } from './hold.js';
 // is that the thing WORKS, and a run is what settles that; the architect's claim is
 // conformance to a design, which no suite can witness.
 //
-// No workflow skill. The position's own contract is its method: it conceives, designs
-// in the small, produces, integrates and ships, and the one thing it may not do is
-// amend the durative design it is building against.
+// `plan` AND NOT `deliver`, and the split follows from the contract rather than from
+// taste. This position reserves `decompose ⟨own-work⟩` and `dispatch(executor)`, and
+// `plan` is the corpus's one statement of how a decomposition is done correctly —
+// census resolved by USE, footprints declared, waves with disjoint outputs. A principal
+// dispatching waves without that discipline is the under-declared-footprint defect with
+// nothing to catch it, so the apparatus carries load here.
+//
+// `deliver` is refused, and refused for the same reason `plan` is granted. Its spine is
+// `validate` against C closing on `amend(C) ⇔ yield`, and `amend(C) ∉ remit` is this
+// contract's defining clause. Handing the position an apparatus whose closing law it may
+// not perform would make `ascent` standing equipment rather than a named defect.
 
 export const buildRole: RoleCell = {
   sign: build_role,
+  skills: ['plan'],
   vector: {
     formality: plain_formality,
     audienceAdaptation: maintenance_audienceAdaptation,

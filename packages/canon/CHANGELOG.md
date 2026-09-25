@@ -94,6 +94,38 @@
   corrected both `architect` and `kino`, which is the mechanical proof that the
   fold works.
 
+  **`purview-guardrail` makes the contract a bound rather than a steer.** A
+  declared arrow that nothing scores is a steer, which is the floor and not the
+  goal, so a pre-fire hook cell lands beside `stance-guardrail-pre` on
+  `subagent.dispatch.pre` and `tool.use.pre` — descending is a mid-turn act and
+  the turn-end guard is structurally blind to it. It carries its own rubric at
+  the vendor-neutral `.agents/` root and its own entry under `gates`, because one
+  gate means one contract and `gates` is keyed by owning cell precisely so a
+  second guarded dimension is a second entry.
+
+  The rubric carries **no role text and names no agent**. The worker reads the
+  `## Role` section out of the holder's own deployed Target at run time and hands
+  it to the judge as the law, so the gate scores what the corpus declares and a
+  sixth role is judged with no edit to the gate — which is the allowlist failure
+  the stance guard already paid for once, refused in advance. It blocks a
+  dispatch whose codomain is `spec` from a holder whose arrow excludes it, a
+  write whose codomain is `artifact` from a holder whose arrow excludes it, and a
+  dispatch transcribing the operator's literal words; it passes every read, every
+  dispatch the contract's own routing names, and every act its `reserves` clause
+  names. Fail-open, evidence-checked and re-entry-capped, all three inherited
+  from the sibling: a block whose cited span is not literally in the payload is
+  discarded, because a fabricated refusal is not a lesser error than a missed
+  one.
+
+  **`build` carries `plan` and refuses `deliver`**, and the split follows from
+  the contract rather than from taste. The position reserves
+  `decompose ⟨own-work⟩` and `dispatch(executor)`, and `plan` is the corpus's one
+  statement of how a decomposition is done correctly, so a principal dispatching
+  waves without it is the under-declared-footprint defect with nothing to catch
+  it. `deliver` is refused for the same reason `plan` is granted: its spine is
+  `validate` against C closing on `amend(C) ⇔ yield`, and `amend(C) ∉ remit` is
+  this contract's defining clause.
+
   **The cost, stated plainly: projected order changed.** The set fold emits role
   members before the holder's own, so `kino`'s capabilities now read
   system-design and research-investigation before its two film capabilities

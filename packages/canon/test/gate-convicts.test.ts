@@ -191,6 +191,10 @@ const REGISTRY: Readonly<Record<string, Kind>> = {
   'canon/null-dimension.test.ts': 'GATE',
   'canon/plan-set.test.ts': 'GATE',
   'canon/projection-stability.test.ts': 'GATE',
+  // BEHAVIORAL, on the same reading as `stance-guardrail-dark`: it drives the worker
+  // with verdicts it supplies itself and carries its own negative controls (a read is
+  // never judged, a fabricated citation is discarded, an unenrolled scope is silent).
+  'canon/purview-guardrail.test.ts': 'BEHAVIORAL',
   'canon/reader-density.test.ts': 'GATE',
   'canon/reader-reach.test.ts': 'GATE',
   'canon/positional-path.test.ts': 'GATE',
