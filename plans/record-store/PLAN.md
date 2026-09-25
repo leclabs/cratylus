@@ -4,13 +4,13 @@
 > read time, met only through the three domains.
 
 **Piece.** The whole lattice of `docs/design/record-store.md` — one piece (the design's § Cut).
-**Pin.** `a49ff769` (the commit carrying the revision; re-pinned from `96aa7ca3`, and before that
-from `9e3e1a6f`, `b3b5a64c`, `0c9da09c`, `4610c33f`, `c501e002` and `9cc32431`). **Digest.** blob
-`160f3bfbfce525b875e667cddd13e0e50ce6ac6e` = `git rev-parse a49ff769:docs/design/record-store.md`
-= `git hash-object docs/design/record-store.md` at re-planning, so `pin = digest`. Every pending unit
-reads the design as `git show a49ff769:docs/design/record-store.md`, never the working file, because
-`design-migration` deletes it. `domain-interface` is carried to the new pin by the design-holder's
-redispatch.
+**Pin.** `9e7730da` (the commit carrying the revision; re-pinned from `a49ff769`, and before that
+from `96aa7ca3`, `9e3e1a6f`, `b3b5a64c`, `0c9da09c`, `4610c33f`, `c501e002` and `9cc32431`).
+**Digest.** blob `781dc63953c94224b73aea448f7d6d4e388db564` =
+`git rev-parse 9e7730da:docs/design/record-store.md` = `git hash-object docs/design/record-store.md`
+at re-planning, so `pin = digest`. Every pending unit reads the design as
+`git show 9e7730da:docs/design/record-store.md`, never the working file, because `design-migration`
+deletes it. `domain-interface` is carried to the new pin by the design-holder's redispatch.
 
 **Bootstrap.** This plan is written in the layout it deletes. It is one of "the existing plans under
 `plans/`" the design removes rather than migrates, so `plan-cutover` deletes it with the rest; the
@@ -18,12 +18,13 @@ last unit is accepted on its commit, since no plan record for this plan will exi
 
 ## Where this stands
 
-Re-pinned 2026-09-25 at `a49ff769` (§ Decided in C at `a49ff769`). No wave, dep or unit moved.
+Re-pinned 2026-09-25 at `9e7730da` (§ Decided in C at `9e7730da`). No wave, dep or unit moved.
 
-- **Pending specs.** The delta touched `trio-skill-routing` and `note-skill`. `design-migration` and
-  `plan-cutover` were only re-pinned.
-- **State.** The plan is bound (`.bound`). W0 and W1 are completed. `domain-interface` (W2) is
-  active, redispatched with the `a49ff769` delta. W3 and W4 are pending on it. No ruling is owed.
+- **Pending specs.** `note-skill`, `trio-skill-routing` and `design-migration` now script exactly
+  the surface `domain-interface` landed (§ Contract, last bullet). `plan-cutover` was only re-pinned:
+  it scripts none of the three capabilities.
+- **State.** The plan is bound (`.bound`). W0 and W1 are completed, `domain-interface` (W2) is
+  active, and W3 and W4 are pending on it. No ruling is owed.
 
 ## Units
 
@@ -79,7 +80,7 @@ check over the four slices finds no swap that lowers it.
 
 ## Lattice coverage
 
-22 anchors at `a49ff769` (`git show a49ff769:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`).
+22 anchors at `9e7730da` (`git show 9e7730da:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`).
 Ten are some unit's `realizes`. Twelve are **covered, not cited** — built inside `record-store`,
 whose acceptance requires the artifact to spell each — and are surfaced here as the design's law
 requires for a concept no unit cites.
@@ -139,6 +140,12 @@ to the one shared registry (`gate-convicts.test.ts`), serializing them further.
   tests land at the verb surface in `domain-interface`, where behaviour becomes consumer-visible.
   One unit per wave touches `gate-convicts.test.ts`: `record-store` (W0), `immutability-gate` (W1),
   `domain-interface` (W2), `plan-cutover` (W4); no W3 unit adds or deletes a test file.
+- **The surface W3 scripts against** (landed by `domain-interface`, fixed for W3). Within plan
+  verbs, `--plan <p>` puts the plan in view: `plan show` (the bound plan), `plan show <plan>` (any
+  plan), `plan show <unit> --plan <p>`, and add, advance, retract and revise of a unit. Wherever no
+  plan is in view, for instance in a note's `--blocks`, a unit is `u of plan p`; `note` has no
+  `--plan`. A pin is retaken only by `plan revise <unit> --plan <p> --repin --reason <why>`. Every
+  write takes `--author`, `--reason` and `--cause`, and set-valued flags are repeated once per member.
 - **Durability.** Each executor commits its own paths (pathspec) at coherent steps and adds a
   changeset naming every package its paths changed. `pnpm verify` is the green bar.
 
@@ -266,6 +273,19 @@ to the one shared registry (`gate-convicts.test.ts`), serializing them further.
   follow: `trio-skill-routing` Accept 7 now forbids `record`, `head` and `envelope` as words in the
   three skills (at `a49ff769` it hits `design/skill.ts:22`), and `note-skill` names records among
   what it never mentions.
+
+## Decided in C at `9e7730da`
+
+- **A unit realizing a concept its plan does not is an incoherence kind** after a merge
+  (`trio-skill-routing` states it with the plan laws).
+- **Resolve-first names causes and what moved, lists only what can still be resolved, and is
+  scoped to its plan.** It is also printed by the view, so it is `domain-interface`'s; no pending
+  spec restates it.
+- **Substrate faults speak plainly**, naming what a person must repair: `domain-interface`'s.
+- **Every printed name addresses one entity, with a unit qualified by its plan.** The W3 skills
+  script the qualified form (`u of plan p`) wherever no plan is in view (`note-skill`,
+  `trio-skill-routing`), and each adds an Accept that runs its quoted command forms against a built
+  `cratylus`.
 
 ## Boundary findings (N1–N6 at `c501e002`, N7 at `4610c33f`, N8 at `0c9da09c`, N9–N10 at `b3b5a64c`; N9 superseded and N10 confirmed at `9e3e1a6f`; N8 superseded at `96aa7ca3`; none blocks)
 

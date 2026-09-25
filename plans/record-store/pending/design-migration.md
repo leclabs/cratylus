@@ -14,11 +14,16 @@ commit, because an empty reason is refused too. Then read the lattice back again
 document and delete `docs/design/record-store.md`. From here on, C is read with `design`, never
 from a file (the design's own bootstrap note).
 
-The source is always `git show a49ff769:docs/design/record-store.md`, never the working file.
+The source is always `git show 9e7730da:docs/design/record-store.md`, never the working file.
+
+Each concept is written with the landed surface, exactly:
+`pnpm exec cratylus design define <anchor> --gloss <gloss> [--factors <anchor>]… --author architect --reason <why> --cause <what caused it>`,
+with `--factors` repeated once per factor and left out for a primitive. The reason and cause cite
+`docs/design/record-store.md` at `9e7730da`.
 
 ## Static
 
-- `git show a49ff769:docs/design/record-store.md` § Lattice (22 concepts at `a49ff769`; re-derive
+- `git show 9e7730da:docs/design/record-store.md` § Lattice (22 concepts at `9e7730da`; re-derive
   with the command in criterion 1).
 - The landed `design` capability (`domain-interface`) and the records root (`record-store`).
 
@@ -37,7 +42,7 @@ No package changes, so no changeset.
 ## Accept
 
 1. For every anchor listed by
-   `git show a49ff769:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`,
+   `git show 9e7730da:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`,
    `pnpm exec cratylus design show <anchor>` (after `pnpm build`) exits 0, prints the gloss, and
    lists exactly the anchors on that concept's `Factors:` line in the document (none for a
    primitive). A script prints `matched n/22` with both numbers read, not typed.

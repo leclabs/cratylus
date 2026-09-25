@@ -24,7 +24,13 @@ It holds the notebook's own rules and no one else's:
   title; there is no body-fragment matching (N9 is superseded at `9e3e1a6f`). The cell never tells the
   reader to use an identity. The interface surfaces one only where a merge has left a title held by
   more than one note.
-- A changed note is revised, never edited in place.
+- A changed note is revised, never edited in place; `--title` on a revise retitles it.
+- The cell scripts the landed surface exactly: `note show [<title>]`,
+  `note capture <title> --kind <k> --topic <t> --body <b> [--blocks <plan or unit>]…`,
+  `note revise <title> [...]`, `note retract <title>`, `note reconcile <title>`, each write with
+  `--author`, `--reason` and `--cause`. What a note blocks is named by plan name, or by a unit
+  qualified by its plan, `u of plan p` (bare only where the unit's name is its own). There is no
+  `--plan` flag on `note`.
 
 It restates no other skill's rules, borrows nothing from `design`, `plan` or `deliver` (`PLAN.md`
 § Contract, W3 isolation), composes nothing, and never mentions the record store, records, record
@@ -37,7 +43,7 @@ at the first census; if it still is, author from the design alone and say so in 
 
 ## Static
 
-- `git show a49ff769:docs/design/record-store.md` § The three domains (`notebook`, `unit`), § How
+- `git show 9e7730da:docs/design/record-store.md` § The three domains (`notebook`, `unit`), § How
   they are met (`domain interface`, `skill routing`).
 - `packages/canon/src/skills/event-tap/skill.ts` — a capability-bound cell's shape.
 - The landed `note` capability's verbs (`packages/runtime/src/capabilities/note/dispatch.ts`).
@@ -69,7 +75,11 @@ at the first census; if it still is, author from the design alone and say so in 
    prints nothing. The title law is present:
    `git grep -n "title" -- packages/canon/src/skills/note/skill.ts` hits the line saying a note's
    title is its name, one live note per title.
-4. `git grep -niE "record|envelope|\bheads?\b|ulid|\.json" -- packages/canon/src/skills/note` prints
+4. The cell names a blocked unit as `u of plan p`, and scripts no `--plan` flag:
+   `git grep -n "of plan" -- packages/canon/src/skills/note/skill.ts` hits, and
+   `git grep -nE -- "--plan\b" -- packages/canon/src/skills/note` prints nothing. The return runs the
+   cell's `capture … --blocks '<u> of plan <p>'` form against a built `cratylus` and shows it accepted.
+   `git grep -niE "record|envelope|\bheads?\b|ulid|\.json" -- packages/canon/src/skills/note` prints
    nothing.
 5. `git grep -nE " @ (design|plan|deliver)\b" -- packages/canon/src/skills/note` prints nothing.
 6. Sole: `git grep -l "capability: 'note'" -- packages/canon/src` lists only

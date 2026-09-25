@@ -51,7 +51,8 @@ which `boundary-binding.test.ts` resolves; split, they would dangle each other's
     state moves only through bind and close, and `revise` routes to a unit or a plan;
   - a unit can be retracted (`plan retract`), unless another live unit depends on it;
   - a unit realizes exactly the concept its pin names, which is among the concepts its plan
-    realizes, and its lifecycle moves forward one step at a time;
+    realizes (a merge that breaks this is an incoherence, reported like the others), and its
+    lifecycle moves forward one step at a time;
   - a unit's dependencies are acyclic and name live units of the same plan;
   - a unit is ready when every dependency has reached completion or moved past it, and no owed
     ruling names the unit or its plan;
@@ -72,7 +73,26 @@ which `boundary-binding.test.ts` resolves; split, they would dangle each other's
   at deliver. The WIP law `∃! P : bound(P)` is now held by binding, which returns the previous plan
   to proposed, and `terminal(P) ⇒ retire(P)` becomes closing, which keeps the plan readable instead
   of deleting it. It gains the unbuilt-concept law from `design` (N10). `file(d)` captures to the notebook through the `note` capability's verb, without
-  borrowing from the `note` skill (`PLAN.md` § Contract, W3 isolation).
+  borrowing from the `note` skill (`PLAN.md` § Contract, W3 isolation); a note it files against a
+  unit names it `u of plan p`.
+
+**The surface the three skills script against is the one `domain-interface` landed, exactly:**
+
+- `design show [<concept>]`, `design define <anchor> --gloss <g> [--factors <anchor>]…`,
+  `design amend <concept> [--anchor <a>] [--gloss <g>] [--factors <anchor>]…`, `design retract`,
+  `design reconcile`, `design trace <concept>`.
+- `plan show` (the bound plan), `plan show <plan>` (any plan named, whole), and
+  `plan show <unit> --plan <p>` (one unit). `plan add <unit> --plan <p> --realizes <concept>`, with
+  the spec fields `--intent`, `--static`, `--deps`, `--outputs` and `--accept`, and
+  `--plan-realizes <concept>`… when the add proposes the plan. `plan advance <unit> --plan <p> --to <state>`
+  and `plan retract <unit> --plan <p>`.
+- `plan revise <unit> --plan <p>` edits the spec and keeps the pin. `plan revise … --repin --reason <why>`
+  retakes it, and is the only way to retake it; `plan revise <plan>` changes a plan's name or
+  concepts. `plan bind <plan>`, `plan close <plan>`, `plan reconcile`.
+- Within plan verbs, `--plan` puts the plan in view. Wherever no plan is in view (a note's
+  `--blocks`, a unit named in `deliver`'s or `design`'s prose), a unit is named `u of plan p`.
+- Every write takes `--author`, `--reason` and `--cause`. Set-valued flags are repeated, one member
+  each.
 
 The canon half of the lifecycle round trip lands here: `event-vocabulary.test.ts` § (c) gains a leg
 that emits the host config from the live corpus (so the `plan` skill's declared states), reads it
@@ -84,7 +104,7 @@ beside this unit leaves it true.
 
 ## Static
 
-- `git show a49ff769:docs/design/record-store.md` § The three domains, § How they are met,
+- `git show 9e7730da:docs/design/record-store.md` § The three domains, § How they are met,
   § Boundaries.
 - `packages/canon/src/skills/{design,plan,deliver}/skill.ts`, `packages/canon/src/skills/event-tap/skill.ts`.
 - `packages/canon/test/boundary-binding.test.ts`, `reader-reach.test.ts` (pins on `deliver`'s
@@ -147,5 +167,14 @@ beside this unit leaves it true.
     `git grep -nE "@ plan|realizes" -- packages/canon/src/skills/design/skill.ts` prints nothing (at
     `b3b5a64c` it hits lines 42 and 71). `deliver`'s block carries the unbuilt-concept law, which
     the return quotes.
-11. `pnpm verify` passes.
-12. `.changeset/trio-skill-routing.md` names `@cratylus/canon`.
+11. The skills script exactly the landed surface:
+    - `git grep -n -- "--repin" -- packages/canon/src/skills/plan/skill.ts` hits the re-pin law, and
+      that line also names `--reason`.
+    - `git grep -n "of plan" -- packages/canon/src/skills/deliver/skill.ts` hits `file(d)`'s unit form.
+    - `git grep -nE "note\.mjs.*--plan\b" -- packages/canon/src/skills` prints nothing:
+      no skill scripts the retired note `--plan` flag.
+    - The return runs each command form the three blocks quote against a built `cratylus` in a
+      scratch repository (with a lifecycle config) and shows that none is refused as an unknown verb
+      or flag.
+12. `pnpm verify` passes.
+13. `.changeset/trio-skill-routing.md` names `@cratylus/canon`.
