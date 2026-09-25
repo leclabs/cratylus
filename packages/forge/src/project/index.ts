@@ -37,7 +37,6 @@ import {
   type Enforcing,
   type HookCell,
   type ProjectionFacts,
-  type Skill,
   type Value,
   anchorOf,
   bodyOf,
@@ -64,11 +63,7 @@ import {
   SESSION_SCOPE,
   SHARED_STAGE_DIR,
 } from '../core/harness-adapter.js';
-import {
-  resolveModulePath,
-  scanCellDirNames,
-  scanModuleNames,
-} from '../core/module-scan.js';
+import { resolveModulePath, scanModuleNames } from '../core/module-scan.js';
 // The DEFINING module, never the `deploy/` barrel: one constant is wanted here,
 // and a barrel import would drag deploy's whole lineage into every projection
 // consumer (the edge `adapters/registry` documents at length).
@@ -79,6 +74,7 @@ import {
   resolve as foldFragments,
 } from '../resolve/resolve.js';
 import { realizationOf } from './realization.js';
+import { resolveSkills } from './resolve-skills.js';
 import { runtimeShimContent } from './runtime-shim.js';
 
 /**
@@ -235,20 +231,6 @@ async function agentOf(modPath: string): Promise<Agent> {
   const key = Object.keys(mod).find((k) => k !== 'default');
   if (!key) throw new Error(`${modPath}: no Agent export`);
   return mod[key] as Agent;
-}
-
-/** The `Skill` export of a skill module (the object carrying `formalBlock`). */
-async function skillOf(modPath: string): Promise<Skill> {
-  const mod = (await import(pathToFileURL(modPath).href)) as Record<
-    string,
-    unknown
-  >;
-  const skill = Object.values(mod).find(
-    (v): v is Skill =>
-      typeof v === 'object' && v !== null && 'formalBlock' in v,
-  );
-  if (!skill) throw new Error(`${modPath}: no Skill export`);
-  return skill;
 }
 
 /** The `HookCell` export of a hook module (the object carrying `substrate`). */
@@ -492,7 +474,6 @@ export async function projectPluginSet(
   // Collect by name across plugins first, so an override is resolved BEFORE any
   // cell is rendered and can be logged rather than discovered as a clobbered file.
   const agentSrc = new Map<string, Src>();
-  const skillSrc = new Map<string, Src>();
   for (const p of opts.plugins) {
     if (p.agents) {
       for (const n of await scanModuleNames(p.agents, ['base'])) {
@@ -505,18 +486,8 @@ export async function projectPluginSet(
         });
       }
     }
-    if (p.skills) {
-      for (const n of await scanCellDirNames(p.skills, 'skill')) {
-        const prev = skillSrc.get(n);
-        if (prev) log(`  override skill ${n}: ${prev.plugin} → ${p.name}`);
-        skillSrc.set(n, {
-          dir: p.skills,
-          plugin: p.name,
-          preamble: p.preamble,
-        });
-      }
-    }
   }
+  const contributedSkills = await resolveSkills(opts.plugins, log);
 
   let agents = 0;
   const agentNames: string[] = [];
@@ -680,10 +651,7 @@ export async function projectPluginSet(
 
   let skills = 0;
   let shims = 0;
-  for (const [name, { dir, preamble: pre }] of [...skillSrc].sort()) {
-    const cellPath = await resolveModulePath(join(dir, name), 'skill');
-    if (!cellPath) throw new Error(`skill module not found: ${name}/skill`);
-    const cell = await skillOf(cellPath);
+  for (const { name, skill: cell, preamble: pre } of contributedSkills) {
     const resolved: ResolvedSkill = {
       name: cell.name,
       trigger: `/${cell.name}`,

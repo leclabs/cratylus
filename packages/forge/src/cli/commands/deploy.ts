@@ -9,14 +9,12 @@
 
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
-import type { AgentPlugin, Skill } from '@cratylus/schema';
+import type { AgentPlugin } from '@cratylus/schema';
 import pc from 'picocolors';
 import { adapterByName } from '../../adapters/registry/index.js';
 import { CLI_BIN } from '../../bin-name.js';
 import { loadConfig } from '../../config/index.js';
 import { CONFIG_FILE } from '../../config/scaffold.js';
-import { resolveModulePath, scanCellDirNames } from '../../core/module-scan.js';
 import {
   DEPLOY_CHECK_EXIT,
   type DeployKind,
@@ -30,6 +28,7 @@ import {
   userScope,
 } from '../../deploy/index.js';
 import { type DriftReport, auditLocal } from '../../deploy/local.js';
+import { resolveSkills } from '../../project/resolve-skills.js';
 
 /** The CLI `--kind` argument: a real `DeployKind`, or the `all` sugar that
  *  expands to every kind in ONE invocation (agent → skill → hooks) under the
@@ -57,10 +56,10 @@ export interface DeployCmdOpts {
   home?: string | null;
   project?: string | null;
   only?: string | null;
-  /** The corpus's lifecycle-event vocabulary, when the caller already has it.
-   *  Supplied by `install`, which resolves its plugins in memory and has no config
-   *  file to be read back. */
-  events?: readonly string[];
+  /** The corpus's plugin set, when the caller already holds it. Supplied by
+   *  `install`, which resolves its plugins in memory and has no config file to be
+   *  read back. Absent ⇒ read from `config`. */
+  plugins?: readonly AgentPlugin[];
   dryRun?: boolean;
   /** REPORT ONLY: compare the deployed tree against the render tree and print
    *  every divergence. Places nothing, prunes nothing, repairs nothing. */
@@ -68,10 +67,12 @@ export interface DeployCmdOpts {
   /** Sink for the report (tests, and any caller that is not a terminal). */
   log?: (line: string) => void;
   /**
-   * Path to `cratylus.config.ts` — read for ONE fact deploy cannot obtain from a
-   * render tree: the corpus's lifecycle-event vocabulary (`AgentPlugin.events`).
+   * Path to `cratylus.config.ts` — read, when no `plugins` are supplied, for the
+   * facts deploy cannot obtain from a render tree: the corpus's lifecycle-event
+   * vocabulary (`AgentPlugin.events`) and the capability configuration its skills
+   * declare on their runtime faces.
    *
-   * The tree is a directory of already-rendered bytes; a vocabulary is not in it.
+   * The tree is a directory of already-rendered bytes; neither fact is in it.
    * Reading the plugin set here is the same route `project` takes, so the two
    * cannot disagree about what the corpus declares. Absent or unreadable ⇒ the
    * host config is not emitted and the deploy says so, rather than writing an
@@ -202,89 +203,32 @@ async function emitHostRuntimeConfig(
   // THE CALLER MAY ALREADY HOLD THE CORPUS, and when it does, re-reading a config
   // file to recover what it has is how a zero-config path ends up half-configured.
   // `install` resolves its plugins in memory and has no config file by definition —
-  // it passes the vocabulary straight through rather than sending deploy to look for
-  // a file that will not be there. It passes no skills, so no capability
-  // configuration travels this path.
-  if (opts.events !== undefined) {
-    if (opts.events.length === 0) {
+  // it passes the plugin set straight through rather than sending deploy to look
+  // for a file that will not be there. Either way, the vocabulary and the
+  // configuration are derived from ONE plugin set, by one route.
+  let plugins = opts.plugins;
+  if (plugins === undefined) {
+    const configPath =
+      opts.config ?? join(opts.project ?? process.cwd(), CONFIG_FILE);
+    if (!existsSync(configPath)) {
       warn(
-        '  runtime config: the corpus declares no `events` — the host config was NOT emitted',
+        `  runtime config: no ${CONFIG_FILE} at ${configPath} — the corpus's event vocabulary is unavailable, so the host config was NOT emitted and runtime capabilities on this host cannot validate an event name`,
       );
       return;
     }
-    emitAndReport(opts, opts.events, [], nativeEvents, log);
-    return;
+    plugins = (await loadConfig(configPath)).extends;
   }
-  const configPath =
-    opts.config ?? join(opts.project ?? process.cwd(), CONFIG_FILE);
-  if (!existsSync(configPath)) {
-    warn(
-      `  runtime config: no ${CONFIG_FILE} at ${configPath} — the corpus's event vocabulary is unavailable, so the host config was NOT emitted and runtime capabilities on this host cannot validate an event name`,
-    );
-    return;
-  }
-  const config = await loadConfig(configPath);
-  const events = [...new Set(config.extends.flatMap((p) => p.events ?? []))];
+  const events = [...new Set(plugins.flatMap((p) => p.events ?? []))];
   if (events.length === 0) {
     warn(
-      `  runtime config: ${CONFIG_FILE} extends no plugin declaring \`events\` — the host config was NOT emitted`,
+      '  runtime config: the plugin set declares no `events` — the host config was NOT emitted',
     );
     return;
   }
-  emitAndReport(
-    opts,
-    events,
-    await skillsOf(config.extends),
-    nativeEvents,
-    log,
-  );
-}
-
-/**
- * The skills of a resolved plugin set, by name, a later plugin's cell overriding
- * an earlier one's — the same resolution `projectPluginSet` renders from, so the
- * configuration emitted is the one carried by the skills actually deployed.
- */
-async function skillsOf(plugins: readonly AgentPlugin[]): Promise<Skill[]> {
-  const dirOf = new Map<string, string>();
-  for (const p of plugins) {
-    if (!p.skills) continue;
-    for (const name of await scanCellDirNames(p.skills, 'skill')) {
-      dirOf.set(name, p.skills);
-    }
-  }
-  const skills: Skill[] = [];
-  for (const [name, dir] of [...dirOf].sort()) {
-    const modPath = await resolveModulePath(join(dir, name), 'skill');
-    if (!modPath) throw new Error(`skill module not found: ${name}/skill`);
-    // Runtime-selected: the cell module is whatever the plugin set's skill dir holds.
-    const mod = (await import(pathToFileURL(modPath).href)) as Record<
-      string,
-      unknown
-    >;
-    const skill = Object.values(mod).find(
-      (v): v is Skill =>
-        typeof v === 'object' && v !== null && 'formalBlock' in v,
-    );
-    if (!skill) throw new Error(`${modPath}: no Skill export`);
-    skills.push(skill);
-  }
-  return skills;
-}
-
-/** Emit the host runtime config and report it. One home, so the config-file path and
- *  the caller-supplied path cannot drift in what they write or what they say. */
-function emitAndReport(
-  opts: DeployCmdOpts,
-  events: readonly string[],
-  skills: readonly Skill[],
-  nativeEvents: Readonly<Record<string, string>>,
-  log: (line: string) => void,
-): void {
   const { path, wrote, doc } = emitRuntimeConfig({
-    events: [...events],
+    events,
     nativeEvents,
-    skills,
+    skills: (await resolveSkills(plugins)).map((s) => s.skill),
     dry: opts.dryRun ?? false,
   });
   log(

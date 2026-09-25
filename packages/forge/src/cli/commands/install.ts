@@ -161,11 +161,12 @@ export async function runInstall(
       project: null,
       config: existsSync(configPath) ? configPath : null,
       only: null,
-      // THE VOCABULARY TRAVELS WITH THE CORPUS. `install` has no config file by
-      // definition, so deploy must be handed the events rather than sent to read
-      // them back off disk — otherwise the zero-config path deploys agents and
-      // skills onto a host whose runtime cannot validate an event name.
-      events: [...new Set(plugins.flatMap((p) => p.events ?? []))],
+      // THE PLUGIN SET TRAVELS WITH THE CALL. `install` has no config file by definition,
+      // so deploy must be handed the plugin set rather than sent to read it back off
+      // disk — otherwise the zero-config path deploys agents and skills onto a host
+      // whose runtime cannot validate an event name or read the configuration its
+      // capabilities need.
+      plugins,
       dryRun: opts.dryRun,
       check: false,
     });
