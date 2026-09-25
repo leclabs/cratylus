@@ -30,7 +30,7 @@ Isolation (`PLAN.md` § Contract): imports only from `../../record-store/` (neve
 
 ## Static
 
-- `git show 4610c33f:docs/design/record-store.md` § The three domains (`unit`, `plan`, `notebook`,
+- `git show 0c9da09c:docs/design/record-store.md` § The three domains (`unit`, `plan`, `notebook`,
   `pin`).
 - `git show c501e002:packages/canon/src/skills/plan/skill.ts` — `wave`, `frontier`, `blocked`,
   `spec(unit)`.
@@ -50,12 +50,18 @@ Isolation (`PLAN.md` § Contract): imports only from `../../record-store/` (neve
 1. `pnpm --filter @cratylus/runtime typecheck` passes.
 2. The return carries a smoke script and its verbatim output, run as
    `pnpm --filter @cratylus/canon exec tsx <absolute path>` against a temporary records root with a
-   unit lifecycle built from invented names (`u0`, `u1`, `u2`, the last satisfying a dependency); a
-   re-run reproduces the output. With units `A`, `B` (dep `A`), `C` (dep `A`), `D`: waves are
-   `[A, D]`, `[B, C]`; ready is `{A, D}`; advancing `A` to its last state makes `B` and `C` ready;
-   an owed ruling naming `D` takes it out of ready; an owed ruling naming the plan takes all four
-   out; skipping a lifecycle step refuses; a dep cycle reads as incoherence; the payload keys of
-   every record written are printed and include no readiness, frontier or wave field.
+   unit lifecycle built from invented names `u0`, `u1`, `u2` and `u3`, where `u2` is completion and
+   `u3` lies beyond it; a re-run reproduces the output. With units `A`, `B` (dep `A`), `C` (dep `A`)
+   and `D`, it shows:
+   - waves `[A, D]`, `[B, C]`, and ready `{A, D}`;
+   - advancing `A` to `u2` makes `B` and `C` ready, and advancing `A` on to `u3` keeps them ready;
+   - an owed ruling naming `D` takes it out of ready, and one naming the plan takes all four out;
+   - each of these writes refuses on one branch: skipping a lifecycle step; a dep closing a cycle; a
+     dep on a unit of another plan; a dep on a withdrawn unit; retracting a unit another unit
+     depends on;
+   - two record sets unioned that each add a dep closing one cycle: incoherence reported;
+   - the payload keys of every record written, printed, include no readiness, frontier or wave
+     field.
 3. `git grep -nE "'(pending|ready|active|completed)'" -- packages/runtime/src/capabilities/plan packages/runtime/src/capabilities/design packages/runtime/src/capabilities/note`
    prints nothing (the flag-fed `carry-on` hits are `plan-cutover`'s to delete).
 4. `git grep -nE "from '\./(plan|pin)|from '\.\./(design|note)/|from '\.\./\.\./(view|runtime-config)|immutability-gate" -- packages/runtime/src/capabilities/plan/unit.ts`

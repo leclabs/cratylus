@@ -26,7 +26,7 @@ stores the pin as an opaque value; `unit` does not import this module either.
 
 ## Static
 
-- `git show 4610c33f:docs/design/record-store.md` § The three domains (`pin`, `unit`), § The
+- `git show 0c9da09c:docs/design/record-store.md` § The three domains (`pin`, `unit`), § The
   record model (`head`, `divergence`).
 - `git show c501e002:packages/canon/src/skills/plan/skill.ts` — the piece-level
   `pin(s) ≠ digest(s) ⇒ REFUSE` law this per-unit pin replaces.
@@ -47,10 +47,15 @@ stores the pin as an opaque value; `unit` does not import this module either.
 2. The return carries a smoke script and its verbatim output, run as
    `pnpm --filter @cratylus/canon exec tsx <absolute path>` against a temporary records root, with
    concept records written directly through the store and a hand-written closure for the port; a
-   re-run reproduces the output. With `B` factoring `A`: a pin taken on `B`; amend `B` → drifted;
-   a fresh pin on `B`, then amend `A` → suspect and not drifted; retract `B` → drifted; diverge `A`
-   (two record sets written independently from its head and unioned) → suspect; taking a pin on the
-   diverged `A` refuses; taking a pin on a withdrawn concept refuses.
+   re-run reproduces the output. With `B` factoring `A`, it shows:
+   - a pin taken on `B`, then amend `B`: drifted;
+   - a fresh pin on `B`, then amend `A`: suspect and not drifted;
+   - diverge `A` (two record sets written independently from its head, unioned): still suspect and
+     not drifted, and taking a new pin on `B` refuses (its closure is not settled), as does a pin on
+     `A`;
+   - reconcile `A`, then retract `B`: drifted and not suspect, although `A` changed since the pin
+     (drifted and suspect are disjoint);
+   - taking a pin on the withdrawn `B` refuses.
 3. `git grep -nE "from '\./(plan|unit)|from '\.\./(design|note)/|from '\.\./\.\./(view|runtime-config)|immutability-gate" -- packages/runtime/src/capabilities/plan/pin.ts`
    prints nothing.
 4. Sole: the return names the identifiers realizing take, drifted and suspect, and each is

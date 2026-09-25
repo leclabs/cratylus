@@ -30,7 +30,7 @@ It references plans and units as opaque entity references; it imports no plan mo
 
 ## Static
 
-- `git show 4610c33f:docs/design/record-store.md` § The three domains (`notebook`, `unit`),
+- `git show 0c9da09c:docs/design/record-store.md` § The three domains (`notebook`, `unit`),
   § Primitives (`entity`, `payload`).
 - The landed `packages/runtime/src/record-store/` and its return's reported signs.
 

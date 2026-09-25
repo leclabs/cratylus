@@ -6,17 +6,19 @@ transcription, but every `define` is a design write.
 
 ## Intent
 
-Define every concept of the lattice through the `design` capability — its anchor, its gloss
-verbatim, its factors by anchor — in factor order, primitives first, so every factor exists when
-the concept naming it is defined. Then read it back against the pinned document, and delete
-`docs/design/record-store.md`. From here on, C is read with `design`, never from a file (the
-design's own bootstrap note).
+Define every concept of the lattice through the `design` capability, giving its anchor, its gloss
+verbatim and its factors by anchor. Define them in factor order, primitives first, because at
+`0c9da09c` every write keeps the design's laws: a factor naming a concept not yet defined (not
+live) is refused. Every `define` carries a non-empty reason, citing the pinned document and its
+commit, because an empty reason is refused too. Then read the lattice back against the pinned
+document and delete `docs/design/record-store.md`. From here on, C is read with `design`, never
+from a file (the design's own bootstrap note).
 
-The source is always `git show 4610c33f:docs/design/record-store.md`, never the working file.
+The source is always `git show 0c9da09c:docs/design/record-store.md`, never the working file.
 
 ## Static
 
-- `git show 4610c33f:docs/design/record-store.md` § Lattice (22 concepts at `4610c33f`; re-derive
+- `git show 0c9da09c:docs/design/record-store.md` § Lattice (22 concepts at `0c9da09c`; re-derive
   with the command in criterion 1).
 - The landed `design` capability (`domain-interface`) and the records root (`record-store`).
 
@@ -35,7 +37,7 @@ No package changes, so no changeset.
 ## Accept
 
 1. For every anchor listed by
-   `git show 4610c33f:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`,
+   `git show 0c9da09c:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`,
    `pnpm exec cratylus design show <anchor>` (after `pnpm build`) exits 0, prints the gloss, and
    lists exactly the anchors on that concept's `Factors:` line in the document (none for a
    primitive). A script prints `matched n/22` with both numbers read, not typed.

@@ -31,7 +31,7 @@ keys naming those roles are derived with `signify` and reported. Nothing in `run
 
 ## Static
 
-- `git show 4610c33f:docs/design/record-store.md` § Boundaries, § The three domains (`plan`, `unit`).
+- `git show 0c9da09c:docs/design/record-store.md` § Boundaries, § The three domains (`plan`, `unit`).
 - `packages/schema/src/index.ts` (`SkillOf`, its `runtime` field) and `packages/schema/README.md`.
 - `packages/forge/src/deploy/runtime-config.ts`, `packages/forge/src/cli/commands/deploy.ts`
   (`emitHostRuntimeConfig`, `emitAndReport`).
@@ -47,10 +47,21 @@ keys naming those roles are derived with `signify` and reported. Nothing in `run
 
 - `packages/schema/src/index.ts`, `packages/schema/README.md`
 - `packages/forge/src/deploy/runtime-config.ts`, `packages/forge/src/cli/commands/deploy.ts`
+- `packages/forge/src/cli/commands/install.ts`, the only caller that passed
+  `DeployCmdOpts.events`, and `packages/forge/src/project/index.ts`: both added by the widening the
+  design-holder authorized on 2026-09-25
+- one new internal forge module resolving the deployed skills (same authorization; not exported
+  from any forge barrel). It landed as `packages/forge/src/project/resolve-skills.ts` in `b31b47d1`.
 - `packages/runtime/src/runtime-config.ts`
 - `packages/runtime/test/runtime-config.test.ts`
-- `packages/canon/test/event-vocabulary.test.ts` — § (c) gains the configuration's round trip
+- `packages/canon/test/event-vocabulary.test.ts`: § (c) gains the configuration's round trip
 - `.changeset/lifecycle-configuration.md`
+
+**Cutover recorded with the widening:** `DeployCmdOpts.events` is replaced by `plugins`. Deploy
+derives both the event vocabulary and the skills' capability configuration from the plugin set, and
+`install` passes its in-memory plugins instead of a flattened event list. No shim remains. At the
+widening, `git grep -n "events:" -- packages/forge/src/cli/commands/install.ts` hit line 168 (the
+only caller). No pending unit declares or compiles against these paths, so no other spec moved.
 
 Apart from `packages/schema/src/index.ts`, where `SkillOf` is declared, no package barrel is edited:
 no wave-mate compiles against schema, and the forge and runtime barrels stay untouched.
@@ -72,3 +83,7 @@ no wave-mate compiles against schema, and the forge and runtime barrels stay unt
    emitting function and the one reading function; `git grep -n` finds each declared once.
 6. `.changeset/lifecycle-configuration.md` names `@cratylus/schema`, `@cratylus/forge`,
    `@cratylus/runtime` and `@cratylus/canon`.
+7. The `events` option is gone from `DeployCmdOpts`:
+   `git grep -nF "events?: readonly string" -- packages/forge/src/cli/commands/deploy.ts` prints
+   nothing (at `36a05113` it hit line 63). And `install.ts` hands `runDeploy` its `plugins`: the
+   return quotes that call.

@@ -5,17 +5,23 @@ skill.
 
 ## Intent
 
-Canon's `note` skill routes its reader's intents to the `note` capability in the notebook's own
-vocabulary — show the whole notebook or one note, capture, retract — through
-`scripts/note.mjs <verb>`, the shim forge projects for a cell declaring
+Canon's `note` skill routes the reader's intents to the `note` capability, in the notebook's own
+vocabulary: show the whole notebook or one note, capture, revise, retract and reconcile. It routes
+them through `scripts/note.mjs <verb>`, the shim forge projects for a cell declaring
 `runtime: { capability: 'note' }` (the `event-tap` cell is the precedent).
 
-It holds the notebook's own rules and no one else's: anyone may capture a note; capture has no
-admission bar; the kinds are idea, question and decision, and the runtime treats kind as opaque, so
-this cell is their one home (`PLAN.md` N4); only a question may block a plan or unit, and an open
-question that does is an owed ruling, which blocks what it names until it is closed; closing it is
-retracting the note; a note is addressed by its topic, and by kind within a topic (N3); a changed
-note is superseded, never edited in place.
+It holds the notebook's own rules and no one else's:
+
+- Anyone may capture, revise, retract or reconcile a note, and capture has no admission bar.
+- A note's kind (idea, question or decision) is a label the runtime never interprets, so this cell
+  is the one home of the kinds.
+- Any live note that blocks a plan or unit is an owed ruling, whatever its kind. It blocks what it
+  names until it is retracted, or revised to block nothing. The earlier rule that only a question
+  may block is dropped: `0c9da09c` no longer makes it.
+- A diverged note blocks whatever any of its competing versions blocks, until someone reconciles
+  it. The cell says "versions", never "heads" (criterion 4).
+- A note is addressed by its topic, and by kind within a topic (N3).
+- A changed note is revised, never edited in place.
 
 It restates no other skill's rules, borrows nothing from `design`, `plan` or `deliver` (`PLAN.md`
 § Contract, W3 isolation), composes nothing, and never mentions the record store, record ids,
@@ -28,7 +34,7 @@ at the first census; if it still is, author from the design alone and say so in 
 
 ## Static
 
-- `git show 4610c33f:docs/design/record-store.md` § The three domains (`notebook`, `unit`), § How
+- `git show 0c9da09c:docs/design/record-store.md` § The three domains (`notebook`, `unit`), § How
   they are met (`domain interface`, `skill routing`).
 - `packages/canon/src/skills/event-tap/skill.ts` — a capability-bound cell's shape.
 - The landed `note` capability's verbs (`packages/runtime/src/capabilities/note/dispatch.ts`).
@@ -52,9 +58,12 @@ at the first census; if it still is, author from the design alone and say so in 
    `capability-keyspace`).
 2. `pnpm canon:project` emits `.cratylus/claude/skills/note/scripts/note.mjs`, which spawns the bin
    with `['note', …]`, and `.cratylus/claude/skills/note/SKILL.md` contains
-   `scripts/note.mjs capture`, `scripts/note.mjs retract` and `scripts/note.mjs show`.
-3. The three kinds appear in the cell, and the owed-ruling rule names the question kind:
-   `git grep -nE "idea|question|decision" -- packages/canon/src/skills/note/skill.ts` hits all three.
+   `scripts/note.mjs <verb>` for each of `show`, `capture`, `revise`, `retract` and `reconcile`.
+3. The three kinds appear in the cell as labels:
+   `git grep -nE "idea|question|decision" -- packages/canon/src/skills/note/skill.ts` hits all
+   three. No line makes blocking depend on a kind:
+   `git grep -nE "question.*(block|owed)|(block|owed).*question" -- packages/canon/src/skills/note/skill.ts`
+   prints nothing.
 4. `git grep -niE "record|envelope|\bheads?\b|ulid|\.json" -- packages/canon/src/skills/note` prints
    nothing.
 5. `git grep -nE " @ (design|plan|deliver)\b" -- packages/canon/src/skills/note` prints nothing.

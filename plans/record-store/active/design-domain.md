@@ -34,7 +34,7 @@ Isolation (PLAN.md § Contract): imports only from `../../record-store/` (never
 
 ## Static
 
-- `git show 4610c33f:docs/design/record-store.md` § The three domains (`design`), § The record
+- `git show 0c9da09c:docs/design/record-store.md` § The three domains (`design`), § The record
   model.
 - `git show c501e002:packages/canon/src/skills/design/skill.ts` — `anchor`, `gloss`, `factors`,
   `closure`, `blast`, `denotes`.
@@ -56,12 +56,20 @@ Isolation (PLAN.md § Contract): imports only from `../../record-store/` (never
 1. `pnpm --filter @cratylus/runtime typecheck` passes.
 2. The return carries a smoke script and its verbatim output, run as
    `pnpm --filter @cratylus/canon exec tsx <absolute path>` against a temporary records root; a
-   re-run reproduces the output. It shows: define `A`, define `B` factoring `A` →
-   `closure(B) = {B, A}` and `blast(A) = {A, B}`; relabel `A` → `B` still resolves its factor to
-   the same entity; retract `A` → `A` reads withdrawn and incoherence names `B`'s factor; amend
-   `A` → reinstated, incoherence gone; two record sets written independently from one head of `B`
-   (one amending, one retracting) and unioned → divergence reported, and a further amend refuses,
-   naming reconciliation; reconcile `B` → settled live; a factor cycle → incoherence.
+   re-run reproduces the output. It shows:
+   - define `A`, then define `B` factoring `A`: `closure(B) = {B, A}` and `blast(A) = {A, B}`;
+   - relabel `A`: `B` still resolves its factor to the same entity;
+   - each of these writes refuses on one branch: retract `A` while `B` factors on it; define a
+     second live `B`; define with an empty gloss or reason; a factor naming a withdrawn concept; an
+     amend closing a factor cycle;
+   - retract `B`, then `A`: `A` reads withdrawn, and defining a new concept named `A` refuses (a
+     withdrawn concept keeps its anchor); amend `A`, and it is reinstated;
+   - two record sets written independently from one head of `B` (one amending, one retracting),
+     unioned: divergence reported, a further amend refuses naming reconciliation, and reconciling
+     `B` leaves it settled and live;
+   - two record sets unioned where one retracted `A` and the other defined `C` factoring `A`, and two
+     unioned sets that each defined a live `D`: incoherence reported for both, each resolved by an
+     ordinary write.
 3. `git grep -nE "from '\.\./(plan|note)/|from '\.\./\.\./view|immutability-gate" -- packages/runtime/src/capabilities/design`
    prints nothing.
 4. Sole: the return names the one module computing `closure`, and

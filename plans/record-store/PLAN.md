@@ -4,12 +4,12 @@
 > read time, met only through the three domains.
 
 **Piece.** The whole lattice of `docs/design/record-store.md` — one piece (the design's § Cut).
-**Pin.** `4610c33f` (the commit carrying the revision; re-pinned from `c501e002`, before that
-`9cc32431`). **Digest.** blob `351492c6d3a272c0f56a680dbcb74f16ef03d2b0` =
-`git rev-parse 4610c33f:docs/design/record-store.md` = `git hash-object docs/design/record-store.md`
+**Pin.** `0c9da09c` (the commit carrying the revision; re-pinned from `4610c33f`, and before that
+from `c501e002` and `9cc32431`). **Digest.** blob `6f2dfb48085aaf90093ebc292dd817f9731c95d2` =
+`git rev-parse 0c9da09c:docs/design/record-store.md` = `git hash-object docs/design/record-store.md`
 at re-planning, so `pin = digest`. Every unit reads the design as
-`git show 4610c33f:docs/design/record-store.md`, never the working file: `design-migration` deletes
-it.
+`git show 0c9da09c:docs/design/record-store.md`, never the working file, because
+`design-migration` deletes it.
 
 **Bootstrap.** This plan is written in the layout it deletes. It is one of "the existing plans under
 `plans/`" the design removes rather than migrates, so `plan-cutover` deletes it with the rest; the
@@ -17,32 +17,39 @@ last unit is accepted on its commit, since no plan record for this plan will exi
 
 ## Where this stands
 
-Re-pinned 2026-09-25 at `4610c33f`: a retraction is a head, writes name only current heads, and
-one sense of supersession (§ Decided in C). The delta touched the specs that restate head,
-retraction or divergence semantics; no wave, dep or output moved. Bound (`.bound`). `record-store`
-is active (redispatched with the change), `scaffold-cutover` completed; everything else is pending
-on its deps. `lifecycle-configuration`'s only dep is now completed, so it is ready to be moved.
-No ruling is owed.
+Re-pinned 2026-09-25 at `0c9da09c` (see § Decided in C at `0c9da09c`). No wave, dep or unit moved.
+
+- **Pending specs.** The delta rewrote `domain-interface`, `note-skill` and `trio-skill-routing`.
+  `design-migration` gained the write-time design laws; `plan-cutover` was only re-pinned.
+- **Active W1 specs.** Their Accept changed only where it contradicted the new C: `design-domain`,
+  `plan-domain`, `unit`, `pin` and `view`. The design-holder redispatched their executors with the
+  fixes.
+- **`lifecycle-configuration`.** Its outputs are widened to `forge/src/cli/commands/install.ts`,
+  `forge/src/project/index.ts` and the new `forge/src/project/resolve-skills.ts`. The design-holder
+  authorized this; `DeployCmdOpts.events` is cut over to `plugins`. No pending unit declares or
+  compiles against those paths.
+- **State.** The plan is bound (`.bound`). W0 is completed, and all of W1 is active. No ruling is
+  owed.
 
 ## Units
 
-| wave | state     | unit                      | realizes            | outputs (summary; the shard is the full array)                                                                                                        | deps                                                                                         |
-| ---- | --------- | ------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| 0    | active    | `record-store`            | `record store`      | `runtime/src/record-store/**`; memory's `ulid.ts` moved to `runtime/src/ulid.ts` (subpath `./ulid`) and every importer; tests; registry; biome ignore | —                                                                                            |
-| 0    | completed | `scaffold-cutover`        | `plan`              | forge `deploy/{project-template,init}.ts` + 2 tests; canon `tooling/{project-template,scaffold-cli}.ts` + 1 test                                      | —                                                                                            |
-| 1    | pending   | `lifecycle-configuration` | `plan`              | schema `Skill.runtime` shape; forge `deploy/runtime-config.ts`, `cli/commands/deploy.ts`; runtime `runtime-config.ts`; 2 tests                        | `scaffold-cutover` (contention)                                                              |
-| 1    | pending   | `design-domain`           | `design`            | `runtime/src/capabilities/design/design.ts`                                                                                                           | `record-store`                                                                               |
-| 1    | pending   | `notebook`                | `notebook`          | `runtime/src/capabilities/note/notebook.ts`                                                                                                           | `record-store`                                                                               |
-| 1    | pending   | `plan-domain`             | `plan`              | `runtime/src/capabilities/plan/plan.ts`                                                                                                               | `record-store`                                                                               |
-| 1    | pending   | `unit`                    | `unit`              | `runtime/src/capabilities/plan/unit.ts`                                                                                                               | `record-store`                                                                               |
-| 1    | pending   | `pin`                     | `pin`               | `runtime/src/capabilities/plan/pin.ts`                                                                                                                | `record-store`                                                                               |
-| 1    | pending   | `view`                    | `view`              | `runtime/src/view/**`                                                                                                                                 | `record-store`                                                                               |
-| 1    | pending   | `immutability-gate`       | `immutability gate` | `record-store/immutability-gate.ts` + test; runtime `package.json`; lockfile; husky `pre-commit`; `gates.yml`; registry                               | `record-store`                                                                               |
-| 2    | pending   | `domain-interface`        | `domain interface`  | ports + `capabilities/{design,plan,note}` verb surfaces; loader/plugin/main/index; canon `manifest.ts`; 3 tests; registry                             | `design-domain`, `notebook`, `plan-domain`, `unit`, `pin`, `view`, `lifecycle-configuration` |
-| 3    | pending   | `note-skill`              | `skill routing`     | `canon/src/skills/note/skill.ts` (new); one test header                                                                                               | `domain-interface`                                                                           |
-| 3    | pending   | `trio-skill-routing`      | `skill routing`     | `canon/src/skills/{design,plan,deliver}/skill.ts` (the `plan` skill becomes the lifecycle states' home); 6 canon tests                                | `domain-interface`                                                                           |
-| 3    | pending   | `design-migration`        | `design`            | the design records (new); deletes `docs/design/record-store.md`                                                                                       | `domain-interface`, `immutability-gate`                                                      |
-| 4    | pending   | `plan-cutover`            | `plan`              | deletes plan-states, plan-set, markers, `plans/**` (this plan included), runtime `carryOn`, memory's plan-path handling; migrates callers             | `note-skill`, `trio-skill-routing`, `design-migration`, `scaffold-cutover`                   |
+| wave | state     | unit                      | realizes            | outputs (summary; the shard is the full array)                                                                                                                                | deps                                                                                         |
+| ---- | --------- | ------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| 0    | completed | `record-store`            | `record store`      | `runtime/src/record-store/**`; memory's `ulid.ts` moved to `runtime/src/ulid.ts` (subpath `./ulid`) and every importer; tests; registry; biome ignore                         | —                                                                                            |
+| 0    | completed | `scaffold-cutover`        | `plan`              | forge `deploy/{project-template,init}.ts` + 2 tests; canon `tooling/{project-template,scaffold-cli}.ts` + 1 test                                                              | —                                                                                            |
+| 1    | active    | `lifecycle-configuration` | `plan`              | schema `Skill.runtime` shape; forge `deploy/runtime-config.ts`, `cli/commands/{deploy,install}.ts`, `project/{index,resolve-skills}.ts`; runtime `runtime-config.ts`; 2 tests | `scaffold-cutover` (contention)                                                              |
+| 1    | active    | `design-domain`           | `design`            | `runtime/src/capabilities/design/design.ts`                                                                                                                                   | `record-store`                                                                               |
+| 1    | active    | `notebook`                | `notebook`          | `runtime/src/capabilities/note/notebook.ts`                                                                                                                                   | `record-store`                                                                               |
+| 1    | active    | `plan-domain`             | `plan`              | `runtime/src/capabilities/plan/plan.ts`                                                                                                                                       | `record-store`                                                                               |
+| 1    | active    | `unit`                    | `unit`              | `runtime/src/capabilities/plan/unit.ts`                                                                                                                                       | `record-store`                                                                               |
+| 1    | active    | `pin`                     | `pin`               | `runtime/src/capabilities/plan/pin.ts`                                                                                                                                        | `record-store`                                                                               |
+| 1    | active    | `view`                    | `view`              | `runtime/src/view/**`                                                                                                                                                         | `record-store`                                                                               |
+| 1    | active    | `immutability-gate`       | `immutability gate` | `record-store/immutability-gate.ts` + test; runtime `package.json`; lockfile; husky `pre-commit`; `gates.yml`; registry                                                       | `record-store`                                                                               |
+| 2    | pending   | `domain-interface`        | `domain interface`  | ports + `capabilities/{design,plan,note}` verb surfaces; loader/plugin/main/index; canon `manifest.ts`; 3 tests; registry                                                     | `design-domain`, `notebook`, `plan-domain`, `unit`, `pin`, `view`, `lifecycle-configuration` |
+| 3    | pending   | `note-skill`              | `skill routing`     | `canon/src/skills/note/skill.ts` (new); one test header                                                                                                                       | `domain-interface`                                                                           |
+| 3    | pending   | `trio-skill-routing`      | `skill routing`     | `canon/src/skills/{design,plan,deliver}/skill.ts` (the `plan` skill becomes the lifecycle states' home); 6 canon tests                                                        | `domain-interface`                                                                           |
+| 3    | pending   | `design-migration`        | `design`            | the design records (new); deletes `docs/design/record-store.md`                                                                                                               | `domain-interface`, `immutability-gate`                                                      |
+| 4    | pending   | `plan-cutover`            | `plan`              | deletes plan-states, plan-set, markers, `plans/**` (this plan included), runtime `carryOn`, memory's plan-path handling; migrates callers                                     | `note-skill`, `trio-skill-routing`, `design-migration`, `scaffold-cutover`                   |
 
 Waves are the earliest-wave closure of R. Within each wave outputs are pairwise disjoint, and no
 unit's outputs intersect a wave-mate's refs: the W1 runtime modules import only `record-store/`
@@ -78,7 +85,7 @@ check over the four slices finds no swap that lowers it.
 
 ## Lattice coverage
 
-22 anchors at `4610c33f` (`git show 4610c33f:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`).
+22 anchors at `0c9da09c` (`git show 0c9da09c:docs/design/record-store.md | grep -oE '^- \*\*[a-z ]+\*\*'`).
 Ten are some unit's `realizes`. Twelve are **covered, not cited** — built inside `record-store`,
 whose acceptance requires the artifact to spell each — and are surfaced here as the design's law
 requires for a concept no unit cites.
@@ -170,7 +177,40 @@ to the one shared registry (`gate-convicts.test.ts`), serializing them further.
   is restated as a new version of the same concept; a concept becoming another is a retraction plus
   a definition. Lands in `trio-skill-routing` (Intent, Accept 6).
 
-## Boundary findings (N1–N6 at `c501e002`, N7 at `4610c33f`; each planned as noted, none blocks)
+## Decided in C at `0c9da09c`
+
+- **Domain laws hold on every write.** A write that would break a law on the current branch is
+  refused, so incoherence arises only from merges. Every smoke script and test that produced
+  incoherence with a single-branch write now expects a refusal, and produces incoherence by uniting
+  two record sets. Applied to the Accept of `design-domain`, `unit` and `domain-interface`.
+- **Incoherence, generalized.** It now covers a withdrawn reference, a cycle, one name on two live
+  entities, and more than one bound plan.
+- **Reconciliation.** It resolves divergence (a version superseding every head) and incoherence (an
+  ordinary write), under domain authority: the architect for design and plans, anyone for notes.
+  `plan` and `note` gain `reconcile`, and `note` gains `revise` (`domain-interface`, `note-skill`,
+  `trio-skill-routing`).
+- **Notebook.** A kind is a label the runtime never interprets. An owed ruling is any live note
+  that blocks something, and it ends by retraction or by a revision that blocks nothing. A diverged
+  note blocks the union of what its heads block. `note-skill` drops "only a question may block".
+- **Design laws.** One live concept per anchor, and a withdrawn concept keeps its anchor. Factors
+  are acyclic and name live concepts, so a concept that others factor on cannot be retracted.
+  Gloss and reason are non-empty (`design-domain` Accept, `trio-skill-routing`, and
+  `design-migration`'s reasons).
+- **Plan.** Binding returns the previously bound plan to proposed, and when a merge leaves two
+  bound, binding one resolves it. A plan names the concepts it realizes. An owed ruling naming a
+  plan blocks binding it and every unit in it (`plan-domain` Accept, `domain-interface`).
+- **Unit.** A unit realizes the concept its pin names. A dependency is satisfied at completion or
+  beyond it, and dependencies are acyclic, live and within the same plan (`unit` Accept).
+- **Pin.** A pin is taken only on a settled, live closure, and drifted and suspect are disjoint
+  (`pin` Accept).
+- **View.** Every live item gets a line, including one the structure cannot place. The view orders
+  the lattice from the factors it is given. A concept shows each standing plan with that plan's
+  state, and drilling into a diverged item shows every head (`view` Accept).
+
+## Boundary findings (N1–N6 at `c501e002`, N7 at `4610c33f`, N8 at `0c9da09c`; none blocks)
+
+N1, N2 and N4 are now decided in C at `0c9da09c`. Their planned defaults below are superseded where
+that section says so, and are kept for the record.
 
 - **N1 — what "the design it realizes" is.** A plan's payload names "the design it realizes", but C is
   one per repository and a cut piece is not an entity. Planned reading (`plan-domain`): the plan
@@ -200,6 +240,12 @@ to the one shared registry (`gate-convicts.test.ts`), serializing them further.
   entity is reinstated", but the `design` interface's verbs are define, amend, retract, reconcile,
   trace. Planned (`design-domain`): amending a withdrawn concept supersedes its retraction and
   reinstates it; no new verb.
+- **N8 — writing while a branch is incoherent (new at `0c9da09c`).** "A write that would break a
+  law is refused", but after a merge the law is already broken. Read literally, every write would
+  refuse, including the ordinary write that is supposed to resolve the incoherence. Planned
+  (`domain-interface`, and the W1 domain modules through their redispatch): a write is refused iff
+  it introduces a violation the fold did not already hold. Writes to unrelated entities proceed, and
+  an ordinary write that removes a standing violation is the reconciliation.
 
 ## Census (measured at `c501e002`; re-run for today's figure)
 

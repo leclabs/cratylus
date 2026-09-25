@@ -1,6 +1,6 @@
 # view
 
-**Wave 1.** Realizes `view`. Factors at `4610c33f`: `fold`, `divergence`, `incoherence`, `unit`.
+**Wave 1.** Realizes `view`. Factors at `0c9da09c`: `fold`, `divergence`, `incoherence`, `unit`.
 
 ## Intent
 
@@ -30,7 +30,7 @@ nothing from `record-store/` except read-only types if it needs them.
 
 ## Static
 
-- `git show 4610c33f:docs/design/record-store.md` § How they are met (`view`, `domain interface`).
+- `git show 0c9da09c:docs/design/record-store.md` § How they are met (`view`, `domain interface`).
 - `packages/canon/test/reader-register.ts` — the register ρ = LLM artifacts are held to.
 
 ## Deps
@@ -47,13 +47,20 @@ nothing from `record-store/` except read-only types if it needs them.
 1. `pnpm --filter @cratylus/runtime typecheck` passes.
 2. The return carries a smoke script and its verbatim output, run as
    `pnpm --filter @cratylus/canon exec tsx <absolute path>` over hand-built inputs for all three
-   domains; a re-run reproduces the output. It shows: the first line names the given commit and
-   the counts; a fed divergence, incoherence, drifted unit, suspect unit, owed ruling and open
-   question all print before the body; a concept prints before its factors; units print in wave
-   order with the frontier marked on its lines; notes group by kind, then topic; a concept line
-   shows the units standing on it and a unit line shows its concept; drilling into one item prints
-   it in full; no line matches `[0-9A-HJKMNP-TV-Z]{26}` even when the inputs are built from real
-   entity ids.
+   domains; a re-run reproduces the output. It shows:
+   - the first line names the given commit and the counts;
+   - a fed divergence, incoherence, drifted unit, suspect unit, owed ruling and open question all
+     print before the body;
+   - fed concepts in shuffled order, each still prints before its factors, ordered by the view from
+     the factors it is given;
+   - a live item the structure cannot place (a concept whose factors form a cycle after a merge, a
+     unit with a dep outside the fed plan) still gets a line;
+   - units print in wave order with the frontier marked on their lines;
+   - notes group by kind, then topic;
+   - a concept line shows each plan standing on it with that plan's state, and a unit line shows its
+     concept;
+   - drilling into one item prints it in full, and drilling into a diverged item prints every head;
+   - no line matches `[0-9A-HJKMNP-TV-Z]{26}`, even when the inputs are built from real entity ids.
 3. `git grep -n "capabilities/" -- packages/runtime/src/view` prints nothing.
 4. `git grep -nE "'(proposed|bound|closed|pending|ready|active|completed|idea|question|decision)'|closure" -- packages/runtime/src/view`
    prints nothing.

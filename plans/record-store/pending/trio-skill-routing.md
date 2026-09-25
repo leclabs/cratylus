@@ -10,9 +10,15 @@ unit for the three because their formal blocks borrow from each other (`X @ desi
 which `boundary-binding.test.ts` resolves; split, they would dangle each other's borrows mid-wave.
 
 - **`design`** — `runtime: { capability: 'design' }`; intents reach show, define, amend, retract,
-  reconcile and trace through `scripts/design.mjs <verb>`. It holds reconciliation as the
-  architect's alone, and states that a planner, implementer or assayer meeting divergence reports it
-  and never picks a head. **One sense of supersession** (§ Boundaries at `4610c33f`): the lattice law
+  reconcile and trace (how a concept came to be, what it stands on, what stands on it) through
+  `scripts/design.mjs <verb>`. It holds reconciliation of the design as the architect's alone,
+  and states that a planner, implementer or assayer meeting divergence or incoherence reports it
+  and never resolves it. It carries the design's laws at `0c9da09c`: one live concept per anchor,
+  and a withdrawn concept keeps its anchor until it is reinstated; factors are acyclic and name live
+  concepts, so a concept that others factor on cannot be retracted; every gloss and every reason is
+  non-empty. The block already states anchor uniqueness, acyclicity, a non-empty gloss and a
+  non-empty reason; the live-factor and anchor-retention laws are new to it. **One sense of
+  supersession** (§ Boundaries at `4610c33f`): the lattice law
   `supersede(c, c') ⇒ phase(c) := superseded ∧ supersededBy(c) = c' ∧ c ∈ C`, with `Phase` and
   `supersededBy : C ⇀ C`, reads a superseded concept as replaced by another concept; it is restated
   in the design's sense — a supersession is a new version of the same concept, the prior version
@@ -23,20 +29,33 @@ which `boundary-binding.test.ts` resolves; split, they would dangle each other's
   leaves `design`; `cut`, `closure`, `blast`, `anchor`, `gloss`, `factors` and `denotes` stay. Every
   borrower of a removed sign is migrated (at `4610c33f` none outside the cell:
   `git grep -nE "supersededBy|Phase" -- packages/canon/src ':!packages/canon/src/skills/design'`).
-- **`plan`** — `runtime: { capability: 'plan', … }`; intents reach show, add, revise, advance, bind
-  and close through `scripts/plan.mjs <verb>`. **It is the one home of the plan and unit lifecycle
-  states** (§ Boundaries): the states are declared once in this module, carried on the `Skill`'s
-  runtime face as the capability's configuration (the shape `lifecycle-configuration` added), and
+- **`plan`** — `runtime: { capability: 'plan', … }`; intents reach show, add, revise, advance, bind,
+  close and reconcile through `scripts/plan.mjs <verb>`. It holds reconciliation of plans and units
+  as the architect's alone. **It is the one home of the plan and unit lifecycle states**
+  (§ Boundaries). The states are declared once in this module and carried on the `Skill`'s runtime
+  face as the capability's configuration, in the shape `lifecycle-configuration` added. They are
   interpolated into the formal block, which replaces `States ≜ { ${PLAN_STATES…} }` and the
-  `plan-states.ts` import. Unit readiness is computed (every dep in the state that satisfies it, no
-  owed ruling naming the unit or its plan); an owed ruling is an open notebook question naming a
-  plan or unit, reached through the `note` capability's verbs. It pins and advances: `pin`, drifted
-  and suspect are declared here and replace `pin(s) ≠ digest(s) ⇒ REFUSE`. The `mirror` sign,
-  `advance ⊨ mirror` and the `→ mirror →` step are deleted. `R`, the census, outputs, wave and
-  acceptance laws stay (`boundary-binding.test.ts`'s fixture borrows `R`).
+  `plan-states.ts` import.
+
+  The block carries the plan and unit laws at `0c9da09c`:
+  - binding a plan returns whichever plan was bound to proposed, so at most one is bound;
+  - a unit realizes exactly the concept its pin names;
+  - a unit's dependencies are acyclic and name live units of the same plan;
+  - a unit is ready when every dependency has reached completion or moved past it, and no owed
+    ruling names the unit or its plan;
+  - an owed ruling is any live note that blocks a plan or unit, whatever its kind, reached through
+    the `note` capability's verbs; one naming a plan blocks binding it and every unit in it.
+
+  It pins and advances. `pin` is taken only when the concept and its whole closure are settled and
+  live. Drifted and suspect are disjoint (a drifted unit is never also suspect), and both are
+  declared here, replacing `pin(s) ≠ digest(s) ⇒ REFUSE`. The `mirror` sign, `advance ⊨ mirror`
+  and the `→ mirror →` step are deleted. `R`, the census, outputs, wave and acceptance laws stay
+  (`boundary-binding.test.ts`'s fixture borrows `R`).
+
 - **`deliver`** — reads both (show) and records acceptance by advancing a unit (`advance @ plan`).
   `bound(P)` is now the plan entity's state: binding and closing are `plan` verbs the architect uses
-  at deliver, and `terminal(P) ⇒ retire(P)` becomes closing, which keeps the plan readable instead
+  at deliver. The WIP law `∃! P : bound(P)` is now held by binding, which returns the previous plan
+  to proposed, and `terminal(P) ⇒ retire(P)` becomes closing, which keeps the plan readable instead
   of deleting it. `file(d)` captures to the notebook through the `note` capability's verb, without
   borrowing from the `note` skill (`PLAN.md` § Contract, W3 isolation).
 
@@ -50,7 +69,7 @@ beside this unit leaves it true.
 
 ## Static
 
-- `git show 4610c33f:docs/design/record-store.md` § The three domains, § How they are met,
+- `git show 0c9da09c:docs/design/record-store.md` § The three domains, § How they are met,
   § Boundaries.
 - `packages/canon/src/skills/{design,plan,deliver}/skill.ts`, `packages/canon/src/skills/event-tap/skill.ts`.
 - `packages/canon/test/boundary-binding.test.ts`, `reader-reach.test.ts` (pins on `deliver`'s
@@ -101,5 +120,10 @@ beside this unit leaves it true.
    prints nothing.
 8. Sole: `git grep -l "capability: 'design'" -- packages/canon/src` and the same for `'plan'` each
    list exactly one file.
-9. `pnpm verify` passes.
-10. `.changeset/trio-skill-routing.md` names `@cratylus/canon`.
+9. `plan`'s formal block names `reconcile` with the architect-only authority over it. The return
+   quotes the block's one line defining an owed ruling. That line must say a live note blocking a
+   plan or unit, and name none of `idea`, `question` or `decision`. A blanket grep for `question`
+   cannot serve: at `0c9da09c` it already hits `deliver`'s "three questions" and `plan`'s
+   "unanswered question".
+10. `pnpm verify` passes.
+11. `.changeset/trio-skill-routing.md` names `@cratylus/canon`.
