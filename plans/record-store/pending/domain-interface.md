@@ -74,6 +74,29 @@ it keeps its own refusal wording. The check knows no law and no domain, like the
 store. It stays internal to `runtime`: the domains import it relatively, so it gets no package
 subpath and the barrel stays untouched. Its identifiers are derived with `signify` and reported.
 
+**Canonical set order, one home.** Four payload fields are sets: a concept's factors, a plan's
+`realizes`, a unit's dependencies and a note's `blocks`. Each must be written in one canonical
+order, so that two branches writing the same set produce the same payload and converge. Today
+`plan.ts` keeps the caller's order: `['c1','c2']` and `['c2','c1']` read as diverged (assay locus
+`plan.ts:289,317,407` and `fold.ts:40-42` at `1ad58981`). The same holds wherever the other three
+domains copy a set through (`design.ts:441`, `notebook.ts:100`, and the unit spec's `deps` on add and
+revise).
+
+One record-store function owns the order: it sorts the stored references, which are entity
+identities, never names, so a rename cannot reorder a set. Each domain calls it when it builds a
+payload. The fold keeps comparing payload bytes as written and reorders nothing on read, so the
+fold does not become a second home.
+
+**Legibility for the view's reader, fixed where the view is wired.** The view itself is accepted.
+
+- A bare `retracted` line under a diverged item (`view/layers.ts:138` at `e092b315`) says which head
+  is the retraction.
+- `references withdrawn` (`view/layers.ts:145`) names the kind of reference: factor, dependency or
+  realizes.
+- When several plans are shown, the header's counts are attributed to each plan rather than summed.
+- A diverged concept's `realized in` lists each plan once, however many of its names that plan
+  realizes (`view/design.ts:172` flat-maps once per name).
+
 **Residue from the accepted W1 units, settled here:**
 
 - The header of `pin.ts` (lines 21–22 at `85d02326`) says "`unit` reads only its `concept`".
@@ -146,16 +169,19 @@ invented, so no test spells the `plan` skill's vocabulary.
 - `packages/runtime/src/ports/{design,plan,note}.ts` (new)
 - `packages/runtime/src/capabilities/{design,plan,note}/**`: a new `index.ts` and `dispatch.ts` in
   each; the W1 modules in these directories only where composition exposes a defect
-- `packages/runtime/src/record-store/`: one new module holding the repair check. Also repairs that
-  composition exposes, if any (this wave has no other unit).
+- `packages/runtime/src/record-store/`: new modules holding the repair check and the canonical set
+  order (one module may hold both). Also repairs that composition exposes, if any (this wave has no
+  other unit).
 - `packages/runtime/test/record-store.test.ts`: the repair check's legs
 - `packages/runtime/src/capabilities/design/design.ts`, `packages/runtime/src/capabilities/plan/plan.ts`,
   `packages/runtime/src/capabilities/plan/unit.ts` and
   `packages/runtime/src/capabilities/note/notebook.ts`: each calls the one repair check, and its own
-  copy is deleted
+  copy is deleted, and each builds its set-valued payload fields through the canonical order
 - `packages/runtime/src/capabilities/plan/pin.ts`: the stale header lines
-- `packages/runtime/src/view/**`, including `view/design.ts`, whose `Concept` gets one home with
-  `design.ts`'s; plus repairs that composition exposes
+- `packages/runtime/src/view/**`: `view/design.ts`, whose `Concept` gets one home with
+  `design.ts`'s and whose `realized in` lists a plan once; `view/layers.ts`, for the retraction
+  head, the reference kind and the per-plan header counts; `view/plan.ts`, where several plans are
+  shown; plus repairs that composition exposes
 - `packages/runtime/src/runtime-config.ts`: only if reading the `plan` configuration exposes a defect
   in the reader
 - `packages/runtime/src/{loader,plugin,main,index}.ts`
@@ -229,6 +255,20 @@ invented, so no test spells the `plan` skill's vocabulary.
      title, and `note retract` given one identity resolves it.
 
    **everywhere**
+   - The same set written in two orders converges, in each of the four domains. On two branches,
+     each domain writes the same set in opposite orders: `design amend` of one concept's factors,
+     `plan revise` of one plan's `realizes`, `plan revise` of one unit's dependencies, and
+     `note revise` of one note's `blocks`. After the merge, each item reads converged: no
+     divergence is listed, and an ordinary write to it succeeds without `reconcile`. In each case
+     the payload written on the two branches is byte-identical.
+   - The view legibility items:
+     - A concept diverged by a version and a retraction drills to a line naming which head is the
+       retraction.
+     - A withdrawn-reference incoherence names its kind (`factor`, `dependency` or `realizes`), one
+       fixture each.
+     - `plan show` over two shown plans attributes each count to its plan.
+     - A diverged concept holding two names, both realized by one plan, lists that plan once under
+       `realized in`.
    - Every capability that needs lifecycle configuration refuses when it is absent.
    - Every `show` output is free of the records root's path.
    - Every `show` output matches `[0-9A-HJKMNP-TV-Z]{26}` only beside a name held by more than one
@@ -270,5 +310,13 @@ invented, so no test spells the `plan` skill's vocabulary.
    - `git grep -n "configuration" -- packages/runtime/src/capabilities/plan` hits the reader that
      builds `PlanLifecycle` and `UnitLifecycle` from `loadRuntimeConfig().configuration`. Accept 1's
      absent-configuration refusal and its invented-state fixtures exercise that reader end to end.
-9. `pnpm verify` passes.
-10. `.changeset/domain-interface.md` names `@cratylus/runtime` and `@cratylus/canon`.
+9. **Canonical set order has one home.** The return names the ordering function.
+   - `git grep -l <it> -- packages/runtime/src/capabilities` lists `design.ts`, `plan.ts`, `unit.ts`
+     and `notebook.ts`.
+   - `git grep -nE "\.sort\(" -- packages/runtime/src/capabilities` adds no hit on a set-valued
+     payload field (the return lists every hit and why it is not one).
+   - `pnpm --filter @cratylus/runtime test -- record-store` covers the function directly: a set's
+     canonical form is independent of its input order, and a duplicate entry is not absorbed but left
+     for the domain's set law to refuse.
+10. `pnpm verify` passes.
+11. `.changeset/domain-interface.md` names `@cratylus/runtime` and `@cratylus/canon`.
