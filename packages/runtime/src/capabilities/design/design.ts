@@ -4,53 +4,69 @@
 //
 // A concept is an entity of the record store's `design` domain. Its payload is its
 // anchor, gloss and factors, and it names its factors by ENTITY, so relabelling an
-// anchor never breaks a reference. Names are resolved to entities and back here,
-// at the boundary: every input and every output names a concept, and no caller
-// ever names a record — each write names the concept's current head itself.
+// anchor never breaks a reference. Anchors are resolved to entities and back here,
+// at the boundary: every input and every output names a concept by its anchor, and
+// no caller ever names a record — each write names the concept's current heads
+// itself. A diverged concept is named by any of its heads' anchors.
 //
-// A concept's name is its anchor. When a merge leaves one anchor on several
-// concepts, each of them is named `<anchor> #<n>`, numbered in the order the
-// concepts were defined, so every concept stays addressable and the architect can
-// relabel or retract one of them.
+// Where an anchor cannot address one concept, because a merge left it on several,
+// the concept's IDENTITY is shown and accepted beside the anchor (`Identified`).
+// That is the one place an identity surfaces. It travels as its own field, never
+// inside a string, so no anchor a write records can ever be read as an identity.
 //
-// A concept is live when its one head is a version, withdrawn when its one head is
-// a retraction, and diverged when it has more than one head. Divergence is reported
-// and never resolved by picking a head: amending or retracting a diverged concept
-// refuses and names reconciliation, which writes one version over every head.
-// Amending a withdrawn concept reinstates it. A new version is always the same
-// concept; a concept that becomes another is a retraction plus a definition.
+// A concept is live when its heads carry one version, withdrawn when they carry
+// only a retraction, and diverged when they carry more than one payload (the
+// fold's `diverged`); heads carrying the same payload have converged and read as
+// one. Divergence is reported and never resolved by picking a head: amending or
+// retracting a diverged concept refuses and names reconciliation, which writes one
+// version over every head. Every write names every current head, converged ones
+// included. Amending a withdrawn concept reinstates it. A new version is always
+// the same concept; a concept that becomes another is a retraction plus a
+// definition.
 //
 // Every write keeps the design's laws on the current branch: one live concept per
-// anchor, and a withdrawn concept keeps its anchor until reinstated; factors are
-// acyclic and name no withdrawn concept, so a concept others factor on is not
-// retracted; every anchor, gloss and reason is non-empty. A write that would break
-// one refuses, so incoherence — a factor on a withdrawn concept, a factor cycle, one
-// anchor on two live concepts — arises only from merges, and is reported here and
-// resolved by an ordinary write to one of the concepts involved.
+// anchor, and a withdrawn concept keeps its anchor until reinstated; factors form a
+// set, are acyclic and name no withdrawn concept, so a concept others factor on is
+// not retracted; every anchor, gloss and reason is non-empty. A write that would
+// break one refuses, so incoherence — a factor on a withdrawn concept, a factor
+// cycle, one anchor on two live concepts — arises only from merges, and is reported
+// here and resolved by an ordinary write to one of the concepts involved.
 //
 // `closure` and `blast` are the `design` skill's signs and mean what they mean
 // there. Who may write the design is skill routing's rule, not this module's.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import {
-  type Fold,
-  divergence,
-  fold,
-  incoherence,
-} from '../../record-store/fold.js';
+import { type Fold, fold, incoherence } from '../../record-store/fold.js';
 import type { Envelope, Operation, Record } from '../../record-store/record.js';
 import type { RecordStore } from '../../record-store/store.js';
 
 /** The record store domain holding the design records. */
 export const DOMAIN = 'design';
 
+/** A concept named by its identity beside its anchor, for where the anchor alone
+ *  cannot address it. */
+export interface Identified {
+  readonly anchor: string;
+  readonly identity: string;
+}
+
+/** How the boundary names a concept: its anchor, or its anchor with its identity
+ *  where a merge left that anchor on several concepts. */
+export type Name = string | Identified;
+
 /** A concept as the boundary names it: its factors by name. */
 export interface Concept {
   readonly anchor: string;
   /** What the concept is, in one line. */
   readonly gloss: string;
-  /** The concepts it decomposes into, by name; empty for a primitive. */
-  readonly factors: readonly string[];
+  /** The concepts it decomposes into, a set; empty for a primitive. */
+  readonly factors: readonly Name[];
+}
+
+/** A live concept as the lattice lists it, its identity beside its anchor where
+ *  the anchor alone cannot address it. */
+export interface Listed extends Concept {
+  readonly identity?: string;
 }
 
 /** A concept's payload as recorded: its factors by entity. */
@@ -62,13 +78,15 @@ interface Payload {
 
 /** One concept as folded now. */
 export interface Standing {
-  /** The name it is addressed by: its anchor, `<anchor> #<n>` when several
-   *  concepts carry that anchor; a diverged concept whose heads carry different
-   *  anchors is named by each of them, joined by ` | `. */
-  readonly name: string;
-  /** Each head, in the fold's order: its concept, or `null` for a retraction.
-   *  More than one head is divergence. */
+  /** The anchors it is named by, sorted: its one head's, each of a diverged
+   *  concept's heads', and a withdrawn concept's kept anchor. */
+  readonly anchors: readonly string[];
+  /** Its identity, where an anchor of it cannot address it alone. */
+  readonly identity?: string;
+  /** Each distinct head, in the fold's order: its concept, or `null` for a
+   *  retraction; converged heads read as one. */
   readonly heads: readonly (Concept | null)[];
+  readonly diverged: boolean;
   /** Settled on a retraction. */
   readonly withdrawn: boolean;
   /** The one head's concept when settled and live; `undefined` otherwise. */
@@ -76,25 +94,25 @@ export interface Standing {
 }
 
 /** A design law broken across concepts by a merge: a factor on a withdrawn
- *  concept, a factor cycle (its members, sorted), or one anchor on several live
- *  concepts (their names). */
+ *  concept, a factor cycle, or one anchor on several live concepts (their
+ *  identities, in definition order). */
 export type Incoherence =
   | {
       readonly kind: 'retracted';
-      readonly name: string;
-      readonly factor: string;
+      readonly concept: Name;
+      readonly factor: Name;
     }
-  | { readonly kind: 'cycle'; readonly names: readonly string[] }
+  | { readonly kind: 'cycle'; readonly concepts: readonly Name[] }
   | {
       readonly kind: 'anchor';
       readonly anchor: string;
-      readonly names: readonly string[];
+      readonly identities: readonly string[];
     };
 
 /** The whole design as folded now. */
 export interface Lattice {
-  /** Every live concept, by name. */
-  readonly concepts: readonly Concept[];
+  /** Every live concept, by anchor. */
+  readonly concepts: readonly Listed[];
   /** Every diverged concept. */
   readonly divergence: readonly Standing[];
   readonly incoherence: readonly Incoherence[];
@@ -113,6 +131,13 @@ export interface HistoryEntry {
 
 type By = Pick<Envelope, 'author' | 'reason' | 'cause'>;
 
+/** A name as a message quotes it. */
+function quote(name: Name): string {
+  return typeof name === 'string'
+    ? JSON.stringify(name)
+    : `${JSON.stringify(name.anchor)} (identity ${name.identity})`;
+}
+
 /** The entities reachable from `start` over `edges`, `start` first. */
 function reach(
   start: string,
@@ -128,6 +153,8 @@ function reach(
 class Snapshot {
   readonly records: readonly Record<Payload>[];
   readonly folds: ReadonlyMap<string, Fold<Payload>>;
+  /** The diverged entities, as the store's fold reports them. */
+  readonly diverged: ReadonlySet<string>;
   /** The factor relation: each concept's factors over every version head. */
   readonly factors = new Map<string, Set<string>>();
   readonly #byId: ReadonlyMap<string, Record<Payload>>;
@@ -138,6 +165,9 @@ class Snapshot {
     this.records = records;
     // Records arrive in record-id order, so the folds are in definition order.
     this.folds = fold(records);
+    this.diverged = new Set(
+      [...this.folds.values()].filter((f) => f.diverged).map((f) => f.entity),
+    );
     this.#byId = new Map(records.map((r) => [r.envelope.id, r] as const));
     for (const f of this.folds.values()) {
       const out = new Set<string>();
@@ -183,57 +213,60 @@ class Snapshot {
     return this.folds.get(entity)?.withdrawn ?? false;
   }
 
-  name(entity: string): string {
-    return this.anchors(entity)
-      .map((anchor) => {
-        const carriers = this.carriers(anchor);
-        return carriers.length > 1
-          ? `${anchor} #${carriers.indexOf(entity) + 1}`
-          : anchor;
-      })
-      .join(' | ');
+  /** The entity an anchor addresses alone: its one carrier, or the one of its
+   *  carriers not withdrawn; `undefined` when none or several do. */
+  #addressed(anchor: string): string | undefined {
+    const carriers = this.carriers(anchor);
+    if (carriers.length === 1) return carriers[0];
+    const open = carriers.filter((e) => !this.withdrawn(e));
+    return open.length === 1 ? open[0] : undefined;
+  }
+
+  /** Whether `entity` needs its identity beside its anchor. */
+  identified(entity: string): boolean {
+    return !this.anchors(entity).some((a) => this.#addressed(a) === entity);
+  }
+
+  /** The name of `entity`: the first of its anchors that addresses it alone, or
+   *  its first anchor with its identity. */
+  name(entity: string): Name {
+    const anchors = this.anchors(entity);
+    const alone = anchors.find((a) => this.#addressed(a) === entity);
+    return alone ?? { anchor: anchors[0] ?? '', identity: entity };
   }
 
   /** A concept as a refusal lists it: its name, gloss and state. */
   sign(entity: string): string {
     const glosses = [...new Set(this.versions(entity).map((v) => v.gloss))];
-    return `${this.name(entity)} — ${glosses.join(' | ')}${this.withdrawn(entity) ? ' (withdrawn)' : ''}`;
+    return `${quote(this.name(entity))} — ${glosses.join(' or ')}${this.withdrawn(entity) ? ' (withdrawn)' : ''}`;
   }
 
-  /** The entity `name` denotes, if any: every name this module emits resolves
-   *  back. An anchor several concepts carry denotes the one of them not
-   *  withdrawn, if there is exactly one, and otherwise refuses, listing each
-   *  concept under the name that addresses it. */
-  denotes(name: string): string | undefined {
-    const carriers = this.carriers(name);
-    if (carriers.length === 1) return carriers[0];
-    if (carriers.length > 1) {
-      const open = carriers.filter((e) => !this.withdrawn(e));
-      if (open.length === 1) return open[0];
-      throw new Error(
-        `design: ${JSON.stringify(name)} names ${carriers.length} concepts — ${carriers
-          .map((e) => this.sign(e))
-          .join('; ')}; name one of them`,
-      );
-    }
-    const parts = name.split(' | ');
-    if (parts.length > 1) {
-      const [first, ...rest] = parts.map((part) => this.denotes(part));
-      return first !== undefined && rest.every((e) => e === first)
-        ? first
+  /** The entity `name` denotes, if any. An anchor several live concepts carry
+   *  refuses, listing each with its identity; an identity must be a concept
+   *  carrying the anchor beside it. */
+  denotes(name: Name): string | undefined {
+    if (typeof name !== 'string')
+      return this.folds.has(name.identity) &&
+        this.anchors(name.identity).includes(name.anchor)
+        ? name.identity
         : undefined;
-    }
-    const numbered = /^(.+) #([1-9][0-9]*)$/.exec(name);
-    if (!numbered) return undefined;
-    const among = this.carriers(numbered[1] as string);
-    return among.length > 1 ? among[Number(numbered[2]) - 1] : undefined;
+    const carriers = this.carriers(name);
+    if (carriers.length === 0) return undefined;
+    const entity = this.#addressed(name);
+    if (entity === undefined)
+      throw new Error(
+        `design: ${quote(name)} names ${carriers.length} concepts — ${carriers
+          .map((e) => this.sign(e))
+          .join('; ')}; name one of them by its identity`,
+      );
+    return entity;
   }
 
   /** The entity `name` denotes; refuses a name no concept carries. */
-  resolve(name: string): string {
+  resolve(name: Name): string {
     const entity = this.denotes(name);
     if (entity === undefined)
-      throw new Error(`design: no concept is named ${JSON.stringify(name)}`);
+      throw new Error(`design: no concept is named ${quote(name)}`);
     return entity;
   }
 
@@ -248,10 +281,17 @@ class Snapshot {
   standing(entity: string): Standing {
     const f = this.folds.get(entity);
     return {
-      name: this.name(entity),
-      heads: (f?.heads ?? []).map((h) =>
-        h.payload ? this.concept(h.payload) : null,
-      ),
+      anchors: this.anchors(entity),
+      ...(this.identified(entity) ? { identity: entity } : {}),
+      heads: [
+        ...new Map(
+          (f?.heads ?? []).map((h) => {
+            const concept = h.payload ? this.concept(h.payload) : null;
+            return [JSON.stringify(concept), concept] as const;
+          }),
+        ).values(),
+      ],
+      diverged: this.diverged.has(entity),
       withdrawn: f?.withdrawn ?? false,
       concept: f?.payload ? this.concept(f.payload) : undefined,
     };
@@ -282,7 +322,7 @@ export class Design {
   ): Payload {
     const refuse = (why: string): never => {
       throw new Error(
-        `design: ${verb} ${JSON.stringify(entity === undefined ? concept.anchor : read.name(entity))} refused — ${why}`,
+        `design: ${verb} ${quote(entity === undefined ? concept.anchor : read.name(entity))} refused — ${why}`,
       );
     };
     if (by.reason.trim() === '') refuse('every write gives its reason');
@@ -298,36 +338,43 @@ export class Design {
       refuse(
         `the anchor already names ${holders.map((e) => read.sign(e)).join('; ')}`,
       );
-    if (concept.factors.includes(concept.anchor))
-      refuse('a concept never factors itself');
-    const factors = concept.factors.map((name) => {
+    const factors = new Set<string>();
+    for (const name of concept.factors) {
+      if (entity === undefined && name === concept.anchor)
+        refuse('a concept never factors itself');
       const factor = read.resolve(name);
+      if (factor === entity) refuse('a concept never factors itself');
+      if (factors.has(factor))
+        refuse(`it names its factor ${quote(name)} twice; factors form a set`);
       if (read.withdrawn(factor))
-        refuse(`its factor ${JSON.stringify(name)} is withdrawn`);
+        refuse(`its factor ${quote(name)} is withdrawn`);
       if (entity !== undefined && reach(factor, read.factors).includes(entity))
         refuse(
-          `its factor ${JSON.stringify(name)} stands on it, so factoring it closes a cycle`,
+          `its factor ${quote(name)} stands on it, so factoring it closes a cycle`,
         );
-      return factor;
-    });
-    return { anchor: concept.anchor, gloss: concept.gloss, factors };
+      factors.add(factor);
+    }
+    return {
+      anchor: concept.anchor,
+      gloss: concept.gloss,
+      factors: [...factors],
+    };
   }
 
-  /** The one current head of the concept `name` denotes; refuses a diverged
-   *  concept, naming reconciliation, and a write with no reason. */
-  #head(read: Snapshot, verb: string, name: string, by: By) {
+  /** The concept `name` denotes and its current heads, for an ordinary write;
+   *  refuses a diverged concept, naming reconciliation, and a write with no
+   *  reason. */
+  #settled(read: Snapshot, verb: string, name: Name, by: By) {
     const refuse = (why: string): never => {
-      throw new Error(
-        `design: ${verb} ${JSON.stringify(name)} refused — ${why}`,
-      );
+      throw new Error(`design: ${verb} ${quote(name)} refused — ${why}`);
     };
     if (by.reason.trim() === '') refuse('every write gives its reason');
     const entity = read.resolve(name);
-    const heads = read.folds.get(entity)?.heads ?? [];
-    const [head] = heads;
-    if (heads.length !== 1 || head === undefined)
-      return refuse(`it has diverged into ${heads.length} heads; reconcile it`);
-    return { entity, head, refuse };
+    if (read.diverged.has(entity)) refuse('it has diverged; reconcile it');
+    const heads = (read.folds.get(entity)?.heads ?? []).map(
+      (h) => h.envelope.id,
+    );
+    return { entity, heads, refuse };
   }
 
   /** Define a new concept: its first version. */
@@ -340,29 +387,29 @@ export class Design {
   }
 
   /** Amend the concept `name` denotes to `concept` (which may relabel it): a new
-   *  version of the same concept over its one current head. Amending a withdrawn
+   *  version of the same concept over its current head. Amending a withdrawn
    *  concept reinstates it. */
-  amend(name: string, concept: Concept, by: By): void {
+  amend(name: Name, concept: Concept, by: By): void {
     const read = this.#read();
-    const { entity, head } = this.#head(read, 'amend', name, by);
+    const { entity, heads } = this.#settled(read, 'amend', name, by);
     this.#store.supersede(
       DOMAIN,
       entity,
-      [head.envelope.id],
+      heads,
       this.#payload(read, 'amend', concept, by, entity),
       by,
     );
   }
 
-  /** Withdraw the concept `name` denotes: a retraction of its one current head,
-   *  which becomes its head. Refuses while another concept factors on it. */
-  retract(name: string, by: By): void {
+  /** Withdraw the concept `name` denotes: a retraction of its current head, which
+   *  becomes its head. Refuses while another concept factors on it. */
+  retract(name: Name, by: By): void {
     const read = this.#read();
-    const { entity, head, refuse } = this.#head(read, 'retract', name, by);
-    if (head.envelope.operation === 'retract') refuse('it is withdrawn');
+    const { entity, refuse } = this.#settled(read, 'retract', name, by);
+    if (read.withdrawn(entity)) refuse('it is withdrawn');
     const dependants = [...read.factors]
       .filter(([other, factors]) => other !== entity && factors.has(entity))
-      .map(([other]) => JSON.stringify(read.name(other)));
+      .map(([other]) => quote(read.name(other)));
     if (dependants.length > 0)
       refuse(
         `${dependants.join(', ')} factor${dependants.length > 1 ? '' : 's'} on it; amend or retract ${dependants.length > 1 ? 'them' : 'it'} first`,
@@ -372,13 +419,12 @@ export class Design {
 
   /** Reconcile the diverged concept `name` denotes: one version, `concept`, over
    *  every head, a retraction among them included. Refuses a settled concept. */
-  reconcile(name: string, concept: Concept, by: By): void {
+  reconcile(name: Name, concept: Concept, by: By): void {
     const read = this.#read();
     const entity = read.resolve(name);
-    const heads = read.folds.get(entity)?.heads.length ?? 0;
-    if (heads < 2)
+    if (!read.diverged.has(entity))
       throw new Error(
-        `design: reconcile ${JSON.stringify(name)} refused — it is settled, and only divergence is reconciled; amend it`,
+        `design: reconcile ${quote(name)} refused — it has not diverged, and only divergence is reconciled; amend it`,
       );
     this.#store.reconcile(
       DOMAIN,
@@ -391,58 +437,55 @@ export class Design {
   /** The whole design: every live concept, every divergence, every incoherence. */
   lattice(): Lattice {
     const read = this.#read();
-    const concepts: Concept[] = [];
+    const concepts: Listed[] = [];
     for (const f of read.folds.values())
-      if (f.payload) concepts.push(read.concept(f.payload));
+      if (f.payload)
+        concepts.push({
+          ...read.concept(f.payload),
+          ...(read.identified(f.entity) ? { identity: f.entity } : {}),
+        });
     const found: Incoherence[] = incoherence(read.folds, (p) => p.factors).map(
       (i) =>
         i.kind === 'retracted'
           ? {
               kind: i.kind,
-              name: read.name(i.entity),
+              concept: read.name(i.entity),
               factor: read.name(i.reference),
             }
-          : {
-              kind: i.kind,
-              names: i.entities.map((e) => read.name(e)).sort(),
-            },
+          : { kind: i.kind, concepts: i.entities.map((e) => read.name(e)) },
     );
     for (const anchor of new Set(concepts.map((c) => c.anchor))) {
       const open = read.carriers(anchor).filter((e) => !read.withdrawn(e));
       if (open.length > 1)
-        found.push({
-          kind: 'anchor',
-          anchor,
-          names: open.map((e) => read.name(e)),
-        });
+        found.push({ kind: 'anchor', anchor, identities: open });
     }
     return {
       concepts: concepts.sort((a, b) => (a.anchor < b.anchor ? -1 : 1)),
-      divergence: divergence(read.folds).map((f) => read.standing(f.entity)),
+      divergence: [...read.diverged].map((e) => read.standing(e)),
       incoherence: found,
     };
   }
 
   /** The concept `name` denotes, live, withdrawn or diverged. */
-  concept(name: string): Standing {
+  concept(name: Name): Standing {
     const read = this.#read();
     return read.standing(read.resolve(name));
   }
 
   /** The entity `name` denotes, `undefined` when no concept carries it. */
-  denotes(name: string): string | undefined {
+  denotes(name: Name): string | undefined {
     return this.#read().denotes(name);
   }
 
   /** closure(c) ≜ { c } ∪ ⋃ { closure(f) | f ∈ factors(c) }, by name, `c` first.
    *  A diverged concept contributes the factors of every version head. */
-  closure(name: string): string[] {
+  closure(name: Name): Name[] {
     const read = this.#read();
     return reach(read.resolve(name), read.factors).map((e) => read.name(e));
   }
 
   /** blast(c) ≜ { d ∈ C | c ∈ closure(d) }, by name, `c` first. */
-  blast(name: string): string[] {
+  blast(name: Name): Name[] {
     const read = this.#read();
     const factoredBy = new Map<string, Set<string>>();
     for (const [entity, factors] of read.factors)
@@ -456,7 +499,7 @@ export class Design {
 
   /** Every version and retraction of the concept `name` denotes, oldest first,
    *  with its reason; factors by their current names. */
-  history(name: string): HistoryEntry[] {
+  history(name: Name): HistoryEntry[] {
     const read = this.#read();
     const entity = read.resolve(name);
     return read.records
